@@ -294,8 +294,9 @@ def imageset_to_xds(imageset, synchrotron = None, reversephi = False,
     result.append('POLARIZATION_PLANE_NORMAL= %.3f %.3f %.3f' %
                   (R * matrix.col(beam.get_polarization_normal())).elems)
 
-  # FIXME 11/DEC/06 this should depend on the wavelength
-  result.append('AIR=0.001')
+  # FIXME 24/NOV/14 XDS determines the air absorption automatically
+  # based on wavelength. May be useful to override this for in vacuo exps
+  # result.append('AIR=0.001')
 
 
   # FIXME I should really get this from the image headers...
