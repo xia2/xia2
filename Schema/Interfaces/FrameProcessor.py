@@ -70,7 +70,7 @@ class FrameProcessor(object):
     # also need to keep track of allowed images in here
     self._fp_wedge = None
 
-    self._imageset = None
+    self._fp_imageset = None
     # if image has been specified, construct much of this information
     # from the image
 
@@ -261,28 +261,28 @@ class FrameProcessor(object):
 
   # getters/setters for dxtbx objects
   def get_imageset(self):
-    return self._imageset
+    return self._fp_imageset
 
   def get_scan(self):
-    return self._imageset.get_scan()
+    return self._fp_imageset.get_scan()
 
   def get_detector(self):
-    return self._imageset.get_detector()
+    return self._fp_imageset.get_detector()
 
   def set_detector(self, detector):
-    self._imageset.set_detector(detector)
+    self._fp_imageset.set_detector(detector)
 
   def get_goniometer(self):
-    return self._imageset.get_goniometer()
+    return self._fp_imageset.get_goniometer()
 
   def set_goniometer(self, goniometer):
-    self._imageset.set_goniometer(goniometer)
+    self._fp_imageset.set_goniometer(goniometer)
 
   def get_beam_obj(self):
-    return self._imageset.get_beam()
+    return self._fp_imageset.get_beam()
 
   def set_beam_obj(self, beam):
-    self._imageset.set_beam(beam)
+    self._fp_imageset.set_beam(beam)
 
   def setup_from_image(self, image):
     if self._fp_template and self._fp_directory:
@@ -291,7 +291,7 @@ class FrameProcessor(object):
     self._setup_from_image(image)
 
   def setup_from_imageset(self, imageset):
-    if self._imageset:
+    if self._fp_imageset:
       raise RuntimeError, 'FrameProcessor implementation already set up'
 
     self._setup_from_imageset(imageset)
@@ -328,7 +328,7 @@ class FrameProcessor(object):
 
     beam = imageset.get_beam()
     detector = imageset.get_detector()
-    self._imageset = imageset
+    self._fp_imageset = imageset
     self._fp_directory, self._fp_template = os.path.split(
       imageset.get_template())
 
