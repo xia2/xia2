@@ -7,6 +7,7 @@ import libtbx.load_env
 
 tst_list = (
     "$D/Test/Wrappers/Dials/TstDialsWrappers.py",
+    "$D/Test/Modules/Indexer/TstMosflmIndexer.py",
     "$D/Test/Modules/Indexer/TstDialsIndexer.py",
     "$D/Test/Modules/Indexer/TstLabelitIndexer.py",
     "$D/Test/Modules/Indexer/TstLabelitIndexerII.py",
