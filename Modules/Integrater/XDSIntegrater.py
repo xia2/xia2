@@ -354,12 +354,13 @@ class XDSIntegrater(Integrater):
         self._data_files[file] = os.path.join(
           self.get_working_directory(), 'xds', file)
 
-      self._intgr_indexer.set_indexer_payload('xds_files', self._data_files)
+      for k, v in self._data_files:
+        self._intgr_indexer.set_indexer_payload(k, v)
 
     # check that the indexer is an XDS indexer - if not then
     # create one...
 
-    elif not self._intgr_indexer.get_indexer_payload('xds_files'):
+    elif not self._intgr_indexer.get_indexer_payload('XPARM.XDS'):
       Debug.write('Generating an XDS indexer')
 
       # note to self for the future - this set will reset the
@@ -462,8 +463,7 @@ class XDSIntegrater(Integrater):
                   self.get_integrater_low_resolution())
 
     # copy the data across
-    self._data_files = copy.deepcopy(
-        self._intgr_indexer.get_indexer_payload('xds_files'))
+    self._data_files = copy.deepcopy(self._intgr_indexer._indxr_payload)
 
     Debug.write('Files available at the end of XDS integrate prepare:')
     for f in self._data_files.keys():

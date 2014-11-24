@@ -65,6 +65,25 @@ def exercise_xds_indexer():
   print indexer.get_indexer_experiment_list()[0].crystal
   print indexer.get_indexer_experiment_list()[0].detector
 
+  # test serialization of indexer
+  json_str = indexer.as_json()
+  print json_str
+  indexer2 = XDSIndexer.from_json(string=json_str)
+  indexer2.index()
+
+  assert approx_equal(indexer.get_indexer_cell(), indexer2.get_indexer_cell())
+  assert approx_equal(
+    indexer.get_indexer_beam_centre(), indexer2.get_indexer_beam_centre())
+  assert approx_equal(
+    indexer.get_indexer_images(), indexer2.get_indexer_images())
+
+  indexer.eliminate()
+  indexer2.eliminate()
+
+  assert approx_equal(indexer.get_indexer_cell(), indexer2.get_indexer_cell())
+  assert indexer.get_indexer_lattice() == 'hR'
+  assert indexer2.get_indexer_lattice() == 'hR'
+
 
 def run():
   exercise_xds_indexer()

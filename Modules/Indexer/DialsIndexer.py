@@ -66,7 +66,7 @@ class DialsIndexer(Indexer):
   # admin functions
 
   def get_indexed_filename(self):
-    return self._indexed_filename
+    return self.get_indexer_payload("indexed_filename")
 
   # factory functions
 
@@ -144,11 +144,13 @@ class DialsIndexer(Indexer):
       spotfinder.set_min_spot_size(min_spot_size)
     spotfinder.run()
 
-    self._spot_filename = spotfinder.get_spot_filename()
-    if not os.path.exists(self._spot_filename):
+
+    spot_filename = spotfinder.get_spot_filename()
+    if not os.path.exists(spot_filename):
       raise RuntimeError("Spotfinding failed: %s does not exist."
-                         %os.path.basename(self._spot_filename))
-    self._sweep_filename = importer.get_sweep_filename()
+                         %os.path.basename(spot_filename))
+    self.set_indexer_payload("spot_list", spot_filename)
+    self.set_indexer_payload("datablock.json", importer.get_sweep_filename())
 
     return
 
@@ -176,7 +178,8 @@ class DialsIndexer(Indexer):
 
     # not strictly the P1 cell, rather the cell that was used in indexing
     self._p1_cell = indexer._p1_cell
-    self._indexed_filename = indexer.get_indexed_filename()
+    self.set_indexer_payload(
+      "indexed_filename", indexer.get_indexed_filename())
 
     # FIXME in here should respect the input unit cell and lattice if provided
 
@@ -240,12 +243,12 @@ class DialsIndexer(Indexer):
       # reindex the output reflection list to this solution
       reindex = self.Reindex()
       reindex.set_experiments_filename(indexer.get_experiments_filename())
-      reindex.set_indexed_filename(self._indexed_filename)
+      reindex.set_indexed_filename(self._indxr_payload["indexed_filename"])
       reindex.set_cb_op(self._solution['cb_op'])
       reindex.set_space_group(str(lattice_to_spacegroup_number(
         self._solution['lattice'])))
       experiments, indexed_file = reindex.run()
-      self._indexed_filename = indexed_file
+      self.set_indexer_payload("indexed_filename", indexed_file)
 
     else:
       experiment_list = load.experiment_list(
@@ -256,8 +259,8 @@ class DialsIndexer(Indexer):
 
   def _do_indexing(self, method=None):
     indexer = self.Index()
-    indexer.set_spot_filename(self._spot_filename)
-    indexer.set_sweep_filename(self._sweep_filename)
+    indexer.set_spot_filename(self._indxr_payload["spot_list"])
+    indexer.set_sweep_filename(self._indxr_payload["datablock.json"])
     if PhilIndex.params.dials.index.phil_file is not None:
       indexer.set_phil_file(PhilIndex.params.dials.index.phil_file)
     if PhilIndex.params.dials.index.max_cell:
@@ -355,7 +358,7 @@ class DialsIndexer(Indexer):
 
     from libtbx import easy_pickle
     from cctbx import crystal, miller, uctbx
-    reflections = easy_pickle.load(self._indexed_filename)
+    reflections = easy_pickle.load(self._indxr_payload["indexed_filename"])
     miller_indices = reflections['miller_index']
     miller_indices = miller_indices.select(miller_indices != (0,0,0))
     # it isn't necessarily the 'p1_cell', but it should be the cell that

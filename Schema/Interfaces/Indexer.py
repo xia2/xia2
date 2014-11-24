@@ -205,6 +205,77 @@ class Indexer(FrameProcessor):
   def get_working_directory(self):
     return self._indxr_working_directory
 
+  # serialization functions
+
+  def to_dict(self):
+    obj = {}
+    obj['__id__'] = 'Indexer'
+    import inspect
+    attributes = inspect.getmembers(self, lambda m:not(inspect.isroutine(m)))
+    for a in attributes:
+      if a[0] == '_indxr_helper':
+        lattice_cell_dict = {}
+        lattice_list = a[1].get_all()
+        for l, c in lattice_list:
+          lattice_cell_dict[l] = c
+        obj[a[0]] = lattice_cell_dict
+      elif a[0] == '_indxr_experiment_list':
+        obj[a[0]] = a[1].to_dict()
+      elif a[0] == '_fp_imageset':
+        from dxtbx.serialize.imageset import imageset_to_dict
+        obj[a[0]] = imageset_to_dict(a[1])
+      elif a[0] == '_indxr_sweep':
+        # XXX I guess we probably want this?
+        continue
+      elif (a[0].startswith('_indxr_') or
+            a[0].startswith('_fp_')):
+        obj[a[0]] = a[1]
+    return obj
+
+  @classmethod
+  def from_dict(cls, obj):
+    assert obj['__id__'] == 'Indexer'
+    return_obj = cls()
+    for k, v in obj.iteritems():
+      if k == '_indxr_helper':
+        from Schema.Interfaces.Indexer import _IndexerHelper
+        v = _IndexerHelper(v)
+      if isinstance(v, dict):
+        if v.get('__id__', None) == 'ExperimentList':
+          from dxtbx.model.experiment.experiment_list import ExperimentListFactory
+          v = ExperimentListFactory.from_dict(v)
+        elif v.get('__id__', None) == 'imageset':
+          from dxtbx.serialize.imageset import imageset_from_dict
+          v = imageset_from_dict(v)
+      setattr(return_obj, k, v)
+    return return_obj
+
+  def as_json(self, filename=None, compact=False):
+    import json
+    obj = self.to_dict()
+    if compact:
+      text = json.dumps(obj, skipkeys=True, separators=(',',':'), ensure_ascii=True)
+    else:
+      text = json.dumps(obj, skipkeys=True, indent=2, ensure_ascii=True)
+
+    # If a filename is set then dump to file otherwise return string
+    if filename is not None:
+      with open(filename, 'w') as outfile:
+        outfile.write(text)
+    else:
+      return text
+
+  @classmethod
+  def from_json(cls, filename=None, string=None):
+    import json
+    from dxtbx.serialize.load import _decode_dict
+    assert [filename, string].count(None) == 1
+    if filename is not None:
+      with open(filename, 'wb') as f:
+        string = f.read()
+    obj = json.loads(string, object_hook=_decode_dict)
+    return cls.from_dict(obj)
+
   # ----------------------------------------------------------------
   # These are functions which will want to be overloaded for the
   # actual implementation - preparation may do things like gathering

@@ -111,9 +111,9 @@ class XDSIndexerII(XDSIndexer):
     '''Actually do the autoindexing using the data prepared by the
     previous method.'''
 
-    images_str = '%d to %d' % self._indxr_images[0]
+    images_str = '%d to %d' % tuple(self._indxr_images[0])
     for i in self._indxr_images[1:]:
-      images_str += ', %d to %d' % i
+      images_str += ', %d to %d' % tuple(i)
 
     cell_str = None
     if self._indxr_input_cell:
@@ -139,7 +139,7 @@ class XDSIndexerII(XDSIndexer):
 
     self._index_remove_masked_regions()
     for file in ['SPOT.XDS']:
-      idxref.set_input_data_file(file, self._data_files[file])
+      idxref.set_input_data_file(file, self._indxr_payload[file])
 
     idxref.set_data_range(self._indxr_images[0][0],
                           self._indxr_images[0][1])
@@ -275,7 +275,7 @@ class XDSIndexerII(XDSIndexer):
                                              'IDXREF.LP'))
     for file in ['SPOT.XDS',
                  'XPARM.XDS']:
-      self._data_files[file] = idxref.get_output_data_file(file)
+      self._indxr_payload[file] = idxref.get_output_data_file(file)
 
     # need to get the indexing solutions out somehow...
 
@@ -301,8 +301,6 @@ class XDSIndexerII(XDSIndexer):
 
     experiment_list = ExperimentList([experiment])
     self.set_indexer_experiment_list(experiment_list)
-
-    self._indxr_payload['xds_files'] = self._data_files
 
     # I will want this later on to check that the lattice was ok
     self._idxref_subtree_problem = idxref.get_index_tree_problem()
@@ -340,7 +338,7 @@ class XDSIndexerII(XDSIndexer):
 
     self._index_remove_masked_regions()
     for file in ['SPOT.XDS']:
-      idxref.set_input_data_file(file, self._data_files[file])
+      idxref.set_input_data_file(file, self._indxr_payload[file])
 
     idxref.set_data_range(self._indxr_images[0][0],
                           self._indxr_images[0][1])
@@ -385,7 +383,7 @@ class XDSIndexerII(XDSIndexer):
 
     self._index_remove_masked_regions()
     for file in ['SPOT.XDS']:
-      idxref.set_input_data_file(file, self._data_files[file])
+      idxref.set_input_data_file(file, self._indxr_payload[file])
 
     idxref.set_data_range(self._indxr_images[0][0],
                           self._indxr_images[0][1])

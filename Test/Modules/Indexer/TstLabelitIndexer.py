@@ -58,6 +58,36 @@ def exercise_labelit_indexer():
   print ls.get_indexer_experiment_list()[0].crystal
   print ls.get_indexer_experiment_list()[0].detector
 
+  json_str = ls.as_json()
+  #print ls.to_dict()
+  print json_str
+  ls1 = LabelitIndexer.from_json(string=json_str)
+  ls1.index()
+
+  print ls.get_indexer_experiment_list()[0].crystal
+  assert ls.get_indexer_beam_centre() == ls1.get_indexer_beam_centre()
+  assert approx_equal(ls.get_indexer_images(), ls1.get_indexer_images())
+  assert ls.get_distance() == ls1.get_distance()
+
+  ls.eliminate()
+  ls1.eliminate()
+
+  print ls1.get_indexer_experiment_list()[0].crystal
+  assert ls.get_indexer_beam_centre() == ls1.get_indexer_beam_centre()
+  assert approx_equal(ls.get_indexer_images(), ls1.get_indexer_images())
+  assert ls.get_distance() == ls1.get_distance()
+
+  print ls1.get_indexer_cell()
+  print ls1.get_solution()
+  assert approx_equal(ls.get_indexer_cell(), (111.11, 111.11, 68.08, 90.0, 90.0, 120.0), 1e-1)
+  solution = ls1.get_solution()
+  assert solution['rmsd'] >= 0.087
+  assert approx_equal(solution['metric'], 0.1291, eps=1e-3)
+  #assert solution['number'] == 8
+  assert solution['lattice'] == 'hR'
+  assert solution['mosaic'] == 0.025
+  assert abs(solution['nspots'] - 856) <= 3
+
 
 def run():
   exercise_labelit_indexer()

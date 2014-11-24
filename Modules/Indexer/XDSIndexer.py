@@ -191,7 +191,7 @@ class XDSIndexer(Indexer):
     limits = PhilIndex.params.xia2.settings.untrusted_rectangle_indexing
     spot_xds = ''
     removed = 0
-    for record in self._data_files['SPOT.XDS'].split('\n'):
+    for record in self._indxr_payload['SPOT.XDS'].split('\n'):
       if not record.strip():
         continue
       x, y, phi, i = map(float, record.split()[:4])
@@ -202,7 +202,7 @@ class XDSIndexer(Indexer):
       spot_xds += '%s\n' % record
 
     Debug.write('Removed %d peaks from SPOT.XDS' % removed)
-    self._data_files['SPOT.XDS'] = spot_xds
+    self._indxr_payload['SPOT.XDS'] = spot_xds
     return
 
   def _index_select_images_i(self):
@@ -318,7 +318,7 @@ class XDSIndexer(Indexer):
 
     for file in ['X-CORRECTIONS.cbf',
                  'Y-CORRECTIONS.cbf']:
-      self._data_files[file] = xycorr.get_output_data_file(file)
+      self._indxr_payload[file] = xycorr.get_output_data_file(file)
 
     # next start to process these - then init
 
@@ -326,7 +326,7 @@ class XDSIndexer(Indexer):
 
     for file in ['X-CORRECTIONS.cbf',
                  'Y-CORRECTIONS.cbf']:
-      init.set_input_data_file(file, self._data_files[file])
+      init.set_input_data_file(file, self._indxr_payload[file])
 
     init.set_data_range(first, last)
 
@@ -365,7 +365,7 @@ class XDSIndexer(Indexer):
     for file in ['BLANK.cbf',
                  'BKGINIT.cbf',
                  'GAIN.cbf']:
-      self._data_files[file] = init.get_output_data_file(file)
+      self._indxr_payload[file] = init.get_output_data_file(file)
 
     if PhilIndex.params.xia2.settings.developmental.use_dials_spotfinder:
 
@@ -382,7 +382,7 @@ class XDSIndexer(Indexer):
       export.run()
 
       for file in ['SPOT.XDS']:
-        self._data_files[file] = export.get_output_data_file(file)
+        self._indxr_payload[file] = export.get_output_data_file(file)
 
     else:
 
@@ -395,7 +395,7 @@ class XDSIndexer(Indexer):
                    'BLANK.cbf',
                    'BKGINIT.cbf',
                    'GAIN.cbf']:
-        colspot.set_input_data_file(file, self._data_files[file])
+        colspot.set_input_data_file(file, self._indxr_payload[file])
 
       colspot.set_data_range(first, last)
       colspot.set_background_range(self._indxr_images[0][0],
@@ -406,7 +406,7 @@ class XDSIndexer(Indexer):
       colspot.run()
 
       for file in ['SPOT.XDS']:
-        self._data_files[file] = colspot.get_output_data_file(file)
+        self._indxr_payload[file] = colspot.get_output_data_file(file)
 
     # that should be everything prepared... all of the important
     # files should be loaded into memory to be able to cope with
@@ -418,9 +418,9 @@ class XDSIndexer(Indexer):
     '''Actually do the autoindexing using the data prepared by the
     previous method.'''
 
-    images_str = '%d to %d' % self._indxr_images[0]
+    images_str = '%d to %d' % tuple(self._indxr_images[0])
     for i in self._indxr_images[1:]:
-      images_str += ', %d to %d' % i
+      images_str += ', %d to %d' % tuple(i)
 
     cell_str = None
     if self._indxr_input_cell:
@@ -446,7 +446,7 @@ class XDSIndexer(Indexer):
 
     self._index_remove_masked_regions()
     for file in ['SPOT.XDS']:
-      idxref.set_input_data_file(file, self._data_files[file])
+      idxref.set_input_data_file(file, self._indxr_payload[file])
 
     # edit SPOT.XDS to remove reflections in untrusted regions of the detector
 
@@ -564,7 +564,7 @@ class XDSIndexer(Indexer):
 
     for file in ['SPOT.XDS',
                  'XPARM.XDS']:
-      self._data_files[file] = idxref.get_output_data_file(file)
+      self._indxr_payload[file] = idxref.get_output_data_file(file)
 
     # need to get the indexing solutions out somehow...
 
@@ -591,8 +591,6 @@ class XDSIndexer(Indexer):
     experiment_list = ExperimentList([experiment])
     self.set_indexer_experiment_list(experiment_list)
 
-    self._indxr_payload['xds_files'] = self._data_files
-
     # I will want this later on to check that the lattice was ok
     self._idxref_subtree_problem = idxref.get_index_tree_problem()
 
@@ -603,7 +601,7 @@ class XDSIndexer(Indexer):
 
     # ok, in here now ask if this solution was sensible!
 
-    if not self.get_indexer_sweep().get_user_lattice():
+    if not self.get_indexer_user_input_lattice():
 
       lattice = self._indxr_lattice
       cell = self._indxr_cell
