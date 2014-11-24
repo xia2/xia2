@@ -174,6 +174,8 @@ class Indexer(FrameProcessor):
     self._indxr_refined_goniometer = None
     self._indxr_refined_scan = None
 
+    self._indxr_experiment_list = None
+
     # spot list in an as yet to be defined standard reference frame
     self._indxr_spot_list = None
 

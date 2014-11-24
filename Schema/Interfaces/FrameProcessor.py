@@ -343,7 +343,7 @@ class FrameProcessor(object):
       #self._fp_distance = detector[0].get_distance()
       self._fp_distance_prov = 'header'
     if self._fp_beam_prov is None:
-      self._fp_beam = reversed(detector.get_ray_intersection(beam.get_s0())[1])
+      self._fp_beam = tuple(reversed(detector.get_ray_intersection(beam.get_s0())[1]))
       self._fp_beam_prov = 'header'
     # XXX How do I get two_theta from dxtbx? do we even need it?
     #if self._fp_two_theta_prov is None:
