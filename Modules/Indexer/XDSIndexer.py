@@ -68,9 +68,6 @@ class XDSIndexer(Indexer):
 
     idxref = _Idxref()
 
-    # admin junk
-    self._working_directory = os.getcwd()
-
     self._background_images = None
     self._index_select_images = 'i'
 
@@ -78,15 +75,6 @@ class XDSIndexer(Indexer):
     self._data_files = { }
 
     return
-
-  # admin functions
-
-  def set_working_directory(self, working_directory):
-    self._working_directory = working_directory
-    return
-
-  def get_working_directory(self):
-    return self._working_directory
 
   # factory functions
 

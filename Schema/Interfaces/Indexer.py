@@ -134,6 +134,8 @@ class Indexer(FrameProcessor):
     # interface constructor calls
     FrameProcessor.__init__(self)
 
+    self._indxr_working_directory = os.getcwd()
+
     # (optional) input parameters
     self._indxr_images = []
     self._indxr_input_lattice = None
@@ -197,11 +199,11 @@ class Indexer(FrameProcessor):
   # admin functions
 
   def set_working_directory(self, working_directory):
-    self._working_directory = working_directory
+    self._indxr_working_directory = working_directory
     return
 
   def get_working_directory(self):
-    return self._working_directory
+    return self._indxr_working_directory
 
   # ----------------------------------------------------------------
   # These are functions which will want to be overloaded for the

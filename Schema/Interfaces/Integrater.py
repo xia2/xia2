@@ -71,6 +71,9 @@ class Integrater(FrameProcessor):
     # interface constructor calls
     FrameProcessor.__init__(self)
 
+    # admin junk
+    self._intgr_working_directory = os.getcwd()
+
     # a pointer to an implementation of the indexer class from which
     # to get orientation (maybe) and unit cell, lattice (definately)
     self._intgr_indexer = None
@@ -274,11 +277,11 @@ class Integrater(FrameProcessor):
   # getters and setters of administrative information
 
   def set_working_directory(self, working_directory):
-    self._working_directory = working_directory
+    self._intgr_working_directory = working_directory
     return
 
   def get_working_directory(self):
-    return self._working_directory
+    return self._intgr_working_directory
 
   def set_integrater_sweep_name(self, sweep_name):
     self._intgr_sweep_name = sweep_name

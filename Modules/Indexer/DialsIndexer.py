@@ -51,8 +51,6 @@ class DialsIndexer(Indexer):
 
     Indexer.__init__(self)
 
-    self._working_directory = os.getcwd()
-
     self._background_images = None
 
     # place to store working data
@@ -66,13 +64,6 @@ class DialsIndexer(Indexer):
     return
 
   # admin functions
-
-  def set_working_directory(self, working_directory):
-    self._working_directory = working_directory
-    return
-
-  def get_working_directory(self):
-    return self._working_directory
 
   def get_indexed_filename(self):
     return self._indexed_filename

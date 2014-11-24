@@ -79,9 +79,6 @@ class XDSIntegrater(Integrater):
 
     integrate = _Integrate()
 
-    # admin junk
-    self._working_directory = os.getcwd()
-
     # place to store working data
     self._data_files = { }
 
@@ -116,13 +113,6 @@ class XDSIntegrater(Integrater):
     return self._intgr_corrected_hklout
 
   # admin functions
-
-  def set_working_directory(self, working_directory):
-    self._working_directory = working_directory
-    return
-
-  def get_working_directory(self):
-    return self._working_directory
 
   def _set_integrater_reindex_operator_callback(self):
     '''If a REMOVE.HKL file exists in the working

@@ -66,9 +66,6 @@ class DialsIntegrater(Integrater):
 
     integrate = _Integrate()
 
-    # admin junk
-    self._working_directory = os.getcwd()
-
     # place to store working data
     self._data_files = { }
 
@@ -97,13 +94,6 @@ class DialsIntegrater(Integrater):
     return
 
   # admin functions
-
-  def set_working_directory(self, working_directory):
-    self._working_directory = working_directory
-    return
-
-  def get_working_directory(self):
-    return self._working_directory
 
   def get_integrated_filename(self):
     return self._intgr_integrated_filename
