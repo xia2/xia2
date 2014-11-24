@@ -31,7 +31,6 @@ from Driver.DriverFactory import DriverFactory
 from Decorators.DecoratorFactory import DecoratorFactory
 
 # interfaces that this will present
-from Schema.Interfaces.FrameProcessor import FrameProcessor
 from Schema.Interfaces.Indexer import Indexer
 from Schema.Interfaces.Integrater import Integrater
 
@@ -92,7 +91,6 @@ def Mosflm(DriverType = None):
   CCP4DriverInstance = DecoratorFactory.Decorate(DriverInstance, 'ccp4')
 
   class MosflmWrapper(CCP4DriverInstance.__class__,
-                      FrameProcessor,
                       Indexer,
                       Integrater):
     '''A wrapper for Mosflm, using the CCP4-ified Driver.'''
