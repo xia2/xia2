@@ -49,6 +49,9 @@ Test/Modules/Indexer/TstLabelitIndexerII.py -text
 Test/Modules/Indexer/TstMosflmIndexer.py -text
 Test/Modules/Indexer/TstXDSIndexer.py -text
 Test/Modules/Indexer/TstXDSIndexerII.py -text
+Test/Modules/Integrater/TstDialsIntegrater.py -text
+Test/Modules/Integrater/TstMosflmIntegrater.py -text
+Test/Modules/Integrater/TstXDSIntegrater.py -text
 Test/Mosflm/MosflmRefactorTest.py -text
 Test/Mosflm/Platform.py -text
 Test/Mosflm/PlatformHelpers.py -text

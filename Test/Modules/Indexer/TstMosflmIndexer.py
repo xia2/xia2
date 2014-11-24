@@ -42,15 +42,6 @@ def exercise_mosflm_indexer():
   indexer.set_working_directory(tmp_dir)
   indexer.setup_from_image(template %1)
 
-  #from Schema.XCrystal import XCrystal
-  #from Schema.XWavelength import XWavelength
-  #from Schema.XSweep import XSweep
-  #cryst = XCrystal("CRYST1", None)
-  #wav = XWavelength("WAVE1", cryst, indexer.get_wavelength())
-  #directory, image = os.path.split(template %1)
-  #sweep = XSweep('SWEEP1', wav, directory=directory, image=image)
-  #indexer.set_indexer_sweep(sweep)
-
   indexer.index()
 
   assert approx_equal(indexer.get_indexer_cell(),
