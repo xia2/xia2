@@ -274,7 +274,7 @@ class Indexer(FrameProcessor):
     from dxtbx.serialize.load import _decode_dict
     assert [filename, string].count(None) == 1
     if filename is not None:
-      with open(filename, 'wb') as f:
+      with open(filename, 'rb') as f:
         string = f.read()
     obj = json.loads(string, object_hook=_decode_dict)
     return cls.from_dict(obj)
