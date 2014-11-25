@@ -25,10 +25,15 @@ except KeyError, e:
   have_dials_regression = False
 
 
-def exercise_mosflm_integrater():
+
+def exercise_mosflm_integrater(nproc=None):
   if not have_dials_regression:
     print "Skipping exercise_mosflm_integrater(): dials_regression not configured"
     return
+
+  if nproc is not None:
+    from xia2.Handlers.Flags import Flags
+    Flags.set_parallel(nproc)
 
   xia2_demo_data = os.path.join(dials_regression, "xia2_demo_data")
   template = os.path.join(xia2_demo_data, "insulin_1_%03i.img")
@@ -66,7 +71,7 @@ def exercise_mosflm_integrater():
   reader = any_reflection_file(integrater_intensities)
   assert reader.file_type() == "ccp4_mtz"
   mtz_object = reader.file_content()
-  assert mtz_object.n_reflections() == 81057
+  assert mtz_object.n_reflections() == 81057, mtz_object.n_reflections()
   assert mtz_object.column_labels() == [
     'H', 'K', 'L', 'M_ISYM', 'BATCH', 'I', 'SIGI', 'IPR', 'SIGIPR',
     'FRACTIONCALC', 'XDET', 'YDET', 'ROT', 'WIDTH', 'LP', 'MPART', 'FLAG',
@@ -89,13 +94,18 @@ def exercise_mosflm_integrater():
   reader = any_reflection_file(integrater2_intensities)
   assert reader.file_type() == "ccp4_mtz"
   mtz_object = reader.file_content()
-  assert mtz_object.n_reflections() == 53698
+  assert mtz_object.n_reflections() == 53698, mtz_object.n_reflections()
 
 
-def run():
-  exercise_mosflm_integrater()
+def run(args):
+  assert len(args) >= 1, args
+  if len(args) == 1:
+    nproc = int(args[0])
+  else:
+    nproc = None
+  exercise_mosflm_integrater(nproc=nproc)
   print "OK"
 
 
 if __name__ == '__main__':
-  run()
+  run(sys.argv[1:])

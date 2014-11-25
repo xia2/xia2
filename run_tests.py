@@ -6,16 +6,17 @@ from libtbx import test_utils
 import libtbx.load_env
 
 tst_list = (
-    "$D/Test/Wrappers/Dials/TstDialsWrappers.py",
-    "$D/Test/Modules/Integrater/TstMosflmIntegrater.py",
-    "$D/Test/Modules/Integrater/TstDialsIntegrater.py",
-    "$D/Test/Modules/Integrater/TstXDSIntegrater.py",
-    "$D/Test/Modules/Indexer/TstMosflmIndexer.py",
-    "$D/Test/Modules/Indexer/TstDialsIndexer.py",
+    ["$D/Test/Wrappers/Dials/TstDialsWrappers.py", "1"],
+    ["$D/Test/Modules/Integrater/TstMosflmIntegrater.py", "1"], # serial
+    ["$D/Test/Modules/Integrater/TstMosflmIntegrater.py", "2"], # parallel
+    ["$D/Test/Modules/Integrater/TstDialsIntegrater.py", "1"],
+    ["$D/Test/Modules/Integrater/TstXDSIntegrater.py", "1"],
+    ["$D/Test/Modules/Indexer/TstMosflmIndexer.py", "1"],
+    ["$D/Test/Modules/Indexer/TstDialsIndexer.py", "1"],
     "$D/Test/Modules/Indexer/TstLabelitIndexer.py",
     "$D/Test/Modules/Indexer/TstLabelitIndexerII.py",
-    "$D/Test/Modules/Indexer/TstXDSIndexer.py",
-    "$D/Test/Modules/Indexer/TstXDSIndexerII.py",
+    ["$D/Test/Modules/Indexer/TstXDSIndexer.py", "1"],
+    ["$D/Test/Modules/Indexer/TstXDSIndexerII.py", "1"],
     "$D/Test/Wrappers/Labelit/TstLabelitIndex.py",
     "$D/Test/Wrappers/Mosflm/TstMosflmIndex.py",
     "$D/Test/Wrappers/Mosflm/TstMosflmRefineCell.py",

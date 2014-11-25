@@ -25,10 +25,14 @@ except KeyError, e:
   have_dials_regression = False
 
 
-def exercise_xds_indexer():
+def exercise_xds_indexer(nproc=None):
   if not have_dials_regression:
     print "Skipping exercise_xds_indexer(): dials_regression not configured"
     return
+
+  if nproc is not None:
+    from xia2.Handlers.Flags import Flags
+    Flags.set_parallel(nproc)
 
   xia2_demo_data = os.path.join(dials_regression, "xia2_demo_data")
   template = os.path.join(xia2_demo_data, "insulin_1_%03i.img")
@@ -85,10 +89,15 @@ def exercise_xds_indexer():
   assert indexer2.get_indexer_lattice() == 'hR'
 
 
-def run():
-  exercise_xds_indexer()
+def run(args):
+  assert len(args) >= 1, args
+  if len(args) == 1:
+    nproc = int(args[0])
+  else:
+    nproc = None
+  exercise_xds_indexer(nproc=nproc)
   print "OK"
 
 
 if __name__ == '__main__':
-  run()
+  run(sys.argv[1:])
