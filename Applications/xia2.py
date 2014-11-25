@@ -154,15 +154,7 @@ def check():
 
   return
 
-def xia2():
-  '''Actually process something...'''
-
-  # print the version
-  Chatter.write(Version)
-  Citations.cite('xia2')
-
-  start_time = time.time()
-
+def get_command_line():
   from Handlers.CommandLine import CommandLine
 
   CommandLine.print_command_line()
@@ -203,6 +195,41 @@ def xia2():
       write_xinfo(xinfo, path)
 
     CommandLine.set_xinfo(xinfo)
+
+  return CommandLine
+
+def write_citations():
+  # tell the user which programs were used...
+  used = ''
+  for program in Citations.get_programs():
+    used += ' %s' % program
+
+  Chatter.write('XIA2 used... %s' % used)
+  Chatter.write(
+      'Here are the appropriate citations (BIBTeX in xia-citations.bib.)')
+
+  for citation in Citations.get_citations_acta():
+    Chatter.write(citation)
+
+  # and write the bibtex versions
+  out = open('xia-citations.bib', 'w')
+
+  for citation in Citations.get_citations():
+    out.write('%s\n' % citation)
+
+  out.close()
+
+
+def xia2():
+  '''Actually process something...'''
+
+  # print the version
+  Chatter.write(Version)
+  Citations.cite('xia2')
+
+  start_time = time.time()
+
+  CommandLine = get_command_line()
 
   # check that something useful has been assigned for processing...
   xtals = CommandLine.get_xinfo().get_crystals()
@@ -257,25 +284,7 @@ def xia2():
     fout.write('%s\n' % record)
   fout.close()
 
-  # tell the user which programs were used...
-  used = ''
-  for program in Citations.get_programs():
-    used += ' %s' % program
-
-  Chatter.write('XIA2 used... %s' % used)
-  Chatter.write(
-      'Here are the appropriate citations (BIBTeX in xia-citations.bib.)')
-
-  for citation in Citations.get_citations_acta():
-    Chatter.write(citation)
-
-  # and write the bibtex versions
-  out = open('xia-citations.bib', 'w')
-
-  for citation in Citations.get_citations():
-    out.write('%s\n' % citation)
-
-  out.close()
+  write_citations()
 
   Environment.cleanup()
 
