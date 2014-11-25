@@ -79,15 +79,15 @@ def exercise_labelit_indexer():
 
   print ls1.get_indexer_cell()
   print ls1.get_solution()
-  assert approx_equal(ls.get_indexer_cell(), (111.11, 111.11, 68.08, 90.0, 90.0, 120.0), 1e-1)
+  assert approx_equal(ls.get_indexer_cell(),
+                      (111.11, 111.11, 68.08, 90.0, 90.0, 120.0), 1e-1)
   solution = ls1.get_solution()
-  assert solution['rmsd'] >= 0.087
+  assert solution['rmsd'] >= 0.07, solution['rmsd']
   assert approx_equal(solution['metric'], 0.1291, eps=1e-3)
   #assert solution['number'] == 8
-  assert solution['lattice'] == 'hR'
-  assert solution['mosaic'] == 0.025
+  assert solution['lattice'] == 'hR', solution['lattice']
+  assert solution['mosaic'] == 0.025, solution['mosaic']
   assert abs(solution['nspots'] - 856) <= 3
-
 
 def run():
   exercise_labelit_indexer()
