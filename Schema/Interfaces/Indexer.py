@@ -446,13 +446,13 @@ class Indexer(FrameProcessor):
 
           if not self._indxr_done:
             Debug.write(
-                'Looks like indexing failed - try again!')
+              'Looks like indexing failed - try again!')
             continue
 
           solutions = { }
           for k in self._indxr_other_lattice_cell.keys():
             solutions[k] = self._indxr_other_lattice_cell[k][
-                'cell']
+              'cell']
 
           # create a helper for the indexer to manage solutions
           self._indxr_helper = _IndexerHelper(solutions)
@@ -464,10 +464,10 @@ class Indexer(FrameProcessor):
           # be used next cycle
 
           if self._indxr_lattice != solution[0] and \
-                 not self._indxr_input_cell:
+             not self._indxr_input_cell:
             Debug.write(
-                'Rerunning indexing with target lattice %s' % \
-                solution[0])
+              'Rerunning indexing with target lattice %s' % \
+              solution[0])
             self.set_indexer_done(False)
 
         else:
@@ -508,9 +508,9 @@ class Indexer(FrameProcessor):
       if self._indxr_print:
         Chatter.write('Indexing solution:')
         Chatter.write('%s %s' % (
-            lattice,
-            '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
-            crystal_model.get_unit_cell().parameters()))
+          lattice,
+          '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
+          crystal_model.get_unit_cell().parameters()))
 
     return
 
