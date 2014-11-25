@@ -250,7 +250,7 @@ def xia2():
       no_images = False
 
   # this actually gets the processing started...
-  Chatter.write(str(CommandLine.get_xinfo()))
+  Chatter.write(CommandLine.get_xinfo().get_output())
 
   duration = time.time() - start_time
 

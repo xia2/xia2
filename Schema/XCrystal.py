@@ -302,7 +302,7 @@ class XCrystal(object):
 
     return
 
-  def __repr__(self):
+  def get_output(self):
 
     result = 'Crystal: %s\n' % self._name
 
@@ -312,7 +312,7 @@ class XCrystal(object):
     if self._aa_sequence:
       result += 'Sequence: %s\n' % self._aa_sequence.get_sequence()
     for wavelength in self._wavelengths.keys():
-      result += str(self._wavelengths[wavelength])
+      result += self._wavelengths[wavelength].get_output()
 
     # this is now deprecated - be explicit in what you are
     # asking for...
@@ -452,8 +452,8 @@ class XCrystal(object):
 
     return result
 
-  def __str__(self):
-    return self.__repr__()
+  #def __str__(self):
+    #return self.__repr__()
 
   def summarise(self):
     '''Produce a short summary of this crystal.'''

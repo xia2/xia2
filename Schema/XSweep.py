@@ -408,47 +408,47 @@ class XSweep(object):
   def get_user_cell(self):
     return self._user_cell
 
-  def __str__(self):
-    return self.__repr__()
+  #def __str__(self):
+    #return self.__repr__()
 
-  def __repr__(self):
+  def get_output(self):
     if self.get_wavelength():
-      repr = 'SWEEP %s [WAVELENGTH %s]\n' % \
+      text = 'SWEEP %s [WAVELENGTH %s]\n' % \
              (self._name, self.get_wavelength().get_name())
     else:
-      repr = 'SWEEP %s [WAVELENGTH UNDEFINED]\n' % self._name
+      text = 'SWEEP %s [WAVELENGTH UNDEFINED]\n' % self._name
 
     if self._template:
-      repr += 'TEMPLATE %s\n' % self._template
+      text += 'TEMPLATE %s\n' % self._template
     if self._directory:
-      repr += 'DIRECTORY %s\n' % self._directory
+      text += 'DIRECTORY %s\n' % self._directory
 
     if self._header:
       # print some header information
       if self._header.has_key('detector'):
-        repr += 'DETECTOR %s\n' % self._header['detector']
+        text += 'DETECTOR %s\n' % self._header['detector']
       if self._header.has_key('exposure_time'):
-        repr += 'EXPOSURE TIME %f\n' % self._header['exposure_time']
+        text += 'EXPOSURE TIME %f\n' % self._header['exposure_time']
       if self._header.has_key('phi_start'):
-        repr += 'PHI WIDTH %.2f\n' % \
+        text += 'PHI WIDTH %.2f\n' % \
                 (self._header['phi_end'] - self._header['phi_start'])
 
     if self._frames_to_process:
       frames = self._frames_to_process
-      repr += 'IMAGES (USER) %d to %d\n' % (frames[0],
+      text += 'IMAGES (USER) %d to %d\n' % (frames[0],
                                             frames[1])
     elif self._images:
-      repr += 'IMAGES %d to %d\n' % (min(self._images),
+      text += 'IMAGES %d to %d\n' % (min(self._images),
                                      max(self._images))
 
     else:
-      repr += 'IMAGES UNKNOWN\n'
+      text += 'IMAGES UNKNOWN\n'
 
     # add some stuff to implement the actual processing implicitly
 
-    repr += 'MTZ file: %s\n' % self.get_integrater_intensities()
+    text += 'MTZ file: %s\n' % self.get_integrater_intensities()
 
-    return repr
+    return text
 
   def summarise(self):
 

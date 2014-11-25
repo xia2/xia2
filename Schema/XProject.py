@@ -48,15 +48,15 @@ class XProject(object):
 
     return
 
-  def __repr__(self):
+  def get_output(self):
     result = 'Project: %s\n' % self._name
 
     for crystal in self._crystals.keys():
-      result += str(self._crystals[crystal])
+      result += self._crystals[crystal].get_output()
     return result[:-1]
 
-  def __str__(self):
-    return self.__repr__()
+  #def __str__(self):
+    #return self.__repr__()
 
   def summarise(self):
     '''Produce summary information.'''

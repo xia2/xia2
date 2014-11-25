@@ -64,7 +64,7 @@ class XWavelength(object):
 
     return
 
-  def __repr__(self):
+  def get_output(self):
     result = 'Wavelength name: %s\n' % self._name
     result += 'Wavelength %7.5f\n' % self._wavelength
     if self._f_pr != 0.0 and self._f_prpr != 0.0:
@@ -124,7 +124,7 @@ class XWavelength(object):
       DriverFactory.set_driver_type(drivertype)
 
       self._sweeps = [s for s in results_list if s is not None]
-      result += "\n".join(str(s) for s in results_list)
+      result += "\n".join(s.get_output() for s in results_list)
 
     else:
       remove = []
@@ -135,7 +135,7 @@ class XWavelength(object):
         # sure how to do that though (should be handled in Interfaces?)
 
         try:
-          result += '%s\n' % str(s)
+          result += '%s\n' % s.get_output()
         except Exception, e:
           if Flags.get_failover():
             Chatter.write('Processing sweep %s failed: %s' % \
@@ -159,8 +159,8 @@ class XWavelength(object):
 
     return summary
 
-  def __str__(self):
-    return self.__repr__()
+  #def __str__(self):
+    #return self.__repr__()
 
   def get_wavelength(self):
     return self._wavelength

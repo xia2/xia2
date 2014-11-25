@@ -33,17 +33,17 @@ class XInfo(object):
 
     return
 
-  def __repr__(self):
+  def get_output(self):
     '''Generate a string representation of the project.'''
 
-    repr = 'Project %s\n' % self._project
+    text = 'Project %s\n' % self._project
     for crystal in self._crystals.keys():
-      repr += 'Crystal %s\n' % crystal
-      repr += '%s\n' % str(self._crystals[crystal])
+      text += 'Crystal %s\n' % crystal
+      text += '%s\n' % self._crystals[crystal].get_output()
 
     # remove a trailing newline...
 
-    return repr[:-1]
+    return text[:-1]
 
   def get_project(self):
     return self._project
