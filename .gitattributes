@@ -103,6 +103,7 @@ Wrappers/XDS/XDSGenerateIgnoreFiles.py -text
 Wrappers/XDS/XScaleR.py -text
 command_line/xia2.integrate.py -text
 command_line/xia2.new.py -text
+command_line/xia2.old.py -text
 command_line/xia2.setup.py -text
 core/Python/Background/Background.py -text
 core/Python/Background/__init__.py -text
