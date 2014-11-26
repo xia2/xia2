@@ -92,7 +92,7 @@ def exercise_dials_indexer(nproc=None):
 
 
 def run(args):
-  assert len(args) >= 1, args
+  assert len(args) <= 1, args
   if len(args) == 1:
     nproc = int(args[0])
   else:
