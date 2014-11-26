@@ -136,7 +136,17 @@ class _Flags(object):
     # pickle output
     self._pickle = None
 
+    # serialization of indexer/integrater state to/from json
+    self._serialize_state = False
+
     return
+
+  def set_serialize_state(self, serialize_state):
+    self._serialize_state = serialize_state
+    return
+
+  def get_serialize_state(self):
+    return self._serialize_state
 
   def set_batch_scale(self, batch_scale):
     self._batch_scale = batch_scale

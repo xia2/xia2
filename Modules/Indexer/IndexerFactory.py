@@ -51,7 +51,7 @@ from Handlers.Streams import Debug
 from Handlers.Flags import Flags
 from Handlers.PipelineSelection import get_preferences
 
-def IndexerForXSweep(xsweep):
+def IndexerForXSweep(xsweep, json_file=None):
   '''Provide an indexer to work with XSweep instance xsweep.'''
 
   # check what is going on
@@ -88,13 +88,18 @@ def IndexerForXSweep(xsweep):
   else:
     indexer = Indexer()
 
+  if json_file is not None:
+    assert os.path.isfile(json_file)
+    Debug.write("Loading indexer from json: %s" %json_file)
+    indexer = indexer.__class__.from_json(filename=json_file)
+  else:
+    # configure the indexer
+    indexer.setup_from_imageset(xsweep.get_imageset())
+
   if crystal_lattice:
     # this is e.g. ('aP', (1.0, 2.0, 3.0, 90.0, 98.0, 88.0))
     indexer.set_indexer_input_lattice(crystal_lattice[0])
     indexer.set_indexer_input_cell(crystal_lattice[1])
-
-  # configure the indexer
-  indexer.setup_from_imageset(xsweep.get_imageset())
 
   # FIXME - it is assumed that all programs which implement the Indexer
   # interface will also implement FrameProcessor, which this uses.

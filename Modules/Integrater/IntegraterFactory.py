@@ -36,7 +36,7 @@ from DriverExceptions.NotAvailableError import NotAvailableError
 # FIXME 06/SEP/06 also need interface which will work with xsweep
 #                 objects.
 
-def IntegraterForXSweep(xsweep):
+def IntegraterForXSweep(xsweep, json_file=None):
   '''Create an Integrater implementation to work with the provided
   XSweep.'''
 
@@ -48,7 +48,13 @@ def IntegraterForXSweep(xsweep):
     raise RuntimeError, 'XSweep instance needed'
 
   integrater = Integrater()
-  integrater.setup_from_imageset(xsweep.get_imageset())
+
+  if json_file is not None:
+    assert os.path.isfile(json_file)
+    Debug.write("Loading integrater from json: %s" %json_file)
+    integrater = integrater.__class__.from_json(filename=json_file)
+  else:
+    integrater.setup_from_imageset(xsweep.get_imageset())
   integrater.set_integrater_sweep_name(xsweep.get_name())
 
   # copy across resolution limits
@@ -92,7 +98,7 @@ def IntegraterForXSweep(xsweep):
                 xsweep.get_distance())
     integrater.set_distance(xsweep.get_distance())
 
-  integrater.set_integrater_sweep(xsweep)
+  integrater.set_integrater_sweep(xsweep, reset=False)
 
   return integrater
 
