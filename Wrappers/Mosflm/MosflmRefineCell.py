@@ -121,7 +121,7 @@ def MosflmRefineCell(DriverType = None, indxr_print = True):
       self._template = template
 
     def set_beam_centre(self, beam_centre):
-      self._beam_centre = beam_centre
+      self._beam_centre = tuple(beam_centre)
 
     def set_wavelength(self, wavelength):
       self._wavelength = wavelength

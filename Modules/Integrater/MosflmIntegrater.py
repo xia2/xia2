@@ -90,6 +90,15 @@ class MosflmIntegrater(Integrater):
 
     return
 
+  def to_dict(self):
+    obj = Integrater.to_dict(self)
+    import inspect
+    attributes = inspect.getmembers(self, lambda m:not(inspect.isroutine(m)))
+    for a in attributes:
+      if a[0].startswith('_mosflm_'):
+        obj[a[0]] = a[1]
+    return obj
+
   def _refine_select_images(self, mosaic):
     '''Select images for cell refinement based on image headers.'''
 
@@ -179,9 +188,9 @@ class MosflmIntegrater(Integrater):
 
     # generate human readable output
 
-    images_str = '%d to %d' % self._mosflm_cell_ref_images[0]
+    images_str = '%d to %d' % tuple(self._mosflm_cell_ref_images[0])
     for i in self._mosflm_cell_ref_images[1:]:
-      images_str += ', %d to %d' % i
+      images_str += ', %d to %d' % tuple(i)
 
     cell_str = '%.2f %.2f %.2f %.2f %.2f %.2f' % \
                indxr.get_indexer_cell()
@@ -350,8 +359,8 @@ class MosflmIntegrater(Integrater):
     # cite the program
     Citations.cite('mosflm')
 
-    images_str = '%d to %d' % self._intgr_wedge
-    cell_str = '%.2f %.2f %.2f %.2f %.2f %.2f' % self._intgr_cell
+    images_str = '%d to %d' % tuple(self._intgr_wedge)
+    cell_str = '%.2f %.2f %.2f %.2f %.2f %.2f' % tuple(self._intgr_cell)
 
     if len(self._fp_directory) <= 50:
       dirname = self._fp_directory

@@ -59,7 +59,7 @@ def set_mosflm_beam_centre(detector, beam, mosflm_beam_centre):
   # sanity check to make sure we have got the new beam centre correct
   panel_id, new_beam_centre = detector.get_ray_intersection(beam.get_s0())
   assert (matrix.col(new_beam_centre) -
-          matrix.col(tuple(reversed(mosflm_beam_centre)))).length() < 1e-6
+          matrix.col(tuple(reversed(mosflm_beam_centre)))).length() < 1e-4
 
 def set_distance(detector, distance):
   from scitbx import matrix

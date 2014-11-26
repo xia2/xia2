@@ -85,16 +85,33 @@ def exercise_mosflm_integrater(nproc=None):
   json_str = integrater.as_json()
   #print json_str
   integrater2 = MosflmIntegrater.from_json(string=json_str)
+  integrater2.set_integrater_sweep(sweep, reset=False)
   integrater2_intensities = integrater.get_integrater_intensities()
   assert integrater2_intensities == integrater_intensities
 
-  integrater2.set_integrater_wedge(1, 30)
-  integrater2.set_integrater_sweep(sweep)
+  integrater2.set_integrater_finish_done(False)
   integrater2_intensities = integrater2.get_integrater_intensities()
+  assert os.path.exists(integrater2_intensities)
   reader = any_reflection_file(integrater2_intensities)
   assert reader.file_type() == "ccp4_mtz"
   mtz_object = reader.file_content()
-  assert mtz_object.n_reflections() == 53698, mtz_object.n_reflections()
+  assert mtz_object.n_reflections() == 81057, mtz_object.n_reflections()
+
+  integrater2.set_integrater_done(False)
+  integrater2_intensities = integrater2.get_integrater_intensities()
+  assert os.path.exists(integrater2_intensities)
+  reader = any_reflection_file(integrater2_intensities)
+  assert reader.file_type() == "ccp4_mtz"
+  mtz_object = reader.file_content()
+  assert mtz_object.n_reflections() == 81057, mtz_object.n_reflections()
+
+  integrater2.set_integrater_prepare_done(False)
+  integrater2_intensities = integrater2.get_integrater_intensities()
+  assert os.path.exists(integrater2_intensities)
+  reader = any_reflection_file(integrater2_intensities)
+  assert reader.file_type() == "ccp4_mtz"
+  mtz_object = reader.file_content()
+  assert mtz_object.n_reflections() == 80516, mtz_object.n_reflections()
 
 
 def run(args):

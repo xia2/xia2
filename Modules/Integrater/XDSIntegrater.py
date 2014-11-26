@@ -80,15 +80,30 @@ class XDSIntegrater(Integrater):
     integrate = _Integrate()
 
     # place to store working data
-    self._data_files = { }
+    self._xds_data_files = { }
 
     # internal parameters to pass around
-    self._integrate_parameters = { }
+    self._xds_integrate_parameters = { }
 
     # factory for pointless -used for converting INTEGRATE.HKL to .mtz
     self._factory = CCP4Factory()
 
     return
+
+  def to_dict(self):
+    obj = Integrater.to_dict(self)
+    import inspect
+    attributes = inspect.getmembers(self, lambda m:not(inspect.isroutine(m)))
+    for a in attributes:
+      if a[0].startswith('_xds_'):
+        obj[a[0]] = a[1]
+    return obj
+
+  @classmethod
+  def from_dict(cls, obj):
+    return_obj = super(XDSIntegrater, cls).from_dict(obj)
+    return_obj._factory = CCP4Factory()
+    return return_obj
 
   # overload these methods as we don't want the resolution range
   # feeding back... aha - but we may want to assign them
@@ -237,8 +252,8 @@ class XDSIntegrater(Integrater):
   def _integrater_reset_callback(self):
     '''Delete all results on a reset.'''
     Debug.write('Deleting all stored results.')
-    self._data_files = { }
-    self._integrate_parameters = { }
+    self._xds_data_files = { }
+    self._xds_integrate_parameters = { }
     return
 
   def _integrate_prepare(self):
@@ -326,7 +341,7 @@ class XDSIntegrater(Integrater):
 
       for file in ['X-CORRECTIONS.cbf',
                    'Y-CORRECTIONS.cbf']:
-        self._data_files[file] = xycorr.get_output_data_file(file)
+        self._xds_data_files[file] = xycorr.get_output_data_file(file)
 
       # next start to process these - then init
 
@@ -334,7 +349,7 @@ class XDSIntegrater(Integrater):
 
       for file in ['X-CORRECTIONS.cbf',
                    'Y-CORRECTIONS.cbf']:
-        init.set_input_data_file(file, self._data_files[file])
+        init.set_input_data_file(file, self._xds_data_files[file])
 
       init.set_data_range(first, last)
       init.set_background_range(first, last_background)
@@ -343,7 +358,7 @@ class XDSIntegrater(Integrater):
       for file in ['BLANK.cbf',
                    'BKGINIT.cbf',
                    'GAIN.cbf']:
-        self._data_files[file] = init.get_output_data_file(file)
+        self._xds_data_files[file] = init.get_output_data_file(file)
 
       exporter = self.ExportXDS()
       exporter.set_experiments_filename(
@@ -351,10 +366,10 @@ class XDSIntegrater(Integrater):
       exporter.run()
 
       for file in ['XPARM.XDS']:
-        self._data_files[file] = os.path.join(
+        self._xds_data_files[file] = os.path.join(
           self.get_working_directory(), 'xds', file)
 
-      for k, v in self._data_files:
+      for k, v in self._xds_data_files:
         self._intgr_indexer.set_indexer_payload(k, v)
 
     # check that the indexer is an XDS indexer - if not then
@@ -463,10 +478,10 @@ class XDSIntegrater(Integrater):
                   self.get_integrater_low_resolution())
 
     # copy the data across
-    self._data_files = copy.deepcopy(self._intgr_indexer._indxr_payload)
+    self._xds_data_files = copy.deepcopy(self._intgr_indexer._indxr_payload)
 
     Debug.write('Files available at the end of XDS integrate prepare:')
-    for f in self._data_files.keys():
+    for f in self._xds_data_files.keys():
       Debug.write('%s' % f)
 
     # copy across the trusted_range - it got lost along the way
@@ -488,7 +503,7 @@ class XDSIntegrater(Integrater):
     '''Actually do the integration - in XDS terms this will mean running
     DEFPIX and INTEGRATE to measure all the reflections.'''
 
-    images_str = '%d to %d' % self._intgr_wedge
+    images_str = '%d to %d' % tuple(self._intgr_wedge)
     cell_str = '%.2f %.2f %.2f %.2f %.2f %.2f' % \
                self._intgr_indexer.get_indexer_cell()
 
@@ -516,7 +531,7 @@ class XDSIntegrater(Integrater):
                  'Y-CORRECTIONS.cbf',
                  'BKGINIT.cbf',
                  'XPARM.XDS']:
-      defpix.set_input_data_file(file, self._data_files[file])
+      defpix.set_input_data_file(file, self._xds_data_files[file])
 
     defpix.set_data_range(self._intgr_wedge[0],
                           self._intgr_wedge[1])
@@ -539,12 +554,12 @@ class XDSIntegrater(Integrater):
     # and gather the result files
     for file in ['BKGPIX.cbf',
                  'ABS.cbf']:
-      self._data_files[file] = defpix.get_output_data_file(file)
+      self._xds_data_files[file] = defpix.get_output_data_file(file)
 
     integrate = self.Integrate()
 
-    if self._integrate_parameters:
-      integrate.set_updates(self._integrate_parameters)
+    if self._xds_integrate_parameters:
+      integrate.set_updates(self._xds_integrate_parameters)
 
     # decide what images we are going to process, if not already
     # specified
@@ -564,16 +579,16 @@ class XDSIntegrater(Integrater):
                  'BLANK.cbf',
                  'BKGPIX.cbf',
                  'GAIN.cbf']:
-      integrate.set_input_data_file(file, self._data_files[file])
+      integrate.set_input_data_file(file, self._xds_data_files[file])
 
-    if self._data_files.has_key('GXPARM.XDS'):
+    if self._xds_data_files.has_key('GXPARM.XDS'):
       Debug.write('Using globally refined parameters')
       integrate.set_input_data_file(
-          'XPARM.XDS', self._data_files['GXPARM.XDS'])
+          'XPARM.XDS', self._xds_data_files['GXPARM.XDS'])
       integrate.set_refined_xparm()
     else:
       integrate.set_input_data_file(
-          'XPARM.XDS', self._data_files['XPARM.XDS'])
+          'XPARM.XDS', self._xds_data_files['XPARM.XDS'])
 
     integrate.run()
 
@@ -606,7 +621,7 @@ class XDSIntegrater(Integrater):
     # integration or can we assume that the application of a
     # sensible resolution limit will achieve this??
 
-    self._integrate_parameters = integrate.get_updates()
+    self._xds_integrate_parameters = integrate.get_updates()
 
     # record the mosaic spread &c.
 
@@ -635,7 +650,7 @@ class XDSIntegrater(Integrater):
     # erm? shouldn't this therefore return if this is the principle, or
     # set the flag after we have tested the lattice?
 
-    if not self._data_files.has_key('GXPARM.XDS'):
+    if not self._xds_data_files.has_key('GXPARM.XDS'):
       Debug.write(
           'Resetting integrater, to ensure refined orientation is used')
       self.set_integrater_done(False)
@@ -827,7 +842,7 @@ class XDSIntegrater(Integrater):
 
     # FIXME perhaps I should also feedback the GXPARM file here??
     for file in ['GXPARM.XDS']:
-      self._data_files[file] = correct.get_output_data_file(file)
+      self._xds_data_files[file] = correct.get_output_data_file(file)
 
     # record the postrefined cell parameters
     self._intgr_cell = correct.get_result('cell')

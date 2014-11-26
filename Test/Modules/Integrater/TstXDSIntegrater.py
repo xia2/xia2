@@ -93,16 +93,33 @@ def exercise_xds_integrater(nproc=None):
   json_str = integrater.as_json()
   #print json_str
   integrater2 = XDSIntegrater.from_json(string=json_str)
+  integrater2.set_integrater_sweep(sweep, reset=False)
   integrater2_intensities = integrater.get_integrater_intensities()
   assert integrater2_intensities == integrater_intensities
 
-  integrater2.set_integrater_wedge(1, 30)
-  integrater2.set_integrater_sweep(sweep)
+  integrater2.set_integrater_finish_done(False)
   integrater2_intensities = integrater2.get_integrater_intensities()
+  assert os.path.exists(integrater2_intensities)
   reader = any_reflection_file(integrater2_intensities)
   assert reader.file_type() == "ccp4_mtz"
   mtz_object = reader.file_content()
-  assert mtz_object.n_reflections() == 32919
+  assert mtz_object.n_reflections() == 49630, mtz_object.n_reflections()
+
+  integrater2.set_integrater_done(False)
+  integrater2_intensities = integrater2.get_integrater_intensities()
+  assert os.path.exists(integrater2_intensities)
+  reader = any_reflection_file(integrater2_intensities)
+  assert reader.file_type() == "ccp4_mtz"
+  mtz_object = reader.file_content()
+  assert mtz_object.n_reflections() == 49705, mtz_object.n_reflections()
+
+  integrater2.set_integrater_prepare_done(False)
+  integrater2_intensities = integrater2.get_integrater_intensities()
+  assert os.path.exists(integrater2_intensities)
+  reader = any_reflection_file(integrater2_intensities)
+  assert reader.file_type() == "ccp4_mtz"
+  mtz_object = reader.file_content()
+  assert mtz_object.n_reflections() == 49778, mtz_object.n_reflections()
 
 
 def run(args):

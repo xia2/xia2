@@ -267,9 +267,10 @@ class Integrater(FrameProcessor):
     self._integrater_reset_callback()
     return
 
-  def set_integrater_sweep(self, sweep):
+  def set_integrater_sweep(self, sweep, reset=True):
     self._intgr_sweep = sweep
-    self._integrater_reset()
+    if reset:
+      self._integrater_reset()
     return
 
   def get_integrater_sweep(self):
