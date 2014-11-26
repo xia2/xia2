@@ -131,6 +131,8 @@ def Aimless(DriverType = None,
       self._brotation = None
       self._bfactor_tie = None
 
+      self._intensities = 'combine'
+
       self._project_crystal_dataset = { }
       self._runs = []
 
@@ -268,6 +270,11 @@ def Aimless(DriverType = None,
       self._cycles = cycles
 
       return
+
+    def set_intensities(self, intensities):
+      intensities = intensities.lower()
+      assert intensities in ("summation", "profile", "combine")
+      self._intensities = intensities
 
     def identify_negative_scale_run(self):
       '''Given the presence of a negative scale factor, try to
@@ -495,6 +502,7 @@ def Aimless(DriverType = None,
       self.start()
       self.input('xmlout %d_aimless.xml' % self.get_xpid())
       self.input('bins 20')
+      self.input('intensities %s' %self._intensities)
 
       if self._new_scales_file:
         self.input('dump %s' % self._new_scales_file)

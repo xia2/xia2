@@ -627,6 +627,7 @@ class CCP4ScalerA(Scaler):
 
     sc = self._updated_aimless()
     sc.set_hklin(self._prepared_reflections)
+    sc.set_intensities(PhilIndex.params.ccp4.aimless.intensities)
 
     sc.set_chef_unmerged(True)
 

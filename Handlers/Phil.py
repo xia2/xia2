@@ -93,9 +93,15 @@ dials {
   }
   # FIXME to here
 }
-ccp4.truncate {
-  program = 'ctruncate'
-    .type = str
+ccp4 {
+  truncate {
+    program = 'ctruncate'
+      .type = str
+  }
+  aimless {
+    intensities = summation profile *combine
+      .type = choice
+  }
 }
 xia2.settings {
   input {
