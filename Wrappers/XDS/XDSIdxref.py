@@ -532,6 +532,11 @@ def XDSIdxref(DriverType=None, params=None):
       # one, if self._symm is set...
 
       if self._symm:
+        assert len(self._indexing_solutions) > 0, "No remaining indexing solutions (%s, %s)" % (s2l(self._symm), self._symm);
+      else:
+        assert len(self._indexing_solutions) > 0, "No remaining indexing solutions"
+
+      if self._symm:
         max_p = 2.0 * self._indexing_solutions[
             s2l(self._symm)]['goodness']
         to_remove = []
