@@ -128,12 +128,15 @@ xia2.settings {
     .help = "Search for best scaling model"
   beam_centre = None
     .type = floats(size=2)
-    .help = "Beam centre (x,y) coordinates (mm) using the  Mosflm convention"
+    .help = "Beam centre (x,y) coordinates (mm) using the Mosflm convention"
   trust_beam_centre = False
     .type = bool
     .help = "Whether or not to trust the beam centre in the image header."
             "If false, then labelit.index is used to determine a better beam "
             "centre during xia2 setup phase"
+  detector_distance = None
+    .type = float(value_min=0.0)
+    .help = "Distance between sample and detector (mm)"
   show_template = False
     .type = bool
   untrusted_rectangle_indexing = None

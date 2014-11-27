@@ -420,6 +420,10 @@ def print_sweeps(out = sys.stdout):
         if beam_centre:
           out.write('BEAM %6.2f %6.2f\n' % tuple(beam_centre))
         Flags.set_interactive(interactive)
+
+      if settings.detector_distance is not None:
+        out.write('DISTANCE %.2f\n' % settings.detector_distance)
+
       out.write('END SWEEP %s\n' % name)
 
       out.write('\n')
