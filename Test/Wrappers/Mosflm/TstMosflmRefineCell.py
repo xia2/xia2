@@ -66,17 +66,27 @@ def exercise_mosflm_refine_cell():
 
   background_residual = refiner.get_background_residual()
   rms_values = refiner.get_rms_values()
-  assert background_residual == {
+
+  ref_residual = {
     1: {1: 0.1, 2: 0.1, 3: 0.1, 43: 0.1, 44: 0.2, 45: 0.1, 21: 0.1, 22: 0.1, 23: 0.1},
     2: {1: 0.1, 2: 0.1, 3: 0.1, 43: 0.1, 44: 0.2, 45: 0.1, 21: 0.1, 22: 0.1, 23: 0.1},
     3: {1: 0.1, 2: 0.1, 3: 0.1, 43: 0.1, 44: 0.2, 45: 0.1, 21: 0.1, 22: 0.1, 23: 0.1}
   }
 
-  assert rms_values == {
+  for cycle in background_residual:
+    for frame in background_residual[cycle]:
+      assert abs(background_residual[cycle][frame] -
+                 ref_residual[cycle][frame]) <= 0.1, (cycle, frame)
+
+  ref_values = {
     1: [0.027, 0.029, 0.027, 0.025, 0.027, 0.025, 0.024, 0.022, 0.025],
     2: [0.02, 0.021, 0.023, 0.021, 0.02, 0.017, 0.018, 0.019, 0.022],
     3: [0.02, 0.021, 0.025, 0.022, 0.021, 0.019, 0.018, 0.019, 0.021]
   }
+
+  for cycle in rms_values:
+    for frame in range(len(rms_values[cycle])):
+      assert abs(rms_values[cycle][frame] - ref_values[cycle][frame]) <= 0.05
 
 
 def run():
@@ -86,4 +96,3 @@ def run():
 
 if __name__ == '__main__':
   run()
-
