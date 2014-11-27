@@ -1016,14 +1016,6 @@ class MosflmIntegrater(Integrater):
     Chatter.write('Weighted RMSD: %.2f (%.2f)' % \
                   (mean, sd))
 
-    #for i in images:
-      #data = parsed_output[i]
-
-      #if data.has_key('weighted_residual'):
-
-        #if data['weighted_residual'] > max_weighted_residual:
-          #max_weighted_residual = data['weighted_residual']
-
     spot_status = integrater.get_spot_status()
     if len(spot_status) > 60:
       Chatter.write('Integration status per image (60/record):')
@@ -1085,10 +1077,6 @@ class MosflmIntegrater(Integrater):
     missets. This will all be kind of explicit and hence probably
     messy!'''
 
-    # FIXME why am I getting the cell constants and so on from the
-    # indexer?! Because that is where the _integrate_prepare step
-    # stores them... interesting!
-
     if not self.get_integrater_indexer():
       # should I raise a RuntimeError here?!
       Debug.write('Replacing indexer of %s with self at %d' % \
@@ -1129,6 +1117,14 @@ class MosflmIntegrater(Integrater):
 
     parallel = Flags.get_parallel()
 
+    # FIXME this is something of a kludge - if too few frames refinement
+    # and integration does not work well... ideally want at least 15
+    # frames / chunk (say)
+    nframes = self._intgr_wedge[1] - self._intgr_wedge[0] + 1
+
+    if parallel > nframes / 15:
+      parallel = nframes // 15
+
     if not parallel:
       raise RuntimeError, 'parallel not set'
     if parallel < 2:
@@ -1136,7 +1132,6 @@ class MosflmIntegrater(Integrater):
 
     jobs = []
     hklouts = []
-    # reindex_ops = []
     nref = 0
 
     # calculate the chunks to use
@@ -1258,11 +1253,6 @@ class MosflmIntegrater(Integrater):
 
       job.set_fix_mosaic(self._mosflm_postref_fix_mosaic)
 
-      ## XXX FIXME this is a horrible hack - I at least need to
-      ## sand box this ...
-      #if self.get_header_item('detector') == 'raxis':
-        #self.input('adcoffset 0')
-
       job.set_pre_refinement(True)
       job.set_image_range(chunks[j])
 
@@ -1301,6 +1291,9 @@ class MosflmIntegrater(Integrater):
     mosaics = []
     postref_result = { }
 
+    integrated_images_first = 1.0e6
+    integrated_images_last = -1.0e6
+
     for j in range(parallel):
       thread = threads[j]
       thread.stop()
@@ -1323,16 +1316,14 @@ class MosflmIntegrater(Integrater):
       # value for the gain (if present,) any warnings, errors,
       # or just interesting facts.
 
-      integrated_images_first = 1.0e6
-      integrated_images_last = -1.0e6
-
       batches = job.get_batches_out()
       integrated_images_first = min(batches[0], integrated_images_first)
       integrated_images_last = max(batches[1], integrated_images_last)
 
       mosaics.extend(job.get_mosaic_spreads())
+
       if min(mosaics) < 0:
-        raise IntegrationError, 'negative mosaic spread: %s' %min(mosaic)
+        raise IntegrationError, 'negative mosaic spread: %s' % min(mosaic)
 
       if (job.get_detector_gain_error() and not
           (self.get_imageset().get_detector()[0].get_type() == 'SENSOR_PAD')):

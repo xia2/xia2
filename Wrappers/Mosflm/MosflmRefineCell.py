@@ -38,8 +38,6 @@ from Decorators.DecoratorFactory import DecoratorFactory
 
 from Handlers.Streams import Chatter, Debug
 from Handlers.Executables import Executables
-#from Handlers.Files import FileHandler
-
 
 from Wrappers.CCP4.MosflmHelpers import _parse_mosflm_index_output
 
@@ -91,8 +89,6 @@ def MosflmRefineCell(DriverType = None, indxr_print = True):
       self._lim_y = None
       self._ignore_cell_refinement_failure = False
       self._parameters = {}
-      #self._solution_number = 0
-      #self._threshold = 20.0
 
       self._refined_beam_centre = None
       self._refined_distance = None
@@ -170,17 +166,10 @@ def MosflmRefineCell(DriverType = None, indxr_print = True):
     def update_parameters(self, parameters):
       self._parameters.update(parameters)
 
-    #def set_threshold(self, threshold):
-      #self._threshold = threshold
-
-    #def set_solution_number(self, solution_number):
-      #self._solution_number = solution_number
-
     def run(self):
       '''Run mosflm cell refinement'''
 
       assert len(self._images) > 0
-      #self._images.sort()
 
       self.start()
 
@@ -191,7 +180,8 @@ def MosflmRefineCell(DriverType = None, indxr_print = True):
         self.input('detector reversephi')
 
       assert self._template is not None and self._directory is not None
-      assert self._input_mat_file is not None and self._output_mat_file is not None
+      assert self._input_mat_file is not None and \
+          self._output_mat_file is not None
       assert self._mosaic is not None
       self.input('template "%s"' %self._template)
       self.input('directory "%s"' %self._directory)
@@ -204,8 +194,6 @@ def MosflmRefineCell(DriverType = None, indxr_print = True):
         self.input('wavelength %f' %self._wavelength)
       if self._distance is not None:
         self.input('distance %f' %self._distance)
-      #if self._unit_cell is not None:
-        #self.input('cell %f %f %f %f %f %f' %self._unit_cell)
       if self._space_group_number is not None:
         self.input('symmetry %d' %self._space_group_number)
 
@@ -239,7 +227,6 @@ def MosflmRefineCell(DriverType = None, indxr_print = True):
           self.input('%s %s' % (p, str(v)))
 
       if self._lim_x is not None and self._lim_y is not None:
-        #Debug.write('Scanner limits: %.1f %.1f' % (self._lim_x, self._lim_y))
         self.input('limits xscan %f yscan %f' % (self._lim_x, self._lim_y))
 
       self.input('separation close')
@@ -281,9 +268,6 @@ def MosflmRefineCell(DriverType = None, indxr_print = True):
       if not self._cell_refinement_ok:
         if not self._ignore_cell_refinement_failure:
           return [0.0], [0.0]
-
-        #Chatter.write(
-            #'Looks like cell refinement failed - more follows...')
 
       rms_values_last = None
       rms_values = None
@@ -426,7 +410,7 @@ def MosflmRefineCell(DriverType = None, indxr_print = True):
         if 'Refined mosaic spread (excluding safety factor)' in o:
           mosaic = float(o.split()[-1])
 
-          if mosaic < 0.05:
+          if mosaic < 0.00:
             Debug.write('Negative mosaic spread (%5.2f)' %
                         mosaic)
 

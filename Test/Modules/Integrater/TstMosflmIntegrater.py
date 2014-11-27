@@ -25,7 +25,6 @@ except KeyError, e:
   have_dials_regression = False
 
 
-
 def exercise_mosflm_integrater(nproc=None):
   if not have_dials_regression:
     print "Skipping exercise_mosflm_integrater(): dials_regression not configured"
@@ -42,7 +41,6 @@ def exercise_mosflm_integrater(nproc=None):
   tmp_dir = os.path.abspath(open_tmp_directory())
   os.chdir(tmp_dir)
 
-
   from Modules.Indexer.MosflmIndexer import MosflmIndexer
   from Modules.Integrater.MosflmIntegrater import MosflmIntegrater
   indexer = MosflmIndexer()
@@ -58,6 +56,8 @@ def exercise_mosflm_integrater(nproc=None):
   sweep = XSweep('SWEEP1', wav, directory=directory, image=image)
   indexer.set_indexer_sweep(sweep)
 
+  nref_error = 500
+
   integrater = MosflmIntegrater()
   integrater.set_working_directory(tmp_dir)
   integrater.setup_from_image(template %1)
@@ -71,7 +71,8 @@ def exercise_mosflm_integrater(nproc=None):
   reader = any_reflection_file(integrater_intensities)
   assert reader.file_type() == "ccp4_mtz"
   mtz_object = reader.file_content()
-  assert mtz_object.n_reflections() == 81057, mtz_object.n_reflections()
+  assert abs(mtz_object.n_reflections() - 81057) < nref_error, \
+      mtz_object.n_reflections()
   assert mtz_object.column_labels() == [
     'H', 'K', 'L', 'M_ISYM', 'BATCH', 'I', 'SIGI', 'IPR', 'SIGIPR',
     'FRACTIONCALC', 'XDET', 'YDET', 'ROT', 'WIDTH', 'LP', 'MPART', 'FLAG',
@@ -79,7 +80,7 @@ def exercise_mosflm_integrater(nproc=None):
 
   assert integrater.get_integrater_wedge() == (1, 45)
   assert approx_equal(integrater.get_integrater_cell(),
-                      (78.014, 78.014, 78.014, 90.0, 90.0, 90.0), eps=1e-3)
+                      (78.014, 78.014, 78.014, 90.0, 90.0, 90.0), eps=1e-2)
 
   # test serialization of integrater
   json_str = integrater.as_json()
@@ -95,7 +96,8 @@ def exercise_mosflm_integrater(nproc=None):
   reader = any_reflection_file(integrater2_intensities)
   assert reader.file_type() == "ccp4_mtz"
   mtz_object = reader.file_content()
-  assert mtz_object.n_reflections() == 81057, mtz_object.n_reflections()
+  assert abs(mtz_object.n_reflections() - 81057) < nref_error, \
+      mtz_object.n_reflections()
 
   integrater2.set_integrater_done(False)
   integrater2_intensities = integrater2.get_integrater_intensities()
@@ -103,7 +105,8 @@ def exercise_mosflm_integrater(nproc=None):
   reader = any_reflection_file(integrater2_intensities)
   assert reader.file_type() == "ccp4_mtz"
   mtz_object = reader.file_content()
-  assert mtz_object.n_reflections() == 81057, mtz_object.n_reflections()
+  assert abs(mtz_object.n_reflections() - 81057) < nref_error, \
+      mtz_object.n_reflections()
 
   integrater2.set_integrater_prepare_done(False)
   integrater2_intensities = integrater2.get_integrater_intensities()
@@ -111,7 +114,8 @@ def exercise_mosflm_integrater(nproc=None):
   reader = any_reflection_file(integrater2_intensities)
   assert reader.file_type() == "ccp4_mtz"
   mtz_object = reader.file_content()
-  assert mtz_object.n_reflections() == 80516, mtz_object.n_reflections()
+  assert abs(mtz_object.n_reflections() - 80516) < nref_error, \
+      mtz_object.n_reflections()
 
 
 def run(args):

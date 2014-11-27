@@ -311,8 +311,7 @@ class MosflmIndexer(Indexer):
       if self._indxr_input_cell:
         assert indxr_cell is not None
         for j in range(6):
-          if math.fabs(self._indxr_input_cell[j] -
-                       indxr_cell[j]) > 2.0:
+          if math.fabs(self._indxr_input_cell[j] - indxr_cell[j]) > 2.0:
             Chatter.write(
                 'Mosflm autoindexing did not select ' +
                 'correct (target) unit cell')
