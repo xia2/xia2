@@ -131,8 +131,7 @@ class Indexer(FrameProcessor):
 
   def __init__(self):
 
-    # interface constructor calls
-    FrameProcessor.__init__(self)
+    super(Indexer, self).__init__()
 
     self._indxr_working_directory = os.getcwd()
 

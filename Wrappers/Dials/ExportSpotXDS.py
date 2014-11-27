@@ -49,15 +49,12 @@ def ExportSpotXDS(DriverType=None, params=None):
   DriverInstance = DriverFactory.Driver(DriverType)
 
   class ExportSpotXDSWrapper(DriverInstance.__class__,
-                          FrameProcessor):
+                             FrameProcessor):
     '''A wrapper for wrapping dials.export_spot_xds.'''
 
     def __init__(self, params=None):
 
-      # set up the object ancestors...
-
-      DriverInstance.__class__.__init__(self)
-      FrameProcessor.__init__(self)
+      super(ExportSpotXDSWrapper, self).__init__()
 
       # phil parameters
 

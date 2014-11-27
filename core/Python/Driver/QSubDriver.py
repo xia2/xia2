@@ -60,11 +60,10 @@ def get_qsub_command():
 class QSubDriver(DefaultDriver):
 
   def __init__(self):
-
     if os.name != 'posix':
       raise RuntimeError, 'os "%s" not supported' % os.name
 
-    DefaultDriver.__init__(self)
+    super(QSubDriver, self).__init__()
 
     self._script_command_line = []
     self._script_standard_input = []

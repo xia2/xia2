@@ -61,11 +61,7 @@ def Spotfinder(DriverType=None, params=None):
     '''A wrapper for wrapping dials.spotfinder.'''
 
     def __init__(self, params=None):
-
-      # set up the object ancestors...
-
-      DriverInstance.__class__.__init__(self)
-      FrameProcessor.__init__(self)
+      super(SpotfinderWrapper, self).__init__()
 
       # phil parameters - should get these from Handlers.Phil.dials.phil_file
       # perhaps as starting point then clobber those extra parameters we want...

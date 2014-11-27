@@ -64,7 +64,7 @@ class XDSScalerA(Scaler):
   programs like pointless.'''
 
   def __init__(self):
-    Scaler.__init__(self)
+    super(XDSScalerA, self).__init__()
 
     self._sweep_information = { }
 

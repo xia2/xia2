@@ -50,11 +50,7 @@ def XDSInit(DriverType = None, params = None):
     '''A wrapper for wrapping XDS in init mode.'''
 
     def __init__(self, params = None):
-
-      # set up the object ancestors...
-
-      DriverInstance.__class__.__init__(self)
-      FrameProcessor.__init__(self)
+      super(XDSInitWrapper, self).__init__()
 
       # phil parameters
 

@@ -20,7 +20,7 @@ from DriverHelper import kill_process
 class PythonDriver(DefaultDriver):
 
   def __init__(self):
-    DefaultDriver.__init__(self)
+    super(PythonDriver, self).__init__()
 
     self._popen = None
 

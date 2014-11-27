@@ -25,8 +25,7 @@ def Import(DriverType = None):
                       FrameProcessor):
 
     def __init__(self):
-      DriverInstance.__class__.__init__(self)
-      FrameProcessor.__init__(self)
+      super(ImportWrapper, self).__init__()
 
       self.set_executable('dials.import')
 

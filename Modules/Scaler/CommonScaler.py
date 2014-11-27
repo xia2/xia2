@@ -27,7 +27,7 @@ class CommonScaler(Scaler):
   '''Unified bits which the scalers have in common over the interface.'''
 
   def __init__(self):
-    Scaler.__init__(self)
+    super(CommonScaler, self).__init__()
 
     self._sweep_handler = None
 

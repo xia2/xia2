@@ -82,11 +82,7 @@ def XDSIntegrate(DriverType=None, params=None):
     '''A wrapper for wrapping XDS in integrate mode.'''
 
     def __init__(self, params=None):
-
-      # set up the object ancestors...
-
-      DriverInstance.__class__.__init__(self)
-      FrameProcessor.__init__(self)
+      super(XDSIntegrateWrapper, self).__init__()
 
       # phil parameters
 

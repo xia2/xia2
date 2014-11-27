@@ -49,7 +49,7 @@ class CCP4ScalerA(Scaler):
   '''An implementation of the Scaler interface using CCP4 programs.'''
 
   def __init__(self):
-    Scaler.__init__(self)
+    super(CCP4ScalerA, self).__init__()
 
     self._sweep_handler = None
 

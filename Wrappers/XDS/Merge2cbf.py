@@ -68,10 +68,7 @@ def Merge2cbf(DriverType=None, params=None):
 
     def __init__(self, params=None):
 
-      # set up the object ancestors...
-
-      DriverInstance.__class__.__init__(self)
-      FrameProcessor.__init__(self)
+      super(Merge2cbfWrapper, self).__init__()
 
       # phil parameters
 

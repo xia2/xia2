@@ -26,6 +26,7 @@ class DefaultClusterDriver(DefaultDriver):
   be used directly!'''
 
   def __init__(self):
+    super(DefaultClusterDriver, self).__init__()
 
     if os.name != 'posix':
       raise RuntimeError, 'os "%s" not supported' % os.name

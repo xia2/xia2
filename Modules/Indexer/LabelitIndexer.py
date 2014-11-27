@@ -58,9 +58,7 @@ class LabelitIndexer(Indexer):
   diffraction pattern.'''
 
   def __init__(self, indxr_print=True):
-
-    # interface constructor calls
-    Indexer.__init__(self)
+    super(LabelitIndexer, self).__init__()
 
     # control over the behaviour
 

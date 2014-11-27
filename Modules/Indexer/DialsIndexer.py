@@ -46,10 +46,7 @@ from Experts.SymmetryExpert import lattice_to_spacegroup_number
 
 class DialsIndexer(Indexer):
   def __init__(self):
-
-    # set up the inherited objects
-
-    Indexer.__init__(self)
+    super(DialsIndexer, self).__init__()
 
     self._background_images = None
 

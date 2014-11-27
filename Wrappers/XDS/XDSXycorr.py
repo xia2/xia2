@@ -43,11 +43,7 @@ def XDSXycorr(DriverType = None):
     '''A wrapper for wrapping XDS in xycorr mode.'''
 
     def __init__(self):
-
-      # set up the object ancestors...
-
-      DriverInstance.__class__.__init__(self)
-      FrameProcessor.__init__(self)
+      super(XDSXycorrWrapper, self).__init__()
 
       # now set myself up...
 

@@ -26,7 +26,7 @@ from Schema.Interfaces.FrameProcessor import FrameProcessor
 
 class Platform(FrameProcessor):
   def __init__(self, image):
-    FrameProcessor.__init__(self, image)
+    super(Platform, self).__init__()
 
   def findspots(self, images):
     from Wrappers.Dials.DialsSpotfinder import DialsSpotfinder

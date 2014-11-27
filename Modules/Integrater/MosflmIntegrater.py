@@ -65,8 +65,7 @@ class MosflmIntegrater(Integrater):
   '''A wrapper for Mosflm integration.'''
 
   def __init__(self):
-    # generic things
-    Integrater.__init__(self)
+    super(MosflmIntegrater, self).__init__()
 
     # local parameters used in cell refinement
     self._mosflm_cell_ref_images = None

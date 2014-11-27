@@ -58,10 +58,7 @@ class XDSIndexer(Indexer):
   '''An implementation of the Indexer interface using XDS.'''
 
   def __init__(self):
-
-    # set up the inherited objects
-
-    Indexer.__init__(self)
+    super(XDSIndexer, self).__init__()
 
     # check that the programs exist - this will raise an exception if
     # they do not...

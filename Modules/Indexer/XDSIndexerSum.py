@@ -38,11 +38,7 @@ class XDSIndexerSum(XDSIndexer):
   '''An extension of XDSIndexer using all available images.'''
 
   def __init__(self):
-
-    # set up the inherited objects
-    _index_select_images = self._index_select_images
-
-    XDSIndexer.__init__(self)
+    super(XDSIndexerSum, self).__init__()
 
     # XDSIndexer.__init__ modfies this!
     self._index_select_images = _index_select_images

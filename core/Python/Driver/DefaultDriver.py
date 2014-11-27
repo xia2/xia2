@@ -73,6 +73,7 @@ class DefaultDriver(object):
 
   def __init__(self):
     '''Initialise the Driver instance.'''
+    super(DefaultDriver, self).__init__()
 
     # settings for the job to run
     self._executable = None

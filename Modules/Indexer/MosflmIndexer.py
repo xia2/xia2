@@ -61,9 +61,7 @@ class MosflmIndexer(Indexer):
   '''A wrapper for Mosflm indexing'''
 
   def __init__(self):
-    # generic things
-
-    Indexer.__init__(self)
+    super(MosflmIndexer, self).__init__()
 
     # local parameters used in autoindexing
     self._mosflm_autoindex_sol = 0

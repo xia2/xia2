@@ -51,10 +51,7 @@ class XDSIndexerII(XDSIndexer):
   '''An extension of XDSIndexer using all available images.'''
 
   def __init__(self):
-
-    # set up the inherited objects
-
-    XDSIndexer.__init__(self)
+    super(XDSIndexerII, self).__init__()
 
     self._index_select_images = 'ii'
 
