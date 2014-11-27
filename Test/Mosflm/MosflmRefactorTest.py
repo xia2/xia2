@@ -111,12 +111,18 @@ def exercise_mosflm_integrate(nproc):
   m2.set_integrater_wedge(1, 45)
   m2.integrate()
 
-  assert m1.get_integrater_cell() == m2.get_integrater_cell(), "%s != %s" % \
-      (str(m1.get_integrater_cell()), str(m2.get_integrater_cell()))
-  assert indexer.get_indexer_distance() == m2.get_indexer_distance()
-  assert indexer.get_indexer_cell() == m2.get_indexer_cell()
+  from libtbx.test_utils import approx_equal
+  assert approx_equal(m1.get_integrater_cell(), m2.get_integrater_cell(),
+                      eps=0.02)
+
+  assert approx_equal(indexer.get_indexer_distance(), m2.get_indexer_distance(),
+                      eps=0.2)
+
+  assert approx_equal(m1.get_integrater_indexer().get_indexer_cell(),
+                      m2.get_indexer_cell(), eps=0.02)
   assert indexer.get_indexer_lattice() == m2.get_indexer_lattice()
-  assert indexer.get_indexer_mosaic() == m2.get_indexer_mosaic()
+  assert approx_equal(indexer.get_indexer_mosaic(), m2.get_indexer_mosaic(),
+                      eps=0.01)
 
   m1_mtz = m1.get_integrater_intensities()
   m2_mtz = m2.get_integrater_intensities()
