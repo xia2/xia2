@@ -173,6 +173,10 @@ def XDSColspot(DriverType=None, params=None):
       if Flags.get_microcrystal():
         xds_inp.write('MINIMUM_NUMBER_OF_PIXELS_IN_A_SPOT=1\n')
 
+      if Flags.get_small_molecule():
+        xds_inp.write('STRONG_PIXEL=5\n')
+        # FIXME should probably be moved to a phil parameter
+
       xds_inp.close()
 
       # copy the input file...
