@@ -292,7 +292,7 @@ class LabelitIndexer(Indexer):
     import copy
     detector = copy.deepcopy(self.get_detector())
     beam = copy.deepcopy(self.get_beam_obj())
-    from Wrappers.Mosflm.AutoindexHelpers import set_mosflm_beam_centre
+    from dxtbx.model.detector_helpers import set_mosflm_beam_centre
     set_mosflm_beam_centre(detector, beam, mosflm_beam_centre)
 
     from Experts.SymmetryExpert import lattice_to_spacegroup_number

@@ -630,7 +630,7 @@ class MosflmIntegrater(Integrater):
     if indxr != self:
       from cctbx import sgtbx
       from dxtbx.model import crystal
-      from Wrappers.Mosflm.AutoindexHelpers import set_mosflm_beam_centre
+      from dxtbx.model.detector_helpers import set_mosflm_beam_centre
       experiment = indxr.get_indexer_experiment_list()[0]
       set_mosflm_beam_centre(
         experiment.detector, experiment.beam, beam_centre)

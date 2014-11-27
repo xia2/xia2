@@ -602,7 +602,7 @@ def Mosflm(DriverType = None):
                        'xiaindex.mat'), 'r').readlines()
 
       import copy
-      from Wrappers.Mosflm.AutoindexHelpers import set_mosflm_beam_centre
+      from dxtbx.model.detector_helpers import set_mosflm_beam_centre
       from Wrappers.Mosflm.AutoindexHelpers import set_distance
       from Wrappers.Mosflm.AutoindexHelpers import crystal_model_from_mosflm_mat
       from cctbx import sgtbx, uctbx
@@ -1283,7 +1283,7 @@ def Mosflm(DriverType = None):
       if indxr != self:
         from cctbx import sgtbx
         from dxtbx.model import crystal
-        from Wrappers.Mosflm.AutoindexHelpers import set_mosflm_beam_centre
+        from dxtbx.model.detector_helpers import set_mosflm_beam_centre
         experiment = indxr.get_indexer_experiment_list()[0]
         set_mosflm_beam_centre(
           experiment.detector, experiment.beam, beam_centre)

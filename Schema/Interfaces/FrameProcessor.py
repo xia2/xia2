@@ -198,7 +198,7 @@ class FrameProcessor(object):
     return self._fp_distance_prov
 
   def set_beam_centre(self, beam_centre):
-    from Wrappers.Mosflm.AutoindexHelpers import set_mosflm_beam_centre
+    from dxtbx.model.detector_helpers import set_mosflm_beam_centre
     set_mosflm_beam_centre(self.get_detector(),
                            self.get_beam_obj(),
                            beam_centre)

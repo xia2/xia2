@@ -373,7 +373,7 @@ class MosflmIndexer(Indexer):
                      'xiaindex.mat'), 'r').readlines()
 
     import copy
-    from Wrappers.Mosflm.AutoindexHelpers import set_mosflm_beam_centre
+    from dxtbx.model.detector_helpers import set_mosflm_beam_centre
     from Wrappers.Mosflm.AutoindexHelpers import set_distance
     from Wrappers.Mosflm.AutoindexHelpers import crystal_model_from_mosflm_mat
     from cctbx import sgtbx, uctbx
