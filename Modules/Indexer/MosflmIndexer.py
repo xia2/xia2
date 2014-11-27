@@ -329,9 +329,9 @@ class MosflmIndexer(Indexer):
 
         # XXX FIXME
         self._mosflm_autoindex_sol = _get_indexing_solution_number(
-            output,
-            self._indxr_input_cell,
-            self._indxr_input_lattice)
+          indexer.get_all_output(),
+          self._indxr_input_cell,
+          self._indxr_input_lattice)
 
         # set the fact that we are not done...
         self.set_indexer_done(False)
