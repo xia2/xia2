@@ -97,6 +97,12 @@ def Refine(DriverType = None):
       self.add_command_line('use_all_reflections=%s' % self._use_all_reflections)
       self.add_command_line('close_to_spindle_cutoff=0.05')
 
+      self._refined_experiments_filename = os.path.join(
+        self.get_working_directory(),
+        '%s_refined_experiments.json' % self.get_xpid())
+      self.add_command_line(
+        'output.experiments_filename=%s' %self._refined_experiments_filename)
+
       if self._reflections_per_degree is not None:
         self.add_command_line(
           'reflections_per_degree=%i' %self._reflections_per_degree)
@@ -113,8 +119,6 @@ def Refine(DriverType = None):
       self.start()
       self.close_wait()
       self.check_for_errors()
-      self._refined_experiments_filename = os.path.join(
-        self.get_working_directory(), 'refined_experiments.json')
       return
 
   return RefineWrapper()

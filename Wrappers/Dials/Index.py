@@ -154,21 +154,17 @@ def Index(DriverType = None):
       if self._phil_file is not None:
         self.add_command_line("%s" %self._phil_file)
 
-      self.start()
-      self.close_wait()
-      self.check_for_errors()
 
       self._experiment_filename = os.path.join(
         self.get_working_directory(), '%d_experiments.json' %self.get_xpid())
-      shutil.copyfile(
-        os.path.join(self.get_working_directory(), 'experiments.json'),
-        self._experiment_filename)
-
       self._indexed_filename = os.path.join(
         self.get_working_directory(), '%d_indexed.pickle' %self.get_xpid())
-      shutil.copyfile(
-        os.path.join(self.get_working_directory(), 'indexed.pickle'),
-        self._indexed_filename)
+      self.add_command_line("output.experiments=%s" %self._experiment_filename)
+      self.add_command_line("output.reflections=%s" %self._indexed_filename)
+
+      self.start()
+      self.close_wait()
+      self.check_for_errors()
 
       records = self.get_all_output()
 

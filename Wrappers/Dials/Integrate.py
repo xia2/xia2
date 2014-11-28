@@ -9,6 +9,7 @@
 # Integration using DIALS.
 
 from __future__ import division
+import os
 
 from __init__ import _setup_xia2_environ
 _setup_xia2_environ()
@@ -29,6 +30,7 @@ def Integrate(DriverType = None):
 
       self._experiments_filename = None
       self._reflections_filename = None
+      self._integrated_filename = None
       self._integration_algorithm = "fitrs"
       self._outlier_algorithm = None
       self._phil_file = None
@@ -74,8 +76,7 @@ def Integrate(DriverType = None):
       return
 
     def get_integrated_filename(self):
-      import os
-      return os.path.join(self.get_working_directory(), 'integrated.pickle')
+      return self._integrated_filename
 
     def get_mosaic(self):
       return self._mosaic
@@ -91,6 +92,9 @@ def Integrate(DriverType = None):
 
       self.add_command_line('nproc=%i' % nproc)
       self.add_command_line(('input.reflections=%s' % self._reflections_filename))
+      self._integrated_filename = os.path.join(
+        self.get_working_directory(), '%d_integrated.pickle' %self.get_xpid())
+      self.add_command_line('output.reflections=%s' % self._integrated_filename)
       self.add_command_line(
         'intensity.algorithm=%s' % self._integration_algorithm)
       if self._outlier_algorithm is not None:

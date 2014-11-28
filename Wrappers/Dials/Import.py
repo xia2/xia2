@@ -59,8 +59,7 @@ def Import(DriverType = None):
       import json
       import os
 
-      datablock_json = os.path.join(self.get_working_directory(),
-                                    'datablock_import.json')
+      datablock_json = self.get_sweep_filename()
 
       datablock = json.load(open(datablock_json))
       scan = datablock[0]['scan'][0]

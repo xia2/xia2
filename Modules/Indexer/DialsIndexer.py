@@ -72,6 +72,9 @@ class DialsIndexer(Indexer):
     importer.set_working_directory(self.get_working_directory())
     importer.setup_from_imageset(self.get_imageset())
     auto_logfiler(importer)
+    importer.set_sweep_filename(
+      os.path.join(self.get_working_directory(),
+                   '%s_datablock_import.json' %importer.get_xpid()))
     return importer
 
   def Spotfinder(self):
@@ -128,6 +131,8 @@ class DialsIndexer(Indexer):
     offset = self.get_frame_offset()
     spotfinder = self.Spotfinder()
     spotfinder.set_sweep_filename(importer.get_sweep_filename())
+    spotfinder.set_input_spot_filename(
+      '%s_strong.pickle' %spotfinder.get_xpid())
     spotfinder.set_scan_ranges([(first + offset - 1, last + offset)])
     if PhilIndex.params.dials.spotfinder.phil_file is not None:
       spotfinder.set_phil_file(PhilIndex.params.dials.spotfinder.phil_file)

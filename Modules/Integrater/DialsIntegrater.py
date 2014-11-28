@@ -327,8 +327,7 @@ class DialsIntegrater(Integrater):
     # integration log on the quality of the data and (iii) the mosaic spread
     # range observed and R.M.S. deviations.
 
-    self._intgr_integrated_pickle \
-      = os.path.join(self.get_working_directory(), 'integrated.pickle')
+    self._intgr_integrated_pickle = integrate.get_integrated_filename()
     if not os.path.isfile(self._intgr_integrated_pickle):
       raise RuntimeError("Integration failed: %s does not exist."
                          %self._intgr_integrated_pickle)
@@ -382,7 +381,8 @@ class DialsIntegrater(Integrater):
 
     exporter = self.ExportMtz()
     exporter.set_reflections_filename(self._intgr_integrated_pickle)
-    mtz_filename = os.path.join(self.get_working_directory(), 'integrated.mtz')
+    mtz_filename = os.path.join(
+      self.get_working_directory(), '%s_integrated.mtz' %exporter.get_xpid())
     exporter.set_mtz_filename(mtz_filename)
     exporter.run()
     self._intgr_integrated_filename = mtz_filename
