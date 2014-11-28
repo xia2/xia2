@@ -238,11 +238,11 @@ class XDSIndexerII(XDSIndexer):
         if 'solution is inaccurate' in str(e):
           Debug.write(
               'XDS complains solution inaccurate - ignoring')
-          done = idxref.run(ignore_errors = True)
+          done = idxref.continue_from_error()
         elif ('insufficient percentage (< 70%)' in str(e) or
               'insufficient percentage (< 50%)' in str(e)) and \
                  original_cell:
-          done = idxref.run(ignore_errors = True)
+          done = idxref.continue_from_error()
           lattice, cell, mosaic = \
                    idxref.get_indexing_solution()
           # compare solutions
@@ -261,8 +261,8 @@ class XDSIndexerII(XDSIndexer):
           Debug.write('XDS unhappy but solution ok')
         elif 'insufficient percentage (< 70%)' in str(e) or \
                  'insufficient percentage (< 50%)' in str(e):
-          done = idxref.run(ignore_errors = True)
           Debug.write('XDS unhappy but solution probably ok')
+          done = idxref.continue_from_error()
         else:
           raise e
 

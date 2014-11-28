@@ -395,7 +395,6 @@ def XDSIdxref(DriverType=None, params=None):
                                    '%d_IDXREF.INP' % self.get_xpid()))
 
       # write the input data files...
-
       for file_name in self._input_data_files_list:
         src = self._input_data_files[file_name]
         dst = os.path.join(
@@ -410,6 +409,14 @@ def XDSIdxref(DriverType=None, params=None):
       if not ignore_errors:
         xds_check_error(self.get_all_output())
 
+      # If xds_check_error detects any errors it will raise an exception
+      # The caller can then continue using the run_continue_from_error()
+      # function. If XDS does not throw any errors we just plow on.
+
+      return self.continue_from_error()
+
+
+    def continue_from_error(self):
       # copy the LP file
       shutil.copyfile(os.path.join(self.get_working_directory(),
                                    'IDXREF.LP'),
@@ -532,6 +539,7 @@ def XDSIdxref(DriverType=None, params=None):
       else:
         assert len(self._indexing_solutions) > 0, "No remaining indexing solutions"
 
+#     print self._indexing_solutions
       if self._symm:
         max_p = 2.0 * self._indexing_solutions[
             s2l(self._symm)]['goodness']
@@ -593,6 +601,7 @@ def XDSIdxref(DriverType=None, params=None):
         # "indexing done" flag
 
         sorted_list = SortLattices(list)
+#       print sorted_list
 
         self._symm = lattice_to_spacegroup_number(sorted_list[0][0])
         self._cell = sorted_list[0][1]
