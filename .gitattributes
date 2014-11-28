@@ -66,6 +66,9 @@ Toolkit/FrameCC.py -text
 Toolkit/MendBKGINIT.py -text
 Toolkit/PolyFitter.py -text
 Toolkit/__init__.py -text
+Util/create_xia2_binary_installers.sh -text
+Util/installer.py -text
+Util/make_dist.phil -text
 Wrappers/CCP4/AimlessHelpers.py -text
 Wrappers/CCP4/Ctruncate.py -text
 Wrappers/Cctbx/BrehmDiederichs.py -text
