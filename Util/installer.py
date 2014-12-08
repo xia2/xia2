@@ -25,7 +25,7 @@ class installer (install_distribution.installer) :
     ['xia2', 'dials', 'cbflib', 'annlib_adaptbx', 'wxtbx', "gltbx"]
   include_gui_packages = True
   remove_sources_default = False # XXX toggles removal of C++ files after building
-  base_package_options = ['--dials', "--pyopengl", "--xia2"]
+  base_package_options = ['--dials', "--all", "--xia2"]
   source_packages = [ "cctbx_bundle" ] + ['xia2', 'dials', 'cbflib', 'annlib', 'annlib_adaptbx']
   #
 
