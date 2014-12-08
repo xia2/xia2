@@ -53,7 +53,7 @@ class CCP4ScalerA(Scaler):
 
     self._sweep_handler = None
 
-    self._tmp_scaled_refl_files = { }
+    self._scalr_scaled_refl_files = { }
     self._wavelengths_in_order = []
 
     self.__sweep_resolution_limits = { }
@@ -76,6 +76,34 @@ class CCP4ScalerA(Scaler):
     return
 
   # overloaded from the Scaler interface... to plumb in the factory
+
+  def to_dict(self):
+    import json
+    obj = super(CCP4ScalerA, self).to_dict()
+    if self._sweep_handler is not None:
+      obj['_sweep_handler'] = self._sweep_handler.to_dict()
+    d = {}
+    for k, v in self._sweep_resolution_limits.iteritems():
+      k = json.dumps(k)
+      d[k] = v
+    obj['_sweep_resolution_limits'] = d
+    obj['_prepared_reflections'] = self._prepared_reflections
+    return obj
+
+  @classmethod
+  def from_dict(cls, obj):
+    import json
+    return_obj = super(CCP4ScalerA, cls).from_dict(obj)
+    if return_obj._sweep_handler is not None:
+      return_obj._sweep_handler = SweepInformationHandler.from_dict(
+        return_obj._sweep_handler)
+    d = {}
+    for k, v in return_obj._sweep_resolution_limits.iteritems():
+      k = tuple(str(s) for s in json.loads(k))
+      d[k] = v
+    return_obj._sweep_resolution_limits = d
+    return_obj._prepared_reflections = obj['_prepared_reflections']
+    return return_obj
 
   def set_working_directory(self, working_directory):
     self._working_directory = working_directory
@@ -926,14 +954,14 @@ class CCP4ScalerA(Scaler):
 
     self._scalr_statistics = data
 
-    self._tmp_scaled_refl_files = copy.deepcopy(
+    self._scalr_scaled_refl_files = copy.deepcopy(
         sc.get_scaled_reflection_files())
 
     self._scalr_scaled_reflection_files = { }
     self._scalr_scaled_reflection_files['sca'] = { }
 
-    for key in self._tmp_scaled_refl_files:
-      f = self._tmp_scaled_refl_files[key]
+    for key in self._scalr_scaled_refl_files:
+      f = self._scalr_scaled_refl_files[key]
       scaout = '%s.sca' % f[:-4]
 
       m2v = self._factory.Mtz2various()
@@ -977,8 +1005,8 @@ class CCP4ScalerA(Scaler):
     sc.scale()
 
     self._scalr_scaled_reflection_files['sca_unmerged'] = { }
-    for key in self._tmp_scaled_refl_files:
-      f = self._tmp_scaled_refl_files[key]
+    for key in self._scalr_scaled_refl_files:
+      f = self._scalr_scaled_refl_files[key]
       scalepack = os.path.join(os.path.split(f)[0],
                                os.path.split(f)[1].replace(
           '_scaled', '_scaled_unmerged').replace('.mtz', '.sca'))
@@ -1024,8 +1052,8 @@ class CCP4ScalerA(Scaler):
     ami.set_working_directory(self.get_working_directory())
 
     average_unit_cell, ignore_sg = ami.compute_average_cell(
-        [self._tmp_scaled_refl_files[key] for key in
-         self._tmp_scaled_refl_files])
+        [self._scalr_scaled_refl_files[key] for key in
+         self._scalr_scaled_refl_files])
 
     Debug.write('Computed average unit cell (will use in all files)')
     Debug.write('%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \

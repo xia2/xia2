@@ -52,6 +52,8 @@ Test/Modules/Indexer/TstXDSIndexerII.py -text
 Test/Modules/Integrater/TstDialsIntegrater.py -text
 Test/Modules/Integrater/TstMosflmIntegrater.py -text
 Test/Modules/Integrater/TstXDSIntegrater.py -text
+Test/Modules/Scaler/TstCCP4ScalerA.py -text
+Test/Modules/Scaler/TstXDSScalerA.py -text
 Test/Mosflm/MosflmRefactorTest.py -text
 Test/Mosflm/Platform.py -text
 Test/Mosflm/PlatformHelpers.py -text

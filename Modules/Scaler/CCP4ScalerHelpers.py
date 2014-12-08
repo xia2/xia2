@@ -362,6 +362,33 @@ class SweepInformation(object):
 
     return
 
+  def to_dict(self):
+    obj = {}
+    obj['__id__'] = 'SweepInformation'
+    import inspect
+    attributes = inspect.getmembers(self, lambda m:not(inspect.isroutine(m)))
+    for a in attributes:
+      if a[0].startswith('__'): continue
+      elif a[0] == '_integrater':
+        obj[a[0]] = a[1].to_dict()
+      else:
+        obj[a[0]] = a[1]
+    return obj
+
+  @classmethod
+  def from_dict(cls, obj):
+    assert obj['__id__'] == 'SweepInformation'
+    return_obj = cls.__new__(cls)
+    for k, v in obj.iteritems():
+      if k == '_integrater':
+        from libtbx.utils import import_python_object
+        integrater_cls = import_python_object(
+          import_path=".".join((v['__module__'], v['__name__'])),
+          error_prefix='', target_must_be='', where_str='').object
+        v = integrater_cls.from_dict(v)
+      setattr(return_obj, k, v)
+    return return_obj
+
   def get_project_info(self):
     return self._project_info
 
@@ -452,6 +479,26 @@ class SweepInformationHandler(object):
     self._first = sorted(self._sweep_information)[0]
 
     return
+
+  def to_dict(self):
+    obj = {}
+    obj['__id__'] = 'SweepInformationHandler'
+    d = {}
+    for k, v in self._sweep_information.iteritems():
+      d[k] = v.to_dict()
+    obj['_sweep_information'] = d
+    return obj
+
+  @classmethod
+  def from_dict(cls, obj):
+    assert obj['__id__'] == 'SweepInformationHandler'
+    return_obj = cls.__new__(cls)
+    d = {}
+    for k, v in obj['_sweep_information'].iteritems():
+      d[k] = SweepInformation.from_dict(v)
+    return_obj._sweep_information = d
+    return_obj._first = sorted(return_obj._sweep_information)[0]
+    return return_obj
 
   def get_epochs(self):
     return sorted(self._sweep_information)

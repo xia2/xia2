@@ -90,7 +90,7 @@ class MosflmIntegrater(Integrater):
     return
 
   def to_dict(self):
-    obj = Integrater.to_dict(self)
+    obj = super(MosflmIntegrater, self).to_dict()
     import inspect
     attributes = inspect.getmembers(self, lambda m:not(inspect.isroutine(m)))
     for a in attributes:

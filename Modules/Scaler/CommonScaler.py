@@ -632,8 +632,8 @@ class CommonScaler(Scaler):
     # compute anomalous signals if anomalous
 
     if self.get_scaler_anomalous():
-      for key in self._tmp_scaled_refl_files:
-        f = self._tmp_scaled_refl_files[key]
+      for key in self._scalr_scaled_refl_files:
+        f = self._scalr_scaled_refl_files[key]
         Debug.write('Running anomalous signal analysis on %s' % f)
         a_s = anomalous_signals(f)
         self._scalr_statistics[
@@ -645,14 +645,14 @@ class CommonScaler(Scaler):
 
     # next transform to F's from I's etc.
 
-    if len(self._tmp_scaled_refl_files.keys()) == 0:
+    if len(self._scalr_scaled_refl_files.keys()) == 0:
       raise RuntimeError, 'no reflection files stored'
 
     if not Flags.get_small_molecule():
 
-      for wavelength in self._tmp_scaled_refl_files.keys():
+      for wavelength in self._scalr_scaled_refl_files.keys():
 
-        hklin = self._tmp_scaled_refl_files[wavelength]
+        hklin = self._scalr_scaled_refl_files[wavelength]
 
         truncate = self._factory.Truncate()
         truncate.set_hklin(hklin)
@@ -686,15 +686,15 @@ class CommonScaler(Scaler):
             ]['Wilson B factor'] = [b_factor]
 
         # and record the reflection file..
-        self._tmp_scaled_refl_files[wavelength] = hklout
+        self._scalr_scaled_refl_files[wavelength] = hklout
 
-    if len(self._tmp_scaled_refl_files.keys()) > 1:
+    if len(self._scalr_scaled_refl_files.keys()) > 1:
 
       reflection_files = { }
 
-      for wavelength in self._tmp_scaled_refl_files.keys():
+      for wavelength in self._scalr_scaled_refl_files.keys():
         cad = self._factory.Cad()
-        cad.add_hklin(self._tmp_scaled_refl_files[wavelength])
+        cad.add_hklin(self._scalr_scaled_refl_files[wavelength])
         cad.set_hklout(os.path.join(
             self.get_working_directory(),
             'cad-tmp-%s.mtz' % wavelength))
@@ -723,8 +723,8 @@ class CommonScaler(Scaler):
     else:
 
       self._scalr_scaled_reflection_files[
-          'mtz_merged'] = self._tmp_scaled_refl_files[
-          self._tmp_scaled_refl_files.keys()[0]]
+          'mtz_merged'] = self._scalr_scaled_refl_files[
+          self._scalr_scaled_refl_files.keys()[0]]
 
     # finally add a FreeR column, and record the new merged reflection
     # file with the free column added.
@@ -837,7 +837,7 @@ class CommonScaler(Scaler):
 
     # next have a look for radiation damage... if more than one wavelength
 
-    if len(self._tmp_scaled_refl_files.keys()) > 1 and \
+    if len(self._scalr_scaled_refl_files.keys()) > 1 and \
            not Flags.get_small_molecule():
       crd = CCP4InterRadiationDamageDetector()
 

@@ -74,7 +74,7 @@ class XDSScalerA(Scaler):
     # derived from an average of all of the sweeps which are
     # passed in
 
-    self._spacegroup = None
+    self._xds_spacegroup = None
     self._factory = CCP4Factory()
 
     self._chef_analysis_groups = { }
@@ -101,6 +101,38 @@ class XDSScalerA(Scaler):
       self._scalr_corrections = True
 
     return
+
+  def to_dict(self):
+    obj = super(XDSScalerA, self).to_dict()
+    import inspect
+    attributes = inspect.getmembers(self, lambda m:not(inspect.isroutine(m)))
+    for a in attributes:
+      if a[0].startswith('_xds_'):
+        obj[a[0]] = a[1]
+      elif a[0] == '_sweep_information':
+        import copy
+        d = copy.deepcopy(a[1])
+        for i in d.keys():
+          d[i]['integrater'] = d[i]['integrater'].to_dict()
+        obj[a[0]] = d
+    return obj
+
+  @classmethod
+  def from_dict(cls, obj):
+    return_obj = super(XDSScalerA, cls).from_dict(obj)
+    for i in return_obj._sweep_information.keys():
+      d = return_obj._sweep_information[i]['integrater']
+      from libtbx.utils import import_python_object
+      integrater_cls = import_python_object(
+        import_path=".".join((d['__module__'], d['__name__'])),
+        error_prefix='', target_must_be='', where_str='').object
+      return_obj._sweep_information[i]['integrater'] \
+        = integrater_cls.from_dict(d)
+      # expects epoch as number (or int?)
+      return_obj._sweep_information[float(i)] = return_obj._sweep_information[i]
+      del return_obj._sweep_information[i]
+    return return_obj
+
 
   # This is overloaded from the Scaler interface...
   def set_working_directory(self, working_directory):
@@ -405,10 +437,10 @@ class XDSScalerA(Scaler):
       md.set_hklin(self.get_scaler_reference_reflection_file())
       md.dump()
 
-      self._spacegroup = Syminfo.spacegroup_name_to_number(
+      self._xds_spacegroup = Syminfo.spacegroup_name_to_number(
           md.get_spacegroup())
 
-      Debug.write('Spacegroup %d' % self._spacegroup)
+      Debug.write('Spacegroup %d' % self._xds_spacegroup)
 
     elif Flags.get_reference_reflection_file():
       self._reference = Flags.get_reference_reflection_file()
@@ -419,10 +451,10 @@ class XDSScalerA(Scaler):
       md.set_hklin(Flags.get_reference_reflection_file())
       md.dump()
 
-      self._spacegroup = Syminfo.spacegroup_name_to_number(
+      self._xds_spacegroup = Syminfo.spacegroup_name_to_number(
           md.get_spacegroup())
 
-      Debug.write('Spacegroup %d' % self._spacegroup)
+      Debug.write('Spacegroup %d' % self._xds_spacegroup)
 
     params = PhilIndex.params
     use_brehm_diederichs = params.xia2.settings.use_brehm_diederichs
@@ -560,7 +592,7 @@ class XDSScalerA(Scaler):
         reindex_op = 'h,k,l'
         need_to_return = True
 
-      self._spacegroup = Syminfo.spacegroup_name_to_number(pointgroup)
+      self._xds_spacegroup = Syminfo.spacegroup_name_to_number(pointgroup)
 
       # next pass this reindexing operator back to the source
       # of the reflections
@@ -773,7 +805,7 @@ class XDSScalerA(Scaler):
 
         need_to_return = True
 
-      self._spacegroup = Syminfo.spacegroup_name_to_number(pointgroup)
+      self._xds_spacegroup = Syminfo.spacegroup_name_to_number(pointgroup)
 
       # next pass this reindexing operator back to the source
       # of the reflections
@@ -850,13 +882,13 @@ class XDSScalerA(Scaler):
 
     xscale = self.XScale()
 
-    xscale.set_spacegroup_number(self._spacegroup)
+    xscale.set_spacegroup_number(self._xds_spacegroup)
     xscale.set_cell(self._scalr_cell)
 
     Debug.write('Set CELL: %.2f %.2f %.2f %.2f %.2f %.2f' % \
                 tuple(self._scalr_cell))
     Debug.write('Set SPACEGROUP_NUMBER: %d' % \
-                self._spacegroup)
+                self._xds_spacegroup)
 
     Debug.write('Gathering measurements for scaling')
 
@@ -1021,7 +1053,7 @@ class XDSScalerA(Scaler):
           self._resolution_limits[rkey] = dmin
           self._user_resolution_limits[rkey] = dmin
 
-    self._tmp_scaled_refl_files = { }
+    self._scalr_scaled_refl_files = { }
 
     self._scalr_statistics = { }
 
@@ -1261,7 +1293,7 @@ class XDSScalerA(Scaler):
 
     self._scalr_statistics = data
 
-    self._tmp_scaled_refl_files = copy.deepcopy(
+    self._scalr_scaled_refl_files = copy.deepcopy(
         sc.get_scaled_reflection_files())
 
     self._scalr_scaled_reflection_files = { }
@@ -1313,9 +1345,9 @@ class XDSScalerA(Scaler):
     self._scalr_scaled_reflection_files['sca'] = { }
     self._scalr_scaled_reflection_files['hkl'] = { }
 
-    for key in self._tmp_scaled_refl_files:
+    for key in self._scalr_scaled_refl_files:
 
-      f = self._tmp_scaled_refl_files[key]
+      f = self._scalr_scaled_refl_files[key]
       scaout = '%s.sca' % f[:-4]
 
       m2v = self._factory.Mtz2various()

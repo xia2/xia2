@@ -241,6 +241,85 @@ class Scaler(object):
 
     return
 
+  # serialization functions
+
+  def to_dict(self):
+    import json
+    obj = {}
+    obj['__id__'] = 'Scaler'
+    obj['__module__'] = self.__class__.__module__
+    obj['__name__'] = self.__class__.__name__
+    import inspect
+    attributes = inspect.getmembers(self, lambda m:not(inspect.isroutine(m)))
+    for a in attributes:
+      if a[0] == '_scalr_xcrystal':
+        # XXX I guess we probably want this?
+        continue
+      elif a[0] == '_scalr_integraters':
+        d = {}
+        for k, v in a[1].iteritems():
+          d[k] = v.to_dict()
+        obj[a[0]] = d
+      elif a[0] == '_scalr_statistics':
+        # dictionary has tuples as keys - json can't handle this so serialize
+        # keys in place
+        d = {}
+        for k, v in a[1].iteritems():
+          k = json.dumps(k)
+          d[k] = v
+        obj[a[0]] = d
+      elif (a[0].startswith('_scalr_')):
+        obj[a[0]] = a[1]
+    return obj
+
+  @classmethod
+  def from_dict(cls, obj):
+    import json
+    assert obj['__id__'] == 'Scaler'
+    return_obj = cls()
+    for k, v in obj.iteritems():
+      if k == '_scalr_integraters':
+        for k_, v_ in v.iteritems():
+          from libtbx.utils import import_python_object
+          integrater_cls = import_python_object(
+            import_path=".".join((v_['__module__'], v_['__name__'])),
+            error_prefix='', target_must_be='', where_str='').object
+          v[k_] = integrater_cls.from_dict(v_)
+      elif k == '_scalr_statistics':
+        d = {}
+        for k_, v_ in v.iteritems():
+          k_ = tuple(str(s) for s in json.loads(k_))
+          d[k_] = v_
+        v = d
+      setattr(return_obj, k, v)
+    return return_obj
+
+  def as_json(self, filename=None, compact=False):
+    import json
+    obj = self.to_dict()
+    if compact:
+      text = json.dumps(obj, skipkeys=False, separators=(',',':'), ensure_ascii=True)
+    else:
+      text = json.dumps(obj, skipkeys=False, indent=2, ensure_ascii=True)
+
+    # If a filename is set then dump to file otherwise return string
+    if filename is not None:
+      with open(filename, 'w') as outfile:
+        outfile.write(text)
+    else:
+      return text
+
+  @classmethod
+  def from_json(cls, filename=None, string=None):
+    import json
+    from dxtbx.serialize.load import _decode_dict
+    assert [filename, string].count(None) == 1
+    if filename is not None:
+      with open(filename, 'rb') as f:
+        string = f.read()
+    obj = json.loads(string, object_hook=_decode_dict)
+    return cls.from_dict(obj)
+
   # FIXME x1698 these not currently used yet
 
   def _scale_list_likely_pointgroups(self, integrater):
