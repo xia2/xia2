@@ -149,6 +149,7 @@ class CCP4ScalerA(Scaler):
     sc_tst.set_cycles(5)
 
     sc_tst.set_hklin(self._prepared_reflections)
+    sc.set_intensities(PhilIndex.params.ccp4.aimless.intensities)
     sc_tst.set_hklout('temp.mtz')
 
     sc_tst.set_tails(tails = tails)
@@ -889,6 +890,7 @@ class CCP4ScalerA(Scaler):
     highest_resolution = 100.0
 
     sc.set_hklin(self._prepared_reflections)
+    sc.set_intensities(PhilIndex.params.ccp4.aimless.intensities)
 
     scales_file = '%s_final.scales' % self._scalr_xname
 
@@ -975,6 +977,7 @@ class CCP4ScalerA(Scaler):
 
     sc = self._updated_aimless()
     sc.set_hklin(self._prepared_reflections)
+    sc.set_intensities(PhilIndex.params.ccp4.aimless.intensities)
     sc.set_scales_file(scales_file)
 
     self._wavelengths_in_order = []
@@ -1016,6 +1019,7 @@ class CCP4ScalerA(Scaler):
 
     sc = self._updated_aimless()
     sc.set_hklin(self._prepared_reflections)
+    sc.set_intensities(PhilIndex.params.ccp4.aimless.intensities)
     sc.set_scales_file(scales_file)
 
     self._wavelengths_in_order = []
