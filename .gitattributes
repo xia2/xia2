@@ -57,6 +57,7 @@ Test/Modules/Scaler/TstXDSScalerA.py -text
 Test/Mosflm/MosflmRefactorTest.py -text
 Test/Mosflm/Platform.py -text
 Test/Mosflm/PlatformHelpers.py -text
+Test/Wrappers/CCP4/TstBlend.py -text
 Test/Wrappers/Dials/TstDialsWrappers.py -text
 Test/Wrappers/Labelit/TstLabelitIndex.py -text
 Test/Wrappers/Mosflm/TstMosflmIndex.py -text
@@ -72,6 +73,7 @@ Util/create_xia2_binary_installers.sh -text
 Util/installer.py -text
 Util/make_dist.phil -text
 Wrappers/CCP4/AimlessHelpers.py -text
+Wrappers/CCP4/Blend.py -text
 Wrappers/CCP4/Ctruncate.py -text
 Wrappers/Cctbx/BrehmDiederichs.py -text
 Wrappers/Cctbx/__init__.py -text
