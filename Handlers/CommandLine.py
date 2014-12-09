@@ -436,8 +436,9 @@ class _CommandLine(object):
     self._understood.append(index + 1)
 
     # XXX Warning added 2014-11-10
-    print "Warning: -beam option deprecated: please use beam_centre='%s' instead" %(
-        self._argv[index + 1])
+    Chatter.write(
+      "Warning: -beam option deprecated: please use beam_centre='%s' instead" %(
+        self._argv[index + 1]))
 
     PhilIndex.update("xia2.settings.beam_centre=%s" %self._argv[index +1 ])
     PhilIndex.get_python_object()
@@ -697,8 +698,9 @@ class _CommandLine(object):
     self._understood.append(index + 1)
 
     # XXX Warning added 2014-11-10
-    print "Warning: -parallel option deprecated: please use nproc=%s instead" %(
-        self._argv[index + 1])
+    Chatter.write(
+      "Warning: -parallel option deprecated: please use nproc=%s instead" %(
+        self._argv[index + 1]))
 
     PhilIndex.update("xia2.settings.multiprocessing.nproc=%s" %(
       self._argv[index + 1]))
@@ -808,8 +810,9 @@ class _CommandLine(object):
     self._understood.append(index + 1)
 
     # XXX Warning added 2014-11-10
-    print "Warning: -spacegroup option deprecated: please use space_group='%s' instead" %(
-        self._argv[index + 1])
+    Chatter.write(
+      "Warning: -spacegroup option deprecated: please use space_group='%s' instead" %(
+        self._argv[index + 1]))
 
     Flags.set_spacegroup(self._argv[index + 1]) # XXX this line should go
     PhilIndex.update("xia2.settings.space_group=%s" %self._argv[index + 1])
@@ -846,12 +849,14 @@ class _CommandLine(object):
     if dmax is not None:
       PhilIndex.update("xia2.settings.d_max=%s" %dmax)
       # XXX Warning added 2014-11-10
-      print "Warning: -resolution option deprecated: please use d_min=%s and d_max=%s instead" %(
-        dmin, dmax)
+      Chatter.write(
+        "Warning: -resolution option deprecated: please use d_min=%s and d_max=%s instead" %(
+          dmin, dmax))
     else:
       # XXX Warning added 2014-11-10
-      print "Warning: -resolution option deprecated: please use d_min=%s instead" %(
-        dmin)
+      Chatter.write(
+        "Warning: -resolution option deprecated: please use d_min=%s instead" %(
+          dmin))
     PhilIndex.get_python_object()
 
     if dmax:
@@ -1473,8 +1478,9 @@ class _CommandLine(object):
     _cell = tuple(map(float, cell))
 
     # XXX Warning added 2014-11-10
-    print "Warning: -cell option deprecated: please use unit_cell='%s' instead" %(
-        self._argv[index + 1])
+    Chatter.write(
+      "Warning: -cell option deprecated: please use unit_cell='%s' instead" %(
+        self._argv[index + 1]))
 
     PhilIndex.update("xia2.settings.unit_cell=%s,%s,%s,%s,%s,%s" %_cell)
     PhilIndex.get_python_object()
@@ -1584,8 +1590,9 @@ class _CommandLine(object):
     indexer = self._argv[index + 1]
 
     # XXX Warning added 2014-11-10
-    print "Warning: -indexer option deprecated: please use indexer='%s' instead" %(
-      indexer)
+    Chatter.write(
+      "Warning: -indexer option deprecated: please use indexer='%s' instead" %(
+        indexer))
 
     PhilIndex.update("xia2.settings.indexer=%s" %indexer)
     PhilIndex.get_python_object()
@@ -1604,8 +1611,9 @@ class _CommandLine(object):
     integrater = self._argv[index + 1]
 
     # XXX Warning added 2014-11-10
-    print "Warning: -integrater option deprecated: please use integrater='%s' instead" %(
-      integrater)
+    Chatter.write(
+      "Warning: -integrater option deprecated: please use integrater='%s' instead" %(
+        integrater))
 
     PhilIndex.update("xia2.settings.integrater=%s" %integrater)
     PhilIndex.get_python_object()
@@ -1624,8 +1632,9 @@ class _CommandLine(object):
     scaler = self._argv[index + 1]
 
     # XXX Warning added 2014-11-10
-    print "Warning: -scaler option deprecated: please use scaler='%s' instead" %(
-      scaler)
+    Chatter.write(
+      "Warning: -scaler option deprecated: please use scaler='%s' instead" %(
+        scaler))
 
     PhilIndex.update("xia2.settings.scaler=%s" %scaler)
     PhilIndex.get_python_object()
