@@ -395,7 +395,7 @@ class _CommandLine(object):
     for j, argv in enumerate(self._argv):
       if j == 0:
         continue
-      if argv[0] != '-':
+      if argv[0] != '-' and '=' not in argv:
         continue
       if not j in self._understood:
         nonsense += ' %s' % argv
