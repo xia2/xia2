@@ -128,6 +128,9 @@ def run():
   except exceptions.Exception, e:
     traceback.print_exc(file = open(os.path.join(wd, 'xia2.error'), 'w'))
     Chatter.write('Status: error "%s"' % str(e))
+    Chatter.write(
+      'Please send the contents of xia2.txt, xia2.error and xia2-debug.txt to:')
+    Chatter.write('xia2.support@gmail.com')
     from Handlers.Flags import Flags
     if Flags.get_egg():
       from lib.bits import message
