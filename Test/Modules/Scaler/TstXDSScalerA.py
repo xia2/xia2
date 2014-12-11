@@ -74,8 +74,6 @@ def exercise_xds_scaler(nproc=None):
 
   check_scaler_files_exist(scaler)
 
-  print
-
   # test serialization of scaler
   json_str = scaler.as_json()
   #print json_str
