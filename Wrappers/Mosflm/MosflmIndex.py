@@ -104,7 +104,7 @@ def MosflmIndex(DriverType = None, indxr_print = True):
       self._wavelength = wavelength
 
     def set_distance(self, distance):
-      self._distance = distance
+      self._distance = abs(distance)
 
     def set_unit_cell(self, unit_cell):
       self._unit_cell
