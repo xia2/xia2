@@ -71,6 +71,7 @@ def MosflmIntegrate(DriverType = None, indxr_print = True):
       self._mosflm_autoindex_sol = 0
       self._mosflm_autoindex_thresh = None
       self._mosflm_spot_file = None
+      self._mosflm_hklout = None
 
       self._images = []
 
