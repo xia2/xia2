@@ -39,7 +39,8 @@ def load_imagesets(template, directory, id_image=None, image_range=None,
       scan_image_range = scan.get_image_range()
       if (image_range[0] >= scan_image_range[0] and
           image_range[1] <= scan_image_range[1]):
-        return [imageset[
-          scan_image_range[0]-image_range[0]:
-          scan_image_range[1]-image_range[0] + 1]]
+        imagesets = [imageset[
+          image_range[0] - scan_image_range[0]:
+          image_range[1] + 1 - scan_image_range[0]]]
+        assert len(imagesets[0]) == image_range[1] - image_range[0] + 1, len(imagesets[0])
   return imageset_cache[full_template_path].values()
