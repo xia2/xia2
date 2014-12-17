@@ -90,6 +90,8 @@ dials {
       .type = choice
     background_outlier_algorithm = *null nsigma truncated normal
       .type = choice
+    use_threading = False
+      .type = bool
   }
   # FIXME to here
 }

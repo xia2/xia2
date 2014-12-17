@@ -36,8 +36,12 @@ def Integrate(DriverType = None):
       self._phil_file = None
       self._mosaic = None
       self._dmax = None
+      self._use_threading = False
 
       return
+
+    def set_use_threading(self, use_threading):
+      self._use_threading = use_threading
 
     def set_experiments_filename(self, experiments_filename):
       self._experiments_filename = experiments_filename
@@ -89,6 +93,10 @@ def Integrate(DriverType = None):
       self.add_command_line('input.experiments=%s' % self._experiments_filename)
       nproc = Flags.get_parallel()
       self.set_cpu_threads(nproc)
+
+      if self._use_threading:
+        self.add_command_line('nthreads=%i' %nproc)
+        nproc = 1
 
       self.add_command_line('nproc=%i' % nproc)
       self.add_command_line(('input.reflections=%s' % self._reflections_filename))

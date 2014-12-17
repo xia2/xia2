@@ -125,6 +125,7 @@ class DialsIntegrater(Integrater):
     integrate.set_experiments_filename(self._intgr_experiments_filename)
     integrate.set_reflections_filename(
       self._intgr_indexer.get_indexed_filename())
+    integrate.set_use_threading(params.use_threading)
 
     auto_logfiler(integrate, 'INTEGRATE')
 
