@@ -1328,8 +1328,11 @@ class _CommandLine(object):
   def _read_2d(self):
 
     if '-2d' in self._argv:
-      PhilIndex.update("xia2.settings.integrater=mosflmr")
-      PhilIndex.update("xia2.settings.scaler=ccp4a")
+      settings = PhilIndex.get_python_object().xia2.settings
+      if settings.integrater is None:
+        PhilIndex.update("xia2.settings.integrater=mosflmr")
+      if settings.scaler is None:
+        PhilIndex.update("xia2.settings.scaler=ccp4a")
       PhilIndex.get_python_object()
       self._understood.append(self._argv.index('-2d'))
       Debug.write('2DA pipeline selected')
@@ -1338,9 +1341,13 @@ class _CommandLine(object):
   def _read_2di(self):
 
     if '-2di' in self._argv:
-      PhilIndex.update("xia2.settings.indexer=mosflm")
-      PhilIndex.update("xia2.settings.integrater=mosflmr")
-      PhilIndex.update("xia2.settings.scaler=ccp4a")
+      settings = PhilIndex.get_python_object().xia2.settings
+      if settings.indexer is None:
+        PhilIndex.update("xia2.settings.indexer=mosflm")
+      if settings.integrater is None:
+        PhilIndex.update("xia2.settings.integrater=mosflmr")
+      if settings.scaler is None:
+        PhilIndex.update("xia2.settings.scaler=ccp4a")
       PhilIndex.get_python_object()
       self._understood.append(self._argv.index('-2di'))
       Debug.write('2DA pipeline; mosflm indexing selected')
@@ -1348,9 +1355,13 @@ class _CommandLine(object):
 
   def _read_dials(self):
     if '-dials' in self._argv:
-      PhilIndex.update("xia2.settings.indexer=dials")
-      PhilIndex.update("xia2.settings.integrater=dials")
-      PhilIndex.update("xia2.settings.scaler=ccp4a")
+      settings = PhilIndex.get_python_object().xia2.settings
+      if settings.indexer is None:
+        PhilIndex.update("xia2.settings.indexer=dials")
+      if settings.integrater is None:
+        PhilIndex.update("xia2.settings.integrater=dials")
+      if settings.scaler is None:
+        PhilIndex.update("xia2.settings.scaler=ccp4a")
       PhilIndex.get_python_object()
       self._understood.append(self._argv.index('-dials'))
       Debug.write('DIALS pipeline selected')
@@ -1359,9 +1370,13 @@ class _CommandLine(object):
   def _read_3d(self):
 
     if '-3d' in self._argv:
-      PhilIndex.update("xia2.settings.indexer=xds")
-      PhilIndex.update("xia2.settings.integrater=xdsr")
-      PhilIndex.update("xia2.settings.scaler=xdsa")
+      settings = PhilIndex.get_python_object().xia2.settings
+      if settings.indexer is None:
+        PhilIndex.update("xia2.settings.indexer=xds")
+      if settings.integrater is None:
+        PhilIndex.update("xia2.settings.integrater=xdsr")
+      if settings.scaler is None:
+        PhilIndex.update("xia2.settings.scaler=xdsa")
       PhilIndex.get_python_object()
       self._understood.append(self._argv.index('-3d'))
       Debug.write('3DR pipeline selected')
@@ -1370,9 +1385,13 @@ class _CommandLine(object):
   def _read_3di(self):
 
     if '-3di' in self._argv:
-      PhilIndex.update("xia2.settings.indexer=xds")
-      PhilIndex.update("xia2.settings.integrater=xdsr")
-      PhilIndex.update("xia2.settings.scaler=xdsa")
+      settings = PhilIndex.get_python_object().xia2.settings
+      if settings.indexer is None:
+        PhilIndex.update("xia2.settings.indexer=xds")
+      if settings.integrater is None:
+        PhilIndex.update("xia2.settings.integrater=xdsr")
+      if settings.scaler is None:
+        PhilIndex.update("xia2.settings.scaler=xdsa")
       PhilIndex.get_python_object()
       self._understood.append(self._argv.index('-3di'))
       Debug.write('3DR pipeline; XDS indexing selected')
@@ -1381,9 +1400,13 @@ class _CommandLine(object):
   def _read_3dii(self):
 
     if '-3dii' in self._argv:
-      PhilIndex.update("xia2.settings.indexer=xdsii")
-      PhilIndex.update("xia2.settings.integrater=xdsr")
-      PhilIndex.update("xia2.settings.scaler=xdsa")
+      settings = PhilIndex.get_python_object().xia2.settings
+      if settings.indexer is None:
+        PhilIndex.update("xia2.settings.indexer=xdsii")
+      if settings.integrater is None:
+        PhilIndex.update("xia2.settings.integrater=xdsr")
+      if settings.scaler is None:
+        PhilIndex.update("xia2.settings.scaler=xdsa")
       PhilIndex.get_python_object()
       self._understood.append(self._argv.index('-3dii'))
       Debug.write('3D II R pipeline (XDS IDXREF all images) selected')
@@ -1392,9 +1415,13 @@ class _CommandLine(object):
   def _read_3dd(self):
 
     if '-3dd' in self._argv:
-      PhilIndex.update("xia2.settings.indexer=dials")
-      PhilIndex.update("xia2.settings.integrater=xdsr")
-      PhilIndex.update("xia2.settings.scaler=xdsa")
+      settings = PhilIndex.get_python_object().xia2.settings
+      if settings.indexer is None:
+        PhilIndex.update("xia2.settings.indexer=dials")
+      if settings.integrater is None:
+        PhilIndex.update("xia2.settings.integrater=xdsr")
+      if settings.scaler is None:
+        PhilIndex.update("xia2.settings.scaler=xdsa")
       PhilIndex.get_python_object()
       self._understood.append(self._argv.index('-3dd'))
       Debug.write('3DD pipeline (DIALS indexing) selected')
