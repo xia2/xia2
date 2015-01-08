@@ -136,6 +136,8 @@ xia2.settings {
     .help = "Whether or not to trust the beam centre in the image header."
             "If false, then labelit.index is used to determine a better beam "
             "centre during xia2 setup phase"
+  read_all_image_headers = True
+    .type = bool
   detector_distance = None
     .type = float(value_min=0.0)
     .help = "Distance between sample and detector (mm)"
