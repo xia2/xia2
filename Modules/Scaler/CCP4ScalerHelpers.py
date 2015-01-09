@@ -134,6 +134,10 @@ def meansd(values):
   return mean, math.sqrt(var)
 
 def compute_resolution(dmax, dmin, d, isig):
+  # XXX As far as I can tell this function doesn't do anything useful as it
+  # just returns the unmodified dmin that was passed as input!
+  return dmin
+
   bins = { }
 
   smax = 1.0 / (dmax * dmax)
