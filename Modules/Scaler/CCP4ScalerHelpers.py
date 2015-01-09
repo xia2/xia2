@@ -117,27 +117,13 @@ def erzatz_resolution(reflection_file, batch_ranges):
   ipr_values = ipr_column.extract_values()
   sigipr_values = sigipr_column.extract_values()
   batch_values = batch_column.extract_values()
-
-  batches = [nint(b) for b in batch_values]
-
+  batches = batch_values.as_double().iround()
   resolutions = { }
 
   for start, end in batch_ranges:
-
-    d = []
-    isig = []
-
-    for j in range(miller.size()):
-
-      if batches[j] < start:
-        continue
-      if batches[j] > end:
-        continue
-
-      if sigipr_values[j] > 0:
-        d.append(uc.d(miller[j]))
-        isig.append(ipr_values[j] / sigipr_values[j])
-
+    sel = (batches >= start) & (batches <= end)
+    d = uc.d(miller.select(sel))
+    isig = ipr_values.select(sel) / sigipr_values.select(sel)
     resolutions[(start, end)] = compute_resolution(dmax, dmin, d, isig)
 
   return resolutions
