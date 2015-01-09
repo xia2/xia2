@@ -1381,19 +1381,8 @@ class MosflmIntegrater(Integrater):
       for s in spot_status:
         all_spot_status += s
 
-      ## concatenate all of the output lines to our own output
-      ## channel (may be messy, but nothing better presents itself...
-      ## yuck, this involves delving in to the Driver interface...
-
-      #output = job.get_all_output()
-      #for record in output:
-        #self._standard_output_records.append(record)
-        #if not self._log_file is None:
-          #self._log_file.write(record)
-
-    self._intgr_batches_out = (first_integrated_batch,
-                               last_integrated_batch)
-
+    self._intgr_batches_out = (integrated_images_first,
+                               integrated_images_last)
 
     if mosaics and len(mosaics) > 0:
       self.set_integrater_mosaic_min_mean_max(

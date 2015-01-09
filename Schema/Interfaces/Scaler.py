@@ -215,7 +215,7 @@ class Scaler(object):
         'Completeness', 'Multiplicity',
         'I/sigma', 'Rmerge',
         'Rmeas(I)', 'Rmeas(I+/-)',
-        'Rpim(I)', 'Rpim(I+/-)',
+        'Rpim(I)', 'Rpim(I+/-)', 'CC half',
         'Wilson B factor', 'Partial bias',
         'Anomalous completeness', 'Anomalous multiplicity',
         'Anomalous correlation', 'Anomalous slope',

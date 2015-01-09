@@ -17,7 +17,8 @@ def parse_aimless_xml(xml_file):
       'RpimOverall':'Rpim(I)',
       'Rpim':'Rpim(I+/-)',
       'NumberObservations':'Total observations',
-      'NumberReflections':'Total unique'
+      'NumberReflections':'Total unique',
+      'CChalf':'CC half'
       }
 
   total_summary = {}
