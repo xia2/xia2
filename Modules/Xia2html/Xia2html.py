@@ -2793,6 +2793,7 @@ class Xia2doc:
                   'Low resolution limit',
                   'Completeness',
                   'Multiplicity',
+                  'CC-half',
                   'I/sigma',
                   'R<sub>merge</sub>']
     if has_anomalous:
@@ -2812,6 +2813,7 @@ class Xia2doc:
                        dataset['Low resolution limit'][1],
                        dataset['Completeness'][1],
                        dataset['Multiplicity'][1],
+                       dataset['CC half'][1],
                        dataset['I/sigma'][1],
                        dataset['Rmerge'][1]]
         if has_anomalous:
@@ -2845,6 +2847,8 @@ class Xia2doc:
                        " - "+dataset['Completeness'][3]+")",
                        "("+dataset['Multiplicity'][2]+\
                        " - "+dataset['Multiplicity'][3]+")",
+                       "("+dataset['CC half'][2]+\
+                       " - "+dataset['CC half'][3]+")",
                        "("+dataset['I/sigma'][2]+\
                        " - "+dataset['I/sigma'][3]+")",
                        "("+dataset['Rmerge'][2]+\
