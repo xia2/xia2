@@ -251,11 +251,14 @@ class DialsIndexer(Indexer):
         self._solution['lattice'])))
       experiments, indexed_file = reindex.run()
       self.set_indexer_payload("indexed_filename", indexed_file)
+      self.set_indexer_payload("experiments_filename", experiments)
 
     else:
       experiment_list = load.experiment_list(
         indexer.get_experiments_filename())
       self.set_indexer_experiment_list(experiment_list)
+      self.set_indexer_payload(
+        "experiments_filename", indexer.get_experiments_filename())
 
     return
 

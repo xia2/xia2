@@ -66,7 +66,7 @@ def CombineExperiments(DriverType = None):
         self.add_command_line(expt)
       for f in self._reflections_filenames:
         self.add_command_line(f)
-      self.add_command_line("beam=0")
+      #self.add_command_line("beam=0")
       self.add_command_line("goniometer=0")
       self.add_command_line("detector=0")
 

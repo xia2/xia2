@@ -41,6 +41,7 @@ Modules/Xia2html/icons/img_overloaded.png -text
 Modules/Xia2html/icons/img_weak.png -text
 Modules/Xia2html/icons/info.png -text
 Modules/Xia2html/icons/warning.png -text
+Schema/Interfaces/Refiner.py -text
 Schema/XLattice.py -text
 Test/Dials/Platform.py -text
 Test/Modules/Indexer/TstDialsIndexer.py -text
@@ -52,6 +53,7 @@ Test/Modules/Indexer/TstXDSIndexerII.py -text
 Test/Modules/Integrater/TstDialsIntegrater.py -text
 Test/Modules/Integrater/TstMosflmIntegrater.py -text
 Test/Modules/Integrater/TstXDSIntegrater.py -text
+Test/Modules/Refiner/TstDialsRefiner.py -text
 Test/Modules/Scaler/TstCCP4ScalerA.py -text
 Test/Modules/Scaler/TstXDSScalerA.py -text
 Test/Mosflm/MosflmRefactorTest.py -text
