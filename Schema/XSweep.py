@@ -288,7 +288,7 @@ class XSweep(object):
           # raise RuntimeError, format  % \
           # (name, wavelength.get_name())
 
-          format = 'Header wavelength for sweep %s differerent' + \
+          format = 'Header wavelength for sweep %s different' + \
                    ' to assigned value (%4.2f vs. %4.2f)'
 
           Chatter.write(format % (name, beam_.get_wavelength(),
