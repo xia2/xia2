@@ -87,7 +87,7 @@ def exercise_dials_wrappers(nproc=None):
   assert bravais_setting_22['bravais'] == 'cI'
   assert bravais_setting_22['cb_op'] == 'b+c,a+c,a+b'
   assert approx_equal(bravais_setting_22['unit_cell'],
-                      (78.0425,78.0425,78.0425,90,90,90), eps=1e-4)
+                      (78.0619,78.0619,78.0619,90,90,90), eps=1e-4)
   bravais_setting_22_json = bravais_setting_22['experiments_file']
   assert os.path.exists(bravais_setting_22_json)
 
@@ -128,6 +128,23 @@ def exercise_dials_wrappers(nproc=None):
   print ''.join(exporter.get_all_output())
   print "Done exporting"
   assert os.path.exists(exporter.get_mtz_filename())
+
+  import shutil
+  shutil.copy(indexer.get_experiments_filename(), "copy.json")
+  shutil.copy(indexer.get_indexed_filename(), "copy.pickle")
+  print "Begin combining"
+  from Wrappers.Dials.CombineExperiments import CombineExperiments
+  exporter = CombineExperiments()
+  exporter.add_experiments(indexer.get_experiments_filename())
+  exporter.add_experiments("copy.json")
+  exporter.add_reflections(indexer.get_indexed_filename())
+  exporter.add_reflections("copy.pickle")
+  exporter.run()
+  print ''.join(exporter.get_all_output())
+  print "Done combining"
+  assert os.path.exists(exporter.get_combined_experiments_filename())
+  assert os.path.exists(exporter.get_combined_reflections_filename())
+
 
 
 def run(args):

@@ -78,6 +78,7 @@ Wrappers/CCP4/Ctruncate.py -text
 Wrappers/Cctbx/BrehmDiederichs.py -text
 Wrappers/Cctbx/__init__.py -text
 Wrappers/Dials/Attic/Spotfinder.py -text
+Wrappers/Dials/CombineExperiments.py -text
 Wrappers/Dials/ExportMtz.py -text
 Wrappers/Dials/ExportSpotXDS.py -text
 Wrappers/Dials/ExportXDS.py -text
