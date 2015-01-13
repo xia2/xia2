@@ -10,6 +10,8 @@
 
 from __future__ import division
 
+import os
+
 from __init__ import _setup_xia2_environ
 _setup_xia2_environ()
 
@@ -68,18 +70,20 @@ def Reindex(DriverType = None):
       if self._space_group:
         self.add_command_line("space_group=%s" % self._space_group)
 
+      wd = self.get_working_directory()
+      self._reindexed_experiments_filename = os.path.join(
+        wd, "%d_experiments_reindexed.json" %self.get_xpid())
+      self._reindexed_reflections_filename = os.path.join(
+        wd, "%d_reflections_reindexed.pickle" %self.get_xpid())
+
+      self.add_command_line(
+        "output.experiments=%s" %self._reindexed_experiments_filename)
+      self.add_command_line(
+        "output.reflections=%s" %self._reindexed_reflections_filename)
+
       self.start()
       self.close_wait()
       self.check_for_errors()
-
-      wd = self.get_working_directory()
-
-      import os
-
-      self._reindexed_experiments_filename = os.path.join(
-        wd, "experiments_reindexed.json")
-      self._reindexed_reflections_filename = os.path.join(
-        wd, "reflections_reindexed.pickle")
 
       return (self._reindexed_experiments_filename,
               self._reindexed_reflections_filename)
