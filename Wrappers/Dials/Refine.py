@@ -101,7 +101,7 @@ def Refine(DriverType = None):
         self.get_working_directory(),
         '%s_refined_experiments.json' % self.get_xpid())
       self.add_command_line(
-        'output.experiments_filename=%s' %self._refined_experiments_filename)
+        'output.experiments=%s' %self._refined_experiments_filename)
 
       if self._reflections_per_degree is not None:
         self.add_command_line(
