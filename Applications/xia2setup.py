@@ -91,11 +91,13 @@ def is_image_name(filename):
     if exten in known_image_extensions:
       return True
 
-    # check for files like foo_bar.0001 - c/f FIXME for 25/SEP/06
+    # check for files like foo_bar.0001, through try to avoid filenames
+    # like MSCServDetCCD.log.1
     end = filename.split('.')[-1]
     try:
       j = int(end)
-      return True
+      if not '.log.' in filename and len(end) > 1:
+        return True
     except:
       pass
 
