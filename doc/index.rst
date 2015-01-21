@@ -8,7 +8,7 @@ xia2
 .. toctree::
    :maxdepth: 1
 
-   installation
+   parameters
 
 Contact
 =======
