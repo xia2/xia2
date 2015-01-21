@@ -180,10 +180,21 @@ core/readme.txt -text
 doc/Makefile -text
 doc/acknowledgements.rst -text
 doc/background.rst -text
+doc/comments.rst -text
 doc/conf.py -text
+doc/figures/3qrn-all-complete-aimless.png -text svneol=unset#unset
+doc/figures/3qrn-all-rmerge-aimless.png -text svneol=unset#unset
+doc/figures/3qrn-all-rmerge.png -text svneol=unset#unset
+doc/figures/3qrn-diffraction.png -text svneol=unset#unset
+doc/figures/3qrn-sub-complete-aimless.png -text svneol=unset#unset
+doc/figures/3qrn-sub-rmerge-aimless.png -text svneol=unset#unset
+doc/figures/xia2html.png -text svneol=unset#unset
 doc/index.rst -text
+doc/installation.rst -text
 doc/introduction.rst -text
+doc/introductory_example.rst -text
 doc/parameters.rst -text
+doc/program_output.rst -text
 doc/quick_start.rst -text
 doc/using_xia2.rst -text
 html/phils/fixed_scale_factors.phil -text

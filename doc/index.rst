@@ -13,16 +13,16 @@ xia2
    background
    acknowledgements
    using_xia2
+   introductory_example
+   program_output
    parameters
+   installation
+   comments
 
 Contact
 =======
 
-xia2.support@gmail.com
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+* Blog: http://xia2.blogspot.co.uk/
+* Source code: http://xia2.sourceforge.net/
+* Mailing list: xia2-list@lists.sourceforge.net
+* Support: xia2.support@gmail.com

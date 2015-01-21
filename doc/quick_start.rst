@@ -17,7 +17,7 @@ home and dry. Some critical options:
   =======  =====
   Option   Usage
   =======  =====
-  -atom X  tell xia2 to separate anomalous pairs i.e. I(+) 6= I(−) in scaling
+  -atom X  tell xia2 to separate anomalous pairs i.e. I(+) :math:`\neq` I(−) in scaling
   -2d      tell xia2 to use MOSFLM_ and Aimless_
   -3d      tell xia2 to use XDS_ and XSCALE_
   -3dii    tell xia2 to use XDS_ and XSCALE_, indexing with peaks found from all images

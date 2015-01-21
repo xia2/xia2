@@ -16,7 +16,7 @@ most important command-line options are as follows:
   =======  =====
   Option   Usage
   =======  =====
-  -atom X  tell xia2 to separate anomalous pairs i.e. I(+) 6= I(−) in scaling
+  -atom X  tell xia2 to separate anomalous pairs i.e. I(+) :math:`\neq` I(−) in scaling
   -2d      tell xia2 to use MOSFLM_ and Aimless_
   -3d      tell xia2 to use XDS_ and XSCALE_
   -3dii    tell xia2 to use XDS_ and XSCALE_, indexing with peaks found from all images
@@ -36,8 +36,32 @@ CCP4 MTZ datasets, and will ultimately have unique Miller indices. For
 example, a low and high dose pass will be merged together. A CRYSTAL
 however contains all of the data from the experiment and is the basic unit of
 data for scaling. This description of the experiment is written automatically
-to an instruction file, an example of which is shown in Figure 1.
+to an instruction file, an example of which is shown in below::
 
+  BEGIN PROJECT AUTOMATIC
+  BEGIN CRYSTAL DEFAULT
+
+  BEGIN HA_INFO
+  ATOM Ba
+  END HA_INFO
+
+  BEGIN WAVELENGTH SAD
+  WAVELENGTH 0.979500
+  END WAVELENGTH SAD
+
+  BEGIN SWEEP SWEEP1
+  WAVELENGTH SAD
+  DIRECTORY /dls/i02/data/2011/mx1234-5
+  IMAGE K5_M1S3_3_001.img
+  START_END 1 450
+  END SWEEP SWEEP1
+
+  END CRYSTAL DEFAULT
+  END PROJECT AUTOMATIC
+
+The input file to the program, which is generated automatically,
+shows how the input data are understood. This may be adjusted and the
+program rerun, which will be covered in more detail later in the manual.
 
 .. _MOSFLM: http://www.mrc-lmb.cam.ac.uk/harry/mosflm/
 .. _DIALS: http://dials.sourceforge.net/
