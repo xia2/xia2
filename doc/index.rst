@@ -8,6 +8,11 @@ xia2
 .. toctree::
    :maxdepth: 1
 
+   quick_start
+   introduction
+   background
+   acknowledgements
+   using_xia2
    parameters
 
 Contact

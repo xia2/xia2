@@ -178,9 +178,14 @@ core/Test/ExampleProgramTightLoop.py -text
 core/Test/readme.txt -text
 core/readme.txt -text
 doc/Makefile -text
+doc/acknowledgements.rst -text
+doc/background.rst -text
 doc/conf.py -text
 doc/index.rst -text
+doc/introduction.rst -text
 doc/parameters.rst -text
+doc/quick_start.rst -text
+doc/using_xia2.rst -text
 html/phils/fixed_scale_factors.phil -text
 html/phils/micromanage_integrate.phil -text
 html/phils/pixels_per_spot.phil -text
