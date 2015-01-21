@@ -177,6 +177,9 @@ core/Test/ExampleProgramTightLoop.bat -text
 core/Test/ExampleProgramTightLoop.py -text
 core/Test/readme.txt -text
 core/readme.txt -text
+doc/Makefile -text
+doc/conf.py -text
+doc/index.rst -text
 html/phils/fixed_scale_factors.phil -text
 html/phils/micromanage_integrate.phil -text
 html/phils/pixels_per_spot.phil -text
