@@ -177,9 +177,18 @@ core/Test/ExampleProgramTightLoop.bat -text
 core/Test/ExampleProgramTightLoop.py -text
 core/Test/readme.txt -text
 core/readme.txt -text
+doc/sphinx/Makefile -text
 doc/sphinx/acknowledgements.rst -text
 doc/sphinx/background.rst -text
 doc/sphinx/comments.rst -text
+doc/sphinx/conf.py -text
+doc/sphinx/figures/3qrn-all-complete-aimless.png -text svneol=unset#unset
+doc/sphinx/figures/3qrn-all-rmerge-aimless.png -text svneol=unset#unset
+doc/sphinx/figures/3qrn-all-rmerge.png -text svneol=unset#unset
+doc/sphinx/figures/3qrn-diffraction.png -text svneol=unset#unset
+doc/sphinx/figures/3qrn-sub-complete-aimless.png -text svneol=unset#unset
+doc/sphinx/figures/3qrn-sub-rmerge-aimless.png -text svneol=unset#unset
+doc/sphinx/figures/xia2html.png -text svneol=unset#unset
 doc/sphinx/index.rst -text
 doc/sphinx/installation.rst -text
 doc/sphinx/introduction.rst -text
