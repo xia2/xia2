@@ -178,9 +178,6 @@ core/Test/ExampleProgramTightLoop.py -text
 core/Test/readme.txt -text
 core/readme.txt -text
 doc/Makefile -text
-doc/acknowledgements.rst -text
-doc/background.rst -text
-doc/comments.rst -text
 doc/conf.py -text
 doc/figures/3qrn-all-complete-aimless.png -text svneol=unset#unset
 doc/figures/3qrn-all-rmerge-aimless.png -text svneol=unset#unset
@@ -189,14 +186,17 @@ doc/figures/3qrn-diffraction.png -text svneol=unset#unset
 doc/figures/3qrn-sub-complete-aimless.png -text svneol=unset#unset
 doc/figures/3qrn-sub-rmerge-aimless.png -text svneol=unset#unset
 doc/figures/xia2html.png -text svneol=unset#unset
-doc/index.rst -text
-doc/installation.rst -text
-doc/introduction.rst -text
-doc/introductory_example.rst -text
-doc/parameters.rst -text
-doc/program_output.rst -text
-doc/quick_start.rst -text
-doc/using_xia2.rst -text
+doc/sphinx/acknowledgements.rst -text
+doc/sphinx/background.rst -text
+doc/sphinx/comments.rst -text
+doc/sphinx/index.rst -text
+doc/sphinx/installation.rst -text
+doc/sphinx/introduction.rst -text
+doc/sphinx/introductory_example.rst -text
+doc/sphinx/parameters.rst -text
+doc/sphinx/program_output.rst -text
+doc/sphinx/quick_start.rst -text
+doc/sphinx/using_xia2.rst -text
 html/phils/fixed_scale_factors.phil -text
 html/phils/micromanage_integrate.phil -text
 html/phils/pixels_per_spot.phil -text
