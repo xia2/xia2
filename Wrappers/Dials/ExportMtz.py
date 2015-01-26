@@ -63,6 +63,7 @@ def ExportMtz(DriverType = None):
       self.add_command_line('experiments=%s' % self._experiments_filename)
       self.add_command_line('reflections=%s' % self._reflections_filename)
       self.add_command_line('hklout=%s' % self._mtz_filename)
+      self.add_command_line('include_partials=true')
       self.start()
       self.close_wait()
       self.check_for_errors()
