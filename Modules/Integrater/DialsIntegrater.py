@@ -105,6 +105,8 @@ class DialsIntegrater(Integrater):
     refine.set_experiments_filename(self._intgr_experiments_filename)
     refine.set_indexed_filename(
       self._intgr_indexer.get_indexed_filename())
+    refine.set_refined_filename(os.path.join(self.get_working_directory(),
+                                             'refined.pickle'))
     refine.set_scan_varying(params.scan_varying)
     refine.set_use_all_reflections(params.use_all_reflections)
     if params.reflections_per_degree:
@@ -113,7 +115,7 @@ class DialsIntegrater(Integrater):
 
     return refine
 
-  def Integrate(self):
+  def Integrate(self, indexed_filename=None):
     params = PhilIndex.params.dials.integrate
     integrate = _Integrate()
     integrate.set_phil_file(params.phil_file)
@@ -123,8 +125,9 @@ class DialsIntegrater(Integrater):
     integrate.set_working_directory(self.get_working_directory())
 
     integrate.set_experiments_filename(self._intgr_experiments_filename)
-    integrate.set_reflections_filename(
-      self._intgr_indexer.get_indexed_filename())
+
+    integrate.set_reflections_filename(self._intgr_indexed_filename)
+
     integrate.set_use_threading(params.use_threading)
 
     auto_logfiler(integrate, 'INTEGRATE')
@@ -258,13 +261,10 @@ class DialsIntegrater(Integrater):
       = refiner.get_refined_experiments_filename()
     experiments = load.experiment_list(self._intgr_experiments_filename)
     experiment = experiments[0]
+    self._intgr_indexed_filename = refiner.get_refined_filename()
 
     # this is the result of the cell refinement
     self._intgr_cell = experiment.crystal.get_unit_cell().parameters()
-
-    if self._intgr_indexer.get_indexed_filename() != self._intgr_indexed_filename:
-      shutil.copyfile(self._intgr_indexer.get_indexed_filename(),
-                      self._intgr_indexed_filename)
 
     Debug.write('Files available at the end of DIALS integrate prepare:')
     for f in self._data_files.keys():

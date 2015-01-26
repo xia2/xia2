@@ -86,6 +86,8 @@ class DialsIndexer(Indexer):
   def Index(self):
     index = _Index()
     index.set_working_directory(self.get_working_directory())
+    params = PhilIndex.params.dials.index
+    index.set_use_all_reflections(params.use_all_reflections)
     auto_logfiler(index)
     return index
 

@@ -40,6 +40,7 @@ def Index(DriverType = None):
       self._p1_cell = None
       self._indxr_input_cell = None
       self._indxr_input_lattice = None
+      self._use_all_reflections = False
 
       self._experiment_filename = None
       self._indexed_filename = None
@@ -101,6 +102,10 @@ def Index(DriverType = None):
     def set_indexing_method(self):
       return self._indexing_method
 
+    def set_use_all_reflections(self, use_all_reflections):
+      self._use_all_reflections = use_all_reflections
+      return
+
     def get_sweep_filename(self):
       return os.path.join(self.get_working_directory(), 'datablock.json')
 
@@ -132,7 +137,10 @@ def Index(DriverType = None):
       self.add_command_line(self._sweep_filename)
       self.add_command_line(self._spot_filename)
       self.add_command_line('indexing.method=%s' % method)
-      self.add_command_line('use_all_reflections=False')
+      if self._use_all_reflections:
+        self.add_command_line('use_all_reflections=True')
+      else:
+        self.add_command_line('use_all_reflections=False')
       self.add_command_line('close_to_spindle_cutoff=0.02')
       if self._max_cell:
         self.add_command_line('max_cell=%d' % self._max_cell)

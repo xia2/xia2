@@ -14,7 +14,6 @@ import os
 from __init__ import _setup_xia2_environ
 _setup_xia2_environ()
 
-
 def Refine(DriverType = None):
   '''A factory for RefineWrapper classes.'''
 
@@ -55,6 +54,13 @@ def Refine(DriverType = None):
       self._indexed_filename = indexed_filename
       return
 
+    def set_refined_filename(self, refined_filename):
+      self._refined_filename = refined_filename
+      return
+
+    def get_refined_filename(self):
+      return self._refined_filename
+
     def get_refined_experiments_filename(self):
       return self._refined_experiments_filename
 
@@ -94,14 +100,16 @@ def Refine(DriverType = None):
       self.add_command_line(self._experiments_filename)
       self.add_command_line(self._indexed_filename)
       self.add_command_line('scan_varying=%s' % self._scan_varying)
-      self.add_command_line('use_all_reflections=%s' % self._use_all_reflections)
+      self.add_command_line('use_all_reflections=%s' % \
+                            self._use_all_reflections)
       self.add_command_line('close_to_spindle_cutoff=0.05')
 
       self._refined_experiments_filename = os.path.join(
         self.get_working_directory(),
         '%s_refined_experiments.json' % self.get_xpid())
       self.add_command_line(
-        'output.experiments=%s' %self._refined_experiments_filename)
+        'output.experiments=%s' % self._refined_experiments_filename)
+      self.add_command_line('output.reflections=%s' % self._refined_filename)
 
       if self._reflections_per_degree is not None:
         self.add_command_line(

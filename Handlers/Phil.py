@@ -89,11 +89,13 @@ dials {
       .type = path
     max_cell = 0.0
       .type = float
+    use_all_reflections = False
+      .type = bool
   }
   refine {
     scan_varying = True
       .type = bool
-    use_all_reflections = False
+    use_all_reflections = True
       .type = bool
     phil_file = None
       .type = path
