@@ -33,6 +33,7 @@ def Refine(DriverType = None):
       self._experiments_filename = None
       self._indexed_filename = None
       self._refined_experiments_filename = None
+      self._refined_filename = None
       self._scan_varying = False
       self._use_all_reflections = False
       self._fix_beam = False
@@ -109,8 +110,8 @@ def Refine(DriverType = None):
         '%s_refined_experiments.json' % self.get_xpid())
       self.add_command_line(
         'output.experiments=%s' % self._refined_experiments_filename)
-      self.add_command_line('output.reflections=%s' % self._refined_filename)
-
+      if self._refined_filename:
+        self.add_command_line('output.reflections=%s' % self._refined_filename)
       if self._reflections_per_degree is not None:
         self.add_command_line(
           'reflections_per_degree=%i' %self._reflections_per_degree)
