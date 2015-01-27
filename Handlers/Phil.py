@@ -111,6 +111,8 @@ dials {
       .type = choice
     use_threading = False
       .type = bool
+    include_partials = True
+      .type = bool
   }
   # FIXME to here
 }

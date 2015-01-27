@@ -31,8 +31,12 @@ def ExportMtz(DriverType = None):
       self._reflections_filename = None
       self._mtz_filename = "hklout.mtz"
       self._integration_algorithm = "fitrs"
+      self._include_partials = False
 
       return
+
+    def set_include_partials(self, include_partials):
+      self._include_partials = include_partials
 
     def set_experiments_filename(self, experiments_filename):
       self._experiments_filename = experiments_filename
@@ -63,7 +67,8 @@ def ExportMtz(DriverType = None):
       self.add_command_line('experiments=%s' % self._experiments_filename)
       self.add_command_line('reflections=%s' % self._reflections_filename)
       self.add_command_line('hklout=%s' % self._mtz_filename)
-      self.add_command_line('include_partials=true')
+      if self._include_partials:
+        self.add_command_line('include_partials=true')
       self.start()
       self.close_wait()
       self.check_for_errors()

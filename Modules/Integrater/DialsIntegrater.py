@@ -135,10 +135,12 @@ class DialsIntegrater(Integrater):
     return integrate
 
   def ExportMtz(self):
+    params = PhilIndex.params.dials.integrate
     export = _ExportMtz()
     export.set_working_directory(self.get_working_directory())
 
     export.set_experiments_filename(self._intgr_experiments_filename)
+    export.set_include_partials(params.include_partials)
 
     auto_logfiler(export, 'EXPORTMTZ')
 
