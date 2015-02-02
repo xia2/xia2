@@ -31,7 +31,7 @@ def exercise_mosflm_integrater(nproc=None):
     return
 
   if nproc is not None:
-    from xia2.Handlers.Flags import Flags
+    from Handlers.Flags import Flags
     Flags.set_parallel(nproc)
 
   xia2_demo_data = os.path.join(dials_regression, "xia2_demo_data")

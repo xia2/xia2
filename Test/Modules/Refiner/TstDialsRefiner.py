@@ -32,7 +32,7 @@ def exercise_dials_refiner(nproc=None):
     return
 
   if nproc is not None:
-    from xia2.Handlers.Flags import Flags
+    from Handlers.Flags import Flags
     Flags.set_parallel(nproc)
 
   xia2_demo_data = os.path.join(xia2_regression, "test_data", "mad_example")

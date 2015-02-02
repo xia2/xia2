@@ -31,7 +31,7 @@ def exercise_dials_wrappers(nproc=None):
     return
 
   if nproc is not None:
-    from xia2.Handlers.Flags import Flags
+    from Handlers.Flags import Flags
     Flags.set_parallel(nproc)
 
   from Wrappers.Dials.Import import Import
