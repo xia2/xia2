@@ -20,7 +20,7 @@ os.environ['XIA2CORE_ROOT'] = os.path.join(xia2_root_dir, "core")
 
 tst_list = (
     ["$D/Test/Wrappers/Dials/TstDialsWrappers.py", "1"],
-    ["$D/Test/Modules/Refiner/TstDialsRefiner.py", "1"],
+    #["$D/Test/Modules/Refiner/TstDialsRefiner.py", "1"],
     ["$D/Test/Modules/Integrater/TstMosflmIntegrater.py", "1"], # serial
     ["$D/Test/Modules/Integrater/TstMosflmIntegrater.py", "2"], # parallel
     ["$D/Test/Modules/Integrater/TstDialsIntegrater.py", "1"],
