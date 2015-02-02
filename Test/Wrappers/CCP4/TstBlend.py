@@ -37,7 +37,7 @@ def exercise_blend_wrapper():
       tar.extract(tarinfo, path=tmp_dir)
   tar.close()
 
-  g = glob.glob(os.path.join(tmp_dir, 'data', 'lysozyme', 'dataset_*.mtz'))
+  g = sorted(glob.glob(os.path.join(tmp_dir, 'data', 'lysozyme', 'dataset_*.mtz')))
 
   from xia2.Wrappers.CCP4.Blend import Blend
 
