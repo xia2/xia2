@@ -40,6 +40,9 @@ def exercise_mosflm_integrater(nproc=None):
   cwd = os.path.abspath(os.curdir)
   tmp_dir = os.path.abspath(open_tmp_directory())
   os.chdir(tmp_dir)
+  # otherwise if this test is running multiple times simultaneously two mosflm
+  # processes try to write to the same genfile
+  os.environ['CCP4_SCR'] = tmp_dir
 
   from Modules.Indexer.MosflmIndexer import MosflmIndexer
   from Modules.Integrater.MosflmIntegrater import MosflmIntegrater
