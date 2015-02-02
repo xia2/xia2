@@ -138,8 +138,8 @@ class CCP4ScalerA(Scaler):
 
     return aimless
 
-  def _pointless_indexer_jiffy(self, hklin, indexer):
-    return self._helper.pointless_indexer_jiffy(hklin, indexer)
+  def _pointless_indexer_jiffy(self, hklin, refiner):
+    return self._helper.pointless_indexer_jiffy(hklin, refiner)
 
   def _assess_scaling_model(self, tails, bfactor, secondary):
 
@@ -340,7 +340,7 @@ class CCP4ScalerA(Scaler):
         si = self._sweep_handler.get_sweep_information(epoch)
         intgr = si.get_integrater()
         hklin = intgr.get_integrater_intensities()
-        indxr = intgr.get_integrater_indexer()
+        refiner = intgr.get_integrater_refiner()
 
         if self._scalr_input_pointgroup:
           pointgroup = self._scalr_input_pointgroup
@@ -353,7 +353,7 @@ class CCP4ScalerA(Scaler):
 
           pointgroup, reindex_op, ntr, pt = \
                       self._pointless_indexer_jiffy(
-              pointless_hklin, indxr)
+              pointless_hklin, refiner)
 
           Debug.write('X1698: %s: %s' % (pointgroup, reindex_op))
 
@@ -380,19 +380,19 @@ class CCP4ScalerA(Scaler):
         for epoch in self._sweep_handler.get_epochs():
 
           si = self._sweep_handler.get_sweep_information(epoch)
-          indxr = si.get_integrater().get_integrater_indexer()
+          refiner = si.get_integrater().get_integrater_refiner()
           sname = si.get_sweep_name()
 
-          state = indxr.set_indexer_asserted_lattice(
+          state = refiner.set_refiner_asserted_lattice(
               correct_lattice)
 
-          if state == indxr.LATTICE_CORRECT:
+          if state == refiner.LATTICE_CORRECT:
             Chatter.write('Lattice %s ok for sweep %s' % \
                           (correct_lattice, sname))
-          elif state == indxr.LATTICE_IMPOSSIBLE:
+          elif state == refiner.LATTICE_IMPOSSIBLE:
             raise RuntimeError, 'Lattice %s impossible for %s' \
                   % (correct_lattice, sname)
-          elif state == indxr.LATTICE_POSSIBLE:
+          elif state == refiner.LATTICE_POSSIBLE:
             Chatter.write('Lattice %s assigned for sweep %s' % \
                           (correct_lattice, sname))
             need_to_return = True
@@ -427,7 +427,7 @@ class CCP4ScalerA(Scaler):
       FileHandler.record_temporary_file(hklout)
 
       integrater = si.get_integrater()
-      indexer = integrater.get_integrater_indexer()
+      refiner = integrater.get_integrater_refiner()
 
       if self._scalr_input_pointgroup:
         Debug.write('Using input pointgroup: %s' % \
@@ -443,7 +443,7 @@ class CCP4ScalerA(Scaler):
 
         pointgroup, reindex_op, ntr, pt = \
                     self._pointless_indexer_jiffy(
-            pointless_hklin, indexer)
+            pointless_hklin, refiner)
 
         Debug.write('X1698: %s: %s' % (pointgroup, reindex_op))
 

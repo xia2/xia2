@@ -56,12 +56,18 @@ def exercise_mosflm_integrater(nproc=None):
   sweep = XSweep('SWEEP1', wav, directory=directory, image=image)
   indexer.set_indexer_sweep(sweep)
 
+  from Modules.Refiner.MosflmRefiner import MosflmRefiner
+  refiner = MosflmRefiner()
+  refiner.set_working_directory(tmp_dir)
+  refiner.add_refiner_indexer(sweep.get_epoch(1), indexer)
+
   nref_error = 500
 
   integrater = MosflmIntegrater()
   integrater.set_working_directory(tmp_dir)
   integrater.setup_from_image(template %1)
-  integrater.set_integrater_indexer(indexer)
+  integrater.set_integrater_refiner(refiner)
+  #integrater.set_integrater_indexer(indexer)
   integrater.set_integrater_sweep(sweep)
   integrater.integrate()
 
@@ -71,7 +77,7 @@ def exercise_mosflm_integrater(nproc=None):
   reader = any_reflection_file(integrater_intensities)
   assert reader.file_type() == "ccp4_mtz"
   mtz_object = reader.file_content()
-  assert abs(mtz_object.n_reflections() - 81057) < nref_error, \
+  assert abs(mtz_object.n_reflections() - 81116) < nref_error, \
       mtz_object.n_reflections()
   assert mtz_object.column_labels() == [
     'H', 'K', 'L', 'M_ISYM', 'BATCH', 'I', 'SIGI', 'IPR', 'SIGIPR',
@@ -96,7 +102,7 @@ def exercise_mosflm_integrater(nproc=None):
   reader = any_reflection_file(integrater2_intensities)
   assert reader.file_type() == "ccp4_mtz"
   mtz_object = reader.file_content()
-  assert abs(mtz_object.n_reflections() - 81057) < nref_error, \
+  assert abs(mtz_object.n_reflections() - 81116) < nref_error, \
       mtz_object.n_reflections()
 
   integrater2.set_integrater_done(False)
@@ -105,7 +111,7 @@ def exercise_mosflm_integrater(nproc=None):
   reader = any_reflection_file(integrater2_intensities)
   assert reader.file_type() == "ccp4_mtz"
   mtz_object = reader.file_content()
-  assert abs(mtz_object.n_reflections() - 81057) < nref_error, \
+  assert abs(mtz_object.n_reflections() - 81116) < nref_error, \
       mtz_object.n_reflections()
 
   integrater2.set_integrater_prepare_done(False)
@@ -114,8 +120,8 @@ def exercise_mosflm_integrater(nproc=None):
   reader = any_reflection_file(integrater2_intensities)
   assert reader.file_type() == "ccp4_mtz"
   mtz_object = reader.file_content()
-  assert abs(mtz_object.n_reflections() - 80516) < nref_error, \
-      mtz_object.n_reflections()
+  assert abs(mtz_object.n_reflections() - 81116) < nref_error, \
+         mtz_object.n_reflections()
 
 
 def run(args):

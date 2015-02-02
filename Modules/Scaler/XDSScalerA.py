@@ -166,7 +166,7 @@ class XDSScalerA(Scaler):
     auto_logfiler(cellparm)
     return cellparm
 
-  def _pointless_indexer_jiffy(self, hklin, indexer):
+  def _pointless_indexer_jiffy(self, hklin, refiner):
     '''A jiffy to centralise the interactions between pointless
     (in the blue corner) and the Indexer, in the red corner.'''
 
@@ -194,8 +194,8 @@ class XDSScalerA(Scaler):
     Debug.write(' '.join(possible))
 
     for lattice in possible:
-      state = indexer.set_indexer_asserted_lattice(lattice)
-      if state == indexer.LATTICE_CORRECT:
+      state = refiner.set_refiner_asserted_lattice(lattice)
+      if state == refiner.LATTICE_CORRECT:
 
         Debug.write(
             'Agreed lattice %s' % lattice)
@@ -203,7 +203,7 @@ class XDSScalerA(Scaler):
 
         break
 
-      elif state == indexer.LATTICE_IMPOSSIBLE:
+      elif state == refiner.LATTICE_IMPOSSIBLE:
         Debug.write(
             'Rejected lattice %s' % lattice)
 
@@ -211,7 +211,7 @@ class XDSScalerA(Scaler):
 
         continue
 
-      elif state == indexer.LATTICE_POSSIBLE:
+      elif state == refiner.LATTICE_POSSIBLE:
         Debug.write(
             'Accepted lattice %s ...' % lattice)
         Debug.write(
@@ -224,11 +224,11 @@ class XDSScalerA(Scaler):
         break
 
     if correct_lattice == None:
-      correct_lattice = indexer.get_indexer_lattice()
+      correct_lattice = refiner.get_refiner_lattice()
       rerun_pointless = True
 
       Debug.write(
-          'No solution found: assuming lattice from indexer')
+          'No solution found: assuming lattice from refiner')
 
     if rerun_pointless:
       pointless.set_correct_lattice(correct_lattice)
@@ -338,7 +338,7 @@ class XDSScalerA(Scaler):
 
         intgr = self._sweep_information[epoch]['integrater']
         hklin = intgr.get_integrater_corrected_intensities()
-        indxr = intgr.get_integrater_indexer()
+        refiner = intgr.get_integrater_refiner()
 
         if self._scalr_input_pointgroup:
           pointgroup = self._scalr_input_pointgroup
@@ -348,7 +348,7 @@ class XDSScalerA(Scaler):
         else:
 
           pointgroup, reindex_op, ntr = \
-                      self._pointless_indexer_jiffy(hklin, indxr)
+                      self._pointless_indexer_jiffy(hklin, refiner)
 
           Debug.write('X1698: %s: %s' % (pointgroup, reindex_op))
 
@@ -391,21 +391,21 @@ class XDSScalerA(Scaler):
         for epoch in self._sweep_information.keys():
           integrater = self._sweep_information[
               epoch]['integrater']
-          indexer = integrater.get_integrater_indexer()
+          refiner = integrater.get_integrater_refiner()
           sname = integrater.get_integrater_sweep_name()
 
-          if not indexer:
+          if not refiner:
             continue
 
-          state = indexer.set_indexer_asserted_lattice(
+          state = refiner.set_refiner_asserted_lattice(
               correct_lattice)
-          if state == indexer.LATTICE_CORRECT:
+          if state == refiner.LATTICE_CORRECT:
             Debug.write('Lattice %s ok for sweep %s' % \
                         (correct_lattice, sname))
-          elif state == indexer.LATTICE_IMPOSSIBLE:
+          elif state == refiner.LATTICE_IMPOSSIBLE:
             raise RuntimeError, 'Lattice %s impossible for %s' % \
                   (correct_lattice, sname)
-          elif state == indexer.LATTICE_POSSIBLE:
+          elif state == refiner.LATTICE_POSSIBLE:
             Debug.write('Lattice %s assigned for sweep %s' % \
                         (correct_lattice, sname))
             need_to_return = True
@@ -464,14 +464,14 @@ class XDSScalerA(Scaler):
 
         intgr = self._sweep_information[epoch]['integrater']
         hklin = intgr.get_integrater_corrected_intensities()
-        indxr = intgr.get_integrater_indexer()
+        refiner = intgr.get_integrater_refiner()
 
         # in here need to consider what to do if the user has
         # assigned the pointgroup on the command line ...
 
         if not self._scalr_input_pointgroup:
           pointgroup, reindex_op, ntr = \
-                      self._pointless_indexer_jiffy(hklin, indxr)
+                      self._pointless_indexer_jiffy(hklin, refiner)
 
           if ntr:
 
@@ -631,14 +631,14 @@ class XDSScalerA(Scaler):
 
         intgr = sweep_information['integrater']
         hklin = intgr.get_integrater_corrected_intensities()
-        indxr = intgr.get_integrater_indexer()
+        refiner = intgr.get_integrater_refiner()
 
         # in here need to consider what to do if the user has
         # assigned the pointgroup on the command line ...
 
         if not self._scalr_input_pointgroup:
           pointgroup, reindex_op, ntr = \
-                      self._pointless_indexer_jiffy(hklin, indxr)
+                      self._pointless_indexer_jiffy(hklin, refiner)
 
           if ntr:
 
@@ -764,7 +764,7 @@ class XDSScalerA(Scaler):
 
       epoch = self._first_epoch
       intgr = self._sweep_information[epoch]['integrater']
-      indxr = intgr.get_integrater_indexer()
+      refiner = intgr.get_integrater_refiner()
       sname = intgr.get_integrater_sweep_name()
 
       hklout = os.path.join(self.get_working_directory(),
@@ -790,7 +790,7 @@ class XDSScalerA(Scaler):
 
       else:
         pointgroup, reindex_op, ntr = self._pointless_indexer_jiffy(
-            hklin, indxr)
+            hklin, refiner)
 
       if ntr:
 

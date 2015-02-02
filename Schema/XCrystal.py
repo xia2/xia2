@@ -79,6 +79,7 @@ if not os.path.join(os.environ['XIA2_ROOT'],'lib') in sys.path:
 from Wrappers.CCP4.Othercell import Othercell
 from Handlers.Environment import Environment
 from Modules.Scaler.ScalerFactory import Scaler
+from Modules.Refiner.RefinerFactory import Refiner
 from Handlers.Syminfo import Syminfo
 from Handlers.Flags import Flags
 from Handlers.Files import FileHandler
@@ -288,6 +289,8 @@ class XCrystal(object):
     # hooks to dangle command interfaces from
 
     self._scaler = None
+
+    self._refiner = None
 
     # things to store input reflections which are used to define
     # the setting... this will be passed into the Scaler if

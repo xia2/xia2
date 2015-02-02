@@ -58,15 +58,15 @@ def exercise_dials_indexer(nproc=None):
   indexer.index()
 
   assert approx_equal(indexer.get_indexer_cell(),
-                      (78.04253, 78.04253, 78.04253, 90, 90, 90))
+                      (78.0619, 78.0619, 78.0619, 90, 90, 90), eps=1e-2)
   solution = indexer.get_solution()
-  assert approx_equal(solution['rmsd'], 0.041, eps=1e-4)
+  assert approx_equal(solution['rmsd'], 0.041, eps=1e-3)
   assert approx_equal(solution['metric'], 0.0238, eps=1e-4)
   assert solution['number'] == 22
   assert solution['lattice'] == 'cI'
 
   beam_centre = indexer.get_indexer_beam_centre()
-  assert approx_equal(beam_centre, (94.4223, 94.5097), eps=1e-4)
+  assert approx_equal(beam_centre, (94.4223, 94.5097), eps=1e-2)
   assert indexer.get_indexer_images() == [(1,45)]
   print indexer.get_indexer_experiment_list()[0].crystal
   print indexer.get_indexer_experiment_list()[0].detector

@@ -50,8 +50,8 @@ completeness is poor:
 
 .. image:: figures/3qrn-all-complete-aimless.png
 
-6.1 Modifying input
--------------------
+Modifying input
+---------------
 
 From the example it would seem sensible to investigate processing only
 the first 200 of the 450 images. While it is usual to limit the batch range in

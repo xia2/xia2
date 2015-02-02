@@ -521,22 +521,22 @@ class Scaler(object):
     # FIXME will have to handle gracefully user provided pointgroup
 
     pointgroups = self._scale_list_likely_pointgroups(integrater)
-    indexer = integrater.get_integrater_indexer()
+    refiner = integrater.get_integrater_refiner()
     lattices = [lauegroup_to_lattice(p) for p in pointgroups]
 
     correct_lattice = None
 
     for lattice in lattices:
-      state = indexer.set_indexer_asserted_lattice(lattice)
+      state = refiner.set_refiner_asserted_lattice(lattice)
 
-      if state == indexer.LATTICE_CORRECT:
+      if state == refiner.LATTICE_CORRECT:
         correct_lattice = lattice
         break
 
-      elif state == indexer.LATTICE_IMPOSSIBLE:
+      elif state == refiner.LATTICE_IMPOSSIBLE:
         continue
 
-      elif state == indexer.LATTICE_POSSIBLE:
+      elif state == refiner.LATTICE_POSSIBLE:
         correct_lattice = lattice
         break
 
@@ -570,10 +570,10 @@ class Scaler(object):
       consensus_lattice = sort_lattices(unique_lattices)[0]
 
       for integrater in integraters:
-        indexer = integrater.get_integrater_indexer()
-        state = indexer.set_indexer_asserted_lattice(consensus_lattice)
+        refiner = integrater.get_integrater_refiner()
+        state = refiner.set_refiner_asserted_lattice(consensus_lattice)
 
-        assert(state != indexer.LATTICE_IMPOSSIBLE)
+        assert(state != refiner.LATTICE_IMPOSSIBLE)
 
     # then decide on the consensus pointgroup
 

@@ -245,7 +245,7 @@ def MosflmIntegrate(DriverType = None, indxr_print = True):
       assert self._beam_centre is not None
       assert self._distance is not None
       assert self._mosaic is not None
-      self.input('beam %f %f' %self._beam_centre)
+      self.input('beam %f %f' %tuple(self._beam_centre))
       self.input('distance %f' %self._distance)
       self.input('mosaic %f' %self._mosaic)
       if self._unit_cell is not None:

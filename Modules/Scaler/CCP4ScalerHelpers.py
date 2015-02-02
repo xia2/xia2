@@ -271,7 +271,7 @@ class CCP4ScalerHelper(object):
     auto_logfiler(pointless)
     return pointless
 
-  def pointless_indexer_jiffy(self, hklin, indexer):
+  def pointless_indexer_jiffy(self, hklin, refiner):
     '''A jiffy to centralise the interactions between pointless
     and the Indexer.'''
 
@@ -293,20 +293,20 @@ class CCP4ScalerHelper(object):
     Debug.write(' '.join(possible))
 
     for lattice in possible:
-      state = indexer.set_indexer_asserted_lattice(lattice)
-      if state == indexer.LATTICE_CORRECT:
+      state = refiner.set_refiner_asserted_lattice(lattice)
+      if state == refiner.LATTICE_CORRECT:
         Debug.write('Agreed lattice %s' % lattice)
         correct_lattice = lattice
 
         break
 
-      elif state == indexer.LATTICE_IMPOSSIBLE:
+      elif state == refiner.LATTICE_IMPOSSIBLE:
         Debug.write('Rejected lattice %s' % lattice)
         rerun_pointless = True
 
         continue
 
-      elif state == indexer.LATTICE_POSSIBLE:
+      elif state == refiner.LATTICE_POSSIBLE:
         Debug.write('Accepted lattice %s, will reprocess' % lattice)
         need_to_return = True
         correct_lattice = lattice
@@ -314,11 +314,11 @@ class CCP4ScalerHelper(object):
         break
 
     if correct_lattice == None:
-      correct_lattice = indexer.get_indexer_lattice()
+      correct_lattice = refiner.get_refiner_lattice()
       rerun_pointless = True
 
       Debug.write(
-          'No solution found: assuming lattice from indexer')
+          'No solution found: assuming lattice from refiner')
 
     if rerun_pointless:
       pointless.set_correct_lattice(correct_lattice)

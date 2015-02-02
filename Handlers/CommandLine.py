@@ -359,6 +359,8 @@ class _CommandLine(object):
 
     if params.xia2.settings.indexer is not None:
       add_preference("indexer", params.xia2.settings.indexer)
+    if params.xia2.settings.refiner is not None:
+      add_preference("refiner", params.xia2.settings.refiner)
     if params.xia2.settings.integrater is not None:
       add_preference("integrater", params.xia2.settings.integrater)
     if params.xia2.settings.scaler is not None:
@@ -1329,6 +1331,8 @@ class _CommandLine(object):
 
     if '-2d' in self._argv:
       settings = PhilIndex.get_python_object().xia2.settings
+      if settings.refiner is None:
+        PhilIndex.update("xia2.settings.refiner=mosflm")
       if settings.integrater is None:
         PhilIndex.update("xia2.settings.integrater=mosflmr")
       if settings.scaler is None:
@@ -1344,6 +1348,8 @@ class _CommandLine(object):
       settings = PhilIndex.get_python_object().xia2.settings
       if settings.indexer is None:
         PhilIndex.update("xia2.settings.indexer=mosflm")
+      if settings.refiner is None:
+        PhilIndex.update("xia2.settings.refiner=mosflm")
       if settings.integrater is None:
         PhilIndex.update("xia2.settings.integrater=mosflmr")
       if settings.scaler is None:
@@ -1358,6 +1364,8 @@ class _CommandLine(object):
       settings = PhilIndex.get_python_object().xia2.settings
       if settings.indexer is None:
         PhilIndex.update("xia2.settings.indexer=dials")
+      if settings.refiner is None:
+        PhilIndex.update("xia2.settings.refiner=dials")
       if settings.integrater is None:
         PhilIndex.update("xia2.settings.integrater=dials")
       if settings.scaler is None:
@@ -1373,6 +1381,8 @@ class _CommandLine(object):
       settings = PhilIndex.get_python_object().xia2.settings
       if settings.indexer is None:
         PhilIndex.update("xia2.settings.indexer=xds")
+      if settings.refiner is None:
+        PhilIndex.update("xia2.settings.refiner=xds")
       if settings.integrater is None:
         PhilIndex.update("xia2.settings.integrater=xdsr")
       if settings.scaler is None:
@@ -1388,6 +1398,8 @@ class _CommandLine(object):
       settings = PhilIndex.get_python_object().xia2.settings
       if settings.indexer is None:
         PhilIndex.update("xia2.settings.indexer=xds")
+      if settings.refiner is None:
+        PhilIndex.update("xia2.settings.refiner=xds")
       if settings.integrater is None:
         PhilIndex.update("xia2.settings.integrater=xdsr")
       if settings.scaler is None:
@@ -1403,6 +1415,8 @@ class _CommandLine(object):
       settings = PhilIndex.get_python_object().xia2.settings
       if settings.indexer is None:
         PhilIndex.update("xia2.settings.indexer=xdsii")
+      if settings.refiner is None:
+        PhilIndex.update("xia2.settings.refiner=xds")
       if settings.integrater is None:
         PhilIndex.update("xia2.settings.integrater=xdsr")
       if settings.scaler is None:
@@ -1418,6 +1432,8 @@ class _CommandLine(object):
       settings = PhilIndex.get_python_object().xia2.settings
       if settings.indexer is None:
         PhilIndex.update("xia2.settings.indexer=dials")
+      if settings.refiner is None:
+        PhilIndex.update("xia2.settings.refiner=xds")
       if settings.integrater is None:
         PhilIndex.update("xia2.settings.integrater=xdsr")
       if settings.scaler is None:

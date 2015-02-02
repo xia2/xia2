@@ -139,8 +139,9 @@ from Experts.FindImages import image2template, find_matching_images, \
 from Experts.Filenames import expand_path
 
 # access to factory classes
-import Modules.Indexer.IndexerFactory as IndexerFactory
-import Modules.Integrater.IntegraterFactory as IntegraterFactory
+from Modules.Indexer import IndexerFactory
+from Modules.Refiner import RefinerFactory
+from Modules.Integrater import IntegraterFactory
 
 class XSweep(object):
   '''An object representation of the sweep.'''
@@ -333,6 +334,7 @@ class XSweep(object):
     #   _get_integrater below.
 
     self._indexer = None
+    self._refiner = None
     self._integrater = None
 
     # I don't need this - it is equivalent to self.getWavelength(
@@ -594,6 +596,70 @@ class XSweep(object):
 
     return self._indexer
 
+  def _get_refiner(self):
+
+    if self._refiner == None:
+      # set the working directory for this, based on the hierarchy
+      # defined herein...
+
+      # that would be CRYSTAL_ID/WAVELENGTH/SWEEP/index &c.
+
+      if not self.get_wavelength():
+        wavelength_id = "default"
+        crystal_id = "default"
+
+      else:
+        wavelength_id = self.get_wavelength().get_name()
+        crystal_id = self.get_wavelength().get_crystal().get_name()
+
+      working_directory = Environment.generate_directory(
+        [crystal_id, wavelength_id, self.get_name(), 'refine'])
+
+      json_file = None
+      if Flags.get_serialize_state() and os.path.isdir(working_directory):
+        json_file = os.path.join(working_directory, 'xia2.json')
+        if not os.path.isfile(json_file):
+          json_file = None
+
+      # FIXME the indexer factory should probably be able to
+      # take self [this object] as input, to help with deciding
+      # the most appropriate indexer to use... this will certainly
+      # be the case for the integrater. Maintaining this link
+      # will also help the system cope with updates (which
+      # was going to be one of the big problems...)
+      # 06/SEP/06 no keep these interfaces separate - want to
+      # keep "pure" interfaces to the programs for reuse, then
+      # wrap in XStyle.
+      self._refiner = RefinerFactory.RefinerForXSweep(
+        self, json_file=json_file)
+
+      ## set the user supplied lattice if there is one
+      #if self._user_lattice:
+        #self._indexer.set_indexer_input_lattice(self._user_lattice)
+        #self._indexer.set_indexer_user_input_lattice(True)
+
+        ## and also the cell constants - but only if lattice is
+        ## assigned
+
+        #if self._user_cell:
+          #self._indexer.set_indexer_input_cell(self._user_cell)
+
+      #else:
+        #if self._user_cell:
+          #raise RuntimeError, 'cannot assign cell without lattice'
+
+      self._refiner.set_working_directory(working_directory)
+
+      #if self._frames_to_process:
+        #frames = self._frames_to_process
+        #self._refiner.set_frame_wedge(frames[0], frames[1])
+
+      #self._refiner.set_indexer_sweep_name(self._name)
+
+    self._refiner.add_refiner_indexer(self.get_epoch(1), self._get_indexer())
+
+    return self._refiner
+
   # FIXME make this general - allow multiple intergraters from one indexer to
   # handle multi-lattice cases...
 
@@ -633,10 +699,11 @@ class XSweep(object):
         # configure the integrater with the indexer - unless
         # we don't want to...
 
-        self._integrater.set_integrater_indexer(self._get_indexer())
+        self._integrater.set_integrater_refiner(self._get_refiner())
 
-        Debug.write('Integrater / indexer for sweep %s: %s/%s' % \
+        Debug.write('Integrater / refiner / indexer for sweep %s: %s/%s/%s' % \
                     (self._name, self._integrater.__class__.__name__,
+                     self._get_refiner().__class__.__name__,
                      self._get_indexer().__class__.__name__))
 
         # or if we have been told this on the command-line -
@@ -654,7 +721,6 @@ class XSweep(object):
         if len(self._excluded_regions) > 0:
           self._integrater.set_integrater_excluded_regions(
               self._excluded_regions)
-
 
         self._integrater.set_integrater_project_info(
           project_id, crystal_id, wavelength_id)

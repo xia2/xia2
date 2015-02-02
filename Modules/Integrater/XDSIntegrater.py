@@ -29,8 +29,6 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 # wrappers for programs that this needs
 
-from Wrappers.XDS.XDSXycorr import XDSXycorr as _Xycorr
-from Wrappers.XDS.XDSInit import XDSInit as _Init
 from Wrappers.XDS.XDSDefpix import XDSDefpix as _Defpix
 from Wrappers.XDS.XDSIntegrate import XDSIntegrate as _Integrate
 from Wrappers.XDS.XDSCorrect import XDSCorrect as _Correct
@@ -140,46 +138,6 @@ class XDSIntegrater(Integrater):
 
   # factory functions
 
-  def ExportXDS(self):
-    from Wrappers.Dials.ExportXDS import ExportXDS as _ExportXDS
-    export_xds = _ExportXDS()
-    export_xds.set_working_directory(self.get_working_directory())
-    auto_logfiler(export_xds)
-    return export_xds
-
-  def Xycorr(self):
-    xycorr = _Xycorr()
-    xycorr.set_working_directory(self.get_working_directory())
-
-    xycorr.setup_from_imageset(self.get_imageset())
-
-    if self.get_distance():
-      xycorr.set_distance(self.get_distance())
-
-    if self.get_wavelength():
-      xycorr.set_wavelength(self.get_wavelength())
-
-    auto_logfiler(xycorr, 'XYCORR')
-
-    return xycorr
-
-  def Init(self):
-    from Handlers.Phil import PhilIndex
-    init = _Init(params=PhilIndex.params.xds.init)
-    init.set_working_directory(self.get_working_directory())
-
-    init.setup_from_imageset(self.get_imageset())
-
-    if self.get_distance():
-      init.set_distance(self.get_distance())
-
-    if self.get_wavelength():
-      init.set_wavelength(self.get_wavelength())
-
-    auto_logfiler(init, 'INIT')
-
-    return init
-
   def Defpix(self):
     defpix = _Defpix()
     defpix.set_working_directory(self.get_working_directory())
@@ -272,195 +230,39 @@ class XDSIntegrater(Integrater):
     Debug.write('Wavelength: %.6f' % self.get_wavelength())
     Debug.write('Distance: %.2f' % self.get_distance())
 
-    if not self._intgr_indexer:
-      self.set_integrater_indexer(XDSIndexer())
-      self.get_integrater_indexer().set_indexer_sweep(
-          self.get_integrater_sweep())
+    idxr = self._intgr_refiner.get_refiner_indexer(self.get_integrater_epoch())
 
-      self._intgr_indexer.set_working_directory(
-          self.get_working_directory())
+    if idxr is None:
+      idxr = XDSIndexer()
+      self._intgr_refiner.add_refiner_indexer(idxr)
+      self.set_integrater_prepare_done(False)
+      #self.set_integrater_indexer()
+      idxr.set_indexer_sweep(self.get_integrater_sweep())
 
-      self._intgr_indexer.setup_from_imageset(self.get_imageset())
+      idxr.set_working_directory(self.get_working_directory())
+
+      idxr.setup_from_imageset(self.get_imageset())
 
       if self.get_frame_wedge():
         wedge = self.get_frame_wedge()
         Debug.write('Propogating wedge limit: %d %d' % wedge)
-        self._intgr_indexer.set_frame_wedge(wedge[0], wedge[1],
-                                            apply_offset = False)
+        idxr.set_frame_wedge(wedge[0], wedge[1], apply_offset = False)
 
       # this needs to be set up from the contents of the
       # Integrater frame processer - wavelength &c.
 
       if self.get_beam_centre():
-        self._intgr_indexer.set_beam_centre(self.get_beam_centre())
+        idxr.set_beam_centre(self.get_beam_centre())
 
       if self.get_distance():
-        self._intgr_indexer.set_distance(self.get_distance())
+        idxr.set_distance(self.get_distance())
 
       if self.get_wavelength():
-        self._intgr_indexer.set_wavelength(
-            self.get_wavelength())
+        idxr.set_wavelength(self.get_wavelength())
 
     # get the unit cell from this indexer to initiate processing
     # if it is new... and also copy out all of the information for
     # the XDS indexer if not...
-
-    experiments = self._intgr_indexer.get_indexer_experiment_list()
-    assert len(experiments) == 1 # currently only handle one lattice/sweep
-    experiment = experiments[0]
-    crystal_model = experiment.crystal
-    lattice = self._intgr_indexer.get_indexer_lattice()
-
-    # check if the lattice was user assigned...
-    user_assigned = self._intgr_indexer.get_indexer_user_input_lattice()
-
-    # hack to figure out if we did indexign with Dials - if so then need to
-    # run XYCORR, INIT, and then dials.export_xds before we are ready to
-    # integrate with XDS
-    from Modules.Indexer.DialsIndexer import DialsIndexer
-    if isinstance(self._intgr_indexer, DialsIndexer):
-      all_images = self.get_matching_images()
-      first = min(all_images)
-      last = max(all_images)
-
-      last_background = int(round(5.0 / self.get_phi_width())) - 1 + first
-      last_background = min(last, last_background)
-
-      # next start to process these - first xycorr
-      # FIXME run these *afterwards* as then we have a refined detector geometry
-      # so the parallax correction etc. should be slightly better.
-
-      self._indxr_images = [(first, last)]
-      xycorr = self.Xycorr()
-      xycorr.set_data_range(first, last)
-      xycorr.set_background_range(first, last_background)
-      xycorr.run()
-
-      for file in ['X-CORRECTIONS.cbf',
-                   'Y-CORRECTIONS.cbf']:
-        self._xds_data_files[file] = xycorr.get_output_data_file(file)
-
-      # next start to process these - then init
-
-      init = self.Init()
-
-      for file in ['X-CORRECTIONS.cbf',
-                   'Y-CORRECTIONS.cbf']:
-        init.set_input_data_file(file, self._xds_data_files[file])
-
-      init.set_data_range(first, last)
-      init.set_background_range(first, last_background)
-      init.run()
-
-      for file in ['BLANK.cbf',
-                   'BKGINIT.cbf',
-                   'GAIN.cbf']:
-        self._xds_data_files[file] = init.get_output_data_file(file)
-
-      exporter = self.ExportXDS()
-      exporter.set_experiments_filename(
-        self._intgr_indexer.get_solution()['experiments_file'])
-      exporter.run()
-
-      for file in ['XPARM.XDS']:
-        self._xds_data_files[file] = os.path.join(
-          self.get_working_directory(), 'xds', file)
-
-      for k, v in self._xds_data_files:
-        self._intgr_indexer.set_indexer_payload(k, v)
-
-    # check that the indexer is an XDS indexer - if not then
-    # create one...
-
-    elif not self._intgr_indexer.get_indexer_payload('XPARM.XDS'):
-      Debug.write('Generating an XDS indexer')
-
-      # note to self for the future - this set will reset the
-      # integrater prepare done flag - this means that we will
-      # go through this routine all over again. However this
-      # is not a problem as all that will happen is that the
-      # results will be re-got, no additional processing will
-      # be performed...
-
-      self.set_integrater_indexer(XDSIndexer())
-      self.get_integrater_indexer().set_indexer_sweep(
-          self.get_integrater_sweep())
-
-      # set the indexer up as per the frameprocessor interface...
-      # this would usually happen within the IndexerFactory.
-
-      self.get_integrater_indexer().set_indexer_sweep_name(
-          self.get_integrater_sweep_name())
-
-      self.get_integrater_indexer().setup_from_imageset(self.get_imageset())
-      self.get_integrater_indexer().set_working_directory(
-          self.get_working_directory())
-
-      if self.get_frame_wedge():
-        wedge = self.get_frame_wedge()
-        Debug.write('Propogating wedge limit: %d %d' % wedge)
-        self._intgr_indexer.set_frame_wedge(wedge[0], wedge[1],
-                                            apply_offset = False)
-
-      if self.get_reversephi():
-        Debug.write('Propogating reverse-phi...')
-        self._intgr_indexer.set_reversephi()
-
-      # now copy information from the old indexer to the new
-      # one - lattice, cell, distance etc.
-
-      # bug # 2434 - providing the correct target cell
-      # may be screwing things up - perhaps it would
-      # be best to allow XDS just to index with a free
-      # cell but target lattice??
-      cell = crystal_model.get_unit_cell().parameters()
-      if Flags.get_relax():
-        Debug.write(
-            'Inputting target cell: %.2f %.2f %.2f %.2f %.2f %.2f' % \
-            cell)
-        self._intgr_indexer.set_indexer_input_cell(cell)
-      input_cell = cell
-
-      # propogate the wavelength information...
-      if self.get_wavelength():
-        self._intgr_indexer.set_wavelength(
-            self.get_wavelength())
-
-      from cctbx.sgtbx import bravais_types
-      lattice = str(
-        bravais_types.bravais_lattice(group=crystal_model.get_space_group()))
-      self._intgr_indexer.set_indexer_input_lattice(lattice)
-
-      if user_assigned:
-        Debug.write('Assigning the user given lattice: %s' % \
-                    lattice)
-        self._intgr_indexer.set_indexer_user_input_lattice(True)
-
-      #self._intgr_indexer.set_distance(distance)
-      self._intgr_indexer.set_detector(experiment.detector)
-      self._intgr_indexer.set_beam_obj(experiment.beam)
-      self._intgr_indexer.set_goniometer(experiment.goniometer)
-
-      # re-get the unit cell &c. and check that the indexing
-      # worked correctly
-
-      Debug.write('Rerunning indexing with XDS')
-
-      #cell = self._intgr_indexer.get_indexer_cell()
-      #lattice = self._intgr_indexer.get_indexer_lattice()
-
-      experiments = self._intgr_indexer.get_indexer_experiment_list()
-      assert len(experiments) == 1 # currently only handle one lattice/sweep
-      experiment = experiments[0]
-      crystal_model = experiment.crystal
-
-      # then in here check that the target unit cell corresponds
-      # to the unit cell I wanted as input...? now for this I
-      # should probably compute the unit cell volume rather
-      # than comparing the cell axes as they may have been
-      # switched around...
-
-      # FIXME comparison needed
 
     # set a low resolution limit (which isn't really used...)
     # this should perhaps be done more intelligently from an
@@ -468,19 +270,23 @@ class XDSIntegrater(Integrater):
 
     if not self.get_integrater_low_resolution():
 
-      dmax = self._intgr_indexer.get_indexer_low_resolution()
+      dmax = self._intgr_refiner.get_indexer_low_resolution(
+        self.get_integrater_epoch())
       self.set_integrater_low_resolution(dmax)
 
       Debug.write('Low resolution set to: %s' % \
                   self.get_integrater_low_resolution())
 
     # copy the data across
-    self._xds_data_files = copy.deepcopy(self._intgr_indexer._indxr_payload)
+    self._xds_data_files = copy.deepcopy(
+      self._intgr_refiner.get_refiner_payload(self.get_integrater_epoch()))
 
     Debug.write('Files available at the end of XDS integrate prepare:')
     for f in self._xds_data_files.keys():
       Debug.write('%s' % f)
 
+    experiment = self._intgr_refiner.get_refined_experiment_list(
+      self.get_integrater_epoch())[0]
     # copy across the trusted_range - it got lost along the way
     old_detector = self.get_detector()
     self.set_detector(experiment.detector)
@@ -500,9 +306,13 @@ class XDSIntegrater(Integrater):
     '''Actually do the integration - in XDS terms this will mean running
     DEFPIX and INTEGRATE to measure all the reflections.'''
 
+    experiment = self._intgr_refiner.get_refined_experiment_list(
+      self.get_integrater_epoch())[0]
+    crystal_model = experiment.crystal
+    self._intgr_refiner_cell = crystal_model.get_unit_cell().parameters()
+
     images_str = '%d to %d' % tuple(self._intgr_wedge)
-    cell_str = '%.2f %.2f %.2f %.2f %.2f %.2f' % \
-               self._intgr_indexer.get_indexer_cell()
+    cell_str = '%.2f %.2f %.2f %.2f %.2f %.2f' %tuple(self._intgr_refiner_cell)
 
     if len(self._fp_directory) <= 50:
       dirname = self._fp_directory
@@ -513,7 +323,7 @@ class XDSIntegrater(Integrater):
         'integrating', self._intgr_sweep_name, 'XDS',
         {'images':images_str,
          'cell':cell_str,
-         'lattice':self.get_integrater_indexer().get_indexer_lattice(),
+         'lattice':self._intgr_refiner.get_refiner_lattice(),
          'template':self._fp_template,
          'directory':dirname,
          'resolution':'%.2f' % self._intgr_reso_high})
@@ -600,7 +410,7 @@ class XDSIntegrater(Integrater):
 
     # and copy the first pass INTEGRATE.HKL...
 
-    lattice = self._intgr_indexer.get_indexer_lattice()
+    lattice = self._intgr_refiner.get_refiner_lattice()
     if not os.path.exists(os.path.join(
         self.get_working_directory(),
         'INTEGRATE-%s.HKL' % lattice)):
@@ -667,8 +477,7 @@ class XDSIntegrater(Integrater):
       # cell or are the results ok without it?!
 
       correct.set_spacegroup_number(1)
-      correct.set_cell(
-          self._intgr_indexer.get_indexer_cell())
+      correct.set_cell(self._intgr_refiner_cell)
 
       correct.run()
 
@@ -729,8 +538,8 @@ class XDSIntegrater(Integrater):
     # unless we set the spacegroup and cell explicitly
 
     if not self.get_integrater_spacegroup_number():
-      cell = self._intgr_indexer.get_indexer_cell()
-      lattice = self._intgr_indexer.get_indexer_lattice()
+      cell = self._intgr_refiner_cell
+      lattice = self._intgr_refiner.get_refiner_lattice()
       spacegroup_number = lattice_to_spacegroup_number(lattice)
 
       # this should not prevent the postrefinement from
@@ -741,8 +550,8 @@ class XDSIntegrater(Integrater):
       correct.set_cell(cell)
 
       Debug.write('Setting spacegroup to: %d' % spacegroup_number)
-      Debug.write('Setting cell to: %.2f %.2f %.2f %.2f %.2f %.2f' % \
-                  cell)
+      Debug.write(
+        'Setting cell to: %.2f %.2f %.2f %.2f %.2f %.2f' % tuple(cell))
 
     if self.get_integrater_reindex_matrix():
 
@@ -750,7 +559,7 @@ class XDSIntegrater(Integrater):
       # reindex matrix need to be multiplied by a constant which
       # depends on the Bravais lattice centering.
 
-      lattice = self._intgr_indexer.get_indexer_lattice()
+      lattice = self._intgr_refiner.get_refiner_lattice()
 
       matrix = r_to_rt(self.get_integrater_reindex_matrix())
 
@@ -792,7 +601,7 @@ class XDSIntegrater(Integrater):
 
       matrix = rt_to_r(correct.get_reindex_used())
 
-      lattice = self._intgr_indexer.get_indexer_lattice()
+      lattice = self._intgr_refiner.get_refiner_lattice()
 
       if lattice[1] == 'P':
         mult = 1.0

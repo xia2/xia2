@@ -59,10 +59,16 @@ def exercise_xds_scaler(nproc=None):
   sweep = XSweep('SWEEP1', wav, directory=directory, image=image)
   indexer.set_indexer_sweep(sweep)
 
+  from Modules.Refiner.XDSRefiner import XDSRefiner
+  refiner = XDSRefiner()
+  refiner.set_working_directory(tmp_dir)
+  refiner.add_refiner_indexer(sweep.get_epoch(1), indexer)
+
   integrater = XDSIntegrater()
   integrater.set_working_directory(tmp_dir)
   integrater.setup_from_image(template %1)
-  integrater.set_integrater_indexer(indexer)
+  integrater.set_integrater_refiner(refiner)
+  #integrater.set_integrater_indexer(indexer)
   integrater.set_integrater_sweep(sweep)
   integrater.set_integrater_sweep_name('SWEEP1')
   integrater.set_integrater_project_info('CRYST1', 'WAVE1', 'SWEEP1')

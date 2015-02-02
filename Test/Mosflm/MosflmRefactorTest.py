@@ -58,6 +58,8 @@ def exercise_mosflm_index():
   assert m1.get_indexer_lattice() == m2.get_indexer_lattice()
   assert m1.get_indexer_mosaic() == m2.get_indexer_mosaic()
 
+  os.chdir(cwd)
+
   return
 
 
@@ -80,10 +82,13 @@ def exercise_mosflm_integrate(nproc):
   os.chdir(tmp_dir1)
 
   from Modules.Integrater.MosflmIntegrater import MosflmIntegrater
+  from Modules.Refiner.MosflmRefiner import MosflmRefiner
   from Modules.Indexer.MosflmIndexer import MosflmIndexer
   indexer = MosflmIndexer()
   indexer.set_working_directory(tmp_dir1)
   indexer.setup_from_image(template % 1)
+  refiner = MosflmRefiner()
+  refiner.add_refiner_indexer(1, indexer)
   m1 = MosflmIntegrater()
   m1.set_working_directory(tmp_dir1)
   m1.setup_from_image(template % 1)
@@ -91,8 +96,9 @@ def exercise_mosflm_integrate(nproc):
   wav = XWavelength("WAVE1", cryst, m1.get_wavelength())
   directory, image = os.path.split(template %1)
   sweep = XSweep('SWEEP1', wav, directory=directory, image=image)
+  indexer.set_indexer_sweep(sweep)
   m1.set_integrater_sweep(sweep)
-  m1.set_integrater_indexer(indexer)
+  m1.set_integrater_refiner(refiner)
   m1.set_frame_wedge(1, 45)
   m1.set_integrater_wedge(1, 45)
   m1.integrate()
@@ -118,8 +124,8 @@ def exercise_mosflm_integrate(nproc):
   assert approx_equal(indexer.get_indexer_distance(), m2.get_indexer_distance(),
                       eps=0.2)
 
-  assert approx_equal(m1.get_integrater_indexer().get_indexer_cell(),
-                      m2.get_indexer_cell(), eps=0.02)
+  assert approx_equal(m1.get_integrater_cell(),
+                      m2.get_integrater_cell(), eps=0.02)
   assert indexer.get_indexer_lattice() == m2.get_indexer_lattice()
   assert approx_equal(indexer.get_indexer_mosaic(), m2.get_indexer_mosaic(),
                       eps=0.01)

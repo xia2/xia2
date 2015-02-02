@@ -43,6 +43,7 @@ def exercise_ccp4_scaler(nproc=None):
   os.chdir(tmp_dir)
 
   from Modules.Indexer.DialsIndexer import DialsIndexer
+  from Modules.Refiner.DialsRefiner import DialsRefiner
   from Modules.Integrater.DialsIntegrater import DialsIntegrater
   from Modules.Scaler.CCP4ScalerA import CCP4ScalerA
   indexer = DialsIndexer()
@@ -58,10 +59,15 @@ def exercise_ccp4_scaler(nproc=None):
   sweep = XSweep('SWEEP1', wav, directory=directory, image=image)
   indexer.set_indexer_sweep(sweep)
 
+  refiner = DialsRefiner()
+  refiner.set_working_directory(tmp_dir)
+  refiner.add_refiner_indexer(sweep.get_epoch(1), indexer)
+
   integrater = DialsIntegrater()
   integrater.set_working_directory(tmp_dir)
   integrater.setup_from_image(template %1)
-  integrater.set_integrater_indexer(indexer)
+  integrater.set_integrater_refiner(refiner)
+  #integrater.set_integrater_indexer(indexer)
   integrater.set_integrater_sweep(sweep)
   integrater.set_integrater_sweep_name('SWEEP1')
   integrater.set_integrater_project_info('CRYST1', 'WAVE1', 'SWEEP1')

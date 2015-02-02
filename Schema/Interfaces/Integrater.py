@@ -74,8 +74,9 @@ class Integrater(FrameProcessor):
     self._intgr_working_directory = os.getcwd()
 
     # a pointer to an implementation of the indexer class from which
-    # to get orientation (maybe) and unit cell, lattice (definately)
+    # to get orientation (maybe) and unit cell, lattice (definitely)
     self._intgr_indexer = None
+    self._intgr_refiner = None
 
     # optional parameters - added user for # 3183
     self._intgr_reso_high = 0.0
@@ -154,7 +155,7 @@ class Integrater(FrameProcessor):
     import inspect
     attributes = inspect.getmembers(self, lambda m:not(inspect.isroutine(m)))
     for a in attributes:
-      if a[0] == '_intgr_indexer':
+      if a[0] in ('_intgr_indexer', '_intgr_refiner') and a[1] is not None:
         obj[a[0]] = a[1].to_dict()
       #elif a[0] == '_indxr_experiment_list':
         #obj[a[0]] = a[1].to_dict()
@@ -174,12 +175,12 @@ class Integrater(FrameProcessor):
     assert obj['__id__'] == 'Integrater'
     return_obj = cls()
     for k, v in obj.iteritems():
-      if k == '_intgr_indexer':
+      if k in ('_intgr_indexer', '_intgr_refiner') and v is not None:
         from libtbx.utils import import_python_object
-        indexer_cls = import_python_object(
+        cls = import_python_object(
           import_path=".".join((v['__module__'], v['__name__'])),
           error_prefix='', target_must_be='', where_str='').object
-        v = indexer_cls.from_dict(v)
+        v = cls.from_dict(v)
       if isinstance(v, dict):
         if v.get('__id__', None) == 'ExperimentList':
           from dxtbx.model.experiment.experiment_list import ExperimentListFactory
@@ -305,12 +306,13 @@ class Integrater(FrameProcessor):
   # that everything is up-to-date...
 
   def get_integrater_prepare_done(self):
-    if not self.get_integrater_indexer():
+    #if not self.get_integrater_indexer():
+    if not self.get_integrater_refiner():
       return self._intgr_prepare_done
 
-    if not self.get_integrater_indexer().get_indexer_done() \
+    if not self.get_integrater_refiner().get_refiner_done() \
            and self._intgr_prepare_done:
-      Debug.write('Resetting integrater as indexer updated.')
+      Debug.write('Resetting integrater as refiner updated.')
       self._integrater_reset()
 
     return self._intgr_prepare_done
@@ -546,6 +548,17 @@ class Integrater(FrameProcessor):
     self.set_integrater_prepare_done(False)
     return
 
+  def set_integrater_refiner(self, refiner):
+    '''Set the refiner implementation to use for this integration.'''
+
+    if not inherits_from(refiner.__class__, 'Refiner'):
+      raise RuntimeError, 'input %s is not a Refiner implementation' % \
+            refiner.__name__
+
+    self._intgr_refiner = refiner
+    self.set_integrater_prepare_done(False)
+    return
+
   def integrate(self):
     '''Actually perform integration until we think we are done...'''
 
@@ -569,7 +582,7 @@ class Integrater(FrameProcessor):
             Journal.banner('eliminated this lattice', size = 80)
 
             Chatter.write('Rejecting bad lattice %s' % str(e))
-            self._intgr_indexer.eliminate()
+            self._intgr_refiner.eliminate()
             self._integrater_reset()
 
         # FIXME x1698 - may be the case that _integrate() returns the
@@ -599,7 +612,7 @@ class Integrater(FrameProcessor):
 
           Journal.banner('eliminated this lattice', size = 80)
 
-          self._intgr_indexer.eliminate()
+          self._intgr_refiner.eliminate()
           self._integrater_reset()
 
       self.set_integrater_finish_done(True)
@@ -612,13 +625,16 @@ class Integrater(FrameProcessor):
 
       except BadLatticeError, e:
         Chatter.write('Uh oh! %s' % str(e))
-        self._intgr_indexer.eliminate()
+        self._intgr_refiner.eliminate()
         self._integrater_reset()
 
     return self._intgr_hklout
 
   def get_integrater_indexer(self):
     return self._intgr_indexer
+
+  def get_integrater_refiner(self):
+    return self._intgr_refiner
 
   def get_integrater_intensities(self):
     self.integrate()

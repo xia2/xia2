@@ -25,7 +25,9 @@ Modules/Indexer/__init__.py -text
 Modules/Integrater/DialsIntegrater.py -text
 Modules/Integrater/__init__.py -text
 Modules/Refiner/DialsRefiner.py -text
+Modules/Refiner/MosflmRefiner.py -text
 Modules/Refiner/RefinerFactory.py -text
+Modules/Refiner/XDSRefiner.py -text
 Modules/Refiner/__init__.py -text
 Modules/Scaler/CCP4ScalerA.py -text
 Modules/Scaler/CommonScaler.py -text

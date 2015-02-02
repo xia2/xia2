@@ -18,7 +18,12 @@ class Refiner(object):
   '''An interface to present refinement functionality in a similar way to the
   scaler interface.'''
 
+  LATTICE_POSSIBLE = 'LATTICE_POSSIBLE'
+  LATTICE_IMPOSSIBLE = 'LATTICE_IMPOSSIBLE'
+  LATTICE_CORRECT = 'LATTICE_CORRECT'
+
   def __init__(self):
+    super(Refiner, self).__init__()
     # set up a framework for storing all of the input information...
     # this should really only consist of integraters...
 
@@ -28,12 +33,13 @@ class Refiner(object):
 
     # admin junk
     self._working_directory = os.getcwd()
-    #self._scalr_pname = None
-    #self._scalr_xname = None
 
+    self._refinr_payload = {}
     self._refinr_refined_experiment_list = None
-    ## link to parent xcrystal
-    #self._scalr_xcrystal = None
+
+    # implementation dependent parameters - these should be keyed by
+    # say 'mosflm':{'yscale':0.9999} etc.
+    self._refinr_program_parameters = { }
 
     return
 
@@ -70,22 +76,26 @@ class Refiner(object):
     return_obj = cls()
     for k, v in obj.iteritems():
       if k == '_refinr_indexers':
+        v_new = {}
         for k_, v_ in v.iteritems():
           from libtbx.utils import import_python_object
           integrater_cls = import_python_object(
             import_path=".".join((v_['__module__'], v_['__name__'])),
             error_prefix='', target_must_be='', where_str='').object
-          v[k_] = integrater_cls.from_dict(v_)
+          v_new[float(k_)] = integrater_cls.from_dict(v_)
+        v = v_new
+      elif k == '_refinr_payload':
+        v_new = {}
+        for k_, v_ in v.iteritems():
+          try:
+            v_new[float(k_)] = v_
+          except ValueError, e:
+            v_new[k_] = v_
+        v = v_new
       if isinstance(v, dict):
         if v.get('__id__', None) == 'ExperimentList':
           from dxtbx.model.experiment.experiment_list import ExperimentListFactory
           v = ExperimentListFactory.from_dict(v)
-      #elif k == '_scalr_statistics':
-        #d = {}
-        #for k_, v_ in v.iteritems():
-          #k_ = tuple(str(s) for s in json.loads(k_))
-          #d[k_] = v_
-        #v = d
       setattr(return_obj, k, v)
     return return_obj
 
@@ -190,76 +200,37 @@ class Refiner(object):
       self.set_refiner_finish_done(False)
     return self._refinr_finish_done
 
-  def add_refiner_indexer(self, indexer):
+  def add_refiner_indexer(self, epoch, indexer):
     '''Add an indexer to this scaler, to provide the input.'''
 
-    # epoch values are trusted as long as they are unique.
-    # if a collision is detected, all epoch values are replaced by an
-    # integer series, starting with 0
+    ## epoch values are trusted as long as they are unique.
+    ## if a collision is detected, all epoch values are replaced by an
+    ## integer series, starting with 0
 
-    if 1 or 0 in self._refinr_indexers.keys():
-      epoch = len(self._refinr_indexers)
+    #if 1 or 0 in self._refinr_indexers.keys():
+      #epoch = len(self._refinr_indexers)
 
-    else:
-      epoch = indexer.get_integrater_epoch()
+    #else:
+      #epoch = indexer.get_integrater_epoch()
 
-      # FIXME This is now probably superflous?
-      if epoch == 0 and self._refinr_indexers:
-        raise RuntimeError, 'multi-sweep indexer has epoch 0'
+      ## FIXME This is now probably superflous?
+      #if epoch == 0 and self._refinr_indexers:
+        #raise RuntimeError, 'multi-sweep indexer has epoch 0'
 
-      if epoch in self._refinr_indexers.keys():
-        Debug.write('indexer with epoch %d already exists. will not trust epoch values' % epoch)
+      #if epoch in self._refinr_indexers.keys():
+        #Debug.write('indexer with epoch %d already exists. will not trust epoch values' % epoch)
 
-        # collision. Throw away all epoch keys, and replace with integer series
-        self._refinr_indexers = dict(zip(
-            range(0,len(self._refinr_indexers)),
-             self._refinr_indexers.values()))
-        epoch = len(self._refinr_indexers)
+        ## collision. Throw away all epoch keys, and replace with integer series
+        #self._refinr_indexers = dict(zip(
+            #range(0,len(self._refinr_indexers)),
+             #self._refinr_indexers.values()))
+        #epoch = len(self._refinr_indexers)
 
     self._refinr_indexers[epoch] = indexer
 
     self.refiner_reset()
 
     return
-
-  # FIXME x1698 these not currently used yet
-
-  #def _scale_setup_integrater(self, integrater):
-    #'''Check that the pointgroup for a data set is consistent with
-    #the lattice used for integration, then determine the pointgroup for
-    #the data.'''
-
-    ## FIXME will have to handle gracefully user provided pointgroup
-
-    #pointgroups = self._scale_list_likely_pointgroups(integrater)
-    #indexer = integrater.get_integrater_indexer()
-    #lattices = [lauegroup_to_lattice(p) for p in pointgroups]
-
-    #correct_lattice = None
-
-    #for lattice in lattices:
-      #state = indexer.set_indexer_asserted_lattice(lattice)
-
-      #if state == indexer.LATTICE_CORRECT:
-        #correct_lattice = lattice
-        #break
-
-      #elif state == indexer.LATTICE_IMPOSSIBLE:
-        #continue
-
-      #elif state == indexer.LATTICE_POSSIBLE:
-        #correct_lattice = lattice
-        #break
-
-    #assert(correct_lattice)
-
-    ## run this analysis again, which may respond in different conclusions
-    ## if it triggers the reprocessing of the data with a new lattice
-
-    #pointgroups = self._scale_list_likely_pointgroups(integrater)
-    #lattices = [lauegroup_to_lattice(p) for p in pointgroups]
-
-    #return pointgroups[lattices.index(correct_lattice)]
 
   def refine(self):
     '''Actually perform the refinement - this is delegated to the
@@ -290,6 +261,70 @@ class Refiner(object):
 
     return self._refinr_result
 
-  def get_refined_experiment_list(self):
+  def set_refiner_payload(self, this, value):
+    self._refinr_payload[this] = value
+
+  def get_refiner_payload(self, this):
     self.refine()
-    return self._refinr_refined_experiment_list
+    return self._refinr_payload.get(this, None)
+
+  def eliminate(self, indxr_print=True):
+    for idxr in self._refinr_indexers.values():
+      idxr.eliminate(indxr_print=indxr_print)
+    self.refiner_reset()
+
+  def get_refiner_indexer(self, epoch):
+    return self._refinr_indexers.get(epoch)
+
+  def get_indexer_low_resolution(self, epoch):
+    return self._refinr_indexers[epoch].get_indexer_low_resolution()
+
+  def get_refined_experiment_list(self, epoch):
+    self.refine()
+    # FIXME needs revisiting for joint refinement
+    return self._refinr_refined_experiment_list[0:1]
+
+  def get_refiner_lattice(self):
+    # for now assume all indexer have the same lattice
+    return self._refinr_indexers.values()[0].get_indexer_lattice()
+
+  def set_refiner_asserted_lattice(self, asserted_lattice):
+    state = self.LATTICE_POSSIBLE
+    for idxr in self._refinr_indexers.values():
+      state = idxr.set_indexer_asserted_lattice(asserted_lattice)
+    # XXX for multiple indexers need to get some kind of consensus?
+    return state
+
+  def set_refiner_parameter(self, program, parameter, value):
+    '''Set an arbitrary parameter for the program specified to
+    use in refinement, e.g. the YSCALE or GAIN values in Mosflm.'''
+
+    if not self._refinr_program_parameters.has_key(program):
+      self._refinr_program_parameters[program] = { }
+
+    self._refinr_program_parameters[program][parameter] = value
+    return
+
+  def get_refiner_parameter(self, program, parameter):
+    '''Get a parameter value.'''
+
+    try:
+      return self._refinr_program_parameters[program][parameter]
+    except:
+      return None
+
+  def get_refiner_parameters(self, program):
+    '''Get all parameters and values.'''
+
+    try:
+      return self._refinr_program_parameters[program]
+    except:
+      return { }
+
+  def set_refiner_parameters(self, parameters):
+    '''Set all parameters and values.'''
+
+    self._refinr_program_parameters = parameters
+    self.set_refiner_done(False)
+
+    return

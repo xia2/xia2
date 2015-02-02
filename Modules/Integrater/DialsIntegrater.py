@@ -35,7 +35,7 @@ from Schema.Interfaces.Integrater import Integrater
 from Schema.Exceptions.BadLatticeError import BadLatticeError
 
 # indexing functionality if not already provided - even if it is
-# we still need to reindex with XDS.
+# we still need to reindex with DIALS.
 
 from Modules.Indexer.DialsIndexer import DialsIndexer
 from Wrappers.CCP4.Reindex import Reindex
@@ -52,7 +52,7 @@ from Handlers.Phil import PhilIndex
 from Experts.SymmetryExpert import lattice_to_spacegroup_number
 
 class DialsIntegrater(Integrater):
-  '''A class to implement the Integrater interface using *only* XDS
+  '''A class to implement the Integrater interface using *only* DIALS
   programs.'''
 
   def __init__(self):
@@ -96,24 +96,6 @@ class DialsIntegrater(Integrater):
     return self._intgr_integrated_filename
 
   # factory functions
-
-  def Refine(self):
-    refine = _Refine()
-    params = PhilIndex.params.dials.refine
-    refine.set_phil_file(params.phil_file)
-    refine.set_working_directory(self.get_working_directory())
-    refine.set_experiments_filename(self._intgr_experiments_filename)
-    refine.set_indexed_filename(
-      self._intgr_indexer.get_indexed_filename())
-    refine.set_refined_filename(os.path.join(self.get_working_directory(),
-                                             'refined.pickle'))
-    refine.set_scan_varying(params.scan_varying)
-    refine.set_use_all_reflections(params.use_all_reflections)
-    if params.reflections_per_degree:
-      refine.set_reflections_per_degree(params.reflections_per_degree)
-    auto_logfiler(refine, 'REFINE')
-
-    return refine
 
   def Integrate(self, indexed_filename=None):
     params = PhilIndex.params.dials.integrate
@@ -180,47 +162,47 @@ class DialsIntegrater(Integrater):
     Debug.write('Wavelength: %.6f' % self.get_wavelength())
     Debug.write('Distance: %.2f' % self.get_distance())
 
-    if not self._intgr_indexer:
-      self.set_integrater_indexer(DialsIndexer())
-      self.get_integrater_indexer().set_indexer_sweep(
-          self.get_integrater_sweep())
+    #if not self._intgr_indexer:
+      #self.set_integrater_indexer(DialsIndexer())
+      #self.get_integrater_indexer().set_indexer_sweep(
+          #self.get_integrater_sweep())
 
-      self._intgr_indexer.set_working_directory(
-          self.get_working_directory())
+      #self._intgr_indexer.set_working_directory(
+          #self.get_working_directory())
 
-      self._intgr_indexer.setup_from_imageset(self.get_imageset())
+      #self._intgr_indexer.setup_from_imageset(self.get_imageset())
 
-      if self.get_frame_wedge():
-        wedge = self.get_frame_wedge()
-        Debug.write('Propogating wedge limit: %d %d' % wedge)
-        self._intgr_indexer.set_frame_wedge(wedge[0], wedge[1],
-                                            apply_offset = False)
+      #if self.get_frame_wedge():
+        #wedge = self.get_frame_wedge()
+        #Debug.write('Propogating wedge limit: %d %d' % wedge)
+        #self._intgr_indexer.set_frame_wedge(wedge[0], wedge[1],
+                                            #apply_offset = False)
 
-      # this needs to be set up from the contents of the
-      # Integrater frame processer - wavelength &c.
+      ## this needs to be set up from the contents of the
+      ## Integrater frame processer - wavelength &c.
 
-      if self.get_beam_centre():
-        self._intgr_indexer.set_beam_centre(self.get_beam_centre())
+      #if self.get_beam_centre():
+        #self._intgr_indexer.set_beam_centre(self.get_beam_centre())
 
-      if self.get_distance():
-        self._intgr_indexer.set_distance(self.get_distance())
+      #if self.get_distance():
+        #self._intgr_indexer.set_distance(self.get_distance())
 
-      if self.get_wavelength():
-        self._intgr_indexer.set_wavelength(
-            self.get_wavelength())
+      #if self.get_wavelength():
+        #self._intgr_indexer.set_wavelength(
+            #self.get_wavelength())
 
-    # get the unit cell from this indexer to initiate processing
-    # if it is new... and also copy out all of the information for
-    # the Dials indexer if not...
+    ## get the unit cell from this indexer to initiate processing
+    ## if it is new... and also copy out all of the information for
+    ## the Dials indexer if not...
 
-    experiments = self._intgr_indexer.get_indexer_experiment_list()
-    assert len(experiments) == 1 # currently only handle one lattice/sweep
-    experiment = experiments[0]
-    crystal_model = experiment.crystal
-    lattice = self._intgr_indexer.get_indexer_lattice()
+    #experiments = self._intgr_indexer.get_indexer_experiment_list()
+    #assert len(experiments) == 1 # currently only handle one lattice/sweep
+    #experiment = experiments[0]
+    #crystal_model = experiment.crystal
+    #lattice = self._intgr_indexer.get_indexer_lattice()
 
-    # check if the lattice was user assigned...
-    user_assigned = self._intgr_indexer.get_indexer_user_input_lattice()
+    ## check if the lattice was user assigned...
+    #user_assigned = self._intgr_indexer.get_indexer_user_input_lattice()
 
     # XXX check that the indexer is an Dials indexer - if not then
     # create one...
@@ -231,39 +213,23 @@ class DialsIntegrater(Integrater):
 
     if not self.get_integrater_low_resolution():
 
-      dmax = self._intgr_indexer.get_indexer_low_resolution()
+      dmax = self._intgr_refiner.get_indexer_low_resolution(
+        self.get_integrater_epoch())
       self.set_integrater_low_resolution(dmax)
 
       Debug.write('Low resolution set to: %s' % \
                   self.get_integrater_low_resolution())
 
-    # copy the data across
-    from dxtbx.serialize import load, dump
-    self._intgr_experiments_filename = os.path.join(
-      self.get_working_directory(), "experiments.json")
-    dump.experiment_list(experiments, self._intgr_experiments_filename)
-    self._intgr_indexed_filename = os.path.join(
-      self.get_working_directory(), os.path.basename(
-        self._intgr_indexer.get_indexed_filename()))
+    ## copy the data across
+    from dxtbx.serialize import load
 
-    refiner = self.Refine()
-
-    # XXX Temporary workaround for dials.refine error for scan_varying
-    # refinement with smaller wedges
-    all_images = self.get_matching_images()
-    phi_width = self.get_phi_width()
-    total_phi_range = len(all_images) * phi_width
-    if total_phi_range < 5: # arbitrary value
-      refiner.set_scan_varying(False)
-    elif total_phi_range < 36:
-      refiner.set_interval_width_degrees(total_phi_range/2)
-
-    refiner.run()
-    self._intgr_experiments_filename \
-      = refiner.get_refined_experiments_filename()
+    refiner = self.get_integrater_refiner()
+    self._intgr_experiments_filename = refiner.get_refiner_payload(
+      "experiments.json")
     experiments = load.experiment_list(self._intgr_experiments_filename)
     experiment = experiments[0]
-    self._intgr_indexed_filename = refiner.get_refined_filename()
+    self._intgr_indexed_filename = refiner.get_refiner_payload(
+      "reflections.pickle")
 
     # this is the result of the cell refinement
     self._intgr_cell = experiment.crystal.get_unit_cell().parameters()
@@ -283,8 +249,7 @@ class DialsIntegrater(Integrater):
     DEFPIX and INTEGRATE to measure all the reflections.'''
 
     images_str = '%d to %d' % tuple(self._intgr_wedge)
-    cell_str = '%.2f %.2f %.2f %.2f %.2f %.2f' % \
-               self._intgr_indexer.get_indexer_cell()
+    cell_str = '%.2f %.2f %.2f %.2f %.2f %.2f' % tuple(self._intgr_cell)
 
     if len(self._fp_directory) <= 50:
       dirname = self._fp_directory
@@ -295,7 +260,7 @@ class DialsIntegrater(Integrater):
         'integrating', self._intgr_sweep_name, 'DIALS',
         {'images':images_str,
          'cell':cell_str,
-         'lattice':self.get_integrater_indexer().get_indexer_lattice(),
+         'lattice':self.get_integrater_refiner().get_refiner_lattice(),
          'template':self._fp_template,
          'directory':dirname,
          'resolution':'%.2f' % self._intgr_reso_high})
@@ -395,7 +360,7 @@ class DialsIntegrater(Integrater):
 
     if self._intgr_reindex_operator is None and \
       self._intgr_spacegroup_number == lattice_to_spacegroup(
-        self.get_integrater_indexer().get_indexer_lattice()):
+        self.get_integrater_refiner().get_refiner_lattice()):
       return mtz_filename
 
     if self._intgr_reindex_operator is None and \

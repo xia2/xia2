@@ -40,7 +40,6 @@ from Wrappers.CCP4.MosflmHelpers import _happy_integrate_lp, \
      _parse_mosflm_integration_output, decide_integration_resolution_limit, \
      standard_mask, detector_class_to_mosflm, \
      _parse_summary_file
-from Wrappers.Mosflm.MosflmRefineCell import MosflmRefineCell
 from Wrappers.Mosflm.MosflmIntegrate import MosflmIntegrate
 
 from Modules.GainEstimater import gain
@@ -49,11 +48,8 @@ from Handlers.Files import FileHandler
 from lib.bits import auto_logfiler, mean_sd
 from lib.SymmetryLib import lattice_to_spacegroup
 
-from Experts.MatrixExpert import transmogrify_matrix
-
 # exceptions
 from Schema.Exceptions.BadLatticeError import BadLatticeError
-from Schema.Exceptions.NegativeMosaicError import NegativeMosaicError
 from Schema.Exceptions.IntegrationError import IntegrationError
 
 # other classes which are necessary to implement the integrater
@@ -98,72 +94,10 @@ class MosflmIntegrater(Integrater):
         obj[a[0]] = a[1]
     return obj
 
-  def _refine_select_images(self, mosaic):
-    '''Select images for cell refinement based on image headers.'''
-
-    cell_ref_images = []
-
-    phi_width = self.get_phi_width()
-    min_images = max(3, int(2 * mosaic / phi_width))
-
-    if min_images > 9:
-      min_images = 9
-
-    images = self.get_matching_images()
-
-    if len(images) < 3 * min_images:
-      cell_ref_images.append((min(images), max(images)))
-      return cell_ref_images
-
-    cell_ref_images = []
-    cell_ref_images.append((images[0], images[min_images - 1]))
-
-    ideal_last = int(90.0 / phi_width) + min_images
-
-    if ideal_last < len(images):
-      ideal_middle = int(45.0 / phi_width) - min_images // 2
-      cell_ref_images.append((images[ideal_middle - 1],
-                              images[ideal_middle - 2 + min_images]))
-      cell_ref_images.append((images[ideal_last - min_images],
-                              images[ideal_last]))
-
-    else:
-      middle = int((max(images) + min(images) - min_images) // 2)
-      cell_ref_images.append((middle - 1,
-                              middle - 2 + min_images))
-      cell_ref_images.append((images[-min_images],
-                              images[-1]))
-
-    return cell_ref_images
-
-  def _refine_select_twenty(self, mosaic):
-    '''Select images for cell refinement - first 20 in the sweep.'''
-
-    cell_ref_images = []
-
-    images = self.get_matching_images()
-
-    cell_ref_images = []
-
-    if len(images) > 20:
-      cell_ref_images.append((images[0], images[19]))
-    else:
-      cell_ref_images.append((images[0], images[-1]))
-
-    return cell_ref_images
-
-  def _mosflm_generate_raster(self, _images):
-    from Wrappers.Mosflm.GenerateRaster import GenerateRaster
-    gr = GenerateRaster()
-    gr.set_working_directory(self.get_working_directory())
-    return gr(self.get_integrater_indexer(), _images)
-
   def _integrate_prepare(self):
     '''Prepare for integration - note that if there is a reason
     why this is needed to be run again, set self._intgr_prepare_done
     as False.'''
-
-    self.digest_template()
 
     if not self._mosflm_gain and self.get_gain():
       self._mosflm_gain = self.get_gain()
@@ -173,182 +107,22 @@ class MosflmIntegrater(Integrater):
     if self.get_imageset().get_detector()[0].get_type() == 'SENSOR_PAD':
       self._mosflm_gain = 1.0
 
-    indxr = self.get_integrater_indexer()
+    #self._intgr_refiner.set_prepare_done(False)
 
-    if not self._mosflm_cell_ref_images:
-      mosaic = indxr.get_indexer_mosaic()
+    self.digest_template()
 
-      if Flags.get_microcrystal():
-        self._mosflm_cell_ref_images = self._refine_select_twenty(
-            mosaic)
-      else:
-        self._mosflm_cell_ref_images = self._refine_select_images(
-            mosaic)
-
-    # generate human readable output
-
-    images_str = '%d to %d' % tuple(self._mosflm_cell_ref_images[0])
-    for i in self._mosflm_cell_ref_images[1:]:
-      images_str += ', %d to %d' % tuple(i)
-
-    cell_str = '%.2f %.2f %.2f %.2f %.2f %.2f' % \
-               indxr.get_indexer_cell()
-
-    if len(self._fp_directory) <= 50:
-      dirname = self._fp_directory
-    else:
-      dirname = '...%s' % self._fp_directory[-46:]
-
-    Journal.block('cell refining', self._intgr_sweep_name, 'mosflm',
-                  {'images':images_str,
-                   'start cell':cell_str,
-                   'target lattice':indxr.get_indexer_lattice(),
-                   'template':self._fp_template,
-                   'directory':dirname})
-
-    # end generate human readable output
-
-    # in here, check to see if we have the raster parameters and
-    # separation from indexing - if we used a different indexer
-    # we may not, so if this is the case call a function to generate
-    # them...
-
-    if not indxr.get_indexer_payload(
-        'mosflm_integration_parameters'):
-
-      # generate a list of first images
-
-      images = []
-      for cri in self._mosflm_cell_ref_images:
-        images.append(cri[0])
-
-      images.sort()
-
-      integration_params = self._mosflm_generate_raster(images)
-
-      # copy them over to where they are needed
-
-      if integration_params.has_key('separation'):
-        self.set_integrater_parameter(
-            'mosflm', 'separation',
-            '%f %f' % tuple(integration_params['separation']))
-      if integration_params.has_key('raster'):
-        self.set_integrater_parameter(
-            'mosflm', 'raster',
-            '%d %d %d %d %d' % tuple(integration_params['raster']))
-
-    # next test the cell refinement with the correct lattice
-    # and P1 and see how the numbers stack up...
-
-    # copy the cell refinement resolution in...
-
-    self._mosflm_cell_ref_resolution = indxr.get_indexer_resolution()
-
-    Debug.write(
-        'Using resolution limit of %.2f for cell refinement' % \
-        self._mosflm_cell_ref_resolution)
-
-    # now trap NegativeMosaicError exception - once!
-
-    try:
-
-      # now reading the background residual values as well - if these
-      # are > 10 it would indicate that the images are blank (assert)
-      # so ignore from the analyis / comparison
-
-      if Flags.get_no_lattice_test() or \
-             self.get_integrater_sweep().get_user_lattice():
-        rms_deviations_p1 = []
-        br_p1 = []
-      else:
-        rms_deviations_p1, br_p1 = self._mosflm_test_refine_cell(
-            'aP')
-
-      rms_deviations, br = self._mosflm_refine_cell()
-
-    except NegativeMosaicError, nme:
-
-      if self._mosflm_cell_ref_double_mosaic:
-
-        # reset flag; half mosaic; raise BadLatticeError
-        Debug.write('Mosaic negative even x2 -> BadLattice')
-        self._mosflm_cell_ref_double_mosaic = False
-        raise BadLatticeError, 'negative mosaic spread'
-
-      else:
-
-        # set flag, double mosaic, return to try again
-        Debug.write('Mosaic negative -> try x2')
-        self._mosflm_cell_ref_double_mosaic = True
-        self.set_integrater_prepare_done(False)
-
-        return
-
-    if not self.get_integrater_prepare_done():
-      return
-
-    # compare cell refinement with lattice and in P1
-
-    images = []
-    for cri in self._mosflm_cell_ref_images:
-      for j in range(cri[0], cri[1] + 1):
-        images.append(j)
-
-    if rms_deviations and rms_deviations_p1:
-      cycles = []
-      j = 1
-      while rms_deviations.has_key(j) and \
-            rms_deviations_p1.has_key(j):
-        cycles.append(j)
-        j += 1
-      Debug.write('Cell refinement comparison:')
-      Debug.write('Image   correct   triclinic')
-      ratio = 0.0
-
-      ratios = []
-
-      for c in cycles:
-        Debug.write('Cycle %d' % c)
-        for j, image in enumerate(images):
-
-          background_residual = max(br_p1[c][image],
-                                    br[c][image])
-
-          if background_residual > 10:
-            Debug.write('. %4d   %.2f     %.2f (ignored)' % \
-                        (images[j], rms_deviations[c][j],
-                         rms_deviations_p1[c][j]))
-            continue
-
-          Debug.write('. %4d   %.2f     %.2f' % \
-                      (images[j], rms_deviations[c][j],
-                       rms_deviations_p1[c][j]))
-
-          ratio += rms_deviations[c][j] / rms_deviations_p1[c][j]
-          ratios.append(
-              (rms_deviations[c][j] / rms_deviations_p1[c][j]))
-
-      Debug.write('Average ratio: %.2f' % \
-                  (ratio / len(ratios)))
-
-      if (ratio / (max(cycles) * len(images))) > \
-             Flags.get_rejection_threshold() and \
-             not self.get_integrater_sweep().get_user_lattice():
-        raise BadLatticeError, 'incorrect lattice constraints'
-
-    else:
-      Debug.write('Cell refinement in P1 failed... or was not run')
-
-    cell_str = '%.2f %.2f %.2f %.2f %.2f %.2f' % \
-               self._intgr_cell
-
-    Journal.entry({'refined cell':cell_str})
+    experiment = self._intgr_refiner.get_refined_experiment_list(
+      self.get_integrater_epoch())[0]
+    crystal_model = experiment.crystal
+    self._intgr_cell = crystal_model.get_unit_cell().parameters()
 
     if not self._intgr_wedge:
       images = self.get_matching_images()
       self.set_integrater_wedge(min(images),
-                                max(images))
+      max(images))
 
+    self.set_integrater_parameters(
+      {'mosflm': self._intgr_refiner.get_refiner_parameters('mosflm')})
 
     return
 
@@ -370,7 +144,7 @@ class MosflmIntegrater(Integrater):
         'integrating', self._intgr_sweep_name, 'mosflm',
         {'images':images_str,
          'cell':cell_str,
-         'lattice':self.get_integrater_indexer().get_indexer_lattice(),
+         'lattice':self.get_integrater_refiner().get_refiner_lattice(),
          'template':self._fp_template,
          'directory':dirname,
          'resolution':'%.2f' % self._intgr_reso_high})
@@ -432,7 +206,7 @@ class MosflmIntegrater(Integrater):
 
     if self._intgr_reindex_operator is None and \
        self._intgr_spacegroup_number == lattice_to_spacegroup(
-        self.get_integrater_indexer().get_indexer_lattice()):
+        self.get_integrater_refiner().get_refiner_lattice()):
       return self._mosflm_hklout
 
     if self._intgr_reindex_operator is None and \
@@ -461,377 +235,47 @@ class MosflmIntegrater(Integrater):
 
     return hklout
 
-  def _mosflm_test_refine_cell(self, test_lattice):
-    '''Test performing cell refinement in with a different
-    lattice to the one which was selected by the autoindex
-    procedure. This should not change anything in the class.'''
-
-    indxr = self.get_integrater_indexer()
-
-    lattice = indxr.get_indexer_lattice()
-    mosaic = indxr.get_indexer_mosaic()
-    beam_centre = indxr.get_indexer_beam_centre()
-    distance = indxr.get_indexer_distance()
-    matrix = indxr.get_indexer_payload('mosflm_orientation_matrix')
-
-    phi_width = self.get_phi_width()
-    if mosaic < 0.25 * phi_width:
-      mosaic = 0.25 * phi_width
-
-    input_matrix = ''
-    for m in matrix:
-      input_matrix += '%s\n' % m
-
-    new_matrix = transmogrify_matrix(lattice, input_matrix,
-                                     test_lattice,
-                                     self.get_wavelength(),
-                                     self.get_working_directory())
-
-    spacegroup_number = lattice_to_spacegroup(test_lattice)
-
-    if not self._mosflm_cell_ref_images:
-      raise RuntimeError, 'wedges must be assigned already'
-
-    open(os.path.join(self.get_working_directory(),
-                      'test-xiaindex-%s.mat' % lattice),
-         'w').write(new_matrix)
-
-
-    refiner = MosflmRefineCell()
-    refiner.set_working_directory(self.get_working_directory())
-    auto_logfiler(refiner)
-
-    if self._mosflm_gain:
-      refiner.set_gain(self._mosflm_gain)
-
-    refiner.set_reverse_phi(self.get_reversephi())
-    refiner.set_template(self.get_template())
-    refiner.set_directory(self.get_directory())
-    refiner.set_input_mat_file('test-xiaindex-%s.mat' % lattice)
-    refiner.set_output_mat_file('test-xiarefine.mat')
-    refiner.set_beam_centre(beam_centre)
-    refiner.set_distance(distance)
-    refiner.set_space_group_number(spacegroup_number)
-
-    # FIXME 18/JUN/08 - it may help to have an overestimate
-    # of the mosaic spread in here as it *may* refine down
-    # better than up... - this is not a good idea as it may
-    # also not refine at all! - 12972 # integration failed
-
-    # Bug # 3103
-    if self._mosflm_cell_ref_double_mosaic:
-      mosaic *= 2.0
-    refiner.set_mosaic(mosaic)
-
-    # if set, use the resolution for cell refinement - see
-    # bug # 2078...
-
-    if self._mosflm_cell_ref_resolution and not \
-           Flags.get_microcrystal():
-      refiner.set_resolution(self._mosflm_cell_ref_resolution)
-
-    refiner.set_fix_mosaic(self._mosflm_postref_fix_mosaic)
-
-    if Flags.get_microcrystal():
-      refiner.set_sdfac(2.0)
-
-    # note well that the beam centre is coming from indexing so
-    # should be already properly handled
-
-    if self.get_wavelength_prov() == 'user':
-      refiner.set_wavelength(self.get_wavelength())
-
-    # belt + braces mode - only to be used when considering failover,
-    # will run an additional step of autoindexing prior to cell
-    # refinement, to be used only after proving that not going it
-    # will result in cell refinement failure - will use the first
-    # wedge... N.B. this is only useful if the indexer is Labelit
-    # not Mosflm...
-
-    refiner.set_add_autoindex(self._mosflm_cell_ref_add_autoindex)
-
-    # get all of the stored parameter values
-    parameters = self.get_integrater_parameters('mosflm')
-    refiner.update_parameters(parameters)
-
-    detector = self.get_detector()
-    detector_width, detector_height = detector[0].get_image_size_mm()
-
-    lim_x = 0.5 * detector_width
-    lim_y = 0.5 * detector_height
-
-    Debug.write('Scanner limits: %.1f %.1f' % (lim_x, lim_y))
-    refiner.set_limits(lim_x, lim_y)
-    refiner.set_images(self._mosflm_cell_ref_images)
-
-    refiner.run()
-
-    rms_values = refiner.get_rms_values()
-    background_residual = refiner.get_background_residual()
-
-    return rms_values, background_residual
-
-  def _mosflm_refine_cell(self, set_spacegroup = None):
-    '''Perform the refinement of the unit cell. This will populate
-    all of the information needed to perform the integration.'''
-
-    # FIXME this will die after #1285
-
-    if not self.get_integrater_indexer():
-      Debug.write('Replacing indexer of %s with self at %d' % \
-                  (str(self.get_integrater_indexer()), __line__))
-      self.set_integrater_indexer(self)
-
-    indxr = self.get_integrater_indexer()
-
-    if not indxr.get_indexer_payload('mosflm_orientation_matrix'):
-      raise RuntimeError, 'unexpected situation in indexing'
-
-    lattice = indxr.get_indexer_lattice()
-    mosaic = indxr.get_indexer_mosaic()
-    cell = indxr.get_indexer_cell()
-    beam_centre = indxr.get_indexer_beam_centre()
-
-    # bug # 3174 - if mosaic is very small (here defined to be
-    # 0.25 x osc_width) then set to this minimum value.
-
-    phi_width = self.get_phi_width()
-    if mosaic < 0.25 * phi_width:
-      mosaic = 0.25 * phi_width
-
-    if indxr.get_indexer_payload('mosflm_beam_centre'):
-      beam_centre = indxr.get_indexer_payload('mosflm_beam_centre')
-
-    distance = indxr.get_indexer_distance()
-    matrix = indxr.get_indexer_payload('mosflm_orientation_matrix')
-
-    integration_params = indxr.get_indexer_payload(
-        'mosflm_integration_parameters')
-
-    if integration_params:
-      if integration_params.has_key('separation'):
-        self.set_integrater_parameter(
-            'mosflm', 'separation',
-            '%f %f' % tuple(integration_params['separation']))
-      if integration_params.has_key('raster'):
-        self.set_integrater_parameter(
-            'mosflm', 'raster',
-            '%d %d %d %d %d' % tuple(integration_params['raster']))
-
-    indxr.set_indexer_payload('mosflm_integration_parameters', None)
-
-    spacegroup_number = lattice_to_spacegroup(lattice)
-
-    # copy these into myself for later reference, if indexer
-    # is not myself - everything else is copied via the
-    # cell refinement process...
-
-    if indxr != self:
-      from cctbx import sgtbx
-      from dxtbx.model import crystal
-      from dxtbx.model.detector_helpers import set_mosflm_beam_centre
-      experiment = indxr.get_indexer_experiment_list()[0]
-      set_mosflm_beam_centre(
-        experiment.detector, experiment.beam, beam_centre)
-      space_group = sgtbx.space_group_info(number=spacegroup_number).group()
-      a, b, c = experiment.crystal.get_real_space_vectors()
-      experiment.crystal = crystal.crystal_model(
-        a, b, c, space_group=space_group)
-
-    # FIXME surely these have been assigned further up?!
-
-    if not self._mosflm_cell_ref_images:
-      self._mosflm_cell_ref_images = self._refine_select_images(
-          mosaic)
-
-    f = open(os.path.join(self.get_working_directory(),
-                          'xiaindex-%s.mat' % lattice), 'w')
-    for m in matrix:
-      f.write(m)
-    f.close()
-
-    # then start the cell refinement
-
-    refiner = MosflmRefineCell()
-    refiner.set_working_directory(self.get_working_directory())
-    auto_logfiler(refiner)
-
-    if self._mosflm_gain:
-      refiner.set_gain(self._mosflm_gain)
-
-    refiner.set_reverse_phi(self.get_reversephi())
-    refiner.set_template(self.get_template())
-    refiner.set_directory(self.get_directory())
-    refiner.set_input_mat_file('xiaindex-%s.mat' % lattice)
-    refiner.set_output_mat_file('xiarefine.mat')
-    refiner.set_beam_centre(beam_centre)
-    refiner.set_unit_cell(cell)
-    refiner.set_distance(distance)
-    if set_spacegroup:
-      refiner.set_space_group_number(set_spacegroup)
-    else:
-      refiner.set_space_group_number(spacegroup_number)
-
-    # FIXME 18/JUN/08 - it may help to have an overestimate
-    # of the mosaic spread in here as it *may* refine down
-    # better than up... - this is not a good idea as it may
-    # also not refine at all! - 12972 # integration failed
-
-    # Bug # 3103
-    if self._mosflm_cell_ref_double_mosaic:
-      mosaic *= 2.0
-    refiner.set_mosaic(mosaic)
-
-    # if set, use the resolution for cell refinement - see
-    # bug # 2078...
-
-    if self._mosflm_cell_ref_resolution and not \
-           Flags.get_microcrystal():
-      refiner.set_resolution(self._mosflm_cell_ref_resolution)
-
-    refiner.set_fix_mosaic(self._mosflm_postref_fix_mosaic)
-
-    if Flags.get_microcrystal():
-      refiner.set_sdfac(2.0)
-
-    # note well that the beam centre is coming from indexing so
-    # should be already properly handled
-
-    if self.get_wavelength_prov() == 'user':
-      refiner.set_wavelength(self.get_wavelength())
-
-    # belt + braces mode - only to be used when considering failover,
-    # will run an additional step of autoindexing prior to cell
-    # refinement, to be used only after proving that not going it
-    # will result in cell refinement failure - will use the first
-    # wedge... N.B. this is only useful if the indexer is Labelit
-    # not Mosflm...
-
-    refiner.set_add_autoindex(self._mosflm_cell_ref_add_autoindex)
-
-    # get all of the stored parameter values
-    parameters = self.get_integrater_parameters('mosflm')
-    refiner.update_parameters(parameters)
-
-    detector = self.get_detector()
-    detector_width, detector_height = detector[0].get_image_size_mm()
-
-    lim_x = 0.5 * detector_width
-    lim_y = 0.5 * detector_height
-
-    Debug.write('Scanner limits: %.1f %.1f' % (lim_x, lim_y))
-    refiner.set_limits(lim_x, lim_y)
-    refiner.set_images(self._mosflm_cell_ref_images)
-
-    if Flags.get_failover() and not \
-                   self._mosflm_cell_ref_add_autoindex:
-      refiner.set_ignore_cell_refinement_failure(True)
-
-    refiner.run()
-
-    # then look to see if the cell refinement worked ok - if it
-    # didn't then this may indicate that the lattice was wrongly
-    # selected.
-
-    cell_refinement_ok = refiner.cell_refinement_ok()
-
-    if not cell_refinement_ok:
-      Debug.write('Repeating cell refinement...')
-      self.set_integrater_prepare_done(False)
-      self._mosflm_cell_ref_add_autoindex = True
-      return [0.0], [0.0]
-
-    rms_values = refiner.get_rms_values()
-    background_residual = refiner.get_background_residual()
-    self._intgr_cell = refiner.get_refined_unit_cell()
-    distance = refiner.get_refined_distance2()
-    experiment = self.get_integrater_indexer(
-      ).get_indexer_experiment_list()[0]
-    from Wrappers.Mosflm.AutoindexHelpers import set_distance
-    set_distance(experiment.detector, distance)
-
-    self.set_integrater_parameter('mosflm',
-                                  'distortion yscale',
-                                  refiner.get_refined_distortion_yscale())
-
-    self.set_integrater_parameter('mosflm',
-                                  'raster',
-                                  refiner.get_raster())
-
-    separation = refiner.get_separation()
-    if separation is not None:
-      self.set_integrater_parameter('mosflm',
-                                    'separation',
-                                    '%s %s' %refiner.get_separation())
-
-    self.set_integrater_parameter('mosflm',
-                                  'beam',
-                                  '%s %s' %refiner.get_refined_beam_centre())
-    self.set_integrater_parameter('mosflm',
-                                  'distance',
-                                  refiner.get_refined_distance())
-    self.set_integrater_parameter('mosflm',
-                                  'distortion tilt',
-                                  refiner.get_refined_distortion_tilt())
-    self.set_integrater_parameter('mosflm',
-                                  'distortion twist',
-                                  refiner.get_refined_distortion_twist())
-
-    indxr._indxr_mosaic = refiner.get_refined_mosaic()
-
-    indxr.set_indexer_payload('mosflm_orientation_matrix', open(
-        os.path.join(self.get_working_directory(),
-                     'xiarefine.mat'), 'r').readlines())
-
-    from Wrappers.Mosflm.AutoindexHelpers import crystal_model_from_mosflm_mat
-    # make a dxtbx crystal_model object from the mosflm matrix
-    experiment = self.get_integrater_indexer(
-      ).get_indexer_experiment_list()[0]
-    crystal_model = crystal_model_from_mosflm_mat(
-      indxr._indxr_payload['mosflm_orientation_matrix'],
-      unit_cell=refiner.get_refined_unit_cell(),
-      space_group=experiment.crystal.get_space_group())
-    experiment.crystal = crystal_model
-
-    return rms_values, background_residual
-
   def _mosflm_integrate(self):
     '''Perform the actual integration, based on the results of the
     cell refinement or indexing (they have the equivalent form.)'''
 
-    if not self.get_integrater_indexer():
-      Debug.write('Replacing indexer of %s with self at %d' % \
-                  (str(self.get_integrater_indexer()), __line__))
-      self.set_integrater_indexer(self)
+    #if not self.get_integrater_indexer():
+      #Debug.write('Replacing indexer of %s with self at %d' % \
+                  #(str(self.get_integrater_indexer()), __line__))
+      #self.set_integrater_indexer(self)
 
-    indxr = self.get_integrater_indexer()
+    #indxr = self.get_integrater_indexer()
+    refinr = self.get_integrater_refiner()
 
-    if not indxr.get_indexer_payload('mosflm_orientation_matrix'):
+    if not refinr.get_refiner_payload('mosflm_orientation_matrix'):
       raise RuntimeError, 'unexpected situation in indexing'
 
-    lattice = indxr.get_indexer_lattice()
-    mosaic = indxr.get_indexer_mosaic()
-    cell = indxr.get_indexer_cell()
-    beam = indxr.get_indexer_beam_centre()
-    distance = indxr.get_indexer_distance()
-    matrix = indxr.get_indexer_payload('mosflm_orientation_matrix')
+    lattice = refinr.get_refiner_lattice()
+    spacegroup_number = lattice_to_spacegroup(lattice)
+    #mosaic = indxr.get_indexer_mosaic()
+    mosaic = refinr.get_refiner_payload('mosaic')
+    #cell = self._intgr_cell
+    beam = refinr.get_refiner_payload('beam')
+    distance = refinr.get_refiner_payload('distance')
+    matrix = refinr.get_refiner_payload('mosflm_orientation_matrix')
 
-    integration_params = indxr.get_indexer_payload(
-        'mosflm_integration_parameters')
+    integration_params = refinr.get_refiner_payload(
+      'mosflm_integration_parameters')
+
+    #beam = integration_params['beam']
+    #distance = integration_params['distance']
 
     if integration_params:
       if integration_params.has_key('separation'):
         self.set_integrater_parameter(
-            'mosflm', 'separation',
-            '%f %f' % tuple(integration_params['separation']))
+          'mosflm', 'separation',
+          '%s %s' % tuple(integration_params['separation']))
       if integration_params.has_key('raster'):
         self.set_integrater_parameter(
-            'mosflm', 'raster',
-            '%d %d %d %d %d' % tuple(integration_params['raster']))
+          'mosflm', 'raster',
+          '%d %d %d %d %d' % tuple(integration_params['raster']))
 
-    indxr.set_indexer_payload('mosflm_integration_parameters', None)
-
-    spacegroup_number = lattice_to_spacegroup(lattice)
+    refinr.set_refiner_payload('mosflm_integration_parameters', None)
 
     f = open(os.path.join(self.get_working_directory(),
                           'xiaintegrate.mat'), 'w')
@@ -1076,39 +520,41 @@ class MosflmIntegrater(Integrater):
     missets. This will all be kind of explicit and hence probably
     messy!'''
 
-    if not self.get_integrater_indexer():
-      # should I raise a RuntimeError here?!
-      Debug.write('Replacing indexer of %s with self at %d' % \
-                  (str(self.get_integrater_indexer()), __line__))
-      self.set_integrater_indexer(self)
+    #if not self.get_integrater_indexer():
+      ## should I raise a RuntimeError here?!
+      #Debug.write('Replacing indexer of %s with self at %d' % \
+                  #(str(self.get_integrater_indexer()), __line__))
+      #self.set_integrater_indexer(self)
 
-    indxr = self.get_integrater_indexer()
+    #indxr = self.get_integrater_indexer()
+    refinr = self.get_integrater_refiner()
 
-    lattice = indxr.get_indexer_lattice()
+    lattice = refinr.get_refiner_lattice()
     spacegroup_number = lattice_to_spacegroup(lattice)
-    mosaic = indxr.get_indexer_mosaic()
-    cell = indxr.get_indexer_cell()
-    beam = indxr.get_indexer_beam_centre()
-    distance = indxr.get_indexer_distance()
-    matrix = indxr.get_indexer_payload('mosflm_orientation_matrix')
+    #mosaic = indxr.get_indexer_mosaic()
+    mosaic = refinr.get_refiner_payload('mosaic')
+    #cell = self._intgr_cell
+    beam = refinr.get_refiner_payload('beam')
+    distance = refinr.get_refiner_payload('distance')
+    matrix = refinr.get_refiner_payload('mosflm_orientation_matrix')
 
-    # integration parameters - will have to be copied to all
-    # of the running Mosflm instances...
+    integration_params = refinr.get_refiner_payload(
+      'mosflm_integration_parameters')
 
-    integration_params = indxr.get_indexer_payload(
-        'mosflm_integration_parameters')
+    #beam = integration_params['beam']
+    #distance = integration_params['distance']
 
     if integration_params:
       if integration_params.has_key('separation'):
         self.set_integrater_parameter(
             'mosflm', 'separation',
-            '%f %f' % tuple(integration_params['separation']))
+            '%s %s' % tuple(integration_params['separation']))
       if integration_params.has_key('raster'):
         self.set_integrater_parameter(
             'mosflm', 'raster',
             '%d %d %d %d %d' % tuple(integration_params['raster']))
 
-    indxr.set_indexer_payload('mosflm_integration_parameters', None)
+    refinr.set_refiner_payload('mosflm_integration_parameters', None)
     pname, xname, dname = self.get_integrater_project_info()
 
     # what follows below should (i) be run in separate directories
@@ -1164,7 +610,7 @@ class MosflmIntegrater(Integrater):
 
       auto_logfiler(job)
 
-      l = indxr.get_indexer_lattice()
+      l = refinr.get_refiner_lattice()
 
       # create the starting point
       f = open(os.path.join(wd, 'xiaintegrate-%s.mat' % l), 'w')

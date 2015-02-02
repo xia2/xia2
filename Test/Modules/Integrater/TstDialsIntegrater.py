@@ -56,12 +56,20 @@ def exercise_dials_integrater(nproc=None):
   sweep = XSweep('SWEEP1', wav, directory=directory, image=image)
   indexer.set_indexer_sweep(sweep)
 
+  from Modules.Refiner.DialsRefiner import DialsRefiner
+  refiner = DialsRefiner()
+  refiner.set_working_directory(tmp_dir)
+  refiner.add_refiner_indexer(sweep.get_epoch(1), indexer)
+  #refiner.refine()
+
   integrater = DialsIntegrater()
   integrater.set_working_directory(tmp_dir)
   integrater.setup_from_image(template %1)
-  integrater.set_integrater_indexer(indexer)
+  integrater.set_integrater_refiner(refiner)
+  #integrater.set_integrater_indexer(indexer)
   integrater.set_integrater_sweep(sweep)
   integrater.integrate()
+
 
   integrater_intensities = integrater.get_integrater_intensities()
   assert os.path.exists(integrater_intensities)
@@ -69,14 +77,14 @@ def exercise_dials_integrater(nproc=None):
   reader = any_reflection_file(integrater_intensities)
   assert reader.file_type() == "ccp4_mtz"
   mtz_object = reader.file_content()
-  assert mtz_object.n_reflections() == 43098
+  assert mtz_object.n_reflections() == 48097, mtz_object.n_reflections()
   assert mtz_object.column_labels() == [
     'H', 'K', 'L', 'M_ISYM', 'BATCH', 'IPR', 'SIGIPR', 'I', 'SIGI',
     'FRACTIONCALC', 'XDET', 'YDET', 'ROT', 'LP']
 
   assert integrater.get_integrater_wedge() == (1, 45)
   assert approx_equal(integrater.get_integrater_cell(),
-                      (78.0425, 78.0425, 78.04251, 90, 90, 90), eps=1e-3)
+                      (78.062, 78.062, 78.062, 90, 90, 90), eps=1e-2)
 
   # test serialization of integrater
   json_str = integrater.as_json()
@@ -92,7 +100,7 @@ def exercise_dials_integrater(nproc=None):
   reader = any_reflection_file(integrater2_intensities)
   assert reader.file_type() == "ccp4_mtz"
   mtz_object = reader.file_content()
-  assert mtz_object.n_reflections() == 43098, mtz_object.n_reflections()
+  assert mtz_object.n_reflections() == 48097, mtz_object.n_reflections()
 
   integrater2.set_integrater_done(False)
   integrater2_intensities = integrater2.get_integrater_intensities()
@@ -100,7 +108,7 @@ def exercise_dials_integrater(nproc=None):
   reader = any_reflection_file(integrater2_intensities)
   assert reader.file_type() == "ccp4_mtz"
   mtz_object = reader.file_content()
-  assert mtz_object.n_reflections() == 43098, mtz_object.n_reflections()
+  assert mtz_object.n_reflections() == 48097, mtz_object.n_reflections()
 
   integrater2.set_integrater_prepare_done(False)
   integrater2_intensities = integrater2.get_integrater_intensities()
@@ -108,7 +116,7 @@ def exercise_dials_integrater(nproc=None):
   reader = any_reflection_file(integrater2_intensities)
   assert reader.file_type() == "ccp4_mtz"
   mtz_object = reader.file_content()
-  assert mtz_object.n_reflections() == 43098, mtz_object.n_reflections()
+  assert mtz_object.n_reflections() == 48097, mtz_object.n_reflections()
 
 
 def run(args):

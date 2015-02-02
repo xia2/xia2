@@ -21,11 +21,17 @@ def check(key, value):
   allowed_indexers = [
       'mosflm', 'labelit', 'labelitii', 'xds', 'xdsii', 'xdssum', 'dials']
   allowed_integraters = ['mosflmr', 'xdsr', 'mosflm', 'xds', 'dials']
+  allowed_refiners = ['mosflm', 'xds', 'dials']
   allowed_scalers = ['ccp4a', 'xdsa']
 
   if key == 'indexer':
     if not value in allowed_indexers:
       raise RuntimeError, 'indexer %s unknown' % value
+    return value
+
+  if key == 'refiner':
+    if not value in allowed_refiners:
+      raise RuntimeError, 'refiner %s unknown' % value
     return value
 
   if key == 'integrater':

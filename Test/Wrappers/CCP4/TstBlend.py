@@ -56,7 +56,7 @@ def exercise_blend_wrapper():
     'start_image': 1, 'radiation_damage_cutoff': 50, 'd_min': 1.739,
     'final_image': 50,
     'input_file': os.path.join(tmp_dir, 'data', 'lysozyme', 'dataset_001.mtz')
-  }
+  }, analysis[1]
 
   assert summary.keys() == range(1, 29)
   assert summary[1] == {

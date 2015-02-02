@@ -187,6 +187,8 @@ xia2.settings {
   }
   indexer = mosflm labelit labelitii xds xdsii xdssum dials
     .type = choice
+  refiner = mosflm xds dials
+    .type = choice
   integrater = mosflmr xdsr mosflm xds dials
     .type = choice
   scaler = ccp4a xdsa
