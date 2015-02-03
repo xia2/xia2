@@ -16,7 +16,7 @@ class XInfo(object):
   enough information to allow structure solution, as parsed from a
   .xinfo file, an example of which is in the source code.'''
 
-  def __init__(self, xinfo_file):
+  def __init__(self, xinfo_file, sweep_ids=None, sweep_ranges=None):
     '''Initialise myself from an input .xinfo file.'''
 
     # first initialise all of the data structures which will hold the
@@ -24,6 +24,14 @@ class XInfo(object):
 
     self._project = None
     self._crystals = OrderedDict()
+
+    if sweep_ids is not None:
+      sweep_ids = [s.lower() for s in sweep_ids]
+    if sweep_ranges is not None:
+      assert sweep_ids is not None
+      assert len(sweep_ids) == len(sweep_ranges)
+    self._sweep_ids = sweep_ids
+    self._sweep_ranges = sweep_ranges
 
     # read the contents of the xinfo file
 
@@ -275,6 +283,14 @@ class XInfo(object):
       if 'BEGIN SWEEP' in record:
         sweep = record.replace('BEGIN SWEEP', '').strip()
 
+        if self._sweep_ids is not None and sweep.lower() not in self._sweep_ids:
+          continue
+
+        elif self._sweep_ranges is not None:
+          start_end = self._sweep_ranges[self._sweep_ids.index(sweep.lower())]
+        else:
+          start_end = None
+
         if self._crystals[crystal]['sweeps'].has_key(sweep):
           raise RuntimeError, \
                 'sweep %s already exists for crystal %s' % \
@@ -283,6 +299,10 @@ class XInfo(object):
         self._crystals[crystal]['sweeps'][sweep] = { }
         self._crystals[crystal]['sweeps'][sweep][
             'excluded_regions'] = []
+
+        if start_end is not None:
+          self._crystals[crystal]['sweeps'][sweep][
+            'start_end'] = start_end
 
         # in here I expect to find IMAGE, DIRECTORY, WAVELENGTH
         # and optionally BEAM
@@ -332,12 +352,13 @@ class XInfo(object):
                 'reversephi'] = True
 
           elif 'START_END' == record.split()[0]:
-            start_end = map(int, record.split()[1:])
-            if len(start_end) != 2:
-              raise RuntimeError, \
-                    'START_END start end, not "%s"' % record
-            self._crystals[crystal]['sweeps'][sweep][
-                'start_end'] = start_end
+            if 'start_end' not in self._crystals[crystal]['sweeps'][sweep]:
+              start_end = map(int, record.split()[1:])
+              if len(start_end) != 2:
+                raise RuntimeError, \
+                      'START_END start end, not "%s"' % record
+              self._crystals[crystal]['sweeps'][sweep][
+                  'start_end'] = start_end
 
           elif 'EXCLUDE' == record.split()[0]:
             if record.split()[1].upper() == 'ICE':

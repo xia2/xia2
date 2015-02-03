@@ -343,7 +343,10 @@ class SweepInformation(object):
     self._project_info = integrater.get_integrater_project_info()
     self._sweep_name = integrater.get_integrater_sweep_name()
     self._integrater = integrater
-    self._batches = integrater.get_integrater_batches()
+    sweep = integrater.get_integrater_sweep()
+    self._batches = sweep.get_frames_to_process()
+    if self._batches is None:
+      self._batches = integrater.get_integrater_batches()
     self._batch_offset = 0
 
     self._image_to_epoch = integrater.get_integrater_sweep(

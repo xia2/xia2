@@ -134,6 +134,14 @@ xia2.settings {
               "alternative source of images header information to avoid the "
               "need to read all the image headers on start-up."
   }
+  sweep
+    .multiple = True
+  {
+    id = None
+      .type = str
+    range = None
+      .type = ints(size=2)
+  }
   unit_cell = None
     .type = unit_cell
     .help = "Provide a target unit cell to the indexing program"

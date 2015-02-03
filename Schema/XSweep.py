@@ -762,6 +762,9 @@ class XSweep(object):
 
     return self._integrater
 
+  def get_frames_to_process(self):
+    return self._frames_to_process
+
   def get_indexer_lattice(self):
     return self._get_indexer().get_indexer_lattice()
 

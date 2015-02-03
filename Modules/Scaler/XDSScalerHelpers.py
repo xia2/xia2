@@ -178,14 +178,40 @@ class XDSScalerHelper(object):
 
     return data_map
 
+  def limit_batches(self, input_file, output_file, start, end):
+    infile = open(input_file, 'rb')
+    outfile = open(output_file, 'wb')
+
+    for line in infile.readlines():
+      if line.startswith('!'):
+        outfile.write(line)
+      else:
+        tokens = line.split()
+        assert len(tokens) == 12
+        z = float(tokens[7])
+        if z >= start and z < end:
+          outfile.write(line)
+
+    infile.close()
+    outfile.close()
+
 if __name__ == '__main__':
 
   xsh = XDSScalerHelper()
 
-  input_file = os.path.join(
-      os.environ['X2TD_ROOT'], 'Test', 'UnitTest',
-      'Modules', 'XDSScalerHelpers', '1VR9_NAT.HKL')
-  project_info = {'NATIVE_NATIVE_HR.HKL':('JCSG', '1VR9', 'NATIVE'),
-                  'NATIVE_NATIVE_LR.HKL':('JCSG', '1VR9', 'NATIVE')}
-  print xsh.split_and_convert_xscale_output(input_file, 'SCALED_',
-                                            project_info)
+  #input_file = os.path.join(
+      #os.environ['X2TD_ROOT'], 'Test', 'UnitTest',
+      #'Modules', 'XDSScalerHelpers', '1VR9_NAT.HKL')
+  #project_info = {'NATIVE_NATIVE_HR.HKL':('JCSG', '1VR9', 'NATIVE'),
+                  #'NATIVE_NATIVE_LR.HKL':('JCSG', '1VR9', 'NATIVE')}
+  #print xsh.split_and_convert_xscale_output(input_file, 'SCALED_',
+                                            #project_info)
+
+  args = sys.argv[1:]
+  assert len(args) == 4
+  input_file = args[0]
+  output_file = args[1]
+  start = int(args[2])
+  end = int(args[3])
+
+  xsh.limit_batches(input_file, output_file, start, end)

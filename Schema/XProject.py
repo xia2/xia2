@@ -94,7 +94,14 @@ class XProject(object):
 
     settings = PhilIndex.params.xia2.settings
 
-    xinfo = XInfo(xinfo_file)
+    sweep_ids = [sweep.id for sweep in settings.sweep]
+    sweep_ranges = [sweep.range for sweep in settings.sweep]
+
+    if len(sweep_ids) == 0:
+      sweep_ids = None
+      sweep_ranges = None
+
+    xinfo = XInfo(xinfo_file, sweep_ids=sweep_ids, sweep_ranges=sweep_ranges)
 
     self._name = xinfo.get_project()
     crystals = xinfo.get_crystals()

@@ -19,25 +19,26 @@ os.environ['XIA2_ROOT'] = xia2_root_dir
 os.environ['XIA2CORE_ROOT'] = os.path.join(xia2_root_dir, "core")
 
 tst_list = (
-    ["$D/Test/Wrappers/Dials/TstDialsWrappers.py", "1"],
-    #["$D/Test/Modules/Refiner/TstDialsRefiner.py", "1"],
-    ["$D/Test/Modules/Integrater/TstMosflmIntegrater.py", "1"], # serial
-    ["$D/Test/Modules/Integrater/TstMosflmIntegrater.py", "2"], # parallel
-    ["$D/Test/Modules/Integrater/TstDialsIntegrater.py", "1"],
-    ["$D/Test/Modules/Integrater/TstXDSIntegrater.py", "1"],
-    ["$D/Test/Modules/Indexer/TstMosflmIndexer.py", "1"],
-    ["$D/Test/Modules/Indexer/TstDialsIndexer.py", "1"],
-    "$D/Test/Modules/Indexer/TstLabelitIndexer.py",
-    "$D/Test/Modules/Indexer/TstLabelitIndexerII.py",
-    ["$D/Test/Modules/Indexer/TstXDSIndexer.py", "1"],
-    ["$D/Test/Modules/Indexer/TstXDSIndexerII.py", "1"],
-    ["$D/Test/Modules/Scaler/TstCCP4ScalerA.py", "1"],
-    ["$D/Test/Modules/Scaler/TstXDSScalerA.py", "1"],
-    "$D/Test/Wrappers/CCP4/TstBlend.py",
-    "$D/Test/Wrappers/Labelit/TstLabelitIndex.py",
-    "$D/Test/Wrappers/Mosflm/TstMosflmIndex.py",
-    "$D/Test/Wrappers/Mosflm/TstMosflmRefineCell.py",
-    "$D/Test/Mosflm/MosflmRefactorTest.py",
+  "$D/Test/Handlers/TstXinfo.py",
+  ["$D/Test/Wrappers/Dials/TstDialsWrappers.py", "1"],
+  #["$D/Test/Modules/Refiner/TstDialsRefiner.py", "1"],
+  ["$D/Test/Modules/Integrater/TstMosflmIntegrater.py", "1"], # serial
+  ["$D/Test/Modules/Integrater/TstMosflmIntegrater.py", "2"], # parallel
+  ["$D/Test/Modules/Integrater/TstDialsIntegrater.py", "1"],
+  ["$D/Test/Modules/Integrater/TstXDSIntegrater.py", "1"],
+  ["$D/Test/Modules/Indexer/TstMosflmIndexer.py", "1"],
+  ["$D/Test/Modules/Indexer/TstDialsIndexer.py", "1"],
+  "$D/Test/Modules/Indexer/TstLabelitIndexer.py",
+  "$D/Test/Modules/Indexer/TstLabelitIndexerII.py",
+  ["$D/Test/Modules/Indexer/TstXDSIndexer.py", "1"],
+  ["$D/Test/Modules/Indexer/TstXDSIndexerII.py", "1"],
+  ["$D/Test/Modules/Scaler/TstCCP4ScalerA.py", "1"],
+  ["$D/Test/Modules/Scaler/TstXDSScalerA.py", "1"],
+  "$D/Test/Wrappers/CCP4/TstBlend.py",
+  "$D/Test/Wrappers/Labelit/TstLabelitIndex.py",
+  "$D/Test/Wrappers/Mosflm/TstMosflmIndex.py",
+  "$D/Test/Wrappers/Mosflm/TstMosflmRefineCell.py",
+  "$D/Test/Mosflm/MosflmRefactorTest.py",
 )
 
 def run () :
