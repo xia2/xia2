@@ -30,7 +30,7 @@ from xia2.Applications.xia2setup import write_xinfo
 from xia2.Applications.xia2 import check, check_cctbx_version, check_environment
 from xia2.Applications.xia2 import get_command_line, write_citations, help
 
-def xia2():
+def xia2(stop_after=None):
   '''Actually process something...'''
 
   from Handlers.Flags import Flags
@@ -70,9 +70,15 @@ def xia2():
       wavelength = crystals[crystal_id].get_xwavelength(wavelength_id)
       sweeps = wavelength.get_sweeps()
       for sweep in sweeps:
-        sweep.get_integrater_intensities()
+        if stop_after == 'index':
+          sweep.get_indexer_cell()
+        else:
+          sweep.get_integrater_intensities()
         sweep.serialize()
-  Chatter.write(xinfo.get_output())
+
+
+  if stop_after not in ('index', 'integrate'):
+    Chatter.write(xinfo.get_output())
 
   duration = time.time() - start_time
 
@@ -89,13 +95,14 @@ def xia2():
     from Wrappers.XIA.Diffdump import HeaderCache
     HeaderCache.write(Flags.get_hdr_out())
 
-  # and the summary file
-  summary_records = CommandLine.get_xinfo().summarise()
+  if stop_after not in ('index', 'integrate'):
+    # and the summary file
+    summary_records = CommandLine.get_xinfo().summarise()
 
-  fout = open('xia2-summary.dat', 'w')
-  for record in summary_records:
-    fout.write('%s\n' % record)
-  fout.close()
+    fout = open('xia2-summary.dat', 'w')
+    for record in summary_records:
+      fout.write('%s\n' % record)
+    fout.close()
 
   write_citations()
 
