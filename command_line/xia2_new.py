@@ -76,9 +76,11 @@ def xia2(stop_after=None):
           sweep.get_integrater_intensities()
         sweep.serialize()
 
-
   if stop_after not in ('index', 'integrate'):
     Chatter.write(xinfo.get_output())
+
+  for crystal in crystals.values():
+    crystal.serialize()
 
   duration = time.time() - start_time
 

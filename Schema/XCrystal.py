@@ -764,6 +764,8 @@ class XCrystal(object):
       # if both of these are true then produce a null scaler
       # which will wrap this information
 
+      working_directory = Environment.generate_directory([self._name, 'scale'])
+
       self._scaler = Scaler()
 
       # put an inverse link in place... to support RD analysis
@@ -775,9 +777,7 @@ class XCrystal(object):
         self._scaler.set_scaler_anomalous(True)
 
       # set up a sensible working directory
-      self._scaler.set_working_directory(
-          Environment.generate_directory([self._name,
-                                          'scale']))
+      self._scaler.set_working_directory(working_directory)
 
       # set the reference reflection file, if we have one...
       if self._reference_reflection_file:
@@ -812,6 +812,13 @@ class XCrystal(object):
         self._scaler.add_scaler_integrater(i)
 
     return self._scaler
+
+  def serialize(self):
+    scaler = self._get_scaler()
+    if scaler.get_scaler_finish_done():
+      scaler.as_json(
+        filename=os.path.join(scaler.get_working_directory(), "xia2.json"))
+
 
 if __name__ == '__main__':
   # lm = _lattice_manager('aP', (43.62, 52.27, 116.4, 103, 100.7, 90.03))
