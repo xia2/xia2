@@ -24,6 +24,8 @@ try:
 except KeyError, e:
   have_dials_regression = False
 
+from Handlers.Streams import Debug, Stdout
+Debug.join(Stdout)
 
 def exercise_mosflm_indexer():
   if not have_dials_regression:
