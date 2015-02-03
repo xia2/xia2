@@ -30,63 +30,6 @@ from xia2.Applications.xia2setup import write_xinfo
 from xia2.Applications.xia2 import check, check_cctbx_version, check_environment
 from xia2.Applications.xia2 import get_command_line, write_citations, help
 
-#def xia2_index():
-  #'''Actually process something...'''
-
-  #from Handlers.Flags import Flags
-  #Flags.set_serialize_state(True)
-
-  ## print the version
-  #Chatter.write(Version)
-  #Citations.cite('xia2')
-
-  #start_time = time.time()
-
-  #CommandLine = get_command_line()
-
-  ## check that something useful has been assigned for processing...
-  #xtals = CommandLine.get_xinfo().get_crystals()
-
-  #no_images = True
-
-  #for name in xtals.keys():
-    #xtal = xtals[name]
-
-    #if not xtal.get_all_image_names():
-
-      #Chatter.write('-----------------------------------' + \
-                    #'-' * len(name))
-      #Chatter.write('| No images assigned for crystal %s |' % name)
-      #Chatter.write('-----------------------------------' + '-' \
-                    #* len(name))
-    #else:
-      #no_images = False
-
-  ## this actually gets the processing started...
-  #xinfo = CommandLine.get_xinfo()
-  #crystals = xinfo.get_crystals()
-  #for crystal_id in crystals.keys():
-    #for wavelength_id in crystals[crystal_id].get_wavelength_names():
-      #wavelength = crystals[crystal_id].get_xwavelength(wavelength_id)
-      #sweeps = wavelength.get_sweeps()
-      #for sweep in sweeps:
-        #sweep.get_indexer_cell()
-        #sweep.serialize()
-
-  #duration = time.time() - start_time
-
-  ## write out the time taken in a human readable way
-  #Chatter.write('Processing took %s' % \
-                #time.strftime("%Hh %Mm %Ss", time.gmtime(duration)))
-
-  ## delete all of the temporary mtz files...
-  #cleanup()
-
-  #write_citations()
-
-  #Environment.cleanup()
-
-  #return
 
 def run():
   try:
