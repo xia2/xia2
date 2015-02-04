@@ -77,14 +77,14 @@ def exercise_dials_integrater(nproc=None):
   reader = any_reflection_file(integrater_intensities)
   assert reader.file_type() == "ccp4_mtz"
   mtz_object = reader.file_content()
-  assert mtz_object.n_reflections() == 48097, mtz_object.n_reflections()
+  assert abs(mtz_object.n_reflections() - 48097) < 100, mtz_object.n_reflections()
   assert mtz_object.column_labels() == [
     'H', 'K', 'L', 'M_ISYM', 'BATCH', 'IPR', 'SIGIPR', 'I', 'SIGI',
     'FRACTIONCALC', 'XDET', 'YDET', 'ROT', 'LP']
 
   assert integrater.get_integrater_wedge() == (1, 45)
   assert approx_equal(integrater.get_integrater_cell(),
-                      (78.062, 78.062, 78.062, 90, 90, 90), eps=1e-2)
+                      (78.14, 78.14, 78.14, 90, 90, 90), eps=1e-2)
 
   # test serialization of integrater
   json_str = integrater.as_json()
@@ -100,7 +100,7 @@ def exercise_dials_integrater(nproc=None):
   reader = any_reflection_file(integrater2_intensities)
   assert reader.file_type() == "ccp4_mtz"
   mtz_object = reader.file_content()
-  assert mtz_object.n_reflections() == 48097, mtz_object.n_reflections()
+  assert abs(mtz_object.n_reflections() - 48097) < 100, mtz_object.n_reflections()
 
   integrater2.set_integrater_done(False)
   integrater2_intensities = integrater2.get_integrater_intensities()
@@ -108,7 +108,7 @@ def exercise_dials_integrater(nproc=None):
   reader = any_reflection_file(integrater2_intensities)
   assert reader.file_type() == "ccp4_mtz"
   mtz_object = reader.file_content()
-  assert mtz_object.n_reflections() == 48097, mtz_object.n_reflections()
+  assert abs(mtz_object.n_reflections() - 48097) < 100, mtz_object.n_reflections()
 
   integrater2.set_integrater_prepare_done(False)
   integrater2_intensities = integrater2.get_integrater_intensities()
@@ -116,7 +116,7 @@ def exercise_dials_integrater(nproc=None):
   reader = any_reflection_file(integrater2_intensities)
   assert reader.file_type() == "ccp4_mtz"
   mtz_object = reader.file_content()
-  assert mtz_object.n_reflections() == 48097, mtz_object.n_reflections()
+  assert abs(mtz_object.n_reflections() - 48097) < 100, mtz_object.n_reflections()
 
 
 def run(args):

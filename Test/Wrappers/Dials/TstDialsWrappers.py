@@ -87,7 +87,7 @@ def exercise_dials_wrappers(nproc=None):
   assert bravais_setting_22['bravais'] == 'cI'
   assert bravais_setting_22['cb_op'] == 'b+c,a+c,a+b'
   assert approx_equal(bravais_setting_22['unit_cell'],
-                      (78.0619,78.0619,78.0619,90,90,90), eps=1e-4)
+                      (78.14,78.14,78.14,90,90,90), eps=1e-2)
   bravais_setting_22_json = bravais_setting_22['experiments_file']
   assert os.path.exists(bravais_setting_22_json)
 

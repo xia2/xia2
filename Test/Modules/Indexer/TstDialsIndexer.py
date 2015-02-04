@@ -58,10 +58,10 @@ def exercise_dials_indexer(nproc=None):
   indexer.index()
 
   assert approx_equal(indexer.get_indexer_cell(),
-                      (78.0619, 78.0619, 78.0619, 90, 90, 90), eps=1e-2)
+                      (78.14, 78.14, 78.14, 90, 90, 90), eps=1e-2)
   solution = indexer.get_solution()
-  assert approx_equal(solution['rmsd'], 0.041, eps=1e-3)
-  assert approx_equal(solution['metric'], 0.0238, eps=1e-4)
+  assert approx_equal(solution['rmsd'], 0.043, eps=1e-2)
+  assert approx_equal(solution['metric'], 0.0256, eps=1e-3)
   assert solution['number'] == 22
   assert solution['lattice'] == 'cI'
 
