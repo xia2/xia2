@@ -226,6 +226,8 @@ class MosflmIndexer(Indexer):
         for i in _images:
 
           p = Printpeaks()
+          p.set_working_directory(self.get_working_directory())
+          auto_logfiler(p)
           p.set_image(self.get_image_name(i))
           thresh = p.threshold(min_peaks)
 
@@ -238,6 +240,7 @@ class MosflmIndexer(Indexer):
         self._mosflm_autoindex_thresh = thresh
 
       except Exception as e:
+        print str(e) #XXX this should disappear!
         Debug.write('Error computing threshold: %s' % str(e))
         Debug.write('Using default of 20.0')
         thresh = 20.0
