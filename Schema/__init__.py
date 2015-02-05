@@ -57,4 +57,5 @@ def load_imagesets(template, directory, id_image=None, image_range=None,
           image_range[0] - scan_image_range[0]:
           image_range[1] + 1 - scan_image_range[0]]]
         assert len(imagesets[0]) == image_range[1] - image_range[0] + 1, len(imagesets[0])
+        return imagesets
   return imageset_cache[full_template_path].values()
