@@ -25,8 +25,10 @@ def load_imagesets(template, directory, id_image=None, image_range=None,
       unhandled = []
       datablocks = DataBlockFactory.from_filenames(
         paths, verbose=False, unhandled=unhandled)
-      assert len(unhandled) == 0, "unhandled image files identified: %s" % unhandled
-      assert len(datablocks) == 1, "1 datablock expected, %d found" % len(datablocks)
+      assert len(unhandled) == 0, "unhandled image files identified: %s" % \
+          unhandled
+      assert len(datablocks) == 1, "1 datablock expected, %d found" % \
+          len(datablocks)
 
     else:
       from dxtbx.datablock import DataBlockTemplateImporter
