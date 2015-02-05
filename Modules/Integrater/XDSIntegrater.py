@@ -234,7 +234,8 @@ class XDSIntegrater(Integrater):
 
     if idxr is None:
       idxr = XDSIndexer()
-      self._intgr_refiner.add_refiner_indexer(idxr)
+      self._intgr_refiner.add_refiner_indexer(
+        self.get_integrater_epoch(), idxr)
       self.set_integrater_prepare_done(False)
       #self.set_integrater_indexer()
       idxr.set_indexer_sweep(self.get_integrater_sweep())
