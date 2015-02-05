@@ -16,6 +16,7 @@ os.environ['XIA2CORE_ROOT'] = os.path.join(xia2_root_dir, "core")
 
 from Handlers.Streams import Chatter, Debug
 
+from Handlers.Flags import Flags
 from Handlers.Files import cleanup
 from Handlers.Citations import Citations
 from Handlers.Environment import Environment, df
@@ -62,6 +63,39 @@ def xia2(stop_after=None):
     else:
       no_images = False
 
+  def process_one_sweep(args):
+
+    assert len(args) == 3
+    sweep, stop_after, cache = args
+
+    if cache:
+      Chatter.cache()
+      Debug.cache()
+
+    try:
+      if stop_after == 'index':
+        sweep.get_indexer_cell()
+      else:
+        sweep.get_integrater_intensities()
+      sweep.serialize()
+    except Exception, e:
+      if Flags.get_failover():
+        Chatter.write('Processing sweep %s failed: %s' % \
+                      (s.get_name(), str(e)))
+      else:
+        raise
+    finally:
+      if cache:
+        Chatter.uncache()
+        Debug.uncache()
+
+  args = []
+
+  from Handlers.Phil import PhilIndex
+  params = PhilIndex.get_python_object()
+  mp_params = params.xia2.settings.multiprocessing
+  njob = mp_params.njob
+
   # this actually gets the processing started...
   xinfo = CommandLine.get_xinfo()
   crystals = xinfo.get_crystals()
@@ -70,11 +104,27 @@ def xia2(stop_after=None):
       wavelength = crystals[crystal_id].get_xwavelength(wavelength_id)
       sweeps = wavelength.get_sweeps()
       for sweep in sweeps:
-        if stop_after == 'index':
-          sweep.get_indexer_cell()
-        else:
-          sweep.get_integrater_intensities()
-        sweep.serialize()
+        args.append((sweep, stop_after, njob > 1))
+
+  from libtbx import easy_mp
+  results = easy_mp.parallel_map(
+    process_one_sweep, args, processes=njob,
+    method="multiprocessing",
+    preserve_order=True,
+    preserve_exception_message=True)
+
+  # Hack to update sweep with the serialized indexers/refiners/integraters
+  for crystal_id in crystals.keys():
+    for wavelength_id in crystals[crystal_id].get_wavelength_names():
+      wavelength = crystals[crystal_id].get_xwavelength(wavelength_id)
+      sweeps = wavelength.get_sweeps()
+      for sweep in sweeps:
+        sweep._indexer = None
+        sweep._refiner = None
+        sweep._integrater = None
+        sweep._get_indexer()
+        sweep._get_refiner()
+        sweep._get_integrater()
 
   if stop_after not in ('index', 'integrate'):
     Chatter.write(xinfo.get_output())
@@ -92,7 +142,6 @@ def xia2(stop_after=None):
   cleanup()
 
   # maybe write out the headers
-  from Handlers.Flags import Flags
   if Flags.get_hdr_out():
     from Wrappers.XIA.Diffdump import HeaderCache
     HeaderCache.write(Flags.get_hdr_out())
