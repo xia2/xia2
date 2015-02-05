@@ -31,10 +31,12 @@ from xia2.Applications.xia2setup import write_xinfo
 from xia2.Applications.xia2 import check, check_cctbx_version, check_environment
 from xia2.Applications.xia2 import get_command_line, write_citations, help
 
+from xia2.Applications.xia2_helpers import process_one_sweep
+
+
 def xia2(stop_after=None):
   '''Actually process something...'''
 
-  from Handlers.Flags import Flags
   Flags.set_serialize_state(True)
 
   # print the version
@@ -63,38 +65,14 @@ def xia2(stop_after=None):
     else:
       no_images = False
 
-  def process_one_sweep(args):
-
-    assert len(args) == 3
-    sweep, stop_after, cache = args
-
-    if cache:
-      Chatter.cache()
-      Debug.cache()
-
-    try:
-      if stop_after == 'index':
-        sweep.get_indexer_cell()
-      else:
-        sweep.get_integrater_intensities()
-      sweep.serialize()
-    except Exception, e:
-      if Flags.get_failover():
-        Chatter.write('Processing sweep %s failed: %s' % \
-                      (s.get_name(), str(e)))
-      else:
-        raise
-    finally:
-      if cache:
-        Chatter.uncache()
-        Debug.uncache()
-
   args = []
 
   from Handlers.Phil import PhilIndex
   params = PhilIndex.get_python_object()
   mp_params = params.xia2.settings.multiprocessing
   njob = mp_params.njob
+
+  from libtbx import group_args
 
   # this actually gets the processing started...
   xinfo = CommandLine.get_xinfo()
@@ -104,12 +82,33 @@ def xia2(stop_after=None):
       wavelength = crystals[crystal_id].get_xwavelength(wavelength_id)
       sweeps = wavelength.get_sweeps()
       for sweep in sweeps:
-        args.append((sweep, stop_after, njob > 1))
+        sweep._get_indexer()
+        sweep._get_refiner()
+        sweep._get_integrater()
+        args.append((
+          group_args(sweep=sweep,
+                     stop_after=stop_after,
+                     cache_output=(njob > 1),
+                     flags=Flags,
+                     phil_index=PhilIndex,
+                     command_line=CommandLine
+                     ),))
+
+  if mp_params.type == "qsub":
+    method = "sge"
+  else:
+    method = "multiprocessing"
+  nproc = mp_params.nproc
+  qsub_command = mp_params.qsub_command
+  if not qsub_command:
+    qsub_command = 'qsub'
+  qsub_command = '%s -V -cwd -pe smp %d' %(qsub_command, nproc)
 
   from libtbx import easy_mp
   results = easy_mp.parallel_map(
     process_one_sweep, args, processes=njob,
-    method="multiprocessing",
+    method=method,
+    qsub_command=qsub_command,
     preserve_order=True,
     preserve_exception_message=True)
 
