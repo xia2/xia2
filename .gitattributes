@@ -122,6 +122,7 @@ Wrappers/XDS/XDSGenerateIgnoreFiles.py -text
 Wrappers/XDS/XScaleR.py -text
 command_line/index.py -text
 command_line/integrate.py -text
+command_line/make_sphinx_html.py -text
 command_line/xia2_new.py -text
 command_line/xia2_old.py -text
 command_line/xia2_setup.py -text
