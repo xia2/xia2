@@ -117,15 +117,16 @@ def xia2(stop_after=None):
   for crystal_id in crystals.keys():
     for wavelength_id in crystals[crystal_id].get_wavelength_names():
       wavelength = crystals[crystal_id].get_xwavelength(wavelength_id)
+      remove_sweeps = []
       sweeps = wavelength.get_sweeps()
       for sweep in sweeps:
         success, output = results[i_sweep]
+        if output is not None:
+          Chatter.write(output)
         if not success:
           print "Sweep failed: removing %s" %sweep.get_name()
-          wavelength.remove_sweep(sweep)
+          remove_sweeps.append(sweep)
         else:
-          if output is not None:
-            Chatter.write(output)
           print "Loading sweep: %s" %sweep.get_name()
           sweep._indexer = None
           sweep._refiner = None
@@ -134,6 +135,12 @@ def xia2(stop_after=None):
           sweep._get_refiner()
           sweep._get_integrater()
         i_sweep += 1
+      for sweep in remove_sweeps:
+        wavelength.remove_sweep(sweep)
+
+  # switch off parallel mode so that old-style parallelisation doesn't kick in
+  mp_params.njob = 1
+  mp_params.mode = "serial"
 
   if stop_after not in ('index', 'integrate'):
     Chatter.write(xinfo.get_output())
