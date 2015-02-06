@@ -18,6 +18,7 @@ xia2
    parameters
    installation
    comments
+   release_notes
 
 Contact
 =======

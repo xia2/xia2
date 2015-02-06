@@ -205,6 +205,7 @@ doc/sphinx/introductory_example.rst -text
 doc/sphinx/parameters.rst -text
 doc/sphinx/program_output.rst -text
 doc/sphinx/quick_start.rst -text
+doc/sphinx/release_notes.rst -text
 doc/sphinx/using_xia2.rst -text
 html/new/.buildinfo -text
 html/new/_images/3qrn-all-complete-aimless.png -text svneol=unset#unset
@@ -223,6 +224,7 @@ html/new/_sources/introductory_example.txt -text
 html/new/_sources/parameters.txt -text
 html/new/_sources/program_output.txt -text
 html/new/_sources/quick_start.txt -text
+html/new/_sources/release_notes.txt -text
 html/new/_sources/using_xia2.txt -text
 html/new/_static/ajax-loader.gif -text svneol=unset#unset
 html/new/_static/basic.css -text
@@ -254,10 +256,11 @@ html/new/index.html -text
 html/new/installation.html -text
 html/new/introduction.html -text
 html/new/introductory_example.html -text
-html/new/objects.inv -text svneol=unset#unset
+html/new/objects.inv -text
 html/new/parameters.html -text
 html/new/program_output.html -text
 html/new/quick_start.html -text
+html/new/release_notes.html -text
 html/new/search.html -text
 html/new/searchindex.js -text
 html/new/using_xia2.html -text

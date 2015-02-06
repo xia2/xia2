@@ -3,7 +3,7 @@ Background
 ++++++++++
 
 Users of macromolecular crystallography (MX) are well served in terms of
-data reduction software, with packages such as HKL2000, Mosflm [1]_,
+data reduction software, with packages such as HKL2000, Mosflm [1]_, 
 XDS [2]_ and d*TREK often available and commonly used. In the main, however,
 these programs require that the user makes sensible decisions about the
 data analysis to ensure that a useful result is reached. This manual describes
