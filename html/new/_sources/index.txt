@@ -5,11 +5,15 @@ xia2
 
 .. _introduction:
 
+.. include:: introduction.rst
+
+Table of Contents
+=================
+
 .. toctree::
    :maxdepth: 1
 
    quick_start
-   introduction
    background
    acknowledgements
    using_xia2
