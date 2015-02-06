@@ -1,0 +1,154 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Quick start guide &mdash; xia2  documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="xia2  documentation" href="index.html" />
+    <link rel="next" title="Introduction" href="introduction.html" />
+    <link rel="prev" title="xia2" href="index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="introduction.html" title="Introduction"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="xia2"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">xia2  documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="quick-start-guide">
+<h1>Quick start guide<a class="headerlink" href="#quick-start-guide" title="Permalink to this headline">¶</a></h1>
+<p>If you don’t like reading manuals and just want to get started, try:</p>
+<div class="highlight-python"><div class="highlight"><pre>xia2 -2d /here/are/my/images
+</pre></div>
+</div>
+<p>or:</p>
+<div class="highlight-python"><div class="highlight"><pre>xia2 -3d /here/are/my/images
+</pre></div>
+</div>
+<p>(remembering of course -atom X if you want anomalous pairs separating
+in scaling.) If this appears to do something sensible then you may well be
+home and dry. Some critical options:</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="8%" />
+<col width="92%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Option</th>
+<th class="head">Usage</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>-atom X</td>
+<td>tell xia2 to separate anomalous pairs i.e. I(+) <img class="math" src="_images/math/0d30670bb6d1c8b8b455037c6281681a60c02b0d.png" alt="\neq"/> I(−) in scaling</td>
+</tr>
+<tr class="row-odd"><td>-2d</td>
+<td>tell xia2 to use <a class="reference external" href="http://www.mrc-lmb.cam.ac.uk/harry/mosflm/">MOSFLM</a> and <a class="reference external" href="http://www.ccp4.ac.uk/html/aimless.html">Aimless</a></td>
+</tr>
+<tr class="row-even"><td>-3d</td>
+<td>tell xia2 to use <a class="reference external" href="http://xds.mpimf-heidelberg.mpg.de/">XDS</a> and <a class="reference external" href="http://xds.mpimf-heidelberg.mpg.de/html_doc/xscale_program.html">XSCALE</a></td>
+</tr>
+<tr class="row-odd"><td>-3dii</td>
+<td>tell xia2 to use <a class="reference external" href="http://xds.mpimf-heidelberg.mpg.de/">XDS</a> and <a class="reference external" href="http://xds.mpimf-heidelberg.mpg.de/html_doc/xscale_program.html">XSCALE</a>, indexing with peaks found from all images</td>
+</tr>
+<tr class="row-even"><td>-dials</td>
+<td>tell xia2 to use <a class="reference external" href="http://dials.sourceforge.net/">DIALS</a> and <a class="reference external" href="http://www.ccp4.ac.uk/html/aimless.html">Aimless</a></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>If this doesn’t hit the spot, you’ll need to read the rest of the documentation.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">xia2</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="introduction.html"
+                        title="next chapter">Introduction</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/quick_start.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="introduction.html" title="Introduction"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="xia2"
+             >previous</a> |</li>
+        <li><a href="index.html">xia2  documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Diamond Light Source.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Program Output &mdash; xia2  documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="xia2  documentation" href="index.html" />
+    <link rel="next" title="Parameters" href="parameters.html" />
+    <link rel="prev" title="Introductory example" href="introductory_example.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="parameters.html" title="Parameters"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="introductory_example.html" title="Introductory example"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">xia2  documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="program-output">
+<h1>Program Output<a class="headerlink" href="#program-output" title="Permalink to this headline">¶</a></h1>
+<p>As the program runs the key results are written to the screen and recorded
+in the file <code class="samp docutils literal"><span class="pre">xia2.txt</span></code>. This includes everything you should read and includes
+appropriate citations for the programs that xia2 has used on your behalf.
+There is also a file <code class="samp docutils literal"><span class="pre">xia2-debug.txt</span></code> which should be send to <a class="reference external" href="mailto:xia2&#46;support&#37;&#52;&#48;gmail&#46;com">xia2<span>&#46;</span>support<span>&#64;</span>gmail<span>&#46;</span>com</a>
+in the event of program failure. There are also two sensibly named directories,
+<code class="samp docutils literal"><span class="pre">LogFiles</span></code> and <code class="samp docutils literal"><span class="pre">DataFiles</span></code>, which will be discussed shortly.</p>
+<div class="section" id="xia2-txt">
+<h2>xia2.txt<a class="headerlink" href="#xia2-txt" title="Permalink to this headline">¶</a></h2>
+<p>By design, the program output from xia2 includes only the information that
+is critical to read, as will be shown for a 450 image Pilatus 2M data set
+recorded from a thaumatin crystal. The results from indexing are displayed
+as lattice / unit cell:</p>
+<div class="highlight-python"><div class="highlight"><pre>------------------- Autoindexing SWEEP1 --------------------
+All possible indexing solutions:
+tP 57.60 57.60 149.51 90.00 90.00 90.00
+oC 81.45 81.46 149.51 90.00 90.00 90.00
+oP 57.59 57.60 149.50 90.00 90.00 90.00
+mC 81.46 81.45 149.50 90.00 89.95 90.00
+mP 57.60 57.59 149.53 90.00 89.93 90.00
+aP 57.59 57.61 149.52 89.93 89.99 89.99
+Indexing solution:
+tP 57.60 57.60 149.51 90.00 90.00 90.00
+</pre></div>
+</div>
+<p>where in each case the solution with the lowest penalty is displayed. The
+results of integration are displayed as one character per image - which allows
+the overall behaviour of the data to be understood at a glance. While
+mostly ’o’ is usually a good indication of satisfactory processing, ’%’ are not
+unusual, along with ’.’ for weaker data. If the output consists of mostly ’O’
+then it may be helpful to record a low dose data set. The output includes a
+convenient legend, and looks like the following:</p>
+<div class="highlight-python"><div class="highlight"><pre>-------------------- Integrating SWEEP1 --------------------
+Processed batches 1 to 450
+Weighted RMSD: 0.26 (0.09)
+Integration status per image (60/record):
+ooooooooooooooooooooooooooooooooooo.oooooooooooooooooooooooo
+ooooooooooooooooooooooo.ooooooooooooooooooo.ooooooo.oooooooo
+ooo.o.ooooooo.oooooooooooooooooooooooooooooooooooooooooooooo
+oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+oooooooooooooooooooo.ooooooooooooooooooooooooooooooooooooooo
+ooooooooooooooooooooooooooooooooooooooooooooooooooo.oooooooo
+ooooooooo.oooooooooo..ooo.oooooooooooooooooooo.ooooooooooooo
+oooooooooooooooooooo.oooooooo.
+&quot;o&quot; =&gt; good &quot;%&quot; =&gt; ok &quot;!&quot; =&gt; bad rmsd
+&quot;O&quot; =&gt; overloaded &quot;#&quot; =&gt; many bad &quot;.&quot; =&gt; blank
+&quot;@&quot; =&gt; abandoned
+Mosaic spread: 0.140 &lt; 0.189 &lt; 0.290
+</pre></div>
+</div>
+</div>
+<div class="section" id="html-pages">
+<h2>HTML pages<a class="headerlink" href="#html-pages" title="Permalink to this headline">¶</a></h2>
+<p>If xia2html has been run there is a nicely formatted html version of this
+report, which includes graphical representation of some of the log file output
+from e.g. Aimless. Loading up <code class="samp docutils literal"><span class="pre">xia2.html</span></code> will give (hopefully self documenting)
+results as shown below. If you have manually run xia2,
+immediately running xia2html in the same directory will generate this.</p>
+<img alt="_images/xia2html.png" src="_images/xia2html.png" />
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Program Output</a><ul>
+<li><a class="reference internal" href="#xia2-txt">xia2.txt</a></li>
+<li><a class="reference internal" href="#html-pages">HTML pages</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="introductory_example.html"
+                        title="previous chapter">Introductory example</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="parameters.html"
+                        title="next chapter">Parameters</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/program_output.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="parameters.html" title="Parameters"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="introductory_example.html" title="Introductory example"
+             >previous</a> |</li>
+        <li><a href="index.html">xia2  documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Diamond Light Source.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

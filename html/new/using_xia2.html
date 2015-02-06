@@ -1,0 +1,190 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Using xia2 &mdash; xia2  documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="xia2  documentation" href="index.html" />
+    <link rel="next" title="Introductory example" href="introductory_example.html" />
+    <link rel="prev" title="Acknowledgements" href="acknowledgements.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="introductory_example.html" title="Introductory example"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="acknowledgements.html" title="Acknowledgements"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">xia2  documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="using-xia2">
+<h1>Using xia2<a class="headerlink" href="#using-xia2" title="Permalink to this headline">¶</a></h1>
+<p>As mentioned in the <a class="reference internal" href="quick_start.html"><em>quick start guide</em></a>, to get started simply run:</p>
+<div class="highlight-python"><div class="highlight"><pre>xia2 -2d /here/are/my/images
+</pre></div>
+</div>
+<p>or:</p>
+<div class="highlight-python"><div class="highlight"><pre>xia2 -3d /here/are/my/images
+</pre></div>
+</div>
+<p>The program is used from the command-line; there is no GUI. The four
+most important command-line options are as follows:</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="8%" />
+<col width="92%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Option</th>
+<th class="head">Usage</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>-atom X</td>
+<td>tell xia2 to separate anomalous pairs i.e. I(+) <img class="math" src="_images/math/0d30670bb6d1c8b8b455037c6281681a60c02b0d.png" alt="\neq"/> I(−) in scaling</td>
+</tr>
+<tr class="row-odd"><td>-2d</td>
+<td>tell xia2 to use <a class="reference external" href="http://www.mrc-lmb.cam.ac.uk/harry/mosflm/">MOSFLM</a> and <a class="reference external" href="http://www.ccp4.ac.uk/html/aimless.html">Aimless</a></td>
+</tr>
+<tr class="row-even"><td>-3d</td>
+<td>tell xia2 to use <a class="reference external" href="http://xds.mpimf-heidelberg.mpg.de/">XDS</a> and <a class="reference external" href="http://xds.mpimf-heidelberg.mpg.de/html_doc/xscale_program.html">XSCALE</a></td>
+</tr>
+<tr class="row-odd"><td>-3dii</td>
+<td>tell xia2 to use <a class="reference external" href="http://xds.mpimf-heidelberg.mpg.de/">XDS</a> and <a class="reference external" href="http://xds.mpimf-heidelberg.mpg.de/html_doc/xscale_program.html">XSCALE</a>, indexing with peaks found from all images</td>
+</tr>
+<tr class="row-even"><td>-dials</td>
+<td>tell xia2 to use <a class="reference external" href="http://dials.sourceforge.net/">DIALS</a> and <a class="reference external" href="http://www.ccp4.ac.uk/html/aimless.html">Aimless</a></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>These specify in the broadest possible terms to the program the manner
+in which you would like the processing performed. The program will then
+read all of the image headers found in <code class="samp docutils literal"><span class="pre">/here/are/my/data</span></code> to organise the
+data, first into sweeps, then into wavelengths, before assigning all of these
+wavelengths to a crystal.</p>
+<p>The data from the experiment is understood as follows. The SWEEP,
+which corresponds to one &#8220;scan&#8221;, is the basic unit of indexing and integration.
+These are contained by WAVELENGTH objects which correspond to
+CCP4 MTZ datasets, and will ultimately have unique Miller indices. For
+example, a low and high dose pass will be merged together. A CRYSTAL
+however contains all of the data from the experiment and is the basic unit of
+data for scaling. This description of the experiment is written automatically
+to an instruction file, an example of which is shown in below:</p>
+<div class="highlight-python"><div class="highlight"><pre>BEGIN PROJECT AUTOMATIC
+BEGIN CRYSTAL DEFAULT
+
+BEGIN HA_INFO
+ATOM Ba
+END HA_INFO
+
+BEGIN WAVELENGTH SAD
+WAVELENGTH 0.979500
+END WAVELENGTH SAD
+
+BEGIN SWEEP SWEEP1
+WAVELENGTH SAD
+DIRECTORY /dls/i02/data/2011/mx1234-5
+IMAGE K5_M1S3_3_001.img
+START_END 1 450
+END SWEEP SWEEP1
+
+END CRYSTAL DEFAULT
+END PROJECT AUTOMATIC
+</pre></div>
+</div>
+<p>The input file to the program, which is generated automatically,
+shows how the input data are understood. This may be adjusted and the
+program rerun, which will be covered in more detail later in the manual.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="acknowledgements.html"
+                        title="previous chapter">Acknowledgements</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="introductory_example.html"
+                        title="next chapter">Introductory example</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/using_xia2.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="introductory_example.html" title="Introductory example"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="acknowledgements.html" title="Acknowledgements"
+             >previous</a> |</li>
+        <li><a href="index.html">xia2  documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Diamond Light Source.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

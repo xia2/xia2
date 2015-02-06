@@ -206,6 +206,61 @@ doc/sphinx/parameters.rst -text
 doc/sphinx/program_output.rst -text
 doc/sphinx/quick_start.rst -text
 doc/sphinx/using_xia2.rst -text
+html/new/.buildinfo -text
+html/new/_images/3qrn-all-complete-aimless.png -text svneol=unset#unset
+html/new/_images/3qrn-all-rmerge-aimless.png -text svneol=unset#unset
+html/new/_images/math/0d30670bb6d1c8b8b455037c6281681a60c02b0d.png -text svneol=unset#unset
+html/new/_images/math/24ca2f7a44d43ef4c004aa3e1a0c9f3719108107.png -text svneol=unset#unset
+html/new/_images/math/4fbc706dce6cce3b3d41ae617c0e89105c37d543.png -text svneol=unset#unset
+html/new/_images/xia2html.png -text svneol=unset#unset
+html/new/_sources/acknowledgements.txt -text
+html/new/_sources/background.txt -text
+html/new/_sources/comments.txt -text
+html/new/_sources/index.txt -text
+html/new/_sources/installation.txt -text
+html/new/_sources/introduction.txt -text
+html/new/_sources/introductory_example.txt -text
+html/new/_sources/parameters.txt -text
+html/new/_sources/program_output.txt -text
+html/new/_sources/quick_start.txt -text
+html/new/_sources/using_xia2.txt -text
+html/new/_static/ajax-loader.gif -text svneol=unset#unset
+html/new/_static/basic.css -text
+html/new/_static/comment-bright.png -text svneol=unset#unset
+html/new/_static/comment-close.png -text svneol=unset#unset
+html/new/_static/comment.png -text svneol=unset#unset
+html/new/_static/default.css -text
+html/new/_static/doctools.js -text
+html/new/_static/down-pressed.png -text svneol=unset#unset
+html/new/_static/down.png -text svneol=unset#unset
+html/new/_static/file.png -text svneol=unset#unset
+html/new/_static/jquery-1.11.1.js -text
+html/new/_static/jquery.js -text
+html/new/_static/minus.png -text svneol=unset#unset
+html/new/_static/plus.png -text svneol=unset#unset
+html/new/_static/pygments.css -text
+html/new/_static/searchtools.js -text
+html/new/_static/sidebar.js -text
+html/new/_static/underscore-1.3.1.js -text
+html/new/_static/underscore.js -text
+html/new/_static/up-pressed.png -text svneol=unset#unset
+html/new/_static/up.png -text svneol=unset#unset
+html/new/_static/websupport.js -text
+html/new/acknowledgements.html -text
+html/new/background.html -text
+html/new/comments.html -text
+html/new/genindex.html -text
+html/new/index.html -text
+html/new/installation.html -text
+html/new/introduction.html -text
+html/new/introductory_example.html -text
+html/new/objects.inv -text svneol=unset#unset
+html/new/parameters.html -text
+html/new/program_output.html -text
+html/new/quick_start.html -text
+html/new/search.html -text
+html/new/searchindex.js -text
+html/new/using_xia2.html -text
 html/phils/fixed_scale_factors.phil -text
 html/phils/micromanage_integrate.phil -text
 html/phils/pixels_per_spot.phil -text
