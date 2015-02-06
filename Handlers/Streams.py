@@ -82,6 +82,9 @@ class _Stream(object):
       self._file = open(self._file_name, 'w')
     return self._file
 
+  def set_file(self, file):
+    self._file = file
+
   def set_additional(self):
     self._additional = True
 

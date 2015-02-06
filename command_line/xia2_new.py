@@ -91,7 +91,7 @@ def xia2(stop_after=None):
                      cache_output=(njob > 1),
                      flags=Flags,
                      phil_index=PhilIndex,
-                     command_line=CommandLine
+                     command_line=CommandLine,
                      ),))
 
   if mp_params.type == "qsub":
@@ -113,17 +113,27 @@ def xia2(stop_after=None):
     preserve_exception_message=True)
 
   # Hack to update sweep with the serialized indexers/refiners/integraters
+  i_sweep = 0
   for crystal_id in crystals.keys():
     for wavelength_id in crystals[crystal_id].get_wavelength_names():
       wavelength = crystals[crystal_id].get_xwavelength(wavelength_id)
       sweeps = wavelength.get_sweeps()
       for sweep in sweeps:
-        sweep._indexer = None
-        sweep._refiner = None
-        sweep._integrater = None
-        sweep._get_indexer()
-        sweep._get_refiner()
-        sweep._get_integrater()
+        success, output = results[i_sweep]
+        if not success:
+          print "Sweep failed: removing %s" %sweep.get_name()
+          wavelength.remove_sweep(sweep)
+        else:
+          if output is not None:
+            Chatter.write(output)
+          print "Loading sweep: %s" %sweep.get_name()
+          sweep._indexer = None
+          sweep._refiner = None
+          sweep._integrater = None
+          sweep._get_indexer()
+          sweep._get_refiner()
+          sweep._get_integrater()
+        i_sweep += 1
 
   if stop_after not in ('index', 'integrate'):
     Chatter.write(xinfo.get_output())

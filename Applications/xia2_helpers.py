@@ -10,10 +10,9 @@ os.environ['XIA2_ROOT'] = xia2_root_dir
 os.environ['XIA2CORE_ROOT'] = os.path.join(xia2_root_dir, "core")
 
 
-from Handlers.Streams import Chatter, Debug
-
 import Handlers.Flags
 import Handlers.Phil
+import Handlers.Streams
 import Handlers.CommandLine
 
 def process_one_sweep(args):
@@ -31,13 +30,22 @@ def process_one_sweep(args):
   from Handlers.Flags import Flags
   from Handlers.Phil import PhilIndex
   from Driver.DriverFactory import DriverFactory
+  from Handlers.Streams import Chatter, Debug, Stdout
 
   if cache:
-    Chatter.cache()
-    Debug.cache()
+    from cStringIO import StringIO
+    s = StringIO()
+    junk = StringIO()
+    cache_chatter = Chatter.get_file()
+    cache_stdout = Stdout.get_file()
+    Stdout.set_file(s)
+    Chatter.set_file(junk)
 
   params = PhilIndex.get_python_object()
   mp_params = params.xia2.settings.multiprocessing
+
+  output = None
+  success = False
 
   try:
     if stop_after == 'index':
@@ -45,6 +53,7 @@ def process_one_sweep(args):
     else:
       sweep.get_integrater_intensities()
     sweep.serialize()
+    success = True
   except Exception, e:
     if Flags.get_failover():
       Chatter.write('Processing sweep %s failed: %s' % \
@@ -53,5 +62,7 @@ def process_one_sweep(args):
       raise
   finally:
     if cache:
-      Chatter.uncache()
-      Debug.uncache()
+      Stdout.set_file(cache_stdout)
+      Chatter.set_file(cache_chatter)
+      output = s.getvalue()
+    return success, output
