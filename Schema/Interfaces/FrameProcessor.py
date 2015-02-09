@@ -49,9 +49,6 @@ class FrameProcessor(object):
 
     self._fp_offset = 0
 
-    #self._fp_wavelength = None
-    #self._fp_distance = None
-    #self._fp_beam = None
     self._fp_reversephi = False
     self._fp_two_theta = 0.0
     self._fp_two_theta_prov = None
@@ -106,9 +103,6 @@ class FrameProcessor(object):
       ## reload the header information as well - this will be
       ## for the old wedge...# read the image header
       ## XXX this shouldn't be needed
-      #dd = Diffdump()
-      #dd.set_image(self.get_image_name(start))
-      #self._fp_header = dd.readheader()
 
       from dxtbx.imageset import ImageSetFactory
       imageset = ImageSetFactory.new(self.get_image_name(start))[0]
@@ -124,18 +118,14 @@ class FrameProcessor(object):
 
       if self._fp_wavelength_prov is None or \
                       self._fp_wavelength_prov == 'header':
-        #self._fp_wavelength = imageset.get_beam().get_wavelength()
         self._fp_wavelength_prov = 'header'
 
       if self._fp_distance_prov is None or \
                       self._fp_distance_prov == 'header':
-        #self._fp_distance = imageset.get_detector()[0].get_distance()
         self._fp_distance_prov = 'header'
 
       if self._fp_beam_prov is None or \
             self._fp_beam_prov == 'header':
-        #self._fp_beam = imageset.get_detector().get_ray_intersection(
-          #imageset.get_beam().get_s0())[1]
         self._fp_beam_prov = 'header'
 
     return
@@ -200,10 +190,13 @@ class FrameProcessor(object):
 
   def set_beam_centre(self, beam_centre):
     from dxtbx.model.detector_helpers import set_mosflm_beam_centre
-    set_mosflm_beam_centre(self.get_detector(),
-                           self.get_beam_obj(),
-                           beam_centre)
-    self._fp_beam_prov = 'user'
+    try:
+      set_mosflm_beam_centre(self.get_detector(),
+                             self.get_beam_obj(),
+                             beam_centre)
+      self._fp_beam_prov = 'user'
+    except AssertionError, e:
+      Debug.write('Error setting mosflm beam centre: %s' % e)
     return
 
   def get_beam_centre(self):

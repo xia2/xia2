@@ -431,7 +431,10 @@ def Pointless(DriverType = None):
 
         dom = xml.dom.minidom.parse(xml_file)
 
-        best = dom.getElementsByTagName('BestSolution')[0]
+        try:
+          best = dom.getElementsByTagName('BestSolution')[0]
+        except IndexError, e:
+          raise RuntimeError, 'error getting solution from pointless'
         self._pointgroup = best.getElementsByTagName(
             'GroupName')[0].childNodes[0].data
         self._confidence = float(best.getElementsByTagName(
