@@ -328,7 +328,7 @@ class XDSScalerA(Scaler):
       sweep = intgr.get_integrater_sweep()
       if sweep.get_frames_to_process() is not None:
         start, end = sweep.get_frames_to_process()
-        xsh.limit_batches(hklin, hklout, start, end)
+        xsh.limit_batches(hklin, hklout, start-start, end-start)
         self._sweep_information[epoch]['corrected_intensities'] = hklout
 
     # if there is more than one sweep then compare the lattices
