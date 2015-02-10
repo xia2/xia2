@@ -34,6 +34,7 @@ def Spotfinder(DriverType = None):
       self._scan_ranges = []
       self._nspots = 0
       self._min_spot_size = None
+      self._sigma_strong = None
       self._phil_file = None
 
       return
@@ -68,6 +69,9 @@ def Spotfinder(DriverType = None):
     def set_min_spot_size(self, min_spot_size):
       self._min_spot_size = int(min_spot_size)
 
+    def set_sigma_strong(self, sigma_strong):
+      self._sigma_strong = sigma_strong
+
     def run(self):
       from Handlers.Streams import Debug
       Debug.write('Running dials.find_spots')
@@ -81,7 +85,9 @@ def Spotfinder(DriverType = None):
       for scan_range in self._scan_ranges:
         self.add_command_line('spotfinder.scan_range=%d,%d' % scan_range)
       if self._min_spot_size is not None:
-        self.add_command_line('min_spot_size=%i' %self._min_spot_size)
+        self.add_command_line('min_spot_size=%i' % self._min_spot_size)
+      if self._sigma_strong is not None:
+        self.add_command_line('sigma_strong=%i' % self._sigma_strong)
       if self._phil_file is not None:
         self.add_command_line("%s" % self._phil_file)
       self.start()

@@ -81,6 +81,8 @@ dials {
       .type = int
     phil_file = None
       .type = path
+    sigma_strong = None
+      .type = float
   }
   index {
     method = fft1d *fft3d real_space_grid_search

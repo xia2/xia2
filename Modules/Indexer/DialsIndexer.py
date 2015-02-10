@@ -146,6 +146,9 @@ class DialsIndexer(Indexer):
         min_spot_size = None
     if min_spot_size is not None:
       spotfinder.set_min_spot_size(min_spot_size)
+    sigma_strong = PhilIndex.params.dials.spotfinder.sigma_strong
+    if sigma_strong:
+      spotfinder.set_sigma_strong(sigma_strong)
     spotfinder.run()
 
 
