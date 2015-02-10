@@ -656,7 +656,8 @@ class XSweep(object):
 
       #self._refiner.set_indexer_sweep_name(self._name)
 
-    self._refiner.add_refiner_indexer(self.get_epoch(1), self._get_indexer())
+    self._refiner.add_refiner_indexer(
+      self.get_epoch(self._frames_to_process[0]), self._get_indexer())
 
     return self._refiner
 
