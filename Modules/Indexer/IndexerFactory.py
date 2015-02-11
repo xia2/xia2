@@ -91,7 +91,11 @@ def IndexerForXSweep(xsweep, json_file=None):
   if json_file is not None:
     assert os.path.isfile(json_file)
     Debug.write("Loading indexer from json: %s" %json_file)
+    import time
+    t0 = time.time()
     indexer = indexer.__class__.from_json(filename=json_file)
+    t1 = time.time()
+    Debug.write("Loaded indexer in %.2f seconds" %(t1-t0))
   else:
     # configure the indexer
     indexer.setup_from_imageset(xsweep.get_imageset())

@@ -187,7 +187,7 @@ class Integrater(FrameProcessor):
           v = ExperimentListFactory.from_dict(v)
         elif v.get('__id__', None) == 'imageset':
           from dxtbx.serialize.imageset import imageset_from_dict
-          v = imageset_from_dict(v)
+          v = imageset_from_dict(v, check_format=False)
       setattr(return_obj, k, v)
     return return_obj
 

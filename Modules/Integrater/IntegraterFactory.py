@@ -52,7 +52,11 @@ def IntegraterForXSweep(xsweep, json_file=None):
   if json_file is not None:
     assert os.path.isfile(json_file)
     Debug.write("Loading integrater from json: %s" %json_file)
+    import time
+    t0 = time.time()
     integrater = integrater.__class__.from_json(filename=json_file)
+    t1 = time.time()
+    Debug.write("Loaded integrater in %.2f seconds" %(t1-t0))
   else:
     integrater.setup_from_imageset(xsweep.get_imageset())
   integrater.set_integrater_sweep_name(xsweep.get_name())
