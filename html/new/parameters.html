@@ -1,3 +1,4 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -5,12 +6,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-
+    
     <title>Parameters &mdash; xia2  documentation</title>
-
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-
+    <link rel="stylesheet" href="_static/xia2.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -23,11 +25,23 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/dials_icon.png"/>
     <link rel="top" title="xia2  documentation" href="index.html" />
-    <link rel="next" title="Installing xia2" href="installation.html" />
+    <link rel="next" title="Comments" href="comments.html" />
     <link rel="prev" title="Program Output" href="program_output.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
   </head>
   <body role="document">
+<!--   <div class="logoheader container"> -->
+<!--   <a href="index.html"> -->
+<!--   <img class="logoheader" alt="DIALS" src="_static/dials_header.png" /> -->
+<!--   </a> -->
+<!--   </div> -->
+  
+
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -35,20 +49,20 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="installation.html" title="Installing xia2"
+          <a href="comments.html" title="Comments"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="program_output.html" title="Program Output"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">xia2  documentation</a> &raquo;</li>
+        <li><a href="index.html">xia2  documentation</a> &raquo;</li> 
       </ul>
-    </div>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
           <div class="body" role="main">
-
+            
   <div class="section" id="parameters">
 <h1>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="commonly-used-program-options">
@@ -127,7 +141,8 @@ should however be automated generation of command-line documentation and the abi
 keep &#8220;recipes&#8221; for running xia2 in tidy files.</p>
 </div>
 <p>Here is a comprehensive list of PHIL parameters used by xia2:</p>
-<div class="highlight-python"><div class="highlight"><pre>general {
+<pre class="literal-block">
+general {
   check_image_files_readable = True
 }
 xds {
@@ -174,15 +189,17 @@ dials {
   spotfinder {
     min_spot_size = Auto
     phil_file = None
+    sigma_strong = None
   }
   index {
     method = fft1d *fft3d real_space_grid_search
     phil_file = None
     max_cell = 0.0
+    use_all_reflections = False
   }
   refine {
     scan_varying = True
-    use_all_reflections = False
+    use_all_reflections = True
     phil_file = None
     reflections_per_degree = 100
   }
@@ -191,11 +208,12 @@ dials {
     intensity_algorithm = sum3d sum2d *fitrs mosflm
     background_outlier_algorithm = *null nsigma truncated normal
     use_threading = False
+    include_partials = True
   }
 }
 ccp4 {
   truncate {
-    program = &#39;ctruncate&#39;
+    program = 'ctruncate'
   }
   aimless {
     intensities = summation profile *combine
@@ -204,6 +222,10 @@ ccp4 {
 xia2.settings {
   input {
     json = None
+  }
+  sweep {
+    id = None
+    range = None
   }
   unit_cell = None
   space_group = None
@@ -226,6 +248,7 @@ xia2.settings {
     geometry_y = None
   }
   indexer = mosflm labelit labelitii xds xdsii xdssum dials
+  refiner = mosflm xds dials
   integrater = mosflmr xdsr mosflm xds dials
   scaler = ccp4a xdsa
   multiprocessing {
@@ -233,11 +256,11 @@ xia2.settings {
     nproc = Auto
     njob = Auto
     type = *simple qsub
-    qsub_command = &#39;&#39;
+    qsub_command = ''
   }
 }
-</pre></div>
-</div>
+
+</pre>
 </div>
 </div>
 
@@ -247,64 +270,51 @@ xia2.settings {
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Parameters</a><ul>
-<li><a class="reference internal" href="#commonly-used-program-options">Commonly used program options</a></li>
-<li><a class="reference internal" href="#resolution-limits">Resolution limits</a></li>
-<li><a class="reference internal" href="#phil-parameters">Phil parameters</a></li>
-</ul>
-</li>
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/xia2-new-logo.gif" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quick_start.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="using_xia2.html">Using xia2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installing xia2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="introductory_example.html">Introductory example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="program_output.html">Program Output</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="comments.html">Comments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="background.html">History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="release_notes.html">Release Notes</a></li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="program_output.html"
-                        title="previous chapter">Program Output</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="installation.html"
-                        title="next chapter">Installing xia2</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/parameters.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="installation.html" title="Installing xia2"
-             >next</a> |</li>
-        <li class="right" >
-          <a href="program_output.html" title="Program Output"
-             >previous</a> |</li>
-        <li><a href="index.html">xia2  documentation</a> &raquo;</li>
-      </ul>
+  <div class="footer container">
+  <a href="http://www.diamond.ac.uk/"><img class="logofooter" alt="Diamond" src="_static/diamond_logo.png" /></a>
+  <a href="http://dials.diamond.ac.uk/"><img class="logofooter" alt="DIALS" src="_static/dials_logo_fx_transparent_bg.png" /></a>
+  <a href="http://www.ccp4.ac.uk/"><img class="logofooter" alt="CCP4" src="_static/CCP4-logo-plain.png" /></a>
+  </div>
+  
+    <div class="footer">
+      &copy;2015, Diamond Light Source.
+      
     </div>
-    <div class="footer" role="contentinfo">
-        &copy; Copyright 2015, Diamond Light Source.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
-    </div>
+
+    
+
+    
+
   </body>
 </html>
