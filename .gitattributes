@@ -232,12 +232,16 @@ html/new/_sources/program_output.txt -text
 html/new/_sources/quick_start.txt -text
 html/new/_sources/release_notes.txt -text
 html/new/_sources/using_xia2.txt -text
+html/new/_static/CCP4-logo-plain.png -text svneol=unset#unset
 html/new/_static/ajax-loader.gif -text svneol=unset#unset
+html/new/_static/alabaster.css -text
 html/new/_static/basic.css -text
 html/new/_static/comment-bright.png -text svneol=unset#unset
 html/new/_static/comment-close.png -text svneol=unset#unset
 html/new/_static/comment.png -text svneol=unset#unset
 html/new/_static/default.css -text
+html/new/_static/dials_logo_fx_transparent_bg.png -text svneol=unset#unset
+html/new/_static/diamond_logo.png -text svneol=unset#unset
 html/new/_static/doctools.js -text
 html/new/_static/down-pressed.png -text svneol=unset#unset
 html/new/_static/down.png -text svneol=unset#unset
@@ -254,6 +258,8 @@ html/new/_static/underscore.js -text
 html/new/_static/up-pressed.png -text svneol=unset#unset
 html/new/_static/up.png -text svneol=unset#unset
 html/new/_static/websupport.js -text
+html/new/_static/xia2-new-logo.gif -text svneol=unset#unset
+html/new/_static/xia2.css -text
 html/new/acknowledgements.html -text
 html/new/background.html -text
 html/new/comments.html -text
