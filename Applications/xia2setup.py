@@ -446,7 +446,7 @@ def get_sweeps(templates):
 
   from Applications.xia2setup_helpers import get_sweep
 
-  if njob > 1:
+  if params.xia2.settings.read_all_image_headers and njob > 1:
     if mp_params.type == "qsub":
       method = "sge"
     else:
