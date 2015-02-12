@@ -10,6 +10,10 @@ or::
   
   xia2 -3d /here/are/my/images
 
+or::
+
+  xia2 -dials /here/are/my/images
+
 (remembering of course -atom X if you want anomalous pairs separating
 in scaling.) If this appears to do something sensible then you may well be
 home and dry. Some critical options:

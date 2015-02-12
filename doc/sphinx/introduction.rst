@@ -2,10 +2,10 @@
 Introduction
 ++++++++++++
 
-In a nutshell, xia2 is an expert system to perform X-ray diffraction data processing
+xia2 is an expert system to perform X-ray diffraction data processing
 on your behalf, using your software with little or no input from you.
 It will correctly handle multi-pass, multi-wavelength data sets as described
-later but crucially it is not a data processing package. Specifically, if you
+later but it is not a data processing package. Specifically, if you
 use xia2 in published work please include the references for the programs
 it has used, which are printed at the end of the output.
 The system was initially written to support remote access to synchrotron
