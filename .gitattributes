@@ -187,6 +187,12 @@ core/Test/ExampleProgramTightLoop.py -text
 core/Test/readme.txt -text
 core/readme.txt -text
 doc/sphinx/Makefile -text
+doc/sphinx/_static/CCP4-logo-plain.png -text svneol=unset#unset
+doc/sphinx/_static/dials_logo_fx_transparent_bg.png -text svneol=unset#unset
+doc/sphinx/_static/diamond_logo.png -text svneol=unset#unset
+doc/sphinx/_static/xia2-new-logo.gif -text svneol=unset#unset
+doc/sphinx/_static/xia2.css -text
+doc/sphinx/_templates/layout.html -text
 doc/sphinx/acknowledgements.rst -text
 doc/sphinx/background.rst -text
 doc/sphinx/comments.rst -text

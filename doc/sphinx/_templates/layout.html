@@ -1,0 +1,25 @@
+{# Import the theme's layout. #}
+{% extends "!layout.html" %}
+
+{% block header %}
+<!--   <div class="logoheader container"> -->
+<!--   <a href="{{ pathto(master_doc) }}"> -->
+<!--   <img class="logoheader" alt="DIALS" src="{{ pathto('_static/dials_header.png', 1) }}" /> -->
+<!--   </a> -->
+<!--   </div> -->
+  {{ super() }}
+{% endblock %}
+
+{% block footer %}
+  <div class="footer container">
+  <a href="http://www.diamond.ac.uk/"><img class="logofooter" alt="Diamond" src="{{ pathto('_static/diamond_logo.png', 1) }}" /></a>
+  <a href="http://dials.diamond.ac.uk/"><img class="logofooter" alt="DIALS" src="{{ pathto('_static/dials_logo_fx_transparent_bg.png', 1) }}" /></a>
+  <a href="http://www.ccp4.ac.uk/"><img class="logofooter" alt="CCP4" src="{{ pathto('_static/CCP4-logo-plain.png', 1) }}" /></a>
+  </div>
+  {{ super() }}
+{% endblock %}
+
+{# Custom CSS overrides #}
+{% set bootswatch_css_custom = ['_static/xia2.css'] %}
+
+{% set css_files = css_files + ['_static/xia2.css'] %}

@@ -3,7 +3,7 @@
 ### build documentation with: phenix.python `which sphinx-build` -b html source build/html
 
 #
-# CCTBX documentation build configuration file, created by
+# xia2 documentation build configuration file, created by
 # sphinx-quickstart on Thu Jul 24 15:08:40 2014.
 #
 # This file is execfile()d with the current directory set to its
@@ -36,9 +36,11 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
     'sphinx.ext.pngmath',
+    'sphinx.ext.viewcode',
     'numpydoc',
     'libtbx.sphinx.phil',
     'libtbx.sphinx.python_string',
+    'libtbx.sphinx.pubmed',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -78,7 +80,7 @@ release = ''
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = []
+exclude_patterns = ['_build', 'scipy-sphinx-theme']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -107,17 +109,26 @@ pygments_style = 'sphinx'
 
 # -- Options for HTML output ----------------------------------------------
 
-# The theme to use for HTML and HTML Help pages.  See the documentation for
-# a list of builtin themes.
-html_theme = 'default'
+import alabaster
 
-# Theme options are theme-specific and customize the look and feel of a theme
-# further.  For a list of options available for each theme, see the
-# documentation.
-#html_theme_options = {}
+html_theme_path = [alabaster.get_path()]
+extensions.append('alabaster')
+html_theme = 'alabaster'
+html_sidebars = {
+    '**': [
+        'about.html',
+        'navigation.html',
+        #'searchbox.html',
+        #'donate.html',
+    ]
+}
 
-# Add any paths that contain custom themes here, relative to this directory.
-#html_theme_path = []
+html_theme_options = {
+  'logo': 'xia2-new-logo.gif',
+  'github_button': False,
+  'show_powered_by': False,
+  #'description': 'Data Integration for Advanced Light Sources',
+}
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -128,12 +139,12 @@ html_theme = 'default'
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-#html_logo = None
+#html_logo = "figures/dials_header.png"
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-#html_favicon = None
+html_favicon = "dials_icon.png"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -170,7 +181,7 @@ html_static_path = ['_static']
 #html_split_index = False
 
 # If true, links to the reST sources are added to the pages.
-#html_show_sourcelink = True
+html_show_sourcelink = False
 
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
 #html_show_sphinx = True
@@ -187,7 +198,7 @@ html_static_path = ['_static']
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'CCTBXdoc'
+htmlhelp_basename = 'xia2doc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -207,8 +218,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('index', 'CCTBX.tex', u'CCTBX Documentation',
-   u'Paul D. Adams', 'manual'),
+  ('index', 'xia2_manual.tex', u'xia2 Manual',
+   u'xia2', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -232,23 +243,15 @@ latex_documents = [
 #latex_domain_indices = True
 
 
-# -- Options for manual page output ---------------------------------------
-
-# One entry per manual page. List of tuples
-# (source start file, name, description, authors, manual section).
-man_pages = [
-]
-
-# If true, show URL addresses after external links.
-#man_show_urls = False
-
-
 # -- Options for Texinfo output -------------------------------------------
 
 # Grouping the document tree into Texinfo files. List of tuples
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
+  ('index', 'xia2', u'xia2 Documentation',
+   u'', 'xia2', 'One line description of project.',
+   'Miscellaneous'),
 ]
 
 # Documents to append as an appendix to all manuals.
@@ -267,6 +270,5 @@ texinfo_documents = [
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
   'http://docs.python.org/': None,
-  'http://cci.lbl.gov/cctbx_docs/': None,
-  'http://dials.sourceforge.net/doc/': None
+  'http://cci.lbl.gov/cctbx_docs/': None
 }

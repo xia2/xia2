@@ -1,28 +1,21 @@
 
-++++
-xia2
-++++
-
 .. _introduction:
 
-.. include:: introduction.rst
-
-Table of Contents
-=================
-
 .. toctree::
-   :maxdepth: 1
+   :hidden:
 
-   quick_start
-   background
-   acknowledgements
+   Getting started <quick_start>
    using_xia2
+   installation
    introductory_example
    program_output
    parameters
-   installation
    comments
+   History <background>
+   acknowledgements
    release_notes
+
+.. include:: introduction.rst
 
 Contact
 =======

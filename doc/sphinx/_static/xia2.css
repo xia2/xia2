@@ -1,0 +1,31 @@
+body {
+  margin: 8px;
+  min-width: 640px;
+  margin-left: 10%;
+  margin-right: 10%;
+}
+
+div.document {
+  width: auto;
+}
+
+div.logoheader {
+  width: auto;
+  margin: 0 auto 0 auto;
+  background-color: #061679;
+  border: medium solid black;
+  /* This makes the borders rounded on Mozilla, which pleases me */
+  -moz-border-radius: 8px;
+  padding: 0;
+}
+
+div.footer {
+  height: 50px;
+  width: auto;
+}
+
+img.logofooter {
+  height: 50px;
+  margin: 5px;
+  padding: 5px;
+}
