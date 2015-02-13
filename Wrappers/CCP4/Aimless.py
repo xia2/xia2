@@ -500,6 +500,14 @@ def Aimless(DriverType = None,
                                   '%d_aimless.xml' % self.get_xpid())
 
       self.start()
+
+      from Handlers.Phil import PhilIndex
+      params = PhilIndex.get_python_object()
+      mp_params = params.xia2.settings.multiprocessing
+      nproc = mp_params.nproc
+      if nproc > 1:
+        self.set_working_environment('OMP_NUM_THREADS', '%d' %nproc)
+        self.input('refine parallel')
       self.input('xmlout %d_aimless.xml' % self.get_xpid())
       self.input('bins 20')
       self.input('intensities %s' %self._intensities)
