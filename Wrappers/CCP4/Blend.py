@@ -53,12 +53,14 @@ def Blend(DriverType = None):
 
       assert len(self._hklin_files) > 1
 
-      with open('input_files.dat', 'wb') as f:
+      input_files_dat = os.path.join(
+        self.get_working_directory(), 'input_files.dat')
+      with open(input_files_dat, 'wb') as f:
         for hklin in self._hklin_files:
           print >> f, hklin
 
       self.add_command_line('-a')
-      self.add_command_line('input_files.dat')
+      self.add_command_line(input_files_dat)
 
       self.start()
 
