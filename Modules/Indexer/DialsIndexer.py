@@ -208,7 +208,8 @@ class DialsIndexer(Indexer):
       # FIXME need to do this better - for the moment only accept lattices
       # where R.M.S. deviation is less than twice P1 R.M.S. deviation.
 
-      if summary['rmsd'] > 2.0 * rmsd_p1:
+      if (self._indxr_input_lattice is None and
+          summary['rmsd'] > 2.0 * rmsd_p1):
         continue
 
       self._solutions[k] = {
