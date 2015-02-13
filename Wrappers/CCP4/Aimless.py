@@ -501,10 +501,7 @@ def Aimless(DriverType = None,
 
       self.start()
 
-      from Handlers.Phil import PhilIndex
-      params = PhilIndex.get_python_object()
-      mp_params = params.xia2.settings.multiprocessing
-      nproc = mp_params.nproc
+      nproc = Flags.get_parallel()
       if nproc > 1:
         self.set_working_environment('OMP_NUM_THREADS', '%d' %nproc)
         self.input('refine parallel')
