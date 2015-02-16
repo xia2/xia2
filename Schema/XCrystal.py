@@ -497,17 +497,20 @@ class XCrystal(object):
           stats.append(k)
 
       for s in stats:
-        if type(statistics_all[key][s]) == type(0.0):
+        if isinstance(statistics_all[key][s], float):
           summary.append('%s: %f' % (s.ljust(40),
                                      statistics_all[key][s]))
-        elif type(statistics_all[key][s]) == type(""):
+        elif isinstance(statistics_all[key][s], basestring):
           summary.append('%s: %s' % (s.ljust(40),
                                      statistics_all[key][s]))
-        elif type(statistics_all[key][s]) == type([]):
-          result = '%s ' % s.ljust(40)
-          for value in statistics_all[key][s]:
-            result += '\t%s' % str(value)
-          summary.append(result)
+        else:
+          try:
+            result = '%s ' % s.ljust(40)
+            for value in statistics_all[key][s]:
+              result += '\t%s' % str(value)
+            summary.append(result)
+          except TypeError, e:
+            continue
 
     cell = self._get_scaler().get_scaler_cell()
     spacegroup = self._get_scaler().get_scaler_likely_spacegroups()[0]
