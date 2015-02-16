@@ -227,12 +227,12 @@ class XDSIndexer(Indexer):
         wedges.append(images[1])
 
     else:
-      block_size = 5
+      block_size = min(len(images), 5)
 
       Debug.write('Adding images for indexer: %d -> %d' % \
-                  (images[0], images[block_size] - 1))
+                  (images[0], images[block_size - 1]))
 
-      wedges.append((images[0], images[block_size] - 1))
+      wedges.append((images[0], images[block_size - 1]))
 
       if int(90.0 / phi_width) + block_size in images:
         # assume we can add a wedge around 45 degrees as well...
@@ -255,14 +255,15 @@ class XDSIndexer(Indexer):
 
         # add some half-way anyway
         first = (len(images) // 2) - (block_size // 2) + images[0] - 1
-        last = first + block_size - 1
-
-        Debug.write('Adding images for indexer: %d -> %d' % \
-                    (first, last))
-        wedges.append((first, last))
-        Debug.write('Adding images for indexer: %d -> %d' % \
-                    (images[- block_size], images[-1]))
-        wedges.append((images[- block_size], images[-1]))
+        if first > wedges[0][1]:
+          last = first + block_size - 1
+          Debug.write('Adding images for indexer: %d -> %d' % \
+                      (first, last))
+          wedges.append((first, last))
+        if len(images) > block_size:
+          Debug.write('Adding images for indexer: %d -> %d' % \
+                      (images[- block_size], images[-1]))
+          wedges.append((images[- block_size], images[-1]))
 
     return wedges
 
