@@ -41,7 +41,11 @@ def exercise_labelit_indexer():
   ls = LabelitIndexer(indxr_print=True)
   ls.set_working_directory(tmp_dir)
   ls.setup_from_image(template %1)
-  ls.index()
+  try:
+    ls.index()
+  except DriverExceptions.NotAvailableError.NotAvailableError:
+    print "Skipping exercise_labelit_indexer(): labelit not found"
+    return
 
   assert approx_equal(ls.get_indexer_cell(), (78.58, 78.58, 78.58, 90, 90, 90))
   solution = ls.get_solution()
