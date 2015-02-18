@@ -77,70 +77,97 @@ def xia2(stop_after=None):
   # this actually gets the processing started...
   xinfo = CommandLine.get_xinfo()
   crystals = xinfo.get_crystals()
-  for crystal_id in crystals.keys():
-    for wavelength_id in crystals[crystal_id].get_wavelength_names():
-      wavelength = crystals[crystal_id].get_xwavelength(wavelength_id)
-      sweeps = wavelength.get_sweeps()
-      for sweep in sweeps:
-        sweep._get_indexer()
-        sweep._get_refiner()
-        sweep._get_integrater()
-        args.append((
-          group_args(sweep=sweep,
-                     stop_after=stop_after,
-                     cache_output=(njob > 1),
-                     flags=Flags,
-                     phil_index=PhilIndex,
-                     command_line=CommandLine,
-                     ),))
 
-  if mp_params.type == "qsub":
-    method = "sge"
-  else:
-    method = "multiprocessing"
-  nproc = mp_params.nproc
-  qsub_command = mp_params.qsub_command
-  if not qsub_command:
-    qsub_command = 'qsub'
-  qsub_command = '%s -V -cwd -pe smp %d' %(qsub_command, nproc)
-
-  from libtbx import easy_mp
-  results = easy_mp.parallel_map(
-    process_one_sweep, args, processes=njob,
-    method=method,
-    qsub_command=qsub_command,
-    preserve_order=True,
-    preserve_exception_message=True)
-
-  # Hack to update sweep with the serialized indexers/refiners/integraters
-  i_sweep = 0
-  for crystal_id in crystals.keys():
-    for wavelength_id in crystals[crystal_id].get_wavelength_names():
-      wavelength = crystals[crystal_id].get_xwavelength(wavelength_id)
-      remove_sweeps = []
-      sweeps = wavelength.get_sweeps()
-      for sweep in sweeps:
-        success, output = results[i_sweep]
-        if output is not None:
-          Chatter.write(output)
-        if not success:
-          print "Sweep failed: removing %s" %sweep.get_name()
-          remove_sweeps.append(sweep)
-        else:
-          print "Loading sweep: %s" %sweep.get_name()
-          sweep._indexer = None
-          sweep._refiner = None
-          sweep._integrater = None
+  if njob > 1:
+    driver_type = mp_params.type
+    for crystal_id in crystals.keys():
+      for wavelength_id in crystals[crystal_id].get_wavelength_names():
+        wavelength = crystals[crystal_id].get_xwavelength(wavelength_id)
+        sweeps = wavelength.get_sweeps()
+        for sweep in sweeps:
           sweep._get_indexer()
           sweep._get_refiner()
           sweep._get_integrater()
-        i_sweep += 1
-      for sweep in remove_sweeps:
-        wavelength.remove_sweep(sweep)
+          args.append((
+            group_args(
+              driver_type=driver_type,
+              stop_after=stop_after,
+              failover=Flags.get_failover(),
+              command_line_args=CommandLine.get_argv()[1:],
+              nproc=mp_params.nproc,
+              crystal_id=crystal_id,
+              wavelength_id=wavelength_id,
+              sweep_id=sweep.get_name(),
+              ),))
 
-  # switch off parallel mode so that old-style parallelisation doesn't kick in
-  mp_params.njob = 1
-  mp_params.mode = "serial"
+    if mp_params.type == "qsub":
+      method = "sge"
+    else:
+      method = "multiprocessing"
+    nproc = mp_params.nproc
+    qsub_command = mp_params.qsub_command
+    if not qsub_command:
+      qsub_command = 'qsub'
+    qsub_command = '%s -V -cwd -pe smp %d' %(qsub_command, nproc)
+
+    from libtbx import easy_mp
+    results = easy_mp.parallel_map(
+      process_one_sweep, args, processes=njob,
+      #method=method,
+      method="multiprocessing",
+      qsub_command=qsub_command,
+      preserve_order=True,
+      preserve_exception_message=True)
+
+    # Hack to update sweep with the serialized indexers/refiners/integraters
+    i_sweep = 0
+    for crystal_id in crystals.keys():
+      for wavelength_id in crystals[crystal_id].get_wavelength_names():
+        wavelength = crystals[crystal_id].get_xwavelength(wavelength_id)
+        remove_sweeps = []
+        sweeps = wavelength.get_sweeps()
+        for sweep in sweeps:
+          success, output = results[i_sweep]
+          if output is not None:
+            Chatter.write(output)
+          if not success:
+            print "Sweep failed: removing %s" %sweep.get_name()
+            remove_sweeps.append(sweep)
+          else:
+            print "Loading sweep: %s" %sweep.get_name()
+            sweep._indexer = None
+            sweep._refiner = None
+            sweep._integrater = None
+            sweep._get_indexer()
+            sweep._get_refiner()
+            sweep._get_integrater()
+          i_sweep += 1
+        for sweep in remove_sweeps:
+          wavelength.remove_sweep(sweep)
+
+    # switch off parallel mode so that old-style parallelisation doesn't kick in
+    mp_params.njob = 1
+    mp_params.mode = "serial"
+
+  else:
+    for crystal_id in crystals.keys():
+      for wavelength_id in crystals[crystal_id].get_wavelength_names():
+        wavelength = crystals[crystal_id].get_xwavelength(wavelength_id)
+        sweeps = wavelength.get_sweeps()
+        for sweep in sweeps:
+          try:
+            if stop_after == 'index':
+              sweep.get_indexer_cell()
+            else:
+              sweep.get_integrater_intensities()
+            sweep.serialize()
+          except Exception, e:
+            if Flags.get_failover():
+              Chatter.write('Processing sweep %s failed: %s' % \
+                            (sweep.get_name(), str(e)))
+              wavelength.remove_sweep(sweep)
+            else:
+              raise
 
   if stop_after not in ('index', 'integrate'):
     Chatter.write(xinfo.get_output())

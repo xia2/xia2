@@ -120,6 +120,7 @@ Wrappers/XDS/Merge2cbf.py -text
 Wrappers/XDS/XDSFiles.py -text
 Wrappers/XDS/XDSGenerateIgnoreFiles.py -text
 Wrappers/XDS/XScaleR.py -text
+Wrappers/XIA/Integrate.py -text
 command_line/index.py -text
 command_line/integrate.py -text
 command_line/make_sphinx_html.py -text
