@@ -42,7 +42,12 @@ def exercise_labelit_index():
   tmp_dir = open_tmp_directory()
   os.chdir(tmp_dir)
 
-  indexer = LabelitIndex()
+  from DriverExceptions.NotAvailableError import NotAvailableError
+  try:
+    indexer = LabelitIndex()
+  except NotAvailableError:
+    print "Skipping exercise_labelit_index(): labelit not found"
+    return
   indexer.set_beam_search_scope(4.0)
   indexer.add_image(template %1)
   indexer.add_image(template %45)

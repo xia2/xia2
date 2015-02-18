@@ -45,7 +45,13 @@ def exercise_labelit_indexerii():
   ls.set_indexer_input_cell((78,78,78,90,90,90))
   ls.set_indexer_user_input_lattice(True)
   ls.set_indexer_input_lattice('cI')
-  ls.index()
+
+  from DriverExceptions.NotAvailableError import NotAvailableError
+  try:
+    ls.index()
+  except NotAvailableError:
+    print "Skipping exercise_labelit_indexerii(): labelit not found"
+    return
 
   assert approx_equal(ls.get_indexer_cell(), (78.52, 78.52, 78.52, 90, 90, 90))
   solution = ls.get_solution()

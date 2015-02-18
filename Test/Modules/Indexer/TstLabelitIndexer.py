@@ -41,9 +41,11 @@ def exercise_labelit_indexer():
   ls = LabelitIndexer(indxr_print=True)
   ls.set_working_directory(tmp_dir)
   ls.setup_from_image(template %1)
+
+  from DriverExceptions.NotAvailableError import NotAvailableError
   try:
     ls.index()
-  except DriverExceptions.NotAvailableError.NotAvailableError:
+  except NotAvailableError:
     print "Skipping exercise_labelit_indexer(): labelit not found"
     return
 
