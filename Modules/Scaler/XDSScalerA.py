@@ -681,9 +681,6 @@ class XDSScalerA(Scaler):
         # get this should be in the correct setting...
 
         hklin = self._sweep_information[epoch]['corrected_intensities']
-        hklout = os.path.join(self.get_working_directory(),
-                              'xds-pointgroup-unsorted.mtz')
-        FileHandler.record_temporary_file(hklout)
 
         # now use pointless to make this conversion
 
@@ -691,6 +688,10 @@ class XDSScalerA(Scaler):
 
         pointless = self._factory.Pointless()
         pointless.set_xdsin(hklin)
+        hklout = os.path.join(
+          self.get_working_directory(),
+          '%d_xds-pointgroup-unsorted.mtz' %pointless.get_xpid())
+        FileHandler.record_temporary_file(hklout)
         pointless.set_hklout(hklout)
         pointless.xds_to_mtz()
 
