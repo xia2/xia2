@@ -84,7 +84,7 @@ def exercise_dials_integrater(nproc=None):
 
   assert integrater.get_integrater_wedge() == (1, 45)
   assert approx_equal(integrater.get_integrater_cell(),
-                      (78.14, 78.14, 78.14, 90, 90, 90), eps=1e-2)
+                      (78.14, 78.14, 78.14, 90, 90, 90), eps=1e-1)
 
   # test serialization of integrater
   json_str = integrater.as_json()
