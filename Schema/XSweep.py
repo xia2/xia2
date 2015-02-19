@@ -312,7 +312,7 @@ class XSweep(object):
       for j in images:
         epoch = scan.get_image_epoch(j)
         if epoch == 0.0:
-          epoch = float(os.stat(self._imageset.get_path(j-1)).st_mtime)
+          epoch = float(os.stat(self._imageset.get_path(j-images[0])).st_mtime)
         self._epoch_to_image[epoch] = j
         self._image_to_epoch[j] = epoch
 
@@ -758,6 +758,8 @@ class XSweep(object):
                                                 frames[1])
           self._integrater.set_frame_wedge(frames[0],
                                            frames[1])
+          self._integrater.set_integrater_epoch(
+            self.get_epoch(self._frames_to_process[0]))
 
         self._integrater.set_working_directory(working_directory)
 
