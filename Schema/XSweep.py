@@ -230,10 +230,10 @@ class XSweep(object):
       # and (2) that all of the images are readable. This should also
       # take into account frames_to_process if set.
 
-      if self._frames_to_process:
-        start, end = self._frames_to_process
-      else:
-        start, end = min(self._images), max(self._images)
+      if self._frames_to_process is None:
+        self._frames_to_process = min(self._images), max(self._images)
+
+      start, end = self._frames_to_process
 
       error = False
 
