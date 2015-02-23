@@ -35,8 +35,11 @@ def Integrate(DriverType = None):
       self._outlier_algorithm = None
       self._phil_file = None
       self._mosaic = None
-      self._dmax = None
+      self._d_max = None
+      self._d_min = None
       self._use_threading = False
+      self._scan_range = []
+      self._reflections_per_degree = None
 
       return
 
@@ -71,13 +74,23 @@ def Integrate(DriverType = None):
     def get_background_outlier_algorithm(self):
       return self._outlier_algorithm
 
+    def set_reflections_per_degree(self, reflections_per_degree):
+      self._reflections_per_degree = reflections_per_degree
+
     def set_phil_file(self, phil_file):
       self._phil_file = phil_file
       return
 
-    def set_dmax(self, dmax):
-      self._dmax = dmax
+    def set_d_max(self, d_max):
+      self._d_max = d_max
       return
+
+    def set_d_min(self, d_min):
+      self._d_min = d_min
+      return
+
+    def add_scan_range(self, start, stop):
+      self._scan_range.append((start, stop))
 
     def get_integrated_filename(self):
       return self._integrated_filename
@@ -110,8 +123,15 @@ def Integrate(DriverType = None):
           'outlier.algorithm=%s' % self._outlier_algorithm)
       if self._phil_file is not None:
         self.add_command_line('%s' % self._phil_file)
-      if self._dmax is not None:
-        self.add_command_line('prediction.dmax=%f' % self._dmax)
+      if self._d_max is not None:
+        self.add_command_line('prediction.dmax=%f' % self._d_max)
+      if self._d_min is not None and self._d_min > 0.0:
+        self.add_command_line('prediction.dmin=%f' % self._d_min)
+      for scan_range in self._scan_range:
+        self.add_command_line('scan_range=%d,%d' %scan_range)
+      if self._reflections_per_degree is not None:
+        self.add_command_line('reflections_per_degree=%d' %self._reflections_per_degree)
+        self.add_command_line('integrate_all_reflections=False')
 
       self.start()
       self.close_wait()

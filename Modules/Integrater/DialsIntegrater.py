@@ -267,9 +267,6 @@ class DialsIntegrater(Integrater):
 
     integrate = self.Integrate()
 
-    if self._integrate_parameters:
-      integrate.set_updates(self._integrate_parameters)
-
     # decide what images we are going to process, if not already
     # specified
 
@@ -282,9 +279,50 @@ class DialsIntegrater(Integrater):
 
     integrate.set_experiments_filename(self._intgr_experiments_filename)
     integrate.set_reflections_filename(self._intgr_indexed_filename)
-    integrate.set_dmax(self._intgr_reso_low)
+    integrate.set_d_max(self._intgr_reso_low)
+    integrate.set_d_min(self._intgr_reso_high)
 
-    integrate.run()
+    try:
+      integrate.run()
+    except RuntimeError, e:
+      s = str(e)
+      if ('dials.integrate requires more memory than is available.' in s
+          and not self._intgr_reso_high):
+        # Try to estimate a more sensible resolution limit for integration
+        # in case we were just integrating noise to the edge of the detector
+        images = self._integrate_select_images_wedges()
+
+        Debug.write(
+          'Integrating subset of images to estimate resolution limit.\n'
+          'Integrating images %s' %images)
+
+        integrate = self.Integrate()
+        integrate.set_experiments_filename(self._intgr_experiments_filename)
+        integrate.set_reflections_filename(self._intgr_indexed_filename)
+        integrate.set_d_max(self._intgr_reso_low)
+        integrate.set_d_min(self._intgr_reso_high)
+        for (start, stop) in images:
+          integrate.add_scan_range(start-self.get_matching_images()[0], stop-self.get_matching_images()[0])
+        integrate.set_reflections_per_degree(1000)
+        integrate.run()
+
+        integrated_pickle = integrate.get_integrated_filename()
+        
+        from Wrappers.Dials.EstimateResolutionLimit import EstimateResolutionLimit
+        d_min_estimater = EstimateResolutionLimit()
+        d_min_estimater.set_working_directory(self.get_working_directory())
+        auto_logfiler(d_min_estimater)
+        d_min_estimater.set_experiments_filename(self._intgr_experiments_filename)
+        d_min_estimater.set_reflections_filename(integrated_pickle)
+        d_min = d_min_estimater.run()
+
+        Debug.write('Estimate for d_min: %.2f' %d_min)
+        Debug.write('Re-running integration to this resolution limit')
+
+        self._intgr_reso_high = d_min
+        self.set_integrater_done(False)
+        return
+      raise
 
     # also record the batch range - needed for the analysis of the
     # radiation damage in chef...
@@ -388,6 +426,71 @@ class DialsIntegrater(Integrater):
     self._intgr_cell = reindex.get_cell()
 
     return hklout
+
+  def _integrate_select_images_wedges(self):
+    '''Select correct images based on image headers.'''
+
+    phi_width = self.get_phi_width()
+
+    if phi_width == 0.0:
+      Debug.write('Phi width 0.0? Assuming 1.0!')
+      phi_width = 1.0
+
+    images = self.get_matching_images()
+
+    # characterise the images - are there just two (e.g. dna-style
+    # reference images) or is there a full block?
+
+    wedges = []
+
+    if len(images) < 3:
+      # work on the assumption that this is a reference pair
+
+      wedges.append(images[0])
+
+      if len(images) > 1:
+        wedges.append(images[1])
+
+    else:
+      block_size = min(len(images), int(math.ceil(5/phi_width)))
+
+      Debug.write('Adding images for indexer: %d -> %d' % \
+                  (images[0], images[block_size - 1]))
+
+      wedges.append((images[0], images[block_size - 1]))
+
+      if int(90.0 / phi_width) + block_size in images:
+        # assume we can add a wedge around 45 degrees as well...
+        Debug.write('Adding images for indexer: %d -> %d' % \
+                    (int(45.0 / phi_width) + images[0],
+                     int(45.0 / phi_width) + images[0] +
+                     block_size - 1))
+        Debug.write('Adding images for indexer: %d -> %d' % \
+                    (int(90.0 / phi_width) + images[0],
+                     int(90.0 / phi_width) + images[0] +
+                     block_size - 1))
+        wedges.append(
+            (int(45.0 / phi_width) + images[0],
+             int(45.0 / phi_width) + images[0] + block_size - 1))
+        wedges.append(
+            (int(90.0 / phi_width) + images[0],
+             int(90.0 / phi_width) + images[0] + block_size - 1))
+
+      else:
+
+        # add some half-way anyway
+        first = (len(images) // 2) - (block_size // 2) + images[0] - 1
+        if first > wedges[0][1]:
+          last = first + block_size - 1
+          Debug.write('Adding images for indexer: %d -> %d' % \
+                      (first, last))
+          wedges.append((first, last))
+        if len(images) > block_size:
+          Debug.write('Adding images for indexer: %d -> %d' % \
+                      (images[- block_size], images[-1]))
+          wedges.append((images[- block_size], images[-1]))
+
+    return wedges
 
 if __name__ == '__main__':
 
