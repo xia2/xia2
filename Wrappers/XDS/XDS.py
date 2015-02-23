@@ -295,14 +295,24 @@ def imageset_to_xds(imageset, synchrotron = None, reversephi = False,
     result.append('POLARIZATION_PLANE_NORMAL= %.3f %.3f %.3f' %
                   (R * matrix.col(beam.get_polarization_normal())).elems)
 
-  # FIXME 24/NOV/14 XDS determines the air absorption automatically
+  # 24/NOV/14 XDS determines the air absorption automatically
   # based on wavelength. May be useful to override this for in vacuo exps
   # result.append('AIR=0.001')
 
-
-  # FIXME I should really get this from the image headers...
   if detector == 'PILATUS':
-    result.append('SENSOR_THICKNESS= 0.32')
+    try:
+      thickness = converter.get_detector()[0].get_thickness()
+      if not thickness:
+        thickness = 0.32
+        Debug.write('Could not determine sensor thickness. Assuming default PILATUS 0.32mm')
+    except e:
+      thickness = 0.32
+      Debug.write('Error occured during sensor thickness determination. Assuming default PILATUS 0.32mm')
+    result.append('SENSOR_THICKNESS=%f' % thickness)
+
+#  # FIXME: Sensor absorption coefficient calculation probably requires a more general solution
+#  if converter.get_detector()[0].get_material() == 'CdTe':
+#    print "CdTe detector detected. Beam wavelength is %8.6f Angstrom" % converter.wavelength
 
   for f0, s0, f1, s1 in converter.get_detector()[0].get_mask():
     result.append('UNTRUSTED_RECTANGLE= %d %d %d %d' %
