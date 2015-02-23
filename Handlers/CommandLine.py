@@ -58,8 +58,12 @@ class _CommandLine(object):
   def get_command_line(self):
     import libtbx.load_env
     cl = libtbx.env.dispatcher_name
-    if 'xia2' not in cl or 'python' in cl:
+    if cl:
+      if 'xia2' not in cl or 'python' in cl:
+        cl = 'xia2'
+    else:
       cl = 'xia2'
+
     for arg in sys.argv[1:]:
       cl += ' %s' % arg
 
