@@ -311,6 +311,7 @@ class XDSScalerA(Scaler):
     self._scalr_xname = self._sweep_information[epochs[0]]['xname']
 
     for epoch in epochs:
+      intgr = self._scalr_integraters[epoch]
       pname = self._sweep_information[epoch]['pname']
       if self._scalr_pname != pname:
         raise RuntimeError, 'all data must have a common project name'
@@ -327,8 +328,14 @@ class XDSScalerA(Scaler):
                               pname, xname, dname, sname))
       sweep = intgr.get_integrater_sweep()
       if sweep.get_frames_to_process() is not None:
+        offset = intgr.get_frame_offset()
+        #print "offset: %d" %offset
         start, end = sweep.get_frames_to_process()
-        xsh.limit_batches(hklin, hklout, start-start, end-start)
+        start -= offset
+        end -= offset
+        #end += 1 ????
+        #print "limiting batches: %d-%d" %(start, end)
+        xsh.limit_batches(hklin, hklout, start, end)
         self._sweep_information[epoch]['corrected_intensities'] = hklout
 
     # if there is more than one sweep then compare the lattices
