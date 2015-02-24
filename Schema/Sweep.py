@@ -119,6 +119,9 @@ class Sweep(object):
   def get_wavelength(self):
     return self._imageset.get_beam().get_wavelength()
 
+  def set_wavelength(self, wavelength):
+    return self._imageset.get_beam().set_wavelength(wavelength)
+
   def get_beam_centre(self):
     detector = self._imageset.get_detector()
     beam = self._imageset.get_beam()

@@ -253,6 +253,9 @@ def print_sweeps(out = sys.stdout):
 
   wavelengths = []
 
+  params = PhilIndex.get_python_object()
+  wavelength_tolerance = params.xia2.settings.wavelength_tolerance
+
   for sweep in sweeplists:
     sweeps = known_sweeps[sweep]
     # this should sort on exposure epoch ...?
@@ -265,7 +268,13 @@ def print_sweeps(out = sys.stdout):
       wavelength = s.get_wavelength()
 
       if not wavelength in wavelengths:
-        wavelengths.append(wavelength)
+        have_wavelength = False
+        for w in wavelengths:
+          if abs(w - wavelength) < wavelength_tolerance:
+            have_wavelength = True
+            s.set_wavelength(w)
+        if not have_wavelength:
+          wavelengths.append(wavelength)
 
   wavelength_map = { }
 

@@ -167,6 +167,9 @@ xia2.settings {
     .help = "Whether or not to trust the beam centre in the image header."
             "If false, then labelit.index is used to determine a better beam "
             "centre during xia2 setup phase"
+  wavelength_tolerance = 0.0002
+    .type = float(value_min=0.0)
+    .help = "Tolerance for accepting two different wavelengths as the same wavelength."
   read_all_image_headers = True
     .type = bool
   detector_distance = None
