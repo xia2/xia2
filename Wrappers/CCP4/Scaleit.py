@@ -119,7 +119,9 @@ def Scaleit(DriverType = None):
       return columns
 
     def check_scaleit_errors(self):
-      return
+      for record in self.get_all_output():
+        if 'SCALEIT:  ** No reflections **' in record:
+          raise RuntimeError, 'no reflections'
 
     def scaleit(self):
       '''Run scaleit and get some interesting facts out.'''

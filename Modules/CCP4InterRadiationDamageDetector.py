@@ -119,7 +119,10 @@ class CCP4InterRadiationDamageDetector(object):
     scaleit.set_hklin(self.get_hklin())
     scaleit.set_hklout(self.get_hklout())
 
-    scaleit.scaleit()
+    try:
+      scaleit.scaleit()
+    except RuntimeError, e:
+      return ()
 
     statistics = scaleit.get_statistics()
 

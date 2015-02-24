@@ -307,7 +307,7 @@ class DialsIntegrater(Integrater):
         integrate.run()
 
         integrated_pickle = integrate.get_integrated_filename()
-        
+
         from Wrappers.Dials.EstimateResolutionLimit import EstimateResolutionLimit
         d_min_estimater = EstimateResolutionLimit()
         d_min_estimater.set_working_directory(self.get_working_directory())

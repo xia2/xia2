@@ -855,10 +855,13 @@ class CommonScaler(Scaler):
 
       status = crd.detect()
 
-      Chatter.write('')
-      Chatter.banner('Local Scaling %s' % self._scalr_xname)
-      for s in status:
-        Chatter.write('%s %s' % s)
-      Chatter.banner('')
+      if status:
+        Chatter.write('')
+        Chatter.banner('Local Scaling %s' % self._scalr_xname)
+        for s in status:
+          Chatter.write('%s %s' % s)
+        Chatter.banner('')
+      else:
+        Debug.write('Local scaling failed')
 
     return
