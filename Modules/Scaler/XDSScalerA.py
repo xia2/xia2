@@ -313,6 +313,9 @@ class XDSScalerA(Scaler):
     for epoch in epochs:
       intgr = self._scalr_integraters[epoch]
       pname = self._sweep_information[epoch]['pname']
+      xname = self._sweep_information[epoch]['xname']
+      dname = self._sweep_information[epoch]['dname']
+      sname = self._sweep_information[epoch]['sname']
       if self._scalr_pname != pname:
         raise RuntimeError, 'all data must have a common project name'
       xname = self._sweep_information[epoch]['xname']
