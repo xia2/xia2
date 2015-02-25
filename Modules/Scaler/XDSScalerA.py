@@ -652,7 +652,7 @@ class XDSScalerA(Scaler):
           DriverFactory.set_driver_type(job_type)
 
         intgr = sweep_information['integrater']
-        hklin = self._sweep_information[epoch]['corrected_intensities']
+        hklin = sweep_information['corrected_intensities']
         refiner = intgr.get_integrater_refiner()
 
         # in here need to consider what to do if the user has
@@ -690,7 +690,7 @@ class XDSScalerA(Scaler):
         # convert the XDS_ASCII for this sweep to mtz - on the next
         # get this should be in the correct setting...
 
-        hklin = self._sweep_information[epoch]['corrected_intensities']
+        hklin = sweep_information['corrected_intensities']
 
         # now use pointless to make this conversion
 
@@ -736,7 +736,7 @@ class XDSScalerA(Scaler):
 
         dname = sweep_information['dname']
         sname = intgr.get_integrater_sweep_name()
-        hklin = self._sweep_information[epoch]['corrected_intensities']
+        hklin = sweep_information['corrected_intensities']
         hklout = os.path.join(self.get_working_directory(),
                               '%s_%s.HKL' % (dname, sname))
 
