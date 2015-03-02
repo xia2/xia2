@@ -36,6 +36,17 @@ from Handlers.Streams import Chatter, Debug
 from Handlers.PipelineSelection import add_preference, get_preferences
 from Handlers.Executables import Executables
 
+from libtbx.utils import Sorry
+
+def which(pgm):
+  # python equivalent to the 'which' command
+  # http://stackoverflow.com/questions/9877462/is-there-a-python-equivalent-to-the-which-command
+  path = os.getenv('PATH')
+  for p in path.split(os.path.pathsep):
+    p = os.path.join(p,pgm)
+    if os.path.exists(p) and os.access(p,os.X_OK):
+      return p
+
 class _CommandLine(object):
   '''A class to represent the command line input.'''
 
@@ -343,6 +354,9 @@ class _CommandLine(object):
     mp_params = params.xia2.settings.multiprocessing
     from libtbx import Auto
     if mp_params.mode == 'parallel':
+      if mp_params.type == 'qsub':
+        if which('qsub') is None:
+          raise Sorry('qsub not available')
       if mp_params.njob is Auto:
         from Handlers.Environment import get_number_cpus
         mp_params.njob = get_number_cpus()
