@@ -87,7 +87,7 @@ class _CommandLine(object):
 
     for token in sys.argv:
       try:
-        token.encode('utf8')
+        token.encode('ascii')
       except UnicodeDecodeError, e:
         raise RuntimeError, 'non-ascii characters in input'
 
