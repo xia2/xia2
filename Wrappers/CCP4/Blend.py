@@ -84,6 +84,10 @@ def Blend(DriverType = None):
       self._summary = parse_summary_file(self._summary_file)
       self._clusters = parse_clusters_file(self._clusters_file)
       self._analysis = parse_final_list_of_files_dat(self._analysis_file)
+      self._linkage_matrix = clusters_as_scipy_linkage_matrix(self._clusters)
+
+      self._dendrogram_file = os.path.join(
+        self.get_working_directory(), 'tree.png')
 
     def get_clusters_file(self):
       return self._clusters_file
@@ -94,11 +98,17 @@ def Blend(DriverType = None):
     def get_analysis_file(self):
       return self._analysis_file
 
+    def get_dendrogram_file(self):
+      return self._dendrogram_file
+
     def get_summary(self):
       return self._summary
 
     def get_clusters(self):
       return self._clusters
+
+    def get_linkage_matrix(self):
+      return self._linkage_matrix
 
     def get_analysis(self):
       return self._analysis
@@ -206,6 +216,41 @@ def parse_final_list_of_files_dat(filename):
     }
 
   return result
+
+def clusters_as_scipy_linkage_matrix(clusters):
+
+  import numpy
+
+  n = len(clusters) + 1
+  linkage_matrix = numpy.ndarray(shape=(n-1,4 ))
+  cluster_id_to_datasets = {}
+  datasets_to_cluster_id = {}
+
+  for i in range(n-1):
+    c = clusters[i+1]
+    dataset_ids = tuple(sorted(c['dataset_ids']))
+    cluster_id = n + i
+    if len(dataset_ids) == 2:
+      linkage_matrix[i] = [
+        dataset_ids[0]-1, dataset_ids[1]-1, c['height'], len(dataset_ids)]
+    else:
+      new = None
+      for cid, dids in cluster_id_to_datasets.iteritems():
+        diff = tuple(sorted(set(dataset_ids)-set(dids)))
+        if len(diff) == 1:
+          new = diff[0]-1
+          break
+        elif len(diff) < len(dataset_ids):
+          if diff in datasets_to_cluster_id:
+            new = datasets_to_cluster_id[diff]
+            break
+      assert new is not None
+      linkage_matrix[i] = [cid, new, c['height'], len(dataset_ids)]
+    cluster_id_to_datasets[cluster_id] = dataset_ids
+    datasets_to_cluster_id[dataset_ids] = cluster_id
+
+  return linkage_matrix
+
 
 
 if __name__ == '__main__':
