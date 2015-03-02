@@ -51,7 +51,7 @@ def Blend(DriverType = None):
     def analysis(self):
       '''Run blend in analysis mode.'''
 
-      assert len(self._hklin_files) > 1
+      assert len(self._hklin_files) > 1, "BLEND requires more than one reflection file"
 
       input_files_dat = os.path.join(
         self.get_working_directory(), 'input_files.dat')
