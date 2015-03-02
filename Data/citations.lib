@@ -130,6 +130,20 @@ pages = "41--51",
   year={1997}
 }
 </citation>
+<citation program="blend">
+@article{Foadi:dz5278,
+author = "Foadi, James and Aller, Pierre and Alguel, Yilmaz and Cameron, Alex and Axford, Danny and Owen, Robin L. and Armour, Wes and Waterman, David G. and Iwata, So and Evans, Gwyndaf",
+title = "{Clustering procedures for the optimal selection of data sets from multiple crystals in macromolecular crystallography}",
+journal = "Acta Crystallographica Section D",
+year = "2013",
+volume = "69",
+number = "8",
+pages = "1617--1632",
+month = "Aug",
+doi = {10.1107/S0907444913012274},
+url = {http://dx.doi.org/10.1107/S0907444913012274},
+}
+</citation>
 </citations>
 
  
