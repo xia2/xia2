@@ -399,10 +399,16 @@ class DialsIntegrater(Integrater):
     if self._intgr_reindex_operator is None and \
       self._intgr_spacegroup_number == lattice_to_spacegroup(
         self.get_integrater_refiner().get_refiner_lattice()):
+      Debug.write('Not reindexing to spacegroup %d (%s)' % \
+                    (self._intgr_spacegroup_number,
+                     self._intgr_reindex_operator))
       return mtz_filename
 
     if self._intgr_reindex_operator is None and \
       self._intgr_spacegroup_number == 0:
+      Debug.write('Not reindexing to spacegroup %d (%s)' % \
+                    (self._intgr_spacegroup_number,
+                     self._intgr_reindex_operator))
       return mtz_filename
 
     Debug.write('Reindexing to spacegroup %d (%s)' % \
