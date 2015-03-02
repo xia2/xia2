@@ -515,6 +515,8 @@ class CCP4ScalerA(Scaler):
           reindex_ops[epoch])
       integrater.set_integrater_spacegroup_number(
           Syminfo.spacegroup_name_to_number(overall_pointgroup))
+      # This will give us the reflections in the correct point group
+      si.set_reflections(integrater.get_integrater_intensities())
 
     if need_to_return:
       self.set_scaler_done(False)
