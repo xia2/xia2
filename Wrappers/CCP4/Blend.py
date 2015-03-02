@@ -69,13 +69,16 @@ def Blend(DriverType = None):
       # general errors - SEGV and the like
       self.check_for_errors()
 
-      self._clusters_file = 'CLUSTERS.txt'
+      self._clusters_file = os.path.join(
+        self.get_working_directory(), 'CLUSTERS.txt')
       assert os.path.isfile(self._clusters_file)
 
-      self._summary_file = 'BLEND_SUMMARY.txt'
+      self._summary_file = os.path.join(
+        self.get_working_directory(), 'BLEND_SUMMARY.txt')
       assert os.path.isfile(self._summary_file)
 
-      self._analysis_file = 'FINAL_list_of_files.dat'
+      self._analysis_file = os.path.join(
+        self.get_working_directory(), 'FINAL_list_of_files.dat')
       assert os.path.isfile(self._analysis_file)
 
       self._summary = parse_summary_file(self._summary_file)
