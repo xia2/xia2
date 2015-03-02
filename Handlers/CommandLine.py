@@ -83,6 +83,14 @@ class _CommandLine(object):
   def setup(self):
     '''Set everything up...'''
 
+    # check arguments are all ascii
+
+    for token in sys.argv:
+      try:
+        token.encode('utf8')
+      except UnicodeEncodeError, e:
+        raise RuntimeError, 'non-ascii characters in input'
+
     self._argv = copy.deepcopy(sys.argv)
 
     # first of all try to interpret arguments as phil parameters/files
