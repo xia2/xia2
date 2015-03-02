@@ -135,6 +135,10 @@ xia2.settings {
       .help = "dxtbx-format datablock.json file which can be provided as an "
               "alternative source of images header information to avoid the "
               "need to read all the image headers on start-up."
+    xinfo = None
+      .type = path
+      .help = "Provide an xinfo file as input as alternative to directory "
+              "containing image files."
   }
   sweep
     .multiple = True

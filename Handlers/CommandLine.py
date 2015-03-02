@@ -361,6 +361,11 @@ class _CommandLine(object):
         mp_params.nproc = get_number_cpus()
       Flags.set_parallel(mp_params.nproc)
 
+    PhilIndex.update("xia2.settings.multiprocessing.njob=%d" %mp_params.njob)
+    PhilIndex.update("xia2.settings.multiprocessing.nproc=%d" %mp_params.nproc)
+    params = PhilIndex.get_python_object()
+    mp_params = params.xia2.settings.multiprocessing
+
     if params.xia2.settings.indexer is not None:
       add_preference("indexer", params.xia2.settings.indexer)
     if params.xia2.settings.refiner is not None:
@@ -386,6 +391,23 @@ class _CommandLine(object):
       traceback.print_exc(file = open('xia2-xinfo.error', 'w'))
       raise RuntimeError, '%s (%s)' % \
             (self._help_xinfo(), str(e))
+
+    params = PhilIndex.get_python_object()
+    if params.xia2.settings.input.xinfo is not None:
+      xinfo_file = params.xia2.settings.input.xinfo
+      self._xinfo = XProject(xinfo_file)
+
+      Debug.write(60 * '-')
+      Debug.write('XINFO file: %s' % xinfo_file)
+      for record in open(xinfo_file, 'r').readlines():
+        # don't want \n on the end...
+        Debug.write(record[:-1])
+      Debug.write(60 * '-')
+    else:
+      xinfo_file = '%s/automatic.xinfo' %os.path.abspath(
+        os.curdir)
+      PhilIndex.update("xia2.settings.input.xinfo=%s" %xinfo_file)
+      PhilIndex.get_python_object()
 
     # finally, check that all arguments were read and raise an exception
     # if any of them were nonsense.
@@ -614,14 +636,13 @@ class _CommandLine(object):
     self._understood.append(index)
     self._understood.append(index + 1)
 
-    self._xinfo = XProject(self._argv[index + 1])
+    # XXX Warning added 2015-03-02
+    Chatter.write(
+      "Warning: -xinfo option deprecated: please use xinfo='%s' instead" %(
+        self._argv[index + 1]))
 
-    Debug.write(60 * '-')
-    Debug.write('XINFO file: %s' % self._argv[index + 1])
-    for record in open(self._argv[index + 1], 'r').readlines():
-      # don't want \n on the end...
-      Debug.write(record[:-1])
-    Debug.write(60 * '-')
+    PhilIndex.update("xia2.settings.input.xinfo=%s" %self._argv[index + 1])
+    PhilIndex.get_python_object()
 
     return
 
