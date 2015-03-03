@@ -12,6 +12,8 @@ os.environ['XIA2CORE_ROOT'] = os.path.join(xia2_root_dir, "core")
 
 from Wrappers.XIA.Integrate import Integrate as XIA2Integrate
 
+from Handlers.Streams import Chatter, Debug
+
 def process_one_sweep(args):
 
 
@@ -68,6 +70,8 @@ def process_one_sweep(args):
     sweep_target_dir = os.path.join(curdir, crystal_id, wavelength_id, sweep_id)
     move_output_folder(sweep_tmp_dir, sweep_target_dir)
     shutil.rmtree(tmpdir, ignore_errors=True)
+    if os.path.exists(tmpdir):
+      shutil.rmtree(tmpdir, ignore_errors=True)
     success = True
   except Exception, e:
     if failover:
