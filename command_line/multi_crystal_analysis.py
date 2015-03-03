@@ -108,6 +108,12 @@ def multi_crystal_analysis(stop_after=None):
       linkage_matrix = hand_blender.get_linkage_matrix()
       #print linkage_matrix
 
+  from Modules import MultiCrystalAnalysis
+  # XXX what about multiple wavelengths?
+  MultiCrystalAnalysis.run(
+    [scaler.get_scaled_reflections(format="sca_unmerged").values()[0],
+     "unit_cell=%s %s %s %s %s %s" %tuple(scaler.get_scaler_cell())])
+
   write_citations()
 
   Environment.cleanup()

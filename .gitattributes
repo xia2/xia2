@@ -25,6 +25,7 @@ Modules/Indexer/XDSIndexerSum.py -text
 Modules/Indexer/__init__.py -text
 Modules/Integrater/DialsIntegrater.py -text
 Modules/Integrater/__init__.py -text
+Modules/MultiCrystalAnalysis.py -text
 Modules/Refiner/DialsRefiner.py -text
 Modules/Refiner/MosflmRefiner.py -text
 Modules/Refiner/RefinerFactory.py -text
