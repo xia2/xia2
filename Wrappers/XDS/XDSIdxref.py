@@ -54,7 +54,7 @@ from Experts.LatticeExpert import s2l
 from libtbx.phil import parse
 
 master_params = parse("""
-refine = *ORIENTATION *CELL *BEAM *DISTANCE *AXIS
+refine = *ORIENTATION *CELL *BEAM *DISTANCE *AXIS *POSITION
   .type = choice(multi = True)
   .help = 'what to refine in autoindexing'
 debug = *OFF ON

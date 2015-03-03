@@ -51,7 +51,7 @@ from Handlers.Streams import Debug
 from libtbx.phil import parse
 
 master_params = parse("""
-refine = *DISTANCE *BEAM *AXIS *ORIENTATION *CELL
+refine = *DISTANCE *BEAM *AXIS *ORIENTATION *CELL *POSITION
   .type = choice(multi = True)
   .help = 'what to refine in the CORRECT step'
 """)
