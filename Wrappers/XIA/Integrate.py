@@ -69,6 +69,9 @@ def Integrate(DriverType = None):
       self.start()
       self.close_wait()
       self.check_for_errors()
+      for line in self.get_all_output():
+        if 'Status: error' in line:
+          raise RuntimeError(line.split('error')[-1].strip())
 
       return
 
