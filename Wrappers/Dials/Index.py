@@ -139,7 +139,7 @@ def Index(DriverType = None):
       self.add_command_line('indexing.method=%s' % method)
       nproc = Flags.get_parallel()
       self.set_cpu_threads(nproc)
-      self.add_command_line('nproc=%i' % nproc)
+      self.add_command_line('indexing.nproc=%i' % nproc)
       if self._use_all_reflections:
         self.add_command_line('use_all_reflections=True')
       else:
