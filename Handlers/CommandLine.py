@@ -76,6 +76,8 @@ class _CommandLine(object):
       cl = 'xia2'
 
     for arg in sys.argv[1:]:
+      if ' ' in arg:
+        arg = '"%s"' %arg
       cl += ' %s' % arg
 
     return cl
