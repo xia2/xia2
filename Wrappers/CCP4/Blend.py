@@ -64,6 +64,10 @@ def Blend(DriverType = None):
 
       self.start()
 
+      # switch off radiation damage analysis since this can be quite slow
+      # and we don't actually need it anyway
+      self.input('RADFRAC 0.00')
+
       self.close_wait()
 
       # general errors - SEGV and the like
