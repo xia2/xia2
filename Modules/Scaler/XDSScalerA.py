@@ -520,6 +520,8 @@ class XDSScalerA(Scaler):
         intgr.set_integrater_reindex_operator(reindex_op)
         intgr.set_integrater_spacegroup_number(
             Syminfo.spacegroup_name_to_number(pointgroup))
+        self._sweep_information[epoch]['corrected_intensities'] \
+          = intgr.get_integrater_corrected_intensities()
 
         # convert the XDS_ASCII for this sweep to mtz - on the next
         # get this should be in the correct setting...
@@ -622,6 +624,8 @@ class XDSScalerA(Scaler):
       intgr.set_integrater_reindex_operator(reindex_op)
       intgr.set_integrater_spacegroup_number(
           Syminfo.spacegroup_name_to_number(pointgroup))
+      self._sweep_information[epoch]['corrected_intensities'] \
+        = intgr.get_integrater_corrected_intensities()
 
       hklin = self._sweep_information[epoch]['corrected_intensities']
 
@@ -686,6 +690,8 @@ class XDSScalerA(Scaler):
         intgr.set_integrater_reindex_operator(reindex_op)
         intgr.set_integrater_spacegroup_number(
             Syminfo.spacegroup_name_to_number(pointgroup))
+        sweep_information['corrected_intensities'] \
+          = intgr.get_integrater_corrected_intensities()
 
         # convert the XDS_ASCII for this sweep to mtz - on the next
         # get this should be in the correct setting...
@@ -731,6 +737,8 @@ class XDSScalerA(Scaler):
         intgr.set_integrater_spacegroup_number(
             Syminfo.spacegroup_name_to_number(pointgroup))
         intgr.set_integrater_reindex_operator(reindex_op)
+        sweep_information['corrected_intensities'] \
+          = intgr.get_integrater_corrected_intensities()
 
         # and copy the reflection file to the local directory
 
@@ -836,6 +844,8 @@ class XDSScalerA(Scaler):
       intgr.set_integrater_reindex_operator(reindex_op)
       intgr.set_integrater_spacegroup_number(
           Syminfo.spacegroup_name_to_number(pointgroup))
+      self._sweep_information[epoch]['corrected_intensities'] \
+        = intgr.get_integrater_corrected_intensities()
 
       hklin = self._sweep_information[epoch]['corrected_intensities']
       dname = self._sweep_information[epoch]['dname']
