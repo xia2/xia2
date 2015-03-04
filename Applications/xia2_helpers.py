@@ -66,12 +66,6 @@ def process_one_sweep(args):
   try:
     xia2_integrate.run()
     output = get_sweep_output_only(xia2_integrate.get_all_output())
-    sweep_tmp_dir = os.path.join(tmpdir, crystal_id, wavelength_id, sweep_id)
-    sweep_target_dir = os.path.join(curdir, crystal_id, wavelength_id, sweep_id)
-    move_output_folder(sweep_tmp_dir, sweep_target_dir)
-    shutil.rmtree(tmpdir, ignore_errors=True)
-    if os.path.exists(tmpdir):
-      shutil.rmtree(tmpdir, ignore_errors=True)
     success = True
   except Exception, e:
     if failover:
@@ -81,6 +75,12 @@ def process_one_sweep(args):
       #print e
       raise
   finally:
+    sweep_tmp_dir = os.path.join(tmpdir, crystal_id, wavelength_id, sweep_id)
+    sweep_target_dir = os.path.join(curdir, crystal_id, wavelength_id, sweep_id)
+    move_output_folder(sweep_tmp_dir, sweep_target_dir)
+    shutil.rmtree(tmpdir, ignore_errors=True)
+    if os.path.exists(tmpdir):
+      shutil.rmtree(tmpdir, ignore_errors=True)
     DriverFactory.set_driver_type(default_driver_type)
     return success, output
 
