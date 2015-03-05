@@ -1028,14 +1028,17 @@ class CCP4ScalerA(Scaler):
     sc.scale()
 
     self._scalr_scaled_reflection_files['sca_unmerged'] = { }
+    self._scalr_scaled_reflection_files['mtz_unmerged'] = { }
     for key in self._scalr_scaled_refl_files:
       f = self._scalr_scaled_refl_files[key]
       scalepack = os.path.join(os.path.split(f)[0],
                                os.path.split(f)[1].replace(
           '_scaled', '_scaled_unmerged').replace('.mtz', '.sca'))
-      self._scalr_scaled_reflection_files['sca_unmerged'][
-          key] = scalepack
+      self._scalr_scaled_reflection_files['sca_unmerged'][key] = scalepack
       FileHandler.record_data_file(scalepack)
+      mtz_unmerged = os.path.splitext(scalepack)[0] + '.mtz'
+      self._scalr_scaled_reflection_files['mtz_unmerged'][key] = mtz_unmerged
+      FileHandler.record_data_file(mtz_unmerged)
 
     sc = self._updated_aimless()
     sc.set_hklin(self._prepared_reflections)
