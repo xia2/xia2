@@ -77,12 +77,11 @@ class CommonScaler(Scaler):
       hklin = si.get_reflections()
 
       pname, xname, dname = si.get_project_info()
+      sname = si.get_sweep_name()
 
       hklout = os.path.join(self.get_working_directory(),
-                            '%s_%s_%s_%d.mtz' % \
-                            (pname, xname, dname, counter))
-
-      FileHandler.record_temporary_file(hklout)
+                            '%s_%s_%s_%s_integrated.mtz' % \
+                            (pname, xname, dname, sname))
 
       first_batch = min(si.get_batches())
       si.set_batch_offset(counter * max_batches - first_batch + 1)

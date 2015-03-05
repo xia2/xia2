@@ -359,7 +359,7 @@ class CCP4ScalerA(Scaler):
 
         si = self._sweep_handler.get_sweep_information(epoch)
         intgr = si.get_integrater()
-        hklin = intgr.get_integrater_intensities()
+        hklin = si.get_reflections()
         refiner = intgr.get_integrater_refiner()
 
         if self._scalr_input_pointgroup:
@@ -536,8 +536,7 @@ class CCP4ScalerA(Scaler):
 
       first = self._sweep_handler.get_epochs()[0]
       si = self._sweep_handler.get_sweep_information(first)
-      integrater = si.get_integrater()
-      self._reference = integrater.get_integrater_intensities()
+      self._reference = si.get_reflections()
 
     if self._reference:
 
@@ -601,16 +600,17 @@ class CCP4ScalerA(Scaler):
         integrater.set_integrater_reindex_operator(reindex_op)
         integrater.set_integrater_spacegroup_number(
             Syminfo.spacegroup_name_to_number(pointgroup))
+        si.set_reflections(integrater.get_integrater_intensities())
 
         md = self._factory.Mtzdump()
-        md.set_hklin(integrater.get_integrater_intensities())
+        md.set_hklin(si.get_reflections())
         md.dump()
 
         datasets = md.get_datasets()
 
         if len(datasets) > 1:
           raise RuntimeError, 'more than one dataset in %s' % \
-                integrater.get_integrater_intensities()
+                si.get_reflections()
 
         # then get the unit cell, lattice etc.
 
@@ -619,16 +619,14 @@ class CCP4ScalerA(Scaler):
 
         if lattice != reference_lattice:
           raise RuntimeError, 'lattices differ in %s and %s' % \
-                (self._reference,
-                 integrater.get_integrater_intensities())
+                (self._reference, si.get_reflections())
 
         for j in range(6):
           if math.fabs((cell[j] - reference_cell[j]) /
                        reference_cell[j]) > 0.1:
             raise RuntimeError, \
                   'unit cell parameters differ in %s and %s' % \
-                  (self._reference,
-                   integrater.get_integrater_intensities())
+                  (self._reference, si.get_reflections())
 
     # ---------- SORT TOGETHER DATA ----------
 
