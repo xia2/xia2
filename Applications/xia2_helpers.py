@@ -37,13 +37,8 @@ def process_one_sweep(args):
 
   if '-xinfo' in command_line_args:
     idx = command_line_args.index('-xinfo')
-    xinfo = command_line_args[idx+1]
-    assert os.path.exists(xinfo)
-    xinfo = os.path.abspath(xinfo)
-    command_line_args[idx+1] = xinfo # substitute full path to xinfo
-  else:
-    command_line_args.extend(
-      ['-xinfo', os.path.join(curdir, 'automatic.xinfo')])
+    del command_line_args[idx+1]
+    del command_line_args[idx]
 
   xia2_integrate = XIA2Integrate()
 

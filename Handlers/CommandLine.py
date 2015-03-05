@@ -418,7 +418,9 @@ class _CommandLine(object):
 
     params = PhilIndex.get_python_object()
     if params.xia2.settings.input.xinfo is not None:
-      xinfo_file = params.xia2.settings.input.xinfo
+      xinfo_file = os.path.abspath(params.xia2.settings.input.xinfo)
+      PhilIndex.update("xia2.settings.input.xinfo=%s" %xinfo_file)
+      params = PhilIndex.get_python_object()
       self._xinfo = XProject(xinfo_file)
 
       Debug.write(60 * '-')
@@ -431,7 +433,7 @@ class _CommandLine(object):
       xinfo_file = '%s/automatic.xinfo' %os.path.abspath(
         os.curdir)
       PhilIndex.update("xia2.settings.input.xinfo=%s" %xinfo_file)
-      PhilIndex.get_python_object()
+      params = PhilIndex.get_python_object()
 
     # finally, check that all arguments were read and raise an exception
     # if any of them were nonsense.
