@@ -30,7 +30,6 @@ def ExportMtz(DriverType = None):
       self._experiments_filename = None
       self._reflections_filename = None
       self._mtz_filename = "hklout.mtz"
-      self._integration_algorithm = "fitrs"
       self._include_partials = False
 
       return

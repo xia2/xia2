@@ -107,8 +107,8 @@ dials {
   integrate {
     phil_file = None
       .type = path
-    intensity_algorithm = sum3d sum2d *fitrs mosflm
-      .type = choice
+    profile_fitting = True
+      .type = bool
     background_outlier_algorithm = *null nsigma truncated normal
       .type = choice
     use_threading = False

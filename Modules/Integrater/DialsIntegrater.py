@@ -101,7 +101,7 @@ class DialsIntegrater(Integrater):
     params = PhilIndex.params.dials.integrate
     integrate = _Integrate()
     integrate.set_phil_file(params.phil_file)
-    integrate.set_intensity_algorithm(params.intensity_algorithm)
+    integrate.set_profile_fitting(params.profile_fitting)
     integrate.set_background_outlier_algorithm(
       params.background_outlier_algorithm)
     integrate.set_working_directory(self.get_working_directory())

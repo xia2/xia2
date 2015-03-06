@@ -31,7 +31,7 @@ def Integrate(DriverType = None):
       self._experiments_filename = None
       self._reflections_filename = None
       self._integrated_filename = None
-      self._integration_algorithm = "fitrs"
+      self._profile_fitting = True
       self._outlier_algorithm = None
       self._phil_file = None
       self._mosaic = None
@@ -60,12 +60,12 @@ def Integrate(DriverType = None):
     def get_reflections_filename(self):
       return self._reflections_filename
 
-    def set_intensity_algorithm(self, algorithm):
-      self._integration_algorithm = algorithm
+    def set_profile_fitting(self, profile_fitting):
+      self._profile_fitting = profile_fitting
       return
 
-    def get_intensity_algorithm(self):
-      return self._integration_algorithm
+    def get_profile_fitting(self):
+      return self._profile_fitting
 
     def set_background_outlier_algorithm(self, algorithm):
       self._outlier_algorithm = algorithm
@@ -117,7 +117,7 @@ def Integrate(DriverType = None):
         self.get_working_directory(), '%d_integrated.pickle' %self.get_xpid())
       self.add_command_line('output.reflections=%s' % self._integrated_filename)
       self.add_command_line(
-        'intensity.algorithm=%s' % self._integration_algorithm)
+        'profile_fitting=%s' % self._profile_fitting)
       if self._outlier_algorithm is not None:
         self.add_command_line(
           'outlier.algorithm=%s' % self._outlier_algorithm)
