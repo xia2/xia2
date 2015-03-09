@@ -25,7 +25,7 @@ giving the merging statistics shown below:
   Rmeas(I+/-)            0.121  0.105 0.679
   Rpim(I)                0.034  0.038 0.267
   Rpim(I+/-)             0.043  0.041 0.368
-  Wilson B factor        12.131 
+  Wilson B factor        12.131
   Anomalous completeness 93.3   52.6  58.0
   Anomalous multiplicity 6.4    5.0   2.0
   Anomalous correlation  0.544  0.791 -0.297
@@ -114,4 +114,3 @@ with very poor low resolution completeness. At the same time we may wish
 to adjust the resolution limits to give more complete data in the outer shell,
 which may be achieved by adding a RESOLUTION instruction to either the
 SWEEP or WAVELENGTH block.
-
