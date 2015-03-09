@@ -64,8 +64,13 @@ class multi_crystal_analysis(object):
     self.individual_merged_intensities = individual_merged_intensities
     self.batches = batches
 
-    self.relative_anomalous_cc_plot()
-    self.cc_matrix_plot()
+    racc = self.relative_anomalous_cc()
+    if racc is not None:
+      self.plot_relative_anomalous_cc(racc)
+    correlation_matrix, linkage_matrix = self.compute_correlation_coefficient_matrix()
+    self.plot_cc_matrix(correlation_matrix, linkage_matrix)
+
+    self.write_output(correlation_matrix, linkage_matrix, racc)
 
   def relative_anomalous_cc(self):
     if self.unmerged_intensities.anomalous_flag():
@@ -79,17 +84,15 @@ class multi_crystal_analysis(object):
         racc.append(anom_cc)
       return racc
 
-  def relative_anomalous_cc_plot(self):
-    racc = self.relative_anomalous_cc()
-    if racc is not None:
-      perm = flex.sort_permutation(racc)
-      fig = pyplot.figure(dpi=1200, figsize=(16,12))
-      pyplot.bar(range(len(racc)), list(racc.select(perm)))
-      pyplot.xticks([i+0.5 for i in range(len(racc))],
-                    ["%.0f" %(j+1) for j in perm])
-      pyplot.xlabel("Dataset")
-      pyplot.ylabel("Relative anomalous correlation coefficient")
-      fig.savefig("racc.png")
+  def plot_relative_anomalous_cc(self, racc):
+    perm = flex.sort_permutation(racc)
+    fig = pyplot.figure(dpi=1200, figsize=(16,12))
+    pyplot.bar(range(len(racc)), list(racc.select(perm)))
+    pyplot.xticks([i+0.5 for i in range(len(racc))],
+                  ["%.0f" %(j+1) for j in perm])
+    pyplot.xlabel("Dataset")
+    pyplot.ylabel("Relative anomalous correlation coefficient")
+    fig.savefig("racc.png")
 
   def compute_correlation_coefficient_matrix(self):
     from scipy.cluster import hierarchy
@@ -122,10 +125,8 @@ class multi_crystal_analysis(object):
 
     return correlation_matrix, linkage_matrix
 
-  def cc_matrix_plot(self):
+  def plot_cc_matrix(self, correlation_matrix, linkage_matrix):
     from scipy.cluster import hierarchy
-
-    correlation_matrix, linkage_matrix = self.compute_correlation_coefficient_matrix()
 
     ind = hierarchy.fcluster(linkage_matrix, t=0.05, criterion='distance')
 
@@ -164,6 +165,50 @@ class multi_crystal_analysis(object):
                          labels=['%i' %(i+1) for i in range(len(self.intensities))],
                          show_leaf_counts=True)
     fig.savefig('dendrogram.png')
+
+  def write_output(self, correlation_matrix, linkage_matrix, racc):
+    from scipy.cluster import hierarchy
+    tree = hierarchy.to_tree(linkage_matrix, rd=False)
+    leaves_list = hierarchy.leaves_list(linkage_matrix)
+    #print tree
+    #print leaves_list
+    #print tree.get_count()
+    #print tree.get_id()
+    #print tree.get_left()
+    #print tree.get_right()
+    #print tree.is_leaf()
+    #print tree.pre_order()
+
+    cluster_dict = {}
+
+    # http://w3facility.org/question/scipy-dendrogram-to-json-for-d3-js-tree-visualisation/
+    # https://gist.github.com/mdml/7537455
+
+    def add_node(node):
+      if node.is_leaf(): return
+      cluster_id = node.get_id() - len(linkage_matrix) - 1
+      row = linkage_matrix[cluster_id]
+      cluster_dict[cluster_id] = {
+        'datasets': sorted(node.pre_order()),
+        'height': row[2],
+      }
+
+      # Recursively add the current node's children
+      if node.left: add_node(node.left)
+      if node.right: add_node(node.right)
+
+    add_node(tree)
+
+    rows = [["cluster_id", "# datasets", "height", "datasets"]]
+    for cid in sorted(cluster_dict.keys()):
+      cluster = cluster_dict[cid]
+      datasets = cluster['datasets']
+      rows.append([str(cid), str(len(datasets)),
+                   '%.2f' %cluster['height'], ' '.join(['%s'] * len(datasets)) % tuple(datasets)])
+
+    from libtbx import table_utils
+    print table_utils.format(
+      rows, has_header=True, prefix="|", postfix="|")
 
 
 def run(args):
