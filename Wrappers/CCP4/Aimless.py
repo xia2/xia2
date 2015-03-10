@@ -450,7 +450,7 @@ def Aimless(DriverType = None,
 
       if self._scalepack:
         self.input('output polish unmerged')
-      self.input('output unmerged together')
+      self.input('output unmerged')
 
       self.close_wait()
 
@@ -600,7 +600,10 @@ def Aimless(DriverType = None,
 
       if self._scalepack:
         self.input('output polish unmerged')
-      self.input('output unmerged together')
+      elif self._chef_unmerged:
+        self.input('output unmerged together')
+      else:
+        self.input('output unmerged')
 
       # run using previously determined scales
 
@@ -738,7 +741,7 @@ def Aimless(DriverType = None,
       # FIXME this is probably not ready to be used yet...
       if self._scalepack:
         self.input('output polish unmerged')
-      self.input('output unmerged together')
+      self.input('output unmerged')
 
       if self._scales_file:
         self.input('onlymerge')
