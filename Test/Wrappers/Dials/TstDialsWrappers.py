@@ -45,7 +45,7 @@ def exercise_dials_wrappers(nproc=None):
 
   xia2_demo_data = os.path.join(dials_regression, "xia2_demo_data")
   template = os.path.join(xia2_demo_data, "insulin_1_%03i.img")
-  scan_ranges = [(0, 45)]
+  scan_ranges = [(1, 45)]
   image_range = (1, 45)
 
   cwd = os.path.abspath(os.curdir)
