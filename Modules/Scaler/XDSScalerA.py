@@ -1360,6 +1360,7 @@ class XDSScalerA(Scaler):
     sc.multi_merge()
 
     self._scalr_scaled_reflection_files['sca_unmerged'] = { }
+    self._scalr_scaled_reflection_files['mtz_unmerged'] = { }
 
     for dataset in sc.get_scaled_reflection_files().keys():
       hklout = sc.get_scaled_reflection_files()[dataset]
@@ -1372,6 +1373,9 @@ class XDSScalerA(Scaler):
       self._scalr_scaled_reflection_files['sca_unmerged'][
           dataset] = scalepack
       FileHandler.record_data_file(scalepack)
+      mtz_unmerged = os.path.splitext(scalepack)[0] + '.mtz'
+      self._scalr_scaled_reflection_files['mtz_unmerged'][key] = mtz_unmerged
+      FileHandler.record_data_file(mtz_unmerged)
 
     # convert reflection files to .sca format - use mtz2various for this
 
