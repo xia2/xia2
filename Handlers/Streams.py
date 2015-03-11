@@ -189,10 +189,18 @@ class _Stream(object):
 # FIXME 23/NOV/06 now write a xia2.txt from chatter and rename that
 # output stream Stdout... then copy everything there!
 
-Chatter = _Stream('xia2', None)
-Journal = _Stream('xia2-journal', None)
+import libtbx.load_env
+cl = libtbx.env.dispatcher_name
+if cl:
+  if ('xia2' not in cl or 'python' in cl or cl == 'xia2.new'):
+    cl = 'xia2'
+else:
+  cl = 'xia2'
+
+Chatter = _Stream('%s' %cl, None)
+Journal = _Stream('%s-journal' %cl, None)
 Stdout = _Stream(None, None)
-Debug = _Stream('xia2-debug', None)
+Debug = _Stream('%s-debug' %cl, None)
 
 Chatter.join(Stdout)
 
