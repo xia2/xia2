@@ -1,3 +1,4 @@
+from __future__ import division
 import os
 
 import iotbx.phil
@@ -15,6 +16,14 @@ n_bins = 20
   .type = int(value_min=1)
 d_min = None
   .type = float(value_min=0)
+batch
+  .multiple = True
+{
+  id = None
+    .type = str
+  range = None
+    .type = ints(size=2, value_min=0)
+}
 """)
 
 
@@ -29,7 +38,8 @@ except ImportError:
 
 class multi_crystal_analysis(object):
 
-  def __init__(self, unmerged_intensities, batches_all, n_bins=20, d_min=None):
+  def __init__(self, unmerged_intensities, batches_all, n_bins=20, d_min=None,
+               id_to_batches=None):
 
     intensities = OrderedDict()
     individual_merged_intensities = OrderedDict()
@@ -40,20 +50,36 @@ class multi_crystal_analysis(object):
     unmerged_intensities = unmerged_intensities.select(sel)
     batches_all = batches_all.select(sel)
 
-    run_id = 0
-    unique_batches = sorted(set(batches_all.data()))
-    last_batch = None
-    run_start = unique_batches[0]
-    for i, batch in enumerate(unique_batches):
-      if last_batch is not None and batch > (last_batch + 1) or (i+1) == len(unique_batches):
+
+    if id_to_batches is None:
+      run_id_to_batch_id = None
+      run_id = 0
+      unique_batches = sorted(set(batches_all.data()))
+      last_batch = None
+      run_start = unique_batches[0]
+      for i, batch in enumerate(unique_batches):
+        if last_batch is not None and batch > (last_batch + 1) or (i+1) == len(unique_batches):
+          batch_sel = (batches_all.data() >= run_start) & (batches_all.data() <= last_batch)
+          batches[run_id] = batches_all.select(batch_sel).resolution_filter(d_min=d_min)
+          intensities[run_id] = unmerged_intensities.select(batch_sel).resolution_filter(d_min=d_min)
+          individual_merged_intensities[run_id] = intensities[run_id].merge_equivalents().array()
+          Debug.write("run %i batch %i to %i" %(run_id+1, run_start, last_batch))
+          run_id += 1
+          run_start = batch
+        last_batch = batch
+
+    else:
+      run_id_to_batch_id = OrderedDict()
+      run_id = 0
+      for batch_id, batch_range in id_to_batches.iteritems():
+        run_id_to_batch_id[run_id] = batch_id
+        run_start, last_batch = batch_range
         batch_sel = (batches_all.data() >= run_start) & (batches_all.data() <= last_batch)
         batches[run_id] = batches_all.select(batch_sel).resolution_filter(d_min=d_min)
         intensities[run_id] = unmerged_intensities.select(batch_sel).resolution_filter(d_min=d_min)
         individual_merged_intensities[run_id] = intensities[run_id].merge_equivalents().array()
         Debug.write("run %i batch %i to %i" %(run_id+1, run_start, last_batch))
         run_id += 1
-        run_start = batch
-      last_batch = batch
 
     unmerged_intensities.setup_binner(n_bins=n_bins)
     unmerged_intensities.show_summary()
@@ -70,7 +96,11 @@ class multi_crystal_analysis(object):
     if racc is not None:
       self.plot_relative_anomalous_cc(racc)
     correlation_matrix, linkage_matrix = self.compute_correlation_coefficient_matrix()
-    self.plot_cc_matrix(correlation_matrix, linkage_matrix)
+    if run_id_to_batch_id is not None:
+      labels = run_id_to_batch_id.values()
+    else:
+      labels = None
+    self.plot_cc_matrix(correlation_matrix, linkage_matrix, labels=labels)
 
     self.write_output(correlation_matrix, linkage_matrix, racc)
 
@@ -127,7 +157,7 @@ class multi_crystal_analysis(object):
 
     return correlation_matrix, linkage_matrix
 
-  def plot_cc_matrix(self, correlation_matrix, linkage_matrix):
+  def plot_cc_matrix(self, correlation_matrix, linkage_matrix, labels=None):
     from scipy.cluster import hierarchy
 
     ind = hierarchy.fcluster(linkage_matrix, t=0.05, criterion='distance')
@@ -161,11 +191,17 @@ class multi_crystal_analysis(object):
 
     fig = pyplot.figure(dpi=1200, figsize=(16,12))
 
+    if labels is None:
+      labels = ['%i' %(i+1) for i in range(len(self.intensities))]
+
     hierarchy.dendrogram(linkage_matrix,
                          #truncate_mode='lastp',
                          color_threshold=0.05,
-                         labels=['%i' %(i+1) for i in range(len(self.intensities))],
-                         show_leaf_counts=True)
+                         labels=labels,
+                         #leaf_rotation=90,
+                         show_leaf_counts=False)
+    locs, labels = pyplot.xticks()
+    pyplot.setp(labels, rotation=70)
     fig.savefig('dendrogram.png')
 
   def write_output(self, correlation_matrix, linkage_matrix, racc):
@@ -247,8 +283,20 @@ def run(args):
   assert batches_all is not None
   assert unmerged_intensities is not None
 
+  id_to_batches = None
+
+  if len(params.batch) > 0:
+    id_to_batches = {
+    }
+    for b in params.batch:
+      assert b.id is not None
+      assert b.range is not None
+      assert b.id not in id_to_batches, "Duplicate batch id: %s" %b.id
+      id_to_batches[b.id] = b.range
+
   multi_crystal_analysis(unmerged_intensities, batches_all,
-                         n_bins=params.n_bins, d_min=params.d_min)
+                         n_bins=params.n_bins, d_min=params.d_min,
+                         id_to_batches=id_to_batches)
 
 
 if __name__ == '__main__':

@@ -113,9 +113,25 @@ def multi_crystal_analysis(stop_after=None):
 
   from Modules import MultiCrystalAnalysis
   # XXX what about multiple wavelengths?
+
+  with open('batches.phil', 'wb') as f:
+    try:
+      for epoch, si in scaler._sweep_information.iteritems():
+        print >> f, "batch {"
+        print >> f, "  id=%s" %si['sname']
+        print >> f, "  range=%i,%i" %tuple(si['batches'])
+        print >> f, "}"
+    except AttributeError, e:
+      for epoch in scaler._sweep_handler.get_epochs():
+        si = scaler._sweep_handler.get_sweep_information(epoch)
+        print >> f, "batch {"
+        print >> f, "  id=%s" %si.get_sweep_name()
+        print >> f, "  range=%i,%i" %tuple(si.get_batches())
+        print >> f, "}"
   MultiCrystalAnalysis.run(
     [scaler.get_scaled_reflections(format="sca_unmerged").values()[0],
-     "unit_cell=%s %s %s %s %s %s" %tuple(scaler.get_scaler_cell())])
+     "unit_cell=%s %s %s %s %s %s" %tuple(scaler.get_scaler_cell()),
+     "batches.phil"])
 
   write_citations()
 
@@ -158,4 +174,3 @@ def run():
 
 if __name__ == '__main__':
   run()
-
