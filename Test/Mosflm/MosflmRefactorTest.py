@@ -29,7 +29,8 @@ Debug.join(Stdout)
 
 def exercise_mosflm_index():
   if not have_dials_regression:
-    raise RuntimeError, 'dials_regression not available'
+    print 'SKIP: dials_regression not configured'
+    exit(0)
 
   xia2_demo_data = os.path.join(dials_regression, "xia2_demo_data")
   template = os.path.join(xia2_demo_data, "insulin_1_%03i.img")
