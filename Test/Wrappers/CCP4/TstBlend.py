@@ -18,9 +18,11 @@ def cmd_exists(cmd):
 def exercise_blend_wrapper():
   if not cmd_exists('blend'):
     print "Skipping exercise_blend_wrapper(): blend not available"
+    exit(0)
 
   if xia2_regression is None:
     print "Skipping exercise_blend_wrapper(): xia2_regression not present."
+    exit(0)
 
   cwd = os.path.abspath(os.curdir)
   tmp_dir = os.path.abspath(open_tmp_directory())
