@@ -19,6 +19,7 @@ from Handlers.Streams import Chatter, Debug
 from Handlers.Files import cleanup
 from Handlers.Citations import Citations
 from Handlers.Environment import Environment, df
+from lib.bits import auto_logfiler
 
 from XIA2Version import Version
 
@@ -111,9 +112,8 @@ def multi_crystal_analysis(stop_after=None):
       linkage_matrix = hand_blender.get_linkage_matrix()
       #print linkage_matrix
 
-  from Modules import MultiCrystalAnalysis
-  # XXX what about multiple wavelengths?
 
+  # XXX what about multiple wavelengths?
   with open('batches.phil', 'wb') as f:
     try:
       for epoch, si in scaler._sweep_information.iteritems():
@@ -128,10 +128,22 @@ def multi_crystal_analysis(stop_after=None):
         print >> f, "  id=%s" %si.get_sweep_name()
         print >> f, "  range=%i,%i" %tuple(si.get_batches())
         print >> f, "}"
-  MultiCrystalAnalysis.run(
+
+  #from Modules import MultiCrystalAnalysis
+  #MultiCrystalAnalysis.run(
+    #[scaler.get_scaled_reflections(format="sca_unmerged").values()[0],
+     #"unit_cell=%s %s %s %s %s %s" %tuple(scaler.get_scaler_cell()),
+     #"batches.phil"])
+
+  from Wrappers.XIA.MultiCrystalAnalysis import MultiCrystalAnalysis
+  mca = MultiCrystalAnalysis()
+  auto_logfiler(mca, extra="MultiCrystalAnalysis")
+  mca.add_command_line_args(
     [scaler.get_scaled_reflections(format="sca_unmerged").values()[0],
      "unit_cell=%s %s %s %s %s %s" %tuple(scaler.get_scaler_cell()),
      "batches.phil"])
+  mca.set_working_directory(working_directory)
+  mca.run()
 
   write_citations()
 
