@@ -74,18 +74,21 @@ def multi_crystal_analysis(stop_after=None):
         os.path.isdir(scaler_working_directory) and
         os.path.isfile(json_file)):
       scaler = scaler.__class__.from_json(filename=json_file)
-
       scaler.set_working_directory(scaler_working_directory)
-
       scaler.set_scaler_xcrystal(crystal)
       crystal._scaler = scaler
 
   for crystal_id, crystal in crystals.iteritems():
+    cwd = os.path.abspath(os.curdir)
+    working_directory = Environment.generate_directory(
+      [crystal.get_name(), 'analysis'])
+    os.chdir(working_directory)
+
     from Wrappers.CCP4.Blend import Blend
 
     from lib.bits import auto_logfiler
     hand_blender = Blend()
-    hand_blender.set_working_directory(scaler.get_working_directory())
+    hand_blender.set_working_directory(working_directory)
     auto_logfiler(hand_blender)
     Citations.cite('blend')
 
@@ -100,7 +103,7 @@ def multi_crystal_analysis(stop_after=None):
         hand_blender.add_hklin(si.get_reflections())
     finally:
       hand_blender.analysis()
-      print "Dendrogram saved to: %s" %hand_blender.get_dendrogram_file()
+      Chatter.write("Dendrogram saved to: %s" %hand_blender.get_dendrogram_file())
       analysis = hand_blender.get_analysis()
       summary = hand_blender.get_summary()
       clusters = hand_blender.get_clusters()

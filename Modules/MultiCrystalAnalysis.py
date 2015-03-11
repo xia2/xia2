@@ -6,6 +6,8 @@ from scitbx.array_family import flex
 from libtbx.containers import OrderedDict
 from cctbx import crystal, miller, sgtbx, uctbx
 
+from Handlers.Streams import Chatter, Debug
+
 master_phil_scope = iotbx.phil.parse("""\
 unit_cell = None
   .type = unit_cell
@@ -48,7 +50,7 @@ class multi_crystal_analysis(object):
         batches[run_id] = batches_all.select(batch_sel).resolution_filter(d_min=d_min)
         intensities[run_id] = unmerged_intensities.select(batch_sel).resolution_filter(d_min=d_min)
         individual_merged_intensities[run_id] = intensities[run_id].merge_equivalents().array()
-        print "run %i batch %i to %i" %(run_id+1, run_start, last_batch)
+        Debug.write("run %i batch %i to %i" %(run_id+1, run_start, last_batch))
         run_id += 1
         run_start = batch
       last_batch = batch
@@ -206,9 +208,10 @@ class multi_crystal_analysis(object):
       rows.append([str(cid), str(len(datasets)),
                    '%.2f' %cluster['height'], ' '.join(['%s'] * len(datasets)) % tuple(datasets)])
 
-    from libtbx import table_utils
-    print table_utils.format(
-      rows, has_header=True, prefix="|", postfix="|")
+    with open('intensity_clustering.txt', 'wb') as f:
+      from libtbx import table_utils
+      print >> f, table_utils.format(
+        rows, has_header=True, prefix="|", postfix="|")
 
 
 def run(args):
@@ -231,7 +234,7 @@ def run(args):
 
   for ma in result.as_miller_arrays(
     merge_equivalents=False, crystal_symmetry=crystal_symmetry):
-    print ma.info().labels
+    #print ma.info().labels
     if ma.info().labels == ['I(+)', 'SIGI(+)', 'I(-)', 'SIGI(-)']:
       assert ma.anomalous_flag()
       unmerged_intensities = ma
