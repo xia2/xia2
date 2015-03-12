@@ -125,6 +125,8 @@ def get_template(f):
 
   # in here, check the permissions on the file...
 
+  template = None
+
   if not os.access(f, os.R_OK):
     from Handlers.Streams import Debug
     Debug.write('No read permission for %s' % f)
@@ -139,7 +141,10 @@ def get_template(f):
   except Exception, e:
     from Handlers.Streams import Debug
     Debug.write('Exception: %s (%s)' % (str(e), f))
-    # traceback.print_exc(file = sys.stdout)
+    traceback.print_exc(file = sys.stdout)
+
+  if not template:
+    raise RuntimeError, 'template not recognised for %s' % f
 
   return os.path.join(directory, template)
 

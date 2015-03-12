@@ -58,6 +58,9 @@ def template_regex(filename):
 
   global patterns, compiled_patterns
 
+  template = None
+  digits = None
+
   for j, cp in enumerate(compiled_patterns):
     match = cp.match(rfilename)
     if not match:
@@ -75,6 +78,9 @@ def template_regex(filename):
 
     template = prefix + ''.join(['#' for d in digits]) + exten
     break
+
+  if not template:
+    raise RuntimeError, 'template not recognised'
 
   return template, int(digits)
 
