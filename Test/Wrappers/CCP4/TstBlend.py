@@ -20,7 +20,7 @@ def exercise_blend_wrapper():
     print "Skipping exercise_blend_wrapper(): blend not available"
     exit(0)
 
-  if xia2_regression is None:
+  if (not libtbx.env.has_module('xia2_regression')) or (xia2_regression is None):
     print "Skipping exercise_blend_wrapper(): xia2_regression not present."
     exit(0)
 
