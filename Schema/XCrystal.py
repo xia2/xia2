@@ -489,6 +489,7 @@ class XCrystal(object):
           'Multiplicity',
           'I/sigma',
           'Rmerge',
+          'CC half',
           'Anomalous completeness',
           'Anomalous multiplicity']
 
