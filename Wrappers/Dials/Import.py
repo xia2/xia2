@@ -34,6 +34,7 @@ def Import(DriverType = None):
 
       self._sweep_filename = 'datablock_import.json'
       self._image_to_epoch = None
+      self._reference_geometry = None
 
       return
 
@@ -54,6 +55,9 @@ def Import(DriverType = None):
     def set_image_to_epoch(self, image_to_epoch):
       self._image_to_epoch = image_to_epoch
       return
+
+    def set_reference_geometry(self, reference_geometry):
+      self._reference_geometry = reference_geometry
 
     def fix_datablock_import(self):
       import json
@@ -99,6 +103,10 @@ def Import(DriverType = None):
 
       for i in range(self._image_range[0], self._image_range[1] + 1):
         self._images.append(self.get_image_name(i))
+
+      if self._reference_geometry is not None:
+        self.add_command_line(
+          'input.reference_geometry=%s' %self._reference_geometry)
 
       if fast_mode:
         for image in self._images[:2]:

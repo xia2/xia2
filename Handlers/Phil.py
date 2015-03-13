@@ -135,6 +135,11 @@ xia2.settings {
       .help = "dxtbx-format datablock.json file which can be provided as an "
               "alternative source of images header information to avoid the "
               "need to read all the image headers on start-up."
+    reference_geometry = None
+      .type = path
+      .help = "Experimental geometry from this datablock.json or "
+              "experiments.json will override the geometry from the "
+              "image headers."
     xinfo = None
       .type = path
       .help = "Provide an xinfo file as input as alternative to directory "

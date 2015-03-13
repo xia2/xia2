@@ -409,6 +409,12 @@ class _CommandLine(object):
       assert os.path.isfile(params.xia2.settings.input.json)
       load_datablock(params.xia2.settings.input.json)
 
+    if params.xia2.settings.input.reference_geometry is not None:
+      PhilIndex.update(
+        "xia2.settings.input.reference_geometry=%s" %os.path.abspath(
+          params.xia2.settings.input.reference_geometry))
+      params = PhilIndex.get_python_object()
+
     try:
       self._read_xinfo()
     except exceptions.Exception, e:

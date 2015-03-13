@@ -163,14 +163,19 @@ def save_datablock(filename):
 
 
 def load_datablock(filename):
-  from Schema import imageset_cache
+  from Schema import imageset_cache, update_with_reference_geometry
   from dxtbx.serialize import load
   from libtbx.containers import OrderedDict
 
   datablocks = load.datablock(filename, check_format=False)
 
   for datablock in datablocks:
-    for imageset in datablock.extract_imagesets():
+    imagesets = datablock.extract_imagesets()
+    params = PhilIndex.get_python_object()
+    reference_geometry = params.xia2.settings.input.reference_geometry
+    if reference_geometry is not None:
+      update_with_reference_geometry(imagesets, reference_geometry)
+    for imageset in imagesets:
       template = imageset.get_template()
       if template not in imageset_cache:
         imageset_cache[template] = OrderedDict()

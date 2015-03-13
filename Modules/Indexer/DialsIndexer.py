@@ -127,6 +127,9 @@ class DialsIndexer(Indexer):
     importer = self.Import()
     importer.set_image_range(self._indxr_images[0])
     importer.set_image_to_epoch(image_to_epoch)
+    if PhilIndex.params.xia2.settings.input.reference_geometry is not None:
+      importer.set_reference_geometry(
+        PhilIndex.params.xia2.settings.input.reference_geometry)
     importer.run(fast_mode=True)
 
     # FIXME this should really use the assigned spot finding regions
