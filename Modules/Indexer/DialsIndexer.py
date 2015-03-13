@@ -201,6 +201,9 @@ class DialsIndexer(Indexer):
     rbs = self.RefineBravaisSettings()
     rbs.set_experiments_filename(indexer.get_experiments_filename())
     rbs.set_indexed_filename(indexer.get_indexed_filename())
+    if PhilIndex.params.dials.fix_geometry:
+      rbs.set_detector_fix('all')
+      rbs.set_beam_fix('all')
     rbs.run()
 
     rmsd_p1 = rbs.get_bravais_summary()[1]['rmsd']
@@ -279,6 +282,9 @@ class DialsIndexer(Indexer):
       indexer.set_phil_file(PhilIndex.params.dials.index.phil_file)
     if PhilIndex.params.dials.index.max_cell:
       indexer.set_max_cell(PhilIndex.params.dials.index.max_cell)
+    if PhilIndex.params.dials.fix_geometry:
+      indexer.set_detector_fix('all')
+      indexer.set_beam_fix('all')
 
     if self._indxr_input_lattice:
       indexer.set_indexer_input_lattice(self._indxr_input_lattice)

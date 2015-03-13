@@ -36,8 +36,8 @@ def Refine(DriverType = None):
       self._refined_filename = None
       self._scan_varying = False
       self._use_all_reflections = False
-      self._fix_beam = False
-      self._fix_detector = False
+      self._detector_fix = None
+      self._beam_fix = None
       self._reflections_per_degree = None
       self._interval_width_degrees = None
       self._phil_file = None
@@ -77,11 +77,13 @@ def Refine(DriverType = None):
     def get_use_all_reflections(self):
       return self._use_all_reflections
 
-    def set_fix_detector(self, fix):
-      self._fix_detector = fix
+    def set_detector_fix(self, detector_fix):
+      self._detector_fix = detector_fix
+      return
 
-    def set_fix_beam(self, fix):
-      self._fix_beam = fix
+    def set_beam_fix(self, beam_fix):
+      self._beam_fix = beam_fix
+      return
 
     def set_reflections_per_degree(self, reflections_per_degree):
       self._reflections_per_degree = int(reflections_per_degree)
@@ -118,10 +120,10 @@ def Refine(DriverType = None):
       if self._interval_width_degrees is not None:
         self.add_command_line(
           'interval_width_degrees=%i' %self._interval_width_degrees)
-      if self._fix_detector:
-        self.add_command_line('detector.fix=all')
-      if self._fix_beam:
-        self.add_command_line('beam.fix=all')
+      if self._detector_fix:
+        self.add_command_line('detector.fix=%s' % self._detector_fix)
+      if self._beam_fix:
+        self.add_command_line('beam.fix=%s' % self._beam_fix)
       if self._phil_file is not None:
         self.add_command_line('%s' %self._phil_file)
 

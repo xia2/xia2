@@ -49,6 +49,9 @@ class DialsRefiner(Refiner):
     refine.set_use_all_reflections(params.use_all_reflections)
     if params.reflections_per_degree:
       refine.set_reflections_per_degree(params.reflections_per_degree)
+    if PhilIndex.params.dials.fix_geometry:
+      refine.set_detector_fix('all')
+      refine.set_beam_fix('all')
     auto_logfiler(refine, 'REFINE')
 
     return refine

@@ -29,6 +29,8 @@ def RefineBravaisSettings(DriverType = None):
 
       self._experiments_filename = None
       self._indexed_filename = None
+      self._detector_fix = None
+      self._beam_fix = None
 
       return
 
@@ -38,6 +40,14 @@ def RefineBravaisSettings(DriverType = None):
 
     def set_indexed_filename(self, indexed_filename):
       self._indexed_filename = indexed_filename
+      return
+
+    def set_detector_fix(self, detector_fix):
+      self._detector_fix = detector_fix
+      return
+
+    def set_beam_fix(self, beam_fix):
+      self._beam_fix = beam_fix
       return
 
     def get_bravais_summary(self):
@@ -61,8 +71,10 @@ def RefineBravaisSettings(DriverType = None):
       self.set_cpu_threads(nproc)
       self.add_command_line('nproc=%i' % nproc)
       self.add_command_line('reflections_per_degree=10')
-      #self.add_command_line('detector.fix=all')
-      #self.add_command_line('beam.fix=all')
+      if self._detector_fix:
+        self.add_command_line('detector.fix=%s' % self._detector_fix)
+      if self._beam_fix:
+        self.add_command_line('beam.fix=%s' % self._beam_fix)
       self.add_command_line('engine=GaussNewton')
       self.add_command_line('close_to_spindle_cutoff=0.05')
 

@@ -84,6 +84,10 @@ dials {
     sigma_strong = None
       .type = float
   }
+  fix_geometry = False
+    .type = bool
+    .help = "Whether or not to refine geometry in dials.index and dials.refine."
+            "Most useful when also providing a reference geometry to xia2."
   index {
     method = fft1d *fft3d real_space_grid_search
       .type = choice
