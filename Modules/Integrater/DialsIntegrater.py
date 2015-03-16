@@ -341,44 +341,14 @@ class DialsIntegrater(Integrater):
     show = self.ShowIsigRmsd()
     show.set_reflections_filename(self._intgr_integrated_pickle)
     show.run()
-    data = show.data()
+    self._intgr_per_image_statistics = show.data()
+    self.show_per_image_statistics()
 
-    spot_status = ''
+    m_min, m_mean, m_max = integrate.get_mosaic()
+    self.set_integrater_mosaic_min_mean_max(m_min, m_mean, m_max)
 
-    for frame in range(self._intgr_wedge[0], self._intgr_wedge[1] + 1):
-      n, isig, rmsd = data.get(frame, (0, 0.0, 0.0))
-
-      if isig < 1.0:
-        status = '.'
-      elif rmsd > 2.5:
-        status = '!'
-      elif rmsd > 1.0:
-        status = '%'
-      else:
-        status = 'o'
-
-      spot_status += status
-
-
-    if len(spot_status) > 60:
-      Chatter.write('Integration status per image (60/record):')
-    else:
-      Chatter.write('Integration status per image:')
-
-    for chunk in [spot_status[i:i + 60] \
-                  for i in range(0, len(spot_status), 60)]:
-      Chatter.write(chunk)
-
-    Chatter.write(
-      '"o" => good        "%" => ok        "!" => bad rmsd')
-    Chatter.write(
-      '"O" => overloaded  "#" => many bad  "." => weak')
-    Chatter.write(
-      '"@" => abandoned')
-
-    mosaic = integrate.get_mosaic()
     Chatter.write('Mosaic spread: %.3f < %.3f < %.3f' % \
-                  (mosaic, mosaic, mosaic))
+                  self.get_integrater_mosaic_min_mean_max())
 
     return self._intgr_integrated_pickle
 

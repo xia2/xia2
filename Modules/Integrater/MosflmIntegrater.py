@@ -36,7 +36,7 @@ from Handlers.Flags import Flags
 from Handlers.Files import FileHandler
 
 # helpers
-from Wrappers.CCP4.MosflmHelpers import _happy_integrate_lp, \
+from Wrappers.CCP4.MosflmHelpers import \
      _parse_mosflm_integration_output, decide_integration_resolution_limit, \
      standard_mask, detector_class_to_mosflm, \
      _parse_summary_file
@@ -393,6 +393,8 @@ class MosflmIntegrater(Integrater):
          pname, xname, dname),
         integrater.get_log_file())
 
+    self._intgr_per_image_statistics = integrater.get_per_image_statistics()
+
     self._mosflm_hklout = integrater.get_hklout()
     Debug.write('Integration output: %s' %self._mosflm_hklout)
 
@@ -459,22 +461,7 @@ class MosflmIntegrater(Integrater):
     Chatter.write('Weighted RMSD: %.2f (%.2f)' % \
                   (mean, sd))
 
-    spot_status = integrater.get_spot_status()
-    if len(spot_status) > 60:
-      Chatter.write('Integration status per image (60/record):')
-    else:
-      Chatter.write('Integration status per image:')
-
-    for chunk in [spot_status[i:i + 60] \
-                  for i in range(0, len(spot_status), 60)]:
-      Chatter.write(chunk)
-
-    Chatter.write(
-        '"o" => good        "%" => ok        "!" => bad rmsd')
-    Chatter.write(
-        '"O" => overloaded  "#" => many bad  "." => weak')
-    Chatter.write(
-        '"@" => abandoned')
+    self.show_per_image_statistics()
 
     Chatter.write('Mosaic spread: %.3f < %.3f < %.3f' % \
                   self.get_integrater_mosaic_min_mean_max())
@@ -719,7 +706,6 @@ class MosflmIntegrater(Integrater):
     last_integrated_batch = -1.0e6
 
     all_residuals = []
-    all_spot_status = ''
 
     threads = []
 
@@ -738,6 +724,7 @@ class MosflmIntegrater(Integrater):
 
     integrated_images_first = 1.0e6
     integrated_images_last = -1.0e6
+    self._intgr_per_image_statistics = {}
 
     for j in range(parallel):
       thread = threads[j]
@@ -817,15 +804,12 @@ class MosflmIntegrater(Integrater):
       # write the report for each image as .*-#$ to Chatter -
       # detailed report will be written automagically to science...
 
-      spot_status = job.get_spot_status()
+      self._intgr_per_image_statistics.update(job.get_per_image_statistics())
       postref_result.update(job.get_postref_result())
 
       # inspect the output for e.g. very high weighted residuals
 
       all_residuals.extend(job.get_residuals())
-
-      for s in spot_status:
-        all_spot_status += s
 
     self._intgr_batches_out = (integrated_images_first,
                                integrated_images_last)
@@ -840,23 +824,7 @@ class MosflmIntegrater(Integrater):
     Chatter.write('Processed batches %d to %d' % \
                   self._intgr_batches_out)
 
-    spot_status = all_spot_status
-
-    if len(spot_status) > 60:
-      Chatter.write('Integration status per image (60/record):')
-    else:
-      Chatter.write('Integration status per image:')
-
-    for chunk in [spot_status[i:i + 60] \
-                  for i in range(0, len(spot_status), 60)]:
-      Chatter.write(chunk)
-
-    Chatter.write(
-        '"o" => good        "%" => ok        "!" => bad rmsd')
-    Chatter.write(
-        '"O" => overloaded  "#" => many bad  "." => weak')
-    Chatter.write(
-        '"@" => abandoned')
+    self.show_per_image_statistics()
 
     Chatter.write('Mosaic spread: %.3f < %.3f < %.3f' % \
                   self.get_integrater_mosaic_min_mean_max())

@@ -400,6 +400,9 @@ class XDSIntegrater(Integrater):
 
     integrate.run()
 
+    self._intgr_per_image_statistics = integrate.get_per_image_statistics()
+    self.show_per_image_statistics()
+
     # record the log file -
 
     pname, xname, dname = self.get_integrater_project_info()

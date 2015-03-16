@@ -143,6 +143,8 @@ class Integrater(FrameProcessor):
     self._intgr_mosaic_mean = None
     self._intgr_mosaic_max = None
 
+    self._intgr_per_image_statistics = None
+
     return
 
   # serialization functions
@@ -758,3 +760,119 @@ class Integrater(FrameProcessor):
 
   def _set_integrater_reindex_operator_callback(self):
     pass
+
+  def show_per_image_statistics(self):
+    assert self._intgr_per_image_statistics is not None
+
+    stats = self._intgr_per_image_statistics
+
+    # analyse stats here, perhaps raising an exception if we
+    # are unhappy with something, so that the indexing solution
+    # can be eliminated in the integrater.
+
+    images = stats.keys()
+    images.sort()
+
+    # these may not be present if only a couple of the
+    # images were integrated...
+
+    try:
+
+      stddev_pixel = [stats[i]['rmsd_pixel'] for i in images]
+
+      # fix to bug # 2501 - remove the extreme values from this
+      # list...
+
+      stddev_pixel = list(set(stddev_pixel))
+      stddev_pixel.sort()
+
+      # only remove the extremes if there are enough values
+      # that this is meaningful... very good data may only have
+      # two values!
+
+      if len(stddev_pixel) > 4:
+        stddev_pixel = stddev_pixel[1:-1]
+
+      low, high = min(stddev_pixel), \
+                  max(stddev_pixel)
+
+      Chatter.write('Processed batches %d to %d' % \
+                    (min(images), max(images)))
+
+      Chatter.write('Standard Deviation in pixel range: %f %f' % \
+                    (low, high))
+
+      overloads = None
+      fraction_weak = None
+      isigi = None
+
+      # print a one-spot-per-image rendition of this...
+      stddev_pixel = [stats[i]['rmsd_pixel'] for i in images]
+      if 'overloads' in stats.values()[0]:
+        overloads = [stats[i]['overloads'] for i in images]
+      strong = [stats[i]['strong'] for i in images]
+      if 'fraction_weak' in stats.values()[0]:
+        fraction_weak = [stats[i]['fraction_weak'] for i in images]
+      if 'isigi' in stats.values()[0]:
+        isigi = [stats[i]['isigi'] for i in images]
+
+      # FIXME need to allow for blank images in here etc.
+
+      status_record = ''
+      for i, stddev in enumerate(stddev_pixel):
+        if fraction_weak is not None and fraction_weak[i] > 0.99:
+          status_record += '.'
+        elif isigi is not None and isigi[i] < 1.0:
+          status_record += '.'
+        elif stddev > 2.5:
+          status_record += '!'
+        elif stddev > 1.0:
+          status_record += '%'
+        elif overloads is not None and overloads[i] > 0.01 * strong[i]:
+          status_record += 'O'
+        else:
+          status_record += 'o'
+
+      if len(status_record) > 60:
+        Chatter.write('Integration status per image (60/record):')
+      else:
+        Chatter.write('Integration status per image:')
+
+      for chunk in [status_record[i:i + 60] \
+                    for i in range(0, len(status_record), 60)]:
+        Chatter.write(chunk)
+      Chatter.write(
+          '"o" => good        "%" => ok        "!" => bad rmsd')
+      Chatter.write(
+          '"O" => overloaded  "#" => many bad  "." => weak')
+      Chatter.write(
+          '"@" => abandoned')
+
+      # next look for variations in the unit cell parameters
+      if 'unit_cell' in stats.values()[0]:
+        unit_cells = [stats[i]['unit_cell'] for i in images]
+
+        # compute average
+        uc_mean = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+
+        for uc in unit_cells:
+          for j in range(6):
+            uc_mean[j] += uc[j]
+
+        for j in range(6):
+          uc_mean[j] /= len(unit_cells)
+
+        max_rel_dev = 0.0
+
+        for uc in unit_cells:
+          for j in range(6):
+            if (math.fabs(uc[j] - uc_mean[j]) / \
+                uc_mean[j]) > max_rel_dev:
+              max_rel_dev = math.fabs(uc[j] - uc_mean[j]) / \
+                            uc_mean[j]
+
+        Chatter.write('Maximum relative deviation in cell: %.3f' % \
+                      max_rel_dev)
+
+    except KeyError, e:
+      raise RuntimeError, 'Refinement not performed...'

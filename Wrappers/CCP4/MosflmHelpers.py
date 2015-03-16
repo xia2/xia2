@@ -250,51 +250,6 @@ def _print_integrate_lp(integrate_lp_stats):
            data.get('mosaic', 0.0), data['distance'],
            data['resolution'])
 
-def _happy_integrate_lp(integrate_lp_stats):
-  '''Return a string which explains how happy we are with the integration.'''
-
-  images = integrate_lp_stats.keys()
-  images.sort()
-
-  results = ''
-
-  max_weighted_residual = 0.0
-
-  for i in images:
-    data = integrate_lp_stats[i]
-
-    # FIXME need to look for "blank" "many bad spots" "overloaded"
-
-    if not data.has_key('weighted_residual'):
-      pass
-    elif data['weighted_residual'] < max_weighted_residual:
-      max_weighted_residual = data['weighted_residual']
-
-    # definitions...
-
-    # rmsd pixel > 1.0 -> % (ok) > 2.5 -> ! (bad)
-    # > 10% overloads -> O (overloads)
-
-    if not data.has_key('rmsd_pixel'):
-      status = '@'
-    elif data.get('fraction_weak', 1.0) > 0.95:
-      status = '.'
-    elif data['rmsd_pixel'] > 2.5:
-      status = '!'
-    elif data['rmsd_pixel'] > 1.0:
-      status = '%'
-    elif data['overloads'] > 0.01 * data['strong']:
-      status = 'O'
-    else:
-      status = 'o'
-
-    # also - # bad O overloaded . blank ! problem ? other
-    # @ ABANDONED PROCESSING
-
-    results += status
-
-  return results
-
 def decide_integration_resolution_limit(mosflm_integration_output):
   '''Define the resolution limit for integration, where I/sigma
   for individual reflections is about 1.0.'''

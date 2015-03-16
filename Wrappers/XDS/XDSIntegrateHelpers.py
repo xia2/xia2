@@ -171,36 +171,6 @@ def _print_integrate_lp(integrate_lp_stats):
            data['overloads'], data['rejected'],
            data['mosaic'], data['distance'])
 
-def _happy_integrate_lp(integrate_lp_stats):
-  '''Return a string which explains how happy we are with the integration.'''
-
-  images = integrate_lp_stats.keys()
-  images.sort()
-
-  results = ''
-
-  Debug.write('Report on images %d to %d' % (min(images), max(images)),
-              forward = False)
-
-  for i in images:
-    data = integrate_lp_stats[i]
-
-    if data['rmsd_phi'] > 1.0 or data['rmsd_pixel'] > 1.0:
-      status = '*'
-      Debug.write('Image %4d ... high rmsd (%f, %f)' % \
-                  (i, data['rmsd_pixel'], data['rmsd_phi']),
-                  forward = False)
-
-    else:
-
-      status = '.'
-      Debug.write('Image %4d ... ok' % i, forward = False)
-
-
-    results += status
-
-  return results
-
 
 if __name__ == '__main__':
   if len(sys.argv) > 1:

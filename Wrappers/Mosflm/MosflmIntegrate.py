@@ -40,7 +40,7 @@ from Handlers.Executables import Executables
 from lib.bits import mean_sd
 
 
-from Wrappers.CCP4.MosflmHelpers import _happy_integrate_lp, \
+from Wrappers.CCP4.MosflmHelpers import \
      _parse_mosflm_integration_output, decide_integration_resolution_limit, \
      _parse_summary_file
 
@@ -198,6 +198,9 @@ def MosflmIntegrate(DriverType = None, indxr_print = True):
 
     def update_parameters(self, parameters):
       self._parameters.update(parameters)
+
+    def get_per_image_statistics(self):
+      return self._per_image_statistics
 
     def run(self):
       '''Run mosflm integration'''
@@ -435,13 +438,11 @@ def MosflmIntegrate(DriverType = None, indxr_print = True):
 
       self._mosaic_spreads = mosaics
 
-      parsed_output = _parse_mosflm_integration_output(output)
-
-      self._spot_status = _happy_integrate_lp(parsed_output)
+      self._per_image_statistics = _parse_mosflm_integration_output(output)
 
       # inspect the output for e.g. very high weighted residuals
 
-      images = parsed_output.keys()
+      images = self._per_image_statistics.keys()
       images.sort()
 
       # FIXME bug 2175 this should probably look at the distribution
@@ -450,8 +451,8 @@ def MosflmIntegrate(DriverType = None, indxr_print = True):
 
       residuals = []
       for i in images:
-        if parsed_output[i].has_key('weighted_residual'):
-          residuals.append(parsed_output[i]['weighted_residual'])
+        if self._per_image_statistics[i].has_key('weighted_residual'):
+          residuals.append(self._per_image_statistics[i]['weighted_residual'])
 
       self._residuals = residuals
 

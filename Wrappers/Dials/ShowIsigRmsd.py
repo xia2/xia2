@@ -53,8 +53,11 @@ def ShowIsigRmsd(DriverType = None):
         tokens = record.split()
         if not tokens:
           continue
-        self._data[1 + int(tokens[0])] = (
-          int(tokens[1]), float(tokens[2]), float(tokens[3]))
+        d = {}
+        d['strong'] = int(tokens[1])
+        d['isigi'] = float(tokens[2])
+        d['rmsd_pixel'] = float(tokens[3])
+        self._data[1 + int(tokens[0])] = d
 
       return
 
