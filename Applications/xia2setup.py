@@ -461,15 +461,10 @@ def get_sweeps(templates):
   from xia2setup_helpers import get_sweep
   params = PhilIndex.get_python_object()
   mp_params = params.xia2.settings.multiprocessing
-  njob = mp_params.njob
+  nproc = mp_params.nproc
 
-  from Applications.xia2setup_helpers import get_sweep
-
-  if params.xia2.settings.read_all_image_headers and njob > 1:
-    if mp_params.type == "qsub":
-      method = "sge"
-    else:
-      method = "multiprocessing"
+  if params.xia2.settings.read_all_image_headers and nproc > 1:
+    method = "multiprocessing"
 
     # If xia2 was a proper cctbx module, then we wouldn't have to do this
     # FIXME xia2 is now a proper cctbx module ;o)
@@ -480,7 +475,7 @@ def get_sweeps(templates):
     args = [(template,) for template in templates]
     results_list = easy_mp.parallel_map(
       get_sweep, args,
-      processes=njob,
+      processes=nproc,
       method=method,
       qsub_command=qsub_command,
       asynchronous=True,
