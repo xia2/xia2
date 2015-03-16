@@ -11,7 +11,7 @@ sys.path.insert(0, xia2_root_dir)
 os.environ['XIA2_ROOT'] = xia2_root_dir
 os.environ['XIA2CORE_ROOT'] = os.path.join(xia2_root_dir, "core")
 
-from xia2.Applications import xia2
+from Applications import xia2
 
 if __name__ == '__main__':
   xia2.run()
