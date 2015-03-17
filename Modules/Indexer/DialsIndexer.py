@@ -215,7 +215,9 @@ class DialsIndexer(Indexer):
       # where R.M.S. deviation is less than twice P1 R.M.S. deviation.
 
       if (self._indxr_input_lattice is None and
-          summary['rmsd'] > 2.0 * rmsd_p1):
+          (summary['max_angular_difference'] < 0.5 and
+           summary['rmsd'] > 2.0 * rmsd_p1) or
+          (summary['rmsd'] > 1.5 * rmsd_p1)):
         continue
 
       self._solutions[k] = {
