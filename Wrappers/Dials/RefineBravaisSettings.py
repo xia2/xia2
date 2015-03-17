@@ -70,12 +70,12 @@ def RefineBravaisSettings(DriverType = None):
       nproc = Flags.get_parallel()
       self.set_cpu_threads(nproc)
       self.add_command_line('nproc=%i' % nproc)
-      self.add_command_line('reflections_per_degree=10')
+      #self.add_command_line('reflections_per_degree=10')
       if self._detector_fix:
         self.add_command_line('detector.fix=%s' % self._detector_fix)
       if self._beam_fix:
         self.add_command_line('beam.fix=%s' % self._beam_fix)
-      self.add_command_line('engine=GaussNewton')
+      #self.add_command_line('engine=GaussNewton')
       self.add_command_line('close_to_spindle_cutoff=0.05')
 
       self.start()
