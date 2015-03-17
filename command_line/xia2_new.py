@@ -102,6 +102,14 @@ def xia2(stop_after=None):
               sweep_id=sweep.get_name(),
               ),))
 
+    from Driver.DriverFactory import DriverFactory
+    default_driver_type = DriverFactory.get_driver_type()
+
+    # run every nth job on the current computer (no need to submit to qsub)
+    for i_job, arg in enumerate(args):
+      if (i_job % njob) == 0:
+        arg[0].driver_type = default_driver_type
+
     if mp_params.type == "qsub":
       method = "sge"
     else:
