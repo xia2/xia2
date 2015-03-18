@@ -43,8 +43,6 @@ class DialsRefiner(Refiner):
     params = PhilIndex.params.dials.refine
     refine.set_phil_file(params.phil_file)
     refine.set_working_directory(self.get_working_directory())
-    refine.set_refined_filename(os.path.join(self.get_working_directory(),
-                                             'refined.pickle'))
     refine.set_scan_varying(params.scan_varying)
     refine.set_use_all_reflections(params.use_all_reflections)
     if params.reflections_per_degree and not params.use_all_reflections:
@@ -154,7 +152,7 @@ class DialsRefiner(Refiner):
         = refiner.get_refined_experiments_filename()
       experiments = load.experiment_list(self._refinr_experiments_filename)
       experiment = experiments[0]
-      self._refinr_indexed_filename = refiner.get_refined_filename()
+      self._refinr_indexed_filename = idxr.get_indexer_payload("indexed_filename")
       self.set_refiner_payload("experiments.json", self._refinr_experiments_filename)
       self.set_refiner_payload("reflections.pickle", self._refinr_indexed_filename)
 
