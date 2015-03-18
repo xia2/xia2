@@ -47,7 +47,7 @@ class DialsRefiner(Refiner):
                                              'refined.pickle'))
     refine.set_scan_varying(params.scan_varying)
     refine.set_use_all_reflections(params.use_all_reflections)
-    if params.reflections_per_degree:
+    if params.reflections_per_degree and not params.use_all_reflections:
       refine.set_reflections_per_degree(params.reflections_per_degree)
     if PhilIndex.params.dials.fix_geometry:
       refine.set_detector_fix('all')
