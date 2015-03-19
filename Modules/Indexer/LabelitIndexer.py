@@ -60,6 +60,11 @@ class LabelitIndexer(Indexer):
   def __init__(self, indxr_print=True):
     super(LabelitIndexer, self).__init__()
 
+    # this will check that Labelit is available in the PATH
+
+    from Wrappers.Labelit.LabelitIndex import LabelitIndex
+    index = LabelitIndex()
+
     # control over the behaviour
 
     self._refine_beam = True
