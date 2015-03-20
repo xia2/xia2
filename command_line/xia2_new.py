@@ -210,6 +210,8 @@ def xia2(stop_after=None):
 
   write_citations()
 
+  xinfo.as_json(filename='xia2.json')
+
   Environment.cleanup()
 
   return
