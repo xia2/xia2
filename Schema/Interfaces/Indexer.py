@@ -483,9 +483,7 @@ class Indexer(FrameProcessor):
       self._index_finish()
 
       if self._indxr_print:
-        Chatter.write('All possible indexing solutions:')
-        for l in self._indxr_helper.repr():
-          Chatter.write(l)
+        self.show_indexer_solutions()
 
       # FIXED 23/OCT/06 at this stage I need to look at the list of
       # reasonable solutions and try to figure out if the indexing
@@ -500,18 +498,22 @@ class Indexer(FrameProcessor):
       # general one, so may be implemented in the general indexer
       # interface rather than in specific code...
 
-      from cctbx.sgtbx import bravais_types
-      crystal_model = self._indxr_experiment_list[0].crystal
-      lattice = str(
-        bravais_types.bravais_lattice(group=crystal_model.get_space_group()))
-      if self._indxr_print:
-        Chatter.write('Indexing solution:')
-        Chatter.write('%s %s' % (
-          lattice,
-          '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
-          crystal_model.get_unit_cell().parameters()))
-
     return
+
+  def show_indexer_solutions(self):
+    Chatter.write('All possible indexing solutions:')
+    for l in self._indxr_helper.repr():
+      Chatter.write(l)
+
+    from cctbx.sgtbx import bravais_types
+    crystal_model = self._indxr_experiment_list[0].crystal
+    lattice = str(
+      bravais_types.bravais_lattice(group=crystal_model.get_space_group()))
+    Chatter.write('Indexing solution:')
+    Chatter.write('%s %s' % (
+      lattice,
+      '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
+      crystal_model.get_unit_cell().parameters()))
 
   # setter methods for the input - most of these will reset the
   # indexer in one way or another
