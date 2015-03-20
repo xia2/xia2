@@ -39,19 +39,18 @@ def exercise_labelit_indexerii():
 
   from Modules.Indexer.LabelitIndexerII import LabelitIndexerII
 
-  ls = LabelitIndexerII(indxr_print=True)
+  from DriverExceptions.NotAvailableError import NotAvailableError
+  try:
+    ls = LabelitIndexerII(indxr_print=True)
+  except NotAvailableError:
+    print "Skipping exercise_labelit_indexerii(): labelit not found"
+    return
   ls.set_working_directory(tmp_dir)
   ls.setup_from_image(template %1)
   ls.set_indexer_input_cell((78,78,78,90,90,90))
   ls.set_indexer_user_input_lattice(True)
   ls.set_indexer_input_lattice('cI')
-
-  from DriverExceptions.NotAvailableError import NotAvailableError
-  try:
-    ls.index()
-  except NotAvailableError:
-    print "Skipping exercise_labelit_indexerii(): labelit not found"
-    return
+  ls.index()
 
   assert approx_equal(ls.get_indexer_cell(), (78.52, 78.52, 78.52, 90, 90, 90))
   solution = ls.get_solution()
