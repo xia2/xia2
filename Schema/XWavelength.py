@@ -64,6 +64,41 @@ class XWavelength(object):
 
     return
 
+  # serialization functions
+
+  def to_dict(self):
+    obj = {}
+    obj['__id__'] = 'XWavelength'
+    import inspect
+    attributes = inspect.getmembers(self, lambda m:not(inspect.isroutine(m)))
+    for a in attributes:
+      if a[0] == '_sweeps':
+        sweeps = []
+        for sweep in a[1]:
+          sweeps.append(sweep.to_dict())
+        obj[a[0]] = sweeps
+      elif a[0] == '_crystal':
+        # don't serialize this since the parent xwavelength *should* contain
+        # the reference to the child xsweeo
+        continue
+      elif a[0].startswith('__'):
+        continue
+      else:
+        obj[a[0]] = a[1]
+    return obj
+
+  @classmethod
+  def from_dict(cls, obj):
+    assert obj['__id__'] == 'XWavelength'
+    return_obj = cls(name=None, crystal=None, wavelength=None)
+    for k, v in obj.iteritems():
+      if k == '_sweeps':
+        v = [XSweep.from_dict(s_dict) for s_dict in v]
+        for sweep in v:
+          sweep._wavelength = return_obj
+      setattr(return_obj, k, v)
+    return return_obj
+
   def get_output(self):
     result = 'Wavelength name: %s\n' % self._name
     result += 'Wavelength %7.5f\n' % self._wavelength

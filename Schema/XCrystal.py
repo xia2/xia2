@@ -307,6 +307,62 @@ class XCrystal(object):
 
     return
 
+  # serialization functions
+
+  def to_dict(self):
+    obj = {}
+    obj['__id__'] = 'XCrystal'
+    import inspect
+    attributes = inspect.getmembers(self, lambda m:not(inspect.isroutine(m)))
+    for a in attributes:
+      if a[0] == '_scaler' and a[1] is not None:
+        obj[a[0]] = a[1].to_dict()
+      elif a[0] == '_wavelengths':
+        wavs = {}
+        for wname, wav in a[1].iteritems():
+          wavs[wname] = wav.to_dict()
+        obj[a[0]] = wavs
+      elif a[0] == '_project':
+        # don't serialize this since the parent xproject *should* contain
+        # the pointer to the child xcrystal
+        continue
+      elif a[0].startswith('__'):
+        continue
+      else:
+        obj[a[0]] = a[1]
+    return obj
+
+  @classmethod
+  def from_dict(cls, obj):
+    from Schema.XWavelength import XWavelength
+    assert obj['__id__'] == 'XCrystal'
+    return_obj = cls(name=None, project=None)
+    for k, v in obj.iteritems():
+      if k == '_scaler' and v is not None:
+        from libtbx.utils import import_python_object
+        cls = import_python_object(
+          import_path=".".join((v['__module__'], v['__name__'])),
+          error_prefix='', target_must_be='', where_str='').object
+        v = cls.from_dict(v)
+        v._scalr_xcrystal = return_obj
+      if k == '_wavelengths':
+        v_ = {}
+        for wname, wdict in v.iteritems():
+          wav = XWavelength.from_dict(wdict)
+          wav._crystal = return_obj
+          v_[wname] = wav
+        v = v_
+      setattr(return_obj, k, v)
+    if return_obj._scaler is not None:
+      for intgr in return_obj._get_integraters():
+        return_obj._scaler._scalr_integraters[intgr.get_integrater_epoch()] \
+          = intgr
+        if (hasattr(return_obj._scaler, '_sweep_handler') and
+            return_obj._scaler._sweep_handler is not None):
+          return_obj._scaler._sweep_handler._sweep_information[
+            intgr.get_integrater_epoch()]._integrater = intgr
+    return return_obj
+
   def get_output(self):
 
     result = 'Crystal: %s\n' % self._name

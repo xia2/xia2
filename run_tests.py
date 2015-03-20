@@ -19,6 +19,7 @@ os.environ['XIA2_ROOT'] = xia2_root_dir
 os.environ['XIA2CORE_ROOT'] = os.path.join(xia2_root_dir, "core")
 
 tst_list = (
+  "$D/Test/Schema/TstXProject.py",
   "$D/Test/Handlers/TstXinfo.py",
   ["$D/Test/Wrappers/Dials/TstDialsWrappers.py", "1"],
   #["$D/Test/Modules/Refiner/TstDialsRefiner.py", "1"],

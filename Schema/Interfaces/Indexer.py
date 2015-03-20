@@ -214,13 +214,13 @@ class Indexer(FrameProcessor):
     import inspect
     attributes = inspect.getmembers(self, lambda m:not(inspect.isroutine(m)))
     for a in attributes:
-      if a[0] == '_indxr_helper':
+      if a[0] == '_indxr_helper' and a[1] is not None:
         lattice_cell_dict = {}
         lattice_list = a[1].get_all()
         for l, c in lattice_list:
           lattice_cell_dict[l] = c
         obj[a[0]] = lattice_cell_dict
-      elif a[0] == '_indxr_experiment_list':
+      elif a[0] == '_indxr_experiment_list' and a[1] is not None:
         obj[a[0]] = a[1].to_dict()
       elif a[0] == '_fp_imageset':
         from dxtbx.serialize.imageset import imageset_to_dict
@@ -239,7 +239,7 @@ class Indexer(FrameProcessor):
     assert obj['__name__'] == cls.__name__
     return_obj = cls()
     for k, v in obj.iteritems():
-      if k == '_indxr_helper':
+      if k == '_indxr_helper' and v is not None:
         from Schema.Interfaces.Indexer import _IndexerHelper
         v = _IndexerHelper(v)
       if isinstance(v, dict):

@@ -56,7 +56,7 @@ class CCP4ScalerA(Scaler):
     self._scalr_scaled_refl_files = { }
     self._wavelengths_in_order = []
 
-    self.__sweep_resolution_limits = { }
+    self._sweep_resolution_limits = { }
 
     # flags to keep track of the corrections we will be applying
 

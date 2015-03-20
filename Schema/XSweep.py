@@ -354,6 +354,61 @@ class XSweep(object):
 
     return
 
+  # serialization functions
+
+  def to_dict(self):
+    obj = {}
+    obj['__id__'] = 'XSweep'
+    import inspect
+    attributes = inspect.getmembers(self, lambda m:not(inspect.isroutine(m)))
+    for a in attributes:
+      if a[0] in ('_indexer', '_refiner', '_integrater') and a[1] is not None:
+        obj[a[0]] = a[1].to_dict()
+      elif a[0] == '_imageset':
+        from dxtbx.serialize.imageset import imageset_to_dict
+        obj[a[0]] = imageset_to_dict(a[1])
+      elif a[0] == '_wavelength':
+        # don't serialize this since the parent xwavelength *should* contain
+        # the reference to the child xsweeo
+        continue
+      elif a[0].startswith('__'):
+        continue
+      else:
+        obj[a[0]] = a[1]
+    return obj
+
+  @classmethod
+  def from_dict(cls, obj):
+    assert obj['__id__'] == 'XSweep'
+    return_obj = cls(name=None, wavelength=None)
+    for k, v in obj.iteritems():
+      if k in ('_indexer', '_refiner', '_integrater') and v is not None:
+        from libtbx.utils import import_python_object
+        cls = import_python_object(
+          import_path=".".join((v['__module__'], v['__name__'])),
+          error_prefix='', target_must_be='', where_str='').object
+        v = cls.from_dict(v)
+        if k == '_indexer':
+          v.set_indexer_sweep(return_obj)
+        elif k == '_integrater':
+          v.set_integrater_sweep(return_obj, reset=False)
+      if isinstance(v, dict):
+        #if v.get('__id__', None) == 'ExperimentList':
+          #from dxtbx.model.experiment.experiment_list import ExperimentListFactory
+          #v = ExperimentListFactory.from_dict(v)
+        if v.get('__id__', None) == 'imageset':
+          from dxtbx.serialize.imageset import imageset_from_dict
+          v = imageset_from_dict(v, check_format=False)
+      setattr(return_obj, k, v)
+    if return_obj._indexer is not None and return_obj._integrater is not None:
+      return_obj._integrater._intgr_indexer = return_obj._indexer
+    if return_obj._integrater is not None and return_obj._refiner is not None:
+      return_obj._integrater._intgr_refiner = return_obj._refiner
+    if return_obj._indexer is not None and return_obj._refiner is not None:
+      return_obj._refiner._refinr_indexers[return_obj.get_epoch(1)] \
+        = return_obj._indexer
+    return return_obj
+
   def get_image_name(self, number):
     '''Convert an image number into a name.'''
 

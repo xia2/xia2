@@ -260,7 +260,7 @@ class Scaler(object):
         for k, v in a[1].iteritems():
           d[k] = v.to_dict()
         obj[a[0]] = d
-      elif a[0] == '_scalr_statistics':
+      elif a[0] == '_scalr_statistics' and a[1] is not None:
         # dictionary has tuples as keys - json can't handle this so serialize
         # keys in place
         d = {}
@@ -285,7 +285,7 @@ class Scaler(object):
             import_path=".".join((v_['__module__'], v_['__name__'])),
             error_prefix='', target_must_be='', where_str='').object
           v[k_] = integrater_cls.from_dict(v_)
-      elif k == '_scalr_statistics':
+      elif k == '_scalr_statistics' and v is not None:
         d = {}
         for k_, v_ in v.iteritems():
           k_ = tuple(str(s) for s in json.loads(k_))

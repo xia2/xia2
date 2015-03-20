@@ -48,6 +48,101 @@ class XProject(object):
 
     return
 
+  # serialization functions
+
+  def to_dict(self):
+    obj = {}
+    obj['__id__'] = 'XProject'
+    import inspect
+    attributes = inspect.getmembers(self, lambda m:not(inspect.isroutine(m)))
+    for a in attributes:
+      if a[0] == '_crystals':
+        crystals = {}
+        for cname, cryst in a[1].iteritems():
+          crystals[cname] = cryst.to_dict()
+        obj[a[0]] = crystals
+      elif a[0].startswith('__'):
+        continue
+      else:
+        obj[a[0]] = a[1]
+    return obj
+
+  @classmethod
+  def from_dict(cls, obj):
+    assert obj['__id__'] == 'XProject'
+    return_obj = cls()
+    for k, v in obj.iteritems():
+      if k == '_crystals':
+        v_ = {}
+        for cname, cdict in v.iteritems():
+          cryst = XCrystal.from_dict(cdict)
+          cryst._project = return_obj
+          v_[cname] = cryst
+        v = v_
+      setattr(return_obj, k, v)
+    return return_obj
+
+  def as_json(self, filename=None, compact=False):
+    import json
+    obj = self.to_dict()
+    if compact:
+      text = json.dumps(obj, skipkeys=True, separators=(',',':'), ensure_ascii=True)
+    else:
+      text = json.dumps(obj, skipkeys=True, indent=2, ensure_ascii=True)
+
+    # If a filename is set then dump to file otherwise return string
+    if filename is not None:
+      with open(filename, 'w') as outfile:
+        outfile.write(text)
+    else:
+      return text
+
+  @classmethod
+  def from_json(cls, filename=None, string=None):
+    import json
+
+
+    def _decode_list(data):
+      '''Decode a list to str from unicode. '''
+      rv = []
+      for item in data:
+        if isinstance(item, unicode):
+          item = item.encode('utf-8')
+        elif isinstance(item, list):
+          item = _decode_list(item)
+        elif isinstance(item, dict):
+          item = _decode_dict(item)
+        rv.append(item)
+      return rv
+
+    def _decode_dict(data):
+      ''' Decode a dict to str from unicode. '''
+      from dxtbx.serialize.load import _decode_list
+      rv = {}
+      for key, value in data.iteritems():
+        if isinstance(key, unicode):
+          key = key.encode('utf-8')
+        if isinstance(value, unicode):
+          value = value.encode('utf-8')
+        elif isinstance(value, list):
+          value = _decode_list(value)
+        elif isinstance(value, dict):
+          value = _decode_dict(value)
+        try:
+          key = float(key)
+          if int(key) == key: key = int(key)
+        except ValueError:
+          pass
+        rv[key] = value
+      return rv
+
+    assert [filename, string].count(None) == 1
+    if filename is not None:
+      with open(filename, 'rb') as f:
+        string = f.read()
+    obj = json.loads(string, object_hook=_decode_dict)
+    return cls.from_dict(obj)
+
   def get_output(self):
     result = 'Project: %s\n' % self._name
 
