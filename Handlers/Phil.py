@@ -113,7 +113,7 @@ dials {
       .type = path
     profile_fitting = True
       .type = bool
-    background_outlier_algorithm = *null nsigma truncated normal tukey
+    background_outlier_algorithm = *null nsigma truncated normal tukey mosflm
       .type = choice
     use_threading = False
       .type = bool
