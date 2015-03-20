@@ -348,7 +348,7 @@ class XCrystal(object):
         # don't serialize this since the parent xproject *should* contain
         # the pointer to the child xcrystal
         continue
-      elif a[0] == '_aa_sequence':
+      elif a[0] == '_aa_sequence' and a[1] is not None:
         obj[a[0]] = a[1].to_dict()
       elif a[0].startswith('__'):
         continue
@@ -376,7 +376,7 @@ class XCrystal(object):
           wav._crystal = return_obj
           v_[wname] = wav
         v = v_
-      elif k == '_aa_sequence':
+      elif k == '_aa_sequence' and v is not None:
         v = _aa_sequence.from_dict(v)
       setattr(return_obj, k, v)
     if return_obj._scaler is not None:
