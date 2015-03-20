@@ -162,6 +162,28 @@ class _aa_sequence(object):
   def get_sequence(self):
     return self._sequence
 
+  # serialization functions
+
+  def to_dict(self):
+    obj = {}
+    obj['__id__'] = 'aa_sequence'
+    import inspect
+    attributes = inspect.getmembers(self, lambda m:not(inspect.isroutine(m)))
+    for a in attributes:
+      if a[0].startswith('__'):
+        continue
+      else:
+        obj[a[0]] = a[1]
+    return obj
+
+  @classmethod
+  def from_dict(cls, obj):
+    assert obj['__id__'] == 'aa_sequence'
+    return_obj = cls(obj['_sequence'])
+    for k, v in obj.iteritems():
+      setattr(return_obj, k, v)
+    return return_obj
+
 class _ha_info(object):
   '''A versioned class to represent the heavy atom information.'''
 
@@ -326,6 +348,8 @@ class XCrystal(object):
         # don't serialize this since the parent xproject *should* contain
         # the pointer to the child xcrystal
         continue
+      elif a[0] == '_aa_sequence':
+        obj[a[0]] = a[1].to_dict()
       elif a[0].startswith('__'):
         continue
       else:
@@ -345,13 +369,15 @@ class XCrystal(object):
           error_prefix='', target_must_be='', where_str='').object
         v = cls.from_dict(v)
         v._scalr_xcrystal = return_obj
-      if k == '_wavelengths':
+      elif k == '_wavelengths':
         v_ = {}
         for wname, wdict in v.iteritems():
           wav = XWavelength.from_dict(wdict)
           wav._crystal = return_obj
           v_[wname] = wav
         v = v_
+      elif k == '_aa_sequence':
+        v = _aa_sequence.from_dict(v)
       setattr(return_obj, k, v)
     if return_obj._scaler is not None:
       for intgr in return_obj._get_integraters():
