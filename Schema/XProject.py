@@ -101,20 +101,6 @@ class XProject(object):
   def from_json(cls, filename=None, string=None):
     import json
 
-
-    def _decode_list(data):
-      '''Decode a list to str from unicode. '''
-      rv = []
-      for item in data:
-        if isinstance(item, unicode):
-          item = item.encode('utf-8')
-        elif isinstance(item, list):
-          item = _decode_list(item)
-        elif isinstance(item, dict):
-          item = _decode_dict(item)
-        rv.append(item)
-      return rv
-
     def _decode_dict(data):
       ''' Decode a dict to str from unicode. '''
       from dxtbx.serialize.load import _decode_list
