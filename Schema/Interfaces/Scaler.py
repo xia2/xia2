@@ -239,6 +239,8 @@ class Scaler(object):
     # link to parent xcrystal
     self._scalr_xcrystal = None
 
+    self._scalr_resolution_limits = { }
+
     return
 
   # serialization functions
@@ -405,6 +407,9 @@ class Scaler(object):
 
   def get_scaler_freer_file(self):
     return self._scalr_freer_file
+
+  def get_scaler_resolution_limits(self):
+    return self._scalr_resolution_limits
 
   def set_scaler_prepare_done(self, done = True):
 

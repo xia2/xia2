@@ -427,6 +427,9 @@ class XCrystal(object):
 
       result += '%s\n' %banner('Scaling %s' %self.get_name())
 
+      for (dname, sname), limit in scaler.get_scaler_resolution_limits().iteritems():
+        result += 'Resolution limit for %s/%s: %5.2f\n' %(dname, sname, limit)
+
     # this is now deprecated - be explicit in what you are
     # asking for...
     reflections_all = self.get_scaled_merged_reflections()

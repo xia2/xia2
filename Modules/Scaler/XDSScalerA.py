@@ -78,7 +78,6 @@ class XDSScalerA(Scaler):
     self._chef_analysis_times = { }
     self._chef_analysis_resolutions = { }
 
-    self._scalr_resolution_limits = { }
     self._user_resolution_limits = { }
 
     # scaling correction choices - may be set one on the command line...
