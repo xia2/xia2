@@ -20,6 +20,9 @@ import math
 
 from Handlers.Files import FileHandler
 
+# new resolution limit code
+from Wrappers.XIA.Merger import Merger
+
 def clean_reindex_operator(reindex_operator):
   return reindex_operator.replace('[', '').replace(']', '')
 
@@ -864,3 +867,49 @@ class CommonScaler(Scaler):
         Debug.write('Local scaling failed')
 
     return
+
+  def _estimate_resolution_limit(self, hklin):
+    m = Merger()
+    m.set_hklin(hklin)
+    if Flags.get_rmerge():
+      m.set_limit_rmerge(Flags.get_rmerge())
+    if Flags.get_completeness():
+      m.set_limit_completeness(Flags.get_completeness())
+    if Flags.get_cc_half():
+      m.set_limit_cc_half(Flags.get_cc_half())
+    if Flags.get_isigma():
+      m.set_limit_isigma(Flags.get_isigma())
+    if Flags.get_misigma():
+      m.set_limit_misigma(Flags.get_misigma())
+    if Flags.get_small_molecule():
+      m.set_nbins(20)
+    m.run()
+
+    if Flags.get_completeness():
+      r_comp = m.get_resolution_completeness()
+    else:
+      r_comp = 0.0
+
+    if Flags.get_cc_half():
+      r_cc_half = m.get_resolution_cc_half()
+    else:
+      r_cc_half = 0.0
+
+    if Flags.get_rmerge():
+      r_rm = m.get_resolution_rmerge()
+    else:
+      r_rm = 0.0
+
+    if Flags.get_isigma():
+      r_uis = m.get_resolution_isigma()
+    else:
+      r_uis = 0.0
+
+    if Flags.get_misigma():
+      r_mis = m.get_resolution_misigma()
+    else:
+      r_mis = 0.0
+
+    resolution = max([r_comp, r_rm, r_uis, r_mis, r_cc_half])
+
+    return resolution

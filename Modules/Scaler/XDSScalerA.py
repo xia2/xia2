@@ -51,9 +51,6 @@ from Handlers.Phil import PhilIndex
 # stuff I have nicked from the CCP4 Scaler implementation
 from Modules.DoseAccumulate import accumulate
 
-# new resolution limit code
-from Wrappers.XIA.Merger import Merger
-
 # newly implemented CCTBX powered functions to replace xia2 binaries
 from Modules.Scaler.add_dose_time_to_mtz import add_dose_time_to_mtz
 from Modules.Scaler.compute_average_unit_cell import compute_average_unit_cell
@@ -81,7 +78,7 @@ class XDSScalerA(Scaler):
     self._chef_analysis_times = { }
     self._chef_analysis_resolutions = { }
 
-    self._resolution_limits = { }
+    self._scalr_resolution_limits = { }
     self._user_resolution_limits = { }
 
     # scaling correction choices - may be set one on the command line...
@@ -884,7 +881,7 @@ class XDSScalerA(Scaler):
 
     self._scalr_cell = compute_average_unit_cell(unit_cell_list)
 
-    self._resolution_limits = { }
+    self._scalr_resolution_limits = { }
 
     Debug.write('Determined unit cell: %.2f %.2f %.2f %.2f %.2f %.2f' % \
                 tuple(self._scalr_cell))
@@ -941,7 +938,7 @@ class XDSScalerA(Scaler):
       Debug.write('HKL: %s (%s/%s)' % (reflections, dname, sname))
 
       resolution_low = intgr.get_integrater_low_resolution()
-      resolution_high = self._resolution_limits.get((dname, sname), 0.0)
+      resolution_high = self._scalr_resolution_limits.get((dname, sname), 0.0)
 
       resolution = (resolution_high, resolution_low)
 
@@ -1080,10 +1077,10 @@ class XDSScalerA(Scaler):
         dmin = intgr.get_integrater_high_resolution()
 
         if not self._user_resolution_limits.has_key(rkey):
-          self._resolution_limits[rkey] = dmin
+          self._scalr_resolution_limits[rkey] = dmin
           self._user_resolution_limits[rkey] = dmin
         elif dmin < self._user_resolution_limits[rkey]:
-          self._resolution_limits[rkey] = dmin
+          self._scalr_resolution_limits[rkey] = dmin
           self._user_resolution_limits[rkey] = dmin
 
     self._scalr_scaled_refl_files = { }
@@ -1148,58 +1145,17 @@ class XDSScalerA(Scaler):
         resolution = self._user_resolution_limits[(dname, sname)]
 
       else:
-        m = Merger()
-        m.set_hklin(hklin)
-        if Flags.get_rmerge():
-          m.set_limit_rmerge(Flags.get_rmerge())
-        if Flags.get_completeness():
-          m.set_limit_completeness(Flags.get_completeness())
-        if Flags.get_cc_half():
-          m.set_limit_cc_half(Flags.get_cc_half())
-        if Flags.get_isigma():
-          m.set_limit_isigma(Flags.get_isigma())
-        if Flags.get_misigma():
-          m.set_limit_misigma(Flags.get_misigma())
-        if Flags.get_small_molecule():
-          m.set_nbins(20)
-        m.run()
-
-        if Flags.get_completeness():
-          r_comp = m.get_resolution_completeness()
-        else:
-          r_comp = 0.0
-
-        if Flags.get_cc_half():
-          r_cc_half = m.get_resolution_cc_half()
-        else:
-          r_cc_half = 0.0
-
-        if Flags.get_rmerge():
-          r_rm = m.get_resolution_rmerge()
-        else:
-          r_rm = 0.0
-
-        if Flags.get_isigma():
-          r_uis = m.get_resolution_isigma()
-        else:
-          r_uis = 0.0
-
-        if Flags.get_misigma():
-          r_mis = m.get_resolution_misigma()
-        else:
-          r_mis = 0.0
-
-        resolution = max([r_comp, r_rm, r_uis, r_mis, r_cc_half])
+        resolution = self._estimate_resolution_limit(hklin)
 
       Chatter.write('Resolution for sweep %s/%s: %.2f' % \
                     (dname, sname, resolution))
 
-      if not (dname, sname) in self._resolution_limits:
-        self._resolution_limits[(dname, sname)] = resolution
+      if not (dname, sname) in self._scalr_resolution_limits:
+        self._scalr_resolution_limits[(dname, sname)] = resolution
         self.set_scaler_done(False)
       else:
-        if resolution < self._resolution_limits[(dname, sname)]:
-          self._resolution_limits[(dname, sname)] = resolution
+        if resolution < self._scalr_resolution_limits[(dname, sname)]:
+          self._scalr_resolution_limits[(dname, sname)] = resolution
           self.set_scaler_done(False)
 
     debug_memory_usage()
@@ -1210,8 +1166,7 @@ class XDSScalerA(Scaler):
 
     self._sort_together_data_xds()
 
-    highest_resolution = min(
-        [self._resolution_limits[k] for k in self._resolution_limits])
+    highest_resolution = min(self._scalr_resolution_limits.values())
 
     self._scalr_highest_resolution = highest_resolution
 
@@ -1249,7 +1204,7 @@ class XDSScalerA(Scaler):
       start, end = (min(input['batches']), max(input['batches']))
 
       rkey = input['dname'], input['sname']
-      run_resolution_limit = self._resolution_limits[rkey]
+      run_resolution_limit = self._scalr_resolution_limits[rkey]
 
       sc.add_run(start, end, exclude = False,
                  resolution = run_resolution_limit,
@@ -1319,7 +1274,7 @@ class XDSScalerA(Scaler):
       start, end = (min(input['batches']), max(input['batches']))
 
       rkey = input['dname'], input['sname']
-      run_resolution_limit = self._resolution_limits[rkey]
+      run_resolution_limit = self._scalr_resolution_limits[rkey]
 
       sc.add_run(start, end, exclude = False,
                  resolution = run_resolution_limit,

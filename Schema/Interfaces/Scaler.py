@@ -268,6 +268,12 @@ class Scaler(object):
           k = json.dumps(k)
           d[k] = v
         obj[a[0]] = d
+      elif a[0] == '_scalr_resolution_limits':
+        d = {}
+        for k, v in a[1].iteritems():
+          k = json.dumps(k)
+          d[k] = v
+        obj[a[0]] = d
       elif (a[0].startswith('_scalr_')):
         obj[a[0]] = a[1]
     return obj
@@ -286,6 +292,12 @@ class Scaler(object):
             error_prefix='', target_must_be='', where_str='').object
           v[k_] = integrater_cls.from_dict(v_)
       elif k == '_scalr_statistics' and v is not None:
+        d = {}
+        for k_, v_ in v.iteritems():
+          k_ = tuple(str(s) for s in json.loads(k_))
+          d[k_] = v_
+        v = d
+      elif k == '_scalr_resolution_limits':
         d = {}
         for k_, v_ in v.iteritems():
           k_ = tuple(str(s) for s in json.loads(k_))

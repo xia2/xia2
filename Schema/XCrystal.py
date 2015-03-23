@@ -403,7 +403,6 @@ class XCrystal(object):
     for wavelength in self._wavelengths.keys():
       result += self._wavelengths[wavelength].get_output()
 
-
     scaler = self._get_scaler()
     if scaler.get_scaler_finish_done():
       for wname, xwav in self._wavelengths.iteritems():
@@ -425,6 +424,8 @@ class XCrystal(object):
             result += '%s\n' %banner(
               'Integrating %s' %intgr.get_integrater_sweep_name())
           result += '%s\n' % intgr.show_per_image_statistics()
+
+      result += '%s\n' %banner('Scaling %s' %self.get_name())
 
     # this is now deprecated - be explicit in what you are
     # asking for...

@@ -43,7 +43,6 @@ from CCP4ScalerHelpers import _prepare_pointless_hklin, \
      CCP4ScalerHelper, SweepInformationHandler, erzatz_resolution
 
 from Modules.AnalyseMyIntensities import AnalyseMyIntensities
-from Wrappers.XIA.Merger import Merger
 
 class CCP4ScalerA(Scaler):
   '''An implementation of the Scaler interface using CCP4 programs.'''
@@ -56,7 +55,7 @@ class CCP4ScalerA(Scaler):
     self._scalr_scaled_refl_files = { }
     self._wavelengths_in_order = []
 
-    self._sweep_resolution_limits = { }
+    self._scalr_resolution_limits = { }
 
     # flags to keep track of the corrections we will be applying
 
@@ -82,11 +81,6 @@ class CCP4ScalerA(Scaler):
     obj = super(CCP4ScalerA, self).to_dict()
     if self._sweep_handler is not None:
       obj['_sweep_handler'] = self._sweep_handler.to_dict()
-    d = {}
-    for k, v in self._sweep_resolution_limits.iteritems():
-      k = json.dumps(k)
-      d[k] = v
-    obj['_sweep_resolution_limits'] = d
     obj['_prepared_reflections'] = self._prepared_reflections
     return obj
 
@@ -97,11 +91,6 @@ class CCP4ScalerA(Scaler):
     if return_obj._sweep_handler is not None:
       return_obj._sweep_handler = SweepInformationHandler.from_dict(
         return_obj._sweep_handler)
-    d = {}
-    for k, v in return_obj._sweep_resolution_limits.iteritems():
-      k = tuple(str(s) for s in json.loads(k))
-      d[k] = v
-    return_obj._sweep_resolution_limits = d
     return_obj._prepared_reflections = obj['_prepared_reflections']
     return return_obj
 
@@ -632,7 +621,7 @@ class CCP4ScalerA(Scaler):
 
     self._sort_together_data_ccp4()
 
-    self._sweep_resolution_limits = { }
+    self._scalr_resolution_limits = { }
 
     # store central resolution limit estimates
 
@@ -703,8 +692,8 @@ class CCP4ScalerA(Scaler):
 
       start, end = si.get_batch_range()
 
-      if (dname, sname) in self._sweep_resolution_limits:
-        resolution = self._sweep_resolution_limits[(dname, sname)]
+      if (dname, sname) in self._scalr_resolution_limits:
+        resolution = self._scalr_resolution_limits[(dname, sname)]
         sc.add_run(start, end, exclude = False,
                    resolution = resolution, name = sname)
       else:
@@ -808,7 +797,7 @@ class CCP4ScalerA(Scaler):
 
       if (dname, sname) in user_resolution_limits:
         resolution = user_resolution_limits[(dname, sname)]
-        self._sweep_resolution_limits[(dname, sname)] = resolution
+        self._scalr_resolution_limits[(dname, sname)] = resolution
         if resolution < highest_resolution:
           highest_resolution = resolution
         Chatter.write('Resolution limit for %s: %5.2f' % \
@@ -828,53 +817,13 @@ class CCP4ScalerA(Scaler):
 
       FileHandler.record_temporary_file(hklout)
 
-      m = Merger()
-      m.set_hklin(hklout)
-      if Flags.get_rmerge():
-        m.set_limit_rmerge(Flags.get_rmerge())
-      if Flags.get_completeness():
-        m.set_limit_completeness(Flags.get_completeness())
-      if Flags.get_cc_half():
-        m.set_limit_cc_half(Flags.get_cc_half())
-      if Flags.get_isigma():
-        m.set_limit_isigma(Flags.get_isigma())
-      if Flags.get_misigma():
-        m.set_limit_misigma(Flags.get_misigma())
-
-      m.run()
-
-      if Flags.get_completeness():
-        r_comp = m.get_resolution_completeness()
-      else:
-        r_comp = 0.0
-
-      if Flags.get_cc_half():
-        r_cc_half = m.get_resolution_cc_half()
-      else:
-        r_cc_half = 0.0
-
-      if Flags.get_rmerge():
-        r_rm = m.get_resolution_rmerge()
-      else:
-        r_rm = 0.0
-
-      if Flags.get_isigma():
-        r_uis = m.get_resolution_isigma()
-      else:
-        r_uis = 0.0
-
-      if Flags.get_misigma():
-        r_mis = m.get_resolution_misigma()
-      else:
-        r_mis = 0.0
-
-      resolution = max([r_comp, r_rm, r_uis, r_mis, r_cc_half])
+      resolution = self._estimate_resolution_limit(hklout)
 
       Debug.write('Resolution for sweep %s: %.2f' % \
                   (sname, resolution))
 
-      if not (dname, sname) in self._sweep_resolution_limits:
-        self._sweep_resolution_limits[(dname, sname)] = resolution
+      if not (dname, sname) in self._scalr_resolution_limits:
+        self._scalr_resolution_limits[(dname, sname)] = resolution
         self.set_scaler_done(False)
 
       if resolution < highest_resolution:
@@ -882,7 +831,7 @@ class CCP4ScalerA(Scaler):
 
       Chatter.write('Resolution limit for %s/%s: %5.2f' % \
                     (dname, sname,
-                     self._sweep_resolution_limits[(dname, sname)]))
+                     self._scalr_resolution_limits[(dname, sname)]))
 
     self._scalr_highest_resolution = highest_resolution
 
@@ -923,7 +872,7 @@ class CCP4ScalerA(Scaler):
       sname = si.get_sweep_name()
       start, end = si.get_batch_range()
 
-      resolution_limit = self._sweep_resolution_limits[(dname, sname)]
+      resolution_limit = self._scalr_resolution_limits[(dname, sname)]
 
       if resolution_limit < highest_resolution:
         highest_resolution = resolution_limit
@@ -1008,7 +957,7 @@ class CCP4ScalerA(Scaler):
       sname = si.get_sweep_name()
       start, end = si.get_batch_range()
 
-      resolution_limit = self._sweep_resolution_limits[(dname, sname)]
+      resolution_limit = self._scalr_resolution_limits[(dname, sname)]
 
       sc.add_run(start, end, exclude = False,
                  resolution = resolution_limit, name = sname)
@@ -1054,7 +1003,7 @@ class CCP4ScalerA(Scaler):
       sname = si.get_sweep_name()
       start, end = si.get_batch_range()
 
-      resolution_limit = self._sweep_resolution_limits[(dname, sname)]
+      resolution_limit = self._scalr_resolution_limits[(dname, sname)]
 
       sc.add_run(start, end, exclude = False,
                  resolution = resolution_limit, name = sname)
