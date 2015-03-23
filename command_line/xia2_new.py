@@ -137,7 +137,7 @@ def xia2(stop_after=None):
         remove_sweeps = []
         sweeps = wavelength.get_sweeps()
         for sweep in sweeps:
-          success, output = results[i_sweep]
+          success, output, xsweep_dict = results[i_sweep]
           if output is not None:
             Chatter.write(output)
           if not success:
@@ -145,12 +145,11 @@ def xia2(stop_after=None):
             remove_sweeps.append(sweep)
           else:
             print "Loading sweep: %s" %sweep.get_name()
-            sweep._indexer = None
-            sweep._refiner = None
-            sweep._integrater = None
-            sweep._get_indexer()
-            sweep._get_refiner()
-            sweep._get_integrater()
+            from Schema.XSweep import XSweep
+            new_sweep = XSweep.from_dict(xsweep_dict)
+            sweep._indexer = new_sweep._indexer
+            sweep._refiner = new_sweep._refiner
+            sweep._integrater = new_sweep._integrater
           i_sweep += 1
         for sweep in remove_sweeps:
           wavelength.remove_sweep(sweep)

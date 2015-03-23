@@ -70,14 +70,28 @@ def process_one_sweep(args):
       #print e
       raise
   finally:
+    from Schema.XProject import XProject
+    xia2_json = os.path.join(tmpdir, 'xia2.json')
+    assert os.path.exists(xia2_json)
+
     sweep_tmp_dir = os.path.join(tmpdir, crystal_id, wavelength_id, sweep_id)
     sweep_target_dir = os.path.join(curdir, crystal_id, wavelength_id, sweep_id)
+
+    # update the absolute paths in the json files
+    import fileinput
+    for line in fileinput.FileInput(files=[xia2_json], inplace=1):
+      line = line.replace(sweep_tmp_dir, sweep_target_dir)
+      print line
+
     move_output_folder(sweep_tmp_dir, sweep_target_dir)
+    xinfo = XProject.from_json(xia2_json)
+    xcryst = xinfo.get_crystals().values()[0]
+    xsweep = xcryst.get_xwavelength(wavelength_id).get_sweeps()[0]
     shutil.rmtree(tmpdir, ignore_errors=True)
     if os.path.exists(tmpdir):
       shutil.rmtree(tmpdir, ignore_errors=True)
     DriverFactory.set_driver_type(default_driver_type)
-    return success, output
+    return success, output, xsweep.to_dict()
 
 def get_sweep_output_only(all_output):
   sweep_lines = []
