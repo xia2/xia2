@@ -125,6 +125,7 @@ Wrappers/XDS/XDSGenerateIgnoreFiles.py -text
 Wrappers/XDS/XScaleR.py -text
 Wrappers/XIA/Integrate.py -text
 Wrappers/XIA/MultiCrystalAnalysis.py -text
+command_line/html.py -text
 command_line/index.py -text
 command_line/integrate.py -text
 command_line/make_sphinx_html.py -text
@@ -288,5 +289,6 @@ html/phils/micromanage_integrate.phil -text
 html/phils/pixels_per_spot.phil -text
 html/xia2-new-logo.gif -text
 html/xia2-new-logo.psd -text
+lib/tabulate.py -text
 /libtbx_config -text
 /run_tests.py -text
