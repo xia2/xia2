@@ -1136,30 +1136,6 @@ class XDSScalerA(Scaler):
       dname = self._sweep_information[epoch]['dname']
       sname = self._sweep_information[epoch]['sname']
 
-      log_completeness = os.path.join(self.get_working_directory(),
-                                '%s-completeness.log' % sname)
-
-      if os.path.exists(log_completeness):
-        log_completeness = None
-
-      log_rmerge = os.path.join(self.get_working_directory(),
-                                '%s-rmerge.log' % sname)
-
-      if os.path.exists(log_rmerge):
-        log_rmerge = None
-
-      log_isigma = os.path.join(self.get_working_directory(),
-                                '%s-isigma.log' % sname)
-
-      if os.path.exists(log_isigma):
-        log_isigma = None
-
-      log_misigma = os.path.join(self.get_working_directory(),
-                                '%s-misigma.log' % sname)
-
-      if os.path.exists(log_misigma):
-        log_misigma = None
-
       hkl_copy = os.path.join(self.get_working_directory(),
                               'R_%s' % os.path.split(hklin)[-1])
 
