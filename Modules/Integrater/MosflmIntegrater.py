@@ -461,7 +461,7 @@ class MosflmIntegrater(Integrater):
     Chatter.write('Weighted RMSD: %.2f (%.2f)' % \
                   (mean, sd))
 
-    self.show_per_image_statistics()
+    Chatter.write(self.show_per_image_statistics())
 
     Chatter.write('Mosaic spread: %.3f < %.3f < %.3f' % \
                   self.get_integrater_mosaic_min_mean_max())
@@ -824,7 +824,7 @@ class MosflmIntegrater(Integrater):
     Chatter.write('Processed batches %d to %d' % \
                   self._intgr_batches_out)
 
-    self.show_per_image_statistics()
+    Chatter.write(self.show_per_image_statistics())
 
     Chatter.write('Mosaic spread: %.3f < %.3f < %.3f' % \
                   self.get_integrater_mosaic_min_mean_max())

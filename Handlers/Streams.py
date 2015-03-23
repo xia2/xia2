@@ -30,6 +30,18 @@
 import sys
 import inspect
 
+
+def banner(comment, forward = True, size = 60):
+
+  if not comment:
+    return '-' * size
+
+  l = len(comment)
+  m = (size - (l + 2)) // 2
+  n = size - (l + 2 + m)
+  return '%s %s %s' % ('-' * m, comment, '-' * n)
+
+
 class _Stream(object):
   '''A class to represent an output stream. This will be used as a number
   of static instances - Debug and Chatter in particular.'''
@@ -129,15 +141,7 @@ class _Stream(object):
     return
 
   def banner(self, comment, forward = True, size = 60):
-
-    if not comment:
-      self.write('-' * size)
-      return
-
-    l = len(comment)
-    m = (size - (l + 2)) // 2
-    n = size - (l + 2 + m)
-    self.write('%s %s %s' % ('-' * m, comment, '-' * n))
+    self.write(banner(comment, forward=forward, size=size))
     return
 
   def smallbanner(self, comment, forward):

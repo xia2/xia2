@@ -762,6 +762,7 @@ class Integrater(FrameProcessor):
     pass
 
   def show_per_image_statistics(self):
+    lines = []
     assert self._intgr_per_image_statistics is not None
 
     stats = self._intgr_per_image_statistics
@@ -796,11 +797,9 @@ class Integrater(FrameProcessor):
       low, high = min(stddev_pixel), \
                   max(stddev_pixel)
 
-      Chatter.write('Processed batches %d to %d' % \
-                    (min(images), max(images)))
+      lines.append('Processed batches %d to %d' %(min(images), max(images)))
 
-      Chatter.write('Standard Deviation in pixel range: %f %f' % \
-                    (low, high))
+      lines.append('Standard Deviation in pixel range: %f %f' %(low, high))
 
       overloads = None
       fraction_weak = None
@@ -834,18 +833,18 @@ class Integrater(FrameProcessor):
           status_record += 'o'
 
       if len(status_record) > 60:
-        Chatter.write('Integration status per image (60/record):')
+        lines.append('Integration status per image (60/record):')
       else:
-        Chatter.write('Integration status per image:')
+        lines.append('Integration status per image:')
 
       for chunk in [status_record[i:i + 60] \
                     for i in range(0, len(status_record), 60)]:
-        Chatter.write(chunk)
-      Chatter.write(
+        lines.append(chunk)
+      lines.append(
           '"o" => good        "%" => ok        "!" => bad rmsd')
-      Chatter.write(
+      lines.append(
           '"O" => overloaded  "#" => many bad  "." => weak')
-      Chatter.write(
+      lines.append(
           '"@" => abandoned')
 
       # next look for variations in the unit cell parameters
@@ -871,8 +870,9 @@ class Integrater(FrameProcessor):
               max_rel_dev = math.fabs(uc[j] - uc_mean[j]) / \
                             uc_mean[j]
 
-        Chatter.write('Maximum relative deviation in cell: %.3f' % \
-                      max_rel_dev)
+        lines.append('Maximum relative deviation in cell: %.3f' %max_rel_dev)
 
     except KeyError, e:
       raise RuntimeError, 'Refinement not performed...'
+
+    return '\n'.join(lines)

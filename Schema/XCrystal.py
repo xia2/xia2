@@ -83,6 +83,8 @@ from Modules.Refiner.RefinerFactory import Refiner
 from Handlers.Syminfo import Syminfo
 from Handlers.Flags import Flags
 from Handlers.Files import FileHandler
+from Handlers.Phil import PhilIndex
+from Handlers.Streams import banner
 from NMolLib import compute_nmol, compute_solvent
 
 # XML Marked up output for e-HTPX
@@ -400,6 +402,29 @@ class XCrystal(object):
       result += 'Sequence: %s\n' % self._aa_sequence.get_sequence()
     for wavelength in self._wavelengths.keys():
       result += self._wavelengths[wavelength].get_output()
+
+
+    scaler = self._get_scaler()
+    if scaler.get_scaler_finish_done():
+      for wname, xwav in self._wavelengths.iteritems():
+        for xsweep in xwav.get_sweeps():
+          idxr = xsweep._get_indexer()
+          if PhilIndex.params.xia2.settings.show_template:
+            result += '%s\n' %banner('Autoindexing %s (%s)' %(
+              idxr.get_indexer_sweep_name(), idxr.get_template()))
+          else:
+            result += '%s\n' %banner(
+              'Autoindexing %s' %idxr.get_indexer_sweep_name())
+          result += '%s\n' %idxr.show_indexer_solutions()
+
+          intgr = xsweep._get_integrater()
+          if PhilIndex.params.xia2.settings.show_template:
+            result += '%s\n' %banner('Integrating %s (%s)' %(
+              intgr.get_integrater_sweep_name(), intgr.get_template()))
+          else:
+            result += '%s\n' %banner(
+              'Integrating %s' %intgr.get_integrater_sweep_name())
+          result += '%s\n' % intgr.show_per_image_statistics()
 
     # this is now deprecated - be explicit in what you are
     # asking for...

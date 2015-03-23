@@ -342,7 +342,7 @@ class DialsIntegrater(Integrater):
     show.set_reflections_filename(self._intgr_integrated_pickle)
     show.run()
     self._intgr_per_image_statistics = show.data()
-    self.show_per_image_statistics()
+    Chatter.write(self.show_per_image_statistics())
 
     mosaic = integrate.get_mosaic()
     self.set_integrater_mosaic_min_mean_max(mosaic, mosaic, mosaic)
