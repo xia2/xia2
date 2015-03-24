@@ -198,7 +198,97 @@ def get_xproject_rst(xproject):
   lines.append('.. note:: The spacegroup was determined using pointless (see log file)')
   lines.append('\n')
 
+  lines.append('Twinning analysis')
+  lines.append('-' * len(lines[-1]))
+  lines.append('\n')
+  lines.append('Overall twinning score: %s' %twinning_score)
+  lines.append('Your data do not appear to be twinned')
+  lines.append('\n')
+  lines.append(
+    '.. note:: The twinning score is the value of <E4>/<I2> reported by')
+  lines.append(
+    '      sfcheck (see `documentation <http://www.ccp4.ac.uk/html/sfcheck.html#Twinning%20test>`_)')
+  lines.append('\n')
 
+  lines.append('Asymmetric unit contents')
+  lines.append('-' * len(lines[-1]))
+  lines.append('\n')
+  lines.append('\n')
+  lines.append('.. note:: No information on ASU contents (because no sequence information was supplied?)')
+  lines.append('\n')
+
+  #lines.append('Inter-wavelength B and R-factor analysis')
+  #lines.append('-' * len(lines[-1]))
+  #lines.append('\n')
+
+  lines.append('Output files')
+  lines.append('=' * len(lines[-1]))
+  lines.append('\n')
+
+  lines.append('Reflection data files')
+  lines.append('-' * len(lines[-1]))
+  lines.append('\n')
+
+  lines.append(
+    'xia2 produced the following reflection data files - to download,'
+    'right-click on the link and select "Save Link As..."')
+  lines.append('\n')
+
+  reflection_files = xcryst.get_scaled_merged_reflections()
+  lines.append('MTZ files (useful for CCP4 and Phenix)')
+  lines.append('_' * len(lines[-1]))
+  lines.append('\n')
+
+  headers = ['Dataset', 'File name']
+  merged_mtz = reflection_files['mtz']
+  table = [['All datasets', '`%s <%s>`_' %(os.path.basename(merged_mtz), merged_mtz)]]
+  #['All datasets (unmerged)', '`%s <%s>`_' %(os.path.basename(merged_mtz), merged_mtz],
+
+  for wname, unmerged_mtz in reflection_files['mtz_unmerged'].iteritems():
+    table.append(
+      [wname, '`%s <%s>`_' %(os.path.basename(unmerged_mtz), unmerged_mtz)])
+
+  lines.append('\n')
+  lines.append(tabulate(table, headers, tablefmt='rst'))
+  lines.append('\n')
+
+
+  lines.append('SCA files (useful for AutoSHARP, etc.)')
+  lines.append('_' * len(lines[-1]))
+  lines.append('\n')
+
+  table = []
+  for wname, merged_sca in reflection_files['sca'].iteritems():
+    table.append(
+      [wname, '`%s <%s>`_' %(os.path.basename(merged_sca), merged_sca)])
+
+  lines.append('\n')
+  lines.append(tabulate(table, headers, tablefmt='rst'))
+  lines.append('\n')
+
+  lines.append('SCA_UNMERGED files (useful for XPREP and Shelx C/D/E)')
+  lines.append('_' * len(lines[-1]))
+  lines.append('\n')
+
+  table = []
+  for wname, unmerged_sca in reflection_files['sca_unmerged'].iteritems():
+    table.append(
+      [wname, '`%s <%s>`_' %(os.path.basename(unmerged_sca), unmerged_sca)])
+
+  lines.append('\n')
+  lines.append(tabulate(table, headers, tablefmt='rst'))
+  lines.append('\n')
+
+  lines.append('Log files')
+  lines.append('-' * len(lines[-1]))
+  lines.append('\n')
+
+  lines.append(
+    'The log files are located in `<%s/LogFiles>`_ and are grouped by '
+    'processing stage:' %os.path.abspath(os.path.curdir))
+
+
+  lines.append('\n')
   lines.append('Detailed statistics for each dataset')
   lines.append('=' * len(lines[-1]))
   lines.append('\n')
