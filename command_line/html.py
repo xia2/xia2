@@ -165,6 +165,20 @@ def get_xproject_rst(xproject):
     #Your data do not appear to be twinned
     #All crystallographic parameters..
 
+  lines.append('Contents of the rest of this document:')
+  lines.append('\n')
+  lines.append(
+    '* `Reflection files output from xia2`_')
+  lines.append(
+    '* `Full statistics for each wavelength`_')
+  lines.append(
+    '* `Log files from individual stages`_')
+  lines.append(
+    '* `Integration status for images by wavelength and sweep`_')
+  #lines.append(
+    #'* `Lists of programs and citations`_')
+
+  lines.append('\n')
   lines.append('Crystallographic parameters')
   lines.append('=' * len(lines[-1]))
   lines.append('\n')
@@ -225,6 +239,7 @@ def get_xproject_rst(xproject):
   lines.append('=' * len(lines[-1]))
   lines.append('\n')
 
+  lines.append('.. _Reflection files output from xia2:\n')
   lines.append('Reflection data files')
   lines.append('-' * len(lines[-1]))
   lines.append('\n')
@@ -279,6 +294,7 @@ def get_xproject_rst(xproject):
   lines.append(tabulate(table, headers, tablefmt='rst'))
   lines.append('\n')
 
+  lines.append('.. _Log files from individual stages:\n')
   lines.append('Log files')
   lines.append('-' * len(lines[-1]))
   lines.append('\n')
@@ -287,7 +303,8 @@ def get_xproject_rst(xproject):
     'The log files are located in `<%s/LogFiles>`_ and are grouped by '
     'processing stage:' %os.path.abspath(os.path.curdir))
 
-
+  lines.append('\n')
+  lines.append('.. _Full statistics for each wavelength:\n')
   lines.append('\n')
   lines.append('Detailed statistics for each dataset')
   lines.append('=' * len(lines[-1]))
@@ -349,6 +366,7 @@ def get_xproject_rst(xproject):
       lines.append(tabulate(table, headers, tablefmt='grid'))
       lines.append('\n')
 
+  lines.append('.. _Integration status for images by wavelength and sweep:\n')
   lines.append('Integration status per image')
   lines.append('=' * len(lines[-1]))
   lines.append(
