@@ -174,6 +174,8 @@ def overview_section(xproject):
   headers = table.pop(0)
 
   lines.append('\n')
+  lines.append('.. class:: table-one')
+  lines.append('\n')
   lines.append(tabulate(table, headers, tablefmt='grid'))
   lines.append('\n')
 
