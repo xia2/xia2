@@ -252,14 +252,20 @@ def get_xproject_rst(xproject):
       for xsweep in xwav.get_sweeps():
         intgr = xsweep._get_integrater()
         stats = intgr.show_per_image_statistics()
-        status = stats.split('Integration status per image:')[1].split(
-          '"o" => good')[0].strip()
+        status = stats.split(
+          'Integration status per image')[1].split(':')[1].split(
+            '"o" => good')[0].strip()
+        status = ''.join(status.split())
 
         overall_table.append([
           wname, xsweep.get_name(),
           status.count(good), status.count(ok), status.count(bad_rmsd),
           status.count(overloaded), status.count(many_bad), status.count(weak),
           status.count(abandoned), len(status)])
+
+
+        import textwrap
+        status = '\n'.join('| %s' %s for s in textwrap.wrap(status, width=60))
 
         status_lines.append('\n')
         status_lines.append('Dataset %s' %wname)
@@ -269,6 +275,11 @@ def get_xproject_rst(xproject):
         status_lines.append(
           '%s: batches %d to %d' %(xsweep.get_name(), batches[0], batches[1]))
         status_lines.append('\n%s\n' %status)
+
+        #if '(60/record)' in stats:
+          #status_lines.append('\n')
+          #status_lines.append('.. note:: (60 images/record)')
+          #status_lines.append('\n')
 
   lines.append('\n')
   lines.append(tabulate(overall_table, headers, tablefmt='rst'))
