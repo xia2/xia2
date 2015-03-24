@@ -304,68 +304,6 @@ def get_xproject_rst(xproject):
     'processing stage:' %os.path.abspath(os.path.curdir))
 
   lines.append('\n')
-  lines.append('.. _Full statistics for each wavelength:\n')
-  lines.append('\n')
-  lines.append('Detailed statistics for each dataset')
-  lines.append('=' * len(lines[-1]))
-  lines.append('\n')
-
-  for cname, xcryst in xproject.get_crystals().iteritems():
-    statistics_all = xcryst.get_statistics()
-
-    from lib.tabulate import tabulate
-    from collections import OrderedDict
-
-    for key, statistics in statistics_all.iteritems():
-
-      pname, xname, dname = key
-
-      lines.append('Dataset %s' %dname)
-      lines.append('-' * len(lines[-1]))
-
-      table = []
-
-      headers = [' ', 'Overall', 'Low', 'High']
-
-      available = statistics.keys()
-
-      formats = OrderedDict([
-        ('High resolution limit', '%6.2f'),
-        ('Low resolution limit', '%6.2f'),
-        ('Completeness', '%5.1f'),
-        ('Multiplicity', '%5.1f'),
-        ('I/sigma', '%5.1f'),
-        ('Rmerge', '%5.3f'),
-        ('Rmeas(I)', '%5.3f'),
-        ('Rmeas(I+/-)', '%5.3f'),
-        ('Rpim(I)', '%5.3f'),
-        ('Rpim(I+/-)', '%5.3f'),
-        ('CC half', '%5.3f'),
-        ('Wilson B factor', '%.3f'),
-        ('Partial bias', '%5.3f'),
-        ('Anomalous completeness', '%5.1f'),
-        ('Anomalous multiplicity', '%5.1f'),
-        ('Anomalous correlation', '%6.3f'),
-        ('Anomalous slope', '%5.3f'),
-        ('dF/F', '%.3f'),
-        ('dI/s(dI)', '%.3f'),
-        ('Total observations', '%d'),
-        ('Total unique', '%d')
-      ])
-
-      for k in formats.keys():
-        if k in available:
-          values = [formats[k] % v for v in statistics[k]]
-          if len(values) == 1:
-            values = [values[0], '', '']
-          assert len(values) == 3
-          table.append([k] + values)
-
-
-      lines.append('\n')
-      lines.append(tabulate(table, headers, tablefmt='grid'))
-      lines.append('\n')
-
   lines.append('.. _Integration status for images by wavelength and sweep:\n')
   lines.append('Integration status per image')
   lines.append('=' * len(lines[-1]))
@@ -428,6 +366,69 @@ def get_xproject_rst(xproject):
   lines.append('\n')
 
   lines.extend(status_lines)
+
+  lines.append('\n')
+  lines.append('.. _Full statistics for each wavelength:\n')
+  lines.append('\n')
+  lines.append('Detailed statistics for each dataset')
+  lines.append('=' * len(lines[-1]))
+  lines.append('\n')
+
+  for cname, xcryst in xproject.get_crystals().iteritems():
+    statistics_all = xcryst.get_statistics()
+
+    from lib.tabulate import tabulate
+    from collections import OrderedDict
+
+    for key, statistics in statistics_all.iteritems():
+
+      pname, xname, dname = key
+
+      lines.append('Dataset %s' %dname)
+      lines.append('-' * len(lines[-1]))
+
+      table = []
+
+      headers = [' ', 'Overall', 'Low', 'High']
+
+      available = statistics.keys()
+
+      formats = OrderedDict([
+        ('High resolution limit', '%6.2f'),
+        ('Low resolution limit', '%6.2f'),
+        ('Completeness', '%5.1f'),
+        ('Multiplicity', '%5.1f'),
+        ('I/sigma', '%5.1f'),
+        ('Rmerge', '%5.3f'),
+        ('Rmeas(I)', '%5.3f'),
+        ('Rmeas(I+/-)', '%5.3f'),
+        ('Rpim(I)', '%5.3f'),
+        ('Rpim(I+/-)', '%5.3f'),
+        ('CC half', '%5.3f'),
+        ('Wilson B factor', '%.3f'),
+        ('Partial bias', '%5.3f'),
+        ('Anomalous completeness', '%5.1f'),
+        ('Anomalous multiplicity', '%5.1f'),
+        ('Anomalous correlation', '%6.3f'),
+        ('Anomalous slope', '%5.3f'),
+        ('dF/F', '%.3f'),
+        ('dI/s(dI)', '%.3f'),
+        ('Total observations', '%d'),
+        ('Total unique', '%d')
+      ])
+
+      for k in formats.keys():
+        if k in available:
+          values = [formats[k] % v for v in statistics[k]]
+          if len(values) == 1:
+            values = [values[0], '', '']
+          assert len(values) == 3
+          table.append([k] + values)
+
+
+      lines.append('\n')
+      lines.append(tabulate(table, headers, tablefmt='grid'))
+      lines.append('\n')
 
   return '\n'.join(lines)
 
