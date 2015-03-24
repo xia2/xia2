@@ -25,6 +25,8 @@ from Applications.xia2 import get_command_line, write_citations, help
 
 from XIA2Version import Version
 
+from lib.tabulate import tabulate
+
 # XML Marked up output for e-HTPX
 if not os.path.join(os.environ['XIA2_ROOT'], 'Interfaces') in sys.path:
   sys.path.append(os.path.join(os.environ['XIA2_ROOT'], 'Interfaces'))
@@ -38,9 +40,11 @@ def run():
   with open('xia2.new.html', 'wb') as f:
     print >> f, rst2html(rst)
 
-  with open('xia2.tex', 'wb') as f:
-    print >> f, rst2latex(rst)
+  #with open('xia2.tex', 'wb') as f:
+    #print >> f, rst2latex(rst)
 
+  #with open('xia2.odt', 'wb') as f:
+    #print >> f, rst2odt(rst)
 
 def rst2html(rst):
   from docutils.core import publish_string
@@ -61,7 +65,6 @@ def rst2html(rst):
       self.body.append(
         self.starttag(node, 'table', CLASS=classes, border="0"))
 
-
   args = {
     'stylesheet_path': os.path.join(xia2_root_dir, 'css', 'voidspace.css')
   }
@@ -79,9 +82,27 @@ def rst2latex(rst):
 
   return publish_string(rst, writer=w)
 
+def rst2odt(rst):
+  from docutils.core import publish_string
+  from docutils.writers.odf_odt import Writer
+
+  w = Writer()
+
+  return publish_string(rst, writer=w)
+
 def get_xproject_rst(xproject):
 
   lines = []
+
+
+  lines.extend(crystallographic_parameters_section(xproject))
+  lines.extend(output_files_section(xproject))
+  lines.extend(integration_status_section(xproject))
+  lines.extend(detailed_statistics_section(xproject))
+
+  return '\n'.join(lines)
+
+def overview_section(xproject):
 
   lines.append('xia2 Processing Report: %s' %xproject.get_name())
   lines.append('#' * len(lines[-1]))
@@ -92,9 +113,6 @@ def get_xproject_rst(xproject):
     Version.split()[-1], xia2_status))
 
   lines.append('Read output from `<%s/>`_\n' %os.path.abspath(os.path.curdir))
-
-  from lib.tabulate import tabulate
-  from collections import OrderedDict
 
   columns = []
   columns.append([
@@ -178,130 +196,159 @@ def get_xproject_rst(xproject):
   #lines.append(
     #'* `Lists of programs and citations`_')
 
-  lines.append('\n')
-  lines.append('Crystallographic parameters')
-  lines.append('=' * len(lines[-1]))
-  lines.append('\n')
-
-  lines.append('Unit cell')
-  lines.append('-' * len(lines[-1]))
-  lines.append('\n')
-
-  cell = xcryst.get_cell()
-  headers = [u'a (Å)', u'b (Å)', u'c (Å)', u'α (°)', u'β (°)', u'γ (°)']
-  table = [['%.3f' %c for c in cell]]
-  lines.append('\n')
-  lines.append(tabulate(table, headers, tablefmt='grid'))
-  lines.append('\n')
-
-  lines.append('.. note:: The unit cell parameters are the average for all measurements.')
-  lines.append('\n')
-
-  lines.append('Space group')
-  lines.append('-' * len(lines[-1]))
-  lines.append('\n')
-  lines.append('Space group: %s' %spacegroup)
-  lines.append('\n')
-  lines.append('Other possibilities could be:')
-  lines.append('\n')
-  if len(spacegroups) > 1:
-    for sg in spacegroups[1:]:
-      sg = sgtbx.space_group_type(str(sg))
-      lines.append('* %s\n' %sg.lookup_symbol())
-  lines.append('\n')
-  lines.append('.. note:: The spacegroup was determined using pointless (see log file)')
-  lines.append('\n')
-
-  lines.append('Twinning analysis')
-  lines.append('-' * len(lines[-1]))
-  lines.append('\n')
-  lines.append('Overall twinning score: %s' %twinning_score)
-  lines.append('Your data do not appear to be twinned')
-  lines.append('\n')
-  lines.append(
-    '.. note:: The twinning score is the value of <E4>/<I2> reported by')
-  lines.append(
-    '      sfcheck (see `documentation <http://www.ccp4.ac.uk/html/sfcheck.html#Twinning%20test>`_)')
-  lines.append('\n')
-
-  lines.append('Asymmetric unit contents')
-  lines.append('-' * len(lines[-1]))
-  lines.append('\n')
-  lines.append('\n')
-  lines.append('.. note:: No information on ASU contents (because no sequence information was supplied?)')
-  lines.append('\n')
-
   #lines.append('Inter-wavelength B and R-factor analysis')
   #lines.append('-' * len(lines[-1]))
   #lines.append('\n')
 
-  lines.append('Output files')
-  lines.append('=' * len(lines[-1]))
-  lines.append('\n')
+  return lines
 
-  lines.append('.. _Reflection files output from xia2:\n')
-  lines.append('Reflection data files')
-  lines.append('-' * len(lines[-1]))
-  lines.append('\n')
+def crystallographic_parameters_section(xproject):
+  lines = []
 
-  lines.append(
-    'xia2 produced the following reflection data files - to download,'
-    'right-click on the link and select "Save Link As..."')
-  lines.append('\n')
+  for cname, xcryst in xproject.get_crystals().iteritems():
 
-  reflection_files = xcryst.get_scaled_merged_reflections()
-  lines.append('MTZ files (useful for CCP4 and Phenix)')
-  lines.append('_' * len(lines[-1]))
-  lines.append('\n')
+    lines.append('\n')
+    lines.append('Crystallographic parameters')
+    lines.append('=' * len(lines[-1]))
+    lines.append('\n')
 
-  headers = ['Dataset', 'File name']
-  merged_mtz = reflection_files['mtz']
-  table = [['All datasets', '`%s <%s>`_' %(os.path.basename(merged_mtz), merged_mtz)]]
-  #['All datasets (unmerged)', '`%s <%s>`_' %(os.path.basename(merged_mtz), merged_mtz],
+    lines.append('Unit cell')
+    lines.append('-' * len(lines[-1]))
+    lines.append('\n')
 
-  for wname, unmerged_mtz in reflection_files['mtz_unmerged'].iteritems():
-    table.append(
-      [wname, '`%s <%s>`_' %(os.path.basename(unmerged_mtz), unmerged_mtz)])
+    cell = xcryst.get_cell()
+    headers = [u'a (Å)', u'b (Å)', u'c (Å)', u'α (°)', u'β (°)', u'γ (°)']
+    table = [['%.3f' %c for c in cell]]
+    lines.append('\n')
+    lines.append(tabulate(table, headers, tablefmt='grid'))
+    lines.append('\n')
 
-  lines.append('\n')
-  lines.append(tabulate(table, headers, tablefmt='rst'))
-  lines.append('\n')
+    lines.append('.. note:: The unit cell parameters are the average for all measurements.')
+    lines.append('\n')
+
+    from cctbx import sgtbx
+    spacegroups = xcryst.get_likely_spacegroups()
+    spacegroup = spacegroups[0]
+    sg = sgtbx.space_group_type(str(spacegroup))
+    spacegroup = sg.lookup_symbol()
+    table.append(['Space group', spacegroup, ''])
+
+    lines.append('Space group')
+    lines.append('-' * len(lines[-1]))
+    lines.append('\n')
+    lines.append('Space group: %s' %spacegroup)
+    lines.append('\n')
+    lines.append('Other possibilities could be:')
+    lines.append('\n')
+    if len(spacegroups) > 1:
+      for sg in spacegroups[1:]:
+        sg = sgtbx.space_group_type(str(sg))
+        lines.append('* %s\n' %sg.lookup_symbol())
+    lines.append('\n')
+    lines.append('.. note:: The spacegroup was determined using pointless (see log file)')
+    lines.append('\n')
+
+    twinning_score = ''
+    lines.append('Twinning analysis')
+    lines.append('-' * len(lines[-1]))
+    lines.append('\n')
+    lines.append('Overall twinning score: %s' %twinning_score)
+    lines.append('Your data do not appear to be twinned')
+    lines.append('\n')
+    lines.append(
+      '.. note:: The twinning score is the value of <E4>/<I2> reported by')
+    lines.append(
+      '      sfcheck (see `documentation <http://www.ccp4.ac.uk/html/sfcheck.html#Twinning%20test>`_)')
+    lines.append('\n')
+
+    lines.append('Asymmetric unit contents')
+    lines.append('-' * len(lines[-1]))
+    lines.append('\n')
+    lines.append('\n')
+    lines.append('.. note:: No information on ASU contents (because no sequence information was supplied?)')
+    lines.append('\n')
+
+  return lines
 
 
-  lines.append('SCA files (useful for AutoSHARP, etc.)')
-  lines.append('_' * len(lines[-1]))
-  lines.append('\n')
+def output_files_section(xproject):
+  lines = []
 
-  table = []
-  for wname, merged_sca in reflection_files['sca'].iteritems():
-    table.append(
-      [wname, '`%s <%s>`_' %(os.path.basename(merged_sca), merged_sca)])
+  for cname, xcryst in xproject.get_crystals().iteritems():
+    lines.append('Output files')
+    lines.append('=' * len(lines[-1]))
+    lines.append('\n')
 
-  lines.append('\n')
-  lines.append(tabulate(table, headers, tablefmt='rst'))
-  lines.append('\n')
+    lines.append('.. _Reflection files output from xia2:\n')
+    lines.append('Reflection data files')
+    lines.append('-' * len(lines[-1]))
+    lines.append('\n')
 
-  lines.append('SCA_UNMERGED files (useful for XPREP and Shelx C/D/E)')
-  lines.append('_' * len(lines[-1]))
-  lines.append('\n')
+    lines.append(
+      'xia2 produced the following reflection data files - to download,'
+      'right-click on the link and select "Save Link As..."')
+    lines.append('\n')
 
-  table = []
-  for wname, unmerged_sca in reflection_files['sca_unmerged'].iteritems():
-    table.append(
-      [wname, '`%s <%s>`_' %(os.path.basename(unmerged_sca), unmerged_sca)])
+    reflection_files = xcryst.get_scaled_merged_reflections()
+    lines.append('MTZ files (useful for CCP4 and Phenix)')
+    lines.append('_' * len(lines[-1]))
+    lines.append('\n')
 
-  lines.append('\n')
-  lines.append(tabulate(table, headers, tablefmt='rst'))
-  lines.append('\n')
+    headers = ['Dataset', 'File name']
+    merged_mtz = reflection_files['mtz']
+    table = [['All datasets', '`%s <%s>`_' %(os.path.basename(merged_mtz), merged_mtz)]]
+    #['All datasets (unmerged)', '`%s <%s>`_' %(os.path.basename(merged_mtz), merged_mtz],
 
-  lines.append('.. _Log files from individual stages:\n')
-  lines.append('Log files')
-  lines.append('-' * len(lines[-1]))
-  lines.append('\n')
+    for wname, unmerged_mtz in reflection_files['mtz_unmerged'].iteritems():
+      table.append(
+        [wname, '`%s <%s>`_' %(os.path.basename(unmerged_mtz), unmerged_mtz)])
 
-  lines.append(
-    'The log files are located in `<%s/LogFiles>`_ and are grouped by '
-    'processing stage:' %os.path.abspath(os.path.curdir))
+    lines.append('\n')
+    lines.append(tabulate(table, headers, tablefmt='rst'))
+    lines.append('\n')
+
+
+    lines.append('SCA files (useful for AutoSHARP, etc.)')
+    lines.append('_' * len(lines[-1]))
+    lines.append('\n')
+
+    table = []
+    for wname, merged_sca in reflection_files['sca'].iteritems():
+      table.append(
+        [wname, '`%s <%s>`_' %(os.path.basename(merged_sca), merged_sca)])
+
+    lines.append('\n')
+    lines.append(tabulate(table, headers, tablefmt='rst'))
+    lines.append('\n')
+
+    lines.append('SCA_UNMERGED files (useful for XPREP and Shelx C/D/E)')
+    lines.append('_' * len(lines[-1]))
+    lines.append('\n')
+
+    table = []
+    for wname, unmerged_sca in reflection_files['sca_unmerged'].iteritems():
+      table.append(
+        [wname, '`%s <%s>`_' %(os.path.basename(unmerged_sca), unmerged_sca)])
+
+    lines.append('\n')
+    lines.append(tabulate(table, headers, tablefmt='rst'))
+    lines.append('\n')
+
+    lines.append('.. _Log files from individual stages:\n')
+    lines.append('Log files')
+    lines.append('-' * len(lines[-1]))
+    lines.append('\n')
+
+    lines.append(
+      'The log files are located in `<%s/LogFiles>`_ and are grouped by '
+      'processing stage:' %os.path.abspath(os.path.curdir))
+
+  return lines
+
+
+def integration_status_section(xproject):
+  lines = []
+  status_lines = []
 
   lines.append('\n')
   lines.append('.. _Integration status for images by wavelength and sweep:\n')
@@ -323,8 +370,6 @@ def get_xproject_rst(xproject):
   many_bad = '#'
   weak = '.'
   abandoned = '@'
-
-  status_lines = []
 
   for cname, xcryst in xproject.get_crystals().iteritems():
     for wname in xcryst.get_wavelength_names():
@@ -366,7 +411,11 @@ def get_xproject_rst(xproject):
   lines.append('\n')
 
   lines.extend(status_lines)
+  return lines
 
+
+def detailed_statistics_section(xproject):
+  lines = []
   lines.append('\n')
   lines.append('.. _Full statistics for each wavelength:\n')
   lines.append('\n')
@@ -377,7 +426,6 @@ def get_xproject_rst(xproject):
   for cname, xcryst in xproject.get_crystals().iteritems():
     statistics_all = xcryst.get_statistics()
 
-    from lib.tabulate import tabulate
     from collections import OrderedDict
 
     for key, statistics in statistics_all.iteritems():
@@ -430,7 +478,7 @@ def get_xproject_rst(xproject):
       lines.append(tabulate(table, headers, tablefmt='grid'))
       lines.append('\n')
 
-  return '\n'.join(lines)
+  return lines
 
 
 if __name__ == '__main__':
