@@ -194,6 +194,7 @@ core/Test/ExampleProgramTightLoop.bat -text
 core/Test/ExampleProgramTightLoop.py -text
 core/Test/readme.txt -text
 core/readme.txt -text
+css/voidspace.css -text
 doc/sphinx/Makefile -text
 doc/sphinx/_static/CCP4-logo-plain.png -text svneol=unset#unset
 doc/sphinx/_static/dials_logo_fx_transparent_bg.png -text svneol=unset#unset

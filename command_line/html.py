@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # LIBTBX_SET_DISPATCHER_NAME dev.xia2.html
 
 import sys
@@ -22,6 +23,7 @@ from Handlers.Environment import Environment, df
 
 from Applications.xia2 import get_command_line, write_citations, help
 
+from XIA2Version import Version
 
 # XML Marked up output for e-HTPX
 if not os.path.join(os.environ['XIA2_ROOT'], 'Interfaces') in sys.path:
@@ -44,9 +46,30 @@ def rst2html(rst):
   from docutils.core import publish_string
   from docutils.writers.html4css1 import Writer,HTMLTranslator
 
-  w = Writer()
+  class xia2HTMLTranslator(HTMLTranslator):
+    def __init__(self, document):
+      HTMLTranslator.__init__(self, document)
+      #self.head_prefix = ['','','','','']
+      #self.body_prefix = []
+      #self.body_suffix = []
+      #self.stylesheet = []
 
-  return publish_string(rst, writer=w)
+    def visit_table(self, node):
+      self.context.append(self.compact_p)
+      self.compact_p = True
+      classes = ' '.join(['docutils', self.settings.table_style]).strip()
+      self.body.append(
+        self.starttag(node, 'table', CLASS=classes, border="0"))
+
+
+  args = {
+    'stylesheet_path': os.path.join(xia2_root_dir, 'css', 'voidspace.css')
+  }
+
+  w = Writer()
+  w.translator_class = xia2HTMLTranslator
+
+  return publish_string(rst, writer=w, settings=None, settings_overrides=args)
 
 def rst2latex(rst):
   from docutils.core import publish_string
@@ -60,8 +83,91 @@ def get_xproject_rst(xproject):
 
   lines = []
 
+  lines.append('xia2 Processing Report: %s' %xproject.get_name())
+  lines.append('#' * len(lines[-1]))
+
+  lines.append('\n')
+  xia2_status = 'normal termination' # XXX FIXME
+  lines.append("xia2 version %s completed with status '%s'\n" %(
+    Version.split()[-1], xia2_status))
+
+  lines.append('Read output from `<%s/>`_\n' %os.path.abspath(os.path.curdir))
+
+  from lib.tabulate import tabulate
+  from collections import OrderedDict
+
+  columns = []
+  columns.append([
+    '',
+    u'Wavelength (Å)',
+    'High resolution limit',
+    'Low resolution limit',
+    'Completeness',
+    'Multiplicity',
+    'CC-half',
+    'I/sigma',
+    'Rmerge',
+    'Anomalous completeness',
+    'Anomalous multiplicity',
+    #'See all statistics',
+  ])
+
+  for cname, xcryst in xproject.get_crystals().iteritems():
+    statistics_all = xcryst.get_statistics()
+    for wname in xcryst.get_wavelength_names():
+      statistics = statistics_all[(xproject.get_name(), cname, wname)]
+      xwav = xcryst.get_xwavelength(wname)
+      high_res = statistics['High resolution limit']
+      low_res = statistics['Low resolution limit']
+      column = [
+        wname, xwav.get_wavelength(),
+        '%s (%s - %s)' %(high_res[0], low_res[2], high_res[2]),
+        '%s (%s - %s)' %(low_res[0], high_res[2], low_res[2]),
+        '%s' %statistics['Completeness'][0],
+        '%s' %statistics['Multiplicity'][0],
+        '%s' %statistics['CC half'][0],
+        '%s' %statistics['I/sigma'][0],
+        '%s' %statistics['Rmerge'][0],
+        '%s' %statistics['Anomalous completeness'][0],
+        '%s' %statistics['Anomalous multiplicity'][0],
+      ]
+      columns.append(column)
+
+  table = [[c[i] for c in columns] for i in range(len(columns[0]))]
+
+  cell = xcryst.get_cell()
+  table.append([u'Unit cell dimensions: a (Å)', '%.3f' %cell[0], ''])
+  table.append([u'b (Å)', '%.3f' %cell[1], ''])
+  table.append([u'c (Å)', '%.3f' %cell[2], ''])
+  table.append([u'alpha (°)', '%.3f' %cell[3], ''])
+  table.append([u'beta (°)', '%.3f' %cell[4], ''])
+  table.append([u'gamma (°)', '%.3f' %cell[5], ''])
+
+  from cctbx import sgtbx
+  spacegroups = xcryst.get_likely_spacegroups()
+  spacegroup = spacegroups[0]
+  sg = sgtbx.space_group_type(str(spacegroup))
+  spacegroup = sg.lookup_symbol()
+  table.append(['Space group', spacegroup, ''])
+
+  twinning_score = ''
+  table.append(['Sfcheck twinning score', twinning_score, ''])
+
+  headers = table.pop(0)
+
+  lines.append('\n')
+  lines.append(tabulate(table, headers, tablefmt='grid'))
+  lines.append('\n')
+
+    #Spacegroup P 41 2 2
+
+    #Sfcheck twinning score     2.99
+    #Your data do not appear to be twinned
+    #All crystallographic parameters..
+
   lines.append('Detailed statistics for each dataset')
   lines.append('=' * len(lines[-1]))
+  lines.append('\n')
 
   for cname, xcryst in xproject.get_crystals().iteritems():
     statistics_all = xcryst.get_statistics()
@@ -175,4 +281,3 @@ def get_xproject_rst(xproject):
 
 if __name__ == '__main__':
   run()
-
