@@ -94,7 +94,7 @@ def get_xproject_rst(xproject):
 
   lines = []
 
-
+  lines.extend(overview_section(xproject))
   lines.extend(crystallographic_parameters_section(xproject))
   lines.extend(output_files_section(xproject))
   lines.extend(integration_status_section(xproject))
@@ -103,7 +103,7 @@ def get_xproject_rst(xproject):
   return '\n'.join(lines)
 
 def overview_section(xproject):
-
+  lines = []
   lines.append('xia2 Processing Report: %s' %xproject.get_name())
   lines.append('#' * len(lines[-1]))
 
