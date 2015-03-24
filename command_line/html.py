@@ -139,9 +139,9 @@ def get_xproject_rst(xproject):
   table.append([u'Unit cell dimensions: a (Å)', '%.3f' %cell[0], ''])
   table.append([u'b (Å)', '%.3f' %cell[1], ''])
   table.append([u'c (Å)', '%.3f' %cell[2], ''])
-  table.append([u'alpha (°)', '%.3f' %cell[3], ''])
-  table.append([u'beta (°)', '%.3f' %cell[4], ''])
-  table.append([u'gamma (°)', '%.3f' %cell[5], ''])
+  table.append([u'α (°)', '%.3f' %cell[3], ''])
+  table.append([u'β (°)', '%.3f' %cell[4], ''])
+  table.append([u'γ (°)', '%.3f' %cell[5], ''])
 
   from cctbx import sgtbx
   spacegroups = xcryst.get_likely_spacegroups()
@@ -165,6 +165,40 @@ def get_xproject_rst(xproject):
     #Your data do not appear to be twinned
     #All crystallographic parameters..
 
+  lines.append('Crystallographic parameters')
+  lines.append('=' * len(lines[-1]))
+  lines.append('\n')
+
+  lines.append('Unit cell')
+  lines.append('-' * len(lines[-1]))
+  lines.append('\n')
+
+  cell = xcryst.get_cell()
+  headers = [u'a (Å)', u'b (Å)', u'c (Å)', u'α (°)', u'β (°)', u'γ (°)']
+  table = [['%.3f' %c for c in cell]]
+  lines.append('\n')
+  lines.append(tabulate(table, headers, tablefmt='grid'))
+  lines.append('\n')
+
+  lines.append('.. note:: The unit cell parameters are the average for all measurements.')
+  lines.append('\n')
+
+  lines.append('Space group')
+  lines.append('-' * len(lines[-1]))
+  lines.append('\n')
+  lines.append('Space group: %s' %spacegroup)
+  lines.append('\n')
+  lines.append('Other possibilities could be:')
+  lines.append('\n')
+  if len(spacegroups) > 1:
+    for sg in spacegroups[1:]:
+      sg = sgtbx.space_group_type(str(sg))
+      lines.append('* %s\n' %sg.lookup_symbol())
+  lines.append('\n')
+  lines.append('.. note:: The spacegroup was determined using pointless (see log file)')
+  lines.append('\n')
+
+
   lines.append('Detailed statistics for each dataset')
   lines.append('=' * len(lines[-1]))
   lines.append('\n')
@@ -180,7 +214,7 @@ def get_xproject_rst(xproject):
       pname, xname, dname = key
 
       lines.append('Dataset %s' %dname)
-      lines.append('_' * len(lines[-1]))
+      lines.append('-' * len(lines[-1]))
 
       table = []
 
@@ -269,7 +303,7 @@ def get_xproject_rst(xproject):
 
         status_lines.append('\n')
         status_lines.append('Dataset %s' %wname)
-        status_lines.append('_' * len(status_lines[-1]))
+        status_lines.append('-' * len(status_lines[-1]))
         status_lines.append('\n')
         batches = xsweep.get_image_range()
         status_lines.append(
