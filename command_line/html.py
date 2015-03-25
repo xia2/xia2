@@ -35,6 +35,7 @@ def run():
   assert os.path.exists('xia2.json')
   from Schema.XProject import XProject
   xinfo = XProject.from_json(filename='xia2.json')
+
   rst = get_xproject_rst(xinfo)
 
   with open('xia2.new.html', 'wb') as f:
@@ -46,6 +47,25 @@ def run():
   #with open('xia2.odt', 'wb') as f:
     #print >> f, rst2odt(rst)
 
+def make_logfile_html(logfile):
+    tables = extract_loggraph_tables(logfile)
+    rst = []
+
+    for table in tables:
+      for graph_name, html in table_to_google_charts(table).iteritems():
+        rst.append('.. _%s:\n' %graph_name)
+        rst.append('.. raw:: html')
+        rst.append('\n    '.join(html.split('\n')))
+
+    rst = '\n'.join(rst)
+
+    html_file = '%s.html' %(
+      os.path.splitext(os.path.basename(logfile))[0])
+    with open(html_file, 'wb') as f:
+      print >> f, rst2html(rst)
+    return html_file
+
+
 def rst2html(rst):
   from docutils.core import publish_string
   from docutils.writers.html4css1 import Writer,HTMLTranslator
@@ -53,10 +73,6 @@ def rst2html(rst):
   class xia2HTMLTranslator(HTMLTranslator):
     def __init__(self, document):
       HTMLTranslator.__init__(self, document)
-      #self.head_prefix = ['','','','','']
-      #self.body_prefix = []
-      #self.body_suffix = []
-      #self.stylesheet = []
 
     def visit_table(self, node):
       self.context.append(self.compact_p)
@@ -64,6 +80,10 @@ def rst2html(rst):
       classes = ' '.join(['docutils', self.settings.table_style]).strip()
       self.body.append(
         self.starttag(node, 'table', CLASS=classes, border="0"))
+
+    def write_colspecs(self):
+      self.colspecs = []
+
 
   args = {
     'stylesheet_path': os.path.join(xia2_root_dir, 'css', 'voidspace.css')
@@ -154,6 +174,7 @@ def overview_section(xproject):
   table = [[c[i] for c in columns] for i in range(len(columns[0]))]
 
   cell = xcryst.get_cell()
+  table.append(['','',''])
   table.append([u'Unit cell dimensions: a (Å)', '%.3f' %cell[0], ''])
   table.append([u'b (Å)', '%.3f' %cell[1], ''])
   table.append([u'c (Å)', '%.3f' %cell[2], ''])
@@ -166,9 +187,11 @@ def overview_section(xproject):
   spacegroup = spacegroups[0]
   sg = sgtbx.space_group_type(str(spacegroup))
   spacegroup = sg.lookup_symbol()
+  table.append(['','',''])
   table.append(['Space group', spacegroup, ''])
 
   twinning_score = ''
+  table.append(['','',''])
   table.append(['Sfcheck twinning score', twinning_score, ''])
 
   headers = table.pop(0)
@@ -345,6 +368,22 @@ def output_files_section(xproject):
       'The log files are located in `<%s/LogFiles>`_ and are grouped by '
       'processing stage:' %os.path.abspath(os.path.curdir))
 
+    table = []
+    log_dir = os.path.join(os.path.abspath(os.path.curdir), 'LogFiles')
+    import glob
+    g = glob.glob(os.path.join(log_dir, '*.log'))
+    for logfile in g:
+      html_file = make_logfile_html(logfile)
+      table.append(
+        [os.path.basename(logfile),
+         '`original <%s>`__' %logfile,
+         '`html <%s>`__' %html_file
+         ])
+    lines.append('\n')
+    lines.append(tabulate(table, headers, tablefmt='rst'))
+    print tabulate(table, headers, tablefmt='rst')
+    lines.append('\n')
+
   return lines
 
 
@@ -482,6 +521,102 @@ def detailed_statistics_section(xproject):
 
   return lines
 
+
+def extract_loggraph_tables(logfile):
+  from iotbx import data_plots
+  return data_plots.import_ccp4i_logfile(file_name=logfile)
+
+
+def table_to_google_charts(table, ):
+  html_graphs = {}
+  draw_chart_template = """
+
+  function drawChart_%(name)s() {
+
+    var data_%(name)s = new google.visualization.DataTable();
+    %(columns)s
+
+    %(rows)s
+
+    var options = {
+      width: 500,
+      height: 250,
+      hAxis: {
+        title: '%(xtitle)s'
+      },
+      vAxis: {
+        title: '%(ytitle)s'
+      },
+      title: '%(title)s'
+    };
+
+    var chart_%(name)s = new google.visualization.LineChart(
+      document.getElementById('%(id)s'));
+
+    chart_%(name)s.draw(data_%(name)s, options);
+
+  }
+
+"""
+
+  import re
+  #title = re.sub("[^a-zA-Z]","", table.title)
+
+  divs = []
+
+  for i_graph, graph_name in enumerate(table.graph_names):
+
+    script = [
+      "<!--Load the AJAX API-->",
+      '<script type="text/javascript" src="https://www.google.com/jsapi"></script>',
+      '<script type="text/javascript">',
+      "google.load('visualization', '1', {packages: ['corechart']});",
+    ]
+
+    name = re.sub("[^a-zA-Z]","", graph_name)
+
+    script.append("google.setOnLoadCallback(drawChart_%s);" %name)
+
+    graph_columns = table.graph_columns[i_graph]
+
+    columns = []
+    for i_col in graph_columns:
+      columns.append(
+        "data_%s.addColumn('number', '%s');" %(name, table.column_labels[i_col]))
+
+    add_rows = []
+    add_rows.append('data_%s.addRows([' %name)
+    data = [table.data[i_col] for i_col in graph_columns]
+    n_rows = len(data[0])
+    for j in xrange(n_rows) :
+      row = [ col[j] for col in data ]
+      add_rows.append('%s,' %row)
+    add_rows.append(']);')
+
+    script.append(draw_chart_template %({
+      'name': name,
+      'id': name,
+      'columns': '\n    '.join(columns),
+      'rows': '\n    '.join(add_rows),
+      'xtitle': table.column_labels[graph_columns[0]],
+      'ytitle': '',
+      'title': graph_name,
+     }))
+
+    divs.append('<div class="graph" id="%s"></div>' %name)
+
+    script.append('</script>')
+
+    html_graphs[graph_name] = """
+%(script)s
+
+<!--Div that will hold the chart-->
+%(div)s
+
+  """ %({'script': '\n'.join(script),
+         'div': '\n'.join(divs)})
+
+  return html_graphs
 
 if __name__ == '__main__':
   run()
