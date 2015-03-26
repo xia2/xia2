@@ -54,7 +54,7 @@ def make_logfile_html(logfile):
     for table in tables:
       #for graph_name, html in table_to_google_charts(table).iteritems():
       for graph_name, html in table_to_c3js_charts(table).iteritems():
-        rst.append('.. _%s:\n' %graph_name)
+        #rst.append('.. __%s:\n' %graph_name)
         rst.append('.. raw:: html')
         rst.append('\n    '.join(html.split('\n')))
 
@@ -678,20 +678,35 @@ var chart_%(name)s = c3.generate({
 
     import json
 
-    axis_dict = {
-      'x': {
-        'label': {
-          'text': table.column_labels[graph_columns[0]],
-          'position': 'outer-center'
+    xlabel = table.column_labels[graph_columns[0]]
+    if xlabel in ('1/d^2', '1/resol^2'):
+      xlabel = u'Resolution (Å)'
+      tick = """\
+tick: {
+          format: function (x) { return (1/Math.sqrt(x)).toFixed(2); }
         }
+"""
+    else:
+      tick = ''
+
+    axis = """
+    {
+      x: {
+        label: {
+          text: '%(text)s',
+          position: 'outer-center'
+        },
+        %(tick)s
       }
     }
+""" %{'text': xlabel,
+      'tick': tick}
 
     script.append(draw_chart_template %({
       'name': name,
       'id': name,
       'data': json.dumps(data_dict, indent=2),
-      'axis': json.dumps(axis_dict, indent=2),
+      'axis': axis,
      }))
 
     divs = []
@@ -712,7 +727,6 @@ var chart_%(name)s = c3.generate({
   """ %({'script': '\n'.join(script),
          'div': '\n'.join(divs)})
 
-    #break
   return html_graphs
 
 
