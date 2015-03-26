@@ -278,7 +278,7 @@ def XDSCorrect(DriverType = None, params=None):
       # postrefine everything to give better values to the
       # next INTEGRATE run
       xds_inp.write(
-          'REFINE(CORRECT)=%s\n' %self._params.refine)
+          'REFINE(CORRECT)=%s\n' %' '.join(self._params.refine))
 
       if self._polarization > 0.0:
         xds_inp.write('FRACTION_OF_POLARIZATION=%.2f\n' % \
