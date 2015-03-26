@@ -52,7 +52,8 @@ def make_logfile_html(logfile):
     rst = []
 
     for table in tables:
-      for graph_name, html in table_to_google_charts(table).iteritems():
+      #for graph_name, html in table_to_google_charts(table).iteritems():
+      for graph_name, html in table_to_c3js_charts(table).iteritems():
         rst.append('.. _%s:\n' %graph_name)
         rst.append('.. raw:: html')
         rst.append('\n    '.join(html.split('\n')))
@@ -617,6 +618,103 @@ def table_to_google_charts(table, ):
          'div': '\n'.join(divs)})
 
   return html_graphs
+
+
+def table_to_c3js_charts(table, ):
+  html_graphs = {}
+  draw_chart_template = """
+var chart_%(name)s = c3.generate({
+    bindto: '#chart_%(name)s',
+    data: %(data)s,
+    axis: %(axis)s,
+    legend: {
+      position: 'right'
+    },
+});
+"""
+
+  import re
+
+  divs = []
+
+  ## local files in xia2 distro
+  #c3css = os.path.join(xia2_root_dir, 'c3', 'c3.css')
+  #c3js = os.path.join(xia2_root_dir, 'c3', 'c3.min.js')
+  #d3js = os.path.join(xia2_root_dir, 'd3', 'd3.min.js')
+
+  # webhosted files
+  c3css = 'https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.10/c3.css'
+  c3js = 'https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.10/c3.min.js'
+  d3js = 'https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js'
+
+  for i_graph, graph_name in enumerate(table.graph_names):
+    print graph_name
+
+    script = [
+      '<!-- Load c3.css -->',
+      '<link href="%s" rel="stylesheet" type="text/css">' %c3css,
+      '<!-- Load d3.js and c3.js -->',
+      '<script src="%s" charset="utf-8"></script>' %d3js,
+      '<script src="%s"></script>' %c3js,
+      '<script type="text/javascript">',
+    ]
+
+    name = re.sub("[^a-zA-Z]","", graph_name)
+
+    row_dicts = []
+    graph_columns = table.graph_columns[i_graph]
+    for row in zip(*[table.data[i_col] for i_col in graph_columns]):
+      row_dict = {'name': ''}
+      for i_col, c in enumerate(row):
+        row_dict[table.column_labels[graph_columns[i_col]]] = c
+      row_dicts.append(row_dict)
+
+    data_dict = {'json': row_dicts,
+                 'keys': {
+                   'x': table.column_labels[graph_columns[0]],
+                   'value': [table.column_labels[i_col]
+                             for i_col in graph_columns[1:]]}
+                 }
+
+    import json
+
+    axis_dict = {
+      'x': {
+        'label': {
+          'text': table.column_labels[graph_columns[0]],
+          'position': 'outer-center'
+        }
+      }
+    }
+
+    script.append(draw_chart_template %({
+      'name': name,
+      'id': name,
+      'data': json.dumps(data_dict, indent=2),
+      'axis': json.dumps(axis_dict, indent=2),
+     }))
+
+    divs = []
+    divs.append('''\
+<div>
+  <p>%s</p>
+  <div class="graph" id="chart_%s"></div
+</div>''' %(graph_name, name))
+
+    script.append('</script>')
+
+    html_graphs[graph_name] = """
+<!--Div that will hold the chart-->
+%(div)s
+
+%(script)s
+
+  """ %({'script': '\n'.join(script),
+         'div': '\n'.join(divs)})
+
+    #break
+  return html_graphs
+
 
 if __name__ == '__main__':
   run()
