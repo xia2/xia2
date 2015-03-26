@@ -140,6 +140,7 @@ class XDSRefiner(Refiner):
 
         idxr_old = idxr
 
+        from Modules.Indexer.XDSIndexer import XDSIndexer
         idxr = XDSIndexer()
         idxr.set_indexer_sweep(idxr_old.get_indexer_sweep())
         self._refinr_indexers[epoch] = idxr
