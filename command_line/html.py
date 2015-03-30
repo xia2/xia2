@@ -382,7 +382,6 @@ def output_files_section(xproject):
          ])
     lines.append('\n')
     lines.append(tabulate(table, headers, tablefmt='rst'))
-    print tabulate(table, headers, tablefmt='rst')
     lines.append('\n')
 
   return lines
@@ -648,7 +647,7 @@ var chart_%(name)s = c3.generate({
   d3js = 'https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js'
 
   for i_graph, graph_name in enumerate(table.graph_names):
-    print graph_name
+    #print graph_name
 
     script = [
       '<!-- Load c3.css -->',
