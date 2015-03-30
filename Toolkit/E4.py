@@ -26,8 +26,13 @@ def E4_mtz(hklin, native = True):
 
 
 def E4(ma):
+  import sys
+  import cStringIO
+  cache_stdout = sys.stdout
+  sys.stdout = cStringIO.StringIO()
   from mmtbx.scaling.twin_analyses import twin_analyses
   analysis = twin_analyses(ma)
+  sys.stdout = cache_stdout
   return analysis.wilson_moments.acentric_i_ratio
 
   #f = ma.as_intensity_array()
