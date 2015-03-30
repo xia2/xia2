@@ -217,6 +217,27 @@ class _ha_info(object):
   def get_number_total(self):
     return self._number_total
 
+  def to_dict(self):
+    obj = {}
+    obj['__id__'] = 'ha_info'
+    import inspect
+    attributes = inspect.getmembers(self, lambda m:not(inspect.isroutine(m)))
+    for a in attributes:
+      if a[0].startswith('__'):
+        continue
+      else:
+        obj[a[0]] = a[1]
+    return obj
+
+  @classmethod
+  def from_dict(cls, obj):
+    assert obj['__id__'] == 'ha_info'
+    return_obj = cls(obj['_atom'])
+    for k, v in obj.iteritems():
+      setattr(return_obj, k, v)
+    return return_obj
+
+
 def _print_lattice(lattice):
   print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % lattice['cell']
   print 'Number: %s     Lattice: %s' % (lattice['number'],
@@ -352,6 +373,11 @@ class XCrystal(object):
         continue
       elif a[0] == '_aa_sequence' and a[1] is not None:
         obj[a[0]] = a[1].to_dict()
+      elif a[0] == '_ha_info' and a[1] is not None:
+        d = {}
+        for k, v in a[1].iteritems():
+          d[k] = v.to_dict()
+        obj[a[0]] = d
       elif a[0].startswith('__'):
         continue
       else:
@@ -380,6 +406,9 @@ class XCrystal(object):
         v = v_
       elif k == '_aa_sequence' and v is not None:
         v = _aa_sequence.from_dict(v)
+      elif k == '_ha_info' and v is not None:
+        for k_, v_ in v.iteritems():
+          v[k_] = _ha_info.from_dict(v_)
       setattr(return_obj, k, v)
     if return_obj._scaler is not None:
       for intgr in return_obj._get_integraters():

@@ -54,6 +54,7 @@ def exercise_serialization():
   proj.add_crystal(cryst)
   wav = XWavelength("WAVE1", cryst, wavelength=0.98)
   cryst.add_wavelength(wav)
+  cryst.set_ha_info({'atom': 'S'})
   directory, image = os.path.split(template %1)
   wav.add_sweep(name='SWEEP1', directory=directory, image=image)
 
