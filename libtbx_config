@@ -1,5 +1,5 @@
 {
   "modules_required_for_build": [],
-  "modules_required_for_use": ["cctbx", "iotbx", "dxtbx"],
+  "modules_required_for_use": ["cctbx", "iotbx", "dxtbx", "mmtbx"],
   "optional_modules": ["dials"]
 }
