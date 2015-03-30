@@ -265,19 +265,6 @@ class XDSIntegrater(Integrater):
     # if it is new... and also copy out all of the information for
     # the XDS indexer if not...
 
-    # set a low resolution limit (which isn't really used...)
-    # this should perhaps be done more intelligently from an
-    # analysis of the spot list or something...?
-
-    if not self.get_integrater_low_resolution():
-
-      dmax = self._intgr_refiner.get_indexer_low_resolution(
-        self.get_integrater_epoch())
-      self.set_integrater_low_resolution(dmax)
-
-      Debug.write('Low resolution set to: %s' % \
-                  self.get_integrater_low_resolution())
-
     # copy the data across
     self._xds_data_files = copy.deepcopy(
       self._intgr_refiner.get_refiner_payload(self.get_integrater_epoch()))
@@ -295,6 +282,19 @@ class XDSIntegrater(Integrater):
       p2.set_trusted_range(p1.get_trusted_range())
     self.set_beam_obj(experiment.beam)
     self.set_goniometer(experiment.goniometer)
+
+    # set a low resolution limit (which isn't really used...)
+    # this should perhaps be done more intelligently from an
+    # analysis of the spot list or something...?
+
+    if not self.get_integrater_low_resolution():
+
+      dmax = self._intgr_refiner.get_indexer_low_resolution(
+        self.get_integrater_epoch())
+      self.set_integrater_low_resolution(dmax)
+
+      Debug.write('Low resolution set to: %s' % \
+                  self.get_integrater_low_resolution())
 
     # delete things we should not know e.g. the postrefined cell from
     # CORRECT - c/f bug # 2695
