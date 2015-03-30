@@ -166,7 +166,8 @@ def Indexer(preselection = None):
       if preselection:
         raise RuntimeError, \
               'preselected indexer labelit not available'
-      pass
+      elif 'xds' in get_preferences().get('integrater'):
+        preselection = 'xds'
 
   if not indexer and (not preselection or preselection == 'mosflm'):
     try:
