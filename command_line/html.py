@@ -404,13 +404,23 @@ def integration_status_section(xproject):
   headers = ['Dataset', 'Sweep', 'Good', 'Ok', 'Bad rmsd', 'Overloaded',
              'Many bad', 'Weak', 'Abandoned', 'Total']
 
-  good = 'o'
-  ok = '%'
-  bad_rmsd = '!'
-  overloaded = 'O'
-  many_bad = '#'
-  weak = '.'
-  abandoned = '@'
+  status_to_symbol = dict(
+    good='o',
+    ok='%',
+    bad_rmsd='!',
+    overloaded='O',
+    many_bad='#',
+    weak='.',
+    abandoned='@'
+  )
+  symbol_to_status = dict(reversed(item) for item in status_to_symbol.items())
+
+  # FIXME we should copy these icons to the local directory
+  img_dir = os.path.join(xia2_root_dir, 'Modules', 'Xia2html', 'icons')
+  for s in status_to_symbol.keys():
+    status_lines.append('.. |%s| image:: %s/img_%s.png' %(s, img_dir, s))
+    #status_lines.append('   :align: center')
+    status_lines.append('\n')
 
   for cname, xcryst in xproject.get_crystals().iteritems():
     for wname in xcryst.get_wavelength_names():
@@ -423,15 +433,21 @@ def integration_status_section(xproject):
             '"o" => good')[0].strip()
         status = ''.join(status.split())
 
-        overall_table.append([
-          wname, xsweep.get_name(),
-          status.count(good), status.count(ok), status.count(bad_rmsd),
-          status.count(overloaded), status.count(many_bad), status.count(weak),
-          status.count(abandoned), len(status)])
+        overall_table.append(
+          [wname, xsweep.get_name()] +
+          [status.count(status_to_symbol[h.lower().replace(' ', '_')])
+           for h in headers[2:-1]] +
+          [len(status)])
 
-
-        import textwrap
-        status = '\n'.join('| %s' %s for s in textwrap.wrap(status, width=60))
+        status_table = []
+        row = []
+        for symbol in status:
+          if len(row) == 60:
+            status_table.append(row)
+            row = []
+          row.append('|%s|' %symbol_to_status[symbol])
+        if len(row):
+          status_table.append(row)
 
         status_lines.append('\n')
         status_lines.append('Dataset %s' %wname)
@@ -440,7 +456,9 @@ def integration_status_section(xproject):
         batches = xsweep.get_image_range()
         status_lines.append(
           '%s: batches %d to %d' %(xsweep.get_name(), batches[0], batches[1]))
-        status_lines.append('\n%s\n' %status)
+        status_lines.append('\n.. class:: status-table')
+        status_lines.append('\n')
+        status_lines.append('\n%s\n' %tabulate(status_table, tablefmt='grid'))
 
         #if '(60/record)' in stats:
           #status_lines.append('\n')
@@ -448,7 +466,15 @@ def integration_status_section(xproject):
           #status_lines.append('\n')
 
   lines.append('\n')
-  lines.append(tabulate(overall_table, headers, tablefmt='rst'))
+  icons = []
+  for h in headers:
+    h = h.lower().replace(' ', '_')
+    if h in status_to_symbol:
+      icons.append('|%s|' %h)
+    else:
+      icons.append(' ')
+  overall_table.insert(0, icons)
+  lines.append(tabulate(overall_table, headers, tablefmt='grid'))
   lines.append('\n')
 
   lines.extend(status_lines)
