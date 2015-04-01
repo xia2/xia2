@@ -191,9 +191,13 @@ def overview_section(xproject):
   table.append(['','',''])
   table.append(['Space group', spacegroup, ''])
 
-  twinning_score = ''
-  table.append(['','',''])
-  table.append(['Sfcheck twinning score', twinning_score, ''])
+  twinning_score = xcryst._get_scaler()._scalr_twinning_score
+  twinning_conclusion = xcryst._get_scaler()._scalr_twinning_conclusion
+  if twinning_score is not None:
+    table.append(['','',''])
+    table.append(['Twinning score', '%.2f' %twinning_score, ''])
+    if twinning_conclusion is not None:
+      table.append(['', twinning_conclusion, ''])
 
   headers = table.pop(0)
 
@@ -274,18 +278,21 @@ def crystallographic_parameters_section(xproject):
     lines.append('.. note:: The spacegroup was determined using pointless (see log file)')
     lines.append('\n')
 
-    twinning_score = ''
-    lines.append('Twinning analysis')
-    lines.append('-' * len(lines[-1]))
-    lines.append('\n')
-    lines.append('Overall twinning score: %s' %twinning_score)
-    lines.append('Your data do not appear to be twinned')
-    lines.append('\n')
-    lines.append(
-      '.. note:: The twinning score is the value of <E4>/<I2> reported by')
-    lines.append(
-      '      sfcheck (see `documentation <http://www.ccp4.ac.uk/html/sfcheck.html#Twinning%20test>`_)')
-    lines.append('\n')
+    twinning_score = xcryst._get_scaler()._scalr_twinning_score
+    twinning_conclusion = xcryst._get_scaler()._scalr_twinning_conclusion
+
+    if twinning_score is not None and twinning_conclusion is not None:
+      lines.append('Twinning analysis')
+      lines.append('-' * len(lines[-1]))
+      lines.append('\n')
+      lines.append('Overall twinning score: %.2f' %twinning_score)
+      lines.append('%s' %twinning_conclusion)
+      lines.append('\n')
+      lines.append(
+        '.. note:: The twinning score is the value of <E4>/<I2> reported by')
+      lines.append(
+        '      sfcheck (see `documentation <http://www.ccp4.ac.uk/html/sfcheck.html#Twinning%20test>`_)')
+      lines.append('\n')
 
     lines.append('Asymmetric unit contents')
     lines.append('-' * len(lines[-1]))
