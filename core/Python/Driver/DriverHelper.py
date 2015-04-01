@@ -270,9 +270,36 @@ def error_abrt(record):
     if name == 'Darwin' and 'Abort trap' in record:
       raise RuntimeError, 'child aborted'
 
-def error_python_traceback(record):
-  if 'Traceback (most recent call last)' in record:
-    raise RuntimeError('Traceback detected')
+def error_python_traceback(records):
+  import string
+  buf_mode = False
+  traceback_mode = False
+  error_message_mode = False
+  buf = []
+  tracebacks = []
+  error_messages = []
+  for line in records:
+    if 'Traceback (most recent call last)' in line:
+      traceback_mode = True
+      #continue
+    if traceback_mode and not (line.startswith(tuple(string.whitespace)) or
+                               line.startswith('Traceback')):
+      traceback_mode = False
+      error_message_mode = True
+      tracebacks.append(''.join(buf))
+      buf = []
+    if error_message_mode and len(line) < 5:
+      error_message_mode = False
+      error_messages.append(''.join(buf))
+      buf = []
+    if traceback_mode or error_message_mode:
+      if len(line) > 400:
+        line = line[:400] + '...\n'
+      buf.append(line)
+
+  if len(error_messages):
+    from libtbx.utils import Sorry
+    raise Sorry(error_messages[0])
 
 def check_return_code(code):
   '''Check the return code for indications of errors.'''

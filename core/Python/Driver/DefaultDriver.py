@@ -329,7 +329,12 @@ class DefaultDriver(object):
       error_kill(record)
       error_abrt(record)
       error_fp(record)
-      error_python_traceback(record)
+
+    try:
+      error_python_traceback(records)
+    except Exception, e:
+      raise RuntimeError('%s terminated with an error: see %s for more details' %(
+        os.path.basename(self._executable), self.get_log_file()))
 
     return
 
