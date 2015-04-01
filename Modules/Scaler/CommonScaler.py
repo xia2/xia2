@@ -33,6 +33,8 @@ class CommonScaler(Scaler):
     super(CommonScaler, self).__init__()
 
     self._sweep_handler = None
+    self._scalr_twinning_score = None
+    self._scalr_twinning_conclusion = None
 
   def _sort_together_data_ccp4(self):
     '''Sort together in the right order (rebatching as we go) the sweeps
@@ -827,15 +829,17 @@ class CommonScaler(Scaler):
     from Toolkit.E4 import E4_mtz
 
     E4s = E4_mtz(hklout, native = True)
-    twinning_score = E4s.items()[0][1]
+    self._scalr_twinning_score = E4s.items()[0][1]
 
-    Chatter.write('Overall twinning score: %4.2f' % twinning_score)
-    if twinning_score > 1.9:
-      Chatter.write('Your data do not appear to be twinned')
-    elif twinning_score < 1.6:
-      Chatter.write('Your data appear to be twinned')
+    if self._scalr_twinning_score > 1.9:
+      self._scalr_twinning_conclusion = 'Your data do not appear to be twinned'
+    elif self._scalr_twinning_score < 1.6:
+      self._scalr_twinning_conclusion = 'Your data appear to be twinned'
     else:
-      Chatter.write('Ambiguous score (1.6 < score < 1.9)')
+      self._scalr_twinning_conclusion = 'Ambiguous score (1.6 < score < 1.9)'
+
+    Chatter.write('Overall twinning score: %4.2f' % self._scalr_twinning_score)
+    Chatter.write(self._scalr_twinning_conclusion)
 
     # next have a look for radiation damage... if more than one wavelength
 
