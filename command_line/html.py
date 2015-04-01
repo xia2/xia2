@@ -187,7 +187,8 @@ def overview_section(xproject):
   spacegroups = xcryst.get_likely_spacegroups()
   spacegroup = spacegroups[0]
   sg = sgtbx.space_group_type(str(spacegroup))
-  spacegroup = sg.lookup_symbol()
+  #spacegroup = sg.lookup_symbol()
+  spacegroup = space_group_symbol_rst(sg)
   table.append(['','',''])
   table.append(['Space group', spacegroup, ''])
 
@@ -260,7 +261,8 @@ def crystallographic_parameters_section(xproject):
     spacegroups = xcryst.get_likely_spacegroups()
     spacegroup = spacegroups[0]
     sg = sgtbx.space_group_type(str(spacegroup))
-    spacegroup = sg.lookup_symbol()
+    #spacegroup = sg.lookup_symbol()
+    spacegroup = space_group_symbol_rst(sg)
     table.append(['Space group', spacegroup, ''])
 
     lines.append('Space group')
@@ -273,7 +275,7 @@ def crystallographic_parameters_section(xproject):
     if len(spacegroups) > 1:
       for sg in spacegroups[1:]:
         sg = sgtbx.space_group_type(str(sg))
-        lines.append('* %s\n' %sg.lookup_symbol())
+        lines.append('* %s\n' %space_group_symbol_rst(sg))
     lines.append('\n')
     lines.append('.. note:: The spacegroup was determined using pointless (see log file)')
     lines.append('\n')
@@ -761,6 +763,15 @@ tick: {
 
   return html_graphs
 
+
+def space_group_symbol_rst(space_group):
+  symbol = space_group.lookup_symbol()
+  parts = symbol.split()
+  for i, part in enumerate(parts):
+    if part.isdigit() and len(part) > 1:
+      parts[i] = '%s\ :sub:`%s`' %(parts[i][0], parts[i][1])
+
+  return ' '.join(parts)
 
 if __name__ == '__main__':
   run()
