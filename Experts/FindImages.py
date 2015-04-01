@@ -80,7 +80,7 @@ def template_regex(filename):
     break
 
   if not template:
-    raise RuntimeError, 'template not recognised'
+    raise RuntimeError, 'template not recognised for %s' %filename
 
   return template, int(digits)
 

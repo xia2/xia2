@@ -126,6 +126,7 @@ def get_template(f):
   # in here, check the permissions on the file...
 
   template = None
+  directory = None
 
   if not os.access(f, os.R_OK):
     from Handlers.Streams import Debug
@@ -141,9 +142,9 @@ def get_template(f):
   except Exception, e:
     from Handlers.Streams import Debug
     Debug.write('Exception: %s (%s)' % (str(e), f))
-    traceback.print_exc(file = sys.stdout)
+    Debug.write(traceback.format_exc())
 
-  if not template:
+  if template is None or directory is None:
     raise RuntimeError, 'template not recognised for %s' % f
 
   return os.path.join(directory, template)
@@ -204,7 +205,12 @@ def visit(root, directory, files):
 
     full_path = os.path.join(directory, f)
     if is_image_name(full_path):
-      template = get_template(full_path)
+      try:
+        template = get_template(full_path)
+      except Exception, e:
+        from Handlers.Streams import Debug
+        Debug.write('Exception: %s' %str(e))
+        continue
       if template is not None:
         templates.add(template)
 
