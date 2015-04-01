@@ -49,6 +49,9 @@ def run():
 
 def make_logfile_html(logfile):
     tables = extract_loggraph_tables(logfile)
+    if not len(tables):
+      return
+
     rst = []
 
     for table in tables:
@@ -384,11 +387,18 @@ def output_files_section(xproject):
     g = glob.glob(os.path.join(log_dir, '*.log'))
     for logfile in g:
       html_file = make_logfile_html(logfile)
-      table.append(
-        [os.path.basename(logfile),
-         '`original <%s>`__' %logfile,
-         '`html <%s>`__' %html_file
-         ])
+      if html_file is not None:
+        table.append(
+          [os.path.basename(logfile),
+           '`original <%s>`__' %logfile,
+           '`html <%s>`__' %html_file
+           ])
+      else:
+        table.append(
+          [os.path.basename(logfile),
+           '`original <%s>`__' %logfile,
+           ' ',
+           ])
     lines.append('\n')
     lines.append(tabulate(table, headers, tablefmt='rst'))
     lines.append('\n')
