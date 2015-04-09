@@ -7,8 +7,8 @@ it would clearly be impossible to develop xia2. The author would therefore
 like to thank Andrew Leslie, Harry Powell, Phil Evans, Wolfgang Kabsch
 and Kay Diederichs for their assistance in using their programs and modi-
 fications they have made. In addition, more recent developments such as
-Labelit [5]_
-, Pointless [6]_ and CCTBX [7]_ have made the development of xia2 much
+Labelit [1]_
+, Pointless [2]_ and CCTBX [3]_ have made the development of xia2 much
 more straightforward and the end product more reliable. The author would
 therefore like to additionally thank Nick Sauter and Ralf Grosse-Kunstleve
 for their help.
@@ -23,6 +23,6 @@ itself is open source, distributed under a BSD licence, but relies on the
 user having correctly configured and licenced the necessary data analysis
 software, the details of which will be discussed shortly.
 
-.. [5] N.K. Sauter et al. J. Appl. Cryst. (2004) 37, 399-409
-.. [6] P. Evans, Acta Cryst. (2006) D62, 72-82
-.. [7] R.W. Grosse-Kunstleve et al. J. Appl. Cryst. (2002) 35, 126-136
+.. [1] N.K. Sauter et al. J. Appl. Cryst. (2004) 37, 399-409
+.. [2] P. Evans, Acta Cryst. (2006) D62, 72-82
+.. [3] R.W. Grosse-Kunstleve et al. J. Appl. Cryst. (2002) 35, 126-136
