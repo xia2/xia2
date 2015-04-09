@@ -6,13 +6,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-
+    
     <title>Using xia2 &mdash; xia2  documentation</title>
-
+    
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/xia2.css" type="text/css" />
-
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -27,42 +27,42 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="shortcut icon" href="_static/dials_icon.png"/>
     <link rel="top" title="xia2  documentation" href="index.html" />
-    <link rel="next" title="Installing xia2" href="installation.html" />
+    <link rel="next" title="Installation" href="installation.html" />
     <link rel="prev" title="Quick start guide" href="quick_start.html" />
-
-
+   
+  
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
 
   </head>
-  <body role="document">
+  <body>
 <!--   <div class="logoheader container"> -->
 <!--   <a href="index.html"> -->
 <!--   <img class="logoheader" alt="DIALS" src="_static/dials_header.png" /> -->
 <!--   </a> -->
 <!--   </div> -->
+  
 
-
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="installation.html" title="Installing xia2"
+          <a href="installation.html" title="Installation"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="quick_start.html" title="Quick start guide"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">xia2  documentation</a> &raquo;</li>
+        <li><a href="index.html">xia2  documentation</a> &raquo;</li> 
       </ul>
-    </div>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body" role="main">
-
+          <div class="body">
+            
   <div class="section" id="using-xia2">
 <h1>Using xia2<a class="headerlink" href="#using-xia2" title="Permalink to this headline">¶</a></h1>
 <p>As mentioned in the <a class="reference internal" href="quick_start.html"><em>quick start guide</em></a>, to get started simply run:</p>
@@ -71,6 +71,10 @@
 </div>
 <p>or:</p>
 <div class="highlight-python"><div class="highlight"><pre>xia2 -3d /here/are/my/images
+</pre></div>
+</div>
+<p>or:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">xia2</span> <span class="o">-</span><span class="n">dials</span> <span class="o">/</span><span class="n">here</span><span class="o">/</span><span class="n">are</span><span class="o">/</span><span class="n">my</span><span class="o">/</span><span class="n">images</span>
 </pre></div>
 </div>
 <p>The program is used from the command-line; there is no GUI. The four
@@ -107,7 +111,7 @@ most important command-line options are as follows:</p>
 </div></blockquote>
 <p>These specify in the broadest possible terms to the program the manner
 in which you would like the processing performed. The program will then
-read all of the image headers found in <code class="samp docutils literal"><span class="pre">/here/are/my/data</span></code> to organise the
+read all of the image headers found in <tt class="samp docutils literal"><span class="pre">/here/are/my/data</span></tt> to organise the
 data, first into sweeps, then into wavelengths, before assigning all of these
 wavelengths to a crystal.</p>
 <p>The data from the experiment is understood as follows. The SWEEP,
@@ -149,12 +153,12 @@ program rerun, which will be covered in more detail later in the manual.</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
 <p class="logo">
   <a href="index.html">
     <img class="logo" src="_static/xia2-new-logo.gif" alt="Logo"/>
-
+    
   </a>
 </p>
 
@@ -167,14 +171,16 @@ program rerun, which will be covered in more detail later in the manual.</p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="quick_start.html">Getting started</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">Using xia2</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installation.html">Installing xia2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="introductory_example.html">Introductory example</a></li>
-<li class="toctree-l1"><a class="reference internal" href="program_output.html">Program Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="insulin_tutorial.html">Insulin tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="program_output.html">Program output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="comments.html">Comments</a></li>
 <li class="toctree-l1"><a class="reference internal" href="background.html">History</a></li>
 <li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
-<li class="toctree-l1"><a class="reference internal" href="release_notes.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="release_notes.html">Release notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
 </ul>
 
 
@@ -187,15 +193,15 @@ program rerun, which will be covered in more detail later in the manual.</p>
   <a href="http://dials.diamond.ac.uk/"><img class="logofooter" alt="DIALS" src="_static/dials_logo_fx_transparent_bg.png" /></a>
   <a href="http://www.ccp4.ac.uk/"><img class="logofooter" alt="CCP4" src="_static/CCP4-logo-plain.png" /></a>
   </div>
-
+  
     <div class="footer">
       &copy;2015, Diamond Light Source.
-
+      
     </div>
 
+    
 
-
-
+    
 
   </body>
 </html>

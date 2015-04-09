@@ -6,13 +6,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-
+    
     <title>Parameters &mdash; xia2  documentation</title>
-
+    
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/xia2.css" type="text/css" />
-
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -28,21 +28,21 @@
     <link rel="shortcut icon" href="_static/dials_icon.png"/>
     <link rel="top" title="xia2  documentation" href="index.html" />
     <link rel="next" title="Comments" href="comments.html" />
-    <link rel="prev" title="Program Output" href="program_output.html" />
-
-
+    <link rel="prev" title="Program output" href="program_output.html" />
+   
+  
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
 
   </head>
-  <body role="document">
+  <body>
 <!--   <div class="logoheader container"> -->
 <!--   <a href="index.html"> -->
 <!--   <img class="logoheader" alt="DIALS" src="_static/dials_header.png" /> -->
 <!--   </a> -->
 <!--   </div> -->
+  
 
-
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -52,17 +52,17 @@
           <a href="comments.html" title="Comments"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="program_output.html" title="Program Output"
+          <a href="program_output.html" title="Program output"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">xia2  documentation</a> &raquo;</li>
+        <li><a href="index.html">xia2  documentation</a> &raquo;</li> 
       </ul>
-    </div>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body" role="main">
-
+          <div class="body">
+            
   <div class="section" id="parameters">
 <h1>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="commonly-used-program-options">
@@ -120,7 +120,7 @@ are:</p>
 <li>Unmerged <img class="math" src="_images/math/4fbc706dce6cce3b3d41ae617c0e89105c37d543.png" alt="\frac{I}{\sigma_I} &gt; 1"/></li>
 </ul>
 </div></blockquote>
-<p>However you can override these with <code class="samp docutils literal"><span class="pre">-misigma</span></code>, <code class="samp docutils literal"><span class="pre">-isigma</span></code></p>
+<p>However you can override these with <tt class="samp docutils literal"><span class="pre">-misigma</span></tt>, <tt class="samp docutils literal"><span class="pre">-isigma</span></tt></p>
 </div>
 <div class="section" id="phil-parameters">
 <h2>Phil parameters<a class="headerlink" href="#phil-parameters" title="Permalink to this headline">¶</a></h2>
@@ -129,11 +129,11 @@ are:</p>
 <p>We are currently moving towards moving <a class="reference external" href="http://cctbx.sourceforge.net/libtbx_phil.html">PHIL (Python-based Hierarchial Interchange Language)</a>
 for specifying xia2 program parameters,
 which will in the long run help the documentation, but in the mean time you may see some
-warnings as certain parameters are changed from <code class="samp docutils literal"><span class="pre">-param</span></code> style parameters to
-<code class="samp docutils literal"><span class="pre">param=</span></code> style PHIL parameters. If you see, e.g.:</p>
+warnings as certain parameters are changed from <tt class="samp docutils literal"><span class="pre">-param</span></tt> style parameters to
+<tt class="samp docutils literal"><span class="pre">param=</span></tt> style PHIL parameters. If you see, e.g.:</p>
 <blockquote>
-<div><p><code class="samp docutils literal"><span class="pre">Warning:</span> <span class="pre">-spacegroup</span> <span class="pre">option</span> <span class="pre">deprecated:</span> <span class="pre">please</span> <span class="pre">use</span> <span class="pre">space_group='P422'</span> <span class="pre">instead</span></code></p>
-<p><code class="samp docutils literal"><span class="pre">Warning:</span> <span class="pre">-resolution</span> <span class="pre">option</span> <span class="pre">deprecated:</span> <span class="pre">please</span> <span class="pre">use</span> <span class="pre">d_min=1.5</span> <span class="pre">instead</span></code></p>
+<div><p><tt class="samp docutils literal"><span class="pre">Warning:</span> <span class="pre">-spacegroup</span> <span class="pre">option</span> <span class="pre">deprecated:</span> <span class="pre">please</span> <span class="pre">use</span> <span class="pre">space_group='P422'</span> <span class="pre">instead</span></tt></p>
+<p><tt class="samp docutils literal"><span class="pre">Warning:</span> <span class="pre">-resolution</span> <span class="pre">option</span> <span class="pre">deprecated:</span> <span class="pre">please</span> <span class="pre">use</span> <span class="pre">d_min=1.5</span> <span class="pre">instead</span></tt></p>
 </div></blockquote>
 <p class="last">don&#8217;t panic - this is to be expected - but you may want to change the way you run xia2
 or your scripts. More of a warning for beamline / automation people! The outcome of this
@@ -205,7 +205,7 @@ dials {
   }
   integrate {
     phil_file = None
-    profile_fitting = True
+    intensity_algorithm = sum3d sum2d *fitrs mosflm
     background_outlier_algorithm = *null nsigma truncated normal
     use_threading = False
     include_partials = True
@@ -234,6 +234,7 @@ xia2.settings {
   optimize_scaling = False
   beam_centre = None
   trust_beam_centre = False
+  wavelength_tolerance = 0.0002
   read_all_image_headers = True
   detector_distance = None
   show_template = False
@@ -268,12 +269,12 @@ xia2.settings {
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
 <p class="logo">
   <a href="index.html">
     <img class="logo" src="_static/xia2-new-logo.gif" alt="Logo"/>
-
+    
   </a>
 </p>
 
@@ -286,14 +287,16 @@ xia2.settings {
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="quick_start.html">Getting started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="using_xia2.html">Using xia2</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installation.html">Installing xia2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="introductory_example.html">Introductory example</a></li>
-<li class="toctree-l1"><a class="reference internal" href="program_output.html">Program Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="insulin_tutorial.html">Insulin tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="program_output.html">Program output</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">Parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="comments.html">Comments</a></li>
 <li class="toctree-l1"><a class="reference internal" href="background.html">History</a></li>
 <li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
-<li class="toctree-l1"><a class="reference internal" href="release_notes.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="release_notes.html">Release notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
 </ul>
 
 
@@ -306,15 +309,15 @@ xia2.settings {
   <a href="http://dials.diamond.ac.uk/"><img class="logofooter" alt="DIALS" src="_static/dials_logo_fx_transparent_bg.png" /></a>
   <a href="http://www.ccp4.ac.uk/"><img class="logofooter" alt="CCP4" src="_static/CCP4-logo-plain.png" /></a>
   </div>
-
+  
     <div class="footer">
       &copy;2015, Diamond Light Source.
-
+      
     </div>
 
+    
 
-
-
+    
 
   </body>
 </html>

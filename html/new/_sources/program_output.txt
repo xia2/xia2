@@ -1,5 +1,5 @@
 ++++++++++++++
-Program Output
+Program output
 ++++++++++++++
 
 As the program runs the key results are written to the screen and recorded

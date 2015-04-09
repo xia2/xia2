@@ -6,13 +6,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-
-    <title>Release Notes &mdash; xia2  documentation</title>
-
+    
+    <title>Release notes &mdash; xia2  documentation</title>
+    
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/xia2.css" type="text/css" />
-
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -27,40 +27,44 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="shortcut icon" href="_static/dials_icon.png"/>
     <link rel="top" title="xia2  documentation" href="index.html" />
+    <link rel="next" title="xia2 license" href="license.html" />
     <link rel="prev" title="Acknowledgements" href="acknowledgements.html" />
-
-
+   
+  
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
 
   </head>
-  <body role="document">
+  <body>
 <!--   <div class="logoheader container"> -->
 <!--   <a href="index.html"> -->
 <!--   <img class="logoheader" alt="DIALS" src="_static/dials_header.png" /> -->
 <!--   </a> -->
 <!--   </div> -->
+  
 
-
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="license.html" title="xia2 license"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
           <a href="acknowledgements.html" title="Acknowledgements"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">xia2  documentation</a> &raquo;</li>
+        <li><a href="index.html">xia2  documentation</a> &raquo;</li> 
       </ul>
-    </div>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body" role="main">
-
+          <div class="body">
+            
   <div class="section" id="release-notes">
-<h1>Release Notes<a class="headerlink" href="#release-notes" title="Permalink to this headline">¶</a></h1>
+<h1>Release notes<a class="headerlink" href="#release-notes" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="changes-since-0-3-8-0">
 <h2>Changes since 0.3.8.0<a class="headerlink" href="#changes-since-0-3-8-0" title="Permalink to this headline">¶</a></h2>
 <blockquote>
@@ -173,7 +177,7 @@ indexing can give large variations in unit cell constants (e.g. low
 resolution virus data)</li>
 <li>Properly set the resolution in CAD copying free R flags.</li>
 <li>Allow access to profile grid size through the Phil interface:
-<code class="samp docutils literal"><span class="pre">xds.parameter.profile_grid_size=13,13</span></code></li>
+<tt class="samp docutils literal"><span class="pre">xds.parameter.profile_grid_size=13,13</span></tt></li>
 <li>Implement TRUSTED_REGION through Phil as suggested by Luca Jovine</li>
 <li>Updates to process simulated data from SIM_MX</li>
 <li>More measures of anomalous signal in output.</li>
@@ -625,7 +629,7 @@ reversephi to the xinfo file or -reversephi to the command line.</li>
 <blockquote>
 <div><ul class="simple">
 <li>Now handles complex image names with e.g. + in them correctly.</li>
-<li>New option for processing <code class="samp docutils literal"><span class="pre">-3dii</span></code> added - this will run
+<li>New option for processing <tt class="samp docutils literal"><span class="pre">-3dii</span></tt> added - this will run
 the 3D pipeline (XDS, XSCALE) using all images for spot picking and
 autoindexing - useful for properly tricky cases.</li>
 <li>Now correctly propogate the profile information to Mosflm when not
@@ -811,12 +815,12 @@ This is likely to have interesting side-effects.</li>
 <li>If time of data collection not recorded in header <em>but</em>
 the time stamp for the images are correct (e.g. you have not moved
 them since collection) then the command line flag
-<code class="samp docutils literal"><span class="pre">-trust_timestamps</span></code> can be used, which will use the
+<tt class="samp docutils literal"><span class="pre">-trust_timestamps</span></tt> can be used, which will use the
 time stamps on the image files to analyse things like radiation
 damage.</li>
 <li>If you are running this on a cluster, have added an option
 to migrate the diffraction data to a local disk (e.g. /tmp.)
-To do this add <code class="samp docutils literal"><span class="pre">-migrate_data</span></code> to the command line -
+To do this add <tt class="samp docutils literal"><span class="pre">-migrate_data</span></tt> to the command line -
 the data will be removed from the local disk once the processing
 is finished.</li>
 <li>Copy all final reflection files to a DataFiles directory.</li>
@@ -954,12 +958,12 @@ it getting mangled.</td></tr>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
 <p class="logo">
   <a href="index.html">
     <img class="logo" src="_static/xia2-new-logo.gif" alt="Logo"/>
-
+    
   </a>
 </p>
 
@@ -972,14 +976,16 @@ it getting mangled.</td></tr>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="quick_start.html">Getting started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="using_xia2.html">Using xia2</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installation.html">Installing xia2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="introductory_example.html">Introductory example</a></li>
-<li class="toctree-l1"><a class="reference internal" href="program_output.html">Program Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="insulin_tutorial.html">Insulin tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="program_output.html">Program output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="comments.html">Comments</a></li>
 <li class="toctree-l1"><a class="reference internal" href="background.html">History</a></li>
 <li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Release Notes</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Release notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
 </ul>
 
 
@@ -992,15 +998,15 @@ it getting mangled.</td></tr>
   <a href="http://dials.diamond.ac.uk/"><img class="logofooter" alt="DIALS" src="_static/dials_logo_fx_transparent_bg.png" /></a>
   <a href="http://www.ccp4.ac.uk/"><img class="logofooter" alt="CCP4" src="_static/CCP4-logo-plain.png" /></a>
   </div>
-
+  
     <div class="footer">
       &copy;2015, Diamond Light Source.
-
+      
     </div>
 
+    
 
-
-
+    
 
   </body>
 </html>

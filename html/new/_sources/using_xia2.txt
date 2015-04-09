@@ -10,6 +10,10 @@ or::
 
   xia2 -3d /here/are/my/images
 
+or::
+
+  xia2 -dials /here/are/my/images
+
 The program is used from the command-line; there is no GUI. The four
 most important command-line options are as follows:
 
