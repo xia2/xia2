@@ -3,17 +3,20 @@
 
 .. toctree::
    :hidden:
+   :maxdepth: 1
 
    Getting started <quick_start>
    using_xia2
    installation
    introductory_example
+   insulin_tutorial
    program_output
    parameters
    comments
    History <background>
    acknowledgements
    release_notes
+   License <license>
 
 .. include:: introduction.rst
 

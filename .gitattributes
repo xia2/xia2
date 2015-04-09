@@ -216,8 +216,10 @@ doc/sphinx/figures/thermolysin_blend_tree.png -text svneol=unset#unset
 doc/sphinx/figures/xia2html.png -text svneol=unset#unset
 doc/sphinx/index.rst -text
 doc/sphinx/installation.rst -text
+doc/sphinx/insulin_tutorial.rst -text
 doc/sphinx/introduction.rst -text
 doc/sphinx/introductory_example.rst -text
+doc/sphinx/license.rst -text
 doc/sphinx/parameters.rst -text
 doc/sphinx/program_output.rst -text
 doc/sphinx/quick_start.rst -text
