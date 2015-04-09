@@ -152,6 +152,9 @@ class DialsIndexer(Indexer):
     sigma_strong = PhilIndex.params.dials.spotfinder.sigma_strong
     if sigma_strong:
       spotfinder.set_sigma_strong(sigma_strong)
+    filter_ice_rings = PhilIndex.params.dials.spotfinder.filter_ice_rings
+    if filter_ice_rings:
+      spotfinder.set_filter_ice_rings(filter_ice_rings)
     spotfinder.run()
 
 

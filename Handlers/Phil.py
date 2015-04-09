@@ -83,6 +83,8 @@ dials {
       .type = path
     sigma_strong = None
       .type = float
+    filter_ice_rings = False
+      .type = bool
   }
   fix_geometry = False
     .type = bool
