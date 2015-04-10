@@ -40,23 +40,7 @@ from Handlers.Streams import Debug
 # global flags
 from Handlers.Flags import Flags
 
-from libtbx import phil
 import libtbx
-
-master_params = phil.parse("""
-merge_n_images = 2
-  .type = int(value_min=1)
-  .help = "Number of input images to average into a single output image"
-data_range = None
-  .type = ints(size=2, value_min=0)
-moving_average = False
-  .type = bool
-  .help = "If true, then perform a moving average over the sweep, i.e. given"
-          "images 1, 2, 3, 4, 5, 6, ..., with averaging over three images,"
-          "the output frames would cover 1-3, 2-4, 3-5, 4-6, etc."
-          "Otherwise, a straight summation is performed:"
-          " 1-3, 4-6, 7-9, etc."
-""")
 
 def Merge2cbf(DriverType=None, params=None):
 
@@ -73,7 +57,8 @@ def Merge2cbf(DriverType=None, params=None):
       # phil parameters
 
       if not params:
-        params = master_params.extract()
+        from Handlers.Phil import master_phil
+        params = master_params.extract().xds.merge2cbf
       self._params = params
 
       # now set myself up...

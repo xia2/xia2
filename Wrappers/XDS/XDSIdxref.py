@@ -51,17 +51,6 @@ from Handlers.Flags import Flags
 from Experts.SymmetryExpert import lattice_to_spacegroup_number
 from Experts.LatticeExpert import s2l
 
-from libtbx.phil import parse
-
-master_params = parse("""
-refine = *ORIENTATION *CELL *BEAM *DISTANCE *AXIS *POSITION
-  .type = choice(multi = True)
-  .help = 'what to refine in autoindexing'
-debug = *OFF ON
-  .type = choice(multi = False)
-  .help = 'output enganced debugging for indexing'
-""")
-
 def XDSIdxref(DriverType=None, params=None):
 
   DriverInstance = DriverFactory.Driver(DriverType)
@@ -76,7 +65,8 @@ def XDSIdxref(DriverType=None, params=None):
       # phil parameters
 
       if not params:
-        params = master_params.extract()
+        from Handlers.Phil import master_phil
+        params = master_params.extract().xds.index
       self._params = params
 
       # now set myself up...

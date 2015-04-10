@@ -45,33 +45,10 @@ from XDSIntegrateHelpers import _parse_integrate_lp, \
 from Handlers.Flags import Flags
 from Handlers.Streams import Chatter, Debug
 
-from libtbx.phil import parse
-
 # For details on reflecting_range, it's E.S.D., and beam divergence etc.
 # see:
 #
 # http://xds.mpimf-heidelberg.mpg.de/html_doc/xds_parameters.html
-
-master_params = parse("""
-refine = *ORIENTATION *CELL *BEAM *DISTANCE AXIS *POSITION
-  .type = choice(multi = True)
-  .help = 'what to refine in first pass of integration'
-refine_final = *ORIENTATION *CELL BEAM DISTANCE AXIS POSITION
-  .type = choice(multi = True)
-  .help = 'what to refine in final pass of integration'
-fix_scale = False
-  .type = bool
-delphi = 0
-  .type = float
-reflecting_range = 0
-  .type = float
-reflecting_range_esd = 0
-  .type = float
-beam_divergence = 0
-  .type = float
-beam_divergence_esd = 0
-  .type = float
-""")
 
 def XDSIntegrate(DriverType=None, params=None):
 
@@ -87,7 +64,8 @@ def XDSIntegrate(DriverType=None, params=None):
       # phil parameters
 
       if not params:
-        params = master_params.extract()
+        from Handlers.Phil import master_phil
+        params = master_params.extract().xds.integrate
       self._params = params
 
       # now set myself up...

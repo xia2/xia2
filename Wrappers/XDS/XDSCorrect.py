@@ -48,14 +48,6 @@ from Experts.ResolutionExperts import xds_integrate_hkl_to_list, \
 from Handlers.Flags import Flags
 from Handlers.Streams import Debug
 
-from libtbx.phil import parse
-
-master_params = parse("""
-refine = *DISTANCE *BEAM *AXIS *ORIENTATION *CELL *POSITION
-  .type = choice(multi = True)
-  .help = 'what to refine in the CORRECT step'
-""")
-
 def XDSCorrect(DriverType = None, params=None):
 
   DriverInstance = DriverFactory.Driver(DriverType)
@@ -70,7 +62,8 @@ def XDSCorrect(DriverType = None, params=None):
       # phil parameters
 
       if not params:
-        params = master_params.extract()
+        from Handlers.Phil import master_phil
+        params = master_params.extract().xds.correct
       self._params = params
 
       # now set myself up...

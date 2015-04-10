@@ -35,12 +35,6 @@ from Schema.Interfaces.FrameProcessor import FrameProcessor
 from XDS import imageset_to_xds, xds_check_version_supported, _running_xds_version
 from Handlers.Streams import Debug
 
-from libtbx.phil import parse
-master_params = parse("""
-fix_scale = False
-  .type = bool
-""")
-
 def XDSInit(DriverType = None, params = None):
 
   DriverInstance = DriverFactory.Driver(DriverType)
@@ -55,7 +49,8 @@ def XDSInit(DriverType = None, params = None):
       # phil parameters
 
       if not params:
-        params = master_params.extract()
+        from Handlers.Phil import master_phil
+        params = master_params.extract().xds.init
       self._params = params
 
       # now set myself up...

@@ -38,12 +38,6 @@ from Handlers.Streams import Debug
 # global flags
 from Handlers.Flags import Flags
 
-from libtbx.phil import parse
-
-master_params = parse("""
-minimum_pixels_per_spot = 1
-  .type = int
-""")
 
 def XDSColspot(DriverType=None, params=None):
 
@@ -59,7 +53,8 @@ def XDSColspot(DriverType=None, params=None):
       # phil parameters
 
       if not params:
-        params = master_params.extract()
+        from Handlers.Phil import master_phil
+        params = master_params.extract().xds.colspot
       self._params = params
 
       # now set myself up...

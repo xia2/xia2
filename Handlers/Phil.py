@@ -48,26 +48,63 @@ xds {
   profile_grid_size = None
     .type = ints(size = 2)
   correct {
-    include scope Wrappers.XDS.XDSCorrect.master_params
+    refine = *DISTANCE *BEAM *AXIS *ORIENTATION *CELL *POSITION
+      .type = choice(multi = True)
+      .help = 'what to refine in the CORRECT step'
   }
   integrate {
-    include scope Wrappers.XDS.XDSIntegrate.master_params
+    refine = *ORIENTATION *CELL *BEAM *DISTANCE AXIS *POSITION
+      .type = choice(multi = True)
+      .help = 'what to refine in first pass of integration'
+    refine_final = *ORIENTATION *CELL BEAM DISTANCE AXIS POSITION
+      .type = choice(multi = True)
+      .help = 'what to refine in final pass of integration'
+    fix_scale = False
+      .type = bool
+    delphi = 0
+      .type = float
+    reflecting_range = 0
+      .type = float
+    reflecting_range_esd = 0
+      .type = float
+    beam_divergence = 0
+      .type = float
+    beam_divergence_esd = 0
+      .type = float
   }
   init {
-    include scope Wrappers.XDS.XDSInit.master_params
+    fix_scale = False
+      .type = bool
   }
   index {
-    include scope Wrappers.XDS.XDSIdxref.master_params
+    refine = *ORIENTATION *CELL *BEAM *DISTANCE *AXIS *POSITION
+      .type = choice(multi = True)
+      .help = 'what to refine in autoindexing'
+    debug = *OFF ON
+      .type = choice(multi = False)
+      .help = 'output enganced debugging for indexing'
   }
   colspot {
-    include scope Wrappers.XDS.XDSColspot.master_params
+    minimum_pixels_per_spot = 1
+      .type = int
   }
   xscale {
     min_isigma = 3.0
       .type = float
   }
   merge2cbf {
-    include scope Wrappers.XDS.Merge2cbf.master_params
+    merge_n_images = 2
+      .type = int(value_min=1)
+      .help = "Number of input images to average into a single output image"
+    data_range = None
+      .type = ints(size=2, value_min=0)
+    moving_average = False
+      .type = bool
+      .help = "If true, then perform a moving average over the sweep, i.e. given"
+              "images 1, 2, 3, 4, 5, 6, ..., with averaging over three images,"
+              "the output frames would cover 1-3, 2-4, 3-5, 4-6, etc."
+              "Otherwise, a straight summation is performed:"
+              " 1-3, 4-6, 7-9, etc."
   }
 }
 dials {
