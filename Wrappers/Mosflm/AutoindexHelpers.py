@@ -47,7 +47,7 @@ def set_distance(detector, distance):
   d_normal = matrix.col(panel.get_normal())
   d_origin = matrix.col(panel.get_origin())
   assert d_origin.dot(d_normal) == panel.get_distance(), (
-    (d_origin.d_normal), panel.get_distance())
+    d_origin.dot(d_normal), panel.get_distance())
   translation = d_normal * (distance - panel.get_distance())
   new_origin = d_origin + translation
   delta = math.fabs(new_origin.dot(d_normal) - distance)
