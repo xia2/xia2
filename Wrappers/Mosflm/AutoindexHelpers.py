@@ -42,22 +42,25 @@ def parse_index_log(mosflm_output):
 def set_distance(detector, distance):
   from scitbx import matrix
   import math
-  assert len(detector) == 1
+  assert len(detector) == 1, len(detector)
   panel = detector[0]
   d_normal = matrix.col(panel.get_normal())
   d_origin = matrix.col(panel.get_origin())
-  assert d_origin.dot(d_normal) == panel.get_distance()
+  assert d_origin.dot(d_normal) == panel.get_distance(), (
+    (d_origin.d_normal), panel.get_distance())
   translation = d_normal * (distance - panel.get_distance())
   new_origin = d_origin + translation
-  assert math.fabs(new_origin.dot(d_normal) - distance) < 0.001
+  delta = math.fabs(new_origin.dot(d_normal) - distance)
+  assert delta < 0.001, delta
   fast = panel.get_fast_axis()
   slow = panel.get_slow_axis()
   panel.set_frame(panel.get_fast_axis(), panel.get_slow_axis(), new_origin.elems)
-  assert matrix.col(panel.get_fast_axis()).angle(
-    matrix.col(fast), deg=True) < 1e-6
-  assert matrix.col(panel.get_slow_axis()).angle(
-    matrix.col(slow), deg=True) < 1e-6
-  assert math.fabs(panel.get_distance() - distance) < 0.001
+  d_fast = matrix.col(panel.get_fast_axis()).angle(matrix.col(fast), deg=True)
+  assert d_fast < 1e-6, d_fast
+  d_slow = matrix.col(panel.get_slow_axis()).angle(matrix.col(slow), deg=True)
+  assert d_slow < 1e-6, d_slow
+  d_distance = math.fabs(panel.get_distance() - distance)
+  assert d_distance < 0.001, d_distance
 
 def crystal_model_from_mosflm_mat(mosflm_mat_lines, unit_cell, space_group):
   from scitbx import matrix
