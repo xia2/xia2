@@ -66,7 +66,7 @@ def XDSIdxref(DriverType=None, params=None):
 
       if not params:
         from Handlers.Phil import master_phil
-        params = master_params.extract().xds.index
+        params = master_phil.extract().xds.index
       self._params = params
 
       # now set myself up...

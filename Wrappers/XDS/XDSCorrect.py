@@ -63,7 +63,7 @@ def XDSCorrect(DriverType = None, params=None):
 
       if not params:
         from Handlers.Phil import master_phil
-        params = master_params.extract().xds.correct
+        params = master_phil.extract().xds.correct
       self._params = params
 
       # now set myself up...

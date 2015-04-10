@@ -54,7 +54,7 @@ def XDSColspot(DriverType=None, params=None):
 
       if not params:
         from Handlers.Phil import master_phil
-        params = master_params.extract().xds.colspot
+        params = master_phil.extract().xds.colspot
       self._params = params
 
       # now set myself up...

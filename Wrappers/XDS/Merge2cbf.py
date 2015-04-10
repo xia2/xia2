@@ -58,7 +58,7 @@ def Merge2cbf(DriverType=None, params=None):
 
       if not params:
         from Handlers.Phil import master_phil
-        params = master_params.extract().xds.merge2cbf
+        params = master_phil.extract().xds.merge2cbf
       self._params = params
 
       # now set myself up...

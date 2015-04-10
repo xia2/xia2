@@ -50,7 +50,7 @@ def XDSInit(DriverType = None, params = None):
 
       if not params:
         from Handlers.Phil import master_phil
-        params = master_params.extract().xds.init
+        params = master_phil.extract().xds.init
       self._params = params
 
       # now set myself up...
