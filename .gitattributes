@@ -226,77 +226,71 @@ doc/sphinx/quick_start.rst -text
 doc/sphinx/release_notes.rst -text
 doc/sphinx/tutorials/multi_crystal.rst -text
 doc/sphinx/using_xia2.rst -text
-html/new/.buildinfo -text
-html/new/_images/3qrn-all-complete-aimless.png -text svneol=unset#unset
-html/new/_images/3qrn-all-rmerge-aimless.png -text svneol=unset#unset
-html/new/_images/math/0d30670bb6d1c8b8b455037c6281681a60c02b0d.png -text svneol=unset#unset
-html/new/_images/math/24ca2f7a44d43ef4c004aa3e1a0c9f3719108107.png -text svneol=unset#unset
-html/new/_images/math/4fbc706dce6cce3b3d41ae617c0e89105c37d543.png -text svneol=unset#unset
-html/new/_images/thermolysin_blend_tree.png -text svneol=unset#unset
-html/new/_images/xia2html.png -text svneol=unset#unset
-html/new/_sources/acknowledgements.txt -text
-html/new/_sources/background.txt -text
-html/new/_sources/comments.txt -text
-html/new/_sources/index.txt -text
-html/new/_sources/installation.txt -text
-html/new/_sources/insulin_tutorial.txt -text
-html/new/_sources/introduction.txt -text
-html/new/_sources/introductory_example.txt -text
-html/new/_sources/license.txt -text
-html/new/_sources/parameters.txt -text
-html/new/_sources/program_output.txt -text
-html/new/_sources/quick_start.txt -text
-html/new/_sources/release_notes.txt -text
-html/new/_sources/tutorials/multi_crystal.txt -text
-html/new/_sources/using_xia2.txt -text
-html/new/_static/CCP4-logo-plain.png -text svneol=unset#unset
-html/new/_static/ajax-loader.gif -text svneol=unset#unset
-html/new/_static/alabaster.css -text
-html/new/_static/basic.css -text
-html/new/_static/comment-bright.png -text svneol=unset#unset
-html/new/_static/comment-close.png -text svneol=unset#unset
-html/new/_static/comment.png -text svneol=unset#unset
-html/new/_static/dials_logo_fx_transparent_bg.png -text svneol=unset#unset
-html/new/_static/diamond_logo.png -text svneol=unset#unset
-html/new/_static/doctools.js -text
-html/new/_static/down-pressed.png -text svneol=unset#unset
-html/new/_static/down.png -text svneol=unset#unset
-html/new/_static/file.png -text svneol=unset#unset
-html/new/_static/jquery.js -text
-html/new/_static/minus.png -text svneol=unset#unset
-html/new/_static/plus.png -text svneol=unset#unset
-html/new/_static/pygments.css -text
-html/new/_static/searchtools.js -text
-html/new/_static/underscore.js -text
-html/new/_static/up-pressed.png -text svneol=unset#unset
-html/new/_static/up.png -text svneol=unset#unset
-html/new/_static/websupport.js -text
-html/new/_static/xia2-new-logo.gif -text svneol=unset#unset
-html/new/_static/xia2.css -text
-html/new/acknowledgements.html -text
-html/new/background.html -text
-html/new/comments.html -text
-html/new/genindex.html -text
-html/new/index.html -text
-html/new/installation.html -text
-html/new/insulin_tutorial.html -text
-html/new/introduction.html -text
-html/new/introductory_example.html -text
-html/new/license.html -text
-html/new/objects.inv -text
-html/new/parameters.html -text
-html/new/program_output.html -text
-html/new/quick_start.html -text
-html/new/release_notes.html -text
-html/new/search.html -text
-html/new/searchindex.js -text
-html/new/tutorials/multi_crystal.html -text
-html/new/using_xia2.html -text
-html/phils/fixed_scale_factors.phil -text
-html/phils/micromanage_integrate.phil -text
-html/phils/pixels_per_spot.phil -text
-html/xia2-new-logo.gif -text
-html/xia2-new-logo.psd -text
+html/.buildinfo -text
+html/_images/3qrn-all-complete-aimless.png -text svneol=unset#unset
+html/_images/3qrn-all-rmerge-aimless.png -text svneol=unset#unset
+html/_images/math/0d30670bb6d1c8b8b455037c6281681a60c02b0d.png -text svneol=unset#unset
+html/_images/math/24ca2f7a44d43ef4c004aa3e1a0c9f3719108107.png -text svneol=unset#unset
+html/_images/math/4fbc706dce6cce3b3d41ae617c0e89105c37d543.png -text svneol=unset#unset
+html/_images/thermolysin_blend_tree.png -text svneol=unset#unset
+html/_images/xia2html.png -text svneol=unset#unset
+html/_sources/acknowledgements.txt -text
+html/_sources/background.txt -text
+html/_sources/comments.txt -text
+html/_sources/index.txt -text
+html/_sources/installation.txt -text
+html/_sources/insulin_tutorial.txt -text
+html/_sources/introduction.txt -text
+html/_sources/introductory_example.txt -text
+html/_sources/license.txt -text
+html/_sources/parameters.txt -text
+html/_sources/program_output.txt -text
+html/_sources/quick_start.txt -text
+html/_sources/release_notes.txt -text
+html/_sources/tutorials/multi_crystal.txt -text
+html/_sources/using_xia2.txt -text
+html/_static/CCP4-logo-plain.png -text svneol=unset#unset
+html/_static/ajax-loader.gif -text svneol=unset#unset
+html/_static/alabaster.css -text
+html/_static/basic.css -text
+html/_static/comment-bright.png -text svneol=unset#unset
+html/_static/comment-close.png -text svneol=unset#unset
+html/_static/comment.png -text svneol=unset#unset
+html/_static/dials_logo_fx_transparent_bg.png -text svneol=unset#unset
+html/_static/diamond_logo.png -text svneol=unset#unset
+html/_static/doctools.js -text
+html/_static/down-pressed.png -text svneol=unset#unset
+html/_static/down.png -text svneol=unset#unset
+html/_static/file.png -text svneol=unset#unset
+html/_static/jquery.js -text
+html/_static/minus.png -text svneol=unset#unset
+html/_static/plus.png -text svneol=unset#unset
+html/_static/pygments.css -text
+html/_static/searchtools.js -text
+html/_static/underscore.js -text
+html/_static/up-pressed.png -text svneol=unset#unset
+html/_static/up.png -text svneol=unset#unset
+html/_static/websupport.js -text
+html/_static/xia2-new-logo.gif -text
+html/_static/xia2.css -text
+html/acknowledgements.html -text
+html/background.html -text
+html/comments.html -text
+html/genindex.html -text
+html/index.html -text
+html/installation.html -text
+html/insulin_tutorial.html -text
+html/introduction.html -text
+html/introductory_example.html -text
+html/objects.inv -text
+html/parameters.html -text
+html/program_output.html -text
+html/quick_start.html -text
+html/release_notes.html -text
+html/search.html -text
+html/searchindex.js -text
+html/tutorials/multi_crystal.html -text
+html/using_xia2.html -text
 lib/tabulate.py -text
 /libtbx_config -text
 /run_tests.py -text

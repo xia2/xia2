@@ -10,7 +10,7 @@ import os
 if (__name__ == "__main__") :
   xia2_dir = libtbx.env.find_in_repositories("xia2")
   assert (xia2_dir is not None)
-  dest_dir = op.join(xia2_dir, "html", "new")
+  dest_dir = op.join(xia2_dir, "html")
   if op.exists(dest_dir) :
     shutil.rmtree(dest_dir)
   os.chdir(op.join(xia2_dir, "doc", "sphinx"))

@@ -1,6 +1,0 @@
-xds.integrate.delphi = 10.0
-xds.integrate.reflecting_range = 0.31
-xds.integrate.reflecting_range_esd = 0.045
-xds.integrate.beam_divergence = 0.25
-xds.integrate.beam_divergence_esd = 0.025
-
