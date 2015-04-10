@@ -153,11 +153,11 @@ xds {
   trusted_region = None
   profile_grid_size = None
   correct {
-    refine = *DISTANCE *BEAM *AXIS *ORIENTATION *CELL
+    refine = *DISTANCE *BEAM *AXIS *ORIENTATION *CELL *POSITION
   }
   integrate {
-    refine = *ORIENTATION *CELL *BEAM *DISTANCE AXIS
-    refine_final = *ORIENTATION *CELL BEAM DISTANCE AXIS
+    refine = *ORIENTATION *CELL *BEAM *DISTANCE AXIS *POSITION
+    refine_final = *ORIENTATION *CELL BEAM DISTANCE AXIS POSITION
     fix_scale = False
     delphi = 0
     reflecting_range = 0
@@ -169,7 +169,7 @@ xds {
     fix_scale = False
   }
   index {
-    refine = *ORIENTATION *CELL *BEAM *DISTANCE *AXIS
+    refine = *ORIENTATION *CELL *BEAM *DISTANCE *AXIS *POSITION
     debug = *OFF ON
   }
   colspot {
@@ -190,7 +190,9 @@ dials {
     min_spot_size = Auto
     phil_file = None
     sigma_strong = None
+    filter_ice_rings = False
   }
+  fix_geometry = False
   index {
     method = fft1d *fft3d real_space_grid_search
     phil_file = None
@@ -205,8 +207,8 @@ dials {
   }
   integrate {
     phil_file = None
-    intensity_algorithm = sum3d sum2d *fitrs mosflm
-    background_outlier_algorithm = *null nsigma truncated normal
+    profile_fitting = True
+    background_outlier_algorithm = *null nsigma truncated normal tukey mosflm
     use_threading = False
     include_partials = True
   }
@@ -222,6 +224,8 @@ ccp4 {
 xia2.settings {
   input {
     json = None
+    reference_geometry = None
+    xinfo = None
   }
   sweep {
     id = None
@@ -234,7 +238,7 @@ xia2.settings {
   optimize_scaling = False
   beam_centre = None
   trust_beam_centre = False
-  wavelength_tolerance = 0.0002
+  wavelength_tolerance = 0.00001
   read_all_image_headers = True
   detector_distance = None
   show_template = False

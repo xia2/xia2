@@ -19,9 +19,9 @@ raw diffraction data.
 During the course of xia2 development the project has been supported
 by the UK BBSRC through the e-HTPX project, the EU Framework 6 through
 the BioXHit project and most recently by Diamond Light Source. The software
-itself is open source, distributed under a BSD licence, but relies on the
-user having correctly configured and licenced the necessary data analysis
-software, the details of which will be discussed shortly.
+itself is open source, distributed under a :doc:`BSD license <../license>`,
+but relies on the user having correctly configured and licenced the necessary
+data analysis software, the details of which will be discussed shortly.
 
 .. [1] N.K. Sauter et al. J. Appl. Cryst. (2004) 37, 399-409
 .. [2] P. Evans, Acta Cryst. (2006) D62, 72-82
