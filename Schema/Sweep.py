@@ -131,7 +131,7 @@ class Sweep(object):
     D = matrix.sqr(panel.get_D_matrix())
     v = D * beam.get_s0()
     x, y = v[0] / v[2], v[1] / v[2]
-    return tuple(y, x)
+    return y, x
 
   def imagename(self, number):
     '''Compute an image name from an image number.'''
