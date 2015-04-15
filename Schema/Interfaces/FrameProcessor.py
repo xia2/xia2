@@ -200,8 +200,15 @@ class FrameProcessor(object):
     return
 
   def get_beam_centre(self):
-    return tuple(reversed(self.get_detector().get_ray_intersection(
-      self.get_beam_obj().get_s0())[1]))
+    from scitbx import matrix
+    detector = self.get_detector()
+    assert len(detector) == 1, 'xia2 does not yet support multi-panel detectors'
+    panel = detector[0]
+    beam = self.get_beam_obj()
+    D = matrix.sqr(panel.get_D_matrix())
+    v = D * beam.get_s0()
+    x, y = v[0] / v[2], v[1] / v[2]
+    return y, x
 
   def get_beam_prov(self):
     return self._fp_beam_prov
@@ -322,6 +329,9 @@ class FrameProcessor(object):
 
     beam = imageset.get_beam()
     detector = imageset.get_detector()
+    assert len(detector) == 1, 'xia2 does not yet support multi-panel detectors'
+    panel = detector[0]
+
     self._fp_imageset = imageset
     self._fp_directory, self._fp_template = os.path.split(
       imageset.get_template())
@@ -329,20 +339,18 @@ class FrameProcessor(object):
     image_range = imageset.get_scan().get_image_range()
     self._fp_matching_images = tuple(range(image_range[0], image_range[1]+1))
 
-    # populate wavelength, beam etc from this
     if self._fp_wavelength_prov is None:
-      #self._fp_wavelength = beam.get_wavelength()
       self._fp_wavelength_prov = 'header'
     if self._fp_distance_prov is None:
-      #self._fp_distance = detector[0].get_distance()
       self._fp_distance_prov = 'header'
     if self._fp_beam_prov is None:
-      self._fp_beam = tuple(reversed(detector.get_ray_intersection(beam.get_s0())[1]))
+      from scitbx import matrix
+      D = matrix.sqr(panel.get_D_matrix())
+      v = D * beam.get_s0()
+      x, y = v[0] / v[2], v[1] / v[2]
+
+      self._fp_beam = y, x
       self._fp_beam_prov = 'header'
-    # XXX How do I get two_theta from dxtbx? do we even need it?
-    #if self._fp_two_theta_prov is None:
-      #self._fp_two_theta = self._fp_header['two_theta']
-      #self._fp_two_theta_prov = 'header'
 
     self.digest_template()
 
