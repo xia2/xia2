@@ -123,9 +123,15 @@ class Sweep(object):
     return self._imageset.get_beam().set_wavelength(wavelength)
 
   def get_beam_centre(self):
+    from scitbx import matrix
     detector = self._imageset.get_detector()
+    assert len(detector) == 1, 'xia2 does not yet support multi-panel detectors'
+    panel = detector[0]
     beam = self._imageset.get_beam()
-    return tuple(reversed(detector.get_ray_intersection(beam.get_s0())[1]))
+    D = matrix.sqr(panel.get_D_matrix())
+    v = D * beam.get_s0()
+    x, y = v[0] / v[2], v[1] / v[2]
+    return tuple(y, x)
 
   def imagename(self, number):
     '''Compute an image name from an image number.'''
