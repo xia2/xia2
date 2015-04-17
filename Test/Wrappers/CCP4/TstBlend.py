@@ -69,6 +69,9 @@ def exercise_blend_wrapper():
   }
 
   assert clusters.keys() == range(1, 28)
+  if 'furthest_datasets' in clusters[1]:
+    del clusters[1]['furthest_datasets']
+    del clusters[27]['furthest_datasets']
   assert clusters[1] == {
     'lcv': 0.05, 'alcv': 0.06, 'n_datasets': 2,
     'dataset_ids': [13, 14], 'height': 0.001

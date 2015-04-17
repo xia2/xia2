@@ -160,8 +160,12 @@ def parse_clusters_file(clusters_file):
   with open(clusters_file, 'rb') as f:
     lines = f.readlines()
 
+  contains_furthest_datasets = False
+
   clusters = {}
   for line in lines:
+    if "Furthest" in line:
+      contains_furthest_datasets = True
     row = line.split()
     if len(row) < 6:
       continue
@@ -175,14 +179,20 @@ def parse_clusters_file(clusters_file):
     height = float(row[2])
     lcv = float(row[3])
     alcv = float(row[4])
-    dataset_ids = [int(s) for s in row[5:]]
+    if contains_furthest_datasets:
+      dataset_ids = [int(s) for s in row[7:]]
+      furthest_datasets = [int(s) for s in row[5:7]]
+    else:
+      dataset_ids = [int(s) for s in row[5:]]
+      furthest_datasets = None
 
     clusters[cluster_id] = {
       'n_datasets': n_datasets,
       'height': height,
       'lcv': lcv,
       'alcv': alcv,
-      'dataset_ids': dataset_ids
+      'dataset_ids': dataset_ids,
+      'furthest_datasets': furthest_datasets,
     }
 
   return clusters
