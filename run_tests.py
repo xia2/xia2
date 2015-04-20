@@ -40,6 +40,7 @@ tst_list = (
   "$D/Test/Wrappers/Mosflm/TstMosflmIndex.py",
   "$D/Test/Wrappers/Mosflm/TstMosflmRefineCell.py",
   "$D/Test/Mosflm/MosflmRefactorTest.py",
+  "$D/Test/System/TstRunXia2.py",
 )
 
 def run () :
