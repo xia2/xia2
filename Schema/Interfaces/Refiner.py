@@ -292,6 +292,8 @@ class Refiner(object):
     state = self.LATTICE_POSSIBLE
     for idxr in self._refinr_indexers.values():
       state = idxr.set_indexer_asserted_lattice(asserted_lattice)
+      if not idxr.get_indexer_done():
+        self.refiner_reset()
     # XXX for multiple indexers need to get some kind of consensus?
     return state
 
