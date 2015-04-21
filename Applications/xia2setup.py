@@ -279,6 +279,10 @@ def print_sweeps(out = sys.stdout):
     for s in sweeps:
 
       if len(s.get_images()) < Flags.get_min_images():
+        from Handlers.Streams import Debug
+        Debug.write('Rejecting sweep %s:' %s.get_template())
+        Debug.write('  Not enough images (found %i, require at least %i)'
+                    %(len(s.get_images()), Flags.get_min_images()))
         continue
 
       wavelength = s.get_wavelength()
@@ -291,6 +295,8 @@ def print_sweeps(out = sys.stdout):
             s.set_wavelength(w)
         if not have_wavelength:
           wavelengths.append(wavelength)
+
+  assert len(wavelengths), "No sweeps found matching criteria"
 
   wavelength_map = { }
 
