@@ -211,6 +211,10 @@ class DialsIndexer(Indexer):
 
     rmsd_p1 = rbs.get_bravais_summary()[1]['rmsd']
 
+    from dxtbx.serialize import load
+    from cctbx import crystal
+    from cctbx.sgtbx import bravais_types
+
     for k in sorted(rbs.get_bravais_summary()):
       summary = rbs.get_bravais_summary()[k]
 
@@ -223,14 +227,23 @@ class DialsIndexer(Indexer):
           (summary['rmsd'] > 1.5 * rmsd_p1)):
         continue
 
+      experiments = load.experiment_list(
+        summary['experiments_file'], check_format=False)
+      cryst = experiments.crystals()[0]
+      cs = crystal.symmetry(unit_cell=cryst.get_unit_cell(),
+                            space_group=cryst.get_space_group())
+      cs_reference = cs.as_reference_setting()
+      lattice = str(bravais_types.bravais_lattice(
+        group=cs_reference.space_group()))
+
       self._solutions[k] = {
         'number':k,
         'mosaic':0.0,
         'metric':summary['max_angular_difference'],
         'rmsd':summary['rmsd'],
         'nspots':summary['nspots'],
-        'lattice':summary['bravais'],
-        'cell':summary['unit_cell'],
+        'lattice':lattice,
+        'cell':cs_reference.unit_cell().parameters(),
         'experiments_file':summary['experiments_file'],
         'cb_op':summary['cb_op']
         }
@@ -252,7 +265,6 @@ class DialsIndexer(Indexer):
         'metric':self._solutions[solution]['metric'],
         'cell':self._solutions[solution]['cell']}
 
-    from dxtbx.serialize import load
     self._indxr_mosaic = self._solution['mosaic']
 
     if self._indxr_input_lattice is None:
