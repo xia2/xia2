@@ -344,13 +344,6 @@ def LabelitIndex(DriverType = None, indxr_print = True):
       # FIXME this needs to check the smilie status e.g.
       # ":)" or ";(" or "  ".
 
-      # FIXME need to check the value of the RMSD and raise an
-      # exception if the P1 solution has an RMSD > 1.0...
-
-      # Change 27/FEB/08 to support user assigned spacegroups
-      # (euugh!) have to "ignore" solutions with higher symmetry
-      # otherwise the rest of xia will override us. Bummer.
-
       for i in range(counter + 1, len(output)):
         o = output[i][3:]
         smiley = output[i][:3]
@@ -366,6 +359,13 @@ def LabelitIndex(DriverType = None, indxr_print = True):
                                         'cell':map(float, l[7:13]),
                                         'volume':int(l[-1]),
                                         'smiley':smiley}
+
+      # remove clearly incorrect solutions i.e. rmsd >> rmsd for P1 i.e. factor
+      # of 4.0 or more...
+
+      for s in sorted(self._solutions):
+        if self._solutions[s]['rmsd'] > 4.0 * self._solutions[1]['rmsd']:
+          del(self._solutions[s])
 
       return 'ok'
 
@@ -387,4 +387,3 @@ if __name__ == '__main__':
     indexer.add_image(filename)
   indexer.run()
   print ''.join(indexer.get_all_output())
-
