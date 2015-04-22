@@ -626,7 +626,7 @@ class Integrater(FrameProcessor):
         self._intgr_hklout = self._integrate_finish()
 
       except BadLatticeError, e:
-        Chatter.write('Uh oh! %s' % str(e))
+        Chatter.write('Bad Lattice Error: %s' % str(e))
         self._intgr_refiner.eliminate()
         self._integrater_reset()
 
