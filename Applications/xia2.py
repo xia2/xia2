@@ -167,32 +167,24 @@ def get_command_line():
 
     if not CommandLine.get_directory():
 
-      path = argv.pop()
+      directories = []
 
-      while not os.path.exists(path):
-        try:
-          path = '%s %s' % (argv.pop(), path)
-        except IndexError, e:
-          raise RuntimeError, \
-                'directory not found in arguments: %s' % path
+      for arg in argv:
+        if os.path.isdir(arg):
+          directories.append(os.path.abspath(arg))
+
+      if len(directories) == 0:
+        raise RuntimeError('directory not found in arguments')
 
     else:
-      path = CommandLine.get_directory()
-      if not os.path.exists(path):
-        raise RuntimeError, 'provided path %s does not exist' % path
+      directories = [CommandLine.get_directory()]
 
-    if not os.path.isabs(path):
-      path = os.path.abspath(path)
-
-    # in here check that this is a directory
-
-    if not os.path.isdir(path):
-      raise RuntimeError, '%s must be a directory' % path
+    directories = [os.path.abspath(d) for d in directories]
 
     if CommandLine.get_template():
-      write_xinfo(xinfo, path, template = CommandLine.get_template())
+      write_xinfo(xinfo, directories, template=CommandLine.get_template())
     else:
-      write_xinfo(xinfo, path)
+      write_xinfo(xinfo, directories)
 
     CommandLine.set_xinfo(xinfo)
 

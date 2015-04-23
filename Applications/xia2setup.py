@@ -511,17 +511,18 @@ def get_sweeps(templates):
           imageset.get_scan().get_image_range()[0]] = imageset
 
 
-def rummage(path):
+def rummage(directories):
   '''Walk through the directories looking for sweeps.'''
   templates = set()
-  for root, dirs, files in os.walk(path, followlinks=True):
-    templates.update(visit(os.getcwd(), root, files))
+  for path in directories:
+    for root, dirs, files in os.walk(path, followlinks=True):
+      templates.update(visit(os.getcwd(), root, files))
 
   get_sweeps(templates)
 
   return
 
-def write_xinfo(filename, path, template = None):
+def write_xinfo(filename, directories, template=None):
 
   global target_template
 
@@ -555,7 +556,7 @@ def write_xinfo(filename, path, template = None):
     get_sweeps(visit(None, CommandLine.get_directory(),
                      os.listdir(CommandLine.get_directory())))
   else:
-    rummage(path)
+    rummage(directories)
 
   save_datablock(os.path.join(start, 'xia2-datablock.json'))
 
@@ -577,22 +578,19 @@ def run():
 
   if not CommandLine.get_directory():
 
-    path = argv.pop()
+    directories = []
 
-    while not os.path.exists(path):
-      try:
-        path = '%s %s' % (argv.pop(), path)
-      except IndexError, e:
-        raise RuntimeError, \
-              'directory not found in arguments: %s' % path
+    for arg in argv:
+      if os.path.isdir(arg):
+        directories.append(os.path.abspath(arg))
+
+    if len(directories) == 0:
+      raise RuntimeError('directory not found in arguments')
 
   else:
-    path = CommandLine.get_directory()
-    if not os.path.exists(path):
-      raise RuntimeError, 'provided path %s does not exist' % path
+    directories = [CommandLine.get_directory()]
 
-  if not os.path.isabs(path):
-    path = os.path.abspath(path)
+  directories = [os.path.abspath(d) for d in directories]
 
   # perhaps move to a new directory...
 
@@ -615,7 +613,7 @@ def run():
 
   os.chdir(directory)
 
-  rummage(path)
+  rummage(directories)
   print_sweeps(fout)
 
   save_datablock(os.path.join(start, 'xia2-datablock.json'))
