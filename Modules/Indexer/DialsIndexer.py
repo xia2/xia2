@@ -212,7 +212,7 @@ class DialsIndexer(Indexer):
     rmsd_p1 = rbs.get_bravais_summary()[1]['rmsd']
 
     from dxtbx.serialize import load
-    from cctbx import crystal
+    from cctbx import crystal, sgtbx
     from cctbx.sgtbx import bravais_types
 
     for k in sorted(rbs.get_bravais_summary()):
@@ -232,9 +232,11 @@ class DialsIndexer(Indexer):
       cryst = experiments.crystals()[0]
       cs = crystal.symmetry(unit_cell=cryst.get_unit_cell(),
                             space_group=cryst.get_space_group())
-      cs_reference = cs.as_reference_setting()
+      cb_op_best_to_ref = cs.change_of_basis_op_to_reference_setting()
+      cs_reference = cs.change_basis(cb_op_best_to_ref)
       lattice = str(bravais_types.bravais_lattice(
         group=cs_reference.space_group()))
+      cb_op = cb_op_best_to_ref * sgtbx.change_of_basis_op(str(summary['cb_op']))
 
       self._solutions[k] = {
         'number':k,
@@ -245,7 +247,7 @@ class DialsIndexer(Indexer):
         'lattice':lattice,
         'cell':cs_reference.unit_cell().parameters(),
         'experiments_file':summary['experiments_file'],
-        'cb_op':summary['cb_op']
+        'cb_op':str(cb_op)
         }
 
     self._solution = self.get_solution()
@@ -271,16 +273,30 @@ class DialsIndexer(Indexer):
       experiment_list = load.experiment_list(self._solution['experiments_file'])
       self.set_indexer_experiment_list(experiment_list)
 
+      # reindex the output experiments list to the reference setting
+      # (from the best cell/conventional setting)
+      cb_op_to_ref = experiments.crystals()[0].get_space_group().info()\
+        .change_of_basis_op_to_reference_setting()
+      reindex = self.Reindex()
+      reindex.set_experiments_filename(self._solution['experiments_file'])
+      reindex.set_cb_op(cb_op_to_ref)
+      reindex.set_space_group(str(lattice_to_spacegroup_number(
+        self._solution['lattice'])))
+      reindex.run()
+      experiments_file = reindex.get_reindexed_experiments_filename()
+      experiment_list = load.experiment_list(experiments_file)
+      self.set_indexer_experiment_list(experiment_list)
+      self.set_indexer_payload("experiments_filename", experiments_file)
+
       # reindex the output reflection list to this solution
       reindex = self.Reindex()
-      reindex.set_experiments_filename(indexer.get_experiments_filename())
       reindex.set_indexed_filename(self._indxr_payload["indexed_filename"])
       reindex.set_cb_op(self._solution['cb_op'])
       reindex.set_space_group(str(lattice_to_spacegroup_number(
         self._solution['lattice'])))
-      experiments, indexed_file = reindex.run()
+      reindex.run()
+      indexed_file = reindex.get_reindexed_reflections_filename()
       self.set_indexer_payload("indexed_filename", indexed_file)
-      self.set_indexer_payload("experiments_filename", self._solution['experiments_file'])
 
     else:
       experiment_list = load.experiment_list(

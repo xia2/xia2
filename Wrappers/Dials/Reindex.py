@@ -62,30 +62,28 @@ def Reindex(DriverType = None):
       from Handlers.Streams import Debug
       Debug.write('Running dials.reindex')
 
+      wd = self.get_working_directory()
+
       self.clear_command_line()
-      self.add_command_line(self._experiments_filename)
-      self.add_command_line(self._indexed_filename)
+      if self._experiments_filename is not None:
+        self.add_command_line(self._experiments_filename)
+        self._reindexed_experiments_filename = os.path.join(
+          wd, "%d_experiments_reindexed.json" %self.get_xpid())
+        self.add_command_line(
+          "output.experiments=%s" %self._reindexed_experiments_filename)
+      if self._indexed_filename is not None:
+        self.add_command_line(self._indexed_filename)
+        self._reindexed_reflections_filename = os.path.join(
+          wd, "%d_reflections_reindexed.pickle" %self.get_xpid())
+        self.add_command_line(
+          "output.reflections=%s" %self._reindexed_reflections_filename)
       if self._cb_op:
         self.add_command_line("change_of_basis_op=%s" % self._cb_op)
       if self._space_group:
         self.add_command_line("space_group=%s" % self._space_group)
 
-      wd = self.get_working_directory()
-      self._reindexed_experiments_filename = os.path.join(
-        wd, "%d_experiments_reindexed.json" %self.get_xpid())
-      self._reindexed_reflections_filename = os.path.join(
-        wd, "%d_reflections_reindexed.pickle" %self.get_xpid())
-
-      self.add_command_line(
-        "output.experiments=%s" %self._reindexed_experiments_filename)
-      self.add_command_line(
-        "output.reflections=%s" %self._reindexed_reflections_filename)
-
       self.start()
       self.close_wait()
       self.check_for_errors()
-
-      return (self._reindexed_experiments_filename,
-              self._reindexed_reflections_filename)
 
   return ReindexWrapper()
