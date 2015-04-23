@@ -173,6 +173,10 @@ ccp4 {
 }
 xia2.settings {
   input {
+    image = None
+      .type = path
+      .multiple = True
+      .help = "image=/path/to/an/image_001.img"
     json = None
       .type = path
       .help = "dxtbx-format datablock.json file which can be provided as an "

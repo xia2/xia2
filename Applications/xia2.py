@@ -177,7 +177,7 @@ def get_command_line():
         raise RuntimeError('directory not found in arguments')
 
     else:
-      directories = [CommandLine.get_directory()]
+      directories = CommandLine.get_directory()
 
     directories = [os.path.abspath(d) for d in directories]
 

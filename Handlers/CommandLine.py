@@ -441,6 +441,17 @@ class _CommandLine(object):
       PhilIndex.update("xia2.settings.input.xinfo=%s" %xinfo_file)
       params = PhilIndex.get_python_object()
 
+
+    images = PhilIndex.params.xia2.settings.input.image
+    for image in images:
+      template, directory = image2template_directory(os.path.abspath(image))
+      self._default_template.append(template)
+      self._default_directory.append(directory)
+
+      Debug.write('Interpreted from image %s:' % image)
+      Debug.write('Template %s' % template)
+      Debug.write('Directory %s' % directory)
+
     # finally, check that all arguments were read and raise an exception
     # if any of them were nonsense.
 
@@ -528,9 +539,8 @@ class _CommandLine(object):
       index = self._argv.index('-image')
     except ValueError, e:
       # the token is not on the command line
-      self._default_template = None
-      self._default_directory = None
-      self._default_image = None
+      self._default_template = []
+      self._default_directory = []
       return
 
     image = self._argv[index + 1]
@@ -546,17 +556,18 @@ class _CommandLine(object):
       except:
         raise RuntimeError, 'image name ends in \\'
 
-    template, directory = image2template_directory(image)
-    self._default_template = template
-    self._default_directory = directory
-    self._default_image = image
+    # XXX Warning added 2015-04-23
+    Chatter.write(
+      "Warning: -image option deprecated: please use image='%s' instead" %(
+        image))
+
+    PhilIndex.update("xia2.settings.input.image=%s" %image)
+    PhilIndex.get_python_object()
+
+    image = PhilIndex.params.xia2.settings.input.image[-1]
 
     self._understood.append(index)
     self._understood.append(index + 1)
-
-    Debug.write('Interpreted from image %s:' % image)
-    Debug.write('Template %s' % template)
-    Debug.write('Directory %s' % directory)
 
     return
 
@@ -1258,9 +1269,6 @@ class _CommandLine(object):
 
   def get_directory(self):
     return self._default_directory
-
-  def get_image(self):
-    return self._default_image
 
   def _read_trust_timestamps(self):
 

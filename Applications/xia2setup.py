@@ -136,7 +136,7 @@ def get_template(f):
     template, directory = image2template_directory(f)
 
     if target_template:
-      if template != target_template:
+      if template not in target_template:
         return
 
   except Exception, e:
@@ -553,8 +553,10 @@ def write_xinfo(filename, directories, template=None):
   # look there (i.e. not in the subdirectories)
 
   if CommandLine.get_template() and CommandLine.get_directory():
-    get_sweeps(visit(None, CommandLine.get_directory(),
-                     os.listdir(CommandLine.get_directory())))
+    templates = set()
+    for directory in CommandLine.get_directory():
+      templates.update(visit(None, directory, os.listdir(directory)))
+    get_sweeps(templates)
   else:
     rummage(directories)
 
