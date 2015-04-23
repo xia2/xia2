@@ -281,7 +281,8 @@ class poly_fitter(object):
   def refine(self):
     '''Actually perform the parameter refinement.'''
 
-    return lbfgs.run(target_evaluator = self)
+    tp = lbfgs.termination_parameters(max_iterations=100)
+    return lbfgs.run(target_evaluator = self, termination_params=tp)
 
   def compute_functional_and_gradients(self):
 
