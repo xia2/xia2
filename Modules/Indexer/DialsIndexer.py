@@ -194,82 +194,84 @@ class DialsIndexer(Indexer):
     self.set_indexer_payload(
       "indexed_filename", indexer.get_indexed_filename())
 
-    # FIXME in here should respect the input unit cell and lattice if provided
-
-    # FIXME from this (i) populate the helper table,
-    # (ii) try to avoid re-running the indexing
-    # step if we eliminate a solution as we have all of the refined results
-    # already available.
-
-    rbs = self.RefineBravaisSettings()
-    rbs.set_experiments_filename(indexer.get_experiments_filename())
-    rbs.set_indexed_filename(indexer.get_indexed_filename())
-    if PhilIndex.params.dials.fix_geometry:
-      rbs.set_detector_fix('all')
-      rbs.set_beam_fix('all')
-    rbs.run()
-
-    rmsd_p1 = rbs.get_bravais_summary()[1]['rmsd']
-
-    from dxtbx.serialize import load
-    from cctbx import crystal, sgtbx
     from cctbx.sgtbx import bravais_types
-
-    for k in sorted(rbs.get_bravais_summary()):
-      summary = rbs.get_bravais_summary()[k]
-
-      # FIXME need to do this better - for the moment only accept lattices
-      # where R.M.S. deviation is less than twice P1 R.M.S. deviation.
-
-      if (self._indxr_input_lattice is None and
-          (summary['max_angular_difference'] < 0.5 and
-           summary['rmsd'] > 2.0 * rmsd_p1) or
-          (summary['rmsd'] > 1.5 * rmsd_p1)):
-        continue
-
-      experiments = load.experiment_list(
-        summary['experiments_file'], check_format=False)
-      cryst = experiments.crystals()[0]
-      cs = crystal.symmetry(unit_cell=cryst.get_unit_cell(),
-                            space_group=cryst.get_space_group())
-      cb_op_best_to_ref = cs.change_of_basis_op_to_reference_setting()
-      cs_reference = cs.change_basis(cb_op_best_to_ref)
-      lattice = str(bravais_types.bravais_lattice(
-        group=cs_reference.space_group()))
-      cb_op = cb_op_best_to_ref * sgtbx.change_of_basis_op(str(summary['cb_op']))
-
-      self._solutions[k] = {
-        'number':k,
-        'mosaic':0.0,
-        'metric':summary['max_angular_difference'],
-        'rmsd':summary['rmsd'],
-        'nspots':summary['nspots'],
-        'lattice':lattice,
-        'cell':cs_reference.unit_cell().parameters(),
-        'experiments_file':summary['experiments_file'],
-        'cb_op':str(cb_op)
-        }
-
-    self._solution = self.get_solution()
-    self._indxr_lattice = self._solution['lattice']
-
-    for solution in self._solutions.keys():
-      lattice = self._solutions[solution]['lattice']
-      if (self._indxr_input_lattice is not None and
-          self._indxr_input_lattice != lattice):
-        continue
-      if self._indxr_other_lattice_cell.has_key(lattice):
-        if self._indxr_other_lattice_cell[lattice]['metric'] < \
-          self._solutions[solution]['metric']:
-          continue
-
-      self._indxr_other_lattice_cell[lattice] = {
-        'metric':self._solutions[solution]['metric'],
-        'cell':self._solutions[solution]['cell']}
-
-    self._indxr_mosaic = self._solution['mosaic']
+    from dxtbx.serialize import load
 
     if self._indxr_input_lattice is None:
+
+      # FIXME in here should respect the input unit cell and lattice if provided
+
+      # FIXME from this (i) populate the helper table,
+      # (ii) try to avoid re-running the indexing
+      # step if we eliminate a solution as we have all of the refined results
+      # already available.
+
+      rbs = self.RefineBravaisSettings()
+      rbs.set_experiments_filename(indexer.get_experiments_filename())
+      rbs.set_indexed_filename(indexer.get_indexed_filename())
+      if PhilIndex.params.dials.fix_geometry:
+        rbs.set_detector_fix('all')
+        rbs.set_beam_fix('all')
+      rbs.run()
+
+      rmsd_p1 = rbs.get_bravais_summary()[1]['rmsd']
+
+      from cctbx import crystal, sgtbx
+
+      for k in sorted(rbs.get_bravais_summary()):
+        summary = rbs.get_bravais_summary()[k]
+
+        # FIXME need to do this better - for the moment only accept lattices
+        # where R.M.S. deviation is less than twice P1 R.M.S. deviation.
+
+        if (self._indxr_input_lattice is None and
+            (summary['max_angular_difference'] < 0.5 and
+             summary['rmsd'] > 2.0 * rmsd_p1) or
+            (summary['rmsd'] > 1.5 * rmsd_p1)):
+          continue
+
+        experiments = load.experiment_list(
+          summary['experiments_file'], check_format=False)
+        cryst = experiments.crystals()[0]
+        cs = crystal.symmetry(unit_cell=cryst.get_unit_cell(),
+                              space_group=cryst.get_space_group())
+        cb_op_best_to_ref = cs.change_of_basis_op_to_reference_setting()
+        cs_reference = cs.change_basis(cb_op_best_to_ref)
+        lattice = str(bravais_types.bravais_lattice(
+          group=cs_reference.space_group()))
+        cb_op = cb_op_best_to_ref * sgtbx.change_of_basis_op(str(summary['cb_op']))
+
+        self._solutions[k] = {
+          'number':k,
+          'mosaic':0.0,
+          'metric':summary['max_angular_difference'],
+          'rmsd':summary['rmsd'],
+          'nspots':summary['nspots'],
+          'lattice':lattice,
+          'cell':cs_reference.unit_cell().parameters(),
+          'experiments_file':summary['experiments_file'],
+          'cb_op':str(cb_op)
+          }
+
+      self._solution = self.get_solution()
+      self._indxr_lattice = self._solution['lattice']
+
+      for solution in self._solutions.keys():
+        lattice = self._solutions[solution]['lattice']
+        if (self._indxr_input_lattice is not None and
+            self._indxr_input_lattice != lattice):
+          continue
+        if self._indxr_other_lattice_cell.has_key(lattice):
+          if self._indxr_other_lattice_cell[lattice]['metric'] < \
+            self._solutions[solution]['metric']:
+            continue
+
+        self._indxr_other_lattice_cell[lattice] = {
+          'metric':self._solutions[solution]['metric'],
+          'cell':self._solutions[solution]['cell']}
+
+      self._indxr_mosaic = self._solution['mosaic']
+
       experiment_list = load.experiment_list(self._solution['experiments_file'])
       self.set_indexer_experiment_list(experiment_list)
 
@@ -304,6 +306,26 @@ class DialsIndexer(Indexer):
       self.set_indexer_experiment_list(experiment_list)
       self.set_indexer_payload(
         "experiments_filename", indexer.get_experiments_filename())
+
+      cryst = experiment_list.crystals()[0]
+      lattice = str(bravais_types.bravais_lattice(
+        group=cryst.get_space_group()))
+      self._solutions = {}
+      self._solutions[0] = {
+        'number':0,
+        'mosaic':0.0,
+        'metric':-1,
+        'rmsd':-1,
+        'nspots':-1,
+        'lattice':lattice,
+        'cell':cryst.get_unit_cell().parameters(),
+        'experiments_file':indexer.get_experiments_filename(),
+        'cb_op':'a,b,c'
+      }
+
+      self._indxr_other_lattice_cell[lattice] = {
+        'metric':self._solutions[0]['metric'],
+        'cell':self._solutions[0]['cell']}
 
     return
 
