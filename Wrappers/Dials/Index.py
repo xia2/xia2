@@ -51,6 +51,8 @@ def Index(DriverType = None):
       self._rmsd_z = None
 
       self._max_cell = None
+      self._min_cell = None
+
       self._phil_file = None
 
       return
@@ -129,6 +131,10 @@ def Index(DriverType = None):
       self._max_cell = max_cell
       return
 
+    def set_min_cell(self, min_cell):
+      self._min_cell = min_cell
+      return
+
     def run(self, method):
       from Handlers.Streams import Debug
       Debug.write('Running dials.index')
@@ -147,6 +153,8 @@ def Index(DriverType = None):
       self.add_command_line('close_to_spindle_cutoff=0.02')
       if self._max_cell:
         self.add_command_line('max_cell=%d' % self._max_cell)
+      if self._min_cell:
+        self.add_command_line('min_cell=%d' % self._min_cell)
       if self._indxr_input_lattice is not None:
         from Experts.SymmetryExpert import lattice_to_spacegroup_number
         self._symm = lattice_to_spacegroup_number(
