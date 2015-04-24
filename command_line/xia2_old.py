@@ -1,5 +1,4 @@
 # LIBTBX_SET_DISPATCHER_NAME xia2.old
-# LIBTBX_SET_DISPATCHER_NAME xia2
 
 import os
 import sys
