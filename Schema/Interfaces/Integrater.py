@@ -56,7 +56,7 @@ from Schema.Exceptions.BadLatticeError import BadLatticeError
 from Wrappers.XIA.Diffdump import Diffdump
 
 # symmetry operator management functionality
-from Experts.SymmetryExpert import compose_matrices_r, compose_symops
+from Experts.SymmetryExpert import compose_symops
 from Experts.SymmetryExpert import symop_to_mat
 
 # interfaces that this inherits from ...
