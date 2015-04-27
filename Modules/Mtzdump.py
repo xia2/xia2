@@ -43,8 +43,8 @@ class Mtzdump(object):
   def dump(self):
     '''Actually obtain the contents of the mtz file header.'''
 
-    assert(self._hklin)
-    assert(os.path.exists(self._hklin))
+    assert self._hklin, self._hklin
+    assert os.path.exists(self._hklin), self._hklin
 
     mtz_obj = mtz.object(self._hklin)
 
@@ -100,8 +100,8 @@ class Mtzdump(object):
   def dump_batch_headers(self):
     '''Actually print the contents of the mtz file batch headers.'''
 
-    assert(self._hklin)
-    assert(os.path.exists(self._hklin))
+    assert self._hklin, self._hklin
+    assert os.path.exists(self._hklin), self._hklin
 
     mtz_obj = mtz.object(self._hklin)
 
@@ -153,8 +153,8 @@ class Mtzdump(object):
     '''Get the value ranges for this column. This now works by reading
     the file rather than using cached values => could be slow.'''
 
-    assert(self._hklin)
-    assert(os.path.exists(self._hklin))
+    assert self._hklin, self._hklin
+    assert os.path.exists(self._hklin), self._hklin
 
     mtz_obj = mtz.object(self._hklin)
     col = mtz_obj.get_column(column)
