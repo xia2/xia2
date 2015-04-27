@@ -93,8 +93,10 @@ def compose_matrices_r(mat_a, mat_b):
 def compose_symops(a, b):
   '''Compose operation c, which is applying b then a.'''
 
-  return mat_to_symop(
-      _multiply_symmetry_matrix(symop_to_mat(a), symop_to_mat(b))).strip()
+  return (sgtbx.change_of_basis_op(b) * sgtbx.change_of_basis_op(a)).as_hkl()
+
+  #return mat_to_symop(
+      #_multiply_symmetry_matrix(symop_to_mat(a), symop_to_mat(b))).strip()
 
 def symop_to_mat(symop):
   symop = symop.replace('h', 'x').replace('k', 'y').replace('l', 'z')
