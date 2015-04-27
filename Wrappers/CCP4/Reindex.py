@@ -64,7 +64,8 @@ def Reindex(DriverType = None):
     def set_operator(self, operator):
       '''Set the reindexing operator for mapping from in to out.'''
 
-      self._operator = operator
+      # pointless doesn't like reindex operators with '*'
+      self._operator = operator.replace('*', '')
       return
 
     def get_cell(self):
