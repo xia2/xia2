@@ -38,7 +38,7 @@ from Applications.xia2_helpers import process_one_sweep
 def xia2(stop_after=None):
   '''Actually process something...'''
 
-  Flags.set_serialize_state(True)
+  #Flags.set_serialize_state(True)
 
   # print the version
   Chatter.write(Version)
@@ -75,8 +75,62 @@ def xia2(stop_after=None):
 
   from libtbx import group_args
 
-  # this actually gets the processing started...
   xinfo = CommandLine.get_xinfo()
+
+  if os.path.exists('xia2.json'):
+    from Schema.XProject import XProject
+    xinfo_new = xinfo
+    xinfo = XProject.from_json(filename='xia2.json')
+
+    crystals = xinfo.get_crystals()
+    crystals_new = xinfo_new.get_crystals()
+    for crystal_id in crystals_new.keys():
+      if crystal_id not in crystals:
+        crystals[crystal_id] = crystals_new[crystal_id]
+        continue
+      crystals[crystal_id]._scaler = None # reset scaler
+      for wavelength_id in crystals_new[crystal_id].get_wavelength_names():
+        wavelength_new = crystals_new[crystal_id].get_xwavelength(wavelength_id)
+        if wavelength_id not in crystals[crystal_id].get_wavelength_names():
+          crystals[crystal_id].add_wavelength(
+            crystals_new[crystal_id].get_xwavelength(wavelength_new))
+          continue
+        wavelength = crystals[crystal_id].get_xwavelength(wavelength_id)
+        sweeps_new = wavelength_new.get_sweeps()
+        sweeps = wavelength.get_sweeps()
+        sweep_names = [s.get_name() for s in sweeps]
+        sweep_keys = [
+          (s.get_directory(), s.get_template(), s.get_image_range())
+          for s in sweeps]
+        for sweep in sweeps_new:
+          if ((sweep.get_directory(), sweep.get_template(),
+               sweep.get_image_range()) not in sweep_keys):
+            if sweep.get_name() in sweep_names:
+              i = 1
+              while 'SWEEEP%i' %i in sweep_names:
+                i += 1
+              sweep._name = 'SWEEP%i' %i
+              break
+            wavelength.add_sweep(
+              name=sweep.get_name(),
+              directory=sweep.get_directory(),
+              image=sweep.get_image(),
+              beam=sweep.get_beam_centre(),
+              reversephi=sweep.get_reversephi(),
+              distance=sweep.get_distance(),
+              gain=sweep.get_gain(),
+              dmin=sweep.get_resolution_high(),
+              dmax=sweep.get_resolution_low(),
+              polarization=sweep.get_polarization(),
+              frames_to_process=sweep.get_frames_to_process(),
+              user_lattice=sweep.get_user_lattice(),
+              user_cell=sweep.get_user_cell(),
+              epoch=sweep._epoch,
+              ice=sweep._ice,
+              excluded_regions=sweep._excluded_regions,
+            )
+            sweep_names.append(sweep.get_name())
+
   crystals = xinfo.get_crystals()
 
   if njob > 1:
@@ -201,7 +255,7 @@ def xia2(stop_after=None):
 
   if stop_after not in ('index', 'integrate'):
     # and the summary file
-    summary_records = CommandLine.get_xinfo().summarise()
+    summary_records = xinfo.summarise()
 
     fout = open('xia2-summary.dat', 'w')
     for record in summary_records:
