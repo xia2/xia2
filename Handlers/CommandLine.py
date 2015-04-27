@@ -47,6 +47,28 @@ def which(pgm):
     if os.path.exists(p) and os.access(p,os.X_OK):
       return p
 
+
+def load_datablock(filename):
+  from Schema import imageset_cache, update_with_reference_geometry
+  from dxtbx.serialize import load
+  from libtbx.containers import OrderedDict
+
+  datablocks = load.datablock(filename, check_format=False)
+
+  for datablock in datablocks:
+    imagesets = datablock.extract_imagesets()
+    params = PhilIndex.get_python_object()
+    reference_geometry = params.xia2.settings.input.reference_geometry
+    if reference_geometry is not None:
+      update_with_reference_geometry(imagesets, reference_geometry)
+    for imageset in imagesets:
+      template = imageset.get_template()
+      if template not in imageset_cache:
+        imageset_cache[template] = OrderedDict()
+      imageset_cache[template][
+        imageset.get_scan().get_image_range()[0]] = imageset
+
+
 class _CommandLine(object):
   '''A class to represent the command line input.'''
 
@@ -405,7 +427,6 @@ class _CommandLine(object):
       Flags.set_resolution_low(params.xia2.settings.d_max)
 
     if params.xia2.settings.input.json is not None:
-      from Applications.xia2setup import load_datablock
       assert os.path.isfile(params.xia2.settings.input.json)
       load_datablock(params.xia2.settings.input.json)
 
