@@ -44,6 +44,7 @@ class Merger(PythonDriver):
     self._limit_isigma = None
     self._limit_misigma = None
     self._nbins = 100
+    self._batch_range = None
 
     # outputs
     self._resolution_rmerge = None
@@ -82,6 +83,10 @@ class Merger(PythonDriver):
     self._limit_misigma = limit_misigma
     return
 
+  def set_batch_range(self, start, end):
+    self._batch_range = (start, end)
+    return
+
   def get_resolution_rmerge(self):
     return self._resolution_rmerge
 
@@ -111,6 +116,8 @@ class Merger(PythonDriver):
       cl.append('isigma=%f' % self._limit_isigma)
     if self._limit_misigma:
       cl.append('misigma=%f' % self._limit_misigma)
+    if self._batch_range is not None:
+      cl.append('batch_range=%i,%i' % self._batch_range)
     for c in cl:
       self.add_command_line(c)
     Debug.write('Resolution analysis: %s' % (' '.join(cl)))
