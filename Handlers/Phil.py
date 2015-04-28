@@ -146,6 +146,8 @@ dials {
       .type = path
     reflections_per_degree = 100
       .type = int
+    outlier_rejection = True
+      .type = bool
   }
   integrate {
     phil_file = None
