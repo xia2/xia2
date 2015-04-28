@@ -582,6 +582,8 @@ resolutionizer {
     .type = float
   nbins = 100
     .type = int
+  batch_range = None
+    .type = ints(size=2, value_min=0)
 }
 '''
 
@@ -690,6 +692,15 @@ class resolutionizer(object):
     i = self._mf.get_column_values('I')
     sigi = self._mf.get_column_values('SIGI')
     b = self._mf.get_column_values(self._b_column)
+
+    if self._params.batch_range is not None:
+      start, end = self._params.batch_range
+      sel = ((b >= start) & (b <= end))
+      mi = mi.select(sel)
+      m_isym = m_isym.select(sel)
+      i = i.select(sel)
+      sigi = sigi.select(sel)
+      b = b.select(sel)
 
     for j in range(len(i)):
       hkl = mi[j]

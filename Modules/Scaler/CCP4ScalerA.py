@@ -802,21 +802,9 @@ class CCP4ScalerA(Scaler):
                       (dname, resolution))
         continue
 
-      # extract the reflections for this sweep...
-
       hklin = sc.get_unmerged_reflection_file()
-      hklout = os.path.join(self.get_working_directory(),
-                            'resolution_%s_%s.mtz' % (dname, sname))
-
-      rb = self._factory.Pointless()
-      rb.set_hklin(hklin)
-      rb.set_hklout(hklout)
-      rb.limit_batches(start, end)
-
-      FileHandler.record_temporary_file(hklout)
-
-      resolution = self._estimate_resolution_limit(hklout)
-
+      resolution = self._estimate_resolution_limit(
+        hklin, batch_range=(start, end))
       Debug.write('Resolution for sweep %s: %.2f' % \
                   (sname, resolution))
 

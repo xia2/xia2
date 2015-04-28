@@ -872,7 +872,7 @@ class CommonScaler(Scaler):
 
     return
 
-  def _estimate_resolution_limit(self, hklin):
+  def _estimate_resolution_limit(self, hklin, batch_range=None):
     m = Merger()
     m.set_hklin(hklin)
     if Flags.get_rmerge():
@@ -887,6 +887,9 @@ class CommonScaler(Scaler):
       m.set_limit_misigma(Flags.get_misigma())
     if Flags.get_small_molecule():
       m.set_nbins(20)
+    if batch_range is not None:
+      start, end = batch_range
+      m.set_batch_range(start, end)
     m.run()
 
     if Flags.get_completeness():
