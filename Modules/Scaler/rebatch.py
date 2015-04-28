@@ -14,9 +14,14 @@ import sys
 from iotbx import mtz
 from cctbx.array_family import flex
 
-def rebatch(hklin, hklout, first_batch):
+def rebatch(hklin, hklout, first_batch=None,
+            include_range=[], exclude_range=[]):
   '''Need to implement: include batch range, exclude batches, add N to
   batches, start batches at N.'''
+
+  assert not (len(include_range) and len(exclude_range))
+  assert not (len(include_range) and first_batch)
+  assert not (len(exclude_range) and first_batch)
 
   mtz_obj = mtz.object(file_name = hklin)
 
@@ -38,23 +43,37 @@ def rebatch(hklin, hklout, first_batch):
 
   valid = flex.bool()
 
+  if len(exclude_range):
+    exclude_sel = flex.bool(batch_column_values.size(), False)
+    for (start, end) in exclude_range:
+      exclude_sel.set_selected(
+        (batch_column_values >= start) & (batch_column_values <= end), True)
+    mtz_obj.delete_reflections(exclude_sel.iselection())
+
+  elif len(include_range):
+    exclude_sel = flex.bool(batch_column_values.size(), True)
+    for (start, end) in include_range:
+      exclude_sel.set_selected(
+        (batch_column_values >= start) & (batch_column_values <= end), False)
+    mtz_obj.delete_reflections(exclude_sel.iselection())
+
   # modify batch columns, and also the batch headers
 
-  if first_batch != None:
+  elif first_batch is not None:
     offset = first_batch - min(batch_column_values)
     batch_column_values = batch_column_values + offset
 
     for batch in mtz_obj.batches():
       batch.set_num(int(batch.num() + offset))
 
-  # done modifying
+    # done modifying
 
-  batch_column.set_values(values = batch_column_values,
-                          selection_valid = valid)
+    batch_column.set_values(values=batch_column_values, selection_valid=valid)
 
   # and write this lot out as hklout
 
   mtz_obj.write(file_name = hklout)
+
 
 def copy_r_file(hklin, hklout):
 
@@ -124,11 +143,37 @@ def copy_r_file(hklin, hklout):
 
   return
 
+
+import iotbx.phil
+
+
+master_phil = """\
+hklin = None
+  .type = path
+hklout = hklout.mtz
+  .type = path
+first_batch = None
+  .type = int(value_min=0)
+include_range = None
+  .type = ints(size=2)
+  .multiple=True
+exclude_range = None
+  .type = ints(size=2)
+  .multiple=True
+"""
+
+def run(args):
+  processed = iotbx.phil.process_command_line(args, master_phil)
+  params = processed.work.extract()
+  args = processed.remaining_args
+  if params.hklin is None and len(args):
+    params.hklin = args[0]
+  assert params.hklin is not None
+
+  rebatch(params.hklin, params.hklout, first_batch=params.first_batch,
+          include_range=params.include_range,
+          exclude_range=params.exclude_range)
+
 if __name__ == '__main__':
-
   import sys
-
-  hklin = sys.argv[1]
-  hklout = 'arse.mtz'
-
-  copy_r_file(hklin, hklout)
+  run(sys.argv[1:])
