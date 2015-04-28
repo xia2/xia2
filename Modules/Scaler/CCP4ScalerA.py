@@ -323,7 +323,7 @@ class CCP4ScalerA(Scaler):
                             '%s_%s_%s_%s_integrated.mtz' %(
                             pname, xname, dname, sname))
 
-      rb = self._factory.Rebatch()
+      rb = self._factory.Pointless()
       rb.set_hklin(hklin)
       rb.set_hklout(hklout)
       rb.limit_batches(start, end)
@@ -808,7 +808,7 @@ class CCP4ScalerA(Scaler):
       hklout = os.path.join(self.get_working_directory(),
                             'resolution_%s_%s.mtz' % (dname, sname))
 
-      rb = self._factory.Rebatch()
+      rb = self._factory.Pointless()
       rb.set_hklin(hklin)
       rb.set_hklout(hklout)
       rb.limit_batches(start, end)

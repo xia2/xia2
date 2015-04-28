@@ -296,6 +296,21 @@ def Pointless(DriverType = None):
 
       return cell
 
+    def limit_batches(self, first, last):
+      '''Replacement for rebatch, removing batches.'''
+
+      self.check_hklin()
+      self.check_hklout()
+
+      self.add_command_line('-c')
+
+      self.start()
+      if first > 1:
+        self.input('exclude batch %d to %d' % (0, first - 1))
+      self.input('exclude batch %d to %d' % (last + 1, 9999999))
+      self.close_wait()
+      return
+
     def xds_to_mtz(self):
       '''Use pointless to convert XDS file to MTZ.'''
 
