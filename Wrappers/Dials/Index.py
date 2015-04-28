@@ -53,6 +53,8 @@ def Index(DriverType = None):
       self._max_cell = None
       self._min_cell = None
 
+      self._d_min_start = None
+
       self._phil_file = None
 
       return
@@ -135,6 +137,10 @@ def Index(DriverType = None):
       self._min_cell = min_cell
       return
 
+    def set_d_min_start(self, d_min_start):
+      self._d_min_start = d_min_start
+      return
+
     def run(self, method):
       from Handlers.Streams import Debug
       Debug.write('Running dials.index')
@@ -155,6 +161,8 @@ def Index(DriverType = None):
         self.add_command_line('max_cell=%d' % self._max_cell)
       if self._min_cell:
         self.add_command_line('min_cell=%d' % self._min_cell)
+      if self._d_min_start:
+        self.add_command_line('d_min_start=%f' % self._d_min_start)
       if self._indxr_input_lattice is not None:
         from Experts.SymmetryExpert import lattice_to_spacegroup_number
         self._symm = lattice_to_spacegroup_number(
