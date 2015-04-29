@@ -129,7 +129,8 @@ dials {
             "Most useful when also providing a reference geometry to xia2."
   outlier_rejection = True
     .type = bool
-    .help = "Whether to perform outlier rejection (using Tukey method)"
+    .help = "Whether to perform outlier rejection in dials.index and "
+            "dials.refine (using Tukey method)."
   index {
     method = fft1d *fft3d real_space_grid_search
       .type = choice
@@ -149,8 +150,6 @@ dials {
       .type = path
     reflections_per_degree = 100
       .type = int
-    outlier_rejection = True
-      .type = bool
   }
   integrate {
     phil_file = None
