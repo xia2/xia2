@@ -111,10 +111,8 @@ def Refine(DriverType = None):
       self.add_command_line('use_all_reflections=%s' % \
                             self._use_all_reflections)
       self.add_command_line('close_to_spindle_cutoff=0.05')
-
       if self._outlier_algorithm:
         self.add_command_line('outlier.algorithm=%s' % self._outlier_algorithm)
-
       self._refined_experiments_filename = os.path.join(
         self.get_working_directory(),
         '%s_refined_experiments.json' % self.get_xpid())

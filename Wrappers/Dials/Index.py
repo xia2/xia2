@@ -56,6 +56,7 @@ def Index(DriverType = None):
       self._d_min_start = None
 
       self._phil_file = None
+      self._outlier_algorithm = None
 
       return
 
@@ -126,6 +127,10 @@ def Index(DriverType = None):
       self._phil_file = phil_file
       return
 
+    def set_outlier_algorithm(self, outlier_algorithm):
+      self._outlier_algorithm = outlier_algorithm
+      return
+
     def get_nref_rmsds(self):
       return self._nref, (self._rmsd_x, self._rmsd_y, self._rmsd_z)
 
@@ -157,6 +162,8 @@ def Index(DriverType = None):
       else:
         self.add_command_line('use_all_reflections=False')
       self.add_command_line('close_to_spindle_cutoff=0.02')
+      if self._outlier_algorithm:
+        self.add_command_line('outlier.algorithm=%s' % self._outlier_algorithm)
       if self._max_cell:
         self.add_command_line('max_cell=%d' % self._max_cell)
       if self._min_cell:

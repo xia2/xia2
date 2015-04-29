@@ -127,6 +127,9 @@ dials {
     .type = bool
     .help = "Whether or not to refine geometry in dials.index and dials.refine."
             "Most useful when also providing a reference geometry to xia2."
+  outlier_rejection = True
+    .type = bool
+    .help = "Whether to perform outlier rejection (using Tukey method)"
   index {
     method = fft1d *fft3d real_space_grid_search
       .type = choice

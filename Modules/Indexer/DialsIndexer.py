@@ -89,6 +89,8 @@ class DialsIndexer(Indexer):
     params = PhilIndex.params.dials.index
     index.set_use_all_reflections(params.use_all_reflections)
     auto_logfiler(index)
+    if PhilIndex.params.dials.outlier_rejection:
+      index.set_outlier_algorithm('tukey')
     return index
 
   def Reindex(self):
