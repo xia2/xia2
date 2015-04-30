@@ -10,6 +10,7 @@
    installation
    introductory_example
    insulin_tutorial
+   Multi-crystal data <multi_crystal>
    program_output
    parameters
    comments

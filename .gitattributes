@@ -222,6 +222,7 @@ doc/sphinx/insulin_tutorial.rst -text
 doc/sphinx/introduction.rst -text
 doc/sphinx/introductory_example.rst -text
 doc/sphinx/license.rst -text
+doc/sphinx/multi_crystal.rst -text
 doc/sphinx/parameters.rst -text
 doc/sphinx/program_output.rst -text
 doc/sphinx/quick_start.rst -text
@@ -231,9 +232,11 @@ doc/sphinx/using_xia2.rst -text
 html/.buildinfo -text
 html/_images/3qrn-all-complete-aimless.png -text svneol=unset#unset
 html/_images/3qrn-all-rmerge-aimless.png -text svneol=unset#unset
+html/_images/math/0b8f66a848c851c882bd816037c9c5859ca75570.png -text svneol=unset#unset
 html/_images/math/0d30670bb6d1c8b8b455037c6281681a60c02b0d.png -text svneol=unset#unset
 html/_images/math/24ca2f7a44d43ef4c004aa3e1a0c9f3719108107.png -text svneol=unset#unset
 html/_images/math/4fbc706dce6cce3b3d41ae617c0e89105c37d543.png -text svneol=unset#unset
+html/_images/math/ccf223ff9d3dcceff90ff69a1fe5ee9721e0c803.png -text svneol=unset#unset
 html/_images/thermolysin_blend_tree.png -text svneol=unset#unset
 html/_images/xia2html.png -text svneol=unset#unset
 html/_sources/acknowledgements.txt -text
@@ -245,6 +248,7 @@ html/_sources/insulin_tutorial.txt -text
 html/_sources/introduction.txt -text
 html/_sources/introductory_example.txt -text
 html/_sources/license.txt -text
+html/_sources/multi_crystal.txt -text
 html/_sources/parameters.txt -text
 html/_sources/program_output.txt -text
 html/_sources/quick_start.txt -text
@@ -284,6 +288,7 @@ html/installation.html -text
 html/insulin_tutorial.html -text
 html/introduction.html -text
 html/introductory_example.html -text
+html/multi_crystal.html -text
 html/objects.inv -text
 html/parameters.html -text
 html/program_output.html -text
