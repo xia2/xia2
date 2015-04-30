@@ -70,6 +70,32 @@ a couple of reasons:
    labelit.index. This step can be disabled using the parameter
    :samp:`trust_beam_centre=True`
 
+Furthermore, xia2 may not make the same conclusion as to the symmetry for each
+sweep, leading it to process the final dataset in the lowest common symmetry.
+Sometimes indexing for a given sweep may fail altogether, and specifying the
+:samp:`unit_cell=` and :samp:`space_group=` parameters (if known) on the
+command line can help in both these situations.
+
+
++----------------------------------+---------------------------------------+
+| Parameter                        |  Description                          |
++==================================+=======================================+
+| ``-failover``                    | If processing fails for any sweeps,   |
+|                                  | ignore and just use those sweeps that |
+|                                  | processed successfully                |
++----------------------------------+---------------------------------------+
+| ``trust_beam_centre=True``       | Don't run labelit beam centre search  |
++----------------------------------+---------------------------------------+
+| ``read_all_image_headers=False`` | Skip reading all image headers - just |
+|                                  | read the first one for each sweep     |
++----------------------------------+---------------------------------------+
+| ``unit_cell=``                   | Provide a target unit cell to help    |
+|                                  | indexing                              |
++----------------------------------+---------------------------------------+
+| ``space_group=``                 | Provide a target space group to help  |
+|                                  | indexing                              |
++----------------------------------+---------------------------------------+
+
 
 Parallel data processing
 ------------------------
@@ -100,3 +126,22 @@ which queue jobs should be submitted to::
   xia2 -dials /path/to/images multiprocessing.mode=parallel \
     multiprocessing.type=qsub multiprocessing.qsub_command="qsub -q low.q" \
     multiprocessing.njob=10 multiprocessing.nproc=16
+
+
++---------------------------------------+--------------------------------------+
+| Parameter                             |  Description                         |
++=======================================+======================================+
+| ``multiprocessing.mode=parallel``     | Process multiple sweeps in parallel, |
+|                                       | rather than serially                 |
++---------------------------------------+--------------------------------------+
+| ``multiprocessing.njob=4``            | In conjunction with mode=parallel,   |
+|                                       | process 4 sweeps simultaneously      |
++---------------------------------------+--------------------------------------+
+| ``multiprocessing.nproc=1``           | Use 1 processor per job (sweep)      |
++---------------------------------------+--------------------------------------+
+| ``multiprocessing.type=qsub``         | Submit individual processing jobs to |
+|                                       | cluster using qsub                   |
++---------------------------------------+--------------------------------------+
+| ``multiprocessing.type=qsub_command`` | The command to use to submit qsub    |
+|                                       | jobs                                 |
++---------------------------------------+--------------------------------------+

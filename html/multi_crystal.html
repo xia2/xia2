@@ -6,13 +6,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-
+    
     <title>Processing multi-crystal datasets with xia2 &mdash; xia2  documentation</title>
-
+    
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/xia2.css" type="text/css" />
-
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -29,8 +29,8 @@
     <link rel="top" title="xia2  documentation" href="index.html" />
     <link rel="next" title="Program output" href="program_output.html" />
     <link rel="prev" title="Insulin tutorial" href="insulin_tutorial.html" />
-
-
+   
+  
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
 
   </head>
@@ -40,7 +40,7 @@
 <!--   <img class="logoheader" alt="DIALS" src="_static/dials_header.png" /> -->
 <!--   </a> -->
 <!--   </div> -->
-
+  
 
     <div class="related">
       <h3>Navigation</h3>
@@ -54,15 +54,15 @@
         <li class="right" >
           <a href="insulin_tutorial.html" title="Insulin tutorial"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">xia2  documentation</a> &raquo;</li>
+        <li><a href="index.html">xia2  documentation</a> &raquo;</li> 
       </ul>
-    </div>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
           <div class="body">
-
+            
   <div class="section" id="processing-multi-crystal-datasets-with-xia2">
 <h1>Processing multi-crystal datasets with xia2<a class="headerlink" href="#processing-multi-crystal-datasets-with-xia2" title="Permalink to this headline">¶</a></h1>
 <p>xia2 is ideally suited to processing multi-crystal (or multi-sweep) datasets,
@@ -134,6 +134,44 @@ first image header for each set of files with a matching template, and</li>
 labelit.index. This step can be disabled using the parameter
 <tt class="samp docutils literal"><span class="pre">trust_beam_centre=True</span></tt></li>
 </ol>
+<p>Furthermore, xia2 may not make the same conclusion as to the symmetry for each
+sweep, leading it to process the final dataset in the lowest common symmetry.
+Sometimes indexing for a given sweep may fail altogether, and specifying the
+<tt class="samp docutils literal"><span class="pre">unit_cell=</span></tt> and <tt class="samp docutils literal"><span class="pre">space_group=</span></tt> parameters (if known) on the
+command line can help in both these situations.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="47%" />
+<col width="53%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">-failover</span></tt></td>
+<td>If processing fails for any sweeps,
+ignore and just use those sweeps that
+processed successfully</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">trust_beam_centre=True</span></tt></td>
+<td>Don&#8217;t run labelit beam centre search</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">read_all_image_headers=False</span></tt></td>
+<td>Skip reading all image headers - just
+read the first one for each sweep</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">unit_cell=</span></tt></td>
+<td>Provide a target unit cell to help
+indexing</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">space_group=</span></tt></td>
+<td>Provide a target space group to help
+indexing</td>
+</tr>
+</tbody>
+</table>
 <div class="section" id="parallel-data-processing">
 <h2>Parallel data processing<a class="headerlink" href="#parallel-data-processing" title="Permalink to this headline">¶</a></h2>
 <p>By default, xia2 processes each sweep sequentially, using <tt class="samp docutils literal"><span class="pre">nproc</span></tt>
@@ -163,6 +201,38 @@ which queue jobs should be submitted to:</p>
   multiprocessing.njob=10 multiprocessing.nproc=16
 </pre></div>
 </div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="51%" />
+<col width="49%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">multiprocessing.mode=parallel</span></tt></td>
+<td>Process multiple sweeps in parallel,
+rather than serially</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">multiprocessing.njob=4</span></tt></td>
+<td>In conjunction with mode=parallel,
+process 4 sweeps simultaneously</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">multiprocessing.nproc=1</span></tt></td>
+<td>Use 1 processor per job (sweep)</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">multiprocessing.type=qsub</span></tt></td>
+<td>Submit individual processing jobs to
+cluster using qsub</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">multiprocessing.type=qsub_command</span></tt></td>
+<td>The command to use to submit qsub
+jobs</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 
@@ -175,7 +245,7 @@ which queue jobs should be submitted to:</p>
 <p class="logo">
   <a href="index.html">
     <img class="logo" src="_static/xia2-new-logo.gif" alt="Logo"/>
-
+    
   </a>
 </p>
 
@@ -211,15 +281,15 @@ which queue jobs should be submitted to:</p>
   <a href="http://dials.diamond.ac.uk/"><img class="logofooter" alt="DIALS" src="_static/dials_logo_fx_transparent_bg.png" /></a>
   <a href="http://www.ccp4.ac.uk/"><img class="logofooter" alt="CCP4" src="_static/CCP4-logo-plain.png" /></a>
   </div>
-
+  
     <div class="footer">
       &copy;2015, Diamond Light Source.
-
+      
     </div>
 
+    
 
-
-
+    
 
   </body>
 </html>
