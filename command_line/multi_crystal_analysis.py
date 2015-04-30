@@ -34,51 +34,11 @@ from Applications.xia2 import get_command_line, write_citations, help
 def multi_crystal_analysis(stop_after=None):
   '''Actually process something...'''
 
-  from Handlers.Flags import Flags
-  Flags.set_serialize_state(True)
+  assert os.path.exists('xia2.json')
+  from Schema.XProject import XProject
+  xinfo = XProject.from_json(filename='xia2.json')
 
-  # print the version
-  Chatter.write(Version)
-  Citations.cite('xia2')
-
-  start_time = time.time()
-
-  CommandLine = get_command_line()
-
-  # check that something useful has been assigned for processing...
-  xtals = CommandLine.get_xinfo().get_crystals()
-
-  no_images = True
-
-  for name in xtals.keys():
-    xtal = xtals[name]
-
-    if not xtal.get_all_image_names():
-
-      Chatter.write('-----------------------------------' + \
-                    '-' * len(name))
-      Chatter.write('| No images assigned for crystal %s |' % name)
-      Chatter.write('-----------------------------------' + '-' \
-                    * len(name))
-    else:
-      no_images = False
-
-  # this actually gets the processing started...
-  xinfo = CommandLine.get_xinfo()
   crystals = xinfo.get_crystals()
-
-  for crystal_id, crystal in crystals.iteritems():
-    scaler = crystal._get_scaler()
-    scaler_working_directory = scaler.get_working_directory()
-    json_file = os.path.join(scaler_working_directory, 'xia2.json')
-    if (Flags.get_serialize_state() and
-        os.path.isdir(scaler_working_directory) and
-        os.path.isfile(json_file)):
-      scaler = scaler.__class__.from_json(filename=json_file)
-      scaler.set_working_directory(scaler_working_directory)
-      scaler.set_scaler_xcrystal(crystal)
-      crystal._scaler = scaler
-
   for crystal_id, crystal in crystals.iteritems():
     cwd = os.path.abspath(os.curdir)
     working_directory = Environment.generate_directory(
@@ -112,7 +72,6 @@ def multi_crystal_analysis(stop_after=None):
       linkage_matrix = hand_blender.get_linkage_matrix()
       #print linkage_matrix
 
-
   # XXX what about multiple wavelengths?
   with open('batches.phil', 'wb') as f:
     try:
@@ -128,12 +87,6 @@ def multi_crystal_analysis(stop_after=None):
         print >> f, "  id=%s" %si.get_sweep_name()
         print >> f, "  range=%i,%i" %tuple(si.get_batches())
         print >> f, "}"
-
-  #from Modules import MultiCrystalAnalysis
-  #MultiCrystalAnalysis.run(
-    #[scaler.get_scaled_reflections(format="sca_unmerged").values()[0],
-     #"unit_cell=%s %s %s %s %s %s" %tuple(scaler.get_scaler_cell()),
-     #"batches.phil"])
 
   from Wrappers.XIA.MultiCrystalAnalysis import MultiCrystalAnalysis
   mca = MultiCrystalAnalysis()
