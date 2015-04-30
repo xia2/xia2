@@ -105,6 +105,8 @@ def multi_crystal_analysis(stop_after=None):
   return
 
 def run():
+  if os.path.exists('xia2-working.phil'):
+    sys.argv.append('xia2-working.phil')
   try:
     check_environment()
     check()
