@@ -130,6 +130,7 @@ def Aimless(DriverType = None,
       self._cycles = 100
       self._brotation = None
       self._bfactor_tie = None
+      self._surface_tie = None
 
       self._intensities = 'combine'
 
@@ -223,6 +224,10 @@ def Aimless(DriverType = None,
       if brotation:
         self._brotation = brotation
 
+      return
+
+    def set_surface_tie(self, surface_tie):
+      self._surface_tie = surface_tie
       return
 
     def set_anomalous(self, anomalous = True):
@@ -535,6 +540,9 @@ def Aimless(DriverType = None,
 
         if run[5]:
           continue
+
+      if self._secondary and self._surface_tie:
+        self.input('tie surface %.4f' % self._surface_tie)
 
       # assemble the scales command
       if self._mode == 'rotation':

@@ -123,6 +123,8 @@ class CCP4ScalerA(Scaler):
       if self._scalr_correct_decay:
         aimless.set_bfactor(bfactor = True, brotation = 2.0)
 
+    aimless.set_surface_tie(PhilIndex.params.ccp4.aimless.surface_tie)
+
     return aimless
 
   def _pointless_indexer_jiffy(self, hklin, refiner):

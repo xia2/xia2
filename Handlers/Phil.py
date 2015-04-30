@@ -173,6 +173,8 @@ ccp4 {
   aimless {
     intensities = summation profile *combine
       .type = choice
+    surface_tie = 0.001
+      .type = float
   }
 }
 xia2.settings {
