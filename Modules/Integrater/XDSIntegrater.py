@@ -565,7 +565,10 @@ class XDSIntegrater(Integrater):
 
       lattice = self._intgr_refiner.get_refiner_lattice()
 
-      matrix = r_to_rt(self.get_integrater_reindex_matrix())
+      import scitbx.matrix
+      matrix = self.get_integrater_reindex_matrix()
+      matrix = scitbx.matrix.sqr(matrix).transpose().elems
+      matrix = r_to_rt(matrix)
 
       if lattice[1] == 'P':
         mult = 1
@@ -604,6 +607,8 @@ class XDSIntegrater(Integrater):
       # will involve dividing through by the lattice centring multiplier
 
       matrix = rt_to_r(correct.get_reindex_used())
+      import scitbx.matrix
+      matrix = scitbx.matrix.sqr(matrix).transpose().elems
 
       lattice = self._intgr_refiner.get_refiner_lattice()
 
