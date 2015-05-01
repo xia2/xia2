@@ -131,6 +131,7 @@ def Aimless(DriverType = None,
       self._brotation = None
       self._bfactor_tie = None
       self._surface_tie = None
+      self._surface_link = True
 
       self._intensities = 'combine'
 
@@ -228,6 +229,10 @@ def Aimless(DriverType = None,
 
     def set_surface_tie(self, surface_tie):
       self._surface_tie = surface_tie
+      return
+
+    def set_surface_link(self, surface_link):
+      self._surface_link = surface_link
       return
 
     def set_anomalous(self, anomalous = True):
@@ -543,13 +548,16 @@ def Aimless(DriverType = None,
 
       if self._secondary and self._surface_tie:
         self.input('tie surface %.4f' % self._surface_tie)
+        if not self._surface_link:
+          self.input('unlink all')
 
       # assemble the scales command
       if self._mode == 'rotation':
         scale_command = 'scales rotation spacing %f' % self._spacing
 
         if self._secondary:
-          scale_command += ' secondary %f' % self._secondary
+          scale_command += ' secondary %d absorption %d' % \
+            (int(self._secondary), int(self._secondary))
 
         if self._bfactor:
           scale_command += ' bfactor on'

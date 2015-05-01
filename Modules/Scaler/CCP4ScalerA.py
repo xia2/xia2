@@ -124,6 +124,7 @@ class CCP4ScalerA(Scaler):
         aimless.set_bfactor(bfactor = True, brotation = 2.0)
 
     aimless.set_surface_tie(PhilIndex.params.ccp4.aimless.surface_tie)
+    aimless.set_surface_link(PhilIndex.params.ccp4.aimless.surface_link)
 
     return aimless
 

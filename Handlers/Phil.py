@@ -175,6 +175,8 @@ ccp4 {
       .type = choice
     surface_tie = 0.001
       .type = float
+    surface_link = True
+      .type = bool
   }
 }
 xia2.settings {
