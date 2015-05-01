@@ -233,6 +233,9 @@ def xia2(stop_after=None):
             else:
               raise
 
+  # save intermediate xia2.json file in case scaling step fails
+  xinfo.as_json(filename='xia2.json')
+
   if stop_after not in ('index', 'integrate'):
     Chatter.write(xinfo.get_output())
 
