@@ -32,6 +32,7 @@ from Experts.FindImages import image2template_directory
 from Handlers.CommandLine import CommandLine
 from Handlers.Flags import Flags
 from Handlers.Streams import streams_off
+from Handlers.Phil import PhilIndex
 
 from Wrappers.Labelit.DistlSweepStrength import DistlSweepStrength
 
@@ -93,13 +94,15 @@ def print_sweeps(out = sys.stdout):
 
   wavelengths = []
 
+  min_images = PhilIndex.params.xia2.settings.input.min_images
+
   for sweep in sweeplists:
     sweeps = known_sweeps[sweep]
     # this should sort on exposure epoch ...?
     sweeps.sort()
     for s in sweeps:
 
-      if len(s.get_images()) < Flags.get_min_images():
+      if len(s.get_images()) < min_images:
         continue
 
       wavelength = s.get_wavelength()
@@ -142,7 +145,7 @@ def print_sweeps(out = sys.stdout):
 
       # require at least n images to represent a sweep...
 
-      if len(s.get_images()) < Flags.get_min_images():
+      if len(s.get_images()) < min_images:
         continue
 
       j += 1

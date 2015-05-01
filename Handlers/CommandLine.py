@@ -834,9 +834,14 @@ class _CommandLine(object):
     self._understood.append(index)
     self._understood.append(index + 1)
 
-    Flags.set_min_images(int(self._argv[index + 1]))
-    Debug.write('Min No. images / sweep set to %d' % \
-                Flags.get_min_images())
+    # XXX Warning added 2015-05-01
+    Chatter.write(
+      "Warning: -min_images option deprecated: please use min_images=%s instead" %(
+        self._argv[index + 1]))
+
+    PhilIndex.update("xia2.settings.input.min_images=%i" %(
+      int(self._argv[index + 1])))
+    PhilIndex.get_python_object()
 
     return
 

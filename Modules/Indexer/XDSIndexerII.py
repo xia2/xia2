@@ -46,6 +46,7 @@ from lib.bits import auto_logfiler, nint
 from Handlers.Streams import Chatter, Debug, Journal
 from Handlers.Flags import Flags
 from Handlers.Files import FileHandler
+from Handlers.Phil import PhilIndex
 
 class XDSIndexerII(XDSIndexer):
   '''An extension of XDSIndexer using all available images.'''
@@ -85,7 +86,9 @@ class XDSIndexerII(XDSIndexer):
 
     wedges = []
 
-    if len(images) < 3 and len(images) < Flags.get_min_images():
+    min_images = PhilIndex.params.xia2.settings.input.min_images
+
+    if len(images) < 3 and len(images) < min_images:
       raise RuntimeError, \
             'This INDEXER cannot be used for only %d images' % \
             len(images)

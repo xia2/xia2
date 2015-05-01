@@ -62,7 +62,6 @@ class _Flags(object):
 
     self._xparallel = 0
 
-    self._min_images = 10
     self._start_end = None
 
     self._batch_scale = False
@@ -418,13 +417,6 @@ class _Flags(object):
 
   def get_xparm_c(self):
     return self._xparm_c
-
-  def set_min_images(self, min_images):
-    self._min_images = min_images
-    return
-
-  def get_min_images(self):
-    return self._min_images
 
   def set_start_end(self, start, end):
     assert(end > start)

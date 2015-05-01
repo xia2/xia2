@@ -250,6 +250,8 @@ def print_sweeps(out = sys.stdout):
 
   params = PhilIndex.get_python_object()
   wavelength_tolerance = params.xia2.settings.wavelength_tolerance
+  min_images = params.xia2.settings.input.min_images
+  min_oscillation_range = params.xia2.settings.input.min_oscillation_range
 
   for sweep in sweeplists:
     sweeps = known_sweeps[sweep]
@@ -257,11 +259,20 @@ def print_sweeps(out = sys.stdout):
     sweeps.sort()
     for s in sweeps:
 
-      if len(s.get_images()) < Flags.get_min_images():
+      if len(s.get_images()) < min_images:
         from Handlers.Streams import Debug
         Debug.write('Rejecting sweep %s:' %s.get_template())
         Debug.write('  Not enough images (found %i, require at least %i)'
-                    %(len(s.get_images()), Flags.get_min_images()))
+                    %(len(s.get_images()), min_images))
+        continue
+
+      oscillation_range = s.get_imageset().get_scan().get_oscillation_range()
+      width = oscillation_range[1]-oscillation_range[0]
+      if width < min_oscillation_range:
+        from Handlers.Streams import Debug
+        Debug.write('Rejecting sweep %s:' %s.get_template())
+        Debug.write('  Too narrow oscillation range (found %i, require at least %i)'
+                    %(width, min_oscillation_range))
         continue
 
       wavelength = s.get_wavelength()
@@ -386,8 +397,20 @@ def print_sweeps(out = sys.stdout):
     for s in sweeps:
 
       # require at least n images to represent a sweep...
+      if len(s.get_images()) < min_images:
+        from Handlers.Streams import Debug
+        Debug.write('Rejecting sweep %s:' %s.get_template())
+        Debug.write('  Not enough images (found %i, require at least %i)'
+                    %(len(s.get_images()), min_images))
+        continue
 
-      if len(s.get_images()) < Flags.get_min_images():
+      oscillation_range = s.get_imageset().get_scan().get_oscillation_range()
+      width = oscillation_range[1]-oscillation_range[0]
+      if width < min_oscillation_range:
+        from Handlers.Streams import Debug
+        Debug.write('Rejecting sweep %s:' %s.get_template())
+        Debug.write('  Too narrow oscillation range (found %i, require at least %i)'
+                    %(width, min_oscillation_range))
         continue
 
       j += 1
