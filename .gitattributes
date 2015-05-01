@@ -133,6 +133,7 @@ command_line/integrate.py -text
 command_line/make_sphinx_html.py -text
 command_line/multi_crystal_analysis.py -text
 command_line/print.py -text
+command_line/to_shelx.py -text
 command_line/xia2_new.py -text
 command_line/xia2_old.py -text
 command_line/xia2_setup.py -text
