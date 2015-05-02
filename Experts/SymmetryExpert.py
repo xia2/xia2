@@ -99,14 +99,14 @@ def compose_symops(a, b):
       #_multiply_symmetry_matrix(symop_to_mat(a), symop_to_mat(b))).strip()
 
 def symop_to_mat(symop):
-  symop = symop.replace('h', 'x').replace('k', 'y').replace('l', 'z')
+  #symop = symop.replace('h', 'x').replace('k', 'y').replace('l', 'z')
   return matrix.sqr(sgtbx.change_of_basis_op(
       symop).c().as_double_array()[:9]).elems
 
 def mat_to_symop(mat):
   return sgtbx.change_of_basis_op(sgtbx.rt_mx(
       matrix.sqr(mat), (0, 0, 0),
-      r_den = 12, t_den = 144)).as_xyz()
+      r_den = 12, t_den = 144)).as_hkl()
 
 def lattice_to_spacegroup_number(lattice):
   '''Return the spacegroup number corresponding to the lowest symmetry
