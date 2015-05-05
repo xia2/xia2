@@ -125,8 +125,9 @@ class XDSScalerA(Scaler):
       return_obj._sweep_information[i]['integrater'] \
         = integrater_cls.from_dict(d)
       # expects epoch as number (or int?)
-      return_obj._sweep_information[float(i)] = return_obj._sweep_information[i]
-      del return_obj._sweep_information[i]
+      if isinstance(i, basestring):
+        return_obj._sweep_information[float(i)] = return_obj._sweep_information[i]
+        del return_obj._sweep_information[i]
     return return_obj
 
 
