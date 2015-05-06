@@ -228,8 +228,8 @@ class DialsIndexer(Indexer):
 
         if (self._indxr_input_lattice is None and
             (summary['max_angular_difference'] < 0.5 and
-             summary['rmsd'] > 2.0 * rmsd_p1) or
-            (summary['rmsd'] > 1.5 * rmsd_p1)):
+             summary['min_cc'] < 0.5 and summary['rmsd'] > 2.0 * rmsd_p1) or
+            (summary['min_cc'] < 0.5 and summary['rmsd'] > 1.5 * rmsd_p1)):
           continue
 
         experiments = load.experiment_list(
