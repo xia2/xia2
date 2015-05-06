@@ -226,11 +226,12 @@ class DialsIndexer(Indexer):
         # FIXME need to do this better - for the moment only accept lattices
         # where R.M.S. deviation is less than twice P1 R.M.S. deviation.
 
-        if (self._indxr_input_lattice is None and
-            (summary['max_angular_difference'] < 0.5 and
-             summary['min_cc'] < 0.5 and summary['rmsd'] > 2.0 * rmsd_p1) or
-            (summary['min_cc'] < 0.5 and summary['rmsd'] > 1.5 * rmsd_p1)):
-          continue
+        if self._indxr_input_lattice is None:
+          if summary['max_angular_difference'] < 0.5:
+            if summary['min_cc'] < 0.5 and summary['rmsd'] > 2.0 * rmsd_p1:
+              continue
+          elif summary['rmsd'] > 1.5 * rmsd_p1:
+            continue
 
         experiments = load.experiment_list(
           summary['experiments_file'], check_format=False)
