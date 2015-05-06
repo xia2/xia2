@@ -209,10 +209,6 @@ def xia2(stop_after=None):
         for sweep in remove_sweeps:
           wavelength.remove_sweep(sweep)
 
-    # switch off parallel mode so that old-style parallelisation doesn't kick in
-    mp_params.njob = 1
-    mp_params.mode = "serial"
-
   else:
     for crystal_id in crystals.keys():
       for wavelength_id in crystals[crystal_id].get_wavelength_names():

@@ -137,50 +137,25 @@ class XWavelength(object):
         Debug.uncache()
         return s
 
-    from libtbx import easy_mp
-    from Handlers.Phil import PhilIndex
-    params = PhilIndex.get_python_object()
-    mp_params = params.xia2.settings.multiprocessing
-    njob = mp_params.njob
+    remove = []
 
-    if njob > 1:
-      drivertype = DriverFactory.get_driver_type()
+    for s in self._sweeps:
 
-      args = [(s, Flags.get_failover(), mp_params.type) for s in self._sweeps]
-      results_list = easy_mp.parallel_map(
-        run_one_sweep, args, params=None,
-        processes=njob,
-        method="threading",
-        asynchronous=True,
-        callback=None,
-        preserve_order=True,
-        preserve_exception_message=True)
+      # would be nice to put this somewhere else in the hierarchy - not
+      # sure how to do that though (should be handled in Interfaces?)
 
-      DriverFactory.set_driver_type(drivertype)
+      try:
+        result += '%s\n' % s.get_output()
+      except Exception, e:
+        if Flags.get_failover():
+          Chatter.write('Processing sweep %s failed: %s' % \
+                        (s.get_name(), str(e)))
+          remove.append(s)
+        else:
+          raise
 
-      self._sweeps = [s for s in results_list if s is not None]
-      result += "\n".join(s.get_output() for s in results_list)
-
-    else:
-      remove = []
-
-      for s in self._sweeps:
-
-        # would be nice to put this somewhere else in the hierarchy - not
-        # sure how to do that though (should be handled in Interfaces?)
-
-        try:
-          result += '%s\n' % s.get_output()
-        except Exception, e:
-          if Flags.get_failover():
-            Chatter.write('Processing sweep %s failed: %s' % \
-                          (s.get_name(), str(e)))
-            remove.append(s)
-          else:
-            raise
-
-      for s in remove:
-        self._sweeps.remove(s)
+    for s in remove:
+      self._sweeps.remove(s)
 
     return result[:-1]
 
