@@ -35,6 +35,7 @@ def Import(DriverType = None):
       self._sweep_filename = 'datablock_import.json'
       self._image_to_epoch = None
       self._reference_geometry = None
+      self._mosflm_beam_centre = None
 
       return
 
@@ -58,6 +59,9 @@ def Import(DriverType = None):
 
     def set_reference_geometry(self, reference_geometry):
       self._reference_geometry = reference_geometry
+
+    def set_mosflm_beam_centre(self, mosflm_beam_centre):
+      self._mosflm_beam_centre = mosflm_beam_centre
 
     def fix_datablock_import(self):
       import json
@@ -107,6 +111,11 @@ def Import(DriverType = None):
       if self._reference_geometry is not None:
         self.add_command_line(
           'input.reference_geometry=%s' %self._reference_geometry)
+
+      elif self._mosflm_beam_centre is not None:
+        assert len(self._mosflm_beam_centre) == 2
+        self.add_command_line(
+          'mosflm_beam_centre=%s,%s' %(self._mosflm_beam_centre))
 
       if fast_mode:
         for image in self._images[:2]:

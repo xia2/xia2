@@ -72,6 +72,7 @@ class DialsIndexer(Indexer):
     importer.set_working_directory(self.get_working_directory())
     importer.setup_from_imageset(self.get_imageset())
     auto_logfiler(importer)
+    importer.set_mosflm_beam_centre(self.get_beam_centre())
     importer.set_sweep_filename(
       os.path.join(self.get_working_directory(),
                    '%s_datablock_import.json' %importer.get_xpid()))
