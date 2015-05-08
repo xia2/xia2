@@ -638,6 +638,11 @@ class CommonScaler(Scaler):
     if self.get_scaler_anomalous():
       for key in self._scalr_scaled_refl_files:
         f = self._scalr_scaled_refl_files[key]
+        from iotbx import mtz
+        m = mtz.object(f)
+        if m.space_group().is_centric():
+          Debug.write('Spacegroup is centric: %s' % f)
+          continue
         Debug.write('Running anomalous signal analysis on %s' % f)
         a_s = anomalous_signals(f)
         self._scalr_statistics[
@@ -826,17 +831,23 @@ class CommonScaler(Scaler):
     # record this for future reference
     FileHandler.record_data_file(hklout)
 
-    from Toolkit.E4 import E4_mtz
+    from iotbx import mtz
+    m = mtz.object(hklout)
+    if not m.space_group().is_centric():
+      from Toolkit.E4 import E4_mtz
+      E4s = E4_mtz(hklout, native = True)
+      self._scalr_twinning_score = E4s.items()[0][1]
 
-    E4s = E4_mtz(hklout, native = True)
-    self._scalr_twinning_score = E4s.items()[0][1]
+      if self._scalr_twinning_score > 1.9:
+        self._scalr_twinning_conclusion = 'Your data do not appear twinned'
+      elif self._scalr_twinning_score < 1.6:
+        self._scalr_twinning_conclusion = 'Your data appear to be twinned'
+      else:
+        self._scalr_twinning_conclusion = 'Ambiguous score (1.6 < score < 1.9)'
 
-    if self._scalr_twinning_score > 1.9:
-      self._scalr_twinning_conclusion = 'Your data do not appear to be twinned'
-    elif self._scalr_twinning_score < 1.6:
-      self._scalr_twinning_conclusion = 'Your data appear to be twinned'
     else:
-      self._scalr_twinning_conclusion = 'Ambiguous score (1.6 < score < 1.9)'
+      self._scalr_twinning_conclusion = 'Data are centric'
+      self._scalr_twinning_score = 0
 
     Chatter.write('Overall twinning score: %4.2f' % self._scalr_twinning_score)
     Chatter.write(self._scalr_twinning_conclusion)
