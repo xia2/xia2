@@ -148,6 +148,24 @@ from lib.SymmetryLib import lauegroup_to_lattice, spacegroup_name_xHM_to_old, \
 # XDS_ASCII meddling things
 from Modules.XDS_ASCII import remove_misfits
 
+def mend_pointless_xml(xml_file):
+  '''Repair XML document'''
+
+  text = open(xml_file, 'r').read().split('\n')
+  result = []
+  for record in text:
+    if not 'CenProb' in record:
+      result.append(record)
+      continue
+    if '/CenProb' in record:
+      result.append(record)
+      continue
+    tokens = record.split('CenProb')
+    assert(len(tokens) == 3)
+    result.append('%sCenProb%s/CenProb%s' % tuple(tokens))
+  open(xml_file, 'w').write('\n'.join(result))
+  return
+
 def Pointless(DriverType = None):
   '''A factory for PointlessWrapper classes.'''
 
@@ -373,16 +391,12 @@ def Pointless(DriverType = None):
 
       self.start()
 
-      # change 22/AUG/06 add this command to switch off systematic
-      # absence analysis of the spacegroups.
-
       self.input('systematicabsences off')
       self.input('setting symmetry-based')
 
-      if Flags.get_small_molecule() and False:
+      if Flags.get_small_molecule():
         self.input('chirality nonchiral')
 
-      # change 23/OCT/06 if there is an input laue group, use this
       if self._input_laue_group:
         self.input('lauegroup %s' % self._input_laue_group)
 
@@ -391,8 +405,11 @@ def Pointless(DriverType = None):
       # check for errors
       self.check_for_errors()
 
-      # check the CCP4 status - oh, there isn't one!
-      # FIXME I manually need to check for errors here....
+      # check for fatal errors
+      output = self.get_all_output()
+      for j, record in enumerate(output):
+        if 'FATAL ERROR message:' in record:
+          raise RuntimeError, 'Pointless error: %s' % output[j+1].strip()
 
       hklin_spacegroup = ''
       hklin_lattice = ''
@@ -434,7 +451,7 @@ def Pointless(DriverType = None):
 
       xml_file = os.path.join(self.get_working_directory(),
                               '%d_pointless.xml' % self.get_xpid())
-
+      mend_pointless_xml(xml_file)
       # catch the case sometimes on ppc mac where pointless adds
       # an extra .xml on the end...
 
@@ -610,7 +627,7 @@ def Pointless(DriverType = None):
       self.input('lauegroup hklin')
       self.input('setting symmetry-based')
 
-      if Flags.get_small_molecule() and False:
+      if Flags.get_small_molecule():
         self.input('chirality nonchiral')
 
       self.close_wait()
@@ -622,6 +639,7 @@ def Pointless(DriverType = None):
 
       xml_file = os.path.join(self.get_working_directory(),
                               '%d_pointless.xml' % self.get_xpid())
+      mend_pointless_xml(xml_file)
 
       if not os.path.exists(xml_file) and \
          os.path.exists('%s.xml' % xml_file):
