@@ -547,6 +547,7 @@ def Aimless(DriverType = None,
           continue
 
       if self._secondary and self._surface_tie:
+        self.input('sdcorrection same')
         self.input('tie surface %.4f' % self._surface_tie)
         if not self._surface_link:
           self.input('unlink all')
