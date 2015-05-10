@@ -77,6 +77,7 @@ Test/Wrappers/Labelit/TstLabelitIndex.py -text
 Test/Wrappers/Mosflm/TstMosflmIndex.py -text
 Test/Wrappers/Mosflm/TstMosflmIntegrate.py -text
 Test/Wrappers/Mosflm/TstMosflmRefineCell.py -text
+Toolkit/AimlessSurface.py -text
 Toolkit/BackstopMask.py -text
 Toolkit/E4.py -text
 Toolkit/FrameCC.py -text
