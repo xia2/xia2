@@ -72,6 +72,8 @@ def evaluate_1degree(ClmList, png_filename):
   return
 
 def scrape_coefficients(log_file_name):
+  # FIXME cope with cases where the surfaces are not LINKed => will be several
+  # of them...
   Clm = { }
   c = 0
   l = 0
