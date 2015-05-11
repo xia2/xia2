@@ -43,7 +43,7 @@ def evaluate_1degree(ClmList, png_filename):
       Clm[(l,m)] = ClmList[idx]
       idx += 1
 
-  abscor = numpy.empty((1+360//1, 1+180//1), float, 'C')
+  abscor = numpy.empty((1+180//1, 1+360//1), float, 'C')
   sqrt2 = pymath.sqrt(2)
   for t in range(0, 361, 1):
     for p in range(0, 181, 1):
@@ -61,7 +61,7 @@ def evaluate_1degree(ClmList, png_filename):
             a += Clm[(l,m)] * Ylm.real
           else:
             a += Clm[(l,m)] * sqrt2 * ((-1) ** m) * Ylm.real
-      abscor[(t//1, p//1)] = a
+      abscor[(p//1, t//1)] = a
 
   import matplotlib
   matplotlib.use('Agg')
