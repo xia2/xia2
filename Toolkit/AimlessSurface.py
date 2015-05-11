@@ -43,13 +43,26 @@ def evaluate_1degree(ClmList):
       idx += 1
 
   abscor = []
+  sqrt2 = pymath.sqrt(2)
   for t in range(0, 361, 5):
     for p in range(0, 181, 5):
       a = 1.0
       for l in range(1, order+1):
         for m in range(-l, l+1):
-          a += Clm[(l,m)] * nsssphe.spherical_harmonic(l, m, t*d2r, p*d2r)
-      abscor.append(abs(a))
+          # Ylm = nsssphe.spherical_harmonic(l, m, t*d2r, p*d2r)
+          # Convert from complex to real according to
+          # http://en.wikipedia.org/wiki/Spherical_harmonics#Real_form
+          if m < 0:
+            Ylm = nsssphe.spherical_harmonic(l, abs(m), t*d2r, p*d2r)
+            a += Clm[(l,m)] * sqrt2 * ((-1) ** m) * Ylm.imag
+          elif m == 0:
+            Ylm = nsssphe.spherical_harmonic(l, m, t*d2r, p*d2r)
+            assert(Ylm.imag == 0.0)
+            a += Ylm.real
+          else:
+            Ylm = nsssphe.spherical_harmonic(l, m, t*d2r, p*d2r)
+            a += Clm[(l,m)] * sqrt2 * ((-1) ** m) * Ylm.real
+      abscor.append(a)
 
   print min(abscor), max(abscor)
 
