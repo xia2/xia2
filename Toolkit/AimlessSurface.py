@@ -53,15 +53,13 @@ def evaluate_1degree(ClmList, png_filename):
           # Ylm = nsssphe.spherical_harmonic(l, m, t*d2r, p*d2r)
           # Convert from complex to real according to
           # http://en.wikipedia.org/wiki/Spherical_harmonics#Real_form
+          Ylm = nsssphe.spherical_harmonic(l, abs(m), t*d2r, p*d2r)
           if m < 0:
-            Ylm = nsssphe.spherical_harmonic(l, abs(m), t*d2r, p*d2r)
             a += Clm[(l,m)] * sqrt2 * ((-1) ** m) * Ylm.imag
           elif m == 0:
-            Ylm = nsssphe.spherical_harmonic(l, m, t*d2r, p*d2r)
             assert(Ylm.imag == 0.0)
-            a += Ylm.real
+            a += Clm[(l,m)] * Ylm.real
           else:
-            Ylm = nsssphe.spherical_harmonic(l, m, t*d2r, p*d2r)
             a += Clm[(l,m)] * sqrt2 * ((-1) ** m) * Ylm.real
       abscor[(t//1, p//1)] = a
 
