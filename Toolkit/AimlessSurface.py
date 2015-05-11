@@ -27,10 +27,11 @@ def n_terms():
 def order_from_nterm(n):
   return {0: 0, 80: 8, 3: 1, 8: 2, 15: 3, 48: 6, 99: 9, 35: 5, 24: 4, 63: 7}[n]
 
-def evaluate_1degree(ClmList):
+def evaluate_1degree(ClmList, png_filename):
   from scitbx import math
   from scitbx.array_family import flex
   import math as pymath
+  import numpy
   d2r = pymath.pi / 180.0
   order = order_from_nterm(len(ClmList))
   lfg =  math.log_factorial_generator(2 * order + 1)
@@ -42,10 +43,10 @@ def evaluate_1degree(ClmList):
       Clm[(l,m)] = ClmList[idx]
       idx += 1
 
-  abscor = []
+  abscor = numpy.empty((1+360//1, 1+180//1), float, 'C')
   sqrt2 = pymath.sqrt(2)
-  for t in range(0, 361, 5):
-    for p in range(0, 181, 5):
+  for t in range(0, 361, 1):
+    for p in range(0, 181, 1):
       a = 1.0
       for l in range(1, order+1):
         for m in range(-l, l+1):
@@ -62,20 +63,28 @@ def evaluate_1degree(ClmList):
           else:
             Ylm = nsssphe.spherical_harmonic(l, m, t*d2r, p*d2r)
             a += Clm[(l,m)] * sqrt2 * ((-1) ** m) * Ylm.real
-      abscor.append(a)
+      abscor[(t//1, p//1)] = a
 
-  print min(abscor), max(abscor)
+  import matplotlib
+  matplotlib.use('Agg')
+  from matplotlib import pyplot
+  plot = pyplot.imshow(abscor)
+  pyplot.colorbar()
+  pyplot.savefig(png_filename)
+  return
 
-def scrape_coefficients():
+def scrape_coefficients(log_file_name):
   Clm = { }
   c = 0
   l = 0
 
   coefficients = []
-  for record in open('aimless.log'):
+  for record in open(log_file_name):
     if 'Coefficient(Sd)' in record:
       for token in record.split()[1:]:
         coefficients.append(float(token.split('(')[0]))
   return coefficients
 
-evaluate_1degree(scrape_coefficients())
+if __name__ == '__main__':
+  import sys
+  evaluate_1degree(scrape_coefficients(sys.argv[1]), sys.argv[2])
