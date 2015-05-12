@@ -24,6 +24,8 @@ import libtbx
 
 from Wrappers.Dials.Import import Import as _Import
 from Wrappers.Dials.Spotfinder import Spotfinder as _Spotfinder
+from Wrappers.Dials.DiscoverBetterExperimentalModel \
+     import DiscoverBetterExperimentalModel as _DiscoverBetterExperimentalModel
 from Wrappers.Dials.Index import Index as _Index
 from Wrappers.Dials.Reindex import Reindex as _Reindex
 from Wrappers.Dials.RefineBravaisSettings import RefineBravaisSettings as \
@@ -84,6 +86,13 @@ class DialsIndexer(Indexer):
     auto_logfiler(spotfinder)
     return spotfinder
 
+  def DiscoverBetterExperimentalModel(self):
+    discovery = _DiscoverBetterExperimentalModel()
+    discovery.set_working_directory(self.get_working_directory())
+    #params = PhilIndex.params.dials.index
+    auto_logfiler(discovery)
+    return discovery
+
   def Index(self):
     index = _Index()
     index.set_working_directory(self.get_working_directory())
@@ -107,6 +116,72 @@ class DialsIndexer(Indexer):
     return rbs
 
   ##########################################
+
+  def _index_select_images_i(self):
+    # FIXME copied from XDSIndexer.py!
+    '''Select correct images based on image headers.'''
+
+    phi_width = self.get_phi_width()
+
+    if phi_width == 0.0:
+      Debug.write('Phi width 0.0? Assuming 1.0!')
+      phi_width = 1.0
+
+    images = self.get_matching_images()
+
+    # characterise the images - are there just two (e.g. dna-style
+    # reference images) or is there a full block?
+
+    wedges = []
+
+    if len(images) < 3:
+      # work on the assumption that this is a reference pair
+
+      wedges.append(images[0])
+
+      if len(images) > 1:
+        wedges.append(images[1])
+
+    else:
+      block_size = min(len(images), 5)
+
+      Debug.write('Adding images for indexer: %d -> %d' % \
+                  (images[0], images[block_size - 1]))
+
+      wedges.append((images[0], images[block_size - 1]))
+
+      if int(90.0 / phi_width) + block_size in images:
+        # assume we can add a wedge around 45 degrees as well...
+        Debug.write('Adding images for indexer: %d -> %d' % \
+                    (int(45.0 / phi_width) + images[0],
+                     int(45.0 / phi_width) + images[0] +
+                     block_size - 1))
+        Debug.write('Adding images for indexer: %d -> %d' % \
+                    (int(90.0 / phi_width) + images[0],
+                     int(90.0 / phi_width) + images[0] +
+                     block_size - 1))
+        wedges.append(
+            (int(45.0 / phi_width) + images[0],
+             int(45.0 / phi_width) + images[0] + block_size - 1))
+        wedges.append(
+            (int(90.0 / phi_width) + images[0],
+             int(90.0 / phi_width) + images[0] + block_size - 1))
+
+      else:
+
+        # add some half-way anyway
+        first = (len(images) // 2) - (block_size // 2) + images[0] - 1
+        if first > wedges[0][1]:
+          last = first + block_size - 1
+          Debug.write('Adding images for indexer: %d -> %d' % \
+                      (first, last))
+          wedges.append((first, last))
+        if len(images) > block_size:
+          Debug.write('Adding images for indexer: %d -> %d' % \
+                      (images[- block_size], images[-1]))
+          wedges.append((images[- block_size], images[-1]))
+
+    return wedges
 
   def _index_prepare(self):
 
@@ -160,13 +235,27 @@ class DialsIndexer(Indexer):
       spotfinder.set_filter_ice_rings(filter_ice_rings)
     spotfinder.run()
 
-
     spot_filename = spotfinder.get_spot_filename()
     if not os.path.exists(spot_filename):
       raise RuntimeError("Spotfinding failed: %s does not exist."
                          %os.path.basename(spot_filename))
     self.set_indexer_payload("spot_list", spot_filename)
     self.set_indexer_payload("datablock.json", importer.get_sweep_filename())
+
+    if not PhilIndex.params.xia2.settings.trust_beam_centre:
+      discovery = self.DiscoverBetterExperimentalModel()
+      discovery.set_sweep_filename(importer.get_sweep_filename())
+      discovery.set_spot_filename(spot_filename)
+      wedges = self._index_select_images_i()
+      discovery.set_scan_ranges(wedges)
+      #discovery.set_scan_ranges([(first + offset, last + offset)])
+      try:
+        discovery.run()
+      except Exception, e:
+        Debug.write('DIALS beam centre search failed: %s' %str(e))
+      else:
+        self.set_indexer_payload(
+          "datablock.json", discovery.get_optimized_datablock_filename())
 
     return
 
