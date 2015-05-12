@@ -78,6 +78,9 @@ class _CommandLine(object):
     self._argv = []
     self._understood = []
 
+    self._default_template = []
+    self._default_directory = []
+
     return
 
   def get_argv(self):
