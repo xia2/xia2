@@ -231,7 +231,7 @@ class DialsIndexer(Indexer):
           if summary['max_angular_difference'] < 0.5:
             if summary['min_cc'] < 0.5 and summary['rmsd'] > 2.0 * rmsd_p1:
               continue
-          elif summary['rmsd'] > 1.5 * rmsd_p1:
+          elif summary['min_cc'] < 0.7 and summary['rmsd'] > 1.5 * rmsd_p1:
             continue
 
         experiments = load.experiment_list(
