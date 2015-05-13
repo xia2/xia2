@@ -113,7 +113,7 @@ dials {
   # FIXME all of these should go away - until we put things back in
   # explicitly
   # include scope Wrappers.Dials.Spotfinder.master_phil
-  spotfinder {
+  find_spots {
     min_spot_size = Auto
       .type = int
     phil_file = None

@@ -217,9 +217,9 @@ class DialsIndexer(Indexer):
     spotfinder.set_input_spot_filename(
       '%s_strong.pickle' %spotfinder.get_xpid())
     spotfinder.set_scan_ranges([(first + offset, last + offset)])
-    if PhilIndex.params.dials.spotfinder.phil_file is not None:
-      spotfinder.set_phil_file(PhilIndex.params.dials.spotfinder.phil_file)
-    min_spot_size = PhilIndex.params.dials.spotfinder.min_spot_size
+    if PhilIndex.params.dials.find_spots.phil_file is not None:
+      spotfinder.set_phil_file(PhilIndex.params.dials.find_spots.phil_file)
+    min_spot_size = PhilIndex.params.dials.find_spots.min_spot_size
     if min_spot_size is libtbx.Auto:
       if self.get_imageset().get_detector()[0].get_type() == 'SENSOR_PAD':
         min_spot_size = 3
@@ -227,10 +227,10 @@ class DialsIndexer(Indexer):
         min_spot_size = None
     if min_spot_size is not None:
       spotfinder.set_min_spot_size(min_spot_size)
-    sigma_strong = PhilIndex.params.dials.spotfinder.sigma_strong
+    sigma_strong = PhilIndex.params.dials.find_spots.sigma_strong
     if sigma_strong:
       spotfinder.set_sigma_strong(sigma_strong)
-    filter_ice_rings = PhilIndex.params.dials.spotfinder.filter_ice_rings
+    filter_ice_rings = PhilIndex.params.dials.find_spots.filter_ice_rings
     if filter_ice_rings:
       spotfinder.set_filter_ice_rings(filter_ice_rings)
     spotfinder.run()

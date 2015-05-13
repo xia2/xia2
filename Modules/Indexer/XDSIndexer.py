@@ -127,7 +127,7 @@ class XDSIndexer(Indexer):
 
   def DialsSpotfinder(self):
     from Wrappers.Dials.Spotfinder import Spotfinder
-    spotfinder = Spotfinder(params=PhilIndex.params.dials.spotfinder)
+    spotfinder = Spotfinder(params=PhilIndex.params.dials.find_spots)
     spotfinder.set_working_directory(self.get_working_directory())
     spotfinder.setup_from_imageset(self.get_imageset())
 
