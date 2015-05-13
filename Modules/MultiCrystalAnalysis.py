@@ -103,14 +103,14 @@ class multi_crystal_analysis(object):
     self.individual_merged_intensities = individual_merged_intensities
     self.batches = batches
 
-    racc = self.relative_anomalous_cc()
-    if racc is not None:
-      self.plot_relative_anomalous_cc(racc)
-    correlation_matrix, linkage_matrix = self.compute_correlation_coefficient_matrix()
     if run_id_to_batch_id is not None:
       labels = run_id_to_batch_id.values()
     else:
       labels = None
+    racc = self.relative_anomalous_cc()
+    if racc is not None:
+      self.plot_relative_anomalous_cc(racc, labels=labels)
+    correlation_matrix, linkage_matrix = self.compute_correlation_coefficient_matrix()
     self.plot_cc_matrix(correlation_matrix, linkage_matrix, labels=labels)
 
     self.write_output(correlation_matrix, linkage_matrix, racc)
@@ -127,12 +127,16 @@ class multi_crystal_analysis(object):
         racc.append(anom_cc)
       return racc
 
-  def plot_relative_anomalous_cc(self, racc):
+  def plot_relative_anomalous_cc(self, racc, labels=None):
     perm = flex.sort_permutation(racc)
     fig = pyplot.figure(dpi=1200, figsize=(16,12))
     pyplot.bar(range(len(racc)), list(racc.select(perm)))
-    pyplot.xticks([i+0.5 for i in range(len(racc))],
-                  ["%.0f" %(j+1) for j in perm])
+    if labels is None:
+      labels = ["%.0f" %(j+1) for j in perm]
+    assert len(labels) == len(racc)
+    pyplot.xticks([i+0.5 for i in range(len(racc))], labels)
+    locs, labels = pyplot.xticks()
+    pyplot.setp(labels, rotation=70)
     pyplot.xlabel("Dataset")
     pyplot.ylabel("Relative anomalous correlation coefficient")
     fig.savefig("racc.png")
@@ -191,6 +195,11 @@ class multi_crystal_analysis(object):
     D = D[:,index]
     im = axmatrix.matshow(D, aspect='auto', origin='lower')
     axmatrix.yaxis.tick_right()
+    if labels is not None:
+      axmatrix.xaxis.tick_bottom()
+      axmatrix.set_xticks(list(range(len(labels))))
+      axmatrix.set_xticklabels([labels[i] for i in index], rotation=70)
+      axmatrix.yaxis.set_ticks([])
 
     # Plot colorbar.
     axcolor = fig.add_axes([0.91,0.1,0.02,0.8])

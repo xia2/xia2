@@ -57,11 +57,11 @@ def multi_crystal_analysis(stop_after=None):
 
     try:
       for epoch, si in scaler._sweep_information.iteritems():
-        hand_blender.add_hklin(si['corrected_intensities'])
+        hand_blender.add_hklin(si['corrected_intensities'], label=si['sname'])
     except AttributeError, e:
       for epoch in scaler._sweep_handler.get_epochs():
         si = scaler._sweep_handler.get_sweep_information(epoch)
-        hand_blender.add_hklin(si.get_reflections())
+        hand_blender.add_hklin(si.get_reflections(), label=si.get_sweep_name())
     finally:
       hand_blender.analysis()
       Chatter.write("Dendrogram saved to: %s" %hand_blender.get_dendrogram_file())
@@ -70,6 +70,7 @@ def multi_crystal_analysis(stop_after=None):
       clusters = hand_blender.get_clusters()
 
       linkage_matrix = hand_blender.get_linkage_matrix()
+      hand_blender.plot_dendrogram()
       #print linkage_matrix
 
   # XXX what about multiple wavelengths?
