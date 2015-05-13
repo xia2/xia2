@@ -108,11 +108,14 @@ xds {
   }
 }
 dials {
-  phil_file = None
-    .type = path
-  # FIXME all of these should go away - until we put things back in
-  # explicitly
-  # include scope Wrappers.Dials.Spotfinder.master_phil
+  fix_geometry = False
+    .type = bool
+    .help = "Whether or not to refine geometry in dials.index and dials.refine."
+            "Most useful when also providing a reference geometry to xia2."
+  outlier_rejection = True
+    .type = bool
+    .help = "Whether to perform outlier rejection in dials.index and "
+            "dials.refine (using Tukey method)."
   find_spots {
     min_spot_size = Auto
       .type = int
@@ -123,14 +126,6 @@ dials {
     filter_ice_rings = False
       .type = bool
   }
-  fix_geometry = False
-    .type = bool
-    .help = "Whether or not to refine geometry in dials.index and dials.refine."
-            "Most useful when also providing a reference geometry to xia2."
-  outlier_rejection = True
-    .type = bool
-    .help = "Whether to perform outlier rejection in dials.index and "
-            "dials.refine (using Tukey method)."
   index {
     method = fft1d *fft3d real_space_grid_search
       .type = choice
@@ -163,7 +158,6 @@ dials {
     include_partials = True
       .type = bool
   }
-  # FIXME to here
 }
 ccp4 {
   truncate {

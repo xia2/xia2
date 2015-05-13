@@ -465,6 +465,19 @@ class _CommandLine(object):
       PhilIndex.update("xia2.settings.input.xinfo=%s" %xinfo_file)
       params = PhilIndex.get_python_object()
 
+    if params.dials.find_spots.phil_file is not None:
+      PhilIndex.update("dials.find_spots.phil_file=%s" %os.path.abspath(
+        params.dials.find_spots.phil_file))
+    if params.dials.index.phil_file is not None:
+      PhilIndex.update("dials.index.phil_file=%s" %os.path.abspath(
+        params.dials.index.phil_file))
+    if params.dials.refine.phil_file is not None:
+      PhilIndex.update("dials.refine.phil_file=%s" %os.path.abspath(
+        params.dials.refine.phil_file))
+    if params.dials.integrate.phil_file is not None:
+      PhilIndex.update("dials.integrate.phil_file=%s" %os.path.abspath(
+        params.dials.integrate.phil_file))
+    params = PhilIndex.get_python_object()
 
     images = PhilIndex.params.xia2.settings.input.image
     for image in images:
