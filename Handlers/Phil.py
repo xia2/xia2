@@ -139,6 +139,9 @@ dials {
   refine {
     scan_varying = True
       .type = bool
+    interval_width_degrees = 36.0
+      .help = "Width of scan between checkpoints in degrees"
+      .type = float(value_min=0.)
     use_all_reflections = True
       .type = bool
     phil_file = None
