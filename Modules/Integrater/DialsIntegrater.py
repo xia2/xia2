@@ -104,6 +104,8 @@ class DialsIntegrater(Integrater):
     integrate.set_profile_fitting(params.profile_fitting)
     integrate.set_background_outlier_algorithm(
       params.background_outlier_algorithm)
+    integrate.set_background_algorithm(
+      params.background_algorithm)
     integrate.set_working_directory(self.get_working_directory())
 
     integrate.set_experiments_filename(self._intgr_experiments_filename)

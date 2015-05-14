@@ -156,6 +156,8 @@ dials {
       .type = bool
     background_outlier_algorithm = *null nsigma truncated normal tukey mosflm
       .type = choice
+    background_algorithm = *simple null glm
+      .type = choice
     use_threading = False
       .type = bool
     include_partials = True

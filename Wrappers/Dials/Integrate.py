@@ -33,6 +33,7 @@ def Integrate(DriverType = None):
       self._integrated_filename = None
       self._profile_fitting = True
       self._outlier_algorithm = None
+      self._background_algorithm = None
       self._phil_file = None
       self._mosaic = None
       self._d_max = None
@@ -73,6 +74,13 @@ def Integrate(DriverType = None):
 
     def get_background_outlier_algorithm(self):
       return self._outlier_algorithm
+
+    def set_background_algorithm(self, algorithm):
+      self._background_algorithm = algorithm
+      return
+
+    def get_background_algorithm(self):
+      return self._background_algorithm
 
     def set_reflections_per_degree(self, reflections_per_degree):
       self._reflections_per_degree = reflections_per_degree
@@ -121,6 +129,9 @@ def Integrate(DriverType = None):
       if self._outlier_algorithm is not None:
         self.add_command_line(
           'outlier.algorithm=%s' % self._outlier_algorithm)
+      if self._background_algorithm is not None:
+        self.add_command_line(
+          'background.algorithm=%s' % self._background_algorithm)
       if self._phil_file is not None:
         self.add_command_line('%s' % self._phil_file)
       if self._d_max is not None:
