@@ -393,6 +393,9 @@ def Pointless(DriverType = None):
 
       self.input('systematicabsences off')
       self.input('setting symmetry-based')
+      # may expect more %age variation for small molecule data
+      if Flags.get_small_molecule() and self._hklref:
+        self.input('tolerance 5.0')
 
       if Flags.get_small_molecule():
         self.input('chirality nonchiral')
