@@ -265,10 +265,10 @@ def error_abrt(record):
     name = os.uname()[0]
 
     if name == 'Linux' and 'Aborted' in record:
-      raise RuntimeError, 'child aborted'
+      raise RuntimeError, 'process failed'
 
     if name == 'Darwin' and 'Abort trap' in record:
-      raise RuntimeError, 'child aborted'
+      raise RuntimeError, 'process failed'
 
 def error_python_traceback(records):
   import string
@@ -326,7 +326,7 @@ def check_return_code(code):
       raise RuntimeError, 'child killed'
 
     if code == abrt:
-      raise RuntimeError, 'child aborted'
+      raise RuntimeError, 'process failed'
 
 executable_exists_cache = { }
 
