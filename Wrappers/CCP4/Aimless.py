@@ -546,8 +546,14 @@ def Aimless(DriverType = None,
         if run[5]:
           continue
 
+      self.input('sdcorrection same')
+
+      # FIXME this is a bit of a hack - should be better determined
+      # than this...
+      if Flags.get_small_molecule():
+        self.input('sdcorrection tie sdfac 0.707 0.3 tie sdadd 0.1 0.2')
+
       if self._secondary and self._surface_tie:
-        self.input('sdcorrection same')
         self.input('tie surface %.4f' % self._surface_tie)
         if not self._surface_link:
           self.input('unlink all')
