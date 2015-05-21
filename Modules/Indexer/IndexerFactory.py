@@ -158,6 +158,16 @@ def Indexer(preselection = None):
 
   # FIXME perhaps find a less baroque way of coding this up
 
+  if not indexer and (not preselection or preselection == 'dials'):
+    try:
+      indexer = DialsIndexer()
+      Debug.write('Using DialsIndexer')
+    except NotAvailableError, e:
+      if preselection:
+        raise RuntimeError, \
+              'preselected indexer dials not available'
+      pass
+
   if not indexer and (not preselection or preselection == 'labelit'):
     try:
       indexer = LabelitIndexer()
@@ -217,16 +227,6 @@ def Indexer(preselection = None):
       if preselection:
         raise RuntimeError, \
               'preselected indexer labelit not available'
-      pass
-
-  if not indexer and (not preselection or preselection == 'dials'):
-    try:
-      indexer = DialsIndexer()
-      Debug.write('Using DialsIndexer')
-    except NotAvailableError, e:
-      if preselection:
-        raise RuntimeError, \
-              'preselected indexer dials not available'
       pass
 
   if not indexer:

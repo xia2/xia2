@@ -116,6 +116,18 @@ def Integrater():
   integrater = None
   preselection = get_preferences().get('integrater')
 
+  if not integrater and \
+         (not preselection or preselection == 'dials'):
+    try:
+      integrater = DialsIntegrater()
+      Debug.write('Using Dials Integrater')
+    except NotAvailableError, e:
+      if preselection == 'dials':
+        raise RuntimeError, \
+              'preselected integrater dials not available: ' + \
+              'dials not installed?'
+      pass
+
   if not integrater and (not preselection or preselection == 'mosflmr'):
     try:
       integrater = MosflmIntegrater()
@@ -138,18 +150,6 @@ def Integrater():
         raise RuntimeError, \
               'preselected integrater xdsr not available: ' + \
               'xds not installed?'
-      pass
-
-  if not integrater and \
-         (not preselection or preselection == 'dials'):
-    try:
-      integrater = DialsIntegrater()
-      Debug.write('Using Dials Integrater')
-    except NotAvailableError, e:
-      if preselection == 'dials':
-        raise RuntimeError, \
-              'preselected integrater dials not available: ' + \
-              'dials not installed?'
       pass
 
   if not integrater:

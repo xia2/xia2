@@ -5,7 +5,7 @@ def main(log, png):
   from xia2.Toolkit.AimlessSurface import evaluate_1degree, scrape_coefficients
   evaluate_1degree(scrape_coefficients(log), png)
   return
-  
+
 
 if __name__ == '__main__':
   import sys
