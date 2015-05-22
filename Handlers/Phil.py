@@ -267,13 +267,13 @@ xia2.settings {
     geometry_y = None
       .type = path
   }
-  indexer = mosflm labelit labelitii xds xdsii xdssum dials*
+  indexer = mosflm labelit labelitii xds xdsii xdssum dials
     .type = choice
-  refiner = mosflm xds dials*
+  refiner = mosflm xds dials
     .type = choice
-  integrater = mosflmr xdsr mosflm xds dials*
+  integrater = mosflmr xdsr mosflm xds dials
     .type = choice
-  scaler = ccp4a* xdsa
+  scaler = ccp4a xdsa
     .type = choice
   multiprocessing {
     mode = *serial parallel
