@@ -16,9 +16,6 @@ import math
 from lib.bits import auto_logfiler
 from Handlers.Files import FileHandler
 
-from Wrappers.XDS.XDSXycorr import XDSXycorr as _Xycorr
-from Wrappers.XDS.XDSInit import XDSInit as _Init
-
 class XDSRefiner(Refiner):
 
   def __init__(self):
@@ -31,39 +28,6 @@ class XDSRefiner(Refiner):
     export_xds.set_working_directory(self.get_working_directory())
     auto_logfiler(export_xds)
     return export_xds
-
-  def Xycorr(self):
-    xycorr = _Xycorr()
-    xycorr.set_working_directory(self.get_working_directory())
-
-    xycorr.setup_from_imageset(self.get_imageset())
-
-    if self.get_distance():
-      xycorr.set_distance(self.get_distance())
-
-    if self.get_wavelength():
-      xycorr.set_wavelength(self.get_wavelength())
-
-    auto_logfiler(xycorr, 'XYCORR')
-
-    return xycorr
-
-  def Init(self):
-    from Handlers.Phil import PhilIndex
-    init = _Init(params=PhilIndex.params.xds.init)
-    init.set_working_directory(self.get_working_directory())
-
-    init.setup_from_imageset(self.get_imageset())
-
-    if self.get_distance():
-      init.set_distance(self.get_distance())
-
-    if self.get_wavelength():
-      init.set_wavelength(self.get_wavelength())
-
-    auto_logfiler(init, 'INIT')
-
-    return init
 
   def _refine_prepare(self):
     for epoch, idxr in self._refinr_indexers.iteritems():
@@ -89,47 +53,55 @@ class XDSRefiner(Refiner):
         last_background = int(round(5.0 / idxr.get_phi_width())) - 1 + first
         last_background = min(last, last_background)
 
+        from Modules.Indexer.XDSIndexer import XDSIndexer
+        xds_idxr = XDSIndexer()
+        xds_idxr.set_indexer_sweep(idxr.get_indexer_sweep())
+        xds_idxr.setup_from_imageset(idxr.get_imageset())
+
         # next start to process these - first xycorr
         # FIXME run these *afterwards* as then we have a refined detector geometry
         # so the parallax correction etc. should be slightly better.
 
         #self._indxr_images = [(first, last)]
-        xycorr = self.Xycorr()
+        xycorr = xds_idxr.Xycorr()
         xycorr.set_data_range(first, last)
         xycorr.set_background_range(first, last_background)
+        xycorr.set_working_directory(self.get_working_directory())
         xycorr.run()
 
+        xds_data_files = {}
         for file in ['X-CORRECTIONS.cbf',
                      'Y-CORRECTIONS.cbf']:
-          self._xds_data_files[file] = xycorr.get_output_data_file(file)
+          xds_data_files[file] = xycorr.get_output_data_file(file)
 
         # next start to process these - then init
 
-        init = self.Init()
+        init = xds_idxr.Init()
 
         for file in ['X-CORRECTIONS.cbf',
                      'Y-CORRECTIONS.cbf']:
-          init.set_input_data_file(file, self._xds_data_files[file])
+          init.set_input_data_file(file, xds_data_files[file])
 
         init.set_data_range(first, last)
         init.set_background_range(first, last_background)
+        init.set_working_directory(self.get_working_directory())
         init.run()
 
         for file in ['BLANK.cbf',
                      'BKGINIT.cbf',
                      'GAIN.cbf']:
-          self._xds_data_files[file] = init.get_output_data_file(file)
+          xds_data_files[file] = init.get_output_data_file(file)
 
         exporter = self.ExportXDS()
         exporter.set_experiments_filename(
-          idxr.get_indexer_solution()['experiments_file'])
+          idxr.get_solution()['experiments_file'])
         exporter.run()
 
         for file in ['XPARM.XDS']:
-          self._xds_data_files[file] = os.path.join(
-            idxr.get_working_directory(), 'xds', file)
+          xds_data_files[file] = os.path.join(
+            self.get_working_directory(), 'xds', file)
 
-        for k, v in self._xds_data_files:
+        for k, v in xds_data_files.items():
           idxr.set_indexer_payload(k, v)
 
       # check that the indexer is an XDS indexer - if not then
