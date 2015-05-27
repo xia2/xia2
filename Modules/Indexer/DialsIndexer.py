@@ -233,6 +233,9 @@ class DialsIndexer(Indexer):
     filter_ice_rings = PhilIndex.params.dials.find_spots.filter_ice_rings
     if filter_ice_rings:
       spotfinder.set_filter_ice_rings(filter_ice_rings)
+    kernel_size = PhilIndex.params.dials.find_spots.kernel_size
+    if kernel_size:
+      spotfinder.set_kernel_size(kernel_size)
     spotfinder.run()
 
     spot_filename = spotfinder.get_spot_filename()

@@ -34,6 +34,7 @@ def Spotfinder(DriverType = None):
       self._scan_ranges = []
       self._nspots = 0
       self._min_spot_size = None
+      self._kernel_size = None
       self._sigma_strong = None
       self._filter_ice_rings = False
       self._phil_file = None
@@ -70,6 +71,9 @@ def Spotfinder(DriverType = None):
     def set_min_spot_size(self, min_spot_size):
       self._min_spot_size = int(min_spot_size)
 
+    def set_kernel_size(self, kernel_size):
+      self._kernel_size = int(kernel_size)
+
     def set_sigma_strong(self, sigma_strong):
       self._sigma_strong = sigma_strong
 
@@ -90,6 +94,9 @@ def Spotfinder(DriverType = None):
         self.add_command_line('spotfinder.scan_range=%d,%d' % scan_range)
       if self._min_spot_size is not None:
         self.add_command_line('min_spot_size=%i' % self._min_spot_size)
+      if self._kernel_size is not None:
+        self.add_command_line('kernel_size=%i %i' % \
+                              (self._kernel_size, self._kernel_size))
       if self._sigma_strong is not None:
         self.add_command_line('sigma_strong=%i' % self._sigma_strong)
       if self._filter_ice_rings:

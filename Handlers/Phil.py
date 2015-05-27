@@ -125,6 +125,8 @@ dials {
       .type = float
     filter_ice_rings = False
       .type = bool
+    kernel_size = 3
+      .type = int
   }
   index {
     method = fft1d *fft3d real_space_grid_search
