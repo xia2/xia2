@@ -216,7 +216,11 @@ class DialsIndexer(Indexer):
     spotfinder.set_sweep_filename(importer.get_sweep_filename())
     spotfinder.set_input_spot_filename(
       '%s_strong.pickle' %spotfinder.get_xpid())
-    spotfinder.set_scan_ranges([(first + offset, last + offset)])
+    if PhilIndex.params.dials.fast_mode:
+      wedges = self._index_select_images_i()
+      spotfinder.set_scan_ranges(wedges)
+    else:
+      spotfinder.set_scan_ranges([(first + offset, last + offset)])
     if PhilIndex.params.dials.find_spots.phil_file is not None:
       spotfinder.set_phil_file(PhilIndex.params.dials.find_spots.phil_file)
     min_spot_size = PhilIndex.params.dials.find_spots.min_spot_size

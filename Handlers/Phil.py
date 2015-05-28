@@ -116,6 +116,8 @@ dials {
     .type = bool
     .help = "Whether to perform outlier rejection in dials.index and "
             "dials.refine (using Tukey method)."
+  fast_mode = False
+    .type = bool
   find_spots {
     min_spot_size = Auto
       .type = int

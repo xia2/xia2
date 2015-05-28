@@ -43,7 +43,11 @@ class DialsRefiner(Refiner):
     params = PhilIndex.params.dials.refine
     refine.set_phil_file(params.phil_file)
     refine.set_working_directory(self.get_working_directory())
-    refine.set_scan_varying(params.scan_varying)
+    if  PhilIndex.params.dials.fast_mode:
+      # scan-static refinement in fast mode
+      refine.set_scan_varying(False)
+    else:
+      refine.set_scan_varying(params.scan_varying)
     refine.set_use_all_reflections(params.use_all_reflections)
     if params.reflections_per_degree and not params.use_all_reflections:
       refine.set_reflections_per_degree(params.reflections_per_degree)
