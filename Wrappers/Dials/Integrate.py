@@ -125,7 +125,7 @@ def Integrate(DriverType = None):
         self.get_working_directory(), '%d_integrated.pickle' %self.get_xpid())
       self.add_command_line('output.reflections=%s' % self._integrated_filename)
       self.add_command_line(
-        'profile_fitting=%s' % self._profile_fitting)
+        'profile.fitting=%s' % self._profile_fitting)
       if self._outlier_algorithm is not None:
         self.add_command_line(
           'outlier.algorithm=%s' % self._outlier_algorithm)
