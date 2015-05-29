@@ -85,7 +85,7 @@ def Spotfinder(DriverType = None):
       Debug.write('Running dials.find_spots')
 
       self.clear_command_line()
-      self.add_command_line('datablock="%s"' % self._sweep_filename)
+      self.add_command_line('input.datablock="%s"' % self._sweep_filename)
       self.add_command_line('output.reflections="%s"' % self._input_spot_filename)
       nproc = Flags.get_parallel()
       self.set_cpu_threads(nproc)
