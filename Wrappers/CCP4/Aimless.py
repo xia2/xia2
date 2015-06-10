@@ -199,7 +199,18 @@ def Aimless(DriverType = None,
       obtaining stats to different resolutions. See also
       set_new_scales_file(). This will switch on ONLYMERGE RESTORE.'''
 
-      self._scales_file = scales_file
+      # bodge: take this file and make a temporary local copy which will
+      # have the Nparameters token spaced from the number which follows
+      # it....
+
+      tmp_scales_file = os.path.join(self.get_working_directory(),
+                                     '%s.tmp' % os.path.split(scales_file)[-1])
+
+      open(tmp_scales_file, 'w').write(open(os.path.join(
+        self.get_working_directory(), scales_file)).read().replace(
+        'Nparameters', 'Nparameters '))
+
+      self._scales_file = tmp_scales_file
       return
 
     def set_new_scales_file(self, new_scales_file):
