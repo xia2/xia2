@@ -31,8 +31,6 @@ from Wrappers.Dials.Reindex import Reindex as _Reindex
 from Wrappers.Dials.RefineBravaisSettings import RefineBravaisSettings as \
      _RefineBravaisSettings
 
-from Wrappers.XIA.Diffdump import Diffdump
-
 # interfaces that this must implement to be an indexer
 
 from Schema.Interfaces.Indexer import Indexer

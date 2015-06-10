@@ -30,7 +30,8 @@ def Integrate(DriverType = None):
 
       self._experiments_filename = None
       self._reflections_filename = None
-      self._integrated_filename = None
+      self._integrated_reflections = None
+      self._integrated_experiments = None
       self._profile_fitting = True
       self._outlier_algorithm = None
       self._background_algorithm = None
@@ -100,11 +101,11 @@ def Integrate(DriverType = None):
     def add_scan_range(self, start, stop):
       self._scan_range.append((start, stop))
 
-    def get_integrated_filename(self):
-      return self._integrated_filename
+    def get_integrated_reflections(self):
+      return self._integrated_reflections
 
-    def get_mosaic(self):
-      return self._mosaic
+    def get_integrated_experiments(self):
+      return self._integrated_experiments
 
     def run(self):
       from Handlers.Streams import Debug
@@ -121,9 +122,12 @@ def Integrate(DriverType = None):
 
       self.add_command_line('nproc=%i' % nproc)
       self.add_command_line(('input.reflections=%s' % self._reflections_filename))
-      self._integrated_filename = os.path.join(
+      self._integrated_reflections = os.path.join(
         self.get_working_directory(), '%d_integrated.pickle' %self.get_xpid())
-      self.add_command_line('output.reflections=%s' % self._integrated_filename)
+      self._integrated_experiments = os.path.join(
+        self.get_working_directory(), '%d_integrated_experiments.json' %self.get_xpid())
+      self.add_command_line('output.experiments=%s' % self._integrated_experiments)
+      self.add_command_line('output.reflections=%s' % self._integrated_reflections)
       self.add_command_line(
         'profile.fitting=%s' % self._profile_fitting)
       if self._outlier_algorithm is not None:
@@ -154,10 +158,6 @@ def Integrate(DriverType = None):
 Try using a machine with more memory or using fewer processor.''')
 
       self.check_for_errors()
-
-      for record in self.get_all_output():
-        if 'Sigma_m' in record:
-          self._mosaic = float(record.split()[-2])
 
       return
 

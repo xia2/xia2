@@ -329,6 +329,8 @@ class DialsIntegrater(Integrater):
         return
       raise
 
+    self._intgr_experiments_filename = integrate.get_integrated_experiments()
+
     # also record the batch range - needed for the analysis of the
     # radiation damage in chef...
 
@@ -338,7 +340,7 @@ class DialsIntegrater(Integrater):
     # integration log on the quality of the data and (iii) the mosaic spread
     # range observed and R.M.S. deviations.
 
-    self._intgr_integrated_pickle = integrate.get_integrated_filename()
+    self._intgr_integrated_pickle = integrate.get_integrated_reflections()
     if not os.path.isfile(self._intgr_integrated_pickle):
       raise RuntimeError("Integration failed: %s does not exist."
                          %self._intgr_integrated_pickle)
@@ -349,7 +351,11 @@ class DialsIntegrater(Integrater):
     self._intgr_per_image_statistics = show.data()
     Chatter.write(self.show_per_image_statistics())
 
-    mosaic = integrate.get_mosaic()
+    import dials
+    from dxtbx.serialize import load
+    experiments = load.experiment_list(self._intgr_experiments_filename)
+    profile = experiments.profiles()[0]
+    mosaic = profile.sigma_m()
     self.set_integrater_mosaic_min_mean_max(mosaic, mosaic, mosaic)
 
     Chatter.write('Mosaic spread: %.3f < %.3f < %.3f' % \
