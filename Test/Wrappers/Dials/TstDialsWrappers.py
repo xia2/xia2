@@ -122,8 +122,8 @@ def exercise_dials_wrappers(nproc=None):
 
   print "Begin exporting"
   exporter = ExportMtz()
-  exporter.set_experiments_filename(integrater.get_experiments_filename())
-  exporter.set_reflections_filename(integrater.get_integrated_filename())
+  exporter.set_experiments_filename(integrater.get_integrated_experiments())
+  exporter.set_reflections_filename(integrater.get_integrated_reflections())
   exporter.run()
   print ''.join(exporter.get_all_output())
   print "Done exporting"
