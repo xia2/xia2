@@ -70,8 +70,8 @@ def exercise_dials_wrappers(nproc=None):
 
   print "Begin indexing"
   indexer = Index()
-  indexer.set_spot_filename(spotfinder.get_spot_filename())
-  indexer.set_sweep_filename(importer.get_sweep_filename())
+  indexer.add_spot_filename(spotfinder.get_spot_filename())
+  indexer.add_sweep_filename(importer.get_sweep_filename())
   indexer.run('fft3d')
   print ''.join(indexer.get_all_output())
   print "Done indexing"
