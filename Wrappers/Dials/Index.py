@@ -29,8 +29,8 @@ def Index(DriverType = None):
       DriverInstance.__class__.__init__(self)
       self.set_executable('dials.index')
 
-      self._sweep_filename = None
-      self._spot_filename = None
+      self._sweep_filenames = []
+      self._spot_filenames = []
       self._unit_cell = None
       self._space_group = None
       self._maximum_spot_error = 3.0
@@ -60,14 +60,12 @@ def Index(DriverType = None):
 
       return
 
-    def set_sweep_filename(self, sweep_filename):
-      if sweep_filename == 'datablock.json':
-        raise RuntimeError, 'chosen sweep name will be overwritten'
-      self._sweep_filename = sweep_filename
+    def add_sweep_filename(self, sweep_filename):
+      self._sweep_filenames.append(sweep_filename)
       return
 
-    def set_spot_filename(self, spot_filename):
-      self._spot_filename = spot_filename
+    def add_spot_filename(self, spot_filename):
+      self._spot_filenames.append(spot_filename)
       return
 
     def set_indexer_input_lattice(self, lattice):
@@ -111,8 +109,8 @@ def Index(DriverType = None):
       self._use_all_reflections = use_all_reflections
       return
 
-    def get_sweep_filename(self):
-      return os.path.join(self.get_working_directory(), 'datablock.json')
+    def get_sweep_filenames(self):
+      return self._sweep_filenames
 
     def get_experiments_filename(self):
       return self._experiment_filename
@@ -151,8 +149,10 @@ def Index(DriverType = None):
       Debug.write('Running dials.index')
 
       self.clear_command_line()
-      self.add_command_line(self._sweep_filename)
-      self.add_command_line(self._spot_filename)
+      for f in self._sweep_filenames:
+        self.add_command_line(f)
+      for f in self._spot_filenames:
+        self.add_command_line(f)
       self.add_command_line('indexing.method=%s' % method)
       nproc = Flags.get_parallel()
       self.set_cpu_threads(nproc)

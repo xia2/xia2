@@ -431,8 +431,8 @@ class DialsIndexer(Indexer):
 
   def _do_indexing(self, method=None):
     indexer = self.Index()
-    indexer.set_spot_filename(self._indxr_payload["spot_list"])
-    indexer.set_sweep_filename(self._indxr_payload["datablock.json"])
+    indexer.add_spot_filename(self._indxr_payload["spot_list"])
+    indexer.add_sweep_filename(self._indxr_payload["datablock.json"])
     if PhilIndex.params.dials.index.phil_file is not None:
       indexer.set_phil_file(PhilIndex.params.dials.index.phil_file)
     if PhilIndex.params.dials.index.max_cell:
