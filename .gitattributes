@@ -16,6 +16,7 @@ Data/detectors.lib -text
 Handlers/Executables.py -text
 Handlers/Phil.py -text
 Modules/Indexer/DialsIndexer.py -text
+Modules/Indexer/DialsMultiIndexer.py -text
 Modules/Indexer/IndexerSelectImages.py -text
 Modules/Indexer/LabelitIndexer.py -text
 Modules/Indexer/LabelitIndexerII.py -text
@@ -48,6 +49,8 @@ Modules/Xia2html/icons/img_overloaded.png -text
 Modules/Xia2html/icons/img_weak.png -text
 Modules/Xia2html/icons/info.png -text
 Modules/Xia2html/icons/warning.png -text
+Schema/Interfaces/MultiIndexer.py -text
+Schema/Interfaces/MultiIndexerSingle.py -text
 Schema/Interfaces/Refiner.py -text
 Schema/XLattice.py -text
 Test/Dials/Platform.py -text
@@ -55,6 +58,7 @@ Test/Handlers/TstXinfo.py -text
 Test/Handlers/insulin.xinfo -text
 Test/Handlers/multi.xinfo -text
 Test/Modules/Indexer/TstDialsIndexer.py -text
+Test/Modules/Indexer/TstDialsMultiIndexer.py -text
 Test/Modules/Indexer/TstLabelitIndexer.py -text
 Test/Modules/Indexer/TstLabelitIndexerII.py -text
 Test/Modules/Indexer/TstMosflmIndexer.py -text
