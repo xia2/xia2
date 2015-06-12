@@ -264,6 +264,9 @@ xia2.settings {
       .type = bool
       .help = "This feature requires the dials project to be installed, and"
               "is not currently intended for general use. Use at your peril!"
+    pointless_tolerance = 0.0
+      .type = float(value_min=0.0)
+      .help = "Tolerance to use in POINTLESS for comparison of data sets"
   }
   xds {
     geometry_x = None

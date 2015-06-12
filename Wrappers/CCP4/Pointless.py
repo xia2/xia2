@@ -393,6 +393,12 @@ def Pointless(DriverType = None):
 
       self.input('systematicabsences off')
       self.input('setting symmetry-based')
+      if self._hklref:
+        from Handlers.Phil import PhilIndex
+        dev = PhilIndex.params.xia2.settings.developmental
+        if dev.pointless_tolerance > 0.0:
+          self.input('tolerance %f' % dev.pointless_tolerance)
+
       # may expect more %age variation for small molecule data
       if Flags.get_small_molecule() and self._hklref:
         self.input('tolerance 5.0')
