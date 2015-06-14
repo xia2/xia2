@@ -735,6 +735,9 @@ class CommonScaler(Scaler):
           'mtz_merged'] = self._scalr_scaled_refl_files[
           self._scalr_scaled_refl_files.keys()[0]]
 
+    if Flags.get_small_molecule():
+      return
+
     # finally add a FreeR column, and record the new merged reflection
     # file with the free column added.
 

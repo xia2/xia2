@@ -315,6 +315,8 @@ class CCP4ScalerA(Scaler):
     # limit the reflections - e.g. if we are re-running the scaling step
     # on just a subset of the integrated data
     for e in self._sweep_handler.get_epochs():
+      if Flags.get_small_molecule():
+        continue
       si = self._sweep_handler.get_sweep_information(e)
 
       pname, xname, dname = si.get_project_info()
