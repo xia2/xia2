@@ -28,6 +28,8 @@ from Decorators.DecoratorFactory import DecoratorFactory
 
 from Handlers.Syminfo import Syminfo
 from Handlers.Phil import PhilIndex
+from Handlers.Streams import Debug
+from Handlers.Flags import Flags
 
 def Reindex(DriverType = None):
   '''A new factory for ReindexWrapper classes, which will actually use
@@ -78,6 +80,34 @@ def Reindex(DriverType = None):
 
       pass
 
+    def cctbx_reindex(self):
+      '''Reindex using CCTBX code; not pointless; assert cb_op==h,k,l in
+      first instance.'''
+
+      self.check_hklin()
+      self.check_hklout()
+
+      if not self._spacegroup and not self._operator:
+        raise RuntimeError, 'reindex requires spacegroup or operator'
+
+      if self._operator:
+        if self._operator.replace(' ', '') != 'h,k,l':
+          raise RuntimeError, 'cannot reindex right now'
+
+      assert(self._spacegroup)
+
+      Debug.write('CCTBX reindexing %s -> %s: %s' % \
+                  (self.get_hklin(), self.get_hklout(), self._spacegroup))
+
+      from iotbx import mtz
+      from cctbx.sgtbx import space_group, space_group_symbols
+      sg = space_group(space_group_symbols(str(self._spacegroup)))
+      mo = mtz.object(self.get_hklin())
+      mo2 = mo.set_space_group(sg)
+      mo2.write(self.get_hklout())
+
+      return
+
     def reindex(self):
       '''Actually perform the reindexing.'''
 
@@ -86,6 +116,15 @@ def Reindex(DriverType = None):
 
       if not self._spacegroup and not self._operator:
         raise RuntimeError, 'reindex requires spacegroup or operator'
+
+      if self._operator:
+        self._operator = self._operator.replace('[', '').replace(']', '')
+
+      Debug.write('Reindex... %s %s' % (self._spacegroup, self._operator))
+
+      if self._spacegroup and Flags.get_small_molecule():
+        if not self._operator or self._operator.replace(' ', '') == 'h,k,l':
+          return self.cctbx_reindex()
 
       self.start()
 
