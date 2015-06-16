@@ -189,6 +189,7 @@ def visit(root, directory, files):
       except Exception, e:
         from Handlers.Streams import Debug
         Debug.write('Exception: %s' %str(e))
+        Debug.write(traceback.format_exc())
         continue
       if template is not None:
         templates.add(template)

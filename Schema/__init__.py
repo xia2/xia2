@@ -97,6 +97,9 @@ def update_with_reference_geometry(imagesets, reference_geometry):
     reference_beam = imageset.get_beam()
 
   for imageset in imagesets:
-    assert reference_detector.is_similar_to(imageset.get_detector())
+    assert(reference_detector.is_similar_to(imageset.get_detector(),
+                                            fast_axis_tolerance=0.1,
+                                            slow_axis_tolerance=0.1,
+                                            origin_tolerance=10))
     imageset.set_beam(reference_beam)
     imageset.set_detector(reference_detector)
