@@ -70,6 +70,16 @@ def Aimless(DriverType = None,
       # FIXME (i) check program exists and (ii) version is known -
       # if not then default back in the calling code to using scala.
 
+      # recently fixed things...
+
+      version_values = map(int, version.split('.'))
+
+      if (version_values[1] > 5) or (version_values[1] == 5 and \
+                                     version_values[2] > 10):
+        self._fixed_secondary_lmax = True
+      else:
+        self._fixed_secondary_lmax = False
+
       # clear all the header junk
       self.reset()
 
@@ -578,8 +588,13 @@ def Aimless(DriverType = None,
         scale_command = 'scales rotation spacing %f' % self._spacing
 
         if self._secondary:
-          scale_command += ' secondary %d absorption %d' % \
-            (int(self._secondary), int(self._secondary))
+          nterm = int(self._secondary)
+          if self._fixed_secondary_lmax:
+            scale_command += ' secondary %d %d absorption %d %d' % \
+              (nterm, nterm - 1, nterm, nterm - 1)
+          else:
+            scale_command += ' secondary %dabsorption %d' % \
+              (nterm, nterm)
 
         if self._bfactor:
           scale_command += ' bfactor on'
