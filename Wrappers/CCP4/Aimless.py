@@ -562,7 +562,9 @@ def Aimless(DriverType = None,
       # FIXME this is a bit of a hack - should be better determined
       # than this...
       if Flags.get_small_molecule():
-        self.input('sdcorrection tie sdfac 0.707 0.3 tie sdadd 0.1 0.2')
+        #self.input('sdcorrection tie sdfac 0.707 0.3 tie sdadd 0.01 0.05')
+        self.input('reject all 30')
+        self.input('sdcorrection fixsdb')
 
       if self._secondary and self._surface_tie:
         self.input('tie surface %.4f' % self._surface_tie)
