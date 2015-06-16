@@ -159,6 +159,15 @@ class CommonScaler(Scaler):
         spacegroup = self._scalr_input_spacegroup
         reindex_operator = 'h,k,l'
 
+      elif Flags.get_small_molecule() and False:
+        p.decide_pointgroup()
+        spacegroup = p.get_pointgroup()
+        reindex_operator = p.get_reindex_operator()
+
+        Debug.write('Pointless thought %s (reindex as %s)' % \
+                    (spacegroup, reindex_operator))
+        self._scalr_likely_spacegroups = [spacegroup]
+
       else:
         p.decide_spacegroup()
         spacegroup = p.get_spacegroup()
@@ -739,7 +748,7 @@ class CommonScaler(Scaler):
       # record this for future reference
       FileHandler.record_data_file(self._scalr_scaled_reflection_files[
         'mtz_merged'])
-  
+
       return
 
     # finally add a FreeR column, and record the new merged reflection
