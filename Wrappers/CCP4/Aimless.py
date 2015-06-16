@@ -593,7 +593,7 @@ def Aimless(DriverType = None,
             scale_command += ' secondary %d %d absorption %d %d' % \
               (nterm, nterm - 1, nterm, nterm - 1)
           else:
-            scale_command += ' secondary %dabsorption %d' % \
+            scale_command += ' secondary %d absorption %d' % \
               (nterm, nterm)
 
         if self._bfactor:
