@@ -458,7 +458,8 @@ def Aimless(DriverType = None,
 
       self.start()
       self.input('xmlout %d_aimless.xml' % self.get_xpid())
-      self.input('bins 20')
+      if not Flags.get_small_molecule():
+        self.input('bins 20')
       self.input('run 1 all')
       self.input('scales constant')
       self.input('initial unity')
@@ -528,7 +529,8 @@ def Aimless(DriverType = None,
         self.set_working_environment('OMP_NUM_THREADS', '%d' %nproc)
         self.input('refine parallel')
       self.input('xmlout %d_aimless.xml' % self.get_xpid())
-      self.input('bins 20')
+      if not Flags.get_small_molecule():
+        self.input('bins 20')
       self.input('intensities %s' %self._intensities)
 
       if self._new_scales_file:
@@ -732,7 +734,8 @@ def Aimless(DriverType = None,
                                   '%d_aimless.xml' % self.get_xpid())
 
       self.input('xmlout %d_aimless.xml' % self.get_xpid())
-      self.input('bins 20')
+      if not Flags.get_small_molecule():
+        self.input('bins 20')
 
       if self._new_scales_file:
         self.input('dump %s' % self._new_scales_file)

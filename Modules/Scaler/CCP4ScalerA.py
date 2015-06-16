@@ -121,10 +121,11 @@ class CCP4ScalerA(Scaler):
 
       aimless.set_scaling_parameters('rotation', 2.0)
       if self._scalr_correct_decay:
-        aimless.set_bfactor(bfactor = True, brotation = 2.0)
+        aimless.set_bfactor(bfactor=True, brotation = 2.0)
 
     if Flags.get_small_molecule():
       aimless.set_scaling_parameters('rotation', 15.0)
+      aimless.set_bfactor(bfactor=False)
 
     aimless.set_surface_tie(PhilIndex.params.ccp4.aimless.surface_tie)
     aimless.set_surface_link(PhilIndex.params.ccp4.aimless.surface_link)
