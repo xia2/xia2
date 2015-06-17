@@ -134,6 +134,7 @@ Wrappers/XIA/Integrate.py -text
 Wrappers/XIA/MultiCrystalAnalysis.py -text
 command_line/add_free_set.py -text
 command_line/aimless_absorption_map.py -text
+command_line/create_mask.py -text
 command_line/documentation.py -text
 command_line/html.py -text
 command_line/index.py -text
@@ -141,6 +142,7 @@ command_line/integrate.py -text
 command_line/make_sphinx_html.py -text
 command_line/multi_crystal_analysis.py -text
 command_line/print.py -text
+command_line/show_mask.py -text
 command_line/to_shelx.py -text
 command_line/xia2_new.py -text
 command_line/xia2_old.py -text
