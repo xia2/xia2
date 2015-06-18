@@ -173,6 +173,10 @@ ccp4 {
     program = 'ctruncate'
       .type = str
   }
+  reindex {
+    program = 'pointless'
+      .type = str
+  }
   aimless {
     intensities = summation profile *combine
       .type = choice
@@ -232,6 +236,9 @@ xia2.settings {
   optimize_scaling = False
     .type = bool
     .help = "Search for best scaling model"
+  unify_setting = False
+    .type = bool
+    .help = "For one crystal, multiple orientations, unify U matrix"
   beam_centre = None
     .type = floats(size=2)
     .help = "Beam centre (x,y) coordinates (mm) using the Mosflm convention"

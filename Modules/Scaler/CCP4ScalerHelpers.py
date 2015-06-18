@@ -540,6 +540,17 @@ def anomalous_signals(hklin):
 
   return df_f, di_sigdi
 
+def get_umat_lattice_symmetry_from_mtz(mtz_file):
+  '''Get the U matrix and lattice symmetry derived from the unit cell
+    constants from an MTZ file.'''
+  from iotbx import mtz
+  m = mtz.object(mtz_file)
+  # assert first U matrix from batches is OK
+  uc = m.crystals()[0].unit_cell()
+  from cctbx.sgtbx import lattice_symmetry_group
+  lattice_symm = lattice_symmetry_group(uc, max_delta=0.0)
+  return tuple(m.batches()[0].umat()), lattice_symm
+
 if __name__ == '__main__':
 
   for arg in sys.argv[1:]:

@@ -405,6 +405,9 @@ class DialsIntegrater(Integrater):
 
     if self._intgr_spacegroup_number:
       reindex.set_spacegroup(self._intgr_spacegroup_number)
+    else:
+      reindex.set_spacegroup(lattice_to_spacegroup(
+        self.get_integrater_refiner().get_refiner_lattice()))
     hklout = '%s_reindex.mtz' % hklin[:-4]
     reindex.set_hklin(hklin)
     reindex.set_hklout(hklout)

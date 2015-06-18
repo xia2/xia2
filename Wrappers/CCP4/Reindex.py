@@ -80,36 +80,54 @@ def Reindex(DriverType = None):
 
       pass
 
-    def cctbx_reindex(self):
-      '''Reindex using CCTBX code; not pointless; assert cb_op==h,k,l in
-      first instance.'''
-
+    def reindex_old(self):
+      self.set_executable(os.path.join(os.environ.get('CBIN', ''),
+                                       'reindex'))
       self.check_hklin()
       self.check_hklout()
 
       if not self._spacegroup and not self._operator:
         raise RuntimeError, 'reindex requires spacegroup or operator'
 
-      if self._operator:
-        if self._operator.replace(' ', '') != 'h,k,l':
-          raise RuntimeError, 'cannot reindex right now'
+      self.start()
 
-      assert(self._spacegroup)
-
-      Debug.write('CCTBX reindexing %s -> %s: %s' % \
-                  (self.get_hklin(), self.get_hklout(), self._spacegroup))
-
-      from iotbx import mtz
+      # look up the space group number to cope with complex symbols
+      # that old fashioned CCP4 reindex does not understand...
       from cctbx.sgtbx import space_group, space_group_symbols
-      sg = space_group(space_group_symbols(str(self._spacegroup)))
-      mo = mtz.object(self.get_hklin())
-      mo2 = mo.set_space_group(sg)
-      mo2.write(self.get_hklout())
+      sg_t = space_group(space_group_symbols(str(self._spacegroup))).type()
 
-      return
+      if self._operator:
+        self.input('reindex %s' % str(self._operator))
+      if self._spacegroup:
+        self.input('symmetry %d' % sg_t.number())
+      self.close_wait()
+
+      # check for errors
+
+      try:
+        self.check_for_errors()
+
+      except RuntimeError, e:
+        try:
+          os.remove(self.get_hklout())
+        except:
+          pass
+
+        raise e
+
+      output = self.get_all_output()
+
+      for j, o in enumerate(output):
+        if 'Cell Dimensions : (obsolete' in o:
+          self._cell = map(float, output[j + 2].split())
+
+      return 'OK'
 
     def reindex(self):
       '''Actually perform the reindexing.'''
+
+      if PhilIndex.params.ccp4.reindex.program == 'reindex':
+        return self.reindex_old()
 
       self.check_hklin()
       self.check_hklout()
