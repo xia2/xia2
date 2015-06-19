@@ -129,7 +129,10 @@ class _CommandLine(object):
       args=self._argv, custom_processor="collect_remaining")
 
     PhilIndex.merge_phil(working_phil)
-    PhilIndex.get_python_object()
+    try:
+      PhilIndex.get_python_object()
+    except RuntimeError, e:
+      raise Sorry(e)
     #PhilIndex.get_diff().show()
 
     # things which are single token flags...
