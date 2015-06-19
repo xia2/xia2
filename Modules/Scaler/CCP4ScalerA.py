@@ -300,11 +300,6 @@ class CCP4ScalerA(Scaler):
         'gathering', self.get_scaler_xcrystal().get_name(), 'CCP4',
         {'working directory':self.get_working_directory()})
 
-    unify_setting = PhilIndex.params.xia2.settings.unify_setting
-
-    if unify_setting:
-      reference_U = None
-
     for epoch in self._sweep_handler.get_epochs():
       si = self._sweep_handler.get_sweep_information(epoch)
       pname, xname, dname = si.get_project_info()
@@ -312,46 +307,6 @@ class CCP4ScalerA(Scaler):
 
       Journal.entry({'adding data from':'%s/%s/%s' % \
                      (xname, dname, sname)})
-
-      if not unify_setting:
-        continue
-
-      # Unify the setting matrix for these sweeps - i.e. try to reindex
-      # to make all of the orientation matrices the same modulo fixed
-      # goniometer matrix F
-
-      from scitbx.matrix import sqr
-
-      fixed = sqr(si.get_integrater().get_goniometer().get_fixed_rotation())
-      Debug.write('Fixed rotation: %s' % str(fixed))
-      u, s = get_umat_lattice_symmetry_from_mtz(si.get_reflections())
-      umat = sqr(u).transpose()
-      u0 = fixed.inverse() * umat
-      Debug.write('U matrix rotation: %s' % str(u0))
-      if reference_U is None:
-        reference_U = u0
-        continue
-
-      for op in s.all_ops():
-        r = sqr(op.r().as_double())
-        nearly_i3 = (u0 * r).inverse() * reference_U
-        i3 = sqr((1, 0, 0, 0, 1, 0, 0, 0, 1))
-        score = sum([abs(_n - _i) for (_n, _i) in zip(nearly_i3, i3)])
-
-        if score > 0.1:
-          continue
-
-        Debug.write('Reindexing by %s (%.3f)' % (op.r().as_hkl(), score))
-        integrater = si.get_integrater()
-        integrater.set_integrater_reindex_operator(op.r().as_hkl())
-        si.set_reflections(integrater.get_integrater_intensities())
-
-        # recalculate
-        u, s = get_umat_lattice_symmetry_from_mtz(si.get_reflections())
-        umat = sqr(u).transpose()
-        u0 = fixed.inverse() * umat
-        Debug.write('New reindex: %s' % (u0.inverse() * reference_U))
-        break
 
     # gather data for all images which belonged to the parent
     # crystal - allowing for the fact that things could go wrong
