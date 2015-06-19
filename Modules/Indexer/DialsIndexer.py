@@ -238,6 +238,9 @@ class DialsIndexer(Indexer):
     kernel_size = PhilIndex.params.dials.find_spots.kernel_size
     if kernel_size:
       spotfinder.set_kernel_size(kernel_size)
+    global_threshold = PhilIndex.params.dials.find_spots.global_threshold
+    if global_threshold is not None:
+      spotfinder.set_global_threshold(global_threshold)
     spotfinder.run()
 
     spot_filename = spotfinder.get_spot_filename()

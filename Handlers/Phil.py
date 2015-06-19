@@ -129,6 +129,8 @@ dials {
       .type = bool
     kernel_size = 3
       .type = int
+    global_threshold = None
+      .type = float
   }
   index {
     method = fft1d *fft3d real_space_grid_search
