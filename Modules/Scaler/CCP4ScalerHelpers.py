@@ -540,7 +540,25 @@ def anomalous_signals(hklin):
 
   return df_f, di_sigdi
 
-def get_umat_lattice_symmetry_from_mtz(mtz_file):
+def mosflm_B_matrix(uc):
+  from scitbx.matrix import sqr
+  from math import sin, cos, pi
+
+  parameters = uc.parameters()
+  r_parameters = uc.reciprocal_parameters()
+
+  a = parameters[:3]
+  al = [pi * p / 180.0 for p in parameters[3:]]
+  b = r_parameters[:3]
+  be = [pi * p / 180.0 for p in r_parameters[3:]]
+
+  mosflm_B = sqr((b[0], b[1] * cos(be[2]), b[2] * cos(be[1]),
+                  0, b[1] * sin(be[2]), - b[2] * sin(be[1]) * cos(al[0]),
+                  0, 0, 1.0 / a[2]))
+
+  return mosflm_B
+
+def get_umat_bmat_lattice_symmetry_from_mtz(mtz_file):
   '''Get the U matrix and lattice symmetry derived from the unit cell
     constants from an MTZ file.'''
   from iotbx import mtz
@@ -549,11 +567,10 @@ def get_umat_lattice_symmetry_from_mtz(mtz_file):
   uc = m.crystals()[0].unit_cell()
   from cctbx.sgtbx import lattice_symmetry_group
   lattice_symm = lattice_symmetry_group(uc, max_delta=0.0)
-  return tuple(m.batches()[0].umat()), lattice_symm
+  return tuple(m.batches()[0].umat()), mosflm_B_matrix(uc), lattice_symm
 
 if __name__ == '__main__':
 
   for arg in sys.argv[1:]:
     df_f, di_sigdi = anomalous_signals(arg)
     print '%s: %.3f %.3f' % (os.path.split(arg)[-1], df_f, di_sigdi)
-

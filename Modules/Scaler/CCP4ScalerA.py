@@ -41,7 +41,7 @@ from lib.SymmetryLib import sort_lattices
 
 from CCP4ScalerHelpers import _prepare_pointless_hklin, \
      CCP4ScalerHelper, SweepInformationHandler, erzatz_resolution, \
-     get_umat_lattice_symmetry_from_mtz
+     get_umat_bmat_lattice_symmetry_from_mtz
 
 from Modules.AnalyseMyIntensities import AnalyseMyIntensities
 
@@ -519,6 +519,47 @@ class CCP4ScalerA(Scaler):
       self.set_scaler_done(False)
       self.set_scaler_prepare_done(False)
       return
+
+    # in here now optinally work through the data files which should be
+    # indexed with a consistent point group, and transform the orientation
+    # matrices by the lattice symmetry operations (if possible) to get a
+    # consistent definition of U matrix modulo fixed rotations
+
+    if PhilIndex.params.xia2.settings.unify_setting:
+
+      from scitbx.matrix import sqr
+      reference_U = None
+      i3 = sqr((1, 0, 0, 0, 1, 0, 0, 0, 1))
+
+      for epoch in self._sweep_handler.get_epochs():
+        si = self._sweep_handler.get_sweep_information(epoch)
+        intgr = si.get_integrater()
+        fixed = sqr(intgr.get_goniometer().get_fixed_rotation())
+        u, b, s = get_umat_bmat_lattice_symmetry_from_mtz(si.get_reflections())
+        U = fixed.inverse() * sqr(u).transpose()
+        B = sqr(b)
+
+        if reference_U is None:
+          reference_U = U
+          continue
+
+        results = []
+        for op in s.all_ops():
+          R = B * sqr(op.r().as_double()).transpose() * B.inverse()
+          nearly_i3 = (U * R).inverse() * reference_U
+          score = sum([abs(_n - _i) for (_n, _i) in zip(nearly_i3, i3)])
+          results.append((score, op.r().as_hkl(), op))
+
+        results.sort()
+        best = results[0]
+        Debug.write('Best reindex: %s %.3f' % (best[1], best[0]))
+        intgr.set_integrater_reindex_operator(best[2].r().as_hkl())
+        si.set_reflections(intgr.get_integrater_intensities())
+
+        # recalculate to verify
+        u, b, s = get_umat_bmat_lattice_symmetry_from_mtz(si.get_reflections())
+        U = fixed.inverse() * sqr(u).transpose()
+        Debug.write('New reindex: %s' % (U.inverse() * reference_U))
 
     if self.get_scaler_reference_reflection_file():
       self._reference = self.get_scaler_reference_reflection_file()
