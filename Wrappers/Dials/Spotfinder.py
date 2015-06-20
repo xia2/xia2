@@ -76,7 +76,7 @@ def Spotfinder(DriverType = None):
       self._kernel_size = int(kernel_size)
 
     def set_global_threshold(self, global_threshold):
-      self._global_threshold = float(global_threshold)
+      self._global_threshold = global_threshold
 
     def set_sigma_strong(self, sigma_strong):
       self._sigma_strong = sigma_strong
@@ -102,7 +102,7 @@ def Spotfinder(DriverType = None):
         self.add_command_line('kernel_size=%i %i' % \
                               (self._kernel_size, self._kernel_size))
       if self._global_threshold is not None:
-        self.add_command_line('global_threshold=%f' % self._global_threshold)
+        self.add_command_line('global_threshold=%s' % self._global_threshold)
       if self._sigma_strong is not None:
         self.add_command_line('sigma_strong=%i' % self._sigma_strong)
       if self._filter_ice_rings:
