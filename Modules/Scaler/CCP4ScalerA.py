@@ -509,7 +509,7 @@ class CCP4ScalerA(Scaler):
       integrater = si.get_integrater()
 
       integrater.set_integrater_reindex_operator(
-          reindex_ops[epoch])
+          reindex_ops[epoch], reason='setting point group')
       integrater.set_integrater_spacegroup_number(
           Syminfo.spacegroup_name_to_number(overall_pointgroup))
       # This will give us the reflections in the correct point group
@@ -553,13 +553,17 @@ class CCP4ScalerA(Scaler):
         results.sort()
         best = results[0]
         Debug.write('Best reindex: %s %.3f' % (best[1], best[0]))
-        intgr.set_integrater_reindex_operator(best[2].r().as_hkl())
+        intgr.set_integrater_reindex_operator(best[2].r().inverse().as_hkl(),
+                                              reason='unifying [U] setting')
         si.set_reflections(intgr.get_integrater_intensities())
 
         # recalculate to verify
         u, b, s = get_umat_bmat_lattice_symmetry_from_mtz(si.get_reflections())
         U = fixed.inverse() * sqr(u).transpose()
         Debug.write('New reindex: %s' % (U.inverse() * reference_U))
+
+        # FIXME I should probably raise an exception at this stage if this
+        # is not about I3...
 
     if self.get_scaler_reference_reflection_file():
       self._reference = self.get_scaler_reference_reflection_file()
@@ -635,7 +639,8 @@ class CCP4ScalerA(Scaler):
 
         integrater = si.get_integrater()
 
-        integrater.set_integrater_reindex_operator(reindex_op)
+        integrater.set_integrater_reindex_operator(reindex_op,
+                                                   reason='match reference')
         integrater.set_integrater_spacegroup_number(
             Syminfo.spacegroup_name_to_number(pointgroup))
         si.set_reflections(integrater.get_integrater_intensities())
