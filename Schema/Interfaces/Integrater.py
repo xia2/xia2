@@ -708,7 +708,8 @@ class Integrater(FrameProcessor):
     return self.set_integrater_reindex_operator('h,k,l', compose = False)
 
   def set_integrater_reindex_operator(self, reindex_operator,
-                                      compose = True):
+                                      compose=True,
+                                      reason=None):
     '''Assign a symmetry operator to the reflections - note
     that this is cumulative...'''
 
@@ -723,6 +724,10 @@ class Integrater(FrameProcessor):
     # operation or compose it with the existing operation
 
     self.set_integrater_finish_done(False)
+
+    if reason:
+      Debug.write('Reindexing to %s (compose=%s) because %s' % 
+                  (reindex_operator, compose, reason))
 
     if self._intgr_reindex_operator is None or not compose:
       self._intgr_reindex_operator = reindex_operator

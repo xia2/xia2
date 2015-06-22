@@ -366,10 +366,16 @@ class DialsIntegrater(Integrater):
   def _integrate_finish(self):
     '''Finish off the integration by running dials.export_mtz.'''
 
+    # FIXME - do we want to export every time we call this method
+    # (the file will not have changed) and also (more important) do 
+    # we want a different exported MTZ file every time (I do not think 
+    # that we do; these can be very large) - was exporter.get_xpid() -> 
+    # now dials
+
     exporter = self.ExportMtz()
     exporter.set_reflections_filename(self._intgr_integrated_pickle)
     mtz_filename = os.path.join(
-      self.get_working_directory(), '%s_integrated.mtz' %exporter.get_xpid())
+      self.get_working_directory(), '%s_integrated.mtz' % 'dials')
     exporter.set_mtz_filename(mtz_filename)
     exporter.run()
     self._intgr_integrated_filename = mtz_filename
@@ -408,6 +414,7 @@ class DialsIntegrater(Integrater):
     else:
       reindex.set_spacegroup(lattice_to_spacegroup(
         self.get_integrater_refiner().get_refiner_lattice()))
+
     hklout = '%s_reindex.mtz' % hklin[:-4]
     reindex.set_hklin(hklin)
     reindex.set_hklout(hklout)
