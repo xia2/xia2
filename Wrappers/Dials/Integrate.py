@@ -139,9 +139,9 @@ def Integrate(DriverType = None):
       if self._phil_file is not None:
         self.add_command_line('%s' % self._phil_file)
       if self._d_max is not None:
-        self.add_command_line('prediction.dmax=%f' % self._d_max)
+        self.add_command_line('prediction.d_max=%f' % self._d_max)
       if self._d_min is not None and self._d_min > 0.0:
-        self.add_command_line('prediction.dmin=%f' % self._d_min)
+        self.add_command_line('prediction.d_min=%f' % self._d_min)
       for scan_range in self._scan_range:
         self.add_command_line('scan_range=%d,%d' %scan_range)
       if self._reflections_per_degree is not None:
