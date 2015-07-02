@@ -121,10 +121,6 @@ class DialsIndexer(Indexer):
 
     phi_width = self.get_phi_width()
 
-    if phi_width == 0.0:
-      Debug.write('Phi width 0.0? Assuming 1.0!')
-      phi_width = 1.0
-
     images = self.get_matching_images()
 
     # characterise the images - are there just two (e.g. dna-style

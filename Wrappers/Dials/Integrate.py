@@ -42,8 +42,12 @@ def Integrate(DriverType = None):
       self._use_threading = False
       self._scan_range = []
       self._reflections_per_degree = None
+      self._data = { }
 
       return
+
+    def data(self):
+      return self._data
 
     def set_use_threading(self, use_threading):
       self._use_threading = use_threading
@@ -158,6 +162,25 @@ def Integrate(DriverType = None):
 Try using a machine with more memory or using fewer processor.''')
 
       self.check_for_errors()
+
+      # save some of the output for future reference - the per-image
+      # results
+
+      import math
+
+      self._data = { }
+      output = self.get_all_output()
+      for j, record in enumerate(output):
+        if 'Summary vs image number' in record:
+          k = j + 5
+          while not '-----' in output[k]:
+            values = map(float, output[k].replace('|', '').split())
+            image = int(values[1] + 1)
+            number = int(values[2] + values[3])
+            isig = values[8] * math.sqrt(number)
+            d = {'isig_tot':isig}
+            self._data[image] = d
+            k += 1
 
       return
 

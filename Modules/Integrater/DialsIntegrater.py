@@ -348,7 +348,27 @@ class DialsIntegrater(Integrater):
     show = self.ShowIsigRmsd()
     show.set_reflections_filename(self._intgr_integrated_pickle)
     show.run()
-    self._intgr_per_image_statistics = show.data()
+    data = integrate.data()
+    sdata = show.data()
+    images = list(data)
+    removed = []
+    for i in images:
+      if not i in sdata:
+        del(data[i])
+        removed.append(i)
+
+    import itertools
+    ranges = lambda l:map(lambda x:(x[0][1],x[-1][1]),
+                          map(lambda (x,y):list(y),
+                              itertools.groupby(enumerate(l),lambda (x,y):x-y)))
+
+    Debug.write('Removed as no meta-information:')
+    for r in ranges(removed):
+      Debug.write('Removed %d %d' % r)
+
+    data.update(sdata)
+    self._intgr_per_image_statistics = data
+
     Chatter.write(self.show_per_image_statistics())
 
     import dials
@@ -367,9 +387,9 @@ class DialsIntegrater(Integrater):
     '''Finish off the integration by running dials.export_mtz.'''
 
     # FIXME - do we want to export every time we call this method
-    # (the file will not have changed) and also (more important) do 
-    # we want a different exported MTZ file every time (I do not think 
-    # that we do; these can be very large) - was exporter.get_xpid() -> 
+    # (the file will not have changed) and also (more important) do
+    # we want a different exported MTZ file every time (I do not think
+    # that we do; these can be very large) - was exporter.get_xpid() ->
     # now dials
 
     exporter = self.ExportMtz()
@@ -428,10 +448,6 @@ class DialsIntegrater(Integrater):
     '''Select correct images based on image headers.'''
 
     phi_width = self.get_phi_width()
-
-    if phi_width == 0.0:
-      Debug.write('Phi width 0.0? Assuming 1.0!')
-      phi_width = 1.0
 
     images = self.get_matching_images()
 

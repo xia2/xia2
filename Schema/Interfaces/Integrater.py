@@ -726,7 +726,7 @@ class Integrater(FrameProcessor):
     self.set_integrater_finish_done(False)
 
     if reason:
-      Debug.write('Reindexing to %s (compose=%s) because %s' % 
+      Debug.write('Reindexing to %s (compose=%s) because %s' %
                   (reindex_operator, compose, reason))
 
     if self._intgr_reindex_operator is None or not compose:
@@ -809,6 +809,7 @@ class Integrater(FrameProcessor):
       overloads = None
       fraction_weak = None
       isigi = None
+      isig_tot = None
 
       # print a one-spot-per-image rendition of this...
       stddev_pixel = [stats[i]['rmsd_pixel'] for i in images]
@@ -819,12 +820,16 @@ class Integrater(FrameProcessor):
         fraction_weak = [stats[i]['fraction_weak'] for i in images]
       if 'isigi' in stats.values()[0]:
         isigi = [stats[i]['isigi'] for i in images]
+      if 'isig_tot' in stats.values()[0]:
+        isig_tot = [stats[i]['isig_tot'] for i in images]
 
       # FIXME need to allow for blank images in here etc.
 
       status_record = ''
       for i, stddev in enumerate(stddev_pixel):
-        if fraction_weak is not None and fraction_weak[i] > 0.99:
+        if isig_tot is not None and isig_tot[i] < 1.0:
+          status_record += '?'
+        elif fraction_weak is not None and fraction_weak[i] > 0.99:
           status_record += '.'
         elif isigi is not None and isigi[i] < 1.0:
           status_record += '.'
@@ -850,7 +855,7 @@ class Integrater(FrameProcessor):
       lines.append(
           '"O" => overloaded  "#" => many bad  "." => weak')
       lines.append(
-          '"@" => abandoned')
+          '"@" => abandoned   "?" => completely blank')
 
       # next look for variations in the unit cell parameters
       if 'unit_cell' in stats.values()[0]:
