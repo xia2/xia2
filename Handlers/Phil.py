@@ -121,6 +121,8 @@ dials {
   find_spots {
     min_spot_size = Auto
       .type = int
+    min_local = 0
+      .type = int
     phil_file = None
       .type = path
     sigma_strong = None
