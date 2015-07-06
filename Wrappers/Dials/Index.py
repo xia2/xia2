@@ -174,10 +174,10 @@ def Index(DriverType = None):
         from Experts.SymmetryExpert import lattice_to_spacegroup_number
         self._symm = lattice_to_spacegroup_number(
             self._indxr_input_lattice)
-        self.add_command_line('space_group=%s' % self._symm)
+        self.add_command_line('known_symmetry.space_group=%s' % self._symm)
       if self._indxr_input_cell is not None:
         self.add_command_line(
-          'unit_cell="%s,%s,%s,%s,%s,%s"' %self._indxr_input_cell)
+          'known_symmetry.unit_cell="%s,%s,%s,%s,%s,%s"' %self._indxr_input_cell)
       if self._maximum_spot_error:
         self.add_command_line('maximum_spot_error=%.f' %
                               self._maximum_spot_error)
