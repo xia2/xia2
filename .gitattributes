@@ -97,6 +97,7 @@ Wrappers/CCP4/Ctruncate.py -text
 Wrappers/Cctbx/BrehmDiederichs.py -text
 Wrappers/Cctbx/__init__.py -text
 Wrappers/Dials/Attic/Spotfinder.py -text
+Wrappers/Dials/CheckIndexingSymmetry.py -text
 Wrappers/Dials/CombineExperiments.py -text
 Wrappers/Dials/DiscoverBetterExperimentalModel.py -text
 Wrappers/Dials/EstimateResolutionLimit.py -text

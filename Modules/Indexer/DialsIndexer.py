@@ -27,7 +27,10 @@ from Wrappers.Dials.Spotfinder import Spotfinder as _Spotfinder
 from Wrappers.Dials.DiscoverBetterExperimentalModel \
      import DiscoverBetterExperimentalModel as _DiscoverBetterExperimentalModel
 from Wrappers.Dials.Index import Index as _Index
+from Wrappers.Dials.CheckIndexingSymmetry \
+     import CheckIndexingSymmetry as _CheckIndexingSymmetry
 from Wrappers.Dials.Reindex import Reindex as _Reindex
+from Wrappers.Dials.Refine import Refine as _Refine
 from Wrappers.Dials.RefineBravaisSettings import RefineBravaisSettings as \
      _RefineBravaisSettings
 
@@ -101,11 +104,30 @@ class DialsIndexer(Indexer):
       index.set_outlier_algorithm('tukey')
     return index
 
+  def CheckIndexingSymmetry(self):
+    checksym = _CheckIndexingSymmetry()
+    checksym.set_working_directory(self.get_working_directory())
+    auto_logfiler(checksym)
+    return checksym
+
   def Reindex(self):
     reindex = _Reindex()
     reindex.set_working_directory(self.get_working_directory())
     auto_logfiler(reindex)
     return reindex
+
+  def Refine(self):
+    refine = _Refine()
+    params = PhilIndex.params.dials.refine
+    refine.set_working_directory(self.get_working_directory())
+    refine.set_scan_varying(False)
+    if PhilIndex.params.dials.outlier_rejection:
+      refine.set_outlier_algorithm('tukey')
+    if PhilIndex.params.dials.fix_geometry:
+      refine.set_detector_fix('all')
+      refine.set_beam_fix('all')
+    auto_logfiler(refine)
+    return refine
 
   def RefineBravaisSettings(self):
     rbs = _RefineBravaisSettings()
@@ -296,6 +318,40 @@ class DialsIndexer(Indexer):
     from cctbx.sgtbx import bravais_types
     from dxtbx.serialize import load
 
+    indexed_file = indexer.get_indexed_filename()
+    indexed_experiments = indexer.get_experiments_filename()
+
+    checksym = self.CheckIndexingSymmetry()
+    checksym.set_experiments_filename(indexed_experiments)
+    checksym.set_indexed_filename(indexed_file)
+    checksym.set_grid_search_scope(1)
+    checksym.run()
+    hkl_offset = checksym.get_hkl_offset()
+    Debug.write("hkl_offset: %s" %str(hkl_offset))
+    if hkl_offset is not None and hkl_offset != (0,0,0):
+      reindex = self.Reindex()
+      reindex.set_hkl_offset(hkl_offset)
+      reindex.set_indexed_filename(indexed_file)
+      reindex.run()
+      indexed_file = reindex.get_reindexed_reflections_filename()
+
+      # do some scan-static refinement - run twice, first without outlier
+      # rejection as the model is too far from reality to do a sensible job of
+      # outlier rejection
+      refiner = self.Refine()
+      refiner.set_experiments_filename(indexed_experiments)
+      refiner.set_indexed_filename(reindex.get_reindexed_reflections_filename())
+      refiner.set_outlier_algorithm(None)
+      refiner.run()
+      indexed_experiments = refiner.get_refined_experiments_filename()
+
+      # now again with outlier rejection (possibly)
+      refiner = self.Refine()
+      refiner.set_experiments_filename(indexed_experiments)
+      refiner.set_indexed_filename(indexed_file)
+      refiner.run()
+      indexed_experiments = refiner.get_refined_experiments_filename()
+
     if self._indxr_input_lattice is None:
 
       # FIXME in here should respect the input unit cell and lattice if provided
@@ -306,8 +362,8 @@ class DialsIndexer(Indexer):
       # already available.
 
       rbs = self.RefineBravaisSettings()
-      rbs.set_experiments_filename(indexer.get_experiments_filename())
-      rbs.set_indexed_filename(indexer.get_indexed_filename())
+      rbs.set_experiments_filename(indexed_experiments)
+      rbs.set_indexed_filename(indexed_file)
       if PhilIndex.params.dials.fix_geometry:
         rbs.set_detector_fix('all')
         rbs.set_beam_fix('all')
@@ -394,7 +450,7 @@ class DialsIndexer(Indexer):
 
       # reindex the output reflection list to this solution
       reindex = self.Reindex()
-      reindex.set_indexed_filename(self._indxr_payload["indexed_filename"])
+      reindex.set_indexed_filename(indexed_file)
       reindex.set_cb_op(self._solution['cb_op'])
       reindex.set_space_group(str(lattice_to_spacegroup_number(
         self._solution['lattice'])))
@@ -403,11 +459,9 @@ class DialsIndexer(Indexer):
       self.set_indexer_payload("indexed_filename", indexed_file)
 
     else:
-      experiment_list = load.experiment_list(
-        indexer.get_experiments_filename())
+      experiment_list = load.experiment_list(indexed_experiments)
       self.set_indexer_experiment_list(experiment_list)
-      self.set_indexer_payload(
-        "experiments_filename", indexer.get_experiments_filename())
+      self.set_indexer_payload("experiments_filename", indexed_experiments)
 
       cryst = experiment_list.crystals()[0]
       lattice = str(bravais_types.bravais_lattice(
@@ -421,7 +475,7 @@ class DialsIndexer(Indexer):
         'nspots':-1,
         'lattice':lattice,
         'cell':cryst.get_unit_cell().parameters(),
-        'experiments_file':indexer.get_experiments_filename(),
+        'experiments_file':indexed_experiments,
         'cb_op':'a,b,c'
       }
 

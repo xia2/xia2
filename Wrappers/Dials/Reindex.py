@@ -33,6 +33,7 @@ def Reindex(DriverType = None):
       self._indexed_filename = None
       self._space_group = None
       self._cb_op = None
+      self._hkl_offset = None
 
       return
 
@@ -51,6 +52,10 @@ def Reindex(DriverType = None):
     def set_cb_op(self, cb_op):
       self._cb_op = cb_op
       return
+
+    def set_hkl_offset(self, hkl_offset):
+      assert len(hkl_offset) == 3
+      self._hkl_offset = hkl_offset
 
     def get_reindexed_experiments_filename(self):
       return self._reindexed_experiments_filename
@@ -81,6 +86,8 @@ def Reindex(DriverType = None):
         self.add_command_line("change_of_basis_op=%s" % self._cb_op)
       if self._space_group:
         self.add_command_line("space_group=%s" % self._space_group)
+      if self._hkl_offset is not None:
+        self.add_command_line("hkl_offset=%i,%i,%i" %self._hkl_offset)
 
       self.start()
       self.close_wait()
