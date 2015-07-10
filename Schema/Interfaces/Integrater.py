@@ -827,7 +827,7 @@ class Integrater(FrameProcessor):
 
       status_record = ''
       for i, stddev in enumerate(stddev_pixel):
-        if isig_tot is not None and isig_tot[i] < 1.0:
+        if False and isig_tot is not None and isig_tot[i] < 1.0:
           status_record += '?'
         elif fraction_weak is not None and fraction_weak[i] > 0.99:
           status_record += '.'
@@ -855,7 +855,7 @@ class Integrater(FrameProcessor):
       lines.append(
           '"O" => overloaded  "#" => many bad  "." => weak')
       lines.append(
-          '"@" => abandoned   "?" => completely blank')
+          '"@" => abandoned')
 
       # next look for variations in the unit cell parameters
       if 'unit_cell' in stats.values()[0]:
