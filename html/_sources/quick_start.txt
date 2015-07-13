@@ -7,7 +7,7 @@ If you don’t like reading manuals and just want to get started, try::
   xia2 -2d /here/are/my/images
 
 or::
-  
+
   xia2 -3d /here/are/my/images
 
 or::
@@ -27,7 +27,7 @@ home and dry. Some critical options:
   -3dii    tell xia2 to use XDS_ and XSCALE_, indexing with peaks found from all images
   -dials   tell xia2 to use DIALS_ and Aimless_
   =======  =====
-  
+
 If this doesn’t hit the spot, you’ll need to read the rest of the documentation.
 
 
