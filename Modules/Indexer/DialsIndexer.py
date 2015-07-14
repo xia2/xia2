@@ -321,36 +321,38 @@ class DialsIndexer(Indexer):
     indexed_file = indexer.get_indexed_filename()
     indexed_experiments = indexer.get_experiments_filename()
 
-    checksym = self.CheckIndexingSymmetry()
-    checksym.set_experiments_filename(indexed_experiments)
-    checksym.set_indexed_filename(indexed_file)
-    checksym.set_grid_search_scope(1)
-    checksym.run()
-    hkl_offset = checksym.get_hkl_offset()
-    Debug.write("hkl_offset: %s" %str(hkl_offset))
-    if hkl_offset is not None and hkl_offset != (0,0,0):
-      reindex = self.Reindex()
-      reindex.set_hkl_offset(hkl_offset)
-      reindex.set_indexed_filename(indexed_file)
-      reindex.run()
-      indexed_file = reindex.get_reindexed_reflections_filename()
+    if not PhilIndex.params.xia2.settings.trust_beam_centre:
+      checksym = self.CheckIndexingSymmetry()
+      checksym.set_experiments_filename(indexed_experiments)
+      checksym.set_indexed_filename(indexed_file)
+      checksym.set_grid_search_scope(1)
+      checksym.run()
+      hkl_offset = checksym.get_hkl_offset()
+      Debug.write("hkl_offset: %s" %str(hkl_offset))
+      if hkl_offset is not None and hkl_offset != (0,0,0):
+        reindex = self.Reindex()
+        reindex.set_hkl_offset(hkl_offset)
+        reindex.set_indexed_filename(indexed_file)
+        reindex.run()
+        indexed_file = reindex.get_reindexed_reflections_filename()
 
-      # do some scan-static refinement - run twice, first without outlier
-      # rejection as the model is too far from reality to do a sensible job of
-      # outlier rejection
-      refiner = self.Refine()
-      refiner.set_experiments_filename(indexed_experiments)
-      refiner.set_indexed_filename(reindex.get_reindexed_reflections_filename())
-      refiner.set_outlier_algorithm(None)
-      refiner.run()
-      indexed_experiments = refiner.get_refined_experiments_filename()
+        # do some scan-static refinement - run twice, first without outlier
+        # rejection as the model is too far from reality to do a sensible job of
+        # outlier rejection
+        refiner = self.Refine()
+        refiner.set_experiments_filename(indexed_experiments)
+        refiner.set_indexed_filename(
+            reindex.get_reindexed_reflections_filename())
+        refiner.set_outlier_algorithm(None)
+        refiner.run()
+        indexed_experiments = refiner.get_refined_experiments_filename()
 
-      # now again with outlier rejection (possibly)
-      refiner = self.Refine()
-      refiner.set_experiments_filename(indexed_experiments)
-      refiner.set_indexed_filename(indexed_file)
-      refiner.run()
-      indexed_experiments = refiner.get_refined_experiments_filename()
+        # now again with outlier rejection (possibly)
+        refiner = self.Refine()
+        refiner.set_experiments_filename(indexed_experiments)
+        refiner.set_indexed_filename(indexed_file)
+        refiner.run()
+        indexed_experiments = refiner.get_refined_experiments_filename()
 
     if self._indxr_input_lattice is None:
 

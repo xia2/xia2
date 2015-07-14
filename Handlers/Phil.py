@@ -293,6 +293,8 @@ xia2.settings {
     .type = choice
   scaler = ccp4a xdsa
     .type = choice
+  verbose = False
+    .type = bool
   multiprocessing {
     mode = *serial parallel
       .type = choice

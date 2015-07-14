@@ -440,6 +440,8 @@ class _CommandLine(object):
       PhilIndex.update(
         "xia2.settings.input.reference_geometry=%s" %os.path.abspath(
           params.xia2.settings.input.reference_geometry))
+      Debug.write("xia2.settings.trust_beam_centre=true")
+      PhilIndex.update("xia2.settings.trust_beam_centre=true")
       params = PhilIndex.get_python_object()
 
     try:
