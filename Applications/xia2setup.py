@@ -440,6 +440,11 @@ def print_sweeps(out = sys.stdout):
                 (end, max(s.get_images()))
 
         out.write('START_END %d %d\n' % (start, end))
+      elif CommandLine.get_start_end(
+              os.path.join(s.get_directory(), s.get_template())):
+        start_end = CommandLine.get_start_end(
+              os.path.join(s.get_directory(), s.get_template()))
+        out.write('START_END %d %d\n' % start_end)
       else:
         out.write('START_END %d %d\n' % (min(s.get_images()),
                                          max(s.get_images())))

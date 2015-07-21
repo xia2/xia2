@@ -369,6 +369,9 @@ class DialsIndexer(Indexer):
       if PhilIndex.params.dials.fix_geometry:
         rbs.set_detector_fix('all')
         rbs.set_beam_fix('all')
+
+      FileHandler.record_log_file('%s LATTICE' % self.get_indexer_sweep_name(),
+                                  rbs.get_log_file())
       rbs.run()
 
       rmsd_p1 = rbs.get_bravais_summary()[1]['rmsd']
@@ -518,6 +521,8 @@ class DialsIndexer(Indexer):
       else:
         method = PhilIndex.params.dials.index.method
 
+    FileHandler.record_log_file('%s INDEX' % self.get_indexer_sweep_name(),
+                                indexer.get_log_file())
     indexer.run(method)
 
     if not os.path.exists(indexer.get_experiments_filename()):

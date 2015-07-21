@@ -80,6 +80,7 @@ class _CommandLine(object):
 
     self._default_template = []
     self._default_directory = []
+    self._default_start_end = { }
 
     return
 
@@ -486,6 +487,20 @@ class _CommandLine(object):
 
     images = PhilIndex.params.xia2.settings.input.image
     for image in images:
+
+      start_end = None
+
+      if ':' in image:
+        tokens = image.split(':')
+        # cope with windows drives i.e. C:\data\blah\thing_0001.cbf:1:100
+        if len(tokens[0]) == 1:
+          tokens = ['%s:%s' % (tokens[0], tokens[1])] + tokens[2:]
+        if len(tokens) != 3:
+          raise RuntimeError, '/path/to/image_0001.cbf:start:end'
+
+        image = tokens[0]
+        start_end = int(tokens[1]), int(tokens[2])
+
       template, directory = image2template_directory(os.path.abspath(image))
       self._default_template.append(template)
       self._default_directory.append(directory)
@@ -493,6 +508,11 @@ class _CommandLine(object):
       Debug.write('Interpreted from image %s:' % image)
       Debug.write('Template %s' % template)
       Debug.write('Directory %s' % directory)
+      if start_end:
+        Debug.write('Image range: %d %d' % start_end)
+        self._default_start_end[os.path.join(directory, template)] = start_end
+      else:
+        Debug.write('No image range specified')
 
     # finally, check that all arguments were read and raise an exception
     # if any of them were nonsense.
@@ -1313,6 +1333,9 @@ class _CommandLine(object):
 
   def get_template(self):
     return self._default_template
+
+  def get_start_end(self, full_template):
+    return self._default_start_end.get(full_template, None)
 
   def get_directory(self):
     return self._default_directory
