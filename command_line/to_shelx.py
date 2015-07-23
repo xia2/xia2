@@ -57,7 +57,7 @@ def to_shelx(hklin, prefix, compound=''):
 if __name__ == '__main__':
   import sys
 
-  # FIXME consider concatenating argv[3:] to merge C2 H5 OH into H2H5OH
+  # FIXME concatenate argv[3:] to merge C2 H5 OH into H2H5OH
   if len(sys.argv) == 4:
     to_shelx(sys.argv[1], sys.argv[2], sys.argv[3])
   else:
