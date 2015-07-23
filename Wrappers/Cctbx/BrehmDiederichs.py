@@ -68,7 +68,7 @@ def BrehmDiederichs(DriverType = None):
       with open(results_filename, 'rb') as f:
         for line in f.readlines():
           filename, reindex_op = line.strip().rsplit(' ', 1)
-          self._reindexing_dict[filename] = reindex_op
+          self._reindexing_dict[os.path.abspath(filename)] = reindex_op
 
       return
 

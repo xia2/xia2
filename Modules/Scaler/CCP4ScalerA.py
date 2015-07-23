@@ -573,7 +573,46 @@ class CCP4ScalerA(Scaler):
       self._reference = Flags.get_reference_reflection_file()
       Debug.write('Using HKLREF %s' % self._reference)
 
-    if len(self._sweep_handler.get_epochs()) > 1 and \
+    params = PhilIndex.params
+    use_brehm_diederichs = params.xia2.settings.use_brehm_diederichs
+    if len(self._sweep_handler.get_epochs()) > 1 and use_brehm_diederichs:
+
+      brehm_diederichs_files_in = []
+      for epoch in self._sweep_handler.get_epochs():
+
+        si = self._sweep_handler.get_sweep_information(epoch)
+        hklin = si.get_reflections()
+        brehm_diederichs_files_in.append(hklin)
+
+      # now run cctbx.brehm_diederichs to figure out the indexing hand for
+      # each sweep
+      from Wrappers.Cctbx.BrehmDiederichs import BrehmDiederichs
+      from lib.bits import auto_logfiler
+      brehm_diederichs = BrehmDiederichs()
+      brehm_diederichs.set_working_directory(self.get_working_directory())
+      auto_logfiler(brehm_diederichs)
+      brehm_diederichs.set_input_filenames(brehm_diederichs_files_in)
+      # 1 or 3? 1 seems to work better?
+      brehm_diederichs.set_asymmetric(1)
+      brehm_diederichs.run()
+      reindexing_dict = brehm_diederichs.get_reindexing_dict()
+
+      for epoch in self._sweep_handler.get_epochs():
+
+        si = self._sweep_handler.get_sweep_information(epoch)
+        intgr = si.get_integrater()
+        hklin = si.get_reflections()
+
+        reindex_op = reindexing_dict.get(os.path.abspath(hklin))
+        assert reindex_op is not None
+
+        if 1 or reindex_op != 'h,k,l':
+          # apply the reindexing operator
+          intgr.set_integrater_reindex_operator(
+            reindex_op, reason='match reference')
+          si.set_reflections(intgr.get_integrater_intensities())
+
+    elif len(self._sweep_handler.get_epochs()) > 1 and \
            not self._reference:
 
       first = self._sweep_handler.get_epochs()[0]
