@@ -271,7 +271,7 @@ class DialsIndexer(Indexer):
     self.set_indexer_payload("spot_list", spot_filename)
     self.set_indexer_payload("datablock.json", importer.get_sweep_filename())
 
-    if not PhilIndex.params.xia2.settings.trust_beam_centre:
+    if 0 and not PhilIndex.params.xia2.settings.trust_beam_centre:
       discovery = self.DiscoverBetterExperimentalModel()
       discovery.set_sweep_filename(importer.get_sweep_filename())
       discovery.set_spot_filename(spot_filename)
