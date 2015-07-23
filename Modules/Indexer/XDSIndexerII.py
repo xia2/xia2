@@ -269,10 +269,10 @@ class XDSIndexerII(XDSIndexer):
         else:
           raise e
 
-    sweep = self.get_indexer_sweep_name()
-    FileHandler.record_log_file('%s INDEX' % (sweep),
+    FileHandler.record_log_file('%s INDEX' % self.get_indexer_full_name(),
                                 os.path.join(self.get_working_directory(),
                                              'IDXREF.LP'))
+
     for file in ['SPOT.XDS',
                  'XPARM.XDS']:
       self._indxr_payload[file] = idxref.get_output_data_file(file)

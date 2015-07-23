@@ -146,6 +146,9 @@ class Indexer(FrameProcessor):
     self._indxr_prepare_done = False
     self._indxr_finish_done = False
     self._indxr_sweep_name = None
+    self._indxr_pname = None
+    self._indxr_xname = None
+    self._indxr_dname = None
 
     # links to where my data is coming from
     self._indxr_sweep = None
@@ -335,6 +338,21 @@ class Indexer(FrameProcessor):
 
   def get_indexer_sweep_name(self):
     return self._indxr_sweep_name
+
+  def set_indexer_project_info(
+      self, project_name, crystal_name, dataset_name):
+    self._indxr_pname = project_name
+    self._indxr_xname = crystal_name
+    self._indxr_dname = dataset_name
+
+    return
+
+  def get_indexer_project_info(self):
+    return self._indxr_pname, self._indxr_xname, self._indxr_dname
+
+  def get_indexer_full_name(self):
+    return '%s %s %s %s' % tuple(list(self.get_indexer_project_info()) +
+                                 [self._indxr_sweep_name])
 
   # getters of the status - note well that these need to cascade
   # the status... note that for the prepare get there is no previous

@@ -286,11 +286,6 @@ class DialsIntegrater(Integrater):
     integrate.set_reflections_filename(self._intgr_indexed_filename)
     integrate.set_d_max(self._intgr_reso_low)
     integrate.set_d_min(self._intgr_reso_high)
-    pname, xname, dname = self.get_integrater_project_info()
-    sweep = self.get_integrater_sweep_name()
-    FileHandler.record_log_file('%s %s %s %s INTEGRATE' % \
-                                (pname, xname, dname, sweep),
-                                integrate.get_log_file())
 
     try:
       integrate.run()
@@ -356,22 +351,10 @@ class DialsIntegrater(Integrater):
     data = integrate.data()
     sdata = show.data()
     images = list(data)
-    removed = []
     for i in images:
       if not i in sdata:
         del(data[i])
-        removed.append(i)
-
-    import itertools
-    ranges = lambda l:map(lambda x:(x[0][1],x[-1][1]),
-                          map(lambda (x,y):list(y),
-                              itertools.groupby(enumerate(l),lambda (x,y):x-y)))
-
-    Debug.write('Removed as no meta-information:')
-    for r in ranges(removed):
-      Debug.write('Removed %d %d' % r)
-
-    data.update(sdata)
+    data.update(sdata())
     self._intgr_per_image_statistics = data
 
     Chatter.write(self.show_per_image_statistics())

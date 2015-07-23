@@ -463,10 +463,6 @@ class XDSIndexer(Indexer):
     for block in self._indxr_images[1:]:
       idxref.add_spot_range(block[0], block[1])
 
-    # FIXME need to also be able to pass in the known unit
-    # cell and lattice if already available e.g. from
-    # the helper... indirectly
-
     if self._indxr_user_input_lattice:
       idxref.set_indexer_user_input_lattice(True)
 
@@ -485,13 +481,6 @@ class XDSIndexer(Indexer):
     else:
       original_cell = None
 
-    # FIXED need to set the beam centre here - this needs to come
-    # from the input .xinfo object or header, and be converted
-    # to the XDS frame... done.
-
-    #mosflm_beam_centre = self.get_beam_centre()
-    #xds_beam_centre = beam_centre_mosflm_to_xds(
-        #mosflm_beam_centre[0], mosflm_beam_centre[1], self.get_header())
     from dxtbx.serialize.xds import to_xds
     converter = to_xds(self.get_imageset())
     xds_beam_centre = converter.detector_origin
@@ -548,8 +537,7 @@ class XDSIndexer(Indexer):
         else:
           raise e
 
-    sweep = self.get_indexer_sweep_name()
-    FileHandler.record_log_file('%s INDEX' % (sweep),
+    FileHandler.record_log_file('%s INDEX' % self.get_indexer_full_name(),
                                 os.path.join(self.get_working_directory(),
                                              'IDXREF.LP'))
 

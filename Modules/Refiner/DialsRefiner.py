@@ -10,6 +10,7 @@ from Schema.Interfaces.Refiner import Refiner
 from Handlers.Streams import Debug, Chatter
 from Handlers.Flags import Flags
 from Handlers.Phil import PhilIndex
+from Handlers.Files import FileHandler
 
 import os
 import math
@@ -154,6 +155,8 @@ class DialsRefiner(Refiner):
       elif total_phi_range < 36:
         refiner.set_interval_width_degrees(total_phi_range/2)
 
+      FileHandler.record_log_file('%s REFINE' % idxr.get_indexer_full_name(),
+                                  refiner.get_log_file())
       refiner.run()
       self._refinr_experiments_filename \
         = refiner.get_refined_experiments_filename()

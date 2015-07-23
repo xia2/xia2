@@ -152,10 +152,6 @@ def Indexer(preselection = None):
   if not preselection:
     preselection = get_preferences().get('indexer')
 
-  if not preselection:
-    if Flags.get_small_molecule():
-      preselection = 'mosflm'
-
   # FIXME perhaps find a less baroque way of coding this up
 
   if not indexer and (not preselection or preselection == 'dials'):

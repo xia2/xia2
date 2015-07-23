@@ -596,14 +596,15 @@ class XSweep(object):
       # defined herein...
 
       # that would be CRYSTAL_ID/WAVELENGTH/SWEEP/index &c.
-
       if not self.get_wavelength():
         wavelength_id = "default"
         crystal_id = "default"
+        project_id = "default"
 
       else:
         wavelength_id = self.get_wavelength().get_name()
         crystal_id = self.get_wavelength().get_crystal().get_name()
+        project_id = self.get_wavelength().get_crystal().get_project().get_name()
 
       working_directory = Environment.generate_directory(
         [crystal_id, wavelength_id, self.get_name(), 'index'])
@@ -646,6 +647,9 @@ class XSweep(object):
       if self._frames_to_process:
         frames = self._frames_to_process
         self._indexer.set_frame_wedge(frames[0], frames[1])
+
+      self._indexer.set_indexer_project_info(
+        project_id, crystal_id, wavelength_id)
 
       self._indexer.set_indexer_sweep_name(self._name)
 
