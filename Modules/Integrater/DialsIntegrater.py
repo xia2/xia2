@@ -286,6 +286,11 @@ class DialsIntegrater(Integrater):
     integrate.set_reflections_filename(self._intgr_indexed_filename)
     integrate.set_d_max(self._intgr_reso_low)
     integrate.set_d_min(self._intgr_reso_high)
+    pname, xname, dname = self.get_integrater_project_info()
+    sweep = self.get_integrater_sweep_name()
+    FileHandler.record_log_file('%s %s %s %s INTEGRATE' % \
+                                (pname, xname, dname, sweep),
+                                integrate.get_log_file())
 
     try:
       integrate.run()

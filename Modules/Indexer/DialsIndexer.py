@@ -271,7 +271,7 @@ class DialsIndexer(Indexer):
     self.set_indexer_payload("spot_list", spot_filename)
     self.set_indexer_payload("datablock.json", importer.get_sweep_filename())
 
-    if 0 and not PhilIndex.params.xia2.settings.trust_beam_centre:
+    if not PhilIndex.params.xia2.settings.trust_beam_centre:
       discovery = self.DiscoverBetterExperimentalModel()
       discovery.set_sweep_filename(importer.get_sweep_filename())
       discovery.set_spot_filename(spot_filename)
@@ -370,7 +370,7 @@ class DialsIndexer(Indexer):
         rbs.set_detector_fix('all')
         rbs.set_beam_fix('all')
 
-      FileHandler.record_log_file('%s LATTICE' % self.get_indexer_sweep_name(),
+      FileHandler.record_log_file('%s LATTICE' % self.get_indexer_full_name(),
                                   rbs.get_log_file())
       rbs.run()
 
@@ -521,7 +521,7 @@ class DialsIndexer(Indexer):
       else:
         method = PhilIndex.params.dials.index.method
 
-    FileHandler.record_log_file('%s INDEX' % self.get_indexer_sweep_name(),
+    FileHandler.record_log_file('%s INDEX' % self.get_indexer_full_name(),
                                 indexer.get_log_file())
     indexer.run(method)
 

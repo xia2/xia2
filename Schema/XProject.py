@@ -38,13 +38,13 @@ class XProject(object):
   '''A representation of a complete project. This will contain a dictionary
   of crystals.'''
 
-  def __init__(self, xinfo_file = None):
+  def __init__(self, xinfo_file=None, name=None):
 
     self._crystals = { }
     if xinfo_file:
       self.setup_from_xinfo_file(xinfo_file)
     else:
-      self._name = None
+      self._name = name
 
     return
 
