@@ -85,7 +85,7 @@ def exercise_mosflm_index():
   assert approx_equal(indexer.get_separation(), [0.48, 0.57])
   assert approx_equal(indexer.get_raster(), [15, 17, 9, 5, 5])
   assert approx_equal(
-    indexer.get_mosaic_spreads(), [0.5, 0.35, 0.45, 0.65, 0.4])
+    indexer.get_mosaic_spreads(), [0.5, 0.35, 0.45, 0.65, 0.4], eps=1e-1)
   assert indexer.get_lattice() == 'cI'
 
 def run():
