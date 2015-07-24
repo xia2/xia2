@@ -47,7 +47,7 @@ def exercise_mosflm_indexer():
   indexer.index()
 
   assert approx_equal(indexer.get_indexer_cell(),
-                      (78.6657, 78.6657, 78.6657, 90.0, 90.0, 90.0), eps=1e-4)
+                      (78.6657, 78.6657, 78.6657, 90.0, 90.0, 90.0), eps=1e-3)
   experiment = indexer.get_indexer_experiment_list()[0]
   sgi = experiment.crystal.get_space_group().info()
   assert sgi.type().number() == 197

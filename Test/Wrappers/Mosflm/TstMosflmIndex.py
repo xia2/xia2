@@ -54,7 +54,7 @@ def exercise_mosflm_index():
   print output
   assert approx_equal(indexer.get_refined_beam_centre(), (94.33, 94.58))
   assert approx_equal(indexer.get_refined_unit_cell(),
-                      (78.655, 78.655, 78.655, 90.0, 90.0, 90.0))
+                      (78.655, 78.655, 78.655, 90.0, 90.0, 90.0), 1e-3)
   assert approx_equal(indexer.get_refined_distance(), 160.0)
   assert approx_equal(indexer.get_resolution_estimate(), 2.12)
   assert approx_equal(indexer.get_separation(), [0.57, 0.57])
