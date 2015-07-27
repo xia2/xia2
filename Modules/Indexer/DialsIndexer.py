@@ -229,7 +229,9 @@ class DialsIndexer(Indexer):
     # FIXME this should really use the assigned spot finding regions
     offset = self.get_frame_offset()
     spotfinder = self.Spotfinder()
-    spotfinder.set_sweep_filename(importer.get_sweep_filename())
+    spotfinder.set_input_sweep_filename(importer.get_sweep_filename())
+    spotfinder.set_output_sweep_filename(
+      '%s_datablock.json' %spotfinder.get_xpid())
     spotfinder.set_input_spot_filename(
       '%s_strong.pickle' %spotfinder.get_xpid())
     if PhilIndex.params.dials.fast_mode:
@@ -269,11 +271,13 @@ class DialsIndexer(Indexer):
       raise RuntimeError("Spotfinding failed: %s does not exist."
                          %os.path.basename(spot_filename))
     self.set_indexer_payload("spot_list", spot_filename)
-    self.set_indexer_payload("datablock.json", importer.get_sweep_filename())
+    self.set_indexer_payload(
+      "datablock.json", spotfinder.get_output_sweep_filename())
+    self.set_indexer_payload("spot_list", spot_filename)
 
     if 0 and not PhilIndex.params.xia2.settings.trust_beam_centre:
       discovery = self.DiscoverBetterExperimentalModel()
-      discovery.set_sweep_filename(importer.get_sweep_filename())
+      discovery.set_sweep_filename(self.get_indexer_payload("datablock.json"))
       discovery.set_spot_filename(spot_filename)
       wedges = self._index_select_images_i()
       discovery.set_scan_ranges(wedges)

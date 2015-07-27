@@ -62,7 +62,7 @@ def exercise_dials_wrappers(nproc=None):
 
   print "Begin spotfinding"
   spotfinder = Spotfinder()
-  spotfinder.set_sweep_filename(importer.get_sweep_filename())
+  spotfinder.set_input_sweep_filename(importer.get_sweep_filename())
   spotfinder.set_scan_ranges(scan_ranges)
   spotfinder.run()
   print ''.join(spotfinder.get_all_output())

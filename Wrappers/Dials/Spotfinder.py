@@ -29,7 +29,8 @@ def Spotfinder(DriverType = None):
       DriverInstance.__class__.__init__(self)
       self.set_executable('dials.find_spots')
 
-      self._sweep_filename = None
+      self._input_sweep_filename = None
+      self._output_sweep_filename = None
       self._input_spot_filename = 'strong.pickle'
       self._scan_ranges = []
       self._nspots = 0
@@ -43,9 +44,16 @@ def Spotfinder(DriverType = None):
 
       return
 
-    def set_sweep_filename(self, sweep_filename):
-      self._sweep_filename = sweep_filename
+    def set_input_sweep_filename(self, sweep_filename):
+      self._input_sweep_filename = sweep_filename
       return
+
+    def set_output_sweep_filename(self, sweep_filename):
+      self._output_sweep_filename = sweep_filename
+      return
+
+    def get_output_sweep_filename(self):
+      return self._output_sweep_filename
 
     def set_input_spot_filename(self, spot_filename):
       self._input_spot_filename = spot_filename
@@ -93,7 +101,10 @@ def Spotfinder(DriverType = None):
       Debug.write('Running dials.find_spots')
 
       self.clear_command_line()
-      self.add_command_line('input.datablock="%s"' % self._sweep_filename)
+      self.add_command_line('input.datablock="%s"' % self._input_sweep_filename)
+      if self._output_sweep_filename is not None:
+        self.add_command_line(
+          'output.datablock="%s"' % self._output_sweep_filename)
       self.add_command_line('output.reflections="%s"' % self._input_spot_filename)
       nproc = Flags.get_parallel()
       self.set_cpu_threads(nproc)
