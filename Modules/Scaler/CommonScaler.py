@@ -10,6 +10,7 @@
 from Schema.Interfaces.Scaler import Scaler
 from Handlers.Streams import Debug, Chatter
 from Handlers.Flags import Flags
+from Handlers.Phil import PhilIndex
 from CCP4ScalerHelpers import anomalous_signals
 from Modules.CCP4InterRadiationDamageDetector import \
      CCP4InterRadiationDamageDetector
@@ -42,19 +43,52 @@ class CommonScaler(Scaler):
 
     max_batches = 0
 
-    for epoch in self._sweep_handler.get_epochs():
+    for e in self._sweep_handler.get_epochs():
+      if Flags.get_small_molecule():
+        continue
+      si = self._sweep_handler.get_sweep_information(e)
 
-      # keep a count of the maximum number of batches in a block -
-      # this will be used to make rebatch work below.
+      pname, xname, dname = si.get_project_info()
+      sname = si.get_sweep_name()
+
+
+
+    for epoch in self._sweep_handler.get_epochs():
 
       si = self._sweep_handler.get_sweep_information(epoch)
       hklin = si.get_reflections()
 
+      # limit the reflections - e.g. if we are re-running the scaling step
+      # on just a subset of the integrated data
+
+      hklin = si.get_reflections()
+      limit_batch_range = None
+      for sweep in PhilIndex.params.xia2.settings.sweep:
+        if sweep.id == sname and sweep.range is not None:
+          limit_batch_range = sweep.range
+          break
+
+      if limit_batch_range is not None:
+        Debug.write('Limiting batch range for %s: %s' %(sname, limit_batch_range))
+        start, end = limit_batch_range
+        hklout = os.path.splitext(hklin)[0] + '_tmp.mtz'
+        FileHandler.record_temporary_file(hklout)
+        rb = self._factory.Pointless()
+        rb.set_hklin(hklin)
+        rb.set_hklout(hklout)
+        rb.limit_batches(start, end)
+        si.set_reflections(hklout)
+        si.set_batches(limit_batch_range)
+
+      # keep a count of the maximum number of batches in a block -
+      # this will be used to make rebatch work below.
+
+      hklin = si.get_reflections()
       md = self._factory.Mtzdump()
       md.set_hklin(hklin)
       md.dump()
 
-      batches = si.get_batches()
+      batches = md.get_batches()
       if 1 + max(batches) - min(batches) > max_batches:
         max_batches = max(batches) - min(batches) + 1
 

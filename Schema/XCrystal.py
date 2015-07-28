@@ -908,7 +908,11 @@ class XCrystal(object):
       # if both of these are true then produce a null scaler
       # which will wrap this information
 
-      working_directory = Environment.generate_directory([self._name, 'scale'])
+      from libtbx import Auto
+      scale_dir = PhilIndex.params.xia2.settings.scale.directory
+      if scale_dir is Auto:
+        scale_dir = 'scale'
+      working_directory = Environment.generate_directory([self._name, scale_dir])
 
       self._scaler = Scaler()
 

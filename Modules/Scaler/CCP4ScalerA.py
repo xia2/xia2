@@ -305,8 +305,19 @@ class CCP4ScalerA(Scaler):
       pname, xname, dname = si.get_project_info()
       sname = si.get_sweep_name()
 
-      Journal.entry({'adding data from':'%s/%s/%s' % \
-                     (xname, dname, sname)})
+      exclude_sweep = False
+
+      for sweep in PhilIndex.params.xia2.settings.sweep:
+        if sweep.id == sname and sweep.exclude:
+          exclude_sweep = True
+          break
+
+      if exclude_sweep:
+        self._sweep_handler.remove_epoch(epoch)
+        Debug.write('Excluding sweep %s' %sname)
+      else:
+        Journal.entry({'adding data from':'%s/%s/%s' % \
+                       (xname, dname, sname)})
 
     # gather data for all images which belonged to the parent
     # crystal - allowing for the fact that things could go wrong
@@ -316,28 +327,6 @@ class CCP4ScalerA(Scaler):
     for e in self._sweep_handler.get_epochs():
       si = self._sweep_handler.get_sweep_information(e)
       assert is_mtz_file(si.get_reflections())
-
-    # limit the reflections - e.g. if we are re-running the scaling step
-    # on just a subset of the integrated data
-    for e in self._sweep_handler.get_epochs():
-      if Flags.get_small_molecule():
-        continue
-      si = self._sweep_handler.get_sweep_information(e)
-
-      pname, xname, dname = si.get_project_info()
-      sname = si.get_sweep_name()
-
-      start, end = si.get_batch_range()
-      hklin = si.get_reflections()
-      hklout = os.path.join(self.get_working_directory(),
-                            '%s_%s_%s_%s_integrated.mtz' %(
-                            pname, xname, dname, sname))
-
-      rb = self._factory.Pointless()
-      rb.set_hklin(hklin)
-      rb.set_hklout(hklout)
-      rb.limit_batches(start, end)
-      si.set_reflections(hklout)
 
     p, x = self._sweep_handler.get_project_info()
     self._scalr_pname = p

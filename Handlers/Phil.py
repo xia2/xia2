@@ -224,6 +224,12 @@ xia2.settings {
       .type = str
     range = None
       .type = ints(size=2)
+    exclude = False
+      .type = bool
+  }
+  scale {
+    directory = Auto
+      .type = str
   }
   unit_cell = None
     .type = unit_cell

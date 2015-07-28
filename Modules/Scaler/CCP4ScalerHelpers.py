@@ -498,6 +498,10 @@ class SweepInformationHandler(object):
   def get_epochs(self):
     return sorted(self._sweep_information)
 
+  def remove_epoch(self, epoch):
+    del self._sweep_information[epoch]
+    self._first = sorted(self._sweep_information)[0]
+
   def get_sweep_information(self, epoch):
     return self._sweep_information[epoch]
 
