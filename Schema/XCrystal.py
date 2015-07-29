@@ -416,8 +416,10 @@ class XCrystal(object):
           = intgr
         if (hasattr(return_obj._scaler, '_sweep_handler') and
             return_obj._scaler._sweep_handler is not None):
-          return_obj._scaler._sweep_handler._sweep_information[
-            intgr.get_integrater_epoch()]._integrater = intgr
+          if intgr.get_integrater_epoch() in \
+             return_obj._scaler._sweep_handler._sweep_information:
+            return_obj._scaler._sweep_handler._sweep_information[
+              intgr.get_integrater_epoch()]._integrater = intgr
     return return_obj
 
   def get_output(self):
