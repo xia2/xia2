@@ -203,6 +203,7 @@ xia2.settings {
               "need to read all the image headers on start-up."
     reference_geometry = None
       .type = path
+      .multiple = True
       .help = "Experimental geometry from this datablock.json or "
               "experiments.json will override the geometry from the "
               "image headers."

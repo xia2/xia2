@@ -81,25 +81,34 @@ def load_imagesets(template, directory, id_image=None, image_range=None,
 
 def update_with_reference_geometry(imagesets, reference_geometry):
   assert reference_geometry is not None
+  assert len(reference_geometry) >= 1
   from dxtbx.serialize import load
-  try:
-    experiments = load.experiment_list(
-      reference_geometry, check_format=False)
-    assert len(experiments.detectors()) == 1
-    assert len(experiments.beams()) == 1
-    reference_detector = experiments.detectors()[0]
-    reference_beam = experiments.beams()[0]
-  except Exception, e:
-    datablock = load.datablock(reference_geometry)
-    assert len(datablock) == 1
-    imageset = datablock[0].extract_imagesets()[0]
-    reference_detector = imageset.get_detector()
-    reference_beam = imageset.get_beam()
+
+  reference_components = []
+  for geometry in reference_geometry:
+    try:
+      experiments = load.experiment_list(geometry, check_format=False)
+      assert len(experiments.detectors()) == 1
+      assert len(experiments.beams()) == 1
+      reference_detector = experiments.detectors()[0]
+      reference_beam = experiments.beams()[0]
+    except Exception, e:
+      datablock = load.datablock(geometry)
+      assert len(datablock) == 1
+      imageset = datablock[0].extract_imagesets()[0]
+      reference_detector = imageset.get_detector()
+      reference_beam = imageset.get_beam()
+    reference_components.append({'detector': reference_detector, 'beam': reference_beam})
 
   for imageset in imagesets:
-    assert(reference_detector.is_similar_to(imageset.get_detector(),
-                                            fast_axis_tolerance=0.1,
-                                            slow_axis_tolerance=0.1,
-                                            origin_tolerance=10))
-    imageset.set_beam(reference_beam)
-    imageset.set_detector(reference_detector)
+    for reference_set in reference_components:
+      if reference_set['detector'].is_similar_to(imageset.get_detector(),
+                                          fast_axis_tolerance=0.1,
+                                          slow_axis_tolerance=0.1,
+                                          origin_tolerance=10):
+        break
+    else:
+      raise Exception("No appropriate reference geometry found")
+#   print "Appropriate set: ", reference_set
+    imageset.set_beam(reference_set['beam'])
+    imageset.set_detector(reference_set['detector'])
