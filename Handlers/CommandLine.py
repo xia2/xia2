@@ -438,9 +438,11 @@ class _CommandLine(object):
       load_datablock(params.xia2.settings.input.json)
 
     if params.xia2.settings.input.reference_geometry is not None:
-      PhilIndex.update(
-        "xia2.settings.input.reference_geometry=%s" %os.path.abspath(
-          params.xia2.settings.input.reference_geometry))
+      reference_geometries = "\n".join(
+        ["xia2.settings.input.reference_geometry=%s" % os.path.abspath(g)
+          for g in params.xia2.settings.input.reference_geometry])
+      Debug.write(reference_geometries)
+      PhilIndex.update(reference_geometries)
       Debug.write("xia2.settings.trust_beam_centre=true")
       PhilIndex.update("xia2.settings.trust_beam_centre=true")
       params = PhilIndex.get_python_object()

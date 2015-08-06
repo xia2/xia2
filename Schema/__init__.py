@@ -79,27 +79,44 @@ def load_imagesets(template, directory, id_image=None, image_range=None,
         return imagesets
   return imageset_cache[full_template_path].values()
 
-def update_with_reference_geometry(imagesets, reference_geometry):
-  assert reference_geometry is not None
-  from dxtbx.serialize import load
-  try:
-    experiments = load.experiment_list(
-      reference_geometry, check_format=False)
-    assert len(experiments.detectors()) == 1
-    assert len(experiments.beams()) == 1
-    reference_detector = experiments.detectors()[0]
-    reference_beam = experiments.beams()[0]
-  except Exception, e:
-    datablock = load.datablock(reference_geometry)
-    assert len(datablock) == 1
-    imageset = datablock[0].extract_imagesets()[0]
-    reference_detector = imageset.get_detector()
-    reference_beam = imageset.get_beam()
+def update_with_reference_geometry(imagesets, reference_geometry_list):
+  assert reference_geometry_list is not None
+  assert len(reference_geometry_list) >= 1
+
+  reference_components = load_reference_geometries(reference_geometry_list)
 
   for imageset in imagesets:
-    assert(reference_detector.is_similar_to(imageset.get_detector(),
-                                            fast_axis_tolerance=0.1,
-                                            slow_axis_tolerance=0.1,
-                                            origin_tolerance=10))
-    imageset.set_beam(reference_beam)
-    imageset.set_detector(reference_detector)
+    reference_geometry = find_relevant_reference_geometry(imageset, reference_components)
+#   print "Appropriate set: ", reference_set
+    imageset.set_beam(reference_geometry['beam'])
+    imageset.set_detector(reference_geometry['detector'])
+
+def load_reference_geometries(geometry_file_list):
+  from dxtbx.serialize import load
+  reference_components = []
+  for file in geometry_file_list:
+    try:
+      experiments = load.experiment_list(file, check_format=False)
+      assert len(experiments.detectors()) == 1
+      assert len(experiments.beams()) == 1
+      reference_detector = experiments.detectors()[0]
+      reference_beam = experiments.beams()[0]
+    except Exception, e:
+      datablock = load.datablock(file)
+      assert len(datablock) == 1
+      imageset = datablock[0].extract_imagesets()[0]
+      reference_detector = imageset.get_detector()
+      reference_beam = imageset.get_beam()
+    reference_components.append({'detector': reference_detector, 'beam': reference_beam, 'file': file})
+  return reference_components
+
+def find_relevant_reference_geometry(imageset, geometry_list):
+  for geometry in geometry_list:
+    if geometry['detector'].is_similar_to(imageset.get_detector(),
+                                        fast_axis_tolerance=0.1,
+                                        slow_axis_tolerance=0.1,
+                                        origin_tolerance=10):
+      break
+  else:
+    raise Exception("No appropriate reference geometry found")
+  return geometry
