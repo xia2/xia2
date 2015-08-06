@@ -56,7 +56,7 @@ def load_imagesets(template, directory, id_image=None, image_range=None,
     imageset_cache[full_template_path] = OrderedDict()
 
     reference_geometry = PhilIndex.params.xia2.settings.input.reference_geometry
-    if reference_geometry is not None:
+    if reference_geometry is not None and len(reference_geometry) > 0:
       update_with_reference_geometry(imagesets, reference_geometry)
 
     for imageset in imagesets:
