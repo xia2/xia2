@@ -222,11 +222,17 @@ class DialsIndexer(Indexer):
     importer.set_image_range(self._indxr_images[0])
     importer.set_image_to_epoch(image_to_epoch)
     if PhilIndex.params.xia2.settings.input.reference_geometry is not None:
-      # FIXME in here if reference_geometry is a [list] then check through
-      # and find the one which matches closest (cope with e.g. two 2-theta
-      # settings) - can pull "known" geometry from self.get_indexer_sweep()
-      importer.set_reference_geometry(
-        PhilIndex.params.xia2.settings.input.reference_geometry)
+      if len(PhilIndex.params.xia2.settings.input.reference_geometry) == 1:
+        importer.set_reference_geometry(
+          PhilIndex.params.xia2.settings.input.reference_geometry[0])
+      else:
+        from Schema import load_reference_geometries, find_relevant_reference_geometry
+        geometry_file = find_relevant_reference_geometry(
+          self.get_indexer_sweep().get_imageset(),
+          load_reference_geometries(PhilIndex.params.xia2.settings.input.reference_geometry)
+        )['file']
+        importer.set_reference_geometry(geometry_file)
+
     importer.run(fast_mode=True)
 
     # FIXME this should really use the assigned spot finding regions
