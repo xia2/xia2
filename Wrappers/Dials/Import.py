@@ -110,12 +110,12 @@ def Import(DriverType = None):
 
       if self._reference_geometry is not None:
         self.add_command_line(
-          'input.reference_geometry=%s' %self._reference_geometry)
+          'input.reference_geometry=%s' % self._reference_geometry)
 
       elif self._mosflm_beam_centre is not None:
         assert len(self._mosflm_beam_centre) == 2
         self.add_command_line(
-          'mosflm_beam_centre=%s,%s' %(self._mosflm_beam_centre))
+          'mosflm_beam_centre=%s,%s' % (self._mosflm_beam_centre))
 
       if fast_mode:
         for image in self._images[:2]:

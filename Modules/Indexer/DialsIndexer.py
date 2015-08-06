@@ -222,6 +222,9 @@ class DialsIndexer(Indexer):
     importer.set_image_range(self._indxr_images[0])
     importer.set_image_to_epoch(image_to_epoch)
     if PhilIndex.params.xia2.settings.input.reference_geometry is not None:
+      # FIXME in here if reference_geometry is a [list] then check through
+      # and find the one which matches closest (cope with e.g. two 2-theta
+      # settings) - can pull "known" geometry from self.get_indexer_sweep()
       importer.set_reference_geometry(
         PhilIndex.params.xia2.settings.input.reference_geometry)
     importer.run(fast_mode=True)
