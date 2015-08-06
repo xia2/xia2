@@ -41,7 +41,7 @@ def to_shelx(hklin, prefix, compound=''):
   intensities = [ma for ma in reader.as_miller_arrays(merge_equivalents=False)
                  if ma.info().labels == ['I', 'SIGI']][0]
   with open('%s.hkl' % prefix, 'wb') as f:
-    intensities.export_as_shelx_hklf(f)
+    intensities.export_as_shelx_hklf(f, normalise_if_format_overflow=True)
 
   crystal_symm = intensities.crystal_symmetry()
   xray_structure = structure(crystal_symmetry=crystal_symm)
