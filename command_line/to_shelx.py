@@ -28,6 +28,19 @@ def parse_compound(compound):
       number += c
   return result
 
+def mtz_to_hklf4(hklin, out):
+  from iotbx import mtz
+  mtz_obj = mtz.object(hklin)
+  miller_indices = mtz_obj.extract_original_index_miller_indices()
+  i = mtz_obj.get_column('I').extract_values()
+  sigi = mtz_obj.get_column('SIGI').extract_values()
+  f = open(out, 'wb')
+  for j, mi in enumerate(miller_indices):
+    f.write('%4d%4d%4d' % mi)
+    f.write('%8.2f%8.2f\n' % (i[j], sigi[j]))
+  f.close()
+  return
+
 def to_shelx(hklin, prefix, compound=''):
   '''Read hklin (unmerged reflection file) and generate SHELXT input file
   and HKL file'''
@@ -40,8 +53,11 @@ def to_shelx(hklin, prefix, compound=''):
   reader = any_reflection_file(hklin)
   intensities = [ma for ma in reader.as_miller_arrays(merge_equivalents=False)
                  if ma.info().labels == ['I', 'SIGI']][0]
-  with open('%s.hkl' % prefix, 'wb') as f:
-    intensities.export_as_shelx_hklf(f, normalise_if_format_overflow=True)
+  if True:
+    mtz_to_hklf4(hklin, '%s.hkl' % prefix)
+  else:
+    with open('%s.hkl' % prefix, 'wb') as f:
+      intensities.export_as_shelx_hklf(f, normalise_if_format_overflow=True)
 
   crystal_symm = intensities.crystal_symmetry()
   xray_structure = structure(crystal_symmetry=crystal_symm)
