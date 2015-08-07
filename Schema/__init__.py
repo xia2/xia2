@@ -11,9 +11,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 
 from libtbx.containers import OrderedDict
-
 from Handlers.Phil import PhilIndex
-
 
 class _ImagesetCache(dict):
   pass
@@ -31,7 +29,6 @@ def load_imagesets(template, directory, id_image=None, image_range=None,
     from dxtbx.datablock import DataBlockFactory
     from dxtbx.sweep_filenames import locate_files_matching_template_string
 
-    from Handlers.Phil import PhilIndex
     params = PhilIndex.get_python_object()
     read_all_image_headers = params.xia2.settings.read_all_image_headers
 
@@ -93,6 +90,7 @@ def update_with_reference_geometry(imagesets, reference_geometry_list):
 
 def load_reference_geometries(geometry_file_list):
   from dxtbx.serialize import load
+
   reference_components = []
   for file in geometry_file_list:
     try:
@@ -108,14 +106,24 @@ def load_reference_geometries(geometry_file_list):
       reference_detector = imageset.get_detector()
       reference_beam = imageset.get_beam()
     reference_components.append({'detector': reference_detector, 'beam': reference_beam, 'file': file})
+
+  import itertools
+  for combination in itertools.combinations(reference_components, 2):
+    if compare_geometries(combination[0]['detector'], combination[1]['detector']):
+      from Handlers.Streams import Chatter
+      Chatter.write('Reference geometries given in %s and %s are too similar' % (combination[0]['file'], combination[1]['file']))
+      raise Exception('Reference geometries too similar')
   return reference_components
+
+def compare_geometries(detectorA, detectorB):
+  return detectorA.is_similar_to(detectorB,
+             fast_axis_tolerance=0.1,
+             slow_axis_tolerance=0.1,
+             origin_tolerance=10)
 
 def find_relevant_reference_geometry(imageset, geometry_list):
   for geometry in geometry_list:
-    if geometry['detector'].is_similar_to(imageset.get_detector(),
-                                        fast_axis_tolerance=0.1,
-                                        slow_axis_tolerance=0.1,
-                                        origin_tolerance=10):
+    if compare_geometries(geometry['detector'], imageset.get_detector()):
       break
   else:
     raise Exception("No appropriate reference geometry found")
