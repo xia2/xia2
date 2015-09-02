@@ -143,6 +143,8 @@ dials {
       .type = float
     use_all_reflections = False
       .type = bool
+    fft3d.n_points = None
+      .type = int(value_min=0)
   }
   refine {
     scan_varying = True

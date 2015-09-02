@@ -33,7 +33,7 @@ def Index(DriverType = None):
       self._spot_filenames = []
       self._unit_cell = None
       self._space_group = None
-      self._maximum_spot_error = 3.0
+      self._maximum_spot_error = None
       self._detector_fix = None
       self._beam_fix = None
       self._indexing_method = "fft3d"
@@ -41,6 +41,7 @@ def Index(DriverType = None):
       self._indxr_input_cell = None
       self._indxr_input_lattice = None
       self._use_all_reflections = False
+      self._fft3d_n_points = None
 
       self._experiment_filename = None
       self._indexed_filename = None
@@ -109,6 +110,10 @@ def Index(DriverType = None):
       self._use_all_reflections = use_all_reflections
       return
 
+    def set_fft3d_n_points(self, n_points):
+      self._fft3d_n_points = n_points
+      return
+
     def get_sweep_filenames(self):
       return self._sweep_filenames
 
@@ -161,6 +166,9 @@ def Index(DriverType = None):
         self.add_command_line('use_all_reflections=True')
       else:
         self.add_command_line('use_all_reflections=False')
+      if self._fft3d_n_points is not None:
+        self.add_command_line(
+          'fft3d.reciprocal_space_grid.n_points=%i' %self._fft3d_n_points)
       self.add_command_line('close_to_spindle_cutoff=0.02')
       if self._outlier_algorithm:
         self.add_command_line('outlier.algorithm=%s' % self._outlier_algorithm)
