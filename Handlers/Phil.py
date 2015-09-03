@@ -112,10 +112,8 @@ dials {
     .type = bool
     .help = "Whether or not to refine geometry in dials.index and dials.refine."
             "Most useful when also providing a reference geometry to xia2."
-  outlier_rejection = True
-    .type = bool
-    .help = "Whether to perform outlier rejection in dials.index and "
-            "dials.refine (using Tukey method)."
+  outlier.algorithm = null *auto mcd tukey sauter_poon
+    .type = choice
   fast_mode = False
     .type = bool
   find_spots {

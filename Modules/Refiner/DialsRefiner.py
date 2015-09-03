@@ -53,8 +53,7 @@ class DialsRefiner(Refiner):
     if params.reflections_per_degree and not params.use_all_reflections:
       refine.set_reflections_per_degree(params.reflections_per_degree)
     refine.set_interval_width_degrees(params.interval_width_degrees)
-    if PhilIndex.params.dials.outlier_rejection:
-      refine.set_outlier_algorithm('tukey')
+    refine.set_outlier_algorithm(PhilIndex.params.dials.outlier.algorithm)
     if PhilIndex.params.dials.fix_geometry:
       refine.set_detector_fix('all')
       refine.set_beam_fix('all')

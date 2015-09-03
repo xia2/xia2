@@ -102,8 +102,7 @@ class DialsIndexer(Indexer):
     if params.fft3d.n_points is not None:
       index.set_fft3d_n_points(params.fft3d.n_points)
     auto_logfiler(index)
-    if PhilIndex.params.dials.outlier_rejection:
-      index.set_outlier_algorithm('tukey')
+    index.set_outlier_algorithm(PhilIndex.params.dials.outlier.algorithm)
     return index
 
   def CheckIndexingSymmetry(self):
@@ -123,8 +122,7 @@ class DialsIndexer(Indexer):
     params = PhilIndex.params.dials.refine
     refine.set_working_directory(self.get_working_directory())
     refine.set_scan_varying(False)
-    if PhilIndex.params.dials.outlier_rejection:
-      refine.set_outlier_algorithm('tukey')
+    refine.set_outlier_algorithm(PhilIndex.params.dials.outlier.algorithm)
     if PhilIndex.params.dials.fix_geometry:
       refine.set_detector_fix('all')
       refine.set_beam_fix('all')
