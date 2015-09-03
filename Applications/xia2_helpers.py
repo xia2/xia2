@@ -16,7 +16,6 @@ from Handlers.Streams import Chatter, Debug
 
 def process_one_sweep(args):
 
-
   assert len(args) == 1
   args = args[0]
   #stop_after = args.stop_after
@@ -55,8 +54,12 @@ def process_one_sweep(args):
   xia2_integrate.set_njob(1)
   xia2_integrate.set_mp_mode('serial')
 
+  sweep_tmp_dir = os.path.join(tmpdir, crystal_id, wavelength_id, sweep_id)
+  sweep_target_dir = os.path.join(curdir, crystal_id, wavelength_id, sweep_id)
+
   output = None
   success = False
+  xsweep_dict = None
 
   try:
     xia2_integrate.run()
@@ -69,13 +72,10 @@ def process_one_sweep(args):
     else:
       #print e
       raise
-  finally:
+  else:
     from Schema.XProject import XProject
     xia2_json = os.path.join(tmpdir, 'xia2.json')
     assert os.path.exists(xia2_json)
-
-    sweep_tmp_dir = os.path.join(tmpdir, crystal_id, wavelength_id, sweep_id)
-    sweep_target_dir = os.path.join(curdir, crystal_id, wavelength_id, sweep_id)
 
     # update the absolute paths in the json files
     import fileinput
@@ -83,15 +83,18 @@ def process_one_sweep(args):
       line = line.replace(sweep_tmp_dir, sweep_target_dir)
       print line
 
-    move_output_folder(sweep_tmp_dir, sweep_target_dir)
     xinfo = XProject.from_json(xia2_json)
     xcryst = xinfo.get_crystals().values()[0]
     xsweep = xcryst.get_xwavelength(wavelength_id).get_sweeps()[0]
+    xsweep_dict = xsweep.to_dict()
+
+  finally:
+    move_output_folder(sweep_tmp_dir, sweep_target_dir)
     shutil.rmtree(tmpdir, ignore_errors=True)
     if os.path.exists(tmpdir):
       shutil.rmtree(tmpdir, ignore_errors=True)
     DriverFactory.set_driver_type(default_driver_type)
-    return success, output, xsweep.to_dict()
+    return success, output, xsweep_dict
 
 def get_sweep_output_only(all_output):
   sweep_lines = []
