@@ -162,6 +162,8 @@ def Index(DriverType = None):
       nproc = Flags.get_parallel()
       self.set_cpu_threads(nproc)
       self.add_command_line('indexing.nproc=%i' % nproc)
+      if Flags.get_small_molecule():
+        self.add_command_line('filter_ice=false')
       if self._use_all_reflections:
         self.add_command_line('use_all_reflections=True')
       else:
