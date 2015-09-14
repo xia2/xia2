@@ -10,7 +10,7 @@
 # A file containing the version number of the current xia2. Generally useful.
 #
 
-VersionNumber = "0.3.8.0"
+VersionNumber = "0.4.0.0"
 Version = "XIA2 %s" % VersionNumber
 CVSTag = "xia2-%s" % VersionNumber.replace('.', '_')
 Directory = "xia2-%s" % VersionNumber
