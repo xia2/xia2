@@ -44,6 +44,9 @@ def xia2(stop_after=None):
   Chatter.write(Version)
   Citations.cite('xia2')
 
+  from dials.util.version import dials_version
+  Chatter.write(dials_version())
+
   start_time = time.time()
 
   CommandLine = get_command_line()
