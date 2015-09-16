@@ -10,7 +10,7 @@ import sys
 
 # Needed to make xia2 imports work correctly
 import libtbx.load_env
-xia2_root_dir = libtbx.env.find_in_repositories("xia2")
+xia2_root_dir = libtbx.env.find_in_repositories("xia2", optional=False)
 if xia2_root_dir is None:
   from sys import exit
   exit("xia2 not in cctbx repositories")
