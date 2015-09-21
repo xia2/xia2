@@ -9,6 +9,14 @@ resolution_bins = 8
   .type = int
 anomalous = False
   .type = bool
+range {
+  width = 1
+    .type = float(value_min=0)
+  min = None
+    .type = float(value_min=0)
+  max = None
+    .type = float(value_min=0)
+}
 """)
 
 def run(args):
@@ -56,22 +64,35 @@ def run(args):
 
   n_batches = flex.max(batches.data())
 
-  from cctbx import miller
-  matches = miller.match_multi_indices(unique_indices, intensities_asu.indices())
-
   dose = batches.data()
-  d_max = flex.max(dose)
+
+  range_min = params.range.min
+  range_max = params.range.max
+  range_width = params.range.width
+  assert range_width > 0
+
+  if range_min is None:
+    range_min = flex.min(dose)
+  if range_max is None:
+    range_max = flex.max(dose)
+  n_steps = 2 + int((range_max - range_min) - range_width)
+
+  sel = (dose.as_double() <= range_max) & (dose.as_double() >= range_min)
+  dose = dose.select(sel)
+  intensities_asu = intensities_asu.select(sel)
 
   intensities_data = intensities_asu.data()
   sigmas = intensities_asu.sigmas()
   d_star_sq = intensities_asu.d_star_sq().data()
 
   binner = merged.setup_binner(n_bins=n_bins)
-  A = [[0]*d_max for i in xrange(n_bins)]
-  B = [[0]*d_max for i in xrange(n_bins)]
-  isigma = [[0]*d_max for i in xrange(n_bins)]
-  count = [[0]*d_max for i in xrange(n_bins)]
+  A = [[0] * n_steps for i in xrange(n_bins)]
+  B = [[0] * n_steps for i in xrange(n_bins)]
+  isigma = [[0] * n_steps for i in xrange(n_bins)]
+  count = [[0] * n_steps for i in xrange(n_bins)]
 
+  from cctbx import miller
+  matches = miller.match_multi_indices(unique_indices, intensities_asu.indices())
   pairs = matches.pairs()
   n_pairs = pairs.size()
 
@@ -90,16 +111,17 @@ def run(args):
       A_part = math.fabs(I_i - I_j)
       B_part = 0.5 * math.fabs(I_i + I_j)
       dose_j = dose[j_ref]
-      dose_0 = max(dose_i, dose_j)
-      A[i_bin][dose_0-1] += A_part
-      B[i_bin][dose_0-1] += B_part
-      isigma[i_bin][dose_0-1] += (I_i/sigi_i) + (I_j/sigi_j)
-      count[i_bin][dose_0-1] += 2
+      dose_0 = int((max(dose_i, dose_j) - range_min)/range_width)
+      assert dose_0 >= 0
+      A[i_bin][dose_0] += A_part
+      B[i_bin][dose_0] += B_part
+      isigma[i_bin][dose_0] += (I_i/sigi_i) + (I_j/sigi_j)
+      count[i_bin][dose_0] += 2
 
   # now accumulate as a function of time
 
   for i_bin in xrange(n_bins):
-    for j in xrange(1, len(A[0])):
+    for j in xrange(1, n_steps):
       A[i_bin][j] += A[i_bin][j-1]
       B[i_bin][j] += B[i_bin][j-1]
       isigma[i_bin][j] += isigma[i_bin][j-1]
@@ -107,14 +129,14 @@ def run(args):
 
   # accumulate as a function of dose and resolution
 
-  rcp_overall = flex.double(d_max-1, 0)
+  rcp_overall = flex.double(n_steps, 0)
   rcp_bins = []
-  scp_overall = flex.double(d_max-1, 0)
+  scp_overall = flex.double(n_steps, 0)
   scp_bins = []
   for i_bin in xrange(n_bins):
     rcp_b = flex.double()
     scp_b = flex.double()
-    for d in xrange(1, d_max):
+    for d in xrange(n_steps):
       top = A[i_bin][d]
       bottom = B[i_bin][d]
       rcp = 0.0
@@ -149,8 +171,9 @@ def run(args):
                          column_formats=column_formats,
                          graph_names=graph_names,
                          graph_columns=graph_columns)
-  for i in xrange(len(rcp_overall)):
-    row = [i] + [rcp_bins[j][i] for j in xrange(len(rcp_bins))] + [rcp_overall[i]]
+  for i in xrange(n_steps):
+    row = [i * range_width + range_min] \
+      + [rcp_bins[j][i] for j in xrange(len(rcp_bins))] + [rcp_overall[i]]
     table_rcp.add_row(row)
 
   print table_rcp.format_loggraph()
@@ -168,8 +191,9 @@ def run(args):
                          column_formats=column_formats,
                          graph_names=graph_names,
                          graph_columns=graph_columns)
-  for i in xrange(len(rcp_overall)):
-    row = [i] + [scp_bins[j][i] for j in xrange(len(scp_bins))] + [scp_overall[i]]
+  for i in xrange(n_steps):
+    row = [i * range_width + range_min] \
+      + [scp_bins[j][i] for j in xrange(len(scp_bins))] + [scp_overall[i]]
     table_scp.add_row(row)
 
   print table_scp.format_loggraph()
