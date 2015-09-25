@@ -82,17 +82,17 @@ def FrenchWilson(DriverType = None):
       self.add_command_line(self._hklin)
       self.add_command_line('hklout=%s' %self._hklout)
 
+      if self._anomalous:
+        self.add_command_line('anomalous=true')
+      else:
+        self.add_command_line('anomalous=false')
+
       self.start()
 
       # write the harvest files in the local directory, not
       # in $HARVESTHOME. Though we have set this for the project
       # so we should be fine to just plough ahead...
       # self.input('usecwd')
-
-      #if self._anomalous:
-        #self.input('anomalous yes')
-      #else:
-        #self.input('anomalous no')
 
       #if self._nres:
         #self.input('nres %d' % self._nres)

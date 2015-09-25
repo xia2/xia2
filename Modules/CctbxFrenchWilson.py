@@ -10,6 +10,8 @@ from xia2.Handlers.Streams import Chatter, Debug
 master_phil_scope = iotbx.phil.parse("""\
 hklout = truncate.mtz
   .type = path
+anomalous = False
+  .type = bool
 include scope cctbx.french_wilson.master_phil
 """, process_includes=True)
 
@@ -18,40 +20,33 @@ class french_wilson(object):
 
   def __init__(self, mtz_file, params=None):
 
+    print 'Reading reflections from %s' %mtz_file
     from iotbx.reflection_file_reader import any_reflection_file
     result = any_reflection_file(mtz_file)
     assert result.file_type() == 'ccp4_mtz'
     mtz_object = result.file_content()
+    mtz_object.show_summary()
 
-    i_plus_minus = None
-    i_mean = None
+    intensities = None
 
     for ma in result.as_miller_arrays(merge_equivalents=False):
-      print ma.info().labels
-      if ma.info().labels == ['I(+)', 'SIGI(+)', 'I(-)', 'SIGI(-)']:
+      if (params.anomalous and
+          ma.info().labels == ['I(+)', 'SIGI(+)', 'I(-)', 'SIGI(-)']):
         assert ma.anomalous_flag()
-        i_plus_minus = ma
-      elif ma.info().labels == ['IMEAN', 'SIGIMEAN']:
+        intensities = ma.merge_equivalents().array() # XXX why is this necessary?
+      elif (not params.anomalous and ma.info().labels == ['IMEAN', 'SIGIMEAN']):
         assert not ma.anomalous_flag()
-        i_mean = ma
+        intensities = ma
 
-    assert i_mean.is_xray_intensity_array()
-    f_mean = i_mean.french_wilson(params=params)
-    assert f_mean.is_xray_amplitude_array()
+    assert intensities.is_xray_intensity_array()
+    amplitudes = intensities.french_wilson(params=params)
+    assert amplitudes.is_xray_amplitude_array()
 
     mtz_dataset = mtz_object.crystals()[1].datasets()[0]
-
-    matches = i_mean.match_indices(f_mean)
-    nan = float('nan')
-    f_double = flex.double(i_mean.size(), nan)
-    sigf_double = flex.double(i_mean.size(), nan)
-
-    sel = matches.pair_selection(0)
-    f_double.set_selected(sel, f_mean.data())
-    sigf_double.set_selected(sel, f_mean.sigmas())
-    mtz_dataset.add_column('F', 'F').set_values(f_double.as_float())
-    mtz_dataset.add_column('SIGF', 'F').set_values(sigf_double.as_float())
+    mtz_dataset.add_miller_array(amplitudes, column_root_label='F')
     mtz_object.add_history('cctbx.french_wilson analysis')
+    print 'Writing reflections to %s' %(params.hklout)
+    mtz_object.show_summary()
     mtz_object.write(params.hklout)
 
 
