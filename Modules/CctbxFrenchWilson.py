@@ -36,8 +36,7 @@ class french_wilson(object):
         i_mean = ma
 
     assert i_mean.is_xray_intensity_array()
-    from cctbx.french_wilson import french_wilson_scale
-    f_mean = french_wilson_scale(i_mean, params=params)
+    f_mean = i_mean.french_wilson(params=params)
     assert f_mean.is_xray_amplitude_array()
 
     mtz_dataset = mtz_object.crystals()[1].datasets()[0]

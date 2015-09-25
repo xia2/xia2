@@ -53,6 +53,9 @@ def Truncate(DriverType = None):
 
   if PhilIndex.params.ccp4.truncate.program == 'ctruncate':
     return Ctruncate(DriverType)
+  elif PhilIndex.params.ccp4.truncate.program == 'cctbx':
+    from Wrappers.XIA.FrenchWilson import FrenchWilson
+    return FrenchWilson(DriverType)
 
   class TruncateWrapper(CCP4DriverInstance.__class__):
     '''A wrapper for Truncate, using the CCP4-ified Driver.'''
