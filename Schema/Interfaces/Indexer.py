@@ -481,7 +481,8 @@ class Indexer(FrameProcessor):
           # be used next cycle
 
           if self._indxr_lattice != solution[0] and \
-             not self._indxr_input_cell:
+             not self._indxr_input_cell and \
+             not PhilIndex.params.xia2.settings.integrate_p1:
             Debug.write(
               'Rerunning indexing with target lattice %s' % \
               solution[0])

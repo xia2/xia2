@@ -286,6 +286,8 @@ xia2.settings {
       .type = float(value_min=0.0)
       .help = "Tolerance to use in POINTLESS for comparison of data sets"
   }
+  integrate_p1 = False
+    .type = bool
   xds {
     geometry_x = None
       .type = path

@@ -572,6 +572,8 @@ class DialsIndexer(Indexer):
     # FIXME I really need to clean up the code in here...
 
     if self._indxr_input_lattice is None:
+      if PhilIndex.params.xia2.settings.integrate_p1:
+        return copy.deepcopy(self._solutions[1])
       return copy.deepcopy(
         self._solutions[max(self._solutions.keys())])
     else:
