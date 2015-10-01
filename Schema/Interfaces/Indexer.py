@@ -715,6 +715,14 @@ class Indexer(FrameProcessor):
     # do anything
 
     if asserted_lattice == all_lattices[0][0]:
+
+      if (PhilIndex.params.xia2.settings.integrate_p1 and
+          asserted_lattice != self.get_indexer_lattice() and
+          asserted_lattice != 'aP'):
+        #Debug.write('Accepted lattice %s, will reprocess' % asserted_lattice)
+        self.set_indexer_done(False)
+        return self.LATTICE_POSSIBLE
+
       return self.LATTICE_CORRECT
 
     # ok this means that we need to do something - work through
