@@ -29,7 +29,7 @@ from Handlers.Files import cleanup
 from Handlers.Citations import Citations
 from Handlers.Environment import Environment, df
 
-from XIA2Version import Version
+from XIA2Version import Version, get_git_revision
 
 # XML Marked up output for e-HTPX
 if not os.path.join(os.environ['XIA2_ROOT'], 'Interfaces') in sys.path:
@@ -126,12 +126,7 @@ def check_environment():
   except KeyError, e:
     pass
 
-  revision = '$Revision$'
-  if len(revision.split()) > 1:
-    revision = revision.split()[1]
-  else:
-    revision = 'not set'
-
+  revision = get_git_revision()
   Chatter.write('Build: %s' % revision)
   Chatter.write('Contact: xia2.support@gmail.com')
 
