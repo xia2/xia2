@@ -404,6 +404,14 @@ class DialsIntegrater(Integrater):
     exporter.set_mtz_filename(mtz_filename)
     exporter.run()
     self._intgr_integrated_filename = mtz_filename
+
+    # record integrated MTZ file for e.g. BLEND.
+
+    pname, xname, dname = self.get_integrater_project_info()
+    sweep = self.get_integrater_sweep_name()
+    FileHandler.record_more_data_file(
+        '%s %s %s %s INTEGRATE' % (pname, xname, dname, sweep), mtz_filename)
+
     if not os.path.isfile(self._intgr_integrated_filename):
       raise RuntimeError("dials.export_mtz failed: %s does not exist."
                          % self._intgr_integrated_filename)
