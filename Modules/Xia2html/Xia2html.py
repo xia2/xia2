@@ -2345,7 +2345,7 @@ class Xia2doc:
     unit_cell = xtal.unit_cell()
     # Add a table to the section with the parameters
     section.addTable(['a','b','c',
-                      '&alpha;','&beta;','&gamma']). \
+                      '&alpha;','&beta;','&gamma;']). \
                       addRow([unit_cell['a']+'&nbsp;',
                               unit_cell['b']+'&nbsp;',
                               unit_cell['c']+'&nbsp;',
