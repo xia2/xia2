@@ -437,7 +437,8 @@ class _CommandLine(object):
       assert os.path.isfile(params.xia2.settings.input.json)
       load_datablock(params.xia2.settings.input.json)
 
-    if params.xia2.settings.input.reference_geometry is not None:
+    reference_geometry = params.xia2.settings.input.reference_geometry
+    if reference_geometry is not None and len(reference_geometry) > 0:
       reference_geometries = "\n".join(
         ["xia2.settings.input.reference_geometry=%s" % os.path.abspath(g)
           for g in params.xia2.settings.input.reference_geometry])

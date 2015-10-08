@@ -221,7 +221,8 @@ class DialsIndexer(Indexer):
     importer = self.Import()
     importer.set_image_range(self._indxr_images[0])
     importer.set_image_to_epoch(image_to_epoch)
-    if PhilIndex.params.xia2.settings.input.reference_geometry is not None:
+    reference_geometry = PhilIndex.params.xia2.settings.input.reference_geometry
+    if reference_geometry is not None and len(reference_geometry) > 0:
       if len(PhilIndex.params.xia2.settings.input.reference_geometry) > 1:
         from Schema import load_reference_geometries, find_relevant_reference_geometry
         geometry_file = find_relevant_reference_geometry(
