@@ -522,8 +522,14 @@ def get_sweeps(templates):
 def rummage(directories):
   '''Walk through the directories looking for sweeps.'''
   templates = set()
+  visited = set()
   for path in directories:
     for root, dirs, files in os.walk(path, followlinks=True):
+      realpath = os.path.realpath(root)
+      if realpath in visited:
+        # safety-check to avoid recursively symbolic links
+        continue
+      visited.add(realpath)
       templates.update(visit(os.getcwd(), root, files))
 
   get_sweeps(templates)
