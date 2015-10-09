@@ -56,10 +56,6 @@ def Refine(DriverType = None):
       self._indexed_filename = indexed_filename
       return
 
-    def set_refined_filename(self, refined_filename):
-      self._refined_filename = refined_filename
-      return
-
     def get_refined_filename(self):
       return self._refined_filename
 
@@ -118,8 +114,9 @@ def Refine(DriverType = None):
         '%s_refined_experiments.json' % self.get_xpid())
       self.add_command_line(
         'output.experiments=%s' % self._refined_experiments_filename)
-      if self._refined_filename:
-        self.add_command_line('output.reflections=%s' % self._refined_filename)
+      self._refined_filename = os.path.join(
+        self.get_working_directory(), '%s_refined.pickle' % self.get_xpid())
+      self.add_command_line('output.reflections=%s' % self._refined_filename)
       if self._reflections_per_degree is not None:
         self.add_command_line(
           'reflections_per_degree=%i' %self._reflections_per_degree)

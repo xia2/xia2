@@ -161,7 +161,7 @@ class DialsRefiner(Refiner):
         = refiner.get_refined_experiments_filename()
       experiments = load.experiment_list(self._refinr_experiments_filename)
       experiment = experiments[0]
-      self._refinr_indexed_filename = idxr.get_indexer_payload("indexed_filename")
+      self._refinr_indexed_filename = refiner.get_refined_filename()
       self.set_refiner_payload("experiments.json", self._refinr_experiments_filename)
       self.set_refiner_payload("reflections.pickle", self._refinr_indexed_filename)
 
