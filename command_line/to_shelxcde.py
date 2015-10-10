@@ -30,7 +30,8 @@ def to_shelxcde(hklin, prefix, sites=0):
     'spag %s' % sg,
     'sad %s.hkl' % prefix,
     'find %d' % sites,
-    'eof']))
+    'maxm %d' % (1 + intensities.data().size() // 1000000),
+    'eof', '']))
 
 if __name__ == '__main__':
   import sys
