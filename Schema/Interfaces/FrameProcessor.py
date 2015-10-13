@@ -221,8 +221,8 @@ class FrameProcessor(object):
       r = n.cross(s0)
       a = n.angle(s0)
 
-    # if two theta small use old version of code
-    if abs(a) < 5.0 * math.pi / 180.0:
+    # if two theta small use old version of code - remembering modulo pi
+    if abs(a % math.pi) < 5.0 * math.pi / 180.0:
       D = matrix.sqr(panel.get_D_matrix())
       v = D * beam.get_s0()
       x, y = v[0] / v[2], v[1] / v[2]
