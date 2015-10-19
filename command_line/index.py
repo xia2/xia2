@@ -47,7 +47,7 @@ def run():
 
   try:
     #xia2_index()
-    from xia2_new import xia2
+    from xia2 import xia2
     xia2(stop_after='index')
     Chatter.write('Status: normal termination')
     from Handlers.Flags import Flags
