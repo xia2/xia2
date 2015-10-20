@@ -42,21 +42,6 @@
 <!--   </div> -->
 
 
-    <div class="related">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="introductory_example.html" title="Introductory example"
-             accesskey="N">next</a> |</li>
-        <li class="right" >
-          <a href="using_xia2.html" title="Using xia2"
-             accesskey="P">previous</a> |</li>
-        <li><a href="index.html">xia2  documentation</a> &raquo;</li>
-      </ul>
-    </div>
 
     <div class="document">
       <div class="documentwrapper">
@@ -65,50 +50,35 @@
 
   <div class="section" id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
-<p>The current version, 0.3.8.0 can be obtained by following these links:</p>
+<p>The recommended way of obtaining the latest xia2 is to install the latest
+xia2/DIALS bundle which can be obtained
+<a class="reference external" href="http://dials.diamond.ac.uk/installation.html">here</a>.</p>
+<p>xia2 depends critically on having CCP4 available. The <tt class="docutils literal"><span class="pre">-dials</span></tt> and <tt class="docutils literal"><span class="pre">-2d</span></tt>
+pipelines will work with only xia2 and CCP4 installed. In order to use the
+<tt class="docutils literal"><span class="pre">-3d</span></tt>, <tt class="docutils literal"><span class="pre">-3di</span></tt> and <tt class="docutils literal"><span class="pre">-3dii</span></tt> pipelines you will also need XDS. Optionally
+xia2 can make use of <a class="reference external" href="http://cci.lbl.gov/labelit/">LABELIT</a> which requires installation of LABELIT or
+<a class="reference external" href="http://www.phenix-online.org/">PHENIX</a> (the latter includes the former).</p>
+<p>The standard recommended procedure for installing xia2 is therefore:</p>
 <ul class="simple">
-<li><a class="reference external" href="http://www.ccp4.ac.uk/xia/xia2-0.3.8.0.zip">Windows (as .zip file)</a></li>
-<li><a class="reference external" href="http://www.ccp4.ac.uk/xia/xia2-0.3.8.0.tar.bz2">Unix (as .tar.bz2 file)</a></li>
-<li><a class="reference external" href="http://www.ccp4.ac.uk/xia/xia2-0.3.8.0.tar.gz">Unix (as .tar.gz file)</a></li>
-</ul>
-<p>All of the files are the same, simply packed for different platforms.</p>
-<p>Since everything is Python using cctbx, the only requirement is to export
-<tt class="samp docutils literal"><span class="pre">XIA2_ROOT</span></tt> to point to the directory where xia2 was unpacked
-(including the xia2-0.3.6.0 bit) and then
-<tt class="samp docutils literal"><span class="pre">source</span> <span class="pre">$XIA2_ROOT/setup.(c)sh</span></tt>.</p>
-<p>xia2 depends critically on having CCP4 and CCTBX available. However to
-get access to the full functionality you will also need XDS and Phenix (which
-includes Labelit and CCTBX.) Therefore for a “standard” xia2 installation I
-would recommend:</p>
-<ul class="simple">
-<li>Install CCP4 include updated versions of Pointless and Aimless from <a class="reference external" href="ftp://ftp.mrc-lmb.cam.ac.uk/pub/pre">ftp://ftp.mrc-lmb.cam.ac.uk/pub/pre</a></li>
-<li>Download XDS from <a class="reference external" href="http://xds.mpimf-heidelberg.mpg.de/">http://xds.mpimf-heidelberg.mpg.de/</a> and add this to your path <a class="footnote-reference" href="#id2" id="id1">[1]</a></li>
-<li>Download PHENIX from <a class="reference external" href="http://www.phenix-online.org">http://www.phenix-online.org</a> and be sure to source the setup for this after CCP4</li>
-<li>Download xia2 from <a class="reference external" href="http://xia2.sf.net">http://xia2.sf.net</a> and tweak the setup file to reflect where it’s installed</li>
+<li>Install CCP4 including updated versions of Pointless and Aimless from <a class="reference external" href="ftp://ftp.mrc-lmb.cam.ac.uk/pub/pre">ftp://ftp.mrc-lmb.cam.ac.uk/pub/pre</a></li>
+<li>Download a recent xia2/DIALS bundle from <a class="reference external" href="http://dials.diamond.ac.uk/installation.html">http://dials.diamond.ac.uk/installation.html</a>.
+Once installed, simply sourcing the dials_env.sh script in the installation
+directory will make available all xia2 and DIALS commands in the current
+terminal. Make sure to source the dials_env.sh script after the CCP4 setup
+script</li>
+<li>Optionally download XDS from <a class="reference external" href="http://xds.mpimf-heidelberg.mpg.de/">http://xds.mpimf-heidelberg.mpg.de/</a> and add this to your path <a class="footnote-reference" href="#id2" id="id1">[1]</a></li>
+<li>Optionally download PHENIX from <a class="reference external" href="http://www.phenix-online.org">http://www.phenix-online.org</a> or LABELIT from
+<a class="reference external" href="http://cci.lbl.gov/labelit/">http://cci.lbl.gov/labelit/</a> and source the relevant setup script</li>
 </ul>
 <p>By and large, if these instruction are followed you should end up with a
 happy xia2 installation. If you find any problems it’s always worth checking
-the blog (<a class="reference external" href="http://xia2.blogspot.com">http://xia2.blogspot.com</a>) or sending an email to <a class="reference external" href="mailto:xia2&#46;support&#37;&#52;&#48;gmail&#46;com">xia2<span>&#46;</span>support<span>&#64;</span>gmail<span>&#46;</span>com</a>.</p>
-<div class="section" id="experimental-xia2-dials-installers">
-<h2>Experimental xia2/DIALS installers<a class="headerlink" href="#experimental-xia2-dials-installers" title="Permalink to this headline">¶</a></h2>
-<p>We are currently testing new xia2/DIALS installers for mac/linux which provide
-a self-contained xia2/cctbx/DIALS installation. Instructions on downloading
-and installing these bundles can be found at
-<a class="reference external" href="http://dials.diamond.ac.uk/doc/installation.html">http://dials.diamond.ac.uk/doc/installation.html</a>. Once installed, simply
-sourcing the dials_env.sh script in the installation directory will make
-available all xia2 and DIALS commands in the current terminal. You will also
-need CCP4 available - but make sure to source the dials_env.sh script after
-the CCP4 setup script. You can also try out the new xia2 -dials option, which
-will use the new software DIALS to index and integrate your data, followed by
-scaling and merging with Aimless. As always, please send any feedback to
-<a class="reference external" href="mailto:xia2&#46;support&#37;&#52;&#48;gmail&#46;com">xia2<span>&#46;</span>support<span>&#64;</span>gmail<span>&#46;</span>com</a>.</p>
+the <a class="reference external" href="http://xia2.blogspot.com/">blog</a> or sending an email to <a class="reference external" href="mailto:xia2&#46;support&#37;&#52;&#48;gmail&#46;com">xia2<span>&#46;</span>support<span>&#64;</span>gmail<span>&#46;</span>com</a>.</p>
 <table class="docutils footnote" frame="void" id="id2" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
 <tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>To use <tt class="samp docutils literal"><span class="pre">-xparallel</span></tt> you will need to fiddle with forkintegrate in the XDS distribution</td></tr>
 </tbody>
 </table>
-</div>
 </div>
 
 

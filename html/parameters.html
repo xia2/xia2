@@ -42,21 +42,6 @@
 <!--   </div> -->
 
 
-    <div class="related">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="comments.html" title="Comments"
-             accesskey="N">next</a> |</li>
-        <li class="right" >
-          <a href="program_output.html" title="Program output"
-             accesskey="P">previous</a> |</li>
-        <li><a href="index.html">xia2  documentation</a> &raquo;</li>
-      </ul>
-    </div>
 
     <div class="document">
       <div class="documentwrapper">
@@ -185,23 +170,28 @@ xds {
   }
 }
 dials {
-  phil_file = None
-  spotfinder {
+  fix_geometry = False
+  outlier.algorithm = null *auto mcd tukey sauter_poon
+  fast_mode = False
+  find_spots {
     min_spot_size = Auto
+    min_local = 0
     phil_file = None
     sigma_strong = None
     filter_ice_rings = False
+    kernel_size = 3
+    global_threshold = None
   }
-  fix_geometry = False
-  outlier_rejection = True
   index {
     method = fft1d *fft3d real_space_grid_search
     phil_file = None
     max_cell = 0.0
     use_all_reflections = False
+    fft3d.n_points = None
   }
   refine {
     scan_varying = True
+    interval_width_degrees = 36.0
     use_all_reflections = True
     phil_file = None
     reflections_per_degree = 100
@@ -210,6 +200,7 @@ dials {
     phil_file = None
     profile_fitting = True
     background_outlier_algorithm = *null nsigma truncated normal tukey mosflm
+    background_algorithm = simple null *glm
     use_threading = False
     include_partials = True
   }
@@ -218,9 +209,13 @@ ccp4 {
   truncate {
     program = 'ctruncate'
   }
+  reindex {
+    program = 'pointless'
+  }
   aimless {
     intensities = summation profile *combine
     surface_tie = 0.001
+    surface_link = True
   }
 }
 xia2.settings {
@@ -229,16 +224,23 @@ xia2.settings {
     json = None
     reference_geometry = None
     xinfo = None
+    min_images = 10
+    min_oscillation_range = None
   }
   sweep {
     id = None
     range = None
+    exclude = False
+  }
+  scale {
+    directory = Auto
   }
   unit_cell = None
   space_group = None
   d_min = None
   d_max = None
   optimize_scaling = False
+  unify_setting = False
   beam_centre = None
   trust_beam_centre = False
   wavelength_tolerance = 0.00001
@@ -250,7 +252,9 @@ xia2.settings {
   use_brehm_diederichs = False
   developmental {
     use_dials_spotfinder = False
+    pointless_tolerance = 0.0
   }
+  integrate_p1 = False
   xds {
     geometry_x = None
     geometry_y = None
@@ -259,6 +263,7 @@ xia2.settings {
   refiner = mosflm xds dials
   integrater = mosflmr xdsr mosflm xds dials
   scaler = ccp4a xdsa
+  verbose = False
   multiprocessing {
     mode = *serial parallel
     nproc = Auto
