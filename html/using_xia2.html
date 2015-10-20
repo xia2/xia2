@@ -51,15 +51,15 @@
   <div class="section" id="using-xia2">
 <h1>Using xia2<a class="headerlink" href="#using-xia2" title="Permalink to this headline">¶</a></h1>
 <p>As mentioned in the <a class="reference internal" href="quick_start.html"><em>quick start guide</em></a>, to get started simply run:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">xia2</span> <span class="o">-</span><span class="n">dials</span> <span class="o">/</span><span class="n">here</span><span class="o">/</span><span class="n">are</span><span class="o">/</span><span class="n">my</span><span class="o">/</span><span class="n">images</span>
+</pre></div>
+</div>
+<p>or:</p>
 <div class="highlight-python"><div class="highlight"><pre>xia2 -2d /here/are/my/images
 </pre></div>
 </div>
 <p>or:</p>
 <div class="highlight-python"><div class="highlight"><pre>xia2 -3d /here/are/my/images
-</pre></div>
-</div>
-<p>or:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">xia2</span> <span class="o">-</span><span class="n">dials</span> <span class="o">/</span><span class="n">here</span><span class="o">/</span><span class="n">are</span><span class="o">/</span><span class="n">my</span><span class="o">/</span><span class="n">images</span>
 </pre></div>
 </div>
 <p>The program is used from the command-line; there is no GUI. The four
@@ -79,17 +79,17 @@ most important command-line options are as follows:</p>
 <tr class="row-even"><td>-atom X</td>
 <td>tell xia2 to separate anomalous pairs i.e. I(+) <img class="math" src="_images/math/0d30670bb6d1c8b8b455037c6281681a60c02b0d.png" alt="\neq"/> I(−) in scaling</td>
 </tr>
-<tr class="row-odd"><td>-2d</td>
+<tr class="row-odd"><td>-dials</td>
+<td>tell xia2 to use <a class="reference external" href="http://dials.sourceforge.net/">DIALS</a> and <a class="reference external" href="http://www.ccp4.ac.uk/html/aimless.html">Aimless</a></td>
+</tr>
+<tr class="row-even"><td>-2d</td>
 <td>tell xia2 to use <a class="reference external" href="http://www.mrc-lmb.cam.ac.uk/harry/mosflm/">MOSFLM</a> and <a class="reference external" href="http://www.ccp4.ac.uk/html/aimless.html">Aimless</a></td>
 </tr>
-<tr class="row-even"><td>-3d</td>
+<tr class="row-odd"><td>-3d</td>
 <td>tell xia2 to use <a class="reference external" href="http://xds.mpimf-heidelberg.mpg.de/">XDS</a> and <a class="reference external" href="http://xds.mpimf-heidelberg.mpg.de/html_doc/xscale_program.html">XSCALE</a></td>
 </tr>
-<tr class="row-odd"><td>-3dii</td>
+<tr class="row-even"><td>-3dii</td>
 <td>tell xia2 to use <a class="reference external" href="http://xds.mpimf-heidelberg.mpg.de/">XDS</a> and <a class="reference external" href="http://xds.mpimf-heidelberg.mpg.de/html_doc/xscale_program.html">XSCALE</a>, indexing with peaks found from all images</td>
-</tr>
-<tr class="row-even"><td>-dials</td>
-<td>tell xia2 to use <a class="reference external" href="http://dials.sourceforge.net/">DIALS</a> and <a class="reference external" href="http://www.ccp4.ac.uk/html/aimless.html">Aimless</a></td>
 </tr>
 </tbody>
 </table>
