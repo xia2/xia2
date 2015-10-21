@@ -46,8 +46,8 @@ def run():
   wd = os.getcwd()
 
   try:
-    from xia2 import xia2
-    xia2(stop_after='integrate')
+    from xia2_main import xia2_main
+    xia2_main(stop_after='integrate')
     Chatter.write('Status: normal termination')
     from Handlers.Flags import Flags
     if Flags.get_egg():

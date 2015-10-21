@@ -34,7 +34,7 @@ from Applications.xia2 import get_command_line, write_citations, help
 from Applications.xia2_helpers import process_one_sweep
 
 
-def xia2(stop_after=None):
+def xia2_main(stop_after=None):
   '''Actually process something...'''
 
   #Flags.set_serialize_state(True)
@@ -286,7 +286,7 @@ def run():
   wd = os.getcwd()
 
   try:
-    xia2()
+    xia2_main()
     Chatter.write('Status: normal termination')
     from Handlers.Flags import Flags
     if Flags.get_egg():
