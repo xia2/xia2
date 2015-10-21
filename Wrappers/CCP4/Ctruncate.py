@@ -124,6 +124,7 @@ def Ctruncate(DriverType = None):
         except:
           pass
 
+        Debug.write(str(e))
         raise RuntimeError, 'ctruncate failure'
 
       nref = 0
