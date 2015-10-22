@@ -67,6 +67,7 @@ def CheckIndexingSymmetry(DriverType = None):
 
       lines = self.get_all_output()
       hkl_offsets = {}
+      hkl_nref = {}
       for i, line in enumerate(lines):
         line = line.strip()
         if line.startswith('dH dK dL   Nref    CC'):
@@ -79,13 +80,28 @@ def CheckIndexingSymmetry(DriverType = None):
             h, k, l = [int(t) for t in tokens[:3]]
             nref, cc = [float(t) for t in tokens[3:]]
             hkl_offsets[(h,k,l)] = cc
+            hkl_nref[(h,k,l)] = nref
 
       Debug.write("hkl_offset scores: %s" %str(hkl_offsets))
+      Debug.write("hkl_nref scores: %s" %str(hkl_nref))
       if len(hkl_offsets) > 1:
         max_offset = max(hkl_offsets.values())
-        i = [i for i, v in enumerate(hkl_offsets.values())
-             if v == max_offset][0]
-        self._hkl_offset = hkl_offsets.keys()[i]
+        max_nref = max(hkl_nref.values())
+
+        # select "best" solution - needs nref > 0.5 max nref && highest CC
+        # FIXME perform proper statistical test in here do not like heuristics
+
+        best_hkl = 0,0,0
+        best_hkl_score = 0.0
+
+        for hkl in hkl_nref:
+          if hkl_nref[hkl] < max_nref // 2:
+            continue
+          if hkl_offsets[hkl] > best_hkl_score:
+            best_hkl_score = hkl_offsets[hkl]
+            best_hkl = hkl
+
+        self._hkl_offset = best_hkl
       else:
         self._hkl_offset = None
 
