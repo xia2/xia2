@@ -211,6 +211,9 @@ xia2.settings {
       .type = path
       .help = "Provide an xinfo file as input as alternative to directory "
               "containing image files."
+    gain = None
+      .type = float
+      .help = "Detector gain if using DIALS"
     min_images = 10
       .type = int(value_min=1)
       .help = "Minimum number of matching images to include a sweep in processing."
