@@ -912,10 +912,8 @@ class PyChef(object):
 
         values.append(rcp)
 
-      klist = [k in range(self._resolution_bins)]
-
-      ot = sum([rcp_top[k][j] for k in klist])
-      ob = sum([rcp_bottom[k][j] for k in klist])
+      ot = sum([rcp_top[k][j] for k in range(self._resolution_bins)])
+      ob = sum([rcp_bottom[k][j] for k in range(self._resolution_bins)])
 
       if ob:
         overall = ot / ob
