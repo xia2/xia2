@@ -131,31 +131,38 @@ def run(args):
   # accumulate as a function of dose and resolution
 
   rcp_overall = flex.double(n_steps, 0)
-  rcp_bins = []
+  rcp_bins = [flex.double(n_steps, 0) for i in range(n_bins)]
   scp_overall = flex.double(n_steps, 0)
-  scp_bins = []
-  for i_bin in xrange(n_bins):
-    rcp_b = flex.double()
-    scp_b = flex.double()
-    for d in xrange(n_steps):
-      top = A[i_bin][d]
-      bottom = B[i_bin][d]
+  scp_bins = [flex.double(n_steps, 0) for i in range(n_bins)]
+
+  for j in xrange(n_steps):
+
+    for i_bin in xrange(n_bins):
+      top = A[i_bin][j]
+      bottom = B[i_bin][j]
+
       rcp = 0.0
-      scp = 0.0
+      scp = 0.
+
       if bottom > 0:
         rcp = top/bottom
-        if count[i_bin][d] > 100:
-          isig = isigma[i_bin][d] / count[i_bin][d]
+        if count[i_bin][j] > 100:
+          isig = isigma[i_bin][j] / count[i_bin][j]
           scp = rcp / (1.1284 / isig)
-      rcp_b.append(rcp)
-      scp_b.append(scp)
-    rcp_bins.append(rcp_b)
-    scp_bins.append(scp_b)
-    rcp_overall += rcp_b
-    scp_overall += scp_b
 
-  rcp_overall /= n_bins
-  scp_overall /= n_bins
+        rcp_bins[i_bin][j] = rcp
+        scp_bins[i_bin][j] = scp
+
+    ot = sum(A[i_bin][j] for i_bin in xrange(n_bins))
+    ob = sum(B[i_bin][j] for i_bin in xrange(n_bins))
+
+    if ob > 0:
+      overall = ot/ob
+    else:
+      overall = 0.
+    rcp_overall[j] = overall
+
+    scp_overall[j] = sum(scp_bins[i_bin][j] for i_bin in xrange(n_bins))/n_bins
 
   from iotbx.data_plots import table_data
 
