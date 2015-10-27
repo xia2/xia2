@@ -72,7 +72,7 @@ def run(args):
   assert range_width > 0
 
   if range_min is None:
-    range_min = flex.min(dose)
+    range_min = flex.min(dose) - range_width
   if range_max is None:
     range_max = flex.max(dose)
   n_steps = 2 + int((range_max - range_min) - range_width)
@@ -85,7 +85,8 @@ def run(args):
   sigmas = intensities_asu.sigmas()
   d_star_sq = intensities_asu.d_star_sq().data()
 
-  binner = merged.setup_binner(n_bins=n_bins)
+  binner = merged.setup_binner_d_star_sq_step(
+    d_star_sq_step=(flex.max(d_star_sq)-flex.min(d_star_sq)+1e-8)/n_bins)
   A = [[0] * n_steps for i in xrange(n_bins)]
   B = [[0] * n_steps for i in xrange(n_bins)]
   isigma = [[0] * n_steps for i in xrange(n_bins)]
