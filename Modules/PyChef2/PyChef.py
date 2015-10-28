@@ -292,8 +292,8 @@ class statistics(object):
 
   def calc_rd(self):
 
-    rd_top = flex.double(self.n_steps, 0)
-    rd_bottom = flex.double(self.n_steps, 0)
+    rd_top = [0] * self.n_steps
+    rd_bottom = [0] * self.n_steps
 
     intensities_data = self.intensities.data()
     sigmas = self.intensities.sigmas()
