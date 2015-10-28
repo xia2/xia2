@@ -164,7 +164,7 @@ class statistics(object):
       if observed.is_minus():
         continue
 
-      irefs = sorted(observed.irefs)
+      irefs = list(observed.irefs)
       dose_min_iplus = self.range_max + self.range_width
       dose_min_iminus = self.range_max + self.range_width
 
@@ -179,7 +179,7 @@ class statistics(object):
       h_uniq_minus = tuple(-h for h in h_uniq)
       if h_uniq_minus in self.observations:
         observed = self.observations[h_uniq_minus]
-        irefs = sorted(observed.irefs)
+        irefs = list(observed.irefs)
         for i, i_ref in enumerate(irefs):
           dose_i = self.dose[i_ref]
           dose_min_iminus = min(dose_i, dose_min_iminus)
@@ -223,7 +223,7 @@ class statistics(object):
     sigmas = self.intensities.sigmas()
 
     for h_uniq, observed in self.observations:
-      irefs = sorted(observed.irefs)
+      irefs = list(observed.irefs)
       if len(irefs) == 1:
         # lone observation, no pairs
         continue
@@ -233,14 +233,12 @@ class statistics(object):
         sigi_i = sigmas[i_ref]
         i_bin = binner.get_i_bin(self.d_star_sq[i_ref]) - 1
         for j, j_ref in enumerate(irefs[i+1:]):
-          assert abs(self.d_star_sq[j_ref] - self.d_star_sq[i_ref]) < 1e-8
           I_j = intensities_data[j_ref]
           sigi_j = sigmas[i_ref]
           A_part = math.fabs(I_i - I_j)
           B_part = 0.5 * math.fabs(I_i + I_j)
           dose_j = self.dose[j_ref]
           dose_0 = int((max(dose_i, dose_j) - self.range_min)/self.range_width)
-          assert dose_0 >= 0
           A[i_bin][dose_0] += A_part
           B[i_bin][dose_0] += B_part
           isigma[i_bin][dose_0] += (I_i/sigi_i) + (I_j/sigi_j)
@@ -301,7 +299,7 @@ class statistics(object):
     sigmas = self.intensities.sigmas()
 
     for h_uniq, observed in self.observations:
-      irefs = sorted(observed.irefs)
+      irefs = list(observed.irefs)
       if len(irefs) == 1:
         # lone observation, no pairs
         continue
@@ -309,7 +307,6 @@ class statistics(object):
         dose_i = self.dose[i_ref]
         I_i = intensities_data[i_ref]
         for j, j_ref in enumerate(irefs[i+1:]):
-          assert abs(self.d_star_sq[j_ref] - self.d_star_sq[i_ref]) < 1e-8
           I_j = intensities_data[j_ref]
           dose_j = self.dose[j_ref]
           d_dose = int(
