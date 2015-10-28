@@ -275,6 +275,35 @@ class statistics(object):
       scp_overall[j] = sum(scp_bins[i_bin][j] for i_bin in xrange(self.n_bins))/self.n_bins
     return rcp_bins, rcp_overall, scp_bins, scp_overall
 
+  def calc_rd(self):
+
+    rd_top = flex.double(self.n_steps, 0)
+    rd_bottom = flex.double(self.n_steps, 0)
+
+    intensities_data = self.intensities.data()
+    sigmas = self.intensities.sigmas()
+
+    for h_uniq, observed in self.observations:
+      irefs = sorted(observed.irefs)
+      if len(irefs) == 1:
+        # lone observation, no pairs
+        continue
+      for i, i_ref in enumerate(irefs):
+        dose_i = self.dose[i_ref]
+        I_i = intensities_data[i_ref]
+        for j, j_ref in enumerate(irefs[i+1:]):
+          assert abs(self.d_star_sq[j_ref] - self.d_star_sq[i_ref]) < 1e-8
+          I_j = intensities_data[j_ref]
+          dose_j = self.dose[j_ref]
+          d_dose = int(
+            round(math.fabs(dose_i - dose_j) - self.range_min)/self.range_width)
+          rd_top[d_dose] += math.fabs(I_i - I_j)
+          rd_bottom[d_dose] += 0.5 * (I_i + I_j)
+
+    rd = flex.double(rd_top[i]/rd_bottom[i] if rd_bottom[i] > 0 else 0
+                     for i in xrange(self.n_steps))
+    return rd
+
   def print_completeness_vs_dose(self, iplus_count, iminus_count,
                                  ieither_count, iboth_count):
 
@@ -347,6 +376,25 @@ class statistics(object):
 
     print table_scp.format_loggraph()
 
+  def print_rd_vs_dose(self, rd):
+
+    title = "R vs. BATCH difference:"
+    column_labels = ["BATCH", "Scp(d)"]
+    column_formats = ["%8.1f", "%5.3f"]
+    graph_names = ["Rd"]
+    graph_columns = [[0,1]]
+
+    table_rd = table_data(title=title,
+                           column_labels=column_labels,
+                           column_formats=column_formats,
+                           graph_names=graph_names,
+                           graph_columns=graph_columns)
+    for i in xrange(self.n_steps):
+      row = [i * self.range_width + self.range_min, rd[i]]
+      table_rd.add_row(row)
+
+    print table_rd.format_loggraph()
+
 
 def run(args):
   from iotbx.reflection_file_reader import any_reflection_file
@@ -398,11 +446,13 @@ def run(args):
   iplus_count, iminus_count, ieither_count, iboth_count \
     = stats.calc_completeness_vs_dose()
   rcp_bins, rcp_overall, scp_bins, scp_overall = stats.calc_rcp_scp()
+  rd = stats.calc_rd()
 
   stats.print_completeness_vs_dose(
     iplus_count, iminus_count, ieither_count, iboth_count)
   stats.print_rcp_vs_dose(rcp_bins, rcp_overall)
   stats.print_scp_vs_dose(scp_bins, scp_overall)
+  stats.print_rd_vs_dose(rd)
 
 
 if __name__ == '__main__':
