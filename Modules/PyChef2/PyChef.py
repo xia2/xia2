@@ -148,6 +148,8 @@ class statistics(object):
     ieither_count = flex.size_t(self.n_steps, 0)
     iboth_count = flex.size_t(self.n_steps, 0)
 
+    n_complete = self.intensities.as_non_anomalous_array().complete_set().size()
+
     for h_uniq, observed in self.observations:
       if observed.is_minus():
         continue
@@ -190,7 +192,12 @@ class statistics(object):
       ieither_count[j] += ieither_count[j - 1]
       iboth_count[j] += iboth_count[j - 1]
 
-    return iplus_count, iminus_count, ieither_count, iboth_count
+    iplus_comp = iplus_count.as_double() / n_complete
+    iminus_comp = iminus_count.as_double() / n_complete
+    ieither_comp = ieither_count.as_double() / n_complete
+    iboth_comp = iboth_count.as_double() / n_complete
+
+    return iplus_comp, iminus_comp, ieither_comp, iboth_comp
 
   def calc_rcp_scp(self):
 
