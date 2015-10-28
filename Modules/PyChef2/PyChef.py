@@ -20,6 +20,16 @@ range {
   max = None
     .type = float(value_min=0)
 }
+batch
+  .multiple = True
+{
+  range = None
+    .type = ints(value_min=0, size=2)
+  dose_start = None
+    .type = float(value_min=0)
+  dose_step = None
+    .type = float(value_min=0)
+}
 """)
 
 
@@ -444,7 +454,21 @@ def run(args):
     intensities = intensities.as_anomalous_array()
     batches = batches.as_anomalous_array()
 
-  dose = batches.data()
+  if len(params.batch):
+    dose = flex.double(batches.size(), -1)
+    batch_data = batches.data()
+    for batch in params.batch:
+      start = batch.dose_start
+      step = batch.dose_step
+      for i in range(batch.range[0], batch.range[1]+1):
+        # inclusive range
+        dose.set_selected(batch_data == i, start + step * (i-batch.range[0]))
+  else:
+    dose = batches.data()
+
+  sel = dose > -1
+  intensities = intensities.select(sel)
+  dose = dose.select(sel)
 
   stats = statistics(intensities, dose, n_bins=params.resolution_bins,
                      range_min=params.range.min, range_max=params.range.max,
