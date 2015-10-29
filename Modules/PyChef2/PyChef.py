@@ -8,6 +8,10 @@ from libtbx import phil
 
 
 phil_scope = phil.parse("""\
+d_min = None
+  .type = float(value_min=0)
+d_max = None
+  .type = float(value_min=0)
 resolution_bins = 8
   .type = int
 anomalous = False
@@ -466,6 +470,16 @@ def run(args):
   sel = dose > -1
   intensities = intensities.select(sel)
   dose = dose.select(sel)
+
+  if params.d_min or params.d_max:
+    sel = flex.bool(intensities.size(), True)
+    d_spacings = intensities.d_spacings().data()
+    if params.d_min:
+      sel &= d_spacings >= params.d_min
+    if params.d_max:
+      sel &= d_spacings <= params.d_max
+    intensities = intensities.select(sel)
+    dose = dose.select(sel)
 
   stats = statistics(intensities, dose, n_bins=params.resolution_bins,
                      range_min=params.range.min, range_max=params.range.max,
