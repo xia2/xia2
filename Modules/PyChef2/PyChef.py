@@ -397,7 +397,7 @@ class statistics(object):
   def print_rd_vs_dose(self, rd):
 
     title = "R vs. BATCH difference:"
-    column_labels = ["BATCH", "Scp(d)"]
+    column_labels = ["BATCH", "Rd"]
     column_formats = ["%8.1f", "%5.3f"]
     graph_names = ["Rd"]
     graph_columns = [[0,1]]
