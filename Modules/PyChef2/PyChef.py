@@ -359,8 +359,8 @@ class statistics(object):
     title = "Cumulative radiation damage analysis:"
     column_labels = ["BATCH"] + ["S%i" %i for i in range(self.n_bins)] + ["Rcp(d)"]
     column_formats = ["%8.1f"] + ["%7.4f" for i in range(self.n_bins+1)]
-    graph_names = ["Rcp(d)"]
-    graph_columns = [[0,9]]
+    graph_names = ["Rcp(d)", "Rcp(d), in resolution shells"]
+    graph_columns = [[0, self.n_bins+1], range(self.n_bins+1)]
 
     table_rcp = table_data(title=title,
                            column_labels=column_labels,
@@ -379,8 +379,8 @@ class statistics(object):
     title = "Normalised radiation damage analysis:"
     column_labels = ["BATCH"] + ["S%i" %i for i in range(self.n_bins)] + ["Scp(d)"]
     column_formats = ["%8.1f"] + ["%7.4f" for i in range(self.n_bins+1)]
-    graph_names = ["Scp(d)"]
-    graph_columns = [[0,9]]
+    graph_names = ["Scp(d)", "Scp(d), in resolution shells"]
+    graph_columns = [[0, self.n_bins+1], range(self.n_bins+1)]
 
     table_scp = table_data(title=title,
                            column_labels=column_labels,
