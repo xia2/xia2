@@ -291,6 +291,8 @@ xia2.settings {
   }
   integrate_p1 = False
     .type = bool
+  reintegrate_correct_lattice = True
+    .type = bool
   xds {
     geometry_x = None
       .type = path

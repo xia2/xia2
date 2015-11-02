@@ -720,8 +720,10 @@ class Indexer(FrameProcessor):
           asserted_lattice != self.get_indexer_lattice() and
           asserted_lattice != 'aP'):
         #Debug.write('Accepted lattice %s, will reprocess' % asserted_lattice)
-        self.set_indexer_done(False)
-        return self.LATTICE_POSSIBLE
+        if PhilIndex.params.xia2.settings.reintegrate_correct_lattice:
+          self.set_indexer_done(False)
+          return self.LATTICE_POSSIBLE
+        return self.LATTICE_CORRECT
 
       return self.LATTICE_CORRECT
 
