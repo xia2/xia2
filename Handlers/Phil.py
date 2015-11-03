@@ -71,6 +71,8 @@ xds {
       .type = float
     beam_divergence_esd = 0
       .type = float
+    reintegrate = true
+      .type = bool
   }
   init {
     fix_scale = False

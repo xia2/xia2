@@ -461,7 +461,8 @@ class XDSIntegrater(Integrater):
     # erm? shouldn't this therefore return if this is the principle, or
     # set the flag after we have tested the lattice?
 
-    if not self._xds_data_files.has_key('GXPARM.XDS'):
+    if not self._xds_data_files.has_key('GXPARM.XDS') and \
+      PhilIndex.params.xds.integrate.reintegrate:
       Debug.write(
           'Resetting integrater, to ensure refined orientation is used')
       self.set_integrater_done(False)
