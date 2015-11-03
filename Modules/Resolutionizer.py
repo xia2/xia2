@@ -1446,10 +1446,13 @@ class resolutionizer(object):
 
     return r_cc
 
-if __name__ == '__main__':
-
+def run(args):
   stamp("Resolutionizer.py starting")
-  m = resolutionizer(sys.argv[1:])
+  m = resolutionizer(args)
   stamp("instantiated")
   m.resolution_auto()
   stamp("the end.")
+
+
+if __name__ == '__main__':
+  run(sys.argv[1:])
