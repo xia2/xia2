@@ -196,6 +196,7 @@ class XSweep(object):
     self._resolution_low = dmax
     self._ice = ice
     self._excluded_regions = excluded_regions
+    self._imageset = None
 
     # FIXME in here also need to be able to accumulate the total
     # dose from all experimental measurements (complex) and provide
@@ -321,6 +322,8 @@ class XSweep(object):
       Debug.write('Exposure epoch for sweep %s: %d %d' % \
                   (self._template, min(epochs), max(epochs)))
 
+    self._input_imageset = copy.deepcopy(self._imageset)
+
     # + get the lattice - can this be a pointer, so that when
     #   this object updates lattice it is globally-for-this-crystal
     #   updated? The lattice included directly in here includes an
@@ -365,6 +368,9 @@ class XSweep(object):
       if a[0] in ('_indexer', '_refiner', '_integrater') and a[1] is not None:
         obj[a[0]] = a[1].to_dict()
       elif a[0] == '_imageset':
+        from dxtbx.serialize.imageset import imageset_to_dict
+        obj[a[0]] = imageset_to_dict(a[1])
+      elif a[0] == '_input_imageset':
         from dxtbx.serialize.imageset import imageset_to_dict
         obj[a[0]] = imageset_to_dict(a[1])
       elif a[0] == '_wavelength':
@@ -438,6 +444,9 @@ class XSweep(object):
 
   def get_imageset(self):
     return self._imageset
+
+  def get_input_imageset(self):
+    return self._input_imageset
 
   def get_header(self):
     '''Get the image header information.'''
@@ -518,27 +527,28 @@ class XSweep(object):
     if self._frames_to_process:
       summary.append('Images: %d to %d' % tuple(self._frames_to_process))
 
-    if self._header and self._get_indexer():
+    if self._get_indexer():
       # print the comparative values
 
-      header= self._header
       indxr = self._get_indexer()
 
-      hbeam = header['beam']
+      from Schema.Interfaces.FrameProcessor import get_beam_centre
+      imgset = self.get_input_imageset()
+      hbeam = get_beam_centre(imgset.get_detector(), imgset.get_beam())
       ibeam = indxr.get_indexer_beam_centre()
 
       if hbeam and ibeam:
         summary.append('Beam %.2f %.2f => %.2f %.2f' % \
         (hbeam[0], hbeam[1], ibeam[0], ibeam[1]))
 
-      hdist = header['distance']
-
+      hdist = imgset.get_detector()[0].get_distance()
       idist = indxr.get_indexer_distance()
 
       if hdist and idist:
         summary.append('Distance %.2f => %.2f' % (hdist, idist))
 
-      summary.append('Date: %s' % header['date'])
+      summary.append('Date: %s' %time.asctime(
+        time.gmtime(imgset.get_scan().get_epochs()[0])))
 
     return summary
 

@@ -200,14 +200,16 @@ class FrameProcessor(object):
     return
 
   def get_beam_centre(self):
+    detector = self.get_detector()
+    beam = self.get_beam_obj()
+    return get_beam_centre(detector, beam)
+
     from scitbx import matrix
     import math
-    detector = self.get_detector()
     assert len(detector) == 1, \
       'xia2 does not yet support multi-panel detectors'
 
     panel = detector[0]
-    beam = self.get_beam_obj()
     s0 = matrix.col(beam.get_s0())
     f = matrix.col(panel.get_fast_axis())
     s = matrix.col(panel.get_slow_axis())
@@ -398,6 +400,45 @@ class FrameProcessor(object):
     return
 
   # end of class
+
+
+def get_beam_centre(detector, beam):
+  from scitbx import matrix
+  import math
+  assert len(detector) == 1, \
+    'xia2 does not yet support multi-panel detectors'
+
+  panel = detector[0]
+  s0 = matrix.col(beam.get_s0())
+  f = matrix.col(panel.get_fast_axis())
+  s = matrix.col(panel.get_slow_axis())
+  n = matrix.col(panel.get_normal())
+  o = matrix.col(panel.get_origin())
+  # find axis of 2theta shift
+  if abs(f.dot(s0)) > abs(s.dot(s0)):
+    r = n.cross(s0)
+    a = n.angle(s0)
+  else:
+    r = n.cross(s0)
+    a = n.angle(s0)
+
+  # if two theta small use old version of code - remembering modulo pi
+  if abs(a % math.pi) < 5.0 * math.pi / 180.0:
+    D = matrix.sqr(panel.get_D_matrix())
+    v = D * beam.get_s0()
+    x, y = v[0] / v[2], v[1] / v[2]
+    return y, x
+
+  # apply matrix
+  R = r.axis_and_angle_as_r3_rotation_matrix(a)
+  # compute beam centre at two-theta=0
+  Ro = R * o
+  Rn = R * n
+  b = - Ro + Ro.dot(s0) * s0
+  beam_x = b.dot(R * f)
+  beam_y = b.dot(R * s)
+  return beam_y, beam_x
+
 
 if __name__ == '__main__':
   # run a quick test
