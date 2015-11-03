@@ -27,7 +27,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from Driver.DriverFactory import DriverFactory
 from Decorators.DecoratorFactory import DecoratorFactory
-from Handlers.Streams import Debug
+from Handlers.Streams import Chatter, Debug
 from Handlers.Flags import Flags
 from Experts.ResolutionExperts import linear
 
@@ -670,10 +670,15 @@ def Aimless(DriverType = None,
 
       if True:
         # try:
-        self.check_for_errors()
-        self.check_ccp4_errors()
-        self.check_aimless_error_negative_scale_run()
-        self.check_aimless_errors()
+        try:
+          self.check_for_errors()
+          self.check_ccp4_errors()
+          self.check_aimless_error_negative_scale_run()
+          self.check_aimless_errors()
+        except Exception, e:
+          Chatter.write(
+            "Aimless failed, see log file for more details:\n  %s" %self.get_log_file())
+          raise
 
         status = 'OK'
 
