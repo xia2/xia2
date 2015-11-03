@@ -935,6 +935,9 @@ class CommonScaler(Scaler):
 
   def _estimate_resolution_limit(self, hklin, batch_range=None):
     m = Merger()
+    m.set_working_directory(self.get_working_directory())
+    from lib.bits import auto_logfiler
+    auto_logfiler(m)
     m.set_hklin(hklin)
     if Flags.get_rmerge():
       m.set_limit_rmerge(Flags.get_rmerge())
