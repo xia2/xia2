@@ -42,12 +42,12 @@ def Integrate(DriverType = None):
       self._use_threading = False
       self._scan_range = []
       self._reflections_per_degree = None
-      self._data = { }
+      self._integration_report = {}
 
       return
 
-    def data(self):
-      return self._data
+    def get_per_image_statistics(self):
+      return self._per_image_statistics
 
     def set_use_threading(self, use_threading):
       self._use_threading = use_threading
@@ -111,6 +111,9 @@ def Integrate(DriverType = None):
     def get_integrated_experiments(self):
       return self._integrated_experiments
 
+    def get_integration_report(self):
+      return self._integration_report
+
     def run(self):
       from Handlers.Streams import Debug
       Debug.write('Running dials.integrate')
@@ -130,8 +133,11 @@ def Integrate(DriverType = None):
         self.get_working_directory(), '%d_integrated.pickle' %self.get_xpid())
       self._integrated_experiments = os.path.join(
         self.get_working_directory(), '%d_integrated_experiments.json' %self.get_xpid())
+      self._integration_report_filename = os.path.join(
+        self.get_working_directory(), '%d_integration_report.json' %self.get_xpid())
       self.add_command_line('output.experiments=%s' % self._integrated_experiments)
       self.add_command_line('output.reflections=%s' % self._integrated_reflections)
+      self.add_command_line('output.report=%s' % self._integration_report_filename)
       self.add_command_line(
         'profile.fitting=%s' % self._profile_fitting)
       if self._outlier_algorithm is not None:
@@ -166,21 +172,28 @@ Try using a machine with more memory or using fewer processor.''')
       # save some of the output for future reference - the per-image
       # results
 
+      import json
+      self._integration_report = json.load(
+        open(self._integration_report_filename, 'rb'))
+
       import math
 
-      self._data = { }
-      output = self.get_all_output()
-      for j, record in enumerate(output):
-        if 'Summary vs image number' in record:
-          k = j + 5
-          while not '-----' in output[k]:
-            values = map(float, output[k].replace('|', '').split())
-            image = int(values[1] + 1)
-            number = int(values[2] + values[3])
-            isig = values[8] * math.sqrt(number)
-            d = {'isig_tot':isig}
-            self._data[image] = d
-            k += 1
+      self._per_image_statistics = {}
+      table = self._integration_report['tables']['integration.image.summary']
+      rows = table['rows']
+      for row in table['rows']:
+        n_ref = float(row['n_prf'])
+        if n_ref > 0:
+          ios = float(row['ios_prf'])
+        else:
+          ios = float(row['ios_sum'])
+          n_ref = float(row['n_sum'])
+        self._per_image_statistics[int(row['image'])] = {
+          'isig': ios,
+          'isig_tot': ios * math.sqrt(n_ref),
+          'rmsd_pixel': float(row['rmsd_xy']),
+          'strong': n_ref,
+        }
 
       return
 

@@ -26,7 +26,6 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from Wrappers.Dials.Refine import Refine as _Refine
 from Wrappers.Dials.Integrate import Integrate as _Integrate
 from Wrappers.Dials.ExportMtz import ExportMtz as _ExportMtz
-from Wrappers.Dials.ShowIsigRmsd import ShowIsigRmsd as _ShowIsigRmsd
 
 # interfaces that this must implement to be an integrater
 
@@ -132,12 +131,6 @@ class DialsIntegrater(Integrater):
     auto_logfiler(export, 'EXPORTMTZ')
 
     return export
-
-  def ShowIsigRmsd(self):
-    show = _ShowIsigRmsd()
-    show.set_working_directory(self.get_working_directory())
-    auto_logfiler(show, 'SHOWISIGRMSD')
-    return show
 
   # now some real functions, which do useful things
 
@@ -350,30 +343,7 @@ class DialsIntegrater(Integrater):
       raise RuntimeError("Integration failed: %s does not exist."
                          %self._intgr_integrated_pickle)
 
-    show = self.ShowIsigRmsd()
-    show.set_reflections_filename(self._intgr_integrated_pickle)
-    show.run()
-    data = integrate.data()
-    sdata = show.data()
-    images = list(data)
-    removed = []
-    for i in images:
-      if not i in sdata:
-        del(data[i])
-        removed.append(i)
-
-    import itertools
-    ranges = lambda l:map(lambda x:(x[0][1],x[-1][1]),
-                          map(lambda (x,y):list(y),
-                              itertools.groupby(enumerate(l),lambda (x,y):x-y)))
-
-    Debug.write('Removed as no meta-information:')
-    for r in ranges(removed):
-      Debug.write('Removed %d %d' % r)
-
-    data.update(sdata)
-    self._intgr_per_image_statistics = data
-
+    self._intgr_per_image_statistics = integrate.get_per_image_statistics()
     Chatter.write(self.show_per_image_statistics())
 
     import dials
