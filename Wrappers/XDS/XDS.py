@@ -319,13 +319,15 @@ def imageset_to_xds(imageset, synchrotron = None, reversephi = False,
                   (f0 - 1, f1 + 1, s0 - 1, s1 + 1))
 
   if params.xds.untrusted_ellipse:
-    result.append(
-      'UNTRUSTED_ELLIPSE= %d %d %d %d' % tuple(params.xds.untrusted_ellipse))
+    for untrusted_ellipse in params.xds.untrusted_ellipse:
+      result.append(
+        'UNTRUSTED_ELLIPSE= %d %d %d %d' % tuple(untrusted_ellipse))
     Debug.write(result[-1])
 
   if params.xds.untrusted_rectangle:
-    result.append('UNTRUSTED_RECTANGLE= %d %d %d %d' % tuple(
-      params.xds.untrusted_rectangle))
+    for untrusted_rectangle in params.xds.untrusted_rectangle:
+      result.append(
+        'UNTRUSTED_RECTANGLE= %d %d %d %d' % tuple(untrusted_rectangle))
     Debug.write(result[-1])
 
   return result

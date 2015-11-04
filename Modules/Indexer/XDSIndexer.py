@@ -185,21 +185,32 @@ class XDSIndexer(Indexer):
     if not PhilIndex.params.xia2.settings.untrusted_rectangle_indexing:
       return
 
-    limits = PhilIndex.params.xia2.settings.untrusted_rectangle_indexing
-    spot_xds = ''
+    untrusted_rectangle_indexing \
+      = PhilIndex.params.xia2.settings.untrusted_rectangle_indexing
+    limits = untrusted_rectangle_indexing
+    spot_xds = []
     removed = 0
-    for record in self._indxr_payload['SPOT.XDS'].split('\n'):
+    lines = open(self._indxr_payload['SPOT.XDS'], 'rb').readlines()
+    for record in lines:
       if not record.strip():
         continue
+      remove = False
       x, y, phi, i = map(float, record.split()[:4])
-      if x > limits[0] and x < limits[1] and \
-          y > limits[2] and y < limits[3]:
-        removed += 1
-        continue
-      spot_xds += '%s\n' % record
+      for limits in untrusted_rectangle_indexing:
+        if x > limits[0] and x < limits[1] and \
+            y > limits[2] and y < limits[3]:
+          removed += 1
+          remove = True
+          break
+
+      if not remove:
+        spot_xds.append('%s' % record)
 
     Debug.write('Removed %d peaks from SPOT.XDS' % removed)
-    self._indxr_payload['SPOT.XDS'] = spot_xds
+    masked_spot_xds = os.path.splitext(self._indxr_payload['SPOT.XDS'])[0] + '_masked.XDS'
+    with open(masked_spot_xds, 'wb') as f:
+      f.writelines(spot_xds)
+    self._indxr_payload['SPOT.XDS'] = masked_spot_xds
     return
 
   def _index_select_images_i(self):

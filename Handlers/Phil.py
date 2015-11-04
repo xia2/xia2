@@ -41,8 +41,10 @@ xds {
     .type = float
   untrusted_ellipse = None
     .type = ints(size = 4)
+    .multiple = True
   untrusted_rectangle = None
     .type = ints(size = 4)
+    .multiple = True
   trusted_region = None
     .type = floats(size = 2)
   profile_grid_size = None
@@ -275,6 +277,7 @@ xia2.settings {
     .type = bool
   untrusted_rectangle_indexing = None
     .type = ints(size = 4)
+    .multiple = True
   xds_cell_deviation = 0.05, 5.0
     .type = floats(size = 2)
   use_brehm_diederichs = False
