@@ -55,6 +55,7 @@ class XDSRefiner(Refiner):
 
         from Modules.Indexer.XDSIndexer import XDSIndexer
         xds_idxr = XDSIndexer()
+        xds_idxr.set_working_directory(self.get_working_directory())
         xds_idxr.set_indexer_sweep(idxr.get_indexer_sweep())
         xds_idxr.setup_from_imageset(idxr.get_imageset())
 
