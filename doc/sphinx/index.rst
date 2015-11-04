@@ -25,6 +25,6 @@ Contact
 =======
 
 * Blog: http://xia2.blogspot.co.uk/
-* Source code: http://xia2.sourceforge.net/
+* Source code: https://github.com/xia2/xia2
 * Mailing list: xia2-list@lists.sourceforge.net
 * Support: xia2.support@gmail.com

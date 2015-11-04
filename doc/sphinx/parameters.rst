@@ -38,19 +38,19 @@ Phil parameters
 
 
 .. note::
-  We are currently moving towards moving `PHIL (Python-based Hierarchial Interchange Language)`_ 
+  We are currently moving towards moving `PHIL (Python-based Hierarchial Interchange Language)`_
   for specifying xia2 program parameters,
   which will in the long run help the documentation, but in the mean time you may see some
-  warnings as certain parameters are changed from :samp:`-param` style parameters to 
+  warnings as certain parameters are changed from :samp:`-param` style parameters to
   :samp:`param=` style PHIL parameters. If you see, e.g.:
 
     :samp:`Warning: -spacegroup option deprecated: please use space_group='P422' instead`
 
     :samp:`Warning: -resolution option deprecated: please use d_min=1.5 instead`
 
-  don't panic - this is to be expected - but you may want to change the way you run xia2 
-  or your scripts. More of a warning for beamline / automation people! The outcome of this 
-  should however be automated generation of command-line documentation and the ability to 
+  don't panic - this is to be expected - but you may want to change the way you run xia2
+  or your scripts. More of a warning for beamline / automation people! The outcome of this
+  should however be automated generation of command-line documentation and the ability to
   keep "recipes" for running xia2 in tidy files.
 
 Here is a comprehensive list of PHIL parameters used by xia2:
@@ -62,7 +62,7 @@ Here is a comprehensive list of PHIL parameters used by xia2:
 
 .. _PHIL (Python-based Hierarchial Interchange Language): http://cctbx.sourceforge.net/libtbx_phil.html
 .. _MOSFLM: http://www.mrc-lmb.cam.ac.uk/harry/mosflm/
-.. _DIALS: http://dials.sourceforge.net/
+.. _DIALS: http://dials.github.io/
 .. _XDS: http://xds.mpimf-heidelberg.mpg.de/
 .. _XSCALE: http://xds.mpimf-heidelberg.mpg.de/html_doc/xscale_program.html
 .. _aimless: http://www.ccp4.ac.uk/html/aimless.html

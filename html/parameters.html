@@ -6,13 +6,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-
+    
     <title>Parameters &mdash; xia2  documentation</title>
-
+    
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/xia2.css" type="text/css" />
-
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -29,8 +29,8 @@
     <link rel="top" title="xia2  documentation" href="index.html" />
     <link rel="next" title="Comments" href="comments.html" />
     <link rel="prev" title="Program output" href="program_output.html" />
-
-
+   
+  
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
 
   </head>
@@ -40,14 +40,14 @@
 <!--   <img class="logoheader" alt="DIALS" src="_static/dials_header.png" /> -->
 <!--   </a> -->
 <!--   </div> -->
-
-
+  
+  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
           <div class="body">
-
+            
   <div class="section" id="parameters">
 <h1>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="commonly-used-program-options">
@@ -74,7 +74,7 @@ are:</p>
 <td>tell xia2 to use <a class="reference external" href="http://xds.mpimf-heidelberg.mpg.de/">XDS</a> and <a class="reference external" href="http://xds.mpimf-heidelberg.mpg.de/html_doc/xscale_program.html">XSCALE</a>, indexing with peaks found from all images</td>
 </tr>
 <tr class="row-odd"><td>-dials</td>
-<td>tell xia2 to use <a class="reference external" href="http://dials.sourceforge.net/">DIALS</a> and <a class="reference external" href="http://www.ccp4.ac.uk/html/aimless.html">Aimless</a></td>
+<td>tell xia2 to use <a class="reference external" href="http://dials.github.io/">DIALS</a> and <a class="reference external" href="http://www.ccp4.ac.uk/html/aimless.html">Aimless</a></td>
 </tr>
 <tr class="row-even"><td>-xinfo</td>
 <td>modified.xinfo use specific input file</td>
@@ -149,6 +149,7 @@ xds {
     reflecting_range_esd = 0
     beam_divergence = 0
     beam_divergence_esd = 0
+    reintegrate = true
   }
   init {
     fix_scale = False
@@ -224,6 +225,7 @@ xia2.settings {
     json = None
     reference_geometry = None
     xinfo = None
+    gain = None
     min_images = 10
     min_oscillation_range = None
   }
@@ -255,6 +257,7 @@ xia2.settings {
     pointless_tolerance = 0.0
   }
   integrate_p1 = False
+  reintegrate_correct_lattice = True
   xds {
     geometry_x = None
     geometry_y = None
@@ -286,7 +289,7 @@ xia2.settings {
 <p class="logo">
   <a href="index.html">
     <img class="logo" src="_static/xia2-new-logo.gif" alt="Logo"/>
-
+    
   </a>
 </p>
 
@@ -322,15 +325,15 @@ xia2.settings {
   <a href="http://dials.diamond.ac.uk/"><img class="logofooter" alt="DIALS" src="_static/dials_logo_fx_transparent_bg.png" /></a>
   <a href="http://www.ccp4.ac.uk/"><img class="logofooter" alt="CCP4" src="_static/CCP4-logo-plain.png" /></a>
   </div>
-
+  
     <div class="footer">
       &copy;2015, Diamond Light Source.
-
+      
     </div>
 
+    
 
-
-
+    
 
   </body>
 </html>

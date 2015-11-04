@@ -1,0 +1,48 @@
+! project crystal information - these will end up in the mtz file
+! so keep it punchy! note well - these need to be closed off at the
+! end of the input file...
+
+BEGIN PROJECT PROJECT_NAME
+BEGIN CRYSTAL CRYSTAL_NAME
+
+BEGIN AA_SEQUENCE
+
+! copy in one-letter AA sequence here - if you have it, since this will
+! enable the solvent estimation stuff
+
+END AA_SEQUENCE
+
+BEGIN HA_INFO
+
+! heavy atom information - number per molecule (can also write
+! in NUMBER_TOTAL for total number in ASU e.g. from soak.) currently
+! this is not used...
+
+ATOM SE
+NUMBER_PER_MONOMER 5
+
+END HA_INFO
+
+! wavelength information - the wavelengths need to correspond to the
+! header values to about 0.0001A and the F', F'' values should be read
+! from e.g. a scan or crossec. these are not currently used but will
+! be in future versions.
+
+BEGIN WAVELENGTH SAD
+WAVELENGTH
+F'
+F''
+END WAVELENGTH SAD
+
+! sweep information - these are where the images you collected are mapped
+! on to wavelengths to which they should belong... note that the wavelength
+! here is a NAME corresponding to one of the wavelengths defined above...
+
+BEGIN SWEEP SAD
+WAVELENGTH SAD
+IMAGE donut_1_001.img
+DIRECTORY /path/to/images
+END SWEEP SAD
+
+END CRYSTAL CRYSTAL_NAME
+END PROJECT PROJECT_NAME

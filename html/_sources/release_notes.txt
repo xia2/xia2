@@ -701,4 +701,4 @@ Changes since 0.2.2.2
               will all be cached while parallel processing is happening to avoid
               it getting mangled.
 
-.. _DIALS: http://dials.sourceforge.net
+.. _DIALS: http://dials.github.io

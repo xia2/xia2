@@ -1,0 +1,41 @@
+! project crystal information - these will end up in the mtz file
+! so keep it punchy! note well - these need to be closed off at the
+! end of the input file...
+
+BEGIN PROJECT PROJECT_NAME
+BEGIN CRYSTAL CRYSTAL_NAME
+
+BEGIN AA_SEQUENCE
+
+! copy in one-letter AA sequence here - if you have it, since this will
+! enable the solvent estimation stuff
+
+END AA_SEQUENCE
+
+! wavelength information - the wavelengths need to correspond to the
+! header values to about 0.0001A.
+
+BEGIN WAVELENGTH NATIVE
+WAVELENGTH
+END WAVELENGTH NATIVE
+
+! sweep information - these are where the images you collected are mapped
+! on to wavelengths to which they should belong... note that the wavelength
+! here is a NAME corresponding to one of the wavelengths defined above...
+! this example has a low and high resolution pass contributing to the
+! NATIVE data set (WAVELENGTH NATIVE)
+
+BEGIN SWEEP NATIVE_HR
+WAVELENGTH NATIVE
+IMAGE donut_1_001.img
+DIRECTORY /path/to/images
+END SWEEP NATIVE_HR
+
+BEGIN SWEEP NATIVE_LR
+WAVELENGTH NATIVE
+IMAGE donut_2_001.img
+DIRECTORY /path/to/images
+END SWEEP NATIVE_LR
+
+END CRYSTAL CRYSTAL_NAME
+END PROJECT PROJECT_NAME

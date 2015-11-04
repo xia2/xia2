@@ -6,8 +6,8 @@ This tutorial uses test images which are available from the links below.
 Thanks to John Cowan for providing this test data!
 
 * `Windows (as .zip file) <http://www.ccp4.ac.uk/xia/demo.zip>`_
-* `Unix (as .tar.bz2 file) <http://www.ccp4.ac.uk/demo.tar.bz2>`_
-* `Unix (as .tar.gz file) <http://www.ccp4.ac.uk/demo.tar.gz>`_
+* `Unix (as .tar.bz2 file) <http://www.ccp4.ac.uk/xia/demo.tar.bz2>`_
+* `Unix (as .tar.gz file) <http://www.ccp4.ac.uk/xia/demo.tar.gz>`_
 
 There are two ways of running xia2 - with and without an input file, an
 example of which follows below. If you just run::
@@ -73,9 +73,9 @@ process a subset of the measurements, or want to process data for an RIP
 experiment. A simple example of xinfo file follows below, and more complex
 examples can be found here:
 
-* `Native data <http://xia2.sourceforge.net/NATIVE.xinfo>`_
-* `SAD data <http://xia2.sourceforge.net/SAD.xinfo>`_
-* `MAD data <http://xia2.sourceforge.net/MAD.xinfo>`_
+* :download:`Native data <files/NATIVE.xinfo>`
+* :download:`SAD data <files/SAD.xinfo>`
+* :download:`MAD data <files/MAD.xinfo>`
 
 ::
 

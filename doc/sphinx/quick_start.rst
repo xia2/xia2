@@ -32,7 +32,7 @@ If this doesn’t hit the spot, you’ll need to read the rest of the documentat
 
 
 .. _MOSFLM: http://www.mrc-lmb.cam.ac.uk/harry/mosflm/
-.. _DIALS: http://dials.sourceforge.net/
+.. _DIALS: http://dials.github.io/
 .. _XDS: http://xds.mpimf-heidelberg.mpg.de/
 .. _XSCALE: http://xds.mpimf-heidelberg.mpg.de/html_doc/xscale_program.html
 .. _aimless: http://www.ccp4.ac.uk/html/aimless.html

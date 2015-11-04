@@ -62,7 +62,7 @@ Here is a comprehensive list of PHIL parameters used by xia2:
 
 .. _PHIL (Python-based Hierarchial Interchange Language): http://cctbx.sourceforge.net/libtbx_phil.html
 .. _MOSFLM: http://www.mrc-lmb.cam.ac.uk/harry/mosflm/
-.. _DIALS: http://dials.sourceforge.net/
+.. _DIALS: http://dials.github.io/
 .. _XDS: http://xds.mpimf-heidelberg.mpg.de/
 .. _XSCALE: http://xds.mpimf-heidelberg.mpg.de/html_doc/xscale_program.html
 .. _aimless: http://www.ccp4.ac.uk/html/aimless.html
