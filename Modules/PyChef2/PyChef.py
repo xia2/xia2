@@ -160,12 +160,10 @@ class statistics(object):
 
   def calc_completeness_vs_dose(self):
 
-    iplus_count = flex.size_t(self.n_steps, 0)
-    iminus_count = flex.size_t(self.n_steps, 0)
-    ieither_count = flex.size_t(self.n_steps, 0)
-    iboth_count = flex.size_t(self.n_steps, 0)
-
-    n_complete = self.intensities.as_non_anomalous_array().complete_set().size()
+    iplus_count = [flex.double(self.n_steps, 0) for i in xrange(self.n_bins)]
+    iminus_count = [flex.double(self.n_steps, 0) for i in xrange(self.n_bins)]
+    ieither_count = [flex.double(self.n_steps, 0) for i in xrange(self.n_bins)]
+    iboth_count = [flex.double(self.n_steps, 0) for i in xrange(self.n_bins)]
 
     for h_uniq, observed in self.observations:
       if observed.is_minus():
@@ -174,6 +172,8 @@ class statistics(object):
       irefs = list(observed.irefs)
       dose_min_iplus = self.range_max + self.range_width
       dose_min_iminus = self.range_max + self.range_width
+
+      i_bin = self.binner.get_i_bin(self.d_star_sq[irefs[0]]) - 1
 
       for i, i_ref in enumerate(irefs):
         dose_i = self.dose[i_ref]
@@ -195,26 +195,61 @@ class statistics(object):
       start_iminus = int((dose_min_iminus - self.range_min)/self.range_width)
 
       if start_iplus < self.n_steps:
-        iplus_count[start_iplus] += 1
+        iplus_count[i_bin][start_iplus] += 1
       if start_iminus < self.n_steps:
-        iminus_count[start_iminus] += 1
+        iminus_count[i_bin][start_iminus] += 1
       if min(start_iplus, start_iminus) < self.n_steps:
-        ieither_count[min(start_iplus, start_iminus)] += 1
+        ieither_count[i_bin][min(start_iplus, start_iminus)] += 1
       if max(start_iplus, start_iminus) < self.n_steps:
-        iboth_count[max(start_iplus, start_iminus)] += 1
+        iboth_count[i_bin][max(start_iplus, start_iminus)] += 1
 
-    for j in range(1, self.n_steps):
-      iplus_count[j] += iplus_count[j - 1]
-      iminus_count[j] += iminus_count[j - 1]
-      ieither_count[j] += ieither_count[j - 1]
-      iboth_count[j] += iboth_count[j - 1]
+    # now accumulate as a function of time
 
-    iplus_comp = iplus_count.as_double() / n_complete
-    iminus_comp = iminus_count.as_double() / n_complete
-    ieither_comp = ieither_count.as_double() / n_complete
-    iboth_comp = iboth_count.as_double() / n_complete
+    for i_bin in xrange(self.n_bins):
+      for j in range(1, self.n_steps):
+        iplus_count[i_bin][j] += iplus_count[i_bin][j - 1]
+        iminus_count[i_bin][j] += iminus_count[i_bin][j - 1]
+        ieither_count[i_bin][j] += ieither_count[i_bin][j - 1]
+        iboth_count[i_bin][j] += iboth_count[i_bin][j - 1]
 
-    return iplus_comp, iminus_comp, ieither_comp, iboth_comp
+    # accumulate as a function of dose and resolution
+
+    iplus_comp_overall = flex.double(self.n_steps, 0)
+    iminus_comp_overall = flex.double(self.n_steps, 0)
+    ieither_comp_overall = flex.double(self.n_steps, 0)
+    iboth_comp_overall = flex.double(self.n_steps, 0)
+
+    binner_non_anom = self.intensities.as_non_anomalous_array().use_binning(
+      self.binner)
+    n_complete = binner_non_anom.counts_complete()[1:-1]
+
+    for i_bin in xrange(self.n_bins):
+      iplus_comp_overall += iplus_count[i_bin]
+      iminus_comp_overall += iminus_count[i_bin]
+      ieither_comp_overall += ieither_count[i_bin]
+      iboth_comp_overall += iboth_count[i_bin]
+
+      iplus_count[i_bin] /= n_complete[i_bin]
+      iminus_count[i_bin] /= n_complete[i_bin]
+      ieither_count[i_bin] /= n_complete[i_bin]
+      iboth_count[i_bin] /= n_complete[i_bin]
+
+    tot_n_complete = sum(n_complete)
+    iplus_comp_overall /= tot_n_complete
+    iminus_comp_overall /= tot_n_complete
+    ieither_comp_overall /= tot_n_complete
+    iboth_comp_overall /= tot_n_complete
+
+    from libtbx import group_args
+    return group_args(
+      iplus_comp_bins=iplus_count,
+      iminus_comp_bins=iminus_count,
+      ieither_comp_bins=ieither_count,
+      iboth_comp_bins=iboth_count,
+      iplus_comp_overall=iplus_comp_overall,
+      iminus_comp_overall=iminus_comp_overall,
+      ieither_comp_overall=ieither_comp_overall,
+      iboth_comp_overall=iboth_comp_overall)
 
   def calc_rcp_scp(self):
 
@@ -231,11 +266,11 @@ class statistics(object):
       if len(irefs) == 1:
         # lone observation, no pairs
         continue
+      i_bin = self.binner.get_i_bin(self.d_star_sq[irefs[0]]) - 1
       for i, i_ref in enumerate(irefs):
         dose_i = self.dose[i_ref]
         I_i = intensities_data[i_ref]
         sigi_i = sigmas[i_ref]
-        i_bin = self.binner.get_i_bin(self.d_star_sq[i_ref]) - 1
         for j, j_ref in enumerate(irefs[i+1:]):
           I_j = intensities_data[j_ref]
           sigi_j = sigmas[i_ref]
@@ -322,34 +357,42 @@ class statistics(object):
                      for i in xrange(self.n_steps))
     return rd
 
-  def print_completeness_vs_dose(self, iplus_count, iminus_count,
-                                 ieither_count, iboth_count):
+  def print_completeness_vs_dose(self, completeness_vs_dose):
 
     anomalous = self.intensities.anomalous_flag()
 
     title = "Completeness vs. BATCH:"
-    graph_names = ["Completeness"]
+    graph_names = ["Completeness", "Completeness in resolution shells"]
 
     if anomalous:
-      column_labels = ["BATCH", 'I+', 'I-', 'I', 'dI']
-      column_formats = ["%8.1f", "%5.3f", "%5.3f", "%5.3f", "%5.3f"]
-      graph_columns = [[0,1,2,3,4]]
+      column_labels = ["BATCH"] + ["%.2f-%.2f(A)" %self.binner.bin_d_range(i+1)
+                                   for i in range(self.n_bins)] + \
+        ['I+', 'I-', 'I', 'dI']
+      column_formats = ["%8.1f"] + ["%5.3f" for i in range(self.n_bins)] + ["%5.3f", "%5.3f", "%5.3f", "%5.3f"]
+      #graph_columns = [[0,1,2,3,4]]
+      graph_columns = [[0] + range(self.n_bins+2, self.n_bins+5), range(self.n_bins+1)]
     else:
-      column_labels = ["BATCH", "I"]
-      column_formats = ["%8.1f", "%5.3f"]
-      graph_columns = [[0,1]]
+      column_labels = ["BATCH"] + ["%.2f-%.2f(A)" %self.binner.bin_d_range(i+1)
+                                   for i in range(self.n_bins)] + ["I"]
+      column_formats = ["%8.1f"] + ["%5.3f" for i in range(self.n_bins)] + [ "%5.3f"]
+      graph_columns = [[0, self.n_bins+1], range(self.n_bins+1)]
 
     table_completeness = table_data(title=title,
                                     column_labels=column_labels,
                                     column_formats=column_formats,
                                     graph_names=graph_names,
                                     graph_columns=graph_columns)
+    res = completeness_vs_dose
     for i in xrange(self.n_steps):
       if anomalous:
-        row = [i * self.range_width + self.range_min, iplus_count[i],
-               iminus_count[i], ieither_count[i], iboth_count[i]]
+        row = [i * self.range_width + self.range_min] \
+          + [res.ieither_comp_bins[i_bin][i] for i_bin in range(self.n_bins)] \
+          + [res.iplus_comp_overall[i], res.iminus_comp_overall[i],
+             res.ieither_comp_overall[i], res.iboth_comp_overall[i]]
       else:
-        row = [i * self.range_width + self.range_min, ieither_count[i]]
+        row = [i * self.range_width + self.range_min]  \
+          + [res.ieither_comp_bins[i_bin][i] for i_bin in range(self.n_bins)] \
+          + [res.ieither_comp_overall[i]]
       table_completeness.add_row(row)
 
     print table_completeness.format_loggraph()
@@ -489,13 +532,11 @@ def run(args):
                      range_min=params.range.min, range_max=params.range.max,
                      range_width=params.range.width)
 
-  iplus_count, iminus_count, ieither_count, iboth_count \
-    = stats.calc_completeness_vs_dose()
+  completeness_result = stats.calc_completeness_vs_dose()
   rcp_bins, rcp_overall, scp_bins, scp_overall = stats.calc_rcp_scp()
   rd = stats.calc_rd()
 
-  stats.print_completeness_vs_dose(
-    iplus_count, iminus_count, ieither_count, iboth_count)
+  stats.print_completeness_vs_dose(completeness_result)
   stats.print_rcp_vs_dose(rcp_bins, rcp_overall)
   stats.print_scp_vs_dose(scp_bins, scp_overall)
   stats.print_rd_vs_dose(rd)
