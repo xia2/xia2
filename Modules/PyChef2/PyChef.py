@@ -153,6 +153,9 @@ class statistics(object):
     self.intensities = self.intensities.select(sel)
     self.d_star_sq = self.intensities.d_star_sq().data()
 
+    self.binner = self.intensities.setup_binner_d_star_sq_step(
+      d_star_sq_step=(flex.max(self.d_star_sq)-flex.min(self.d_star_sq)+1e-8)/self.n_bins)
+
     self.observations = unmerged_observations(self.intensities)
 
   def calc_completeness_vs_dose(self):
@@ -215,9 +218,6 @@ class statistics(object):
 
   def calc_rcp_scp(self):
 
-    merged = self.intensities.merge_equivalents().array()
-    binner = merged.setup_binner_d_star_sq_step(
-      d_star_sq_step=(flex.max(self.d_star_sq)-flex.min(self.d_star_sq)+1e-8)/self.n_bins)
     A = [[0] * self.n_steps for i in xrange(self.n_bins)]
     B = [[0] * self.n_steps for i in xrange(self.n_bins)]
     isigma = [[0] * self.n_steps for i in xrange(self.n_bins)]
@@ -235,7 +235,7 @@ class statistics(object):
         dose_i = self.dose[i_ref]
         I_i = intensities_data[i_ref]
         sigi_i = sigmas[i_ref]
-        i_bin = binner.get_i_bin(self.d_star_sq[i_ref]) - 1
+        i_bin = self.binner.get_i_bin(self.d_star_sq[i_ref]) - 1
         for j, j_ref in enumerate(irefs[i+1:]):
           I_j = intensities_data[j_ref]
           sigi_j = sigmas[i_ref]
@@ -356,8 +356,10 @@ class statistics(object):
 
   def print_rcp_vs_dose(self, rcp_bins, rcp_overall):
 
+    assert len(rcp_bins) == self.binner.n_bins_used()
     title = "Cumulative radiation damage analysis:"
-    column_labels = ["BATCH"] + ["S%i" %i for i in range(self.n_bins)] + ["Rcp(d)"]
+    column_labels = ["BATCH"] + ["%.2f-%.2f(A)" %self.binner.bin_d_range(i+1)
+                                 for i in range(self.n_bins)] + ["Rcp(d)"]
     column_formats = ["%8.1f"] + ["%7.4f" for i in range(self.n_bins+1)]
     graph_names = ["Rcp(d)", "Rcp(d), in resolution shells"]
     graph_columns = [[0, self.n_bins+1], range(self.n_bins+1)]
@@ -376,8 +378,10 @@ class statistics(object):
 
   def print_scp_vs_dose(self, scp_bins, scp_overall):
 
+    assert len(scp_bins) == self.binner.n_bins_used()
     title = "Normalised radiation damage analysis:"
-    column_labels = ["BATCH"] + ["S%i" %i for i in range(self.n_bins)] + ["Scp(d)"]
+    column_labels = ["BATCH"] + ["%.2f-%.2f(A)" %self.binner.bin_d_range(i+1)
+                                 for i in range(self.n_bins)] + ["Rcp(d)"]
     column_formats = ["%8.1f"] + ["%7.4f" for i in range(self.n_bins+1)]
     graph_names = ["Scp(d)", "Scp(d), in resolution shells"]
     graph_columns = [[0, self.n_bins+1], range(self.n_bins+1)]
