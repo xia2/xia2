@@ -8,4 +8,5 @@ _*.nb
 *~
 *.swp
 .olex
+.git-notifier*
 .gitversion
