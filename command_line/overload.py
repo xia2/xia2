@@ -43,21 +43,15 @@ def build_hist():
   thresh = 100
   scale = thresh / get_overload(sys.argv[1])
 
-
-  hist = None
+  hist = flex.histogram(flex.double(), data_min=0.0, data_max=(5.0*thresh),
+                        n_slots=500)
 
   for image in sys.argv[1:]:
-    sys.stdout.write('.')
-    sys.stdout.flush()
     data = read_cbf_image(image)
     scaled = scale * data.as_double()
-    if hist == None:
-      hist = flex.histogram(scaled, data_min=0.0, data_max=(5.0*thresh),
-                            n_slots=500)
-    else:
-      tmp_hist = flex.histogram(scaled, data_min=0.0, data_max=(5.0*thresh),
-                                n_slots=500)
-      hist.update(tmp_hist)
+    tmp_hist = flex.histogram(scaled.as_1d(), data_min=0.0, data_max=(5.0*thresh),
+                              n_slots=500)
+    hist.update(tmp_hist)
 
   hist.show()
 
