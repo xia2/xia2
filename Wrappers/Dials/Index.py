@@ -171,7 +171,7 @@ def Index(DriverType = None):
       if self._fft3d_n_points is not None:
         self.add_command_line(
           'fft3d.reciprocal_space_grid.n_points=%i' %self._fft3d_n_points)
-      self.add_command_line('close_to_spindle_cutoff=0.02')
+      # self.add_command_line('close_to_spindle_cutoff=0.02')
       if self._outlier_algorithm:
         self.add_command_line('outlier.algorithm=%s' % self._outlier_algorithm)
       if self._max_cell:
