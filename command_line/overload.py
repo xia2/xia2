@@ -40,27 +40,26 @@ def build_hist():
   import sys
   from scitbx.array_family import flex
 
-  hist = { }
-
   thresh = 100
   scale = thresh / get_overload(sys.argv[1])
+
+
+  hist = None
 
   for image in sys.argv[1:]:
     sys.stdout.write('.')
     sys.stdout.flush()
     data = read_cbf_image(image)
-    scaled = (scale * data.as_double()).iround()
-    for d in scaled:
-      if not d in hist:
-        hist[d] = 0
-      hist[d] += 1
-
-  print '\n'
-  for d in sorted(hist)[1:]:
-    if d < 0.1 * thresh:
-      print d, hist[d]
+    scaled = scale * data.as_double()
+    if hist == None:
+      hist = flex.histogram(scaled, data_min=0.0, data_max=(5.0*thresh),
+                            n_slots=500)
     else:
-      print d, hist[d], '***'
+      tmp_hist = flex.histogram(scaled, data_min=0.0, data_max=(5.0*thresh),
+                                n_slots=500)
+      hist.update(tmp_hist)
+
+  hist.show()
 
 if __name__ == '__main__':
   build_hist()
