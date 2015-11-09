@@ -271,11 +271,12 @@ def xia2_main(stop_after=None):
   return
 
 def run():
+  if len(sys.argv) < 2 or '-help' in sys.argv:
+    help()
+    sys.exit()
+
   try:
     check()
-    if len(sys.argv) < 2 or '-help' in sys.argv:
-      help()
-      sys.exit()
     check_environment()
   except exceptions.Exception, e:
     traceback.print_exc(file = open('xia2.error', 'w'))
