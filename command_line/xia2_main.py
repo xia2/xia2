@@ -27,8 +27,7 @@ from XIA2Version import Version
 if not os.path.join(os.environ['XIA2_ROOT'], 'Interfaces') in sys.path:
   sys.path.append(os.path.join(os.environ['XIA2_ROOT'], 'Interfaces'))
 
-from Applications.xia2setup import write_xinfo
-from Applications.xia2 import check, check_cctbx_version, check_environment
+from Applications.xia2 import check, check_environment
 from Applications.xia2 import get_command_line, write_citations, help
 
 from Applications.xia2_helpers import process_one_sweep
@@ -273,15 +272,14 @@ def xia2_main(stop_after=None):
 
 def run():
   try:
-    check_environment()
     check()
+    if len(sys.argv) < 2 or '-help' in sys.argv:
+      help()
+      sys.exit()
+    check_environment()
   except exceptions.Exception, e:
     traceback.print_exc(file = open('xia2.error', 'w'))
     Chatter.write('Status: error "%s"' % str(e))
-
-  if len(sys.argv) < 2 or '-help' in sys.argv:
-    help()
-    sys.exit()
 
   wd = os.getcwd()
 

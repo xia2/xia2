@@ -35,8 +35,6 @@ from XIA2Version import Version, get_git_revision
 if not os.path.join(os.environ['XIA2_ROOT'], 'Interfaces') in sys.path:
   sys.path.append(os.path.join(os.environ['XIA2_ROOT'], 'Interfaces'))
 
-from xia2setup import write_xinfo
-
 # CCTBX bits I want
 
 import libtbx.load_env
@@ -175,6 +173,7 @@ def get_command_line():
       directories = CommandLine.get_directory()
 
     directories = [os.path.abspath(d) for d in directories]
+    from xia2setup import write_xinfo
 
     if CommandLine.get_template():
       write_xinfo(xinfo, directories, template=CommandLine.get_template())
