@@ -221,6 +221,9 @@ class DialsIndexer(Indexer):
     importer = self.Import()
     importer.set_image_range(self._indxr_images[0])
     importer.set_image_to_epoch(image_to_epoch)
+    wavelength_tolerance = PhilIndex.params.xia2.settings.wavelength_tolerance
+    if wavelength_tolerance is not None:
+      importer.set_wavelength_tolerance(wavelength_tolerance)
     reference_geometry = PhilIndex.params.xia2.settings.input.reference_geometry
     if reference_geometry is not None and len(reference_geometry) > 0:
       if len(PhilIndex.params.xia2.settings.input.reference_geometry) > 1:

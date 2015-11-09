@@ -36,6 +36,7 @@ def Import(DriverType = None):
       self._image_to_epoch = None
       self._reference_geometry = None
       self._mosflm_beam_centre = None
+      self._wavelength_tolerance = None
 
       return
 
@@ -45,6 +46,9 @@ def Import(DriverType = None):
     def set_sweep_filename(self, sweep_filename):
       self._sweep_filename = sweep_filename
       return
+
+    def set_wavelength_tolerance(self, tolerance):
+      self._wavelength_tolerance = tolerance
 
     def get_sweep_filename(self):
       import os
@@ -107,6 +111,10 @@ def Import(DriverType = None):
 
       for i in range(self._image_range[0], self._image_range[1] + 1):
         self._images.append(self.get_image_name(i))
+
+      if self._wavelength_tolerance is not None:
+        self.add_command_line(
+          'input.tolerance.beam.wavelength=%s' %self._wavelength_tolerance)
 
       if self._reference_geometry is not None:
         self.add_command_line(
