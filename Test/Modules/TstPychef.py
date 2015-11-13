@@ -39,15 +39,12 @@ def exercise_accumulators():
   if anomalous_flag:
     intensities = intensities.as_anomalous_array()
 
-  stats = PyChef.statistics(intensities, batches.data())
-  comp_stats = stats.calc_completeness_vs_dose()
-  rcp_scp_stats = stats.calc_rcp_scp()
-  rd_stats = stats.calc_rd()
+  pystats = PyChef.PyStatistics(intensities, batches.data())
 
   miller_indices = batches.indices()
   sg = batches.space_group()
 
-  n_steps = stats.n_steps
+  n_steps = pystats.n_steps
   dose = batches.data()
   range_width  = 1
   range_max = flex.max(dose)
@@ -56,31 +53,31 @@ def exercise_accumulators():
   dose -= range_min
 
   binner_non_anom = intensities.as_non_anomalous_array().use_binning(
-    stats.binner)
+    pystats.binner)
   n_complete = flex.size_t(binner_non_anom.counts_complete()[1:-1])
 
   dose = flex.size_t(list(dose))
 
   chef_stats = ChefStatistics(
     miller_indices, intensities.data(), intensities.sigmas(),
-    intensities.d_star_sq().data(), dose, n_complete, stats.binner,
+    intensities.d_star_sq().data(), dose, n_complete, pystats.binner,
     sg, anomalous_flag, n_steps)
 
   # test completeness
 
-  assert approx_equal(chef_stats.iplus_completeness(), comp_stats.iplus_comp_overall)
-  assert approx_equal(chef_stats.iminus_completeness(), comp_stats.iminus_comp_overall)
-  assert approx_equal(chef_stats.ieither_completeness(), comp_stats.ieither_comp_overall)
-  assert approx_equal(chef_stats.iboth_completeness(), comp_stats.iboth_comp_overall)
+  assert approx_equal(chef_stats.iplus_completeness(), pystats.iplus_comp_overall)
+  assert approx_equal(chef_stats.iminus_completeness(), pystats.iminus_comp_overall)
+  assert approx_equal(chef_stats.ieither_completeness(), pystats.ieither_comp_overall)
+  assert approx_equal(chef_stats.iboth_completeness(), pystats.iboth_comp_overall)
 
   # test rcp,scp
 
-  assert approx_equal(chef_stats.rcp(), rcp_scp_stats[1])
-  assert approx_equal(chef_stats.scp(), rcp_scp_stats[3])
+  assert approx_equal(chef_stats.rcp(), pystats.rcp)
+  assert approx_equal(chef_stats.scp(), pystats.scp)
 
   # test Rd
 
-  assert approx_equal(chef_stats.rd(), rd_stats)
+  assert approx_equal(chef_stats.rd(), pystats.rd)
 
   print "OK"
 

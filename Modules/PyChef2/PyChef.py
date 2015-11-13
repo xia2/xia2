@@ -138,7 +138,7 @@ class unmerged_observations(Mapping):
     return hkl in self._observations
 
 
-class statistics(object):
+class PyStatistics(object):
 
   def __init__(self, intensities, dose, n_bins=8,
                range_min=None, range_max=None, range_width=1):
@@ -168,7 +168,11 @@ class statistics(object):
 
     self.observations = unmerged_observations(self.intensities)
 
-  def calc_completeness_vs_dose(self):
+    self._calc_completeness_vs_dose()
+    self._calc_rcp_scp()
+    self._calc_rd()
+
+  def _calc_completeness_vs_dose(self):
 
     iplus_count = [flex.double(self.n_steps, 0) for i in xrange(self.n_bins)]
     iminus_count = [flex.double(self.n_steps, 0) for i in xrange(self.n_bins)]
@@ -251,18 +255,16 @@ class statistics(object):
     ieither_comp_overall /= tot_n_complete
     iboth_comp_overall /= tot_n_complete
 
-    from libtbx import group_args
-    return group_args(
-      iplus_comp_bins=iplus_count,
-      iminus_comp_bins=iminus_count,
-      ieither_comp_bins=ieither_count,
-      iboth_comp_bins=iboth_count,
-      iplus_comp_overall=iplus_comp_overall,
-      iminus_comp_overall=iminus_comp_overall,
-      ieither_comp_overall=ieither_comp_overall,
-      iboth_comp_overall=iboth_comp_overall)
+    self.iplus_comp_bins = iplus_count
+    self.iminus_comp_bins = iminus_count
+    self.ieither_comp_bins = ieither_count
+    self.iboth_comp_bins = iboth_count
+    self.iplus_comp_overall = iplus_comp_overall
+    self.iminus_comp_overall = iminus_comp_overall
+    self.ieither_comp_overall = ieither_comp_overall
+    self.iboth_comp_overall = iboth_comp_overall
 
-  def calc_rcp_scp(self):
+  def _calc_rcp_scp(self):
 
     A = [[0] * self.n_steps for i in xrange(self.n_bins)]
     B = [[0] * self.n_steps for i in xrange(self.n_bins)]
@@ -343,9 +345,13 @@ class statistics(object):
       rcp_overall[j] = overall
 
       scp_overall[j] = sum(scp_bins[i_bin][j] for i_bin in xrange(self.n_bins))/self.n_bins
-    return rcp_bins, rcp_overall, scp_bins, scp_overall
 
-  def calc_rd(self):
+    self.rcp_bins = rcp_bins
+    self.rcp = rcp_overall
+    self.scp_bins = scp_bins
+    self.scp = scp_overall
+
+  def _calc_rd(self):
 
     rd_top = [0] * self.n_steps
     rd_bottom = [0] * self.n_steps
@@ -368,11 +374,10 @@ class statistics(object):
           rd_top[d_dose] += math.fabs(I_i - I_j)
           rd_bottom[d_dose] += 0.5 * (I_i + I_j)
 
-    rd = flex.double(rd_top[i]/rd_bottom[i] if rd_bottom[i] > 0 else 0
-                     for i in xrange(self.n_steps))
-    return rd
+    self.rd = flex.double(rd_top[i]/rd_bottom[i] if rd_bottom[i] > 0 else 0
+                          for i in xrange(self.n_steps))
 
-  def print_completeness_vs_dose(self, completeness_vs_dose):
+  def print_completeness_vs_dose(self):
 
     anomalous = self.intensities.anomalous_flag()
 
@@ -397,24 +402,23 @@ class statistics(object):
                                     column_formats=column_formats,
                                     graph_names=graph_names,
                                     graph_columns=graph_columns)
-    res = completeness_vs_dose
     for i in xrange(self.n_steps):
       if anomalous:
         row = [i * self.range_width + self.range_min] \
-          + [res.ieither_comp_bins[i_bin][i] for i_bin in range(self.n_bins)] \
-          + [res.iplus_comp_overall[i], res.iminus_comp_overall[i],
-             res.ieither_comp_overall[i], res.iboth_comp_overall[i]]
+          + [self.ieither_comp_bins[i_bin][i] for i_bin in range(self.n_bins)] \
+          + [self.iplus_comp_overall[i], self.iminus_comp_overall[i],
+             self.ieither_comp_overall[i], self.iboth_comp_overall[i]]
       else:
         row = [i * self.range_width + self.range_min]  \
-          + [res.ieither_comp_bins[i_bin][i] for i_bin in range(self.n_bins)] \
-          + [res.ieither_comp_overall[i]]
+          + [self.ieither_comp_bins[i_bin][i] for i_bin in range(self.n_bins)] \
+          + [self.ieither_comp_overall[i]]
       table_completeness.add_row(row)
 
     print table_completeness.format_loggraph()
 
-  def print_rcp_vs_dose(self, rcp_bins, rcp_overall):
+  def print_rcp_vs_dose(self):
 
-    assert len(rcp_bins) == self.binner.n_bins_used()
+    assert len(self.rcp_bins) == self.binner.n_bins_used()
     title = "Cumulative radiation damage analysis:"
     column_labels = ["BATCH"] + ["%.2f-%.2f(A)" %self.binner.bin_d_range(i+1)
                                  for i in range(self.n_bins)] + ["Rcp(d)"]
@@ -429,14 +433,14 @@ class statistics(object):
                            graph_columns=graph_columns)
     for i in xrange(self.n_steps):
       row = [i * self.range_width + self.range_min] \
-        + [rcp_bins[j][i] for j in xrange(len(rcp_bins))] + [rcp_overall[i]]
+        + [self.rcp_bins[j][i] for j in xrange(len(self.rcp_bins))] + [self.rcp[i]]
       table_rcp.add_row(row)
 
     print table_rcp.format_loggraph()
 
-  def print_scp_vs_dose(self, scp_bins, scp_overall):
+  def print_scp_vs_dose(self):
 
-    assert len(scp_bins) == self.binner.n_bins_used()
+    assert len(self.scp_bins) == self.binner.n_bins_used()
     title = "Normalised radiation damage analysis:"
     column_labels = ["BATCH"] + ["%.2f-%.2f(A)" %self.binner.bin_d_range(i+1)
                                  for i in range(self.n_bins)] + ["Rcp(d)"]
@@ -451,12 +455,12 @@ class statistics(object):
                            graph_columns=graph_columns)
     for i in xrange(self.n_steps):
       row = [i * self.range_width + self.range_min] \
-        + [scp_bins[j][i] for j in xrange(len(scp_bins))] + [scp_overall[i]]
+        + [self.scp_bins[j][i] for j in xrange(len(self.scp_bins))] + [self.scp[i]]
       table_scp.add_row(row)
 
     print table_scp.format_loggraph()
 
-  def print_rd_vs_dose(self, rd):
+  def print_rd_vs_dose(self):
 
     title = "R vs. BATCH difference:"
     column_labels = ["BATCH", "Rd"]
@@ -470,10 +474,151 @@ class statistics(object):
                            graph_names=graph_names,
                            graph_columns=graph_columns)
     for i in xrange(self.n_steps):
-      row = [i * self.range_width + self.range_min, rd[i]]
+      row = [i * self.range_width + self.range_min, self.rd[i]]
       table_rd.add_row(row)
 
     print table_rd.format_loggraph()
+
+
+class Statistics(PyStatistics):
+
+  def __init__(self, intensities, dose, n_bins=8,
+               range_min=None, range_max=None, range_width=1):
+
+    self.intensities = intensities
+    self.dose = dose
+    self.n_bins = n_bins
+    self.range_min = range_min
+    self.range_max = range_max
+    self.range_width = range_width
+    assert self.range_width > 0
+
+    if self.range_min is None:
+      self.range_min = flex.min(self.dose) - self.range_width
+    if self.range_max is None:
+      self.range_max = flex.max(self.dose)
+    self.n_steps = 2 + int((self.range_max - self.range_min) - self.range_width)
+
+    sel = (self.dose.as_double() <= self.range_max) & (self.dose.as_double() >= self.range_min)
+    self.dose = self.dose.select(sel)
+
+    self.intensities = self.intensities.select(sel)
+    self.d_star_sq = self.intensities.d_star_sq().data()
+
+    self.binner = self.intensities.setup_binner_d_star_sq_step(
+      d_star_sq_step=(flex.max(self.d_star_sq)-flex.min(self.d_star_sq)+1e-8)/self.n_bins)
+
+    self.observations = unmerged_observations(self.intensities)
+
+    #self.dose /= range_width
+    #self.dose -= range_min
+
+    self.dose = flex.size_t(list(self.dose))
+
+    binner_non_anom = intensities.as_non_anomalous_array().use_binning(
+      self.binner)
+    n_complete = flex.size_t(binner_non_anom.counts_complete()[1:-1])
+
+    from xia2.Modules.PyChef2 import ChefStatistics
+    chef_stats = ChefStatistics(
+      intensities.indices(), intensities.data(), intensities.sigmas(),
+      intensities.d_star_sq().data(), self.dose, n_complete, self.binner,
+      intensities.space_group(), intensities.anomalous_flag(), self.n_steps)
+
+    self.iplus_comp_bins = chef_stats.iplus_completeness_bins()
+    self.iminus_comp_bins = chef_stats.iminus_completeness_bins()
+    self.ieither_comp_bins = chef_stats.ieither_completeness_bins()
+    self.iboth_comp_bins = chef_stats.iboth_completeness_bins()
+    self.iplus_comp_overall = chef_stats.iplus_completeness()
+    self.iminus_comp_overall = chef_stats.iminus_completeness()
+    self.ieither_comp_overall = chef_stats.ieither_completeness()
+    self.iboth_comp_overall = chef_stats.iboth_completeness()
+    self.rcp_bins = chef_stats.rcp_bins()
+    self.rcp = chef_stats.rcp()
+    self.scp_bins = chef_stats.scp_bins()
+    self.scp = chef_stats.scp()
+    self.rd = chef_stats.rd()
+
+  def print_completeness_vs_dose(self):
+
+    anomalous = self.intensities.anomalous_flag()
+
+    title = "Completeness vs. BATCH:"
+    graph_names = ["Completeness", "Completeness in resolution shells"]
+
+    if anomalous:
+      column_labels = ["BATCH"] + ["%.2f-%.2f(A)" %self.binner.bin_d_range(i+1)
+                                   for i in range(self.n_bins)] + \
+        ['I+', 'I-', 'I', 'dI']
+      column_formats = ["%8.1f"] + ["%5.3f" for i in range(self.n_bins)] + ["%5.3f", "%5.3f", "%5.3f", "%5.3f"]
+      #graph_columns = [[0,1,2,3,4]]
+      graph_columns = [[0] + range(self.n_bins+2, self.n_bins+5), range(self.n_bins+1)]
+    else:
+      column_labels = ["BATCH"] + ["%.2f-%.2f(A)" %self.binner.bin_d_range(i+1)
+                                   for i in range(self.n_bins)] + ["I"]
+      column_formats = ["%8.1f"] + ["%5.3f" for i in range(self.n_bins)] + [ "%5.3f"]
+      graph_columns = [[0, self.n_bins+1], range(self.n_bins+1)]
+
+    table_completeness = table_data(title=title,
+                                    column_labels=column_labels,
+                                    column_formats=column_formats,
+                                    graph_names=graph_names,
+                                    graph_columns=graph_columns)
+    for i in xrange(self.n_steps):
+      if anomalous:
+        row = [i * self.range_width + self.range_min] \
+          + [self.ieither_comp_bins[i_bin, i] for i_bin in range(self.n_bins)] \
+          + [self.iplus_comp_overall[i], self.iminus_comp_overall[i],
+             self.ieither_comp_overall[i], self.iboth_comp_overall[i]]
+      else:
+        row = [i * self.range_width + self.range_min]  \
+          + [self.ieither_comp_bins[i_bin, i] for i_bin in range(self.n_bins)] \
+          + [self.ieither_comp_overall[i]]
+      table_completeness.add_row(row)
+
+    print table_completeness.format_loggraph()
+
+  def print_rcp_vs_dose(self):
+
+    title = "Cumulative radiation damage analysis:"
+    column_labels = ["BATCH"] + ["%.2f-%.2f(A)" %self.binner.bin_d_range(i+1)
+                                 for i in range(self.n_bins)] + ["Rcp(d)"]
+    column_formats = ["%8.1f"] + ["%7.4f" for i in range(self.n_bins+1)]
+    graph_names = ["Rcp(d)", "Rcp(d), in resolution shells"]
+    graph_columns = [[0, self.n_bins+1], range(self.n_bins+1)]
+
+    table_rcp = table_data(title=title,
+                           column_labels=column_labels,
+                           column_formats=column_formats,
+                           graph_names=graph_names,
+                           graph_columns=graph_columns)
+    for i in xrange(self.n_steps):
+      row = [i * self.range_width + self.range_min] \
+        + [self.rcp_bins[j, i] for j in xrange(self.binner.n_bins_used())] + [self.rcp[i]]
+      table_rcp.add_row(row)
+
+    print table_rcp.format_loggraph()
+
+  def print_scp_vs_dose(self):
+
+    title = "Normalised radiation damage analysis:"
+    column_labels = ["BATCH"] + ["%.2f-%.2f(A)" %self.binner.bin_d_range(i+1)
+                                 for i in range(self.n_bins)] + ["Rcp(d)"]
+    column_formats = ["%8.1f"] + ["%7.4f" for i in range(self.n_bins+1)]
+    graph_names = ["Scp(d)", "Scp(d), in resolution shells"]
+    graph_columns = [[0, self.n_bins+1], range(self.n_bins+1)]
+
+    table_scp = table_data(title=title,
+                           column_labels=column_labels,
+                           column_formats=column_formats,
+                           graph_names=graph_names,
+                           graph_columns=graph_columns)
+    for i in xrange(self.n_steps):
+      row = [i * self.range_width + self.range_min] \
+        + [self.scp_bins[j, i] for j in xrange(self.binner.n_bins_used())] + [self.scp[i]]
+      table_scp.add_row(row)
+
+    print table_scp.format_loggraph()
 
 
 def run(args):
@@ -543,18 +688,14 @@ def run(args):
     intensities = intensities.select(sel)
     dose = dose.select(sel)
 
-  stats = statistics(intensities, dose, n_bins=params.resolution_bins,
+  stats = Statistics(intensities, dose, n_bins=params.resolution_bins,
                      range_min=params.range.min, range_max=params.range.max,
                      range_width=params.range.width)
 
-  completeness_result = stats.calc_completeness_vs_dose()
-  rcp_bins, rcp_overall, scp_bins, scp_overall = stats.calc_rcp_scp()
-  rd = stats.calc_rd()
-
-  stats.print_completeness_vs_dose(completeness_result)
-  stats.print_rcp_vs_dose(rcp_bins, rcp_overall)
-  stats.print_scp_vs_dose(scp_bins, scp_overall)
-  stats.print_rd_vs_dose(rd)
+  stats.print_completeness_vs_dose()
+  stats.print_rcp_vs_dose()
+  stats.print_scp_vs_dose()
+  stats.print_rd_vs_dose()
 
 
 if __name__ == '__main__':
