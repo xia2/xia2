@@ -146,6 +146,7 @@ namespace xia2 { namespace pychef {
           cctbx::miller::binner const &binner,
           int n_steps)
           :
+          finalised_(false),
           dose_(dose.begin(), dose.end()),
           d_star_sq_(d_star_sq.begin(), d_star_sq.end()),
           binner_(binner), n_steps_(n_steps),
@@ -298,7 +299,7 @@ namespace xia2 { namespace pychef {
 
       private:
 
-        bool finalised_ = false;
+        bool finalised_;
 
         af::shared<std::size_t> dose_;
         af::shared<double> d_star_sq_;
@@ -326,6 +327,7 @@ namespace xia2 { namespace pychef {
           cctbx::miller::binner const &binner,
           int n_steps)
           :
+          finalised_(false),
           intensities_(intensities.begin(), intensities.end()),
           sigmas_(sigmas.begin(), sigmas.end()),
           dose_(dose.begin(), dose.end()),
@@ -466,7 +468,7 @@ namespace xia2 { namespace pychef {
 
       private:
 
-        bool finalised_ = false;
+        bool finalised_;
 
         af::shared<double> intensities_;
         af::shared<double> sigmas_;
@@ -493,6 +495,7 @@ namespace xia2 { namespace pychef {
           af::const_ref<std::size_t> const &dose,
           int n_steps)
           :
+          finalised_(false),
           intensities_(intensities.begin(), intensities.end()),
           dose_(dose.begin(), dose.end()), n_steps_(n_steps),
           rd_top(n_steps, 0.0),
@@ -548,7 +551,7 @@ namespace xia2 { namespace pychef {
 
       private:
 
-        bool finalised_ = false;
+        bool finalised_;
 
         af::shared<double> intensities_;
         af::shared<std::size_t> dose_;
