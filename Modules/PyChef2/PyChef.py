@@ -37,43 +37,42 @@ batch
 """)
 
 
-class observations_single_miller_index(object):
+class observation_group(object):
 
   PLUS = 1
   MINUS = -1
   CENTRIC = 0
 
-  def __init__(self, asu_index, flag, irefs=None):
-    assert flag in (self.PLUS, self.MINUS, self.CENTRIC)
+  def __init__(self, asu_index, is_centric, iplus=None, iminus=None):
     self._asu_index = asu_index
-    self._flag = flag
-    if irefs is None:
-      irefs = flex.size_t()
-    self._irefs = irefs
+    self._centric = is_centric
+    if iplus is None:
+      iplus = flex.size_t()
+    if iminus is None:
+      iminus = flex.size_t()
+    self._iplus = iplus
+    self._iminus = iminus
 
-  def add_iref(self, iref):
-    self._irefs.append(iref)
+  def add_iplus(self, iplus):
+    self._iplus.append(iplus)
+
+  def add_iminus(self, iminus):
+    self._iminus.append(iminus)
 
   @property
-  def irefs(self):
-    return self._irefs
+  def iminus(self):
+    return self._iminus
+
+  @property
+  def iplus(self):
+    return self._iplus
 
   @property
   def asu_index(self):
     return self._asu_index
 
-  @property
-  def flag(self):
-    return self._flag
-
-  def is_plus(self):
-    return self._flag == self.PLUS
-
-  def is_minus(self):
-    return self._flag == self.MINUS
-
   def is_centric(self):
-    return self._flag == self.CENTRIC
+    return self._centric
 
 
 class unmerged_observations(Mapping):
@@ -95,25 +94,36 @@ class unmerged_observations(Mapping):
 
     miller.map_to_asu_isym(sg_type, anomalous_flag, unique_indices, isym)
 
+    n_plus, n_minus = 0, 0
+
     for iref in range(len(original_indices)):
       h_orig = original_indices[iref]
       h_uniq = unique_indices[iref]
       h_isym = isym[iref]
 
-      if h_uniq not in self._observations:
-        h_eq = miller.sym_equiv_indices(sg, h_uniq)
+      h_eq = miller.sym_equiv_indices(sg, h_uniq)
+      if h_eq.is_centric():
+        flag = observation_group.CENTRIC
+      else:
         asu_which = asu.which(h_uniq)
         assert asu_which != 0
-        if h_eq.is_centric():
-          flag = observations_single_miller_index.CENTRIC
-        elif asu_which == 1:
-          flag = observations_single_miller_index.PLUS
+        if asu_which == 1:
+          flag = observation_group.PLUS
         else:
-          flag = observations_single_miller_index.MINUS
-        self._observations[h_uniq] = observations_single_miller_index(
-          h_uniq, flag)
+          flag = observation_group.MINUS
+          h_uniq = tuple(-1*h for h in h_uniq)
 
-      self._observations[h_uniq].add_iref(iref)
+      group = self._observations.get(h_uniq)
+      if group is None:
+        group = observation_group(
+          h_uniq, is_centric=(flag == observation_group.CENTRIC))
+        self._observations[h_uniq] = group
+      if flag == observation_group.MINUS:
+        n_minus += 1
+        group.add_iminus(iref)
+      else:
+        n_plus += 1
+        group.add_iplus(iref)
 
   def __iter__(self):
     return self._observations.iteritems()
@@ -166,30 +176,31 @@ class statistics(object):
     iboth_count = [flex.double(self.n_steps, 0) for i in xrange(self.n_bins)]
 
     for h_uniq, observed in self.observations:
-      if observed.is_minus():
-        continue
+      #if observed.is_minus():
+        #continue
 
-      irefs = list(observed.irefs)
+      #irefs = list(observed.irefs)
       dose_min_iplus = self.range_max + self.range_width
       dose_min_iminus = self.range_max + self.range_width
 
-      i_bin = self.binner.get_i_bin(self.d_star_sq[irefs[0]]) - 1
+      if observed.iplus.size():
+        i_bin = self.binner.get_i_bin(self.d_star_sq[observed.iplus[0]]) - 1
+      else:
+        i_bin = self.binner.get_i_bin(self.d_star_sq[observed.iminus[0]]) - 1
 
-      for i, i_ref in enumerate(irefs):
+      if i_bin < 0:
+        continue
+
+      for i, i_ref in enumerate(observed.iplus):
         dose_i = self.dose[i_ref]
+        dose_min_iplus = min(dose_i, dose_min_iplus)
         if observed.is_centric():
-          dose_min_iplus = min(dose_i, dose_min_iplus)
           dose_min_iminus = min(dose_i, dose_min_iminus)
-        else:
-          dose_min_iplus = min(dose_i, dose_min_iplus)
 
-      h_uniq_minus = tuple(-h for h in h_uniq)
-      if h_uniq_minus in self.observations:
-        observed = self.observations[h_uniq_minus]
-        irefs = list(observed.irefs)
-        for i, i_ref in enumerate(irefs):
-          dose_i = self.dose[i_ref]
-          dose_min_iminus = min(dose_i, dose_min_iminus)
+      for i, i_ref in enumerate(observed.iminus):
+        assert i_ref not in observed.iplus
+        dose_i = self.dose[i_ref]
+        dose_min_iminus = min(dose_i, dose_min_iminus)
 
       start_iplus = int((dose_min_iplus - self.range_min)/self.range_width)
       start_iminus = int((dose_min_iminus - self.range_min)/self.range_width)
@@ -261,27 +272,32 @@ class statistics(object):
     intensities_data = self.intensities.data()
     sigmas = self.intensities.sigmas()
 
-    for h_uniq, observed in self.observations:
-      irefs = list(observed.irefs)
-      if len(irefs) == 1:
-        # lone observation, no pairs
-        continue
-      i_bin = self.binner.get_i_bin(self.d_star_sq[irefs[0]]) - 1
+    def accumulate(irefs, i_bin):
+      if i_bin < 0:
+        return
       for i, i_ref in enumerate(irefs):
         dose_i = self.dose[i_ref]
         I_i = intensities_data[i_ref]
         sigi_i = sigmas[i_ref]
         for j, j_ref in enumerate(irefs[i+1:]):
           I_j = intensities_data[j_ref]
-          sigi_j = sigmas[i_ref]
+          sigi_j = sigmas[j_ref]
           A_part = math.fabs(I_i - I_j)
           B_part = 0.5 * math.fabs(I_i + I_j)
           dose_j = self.dose[j_ref]
           dose_0 = int((max(dose_i, dose_j) - self.range_min)/self.range_width)
           A[i_bin][dose_0] += A_part
           B[i_bin][dose_0] += B_part
-          isigma[i_bin][dose_0] += (I_i/sigi_i) + (I_j/sigi_j)
+          isigma[i_bin][dose_0] += ((I_i/sigi_i) + (I_j/sigi_j))
           count[i_bin][dose_0] += 2
+
+    for h_uniq, observed in self.observations:
+      if len(observed.iplus) > 1:
+        i_bin = self.binner.get_i_bin(self.d_star_sq[observed.iplus[0]]) - 1
+        accumulate(list(observed.iplus), i_bin)
+      if len(observed.iminus) > 1:
+        i_bin = self.binner.get_i_bin(self.d_star_sq[observed.iminus[0]]) - 1
+        accumulate(list(observed.iminus), i_bin)
 
     # now accumulate as a function of time
 
@@ -338,7 +354,7 @@ class statistics(object):
     sigmas = self.intensities.sigmas()
 
     for h_uniq, observed in self.observations:
-      irefs = list(observed.irefs)
+      irefs = list(observed.iplus) + list(observed.iminus)
       if len(irefs) == 1:
         # lone observation, no pairs
         continue
