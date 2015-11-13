@@ -509,7 +509,7 @@ class Statistics(PyStatistics):
       d_star_sq_step=(flex.max(self.d_star_sq)-flex.min(self.d_star_sq)+1e-8)/self.n_bins)
 
     #self.dose /= range_width
-    #self.dose -= range_min
+    self.dose -= int(self.range_min)
 
     self.dose = flex.size_t(list(self.dose))
 
