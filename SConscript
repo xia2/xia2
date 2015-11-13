@@ -26,4 +26,4 @@ if (not env_etc.no_boost_python and hasattr(env_etc, "boost_adaptbx_include")):
                 "scitbx_boost_python",
                 "boost_python",
                 "cctbx"])
-    env.SConscript('Modules/Pychef2/SConscript', exports={ 'env' : env })
+    env.SConscript('Modules/PyChef2/SConscript', exports={ 'env' : env })
