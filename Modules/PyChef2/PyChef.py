@@ -351,7 +351,6 @@ class statistics(object):
     rd_bottom = [0] * self.n_steps
 
     intensities_data = self.intensities.data()
-    sigmas = self.intensities.sigmas()
 
     for h_uniq, observed in self.observations:
       irefs = list(observed.iplus) + list(observed.iminus)

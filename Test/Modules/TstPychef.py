@@ -20,6 +20,7 @@ def exercise_accumulators():
   from xia2.Modules.PyChef2 import Observations
   from xia2.Modules.PyChef2 import CompletenessAccumulator
   from xia2.Modules.PyChef2 import RcpScpAccumulator
+  from xia2.Modules.PyChef2 import RdAccumulator
   from cctbx.array_family import flex
 
   from iotbx.reflection_file_reader import any_reflection_file
@@ -44,6 +45,7 @@ def exercise_accumulators():
   stats = PyChef.statistics(intensities, batches.data())
   comp_stats = stats.calc_completeness_vs_dose()
   rcp_scp_stats = stats.calc_rcp_scp()
+  rd_stats = stats.calc_rd()
 
   miller_indices = batches.indices()
   sg = batches.space_group()
@@ -56,6 +58,9 @@ def exercise_accumulators():
   range_min = flex.min(dose) - range_width
   dose /= range_width
   dose -= range_min
+
+  # test CompletenessAccumulator
+
   accumulate = CompletenessAccumulator(
     flex.size_t(list(dose)), stats.d_star_sq, stats.binner, n_steps)
 
@@ -72,6 +77,8 @@ def exercise_accumulators():
   assert approx_equal(accumulate.ieither_completeness(), comp_stats.ieither_comp_overall)
   assert approx_equal(accumulate.iboth_completeness(), comp_stats.iboth_comp_overall)
 
+  # test RcpScpAccumulator
+
   accumulate_rcp_scp = RcpScpAccumulator(
     intensities.data(), intensities.sigmas(),
     flex.size_t(list(dose)), batches.d_star_sq().data(), stats.binner, n_steps)
@@ -82,6 +89,17 @@ def exercise_accumulators():
 
   assert approx_equal(accumulate_rcp_scp.rcp(), rcp_scp_stats[1])
   assert approx_equal(accumulate_rcp_scp.scp(), rcp_scp_stats[3])
+
+  # test RdAccumulator
+
+  accumulate_rd = RdAccumulator(
+    intensities.data(), flex.size_t(list(dose)), n_steps)
+
+  for g in observations.observation_groups():
+    accumulate_rd(g.data())
+  accumulate_rd.finalise()
+
+  assert approx_equal(accumulate_rd.rd(), rd_stats)
 
   print "OK"
 

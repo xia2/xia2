@@ -497,6 +497,83 @@ namespace xia2 { namespace pychef {
     };
 
 
+    template<class Previous=NullAccumulator<ObservationGroup> >
+    class RdAccumulator : public Previous
+    {
+      public:
+        RdAccumulator(
+          af::const_ref<double> const &intensities,
+          af::const_ref<std::size_t> const &dose,
+          int n_steps)
+          :
+          intensities_(intensities.begin(), intensities.end()),
+          dose_(dose.begin(), dose.end()), n_steps_(n_steps),
+          rd_top(n_steps, 0.0),
+          rd_bottom(n_steps, 0.0),
+          rd_(n_steps, 0.0)
+          /*Previous(x0),*/
+          /*min_(x0), max_(x0), max_absolute_(std::abs(x0)*/
+        {}
+
+        void operator()(ObservationGroup group) {
+          Previous::operator()(group);
+
+          if (group.iplus().size()) {
+            accumulate(group.iplus());
+          }
+          if (group.iminus().size()) {
+            accumulate(group.iminus());
+          }
+        }
+
+      private:
+
+        void accumulate(scitbx::af::shared<std::size_t> irefs) {
+          for (std::size_t i=0; i<irefs.size(); i++) {
+            int dose_i = dose_[irefs[i]];
+            double I_i = intensities_[irefs[i]];
+            for (std::size_t j=i+1; j<irefs.size(); j++) {
+              int dose_j = dose_[irefs[j]];
+              double I_j = intensities_[irefs[j]];
+              std::size_t d_dose = std::abs(dose_i - dose_j);
+              DIALS_ASSERT(d_dose < n_steps_);
+              rd_top[d_dose] += std::fabs(I_i - I_j);
+              rd_bottom[d_dose] +=  0.5 * (I_i + I_j);
+            }
+          }
+        }
+
+      public:
+
+        void finalise() {
+          DIALS_ASSERT(!finalised_);
+
+          for (std::size_t i_step=0; i_step < n_steps_; i_step++) {
+            if (rd_bottom[i_step] > 0) {
+              rd_[i_step] = rd_top[i_step]/rd_bottom[i_step];
+            }
+          }
+
+          finalised_ = true;
+        }
+
+        af::shared<double> rd() {
+          DIALS_ASSERT(finalised_);
+          return rd_;
+        }
+
+      private:
+
+        bool finalised_ = false;
+
+        af::shared<double> intensities_;
+        af::shared<std::size_t> dose_;
+        std::size_t const n_steps_;
+
+        af::shared<double> rd_top, rd_bottom, rd_;
+
+    };
+
   } // namespace accumulator
 
 }} // xia2::pychef

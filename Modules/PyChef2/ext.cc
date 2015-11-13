@@ -107,6 +107,21 @@ namespace xia2 { namespace pychef {
       .def("scp",
            &rcp_scp_accumulator_t::scp)
       ;
+
+
+    typedef RdAccumulator<> rd_accumulator_t;
+    class_<rd_accumulator_t>("RdAccumulator", no_init)
+      .def(init<af::const_ref<double> const &,
+                af::const_ref<std::size_t> const &,
+                int>((
+           arg("dose"),
+           arg("n_steps"))))
+      .def("__call__", &rd_accumulator_t::operator())
+      .def("finalise", &rd_accumulator_t::finalise)
+      .def("rd",
+           &rd_accumulator_t::rd)
+      ;
+
   }
 
   BOOST_PYTHON_MODULE(xia2_pychef_ext)
