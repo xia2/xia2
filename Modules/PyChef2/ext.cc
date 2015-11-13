@@ -11,7 +11,7 @@
 #include <boost/python.hpp>
 #include <boost/python/def.hpp>
 #include <boost/python/suite/indexing/map_indexing_suite.hpp>
-#include <xia2/Modules/Pychef2/pychef.h>
+#include <xia2/Modules/PyChef2/Chef.h>
 
 namespace xia2 { namespace pychef {
   namespace boost_python {
