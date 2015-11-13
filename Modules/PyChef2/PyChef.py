@@ -508,8 +508,6 @@ class Statistics(PyStatistics):
     self.binner = self.intensities.setup_binner_d_star_sq_step(
       d_star_sq_step=(flex.max(self.d_star_sq)-flex.min(self.d_star_sq)+1e-8)/self.n_bins)
 
-    self.observations = unmerged_observations(self.intensities)
-
     #self.dose /= range_width
     #self.dose -= range_min
 
