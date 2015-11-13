@@ -134,21 +134,10 @@ namespace xia2 { namespace pychef {
 
   };
 
+
   namespace accumulator {
 
-    template<typename DataType>
-    class NullAccumulator
-    {
-      public:
-        NullAccumulator() {}
-        NullAccumulator(DataType x0) {}
-        NullAccumulator(DataType x0, DataType x1) {}
-        void operator()(DataType x) {}
-    };
-
-
-    template<class Previous=NullAccumulator<ObservationGroup> >
-    class CompletenessAccumulator : public Previous
+    class CompletenessAccumulator
     {
       public:
         CompletenessAccumulator(
@@ -168,12 +157,9 @@ namespace xia2 { namespace pychef {
           iminus_comp_overall(n_steps, 0.0),
           ieither_comp_overall(n_steps, 0.0),
           iboth_comp_overall(n_steps, 0.0)
-          /*Previous(x0),*/
-          /*min_(x0), max_(x0), max_absolute_(std::abs(x0)*/
         {}
 
         void operator()(ObservationGroup group) {
-          Previous::operator()(group);
 
           std::size_t dose_min_iplus = 1e8;
           std::size_t dose_min_iminus = 1e8;
@@ -274,14 +260,17 @@ namespace xia2 { namespace pychef {
           DIALS_ASSERT(finalised_);
           return iplus_count;
         }
+
         af::versa<double, af::c_grid<2> > iminus_completeness_bins() {
           DIALS_ASSERT(finalised_);
           return iminus_count;
         }
+
         af::versa<double, af::c_grid<2> > ieither_completeness_bins() {
           DIALS_ASSERT(finalised_);
           return ieither_count;
         }
+
         af::versa<double, af::c_grid<2> > iboth_completeness_bins() {
           DIALS_ASSERT(finalised_);
           return iboth_count;
@@ -291,14 +280,17 @@ namespace xia2 { namespace pychef {
           DIALS_ASSERT(finalised_);
           return iplus_comp_overall;
         }
+
         af::shared<double> iminus_completeness() {
           DIALS_ASSERT(finalised_);
           return iminus_comp_overall;
         }
+
         af::shared<double> ieither_completeness() {
           DIALS_ASSERT(finalised_);
           return ieither_comp_overall;
         }
+
         af::shared<double> iboth_completeness() {
           DIALS_ASSERT(finalised_);
           return iboth_comp_overall;
@@ -323,8 +315,7 @@ namespace xia2 { namespace pychef {
     };
 
 
-    template<class Previous=NullAccumulator<ObservationGroup> >
-    class RcpScpAccumulator : public Previous
+    class RcpScpAccumulator
     {
       public:
         RcpScpAccumulator(
@@ -348,12 +339,9 @@ namespace xia2 { namespace pychef {
           count(af::c_grid<2>(binner.n_bins_used(), n_steps), 0),
           rcp_(n_steps, 0.0),
           scp_(n_steps, 0.0)
-          /*Previous(x0),*/
-          /*min_(x0), max_(x0), max_absolute_(std::abs(x0)*/
         {}
 
         void operator()(ObservationGroup group) {
-          Previous::operator()(group);
 
           if (group.iplus().size()) {
             std::size_t i_bin = binner_.get_i_bin(d_star_sq_[group.iplus()[0]]);
@@ -497,8 +485,7 @@ namespace xia2 { namespace pychef {
     };
 
 
-    template<class Previous=NullAccumulator<ObservationGroup> >
-    class RdAccumulator : public Previous
+    class RdAccumulator
     {
       public:
         RdAccumulator(
@@ -511,12 +498,9 @@ namespace xia2 { namespace pychef {
           rd_top(n_steps, 0.0),
           rd_bottom(n_steps, 0.0),
           rd_(n_steps, 0.0)
-          /*Previous(x0),*/
-          /*min_(x0), max_(x0), max_absolute_(std::abs(x0)*/
         {}
 
         void operator()(ObservationGroup group) {
-          Previous::operator()(group);
 
           if (group.iplus().size()) {
             accumulate(group.iplus());
@@ -575,6 +559,106 @@ namespace xia2 { namespace pychef {
     };
 
   } // namespace accumulator
+
+
+  class ChefStatistics {
+    public:
+      ChefStatistics(
+        scitbx::af::const_ref<cctbx::miller::index<> > const& miller_indices,
+        af::const_ref<double> const &intensities,
+        af::const_ref<double> const &sigmas,
+        af::const_ref<double> const &d_star_sq,
+        af::const_ref<std::size_t> const &dose,
+        af::const_ref<std::size_t> counts_complete,
+        cctbx::miller::binner const &binner,
+        sgtbx::space_group space_group,
+        bool anomalous_flag,
+        int n_steps
+        )
+        :
+        observations(miller_indices, space_group, anomalous_flag),
+        completeness_accumulator(dose, d_star_sq, binner, n_steps),
+        rcp_scp_accumulator(
+          intensities, sigmas, dose, d_star_sq, binner, n_steps),
+        rd_accumulator(intensities, dose, n_steps)
+      {
+        typedef Observations::map_type map_t;
+        map_t groups = observations.observation_groups();
+
+        for (map_t::iterator it = groups.begin(); it != groups.end(); it++) {
+          ObservationGroup group = it->second;
+          completeness_accumulator(group);
+          rcp_scp_accumulator(group);
+          rd_accumulator(group);
+        }
+
+        completeness_accumulator.finalise(counts_complete);
+        rcp_scp_accumulator.finalise();
+        rd_accumulator.finalise();
+      }
+
+      af::versa<double, af::c_grid<2> > iplus_completeness_bins() {
+        return completeness_accumulator.iplus_completeness_bins();
+      }
+
+      af::versa<double, af::c_grid<2> > iminus_completeness_bins() {
+        return completeness_accumulator.iminus_completeness_bins();
+      }
+
+      af::versa<double, af::c_grid<2> > ieither_completeness_bins() {
+        return completeness_accumulator.ieither_completeness_bins();
+      }
+
+      af::versa<double, af::c_grid<2> > iboth_completeness_bins() {
+        return completeness_accumulator.iboth_completeness_bins();
+      }
+
+      af::shared<double> iplus_completeness() {
+        return completeness_accumulator.iplus_completeness();
+      }
+
+      af::shared<double> iminus_completeness() {
+        return completeness_accumulator.iminus_completeness();
+      }
+
+      af::shared<double> ieither_completeness() {
+        return completeness_accumulator.ieither_completeness();
+      }
+
+      af::shared<double> iboth_completeness() {
+        return completeness_accumulator.iboth_completeness();
+      }
+
+      af::versa<double, af::c_grid<2> > rcp_bins() {
+        return rcp_scp_accumulator.rcp_bins();
+      }
+
+      af::versa<double, af::c_grid<2> > scp_bins() {
+        return rcp_scp_accumulator.scp_bins();
+      }
+
+      af::shared<double> rcp() {
+        return rcp_scp_accumulator.rcp();
+      }
+
+      af::shared<double> scp() {
+        return rcp_scp_accumulator.scp();
+      }
+
+      af::shared<double> rd() {
+        return rd_accumulator.rd();
+      }
+
+
+    private:
+      Observations observations;
+
+      accumulator::CompletenessAccumulator completeness_accumulator;
+      accumulator::RcpScpAccumulator rcp_scp_accumulator;
+      accumulator::RdAccumulator rd_accumulator;
+
+  };
+
 
 }} // xia2::pychef
 

@@ -17,10 +17,7 @@ def exercise_observations():
 
 def exercise_accumulators():
   from xia2.Modules.PyChef2 import PyChef
-  from xia2.Modules.PyChef2 import Observations
-  from xia2.Modules.PyChef2 import CompletenessAccumulator
-  from xia2.Modules.PyChef2 import RcpScpAccumulator
-  from xia2.Modules.PyChef2 import RdAccumulator
+  from xia2.Modules.PyChef2 import ChefStatistics
   from cctbx.array_family import flex
 
   from iotbx.reflection_file_reader import any_reflection_file
@@ -50,7 +47,6 @@ def exercise_accumulators():
   miller_indices = batches.indices()
   sg = batches.space_group()
 
-  observations = Observations(miller_indices, sg, anomalous_flag)
   n_steps = stats.n_steps
   dose = batches.data()
   range_width  = 1
@@ -59,47 +55,32 @@ def exercise_accumulators():
   dose /= range_width
   dose -= range_min
 
-  # test CompletenessAccumulator
-
-  accumulate = CompletenessAccumulator(
-    flex.size_t(list(dose)), stats.d_star_sq, stats.binner, n_steps)
-
   binner_non_anom = intensities.as_non_anomalous_array().use_binning(
     stats.binner)
-  n_complete = binner_non_anom.counts_complete()[1:-1]
+  n_complete = flex.size_t(binner_non_anom.counts_complete()[1:-1])
 
-  for g in observations.observation_groups():
-    accumulate(g.data())
-  accumulate.finalise(flex.size_t(n_complete))
+  dose = flex.size_t(list(dose))
 
-  assert approx_equal(accumulate.iplus_completeness(), comp_stats.iplus_comp_overall)
-  assert approx_equal(accumulate.iminus_completeness(), comp_stats.iminus_comp_overall)
-  assert approx_equal(accumulate.ieither_completeness(), comp_stats.ieither_comp_overall)
-  assert approx_equal(accumulate.iboth_completeness(), comp_stats.iboth_comp_overall)
+  chef_stats = ChefStatistics(
+    miller_indices, intensities.data(), intensities.sigmas(),
+    intensities.d_star_sq().data(), dose, n_complete, stats.binner,
+    sg, anomalous_flag, n_steps)
 
-  # test RcpScpAccumulator
+  # test completeness
 
-  accumulate_rcp_scp = RcpScpAccumulator(
-    intensities.data(), intensities.sigmas(),
-    flex.size_t(list(dose)), batches.d_star_sq().data(), stats.binner, n_steps)
+  assert approx_equal(chef_stats.iplus_completeness(), comp_stats.iplus_comp_overall)
+  assert approx_equal(chef_stats.iminus_completeness(), comp_stats.iminus_comp_overall)
+  assert approx_equal(chef_stats.ieither_completeness(), comp_stats.ieither_comp_overall)
+  assert approx_equal(chef_stats.iboth_completeness(), comp_stats.iboth_comp_overall)
 
-  for g in observations.observation_groups():
-    accumulate_rcp_scp(g.data())
-  accumulate_rcp_scp.finalise()
+  # test rcp,scp
 
-  assert approx_equal(accumulate_rcp_scp.rcp(), rcp_scp_stats[1])
-  assert approx_equal(accumulate_rcp_scp.scp(), rcp_scp_stats[3])
+  assert approx_equal(chef_stats.rcp(), rcp_scp_stats[1])
+  assert approx_equal(chef_stats.scp(), rcp_scp_stats[3])
 
-  # test RdAccumulator
+  # test Rd
 
-  accumulate_rd = RdAccumulator(
-    intensities.data(), flex.size_t(list(dose)), n_steps)
-
-  for g in observations.observation_groups():
-    accumulate_rd(g.data())
-  accumulate_rd.finalise()
-
-  assert approx_equal(accumulate_rd.rd(), rd_stats)
+  assert approx_equal(chef_stats.rd(), rd_stats)
 
   print "OK"
 

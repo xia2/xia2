@@ -49,77 +49,51 @@ namespace xia2 { namespace pychef {
   }
 
 
-  void export_accumulators() {
-    using namespace accumulator;
+  void export_chef_statistics() {
 
-
-    typedef CompletenessAccumulator<> completeness_accumulator_t;
-    class_<completeness_accumulator_t>("CompletenessAccumulator", no_init)
-      .def(init<af::const_ref<std::size_t> const &,
+    typedef ChefStatistics chef_statistics_t;
+    class_<chef_statistics_t>("ChefStatistics", no_init)
+      .def(init<scitbx::af::const_ref<cctbx::miller::index<> > const&,
                 af::const_ref<double> const &,
+                af::const_ref<double> const &,
+                af::const_ref<double> const &,
+                af::const_ref<std::size_t> const &,
+                af::const_ref<std::size_t> const &,
                 cctbx::miller::binner const &,
-                int>((
-           arg("dose"),
+                sgtbx::space_group,
+                bool,
+                int >((
+           arg("miller_index"),
+           arg("intensities"),
+           arg("sigmas"),
            arg("d_star_sq"),
+           arg("dose"),
+           arg("counts_complete"),
            arg("binner"),
+           arg("space_group"),
+           arg("anomalous_flag"),
            arg("n_steps"))))
-      .def("__call__", &completeness_accumulator_t::operator())
-      .def("finalise", &completeness_accumulator_t::finalise)
       .def("iplus_completeness",
-           &completeness_accumulator_t::iplus_completeness)
+           &chef_statistics_t::iplus_completeness)
       .def("iminus_completeness",
-           &completeness_accumulator_t::iminus_completeness)
+           &chef_statistics_t::iminus_completeness)
       .def("ieither_completeness",
-           &completeness_accumulator_t::ieither_completeness)
+           &chef_statistics_t::ieither_completeness)
       .def("iboth_completeness",
-           &completeness_accumulator_t::iboth_completeness)
+           &chef_statistics_t::iboth_completeness)
       .def("iplus_completeness_bins",
-           &completeness_accumulator_t::iplus_completeness_bins)
+           &chef_statistics_t::iplus_completeness_bins)
       .def("iminus_completeness_bins",
-           &completeness_accumulator_t::iminus_completeness_bins)
+           &chef_statistics_t::iminus_completeness_bins)
       .def("ieither_completeness_bins",
-           &completeness_accumulator_t::ieither_completeness_bins)
+           &chef_statistics_t::ieither_completeness_bins)
       .def("iboth_completeness_bins",
-           &completeness_accumulator_t::iboth_completeness_bins)
-      ;
-
-
-    typedef RcpScpAccumulator<> rcp_scp_accumulator_t;
-    class_<rcp_scp_accumulator_t>("RcpScpAccumulator", no_init)
-      .def(init<af::const_ref<double> const &,
-                af::const_ref<double> const &,
-                af::const_ref<std::size_t> const &,
-                af::const_ref<double> const &,
-                cctbx::miller::binner const &,
-                int>((
-           arg("dose"),
-           arg("d_star_sq"),
-           arg("binner"),
-           arg("n_steps"))))
-      .def("__call__", &rcp_scp_accumulator_t::operator())
-      .def("finalise", &rcp_scp_accumulator_t::finalise)
-      .def("rcp_bins",
-           &rcp_scp_accumulator_t::rcp_bins)
-      .def("scp_bins",
-           &rcp_scp_accumulator_t::scp_bins)
-      .def("rcp",
-           &rcp_scp_accumulator_t::rcp)
-      .def("scp",
-           &rcp_scp_accumulator_t::scp)
-      ;
-
-
-    typedef RdAccumulator<> rd_accumulator_t;
-    class_<rd_accumulator_t>("RdAccumulator", no_init)
-      .def(init<af::const_ref<double> const &,
-                af::const_ref<std::size_t> const &,
-                int>((
-           arg("dose"),
-           arg("n_steps"))))
-      .def("__call__", &rd_accumulator_t::operator())
-      .def("finalise", &rd_accumulator_t::finalise)
-      .def("rd",
-           &rd_accumulator_t::rd)
+           &chef_statistics_t::iboth_completeness_bins)
+      .def("rcp_bins", &chef_statistics_t::rcp_bins)
+      .def("scp_bins", &chef_statistics_t::scp_bins)
+      .def("rcp", &chef_statistics_t::rcp)
+      .def("scp", &chef_statistics_t::scp)
+      .def("rd", &chef_statistics_t::rd)
       ;
 
   }
@@ -128,7 +102,7 @@ namespace xia2 { namespace pychef {
   {
     export_observations();
     export_observation_group();
-    export_accumulators();
+    export_chef_statistics();
   }
 
 }}} // namespace = xia2::pychef::boost_python
