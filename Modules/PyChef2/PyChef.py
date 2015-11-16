@@ -390,7 +390,7 @@ class PyStatistics(object):
         ['I+', 'I-', 'I', 'dI']
       column_formats = ["%8.1f"] + ["%5.3f" for i in range(self.n_bins)] + ["%5.3f", "%5.3f", "%5.3f", "%5.3f"]
       #graph_columns = [[0,1,2,3,4]]
-      graph_columns = [[0] + range(self.n_bins+2, self.n_bins+5), range(self.n_bins+1)]
+      graph_columns = [[0] + range(self.n_bins+1, self.n_bins+5), range(self.n_bins+1)]
     else:
       column_labels = ["BATCH"] + ["%.2f-%.2f(A)" %self.binner.bin_d_range(i+1)
                                    for i in range(self.n_bins)] + ["I"]
@@ -550,7 +550,7 @@ class Statistics(PyStatistics):
         ['I+', 'I-', 'I', 'dI']
       column_formats = ["%8.1f"] + ["%5.3f" for i in range(self.n_bins)] + ["%5.3f", "%5.3f", "%5.3f", "%5.3f"]
       #graph_columns = [[0,1,2,3,4]]
-      graph_columns = [[0] + range(self.n_bins+2, self.n_bins+5), range(self.n_bins+1)]
+      graph_columns = [[0] + range(self.n_bins+1, self.n_bins+5), range(self.n_bins+1)]
     else:
       column_labels = ["BATCH"] + ["%.2f-%.2f(A)" %self.binner.bin_d_range(i+1)
                                    for i in range(self.n_bins)] + ["I"]
