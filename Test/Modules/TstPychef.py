@@ -18,10 +18,17 @@ def exercise_observations():
 def exercise_accumulators():
   from xia2.Modules.PyChef2 import PyChef
   from xia2.Modules.PyChef2 import ChefStatistics
-  from cctbx.array_family import flex
-
   from iotbx.reflection_file_reader import any_reflection_file
-  f = "/Users/rjgildea/tmp/insulin_dials/DataFiles/AUTOMATIC_DEFAULT_scaled_unmerged.mtz"
+  from cctbx.array_family import flex
+  import libtbx.load_env
+  import os
+
+  xia2_regression = libtbx.env.find_in_repositories("xia2_regression")
+  if xia2_regression is None:
+    print "Skipping exercise_accumulators(): xia2_regression not available"
+    return
+
+  f = os.path.join(xia2_regression, "test/insulin_dials_scaled_unmerged.mtz")
   reader = any_reflection_file(f)
   assert reader.file_type() == 'ccp4_mtz'
   arrays = reader.as_miller_arrays(merge_equivalents=False)
