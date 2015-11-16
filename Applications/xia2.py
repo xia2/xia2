@@ -279,7 +279,13 @@ def xia2():
 def help():
   '''Print out some help for xia2.'''
 
-  sys.stdout.write('\nCommand-line options to xia2:\n')
+  from XIA2Version import Version
+  sys.stdout.write('%s\n' % Version);
+
+  sys.stdout.write('An expert system for automated reduction of X-Ray\n')
+  sys.stdout.write('diffraction data from macromolecular crystals\n\n')
+
+  sys.stdout.write('Command-line options to xia2:\n')
   sys.stdout.write('Processing pipelines:\n')
   sys.stdout.write(' [-2d]    MOSFLM, LABELIT (if installed), AIMLESS\n')
   sys.stdout.write(' [-3d]    XDS, XSCALE, LABELIT\n')
