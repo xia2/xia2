@@ -218,31 +218,15 @@ class DialsIndexer(Indexer):
 
     # FIXME need to adjust this to allow (say) three chunks of images
 
-    importer = self.Import()
-    importer.set_image_range(self._indxr_images[0])
-    importer.set_image_to_epoch(image_to_epoch)
-    wavelength_tolerance = PhilIndex.params.xia2.settings.wavelength_tolerance
-    if wavelength_tolerance is not None:
-      importer.set_wavelength_tolerance(wavelength_tolerance)
-    reference_geometry = PhilIndex.params.xia2.settings.input.reference_geometry
-    if reference_geometry is not None and len(reference_geometry) > 0:
-      if len(PhilIndex.params.xia2.settings.input.reference_geometry) > 1:
-        from Schema import load_reference_geometries, find_relevant_reference_geometry
-        geometry_file = find_relevant_reference_geometry(
-          self.get_indexer_sweep().get_imageset(),
-          load_reference_geometries(PhilIndex.params.xia2.settings.input.reference_geometry)
-        )['file']
-        importer.set_reference_geometry(geometry_file)
-      elif len(PhilIndex.params.xia2.settings.input.reference_geometry) == 1:
-        importer.set_reference_geometry(
-          PhilIndex.params.xia2.settings.input.reference_geometry[0])
-
-    importer.run(fast_mode=True)
+    from dxtbx.serialize import dump
+    from dxtbx.datablock import DataBlock
+    sweep_filename = os.path.join(self.get_working_directory(), 'datablock.json')
+    dump.datablock(DataBlock([self.get_imageset()]), sweep_filename)
 
     # FIXME this should really use the assigned spot finding regions
     offset = self.get_frame_offset()
     spotfinder = self.Spotfinder()
-    spotfinder.set_input_sweep_filename(importer.get_sweep_filename())
+    spotfinder.set_input_sweep_filename(sweep_filename)
     spotfinder.set_output_sweep_filename(
       '%s_datablock.json' %spotfinder.get_xpid())
     spotfinder.set_input_spot_filename(
