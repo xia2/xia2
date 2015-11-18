@@ -211,6 +211,9 @@ xia2.settings {
       .help = "Experimental geometry from this datablock.json or "
               "experiments.json will override the geometry from the "
               "image headers."
+    reverse_phi = False
+      .type = bool
+      .help = "Reverse the direction of the phi axis rotation."
     xinfo = None
       .type = path
       .help = "Provide an xinfo file as input as alternative to directory "

@@ -433,6 +433,8 @@ class _CommandLine(object):
     if params.xia2.settings.d_max is not None:
       Flags.set_resolution_low(params.xia2.settings.d_max)
 
+    Flags.set_reversephi(params.xia2.settings.input.reverse_phi)
+
     if params.xia2.settings.input.json is not None:
       assert os.path.isfile(params.xia2.settings.input.json)
       load_datablock(params.xia2.settings.input.json)
@@ -1414,9 +1416,12 @@ class _CommandLine(object):
   def _read_reversephi(self):
 
     if '-reversephi' in self._argv:
-      Flags.set_reversephi(True)
       self._understood.append(self._argv.index('-reversephi'))
-      Debug.write('Reversephi mode selected')
+      # XXX Warning added 2015-11-18
+      Chatter.write(
+        "Warning: -reversephi option deprecated: please use reverse_phi=True instead")
+      PhilIndex.update("xia2.settings.input.reverse_phi=True")
+      PhilIndex.get_python_object()
     return
 
   def _read_no_lattice_test(self):
