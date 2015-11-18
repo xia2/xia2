@@ -86,10 +86,6 @@ def IntegraterForXSweep(xsweep, json_file=None):
   if xsweep._epoch > 0:
     integrater.set_integrater_epoch(xsweep._epoch)
 
-  if xsweep.get_reversephi() or Flags.get_reversephi():
-    Debug.write('Setting reverse-phi')
-    integrater.set_reversephi()
-
   # need to do the same for wavelength now as that could be wrong in
   # the image header...
 

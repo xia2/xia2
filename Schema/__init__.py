@@ -20,7 +20,7 @@ class _ImagesetCache(dict):
 imageset_cache = _ImagesetCache()
 
 def load_imagesets(template, directory, id_image=None, image_range=None,
-                   use_cache=True):
+                   use_cache=True, reversephi=False):
   global imageset_cache
 
   full_template_path = os.path.join(directory, template)
@@ -51,6 +51,11 @@ def load_imagesets(template, directory, id_image=None, image_range=None,
     assert len(imagesets) > 0, "no imageset found"
 
     imageset_cache[full_template_path] = OrderedDict()
+    if reversephi:
+      for imageset in imagesets:
+        goniometer = imageset.get_goniometer()
+        goniometer.set_rotation_axis(
+          tuple((-g for g in goniometer.get_rotation_axis())))
 
     reference_geometry = PhilIndex.params.xia2.settings.input.reference_geometry
     if reference_geometry is not None and len(reference_geometry) > 0:

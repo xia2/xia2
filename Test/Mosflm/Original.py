@@ -316,9 +316,6 @@ def Mosflm(DriverType = None):
       auto_logfiler(self)
       self.start()
 
-      if self.get_reversephi():
-        self.input('detector reversephi')
-
       self.input('template "%s"' % self.get_template())
       self.input('directory "%s"' % self.get_directory())
       self.input('newmat xiaindex.mat')
@@ -1026,9 +1023,6 @@ def Mosflm(DriverType = None):
       if self._mosflm_gain:
         self.input('gain %5.2f' % self._mosflm_gain)
 
-      if self.get_reversephi():
-        self.input('detector reversephi')
-
       self.input('template "%s"' % self.get_template())
       self.input('directory "%s"' % self.get_directory())
 
@@ -1313,9 +1307,6 @@ def Mosflm(DriverType = None):
 
       if self._mosflm_gain:
         self.input('gain %5.2f' % self._mosflm_gain)
-
-      if self.get_reversephi():
-        self.input('detector reversephi')
 
       self.input('template "%s"' % self.get_template())
       self.input('directory "%s"' % self.get_directory())
@@ -1784,9 +1775,6 @@ def Mosflm(DriverType = None):
 
         self.input('dname %s' % temp_dname)
         # self.input('ucwd')
-
-      if self.get_reversephi():
-        self.input('detector reversephi')
 
       self.input('template "%s"' % self.get_template())
       self.input('directory "%s"' % self.get_directory())
@@ -2318,9 +2306,6 @@ def Mosflm(DriverType = None):
                        (dname, self.get_integrater_sweep_name())
 
           job.input('dname %s' % temp_dname)
-
-        if self.get_reversephi():
-          job.input('detector reversephi')
 
         job.input('template "%s"' % self.get_template())
         job.input('directory "%s"' % self.get_directory())

@@ -164,9 +164,8 @@ def detector_axis_apply_two_theta_rotation(axis_string, header):
 
   return '%.3f %.3f %.3f' % new_axis
 
-def imageset_to_xds(imageset, synchrotron = None, reversephi = False,
-                    refined_beam_vector = None, refined_rotation_axis = None,
-                    refined_distance = None):
+def imageset_to_xds(imageset, synchrotron = None, refined_beam_vector = None,
+                    refined_rotation_axis = None, refined_distance = None):
   '''A function to take an input header dictionary from Diffdump
   and generate a list of records to start XDS - see Doc/INP.txt.'''
 

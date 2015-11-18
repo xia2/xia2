@@ -34,6 +34,7 @@ from Experts.FindImages import image2template, find_matching_images, \
 
 # image header reading functionality
 from Wrappers.XIA.Diffdump import Diffdump
+from Handlers.Flags import Flags
 
 def SweepFactory(template, directory, beam = None):
   '''A factory which will return a list of sweep objects which match
@@ -42,7 +43,8 @@ def SweepFactory(template, directory, beam = None):
   sweeps = []
 
   from Schema import load_imagesets
-  imagesets = load_imagesets(template, directory)
+  imagesets = load_imagesets(
+    template, directory, reversephi=Flags.get_reversephi())
 
   for imageset in imagesets:
     scan = imageset.get_scan()
@@ -171,7 +173,7 @@ class Sweep(object):
       from Schema import load_imagesets
       imagesets = load_imagesets(
         self._template, self._directory, id_image=self._id_image,
-        use_cache=False)
+        use_cache=False, reversephi=Flags.get_reversephi())
 
       max_images = 0
       best_sweep = None

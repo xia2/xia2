@@ -102,9 +102,6 @@ def XDSIdxref(DriverType=None, params=None):
       self._b_axis = None
       self._c_axis = None
 
-      # options
-      self._reversephi = False
-
       # results
 
       self._refined_beam = (0, 0)
@@ -190,10 +187,6 @@ def XDSIdxref(DriverType=None, params=None):
 
     def get_indexing_solution(self):
       return self._indxr_lattice, self._indxr_cell, self._indxr_mosaic
-
-    def set_reversephi(self, reversephi = True):
-      self._reversephi = reversephi
-      return
 
     def get_index_tree_problem(self):
       return self._index_tree_problem
@@ -287,7 +280,6 @@ def XDSIdxref(DriverType=None, params=None):
 
       header = imageset_to_xds(
         self.get_imageset(),
-        reversephi=self._reversephi,
         refined_beam_vector=self._refined_beam_vector,
         refined_rotation_axis=self._refined_rotation_axis,
         refined_distance=self._refined_distance)

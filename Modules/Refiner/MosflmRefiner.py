@@ -331,7 +331,6 @@ class MosflmRefiner(Refiner):
     if self._mosflm_gain:
       refiner.set_gain(self._mosflm_gain)
 
-    refiner.set_reverse_phi(idxr.get_reversephi())
     refiner.set_template(idxr.get_template())
     refiner.set_directory(idxr.get_directory())
     refiner.set_input_mat_file('test-xiaindex-%s.mat' % lattice)
@@ -489,7 +488,6 @@ class MosflmRefiner(Refiner):
     if self._mosflm_gain:
       refiner.set_gain(self._mosflm_gain)
 
-    refiner.set_reverse_phi(idxr.get_reversephi())
     refiner.set_template(idxr.get_template())
     refiner.set_directory(idxr.get_directory())
     refiner.set_input_mat_file('xiaindex-%s.mat' % lattice)

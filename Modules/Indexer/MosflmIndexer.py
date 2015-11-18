@@ -192,7 +192,6 @@ class MosflmIndexer(Indexer):
 
     #self.set_task(task)
 
-    indexer.set_reverse_phi(self.get_reversephi())
     indexer.set_template(self.get_template())
     indexer.set_directory(self.get_directory())
 

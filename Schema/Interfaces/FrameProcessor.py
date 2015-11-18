@@ -49,7 +49,6 @@ class FrameProcessor(object):
 
     self._fp_offset = 0
 
-    self._fp_reversephi = False
     self._fp_two_theta = 0.0
     self._fp_two_theta_prov = None
 
@@ -242,13 +241,6 @@ class FrameProcessor(object):
 
   def get_beam_prov(self):
     return self._fp_beam_prov
-
-  def set_reversephi(self, reversephi = True):
-    self._fp_reversephi = reversephi
-    return
-
-  def get_reversephi(self):
-    return self._fp_reversephi
 
   def set_two_theta(self, two_theta):
     self._fp_two_theta = two_theta

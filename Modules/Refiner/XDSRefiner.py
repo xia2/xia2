@@ -140,10 +140,6 @@ class XDSRefiner(Refiner):
           Debug.write('Propogating wedge limit: %d %d' % wedge)
           idxr.set_frame_wedge(wedge[0], wedge[1], apply_offset = False)
 
-        if idxr_old.get_reversephi():
-          Debug.write('Propogating reverse-phi...')
-          idxr.set_reversephi()
-
         # now copy information from the old indexer to the new
         # one - lattice, cell, distance etc.
 

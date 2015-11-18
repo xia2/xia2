@@ -154,11 +154,6 @@ class XDSIndexer(Indexer):
     if self.get_wavelength():
       idxref.set_wavelength(self.get_wavelength())
 
-    # reverse phi?
-    if self.get_reversephi():
-      Debug.write('Setting reversephi for IDXREF')
-      idxref.set_reversephi()
-
     # if we have a refined set of parameters to apply, apply these
     if Flags.get_xparm():
       idxref.set_refined_origin(Flags.get_xparm_origin())

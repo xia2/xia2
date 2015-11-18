@@ -219,7 +219,8 @@ class XSweep(object):
 
       from Schema import load_imagesets
       imagesets = load_imagesets(
-        self._template, self._directory, image_range=self._frames_to_process)
+        self._template, self._directory, image_range=self._frames_to_process,
+        reversephi=(Flags.get_reversephi() or self._reversephi))
 
       assert len(imagesets) == 1, "one imageset expected, %d found" % \
           len(imagesets)
