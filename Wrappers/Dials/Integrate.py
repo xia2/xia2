@@ -188,7 +188,8 @@ Try using a machine with more memory or using fewer processor.''')
         else:
           ios = float(row['ios_sum'])
           n_ref = float(row['n_sum'])
-        self._per_image_statistics[int(row['image'])] = {
+        # XXX this +1 might need changing if James changes what is output in report.json
+        self._per_image_statistics[int(row['image'])+1] = {
           'isig': ios,
           'isig_tot': ios * math.sqrt(n_ref),
           'rmsd_pixel': float(row['rmsd_xy']),
