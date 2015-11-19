@@ -32,21 +32,29 @@ def read_cbf_image(cbf_image):
   return pixel_values
 
 def get_overload(cbf_file):
-  for record in open(cbf_file):
-    if 'Count_cutoff' in record:
-      return int(record.split()[-2])
+  with open(cbf_file, 'rb') as fh:
+    for record in fh:
+      if 'Count_cutoff' in record:
+        return int(record.split()[-2])
 
 def build_hist():
   import sys
   from scitbx.array_family import flex
 
+  if len(sys.argv) == 2 and sys.argv[1].endswith('.json'):
+    from dxtbx import datablock
+    db = datablock.DataBlockFactory.from_json_file(sys.argv[1])[0]
+    image_list = db.extract_imagesets()[0].paths()
+  else:
+    image_list = sys.argv[1:]
+
   thresh = 100
-  scale = thresh / get_overload(sys.argv[1])
+  scale = thresh / get_overload(image_list[0])
 
   hist = flex.histogram(flex.double(), data_min=0.0, data_max=(5.0*thresh),
                         n_slots=500)
 
-  for image in sys.argv[1:]:
+  for image in image_list:
     data = read_cbf_image(image)
     scaled = scale * data.as_double()
     tmp_hist = flex.histogram(scaled.as_1d(), data_min=0.0, data_max=(5.0*thresh),
