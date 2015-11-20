@@ -132,7 +132,7 @@ def Import(DriverType = None):
         for image in self._images:
           self.add_command_line(image)
 
-      self.add_command_line('output=%s' % self._sweep_filename)
+      self.add_command_line('output.datablock=%s' % self._sweep_filename)
       self.start()
       self.close_wait()
       self.check_for_errors()
