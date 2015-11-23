@@ -618,6 +618,160 @@ class Statistics(PyStatistics):
 
     print table_scp.format_loggraph()
 
+  def to_dict(self):
+    x = [i * self.range_width + self.range_min for i in xrange(self.n_steps)]
+    scp_data = []
+    rcp_data = []
+    rd_data = []
+    completeness_data = []
+
+    scp_data.append({
+      'x': x,
+      'y': list(self.scp),
+      'type': 'scatter',
+      'name': 'Scp overall',
+      'line': {'width': 3},
+      })
+    rcp_data.append({
+      'x': x,
+      'y': list(self.rcp),
+      'type': 'scatter',
+      'name': 'Rcp overall',
+      'line': {'width': 3},
+      })
+    rd_data.append({
+      'x': x,
+      'y': list(self.rd),
+      'type': 'scatter',
+      'name': 'Rd',
+      })
+
+    anomalous = self.intensities.anomalous_flag()
+    completeness_data.append({
+      'x': x,
+      'y': list(self.ieither_comp_overall),
+      'type': 'scatter',
+      'name': 'I',
+      'line': {'width': 3},
+      })
+    if anomalous:
+      completeness_data.append({
+        'x': x,
+        'y': list(self.iboth_comp_overall),
+        'type': 'scatter',
+        'name': 'dI',
+        'line': {'width': 3},
+      })
+      completeness_data.append({
+        'x': x,
+        'y': list(self.iplus_comp_overall),
+        'type': 'scatter',
+        'name': 'I+',
+        'line': {'width': 3},
+      })
+      completeness_data.append({
+        'x': x,
+        'y': list(self.iminus_comp_overall),
+        'type': 'scatter',
+        'name': 'I-',
+        'line': {'width': 3},
+      })
+
+    for j in xrange(self.binner.n_bins_used()):
+      bin_range_suffix = ' (%.2f-%.2f A)' %self.binner.bin_d_range(j+1)
+      scp_data.append({
+        'x': x,
+        'y': list(self.scp_bins[j:j+1,:].as_1d()),
+        'type': 'scatter',
+        'name': 'Scp' + bin_range_suffix,
+        'line': {'width': 1, 'dash': 'dot'},
+        })
+      rcp_data.append({
+        'x': x,
+        'y': list(self.rcp_bins[j:j+1,:].as_1d()),
+        'type': 'scatter',
+        'name': 'Rcp' + bin_range_suffix,
+        'line': {'width': 1, 'dash': 'dot'},
+        })
+
+      completeness_data.append({
+        'x': x,
+        'y': list(self.ieither_comp_bins[j:j+1,:].as_1d()),
+        'type': 'scatter',
+        'name': 'I' + bin_range_suffix,
+        'line': {'width': 1, 'dash': 'dot'},
+        })
+      #if anomalous:
+        #completeness_data.append({
+          #'x': x,
+          #'y': list(self.iboth_comp_bins[j:j+1,:].as_1d()),
+          #'type': 'scatter',
+          #'name': 'dI' + bin_range_suffix,
+          #'line': {'width': 1, 'dash': 'dot'},
+        #})
+        #completeness_data.append({
+          #'x': x,
+          #'y': list(self.iplus_comp_bins[j:j+1,:].as_1d()),
+          #'type': 'scatter',
+          #'name': 'I+' + bin_range_suffix,
+          #'line': {'width': 1, 'dash': 'dot'},
+        #})
+        #completeness_data.append({
+          #'x': x,
+          #'y': list(self.iminus_comp_bins[j:j+1,:].as_1d()),
+          #'type': 'scatter',
+          #'name': 'I-' + bin_range_suffix,
+          #'line': {'width': 1, 'dash': 'dot'},
+        #})
+
+    d = {
+      'scp_vs_batch': {
+        'data': scp_data,
+        'layout': {
+          'title': 'Scp vs batch',
+          'xaxis': {'title': 'Batch'},
+          'yaxis': {
+            'title': 'Scp',
+            'rangemode': 'tozero'
+          }
+        }
+      },
+      'rcp_vs_batch': {
+        'data': rcp_data,
+        'layout': {
+          'title': 'Rcp vs batch',
+          'xaxis': {'title': 'Batch'},
+          'yaxis': {
+            'title': 'Rcp',
+            'rangemode': 'tozero'
+          }
+        }
+      },
+      'rd_vs_batch_difference': {
+        'data': rd_data,
+        'layout': {
+          'title': 'Rd vs batch difference',
+          'xaxis': {'title': 'Batch difference'},
+          'yaxis': {
+            'title': 'Rd',
+            'rangemode': 'tozero'
+          }
+        }
+      },
+      'completeness_vs_batch': {
+        'data': completeness_data,
+        'layout': {
+          'title': 'Completeness vs batch',
+          'xaxis': {'title': 'Batch'},
+          'yaxis': {
+            'title': 'Completeness',
+            'rangemode': 'tozero'
+          }
+        }
+      },
+    }
+    return d
+
 
 def run(args):
   from iotbx.reflection_file_reader import any_reflection_file
