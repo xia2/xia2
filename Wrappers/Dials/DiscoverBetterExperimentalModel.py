@@ -82,7 +82,7 @@ def DiscoverBetterExperimentalModel(DriverType = None):
 
       self._optimized_filename = os.path.join(
         self.get_working_directory(), '%d_optimized_datablock.json' %self.get_xpid())
-      self.add_command_line("output=%s" %self._optimized_filename)
+      self.add_command_line("output.datablock=%s" %self._optimized_filename)
 
       self.start()
       self.close_wait()
