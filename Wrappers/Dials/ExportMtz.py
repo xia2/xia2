@@ -25,7 +25,7 @@ def ExportMtz(DriverType = None):
 
     def __init__(self):
       DriverInstance.__class__.__init__(self)
-      self.set_executable('dials.export_mtz')
+      self.set_executable('dials.export')
 
       self._experiments_filename = None
       self._reflections_filename = None
@@ -60,12 +60,12 @@ def ExportMtz(DriverType = None):
 
     def run(self):
       from Handlers.Streams import Debug
-      Debug.write('Running dials.export_mtz')
+      Debug.write('Running dials.export')
 
       self.clear_command_line()
       self.add_command_line('experiments=%s' % self._experiments_filename)
       self.add_command_line('reflections=%s' % self._reflections_filename)
-      self.add_command_line('hklout=%s' % self._mtz_filename)
+      self.add_command_line('mtz.hklout=%s' % self._mtz_filename)
       if self._include_partials:
         self.add_command_line('include_partials=true')
       self.start()

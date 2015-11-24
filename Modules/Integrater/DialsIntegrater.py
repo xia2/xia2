@@ -359,7 +359,7 @@ class DialsIntegrater(Integrater):
     return self._intgr_integrated_pickle
 
   def _integrate_finish(self):
-    '''Finish off the integration by running dials.export_mtz.'''
+    '''Finish off the integration by running dials.export.'''
 
     # FIXME - do we want to export every time we call this method
     # (the file will not have changed) and also (more important) do
@@ -383,7 +383,7 @@ class DialsIntegrater(Integrater):
         '%s %s %s %s INTEGRATE' % (pname, xname, dname, sweep), mtz_filename)
 
     if not os.path.isfile(self._intgr_integrated_filename):
-      raise RuntimeError("dials.export_mtz failed: %s does not exist."
+      raise RuntimeError("dials.export failed: %s does not exist."
                          % self._intgr_integrated_filename)
 
     if self._intgr_reindex_operator is None and \
