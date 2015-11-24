@@ -77,15 +77,15 @@ def run(args):
   #cc_one_half = intensities.cc_one_half(use_binning=True)
   #i_over_sig_i = intensities.i_over_sig_i(use_binning=True)
 
+  merged_intensities = intensities.merge_equivalents().array()
   from mmtbx.scaling import twin_analyses
-  twin_analysis = twin_analyses.twin_analyses(
-    miller_array=intensities.merge_equivalents().array())
+  twin_analysis = twin_analyses.twin_analyses(miller_array=merged_intensities)
 
   nz_test = twin_analysis.nz_test
 
   from mmtbx.scaling import data_statistics
   wilson_scaling = data_statistics.wilson_scaling(
-    miller_array=intensities, n_residues=200) # XXX default n_residues?
+    miller_array=merged_intensities, n_residues=200) # XXX default n_residues?
 
   acentric = intensities.select_acentric()
   centric = intensities.select_centric()
