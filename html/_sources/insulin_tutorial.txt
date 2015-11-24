@@ -26,14 +26,14 @@ Other options are (type just xia2 to get this list)::
 
   Command-line options to xia2:
   [-2d] or [-3d] or [-3dii]
-  [-parallel 4] (say, for XDS usage)
-  [-resolution 2.8] (say, applies to all sweeps)
+  [nproc=4] (say, for XDS usage)
+  [d_min=2.8] (say, applies to all sweeps)
+  [reverse_phi=True]
+  [beam_centre=x,y] (in mm, following the MOSFLM convention, applies to all sweeps)
   [-freer_file free.mtz]
   [-quick]
   [-atom se] (say)
-  [-reversephi]
   [-migrate_data]
-  [-beam x,y]
 
 Running ths way some assumptions are made:
 
