@@ -1,9 +1,9 @@
+# LIBTBX_SET_DISPATCHER_NAME dev.xia2.analysis
+
 from __future__ import division
 from cctbx.array_family import flex
 import math
 
-
-# LIBTBX_SET_DISPATCHER_NAME dev.xia2.analysis
 
 from xia2.Modules.Analysis import *
 
@@ -41,12 +41,29 @@ def run(args):
   mtz_object = reader.file_content()
 
   indices = mtz_object.extract_original_index_miller_indices()
-  intensities = intensities.customized_copy(indices=indices)
-  batches = batches.customized_copy(indices=indices)
+  intensities = intensities.customized_copy(
+    indices=indices, info=intensities.info())
+  batches = batches.customized_copy(indices=indices, info=batches.info())
 
-  range_min = params.range.min
-  range_max = params.range.max
-  range_width = params.range.width
+  from iotbx import merging_statistics
+  merging_stats = merging_statistics.dataset_statistics(intensities)
+  #merging_stats.show()
+  #merging_stats.show_estimated_cutoffs()
+
+  headers = ['d_max', 'd_min', 'N(obs)', 'N(unique)', 'Multiplicity', 'Completeness',
+             'Mean(I)', 'Mean(I/sigma)', 'Rmerge', 'Rmeas', 'Rpim', 'CC1/2', 'CCano']
+  rows = []
+  for bin_stats in merging_stats.bins:
+    row = ['%.2f' %bin_stats.d_max, '%.2f' %bin_stats.d_min,
+           bin_stats.n_obs, bin_stats.n_uniq, '%.2f' %bin_stats.mean_redundancy,
+           '%.2f' %(100*bin_stats.completeness), '%.1f' %bin_stats.i_mean,
+           '%.1f' %bin_stats.i_over_sigma_mean, '%.3f' %bin_stats.r_merge,
+           '%.3f' %bin_stats.r_meas, '%.3f' %bin_stats.r_pim,
+           '%.3f' %bin_stats.cc_one_half, '%.3f' %bin_stats.cc_anom]
+    rows.append(row)
+
+  from xia2.lib.tabulate import tabulate
+  merging_stats_table_html = tabulate(rows, headers, tablefmt='html')
 
   if params.anomalous:
     intensities = intensities.as_anomalous_array()
@@ -83,20 +100,41 @@ def run(args):
 
   json_data = {
 
+    'multiplicities': {
+      'data': [
+        {
+          'x': merging_stats.overall.redundancies.keys(),
+          'y': merging_stats.overall.redundancies.values(),
+          'type': 'bar',
+          'name': 'Multiplicities',
+          'opacity': 0.75,
+        },
+      ],
+      'layout': {
+        'title': 'Distribution of multiplicities',
+        'xaxis': {'title': 'Multiplicity'},
+        'yaxis': {
+          'title': 'Frequency',
+          #'rangemode': 'tozero'
+        },
+        'bargap': 0,
+      },
+    },
+
     'scale_rmerge_vs_batch': {
       'data': [
         {
           'x': sc_vs_b.batches,
           'y': sc_vs_b.data,
           'type': 'scatter',
-          'name': 'Scales vs batch',
+          'name': 'Scale',
         },
         {
           'x': rmerge_vs_b.batches,
           'y': rmerge_vs_b.data,
           'yaxis': 'y2',
           'type': 'scatter',
-          'name': 'Rmerge vs batch',
+          'name': 'Rmerge',
         },
       ],
       'layout': {
@@ -124,7 +162,7 @@ def run(args):
       }],
       'layout':{
         'title': 'CC-half vs resolution',
-        'xaxis': {'title': 'd_star_sq'},
+        'xaxis': {'title': 'sin theta / lambda'},
         'yaxis': {
           'title': 'CC-half',
           'rangemode': 'tozero',
@@ -142,7 +180,7 @@ def run(args):
       }],
       'layout': {
         'title': '<I/sig(I)> vs resolution',
-        'xaxis': {'title': 'd_star_sq'},
+        'xaxis': {'title': 'sin theta / lambda'},
         'yaxis': {
           'title': '<I/sig(i)>',
           'rangemode': 'tozero'
@@ -167,7 +205,7 @@ def run(args):
       ],
       'layout': {
         'title': 'Second moment of I',
-        'xaxis': {'title': 'd_star_sq'},
+        'xaxis': {'title': 'sin theta / lambda'},
         'yaxis': {
           'title': '<I^2>',
           'rangemode': 'tozero'
@@ -235,7 +273,7 @@ def run(args):
       ],
       'layout': {
         'title': 'Wilson intensity plot',
-        'xaxis': {'title': 'Resolution'},
+        'xaxis': {'title': 'sin theta / lambda'},
         'yaxis': {
           'title': '<I>',
           'rangemode': 'tozero',
@@ -254,6 +292,8 @@ var graphs = %s
 Plotly.newPlot(
   'scale_rmerge', graphs.scale_rmerge_vs_batch.data,
   graphs.scale_rmerge_vs_batch.layout);
+Plotly.newPlot(
+  'multiplicities', graphs.multiplicities.data, graphs.multiplicities.layout);
 Plotly.newPlot(
   'cc_one_half', graphs.cc_one_half.data, graphs.cc_one_half.layout);
 Plotly.newPlot(
@@ -283,10 +323,13 @@ Plotly.newPlot(
 <head>
   <!-- Plotly.js -->
    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+   <script type='text/javascript' src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML%%2CSafe.js&ver=4.1'></script>
 </head>
 
 <body>
+  <div id="merging_stats">%s</div>
   <div id="scale_rmerge" style="width: 600px; height: 400px;"></div>
+  <div id="multiplicities" style="width: 600px; height: 400px;"></div>
   <div id="cc_one_half" style="width: 600px; height: 400px;"></div>
   <div id="mean_i_over_sig_i" style="width: 600px; height: 400px;"></div>
   <div id="second_moments" style="width: 600px; height: 400px;"></div>
@@ -301,12 +344,12 @@ Plotly.newPlot(
   </script>
 </body>
 
-""" %javascript
+""" %(merging_stats_table_html, javascript)
 
-  with open('xia2-summary.json', 'wb') as f:
+  with open('xia2-report.json', 'wb') as f:
     print >> f, json.dumps(json_data, indent=2)
 
-  with open('xia2-summary.html', 'wb') as f:
+  with open('xia2-report.html', 'wb') as f:
     print >> f, html
 
   return
