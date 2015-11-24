@@ -50,13 +50,21 @@ def scales_vs_batch(scales, batches):
   bins = []
   data = []
 
-  for i in range(int(math.floor(flex.min(batches.data()))),
-                 int(math.ceil(flex.max(batches.data())))+1):
-    sel = (batches.data() >= i) & (batches.data() < (i+1))
+  perm = flex.sort_permutation(batches.data())
+  batches = batches.data().select(perm)
+  scales = scales.data().select(perm)
 
-    sc = scales.data().select(sel)
-    bins.append(i)
-    data.append(flex.mean(sc))
+  i_batch_start = 0
+  current_batch = flex.min(batches)
+  n_ref = batches.size()
+  for i_ref in range(n_ref+1):
+    if i_ref == n_ref or batches[i_ref] != current_batch:
+      assert batches[i_batch_start:i_ref].all_eq(current_batch)
+      data.append(flex.mean(scales[i_batch_start:i_ref]))
+      bins.append(current_batch)
+      i_batch_start = i_ref
+      if i_ref < n_ref:
+        current_batch = batches[i_batch_start]
 
   return batch_binned_data(bins, data)
 
@@ -72,29 +80,41 @@ def rmerge_vs_batch(intensities, batches):
   merging = intensities.merge_equivalents()
   merged_intensities = merging.array()
 
+  perm = flex.sort_permutation(batches.data())
+  batches = batches.data().select(perm)
+  intensities = intensities.select(perm)
+
   from cctbx import miller
 
-  for i in range(int(math.floor(flex.min(batches.data()))),
-                 int(math.ceil(flex.max(batches.data())))+1):
-    sel = (batches.data() >= i) & (batches.data() < (i+1))
 
-    numerator = 0
-    denominator = 0
+  i_batch_start = 0
+  current_batch = flex.min(batches)
+  n_ref = batches.size()
+  for i_ref in range(n_ref+1):
+    if i_ref == n_ref or batches[i_ref] != current_batch:
+      assert batches[i_batch_start:i_ref].all_eq(current_batch)
 
-    intensities_sel = intensities.select(sel)
-    matches = miller.match_multi_indices(
-      merged_intensities.indices(), intensities_sel.indices())
+      numerator = 0
+      denominator = 0
 
-    for p in matches.pairs():
-      unmerged_Ij = intensities_sel.data()[p[1]]
-      merged_Ij = merged_intensities.data()[p[0]]
-      numerator += abs(unmerged_Ij - merged_Ij)
-      denominator += unmerged_Ij
+      intensities_sel = intensities[i_batch_start:i_ref]
+      matches = miller.match_multi_indices(
+        merged_intensities.indices(), intensities_sel.indices())
 
-    bins.append(i)
-    if denominator > 0:
-      data.append(numerator/denominator)
-    else:
-      data.append(0)
+      for p in matches.pairs():
+        unmerged_Ij = intensities_sel.data()[p[1]]
+        merged_Ij = merged_intensities.data()[p[0]]
+        numerator += abs(unmerged_Ij - merged_Ij)
+        denominator += unmerged_Ij
+
+      bins.append(current_batch)
+      if denominator > 0:
+        data.append(numerator/denominator)
+      else:
+        data.append(0)
+
+      i_batch_start = i_ref
+      if i_ref < n_ref:
+        current_batch = batches[i_batch_start]
 
   return batch_binned_data(bins, data)
