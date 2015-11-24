@@ -9,7 +9,7 @@ d_min = None
   .type = float(value_min=0)
 d_max = None
   .type = float(value_min=0)
-resolution_bins = 8
+resolution_bins = 20
   .type = int
 anomalous = False
   .type = bool

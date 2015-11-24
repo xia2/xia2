@@ -46,7 +46,8 @@ def run(args):
   batches = batches.customized_copy(indices=indices, info=batches.info())
 
   from iotbx import merging_statistics
-  merging_stats = merging_statistics.dataset_statistics(intensities)
+  merging_stats = merging_statistics.dataset_statistics(
+    intensities, n_bins=n_bins)
   #merging_stats.show()
   #merging_stats.show_estimated_cutoffs()
 
@@ -73,8 +74,8 @@ def run(args):
   rmerge_vs_b = rmerge_vs_batch(intensities, batches)
 
   intensities.setup_binner(reflections_per_bin=500)
-  cc_one_half = intensities.cc_one_half(use_binning=True)
-  i_over_sig_i = intensities.i_over_sig_i(use_binning=True)
+  #cc_one_half = intensities.cc_one_half(use_binning=True)
+  #i_over_sig_i = intensities.i_over_sig_i(use_binning=True)
 
   from mmtbx.scaling import twin_analyses
   twin_analysis = twin_analyses.twin_analyses(
@@ -88,10 +89,19 @@ def run(args):
 
   acentric = intensities.select_acentric()
   centric = intensities.select_centric()
-  acentric.setup_binner(n_bins=20)
-  centric.setup_binner(n_bins=20)
+  acentric.setup_binner(n_bins=n_bins)
+  centric.setup_binner(n_bins=n_bins)
   second_moments_acentric = acentric.second_moment_of_intensities(use_binning=True)
   second_moments_centric = centric.second_moment_of_intensities(use_binning=True)
+
+  d_star_sq_bins = [
+    (1/bin_stats.d_min**2) for bin_stats in merging_stats.bins]
+  i_over_sig_i_bins = [
+    bin_stats.i_over_sigma_mean for bin_stats in merging_stats.bins]
+  cc_one_half_bins = [
+    bin_stats.cc_one_half for bin_stats in merging_stats.bins]
+  cc_anom_bins = [
+    bin_stats.cc_anom for bin_stats in merging_stats.bins]
 
   from xia2.Modules.PyChef2 import PyChef
   pychef_stats = PyChef.Statistics(intensities, batches.data())
@@ -154,12 +164,20 @@ def run(args):
     },
 
     'cc_one_half': {
-      'data': [{
-        'x': list(cc_one_half.binner.bin_centers(2)), # d_star_sq
-        'y': cc_one_half.data[1:-1],
-        'type': 'scatter',
-        'name': 'Scales vs batch',
-      }],
+      'data': [
+        {
+          'x': d_star_sq_bins, # d_star_sq
+          'y': cc_one_half_bins,
+          'type': 'scatter',
+          'name': 'CC-half',
+        },
+        {
+          'x': d_star_sq_bins, # d_star_sq
+          'y': cc_anom_bins,
+          'type': 'scatter',
+          'name': 'CC-anom',
+        },
+      ],
       'layout':{
         'title': 'CC-half vs resolution',
         'xaxis': {'title': 'sin theta / lambda'},
@@ -173,8 +191,8 @@ def run(args):
 
     'i_over_sig_i': {
       'data': [{
-        'x': list(i_over_sig_i.binner.bin_centers(2)), # d_star_sq
-        'y': i_over_sig_i.data[1:-1],
+        'x': d_star_sq_bins, # d_star_sq
+        'y': i_over_sig_i_bins,
         'type': 'scatter',
         'name': 'Scales vs batch',
       }],
@@ -182,7 +200,7 @@ def run(args):
         'title': '<I/sig(I)> vs resolution',
         'xaxis': {'title': 'sin theta / lambda'},
         'yaxis': {
-          'title': '<I/sig(i)>',
+          'title': '<I/sig(I)>',
           'rangemode': 'tozero'
         },
       }
