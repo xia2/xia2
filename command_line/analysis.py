@@ -73,7 +73,7 @@ def run(args):
   sc_vs_b = scales_vs_batch(scales, batches)
   rmerge_vs_b = rmerge_vs_batch(intensities, batches)
 
-  intensities.setup_binner(reflections_per_bin=500)
+  intensities.setup_binner(n_bins=n_bins)
   #cc_one_half = intensities.cc_one_half(use_binning=True)
   #i_over_sig_i = intensities.i_over_sig_i(use_binning=True)
 
@@ -274,26 +274,26 @@ def run(args):
           'x': list(wilson_scaling.d_star_sq),
           'y': list(wilson_scaling.mean_I_obs_data),
           'type': 'scatter',
-          'name': '<I> via binning',
+          'name': 'Observed',
         },
         {
           'x': list(wilson_scaling.d_star_sq),
           'y': list(wilson_scaling.mean_I_obs_theory),
           'type': 'scatter',
-          'name': '<I> expected',
+          'name': 'Expected',
         },
         {
           'x': list(wilson_scaling.d_star_sq),
           'y': list(wilson_scaling.mean_I_normalisation),
           'type': 'scatter',
-          'name': '<I> smooth approximation',
+          'name': 'Smoothed',
         },
       ],
       'layout': {
         'title': 'Wilson intensity plot',
         'xaxis': {'title': 'sin theta / lambda'},
         'yaxis': {
-          'title': '<I>',
+          'title': 'Mean(I)',
           'rangemode': 'tozero',
         },
       },
