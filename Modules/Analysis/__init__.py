@@ -86,6 +86,9 @@ def rmerge_vs_batch(intensities, batches):
 
   from cctbx import miller
 
+  matches = miller.match_multi_indices(
+    merged_intensities.indices(), intensities.indices())
+  pairs = matches.pairs()
 
   i_batch_start = 0
   current_batch = flex.min(batches)
@@ -97,12 +100,8 @@ def rmerge_vs_batch(intensities, batches):
       numerator = 0
       denominator = 0
 
-      intensities_sel = intensities[i_batch_start:i_ref]
-      matches = miller.match_multi_indices(
-        merged_intensities.indices(), intensities_sel.indices())
-
-      for p in matches.pairs():
-        unmerged_Ij = intensities_sel.data()[p[1]]
+      for p in pairs[i_batch_start:i_ref]:
+        unmerged_Ij = intensities.data()[p[1]]
         merged_Ij = merged_intensities.data()[p[0]]
         numerator += abs(unmerged_Ij - merged_Ij)
         denominator += unmerged_Ij
