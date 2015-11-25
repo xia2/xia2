@@ -90,9 +90,11 @@ def run(args):
 
   merged_intensities = intensities.merge_equivalents().array()
   from mmtbx.scaling import twin_analyses
-  twin_analysis = twin_analyses.twin_analyses(miller_array=merged_intensities)
-
-  nz_test = twin_analysis.nz_test
+  normalised_intensities = twin_analyses.wilson_normalised_intensities(
+    miller_array=merged_intensities)
+  nz_test = twin_analyses.n_z_test(
+    normalised_acentric=normalised_intensities.acentric,
+    normalised_centric=normalised_intensities.centric)
 
   from mmtbx.scaling import data_statistics
   wilson_scaling = data_statistics.wilson_scaling(
