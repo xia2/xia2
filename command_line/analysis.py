@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # LIBTBX_SET_DISPATCHER_NAME dev.xia2.analysis
 
 from __future__ import division
@@ -62,11 +63,11 @@ def run(args):
   for x in sorted(set(merging_centric.redundancies().data())):
     multiplicities_centric[x] = merging_centric.redundancies().data().count(x)
 
-  headers = ['d_max', 'd_min', 'N(obs)', 'N(unique)', 'Multiplicity', 'Completeness',
+  headers = [u'Resolution (Å)', 'N(obs)', 'N(unique)', 'Multiplicity', 'Completeness',
              'Mean(I)', 'Mean(I/sigma)', 'Rmerge', 'Rmeas', 'Rpim', 'CC1/2', 'CCano']
   rows = []
   for bin_stats in merging_stats.bins:
-    row = ['%.2f' %bin_stats.d_max, '%.2f' %bin_stats.d_min,
+    row = ['%.2f - %.2f' %(bin_stats.d_max, bin_stats.d_min),
            bin_stats.n_obs, bin_stats.n_uniq, '%.2f' %bin_stats.mean_redundancy,
            '%.2f' %(100*bin_stats.completeness), '%.1f' %bin_stats.i_mean,
            '%.1f' %bin_stats.i_over_sigma_mean, '%.3f' %bin_stats.r_merge,
@@ -76,6 +77,37 @@ def run(args):
 
   from xia2.lib.tabulate import tabulate
   merging_stats_table_html = tabulate(rows, headers, tablefmt='html')
+
+  unit_cell_params = intensities.unit_cell().parameters()
+
+  headers = ['Overall statistics', '']
+  rows = [
+    [u'Resolution (Å)', '%.2f - %.2f' %(merging_stats.overall.d_max, merging_stats.overall.d_min)],
+    ['Observations', '%i' %(merging_stats.overall.n_obs)],
+    ['Unique reflections', '%i' %(merging_stats.overall.n_uniq)],
+    ['Multiplicity', '%.1f' %(merging_stats.overall.mean_redundancy)],
+    ['Completeness', '%.2f%%' %(merging_stats.overall.completeness * 100)],
+    ['Mean intensity', '%.1f' %(merging_stats.overall.i_mean)],
+    ['Mean I/sigma(I)', '%.1f' %(merging_stats.overall.i_over_sigma_mean)],
+    ['Rmerge', '%.3f' %(merging_stats.overall.r_merge)],
+    ['Rmeas', '%.3f' %(merging_stats.overall.r_meas)],
+    ['Rpim', '%.3f' %(merging_stats.overall.r_pim)],
+    ['CC1/2', '%.3f' %merging_stats.overall.cc_one_half],
+  ]
+  overall_stats_table_html = tabulate(rows, headers, tablefmt='html')
+
+  headers = ['Crystal symmetry', '']
+  rows = [
+    [u'Unit cell: a (Å)', '%.3f' %unit_cell_params[0]],
+    [u'b (Å)', '%.3f' %unit_cell_params[1]],
+    [u'c (Å)', '%.3f' %unit_cell_params[2]],
+    [u'α (°)', '%.3f' %unit_cell_params[3]],
+    [u'β (°)', '%.3f' %unit_cell_params[4]],
+    [u'γ (°)', '%.3f' %unit_cell_params[5]],
+    ['Space group', intensities.space_group_info().symbol_and_number()],
+  ]
+
+  symmetry_table_html = tabulate(rows, headers, tablefmt='html')
 
   if params.anomalous:
     intensities = intensities.as_anomalous_array()
@@ -386,7 +418,7 @@ Plotly.newPlot(
 table {
 color: #333;
 font-family: Helvetica, Arial, sans-serif;
-width: 640px;
+/*width: 640px;*/
 border-collapse:
 collapse; border-spacing: 0;
 }
@@ -406,7 +438,7 @@ font-weight: bold;
 
 td {
 background: #FAFAFA;
-text-align: center;
+/*text-align: center;*/
 }
 
 /* Cells in even rows (2,4,6...) are one color */
@@ -437,6 +469,10 @@ tr:nth-child(odd) td { background: #FEFEFE; }
 
 <div id="merging_stats">
 <h2>Merging statistics</h2>
+%s
+<br>
+%s
+<h3>Merging statistics in resolution shells</h3>
 %s
 </div>
 
@@ -473,13 +509,13 @@ tr:nth-child(odd) td { background: #FEFEFE; }
   </script>
 </body>
 
-""" %(merging_stats_table_html, javascript)
+""" %(symmetry_table_html, overall_stats_table_html, merging_stats_table_html, javascript)
 
   with open('xia2-report.json', 'wb') as f:
     print >> f, json.dumps(json_data, indent=2)
 
   with open('xia2-report.html', 'wb') as f:
-    print >> f, html
+    print >> f, html.encode('ascii', 'xmlcharrefreplace')
 
   return
 
