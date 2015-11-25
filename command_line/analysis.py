@@ -51,6 +51,17 @@ def run(args):
   #merging_stats.show()
   #merging_stats.show_estimated_cutoffs()
 
+  merging_acentric = intensities.select_acentric().merge_equivalents()
+  merging_centric = intensities.select_centric().merge_equivalents()
+
+  multiplicities_acentric = {}
+  multiplicities_centric = {}
+
+  for x in sorted(set(merging_acentric.redundancies().data())):
+    multiplicities_acentric[x] = merging_acentric.redundancies().data().count(x)
+  for x in sorted(set(merging_centric.redundancies().data())):
+    multiplicities_centric[x] = merging_centric.redundancies().data().count(x)
+
   headers = ['d_max', 'd_min', 'N(obs)', 'N(unique)', 'Multiplicity', 'Completeness',
              'Mean(I)', 'Mean(I/sigma)', 'Rmerge', 'Rmeas', 'Rpim', 'CC1/2', 'CCano']
   rows = []
@@ -113,10 +124,17 @@ def run(args):
     'multiplicities': {
       'data': [
         {
-          'x': merging_stats.overall.redundancies.keys(),
-          'y': merging_stats.overall.redundancies.values(),
+          'x': multiplicities_acentric.keys(),
+          'y': multiplicities_acentric.values(),
           'type': 'bar',
-          'name': 'Multiplicities',
+          'name': 'Acentric',
+          'opacity': 0.75,
+        },
+        {
+          'x': multiplicities_centric.keys(),
+          'y': multiplicities_centric.values(),
+          'type': 'bar',
+          'name': 'Centric',
           'opacity': 0.75,
         },
       ],
@@ -128,6 +146,7 @@ def run(args):
           #'rangemode': 'tozero'
         },
         'bargap': 0,
+        'barmode': 'overlay',
       },
     },
 
