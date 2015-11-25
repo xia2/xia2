@@ -324,6 +324,22 @@ def run(args):
 
   import json
   javascript = """
+
+var elem = document.querySelector('.grid');
+var msnry = new Masonry( elem, {
+  // options
+  itemSelector: '.grid-item',
+  columnWidth: 400,
+  gutter: 20 // sets horizontal space between columns
+});
+
+// element argument can be a selector string
+//   for an individual element
+var msnry = new Masonry( '.grid', {
+  // options
+});
+
+
 var graphs = %s
 
 Plotly.newPlot(
@@ -358,24 +374,59 @@ Plotly.newPlot(
 
   html = """
 <head>
-  <!-- Plotly.js -->
-   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-   <script type='text/javascript' src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML%%2CSafe.js&ver=4.1'></script>
+
+<!-- Plotly.js -->
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/masonry/3.3.2/masonry.pkgd.min.js"></script>
+
+<style type="text/css">
+
+.grid {
+  max-width: 1200px;
+}
+
+.grid-item {
+  float: left;
+  width: 600px;
+  height: 400px;
+  margin-bottom: 20px;
+}
+.grid-item--width2 { width: 1200px; }
+</style>
+
 </head>
 
 <body>
-  <div id="merging_stats">%s</div>
-  <div id="scale_rmerge" style="width: 600px; height: 400px;"></div>
-  <div id="multiplicities" style="width: 600px; height: 400px;"></div>
-  <div id="cc_one_half" style="width: 600px; height: 400px;"></div>
-  <div id="mean_i_over_sig_i" style="width: 600px; height: 400px;"></div>
-  <div id="second_moments" style="width: 600px; height: 400px;"></div>
-  <div id="cumulative_intensity" style="width: 600px; height: 400px;"></div>
-  <div id="wilson_plot" style="width: 600px; height: 400px;"></div>
-  <div id="completeness" style="width: 600px; height: 400px;"></div>
-  <div id="rcp" style="width: 600px; height: 400px;"></div>
-  <div id="scp" style="width: 600px; height: 400px;"></div>
-  <div id="rd" style="width: 600px; height: 400px;"></div>
+<div id="merging_stats">%s</div>
+
+<br>
+
+<div class="grid">
+  <div class="grid-item" id="multiplicities"></div>
+  <div class="grid-item" id="cumulative_intensity"></div>
+</div>
+
+<div class="grid">
+  <div class="grid-item" style="width:100%%; height: auto">
+    <h2>Analysis by resolution</h2>
+  </div>
+  <div class="grid-item" id="cc_one_half"></div>
+  <div class="grid-item" id="mean_i_over_sig_i"></div>
+  <div class="grid-item" id="second_moments"></div>
+  <div class="grid-item" id="wilson_plot"></div>
+</div>
+
+<div class="grid">
+  <div class="grid-item" style="width:100%%; height: auto">
+    <h2>Analysis by batch</h2>
+  </div>
+  <div class="grid-item" id="scale_rmerge"></div>
+  <div class="grid-item" id="completeness"></div>
+  <div class="grid-item" id="rcp"></div>
+  <div class="grid-item" id="scp"></div>
+  <div class="grid-item" id="rd"></div>
+</div>
+
   <script>
   %s
   </script>
