@@ -167,7 +167,7 @@ def run(args):
         },
       ],
       'layout': {
-        'title': 'Scale and Rmerge vs Batch',
+        'title': 'Scale and Rmerge vs batch',
         'xaxis': {'title': 'Batch'},
         'yaxis': {
           'title': 'Scale',
@@ -381,6 +381,41 @@ Plotly.newPlot(
 
 <style type="text/css">
 
+table {
+color: #333;
+font-family: Helvetica, Arial, sans-serif;
+width: 640px;
+border-collapse:
+collapse; border-spacing: 0;
+}
+
+td, th {
+padding-right: 10px;
+padding-left: 10px;
+border: 1px solid transparent; /* No more visible border */
+height: 30px;
+transition: all 0.3s;  /* Simple transition for hover effect */
+}
+
+th {
+background: #DFDFDF;  /* Darken header a bit */
+font-weight: bold;
+}
+
+td {
+background: #FAFAFA;
+text-align: center;
+}
+
+/* Cells in even rows (2,4,6...) are one color */
+tr:nth-child(even) td { background: #F1F1F1; }
+
+/* Cells in odd rows (1,3,5...) are another (excludes header cells)  */
+tr:nth-child(odd) td { background: #FEFEFE; }
+
+/*tr td:hover { background: #666; color: #FFF; } /* Hover cell effect! */
+
+
 .grid {
   max-width: 1200px;
 }
@@ -397,7 +432,11 @@ Plotly.newPlot(
 </head>
 
 <body>
-<div id="merging_stats">%s</div>
+
+<div id="merging_stats">
+<h2>Merging statistics</h2>
+%s
+</div>
 
 <br>
 
