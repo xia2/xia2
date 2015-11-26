@@ -372,6 +372,8 @@ def run(args):
   json_data.update(pychef_dict)
 
   import json
+  json_str = json.dumps(json_data, indent=2)
+
   javascript = """
 
 var graphs = %s
@@ -404,7 +406,7 @@ Plotly.newPlot(
   'rd', graphs.rd_vs_batch_difference.data,
   graphs.rd_vs_batch_difference.layout);
 
-""" %(json.dumps(json_data, indent=2))
+""" %(json_str)
 
   html = """
 <head>
@@ -554,7 +556,7 @@ body {
 """ %(symmetry_table_html, overall_stats_table_html, merging_stats_table_html, javascript)
 
   with open('xia2-report.json', 'wb') as f:
-    print >> f, json.dumps(json_data, indent=2)
+    print >> f, json_str
 
   with open('xia2-report.html', 'wb') as f:
     print >> f, html.encode('ascii', 'xmlcharrefreplace')
