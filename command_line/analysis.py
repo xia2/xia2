@@ -4,6 +4,7 @@
 from __future__ import division
 from cctbx.array_family import flex
 import math
+import os
 
 
 from xia2.Modules.Analysis import *
@@ -96,18 +97,29 @@ def run(args):
   ]
   overall_stats_table_html = tabulate(rows, headers, tablefmt='html')
 
-  headers = ['Crystal symmetry', '']
-  rows = [
-    [u'Unit cell: a (Å)', '%.3f' %unit_cell_params[0]],
-    [u'b (Å)', '%.3f' %unit_cell_params[1]],
-    [u'c (Å)', '%.3f' %unit_cell_params[2]],
-    [u'α (°)', '%.3f' %unit_cell_params[3]],
-    [u'β (°)', '%.3f' %unit_cell_params[4]],
-    [u'γ (°)', '%.3f' %unit_cell_params[5]],
-    ['Space group', intensities.space_group_info().symbol_and_number()],
-  ]
+  #headers = ['Crystal symmetry', '']
+  #rows = [
+    #[u'Unit cell: a (Å)', '%.3f' %unit_cell_params[0]],
+    #[u'b (Å)', '%.3f' %unit_cell_params[1]],
+    #[u'c (Å)', '%.3f' %unit_cell_params[2]],
+    #[u'α (°)', '%.3f' %unit_cell_params[3]],
+    #[u'β (°)', '%.3f' %unit_cell_params[4]],
+    #[u'γ (°)', '%.3f' %unit_cell_params[5]],
+    #['Space group', intensities.space_group_info().symbol_and_number()],
+  #]
 
-  symmetry_table_html = tabulate(rows, headers, tablefmt='html')
+  #symmetry_table_html = tabulate(rows, headers, tablefmt='html')
+  symmetry_table_html = """
+  <p>
+    <b>Filename:</b> %s
+    <br>
+    <b>Unit cell:</b> %s
+    <br>
+    <b>Space group:</b> %s
+  </p>
+""" %(os.path.abspath(reader.file_name()),
+      intensities.space_group_info().symbol_and_number(),
+      str(intensities.unit_cell()))
 
   if params.anomalous:
     intensities = intensities.as_anomalous_array()
@@ -359,21 +371,6 @@ def run(args):
   import json
   javascript = """
 
-var elem = document.querySelector('.grid');
-var msnry = new Masonry( elem, {
-  // options
-  itemSelector: '.grid-item',
-  columnWidth: 400,
-  gutter: 20 // sets horizontal space between columns
-});
-
-// element argument can be a selector string
-//   for an individual element
-var msnry = new Masonry( '.grid', {
-  // options
-});
-
-
 var graphs = %s
 
 Plotly.newPlot(
@@ -411,9 +408,21 @@ Plotly.newPlot(
 
 <!-- Plotly.js -->
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/masonry/3.3.2/masonry.pkgd.min.js"></script>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 
 <style type="text/css">
+
+body {
+  /*font-family: Helmet, Freesans, Helvetica, Arial, sans-serif;*/
+  margin: 8px;
+  min-width: 240px;
+  margin-left: 5%%;
+  margin-right: 5%%;
+}
 
 table {
 color: #333;
@@ -461,52 +470,118 @@ tr:nth-child(odd) td { background: #FEFEFE; }
   margin-bottom: 20px;
 }
 .grid-item--width2 { width: 1200px; }
+
+.plot {
+  float: left;
+  width: 600px;
+  height: 400px;
+  margin-bottom: 20px;
+}
+
 </style>
 
 </head>
 
 <body>
 
-<div id="merging_stats">
-<h2>Merging statistics</h2>
-%s
-<br>
-%s
-<h3>Merging statistics in resolution shells</h3>
-%s
-</div>
 
-<br>
-
-<div class="grid">
-  <div class="grid-item" id="multiplicities"></div>
-  <div class="grid-item" id="cumulative_intensity"></div>
-</div>
-
-<div class="grid">
-  <div class="grid-item" style="width:100%%; height: auto">
-    <h2>Analysis by resolution</h2>
-  </div>
-  <div class="grid-item" id="cc_one_half"></div>
-  <div class="grid-item" id="mean_i_over_sig_i"></div>
-  <div class="grid-item" id="second_moments"></div>
-  <div class="grid-item" id="wilson_plot"></div>
-</div>
-
-<div class="grid">
-  <div class="grid-item" style="width:100%%; height: auto">
-    <h2>Analysis by batch</h2>
-  </div>
-  <div class="grid-item" id="scale_rmerge"></div>
-  <div class="grid-item" id="completeness"></div>
-  <div class="grid-item" id="rcp"></div>
-  <div class="grid-item" id="scp"></div>
-  <div class="grid-item" id="rd"></div>
-</div>
-
-  <script>
+<div >
+  <h2>Merging statistics</h2>
   %s
-  </script>
+  <div class="panel-group">
+    <div class="panel panel-default">
+      <div class="panel-heading" data-toggle="collapse" href="#collapse1">
+        <h4 class="panel-title">
+          <a>Overall</a>
+        </h4>
+      </div>
+      <div id="collapse1" class="panel-collapse collapse">
+        <div class="panel-body">%s</div>
+        <!-- <div class="panel-footer"></div> -->
+      </div>
+    </div>
+    <div class="panel panel-default">
+      <div class="panel-heading" data-toggle="collapse" href="#collapse2">
+        <h4 class="panel-title">
+          <a>Resolution shells</a>
+        </h4>
+      </div>
+      <div id="collapse2" class="panel-collapse collapse">
+        <div class="panel-body">%s</div>
+        <!-- <div class="panel-footer"></div> -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<div >
+  <h2>Analysis plots</h2>
+  <div class="panel-group">
+    <div class="panel panel-default">
+      <div class="panel-heading" data-toggle="collapse" href="#collapse3">
+        <h4 class="panel-title">
+          <a>Analysis by resolution</a>
+        </h4>
+      </div>
+      <div id="collapse3" class="panel-collapse collapse">
+        <div class="panel-body">
+
+          <div class="container-fluid">
+            <div class="col-xs-6 col-sm-6 col-md-4 plot" id="cc_one_half"></div>
+            <div class="col-xs-6 col-sm-6 col-md-4 plot" id="mean_i_over_sig_i"></div>
+            <div class="col-xs-6 col-sm-6 col-md-4 plot" id="second_moments"></div>
+            <div class="col-xs-6 col-sm-6 col-md-4 plot" id="wilson_plot"></div>
+          </div>
+
+        </div>
+        <!-- <div class="panel-footer"></div> -->
+      </div>
+    </div>
+    <div class="panel panel-default">
+      <div class="panel-heading" data-toggle="collapse" href="#collapse4">
+        <h4 class="panel-title">
+          <a>Analysis by batch</a>
+        </h4>
+      </div>
+      <div id="collapse4" class="panel-collapse collapse">
+        <div class="panel-body">
+
+          <div class="container-fluid">
+            <div class="col-xs-6 col-sm-6 col-md-4 plot" id="scale_rmerge"></div>
+            <div class="col-xs-6 col-sm-6 col-md-4 plot" id="completeness"></div>
+            <div class="col-xs-6 col-sm-6 col-md-4 plot" id="rcp"></div>
+            <div class="col-xs-6 col-sm-6 col-md-4 plot" id="scp"></div>
+            <div class="col-xs-6 col-sm-6 col-md-4 plot" id="rd"></div>
+          </div>
+
+        </div>
+        <!-- <div class="panel-footer"></div> -->
+      </div>
+    </div>
+    <div class="panel panel-default">
+      <div class="panel-heading" data-toggle="collapse" href="#collapse5">
+        <h4 class="panel-title">
+          <a>Miscellaneous</a>
+        </h4>
+      </div>
+      <div id="collapse5" class="panel-collapse collapse">
+        <div class="panel-body">
+
+          <div class="container-fluid">
+            <div class="col-xs-6 col-sm-6 col-md-4 plot" id="multiplicities"></div>
+            <div class="col-xs-6 col-sm-6 col-md-4 plot" id="cumulative_intensity"></div>
+          </div>
+
+        </div>
+        <!-- <div class="panel-footer"></div> -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+%s
+</script>
 </body>
 
 """ %(symmetry_table_html, overall_stats_table_html, merging_stats_table_html, javascript)
