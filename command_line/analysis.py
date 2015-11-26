@@ -248,8 +248,7 @@ def run(args):
         'xaxis': {'title': 'sin theta / lambda'},
         'yaxis': {
           'title': 'CC-half',
-          'rangemode': 'tozero',
-          'range': [0, 1]
+          'range': [min(cc_one_half_bins + cc_anom_bins + [0]), 1]
           },
         },
     },
