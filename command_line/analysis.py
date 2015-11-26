@@ -440,6 +440,9 @@ body {
 
 <body>
 
+<div class="page-header">
+  <h1>xia2 report</h1>
+</div>
 
 <div >
   <h2>Merging statistics</h2>
