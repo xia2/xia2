@@ -298,7 +298,7 @@ def help():
   sys.stdout.write('[space_group=C2] (for example)\n')
   sys.stdout.write('[reverse_phi=True]\n')
   sys.stdout.write(
-    '[beam_centre=x,y] (in mm, following the MOSFLM convention, applies to all sweeps)')
+    '[beam_centre=x,y] (in mm, following the MOSFLM convention, applies to all sweeps)\n')
   sys.stdout.write('[-freer_file free.mtz]\n')
   sys.stdout.write('[-reference_reflection_file free.mtz]\n')
   sys.stdout.write('[-quick]\n')
