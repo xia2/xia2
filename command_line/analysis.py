@@ -83,20 +83,26 @@ def run(args):
 
   unit_cell_params = intensities.unit_cell().parameters()
 
-  headers = ['Overall statistics', '']
+  headers = ['', 'Overall', 'Low resolution', 'High resolution']
+
+  stats = (merging_stats.overall, merging_stats.bins[0], merging_stats.bins[-1])
+
   rows = [
-    [u'Resolution (Å)', '%.2f - %.2f' %(merging_stats.overall.d_max, merging_stats.overall.d_min)],
-    ['Observations', '%i' %(merging_stats.overall.n_obs)],
-    ['Unique reflections', '%i' %(merging_stats.overall.n_uniq)],
-    ['Multiplicity', '%.1f' %(merging_stats.overall.mean_redundancy)],
-    ['Completeness', '%.2f%%' %(merging_stats.overall.completeness * 100)],
-    ['Mean intensity', '%.1f' %(merging_stats.overall.i_mean)],
-    ['Mean I/sigma(I)', '%.1f' %(merging_stats.overall.i_over_sigma_mean)],
-    ['Rmerge', '%.3f' %(merging_stats.overall.r_merge)],
-    ['Rmeas', '%.3f' %(merging_stats.overall.r_meas)],
-    ['Rpim', '%.3f' %(merging_stats.overall.r_pim)],
-    ['CC1/2', '%.3f' %merging_stats.overall.cc_one_half],
+    [u'Resolution (Å)'] + [
+      '%.2f - %.2f' %(s.d_max, s.d_min) for s in stats],
+    ['Observations'] + ['%i' %s.n_obs for s in stats],
+    ['Unique reflections'] + ['%i' %s.n_uniq for s in stats],
+    ['Multiplicity'] + ['%.1f' %s.mean_redundancy for s in stats],
+    ['Completeness'] + ['%.2f%%' %(s.completeness * 100) for s in stats],
+    #['Mean intensity'] + ['%.1f' %s.i_mean for s in stats],
+    ['Mean I/sigma(I)'] + ['%.1f' %s.i_over_sigma_mean for s in stats],
+    ['Rmerge'] + ['%.3f' %s.r_merge for s in stats],
+    ['Rmeas'] + ['%.3f' %s.r_meas for s in stats],
+    ['Rpim'] + ['%.3f' %s.r_pim for s in stats],
+    ['CC1/2'] + ['%.3f' %s.cc_one_half for s in stats],
   ]
+  rows = [[u'<strong>%s</strong>' %r[0]] + r[1:] for r in rows]
+
   overall_stats_table_html = tabulate(rows, headers, tablefmt='html')
   overall_stats_table_html = overall_stats_table_html.replace(
     '<table>', '<table class="table table-hover table-condensed">')
@@ -456,9 +462,9 @@ body {
           <a>Overall</a>
         </h4>
       </div>
-      <div id="collapse1" class="panel-collapse collapse">
+      <div id="collapse1" class="panel-collapse collapse in">
         <div class="panel-body">
-          <div class="table-responsive" style="width: 400px">
+          <div class="table-responsive" style="width: 800px">
             %s
           </div>
         </div>
