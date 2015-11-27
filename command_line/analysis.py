@@ -399,7 +399,7 @@ def run(args):
   json_data.update(pychef_dict)
 
   import json
-  json_str = json.dumps(json_data, indent=2)
+  json_str = json.dumps(json_data)
 
   javascript = """
 
