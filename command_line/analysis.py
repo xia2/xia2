@@ -367,6 +367,7 @@ def run(args):
         'title': 'Wilson intensity plot',
         'xaxis': {'title': 'sin theta / lambda'},
         'yaxis': {
+          'type': 'log',
           'title': 'Mean(I)',
           'rangemode': 'tozero',
         },
