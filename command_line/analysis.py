@@ -312,24 +312,44 @@ def run(args):
           'y': list(nz_test.ac_obs),
           'type': 'scatter',
           'name': 'Acentric observed',
+          'mode': 'lines',
+          'line': {
+            'color': 'rgb(31, 119, 180)',
+          },
         },
         {
           'x': list(nz_test.z),
           'y': list(nz_test.c_obs),
           'type': 'scatter',
           'name': 'Centric observed',
+          'mode': 'lines',
+          'line': {
+            'color': 'rgb(255, 127, 14)',
+          },
         },
         {
           'x': list(nz_test.z),
           'y': list(nz_test.ac_untwinned),
           'type': 'scatter',
-          'name': 'Acentric untwinned',
+          'name': 'Acentric theory',
+          'mode': 'lines',
+          'line': {
+            'color': 'rgb(31, 119, 180)',
+            'dash': 'dot',
+          },
+          'opacity': 0.8,
         },
         {
           'x': list(nz_test.z),
           'y': list(nz_test.c_untwinned),
           'type': 'scatter',
-          'name': 'Centric untwinned',
+          'name': 'Centric theory',
+          'mode': 'lines',
+          'line': {
+            'color': 'rgb(255, 127, 14)',
+            'dash': 'dot',
+          },
+          'opacity': 0.8,
         },
       ],
       'layout': {
