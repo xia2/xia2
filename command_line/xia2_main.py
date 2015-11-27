@@ -271,7 +271,7 @@ def xia2_main(stop_after=None):
   return
 
 def run():
-  if len(sys.argv) < 2 or '-help' or '--help' in sys.argv:
+  if len(sys.argv) < 2 or '-help' in sys.argv or '--help' in sys.argv:
     help()
     sys.exit()
 
