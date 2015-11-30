@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# LIBTBX_SET_DISPATCHER_NAME dev.xia2.analysis
 
 from __future__ import division
 from cctbx.array_family import flex
