@@ -157,9 +157,10 @@ def run(args):
   acentric = intensities.select_acentric()
   centric = intensities.select_centric()
   acentric.setup_binner(n_bins=n_bins)
-  centric.setup_binner(n_bins=n_bins)
   second_moments_acentric = acentric.second_moment_of_intensities(use_binning=True)
-  second_moments_centric = centric.second_moment_of_intensities(use_binning=True)
+  if centric.size():
+    centric.setup_binner(n_bins=n_bins)
+    second_moments_centric = centric.second_moment_of_intensities(use_binning=True)
 
   d_star_sq_bins = [
     (1/bin_stats.d_min**2) for bin_stats in merging_stats.bins]
@@ -288,12 +289,12 @@ def run(args):
           'type': 'scatter',
           'name': '<I^2> acentric',
         },
-        {
-        'x': list(second_moments_centric.binner.bin_centers(2)), # d_star_sq
-        'y': second_moments_centric.data[1:-1],
-        'type': 'scatter',
-        'name': '<I^2> centric',
-        },
+        ({
+          'x': list(second_moments_centric.binner.bin_centers(2)), # d_star_sq
+          'y': second_moments_centric.data[1:-1],
+          'type': 'scatter',
+          'name': '<I^2> centric',
+          } if centric.size() else {})
       ],
       'layout': {
         'title': 'Second moment of I',
