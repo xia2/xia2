@@ -934,21 +934,22 @@ class CommonScaler(Scaler):
     return
 
   def _estimate_resolution_limit(self, hklin, batch_range=None):
+    params = PhilIndex.params.xia2.settings.resolution
     m = Merger()
     m.set_working_directory(self.get_working_directory())
     from lib.bits import auto_logfiler
     auto_logfiler(m)
     m.set_hklin(hklin)
-    if Flags.get_rmerge():
-      m.set_limit_rmerge(Flags.get_rmerge())
-    if Flags.get_completeness():
-      m.set_limit_completeness(Flags.get_completeness())
-    if Flags.get_cc_half():
-      m.set_limit_cc_half(Flags.get_cc_half())
-    if Flags.get_isigma():
-      m.set_limit_isigma(Flags.get_isigma())
-    if Flags.get_misigma():
-      m.set_limit_misigma(Flags.get_misigma())
+    if params.rmerge:
+      m.set_limit_rmerge(params.rmerge)
+    if params.completeness:
+      m.set_limit_completeness(params.completeness)
+    if params.cc_half:
+      m.set_limit_cc_half(params.cc_half)
+    if params.isigma:
+      m.set_limit_isigma(params.isigma)
+    if params.misigma:
+      m.set_limit_misigma(params.misigma)
     if Flags.get_small_molecule():
       m.set_nbins(20)
     if batch_range is not None:
@@ -956,27 +957,27 @@ class CommonScaler(Scaler):
       m.set_batch_range(start, end)
     m.run()
 
-    if Flags.get_completeness():
+    if params.completeness:
       r_comp = m.get_resolution_completeness()
     else:
       r_comp = 0.0
 
-    if Flags.get_cc_half():
+    if params.cc_half:
       r_cc_half = m.get_resolution_cc_half()
     else:
       r_cc_half = 0.0
 
-    if Flags.get_rmerge():
+    if params.rmerge:
       r_rm = m.get_resolution_rmerge()
     else:
       r_rm = 0.0
 
-    if Flags.get_isigma():
+    if params.isigma:
       r_uis = m.get_resolution_isigma()
     else:
       r_uis = 0.0
 
-    if Flags.get_misigma():
+    if params.misigma:
       r_mis = m.get_resolution_misigma()
     else:
       r_mis = 0.0

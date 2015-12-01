@@ -248,12 +248,29 @@ xia2.settings {
   space_group = None
     .type = space_group
     .help = "Provide a target space group to the indexing program"
-  d_min = None
-    .type = float(value_min=0.0)
-    .help = "High resolution cutoff."
-  d_max = None
-    .type = float(value_min=0.0)
-    .help = "Low resolution cutoff."
+  resolution {
+    d_max = None
+      .type = float(value_min=0.0)
+      .help = "Low resolution cutoff."
+    d_min = None
+      .type = float(value_min=0.0)
+      .help = "High resolution cutoff."
+    rmerge = None
+      .type = float(value_min=0)
+      .help = "Minimum value of Rmerge in the outer resolution shell"
+    completeness = None
+      .type = float(value_min=0)
+      .help = "Minimum completeness in the outer resolution shell"
+    cc_half = None
+      .type = float(value_min=0)
+      .help = "Minimum value of CC1/2 in the outer resolution shell"
+    isigma = 1.0
+      .type = float(value_min=0)
+      .help = "Minimum value of the unmerged <I/sigI> in the outer resolution shell"
+    misigma = 2.0
+      .type = float(value_min=0)
+      .help = "Minimum value of the merged <I/sigI> in the outer resolution shell"
+  }
   optimize_scaling = False
     .type = bool
     .help = "Search for best scaling model"

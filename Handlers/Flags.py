@@ -556,41 +556,6 @@ class _Flags(object):
   def get_rejection_threshold(self):
     return self._rejection_threshold
 
-  def set_isigma(self, isigma):
-    self._isigma = isigma
-    return
-
-  def get_isigma(self):
-    return self._isigma
-
-  def set_misigma(self, misigma):
-    self._misigma = misigma
-    return
-
-  def get_misigma(self):
-    return self._misigma
-
-  def set_completeness(self, completeness):
-    self._completeness = completeness
-    return
-
-  def get_completeness(self):
-    return self._completeness
-
-  def set_rmerge(self, rmerge):
-    self._rmerge = rmerge
-    return
-
-  def get_rmerge(self):
-    return self._rmerge
-
-  def set_cc_half(self, cc_half):
-    self._cc_half = cc_half
-    return
-
-  def get_cc_half(self):
-    return self._cc_half
-
   def set_microcrystal(self, microcrystal = True):
     self._microcrystal = microcrystal
     return

@@ -428,10 +428,10 @@ class _CommandLine(object):
     if params.xia2.settings.scaler is not None:
       add_preference("scaler", params.xia2.settings.scaler)
 
-    if params.xia2.settings.d_min is not None:
-      Flags.set_resolution_high(params.xia2.settings.d_min)
-    if params.xia2.settings.d_max is not None:
-      Flags.set_resolution_low(params.xia2.settings.d_max)
+    if params.xia2.settings.resolution.d_min is not None:
+      Flags.set_resolution_high(params.xia2.settings.resolution.d_min)
+    if params.xia2.settings.resolution.d_max is not None:
+      Flags.set_resolution_low(params.xia2.settings.resolution.d_max)
 
     Flags.set_reversephi(params.xia2.settings.input.reverse_phi)
 
@@ -987,9 +987,9 @@ class _CommandLine(object):
     self._understood.append(index)
     self._understood.append(index + 1)
 
-    PhilIndex.update("xia2.settings.d_min=%s" %dmin)
+    PhilIndex.update("xia2.settings.resolution.d_min=%s" %dmin)
     if dmax is not None:
-      PhilIndex.update("xia2.settings.d_max=%s" %dmax)
+      PhilIndex.update("xia2.settings.resolution.d_max=%s" %dmax)
       # XXX Warning added 2014-11-10
       Chatter.write(
         "Warning: -resolution option deprecated: please use d_min=%s and d_max=%s instead" %(
@@ -1138,9 +1138,11 @@ class _CommandLine(object):
     self._understood.append(index)
     self._understood.append(index + 1)
 
-    Flags.set_isigma(float(self._argv[index + 1]))
-    Debug.write('I/sigma limit set to %f' % \
-                Flags.get_isigma())
+    PhilIndex.update(
+      "xia2.settings.resolution.isigma=%s" %self._argv[index + 1])
+    # XXX Warning added 2015-12-01
+    Chatter.write(
+      "Warning: -isigma option deprecated: please use isigma=%s instead" %self._argv[index + 1])
 
     return
 
@@ -1159,9 +1161,11 @@ class _CommandLine(object):
     self._understood.append(index)
     self._understood.append(index + 1)
 
-    Flags.set_misigma(float(self._argv[index + 1]))
-    Debug.write('Merged I/sigma limit set to %f' % \
-                Flags.get_misigma())
+    PhilIndex.update(
+      "xia2.settings.resolution.misigma=%s" %self._argv[index + 1])
+    # XXX Warning added 2015-12-01
+    Chatter.write(
+      "Warning: -misigma option deprecated: please use misigma=%s instead" %self._argv[index + 1])
 
     return
 
@@ -1180,9 +1184,11 @@ class _CommandLine(object):
     self._understood.append(index)
     self._understood.append(index + 1)
 
-    Flags.set_completeness(float(self._argv[index + 1]))
-    Debug.write('Completeness limit set to %f' % \
-                Flags.get_completeness())
+    PhilIndex.update(
+      "xia2.settings.resolution.completeness=%s" %self._argv[index + 1])
+    # XXX Warning added 2015-12-01
+    Chatter.write(
+      "Warning: -completeness option deprecated: please use completeness=%s instead" %self._argv[index + 1])
 
     return
 
@@ -1201,9 +1207,11 @@ class _CommandLine(object):
     self._understood.append(index)
     self._understood.append(index + 1)
 
-    Flags.set_rmerge(float(self._argv[index + 1]))
-    Debug.write('Rmerge limit set to %f' % \
-                Flags.get_rmerge())
+    PhilIndex.update(
+      "xia2.settings.resolution.rmerge=%s" %self._argv[index + 1])
+    # XXX Warning added 2015-12-01
+    Chatter.write(
+      "Warning: -rmerge option deprecated: please use rmerge=%s instead" %self._argv[index + 1])
 
     return
 
@@ -1222,9 +1230,11 @@ class _CommandLine(object):
     self._understood.append(index)
     self._understood.append(index + 1)
 
-    Flags.set_cc_half(float(self._argv[index + 1]))
-    Debug.write('CC half limit set to %f' % \
-                Flags.get_cc_half())
+    PhilIndex.update(
+      "xia2.settings.resolution.cc_half=%s" %self._argv[index + 1])
+    # XXX Warning added 2015-12-01
+    Chatter.write(
+      "Warning: -cc_half option deprecated: please use cc_half=%s instead" %self._argv[index + 1])
 
     return
 
