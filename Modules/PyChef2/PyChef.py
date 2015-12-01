@@ -814,17 +814,7 @@ def run(args):
     intensities = intensities.as_anomalous_array()
     batches = batches.as_anomalous_array()
 
-  if len(params.batch):
-    dose = flex.double(batches.size(), -1)
-    batch_data = batches.data()
-    for batch in params.batch:
-      start = batch.dose_start
-      step = batch.dose_step
-      for i in range(batch.range[0], batch.range[1]+1):
-        # inclusive range
-        dose.set_selected(batch_data == i, start + step * (i-batch.range[0]))
-  else:
-    dose = batches.data()
+  dose = batches_to_dose(batches.data(), params.batch)
 
   sel = dose > -1
   intensities = intensities.select(sel)
@@ -848,6 +838,21 @@ def run(args):
   stats.print_rcp_vs_dose()
   stats.print_scp_vs_dose()
   stats.print_rd_vs_dose()
+
+def batches_to_dose(batches, batch_params):
+  if len(batch_params):
+    dose = flex.double(batches.size(), -1)
+    for batch in batch_params:
+      start = batch.dose_start
+      step = batch.dose_step
+      for i in range(batch.range[0], batch.range[1]+1):
+        # inclusive range
+        dose.set_selected(batches == i, start + step * (i-batch.range[0]))
+    dose = dose.iround()
+  else:
+    dose = batches
+  return dose
+
 
 
 if __name__ == '__main__':

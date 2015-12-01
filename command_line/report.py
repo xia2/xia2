@@ -171,7 +171,8 @@ def run(args):
     bin_stats.cc_anom for bin_stats in merging_stats.bins]
 
   from xia2.Modules.PyChef2 import PyChef
-  pychef_stats = PyChef.Statistics(intensities, batches.data())
+  dose = PyChef.batches_to_dose(batches.data(), params.batch)
+  pychef_stats = PyChef.Statistics(intensities, dose)
 
   pychef_dict = pychef_stats.to_dict()
 
