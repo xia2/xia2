@@ -592,25 +592,16 @@ class resolutionizer(object):
 
   def __init__(self, args):
 
-    hklin = args[0]
-
     working_phil = parse(phil_defaults)
-    phil_args = []
+    interp = working_phil.command_line_argument_interpreter(
+      home_scope='resolutionizer')
+    params, unhandled = interp.process_and_fetch(
+      args, custom_processor='collect_remaining')
 
-    for arg in args[1:]:
-      if os.path.exists(arg):
-        working_phil = working_phil.fetch(
-            source = parse(open(arg).read()))
-      else:
-        phil_args.append(arg)
+    assert len(unhandled)
+    hklin = unhandled[0]
 
-    for phil_arg in phil_args:
-      interp = working_phil.command_line_argument_interpreter(
-          home_scope = 'resolutionizer')
-      more_phil = interp.process(phil_arg)
-      working_phil = working_phil.fetch(source = more_phil)
-
-    self._params = working_phil.extract().resolutionizer
+    self._params = params.extract().resolutionizer
 
     self._mf = mtz_file(hklin)
     self._unmerged_reflections = { }
@@ -928,19 +919,13 @@ class resolutionizer(object):
     uc = self._mf.get_unit_cell()
     sg = self._mf.get_space_group()
 
-    dmin = min(resolution_range)
-    dmax = max(resolution_range)
+    d_min = min(resolution_range)
+    d_max = max(resolution_range)
 
-    cs = crystal_symmetry(unit_cell = uc, space_group = sg)
-    hkl_calc = [hkl for hkl in build_set(
-        cs, False, d_min = dmin, d_max = dmax).indices()]
-
-    # remove systematically absent reflections
-
-    hkl_list = [hkl for hkl in
-                itertools.ifilterfalse(sg.is_sys_absent, hkl_list)]
-
-    return float(len(hkl_list)) / float(len(hkl_calc))
+    cs = crystal_symmetry(unit_cell=uc, space_group = sg)
+    from cctbx import miller
+    ms = miller.set(cs, flex.miller_index(hkl_list), anomalous_flag=False).remove_systematic_absences()
+    return ms.completeness(d_max=d_max)
 
   def calculate_cc_half(self, hkl_list = None):
     '''Calculate cc_half for this set of reflections.'''
@@ -1392,7 +1377,7 @@ class resolutionizer(object):
     try:
       r_comp = 1.0 / math.sqrt(
           interpolate_value(s_s, comp_f, rlimit))
-    except:
+    except Exception:
       r_comp = 1.0 / math.sqrt(max(s_s))
 
     return r_comp
