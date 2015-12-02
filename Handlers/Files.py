@@ -96,6 +96,9 @@ class _FileHandler(object):
     self._xml_files = { }
     self._xml_file_keys = []
 
+    self._html_files = { }
+    self._html_file_keys = []
+
     # for putting the reflection files somewhere nice...
     self._data_files = []
 
@@ -188,6 +191,11 @@ class _FileHandler(object):
       shutil.copyfile(self._xml_files[f], filename)
       out.write('Copied xml file %s to %s\n' %  (self._xml_files[f], filename))
 
+      for f in self._html_file_keys:
+        filename = os.path.join(log_directory, '%s.html' % f.replace(' ', '_'))
+        shutil.copyfile(self._html_files[f], filename)
+        out.write('Copied html file %s to %s\n' %  (self._html_files[f], filename))
+
     # copy the data files
     data_directory = Environment.generate_directory('DataFiles')
     for f in self._data_files:
@@ -229,6 +237,13 @@ class _FileHandler(object):
     self._xml_files[tag] = filename
     if not tag in self._xml_file_keys:
       self._xml_file_keys.append(tag)
+    return
+
+  def record_html_file(self, tag, filename):
+    '''Record an html file.'''
+    self._html_files[tag] = filename
+    if not tag in self._html_file_keys:
+      self._html_file_keys.append(tag)
     return
 
   def record_data_file(self, filename):

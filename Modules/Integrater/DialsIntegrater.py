@@ -25,6 +25,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from Wrappers.Dials.Refine import Refine as _Refine
 from Wrappers.Dials.Integrate import Integrate as _Integrate
+from Wrappers.Dials.Report import Report as _Report
 from Wrappers.Dials.ExportMtz import ExportMtz as _ExportMtz
 
 # interfaces that this must implement to be an integrater
@@ -119,6 +120,14 @@ class DialsIntegrater(Integrater):
     auto_logfiler(integrate, 'INTEGRATE')
 
     return integrate
+
+  def Report(self):
+    report = _Report()
+    report.set_working_directory(self.get_working_directory())
+    report.set_experiments_filename(self._intgr_experiments_filename)
+    report.set_reflections_filename(self._intgr_integrated_pickle)
+    auto_logfiler(report, 'REPORT')
+    return report
 
   def ExportMtz(self):
     params = PhilIndex.params.dials.integrate
@@ -345,6 +354,17 @@ class DialsIntegrater(Integrater):
 
     self._intgr_per_image_statistics = integrate.get_per_image_statistics()
     Chatter.write(self.show_per_image_statistics())
+
+    report = self.Report()
+    html_filename = os.path.join(
+      self.get_working_directory(),
+      '%i_dials.integrate.report.html' %report.get_xpid())
+    report.set_html_filename(html_filename)
+    report.run()
+    assert os.path.exists(html_filename)
+    FileHandler.record_html_file('%s %s %s %s INTEGRATE' % \
+                                 (pname, xname, dname, sweep),
+                                 html_filename)
 
     import dials
     from dxtbx.serialize import load
