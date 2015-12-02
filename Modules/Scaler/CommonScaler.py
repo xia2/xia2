@@ -711,6 +711,9 @@ class CommonScaler(Scaler):
       htmlout = '%s_%s_%s_report.html' %(
           self._scalr_pname, self._scalr_xname, wavelength)
       report.set_html_filename(htmlout)
+      report.set_chef_min_completeness(0.95) # sensible?
+      from lib.bits import auto_logfiler
+      auto_logfiler(report)
       try:
         report.run()
       except Exception, e:

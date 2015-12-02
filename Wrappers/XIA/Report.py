@@ -24,6 +24,7 @@ def Report(DriverType = None):
       self.set_executable('xia2.report')
       self._mtz_filename = None
       self._html_filename = None
+      self._chef_min_completeness = None
       return
 
     def set_mtz_filename(self, mtz_filename):
@@ -35,6 +36,9 @@ def Report(DriverType = None):
     def get_html_filename(self, html_filename):
       return self._html_filename
 
+    def set_chef_min_completeness(self, min_completeness):
+      self._chef_min_completeness = min_completeness
+
     def run(self):
       from Handlers.Streams import Debug
       Debug.write('Running xia2.report')
@@ -43,6 +47,9 @@ def Report(DriverType = None):
       self.clear_command_line()
 
       self.add_command_line(self._mtz_filename)
+      if self._chef_min_completeness is not None:
+        self.add_command_line(
+          'chef_min_completeness=%s' %self._chef_min_completeness)
       self.start()
       self.close_wait()
       self.check_for_errors()
