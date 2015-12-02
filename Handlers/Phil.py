@@ -261,13 +261,13 @@ xia2.settings {
     completeness = None
       .type = float(value_min=0)
       .help = "Minimum completeness in the outer resolution shell"
-    cc_half = None
+    cc_half = 0.5
       .type = float(value_min=0)
       .help = "Minimum value of CC1/2 in the outer resolution shell"
-    isigma = 1.0
+    isigma = 0.25
       .type = float(value_min=0)
       .help = "Minimum value of the unmerged <I/sigI> in the outer resolution shell"
-    misigma = 2.0
+    misigma = 1.0
       .type = float(value_min=0)
       .help = "Minimum value of the merged <I/sigI> in the outer resolution shell"
   }

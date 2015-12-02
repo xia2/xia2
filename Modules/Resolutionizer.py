@@ -574,11 +574,11 @@ resolutionizer {
     .type = float
   completeness = 0.0
     .type = float
-  cc_half = 0.0
+  cc_half = 0.5
     .type = float
-  isigma = 1.0
+  isigma = 0.25
     .type = float
-  misigma = 2.0
+  misigma = 1.0
     .type = float
   nbins = 100
     .type = int
