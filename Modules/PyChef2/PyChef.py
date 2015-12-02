@@ -6,6 +6,23 @@ from cctbx.array_family import flex
 from iotbx.data_plots import table_data
 from libtbx import phil
 
+dose_phil_str = """\
+dose {
+  remove_gaps = True
+    .type = bool
+
+  batch
+    .multiple = True
+  {
+    range = None
+      .type = ints(value_min=0, size=2)
+    dose_start = None
+      .type = float(value_min=0)
+    dose_step = None
+      .type = float(value_min=0)
+  }
+}
+"""
 
 phil_scope = phil.parse("""\
 d_min = None
@@ -24,17 +41,10 @@ range {
   max = None
     .type = float(value_min=0)
 }
-batch
-  .multiple = True
-{
-  range = None
-    .type = ints(value_min=0, size=2)
-  dose_start = None
-    .type = float(value_min=0)
-  dose_step = None
-    .type = float(value_min=0)
-}
-""")
+%s
+""" %dose_phil_str)
+
+
 
 
 class observation_group(object):
@@ -381,18 +391,18 @@ class PyStatistics(object):
 
     anomalous = self.intensities.anomalous_flag()
 
-    title = "Completeness vs. BATCH:"
+    title = "Completeness vs. dose:"
     graph_names = ["Completeness", "Completeness in resolution shells"]
 
     if anomalous:
-      column_labels = ["BATCH"] + ["%.2f-%.2f(A)" %self.binner.bin_d_range(i+1)
+      column_labels = ["Dose"] + ["%.2f-%.2f(A)" %self.binner.bin_d_range(i+1)
                                    for i in range(self.n_bins)] + \
         ['I+', 'I-', 'I', 'dI']
       column_formats = ["%8.1f"] + ["%5.3f" for i in range(self.n_bins)] + ["%5.3f", "%5.3f", "%5.3f", "%5.3f"]
       #graph_columns = [[0,1,2,3,4]]
       graph_columns = [[0] + range(self.n_bins+1, self.n_bins+5), range(self.n_bins+1)]
     else:
-      column_labels = ["BATCH"] + ["%.2f-%.2f(A)" %self.binner.bin_d_range(i+1)
+      column_labels = ["Dose"] + ["%.2f-%.2f(A)" %self.binner.bin_d_range(i+1)
                                    for i in range(self.n_bins)] + ["I"]
       column_formats = ["%8.1f"] + ["%5.3f" for i in range(self.n_bins)] + [ "%5.3f"]
       graph_columns = [[0, self.n_bins+1], range(self.n_bins+1)]
@@ -420,7 +430,7 @@ class PyStatistics(object):
 
     assert len(self.rcp_bins) == self.binner.n_bins_used()
     title = "Cumulative radiation damage analysis:"
-    column_labels = ["BATCH"] + ["%.2f-%.2f(A)" %self.binner.bin_d_range(i+1)
+    column_labels = ["Dose"] + ["%.2f-%.2f(A)" %self.binner.bin_d_range(i+1)
                                  for i in range(self.n_bins)] + ["Rcp(d)"]
     column_formats = ["%8.1f"] + ["%7.4f" for i in range(self.n_bins+1)]
     graph_names = ["Rcp(d)", "Rcp(d), in resolution shells"]
@@ -442,7 +452,7 @@ class PyStatistics(object):
 
     assert len(self.scp_bins) == self.binner.n_bins_used()
     title = "Normalised radiation damage analysis:"
-    column_labels = ["BATCH"] + ["%.2f-%.2f(A)" %self.binner.bin_d_range(i+1)
+    column_labels = ["Dose"] + ["%.2f-%.2f(A)" %self.binner.bin_d_range(i+1)
                                  for i in range(self.n_bins)] + ["Rcp(d)"]
     column_formats = ["%8.1f"] + ["%7.4f" for i in range(self.n_bins+1)]
     graph_names = ["Scp(d)", "Scp(d), in resolution shells"]
@@ -541,18 +551,18 @@ class Statistics(PyStatistics):
 
     anomalous = self.intensities.anomalous_flag()
 
-    title = "Completeness vs. BATCH:"
+    title = "Completeness vs. dose:"
     graph_names = ["Completeness", "Completeness in resolution shells"]
 
     if anomalous:
-      column_labels = ["BATCH"] + ["%.2f-%.2f(A)" %self.binner.bin_d_range(i+1)
+      column_labels = ["Dose"] + ["%.2f-%.2f(A)" %self.binner.bin_d_range(i+1)
                                    for i in range(self.n_bins)] + \
         ['I+', 'I-', 'I', 'dI']
       column_formats = ["%8.1f"] + ["%5.3f" for i in range(self.n_bins)] + ["%5.3f", "%5.3f", "%5.3f", "%5.3f"]
       #graph_columns = [[0,1,2,3,4]]
       graph_columns = [[0] + range(self.n_bins+1, self.n_bins+5), range(self.n_bins+1)]
     else:
-      column_labels = ["BATCH"] + ["%.2f-%.2f(A)" %self.binner.bin_d_range(i+1)
+      column_labels = ["Dose"] + ["%.2f-%.2f(A)" %self.binner.bin_d_range(i+1)
                                    for i in range(self.n_bins)] + ["I"]
       column_formats = ["%8.1f"] + ["%5.3f" for i in range(self.n_bins)] + [ "%5.3f"]
       graph_columns = [[0, self.n_bins+1], range(self.n_bins+1)]
@@ -579,7 +589,7 @@ class Statistics(PyStatistics):
   def print_rcp_vs_dose(self):
 
     title = "Cumulative radiation damage analysis:"
-    column_labels = ["BATCH"] + ["%.2f-%.2f(A)" %self.binner.bin_d_range(i+1)
+    column_labels = ["Dose"] + ["%.2f-%.2f(A)" %self.binner.bin_d_range(i+1)
                                  for i in range(self.n_bins)] + ["Rcp(d)"]
     column_formats = ["%8.1f"] + ["%7.4f" for i in range(self.n_bins+1)]
     graph_names = ["Rcp(d)", "Rcp(d), in resolution shells"]
@@ -600,7 +610,7 @@ class Statistics(PyStatistics):
   def print_scp_vs_dose(self):
 
     title = "Normalised radiation damage analysis:"
-    column_labels = ["BATCH"] + ["%.2f-%.2f(A)" %self.binner.bin_d_range(i+1)
+    column_labels = ["Dose"] + ["%.2f-%.2f(A)" %self.binner.bin_d_range(i+1)
                                  for i in range(self.n_bins)] + ["Rcp(d)"]
     column_formats = ["%8.1f"] + ["%7.4f" for i in range(self.n_bins+1)]
     graph_names = ["Scp(d)", "Scp(d), in resolution shells"]
@@ -725,22 +735,22 @@ class Statistics(PyStatistics):
         #})
 
     d = {
-      'scp_vs_batch': {
+      'scp_vs_dose': {
         'data': scp_data,
         'layout': {
-          'title': 'Scp vs batch',
-          'xaxis': {'title': 'Batch'},
+          'title': 'Scp vs dose',
+          'xaxis': {'title': 'Dose'},
           'yaxis': {
             'title': 'Scp',
             'rangemode': 'tozero'
           }
         }
       },
-      'rcp_vs_batch': {
+      'rcp_vs_dose': {
         'data': rcp_data,
         'layout': {
-          'title': 'Rcp vs batch',
-          'xaxis': {'title': 'Batch'},
+          'title': 'Rcp vs dose',
+          'xaxis': {'title': 'Dose'},
           'yaxis': {
             'title': 'Rcp',
             'rangemode': 'tozero'
@@ -758,11 +768,11 @@ class Statistics(PyStatistics):
           }
         }
       },
-      'completeness_vs_batch': {
+      'completeness_vs_dose': {
         'data': completeness_data,
         'layout': {
-          'title': 'Completeness vs batch',
-          'xaxis': {'title': 'Batch'},
+          'title': 'Completeness vs dose',
+          'xaxis': {'title': 'Dose'},
           'yaxis': {
             'title': 'Completeness',
             'rangemode': 'tozero'
@@ -814,7 +824,7 @@ def run(args):
     intensities = intensities.as_anomalous_array()
     batches = batches.as_anomalous_array()
 
-  dose = batches_to_dose(batches.data(), params.batch)
+  dose = batches_to_dose(batches.data(), params.dose)
 
   sel = dose > -1
   intensities = intensities.select(sel)
@@ -839,20 +849,35 @@ def run(args):
   stats.print_scp_vs_dose()
   stats.print_rd_vs_dose()
 
-def batches_to_dose(batches, batch_params):
-  if len(batch_params):
+def batches_to_dose(batches, params):
+  if len(params.batch):
     dose = flex.double(batches.size(), -1)
-    for batch in batch_params:
+    for batch in params.batch:
       start = batch.dose_start
       step = batch.dose_step
       for i in range(batch.range[0], batch.range[1]+1):
         # inclusive range
         dose.set_selected(batches == i, start + step * (i-batch.range[0]))
     dose = dose.iround()
+  elif params.remove_gaps:
+    dose = remove_batch_gaps(batches)
   else:
     dose = batches
   return dose
 
+
+def remove_batch_gaps(batches):
+  perm = flex.sort_permutation(batches)
+  new_batches = flex.int(batches.size(), -1)
+  sorted_batches = batches.select(perm)
+  curr_batch = -1
+  new_batch = -1
+  for i, b in enumerate(sorted_batches):
+    if b != curr_batch:
+      curr_batch = b
+      new_batch += 1
+    new_batches[perm[i]] = new_batch
+  return new_batches
 
 
 if __name__ == '__main__':

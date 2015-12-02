@@ -4,6 +4,8 @@ from libtbx import phil
 
 import math
 
+from xia2.Modules.PyChef2.PyChef import dose_phil_str
+
 phil_scope = phil.parse("""\
 d_min = None
   .type = float(value_min=0)
@@ -21,17 +23,8 @@ range {
   max = None
     .type = float(value_min=0)
 }
-batch
-  .multiple = True
-{
-  range = None
-    .type = ints(value_min=0, size=2)
-  dose_start = None
-    .type = float(value_min=0)
-  dose_step = None
-    .type = float(value_min=0)
-}
-""")
+%s
+""" %dose_phil_str)
 
 
 class batch_binned_data(object):

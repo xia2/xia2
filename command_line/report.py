@@ -134,12 +134,14 @@ def run(args):
     intensities = intensities.as_anomalous_array()
     batches = batches.as_anomalous_array()
 
-  sc_vs_b = scales_vs_batch(scales, batches)
-  rmerge_vs_b = rmerge_vs_batch(intensities, batches)
+
+  from xia2.Modules.PyChef2.PyChef import remove_batch_gaps
+  new_batch_data = remove_batch_gaps(batches.data())
+  new_batches = batches.customized_copy(data=new_batch_data)
+  sc_vs_b = scales_vs_batch(scales, new_batches)
+  rmerge_vs_b = rmerge_vs_batch(intensities, new_batches)
 
   intensities.setup_binner(n_bins=n_bins)
-  #cc_one_half = intensities.cc_one_half(use_binning=True)
-  #i_over_sig_i = intensities.i_over_sig_i(use_binning=True)
 
   merged_intensities = intensities.merge_equivalents().array()
   from mmtbx.scaling import twin_analyses
@@ -171,7 +173,7 @@ def run(args):
     bin_stats.cc_anom for bin_stats in merging_stats.bins]
 
   from xia2.Modules.PyChef2 import PyChef
-  dose = PyChef.batches_to_dose(batches.data(), params.batch)
+  dose = PyChef.batches_to_dose(batches.data(), params.dose)
   pychef_stats = PyChef.Statistics(intensities, dose)
 
   pychef_dict = pychef_stats.to_dict()
@@ -214,6 +216,7 @@ def run(args):
           'y': sc_vs_b.data,
           'type': 'scatter',
           'name': 'Scale',
+          'opacity': 0.75,
         },
         {
           'x': rmerge_vs_b.batches,
@@ -221,11 +224,12 @@ def run(args):
           'yaxis': 'y2',
           'type': 'scatter',
           'name': 'Rmerge',
+          'opacity': 0.75,
         },
       ],
       'layout': {
         'title': 'Scale and Rmerge vs batch',
-        'xaxis': {'title': 'Batch'},
+        'xaxis': {'title': 'N'},
         'yaxis': {
           'title': 'Scale',
           'rangemode': 'tozero'
@@ -426,10 +430,10 @@ Plotly.newPlot(
   'wilson_plot', graphs.wilson_intensity_plot.data,
   graphs.wilson_intensity_plot.layout);
 Plotly.newPlot(
-  'completeness', graphs.completeness_vs_batch.data,
-  graphs.completeness_vs_batch.layout);
-Plotly.newPlot('rcp', graphs.rcp_vs_batch.data, graphs.rcp_vs_batch.layout);
-Plotly.newPlot('scp', graphs.scp_vs_batch.data, graphs.scp_vs_batch.layout);
+  'completeness', graphs.completeness_vs_dose.data,
+  graphs.completeness_vs_dose.layout);
+Plotly.newPlot('rcp', graphs.rcp_vs_dose.data, graphs.rcp_vs_dose.layout);
+Plotly.newPlot('scp', graphs.scp_vs_dose.data, graphs.scp_vs_dose.layout);
 Plotly.newPlot(
   'rd', graphs.rd_vs_batch_difference.data,
   graphs.rd_vs_batch_difference.layout);
