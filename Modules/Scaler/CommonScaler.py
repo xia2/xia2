@@ -700,6 +700,27 @@ class CommonScaler(Scaler):
     if len(self._scalr_scaled_refl_files.keys()) == 0:
       raise RuntimeError, 'no reflection files stored'
 
+    # run xia2.report on each unmerged mtz file
+    for wavelength in self._scalr_scaled_refl_files.keys():
+
+      hklin = self._scalr_scaled_reflection_files['mtz_unmerged'][wavelength]
+      from Wrappers.XIA.Report import Report
+      report = Report()
+      report.set_working_directory(self.get_working_directory())
+      report.set_mtz_filename(hklin)
+      htmlout = '%s_%s_%s_report.html' %(
+          self._scalr_pname, self._scalr_xname, wavelength)
+      report.set_html_filename(htmlout)
+      try:
+        report.run()
+      except Exception, e:
+        Debug.write('xia2.report failed:')
+        Debug.write(str(e))
+        continue
+      FileHandler.record_html_file(
+        '%s %s %s report' %(
+          self._scalr_pname, self._scalr_xname, wavelength), htmlout)
+
     if not Flags.get_small_molecule():
 
       for wavelength in self._scalr_scaled_refl_files.keys():
