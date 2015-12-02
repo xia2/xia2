@@ -49,8 +49,6 @@ def run(args):
   from iotbx import merging_statistics
   merging_stats = merging_statistics.dataset_statistics(
     intensities, n_bins=n_bins)
-  #merging_stats.show()
-  #merging_stats.show_estimated_cutoffs()
 
   merging_acentric = intensities.select_acentric().merge_equivalents()
   merging_centric = intensities.select_centric().merge_equivalents()
@@ -173,6 +171,16 @@ def run(args):
     bin_stats.cc_anom for bin_stats in merging_stats.bins]
 
   from xia2.Modules.PyChef2 import PyChef
+  if params.chef_min_completeness:
+    d_min = PyChef.resolution_limit(
+      mtz_file=args[0], min_completeness=params.chef_min_completeness, n_bins=8)
+    print 'Estimated d_min for CHEF analysis: %.2f' %d_min
+    sel = flex.bool(intensities.size(), True)
+    d_spacings = intensities.d_spacings().data()
+    sel &= d_spacings >= d_min
+    intensities = intensities.select(sel)
+    batches = batches.select(sel)
+
   dose = PyChef.batches_to_dose(batches.data(), params.dose)
   pychef_stats = PyChef.Statistics(intensities, dose)
 

@@ -29,6 +29,10 @@ d_min = None
   .type = float(value_min=0)
 d_max = None
   .type = float(value_min=0)
+min_completeness = None
+  .type = float(value_min=0, value_max=1)
+  .help = "Minimum value of completeness in outer resolution shell used to "
+          "determine suitable resolution cutoff for analysis"
 resolution_bins = 8
   .type = int
 anomalous = False
@@ -830,6 +834,11 @@ def run(args):
   intensities = intensities.select(sel)
   dose = dose.select(sel)
 
+  if not params.d_min and params.min_completeness:
+    params.d_min = resolution_limit(
+      mtz_file=args[0], min_completeness=params.min_completeness,
+      n_bins=params.resolution_bins)
+    print 'Estimated d_min: %.2f' %params.d_min
   if params.d_min or params.d_max:
     sel = flex.bool(intensities.size(), True)
     d_spacings = intensities.d_spacings().data()
@@ -879,6 +888,12 @@ def remove_batch_gaps(batches):
     new_batches[perm[i]] = new_batch
   return new_batches
 
+
+def resolution_limit(mtz_file, min_completeness, n_bins):
+  from xia2.Modules.Resolutionizer import resolutionizer
+  r = resolutionizer([mtz_file])
+  r.calculate_resolution_ranges(nbins=n_bins)
+  return r.resolution_completeness(limit=min_completeness)
 
 if __name__ == '__main__':
   import sys

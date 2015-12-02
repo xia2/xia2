@@ -23,6 +23,10 @@ range {
   max = None
     .type = float(value_min=0)
 }
+chef_min_completeness = None
+  .type = float(value_min=0, value_max=1)
+  .help = "Minimum value of completeness in outer resolution shell used to "
+          "determine suitable resolution cutoff for CHEF analysis"
 %s
 """ %dose_phil_str)
 
