@@ -708,8 +708,9 @@ class CommonScaler(Scaler):
       report = Report()
       report.set_working_directory(self.get_working_directory())
       report.set_mtz_filename(hklin)
-      htmlout = '%s_%s_%s_report.html' %(
-          self._scalr_pname, self._scalr_xname, wavelength)
+      htmlout = os.path.join(
+        self.get_working_directory(), '%s_%s_%s_report.html' %(
+          self._scalr_pname, self._scalr_xname, wavelength))
       report.set_html_filename(htmlout)
       report.set_chef_min_completeness(0.95) # sensible?
       from lib.bits import auto_logfiler
