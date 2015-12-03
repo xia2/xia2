@@ -942,6 +942,9 @@ class resolutionizer(object):
         a.append(cc_half_contrib[0])
         b.append(cc_half_contrib[1])
 
+    if len(a) == 0 or len(b) == 0:
+      return None
+
     ma = sum(a) / len(a)
     mb = sum(b) / len(b)
 
@@ -1400,6 +1403,9 @@ class resolutionizer(object):
       return 1.0 / math.sqrt(max(s_s))
 
     cc_s = [self.calculate_cc_half(bin) for bin in reversed(bins)]
+
+    s_s = [s for s, cc in zip(s_s, cc_s) if cc is not None]
+    cc_s = [cc for cc in cc_s if cc is not None]
 
     stamp("rch: cc_s = %s" % cc_s)
     stamp("rch: min cc_s = %s" % min(cc_s))
