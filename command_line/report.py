@@ -150,13 +150,15 @@ def run(args):
     normalised_centric=normalised_intensities.centric)
 
   from mmtbx.scaling import data_statistics
-  wilson_scaling = data_statistics.wilson_scaling(
-    miller_array=merged_intensities, n_residues=200) # XXX default n_residues?
+  if not intensities.space_group().is_centric():
+    wilson_scaling = data_statistics.wilson_scaling(
+      miller_array=merged_intensities, n_residues=200) # XXX default n_residues?
 
   acentric = intensities.select_acentric()
   centric = intensities.select_centric()
-  acentric.setup_binner(n_bins=n_bins)
-  second_moments_acentric = acentric.second_moment_of_intensities(use_binning=True)
+  if acentric.size():
+    acentric.setup_binner(n_bins=n_bins)
+    second_moments_acentric = acentric.second_moment_of_intensities(use_binning=True)
   if centric.size():
     centric.setup_binner(n_bins=n_bins)
     second_moments_centric = centric.second_moment_of_intensities(use_binning=True)
@@ -259,12 +261,12 @@ def run(args):
           'type': 'scatter',
           'name': 'CC-half',
         },
-        {
+        ({
           'x': d_star_sq_bins, # d_star_sq
           'y': cc_anom_bins,
           'type': 'scatter',
           'name': 'CC-anom',
-        },
+        } if not intensities.space_group().is_centric() else {}),
       ],
       'layout':{
         'title': 'CC-half vs resolution',
@@ -295,12 +297,12 @@ def run(args):
 
     'second_moments': {
       'data': [
-        {
+        ({
           'x': list(second_moments_acentric.binner.bin_centers(2)), # d_star_sq
           'y': second_moments_acentric.data[1:-1],
           'type': 'scatter',
           'name': '<I^2> acentric',
-        },
+        } if acentric.size() else {}),
         ({
           'x': list(second_moments_centric.binner.bin_centers(2)), # d_star_sq
           'y': second_moments_centric.data[1:-1],
@@ -376,7 +378,7 @@ def run(args):
     },
 
     'wilson_intensity_plot': {
-      'data': [
+      'data': ([
         {
           'x': list(wilson_scaling.d_star_sq),
           'y': list(wilson_scaling.mean_I_obs_data),
@@ -394,8 +396,7 @@ def run(args):
           'y': list(wilson_scaling.mean_I_normalisation),
           'type': 'scatter',
           'name': 'Smoothed',
-        },
-      ],
+        }] if not intensities.space_group().is_centric() else []),
       'layout': {
         'title': 'Wilson intensity plot',
         'xaxis': {'title': 'sin theta / lambda'},
@@ -406,7 +407,6 @@ def run(args):
         },
       },
     },
-
   }
 
   json_data.update(pychef_dict)
