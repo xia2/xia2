@@ -12,7 +12,7 @@ from xia2.Handlers.Streams import Chatter, Debug
 from xia2.Handlers.Phil import PhilIndex
 
 def FrenchWilson(DriverType = None):
-  '''A factory for TruncateWrapper classes.'''
+  '''A factory for FrenchWilsonWrapper classes.'''
 
   DriverInstance = DriverFactory.Driver(DriverType)
 
@@ -45,6 +45,7 @@ def FrenchWilson(DriverType = None):
       self._nref_in = 0
       self._nref_out = 0
       self._nabsent = 0
+      self._xmlout = None
 
       return
 
@@ -71,6 +72,9 @@ def FrenchWilson(DriverType = None):
 
     def check_hklout(self):
       return self.checkHklout()
+
+    def get_xmlout(self):
+      return self._xmlout
 
     def truncate(self):
       '''Actually perform the truncation procedure.'''

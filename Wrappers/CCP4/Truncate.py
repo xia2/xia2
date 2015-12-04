@@ -89,6 +89,8 @@ def Truncate(DriverType = None):
       self._nref_out = 0
       self._nabsent = 0
 
+      self._xmlout = None
+
       return
 
     def set_anomalous(self, anomalous):
@@ -99,6 +101,9 @@ def Truncate(DriverType = None):
       '''Set the use of Wilson scaling - if you set this to False
       Wilson scaling will be switched off...'''
       self._wilson = wilson
+
+    def get_xmlout(self):
+      return self._xmlout
 
     def truncate(self):
       '''Actually perform the truncation procedure.'''

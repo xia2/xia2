@@ -751,6 +751,14 @@ class CommonScaler(Scaler):
         truncate.set_hklout(hklout)
         truncate.truncate()
 
+        xmlout = truncate.get_xmlout()
+        if xmlout is not None:
+          FileHandler.record_xml_file('%s %s %s truncate' % \
+                                      (self._scalr_pname,
+                                       self._scalr_xname,
+                                       wavelength),
+                                      xmlout)
+
         Debug.write('%d absent reflections in %s removed' % \
                     (truncate.get_nabsent(), wavelength))
 

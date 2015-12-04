@@ -70,6 +70,8 @@ def Ctruncate(DriverType = None):
       self._nref_out = 0
       self._nabsent = 0
 
+      self._xmlout = None
+
       return
 
     def set_hklin(self, hklin):
@@ -87,6 +89,9 @@ def Ctruncate(DriverType = None):
     def set_anomalous(self, anomalous):
       self._anomalous = anomalous
       return
+
+    def get_xmlout(self):
+      return self._xmlout
 
     def truncate(self):
       '''Actually perform the truncation procedure.'''
@@ -111,6 +116,11 @@ def Ctruncate(DriverType = None):
 
       self.add_command_line('-colin')
       self.add_command_line('/*/*/[IMEAN,SIGIMEAN]')
+
+      self._xmlout = os.path.join(self.get_working_directory(),
+                                  '%d_truncate.xml' % self.get_xpid())
+      self.add_command_line('-xmlout')
+      self.add_command_line(self._xmlout)
 
       self.start()
       self.close_wait()
