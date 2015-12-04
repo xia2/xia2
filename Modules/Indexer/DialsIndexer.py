@@ -441,7 +441,7 @@ class DialsIndexer(Indexer):
 
       # reindex the output experiments list to the reference setting
       # (from the best cell/conventional setting)
-      cb_op_to_ref = experiments.crystals()[0].get_space_group().info()\
+      cb_op_to_ref = experiment_list.crystals()[0].get_space_group().info()\
         .change_of_basis_op_to_reference_setting()
       reindex = self.Reindex()
       reindex.set_experiments_filename(self._solution['experiments_file'])
