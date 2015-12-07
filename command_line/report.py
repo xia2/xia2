@@ -188,6 +188,28 @@ def run(args):
 
   pychef_dict = pychef_stats.to_dict()
 
+  def d_star_sq_to_d_ticks(d_star_sq, nticks):
+    from cctbx import uctbx
+    d_spacings = uctbx.d_star_sq_as_d(flex.double(d_star_sq))
+    min_d_star_sq = min(d_star_sq)
+    dstep = (max(d_star_sq) - min_d_star_sq)/nticks
+    tickvals = list(min_d_star_sq + (i*dstep) for i in range(nticks))
+    ticktext = ['%.2f' %(uctbx.d_star_sq_as_d(dsq)) for dsq in tickvals]
+    return tickvals, ticktext
+
+  tickvals, ticktext = d_star_sq_to_d_ticks(d_star_sq_bins, nticks=5)
+  tickvals_wilson, ticktext_wilson = d_star_sq_to_d_ticks(
+    wilson_scaling.d_star_sq, nticks=5)
+  second_moment_d_star_sq = []
+  if acentric.size():
+    second_moment_d_star_sq.extend(second_moments_acentric.binner.bin_centers(2))
+  if centric.size():
+    second_moment_d_star_sq.extend(second_moments_centric.binner.bin_centers(2))
+  tickvals_2nd_moment, ticktext_2nd_moment = d_star_sq_to_d_ticks(
+    second_moment_d_star_sq, nticks=5)
+
+
+
   json_data = {
 
     'multiplicities': {
@@ -270,7 +292,11 @@ def run(args):
       ],
       'layout':{
         'title': 'CC-half vs resolution',
-        'xaxis': {'title': 'sin theta / lambda'},
+        'xaxis': {
+          'title': u'Resolution (Å)',
+          'tickvals': tickvals,
+          'ticktext': ticktext,
+        },
         'yaxis': {
           'title': 'CC-half',
           'range': [min(cc_one_half_bins + cc_anom_bins + [0]), 1]
@@ -287,7 +313,11 @@ def run(args):
       }],
       'layout': {
         'title': '<I/sig(I)> vs resolution',
-        'xaxis': {'title': 'sin theta / lambda'},
+        'xaxis': {
+          'title': u'Resolution (Å)',
+          'tickvals': tickvals,
+          'ticktext': ticktext,
+        },
         'yaxis': {
           'title': '<I/sig(I)>',
           'rangemode': 'tozero'
@@ -312,7 +342,11 @@ def run(args):
       ],
       'layout': {
         'title': 'Second moment of I',
-        'xaxis': {'title': 'sin theta / lambda'},
+        'xaxis': {
+          'title': u'Resolution (Å)',
+          'tickvals': tickvals_2nd_moment,
+          'ticktext': ticktext_2nd_moment,
+        },
         'yaxis': {
           'title': '<I^2>',
           'rangemode': 'tozero'
@@ -399,7 +433,11 @@ def run(args):
         }] if not intensities.space_group().is_centric() else []),
       'layout': {
         'title': 'Wilson intensity plot',
-        'xaxis': {'title': 'sin theta / lambda'},
+        'xaxis': {
+          'title': u'Resolution (Å)',
+          'tickvals': tickvals_wilson,
+          'ticktext': ticktext_wilson,
+        },
         'yaxis': {
           'type': 'log',
           'title': 'Mean(I)',
