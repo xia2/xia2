@@ -464,7 +464,7 @@ def integration_status_section(xproject):
           if len(row) == 60:
             status_table.append(row)
             row = []
-          row.append('|%s|' %symbol_to_status[symbol])
+          row.append('<div class="%s status"></div>' %symbol_to_status[symbol])
         if len(row):
           status_table.append(row)
 
@@ -475,9 +475,14 @@ def integration_status_section(xproject):
         batches = xsweep.get_image_range()
         status_lines.append(
           '%s: batches %d to %d' %(xsweep.get_name(), batches[0], batches[1]))
-        status_lines.append('\n.. class:: status-table')
+
         status_lines.append('\n')
-        status_lines.append('\n%s\n' %tabulate(status_table, tablefmt='grid'))
+        html_table = indent_text(
+          tabulate(status_table, tablefmt='html'), indent=3)
+        html_table = html_table.replace('<table>', '<table class="status-table">')
+        status_lines.append('.. raw:: html\n')
+        status_lines.append(html_table)
+        status_lines.append('\n')
 
         #if '(60/record)' in stats:
           #status_lines.append('\n')
@@ -489,15 +494,22 @@ def integration_status_section(xproject):
   for h in headers:
     h = h.lower().replace(' ', '_')
     if h in status_to_symbol:
-      icons.append('|%s|' %h)
+      icons.append('<div class="%s status"></div>' %h)
     else:
       icons.append(' ')
   overall_table.insert(0, icons)
-  lines.append(tabulate(overall_table, headers, tablefmt='grid'))
+  lines.append('.. raw:: html\n')
+  html_table = indent_text(
+    tabulate(overall_table, headers, tablefmt='html'), indent=3)
+  lines.append(html_table)
   lines.append('\n')
 
   lines.extend(status_lines)
   return lines
+
+
+def indent_text(text, indent=3):
+  return '\n'.join([indent * ' ' + line for line in text.split('\n')])
 
 
 def detailed_statistics_section(xproject):

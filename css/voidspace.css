@@ -162,8 +162,8 @@ table.table-one tr.unit_cell > td:first-child { text-align: right;
                                                 font-weight: bold; }
 
 table.status-table td {
-  padding-left: 0px;
-  padding-right: 0px;
+  padding-left: 1px;
+  padding-right: 1px;
 }
 
 table.status-table {
@@ -178,4 +178,39 @@ table td {
 .c3 svg {
   width: 500px;
   /*height: 250px;*/
+}
+
+.status {
+  display: block;
+  height: 10px;
+  width: 10px;
+  border: 1px solid black;
+}
+
+.abandoned {
+  background-color: #FE9A2E;
+}
+
+.bad_rmsd {
+  background-color: #FFFF00;
+}
+
+.good {
+  background-color: #088A08;
+}
+
+.many_bad {
+  background-color: #000000;
+}
+
+.ok {
+  background-color: #A9E2F3;
+}
+
+.overloaded {
+  background-color: #DF0101;
+}
+
+.weak {
+  background-color: #FAFAFA;
 }
