@@ -61,7 +61,6 @@ class multi_crystal_analysis(object):
     unmerged_intensities = unmerged_intensities.select(sel)
     batches_all = batches_all.select(sel)
 
-
     if id_to_batches is None:
       run_id_to_batch_id = None
       run_id = 0
@@ -246,8 +245,8 @@ class multi_crystal_analysis(object):
       if node.is_leaf(): return
       cluster_id = node.get_id() - len(linkage_matrix) - 1
       row = linkage_matrix[cluster_id]
-      cluster_dict[cluster_id] = {
-        'datasets': sorted(node.pre_order()),
+      cluster_dict[cluster_id+1] = {
+        'datasets': [i+1 for i in sorted(node.pre_order())],
         'height': row[2],
       }
 
@@ -263,6 +262,10 @@ class multi_crystal_analysis(object):
       datasets = cluster['datasets']
       rows.append([str(cid), str(len(datasets)),
                    '%.2f' %cluster['height'], ' '.join(['%s'] * len(datasets)) % tuple(datasets)])
+
+    with open('intensity_clusters.json', 'wb') as f:
+      import json
+      json.dump(cluster_dict, f)
 
     with open('intensity_clustering.txt', 'wb') as f:
       from libtbx import table_utils

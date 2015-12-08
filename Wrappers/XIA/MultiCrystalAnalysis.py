@@ -27,6 +27,7 @@ def MultiCrystalAnalysis(DriverType = None):
       self._njob = None
       self._mp_mode = None
       self._phil_file = None
+      self._clusters = None
       return
 
     def add_command_line_args(self, args):
@@ -47,7 +48,17 @@ def MultiCrystalAnalysis(DriverType = None):
       self.close_wait()
       self.check_for_errors()
 
+      self._clusters_json = os.path.join(
+        self.get_working_directory(), 'intensity_clusters.json')
+      assert os.path.exists(self._clusters_json)
+      import json
+      with open(self._clusters_json, 'rb') as f:
+        self._clusters = json.load(f)
+
       return
+
+    def get_clusters(self):
+      return self._clusters
 
   return MultiCrystalAnalysisWrapper()
 

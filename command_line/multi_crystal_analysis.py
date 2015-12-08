@@ -30,6 +30,10 @@ if not os.path.join(os.environ['XIA2_ROOT'], 'Interfaces') in sys.path:
 from Applications.xia2setup import write_xinfo
 from Applications.xia2 import check, check_cctbx_version, check_environment
 from Applications.xia2 import get_command_line, write_citations, help
+from xia2.lib.tabulate import tabulate
+
+from scitbx.array_family import flex
+
 
 def multi_crystal_analysis(stop_after=None):
   '''Actually process something...'''
@@ -55,12 +59,18 @@ def multi_crystal_analysis(stop_after=None):
 
     scaler = crystal._get_scaler()
 
+    epoch_to_si = {}
     try:
-      for epoch, si in scaler._sweep_information.iteritems():
+      epochs = scaler._sweep_information.iteritems()
+      for epoch in epochs:
+        si = scaler._sweep_information[epoch]
+        epoch_to_si[epoch] = si
         hand_blender.add_hklin(si['corrected_intensities'], label=si['sname'])
     except AttributeError, e:
-      for epoch in scaler._sweep_handler.get_epochs():
+      epochs = scaler._sweep_handler.get_epochs()
+      for epoch in epochs:
         si = scaler._sweep_handler.get_sweep_information(epoch)
+        epoch_to_si[epoch] = si
         hand_blender.add_hklin(si.get_reflections(), label=si.get_sweep_name())
     finally:
       hand_blender.analysis()
@@ -72,6 +82,55 @@ def multi_crystal_analysis(stop_after=None):
       linkage_matrix = hand_blender.get_linkage_matrix()
       hand_blender.plot_dendrogram()
       #print linkage_matrix
+
+      unmerged_mtz = scaler.get_scaled_reflections('mtz_unmerged').values()[0]
+      from iotbx.reflection_file_reader import any_reflection_file
+      reader = any_reflection_file(unmerged_mtz)
+
+      intensities = None
+      batches = None
+      assert reader.file_type() == 'ccp4_mtz'
+      arrays = reader.as_miller_arrays(merge_equivalents=False)
+      for ma in arrays:
+        if ma.info().labels == ['BATCH']:
+          batches = ma
+        elif ma.info().labels == ['I', 'SIGI']:
+          intensities = ma
+        elif ma.info().labels == ['I(+)', 'SIGI(+)', 'I(-)', 'SIGI(-)']:
+          intensities = ma
+
+      rows = []
+      headers = ['Cluster', 'Datasets', 'Multiplicity', 'Completeness', 'LCV', 'aLCV']
+      completeness = flex.double()
+      for i, cluster in clusters.iteritems():
+        sel_cluster = flex.bool(batches.size(), False)
+        for j in cluster['dataset_ids']:
+          si = epoch_to_si[epochs[j-1]]
+          batch_start, batch_end = si.get_batches()
+          sel_cluster |= (
+            (batches.data() >= batch_start) & (batches.data() <= batch_end))
+        intensities_cluster = intensities.select(sel_cluster)
+        merging = intensities_cluster.merge_equivalents()
+        merged_intensities = merging.array()
+        multiplicities = merging.redundancies()
+        completeness.append(merged_intensities.completeness())
+        dataset_ids = cluster['dataset_ids']
+
+        rows.append(
+          ['%i' %i, ' '.join(['%i'] * len(dataset_ids)) %tuple(dataset_ids),
+           '%.1f' %flex.mean(multiplicities.data().as_double()),
+           '%.2f' %completeness[-1],
+           '%.2f' %cluster['lcv'], '%.2f' %cluster['alcv']])
+
+      # sort table by completeness
+      perm = flex.sort_permutation(completeness)
+      rows = [rows[i] for i in perm]
+
+      print
+      print 'Unit cell clustering summary:'
+      print tabulate(rows, headers, tablefmt='rst')
+      print
+
 
   # XXX what about multiple wavelengths?
   with open('batches.phil', 'wb') as f:
@@ -98,6 +157,38 @@ def multi_crystal_analysis(stop_after=None):
      "batches.phil"])
   mca.set_working_directory(working_directory)
   mca.run()
+
+  intensity_clusters = mca.get_clusters()
+  rows = []
+  headers = ['Cluster', 'Datasets', 'Multiplicity', 'Completeness', 'Height']
+  completeness = flex.double()
+  for i, cluster in intensity_clusters.iteritems():
+    sel_cluster = flex.bool(batches.size(), False)
+    for j in cluster['datasets']:
+      si = epoch_to_si[epochs[j-1]]
+      batch_start, batch_end = si.get_batches()
+      sel_cluster |= (
+        (batches.data() >= batch_start) & (batches.data() <= batch_end))
+    intensities_cluster = intensities.select(sel_cluster)
+    merging = intensities_cluster.merge_equivalents()
+    merged_intensities = merging.array()
+    multiplicities = merging.redundancies()
+    completeness.append(merged_intensities.completeness())
+    dataset_ids = cluster['datasets']
+
+    rows.append(
+      ['%i' %int(i), ' '.join(['%i'] * len(dataset_ids)) %tuple(dataset_ids),
+       '%.1f' %flex.mean(multiplicities.data().as_double()),
+       '%.2f' %completeness[-1],
+       '%.2f' %cluster['height']])
+
+  # sort table by completeness
+  perm = flex.sort_permutation(completeness)
+  rows = [rows[i] for i in perm]
+
+  print 'Intensity clustering summary:'
+  print tabulate(rows, headers, tablefmt='rst')
+  print
 
   write_citations()
 

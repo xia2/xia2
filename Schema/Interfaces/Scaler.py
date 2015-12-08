@@ -653,7 +653,7 @@ class Scaler(object):
     '''Get a specific format of scaled reflection files. This may
     trigger transmogrification of files.'''
 
-    if not format in ['mtz', 'sca', 'sca_unmerged']:
+    if not format in ['mtz', 'sca', 'mtz_unmerged', 'sca_unmerged']:
       raise RuntimeError, 'format %s unknown' % format
 
     self.scale()
