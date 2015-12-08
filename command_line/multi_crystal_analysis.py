@@ -59,20 +59,50 @@ def multi_crystal_analysis(stop_after=None):
 
     scaler = crystal._get_scaler()
 
-    epoch_to_si = {}
+    #epoch_to_si = {}
+    epoch_to_batches = {}
+    epoch_to_integrated_intensities = {}
+    epoch_to_sweep_name = {}
+
     try:
       epochs = scaler._sweep_information.keys()
       for epoch in epochs:
         si = scaler._sweep_information[epoch]
-        epoch_to_si[epoch] = si
-        hand_blender.add_hklin(si['corrected_intensities'], label=si['sname'])
+        epoch_to_batches[epoch] = si['batches']
+        epoch_to_integrated_intensities[epoch] = si['corrected_intensities']
+        epoch_to_sweep_name[epoch] = si['sname']
     except AttributeError, e:
       epochs = scaler._sweep_handler.get_epochs()
       for epoch in epochs:
         si = scaler._sweep_handler.get_sweep_information(epoch)
-        epoch_to_si[epoch] = si
-        hand_blender.add_hklin(si.get_reflections(), label=si.get_sweep_name())
-    finally:
+        epoch_to_batches[epoch] = si.get_batches()
+        epoch_to_integrated_intensities[epoch] = si.get_reflections()
+        epoch_to_sweep_name[epoch] = si.get_sweep_name()
+
+    unmerged_mtz = scaler.get_scaled_reflections('mtz_unmerged').values()[0]
+    from iotbx.reflection_file_reader import any_reflection_file
+    reader = any_reflection_file(unmerged_mtz)
+
+    intensities = None
+    batches = None
+    assert reader.file_type() == 'ccp4_mtz'
+    arrays = reader.as_miller_arrays(merge_equivalents=False)
+    for ma in arrays:
+      if ma.info().labels == ['BATCH']:
+        batches = ma
+      elif ma.info().labels == ['I', 'SIGI']:
+        intensities = ma
+      elif ma.info().labels == ['I(+)', 'SIGI(+)', 'I(-)', 'SIGI(-)']:
+        intensities = ma
+
+    from Handlers.CommandLine import which
+    Rscript_binary = which('Rscript')
+    if Rscript_binary is None:
+      print 'Skipping BLEND analysis: Rscript not available'
+    else:
+      for epoch in epochs:
+        hand_blender.add_hklin(epoch_to_integrated_intensities[epoch],
+                               label=epoch_to_sweep_name[epoch])
       hand_blender.analysis()
       Chatter.write("Dendrogram saved to: %s" %hand_blender.get_dendrogram_file())
       analysis = hand_blender.get_analysis()
@@ -83,30 +113,13 @@ def multi_crystal_analysis(stop_after=None):
       hand_blender.plot_dendrogram()
       #print linkage_matrix
 
-      unmerged_mtz = scaler.get_scaled_reflections('mtz_unmerged').values()[0]
-      from iotbx.reflection_file_reader import any_reflection_file
-      reader = any_reflection_file(unmerged_mtz)
-
-      intensities = None
-      batches = None
-      assert reader.file_type() == 'ccp4_mtz'
-      arrays = reader.as_miller_arrays(merge_equivalents=False)
-      for ma in arrays:
-        if ma.info().labels == ['BATCH']:
-          batches = ma
-        elif ma.info().labels == ['I', 'SIGI']:
-          intensities = ma
-        elif ma.info().labels == ['I(+)', 'SIGI(+)', 'I(-)', 'SIGI(-)']:
-          intensities = ma
-
       rows = []
       headers = ['Cluster', 'Datasets', 'Multiplicity', 'Completeness', 'LCV', 'aLCV']
       completeness = flex.double()
       for i, cluster in clusters.iteritems():
         sel_cluster = flex.bool(batches.size(), False)
         for j in cluster['dataset_ids']:
-          si = epoch_to_si[epochs[j-1]]
-          batch_start, batch_end = si.get_batches()
+          batch_start, batch_end = epoch_to_batches[epochs[j-1]]
           sel_cluster |= (
             (batches.data() >= batch_start) & (batches.data() <= batch_end))
         intensities_cluster = intensities.select(sel_cluster)
@@ -165,8 +178,7 @@ def multi_crystal_analysis(stop_after=None):
   for i, cluster in intensity_clusters.iteritems():
     sel_cluster = flex.bool(batches.size(), False)
     for j in cluster['datasets']:
-      si = epoch_to_si[epochs[j-1]]
-      batch_start, batch_end = si.get_batches()
+      batch_start, batch_end = epoch_to_batches[epochs[j-1]]
       sel_cluster |= (
         (batches.data() >= batch_start) & (batches.data() <= batch_end))
     intensities_cluster = intensities.select(sel_cluster)
