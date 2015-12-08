@@ -61,7 +61,7 @@ def multi_crystal_analysis(stop_after=None):
 
     epoch_to_si = {}
     try:
-      epochs = scaler._sweep_information.iteritems()
+      epochs = scaler._sweep_information.keys()
       for epoch in epochs:
         si = scaler._sweep_information[epoch]
         epoch_to_si[epoch] = si
