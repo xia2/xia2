@@ -23,7 +23,7 @@ def ExportXDS(DriverType = None):
 
     def __init__(self):
       DriverInstance.__class__.__init__(self)
-      self.set_executable('dials.export_xds')
+      self.set_executable('dials.export')
 
       self._sweep_filename = None
       self._crystal_filename = None
@@ -36,10 +36,11 @@ def ExportXDS(DriverType = None):
 
     def run(self):
       from Handlers.Streams import Debug
-      Debug.write('Running dials.export_xds')
+      Debug.write('Running dials.export')
 
       self.clear_command_line()
       self.add_command_line(self._experiments_filename)
+      self.add_command_line('format=xds')
       self.start()
       self.close_wait()
       self.check_for_errors()
