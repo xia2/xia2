@@ -110,8 +110,7 @@ def multi_crystal_analysis(stop_after=None):
       clusters = hand_blender.get_clusters()
 
       linkage_matrix = hand_blender.get_linkage_matrix()
-      hand_blender.plot_dendrogram()
-      #print linkage_matrix
+      ddict = hand_blender.plot_dendrogram()
 
       rows = []
       headers = ['Cluster', 'Datasets', 'Multiplicity', 'Completeness', 'LCV', 'aLCV']
@@ -144,6 +143,9 @@ def multi_crystal_analysis(stop_after=None):
       print tabulate(rows, headers, tablefmt='rst')
       print
 
+      blend_html = tabulate(rows, headers, tablefmt='html').replace(
+        '<table>', '<table class="table table-hover table-condensed">').replace(
+    '<td>', '<td style="text-align: right;">')
 
   # XXX what about multiple wavelengths?
   with open('batches.phil', 'wb') as f:
@@ -201,6 +203,119 @@ def multi_crystal_analysis(stop_after=None):
   print 'Intensity clustering summary:'
   print tabulate(rows, headers, tablefmt='rst')
   print
+
+  intensity_clustering_html = tabulate(rows, headers, tablefmt='html').replace(
+    '<table>', '<table class="table table-hover table-condensed">').replace(
+    '<td>', '<td style="text-align: right;">')
+
+  import json
+
+  json_data = {}
+  if ddict is not None:
+    from xia2.Modules.MultiCrystalAnalysis import scipy_dendrogram_to_plotly_json
+    json_data['blend_dendrogram'] = scipy_dendrogram_to_plotly_json(ddict)
+  else:
+    json_data['blend_dendrogram'] = {'data': [], 'layout': {}}
+
+  json_data['intensity_clustering'] = mca.get_dict()
+  del json_data['intensity_clustering']['clusters']
+
+  json_str = json.dumps(json_data)
+
+  javascript = ['var graphs = %s' %(json_str)]
+  javascript.append(
+    'Plotly.newPlot(blend_dendrogram, graphs.blend_dendrogram.data, graphs.blend_dendrogram.layout);')
+  javascript.append(
+    'Plotly.newPlot(intensity_clustering, graphs.intensity_clustering.data, graphs.intensity_clustering.layout);')
+
+  html_header = '''
+<head>
+
+<!-- Plotly.js -->
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+<meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+<style type="text/css">
+
+body {
+  /*font-family: Helmet, Freesans, Helvetica, Arial, sans-serif;*/
+  margin: 8px;
+  min-width: 240px;
+  margin-left: 5%;
+  margin-right: 5%;
+}
+
+.plot {
+  float: left;
+  width: 1200px;
+  height: 800px;
+  margin-bottom: 20px;
+}
+
+</style>
+
+</head>
+
+'''
+
+  html_body = '''
+
+<body>
+
+<div class="page-header">
+  <h1>Multi-crystal analysis report</h1>
+</div>
+
+<div class="panel-group">
+  <div class="panel panel-default">
+    <div class="panel-heading" data-toggle="collapse" href="#collapse_cell">
+      <h4 class="panel-title">
+        <a>Unit cell clustering</a>
+      </h4>
+    </div>
+    <div id="collapse_cell" class="panel-collapse collapse">
+      <div class="panel-body">
+        <div class="table-responsive" style="width: 800px">
+          %(blend_html)s
+        </div>
+        <div class="col-xs-12 col-sm-12 col-md-12 plot" id="blend_dendrogram"></div>
+      </div>
+    </div>
+  </div>
+  <div class="panel panel-default">
+    <div class="panel-heading" data-toggle="collapse" href="#collapse_intensity">
+      <h4 class="panel-title">
+        <a>Intensity clustering</a>
+      </h4>
+    </div>
+    <div id="collapse_intensity" class="panel-collapse collapse">
+      <div class="panel-body">
+        <div class="table-responsive" style="width: 800px">
+          %(intensity_clustering_html)s
+        </div>
+        <div class="col-xs-12 col-sm-12 col-md-12 plot" id="intensity_clustering"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+%(script)s
+</script>
+</body>
+    ''' %{'script': '\n'.join(javascript),
+          'blend_html': blend_html,
+          'intensity_clustering_html': intensity_clustering_html}
+
+  html = '\n'.join([html_header, html_body])
+
+  print "Writing html report to: %s" %'multi-crystal-report.html'
+  with open('multi-crystal-report.html', 'wb') as f:
+    print >> f, html.encode('ascii', 'xmlcharrefreplace')
+
 
   write_citations()
 

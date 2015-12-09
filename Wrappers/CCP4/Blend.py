@@ -120,20 +120,16 @@ def Blend(DriverType = None):
     def get_analysis(self):
       return self._analysis
 
-    def plot_dendrogram(self, filename="blend_dendrogram.png"):
+    def get_label(self, dataset_id):
+      if len(self._labels) > 0:
+        assert dataset_id <= len(self._labels)
+        return self._labels[dataset_id - 1]
+      return None
+
+    def plot_dendrogram(self, filename="blend_dendrogram.png", no_plot=False):
       from scipy.cluster import hierarchy
 
-      try:
-        import matplotlib
-        # http://matplotlib.org/faq/howto_faq.html#generate-images-without-having-a-window-appear
-        matplotlib.use('Agg') # use a non-interactive backend
-        from matplotlib import pyplot
-      except ImportError:
-        raise Sorry("matplotlib must be installed to generate a plot.")
-
       linkage_matrix = self.get_linkage_matrix()
-
-      fig = pyplot.figure(dpi=1200, figsize=(16,12))
 
       labels = self._labels
       if len(labels) == 0:
@@ -141,16 +137,33 @@ def Blend(DriverType = None):
       else:
         assert len(labels) == len(self._hklin_files)
 
-      hierarchy.dendrogram(linkage_matrix,
+      if not no_plot:
+        try:
+          import matplotlib
+          # http://matplotlib.org/faq/howto_faq.html#generate-images-without-having-a-window-appear
+          matplotlib.use('Agg') # use a non-interactive backend
+          from matplotlib import pyplot
+        except ImportError:
+          raise Sorry("matplotlib must be installed to generate a plot.")
+
+
+        fig = pyplot.figure(dpi=1200, figsize=(16,12))
+
+      d = hierarchy.dendrogram(linkage_matrix,
                            #truncate_mode='lastp',
                            color_threshold=0.05,
                            labels=labels,
                            #leaf_rotation=90,
-                           show_leaf_counts=False)
-      locs, labels = pyplot.xticks()
-      pyplot.setp(labels, rotation=70)
-      pyplot.ylabel('Ward distance')
-      fig.savefig(filename)
+                           show_leaf_counts=False,
+                           no_plot=no_plot)
+
+      if not no_plot:
+        locs, labels = pyplot.xticks()
+        pyplot.setp(labels, rotation=70)
+        pyplot.ylabel('Ward distance')
+        fig.savefig(filename)
+
+      return d
 
   return BlendWrapper()
 

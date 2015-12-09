@@ -53,12 +53,15 @@ def MultiCrystalAnalysis(DriverType = None):
       assert os.path.exists(self._clusters_json)
       import json
       with open(self._clusters_json, 'rb') as f:
-        self._clusters = json.load(f)
+        self._dict = json.load(f)
+      self._clusters = self._dict['clusters']
 
       return
 
     def get_clusters(self):
       return self._clusters
 
-  return MultiCrystalAnalysisWrapper()
+    def get_dict(self):
+      return self._dict
 
+  return MultiCrystalAnalysisWrapper()

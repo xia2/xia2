@@ -110,9 +110,40 @@ class multi_crystal_analysis(object):
     if racc is not None:
       self.plot_relative_anomalous_cc(racc, labels=labels)
     correlation_matrix, linkage_matrix = self.compute_correlation_coefficient_matrix()
+
+    self._cluster_dict = self.to_dict(correlation_matrix, linkage_matrix)
+
     self.plot_cc_matrix(correlation_matrix, linkage_matrix, labels=labels)
 
-    self.write_output(correlation_matrix, linkage_matrix, racc)
+    self.write_output()
+
+  def to_dict(self, correlation_matrix, linkage_matrix):
+
+    from scipy.cluster import hierarchy
+    tree = hierarchy.to_tree(linkage_matrix, rd=False)
+    leaves_list = hierarchy.leaves_list(linkage_matrix)
+
+    d = {}
+
+    # http://w3facility.org/question/scipy-dendrogram-to-json-for-d3-js-tree-visualisation/
+    # https://gist.github.com/mdml/7537455
+
+    def add_node(node):
+      if node.is_leaf(): return
+      cluster_id = node.get_id() - len(linkage_matrix) - 1
+      row = linkage_matrix[cluster_id]
+      d[cluster_id+1] = {
+        'datasets': [i+1 for i in sorted(node.pre_order())],
+        'height': row[2],
+      }
+
+      # Recursively add the current node's children
+      if node.left: add_node(node.left)
+      if node.right: add_node(node.right)
+
+    add_node(tree)
+
+    return d
 
   def relative_anomalous_cc(self):
     if self.unmerged_intensities.anomalous_flag():
@@ -213,64 +244,239 @@ class multi_crystal_analysis(object):
     if labels is None:
       labels = ['%i' %(i+1) for i in range(len(self.intensities))]
 
-    hierarchy.dendrogram(linkage_matrix,
-                         #truncate_mode='lastp',
-                         color_threshold=0.05,
-                         labels=labels,
-                         #leaf_rotation=90,
-                         show_leaf_counts=False)
+    ddict = hierarchy.dendrogram(linkage_matrix,
+                                 #truncate_mode='lastp',
+                                 color_threshold=0.05,
+                                 labels=labels,
+                                 #leaf_rotation=90,
+                                 show_leaf_counts=False)
     locs, labels = pyplot.xticks()
     pyplot.setp(labels, rotation=70)
     fig.savefig('dendrogram.png')
 
-  def write_output(self, correlation_matrix, linkage_matrix, racc):
-    from scipy.cluster import hierarchy
-    tree = hierarchy.to_tree(linkage_matrix, rd=False)
-    leaves_list = hierarchy.leaves_list(linkage_matrix)
-    #print tree
-    #print leaves_list
-    #print tree.get_count()
-    #print tree.get_id()
-    #print tree.get_left()
-    #print tree.get_right()
-    #print tree.is_leaf()
-    #print tree.pre_order()
+    import copy
+    y2_dict = scipy_dendrogram_to_plotly_json(ddict) # above heatmap
+    x2_dict = copy.deepcopy(y2_dict) # left of heatmap, rotated
+    for d in y2_dict['data']:
+      d['yaxis'] = 'y2'
+      d['xaxis'] = 'x2'
 
-    cluster_dict = {}
+    for d in x2_dict['data']:
+      x = d['x']
+      y = d['y']
+      d['x'] = y
+      d['y'] = x
+      d['yaxis'] = 'y3'
+      d['xaxis'] = 'x3'
 
-    # http://w3facility.org/question/scipy-dendrogram-to-json-for-d3-js-tree-visualisation/
-    # https://gist.github.com/mdml/7537455
+    ccdict = {
+      'data': [{
+        'name': 'correlation_matrix',
+        'x': list(range(D.shape[0])),
+        'y': list(range(D.shape[1])),
+        'z': D.tolist(),
+        'type': 'heatmap',
+        'colorbar': {
+          'title': 'Correlation coefficient',
+          'titleside': 'right',
+          #'x': 0.96,
+          #'y': 0.9,
+          #'titleside': 'top',
+          #'xanchor': 'right',
+          'xpad': 0,
+          #'yanchor': 'top'
+        },
+        'colorscale': 'Jet',
+        'xaxis': 'x',
+        'yaxis': 'y',
+      }],
 
-    def add_node(node):
-      if node.is_leaf(): return
-      cluster_id = node.get_id() - len(linkage_matrix) - 1
-      row = linkage_matrix[cluster_id]
-      cluster_dict[cluster_id+1] = {
-        'datasets': [i+1 for i in sorted(node.pre_order())],
-        'height': row[2],
+      'layout': {
+        'autosize': False,
+        'bargap': 0,
+        'height': 1000,
+        'hovermode': 'closest',
+        'margin': {
+          'r': 20,
+          't': 50,
+          'autoexpand': True,
+          'l': 20
+          },
+        'showlegend': False,
+        'title': 'Dendrogram Heatmap',
+        'width': 1000,
+        'xaxis': {
+          'domain': [0.2, 0.9],
+          'mirror': 'allticks',
+          'showgrid': False,
+          'showline': False,
+          'showticklabels': True,
+          'tickmode': 'array',
+          'ticks': '',
+          'ticktext': y2_dict['layout']['xaxis']['ticktext'],
+          'tickvals': list(range(len(y2_dict['layout']['xaxis']['ticktext']))),
+          'tickangle': 300,
+          'title': '',
+          'type': 'linear',
+          'zeroline': False
+        },
+        'yaxis': {
+          'domain': [0, 0.78],
+          'anchor': 'x',
+          'mirror': 'allticks',
+          'showgrid': False,
+          'showline': False,
+          'showticklabels': True,
+          'tickmode': 'array',
+          'ticks': '',
+          'ticktext': y2_dict['layout']['xaxis']['ticktext'],
+          'tickvals': list(range(len(y2_dict['layout']['xaxis']['ticktext']))),
+          'title': '',
+          'type': 'linear',
+          'zeroline': False
+        },
+        'xaxis2': {
+          'domain': [0.2, 0.9],
+          'anchor': 'y2',
+          'showgrid': False,
+          'showline': False,
+          'showticklabels': False,
+          'zeroline': False
+        },
+        'yaxis2': {
+          'domain': [0.8, 1],
+          'anchor': 'x2',
+          'showgrid': False,
+          'showline': False,
+          'zeroline': False
+        },
+        'xaxis3': {
+          'domain': [0.0, 0.1],
+          'anchor': 'y3',
+          'range': [max(max(d['x']) for d in x2_dict['data']), 0],
+          'showgrid': False,
+          'showline': False,
+          'tickangle': 300,
+          'zeroline': False
+        },
+        'yaxis3': {
+          'domain': [0, 0.78],
+          'anchor': 'x3',
+          'showgrid': False,
+          'showline': False,
+          'showticklabels': False,
+          'zeroline': False
+        },
       }
+    }
+    d = ccdict
+    d['data'].extend(y2_dict['data'])
+    d['data'].extend(x2_dict['data'])
 
-      # Recursively add the current node's children
-      if node.left: add_node(node.left)
-      if node.right: add_node(node.right)
+    d['clusters'] = self._cluster_dict
 
-    add_node(tree)
+    import json
+    with open('intensity_clusters.json', 'wb') as f:
+      json.dump(d, f, indent=2)
+
+
+  def write_output(self):
 
     rows = [["cluster_id", "# datasets", "height", "datasets"]]
-    for cid in sorted(cluster_dict.keys()):
-      cluster = cluster_dict[cid]
+    for cid in sorted(self._cluster_dict.keys()):
+      cluster = self._cluster_dict[cid]
       datasets = cluster['datasets']
       rows.append([str(cid), str(len(datasets)),
                    '%.2f' %cluster['height'], ' '.join(['%s'] * len(datasets)) % tuple(datasets)])
-
-    with open('intensity_clusters.json', 'wb') as f:
-      import json
-      json.dump(cluster_dict, f)
 
     with open('intensity_clustering.txt', 'wb') as f:
       from libtbx import table_utils
       print >> f, table_utils.format(
         rows, has_header=True, prefix="|", postfix="|")
+
+
+def scipy_dendrogram_to_plotly_json(ddict):
+  colors = { 'b': 'rgb(31, 119, 180)',
+             'g': 'rgb(44, 160, 44)',
+             'o': 'rgb(255, 127, 14)',
+             'r': 'rgb(214, 39, 40)',
+  }
+
+  dcoord = ddict['dcoord']
+  icoord = ddict['icoord']
+  color_list = ddict['color_list']
+  ivl = ddict['ivl']
+  leaves = ddict['leaves']
+
+  data = []
+  xticktext = []
+  xtickvals = []
+
+  k_leaf_node = 0
+
+  for k in range(len(dcoord)):
+    x = icoord[k]
+    y = dcoord[k]
+
+    if y[0] == 0:
+      xticktext.append(ivl[k_leaf_node])
+      xtickvals.append(x[0])
+      k_leaf_node += 1
+    if y[3] == 0:
+      xticktext.append(ivl[k_leaf_node])
+      xtickvals.append(x[3])
+      k_leaf_node += 1
+
+    data.append({
+      'x': x,
+      'y': y,
+      'name': ivl,
+      'marker': {
+        'color': colors.get(color_list[k]),
+      },
+      'mode':"lines",
+    })
+
+  d = {
+    'data': data,
+    'layout': {
+      'barmode': 'group',
+      'legend': {
+        'x': 100,
+        'y': 0.5,
+        'bordercolor': 'transparent'
+      },
+      'margin': {
+        'r': 10
+      },
+      'showlegend': False,
+      'title': 'BLEND dendrogram',
+      'xaxis': {
+        'showline': False,
+        'showgrid': False,
+        'showticklabels': True,
+        'tickangle': 300,
+        'title': 'Individual datasets',
+        'titlefont': {
+          'color': 'none'
+        },
+        'type': 'linear',
+        'ticktext': xticktext,
+        'tickvals': xtickvals,
+        'tickorientation': 'vertical',
+      },
+      'yaxis': {
+        'showline': False,
+        'showgrid': False,
+        'showticklabels': True,
+        'tickangle': 0,
+        'title': 'Ward distance',
+        'type': 'linear'
+      },
+      'hovermode': 'closest',
+    }
+  }
+  return d
 
 
 def run(args):
