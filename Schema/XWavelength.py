@@ -217,31 +217,33 @@ class XWavelength(object):
       result.extend(sweep.get_all_image_names())
     return result
 
-  def add_sweep(self, name, directory=None, image=None,
+  def add_sweep(self, name, sample, directory=None, image=None,
                 beam=None, reversephi=False, distance=None,
                 gain=0.0, dmin=0.0, dmax=0.0, polarization=0.0,
                 frames_to_process=None, user_lattice=None,
                 user_cell=None, epoch=0, ice=False, excluded_regions=[]):
     '''Add a sweep to this wavelength.'''
 
-    self._sweeps.append(XSweep(name, self,
-                               directory=directory,
-                               image=image,
-                               beam=beam,
-                               reversephi=reversephi,
-                               distance=distance,
-                               gain=gain,
-                               dmin=dmin,
-                               dmax=dmax,
-                               polarization=polarization,
-                               frames_to_process=frames_to_process,
-                               user_lattice=user_lattice,
-                               user_cell=user_cell,
-                               epoch=epoch,
-                               ice=ice,
-                               excluded_regions=excluded_regions))
+    xsweep = XSweep(name, self,
+                    sample=sample,
+                    directory=directory,
+                    image=image,
+                    beam=beam,
+                    reversephi=reversephi,
+                    distance=distance,
+                    gain=gain,
+                    dmin=dmin,
+                    dmax=dmax,
+                    polarization=polarization,
+                    frames_to_process=frames_to_process,
+                    user_lattice=user_lattice,
+                    user_cell=user_cell,
+                    epoch=epoch,
+                    ice=ice,
+                    excluded_regions=excluded_regions)
+    self._sweeps.append(xsweep)
 
-    return
+    return xsweep
 
   def get_sweeps(self):
     return self._sweeps

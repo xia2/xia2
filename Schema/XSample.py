@@ -1,0 +1,83 @@
+#!/usr/bin/env python
+# XSample.py
+#   Copyright (C) 2015 Diamond Light Source, Richard Gildea
+#   This code is distributed under the BSD license, a copy of which is
+#   included in the root directory of this package.
+
+from XSweep import XSweep
+from Handlers.Flags import Flags
+from Handlers.Streams import Chatter
+
+class XSample(object):
+  '''An object representation of a sample.'''
+
+  def __init__(self, name, crystal):
+    '''Create a new sample named name, belonging to XCrystal object crystal.'''
+
+    # check that the crystal is an XCrystal
+
+    if not crystal.__class__.__name__ == 'XCrystal':
+      pass
+
+    # set up this object
+
+    self._name = name
+    self._crystal = crystal
+
+    # then create space to store things which are contained
+    # in here - the sweeps
+
+    self._sweeps = []
+
+    return
+
+  # serialization functions
+
+  def to_dict(self):
+    obj = {}
+    obj['__id__'] = 'XSample'
+    import inspect
+    attributes = inspect.getmembers(self, lambda m:not(inspect.isroutine(m)))
+    for a in attributes:
+      if a[0] == '_sweeps':
+        sweeps = []
+        for sweep in a[1]:
+          sweeps.append(sweep.to_dict())
+        obj[a[0]] = sweeps
+      elif a[0] == '_crystal':
+        # don't serialize this since the parent xsample *should* contain
+        # the reference to the child xsweep
+        continue
+      elif a[0].startswith('__'):
+        continue
+      else:
+        obj[a[0]] = a[1]
+    return obj
+
+  @classmethod
+  def from_dict(cls, obj):
+    assert obj['__id__'] == 'XSample'
+    return_obj = cls(name=None, crystal=None)
+    for k, v in obj.iteritems():
+      if k == '_sweeps':
+        v = [s_dict['_name'] for s_dict in v]
+      setattr(return_obj, k, v)
+    return return_obj
+
+  def get_output(self):
+    result = 'Sample name: %s\n' % self._name
+
+    result += 'Sweeps:\n'
+
+    from Driver.DriverFactory import DriverFactory
+
+    return result[:-1]
+
+  def get_crystal(self):
+    return self._crystal
+
+  def get_name(self):
+    return self._name
+
+  def add_sweep(self, sweep):
+    self._sweeps.append(sweep)

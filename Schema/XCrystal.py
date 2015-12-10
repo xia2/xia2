@@ -327,8 +327,9 @@ class XCrystal(object):
     # note that I am making allowances for > 1 heavy atom class...
     # FIXME 18/SEP/06 these should be in a dictionary which is keyed
     # by the element name...
-    self._ha_info = { }
-    self._wavelengths = { }
+    self._ha_info = {}
+    self._wavelengths = {}
+    self._samples = {}
     self._lattice_manager = None
 
     # hooks to dangle command interfaces from
@@ -367,6 +368,11 @@ class XCrystal(object):
         for wname, wav in a[1].iteritems():
           wavs[wname] = wav.to_dict()
         obj[a[0]] = wavs
+      elif a[0] == '_samples':
+        samples = {}
+        for sname, sample in a[1].iteritems():
+          samples[sname] = sample.to_dict()
+        obj[a[0]] = samples
       elif a[0] == '_project':
         # don't serialize this since the parent xproject *should* contain
         # the pointer to the child xcrystal
@@ -387,6 +393,7 @@ class XCrystal(object):
   @classmethod
   def from_dict(cls, obj):
     from Schema.XWavelength import XWavelength
+    from Schema.XSample import XSample
     assert obj['__id__'] == 'XCrystal'
     return_obj = cls(name=None, project=None)
     for k, v in obj.iteritems():
@@ -404,12 +411,32 @@ class XCrystal(object):
           wav._crystal = return_obj
           v_[wname] = wav
         v = v_
+      elif k == '_samples':
+        v_ = {}
+        for sname, sdict in v.iteritems():
+          sample = XSample.from_dict(sdict)
+          sample._crystal = return_obj
+          v_[sname] = sample
+        v = v_
       elif k == '_aa_sequence' and v is not None:
         v = _aa_sequence.from_dict(v)
       elif k == '_ha_info' and v is not None:
         for k_, v_ in v.iteritems():
           v[k_] = _ha_info.from_dict(v_)
       setattr(return_obj, k, v)
+    sweep_dict = {}
+    for sample in return_obj._samples.values():
+      for i, sname in enumerate(sample._sweeps):
+        found_sweep = False
+        for wav in return_obj._wavelengths.values():
+          if found_sweep: break
+          for sweep in wav._sweeps:
+            if sweep.get_name() == sname:
+              sample._sweeps[i] = sweep
+              sweep._sample = sample
+              found_sweep = True
+              break
+      for s in sample._sweeps: assert not isinstance(s, basestring)
     if return_obj._scaler is not None:
       for intgr in return_obj._get_integraters():
         return_obj._scaler._scalr_integraters[intgr.get_integrater_epoch()] \
@@ -773,6 +800,23 @@ class XCrystal(object):
 
     if xwavelength.get_f_pr() != 0.0 or xwavelength.get_f_prpr() != 0.0:
       self._anomalous = True
+
+    return
+
+  def get_xsample(self, sample_name):
+    '''Get a named xsample object back.'''
+    return self._samples[sample_name]
+
+  def add_sample(self, xsample):
+
+    if xsample.__class__.__name__ != 'XSample':
+      raise RuntimeError, 'input should be an XSample object'
+
+    if xsample.get_name() in self._samples.keys():
+      raise RuntimeError, 'XSample with name %s already exists' % \
+            xsample.get_name()
+
+    self._samples[xsample.get_name()] = xsample
 
     return
 

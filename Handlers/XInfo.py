@@ -143,12 +143,13 @@ class XInfo(object):
         #           information
 
         self._crystals[crystal] = {
-            'sequence':'',
-            'wavelengths':OrderedDict(),
-            'sweeps':OrderedDict(),
-            'ha_info':OrderedDict(),
-            'crystal_data':OrderedDict()
-            }
+          'sequence':'',
+          'wavelengths': OrderedDict(),
+          'samples': OrderedDict(),
+          'sweeps': OrderedDict(),
+          'ha_info': OrderedDict(),
+          'crystal_data': OrderedDict()
+        }
 
       # next look for interesting stuff in the data structure...
       # starting with the sequence
@@ -183,6 +184,15 @@ class XInfo(object):
           self._crystals[crystal]['ha_info'][key] = value
           i += 1
           record = crystal_records[i]
+
+      if 'BEGIN SAMPLE' in record:
+        sample = record.replace('BEGIN SAMPLE ', '').strip()
+        i += 1
+        record = crystal_records[i]
+        while not 'END SAMPLE' in record:
+          i += 1
+          record = crystal_records[i]
+        self._crystals[crystal]['samples'][sample] = {}
 
       # look for wavelength definitions
       # FIXME need to check that there are not two wavelength
@@ -323,33 +333,33 @@ class XInfo(object):
 
           if 'WAVELENGTH' == record.split()[0]:
             wavelength = record.replace('WAVELENGTH', '').strip()
-            if not wavelength in self._crystals[crystal][
-                'wavelengths'].keys():
+            if not wavelength in self._crystals[crystal]['wavelengths'].keys():
               raise RuntimeError, \
                     'wavelength %s unknown for crystal %s' % \
                     (wavelength, crystal)
+            self._crystals[crystal]['sweeps'][sweep]['wavelength'] = wavelength
 
-            self._crystals[crystal]['sweeps'][sweep][
-                'wavelength'] = wavelength
+          elif 'SAMPLE' == record.split()[0]:
+            sample = record.replace('SAMPLE ', '').strip()
+            if not sample in self._crystals[crystal]['samples'].keys():
+              raise RuntimeError, \
+                  'sample %s unknown for crystal %s' % (sample, crystal)
+            self._crystals[crystal]['sweeps'][sweep]['sample'] = sample
 
           elif 'BEAM' == record.split()[0]:
             beam = map(float, record.split()[1:])
-            self._crystals[crystal]['sweeps'][sweep][
-                'beam'] = beam
+            self._crystals[crystal]['sweeps'][sweep]['beam'] = beam
 
           elif 'DISTANCE' == record.split()[0]:
             distance = float(record.split()[1])
-            self._crystals[crystal]['sweeps'][sweep][
-                'distance'] = distance
+            self._crystals[crystal]['sweeps'][sweep]['distance'] = distance
 
           elif 'EPOCH' == record.split()[0]:
             epoch = int(record.split()[1])
-            self._crystals[crystal]['sweeps'][sweep][
-                'epoch'] = epoch
+            self._crystals[crystal]['sweeps'][sweep]['epoch'] = epoch
 
           elif 'REVERSEPHI' == record.split()[0]:
-            self._crystals[crystal]['sweeps'][sweep][
-                'reversephi'] = True
+            self._crystals[crystal]['sweeps'][sweep]['reversephi'] = True
 
           elif 'START_END' == record.split()[0]:
             if 'start_end' not in self._crystals[crystal]['sweeps'][sweep]:
@@ -357,13 +367,11 @@ class XInfo(object):
               if len(start_end) != 2:
                 raise RuntimeError, \
                       'START_END start end, not "%s"' % record
-              self._crystals[crystal]['sweeps'][sweep][
-                  'start_end'] = start_end
+              self._crystals[crystal]['sweeps'][sweep]['start_end'] = start_end
 
           elif 'EXCLUDE' == record.split()[0]:
             if record.split()[1].upper() == 'ICE':
-              self._crystals[crystal]['sweeps'][sweep][
-                  'ice'] = True
+              self._crystals[crystal]['sweeps'][sweep]['ice'] = True
             else:
               excluded_region = map(float, record.split()[1:])
               if len(excluded_region) != 2:
@@ -375,14 +383,13 @@ class XInfo(object):
                       'EXCLUDE upper lower, where upper \
                        must be greater than lower (not "%s").\n\
                        eg. EXCLUDE 2.28 2.22' % record
-              self._crystals[crystal]['sweeps'][sweep][
-                  'excluded_regions'].append(excluded_region)
+              self._crystals[crystal]['sweeps'][sweep]['excluded_regions'].append(
+                excluded_region)
 
           else:
             key = record.split()[0]
             value = record.replace(key, '').strip()
-            self._crystals[crystal]['sweeps'][sweep][
-                key] = value
+            self._crystals[crystal]['sweeps'][sweep][key] = value
 
           i += 1
           record = crystal_records[i]

@@ -23,6 +23,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from Schema.XCrystal import XCrystal
 from Schema.XWavelength import XWavelength
+from Schema.XSample import XSample
 
 # .xinfo parser
 
@@ -212,6 +213,16 @@ class XProject(object):
         # XXX do we ever actually get here?
         xc.set_user_spacegroup(settings.space_group.type().lookup_symbol())
 
+      # add a default sample if none present in xinfo file
+      if len(crystals[crystal]['samples']) == 0:
+        crystals[crystal]['samples']['X1'] = {}
+
+      for sample in crystals[crystal]['samples'].keys():
+        sample_info = crystals[crystal]['samples'][sample]
+
+        xsample = XSample(sample, xc)
+        xc.add_sample(xsample)
+
       for wavelength in crystals[crystal]['wavelengths'].keys():
         # FIXME 29/NOV/06 in here need to be able to cope with
         # no wavelength information - this should default to the
@@ -285,6 +296,16 @@ class XProject(object):
         for sweep_name in crystals[crystal]['sweeps'].keys():
           sweep_info = crystals[crystal]['sweeps'][sweep_name]
 
+          sample_name = sweep_info.get('sample')
+          if sample_name is None:
+            if len(crystals[crystal]['samples']) == 1:
+              sample_name = crystals[crystal]['samples'].keys()[0]
+            else:
+              raise RuntimeError('No sample given for sweep %s' %sweep_name)
+
+          xsample = xc.get_xsample(sample_name)
+          assert xsample is not None
+
           dmin_old = dmin
           dmax_old = dmax
           replace = False
@@ -309,7 +330,6 @@ class XProject(object):
           if 'excluded_regions' in sweep_info:
             pass
 
-
           if sweep_info['wavelength'] == wavelength:
 
             frames_to_process = sweep_info.get('start_end')
@@ -317,8 +337,9 @@ class XProject(object):
             if not frames_to_process and Flags.get_start_end():
               frames_to_process = Flags.get_start_end()
 
-            xw.add_sweep(
+            xsweep = xw.add_sweep(
               sweep_name,
+              sample=xsample,
               directory = sweep_info.get('DIRECTORY'),
               image = sweep_info.get('IMAGE'),
               beam = sweep_info.get('beam'),
@@ -336,6 +357,8 @@ class XProject(object):
               excluded_regions = sweep_info.get(
                 'excluded_regions', []),
               )
+
+            xsample.add_sweep(xsweep)
 
           dmin = dmin_old
           dmax = dmax_old

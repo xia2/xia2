@@ -148,6 +148,7 @@ class XSweep(object):
 
   def __init__(self, name,
                wavelength,
+               sample,
                directory = None,
                image = None,
                beam = None,
@@ -185,6 +186,7 @@ class XSweep(object):
 
     self._name = name
     self._wavelength = wavelength
+    self._sample = sample
     self._directory = directory
     self._image = image
     self._reversephi = reversephi
@@ -376,7 +378,11 @@ class XSweep(object):
         obj[a[0]] = imageset_to_dict(a[1])
       elif a[0] == '_wavelength':
         # don't serialize this since the parent xwavelength *should* contain
-        # the reference to the child xsweeo
+        # the reference to the child xsweep
+        continue
+      elif a[0] == '_sample':
+        # don't serialize this since the parent xsample *should* contain
+        # the reference to the child xsweep
         continue
       elif a[0].startswith('__'):
         continue
@@ -387,7 +393,7 @@ class XSweep(object):
   @classmethod
   def from_dict(cls, obj):
     assert obj['__id__'] == 'XSweep'
-    return_obj = cls(name=None, wavelength=None)
+    return_obj = cls(name=None, sample=None, wavelength=None)
     for k, v in obj.iteritems():
       if k in ('_indexer', '_refiner', '_integrater') and v is not None:
         from libtbx.utils import import_python_object
@@ -858,6 +864,9 @@ class XSweep(object):
 
   def get_indexer_beam_centre(self):
     return self._get_indexer().get_indexer_beam_centre()
+
+  def get_wavelength(self):
+    return self._sample
 
   def get_wavelength(self):
     return self._wavelength
