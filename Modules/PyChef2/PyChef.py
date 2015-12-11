@@ -499,6 +499,15 @@ class Statistics(PyStatistics):
   def __init__(self, intensities, dose, n_bins=8,
                range_min=None, range_max=None, range_width=1):
 
+    if isinstance(dose, flex.double):
+      sorted_dose = flex.sorted(dose)
+      dd = sorted_dose[1:] - sorted_dose[:-1]
+      step_size = flex.min(dd.select(dd > 0))
+      dose /= step_size
+      dose = dose.iround()
+      if flex.min(dose) == 0:
+        dose += 1
+
     self.intensities = intensities
     self.dose = dose
     self.n_bins = n_bins
@@ -800,6 +809,7 @@ def run(args):
 
   intensities = None
   batches = None
+  dose = None
 
   reader = any_reflection_file(args[0])
   assert reader.file_type() == 'ccp4_mtz'
@@ -807,6 +817,8 @@ def run(args):
   for ma in arrays:
     if ma.info().labels == ['BATCH']:
       batches = ma
+    elif ma.info().labels == ['DOSE']:
+      dose = ma
     elif ma.info().labels == ['I', 'SIGI']:
       intensities = ma
     elif ma.info().labels == ['I(+)', 'SIGI(+)', 'I(-)', 'SIGI(-)']:
@@ -828,7 +840,10 @@ def run(args):
     intensities = intensities.as_anomalous_array()
     batches = batches.as_anomalous_array()
 
-  dose = batches_to_dose(batches.data(), params.dose)
+  if dose is None:
+    dose = batches_to_dose(batches.data(), params.dose)
+  else:
+    dose = dose.data()
 
   sel = dose > -1
   intensities = intensities.select(sel)

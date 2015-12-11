@@ -23,6 +23,7 @@ def run(args):
   intensities = None
   batches = None
   scales = None
+  dose = None
 
   reader = any_reflection_file(args[0])
   assert reader.file_type() == 'ccp4_mtz'
@@ -30,6 +31,8 @@ def run(args):
   for ma in arrays:
     if ma.info().labels == ['BATCH']:
       batches = ma
+    elif ma.info().labels == ['DOSE']:
+      dose = ma
     elif ma.info().labels == ['I', 'SIGI']:
       intensities = ma
     elif ma.info().labels == ['I(+)', 'SIGI(+)', 'I(-)', 'SIGI(-)']:
@@ -183,7 +186,10 @@ def run(args):
     intensities = intensities.select(sel)
     batches = batches.select(sel)
 
-  dose = PyChef.batches_to_dose(batches.data(), params.dose)
+  if dose is None:
+    dose = PyChef.batches_to_dose(batches.data(), params.dose)
+  else:
+    dose = dose.data()
   pychef_stats = PyChef.Statistics(intensities, dose)
 
   pychef_dict = pychef_stats.to_dict()
