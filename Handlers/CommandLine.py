@@ -1536,6 +1536,8 @@ class _CommandLine(object):
 
     if '-3d' in self._argv:
       settings = PhilIndex.get_python_object().xia2.settings
+      if settings.indexer is None:
+        PhilIndex.update("xia2.settings.indexer=xds")
       if settings.refiner is None:
         PhilIndex.update("xia2.settings.refiner=xds")
       if settings.integrater is None:
