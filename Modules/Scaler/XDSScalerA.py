@@ -48,9 +48,6 @@ from Handlers.Flags import Flags
 from Handlers.Files import FileHandler
 from Handlers.Phil import PhilIndex
 
-# stuff I have nicked from the CCP4 Scaler implementation
-from Modules.DoseAccumulate import accumulate
-
 # newly implemented CCTBX powered functions to replace xia2 binaries
 from Modules.Scaler.add_dose_time_to_mtz import add_dose_time_to_mtz
 from Modules.Scaler.compute_average_unit_cell import compute_average_unit_cell
