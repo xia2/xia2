@@ -1129,3 +1129,18 @@ class CCP4ScalerA(Scaler):
   def _prepare_pointless_hklin(self, hklin, phi_width):
     return _prepare_pointless_hklin(self.get_working_directory(),
                                     hklin, phi_width)
+
+  def get_batch_to_dose(self):
+    batch_to_dose = {}
+    epoch_to_dose = {}
+    for xsample in self.get_scaler_xcrystal()._samples.values():
+      epoch_to_dose.update(xsample.get_epoch_to_dose())
+    for si in self._sweep_handler._sweep_information.values():
+      batch_offset = si.get_batch_offset()
+      for b in range(si.get_batches()[0], si.get_batches()[1]+1):
+        if len(epoch_to_dose):
+          batch_to_dose[b] = epoch_to_dose[si._image_to_epoch[b-batch_offset+1]]
+        else:
+          # backwards compatibility 2015-12-11
+          batch_to_dose[b] = b
+    return batch_to_dose

@@ -1336,3 +1336,17 @@ class XDSScalerA(Scaler):
 
     return
 
+  def get_batch_to_dose(self):
+    batch_to_dose = {}
+    epoch_to_dose = {}
+    for xsample in self.get_scaler_xcrystal()._samples.values():
+      epoch_to_dose.update(xsample.get_epoch_to_dose())
+    for si in self._sweep_information.values():
+      batch_offset = si['batch_offset']
+      for b in range(si['batches'][0], si['batches'][1]+1):
+        if len(epoch_to_dose):
+          batch_to_dose[b] = epoch_to_dose[si['image_to_epoch'][b-batch_offset+1]]
+        else:
+          # backwards compatibility 2015-12-11
+          batch_to_dose[b] = b
+    return batch_to_dose

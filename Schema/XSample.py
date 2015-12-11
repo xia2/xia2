@@ -31,6 +31,22 @@ class XSample(object):
 
     return
 
+  def get_epoch_to_dose(self):
+
+    from xia2.Modules.DoseAccumulate import accumulate_dose
+    epoch_to_dose = accumulate_dose(
+      [sweep.get_imageset() for sweep in self._sweeps])
+    return epoch_to_dose
+
+    #from matplotlib import pyplot
+    #for i, sweep in enumerate(self._sweeps):
+      #epochs = sweep.get_imageset().get_scan().get_epochs()
+      #pyplot.scatter(
+        #list(epochs), [epoch_to_dose[e] for e in epochs],
+        #marker='+', color='bg'[i])
+    #pyplot.show()
+
+
   # serialization functions
 
   def to_dict(self):

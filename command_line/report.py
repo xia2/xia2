@@ -185,6 +185,8 @@ def run(args):
     sel &= d_spacings >= d_min
     intensities = intensities.select(sel)
     batches = batches.select(sel)
+    if dose is not None:
+      dose = dose.select(sel)
 
   if dose is None:
     dose = PyChef.batches_to_dose(batches.data(), params.dose)

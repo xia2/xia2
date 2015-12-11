@@ -41,6 +41,29 @@ def epocher(images):
 
   return result
 
+def accumulate_dose(imagesets):
+  from scitbx.array_family import flex
+  epochs = flex.double()
+  exposure_times = flex.double()
+  for imageset in imagesets:
+    scan = imageset.get_scan()
+    epochs.extend(scan.get_epochs())
+    exposure_times.extend(scan.get_exposure_times())
+
+  perm = flex.sort_permutation(epochs)
+  epochs = epochs.select(perm)
+  exposure_times = exposure_times.select(perm)
+
+  from libtbx.containers import OrderedDict
+  integrated_dose = OrderedDict()
+
+  total = 0.0
+  for e, t in zip(epochs, exposure_times):
+    integrated_dose[e] = total + 0.5 * t
+    total += t
+
+  return integrated_dose
+
 def accumulate(images):
   '''Accumulate dose as a function of image epoch.'''
 

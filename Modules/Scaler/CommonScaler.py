@@ -701,9 +701,27 @@ class CommonScaler(Scaler):
       raise RuntimeError, 'no reflection files stored'
 
     # run xia2.report on each unmerged mtz file
-    for wavelength in self._scalr_scaled_refl_files.keys():
+    from iotbx.reflection_file_reader import any_reflection_file
+    from iotbx import mtz
+    from cctbx.array_family import flex
 
-      hklin = self._scalr_scaled_reflection_files['mtz_unmerged'][wavelength]
+    for wavelength in self._scalr_scaled_refl_files.keys():
+      mtz_unmerged = self._scalr_scaled_reflection_files['mtz_unmerged'][wavelength]
+      reader = any_reflection_file(mtz_unmerged)
+      mtz_object = reader.file_content()
+      batches = mtz_object.as_miller_arrays_dict()['HKL_base', 'HKL_base', 'BATCH']
+      dose = flex.double(batches.size(), -1)
+      batch_to_dose = self.get_batch_to_dose()
+      for i, b in enumerate(batches.data()):
+        dose[i] = batch_to_dose[b]
+      c = mtz_object.crystals()[0]
+      d = c.datasets()[0]
+      d.add_column('DOSE', 'R').set_values(dose.as_float())
+      tmp_mtz = os.path.join(self.get_working_directory(), 'dose_tmp.mtz')
+      mtz_object.write(tmp_mtz)
+      hklin = tmp_mtz
+      FileHandler.record_temporary_file(hklin)
+
       from Wrappers.XIA.Report import Report
       report = Report()
       report.set_working_directory(self.get_working_directory())
