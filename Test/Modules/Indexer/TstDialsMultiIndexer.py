@@ -34,6 +34,7 @@ def exercise_dials_multi_indexer(nproc=None):
 
   cryst = None
   wav = None
+  samp = None
 
   from Modules.Indexer.DialsMultiIndexer import DialsMultiIndexer
   multi_indexer = DialsMultiIndexer()
@@ -52,13 +53,15 @@ def exercise_dials_multi_indexer(nproc=None):
     from Schema.XCrystal import XCrystal
     from Schema.XWavelength import XWavelength
     from Schema.XSweep import XSweep
+    from Schema.XSample import XSample
 
     if cryst is None or wav is None:
       cryst = XCrystal("CRYST1", None)
       wav = XWavelength("WAVE1", cryst, indexer.get_wavelength())
+      samp = XSample("X1", cryst)
 
     directory, image = os.path.split(indexer.get_image_name(1))
-    sweep = XSweep('SWEEP1', wav, directory=directory, image=image)
+    sweep = XSweep('SWEEP1', wav, samp, directory=directory, image=image)
     indexer.set_indexer_sweep(sweep)
     indexer.set_multi_indexer(multi_indexer)
     multi_indexer.add_indexer(indexer)

@@ -50,10 +50,12 @@ def exercise_xds_integrater(nproc=None):
   from Schema.XCrystal import XCrystal
   from Schema.XWavelength import XWavelength
   from Schema.XSweep import XSweep
+  from Schema.XSample import XSample
   cryst = XCrystal("CRYST1", None)
   wav = XWavelength("WAVE1", cryst, indexer.get_wavelength())
+  samp = XSample("X1", cryst)
   directory, image = os.path.split(template %1)
-  sweep = XSweep('SWEEP1', wav, directory=directory, image=image)
+  sweep = XSweep('SWEEP1', wav, samp, directory=directory, image=image)
   indexer.set_indexer_sweep(sweep)
 
   from Modules.Refiner.XDSRefiner import XDSRefiner

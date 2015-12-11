@@ -48,15 +48,17 @@ def exercise_serialization():
   from Schema.XCrystal import XCrystal
   from Schema.XWavelength import XWavelength
   from Schema.XSweep import XSweep
+  from Schema.XSample import XSample
   proj = XProject()
   proj._name = "PROJ1"
   cryst = XCrystal("CRYST1", proj)
   proj.add_crystal(cryst)
   wav = XWavelength("WAVE1", cryst, wavelength=0.98)
+  samp = XSample("X1", cryst)
   cryst.add_wavelength(wav)
   cryst.set_ha_info({'atom': 'S'})
   directory, image = os.path.split(template %1)
-  wav.add_sweep(name='SWEEP1', directory=directory, image=image)
+  wav.add_sweep(name='SWEEP1', sample=samp, directory=directory, image=image)
 
   import json
   from dxtbx.serialize.load import _decode_dict

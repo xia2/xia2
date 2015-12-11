@@ -76,6 +76,7 @@ def exercise_mosflm_integrate(nproc):
   from Schema.XCrystal import XCrystal
   from Schema.XWavelength import XWavelength
   from Schema.XSweep import XSweep
+  from Schema.XSample import XSample
 
   from Handlers.Flags import Flags
   Flags.set_parallel(nproc)
@@ -97,8 +98,9 @@ def exercise_mosflm_integrate(nproc):
   m1.setup_from_image(template % 1)
   cryst = XCrystal("CRYST1", None)
   wav = XWavelength("WAVE1", cryst, m1.get_wavelength())
+  samp = XSample("X1", cryst)
   directory, image = os.path.split(template %1)
-  sweep = XSweep('SWEEP1', wav, directory=directory, image=image)
+  sweep = XSweep('SWEEP1', wav, samp, directory=directory, image=image)
   indexer.set_indexer_sweep(sweep)
   m1.set_integrater_sweep(sweep)
   m1.set_integrater_refiner(refiner)

@@ -52,18 +52,21 @@ def exercise_dials_refiner(nproc=None):
   from Schema.XCrystal import XCrystal
   from Schema.XWavelength import XWavelength
   from Schema.XSweep import XSweep
+  from Schema.XSample import XSample
   cryst = XCrystal("CRYST1", None)
   wav1 = XWavelength("WAVE1", cryst, indexer1.get_wavelength())
+  samp1 = XSample("X1", cryst)
   directory, image = os.path.split(template %(1,1))
-  sweep1 = XSweep('SWEEP1', wav1, directory=directory, image=image)
+  sweep1 = XSweep('SWEEP1', wav1, samp1, directory=directory, image=image)
   indexer1.set_indexer_sweep(sweep1)
 
   indexer2 = DialsIndexer()
   indexer2.set_working_directory(tmp_dir)
   indexer2.setup_from_image(template %(2,1))
   wav2 = XWavelength("WAVE2", cryst, indexer2.get_wavelength())
+  samp2 = XSample("X2", cryst)
   directory, image = os.path.split(template %(2,1))
-  sweep2 = XSweep('SWEEP2', wav2, directory=directory, image=image)
+  sweep2 = XSweep('SWEEP2', wav2, samp2, directory=directory, image=image)
   indexer2.set_indexer_sweep(sweep2)
 
   refiner = DialsRefiner()
