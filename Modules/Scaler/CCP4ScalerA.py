@@ -1139,7 +1139,7 @@ class CCP4ScalerA(Scaler):
       batch_offset = si.get_batch_offset()
       for b in range(si.get_batches()[0], si.get_batches()[1]+1):
         if len(epoch_to_dose):
-          batch_to_dose[b] = epoch_to_dose[si._image_to_epoch[b-batch_offset+1]]
+          batch_to_dose[b] = epoch_to_dose[si._image_to_epoch[b-batch_offset]]
         else:
           # backwards compatibility 2015-12-11
           batch_to_dose[b] = b

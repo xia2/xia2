@@ -1345,7 +1345,7 @@ class XDSScalerA(Scaler):
       batch_offset = si['batch_offset']
       for b in range(si['batches'][0], si['batches'][1]+1):
         if len(epoch_to_dose):
-          batch_to_dose[b] = epoch_to_dose[si['image_to_epoch'][b-batch_offset+1]]
+          batch_to_dose[b] = epoch_to_dose[si['image_to_epoch'][b-batch_offset]]
         else:
           # backwards compatibility 2015-12-11
           batch_to_dose[b] = b
