@@ -123,6 +123,8 @@ class DialsIndexer(Indexer):
     refine.set_working_directory(self.get_working_directory())
     refine.set_scan_varying(False)
     refine.set_outlier_algorithm(PhilIndex.params.dials.outlier.algorithm)
+    refine.set_close_to_spindle_cutoff(
+      PhilIndex.params.dials.close_to_spindle_cutoff)
     if PhilIndex.params.dials.fix_geometry:
       refine.set_detector_fix('all')
       refine.set_beam_fix('all')
@@ -132,6 +134,8 @@ class DialsIndexer(Indexer):
   def RefineBravaisSettings(self):
     rbs = _RefineBravaisSettings()
     rbs.set_working_directory(self.get_working_directory())
+    rbs.set_close_to_spindle_cutoff(
+      PhilIndex.params.dials.close_to_spindle_cutoff)
     auto_logfiler(rbs)
     return rbs
 
@@ -504,6 +508,8 @@ class DialsIndexer(Indexer):
     if PhilIndex.params.dials.fix_geometry:
       indexer.set_detector_fix('all')
       indexer.set_beam_fix('all')
+    indexer.set_close_to_spindle_cutoff(
+      PhilIndex.params.dials.close_to_spindle_cutoff)
 
     if self._indxr_input_lattice:
       indexer.set_indexer_input_lattice(self._indxr_input_lattice)

@@ -58,6 +58,7 @@ def Index(DriverType = None):
 
       self._phil_file = None
       self._outlier_algorithm = None
+      self._close_to_spindle_cutoff = None
 
       return
 
@@ -149,6 +150,10 @@ def Index(DriverType = None):
       self._d_min_start = d_min_start
       return
 
+    def set_close_to_spindle_cutoff(self, close_to_spindle_cutoff):
+      self._close_to_spindle_cutoff = close_to_spindle_cutoff
+      return
+
     def run(self, method):
       from Handlers.Streams import Debug
       Debug.write('Running dials.index')
@@ -171,7 +176,9 @@ def Index(DriverType = None):
       if self._fft3d_n_points is not None:
         self.add_command_line(
           'fft3d.reciprocal_space_grid.n_points=%i' %self._fft3d_n_points)
-      self.add_command_line('close_to_spindle_cutoff=0.02')
+      if self._close_to_spindle_cutoff is not None:
+        self.add_command_line(
+          'close_to_spindle_cutoff=%f' %self._close_to_spindle_cutoff)
       if self._outlier_algorithm:
         self.add_command_line('outlier.algorithm=%s' % self._outlier_algorithm)
       if self._max_cell:
@@ -197,7 +204,6 @@ def Index(DriverType = None):
         self.add_command_line('beam.fix=%s' % self._beam_fix)
       if self._phil_file is not None:
         self.add_command_line("%s" %self._phil_file)
-
 
       self._experiment_filename = os.path.join(
         self.get_working_directory(), '%d_experiments.json' %self.get_xpid())

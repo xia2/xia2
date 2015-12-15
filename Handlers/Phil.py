@@ -120,6 +120,8 @@ dials {
     .type = choice
   fast_mode = False
     .type = bool
+  close_to_spindle_cutoff = 0.02
+    .type = float(value_min=0.0)
   find_spots {
     min_spot_size = Auto
       .type = int

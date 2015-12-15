@@ -42,6 +42,7 @@ def Refine(DriverType = None):
       self._interval_width_degrees = None
       self._phil_file = None
       self._outlier_algorithm = None
+      self._close_to_spindle_cutoff = None
 
       return
 
@@ -96,6 +97,10 @@ def Refine(DriverType = None):
       self._outlier_algorithm = outlier_algorithm
       return
 
+    def set_close_to_spindle_cutoff(self, close_to_spindle_cutoff):
+      self._close_to_spindle_cutoff = close_to_spindle_cutoff
+      return
+
     def run(self):
       from Handlers.Streams import Debug
       Debug.write('Running dials.refine')
@@ -106,7 +111,9 @@ def Refine(DriverType = None):
       self.add_command_line('scan_varying=%s' % self._scan_varying)
       self.add_command_line('use_all_reflections=%s' % \
                             self._use_all_reflections)
-      self.add_command_line('close_to_spindle_cutoff=0.05')
+      if self._close_to_spindle_cutoff is not None:
+        self.add_command_line(
+          'close_to_spindle_cutoff=%f' %self._close_to_spindle_cutoff)
       if self._outlier_algorithm:
         self.add_command_line('outlier.algorithm=%s' % self._outlier_algorithm)
       self._refined_experiments_filename = os.path.join(

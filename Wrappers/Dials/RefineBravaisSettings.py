@@ -31,6 +31,7 @@ def RefineBravaisSettings(DriverType = None):
       self._indexed_filename = None
       self._detector_fix = None
       self._beam_fix = None
+      self._close_to_spindle_cutoff = None
 
       return
 
@@ -48,6 +49,10 @@ def RefineBravaisSettings(DriverType = None):
 
     def set_beam_fix(self, beam_fix):
       self._beam_fix = beam_fix
+      return
+
+    def set_close_to_spindle_cutoff(self, close_to_spindle_cutoff):
+      self._close_to_spindle_cutoff = close_to_spindle_cutoff
       return
 
     def get_bravais_summary(self):
@@ -76,7 +81,9 @@ def RefineBravaisSettings(DriverType = None):
       if self._beam_fix:
         self.add_command_line('beam.fix=%s' % self._beam_fix)
       #self.add_command_line('engine=GaussNewton')
-      self.add_command_line('close_to_spindle_cutoff=0.05')
+      if self._close_to_spindle_cutoff is not None:
+        self.add_command_line(
+          'close_to_spindle_cutoff=%f' %self._close_to_spindle_cutoff)
 
       self.start()
       self.close_wait()

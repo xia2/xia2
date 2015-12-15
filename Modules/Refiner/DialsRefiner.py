@@ -57,6 +57,8 @@ class DialsRefiner(Refiner):
     if PhilIndex.params.dials.fix_geometry:
       refine.set_detector_fix('all')
       refine.set_beam_fix('all')
+    refine.set_close_to_spindle_cutoff(
+      PhilIndex.params.dials.close_to_spindle_cutoff)
     auto_logfiler(refine, 'REFINE')
 
     return refine
