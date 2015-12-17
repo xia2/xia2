@@ -643,7 +643,7 @@ class _CommandLine(object):
       index = self._argv.index('-atom')
 
     except ValueError, e:
-      self._default_atom_name = None
+      self._default_atom_name = 'X'
       return
 
     self._default_atom_name = self._argv[index + 1]

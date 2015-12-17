@@ -136,7 +136,7 @@ def xia2_main(stop_after=None):
 
   if njob > 1:
     driver_type = mp_params.type
-    command_line_args=CommandLine.get_argv()[1:]
+    command_line_args = CommandLine.get_argv()[1:]
     command_line_args = [arg for arg in command_line_args if arg != '-failover']
     for crystal_id in crystals.keys():
       for wavelength_id in crystals[crystal_id].get_wavelength_names():
