@@ -59,14 +59,15 @@ def exercise_xds_indexer(nproc=None):
 
   indexer.index()
 
-  assert approx_equal(indexer.get_indexer_cell(),
-                      (78.0833, 78.0833, 78.0833, 90, 90, 90))
+  assert approx_equal(
+    indexer.get_indexer_cell(), (78.05675, 78.05675, 78.05675, 90, 90, 90),
+    eps=1e-4), indexer.get_indexer_cell()
   experiment = indexer.get_indexer_experiment_list()[0]
   sgi = experiment.crystal.get_space_group().info()
   assert sgi.type().number() == 197
 
   beam_centre = indexer.get_indexer_beam_centre()
-  assert approx_equal(beam_centre, (94.4236, 94.5116), eps=1e-4)
+  assert approx_equal(beam_centre, (94.4239, 94.5110), eps=1e-3)
   assert indexer.get_indexer_images() == [(1, 45)]
   print indexer.get_indexer_experiment_list()[0].crystal
   print indexer.get_indexer_experiment_list()[0].detector
