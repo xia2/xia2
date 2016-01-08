@@ -138,6 +138,7 @@ def Integrate(DriverType = None):
       self.add_command_line('output.experiments=%s' % self._integrated_experiments)
       self.add_command_line('output.reflections=%s' % self._integrated_reflections)
       self.add_command_line('output.report=%s' % self._integration_report_filename)
+      self.add_command_line('output.include_bad_reference=True')
       self.add_command_line(
         'profile.fitting=%s' % self._profile_fitting)
       if self._outlier_algorithm is not None:
