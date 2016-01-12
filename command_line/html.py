@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# LIBTBX_SET_DISPATCHER_NAME dev.xia2.html
+# LIBTBX_SET_DISPATCHER_NAME xia2.html
 
 import sys
 import os
@@ -38,7 +38,7 @@ def run():
 
   rst = get_xproject_rst(xinfo)
 
-  with open('xia2.new.html', 'wb') as f:
+  with open('xia2.html', 'wb') as f:
     print >> f, rst2html(rst)
 
   #with open('xia2.tex', 'wb') as f:
