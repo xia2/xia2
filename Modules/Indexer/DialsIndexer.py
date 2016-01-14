@@ -230,6 +230,8 @@ class DialsIndexer(Indexer):
     # FIXME this should really use the assigned spot finding regions
     offset = self.get_frame_offset()
     spotfinder = self.Spotfinder()
+    if last - first > 50:
+      spotfinder.set_write_hot_mask(True)
     spotfinder.set_input_sweep_filename(sweep_filename)
     spotfinder.set_output_sweep_filename(
       '%s_datablock.json' %spotfinder.get_xpid())
