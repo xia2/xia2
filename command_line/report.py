@@ -216,8 +216,6 @@ def run(args):
   tickvals_2nd_moment, ticktext_2nd_moment = d_star_sq_to_d_ticks(
     second_moment_d_star_sq, nticks=5)
 
-
-
   json_data = {
 
     'multiplicities': {
@@ -457,190 +455,57 @@ def run(args):
 
   json_data.update(pychef_dict)
 
+  from dials.report import html_report
+  report = html_report.html_report()
+
+  page_header = html_report.page_header('xia2 report')
+  report.add_content(page_header)
+
+  overall_panel = html_report.panel('Overall', 'overall', show=True)
+  overall_table = html_report.table_responsive(
+    overall_stats_table_html, width=800)
+  overall_panel.add_content(overall_table)
+
+  merging_stats_panel = html_report.panel('Resolution shells', 'merging_stats')
+  merging_stats_table = html_report.table_responsive(merging_stats_table_html)
+  merging_stats_panel.add_content(merging_stats_table)
+
+  merging_stats_panel_group = html_report.panel_group(
+    [overall_panel, merging_stats_panel])
+  div = html_report.div()
+  div.add_content(html_report.raw_html('<h2>Merging statistics</h2>'))
+  div.add_content(html_report.raw_html(symmetry_table_html))
+  div.add_content(merging_stats_panel_group)
+  report.add_content(div)
+
+  resolution_plots_panel = html_report.panel('Analysis by resolution', 'resolution')
+  for graph in ('cc_one_half', 'i_over_sig_i', 'second_moments',
+                'wilson_intensity_plot'):
+    resolution_plots_panel.add_content(html_report.plotly_graph(
+      json_data[graph], graph))
+
+  batch_plots_panel = html_report.panel('Analysis by batch', 'batch')
+  for graph in ('scale_rmerge_vs_batch', 'completeness_vs_dose',
+                'rcp_vs_dose', 'scp_vs_dose', 'rd_vs_batch_difference'):
+    batch_plots_panel.add_content(html_report.plotly_graph(
+      json_data[graph], graph))
+
+  misc_plots_panel = html_report.panel('Miscellaneous', 'misc')
+  for graph in ('multiplicities', 'cumulative_intensity_distribution'):
+    misc_plots_panel.add_content(html_report.plotly_graph(
+      json_data[graph], graph))
+
+  analysis_plots_panel_group = html_report.panel_group(
+    [resolution_plots_panel, batch_plots_panel, misc_plots_panel])
+  div = html_report.div()
+  div.add_content(html_report.raw_html('<h2>Analysis plots</h2>'))
+  div.add_content(analysis_plots_panel_group)
+  report.add_content(div)
+
+  html = report.html()
+
   import json
   json_str = json.dumps(json_data)
-
-  javascript = """
-
-var graphs = %s
-
-Plotly.newPlot(
-  'scale_rmerge', graphs.scale_rmerge_vs_batch.data,
-  graphs.scale_rmerge_vs_batch.layout);
-Plotly.newPlot(
-  'multiplicities', graphs.multiplicities.data, graphs.multiplicities.layout);
-Plotly.newPlot(
-  'cc_one_half', graphs.cc_one_half.data, graphs.cc_one_half.layout);
-Plotly.newPlot(
-  'mean_i_over_sig_i', graphs.i_over_sig_i.data,
-  graphs.i_over_sig_i.layout);
-Plotly.newPlot(
-  'second_moments', graphs.second_moments.data,
-  graphs.second_moments.layout);
-Plotly.newPlot(
-  'cumulative_intensity', graphs.cumulative_intensity_distribution.data,
-  graphs.cumulative_intensity_distribution.layout);
-Plotly.newPlot(
-  'wilson_plot', graphs.wilson_intensity_plot.data,
-  graphs.wilson_intensity_plot.layout);
-Plotly.newPlot(
-  'completeness', graphs.completeness_vs_dose.data,
-  graphs.completeness_vs_dose.layout);
-Plotly.newPlot('rcp', graphs.rcp_vs_dose.data, graphs.rcp_vs_dose.layout);
-Plotly.newPlot('scp', graphs.scp_vs_dose.data, graphs.scp_vs_dose.layout);
-Plotly.newPlot(
-  'rd', graphs.rd_vs_batch_difference.data,
-  graphs.rd_vs_batch_difference.layout);
-
-""" %(json_str)
-
-  html = """
-<head>
-
-<!-- Plotly.js -->
-<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-
-<meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
-<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-
-<style type="text/css">
-
-body {
-  /*font-family: Helmet, Freesans, Helvetica, Arial, sans-serif;*/
-  margin: 8px;
-  min-width: 240px;
-  margin-left: 5%%;
-  margin-right: 5%%;
-}
-
-.plot {
-  float: left;
-  width: 600px;
-  height: 400px;
-  margin-bottom: 20px;
-}
-
-</style>
-
-</head>
-
-<body>
-
-<div class="page-header">
-  <h1>xia2 report</h1>
-</div>
-
-<div >
-  <h2>Merging statistics</h2>
-  %s
-  <div class="panel-group">
-    <div class="panel panel-default">
-      <div class="panel-heading" data-toggle="collapse" href="#collapse1">
-        <h4 class="panel-title">
-          <a>Overall</a>
-        </h4>
-      </div>
-      <div id="collapse1" class="panel-collapse collapse in">
-        <div class="panel-body">
-          <div class="table-responsive" style="width: 800px">
-            %s
-          </div>
-        </div>
-        <!-- <div class="panel-footer"></div> -->
-      </div>
-    </div>
-    <div class="panel panel-default">
-      <div class="panel-heading" data-toggle="collapse" href="#collapse2">
-        <h4 class="panel-title">
-          <a>Resolution shells</a>
-        </h4>
-      </div>
-      <div id="collapse2" class="panel-collapse collapse">
-        <div class="panel-body">
-          <div class="table-responsive">
-            %s
-          </div>
-        </div>
-        <!-- <div class="panel-footer"></div> -->
-      </div>
-    </div>
-  </div>
-</div>
-
-<div >
-  <h2>Analysis plots</h2>
-  <div class="panel-group">
-    <div class="panel panel-default">
-      <div class="panel-heading" data-toggle="collapse" href="#collapse3">
-        <h4 class="panel-title">
-          <a>Analysis by resolution</a>
-        </h4>
-      </div>
-      <div id="collapse3" class="panel-collapse collapse">
-        <div class="panel-body">
-
-          <div class="container-fluid">
-            <div class="col-xs-6 col-sm-6 col-md-4 plot" id="cc_one_half"></div>
-            <div class="col-xs-6 col-sm-6 col-md-4 plot" id="mean_i_over_sig_i"></div>
-            <div class="col-xs-6 col-sm-6 col-md-4 plot" id="second_moments"></div>
-            <div class="col-xs-6 col-sm-6 col-md-4 plot" id="wilson_plot"></div>
-          </div>
-
-        </div>
-        <!-- <div class="panel-footer"></div> -->
-      </div>
-    </div>
-    <div class="panel panel-default">
-      <div class="panel-heading" data-toggle="collapse" href="#collapse4">
-        <h4 class="panel-title">
-          <a>Analysis by batch</a>
-        </h4>
-      </div>
-      <div id="collapse4" class="panel-collapse collapse">
-        <div class="panel-body">
-
-          <div class="container-fluid">
-            <div class="col-xs-6 col-sm-6 col-md-4 plot" id="scale_rmerge"></div>
-            <div class="col-xs-6 col-sm-6 col-md-4 plot" id="completeness"></div>
-            <div class="col-xs-6 col-sm-6 col-md-4 plot" id="rcp"></div>
-            <div class="col-xs-6 col-sm-6 col-md-4 plot" id="scp"></div>
-            <div class="col-xs-6 col-sm-6 col-md-4 plot" id="rd"></div>
-          </div>
-
-        </div>
-        <!-- <div class="panel-footer"></div> -->
-      </div>
-    </div>
-    <div class="panel panel-default">
-      <div class="panel-heading" data-toggle="collapse" href="#collapse5">
-        <h4 class="panel-title">
-          <a>Miscellaneous</a>
-        </h4>
-      </div>
-      <div id="collapse5" class="panel-collapse collapse">
-        <div class="panel-body">
-
-          <div class="container-fluid">
-            <div class="col-xs-6 col-sm-6 col-md-4 plot" id="multiplicities"></div>
-            <div class="col-xs-6 col-sm-6 col-md-4 plot" id="cumulative_intensity"></div>
-          </div>
-
-        </div>
-        <!-- <div class="panel-footer"></div> -->
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-%s
-</script>
-</body>
-
-""" %(symmetry_table_html, overall_stats_table_html, merging_stats_table_html, javascript)
-
   with open('xia2-report.json', 'wb') as f:
     print >> f, json_str
 
