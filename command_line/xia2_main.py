@@ -194,6 +194,7 @@ def xia2_main(stop_after=None):
         sweeps = wavelength.get_sweeps()
         for sweep in sweeps:
           success, output, xsweep_dict = results[i_sweep]
+          assert xsweep_dict is not None
           if output is not None:
             Chatter.write(output)
           if not success:

@@ -77,19 +77,26 @@ def process_one_sweep(args):
     xia2_json = os.path.join(tmpdir, 'xia2.json')
     assert os.path.exists(xia2_json)
 
-    # update the absolute paths in the json files
+    import glob
+    json_files = glob.glob(os.path.join(sweep_tmp_dir, '*', '*.json'))
+    json_files.append(xia2_json)
+
     import fileinput
-    for line in fileinput.FileInput(files=[xia2_json], inplace=1):
+    for line in fileinput.FileInput(files=json_files, inplace=1):
       line = line.replace(sweep_tmp_dir, sweep_target_dir)
       print line
 
-    xinfo = XProject.from_json(xia2_json)
+    new_json = os.path.join(curdir, 'xia2-%s.json' %sweep_id)
+
+    shutil.copyfile(xia2_json, new_json)
+    move_output_folder(sweep_tmp_dir, sweep_target_dir)
+
+    xinfo = XProject.from_json(new_json)
     xcryst = xinfo.get_crystals().values()[0]
     xsweep = xcryst.get_xwavelength(wavelength_id).get_sweeps()[0]
     xsweep_dict = xsweep.to_dict()
 
   finally:
-    move_output_folder(sweep_tmp_dir, sweep_target_dir)
     shutil.rmtree(tmpdir, ignore_errors=True)
     if os.path.exists(tmpdir):
       shutil.rmtree(tmpdir, ignore_errors=True)
@@ -116,12 +123,3 @@ def move_output_folder(sweep_tmp_dir, sweep_target_dir):
     shutil.rmtree(sweep_target_dir)
   #print "Moving %s to %s" %(sweep_tmp_dir, sweep_target_dir)
   shutil.move(sweep_tmp_dir, sweep_target_dir)
-
-  # update the absolute paths in the json files
-  for folder in ('index', 'refine', 'integrate'):
-    json_file = os.path.join(sweep_target_dir, folder, 'xia2.json')
-    if os.path.exists(json_file):
-      import fileinput
-      for line in fileinput.FileInput(files=[json_file], inplace=1):
-        line = line.replace(sweep_tmp_dir, sweep_target_dir)
-        print line
