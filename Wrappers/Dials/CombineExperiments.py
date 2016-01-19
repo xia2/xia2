@@ -35,6 +35,10 @@ def CombineExperiments(DriverType = None):
       self._combined_experiments_filename = None
       self._combined_reflections_filename = None
 
+      self._same_beam = False
+      self._same_detector = True
+      self._same_goniometer = True
+
       return
 
     def add_experiments(self, experiments_filename):
@@ -54,9 +58,20 @@ def CombineExperiments(DriverType = None):
     def get_combined_reflections_filename(self):
       return self._combined_reflections_filename
 
+    def set_experimental_model(self,
+                               same_beam=None,
+                               same_detector=None,
+                               same_goniometer=None):
+      if not same_beam is None:
+        self._same_beam = same_beam
+      if same_detector is not None:
+        self._same_detector = same_detector
+      if same_goniometer is not None:
+        self._same_goniometer = same_goniometer
+
     def run(self):
       from Handlers.Streams import Debug
-      Debug.write('Running dials.refine')
+      Debug.write('Running dials.combine_experiments')
 
       assert len(self._experiments_filenames) > 0
       assert len(self._experiments_filenames) == len(self._reflections_filenames)
@@ -66,9 +81,12 @@ def CombineExperiments(DriverType = None):
         self.add_command_line(expt)
       for f in self._reflections_filenames:
         self.add_command_line(f)
-      #self.add_command_line("beam=0")
-      self.add_command_line("goniometer=0")
-      self.add_command_line("detector=0")
+      if self._same_beam:
+        self.add_command_line("beam=0")
+      if self._same_goniometer:
+        self.add_command_line("goniometer=0")
+      if self._same_detector:
+        self.add_command_line("detector=0")
 
       self._combined_experiments_filename = os.path.join(
         self.get_working_directory(),
