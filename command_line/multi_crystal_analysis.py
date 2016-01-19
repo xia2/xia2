@@ -357,6 +357,7 @@ def run():
     if Flags.get_egg():
       from lib.bits import message
       message('xia2 status error %s' % str(e))
+    sys.exit(1)
 
 if __name__ == '__main__':
   run()
