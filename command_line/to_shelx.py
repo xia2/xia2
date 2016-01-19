@@ -53,13 +53,19 @@ def to_shelx(hklin, prefix, compound=''):
   reader = any_reflection_file(hklin)
   intensities = [ma for ma in reader.as_miller_arrays(merge_equivalents=False)
                  if ma.info().labels == ['I', 'SIGI']][0]
-  if True:
-    mtz_to_hklf4(hklin, '%s.hkl' % prefix)
-  else:
-    with open('%s.hkl' % prefix, 'wb') as f:
-      intensities.export_as_shelx_hklf(f, normalise_if_format_overflow=True)
+
+  # FIXME do I need to reindex to a conventional setting here
+
+  mtz_to_hklf4(hklin, '%s.hkl' % prefix)
 
   crystal_symm = intensities.crystal_symmetry()
+
+  cb_op = crystal_symm.change_of_basis_op_to_reference_setting()
+
+  print 'Change of basis to reference setting: %s' % cb_op
+
+  crystal_symm = crystal_symm.change_basis(cb_op)
+
   xray_structure = structure(crystal_symmetry=crystal_symm)
   if compound:
     result = parse_compound(compound)
