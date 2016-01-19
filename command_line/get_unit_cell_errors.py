@@ -40,10 +40,9 @@ def get_unit_cell_errors(stop_after=None):
   from Schema.XProject import XProject
   xinfo = XProject.from_json(filename='xia2.json')
 
-
+  from Wrappers.Dials.CombineExperiments import CombineExperiments
   from Wrappers.Dials.Reindex import Reindex
   from lib.bits import auto_logfiler
-
 
   crystals = xinfo.get_crystals()
   for crystal_id, crystal in crystals.iteritems():
@@ -64,6 +63,13 @@ def get_unit_cell_errors(stop_after=None):
 
     reference_vectors = None
     reindexed_reflections = []
+
+    dials_combine = CombineExperiments()
+
+    dials_combine.set_experimental_model(
+      same_beam=True,
+      same_detector=True, # This may require some more work for the general case
+      same_goniometer=False)
 
     for epoch in epochs:
         si = scaler._sweep_handler.get_sweep_information(epoch)
@@ -103,7 +109,9 @@ def get_unit_cell_errors(stop_after=None):
         dials_reindex.set_indexed_filename(_reflections_filename)
         auto_logfiler(dials_reindex)
         dials_reindex.run()
-        reindexed_reflections.append(dials_reindex.get_reindexed_reflections_filename())
+
+        dials_combine.add_experiments(reference_vectors)
+        dials_combine.add_reflections(dials_reindex.get_reindexed_reflections_filename())
 #       Citations.cite('blend')
 
 
@@ -113,7 +121,25 @@ def get_unit_cell_errors(stop_after=None):
 
 # add multiple exps together
 #  
+    auto_logfiler(dials_combine)
+    dials_combine.run()
 
+    from Wrappers.Dials.Refine import Refine
+    dials_refine = Refine()
+    dials_refine.set_experiments_filename(dials_combine.get_combined_experiments_filename())
+    dials_refine.set_indexed_filename(dials_combine.get_combined_reflections_filename())
+    auto_logfiler(dials_refine)
+    dials_refine.run()
+
+    print
+    with open('dials.refine.debug.log') as reflog:
+      dials_log = reflog.readlines()
+      model_start = dials_log.index("Final refined crystal model:\n")
+      if model_start > 0:
+        print "".join(dials_log[model_start:model_start+13])
+      errors_start = dials_log.index("Refined cell parameters and estimated standard deviations:\n")
+      if errors_start > 0:
+        print "".join(dials_log[errors_start:errors_start+7])
   return
 
 def run():
