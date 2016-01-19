@@ -62,6 +62,8 @@ def to_shelx(hklin, prefix, compound=''):
 
   cb_op = crystal_symm.change_of_basis_op_to_reference_setting()
 
+  assert(cb_op.c().r().as_hkl() == 'h,k,l')
+
   print 'Change of basis to reference setting: %s' % cb_op
 
   crystal_symm = crystal_symm.change_basis(cb_op)
