@@ -208,90 +208,91 @@ class DialsIndexer(Indexer):
     from Handlers.Citations import Citations
     Citations.cite('dials')
 
-    all_images = self.get_matching_images()
-    first = min(all_images)
-    last = max(all_images)
+    #all_images = self.get_matching_images()
+    #first = min(all_images)
+    #last = max(all_images)
 
-    self._indxr_images = [(first, last)]
+    for imageset in self._indxr_imagesets:
 
-    # at this stage, break out to run the DIALS code: this sets itself up
-    # now cheat and pass in some information... save re-reading all of the
-    # image headers
+      first, last = self._indxr_imagesets[0].get_scan().get_image_range()
+      self._indxr_images = [(first, last)]
 
-    image_to_epoch = self.get_indexer_sweep().get_image_to_epoch()
+      # at this stage, break out to run the DIALS code: this sets itself up
+      # now cheat and pass in some information... save re-reading all of the
+      # image headers
 
-    # FIXME need to adjust this to allow (say) three chunks of images
+      # FIXME need to adjust this to allow (say) three chunks of images
 
-    from dxtbx.serialize import dump
-    from dxtbx.datablock import DataBlock
-    sweep_filename = os.path.join(self.get_working_directory(), 'datablock.json')
-    dump.datablock(DataBlock([self.get_imageset()]), sweep_filename)
+      from dxtbx.serialize import dump
+      from dxtbx.datablock import DataBlock
+      sweep_filename = os.path.join(self.get_working_directory(), 'datablock.json')
+      dump.datablock(DataBlock([imageset]), sweep_filename)
 
-    # FIXME this should really use the assigned spot finding regions
-    offset = self.get_frame_offset()
-    spotfinder = self.Spotfinder()
-    if last - first > 50:
-      spotfinder.set_write_hot_mask(True)
-    spotfinder.set_input_sweep_filename(sweep_filename)
-    spotfinder.set_output_sweep_filename(
-      '%s_datablock.json' %spotfinder.get_xpid())
-    spotfinder.set_input_spot_filename(
-      '%s_strong.pickle' %spotfinder.get_xpid())
-    if PhilIndex.params.dials.fast_mode:
-      wedges = self._index_select_images_i()
-      spotfinder.set_scan_ranges(wedges)
-    else:
-      spotfinder.set_scan_ranges([(first + offset, last + offset)])
-    if PhilIndex.params.dials.find_spots.phil_file is not None:
-      spotfinder.set_phil_file(PhilIndex.params.dials.find_spots.phil_file)
-    min_spot_size = PhilIndex.params.dials.find_spots.min_spot_size
-    if min_spot_size is libtbx.Auto:
-      if self.get_imageset().get_detector()[0].get_type() == 'SENSOR_PAD':
-        min_spot_size = 3
+      # FIXME this should really use the assigned spot finding regions
+      #offset = self.get_frame_offset()
+      spotfinder = self.Spotfinder()
+      if last - first > 10:
+        spotfinder.set_write_hot_mask(True)
+      spotfinder.set_input_sweep_filename(sweep_filename)
+      spotfinder.set_output_sweep_filename(
+        '%s_datablock.json' %spotfinder.get_xpid())
+      spotfinder.set_input_spot_filename(
+        '%s_strong.pickle' %spotfinder.get_xpid())
+      if PhilIndex.params.dials.fast_mode:
+        wedges = self._index_select_images_i()
+        spotfinder.set_scan_ranges(wedges)
       else:
-        min_spot_size = None
-    if min_spot_size is not None:
-      spotfinder.set_min_spot_size(min_spot_size)
-    min_local = PhilIndex.params.dials.find_spots.min_local
-    if min_local is not None:
-      spotfinder.set_min_local(min_local)
-    sigma_strong = PhilIndex.params.dials.find_spots.sigma_strong
-    if sigma_strong:
-      spotfinder.set_sigma_strong(sigma_strong)
-    filter_ice_rings = PhilIndex.params.dials.find_spots.filter_ice_rings
-    if filter_ice_rings:
-      spotfinder.set_filter_ice_rings(filter_ice_rings)
-    kernel_size = PhilIndex.params.dials.find_spots.kernel_size
-    if kernel_size:
-      spotfinder.set_kernel_size(kernel_size)
-    global_threshold = PhilIndex.params.dials.find_spots.global_threshold
-    if global_threshold is not None:
-      spotfinder.set_global_threshold(global_threshold)
-    spotfinder.run()
+        spotfinder.set_scan_ranges([(first, last)])
+      if PhilIndex.params.dials.find_spots.phil_file is not None:
+        spotfinder.set_phil_file(PhilIndex.params.dials.find_spots.phil_file)
+      min_spot_size = PhilIndex.params.dials.find_spots.min_spot_size
+      if min_spot_size is libtbx.Auto:
+        if imageset.get_detector()[0].get_type() == 'SENSOR_PAD':
+          min_spot_size = 3
+        else:
+          min_spot_size = None
+      if min_spot_size is not None:
+        spotfinder.set_min_spot_size(min_spot_size)
+      min_local = PhilIndex.params.dials.find_spots.min_local
+      if min_local is not None:
+        spotfinder.set_min_local(min_local)
+      sigma_strong = PhilIndex.params.dials.find_spots.sigma_strong
+      if sigma_strong:
+        spotfinder.set_sigma_strong(sigma_strong)
+      filter_ice_rings = PhilIndex.params.dials.find_spots.filter_ice_rings
+      if filter_ice_rings:
+        spotfinder.set_filter_ice_rings(filter_ice_rings)
+      kernel_size = PhilIndex.params.dials.find_spots.kernel_size
+      if kernel_size:
+        spotfinder.set_kernel_size(kernel_size)
+      global_threshold = PhilIndex.params.dials.find_spots.global_threshold
+      if global_threshold is not None:
+        spotfinder.set_global_threshold(global_threshold)
+      spotfinder.run()
 
-    spot_filename = spotfinder.get_spot_filename()
-    if not os.path.exists(spot_filename):
-      raise RuntimeError("Spotfinding failed: %s does not exist."
-                         %os.path.basename(spot_filename))
-    self.set_indexer_payload("spot_list", spot_filename)
-    self.set_indexer_payload(
-      "datablock.json", spotfinder.get_output_sweep_filename())
-    self.set_indexer_payload("spot_list", spot_filename)
+      spot_filename = spotfinder.get_spot_filename()
+      if not os.path.exists(spot_filename):
+        raise RuntimeError("Spotfinding failed: %s does not exist."
+                           %os.path.basename(spot_filename))
+      self.set_indexer_payload("spot_list", spot_filename)
+      self.set_indexer_payload(
+        "datablock.json", spotfinder.get_output_sweep_filename())
+      self.set_indexer_payload("spot_list", spot_filename)
 
-    if 0 and not PhilIndex.params.xia2.settings.trust_beam_centre:
-      discovery = self.DiscoverBetterExperimentalModel()
-      discovery.set_sweep_filename(self.get_indexer_payload("datablock.json"))
-      discovery.set_spot_filename(spot_filename)
-      wedges = self._index_select_images_i()
-      discovery.set_scan_ranges(wedges)
-      #discovery.set_scan_ranges([(first + offset, last + offset)])
-      try:
-        discovery.run()
-      except Exception, e:
-        Debug.write('DIALS beam centre search failed: %s' %str(e))
-      else:
-        self.set_indexer_payload(
-          "datablock.json", discovery.get_optimized_datablock_filename())
+      if 0 and not PhilIndex.params.xia2.settings.trust_beam_centre:
+        discovery = self.DiscoverBetterExperimentalModel()
+        discovery.set_sweep_filename(self.get_indexer_payload("datablock.json"))
+        discovery.set_spot_filename(spot_filename)
+        wedges = self._index_select_images_i()
+        discovery.set_scan_ranges(wedges)
+        #discovery.set_scan_ranges([(first + offset, last + offset)])
+        try:
+          discovery.run()
+        except Exception, e:
+          Debug.write('DIALS beam centre search failed: %s' %str(e))
+        else:
+          self.set_indexer_payload(
+            "datablock.json", discovery.get_optimized_datablock_filename())
 
     return
 

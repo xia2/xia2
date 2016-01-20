@@ -148,9 +148,7 @@ class DialsRefiner(Refiner):
 
       # XXX Temporary workaround for dials.refine error for scan_varying
       # refinement with smaller wedges
-      all_images = idxr.get_matching_images()
-      phi_width = idxr.get_phi_width()
-      total_phi_range = len(all_images) * phi_width
+      total_phi_range = idxr._indxr_imagesets[0].get_scan().get_oscillation_range()[1]
       if total_phi_range < 5: # arbitrary value
         refiner.set_scan_varying(False)
       elif total_phi_range < 36:

@@ -98,7 +98,7 @@ def IndexerForXSweep(xsweep, json_file=None):
     Debug.write("Loaded indexer in %.2f seconds" %(t1-t0))
   else:
     # configure the indexer
-    indexer.setup_from_imageset(xsweep.get_imageset())
+    indexer.add_indexer_imageset(xsweep.get_imageset())
 
   if crystal_lattice:
     # this is e.g. ('aP', (1.0, 2.0, 3.0, 90.0, 98.0, 88.0))
@@ -126,10 +126,10 @@ def IndexerForXSweep(xsweep, json_file=None):
   # need to do the same for wavelength now as that could be wrong in
   # the image header...
 
-  if xsweep.get_wavelength_value():
-    Debug.write('Indexer factory: Setting wavelength: %.6f' % \
-                xsweep.get_wavelength_value())
-    indexer.set_wavelength(xsweep.get_wavelength_value())
+  #if xsweep.get_wavelength_value():
+    #Debug.write('Indexer factory: Setting wavelength: %.6f' % \
+                #xsweep.get_wavelength_value())
+    #indexer.set_wavelength(xsweep.get_wavelength_value())
 
   indexer.set_indexer_sweep(xsweep)
 

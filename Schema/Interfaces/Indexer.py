@@ -119,7 +119,8 @@ class _IndexerHelper(object):
 
     return
 
-class Indexer(FrameProcessor):
+
+class Indexer(object):
   '''A class interface to present autoindexing functionality in a standard
   way for all indexing programs. Note that this interface defines the
   contract - what the implementation actually does is a matter for the
@@ -151,7 +152,8 @@ class Indexer(FrameProcessor):
     self._indxr_dname = None
 
     # links to where my data is coming from
-    self._indxr_sweep = None
+    self._indxr_sweeps = []
+    self._indxr_imagesets = []
 
     # the helper to manage the solutions table
     self._indxr_helper = None
@@ -225,10 +227,10 @@ class Indexer(FrameProcessor):
         obj[a[0]] = lattice_cell_dict
       elif a[0] == '_indxr_experiment_list' and a[1] is not None:
         obj[a[0]] = a[1].to_dict()
-      elif a[0] == '_fp_imageset':
+      elif a[0] == '_indxr_imagesets':
         from dxtbx.serialize.imageset import imageset_to_dict
-        obj[a[0]] = imageset_to_dict(a[1])
-      elif a[0] == '_indxr_sweep':
+        obj[a[0]] = [imageset_to_dict(imgset) for imgset in a[1]]
+      elif a[0] == '_indxr_sweeps':
         # XXX I guess we probably want this?
         continue
       elif (a[0].startswith('_indxr_') or
@@ -245,13 +247,14 @@ class Indexer(FrameProcessor):
       if k == '_indxr_helper' and v is not None:
         from Schema.Interfaces.Indexer import _IndexerHelper
         v = _IndexerHelper(v)
+      if k == '_indxr_imagesets' and len(v):
+        assert v[0].get('__id__', None) == 'imageset'
+        from dxtbx.serialize.imageset import imageset_from_dict
+        v = [imageset_from_dict(v_, check_format=False) for v_ in v]
       if isinstance(v, dict):
         if v.get('__id__', None) == 'ExperimentList':
           from dxtbx.model.experiment.experiment_list import ExperimentListFactory
           v = ExperimentListFactory.from_dict(v)
-        elif v.get('__id__', None) == 'imageset':
-          from dxtbx.serialize.imageset import imageset_from_dict
-          v = imageset_from_dict(v, check_format=False)
       setattr(return_obj, k, v)
     return return_obj
 
@@ -326,11 +329,17 @@ class Indexer(FrameProcessor):
     return
 
   def set_indexer_sweep(self, sweep):
-    self._indxr_sweep = sweep
+    self.add_indexer_sweep(sweep)
     return
 
   def get_indexer_sweep(self):
-    return self._indxr_sweep
+    return self._indxr_sweeps[0]
+
+  def add_indexer_sweep(self, sweep):
+    self._indxr_sweeps.append(sweep)
+
+  def get_indexer_sweeps(self):
+    return self._indxr_sweeps
 
   def set_indexer_sweep_name(self, sweep_name):
     self._indxr_sweep_name = sweep_name
@@ -538,6 +547,9 @@ class Indexer(FrameProcessor):
 
   # setter methods for the input - most of these will reset the
   # indexer in one way or another
+
+  def add_indexer_imageset(self, imageset):
+    self._indxr_imagesets.append(imageset)
 
   def add_indexer_image_wedge(self, image, reset = True):
     '''Add some images for autoindexing (optional) input is a 2-tuple

@@ -534,6 +534,13 @@ class XSweep(object):
     if self._frames_to_process:
       summary.append('Images: %d to %d' % tuple(self._frames_to_process))
 
+
+    if self._frames_to_process:
+      first = self._frames_to_process[0]
+      start = self._frames_to_process[0] - first
+      end = self._frames_to_process[1] - first + 1
+      self._imageset = self._imageset[start:end]
+
     if self._get_indexer():
       # print the comparative values
 
@@ -660,10 +667,6 @@ class XSweep(object):
           raise RuntimeError, 'cannot assign cell without lattice'
 
       self._indexer.set_working_directory(working_directory)
-
-      if self._frames_to_process:
-        frames = self._frames_to_process
-        self._indexer.set_frame_wedge(frames[0], frames[1])
 
       self._indexer.set_indexer_project_info(
         project_id, crystal_id, wavelength_id)
