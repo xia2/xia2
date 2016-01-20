@@ -123,16 +123,17 @@ class XDSIndexerII(XDSIndexer):
     # then this is a proper autoindexing run - describe this
     # to the journal entry
 
-    if len(self._fp_directory) <= 50:
-      dirname = self._fp_directory
-    else:
-      dirname = '...%s' % self._fp_directory[-46:]
+    #if len(self._fp_directory) <= 50:
+      #dirname = self._fp_directory
+    #else:
+      #dirname = '...%s' % self._fp_directory[-46:]
+    dirname = os.path.dirname(self.get_imageset().get_template())
 
     Journal.block('autoindexing', self._indxr_sweep_name, 'XDS',
                   {'images':images_str,
                    'target cell':cell_str,
                    'target lattice':self._indxr_input_lattice,
-                   'template':self._fp_template,
+                   'template':self.get_imageset().get_template(),
                    'directory':dirname})
 
     idxref = self.Idxref()

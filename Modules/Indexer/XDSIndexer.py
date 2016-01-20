@@ -73,6 +73,43 @@ class XDSIndexer(Indexer):
 
     return
 
+  # functionality that was previously provided by FrameProcessor
+
+  def get_imageset(self):
+    return self._indxr_imagesets[0]
+
+  def get_scan(self):
+    return self.get_imageset().get_scan()
+
+  def get_detector(self):
+    return self.get_imageset().get_detector()
+
+  def set_detector(self, detector):
+    self.get_imageset().set_detector(detector)
+
+  def get_goniometer(self):
+    return self.get_imageset().get_goniometer()
+
+  def get_beam(self):
+    return self.get_imageset().get_beam()
+
+  def get_wavelength(self):
+    return self.get_beam().get_wavelength()
+
+  def get_distance(self):
+    return self.get_detector()[0].get_distance()
+
+  def get_phi_width(self):
+    return self.get_scan().get_oscillation()[1]
+
+  def get_matching_images(self):
+    start, end = self.get_scan().get_array_range()
+    return tuple(range(start+1, end+1))
+
+  def get_image_name(self, number):
+    first = self.get_scan().get_image_range()[0]
+    return self.get_imageset().get_path(number-first)
+
   # factory functions
 
   def Xycorr(self):
@@ -427,16 +464,17 @@ class XDSIndexer(Indexer):
     # then this is a proper autoindexing run - describe this
     # to the journal entry
 
-    if len(self._fp_directory) <= 50:
-      dirname = self._fp_directory
-    else:
-      dirname = '...%s' % self._fp_directory[-46:]
+    #if len(self._fp_directory) <= 50:
+      #dirname = self._fp_directory
+    #else:
+      #dirname = '...%s' % self._fp_directory[-46:]
+    dirname = os.path.dirname(self.get_imageset().get_template())
 
     Journal.block('autoindexing', self._indxr_sweep_name, 'XDS',
                   {'images':images_str,
                    'target cell':cell_str,
                    'target lattice':self._indxr_input_lattice,
-                   'template':self._fp_template,
+                   'template':self.get_imageset().get_template(),
                    'directory':dirname})
 
     idxref = self.Idxref()
