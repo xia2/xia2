@@ -34,7 +34,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
   sys.path.append(os.environ['XIA2_ROOT'])
 
 # interfaces that this inherits from ...
-from Schema.Interfaces.Indexer import Indexer
+from Schema.Interfaces.Indexer import IndexerSingleSweep
 
 # other labelit things that this uses
 from Wrappers.Labelit.LabelitMosflmScript import LabelitMosflmScript
@@ -52,7 +52,7 @@ from Handlers.Files import FileHandler
 from Modules.Indexer.MosflmCheckIndexerSolution import \
      mosflm_check_indexer_solution
 
-class LabelitIndexer(Indexer):
+class LabelitIndexer(IndexerSingleSweep):
   '''A wrapper for the program labelit.index - which will provide
   functionality for deciding the beam centre and indexing the
   diffraction pattern.'''
@@ -157,17 +157,18 @@ class LabelitIndexer(Indexer):
       # then this is a proper autoindexing run - describe this
       # to the journal entry
 
-      if len(self._fp_directory) <= 50:
-        dirname = self._fp_directory
-      else:
-        dirname = '...%s' % self._fp_directory[-46:]
+      #if len(self._fp_directory) <= 50:
+        #dirname = self._fp_directory
+      #else:
+        #dirname = '...%s' % self._fp_directory[-46:]
+      dirname = os.path.dirname(self.get_imageset().get_template())
 
       Journal.block(
           'autoindexing', self._indxr_sweep_name, 'labelit',
           {'images':images_str,
            'target cell':cell_str,
            'target lattice':self._indxr_input_lattice,
-           'template':self._fp_template,
+           'template':self.get_imageset().get_template(),
            'directory':dirname})
 
     if len(_images) > 4:
@@ -190,11 +191,12 @@ class LabelitIndexer(Indexer):
       index.add_image(self.get_image_name(i))
       Debug.write('%s' % self.get_image_name(i))
 
-    if self.get_distance_prov() == 'user':
+    xsweep = self._indxr_sweeps[0]
+    if xsweep.get_distance() is not None:
       index.set_distance(self.get_distance())
-    if self.get_wavelength_prov() == 'user':
-      index.set_wavelength(self.get_wavelength())
-    if self.get_beam_prov() == 'user':
+    #if self.get_wavelength_prov() == 'user':
+      #index.set_wavelength(self.get_wavelength())
+    if xsweep.get_beam_centre() is not None:
       index.set_beam_centre(self.get_beam_centre())
 
     if self._refine_beam is False:
@@ -294,7 +296,7 @@ class LabelitIndexer(Indexer):
 
     import copy
     detector = copy.deepcopy(self.get_detector())
-    beam = copy.deepcopy(self.get_beam_obj())
+    beam = copy.deepcopy(self.get_beam())
     from dxtbx.model.detector_helpers import set_mosflm_beam_centre
     set_mosflm_beam_centre(detector, beam, mosflm_beam_centre)
 

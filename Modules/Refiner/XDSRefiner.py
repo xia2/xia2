@@ -132,13 +132,13 @@ class XDSRefiner(Refiner):
 
         idxr.set_indexer_sweep_name(idxr_old.get_indexer_sweep_name())
 
-        idxr.setup_from_imageset(idxr_old.get_imageset())
+        idxr.add_indexer_imageset(idxr_old.get_imageset())
         idxr.set_working_directory(idxr_old.get_working_directory())
 
-        if idxr_old.get_frame_wedge():
-          wedge = idxr_old.get_frame_wedge()
-          Debug.write('Propogating wedge limit: %d %d' % wedge)
-          idxr.set_frame_wedge(wedge[0], wedge[1], apply_offset = False)
+        #if idxr_old.get_frame_wedge():
+          #wedge = idxr_old.get_frame_wedge()
+          #Debug.write('Propogating wedge limit: %d %d' % wedge)
+          #idxr.set_frame_wedge(wedge[0], wedge[1], apply_offset = False)
 
         # now copy information from the old indexer to the new
         # one - lattice, cell, distance etc.
@@ -155,9 +155,9 @@ class XDSRefiner(Refiner):
           idxr.set_indexer_input_cell(cell)
         input_cell = cell
 
-        # propogate the wavelength information...
-        if idxr_old.get_wavelength():
-          idxr.set_wavelength(idxr_old.get_wavelength())
+        ## propogate the wavelength information...
+        #if idxr_old.get_wavelength():
+          #idxr.set_wavelength(idxr_old.get_wavelength())
 
         from cctbx.sgtbx import bravais_types
         lattice = str(
@@ -170,7 +170,7 @@ class XDSRefiner(Refiner):
           idxr.set_indexer_user_input_lattice(True)
 
         idxr.set_detector(experiment.detector)
-        idxr.set_beam_obj(experiment.beam)
+        idxr.set_beam(experiment.beam)
         idxr.set_goniometer(experiment.goniometer)
 
         # re-get the unit cell &c. and check that the indexing

@@ -754,3 +754,49 @@ class Indexer(object):
   def get_indexer_experiment_list(self):
     self.index()
     return self._indxr_experiment_list
+
+# class for legacy Indexers that only support indexing from a single sweep
+class IndexerSingleSweep(Indexer):
+
+  # functionality that was previously provided by FrameProcessor
+
+  def get_imageset(self):
+    return self._indxr_imagesets[0]
+
+  def get_scan(self):
+    return self.get_imageset().get_scan()
+
+  def get_detector(self):
+    return self.get_imageset().get_detector()
+
+  def set_detector(self, detector):
+    self.get_imageset().set_detector(detector)
+
+  def get_goniometer(self):
+    return self.get_imageset().get_goniometer()
+
+  def set_goniometer(self, goniometer):
+    return self.get_imageset().set_goniometer(goniometer)
+
+  def get_beam(self):
+    return self.get_imageset().get_beam()
+
+  def set_beam(self, beam):
+    return self.get_imageset().set_beam(beam)
+
+  def get_wavelength(self):
+    return self.get_beam().get_wavelength()
+
+  def get_distance(self):
+    return self.get_detector()[0].get_distance()
+
+  def get_phi_width(self):
+    return self.get_scan().get_oscillation()[1]
+
+  def get_matching_images(self):
+    start, end = self.get_scan().get_array_range()
+    return tuple(range(start+1, end+1))
+
+  def get_image_name(self, number):
+    first = self.get_scan().get_image_range()[0]
+    return self.get_imageset().get_path(number-first)
