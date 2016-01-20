@@ -800,3 +800,9 @@ class IndexerSingleSweep(Indexer):
   def get_image_name(self, number):
     first = self.get_scan().get_image_range()[0]
     return self.get_imageset().get_path(number-first)
+
+  def get_template(self):
+    return self.get_imageset().get_template()
+
+  def get_directory(self):
+    return os.path.dirname(self.get_template())

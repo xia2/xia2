@@ -172,17 +172,18 @@ class MosflmIndexer(IndexerSingleSweep):
 
     if self._indxr_sweep_name:
 
-      if len(self._fp_directory) <= 50:
-        dirname = self._fp_directory
-      else:
-        dirname = '...%s' % self._fp_directory[-46:]
+      #if len(self._fp_directory) <= 50:
+        #dirname = self._fp_directory
+      #else:
+        #dirname = '...%s' % self._fp_directory[-46:]
+      dirname = os.path.dirname(self.get_imageset().get_template())
 
       Journal.block(
           'autoindexing', self._indxr_sweep_name, 'mosflm',
           {'images':images_str,
            'target cell':self._indxr_input_cell,
            'target lattice':self._indxr_input_lattice,
-           'template':self._fp_template,
+           'template':self.get_imageset().get_template(),
            'directory':dirname})
 
     #task = 'Autoindex from images:'
@@ -192,17 +193,16 @@ class MosflmIndexer(IndexerSingleSweep):
 
     #self.set_task(task)
 
-    indexer.set_template(self.get_template())
-    indexer.set_directory(self.get_directory())
+    indexer.set_template(self.get_imageset().get_template())
+    indexer.set_directory(os.path.dirname(self.get_imageset().get_template()))
 
-    if self.get_beam_prov() == 'user':
-      indexer.set_beam_centre(self.get_beam_centre())
-
-    if self.get_wavelength_prov() == 'user':
-      indexer.set_wavelength(self.get_wavelength())
-
-    if self.get_distance_prov() == 'user':
-      indexer.set_directory(self.get_distance())
+    xsweep = self._indxr_sweeps[0]
+    if xsweep.get_distance() is not None:
+      index.set_distance(self.get_distance())
+    #if self.get_wavelength_prov() == 'user':
+      #index.set_wavelength(self.get_wavelength())
+    if xsweep.get_beam_centre() is not None:
+      index.set_beam_centre(self.get_beam_centre())
 
     if self._indxr_input_cell:
       indexer.set_unit_cell(self._indxr_input_cell)
@@ -381,7 +381,7 @@ class MosflmIndexer(IndexerSingleSweep):
 
     # update the beam centre (i.e. shift the origin of the detector)
     detector = copy.deepcopy(self.get_detector())
-    beam = copy.deepcopy(self.get_beam_obj())
+    beam = copy.deepcopy(self.get_beam())
     set_mosflm_beam_centre(detector, beam, beam_centre)
     if detector_distance is not None:
       set_distance(detector, detector_distance)

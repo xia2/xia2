@@ -127,13 +127,13 @@ class XDSIndexerII(XDSIndexer):
       #dirname = self._fp_directory
     #else:
       #dirname = '...%s' % self._fp_directory[-46:]
-    dirname = os.path.dirname(self.get_imageset().get_template())
+    dirname = self.get_directory()
 
     Journal.block('autoindexing', self._indxr_sweep_name, 'XDS',
                   {'images':images_str,
                    'target cell':cell_str,
                    'target lattice':self._indxr_input_lattice,
-                   'template':self.get_imageset().get_template(),
+                   'template':self.get_template(),
                    'directory':dirname})
 
     idxref = self.Idxref()

@@ -50,8 +50,9 @@ class MosflmRefiner(Refiner):
     for epoch, idxr in self._refinr_indexers.iteritems():
       #self.digest_template()
 
-      if not self._mosflm_gain and idxr.get_gain():
-        self._mosflm_gain = idxr.get_gain()
+      gain = idxr._indxr_sweeps[0].get_gain()
+      if not self._mosflm_gain and gain:
+        self._mosflm_gain = gain
 
       # if pilatus override GAIN to 1.0
 
@@ -80,16 +81,17 @@ class MosflmRefiner(Refiner):
       cell_str = '%.2f %.2f %.2f %.2f %.2f %.2f' % \
         indxr.get_indexer_cell()
 
-      if len(idxr._fp_directory) <= 50:
-        dirname = idxr._fp_directory
-      else:
-        dirname = '...%s' % idxr._fp_directory[-46:]
+      #if len(idxr._fp_directory) <= 50:
+        #dirname = idxr._fp_directory
+      #else:
+        #dirname = '...%s' % idxr._fp_directory[-46:]
+      dirname = idxr.get_directory()
 
       Journal.block('cell refining', idxr._indxr_sweep_name, 'mosflm',
                     {'images':images_str,
                      'start cell':cell_str,
                      'target lattice':indxr.get_indexer_lattice(),
-                     'template':idxr._fp_template,
+                     'template':idxr.get_template(),
                      'directory':dirname})
 
       # end generate human readable output
@@ -364,8 +366,8 @@ class MosflmRefiner(Refiner):
     # note well that the beam centre is coming from indexing so
     # should be already properly handled
 
-    if idxr.get_wavelength_prov() == 'user':
-      refiner.set_wavelength(idxr.get_wavelength())
+    #if idxr.get_wavelength_prov() == 'user':
+      #refiner.set_wavelength(idxr.get_wavelength())
 
     # belt + braces mode - only to be used when considering failover,
     # will run an additional step of autoindexing prior to cell
@@ -525,8 +527,8 @@ class MosflmRefiner(Refiner):
     # note well that the beam centre is coming from indexing so
     # should be already properly handled
 
-    if idxr.get_wavelength_prov() == 'user':
-      refiner.set_wavelength(idxr.get_wavelength())
+    #if idxr.get_wavelength_prov() == 'user':
+      #refiner.set_wavelength(idxr.get_wavelength())
 
     # belt + braces mode - only to be used when considering failover,
     # will run an additional step of autoindexing prior to cell
