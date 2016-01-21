@@ -69,6 +69,10 @@ def IndexerForXSweep(xsweep, json_file=None):
 
   crystal_lattice = xsweep.get_crystal_lattice()
 
+  from Handlers.Phil import PhilIndex
+  params = PhilIndex.params
+  multi_sweep_indexing = params.xia2.settings.developmental.multi_sweep_indexing
+
   # FIXME SCI-599 decide from the width of the sweep and the preference
   # which indexer to return...
 
@@ -80,8 +84,15 @@ def IndexerForXSweep(xsweep, json_file=None):
 
   # hack now - if XDS integration switch to XDS indexer if (i) labelit and
   # (ii) sweep < 10 degrees
+  if multi_sweep_indexing and len(xsweep.get_xsample().get_sweeps()) > 1:
+    xsample = xsweep.get_xsample()
+    indexer = xsample.get_multi_indexer()
 
-  if sweep_width < 10.0 and not get_preferences().get('indexer') and \
+    if indexer is None:
+      indexer = Indexer()
+      xsample.set_multi_indexer(indexer)
+
+  elif sweep_width < 10.0 and not get_preferences().get('indexer') and \
       'xds' in get_preferences().get('integrater'):
     Debug.write('Overriding indexer as XDSII')
     indexer = Indexer(preselection = 'xdsii')
@@ -132,6 +143,16 @@ def IndexerForXSweep(xsweep, json_file=None):
     #indexer.set_wavelength(xsweep.get_wavelength_value())
 
   indexer.set_indexer_sweep(xsweep)
+
+  if xsweep.get_xsample().get_multi_indexer() is not None:
+    xsample = xsweep.get_xsample()
+    multi_indexer = xsample.get_multi_indexer()
+    assert multi_indexer is indexer
+
+    if len(indexer._indxr_imagesets) == 1:
+
+      for xsweep_other in xsample.get_sweeps()[1:]:
+        xsweep_other._get_indexer()
 
   return indexer
 

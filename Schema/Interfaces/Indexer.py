@@ -454,16 +454,20 @@ class Indexer(object):
 
         self.set_indexer_done(True)
 
-        if self.get_indexer_sweep():
-          template = self.get_indexer_sweep().get_template()
+        if self.get_indexer_sweeps():
+          xsweeps = self.get_indexer_sweeps()
+          if len(xsweeps) > 1:
+            sweep_names = ', '.join(x.get_name() for x in xsweeps[:-1])
+            sweep_names += ' & ' + xsweeps[-1].get_name()
+          else:
+            sweep_names = xsweeps[0].get_name()
 
-          if self._indxr_sweep_name:
-            if PhilIndex.params.xia2.settings.show_template:
-              Chatter.banner('Autoindexing %s (%s)' % \
-                             (self._indxr_sweep_name, template))
-            else:
-              Chatter.banner('Autoindexing %s' % \
-                             (self._indxr_sweep_name))
+          if PhilIndex.params.xia2.settings.show_template:
+            template = self.get_indexer_sweep().get_template()
+            Chatter.banner(
+              'Autoindexing %s (%s)' %(sweep_names, template))
+          else:
+            Chatter.banner('Autoindexing %s' %sweep_names)
 
 
         if not self._indxr_helper:

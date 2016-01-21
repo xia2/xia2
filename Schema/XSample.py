@@ -29,6 +29,8 @@ class XSample(object):
 
     self._sweeps = []
 
+    self._multi_indexer = None
+
     return
 
   def get_epoch_to_dose(self):
@@ -64,6 +66,8 @@ class XSample(object):
         # don't serialize this since the parent xsample *should* contain
         # the reference to the child xsweep
         continue
+      elif a[0] == '_multi_indexer' and a[1] is not None:
+        obj[a[0]] = a[1].to_dict()
       elif a[0].startswith('__'):
         continue
       else:
@@ -97,3 +101,13 @@ class XSample(object):
 
   def add_sweep(self, sweep):
     self._sweeps.append(sweep)
+
+  def get_sweeps(self):
+    return self._sweeps
+
+  def set_multi_indexer(self, multi_indexer):
+    self._multi_indexer = multi_indexer
+
+  def get_multi_indexer(self):
+    return self._multi_indexer
+

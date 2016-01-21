@@ -114,9 +114,46 @@ class DialsRefiner(Refiner):
       # the Dials indexer if not...
 
       experiments = idxr.get_indexer_experiment_list()
-      assert len(experiments) == 1 # currently only handle one lattice/sweep
-      experiment = experiments[0]
-      crystal_model = experiment.crystal
+
+      indexed_experiments = idxr.get_indexer_payload("experiments_filename")
+      indexed_reflections = idxr.get_indexer_payload("indexed_filename")
+
+      if len(experiments) > 1:
+        xsweeps = idxr._indxr_sweeps
+        assert len(xsweeps) == len(experiments)
+        assert len(self._refinr_sweeps) == 1 # don't currently support joint refinement
+        xsweep = self._refinr_sweeps[0]
+        i = xsweeps.index(xsweep)
+        experiments = experiments[i:i+1]
+
+        # Extract and output experiment and reflections for current sweep
+        indexed_experiments = os.path.join(
+          self.get_working_directory(),
+          "%s_indexed_experiments.json" %xsweep.get_name())
+        indexed_reflections = os.path.join(
+          self.get_working_directory(),
+          "%s_indexed_reflections.pickle" %xsweep.get_name())
+
+        from dxtbx.serialize import dump
+        dump.experiment_list(experiments, indexed_experiments)
+
+        from libtbx import easy_pickle
+        from scitbx.array_family import flex
+        reflections = easy_pickle.load(
+          idxr.get_indexer_payload("indexed_filename"))
+        sel = reflections['id'] == i
+        assert sel.count(True) > 0
+        imageset_id = reflections['imageset_id'].select(sel)
+        assert imageset_id.all_eq(imageset_id[0])
+        sel = reflections['imageset_id'] == imageset_id[0]
+        reflections = reflections.select(sel)
+        # set indexed reflections to id == 0 and imageset_id == 0
+        reflections['id'].set_selected(reflections['id'] == i, 0)
+        reflections['imageset_id'] = flex.int(len(reflections), 0)
+        easy_pickle.dump(indexed_reflections, reflections)
+
+      assert len(experiments.crystals()) == 1 # currently only handle one lattice/sweep
+      crystal_model = experiments.crystals()[0]
       lattice = idxr.get_indexer_lattice()
 
       # check if the lattice was user assigned...
@@ -141,10 +178,8 @@ class DialsRefiner(Refiner):
       from dxtbx.serialize import load, dump
 
       refiner = self.Refine()
-      refiner.set_experiments_filename(
-        idxr.get_indexer_payload("experiments_filename"))
-      refiner.set_indexed_filename(
-        idxr.get_indexer_payload("indexed_filename"))
+      refiner.set_experiments_filename(indexed_experiments)
+      refiner.set_indexed_filename(indexed_reflections)
 
       # XXX Temporary workaround for dials.refine error for scan_varying
       # refinement with smaller wedges
@@ -160,13 +195,12 @@ class DialsRefiner(Refiner):
       self._refinr_experiments_filename \
         = refiner.get_refined_experiments_filename()
       experiments = load.experiment_list(self._refinr_experiments_filename)
-      experiment = experiments[0]
       self._refinr_indexed_filename = refiner.get_refined_filename()
       self.set_refiner_payload("experiments.json", self._refinr_experiments_filename)
       self.set_refiner_payload("reflections.pickle", self._refinr_indexed_filename)
 
       # this is the result of the cell refinement
-      self._refinr_cell = experiment.crystal.get_unit_cell().parameters()
+      self._refinr_cell = experiments.crystals()[0].get_unit_cell().parameters()
 
 
   def _refine_finish(self):

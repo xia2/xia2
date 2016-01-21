@@ -307,7 +307,9 @@ xia2.settings {
     .help = "Use the Brehm-Diederichs algorithm to resolve an indexing "
             "ambiguity."
             "See: W. Brehm and K. Diederichs, Acta Cryst. (2014). D70, 101-109."
-  developmental {
+  developmental
+    .expert_level = 2
+  {
     use_dials_spotfinder = False
       .type = bool
       .help = "This feature requires the dials project to be installed, and"
@@ -315,6 +317,8 @@ xia2.settings {
     pointless_tolerance = 0.0
       .type = float(value_min=0.0)
       .help = "Tolerance to use in POINTLESS for comparison of data sets"
+    multi_sweep_indexing = False
+      .type = bool
   }
   integrate_p1 = False
     .type = bool

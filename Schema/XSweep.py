@@ -402,7 +402,9 @@ class XSweep(object):
           error_prefix='', target_must_be='', where_str='').object
         v = cls.from_dict(v)
         if k == '_indexer':
-          v.set_indexer_sweep(return_obj)
+          v.add_indexer_sweep(return_obj)
+        elif k == '_refiner':
+          v.add_indexer_sweep(return_obj)
         elif k == '_integrater':
           v.set_integrater_sweep(return_obj, reset=False)
       if isinstance(v, dict):

@@ -29,7 +29,8 @@ class Refiner(object):
 
     # key this by the epoch, if available, else will need to
     # do something different.
-    self._refinr_indexers = { }
+    self._refinr_indexers = {}
+    self._refinr_sweeps = []
 
     # admin junk
     self._working_directory = os.getcwd()
@@ -65,6 +66,9 @@ class Refiner(object):
       elif a[0] == '_refinr_refined_experiment_list':
         if a[1] is not None:
           obj[a[0]] = a[1].to_dict()
+      elif a[0] == '_refinr_sweeps':
+        # XXX I guess we probably want this?
+        continue
       elif (a[0].startswith('_refinr_')):
         obj[a[0]] = a[1]
     return obj
@@ -133,6 +137,12 @@ class Refiner(object):
 
   def _refine_finish(self):
     pass
+
+  def add_refiner_sweep(self, sweep):
+    self._refinr_sweeps.append(sweep)
+
+  def get_indexer_sweeps(self):
+    return self._refinr_sweeps
 
   def set_working_directory(self, working_directory):
     self._working_directory = working_directory
