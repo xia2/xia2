@@ -868,7 +868,7 @@ class XSweep(object):
   def get_indexer_beam_centre(self):
     return self._get_indexer().get_indexer_beam_centre()
 
-  def get_wavelength(self):
+  def get_xsample(self):
     return self._sample
 
   def get_wavelength(self):
