@@ -212,7 +212,10 @@ class DialsIndexer(Indexer):
     #first = min(all_images)
     #last = max(all_images)
 
-    for imageset in self._indxr_imagesets:
+    spot_lists = []
+    datablocks = []
+
+    for imageset, xsweep in zip(self._indxr_imagesets, self._indxr_sweeps):
 
       first, last = self._indxr_imagesets[0].get_scan().get_image_range()
       self._indxr_images = [(first, last)]
@@ -225,7 +228,8 @@ class DialsIndexer(Indexer):
 
       from dxtbx.serialize import dump
       from dxtbx.datablock import DataBlock
-      sweep_filename = os.path.join(self.get_working_directory(), 'datablock.json')
+      sweep_filename = os.path.join(
+        self.get_working_directory(), '%s_datablock.json' %xsweep.get_name())
       dump.datablock(DataBlock([imageset]), sweep_filename)
 
       # FIXME this should really use the assigned spot finding regions
@@ -235,9 +239,9 @@ class DialsIndexer(Indexer):
         spotfinder.set_write_hot_mask(True)
       spotfinder.set_input_sweep_filename(sweep_filename)
       spotfinder.set_output_sweep_filename(
-        '%s_datablock.json' %spotfinder.get_xpid())
+        '%s_%s_datablock.json' %(spotfinder.get_xpid(), xsweep.get_name()))
       spotfinder.set_input_spot_filename(
-        '%s_strong.pickle' %spotfinder.get_xpid())
+        '%s_%s_strong.pickle' %(spotfinder.get_xpid(), xsweep.get_name()))
       if PhilIndex.params.dials.fast_mode:
         wedges = self._index_select_images_i()
         spotfinder.set_scan_ranges(wedges)
@@ -274,10 +278,9 @@ class DialsIndexer(Indexer):
       if not os.path.exists(spot_filename):
         raise RuntimeError("Spotfinding failed: %s does not exist."
                            %os.path.basename(spot_filename))
-      self.set_indexer_payload("spot_list", spot_filename)
-      self.set_indexer_payload(
-        "datablock.json", spotfinder.get_output_sweep_filename())
-      self.set_indexer_payload("spot_list", spot_filename)
+
+      spot_lists.append(spot_filename)
+      datablocks.append(spotfinder.get_output_sweep_filename())
 
       if 0 and not PhilIndex.params.xia2.settings.trust_beam_centre:
         discovery = self.DiscoverBetterExperimentalModel()
@@ -291,8 +294,10 @@ class DialsIndexer(Indexer):
         except Exception, e:
           Debug.write('DIALS beam centre search failed: %s' %str(e))
         else:
-          self.set_indexer_payload(
-            "datablock.json", discovery.get_optimized_datablock_filename())
+          datablocks.append(discovery.get_optimized_datablock_filename())
+
+    self.set_indexer_payload("spot_lists", spot_lists)
+    self.set_indexer_payload("datablocks", datablocks)
 
     return
 
@@ -500,8 +505,10 @@ class DialsIndexer(Indexer):
 
   def _do_indexing(self, method=None):
     indexer = self.Index()
-    indexer.add_spot_filename(self._indxr_payload["spot_list"])
-    indexer.add_sweep_filename(self._indxr_payload["datablock.json"])
+    for spot_list in self._indxr_payload["spot_lists"]:
+      indexer.add_spot_filename(spot_list)
+    for datablock in self._indxr_payload["datablocks"]:
+      indexer.add_sweep_filename(datablock)
     if PhilIndex.params.dials.index.phil_file is not None:
       indexer.set_phil_file(PhilIndex.params.dials.index.phil_file)
     if PhilIndex.params.dials.index.max_cell:

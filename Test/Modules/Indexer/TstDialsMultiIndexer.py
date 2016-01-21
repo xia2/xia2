@@ -26,7 +26,7 @@ except KeyError, e:
 
 
 def exercise_dials_multi_indexer(nproc=None):
-  template = "/Volumes/touro/data/i19/4sweep/56_Reza-H2-normalhem_100K_3.75mmAl/56-RezaH2-hem_%02i_%05i.cbf"
+  template = "/Volumes/touro/data/i19/4sweep/56_Reza-H2-normalhem_100K_3.75mmAl/56-RezaH2-hem_%02i_#####.cbf"
 
   cwd = os.path.abspath(os.curdir)
   tmp_dir = os.path.abspath(open_tmp_directory())
@@ -36,19 +36,20 @@ def exercise_dials_multi_indexer(nproc=None):
   wav = None
   samp = None
 
-  from Modules.Indexer.DialsMultiIndexer import DialsMultiIndexer
-  multi_indexer = DialsMultiIndexer()
-  multi_indexer.set_working_directory(tmp_dir)
-
   from Handlers.Phil import PhilIndex
   PhilIndex.params.xia2.settings.trust_beam_centre = True
 
   from Modules.Indexer.DialsIndexer import DialsIndexer
-  from Schema.Interfaces.MultiIndexerSingle import multi_indexer_single_factory
+
+  from Modules.Indexer.DialsIndexer import DialsIndexer
+  indexer = DialsIndexer()
+  indexer.set_working_directory(tmp_dir)
   for i in range(4):
-    indexer = multi_indexer_single_factory(DialsIndexer)
-    indexer.set_working_directory(tmp_dir)
-    indexer.setup_from_image(template %(i+1, 1))
+    from dxtbx.datablock import DataBlockTemplateImporter
+    importer = DataBlockTemplateImporter([template %(i+1)])
+    datablocks = importer.datablocks
+    imageset = datablocks[0].extract_imagesets()[0]
+    indexer.add_indexer_imageset(imageset)
 
     from Schema.XCrystal import XCrystal
     from Schema.XWavelength import XWavelength
@@ -57,22 +58,18 @@ def exercise_dials_multi_indexer(nproc=None):
 
     if cryst is None or wav is None:
       cryst = XCrystal("CRYST1", None)
-      wav = XWavelength("WAVE1", cryst, indexer.get_wavelength())
+      wav = XWavelength("WAVE1", cryst, imageset.get_beam().get_wavelength())
       samp = XSample("X1", cryst)
 
-    directory, image = os.path.split(indexer.get_image_name(1))
+    directory, image = os.path.split(imageset.get_path(1))
     sweep = XSweep('SWEEP1', wav, samp, directory=directory, image=image)
-    indexer.set_indexer_sweep(sweep)
-    indexer.set_multi_indexer(multi_indexer)
-    multi_indexer.add_indexer(indexer)
+    indexer.add_indexer_sweep(sweep)
 
   indexer.index()
 
-  multi_indexer.index()
-
   assert approx_equal(
-    multi_indexer.get_indexer_cell(), (9.23, 12.60, 17.69, 90, 90, 90), eps=1e-2)
-  assert multi_indexer.get_indexer_cell() == indexer.get_indexer_cell()
+    indexer.get_indexer_cell(),
+    (9.088, 12.415, 17.420, 90.000, 90.000, 90.000), eps=1e-2)
 
 
 def run(args):
