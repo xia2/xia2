@@ -217,7 +217,7 @@ class DialsIndexer(Indexer):
 
     for imageset, xsweep in zip(self._indxr_imagesets, self._indxr_sweeps):
 
-      first, last = self._indxr_imagesets[0].get_scan().get_image_range()
+      first, last = imageset.get_scan().get_image_range()
       self._indxr_images = [(first, last)]
 
       # at this stage, break out to run the DIALS code: this sets itself up
