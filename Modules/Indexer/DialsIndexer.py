@@ -217,6 +217,9 @@ class DialsIndexer(Indexer):
 
     for imageset, xsweep in zip(self._indxr_imagesets, self._indxr_sweeps):
 
+
+      Chatter.banner('Spotfinding %s' %xsweep.get_name())
+
       first, last = imageset.get_scan().get_image_range()
       self._indxr_images = [(first, last)]
 
