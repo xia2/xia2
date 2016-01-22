@@ -120,7 +120,7 @@ def get_unit_cell_errors(stop_after=None):
 # ~72
 
 # add multiple exps together
-#  
+#
     auto_logfiler(dials_combine)
     dials_combine.run()
 
