@@ -217,7 +217,6 @@ class DialsIndexer(Indexer):
 
     for imageset, xsweep in zip(self._indxr_imagesets, self._indxr_sweeps):
 
-
       Chatter.banner('Spotfinding %s' %xsweep.get_name())
 
       first, last = imageset.get_scan().get_image_range()
@@ -284,6 +283,11 @@ class DialsIndexer(Indexer):
 
       spot_lists.append(spot_filename)
       datablocks.append(spotfinder.get_output_sweep_filename())
+
+      from libtbx import easy_pickle
+      from dials.util.ascii_art import spot_counts_per_image_plot
+      refl = easy_pickle.load(spot_filename)
+      Chatter.write(spot_counts_per_image_plot(refl))
 
       if 0 and not PhilIndex.params.xia2.settings.trust_beam_centre:
         discovery = self.DiscoverBetterExperimentalModel()
