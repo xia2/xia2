@@ -33,7 +33,7 @@ def exercise_serialization():
   from Handlers.CommandLine import CommandLine
 
   xia2_demo_data = os.path.join(dials_regression, "xia2_demo_data")
-  template = os.path.join(xia2_demo_data, "insulin_1_%03i.img")
+  template = os.path.join(xia2_demo_data, "insulin_1_###.img")
 
   cwd = os.path.abspath(os.curdir)
   tmp_dir = os.path.abspath(open_tmp_directory())
@@ -43,6 +43,11 @@ def exercise_serialization():
   from Modules.Refiner.DialsRefiner import DialsRefiner
   from Modules.Integrater.DialsIntegrater import DialsIntegrater
   from Modules.Scaler.CCP4ScalerA import CCP4ScalerA
+
+  from dxtbx.datablock import DataBlockTemplateImporter
+  importer = DataBlockTemplateImporter([template])
+  datablocks = importer.datablocks
+  imageset = datablocks[0].extract_imagesets()[0]
 
   from Schema.XProject import XProject
   from Schema.XCrystal import XCrystal
@@ -57,7 +62,7 @@ def exercise_serialization():
   samp = XSample("X1", cryst)
   cryst.add_wavelength(wav)
   cryst.set_ha_info({'atom': 'S'})
-  directory, image = os.path.split(template %1)
+  directory, image = os.path.split(imageset.get_path(1))
   wav.add_sweep(name='SWEEP1', sample=samp, directory=directory, image=image)
 
   import json
@@ -66,7 +71,7 @@ def exercise_serialization():
   sweep = wav.get_sweeps()[0]
   indexer = DialsIndexer()
   indexer.set_working_directory(tmp_dir)
-  indexer.setup_from_image(template %1)
+  indexer.add_indexer_imageset(imageset)
   indexer.set_indexer_sweep(sweep)
   sweep._indexer = indexer
 
@@ -77,7 +82,7 @@ def exercise_serialization():
 
   integrater = DialsIntegrater()
   integrater.set_working_directory(tmp_dir)
-  integrater.setup_from_image(template %1)
+  integrater.setup_from_image(imageset.get_path(1))
   integrater.set_integrater_refiner(refiner)
   #integrater.set_integrater_indexer(indexer)
   integrater.set_integrater_sweep(sweep)

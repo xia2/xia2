@@ -353,6 +353,19 @@ class XSweep(object):
 
     # finally configure the beam if set
 
+    if beam is not None:
+      from dxtbx.model.detector_helpers import set_mosflm_beam_centre
+      try:
+        set_mosflm_beam_centre(self.get_imageset().get_detector(),
+                               self.get_imageset().get_beam(),
+                               beam)
+      except AssertionError, e:
+        Debug.write('Error setting mosflm beam centre: %s' % e)
+
+    if distance is not None:
+      from Wrappers.Mosflm.AutoindexHelpers import set_distance
+      set_distance(self.get_imageset().get_detector(), distance)
+
     self._beam_centre = beam
     self._distance = distance
     self._gain = gain

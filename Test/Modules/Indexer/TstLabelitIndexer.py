@@ -31,7 +31,7 @@ def exercise_labelit_indexer():
     return
 
   xia2_demo_data = os.path.join(dials_regression, "xia2_demo_data")
-  template = os.path.join(xia2_demo_data, "insulin_1_%03i.img")
+  template = os.path.join(xia2_demo_data, "insulin_1_###.img")
 
   cwd = os.path.abspath(os.curdir)
   tmp_dir = os.path.abspath(open_tmp_directory())
@@ -46,7 +46,11 @@ def exercise_labelit_indexer():
     print "Skipping exercise_labelit_indexer(): labelit not found"
     return
   ls.set_working_directory(tmp_dir)
-  ls.setup_from_image(template %1)
+  from dxtbx.datablock import DataBlockTemplateImporter
+  importer = DataBlockTemplateImporter([template])
+  datablocks = importer.datablocks
+  imageset = datablocks[0].extract_imagesets()[0]
+  ls.add_indexer_imageset(imageset)
   ls.index()
 
   assert approx_equal(ls.get_indexer_cell(), (78.58, 78.58, 78.58, 90, 90, 90))

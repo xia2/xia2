@@ -120,16 +120,16 @@ def IndexerForXSweep(xsweep, json_file=None):
   # interface will also implement FrameProcessor, which this uses.
   # verify this, or assert it in some way...
 
-  if xsweep.get_beam_centre():
-    indexer.set_beam_centre(xsweep.get_beam_centre())
+  #if xsweep.get_beam_centre():
+    #indexer.set_beam_centre(xsweep.get_beam_centre())
 
-  # N.B. This does not need to be done for the integrater, since
-  # that gets it's numbers from the indexer it uses.
+  ## N.B. This does not need to be done for the integrater, since
+  ## that gets it's numbers from the indexer it uses.
 
-  if xsweep.get_distance():
-    Debug.write('Indexer factory: Setting distance: %.2f' % \
-                xsweep.get_distance())
-    indexer.set_distance(xsweep.get_distance())
+  #if xsweep.get_distance():
+    #Debug.write('Indexer factory: Setting distance: %.2f' % \
+                #xsweep.get_distance())
+    #indexer.set_distance(xsweep.get_distance())
 
   # FIXME more - need to check if we should be indexing in a specific
   # lattice - check xsweep.get_crystal_lattice()

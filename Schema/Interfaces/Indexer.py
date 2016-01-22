@@ -333,7 +333,9 @@ class Indexer(object):
     return
 
   def get_indexer_sweep(self):
-    return self._indxr_sweeps[0]
+    if len(self._indxr_sweeps):
+      return self._indxr_sweeps[0]
+    return
 
   def add_indexer_sweep(self, sweep):
     self._indxr_sweeps.append(sweep)

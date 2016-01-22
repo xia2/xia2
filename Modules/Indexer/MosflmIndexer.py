@@ -196,13 +196,14 @@ class MosflmIndexer(IndexerSingleSweep):
     indexer.set_template(self.get_imageset().get_template())
     indexer.set_directory(os.path.dirname(self.get_imageset().get_template()))
 
-    xsweep = self._indxr_sweeps[0]
-    if xsweep.get_distance() is not None:
-      index.set_distance(self.get_distance())
-    #if self.get_wavelength_prov() == 'user':
-      #index.set_wavelength(self.get_wavelength())
-    if xsweep.get_beam_centre() is not None:
-      index.set_beam_centre(self.get_beam_centre())
+    xsweep = self.get_indexer_sweep()
+    if xsweep is not None:
+      if xsweep.get_distance() is not None:
+        index.set_distance(self.get_distance())
+      #if self.get_wavelength_prov() == 'user':
+        #index.set_wavelength(self.get_wavelength())
+      if xsweep.get_beam_centre() is not None:
+        index.set_beam_centre(self.get_beam_centre())
 
     if self._indxr_input_cell:
       indexer.set_unit_cell(self._indxr_input_cell)

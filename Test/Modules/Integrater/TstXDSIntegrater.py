@@ -35,7 +35,7 @@ def exercise_xds_integrater(nproc=None):
     Flags.set_parallel(nproc)
 
   xia2_demo_data = os.path.join(dials_regression, "xia2_demo_data")
-  template = os.path.join(xia2_demo_data, "insulin_1_%03i.img")
+  template = os.path.join(xia2_demo_data, "insulin_1_###.img")
 
   cwd = os.path.abspath(os.curdir)
   tmp_dir = os.path.abspath(open_tmp_directory())
@@ -45,7 +45,11 @@ def exercise_xds_integrater(nproc=None):
   from Modules.Integrater.XDSIntegrater import XDSIntegrater
   indexer = XDSIndexer()
   indexer.set_working_directory(tmp_dir)
-  indexer.setup_from_image(template %1)
+  from dxtbx.datablock import DataBlockTemplateImporter
+  importer = DataBlockTemplateImporter([template])
+  datablocks = importer.datablocks
+  imageset = datablocks[0].extract_imagesets()[0]
+  indexer.add_indexer_imageset(imageset)
 
   from Schema.XCrystal import XCrystal
   from Schema.XWavelength import XWavelength
@@ -54,7 +58,7 @@ def exercise_xds_integrater(nproc=None):
   cryst = XCrystal("CRYST1", None)
   wav = XWavelength("WAVE1", cryst, indexer.get_wavelength())
   samp = XSample("X1", cryst)
-  directory, image = os.path.split(template %1)
+  directory, image = os.path.split(imageset.get_path(1))
   sweep = XSweep('SWEEP1', wav, samp, directory=directory, image=image)
   indexer.set_indexer_sweep(sweep)
 
@@ -66,7 +70,7 @@ def exercise_xds_integrater(nproc=None):
 
   integrater = XDSIntegrater()
   integrater.set_working_directory(tmp_dir)
-  integrater.setup_from_image(template %1)
+  integrater.setup_from_image(imageset.get_path(1))
   integrater.set_integrater_refiner(refiner)
   #integrater.set_integrater_indexer(indexer)
   integrater.set_integrater_sweep(sweep)
