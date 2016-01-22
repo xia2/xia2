@@ -364,7 +364,7 @@ class LabelitIndexerII(LabelitIndexer):
 
     import copy
     detector = copy.deepcopy(self.get_detector())
-    beam = copy.deepcopy(self.get_beam_obj())
+    beam = copy.deepcopy(self.get_beam())
     from dxtbx.model.detector_helpers import set_mosflm_beam_centre
     set_mosflm_beam_centre(detector, beam, mosflm_beam_centre)
 
