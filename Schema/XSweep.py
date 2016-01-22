@@ -404,7 +404,7 @@ class XSweep(object):
         if k == '_indexer':
           v.add_indexer_sweep(return_obj)
         elif k == '_refiner':
-          v.add_indexer_sweep(return_obj)
+          v.add_refiner_sweep(return_obj)
         elif k == '_integrater':
           v.set_integrater_sweep(return_obj, reset=False)
       if isinstance(v, dict):
