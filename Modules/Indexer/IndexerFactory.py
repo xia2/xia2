@@ -92,7 +92,7 @@ def IndexerForXSweep(xsweep, json_file=None):
       indexer = Indexer()
       xsample.set_multi_indexer(indexer)
 
-  if sweep_width < 10.0 and not get_preferences().get('indexer') and \
+  elif sweep_width < 10.0 and not get_preferences().get('indexer') and \
       get_preferences().get('integrater') and \
       'xds' in get_preferences().get('integrater'):
     Debug.write('Overriding indexer as XDSII')
@@ -148,7 +148,7 @@ def IndexerForXSweep(xsweep, json_file=None):
   if xsweep.get_xsample().get_multi_indexer() is not None:
     xsample = xsweep.get_xsample()
     multi_indexer = xsample.get_multi_indexer()
-    assert multi_indexer is indexer
+    assert multi_indexer is indexer, (multi_indexer, indexer)
 
     if len(indexer._indxr_imagesets) == 1:
 
