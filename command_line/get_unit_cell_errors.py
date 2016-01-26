@@ -68,7 +68,7 @@ def get_unit_cell_errors(stop_after=None):
 
     dials_combine.set_experimental_model(
       same_beam=True,
-      same_detector=True, # This may require some more work for the general case
+      same_detector=False,
       same_goniometer=False)
 
     for epoch in epochs:
@@ -110,7 +110,7 @@ def get_unit_cell_errors(stop_after=None):
         auto_logfiler(dials_reindex)
         dials_reindex.run()
 
-        dials_combine.add_experiments(reference_vectors)
+        dials_combine.add_experiments(refiner.get_refiner_payload("experiments.json"))
         dials_combine.add_reflections(dials_reindex.get_reindexed_reflections_filename())
 #       Citations.cite('blend')
 
