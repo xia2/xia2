@@ -68,6 +68,7 @@ def get_unit_cell_errors(stop_after=None):
 
     dials_combine.set_experimental_model(
       same_beam=True,
+      same_crystal=True,
       same_detector=False,
       same_goniometer=False)
 
