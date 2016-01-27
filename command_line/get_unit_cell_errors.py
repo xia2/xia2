@@ -129,18 +129,19 @@ def get_unit_cell_errors(stop_after=None):
     dials_refine = Refine()
     dials_refine.set_experiments_filename(dials_combine.get_combined_experiments_filename())
     dials_refine.set_indexed_filename(dials_combine.get_combined_reflections_filename())
+    dials_refine.set_use_all_reflections(True)
     auto_logfiler(dials_refine)
     dials_refine.run()
 
-    print
+    Chatter.write("")
     with open('dials.refine.debug.log') as reflog:
       dials_log = reflog.readlines()
       model_start = dials_log.index("Final refined crystal model:\n")
       if model_start > 0:
-        print "".join(dials_log[model_start:model_start+13])
+        Chatter.write("".join(dials_log[model_start:model_start+13]))
       errors_start = dials_log.index("Refined cell parameters and estimated standard deviations:\n")
       if errors_start > 0:
-        print "".join(dials_log[errors_start:errors_start+7])
+        Chatter.write("".join(dials_log[errors_start:errors_start+7]))
   return
 
 def run():
