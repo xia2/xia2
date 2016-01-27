@@ -21,8 +21,6 @@ from Handlers.Files import cleanup
 from Handlers.Citations import Citations
 from Handlers.Environment import Environment, df
 
-from XIA2Version import Version
-
 # XML Marked up output for e-HTPX
 if not os.path.join(os.environ['XIA2_ROOT'], 'Interfaces') in sys.path:
   sys.path.append(os.path.join(os.environ['XIA2_ROOT'], 'Interfaces'))
@@ -37,11 +35,9 @@ def xia2_main(stop_after=None):
   '''Actually process something...'''
 
   #Flags.set_serialize_state(True)
-
-  # print the version
-  Chatter.write(Version)
   Citations.cite('xia2')
 
+  # print versions of related software
   from dials.util.version import dials_version
   Chatter.write(dials_version())
 
