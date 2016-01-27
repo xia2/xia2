@@ -10,12 +10,7 @@
 # A file containing the version number of the current xia2. Generally useful.
 #
 
-VersionNumber = "0.4.0.0"
-Version = "XIA2 %s" % VersionNumber
-CVSTag = "xia2-%s" % VersionNumber.replace('.', '_')
-Directory = "xia2-%s" % VersionNumber
-
-def get_git_revision():
+def get_git_revision(fallback='not set'):
   '''Try to obtain the current git revision number
      and store a copy in .gitversion'''
   version = None
@@ -33,6 +28,14 @@ def get_git_revision():
         import subprocess
         with open(os.devnull, 'w') as devnull:
           version = subprocess.check_output(["git", "describe", "--long"], cwd=xia2_path, stderr=devnull).rstrip()
+          if version[0] == 'v':
+            version = version[1:].replace('.0-','.')
+          try:
+            branch = subprocess.check_output(["git", "describe", "--contains", "--all", "HEAD"], cwd=xia2_path, stderr=devnull).rstrip()
+            if branch != '' and branch != 'master':
+              version = version + '-' + branch
+          except Exception:
+            pass
         with open(version_file, 'w') as gv:
           gv.write(version)
       except Exception:
@@ -46,9 +49,14 @@ def get_git_revision():
     pass
 
   if version is None:
-    version = 'not set'
+    version = fallback
 
   return version
+
+VersionNumber = get_git_revision("0.4.0.0")
+Version = "XIA2 %s" % VersionNumber
+CVSTag = "xia2-%s" % VersionNumber.replace('.', '_')
+Directory = "xia2-%s" % VersionNumber
 
 if __name__ == '__main__':
   print 'This is XIA 2 version %s' % VersionNumber
