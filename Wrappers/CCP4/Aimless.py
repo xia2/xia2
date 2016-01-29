@@ -230,6 +230,15 @@ def Aimless(DriverType = None,
       self._new_scales_file = new_scales_file
       return
 
+    def get_new_scales_file(self):
+      '''Get the file to which the scales have been written.'''
+      if self._new_scales_file:
+        if not os.path.isfile(self._new_scales_file):
+          Chatter.write(
+            "Aimless did not scale the data, see log file for more details:\n  %s" %self.get_log_file())
+          raise RuntimeError, 'data not scaled'
+      return self._new_scales_file
+
     def set_onlymerge(self, onlymerge = True):
       '''Switch on merging only - this will presume that the
       input reflections are scaled already.'''
@@ -400,10 +409,6 @@ def Aimless(DriverType = None,
           run, batches = self.identify_no_observations_run()
           raise RuntimeError, 'no observations run %d: %d to %d' % \
                 (run, batches[0], batches[1])
-
-      if self._new_scales_file:
-        if not os.path.isfile(self._new_scales_file):
-          raise RuntimeError, 'data not scaled'
 
       return
 

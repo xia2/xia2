@@ -1179,8 +1179,6 @@ class XDSScalerA(Scaler):
 
     # ---------- FINAL MERGING ----------
 
-    scales_file = '%s_final.scales' % self._scalr_xname
-
     sc = self._factory.Aimless()
 
     FileHandler.record_log_file('%s %s aimless' % (self._scalr_pname,
@@ -1189,7 +1187,7 @@ class XDSScalerA(Scaler):
 
     sc.set_resolution(highest_resolution)
     sc.set_hklin(self._prepared_reflections)
-    sc.set_new_scales_file(scales_file)
+    sc.set_new_scales_file('%s_final.scales' % self._scalr_xname)
 
     if sdadd_full == 0.0 and sdb_full == 0.0:
       pass
