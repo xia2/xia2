@@ -401,6 +401,10 @@ def Aimless(DriverType = None,
           raise RuntimeError, 'no observations run %d: %d to %d' % \
                 (run, batches[0], batches[1])
 
+      if self._new_scales_file:
+        if not os.path.isfile(self._new_scales_file):
+          raise RuntimeError, 'data not scaled'
+
       return
 
     def sum(self):
