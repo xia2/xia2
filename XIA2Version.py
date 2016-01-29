@@ -32,7 +32,7 @@ def get_git_revision(fallback='not set'):
             version = version[1:].replace('.0-','.')
           try:
             branch = subprocess.check_output(["git", "describe", "--contains", "--all", "HEAD"], cwd=xia2_path, stderr=devnull).rstrip()
-            if branch != '' and branch != 'master':
+            if branch != '' and branch != 'master' and not branch.endswith('/master'):
               version = version + '-' + branch
           except Exception:
             pass
