@@ -36,6 +36,7 @@ def CombineExperiments(DriverType = None):
       self._combined_reflections_filename = None
 
       self._same_beam = False
+      self._same_crystal = False
       self._same_detector = True
       self._same_goniometer = True
 
@@ -60,10 +61,13 @@ def CombineExperiments(DriverType = None):
 
     def set_experimental_model(self,
                                same_beam=None,
+                               same_crystal=None,
                                same_detector=None,
                                same_goniometer=None):
-      if not same_beam is None:
+      if same_beam is not None:
         self._same_beam = same_beam
+      if same_crystal is not None:
+        self._same_crystal = same_crystal
       if same_detector is not None:
         self._same_detector = same_detector
       if same_goniometer is not None:
@@ -83,6 +87,8 @@ def CombineExperiments(DriverType = None):
         self.add_command_line(f)
       if self._same_beam:
         self.add_command_line("beam=0")
+      if self._same_crystal:
+        self.add_command_line("crystal=0")
       if self._same_goniometer:
         self.add_command_line("goniometer=0")
       if self._same_detector:

@@ -751,9 +751,7 @@ class CCP4ScalerA(Scaler):
 
     sc.set_chef_unmerged(True)
 
-    scales_file = '%s.scales' % self._scalr_xname
-
-    sc.set_new_scales_file(scales_file)
+    sc.set_new_scales_file('%s.scales' % self._scalr_xname)
 
     user_resolution_limits = { }
 
@@ -930,10 +928,7 @@ class CCP4ScalerA(Scaler):
 
     sc.set_hklin(self._prepared_reflections)
     sc.set_intensities(PhilIndex.params.ccp4.aimless.intensities)
-
-    scales_file = '%s_final.scales' % self._scalr_xname
-
-    sc.set_new_scales_file(scales_file)
+    sc.set_new_scales_file('%s_final.scales' % self._scalr_xname)
 
     for epoch in epochs:
 
@@ -964,7 +959,7 @@ class CCP4ScalerA(Scaler):
                                 sc.get_xmlout())
 
     data = sc.get_summary()
-
+    scales_file = sc.get_new_scales_file()
     loggraph = sc.parse_ccp4_loggraph()
 
     standard_deviation_info = { }
