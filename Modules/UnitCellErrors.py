@@ -14,36 +14,36 @@ class _refinery:
     self.wavelength = wavelength
     self.lattice = lattice
 
-    self.restraints, self.constraints, self.side_constraints = {}, {}, {}
+    self.constraints, self.restraints, self.side_restraints = {}, {}, {}
     if lattice == 'm':
-      self.restraints = { 3:90, 5:90 } # alpha, gamma = 90
-      self.constraints = { 4:90 } # beta >= 90
+      self.constraints = { 3:90, 5:90 } # alpha, gamma = 90
+      self.restraints = { 4:90 } # beta >= 90
 
     elif lattice == 'o':
-      self.restraints = { 3:90, 4:90, 5:90 }
+      self.constraints = { 3:90, 4:90, 5:90 }
 
     elif lattice == 't':
-      self.restraints = { 3:90, 4:90, 5:90 }
-      self.side_constraints = { 1: 0 } # b = a
+      self.constraints = { 3:90, 4:90, 5:90 }
+      self.side_restraints = { 1: 0 } # b = a
 
     elif lattice == 'h':
-      self.restraints = { 3:90, 4:90, 5:120 }
-      self.side_constraints = { 1: 0 }
+      self.constraints = { 3:90, 4:90, 5:120 }
+      self.side_restraints = { 1: 0 }
 
     elif lattice == 'c':
-      self.restraints = { 3:90, 4:90, 5:90 }
-      self.side_constraints = { 1: 0, 2: 0 } # b = a, c = a
+      self.constraints = { 3:90, 4:90, 5:90 }
+      self.side_restraints = { 1: 0, 2: 0 } # b = a, c = a
 
     self.x = flex.double(unit_cell.parameters())
     scitbx.lbfgs.run(target_evaluator=self)
 
   def unit_cell(self):
     params = list(self.x)
-    for tgt, src in self.side_constraints.iteritems():
+    for tgt, src in self.side_restraints.iteritems():
       params[tgt] = params[src]
-    for ang, const in self.restraints.iteritems():
+    for ang, const in self.constraints.iteritems():
       params[ang] = const
-    for ang, minval in self.constraints.iteritems():
+    for ang, minval in self.restraints.iteritems():
       params[ang] = max(params[ang], minval)
     return uctbx.unit_cell(params)
 
@@ -66,17 +66,17 @@ class _refinery:
     result = flex.double()
 
     for i in xrange(6):
-      if i in self.restraints:
+      if i in self.constraints:
         result.append(0)
         continue
-      if i in self.constraints: # naive
-        if (list(unit_cell.parameters())[i] < self.constraints[i]):
+      if i in self.restraints: # naive
+        if (list(unit_cell.parameters())[i] < self.restraints[i]):
           result.append(-1)
           continue
-        if (list(unit_cell.parameters())[i] == self.constraints[i]):
+        if (list(unit_cell.parameters())[i] == self.restraints[i]):
           result.append(0)
           continue
-      if i in self.side_constraints:
+      if i in self.side_restraints:
         result.append(0)
         continue
       rs = []

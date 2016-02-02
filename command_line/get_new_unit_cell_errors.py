@@ -163,14 +163,14 @@ def get_unit_cell_errors(stop_after=None):
   Chatter.write("Miller index range: %s - %s" % (str(span.min()), str(span.max())))
 
   # prepare MonteCarlo sampling
-  mc_runs = 80
-  sample_size = min(len(all_miller_indices) // 2, 1000)
+  mc_runs = 50
+  sample_size = min(len(all_miller_indices) // 2, 100)
 
   Chatter.write("\nRandomly sampling %d x %d reflections for Monte Carlo iterations" % (mc_runs, sample_size))
   Debug.write("Refinements start with reference unit cell:", reference_cell)
 
   MC = []
-  MCrestrained = []
+  MCconstrained = []
   used_index_range = flex.miller_index()
   used_two_theta_range_min = 1e300
   used_two_theta_range_max = 0
@@ -193,8 +193,8 @@ def get_unit_cell_errors(stop_after=None):
     Debug.write('Run %d refined to: %s', (n, str(refined.unit_cell())))
     if reference_lattice is not None and reference_lattice is not 'aP':
       refined = _refinery(two_thetas_obs, miller_indices, reference_wavelength, reference_cell, reference_lattice[0])
-      MCrestrained.append(refined.unit_cell().parameters())
-      Debug.write('Run %d (restrained %s) refined to: %s', (n, reference_lattice[0], str(refined.unit_cell())))
+      MCconstrained.append(refined.unit_cell().parameters())
+      Debug.write('Run %d (constrained %s) refined to: %s', (n, reference_lattice[0], str(refined.unit_cell())))
 
     if (n % 50) == 0:
       sys.stdout.write("\n%5s ." % (str(n) if n > 0 else ''))
@@ -222,15 +222,15 @@ def get_unit_cell_errors(stop_after=None):
   Chatter.write("drawn from miller indices between %s and %s" % (str(span.min()), str(span.max())))
   Chatter.write("with associated 2theta angles between %.3f and %.3f deg" % (used_two_theta_range_min, used_two_theta_range_max))
   if reference_lattice is None or reference_lattice == 'aP':
-    Chatter.write("\n|  Unrestrained estimate:")
+    Chatter.write("\n|  Unconstrained estimate:")
     for dimension, estimate in zip(['a', 'b', 'c', 'alpha', 'beta', 'gamma'], zip(*MC)):
       est_stats = stats_summary(estimate)
       Chatter.write("| %5s = %9.5f (SE: %.5f)" % (dimension, est_stats['mean'], est_stats['standard_error']))
   else:
-    Chatter.write("\n|    Unrestrained estimate:        |     Restrained estimate (%s):" % reference_lattice)
-    for dimension, estimate, restrained in zip(['a', 'b', 'c', 'alpha', 'beta', 'gamma'], zip(*MC), zip(*MCrestrained)):
+    Chatter.write("\n|    Unconstrained estimate:       |     Constrained estimate (%s):" % reference_lattice)
+    for dimension, estimate, constrained in zip(['a', 'b', 'c', 'alpha', 'beta', 'gamma'], zip(*MC), zip(*MCconstrained)):
       est_stats = stats_summary(estimate)
-      rest_stats = stats_summary(restrained)
+      rest_stats = stats_summary(constrained)
       Chatter.write("| %5s = %9.5f (SE: %.5f)  |  %5s = %9.5f (SE: %.5f)" %
         (dimension, est_stats['mean'], est_stats['standard_error'],
          dimension, rest_stats['mean'], rest_stats['standard_error']))
