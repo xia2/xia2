@@ -265,6 +265,9 @@ class DialsIndexer(Indexer):
       sigma_strong = PhilIndex.params.dials.find_spots.sigma_strong
       if sigma_strong:
         spotfinder.set_sigma_strong(sigma_strong)
+      gain = PhilIndex.params.xia2.settings.input.gain
+      if gain:
+        spotfinder.set_gain(gain)
       filter_ice_rings = PhilIndex.params.dials.find_spots.filter_ice_rings
       if filter_ice_rings:
         spotfinder.set_filter_ice_rings(filter_ice_rings)

@@ -42,6 +42,7 @@ def Spotfinder(DriverType = None):
       self._filter_ice_rings = False
       self._phil_file = None
       self._write_hot_mask = False
+      self._gain = None
 
       return
 
@@ -100,6 +101,9 @@ def Spotfinder(DriverType = None):
     def set_filter_ice_rings(self, filter_ice_rings):
       self._filter_ice_rings = filter_ice_rings
 
+    def set_gain(self, gain):
+      self._gain = gain
+
     def run(self):
       from Handlers.Streams import Debug
       Debug.write('Running dials.find_spots')
@@ -132,6 +136,8 @@ def Spotfinder(DriverType = None):
         self.add_command_line("%s" % self._phil_file)
       if self._write_hot_mask:
         self.add_command_line("write_hot_mask=true")
+      if self._gain:
+        self.add_command_line("gain=%f" % self._gain)
       self.start()
       self.close_wait()
       self.check_for_errors()
