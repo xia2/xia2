@@ -217,7 +217,7 @@ def get_unit_cell_errors(stop_after=None):
 
   print
   Chatter.write("")
-  Chatter.write("Unit cell estimation based on %d Monte Carlo refinements," % len(MC))
+  Chatter.write("Unit cell estimation based on %d Monte Carlo runs," % len(MC))
   span = miller.index_span(used_index_range)
   Chatter.write("drawn from miller indices between %s and %s" % (str(span.min()), str(span.max())))
   Chatter.write("with associated 2theta angles between %.3f and %.3f deg" % (used_two_theta_range_min, used_two_theta_range_max))
