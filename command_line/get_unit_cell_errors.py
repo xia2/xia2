@@ -1,10 +1,8 @@
 import sys
 import os
 import math
-import time
 import exceptions
 import traceback
-
 # Needed to make xia2 imports work correctly
 import libtbx.load_env
 xia2_root_dir = libtbx.env.find_in_repositories("xia2", optional=False)
@@ -16,131 +14,226 @@ from Handlers.Streams import Chatter, Debug
 
 from Handlers.Files import cleanup
 from Handlers.Citations import Citations
-from Handlers.Environment import Environment, df
+from Handlers.Environment import Environment
 from lib.bits import auto_logfiler
-
-from XIA2Version import Version
 
 # XML Marked up output for e-HTPX
 if not os.path.join(os.environ['XIA2_ROOT'], 'Interfaces') in sys.path:
   sys.path.append(os.path.join(os.environ['XIA2_ROOT'], 'Interfaces'))
 
-from Applications.xia2setup import write_xinfo
-from Applications.xia2 import check, check_cctbx_version, check_environment
-from Applications.xia2 import get_command_line, write_citations, help
-from xia2.lib.tabulate import tabulate
+from Applications.xia2 import check, check_environment
+from cctbx import miller
+from cctbx.array_family import flex
+import random
 
-from scitbx.array_family import flex
+from Modules.UnitCellErrors import _refinery
+
+def load_sweeps_with_common_indexing():
+  assert os.path.exists('xia2.json')
+  from Schema.XProject import XProject
+  xinfo = XProject.from_json(filename='xia2.json')
+
+  from Wrappers.Dials.Reindex import Reindex
+  Citations.cite('dials')
+
+  from dxtbx.model.experiment.experiment_list import ExperimentListFactory
+  import cPickle as pickle
+  crystals = xinfo.get_crystals()
+  assert len(crystals) == 1
+  crystal = next(crystals.itervalues())
+  working_directory = Environment.generate_directory([crystal.get_name(), 'analysis'])
+  os.chdir(working_directory)
+
+  scaler = crystal._get_scaler()
+
+  epoch_to_batches = {}
+  epoch_to_integrated_intensities = {}
+  epoch_to_sweep_name = {}
+
+  # Aimless only
+  epochs = scaler._sweep_handler.get_epochs()
+
+  reference_cell = None
+  reference_lattice = None
+  reference_vectors = None
+  reference_wavelength = None
+
+  # Reindex each sweep to same setting
+  all_miller_indices = flex.miller_index()
+  all_two_thetas = flex.double()
+
+  for epoch in epochs:
+    si = scaler._sweep_handler.get_sweep_information(epoch)
+    Chatter.smallbanner(si.get_sweep_name(), True)
+    Debug.smallbanner(si.get_sweep_name(), True)
+
+    intgr = si.get_integrater()
+    refiner = intgr.get_integrater_refiner()
+    _experiments_filename = refiner.get_refiner_payload("experiments.json")
+    _reflections_filename = refiner.get_refiner_payload("reflections.pickle")
+    Debug.write('experiment: %s' % _experiments_filename)
+    Debug.write('reflection: %s' % _reflections_filename)
+
+    # Use setting of first sweep as reference
+    if reference_vectors is None:
+      reference_vectors = _experiments_filename
+
+    # Assume that all sweeps have the same lattice system
+    if reference_lattice is None:
+      reference_lattice = refiner.get_refiner_lattice()
+    else:
+      assert reference_lattice == refiner.get_refiner_lattice()
+    Debug.write("lattice: %s" % refiner.get_refiner_lattice())
+
+    # Read .json file for sweep
+    db = ExperimentListFactory.from_json_file(_experiments_filename)
+
+    # Assume that each file only contains a single experiment
+    assert (len(db) == 1)
+    db = db[0]
+
+    # Get beam vector
+    s0 = db.beam.get_unit_s0()
+
+    # Use the unit cell of the first sweep as reference
+    if reference_cell is None:
+      reference_cell = db.crystal.get_unit_cell()
+      Debug.write("Reference cell: %s" % str(reference_cell))
+
+    dials_reindex = Reindex()
+    dials_reindex.set_working_directory(working_directory)
+    dials_reindex.set_cb_op("auto")
+    dials_reindex.set_experiments_filename(reference_vectors)
+    dials_reindex.set_indexed_filename(_reflections_filename)
+    auto_logfiler(dials_reindex)
+    dials_reindex.run()
+
+    # Assume that all data are collected at same wavelength
+    if reference_wavelength is None:
+      reference_wavelength = intgr.get_wavelength()
+    else:
+      assert abs(reference_wavelength - intgr.get_wavelength()) < 0.01
+    Debug.write("wavelength: %f A" % intgr.get_wavelength())
+    Debug.write("distance: %f mm" % intgr.get_distance())
+
+    # Get list of observed HKL indices
+    with open(dials_reindex.get_reindexed_reflections_filename(), 'rb') as fh:
+      pickle_data = pickle.load(fh)
+
+    Chatter.write("Found %d reflections" % len(pickle_data['miller_index']))
+
+    # Find the observed 2theta angles
+    miller_indices = flex.miller_index()
+    two_thetas_obs = flex.double()
+    for pixel, panel, hkl in zip(pickle_data['xyzobs.px.value'], pickle_data['panel'], pickle_data['miller_index']):
+      if hkl != (0, 0, 0):
+        two_thetas_obs.append(db.detector[panel].get_two_theta_at_pixel(s0, pixel[0:2]))
+        miller_indices.append(hkl)
+
+    # Convert observed 2theta angles to degrees
+    two_thetas_obs = two_thetas_obs * 180 / 3.14159265359
+    Chatter.write("Kept %d reflections != 0,0,0 in 2theta range %.3f - %.3f deg" % (len(miller_indices), min(two_thetas_obs), max(two_thetas_obs)))
+
+    all_miller_indices.extend(miller_indices)
+    all_two_thetas.extend(two_thetas_obs)
+
+  return all_miller_indices, all_two_thetas, reference_cell, reference_lattice, reference_wavelength
 
 
 def get_unit_cell_errors(stop_after=None):
   '''Actually process something...'''
 
-  assert os.path.exists('xia2.json')
-  from Schema.XProject import XProject
-  xinfo = XProject.from_json(filename='xia2.json')
+  all_miller_indices, all_two_thetas_obs, reference_cell, reference_lattice, reference_wavelength = load_sweeps_with_common_indexing()
 
-  from Wrappers.Dials.CombineExperiments import CombineExperiments
-  from Wrappers.Dials.Reindex import Reindex
-  from lib.bits import auto_logfiler
+  Chatter.banner('Unit cell sampling')
+  Debug.banner('Unit cell sampling')
+  span = miller.index_span(all_miller_indices)
+  Chatter.write("Found %d reflections in 2theta range %.3f - %.3f deg" % (len(all_miller_indices), min(all_two_thetas_obs), max(all_two_thetas_obs)))
+  Debug.write("Initial miller index range: %s - %s" % (str(span.min()), str(span.max())))
 
-  crystals = xinfo.get_crystals()
-  for crystal_id, crystal in crystals.iteritems():
-    cwd = os.path.abspath(os.curdir)
-    working_directory = Environment.generate_directory(
-      [crystal.get_name(), 'analysis'])
-    os.chdir(working_directory)
+  # Exclude 1% of reflections to remove potential outliers
+  two_theta_cutoff = sorted(all_two_thetas_obs)[-int(len(all_two_thetas_obs) * 0.01)-1]
+  Chatter.write("Excluding outermost 1%% of reflections (2theta >= %.3f)" % two_theta_cutoff)
+  two_thetas_select = all_two_thetas_obs < two_theta_cutoff
+  all_two_thetas_obs = all_two_thetas_obs.select(two_thetas_select)
+  all_miller_indices = all_miller_indices.select(two_thetas_select)
 
-    scaler = crystal._get_scaler()
+  Chatter.write("Kept %d reflections in 2theta range %.3f - %.3f deg" % (len(all_miller_indices), min(all_two_thetas_obs), max(all_two_thetas_obs)))
+  span = miller.index_span(all_miller_indices)
+  Chatter.write("Miller index range: %s - %s" % (str(span.min()), str(span.max())))
 
-    epoch_to_batches = {}
-    epoch_to_integrated_intensities = {}
-    epoch_to_sweep_name = {}
+  # prepare MonteCarlo sampling
+  mc_runs = 50
+  sample_size = min(len(all_miller_indices) // 2, 100)
 
-    #epoch_to_si = {}
-    # Aimless only
-    epochs = scaler._sweep_handler.get_epochs()
+  Chatter.write("\nRandomly sampling %d x %d reflections for Monte Carlo iterations" % (mc_runs, sample_size))
+  Debug.write("Refinements start with reference unit cell:", reference_cell)
 
-    reference_vectors = None
-    reindexed_reflections = []
+  MC = []
+  MCconstrained = []
+  used_index_range = flex.miller_index()
+  used_two_theta_range_min = 1e300
+  used_two_theta_range_max = 0
 
-    dials_combine = CombineExperiments()
+  for n in range(mc_runs): # MC sampling
+    # Select sample_size reflections
+    sample = flex.size_t(random.sample(range(len(all_miller_indices)), sample_size))
+    miller_indices = all_miller_indices.select(sample)
+    two_thetas_obs = all_two_thetas_obs.select(sample)
 
-    dials_combine.set_experimental_model(
-      same_beam=True,
-      same_detector=True, # This may require some more work for the general case
-      same_goniometer=False)
+    # Record
+    span = miller.index_span(miller_indices)
+    used_index_range.append(span.min())
+    used_index_range.append(span.max())
+    used_two_theta_range_min = min(used_two_theta_range_min, min(two_thetas_obs))
+    used_two_theta_range_max = max(used_two_theta_range_max, max(two_thetas_obs))
 
-    for epoch in epochs:
-        si = scaler._sweep_handler.get_sweep_information(epoch)
-#        epoch_to_batches[epoch] = si.get_batches()
-#        epoch_to_integrated_intensities[epoch] = si.get_reflections()
-#        epoch_to_sweep_name[epoch] = si.get_sweep_name()
+    refined = _refinery(two_thetas_obs, miller_indices, reference_wavelength, reference_cell)
+    MC.append(refined.unit_cell().parameters())
+    Debug.write('Run %d refined to: %s', (n, str(refined.unit_cell())))
+    if reference_lattice is not None and reference_lattice is not 'aP':
+      refined = _refinery(two_thetas_obs, miller_indices, reference_wavelength, reference_cell, reference_lattice[0])
+      MCconstrained.append(refined.unit_cell().parameters())
+      Debug.write('Run %d (constrained %s) refined to: %s', (n, reference_lattice[0], str(refined.unit_cell())))
 
-# check CCP4ScalerA.py
-#~line 347 to get the integrater
-        intgr = si.get_integrater()
-#        hklin = si.get_reflections()
-        refiner = intgr.get_integrater_refiner()
-#        print intgr
-#        print hklin
-#        print refiner
+    if (n % 50) == 0:
+      sys.stdout.write("\n%5s ." % (str(n) if n > 0 else ''))
+    else:
+      sys.stdout.write(".")
+    sys.stdout.flush()
 
-# go to DialsIntegrator.py
-# ~234
-# experiments filename, index filename
-# (poss DialsIndexer)
-#        _intgr_experiments_filename = refiner.get_refiner_payload("experiments.json")
-#        print _intgr_experiments_filename
-        if reference_vectors is None:
-          reference_vectors = refiner.get_refiner_payload("experiments.json")
+  assert used_two_theta_range_min < used_two_theta_range_max
 
-#        ## copy the data across
-#        from dxtbx.serialize import load
-#        experiments = load.experiment_list(_intgr_experiments_filename)
-#        experiment = experiments[0]
-        _reflections_filename = refiner.get_refiner_payload("reflections.pickle")
-        print _reflections_filename
+  def stats_summary(l):
+    mean = sum(l) / len(l)
+    var = 0
+    for y in l:
+      var = var + ((y - mean) ** 2)
+    popvar = var / (len(l)-1)
+    popstddev = math.sqrt(popvar)
+    stderr = popstddev / math.sqrt(len(l))
+    return { 'mean': mean, 'variance': var, 'population_variance': popvar,
+        'population_standard_deviation': popstddev, 'standard_error': stderr }
 
-        dials_reindex = Reindex()
-        dials_reindex.set_working_directory(working_directory)
-        dials_reindex.set_cb_op("auto")
-        dials_reindex.set_experiments_filename(reference_vectors)
-        dials_reindex.set_indexed_filename(_reflections_filename)
-        auto_logfiler(dials_reindex)
-        dials_reindex.run()
-
-        dials_combine.add_experiments(reference_vectors)
-        dials_combine.add_reflections(dials_reindex.get_reindexed_reflections_filename())
-#       Citations.cite('blend')
-
-
-# TstDialsRefiner.py
-# ..?
-# ~72
-
-# add multiple exps together
-#
-    auto_logfiler(dials_combine)
-    dials_combine.run()
-
-    from Wrappers.Dials.Refine import Refine
-    dials_refine = Refine()
-    dials_refine.set_experiments_filename(dials_combine.get_combined_experiments_filename())
-    dials_refine.set_indexed_filename(dials_combine.get_combined_reflections_filename())
-    auto_logfiler(dials_refine)
-    dials_refine.run()
-
-    print
-    with open('dials.refine.debug.log') as reflog:
-      dials_log = reflog.readlines()
-      model_start = dials_log.index("Final refined crystal model:\n")
-      if model_start > 0:
-        print "".join(dials_log[model_start:model_start+13])
-      errors_start = dials_log.index("Refined cell parameters and estimated standard deviations:\n")
-      if errors_start > 0:
-        print "".join(dials_log[errors_start:errors_start+7])
-  return
+  print
+  Chatter.write("")
+  Chatter.write("Unit cell estimation based on %d Monte Carlo refinements," % len(MC))
+  span = miller.index_span(used_index_range)
+  Chatter.write("drawn from miller indices between %s and %s" % (str(span.min()), str(span.max())))
+  Chatter.write("with associated 2theta angles between %.3f and %.3f deg" % (used_two_theta_range_min, used_two_theta_range_max))
+  if reference_lattice is None or reference_lattice == 'aP':
+    Chatter.write("\n|  Unconstrained estimate:")
+    for dimension, estimate in zip(['a', 'b', 'c', 'alpha', 'beta', 'gamma'], zip(*MC)):
+      est_stats = stats_summary(estimate)
+      Chatter.write("| %5s = %9.5f (SE: %.5f)" % (dimension, est_stats['mean'], est_stats['standard_error']))
+  else:
+    Chatter.write("\n|    Unconstrained estimate:       |     Constrained estimate (%s):" % reference_lattice)
+    for dimension, estimate, constrained in zip(['a', 'b', 'c', 'alpha', 'beta', 'gamma'], zip(*MC), zip(*MCconstrained)):
+      est_stats = stats_summary(estimate)
+      rest_stats = stats_summary(constrained)
+      Chatter.write("| %5s = %9.5f (SE: %.5f)  |  %5s = %9.5f (SE: %.5f)" %
+        (dimension, est_stats['mean'], est_stats['standard_error'],
+         dimension, rest_stats['mean'], rest_stats['standard_error']))
 
 def run():
   if os.path.exists('xia2-working.phil'):
@@ -153,7 +246,7 @@ def run():
     Chatter.write('Status: error "%s"' % str(e))
 
   if len(sys.argv) < 2 or '-help' in sys.argv:
-    help()
+    print "Run after xia2 has successfully completed"
     sys.exit()
 
   wd = os.getcwd()
