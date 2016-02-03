@@ -290,7 +290,7 @@ class DialsIndexer(Indexer):
       from libtbx import easy_pickle
       from dials.util.ascii_art import spot_counts_per_image_plot
       refl = easy_pickle.load(spot_filename)
-      Chatter.write(spot_counts_per_image_plot(refl))
+      Chatter.write(spot_counts_per_image_plot(refl), strip=False)
 
       if 0 and not PhilIndex.params.xia2.settings.trust_beam_centre:
         discovery = self.DiscoverBetterExperimentalModel()

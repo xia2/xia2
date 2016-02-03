@@ -100,7 +100,7 @@ class _Stream(object):
   def set_additional(self):
     self._additional = True
 
-  def write(self, record, forward = True):
+  def write(self, record, forward=True, strip=True):
     if self._off:
       return None
 
@@ -117,10 +117,10 @@ class _Stream(object):
     for r in record.split('\n'):
       if self._prefix:
         result = self.get_file().write('[%s]  %s\n' %
-                                       (self._prefix, r.strip()))
+                                       (self._prefix, r.strip() if strip else r))
       else:
         result = self.get_file().write('%s\n' %
-                                       (r.strip()))
+                                       (r.strip() if strip else r))
 
       self.get_file().flush()
 
