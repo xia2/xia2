@@ -125,7 +125,7 @@ class _Stream(object):
       self.get_file().flush()
 
     if self._otherstream and forward:
-      self._otherstream.write(record)
+      self._otherstream.write(record, strip=strip)
 
     return result
 

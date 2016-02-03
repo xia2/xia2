@@ -222,18 +222,18 @@ def get_unit_cell_errors(stop_after=None):
   Chatter.write("drawn from miller indices between %s and %s" % (str(span.min()), str(span.max())))
   Chatter.write("with associated 2theta angles between %.3f and %.3f deg" % (used_two_theta_range_min, used_two_theta_range_max))
   if reference_lattice is None or reference_lattice == 'aP':
-    Chatter.write("\n|  Unconstrained estimate:")
+    Chatter.write("\n  Unconstrained estimate:", strip=False)
     for dimension, estimate in zip(['a', 'b', 'c', 'alpha', 'beta', 'gamma'], zip(*MC)):
       est_stats = stats_summary(estimate)
-      Chatter.write("| %5s = %9.5f (SE: %.5f)" % (dimension, est_stats['mean'], est_stats['standard_error']))
+      Chatter.write(" %5s = %9.5f (SE: %.5f)" % (dimension, est_stats['mean'], est_stats['standard_error']), strip=False)
   else:
-    Chatter.write("\n|    Unconstrained estimate:       |     Constrained estimate (%s):" % reference_lattice)
+    Chatter.write("\n    Unconstrained estimate:       |     Constrained estimate (%s):" % reference_lattice, strip=False)
     for dimension, estimate, constrained in zip(['a', 'b', 'c', 'alpha', 'beta', 'gamma'], zip(*MC), zip(*MCconstrained)):
       est_stats = stats_summary(estimate)
       rest_stats = stats_summary(constrained)
-      Chatter.write("| %5s = %9.5f (SE: %.5f)  |  %5s = %9.5f (SE: %.5f)" %
+      Chatter.write(" %5s = %9.5f (SE: %.5f)  |  %5s = %9.5f (SE: %.5f)" %
         (dimension, est_stats['mean'], est_stats['standard_error'],
-         dimension, rest_stats['mean'], rest_stats['standard_error']))
+         dimension, rest_stats['mean'], rest_stats['standard_error']), strip=False)
 
 def run():
   if os.path.exists('xia2-working.phil'):
