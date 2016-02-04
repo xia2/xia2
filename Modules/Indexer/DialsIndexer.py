@@ -556,8 +556,8 @@ class DialsIndexer(Indexer):
     indexer.run(method)
 
     if not os.path.exists(indexer.get_experiments_filename()):
-      raise RuntimeError("Indexing has failed: %s does not exist."
-                         %indexer.get_experiments_filename())
+      raise RuntimeError("Indexing has failed: see %s for more details."
+                         %indexer.get_log_file())
     elif not os.path.exists(indexer.get_indexed_filename()):
       raise RuntimeError("Indexing has failed: %s does not exist."
                          %indexer.get_indexed_filename())
