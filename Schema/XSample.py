@@ -81,6 +81,12 @@ class XSample(object):
     for k, v in obj.iteritems():
       if k == '_sweeps':
         v = [s_dict['_name'] for s_dict in v]
+      elif k == '_multi_indexer' and v is not None:
+        from libtbx.utils import import_python_object
+        cls = import_python_object(
+          import_path=".".join((v['__module__'], v['__name__'])),
+          error_prefix='', target_must_be='', where_str='').object
+        v = cls.from_dict(v)
       setattr(return_obj, k, v)
     return return_obj
 
