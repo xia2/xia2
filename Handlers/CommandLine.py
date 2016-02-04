@@ -59,7 +59,7 @@ def load_datablock(filename):
     imagesets = datablock.extract_imagesets()
     params = PhilIndex.get_python_object()
     reference_geometry = params.xia2.settings.input.reference_geometry
-    if reference_geometry is not None:
+    if reference_geometry is not None and len(reference_geometry) > 0:
       update_with_reference_geometry(imagesets, reference_geometry)
     for imageset in imagesets:
       template = imageset.get_template()
