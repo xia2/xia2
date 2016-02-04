@@ -422,49 +422,137 @@ class CCP4ScalerA(Scaler):
 
     need_to_return = False
 
-    for epoch in self._sweep_handler.get_epochs():
-      si = self._sweep_handler.get_sweep_information(epoch)
+    multi_sweep_indexing = \
+      PhilIndex.params.xia2.settings.developmental.multi_sweep_indexing
 
-      hklin = si.get_reflections()
-      hklout = os.path.join(
-          self.get_working_directory(),
-          os.path.split(hklin)[-1].replace('.mtz', '_rdx.mtz'))
+    if multi_sweep_indexing and not self._scalr_input_pointgroup:
+      pointless_hklins = []
 
-      FileHandler.record_temporary_file(hklout)
+      max_batches = 0
+      for epoch in self._sweep_handler.get_epochs():
+        si = self._sweep_handler.get_sweep_information(epoch)
+        hklin = si.get_reflections()
 
-      integrater = si.get_integrater()
-      refiner = integrater.get_integrater_refiner()
+        md = self._factory.Mtzdump()
+        md.set_hklin(hklin)
+        md.dump()
 
-      if self._scalr_input_pointgroup:
-        Debug.write('Using input pointgroup: %s' % \
-                    self._scalr_input_pointgroup)
-        pointgroup = self._scalr_input_pointgroup
-        reindex_op = 'h,k,l'
-        pt = False
+        batches = md.get_batches()
+        if 1 + max(batches) - min(batches) > max_batches:
+          max_batches = max(batches) - min(batches) + 1
 
-      else:
+        datasets = md.get_datasets()
 
-        pointless_hklin = self._prepare_pointless_hklin(
+        Debug.write('In reflection file %s found:' % hklin)
+        for d in datasets:
+          Debug.write('... %s' % d)
+
+        dataset_info = md.get_dataset_info(datasets[0])
+
+      from lib.bits import nifty_power_of_ten
+      Debug.write('Biggest sweep has %d batches' % max_batches)
+      max_batches = nifty_power_of_ten(max_batches)
+
+      counter = 0
+
+      for epoch in self._sweep_handler.get_epochs():
+        si = self._sweep_handler.get_sweep_information(epoch)
+        hklin = si.get_reflections()
+        integrater = si.get_integrater()
+        refiner = integrater.get_integrater_refiner()
+
+        hklin = self._prepare_pointless_hklin(
             hklin, si.get_integrater().get_phi_width())
 
-        pointgroup, reindex_op, ntr, pt = \
-                    self._pointless_indexer_jiffy(
-            pointless_hklin, refiner)
+        rb = self._factory.Rebatch()
 
-        Debug.write('X1698: %s: %s' % (pointgroup, reindex_op))
+        hklout = os.path.join(self.get_working_directory(),
+                              '%s_%s_%s_%s_prepointless.mtz' % \
+                              (pname, xname, dname, si.get_sweep_name()))
 
-        if ntr:
+        # we will want to delete this one exit
+        FileHandler.record_temporary_file(hklout)
 
-          integrater.integrater_reset_reindex_operator()
-          need_to_return = True
+        first_batch = min(si.get_batches())
+        si.set_batch_offset(counter * max_batches - first_batch + 1)
 
-      if pt and not probably_twinned:
-        probably_twinned = True
+        rb.set_hklin(hklin)
+        rb.set_first_batch(counter * max_batches + 1)
+        rb.set_project_info(pname, xname, dname)
+        rb.set_hklout(hklout)
 
-      Debug.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
+        new_batches = rb.rebatch()
 
-      pointgroups[epoch] = pointgroup
-      reindex_ops[epoch] = reindex_op
+        pointless_hklins.append(hklout)
+
+        # update the counter & recycle
+        counter += 1
+
+      s = self._factory.Sortmtz()
+
+      pointless_hklin = os.path.join(self.get_working_directory(),
+                            '%s_%s_prepointless_sorted.mtz' % \
+                            (self._scalr_pname, self._scalr_xname))
+
+      s.set_hklout(pointless_hklin)
+
+      for hklin in pointless_hklins:
+        s.add_hklin(hklin)
+
+      s.sort()
+
+      pointgroup, reindex_op, ntr, pt = \
+                  self._pointless_indexer_jiffy(
+          pointless_hklin, refiner)
+
+      for epoch in self._sweep_handler.get_epochs():
+        pointgroups[epoch] = pointgroup
+        reindex_ops[epoch] = reindex_op
+
+    else:
+      for epoch in self._sweep_handler.get_epochs():
+        si = self._sweep_handler.get_sweep_information(epoch)
+
+        hklin = si.get_reflections()
+        #hklout = os.path.join(
+            #self.get_working_directory(),
+            #os.path.split(hklin)[-1].replace('.mtz', '_rdx.mtz'))
+
+        #FileHandler.record_temporary_file(hklout)
+
+        integrater = si.get_integrater()
+        refiner = integrater.get_integrater_refiner()
+
+        if self._scalr_input_pointgroup:
+          Debug.write('Using input pointgroup: %s' % \
+                      self._scalr_input_pointgroup)
+          pointgroup = self._scalr_input_pointgroup
+          reindex_op = 'h,k,l'
+          pt = False
+
+        else:
+
+          pointless_hklin = self._prepare_pointless_hklin(
+              hklin, si.get_integrater().get_phi_width())
+
+          pointgroup, reindex_op, ntr, pt = \
+                      self._pointless_indexer_jiffy(
+              pointless_hklin, refiner)
+
+          Debug.write('X1698: %s: %s' % (pointgroup, reindex_op))
+
+          if ntr:
+
+            integrater.integrater_reset_reindex_operator()
+            need_to_return = True
+
+        if pt and not probably_twinned:
+          probably_twinned = True
+
+        Debug.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
+
+        pointgroups[epoch] = pointgroup
+        reindex_ops[epoch] = reindex_op
 
     overall_pointgroup = None
 
