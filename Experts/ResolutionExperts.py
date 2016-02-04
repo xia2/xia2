@@ -542,6 +542,11 @@ def find_blank(hklin):
   p.set_hklin(hklin)
   cell = p.sum_mtz(hklout)
 
+  if not os.path.isfile(hklout):
+    Debug.write('Pointless failed:')
+    Debug.write(''.join(p.get_all_output()))
+    raise RuntimeError('Pointless failed: %s does not exist' %hklout)
+
   isig = { }
 
   for record in open(hklout, 'r'):
