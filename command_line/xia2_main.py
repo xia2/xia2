@@ -206,6 +206,8 @@ def xia2_main(stop_after=None):
           i_sweep += 1
         for sweep in remove_sweeps:
           wavelength.remove_sweep(sweep)
+          sample = sweep.get_xsample()
+          sample.remove_sweep(sweep)
 
   else:
     for crystal_id in crystals.keys():
@@ -224,6 +226,8 @@ def xia2_main(stop_after=None):
               Chatter.write('Processing sweep %s failed: %s' % \
                             (sweep.get_name(), str(e)))
               wavelength.remove_sweep(sweep)
+              sample = sweep.get_xsample()
+              sample.remove_sweep(sweep)
             else:
               raise
 

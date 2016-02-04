@@ -117,3 +117,12 @@ class XSample(object):
   def get_multi_indexer(self):
     return self._multi_indexer
 
+  def remove_sweep(self, sweep):
+    '''Remove a sweep object from this wavelength.'''
+
+    try:
+      self._sweeps.remove(sweep)
+    except ValueError, e:
+      pass
+
+    return
