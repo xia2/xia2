@@ -435,9 +435,11 @@ class _CommandLine(object):
 
     Flags.set_reversephi(params.xia2.settings.input.reverse_phi)
 
-    if params.xia2.settings.input.json is not None:
-      assert os.path.isfile(params.xia2.settings.input.json)
-      load_datablock(params.xia2.settings.input.json)
+    input_json = params.xia2.settings.input.json
+    if (input_json is not None and len(input_json)):
+      for json_file in input_json:
+        assert os.path.isfile(json_file)
+        load_datablock(json_file)
 
     reference_geometry = params.xia2.settings.input.reference_geometry
     if reference_geometry is not None and len(reference_geometry) > 0:
