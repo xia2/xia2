@@ -46,18 +46,20 @@ class XDSRefiner(Refiner):
       # integrate with XDS
       from Modules.Indexer.DialsIndexer import DialsIndexer
       if isinstance(idxr, DialsIndexer):
-        all_images = idxr.get_matching_images()
-        first = min(all_images)
-        last = max(all_images)
+        sweep = idxr.get_indexer_sweep()
+        imageset = idxr._indxr_imagesets[0]
+        scan = imageset.get_scan()
 
-        last_background = int(round(5.0 / idxr.get_phi_width())) - 1 + first
+        first, last = scan.get_image_range()
+        phi_width = scan.get_oscillation()[1]
+        last_background = int(round(5.0 / phi_width)) - 1 + first
         last_background = min(last, last_background)
 
         from Modules.Indexer.XDSIndexer import XDSIndexer
         xds_idxr = XDSIndexer()
         xds_idxr.set_working_directory(self.get_working_directory())
-        xds_idxr.set_indexer_sweep(idxr.get_indexer_sweep())
-        xds_idxr.setup_from_imageset(idxr.get_imageset())
+        xds_idxr.set_indexer_sweep(sweep)
+        xds_idxr.add_indexer_imageset(imageset)
 
         # next start to process these - first xycorr
         # FIXME run these *afterwards* as then we have a refined detector geometry
