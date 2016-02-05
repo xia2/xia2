@@ -135,7 +135,7 @@ def MosflmIndex(DriverType = None, indxr_print = True):
       self.input('newmat xiaindex.mat')
 
       if self._beam_centre is not None:
-        self.input('beam %f %f' %self._beam_centre)
+        self.input('beam %f %f' %tuple(self._beam_centre))
       if self._wavelength is not None:
         self.input('wavelength %f' %self._wavelength)
       if self._distance is not None:
