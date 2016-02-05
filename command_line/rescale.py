@@ -27,7 +27,6 @@ from XIA2Version import Version
 if not os.path.join(os.environ['XIA2_ROOT'], 'Interfaces') in sys.path:
   sys.path.append(os.path.join(os.environ['XIA2_ROOT'], 'Interfaces'))
 
-from Applications.xia2setup import write_xinfo
 from Applications.xia2 import check, check_cctbx_version, check_environment
 from Applications.xia2 import get_command_line, write_citations, help
 

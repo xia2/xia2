@@ -574,8 +574,6 @@ def write_xinfo(filename, directories, template=None):
   else:
     rummage(directories)
 
-  save_datablock(os.path.join(start, 'xia2-datablock.json'))
-
   fout = open(filename, 'w')
   print_sweeps(fout)
 

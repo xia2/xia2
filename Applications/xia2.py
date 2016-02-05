@@ -181,6 +181,9 @@ def get_command_line():
 
     CommandLine.set_xinfo(xinfo)
 
+  from xia2setup import save_datablock
+  save_datablock(os.path.join(os.getcwd(), 'xia2-datablock.json'))
+
   return CommandLine
 
 def write_citations():
