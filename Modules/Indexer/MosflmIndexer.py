@@ -193,8 +193,8 @@ class MosflmIndexer(IndexerSingleSweep):
 
     #self.set_task(task)
 
-    indexer.set_template(self.get_imageset().get_template())
-    indexer.set_directory(os.path.dirname(self.get_imageset().get_template()))
+    indexer.set_template(os.path.basename(self.get_template()))
+    indexer.set_directory(self.get_directory())
 
     xsweep = self.get_indexer_sweep()
     if xsweep is not None:

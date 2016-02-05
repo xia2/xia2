@@ -307,7 +307,7 @@ class MosflmIntegrater(Integrater):
                    (dname, self.get_integrater_sweep_name())
       integrater.set_pname_xname_dname(pname, xname, temp_dname)
 
-    integrater.set_template(self.get_template())
+    integrater.set_template(os.path.basename(self.get_template()))
     integrater.set_directory(self.get_directory())
 
     # check for ice - and if so, exclude (ranges taken from
@@ -624,7 +624,7 @@ class MosflmIntegrater(Integrater):
                      (dname, self.get_integrater_sweep_name())
         job.set_pname_xname_dname(pname, xname, temp_dname)
 
-      job.set_template(self.get_template())
+      job.set_template(os.path.basename(self.get_template()))
       job.set_directory(self.get_directory())
 
       # check for ice - and if so, exclude (ranges taken from
