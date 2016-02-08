@@ -340,11 +340,17 @@ def run():
 
   try:
     xia2()
-    Chatter.write('Status: normal termination')
+
+    status_message = 'Status: normal termination'
+    import datetime
+    if datetime.date.today().timetuple()[1:3] == (4, 1):
+      status_message = 'Status: all your spots are belong to us'
+
+    Chatter.write(status_message)
     from Handlers.Flags import Flags
     if Flags.get_egg():
       from lib.bits import message
-      message('xia2 status normal termination')
+      message(status_message)
 
   except exceptions.Exception, e:
     traceback.print_exc(file = open(os.path.join(wd, 'xia2.error'), 'w'))
