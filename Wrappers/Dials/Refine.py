@@ -139,6 +139,11 @@ def Refine(DriverType = None):
 
       self.start()
       self.close_wait()
+
+      for record in self.get_all_output():
+        if 'Sorry: Too few reflections to' in record:
+          raise RuntimeError, record.strip()
+
       self.check_for_errors()
       return
 
