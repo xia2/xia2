@@ -337,41 +337,140 @@ class CCP4ScalerA(Scaler):
 
     need_to_return = False
 
+    multi_sweep_indexing = \
+      PhilIndex.params.xia2.settings.developmental.multi_sweep_indexing
+
+
     if len(self._sweep_handler.get_epochs()) > 1:
 
-      lattices = []
+      if multi_sweep_indexing and not self._scalr_input_pointgroup:
+        pointless_hklins = []
 
-      for epoch in self._sweep_handler.get_epochs():
+        max_batches = 0
+        for epoch in self._sweep_handler.get_epochs():
+          si = self._sweep_handler.get_sweep_information(epoch)
+          hklin = si.get_reflections()
 
-        si = self._sweep_handler.get_sweep_information(epoch)
-        intgr = si.get_integrater()
-        hklin = si.get_reflections()
-        refiner = intgr.get_integrater_refiner()
+          md = self._factory.Mtzdump()
+          md.set_hklin(hklin)
+          md.dump()
 
-        if self._scalr_input_pointgroup:
-          pointgroup = self._scalr_input_pointgroup
-          reindex_op = 'h,k,l'
-          ntr = False
+          batches = md.get_batches()
+          if 1 + max(batches) - min(batches) > max_batches:
+            max_batches = max(batches) - min(batches) + 1
 
-        else:
-          pointless_hklin = self._prepare_pointless_hklin(
+          datasets = md.get_datasets()
+
+          Debug.write('In reflection file %s found:' % hklin)
+          for d in datasets:
+            Debug.write('... %s' % d)
+
+          dataset_info = md.get_dataset_info(datasets[0])
+
+        from lib.bits import nifty_power_of_ten
+        Debug.write('Biggest sweep has %d batches' % max_batches)
+        max_batches = nifty_power_of_ten(max_batches)
+
+        counter = 0
+
+        for epoch in self._sweep_handler.get_epochs():
+          si = self._sweep_handler.get_sweep_information(epoch)
+          hklin = si.get_reflections()
+          integrater = si.get_integrater()
+          refiner = integrater.get_integrater_refiner()
+
+          hklin = self._prepare_pointless_hklin(
+            hklin, si.get_integrater().get_phi_width())
+
+          rb = self._factory.Rebatch()
+
+          hklout = os.path.join(self.get_working_directory(),
+                                '%s_%s_%s_%s_prepointless.mtz' % \
+                                (pname, xname, dname, si.get_sweep_name()))
+
+          # we will want to delete this one exit
+          FileHandler.record_temporary_file(hklout)
+
+          first_batch = min(si.get_batches())
+          si.set_batch_offset(counter * max_batches - first_batch + 1)
+
+          rb.set_hklin(hklin)
+          rb.set_first_batch(counter * max_batches + 1)
+          rb.set_project_info(pname, xname, dname)
+          rb.set_hklout(hklout)
+
+          new_batches = rb.rebatch()
+
+          pointless_hklins.append(hklout)
+
+          # update the counter & recycle
+          counter += 1
+
+        s = self._factory.Sortmtz()
+
+        pointless_hklin = os.path.join(self.get_working_directory(),
+                              '%s_%s_prepointless_sorted.mtz' % \
+                              (self._scalr_pname, self._scalr_xname))
+
+        s.set_hklout(pointless_hklin)
+
+        for hklin in pointless_hklins:
+          s.add_hklin(hklin)
+
+        s.sort()
+
+        pointgroup, reindex_op, ntr, pt = \
+                    self._pointless_indexer_jiffy(
+            pointless_hklin, refiner)
+
+        Debug.write('X1698: %s: %s' % (pointgroup, reindex_op))
+
+        lattices = [Syminfo.get_lattice(pointgroup)]
+
+        for epoch in self._sweep_handler.get_epochs():
+          si = self._sweep_handler.get_sweep_information(epoch)
+          intgr = si.get_integrater()
+          hklin = si.get_reflections()
+          refiner = intgr.get_integrater_refiner()
+
+          if ntr:
+            intgr.integrater_reset_reindex_operator()
+            need_to_return = True
+
+      else:
+        lattices = []
+
+        for epoch in self._sweep_handler.get_epochs():
+
+          si = self._sweep_handler.get_sweep_information(epoch)
+          intgr = si.get_integrater()
+          hklin = si.get_reflections()
+          refiner = intgr.get_integrater_refiner()
+
+          if self._scalr_input_pointgroup:
+            pointgroup = self._scalr_input_pointgroup
+            reindex_op = 'h,k,l'
+            ntr = False
+
+          else:
+            pointless_hklin = self._prepare_pointless_hklin(
               hklin, si.get_integrater().get_phi_width())
 
-          pointgroup, reindex_op, ntr, pt = \
-                      self._pointless_indexer_jiffy(
-              pointless_hklin, refiner)
+            pointgroup, reindex_op, ntr, pt = \
+                        self._pointless_indexer_jiffy(
+                pointless_hklin, refiner)
 
-          Debug.write('X1698: %s: %s' % (pointgroup, reindex_op))
+            Debug.write('X1698: %s: %s' % (pointgroup, reindex_op))
 
-        lattice = Syminfo.get_lattice(pointgroup)
+          lattice = Syminfo.get_lattice(pointgroup)
 
-        if not lattice in lattices:
-          lattices.append(lattice)
+          if not lattice in lattices:
+            lattices.append(lattice)
 
-        if ntr:
+          if ntr:
 
-          intgr.integrater_reset_reindex_operator()
-          need_to_return = True
+            intgr.integrater_reset_reindex_operator()
+            need_to_return = True
 
       if len(lattices) > 1:
 
