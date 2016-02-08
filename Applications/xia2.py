@@ -344,7 +344,7 @@ def run():
     status_message = 'Status: normal termination'
     import datetime
     if datetime.date.today().timetuple()[1:3] == (4, 1):
-      status_message = 'Status: all your spots are belong to us'
+      status_message = 'Status: all your intensities are belong to us'
 
     Chatter.write(status_message)
     from Handlers.Flags import Flags
