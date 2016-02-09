@@ -33,6 +33,7 @@ def load_sweeps_with_common_indexing():
   from Schema.XProject import XProject
   xinfo = XProject.from_json(filename='xia2.json')
 
+  import dials # required for gaussian_rs warning
   from Wrappers.Dials.Reindex import Reindex
   Citations.cite('dials')
 
@@ -68,15 +69,15 @@ def load_sweeps_with_common_indexing():
     Debug.smallbanner(si.get_sweep_name(), True)
 
     intgr = si.get_integrater()
+    experiments_filename = intgr.get_integrated_experiments()
+    reflections_filename = intgr.get_integrated_reflections()
     refiner = intgr.get_integrater_refiner()
-    _experiments_filename = refiner.get_refiner_payload("experiments.json")
-    _reflections_filename = refiner.get_refiner_payload("reflections.pickle")
-    Debug.write('experiment: %s' % _experiments_filename)
-    Debug.write('reflection: %s' % _reflections_filename)
+    Debug.write('experiment: %s' % experiments_filename)
+    Debug.write('reflection: %s' % reflections_filename)
 
     # Use setting of first sweep as reference
     if reference_vectors is None:
-      reference_vectors = _experiments_filename
+      reference_vectors = experiments_filename
 
     # Assume that all sweeps have the same lattice system
     if reference_lattice is None:
@@ -86,7 +87,7 @@ def load_sweeps_with_common_indexing():
     Debug.write("lattice: %s" % refiner.get_refiner_lattice())
 
     # Read .json file for sweep
-    db = ExperimentListFactory.from_json_file(_experiments_filename)
+    db = ExperimentListFactory.from_json_file(experiments_filename)
 
     # Assume that each file only contains a single experiment
     assert (len(db) == 1)
@@ -104,7 +105,7 @@ def load_sweeps_with_common_indexing():
     dials_reindex.set_working_directory(working_directory)
     dials_reindex.set_cb_op("auto")
     dials_reindex.set_experiments_filename(reference_vectors)
-    dials_reindex.set_indexed_filename(_reflections_filename)
+    dials_reindex.set_indexed_filename(reflections_filename)
     auto_logfiler(dials_reindex)
     dials_reindex.run()
 
@@ -116,21 +117,40 @@ def load_sweeps_with_common_indexing():
     Debug.write("wavelength: %f A" % intgr.get_wavelength())
     Debug.write("distance: %f mm" % intgr.get_distance())
 
-    # Get list of observed HKL indices
+    # Get integrated reflection data
+    import dials
     with open(dials_reindex.get_reindexed_reflections_filename(), 'rb') as fh:
-      pickle_data = pickle.load(fh)
+      reflections = pickle.load(fh)
+
+    selection = reflections.get_flags(reflections.flags.used_in_refinement)
+    Chatter.write("Found %d reflections used in refinement (out of %d entries)" % (selection.count(True), len(reflections['miller_index'])))
+    reflections = reflections.select(selection)
+
+    # Filter bad reflections
+    selection = reflections['intensity.sum.variance'] <= 0
+    if selection.count(True) > 0:
+      reflections.del_selected(selection)
+      print 'Removing %d reflections with negative variance' % \
+        selection.count(True)
+
+    if 'intensity.prf.variance' in reflections:
+      selection = reflections['intensity.prf.variance'] <= 0
+      if selection.count(True) > 0:
+        reflections.del_selected(selection)
+        print 'Removing %d profile reflections with negative variance' % \
+          selection.count(True)
 
     # Find the observed 2theta angles
     miller_indices = flex.miller_index()
     two_thetas_obs = flex.double()
-    for pixel, panel, hkl in zip(pickle_data['xyzobs.px.value'], pickle_data['panel'], pickle_data['miller_index']):
-      if hkl != (0, 0, 0): # filter unindexed centroids
-        two_thetas_obs.append(db.detector[panel].get_two_theta_at_pixel(s0, pixel[0:2]))
-        miller_indices.append(hkl)
+    for pixel, panel, hkl in zip(reflections['xyzobs.px.value'], reflections['panel'], reflections['miller_index']):
+      assert hkl != (0, 0, 0)
+      two_thetas_obs.append(db.detector[panel].get_two_theta_at_pixel(s0, pixel[0:2]))
+      miller_indices.append(hkl)
 
     # Convert observed 2theta angles to degrees
     two_thetas_obs = two_thetas_obs * 180 / 3.14159265359
-    Chatter.write("Using %d reflections in 2theta range %.3f - %.3f deg" % (len(miller_indices), min(two_thetas_obs), max(two_thetas_obs)))
+    Chatter.write("Remaining %d reflections are in 2theta range %.3f - %.3f deg" % (len(miller_indices), min(two_thetas_obs), max(two_thetas_obs)))
 
     all_miller_indices.extend(miller_indices)
     all_two_thetas.extend(two_thetas_obs)
@@ -150,6 +170,7 @@ def get_unit_cell_errors(stop_after=None):
   Debug.write("Initial miller index range: %s - %s" % (str(span.min()), str(span.max())))
 
   # Exclude 1% of reflections to remove potential outliers
+  # eg. indexed/integrated high angle noise
   two_theta_cutoff = sorted(all_two_thetas_obs)[-int(len(all_two_thetas_obs) * 0.01)-1]
   Chatter.write("Excluding outermost 1%% of reflections (2theta >= %.3f)" % two_theta_cutoff)
   two_thetas_select = all_two_thetas_obs < two_theta_cutoff
