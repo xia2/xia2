@@ -92,8 +92,14 @@ class DialsIntegrater(Integrater):
 
   # admin functions
 
+  def get_integrated_experiments(self):
+    return self._intgr_experiments_filename
+
   def get_integrated_filename(self):
     return self._intgr_integrated_filename
+
+  def get_integrated_reflections(self):
+    return self._intgr_integrated_pickle
 
   # factory functions
 
