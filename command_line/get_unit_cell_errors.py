@@ -120,19 +120,17 @@ def load_sweeps_with_common_indexing():
     with open(dials_reindex.get_reindexed_reflections_filename(), 'rb') as fh:
       pickle_data = pickle.load(fh)
 
-    Chatter.write("Found %d reflections" % len(pickle_data['miller_index']))
-
     # Find the observed 2theta angles
     miller_indices = flex.miller_index()
     two_thetas_obs = flex.double()
     for pixel, panel, hkl in zip(pickle_data['xyzobs.px.value'], pickle_data['panel'], pickle_data['miller_index']):
-      if hkl != (0, 0, 0):
+      if hkl != (0, 0, 0): # filter unindexed centroids
         two_thetas_obs.append(db.detector[panel].get_two_theta_at_pixel(s0, pixel[0:2]))
         miller_indices.append(hkl)
 
     # Convert observed 2theta angles to degrees
     two_thetas_obs = two_thetas_obs * 180 / 3.14159265359
-    Chatter.write("Kept %d reflections != 0,0,0 in 2theta range %.3f - %.3f deg" % (len(miller_indices), min(two_thetas_obs), max(two_thetas_obs)))
+    Chatter.write("Using %d reflections in 2theta range %.3f - %.3f deg" % (len(miller_indices), min(two_thetas_obs), max(two_thetas_obs)))
 
     all_miller_indices.extend(miller_indices)
     all_two_thetas.extend(two_thetas_obs)
