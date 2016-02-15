@@ -83,11 +83,13 @@ if __name__ == '__main__':
   parser.add_option("-?", action="help", help=SUPPRESS_HELP)
   parser.add_option("-w", "--wavelength", dest="wavelength", help="Experimental wavelength (Angstrom)", default=None, type="float")
   options, args = parser.parse_args()
-  if options != {}:
-    print options
   if len(args) > 2:
     atoms = ''.join(args[2:])
     print 'Atoms: %s' % atoms
+    print options
     to_shelx(args[0], args[1], atoms, options)
-  else:
+  elif len(args) == 2:
+    print options
     to_shelx(args[0], args[1], options=options)
+  else:
+    parser.print_help()
