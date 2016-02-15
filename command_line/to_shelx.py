@@ -1,4 +1,6 @@
 from __future__ import division
+import sys
+from optparse import OptionParser, SUPPRESS_HELP
 
 def parse_compound(compound):
   import string
@@ -41,7 +43,7 @@ def mtz_to_hklf4(hklin, out):
   f.close()
   return
 
-def to_shelx(hklin, prefix, compound=''):
+def to_shelx(hklin, prefix, compound='', options={}):
   '''Read hklin (unmerged reflection file) and generate SHELXT input file
   and HKL file'''
 
@@ -74,14 +76,18 @@ def to_shelx(hklin, prefix, compound=''):
                                              occupancy=result[element]))
   open('%s.ins' % prefix, 'w').write(''.join(writer.generator(xray_structure,
                             full_matrix_least_squares_cycles=0,
-                            title=prefix)))
+                            title=prefix, wavelength=options.wavelength)))
 
 if __name__ == '__main__':
-  import sys
-
-  if len(sys.argv) > 3:
-    atoms = ''.join(sys.argv[3:])
+  parser = OptionParser("usage: %prog .mtz-file output-file [atoms]")
+  parser.add_option("-?", action="help", help=SUPPRESS_HELP)
+  parser.add_option("-w", "--wavelength", dest="wavelength", help="Experimental wavelength (Angstrom)", default=None, type="float")
+  options, args = parser.parse_args()
+  if options != {}:
+    print options
+  if len(args) > 2:
+    atoms = ''.join(args[2:])
     print 'Atoms: %s' % atoms
-    to_shelx(sys.argv[1], sys.argv[2], atoms)
+    to_shelx(args[0], args[1], atoms, options)
   else:
-    to_shelx(sys.argv[1], sys.argv[2])
+    to_shelx(args[0], args[1], options=options)
