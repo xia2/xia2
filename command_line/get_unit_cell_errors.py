@@ -161,6 +161,7 @@ def load_sweeps_with_common_indexing():
 
 def get_unit_cell_errors(stop_after=None):
   '''Actually process something...'''
+  wd = os.getcwd()
 
   all_miller_indices, all_two_thetas_obs, reference_cell, reference_lattice, reference_wavelength = load_sweeps_with_common_indexing()
 
@@ -182,9 +183,19 @@ def get_unit_cell_errors(stop_after=None):
   span = miller.index_span(all_miller_indices)
   Chatter.write("Miller index range: %s - %s" % (str(span.min()), str(span.max())))
 
+  unit_cell_info = { 'reflections':
+                     { 'count': len(all_miller_indices),
+                       'min_2theta': min(all_two_thetas_obs),
+                       'max_2theta': max(all_two_thetas_obs),
+                       'min_miller': list(span.min()),
+                       'max_miller': list(span.max())
+                     } }
+
   # prepare MonteCarlo sampling
   mc_runs = 50
   sample_size = min(len(all_miller_indices) // 2, 100)
+  unit_cell_info['sampling'] = { 'method': 'montecarlo', 'runs': mc_runs, 'used_per_run': sample_size,
+     'reference': { 'cell': reference_cell.parameters(), 'wavelength': reference_wavelength } }
 
   Chatter.write("\nRandomly sampling %d x %d reflections for Monte Carlo iterations" % (mc_runs, sample_size))
   Debug.write("Refinements start with reference unit cell:", reference_cell)
@@ -241,19 +252,29 @@ def get_unit_cell_errors(stop_after=None):
   span = miller.index_span(used_index_range)
   Chatter.write("drawn from miller indices between %s and %s" % (str(span.min()), str(span.max())))
   Chatter.write("with associated 2theta angles between %.3f and %.3f deg" % (used_two_theta_range_min, used_two_theta_range_max))
+  unit_cell_info['sampling'].update({
+      'used_max_2theta': used_two_theta_range_max,
+      'used_min_2theta': used_two_theta_range_min,
+      'used_max_miller': span.max(),
+      'used_min_miller': span.min() })
+  unit_cell_info['solution_unconstrained'] = {}
   if reference_lattice is None or reference_lattice == 'aP':
     Chatter.write("\n  Unconstrained estimate:", strip=False)
     for dimension, estimate in zip(['a', 'b', 'c', 'alpha', 'beta', 'gamma'], zip(*MC)):
       est_stats = stats_summary(estimate)
+      unit_cell_info['solution_unconstrained'][dimension] = est_stats
       Chatter.write(" %5s = %9.5f (SD: %.5f, SE: %.5f)" % (dimension,
         est_stats['mean'],
         est_stats['population_standard_deviation'],
         est_stats['standard_error']), strip=False)
   else:
+    unit_cell_info['solution_constrained'] = { 'lattice': reference_lattice }
     Chatter.write("\n    Unconstrained estimate:                    |     Constrained estimate (%s):" % reference_lattice, strip=False)
     for dimension, estimate, constrained in zip(['a', 'b', 'c', 'alpha', 'beta', 'gamma'], zip(*MC), zip(*MCconstrained)):
       est_stats = stats_summary(estimate)
       rest_stats = stats_summary(constrained)
+      unit_cell_info['solution_unconstrained'][dimension] = est_stats
+      unit_cell_info['solution_constrained'][dimension] = rest_stats
       Chatter.write(" %5s = %9.5f (SD: %.5f, SE: %.5f)  |  %5s = %9.5f (SD: %.5f, SE: %.5f)" %
         (dimension,
          est_stats['mean'],
@@ -263,6 +284,10 @@ def get_unit_cell_errors(stop_after=None):
          rest_stats['mean'],
          rest_stats['population_standard_deviation'],
          rest_stats['standard_error']), strip=False)
+
+  with open(os.path.join(wd, 'xia2.get_unit_cell_errors.json'), 'w') as fh:
+    json.dump(unit_cell_info, fh, indent = 2, sort_keys=True)
+
 
 def run():
   if os.path.exists('xia2-working.phil'):
