@@ -62,6 +62,12 @@ def to_shelx(hklin, prefix, compound='', options={}):
 
   crystal_symm = intensities.crystal_symmetry()
 
+  wavelength = options.wavelength
+  if wavelength is None:
+    mtz_object = reader.file_content()
+    mtz_crystals = mtz_object.crystals()
+    wavelength = mtz_crystals[1].datasets()[0].wavelength()
+
   cb_op = crystal_symm.change_of_basis_op_to_reference_setting()
 
   if cb_op.c().r().as_hkl() == 'h,k,l':
@@ -74,9 +80,11 @@ def to_shelx(hklin, prefix, compound='', options={}):
     for element in result:
       xray_structure.add_scatterer(scatterer(label=element,
                                              occupancy=result[element]))
-  open('%s.ins' % prefix, 'w').write(''.join(writer.generator(xray_structure,
-                            full_matrix_least_squares_cycles=0,
-                            title=prefix, wavelength=options.wavelength)))
+  open('%s.ins' % prefix, 'w').write(''.join(
+    writer.generator(xray_structure,
+                     wavelength=wavelength,
+                     full_matrix_least_squares_cycles=0,
+                     title=prefix)))
 
 if __name__ == '__main__':
   parser = OptionParser("usage: %prog .mtz-file output-file [atoms]")
