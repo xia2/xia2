@@ -1,8 +1,11 @@
-import sys
-import os
-import math
 import exceptions
+import json
+import math
+import os
+import random
+import sys
 import traceback
+
 # Needed to make xia2 imports work correctly
 import libtbx.load_env
 xia2_root_dir = libtbx.env.find_in_repositories("xia2", optional=False)
@@ -12,7 +15,6 @@ os.environ['XIA2CORE_ROOT'] = os.path.join(xia2_root_dir, "core")
 
 from Handlers.Streams import Chatter, Debug
 
-from Handlers.Files import cleanup
 from Handlers.Citations import Citations
 from Handlers.Environment import Environment
 from lib.bits import auto_logfiler
@@ -24,7 +26,6 @@ if not os.path.join(os.environ['XIA2_ROOT'], 'Interfaces') in sys.path:
 from Applications.xia2 import check, check_environment
 from cctbx import miller
 from cctbx.array_family import flex
-import random
 
 from Modules.UnitCellErrors import _refinery
 
@@ -244,15 +245,24 @@ def get_unit_cell_errors(stop_after=None):
     Chatter.write("\n  Unconstrained estimate:", strip=False)
     for dimension, estimate in zip(['a', 'b', 'c', 'alpha', 'beta', 'gamma'], zip(*MC)):
       est_stats = stats_summary(estimate)
-      Chatter.write(" %5s = %9.5f (SE: %.5f)" % (dimension, est_stats['mean'], est_stats['standard_error']), strip=False)
+      Chatter.write(" %5s = %9.5f (SD: %.5f, SE: %.5f)" % (dimension,
+        est_stats['mean'],
+        est_stats['population_standard_deviation'],
+        est_stats['standard_error']), strip=False)
   else:
-    Chatter.write("\n    Unconstrained estimate:       |     Constrained estimate (%s):" % reference_lattice, strip=False)
+    Chatter.write("\n    Unconstrained estimate:                    |     Constrained estimate (%s):" % reference_lattice, strip=False)
     for dimension, estimate, constrained in zip(['a', 'b', 'c', 'alpha', 'beta', 'gamma'], zip(*MC), zip(*MCconstrained)):
       est_stats = stats_summary(estimate)
       rest_stats = stats_summary(constrained)
-      Chatter.write(" %5s = %9.5f (SE: %.5f)  |  %5s = %9.5f (SE: %.5f)" %
-        (dimension, est_stats['mean'], est_stats['standard_error'],
-         dimension, rest_stats['mean'], rest_stats['standard_error']), strip=False)
+      Chatter.write(" %5s = %9.5f (SD: %.5f, SE: %.5f)  |  %5s = %9.5f (SD: %.5f, SE: %.5f)" %
+        (dimension,
+         est_stats['mean'],
+         est_stats['population_standard_deviation'],
+         est_stats['standard_error'],
+         dimension,
+         rest_stats['mean'],
+         rest_stats['population_standard_deviation'],
+         rest_stats['standard_error']), strip=False)
 
 def run():
   if os.path.exists('xia2-working.phil'):
