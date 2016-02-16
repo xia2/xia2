@@ -141,13 +141,12 @@ class DialsIndexer(Indexer):
 
   ##########################################
 
-  def _index_select_images_i(self):
+  def _index_select_images_i(self, imageset):
     # FIXME copied from XDSIndexer.py!
     '''Select correct images based on image headers.'''
 
-    phi_width = self.get_phi_width()
-
-    images = self.get_matching_images()
+    start, end = imageset.get_scan().get_array_range()
+    images = tuple(range(start+1, end+1))
 
     # characterise the images - are there just two (e.g. dna-style
     # reference images) or is there a full block?
@@ -170,6 +169,7 @@ class DialsIndexer(Indexer):
 
       wedges.append((images[0], images[block_size - 1]))
 
+      phi_width = imageset.get_scan().get_oscillation()[1]
       if int(90.0 / phi_width) + block_size in images:
         # assume we can add a wedge around 45 degrees as well...
         Debug.write('Adding images for indexer: %d -> %d' % \
@@ -220,7 +220,6 @@ class DialsIndexer(Indexer):
       Chatter.banner('Spotfinding %s' %xsweep.get_name())
 
       first, last = imageset.get_scan().get_image_range()
-      self._indxr_images = [(first, last)]
 
       # at this stage, break out to run the DIALS code: this sets itself up
       # now cheat and pass in some information... save re-reading all of the
@@ -245,7 +244,7 @@ class DialsIndexer(Indexer):
       spotfinder.set_input_spot_filename(
         '%s_%s_strong.pickle' %(spotfinder.get_xpid(), xsweep.get_name()))
       if PhilIndex.params.dials.fast_mode:
-        wedges = self._index_select_images_i()
+        wedges = self._index_select_images_i(imageset)
         spotfinder.set_scan_ranges(wedges)
       else:
         spotfinder.set_scan_ranges([(first, last)])
