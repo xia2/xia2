@@ -1,6 +1,7 @@
 from __future__ import division
+import json
+import optparse
 import sys
-from optparse import OptionParser, SUPPRESS_HELP
 
 def parse_compound(compound):
   import string
@@ -67,13 +68,32 @@ def to_shelx(hklin, prefix, compound='', options={}):
     mtz_object = reader.file_content()
     mtz_crystals = mtz_object.crystals()
     wavelength = mtz_crystals[1].datasets()[0].wavelength()
+  print 'Experimental wavelength: %.3f Angstroms' % wavelength
+
+  unit_cell_dims = None
+  unit_cell_esds = None
+  if options.cell:
+    with open(options.cell, 'r') as fh:
+      cell_data = json.load(fh)
+      cell_data = cell_data.get('solution_constrained', cell_data['solution_unconstrained'])
+      unit_cell_dims = tuple([
+          cell_data[dim]['mean'] for dim in ['a', 'b', 'c', 'alpha', 'beta', 'gamma']
+        ])
+      unit_cell_esds = tuple([
+          cell_data[dim]['population_standard_deviation'] for dim in ['a', 'b', 'c', 'alpha', 'beta', 'gamma']
+        ])
 
   cb_op = crystal_symm.change_of_basis_op_to_reference_setting()
 
   if cb_op.c().r().as_hkl() == 'h,k,l':
     print 'Change of basis to reference setting: %s' % cb_op
     crystal_symm = crystal_symm.change_basis(cb_op)
+    if str(cb_op) != "a,b,c":
+      unit_cell_dims = None
+      unit_cell_esds = None
+      # Would need to apply operation to cell errors, too. Need a test case for this
 
+  # crystal_symm.show_summary()
   xray_structure = structure(crystal_symmetry=crystal_symm)
   if compound:
     result = parse_compound(compound)
@@ -84,17 +104,18 @@ def to_shelx(hklin, prefix, compound='', options={}):
     writer.generator(xray_structure,
                      wavelength=wavelength,
                      full_matrix_least_squares_cycles=0,
-                     title=prefix)))
+                     title=prefix,
+                     unit_cell_esds=unit_cell_esds)))
 
 if __name__ == '__main__':
-  parser = OptionParser("usage: %prog .mtz-file output-file [atoms]")
-  parser.add_option("-?", action="help", help=SUPPRESS_HELP)
-  parser.add_option("-w", "--wavelength", dest="wavelength", help="Experimental wavelength (Angstrom)", default=None, type="float")
+  parser = optparse.OptionParser("usage: %prog .mtz-file output-file [atoms]")
+  parser.add_option("-?", action="help", help=optparse.SUPPRESS_HELP)
+  parser.add_option("-w", "--wavelength", dest="wavelength", help="Override experimental wavelength (Angstrom)", default=None, type="float")
+  parser.add_option("-c", "--cell", dest="cell", metavar="FILE", help="Read unit cell information from a .json file", default=None, type="string")
   options, args = parser.parse_args()
   if len(args) > 2:
     atoms = ''.join(args[2:])
     print 'Atoms: %s' % atoms
-    print options
     to_shelx(args[0], args[1], atoms, options)
   elif len(args) == 2:
     print options
