@@ -194,8 +194,9 @@ def get_unit_cell_errors(stop_after=None):
   # prepare MonteCarlo sampling
   mc_runs = 50
   sample_size = min(len(all_miller_indices) // 2, 100)
-  unit_cell_info['sampling'] = { 'method': 'montecarlo', 'runs': mc_runs, 'used_per_run': sample_size,
-     'reference': { 'cell': reference_cell.parameters(), 'wavelength': reference_wavelength } }
+  unit_cell_info['sampling'] = { 'method': 'montecarlo', 'runs': mc_runs, 'used_per_run': sample_size }
+  unit_cell_info['reference'] = { 'cell': reference_cell.parameters(), 'cell_volume': reference_cell.volume(),
+                                  'lattice': reference_lattice, 'wavelength': reference_wavelength }
 
   Chatter.write("\nRandomly sampling %d x %d reflections for Monte Carlo iterations" % (mc_runs, sample_size))
   Debug.write("Refinements start with reference unit cell:", reference_cell)
@@ -222,11 +223,11 @@ def get_unit_cell_errors(stop_after=None):
     used_two_theta_range_max = max(used_two_theta_range_max, max(two_thetas_obs))
 
     refined = _refinery(two_thetas_obs, miller_indices, reference_wavelength, reference_cell)
-    MC.append(refined.unit_cell().parameters())
+    MC.append(refined.unit_cell().parameters() + (refined.unit_cell().volume(),))
     Debug.write('Run %d refined to: %s', (n, str(refined.unit_cell())))
     if reference_lattice is not None and reference_lattice is not 'aP':
       refined = _refinery(two_thetas_obs, miller_indices, reference_wavelength, reference_cell, reference_lattice[0])
-      MCconstrained.append(refined.unit_cell().parameters())
+      MCconstrained.append(refined.unit_cell().parameters() + (refined.unit_cell().volume(),))
       Debug.write('Run %d (constrained %s) refined to: %s', (n, reference_lattice[0], str(refined.unit_cell())))
 
     if (n % 50) == 0:
@@ -264,22 +265,22 @@ def get_unit_cell_errors(stop_after=None):
   unit_cell_info['solution_constrained'] = { 'lattice': reference_lattice }
   if reference_lattice is None or reference_lattice == 'aP':
     Chatter.write("\n  Unconstrained estimate:", strip=False)
-    for dimension, estimate in zip(['a', 'b', 'c', 'alpha', 'beta', 'gamma'], zip(*MC)):
+    for dimension, estimate in zip(['a', 'b', 'c', 'alpha', 'beta', 'gamma', 'volume'], zip(*MC)):
       est_stats = stats_summary(estimate)
       unit_cell_info['solution_unconstrained'][dimension] = est_stats
       unit_cell_info['solution_constrained'][dimension] = est_stats
-      Chatter.write(" %5s = %9.5f (SD: %.5f, SE: %.5f)" % (dimension,
+      Chatter.write(" %6s =%10.5f (SD: %.5f, SE: %.5f)" % (dimension,
         est_stats['mean'],
         est_stats['population_standard_deviation'],
         est_stats['standard_error']), strip=False)
   else:
-    Chatter.write("\n    Unconstrained estimate:                    |     Constrained estimate (%s):" % reference_lattice, strip=False)
-    for dimension, estimate, constrained in zip(['a', 'b', 'c', 'alpha', 'beta', 'gamma'], zip(*MC), zip(*MCconstrained)):
+    Chatter.write("\n    Unconstrained estimate:                     |     Constrained estimate (%s):" % reference_lattice, strip=False)
+    for dimension, estimate, constrained in zip(['a', 'b', 'c', 'alpha', 'beta', 'gamma', 'volume'], zip(*MC), zip(*MCconstrained)):
       est_stats = stats_summary(estimate)
       rest_stats = stats_summary(constrained)
       unit_cell_info['solution_unconstrained'][dimension] = est_stats
       unit_cell_info['solution_constrained'][dimension] = rest_stats
-      Chatter.write(" %5s = %9.5f (SD: %.5f, SE: %.5f)  |  %5s = %9.5f (SD: %.5f, SE: %.5f)" %
+      Chatter.write(" %6s =%10.5f (SD: %.5f, SE: %.5f)  |  %6s =%10.5f (SD: %.5f, SE: %.5f)" %
         (dimension,
          est_stats['mean'],
          est_stats['population_standard_deviation'],
