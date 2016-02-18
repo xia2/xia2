@@ -59,8 +59,8 @@ Winter, G. (2010) Journal of Applied Crystallography 43
     return "%%.%df(%%d)" % decimal_places % (value, round(esd * (10 ** decimal_places)))
 
   if unit_cell_data:
-    for parameter, cifname in zip(['a', 'b', 'c', 'alpha', 'beta', 'gamma'],
-                                  ['length_a', 'length_b', 'length_c', 'angle_alpha', 'angle_beta', 'angle_gamma']):
+    for parameter, cifname in zip(['a', 'b', 'c', 'alpha', 'beta', 'gamma', 'volume'],
+                                  ['length_a', 'length_b', 'length_c', 'angle_alpha', 'angle_beta', 'angle_gamma', 'volume']):
       block['_cell_%s' % cifname] = format_value_with_esd(unit_cell_data['solution_constrained'][parameter]['mean'],
                                                           unit_cell_data['solution_constrained'][parameter]['population_standard_deviation'],
                                                           4)
