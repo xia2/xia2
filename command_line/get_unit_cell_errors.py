@@ -205,10 +205,12 @@ def get_unit_cell_errors(stop_after=None):
   used_index_range = flex.miller_index()
   used_two_theta_range_min = 1e300
   used_two_theta_range_max = 0
+  used_reflections = set()
 
   for n in range(mc_runs): # MC sampling
     # Select sample_size reflections
     sample = flex.size_t(random.sample(range(len(all_miller_indices)), sample_size))
+    used_reflections = used_reflections.union(set(sample))
     miller_indices = all_miller_indices.select(sample)
     two_thetas_obs = all_two_thetas_obs.select(sample)
 
@@ -253,6 +255,7 @@ def get_unit_cell_errors(stop_after=None):
   Chatter.write("drawn from miller indices between %s and %s" % (str(span.min()), str(span.max())))
   Chatter.write("with associated 2theta angles between %.3f and %.3f deg" % (used_two_theta_range_min, used_two_theta_range_max))
   unit_cell_info['sampling'].update({
+      'used_reflections': len(used_reflections),
       'used_max_2theta': used_two_theta_range_max,
       'used_min_2theta': used_two_theta_range_min,
       'used_max_miller': span.max(),
