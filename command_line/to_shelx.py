@@ -1,7 +1,10 @@
 from __future__ import division
+import datetime
+import iotbx.cif.model
 import json
 import optparse
 import sys
+import xia2.XIA2Version
 
 def parse_compound(compound):
   import string
@@ -43,6 +46,20 @@ def mtz_to_hklf4(hklin, out):
     f.write('%8.2f%8.2f\n' % (i[j], sigi[j]))
   f.close()
   return
+
+def generate_cif(prefix='xia2'):
+  block = iotbx.cif.model.block()
+  block["_audit_creation_method"] = xia2.XIA2Version.Version
+  block["_audit_creation_date"] = datetime.date.today().isoformat()
+
+  block["_publ_section_references"] = '''
+Winter, G. (2010) Journal of Applied Crystallography 43
+'''
+
+  cif = iotbx.cif.model.cif()
+  cif[prefix] = block
+  with open('%s.cif_xia2' % prefix, 'w') as fh:
+    cif.show(out=fh)
 
 def to_shelx(hklin, prefix, compound='', options={}):
   '''Read hklin (unmerged reflection file) and generate SHELXT input file
@@ -106,6 +123,7 @@ def to_shelx(hklin, prefix, compound='', options={}):
                      full_matrix_least_squares_cycles=0,
                      title=prefix,
                      unit_cell_esds=unit_cell_esds)))
+  generate_cif(prefix=prefix)
 
 if __name__ == '__main__':
   parser = optparse.OptionParser("usage: %prog .mtz-file output-file [atoms]")
