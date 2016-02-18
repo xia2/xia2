@@ -258,17 +258,18 @@ def get_unit_cell_errors(stop_after=None):
       'used_max_miller': span.max(),
       'used_min_miller': span.min() })
   unit_cell_info['solution_unconstrained'] = {}
+  unit_cell_info['solution_constrained'] = { 'lattice': reference_lattice }
   if reference_lattice is None or reference_lattice == 'aP':
     Chatter.write("\n  Unconstrained estimate:", strip=False)
     for dimension, estimate in zip(['a', 'b', 'c', 'alpha', 'beta', 'gamma'], zip(*MC)):
       est_stats = stats_summary(estimate)
       unit_cell_info['solution_unconstrained'][dimension] = est_stats
+      unit_cell_info['solution_constrained'][dimension] = est_stats
       Chatter.write(" %5s = %9.5f (SD: %.5f, SE: %.5f)" % (dimension,
         est_stats['mean'],
         est_stats['population_standard_deviation'],
         est_stats['standard_error']), strip=False)
   else:
-    unit_cell_info['solution_constrained'] = { 'lattice': reference_lattice }
     Chatter.write("\n    Unconstrained estimate:                    |     Constrained estimate (%s):" % reference_lattice, strip=False)
     for dimension, estimate, constrained in zip(['a', 'b', 'c', 'alpha', 'beta', 'gamma'], zip(*MC), zip(*MCconstrained)):
       est_stats = stats_summary(estimate)
