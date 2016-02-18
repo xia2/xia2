@@ -47,7 +47,7 @@ def mtz_to_hklf4(hklin, out):
   f.close()
   return
 
-def generate_cif(prefix='xia2', unit_cell_data=None):
+def generate_cif(prefix='xia2', unit_cell_data=None, wavelength=None):
   block = iotbx.cif.model.block()
   block["_audit_creation_method"] = xia2.XIA2Version.Version
   block["_audit_creation_date"] = datetime.date.today().isoformat()
@@ -61,9 +61,24 @@ Winter, G. (2010) Journal of Applied Crystallography 43
   if unit_cell_data:
     for parameter, cifname in zip(['a', 'b', 'c', 'alpha', 'beta', 'gamma'],
                                   ['length_a', 'length_b', 'length_c', 'angle_alpha', 'angle_beta', 'angle_gamma']):
-      block['_cell_%s' % cifname] = format_value_with_esd(unit_cell_data[parameter]['mean'],
-                                                          unit_cell_data[parameter]['population_standard_deviation'],
+      block['_cell_%s' % cifname] = format_value_with_esd(unit_cell_data['solution_constrained'][parameter]['mean'],
+                                                          unit_cell_data['solution_constrained'][parameter]['population_standard_deviation'],
                                                           4)
+    block['_cell_measurement_reflns_used'] = unit_cell_data['sampling']['used_reflections']
+    block['_cell_measurement_theta_min'] = unit_cell_data['sampling']['used_min_2theta']
+    block['_cell_measurement_theta_max'] = unit_cell_data['sampling']['used_max_2theta']
+    block['_diffrn_reflns_number'] = unit_cell_data['reflections']['count']
+    block['_diffrn_reflns_limit_h_min'] = unit_cell_data['reflections']['min_miller'][0]
+    block['_diffrn_reflns_limit_h_max'] = unit_cell_data['reflections']['max_miller'][0]
+    block['_diffrn_reflns_limit_k_min'] = unit_cell_data['reflections']['min_miller'][1]
+    block['_diffrn_reflns_limit_k_max'] = unit_cell_data['reflections']['max_miller'][1]
+    block['_diffrn_reflns_limit_l_min'] = unit_cell_data['reflections']['min_miller'][2]
+    block['_diffrn_reflns_limit_l_max'] = unit_cell_data['reflections']['max_miller'][2]
+    block['_diffrn_reflns_theta_min'] = unit_cell_data['reflections']['min_2theta']
+    block['_diffrn_reflns_theta_max'] = unit_cell_data['reflections']['max_2theta']
+
+  if wavelength:
+    block['_diffrn_radiation_wavelength'] = wavelength
 
   cif = iotbx.cif.model.cif()
   cif[prefix] = block
@@ -102,12 +117,12 @@ def to_shelx(hklin, prefix, compound='', options={}):
   if options.cell:
     with open(options.cell, 'r') as fh:
       cell_data = json.load(fh)
-      cell_data = cell_data.get('solution_constrained', cell_data['solution_unconstrained'])
+      solution = cell_data.get('solution_constrained', cell_data['solution_unconstrained'])
       unit_cell_dims = tuple([
-          cell_data[dim]['mean'] for dim in ['a', 'b', 'c', 'alpha', 'beta', 'gamma']
+          solution[dim]['mean'] for dim in ['a', 'b', 'c', 'alpha', 'beta', 'gamma']
         ])
       unit_cell_esds = tuple([
-          cell_data[dim]['population_standard_deviation'] for dim in ['a', 'b', 'c', 'alpha', 'beta', 'gamma']
+          solution[dim]['population_standard_deviation'] for dim in ['a', 'b', 'c', 'alpha', 'beta', 'gamma']
         ])
 
   cb_op = crystal_symm.change_of_basis_op_to_reference_setting()
