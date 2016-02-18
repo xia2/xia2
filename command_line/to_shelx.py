@@ -47,7 +47,7 @@ def mtz_to_hklf4(hklin, out):
   f.close()
   return
 
-def generate_cif(prefix='xia2'):
+def generate_cif(prefix='xia2', unit_cell_data=None):
   block = iotbx.cif.model.block()
   block["_audit_creation_method"] = xia2.XIA2Version.Version
   block["_audit_creation_date"] = datetime.date.today().isoformat()
@@ -55,6 +55,15 @@ def generate_cif(prefix='xia2'):
   block["_publ_section_references"] = '''
 Winter, G. (2010) Journal of Applied Crystallography 43
 '''
+  def format_value_with_esd(value, esd, decimal_places):
+    return "%%.%df(%%d)" % decimal_places % (value, round(esd * (10 ** decimal_places)))
+
+  if unit_cell_data:
+    for parameter, cifname in zip(['a', 'b', 'c', 'alpha', 'beta', 'gamma'],
+                                  ['length_a', 'length_b', 'length_c', 'angle_alpha', 'angle_beta', 'angle_gamma']):
+      block['_cell_%s' % cifname] = format_value_with_esd(unit_cell_data[parameter]['mean'],
+                                                          unit_cell_data[parameter]['population_standard_deviation'],
+                                                          4)
 
   cif = iotbx.cif.model.cif()
   cif[prefix] = block
@@ -89,6 +98,7 @@ def to_shelx(hklin, prefix, compound='', options={}):
 
   unit_cell_dims = None
   unit_cell_esds = None
+  cell_data = None
   if options.cell:
     with open(options.cell, 'r') as fh:
       cell_data = json.load(fh)
@@ -123,7 +133,7 @@ def to_shelx(hklin, prefix, compound='', options={}):
                      full_matrix_least_squares_cycles=0,
                      title=prefix,
                      unit_cell_esds=unit_cell_esds)))
-  generate_cif(prefix=prefix)
+  generate_cif(prefix=prefix, unit_cell_data=cell_data)
 
 if __name__ == '__main__':
   parser = optparse.OptionParser("usage: %prog .mtz-file output-file [atoms]")
