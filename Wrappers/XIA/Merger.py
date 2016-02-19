@@ -109,17 +109,12 @@ def Merger(DriverType=None):
     def run(self):
       assert(self._hklin)
       cl = [self._hklin]
-      cl.append('nbins=%d' % self._nbins)
-      if self._limit_rmerge:
-        cl.append('rmerge=%f' % self._limit_rmerge)
-      if self._limit_completeness:
-        cl.append('completeness=%f' % self._limit_completeness)
-      if self._limit_cc_half:
-        cl.append('cc_half=%f' % self._limit_cc_half)
-      if self._limit_isigma:
-        cl.append('isigma=%f' % self._limit_isigma)
-      if self._limit_misigma:
-        cl.append('misigma=%f' % self._limit_misigma)
+      cl.append('nbins=%s' % self._nbins)
+      cl.append('rmerge=%s' % self._limit_rmerge)
+      cl.append('completeness=%s' % self._limit_completeness)
+      cl.append('cc_half=%s' % self._limit_cc_half)
+      cl.append('isigma=%s' % self._limit_isigma)
+      cl.append('misigma=%s' % self._limit_misigma)
       if self._batch_range is not None:
         cl.append('batch_range=%i,%i' % self._batch_range)
       for c in cl:

@@ -991,16 +991,11 @@ class CommonScaler(Scaler):
     from lib.bits import auto_logfiler
     auto_logfiler(m)
     m.set_hklin(hklin)
-    if params.rmerge:
-      m.set_limit_rmerge(params.rmerge)
-    if params.completeness:
-      m.set_limit_completeness(params.completeness)
-    if params.cc_half:
-      m.set_limit_cc_half(params.cc_half)
-    if params.isigma:
-      m.set_limit_isigma(params.isigma)
-    if params.misigma:
-      m.set_limit_misigma(params.misigma)
+    m.set_limit_rmerge(params.rmerge)
+    m.set_limit_completeness(params.completeness)
+    m.set_limit_cc_half(params.cc_half)
+    m.set_limit_isigma(params.isigma)
+    m.set_limit_misigma(params.misigma)
     if Flags.get_small_molecule():
       m.set_nbins(20)
     if batch_range is not None:
