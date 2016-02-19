@@ -73,7 +73,6 @@ def exercise_dials_indexer(nproc=None):
 
   beam_centre = indexer.get_indexer_beam_centre()
   assert approx_equal(beam_centre, (94.4223, 94.5097), eps=1e-2)
-  assert indexer.get_indexer_images() == [(1,45)]
   print indexer.get_indexer_experiment_list()[0].crystal
   print indexer.get_indexer_experiment_list()[0].detector
 
@@ -86,8 +85,6 @@ def exercise_dials_indexer(nproc=None):
   assert approx_equal(indexer.get_indexer_cell(), indexer2.get_indexer_cell())
   assert approx_equal(
     indexer.get_indexer_beam_centre(), indexer2.get_indexer_beam_centre())
-  assert approx_equal(
-    indexer.get_indexer_images(), indexer2.get_indexer_images())
 
   indexer.eliminate()
   indexer2.eliminate()

@@ -137,7 +137,6 @@ class Indexer(object):
     self._indxr_working_directory = os.getcwd()
 
     # (optional) input parameters
-    self._indxr_images = []
     self._indxr_input_lattice = None
     self._indxr_input_cell = None
     self._indxr_user_input_lattice = False
@@ -557,41 +556,6 @@ class Indexer(object):
   def add_indexer_imageset(self, imageset):
     self._indxr_imagesets.append(imageset)
 
-  def add_indexer_image_wedge(self, image, reset = True):
-    '''Add some images for autoindexing (optional) input is a 2-tuple
-    or an integer.'''
-
-    if type(image) == type(()):
-      self._indxr_images.append(image)
-    if type(image) == type(1):
-      self._indxr_images.append((image, image))
-
-    if reset:
-      self.set_indexer_prepare_done(False)
-
-    return
-
-  def set_indexer_image_wedges(self, indexer_image_wedges, reset = True):
-    '''Assign images to use for autoindexing, will clobber existing
-    values. Use with interactive indexing...'''
-
-    self._indxr_images = []
-
-    for image in indexer_image_wedges:
-
-      if type(image) == type(()):
-        self._indxr_images.append(image)
-      if type(image) == type(1):
-        self._indxr_images.append((image, image))
-
-    if reset:
-      self.set_indexer_prepare_done(False)
-
-    return
-
-  def get_indexer_images(self):
-    return self._indxr_images
-
   # these relate to propogation of the fact that this is user assigned ->
   # so if we try to eliminate raise an exception... must be coordinated
   # with lattice setting below
@@ -764,6 +728,11 @@ class Indexer(object):
 # class for legacy Indexers that only support indexing from a single sweep
 class IndexerSingleSweep(Indexer):
 
+  def __init__(self):
+    super(IndexerSingleSweep, self).__init__()
+    self._indxr_images = []
+
+
   # functionality that was previously provided by FrameProcessor
 
   def get_imageset(self):
@@ -812,3 +781,38 @@ class IndexerSingleSweep(Indexer):
 
   def get_directory(self):
     return os.path.dirname(self.get_template())
+
+  def add_indexer_image_wedge(self, image, reset = True):
+    '''Add some images for autoindexing (optional) input is a 2-tuple
+    or an integer.'''
+
+    if type(image) == type(()):
+      self._indxr_images.append(image)
+    if type(image) == type(1):
+      self._indxr_images.append((image, image))
+
+    if reset:
+      self.set_indexer_prepare_done(False)
+
+    return
+
+  def set_indexer_image_wedges(self, indexer_image_wedges, reset = True):
+    '''Assign images to use for autoindexing, will clobber existing
+    values. Use with interactive indexing...'''
+
+    self._indxr_images = []
+
+    for image in indexer_image_wedges:
+
+      if type(image) == type(()):
+        self._indxr_images.append(image)
+      if type(image) == type(1):
+        self._indxr_images.append((image, image))
+
+    if reset:
+      self.set_indexer_prepare_done(False)
+
+    return
+
+  def get_indexer_images(self):
+    return self._indxr_images
