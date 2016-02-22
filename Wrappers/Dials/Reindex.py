@@ -31,6 +31,7 @@ def Reindex(DriverType = None):
 
       self._experiments_filename = None
       self._indexed_filename = None
+      self._reference_filename = None
       self._space_group = None
       self._cb_op = None
       self._hkl_offset = None
@@ -43,6 +44,10 @@ def Reindex(DriverType = None):
 
     def set_indexed_filename(self, indexed_filename):
       self._indexed_filename = indexed_filename
+      return
+
+    def set_reference_filename(self, reference_filename):
+      self._reference_filename = reference_filename
       return
 
     def set_space_group(self, space_group):
@@ -82,6 +87,8 @@ def Reindex(DriverType = None):
           wd, "%d_reflections_reindexed.pickle" %self.get_xpid())
         self.add_command_line(
           "output.reflections=%s" %self._reindexed_reflections_filename)
+      if self._reference_filename is not None:
+        self.add_command_line("reference=%s" % self._reference_filename)
       if self._cb_op:
         self.add_command_line("change_of_basis_op=%s" % self._cb_op)
       if self._space_group:
