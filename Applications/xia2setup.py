@@ -34,8 +34,16 @@ from Wrappers.CCP4.Chooch import Chooch
 from Modules.LabelitBeamCentre import compute_beam_centre
 from Handlers.Streams import streams_off
 
-known_image_extensions = ['img', 'mccd', 'mar2300', 'mar1200', 'mar1600',
+image_extensions = ['img', 'mccd', 'mar2300', 'mar1200', 'mar1600',
                           'mar3450', 'osc', 'cbf', 'mar2000']
+
+compression = ['', '.bz2', '.gz']
+
+known_image_extensions = []
+
+for c in compression:
+  for ie in image_extensions:
+    known_image_extensions.append('%s%s' % (ie, c))
 
 xds_file_names = ['ABS', 'ABSORP', 'BKGINIT', 'BKGPIX', 'BLANK', 'DECAY',
                   'X-CORRECTIONS', 'Y-CORRECTIONS', 'MODPIX', 'FRAME',
@@ -82,17 +90,14 @@ def is_image_name(filename):
     if os.path.split(filename)[-1] in XDSFiles:
       return False
 
-    # also XDS scaling files from previous xia2 job - hard coded, messy :o(
     for xds_file in 'ABSORP', 'DECAY', 'MODPIX':
       if os.path.join('scale', xds_file) in filename:
         return False
 
-    exten = filename.split('.')[-1]
-    if exten in known_image_extensions:
-      return True
+    for exten in known_image_extensions:
+      if filename.endswith(exten):
+        return True
 
-    # check for files like foo_bar.0001, through try to avoid filenames
-    # like MSCServDetCCD.log.1
     end = filename.split('.')[-1]
     try:
       j = int(end)
@@ -517,6 +522,7 @@ def get_sweeps(templates):
           imageset_cache[template] = OrderedDict()
         imageset_cache[template][
           imageset.get_scan().get_image_range()[0]] = imageset
+
 
 
 def rummage(directories):
