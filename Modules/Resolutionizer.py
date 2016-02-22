@@ -942,7 +942,7 @@ class resolutionizer(object):
         a.append(cc_half_contrib[0])
         b.append(cc_half_contrib[1])
 
-    if len(a) == 0 or len(b) == 0:
+    if len(a) <= 1 or len(b) <= 1:
       return None
 
     ma = sum(a) / len(a)
