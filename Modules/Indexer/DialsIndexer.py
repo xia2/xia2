@@ -23,6 +23,7 @@ import libtbx
 # wrappers for programs that this needs: DIALS
 
 from Wrappers.Dials.Import import Import as _Import
+from Wrappers.Dials.EstimateGain import EstimateGain as _EstimateGain
 from Wrappers.Dials.Spotfinder import Spotfinder as _Spotfinder
 from Wrappers.Dials.DiscoverBetterExperimentalModel \
      import DiscoverBetterExperimentalModel as _DiscoverBetterExperimentalModel
@@ -80,6 +81,12 @@ class DialsIndexer(Indexer):
       os.path.join(self.get_working_directory(),
                    '%s_datablock_import.json' %importer.get_xpid()))
     return importer
+
+  def EstimateGain(self):
+    estimater = _EstimateGain()
+    estimater.set_working_directory(self.get_working_directory())
+    auto_logfiler(estimater)
+    return estimater
 
   def Spotfinder(self):
     spotfinder = _Spotfinder()
@@ -232,6 +239,15 @@ class DialsIndexer(Indexer):
       sweep_filename = os.path.join(
         self.get_working_directory(), '%s_datablock.json' %xsweep.get_name())
       dump.datablock(DataBlock([imageset]), sweep_filename)
+
+      gain = PhilIndex.params.xia2.settings.input.gain
+      if gain is libtbx.Auto:
+        gain_estimater = self.EstimateGain()
+        gain_estimater.set_sweep_filename(sweep_filename)
+        gain_estimater.run()
+        gain = gain_estimater.get_gain()
+        Chatter.write('Estimated gain: %.2f' %gain)
+        PhilIndex.params.xia2.settings.input.gain = gain
 
       # FIXME this should really use the assigned spot finding regions
       #offset = self.get_frame_offset()
