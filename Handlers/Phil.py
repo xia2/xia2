@@ -75,6 +75,8 @@ xds {
       .type = float
     reintegrate = true
       .type = bool
+    profile_fitting = True
+      .type = bool
   }
   init {
     fix_scale = False

@@ -82,7 +82,6 @@ class _Flags(object):
     self._remove = True
     self._zero_dose = False
     self._relax = True
-    self._profile = True
 
     # and these for the Mosflm / Aimless and perhaps XDS implementation
 
@@ -331,13 +330,6 @@ class _Flags(object):
 
   def get_relax(self):
     return self._relax
-
-  def set_profile(self, profile):
-    self._profile = profile
-    return
-
-  def get_profile(self):
-    return self._profile
 
   def set_migrate_data(self, migrate_data):
     self._migrate_data = migrate_data

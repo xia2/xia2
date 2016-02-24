@@ -201,7 +201,8 @@ def XDSIntegrate(DriverType=None, params=None):
 
         xds_inp.write('MAXIMUM_NUMBER_OF_JOBS=%d\n' % nchunks)
 
-      if not Flags.get_profile():
+      profile_fitting = PhilIndex.params.xds.integrate.profile_fitting
+      if not profile_fitting:
         xds_inp.write('PROFILE_FITTING=FALSE\n')
 
       # write out lots of output

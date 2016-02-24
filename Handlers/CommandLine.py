@@ -1455,9 +1455,14 @@ class _CommandLine(object):
   def _read_no_profile(self):
 
     if '-no_profile' in self._argv:
-      Flags.set_profile(False)
+
+      # XXX Warning added 2016-02-24
+      Chatter.write(
+        "Warning: -no_profile option deprecated: please use xds.integrate.profile_fitting=False instead")
+
+      PhilIndex.update("xds.integrate.profile_fitting=False")
+      PhilIndex.get_python_object()
       self._understood.append(self._argv.index('-no_profile'))
-      Debug.write('XDS profile fitting OFF')
     return
 
   def _read_zero_dose(self):
