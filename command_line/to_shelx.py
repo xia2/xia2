@@ -47,7 +47,7 @@ def mtz_to_hklf4(hklin, out):
   f.close()
   return
 
-def generate_cif(prefix='xia2', unit_cell_data=None, wavelength=None):
+def generate_cif(prefix='xia2', unit_cell_data=None, wavelength=None, structure=None):
   block = iotbx.cif.model.block()
   block["_audit_creation_method"] = xia2.XIA2Version.Version
   block["_audit_creation_date"] = datetime.date.today().isoformat()
@@ -76,6 +76,23 @@ Winter, G. (2010) Journal of Applied Crystallography 43
     block['_diffrn_reflns_limit_l_max'] = unit_cell_data['reflections']['max_miller'][2]
     block['_diffrn_reflns_theta_min'] = unit_cell_data['reflections']['min_2theta']
     block['_diffrn_reflns_theta_max'] = unit_cell_data['reflections']['max_2theta']
+
+  if structure:
+    space_group = structure.space_group()
+    sgi = structure.space_group_info()
+    block['_space_group_crystal_system'] = space_group.crystal_system().lower()
+    block['_space_group_IT_number'] = sgi.type().number()
+    block['_symmetry_space_group_name_H-M'] = sgi.type().lookup_symbol()
+    block['_cell_formula_units_Z'] = sgi.group().order_z()
+
+    loop = iotbx.cif.model.loop()
+    symm_ops = []
+    for i in xrange(space_group.n_smx()):
+      rt_mx = space_group(0, 0, i)
+      if rt_mx.is_unit_mx(): continue
+      symm_ops.append(str(rt_mx))
+    loop['_symmetry_equiv_pos_as_xyz'] = symm_ops
+    block.add_loop(loop)
 
   if wavelength:
     block['_diffrn_radiation_wavelength'] = wavelength
@@ -148,7 +165,7 @@ def to_shelx(hklin, prefix, compound='', options={}):
                      full_matrix_least_squares_cycles=0,
                      title=prefix,
                      unit_cell_esds=unit_cell_esds)))
-  generate_cif(prefix=prefix, unit_cell_data=cell_data, wavelength=wavelength)
+  generate_cif(prefix=prefix, unit_cell_data=cell_data, wavelength=wavelength, structure=xray_structure)
 
 if __name__ == '__main__':
   parser = optparse.OptionParser("usage: %prog .mtz-file output-file [atoms]")
