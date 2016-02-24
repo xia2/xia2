@@ -148,7 +148,7 @@ def to_shelx(hklin, prefix, compound='', options={}):
                      full_matrix_least_squares_cycles=0,
                      title=prefix,
                      unit_cell_esds=unit_cell_esds)))
-  generate_cif(prefix=prefix, unit_cell_data=cell_data)
+  generate_cif(prefix=prefix, unit_cell_data=cell_data, wavelength=wavelength)
 
 if __name__ == '__main__':
   parser = optparse.OptionParser("usage: %prog .mtz-file output-file [atoms]")
