@@ -105,7 +105,7 @@ class DialsIndexer(Indexer):
     index = _Index()
     index.set_working_directory(self.get_working_directory())
     params = PhilIndex.params.dials.index
-    index.set_use_all_reflections(params.use_all_reflections)
+    index.set_reflections_per_degree(params.reflections_per_degree)
     if params.fft3d.n_points is not None:
       index.set_fft3d_n_points(params.fft3d.n_points)
     auto_logfiler(index)

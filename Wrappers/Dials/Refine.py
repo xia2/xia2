@@ -35,7 +35,6 @@ def Refine(DriverType = None):
       self._refined_experiments_filename = None
       self._refined_filename = None
       self._scan_varying = False
-      self._use_all_reflections = False
       self._detector_fix = None
       self._beam_fix = None
       self._reflections_per_degree = None
@@ -68,12 +67,6 @@ def Refine(DriverType = None):
 
     def get_scan_varying(self):
       return self._scan_varying
-
-    def set_use_all_reflections(self, use_all_reflections):
-      self._use_all_reflections = use_all_reflections
-
-    def get_use_all_reflections(self):
-      return self._use_all_reflections
 
     def set_detector_fix(self, detector_fix):
       self._detector_fix = detector_fix
@@ -109,8 +102,6 @@ def Refine(DriverType = None):
       self.add_command_line(self._experiments_filename)
       self.add_command_line(self._indexed_filename)
       self.add_command_line('scan_varying=%s' % self._scan_varying)
-      self.add_command_line('use_all_reflections=%s' % \
-                            self._use_all_reflections)
       if self._close_to_spindle_cutoff is not None:
         self.add_command_line(
           'close_to_spindle_cutoff=%f' %self._close_to_spindle_cutoff)

@@ -49,9 +49,7 @@ class DialsRefiner(Refiner):
       refine.set_scan_varying(False)
     else:
       refine.set_scan_varying(params.scan_varying)
-    refine.set_use_all_reflections(params.use_all_reflections)
-    if params.reflections_per_degree and not params.use_all_reflections:
-      refine.set_reflections_per_degree(params.reflections_per_degree)
+    refine.set_reflections_per_degree(params.reflections_per_degree)
     refine.set_interval_width_degrees(params.interval_width_degrees)
     refine.set_outlier_algorithm(PhilIndex.params.dials.outlier.algorithm)
     if PhilIndex.params.dials.fix_geometry:

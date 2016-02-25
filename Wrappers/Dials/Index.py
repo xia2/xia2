@@ -40,7 +40,7 @@ def Index(DriverType = None):
       self._p1_cell = None
       self._indxr_input_cell = None
       self._indxr_input_lattice = None
-      self._use_all_reflections = False
+      self._reflections_per_degree = None
       self._fft3d_n_points = None
 
       self._experiment_filename = None
@@ -107,9 +107,8 @@ def Index(DriverType = None):
     def set_indexing_method(self):
       return self._indexing_method
 
-    def set_use_all_reflections(self, use_all_reflections):
-      self._use_all_reflections = use_all_reflections
-      return
+    def set_reflections_per_degree(self, reflections_per_degree):
+      self._reflections_per_degree = int(reflections_per_degree)
 
     def set_fft3d_n_points(self, n_points):
       self._fft3d_n_points = n_points
@@ -169,10 +168,9 @@ def Index(DriverType = None):
       self.add_command_line('indexing.nproc=%i' % nproc)
       if Flags.get_small_molecule():
         self.add_command_line('filter_ice=false')
-      if self._use_all_reflections:
-        self.add_command_line('use_all_reflections=True')
-      else:
-        self.add_command_line('use_all_reflections=False')
+      if self._reflections_per_degree is not None:
+        self.add_command_line(
+          'reflections_per_degree=%i' %self._reflections_per_degree)
       if self._fft3d_n_points is not None:
         self.add_command_line(
           'fft3d.reciprocal_space_grid.n_points=%i' %self._fft3d_n_points)

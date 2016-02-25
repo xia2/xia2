@@ -147,10 +147,10 @@ dials {
       .type = path
     max_cell = 0.0
       .type = float
-    use_all_reflections = False
-      .type = bool
     fft3d.n_points = None
       .type = int(value_min=0)
+    reflections_per_degree = 100
+      .type = int
   }
   refine {
     scan_varying = True
@@ -158,8 +158,6 @@ dials {
     interval_width_degrees = 36.0
       .help = "Width of scan between checkpoints in degrees"
       .type = float(value_min=0.)
-    use_all_reflections = True
-      .type = bool
     phil_file = None
       .type = path
     reflections_per_degree = 100
