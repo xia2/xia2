@@ -41,9 +41,28 @@ def mtz_to_hklf4(hklin, out):
   i = mtz_obj.get_column('I').extract_values()
   sigi = mtz_obj.get_column('SIGI').extract_values()
   f = open(out, 'wb')
+
+  def punch_card_format(real):
+    if real >= 0:
+      if real < 100000:
+        return '%8.2f' % real
+      if real < 1000000:
+        return '%8.1f' % real
+      if real < 10000000:
+       return '%7d.' % round(real)
+    else:
+      if real > -10000:
+        return '%8.2f' % real
+      if real > -100000:
+        return '%8.1f' % real
+      if real > -1000000:
+       return '%-7d.' % round(real)
+    raise Exception('Number %f cannot be represented in HKLF4 files' % real)
+
   for j, mi in enumerate(miller_indices):
     f.write('%4d%4d%4d' % mi)
-    f.write('%8.2f%8.2f\n' % (i[j], sigi[j]))
+    f.write('%s%s\n' % (punch_card_format(i[j]),
+                        punch_card_format(sigi[j])))
   f.close()
   return
 
