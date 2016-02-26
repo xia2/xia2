@@ -1,27 +1,19 @@
 from __future__ import division
 
-def mtz_to_hklf4(hklin, out):
-  from iotbx import mtz
-  mtz_obj = mtz.object(hklin)
-  miller_indices = mtz_obj.extract_original_index_miller_indices()
-  i = mtz_obj.get_column('I').extract_values()
-  sigi = mtz_obj.get_column('SIGI').extract_values()
-  f = open(out, 'wb')
-  for j, mi in enumerate(miller_indices):
-    f.write('%4d%4d%4d' % mi)
-    f.write('%8.2f%8.2f\n' % (i[j], sigi[j]))
-  f.close()
-  return
-
 def to_shelxcde(hklin, prefix, sites=0):
   '''Read hklin (unmerged reflection file) and generate SHELXC input file
   and HKL file'''
 
   from iotbx.reflection_file_reader import any_reflection_file
+  from iotbx.shelx.hklf import miller_array_export_as_shelx_hklf
   reader = any_reflection_file(hklin)
   intensities = [ma for ma in reader.as_miller_arrays(merge_equivalents=False)
                  if ma.info().labels == ['I', 'SIGI']][0]
-  mtz_to_hklf4(hklin, '%s.hkl' % prefix)
+  mtz_object = reader.file_content()
+  indices = reader.file_content().extract_original_index_miller_indices()
+  intensities = intensities.customized_copy(indices=indices, info=intensities.info())
+  with open('%s.hkl' % prefix, 'wb') as hkl_file_handle:
+    miller_array_export_as_shelx_hklf(intensities, hkl_file_handle)
   uc = intensities.unit_cell().parameters()
   sg = intensities.space_group().type().lookup_symbol().replace(' ', '')
   open('%s.sh' % prefix, 'w').write('\n'.join([

@@ -34,38 +34,6 @@ def parse_compound(compound):
       number += c
   return result
 
-def mtz_to_hklf4(hklin, out):
-  from iotbx import mtz
-  mtz_obj = mtz.object(hklin)
-  miller_indices = mtz_obj.extract_original_index_miller_indices()
-  i = mtz_obj.get_column('I').extract_values()
-  sigi = mtz_obj.get_column('SIGI').extract_values()
-  f = open(out, 'wb')
-
-  def punch_card_format(real):
-    if real >= 0:
-      if real < 100000:
-        return '%8.2f' % real
-      if real < 1000000:
-        return '%8.1f' % real
-      if real < 10000000:
-       return '%7d.' % round(real)
-    else:
-      if real > -10000:
-        return '%8.2f' % real
-      if real > -100000:
-        return '%8.1f' % real
-      if real > -1000000:
-       return '%-7d.' % round(real)
-    raise Exception('Number %f cannot be represented in HKLF4 files' % real)
-
-  for j, mi in enumerate(miller_indices):
-    f.write('%4d%4d%4d' % mi)
-    f.write('%s%s\n' % (punch_card_format(i[j]),
-                        punch_card_format(sigi[j])))
-  f.close()
-  return
-
 def generate_cif(prefix='xia2', unit_cell_data=None, wavelength=None, structure=None):
   block = iotbx.cif.model.block()
   block["_audit_creation_method"] = xia2.XIA2Version.Version
@@ -127,22 +95,27 @@ def to_shelx(hklin, prefix, compound='', options={}):
 
   from iotbx.reflection_file_reader import any_reflection_file
   from iotbx.shelx import writer
+  from iotbx.shelx.hklf import miller_array_export_as_shelx_hklf
   from cctbx.xray.structure import structure
   from cctbx.xray import scatterer
 
   reader = any_reflection_file(hklin)
+  mtz_object = reader.file_content()
   intensities = [ma for ma in reader.as_miller_arrays(merge_equivalents=False)
                  if ma.info().labels == ['I', 'SIGI']][0]
 
   # FIXME do I need to reindex to a conventional setting here
 
-  mtz_to_hklf4(hklin, '%s.hkl' % prefix)
+  indices = reader.file_content().extract_original_index_miller_indices()
+  intensities = intensities.customized_copy(indices=indices, info=intensities.info())
+
+  with open('%s.hkl' % prefix, 'wb') as hkl_file_handle:
+    miller_array_export_as_shelx_hklf(intensities, hkl_file_handle)
 
   crystal_symm = intensities.crystal_symmetry()
 
   wavelength = options.wavelength
   if wavelength is None:
-    mtz_object = reader.file_content()
     mtz_crystals = mtz_object.crystals()
     wavelength = mtz_crystals[1].datasets()[0].wavelength()
   print 'Experimental wavelength: %.3f Angstroms' % wavelength
