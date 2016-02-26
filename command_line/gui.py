@@ -9,6 +9,7 @@ from wxtbx.phil_controls import path
 from wxtbx.utils import LogViewer
 import wx.lib.agw.flatnotebook
 import wx
+import wx.html
 import wx.html2
 import os
 import sys
@@ -35,7 +36,10 @@ class ProcessingFrame (wx.Frame) :
     self.nb.AddPage(self.start_panel, "Setup")
     self.output_panel = LogViewer(self.nb)
     self.nb.AddPage(self.output_panel, "Output")
-    self.html_panel = wx.html2.WebView.New(self.nb)
+    try:
+      self.html_panel = wx.html2.WebView.New(self.nb)
+    except NotImplementedError:
+      self.html_panel = wx.html.HtmlWindow(self.nb)
     self.nb.AddPage(self.html_panel, "Report")
     #self.indexing_panel = indexing.IndexingPanel(self.nb)
     #self.nb.AddPage(self.indexing_panel, "Indexing")
@@ -132,7 +136,12 @@ class ProcessingFrame (wx.Frame) :
     print html_files
     if len(html_files):
       html_file = html_files[0]
-      self.html_panel.LoadURL(html_file)
+      try:
+        # wx.html.HtmlWindow
+        self.html_panel.LoadFile(html_file)
+      except AttributeError:
+        # wx.html2.WebView
+        self.html_panel.LoadURL(html_file)
       self.nb.AdvanceSelection()
     self.event_dispatcher.callback_final(result)
     self.close()
@@ -181,34 +190,6 @@ class StartPanel (wx.Panel, dataset.SelectDatasetPanelMixin) :
   def GetOutputDir (self) :
     return self.output_ctrl.GetPhilValue()
 
-
-
-
-class xia2_wrapper(object):
-  def __init__(self, output_dir, args):
-    self.output_dir = output_dir
-    self.args = list(args)
-
-  def __call__(self, *args, **kwds):
-    print '__call__'
-    old_cwd = os.getcwd()
-    os.chdir(self.output_dir)
-    result = self.run()
-    os.chdir(old_cwd)
-    return result
-
-  def run(self, *args, **kwds):
-    print 'run'
-    print args, kwds
-
-    old_sys_argv = sys.argv
-    sys.argv = ['xia2'] + self.args
-    from xia2.command_line import xia2_main
-    xia2_main.run(self.args)
-    sys.argv = old_sys_argv
-
-    #from libtbx import easy_run
-    #easy_run.call('xia2 %s' %' '.join(self.args))
 
 import threading
 import random
@@ -275,7 +256,7 @@ class xia2Thread(threading.Thread):
     old_sys_argv = sys.argv
     sys.argv = ['xia2'] + self.args
     from xia2.command_line import xia2_main
-    self.xinfo = xia2_main.run(self.args)
+    self.xinfo = xia2_main.run()
     sys.argv = old_sys_argv
 
     wx.CallAfter(self.window.callback_final, self)
