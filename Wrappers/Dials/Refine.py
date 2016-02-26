@@ -95,7 +95,7 @@ def Refine(DriverType = None):
       return
 
     def run(self):
-      from Handlers.Streams import Debug
+      from Handlers.Streams import Chatter, Debug
       Debug.write('Running dials.refine')
 
       self.clear_command_line()
@@ -131,6 +131,11 @@ def Refine(DriverType = None):
       self.start()
       self.close_wait()
 
+      if not os.path.isfile(self._refined_filename) or \
+         not os.path.isfile(self._refined_experiments_filename):
+        Chatter.write(
+          "DIALS did not refine the data, see log file for more details:\n  %s" %self.get_log_file())
+        raise RuntimeError, 'data not refined'
       for record in self.get_all_output():
         if 'Sorry: Too few reflections to' in record:
           raise RuntimeError, record.strip()
