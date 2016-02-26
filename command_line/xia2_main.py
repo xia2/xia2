@@ -286,12 +286,13 @@ def run():
   wd = os.getcwd()
 
   try:
-    xia2_main()
+    xinfo = xia2_main()
     Chatter.write('Status: normal termination')
     from Handlers.Flags import Flags
     if Flags.get_egg():
       from lib.bits import message
       message('xia2 status normal termination')
+    return xinfo
 
   except exceptions.Exception, e:
     traceback.print_exc(file = open(os.path.join(wd, 'xia2.error'), 'w'))
