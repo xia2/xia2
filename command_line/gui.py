@@ -31,7 +31,9 @@ class ProcessingFrame (wx.Frame) :
     self.statusbar = self.CreateStatusBar()
     self.sizer = wx.BoxSizer(wx.VERTICAL)
     self.SetSizer(self.sizer)
-    self.nb = wx.lib.agw.flatnotebook.FlatNotebook(self)
+    from wx.lib.agw import flatnotebook as fnb
+    self.nb = fnb.FlatNotebook(
+      self, agwStyle=fnb.FNB_DEFAULT_STYLE|fnb.FNB_NO_X_BUTTON)
     self.sizer.Add(self.nb, 1, wx.EXPAND)
     self.nb.SetMinSize((800,40))
     self.start_panel = StartPanel(self.nb)
@@ -231,7 +233,7 @@ class RedirectText(object):
     self.out=aWxTextCtrl
 
   def write(self,string):
-    wx.CallAfter(self.out.WriteText, string)
+    wx.CallAfter(self.out.AppendText, string)
 
   def flush(self):
     pass
