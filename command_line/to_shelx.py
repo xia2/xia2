@@ -110,7 +110,11 @@ def to_shelx(hklin, prefix, compound='', options={}):
   intensities = intensities.customized_copy(indices=indices, info=intensities.info())
 
   with open('%s.hkl' % prefix, 'wb') as hkl_file_handle:
-    miller_array_export_as_shelx_hklf(intensities, hkl_file_handle)
+    # limit values to 4 digits (before decimal point), as this is what shelxt
+    # writes in its output files, and shelxl seems to read. ShelXL apparently
+    # does not read values >9999 properly
+    miller_array_export_as_shelx_hklf(intensities, hkl_file_handle,
+      scale_range=(-9999., 9999.), normalise_if_format_overflow=True)
 
   crystal_symm = intensities.crystal_symmetry()
 
