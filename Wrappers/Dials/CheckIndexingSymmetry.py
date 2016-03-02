@@ -15,12 +15,12 @@ import os
 from __init__ import _setup_xia2_environ
 _setup_xia2_environ()
 
-from Handlers.Flags import Flags
+from xia2.Handlers.Flags import Flags
 
 def CheckIndexingSymmetry(DriverType = None):
   '''A factory for CheckIndexingSymmetryWrapper classes.'''
 
-  from Driver.DriverFactory import DriverFactory
+  from xia2.Driver.DriverFactory import DriverFactory
   DriverInstance = DriverFactory.Driver(DriverType)
 
   class CheckIndexingSymmetryWrapper(DriverInstance.__class__):
@@ -48,7 +48,7 @@ def CheckIndexingSymmetry(DriverType = None):
       return
 
     def run(self):
-      from Handlers.Streams import Debug
+      from xia2.Handlers.Streams import Debug
       Debug.write('Running dials.check_indexing_symmetry')
 
       wd = self.get_working_directory()

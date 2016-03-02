@@ -19,17 +19,11 @@ import tempfile
 import shutil
 import time
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Wrappers.CCP4.Pointless import Pointless
-from Wrappers.CCP4.Mtzdump import Mtzdump
-from Wrappers.CCP4.Rebatch import Rebatch
-from Handlers.Streams import Debug
-from Handlers.Flags import Flags
+from xia2.Wrappers.CCP4.Pointless import Pointless
+from xia2.Wrappers.CCP4.Mtzdump import Mtzdump
+from xia2.Wrappers.CCP4.Rebatch import Rebatch
+from xia2.Handlers.Streams import Debug
+from xia2.Handlers.Flags import Flags
 
 # global parameters
 

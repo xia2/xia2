@@ -16,68 +16,62 @@ import shutil
 import math
 import exceptions
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Background.Background import Background
-from Driver.DriverFactory import DriverFactory
-from Decorators.DecoratorFactory import DecoratorFactory
+from xia2.Background.Background import Background
+from xia2.Driver.DriverFactory import DriverFactory
+from xia2.Decorators.DecoratorFactory import DecoratorFactory
 
 # interfaces that this will present
-from Schema.Interfaces.Indexer import Indexer
-from Schema.Interfaces.Integrater import Integrater
+from xia2.Schema.Interfaces.Indexer import Indexer
+from xia2.Schema.Interfaces.Integrater import Integrater
 
 # output streams &c.
-from Handlers.Streams import Chatter, Debug, Journal
-from Handlers.Citations import Citations
-from Handlers.Flags import Flags
-from Handlers.Executables import Executables
-from Handlers.Files import FileHandler
+from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.Handlers.Citations import Citations
+from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Executables import Executables
+from xia2.Handlers.Files import FileHandler
 
 # helpers
-from Wrappers.CCP4.MosflmHelpers import \
+from xia2.Wrappers.CCP4.MosflmHelpers import \
      _parse_mosflm_integration_output, decide_integration_resolution_limit, \
      _parse_mosflm_index_output, standard_mask, \
      _get_indexing_solution_number, detector_class_to_mosflm, \
      _parse_summary_file
 
 # things we are moving towards...
-from Modules.Indexer.IndexerSelectImages import index_select_images_lone, \
+from xia2.Modules.Indexer.IndexerSelectImages import index_select_images_lone, \
      index_select_images_user
 
-from Modules.GainEstimater import gain
+from xia2.Modules.GainEstimater import gain
 
-from lib.bits import auto_logfiler, mean_sd
-from lib.SymmetryLib import lattice_to_spacegroup
+from xia2.lib.bits import auto_logfiler, mean_sd
+from xia2.lib.SymmetryLib import lattice_to_spacegroup
 
-from Experts.MatrixExpert import transmogrify_matrix, \
+from xia2.Experts.MatrixExpert import transmogrify_matrix, \
      get_reciprocal_space_primitive_matrix, reindex_sym_related
-from Experts.ResolutionExperts import mosflm_mtz_to_list, \
+from xia2.Experts.ResolutionExperts import mosflm_mtz_to_list, \
      bin_o_tron, digest
-from Experts.MissetExpert import MosflmMissetExpert
+from xia2.Experts.MissetExpert import MosflmMissetExpert
 
 # exceptions
-from Schema.Exceptions.BadLatticeError import BadLatticeError
-from Schema.Exceptions.NegativeMosaicError import NegativeMosaicError
-from Schema.Exceptions.IndexingError import IndexingError
-from Schema.Exceptions.IntegrationError import IntegrationError
+from xia2.Schema.Exceptions.BadLatticeError import BadLatticeError
+from xia2.Schema.Exceptions.NegativeMosaicError import NegativeMosaicError
+from xia2.Schema.Exceptions.IndexingError import IndexingError
+from xia2.Schema.Exceptions.IntegrationError import IntegrationError
 
 # other classes which are necessary to implement the integrater
 # interface (e.g. new version, with reindexing as the finish...)
-from Wrappers.CCP4.Reindex import Reindex
-from Wrappers.CCP4.Sortmtz import Sortmtz
-from Wrappers.XIA.Diffdump import Diffdump
-from Wrappers.XIA.Printpeaks import Printpeaks
+from xia2.Wrappers.CCP4.Reindex import Reindex
+from xia2.Wrappers.CCP4.Sortmtz import Sortmtz
+from xia2.Wrappers.XIA.Diffdump import Diffdump
+from xia2.Wrappers.XIA.Printpeaks import Printpeaks
 
 # cell refinement image helpers
-from Modules.Indexer.MosflmCheckIndexerSolution import \
+from xia2.Modules.Indexer.MosflmCheckIndexerSolution import \
      mosflm_check_indexer_solution
 
 # jiffy functions for means, standard deviations and outliers
-from lib.bits import meansd, remove_outliers
+from xia2.lib.bits import meansd, remove_outliers
 
 def Mosflm(DriverType = None):
   '''A factory for MosflmWrapper classes.'''
@@ -277,7 +271,7 @@ def Mosflm(DriverType = None):
       self.reset()
       auto_logfiler(self)
 
-      from lib.bits import unique_elements
+      from xia2.lib.bits import unique_elements
       _images = unique_elements(self._indxr_images)
       images_str = ', '.join(map(str, _images))
 
@@ -598,8 +592,8 @@ def Mosflm(DriverType = None):
 
       import copy
       from dxtbx.model.detector_helpers import set_mosflm_beam_centre
-      from Wrappers.Mosflm.AutoindexHelpers import set_distance
-      from Wrappers.Mosflm.AutoindexHelpers import crystal_model_from_mosflm_mat
+      from xia2.Wrappers.Mosflm.AutoindexHelpers import set_distance
+      from xia2.Wrappers.Mosflm.AutoindexHelpers import crystal_model_from_mosflm_mat
       from cctbx import sgtbx, uctbx
       from dxtbx.model.crystal import crystal_model_from_mosflm_matrix
 
@@ -666,7 +660,7 @@ def Mosflm(DriverType = None):
       return
 
     def _mosflm_generate_raster(self, _images):
-      from Wrappers.Mosflm.GenerateRaster import GenerateRaster
+      from xia2.Wrappers.Mosflm.GenerateRaster import GenerateRaster
       gr = GenerateRaster()
       gr.set_working_directory(self.get_working_directory())
       return gr(self.get_integrater_indexer(), _images)
@@ -1621,7 +1615,7 @@ def Mosflm(DriverType = None):
           distance /= len(distances)
           experiment = self.get_integrater_indexer(
             ).get_indexer_experiment_list()[0]
-          from Wrappers.Mosflm.AutoindexHelpers import set_distance
+          from xia2.Wrappers.Mosflm.AutoindexHelpers import set_distance
           set_distance(experiment.detector, distance)
 
         if 'YSCALE as a function' in o:
@@ -1679,7 +1673,7 @@ def Mosflm(DriverType = None):
           os.path.join(self.get_working_directory(),
                        'xiarefine.mat'), 'r').readlines())
 
-      from Wrappers.Mosflm.AutoindexHelpers import crystal_model_from_mosflm_mat
+      from xia2.Wrappers.Mosflm.AutoindexHelpers import crystal_model_from_mosflm_mat
       # make a dxtbx crystal_model object from the mosflm matrix
       experiment = self.get_integrater_indexer(
         ).get_indexer_experiment_list()[0]
@@ -1780,9 +1774,9 @@ def Mosflm(DriverType = None):
 
         Debug.write('Excluding ice rings')
 
-        for record in open(os.path.join(
-            os.environ['XIA2_ROOT'],
-            'Data', 'ice-rings.dat')).readlines():
+        for record in open(os.path.abspath(os.path.join(
+            os.path.dirname(__file__), '..', '..',
+            'Data', 'ice-rings.dat'))).readlines():
 
           resol = tuple(map(float, record.split()[:2]))
           self.input('resolution exclude %.2f %.2f' % (resol))
@@ -2311,9 +2305,9 @@ def Mosflm(DriverType = None):
 
           Debug.write('Excluding ice rings')
 
-          for record in open(os.path.join(
-              os.environ['XIA2_ROOT'],
-              'Data', 'ice-rings.dat')).readlines():
+          for record in open(os.path.abspath(os.path.join(
+              os.path.dirname(__file__), '..', '..',
+              'Data', 'ice-rings.dat'))).readlines():
 
             resol = tuple(map(float, record.split()[:2]))
             job.input('resolution exclude %.2f %.2f' % (resol))

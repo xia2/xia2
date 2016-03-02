@@ -1,12 +1,6 @@
 import os
 import sys
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
 import libtbx.load_env
 from libtbx import easy_run
 from libtbx.test_utils import approx_equal, open_tmp_directory, show_diff
@@ -24,7 +18,7 @@ def exercise_xds_indexer(nproc=None):
     return
 
   if nproc is not None:
-    from Handlers.Flags import Flags
+    from xia2.Handlers.Flags import Flags
     Flags.set_parallel(nproc)
 
   xia2_demo_data = os.path.join(dials_regression, "xia2_demo_data")
@@ -34,7 +28,7 @@ def exercise_xds_indexer(nproc=None):
   tmp_dir = os.path.abspath(open_tmp_directory())
   os.chdir(tmp_dir)
 
-  from Modules.Indexer.XDSIndexer import XDSIndexer
+  from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
   indexer = XDSIndexer()
   indexer.set_working_directory(tmp_dir)
   from dxtbx.datablock import DataBlockTemplateImporter
@@ -43,10 +37,10 @@ def exercise_xds_indexer(nproc=None):
   imageset = datablocks[0].extract_imagesets()[0]
   indexer.add_indexer_imageset(imageset)
 
-  from Schema.XCrystal import XCrystal
-  from Schema.XWavelength import XWavelength
-  from Schema.XSweep import XSweep
-  from Schema.XSample import XSample
+  from xia2.Schema.XCrystal import XCrystal
+  from xia2.Schema.XWavelength import XWavelength
+  from xia2.Schema.XSweep import XSweep
+  from xia2.Schema.XSample import XSample
   cryst = XCrystal("CRYST1", None)
   wav = XWavelength("WAVE1", cryst, indexer.get_wavelength())
   samp = XSample("X1", cryst)

@@ -21,46 +21,40 @@ import math
 import copy
 import shutil
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
 # wrappers for programs that this needs
 
-from Wrappers.XDS.XDSDefpix import XDSDefpix as _Defpix
-from Wrappers.XDS.XDSIntegrate import XDSIntegrate as _Integrate
-from Wrappers.XDS.XDSCorrect import XDSCorrect as _Correct
-from Wrappers.CCP4.CCP4Factory import CCP4Factory
-from Wrappers.CCP4.Reindex import Reindex
+from xia2.Wrappers.XDS.XDSDefpix import XDSDefpix as _Defpix
+from xia2.Wrappers.XDS.XDSIntegrate import XDSIntegrate as _Integrate
+from xia2.Wrappers.XDS.XDSCorrect import XDSCorrect as _Correct
+from xia2.Wrappers.CCP4.CCP4Factory import CCP4Factory
+from xia2.Wrappers.CCP4.Reindex import Reindex
 
 # helper functions
 
-from Wrappers.XDS.XDS import beam_centre_xds_to_mosflm
-from Experts.SymmetryExpert import r_to_rt, rt_to_r
-from Experts.SymmetryExpert import symop_to_mat, mat_to_symop
+from xia2.Wrappers.XDS.XDS import beam_centre_xds_to_mosflm
+from xia2.Experts.SymmetryExpert import r_to_rt, rt_to_r
+from xia2.Experts.SymmetryExpert import symop_to_mat, mat_to_symop
 
 # interfaces that this must implement to be an integrater
 
-from Schema.Interfaces.Integrater import Integrater
+from xia2.Schema.Interfaces.Integrater import Integrater
 
-from Schema.Exceptions.BadLatticeError import BadLatticeError
+from xia2.Schema.Exceptions.BadLatticeError import BadLatticeError
 
 # indexing functionality if not already provided - even if it is
 # we still need to reindex with XDS.
 
-from Modules.Indexer.XDSIndexer import XDSIndexer
+from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
 
 # odds and sods that are needed
 
-from lib.bits import auto_logfiler
-from Handlers.Streams import Chatter, Debug, Journal
-from Handlers.Flags import Flags
-from Handlers.Files import FileHandler
-from Handlers.Phil import PhilIndex
+from xia2.lib.bits import auto_logfiler
+from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Files import FileHandler
+from xia2.Handlers.Phil import PhilIndex
 
-from Experts.SymmetryExpert import lattice_to_spacegroup_number
+from xia2.Experts.SymmetryExpert import lattice_to_spacegroup_number
 
 class XDSIntegrater(Integrater):
   '''A class to implement the Integrater interface using *only* XDS
@@ -216,7 +210,7 @@ class XDSIntegrater(Integrater):
     IDXREF to get the XPARM etc. DEFPIX is considered part of the full
     integration as it is resolution dependent.'''
 
-    from Handlers.Citations import Citations
+    from xia2.Handlers.Citations import Citations
     Citations.cite('xds')
 
     # decide what images we are going to process, if not already
@@ -847,14 +841,10 @@ if __name__ == '__main__':
 
   # run a demo test
 
-  if not os.environ.has_key('XIA2_ROOT'):
-    raise RuntimeError, 'XIA2_ROOT not defined'
-
   xi = XDSIntegrater()
 
   directory = os.path.join('/data', 'graeme', 'insulin', 'demo')
 
   xi.setup_from_image(os.path.join(directory, 'insulin_1_001.img'))
-
 
   xi.integrate()

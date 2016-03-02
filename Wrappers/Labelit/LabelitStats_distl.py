@@ -32,7 +32,7 @@
 import os
 import sys
 
-from Driver.DriverFactory import DriverFactory
+from xia2.Driver.DriverFactory import DriverFactory
 
 def LabelitStats_distl(DriverType = None):
   '''Factory for LabelitStats_distl wrapper classes, with the specified
@@ -113,9 +113,6 @@ def LabelitStats_distl(DriverType = None):
 if __name__ == '__main__':
 
   # run a demo test
-
-  if not os.environ.has_key('XIA2_ROOT'):
-    raise RuntimeError, 'XIA2_ROOT not defined'
 
   l = LabelitStats_distl()
   l.stats_distl()

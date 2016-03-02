@@ -18,41 +18,35 @@ import sys
 import math
 import shutil
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
 # wrappers for programs that this needs
 
-from Wrappers.XDS.XDSXycorr import XDSXycorr as _Xycorr
-from Wrappers.XDS.XDSInit import XDSInit as _Init
-from Wrappers.XDS.XDSColspot import XDSColspot as _Colspot
-from Wrappers.XDS.XDSIdxref import XDSIdxref as _Idxref
+from xia2.Wrappers.XDS.XDSXycorr import XDSXycorr as _Xycorr
+from xia2.Wrappers.XDS.XDSInit import XDSInit as _Init
+from xia2.Wrappers.XDS.XDSColspot import XDSColspot as _Colspot
+from xia2.Wrappers.XDS.XDSIdxref import XDSIdxref as _Idxref
 
-from Wrappers.XIA.Diffdump import Diffdump
+from xia2.Wrappers.XIA.Diffdump import Diffdump
 
 # helper functions
 
-#from Wrappers.XDS.XDS import beam_centre_mosflm_to_xds
-from Wrappers.XDS.XDS import beam_centre_xds_to_mosflm
-from Wrappers.XDS.XDS import XDSException
-from Modules.Indexer.XDSCheckIndexerSolution import xds_check_indexer_solution
+#from xia2.Wrappers.XDS.XDS import beam_centre_mosflm_to_xds
+from xia2.Wrappers.XDS.XDS import beam_centre_xds_to_mosflm
+from xia2.Wrappers.XDS.XDS import XDSException
+from xia2.Modules.Indexer.XDSCheckIndexerSolution import xds_check_indexer_solution
 
-from Toolkit.MendBKGINIT import recompute_BKGINIT
+from xia2.Toolkit.MendBKGINIT import recompute_BKGINIT
 
 # interfaces that this must implement to be an indexer
 
-from Schema.Interfaces.Indexer import IndexerSingleSweep
+from xia2.Schema.Interfaces.Indexer import IndexerSingleSweep
 
 # odds and sods that are needed
 
-from lib.bits import auto_logfiler, nint
-from Handlers.Streams import Chatter, Debug, Journal
-from Handlers.Flags import Flags
-from Handlers.Phil import PhilIndex
-from Handlers.Files import FileHandler
+from xia2.lib.bits import auto_logfiler, nint
+from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Phil import PhilIndex
+from xia2.Handlers.Files import FileHandler
 
 class XDSIndexer(IndexerSingleSweep):
   '''An implementation of the Indexer interface using XDS.'''
@@ -92,7 +86,7 @@ class XDSIndexer(IndexerSingleSweep):
     return xycorr
 
   def Init(self):
-    from Handlers.Phil import PhilIndex
+    from xia2.Handlers.Phil import PhilIndex
     init = _Init(params=PhilIndex.params.xds.init)
     init.set_working_directory(self.get_working_directory())
 
@@ -109,7 +103,7 @@ class XDSIndexer(IndexerSingleSweep):
     return init
 
   def Colspot(self):
-    from Handlers.Phil import PhilIndex
+    from xia2.Handlers.Phil import PhilIndex
     colspot = _Colspot(params=PhilIndex.params.xds.colspot)
     colspot.set_working_directory(self.get_working_directory())
 
@@ -126,7 +120,7 @@ class XDSIndexer(IndexerSingleSweep):
     return colspot
 
   def DialsSpotfinder(self):
-    from Wrappers.Dials.Spotfinder import Spotfinder
+    from xia2.Wrappers.Dials.Spotfinder import Spotfinder
     spotfinder = Spotfinder(params=PhilIndex.params.dials.find_spots)
     spotfinder.set_working_directory(self.get_working_directory())
     spotfinder.setup_from_imageset(self.get_imageset())
@@ -136,13 +130,13 @@ class XDSIndexer(IndexerSingleSweep):
     return spotfinder
 
   def DialsExportSpotXDS(self):
-    from Wrappers.Dials.ExportSpotXDS import ExportSpotXDS
+    from xia2.Wrappers.Dials.ExportSpotXDS import ExportSpotXDS
     export = ExportSpotXDS()
     export.set_working_directory(self.get_working_directory())
     return export
 
   def Idxref(self):
-    from Handlers.Phil import PhilIndex
+    from xia2.Handlers.Phil import PhilIndex
     idxref = _Idxref(params=PhilIndex.params.xds.index)
     idxref.set_working_directory(self.get_working_directory())
 
@@ -681,9 +675,6 @@ class XDSIndexer(IndexerSingleSweep):
 if __name__ == '__main_old__':
 
   # run a demo test
-
-  if not os.environ.has_key('XIA2_ROOT'):
-    raise RuntimeError, 'XIA2_ROOT not defined'
 
   xi = XDSIndexer()
 

@@ -12,24 +12,16 @@ import os
 import sys
 import shutil
 
-# We should really put these variable checks, etc in one centralised place
-
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Driver.DriverFactory import DriverFactory
+from xia2.Driver.DriverFactory import DriverFactory
 
 # interfaces that this inherits from ...
-from Schema.Interfaces.FrameProcessor import FrameProcessor
+from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 
 # generic helper stuff
-from Handlers.Streams import Debug
+from xia2.Handlers.Streams import Debug
 
 # global flags
-from Handlers.Flags import Flags
+from xia2.Handlers.Flags import Flags
 
 from libtbx import phil
 import libtbx

@@ -3,7 +3,7 @@ from __future__ import division
 def Header(DriverType = None):
   '''A factory for HeaderWrapper(ipmosflm) classes.'''
 
-  from Driver.DriverFactory import DriverFactory
+  from xia2.Driver.DriverFactory import DriverFactory
   DriverInstance = DriverFactory.Driver(DriverType)
 
   class HeaderWrapper(DriverInstance.__class__):
@@ -11,7 +11,7 @@ def Header(DriverType = None):
     def __init__(self):
       DriverInstance.__class__.__init__(self)
 
-      from Handlers.Executables import Executables
+      from xia2.Handlers.Executables import Executables
       if Executables.get('ipmosflm'):
         self.set_executable(Executables.get('ipmosflm'))
       else:
@@ -25,7 +25,7 @@ def Header(DriverType = None):
       return
 
     def __call__(self, fp, images = None):
-      from Handlers.Streams import Debug
+      from xia2.Handlers.Streams import Debug
 
       if images is None:
         images = fp.get_matching_images()

@@ -12,16 +12,10 @@ import os
 import sys
 import shutil
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Driver.DriverFactory import DriverFactory
+from xia2.Driver.DriverFactory import DriverFactory
 
 # interfaces that this inherits from ...
-from Schema.Interfaces.FrameProcessor import FrameProcessor
+from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 
 # generic helper stuff
 from XDS import imageset_to_xds, xds_check_version_supported, xds_check_error
@@ -105,7 +99,7 @@ def XDSXycorr(DriverType = None):
 
       header = imageset_to_xds(self.get_imageset())
 
-      from Handlers.Phil import PhilIndex
+      from xia2.Handlers.Phil import PhilIndex
       xds_params = PhilIndex.params.xia2.settings.xds
 
       xds_inp = open(os.path.join(self.get_working_directory(),

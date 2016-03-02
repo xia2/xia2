@@ -1,12 +1,6 @@
 import os
 import sys
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
 import libtbx.load_env
 from libtbx import easy_run
 from libtbx.test_utils import approx_equal, open_tmp_directory, show_diff
@@ -24,7 +18,7 @@ def exercise_ccp4_scaler(nproc=None):
     return
 
   if nproc is not None:
-    from Handlers.Flags import Flags
+    from xia2.Handlers.Flags import Flags
     Flags.set_parallel(nproc)
 
   xia2_demo_data = os.path.join(dials_regression, "xia2_demo_data")
@@ -34,10 +28,10 @@ def exercise_ccp4_scaler(nproc=None):
   tmp_dir = os.path.abspath(open_tmp_directory())
   os.chdir(tmp_dir)
 
-  from Modules.Indexer.DialsIndexer import DialsIndexer
-  from Modules.Refiner.DialsRefiner import DialsRefiner
-  from Modules.Integrater.DialsIntegrater import DialsIntegrater
-  from Modules.Scaler.CCP4ScalerA import CCP4ScalerA
+  from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
+  from xia2.Modules.Refiner.DialsRefiner import DialsRefiner
+  from xia2.Modules.Integrater.DialsIntegrater import DialsIntegrater
+  from xia2.Modules.Scaler.CCP4ScalerA import CCP4ScalerA
   indexer = DialsIndexer()
   indexer.set_working_directory(tmp_dir)
   from dxtbx.datablock import DataBlockTemplateImporter
@@ -47,10 +41,10 @@ def exercise_ccp4_scaler(nproc=None):
   indexer.add_indexer_imageset(imageset)
 
 
-  from Schema.XCrystal import XCrystal
-  from Schema.XWavelength import XWavelength
-  from Schema.XSweep import XSweep
-  from Schema.XSample import XSample
+  from xia2.Schema.XCrystal import XCrystal
+  from xia2.Schema.XWavelength import XWavelength
+  from xia2.Schema.XSweep import XSweep
+  from xia2.Schema.XSample import XSample
   cryst = XCrystal("CRYST1", None)
   wav = XWavelength("WAVE1", cryst, imageset.get_beam().get_wavelength())
   samp = XSample("X1", cryst)

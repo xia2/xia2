@@ -14,7 +14,7 @@ import os
 def MultiCrystalAnalysis(DriverType = None):
   '''A factory for MultiCrystalAnalysisWrapper classes.'''
 
-  from Driver.DriverFactory import DriverFactory
+  from xia2.Driver.DriverFactory import DriverFactory
   DriverInstance = DriverFactory.Driver(DriverType)
 
   class MultiCrystalAnalysisWrapper(DriverInstance.__class__):
@@ -34,7 +34,7 @@ def MultiCrystalAnalysis(DriverType = None):
       self._argv.extend(args)
 
     def run(self):
-      from Handlers.Streams import Debug
+      from xia2.Handlers.Streams import Debug
       Debug.write('Running MultiCrystalAnalysis.py')
 
       self.clear_command_line()

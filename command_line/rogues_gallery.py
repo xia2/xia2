@@ -6,12 +6,6 @@ import json
 import os
 import sys
 
-# Needed to make xia2 imports work correctly FIXME we should make these go away
-import libtbx.load_env
-xia2_root_dir = libtbx.env.find_in_repositories("xia2", optional=False)
-sys.path.insert(0, xia2_root_dir)
-os.environ['XIA2_ROOT'] = xia2_root_dir
-
 def munch_rogues(rogues):
   rogue_reflections = []
   for record in open(rogues):
@@ -29,7 +23,7 @@ def munch_rogues(rogues):
 
 def reconstruct_rogues(params):
   assert os.path.exists('xia2.json')
-  from Schema.XProject import XProject
+  from xia2.Schema.XProject import XProject
   xinfo = XProject.from_json(filename='xia2.json')
 
   from dxtbx.model.experiment.experiment_list import ExperimentListFactory

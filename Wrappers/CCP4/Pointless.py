@@ -121,25 +121,19 @@ import shutil
 
 import xml.dom.minidom
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
+from xia2.Driver.DriverFactory import DriverFactory
+from xia2.Decorators.DecoratorFactory import DecoratorFactory
 
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Driver.DriverFactory import DriverFactory
-from Decorators.DecoratorFactory import DecoratorFactory
-
-from Handlers.Syminfo import Syminfo
-from Handlers.Streams import Chatter, Debug
-from Handlers.Flags import Flags
+from xia2.Handlers.Syminfo import Syminfo
+from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Flags import Flags
 
 # this was rather complicated - now simpler!
-from lib.SymmetryLib import lauegroup_to_lattice, spacegroup_name_xHM_to_old, \
+from xia2.lib.SymmetryLib import lauegroup_to_lattice, spacegroup_name_xHM_to_old, \
      clean_reindex_operator
 
 # XDS_ASCII meddling things
-from Modules.XDS_ASCII import remove_misfits
+from xia2.Modules.XDS_ASCII import remove_misfits
 
 def mend_pointless_xml(xml_file):
   '''Repair XML document'''
@@ -387,7 +381,7 @@ def Pointless(DriverType = None):
       self.input('systematicabsences off')
       self.input('setting symmetry-based')
       if self._hklref:
-        from Handlers.Phil import PhilIndex
+        from xia2.Handlers.Phil import PhilIndex
         dev = PhilIndex.params.xia2.settings.developmental
         if dev.pointless_tolerance > 0.0:
           self.input('tolerance %f' % dev.pointless_tolerance)

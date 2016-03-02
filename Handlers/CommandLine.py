@@ -20,19 +20,13 @@ import exceptions
 import copy
 import traceback
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
-
-from Experts.FindImages import image2template_directory
-from Schema.XProject import XProject
-from Handlers.Flags import Flags
-from Handlers.Phil import PhilIndex
-from Handlers.Streams import Chatter, Debug
-from Handlers.PipelineSelection import add_preference, get_preferences
-from Handlers.Executables import Executables
+from xia2.Experts.FindImages import image2template_directory
+from xia2.Schema.XProject import XProject
+from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Phil import PhilIndex
+from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.PipelineSelection import add_preference, get_preferences
+from xia2.Handlers.Executables import Executables
 
 from libtbx.utils import Sorry
 
@@ -47,7 +41,7 @@ def which(pgm):
 
 
 def load_datablock(filename):
-  from Schema import imageset_cache, update_with_reference_geometry
+  from xia2.Schema import imageset_cache, update_with_reference_geometry
   from dxtbx.serialize import load
   from libtbx.containers import OrderedDict
 
@@ -121,7 +115,7 @@ class _CommandLine(object):
 
     # first of all try to interpret arguments as phil parameters/files
 
-    from Handlers.Phil import master_phil
+    from xia2.Handlers.Phil import master_phil
     from libtbx.phil import command_line
     cmd_line = command_line.argument_interpreter(master_phil=master_phil)
     working_phil, self._argv = cmd_line.process_and_fetch(
@@ -395,12 +389,12 @@ class _CommandLine(object):
         if which('qsub') is None:
           raise Sorry('qsub not available')
       if mp_params.njob is Auto:
-        from Handlers.Environment import get_number_cpus
+        from xia2.Handlers.Environment import get_number_cpus
         mp_params.njob = get_number_cpus()
         if mp_params.nproc is Auto:
           mp_params.nproc = 1
       elif mp_params.nproc is Auto:
-        from Handlers.Environment import get_number_cpus
+        from xia2.Handlers.Environment import get_number_cpus
         mp_params.nproc = get_number_cpus()
         Flags.set_parallel(mp_params.nproc)
       else:
@@ -408,7 +402,7 @@ class _CommandLine(object):
     elif mp_params.mode == 'serial':
       mp_params.njob = 1
       if mp_params.nproc is Auto:
-        from Handlers.Environment import get_number_cpus
+        from xia2.Handlers.Environment import get_number_cpus
         mp_params.nproc = get_number_cpus()
       Flags.set_parallel(mp_params.nproc)
 

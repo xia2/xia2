@@ -15,14 +15,11 @@ import os
 import sys
 import math
 
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Driver.DriverFactory import DriverFactory
-from Decorators.DecoratorFactory import DecoratorFactory
-from Handlers.Streams import Chatter, Debug
-from Handlers.Flags import Flags
-from Experts.ResolutionExperts import linear
+from xia2.Driver.DriverFactory import DriverFactory
+from xia2.Decorators.DecoratorFactory import DecoratorFactory
+from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Flags import Flags
+from xia2.Experts.ResolutionExperts import linear
 
 def Aimless(DriverType = None,
             partiality_correction = None,

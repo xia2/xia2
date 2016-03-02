@@ -15,12 +15,12 @@ import os
 from __init__ import _setup_xia2_environ
 _setup_xia2_environ()
 
-from Handlers.Flags import Flags
+from xia2.Handlers.Flags import Flags
 
 def Reindex(DriverType = None):
   '''A factory for ReindexWrapper classes.'''
 
-  from Driver.DriverFactory import DriverFactory
+  from xia2.Driver.DriverFactory import DriverFactory
   DriverInstance = DriverFactory.Driver(DriverType)
 
   class ReindexWrapper(DriverInstance.__class__):
@@ -69,7 +69,7 @@ def Reindex(DriverType = None):
       return self._reindexed_reflections_filename
 
     def run(self):
-      from Handlers.Streams import Debug
+      from xia2.Handlers.Streams import Debug
       Debug.write('Running dials.reindex')
 
       wd = self.get_working_directory()

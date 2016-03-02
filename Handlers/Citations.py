@@ -7,7 +7,7 @@
 #
 # A handler for management of program citations. This should initialise
 # from a citations.lib file which can be found in a number of places...
-# in particular $HOME or $USERDIR (I think, on Windows) .xia2, $XIA2_ROOT
+# in particular $HOME or $USERDIR (I think, on Windows) .xia2,
 # data etc...
 #
 # That would be %USERPROFILE%
@@ -24,9 +24,9 @@ class _Citations(object):
 
     # set up the citations list...
 
-    dom = xml.dom.minidom.parse(os.path.join(
-        os.environ['XIA2_ROOT'],
-        'Data', 'citations.lib'))
+    dom = xml.dom.minidom.parse(os.path.abspath(os.path.join(
+        os.path.dirname(__file__), '..',
+        'Data', 'citations.lib')))
     citations = dom.getElementsByTagName(
         'citations')[0].getElementsByTagName('citation')
     for citation in citations:

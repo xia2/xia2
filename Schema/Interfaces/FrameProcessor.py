@@ -21,19 +21,13 @@
 import os
 import sys
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
-
-from Experts.FindImages import image2template_directory, \
+from xia2.Experts.FindImages import image2template_directory, \
     template_directory_number2image, image2image, find_matching_images, \
     digest_template
 
-from Wrappers.XIA.Diffdump import Diffdump
+from xia2.Wrappers.XIA.Diffdump import Diffdump
 
-from Handlers.Streams import Debug
+from xia2.Handlers.Streams import Debug
 
 class FrameProcessor(object):
   '''A class to handle the information needed to process X-Ray
@@ -162,7 +156,7 @@ class FrameProcessor(object):
   def set_distance(self, distance):
     if distance is None:
       return
-    from Wrappers.Mosflm.AutoindexHelpers import set_distance
+    from xia2.Wrappers.Mosflm.AutoindexHelpers import set_distance
     set_distance(self.get_detector(), distance)
     self._fp_distance_prov = 'user'
     return
@@ -336,7 +330,7 @@ class FrameProcessor(object):
         images.append(j)
       self._fp_matching_images = images
 
-    from Schema import load_imagesets
+    from xia2.Schema import load_imagesets
     imagesets = load_imagesets(
       template, directory,
       image_range=(self._fp_matching_images[0], self._fp_matching_images[-1]))

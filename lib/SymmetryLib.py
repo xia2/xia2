@@ -27,11 +27,8 @@
 
 import os
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT undefined'
-
-symop = os.path.join(os.environ['XIA2_ROOT'],
-                     'Data', 'ccp4-symop.lib')
+symop = os.path.abspath(os.path.join(
+          os.path.dirname(__file__), '..', 'Data', 'ccp4-symop.lib'))
 
 syminfo = os.path.join(os.environ['CCP4'],
                        'lib', 'data', 'syminfo.lib')

@@ -11,9 +11,9 @@
 import os
 import sys
 
-from Driver.DriverFactory import DriverFactory
-from Decorators.DecoratorFactory import DecoratorFactory
-from Modules.FindFreeFlag import FindFreeFlag
+from xia2.Driver.DriverFactory import DriverFactory
+from xia2.Decorators.DecoratorFactory import DecoratorFactory
+from xia2.Modules.FindFreeFlag import FindFreeFlag
 
 def Freerflag(DriverType = None):
   '''A factory for FreerflagWrapper classes.'''

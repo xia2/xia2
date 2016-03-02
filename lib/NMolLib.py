@@ -15,18 +15,14 @@
 
 import os, sys, math
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
+from xia2.Handlers.Syminfo import Syminfo
+from xia2.Handlers.Streams import Chatter
+from xia2.Wrappers.CCP4.Matthews_coef import Matthews_coef
 
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
+nmolparams = os.path.abspath(os.path.join(
+          os.path.dirname(__file__), '..', 'Data', 'nmol-params.dat'))
 
-from Handlers.Syminfo import Syminfo
-from Handlers.Streams import Chatter
-from Wrappers.CCP4.Matthews_coef import Matthews_coef
-
-if not os.path.exists(os.path.join(os.environ['XIA2_ROOT'],
-                                   'Data', 'nmol-params.dat')):
+if not os.path.exists(nmolparams):
   raise RuntimeError, 'nmol-params.dat not found'
 
 def unit_cell_volume(cell_a, cell_b, cell_c,
@@ -86,8 +82,7 @@ def sequence_mass(sequence):
 
 def compute_nmol_from_volume(volume, mass, resolution):
 
-  file = open(os.path.join(os.environ['XIA2_ROOT'],
-                           'Data', 'nmol-params.dat'), 'r')
+  file = open(nmolparams, 'r')
 
   while 1:
     line = file.readline()

@@ -7,15 +7,14 @@
 #
 # Use the registry / new image header reading code to read images and print
 # out what is going on...
+#
+# 03/MAR/16
+# To resolve the naming conflict between this file and the entire xia2 module
+# any xia2.* imports in this directory must instead be imported as ..*
 
 import os
 import sys
 import time
-
-assert('XIA2_ROOT' in os.environ)
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
 
 from dxtbx.format.Registry import Registry
 

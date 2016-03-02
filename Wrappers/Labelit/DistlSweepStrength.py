@@ -14,7 +14,7 @@ import libtbx.load_env
 import os
 import sys
 
-from Driver.DriverFactory import DriverFactory
+from xia2.Driver.DriverFactory import DriverFactory
 
 import spotfinder
 from spotfinder.command_line import sweep_strength

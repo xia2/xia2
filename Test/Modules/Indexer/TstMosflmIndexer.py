@@ -1,12 +1,6 @@
 import os
 import sys
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
 import libtbx.load_env
 from libtbx import easy_run
 from libtbx.test_utils import approx_equal, open_tmp_directory, show_diff
@@ -17,7 +11,7 @@ try:
 except KeyError, e:
   have_dials_regression = False
 
-from Handlers.Streams import Debug, Stdout
+from xia2.Handlers.Streams import Debug, Stdout
 Debug.join(Stdout)
 
 def exercise_mosflm_indexer():
@@ -32,7 +26,7 @@ def exercise_mosflm_indexer():
   tmp_dir = os.path.abspath(open_tmp_directory())
   os.chdir(tmp_dir)
 
-  from Modules.Indexer.MosflmIndexer import MosflmIndexer
+  from xia2.Modules.Indexer.MosflmIndexer import MosflmIndexer
   indexer = MosflmIndexer()
   indexer.set_working_directory(tmp_dir)
   from dxtbx.datablock import DataBlockTemplateImporter

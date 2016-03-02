@@ -65,7 +65,7 @@ class Background(threading.Thread):
     return self._result
 
 if __name__ == '__main__':
-  from Driver.DriverFactory import DriverFactory
+  from xia2.Driver.DriverFactory import DriverFactory
 
   drivers = []
   backgrounds = []

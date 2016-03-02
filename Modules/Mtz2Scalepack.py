@@ -12,14 +12,8 @@ import os
 import sys
 import math
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Wrappers.CCP4.Mtzdump import Mtzdump as _Mtzdump
-from Wrappers.CCP4.Mtz2various import Mtz2various as _Mtz2various
+from xia2.Wrappers.CCP4.Mtzdump import Mtzdump as _Mtzdump
+from xia2.Wrappers.CCP4.Mtz2various import Mtz2various as _Mtz2various
 
 class Mtz2Scalepack(object):
   '''A jiffy class to convert an MTZ file to scalepack merged format,

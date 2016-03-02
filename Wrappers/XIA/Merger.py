@@ -13,15 +13,9 @@ import sys
 import math
 import os
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
-
-from Handlers.Flags import Flags
-from Driver.DriverFactory import DriverFactory
-from Handlers.Streams import Debug
+from xia2.Handlers.Flags import Flags
+from xia2.Driver.DriverFactory import DriverFactory
+from xia2.Handlers.Streams import Debug
 
 def Merger(DriverType=None):
   '''A factory for MergerWrapper classes.'''

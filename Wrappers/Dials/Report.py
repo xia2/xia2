@@ -17,7 +17,7 @@ _setup_xia2_environ()
 def Report(DriverType = None):
   '''A factory for ReportWrapper classes.'''
 
-  from Driver.DriverFactory import DriverFactory
+  from xia2.Driver.DriverFactory import DriverFactory
   DriverInstance = DriverFactory.Driver(DriverType)
 
   class ReportWrapper(DriverInstance.__class__):
@@ -46,7 +46,7 @@ def Report(DriverType = None):
       return
 
     def run(self):
-      from Handlers.Streams import Debug
+      from xia2.Handlers.Streams import Debug
       Debug.write('Running dials.report')
 
       self.clear_command_line()

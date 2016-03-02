@@ -88,25 +88,19 @@ import sys
 import copy
 import math
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
 # other labelit things that this uses
-from Wrappers.Labelit.LabelitMosflmMatrix import LabelitMosflmMatrix
-from Wrappers.Labelit.LabelitStats_distl import LabelitStats_distl
-from Wrappers.Labelit.LabelitDistl import LabelitDistl
-from Wrappers.Phenix.LatticeSymmetry import LatticeSymmetry
+from xia2.Wrappers.Labelit.LabelitMosflmMatrix import LabelitMosflmMatrix
+from xia2.Wrappers.Labelit.LabelitStats_distl import LabelitStats_distl
+from xia2.Wrappers.Labelit.LabelitDistl import LabelitDistl
+from xia2.Wrappers.Phenix.LatticeSymmetry import LatticeSymmetry
 
-from lib.bits import auto_logfiler
-from lib.SymmetryLib import lattice_to_spacegroup
-from Handlers.Streams import Chatter, Debug, Journal
-from Handlers.Citations import Citations
-from Modules.Indexer.MosflmCheckIndexerSolution import \
+from xia2.lib.bits import auto_logfiler
+from xia2.lib.SymmetryLib import lattice_to_spacegroup
+from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.Handlers.Citations import Citations
+from xia2.Modules.Indexer.MosflmCheckIndexerSolution import \
      mosflm_check_indexer_solution
-from Modules.Indexer.LabelitIndexer import LabelitIndexer
+from xia2.Modules.Indexer.LabelitIndexer import LabelitIndexer
 
 class LabelitIndexerII(LabelitIndexer):
   '''A wrapper for the program labelit.index - which will provide
@@ -225,7 +219,7 @@ class LabelitIndexerII(LabelitIndexer):
 
     #auto_logfiler(self)
 
-    from Wrappers.Labelit.LabelitIndex import LabelitIndex
+    from xia2.Wrappers.Labelit.LabelitIndex import LabelitIndex
     index = LabelitIndex()
     index.set_working_directory(self.get_working_directory())
     auto_logfiler(index)
@@ -360,7 +354,7 @@ class LabelitIndexerII(LabelitIndexer):
     from dxtbx.model.detector_helpers import set_mosflm_beam_centre
     set_mosflm_beam_centre(detector, beam, mosflm_beam_centre)
 
-    from Experts.SymmetryExpert import lattice_to_spacegroup_number
+    from xia2.Experts.SymmetryExpert import lattice_to_spacegroup_number
     from scitbx import matrix
     from cctbx import sgtbx, uctbx
     from dxtbx.model.crystal import crystal_model_from_mosflm_matrix

@@ -17,7 +17,7 @@ _setup_xia2_environ()
 def Refine(DriverType = None):
   '''A factory for RefineWrapper classes.'''
 
-  from Driver.DriverFactory import DriverFactory
+  from xia2.Driver.DriverFactory import DriverFactory
   DriverInstance = DriverFactory.Driver(DriverType)
 
   class RefineWrapper(DriverInstance.__class__):
@@ -95,7 +95,7 @@ def Refine(DriverType = None):
       return
 
     def run(self):
-      from Handlers.Streams import Chatter, Debug
+      from xia2.Handlers.Streams import Chatter, Debug
       Debug.write('Running dials.refine')
 
       self.clear_command_line()

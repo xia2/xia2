@@ -11,6 +11,11 @@
 #
 # 18th December 2006
 #
+#
+# 03/MAR/16
+# To resolve the naming conflict between this file and the entire xia2 module
+# any xia2.* imports in this directory must instead be imported as ..*
+
 
 
 import os
@@ -18,19 +23,13 @@ import sys
 import time
 import traceback
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
-
-from Experts.FindImages import image2template_directory
-from Handlers.CommandLine import CommandLine
-from Handlers.Flags import Flags
-from Handlers.Phil import PhilIndex
-from Wrappers.CCP4.Chooch import Chooch
-from Modules.LabelitBeamCentre import compute_beam_centre
-from Handlers.Streams import streams_off
+from ..Experts.FindImages import image2template_directory
+from ..Handlers.CommandLine import CommandLine
+from ..Handlers.Flags import Flags
+from ..Handlers.Phil import PhilIndex
+from ..Wrappers.CCP4.Chooch import Chooch
+from ..Modules.LabelitBeamCentre import compute_beam_centre
+from ..Handlers.Streams import streams_off
 
 image_extensions = ['img', 'mccd', 'mar2300', 'mar1200', 'mar1600',
                           'mar3450', 'osc', 'cbf', 'mar2000']
@@ -81,7 +80,7 @@ def is_sequence_name(file):
 def is_image_name(filename):
 
   global known_image_extensions
-  from Wrappers.XDS.XDSFiles import XDSFiles
+  from ..Wrappers.XDS.XDSFiles import XDSFiles
 
   if os.path.isfile(filename):
 
@@ -132,7 +131,7 @@ def get_template(f):
   directory = None
 
   if not os.access(f, os.R_OK):
-    from Handlers.Streams import Debug
+    from ..Handlers.Streams import Debug
     Debug.write('No read permission for %s' % f)
 
   try:
@@ -143,7 +142,7 @@ def get_template(f):
         return
 
   except Exception, e:
-    from Handlers.Streams import Debug
+    from ..Handlers.Streams import Debug
     Debug.write('Exception: %s (%s)' % (str(e), f))
     Debug.write(traceback.format_exc())
 
@@ -154,7 +153,7 @@ def get_template(f):
 
 
 def save_datablock(filename):
-  from Schema import imageset_cache
+  from ..Schema import imageset_cache
   from dxtbx.datablock import DataBlock
   from dxtbx.serialize import dump
 
@@ -190,7 +189,7 @@ def visit(root, directory, files):
       try:
         template = get_template(full_path)
       except Exception, e:
-        from Handlers.Streams import Debug
+        from ..Handlers.Streams import Debug
         Debug.write('Exception: %s' %str(e))
         Debug.write(traceback.format_exc())
         continue
@@ -227,7 +226,7 @@ def print_sweeps(out = sys.stdout):
             for sweep in sweeplists]
 
   if len(epochs) != len(set(epochs)):
-    from Handlers.Streams import Debug
+    from ..Handlers.Streams import Debug
     Debug.write('Duplicate epochs found. Trying to correct epoch information.')
     cumulativedelta = 0.0
     for sweep in sweeplists:
@@ -264,7 +263,7 @@ def print_sweeps(out = sys.stdout):
     for s in sweeps:
 
       if len(s.get_images()) < min_images:
-        from Handlers.Streams import Debug
+        from ..Handlers.Streams import Debug
         Debug.write('Rejecting sweep %s:' %s.get_template())
         Debug.write('  Not enough images (found %i, require at least %i)'
                     %(len(s.get_images()), min_images))
@@ -273,7 +272,7 @@ def print_sweeps(out = sys.stdout):
       oscillation_range = s.get_imageset().get_scan().get_oscillation_range()
       width = oscillation_range[1]-oscillation_range[0]
       if width < min_oscillation_range:
-        from Handlers.Streams import Debug
+        from ..Handlers.Streams import Debug
         Debug.write('Rejecting sweep %s:' %s.get_template())
         Debug.write('  Too narrow oscillation range (found %i, require at least %i)'
                     %(width, min_oscillation_range))
@@ -402,7 +401,7 @@ def print_sweeps(out = sys.stdout):
 
       # require at least n images to represent a sweep...
       if len(s.get_images()) < min_images:
-        from Handlers.Streams import Debug
+        from ..Handlers.Streams import Debug
         Debug.write('Rejecting sweep %s:' %s.get_template())
         Debug.write('  Not enough images (found %i, require at least %i)'
                     %(len(s.get_images()), min_images))
@@ -411,7 +410,7 @@ def print_sweeps(out = sys.stdout):
       oscillation_range = s.get_imageset().get_scan().get_oscillation_range()
       width = oscillation_range[1]-oscillation_range[0]
       if width < min_oscillation_range:
-        from Handlers.Streams import Debug
+        from ..Handlers.Streams import Debug
         Debug.write('Rejecting sweep %s:' %s.get_template())
         Debug.write('  Too narrow oscillation range (found %i, require at least %i)'
                     %(width, min_oscillation_range))
@@ -480,7 +479,7 @@ def get_sweeps(templates):
   global known_sweeps
 
   from libtbx import easy_mp
-  from Handlers.Phil import PhilIndex
+  from ..Handlers.Phil import PhilIndex
   from xia2setup_helpers import get_sweep
   params = PhilIndex.get_python_object()
   mp_params = params.xia2.settings.multiprocessing
@@ -508,7 +507,7 @@ def get_sweeps(templates):
   else:
     results_list = [get_sweep((template,)) for template in templates]
 
-  from Schema import imageset_cache
+  from ..Schema import imageset_cache
   from libtbx.containers import OrderedDict
 
   for template, sweeplist in zip(templates, results_list):

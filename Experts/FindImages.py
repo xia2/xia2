@@ -32,13 +32,7 @@ import string
 import math
 import copy
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Handlers.Streams import Debug
+from xia2.Handlers.Streams import Debug
 
 # N.B. these are reversed patterns...
 

@@ -14,7 +14,6 @@ if xia2_root_dir is None:
   from sys import exit
   exit("xia2 not in cctbx repositories")
 sys.path.insert(0, xia2_root_dir)
-os.environ['XIA2_ROOT'] = xia2_root_dir
 
 tst_list = (
   "$D/Test/Schema/TstXProject.py",

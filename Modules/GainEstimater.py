@@ -16,13 +16,7 @@ import sys
 import exceptions
 import math
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
-
-from Wrappers.XIA.Diffdump import Diffdump
+from xia2.Wrappers.XIA.Diffdump import Diffdump
 
 def gain(image):
   '''Get the gain from an image.'''

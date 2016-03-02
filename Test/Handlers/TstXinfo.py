@@ -1,14 +1,7 @@
 import os
-import sys
-
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
 
 def run():
-  from Handlers.XInfo import XInfo
+  from xia2.Handlers.XInfo import XInfo
 
   import libtbx.load_env
   xinfo_dir = os.path.join(libtbx.env.dist_path('xia2'), 'Test', 'Handlers')

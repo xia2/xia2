@@ -13,19 +13,13 @@
 import os
 import sys
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
 # the class that we are extending
 
 from XDSIndexer import XDSIndexer
 
 # odds and sods that are needed
 
-from Handlers.Streams import Chatter
+from xia2.Handlers.Streams import Chatter
 
 class XDSIndexerInteractive(XDSIndexer):
   '''An extension of XDSIndexer using all available images.'''

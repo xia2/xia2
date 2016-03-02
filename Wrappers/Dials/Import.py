@@ -13,12 +13,12 @@ from __future__ import division
 from __init__ import _setup_xia2_environ
 _setup_xia2_environ()
 
-from Schema.Interfaces.FrameProcessor import FrameProcessor
+from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 
 def Import(DriverType = None):
   '''A factory for ImportWrapper classes.'''
 
-  from Driver.DriverFactory import DriverFactory
+  from xia2.Driver.DriverFactory import DriverFactory
   DriverInstance = DriverFactory.Driver(DriverType)
 
   class ImportWrapper(DriverInstance.__class__,
@@ -99,7 +99,7 @@ def Import(DriverType = None):
       # fast_mode: read first two image headers then extrapolate the rest
       # from what xia2 read from the image headers...
 
-      from Handlers.Streams import Debug
+      from xia2.Handlers.Streams import Debug
       if fast_mode:
         if not self._image_to_epoch:
           raise RuntimeError, 'fast mode needs image_to_epoch map'

@@ -10,29 +10,21 @@ import traceback
 
 # Needed to make xia2 imports work correctly
 import libtbx.load_env
-xia2_root_dir = libtbx.env.find_in_repositories("xia2", optional=False)
-sys.path.insert(0, xia2_root_dir)
-os.environ['XIA2_ROOT'] = xia2_root_dir
+from xia2.Handlers.Streams import Chatter, Debug
 
-from Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Files import cleanup
+from xia2.Handlers.Citations import Citations
+from xia2.Handlers.Environment import Environment, df
 
-from Handlers.Files import cleanup
-from Handlers.Citations import Citations
-from Handlers.Environment import Environment, df
+from xia2.Applications.xia2 import get_command_line, write_citations, help
 
-from Applications.xia2 import get_command_line, write_citations, help
+from xia2.XIA2Version import Version
 
-from XIA2Version import Version
-
-from lib.tabulate import tabulate
-
-# XML Marked up output for e-HTPX
-if not os.path.join(os.environ['XIA2_ROOT'], 'Interfaces') in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2_ROOT'], 'Interfaces'))
+from xia2.lib.tabulate import tabulate
 
 def run():
   assert os.path.exists('xia2.json')
-  from Schema.XProject import XProject
+  from xia2.Schema.XProject import XProject
   xinfo = XProject.from_json(filename='xia2.json')
 
   rst = get_xproject_rst(xinfo)

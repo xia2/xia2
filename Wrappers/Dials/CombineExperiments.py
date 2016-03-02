@@ -17,7 +17,7 @@ _setup_xia2_environ()
 def CombineExperiments(DriverType = None):
   '''A factory for CombineExperimentsWrapper classes.'''
 
-  from Driver.DriverFactory import DriverFactory
+  from xia2.Driver.DriverFactory import DriverFactory
   DriverInstance = DriverFactory.Driver(DriverType)
 
   class CombineExperimentsWrapper(DriverInstance.__class__):
@@ -74,7 +74,7 @@ def CombineExperiments(DriverType = None):
         self._same_goniometer = same_goniometer
 
     def run(self):
-      from Handlers.Streams import Debug
+      from xia2.Handlers.Streams import Debug
       Debug.write('Running dials.combine_experiments')
 
       assert len(self._experiments_filenames) > 0

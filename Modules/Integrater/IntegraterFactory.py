@@ -13,19 +13,13 @@ import os
 import sys
 import copy
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
+from xia2.Handlers.Streams import Debug
+from xia2.Handlers.Flags import Flags
+from xia2.Handlers.PipelineSelection import get_preferences, add_preference
 
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Handlers.Streams import Debug
-from Handlers.Flags import Flags
-from Handlers.PipelineSelection import get_preferences, add_preference
-
-from Modules.Integrater.MosflmIntegrater import MosflmIntegrater
-from Modules.Integrater.XDSIntegrater import XDSIntegrater
-from Modules.Integrater.DialsIntegrater import DialsIntegrater
+from xia2.Modules.Integrater.MosflmIntegrater import MosflmIntegrater
+from xia2.Modules.Integrater.XDSIntegrater import XDSIntegrater
+from xia2.Modules.Integrater.DialsIntegrater import DialsIntegrater
 
 from xia2.DriverExceptions.NotAvailableError import NotAvailableError
 

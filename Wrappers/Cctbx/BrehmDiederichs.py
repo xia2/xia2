@@ -16,7 +16,7 @@ _setup_xia2_environ()
 def BrehmDiederichs(DriverType = None):
   '''A factory for BrehmDiederichsWrapper classes.'''
 
-  from Driver.DriverFactory import DriverFactory
+  from xia2.Driver.DriverFactory import DriverFactory
   DriverInstance = DriverFactory.Driver(DriverType)
 
   class BrehmDiederichsWrapper(DriverInstance.__class__):
@@ -45,7 +45,7 @@ def BrehmDiederichs(DriverType = None):
       return self._reindexing_dict
 
     def run(self):
-      from Handlers.Streams import Debug
+      from xia2.Handlers.Streams import Debug
       Debug.write('Running cctbx.brehm_diederichs')
 
       self.clear_command_line()

@@ -16,17 +16,11 @@ import os
 import math
 import sys
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
 # xia2 stuff...
 
-from Handlers.Streams import Debug
-from Handlers.Flags import Flags
-from lib.bits import nint
+from xia2.Handlers.Streams import Debug
+from xia2.Handlers.Flags import Flags
+from xia2.lib.bits import nint
 
 # cctbx stuff
 

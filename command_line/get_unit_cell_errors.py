@@ -6,35 +6,26 @@ import random
 import sys
 import traceback
 
-# Needed to make xia2 imports work correctly
 import libtbx.load_env
-xia2_root_dir = libtbx.env.find_in_repositories("xia2", optional=False)
-sys.path.insert(0, xia2_root_dir)
-os.environ['XIA2_ROOT'] = xia2_root_dir
+from xia2.Handlers.Streams import Chatter, Debug
 
-from Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Citations import Citations
+from xia2.Handlers.Environment import Environment
+from xia2.lib.bits import auto_logfiler
 
-from Handlers.Citations import Citations
-from Handlers.Environment import Environment
-from lib.bits import auto_logfiler
-
-# XML Marked up output for e-HTPX
-if not os.path.join(os.environ['XIA2_ROOT'], 'Interfaces') in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2_ROOT'], 'Interfaces'))
-
-from Applications.xia2 import check, check_environment
+from xia2.Applications.xia2 import check, check_environment
 from cctbx import miller
 from cctbx.array_family import flex
 
-from Modules.UnitCellErrors import _refinery
+from xia2.Modules.UnitCellErrors import _refinery
 
 def load_sweeps_with_common_indexing():
   assert os.path.exists('xia2.json')
-  from Schema.XProject import XProject
+  from xia2.Schema.XProject import XProject
   xinfo = XProject.from_json(filename='xia2.json')
 
   import dials # required for gaussian_rs warning
-  from Wrappers.Dials.Reindex import Reindex
+  from xia2.Wrappers.Dials.Reindex import Reindex
   Citations.cite('dials')
 
   from dxtbx.model.experiment.experiment_list import ExperimentListFactory
@@ -313,9 +304,9 @@ def run():
   try:
     get_unit_cell_errors()
     Chatter.write('Status: normal termination')
-    from Handlers.Flags import Flags
+    from xia2.Handlers.Flags import Flags
     if Flags.get_egg():
-      from lib.bits import message
+      from xia2.lib.bits import message
       message('xia2 status normal termination')
 
   except exceptions.Exception, e:
@@ -324,9 +315,9 @@ def run():
     Chatter.write(
       'Please send the contents of xia2.txt, xia2.error and xia2-debug.txt to:')
     Chatter.write('xia2.support@gmail.com')
-    from Handlers.Flags import Flags
+    from xia2.Handlers.Flags import Flags
     if Flags.get_egg():
-      from lib.bits import message
+      from xia2.lib.bits import message
       message('xia2 status error %s' % str(e))
     sys.exit(1)
 

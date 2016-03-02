@@ -16,7 +16,7 @@ _setup_xia2_environ()
 def ExportXDS(DriverType = None):
   '''A factory for ExportXDSWrapper classes.'''
 
-  from Driver.DriverFactory import DriverFactory
+  from xia2.Driver.DriverFactory import DriverFactory
   DriverInstance = DriverFactory.Driver(DriverType)
 
   class ExportXDSWrapper(DriverInstance.__class__):
@@ -35,7 +35,7 @@ def ExportXDS(DriverType = None):
       return
 
     def run(self):
-      from Handlers.Streams import Debug
+      from xia2.Handlers.Streams import Debug
       Debug.write('Running dials.export')
 
       self.clear_command_line()

@@ -37,19 +37,13 @@
 import os
 import sys
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
+from xia2.Driver.DriverFactory import DriverFactory
+from xia2.Experts.LatticeExpert import ApplyLattice
+from xia2.Handlers.Syminfo import Syminfo
+from xia2.Handlers.Streams import Chatter
+from xia2.Handlers.Flags import Flags
 
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Driver.DriverFactory import DriverFactory
-from Experts.LatticeExpert import ApplyLattice
-from Handlers.Syminfo import Syminfo
-from Handlers.Streams import Chatter
-from Handlers.Flags import Flags
-
-from lib.SymmetryLib import lauegroup_to_lattice
+from xia2.lib.SymmetryLib import lauegroup_to_lattice
 
 def Othercell(DriverType = None):
   '''Factory for Othercell wrapper classes, with the specified

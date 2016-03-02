@@ -45,14 +45,8 @@ class XDSIndexException(XDSException):
     XDSException.__init__(self, value)
     return
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.path.join(os.environ['XIA2_ROOT']) in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
-
-from Handlers.Streams import Debug
-from Handlers.Flags import Flags
+from xia2.Handlers.Streams import Debug
+from xia2.Handlers.Flags import Flags
 
 from dxtbx.format.FormatPilatusHelpers import pilatus_6M_mask, \
      pilatus_2M_mask, pilatus_300K_mask
@@ -240,7 +234,7 @@ def imageset_to_xds(imageset, synchrotron = None, refined_beam_vector = None,
   result.append('DIRECTION_OF_DETECTOR_Y-AXIS=%f %f %f' %
                 converter.detector_y_axis)
 
-  from Handlers.Phil import PhilIndex
+  from xia2.Handlers.Phil import PhilIndex
   params = PhilIndex.get_python_object()
   if params.xds.trusted_region:
     result.append(
@@ -467,7 +461,7 @@ def xds_read_xparm_new_style(xparm_file):
 
 
 if __name__ == '__main__':
-  from Wrappers.XIA.Diffdump import Diffdump
+  from xia2.Wrappers.XIA.Diffdump import Diffdump
 
   dd = Diffdump()
 

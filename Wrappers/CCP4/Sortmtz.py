@@ -12,12 +12,9 @@
 import os
 import sys
 
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Driver.DriverFactory import DriverFactory
-from Decorators.DecoratorFactory import DecoratorFactory
-from Handlers.Streams import Chatter
+from xia2.Driver.DriverFactory import DriverFactory
+from xia2.Decorators.DecoratorFactory import DecoratorFactory
+from xia2.Handlers.Streams import Chatter
 
 def Sortmtz(DriverType = None):
   '''A factory for SortmtzWrapper classes.'''

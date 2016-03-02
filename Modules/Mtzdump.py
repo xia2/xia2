@@ -63,7 +63,7 @@ class Mtzdump(object):
 
     spacegroup_number = int(spacegroup_and_no.replace(')', '').split()[-1])
 
-    from Handlers.Syminfo import Syminfo
+    from xia2.Handlers.Syminfo import Syminfo
 
     spacegroup = Syminfo.spacegroup_number_to_name(spacegroup_number)
 

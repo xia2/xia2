@@ -14,42 +14,36 @@ import os
 import sys
 import math
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
 # interfaces that this will present
-from Schema.Interfaces.Indexer import IndexerSingleSweep
+from xia2.Schema.Interfaces.Indexer import IndexerSingleSweep
 
 # output streams &c.
-from Handlers.Streams import Chatter, Debug, Journal
-from Handlers.Citations import Citations
-from Handlers.Flags import Flags
-#from Handlers.Executables import Executables
-from Handlers.Files import FileHandler
+from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.Handlers.Citations import Citations
+from xia2.Handlers.Flags import Flags
+#from xia2.Handlers.Executables import Executables
+from xia2.Handlers.Files import FileHandler
 
 # helpers
-from Wrappers.CCP4.MosflmHelpers import _get_indexing_solution_number
-from Wrappers.Mosflm.MosflmIndex import MosflmIndex
+from xia2.Wrappers.CCP4.MosflmHelpers import _get_indexing_solution_number
+from xia2.Wrappers.Mosflm.MosflmIndex import MosflmIndex
 
 # things we are moving towards...
-from Modules.Indexer.IndexerSelectImages import index_select_images_lone, \
+from xia2.Modules.Indexer.IndexerSelectImages import index_select_images_lone, \
      index_select_images_user
 
-from lib.bits import auto_logfiler
-from lib.SymmetryLib import lattice_to_spacegroup
+from xia2.lib.bits import auto_logfiler
+from xia2.lib.SymmetryLib import lattice_to_spacegroup
 
 # exceptions
-#from Schema.Exceptions.BadLatticeError import BadLatticeError
-#from Schema.Exceptions.NegativeMosaicError import NegativeMosaicError
-#from Schema.Exceptions.IndexingError import IndexingError
+#from xia2.Schema.Exceptions.BadLatticeError import BadLatticeError
+#from xia2.Schema.Exceptions.NegativeMosaicError import NegativeMosaicError
+#from xia2.Schema.Exceptions.IndexingError import IndexingError
 
-from Wrappers.XIA.Printpeaks import Printpeaks
+from xia2.Wrappers.XIA.Printpeaks import Printpeaks
 
 # cell refinement image helpers
-from Modules.Indexer.MosflmCheckIndexerSolution import \
+from xia2.Modules.Indexer.MosflmCheckIndexerSolution import \
      mosflm_check_indexer_solution
 
 
@@ -156,7 +150,7 @@ class MosflmIndexer(IndexerSingleSweep):
     indexer.set_working_directory(self.get_working_directory())
     auto_logfiler(indexer)
 
-    from lib.bits import unique_elements
+    from xia2.lib.bits import unique_elements
     _images = unique_elements(self._indxr_images)
     indexer.set_images(_images)
     images_str = ', '.join(map(str, _images))
@@ -371,8 +365,8 @@ class MosflmIndexer(IndexerSingleSweep):
 
     import copy
     from dxtbx.model.detector_helpers import set_mosflm_beam_centre
-    from Wrappers.Mosflm.AutoindexHelpers import set_distance
-    from Wrappers.Mosflm.AutoindexHelpers import crystal_model_from_mosflm_mat
+    from xia2.Wrappers.Mosflm.AutoindexHelpers import set_distance
+    from xia2.Wrappers.Mosflm.AutoindexHelpers import crystal_model_from_mosflm_mat
     from cctbx import sgtbx, uctbx
     from dxtbx.model.crystal import crystal_model_from_mosflm_matrix
 

@@ -2,16 +2,13 @@ from __future__ import division
 import os
 import sys
 
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
 import iotbx.phil
 from libtbx.phil import command_line
 from scitbx.array_family import flex
 from libtbx.containers import OrderedDict
 from cctbx import crystal, miller, sgtbx, uctbx
 
-from Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Streams import Chatter, Debug
 
 master_phil_scope = iotbx.phil.parse("""\
 unit_cell = None

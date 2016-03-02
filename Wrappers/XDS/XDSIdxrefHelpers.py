@@ -13,13 +13,7 @@ import math
 import os
 import sys
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Experts.LatticeExpert import ApplyLattice
+from xia2.Experts.LatticeExpert import ApplyLattice
 
 def _parse_idxref_lp_distance_etc(lp_file_lines):
   '''Parse the LP file for refined distance, beam centre and so on...'''

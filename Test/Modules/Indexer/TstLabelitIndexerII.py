@@ -1,12 +1,6 @@
 import os
 import sys
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
 import libtbx.load_env
 from libtbx import easy_run
 from libtbx.test_utils import approx_equal, open_tmp_directory, show_diff
@@ -30,7 +24,7 @@ def exercise_labelit_indexerii():
   tmp_dir = os.path.abspath(open_tmp_directory())
   os.chdir(tmp_dir)
 
-  from Modules.Indexer.LabelitIndexerII import LabelitIndexerII
+  from xia2.Modules.Indexer.LabelitIndexerII import LabelitIndexerII
 
   from xia2.DriverExceptions.NotAvailableError import NotAvailableError
   try:

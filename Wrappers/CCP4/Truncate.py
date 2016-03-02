@@ -24,17 +24,11 @@
 import os
 import sys
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.path.join(os.environ['XIA2_ROOT']) in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
-
-from Driver.DriverFactory import DriverFactory
-from Decorators.DecoratorFactory import DecoratorFactory
-from lib.bits import transpose_loggraph
-from Handlers.Streams import Chatter, Debug
-from Handlers.Phil import PhilIndex
+from xia2.Driver.DriverFactory import DriverFactory
+from xia2.Decorators.DecoratorFactory import DecoratorFactory
+from xia2.lib.bits import transpose_loggraph
+from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Phil import PhilIndex
 
 from Ctruncate import Ctruncate
 
@@ -47,7 +41,7 @@ def Truncate(DriverType = None):
   if PhilIndex.params.ccp4.truncate.program == 'ctruncate':
     return Ctruncate(DriverType)
   elif PhilIndex.params.ccp4.truncate.program == 'cctbx':
-    from Wrappers.XIA.FrenchWilson import FrenchWilson
+    from xia2.Wrappers.XIA.FrenchWilson import FrenchWilson
     return FrenchWilson(DriverType)
 
   class TruncateWrapper(CCP4DriverInstance.__class__):

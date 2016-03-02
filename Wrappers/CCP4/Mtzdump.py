@@ -19,19 +19,13 @@ import os
 import sys
 import copy
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Driver.DriverFactory import DriverFactory
-from Decorators.DecoratorFactory import DecoratorFactory
+from xia2.Driver.DriverFactory import DriverFactory
+from xia2.Decorators.DecoratorFactory import DecoratorFactory
 
 def Mtzdump(DriverType = None):
   '''A factory for MtzdumpWrapper classes.'''
 
-  from Modules.Mtzdump import Mtzdump as _Mtzdump
+  from xia2.Modules.Mtzdump import Mtzdump as _Mtzdump
   return _Mtzdump()
 
   DriverInstance = DriverFactory.Driver(DriverType)

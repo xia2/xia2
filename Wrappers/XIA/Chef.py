@@ -23,19 +23,13 @@ import os
 import sys
 import math
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
+from xia2.Driver.DriverFactory import DriverFactory
+from xia2.Decorators.DecoratorFactory import DecoratorFactory
+from xia2.lib.bits import transpose_loggraph, mean_sd
+from xia2.Wrappers.CCP4.Mtzdump import Mtzdump
+from xia2.Experts.WedgeExpert import digest_wedges
 
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Driver.DriverFactory import DriverFactory
-from Decorators.DecoratorFactory import DecoratorFactory
-from lib.bits import transpose_loggraph, mean_sd
-from Wrappers.CCP4.Mtzdump import Mtzdump
-from Experts.WedgeExpert import digest_wedges
-
-from Handlers.Streams import Chatter, Stdout
+from xia2.Handlers.Streams import Chatter, Stdout
 
 def Chef(DriverType = None,
          stream = Chatter):

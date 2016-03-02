@@ -9,25 +9,17 @@ import traceback
 
 # Needed to make xia2 imports work correctly
 import libtbx.load_env
-xia2_root_dir = libtbx.env.find_in_repositories("xia2", optional=False)
-sys.path.insert(0, xia2_root_dir)
-os.environ['XIA2_ROOT'] = xia2_root_dir
+from xia2.Handlers.Streams import Chatter, Debug
 
-from Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Files import cleanup
+from xia2.Handlers.Citations import Citations
+from xia2.Handlers.Environment import Environment, df
+from xia2.lib.bits import auto_logfiler
 
-from Handlers.Files import cleanup
-from Handlers.Citations import Citations
-from Handlers.Environment import Environment, df
-from lib.bits import auto_logfiler
+from xia2.XIA2Version import Version
 
-from XIA2Version import Version
-
-# XML Marked up output for e-HTPX
-if not os.path.join(os.environ['XIA2_ROOT'], 'Interfaces') in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2_ROOT'], 'Interfaces'))
-
-from Applications.xia2 import check, check_cctbx_version, check_environment
-from Applications.xia2 import get_command_line, write_citations, help
+from xia2.Applications.xia2 import check, check_cctbx_version, check_environment
+from xia2.Applications.xia2 import get_command_line, write_citations, help
 from xia2.lib.tabulate import tabulate
 
 from scitbx.array_family import flex
@@ -37,7 +29,7 @@ def multi_crystal_analysis(stop_after=None):
   '''Actually process something...'''
 
   assert os.path.exists('xia2.json')
-  from Schema.XProject import XProject
+  from xia2.Schema.XProject import XProject
   xinfo = XProject.from_json(filename='xia2.json')
 
   crystals = xinfo.get_crystals()
@@ -47,9 +39,9 @@ def multi_crystal_analysis(stop_after=None):
       [crystal.get_name(), 'analysis'])
     os.chdir(working_directory)
 
-    from Wrappers.CCP4.Blend import Blend
+    from xia2.Wrappers.CCP4.Blend import Blend
 
-    from lib.bits import auto_logfiler
+    from xia2.lib.bits import auto_logfiler
     hand_blender = Blend()
     hand_blender.set_working_directory(working_directory)
     auto_logfiler(hand_blender)
@@ -93,7 +85,7 @@ def multi_crystal_analysis(stop_after=None):
       elif ma.info().labels == ['I(+)', 'SIGI(+)', 'I(-)', 'SIGI(-)']:
         intensities = ma
 
-    from Handlers.CommandLine import which
+    from xia2.Handlers.CommandLine import which
     Rscript_binary = which('Rscript')
     if Rscript_binary is None:
       print 'Skipping BLEND analysis: Rscript not available'
@@ -161,7 +153,7 @@ def multi_crystal_analysis(stop_after=None):
         print >> f, "  range=%i,%i" %tuple(si.get_batches())
         print >> f, "}"
 
-  from Wrappers.XIA.MultiCrystalAnalysis import MultiCrystalAnalysis
+  from xia2.Wrappers.XIA.MultiCrystalAnalysis import MultiCrystalAnalysis
   mca = MultiCrystalAnalysis()
   auto_logfiler(mca, extra="MultiCrystalAnalysis")
   mca.add_command_line_args(
@@ -340,9 +332,9 @@ def run():
   try:
     multi_crystal_analysis()
     Chatter.write('Status: normal termination')
-    from Handlers.Flags import Flags
+    from xia2.Handlers.Flags import Flags
     if Flags.get_egg():
-      from lib.bits import message
+      from xia2.lib.bits import message
       message('xia2 status normal termination')
 
   except exceptions.Exception, e:
@@ -351,9 +343,9 @@ def run():
     Chatter.write(
       'Please send the contents of xia2.txt, xia2.error and xia2-debug.txt to:')
     Chatter.write('xia2.support@gmail.com')
-    from Handlers.Flags import Flags
+    from xia2.Handlers.Flags import Flags
     if Flags.get_egg():
-      from lib.bits import message
+      from xia2.lib.bits import message
       message('xia2 status error %s' % str(e))
     sys.exit(1)
 

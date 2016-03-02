@@ -83,16 +83,11 @@ import copy
 import time
 
 # allow output
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
 
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Handlers.Streams import Chatter, Debug
-from Handlers.Files import FileHandler
-from Handlers.Flags import Flags
-from Handlers.Environment import Environment
+from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Files import FileHandler
+from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Environment import Environment
 
 # See FIXME Integrater interface definition, 27/SEP/06
 
@@ -132,14 +127,14 @@ global_integration_parameters = _global_integration_parameters()
 # Things which are needed to populate this object from the pointer to a
 # single image.
 
-from Experts.FindImages import image2template, find_matching_images, \
+from xia2.Experts.FindImages import image2template, find_matching_images, \
      template_directory_number2image, image2template_directory
-from Experts.Filenames import expand_path
+from xia2.Experts.Filenames import expand_path
 
 # access to factory classes
-from Modules.Indexer import IndexerFactory
-from Modules.Refiner import RefinerFactory
-from Modules.Integrater import IntegraterFactory
+from xia2.Modules.Indexer import IndexerFactory
+from xia2.Modules.Refiner import RefinerFactory
+from xia2.Modules.Integrater import IntegraterFactory
 
 class XSweep(object):
   '''An object representation of the sweep.'''
@@ -217,7 +212,7 @@ class XSweep(object):
                       image2template_directory(os.path.join(directory,
                                                             image))
 
-      from Schema import load_imagesets
+      from xia2.Schema import load_imagesets
       imagesets = load_imagesets(
         self._template, self._directory, image_range=self._frames_to_process,
         reversephi=(Flags.get_reversephi() or self._reversephi))
@@ -239,7 +234,7 @@ class XSweep(object):
 
       error = False
 
-      from Handlers.Phil import PhilIndex
+      from xia2.Handlers.Phil import PhilIndex
       params = PhilIndex.get_python_object()
       if params.general.check_image_files_readable:
         for j in range(start, end + 1):
@@ -361,7 +356,7 @@ class XSweep(object):
         Debug.write('Error setting mosflm beam centre: %s' % e)
 
     if distance is not None:
-      from Wrappers.Mosflm.AutoindexHelpers import set_distance
+      from xia2.Wrappers.Mosflm.AutoindexHelpers import set_distance
       set_distance(self.get_imageset().get_detector(), distance)
 
     self._beam_centre = beam
@@ -559,7 +554,7 @@ class XSweep(object):
 
       indxr = self._get_indexer()
 
-      from Schema.Interfaces.FrameProcessor import get_beam_centre
+      from xia2.Schema.Interfaces.FrameProcessor import get_beam_centre
       imgset = self.get_input_imageset()
       hbeam = get_beam_centre(imgset.get_detector(), imgset.get_beam())
       ibeam = indxr.get_indexer_beam_centre()
@@ -940,10 +935,6 @@ class XSweep(object):
 
 
 if __name__ == '__main__':
-
-  # directory = os.path.join(os.environ['XIA2_ROOT'],
-  # 'Data', 'Test', 'Images')
-
   directory = os.path.join('z:', 'data', '12287')
 
   image = '12287_1_E1_001.img'

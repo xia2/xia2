@@ -16,7 +16,7 @@
 import os
 import sys
 
-from Driver.DriverFactory import DriverFactory
+from xia2.Driver.DriverFactory import DriverFactory
 
 def DistlSignalStrength(DriverType = None):
   '''Factory for DistlSignalStrength wrapper classes, with the specified

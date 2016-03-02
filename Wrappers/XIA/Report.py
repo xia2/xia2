@@ -14,7 +14,7 @@ import os
 def Report(DriverType = None):
   '''A factory for ReportWrapper classes.'''
 
-  from Driver.DriverFactory import DriverFactory
+  from xia2.Driver.DriverFactory import DriverFactory
   DriverInstance = DriverFactory.Driver(DriverType)
 
   class ReportWrapper(DriverInstance.__class__):
@@ -40,7 +40,7 @@ def Report(DriverType = None):
       self._chef_min_completeness = min_completeness
 
     def run(self):
-      from Handlers.Streams import Debug
+      from xia2.Handlers.Streams import Debug
       Debug.write('Running xia2.report')
       assert self._mtz_filename is not None
 

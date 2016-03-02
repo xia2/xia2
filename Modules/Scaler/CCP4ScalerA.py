@@ -15,35 +15,29 @@ import sys
 import math
 import copy
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
 # the interface definition that this will conform to
-# from Schema.Interfaces.Scaler import Scaler
+# from xia2.Schema.Interfaces.Scaler import Scaler
 from CommonScaler import CommonScaler as Scaler
 
-from Wrappers.CCP4.CCP4Factory import CCP4Factory
+from xia2.Wrappers.CCP4.CCP4Factory import CCP4Factory
 
-from Handlers.Streams import Chatter, Debug, Journal
-from Handlers.Files import FileHandler
-from Handlers.Citations import Citations
-from Handlers.Flags import Flags
-from Handlers.Syminfo import Syminfo
-from Handlers.Phil import PhilIndex
+from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.Handlers.Files import FileHandler
+from xia2.Handlers.Citations import Citations
+from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Syminfo import Syminfo
+from xia2.Handlers.Phil import PhilIndex
 
 # jiffys
-from lib.bits import is_mtz_file
-from lib.bits import transpose_loggraph
-from lib.SymmetryLib import sort_lattices
+from xia2.lib.bits import is_mtz_file
+from xia2.lib.bits import transpose_loggraph
+from xia2.lib.SymmetryLib import sort_lattices
 
 from CCP4ScalerHelpers import _prepare_pointless_hklin, \
      CCP4ScalerHelper, SweepInformationHandler, erzatz_resolution, \
      get_umat_bmat_lattice_symmetry_from_mtz
 
-from Modules.AnalyseMyIntensities import AnalyseMyIntensities
+from xia2.Modules.AnalyseMyIntensities import AnalyseMyIntensities
 
 class CCP4ScalerA(Scaler):
   '''An implementation of the Scaler interface using CCP4 programs.'''
@@ -367,7 +361,7 @@ class CCP4ScalerA(Scaler):
 
           dataset_info = md.get_dataset_info(datasets[0])
 
-        from lib.bits import nifty_power_of_ten
+        from xia2.lib.bits import nifty_power_of_ten
         Debug.write('Biggest sweep has %d batches' % max_batches)
         max_batches = nifty_power_of_ten(max_batches)
 
@@ -548,7 +542,7 @@ class CCP4ScalerA(Scaler):
 
         dataset_info = md.get_dataset_info(datasets[0])
 
-      from lib.bits import nifty_power_of_ten
+      from xia2.lib.bits import nifty_power_of_ten
       Debug.write('Biggest sweep has %d batches' % max_batches)
       max_batches = nifty_power_of_ten(max_batches)
 
@@ -762,8 +756,8 @@ class CCP4ScalerA(Scaler):
 
       # now run cctbx.brehm_diederichs to figure out the indexing hand for
       # each sweep
-      from Wrappers.Cctbx.BrehmDiederichs import BrehmDiederichs
-      from lib.bits import auto_logfiler
+      from xia2.Wrappers.Cctbx.BrehmDiederichs import BrehmDiederichs
+      from xia2.lib.bits import auto_logfiler
       brehm_diederichs = BrehmDiederichs()
       brehm_diederichs.set_working_directory(self.get_working_directory())
       auto_logfiler(brehm_diederichs)

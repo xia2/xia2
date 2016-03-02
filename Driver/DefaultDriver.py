@@ -98,7 +98,7 @@ class DefaultDriver(object):
 
     self._name = generate_random_name()
 
-    # this will be assigned if auto-logfiler (c/f lib.guff)
+    # this will be assigned if auto-logfiler (c/f xia2.lib.guff)
     # note that there are no guidelines for this...!
     # bug 2690... xia2 process id is name...
 

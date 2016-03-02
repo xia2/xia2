@@ -15,12 +15,12 @@ import os
 from __init__ import _setup_xia2_environ
 _setup_xia2_environ()
 
-from Handlers.Flags import Flags
+from xia2.Handlers.Flags import Flags
 
 def Spotfinder(DriverType = None):
   '''A factory for SpotfinderWrapper classes.'''
 
-  from Driver.DriverFactory import DriverFactory
+  from xia2.Driver.DriverFactory import DriverFactory
   DriverInstance = DriverFactory.Driver(DriverType)
 
   class SpotfinderWrapper(DriverInstance.__class__):
@@ -105,7 +105,7 @@ def Spotfinder(DriverType = None):
       self._gain = gain
 
     def run(self):
-      from Handlers.Streams import Debug
+      from xia2.Handlers.Streams import Debug
       Debug.write('Running dials.find_spots')
 
       self.clear_command_line()

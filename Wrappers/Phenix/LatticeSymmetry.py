@@ -19,13 +19,10 @@
 import os
 import sys
 
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
+from xia2.Driver.DriverFactory import DriverFactory
 
-from Driver.DriverFactory import DriverFactory
-
-from lib.SymmetryLib import lauegroup_to_lattice
-from Handlers.Syminfo import Syminfo
+from xia2.lib.SymmetryLib import lauegroup_to_lattice
+from xia2.Handlers.Syminfo import Syminfo
 
 def LatticeSymmetry(DriverType = None):
   '''A factory for the LatticeSymmetry wrappers.'''

@@ -67,31 +67,19 @@ import os
 import sys
 import math
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-if not os.path.join(os.environ['XIA2_ROOT'],'lib') in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2_ROOT'], 'lib'))
-
-from Wrappers.CCP4.Othercell import Othercell
-from Handlers.Environment import Environment
-from Modules.Scaler.ScalerFactory import Scaler
-from Modules.Refiner.RefinerFactory import Refiner
-from Handlers.Syminfo import Syminfo
-from Handlers.Flags import Flags
-from Handlers.Files import FileHandler
-from Handlers.Phil import PhilIndex
-from Handlers.Streams import banner
-from NMolLib import compute_nmol, compute_solvent
+from xia2.Wrappers.CCP4.Othercell import Othercell
+from xia2.Handlers.Environment import Environment
+from xia2.Modules.Scaler.ScalerFactory import Scaler
+from xia2.Modules.Refiner.RefinerFactory import Refiner
+from xia2.Handlers.Syminfo import Syminfo
+from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Files import FileHandler
+from xia2.Handlers.Phil import PhilIndex
+from xia2.Handlers.Streams import banner
+from xia2.lib.NMolLib import compute_nmol, compute_solvent
 
 # XML Marked up output for e-HTPX
-if not os.path.join(os.environ['XIA2_ROOT'], 'Interfaces') in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2_ROOT'], 'Interfaces'))
-
-from ISPyB.ISPyBXmlHandler import ISPyBXmlHandler
+from xia2.Interfaces.ISPyB.ISPyBXmlHandler import ISPyBXmlHandler
 
 def sort_o_dict(dict, metric):
   '''A generic sorter for dictionaries - will return the keys in
@@ -392,8 +380,8 @@ class XCrystal(object):
 
   @classmethod
   def from_dict(cls, obj):
-    from Schema.XWavelength import XWavelength
-    from Schema.XSample import XSample
+    from xia2.Schema.XWavelength import XWavelength
+    from xia2.Schema.XSample import XSample
     assert obj['__id__'] == 'XCrystal'
     return_obj = cls(name=None, project=None)
     for k, v in obj.iteritems():

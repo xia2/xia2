@@ -19,29 +19,23 @@ import copy
 import shutil
 import math
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
 # interfaces that this inherits from ...
-from Schema.Interfaces.Indexer import IndexerSingleSweep
+from xia2.Schema.Interfaces.Indexer import IndexerSingleSweep
 
 # other labelit things that this uses
-from Wrappers.Labelit.LabelitMosflmScript import LabelitMosflmScript
-from Wrappers.Labelit.LabelitStats_distl import LabelitStats_distl
+from xia2.Wrappers.Labelit.LabelitMosflmScript import LabelitMosflmScript
+from xia2.Wrappers.Labelit.LabelitStats_distl import LabelitStats_distl
 
-from Modules.Indexer.IndexerSelectImages import index_select_images_lone, \
+from xia2.Modules.Indexer.IndexerSelectImages import index_select_images_lone, \
      index_select_images_user
 
-from lib.bits import auto_logfiler
-from lib.SymmetryLib import lattice_to_spacegroup
-from Handlers.Streams import Chatter, Debug, Journal
-from Handlers.Citations import Citations
-from Handlers.Flags import Flags
-from Handlers.Files import FileHandler
-from Modules.Indexer.MosflmCheckIndexerSolution import \
+from xia2.lib.bits import auto_logfiler
+from xia2.lib.SymmetryLib import lattice_to_spacegroup
+from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.Handlers.Citations import Citations
+from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Files import FileHandler
+from xia2.Modules.Indexer.MosflmCheckIndexerSolution import \
      mosflm_check_indexer_solution
 
 class LabelitIndexer(IndexerSingleSweep):
@@ -54,7 +48,7 @@ class LabelitIndexer(IndexerSingleSweep):
 
     # this will check that Labelit is available in the PATH
 
-    from Wrappers.Labelit.LabelitIndex import LabelitIndex
+    from xia2.Wrappers.Labelit.LabelitIndex import LabelitIndex
     index = LabelitIndex()
 
     # control over the behaviour
@@ -166,7 +160,7 @@ class LabelitIndexer(IndexerSingleSweep):
     if len(_images) > 4:
       raise RuntimeError, 'cannot use more than 4 images'
 
-    from Wrappers.Labelit.LabelitIndex import LabelitIndex
+    from xia2.Wrappers.Labelit.LabelitIndex import LabelitIndex
     index = LabelitIndex()
     index.set_working_directory(self.get_working_directory())
     auto_logfiler(index)
@@ -293,7 +287,7 @@ class LabelitIndexer(IndexerSingleSweep):
     from dxtbx.model.detector_helpers import set_mosflm_beam_centre
     set_mosflm_beam_centre(detector, beam, mosflm_beam_centre)
 
-    from Experts.SymmetryExpert import lattice_to_spacegroup_number
+    from xia2.Experts.SymmetryExpert import lattice_to_spacegroup_number
     from scitbx import matrix
     from cctbx import sgtbx, uctbx
     from dxtbx.model.crystal import crystal_model_from_mosflm_matrix

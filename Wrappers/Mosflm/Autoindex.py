@@ -20,7 +20,7 @@ from __future__ import division
 def Autoindex(DriverType = None):
   '''A factory for AutoindexWrapper(ipmosflm) classes.'''
 
-  from Driver.DriverFactory import DriverFactory
+  from xia2.Driver.DriverFactory import DriverFactory
   DriverInstance = DriverFactory.Driver(DriverType)
 
   class AutoindexWrapper(DriverInstance.__class__):
@@ -28,7 +28,7 @@ def Autoindex(DriverType = None):
     def __init__(self):
       DriverInstance.__class__.__init__(self)
 
-      from Handlers.Executables import Executables
+      from xia2.Handlers.Executables import Executables
       if Executables.get('ipmosflm'):
         self.set_executable(Executables.get('ipmosflm'))
       else:
@@ -55,14 +55,14 @@ def Autoindex(DriverType = None):
       return
 
     def select_images(self, fp):
-      from Handlers.Streams import Debug
-      from Modules.Indexer.IndexerSelectImages import index_select_images_lone
+      from xia2.Handlers.Streams import Debug
+      from xia2.Modules.Indexer.IndexerSelectImages import index_select_images_lone
       phi_width = fp.get_header_item('phi_width')
       images = fp.get_matching_images()
       return index_select_images_lone(phi_width, images)
 
     def __call__(self, fp, images = None):
-      from Handlers.Streams import Debug
+      from xia2.Handlers.Streams import Debug
 
       if images is None:
         images = self.select_images(fp)

@@ -6,15 +6,15 @@
 #   included in the root directory of this package.
 #
 
-from Schema.Interfaces.Refiner import Refiner
-from Handlers.Streams import Debug, Chatter
-from Handlers.Flags import Flags
+from xia2.Schema.Interfaces.Refiner import Refiner
+from xia2.Handlers.Streams import Debug, Chatter
+from xia2.Handlers.Flags import Flags
 
 import os
 import math
 
-from lib.bits import auto_logfiler
-from Handlers.Files import FileHandler
+from xia2.lib.bits import auto_logfiler
+from xia2.Handlers.Files import FileHandler
 
 class XDSRefiner(Refiner):
 
@@ -23,7 +23,7 @@ class XDSRefiner(Refiner):
 
   # factory functions
   def ExportXDS(self):
-    from Wrappers.Dials.ExportXDS import ExportXDS as _ExportXDS
+    from xia2.Wrappers.Dials.ExportXDS import ExportXDS as _ExportXDS
     export_xds = _ExportXDS()
     export_xds.set_working_directory(self.get_working_directory())
     auto_logfiler(export_xds)
@@ -44,7 +44,7 @@ class XDSRefiner(Refiner):
       # hack to figure out if we did indexing with Dials - if so then need to
       # run XYCORR, INIT, and then dials.export_xds before we are ready to
       # integrate with XDS
-      from Modules.Indexer.DialsIndexer import DialsIndexer
+      from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
       if isinstance(idxr, DialsIndexer):
         sweep = idxr.get_indexer_sweep()
         imageset = idxr._indxr_imagesets[0]
@@ -55,7 +55,7 @@ class XDSRefiner(Refiner):
         last_background = int(round(5.0 / phi_width)) - 1 + first
         last_background = min(last, last_background)
 
-        from Modules.Indexer.XDSIndexer import XDSIndexer
+        from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
         xds_idxr = XDSIndexer()
         xds_idxr.set_working_directory(self.get_working_directory())
         xds_idxr.set_indexer_sweep(sweep)
@@ -115,7 +115,7 @@ class XDSRefiner(Refiner):
 
         idxr_old = idxr
 
-        from Modules.Indexer.XDSIndexer import XDSIndexer
+        from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
         idxr = XDSIndexer()
         idxr.set_indexer_sweep(idxr_old.get_indexer_sweep())
         self._refinr_indexers[epoch] = idxr

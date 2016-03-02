@@ -26,9 +26,9 @@
 import os
 import sys
 
-from Driver.DriverFactory import DriverFactory
-from Decorators.DecoratorFactory import DecoratorFactory
-from Handlers.Streams import Debug
+from xia2.Driver.DriverFactory import DriverFactory
+from xia2.Decorators.DecoratorFactory import DecoratorFactory
+from xia2.Handlers.Streams import Debug
 
 # locally required wrappers
 
@@ -36,7 +36,7 @@ from Mtzdump import Mtzdump
 
 # external functionality
 
-from Modules.FindFreeFlag import FindFreeFlag
+from xia2.Modules.FindFreeFlag import FindFreeFlag
 
 def Cad(DriverType = None):
   '''A factory for CadWrapper classes.'''

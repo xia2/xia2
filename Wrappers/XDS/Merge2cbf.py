@@ -13,24 +13,17 @@ import os
 import sys
 import shutil
 
-# We should really put these variable checks, etc in one centralised place
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Driver.DriverFactory import DriverFactory
+from xia2.Driver.DriverFactory import DriverFactory
 
 # interfaces that this inherits from ...
-from Schema.Interfaces.FrameProcessor import FrameProcessor
+from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 
 # generic helper stuff
 from XDS import xds_check_version_supported
-from Handlers.Streams import Debug
+from xia2.Handlers.Streams import Debug
 
 # global flags
-from Handlers.Flags import Flags
+from xia2.Handlers.Flags import Flags
 
 import libtbx
 
@@ -49,7 +42,7 @@ def Merge2cbf(DriverType=None, params=None):
       # phil parameters
 
       if not params:
-        from Handlers.Phil import master_phil
+        from xia2.Handlers.Phil import master_phil
         params = master_phil.extract().xds.merge2cbf
       self._params = params
 
@@ -167,7 +160,7 @@ def Merge2cbf(DriverType=None, params=None):
         f.close()
 
     def get_minicbf_header_contents(self, i_output_image, moving_average=False):
-      from Wrappers.XDS.XDS import beam_centre_mosflm_to_xds
+      from xia2.Wrappers.XDS.XDS import beam_centre_mosflm_to_xds
       header_contents = []
       image_header = self.get_header()
       header_contents.append(

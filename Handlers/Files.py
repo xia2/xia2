@@ -22,8 +22,8 @@ import tempfile
 import time
 
 from Environment import Environment
-from Handlers.Streams import Chatter, Debug
-from Handlers.Flags import Flags
+from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Flags import Flags
 
 def get_mosflm_commands(lines_of_input):
   '''Get the commands which were sent to Mosflm.'''

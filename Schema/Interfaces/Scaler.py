@@ -150,20 +150,14 @@ import os
 import sys
 import inspect
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
+from xia2.lib.bits import inherits_from
+from xia2.lib.SymmetryLib import lauegroup_to_lattice, sort_lattices
 
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
-
-from lib.bits import inherits_from
-from lib.SymmetryLib import lauegroup_to_lattice, sort_lattices
-
-from Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Streams import Chatter, Debug
 
 # file conversion (and merging) jiffies
 
-from Modules.Mtz2Scalepack import Mtz2Scalepack
+from xia2.Modules.Mtz2Scalepack import Mtz2Scalepack
 
 class Scaler(object):
   '''An interface to present scaling functionality in a similar way to the

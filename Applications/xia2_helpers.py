@@ -1,3 +1,7 @@
+#
+# 03/MAR/16
+# To resolve the naming conflict between this file and the entire xia2 module
+# any xia2.* imports in this directory must instead be imported as ..*
 
 import os
 import sys
@@ -5,13 +9,10 @@ import shutil
 
 # Needed to make xia2 imports work correctly
 import libtbx.load_env
-xia2_root_dir = libtbx.env.find_in_repositories("xia2", optional=False)
-sys.path.insert(0, xia2_root_dir)
-os.environ['XIA2_ROOT'] = xia2_root_dir
 
-from Wrappers.XIA.Integrate import Integrate as XIA2Integrate
+from ..Wrappers.XIA.Integrate import Integrate as XIA2Integrate
 
-from Handlers.Streams import Chatter, Debug
+from ..Handlers.Streams import Chatter, Debug
 
 def process_one_sweep(args):
 
@@ -27,7 +28,7 @@ def process_one_sweep(args):
   failover = args.failover
   driver_type = args.driver_type
 
-  from Driver.DriverFactory import DriverFactory
+  from ..Driver.DriverFactory import DriverFactory
   default_driver_type = DriverFactory.get_driver_type()
   DriverFactory.set_driver_type(driver_type)
 
@@ -72,7 +73,7 @@ def process_one_sweep(args):
       #print e
       raise
   else:
-    from Schema.XProject import XProject
+    from ..Schema.XProject import XProject
     xia2_json = os.path.join(tmpdir, 'xia2.json')
     assert os.path.exists(xia2_json)
 

@@ -14,12 +14,12 @@ import os
 from __init__ import _setup_xia2_environ
 _setup_xia2_environ()
 
-from Handlers.Flags import Flags
+from xia2.Handlers.Flags import Flags
 
 def Integrate(DriverType = None):
   '''A factory for IntegrateWrapper classes.'''
 
-  from Driver.DriverFactory import DriverFactory
+  from xia2.Driver.DriverFactory import DriverFactory
   DriverInstance = DriverFactory.Driver(DriverType)
 
   class IntegrateWrapper(DriverInstance.__class__):
@@ -115,7 +115,7 @@ def Integrate(DriverType = None):
       return self._integration_report
 
     def run(self):
-      from Handlers.Streams import Debug
+      from xia2.Handlers.Streams import Debug
       Debug.write('Running dials.integrate')
 
       self.clear_command_line()

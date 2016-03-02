@@ -20,16 +20,10 @@ import copy
 import shutil
 import math
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
+from xia2.Driver.DriverFactory import DriverFactory
 
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Driver.DriverFactory import DriverFactory
-
-from Handlers.Streams import Chatter
-#from Handlers.Files import FileHandler
+from xia2.Handlers.Streams import Chatter
+#from xia2.Handlers.Files import FileHandler
 
 def LabelitIndex(DriverType = None, indxr_print = True):
   '''Factory for LabelitIndex wrapper classes, with the specified

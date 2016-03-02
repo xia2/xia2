@@ -17,40 +17,34 @@ import sys
 import shutil
 import copy
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
 # the interface definition that this will conform to
-# from Schema.Interfaces.Scaler import Scaler
+# from xia2.Schema.Interfaces.Scaler import Scaler
 from CommonScaler import CommonScaler as Scaler
 
 # other tools that this will need
-from Modules.Scaler.XDSScalerHelpers import XDSScalerHelper
+from xia2.Modules.Scaler.XDSScalerHelpers import XDSScalerHelper
 
 # program wrappers that we will need
 
-from Wrappers.XDS.XScaleR import XScaleR as _XScale
-from Wrappers.XDS.Cellparm import Cellparm as _Cellparm
-from Modules.TTT import ttt
+from xia2.Wrappers.XDS.XScaleR import XScaleR as _XScale
+from xia2.Wrappers.XDS.Cellparm import Cellparm as _Cellparm
+from xia2.Modules.TTT import ttt
 
-from Wrappers.CCP4.CCP4Factory import CCP4Factory
+from xia2.Wrappers.CCP4.CCP4Factory import CCP4Factory
 
 # random odds and sods - the resolution estimate should be somewhere better
-from lib.bits import auto_logfiler, transpose_loggraph, is_mtz_file
-from lib.SymmetryLib import lattices_in_order
-from Handlers.Citations import Citations
-from Handlers.Syminfo import Syminfo
-from Handlers.Streams import Chatter, Debug, Journal
-from Handlers.Flags import Flags
-from Handlers.Files import FileHandler
-from Handlers.Phil import PhilIndex
+from xia2.lib.bits import auto_logfiler, transpose_loggraph, is_mtz_file
+from xia2.lib.SymmetryLib import lattices_in_order
+from xia2.Handlers.Citations import Citations
+from xia2.Handlers.Syminfo import Syminfo
+from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Files import FileHandler
+from xia2.Handlers.Phil import PhilIndex
 
 # newly implemented CCTBX powered functions to replace xia2 binaries
-from Modules.Scaler.add_dose_time_to_mtz import add_dose_time_to_mtz
-from Modules.Scaler.compute_average_unit_cell import compute_average_unit_cell
+from xia2.Modules.Scaler.add_dose_time_to_mtz import add_dose_time_to_mtz
+from xia2.Modules.Scaler.compute_average_unit_cell import compute_average_unit_cell
 
 class XDSScalerA(Scaler):
   '''An implementation of the xia2 Scaler interface implemented with
@@ -538,7 +532,7 @@ class XDSScalerA(Scaler):
 
       # now run cctbx.brehm_diederichs to figure out the indexing hand for
       # each sweep
-      from Wrappers.Cctbx.BrehmDiederichs import BrehmDiederichs
+      from xia2.Wrappers.Cctbx.BrehmDiederichs import BrehmDiederichs
       brehm_diederichs = BrehmDiederichs()
       brehm_diederichs.set_working_directory(self.get_working_directory())
       auto_logfiler(brehm_diederichs)
@@ -638,7 +632,7 @@ class XDSScalerA(Scaler):
 
     if self._reference:
 
-      from Driver.DriverFactory import DriverFactory
+      from xia2.Driver.DriverFactory import DriverFactory
 
       def run_one_sweep(args):
         sweep_information = args[0]
@@ -897,7 +891,7 @@ class XDSScalerA(Scaler):
   def _scale(self):
     '''Actually scale all of the data together.'''
 
-    from Handlers.Environment import debug_memory_usage
+    from xia2.Handlers.Environment import debug_memory_usage
     debug_memory_usage()
 
     Journal.block(

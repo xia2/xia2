@@ -14,15 +14,9 @@
 import os
 import sys
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Handlers.Streams import Debug
-from lib.bits import auto_logfiler
-from Wrappers.CCP4.Pointless import Pointless as _Pointless
+from xia2.Handlers.Streams import Debug
+from xia2.lib.bits import auto_logfiler
+from xia2.Wrappers.CCP4.Pointless import Pointless as _Pointless
 
 class XDSScalerHelper(object):
   '''A class which contains functions which will help the XDS Scaler

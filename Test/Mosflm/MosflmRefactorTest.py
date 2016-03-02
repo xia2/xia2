@@ -1,12 +1,6 @@
 import os
 import sys
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
 import libtbx.load_env
 from libtbx import easy_run
 from libtbx.test_utils import show_diff
@@ -17,7 +11,7 @@ try:
 except KeyError, e:
   have_dials_regression = False
 
-from Handlers.Streams import Debug, Stdout
+from xia2.Handlers.Streams import Debug, Stdout
 Debug.join(Stdout)
 
 def exercise_mosflm_index():
@@ -32,7 +26,7 @@ def exercise_mosflm_index():
   tmp_dir1 = os.path.abspath(open_tmp_directory())
   os.chdir(tmp_dir1)
 
-  from Modules.Indexer.MosflmIndexer import MosflmIndexer
+  from xia2.Modules.Indexer.MosflmIndexer import MosflmIndexer
   m1 = MosflmIndexer()
   m1.set_working_directory(tmp_dir1)
   m1.setup_from_image(template % 1)
@@ -66,21 +60,21 @@ def exercise_mosflm_integrate(nproc):
   xia2_demo_data = os.path.join(dials_regression, "xia2_demo_data")
   template = os.path.join(xia2_demo_data, "insulin_1_%03i.img")
 
-  from Schema.XCrystal import XCrystal
-  from Schema.XWavelength import XWavelength
-  from Schema.XSweep import XSweep
-  from Schema.XSample import XSample
+  from xia2.Schema.XCrystal import XCrystal
+  from xia2.Schema.XWavelength import XWavelength
+  from xia2.Schema.XSweep import XSweep
+  from xia2.Schema.XSample import XSample
 
-  from Handlers.Flags import Flags
+  from xia2.Handlers.Flags import Flags
   Flags.set_parallel(nproc)
 
   cwd = os.path.abspath(os.curdir)
   tmp_dir1 = os.path.abspath(open_tmp_directory())
   os.chdir(tmp_dir1)
 
-  from Modules.Integrater.MosflmIntegrater import MosflmIntegrater
-  from Modules.Refiner.MosflmRefiner import MosflmRefiner
-  from Modules.Indexer.MosflmIndexer import MosflmIndexer
+  from xia2.Modules.Integrater.MosflmIntegrater import MosflmIntegrater
+  from xia2.Modules.Refiner.MosflmRefiner import MosflmRefiner
+  from xia2.Modules.Indexer.MosflmIndexer import MosflmIndexer
   indexer = MosflmIndexer()
   indexer.set_working_directory(tmp_dir1)
   indexer.setup_from_image(template % 1)
