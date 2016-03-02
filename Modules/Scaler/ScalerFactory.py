@@ -13,10 +13,7 @@ import copy
 
 if not os.environ.has_key('XIA2_ROOT'):
   raise RuntimeError, 'XIA2_ROOT not defined'
-if not os.environ.has_key('XIA2CORE_ROOT'):
-  raise RuntimeError, 'XIA2CORE_ROOT not defined'
 
-sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'], 'Python'))
 sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 # scaler implementations
@@ -27,7 +24,7 @@ from XDSScalerA import XDSScalerA
 from Handlers.PipelineSelection import get_preferences
 
 # other odds and ends
-from DriverExceptions.NotAvailableError import NotAvailableError
+from xia2.DriverExceptions.NotAvailableError import NotAvailableError
 from Handlers.Streams import Debug
 
 def Scaler():

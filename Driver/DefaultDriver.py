@@ -4,8 +4,6 @@
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
 # 27th March 2006
 #
 # A new "Driver" class for XIA 0.2.x and others.
@@ -55,15 +53,7 @@ from DriverHelper import generate_random_name, executable_exists
 
 # out of context stuff
 
-if not os.environ.has_key('XIA2CORE_ROOT'):
-  raise RuntimeError, 'XIA2CORE_ROOT not defined'
-
-root = os.path.join(os.environ['XIA2CORE_ROOT'], 'Python')
-
-if not root in sys.path:
-  sys.path.append(root)
-
-from DriverExceptions.NotAvailableError import NotAvailableError
+from xia2.DriverExceptions.NotAvailableError import NotAvailableError
 
 class DefaultDriver(object):
   '''A class to run other programs, specifically from the CCP4 suite

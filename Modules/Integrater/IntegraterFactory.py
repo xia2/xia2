@@ -27,7 +27,7 @@ from Modules.Integrater.MosflmIntegrater import MosflmIntegrater
 from Modules.Integrater.XDSIntegrater import XDSIntegrater
 from Modules.Integrater.DialsIntegrater import DialsIntegrater
 
-from DriverExceptions.NotAvailableError import NotAvailableError
+from xia2.DriverExceptions.NotAvailableError import NotAvailableError
 
 # FIXME 06/SEP/06 this should take an implementation of indexer to
 #                 help with the decision about which integrater to

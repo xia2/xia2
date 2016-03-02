@@ -121,15 +121,8 @@ import shutil
 
 import xml.dom.minidom
 
-if not os.environ.has_key('XIA2CORE_ROOT'):
-  raise RuntimeError, 'XIA2CORE_ROOT not defined'
 if not os.environ.has_key('XIA2_ROOT'):
   raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.path.join(os.environ['XIA2CORE_ROOT'],
-                    'Python') in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
-                               'Python'))
 
 if not os.environ['XIA2_ROOT'] in sys.path:
   sys.path.append(os.environ['XIA2_ROOT'])
@@ -791,52 +784,3 @@ if __name__ == '__main__':
 
   print cell
 
-if __name__ == '__moon__':
-
-  # then run some sort of test
-
-  if not os.environ.has_key('XIA2CORE_ROOT'):
-    raise RuntimeError, 'XIA2CORE_ROOT not defined'
-
-  xia2core = os.environ['XIA2CORE_ROOT']
-
-  hklin = os.path.join(xia2core,
-                       'Data', 'Test', 'Mtz', '12287_1_E1.mtz')
-
-  if len(sys.argv) > 1:
-    hklin = sys.argv[1]
-
-  p = Pointless()
-
-  p.set_hklin(hklin)
-  p.write_log_file('pointless.log')
-
-  pointgroup = True
-
-  if pointgroup:
-    p.decide_pointgroup()
-
-    print 'Correct pointgroup: %s' % p.get_pointgroup()
-    print 'Reindexing matrix: ' + \
-          '%4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f' % \
-          tuple(p.get_reindex_matrix())
-    print 'Confidence: %f' % p.get_confidence()
-
-    if False:
-
-      p.set_correct_lattice('mC')
-      p.decide_pointgroup()
-
-      print 'Correct pointgroup: %s' % p.get_pointgroup()
-      print 'Reindexing matrix: ' + \
-            '%4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f' % \
-            tuple(p.get_reindex_matrix())
-      print 'Confidence: %f' % p.get_confidence()
-
-
-  else:
-    p.decide_spacegroup()
-
-    print 'Correct spacegroup: %s' % p.get_spacegroup()
-    print 'Reindex operator: %s' % p.get_spacegroup_reindex_operator()
-    print 'Cell: %.2f %.2f %.2f %.2f %.2f %.2f' % p.get_cell()

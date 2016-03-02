@@ -14,12 +14,6 @@ import libtbx.load_env
 import os
 import sys
 
-if not os.environ.has_key('XIA2CORE_ROOT'):
-  raise RuntimeError, 'XIA2CORE_ROOT not defined'
-
-sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
-                             'Python'))
-
 from Driver.DriverFactory import DriverFactory
 
 import spotfinder

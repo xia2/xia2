@@ -21,8 +21,6 @@ import traceback
 
 if not os.environ.has_key('XIA2_ROOT'):
   raise RuntimeError, 'XIA2_ROOT not defined'
-if not 'XIA2CORE_ROOT' in os.environ:
-  os.environ['XIA2CORE_ROOT'] = os.path.join(os.environ['XIA2_ROOT'], 'core')
 
 if not os.environ['XIA2_ROOT'] in sys.path:
   sys.path.append(os.path.join(os.environ['XIA2_ROOT']))

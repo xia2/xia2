@@ -15,13 +15,6 @@ import os
 import sys
 import math
 
-if not os.environ.has_key('XIA2CORE_ROOT'):
-  raise RuntimeError, 'XIA2CORE_ROOT not defined'
-
-if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
-                               'Python'))
-
 if not os.environ['XIA2_ROOT'] in sys.path:
   sys.path.append(os.environ['XIA2_ROOT'])
 
@@ -935,49 +928,6 @@ if __name__ == '__output_main__':
     dataset = summary[k]
     for property in dataset.keys():
       print k, property, dataset[property]
-
-if __name__ == '__main_2_':
-
-  # run a couple of tests - this will depend on the unit tests for
-  # XIACore having been run...
-
-  s = Aimless()
-
-  hklin = os.path.join(os.environ['XIA2CORE_ROOT'],
-                       'Python', 'UnitTest', '12287_1_E1_sorted.mtz')
-
-  hklout = '12287_1_E1_scaled.mtz'
-
-  s.set_hklin(hklin)
-  s.set_hklout(hklout)
-
-  s.set_resolution(1.65)
-
-  # switch on all of the options I want
-  s.set_anomalous()
-  s.set_tails()
-  s.set_bfactor()
-
-  s.set_scaling_parameters('rotation')
-
-  # this is in the order fac, add, B
-  s.add_sd_correction('full', 1.0, 0.02, 15.0)
-  s.add_sd_correction('partial', 1.0, 0.00, 15.0)
-
-  print s.scale()
-
-  s.write_log_file('aimless.log')
-
-  results = s.parse_ccp4_loggraph()
-
-  print 'The following loggraphs were found'
-  for k in results.keys():
-    print k
-
-  summary = s.get_summary()
-
-  for k in summary.keys():
-    print k, summary[k]
 
 
 if __name__ == '__main__':

@@ -46,7 +46,7 @@ from Modules.Indexer.XDSIndexerInteractive import XDSIndexerInteractive
 from Modules.Indexer.XDSIndexerSum import XDSIndexerSum
 from Modules.Indexer.DialsIndexer import DialsIndexer
 
-from DriverExceptions.NotAvailableError import NotAvailableError
+from xia2.DriverExceptions.NotAvailableError import NotAvailableError
 from Handlers.Streams import Debug
 from Handlers.Flags import Flags
 from Handlers.PipelineSelection import get_preferences

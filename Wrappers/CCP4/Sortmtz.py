@@ -12,13 +12,6 @@
 import os
 import sys
 
-if not os.environ.has_key('XIA2CORE_ROOT'):
-  raise RuntimeError, 'XIA2CORE_ROOT not defined'
-
-if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
-                               'Python'))
-
 if not os.environ['XIA2_ROOT'] in sys.path:
   sys.path.append(os.environ['XIA2_ROOT'])
 
@@ -155,9 +148,6 @@ def Sortmtz(DriverType = None):
 
 if __name__ == '__main_2_':
   # run some tests
-
-  if not os.environ.has_key('XIA2CORE_ROOT'):
-    raise RuntimeError, 'XIA2CORE_ROOT not defined'
 
   dpa = os.environ['XIA2_ROOT']
 

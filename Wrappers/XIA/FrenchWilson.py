@@ -5,8 +5,8 @@
 import os
 import sys
 
-from xia2.core.Python.Driver.DriverFactory import DriverFactory
-from xia2.core.Python.Decorators.DecoratorFactory import DecoratorFactory
+from xia2.Driver.DriverFactory import DriverFactory
+from xia2.Decorators.DecoratorFactory import DecoratorFactory
 from xia2.lib.bits import transpose_loggraph
 from xia2.Handlers.Streams import Chatter, Debug
 from xia2.Handlers.Phil import PhilIndex

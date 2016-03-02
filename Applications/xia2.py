@@ -21,8 +21,6 @@ if not os.environ.has_key('XIA2_ROOT'):
 
 sys.path.insert(0, os.environ['XIA2_ROOT'])
 
-if not 'XIA2CORE_ROOT' in os.environ:
-  os.environ['XIA2CORE_ROOT'] = os.path.join(os.environ['XIA2_ROOT'], 'core')
 
 from Handlers.Streams import Chatter, Debug
 from Handlers.Files import cleanup
@@ -88,7 +86,7 @@ def check_environment():
 
   check_cctbx_version()
 
-  xia2_keys = ['XIA2_ROOT', 'XIA2CORE_ROOT']
+  xia2_keys = ['XIA2_ROOT']
   ccp4_keys = ['CCP4', 'CLIBD', 'CCP4_SCR']
 
   Chatter.write('Environment configuration...')
@@ -131,18 +129,12 @@ def check_environment():
 
 if not os.environ.has_key('XIA2_ROOT'):
   raise RuntimeError, 'XIA2_ROOT not defined'
-if not os.environ.has_key('XIA2CORE_ROOT'):
-  raise RuntimeError, 'XIA2CORE_ROOT not defined'
 
 def check():
   '''Check that the set-up is ok...'''
 
-  sys.path.append(os.path.join((os.environ['XIA2CORE_ROOT']),
-                               'Python'))
-
-  from TestPython import test_python_setup
-
-  test_python_setup()
+  import os
+  import subprocess
 
   return
 
