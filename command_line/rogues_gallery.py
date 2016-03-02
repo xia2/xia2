@@ -99,10 +99,21 @@ def reconstruct_rogues():
     ann = ann_adaptor(data=reference, dim=3, k=1)
     ann.query(search)
 
+    # FIXME work out how to select only the reflections flagged as an nn
+    # then:
+
+    if False:
+      # Allocate the shoeboxes
+      reflections["shoebox"] = flex.shoebox(
+        reflections["panel"],
+        reflections["bbox"],
+        allocate=True)
+
+      # Extract the shoeboxes
+      reflections.extract_shoeboxes(imageset, verbose=True)
+
     for j, rogue in enumerate(rogues):
-      nn = reflections[ann.nn[j]]
-      print nn['bbox']
-      # FIXME now extract the pixel information
+      print '%5d %5d %5d %5d %5d %5d' % reflections[ann.nn[j]]['bbox']
 
 if __name__ == '__main__':
   reconstruct_rogues()
