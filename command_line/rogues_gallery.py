@@ -28,6 +28,17 @@ def munch_rogues(rogues):
 
   return rogue_reflections
 
+def print_profile(r):
+  s = r['shoebox'].data
+  _i, _j, _k = s.all()
+  for i in range(_i):
+    for j in range(_j):
+      for k in range(_k):
+        print '%5d' % int(s[i,j,k]),
+      print ''
+    print ''
+    print ''
+
 def reconstruct_rogues():
   assert os.path.exists('xia2.json')
   from Schema.XProject import XProject
@@ -99,21 +110,22 @@ def reconstruct_rogues():
     ann = ann_adaptor(data=reference, dim=3, k=1)
     ann.query(search)
 
-    # FIXME work out how to select only the reflections flagged as an nn
-    # then:
-
-    if False:
-      # Allocate the shoeboxes
-      reflections["shoebox"] = flex.shoebox(
-        reflections["panel"],
-        reflections["bbox"],
-        allocate=True)
-
-      # Extract the shoeboxes
-      reflections.extract_shoeboxes(imageset, verbose=True)
-
     for j, rogue in enumerate(rogues):
-      print '%5d %5d %5d %5d %5d %5d' % reflections[ann.nn[j]]['bbox']
+      reflections['id'][ann.nn[j]] = 1701
+
+    rogues = reflections.select(reflections['id'] == 1701)
+
+    reflections["shoebox"] = flex.shoebox(
+      reflections["panel"],
+      reflections["bbox"],
+      allocate=True)
+
+    reflections.extract_shoeboxes(images, verbose=False)
+
+    for r in reflections:
+      print r['miller_index']
+      print r['xyzcal.px']
+      print_profile(r)
 
 if __name__ == '__main__':
   reconstruct_rogues()
