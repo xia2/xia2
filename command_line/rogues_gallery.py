@@ -122,7 +122,7 @@ def reconstruct_rogues():
 
     reflections.extract_shoeboxes(images, verbose=False)
 
-    pickle.dump(reflections, open('xia2_rogues.pickle', 'w'))
+    reflections.as_pickle('xia2-rogues.pickle')
 
 if __name__ == '__main__':
   reconstruct_rogues()
