@@ -16,7 +16,6 @@ import os
 import math
 
 from lib.bits import auto_logfiler
-from Handlers.Files import FileHandler
 
 from Wrappers.Dials.CombineExperiments import CombineExperiments \
      as _CombineExperiments

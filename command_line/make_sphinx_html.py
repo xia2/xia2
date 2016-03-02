@@ -8,7 +8,6 @@ import shutil
 import os
 import sys
 
-import libtbx.load_env
 xia2_root_dir = libtbx.env.find_in_repositories("xia2", optional=False)
 sys.path.insert(0, xia2_root_dir)
 os.environ['XIA2_ROOT'] = xia2_root_dir

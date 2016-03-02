@@ -53,7 +53,6 @@ from Modules.Indexer.IndexerSelectImages import index_select_images_lone, \
      index_select_images_user
 
 from Modules.GainEstimater import gain
-from Handlers.Files import FileHandler
 
 from lib.bits import auto_logfiler, mean_sd
 from lib.SymmetryLib import lattice_to_spacegroup

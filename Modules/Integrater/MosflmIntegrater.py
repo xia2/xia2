@@ -43,7 +43,6 @@ from Wrappers.CCP4.MosflmHelpers import \
 from Wrappers.Mosflm.MosflmIntegrate import MosflmIntegrate
 
 from Modules.GainEstimater import gain
-from Handlers.Files import FileHandler
 
 from lib.bits import auto_logfiler, mean_sd
 from lib.SymmetryLib import lattice_to_spacegroup
