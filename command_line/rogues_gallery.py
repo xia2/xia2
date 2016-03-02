@@ -122,10 +122,7 @@ def reconstruct_rogues():
 
     reflections.extract_shoeboxes(images, verbose=False)
 
-    for r in reflections:
-      print r['miller_index']
-      print r['xyzcal.px']
-      print_profile(r)
+    pickle.dump(reflections, open('xia2_rogues.pickle', 'w'))
 
 if __name__ == '__main__':
   reconstruct_rogues()
