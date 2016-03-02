@@ -29,13 +29,14 @@ def munch_rogues(rogues):
 
   return rogue_reflections
 
-def magic_code():
+def reconstruct_rogues():
   assert os.path.exists('xia2.json')
   from Schema.XProject import XProject
   xinfo = XProject.from_json(filename='xia2.json')
 
   from dxtbx.model.experiment.experiment_list import ExperimentListFactory
   import cPickle as pickle
+  import dials # because WARNING:root:No profile class gaussian_rs registered
   crystals = xinfo.get_crystals()
   assert len(crystals) == 1
 
@@ -49,13 +50,17 @@ def magic_code():
   rogues = os.path.join(scaler.get_working_directory(),
                         xname, 'scale', 'ROGUES')
 
-  munch_rogues(rogues)
+  rogue_reflections = munch_rogues(rogues)
+
+  batched_reflections = { }
 
   for epoch in epochs:
     si = scaler._sweep_handler.get_sweep_information(epoch)
     intgr = si.get_integrater()
-    experiments_filename = intgr.get_integrated_experiments()
-    reflections_filename = intgr.get_integrated_reflections()
+    experiments = ExperimentListFactory.from_json_file(
+      intgr.get_integrated_experiments())
+    reflections = pickle.load(open(intgr.get_integrated_reflections()))
+    batched_reflections[si.get_batch_range()] = (experiments, reflections)
 
 if __name__ == '__main__':
-  magic_code()
+  reconstruct_rogues()
