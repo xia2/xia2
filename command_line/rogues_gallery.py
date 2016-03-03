@@ -59,7 +59,8 @@ def reconstruct_rogues(params):
     experiments = ExperimentListFactory.from_json_file(
       intgr.get_integrated_experiments())
     reflections = pickle.load(open(intgr.get_integrated_reflections()))
-    batched_reflections[si.get_batch_range()] = (experiments, reflections)
+    batched_reflections[si.get_batch_range()] = (experiments, reflections,
+                                                 si.get_sweep_name())
 
   # - look up reflection in reflection list, get bounding box
   # - pull pixels given from image set, flatten these, write out
@@ -78,9 +79,10 @@ def reconstruct_rogues(params):
         reflections_run[run].append(rogue)
         break
 
-  for run in reflections_run:
+  for run_no, run in enumerate(reflections_run):
     experiment = batched_reflections[run][0]
     reflections = batched_reflections[run][1]
+    name = batched_reflections[run][2]
     rogues = reflections_run[run]
     reference = flex.double()
     scan = experiment.scans()[0]
@@ -113,9 +115,18 @@ def reconstruct_rogues(params):
         allocate=True)
       reflections.extract_shoeboxes(images, verbose=False)
 
-    print 'Extracted %d rogue reflections to %s' % \
-      (len(reflections), params.output.reflections)
-    reflections.as_pickle(params.output.reflections)
+    if len(reflections_run) > 1:
+      output = params.output.reflections.replace(
+          '.pickle', '-%d.pickle' % run_no)
+      print 'Extracted %d rogue reflections for %s to %s' % \
+        (len(reflections), name, output)
+      reflections.as_pickle(output)
+    else:
+      output = params.output.reflections
+      print 'Extracted %d rogue reflections to %s' % \
+        (len(reflections), output)
+      reflections.as_pickle(output)
+
 
 if __name__ == '__main__':
   from libtbx.phil import parse
