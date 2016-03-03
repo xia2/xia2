@@ -102,7 +102,7 @@ def reconstruct_rogues(params):
     for j, rogue in enumerate(rogues):
       reflections['id'][ann.nn[j]] = 1701
 
-    rogues = reflections.select(reflections['id'] == 1701)
+    reflections = reflections.select(reflections['id'] == 1701)
 
     if params.extract:
       reflections["shoebox"] = flex.shoebox(
