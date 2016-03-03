@@ -1,5 +1,5 @@
 from __future__ import division
-# LIBTBX_SET_DISPATCHER_NAME dev.xia2.rogues_gallery
+# LIBTBX_SET_DISPATCHER_NAME xia2.rogues_gallery
 
 import exceptions
 import json
