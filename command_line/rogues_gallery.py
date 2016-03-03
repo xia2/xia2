@@ -99,19 +99,22 @@ def reconstruct_rogues(params):
     ann = ann_adaptor(data=reference, dim=3, k=1)
     ann.query(search)
 
-    for j, rogue in enumerate(rogues):
-      reflections['id'][ann.nn[j]] = 1701
+    keep = flex.bool(len(reflections), False)
 
-    reflections = reflections.select(reflections['id'] == 1701)
+    for j, rogue in enumerate(rogues):
+      keep[ann.nn[j]] = True
+
+    reflections = reflections.select(keep==True)
 
     if params.extract:
       reflections["shoebox"] = flex.shoebox(
         reflections["panel"],
         reflections["bbox"],
         allocate=True)
-
       reflections.extract_shoeboxes(images, verbose=False)
 
+    print 'Extracted %d rogue reflections to %s' % \
+      (len(reflections), params.output.reflections)
     reflections.as_pickle(params.output.reflections)
 
 if __name__ == '__main__':
