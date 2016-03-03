@@ -117,7 +117,7 @@ def reconstruct_rogues(params):
 
     if len(reflections_run) > 1:
       output = params.output.reflections.replace(
-          '.pickle', '-%d.pickle' % run_no)
+          '.pickle', '-%s.pickle' % name)
       print 'Extracted %d rogue reflections for %s to %s' % \
         (len(reflections), name, output)
       reflections.as_pickle(output)
