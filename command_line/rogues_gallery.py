@@ -28,18 +28,7 @@ def munch_rogues(rogues):
 
   return rogue_reflections
 
-def print_profile(r):
-  s = r['shoebox'].data
-  _i, _j, _k = s.all()
-  for i in range(_i):
-    for j in range(_j):
-      for k in range(_k):
-        print '%5d' % int(s[i,j,k]),
-      print ''
-    print ''
-    print ''
-
-def reconstruct_rogues():
+def reconstruct_rogues(params):
   assert os.path.exists('xia2.json')
   from Schema.XProject import XProject
   xinfo = XProject.from_json(filename='xia2.json')
@@ -115,14 +104,35 @@ def reconstruct_rogues():
 
     rogues = reflections.select(reflections['id'] == 1701)
 
-    reflections["shoebox"] = flex.shoebox(
-      reflections["panel"],
-      reflections["bbox"],
-      allocate=True)
+    if params.extract:
+      reflections["shoebox"] = flex.shoebox(
+        reflections["panel"],
+        reflections["bbox"],
+        allocate=True)
 
-    reflections.extract_shoeboxes(images, verbose=False)
+      reflections.extract_shoeboxes(images, verbose=False)
 
-    reflections.as_pickle('xia2-rogues.pickle')
+    reflections.as_pickle(params.output.reflections)
 
 if __name__ == '__main__':
-  reconstruct_rogues()
+  from libtbx.phil import parse
+  import sys
+  phil_scope = parse('''
+rogues {
+  extract = False
+    .type = bool
+    .help = "Extract shoebox pixels"
+
+  output {
+    reflections = 'xia2-rogues.pickle'
+      .type = str
+      .help = "The integrated output filename"
+  }
+}
+  ''')
+  interp = phil_scope.command_line_argument_interpreter(home_scope='rogues')
+  for arg in sys.argv[1:]:
+    cl_phil = interp.process(arg)
+    phil_scope = phil_scope.fetch(cl_phil)
+  params = phil_scope.extract()
+  reconstruct_rogues(params.rogues)
