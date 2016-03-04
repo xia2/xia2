@@ -119,6 +119,18 @@ class _IndexerHelper(object):
 
     return
 
+def beam_centre(detector, beam):
+  s0 = beam.get_s0()
+  x, y = (None, None)
+  for panel_id, panel in enumerate(detector):
+    try:
+      x, y = panel.get_ray_intersection(s0)
+    except RuntimeError:
+      continue
+    else:
+      if panel.is_coord_valid_mm((x, y)):
+        break
+  return panel_id, (x, y)
 
 class Indexer(object):
   '''A class interface to present autoindexing functionality in a standard
@@ -497,6 +509,8 @@ class Indexer(object):
           if self._indxr_lattice != solution[0] and \
              not self._indxr_input_cell and \
              not PhilIndex.params.xia2.settings.integrate_p1:
+            Chatter.write('Rerunning indexing lattice %s to %s' %
+                          (self._indxr_lattice, solution[0]))
             Debug.write(
               'Rerunning indexing with target lattice %s' % \
               solution[0])
@@ -650,8 +664,8 @@ class Indexer(object):
 
     self.index()
     experiment = self.get_indexer_experiment_list()[0]
-    return tuple(reversed(experiment.detector.get_ray_intersection(
-      experiment.beam.get_s0())[1]))
+    # FIXME need to consider interaction of xia2 with multi-panel detectors
+    return tuple(reversed(beam_centre(experiment.detector, experiment.beam)[1]))
 
   def get_indexer_payload(self, this):
     '''Attempt to get something from the indexer payload.'''
