@@ -1241,6 +1241,13 @@ class CCP4ScalerA(Scaler):
       self._scalr_scaled_reflection_files['mtz_unmerged'][key] = mtz_unmerged
       FileHandler.record_data_file(mtz_unmerged)
 
+    if PhilIndex.params.xia2.settings.merging_statistics.source == 'cctbx':
+      for key in self._scalr_scaled_refl_files:
+        stats = self._compute_scaler_statistics(
+          self._scalr_scaled_reflection_files['mtz_unmerged'][key])
+        self._scalr_statistics[
+          (self._scalr_pname, self._scalr_xname, key)] = stats
+
     sc = self._updated_aimless()
     sc.set_hklin(self._prepared_reflections)
     sc.set_intensities(PhilIndex.params.ccp4.aimless.intensities)

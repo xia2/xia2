@@ -1031,3 +1031,79 @@ class CommonScaler(Scaler):
     resolution = max([r_comp, r_rm, r_uis, r_mis, r_cc_half])
 
     return resolution
+
+  def _compute_scaler_statistics(self, scaled_unmerged_mtz):
+
+    scalr_statistics = {}
+
+    # mapping of expected dictionary names to iotbx.merging_statistics attributes
+    key_to_var = {
+      'I/sigma': 'i_over_sigma_mean',
+      'Completeness': 'completeness',
+      'Low resolution limit': 'd_max',
+      'Multiplicity': 'mean_redundancy',
+      'Rmerge(I)': 'r_merge',
+      #'Anomalous slope':,
+      #'Wilson B factor':,
+      'Rmeas(I)': 'r_meas',
+      'High resolution limit': 'd_min',
+      'Total observations': 'n_obs',
+      'Anomalous correlation': 'anom_half_corr',
+      'Rpim(I)': 'r_pim',
+      'CC half': 'cc_one_half',
+      'Total unique': 'n_uniq',
+    }
+
+    anom_key_to_var = {
+      'Rmerge(I+/-)': 'r_merge',
+      'Rpim(I+/-)': 'r_pim',
+      'Rmeas(I+/-)': 'r_meas',
+      'Anomalous completeness': 'anom_completeness',
+      'Anomalous multiplicity': 'mean_redundancy',
+    }
+
+    stats = {}
+
+    result = self._iotbx_merging_statistics(
+      scaled_unmerged_mtz, anomalous=False)
+    anom_result = self._iotbx_merging_statistics(
+      scaled_unmerged_mtz, anomalous=True)
+
+    for d, r in ((key_to_var, result), (anom_key_to_var, anom_result)):
+
+      for k, v in d.iteritems():
+        values = (
+          getattr(r.overall, v),
+          getattr(r.bins[0], v),
+          getattr(r.bins[-1], v))
+        if 'completeness' in v:
+          values = [v_ * 100 for v_ in values]
+        if values[0] is not None:
+          stats[k] = values
+
+    return stats
+
+  def _iotbx_merging_statistics(self, scaled_unmerged_mtz, anomalous=False):
+    import iotbx.merging_statistics
+
+    params = PhilIndex.params.xia2.settings.merging_statistics
+
+    i_obs = iotbx.merging_statistics.select_data(scaled_unmerged_mtz, data_labels=None)
+    i_obs = i_obs.customized_copy(anomalous_flag=True, info=i_obs.info())
+
+    result = iotbx.merging_statistics.dataset_statistics(
+      i_obs=i_obs,
+      #crystal_symmetry=symm,
+      #d_min=params.high_resolution,
+      #d_max=params.low_resolution,
+      n_bins=params.n_bins,
+      anomalous=anomalous,
+      #debug=params.debug,
+      #file_name=params.file_name,
+      #sigma_filtering=params.sigma_filtering,
+      use_internal_variance=params.use_internal_variance,
+      #extend_d_max_min=params.extend_d_max_min,
+      #log=out
+    )
+
+    return result
