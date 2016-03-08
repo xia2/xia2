@@ -1103,6 +1103,7 @@ class CommonScaler(Scaler):
       #file_name=params.file_name,
       #sigma_filtering=params.sigma_filtering,
       use_internal_variance=params.use_internal_variance,
+      eliminate_sys_absent=params.eliminate_sys_absent,
       #extend_d_max_min=params.extend_d_max_min,
       #log=out
     )

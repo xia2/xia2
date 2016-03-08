@@ -348,6 +348,9 @@ xia2.settings {
     use_internal_variance = False
       .type = bool
       .help = Use internal variance of the data in the calculation of the merged sigmas
+    eliminate_sys_absent = False
+      .type = bool
+      .help = Eliminate systematically absent reflections before computation of merging statistics.
   }
   verbose = False
     .type = bool
