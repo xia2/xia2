@@ -1043,7 +1043,6 @@ class CommonScaler(Scaler):
       'Low resolution limit': 'd_max',
       'Multiplicity': 'mean_redundancy',
       'Rmerge(I)': 'r_merge',
-      #'Anomalous slope':,
       #'Wilson B factor':,
       'Rmeas(I)': 'r_meas',
       'High resolution limit': 'd_min',
@@ -1081,6 +1080,8 @@ class CommonScaler(Scaler):
         if values[0] is not None:
           stats[k] = values
 
+    stats['Anomalous slope'] = (anom_result.anomalous_np_slope, 0, 0)
+
     return stats
 
   def _iotbx_merging_statistics(self, scaled_unmerged_mtz, anomalous=False):
@@ -1106,4 +1107,60 @@ class CommonScaler(Scaler):
       #log=out
     )
 
+    if anomalous:
+      merged_intensities = i_obs.merge_equivalents(
+        use_internal_variance=params.use_internal_variance).array()
+      slope, intercept, n_pairs = anomalous_probability_plot(merged_intensities)
+
+      Debug.write('Anomalous difference normal probability plot:')
+      Debug.write('Slope: %.2f' %slope)
+      Debug.write('Intercept: %.2f' %intercept)
+      Debug.write('Number of pairs: %i' %n_pairs)
+
+      slope, intercept, n_pairs = anomalous_probability_plot(
+        merged_intensities, expected_delta=0.9)
+      result.anomalous_np_slope = slope
+
+      Debug.write('Anomalous difference normal probability plot (within expected delta 0.9):')
+      Debug.write('Slope: %.2f' %slope)
+      Debug.write('Intercept: %.2f' %intercept)
+      Debug.write('Number of pairs: %i' %n_pairs)
+
+    else:
+      result.anomalous_np_slope = None
+
     return result
+
+def anomalous_probability_plot(intensities, expected_delta=None):
+  from scitbx.math import distributions
+  from scitbx.array_family import flex
+
+  assert intensities.is_unique_set_under_symmetry()
+  assert intensities.anomalous_flag()
+
+  dI = intensities.anomalous_differences()
+  y = dI.data()/dI.sigmas()
+  perm = flex.sort_permutation(y)
+  y = y.select(perm)
+  distribution = distributions.normal_distribution()
+
+  x = distribution.quantiles(y.size())
+
+  if expected_delta is not None:
+    sel = flex.abs(x) < expected_delta
+    x = x.select(sel)
+    y = y.select(sel)
+
+  fit = flex.linear_regression(x, y)
+  correlation = flex.linear_correlation(x, y)
+  assert fit.is_well_defined()
+
+  if 0:
+    from matplotlib import pyplot
+    pyplot.scatter(x, y)
+    m = fit.slope()
+    c = fit.y_intercept()
+    pyplot.plot(pyplot.xlim(), [m * x_ + c for x_ in pyplot.xlim()])
+    pyplot.show()
+
+  return fit.slope(), fit.y_intercept(), x.size()
