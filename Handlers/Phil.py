@@ -340,7 +340,7 @@ xia2.settings {
   scaler = ccp4a xdsa
     .type = choice
   merging_statistics {
-    source = *aimless cctbx
+    source = aimless *cctbx
       .type = choice
       .help = "Use AIMLESS or cctbx for calculation of merging statistics"
     n_bins = 20
