@@ -243,68 +243,46 @@ def _print_lattice(lattice):
   print 'Number: %s     Lattice: %s' % (lattice['number'],
                                         lattice['lattice'])
 
+
+from libtbx.containers import OrderedDict
+formats = OrderedDict([
+  ('High resolution limit', '%6.2f\t%6.2f\t%6.2f'),
+  ('Low resolution limit', '%6.2f\t%6.2f\t%6.2f'),
+  ('Completeness', '%5.1f\t%5.1f\t%5.1f'),
+  ('Multiplicity', '%5.1f\t%5.1f\t%5.1f'),
+  ('I/sigma', '%5.1f\t%5.1f\t%5.1f'),
+  ('Rmerge(I)', '%5.3f\t%5.3f\t%5.3f'),
+  ('Rmerge(I+/-)', '%5.3f\t%5.3f\t%5.3f'),
+  ('Rmeas(I)', '%5.3f\t%5.3f\t%5.3f'),
+  ('Rmeas(I+/-)', '%5.3f\t%5.3f\t%5.3f'),
+  ('Rpim(I)', '%5.3f\t%5.3f\t%5.3f'),
+  ('Rpim(I+/-)', '%5.3f\t%5.3f\t%5.3f'),
+  ('CC half', '%5.3f\t%5.3f\t%5.3f'),
+  ('Wilson B factor', '%.3f'),
+  ('Partial bias', '%5.3f\t%5.3f\t%5.3f'),
+  ('Anomalous completeness', '%5.1f\t%5.1f\t%5.1f'),
+  ('Anomalous multiplicity', '%5.1f\t%5.1f\t%5.1f'),
+  ('Anomalous correlation', '%6.3f\t%6.3f\t%6.3f'),
+  ('Anomalous slope', '%5.3f\t%5.3f\t%5.3f'),
+  ('dF/F', '%.3f'),
+  ('dI/s(dI)', '%.3f'),
+  ('Total observations', '%d\t%d\t%d'),
+  ('Total unique', '%d\t%d\t%d')
+])
+
+
 def format_statistics(statistics):
   '''Format for printing statistics from data processing, removing from
   the main XCrystal __repr__ method. See DLS #1291'''
 
   available = statistics.keys()
 
-  keys = [
-      'High resolution limit',
-      'Low resolution limit',
-      'Completeness',
-      'Multiplicity',
-      'I/sigma',
-      'Rmerge(I)',
-      'Rmerge(I+/-)',
-      'Rmeas(I)',
-      'Rmeas(I+/-)',
-      'Rpim(I)',
-      'Rpim(I+/-)',
-      'CC half',
-      'Wilson B factor',
-      'Partial bias',
-      'Anomalous completeness',
-      'Anomalous multiplicity',
-      'Anomalous correlation',
-      'Anomalous slope',
-      'dF/F',
-      'dI/s(dI)',
-      'Total observations',
-      'Total unique']
-
-  formats = {
-      'High resolution limit':'%6.2f\t%6.2f\t%6.2f',
-      'Low resolution limit':'%6.2f\t%6.2f\t%6.2f',
-      'Completeness':'%5.1f\t%5.1f\t%5.1f',
-      'Multiplicity':'%5.1f\t%5.1f\t%5.1f',
-      'I/sigma':'%5.1f\t%5.1f\t%5.1f',
-      'Rmerge(I)':'%5.3f\t%5.3f\t%5.3f',
-      'Rmerge(I+/-)':'%5.3f\t%5.3f\t%5.3f',
-      'Rmeas(I)':'%5.3f\t%5.3f\t%5.3f',
-      'Rmeas(I+/-)':'%5.3f\t%5.3f\t%5.3f',
-      'Rpim(I)':'%5.3f\t%5.3f\t%5.3f',
-      'Rpim(I+/-)':'%5.3f\t%5.3f\t%5.3f',
-      'CC half':'%5.3f\t%5.3f\t%5.3f',
-      'Wilson B factor':'%.3f',
-      'Partial bias':'%5.3f\t%5.3f\t%5.3f',
-      'Anomalous completeness':'%5.1f\t%5.1f\t%5.1f',
-      'Anomalous multiplicity':'%5.1f\t%5.1f\t%5.1f',
-      'Anomalous correlation':'%6.3f\t%6.3f\t%6.3f',
-      'Anomalous slope':'%5.3f\t%5.3f\t%5.3f',
-      'dF/F':'%.3f',
-      'dI/s(dI)':'%.3f',
-      'Total observations':'%d\t%d\t%d',
-      'Total unique':'%d\t%d\t%d'
-      }
-
-
   result = ''
 
-  for k in keys:
+  for k, format_str in formats.iteritems():
     if k in available:
       result += k.ljust(40) + '\t' + \
-                formats[k] % tuple(statistics[k]) + '\n'
+                format_str % tuple(statistics[k]) + '\n'
 
   return result
 
@@ -655,28 +633,32 @@ class XCrystal(object):
 
       stats = []
       keys = [
-          'High resolution limit',
-          'Low resolution limit',
-          'Completeness',
-          'Multiplicity',
-          'I/sigma',
-          'Rmerge',
-          'CC half',
-          'Anomalous completeness',
-          'Anomalous multiplicity']
+        'High resolution limit',
+        'Low resolution limit',
+        'Completeness',
+        'Multiplicity',
+        'I/sigma',
+        'Rmerge',
+        'CC half',
+        'Anomalous completeness',
+        'Anomalous multiplicity']
 
       for k in keys:
         if k in available:
           stats.append(k)
 
       for s in stats:
+        format_str = formats[s]
         if isinstance(statistics_all[key][s], float):
-          summary.append('%s: %f' % (s.ljust(40),
-                                     statistics_all[key][s]))
+          summary.append(
+            '%s: ' %(s.ljust(40)) + format_str % (statistics_all[key][s]))
         elif isinstance(statistics_all[key][s], basestring):
-          summary.append('%s: %s' % (s.ljust(40),
-                                     statistics_all[key][s]))
+          summary.append(
+            '%s: %s' % (s.ljust(40), statistics_all[key][s]))
         else:
+          summary.append(
+            '%s ' % s.ljust(40) + '\t' + format_str % tuple(statistics_all[key][s]))
+          continue
           try:
             result = '%s ' % s.ljust(40)
             for value in statistics_all[key][s]:
