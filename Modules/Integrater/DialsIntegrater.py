@@ -15,41 +15,35 @@ import math
 import copy
 import shutil
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
 # wrappers for programs that this needs
 
-from Wrappers.Dials.Refine import Refine as _Refine
-from Wrappers.Dials.Integrate import Integrate as _Integrate
-from Wrappers.Dials.Report import Report as _Report
-from Wrappers.Dials.ExportMtz import ExportMtz as _ExportMtz
+from xia2.Wrappers.Dials.Refine import Refine as _Refine
+from xia2.Wrappers.Dials.Integrate import Integrate as _Integrate
+from xia2.Wrappers.Dials.Report import Report as _Report
+from xia2.Wrappers.Dials.ExportMtz import ExportMtz as _ExportMtz
 
 # interfaces that this must implement to be an integrater
 
-from Schema.Interfaces.Integrater import Integrater
+from xia2.Schema.Interfaces.Integrater import Integrater
 
-from Schema.Exceptions.BadLatticeError import BadLatticeError
+from xia2.Schema.Exceptions.BadLatticeError import BadLatticeError
 
 # indexing functionality if not already provided - even if it is
 # we still need to reindex with DIALS.
 
-from Modules.Indexer.DialsIndexer import DialsIndexer
-from Wrappers.CCP4.Reindex import Reindex
+from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
+from xia2.Wrappers.CCP4.Reindex import Reindex
 
 # odds and sods that are needed
 
-from lib.bits import auto_logfiler
-from lib.SymmetryLib import lattice_to_spacegroup
-from Handlers.Streams import Chatter, Debug, Journal
-from Handlers.Flags import Flags
-from Handlers.Files import FileHandler
-from Handlers.Phil import PhilIndex
+from xia2.lib.bits import auto_logfiler
+from xia2.lib.SymmetryLib import lattice_to_spacegroup
+from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Files import FileHandler
+from xia2.Handlers.Phil import PhilIndex
 
-from Experts.SymmetryExpert import lattice_to_spacegroup_number
+from xia2.Experts.SymmetryExpert import lattice_to_spacegroup_number
 
 class DialsIntegrater(Integrater):
   '''A class to implement the Integrater interface using *only* DIALS
@@ -161,7 +155,7 @@ class DialsIntegrater(Integrater):
     IDXREF to get the XPARM etc. DEFPIX is considered part of the full
     integration as it is resolution dependent.'''
 
-    from Handlers.Citations import Citations
+    from xia2.Handlers.Citations import Citations
     Citations.cite('dials')
 
     # decide what images we are going to process, if not already
@@ -326,7 +320,7 @@ class DialsIntegrater(Integrater):
 
         integrated_pickle = integrate.get_integrated_filename()
 
-        from Wrappers.Dials.EstimateResolutionLimit import EstimateResolutionLimit
+        from xia2.Wrappers.Dials.EstimateResolutionLimit import EstimateResolutionLimit
         d_min_estimater = EstimateResolutionLimit()
         d_min_estimater.set_working_directory(self.get_working_directory())
         auto_logfiler(d_min_estimater)
@@ -518,14 +512,11 @@ if __name__ == '__main__':
 
   # run a demo test
 
-  if not os.environ.has_key('XIA2_ROOT'):
-    raise RuntimeError, 'XIA2_ROOT not defined'
-
   di = DialsIntegrater()
   di.setup_from_image(sys.argv[1])
-  from Schema.XCrystal import XCrystal
-  from Schema.XWavelength import XWavelength
-  from Schema.XSweep import XSweep
+  from xia2.Schema.XCrystal import XCrystal
+  from xia2.Schema.XWavelength import XWavelength
+  from xia2.Schema.XSweep import XSweep
   cryst = XCrystal("CRYST1", None)
   wav = XWavelength("WAVE1", cryst, di.get_wavelength())
   directory, image = os.path.split(sys.argv[1])

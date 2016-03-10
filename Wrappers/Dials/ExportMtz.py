@@ -13,12 +13,12 @@ from __future__ import division
 from __init__ import _setup_xia2_environ
 _setup_xia2_environ()
 
-from Handlers.Flags import Flags
+from xia2.Handlers.Flags import Flags
 
 def ExportMtz(DriverType = None):
   '''A factory for ExportMtzWrapper classes.'''
 
-  from Driver.DriverFactory import DriverFactory
+  from xia2.Driver.DriverFactory import DriverFactory
   DriverInstance = DriverFactory.Driver(DriverType)
 
   class ExportMtzWrapper(DriverInstance.__class__):
@@ -59,7 +59,7 @@ def ExportMtz(DriverType = None):
       return self._mtz_filename
 
     def run(self):
-      from Handlers.Streams import Debug
+      from xia2.Handlers.Streams import Debug
       Debug.write('Running dials.export')
 
       self.clear_command_line()

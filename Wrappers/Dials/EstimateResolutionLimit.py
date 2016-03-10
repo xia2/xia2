@@ -15,12 +15,12 @@ import os
 from __init__ import _setup_xia2_environ
 _setup_xia2_environ()
 
-from Handlers.Flags import Flags
+from xia2.Handlers.Flags import Flags
 
 def EstimateResolutionLimit(DriverType = None):
   '''A factory for EstimateResolutionLimitWrapper classes.'''
 
-  from Driver.DriverFactory import DriverFactory
+  from xia2.Driver.DriverFactory import DriverFactory
   DriverInstance = DriverFactory.Driver(DriverType)
 
   class EstimateResolutionLimitWrapper(DriverInstance.__class__):
@@ -47,7 +47,7 @@ def EstimateResolutionLimit(DriverType = None):
       return self._estimated_d_min
 
     def run(self):
-      from Handlers.Streams import Debug
+      from xia2.Handlers.Streams import Debug
       Debug.write('Running dials.estimate_resolution_limit')
 
       self.clear_command_line()

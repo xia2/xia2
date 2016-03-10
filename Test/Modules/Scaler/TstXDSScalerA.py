@@ -1,20 +1,5 @@
-
-
 import os
 import sys
-if not os.environ.has_key('XIA2CORE_ROOT'):
-  raise RuntimeError, 'XIA2CORE_ROOT not defined'
-
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.path.join(os.environ['XIA2CORE_ROOT'],
-                    'Python') in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
-                               'Python'))
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
 
 import libtbx.load_env
 from libtbx import easy_run
@@ -33,7 +18,7 @@ def exercise_xds_scaler(nproc=None):
     return
 
   if nproc is not None:
-    from Handlers.Flags import Flags
+    from xia2.Handlers.Flags import Flags
     Flags.set_parallel(nproc)
 
   xia2_demo_data = os.path.join(dials_regression, "xia2_demo_data")
@@ -43,9 +28,9 @@ def exercise_xds_scaler(nproc=None):
   tmp_dir = os.path.abspath(open_tmp_directory())
   os.chdir(tmp_dir)
 
-  from Modules.Indexer.XDSIndexer import XDSIndexer
-  from Modules.Integrater.XDSIntegrater import XDSIntegrater
-  from Modules.Scaler.XDSScalerA import XDSScalerA
+  from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
+  from xia2.Modules.Integrater.XDSIntegrater import XDSIntegrater
+  from xia2.Modules.Scaler.XDSScalerA import XDSScalerA
   indexer = XDSIndexer()
   indexer.set_working_directory(tmp_dir)
   from dxtbx.datablock import DataBlockTemplateImporter
@@ -54,10 +39,10 @@ def exercise_xds_scaler(nproc=None):
   imageset = datablocks[0].extract_imagesets()[0]
   indexer.add_indexer_imageset(imageset)
 
-  from Schema.XCrystal import XCrystal
-  from Schema.XWavelength import XWavelength
-  from Schema.XSweep import XSweep
-  from Schema.XSample import XSample
+  from xia2.Schema.XCrystal import XCrystal
+  from xia2.Schema.XWavelength import XWavelength
+  from xia2.Schema.XSweep import XSweep
+  from xia2.Schema.XSample import XSample
   cryst = XCrystal("CRYST1", None)
   wav = XWavelength("WAVE1", cryst, imageset.get_beam().get_wavelength())
   samp = XSample("X1", cryst)
@@ -65,7 +50,7 @@ def exercise_xds_scaler(nproc=None):
   sweep = XSweep('SWEEP1', wav, samp, directory=directory, image=image)
   indexer.set_indexer_sweep(sweep)
 
-  from Modules.Refiner.XDSRefiner import XDSRefiner
+  from xia2.Modules.Refiner.XDSRefiner import XDSRefiner
   refiner = XDSRefiner()
   refiner.set_working_directory(tmp_dir)
   refiner.add_refiner_indexer(sweep.get_epoch(1), indexer)

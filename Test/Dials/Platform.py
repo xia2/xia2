@@ -12,24 +12,14 @@ from __future__ import division
 import os
 import sys
 
-if not os.environ.has_key('XIA2CORE_ROOT'):
-  raise RuntimeError, 'XIA2CORE_ROOT not defined'
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'], 'Python'))
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Schema.Interfaces.FrameProcessor import FrameProcessor
+from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 
 class Platform(FrameProcessor):
   def __init__(self, image):
     super(Platform, self).__init__()
 
   def findspots(self, images):
-    from Wrappers.Dials.DialsSpotfinder import DialsSpotfinder
+    from xia2.Wrappers.Dials.DialsSpotfinder import DialsSpotfinder
     fs = DialsSpotfinder()
     return fs(self, images)
 
@@ -38,7 +28,6 @@ def tst_findspots(image):
   return p.findspots(p.get_matching_images()[:10])
 
 def tst_all():
-  import sys
   tst_findspots(sys.argv[1])
   print 'OK'
 

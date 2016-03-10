@@ -11,15 +11,9 @@
 import os
 import sys
 
-if not os.environ.has_key('XIA2CORE_ROOT'):
-  raise RuntimeError, 'XIA2CORE_ROOT not defined'
-
-sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
-                             'Python'))
-
-from Driver.DriverFactory import DriverFactory
-from Decorators.DecoratorFactory import DecoratorFactory
-from Modules.FindFreeFlag import FindFreeFlag
+from xia2.Driver.DriverFactory import DriverFactory
+from xia2.Decorators.DecoratorFactory import DecoratorFactory
+from xia2.Modules.FindFreeFlag import FindFreeFlag
 
 def Freerflag(DriverType = None):
   '''A factory for FreerflagWrapper classes.'''

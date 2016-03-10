@@ -1,18 +1,5 @@
 import os
 import sys
-if not os.environ.has_key('XIA2CORE_ROOT'):
-  raise RuntimeError, 'XIA2CORE_ROOT not defined'
-
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.path.join(os.environ['XIA2CORE_ROOT'],
-                    'Python') in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
-                               'Python'))
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
 
 import libtbx.load_env
 from libtbx import easy_run
@@ -30,7 +17,7 @@ def exercise_serialization():
     print "Skipping exercise_serialization(): dials_regression not configured"
     return
 
-  from Handlers.CommandLine import CommandLine
+  from xia2.Handlers.CommandLine import CommandLine
 
   xia2_demo_data = os.path.join(dials_regression, "xia2_demo_data")
   template = os.path.join(xia2_demo_data, "insulin_1_###.img")
@@ -39,21 +26,21 @@ def exercise_serialization():
   tmp_dir = os.path.abspath(open_tmp_directory())
   os.chdir(tmp_dir)
 
-  from Modules.Indexer.DialsIndexer import DialsIndexer
-  from Modules.Refiner.DialsRefiner import DialsRefiner
-  from Modules.Integrater.DialsIntegrater import DialsIntegrater
-  from Modules.Scaler.CCP4ScalerA import CCP4ScalerA
+  from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
+  from xia2.Modules.Refiner.DialsRefiner import DialsRefiner
+  from xia2.Modules.Integrater.DialsIntegrater import DialsIntegrater
+  from xia2.Modules.Scaler.CCP4ScalerA import CCP4ScalerA
 
   from dxtbx.datablock import DataBlockTemplateImporter
   importer = DataBlockTemplateImporter([template])
   datablocks = importer.datablocks
   imageset = datablocks[0].extract_imagesets()[0]
 
-  from Schema.XProject import XProject
-  from Schema.XCrystal import XCrystal
-  from Schema.XWavelength import XWavelength
-  from Schema.XSweep import XSweep
-  from Schema.XSample import XSample
+  from xia2.Schema.XProject import XProject
+  from xia2.Schema.XCrystal import XCrystal
+  from xia2.Schema.XWavelength import XWavelength
+  from xia2.Schema.XSweep import XSweep
+  from xia2.Schema.XSample import XSample
   proj = XProject()
   proj._name = "PROJ1"
   cryst = XCrystal("CRYST1", proj)

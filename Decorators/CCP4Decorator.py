@@ -458,14 +458,7 @@ def CCP4DecoratorFactory(DriverInstance):
   return CCP4Decorator()
 
 if __name__ == '__main__':
-  if not os.environ.has_key('XIA2CORE_ROOT'):
-    raise RuntimeError, 'XIA2CORE_ROOT not defined'
-
-  sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
-                               'Python',
-                               'Driver'))
-
-  from DriverFactory import DriverFactory
+  from xia2.Driver.DriverFactory import DriverFactory
 
   d = DriverFactory.Driver('script')
 

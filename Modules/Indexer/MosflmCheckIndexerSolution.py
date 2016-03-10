@@ -14,25 +14,19 @@ import os
 import math
 import sys
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
 # xia2 stuff...
 
-from Wrappers.XIA.Printpeaks import Printpeaks
-from Wrappers.XIA.Diffdump import Diffdump
-from Handlers.Streams import Debug
-from Handlers.Flags import Flags
-from lib.bits import nint
-from Experts.MatrixExpert import format_matrix
-from Experts.LatticeExpert import l2s, s2l
+from xia2.Wrappers.XIA.Printpeaks import Printpeaks
+from xia2.Wrappers.XIA.Diffdump import Diffdump
+from xia2.Handlers.Streams import Debug
+from xia2.Handlers.Flags import Flags
+from xia2.lib.bits import nint
+from xia2.Experts.MatrixExpert import format_matrix
+from xia2.Experts.LatticeExpert import l2s, s2l
 
 # optional labelit stuff
 
-from Wrappers.Labelit.DistlSignalStrength import DistlSignalStrength
+from xia2.Wrappers.Labelit.DistlSignalStrength import DistlSignalStrength
 
 # things we can work on...
 
@@ -294,7 +288,7 @@ if __name__ == '__main__':
 
   # run a test!
 
-  from Modules.Indexer.IndexerFactory import Indexer
+  from xia2.Modules.Indexer.IndexerFactory import Indexer
 
   i = Indexer()
 

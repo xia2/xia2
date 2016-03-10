@@ -17,19 +17,13 @@
 import os
 import sys
 
-if not os.environ.has_key('XIA2CORE_ROOT'):
-  raise RuntimeError, 'XIA2CORE_ROOT not defined'
+from xia2.Driver.DriverFactory import DriverFactory
+from xia2.Decorators.DecoratorFactory import DecoratorFactory
 
-sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
-                             'Python'))
-
-from Driver.DriverFactory import DriverFactory
-from Decorators.DecoratorFactory import DecoratorFactory
-
-from Handlers.Syminfo import Syminfo
-from Handlers.Phil import PhilIndex
-from Handlers.Streams import Debug
-from Handlers.Flags import Flags
+from xia2.Handlers.Syminfo import Syminfo
+from xia2.Handlers.Phil import PhilIndex
+from xia2.Handlers.Streams import Debug
+from xia2.Handlers.Flags import Flags
 
 def Reindex(DriverType = None):
   '''A new factory for ReindexWrapper classes, which will actually use
@@ -197,12 +191,7 @@ if __name__ == '__main__':
 
   import os
 
-  if not os.environ.has_key('XIA2CORE_ROOT'):
-    raise RuntimeError, 'XIA2CORE_ROOT not defined'
-
-  dpa = os.environ['XIA2_ROOT']
-
-  hklin = os.path.join(dpa,
+  hklin = os.path.join(os.environ['XIA2_ROOT'],
                        'Data', 'Test', 'Mtz', '12287_1_E1_1_10.mtz')
 
   r = Reindex()

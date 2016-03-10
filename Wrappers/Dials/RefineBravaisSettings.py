@@ -13,12 +13,12 @@ from __future__ import division
 from __init__ import _setup_xia2_environ
 _setup_xia2_environ()
 
-from Handlers.Flags import Flags
+from xia2.Handlers.Flags import Flags
 
 def RefineBravaisSettings(DriverType = None):
   '''A factory for RefineBravaisSettingsWrapper classes.'''
 
-  from Driver.DriverFactory import DriverFactory
+  from xia2.Driver.DriverFactory import DriverFactory
   DriverInstance = DriverFactory.Driver(DriverType)
 
   class RefineBravaisSettingsWrapper(DriverInstance.__class__):
@@ -65,7 +65,7 @@ def RefineBravaisSettings(DriverType = None):
       return bravais_summary
 
     def run(self):
-      from Handlers.Streams import Debug
+      from xia2.Handlers.Streams import Debug
       Debug.write('Running dials.refine_bravais_settings')
 
       self.clear_command_line()

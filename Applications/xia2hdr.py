@@ -1,16 +1,16 @@
+#
+# 03/MAR/16
+# To resolve the naming conflict between this file and the entire xia2 module
+# any xia2.* imports in this directory must instead be imported as ..*
+
 import os
 import sys
-
-assert('XIA2_ROOT' in os.environ)
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
 
 def xia2hdr(filename, image_range):
 
   # diamantle the filename into template, directory, image numbers
 
-  from Experts.FindImages import image2template_directory, image2image
+  from ..Experts.FindImages import image2template_directory, image2image
 
   template, directory = image2template_directory(filename)
   image_number = image2image(filename)
@@ -19,7 +19,7 @@ def xia2hdr(filename, image_range):
 
   # read the first image header to get the starting point
 
-  from Wrappers.XIA.Diffdump import Diffdump
+  from ..Wrappers.XIA.Diffdump import Diffdump
 
   d = Diffdump()
 
@@ -28,7 +28,7 @@ def xia2hdr(filename, image_range):
 
   # now regenerate the rest of the image headers for image range...
 
-  from Experts.FindImages import template_directory_number2image
+  from ..Experts.FindImages import template_directory_number2image
   import copy
   import datetime
   import time

@@ -9,26 +9,17 @@ import traceback
 
 # Needed to make xia2 imports work correctly
 import libtbx.load_env
-xia2_root_dir = libtbx.env.find_in_repositories("xia2", optional=False)
-sys.path.insert(0, xia2_root_dir)
-os.environ['XIA2_ROOT'] = xia2_root_dir
-os.environ['XIA2CORE_ROOT'] = os.path.join(xia2_root_dir, "core")
+from xia2.Handlers.Streams import Chatter, Debug
 
-from Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Files import cleanup
+from xia2.Handlers.Citations import Citations
+from xia2.Handlers.Environment import Environment, df
 
-from Handlers.Flags import Flags
-from Handlers.Files import cleanup
-from Handlers.Citations import Citations
-from Handlers.Environment import Environment, df
+from xia2.Applications.xia2 import check, check_environment
+from xia2.Applications.xia2 import get_command_line, write_citations, help
 
-# XML Marked up output for e-HTPX
-if not os.path.join(os.environ['XIA2_ROOT'], 'Interfaces') in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2_ROOT'], 'Interfaces'))
-
-from Applications.xia2 import check, check_environment
-from Applications.xia2 import get_command_line, write_citations, help
-
-from Applications.xia2_helpers import process_one_sweep
+from xia2.Applications.xia2_helpers import process_one_sweep
 
 
 def xia2_main(stop_after=None):
@@ -65,7 +56,7 @@ def xia2_main(stop_after=None):
 
   args = []
 
-  from Handlers.Phil import PhilIndex
+  from xia2.Handlers.Phil import PhilIndex
   params = PhilIndex.get_python_object()
   mp_params = params.xia2.settings.multiprocessing
   njob = mp_params.njob
@@ -75,7 +66,7 @@ def xia2_main(stop_after=None):
   xinfo = CommandLine.get_xinfo()
 
   if os.path.exists('xia2.json'):
-    from Schema.XProject import XProject
+    from xia2.Schema.XProject import XProject
     xinfo_new = xinfo
     xinfo = XProject.from_json(filename='xia2.json')
 
@@ -154,7 +145,7 @@ def xia2_main(stop_after=None):
               sweep_id=sweep.get_name(),
               ),))
 
-    from Driver.DriverFactory import DriverFactory
+    from xia2.Driver.DriverFactory import DriverFactory
     default_driver_type = DriverFactory.get_driver_type()
 
     # run every nth job on the current computer (no need to submit to qsub)
@@ -198,7 +189,7 @@ def xia2_main(stop_after=None):
             remove_sweeps.append(sweep)
           else:
             print "Loading sweep: %s" %sweep.get_name()
-            from Schema.XSweep import XSweep
+            from xia2.Schema.XSweep import XSweep
             new_sweep = XSweep.from_dict(xsweep_dict)
             sweep._indexer = new_sweep._indexer
             sweep._refiner = new_sweep._refiner
@@ -251,7 +242,7 @@ def xia2_main(stop_after=None):
 
   # maybe write out the headers
   if Flags.get_hdr_out():
-    from Wrappers.XIA.Diffdump import HeaderCache
+    from xia2.Wrappers.XIA.Diffdump import HeaderCache
     HeaderCache.write(Flags.get_hdr_out())
 
   if stop_after not in ('index', 'integrate'):
@@ -288,9 +279,9 @@ def run():
   try:
     xinfo = xia2_main()
     Chatter.write('Status: normal termination')
-    from Handlers.Flags import Flags
+    from xia2.Handlers.Flags import Flags
     if Flags.get_egg():
-      from lib.bits import message
+      from xia2.lib.bits import message
       message('xia2 status normal termination')
     return xinfo
 
@@ -300,9 +291,9 @@ def run():
     Chatter.write(
       'Please send the contents of xia2.txt, xia2.error and xia2-debug.txt to:')
     Chatter.write('xia2.support@gmail.com')
-    from Handlers.Flags import Flags
+    from xia2.Handlers.Flags import Flags
     if Flags.get_egg():
-      from lib.bits import message
+      from xia2.lib.bits import message
       message('xia2 status error %s' % str(e))
     sys.exit(1)
 

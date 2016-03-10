@@ -5,8 +5,8 @@
 #   included in the root directory of this package.
 
 from XSweep import XSweep
-from Handlers.Flags import Flags
-from Handlers.Streams import Chatter
+from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Streams import Chatter
 
 class XSample(object):
   '''An object representation of a sample.'''
@@ -95,7 +95,7 @@ class XSample(object):
 
     result += 'Sweeps:\n'
 
-    from Driver.DriverFactory import DriverFactory
+    from xia2.Driver.DriverFactory import DriverFactory
 
     return result[:-1]
 

@@ -34,14 +34,6 @@ import time
 import itertools
 import copy
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-if not os.environ.has_key('XIA2CORE_ROOT'):
-  raise RuntimeError, 'XIA2CORE_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
-
 from cctbx.array_family import flex
 from iotbx import mtz
 from cctbx.miller import build_set
@@ -55,8 +47,8 @@ from PolyFitter import log_fit
 from PolyFitter import log_inv_fit
 from PolyFitter import interpolate_value
 from PolyFitter import get_positive_values
-from Handlers.Flags import Flags
-from Handlers.Streams import streams_off
+from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Streams import streams_off
 
 def nint(a):
   return int(round(a))

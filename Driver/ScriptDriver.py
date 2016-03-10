@@ -45,7 +45,7 @@ from DriverHelper import script_writer
 class ScriptDriver(DefaultDriver):
 
   def __init__(self):
-    Super(ScriptDriver, self).__init()
+    super(ScriptDriver, self).__init__()
 
     self._script_command_line = []
     self._script_standard_input = []

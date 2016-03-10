@@ -10,19 +10,13 @@ import os
 import sys
 import inspect
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
+from xia2.Handlers.Streams import Debug, Chatter
+from xia2.Handlers.Phil import PhilIndex
 
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
-
-from Handlers.Streams import Debug, Chatter
-from Handlers.Phil import PhilIndex
-
-from Experts.LatticeExpert import SortLattices
+from xia2.Experts.LatticeExpert import SortLattices
 
 # interfaces that this inherits from ...
-from Schema.Interfaces.Indexer import Indexer
+from xia2.Schema.Interfaces.Indexer import Indexer
 
 
 class MultiIndexerSingle(Indexer):

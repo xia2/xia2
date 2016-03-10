@@ -13,27 +13,21 @@ import sys
 import math
 import exceptions
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
 # hooks to all of the child objects
 
-from Schema.XCrystal import XCrystal
-from Schema.XWavelength import XWavelength
-from Schema.XSample import XSample
+from xia2.Schema.XCrystal import XCrystal
+from xia2.Schema.XWavelength import XWavelength
+from xia2.Schema.XSample import XSample
 
 # .xinfo parser
 
-from Handlers.XInfo import XInfo
-from Handlers.Flags import Flags
-from Handlers.Syminfo import Syminfo
-from Handlers.Phil import PhilIndex
+from xia2.Handlers.XInfo import XInfo
+from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Syminfo import Syminfo
+from xia2.Handlers.Phil import PhilIndex
 
 # output stream
-from Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Streams import Chatter, Debug
 
 class XProject(object):
   '''A representation of a complete project. This will contain a dictionary

@@ -20,13 +20,7 @@ import sys
 import exceptions
 import time
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Modules.Indexer.LabelitIndexer import LabelitIndexer
+from xia2.Modules.Indexer.LabelitIndexer import LabelitIndexer
 
 def compute_beam_centre(sweep, working_directory=None):
   '''Compute the beam centre for the input sweep, working in the provided
@@ -58,8 +52,8 @@ def compute_beam_centre(sweep, working_directory=None):
 
 if __name__ == '__main__':
 
-  from Experts.FindImages import image2template_directory
-  from Schema.Sweep import SweepFactory
+  from xia2.Experts.FindImages import image2template_directory
+  from xia2.Schema.Sweep import SweepFactory
 
   if len(sys.argv) < 2:
     image = os.path.join(os.environ['XIA2_ROOT'],

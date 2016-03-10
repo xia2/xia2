@@ -1,18 +1,5 @@
 import os
 import sys
-if not os.environ.has_key('XIA2CORE_ROOT'):
-  raise RuntimeError, 'XIA2CORE_ROOT not defined'
-
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.path.join(os.environ['XIA2CORE_ROOT'],
-                    'Python') in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
-                               'Python'))
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
 
 import libtbx.load_env
 from libtbx import easy_run
@@ -31,17 +18,17 @@ def exercise_dials_wrappers(nproc=None):
     return
 
   if nproc is not None:
-    from Handlers.Flags import Flags
+    from xia2.Handlers.Flags import Flags
     Flags.set_parallel(nproc)
 
-  from Wrappers.Dials.Import import Import
-  from Wrappers.Dials.Spotfinder import Spotfinder
-  from Wrappers.Dials.Index import Index
-  from Wrappers.Dials.Integrate import Integrate
-  from Wrappers.Dials.RefineBravaisSettings import RefineBravaisSettings
-  from Wrappers.Dials.Refine import Refine
-  from Wrappers.Dials.Reindex import Reindex
-  from Wrappers.Dials.ExportMtz import ExportMtz
+  from xia2.Wrappers.Dials.Import import Import
+  from xia2.Wrappers.Dials.Spotfinder import Spotfinder
+  from xia2.Wrappers.Dials.Index import Index
+  from xia2.Wrappers.Dials.Integrate import Integrate
+  from xia2.Wrappers.Dials.RefineBravaisSettings import RefineBravaisSettings
+  from xia2.Wrappers.Dials.Refine import Refine
+  from xia2.Wrappers.Dials.Reindex import Reindex
+  from xia2.Wrappers.Dials.ExportMtz import ExportMtz
 
   xia2_demo_data = os.path.join(dials_regression, "xia2_demo_data")
   template = os.path.join(xia2_demo_data, "insulin_1_%03i.img")
@@ -133,7 +120,7 @@ def exercise_dials_wrappers(nproc=None):
   shutil.copy(indexer.get_experiments_filename(), "copy.json")
   shutil.copy(indexer.get_indexed_filename(), "copy.pickle")
   print "Begin combining"
-  from Wrappers.Dials.CombineExperiments import CombineExperiments
+  from xia2.Wrappers.Dials.CombineExperiments import CombineExperiments
   exporter = CombineExperiments()
   exporter.add_experiments(indexer.get_experiments_filename())
   exporter.add_experiments("copy.json")

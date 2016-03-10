@@ -7,6 +7,11 @@
 #   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
+#
+# 03/MAR/16
+# To resolve the naming conflict between this file and the entire xia2 module
+# any xia2.* imports in this directory must instead be imported as ..*
+
 
 """
 xia2ccp4i.py:

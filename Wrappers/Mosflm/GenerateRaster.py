@@ -16,7 +16,7 @@ from __future__ import division
 def GenerateRaster(DriverType = None):
   '''A factory for GenerateRasterWrapper(ipmosflm) classes.'''
 
-  from Driver.DriverFactory import DriverFactory
+  from xia2.Driver.DriverFactory import DriverFactory
   DriverInstance = DriverFactory.Driver(DriverType)
 
   class GenerateRasterWrapper(DriverInstance.__class__):
@@ -24,7 +24,7 @@ def GenerateRaster(DriverType = None):
     def __init__(self):
       DriverInstance.__class__.__init__(self)
 
-      from Handlers.Executables import Executables
+      from xia2.Handlers.Executables import Executables
       if Executables.get('ipmosflm'):
         self.set_executable(Executables.get('ipmosflm'))
       else:
@@ -35,7 +35,7 @@ def GenerateRaster(DriverType = None):
       return
 
     def __call__(self, indxr, images):
-      from Handlers.Streams import Debug
+      from xia2.Handlers.Streams import Debug
       Debug.write('Running mosflm to generate RASTER, SEPARATION')
 
       self.start()

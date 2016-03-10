@@ -22,15 +22,9 @@ import os
 import sys
 import math
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
 # output streams
 
-from Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Streams import Chatter, Debug
 
 def detector_class_to_mosflm(detector_class):
   '''Get the mosflm detector type from the detector class.'''

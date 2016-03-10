@@ -16,21 +16,9 @@ import math
 from scitbx import matrix
 from cctbx import sgtbx
 
-if not os.environ.has_key('XIA2CORE_ROOT'):
-  raise RuntimeError, 'XIA2CORE_ROOT not defined'
-
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'], 'Python'))
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-# from Wrappers.XIA.Mat2symop import Mat2symop
-# from Wrappers.XIA.Symop2mat import Symop2mat
-from Handlers.Syminfo import Syminfo
+# from xia2.Wrappers.XIA.Mat2symop import Mat2symop
+# from xia2.Wrappers.XIA.Symop2mat import Symop2mat
+from xia2.Handlers.Syminfo import Syminfo
 
 def gen_rot_mat_euler(alpha, beta, gamma):
   '''Compute a rotation matrix (stored as e11 e12 e13 e22 e23...)

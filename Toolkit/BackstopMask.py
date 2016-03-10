@@ -28,13 +28,7 @@ import sys
 import binascii
 import time
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Modules.UnpackByteOffset import unpack_values, pack_values
+from xia2.Modules.UnpackByteOffset import unpack_values, pack_values
 
 def mmcc(ds, xs, ys):
   '''Fit a straight line
@@ -324,7 +318,7 @@ class BackstopMask(object):
 
     p1, p2, p3, p4 = self.calculate_mask(header)
 
-    from Handlers.Streams import Debug
+    from xia2.Handlers.Streams import Debug
 
     Debug.write('Vertices of mask: (%d, %d), (%d, %d), (%d, %d), (%d, %d)' % \
                 (int(p1[0]), int(p1[1]), int(p2[0]), int(p2[1]),
@@ -401,14 +395,7 @@ if __name__ == '__main_work__':
   work_equation_of_line()
 
 if __name__ == '__main__':
-
-  if not os.environ.has_key('XIA2_ROOT'):
-    raise RuntimeError, 'XIA2_ROOT not defined'
-
-  if not os.environ['XIA2_ROOT'] in sys.path:
-    sys.path.append(os.environ['XIA2_ROOT'])
-
-  from Wrappers.XIA.Diffdump import Diffdump
+  from xia2.Wrappers.XIA.Diffdump import Diffdump
 
   bm = BackstopMask(sys.argv[1])
 

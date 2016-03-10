@@ -6,20 +6,20 @@
 #   included in the root directory of this package.
 #
 
-from Schema.Interfaces.Refiner import Refiner
-from Handlers.Streams import Debug, Chatter
-from Handlers.Flags import Flags
-from Handlers.Phil import PhilIndex
-from Handlers.Files import FileHandler
+from xia2.Schema.Interfaces.Refiner import Refiner
+from xia2.Handlers.Streams import Debug, Chatter
+from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Phil import PhilIndex
+from xia2.Handlers.Files import FileHandler
 
 import os
 import math
 
-from lib.bits import auto_logfiler
+from xia2.lib.bits import auto_logfiler
 
-from Wrappers.Dials.CombineExperiments import CombineExperiments \
+from xia2.Wrappers.Dials.CombineExperiments import CombineExperiments \
      as _CombineExperiments
-from Wrappers.Dials.Refine import Refine as _Refine
+from xia2.Wrappers.Dials.Refine import Refine as _Refine
 
 class DialsRefiner(Refiner):
 

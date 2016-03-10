@@ -15,26 +15,12 @@ import math
 import time
 import shutil
 
-if not os.environ.has_key('XIA2CORE_ROOT'):
-  raise RuntimeError, 'XIA2CORE_ROOT not defined'
-
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.path.join(os.environ['XIA2CORE_ROOT'],
-                    'Python') in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
-                               'Python'))
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Driver.DriverFactory import DriverFactory
+from xia2.Driver.DriverFactory import DriverFactory
 from XDS import xds_check_error
 
-from Handlers.Flags import Flags
-from Handlers.Streams import Debug
-from Handlers.Phil import PhilIndex
+from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Streams import Debug
+from xia2.Handlers.Phil import PhilIndex
 from XScaleHelpers import get_correlation_coefficients_and_group
 
 def XScaleR(DriverType = None,

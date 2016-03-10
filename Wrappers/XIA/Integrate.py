@@ -14,7 +14,7 @@ import os
 def Integrate(DriverType = None):
   '''A factory for IntegrateWrapper classes.'''
 
-  from Driver.DriverFactory import DriverFactory
+  from xia2.Driver.DriverFactory import DriverFactory
   DriverInstance = DriverFactory.Driver(DriverType)
 
   class IntegrateWrapper(DriverInstance.__class__):
@@ -45,7 +45,7 @@ def Integrate(DriverType = None):
       self._phil_file = phil_file
 
     def run(self):
-      from Handlers.Streams import Debug
+      from xia2.Handlers.Streams import Debug
       Debug.write('Running xia2.integrate')
 
       self.clear_command_line()

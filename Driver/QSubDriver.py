@@ -43,14 +43,9 @@ from DefaultDriver import DefaultDriver
 from DriverHelper import script_writer
 
 # Now depend on Phil scope from xia2...
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
 
 def get_qsub_command():
-  from Handlers.Phil import PhilIndex
+  from xia2.Handlers.Phil import PhilIndex
   params = PhilIndex.get_python_object()
   mp_params = params.xia2.settings.multiprocessing
   if mp_params.qsub_command:

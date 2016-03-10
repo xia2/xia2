@@ -1,18 +1,5 @@
 import os
 import sys
-if not os.environ.has_key('XIA2CORE_ROOT'):
-  raise RuntimeError, 'XIA2CORE_ROOT not defined'
-
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.path.join(os.environ['XIA2CORE_ROOT'],
-                    'Python') in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
-                               'Python'))
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
 
 import libtbx.load_env
 from libtbx import easy_run
@@ -37,9 +24,9 @@ def exercise_labelit_indexer():
   tmp_dir = os.path.abspath(open_tmp_directory())
   os.chdir(tmp_dir)
 
-  from Modules.Indexer.LabelitIndexer import LabelitIndexer
+  from xia2.Modules.Indexer.LabelitIndexer import LabelitIndexer
 
-  from DriverExceptions.NotAvailableError import NotAvailableError
+  from xia2.DriverExceptions.NotAvailableError import NotAvailableError
   try:
     ls = LabelitIndexer(indxr_print=True)
   except NotAvailableError:

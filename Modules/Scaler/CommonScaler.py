@@ -7,22 +7,22 @@
 #
 # Bits the scalers have in common - inherit from me!
 
-from Schema.Interfaces.Scaler import Scaler
-from Handlers.Streams import Debug, Chatter
-from Handlers.Flags import Flags
-from Handlers.Phil import PhilIndex
+from xia2.Schema.Interfaces.Scaler import Scaler
+from xia2.Handlers.Streams import Debug, Chatter
+from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Phil import PhilIndex
 from CCP4ScalerHelpers import anomalous_signals
-from Modules.CCP4InterRadiationDamageDetector import \
+from xia2.Modules.CCP4InterRadiationDamageDetector import \
      CCP4InterRadiationDamageDetector
 
-from lib.bits import nifty_power_of_ten
+from xia2.lib.bits import nifty_power_of_ten
 import os
 import math
 
-from Handlers.Files import FileHandler
+from xia2.Handlers.Files import FileHandler
 
 # new resolution limit code
-from Wrappers.XIA.Merger import Merger
+from xia2.Wrappers.XIA.Merger import Merger
 
 def clean_reindex_operator(reindex_operator):
   return reindex_operator.replace('[', '').replace(']', '')
@@ -722,7 +722,7 @@ class CommonScaler(Scaler):
       hklin = tmp_mtz
       FileHandler.record_temporary_file(hklin)
 
-      from Wrappers.XIA.Report import Report
+      from xia2.Wrappers.XIA.Report import Report
       report = Report()
       report.set_working_directory(self.get_working_directory())
       report.set_mtz_filename(hklin)
@@ -731,7 +731,7 @@ class CommonScaler(Scaler):
           self._scalr_pname, self._scalr_xname, wavelength))
       report.set_html_filename(htmlout)
       report.set_chef_min_completeness(0.95) # sensible?
-      from lib.bits import auto_logfiler
+      from xia2.lib.bits import auto_logfiler
       auto_logfiler(report)
       try:
         report.run()
@@ -935,7 +935,7 @@ class CommonScaler(Scaler):
     from iotbx import mtz
     m = mtz.object(hklout)
     if not m.space_group().is_centric():
-      from Toolkit.E4 import E4_mtz
+      from xia2.Toolkit.E4 import E4_mtz
       E4s = E4_mtz(hklout, native = True)
       self._scalr_twinning_score = E4s.items()[0][1]
 
@@ -988,7 +988,7 @@ class CommonScaler(Scaler):
     params = PhilIndex.params.xia2.settings.resolution
     m = Merger()
     m.set_working_directory(self.get_working_directory())
-    from lib.bits import auto_logfiler
+    from xia2.lib.bits import auto_logfiler
     auto_logfiler(m)
     m.set_hklin(hklin)
     m.set_limit_rmerge(params.rmerge)

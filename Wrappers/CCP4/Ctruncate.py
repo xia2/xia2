@@ -24,23 +24,10 @@
 import os
 import sys
 
-if not os.environ.has_key('XIA2CORE_ROOT'):
-  raise RuntimeError, 'XIA2CORE_ROOT not defined'
-
-if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
-                               'Python'))
-
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.path.join(os.environ['XIA2_ROOT']) in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
-
-from Driver.DriverFactory import DriverFactory
-from Decorators.DecoratorFactory import DecoratorFactory
-from lib.bits import transpose_loggraph
-from Handlers.Streams import Chatter, Debug
+from xia2.Driver.DriverFactory import DriverFactory
+from xia2.Decorators.DecoratorFactory import DecoratorFactory
+from xia2.lib.bits import transpose_loggraph
+from xia2.Handlers.Streams import Chatter, Debug
 
 def Ctruncate(DriverType = None):
   '''A factory for CtruncateWrapper classes.'''

@@ -15,12 +15,12 @@ import shutil
 from __init__ import _setup_xia2_environ
 _setup_xia2_environ()
 
-from Handlers.Flags import Flags
+from xia2.Handlers.Flags import Flags
 
 def Index(DriverType = None):
   '''A factory for IndexWrapper classes.'''
 
-  from Driver.DriverFactory import DriverFactory
+  from xia2.Driver.DriverFactory import DriverFactory
   DriverInstance = DriverFactory.Driver(DriverType)
 
   class IndexWrapper(DriverInstance.__class__):
@@ -154,7 +154,7 @@ def Index(DriverType = None):
       return
 
     def run(self, method):
-      from Handlers.Streams import Debug
+      from xia2.Handlers.Streams import Debug
       Debug.write('Running dials.index')
 
       self.clear_command_line()
@@ -186,7 +186,7 @@ def Index(DriverType = None):
       if self._d_min_start:
         self.add_command_line('d_min_start=%f' % self._d_min_start)
       if self._indxr_input_lattice is not None:
-        from Experts.SymmetryExpert import lattice_to_spacegroup_number
+        from xia2.Experts.SymmetryExpert import lattice_to_spacegroup_number
         self._symm = lattice_to_spacegroup_number(
             self._indxr_input_lattice)
         self.add_command_line('known_symmetry.space_group=%s' % self._symm)

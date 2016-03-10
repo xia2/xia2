@@ -12,38 +12,32 @@ import sys
 import math
 import shutil
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
 import libtbx
 
 # wrappers for programs that this needs: DIALS
 
-from Wrappers.Dials.Import import Import as _Import
-from Wrappers.Dials.Spotfinder import Spotfinder as _Spotfinder
-from Wrappers.Dials.DiscoverBetterExperimentalModel \
+from xia2.Wrappers.Dials.Import import Import as _Import
+from xia2.Wrappers.Dials.Spotfinder import Spotfinder as _Spotfinder
+from xia2.Wrappers.Dials.DiscoverBetterExperimentalModel \
      import DiscoverBetterExperimentalModel as _DiscoverBetterExperimentalModel
-from Wrappers.Dials.Index import Index as _Index
-from Wrappers.Dials.Reindex import Reindex as _Reindex
-from Wrappers.Dials.RefineBravaisSettings import RefineBravaisSettings as \
+from xia2.Wrappers.Dials.Index import Index as _Index
+from xia2.Wrappers.Dials.Reindex import Reindex as _Reindex
+from xia2.Wrappers.Dials.RefineBravaisSettings import RefineBravaisSettings as \
      _RefineBravaisSettings
 
 # interfaces that this must implement to be an indexer
 
-from Schema.Interfaces.MultiIndexer import MultiIndexer
-from Modules.Indexer.DialsIndexer import DialsIndexer
+from xia2.Schema.Interfaces.MultiIndexer import MultiIndexer
+from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
 
 # odds and sods that are needed
 
-from lib.bits import auto_logfiler, nint
-from Handlers.Streams import Chatter, Debug, Journal
-from Handlers.Flags import Flags
-from Handlers.Phil import PhilIndex
-from Handlers.Files import FileHandler
-from Experts.SymmetryExpert import lattice_to_spacegroup_number
+from xia2.lib.bits import auto_logfiler, nint
+from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Phil import PhilIndex
+from xia2.Handlers.Files import FileHandler
+from xia2.Experts.SymmetryExpert import lattice_to_spacegroup_number
 
 class DialsMultiIndexer(DialsIndexer, MultiIndexer):
 

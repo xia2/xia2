@@ -1,18 +1,5 @@
 import os
 import sys
-if not os.environ.has_key('XIA2CORE_ROOT'):
-  raise RuntimeError, 'XIA2CORE_ROOT not defined'
-
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.path.join(os.environ['XIA2CORE_ROOT'],
-                    'Python') in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
-                               'Python'))
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
 
 import libtbx.load_env
 from libtbx import easy_run
@@ -36,12 +23,12 @@ def exercise_dials_multi_indexer(nproc=None):
   wav = None
   samp = None
 
-  from Handlers.Phil import PhilIndex
+  from xia2.Handlers.Phil import PhilIndex
   PhilIndex.params.xia2.settings.trust_beam_centre = True
 
-  from Modules.Indexer.DialsIndexer import DialsIndexer
+  from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
 
-  from Modules.Indexer.DialsIndexer import DialsIndexer
+  from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
   indexer = DialsIndexer()
   indexer.set_working_directory(tmp_dir)
   for i in range(4):
@@ -51,10 +38,10 @@ def exercise_dials_multi_indexer(nproc=None):
     imageset = datablocks[0].extract_imagesets()[0]
     indexer.add_indexer_imageset(imageset)
 
-    from Schema.XCrystal import XCrystal
-    from Schema.XWavelength import XWavelength
-    from Schema.XSweep import XSweep
-    from Schema.XSample import XSample
+    from xia2.Schema.XCrystal import XCrystal
+    from xia2.Schema.XWavelength import XWavelength
+    from xia2.Schema.XSweep import XSweep
+    from xia2.Schema.XSample import XSample
 
     if cryst is None or wav is None:
       cryst = XCrystal("CRYST1", None)

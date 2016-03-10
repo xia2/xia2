@@ -14,24 +14,10 @@ import shutil
 import math
 import copy
 
-if not os.environ.has_key('XIA2CORE_ROOT'):
-  raise RuntimeError, 'XIA2CORE_ROOT not defined'
-
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.path.join(os.environ['XIA2CORE_ROOT'],
-                    'Python') in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
-                               'Python'))
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Driver.DriverFactory import DriverFactory
+from xia2.Driver.DriverFactory import DriverFactory
 
 # interfaces that this inherits from ...
-from Schema.Interfaces.FrameProcessor import FrameProcessor
+from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 
 # generic helper stuff
 from XDS import imageset_to_xds, xds_check_version_supported, xds_check_error, \
@@ -42,8 +28,8 @@ from XDSIntegrateHelpers import _parse_integrate_lp, \
     _parse_integrate_lp_updates
 
 # global flags etc.
-from Handlers.Flags import Flags
-from Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Streams import Chatter, Debug
 
 # For details on reflecting_range, it's E.S.D., and beam divergence etc.
 # see:
@@ -64,7 +50,7 @@ def XDSIntegrate(DriverType=None, params=None):
       # phil parameters
 
       if not params:
-        from Handlers.Phil import master_phil
+        from xia2.Handlers.Phil import master_phil
         params = master_phil.extract().xds.integrate
       self._params = params
 
@@ -175,7 +161,7 @@ def XDSIntegrate(DriverType=None, params=None):
       xds_inp.write('MAXIMUM_NUMBER_OF_PROCESSORS=%d\n' % \
                     self._parallel)
 
-      from Handlers.Phil import PhilIndex
+      from xia2.Handlers.Phil import PhilIndex
       xds_params = PhilIndex.params.xds
       if xds_params.profile_grid_size:
         ab, c = xds_params.profile_grid_size

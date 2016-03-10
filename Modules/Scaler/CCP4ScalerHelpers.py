@@ -17,19 +17,13 @@ import sys
 import math
 from iotbx import mtz
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Wrappers.CCP4.Mtzdump import Mtzdump
-from Wrappers.CCP4.Rebatch import Rebatch
-from lib.bits import auto_logfiler
-from Handlers.Streams import Debug
-from Handlers.Files import FileHandler
-from Handlers.Flags import Flags
-from Experts.ResolutionExperts import remove_blank
+from xia2.Wrappers.CCP4.Mtzdump import Mtzdump
+from xia2.Wrappers.CCP4.Rebatch import Rebatch
+from xia2.lib.bits import auto_logfiler
+from xia2.Handlers.Streams import Debug
+from xia2.Handlers.Files import FileHandler
+from xia2.Handlers.Flags import Flags
+from xia2.Experts.ResolutionExperts import remove_blank
 
 ############ JIFFY FUNCTIONS #################
 
@@ -245,7 +239,7 @@ def _fraction_difference(value, reference):
 
   return math.fabs((value - reference) / reference)
 
-from Wrappers.CCP4.Pointless import Pointless as _Pointless
+from xia2.Wrappers.CCP4.Pointless import Pointless as _Pointless
 
 ############### HELPER CLASS #########################
 

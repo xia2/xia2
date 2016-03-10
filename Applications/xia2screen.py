@@ -11,6 +11,11 @@
 #
 # 18th December 2006
 #
+#
+# 03/MAR/16
+# To resolve the naming conflict between this file and the entire xia2 module
+# any xia2.* imports in this directory must instead be imported as ..*
+
 
 
 import os
@@ -19,22 +24,14 @@ import exceptions
 import time
 import traceback
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-if not 'XIA2CORE_ROOT' in os.environ:
-  os.environ['XIA2CORE_ROOT'] = os.path.join(os.environ['XIA2_ROOT'], 'core')
+from ..Schema.Sweep import SweepFactory
+from ..Experts.FindImages import image2template_directory
+from ..Handlers.CommandLine import CommandLine
+from ..Handlers.Flags import Flags
+from ..Handlers.Streams import streams_off
+from ..Handlers.Phil import PhilIndex
 
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
-
-from Schema.Sweep import SweepFactory
-from Experts.FindImages import image2template_directory
-from Handlers.CommandLine import CommandLine
-from Handlers.Flags import Flags
-from Handlers.Streams import streams_off
-from Handlers.Phil import PhilIndex
-
-from Wrappers.Labelit.DistlSweepStrength import DistlSweepStrength
+from ..Wrappers.Labelit.DistlSweepStrength import DistlSweepStrength
 
 known_sweeps = { }
 
@@ -56,7 +53,7 @@ def get_sweep(f):
   # in here, check the permissions on the file...
 
   if not os.access(f, os.R_OK):
-    from Handlers.Streams import Debug
+    from ..Handlers.Streams import Debug
     Debug.write('No read permission for %s' % f)
 
   try:
@@ -72,7 +69,7 @@ def get_sweep(f):
       known_sweeps[key] = sweeplist
 
   except exceptions.Exception, e:
-    from Handlers.Streams import Debug
+    from ..Handlers.Streams import Debug
     Debug.write('Exception: %s (%s)' % (str(e), f))
     # traceback.print_exc(file = sys.stdout)
 

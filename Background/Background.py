@@ -65,12 +65,7 @@ class Background(threading.Thread):
     return self._result
 
 if __name__ == '__main__':
-
-  if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
-    sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
-                                 'Python'))
-
-  from Driver.DriverFactory import DriverFactory
+  from xia2.Driver.DriverFactory import DriverFactory
 
   drivers = []
   backgrounds = []

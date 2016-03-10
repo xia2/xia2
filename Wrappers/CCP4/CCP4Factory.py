@@ -13,29 +13,23 @@
 import os
 import sys
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
 # the wrappers that this will use - these are renamed so that the internal
 # factory version can be used...
-from Wrappers.CCP4.Aimless import Aimless as _Aimless
-from Wrappers.CCP4.Scaleit import Scaleit as _Scaleit
-from Wrappers.CCP4.Sortmtz import Sortmtz as _Sortmtz
-from Wrappers.CCP4.Mtzdump import Mtzdump as _Mtzdump
-from Wrappers.CCP4.Truncate import Truncate as _Truncate
-from Wrappers.CCP4.Rebatch import Rebatch as _Rebatch
-from Wrappers.CCP4.Reindex import Reindex as _Reindex
-from Wrappers.CCP4.Mtz2various import Mtz2various as _Mtz2various
-from Wrappers.CCP4.Cad import Cad as _Cad
-from Wrappers.CCP4.Freerflag import Freerflag as _Freerflag
-from Wrappers.CCP4.Pointless import Pointless as _Pointless
-from Wrappers.CCP4.Matthews_coef import Matthews_coef as _Matthews_coef
-from Wrappers.XIA.Chef import Chef as _Chef
+from xia2.Wrappers.CCP4.Aimless import Aimless as _Aimless
+from xia2.Wrappers.CCP4.Scaleit import Scaleit as _Scaleit
+from xia2.Wrappers.CCP4.Sortmtz import Sortmtz as _Sortmtz
+from xia2.Wrappers.CCP4.Mtzdump import Mtzdump as _Mtzdump
+from xia2.Wrappers.CCP4.Truncate import Truncate as _Truncate
+from xia2.Wrappers.CCP4.Rebatch import Rebatch as _Rebatch
+from xia2.Wrappers.CCP4.Reindex import Reindex as _Reindex
+from xia2.Wrappers.CCP4.Mtz2various import Mtz2various as _Mtz2various
+from xia2.Wrappers.CCP4.Cad import Cad as _Cad
+from xia2.Wrappers.CCP4.Freerflag import Freerflag as _Freerflag
+from xia2.Wrappers.CCP4.Pointless import Pointless as _Pointless
+from xia2.Wrappers.CCP4.Matthews_coef import Matthews_coef as _Matthews_coef
+from xia2.Wrappers.XIA.Chef import Chef as _Chef
 
-from lib.bits import auto_logfiler
+from xia2.lib.bits import auto_logfiler
 
 class CCP4Factory(object):
   '''A class to provide CCP4 program wrappers.'''

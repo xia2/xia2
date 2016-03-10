@@ -13,22 +13,10 @@ import sys
 import copy
 import math
 
-if not os.environ.has_key('XIA2CORE_ROOT'):
-  raise RuntimeError, 'XIA2CORE_ROOT not defined'
-
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'], 'Python'))
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Driver.DriverFactory import DriverFactory
+from xia2.Driver.DriverFactory import DriverFactory
 from Diffdump import Diffdump
 
-from Experts.FindImages import image2template_directory, image2image, \
+from xia2.Experts.FindImages import image2template_directory, image2image, \
      template_number2image
 
 def PrintpeaksMosflm(DriverType = None):

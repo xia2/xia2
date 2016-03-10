@@ -20,21 +20,13 @@ import sys
 import copy
 import time
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-if not os.environ.has_key('XIA2CORE_ROOT'):
-  raise RuntimeError, 'XIA2CORE_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
-
-from Experts.FindImages import image2template, find_matching_images, \
+from xia2.Experts.FindImages import image2template, find_matching_images, \
      template_directory_number2image, image2template_directory, \
      headers2sweeps, headers2sweep_ids
 
 # image header reading functionality
-from Wrappers.XIA.Diffdump import Diffdump
-from Handlers.Flags import Flags
+from xia2.Wrappers.XIA.Diffdump import Diffdump
+from xia2.Handlers.Flags import Flags
 
 def SweepFactory(template, directory, beam = None):
   '''A factory which will return a list of sweep objects which match
@@ -42,7 +34,7 @@ def SweepFactory(template, directory, beam = None):
 
   sweeps = []
 
-  from Schema import load_imagesets
+  from xia2.Schema import load_imagesets
   imagesets = load_imagesets(
     template, directory, reversephi=Flags.get_reversephi())
 
@@ -170,7 +162,7 @@ class Sweep(object):
 
       self._images = images
 
-      from Schema import load_imagesets
+      from xia2.Schema import load_imagesets
       imagesets = load_imagesets(
         self._template, self._directory, id_image=self._id_image,
         use_cache=False, reversephi=Flags.get_reversephi())

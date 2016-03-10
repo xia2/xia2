@@ -6,17 +6,17 @@
 #   included in the root directory of this package.
 #
 # Wrapper to allow code written to merge reflections to be externalised...
+#
+# 03/MAR/16
+# To resolve the naming conflict between this file and the entire xia2 module
+# any xia2.* imports in this directory must instead be imported as ..*
+
 
 import os
 import sys
 import time
 
-assert('XIA2_ROOT' in os.environ)
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Toolkit.Merger import merger
+from ..Toolkit.Merger import merger
 
 if __name__ == '__main__':
   import argparse

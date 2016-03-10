@@ -17,14 +17,8 @@
 
 import os, sys
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT undefined'
-
-if not os.environ['XIA2_ROOT'] is sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Wrappers.XIA.Diffdump import Diffdump
-from Handlers.Streams import Debug
+from xia2.Wrappers.XIA.Diffdump import Diffdump
+from xia2.Handlers.Streams import Debug
 
 def epocher(images):
   '''Get a list of epochs for each image in this list, returning as
@@ -145,9 +139,9 @@ if __name__ == '__main__':
 
   batches = { }
 
-  from Experts.FindImages import find_matching_images, \
+  from xia2.Experts.FindImages import find_matching_images, \
        template_directory_number2image, image2template_directory
-  from Handlers.Flags import Flags
+  from xia2.Handlers.Flags import Flags
 
   # just cos we can...
   Flags.set_trust_timestamps(True)

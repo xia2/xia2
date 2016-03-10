@@ -19,34 +19,28 @@ import sys
 import math
 import exceptions
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
 # the class that we are extending
 
 from XDSIndexer import XDSIndexer
 
 # wrappers for programs that this needs
 
-from Wrappers.XIA.Diffdump import Diffdump
+from xia2.Wrappers.XIA.Diffdump import Diffdump
 
 # helper functions
 
-#from Wrappers.XDS.XDS import beam_centre_mosflm_to_xds
-from Wrappers.XDS.XDS import beam_centre_xds_to_mosflm
-from Wrappers.XDS.XDS import XDSException
-from Modules.Indexer.XDSCheckIndexerSolution import xds_check_indexer_solution
+#from xia2.Wrappers.XDS.XDS import beam_centre_mosflm_to_xds
+from xia2.Wrappers.XDS.XDS import beam_centre_xds_to_mosflm
+from xia2.Wrappers.XDS.XDS import XDSException
+from xia2.Modules.Indexer.XDSCheckIndexerSolution import xds_check_indexer_solution
 
 # odds and sods that are needed
 
-from lib.bits import auto_logfiler, nint
-from Handlers.Streams import Chatter, Debug, Journal
-from Handlers.Flags import Flags
-from Handlers.Files import FileHandler
-from Handlers.Phil import PhilIndex
+from xia2.lib.bits import auto_logfiler, nint
+from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Files import FileHandler
+from xia2.Handlers.Phil import PhilIndex
 
 class XDSIndexerII(XDSIndexer):
   '''An extension of XDSIndexer using all available images.'''

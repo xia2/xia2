@@ -12,28 +12,14 @@ import os
 import sys
 import shutil
 
-if not os.environ.has_key('XIA2CORE_ROOT'):
-  raise RuntimeError, 'XIA2CORE_ROOT not defined'
-
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.path.join(os.environ['XIA2CORE_ROOT'],
-                    'Python') in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
-                               'Python'))
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Driver.DriverFactory import DriverFactory
+from xia2.Driver.DriverFactory import DriverFactory
 
 # interfaces that this inherits from ...
-from Schema.Interfaces.FrameProcessor import FrameProcessor
+from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 
 # generic helper stuff
 from XDS import imageset_to_xds, xds_check_version_supported, _running_xds_version
-from Handlers.Streams import Debug
+from xia2.Handlers.Streams import Debug
 
 def XDSInit(DriverType = None, params = None):
 
@@ -49,7 +35,7 @@ def XDSInit(DriverType = None, params = None):
       # phil parameters
 
       if not params:
-        from Handlers.Phil import master_phil
+        from xia2.Handlers.Phil import master_phil
         params = master_phil.extract().xds.init
       self._params = params
 

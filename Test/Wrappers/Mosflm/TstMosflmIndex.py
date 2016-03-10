@@ -1,18 +1,5 @@
 import os
 import sys
-if not os.environ.has_key('XIA2CORE_ROOT'):
-  raise RuntimeError, 'XIA2CORE_ROOT not defined'
-
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.path.join(os.environ['XIA2CORE_ROOT'],
-                    'Python') in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
-                               'Python'))
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
 
 import libtbx.load_env
 from libtbx import easy_run
@@ -34,7 +21,7 @@ def exercise_mosflm_index():
   xia2_demo_data = os.path.join(dials_regression, "xia2_demo_data")
   template = os.path.join(xia2_demo_data, "insulin_1_%03i.img")
 
-  from Wrappers.Mosflm.MosflmIndex import MosflmIndex
+  from xia2.Wrappers.Mosflm.MosflmIndex import MosflmIndex
 
   # exercise basic indexing from two images
   cwd = os.path.abspath(os.curdir)
@@ -44,7 +31,7 @@ def exercise_mosflm_index():
   indexer = MosflmIndex()
   indexer.set_images((1,45))
 
-  from Experts.FindImages import image2template_directory
+  from xia2.Experts.FindImages import image2template_directory
   templ, directory = image2template_directory(template %1)
 
   indexer.set_directory(directory)

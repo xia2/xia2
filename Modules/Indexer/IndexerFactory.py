@@ -31,25 +31,19 @@ import os
 import sys
 import copy
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
+from xia2.Modules.Indexer.MosflmIndexer import MosflmIndexer
+from xia2.Modules.Indexer.LabelitIndexer import LabelitIndexer
+from xia2.Modules.Indexer.LabelitIndexerII import LabelitIndexerII
+from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
+from xia2.Modules.Indexer.XDSIndexerII import XDSIndexerII
+from xia2.Modules.Indexer.XDSIndexerInteractive import XDSIndexerInteractive
+from xia2.Modules.Indexer.XDSIndexerSum import XDSIndexerSum
+from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
 
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Modules.Indexer.MosflmIndexer import MosflmIndexer
-from Modules.Indexer.LabelitIndexer import LabelitIndexer
-from Modules.Indexer.LabelitIndexerII import LabelitIndexerII
-from Modules.Indexer.XDSIndexer import XDSIndexer
-from Modules.Indexer.XDSIndexerII import XDSIndexerII
-from Modules.Indexer.XDSIndexerInteractive import XDSIndexerInteractive
-from Modules.Indexer.XDSIndexerSum import XDSIndexerSum
-from Modules.Indexer.DialsIndexer import DialsIndexer
-
-from DriverExceptions.NotAvailableError import NotAvailableError
-from Handlers.Streams import Debug
-from Handlers.Flags import Flags
-from Handlers.PipelineSelection import get_preferences
+from xia2.DriverExceptions.NotAvailableError import NotAvailableError
+from xia2.Handlers.Streams import Debug
+from xia2.Handlers.Flags import Flags
+from xia2.Handlers.PipelineSelection import get_preferences
 
 def IndexerForXSweep(xsweep, json_file=None):
   '''Provide an indexer to work with XSweep instance xsweep.'''
@@ -69,7 +63,7 @@ def IndexerForXSweep(xsweep, json_file=None):
 
   crystal_lattice = xsweep.get_crystal_lattice()
 
-  from Handlers.Phil import PhilIndex
+  from xia2.Handlers.Phil import PhilIndex
   params = PhilIndex.params
   multi_sweep_indexing = params.xia2.settings.developmental.multi_sweep_indexing
 

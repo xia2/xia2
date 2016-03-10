@@ -14,47 +14,37 @@ import os
 import sys
 import shutil
 
-if not os.environ.has_key('XIA2CORE_ROOT'):
-  raise RuntimeError, 'XIA2CORE_ROOT not defined'
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'], 'Python'))
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Background.Background import Background
+from xia2.Background.Background import Background
 
 # interfaces that this will present
-from Schema.Interfaces.Integrater import Integrater
+from xia2.Schema.Interfaces.Integrater import Integrater
 
 # output streams &c.
-from Handlers.Streams import Chatter, Debug, Journal
-from Handlers.Citations import Citations
-from Handlers.Flags import Flags
-from Handlers.Files import FileHandler
+from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.Handlers.Citations import Citations
+from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Files import FileHandler
 
 # helpers
-from Wrappers.CCP4.MosflmHelpers import \
+from xia2.Wrappers.CCP4.MosflmHelpers import \
      _parse_mosflm_integration_output, decide_integration_resolution_limit, \
      standard_mask, detector_class_to_mosflm, \
      _parse_summary_file
-from Wrappers.Mosflm.MosflmIntegrate import MosflmIntegrate
+from xia2.Wrappers.Mosflm.MosflmIntegrate import MosflmIntegrate
 
-from Modules.GainEstimater import gain
+from xia2.Modules.GainEstimater import gain
 
-from lib.bits import auto_logfiler, mean_sd
-from lib.SymmetryLib import lattice_to_spacegroup
+from xia2.lib.bits import auto_logfiler, mean_sd
+from xia2.lib.SymmetryLib import lattice_to_spacegroup
 
 # exceptions
-from Schema.Exceptions.BadLatticeError import BadLatticeError
-from Schema.Exceptions.IntegrationError import IntegrationError
+from xia2.Schema.Exceptions.BadLatticeError import BadLatticeError
+from xia2.Schema.Exceptions.IntegrationError import IntegrationError
 
 # other classes which are necessary to implement the integrater
 # interface (e.g. new version, with reindexing as the finish...)
-from Wrappers.CCP4.Reindex import Reindex
-from Wrappers.CCP4.Sortmtz import Sortmtz
+from xia2.Wrappers.CCP4.Reindex import Reindex
+from xia2.Wrappers.CCP4.Sortmtz import Sortmtz
 
 class MosflmIntegrater(Integrater):
   '''A wrapper for Mosflm integration.'''

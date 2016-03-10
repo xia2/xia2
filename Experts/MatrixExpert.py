@@ -19,26 +19,14 @@ from cctbx import crystal
 from cctbx import uctbx
 from scitbx import matrix
 
-if not os.environ.has_key('XIA2CORE_ROOT'):
-  raise RuntimeError, 'XIA2CORE_ROOT not defined'
-
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'], 'Python'))
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Experts.SymmetryExpert import symop_to_mat, mat_to_symop
-from Experts.LatticeExpert import l2s, s2l
-from Wrappers.CCP4.Othercell import Othercell
-from Wrappers.Phenix.LatticeSymmetry import LatticeSymmetry
-from lib.SymmetryLib import lattice_to_spacegroup
-from Handlers.Syminfo import Syminfo
-from lib.bits import auto_logfiler
-from Handlers.Streams import Debug
+from xia2.Experts.SymmetryExpert import symop_to_mat, mat_to_symop
+from xia2.Experts.LatticeExpert import l2s, s2l
+from xia2.Wrappers.CCP4.Othercell import Othercell
+from xia2.Wrappers.Phenix.LatticeSymmetry import LatticeSymmetry
+from xia2.lib.SymmetryLib import lattice_to_spacegroup
+from xia2.Handlers.Syminfo import Syminfo
+from xia2.lib.bits import auto_logfiler
+from xia2.Handlers.Streams import Debug
 
 from ReferenceFrame import mosflm_to_xia2, xia2_to_mosflm
 

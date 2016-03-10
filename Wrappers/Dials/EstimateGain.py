@@ -14,12 +14,12 @@ import os
 from __init__ import _setup_xia2_environ
 _setup_xia2_environ()
 
-from Schema.Interfaces.FrameProcessor import FrameProcessor
+from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 
 def EstimateGain(DriverType = None):
   '''A factory for EstimateGainWrapper classes.'''
 
-  from Driver.DriverFactory import DriverFactory
+  from xia2.Driver.DriverFactory import DriverFactory
   DriverInstance = DriverFactory.Driver(DriverType)
 
   class EstimateGainWrapper(DriverInstance.__class__,

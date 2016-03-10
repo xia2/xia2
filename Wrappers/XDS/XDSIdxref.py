@@ -13,43 +13,29 @@ import sys
 import math
 import shutil
 
-if not os.environ.has_key('XIA2CORE_ROOT'):
-  raise RuntimeError, 'XIA2CORE_ROOT not defined'
-
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.path.join(os.environ['XIA2CORE_ROOT'],
-                    'Python') in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
-                               'Python'))
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Driver.DriverFactory import DriverFactory
+from xia2.Driver.DriverFactory import DriverFactory
 
 # interfaces that this inherits from ...
-from Schema.Interfaces.FrameProcessor import FrameProcessor
+from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 
 # generic helper stuff
 from XDS import imageset_to_xds, xds_check_version_supported, xds_check_error
 from XDS import XDSException
-from Handlers.Streams import Debug
+from xia2.Handlers.Streams import Debug
 
 # specific helper stuff
 from XDSIdxrefHelpers import _parse_idxref_lp, _parse_idxref_lp_distance_etc, \
      _parse_idxref_lp_subtree, _parse_idxref_index_origin, \
      _parse_idxref_lp_quality
 
-from Experts.LatticeExpert import SortLattices
+from xia2.Experts.LatticeExpert import SortLattices
 
 # global flags
-from Handlers.Flags import Flags
+from xia2.Handlers.Flags import Flags
 
 # helpful expertise from elsewhere
-from Experts.SymmetryExpert import lattice_to_spacegroup_number
-from Experts.LatticeExpert import s2l
+from xia2.Experts.SymmetryExpert import lattice_to_spacegroup_number
+from xia2.Experts.LatticeExpert import s2l
 
 def XDSIdxref(DriverType=None, params=None):
 
@@ -65,7 +51,7 @@ def XDSIdxref(DriverType=None, params=None):
       # phil parameters
 
       if not params:
-        from Handlers.Phil import master_phil
+        from xia2.Handlers.Phil import master_phil
         params = master_phil.extract().xds.index
       self._params = params
 
@@ -199,7 +185,7 @@ def XDSIdxref(DriverType=None, params=None):
       less than 5% / 5 degrees return True, else False. Now configured
       by xia2.settings.xds_cell_deviation in Phil input.'''
 
-      from Handlers.Phil import PhilIndex
+      from xia2.Handlers.Phil import PhilIndex
       if PhilIndex.params.xia2.settings.xds_cell_deviation:
         dev_l, dev_a = PhilIndex.params.xia2.settings.xds_cell_deviation
       else:
@@ -456,7 +442,7 @@ def XDSIdxref(DriverType=None, params=None):
       # allowable solutions - only consider those lattices in this
       # allowed list (unless we have user input)
 
-      from Wrappers.Phenix.LatticeSymmetry import LatticeSymmetry
+      from xia2.Wrappers.Phenix.LatticeSymmetry import LatticeSymmetry
       ls = LatticeSymmetry()
       ls.set_lattice('aP')
       ls.set_cell(tuple(self._idxref_data[44]['cell']))

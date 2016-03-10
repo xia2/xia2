@@ -8,6 +8,10 @@
 # 21/SEP/06
 #
 # A top-level interface to the whole of xia2, for data processing & analysis.
+#
+# 03/MAR/16
+# To resolve the naming conflict between this file and the entire xia2 module
+# any xia2.* imports in this directory must instead be imported as ..*
 
 import sys
 import os
@@ -16,26 +20,12 @@ import time
 import exceptions
 import traceback
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
+from ..Handlers.Streams import Chatter, Debug
+from ..Handlers.Files import cleanup
+from ..Handlers.Citations import Citations
+from ..Handlers.Environment import Environment, df
 
-sys.path.insert(0, os.environ['XIA2_ROOT'])
-
-if not 'XIA2CORE_ROOT' in os.environ:
-  os.environ['XIA2CORE_ROOT'] = os.path.join(os.environ['XIA2_ROOT'], 'core')
-
-from Handlers.Streams import Chatter, Debug
-from Handlers.Files import cleanup
-from Handlers.Citations import Citations
-from Handlers.Environment import Environment, df
-
-from XIA2Version import Version
-
-# XML Marked up output for e-HTPX
-if not os.path.join(os.environ['XIA2_ROOT'], 'Interfaces') in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2_ROOT'], 'Interfaces'))
-
-# CCTBX bits I want
+from ..XIA2Version import Version
 
 import libtbx.load_env
 
@@ -88,21 +78,11 @@ def check_environment():
 
   check_cctbx_version()
 
-  xia2_keys = ['XIA2_ROOT', 'XIA2CORE_ROOT']
-  ccp4_keys = ['CCP4', 'CLIBD', 'CCP4_SCR']
-
   Chatter.write('Environment configuration...')
-  for k in xia2_keys:
-    v = Environment.getenv(k)
-    if not v:
-      raise RuntimeError, '%s not defined - is xia2 set up?'
-    if not v == v.strip():
-      raise RuntimeError, 'spaces around "%s"' % v
-    Chatter.write('%s => %s' % (k, v))
-
   Chatter.write('Python => %s' % executable)
   Chatter.write('CCTBX => %s' % cctbx_dir)
 
+  ccp4_keys = ['CCP4', 'CLIBD', 'CCP4_SCR']
   for k in ccp4_keys:
     v = Environment.getenv(k)
     if not v:
@@ -129,25 +109,16 @@ def check_environment():
   Chatter.write(Version)
   return
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-if not os.environ.has_key('XIA2CORE_ROOT'):
-  raise RuntimeError, 'XIA2CORE_ROOT not defined'
-
 def check():
   '''Check that the set-up is ok...'''
 
-  sys.path.append(os.path.join((os.environ['XIA2CORE_ROOT']),
-                               'Python'))
-
-  from TestPython import test_python_setup
-
-  test_python_setup()
+  import os
+  import subprocess
 
   return
 
 def get_command_line():
-  from Handlers.CommandLine import CommandLine
+  from ..Handlers.CommandLine import CommandLine
 
   CommandLine.print_command_line()
 
@@ -246,7 +217,7 @@ def xia2():
   Chatter.write('Processing took %s' % \
                 time.strftime("%Hh %Mm %Ss", time.gmtime(duration)))
 
-  from Handlers.Flags import Flags
+  from ..Handlers.Flags import Flags
   if Flags.get_pickle():
     import cPickle as pickle
     try:
@@ -259,9 +230,8 @@ def xia2():
   cleanup()
 
   # maybe write out the headers
-  from Handlers.Flags import Flags
   if Flags.get_hdr_out():
-    from Wrappers.XIA.Diffdump import HeaderCache
+    from ..Wrappers.XIA.Diffdump import HeaderCache
     HeaderCache.write(Flags.get_hdr_out())
 
   # and the summary file
@@ -281,7 +251,7 @@ def xia2():
 def help():
   '''Print out some help for xia2.'''
 
-  from XIA2Version import Version
+  from ..XIA2Version import Version
   sys.stdout.write('%s\n' % Version);
 
   sys.stdout.write('An expert system for automated reduction of X-Ray\n')
@@ -347,9 +317,9 @@ def run():
       status_message = 'Status: all your intensities are belong to us'
 
     Chatter.write(status_message)
-    from Handlers.Flags import Flags
+    from ..Handlers.Flags import Flags
     if Flags.get_egg():
-      from lib.bits import message
+      from ..lib.bits import message
       message(status_message)
 
   except exceptions.Exception, e:
@@ -358,7 +328,7 @@ def run():
     Chatter.write(
       'Please send the contents of xia2.txt, xia2.error and xia2-debug.txt to:')
     Chatter.write('xia2.support@gmail.com')
-    from Handlers.Flags import Flags
+    from ..Handlers.Flags import Flags
     if Flags.get_egg():
-      from lib.bits import message
+      from ..lib.bits import message
       message('xia2 status error %s' % str(e))

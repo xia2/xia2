@@ -120,10 +120,8 @@ class PythonDriver(DefaultDriver):
     return
 
 if __name__ == '__main__':
-  assert('XIA2CORE_ROOT') in os.environ
-
   pd = PythonDriver()
-  pd.set_executable(os.path.join(os.environ['XIA2CORE_ROOT'],
+  pd.set_executable(os.path.join(os.path.dirname(__file__),
                                  'Test', 'ExampleProgram.py'))
   pd.start()
   pd.close_wait()

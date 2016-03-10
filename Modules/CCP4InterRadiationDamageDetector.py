@@ -24,14 +24,8 @@ import os
 import sys
 import math
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Wrappers.CCP4.Scaleit import Scaleit
-from lib.bits import auto_logfiler
+from xia2.Wrappers.CCP4.Scaleit import Scaleit
+from xia2.lib.bits import auto_logfiler
 
 # Operation:
 #

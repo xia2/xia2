@@ -16,29 +16,15 @@ import copy
 import shutil
 import math
 
-if not os.environ.has_key('XIA2CORE_ROOT'):
-  raise RuntimeError, 'XIA2CORE_ROOT not defined'
+from xia2.Driver.DriverFactory import DriverFactory
+from xia2.Decorators.DecoratorFactory import DecoratorFactory
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.path.join(os.environ['XIA2CORE_ROOT'],
-                    'Python') in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
-                               'Python'))
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Driver.DriverFactory import DriverFactory
-from Decorators.DecoratorFactory import DecoratorFactory
-
-from Handlers.Streams import Chatter
-from Handlers.Executables import Executables
-#from Handlers.Files import FileHandler
+from xia2.Handlers.Streams import Chatter
+from xia2.Handlers.Executables import Executables
+#from xia2.Handlers.Files import FileHandler
 
 
-from Wrappers.CCP4.MosflmHelpers import _parse_mosflm_index_output
+from xia2.Wrappers.CCP4.MosflmHelpers import _parse_mosflm_index_output
 
 def MosflmIndex(DriverType = None, indxr_print = True):
   '''Factory for MosflmIndex wrapper classes, with the specified

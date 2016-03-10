@@ -1,17 +1,8 @@
 import os
 import sys
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-if not 'XIA2CORE_ROOT' in os.environ:
-  os.environ['XIA2CORE_ROOT'] = os.path.join(os.environ['XIA2_ROOT'], 'core')
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
-
-
 from libtbx.containers import OrderedDict
-from Handlers.Phil import PhilIndex
+from xia2.Handlers.Phil import PhilIndex
 
 class _ImagesetCache(dict):
   pass
@@ -116,7 +107,7 @@ def load_reference_geometries(geometry_file_list):
   import itertools
   for combination in itertools.combinations(reference_components, 2):
     if compare_geometries(combination[0]['detector'], combination[1]['detector']):
-      from Handlers.Streams import Chatter
+      from xia2.Handlers.Streams import Chatter
       Chatter.write('Reference geometries given in %s and %s are too similar' % (combination[0]['file'], combination[1]['file']))
       raise Exception('Reference geometries too similar')
   return reference_components

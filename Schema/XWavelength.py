@@ -30,8 +30,8 @@
 #                 reduce the least damaged data first.
 
 from XSweep import XSweep
-from Handlers.Flags import Flags
-from Handlers.Streams import Chatter
+from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Streams import Chatter
 
 class XWavelength(object):
   '''An object representation of a wavelength, which will after data
@@ -108,11 +108,11 @@ class XWavelength(object):
 
     result += 'Sweeps:\n'
 
-    from Driver.DriverFactory import DriverFactory
+    from xia2.Driver.DriverFactory import DriverFactory
 
     def run_one_sweep(args):
 
-      from Handlers.Streams import Debug
+      from xia2.Handlers.Streams import Debug
 
       assert len(args) == 3
       s, failover, job_type = args

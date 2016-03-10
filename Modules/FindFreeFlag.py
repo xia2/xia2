@@ -12,13 +12,7 @@ import os
 import sys
 import math
 
-if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'], 'Python'))
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Wrappers.CCP4.Mtzdump import Mtzdump
+from xia2.Wrappers.CCP4.Mtzdump import Mtzdump
 
 def FindFreeFlag(hklin):
   '''Try to find the FREE column in hklin. Raise exception if no column is

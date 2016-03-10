@@ -51,20 +51,8 @@ if __name__ == '__main__':
 else:
   debug = False
 
-if not os.environ.has_key('XIA2CORE_ROOT'):
-  raise RuntimeError, 'XIA2CORE_ROOT not defined'
-
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'], 'Python'))
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Driver.DriverFactory import DriverFactory
-from Handlers.Flags import Flags
+from xia2.Driver.DriverFactory import DriverFactory
+from xia2.Handlers.Flags import Flags
 
 def get_trust_timestamps():
   return Flags.get_trust_timestamp()
@@ -458,7 +446,7 @@ def failover_dxtbx(image_file):
     iformat = last_format
   else:
     iformat = Registry.find(image_file)
-    from Handlers.Streams import Debug
+    from xia2.Handlers.Streams import Debug
     Debug.write('Using dxtbx format instance: %s' % iformat.__name__)
 
   if not iformat.understand(image_file):

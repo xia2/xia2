@@ -14,16 +14,8 @@
 import os
 import sys
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-if not os.environ.has_key('XIA2CORE_ROOT'):
-  raise RuntimeError, 'XIA2CORE_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
-
-from Handlers.Environment import get_number_cpus
-from Toolkit.BackstopMask import BackstopMask
+from xia2.Handlers.Environment import get_number_cpus
+from xia2.Toolkit.BackstopMask import BackstopMask
 
 class _Flags(object):
   '''A singleton to manage boolean flags.'''
@@ -229,7 +221,7 @@ class _Flags(object):
     set the spacegroup and derive from this the pointgroup and lattice
     appropriate for such...'''
 
-    from Handlers.Syminfo import Syminfo
+    from xia2.Handlers.Syminfo import Syminfo
 
     spacegroup = spacegroup.upper()
 
@@ -246,7 +238,7 @@ class _Flags(object):
 
     # debug print
 
-    from Handlers.Streams import Debug
+    from xia2.Handlers.Streams import Debug
 
     Debug.write('Derived information from spacegroup flag: %s' % \
                 spacegroup)
@@ -363,7 +355,7 @@ class _Flags(object):
 
     self._xparm = xparm
 
-    from Wrappers.XDS.XDS import xds_read_xparm
+    from xia2.Wrappers.XDS.XDS import xds_read_xparm
 
     xparm_info = xds_read_xparm(xparm)
 
@@ -449,8 +441,8 @@ class _Flags(object):
     if not os.path.exists(freer_file):
       raise RuntimeError, '%s does not exist' % freer_file
 
-    from Modules.FindFreeFlag import FindFreeFlag
-    from Handlers.Streams import Debug
+    from xia2.Modules.FindFreeFlag import FindFreeFlag
+    from xia2.Handlers.Streams import Debug
 
     column = FindFreeFlag(freer_file)
 
@@ -494,8 +486,8 @@ class _Flags(object):
   def set_hdr_in(self, hdr_in):
     self._hdr_in = hdr_in
 
-    from Wrappers.XIA.Diffdump import HeaderCache
-    from Handlers.Streams import Debug
+    from xia2.Wrappers.XIA.Diffdump import HeaderCache
+    from xia2.Handlers.Streams import Debug
 
     Debug.write('Read %d headers from %s' % (HeaderCache.read(hdr_in),
                                              hdr_in))

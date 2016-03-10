@@ -121,32 +121,19 @@ import shutil
 
 import xml.dom.minidom
 
-if not os.environ.has_key('XIA2CORE_ROOT'):
-  raise RuntimeError, 'XIA2CORE_ROOT not defined'
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
+from xia2.Driver.DriverFactory import DriverFactory
+from xia2.Decorators.DecoratorFactory import DecoratorFactory
 
-if not os.path.join(os.environ['XIA2CORE_ROOT'],
-                    'Python') in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
-                               'Python'))
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Driver.DriverFactory import DriverFactory
-from Decorators.DecoratorFactory import DecoratorFactory
-
-from Handlers.Syminfo import Syminfo
-from Handlers.Streams import Chatter, Debug
-from Handlers.Flags import Flags
+from xia2.Handlers.Syminfo import Syminfo
+from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Flags import Flags
 
 # this was rather complicated - now simpler!
-from lib.SymmetryLib import lauegroup_to_lattice, spacegroup_name_xHM_to_old, \
+from xia2.lib.SymmetryLib import lauegroup_to_lattice, spacegroup_name_xHM_to_old, \
      clean_reindex_operator
 
 # XDS_ASCII meddling things
-from Modules.XDS_ASCII import remove_misfits
+from xia2.Modules.XDS_ASCII import remove_misfits
 
 def mend_pointless_xml(xml_file):
   '''Repair XML document'''
@@ -394,7 +381,7 @@ def Pointless(DriverType = None):
       self.input('systematicabsences off')
       self.input('setting symmetry-based')
       if self._hklref:
-        from Handlers.Phil import PhilIndex
+        from xia2.Handlers.Phil import PhilIndex
         dev = PhilIndex.params.xia2.settings.developmental
         if dev.pointless_tolerance > 0.0:
           self.input('tolerance %f' % dev.pointless_tolerance)
@@ -791,52 +778,3 @@ if __name__ == '__main__':
 
   print cell
 
-if __name__ == '__moon__':
-
-  # then run some sort of test
-
-  if not os.environ.has_key('XIA2CORE_ROOT'):
-    raise RuntimeError, 'XIA2CORE_ROOT not defined'
-
-  xia2core = os.environ['XIA2CORE_ROOT']
-
-  hklin = os.path.join(xia2core,
-                       'Data', 'Test', 'Mtz', '12287_1_E1.mtz')
-
-  if len(sys.argv) > 1:
-    hklin = sys.argv[1]
-
-  p = Pointless()
-
-  p.set_hklin(hklin)
-  p.write_log_file('pointless.log')
-
-  pointgroup = True
-
-  if pointgroup:
-    p.decide_pointgroup()
-
-    print 'Correct pointgroup: %s' % p.get_pointgroup()
-    print 'Reindexing matrix: ' + \
-          '%4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f' % \
-          tuple(p.get_reindex_matrix())
-    print 'Confidence: %f' % p.get_confidence()
-
-    if False:
-
-      p.set_correct_lattice('mC')
-      p.decide_pointgroup()
-
-      print 'Correct pointgroup: %s' % p.get_pointgroup()
-      print 'Reindexing matrix: ' + \
-            '%4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f' % \
-            tuple(p.get_reindex_matrix())
-      print 'Confidence: %f' % p.get_confidence()
-
-
-  else:
-    p.decide_spacegroup()
-
-    print 'Correct spacegroup: %s' % p.get_spacegroup()
-    print 'Reindex operator: %s' % p.get_spacegroup_reindex_operator()
-    print 'Cell: %.2f %.2f %.2f %.2f %.2f %.2f' % p.get_cell()

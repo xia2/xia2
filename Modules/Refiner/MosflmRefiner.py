@@ -6,22 +6,22 @@
 #   included in the root directory of this package.
 #
 
-from Schema.Interfaces.Refiner import Refiner
-from Handlers.Streams import Debug, Chatter, Journal
-from Handlers.Flags import Flags
+from xia2.Schema.Interfaces.Refiner import Refiner
+from xia2.Handlers.Streams import Debug, Chatter, Journal
+from xia2.Handlers.Flags import Flags
 
 import os
 import math
 
-from lib.bits import auto_logfiler
-from Handlers.Files import FileHandler
+from xia2.lib.bits import auto_logfiler
+from xia2.Handlers.Files import FileHandler
 
-from Wrappers.Mosflm.MosflmRefineCell import MosflmRefineCell
-from lib.SymmetryLib import lattice_to_spacegroup
+from xia2.Wrappers.Mosflm.MosflmRefineCell import MosflmRefineCell
+from xia2.lib.SymmetryLib import lattice_to_spacegroup
 
-from Experts.MatrixExpert import transmogrify_matrix
+from xia2.Experts.MatrixExpert import transmogrify_matrix
 
-from Schema.Exceptions.NegativeMosaicError import NegativeMosaicError
+from xia2.Schema.Exceptions.NegativeMosaicError import NegativeMosaicError
 
 from dxtbx.model.experiment.experiment_list import ExperimentList
 
@@ -576,7 +576,7 @@ class MosflmRefiner(Refiner):
     self._refinr_cell = refiner.get_refined_unit_cell()
     distance = refiner.get_refined_distance2()
     experiment = idxr.get_indexer_experiment_list()[0]
-    from Wrappers.Mosflm.AutoindexHelpers import set_distance
+    from xia2.Wrappers.Mosflm.AutoindexHelpers import set_distance
     set_distance(experiment.detector, distance)
 
     self.set_refiner_parameter('mosflm',
@@ -628,7 +628,7 @@ class MosflmRefiner(Refiner):
     self.set_refiner_payload('beam', integration_params['beam'])
     self.set_refiner_payload('distance', integration_params['distance'])
 
-    from Wrappers.Mosflm.AutoindexHelpers import crystal_model_from_mosflm_mat
+    from xia2.Wrappers.Mosflm.AutoindexHelpers import crystal_model_from_mosflm_mat
     # make a dxtbx crystal_model object from the mosflm matrix
     experiment = idxr.get_indexer_experiment_list()[0]
     crystal_model = crystal_model_from_mosflm_mat(
@@ -645,7 +645,7 @@ class MosflmRefiner(Refiner):
     return rms_values, background_residual
 
   def _mosflm_generate_raster(self, _images, indexer):
-    from Wrappers.Mosflm.GenerateRaster import GenerateRaster
+    from xia2.Wrappers.Mosflm.GenerateRaster import GenerateRaster
     gr = GenerateRaster()
     gr.set_working_directory(self.get_working_directory())
     return gr(indexer, _images)

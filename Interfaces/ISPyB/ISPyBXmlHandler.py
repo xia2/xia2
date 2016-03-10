@@ -14,12 +14,7 @@ import time
 import os
 import sys
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Handlers.Files import FileHandler
+from xia2.Handlers.Files import FileHandler
 
 def sanitize(path):
   '''Replace double path separators with single ones.'''
@@ -250,7 +245,7 @@ class _ISPyBXmlHandler(object):
 
       # file unpacking nonsense
 
-      from Handlers.CommandLine import CommandLine
+      from xia2.Handlers.CommandLine import CommandLine
 
       fout.write('<AutoProcProgramContainer><AutoProcProgram>')
       fout.write('<processingCommandLine>%s</processingCommandLine>' \

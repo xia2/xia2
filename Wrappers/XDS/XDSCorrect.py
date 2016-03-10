@@ -16,24 +16,10 @@ import shutil
 import math
 from cctbx.uctbx import unit_cell
 
-if not os.environ.has_key('XIA2CORE_ROOT'):
-  raise RuntimeError, 'XIA2CORE_ROOT not defined'
-
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.path.join(os.environ['XIA2CORE_ROOT'],
-                    'Python') in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
-                               'Python'))
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Driver.DriverFactory import DriverFactory
+from xia2.Driver.DriverFactory import DriverFactory
 
 # interfaces that this inherits from ...
-from Schema.Interfaces.FrameProcessor import FrameProcessor
+from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 
 # generic helper stuff
 from XDS import imageset_to_xds, xds_check_version_supported, xds_check_error
@@ -41,12 +27,12 @@ from XDS import imageset_to_xds, xds_check_version_supported, xds_check_error
 # specific helper stuff
 from XDSCorrectHelpers import _parse_correct_lp
 
-from Experts.ResolutionExperts import xds_integrate_hkl_to_list, \
+from xia2.Experts.ResolutionExperts import xds_integrate_hkl_to_list, \
      bin_o_tron, digest
 
 # global flags
-from Handlers.Flags import Flags
-from Handlers.Streams import Debug
+from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Streams import Debug
 
 def XDSCorrect(DriverType = None, params=None):
 
@@ -62,7 +48,7 @@ def XDSCorrect(DriverType = None, params=None):
       # phil parameters
 
       if not params:
-        from Handlers.Phil import master_phil
+        from xia2.Handlers.Phil import master_phil
         params = master_phil.extract().xds.correct
       self._params = params
 
@@ -251,9 +237,9 @@ def XDSCorrect(DriverType = None, params=None):
       if self._ice != 0:
         Debug.write('Excluding ice rings')
 
-        for record in open(os.path.join(
-            os.environ['XIA2_ROOT'],
-            'Data', 'ice-rings.dat')).readlines():
+        for record in open(os.path.abspath(os.path.join(
+            os.path.dirname(__file__), '..', '..',
+            'Data', 'ice-rings.dat'))).readlines():
 
           resol = tuple(map(float, record.split()[:2]))
 

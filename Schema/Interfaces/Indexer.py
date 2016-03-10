@@ -47,19 +47,13 @@ import os
 import sys
 import inspect
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
+from xia2.Handlers.Streams import Debug, Chatter
+from xia2.Handlers.Phil import PhilIndex
 
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
-
-from Handlers.Streams import Debug, Chatter
-from Handlers.Phil import PhilIndex
-
-from Experts.LatticeExpert import SortLattices
+from xia2.Experts.LatticeExpert import SortLattices
 
 # interfaces that this inherits from ...
-from Schema.Interfaces.FrameProcessor import FrameProcessor
+from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 
 class _IndexerHelper(object):
   '''A class to manage autoindexing results in a useful way, to ensure
@@ -256,7 +250,7 @@ class Indexer(object):
     return_obj = cls()
     for k, v in obj.iteritems():
       if k == '_indxr_helper' and v is not None:
-        from Schema.Interfaces.Indexer import _IndexerHelper
+        from xia2.Schema.Interfaces.Indexer import _IndexerHelper
         v = _IndexerHelper(v)
       if k == '_indxr_imagesets' and len(v):
         assert v[0].get('__id__', None) == 'imageset'

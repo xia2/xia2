@@ -16,30 +16,16 @@ import copy
 import shutil
 import math
 
-from Schema.Exceptions.BadLatticeError import BadLatticeError
-from Schema.Exceptions.NegativeMosaicError import NegativeMosaicError
+from xia2.Schema.Exceptions.BadLatticeError import BadLatticeError
+from xia2.Schema.Exceptions.NegativeMosaicError import NegativeMosaicError
 
-if not os.environ.has_key('XIA2CORE_ROOT'):
-  raise RuntimeError, 'XIA2CORE_ROOT not defined'
+from xia2.Driver.DriverFactory import DriverFactory
+from xia2.Decorators.DecoratorFactory import DecoratorFactory
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
+from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Executables import Executables
 
-if not os.path.join(os.environ['XIA2CORE_ROOT'],
-                    'Python') in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
-                               'Python'))
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Driver.DriverFactory import DriverFactory
-from Decorators.DecoratorFactory import DecoratorFactory
-
-from Handlers.Streams import Chatter, Debug
-from Handlers.Executables import Executables
-
-from Wrappers.CCP4.MosflmHelpers import _parse_mosflm_index_output
+from xia2.Wrappers.CCP4.MosflmHelpers import _parse_mosflm_index_output
 
 def MosflmRefineCell(DriverType = None, indxr_print = True):
   '''Factory for MosflmRefineCell wrapper classes, with the specified

@@ -40,27 +40,21 @@ import sys
 import exceptions
 import math
 
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
+from xia2.lib.bits import inherits_from
+from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.Handlers.Phil import PhilIndex
 
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
-
-from lib.bits import inherits_from
-from Handlers.Streams import Chatter, Debug, Journal
-from Handlers.Phil import PhilIndex
-
-from Schema.Exceptions.BadLatticeError import BadLatticeError
+from xia2.Schema.Exceptions.BadLatticeError import BadLatticeError
 
 # image header reading functionality
-from Wrappers.XIA.Diffdump import Diffdump
+from xia2.Wrappers.XIA.Diffdump import Diffdump
 
 # symmetry operator management functionality
-from Experts.SymmetryExpert import compose_symops
-from Experts.SymmetryExpert import symop_to_mat
+from xia2.Experts.SymmetryExpert import compose_symops
+from xia2.Experts.SymmetryExpert import symop_to_mat
 
 # interfaces that this inherits from ...
-from Schema.Interfaces.FrameProcessor import FrameProcessor
+from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 
 class Integrater(FrameProcessor):
   '''An interface to present integration functionality in a similar

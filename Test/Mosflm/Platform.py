@@ -12,40 +12,30 @@ from __future__ import division
 import os
 import sys
 
-if not os.environ.has_key('XIA2CORE_ROOT'):
-  raise RuntimeError, 'XIA2CORE_ROOT not defined'
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'], 'Python'))
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
-from Schema.Interfaces.FrameProcessor import FrameProcessor
+from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 
 class Platform(FrameProcessor):
   def __init__(self, image):
     super(Platform, self).__init__()
 
   def header(self, images):
-    from Wrappers.Mosflm.Header import Header
+    from xia2.Wrappers.Mosflm.Header import Header
     h = Header()
     return h(self, images)
 
   def findspots(self, images):
-    from Wrappers.Mosflm.Findspots import Findspots
+    from xia2.Wrappers.Mosflm.Findspots import Findspots
     fs = Findspots()
     return fs(self, images)
 
   def autoindex(self, images = None):
-    from Wrappers.Mosflm.Autoindex import Autoindex
+    from xia2.Wrappers.Mosflm.Autoindex import Autoindex
     ai = Autoindex()
     return ai(self, images)
 
   def findspots_autoindex(self, images = None):
-    from Wrappers.Mosflm.Findspots import Findspots
-    from Wrappers.Mosflm.Autoindex import Autoindex
+    from xia2.Wrappers.Mosflm.Findspots import Findspots
+    from xia2.Wrappers.Mosflm.Autoindex import Autoindex
 
     ai = Autoindex()
 
@@ -57,9 +47,9 @@ class Platform(FrameProcessor):
     return ai(self, images)
 
   def findspots_autoindex_randomize(self, images = None):
-    from Wrappers.Mosflm.Findspots import Findspots
-    from Wrappers.Mosflm.Autoindex import Autoindex
-    from Wrappers.Mosflm.Exceptions import AutoindexError
+    from xia2.Wrappers.Mosflm.Findspots import Findspots
+    from xia2.Wrappers.Mosflm.Autoindex import Autoindex
+    from xia2.Wrappers.Mosflm.Exceptions import AutoindexError
 
     ai = Autoindex()
 
