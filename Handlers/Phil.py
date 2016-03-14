@@ -339,6 +339,19 @@ xia2.settings {
     .type = choice
   scaler = ccp4a xdsa
     .type = choice
+  merging_statistics {
+    source = aimless *cctbx
+      .type = choice
+      .help = "Use AIMLESS or cctbx for calculation of merging statistics"
+    n_bins = 20
+      .type = int(value_min=1)
+    use_internal_variance = False
+      .type = bool
+      .help = Use internal variance of the data in the calculation of the merged sigmas
+    eliminate_sys_absent = False
+      .type = bool
+      .help = Eliminate systematically absent reflections before computation of merging statistics.
+  }
   verbose = False
     .type = bool
   multiprocessing {

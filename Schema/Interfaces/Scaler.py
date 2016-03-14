@@ -213,7 +213,7 @@ class Scaler(object):
     self._scalr_statistics_keys = [
         'High resolution limit', 'Low resolution limit',
         'Completeness', 'Multiplicity',
-        'I/sigma', 'Rmerge',
+        'I/sigma', 'Rmerge(I)', 'Rmerge(I+/I-)',
         'Rmeas(I)', 'Rmeas(I+/-)',
         'Rpim(I)', 'Rpim(I+/-)', 'CC half',
         'Wilson B factor', 'Partial bias',
