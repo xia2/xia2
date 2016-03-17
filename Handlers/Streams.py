@@ -8,7 +8,7 @@
 # Maintained by Graeme Winter
 # 15th August 2006
 #
-# "Standard" output streams for the output of xia2dpa - these will allow
+# "Standard" output streams for the output of xia2 - these will allow
 # filtering of the output to files, the standard output, a GUI, none of
 # the above, all of the above.
 #
@@ -16,20 +16,19 @@
 # "scientific" output of the program. Finally I also decided (5/SEP/06)
 # to add a stream for "chatter", that is the odds and ends which are
 # going on inside the program which tells you it's doing things.
-#
-# FIXME 05/SEP/06 wouldn't it be nice to split the output to fit well on
-#                 an 80 character terminal display?
-#
-# FIXED 20/OCT/06 would nice to be able to prevent content being echo'd
-#                 to the chatter, if possible. Esp. for verbose output
-#                 going to say science.
-#
-# FIXME 20/OCT/06 need to be able to switch these of to allow nothing to
-#                 be printed when running unit tests...
 
 import sys
 import inspect
 
+april = {
+    'CC half   ':'Cromulence',
+    'I/sigma   ':'Excellence',
+    'Total observations':'How many spots    ',
+    'Total unique':'Unique spots',
+    'High resolution limit ':'Littlest visible thing',
+    'Low resolution limit ':'Biggest visible thing',
+    'Resolution limit for':'Littlest visible thing'
+    }
 
 def banner(comment, forward = True, size = 60):
 
@@ -70,11 +69,17 @@ class _Stream(object):
 
     self._additional = False
 
+    self._filter = None
+
     return
 
   def cache(self):
     self._cache = True
     self._cachelines = []
+    return
+
+  def filter(self, filter):
+    self._filter = filter
     return
 
   def uncache(self):
@@ -101,6 +106,9 @@ class _Stream(object):
     self._additional = True
 
   def write(self, record, forward=True, strip=True):
+    if self._filter:
+      for replace in self._filter:
+        record = record.replace(replace, self._filter[replace])
     if self._off:
       return None
 
@@ -201,10 +209,15 @@ if cl:
 else:
   cl = 'xia2'
 
-Chatter = _Stream('%s' %cl, None)
-Journal = _Stream('%s-journal' %cl, None)
+Chatter = _Stream('%s' % cl, None)
+Journal = _Stream('%s-journal' % cl, None)
 Stdout = _Stream(None, None)
-Debug = _Stream('%s-debug' %cl, None)
+from datetime import date
+import os
+day = date.today().timetuple()
+if (day.tm_mday == 1 and day.rm_mon == 4) or 'XIA2_APRIL' in os.environ:
+  Stdout.filter(april)
+Debug = _Stream('%s-debug' % cl, None)
 
 Chatter.join(Stdout)
 
