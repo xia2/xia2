@@ -815,6 +815,12 @@ class CCP4ScalerA(Scaler):
       # ---------- REINDEX TO CORRECT (REFERENCE) SETTING ----------
 
       for epoch in self._sweep_handler.get_epochs():
+
+        # if we are working with unified UB matrix then this should not
+        # be a problem here (note, *if*; *should*)
+        if PhilIndex.params.xia2.settings.unify_setting:
+          continue
+
         pl = self._factory.Pointless()
 
         si = self._sweep_handler.get_sweep_information(epoch)
