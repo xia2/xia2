@@ -1089,7 +1089,8 @@ class CommonScaler(Scaler):
 
     params = PhilIndex.params.xia2.settings.merging_statistics
 
-    i_obs = iotbx.merging_statistics.select_data(scaled_unmerged_mtz, data_labels=None)
+    i_obs = iotbx.merging_statistics.select_data(scaled_unmerged_mtz,
+                                                 data_labels=None)
     i_obs = i_obs.customized_copy(anomalous_flag=True, info=i_obs.info())
 
     result = iotbx.merging_statistics.dataset_statistics(
@@ -1108,7 +1109,12 @@ class CommonScaler(Scaler):
       #log=out
     )
 
-    if anomalous:
+    # FIXME check in here spacegroup not centric as well? i.e. if anomalous
+    # and not centric then do this
+
+    centric = i_obs.crystal_symmetry().space_group().is_centric()
+
+    if anomalous and not centric:
       merged_intensities = i_obs.merge_equivalents(
         use_internal_variance=params.use_internal_variance).array()
       slope, intercept, n_pairs = anomalous_probability_plot(merged_intensities)
