@@ -70,9 +70,10 @@ def exercise_dials_integrater(nproc=None):
   assert reader.file_type() == "ccp4_mtz"
   mtz_object = reader.file_content()
   assert abs(mtz_object.n_reflections() - 48117) < 100, mtz_object.n_reflections()
+
   assert mtz_object.column_labels() == [
     'H', 'K', 'L', 'M_ISYM', 'BATCH', 'IPR', 'SIGIPR', 'I', 'SIGI',
-    'FRACTIONCALC', 'XDET', 'YDET', 'ROT', 'LP', 'DQE']
+    'BIG', 'SIGBG', 'FRACTIONCALC', 'XDET', 'YDET', 'ROT', 'LP', 'DQE']
 
   assert integrater.get_integrater_wedge() == (1, 45)
   assert approx_equal(integrater.get_integrater_cell(),
