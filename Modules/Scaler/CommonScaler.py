@@ -1047,7 +1047,6 @@ class CommonScaler(Scaler):
       'Rmeas(I)': 'r_meas',
       'High resolution limit': 'd_min',
       'Total observations': 'n_obs',
-      'Anomalous correlation': 'anom_half_corr',
       'Rpim(I)': 'r_pim',
       'CC half': 'cc_one_half',
       'Total unique': 'n_uniq',
@@ -1058,6 +1057,7 @@ class CommonScaler(Scaler):
       'Rpim(I+/-)': 'r_pim',
       'Rmeas(I+/-)': 'r_meas',
       'Anomalous completeness': 'anom_completeness',
+      'Anomalous correlation': 'anom_half_corr',
       'Anomalous multiplicity': 'mean_redundancy',
     }
 
