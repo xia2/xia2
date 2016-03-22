@@ -269,8 +269,11 @@ def format_statistics(statistics):
 
   for k, format_str in formats.iteritems():
     if k in available:
-      result += k.ljust(40) + '\t' + \
-                format_str % tuple(statistics[k]) + '\n'
+      try:
+        formatted = format_str % tuple(statistics[k])
+      except TypeError:
+        formatted = '(error)'
+      result += k.ljust(40) + '\t' + formatted + '\n'
 
   return result
 
