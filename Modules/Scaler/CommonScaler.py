@@ -1033,6 +1033,7 @@ class CommonScaler(Scaler):
     return resolution
 
   def _compute_scaler_statistics(self, scaled_unmerged_mtz):
+    import iotbx.merging_statistics
 
     scalr_statistics = {}
 
@@ -1063,13 +1064,22 @@ class CommonScaler(Scaler):
 
     stats = {}
 
-    result = self._iotbx_merging_statistics(
-      scaled_unmerged_mtz, anomalous=False)
-    anom_result = self._iotbx_merging_statistics(
-      scaled_unmerged_mtz, anomalous=True)
+    i_obs = iotbx.merging_statistics.select_data(scaled_unmerged_mtz,
+                                                 data_labels=None)
+    i_obs = i_obs.customized_copy(anomalous_flag=True, info=i_obs.info())
+
+    result = self._iotbx_merging_statistics(i_obs, anomalous=False)
+
+    if i_obs.crystal_symmetry().space_group().is_centric():
+      # Do not compute anomalous statistics if space group is centric
+      anom_key_to_var = {}
+      anom_result = None
+      key_to_var.pop('Anomalous correlation', None)
+    else:
+      anom_result = self._iotbx_merging_statistics(i_obs, anomalous=True)
+      stats['Anomalous slope'] = (anom_result.anomalous_np_slope, 0, 0)
 
     for d, r in ((key_to_var, result), (anom_key_to_var, anom_result)):
-
       for k, v in d.iteritems():
         values = (
           getattr(r.overall, v),
@@ -1080,18 +1090,12 @@ class CommonScaler(Scaler):
         if values[0] is not None:
           stats[k] = values
 
-    stats['Anomalous slope'] = (anom_result.anomalous_np_slope, 0, 0)
-
     return stats
 
-  def _iotbx_merging_statistics(self, scaled_unmerged_mtz, anomalous=False):
+  def _iotbx_merging_statistics(self, i_obs, anomalous=False):
     import iotbx.merging_statistics
 
     params = PhilIndex.params.xia2.settings.merging_statistics
-
-    i_obs = iotbx.merging_statistics.select_data(scaled_unmerged_mtz,
-                                                 data_labels=None)
-    i_obs = i_obs.customized_copy(anomalous_flag=True, info=i_obs.info())
 
     result = iotbx.merging_statistics.dataset_statistics(
       i_obs=i_obs,
