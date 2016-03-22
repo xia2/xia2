@@ -1033,7 +1033,6 @@ class CommonScaler(Scaler):
     return resolution
 
   def _compute_scaler_statistics(self, scaled_unmerged_mtz):
-    import iotbx.merging_statistics
 
     scalr_statistics = {}
 
@@ -1064,19 +1063,19 @@ class CommonScaler(Scaler):
 
     stats = {}
 
-    i_obs = iotbx.merging_statistics.select_data(scaled_unmerged_mtz,
-                                                 data_labels=None)
-    i_obs = i_obs.customized_copy(anomalous_flag=True, info=i_obs.info())
+    from cctbx import sgtbx
+    sg = sgtbx.space_group_info(
+      str(self.get_scaler_likely_spacegroups()[0])).group()
 
-    result = self._iotbx_merging_statistics(i_obs, anomalous=False)
+    result = self._iotbx_merging_statistics(
+      scaled_unmerged_mtz, anomalous=False)
 
-    if i_obs.crystal_symmetry().space_group().is_centric():
-      # Do not compute anomalous statistics if space group is centric
-      anom_key_to_var = {}
+    if sg.is_centric():
       anom_result = None
-      key_to_var.pop('Anomalous correlation', None)
+      anom_key_to_var = {}
     else:
-      anom_result = self._iotbx_merging_statistics(i_obs, anomalous=True)
+      anom_result = self._iotbx_merging_statistics(
+        scaled_unmerged_mtz, anomalous=True)
       stats['Anomalous slope'] = (anom_result.anomalous_np_slope, 0, 0)
 
     for d, r in ((key_to_var, result), (anom_key_to_var, anom_result)):
@@ -1092,10 +1091,13 @@ class CommonScaler(Scaler):
 
     return stats
 
-  def _iotbx_merging_statistics(self, i_obs, anomalous=False):
+  def _iotbx_merging_statistics(self, scaled_unmerged_mtz, anomalous=False):
     import iotbx.merging_statistics
 
     params = PhilIndex.params.xia2.settings.merging_statistics
+
+    i_obs = iotbx.merging_statistics.select_data(scaled_unmerged_mtz, data_labels=None)
+    i_obs = i_obs.customized_copy(anomalous_flag=True, info=i_obs.info())
 
     result = iotbx.merging_statistics.dataset_statistics(
       i_obs=i_obs,
@@ -1113,12 +1115,7 @@ class CommonScaler(Scaler):
       #log=out
     )
 
-    # FIXME check in here spacegroup not centric as well? i.e. if anomalous
-    # and not centric then do this
-
-    centric = i_obs.crystal_symmetry().space_group().is_centric()
-
-    if anomalous and not centric:
+    if anomalous:
       merged_intensities = i_obs.merge_equivalents(
         use_internal_variance=params.use_internal_variance).array()
       slope, intercept, n_pairs = anomalous_probability_plot(merged_intensities)
