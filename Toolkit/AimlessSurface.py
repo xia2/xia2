@@ -27,7 +27,7 @@ def n_terms():
 def order_from_nterm(n):
   return {0: 0, 80: 8, 3: 1, 8: 2, 15: 3, 48: 6, 99: 9, 35: 5, 24: 4, 63: 7}[n]
 
-def evaluate_1degree(ClmList, png_filename):
+def evaluate_1degree(ClmList):
   from scitbx import math
   from scitbx.array_family import flex
   import math as pymath
@@ -62,14 +62,15 @@ def evaluate_1degree(ClmList, png_filename):
           else:
             a += Clm[(l,m)] * sqrt2 * ((-1) ** m) * Ylm.real
       abscor[(t//1, p//1)] = a
+  return abscor
 
+def generate_map(abscor, png_filename):
   import matplotlib
   matplotlib.use('Agg')
   from matplotlib import pyplot
   plot = pyplot.imshow(abscor)
   pyplot.colorbar()
   pyplot.savefig(png_filename)
-  return
 
 def scrape_coefficients(log_file_name):
   # FIXME cope with cases where the surfaces are not LINKed => will be several
@@ -87,4 +88,4 @@ def scrape_coefficients(log_file_name):
 
 if __name__ == '__main__':
   import sys
-  evaluate_1degree(scrape_coefficients(sys.argv[1]), sys.argv[2])
+  generate_map(evaluate_1degree(scrape_coefficients(sys.argv[1])), sys.argv[2])

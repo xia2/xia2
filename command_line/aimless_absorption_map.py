@@ -2,10 +2,8 @@
 from __future__ import division
 
 def main(log, png):
-  from xia2.Toolkit.AimlessSurface import evaluate_1degree, scrape_coefficients
-  evaluate_1degree(scrape_coefficients(log), png)
-  return
-
+  from xia2.Toolkit.AimlessSurface import generate_map, evaluate_1degree, scrape_coefficients
+  generate_map(evaluate_1degree(scrape_coefficients(log)), png)
 
 if __name__ == '__main__':
   import sys
