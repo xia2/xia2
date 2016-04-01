@@ -215,7 +215,7 @@ Stdout = _Stream(None, None)
 from datetime import date
 import os
 day = date.today().timetuple()
-if (day.tm_mday == 1 and day.rm_mon == 4) or 'XIA2_APRIL' in os.environ:
+if (day.tm_mday == 1 and day.tm_mon == 4) or 'XIA2_APRIL' in os.environ:
   Stdout.filter(april)
 Debug = _Stream('%s-debug' % cl, None)
 
