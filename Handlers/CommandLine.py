@@ -521,6 +521,12 @@ class _CommandLine(object):
     with open('xia2-diff.phil', 'wb') as f:
       print >> f, PhilIndex.get_diff().as_str()
 
+    Debug.write('\nDifference PHIL:')
+    Debug.write(PhilIndex.get_diff().as_str(), strip=False)
+
+    Debug.write('Working PHIL:')
+    Debug.write(PhilIndex.working_phil.as_str(), strip=False)
+
     nonsense = 'Unknown command-line options:'
     was_nonsense = False
 
