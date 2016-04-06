@@ -559,7 +559,7 @@ def write_xinfo(filename, directories, template=None):
     os.makedirs(directory)
   except OSError, e:
     if not 'File exists' in str(e):
-      raise e
+      raise
 
   # FIXME should I have some exception handling in here...?
 
