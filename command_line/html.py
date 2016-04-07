@@ -10,7 +10,7 @@ import traceback
 
 # Needed to make xia2 imports work correctly
 import libtbx.load_env
-#import libtbx.env.find_in_repositories
+
 from xia2.Handlers.Streams import Chatter, Debug
 
 from xia2.Handlers.Files import cleanup
