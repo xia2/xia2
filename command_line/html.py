@@ -10,6 +10,7 @@ import traceback
 
 # Needed to make xia2 imports work correctly
 import libtbx.load_env
+#import libtbx.env.find_in_repositories
 from xia2.Handlers.Streams import Chatter, Debug
 
 from xia2.Handlers.Files import cleanup
@@ -79,6 +80,7 @@ def rst2html(rst):
     def write_colspecs(self):
       self.colspecs = []
 
+  xia2_root_dir = libtbx.env.find_in_repositories("xia2", optional=False)
 
   args = {
     'stylesheet_path': os.path.join(xia2_root_dir, 'css', 'voidspace.css')
@@ -139,7 +141,7 @@ def overview_section(xproject):
     'Multiplicity',
     'CC-half',
     'I/sigma',
-    'Rmerge',
+    'Rmerge(I)',
     'Anomalous completeness',
     'Anomalous multiplicity',
     #'See all statistics',
@@ -160,7 +162,7 @@ def overview_section(xproject):
         '%s' %statistics['Multiplicity'][0],
         '%s' %statistics['CC half'][0],
         '%s' %statistics['I/sigma'][0],
-        '%s' %statistics['Rmerge'][0],
+        '%s' %statistics['Rmerge(I)'][0],
         '%s' %statistics['Anomalous completeness'][0],
         '%s' %statistics['Anomalous multiplicity'][0],
       ]
@@ -424,6 +426,8 @@ def integration_status_section(xproject):
     abandoned='@'
   )
   symbol_to_status = dict(reversed(item) for item in status_to_symbol.items())
+
+  xia2_root_dir = libtbx.env.find_in_repositories("xia2", optional=False)
 
   # FIXME we should copy these icons to the local directory
   img_dir = os.path.join(xia2_root_dir, 'Modules', 'Xia2html', 'icons')
