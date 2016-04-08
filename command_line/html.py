@@ -148,7 +148,7 @@ def overview_section(xproject):
     'Multiplicity',
     'CC-half',
     'I/sigma',
-    'Rmerge',
+    'Rmerge(I)',
     'Anomalous completeness',
     'Anomalous multiplicity',
     #'See all statistics',
@@ -169,7 +169,7 @@ def overview_section(xproject):
         '%s' %statistics['Multiplicity'][0],
         '%s' %statistics['CC half'][0],
         '%s' %statistics['I/sigma'][0],
-        '%s' %statistics['Rmerge'][0],
+        '%s' %statistics['Rmerge(I)'][0],
         '%s' %statistics['Anomalous completeness'][0],
         '%s' %statistics['Anomalous multiplicity'][0],
       ]
