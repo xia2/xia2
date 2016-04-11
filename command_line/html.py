@@ -334,17 +334,17 @@ def output_files_section(xproject):
 
     headers = ['Dataset', 'File name']
     merged_mtz = reflection_files['mtz']
-    table = [['All datasets', '`%s <%s>`_' %(os.path.basename(merged_mtz), merged_mtz)]]
+    table = [['All datasets', '`%s <%s>`_' %(os.path.basename(merged_mtz), os.path.relpath(merged_mtz))]]
     #['All datasets (unmerged)', '`%s <%s>`_' %(os.path.basename(merged_mtz), merged_mtz],
 
     for wname, unmerged_mtz in reflection_files['mtz_unmerged'].iteritems():
       table.append(
-        [wname, '`%s <%s>`_' %(os.path.basename(unmerged_mtz), unmerged_mtz)])
+        [wname, '`%s <%s>`_' %(
+          os.path.basename(unmerged_mtz), os.path.relpath(unmerged_mtz))])
 
     lines.append('\n')
     lines.append(tabulate(table, headers, tablefmt='rst'))
     lines.append('\n')
-
 
     lines.append('SCA files (useful for AutoSHARP, etc.)')
     lines.append('_' * len(lines[-1]))
@@ -353,7 +353,8 @@ def output_files_section(xproject):
     table = []
     for wname, merged_sca in reflection_files['sca'].iteritems():
       table.append(
-        [wname, '`%s <%s>`_' %(os.path.basename(merged_sca), merged_sca)])
+        [wname, '`%s <%s>`_' %(
+          os.path.basename(merged_sca), os.path.relpath(merged_sca))])
 
     lines.append('\n')
     lines.append(tabulate(table, headers, tablefmt='rst'))
@@ -366,7 +367,8 @@ def output_files_section(xproject):
     table = []
     for wname, unmerged_sca in reflection_files['sca_unmerged'].iteritems():
       table.append(
-        [wname, '`%s <%s>`_' %(os.path.basename(unmerged_sca), unmerged_sca)])
+        [wname, '`%s <%s>`_' %(
+          os.path.basename(unmerged_sca), os.path.relpath(unmerged_sca))])
 
     lines.append('\n')
     lines.append(tabulate(table, headers, tablefmt='rst'))
@@ -390,13 +392,13 @@ def output_files_section(xproject):
       if html_file is not None:
         table.append(
           [os.path.basename(logfile),
-           '`original <%s>`__' %logfile,
-           '`html <%s>`__' %html_file
+           '`original <%s>`__' %os.path.relpath(logfile),
+           '`html <%s>`__' %os.path.relpath(html_file)
            ])
       else:
         table.append(
           [os.path.basename(logfile),
-           '`original <%s>`__' %logfile,
+           '`original <%s>`__' %os.path.relpath(logfile),
            ' ',
            ])
     lines.append('\n')
