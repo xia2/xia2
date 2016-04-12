@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 # LIBTBX_SET_DISPATCHER_NAME xia2.html
 
-import sys
-import os
-import math
-import time
+import docutils
 import exceptions
+import glob
+import math
+import os
+import sys
+import time
 import traceback
 
 # Needed to make xia2 imports work correctly
@@ -64,7 +66,7 @@ def make_logfile_html(logfile):
     rst = '\n'.join(rst)
 
     html_file = '%s.html' %(
-      os.path.splitext(os.path.basename(logfile))[0])
+      os.path.splitext(logfile)[0])
     with open(html_file, 'wb') as f:
       print >> f, rst2html(rst)
     return html_file
@@ -327,24 +329,40 @@ def output_files_section(xproject):
       'right-click on the link and select "Save Link As..."')
     lines.append('\n')
 
+    # hack to replace path to reflection files with DataFiles directory
+    data_dir = os.path.join(os.path.abspath(os.path.curdir), 'DataFiles')
+    g = glob.glob(os.path.join(data_dir, '*'))
     reflection_files = xcryst.get_scaled_merged_reflections()
+    for k, rfile in reflection_files.iteritems():
+      if isinstance(rfile, basestring):
+        for datafile in g:
+          if os.path.basename(datafile) == os.path.basename(rfile):
+            reflection_files[k] = datafile
+            break
+      else:
+        for kk in rfile.keys():
+          for datafile in g:
+            if os.path.basename(datafile) == os.path.basename(rfile[kk]):
+              reflection_files[k][kk] = datafile
+              break
+
     lines.append('MTZ files (useful for CCP4 and Phenix)')
     lines.append('_' * len(lines[-1]))
     lines.append('\n')
 
     headers = ['Dataset', 'File name']
     merged_mtz = reflection_files['mtz']
-    table = [['All datasets', '`%s <%s>`_' %(os.path.basename(merged_mtz), merged_mtz)]]
+    table = [['All datasets', '`%s <%s>`_' %(os.path.basename(merged_mtz), os.path.relpath(merged_mtz))]]
     #['All datasets (unmerged)', '`%s <%s>`_' %(os.path.basename(merged_mtz), merged_mtz],
 
     for wname, unmerged_mtz in reflection_files['mtz_unmerged'].iteritems():
       table.append(
-        [wname, '`%s <%s>`_' %(os.path.basename(unmerged_mtz), unmerged_mtz)])
+        [wname, '`%s <%s>`_' %(
+          os.path.basename(unmerged_mtz), os.path.relpath(unmerged_mtz))])
 
     lines.append('\n')
     lines.append(tabulate(table, headers, tablefmt='rst'))
     lines.append('\n')
-
 
     lines.append('SCA files (useful for AutoSHARP, etc.)')
     lines.append('_' * len(lines[-1]))
@@ -353,7 +371,8 @@ def output_files_section(xproject):
     table = []
     for wname, merged_sca in reflection_files['sca'].iteritems():
       table.append(
-        [wname, '`%s <%s>`_' %(os.path.basename(merged_sca), merged_sca)])
+        [wname, '`%s <%s>`_' %(
+          os.path.basename(merged_sca), os.path.relpath(merged_sca))])
 
     lines.append('\n')
     lines.append(tabulate(table, headers, tablefmt='rst'))
@@ -366,7 +385,8 @@ def output_files_section(xproject):
     table = []
     for wname, unmerged_sca in reflection_files['sca_unmerged'].iteritems():
       table.append(
-        [wname, '`%s <%s>`_' %(os.path.basename(unmerged_sca), unmerged_sca)])
+        [wname, '`%s <%s>`_' %(
+          os.path.basename(unmerged_sca), os.path.relpath(unmerged_sca))])
 
     lines.append('\n')
     lines.append(tabulate(table, headers, tablefmt='rst'))
@@ -383,20 +403,20 @@ def output_files_section(xproject):
 
     table = []
     log_dir = os.path.join(os.path.abspath(os.path.curdir), 'LogFiles')
-    import glob
     g = glob.glob(os.path.join(log_dir, '*.log'))
     for logfile in g:
       html_file = make_logfile_html(logfile)
-      if html_file is not None:
+      html_file = os.path.splitext(logfile)[0] + '.html'
+      if os.path.exists(html_file):
         table.append(
           [os.path.basename(logfile),
-           '`original <%s>`__' %logfile,
-           '`html <%s>`__' %html_file
+           '`original <%s>`__' %os.path.relpath(logfile),
+           '`html <%s>`__' %os.path.relpath(html_file)
            ])
       else:
         table.append(
           [os.path.basename(logfile),
-           '`original <%s>`__' %logfile,
+           '`original <%s>`__' %os.path.relpath(logfile),
            ' ',
            ])
     lines.append('\n')
