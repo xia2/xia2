@@ -7,6 +7,8 @@ import math
 import time
 import exceptions
 import traceback
+import glob
+
 
 # Needed to make xia2 imports work correctly
 import libtbx.load_env
@@ -56,7 +58,7 @@ def make_logfile_html(logfile):
     rst = '\n'.join(rst)
 
     html_file = '%s.html' %(
-      os.path.splitext(os.path.basename(logfile))[0])
+      os.path.splitext(logfile)[0])
     with open(html_file, 'wb') as f:
       print >> f, rst2html(rst)
     return html_file
@@ -320,7 +322,23 @@ def output_files_section(xproject):
       'right-click on the link and select "Save Link As..."')
     lines.append('\n')
 
+    # hack to replace path to reflection files with DataFiles directory
+    data_dir = os.path.join(os.path.abspath(os.path.curdir), 'DataFiles')
+    g = glob.glob(os.path.join(data_dir, '*'))
     reflection_files = xcryst.get_scaled_merged_reflections()
+    for k, rfile in reflection_files.iteritems():
+      if isinstance(rfile, basestring):
+        for datafile in g:
+          if os.path.basename(datafile) == os.path.basename(rfile):
+            reflection_files[k] = datafile
+            break
+      else:
+        for kk in rfile.keys():
+          for datafile in g:
+            if os.path.basename(datafile) == os.path.basename(rfile[kk]):
+              reflection_files[k][kk] = datafile
+              break
+
     lines.append('MTZ files (useful for CCP4 and Phenix)')
     lines.append('_' * len(lines[-1]))
     lines.append('\n')
@@ -378,11 +396,11 @@ def output_files_section(xproject):
 
     table = []
     log_dir = os.path.join(os.path.abspath(os.path.curdir), 'LogFiles')
-    import glob
     g = glob.glob(os.path.join(log_dir, '*.log'))
     for logfile in g:
       html_file = make_logfile_html(logfile)
-      if html_file is not None:
+      html_file = os.path.splitext(logfile)[0] + '.html'
+      if os.path.exists(html_file):
         table.append(
           [os.path.basename(logfile),
            '`original <%s>`__' %os.path.relpath(logfile),
