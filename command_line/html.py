@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 # LIBTBX_SET_DISPATCHER_NAME xia2.html
 
-import sys
-import os
-import math
-import time
+import docutils
 import exceptions
-import traceback
 import glob
-
+import math
+import os
+import sys
+import time
+import traceback
 
 # Needed to make xia2 imports work correctly
 import libtbx.load_env
