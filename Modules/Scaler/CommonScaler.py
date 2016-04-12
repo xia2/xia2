@@ -1063,9 +1063,10 @@ class CommonScaler(Scaler):
 
     stats = {}
 
+    # don't call self.get_scaler_likely_spacegroups() since that calls
+    # self.scale() which introduced a subtle bug
     from cctbx import sgtbx
-    sg = sgtbx.space_group_info(
-      str(self.get_scaler_likely_spacegroups()[0])).group()
+    sg = sgtbx.space_group_info(str(self._scalr_likely_spacegroups[0])).group()
 
     result = self._iotbx_merging_statistics(
       scaled_unmerged_mtz, anomalous=False)
