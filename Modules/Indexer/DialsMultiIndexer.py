@@ -8,22 +8,6 @@
 # An indexer using the DIALS methods.
 
 import os
-import sys
-import math
-import shutil
-
-import libtbx
-
-# wrappers for programs that this needs: DIALS
-
-from xia2.Wrappers.Dials.Import import Import as _Import
-from xia2.Wrappers.Dials.Spotfinder import Spotfinder as _Spotfinder
-from xia2.Wrappers.Dials.DiscoverBetterExperimentalModel \
-     import DiscoverBetterExperimentalModel as _DiscoverBetterExperimentalModel
-from xia2.Wrappers.Dials.Index import Index as _Index
-from xia2.Wrappers.Dials.Reindex import Reindex as _Reindex
-from xia2.Wrappers.Dials.RefineBravaisSettings import RefineBravaisSettings as \
-     _RefineBravaisSettings
 
 # interfaces that this must implement to be an indexer
 
@@ -32,12 +16,9 @@ from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
 
 # odds and sods that are needed
 
-from xia2.lib.bits import auto_logfiler, nint
-from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.Handlers.Streams import Debug
 from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Files import FileHandler
-from xia2.Experts.SymmetryExpert import lattice_to_spacegroup_number
 
 class DialsMultiIndexer(DialsIndexer, MultiIndexer):
 
