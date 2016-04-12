@@ -28,6 +28,7 @@ from xia2.Wrappers.Dials.Reindex import Reindex as _Reindex
 from xia2.Wrappers.Dials.Refine import Refine as _Refine
 from xia2.Wrappers.Dials.RefineBravaisSettings import RefineBravaisSettings as \
      _RefineBravaisSettings
+from xia2.Wrappers.Dials.Report import Report as _Report
 
 # interfaces that this must implement to be an indexer
 
@@ -139,6 +140,12 @@ class DialsIndexer(Indexer):
       PhilIndex.params.dials.close_to_spindle_cutoff)
     auto_logfiler(rbs)
     return rbs
+
+  def Report(self):
+    report = _Report()
+    report.set_working_directory(self.get_working_directory())
+    auto_logfiler(report, 'REPORT')
+    return report
 
   ##########################################
 
@@ -570,6 +577,18 @@ class DialsIndexer(Indexer):
     elif not os.path.exists(indexer.get_indexed_filename()):
       raise RuntimeError("Indexing has failed: %s does not exist."
                          %indexer.get_indexed_filename())
+
+    report = self.Report()
+    report.set_experiments_filename(indexer.get_experiments_filename())
+    report.set_reflections_filename(indexer.get_indexed_filename())
+    html_filename = os.path.join(
+      self.get_working_directory(),
+      '%i_dials.index.report.html' %report.get_xpid())
+    report.set_html_filename(html_filename)
+    report.run()
+    assert os.path.exists(html_filename)
+    FileHandler.record_html_file(
+      '%s INDEX' %self.get_indexer_full_name(), html_filename)
 
     return indexer
 
