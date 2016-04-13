@@ -29,10 +29,12 @@ def run():
   assert os.path.exists('xia2.json')
   from xia2.Schema.XProject import XProject
   xinfo = XProject.from_json(filename='xia2.json')
+  generate_xia2_html(xinfo)
 
+def generate_xia2_html(xinfo, filename='xia2.html'):
   rst = get_xproject_rst(xinfo)
 
-  with open('xia2.html', 'wb') as f:
+  with open(filename, 'wb') as f:
     print >> f, rst2html(rst)
 
   #with open('xia2.tex', 'wb') as f:
@@ -40,6 +42,7 @@ def run():
 
   #with open('xia2.odt', 'wb') as f:
     #print >> f, rst2odt(rst)
+
 
 def make_logfile_html(logfile):
     tables = extract_loggraph_tables(logfile)

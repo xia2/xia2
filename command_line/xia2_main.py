@@ -254,6 +254,9 @@ def xia2_main(stop_after=None):
       fout.write('%s\n' % record)
     fout.close()
 
+    from xia2.command_line.html import generate_xia2_html
+    generate_xia2_html(xinfo, filename='xia2.html')
+
   write_citations()
 
   xinfo.as_json(filename='xia2.json')
