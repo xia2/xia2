@@ -93,9 +93,13 @@ class Sweep(object):
     return
 
   def get_template(self):
-    return self._imageset.get_template()
+    #try:
+      #return self._imageset.get_template()
+    #except Exception:
+    return self._template
 
   def get_directory(self):
+    return self._directory
     return os.path.split(self.get_template())[0]
 
   def get_imageset(self):

@@ -349,8 +349,11 @@ class FrameProcessor(object):
     panel = detector[0]
 
     self._fp_imageset = imageset
-    self._fp_directory, self._fp_template = os.path.split(
-      imageset.get_template())
+    try:
+      self._fp_directory, self._fp_template = os.path.split(
+        imageset.get_template())
+    except Exception:
+      pass
 
     image_range = imageset.get_scan().get_image_range()
     self._fp_matching_images = tuple(range(image_range[0], image_range[1]+1))
@@ -368,7 +371,8 @@ class FrameProcessor(object):
       self._fp_beam = y, x
       self._fp_beam_prov = 'header'
 
-    self.digest_template()
+    if self._fp_template is not None:
+      self.digest_template()
 
     return
 

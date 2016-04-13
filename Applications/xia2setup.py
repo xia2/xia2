@@ -53,6 +53,8 @@ known_scan_extensions = ['scan']
 
 known_sequence_extensions = ['seq']
 
+known_hdf5_extensions = ['.h5']
+
 latest_sequence = None
 
 latest_chooch = None
@@ -102,6 +104,17 @@ def is_image_name(filename):
         return True
     except:
       pass
+
+    if is_hd5f_name(filename):
+      return True
+
+  return False
+
+def is_hd5f_name(filename):
+
+  if os.path.isfile(filename):
+    if os.path.splitext(filename)[-1] in known_hdf5_extensions:
+      return True
 
   return False
 

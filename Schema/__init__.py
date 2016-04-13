@@ -10,33 +10,74 @@ class _ImagesetCache(dict):
 
 imageset_cache = _ImagesetCache()
 
+
+def longest_common_substring(s1, s2):
+  m = [[0] * (1 + len(s2)) for i in xrange(1 + len(s1))]
+  longest, x_longest = 0, 0
+  for x in xrange(1, 1 + len(s1)):
+    for y in xrange(1, 1 + len(s2)):
+      if s1[x - 1] == s2[y - 1]:
+        m[x][y] = m[x - 1][y - 1] + 1
+        if m[x][y] > longest:
+          longest = m[x][y]
+          x_longest = x
+      else:
+        m[x][y] = 0
+  return s1[x_longest - longest: x_longest]
+
+
 def load_imagesets(template, directory, id_image=None, image_range=None,
                    use_cache=True, reversephi=False):
   global imageset_cache
+  from dxtbx.datablock import DataBlockFactory
+  from xia2.Applications.xia2setup import known_hdf5_extensions
 
   full_template_path = os.path.join(directory, template)
   if full_template_path not in imageset_cache or not use_cache:
 
-    from dxtbx.datablock import DataBlockFactory
-    from dxtbx.sweep_filenames import locate_files_matching_template_string
+    if os.path.splitext(full_template_path)[-1] in known_hdf5_extensions:
+      import glob
+      g = glob.glob(os.path.join(directory, '*_master.h5'))
+      master_file = None
+      for p in g:
+        substr = longest_common_substring(template, p)
+        if len(substr):
+          if (master_file is None or
+              (len(substr) > len(longest_common_substring(template, master_file)))):
+            master_file = p
 
-    params = PhilIndex.get_python_object()
-    read_all_image_headers = params.xia2.settings.read_all_image_headers
+      if master_file is None:
+        raise RuntimeError("Can't find master file for %s" %full_template_path)
 
-    if read_all_image_headers:
-      paths = sorted(locate_files_matching_template_string(full_template_path))
       unhandled = []
       datablocks = DataBlockFactory.from_filenames(
-        paths, verbose=False, unhandled=unhandled)
+        [master_file], verbose=False, unhandled=unhandled)
       assert len(unhandled) == 0, "unhandled image files identified: %s" % \
           unhandled
       assert len(datablocks) == 1, "1 datablock expected, %d found" % \
           len(datablocks)
 
     else:
-      from dxtbx.datablock import DataBlockTemplateImporter
-      importer = DataBlockTemplateImporter([full_template_path])
-      datablocks = importer.datablocks
+
+      from dxtbx.sweep_filenames import locate_files_matching_template_string
+
+      params = PhilIndex.get_python_object()
+      read_all_image_headers = params.xia2.settings.read_all_image_headers
+
+      if read_all_image_headers:
+        paths = sorted(locate_files_matching_template_string(full_template_path))
+        unhandled = []
+        datablocks = DataBlockFactory.from_filenames(
+          paths, verbose=False, unhandled=unhandled)
+        assert len(unhandled) == 0, "unhandled image files identified: %s" % \
+            unhandled
+        assert len(datablocks) == 1, "1 datablock expected, %d found" % \
+            len(datablocks)
+
+      else:
+        from dxtbx.datablock import DataBlockTemplateImporter
+        importer = DataBlockTemplateImporter([full_template_path])
+        datablocks = importer.datablocks
 
     imagesets = datablocks[0].extract_sweeps()
     assert len(imagesets) > 0, "no imageset found"
