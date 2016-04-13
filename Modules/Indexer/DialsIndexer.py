@@ -308,19 +308,20 @@ class DialsIndexer(Indexer):
       refl = easy_pickle.load(spot_filename)
       Chatter.write(spot_counts_per_image_plot(refl), strip=False)
 
-      if 0 and not PhilIndex.params.xia2.settings.trust_beam_centre:
+      if not PhilIndex.params.xia2.settings.trust_beam_centre:
         discovery = self.DiscoverBetterExperimentalModel()
-        discovery.set_sweep_filename(self.get_indexer_payload("datablock.json"))
+        discovery.set_sweep_filename(datablocks[-1])
         discovery.set_spot_filename(spot_filename)
-        wedges = self._index_select_images_i()
-        discovery.set_scan_ranges(wedges)
+        #wedges = self._index_select_images_i(imageset)
+        #discovery.set_scan_ranges(wedges)
         #discovery.set_scan_ranges([(first + offset, last + offset)])
         try:
           discovery.run()
         except Exception, e:
           Debug.write('DIALS beam centre search failed: %s' %str(e))
         else:
-          datablocks.append(discovery.get_optimized_datablock_filename())
+          # overwrite datablock.json in datablocks list
+          datablocks[-1] = discovery.get_optimized_datablock_filename()
 
     self.set_indexer_payload("spot_lists", spot_lists)
     self.set_indexer_payload("datablocks", datablocks)
