@@ -348,14 +348,20 @@ class FrameProcessor(object):
     assert len(detector) == 1, 'xia2 does not yet support multi-panel detectors'
     panel = detector[0]
 
+    image_range = imageset.get_scan().get_image_range()
+
     self._fp_imageset = imageset
     try:
       self._fp_directory, self._fp_template = os.path.split(
         imageset.get_template())
+    except AttributeError:
+      try:
+        self._fp_directory = os.path.dirname(imageset.get_path(image_range[0]))
+      except Exception:
+        pass
     except Exception:
       pass
 
-    image_range = imageset.get_scan().get_image_range()
     self._fp_matching_images = tuple(range(image_range[0], image_range[1]+1))
 
     if self._fp_wavelength_prov is None:
