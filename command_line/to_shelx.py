@@ -52,8 +52,8 @@ Winter, G. (2010) Journal of Applied Crystallography 43
                                                           unit_cell_data['solution_constrained'][parameter]['population_standard_deviation'],
                                                           4)
     block['_cell_measurement_reflns_used'] = unit_cell_data['sampling']['used_reflections']
-    block['_cell_measurement_theta_min'] = unit_cell_data['sampling']['used_min_2theta']
-    block['_cell_measurement_theta_max'] = unit_cell_data['sampling']['used_max_2theta']
+    block['_cell_measurement_theta_min'] = unit_cell_data['sampling']['used_min_2theta'] / 2
+    block['_cell_measurement_theta_max'] = unit_cell_data['sampling']['used_max_2theta'] / 2
     block['_diffrn_reflns_number'] = unit_cell_data['reflections']['count']
     block['_diffrn_reflns_limit_h_min'] = unit_cell_data['reflections']['min_miller'][0]
     block['_diffrn_reflns_limit_h_max'] = unit_cell_data['reflections']['max_miller'][0]
