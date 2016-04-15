@@ -147,8 +147,6 @@ def overview_section(xproject):
     'CC-half',
     'I/sigma',
     'Rmerge(I)',
-    'Anomalous completeness',
-    'Anomalous multiplicity',
     #'See all statistics',
   ])
 
@@ -168,9 +166,12 @@ def overview_section(xproject):
         '%s' %statistics['CC half'][0],
         '%s' %statistics['I/sigma'][0],
         '%s' %statistics['Rmerge(I)'][0],
-        '%s' %statistics['Anomalous completeness'][0],
-        '%s' %statistics['Anomalous multiplicity'][0],
       ]
+      for c in ('Anomalous completeness', 'Anomalous multiplicity'):
+        if c in statistics:
+          column.append('%s' %statistics[c][0])
+          if c not in columns[0]:
+            columns[0].append(c)
       columns.append(column)
 
   table = [[c[i] for c in columns] for i in range(len(columns[0]))]
