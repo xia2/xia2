@@ -3,7 +3,9 @@ from __future__ import division
 
 def main(log, png):
   from xia2.Toolkit.AimlessSurface import generate_map, evaluate_1degree, scrape_coefficients
-  generate_map(evaluate_1degree(scrape_coefficients(log)), png)
+  absmap = evaluate_1degree(scrape_coefficients(log))
+  assert absmap.max() - absmap.min() > 0.000001, "Cannot create absorption surface: map is too flat (min: %f, max: %f)" % (absmap.min(), absmap.max())
+  generate_map(absmap, png)
 
 if __name__ == '__main__':
   import sys
