@@ -840,11 +840,12 @@ class XSweep(object):
         # frames to process...
 
         if self._frames_to_process:
-          frames = self._frames_to_process
-          self._integrater.set_integrater_wedge(frames[0],
-                                                frames[1])
-          self._integrater.set_frame_wedge(frames[0],
-                                           frames[1])
+          self._integrater._setup_from_imageset(self.get_imageset())
+          #frames = self._frames_to_process
+          #self._integrater.set_integrater_wedge(frames[0],
+                                                #frames[1])
+          #self._integrater.set_frame_wedge(frames[0],
+                                           #frames[1])
           self._integrater.set_integrater_epoch(
             self.get_epoch(self._frames_to_process[0]))
 
