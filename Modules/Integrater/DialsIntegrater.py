@@ -282,8 +282,6 @@ class DialsIntegrater(Integrater):
       self.set_integrater_wedge(min(images),
                                 max(images))
 
-    first_image_in_wedge = self.get_image_name(self._intgr_wedge[0])
-
     integrate.set_experiments_filename(self._intgr_experiments_filename)
     integrate.set_reflections_filename(self._intgr_indexed_filename)
     integrate.set_d_max(self._intgr_reso_low)
