@@ -831,8 +831,15 @@ class CommonScaler(Scaler):
 
     if Flags.get_small_molecule():
       # record this for future reference
+
+      # keep 'mtz' and remove 'mtz_merged' from the dictionary for
+      # consistency with non-small-molecule workflow
+      self._scalr_scaled_reflection_files['mtz'] = \
+        self._scalr_scaled_reflection_files['mtz_merged']
+      del self._scalr_scaled_reflection_files['mtz_merged']
+
       FileHandler.record_data_file(self._scalr_scaled_reflection_files[
-        'mtz_merged'])
+        'mtz'])
 
       return
 

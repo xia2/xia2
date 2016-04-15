@@ -347,7 +347,7 @@ def output_files_section(xproject):
     lines.append('\n')
 
     headers = ['Dataset', 'File name']
-    merged_mtz = reflection_files['mtz_merged']
+    merged_mtz = reflection_files['mtz']
     table = [['All datasets', '`%s <%s>`_' %(os.path.basename(merged_mtz), os.path.relpath(merged_mtz))]]
     #['All datasets (unmerged)', '`%s <%s>`_' %(os.path.basename(merged_mtz), merged_mtz],
 
