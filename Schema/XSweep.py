@@ -238,14 +238,13 @@ class XSweep(object):
       params = PhilIndex.get_python_object()
       if params.general.check_image_files_readable:
         for j in range(start, end + 1):
+          image_name = self.get_imageset().get_path(j-start)
           if not j in self._images:
-            Debug.write('image %s missing' % \
-                        self.get_image_name(j))
+            Debug.write('image %s missing' %image_name)
             error = True
             continue
-          if not os.access(self.get_image_name(j), os.R_OK):
-            Debug.write('image %s unreadable' % \
-                        self.get_image_name(j))
+          if not os.access(image_name, os.R_OK):
+            Debug.write('image %s unreadable' %image_name)
             error = True
             continue
 
