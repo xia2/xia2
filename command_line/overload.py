@@ -40,7 +40,7 @@ def get_overload(cbf_file):
   with open(cbf_file, 'rb') as fh:
     for record in fh:
       if 'Count_cutoff' in record:
-        return int(record.split()[-2])
+        return float(record.split()[-2])
 
 def build_hist():
   from scitbx.array_family import flex
@@ -57,7 +57,7 @@ def build_hist():
   limit = get_overload(image_list[0])
   binfactor = 5 # register up to 500% counts
   histmax = (limit * binfactor) + 0.0
-  histbins = (limit * binfactor) + 1
+  histbins = int(limit * binfactor) + 1
   hist = flex.histogram(flex.double(), data_min=0.0, data_max=histmax, n_slots=histbins)
 
   print "Processing %d images" % image_count
