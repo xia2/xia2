@@ -42,9 +42,14 @@ def get_overload(cbf_file):
       if 'Count_cutoff' in record:
         return float(record.split()[-2])
 
-def build_hist():
+def build_hist(nproc=1):
   from scitbx.array_family import flex
+  from libtbx import easy_mp
 
+  # FIXME use proper optionparser here. This works for now
+  if len(sys.argv) >= 2 and sys.argv[1].startswith('nproc='):
+    nproc=int(sys.argv[1][6:])
+    sys.argv = sys.argv[1:]
   if len(sys.argv) == 2 and sys.argv[1].endswith('.json'):
     from dxtbx import datablock
     db = datablock.DataBlockFactory.from_json_file(sys.argv[1])[0]
@@ -58,33 +63,45 @@ def build_hist():
   binfactor = 5 # register up to 500% counts
   histmax = (limit * binfactor) + 0.0
   histbins = int(limit * binfactor) + 1
-  hist = flex.histogram(flex.double(), data_min=0.0, data_max=histmax, n_slots=histbins)
 
-  print "Processing %d images" % image_count
-  start = timeit.default_timer()
-  last_update = start
+  print "Processing %d images in %d processes\n" % (image_count, nproc)
 
-#  image_maxima = [None] * image_count
+  def process_image(process):
+    import sys
+    last_update = start = timeit.default_timer()
 
-  for i in range(image_count):
-    data = read_cbf_image(image_list[i])
-    tmp_hist = flex.histogram(data.as_double().as_1d(), data_min=0.0, data_max=histmax, n_slots=histbins)
-#    image_max = histmax
-#    for b in reversed(tmp_hist.slots()):
-#      if b != 0:
-#        image_maxima[i] = int(image_max)
-#        break
-#      image_max -= 1
-    hist.update(tmp_hist)
-    if timeit.default_timer() > (last_update + 3):
-      last_update = timeit.default_timer()
-      if sys.stdout.isatty():
-        sys.stdout.write('\033[A')
-      print 'Processed %d of %d images (%d seconds remain)    ' % (i+1, image_count, round((image_count - i) * (last_update - start) / (i+1)))
-#  print image_maxima
+    i = process
+    local_hist = flex.histogram(flex.double(), data_min=0.0, data_max=histmax, n_slots=histbins)
+    max_images = image_count // nproc
+    if process >= image_count % nproc:
+      max_images += 1
+    while i < image_count:
+      data = read_cbf_image(image_list[i])
+      tmp_hist = flex.histogram(data.as_double().as_1d(), data_min=0.0, data_max=histmax, n_slots=histbins)
+      local_hist.update(tmp_hist)
+      i = i + nproc
+      if process == 0:
+        if timeit.default_timer() > (last_update + 3):
+          last_update = timeit.default_timer()
+          if sys.stdout.isatty():
+            sys.stdout.write('\033[A')
+          print 'Processed %d%% (%d seconds remain)    ' % (100 * i // image_count, round((image_count - i) * (last_update - start) / (i+1)))
+    return local_hist
+
+  results = easy_mp.parallel_map(
+    func=process_image,
+    iterable=range(nproc),
+    processes=nproc,
+    preserve_exception_message=True)
+
+  print "Done"
+  result_hist = flex.histogram(flex.double(), data_min=0.0, data_max=histmax, n_slots=histbins)
+  for hist in results:
+    result_hist.update(hist)
+
   results = { 'scale_factor': 1 / limit,
               'bin_count': histbins,
-              'bins': list(hist.slots()),
+              'bins': list(result_hist.slots()),
               'image_files': image_list }
 
   print "Writing results to overload.json"
