@@ -198,7 +198,20 @@ def visit(root, directory, files):
   for f in files:
 
     full_path = os.path.join(directory, f)
-    if is_image_name(full_path):
+
+    if is_hd5f_name(full_path):
+      from dxtbx.format.Registry import Registry
+
+      format_class = Registry.find(full_path)
+      if format_class is None:
+        Debug.write(
+          'Ignoring %s (Registry can not find format class)' %full_path)
+        continue
+      elif format_class.ignore():
+        continue
+      templates.add(full_path)
+
+    elif is_image_name(full_path):
       try:
         template = get_template(full_path)
       except Exception, e:
@@ -209,7 +222,7 @@ def visit(root, directory, files):
       if template is not None:
         templates.add(template)
 
-    if is_scan_name(full_path):
+    elif is_scan_name(full_path):
       global latest_chooch
       try:
         latest_chooch = Chooch()
@@ -220,7 +233,7 @@ def visit(root, directory, files):
       except:
         latest_chooch = None
 
-    if is_sequence_name(full_path):
+    elif is_sequence_name(full_path):
       parse_sequence(full_path)
 
   return templates
@@ -440,8 +453,9 @@ def print_sweeps(out = sys.stdout):
       out.write('WAVELENGTH %s\n' % wavelength_map[s.get_wavelength()])
 
       out.write('DIRECTORY %s\n' % s.get_directory())
-      out.write('IMAGE %s\n' % os.path.split(s.imagename(min(
-          s.get_images())))[-1])
+      imgset = s.get_imageset()
+      out.write('IMAGE %s\n' % os.path.split(
+        imgset.get_path(imgset.get_array_range()[0]))[-1])
 
       if Flags.get_start_end():
         start, end = Flags.get_start_end()
@@ -552,7 +566,7 @@ def rummage(directories):
 
   return
 
-def write_xinfo(filename, directories, template=None):
+def write_xinfo(filename, directories, template=None, hdf5_master_files=None):
 
   global target_template
 
@@ -582,11 +596,14 @@ def write_xinfo(filename, directories, template=None):
   # if we have given a template and directory on the command line, just
   # look there (i.e. not in the subdirectories)
 
+  import libtbx.load_env
   if CommandLine.get_template() and CommandLine.get_directory():
     templates = set()
     for directory in CommandLine.get_directory():
       templates.update(visit(None, directory, os.listdir(directory)))
     get_sweeps(templates)
+  elif hdf5_master_files is not None:
+    get_sweeps(hdf5_master_files)
   else:
     rummage(directories)
 

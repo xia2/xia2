@@ -159,6 +159,11 @@ class Sweep(object):
     '''Check to see if any more frames have appeared - if they
     have update myself and reset.'''
 
+
+    from xia2.Applications.xia2setup import is_hd5f_name
+    if is_hd5f_name(os.path.join(self._directory, self._template)):
+      return
+
     images = find_matching_images(self._template,
                                   self._directory)
 

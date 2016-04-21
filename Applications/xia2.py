@@ -136,7 +136,7 @@ def get_command_line():
         if os.path.isdir(arg):
           directories.append(os.path.abspath(arg))
 
-      if len(directories) == 0:
+      if len(directories) == 0 and not CommandLine.get_hdf5_master_files():
         raise RuntimeError('directory not found in arguments')
 
     else:
@@ -145,8 +145,9 @@ def get_command_line():
     directories = [os.path.abspath(d) for d in directories]
     from xia2setup import write_xinfo
 
-    if CommandLine.get_template():
-      write_xinfo(xinfo, directories, template=CommandLine.get_template())
+    if CommandLine.get_template() or CommandLine.get_hdf5_master_files():
+      write_xinfo(xinfo, directories, template=CommandLine.get_template(),
+                  hdf5_master_files=CommandLine.get_hdf5_master_files())
     else:
       write_xinfo(xinfo, directories)
 

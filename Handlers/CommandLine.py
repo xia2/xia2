@@ -72,6 +72,7 @@ class _CommandLine(object):
 
     self._default_template = []
     self._default_directory = []
+    self._hdf5_master_files = []
     self._default_start_end = { }
 
     return
@@ -484,34 +485,48 @@ class _CommandLine(object):
         params.dials.integrate.phil_file))
     params = PhilIndex.get_python_object()
 
-    images = PhilIndex.params.xia2.settings.input.image
-    for image in images:
+
+
+    datasets = PhilIndex.params.xia2.settings.input.image
+    for dataset in datasets:
 
       start_end = None
 
-      if ':' in image:
-        tokens = image.split(':')
+      if ':' in dataset:
+        tokens = dataset.split(':')
         # cope with windows drives i.e. C:\data\blah\thing_0001.cbf:1:100
         if len(tokens[0]) == 1:
           tokens = ['%s:%s' % (tokens[0], tokens[1])] + tokens[2:]
         if len(tokens) != 3:
           raise RuntimeError, '/path/to/image_0001.cbf:start:end'
 
-        image = tokens[0]
+        dataset = tokens[0]
         start_end = int(tokens[1]), int(tokens[2])
 
-      template, directory = image2template_directory(os.path.abspath(image))
-      self._default_template.append(template)
-      self._default_directory.append(directory)
+      from xia2.Applications.xia2setup import is_hd5f_name
+      if is_hd5f_name(dataset):
+        self._hdf5_master_files.append(dataset)
+        if start_end:
+          Debug.write('Image range: %d %d' % start_end)
+          self._default_start_end[dataset] = start_end
+        else:
+          Debug.write('No image range specified')
 
-      Debug.write('Interpreted from image %s:' % image)
-      Debug.write('Template %s' % template)
-      Debug.write('Directory %s' % directory)
-      if start_end:
-        Debug.write('Image range: %d %d' % start_end)
-        self._default_start_end[os.path.join(directory, template)] = start_end
       else:
-        Debug.write('No image range specified')
+        template, directory = image2template_directory(os.path.abspath(dataset))
+
+        self._default_template.append(template)
+        self._default_directory.append(directory)
+
+        Debug.write('Interpreted from image %s:' % dataset)
+        Debug.write('Template %s' % template)
+        Debug.write('Directory %s' % directory)
+
+        if start_end:
+          Debug.write('Image range: %d %d' % start_end)
+          self._default_start_end[os.path.join(directory, template)] = start_end
+        else:
+          Debug.write('No image range specified')
 
     # finally, check that all arguments were read and raise an exception
     # if any of them were nonsense.
@@ -630,8 +645,6 @@ class _CommandLine(object):
 
     PhilIndex.update("xia2.settings.input.image=%s" %image)
     PhilIndex.get_python_object()
-
-    image = PhilIndex.params.xia2.settings.input.image[-1]
 
     self._understood.append(index)
     self._understood.append(index + 1)
@@ -1357,6 +1370,9 @@ class _CommandLine(object):
 
   def get_directory(self):
     return self._default_directory
+
+  def get_hdf5_master_files(self):
+    return self._hdf5_master_files
 
   def _read_trust_timestamps(self):
 

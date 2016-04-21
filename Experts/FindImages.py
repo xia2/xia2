@@ -180,6 +180,11 @@ def image2template_directory(filename):
     directory = os.getcwd()
 
   image = os.path.split(filename)[-1]
+
+  from xia2.Applications.xia2setup import is_hd5f_name
+  if is_hd5f_name(filename):
+    return image, directory
+
   template = image2template(image)
 
   return template, directory

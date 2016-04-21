@@ -444,12 +444,9 @@ class XSweep(object):
 
   def get_all_image_names(self):
     '''Get a full list of all images in this sweep...'''
-    result = []
-    for image in self._images:
-      result.append(template_directory_number2image(self._template,
-                                                    self._directory,
-                                                    image))
-    return result
+    array_range = self._imageset.get_array_range()
+    return [self._imageset.get_path(i)
+            for i in range(0, array_range[1]-array_range[0])]
 
   def get_image_range(self):
     '''Get min / max numbers for this sweep.'''
