@@ -456,7 +456,7 @@ class _CommandLine(object):
       xinfo_file = os.path.abspath(params.xia2.settings.input.xinfo)
       PhilIndex.update("xia2.settings.input.xinfo=%s" %xinfo_file)
       params = PhilIndex.get_python_object()
-      self._xinfo = XProject(xinfo_file)
+      self.set_xinfo(xinfo_file)
 
       Debug.write(60 * '-')
       Debug.write('XINFO file: %s' % xinfo_file)
@@ -760,6 +760,9 @@ class _CommandLine(object):
     return '-xinfo example.xinfo'
 
   def set_xinfo(self, xinfo):
+    with open(xinfo, 'rb') as f:
+      Debug.write('\n' + xinfo)
+      Debug.write(f.read())
     self._xinfo = XProject(xinfo)
 
   def get_xinfo(self):
