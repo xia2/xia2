@@ -45,6 +45,7 @@ def get_overload(cbf_file):
 def build_hist(nproc=1):
   from scitbx.array_family import flex
   from libtbx import easy_mp
+  from collections import Counter
 
   # FIXME use proper optionparser here. This works for now
   if len(sys.argv) >= 2 and sys.argv[1].startswith('nproc='):
@@ -63,22 +64,29 @@ def build_hist(nproc=1):
   binfactor = 5 # register up to 500% counts
   histmax = (limit * binfactor) + 0.0
   histbins = int(limit * binfactor) + 1
+  use_python_counter = histbins > 90000000 # empirically determined
 
-  print "Processing %d images in %d processes\n" % (image_count, nproc)
+  print "Processing %d images in %d processes using %s\n" % (image_count, nproc, \
+    "python Counter" if use_python_counter else "flex arrays")
 
   def process_image(process):
     import sys
     last_update = start = timeit.default_timer()
 
     i = process
-    local_hist = flex.histogram(flex.double(), data_min=0.0, data_max=histmax, n_slots=histbins)
+    if use_python_counter:
+      local_hist = Counter()
+    else:
+      local_hist = flex.histogram(flex.double(), data_min=0.0, data_max=histmax, n_slots=histbins)
+
     max_images = image_count // nproc
     if process >= image_count % nproc:
       max_images += 1
     while i < image_count:
       data = read_cbf_image(image_list[i])
-      tmp_hist = flex.histogram(data.as_double().as_1d(), data_min=0.0, data_max=histmax, n_slots=histbins)
-      local_hist.update(tmp_hist)
+      if not use_python_counter:
+        data = flex.histogram(data.as_double().as_1d(), data_min=0.0, data_max=histmax, n_slots=histbins)
+      local_hist.update(data)
       i = i + nproc
       if process == 0:
         if timeit.default_timer() > (last_update + 3):
@@ -94,19 +102,26 @@ def build_hist(nproc=1):
     processes=nproc,
     preserve_exception_message=True)
 
-  print "Done"
-  result_hist = flex.histogram(flex.double(), data_min=0.0, data_max=histmax, n_slots=histbins)
+  print "Merging results"
+  result_hist = None
   for hist in results:
-    result_hist.update(hist)
+    if result_hist is None:
+      result_hist = hist
+    else:
+      result_hist.update(hist)
+
+  if not use_python_counter:
+    # reformat histogram into dictionary
+    result = list(result_hist.slots())
+    result_hist = { b: count for b, count in enumerate(result) if count > 0 }
 
   results = { 'scale_factor': 1 / limit,
-              'bin_count': histbins,
-              'bins': list(result_hist.slots()),
-              'image_files': image_list }
+              'overload_limit': limit,
+              'counts': result_hist }
 
   print "Writing results to overload.json"
   with open('overload.json', 'w') as fh:
-    json.dump(results, fh)
+    json.dump(results, fh, indent=1, sort_keys=True)
 
 if __name__ == '__main__':
   build_hist()
