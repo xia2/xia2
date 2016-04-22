@@ -10,3 +10,4 @@ _*.nb
 .olex
 .git-notifier*
 .gitversion
+.cache
