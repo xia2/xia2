@@ -18,7 +18,8 @@ from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 
 # generic helper stuff
-from XDS import imageset_to_xds, xds_check_version_supported, _running_xds_version
+from XDS import imageset_to_xds, xds_check_version_supported
+from XDS import _running_xds_version, template_to_xds
 from xia2.Handlers.Streams import Debug
 
 def XDSInit(DriverType = None, params = None):
@@ -113,8 +114,8 @@ def XDSInit(DriverType = None, params = None):
       for record in header:
         xds_inp.write('%s\n' % record)
 
-      name_template = os.path.join(self.get_directory(),
-                                   self.get_template().replace('#', '?'))
+      name_template = template_to_xds(
+        os.path.join(self.get_directory(), self.get_template()))
 
       record = 'NAME_TEMPLATE_OF_DATA_FRAMES=%s\n' % \
                name_template

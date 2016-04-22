@@ -462,6 +462,21 @@ def xds_read_xparm_new_style(xparm_file):
 
   return results
 
+def template_to_xds(template):
+  from xia2.Applications.xia2setup import is_hd5f_name
+  if is_hd5f_name(template):
+    # Given (e.g.) XYZ_master.h5 and data files XYZ_data_00000[0-9].h5
+    # XDS expects the template XYZ_??????.h5
+    assert template.endswith('master.h5'), template
+    master_file = template
+    import glob
+    g = glob.glob(master_file.split('master.h5')[0]+'data_*[0-9].h5')
+    assert len(g), 'No associated data files found for %s' %master_file
+    from xia2.Experts.FindImages import image2template
+    template = image2template(g[0])
+    template = master_file.split('master.h5')[0] + template.split('data_')[-1]
+
+  return template.replace('#', '?')
 
 if __name__ == '__main__':
   from xia2.Wrappers.XIA.Diffdump import Diffdump

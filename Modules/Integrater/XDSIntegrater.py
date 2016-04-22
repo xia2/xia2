@@ -323,8 +323,6 @@ class XDSIntegrater(Integrater):
          'directory':dirname,
          'resolution':'%.2f' % self._intgr_reso_high})
 
-    first_image_in_wedge = self.get_image_name(self._intgr_wedge[0])
-
     defpix = self.Defpix()
 
     # pass in the correct data
@@ -370,8 +368,6 @@ class XDSIntegrater(Integrater):
       images = self.get_matching_images()
       self.set_integrater_wedge(min(images),
                                 max(images))
-
-    first_image_in_wedge = self.get_image_name(self._intgr_wedge[0])
 
     integrate.set_data_range(self._intgr_wedge[0],
                              self._intgr_wedge[1])

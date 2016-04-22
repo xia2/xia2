@@ -23,6 +23,7 @@ from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 
 # generic helper stuff
 from XDS import imageset_to_xds, xds_check_version_supported, xds_check_error
+from XDS import template_to_xds
 
 # specific helper stuff
 from XDSCorrectHelpers import _parse_correct_lp
@@ -266,8 +267,8 @@ def XDSCorrect(DriverType = None, params=None):
       for record in header:
         xds_inp.write('%s\n' % record)
 
-      name_template = os.path.join(self.get_directory(),
-                                   self.get_template().replace('#', '?'))
+      name_template = template_to_xds(
+        os.path.join(self.get_directory(), self.get_template()))
 
       record = 'NAME_TEMPLATE_OF_DATA_FRAMES=%s\n' % \
                name_template

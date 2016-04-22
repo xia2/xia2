@@ -19,6 +19,7 @@ from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 
 # generic helper stuff
 from XDS import imageset_to_xds, xds_check_version_supported, xds_check_error
+from XDS import template_to_xds
 
 def XDSXycorr(DriverType = None):
 
@@ -115,8 +116,8 @@ def XDSXycorr(DriverType = None):
         xds_inp.write('X-GEO_CORR=%s\n' % xds_params.geometry_x)
         xds_inp.write('Y-GEO_CORR=%s\n' % xds_params.geometry_y)
 
-      name_template = os.path.join(self.get_directory(),
-                                   self.get_template().replace('#', '?'))
+      name_template = template_to_xds(
+        os.path.join(self.get_directory(), self.get_template()))
 
       record = 'NAME_TEMPLATE_OF_DATA_FRAMES=%s\n' % \
                name_template
