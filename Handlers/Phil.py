@@ -306,6 +306,7 @@ xia2.settings {
       .help = "Tolerance to use in POINTLESS for comparison of data sets"
     multi_sweep_indexing = False
       .type = bool
+      .help = "Index all sweeps together rather than combining individual results"
   }
   integrate_p1 = False
     .type = bool
