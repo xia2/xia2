@@ -162,7 +162,7 @@ class FrameProcessor(object):
     return
 
   def get_distance(self):
-    return self.get_detector()[0].get_distance()
+    return self.get_detector()[0].get_directed_distance()
 
   def set_gain(self, gain):
     self._fp_gain = gain

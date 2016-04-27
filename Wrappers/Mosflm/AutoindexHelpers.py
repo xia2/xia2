@@ -46,9 +46,9 @@ def set_distance(detector, distance):
   panel = detector[0]
   d_normal = matrix.col(panel.get_normal())
   d_origin = matrix.col(panel.get_origin())
-  d_distance = math.fabs(d_origin.dot(d_normal) - panel.get_distance())
+  d_distance = math.fabs(d_origin.dot(d_normal) - panel.get_directed_distance())
   assert d_distance < 0.001, d_distance
-  translation = d_normal * (distance - panel.get_distance())
+  translation = d_normal * (distance - panel.get_directed_distance())
   new_origin = d_origin + translation
   d_distance = math.fabs(new_origin.dot(d_normal) - distance)
   assert d_distance < 0.001, d_distance
@@ -59,7 +59,7 @@ def set_distance(detector, distance):
   assert d_fast < 1e-6, d_fast
   d_slow = matrix.col(panel.get_slow_axis()).angle(matrix.col(slow), deg=True)
   assert d_slow < 1e-6, d_slow
-  d_distance = math.fabs(panel.get_distance() - distance)
+  d_distance = math.fabs(panel.get_directed_distance() - distance)
   assert d_distance < 0.001, d_distance
 
 def crystal_model_from_mosflm_mat(mosflm_mat_lines, unit_cell, space_group):

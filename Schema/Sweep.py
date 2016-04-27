@@ -112,7 +112,7 @@ class Sweep(object):
     return list(range(image_range[0], image_range[1]+1))
 
   def get_distance(self):
-    return self._imageset.get_detector()[0].get_distance()
+    return self._imageset.get_detector()[0].get_directed_distance()
 
   def get_wavelength(self):
     return self._imageset.get_beam().get_wavelength()

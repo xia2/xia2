@@ -639,7 +639,7 @@ class Indexer(object):
 
     self.index()
     experiment = self.get_indexer_experiment_list()[0]
-    return experiment.detector[0].get_distance()
+    return experiment.detector[0].get_directed_distance()
 
   def set_indexer_distance(self, distance):
     '''Set the refined distance.'''
@@ -771,7 +771,7 @@ class IndexerSingleSweep(Indexer):
     return self.get_beam().get_wavelength()
 
   def get_distance(self):
-    return self.get_detector()[0].get_distance()
+    return self.get_detector()[0].get_directed_distance()
 
   def get_phi_width(self):
     return self.get_scan().get_oscillation()[1]
