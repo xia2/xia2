@@ -84,11 +84,16 @@ def _parse_idxref_lp(lp_file_lines):
     # bug # 2355
 
     if 'CHARACTER  LATTICE     OF FIT      a      b      c' in line:
+      # example line (note potential lack of white space between b and c cell parameters):
+      #     9        hR        999.0    3966.3 5324.610528.6  85.6  64.6 132.0
       j = i + 1
       while lp_file_lines[j].strip() != "":
-        record = lp_file_lines[j].replace('*', ' ').split()
-        character = int(record[0])
-        lattice = record[1]
+        l = lp_file_lines[j].replace('*', ' ')
+        character = int(l[:12].strip())
+        lattice = l[12:23].strip()
+        fit = float(l[23:32].strip())
+        cell = tuple(float(c) for c in
+          (l[32:39], l[39:46], l[46:53], l[53:59], l[59:65], l[65:71]))
 
         # FIXME need to do something properly about this...
         # bug # 2355
@@ -97,9 +102,8 @@ def _parse_idxref_lp(lp_file_lines):
           j += 1
           continue
 
-        fit = float(record[2])
-        cell = tuple(map(float, record[3:9]))
-        reindex_card = tuple(map(int, record[9:]))
+        #reindex_card = tuple(map(int, record[9:]))
+        reindex_card = () # XXX need example where this is present in the IDXREF.LP
         constrained_cell = ApplyLattice(lattice, cell)[0]
 
         lattice_character_info[character] = {
@@ -152,7 +156,12 @@ def _parse_idxref_lp_quality(lp_file_lines):
 
 if __name__ == '__main__':
 
-  fraction, rmsd, rmsphi = _parse_idxref_lp_quality(
-      open(sys.argv[1], 'r').readlines())
+  lines = open(sys.argv[1], 'r').readlines()
+
+  d = _parse_idxref_lp(lines)
+  for k, v in d.iteritems():
+    print k, v
+
+  fraction, rmsd, rmsphi = _parse_idxref_lp_quality(lines)
 
   print '%.2f %.2f %.2f' % (fraction, rmsd, rmsphi)
