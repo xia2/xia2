@@ -454,8 +454,7 @@ def print_sweeps(out = sys.stdout):
 
       out.write('DIRECTORY %s\n' % s.get_directory())
       imgset = s.get_imageset()
-      out.write('IMAGE %s\n' % os.path.split(
-        imgset.get_path(imgset.get_array_range()[0]))[-1])
+      out.write('IMAGE %s\n' % os.path.split(imgset.get_path(0))[-1])
 
       if Flags.get_start_end():
         start, end = Flags.get_start_end()
