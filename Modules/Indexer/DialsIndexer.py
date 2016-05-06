@@ -514,6 +514,7 @@ class DialsIndexer(Indexer):
       cryst = experiment_list.crystals()[0]
       lattice = str(bravais_types.bravais_lattice(
         group=cryst.get_space_group()))
+      self._indxr_lattice = lattice
       self._solutions = {}
       self._solutions[0] = {
         'number':0,
