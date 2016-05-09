@@ -216,6 +216,7 @@ xia2.settings {
     min_oscillation_range = None
       .type = int(value_min=0)
       .help = "Minimum oscillation range of a sweep for inclusion in processing."
+    include scope dials.util.options.tolerance_phil_scope
   }
   sweep
     .multiple = True

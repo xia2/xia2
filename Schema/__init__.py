@@ -35,6 +35,26 @@ def load_imagesets(template, directory, id_image=None, image_range=None,
   full_template_path = os.path.join(directory, template)
   if full_template_path not in imageset_cache or not use_cache:
 
+    from dxtbx.datablock import BeamComparison
+    from dxtbx.datablock import DetectorComparison
+    from dxtbx.datablock import GoniometerComparison
+
+    params = PhilIndex.params.xia2.settings
+    compare_beam = BeamComparison(
+      wavelength_tolerance=params.input.tolerance.beam.wavelength,
+      direction_tolerance=params.input.tolerance.beam.direction,
+      polarization_normal_tolerance=params.input.tolerance.beam.polarization_normal,
+      polarization_fraction_tolerance=params.input.tolerance.beam.polarization_fraction)
+    compare_detector = DetectorComparison(
+      fast_axis_tolerance=params.input.tolerance.detector.fast_axis,
+      slow_axis_tolerance=params.input.tolerance.detector.slow_axis,
+      origin_tolerance=params.input.tolerance.detector.origin)
+    compare_goniometer = GoniometerComparison(
+      rotation_axis_tolerance=params.input.tolerance.goniometer.rotation_axis,
+      fixed_rotation_tolerance=params.input.tolerance.goniometer.fixed_rotation,
+      setting_rotation_tolerance=params.input.tolerance.goniometer.setting_rotation)
+    scan_tolerance = params.input.tolerance.scan.oscillation
+
     if os.path.splitext(full_template_path)[-1] in known_hdf5_extensions:
       import glob
       g = glob.glob(os.path.join(directory, '*_master.h5'))
@@ -51,7 +71,11 @@ def load_imagesets(template, directory, id_image=None, image_range=None,
 
       unhandled = []
       datablocks = DataBlockFactory.from_filenames(
-        [master_file], verbose=False, unhandled=unhandled)
+        [master_file], verbose=False, unhandled=unhandled,
+        compare_beam=compare_beam,
+        compare_detector=compare_detector,
+        compare_goniometer=compare_goniometer,
+        scan_tolerance=scan_tolerance)
       assert len(unhandled) == 0, "unhandled image files identified: %s" % \
           unhandled
       assert len(datablocks) == 1, "1 datablock expected, %d found" % \
@@ -68,7 +92,11 @@ def load_imagesets(template, directory, id_image=None, image_range=None,
         paths = sorted(locate_files_matching_template_string(full_template_path))
         unhandled = []
         datablocks = DataBlockFactory.from_filenames(
-          paths, verbose=False, unhandled=unhandled)
+          paths, verbose=False, unhandled=unhandled,
+          compare_beam=compare_beam,
+          compare_detector=compare_detector,
+          compare_goniometer=compare_goniometer,
+          scan_tolerance=scan_tolerance)
         assert len(unhandled) == 0, "unhandled image files identified: %s" % \
             unhandled
         assert len(datablocks) == 1, "1 datablock expected, %d found" % \
