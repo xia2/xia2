@@ -61,8 +61,8 @@ Winter, G. (2010) Journal of Applied Crystallography 43
     block['_diffrn_reflns_limit_k_max'] = unit_cell_data['reflections']['max_miller'][1]
     block['_diffrn_reflns_limit_l_min'] = unit_cell_data['reflections']['min_miller'][2]
     block['_diffrn_reflns_limit_l_max'] = unit_cell_data['reflections']['max_miller'][2]
-    block['_diffrn_reflns_theta_min'] = unit_cell_data['reflections']['min_2theta']
-    block['_diffrn_reflns_theta_max'] = unit_cell_data['reflections']['max_2theta']
+    block['_diffrn_reflns_theta_min'] = unit_cell_data['reflections']['min_2theta'] / 2
+    block['_diffrn_reflns_theta_max'] = unit_cell_data['reflections']['max_2theta'] / 2
 
   if structure:
     space_group = structure.space_group()
