@@ -30,8 +30,8 @@ def measure(hklin, spacegroup):
         elif column.label() == 'SIGIPR':
           sigipr_column = column
 
-  assert(ipr_column != None)
-  assert(sigipr_column != None)
+  assert(ipr_column is not None)
+  assert(sigipr_column is not None)
 
   ipr_values = ipr_column.extract_values(not_a_number_substitute = 0.0)
   sigipr_values = sigipr_column.extract_values(not_a_number_substitute = 0.0)

@@ -120,7 +120,7 @@ def Aimless(DriverType = None,
       # these are only relevant for 'rotation' mode scaling
       self._spacing = 5
 
-      if absorption_correction == None:
+      if absorption_correction is None:
         self._secondary = Flags.get_aimless_secondary()
       elif absorption_correction == True:
         self._secondary = Flags.get_aimless_secondary()

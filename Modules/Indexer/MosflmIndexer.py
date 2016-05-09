@@ -198,7 +198,7 @@ class MosflmIndexer(IndexerSingleSweep):
     if self._indxr_input_cell:
       indexer.set_unit_cell(self._indxr_input_cell)
 
-    if self._indxr_input_lattice != None:
+    if self._indxr_input_lattice is not None:
       spacegroup_number = lattice_to_spacegroup(
           self._indxr_input_lattice)
       indexer.set_space_group_number(spacegroup_number)

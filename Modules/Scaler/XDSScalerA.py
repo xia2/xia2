@@ -211,7 +211,7 @@ class XDSScalerA(Scaler):
 
         break
 
-    if correct_lattice == None:
+    if correct_lattice is None:
       correct_lattice = refiner.get_refiner_lattice()
       rerun_pointless = True
 
@@ -1110,7 +1110,7 @@ class XDSScalerA(Scaler):
               'prepared_reflections'])[-1] == \
               os.path.split(hklout)[-1]:
             if self._sweep_information[epoch][
-                'scaled_reflections'] != None:
+                'scaled_reflections'] is not None:
               raise RuntimeError, 'duplicate entries'
             self._sweep_information[epoch][
                 'scaled_reflections'] = ref[hklout]

@@ -50,7 +50,7 @@ def IndexerForXSweep(xsweep, json_file=None):
 
   # check what is going on
 
-  if xsweep == None:
+  if xsweep is None:
     raise RuntimeError, 'XSweep instance needed'
 
   if not xsweep.__class__.__name__ == 'XSweep':

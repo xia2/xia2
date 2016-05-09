@@ -196,7 +196,7 @@ class Section(DocElement):
     etc)."""
     # Specific class properties
     self.__title = None
-    if title != None: self.__title = str(title)
+    if title is not None: self.__title = str(title)
     self.__subsections = []
     self.__content = []
     self.__level = level
@@ -219,7 +219,7 @@ class Section(DocElement):
     # Base part of the id is a unique id from the parent
     id = "sect_"+str(self.getDocId())
     # Add some title text to make it more human-friendly
-    if self.__title != None:
+    if self.__title is not None:
       id += "-"+replace_special_characters(self.__title)
     return id
 
@@ -848,7 +848,7 @@ class Table(DocElement):
           item_str = item.render()
         except AttributeError:
           # Assume item has no render method
-          if item == None:
+          if item is None:
             item_str = ''
           else:
             item_str = str(item)

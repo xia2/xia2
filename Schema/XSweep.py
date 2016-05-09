@@ -261,7 +261,7 @@ class XSweep(object):
 
       beam_ = self._imageset.get_beam()
       scan = self._imageset.get_scan()
-      if not wavelength == None:
+      if not wavelength is None:
 
         # FIXME 29/NOV/06 if the wavelength wavelength value
         # is 0.0 then first set it to the header value - note
@@ -619,7 +619,7 @@ class XSweep(object):
     '''Get my indexer, if set, else create a new one from the
     factory.'''
 
-    if self._indexer == None:
+    if self._indexer is None:
       # set the working directory for this, based on the hierarchy
       # defined herein...
 
@@ -681,7 +681,7 @@ class XSweep(object):
 
   def _get_refiner(self):
 
-    if self._refiner == None:
+    if self._refiner is None:
       # set the working directory for this, based on the hierarchy
       # defined herein...
 
@@ -750,7 +750,7 @@ class XSweep(object):
   def _get_integrater(self):
     '''Get my integrater, and if it is not set, create one.'''
 
-    if self._integrater == None:
+    if self._integrater is None:
 
       # set the working directory for this, based on the hierarchy
       # defined herein...

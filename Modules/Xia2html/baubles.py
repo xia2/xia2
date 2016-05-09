@@ -1162,7 +1162,7 @@ def summariseGeneric(html,program):
       warnings.append( str(keytext.message() ) )
     elif keytext.name() == "Result":
       result = str(keytext.message())
-  if result != None:
+  if result is not None:
     html.write("<div class=\"keytext\">\n")
     html.write("<p><b>Result:</b><div class=result>\n")
     html.write(plainTextMarkup(result))
