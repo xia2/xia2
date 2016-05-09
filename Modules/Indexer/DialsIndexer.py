@@ -19,6 +19,7 @@ import libtbx
 from xia2.Wrappers.Dials.Import import Import as _Import
 from xia2.Wrappers.Dials.EstimateGain import EstimateGain as _EstimateGain
 from xia2.Wrappers.Dials.Spotfinder import Spotfinder as _Spotfinder
+from xia2.Wrappers.Dials.DetectBlanks import DetectBlanks as _DetectBlanks
 from xia2.Wrappers.Dials.DiscoverBetterExperimentalModel \
      import DiscoverBetterExperimentalModel as _DiscoverBetterExperimentalModel
 from xia2.Wrappers.Dials.Index import Index as _Index
@@ -88,6 +89,12 @@ class DialsIndexer(Indexer):
     spotfinder.set_working_directory(self.get_working_directory())
     auto_logfiler(spotfinder)
     return spotfinder
+
+  def DetectBlanks(self):
+    detectblanks = _DetectBlanks()
+    detectblanks.set_working_directory(self.get_working_directory())
+    auto_logfiler(detectblanks)
+    return detectblanks
 
   def DiscoverBetterExperimentalModel(self):
     discovery = _DiscoverBetterExperimentalModel()
@@ -307,6 +314,18 @@ class DialsIndexer(Indexer):
       from dials.util.ascii_art import spot_counts_per_image_plot
       refl = easy_pickle.load(spot_filename)
       Chatter.write(spot_counts_per_image_plot(refl), strip=False)
+
+      detectblanks = self.DetectBlanks()
+      detectblanks.set_sweep_filename(datablocks[-1])
+      detectblanks.set_reflections_filename(spot_filename)
+      detectblanks.run()
+      json = detectblanks.get_results()
+      offset = imageset.get_scan().get_image_range()[0]
+      blank_regions = json['strong']['blank_regions']
+      if len(blank_regions):
+        for blank_start, blank_end in blank_regions:
+          Chatter.write('WARNING: Potential blank images: %i -> %i' %(
+            blank_start+offset, blank_end+offset))
 
       if not PhilIndex.params.xia2.settings.trust_beam_centre:
         discovery = self.DiscoverBetterExperimentalModel()
