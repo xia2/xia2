@@ -140,8 +140,6 @@ def read_A200(image):
 
   raise RuntimeError, 'this needs implementing!'
 
-  pass
-
 # FIXME get proper specifications for these detectors...
 
 import pycbf

@@ -61,7 +61,6 @@ def Refiner():
     except NotAvailableError, e:
       if preselection == 'dials':
         raise RuntimeError, 'preselected refiner dials not available'
-      pass
 
   if not refiner and \
      (not preselection or preselection == 'mosflm'):
@@ -71,7 +70,6 @@ def Refiner():
     except NotAvailableError, e:
       if preselection == 'mosflm':
         raise RuntimeError, 'preselected refiner mosflm not available'
-      pass
 
   if not refiner and \
      (not preselection or preselection == 'xds'):
@@ -81,6 +79,5 @@ def Refiner():
     except NotAvailableError, e:
       if preselection == 'xds':
         raise RuntimeError, 'preselected refiner xds not available'
-      pass
 
   return refiner

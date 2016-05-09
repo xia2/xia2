@@ -116,7 +116,6 @@ def Integrater():
         raise RuntimeError, \
               'preselected integrater dials not available: ' + \
               'dials not installed?'
-      pass
 
   if not integrater and (not preselection or preselection == 'mosflmr'):
     try:
@@ -128,7 +127,6 @@ def Integrater():
       if preselection == 'mosflmr':
         raise RuntimeError, \
               'preselected integrater mosflmr not available'
-      pass
 
   if not integrater and \
          (not preselection or preselection == 'xdsr'):
@@ -140,7 +138,6 @@ def Integrater():
         raise RuntimeError, \
               'preselected integrater xdsr not available: ' + \
               'xds not installed?'
-      pass
 
   if not integrater:
     raise RuntimeError, 'no integrater implementations found'

@@ -88,7 +88,6 @@ class CCP4InterRadiationDamageDetector(object):
 
   def set_working_directory(self, working_directory):
     self._working_directory = working_directory
-    pass
 
   def get_working_directory(self):
     return self._working_directory

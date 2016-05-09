@@ -36,7 +36,6 @@ def Scaler():
     except NotAvailableError, e:
       if preselection == 'ccp4a':
         raise RuntimeError, 'preselected scaler ccp4a not available'
-      pass
 
   if not scaler and \
     (not preselection or preselection == 'xdsa'):
@@ -46,6 +45,5 @@ def Scaler():
     except NotAvailableError, e:
       if preselection == 'xdsa':
         raise RuntimeError, 'preselected scaler xdsa not available'
-    pass
 
   return scaler
