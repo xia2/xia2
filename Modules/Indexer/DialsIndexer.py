@@ -609,11 +609,10 @@ class DialsIndexer(Indexer):
 
     return True
 
-  def get_solutions():
+  def get_solutions(self):
     return self._solutions
 
   def get_solution(self):
-
     import copy
 
     # FIXME I really need to clean up the code in here...
