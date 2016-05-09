@@ -164,78 +164,32 @@ def Indexer(preselection = None):
   if not preselection:
     preselection = get_preferences().get('indexer')
 
-  # FIXME perhaps find a less baroque way of coding this up
+  indexerlist = [
+      (DialsIndexer, 'dials', 'DialsIndexer'),
+      (LabelitIndexer, 'labelit', 'Labelit Indexer'),
+      (MosflmIndexer, 'mosflm', 'Mosflm Indexer'),
+      (XDSIndexer, 'xds', 'XDS Indexer')
+    ]
 
-  if not indexer and (not preselection or preselection == 'dials'):
-    try:
-      indexer = DialsIndexer()
-      Debug.write('Using DialsIndexer')
-    except NotAvailableError, e:
-      if preselection:
-        raise RuntimeError, \
-              'preselected indexer dials not available'
-      pass
+  if Flags.get_interactive():
+    indexerlist.append((XDSIndexerInteractive, 'xdsii', 'XDS Interactive Indexer'))
+  else:
+    indexerlist.append((XDSIndexerII, 'xdsii', 'XDS II Indexer'))
 
-  if not indexer and (not preselection or preselection == 'labelit'):
-    try:
-      indexer = LabelitIndexer()
-      Debug.write('Using Labelit Indexer')
-    except NotAvailableError, e:
-      if preselection:
-        raise RuntimeError, \
-              'preselected indexer labelit not available'
-      elif 'xds' in get_preferences().get('integrater'):
-        preselection = 'xds'
+  indexerlist.extend([
+      (XDSIndexerSum, 'xdssum', 'XDS Indexer on summed images'),
+      (LabelitIndexerII, 'labelitii', 'LabelitIndexerII')
+    ])
 
-  if not indexer and (not preselection or preselection == 'mosflm'):
-    try:
-      indexer = MosflmIndexer()
-      Debug.write('Using Mosflm Indexer')
-    except NotAvailableError, e:
-      if preselection:
-        raise RuntimeError, 'preselected indexer mosflm not available'
-      pass
-
-  if not indexer and (not preselection or preselection == 'xds'):
-    try:
-      indexer = XDSIndexer()
-      Debug.write('Using XDS Indexer')
-    except NotAvailableError, e:
-      if preselection:
-        raise RuntimeError, 'preselected indexer xds not available'
-      pass
-
-  if not indexer and (not preselection or preselection == 'xdsii'):
-    try:
-      if Flags.get_interactive():
-        indexer = XDSIndexerInteractive()
-        Debug.write('Using XDS Interactive Indexer')
-      else:
-        indexer = XDSIndexerII()
-        Debug.write('Using XDS II Indexer')
-    except NotAvailableError, e:
-      if preselection:
-        raise RuntimeError, 'preselected indexer xds not available'
-      pass
-
-  if not indexer and (not preselection or preselection == 'xdssum'):
-    try:
-      indexer = XDSIndexerSum()
-      Debug.write('Using XDS Indexer on summed images')
-    except NotAvailableError, e:
-      if preselection:
-        raise RuntimeError, 'preselected indexer xds not available'
-      pass
-
-  if not indexer and (not preselection or preselection == 'labelitii'):
-    try:
-      indexer = LabelitIndexerII()
-      Debug.write('Using LabelitIndexerII')
-    except NotAvailableError, e:
-      if preselection:
-        raise RuntimeError, \
-              'preselected indexer labelit not available'
-      pass
+  for (idxfactory, idxname, idxdisplayname) in indexerlist:
+    if not indexer and (not preselection or preselection == idxname):
+      try:
+        indexer = idxfactory()
+        Debug.write('Using %s' % idxdisplayname)
+      except NotAvailableError, e:
+        if preselection:
+          raise RuntimeError, \
+              'preselected indexer %s not available' % idxname
 
   if not indexer:
     raise RuntimeError, 'no indexer implementations found'
