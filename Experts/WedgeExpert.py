@@ -98,7 +98,7 @@ def digest_wedges(wedges):
 
     size = 0
 
-    datasets = list(set([k[0] for k in group_wedges]))
+    datasets = list({k[0] for k in group_wedges})
 
     if len(g) == 1:
       assert(len(belonging_wedges[sweeps[g[0]]]) == 1)

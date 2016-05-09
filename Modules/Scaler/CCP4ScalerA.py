@@ -649,7 +649,7 @@ class CCP4ScalerA(Scaler):
 
     overall_pointgroup = None
 
-    pointgroup_set = set([pointgroups[e] for e in pointgroups])
+    pointgroup_set = {pointgroups[e] for e in pointgroups}
 
     if len(pointgroup_set) > 1 and \
        not probably_twinned:
