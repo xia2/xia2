@@ -103,7 +103,7 @@ class SimpleDriver(DefaultDriver):
   def _status(self):
     # get the return status of the process
 
-    if self._popen_status != None:
+    if self._popen_status is not None:
       return self._popen_status
 
     if self._popen:

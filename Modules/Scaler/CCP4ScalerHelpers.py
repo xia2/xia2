@@ -307,7 +307,7 @@ class CCP4ScalerHelper(object):
 
         break
 
-    if correct_lattice == None:
+    if correct_lattice is None:
       correct_lattice = refiner.get_refiner_lattice()
       rerun_pointless = True
 

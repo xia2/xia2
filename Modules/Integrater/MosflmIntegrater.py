@@ -281,7 +281,7 @@ class MosflmIntegrater(Integrater):
 
     pname, xname, dname = self.get_integrater_project_info()
 
-    if pname != None and xname != None and dname != None:
+    if pname is not None and xname is not None and dname is not None:
       Debug.write('Harvesting: %s/%s/%s' % (pname, xname, dname))
 
       harvest_dir = os.path.join(os.environ['HARVESTHOME'],
@@ -598,7 +598,7 @@ class MosflmIntegrater(Integrater):
 
       # N.B. for harvesting need to append N to dname.
 
-      if pname != None and xname != None and dname != None:
+      if pname is not None and xname is not None and dname is not None:
         Debug.write('Harvesting: %s/%s/%s' %
                     (pname, xname, dname))
 

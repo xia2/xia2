@@ -35,7 +35,7 @@ def IntegraterForXSweep(xsweep, json_file=None):
   XSweep.'''
 
   # FIXME this needs properly implementing...
-  if xsweep == None:
+  if xsweep is None:
     raise RuntimeError, 'XSweep instance needed'
 
   if not xsweep.__class__.__name__ == 'XSweep':

@@ -143,7 +143,7 @@ class XDSIndexerII(XDSIndexer):
 
     # set the phi start etc correctly
 
-    if self._i_or_ii == None:
+    if self._i_or_ii is None:
       self._i_or_ii = self.decide_i_or_ii()
       Debug.write('Selecting I or II, chose %s' % self._i_or_ii)
 

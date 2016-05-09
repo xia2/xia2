@@ -215,10 +215,10 @@ class PyChef(object):
             if column.label() == 'SIGI':
               sigi_column = column
 
-      assert(base_column != None)
-      assert(misym_column != None)
-      assert(i_column != None)
-      assert(sigi_column != None)
+      assert(base_column is not None)
+      assert(misym_column is not None)
+      assert(i_column is not None)
+      assert(sigi_column is not None)
 
       if batch_column and dose_column:
 
@@ -285,13 +285,13 @@ class PyChef(object):
         if mean_shift < overall_range_width:
           overall_range_width = mean_shift
 
-      if overall_range_min == None:
+      if overall_range_min is None:
         overall_range_min = min_base
       else:
         if min_base < overall_range_min:
           overall_range_min = min_base
 
-      if overall_range_max == None:
+      if overall_range_max is None:
         overall_range_max = max_base
       else:
         if max_base > overall_range_max:
@@ -326,11 +326,11 @@ class PyChef(object):
 
         # test whether this is within the range of interest
 
-        if self._range_min != None:
+        if self._range_min is not None:
           if base < self._range_min:
             continue
 
-        if self._range_max != None:
+        if self._range_max is not None:
           if base > self._range_max:
             continue
 
