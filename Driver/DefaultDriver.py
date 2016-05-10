@@ -465,6 +465,13 @@ class DefaultDriver(object):
       self._log_file.write('# %s\n' % command_line)
       self._log_file.close()
       self._log_file = None
+      from xia2.Handlers.Streams import Debug
+      with open(self._log_file_name, 'rb') as f:
+        lines = f.readlines()
+        n = min(50, len(lines))
+        Debug.write('Last %i lines of %s:' %(n, self._log_file_name))
+        for line in lines[-n:]:
+          Debug.write(line.rstrip('\n'), strip=False)
 
     self.cleanup()
 
