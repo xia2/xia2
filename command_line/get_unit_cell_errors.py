@@ -160,7 +160,14 @@ def get_unit_cell_errors(stop_after=None):
   Debug.banner('Unit cell sampling')
   span = miller.index_span(all_miller_indices)
   Chatter.write("Found %d reflections in 2theta range %.3f - %.3f deg" % (len(all_miller_indices), min(all_two_thetas_obs), max(all_two_thetas_obs)))
-  Debug.write("Initial miller index range: %s - %s" % (str(span.min()), str(span.max())))
+  Chatter.write("Miller index range: %s - %s" % (str(span.min()), str(span.max())))
+  unit_cell_info = { 'reflections':
+                     { 'count': len(all_miller_indices),
+                       'min_2theta': min(all_two_thetas_obs),
+                       'max_2theta': max(all_two_thetas_obs),
+                       'min_miller': list(span.min()),
+                       'max_miller': list(span.max())
+                     } }
 
   # Exclude 1% of reflections to remove potential outliers
   # eg. indexed/integrated high angle noise
@@ -169,18 +176,15 @@ def get_unit_cell_errors(stop_after=None):
   two_thetas_select = all_two_thetas_obs < two_theta_cutoff
   all_two_thetas_obs = all_two_thetas_obs.select(two_thetas_select)
   all_miller_indices = all_miller_indices.select(two_thetas_select)
-
   Chatter.write("Kept %d reflections in 2theta range %.3f - %.3f deg" % (len(all_miller_indices), min(all_two_thetas_obs), max(all_two_thetas_obs)))
   span = miller.index_span(all_miller_indices)
-  Chatter.write("Miller index range: %s - %s" % (str(span.min()), str(span.max())))
-
-  unit_cell_info = { 'reflections':
+  unit_cell_info['reflections_filtered'] = \
                      { 'count': len(all_miller_indices),
                        'min_2theta': min(all_two_thetas_obs),
                        'max_2theta': max(all_two_thetas_obs),
                        'min_miller': list(span.min()),
                        'max_miller': list(span.max())
-                     } }
+                     }
 
   # prepare MonteCarlo sampling
   mc_runs = 50
@@ -190,7 +194,7 @@ def get_unit_cell_errors(stop_after=None):
                                   'lattice': reference_lattice, 'wavelength': reference_wavelength }
 
   Chatter.write("\nRandomly sampling %d x %d reflections for Monte Carlo iterations" % (mc_runs, sample_size))
-  Debug.write("Refinements start with reference unit cell:", reference_cell)
+  Debug.write("Refinements start with reference unit cell: %s" % reference_cell)
 
   MC = []
   MCconstrained = []
@@ -215,11 +219,11 @@ def get_unit_cell_errors(stop_after=None):
 
     refined = _refinery(two_thetas_obs, miller_indices, reference_wavelength, reference_cell)
     MC.append(refined.unit_cell().parameters() + (refined.unit_cell().volume(),))
-    Debug.write('Run %d refined to: %s', (n, str(refined.unit_cell())))
+    Debug.write('Run %d refined to: %s' % (n, str(refined.unit_cell())))
     if reference_lattice is not None and reference_lattice is not 'aP':
       refined = _refinery(two_thetas_obs, miller_indices, reference_wavelength, reference_cell, reference_lattice[0])
       MCconstrained.append(refined.unit_cell().parameters() + (refined.unit_cell().volume(),))
-      Debug.write('Run %d (constrained %s) refined to: %s', (n, reference_lattice[0], str(refined.unit_cell())))
+      Debug.write('Run %d (constrained %s) refined to: %s' % (n, reference_lattice[0], str(refined.unit_cell())))
 
     if (n % 50) == 0:
       sys.stdout.write("\n%5s ." % (str(n) if n > 0 else ''))
