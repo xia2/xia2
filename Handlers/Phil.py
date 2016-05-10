@@ -309,6 +309,9 @@ xia2.settings {
       .type = bool
       .help = "Index all sweeps together rather than combining individual results"
   }
+  remove_blanks = False
+    .expert_level = 2
+    .type = bool
   integrate_p1 = False
     .type = bool
   reintegrate_correct_lattice = True

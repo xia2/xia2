@@ -328,6 +328,49 @@ class DialsIndexer(Indexer):
           Chatter.write('WARNING: Potential blank images: %i -> %i' %(
             blank_start+1, blank_end+1))
 
+        if PhilIndex.params.xia2.settings.remove_blanks:
+          non_blanks = []
+          start, end = imageset.get_array_range()
+          for blank_start, blank_end in blank_regions:
+            if len(non_blanks) == 0 and blank_start > start:
+              non_blanks.append((start, blank_start))
+            else:
+              non_blanks.append((last_blank_end, blank_end))
+            last_blank_end = blank_end
+
+          if blank_end+1 != end:
+            non_blanks.append((last_blank_end, end))
+
+          xsweep = self.get_indexer_sweep()
+          xwav = xsweep.get_wavelength()
+          xsample = xsweep.get_xsample()
+
+          sweep_name = xsweep.get_name()
+          import string
+          for i, (nb_start, nb_end) in enumerate(non_blanks):
+            assert i < 26
+            if i == 0:
+              sub_imageset = imageset[nb_start-start:nb_end-start]
+              xsweep._frames_to_process = (nb_start+1, nb_end+1)
+              self.set_indexer_prepare_done(done=False)
+              self._indxr_imagesets[self._indxr_imagesets.index(imageset)] = sub_imageset
+              xsweep._integrater._setup_from_imageset(sub_imageset)
+            else:
+              new_name = '_'.join((sweep_name, string.ascii_lowercase[i]))
+              new_sweep = xwav.add_sweep(new_name,
+                             xsample,
+                             directory=os.path.join(
+                               os.path.basename(xsweep.get_directory()), new_name),
+                             image=imageset.get_path(nb_start-start),
+                             frames_to_process=(nb_start+1, nb_end),
+                             )
+              Chatter.write("Generating new sweep: %s (%s:%i:%i)" %(
+                new_sweep.get_name(),
+                new_sweep.get_image(),
+                new_sweep.get_frames_to_process()[0],
+                new_sweep.get_frames_to_process()[1]))
+          return
+
       if not PhilIndex.params.xia2.settings.trust_beam_centre:
         discovery = self.DiscoverBetterExperimentalModel()
         discovery.set_sweep_filename(datablocks[-1])
