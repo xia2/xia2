@@ -323,9 +323,10 @@ class DialsIndexer(Indexer):
       offset = imageset.get_scan().get_image_range()[0]
       blank_regions = json['strong']['blank_regions']
       if len(blank_regions):
+        blank_regions = [(int(s), int(e)) for s, e in blank_regions]
         for blank_start, blank_end in blank_regions:
           Chatter.write('WARNING: Potential blank images: %i -> %i' %(
-            blank_start+offset, blank_end+offset))
+            blank_start+1, blank_end+1))
 
       if not PhilIndex.params.xia2.settings.trust_beam_centre:
         discovery = self.DiscoverBetterExperimentalModel()
