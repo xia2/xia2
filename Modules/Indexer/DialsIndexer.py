@@ -326,19 +326,18 @@ class DialsIndexer(Indexer):
         blank_regions = [(int(s), int(e)) for s, e in blank_regions]
         for blank_start, blank_end in blank_regions:
           Chatter.write('WARNING: Potential blank images: %i -> %i' %(
-            blank_start+1, blank_end+1))
+            blank_start+1, blank_end))
 
         if PhilIndex.params.xia2.settings.remove_blanks:
           non_blanks = []
           start, end = imageset.get_array_range()
+          last_blank_end = start
           for blank_start, blank_end in blank_regions:
-            if len(non_blanks) == 0 and blank_start > start:
-              non_blanks.append((start, blank_start))
-            else:
-              non_blanks.append((last_blank_end, blank_end))
+            if blank_start > start:
+              non_blanks.append((last_blank_end, blank_start))
             last_blank_end = blank_end
 
-          if blank_end+1 != end:
+          if last_blank_end+1 < end:
             non_blanks.append((last_blank_end, end))
 
           xsweep = self.get_indexer_sweep()
