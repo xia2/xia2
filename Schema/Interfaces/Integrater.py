@@ -46,9 +46,6 @@ from xia2.Handlers.Phil import PhilIndex
 
 from xia2.Schema.Exceptions.BadLatticeError import BadLatticeError
 
-# image header reading functionality
-from xia2.Wrappers.XIA.Diffdump import Diffdump
-
 # symmetry operator management functionality
 from xia2.Experts.SymmetryExpert import compose_symops
 from xia2.Experts.SymmetryExpert import symop_to_mat

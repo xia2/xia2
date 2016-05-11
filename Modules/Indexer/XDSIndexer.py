@@ -25,8 +25,6 @@ from xia2.Wrappers.XDS.XDSInit import XDSInit as _Init
 from xia2.Wrappers.XDS.XDSColspot import XDSColspot as _Colspot
 from xia2.Wrappers.XDS.XDSIdxref import XDSIdxref as _Idxref
 
-from xia2.Wrappers.XIA.Diffdump import Diffdump
-
 # helper functions
 
 #from xia2.Wrappers.XDS.XDS import beam_centre_mosflm_to_xds
@@ -451,10 +449,7 @@ class XDSIndexer(IndexerSingleSweep):
 
     for block in self._indxr_images[:1]:
       starting_frame = block[0]
-
-      dd = Diffdump()
-      dd.set_image(self.get_image_name(starting_frame))
-      starting_angle = dd.readheader()['phi_start']
+      starting_angle = self.get_scan().get_angle_from_image_index(starting_frame)
 
       idxref.set_starting_frame(starting_frame)
       idxref.set_starting_angle(starting_angle)

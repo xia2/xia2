@@ -16,7 +16,7 @@
 #
 # Template, directory. Template in the form ### not ???
 # Distance (mm), wavelength (ang), beam centre (mm, mm),
-# image header information [general c/f diffdump output]
+# image header information
 
 import os
 import sys
@@ -25,7 +25,6 @@ from xia2.Experts.FindImages import image2template_directory, \
     template_directory_number2image, image2image, find_matching_images, \
     digest_template
 
-from xia2.Wrappers.XIA.Diffdump import Diffdump
 
 from xia2.Handlers.Streams import Debug
 
