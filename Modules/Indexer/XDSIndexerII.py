@@ -97,6 +97,18 @@ class XDSIndexerII(XDSIndexer):
 
     return wedges
 
+  def _index_prepare(self):
+    Chatter.banner('Spotfinding %s' %self.get_indexer_sweep_name())
+    super(XDSIndexerII, self)._index_prepare()
+
+    from dials.array_family import flex
+    from dials.util.ascii_art import spot_counts_per_image_plot
+    reflection_pickle = spot_xds_to_reflection_pickle(
+      self._indxr_payload['SPOT.XDS'])
+    refl = flex.reflection_table.from_pickle(reflection_pickle)
+    Chatter.write(spot_counts_per_image_plot(refl), strip=False)
+
+
   def _index(self):
     '''Actually do the autoindexing using the data prepared by the
     previous method.'''
@@ -394,3 +406,12 @@ class XDSIndexerII(XDSIndexer):
     idxref.run()
 
     return idxref.get_fraction_rmsd_rmsphi()
+
+
+def spot_xds_to_reflection_pickle(spot_xds):
+  from xia2.Wrappers.Dials.ImportXDS import ImportXDS
+  importer = ImportXDS()
+  auto_logfiler(importer)
+  importer.set_spot_xds(spot_xds)
+  importer.run()
+  return importer.get_reflection_filename()
