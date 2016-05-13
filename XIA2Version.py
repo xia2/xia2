@@ -14,11 +14,9 @@ def get_git_revision(fallback='not set'):
   '''Try to obtain the current git revision number
      and store a copy in .gitversion'''
   version = None
-
   try:
-    import libtbx.load_env
     import os
-    xia2_path = libtbx.env.dist_path('xia2')
+    xia2_path = os.path.split(os.path.realpath(__file__))[0]
     version_file = os.path.join(xia2_path, '.gitversion')
 
     # 1. Try to access information in .git directory
@@ -55,10 +53,8 @@ def get_git_revision(fallback='not set'):
 
 VersionNumber = get_git_revision("0.4.0.0")
 Version = "XIA2 %s" % VersionNumber
-CVSTag = "xia2-%s" % VersionNumber.replace('.', '_')
 Directory = "xia2-%s" % VersionNumber
 
 if __name__ == '__main__':
   print 'This is XIA 2 version %s' % VersionNumber
   print 'This should be in a directory called "%s"' % Directory
-  print 'And should be CVS tagged as "%s"' % CVSTag
