@@ -34,7 +34,7 @@ class XDSIndexerInteractive(XDSIndexer):
 
   def _index_select_images_interactive(self):
 
-    phi_width = self.get_header_item('phi_width')
+    phi_width = self.get_phi_width()
 
     # use five degrees for the background calculation
 
@@ -48,7 +48,7 @@ class XDSIndexerInteractive(XDSIndexer):
     from IndexerSelectImages import index_select_image_wedges_user
 
     wedges = index_select_image_wedges_user(
-      self._fp_template, phi_width, images, Chatter)
+        self.get_template(), phi_width, images, Chatter)
 
     if min(images) + five_deg in images:
       self._background_images = (min(images), min(images) + five_deg)
