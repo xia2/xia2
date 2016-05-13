@@ -24,16 +24,23 @@ def get_git_revision(fallback='not set'):
     if os.path.exists(os.path.join(xia2_path, '.git')):
       try:
         import subprocess
-        with open(os.devnull, 'w') as devnull:
-          version = subprocess.check_output(["git", "describe", "--long"], cwd=xia2_path, stderr=devnull).rstrip()
-          if version[0] == 'v':
-            version = version[1:].replace('.0-','.')
-          try:
-            branch = subprocess.check_output(["git", "describe", "--contains", "--all", "HEAD"], cwd=xia2_path, stderr=devnull).rstrip()
-            if branch != '' and branch != 'master' and not branch.endswith('/master'):
-              version = version + '-' + branch
-          except Exception:
-            pass
+        def get_stdout(*popenargs, **kwargs):
+          """Run command with arguments and return stdout as a string.
+             Backported from Python 2.7 subprocess.check_output."""
+          with open(os.devnull, 'w') as devnull:
+            process = subprocess.Popen(stdout=subprocess.PIPE, *popenargs, stderr=devnull, **kwargs)
+            output = process.communicate()[0]
+            assert not process.poll()
+            return output.rstrip()
+        version = get_stdout(["git", "describe", "--long"], cwd=xia2_path)
+        if version[0] == 'v':
+          version = version[1:].replace('.0-','.')
+        try:
+          branch = get_stdout(["git", "describe", "--contains", "--all", "HEAD"], cwd=xia2_path)
+          if branch != '' and branch != 'master' and not branch.endswith('/master'):
+            version = version + '-' + branch
+        except Exception:
+          pass
         with open(version_file, 'w') as gv:
           gv.write(version)
       except Exception:
