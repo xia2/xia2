@@ -419,10 +419,6 @@ class XDSIndexer(IndexerSingleSweep):
     # then this is a proper autoindexing run - describe this
     # to the journal entry
 
-    #if len(self._fp_directory) <= 50:
-      #dirname = self._fp_directory
-    #else:
-      #dirname = '...%s' % self._fp_directory[-46:]
     dirname = self.get_directory()
 
     Journal.block('autoindexing', self._indxr_sweep_name, 'XDS',
