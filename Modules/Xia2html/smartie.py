@@ -1831,7 +1831,7 @@ class table_graph:
   collection of table_columns storing columns of data."""
 
   # Initialise the table_graph object
-  def __init__(self,title="",scaling="",column_list=[]):
+  def __init__(self,title="",scaling="",column_list=None):
     """Create a new table_graph object.
 
     The 'title' argument is a string containing the title
@@ -1843,6 +1843,8 @@ class table_graph:
     column in the list will form the 'x' axis of the graph
     when displayed, the others will be displayed on the
     'y' axis."""
+    if column_list is None:
+      column_list = []
 
     self.__title = title
     self.__column_list = column_list

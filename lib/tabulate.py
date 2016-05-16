@@ -653,7 +653,7 @@ def _normalize_tabular_data(tabular_data, headers):
   return rows, headers
 
 
-def tabulate(tabular_data, headers=[], tablefmt="simple",
+def tabulate(tabular_data, headers=None, tablefmt="simple",
              floatfmt="g", numalign="decimal", stralign="left",
              missingval=""):
   """Format a fixed width table for pretty printing.
@@ -884,6 +884,8 @@ def tabulate(tabular_data, headers=[], tablefmt="simple",
   \\bottomrule
   \end{tabular}
   """
+  if headers is None:
+    headers = []
   if tabular_data is None:
     tabular_data = []
   list_of_lists, headers = _normalize_tabular_data(tabular_data, headers)

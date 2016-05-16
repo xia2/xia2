@@ -89,9 +89,11 @@ Winter, G. (2010) Journal of Applied Crystallography 43
   with open('%s.cif_xia2' % prefix, 'w') as fh:
     cif.show(out=fh)
 
-def to_shelx(hklin, prefix, compound='', options={}):
+def to_shelx(hklin, prefix, compound='', options=None):
   '''Read hklin (unmerged reflection file) and generate SHELXT input file
   and HKL file'''
+  if options is None:
+    options = {}
 
   from iotbx.reflection_file_reader import any_reflection_file
   from iotbx.shelx import writer

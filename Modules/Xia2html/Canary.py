@@ -990,7 +990,7 @@ class HTML_components:
   HTML_components is used by the Document class at render time
   to top and tail the HTML that is written out."""
 
-  def start(self,title,styles=[],scripts=[]):
+  def start(self,title,styles=None,scripts=None):
     """Return the HTML document head
 
     The head is opening html tag, plus the full head
@@ -1005,6 +1005,10 @@ class HTML_components:
     'scripts' is an optional list of Script objects which reference
     script files that will either be inlined or referenced from the
     document head."""
+    if styles is None:
+      styles = []
+    if scripts is None:
+      scripts = []
     header = "<html>\n<head>\n<title>" + str(title) + "</title>\n"
     for style in styles:
       header += style.render()

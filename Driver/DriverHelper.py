@@ -49,10 +49,12 @@ def script_writer(working_directory,
                   command_line_tokens,
                   environment,
                   input_records,
-                  mkdirs = []):
+                  mkdirs = None):
   '''Write a script to run a program for either UNIX or Windows.
   mkdirs[] will allow instructions to make directories to be passed
   in.'''
+  if mkdirs is None:
+    mkdirs = []
 
   if os.name == 'nt':
     # write out a windows batch file

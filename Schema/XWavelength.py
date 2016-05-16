@@ -221,8 +221,10 @@ class XWavelength(object):
                 beam=None, reversephi=False, distance=None,
                 gain=0.0, dmin=0.0, dmax=0.0, polarization=0.0,
                 frames_to_process=None, user_lattice=None,
-                user_cell=None, epoch=0, ice=False, excluded_regions=[]):
+                user_cell=None, epoch=0, ice=False, excluded_regions=None):
     '''Add a sweep to this wavelength.'''
+    if excluded_regions is None:
+      excluded_regions = []
 
     xsweep = XSweep(name, self,
                     sample=sample,
