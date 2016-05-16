@@ -100,7 +100,6 @@ class Sweep(object):
 
   def get_directory(self):
     return self._directory
-    return os.path.split(self.get_template())[0]
 
   def get_imageset(self):
     return self._imageset
