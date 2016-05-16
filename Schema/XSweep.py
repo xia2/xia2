@@ -156,10 +156,12 @@ class XSweep(object):
                user_cell = None,
                epoch = 0,
                ice = False,
-               excluded_regions = []):
+               excluded_regions = None):
     '''Create a new sweep named name, belonging to XWavelength object
     wavelength, representing the images in directory starting with image,
     with beam centre optionally defined.'''
+    if excluded_regions is None:
+      excluded_regions = []
 
     # + check the wavelength is an XWavelength object
     #   raise an exception if not... or not...

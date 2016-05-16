@@ -15,9 +15,13 @@ from iotbx import mtz
 from cctbx.array_family import flex
 
 def rebatch(hklin, hklout, first_batch=None,
-            include_range=[], exclude_range=[]):
+            include_range=None, exclude_range=None):
   '''Need to implement: include batch range, exclude batches, add N to
   batches, start batches at N.'''
+  if include_range is None:
+    include_range = []
+  if exclude_range is None:
+    exclude_range = []
 
   assert not (len(include_range) and len(exclude_range))
   assert not (len(include_range) and first_batch)
