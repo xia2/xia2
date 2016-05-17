@@ -735,11 +735,11 @@ def Mosflm(DriverType = None):
 
         # copy them over to where they are needed
 
-        if integration_params.has_key('separation'):
+        if 'separation' in integration_params:
           self.set_integrater_parameter(
               'mosflm', 'separation',
               '%f %f' % tuple(integration_params['separation']))
-        if integration_params.has_key('raster'):
+        if 'raster' in integration_params:
           self.set_integrater_parameter(
               'mosflm', 'raster',
               '%d %d %d %d %d' % tuple(integration_params['raster']))
@@ -808,8 +808,8 @@ def Mosflm(DriverType = None):
       if rms_deviations and rms_deviations_p1:
         cycles = []
         j = 1
-        while rms_deviations.has_key(j) and \
-              rms_deviations_p1.has_key(j):
+        while j in rms_deviations and \
+              j in rms_deviations_p1:
           cycles.append(j)
           j += 1
         Debug.write('Cell refinement comparison:')
@@ -1249,11 +1249,11 @@ def Mosflm(DriverType = None):
           'mosflm_integration_parameters')
 
       if integration_params:
-        if integration_params.has_key('separation'):
+        if 'separation' in integration_params:
           self.set_integrater_parameter(
               'mosflm', 'separation',
               '%f %f' % tuple(integration_params['separation']))
-        if integration_params.has_key('raster'):
+        if 'raster' in integration_params:
           self.set_integrater_parameter(
               'mosflm', 'raster',
               '%d %d %d %d %d' % tuple(integration_params['raster']))
@@ -1710,11 +1710,11 @@ def Mosflm(DriverType = None):
           'mosflm_integration_parameters')
 
       if integration_params:
-        if integration_params.has_key('separation'):
+        if 'separation' in integration_params:
           self.set_integrater_parameter(
               'mosflm', 'separation',
               '%f %f' % tuple(integration_params['separation']))
-        if integration_params.has_key('raster'):
+        if 'raster' in integration_params:
           self.set_integrater_parameter(
               'mosflm', 'raster',
               '%d %d %d %d %d' % tuple(integration_params['raster']))
@@ -2045,7 +2045,7 @@ def Mosflm(DriverType = None):
 
       residuals = []
       for i in images:
-        if parsed_output[i].has_key('weighted_residual'):
+        if 'weighted_residual' in parsed_output[i]:
           residuals.append(parsed_output[i]['weighted_residual'])
 
       mean, sd = mean_sd(residuals)
@@ -2056,7 +2056,7 @@ def Mosflm(DriverType = None):
       for i in images:
         data = parsed_output[i]
 
-        if data.has_key('weighted_residual'):
+        if 'weighted_residual' in data:
 
           if data['weighted_residual'] > max_weighted_residual:
             max_weighted_residual = data['weighted_residual']
@@ -2187,11 +2187,11 @@ def Mosflm(DriverType = None):
           'mosflm_integration_parameters')
 
       if integration_params:
-        if integration_params.has_key('separation'):
+        if 'separation' in integration_params:
           self.set_integrater_parameter(
               'mosflm', 'separation',
               '%f %f' % tuple(integration_params['separation']))
-        if integration_params.has_key('raster'):
+        if 'raster' in integration_params:
           self.set_integrater_parameter(
               'mosflm', 'raster',
               '%d %d %d %d %d' % tuple(integration_params['raster']))
@@ -2615,7 +2615,7 @@ def Mosflm(DriverType = None):
 
         residuals = []
         for i in images:
-          if parsed_output[i].has_key('weighted_residual'):
+          if 'weighted_residual' in parsed_output[i]:
             residuals.append(parsed_output[i]['weighted_residual'])
 
         for r in residuals:
@@ -2777,7 +2777,7 @@ def _happy_integrate_lp(integrate_lp_stats):
 
     # FIXME need to look for "blank" "many bad spots" "overloaded"
 
-    if not data.has_key('weighted_residual'):
+    if 'weighted_residual' not in data:
       pass
     elif data['weighted_residual'] < max_weighted_residual:
       max_weighted_residual = data['weighted_residual']
@@ -2787,7 +2787,7 @@ def _happy_integrate_lp(integrate_lp_stats):
     # rmsd pixel > 1.0 -> % (ok) > 2.5 -> ! (bad)
     # > 10% overloads -> O (overloads)
 
-    if not data.has_key('rmsd_pixel'):
+    if 'rmsd_pixel' not in data:
       status = '@'
     elif data.get('fraction_weak', 1.0) > 0.95:
       status = '.'

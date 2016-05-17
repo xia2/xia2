@@ -120,10 +120,7 @@ def XDSConv(DriverType = None):
       if not self._symmetry:
         self._symmetry = header['spacegroup']
 
-      if header.has_key('resolution_range'):
-        self._resolution = header['resolution_range']
-      else:
-        self._resolution = [100.0, 0.1]
+      self._resolution = header.get('resolution_range', [100.0, 0.1])
       self._resolution.sort()
       self._resolution.reverse()
 

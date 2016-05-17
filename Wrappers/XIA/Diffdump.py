@@ -70,7 +70,7 @@ class _HeaderCache(object):
     return self._headers[image]
 
   def check(self, image):
-    return self._headers.has_key(image)
+    return image in self._headers
 
   def write(self, filename):
     import json
@@ -872,9 +872,9 @@ def Diffdump(DriverType = None):
       # check to see if the beam centre needs to be converted
       # from pixels to mm - e.g. MAR 300 images from APS ID 23
 
-      if self._header.has_key('beam') and \
-         self._header.has_key('pixel') and \
-         self._header.has_key('size'):
+      if 'beam' in self._header and \
+         'pixel' in self._header and \
+         'size' in self._header:
         # look to see if the current beam is somewhere in the middle
         # pixel count wise...
         beam = self._header['beam']
@@ -893,9 +893,9 @@ def Diffdump(DriverType = None):
         self._header['beam'] = (0.5 * size[0] * pixel[0],
                                 0.5 * size[1] * pixel[1])
 
-      if self._header.has_key('detector') and \
-         self._header.has_key('pixel') and \
-         self._header.has_key('size'):
+      if 'detector' in self._header and \
+         'pixel' in self._header and \
+         'size' in self._header:
         # compute the detector class
         detector = self._header['detector']
         width = int(self._header['size'][0])

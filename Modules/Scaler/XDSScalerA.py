@@ -1067,7 +1067,7 @@ class XDSScalerA(Scaler):
       if intgr.get_integrater_user_resolution():
         dmin = intgr.get_integrater_high_resolution()
 
-        if not self._user_resolution_limits.has_key(rkey):
+        if rkey not in self._user_resolution_limits:
           self._scalr_resolution_limits[rkey] = dmin
           self._user_resolution_limits[rkey] = dmin
         elif dmin < self._user_resolution_limits[rkey]:

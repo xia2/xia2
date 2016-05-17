@@ -474,7 +474,7 @@ class Integrater(FrameProcessor):
     '''Set an arbitrary parameter for the program specified to
     use in integration, e.g. the YSCALE or GAIN values in Mosflm.'''
 
-    if not self._intgr_program_parameters.has_key(program):
+    if program not in self._intgr_program_parameters:
       self._intgr_program_parameters[program] = { }
 
     self._intgr_program_parameters[program][parameter] = value
@@ -508,7 +508,7 @@ class Integrater(FrameProcessor):
     '''Set an arbitrary parameter for the program specified to
     use in integration, e.g. the YSCALE or GAIN values in Mosflm.'''
 
-    if not self._intgr_export_program_parameters.has_key(program):
+    if program not in self._intgr_export_program_parameters:
       self._intgr_export_program_parameters[program] = { }
 
     self._intgr_export_program_parameters[program][parameter] = value

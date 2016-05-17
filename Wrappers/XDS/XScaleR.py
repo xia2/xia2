@@ -137,7 +137,7 @@ def XScaleR(DriverType = None,
         wave = self._input_reflection_wavelength_names[j]
         resol = self._input_resolution_ranges[j]
 
-        if not self._transposed_input.has_key(wave):
+        if wave not in self._transposed_input:
           self._transposed_input[wave] = {'hkl':[],
                                           'resol':[]}
           self._transposed_input_keys.append(wave)

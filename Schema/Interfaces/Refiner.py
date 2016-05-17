@@ -304,7 +304,7 @@ class Refiner(object):
     '''Set an arbitrary parameter for the program specified to
     use in refinement, e.g. the YSCALE or GAIN values in Mosflm.'''
 
-    if not self._refinr_program_parameters.has_key(program):
+    if program not in self._refinr_program_parameters:
       self._refinr_program_parameters[program] = { }
 
     self._refinr_program_parameters[program][parameter] = value

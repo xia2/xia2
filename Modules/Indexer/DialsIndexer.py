@@ -529,7 +529,7 @@ class DialsIndexer(Indexer):
         if (self._indxr_input_lattice is not None and
             self._indxr_input_lattice != lattice):
           continue
-        if self._indxr_other_lattice_cell.has_key(lattice):
+        if lattice in self._indxr_other_lattice_cell:
           if self._indxr_other_lattice_cell[lattice]['metric'] < \
             self._solutions[solution]['metric']:
             continue

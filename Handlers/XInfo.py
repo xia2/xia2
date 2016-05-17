@@ -128,7 +128,7 @@ class XInfo(object):
           raise RuntimeError, 'error in BEGIN CRYSTAL record'
 
         crystal = record.replace('BEGIN CRYSTAL ', '').strip()
-        if self._crystals.has_key(crystal):
+        if crystal in self._crystals:
           raise RuntimeError, 'crystal %s already exists' % \
                 crystal
 
@@ -215,7 +215,7 @@ class XInfo(object):
         wavelength = record.replace('BEGIN WAVELENGTH ', '').strip()
 
         # check that this is a new wavelength definition
-        if self._crystals[crystal]['wavelengths'].has_key(wavelength):
+        if wavelength in self._crystals[crystal]['wavelengths']:
           raise RuntimeError, \
                 'wavelength %s already exists for crystal %s' % \
                 (wavelength, crystal)
@@ -301,7 +301,7 @@ class XInfo(object):
         else:
           start_end = None
 
-        if self._crystals[crystal]['sweeps'].has_key(sweep):
+        if sweep in self._crystals[crystal]['sweeps']:
           raise RuntimeError, \
                 'sweep %s already exists for crystal %s' % \
                 (sweep, crystal)

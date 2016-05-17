@@ -64,7 +64,7 @@ def get_sweep(f):
         return
 
     key = (directory, template)
-    if not known_sweeps.has_key(key):
+    if key not in known_sweeps:
       sweeplist = SweepFactory(template, directory)
       known_sweeps[key] = sweeplist
 

@@ -573,7 +573,7 @@ class Tabulator:
 
   def has_key(self,key):
     """Check if a row called 'key' exists"""
-    return self.__data.has_key(key)
+    return key in self.__data
 
   def keys(self):
     """Return the list of data item names (keys)"""

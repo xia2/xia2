@@ -39,7 +39,7 @@ class _DriverFactory(object):
     # should probably write a message or something explaining
     # that the following Driver implementation is being used
 
-    if os.environ.has_key('XIA2CORE_DRIVERTYPE'):
+    if 'XIA2CORE_DRIVERTYPE' in os.environ:
       self.set_driver_type(os.environ['XIA2CORE_DRIVERTYPE'])
 
     return

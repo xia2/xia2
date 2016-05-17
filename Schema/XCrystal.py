@@ -730,22 +730,22 @@ class XCrystal(object):
 
     atom = ha_info_dict['atom']
 
-    if self._ha_info.has_key(atom):
+    if atom in self._ha_info:
       # update this description
-      if ha_info_dict.has_key('number_per_monomer'):
+      if 'number_per_monomer' in ha_info_dict:
         self._ha_info[atom].set_number_per_monomer(
             ha_info_dict['number_per_monomer'])
-      if ha_info_dict.has_key('number_total'):
+      if 'number_total' in ha_info_dict:
         self._ha_info[atom].set_number_total(
             ha_info_dict['number_total'])
 
     else:
       # implant a new atom
       self._ha_info[atom] = _ha_info(atom)
-      if ha_info_dict.has_key('number_per_monomer'):
+      if 'number_per_monomer' in ha_info_dict:
         self._ha_info[atom].set_number_per_monomer(
             ha_info_dict['number_per_monomer'])
-      if ha_info_dict.has_key('number_total'):
+      if 'number_total' in ha_info_dict:
         self._ha_info[atom].set_number_total(
             ha_info_dict['number_total'])
 

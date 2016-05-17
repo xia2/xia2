@@ -184,24 +184,24 @@ class XProject(object):
 
     for crystal in crystals.keys():
       xc = XCrystal(crystal, self)
-      if crystals[crystal].has_key('sequence'):
+      if 'sequence' in crystals[crystal]:
         xc.set_aa_sequence(crystals[crystal]['sequence'])
-      if crystals[crystal].has_key('ha_info'):
+      if 'ha_info' in crystals[crystal]:
         if crystals[crystal]['ha_info'] != { }:
           xc.set_ha_info(crystals[crystal]['ha_info'])
 
-      if crystals[crystal].has_key('scaled_merged_reflection_file'):
+      if 'scaled_merged_reflection_file' in crystals[crystal]:
         xc.set_scaled_merged_reflections(
           crystals[crystal]['scaled_merged_reflections'])
 
-      if crystals[crystal].has_key('reference_reflection_file'):
+      if 'reference_reflection_file' in crystals[crystal]:
         xc.set_reference_reflection_file(
           crystals[crystal]['reference_reflection_file'])
-      if crystals[crystal].has_key('freer_file'):
+      if 'freer_file' in crystals[crystal]:
         xc.set_freer_file(crystals[crystal]['freer_file'])
 
       # user assigned spacegroup
-      if crystals[crystal].has_key('user_spacegroup'):
+      if 'user_spacegroup' in crystals[crystal]:
         xc.set_user_spacegroup(crystals[crystal]['user_spacegroup'])
       elif settings.space_group is not None:
         # XXX do we ever actually get here?
@@ -227,7 +227,7 @@ class XProject(object):
 
         wave_info = crystals[crystal]['wavelengths'][wavelength]
 
-        if not wave_info.has_key('wavelength'):
+        if 'wavelength' not in wave_info:
           Debug.write(
             'No wavelength value given for wavelength %s' % wavelength)
         else:
@@ -237,8 +237,8 @@ class XProject(object):
 
         # handle case where user writes f" in place of f''
 
-        if wave_info.has_key('f"') and not \
-              wave_info.has_key('f\'\''):
+        if 'f"' in wave_info and not \
+              'f\'\'' in wave_info:
           wave_info['f\'\''] = wave_info['f"']
 
         xw = XWavelength(wavelength, xc,
@@ -252,7 +252,7 @@ class XProject(object):
         # been given any scaled reflection files...
 
         # check to see if we have a user supplied lattice...
-        if crystals[crystal].has_key('user_spacegroup'):
+        if 'user_spacegroup' in crystals[crystal]:
           lattice = Syminfo.get_lattice(
             crystals[crystal]['user_spacegroup'])
         elif settings.space_group is not None:
@@ -268,7 +268,7 @@ class XProject(object):
         # the xinfo file (the first port of call) or the
         # command-line.
 
-        if crystals[crystal].has_key('user_cell'):
+        if 'user_cell' in crystals[crystal]:
           cell = crystals[crystal]['user_cell']
         elif settings.unit_cell is not None:
           # XXX do we ever actually get here?

@@ -437,7 +437,7 @@ def MosflmIntegrate(DriverType = None, indxr_print = True):
 
       residuals = []
       for i in images:
-        if self._per_image_statistics[i].has_key('weighted_residual'):
+        if 'weighted_residual' in self._per_image_statistics[i]:
           residuals.append(self._per_image_statistics[i]['weighted_residual'])
 
       self._residuals = residuals

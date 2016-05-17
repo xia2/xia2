@@ -641,7 +641,7 @@ def writeBanner(html,name,program,anchor):
 def writeDocumentationLink(html,program):
   """Write a link to the program documentation."""
 
-  if os.environ.has_key("CHTML"):
+  if "CHTML" in os.environ:
     name = identifyProgram(program).lower()+".html"
     docfile = os.path.join(os.environ["CHTML"],name)
     if os.path.isfile(docfile):
@@ -674,7 +674,7 @@ class javaloggraph:
 
     # Determine what archive is available
     if self.__codebase is None:
-      if os.environ.has_key("CBIN"):
+      if "CBIN" in os.environ:
         # Local version of java
         self.__codebase = "file:"+os.sep*2+os.environ["CBIN"]
         if os.path.exists(os.path.join(os.environ["CBIN"],"JLogView.jar")):

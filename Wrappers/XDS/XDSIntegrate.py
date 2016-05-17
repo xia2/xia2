@@ -219,8 +219,8 @@ def XDSIntegrate(DriverType=None, params=None):
 
       # check for updated input parameters or ones from phil
 
-      if self._updates.has_key('BEAM_DIVERGENCE') and \
-             self._updates.has_key('BEAM_DIVERGENCE_E.S.D.'):
+      if 'BEAM_DIVERGENCE' in self._updates and \
+             'BEAM_DIVERGENCE_E.S.D.' in self._updates:
         xds_inp.write(
             'BEAM_DIVERGENCE=%f BEAM_DIVERGENCE_E.S.D.=%f\n' % \
             (self._updates['BEAM_DIVERGENCE'],
@@ -231,8 +231,8 @@ def XDSIntegrate(DriverType=None, params=None):
             (self._params.beam_divergence,
              self._params.beam_divergence_esd))
 
-      if self._updates.has_key('REFLECTING_RANGE') and \
-             self._updates.has_key('REFLECTING_RANGE_E.S.D.'):
+      if 'REFLECTING_RANGE' in self._updates and \
+             'REFLECTING_RANGE_E.S.D.' in self._updates:
         xds_inp.write(
             'REFLECTING_RANGE=%f REFLECTING_RANGE_E.S.D.=%f\n' % \
             (self._updates['REFLECTING_RANGE'],

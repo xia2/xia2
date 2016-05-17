@@ -94,7 +94,7 @@ def exercise_xds_scaler(nproc=None):
 def check_scaler_files_exist(scaler):
   merged = scaler.get_scaled_merged_reflections()
   for filetype in ('mtz', 'sca', 'sca_unmerged'):
-    assert merged.has_key(filetype)
+    assert filetype in merged
     if isinstance(merged[filetype], basestring):
       files = [merged[filetype]]
     else:

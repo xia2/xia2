@@ -193,7 +193,7 @@ def XDSCorrect(DriverType = None, params=None):
       if not self._results:
         raise RuntimeError, 'no results'
 
-      if not self._results.has_key(name):
+      if name not in self._results:
         raise RuntimeError, 'result name "%s" unknown' % name
 
       return self._results[name]

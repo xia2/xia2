@@ -103,7 +103,7 @@ def _parse_mosflm_integration_output(integration_output_list):
     if 'Processing Image' in record:
       current_image = int(record.replace('Image', 'Image ').split()[2])
 
-      if not per_image_stats.has_key(current_image):
+      if current_image not in per_image_stats:
         per_image_stats[current_image] = {'scale':1.0}
 
     if 'Integrating Image' in record:
@@ -327,7 +327,7 @@ def _parse_mosflm_index_output(index_output_list):
       if number == correct_number:
         acceptable_rms = 1.1 * rms
 
-      if solutions_by_lattice.has_key(latt):
+      if latt in solutions_by_lattice:
         if solutions_by_lattice[latt]['rms'] <= rms:
           continue
 

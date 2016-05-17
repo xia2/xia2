@@ -952,7 +952,7 @@ class CCP4ScalerA(Scaler):
       if intgr.get_integrater_user_resolution():
         dmin = intgr.get_integrater_high_resolution()
 
-        if not user_resolution_limits.has_key((dname, sname)):
+        if (dname, sname) not in user_resolution_limits:
           user_resolution_limits[(dname, sname)] = dmin
         elif dmin < user_resolution_limits[(dname, sname)]:
           user_resolution_limits[(dname, sname)] = dmin

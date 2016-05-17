@@ -117,11 +117,11 @@ class MosflmRefiner(Refiner):
 
         # copy them over to where they are needed
 
-        if integration_params.has_key('separation'):
+        if 'separation' in integration_params:
           self.set_refiner_parameter(
             'mosflm', 'separation',
             '%f %f' % tuple(integration_params['separation']))
-        if integration_params.has_key('raster'):
+        if 'raster' in integration_params:
           self.set_refiner_parameter(
             'mosflm', 'raster',
             '%d %d %d %d %d' % tuple(integration_params['raster']))
@@ -186,8 +186,8 @@ class MosflmRefiner(Refiner):
       if rms_deviations and rms_deviations_p1:
         cycles = []
         j = 1
-        while rms_deviations.has_key(j) and \
-              rms_deviations_p1.has_key(j):
+        while j in rms_deviations and \
+              j in rms_deviations_p1:
           cycles.append(j)
           j += 1
         Debug.write('Cell refinement comparison:')
@@ -441,11 +441,11 @@ class MosflmRefiner(Refiner):
       integration_params = {}
 
     if integration_params:
-      if integration_params.has_key('separation'):
+      if 'separation' in integration_params:
         self.set_refiner_parameter(
           'mosflm', 'separation',
           '%f %f' % tuple(integration_params['separation']))
-      if integration_params.has_key('raster'):
+      if 'raster' in integration_params:
         self.set_refiner_parameter(
           'mosflm', 'raster',
           '%d %d %d %d %d' % tuple(integration_params['raster']))

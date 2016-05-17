@@ -379,7 +379,7 @@ class XDSIntegrater(Integrater):
                  'GAIN.cbf']:
       integrate.set_input_data_file(file, self._xds_data_files[file])
 
-    if self._xds_data_files.has_key('GXPARM.XDS'):
+    if 'GXPARM.XDS' in self._xds_data_files:
       Debug.write('Using globally refined parameters')
       integrate.set_input_data_file(
           'XPARM.XDS', self._xds_data_files['GXPARM.XDS'])
@@ -451,7 +451,7 @@ class XDSIntegrater(Integrater):
     # erm? shouldn't this therefore return if this is the principle, or
     # set the flag after we have tested the lattice?
 
-    if not self._xds_data_files.has_key('GXPARM.XDS') and \
+    if 'GXPARM.XDS' not in self._xds_data_files and \
       PhilIndex.params.xds.integrate.reintegrate:
       Debug.write(
           'Resetting integrater, to ensure refined orientation is used')

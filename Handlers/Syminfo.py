@@ -92,19 +92,19 @@ class _Syminfo(object):
                               'symops':0,
                               'operations':[]}
 
-        if not self._spacegroup_name_to_lattice.has_key(shortname):
+        if shortname not in self._spacegroup_name_to_lattice:
           self._spacegroup_name_to_lattice[shortname] = lattice
 
-        if not self._spacegroup_name_to_number.has_key(shortname):
+        if shortname not in self._spacegroup_name_to_number:
           self._spacegroup_name_to_number[shortname] = index
 
-        if not self._spacegroup_long_to_short.has_key(longname):
+        if longname not in self._spacegroup_long_to_short:
           self._spacegroup_long_to_short[longname] = shortname
 
-        if not self._spacegroup_short_to_long.has_key(shortname):
+        if shortname not in self._spacegroup_short_to_long:
           self._spacegroup_short_to_long[shortname] = longname
 
-        if not self._spacegroup_name_to_pointgroup.has_key(shortname):
+        if shortname not in self._spacegroup_name_to_pointgroup:
           self._spacegroup_name_to_pointgroup[shortname] = pointgroup
 
         current = index

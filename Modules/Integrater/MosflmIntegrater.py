@@ -255,11 +255,11 @@ class MosflmIntegrater(Integrater):
     #distance = integration_params['distance']
 
     if integration_params:
-      if integration_params.has_key('separation'):
+      if 'separation' in integration_params:
         self.set_integrater_parameter(
           'mosflm', 'separation',
           '%s %s' % tuple(integration_params['separation']))
-      if integration_params.has_key('raster'):
+      if 'raster' in integration_params:
         self.set_integrater_parameter(
           'mosflm', 'raster',
           '%d %d %d %d %d' % tuple(integration_params['raster']))
@@ -519,11 +519,11 @@ class MosflmIntegrater(Integrater):
     #distance = integration_params['distance']
 
     if integration_params:
-      if integration_params.has_key('separation'):
+      if 'separation' in integration_params:
         self.set_integrater_parameter(
             'mosflm', 'separation',
             '%s %s' % tuple(integration_params['separation']))
-      if integration_params.has_key('raster'):
+      if 'raster' in integration_params:
         self.set_integrater_parameter(
             'mosflm', 'raster',
             '%d %d %d %d %d' % tuple(integration_params['raster']))

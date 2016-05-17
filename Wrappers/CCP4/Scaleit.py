@@ -205,7 +205,7 @@ def Scaleit(DriverType = None):
           while not 'SUMMARY_END' in line:
             list = line.split()
             if 'Derivative' in list:
-              if not self._statistics.has_key('b_factor'):
+              if 'b_factor' not in self._statistics:
                 self._statistics['b_factor'] = { }
               self._statistics['b_factor'][int(list[1])] = {
                   'scale':float(list[2]),
@@ -274,5 +274,5 @@ if __name__ == '__main__':
 
   print stats['b_factor']
 
-  if stats.has_key('max_difference'):
+  if 'max_difference' in stats:
     print stats['max_difference']

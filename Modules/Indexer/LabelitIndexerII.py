@@ -321,7 +321,7 @@ class LabelitIndexerII(LabelitIndexer):
 
     for solution in self._solutions.keys():
       lattice = self._solutions[solution]['lattice']
-      if self._indxr_other_lattice_cell.has_key(lattice):
+      if lattice in self._indxr_other_lattice_cell:
         if self._indxr_other_lattice_cell[lattice]['goodness'] < \
            self._solutions[solution]['metric']:
           continue

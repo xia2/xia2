@@ -270,7 +270,7 @@ def Pointless(DriverType = None):
       if self._lattice_to_laue == { }:
         raise RuntimeError, 'no lattice to lauegroup mapping'
 
-      if not self._lattice_to_laue.has_key(lattice):
+      if lattice not in self._lattice_to_laue:
         raise RuntimeError, 'lattice %s not possible' % lattice
 
       self._input_laue_group = self._lattice_to_laue[lattice]

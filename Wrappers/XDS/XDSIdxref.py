@@ -451,7 +451,7 @@ def XDSIdxref(DriverType=None, params=None):
       allowed_lattices = ls.get_lattices()
 
       for j in range(1, 45):
-        if not self._idxref_data.has_key(j):
+        if j not in self._idxref_data:
           continue
         data = self._idxref_data[j]
         lattice = data['lattice']
@@ -465,7 +465,7 @@ def XDSIdxref(DriverType=None, params=None):
 
           if self._compare_cell(self._cell, cell) and \
                  lattice_to_spacegroup_number(lattice) == self._symm:
-            if self._indexing_solutions.has_key(lattice):
+            if lattice in self._indexing_solutions:
               if self._indexing_solutions[lattice][
                   'goodness'] < fit:
                 continue
@@ -489,7 +489,7 @@ def XDSIdxref(DriverType=None, params=None):
                     lattice)
                 continue
 
-            if self._indexing_solutions.has_key(lattice):
+            if lattice in self._indexing_solutions:
               if self._indexing_solutions[lattice][
                   'goodness'] < fit:
                 continue

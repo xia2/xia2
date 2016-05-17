@@ -269,7 +269,7 @@ def CCP4DecoratorFactory(DriverInstance):
       scratch directories. The latter shouldnt be needed however.'''
 
       for env in ['BINSORT_SCR', 'CCP4_SCR']:
-        if os.environ.has_key(env):
+        if env in os.environ:
           directory = os.environ[env]
           self.add_scratch_directory(directory)
           try:

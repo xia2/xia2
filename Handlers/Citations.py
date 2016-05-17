@@ -33,7 +33,7 @@ class _Citations(object):
       program = str(citation.attributes['program'].value)
       bibtex = str(citation.childNodes[0].data)
 
-      if not self._citations.has_key(program):
+      if program not in self._citations:
         self._citations[program] = []
       self._citations[program].append(bibtex)
 
@@ -74,7 +74,7 @@ class _Citations(object):
 
     for bibtex in bibtex_list:
       data = self._parse_bibtex(bibtex)
-      if data.has_key('pages'):
+      if 'pages' in data:
         results.append(
             '%(author)s (%(year)s) %(journal)s %(volume)s, %(pages)s' % \
             data)

@@ -504,11 +504,11 @@ class XSweep(object):
 
     if self._header:
       # print some header information
-      if self._header.has_key('detector'):
+      if 'detector' in self._header:
         text += 'DETECTOR %s\n' % self._header['detector']
-      if self._header.has_key('exposure_time'):
+      if 'exposure_time' in self._header:
         text += 'EXPOSURE TIME %f\n' % self._header['exposure_time']
-      if self._header.has_key('phi_start'):
+      if 'phi_start' in self._header:
         text += 'PHI WIDTH %.2f\n' % \
                 (self._header['phi_end'] - self._header['phi_start'])
 

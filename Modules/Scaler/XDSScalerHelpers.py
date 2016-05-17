@@ -148,7 +148,7 @@ class XDSScalerHelper(object):
 
     for token in data_map.keys():
 
-      if not project_info.has_key(token):
+      if token not in project_info:
         raise RuntimeError, 'project info for %s not available' % \
               token
 

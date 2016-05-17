@@ -723,7 +723,7 @@ class fragment:
     The key is a string specifying a particular fragment
     attribute. If the attribute has been set then this
     method returns True, otherwise it returns False."""
-    return self.__dict.has_key(key)
+    return key in self.__dict
 
   def attributes(self):
     """Return a list of all the fragment attributes.
@@ -1525,7 +1525,7 @@ class table:
       # Look up whether the column has an
       # explicit value assigned
       colnam = self.table_column(icol).title()
-      if rowdata.has_key(colnam):
+      if colnam in rowdata:
         self.table_column(icol).append(rowdata[colnam])
       else:
         # Assign a null value
@@ -2158,7 +2158,7 @@ class patternmatch:
 
   def has_pattern(self,name):
     """Returns True if there is a pattern associated 'name'."""
-    return self.__patterns.has_key(name)
+    return name in self.__patterns
 
   def store_pattern(self,name,cpattern):
     """Store a compiled regular expression associated with 'name'.
@@ -3281,7 +3281,7 @@ def offsetline(linen,pattern_result):
   It does this by locating a dictionary key 'nlines', which
   gives the size of the regular expression match."""
 
-  if pattern_result.has_key("nlines"):
+  if "nlines" in pattern_result:
     nlines = pattern_result["nlines"]
   else:
     nlines = 0
@@ -3472,8 +3472,8 @@ def salvage_tag_data(tag_text):
   tag = data[0]
   attributes = data[1]
   # Jloggraph applet data
-  if tag == "param" and attributes.has_key("name"):
-    if attributes["name"] == "table" and attributes.has_key("value"):
+  if tag == "param" and "name" in attributes:
+    if attributes["name"] == "table" and "value" in attributes:
       return attributes["value"]
   # Spacegroup
   if tag_is_spacegroup(tag_text):
