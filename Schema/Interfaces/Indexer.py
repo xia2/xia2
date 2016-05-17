@@ -591,8 +591,8 @@ class Indexer(object):
   def set_indexer_input_cell(self, cell):
     '''Set the input unit cell (optional.)'''
 
-    if not type(cell) == type(()):
-      raise RuntimeError, 'cell must be a 6-tuple of floats'
+    if not (type(cell) == type(()) or type(cell) == type([])):
+      raise RuntimeError, 'cell must be a 6-tuple of floats, is %s' % str(cell)
 
     if len(cell) != 6:
       raise RuntimeError, 'cell must be a 6-tuple of floats'
