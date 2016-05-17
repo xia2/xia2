@@ -560,7 +560,7 @@ def Diffdump(DriverType = None):
     def _get_time(self, datestring):
       '''Unpack a date string to a structure.'''
 
-      if len(datestring) == 0:
+      if not datestring:
         raise RuntimeError, 'empty date'
 
       if datestring == 'N/A':

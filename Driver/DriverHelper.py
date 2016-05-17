@@ -299,7 +299,7 @@ def error_python_traceback(records):
         line = line[:400] + '...\n'
       buf.append(line)
 
-  if len(error_messages):
+  if error_messages:
     from libtbx.utils import Sorry
     raise Sorry(error_messages[0])
 

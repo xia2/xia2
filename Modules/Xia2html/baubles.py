@@ -1041,10 +1041,10 @@ def plainTextMarkup(text):
     if line.strip() != "":
       para.append(line)
     else:
-      if len(para) > 0:
+      if para:
         paras.append(para)
         para = []
-  if len(para) > 0:
+  if para:
     paras.append(para)
   # identify paragraphs as tables and lists
   tablesep = re.compile( r'\s\s+' )
@@ -1168,7 +1168,7 @@ def summariseGeneric(html,program):
     html.write(plainTextMarkup(result))
     html.write("</div></p>\n")
     html.write("</div>\n")
-  if len(warnings) > 0:
+  if warnings:
     html.write("<div id=\"warnings\" class=\"keytext\">\n")
     html.write("<p>The following warnings were issued:</p>\n")
     html.write("<ul>\n")
@@ -1373,9 +1373,9 @@ def baubles(log,htmlfile=None):
       program = fragment
       name = identifyProgram(program)
       progrefs = collectReferences(program)
-      if len(progrefs) > 0:
+      if progrefs:
         refs[name] = progrefs
-  if len(refs) > 0:
+  if refs:
     html.write("<!-- List of references for programs -->\n")
     html.write("<div class=\"references\">")
     html.write("Please consider citing the following papers:\n<ul>\n")

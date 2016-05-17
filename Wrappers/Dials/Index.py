@@ -223,7 +223,7 @@ def Index(DriverType = None):
 
         if 'Final RMSDs by experiment' in record:
           values = records[i+6].strip().strip('|').split('|')
-          if len(values):
+          if values:
             values = [float(v) for v in values]
             if values[0] == 0:
               self._nref = int(values[1])

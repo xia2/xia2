@@ -25,8 +25,6 @@ class SunGridEngineClusterDriver(DefaultClusterDriver):
     DefaultClusterDriver.__init__(self)
     self._job_id = 0
 
-    return
-
   def _check_sge_errors(self, sge_stderr_list):
     '''Check through the standard error from Sun Grid Engine
     for indications that something went wrong... called from
@@ -55,7 +53,7 @@ class SunGridEngineClusterDriver(DefaultClusterDriver):
     stdout, stderr = pipe.communicate()
 
     # check the standard error
-    if len(stderr) > 0:
+    if stderr:
       # something probably went wrong
       if 'error opening' in stderr:
         raise RuntimeError, 'executable "%s" does not exist' % \
@@ -66,8 +64,6 @@ class SunGridEngineClusterDriver(DefaultClusterDriver):
 
     # the job id etc go to the standard output
     self._job_id = stdout.split('\n')[0].split()[2]
-
-    return
 
   def cleanup(self):
     '''Cleanup and close-out.'''
@@ -98,8 +94,6 @@ class SunGridEngineClusterDriver(DefaultClusterDriver):
     except:
       # something wrong with this deletion?
       pass
-
-    return
 
   def kill(self):
     '''This is meaningless...'''

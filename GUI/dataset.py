@@ -62,15 +62,15 @@ class SelectDatasetPanelMixin (object) :
     """
     pass
 
-  def GetImageset (self) :
-    if (len(self._imagesets) == 0) :
-      raise Sorry("No imageset selected!")
-    else :
+  def GetImageset(self):
+    if self._imagesets:
       i = self.stack_ctrl.GetSelections()
       frames = None
-      if (self.frame_ctrl is not None) :
+      if self.frame_ctrl is not None:
         frames = self.frame_ctrl.GetPhilValue()
       return self._imagesets[i], frames
+    else:
+      raise Sorry("No imageset selected!")
 
   def GetImagesets(self):
     return [self._imagesets[i] for i in self.stack_ctrl.GetSelections()]

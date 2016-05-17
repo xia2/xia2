@@ -248,7 +248,7 @@ def XDSCorrect(DriverType = None, params=None):
                         resol)
 
       # exclude requested resolution ranges
-      if len(self._excluded_regions) != 0:
+      if self._excluded_regions:
         Debug.write('Excluding regions: %s' % `self._excluded_regions`)
 
         for upper, lower in self._excluded_regions:

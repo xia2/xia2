@@ -61,7 +61,7 @@ def load_imagesets(template, directory, id_image=None, image_range=None,
       master_file = None
       for p in g:
         substr = longest_common_substring(template, p)
-        if len(substr):
+        if substr:
           if (master_file is None or
               (len(substr) > len(longest_common_substring(template, master_file)))):
             master_file = p

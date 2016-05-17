@@ -563,8 +563,6 @@ def rummage(directories):
 
   get_sweeps(templates)
 
-  return
-
 def write_xinfo(filename, directories, template=None, hdf5_master_files=None):
 
   global target_template
@@ -612,8 +610,6 @@ def write_xinfo(filename, directories, template=None, hdf5_master_files=None):
   # change back directory c/f bug # 2693 - important for error files...
   os.chdir(start)
 
-  return
-
 def run():
   streams_off()
 
@@ -630,7 +626,7 @@ def run():
       if os.path.isdir(arg):
         directories.append(os.path.abspath(arg))
 
-    if len(directories) == 0:
+    if not directories:
       raise RuntimeError('directory not found in arguments')
 
   else:

@@ -106,8 +106,6 @@ class DefaultDriver(object):
 
     self._cpu_threads = 1
 
-    return
-
   def __del__(self):
     # the destructor - close the log file etc.
 
@@ -119,14 +117,12 @@ class DefaultDriver(object):
 
   def set_xpid(self, xpid):
     self._xpid = xpid
-    return
 
   def get_xpid(self):
     return self._xpid
 
   def set_cpu_threads(self, cpu_threads):
     self._cpu_threads = cpu_threads
-    return
 
   def get_cpu_threads(self):
     return self._cpu_threads
@@ -147,8 +143,6 @@ class DefaultDriver(object):
       raise NotAvailableError, 'executable %s does not exist in PATH' % \
             executable
 
-    return
-
   def get_executable(self):
     '''Get the name of the executable.'''
     return self._executable
@@ -161,14 +155,11 @@ class DefaultDriver(object):
     if not name in self._working_environment_exclusive:
       self._working_environment_exclusive.append(name)
 
-    return
-
   def add_working_environment(self, name, value):
     '''Add an extra token to the environment for processing.'''
     if not name in self._working_environment:
       self._working_environment[name] = []
     self._working_environment[name].append(value)
-    return
 
   def get_working_environment(self):
     '''Return the additional elements for the working environment.'''
@@ -185,8 +176,6 @@ class DefaultDriver(object):
 
     self._task = task
 
-    return
-
   def get_task(self):
     '''Return a helpful record about what the task is doing.'''
 
@@ -198,8 +187,6 @@ class DefaultDriver(object):
 
     self._input_files.append(input_file)
 
-    return
-
   def add_input_file(self, input_file):
     return self.add_input_file(input_file)
 
@@ -209,8 +196,6 @@ class DefaultDriver(object):
 
     self._output_files.append(output_file)
 
-    return
-
   def add_output_file(self, output_file):
     return self._add_output_file(output_file)
 
@@ -218,8 +203,6 @@ class DefaultDriver(object):
     '''Clear the command line.'''
 
     self._command_line = []
-
-    return
 
   def get_command_line(self):
     '''Get the command line.'''
@@ -239,8 +222,6 @@ class DefaultDriver(object):
       assert isinstance(command_line_token, basestring)
       self._command_line.append(command_line_token)
 
-    return
-
   def set_command_line(self, command_line):
     '''Set the command line which wants to be run.'''
 
@@ -249,14 +230,10 @@ class DefaultDriver(object):
 
     self._command_line = command_line
 
-    return
-
   def set_working_directory(self, working_directory):
     '''Set the working directory for this process.'''
 
     self._working_directory = working_directory
-
-    return
 
   def get_working_directory(self):
     '''Get the working directory for this process.'''
@@ -290,16 +267,12 @@ class DefaultDriver(object):
     # reset the name to a new value...
     self._name = generate_random_name()
 
-    return
-
   def start(self):
     '''Start the sub process - which is to say if interactive start the
     interactive job, if batch start the batch job. This implementation
     will fail because youre not supposed to use it!'''
 
     raise RuntimeError, 'Do not use the DefaultDriver class directly'
-
-    return
 
   def check(self):
     '''Check that the running process is ok - this is an optional
@@ -326,8 +299,6 @@ class DefaultDriver(object):
       raise RuntimeError('%s terminated with an error: see %s for more details' %(
         os.path.basename(self._executable), self.get_log_file()))
 
-    return
-
   def check_for_errors(self):
     '''Work through the standard output of the program and see if
     any standard error conditions (listed in DriverHelper) can be
@@ -341,8 +312,6 @@ class DefaultDriver(object):
     # next check the status
 
     check_return_code(self.status())
-
-    return
 
   def _input(self, record):
     '''Pass record into the child programs standard input.'''
@@ -363,8 +332,6 @@ class DefaultDriver(object):
     # of the Driver
 
     self._input(record)
-
-    return
 
   def _output(self):
     '''Pass record from the child programs standard output.'''
@@ -411,13 +378,11 @@ class DefaultDriver(object):
     # should have bufsize = 0 here... won't work on mac!
 
     self._log_file = open(filename, 'w')
-    if len(self._standard_output_records) > 0:
+    if self._standard_output_records:
       for s in self._standard_output_records:
         self._log_file.write(s)
 
     self._log_file_name = self._log_file.name
-
-    return
 
   def get_log_file(self):
     '''Get a pointer to the log file if set.'''
@@ -475,8 +440,6 @@ class DefaultDriver(object):
 
     self.cleanup()
 
-    return
-
   def kill(self):
     '''Kill the child process.'''
 
@@ -505,8 +468,6 @@ class DefaultDriver(object):
 
     for line in open(filename, 'r').readlines():
       self._standard_output_records.append(line)
-
-    return
 
 if __name__ == '__main__':
 

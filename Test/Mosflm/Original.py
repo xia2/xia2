@@ -1782,7 +1782,7 @@ def Mosflm(DriverType = None):
           self.input('resolution exclude %.2f %.2f' % (resol))
 
       # exclude specified resolution ranges
-      if len(self.get_integrater_excluded_regions()) != 0:
+      if self.get_integrater_excluded_regions():
         regions = self.get_integrater_excluded_regions()
 
         Debug.write('Excluding regions: %s' % `regions`)
@@ -2313,7 +2313,7 @@ def Mosflm(DriverType = None):
             job.input('resolution exclude %.2f %.2f' % (resol))
 
         # exclude specified resolution ranges
-        if len(self.get_integrater_excluded_regions()) != 0:
+        if self.get_integrater_excluded_regions():
           regions = self.get_integrater_excluded_regions()
 
           Debug.write('Excluding regions: %s' % `regions`)

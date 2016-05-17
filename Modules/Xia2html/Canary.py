@@ -319,7 +319,7 @@ class Section(DocElement):
     contents list - this will include a table of contents
     list for subsections in this section."""
     toc_html = "<a href='#"+self.id()+"'>"+self.title()+"</a>"
-    if len(self.__subsections):
+    if self.__subsections:
       subtoc = List()
       for sect in self.__subsections:
         subtoc.addItem(sect.renderTOC())
@@ -860,7 +860,7 @@ class Table(DocElement):
   def renderContent(self):
     """Generate a HTML version of the table"""
     # Deal with CSS classes
-    if len(self.__classes):
+    if self.__classes:
       class_attribute = " class='"+" ".join(self.__classes)+"' "
     else:
       class_attribute = ''

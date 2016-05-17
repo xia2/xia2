@@ -46,7 +46,7 @@ def generate_xia2_html(xinfo, filename='xia2.html'):
 
 def make_logfile_html(logfile):
     tables = extract_loggraph_tables(logfile)
-    if not len(tables):
+    if not tables:
       return
 
     rst = []

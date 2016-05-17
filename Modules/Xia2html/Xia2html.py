@@ -1603,7 +1603,7 @@ class Sweep:
 
     Returns the last IntegrationRun object added to the
     sweep."""
-    if len(self.__integration_runs):
+    if self.__integration_runs:
       return self.__integration_runs[-1]
     return None
 
@@ -2398,7 +2398,7 @@ class Xia2doc:
       asu_tbl.addClass('xia2_info')
     else:
       message = "No information on ASU contents"
-      if not len(xtal.sequence()):
+      if not xtal.sequence():
         message += " (because no sequence information was supplied?)"
       self.addInfo(section,message)
 
@@ -2482,7 +2482,7 @@ class Xia2doc:
   def reportReflectionFiles(self,section):
     """Add a report of the reflection files to a section"""
     refln_files = self.__xia2run.refln_files()
-    if not len(refln_files):
+    if not refln_files:
       self.addWarning(section,"No reflection data files found")
       section.addPara("No information on the reflection files was found "+
                       "in the xia2.txt file.")
@@ -2536,7 +2536,7 @@ class Xia2doc:
 
   def reportLogFiles(self,section):
     """Add a report of the log files to a section"""
-    if not len(self.__xia2run.logfiles()):
+    if not self.__xia2run.logfiles():
       # No log files were found
       # Print warning and diagnostics
       self.addWarning(section,"No program log files found in "+ \
@@ -2568,7 +2568,7 @@ class Xia2doc:
     unassigned_logs = []
     for log in self.__xia2run.logfiles():
       if not log.crystal(): unassigned_logs.append(log)
-    if len(unassigned_logs):
+    if unassigned_logs:
       unassigned = Canary.List()
       for log in unassigned_logs:
         unassigned.addItem(Canary.MakeLink(
@@ -2633,7 +2633,7 @@ class Xia2doc:
       else:
         logdata.append(None)
       # Warnings from smartie analysis
-      if len(log.warnings()):
+      if log.warnings():
         logdata.append(Canary.MakeLink(html_log+"#warnings",
                                        self.__warning_icon+
                                        " See warnings"))
@@ -2660,7 +2660,7 @@ class Xia2doc:
     multi_crystal = self.__xia2run.multi_crystal()
     int_status_reporter = self.__int_status_reporter
     # Check for problems with the data
-    if not len(int_status_reporter.getSymbolList()):
+    if not int_status_reporter.getSymbolList():
       # No integration status symbols were extracted from the key
       self.addWarning(section,
                       "The integration status symbols were not "+

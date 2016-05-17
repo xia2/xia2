@@ -106,7 +106,7 @@ def Chef(DriverType = None,
     def run(self):
       '''Actually run chef...'''
 
-      if len(self._hklin_list) == 0:
+      if not self._hklin_list:
         raise RuntimeError, 'HKLIN not defined'
 
       for j in range(len(self._hklin_list)):

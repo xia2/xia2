@@ -215,10 +215,9 @@ class Xia2Info(object):
     return self._proj_name
 
   def get_data_files(self):
-    if len(self._data_files) == 0:
-      return None
-    else:
+    if self._data_files:
       return self._data_files
+    return None
 
 def usage(myname="xia2ccp4i.py"):
   """return a usage string"""

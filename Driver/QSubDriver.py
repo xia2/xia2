@@ -167,7 +167,7 @@ class QSubDriver(DefaultDriver):
     stdout, stderr = pipe.communicate()
 
     # check the standard error
-    if len(stderr) > 0:
+    if stderr:
       # something probably went wrong
       if 'error opening' in stderr:
         raise RuntimeError, 'executable "%s" does not exist' % \

@@ -245,7 +245,7 @@ def MosflmIntegrate(DriverType = None, indxr_print = True):
       if self._wavelength is not None:
         self.input('wavelength %f' %self._wavelength)
 
-      if len(self._parameters):
+      if self._parameters:
         for p, v in self._parameters.items():
           self.input('%s %s' % (p, str(v)))
 

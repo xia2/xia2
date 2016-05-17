@@ -74,7 +74,7 @@ class XInfo(object):
 
     for r in open(xinfo_file, 'r').readlines():
       record = r.strip()
-      if len(record) == 0:
+      if not record:
         pass
       elif record[0] == '!' or record[0] == '#':
         pass

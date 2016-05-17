@@ -270,7 +270,7 @@ class logfile:
     The logfile will test as True if at least one
     fragment is defined - otherwise it will test as
     False."""
-    if len(self.__fragments) > 0:
+    if self.__fragments:
       return True
     return False
 
@@ -564,7 +564,7 @@ class logfile:
     first line after the end of the previous fragment,
     or the start of the file (if there is no previous
     fragment)."""
-    if len(self.__fragments) == 0:
+    if not self.__fragments:
       # We're in a situation where there was no
       # first fragment
       # Let's make one now
@@ -1509,7 +1509,7 @@ class table:
     will assign the expected data to the 'X' and 'Z'columns,
     while assigning the '*' character to the 'Y' column.
     """
-    if len(rowdata.keys()) == 0:
+    if not rowdata.keys():
       # No columns were specified
       return
     for colnam in rowdata.keys():

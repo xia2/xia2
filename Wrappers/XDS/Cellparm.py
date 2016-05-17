@@ -50,7 +50,7 @@ def Cellparm(DriverType = None):
     def get_cell(self):
       '''Compute an average cell.'''
 
-      if len(self._cells) < 1:
+      if not self._cells:
         raise RuntimeError, 'no input unit cell parameters'
 
       # check that the input cells are reasonably uniform -

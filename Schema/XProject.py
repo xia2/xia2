@@ -173,7 +173,7 @@ class XProject(object):
     sweep_ids = [sweep.id for sweep in settings.sweep]
     sweep_ranges = [sweep.range for sweep in settings.sweep]
 
-    if len(sweep_ids) == 0:
+    if not sweep_ids:
       sweep_ids = None
       sweep_ranges = None
 
@@ -208,7 +208,7 @@ class XProject(object):
         xc.set_user_spacegroup(settings.space_group.type().lookup_symbol())
 
       # add a default sample if none present in xinfo file
-      if len(crystals[crystal]['samples']) == 0:
+      if not crystals[crystal]['samples']:
         crystals[crystal]['samples']['X1'] = {}
 
       for sample in crystals[crystal]['samples'].keys():

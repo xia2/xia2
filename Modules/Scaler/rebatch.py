@@ -47,14 +47,14 @@ def rebatch(hklin, hklout, first_batch=None,
 
   valid = flex.bool()
 
-  if len(exclude_range):
+  if exclude_range:
     exclude_sel = flex.bool(batch_column_values.size(), False)
     for (start, end) in exclude_range:
       exclude_sel.set_selected(
         (batch_column_values >= start) & (batch_column_values <= end), True)
     mtz_obj.delete_reflections(exclude_sel.iselection())
 
-  elif len(include_range):
+  elif include_range:
     exclude_sel = flex.bool(batch_column_values.size(), True)
     for (start, end) in include_range:
       exclude_sel.set_selected(

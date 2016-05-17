@@ -295,7 +295,7 @@ def headers2sweeps(header_dict):
 
   images = sorted(header_dict)
 
-  if len(images) == 0:
+  if not images:
     return []
 
   sweeps = []

@@ -207,7 +207,7 @@ def MosflmRefineCell(DriverType = None, indxr_print = True):
           self.input('autoindex dps refine image %d' % j)
         self.input('go')
 
-      if len(self._parameters):
+      if self._parameters:
         self.input('!parameters from autoindex run')
         for p, v in self._parameters.items():
           self.input('%s %s' % (p, str(v)))

@@ -623,7 +623,7 @@ def _normalize_tabular_data(tabular_data, headers):
         headers = [headers.get(k, k) for k in keys]
         headers = list(map(_text_type, headers))
       elif headers == "firstrow":
-        if len(rows) > 0:
+        if rows:
           headers = [firstdict.get(k, k) for k in keys]
           headers = list(map(_text_type, headers))
         else:

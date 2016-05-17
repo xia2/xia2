@@ -138,7 +138,7 @@ class ProcessingFrame (wx.Frame) :
     html_files = glob.glob(os.path.join(
       result.output_dir, 'LogFiles/*_report.html'))
     print html_files
-    if len(html_files):
+    if html_files:
       html_file = html_files[0]
       try:
         # wx.html.HtmlWindow

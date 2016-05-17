@@ -804,7 +804,7 @@ class XSweep(object):
         if self._ice:
           self._integrater.set_integrater_ice(self._ice)
 
-        if len(self._excluded_regions) > 0:
+        if self._excluded_regions:
           self._integrater.set_integrater_excluded_regions(
               self._excluded_regions)
 

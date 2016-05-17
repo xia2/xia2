@@ -203,13 +203,10 @@ class Indexer(object):
     self.LATTICE_POSSIBLE = Indexer.LATTICE_POSSIBLE
     self.LATTICE_IMPOSSIBLE = Indexer.LATTICE_IMPOSSIBLE
 
-    return
-
   # admin functions
 
   def set_working_directory(self, working_directory):
     self._indxr_working_directory = working_directory
-    return
 
   def get_working_directory(self):
     return self._indxr_working_directory
@@ -319,28 +316,20 @@ class Indexer(object):
     if not done:
       self.set_indexer_done(False)
 
-    return
-
   def set_indexer_done(self, done = True):
     self._indxr_done = done
-
     if not done:
       self.set_indexer_finish_done(False)
 
-    return
-
   def set_indexer_finish_done(self, done = True):
     self._indxr_finish_done = done
-    return
 
   def set_indexer_sweep(self, sweep):
     self.add_indexer_sweep(sweep)
-    return
 
   def get_indexer_sweep(self):
-    if len(self._indxr_sweeps):
+    if self._indxr_sweeps:
       return self._indxr_sweeps[0]
-    return
 
   def add_indexer_sweep(self, sweep):
     self._indxr_sweeps.append(sweep)
@@ -350,7 +339,6 @@ class Indexer(object):
 
   def set_indexer_sweep_name(self, sweep_name):
     self._indxr_sweep_name = sweep_name
-    return
 
   def get_indexer_sweep_name(self):
     return self._indxr_sweep_name
@@ -360,8 +348,6 @@ class Indexer(object):
     self._indxr_pname = project_name
     self._indxr_xname = crystal_name
     self._indxr_dname = dataset_name
-
-    return
 
   def get_indexer_project_info(self):
     return self._indxr_pname, self._indxr_xname, self._indxr_dname
@@ -421,8 +407,6 @@ class Indexer(object):
 
     self._indxr_helper.eliminate(indxr_print = indxr_print)
     self.set_indexer_done(False)
-
-    return
 
   def _indxr_replace(self, lattice, cell, indxr_print = True):
     '''Replace the highest symmetry in the solution table with this...
@@ -570,7 +554,6 @@ class Indexer(object):
 
   def set_indexer_user_input_lattice(self, user):
     self._indxr_user_input_lattice = user
-    return
 
   def get_indexer_user_input_lattice(self):
     return self._indxr_user_input_lattice
@@ -582,8 +565,6 @@ class Indexer(object):
 
     self._indxr_input_lattice = lattice
     self.set_indexer_done(False)
-
-    return
 
   def get_indexer_input_lattice(self):
     return self._indxr_input_lattice
@@ -599,8 +580,6 @@ class Indexer(object):
 
     self._indxr_input_cell = tuple(map(float, cell))
     self.set_indexer_done(False)
-
-    return
 
   # getter methods for the output - all of these will call index()
   # which will guarantee that the results are up to date (recall
@@ -643,15 +622,11 @@ class Indexer(object):
 
   def set_indexer_distance(self, distance):
     '''Set the refined distance.'''
-
     self._indxr_refined_distance = distance
-    return
 
   def set_indexer_beam_centre(self, beam_centre):
     '''Set the beam centre.'''
-
     self._indxr_refined_beam_centre = beam_centre
-    return
 
   def get_indexer_beam_centre(self):
     '''Get the refined beam.'''
@@ -802,8 +777,6 @@ class IndexerSingleSweep(Indexer):
     if reset:
       self.set_indexer_prepare_done(False)
 
-    return
-
   def set_indexer_image_wedges(self, indexer_image_wedges, reset = True):
     '''Assign images to use for autoindexing, will clobber existing
     values. Use with interactive indexing...'''
@@ -819,8 +792,6 @@ class IndexerSingleSweep(Indexer):
 
     if reset:
       self.set_indexer_prepare_done(False)
-
-    return
 
   def get_indexer_images(self):
     return self._indxr_images

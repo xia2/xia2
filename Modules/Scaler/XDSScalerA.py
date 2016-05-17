@@ -964,7 +964,7 @@ class XDSScalerA(Scaler):
     # then iterate (that is, rerun XSCALE, rejecting these outliers)
 
     if not Flags.get_quick() and Flags.get_remove():
-      if len(xscale.get_remove()) > 0:
+      if xscale.get_remove():
 
         xscale_remove = xscale.get_remove()
         current_remove = []
@@ -1343,7 +1343,7 @@ class XDSScalerA(Scaler):
     for si in self._sweep_information.values():
       batch_offset = si['batch_offset']
       for b in range(si['batches'][0], si['batches'][1]+1):
-        if len(epoch_to_dose):
+        if epoch_to_dose:
           batch_to_dose[b] = epoch_to_dose[si['image_to_epoch'][b-batch_offset]]
         else:
           # backwards compatibility 2015-12-11

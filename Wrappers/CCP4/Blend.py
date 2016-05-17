@@ -111,7 +111,7 @@ def Blend(DriverType = None):
       return self._analysis
 
     def get_label(self, dataset_id):
-      if len(self._labels) > 0:
+      if self._labels:
         assert dataset_id <= len(self._labels)
         return self._labels[dataset_id - 1]
       return None
@@ -122,10 +122,10 @@ def Blend(DriverType = None):
       linkage_matrix = self.get_linkage_matrix()
 
       labels = self._labels
-      if len(labels) == 0:
-        labels = ['%i' %(i+1) for i in range(len(self._hklin_files))]
-      else:
+      if labels:
         assert len(labels) == len(self._hklin_files)
+      else:
+        labels = ['%i' %(i+1) for i in range(len(self._hklin_files))]
 
       if not no_plot:
         try:

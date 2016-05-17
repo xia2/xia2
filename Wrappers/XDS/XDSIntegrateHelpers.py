@@ -71,7 +71,7 @@ def _parse_integrate_lp(filename):
     # look for explicitly per-image information
     if 'IMAGE IER  SCALE' in file_contents[i]:
       j = i + 1
-      while len(file_contents[j].strip()):
+      while file_contents[j].strip():
         lst = file_contents[j].split()
         image = int(lst[0])
         status = int(lst[1])

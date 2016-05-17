@@ -173,7 +173,7 @@ def resolution(h, k, l, a_, b_, c_):
 
 def meansd(values):
 
-  if len(values) == 0:
+  if not values:
     return 0.0, 0.0
 
   if len(values) == 1:
