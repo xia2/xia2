@@ -879,6 +879,9 @@ class CCP4ScalerA(Scaler):
           raise RuntimeError, 'lattices differ in %s and %s' % \
                 (self._reference, si.get_reflections())
 
+        Debug.write('Cell: %.2f %.2f %.2f %.2f %.2f %.2f' % cell)
+        Debug.write('Ref:  %.2f %.2f %.2f %.2f %.2f %.2f' % reference_cell)
+
         for j in range(6):
           if math.fabs((cell[j] - reference_cell[j]) /
                        reference_cell[j]) > 0.1:
