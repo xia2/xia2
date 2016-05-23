@@ -169,7 +169,7 @@ class _ISPyBXmlHandler(object):
             'Completeness',
             'Multiplicity',
             'I/sigma',
-            'Rmerge(I+/I-)',
+            'Rmerge(I+/-)',
             'CC half',
             'Anomalous completeness',
             'Anomalous correlation',
@@ -177,7 +177,7 @@ class _ISPyBXmlHandler(object):
             'Total observations',
             'Total unique',
             'Rmeas(I)',
-            'Rmeas(I+,-)',
+            'Rmeas(I+/-)',
             'Rpim(I)',
             'Rpim(I+/-)',
             'Partial Bias'
