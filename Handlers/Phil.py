@@ -111,12 +111,12 @@ dials {
   close_to_spindle_cutoff = 0.02
     .type = float(value_min=0.0)
   find_spots {
+    phil_file = None
+      .type = path
     min_spot_size = Auto
       .type = int
     min_local = 0
       .type = int
-    phil_file = None
-      .type = path
     sigma_strong = None
       .type = float
     filter_ice_rings = False
@@ -127,10 +127,10 @@ dials {
       .type = float
   }
   index {
-    method = fft1d *fft3d real_space_grid_search
-      .type = choice
     phil_file = None
       .type = path
+    method = fft1d *fft3d real_space_grid_search
+      .type = choice
     max_cell = 0.0
       .type = float
     fft3d.n_points = None
@@ -139,13 +139,13 @@ dials {
       .type = int
   }
   refine {
+    phil_file = None
+      .type = path
     scan_varying = True
       .type = bool
     interval_width_degrees = 36.0
       .help = "Width of scan between checkpoints in degrees"
       .type = float(value_min=0.)
-    phil_file = None
-      .type = path
     reflections_per_degree = 100
       .type = int
   }
@@ -165,10 +165,6 @@ dials {
   }
 }
 ccp4 {
-  truncate {
-    program = 'ctruncate'
-      .type = str
-  }
   reindex {
     program = 'pointless'
       .type = str
@@ -180,6 +176,10 @@ ccp4 {
       .type = float
     surface_link = True
       .type = bool
+  }
+  truncate {
+    program = 'ctruncate'
+      .type = str
   }
 }
 xia2.settings {
@@ -232,12 +232,12 @@ xia2.settings {
     directory = Auto
       .type = str
   }
-  unit_cell = None
-    .type = unit_cell
-    .help = "Provide a target unit cell to the indexing program"
   space_group = None
     .type = space_group
     .help = "Provide a target space group to the indexing program"
+  unit_cell = None
+    .type = unit_cell
+    .help = "Provide a target unit cell to the indexing program"
   resolution {
     d_max = None
       .type = float(value_min=0.0)
