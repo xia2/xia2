@@ -305,12 +305,6 @@ class FrameProcessor(object):
 
   def _setup_from_imageset(self, imageset):
     '''Configure myself from an image name.'''
-
-    beam = imageset.get_beam()
-    detector = imageset.get_detector()
-    assert len(detector) == 1, 'xia2 does not yet support multi-panel detectors'
-    panel = detector[0]
-
     image_range = imageset.get_scan().get_image_range()
 
     self._fp_imageset = imageset
@@ -332,11 +326,9 @@ class FrameProcessor(object):
     if self._fp_distance_prov is None:
       self._fp_distance_prov = 'header'
     if self._fp_beam_prov is None:
-      from scitbx import matrix
-      D = matrix.sqr(panel.get_D_matrix())
-      v = D * beam.get_s0()
-      x, y = v[0] / v[2], v[1] / v[2]
-
+      beam = imageset.get_beam()
+      detector = imageset.get_detector()
+      y, x = get_beam_centre(detector, beam)
       self._fp_beam = y, x
       self._fp_beam_prov = 'header'
 
@@ -364,10 +356,12 @@ class FrameProcessor(object):
 def get_beam_centre(detector, beam):
   from scitbx import matrix
   import math
-  assert len(detector) == 1, \
-    'xia2 does not yet support multi-panel detectors'
+  if len(detector) > 1:
+    panel_id = detector.get_panel_intersection(beam.get_s0())
+  else:
+    panel_id = 0
 
-  panel = detector[0]
+  panel = detector[panel_id]
   s0 = matrix.col(beam.get_s0())
   f = matrix.col(panel.get_fast_axis())
   s = matrix.col(panel.get_slow_axis())

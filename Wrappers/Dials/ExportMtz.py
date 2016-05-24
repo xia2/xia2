@@ -68,6 +68,7 @@ def ExportMtz(DriverType = None):
       self.add_command_line('mtz.hklout=%s' % self._mtz_filename)
       if self._include_partials:
         self.add_command_line('include_partials=true')
+      self.add_command_line('ignore_panels=true')
       self.start()
       self.close_wait()
       self.check_for_errors()
