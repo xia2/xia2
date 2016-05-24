@@ -19,6 +19,7 @@ master_phil = parse("""
 general {
   check_image_files_readable = True
     .type = bool
+    .expert_level = 2
 }
 xds {
   delphi = 5
@@ -104,41 +105,57 @@ dials {
     .type = bool
     .help = "Whether or not to refine geometry in dials.index and dials.refine."
             "Most useful when also providing a reference geometry to xia2."
+    .expert_level = 1
   outlier.algorithm = null *auto mcd tukey sauter_poon
     .type = choice
+    .expert_level = 1
   fast_mode = False
     .type = bool
+    .expert_level = 1
   close_to_spindle_cutoff = 0.02
     .type = float(value_min=0.0)
+    .expert_level = 2
   find_spots {
     phil_file = None
       .type = path
+      .expert_level = 1
     min_spot_size = Auto
       .type = int
+      .expert_level = 1
     min_local = 0
       .type = int
+      .expert_level=2
     sigma_strong = None
       .type = float
+      .expert_level = 1
     filter_ice_rings = False
       .type = bool
     kernel_size = 3
       .type = int
+      .expert_level = 1
     global_threshold = None
       .type = float
+      .expert_level = 1
   }
   index {
     phil_file = None
       .type = path
+      .expert_level = 1
     method = fft1d *fft3d real_space_grid_search
       .type = choice
     max_cell = 0.0
       .type = float
+      .expert_level = 1
     fft3d.n_points = None
       .type = int(value_min=0)
+      .expert_level = 2
     reflections_per_degree = 100
       .type = int
+      .expert_level = 1
   }
-  refine {
+  refine
+    .expert_level = 1
+  {
     phil_file = None
       .type = path
     scan_varying = True
@@ -149,7 +166,9 @@ dials {
     reflections_per_degree = 100
       .type = int
   }
-  integrate {
+  integrate
+    .expert_level = 1
+  {
     phil_file = None
       .type = path
     profile_fitting = True
@@ -160,11 +179,14 @@ dials {
       .type = choice
     use_threading = False
       .type = bool
+      .expert_level = 2
     include_partials = True
       .type = bool
   }
 }
-ccp4 {
+ccp4
+  .expert_level = 1
+{
   reindex {
     program = 'pointless'
       .type = str
@@ -183,7 +205,9 @@ ccp4 {
   }
 }
 xia2.settings {
-  input {
+  input
+    .expert_level = 1
+  {
     image = None
       .type = path
       .multiple = True
@@ -220,6 +244,7 @@ xia2.settings {
   }
   sweep
     .multiple = True
+    .expert_level = 2
   {
     id = None
       .type = str
@@ -231,6 +256,7 @@ xia2.settings {
   scale {
     directory = Auto
       .type = str
+      .expert_level = 2
   }
   space_group = None
     .type = space_group
@@ -248,53 +274,69 @@ xia2.settings {
     rmerge = None
       .type = float(value_min=0)
       .help = "Minimum value of Rmerge in the outer resolution shell"
+      .expert_level = 1
     completeness = None
       .type = float(value_min=0)
       .help = "Minimum completeness in the outer resolution shell"
+      .expert_level = 1
     cc_half = 0.5
       .type = float(value_min=0)
       .help = "Minimum value of CC1/2 in the outer resolution shell"
+      .expert_level = 1
     isigma = 0.25
       .type = float(value_min=0)
       .help = "Minimum value of the unmerged <I/sigI> in the outer resolution shell"
+      .expert_level = 1
     misigma = 1.0
       .type = float(value_min=0)
       .help = "Minimum value of the merged <I/sigI> in the outer resolution shell"
+      .expert_level = 1
   }
   optimize_scaling = False
     .type = bool
     .help = "Search for best scaling model"
+    .expert_level = 1
   unify_setting = False
     .type = bool
     .help = "For one crystal, multiple orientations, unify U matrix"
+    .expert_level = 1
   beam_centre = None
     .type = floats(size=2)
     .help = "Beam centre (x,y) coordinates (mm) using the Mosflm convention"
+    .expert_level = 1
   trust_beam_centre = False
     .type = bool
     .help = "Whether or not to trust the beam centre in the image header."
             "If false, then labelit.index is used to determine a better beam "
             "centre during xia2 setup phase"
+    .expert_level = 1
   wavelength_tolerance = 0.00001
     .type = float(value_min=0.0)
     .help = "Tolerance for accepting two different wavelengths as the same wavelength."
+    .expert_level = 1
   read_all_image_headers = True
     .type = bool
+    .expert_level = 1
   detector_distance = None
     .type = float(value_min=0.0)
     .help = "Distance between sample and detector (mm)"
+    .expert_level = 1
   show_template = False
     .type = bool
+    .expert_level = 1
   untrusted_rectangle_indexing = None
     .type = ints(size = 4)
     .multiple = True
+    .expert_level = 1
   xds_cell_deviation = 0.05, 5.0
     .type = floats(size = 2)
+    .expert_level = 1
   use_brehm_diederichs = False
     .type = bool
     .help = "Use the Brehm-Diederichs algorithm to resolve an indexing "
             "ambiguity."
             "See: W. Brehm and K. Diederichs, Acta Cryst. (2014). D70, 101-109."
+    .expert_level = 1
   developmental
     .expert_level = 2
   {
@@ -314,9 +356,13 @@ xia2.settings {
     .type = bool
   integrate_p1 = False
     .type = bool
+    .expert_level = 1
   reintegrate_correct_lattice = True
     .type = bool
-  xds {
+    .expert_level = 1
+  xds
+    .expert_level = 1
+  {
     geometry_x = None
       .type = path
     geometry_y = None
@@ -324,13 +370,19 @@ xia2.settings {
   }
   indexer = mosflm labelit labelitii xds xdsii xdssum dials
     .type = choice
+    .expert_level = 2
   refiner = mosflm xds dials
     .type = choice
+    .expert_level = 2
   integrater = mosflmr xdsr mosflm xds dials
     .type = choice
+    .expert_level = 2
   scaler = ccp4a xdsa
     .type = choice
-  merging_statistics {
+    .expert_level = 2
+  merging_statistics
+    .expert_level = 1
+  {
     source = aimless *cctbx
       .type = choice
       .help = "Use AIMLESS or cctbx for calculation of merging statistics"
@@ -345,7 +397,10 @@ xia2.settings {
   }
   verbose = False
     .type = bool
-  multiprocessing {
+    .expert_level = 1
+  multiprocessing
+    .expert_level = 1
+  {
     mode = *serial parallel
       .type = choice
       .help = "Whether to process each sweep in serial (using n processes per"
