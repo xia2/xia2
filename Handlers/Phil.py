@@ -119,6 +119,7 @@ dials
   }
   fast_mode = False
     .type = bool
+    .help = "Set various parameters for rapid processing, compromising on quality"
     .short_caption = "Fast mode"
     .expert_level = 1
   close_to_spindle_cutoff = 0.02
@@ -134,13 +135,26 @@ dials
       .expert_level = 1
     min_spot_size = Auto
       .type = int
+      .help = "The minimum number of contiguous pixels for a spot to be"
+              "accepted by the filtering algorithm."
       .short_caption = "Minimum spot size"
       .expert_level = 1
     min_local = 0
       .type = int
+      .help = "The minimum number of pixels under the image processing"
+              "kernel that are need to do the thresholding operation."
+              "Setting the value between 2 and the total number of pixels"
+              "under the kernel will force the algorithm to use that number"
+              "as the minimum. If the value is less than or equal to zero,"
+              "then the algorithm will use all pixels under the kernel. In"
+              "effect this will add a border of pixels which are always"
+              "classed as background around the edge of the image and around"
+              "any masked out pixels."
       .expert_level=2
     sigma_strong = None
       .type = float
+      .help = "The number of standard deviations above the mean in the local"
+              "area above which the pixel will be classified as strong."
       .short_caption = "Strong pixel sigma cutoff"
       .expert_level = 1
     filter_ice_rings = False
@@ -148,9 +162,13 @@ dials
       .short_caption = "Filter ice rings"
     kernel_size = 3
       .type = int
+      .help = "The size of the local area around the spot in which to"
+              "calculate the mean and variance. The kernel is given as a box"
       .expert_level = 1
     global_threshold = None
       .type = float
+      .help = "The global threshold value. Consider all pixels less than"
+              "this value to be part of the background."
       .short_caption = "Global threshold cutoff"
       .expert_level = 1
   }
@@ -166,6 +184,7 @@ dials
       .short_caption = "Indexing method"
     max_cell = 0.0
       .type = float
+      .help = "Maximum length of candidate unit cell basis vectors (in Angstrom)."
       .short_caption = "Maximum cell length"
       .expert_level = 1
     fft3d.n_points = None
@@ -207,6 +226,7 @@ dials
       .short_caption = "Do profile fitting"
     background_outlier_algorithm = *null nsigma truncated normal tukey mosflm
       .type = choice
+      .help = "Outlier rejection performed prior to background fit"
       .short_caption = "Outlier rejection method"
     background_algorithm = simple null *glm
       .type = choice
@@ -217,6 +237,7 @@ dials
       .expert_level = 2
     include_partials = True
       .type = bool
+      .help = "Include partial reflections (scaled) in output"
       .short_caption = "Include partials"
   }
 }
@@ -373,9 +394,8 @@ xia2.settings
     .expert_level = 1
   beam_centre = None
     .type = floats(size=2)
-    .help = "Beam centre (x,y) coordinates (mm) using the Mosflm convention"
+    .help = "Beam centre (x,y) coordinates (mm, mm) using the Mosflm convention"
     .short_caption = "Beam centre coordinates (mm, mm) using the Mosflm convention"
-    .expert_level = 1
   trust_beam_centre = False
     .type = bool
     .help = "Whether or not to trust the beam centre in the image header."
