@@ -100,151 +100,208 @@ xds {
               " 1-3, 4-6, 7-9, etc."
   }
 }
-dials {
+dials
+  .short_caption = "DIALS settings"
+{
   fix_geometry = False
     .type = bool
     .help = "Whether or not to refine geometry in dials.index and dials.refine."
             "Most useful when also providing a reference geometry to xia2."
+    .short_caption = "Fix geometry"
     .expert_level = 1
-  outlier.algorithm = null *auto mcd tukey sauter_poon
-    .type = choice
-    .expert_level = 1
+  outlier
+    .short_caption = "Centroid outlier rejection"
+  {
+    algorithm = null *auto mcd tukey sauter_poon
+      .type = choice
+      .short_caption = "Outlier rejection algorithm"
+      .expert_level = 1
+  }
   fast_mode = False
     .type = bool
+    .short_caption = "Fast mode"
     .expert_level = 1
   close_to_spindle_cutoff = 0.02
     .type = float(value_min=0.0)
+    .short_caption = "Closeness to the spindle cutoff for including reflections in refinement"
     .expert_level = 2
-  find_spots {
+  find_spots
+    .short_caption = "Spot finding"
+  {
     phil_file = None
       .type = path
+      .short_caption = "phil file to pass to dials.find_spots"
       .expert_level = 1
     min_spot_size = Auto
       .type = int
+      .short_caption = "Minimum spot size"
       .expert_level = 1
     min_local = 0
       .type = int
       .expert_level=2
     sigma_strong = None
       .type = float
+      .short_caption = "Strong pixel sigma cutoff"
       .expert_level = 1
     filter_ice_rings = False
       .type = bool
+      .short_caption = "Filter ice rings"
     kernel_size = 3
       .type = int
       .expert_level = 1
     global_threshold = None
       .type = float
+      .short_caption = "Global threshold cutoff"
       .expert_level = 1
   }
-  index {
+  index
+    .short_caption = "Indexing"
+  {
     phil_file = None
       .type = path
+      .short_caption = "phil file to pass to dials.index"
       .expert_level = 1
     method = fft1d *fft3d real_space_grid_search
       .type = choice
+      .short_caption = "Indexing method"
     max_cell = 0.0
       .type = float
+      .short_caption = "Maximum cell length"
       .expert_level = 1
     fft3d.n_points = None
       .type = int(value_min=0)
+      .short_caption = "Number of reciprocal space grid points"
       .expert_level = 2
     reflections_per_degree = 100
       .type = int
+      .short_caption = "Number of reflections per degree for random subset"
       .expert_level = 1
   }
   refine
+    .short_caption = "Refinement"
     .expert_level = 1
   {
     phil_file = None
       .type = path
+      .short_caption = "phil file to pass to dials.refine"
     scan_varying = True
       .type = bool
+      .short_caption = "Fit a scan-varying model"
     interval_width_degrees = 36.0
-      .help = "Width of scan between checkpoints in degrees"
       .type = float(value_min=0.)
+      .help = "Width of scan between checkpoints in degrees"
+      .short_caption = "Interval width between checkpoints (if scan-varying)"
     reflections_per_degree = 100
       .type = int
+      .short_caption = "Number of reflections per degree for random subset"
   }
   integrate
     .expert_level = 1
+    .short_caption = "Integration"
   {
     phil_file = None
       .type = path
+      .short_caption = "phil file to pass to dials.integrate"
     profile_fitting = True
       .type = bool
+      .short_caption = "Do profile fitting"
     background_outlier_algorithm = *null nsigma truncated normal tukey mosflm
       .type = choice
+      .short_caption = "Outlier rejection method"
     background_algorithm = simple null *glm
       .type = choice
+      .short_caption = "Background fit method"
     use_threading = False
       .type = bool
+      .short_caption = "Use threading"
       .expert_level = 2
     include_partials = True
       .type = bool
+      .short_caption = "Include partials"
   }
 }
 ccp4
+  .short_caption = "CCP4 data reduction options"
   .expert_level = 1
 {
-  reindex {
+  reindex
+    .short_caption = "reindex"
+  {
     program = 'pointless'
       .type = str
   }
-  aimless {
+  aimless
+    .short_caption = "aimless"
+  {
     intensities = summation profile *combine
       .type = choice
     surface_tie = 0.001
       .type = float
+      .short_caption = "Surface tie"
     surface_link = True
       .type = bool
+      .short_caption = "Surface link"
   }
-  truncate {
+  truncate
+    .short_caption = "truncate"
+  {
     program = 'ctruncate'
       .type = str
   }
 }
-xia2.settings {
+xia2.settings
+  .short_caption = "xia2 settings"
+{
   input
+    .short_caption = "xia2 input settings"
     .expert_level = 1
   {
     image = None
       .type = path
       .multiple = True
       .help = "image=/path/to/an/image_001.img"
+      .short_caption = "Path to an image file"
     json = None
       .type = path
       .multiple = True
       .help = "dxtbx-format datablock.json file which can be provided as an "
               "alternative source of images header information to avoid the "
               "need to read all the image headers on start-up."
+      .short_caption = "Take headers from json file"
     reference_geometry = None
       .type = path
       .multiple = True
       .help = "Experimental geometry from this datablock.json or "
               "experiments.json will override the geometry from the "
               "image headers."
-    reverse_phi = False
-      .type = bool
-      .help = "Reverse the direction of the phi axis rotation."
+      .short_caption = "Take experimental geometry from json file"
     xinfo = None
       .type = path
       .help = "Provide an xinfo file as input as alternative to directory "
               "containing image files."
+      .short_caption = "Use xinfo instead of image directory"
+    reverse_phi = False
+      .type = bool
+      .help = "Reverse the direction of the phi axis rotation."
+      .short_caption = "Reverse rotation axis"
     gain = None
       .type = float
       .help = "Detector gain if using DIALS"
+      .short_caption = "Detector gain"
     min_images = 10
       .type = int(value_min=1)
       .help = "Minimum number of matching images to include a sweep in processing."
+      .short_caption = "Minimum number of matching images"
     min_oscillation_range = None
       .type = int(value_min=0)
       .help = "Minimum oscillation range of a sweep for inclusion in processing."
+      .short_caption = "Minimum oscillation range"
     include scope dials.util.options.tolerance_phil_scope
   }
   sweep
     .multiple = True
     .expert_level = 2
+    .short_caption = "xia2 sweep"
   {
     id = None
       .type = str
@@ -257,85 +314,108 @@ xia2.settings {
     directory = Auto
       .type = str
       .expert_level = 2
+      .short_caption = "xia2 scale directory"
   }
   space_group = None
     .type = space_group
     .help = "Provide a target space group to the indexing program"
+    .short_caption = "Space group"
   unit_cell = None
     .type = unit_cell
     .help = "Provide a target unit cell to the indexing program"
-  resolution {
+    .short_caption = "Unit cell (if space group is also set)"
+  resolution
+    .short_caption = "Resolution"
+  {
     d_max = None
       .type = float(value_min=0.0)
       .help = "Low resolution cutoff."
+      .short_caption = "Low resolution cutoff"
     d_min = None
       .type = float(value_min=0.0)
       .help = "High resolution cutoff."
+      .short_caption = "High resolution cutoff"
     rmerge = None
       .type = float(value_min=0)
-      .help = "Minimum value of Rmerge in the outer resolution shell"
+      .help = "Maximum value of Rmerge in the outer resolution shell"
+      .short_caption = "Outer shell Rmerge"
       .expert_level = 1
     completeness = None
       .type = float(value_min=0)
       .help = "Minimum completeness in the outer resolution shell"
+      .short_caption = "Outer shell completeness"
       .expert_level = 1
     cc_half = 0.5
       .type = float(value_min=0)
       .help = "Minimum value of CC1/2 in the outer resolution shell"
+      .short_caption = "Outer shell CC1/2"
       .expert_level = 1
     isigma = 0.25
       .type = float(value_min=0)
       .help = "Minimum value of the unmerged <I/sigI> in the outer resolution shell"
+      .short_caption = "Outer shell unmerged <I/sigI>"
       .expert_level = 1
     misigma = 1.0
       .type = float(value_min=0)
       .help = "Minimum value of the merged <I/sigI> in the outer resolution shell"
+      .short_caption = "Outer shell merged <I/sigI>"
       .expert_level = 1
   }
   optimize_scaling = False
     .type = bool
     .help = "Search for best scaling model"
+    .short_caption = "Optimize scaling"
     .expert_level = 1
   unify_setting = False
     .type = bool
     .help = "For one crystal, multiple orientations, unify U matrix"
+    .short_caption = "Unify crystal orientations"
     .expert_level = 1
   beam_centre = None
     .type = floats(size=2)
     .help = "Beam centre (x,y) coordinates (mm) using the Mosflm convention"
+    .short_caption = "Beam centre coordinates (mm, mm) using the Mosflm convention"
     .expert_level = 1
   trust_beam_centre = False
     .type = bool
     .help = "Whether or not to trust the beam centre in the image header."
             "If false, then labelit.index is used to determine a better beam "
             "centre during xia2 setup phase"
+    .short_caption = "Trust beam centre"
     .expert_level = 1
   wavelength_tolerance = 0.00001
     .type = float(value_min=0.0)
     .help = "Tolerance for accepting two different wavelengths as the same wavelength."
+    .short_caption = "Wavelength tolerance"
     .expert_level = 1
   read_all_image_headers = True
     .type = bool
+    .short_caption = "Read all image headers"
     .expert_level = 1
   detector_distance = None
     .type = float(value_min=0.0)
     .help = "Distance between sample and detector (mm)"
+    .short_caption = "Detector distance"
     .expert_level = 1
   show_template = False
     .type = bool
+    .short_caption = "Show template"
     .expert_level = 1
   untrusted_rectangle_indexing = None
     .type = ints(size = 4)
     .multiple = True
+    .short_caption = "Untrusted rectangle for indexing"
     .expert_level = 1
   xds_cell_deviation = 0.05, 5.0
     .type = floats(size = 2)
+    .short_caption = "XDS cell deviation"
     .expert_level = 1
   use_brehm_diederichs = False
     .type = bool
     .help = "Use the Brehm-Diederichs algorithm to resolve an indexing "
             "ambiguity."
             "See: W. Brehm and K. Diederichs, Acta Cryst. (2014). D70, 101-109."
+    .short_caption = "Brehm-Diederichs"
     .expert_level = 1
   developmental
     .expert_level = 2
@@ -356,12 +436,15 @@ xia2.settings {
     .type = bool
   integrate_p1 = False
     .type = bool
+    .short_caption = "Integrate in P1"
     .expert_level = 1
   reintegrate_correct_lattice = True
     .type = bool
+    .short_caption = "Reintegrate using a corrected lattice"
     .expert_level = 1
   xds
     .expert_level = 1
+    .short_caption = "xia2 XDS settings"
   {
     geometry_x = None
       .type = path
@@ -381,24 +464,30 @@ xia2.settings {
     .type = choice
     .expert_level = 2
   merging_statistics
+    .short_caption = "Merging statistics"
     .expert_level = 1
   {
     source = aimless *cctbx
       .type = choice
       .help = "Use AIMLESS or cctbx for calculation of merging statistics"
+      .short_caption = "Software to calculate merging statistics"
     n_bins = 20
       .type = int(value_min=1)
+      .short_caption = "Number of bins"
     use_internal_variance = False
       .type = bool
       .help = Use internal variance of the data in the calculation of the merged sigmas
+      .short_caption = "Use internal variance"
     eliminate_sys_absent = False
       .type = bool
       .help = Eliminate systematically absent reflections before computation of merging statistics.
+      .short_caption = "Eliminate systematic absences before calculation"
   }
   verbose = False
     .type = bool
     .expert_level = 1
   multiprocessing
+    .short_caption = "Multiprocessing"
     .expert_level = 1
   {
     mode = *serial parallel
