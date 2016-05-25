@@ -46,7 +46,8 @@ def ImportXDS(DriverType = None):
         self.add_command_line('%s'%self._spot_xds)
         self.add_command_line('method=reflections')
 
-      self._reflection_filename = 'spot_xds.pickle'
+      self._reflection_filename = os.path.join(
+        self.get_working_directory(), 'spot_xds.pickle')
       self.start()
       self.close_wait()
       self.check_for_errors()
