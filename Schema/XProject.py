@@ -217,6 +217,9 @@ class XProject(object):
         xsample = XSample(sample, xc)
         xc.add_sample(xsample)
 
+      if not crystals[crystal]['wavelengths']:
+        raise RuntimeError('No wavelengths specified in xinfo file')
+
       for wavelength in crystals[crystal]['wavelengths'].keys():
         # FIXME 29/NOV/06 in here need to be able to cope with
         # no wavelength information - this should default to the
