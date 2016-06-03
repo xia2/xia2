@@ -1,0 +1,61 @@
+{% extends "report_base.html" %}
+{% block content %}
+<div class="page-header">
+    <h1>{{ page_title }}</h1>
+</div>
+
+<div>
+    <h2>Merging statistics</h2>
+
+    <p>
+        <b>Filename:</b> {{ filename }}
+        <br>
+        <b>Unit cell:</b> {{ space_group }}
+        <br>
+        <b>Space group:</b> {{ unit_cell }}
+    </p>
+
+    <div class="panel-group">
+        <div class="panel panel-default">
+            <div class="panel-heading" data-toggle="collapse" href="#collapse_expt">
+                <h4 class="panel-title">
+                    <a>Overall</a>
+                </h4>
+            </div>
+            <div id="collapse_expt" class="panel-collapse collapse in">
+                <div class="panel-body">
+                    <div style="width: 800px">
+                        {{ macros.table(overall_stats_table,
+                                        has_column_header=true,
+                                        has_row_header=true) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading" data-toggle="collapse" href="#collapse_geom">
+                <h4 class="panel-title">
+                    <a>Resolution shells</a>
+                </h4>
+            </div>
+            <div id="collapse_geom" class="panel-collapse collapse">
+                <div class="panel-body">
+                    {{ macros.table(merging_stats_table, has_row_header=true) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div>
+    <h2>Analysis plots</h2>
+
+    <div class="panel-group">
+        {{ macros.panel('Analysis by resolution', 'resolution', resolution_graphs) }}
+        {{ macros.panel('Analysis by batch', 'batch', batch_graphs) }}
+        {{ macros.panel('Miscellaneous', 'misc', misc_graphs) }}
+    </div>
+
+</div>
+
+{% endblock %}

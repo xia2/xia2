@@ -5,6 +5,7 @@ from cctbx.array_family import flex
 import math
 import os
 
+from libtbx.containers import OrderedDict
 
 from xia2.Modules.Analysis import *
 
@@ -76,6 +77,8 @@ def run(args):
            '%.3f' %bin_stats.cc_one_half, '%.3f' %bin_stats.cc_anom]
     rows.append(row)
 
+  merging_stats_table = [headers]
+  merging_stats_table.extend(rows)
   from xia2.lib.tabulate import tabulate
   merging_stats_table_html = tabulate(rows, headers, tablefmt='html')
   merging_stats_table_html = merging_stats_table_html.replace(
@@ -102,6 +105,9 @@ def run(args):
     ['CC1/2'] + ['%.3f' %s.cc_one_half for s in stats],
   ]
   rows = [[u'<strong>%s</strong>' %r[0]] + r[1:] for r in rows]
+
+  overall_stats_table = [headers]
+  overall_stats_table.extend(rows)
 
   overall_stats_table_html = tabulate(rows, headers, tablefmt='html')
   overall_stats_table_html = overall_stats_table_html.replace(
@@ -455,56 +461,37 @@ def run(args):
 
   json_data.update(pychef_dict)
 
-  from dials.report import html_report
-  report = html_report.html_report()
-
-  page_header = html_report.page_header('xia2 report')
-  report.add_content(page_header)
-
-  overall_panel = html_report.panel('Overall', 'overall', show=True)
-  overall_table = html_report.table_responsive(
-    overall_stats_table_html, width=800)
-  overall_panel.add_content(overall_table)
-
-  merging_stats_panel = html_report.panel('Resolution shells', 'merging_stats')
-  merging_stats_table = html_report.table_responsive(merging_stats_table_html)
-  merging_stats_panel.add_content(merging_stats_table)
-
-  merging_stats_panel_group = html_report.panel_group(
-    [overall_panel, merging_stats_panel])
-  div = html_report.div()
-  div.add_content(html_report.raw_html('<h2>Merging statistics</h2>'))
-  div.add_content(html_report.raw_html(symmetry_table_html))
-  div.add_content(merging_stats_panel_group)
-  report.add_content(div)
-
-  resolution_plots_panel = html_report.panel('Analysis by resolution', 'resolution')
-  for graph in ('cc_one_half', 'i_over_sig_i', 'second_moments',
-                'wilson_intensity_plot'):
-    resolution_plots_panel.add_content(html_report.plotly_graph(
-      json_data[graph], graph))
-
-  batch_plots_panel = html_report.panel('Analysis by batch', 'batch')
-  for graph in ('scale_rmerge_vs_batch', 'completeness_vs_dose',
-                'rcp_vs_dose', 'scp_vs_dose', 'rd_vs_batch_difference'):
-    batch_plots_panel.add_content(html_report.plotly_graph(
-      json_data[graph], graph))
-
-  misc_plots_panel = html_report.panel('Miscellaneous', 'misc')
-  for graph in ('multiplicities', 'cumulative_intensity_distribution'):
-    misc_plots_panel.add_content(html_report.plotly_graph(
-      json_data[graph], graph))
-
-  analysis_plots_panel_group = html_report.panel_group(
-    [resolution_plots_panel, batch_plots_panel, misc_plots_panel])
-  div = html_report.div()
-  div.add_content(html_report.raw_html('<h2>Analysis plots</h2>'))
-  div.add_content(analysis_plots_panel_group)
-  report.add_content(div)
-
-  html = report.html()
-
   import json
+
+  resolution_graphs = OrderedDict(
+    (k, json.dumps(json_data[k])) for k in
+    ('cc_one_half', 'i_over_sig_i', 'second_moments', 'wilson_intensity_plot'))
+
+  batch_graphs = OrderedDict(
+    (k, json.dumps(json_data[k])) for k in
+    ('scale_rmerge_vs_batch', 'completeness_vs_dose',
+     'rcp_vs_dose', 'scp_vs_dose', 'rd_vs_batch_difference'))
+
+  misc_graphs = OrderedDict(
+    (k, json.dumps(json_data[k])) for k in
+    ('multiplicities', 'cumulative_intensity_distribution'))
+
+  from jinja2 import Environment, ChoiceLoader, PackageLoader
+  loader = ChoiceLoader([PackageLoader('xia2', 'templates'),
+                         PackageLoader('dials', 'templates')])
+  env = Environment(loader=loader)
+
+  template = env.get_template('report.html')
+  html = template.render(page_title='xia2 report',
+                         filename=os.path.abspath(reader.file_name()),
+                         space_group=intensities.space_group_info().symbol_and_number(),
+                         unit_cell=str(intensities.unit_cell()),
+                         overall_stats_table=overall_stats_table,
+                         merging_stats_table=merging_stats_table,
+                         resolution_graphs=resolution_graphs,
+                         batch_graphs=batch_graphs,
+                         misc_graphs=misc_graphs)
+
   json_str = json.dumps(json_data)
   with open('xia2-report.json', 'wb') as f:
     print >> f, json_str
