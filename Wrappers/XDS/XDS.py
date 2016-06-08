@@ -192,6 +192,7 @@ def imageset_to_xds(imageset, synchrotron = None, refined_beam_vector = None,
       'rayonix ccd 300 hs':True,
       'mar 165 ccd':False,
       'mar 135 ccd':False,
+      'pilatus 12M':True,
       'pilatus 6M':True,
       'pilatus 2M':True,
       'pilatus 1M':True,
@@ -301,9 +302,26 @@ def imageset_to_xds(imageset, synchrotron = None, refined_beam_vector = None,
       Debug.write('Error occured during sensor thickness determination. Assuming default PILATUS 0.32mm')
     result.append('SENSOR_THICKNESS=%f' % thickness)
 
-#  # FIXME: Sensor absorption coefficient calculation probably requires a more general solution
-#  if converter.get_detector()[0].get_material() == 'CdTe':
-#    print "CdTe detector detected. Beam wavelength is %8.6f Angstrom" % converter.wavelength
+  #  # FIXME: Sensor absorption coefficient calculation probably requires a more general solution
+  #  if converter.get_detector()[0].get_material() == 'CdTe':
+  #    print "CdTe detector detected. Beam wavelength is %8.6f Angstrom" % converter.wavelength
+
+  if len(converter.panel_x_axis) > 1:
+    for panel_id in range(len(converter.panel_x_axis)):
+
+      result.append('')
+      result.append('!')
+      result.append('! SEGMENT %d' %(panel_id+1))
+      result.append('!')
+      result.append('SEGMENT= %d %d %d %d' % converter.panel_limits[panel_id])
+      result.append('DIRECTION_OF_SEGMENT_X-AXIS= %.3f %.3f %.3f' % \
+            converter.panel_x_axis[panel_id])
+      result.append('DIRECTION_OF_SEGMENT_Y-AXIS= %.3f %.3f %.3f' % \
+            converter.panel_y_axis[panel_id])
+      result.append('SEGMENT_DISTANCE= %.3f' % converter.panel_distance[panel_id])
+      result.append(
+        'SEGMENT_ORGX= %.1f SEGMENT_ORGY= %.1f' % converter.panel_origin[panel_id])
+      result.append('')
 
   for f0, s0, f1, s1 in converter.get_detector()[0].get_mask():
     result.append('UNTRUSTED_RECTANGLE= %d %d %d %d' %

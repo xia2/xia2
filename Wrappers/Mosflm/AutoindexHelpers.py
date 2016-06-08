@@ -42,7 +42,7 @@ def parse_index_log(mosflm_output):
 def set_distance(detector, distance):
   from scitbx import matrix
   import math
-  assert len(detector) == 1, len(detector)
+  #assert len(detector) == 1, len(detector)
   panel = detector[0]
   d_normal = matrix.col(panel.get_normal())
   d_origin = matrix.col(panel.get_origin())

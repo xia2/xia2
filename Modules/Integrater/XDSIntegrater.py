@@ -262,6 +262,8 @@ class XDSIntegrater(Integrater):
     # copy the data across
     self._xds_data_files = copy.deepcopy(
       self._intgr_refiner.get_refiner_payload(self.get_integrater_epoch()))
+    if self._xds_data_files is None:
+      self._xds_data_files = {}
 
     Debug.write('Files available at the end of XDS integrate prepare:')
     for f in self._xds_data_files.keys():

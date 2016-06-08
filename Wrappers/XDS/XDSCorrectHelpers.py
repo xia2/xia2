@@ -74,11 +74,11 @@ def _parse_correct_lp(filename):
   for i in range(len(file_contents)):
     if 'OF SPOT    POSITION (PIXELS)' in file_contents[i]:
       rmsd_pixel = float(file_contents[i].split()[-1])
-      postrefinement_stats['rmsd_pixel'] = rmsd_pixel
+      postrefinement_stats.setdefault('rmsd_pixel', rmsd_pixel)
 
     if 'OF SPINDLE POSITION (DEGREES)' in file_contents[i]:
       rmsd_phi = float(file_contents[i].split()[-1])
-      postrefinement_stats['rmsd_phi'] = rmsd_phi
+      postrefinement_stats.setdefault('rmsd_phi', rmsd_phi)
 
     # want to convert this to mm in some standard setting!
     if 'DETECTOR COORDINATES (PIXELS) OF DIRECT BEAM' in file_contents[i]:
@@ -149,8 +149,7 @@ def _parse_correct_lp(filename):
   return postrefinement_stats
 
 if __name__ == '__main__':
-  correct_lp = os.path.join(os.environ['XIA2_ROOT'], 'Wrappers', 'XDS',
-                            'Doc', 'CORRECT.LP')
-  if len(sys.argv) > 1:
-    correct_lp = sys.argv[1]
+  #correct_lp = os.path.join(os.environ['XIA2_ROOT'], 'Wrappers', 'XDS',
+                            #'Doc', 'CORRECT.LP')
+  correct_lp = sys.argv[1]
   print _parse_correct_lp(correct_lp)
