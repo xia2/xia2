@@ -17,7 +17,6 @@ class _refinery:
     self.constraints, self.restraints, self.side_restraints = {}, {}, {}
     if lattice == 'm':
       self.constraints = { 3:90, 5:90 } # alpha, gamma = 90
-      self.restraints = { 4:90 } # beta >= 90
 
     elif lattice == 'o':
       self.constraints = { 3:90, 4:90, 5:90 }
