@@ -52,11 +52,20 @@ def make_logfile_html(logfile):
     rst = []
 
     for table in tables:
-      #for graph_name, html in table_to_google_charts(table).iteritems():
-      for graph_name, html in table_to_c3js_charts(table).iteritems():
-        #rst.append('.. __%s:\n' %graph_name)
-        rst.append('.. raw:: html')
-        rst.append('\n    '.join(html.split('\n')))
+      try:
+        #for graph_name, html in table_to_google_charts(table).iteritems():
+        for graph_name, html in table_to_c3js_charts(table).iteritems():
+          #rst.append('.. __%s:\n' %graph_name)
+          rst.append('.. raw:: html')
+          rst.append('\n    '.join(html.split('\n')))
+      except StandardError, e:
+        Chatter.write('=' * 80)
+        Chatter.write('Error (%s) while processing table' % str(e))
+        Chatter.write("  '%s'" % table.title)
+        Chatter.write('in %s' % logfile)
+        Chatter.write('=' * 80)
+        Debug.write('Exception raised while processing log file %s, table %s' % (logfile, table.title))
+        Debug.write(traceback.format_exc())
 
     rst = '\n'.join(rst)
 
