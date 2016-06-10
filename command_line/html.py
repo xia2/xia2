@@ -168,17 +168,17 @@ def overview_section(xproject):
       low_res = statistics['Low resolution limit']
       column = [
         wname, xwav.get_wavelength(),
-        '%s (%s - %s)' %(high_res[0], low_res[2], high_res[2]),
-        '%s (%s - %s)' %(low_res[0], high_res[2], low_res[2]),
-        '%s' %statistics['Completeness'][0],
-        '%s' %statistics['Multiplicity'][0],
-        '%s' %statistics['CC half'][0],
-        '%s' %statistics['I/sigma'][0],
-        '%s' %statistics['Rmerge(I)'][0],
+        '%6.2f (%6.2f - %6.2f)' % (high_res[0], low_res[2], high_res[2]),
+        '%6.2f (%6.2f - %6.2f)' % (low_res[0], high_res[2], low_res[2]),
+        '%6.2f' % statistics['Completeness'][0],
+        '%6.2f' % statistics['Multiplicity'][0],
+        '%6.4f' % statistics['CC half'][0],
+        '%6.2f' % statistics['I/sigma'][0],
+        '%6.4f' % statistics['Rmerge(I)'][0],
       ]
       for c in ('Anomalous completeness', 'Anomalous multiplicity'):
         if c in statistics:
-          column.append('%s' %statistics[c][0])
+          column.append('%6.2f' % statistics[c][0])
           if c not in columns[0]:
             columns[0].append(c)
       columns.append(column)
