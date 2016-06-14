@@ -467,63 +467,8 @@ class XCrystal(object):
     # print some of these statistics, perhaps?
 
     for key in statistics_all.keys():
-      pname, xname, dname = key
-
       result += 'For %s/%s/%s\n' % key
-
       result += format_statistics(statistics_all[key])
-
-      if True:
-        continue
-
-      available = statistics_all[key].keys()
-
-      stats = []
-      keys = [
-          'High resolution limit',
-          'Low resolution limit',
-          'Completeness',
-          'Multiplicity',
-          'I/sigma',
-          'Rmerge(I)',
-          'Rmerge(I+/-)',
-          'Rmeas(I)',
-          'Rmeas(I+/-)',
-          'Rpim(I)',
-          'Rpim(I+/-)',
-          'Wilson B factor',
-          'Partial bias',
-          'Anomalous completeness',
-          'Anomalous multiplicity',
-          'Anomalous correlation',
-          'Anomalous slope',
-          'Total observations',
-          'Total unique']
-
-      for k in keys:
-        if k in available:
-          stats.append(k)
-
-      save_stats_overall = { }
-      save_stats_high = { }
-
-      for s in stats:
-        if type(statistics_all[key][s]) == type(0.0):
-          result += '%s: %f\n' % (s.ljust(40),
-                                  statistics_all[key][s])
-        elif type(statistics_all[key][s]) == type(""):
-          result += '%s: %s\n' % (s.ljust(40),
-                                  statistics_all[key][s])
-        elif type(statistics_all[key][s]) == type([]):
-          result += '%s ' % s.ljust(40)
-          for value in statistics_all[key][s]:
-            result += '\t%s' % str(value)
-          result += '\n'
-
-          save_stats_overall[s] = statistics_all[key][s][0]
-          save_stats_high[s] = statistics_all[key][s][-1]
-
-      result += '\n'
 
     # then print out some "derived" information based on the
     # scaling - this is presented through the Scaler interface
