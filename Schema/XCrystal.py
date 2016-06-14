@@ -234,28 +234,28 @@ def _print_lattice(lattice):
 
 from libtbx.containers import OrderedDict
 formats = OrderedDict([
-  ('High resolution limit', '%6.2f\t%6.2f\t%6.2f'),
-  ('Low resolution limit', '%6.2f\t%6.2f\t%6.2f'),
-  ('Completeness', '%5.1f\t%5.1f\t%5.1f'),
-  ('Multiplicity', '%5.1f\t%5.1f\t%5.1f'),
-  ('I/sigma', '%5.1f\t%5.1f\t%5.1f'),
-  ('Rmerge(I)', '%5.3f\t%5.3f\t%5.3f'),
-  ('Rmerge(I+/-)', '%5.3f\t%5.3f\t%5.3f'),
-  ('Rmeas(I)', '%5.3f\t%5.3f\t%5.3f'),
-  ('Rmeas(I+/-)', '%5.3f\t%5.3f\t%5.3f'),
-  ('Rpim(I)', '%5.3f\t%5.3f\t%5.3f'),
-  ('Rpim(I+/-)', '%5.3f\t%5.3f\t%5.3f'),
-  ('CC half', '%5.3f\t%5.3f\t%5.3f'),
-  ('Wilson B factor', '%.3f'),
-  ('Partial bias', '%5.3f\t%5.3f\t%5.3f'),
-  ('Anomalous completeness', '%5.1f\t%5.1f\t%5.1f'),
-  ('Anomalous multiplicity', '%5.1f\t%5.1f\t%5.1f'),
-  ('Anomalous correlation', '%6.3f\t%6.3f\t%6.3f'),
-  ('Anomalous slope', '%5.3f\t%5.3f\t%5.3f'),
+  ('High resolution limit', ' %7.2f %7.2f %7.2f'),
+  ('Low resolution limit', ' %7.2f %7.2f %7.2f'),
+  ('Completeness', '%7.1f %7.1f %7.1f'),
+  ('Multiplicity', '%7.1f %7.1f %7.1f'),
+  ('I/sigma', '%7.1f %7.1f %7.1f'),
+  ('Rmerge(I)', '%7.3f %7.3f %7.3f'),
+  ('Rmerge(I+/-)', '%7.3f %7.3f %7.3f'),
+  ('Rmeas(I)', '%7.3f %7.3f %7.3f'),
+  ('Rmeas(I+/-)', '%7.3f %7.3f %7.3f'),
+  ('Rpim(I)', '%7.3f %7.3f %7.3f'),
+  ('Rpim(I+/-)', '%7.3f %7.3f %7.3f'),
+  ('CC half', '%7.3f %7.3f %7.3f'),
+  ('Wilson B factor', '%7.3f'),
+  ('Partial bias', '%7.3f %7.3f %7.3f'),
+  ('Anomalous completeness', '%7.1f %7.1f %7.1f'),
+  ('Anomalous multiplicity', '%7.1f %7.1f %7.1f'),
+  ('Anomalous correlation', '%7.3f %7.3f %7.3f'),
+  ('Anomalous slope', '%7.3f %7.3f %7.3f'),
   ('dF/F', '%.3f'),
   ('dI/s(dI)', '%.3f'),
-  ('Total observations', '%d\t%d\t%d'),
-  ('Total unique', '%d\t%d\t%d')
+  ('Total observations', '%7d %7d %7d'),
+  ('Total unique', '%7d %7d %7d')
 ])
 
 
@@ -273,7 +273,7 @@ def format_statistics(statistics):
         formatted = format_str % tuple(statistics[k])
       except TypeError:
         formatted = '(error)'
-      result += k.ljust(40) + '\t' + formatted + '\n'
+      result += k.ljust(44) + formatted + '\n'
 
   return result
 
@@ -593,15 +593,7 @@ class XCrystal(object):
             '%s: %s' % (s.ljust(40), statistics_all[key][s]))
         else:
           summary.append(
-            '%s ' % s.ljust(40) + '\t' + format_str % tuple(statistics_all[key][s]))
-          continue
-          try:
-            result = '%s ' % s.ljust(40)
-            for value in statistics_all[key][s]:
-              result += '\t%s' % str(value)
-            summary.append(result)
-          except TypeError, e:
-            continue
+            '%s ' % s.ljust(43) + format_str % tuple(statistics_all[key][s]))
 
     cell = self._get_scaler().get_scaler_cell()
     spacegroup = self._get_scaler().get_scaler_likely_spacegroups()[0]
