@@ -32,7 +32,7 @@ from ..Modules.LabelitBeamCentre import compute_beam_centre
 from ..Handlers.Streams import streams_off
 
 image_extensions = ['img', 'mccd', 'mar2300', 'mar1200', 'mar1600',
-                          'mar3450', 'osc', 'cbf', 'mar2000']
+                    'mar3450', 'osc', 'cbf', 'mar2000', 'sfrm']
 
 compression = ['', '.bz2', '.gz']
 
