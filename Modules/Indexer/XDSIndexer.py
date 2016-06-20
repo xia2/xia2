@@ -624,6 +624,7 @@ class XDSIndexer(IndexerSingleSweep):
     beam = experiment.beam
     goniometer = experiment.goniometer
     scan = experiment.scan
+    crystal_model = experiment.crystal
 
     from iotbx.xds import spot_xds
     spot_xds_handle = spot_xds.reader()
