@@ -669,7 +669,7 @@ class XDSIndexer(IndexerSingleSweep):
       # may be slow... but should work
       ub = crystal_model.get_A()
       d_spacings = [1.0 / (ub * mi).length() for mi in miller_indices]
-      d_max = 1.05 * max(d_spacings)
+      dmax = 1.05 * max(d_spacings)
 
     Debug.write('Low resolution limit assigned as: %.2f' % dmax)
     self._indxr_low_resolution = dmax
