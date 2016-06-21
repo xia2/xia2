@@ -638,38 +638,8 @@ class XDSIndexer(IndexerSingleSweep):
     centroids_px = centroids_px.select(miller_indices != (0,0,0))
     miller_indices = miller_indices.select(miller_indices != (0,0,0))
 
-    # if len(detector) == 1 map to RS, compute that way, else compute from
-    # miller indices & UB matrix
-
-    if len(detector) == 1:
-
-      # Convert Pixel coordinate into mm/rad
-      x, y, z = centroids_px.parts()
-      x_mm, y_mm = detector[0].pixel_to_millimeter(
-        flex.vec2_double(x, y)).parts()
-      z_rad = scan.get_angle_from_array_index(z, deg=False)
-      centroids_mm = flex.vec3_double(x_mm, y_mm, z_rad)
-
-      # then convert detector position to reciprocal space position
-
-      # based on code in dials/algorithms/indexing/indexer2.py
-      s1 = detector[0].get_lab_coord(flex.vec2_double(x_mm, y_mm))
-      s1 = s1/s1.norms() * (1/beam.get_wavelength())
-      S = s1 - beam.get_s0()
-      # XXX what about if goniometer fixed rotation is not identity?
-      reciprocal_space_points = S.rotate_around_origin(
-        goniometer.get_rotation_axis(),
-        -z_rad)
-
-      d_spacings = 1/reciprocal_space_points.norms()
-      dmax = flex.max(d_spacings)
-      dmax *= 1.05 # allow some tolerance
-
-    else:
-      # may be slow... but should work
-      ub = crystal_model.get_A()
-      d_spacings = [1.0 / (ub * mi).length() for mi in miller_indices]
-      dmax = 1.05 * max(d_spacings)
+    ub = crystal_model.get_A()
+    dmax = flex.max(1/(ub.elems * miller_indices.as_vec3_double()).norms())
 
     Debug.write('Low resolution limit assigned as: %.2f' % dmax)
     self._indxr_low_resolution = dmax
