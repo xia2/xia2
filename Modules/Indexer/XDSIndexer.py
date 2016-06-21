@@ -639,7 +639,7 @@ class XDSIndexer(IndexerSingleSweep):
     miller_indices = miller_indices.select(miller_indices != (0,0,0))
 
     ub = crystal_model.get_A()
-    dmax = flex.max(1/(ub.elems * miller_indices.as_vec3_double()).norms())
+    dmax = 1.05 * flex.max(1/(ub.elems * miller_indices.as_vec3_double()).norms())
 
     Debug.write('Low resolution limit assigned as: %.2f' % dmax)
     self._indxr_low_resolution = dmax
