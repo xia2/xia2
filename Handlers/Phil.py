@@ -447,10 +447,12 @@ xia2.settings
     pointless_tolerance = 0.0
       .type = float(value_min=0.0)
       .help = "Tolerance to use in POINTLESS for comparison of data sets"
-    multi_sweep_indexing = False
-      .type = bool
-      .help = "Index all sweeps together rather than combining individual results"
   }
+  multi_sweep_indexing = Auto
+    .type = bool
+    .help = "Index all sweeps together rather than combining individual results"
+            "(requires dials indexer)"
+    .expert_level = 2
   remove_blanks = False
     .expert_level = 2
     .type = bool

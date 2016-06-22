@@ -414,6 +414,9 @@ class _CommandLine(object):
 
     if params.xia2.settings.indexer is not None:
       add_preference("indexer", params.xia2.settings.indexer)
+    if params.xia2.settings.multi_sweep_indexing is Auto:
+      params.xia2.settings.multi_sweep_indexing = \
+        Flags.get_small_molecule() and 'dials' == params.xia2.settings.indexer
     if params.xia2.settings.refiner is not None:
       add_preference("refiner", params.xia2.settings.refiner)
     if params.xia2.settings.integrater is not None:

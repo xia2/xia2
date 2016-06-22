@@ -424,7 +424,7 @@ class DialsIndexer(Indexer):
     indexed_experiments = indexer.get_experiments_filename()
 
     trust_beam_centre = PhilIndex.params.xia2.settings.trust_beam_centre
-    multi_sweep_indexing = PhilIndex.params.xia2.settings.developmental.multi_sweep_indexing
+    multi_sweep_indexing = PhilIndex.params.xia2.settings.multi_sweep_indexing
 
     if not trust_beam_centre and not multi_sweep_indexing:
       checksym = self.CheckIndexingSymmetry()
