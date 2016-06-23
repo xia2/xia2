@@ -79,9 +79,8 @@ def FrenchWilson(DriverType = None):
     def truncate(self):
       '''Actually perform the truncation procedure.'''
 
-      from Modules import CctbxFrenchWilson as fw_module
+      from xia2.Modules import CctbxFrenchWilson as fw_module
       self.add_command_line(fw_module.__file__)
-
 
       self.add_command_line(self._hklin)
       self.add_command_line('hklout=%s' %self._hklout)
