@@ -130,8 +130,8 @@ def Ctruncate(DriverType = None):
         if 'Number of reflections:' in record:
           nref = int(record.split()[-1])
 
-        if 'B =' in record and 'intercept' in record:
-          self._b_factor = float(record.split()[2])
+        if 'Estimate of Wilson B factor:' in record:
+          self._b_factor = float(record.split(':')[1].split()[0])
 
       self._nref_in, self._nref_out = nref, nref
       self._nabsent = 0
