@@ -42,6 +42,14 @@ class french_wilson(object):
     amplitudes = intensities.french_wilson(params=params)
     assert amplitudes.is_xray_amplitude_array()
 
+    from mmtbx.scaling import data_statistics
+    if not intensities.space_group().is_centric():
+      merged_intensities = intensities.merge_equivalents().array()
+      wilson_scaling = data_statistics.wilson_scaling(
+        miller_array=merged_intensities, n_residues=200) # XXX default n_residues?
+      wilson_scaling.show()
+      print
+
     mtz_dataset = mtz_object.crystals()[1].datasets()[0]
     mtz_dataset.add_miller_array(amplitudes, column_root_label='F')
     mtz_object.add_history('cctbx.french_wilson analysis')

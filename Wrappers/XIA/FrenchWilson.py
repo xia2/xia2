@@ -117,6 +117,10 @@ def FrenchWilson(DriverType = None):
 
         raise RuntimeError, 'truncate failure'
 
+      lines = self.get_all_output()
+      for i, line in enumerate(lines):
+        if 'ML estimate of overall B value:' in line:
+          self._b_factor = float(lines[i+1].strip().split()[0])
       return
 
     def get_b_factor(self):
