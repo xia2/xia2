@@ -161,7 +161,7 @@ class _FileHandler(object):
     return self._data_migrate[directory]
 
   def cleanup(self):
-    out = open('xia-files.txt', 'w')
+    out = open('xia2-files.txt', 'w')
     for f in self._temporary_files:
       try:
         os.remove(f)

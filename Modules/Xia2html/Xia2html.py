@@ -728,7 +728,7 @@ class Xia2run:
     #
     # An example might look like this:
     #
-    #Here are the appropriate citations (BIBTeX in xia-citations.bib.)
+    #Here are the appropriate citations (BIBTeX in xia2-citations.bib.)
     #(1994) Acta Crystallogr. D 50, 760--763
     #<snipped>
     #Winter, G. (2010) Journal of Applied Crystallography 43

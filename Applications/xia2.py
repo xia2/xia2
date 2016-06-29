@@ -163,13 +163,13 @@ def write_citations():
   Chatter.write('XIA2 used... %s' % \
       ', '.join(Citations.get_programs()))
   Chatter.write(
-      'Here are the appropriate citations (BIBTeX in xia-citations.bib.)')
+      'Here are the appropriate citations (BIBTeX in xia2-citations.bib.)')
 
   for citation in Citations.get_citations_acta():
     Chatter.write(citation)
 
   # and write the bibtex versions
-  out = open('xia-citations.bib', 'w')
+  out = open('xia2-citations.bib', 'w')
 
   for citation in Citations.get_citations():
     out.write('%s\n' % citation)
