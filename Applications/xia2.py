@@ -160,11 +160,8 @@ def get_command_line():
 
 def write_citations():
   # tell the user which programs were used...
-  used = ''
-  for program in Citations.get_programs():
-    used += ' %s' % program
-
-  Chatter.write('XIA2 used... %s' % used)
+  Chatter.write('XIA2 used... %s' % \
+      ', '.join(Citations.get_programs()))
   Chatter.write(
       'Here are the appropriate citations (BIBTeX in xia-citations.bib.)')
 

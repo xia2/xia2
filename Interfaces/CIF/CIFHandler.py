@@ -31,6 +31,7 @@ class _CIFHandler(object):
   def collate_audit_information(self, block):
     block["_audit_creation_method"] = xia2.XIA2Version.Version
     block["_audit_creation_date"] = datetime.date.today().isoformat()
+    block["_computing_data_reduction"] = ', '.join(xia2.Handlers.Citations.Citations.get_programs())
     block["_publ_section_references"] = '\n'.join(xia2.Handlers.Citations.Citations.get_citations_acta())
 
 CIFHandler = _CIFHandler()
