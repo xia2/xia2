@@ -80,6 +80,8 @@ from xia2.lib.NMolLib import compute_nmol, compute_solvent
 
 # XML Marked up output for e-HTPX
 from xia2.Interfaces.ISPyB.ISPyBXmlHandler import ISPyBXmlHandler
+# Generation of Crystallographic Information Files (CIF)
+from xia2.Interfaces.CIF.CIFHandler import CIFHandler
 
 def sort_o_dict(dict, metric):
   '''A generic sorter for dictionaries - will return the keys in
@@ -426,6 +428,7 @@ class XCrystal(object):
 
     if Flags.get_ispyb_xml_out():
       ISPyBXmlHandler.add_xcrystal(self)
+    CIFHandler.add_xcrystal(self)
 
     if self._aa_sequence:
       result += 'Sequence: %s\n' % self._aa_sequence.get_sequence()
@@ -540,6 +543,7 @@ class XCrystal(object):
 
     if Flags.get_ispyb_xml_out():
       ISPyBXmlHandler.write_xml(Flags.get_ispyb_xml_out())
+    CIFHandler.write_cif()
 
     return result
 
