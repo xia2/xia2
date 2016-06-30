@@ -24,7 +24,8 @@ def memory_usage():
   try:
     import resource
     return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-  except:
+  except exceptions.Exception, e:
+    Debug.write('Error getting RAM usage: %s' % str(e))
     return 0
 
 def debug_memory_usage():
