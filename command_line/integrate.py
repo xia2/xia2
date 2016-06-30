@@ -17,14 +17,13 @@ from xia2.Handlers.Environment import Environment, df
 
 from xia2.XIA2Version import Version
 
-from xia2.Applications.xia2 import check, check_cctbx_version, check_environment
+from xia2.Applications.xia2 import check_environment
 from xia2.Applications.xia2 import get_command_line, write_citations, help
 
 
 def run():
   try:
     check_environment()
-    check()
   except exceptions.Exception, e:
     traceback.print_exc(file = open('xia2.error', 'w'))
     Chatter.write('Status: error "%s"' % str(e))

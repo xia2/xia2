@@ -65,7 +65,6 @@ def Integrate(DriverType = None):
       if self._mp_mode is not None:
         self.add_command_line('multiprocessing.mode=%s' %self._mp_mode)
 
-      #print " ".join([self._executable] + self._command_line)
       self.start()
       self.close_wait()
       self.check_for_errors()
