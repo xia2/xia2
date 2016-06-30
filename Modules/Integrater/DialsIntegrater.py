@@ -282,6 +282,16 @@ class DialsIntegrater(Integrater):
       self.set_integrater_wedge(min(images),
                                 max(images))
 
+    imageset = self.get_imageset()
+    beam = imageset.get_beam()
+    detector = imageset.get_detector()
+
+    d_min_limit = detector.get_max_resolution(beam.get_s0())
+    if d_min_limit > self._intgr_reso_high:
+      Debug.write('Overriding high resolution limit: %f => %f' % \
+                  (self._intgr_reso_high, d_min_limit))
+      self._intgr_reso_high = d_min_limit
+
     integrate.set_experiments_filename(self._intgr_experiments_filename)
     integrate.set_reflections_filename(self._intgr_indexed_filename)
     integrate.set_d_max(self._intgr_reso_low)

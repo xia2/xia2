@@ -189,7 +189,7 @@ def xia2_main(stop_after=None):
             print "Sweep failed: removing %s" %sweep.get_name()
             remove_sweeps.append(sweep)
           else:
-            print "Loading sweep: %s" %sweep.get_name()
+            print "Loading sweep: %s" % sweep.get_name()
             from xia2.Schema.XSweep import XSweep
             new_sweep = XSweep.from_dict(xsweep_dict)
             sweep._indexer = new_sweep._indexer
