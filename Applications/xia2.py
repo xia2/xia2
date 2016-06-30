@@ -81,14 +81,6 @@ def check_environment():
   Chatter.write(Version)
   return
 
-def check():
-  '''Check that the set-up is ok...'''
-
-  import os
-  import subprocess
-
-  return
-
 def get_command_line():
   from ..Handlers.CommandLine import CommandLine
 
@@ -267,7 +259,6 @@ def help():
 def run():
   try:
     check_environment()
-    check()
   except exceptions.Exception, e:
     traceback.print_exc(file = open('xia2.error', 'w'))
     Chatter.write('Status: error "%s"' % str(e))

@@ -16,7 +16,7 @@ from xia2.Handlers.Files import cleanup
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Environment import Environment, df
 
-from xia2.Applications.xia2 import check, check_environment
+from xia2.Applications.xia2 import check_environment
 from xia2.Applications.xia2 import get_command_line, write_citations, help
 
 from xia2.Applications.xia2_helpers import process_one_sweep
@@ -272,7 +272,6 @@ def run():
     sys.exit()
 
   try:
-    check()
     check_environment()
   except exceptions.Exception, e:
     traceback.print_exc(file = open('xia2.error', 'w'))
