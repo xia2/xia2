@@ -63,20 +63,13 @@ class _Environment(object):
   def __init__(self):
     self._cwd = os.getcwd()
     self._is_setup = False
-    # self._setup()
     return
 
   def _setup(self):
     if self._is_setup:
       return
 
-    self._is_setup = True
-    harvest_directory = self.generate_directory('Harvest')
-    self.setenv('HARVESTHOME', harvest_directory)
-
-    # create a USER environment variable, to allow harvesting
-    # in Mosflm to work (hacky, I know, but it really doesn't
-    # matter too much...
+    # Make sure USER env var is defined (historical reasons)
 
     if not 'USER' in os.environ:
       if 'USERNAME' in os.environ:
@@ -128,25 +121,6 @@ class _Environment(object):
     return os.environ.get(name, None)
 
   def cleanup(self):
-    '''Clean up now we are done - chown all harvest files to world
-    readable.'''
-
-    if not self._is_setup:
-      return
-
-    if os.name != 'posix':
-      return
-
-    harvest = self.getenv('HARVESTHOME')
-
-    mod = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH
-
-    for (dirpath, dirnames, filenames) in os.walk(harvest):
-
-      for f in filenames:
-        _f = os.path.join(harvest, dirpath, f)
-        os.chmod(_f, mod)
-
     return
 
 Environment = _Environment()
