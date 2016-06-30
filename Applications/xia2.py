@@ -29,32 +29,6 @@ from ..XIA2Version import Version
 
 import libtbx.load_env
 
-def check_cctbx_version():
-  '''Check that we have the an acceptable CCTBX version.'''
-
-  version = None
-  for tag_file in ["TAG", "cctbx_bundle_TAG"]:
-    tag_path = libtbx.env.under_dist("libtbx",
-                                     os.path.join("..", tag_file))
-    if (os.path.isfile(tag_path)):
-      try:
-        version = open(tag_path).read().strip()
-      except KeyboardInterrupt:
-        raise
-      except:
-        pass
-    else:
-      break
-
-  if version is None:
-    version = libtbx.env.command_version_suffix
-
-  if version is None:
-    # just assume that this is from subversion => probably up-to-date!
-    return
-
-  # should find a good way to run a test herein!
-
 def check_environment():
   '''Check the environment we are running in...'''
 
@@ -73,10 +47,6 @@ def check_environment():
   # to help wrapper code - print process id...
 
   Debug.write('Process ID: %d' % os.getpid())
-
-  # now check that the CCTBX routines are available
-
-  check_cctbx_version()
 
   Chatter.write('Environment configuration...')
   Chatter.write('Python => %s' % executable)
