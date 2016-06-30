@@ -47,21 +47,28 @@ def df(path = os.getcwd()):
   '''Return disk space in bytes in path.'''
 
   if platform.system() == 'Windows':
-    bytes = ctypes.c_ulonglong(0)
-    ctypes.windll.kernel32.GetDiskFreeSpaceExW(
+    try:
+      bytes = ctypes.c_ulonglong(0)
+      ctypes.windll.kernel32.GetDiskFreeSpaceExW(
         ctypes.c_wchar_p(path), None, None, ctypes.pointer(bytes))
-    return bytes.value
+      return bytes.value
+    except exceptions.Exception, e:
+      Debug.write('Error getting disk space: %s' % str(e))
+      return 0
   else:
     s = os.statvfs(path)
     return s.f_frsize * s.f_bavail
 
-  raise RuntimeError, 'platform not supported'
+  return 0
 
 class _Environment(object):
   '''A class to store environmental considerations.'''
 
-  def __init__(self):
-    self._cwd = os.getcwd()
+  def __init__(self, working_directory=None):
+    if working_directory is None:
+      self._working_directory = os.getcwd()
+    else:
+      self._working_directory = working_directory
     self._is_setup = False
     return
 
@@ -87,11 +94,14 @@ class _Environment(object):
 
     return
 
+  def set_working_directory(self, working_directory):
+    self._working_directory = working_directory
+
   def generate_directory(self, path_tuple):
     '''Used for generating working directories.'''
     self._setup()
 
-    path = self._cwd
+    path = self._working_directory
 
     if type(path_tuple) == type('string'):
       path_tuple = (path_tuple,)

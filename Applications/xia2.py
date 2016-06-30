@@ -218,6 +218,7 @@ def help():
 
   # FIXME also needs to make reference to Phil input
   # FIXME ideally should move all command-line functionality over to Phil...
+  # FIXME these should also be generated in automatic way #42
 
   sys.stdout.write('An expert system for automated reduction of X-Ray\n')
   sys.stdout.write('diffraction data from macromolecular crystals\n\n')
@@ -259,6 +260,7 @@ def run():
     help()
     sys.exit()
 
+  # FIXME for #38 this should refer to Phil parameter
   wd = os.getcwd()
 
   try:
