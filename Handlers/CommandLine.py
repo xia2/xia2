@@ -578,16 +578,6 @@ class _CommandLine(object):
     if index < 0:
       raise RuntimeError, 'negative index'
 
-    #try:
-      #beam = self._argv[index + 1].split(',')
-    #except IndexError, e:
-      #raise RuntimeError, '-beam correct use "-beam x,y"'
-
-    #if len(beam) != 2:
-      #raise RuntimeError, '-beam correct use "-beam x,y"'
-
-    #self._beam = (float(beam[0]), float(beam[1]))
-
     self._understood.append(index)
     self._understood.append(index + 1)
 
