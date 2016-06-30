@@ -65,7 +65,7 @@ def _resolution_estimate(ordered_pair_list, cutoff):
 
   return resolution
 
-def erzatz_resolution(reflection_file, batch_ranges):
+def ersatz_resolution(reflection_file, batch_ranges):
 
   mtz_obj = mtz.object(reflection_file)
 

@@ -607,7 +607,7 @@ class merger(object):
     return t / b
 
   def calculate_chisq(self, hkl_list = None):
-    '''Calculate the overall erzatz chi^2.'''
+    '''Calculate the overall ersatz chi^2.'''
 
     if not hkl_list:
       hkl_list = list(self._unmerged_reflections)

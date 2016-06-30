@@ -34,7 +34,7 @@ from xia2.lib.bits import transpose_loggraph
 from xia2.lib.SymmetryLib import sort_lattices
 
 from CCP4ScalerHelpers import _prepare_pointless_hklin, \
-     CCP4ScalerHelper, SweepInformationHandler, erzatz_resolution, \
+     CCP4ScalerHelper, SweepInformationHandler, ersatz_resolution, \
      get_umat_bmat_lattice_symmetry_from_mtz
 
 from xia2.Modules.AnalyseMyIntensities import AnalyseMyIntensities
@@ -901,7 +901,7 @@ class CCP4ScalerA(Scaler):
         epoch).get_batch_range() for epoch in
                     self._sweep_handler.get_epochs()]
 
-    self._resolution_limit_estimates = erzatz_resolution(
+    self._resolution_limit_estimates = ersatz_resolution(
         self._prepared_reflections, batch_ranges)
 
 
