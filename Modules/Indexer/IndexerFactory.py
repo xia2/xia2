@@ -65,7 +65,7 @@ def IndexerForXSweep(xsweep, json_file=None):
 
   from xia2.Handlers.Phil import PhilIndex
   params = PhilIndex.params
-  multi_sweep_indexing = params.xia2.settings.multi_sweep_indexing
+  multi_sweep_indexing = params.xia2.settings.multi_sweep_indexing == True
 
   # FIXME SCI-599 decide from the width of the sweep and the preference
   # which indexer to return...

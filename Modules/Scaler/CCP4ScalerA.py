@@ -332,7 +332,7 @@ class CCP4ScalerA(Scaler):
     need_to_return = False
 
     multi_sweep_indexing = \
-      PhilIndex.params.xia2.settings.multi_sweep_indexing
+      PhilIndex.params.xia2.settings.multi_sweep_indexing == True
 
 
     if len(self._sweep_handler.get_epochs()) > 1:
@@ -516,7 +516,7 @@ class CCP4ScalerA(Scaler):
     need_to_return = False
 
     multi_sweep_indexing = \
-      PhilIndex.params.xia2.settings.multi_sweep_indexing
+      PhilIndex.params.xia2.settings.multi_sweep_indexing == True
 
     if multi_sweep_indexing and not self._scalr_input_pointgroup:
       pointless_hklins = []
