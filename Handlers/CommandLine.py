@@ -34,7 +34,7 @@ def which(pgm):
   # python equivalent to the 'which' command
   # http://stackoverflow.com/questions/9877462/is-there-a-python-equivalent-to-the-which-command
   # FIXME this will not work on Windows as you need to check that there is a
-  # .bat or a .exe extension 
+  # .bat or a .exe extension
   path = os.getenv('PATH')
   for p in path.split(os.path.pathsep):
     p = os.path.join(p,pgm)
@@ -129,10 +129,8 @@ class _CommandLine(object):
       PhilIndex.get_python_object()
     except RuntimeError, e:
       raise Sorry(e)
-    #PhilIndex.get_diff().show()
 
     # things which are single token flags...
-
 
     self._read_debug()
     self._read_interactive()
