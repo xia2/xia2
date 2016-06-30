@@ -216,6 +216,9 @@ def help():
   from ..XIA2Version import Version
   sys.stdout.write('%s\n' % Version);
 
+  # FIXME also needs to make reference to Phil input
+  # FIXME ideally should move all command-line functionality over to Phil...
+
   sys.stdout.write('An expert system for automated reduction of X-Ray\n')
   sys.stdout.write('diffraction data from macromolecular crystals\n\n')
 
