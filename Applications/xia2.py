@@ -241,17 +241,6 @@ def help():
   sys.stdout.write('[-project foo] (say) - this is for xia2setup\n')
   sys.stdout.write('[-crystal bar] (say) - this is for xia2setup\n\n')
 
-  #sys.stdout.write('Command-lines for testing\n')
-  #sys.stdout.write('[-smart_scaling] figure out the "best" scaling model\n')
-  #sys.stdout.write('Developer options - do not use these ...\n')
-  #sys.stdout.write(
-      #'[-z_min 50] (minimum Z value for rejecting reflections)\n')
-  #sys.stdout.write('[-trust_timestamps]\n')
-  #sys.stdout.write('[-debug]\n')
-  #sys.stdout.write('[-relax]\n')
-  #sys.stdout.write('[-zero_dose]\n')
-  #sys.stdout.write('[-norefine]\n\n')
-
   sys.stdout.write('Sensible command lines:\n')
   sys.stdout.write('xia2 (-2d|-3d|..) -xinfo foo.xinfo\n')
   sys.stdout.write('xia2 -project foo -crystal bar (-2d|-3d|..) /data/path\n')
