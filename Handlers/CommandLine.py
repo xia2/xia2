@@ -33,10 +33,12 @@ from libtbx.utils import Sorry
 def which(pgm):
   # python equivalent to the 'which' command
   # http://stackoverflow.com/questions/9877462/is-there-a-python-equivalent-to-the-which-command
+  # FIXME this will not work on Windows as you need to check that there is a
+  # .bat or a .exe extension 
   path = os.getenv('PATH')
   for p in path.split(os.path.pathsep):
     p = os.path.join(p,pgm)
-    if os.path.exists(p) and os.access(p,os.X_OK):
+    if os.path.exists(p) and os.access(p, os.X_OK):
       return p
 
 
