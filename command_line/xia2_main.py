@@ -35,6 +35,7 @@ def xia2_main(stop_after=None):
   start_time = time.time()
 
   CommandLine = get_command_line()
+  start_dir = Flags.get_starting_directory()
 
   # check that something useful has been assigned for processing...
   xtals = CommandLine.get_xinfo().get_crystals()

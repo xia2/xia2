@@ -91,6 +91,8 @@ def check_environment():
       raise RuntimeError, 'spaces around "%s"' % v
     Chatter.write('%s => %s' % (k, v))
 
+  from ..Handlers.Flags import Flags
+  Chatter.write('Starting directory: %s' % Flags.get_starting_directory())
   Chatter.write('Working directory: %s' % os.getcwd())
   Chatter.write('Free space:        %.2f GB' % (df() / math.pow(2, 30)))
 

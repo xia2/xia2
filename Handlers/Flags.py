@@ -129,7 +129,14 @@ class _Flags(object):
     # serialization of indexer/integrater state to/from json
     self._serialize_state = False
 
+    # starting directory (to allow setting working directory && relative
+    # paths on input)
+    self._starting_directory = os.getcwd()
+
     return
+
+  def get_starting_directory(self):
+    return self._starting_directory
 
   def set_serialize_state(self, serialize_state):
     self._serialize_state = serialize_state

@@ -277,6 +277,9 @@ xia2.settings
     .short_caption = "xia2 input settings"
     .expert_level = 1
   {
+    working_directory = None
+      .type = path
+      .short_caption = "Working directory (i.e. not $CWD)"
     image = None
       .type = path
       .multiple = True
