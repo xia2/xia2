@@ -133,9 +133,8 @@ class Magpie:
 
   def processFile(self,filename):
     """Run the processor on a file"""
-    txt = open(filename,'r')
-    self.__process(txt)
-    txt.close()
+    with open(filename,'r') as txt:
+      self.__process(txt)
 
   def processText(self,txt):
     """Run the processor on a block of text"""

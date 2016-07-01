@@ -606,7 +606,8 @@ if __name__ == '__main__':
   # from labelit...
 
   for file in ['SPOT.XDS']:
-    idxref.set_input_data_file(file, open(file, 'rb').read())
+    with open(file, 'rb') as fh:
+      idxref.set_input_data_file(file, fh.read())
 
   idxref.set_beam_centre(1030, 1066)
 

@@ -21,9 +21,8 @@ class _Executables(object):
     if not os.path.exists(path):
       raise RuntimeError, 'path %s not found' % path
     self._executables[executable] = path
-    return
 
   def get(self, executable):
-    return self._executables.get(executable, None)
+    return self._executables.get(executable)
 
 Executables = _Executables()

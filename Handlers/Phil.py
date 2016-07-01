@@ -351,6 +351,10 @@ xia2.settings
   resolution
     .short_caption = "Resolution"
   {
+    keep_all_reflections = False
+      .type = bool
+      .help = "Keep all data regardless of resolution criteria"
+      .short_caption = "Keep all data"
     d_max = None
       .type = float(value_min=0.0)
       .help = "Low resolution cutoff."

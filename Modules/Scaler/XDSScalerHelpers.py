@@ -173,21 +173,16 @@ class XDSScalerHelper(object):
     return data_map
 
   def limit_batches(self, input_file, output_file, start, end):
-    infile = open(input_file, 'rb')
-    outfile = open(output_file, 'wb')
-
-    for line in infile.readlines():
-      if line.startswith('!'):
-        outfile.write(line)
-      else:
-        tokens = line.split()
-        assert len(tokens) == 12
-        z = float(tokens[7])
-        if z >= start and z < end:
+    with open(input_file, 'rb') as infile, open(output_file, 'wb') as outfile:
+      for line in infile.readlines():
+        if line.startswith('!'):
           outfile.write(line)
-
-    infile.close()
-    outfile.close()
+        else:
+          tokens = line.split()
+          assert len(tokens) == 12
+          z = float(tokens[7])
+          if z >= start and z < end:
+            outfile.write(line)
 
 if __name__ == '__main__':
 

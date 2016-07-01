@@ -34,9 +34,8 @@ def XDSGenerateIgnoreFiles():
     if '.cbf' in token and not token in xds_files:
       xds_files.append(token)
 
-  fout = open('XDSFiles.py', 'w')
-  fout.write('XDSFiles = %s\n' % str(xds_files))
-  fout.close()
+  with open('XDSFiles.py', 'w') as fout:
+    fout.write('XDSFiles = %s\n' % str(xds_files))
 
 if __name__ == '__main__':
   XDSGenerateIgnoreFiles()

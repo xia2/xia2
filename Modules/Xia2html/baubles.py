@@ -1268,11 +1268,10 @@ def polarrfn_plot(pltfile,imgbase=""):
     return
   # Count the number of pages in the file
   npages = 0
-  ps = open(psfile,"r")
-  for line in ps:
-    if line.count("%%Page:") > 0:
-      npages = npages + 1
-  ps.close()
+  with open(psfile, "r") as ps:
+    for line in ps:
+      if line.count("%%Page:") > 0:
+        npages = npages + 1
   print "Number of pages (=frames): "+str(npages)
   # Loop over pages and use convert to turn them
   # into gifs

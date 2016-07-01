@@ -1284,11 +1284,10 @@ def Mosflm(DriverType = None):
         self._mosflm_cell_ref_images = self._refine_select_images(
             mosaic)
 
-      f = open(os.path.join(self.get_working_directory(),
-                            'xiaindex-%s.mat' % lattice), 'w')
-      for m in matrix:
-        f.write(m)
-      f.close()
+      with open(os.path.join(self.get_working_directory(),
+                            'xiaindex-%s.mat' % lattice), 'w') as f:
+        for m in matrix:
+          f.write(m)
 
       # then start the cell refinement
 

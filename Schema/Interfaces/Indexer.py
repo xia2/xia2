@@ -71,8 +71,6 @@ class _IndexerHelper(object):
 
     self._sorted_list = SortLattices(lattices)
 
-    return
-
   def get(self):
     '''Get the highest currently allowed lattice.'''
     return self._sorted_list[0]
@@ -97,7 +95,6 @@ class _IndexerHelper(object):
       lattices.append(l)
 
     self._sorted_list = SortLattices(lattices)
-    return
 
   def eliminate(self, indxr_print = True):
     '''Eliminate the highest currently allowed lattice.'''
@@ -110,8 +107,6 @@ class _IndexerHelper(object):
       Chatter.write(self.repr()[0])
 
     self._sorted_list = self._sorted_list[1:]
-
-    return
 
 def beam_centre(detector, beam):
   s0 = beam.get_s0()
@@ -250,11 +245,11 @@ class Indexer(object):
         from xia2.Schema.Interfaces.Indexer import _IndexerHelper
         v = _IndexerHelper(v)
       if k == '_indxr_imagesets' and len(v):
-        assert v[0].get('__id__', None) == 'imageset'
+        assert v[0].get('__id__') == 'imageset'
         from dxtbx.serialize.imageset import imageset_from_dict
         v = [imageset_from_dict(v_, check_format=False) for v_ in v]
       if isinstance(v, dict):
-        if v.get('__id__', None) == 'ExperimentList':
+        if v.get('__id__') == 'ExperimentList':
           from dxtbx.model.experiment.experiment_list import ExperimentListFactory
           v = ExperimentListFactory.from_dict(v)
       setattr(return_obj, k, v)
@@ -523,8 +518,6 @@ class Indexer(object):
       # general one, so may be implemented in the general indexer
       # interface rather than in specific code...
 
-    return
-
   def show_indexer_solutions(self):
     lines = []
     lines.append('All possible indexing solutions:')
@@ -640,7 +633,7 @@ class Indexer(object):
     '''Attempt to get something from the indexer payload.'''
 
     self.index()
-    return self._indxr_payload.get(this, None)
+    return self._indxr_payload.get(this)
 
   def get_indexer_resolution(self):
     '''Get an estimate of the diffracting resolution.'''
@@ -658,7 +651,6 @@ class Indexer(object):
     '''Set something in the payload.'''
 
     self._indxr_payload[this] = value
-    return
 
   # new method to handle interaction with the pointgroup determination
   # much later on in the process - this allows a dialogue to be established.

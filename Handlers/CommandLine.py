@@ -1331,8 +1331,6 @@ class _CommandLine(object):
     Flags.set_hdr_out(self._argv[index + 1])
     Debug.write('Output header file set to %s' % self._argv[index + 1])
 
-    return
-
   def _help_hdr_out(self):
     return '-hdr_out project.hdr'
 
@@ -1350,8 +1348,6 @@ class _CommandLine(object):
     self._understood.append(index + 1)
     Flags.set_pickle(self._argv[index + 1])
 
-    return
-
   def _help_pickle(self):
     return '-pickle name.pkl'
 
@@ -1359,7 +1355,7 @@ class _CommandLine(object):
     return self._default_template
 
   def get_start_end(self, full_template):
-    return self._default_start_end.get(full_template, None)
+    return self._default_start_end.get(full_template)
 
   def get_directory(self):
     return self._default_directory
@@ -1373,8 +1369,6 @@ class _CommandLine(object):
       Flags.set_trust_timestamps(True)
       Debug.write('Trust timestamps on')
       self._understood.append(self._argv.index('-trust_timestamps'))
-
-    return
 
   def _read_batch_scale(self):
 
@@ -1411,15 +1405,12 @@ class _CommandLine(object):
     Flags.set_scale_model(self._argv[index + 1])
     Debug.write('Scaling model set to: %s' % Flags.get_scale_model())
 
-    return
-
   def _read_quick(self):
 
     if '-quick' in self._argv:
       Flags.set_quick(True)
       Debug.write('Quick mode selected')
       self._understood.append(self._argv.index('-quick'))
-    return
 
   def _read_chef(self):
 
@@ -1433,8 +1424,6 @@ class _CommandLine(object):
       self._understood.append(self._argv.index('-nochef'))
       Debug.write('Chef mode deselected')
 
-    return
-
   def _read_reversephi(self):
 
     if '-reversephi' in self._argv:
@@ -1444,7 +1433,6 @@ class _CommandLine(object):
         "Warning: -reversephi option deprecated: please use reverse_phi=True instead")
       PhilIndex.update("xia2.settings.input.reverse_phi=True")
       PhilIndex.get_python_object()
-    return
 
   def _read_no_lattice_test(self):
 
@@ -1452,7 +1440,6 @@ class _CommandLine(object):
       Flags.set_no_lattice_test(True)
       self._understood.append(self._argv.index('-no_lattice_test'))
       Debug.write('No lattice test mode selected')
-    return
 
   def _read_no_relax(self):
 
@@ -1460,7 +1447,6 @@ class _CommandLine(object):
       Flags.set_relax(False)
       self._understood.append(self._argv.index('-no_relax'))
       Debug.write('XDS relax about indexing selected')
-    return
 
   def _read_no_profile(self):
 
@@ -1473,7 +1459,6 @@ class _CommandLine(object):
       PhilIndex.update("xds.integrate.profile_fitting=False")
       PhilIndex.get_python_object()
       self._understood.append(self._argv.index('-no_profile'))
-    return
 
   def _read_zero_dose(self):
 
@@ -1481,7 +1466,6 @@ class _CommandLine(object):
       Flags.set_zero_dose(True)
       self._understood.append(self._argv.index('-zero_dose'))
       Debug.write('Zero-dose mode (XDS/XSCALE) selected')
-    return
 
   def _read_norefine(self):
 
@@ -1490,14 +1474,12 @@ class _CommandLine(object):
       self._understood.append(self._argv.index('-norefine'))
       # FIXME what does this do??? - switch off orientation refinement
       # in integration
-    return
 
   def _read_noremove(self):
 
     if '-noremove' in self._argv:
       self._understood.append(self._argv.index('-noremove'))
       Flags.set_remove(False)
-    return
 
   def _read_2d(self):
 
@@ -1514,7 +1496,6 @@ class _CommandLine(object):
       PhilIndex.get_python_object()
       self._understood.append(self._argv.index('-2d'))
       Debug.write('2DA pipeline selected')
-    return
 
   def _read_2di(self):
 
@@ -1531,7 +1512,6 @@ class _CommandLine(object):
       PhilIndex.get_python_object()
       self._understood.append(self._argv.index('-2di'))
       Debug.write('2DA pipeline; mosflm indexing selected')
-    return
 
   def _read_dials(self):
     if '-dials' in self._argv:
@@ -1547,7 +1527,6 @@ class _CommandLine(object):
       PhilIndex.get_python_object()
       self._understood.append(self._argv.index('-dials'))
       Debug.write('DIALS pipeline selected')
-    return
 
   def _read_3d(self):
 
@@ -1564,7 +1543,6 @@ class _CommandLine(object):
       PhilIndex.get_python_object()
       self._understood.append(self._argv.index('-3d'))
       Debug.write('3DR pipeline selected')
-    return
 
   def _read_3di(self):
 
@@ -1581,7 +1559,6 @@ class _CommandLine(object):
       PhilIndex.get_python_object()
       self._understood.append(self._argv.index('-3di'))
       Debug.write('3DR pipeline; XDS indexing selected')
-    return
 
   def _read_3dii(self):
 
@@ -1598,7 +1575,6 @@ class _CommandLine(object):
       PhilIndex.get_python_object()
       self._understood.append(self._argv.index('-3dii'))
       Debug.write('3D II R pipeline (XDS IDXREF all images) selected')
-    return
 
   def _read_3dd(self):
 
@@ -1615,7 +1591,6 @@ class _CommandLine(object):
       PhilIndex.get_python_object()
       self._understood.append(self._argv.index('-3dd'))
       Debug.write('3DD pipeline (DIALS indexing) selected')
-    return
 
   def _read_debug(self):
 
@@ -1624,7 +1599,6 @@ class _CommandLine(object):
       Debug.join(Chatter)
       self._understood.append(self._argv.index('-debug'))
       Debug.write('Debugging output switched on')
-    return
 
   def _read_interactive(self):
 
@@ -1633,8 +1607,6 @@ class _CommandLine(object):
       self._understood.append(self._argv.index('-interactive'))
       Debug.write('Interactive indexing ON')
 
-    return
-
   def _read_ice(self):
 
     if '-ice' in self._argv:
@@ -1642,15 +1614,11 @@ class _CommandLine(object):
       self._understood.append(self._argv.index('-ice'))
       Debug.write('Ice ring exclusion ON')
 
-    return
-
   def _read_egg(self):
 
     if '-egg' in self._argv:
       self._understood.append(self._argv.index('-egg'))
       Flags.set_egg(True)
-
-    return
 
   def _read_uniform_sd(self):
 
@@ -1659,15 +1627,12 @@ class _CommandLine(object):
       self._understood.append(self._argv.index('-no_uniform_sd'))
       Debug.write('Uniform SD OFF')
 
-    return
-
   def _read_migrate_data(self):
 
     if '-migrate_data' in self._argv:
       Flags.set_migrate_data(True)
       self._understood.append(self._argv.index('-migrate_data'))
       Debug.write('Data migration switched on')
-    return
 
   def _read_cell(self):
     '''Read the cell constants from the command line.'''
@@ -1710,8 +1675,6 @@ class _CommandLine(object):
     Debug.write('Cell read from command line:' + \
                 format % _cell)
 
-    return
-
   def _help_cell(self):
     '''Return a help string for the read cell method.'''
     return '-cell a,b,c,alpha,beta,gamma'
@@ -1731,8 +1694,6 @@ class _CommandLine(object):
     Flags.set_free_fraction(float(self._argv[index + 1]))
     Debug.write('Free fraction set to %f' % Flags.get_free_fraction())
 
-    return
-
   def _help_free_fraction(self):
     return '-free_fraction N'
 
@@ -1751,8 +1712,6 @@ class _CommandLine(object):
     Flags.set_free_total(int(self._argv[index + 1]))
     Debug.write('Free total set to %f' % Flags.get_free_total())
 
-    return
-
   def _help_free_total(self):
     return '-free_total N'
 
@@ -1768,8 +1727,6 @@ class _CommandLine(object):
     self._understood.append(index)
     self._understood.append(index + 1)
     Flags.set_mask(self._argv[index + 1])
-
-    return
 
   def get_mask(self):
     return self._mask
@@ -1791,8 +1748,6 @@ class _CommandLine(object):
 
     self._understood.append(index)
     Flags.set_fixed_628()
-
-    return
 
   def _help_fixed_628(self):
     return '-fixed_628'
@@ -1816,7 +1771,6 @@ class _CommandLine(object):
 
     self._understood.append(index)
     self._understood.append(index + 1)
-    return
 
   def _read_integrater(self):
 
@@ -1837,7 +1791,6 @@ class _CommandLine(object):
 
     self._understood.append(index)
     self._understood.append(index + 1)
-    return
 
   def _read_scaler(self):
 
@@ -1858,7 +1811,6 @@ class _CommandLine(object):
 
     self._understood.append(index)
     self._understood.append(index + 1)
-    return
 
   def _read_executables(self):
     try:
@@ -1871,7 +1823,6 @@ class _CommandLine(object):
     Executables.add(executable, path)
     self._understood.append(index)
     self._understood.append(index + 1)
-    return
 
 CommandLine = _CommandLine()
 CommandLine.setup()

@@ -27,13 +27,13 @@ import itertools
 import copy
 
 from cctbx.array_family import flex
-from iotbx import mtz
+from cctbx.crystal import symmetry as crystal_symmetry
 from cctbx.miller import build_set
 from cctbx.miller import map_to_asu
-from cctbx.crystal import symmetry as crystal_symmetry
 from cctbx.sgtbx import rt_mx
-from scitbx import lbfgs
+from iotbx import mtz
 from libtbx.phil import parse
+from scitbx import lbfgs
 
 def nint(a):
   return int(round(a))

@@ -365,8 +365,6 @@ class XSweep(object):
     self._gain = gain
     self._polarization = polarization
 
-    return
-
   # serialization functions
 
   def to_dict(self):
@@ -415,10 +413,10 @@ class XSweep(object):
         elif k == '_integrater':
           v.set_integrater_sweep(return_obj, reset=False)
       if isinstance(v, dict):
-        #if v.get('__id__', None) == 'ExperimentList':
+        #if v.get('__id__') == 'ExperimentList':
           #from dxtbx.model.experiment.experiment_list import ExperimentListFactory
           #v = ExperimentListFactory.from_dict(v)
-        if v.get('__id__', None) == 'imageset':
+        if v.get('__id__') == 'imageset':
           from dxtbx.serialize.imageset import imageset_from_dict
           v = imageset_from_dict(v, check_format=False)
       setattr(return_obj, k, v)
@@ -589,11 +587,9 @@ class XSweep(object):
 
   def set_resolution_high(self, resolution_high):
     self._resolution_high = resolution_high
-    return
 
   def set_resolution_low(self, resolution_low):
     self._resolution_low = resolution_low
-    return
 
   def get_resolution_high(self):
     return self._resolution_high

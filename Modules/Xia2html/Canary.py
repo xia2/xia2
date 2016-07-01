@@ -450,10 +450,8 @@ class Document(Section):
     'filename'.
 
     If this file already exists then it will be overwritten."""
-    html = open(filename,'w')
-    html.write(self.render())
-    html.close()
-    return
+    with open(filename,'w') as html:
+      html.write(self.render())
 
 class Para:
   """Paragraph object
