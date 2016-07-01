@@ -313,6 +313,8 @@ class DialsIndexer(Indexer):
       from libtbx import easy_pickle
       from dials.util.ascii_art import spot_counts_per_image_plot
       refl = easy_pickle.load(spot_filename)
+      if not len(refl):
+        raise RuntimeError('No spots found in sweep %s' %xsweep.get_name())
       Chatter.write(spot_counts_per_image_plot(refl), strip=False)
 
       detectblanks = self.DetectBlanks()
