@@ -120,7 +120,9 @@ def Refine(DriverType = None):
           'reflections_per_degree=%i' %self._reflections_per_degree)
       if self._interval_width_degrees is not None:
         self.add_command_line(
-          'interval_width_degrees=%i' %self._interval_width_degrees)
+          'unit_cell.smoother.interval_width_degrees=%i' % self._interval_width_degrees)
+        self.add_command_line(
+          'orientation.smoother.interval_width_degrees=%i' % self._interval_width_degrees)
       if self._detector_fix:
         self.add_command_line('detector.fix=%s' % self._detector_fix)
       if self._beam_fix:
