@@ -24,27 +24,20 @@ def remove_misfits(xdsin, xdsout):
   if not os.path.exists(xdsin):
     raise RuntimeError, 'xdsin does not exist'
 
-  fout = open(xdsout, 'w')
-
   ignored = 0
 
-  for record in open(xdsin, 'r').readlines():
-
-    if not record.strip():
-      continue
-
-    if record[0] == '!':
-      fout.write(record)
-      continue
-
-    values = map(float, record.split())
-
-    if values[4] > 0.0:
-      fout.write(record)
-      continue
-    else:
-      ignored += 1
-
-  fout.close()
+  with open(xdsin, 'r') as fin, open(xdsout, 'w') as fout:
+    for record in fin.readlines():
+      if not record.strip():
+        continue
+      if record[0] == '!':
+        fout.write(record)
+        continue
+      values = map(float, record.split())
+      if values[4] > 0.0:
+        fout.write(record)
+        continue
+      else:
+        ignored += 1
 
   return ignored

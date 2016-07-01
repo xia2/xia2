@@ -50,8 +50,6 @@ class _ISPyBXmlHandler(object):
         'I/sigma':'meanIOverSigI',
         }
 
-    return
-
   def add_xcrystal(self, xcrystal):
     if not xcrystal.get_name() in self._crystals:
       self._crystals[xcrystal.get_name()] = xcrystal
@@ -60,23 +58,17 @@ class _ISPyBXmlHandler(object):
     # each sweep and the scaling statistics for low resolution, high
     # resolution and overall...
 
-    return
-
   def add_crystal_log_file(self, crystal, log_file):
     if not log_file in self._per_crystal_data[crystal][
         'log_files']:
       self._per_crystal_data[crystal]['log_files'].append(
           log_file)
 
-    return
-
   def write_date(self, fout):
     '''Write the current date and time out as XML.'''
 
     fout.write('<recordTimeStamp>%s</recordTimeStamp>\n' % \
                time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()))
-
-    return
 
   def write_cell(self, fout, cell):
     '''Write out a UNIT CELL as XML...'''
@@ -88,8 +80,6 @@ class _ISPyBXmlHandler(object):
     fout.write('<cell_beta>%f</cell_beta>' % cell[4])
     fout.write('<cell_gamma>%f</cell_gamma>' % cell[5])
 
-    return
-
   def write_refined_cell(self, fout, cell):
     '''Write out a REFINED UNIT CELL as XML...'''
 
@@ -99,8 +89,6 @@ class _ISPyBXmlHandler(object):
     fout.write('<refinedCell_alpha>%f</refinedCell_alpha>' % cell[3])
     fout.write('<refinedCell_beta>%f</refinedCell_beta>' % cell[4])
     fout.write('<refinedCell_gamma>%f</refinedCell_gamma>' % cell[5])
-
-    return
 
   def write_scaling_statistics(self, fout, scaling_stats_type, stats_dict):
     '''Write out the SCALING STATISTICS block...'''
@@ -124,8 +112,6 @@ class _ISPyBXmlHandler(object):
                    (out_name, stats_dict[name], out_name))
 
     fout.write('</AutoProcScalingStatistics>\n')
-
-    return
 
   def write_xml(self, file):
 
@@ -282,8 +268,6 @@ class _ISPyBXmlHandler(object):
 
     fout.write('</AutoProcContainer>\n')
     fout.close()
-
-    return
 
 ISPyBXmlHandler = _ISPyBXmlHandler()
 

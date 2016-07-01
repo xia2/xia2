@@ -136,8 +136,6 @@ class Integrater(FrameProcessor):
 
     self._intgr_per_image_statistics = None
 
-    return
-
   # serialization functions
 
   def to_dict(self):
@@ -175,10 +173,10 @@ class Integrater(FrameProcessor):
           error_prefix='', target_must_be='', where_str='').object
         v = cls.from_dict(v)
       if isinstance(v, dict):
-        if v.get('__id__', None) == 'ExperimentList':
+        if v.get('__id__') == 'ExperimentList':
           from dxtbx.model.experiment.experiment_list import ExperimentListFactory
           v = ExperimentListFactory.from_dict(v)
-        elif v.get('__id__', None) == 'imageset':
+        elif v.get('__id__') == 'imageset':
           from dxtbx.serialize.imageset import imageset_from_dict
           v = imageset_from_dict(v, check_format=False)
       setattr(return_obj, k, v)
@@ -258,13 +256,11 @@ class Integrater(FrameProcessor):
     self._intgr_program_parameters = { }
 
     self._integrater_reset_callback()
-    return
 
   def set_integrater_sweep(self, sweep, reset=True):
     self._intgr_sweep = sweep
     if reset:
       self._integrater_reset()
-    return
 
   def get_integrater_sweep(self):
     return self._intgr_sweep
@@ -276,7 +272,6 @@ class Integrater(FrameProcessor):
     self._intgr_prepare_done = done
     if not done:
       self.set_integrater_done(False)
-    return
 
   def set_integrater_done(self, done = True):
     self._intgr_done = done
@@ -289,11 +284,9 @@ class Integrater(FrameProcessor):
 
     if not done:
       self.set_integrater_finish_done(False)
-    return
 
   def set_integrater_finish_done(self, done = True):
     self._intgr_finish_done = done
-    return
 
   # getters of the status - note how these cascade the get to ensure
   # that everything is up-to-date...
@@ -345,14 +338,12 @@ class Integrater(FrameProcessor):
 
   def set_working_directory(self, working_directory):
     self._intgr_working_directory = working_directory
-    return
 
   def get_working_directory(self):
     return self._intgr_working_directory
 
   def set_integrater_sweep_name(self, sweep_name):
     self._intgr_sweep_name = sweep_name
-    return
 
   def get_integrater_sweep_name(self):
     return self._intgr_sweep_name
@@ -369,8 +360,6 @@ class Integrater(FrameProcessor):
     self._intgr_xname = crystal_name
     self._intgr_dname = dataset_name
 
-    return
-
   def get_integrater_project_info(self):
     return self._intgr_pname, self._intgr_xname, self._intgr_dname
 
@@ -379,7 +368,6 @@ class Integrater(FrameProcessor):
 
   def set_integrater_epoch(self, epoch):
     self._intgr_epoch = epoch
-    return
 
   def set_integrater_wedge(self, start, end):
     '''Set the wedge of images to process.'''
@@ -398,8 +386,6 @@ class Integrater(FrameProcessor):
     Debug.write('Sweep epoch: %d' % self._intgr_epoch)
 
     self.set_integrater_done(False)
-
-    return
 
   def get_integrater_wedge(self):
     '''Get the wedge of images assigned to this integrater.'''
@@ -435,8 +421,6 @@ class Integrater(FrameProcessor):
 
     self.set_integrater_done(False)
 
-    return
-
   def set_integrater_high_resolution(self, dmin, user = False):
     '''Set high resolution limit.'''
 
@@ -448,20 +432,17 @@ class Integrater(FrameProcessor):
 
     self._intgr_reso_high = dmin
     self.set_integrater_done(False)
-    return
 
   def set_integrater_low_resolution(self, dmax):
     '''Set low resolution limit.'''
 
     self._intgr_reso_low = dmax
     self.set_integrater_done(False)
-    return
 
   def set_integrater_mosaic_min_mean_max(self, m_min, m_mean, m_max):
     self._intgr_mosaic_min = m_min
     self._intgr_mosaic_mean = m_mean
     self._intgr_mosaic_max = m_max
-    return
 
   def get_integrater_mosaic_min_mean_max(self):
     return self._intgr_mosaic_min, self._intgr_mosaic_mean, \
@@ -478,7 +459,6 @@ class Integrater(FrameProcessor):
       self._intgr_program_parameters[program] = { }
 
     self._intgr_program_parameters[program][parameter] = value
-    return
 
   def get_integrater_parameter(self, program, parameter):
     '''Get a parameter value.'''
@@ -502,8 +482,6 @@ class Integrater(FrameProcessor):
     self._intgr_program_parameters = parameters
     self.set_integrater_done(False)
 
-    return
-
   def set_integrater_export_parameter(self, program, parameter, value):
     '''Set an arbitrary parameter for the program specified to
     use in integration, e.g. the YSCALE or GAIN values in Mosflm.'''
@@ -512,7 +490,6 @@ class Integrater(FrameProcessor):
       self._intgr_export_program_parameters[program] = { }
 
     self._intgr_export_program_parameters[program][parameter] = value
-    return
 
   def get_integrater_export_parameter(self, program, parameter):
     '''Get a parameter value.'''
@@ -539,7 +516,6 @@ class Integrater(FrameProcessor):
 
     self._intgr_indexer = indexer
     self.set_integrater_prepare_done(False)
-    return
 
   def set_integrater_refiner(self, refiner):
     '''Set the refiner implementation to use for this integration.'''
@@ -550,7 +526,6 @@ class Integrater(FrameProcessor):
 
     self._intgr_refiner = refiner
     self.set_integrater_prepare_done(False)
-    return
 
   def integrate(self):
     '''Actually perform integration until we think we are done...'''
@@ -642,7 +617,6 @@ class Integrater(FrameProcessor):
 
   def set_integrater_anomalous(self, anomalous):
     self._intgr_anomalous = anomalous
-    return
 
   def get_integrater_anomalous(self):
     return self._intgr_anomalous
@@ -651,7 +625,6 @@ class Integrater(FrameProcessor):
 
   def set_integrater_ice(self, ice):
     self._intgr_ice = ice
-    return
 
   def get_integrater_ice(self):
     return self._intgr_ice
@@ -660,7 +633,6 @@ class Integrater(FrameProcessor):
   # upper and lower resolution ranges to exclude
   def set_integrater_excluded_regions(self, excluded_regions):
     self._intgr_excluded_regions = excluded_regions
-    return
 
   def get_integrater_excluded_regions(self):
     return self._intgr_excluded_regions
@@ -687,8 +659,6 @@ class Integrater(FrameProcessor):
 
     self._intgr_spacegroup_number = spacegroup_number
     self.set_integrater_finish_done(False)
-
-    return
 
   def get_integrater_spacegroup_number(self):
     return self._intgr_spacegroup_number
@@ -737,8 +707,6 @@ class Integrater(FrameProcessor):
         self._intgr_reindex_operator)
 
     self._set_integrater_reindex_operator_callback()
-
-    return
 
   def get_integrater_reindex_operator(self):
     return self._intgr_reindex_operator

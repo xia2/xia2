@@ -71,7 +71,6 @@ class _Environment(object):
     else:
       self._working_directory = working_directory
     self._is_setup = False
-    return
 
   def _setup(self):
     if self._is_setup:
@@ -92,8 +91,6 @@ class _Environment(object):
     Debug.write('Created CCP4_SCR: %s' % ccp4_scr)
 
     self._is_setup = True
-
-    return
 
   def set_working_directory(self, working_directory):
     self._working_directory = working_directory
@@ -124,12 +121,10 @@ class _Environment(object):
     self._setup()
     os.environ[name] = value
 
-    return
-
   def getenv(self, name):
     '''A wrapper for os.environ.'''
     self._setup()
-    return os.environ.get(name, None)
+    return os.environ.get(name)
 
   def cleanup(self):
     return

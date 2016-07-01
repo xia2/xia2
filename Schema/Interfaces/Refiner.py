@@ -35,8 +35,6 @@ class Refiner(object):
     # say 'mosflm':{'yscale':0.9999} etc.
     self._refinr_program_parameters = { }
 
-    return
-
   # serialization functions
 
   def to_dict(self):
@@ -90,7 +88,7 @@ class Refiner(object):
             v_new[k_] = v_
         v = v_new
       if isinstance(v, dict):
-        if v.get('__id__', None) == 'ExperimentList':
+        if v.get('__id__') == 'ExperimentList':
           from dxtbx.model.experiment.experiment_list import ExperimentListFactory
           v = ExperimentListFactory.from_dict(v, check_format=False)
       setattr(return_obj, k, v)
@@ -139,7 +137,6 @@ class Refiner(object):
 
   def set_working_directory(self, working_directory):
     self._working_directory = working_directory
-    return
 
   def get_working_directory(self):
     return self._working_directory
@@ -152,7 +149,6 @@ class Refiner(object):
                 (mod.__name__, frm[0].f_lineno, done))
 
     self._refinr_prepare_done = done
-    return
 
   def set_refiner_done(self, done = True):
 
@@ -162,7 +158,6 @@ class Refiner(object):
                 (mod.__name__, frm[0].f_lineno, done))
 
     self._refinr_done = done
-    return
 
   def set_refiner_finish_done(self, done = True):
 
@@ -172,7 +167,6 @@ class Refiner(object):
                 (mod.__name__, frm[0].f_lineno, done))
 
     self._refinr_finish_done = done
-    return
 
   def refiner_reset(self):
 
@@ -182,7 +176,6 @@ class Refiner(object):
     self._refinr_prepare_done = False
     self._refinr_finish_done = False
     self._refinr_result = None
-    return
 
   # getters of the status - note how the gets cascade to ensure that
   # everything is up-to-date...
@@ -233,8 +226,6 @@ class Refiner(object):
 
     self.refiner_reset()
 
-    return
-
   def refine(self):
     '''Actually perform the refinement - this is delegated to the
     implementation.'''
@@ -269,7 +260,7 @@ class Refiner(object):
 
   def get_refiner_payload(self, this):
     self.refine()
-    return self._refinr_payload.get(this, None)
+    return self._refinr_payload.get(this)
 
   def eliminate(self, indxr_print=True):
     for idxr in self._refinr_indexers.values():
@@ -308,7 +299,6 @@ class Refiner(object):
       self._refinr_program_parameters[program] = { }
 
     self._refinr_program_parameters[program][parameter] = value
-    return
 
   def get_refiner_parameter(self, program, parameter):
     '''Get a parameter value.'''
@@ -331,5 +321,3 @@ class Refiner(object):
 
     self._refinr_program_parameters = parameters
     self.set_refiner_done(False)
-
-    return
