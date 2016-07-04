@@ -113,9 +113,6 @@ class _Flags(object):
     # are we working with small molecule data?
     self._small_molecule = False
 
-    # flags relating to fixing specific bugs
-    self._fixed_628 = False
-
     # ISPyB things
     self._ispyb_xml_out = None
 
@@ -517,13 +514,6 @@ class _Flags(object):
 
   def get_pickle(self):
     return self._pickle
-
-  def set_fixed_628(self):
-    self._fixed_628 = True
-    return
-
-  def get_fixed_628(self):
-    return self._fixed_628
 
   def set_reference_reflection_file(self, reference_reflection_file):
     '''Set a new reference reflection file.'''

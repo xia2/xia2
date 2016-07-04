@@ -176,15 +176,6 @@ class _CommandLine(object):
     self._read_scaler()
     self._read_executables()
 
-    # flags relating to unfixed bugs...
-    self._read_fixed_628()
-
-    try:
-      self._read_image()
-    except exceptions.Exception, e:
-      raise RuntimeError, '%s (%s)' % \
-            (self._help_image(), str(e))
-
     try:
       self._read_project_name()
     except exceptions.Exception, e:
@@ -546,49 +537,6 @@ class _CommandLine(object):
 
   def get_beam(self):
     return self._beam
-
-  def _help_image(self):
-    '''Return a string for explaining the -image method.'''
-    return '-image /path/to/an/image_001.img'
-
-  def _read_image(self):
-    '''Read image information from the command line.'''
-
-    index = -1
-
-    try:
-      index = self._argv.index('-image')
-    except ValueError, e:
-      # the token is not on the command line
-      self._default_template = []
-      self._default_directory = []
-      return
-
-    image = self._argv[index + 1]
-
-    # check if there is a space in the image name - this happens and it
-    # looks like the python input parser will split it even if the
-    # space is escaped or it is quoted
-
-    if image[-1] == '\\':
-      try:
-        image = '%s %s' % (self._argv[index + 1][:-1],
-                           self._argv[index + 2])
-      except:
-        raise RuntimeError, 'image name ends in \\'
-
-    # XXX Warning added 2015-04-23
-    Chatter.write(
-      "Warning: -image option deprecated: please use image='%s' instead" %(
-        image))
-
-    PhilIndex.update("xia2.settings.input.image=%s" %image)
-    PhilIndex.get_python_object()
-
-    self._understood.append(index)
-    self._understood.append(index + 1)
-
-    return
 
   def _read_atom_name(self):
     try:
@@ -1584,21 +1532,6 @@ class _CommandLine(object):
 
   def get_mask(self):
     return self._mask
-
-  def _read_fixed_628(self):
-    try:
-      index = self._argv.index('-fixed_628')
-    except ValueError, e:
-      return
-
-    if index < 0:
-      raise RuntimeError, 'negative index'
-
-    self._understood.append(index)
-    Flags.set_fixed_628()
-
-  def _help_fixed_628(self):
-    return '-fixed_628'
 
   def _read_indexer(self):
 

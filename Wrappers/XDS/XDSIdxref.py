@@ -546,8 +546,7 @@ def XDSIdxref(DriverType=None, params=None):
             # check the unit cell...
             cell = l[1]
 
-            if self._compare_cell(self._cell, cell) \
-                   or not Flags.get_fixed_628():
+            if self._compare_cell(self._cell, cell) or True:
 
               cell_str = '%.2f %.2f %.2f %.2f %.2f %.2f' % cell
               Debug.write(
