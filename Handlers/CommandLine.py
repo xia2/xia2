@@ -151,7 +151,6 @@ class _CommandLine(object):
     self._read_no_lattice_test()
     self._read_no_relax()
     self._read_no_profile()
-    self._read_norefine()
     self._read_noremove()
 
     # pipeline options
@@ -1125,14 +1124,6 @@ class _CommandLine(object):
       Flags.set_zero_dose(True)
       self._understood.append(self._argv.index('-zero_dose'))
       Debug.write('Zero-dose mode (XDS/XSCALE) selected')
-
-  def _read_norefine(self):
-
-    if '-norefine' in self._argv:
-      Flags.set_refine(False)
-      self._understood.append(self._argv.index('-norefine'))
-      # FIXME what does this do??? - switch off orientation refinement
-      # in integration
 
   def _read_noremove(self):
 
