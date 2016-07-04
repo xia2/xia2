@@ -456,7 +456,7 @@ def print_sweeps(out = sys.stdout):
       imgset = s.get_imageset()
       out.write('IMAGE %s\n' % os.path.split(imgset.get_path(0))[-1])
 
-      elif CommandLine.get_start_end(
+      if CommandLine.get_start_end(
               os.path.join(s.get_directory(), s.get_template())):
         start_end = CommandLine.get_start_end(
               os.path.join(s.get_directory(), s.get_template()))
