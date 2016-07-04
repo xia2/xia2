@@ -231,28 +231,10 @@ class _CommandLine(object):
             (self._help_xparm_ub(), str(e))
 
     try:
-      self._read_min_images()
-    except exceptions.Exception, e:
-      raise RuntimeError, '%s (%s)' % \
-            (self._help_min_images(), str(e))
-
-    try:
-      self._read_start_end()
-    except exceptions.Exception, e:
-      raise RuntimeError, '%s (%s)' % \
-            (self._help_start_end(), str(e))
-
-    try:
       self._read_xparallel()
     except exceptions.Exception, e:
       raise RuntimeError, '%s (%s)' % \
             (self._help_xparallel(), str(e))
-
-    try:
-      self._read_resolution()
-    except exceptions.Exception, e:
-      raise RuntimeError, '%s (%s)' % \
-            (self._help_resolution(), str(e))
 
     try:
       self._read_z_min()
@@ -677,57 +659,6 @@ class _CommandLine(object):
   def _help_xparm_ub(self):
     return '-xparm_ub GXPARM.XDS'
 
-  def _read_min_images(self):
-    try:
-      index = self._argv.index('-min_images')
-    except ValueError, e:
-      return
-
-    if index < 0:
-      raise RuntimeError, 'negative index'
-
-    self._understood.append(index)
-    self._understood.append(index + 1)
-
-    # XXX Warning added 2015-05-01
-    Chatter.write(
-      "Warning: -min_images option deprecated: please use min_images=%s instead" %(
-        self._argv[index + 1]))
-
-    PhilIndex.update("xia2.settings.input.min_images=%i" %(
-      int(self._argv[index + 1])))
-    PhilIndex.get_python_object()
-
-    return
-
-  def _help_min_images(self):
-    return '-min_images N'
-
-  def _read_start_end(self):
-    try:
-      index = self._argv.index('-start_end')
-    except ValueError, e:
-      return
-
-    if index < 0:
-      raise RuntimeError, 'negative index'
-
-    if not '-image' in self._argv:
-      raise RuntimeError, 'do not use start_end without -image'
-
-    self._understood.append(index)
-    self._understood.append(index + 1)
-
-    start, end = tuple(map(int, self._argv[index + 1].split(',')))
-
-    Flags.set_start_end(start, end)
-    Debug.write('Start, end set to %d %d' % Flags.get_start_end())
-
-    return
-
-  def _help_start_end(self):
-    return '-start_end start,end'
-
   def _read_xparallel(self):
     try:
       index = self._argv.index('-xparallel')
@@ -747,51 +678,6 @@ class _CommandLine(object):
 
   def _help_xparallel(self):
     return '-xparallel N'
-
-  def _read_resolution(self):
-    try:
-      index = self._argv.index('-resolution')
-    except ValueError, e:
-      return
-
-    if index < 0:
-      raise RuntimeError, 'negative index'
-
-    resolution = self._argv[index + 1]
-    if ',' in resolution:
-      a, b = map(float, resolution.split(','))
-      dmin = min(a, b)
-      dmax = max(a, b)
-    else:
-      dmin = float(resolution)
-      dmax = None
-
-    self._understood.append(index)
-    self._understood.append(index + 1)
-
-    PhilIndex.update("xia2.settings.resolution.d_min=%s" %dmin)
-    if dmax is not None:
-      PhilIndex.update("xia2.settings.resolution.d_max=%s" %dmax)
-      # XXX Warning added 2014-11-10
-      Chatter.write(
-        "Warning: -resolution option deprecated: please use d_min=%s and d_max=%s instead" %(
-          dmin, dmax))
-    else:
-      # XXX Warning added 2014-11-10
-      Chatter.write(
-        "Warning: -resolution option deprecated: please use d_min=%s instead" %(
-          dmin))
-    PhilIndex.get_python_object()
-
-    if dmax:
-      Debug.write('Resolution set to %.3f %.3f' % (dmin, dmax))
-    else:
-      Debug.write('Resolution set to %.3f' % dmin)
-
-    return
-
-  def _help_resolution(self):
-    return '-resolution high[,low]'
 
   def _read_z_min(self):
     try:
