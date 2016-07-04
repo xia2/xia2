@@ -270,6 +270,53 @@ ccp4
       .type = str
   }
 }
+strategy
+  .multiple = True
+  .optional = False
+{
+  i_over_sigi = 2.0
+    .type = float(value_min=0.0)
+    .help = "Target <I/SigI> at highest resolution."
+  minimize_total_time = False
+    .type = bool
+  target_resolution = None
+    .type = float(value_min=0.0)
+  max_total_exposure = None
+    .type = float(value_min=0.0)
+    .help = "maximum total exposure/measurement time, sec, default unlimited"
+  anomalous = False
+    .type = bool
+  dose_rate = 0.0
+    .type = float(value_min=0.0)
+    .help = "dose rate, Gray per Second, default 0.0 - radiation damage neglected"
+  shape = 1.0
+    .type = float(value_min=0.0)
+    .help = "shape factor, default 1, - increase for large crystal in a small beam"
+  susceptibility = 1.0
+    .type = float(value_min=0.0)
+    .help = "increase for radiation-sensitive crystals"
+  completeness = 0.99
+    .type = float(value_min=0.0, value_max=1.0)
+    .help = "Target completeness"
+  multiplicity = None
+    .type = float(value_min=0.0)
+    .help = "Target multiplicity"
+  phi_range = None
+    .type = floats(size=2)
+    .help = "Starting phi angle and total phi rotation range"
+  min_oscillation_width = 0.05
+    .type = float(value_min=0.0)
+    .help = "Minimum rotation width per frame (degrees)"
+  xml_out = None
+    .type = path
+    .help = "XML-formatted data stored in file"
+  max_rotation_speed = None
+    .type = float(value_min=0.0)
+    .help = "Maximum rotation speed (deg/sec)"
+  min_exposure = None
+    .type = float(value_min=0.0)
+    .help = "Minimum exposure per frame (sec)"
+}
 xia2.settings
   .short_caption = "xia2 settings"
 {

@@ -58,24 +58,45 @@ def run():
     assert len(crystal.get_wavelength_names()) == 1
     wavelength = crystal.get_xwavelength(crystal.get_wavelength_names()[0])
     sweeps = wavelength.get_sweeps()
-    for sweep in sweeps:
-      integrater = sweep._get_integrater()
-      from xia2.Wrappers.Dials.ExportBest import ExportBest
-      export = ExportBest()
-      export.set_experiments_filename(integrater.get_integrated_experiments())
-      export.set_reflections_filename(integrater.get_integrated_reflections())
-      export.set_working_directory(wd)
-      auto_logfiler(export)
-      export.run()
+
+    from xia2.Handlers.Phil import PhilIndex
+    params = PhilIndex.get_python_object()
+    strategy_params = params.strategy
+
+    for strategy in strategy_params:
       from xia2.Wrappers.EMBL import Best
       best = Best.BestStrategy()
-      best.set_mos_dat('best.dat')
-      best.set_mos_par('best.par')
-      best.add_mos_hkl('best.hkl')
+      for isweep, sweep in enumerate(sweeps):
+        integrater = sweep._get_integrater()
+        from xia2.Wrappers.Dials.ExportBest import ExportBest
+        export = ExportBest()
+        export.set_experiments_filename(integrater.get_integrated_experiments())
+        export.set_reflections_filename(integrater.get_integrated_reflections())
+        export.set_working_directory(wd)
+        auto_logfiler(export)
+        prefix = '%i_best' %export.get_xpid()
+        export.set_prefix(prefix)
+        export.run()
+        if isweep == 0:
+          best.set_mos_dat('%s.dat' %prefix)
+          best.set_mos_par('%s.par' %prefix)
+        best.add_mos_hkl('%s.hkl' %prefix)
       best.set_t_ref(0.2)
+      best.set_i2s(strategy.i_over_sigi)
+      best.set_T_max(strategy.max_total_exposure)
+      best.set_t_min(strategy.min_exposure)
+      #best.set_trans_ref(25.0)
+      best.set_S_max(strategy.max_rotation_speed)
+      best.set_w_min(strategy.min_oscillation_width)
+      best.set_M_min(strategy.multiplicity)
+      best.set_C_min(strategy.completeness)
+      best.set_anomalous(strategy.anomalous)
+
       best.set_detector('pilatus6m')
       best.set_working_directory(wd)
       auto_logfiler(best)
+      xmlout = '%s/%i_best.xml' %(best.get_working_directory(), best.get_xpid())
+      best.set_xmlout(xmlout)
       best.strategy()
 
       multiplicity = best.get_multiplicity()
@@ -83,24 +104,11 @@ def run():
         mutiplicity = '%.2f' %multiplicity
       except TypeError:
         pass
-      print 'Native'
-      print 'Start / end / width: %.2f/%.2f/%.2f' % (best.get_phi_start(), best.get_phi_end(), best.get_phi_width())
-      print 'Completeness / multiplicity / resolution: %.2f/%s/%.2f' % (best.get_completeness(), multiplicity, best.get_resolution())
-      print 'Transmission / exposure %.3f/%.3f' % (best.get_transmission(), best.get_exposure_time())
-
-      best.set_anomalous(True)
-      auto_logfiler(best)
-      best.strategy()
-
-      multiplicity = best.get_multiplicity()
-      try:
-        mutiplicity = '%.2f' %multiplicity
-      except TypeError:
-        pass
-      print 'Anomalous'
-      print 'Start / end / width: %.2f/%.2f/%.2f' % (best.get_phi_start(), best.get_phi_end(), best.get_phi_width())
-      print 'Completeness / multiplicity / resolution: %.2f/%s/%.2f' % (best.get_completeness(), multiplicity, best.get_resolution())
-      print 'Transmission / exposure %.3f/%.3f' % (best.get_transmission(), best.get_exposure_time())
+      Chatter.write('Native')
+      Chatter.write('Start / end / width: %.2f/%.2f/%.2f' % (best.get_phi_start(), best.get_phi_end(), best.get_phi_width()))
+      Chatter.write('Completeness / multiplicity / resolution: %.2f/%s/%.2f' % (best.get_completeness(), multiplicity, best.get_resolution()))
+      Chatter.write('Transmission / exposure %.3f/%.3f' % (best.get_transmission(), best.get_exposure_time()))
+      Chatter.write('XML: %s' %xmlout)
 
   except exceptions.Exception, e:
     traceback.print_exc(file = open(os.path.join(cwd, 'xia2.error'), 'w'))
