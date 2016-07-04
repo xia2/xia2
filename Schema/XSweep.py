@@ -174,11 +174,6 @@ class XSweep(object):
 
     directory = expand_path(directory)
 
-    # bug # 2274 - maybe migrate the data to a local disk (this
-    # will depend if the user has added -migrate_data to the cl)
-
-    directory = FileHandler.migrate(directory)
-
     self._name = name
     self._wavelength = wavelength
     self._sample = sample

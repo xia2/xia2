@@ -33,7 +33,6 @@ class _Flags(object):
     self._mask = None
     self._reversephi = False
     self._no_lattice_test = False
-    self._migrate_data = False
     self._trust_timestaps = False
 
     # XDS specific things - to help with handling tricky data sets
@@ -326,13 +325,6 @@ class _Flags(object):
 
   def get_relax(self):
     return self._relax
-
-  def set_migrate_data(self, migrate_data):
-    self._migrate_data = migrate_data
-    return
-
-  def get_migrate_data(self):
-    return self._migrate_data
 
   def set_trust_timestamps(self, trust_timestamps):
     self._trust_timestamps = trust_timestamps

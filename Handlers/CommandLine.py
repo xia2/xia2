@@ -164,7 +164,6 @@ class _CommandLine(object):
     self._read_3dii()
     self._read_3dd()
 
-    self._read_migrate_data()
     self._read_zero_dose()
     self._read_free_fraction()
     self._read_free_total()
@@ -1286,13 +1285,6 @@ class _CommandLine(object):
       Flags.set_uniform_sd(False)
       self._understood.append(self._argv.index('-no_uniform_sd'))
       Debug.write('Uniform SD OFF')
-
-  def _read_migrate_data(self):
-
-    if '-migrate_data' in self._argv:
-      Flags.set_migrate_data(True)
-      self._understood.append(self._argv.index('-migrate_data'))
-      Debug.write('Data migration switched on')
 
   def _read_free_fraction(self):
     try:

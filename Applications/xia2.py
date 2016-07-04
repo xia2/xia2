@@ -240,7 +240,6 @@ def help():
   sys.stdout.write('[-freer_file free.mtz]\n')
   sys.stdout.write('[-reference_reflection_file free.mtz]\n')
   sys.stdout.write('[-quick]\n')
-  sys.stdout.write('[-migrate_data]\n')
   sys.stdout.write('[-atom se] (say) - this is for xia2setup\n')
   sys.stdout.write('[-project foo] (say) - this is for xia2setup\n')
   sys.stdout.write('[-crystal bar] (say) - this is for xia2setup\n\n')

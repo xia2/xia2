@@ -107,59 +107,6 @@ class _FileHandler(object):
     self._more_data_files = { }
     self._more_data_file_keys = []
 
-    # for data migration to local disk, bug # 2274
-    self._data_migrate = { }
-
-  def migrate(self, directory):
-    '''Migrate (or not) data to a local directory.'''
-
-    if not Flags.get_migrate_data():
-      # we will not migrate this data
-      return directory
-
-    if directory in self._data_migrate.keys():
-      # we have already migrated this data
-      return self._data_migrate[directory]
-
-    # create a directory to move data to...
-    self._data_migrate[directory] = tempfile.mkdtemp()
-
-    # copy all files in source directory to new directory
-    # retaining timestamps etc.
-
-    start_time = time.time()
-
-    migrated = 0
-    migrated_dir = 0
-    for f in os.listdir(directory):
-      # copy over only files....
-      if os.path.isfile(os.path.join(directory, f)):
-        shutil.copy2(os.path.join(directory, f),
-                     self._data_migrate[directory])
-        migrated += 1
-      elif os.path.isdir(os.path.join(directory, f)):
-        shutil.copytree(os.path.join(directory, f),
-                        os.path.join(self._data_migrate[directory],
-                                     f))
-        migrated_dir += 1
-
-
-    Debug.write('Migrated %d files from %s to %s' % \
-                (migrated, directory, self._data_migrate[directory]))
-
-    if migrated_dir > 0:
-      Debug.write('Migrated %d directories from %s to %s' % \
-                  (migrated_dir, directory,
-                   self._data_migrate[directory]))
-
-    end_time = time.time()
-    duration = end_time - start_time
-
-    Debug.write('Migration took %s' % \
-                time.strftime("%Hh %Mm %Ss", time.gmtime(duration)))
-
-    return self._data_migrate[directory]
-
   def cleanup(self):
     out = open('xia2-files.txt', 'w')
     for f in self._temporary_files:
@@ -169,11 +116,6 @@ class _FileHandler(object):
       except exceptions.Exception, e:
         out.write('Failed to delete: %s (%s)\n' % \
                   (f, str(e)))
-
-    for f in self._data_migrate.keys():
-      d = self._data_migrate[f]
-      shutil.rmtree(d)
-      out.write('Removed directory %s' % d)
 
     for f in self._output_files:
       out.write('Output file (%s): %s\n' % f)

@@ -33,7 +33,6 @@ Other options are (type just xia2 to get this list)::
   [-freer_file free.mtz]
   [-quick]
   [-atom se] (say)
-  [-migrate_data]
 
 Running ths way some assumptions are made:
 
