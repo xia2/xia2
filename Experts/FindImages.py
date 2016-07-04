@@ -415,13 +415,13 @@ def digest_template(template, images):
 
   strings = [format % i for i in images]
 
-  prefix = common_prefix(strings)
   offset = 0
-
-  if prefix:
-    offset = int(prefix + '0' * (length - len(prefix)))
-    template = template.replace(len(prefix) * '#', prefix, 1)
-    images = [int(s.replace(prefix, '', 1)) for s in strings]
+  if len(strings) > 1:
+    prefix = common_prefix(strings)
+    if prefix:
+      offset = int(prefix + '0' * (length - len(prefix)))
+      template = template.replace(len(prefix) * '#', prefix, 1)
+      images = [int(s.replace(prefix, '', 1)) for s in strings]
 
   try:
     template, images, offset = ensure_no_batches_numbered_zero(
