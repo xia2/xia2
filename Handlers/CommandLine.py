@@ -35,6 +35,7 @@ def which(pgm):
   # http://stackoverflow.com/questions/9877462/is-there-a-python-equivalent-to-the-which-command
   # FIXME this will not work on Windows as you need to check that there is a
   # .bat or a .exe extension
+  # FIXME also this is implemented in Driver/DriverHelper.py:executable_exists
   path = os.getenv('PATH')
   for p in path.split(os.path.pathsep):
     p = os.path.join(p,pgm)
