@@ -77,6 +77,9 @@ class _CommandLine(object):
     self._hdf5_master_files = []
     self._default_start_end = { }
 
+    # deprecated options prior to removal
+    self._xinfo = None
+
     return
 
   def get_argv(self):
@@ -177,16 +180,6 @@ class _CommandLine(object):
     self._read_fixed_628()
 
     try:
-      self._read_beam()
-    except:
-      raise RuntimeError, self._help_beam()
-
-    try:
-      self._read_cell()
-    except:
-      raise RuntimeError, self._help_cell()
-
-    try:
       self._read_image()
     except exceptions.Exception, e:
       raise RuntimeError, '%s (%s)' % \
@@ -281,12 +274,6 @@ class _CommandLine(object):
     except exceptions.Exception, e:
       raise RuntimeError, '%s (%s)' % \
             (self._help_xparallel(), str(e))
-
-    try:
-      self._read_spacegroup()
-    except exceptions.Exception, e:
-      raise RuntimeError, '%s (%s)' % \
-            (self._help_spacegroup(), str(e))
 
     try:
       self._read_resolution()
@@ -448,13 +435,6 @@ class _CommandLine(object):
       PhilIndex.update("xia2.settings.trust_beam_centre=true")
       params = PhilIndex.get_python_object()
 
-    try:
-      self._read_xinfo()
-    except exceptions.Exception, e:
-      traceback.print_exc(file = open('xia2-xinfo.error', 'w'))
-      raise RuntimeError, '%s (%s)' % \
-            (self._help_xinfo(), str(e))
-
     params = PhilIndex.get_python_object()
     if params.xia2.settings.input.xinfo is not None:
       xinfo_file = os.path.abspath(params.xia2.settings.input.xinfo)
@@ -563,40 +543,6 @@ class _CommandLine(object):
     return
 
   # command line parsers, getters and help functions.
-
-  def _read_beam(self):
-    '''Read the beam centre from the command line.'''
-
-    index = -1
-
-    try:
-      index = self._argv.index('-beam')
-    except ValueError, e:
-      self._beam = None
-      return
-
-    if index < 0:
-      raise RuntimeError, 'negative index'
-
-    self._understood.append(index)
-    self._understood.append(index + 1)
-
-    # XXX Warning added 2014-11-10
-    Chatter.write(
-      "Warning: -beam option deprecated: please use beam_centre='%s' instead" %(
-        self._argv[index + 1]))
-
-    PhilIndex.update("xia2.settings.beam_centre=%s" %self._argv[index +1 ])
-    PhilIndex.get_python_object()
-    Debug.write('Beam read from command line as %f %f' % tuple(
-      PhilIndex.params.xia2.settings.beam_centre))
-    self._beam = tuple(PhilIndex.params.xia2.settings.beam_centre)
-
-    return
-
-  def _help_beam(self):
-    '''Return a help string for the read beam method.'''
-    return '-beam x,y'
 
   def get_beam(self):
     return self._beam
@@ -738,32 +684,6 @@ class _CommandLine(object):
 
   def get_crystal_name(self):
     return self._default_crystal_name
-
-  def _read_xinfo(self):
-    try:
-      index = self._argv.index('-xinfo')
-    except ValueError, e:
-      self._xinfo = None
-      return
-
-    if index < 0:
-      raise RuntimeError, 'negative index (no xinfo file name given)'
-
-    self._understood.append(index)
-    self._understood.append(index + 1)
-
-    # XXX Warning added 2015-03-02
-    Chatter.write(
-      "Warning: -xinfo option deprecated: please use xinfo='%s' instead" %(
-        self._argv[index + 1]))
-
-    PhilIndex.update("xia2.settings.input.xinfo=%s" %self._argv[index + 1])
-    PhilIndex.get_python_object()
-
-    return
-
-  def _help_xinfo(self):
-    return '-xinfo example.xinfo'
 
   def set_xinfo(self, xinfo):
     with open(xinfo, 'rb') as f:
@@ -947,33 +867,6 @@ class _CommandLine(object):
 
   def _help_xparallel(self):
     return '-xparallel N'
-
-  def _read_spacegroup(self):
-    try:
-      index = self._argv.index('-spacegroup')
-    except ValueError, e:
-      return
-
-    if index < 0:
-      raise RuntimeError, 'negative index'
-
-    self._understood.append(index)
-    self._understood.append(index + 1)
-
-    # XXX Warning added 2014-11-10
-    Chatter.write(
-      "Warning: -spacegroup option deprecated: please use space_group='%s' instead" %(
-        self._argv[index + 1]))
-
-    Flags.set_spacegroup(self._argv[index + 1]) # XXX this line should go
-    PhilIndex.update("xia2.settings.space_group=%s" %self._argv[index + 1])
-    PhilIndex.get_python_object()
-    Debug.write('Spacegroup set to %s' % self._argv[index + 1])
-
-    return
-
-  def _help_spacegroup(self):
-    return '-spacegroup P43212'
 
   def _read_resolution(self):
     try:
@@ -1633,51 +1526,6 @@ class _CommandLine(object):
       Flags.set_migrate_data(True)
       self._understood.append(self._argv.index('-migrate_data'))
       Debug.write('Data migration switched on')
-
-  def _read_cell(self):
-    '''Read the cell constants from the command line.'''
-
-    index = -1
-
-    try:
-      index = self._argv.index('-cell')
-    except ValueError, e:
-      return
-
-    if index < 0:
-      raise RuntimeError, 'negative index'
-
-    try:
-      cell = self._argv[index + 1].split(',')
-    except IndexError, e:
-      raise RuntimeError, \
-            '-cell correct use "-cell a,b,c,alpha,beta,gamma"'
-
-    if len(cell) != 6:
-      raise RuntimeError, \
-            '-cell correct use "-cell a,b,c,alpha,beta,gamma"'
-
-    _cell = tuple(map(float, cell))
-
-    # XXX Warning added 2014-11-10
-    Chatter.write(
-      "Warning: -cell option deprecated: please use unit_cell='%s' instead" %(
-        self._argv[index + 1]))
-
-    PhilIndex.update("xia2.settings.unit_cell=%s,%s,%s,%s,%s,%s" %_cell)
-    PhilIndex.get_python_object()
-
-    format = 6 * ' %7.2f'
-
-    self._understood.append(index)
-    self._understood.append(index + 1)
-
-    Debug.write('Cell read from command line:' + \
-                format % _cell)
-
-  def _help_cell(self):
-    '''Return a help string for the read cell method.'''
-    return '-cell a,b,c,alpha,beta,gamma'
 
   def _read_free_fraction(self):
     try:
