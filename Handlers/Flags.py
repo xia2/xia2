@@ -9,7 +9,8 @@
 #
 # A singleton to handle flags, which can be imported more easily
 # as it will not suffer the problems with circular references that
-# the CommandLine singleton suffers from.
+# the CommandLine singleton suffers from. FIXME xia2-42 this is due
+# for retirement & working into the Phil structure
 
 import os
 import sys
@@ -52,8 +53,6 @@ class _Flags(object):
       self._parallel = 0
 
     self._xparallel = 0
-
-    self._start_end = None
 
     self._batch_scale = False
 
@@ -397,14 +396,6 @@ class _Flags(object):
 
   def get_xparm_c(self):
     return self._xparm_c
-
-  def set_start_end(self, start, end):
-    assert(end > start)
-    self._start_end = start, end
-    return
-
-  def get_start_end(self):
-    return self._start_end
 
   def set_xparallel(self, xparallel):
     self._xparallel = xparallel

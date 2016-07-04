@@ -322,6 +322,7 @@ class XProject(object):
             replace = True
 
           # FIXME: AJP to implement
+          # FIXME ticket number here please
           if 'ice' in sweep_info:
             pass
           if 'excluded_regions' in sweep_info:
@@ -330,9 +331,6 @@ class XProject(object):
           if sweep_info['wavelength'] == wavelength:
 
             frames_to_process = sweep_info.get('start_end')
-
-            if not frames_to_process and Flags.get_start_end():
-              frames_to_process = Flags.get_start_end()
 
             xsweep = xw.add_sweep(
               sweep_name,

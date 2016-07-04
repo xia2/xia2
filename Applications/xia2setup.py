@@ -456,18 +456,6 @@ def print_sweeps(out = sys.stdout):
       imgset = s.get_imageset()
       out.write('IMAGE %s\n' % os.path.split(imgset.get_path(0))[-1])
 
-      if Flags.get_start_end():
-        start, end = Flags.get_start_end()
-
-        if start < min(s.get_images()):
-          raise RuntimeError, 'requested start %d < %d' % \
-                (start, min(s.get_images()))
-
-        if end > max(s.get_images()):
-          raise RuntimeError, 'requested end %d > %d' % \
-                (end, max(s.get_images()))
-
-        out.write('START_END %d %d\n' % (start, end))
       elif CommandLine.get_start_end(
               os.path.join(s.get_directory(), s.get_template())):
         start_end = CommandLine.get_start_end(
