@@ -168,12 +168,6 @@ class _CommandLine(object):
     self._read_free_fraction()
     self._read_free_total()
 
-    # finer grained control over the selection of indexer, integrater
-    # and scaler to use.
-
-    self._read_indexer()
-    self._read_integrater()
-    self._read_scaler()
     self._read_executables()
 
     try:
@@ -223,18 +217,6 @@ class _CommandLine(object):
     except exceptions.Exception, e:
       raise RuntimeError, '%s (%s)' % \
             (self._help_pickle(), str(e))
-
-    try:
-      self._read_parallel()
-    except exceptions.Exception, e:
-      raise RuntimeError, '%s (%s)' % \
-            (self._help_parallel(), str(e))
-
-    try:
-      self._read_serial()
-    except exceptions.Exception, e:
-      raise RuntimeError, '%s (%s)' % \
-            (self._help_serial(), str(e))
 
     try:
       self._read_xparm()
@@ -694,56 +676,6 @@ class _CommandLine(object):
 
   def _help_xparm_ub(self):
     return '-xparm_ub GXPARM.XDS'
-
-  def _read_parallel(self):
-    try:
-      index = self._argv.index('-parallel')
-    except ValueError, e:
-      return
-
-    if index < 0:
-      raise RuntimeError, 'negative index'
-
-    if int(self._argv[index + 1]) < 0:
-      raise RuntimeError, 'negative number of processors: %s' % \
-            self._argv[index + 1]
-
-    self._understood.append(index)
-    self._understood.append(index + 1)
-
-    # XXX Warning added 2014-11-10
-    Chatter.write(
-      "Warning: -parallel option deprecated: please use nproc=%s instead" %(
-        self._argv[index + 1]))
-
-    PhilIndex.update("xia2.settings.multiprocessing.nproc=%s" %(
-      self._argv[index + 1]))
-    PhilIndex.get_python_object()
-    return
-
-  def _help_parallel(self):
-    return '-parallel N'
-
-  def _read_serial(self):
-    try:
-      index = self._argv.index('-serial')
-    except ValueError, e:
-      return
-
-    if index < 0:
-      raise RuntimeError, 'negative index'
-
-    self._understood.append(index)
-
-    Flags.set_parallel(1)
-    PhilIndex.update("xia2.settings.multiprocessing.nproc=1")
-    PhilIndex.get_python_object()
-    Debug.write('Serial set (i.e. 1 CPU)')
-
-    return
-
-  def _help_serial(self):
-    return '-serial'
 
   def _read_min_images(self):
     try:
@@ -1532,66 +1464,6 @@ class _CommandLine(object):
 
   def get_mask(self):
     return self._mask
-
-  def _read_indexer(self):
-
-    try:
-      index = self._argv.index('-indexer')
-    except ValueError, e:
-      return
-
-    indexer = self._argv[index + 1]
-
-    # XXX Warning added 2014-11-10
-    Chatter.write(
-      "Warning: -indexer option deprecated: please use indexer='%s' instead" %(
-        indexer))
-
-    PhilIndex.update("xia2.settings.indexer=%s" %indexer)
-    PhilIndex.get_python_object()
-
-    self._understood.append(index)
-    self._understood.append(index + 1)
-
-  def _read_integrater(self):
-
-    try:
-      index = self._argv.index('-integrater')
-    except ValueError, e:
-      return
-
-    integrater = self._argv[index + 1]
-
-    # XXX Warning added 2014-11-10
-    Chatter.write(
-      "Warning: -integrater option deprecated: please use integrater='%s' instead" %(
-        integrater))
-
-    PhilIndex.update("xia2.settings.integrater=%s" %integrater)
-    PhilIndex.get_python_object()
-
-    self._understood.append(index)
-    self._understood.append(index + 1)
-
-  def _read_scaler(self):
-
-    try:
-      index = self._argv.index('-scaler')
-    except ValueError, e:
-      return
-
-    scaler = self._argv[index + 1]
-
-    # XXX Warning added 2014-11-10
-    Chatter.write(
-      "Warning: -scaler option deprecated: please use scaler='%s' instead" %(
-        scaler))
-
-    PhilIndex.update("xia2.settings.scaler=%s" %scaler)
-    PhilIndex.get_python_object()
-
-    self._understood.append(index)
-    self._understood.append(index + 1)
 
   def _read_executables(self):
     try:
