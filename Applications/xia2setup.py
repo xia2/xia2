@@ -341,6 +341,11 @@ def print_sweeps(out = sys.stdout):
     out.write('ATOM %s\n' % settings.input.atom.lower())
     out.write('END HA_INFO\n')
     out.write('\n')
+  elif settings.input.anomalous:
+    out.write('BEGIN HA_INFO\n')
+    out.write('ATOM X\n')
+    out.write('END HA_INFO\n')
+    out.write('\n')
 
   for j in range(len(wavelengths)):
     anomalous = settings.input.anomalous
