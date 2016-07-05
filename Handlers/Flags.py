@@ -28,7 +28,6 @@ class _Flags(object):
     self._mask = None
     self._reversephi = False
     self._no_lattice_test = False
-    self._trust_timestaps = False
 
     # XDS specific things - to help with handling tricky data sets
 
@@ -229,13 +228,6 @@ class _Flags(object):
 
   def get_relax(self):
     return self._relax
-
-  def set_trust_timestamps(self, trust_timestamps):
-    self._trust_timestamps = trust_timestamps
-    return
-
-  def get_trust_timestamps(self):
-    return self._trust_timestamps
 
   def set_small_molecule(self, small_molecule):
     self._small_molecule = small_molecule

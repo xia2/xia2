@@ -141,10 +141,6 @@ if __name__ == '__main__':
 
   from xia2.Experts.FindImages import find_matching_images, \
        template_directory_number2image, image2template_directory
-  from xia2.Handlers.Flags import Flags
-
-  # just cos we can...
-  Flags.set_trust_timestamps(True)
 
   image_names = []
   for image in sys.argv[1:]:

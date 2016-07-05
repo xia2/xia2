@@ -149,7 +149,6 @@ class _CommandLine(object):
 
     self._read_interactive()
     self._read_ice()
-    self._read_trust_timestamps()
     self._read_batch_scale()
     self._read_small_molecule()
     self._read_quick()
@@ -531,13 +530,6 @@ class _CommandLine(object):
 
   def get_hdf5_master_files(self):
     return self._hdf5_master_files
-
-  def _read_trust_timestamps(self):
-
-    if '-trust_timestamps' in self._argv:
-      Flags.set_trust_timestamps(True)
-      Debug.write('Trust timestamps on')
-      self._understood.append(self._argv.index('-trust_timestamps'))
 
   def _read_batch_scale(self):
 
