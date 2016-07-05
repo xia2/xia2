@@ -252,10 +252,10 @@ def print_sweeps(out = sys.stdout):
 
   wavelengths = []
 
-  params = PhilIndex.get_python_object()
-  wavelength_tolerance = params.xia2.settings.wavelength_tolerance
-  min_images = params.xia2.settings.input.min_images
-  min_oscillation_range = params.xia2.settings.input.min_oscillation_range
+  settings = PhilIndex.get_python_object().xia2.settings
+  wavelength_tolerance = settings.wavelength_tolerance
+  min_images = settings.input.min_images
+  min_oscillation_range = settings.input.min_oscillation_range
 
   for sweep in sweeplists:
     sweeps = known_sweeps[sweep]
@@ -294,13 +294,8 @@ def print_sweeps(out = sys.stdout):
 
   wavelength_map = { }
 
-  project = CommandLine.get_project_name()
-  if not project:
-    project = 'AUTOMATIC'
-
-  crystal = CommandLine.get_crystal_name()
-  if not crystal:
-    crystal = 'DEFAULT'
+  project = settings.project
+  crystal = settings.crystal
 
   out.write('BEGIN PROJECT %s\n' % project)
   out.write('BEGIN CRYSTAL %s\n' % crystal)
@@ -309,8 +304,6 @@ def print_sweeps(out = sys.stdout):
 
   # check to see if a user spacegroup has been assigned - if it has,
   # copy it in...
-
-  settings = PhilIndex.params.xia2.settings
 
   if settings.space_group is not None:
     out.write(
@@ -509,15 +502,12 @@ def rummage(directories):
   get_sweeps(templates)
 
 def write_xinfo(filename, directories, template=None, hdf5_master_files=None):
-
   global target_template
 
   target_template = template
 
-  crystal = CommandLine.get_crystal_name()
-
-  if not crystal:
-    crystal = 'DEFAULT'
+  settings = PhilIndex.get_python_object().xia2.settings
+  crystal = settings.crystal
 
   if not os.path.isabs(filename):
     filename = os.path.abspath(filename)
@@ -580,28 +570,21 @@ def run():
   directories = [os.path.abspath(d) for d in directories]
 
   # perhaps move to a new directory...
+  settings = PhilIndex.get_python_object().xia2.settings
+  crystal = settings.crystal
 
-  crystal = CommandLine.get_crystal_name()
+  with open(os.path.join(os.getcwd(), 'automatic.xinfo'), 'w') as fout:
+    start = os.path.abspath(os.getcwd())
+    directory = os.path.join(os.getcwd(), crystal, 'setup')
+    try:
+      os.makedirs(directory)
+    except OSError, e:
+      if not 'File exists' in str(e):
+        raise e
+    os.chdir(directory)
 
-  fout = open(os.path.join(os.getcwd(), 'automatic.xinfo'), 'w')
-
-  if not crystal:
-    crystal = 'DEFAULT'
-
-  start = os.path.abspath(os.getcwd())
-
-  directory = os.path.join(os.getcwd(), crystal, 'setup')
-
-  try:
-    os.makedirs(directory)
-  except OSError, e:
-    if not 'File exists' in str(e):
-      raise e
-
-  os.chdir(directory)
-
-  rummage(directories)
-  print_sweeps(fout)
+    rummage(directories)
+    print_sweeps(fout)
 
   save_datablock(os.path.join(start, 'xia2-datablock.json'))
 

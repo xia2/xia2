@@ -129,7 +129,7 @@ class _CommandLine(object):
 
     PhilIndex.merge_phil(working_phil)
     try:
-      PhilIndex.get_python_object()
+      params = PhilIndex.get_python_object()
     except RuntimeError, e:
       raise Sorry(e)
 
@@ -157,25 +157,14 @@ class _CommandLine(object):
     self._read_free_fraction()
     self._read_free_total()
 
-    # FIXME xia2-42 move these to project= crystal= Phil parameters
-
-    try:
-      self._read_project_name()
-    except exceptions.Exception, e:
-      raise RuntimeError, '%s (%s)' % \
-            (self._help_project_name(), str(e))
+    Debug.write('Project: %s' % params.xia2.settings.project)
+    Debug.write('Crystal: %s' % params.xia2.settings.crystal)
 
     try:
       self._read_phil()
     except exceptions.Exception, e:
       raise RuntimeError, '%s (%s)' % \
             (self._help_phil(), str(e))
-
-    try:
-      self._read_crystal_name()
-    except exceptions.Exception, e:
-      raise RuntimeError, '%s (%s)' % \
-            (self._help_crystal_name(), str(e))
 
     try:
       self._read_ispyb_xml_out()
@@ -450,50 +439,6 @@ class _CommandLine(object):
 
   def _help_phil(self):
     return '-phil parameters.phil'
-
-  def _read_project_name(self):
-    try:
-      index = self._argv.index('-project')
-
-    except ValueError, e:
-      self._default_project_name = None
-      return
-
-    self._default_project_name = self._argv[index + 1]
-
-    self._understood.append(index)
-    self._understood.append(index + 1)
-    Debug.write('Project: %s' % self._default_project_name)
-
-    return
-
-  def _help_project_name(self):
-    return '-project foo'
-
-  def get_project_name(self):
-    return self._default_project_name
-
-  def _read_crystal_name(self):
-    try:
-      index = self._argv.index('-crystal')
-
-    except ValueError, e:
-      self._default_crystal_name = None
-      return
-
-    self._default_crystal_name = self._argv[index + 1]
-
-    self._understood.append(index)
-    self._understood.append(index + 1)
-    Debug.write('Crystal: %s' % self._default_crystal_name)
-
-    return
-
-  def _help_crystal_name(self):
-    return '-crystal foo'
-
-  def get_crystal_name(self):
-    return self._default_crystal_name
 
   def set_xinfo(self, xinfo):
     with open(xinfo, 'rb') as f:

@@ -274,7 +274,7 @@ ccp4
 xia2.settings
   .short_caption = "xia2 settings"
 {
-  pipeline = 2d 2di 3d 3dd 3di 3dii dials
+  pipeline = 2d 2di 3d 3dd 3di 3dii *dials
     .short_caption = "main processing pipeline"
     .help = "Select the xia2 main processing pipeline"
             "   2d: MOSFLM, LABELIT (if installed), AIMLESS"
@@ -289,6 +289,12 @@ xia2.settings
     .type = bool
     .short_caption = 'Fail over gracefully'
     .help = 'If processing a sweep fails, keep going'
+  project = 'AUTOMATIC'
+    .type = str
+    .help = "A name for the data processing project"
+  crystal = 'DEFAULT'
+    .type = str
+    .help = "A name for the crystal"
   input
     .short_caption = "xia2 input settings"
     .expert_level = 1
