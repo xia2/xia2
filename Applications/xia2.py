@@ -191,11 +191,6 @@ def xia2():
   # delete all of the temporary mtz files...
   cleanup()
 
-  # maybe write out the headers
-  if Flags.get_hdr_out():
-    from ..Wrappers.XIA.Diffdump import HeaderCache
-    HeaderCache.write(Flags.get_hdr_out())
-
   # and the summary file
   summary_records = CommandLine.get_xinfo().summarise()
 
