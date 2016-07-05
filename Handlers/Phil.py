@@ -274,6 +274,17 @@ ccp4
 xia2.settings
   .short_caption = "xia2 settings"
 {
+  pipeline = 2d 2di 3d 3dd 3di 3dii dials
+    .short_caption = "main processing pipeline"
+    .help = "Select the xia2 main processing pipeline"
+            "   2d: MOSFLM, LABELIT (if installed), AIMLESS"
+            "  2di: as 2d, but use 3 wedges for indexing"
+            "   3d: XDS, XSCALE, LABELIT"
+            "  3di: as 3d, but use 3 wedges for indexing"
+            " 3dii: XDS, XSCALE, using all images for autoindexing"
+            "  3dd: as 3d, but use DIALS for indexing"
+            "dials: DIALS, AIMLESS"
+    .type = choice
   input
     .short_caption = "xia2 input settings"
     .expert_level = 1

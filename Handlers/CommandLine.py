@@ -150,15 +150,8 @@ class _CommandLine(object):
     self._read_no_relax()
     self._read_noremove()
 
-    # pipeline options FIXME xia2-42 move these to pipeline= option
-
-    self._read_2d()
-    self._read_2di()
-    self._read_dials()
-    self._read_3d()
-    self._read_3di()
-    self._read_3dii()
-    self._read_3dd()
+    # pipeline options
+    self._read_pipeline()
 
     self._read_zero_dose()
     self._read_free_fraction()
@@ -823,116 +816,39 @@ class _CommandLine(object):
       self._understood.append(self._argv.index('-noremove'))
       Flags.set_remove(False)
 
-  def _read_2d(self):
-
-    if '-2d' in self._argv:
-      settings = PhilIndex.get_python_object().xia2.settings
-      if settings.indexer is None:
-        PhilIndex.update("xia2.settings.indexer=mosflm")
-      if settings.refiner is None:
-        PhilIndex.update("xia2.settings.refiner=mosflm")
-      if settings.integrater is None:
-        PhilIndex.update("xia2.settings.integrater=mosflmr")
-      if settings.scaler is None:
-        PhilIndex.update("xia2.settings.scaler=ccp4a")
-      PhilIndex.get_python_object()
-      self._understood.append(self._argv.index('-2d'))
+  def _read_pipeline(settings):
+    settings = PhilIndex.get_python_object().xia2.settings
+    indexer, refiner, integrater, scaler = None, None, None, None
+    if settings.pipeline == '2d':
       Debug.write('2DA pipeline selected')
-
-  def _read_2di(self):
-
-    if '-2di' in self._argv:
-      settings = PhilIndex.get_python_object().xia2.settings
-      if settings.indexer is None:
-        PhilIndex.update("xia2.settings.indexer=mosflm")
-      if settings.refiner is None:
-        PhilIndex.update("xia2.settings.refiner=mosflm")
-      if settings.integrater is None:
-        PhilIndex.update("xia2.settings.integrater=mosflmr")
-      if settings.scaler is None:
-        PhilIndex.update("xia2.settings.scaler=ccp4a")
-      PhilIndex.get_python_object()
-      self._understood.append(self._argv.index('-2di'))
+      indexer, refiner, integrater, scaler = 'mosflm', 'mosflm', 'mosflmr', 'ccp4a'
+    elif settings.pipeline == '2di':
       Debug.write('2DA pipeline; mosflm indexing selected')
-
-  def _read_dials(self):
-    if '-dials' in self._argv:
-      settings = PhilIndex.get_python_object().xia2.settings
-      if settings.indexer is None:
-        PhilIndex.update("xia2.settings.indexer=dials")
-      if settings.refiner is None:
-        PhilIndex.update("xia2.settings.refiner=dials")
-      if settings.integrater is None:
-        PhilIndex.update("xia2.settings.integrater=dials")
-      if settings.scaler is None:
-        PhilIndex.update("xia2.settings.scaler=ccp4a")
-      PhilIndex.get_python_object()
-      self._understood.append(self._argv.index('-dials'))
-      Debug.write('DIALS pipeline selected')
-
-  def _read_3d(self):
-
-    if '-3d' in self._argv:
-      settings = PhilIndex.get_python_object().xia2.settings
-      if settings.indexer is None:
-        PhilIndex.update("xia2.settings.indexer=xds")
-      if settings.refiner is None:
-        PhilIndex.update("xia2.settings.refiner=xds")
-      if settings.integrater is None:
-        PhilIndex.update("xia2.settings.integrater=xdsr")
-      if settings.scaler is None:
-        PhilIndex.update("xia2.settings.scaler=xdsa")
-      PhilIndex.get_python_object()
-      self._understood.append(self._argv.index('-3d'))
+      indexer, refiner, integrater, scaler = 'mosflm', 'mosflm', 'mosflmr', 'ccp4a'
+    elif settings.pipeline == '3d':
       Debug.write('3DR pipeline selected')
-
-  def _read_3di(self):
-
-    if '-3di' in self._argv:
-      settings = PhilIndex.get_python_object().xia2.settings
-      if settings.indexer is None:
-        PhilIndex.update("xia2.settings.indexer=xds")
-      if settings.refiner is None:
-        PhilIndex.update("xia2.settings.refiner=xds")
-      if settings.integrater is None:
-        PhilIndex.update("xia2.settings.integrater=xdsr")
-      if settings.scaler is None:
-        PhilIndex.update("xia2.settings.scaler=xdsa")
-      PhilIndex.get_python_object()
-      self._understood.append(self._argv.index('-3di'))
+      indexer, refiner, integrater, scaler = 'xds', 'xds', 'xdsr', 'xdsa'
+    elif settings.pipeline == '3di':
       Debug.write('3DR pipeline; XDS indexing selected')
-
-  def _read_3dii(self):
-
-    if '-3dii' in self._argv:
-      settings = PhilIndex.get_python_object().xia2.settings
-      if settings.indexer is None:
-        PhilIndex.update("xia2.settings.indexer=xdsii")
-      if settings.refiner is None:
-        PhilIndex.update("xia2.settings.refiner=xds")
-      if settings.integrater is None:
-        PhilIndex.update("xia2.settings.integrater=xdsr")
-      if settings.scaler is None:
-        PhilIndex.update("xia2.settings.scaler=xdsa")
-      PhilIndex.get_python_object()
-      self._understood.append(self._argv.index('-3dii'))
+      indexer, refiner, integrater, scaler = 'xds', 'xds', 'xdsr', 'xdsa'
+    elif settings.pipeline == '3dii':
       Debug.write('3D II R pipeline (XDS IDXREF all images) selected')
-
-  def _read_3dd(self):
-
-    if '-3dd' in self._argv:
-      settings = PhilIndex.get_python_object().xia2.settings
-      if settings.indexer is None:
-        PhilIndex.update("xia2.settings.indexer=dials")
-      if settings.refiner is None:
-        PhilIndex.update("xia2.settings.refiner=xds")
-      if settings.integrater is None:
-        PhilIndex.update("xia2.settings.integrater=xdsr")
-      if settings.scaler is None:
-        PhilIndex.update("xia2.settings.scaler=xdsa")
-      PhilIndex.get_python_object()
-      self._understood.append(self._argv.index('-3dd'))
+      indexer, refiner, integrater, scaler = 'xdsii', 'xds', 'xdsr', 'xdsa'
+    elif settings.pipeline == '3dd':
       Debug.write('3DD pipeline (DIALS indexing) selected')
+      indexer, refiner, integrater, scaler = 'dials', 'xds', 'xdsr', 'xdsa'
+    elif settings.pipeline == 'dials':
+      Debug.write('DIALS pipeline selected')
+      indexer, refiner, integrater, scaler = 'dials', 'dials', 'dials', 'ccp4a'
+
+    if indexer is not None and settings.indexer is None:
+      PhilIndex.update("xia2.settings.indexer=%s" % indexer)
+    if refiner is not None and settings.refiner is None:
+      PhilIndex.update("xia2.settings.refiner=%s" % refiner)
+    if integrater is not None and settings.integrater is None:
+      PhilIndex.update("xia2.settings.integrater=%s" % integrater)
+    if scaler is not None and settings.scaler is None:
+      PhilIndex.update("xia2.settings.scaler=%s" % scaler)
 
   def _read_debug(self):
 
