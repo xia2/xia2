@@ -21,9 +21,6 @@ from xia2.Toolkit.BackstopMask import BackstopMask
 class _Flags(object):
   '''A singleton to manage boolean flags.'''
 
-  # by default now switch on smart scaling and chef - after the smart
-  # scaling has been reset in the XDS Scaler to be "everything"
-
   def __init__(self):
     self._quick = False
     self._interactive = False

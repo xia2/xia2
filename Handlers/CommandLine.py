@@ -151,7 +151,7 @@ class _CommandLine(object):
     self._read_no_relax()
     self._read_noremove()
 
-    # pipeline options
+    # pipeline options FIXME xia2-42 move these to pipeline= option
 
     self._read_2d()
     self._read_2di()
@@ -164,6 +164,8 @@ class _CommandLine(object):
     self._read_zero_dose()
     self._read_free_fraction()
     self._read_free_total()
+
+    # FIXME xia2-42 move these to project= crystal= Phil parameters
 
     try:
       self._read_project_name()
