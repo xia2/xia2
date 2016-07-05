@@ -511,6 +511,10 @@ xia2.settings
       .type = bool
       .help = "Use profile fitting not summation integration, default yes"
       .short_caption = "Use profile fitting"
+    exclude_ice_regions = False
+      .type = bool
+      .help = "Exclude measurements from regions which are typically where "
+              "ice rings land"
   }
   developmental
     .expert_level = 2

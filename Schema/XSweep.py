@@ -88,6 +88,7 @@ from xia2.Handlers.Streams import Chatter, Debug
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Environment import Environment
+from xia2.Handlers.Phil import PhilIndex
 
 # See FIXME Integrater interface definition, 27/SEP/06
 
@@ -231,7 +232,6 @@ class XSweep(object):
 
       error = False
 
-      from xia2.Handlers.Phil import PhilIndex
       params = PhilIndex.get_python_object()
       if params.general.check_image_files_readable:
         for j in range(start, end + 1):
@@ -787,8 +787,9 @@ class XSweep(object):
         # N.B. should really add a mechanism to specify the ice
         # rings we want removing, #1317.
 
-        if Flags.get_ice():
-          self._integrater.set_integrater_ice(Flags.get_ice())
+        if PhilIndex.parms.xia2.integration.exclude_ice_regions:
+          Debug.write('Ice ring region exclusion ON')
+          self._integrater.set_integrater_ice(True)
 
         # or if we were told about ice or specific excluded resolution
         # ranges via the xinfo file

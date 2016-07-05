@@ -148,7 +148,6 @@ class _CommandLine(object):
     # things which are single token flags...
 
     self._read_interactive()
-    self._read_ice()
     self._read_small_molecule()
     self._read_quick()
     self._read_mask()
@@ -602,13 +601,6 @@ class _CommandLine(object):
       Flags.set_interactive(True)
       self._understood.append(self._argv.index('-interactive'))
       Debug.write('Interactive indexing ON')
-
-  def _read_ice(self):
-
-    if '-ice' in self._argv:
-      Flags.set_ice(True)
-      self._understood.append(self._argv.index('-ice'))
-      Debug.write('Ice ring exclusion ON')
 
   def _read_mask(self):
     try:
