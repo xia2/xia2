@@ -1040,10 +1040,6 @@ class XDSScalerA(Scaler):
     if not self.get_scaler_done():
       Chatter.write('Excluding outlier reflections Z > %.2f' %
                     Flags.get_z_min())
-
-      if Flags.get_egg():
-        for record in ttt():
-          Chatter.write(record)
       return
 
     debug_memory_usage()
