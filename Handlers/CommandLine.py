@@ -167,12 +167,6 @@ class _CommandLine(object):
             (self._help_phil(), str(e))
 
     try:
-      self._read_ispyb_xml_out()
-    except exceptions.Exception, e:
-      raise RuntimeError, '%s (%s)' % \
-            (self._help_ispyb_xml_out(), str(e))
-
-    try:
       self._read_pickle()
     except exceptions.Exception, e:
       raise RuntimeError, '%s (%s)' % \
@@ -591,28 +585,6 @@ class _CommandLine(object):
       Flags.set_microcrystal()
       Debug.write('Microcrystal mode on')
       self._understood.append(self._argv.index('-microcrystal'))
-
-    return
-
-  def _read_ispyb_xml_out(self):
-    try:
-      index = self._argv.index('-ispyb_xml_out')
-    except ValueError, e:
-      self._ispyb_xml_out = None
-      return
-
-    if index < 0:
-      raise RuntimeError, 'negative index'
-
-    self._understood.append(index)
-    self._understood.append(index + 1)
-    Flags.set_ispyb_xml_out(self._argv[index + 1])
-    Debug.write('ISPyB XML output set to %s' % self._argv[index + 1])
-
-    return
-
-  def _help_ispyb_xml_out(self):
-    return '-ispyb_xml_out project.xml'
 
   def _read_pickle(self):
     try:

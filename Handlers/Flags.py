@@ -107,9 +107,6 @@ class _Flags(object):
     # are we working with small molecule data?
     self._small_molecule = False
 
-    # ISPyB things
-    self._ispyb_xml_out = None
-
     # pickle output
     self._pickle = None
 
@@ -454,13 +451,6 @@ class _Flags(object):
 
   def get_mask(self):
     return self._mask
-
-  def set_ispyb_xml_out(self, ispyb_xml_out):
-    self._ispyb_xml_out = ispyb_xml_out
-    return
-
-  def get_ispyb_xml_out(self):
-    return self._ispyb_xml_out
 
   def set_pickle(self, pickle):
     self._pickle = pickle
