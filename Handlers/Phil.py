@@ -36,6 +36,9 @@ xds {
     .type = floats(size = 2)
   profile_grid_size = None
     .type = ints(size = 2)
+  keep_outliers = False
+    .type = bool
+    .help = "Do not remove outliers in integration and scaling"
   correct {
     refine = *DISTANCE *BEAM *AXIS *ORIENTATION *CELL *POSITION
       .type = choice(multi = True)

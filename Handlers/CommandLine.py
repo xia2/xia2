@@ -156,7 +156,6 @@ class _CommandLine(object):
     self._read_mask()
     self._read_no_lattice_test()
     self._read_no_relax()
-    self._read_noremove()
 
     # pipeline options
     self._read_pipeline()
@@ -650,12 +649,6 @@ class _CommandLine(object):
       Flags.set_relax(False)
       self._understood.append(self._argv.index('-no_relax'))
       Debug.write('XDS relax about indexing selected')
-
-  def _read_noremove(self):
-
-    if '-noremove' in self._argv:
-      self._understood.append(self._argv.index('-noremove'))
-      Flags.set_remove(False)
 
   def _read_pipeline(settings):
     settings = PhilIndex.get_python_object().xia2.settings

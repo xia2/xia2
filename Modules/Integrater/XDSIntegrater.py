@@ -715,11 +715,10 @@ class XDSIntegrater(Integrater):
         raise BadLatticeError, \
               'high relative deviations in postrefinement'
 
-    if not Flags.get_quick() and Flags.get_remove():
+    if not Flags.get_quick() and not PhilIndex.params.xds.keep_outliers:
       # check for alien reflections and perhaps recycle - removing them
-      if len(correct.get_remove()) > 0:
-
-        correct_remove = correct.get_remove()
+      correct_remove = correct.get_remove()
+      if correct_remove:
         current_remove = []
         final_remove = []
 

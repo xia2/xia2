@@ -63,7 +63,6 @@ class _Flags(object):
 
     # these are development parameters for the XDS implementation
     self._z_min = 0.0
-    self._remove = True
     self._relax = True
 
     # and these for the Mosflm / Aimless and perhaps XDS implementation
@@ -462,12 +461,5 @@ class _Flags(object):
 
   def get_microcrystal(self):
     return self._microcrystal
-
-  def set_remove(self, remove):
-    self._remove = remove
-    return
-
-  def get_remove(self):
-    return self._remove
 
 Flags = _Flags()
