@@ -96,8 +96,6 @@ class MosflmIntegrater(Integrater):
     if self.get_imageset().get_detector()[0].get_type() == 'SENSOR_PAD':
       self._mosflm_gain = 1.0
 
-    #self._intgr_refiner.set_prepare_done(False)
-
     self.digest_template()
 
     experiment = self._intgr_refiner.get_refined_experiment_list(
@@ -144,16 +142,8 @@ class MosflmIntegrater(Integrater):
 
     try:
 
-      #self.reset()
-      #auto_logfiler(self)
-
       if self.get_integrater_sweep_name():
         pname, xname, dname = self.get_integrater_project_info()
-        #FileHandler.record_log_file(
-            #'%s %s %s %s mosflm integrate' % \
-            #(self.get_integrater_sweep_name(),
-             #pname, xname, dname),
-            #self.get_log_file())
 
       if Flags.get_parallel() > 1:
         Debug.write('Parallel integration: %d jobs' %
@@ -228,12 +218,6 @@ class MosflmIntegrater(Integrater):
     '''Perform the actual integration, based on the results of the
     cell refinement or indexing (they have the equivalent form.)'''
 
-    #if not self.get_integrater_indexer():
-      #Debug.write('Replacing indexer of %s with self at %d' % \
-                  #(str(self.get_integrater_indexer()), __line__))
-      #self.set_integrater_indexer(self)
-
-    #indxr = self.get_integrater_indexer()
     refinr = self.get_integrater_refiner()
 
     if not refinr.get_refiner_payload('mosflm_orientation_matrix'):
@@ -241,18 +225,13 @@ class MosflmIntegrater(Integrater):
 
     lattice = refinr.get_refiner_lattice()
     spacegroup_number = lattice_to_spacegroup(lattice)
-    #mosaic = indxr.get_indexer_mosaic()
     mosaic = refinr.get_refiner_payload('mosaic')
-    #cell = self._intgr_cell
     beam = refinr.get_refiner_payload('beam')
     distance = refinr.get_refiner_payload('distance')
     matrix = refinr.get_refiner_payload('mosflm_orientation_matrix')
 
     integration_params = refinr.get_refiner_payload(
       'mosflm_integration_parameters')
-
-    #beam = integration_params['beam']
-    #distance = integration_params['distance']
 
     if integration_params:
       if 'separation' in integration_params:
@@ -345,12 +324,6 @@ class MosflmIntegrater(Integrater):
     integrater.set_limits(lim_x, lim_y)
 
     integrater.set_fix_mosaic(self._mosflm_postref_fix_mosaic)
-
-    ## XXX FIXME this is a horrible hack - I at least need to
-    ## sand box this ...
-    #if self.get_header_item('detector') == 'raxis':
-      #self.input('adcoffset 0')
-
     offset = self.get_frame_offset()
 
     integrater.set_image_range(
@@ -430,8 +403,8 @@ class MosflmIntegrater(Integrater):
       m = indxr.get_indexer_mosaic()
       self.set_integrater_mosaic_min_mean_max(m, m, m)
 
-    Chatter.write('Processed batches %d to %d' % \
-                  self._intgr_batches_out)
+    #Chatter.write('Processed batches %d to %d' % \
+    #              self._intgr_batches_out)
 
     # write the report for each image as .*-#$ to Chatter -
     # detailed report will be written automagically to science...
@@ -487,29 +460,17 @@ class MosflmIntegrater(Integrater):
     missets. This will all be kind of explicit and hence probably
     messy!'''
 
-    #if not self.get_integrater_indexer():
-      ## should I raise a RuntimeError here?!
-      #Debug.write('Replacing indexer of %s with self at %d' % \
-                  #(str(self.get_integrater_indexer()), __line__))
-      #self.set_integrater_indexer(self)
-
-    #indxr = self.get_integrater_indexer()
     refinr = self.get_integrater_refiner()
 
     lattice = refinr.get_refiner_lattice()
     spacegroup_number = lattice_to_spacegroup(lattice)
-    #mosaic = indxr.get_indexer_mosaic()
     mosaic = refinr.get_refiner_payload('mosaic')
-    #cell = self._intgr_cell
     beam = refinr.get_refiner_payload('beam')
     distance = refinr.get_refiner_payload('distance')
     matrix = refinr.get_refiner_payload('mosflm_orientation_matrix')
 
     integration_params = refinr.get_refiner_payload(
       'mosflm_integration_parameters')
-
-    #beam = integration_params['beam']
-    #distance = integration_params['distance']
 
     if integration_params:
       if 'separation' in integration_params:
@@ -792,8 +753,8 @@ class MosflmIntegrater(Integrater):
       m = indxr.get_indexer_mosaic()
       self.set_integrater_mosaic_min_mean_max(m, m, m)
 
-    Chatter.write('Processed batches %d to %d' % \
-                  self._intgr_batches_out)
+    #Chatter.write('Processed batches %d to %d' % \
+    #              self._intgr_batches_out)
 
     Chatter.write(self.show_per_image_statistics())
 
