@@ -498,13 +498,6 @@ class _Flags(object):
   def get_microcrystal(self):
     return self._microcrystal
 
-  def set_blend(self, blend = True):
-    self._blend = blend
-    return
-
-  def get_blend(self):
-    return self._blend
-
   def set_remove(self, remove):
     self._remove = remove
     return

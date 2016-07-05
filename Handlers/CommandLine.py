@@ -232,12 +232,6 @@ class _CommandLine(object):
             (self._help_microcrystal(), str(e))
 
     try:
-      self._read_blend()
-    except exceptions.Exception, e:
-      raise RuntimeError, '%s (%s)' % \
-            (self._help_blend(), str(e))
-
-    try:
       self._read_scale_model()
     except exceptions.Exception, e:
       raise RuntimeError, '%s (%s)' % \
@@ -652,15 +646,6 @@ class _CommandLine(object):
       Flags.set_microcrystal()
       Debug.write('Microcrystal mode on')
       self._understood.append(self._argv.index('-microcrystal'))
-
-    return
-
-  def _read_blend(self):
-
-    if '-blend' in self._argv:
-      Flags.set_blend()
-      Debug.write('Blend mode on')
-      self._understood.append(self._argv.index('-blend'))
 
     return
 

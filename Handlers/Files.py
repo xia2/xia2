@@ -147,18 +147,13 @@ class _FileHandler(object):
       out.write('Copied data file %s to %s\n' % \
                 (f, filename))
 
-    if Flags.get_blend():
-
-      data_directory = Environment.generate_directory(
-          ('DataFiles', 'Integrate'))
-
-      for f in self._more_data_file_keys:
-        exten = self._more_data_files[f].split('.')[-1]
-        filename = os.path.join(data_directory,
-                                '%s.%s' % (f.replace(' ', '_'), exten))
-        shutil.copyfile(self._more_data_files[f], filename)
-        out.write('Copied extra data file %s to %s\n' % \
-                  (self._more_data_files[f], filename))
+    for f in self._more_data_file_keys:
+      exten = self._more_data_files[f].split('.')[-1]
+      filename = os.path.join(data_directory,
+                              '%s.%s' % (f.replace(' ', '_'), exten))
+      shutil.copyfile(self._more_data_files[f], filename)
+      out.write('Copied extra data file %s to %s\n' % \
+                (self._more_data_files[f], filename))
 
     out.close()
     return
