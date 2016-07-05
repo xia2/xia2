@@ -146,7 +146,6 @@ class _CommandLine(object):
     self._read_quick()
     self._read_chef()
     self._read_mask()
-    self._read_reversephi()
     self._read_no_lattice_test()
     self._read_no_relax()
     self._read_noremove()
@@ -934,16 +933,6 @@ class _CommandLine(object):
       Flags.set_chef(False)
       self._understood.append(self._argv.index('-nochef'))
       Debug.write('Chef mode deselected')
-
-  def _read_reversephi(self):
-
-    if '-reversephi' in self._argv:
-      self._understood.append(self._argv.index('-reversephi'))
-      # XXX Warning added 2015-11-18
-      Chatter.write(
-        "Warning: -reversephi option deprecated: please use reverse_phi=True instead")
-      PhilIndex.update("xia2.settings.input.reverse_phi=True")
-      PhilIndex.get_python_object()
 
   def _read_no_lattice_test(self):
 
