@@ -287,42 +287,22 @@ def MosflmIntegrate(DriverType = None, indxr_print = True):
 
       # XXX FIXME
       from xia2.Handlers.Flags import Flags
-      if Flags.get_microcrystal():
-        a = self._image_range[0]
-        if self._image_range[1] - self._image_range[0] > 20:
-          b = a + 20
-        else:
-          b = self._image_range[1]
+      if self._pre_refinement:
+        a, b = self._image_range
+        if b - a > 3:
+          b = a + 3
 
-        self.input('postref segment 1 fix all')
+        self.input('postref multi segments 1')
         self.input('process %d %d' % (a, b))
         self.input('go')
+
         self.input('postref nosegment')
 
-        self.input('separation close')
-        self.input('process %d %d block %d' % \
-                   (self._image_range[0],
-                    self._image_range[1],
-                    1 + self._image_range[1] - self._image_range[0]))
+        if self._fix_mosaic:
+          self.input('postref fix mosaic')
 
-      else:
-        if self._pre_refinement:
-          a, b = self._image_range
-
-          if b - a > 3:
-            b = a + 3
-
-          self.input('postref multi segments 1')
-          self.input('process %d %d' % (a, b))
-          self.input('go')
-
-          self.input('postref nosegment')
-
-          if self._fix_mosaic:
-            self.input('postref fix mosaic')
-
-        self.input('separation close')
-        self.input(
+      self.input('separation close')
+      self.input(
           'process %d %d' %(self._image_range[0], self._image_range[1]))
 
       self.input('go')

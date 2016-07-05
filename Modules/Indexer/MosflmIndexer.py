@@ -64,10 +64,6 @@ class MosflmIndexer(IndexerSingleSweep):
     if self._indxr_images == []:
       self._index_select_images()
 
-    if self._mosflm_autoindex_thresh is None and \
-           Flags.get_microcrystal():
-      self._mosflm_autoindex_thresh = 5
-
     return
 
   def _index_select_images(self):
@@ -75,9 +71,6 @@ class MosflmIndexer(IndexerSingleSweep):
 
     if Flags.get_small_molecule():
       return self._index_select_images_small_molecule()
-
-    if Flags.get_microcrystal():
-      return self._index_select_images_microcrystal()
 
     phi_width = self.get_phi_width()
     images = self.get_matching_images()
@@ -118,25 +111,6 @@ class MosflmIndexer(IndexerSingleSweep):
 
       Debug.write('Selected image %s' % image_number)
       self.add_indexer_image_wedge(image_number)
-
-    return
-
-  def _index_select_images_microcrystal(self):
-    '''Select images for more difficult cases e.g. microcrystal
-    work. Will apply (up to) 20 images to the task.'''
-
-    phi_width = self.get_phi_width()
-    images = self.get_matching_images()
-
-    spacing = max(1, int(len(images) / 20))
-
-    selected = []
-
-    for j in range(0, len(images), spacing):
-      selected.append(images[j])
-
-    for image in selected[:20]:
-      self.add_indexer_image_wedge(image)
 
     return
 
@@ -340,11 +314,6 @@ class MosflmIndexer(IndexerSingleSweep):
       # only consider this if we have thus far no idea on the
       # mosaic spread...
       mosaic_spreads.append(phi_width)
-
-    #if Flags.get_microcrystal():
-      #self._indxr_mosaic = 0.5
-    #else:
-      #raise IndexingError, 'mosaicity estimation failed'
 
     intgr_params['raster'] = indexer.get_raster()
 

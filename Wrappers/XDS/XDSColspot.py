@@ -145,11 +145,6 @@ def XDSColspot(DriverType=None, params=None):
       xds_inp.write('BACKGROUND_RANGE=%d %d\n' % \
                     self._background_range)
 
-      # microcrystals have very mall spots, perhaps?
-
-      if Flags.get_microcrystal():
-        xds_inp.write('MINIMUM_NUMBER_OF_PIXELS_IN_A_SPOT=1\n')
-
       if Flags.get_small_molecule():
         xds_inp.write('STRONG_PIXEL=5\n')
         # FIXME should probably be moved to a phil parameter

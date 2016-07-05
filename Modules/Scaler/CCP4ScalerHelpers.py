@@ -181,7 +181,7 @@ def _prepare_pointless_hklin(working_directory,
 
   # also remove blank images?
 
-  if not Flags.get_microcrystal() and not Flags.get_small_molecule():
+  if not Flags.get_small_molecule():
 
     Debug.write('Excluding blank images')
 

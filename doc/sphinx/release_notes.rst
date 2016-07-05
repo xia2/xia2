@@ -240,7 +240,7 @@ Changes since 0.3.1.6
 
   * Changes suitable for working on microcrystals - reachable through
     a -microcrystal command line flag, and -failover is probably helpful
-    too.
+    too. Later retired...
   * If lattice or spacegroup specified, do not run tests.
   * 2dr and 3dr now the default pipelines - use 2dold or 3dold if you
     need to get to the old pipelines.

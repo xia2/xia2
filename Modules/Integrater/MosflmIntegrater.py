@@ -58,7 +58,7 @@ class MosflmIntegrater(Integrater):
     self._mosflm_cell_ref_double_mosaic = False
 
     # belt + braces for very troublesome cases - this will only
-    # be used in failover / microcrystal mode
+    # be used in failover mode
     self._mosflm_cell_ref_add_autoindex = False
 
     # and the calculation of the missetting angles

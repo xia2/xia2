@@ -291,10 +291,9 @@ def XScaleR(DriverType = None,
             for file_name in groups[name]:
               Debug.write(file_name)
 
-          if not Flags.get_microcrystal():
-            raise RuntimeError, 'reindexing error: %s' % \
-                  os.path.join(self.get_working_directory(),
-                               'XSCALE.LP')
+          raise RuntimeError, 'reindexing error: %s' % \
+                os.path.join(self.get_working_directory(),
+                             'XSCALE.LP')
 
     def get_scale_factor(self):
       return self._scale_factor

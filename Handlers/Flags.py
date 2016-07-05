@@ -80,9 +80,6 @@ class _Flags(object):
     self._rmerge = 0.0
     self._cc_half = 0.0
 
-    self._microcrystal = False
-    self._blend = False
-
     # are we working with small molecule data?
     self._small_molecule = False
 
@@ -355,12 +352,5 @@ class _Flags(object):
 
   def get_rejection_threshold(self):
     return self._rejection_threshold
-
-  def set_microcrystal(self, microcrystal = True):
-    self._microcrystal = microcrystal
-    return
-
-  def get_microcrystal(self):
-    return self._microcrystal
 
 Flags = _Flags()

@@ -190,12 +190,6 @@ class _CommandLine(object):
       raise RuntimeError, '%s (%s)' % \
             (self._help_rejection_threshold(), str(e))
 
-    try:
-      self._read_microcrystal()
-    except exceptions.Exception, e:
-      raise RuntimeError, '%s (%s)' % \
-            (self._help_microcrystal(), str(e))
-
     # FIXME add some consistency checks in here e.g. that there are
     # images assigned, there is a lattice assigned if cell constants
     # are given and so on
@@ -492,13 +486,6 @@ class _CommandLine(object):
 
   def _help_rejection_threshold(self):
     return '-rejection_threshold N'
-
-  def _read_microcrystal(self):
-
-    if '-microcrystal' in self._argv:
-      Flags.set_microcrystal()
-      Debug.write('Microcrystal mode on')
-      self._understood.append(self._argv.index('-microcrystal'))
 
   def _read_pickle(self):
     try:

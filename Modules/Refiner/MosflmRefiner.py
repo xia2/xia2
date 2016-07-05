@@ -37,7 +37,7 @@ class MosflmRefiner(Refiner):
     self._mosflm_postref_fix_mosaic = False
 
     # belt + braces for very troublesome cases - this will only
-    # be used in failover / microcrystal mode
+    # be used in failover
     self._mosflm_cell_ref_add_autoindex = False
 
   # factory functions
@@ -64,13 +64,8 @@ class MosflmRefiner(Refiner):
 
       if not self._mosflm_cell_ref_images:
         mosaic = indxr.get_indexer_mosaic()
-
-        if Flags.get_microcrystal():
-          self._mosflm_cell_ref_images = self._refine_select_twenty(
-            idxr, mosaic)
-        else:
-          self._mosflm_cell_ref_images = self._refine_select_images(
-            idxr, mosaic)
+        self._mosflm_cell_ref_images = self._refine_select_images(
+          idxr, mosaic)
 
       # generate human readable output
 
@@ -354,14 +349,10 @@ class MosflmRefiner(Refiner):
     # if set, use the resolution for cell refinement - see
     # bug # 2078...
 
-    if self._mosflm_cell_ref_resolution and not \
-       Flags.get_microcrystal():
+    if self._mosflm_cell_ref_resolution:
       refiner.set_resolution(self._mosflm_cell_ref_resolution)
 
     refiner.set_fix_mosaic(self._mosflm_postref_fix_mosaic)
-
-    if Flags.get_microcrystal():
-      refiner.set_sdfac(2.0)
 
     # note well that the beam centre is coming from indexing so
     # should be already properly handled
@@ -515,14 +506,10 @@ class MosflmRefiner(Refiner):
     # if set, use the resolution for cell refinement - see
     # bug # 2078...
 
-    if self._mosflm_cell_ref_resolution and not \
-       Flags.get_microcrystal():
+    if self._mosflm_cell_ref_resolution:
       refiner.set_resolution(self._mosflm_cell_ref_resolution)
 
     refiner.set_fix_mosaic(self._mosflm_postref_fix_mosaic)
-
-    if Flags.get_microcrystal():
-      refiner.set_sdfac(2.0)
 
     # note well that the beam centre is coming from indexing so
     # should be already properly handled
