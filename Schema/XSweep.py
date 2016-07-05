@@ -787,7 +787,7 @@ class XSweep(object):
         # N.B. should really add a mechanism to specify the ice
         # rings we want removing, #1317.
 
-        if PhilIndex.parms.xia2.integration.exclude_ice_regions:
+        if PhilIndex.params.xia2.settings.integration.exclude_ice_regions:
           Debug.write('Ice ring region exclusion ON')
           self._integrater.set_integrater_ice(True)
 
