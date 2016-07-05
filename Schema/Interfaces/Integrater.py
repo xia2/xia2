@@ -148,8 +148,6 @@ class Integrater(FrameProcessor):
     for a in attributes:
       if a[0] in ('_intgr_indexer', '_intgr_refiner') and a[1] is not None:
         obj[a[0]] = a[1].to_dict()
-      #elif a[0] == '_indxr_experiment_list':
-        #obj[a[0]] = a[1].to_dict()
       elif a[0] == '_fp_imageset':
         from dxtbx.serialize.imageset import imageset_to_dict
         obj[a[0]] = imageset_to_dict(a[1])
@@ -292,7 +290,6 @@ class Integrater(FrameProcessor):
   # that everything is up-to-date...
 
   def get_integrater_prepare_done(self):
-    #if not self.get_integrater_indexer():
     if not self.get_integrater_refiner():
       return self._intgr_prepare_done
 
@@ -758,12 +755,12 @@ class Integrater(FrameProcessor):
       if len(stddev_pixel) > 4:
         stddev_pixel = stddev_pixel[1:-1]
 
-      low, high = min(stddev_pixel), \
-                  max(stddev_pixel)
+      low, high = min(stddev_pixel), max(stddev_pixel)
 
-      lines.append('Processed batches %d to %d' %(min(images), max(images)))
+      lines.append('Processed batches %d to %d' % (min(images), max(images)))
 
-      lines.append('Standard Deviation in pixel range: %f %f' %(low, high))
+      lines.append('Standard Deviation in pixel range: %.2f %.2f' %
+                   (low, high))
 
       overloads = None
       fraction_weak = None
