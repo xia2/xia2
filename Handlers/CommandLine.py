@@ -264,30 +264,6 @@ class _CommandLine(object):
             (self._help_rejection_threshold(), str(e))
 
     try:
-      self._read_isigma()
-    except exceptions.Exception, e:
-      raise RuntimeError, '%s (%s)' % \
-            (self._help_isigma(), str(e))
-
-    try:
-      self._read_misigma()
-    except exceptions.Exception, e:
-      raise RuntimeError, '%s (%s)' % \
-            (self._help_misigma(), str(e))
-
-    try:
-      self._read_rmerge()
-    except exceptions.Exception, e:
-      raise RuntimeError, '%s (%s)' % \
-            (self._help_rmerge(), str(e))
-
-    try:
-      self._read_cc_half()
-    except exceptions.Exception, e:
-      raise RuntimeError, '%s (%s)' % \
-            (self._help_cc_half(), str(e))
-
-    try:
       self._read_microcrystal()
     except exceptions.Exception, e:
       raise RuntimeError, '%s (%s)' % \
@@ -304,12 +280,6 @@ class _CommandLine(object):
     except exceptions.Exception, e:
       raise RuntimeError, '%s (%s)' % \
             (self._help_blend(), str(e))
-
-    try:
-      self._read_completeness()
-    except exceptions.Exception, e:
-      raise RuntimeError, '%s (%s)' % \
-            (self._help_completeness(), str(e))
 
     try:
       self._read_scale_model()
@@ -790,121 +760,6 @@ class _CommandLine(object):
 
   def _help_rejection_threshold(self):
     return '-rejection_threshold N'
-
-  def _read_isigma(self):
-    try:
-      index = self._argv.index('-isigma')
-    except ValueError, e:
-      return
-
-    if index < 0:
-      raise RuntimeError, 'negative index'
-
-    self._understood.append(index)
-    self._understood.append(index + 1)
-
-    PhilIndex.update(
-      "xia2.settings.resolution.isigma=%s" %self._argv[index + 1])
-    # XXX Warning added 2015-12-01
-    Chatter.write(
-      "Warning: -isigma option deprecated: please use isigma=%s instead" %self._argv[index + 1])
-
-    return
-
-  def _help_isigma(self):
-    return '-isigma N'
-
-  def _read_misigma(self):
-    try:
-      index = self._argv.index('-misigma')
-    except ValueError, e:
-      return
-
-    if index < 0:
-      raise RuntimeError, 'negative index'
-
-    self._understood.append(index)
-    self._understood.append(index + 1)
-
-    PhilIndex.update(
-      "xia2.settings.resolution.misigma=%s" %self._argv[index + 1])
-    # XXX Warning added 2015-12-01
-    Chatter.write(
-      "Warning: -misigma option deprecated: please use misigma=%s instead" %self._argv[index + 1])
-
-    return
-
-  def _help_misigma(self):
-    return '-misigma N'
-
-  def _read_completeness(self):
-    try:
-      index = self._argv.index('-completeness')
-    except ValueError, e:
-      return
-
-    if index < 0:
-      raise RuntimeError, 'negative index'
-
-    self._understood.append(index)
-    self._understood.append(index + 1)
-
-    PhilIndex.update(
-      "xia2.settings.resolution.completeness=%s" %self._argv[index + 1])
-    # XXX Warning added 2015-12-01
-    Chatter.write(
-      "Warning: -completeness option deprecated: please use completeness=%s instead" %self._argv[index + 1])
-
-    return
-
-  def _help_completeness(self):
-    return '-completeness N'
-
-  def _read_rmerge(self):
-    try:
-      index = self._argv.index('-rmerge')
-    except ValueError, e:
-      return
-
-    if index < 0:
-      raise RuntimeError, 'negative index'
-
-    self._understood.append(index)
-    self._understood.append(index + 1)
-
-    PhilIndex.update(
-      "xia2.settings.resolution.rmerge=%s" %self._argv[index + 1])
-    # XXX Warning added 2015-12-01
-    Chatter.write(
-      "Warning: -rmerge option deprecated: please use rmerge=%s instead" %self._argv[index + 1])
-
-    return
-
-  def _help_rmerge(self):
-    return '-rmerge N'
-
-  def _read_cc_half(self):
-    try:
-      index = self._argv.index('-cc_half')
-    except ValueError, e:
-      return
-
-    if index < 0:
-      raise RuntimeError, 'negative index'
-
-    self._understood.append(index)
-    self._understood.append(index + 1)
-
-    PhilIndex.update(
-      "xia2.settings.resolution.cc_half=%s" %self._argv[index + 1])
-    # XXX Warning added 2015-12-01
-    Chatter.write(
-      "Warning: -cc_half option deprecated: please use cc_half=%s instead" %self._argv[index + 1])
-
-    return
-
-  def _help_cc_half(self):
-    return '-cc_half N'
 
   def _read_microcrystal(self):
 
