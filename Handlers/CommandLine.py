@@ -173,12 +173,6 @@ class _CommandLine(object):
             (self._help_project_name(), str(e))
 
     try:
-      self._read_atom_name()
-    except exceptions.Exception, e:
-      raise RuntimeError, '%s (%s)' % \
-            (self._help_atom_name(), str(e))
-
-    try:
       self._read_phil()
     except exceptions.Exception, e:
       raise RuntimeError, '%s (%s)' % \
@@ -455,30 +449,6 @@ class _CommandLine(object):
 
   def get_beam(self):
     return self._beam
-
-  def _read_atom_name(self):
-    try:
-      index = self._argv.index('-atom')
-
-    except ValueError, e:
-      self._default_atom_name = None
-      return
-
-    self._default_atom_name = self._argv[index + 1]
-
-    self._understood.append(index)
-    self._understood.append(index + 1)
-
-    Debug.write('Heavy atom: %s' % \
-                self._default_atom_name)
-
-    return
-
-  def _help_atom_name(self):
-    return '-atom se'
-
-  def get_atom_name(self):
-    return self._default_atom_name
 
   def _read_phil(self):
     try:

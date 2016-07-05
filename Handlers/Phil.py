@@ -272,6 +272,13 @@ xia2.settings
     .short_caption = "xia2 input settings"
     .expert_level = 1
   {
+    atom = None
+      .type = str
+      .short_caption = "Heavy atom name, optional"
+      .help = "Set the heavy atom name, if appropriate"
+    anomalous = False
+      .type = bool
+      .short_caption = "Separate anomalous pairs in merging"
     working_directory = None
       .type = path
       .short_caption = "Working directory (i.e. not $CWD)"

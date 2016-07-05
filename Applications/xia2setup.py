@@ -27,7 +27,6 @@ from ..Experts.FindImages import image2template_directory
 from ..Handlers.CommandLine import CommandLine
 from ..Handlers.Flags import Flags
 from ..Handlers.Phil import PhilIndex
-from ..Wrappers.CCP4.Chooch import Chooch
 from ..Modules.LabelitBeamCentre import compute_beam_centre
 from ..Handlers.Streams import streams_off
 
@@ -49,26 +48,13 @@ xds_file_names = ['ABS', 'ABSORP', 'BKGINIT', 'BKGPIX', 'BLANK', 'DECAY',
 
 known_sweeps = { }
 
-known_scan_extensions = ['scan']
-
 known_sequence_extensions = ['seq']
 
 known_hdf5_extensions = ['.h5']
 
 latest_sequence = None
 
-latest_chooch = None
-
 target_template = None
-
-def is_scan_name(file):
-  global known_scan_extensions
-
-  if os.path.isfile(file):
-    if file.split('.')[-1] in known_scan_extensions:
-      return True
-
-  return False
 
 def is_sequence_name(file):
   global known_sequence_extensions
@@ -222,17 +208,6 @@ def visit(root, directory, files):
       if template is not None:
         templates.add(template)
 
-    elif is_scan_name(full_path):
-      global latest_chooch
-      try:
-        latest_chooch = Chooch()
-        if CommandLine.get_atom_name():
-          latest_chooch.set_atom(CommandLine.get_atom_name())
-        latest_chooch.set_scan(full_path)
-        latest_chooch.scan()
-      except:
-        latest_chooch = None
-
     elif is_sequence_name(full_path):
       parse_sequence(full_path)
 
@@ -361,42 +336,22 @@ def print_sweeps(out = sys.stdout):
     out.write('END AA_SEQUENCE\n')
     out.write('\n')
 
-  if CommandLine.get_atom_name():
+  if settings.input.atom:
     out.write('BEGIN HA_INFO\n')
-    out.write('ATOM %s\n' % CommandLine.get_atom_name().lower())
-    if CommandLine.get_atom_name().lower() == 'se' and latest_sequence:
-      # assume that this is selenomethionine
-      out.write('! If this is SeMet uncomment next line...\n')
-      out.write('!NUMBER_PER_MONOMER %d\n' % latest_sequence.count('M'))
-      out.write('!NUMBER_TOTAL M\n')
-    else:
-      out.write('!NUMBER_PER_MONOMER N\n')
-      out.write('!NUMBER_TOTAL M\n')
+    out.write('ATOM %s\n' % settings.input.atom.lower())
     out.write('END HA_INFO\n')
     out.write('\n')
 
   for j in range(len(wavelengths)):
-
-    global latest_chooch
-
-    if latest_chooch:
-      name = latest_chooch.id_wavelength(wavelengths[j])
-      first_name = name
-      counter = 1
-
-      while name in [wavelength_map[w] for w in wavelength_map]:
-        counter += 1
-        name = '%s%d' % (first_name, counter)
-
-      fp, fpp = latest_chooch.get_fp_fpp(wavelengths[j])
+    anomalous = settings.input.anomalous
+    if not settings.input.atom is None:
+      anomalous = True
+    if len(wavelengths) == 1 and anomalous:
+      name = 'SAD'
+    elif len(wavelengths) == 1:
+      name = 'NATIVE'
     else:
-      fp, fpp = 0.0, 0.0
-      if len(wavelengths) == 1 and CommandLine.get_atom_name():
-        name = 'SAD'
-      elif len(wavelengths) == 1:
-        name = 'NATIVE'
-      else:
-        name = 'WAVE%d' % (j + 1)
+      name = 'WAVE%d' % (j + 1)
 
     wavelength_map[wavelengths[j]] = name
 
@@ -411,9 +366,6 @@ def print_sweeps(out = sys.stdout):
       out.write('RESOLUTION %f\n' % dmin)
 
     out.write('WAVELENGTH %f\n' % wavelengths[j])
-    if fp != 0.0 and fpp != 0.0:
-      out.write('F\' %5.2f\n' % fp)
-      out.write('F\'\' %5.2f\n' % fpp)
 
     out.write('END WAVELENGTH %s\n' % name)
     out.write('\n')
