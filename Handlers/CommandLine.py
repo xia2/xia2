@@ -161,7 +161,6 @@ class _CommandLine(object):
     # pipeline options
     self._read_pipeline()
 
-    self._read_zero_dose()
     self._read_free_fraction()
     self._read_free_total()
 
@@ -685,13 +684,6 @@ class _CommandLine(object):
       Flags.set_relax(False)
       self._understood.append(self._argv.index('-no_relax'))
       Debug.write('XDS relax about indexing selected')
-
-  def _read_zero_dose(self):
-
-    if '-zero_dose' in self._argv:
-      Flags.set_zero_dose(True)
-      self._understood.append(self._argv.index('-zero_dose'))
-      Debug.write('Zero-dose mode (XDS/XSCALE) selected')
 
   def _read_noremove(self):
 

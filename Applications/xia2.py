@@ -203,8 +203,6 @@ def xia2():
 
   Environment.cleanup()
 
-  return
-
 def help():
   '''Print out some help for xia2.'''
 

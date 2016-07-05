@@ -88,6 +88,9 @@ xds {
   xscale {
     min_isigma = 3.0
       .type = float
+    zero_dose = False
+      .type = bool
+      .help = "Enable XSCALE zero dose extrapolation"
   }
   merge2cbf {
     merge_n_images = 2

@@ -76,7 +76,9 @@ def XScaleR(DriverType = None,
 
       # decisions about the scaling
       self._crystal = None
-      self._zero_dose = False
+      self._zero_dose = PhilIndex.params.xds.xscale.zero_dose
+      if self._zero_dose:
+        Debug.write('Switching on zero-dose extrapolation')
       self._anomalous = True
       self._merge = False
 
@@ -87,46 +89,32 @@ def XScaleR(DriverType = None,
       # one for each data set, obviously...
       self._rmerges = { }
 
-
-      return
-
     def add_reflection_file(self, reflections, wavelength, resolution):
       self._input_reflection_files.append(reflections)
       self._input_reflection_wavelength_names.append(wavelength)
       self._input_resolution_ranges.append(resolution)
-      return
 
     def get_remove(self):
       return self._remove
 
     def set_crystal(self, crystal):
       self._crystal = crystal
-      return
-
-    def set_zero_dose(self, zero_dose = True):
-      self._zero_dose = zero_dose
-      return
 
     def set_anomalous(self, anomalous = True):
       self._anomalous = anomalous
-      return
 
     def set_correct_decay(self, correct_decay):
       self._correct_decay = correct_decay
-      return
 
     def set_correct_absorption(self, correct_absorption):
       self._correct_absorption = correct_absorption
-      return
 
     def set_correct_modulation(self, correct_modulation):
       self._correct_modulation = correct_modulation
-      return
 
     def get_output_reflection_files(self):
       '''Get a dictionary of output reflection files keyed by
       wavelength name.'''
-
       return copy.deepcopy(self._output_reflection_files)
 
     def _transform_input_files(self):
@@ -145,21 +133,16 @@ def XScaleR(DriverType = None,
         self._transposed_input[wave]['hkl'].append(hkl)
         self._transposed_input[wave]['resol'].append(resol)
 
-      return
-
     def set_spacegroup_number(self, spacegroup_number):
       self._spacegroup_number = spacegroup_number
-      return
 
     def set_cell(self, cell):
       self._cell = cell
-      return
 
     def set_reindex_matrix(self, reindex_matrix):
       if not len(reindex_matrix) == 12:
         raise RuntimeError, 'reindex matrix must be 12 numbers'
       self._reindex_matrix = reindex_matrix
-      return
 
     def _write_xscale_inp(self):
       '''Write xscale.inp.'''
@@ -244,7 +227,6 @@ def XScaleR(DriverType = None,
           xscale_inp.write('CRYSTAL_NAME=%s\n' % self._crystal)
 
       xscale_inp.close()
-      return
 
     def run(self):
       '''Actually run XSCALE.'''
@@ -313,8 +295,6 @@ def XScaleR(DriverType = None,
             raise RuntimeError, 'reindexing error: %s' % \
                   os.path.join(self.get_working_directory(),
                                'XSCALE.LP')
-
-      return
 
     def get_scale_factor(self):
       return self._scale_factor

@@ -64,7 +64,6 @@ class _Flags(object):
     # these are development parameters for the XDS implementation
     self._z_min = 0.0
     self._remove = True
-    self._zero_dose = False
     self._relax = True
 
     # and these for the Mosflm / Aimless and perhaps XDS implementation
@@ -470,12 +469,5 @@ class _Flags(object):
 
   def get_remove(self):
     return self._remove
-
-  def set_zero_dose(self, zero_dose):
-    self._zero_dose = zero_dose
-    return
-
-  def get_zero_dose(self):
-    return self._zero_dose
 
 Flags = _Flags()
