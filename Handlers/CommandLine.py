@@ -119,6 +119,18 @@ class _CommandLine(object):
 
     self._argv = copy.deepcopy(sys.argv)
 
+    replacements = { '-2d': 'pipeline=2d',
+                     '-2di': 'pipeline=2di',
+                     '-3d': 'pipeline=3d',
+                     '-3di': 'pipeline=3di',
+                     '-3dii': 'pipeline=3dii',
+                     '-3dd': 'pipeline=3dd',
+                     '-dials': 'pipeline=dials' }
+    for k, v in replacements.iteritems():
+      if k in self._argv:
+        print "***\nCommand line option %s is deprecated. Please use %s instead\n***" % (k, v)
+        self._argv[self._argv.index(k)] = v
+
     # first of all try to interpret arguments as phil parameters/files
 
     from xia2.Handlers.Phil import master_phil
