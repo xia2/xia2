@@ -104,7 +104,8 @@ class DialsIntegrater(Integrater):
     if PhilIndex.params.dials.fast_mode:
       integrate.set_profile_fitting(False)
     else:
-      integrate.set_profile_fitting(params.profile_fitting)
+      profile_fitting = PhilIndex.params.xia2.settings.integration.profile_fitting
+      integrate.set_profile_fitting(profile_fitting)
     integrate.set_background_outlier_algorithm(
       params.background_outlier_algorithm)
     integrate.set_background_algorithm(

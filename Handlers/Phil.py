@@ -62,8 +62,6 @@ xds {
       .type = float
     reintegrate = true
       .type = bool
-    profile_fitting = True
-      .type = bool
   }
   init {
     fix_scale = False
@@ -221,9 +219,6 @@ dials
     phil_file = None
       .type = path
       .short_caption = "phil file to pass to dials.integrate"
-    profile_fitting = True
-      .type = bool
-      .short_caption = "Do profile fitting"
     background_outlier_algorithm = *null nsigma truncated normal tukey mosflm
       .type = choice
       .help = "Outlier rejection performed prior to background fit"
@@ -444,6 +439,12 @@ xia2.settings
             "See: W. Brehm and K. Diederichs, Acta Cryst. (2014). D70, 101-109."
     .short_caption = "Brehm-Diederichs"
     .expert_level = 1
+  integration {
+    profile_fitting = True
+      .type = bool
+      .help = "Use profile fitting not summation integration, default yes"
+      .short_caption = "Use profile fitting"
+  }
   developmental
     .expert_level = 2
   {

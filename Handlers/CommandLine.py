@@ -150,7 +150,6 @@ class _CommandLine(object):
     self._read_reversephi()
     self._read_no_lattice_test()
     self._read_no_relax()
-    self._read_no_profile()
     self._read_noremove()
 
     # pipeline options
@@ -1105,18 +1104,6 @@ class _CommandLine(object):
       Flags.set_relax(False)
       self._understood.append(self._argv.index('-no_relax'))
       Debug.write('XDS relax about indexing selected')
-
-  def _read_no_profile(self):
-
-    if '-no_profile' in self._argv:
-
-      # XXX Warning added 2016-02-24
-      Chatter.write(
-        "Warning: -no_profile option deprecated: please use xds.integrate.profile_fitting=False instead")
-
-      PhilIndex.update("xds.integrate.profile_fitting=False")
-      PhilIndex.get_python_object()
-      self._understood.append(self._argv.index('-no_profile'))
 
   def _read_zero_dose(self):
 
