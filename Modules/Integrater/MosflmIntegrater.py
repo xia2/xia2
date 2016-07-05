@@ -283,14 +283,7 @@ class MosflmIntegrater(Integrater):
 
     if pname is not None and xname is not None and dname is not None:
       Debug.write('Harvesting: %s/%s/%s' % (pname, xname, dname))
-
-      harvest_dir = os.path.join(os.environ['HARVESTHOME'],
-                                 'DepositFiles', pname)
-
-      if not os.path.exists(harvest_dir):
-        Debug.write('Creating harvest directory...')
-        os.makedirs(harvest_dir)
-
+      harvest_dir = self.get_working_directory()
       # harvest file name will be %s.mosflm_run_start_end % dname
       temp_dname = '%s_%s' % \
                    (dname, self.get_integrater_sweep_name())
@@ -601,14 +594,7 @@ class MosflmIntegrater(Integrater):
       if pname is not None and xname is not None and dname is not None:
         Debug.write('Harvesting: %s/%s/%s' %
                     (pname, xname, dname))
-
-        harvest_dir = os.path.join(os.environ['HARVESTHOME'],
-                                   'DepositFiles', pname)
-
-        if not os.path.exists(harvest_dir):
-          Debug.write('Creating harvest directory...')
-          os.makedirs(harvest_dir)
-
+        harvest_dir = self.get_working_directory()
         temp_dname = '%s_%s' % \
                      (dname, self.get_integrater_sweep_name())
         job.set_pname_xname_dname(pname, xname, temp_dname)
