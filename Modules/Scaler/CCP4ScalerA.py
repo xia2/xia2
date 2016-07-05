@@ -978,7 +978,8 @@ class CCP4ScalerA(Scaler):
 
     # what follows, sucks
 
-    if Flags.get_failover():
+    failover = PhilIndex.params.xia2.settings.failover
+    if failover:
 
       try:
         sc.scale()

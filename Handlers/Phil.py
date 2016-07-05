@@ -285,6 +285,10 @@ xia2.settings
             "  3dd: as 3d, but use DIALS for indexing"
             "dials: DIALS, AIMLESS"
     .type = choice
+  failover = False
+    .type = bool
+    .short_caption = 'Fail over gracefully'
+    .help = 'If processing a sweep fails, keep going'
   input
     .short_caption = "xia2 input settings"
     .expert_level = 1

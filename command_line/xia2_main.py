@@ -122,10 +122,11 @@ def xia2_main(stop_after=None):
 
   crystals = xinfo.get_crystals()
 
+  failover = params.xia2.settings.failover
+
   if njob > 1:
     driver_type = mp_params.type
     command_line_args = CommandLine.get_argv()[1:]
-    command_line_args = [arg for arg in command_line_args if arg != '-failover']
     for crystal_id in crystals.keys():
       for wavelength_id in crystals[crystal_id].get_wavelength_names():
         wavelength = crystals[crystal_id].get_xwavelength(wavelength_id)
@@ -138,7 +139,7 @@ def xia2_main(stop_after=None):
             group_args(
               driver_type=driver_type,
               stop_after=stop_after,
-              failover=Flags.get_failover(),
+              failover=failover,
               command_line_args=command_line_args,
               nproc=mp_params.nproc,
               crystal_id=crystal_id,
@@ -214,7 +215,7 @@ def xia2_main(stop_after=None):
               sweep.get_integrater_intensities()
             sweep.serialize()
           except Exception, e:
-            if Flags.get_failover():
+            if failover:
               Chatter.write('Processing sweep %s failed: %s' % \
                             (sweep.get_name(), str(e)))
               wavelength.remove_sweep(sweep)

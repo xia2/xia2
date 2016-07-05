@@ -553,8 +553,11 @@ class MosflmRefiner(Refiner):
     refiner.set_limits(lim_x, lim_y)
     refiner.set_images(self._mosflm_cell_ref_images)
 
-    if Flags.get_failover() and not \
-       self._mosflm_cell_ref_add_autoindex:
+    from xia2.Handlers.Phil import PhilIndex
+    params = PhilIndex.get_python_object()
+    failover = params.xia2.settings.failover
+
+    if failover and not self._mosflm_cell_ref_add_autoindex:
       refiner.set_ignore_cell_refinement_failure(True)
 
     refiner.run()

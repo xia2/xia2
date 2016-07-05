@@ -102,7 +102,6 @@ class _Flags(object):
     self._cc_half = 0.0
 
     self._microcrystal = False
-    self._failover = False
     self._blend = False
 
     # are we working with small molecule data?
@@ -498,13 +497,6 @@ class _Flags(object):
 
   def get_microcrystal(self):
     return self._microcrystal
-
-  def set_failover(self, failover = True):
-    self._failover = failover
-    return
-
-  def get_failover(self):
-    return self._failover
 
   def set_blend(self, blend = True):
     self._blend = blend

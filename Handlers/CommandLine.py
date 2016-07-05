@@ -232,12 +232,6 @@ class _CommandLine(object):
             (self._help_microcrystal(), str(e))
 
     try:
-      self._read_failover()
-    except exceptions.Exception, e:
-      raise RuntimeError, '%s (%s)' % \
-            (self._help_failover(), str(e))
-
-    try:
       self._read_blend()
     except exceptions.Exception, e:
       raise RuntimeError, '%s (%s)' % \
@@ -658,15 +652,6 @@ class _CommandLine(object):
       Flags.set_microcrystal()
       Debug.write('Microcrystal mode on')
       self._understood.append(self._argv.index('-microcrystal'))
-
-    return
-
-  def _read_failover(self):
-
-    if '-failover' in self._argv:
-      Flags.set_failover()
-      Debug.write('Failover mode on')
-      self._understood.append(self._argv.index('-failover'))
 
     return
 
