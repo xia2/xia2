@@ -74,17 +74,9 @@ class _Flags(object):
 
     # and these are general rejection criteria
     self._rejection_threshold = 1.5
-    self._isigma = 1.0
-    self._misigma = 2.0
-    self._completeness = 0.0
-    self._rmerge = 0.0
-    self._cc_half = 0.0
 
     # are we working with small molecule data?
     self._small_molecule = False
-
-    # pickle output
-    self._pickle = None
 
     # serialization of indexer/integrater state to/from json
     self._serialize_state = False
@@ -323,13 +315,6 @@ class _Flags(object):
 
   def get_mask(self):
     return self._mask
-
-  def set_pickle(self, pickle):
-    self._pickle = pickle
-    return
-
-  def get_pickle(self):
-    return self._pickle
 
   def set_reference_reflection_file(self, reference_reflection_file):
     '''Set a new reference reflection file.'''

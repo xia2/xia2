@@ -161,12 +161,6 @@ class _CommandLine(object):
     Debug.write('Crystal: %s' % params.xia2.settings.crystal)
 
     try:
-      self._read_pickle()
-    except exceptions.Exception, e:
-      raise RuntimeError, '%s (%s)' % \
-            (self._help_pickle(), str(e))
-
-    try:
       self._read_xparallel()
     except exceptions.Exception, e:
       raise RuntimeError, '%s (%s)' % \
@@ -453,23 +447,6 @@ class _CommandLine(object):
 
   def _help_rejection_threshold(self):
     return '-rejection_threshold N'
-
-  def _read_pickle(self):
-    try:
-      index = self._argv.index('-pickle')
-    except ValueError, e:
-      self._pickle = None
-      return
-
-    if index < 0:
-      raise RuntimeError, 'negative index'
-
-    self._understood.append(index)
-    self._understood.append(index + 1)
-    Flags.set_pickle(self._argv[index + 1])
-
-  def _help_pickle(self):
-    return '-pickle name.pkl'
 
   def get_template(self):
     return self._default_template
