@@ -987,7 +987,7 @@ class XDSScalerA(Scaler):
             self.get_working_directory(),
             'REMOVE.HKL'), 'w')
 
-        z_min = Flags.get_z_min()
+        z_min = PhilIndex.params.xds.z_min
         rejected = 0
 
         # write in the old reflections
@@ -1026,7 +1026,7 @@ class XDSScalerA(Scaler):
 
     if not self.get_scaler_done():
       Chatter.write('Excluding outlier reflections Z > %.2f' %
-                    Flags.get_z_min())
+                    PhilIndex.params.xds.z_min)
       return
 
     debug_memory_usage()

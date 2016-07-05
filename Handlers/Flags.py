@@ -59,7 +59,6 @@ class _Flags(object):
     self._reference_reflection_file = None
 
     # these are development parameters for the XDS implementation
-    self._z_min = 0.0
     self._relax = True
 
     # options to support the -spacegroup flag - the spacegroup is
@@ -263,13 +262,6 @@ class _Flags(object):
 
   def get_xparallel(self):
     return self._xparallel
-
-  def set_z_min(self, z_min):
-    self._z_min = z_min
-    return
-
-  def get_z_min(self):
-    return self._z_min
 
   def set_freer_file(self, freer_file):
 

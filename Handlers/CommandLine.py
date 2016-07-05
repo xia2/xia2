@@ -167,12 +167,6 @@ class _CommandLine(object):
             (self._help_xparallel(), str(e))
 
     try:
-      self._read_z_min()
-    except exceptions.Exception, e:
-      raise RuntimeError, '%s (%s)' % \
-            (self._help_z_min(), str(e))
-
-    try:
       self._read_rejection_threshold()
     except exceptions.Exception, e:
       raise RuntimeError, '%s (%s)' % \
@@ -406,26 +400,6 @@ class _CommandLine(object):
 
   def _help_xparallel(self):
     return '-xparallel N'
-
-  def _read_z_min(self):
-    try:
-      index = self._argv.index('-z_min')
-    except ValueError, e:
-      return
-
-    if index < 0:
-      raise RuntimeError, 'negative index'
-
-    self._understood.append(index)
-    self._understood.append(index + 1)
-
-    Flags.set_z_min(float(self._argv[index + 1]))
-    Debug.write('Z min set to %f' % Flags.get_z_min())
-
-    return
-
-  def _help_z_min(self):
-    return '-z_min N'
 
   def _read_rejection_threshold(self):
     try:

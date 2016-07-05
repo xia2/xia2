@@ -22,6 +22,8 @@ general {
     .expert_level = 2
 }
 xds {
+  z_min = 0.0
+    .type = float
   delphi = 5
     .type = float
   delphi_small = 30

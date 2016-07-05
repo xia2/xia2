@@ -751,7 +751,7 @@ class XDSIntegrater(Integrater):
             self.get_working_directory(),
             'REMOVE.HKL'), 'w')
 
-        z_min = Flags.get_z_min()
+        z_min = PhilIndex.params.xds.z_min
         rejected = 0
 
         # write in the old reflections
