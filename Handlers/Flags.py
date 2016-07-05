@@ -25,7 +25,6 @@ class _Flags(object):
     self._quick = False
     self._interactive = False
     self._ice = False
-    self._uniform_sd = True
     self._chef = False
     self._mask = None
     self._reversephi = False
@@ -270,13 +269,6 @@ class _Flags(object):
 
   def get_ice(self):
     return self._ice
-
-  def set_uniform_sd(self, uniform_sd):
-    self._uniform_sd = uniform_sd
-    return
-
-  def get_uniform_sd(self):
-    return self._uniform_sd
 
   def set_chef(self, chef):
     self._chef = chef

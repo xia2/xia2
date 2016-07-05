@@ -149,7 +149,6 @@ class _CommandLine(object):
 
     self._read_interactive()
     self._read_ice()
-    self._read_uniform_sd()
     self._read_trust_timestamps()
     self._read_batch_scale()
     self._read_small_molecule()
@@ -760,13 +759,6 @@ class _CommandLine(object):
       Flags.set_ice(True)
       self._understood.append(self._argv.index('-ice'))
       Debug.write('Ice ring exclusion ON')
-
-  def _read_uniform_sd(self):
-
-    if '-no_uniform_sd' in self._argv:
-      Flags.set_uniform_sd(False)
-      self._understood.append(self._argv.index('-no_uniform_sd'))
-      Debug.write('Uniform SD OFF')
 
   def _read_free_fraction(self):
     try:
