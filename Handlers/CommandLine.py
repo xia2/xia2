@@ -147,7 +147,6 @@ class _CommandLine(object):
 
     # things which are single token flags...
 
-    self._read_debug()
     self._read_interactive()
     self._read_ice()
     self._read_uniform_sd()
@@ -747,14 +746,6 @@ class _CommandLine(object):
       PhilIndex.update("xia2.settings.integrater=%s" % integrater)
     if scaler is not None and settings.scaler is None:
       PhilIndex.update("xia2.settings.scaler=%s" % scaler)
-
-  def _read_debug(self):
-
-    if '-debug' in self._argv:
-      # join the debug stream to the main output
-      Debug.join(Chatter)
-      self._understood.append(self._argv.index('-debug'))
-      Debug.write('Debugging output switched on')
 
   def _read_interactive(self):
 
