@@ -111,11 +111,7 @@ def Aimless(DriverType = None,
       else:
         self._tails = partiality_correction
 
-      # alternative for this is 'batch' err.. no rotation
-      if Flags.get_batch_scale():
-        self._mode = 'batch'
-      else:
-        self._mode = 'rotation'
+      self._mode = 'rotation'
 
       # these are only relevant for 'rotation' mode scaling
       self._spacing = 5
@@ -261,6 +257,9 @@ def Aimless(DriverType = None,
 
     def set_secondary(self, secondary):
       self._secondary = secondary
+
+    def set_mode(self, mode):
+      self._mode = mode
 
     def set_scaling_parameters(self, mode,
                                spacing = None, secondary = None):

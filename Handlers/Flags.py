@@ -47,8 +47,6 @@ class _Flags(object):
 
     self._xparallel = 0
 
-    self._batch_scale = False
-
     # File from which to copy the FreeR_flag column
     self._freer_file = None
 
@@ -63,8 +61,6 @@ class _Flags(object):
     # these are development parameters for the XDS implementation
     self._z_min = 0.0
     self._relax = True
-
-    self._rmerge_target = 'low'
 
     # options to support the -spacegroup flag - the spacegroup is
     # set from this, the lattice and pointgroup derived from such
@@ -111,21 +107,6 @@ class _Flags(object):
 
   def get_serialize_state(self):
     return self._serialize_state
-
-  def set_batch_scale(self, batch_scale):
-    self._batch_scale = batch_scale
-    return
-
-  def get_batch_scale(self):
-    return self._batch_scale
-
-  def set_rmerge_target(self, rmerge_target):
-    assert(rmerge_target in ['low', 'high', 'overall'])
-    self._rmerge_target = rmerge_target
-    return
-
-  def get_rmerge_target(self):
-    return self._rmerge_target
 
   ### SETTING OF RESOLUTION LIMITS #### bug # 3183
 

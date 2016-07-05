@@ -402,6 +402,10 @@ xia2.settings
       .type = choice(multi=True)
       .expert_level = 2
       .short_caption = "Scaling models to apply"
+    mode = *rotation batch
+      .type = choice
+      .expert_level = 2
+      .short_caption = "Smoothed or batch scaling"
   }
   space_group = None
     .type = space_group

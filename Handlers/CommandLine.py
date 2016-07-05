@@ -149,7 +149,6 @@ class _CommandLine(object):
 
     self._read_interactive()
     self._read_ice()
-    self._read_batch_scale()
     self._read_small_molecule()
     self._read_quick()
     self._read_mask()
@@ -530,15 +529,6 @@ class _CommandLine(object):
 
   def get_hdf5_master_files(self):
     return self._hdf5_master_files
-
-  def _read_batch_scale(self):
-
-    if '-batch_scale' in self._argv:
-      Flags.set_batch_scale(True)
-      Debug.write('Batch scaling mode on')
-      self._understood.append(self._argv.index('-batch_scale'))
-
-    return
 
   def _read_small_molecule(self):
 

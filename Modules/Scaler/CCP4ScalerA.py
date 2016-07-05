@@ -58,7 +58,6 @@ class CCP4ScalerA(Scaler):
     self._scalr_correct_decay = 'decay' in model
     self._scalr_corrections = True
 
-
     # useful handles...!
 
     self._prepared_reflections = None
@@ -111,6 +110,8 @@ class CCP4ScalerA(Scaler):
           partiality_correction = self._scalr_correct_partiality,
           absorption_correction = self._scalr_correct_absorption,
           decay_correction = self._scalr_correct_decay)
+
+    aimless.set_mode(PhilIndex.params.xia2.settings.scale.mode)
 
     if Flags.get_microcrystal():
 
