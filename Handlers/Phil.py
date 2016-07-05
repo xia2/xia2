@@ -371,6 +371,15 @@ xia2.settings
       .type = str
       .expert_level = 2
       .short_caption = "xia2 scale directory"
+    free_fraction = 0.05
+      .type = float(value_min=0.0, value_max=1.0)
+      .help = "Fraction of free reflections"
+    free_total = None
+      .type = int(value_min=0)
+      .help = "Total number of free reflections"
+    freer_file = None
+      .type = path
+      .help = "Copy freer flags from this file"
   }
   space_group = None
     .type = space_group

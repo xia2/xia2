@@ -752,12 +752,7 @@ class CommonScaler(Scaler):
 
     else:
 
-      # default fraction of 0.05
-      free_fraction = 0.05
-
-      if Flags.get_free_fraction():
-        free_fraction = Flags.get_free_fraction()
-      elif Flags.get_free_total():
+      if Flags.get_free_total():
         ntot = Flags.get_free_total()
 
         # need to get a fraction, so...
@@ -766,6 +761,8 @@ class CommonScaler(Scaler):
         mtzdump.dump()
         nref = mtzdump.get_reflections()
         free_fraction = float(ntot) / float(nref)
+      else:
+        free_fraction = Flags.get_free_fraction()
 
       f = self._factory.Freerflag()
       f.set_free_fraction(free_fraction)

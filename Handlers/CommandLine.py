@@ -161,9 +161,6 @@ class _CommandLine(object):
     # pipeline options
     self._read_pipeline()
 
-    self._read_free_fraction()
-    self._read_free_total()
-
     Debug.write('Project: %s' % params.xia2.settings.project)
     Debug.write('Crystal: %s' % params.xia2.settings.crystal)
 
@@ -196,12 +193,6 @@ class _CommandLine(object):
     except exceptions.Exception, e:
       raise RuntimeError, '%s (%s)' % \
             (self._help_aimless_secondary(), str(e))
-
-    try:
-      self._read_freer_file()
-    except exceptions.Exception, e:
-      raise RuntimeError, '%s (%s)' % \
-            (self._help_freer_file(), str(e))
 
     try:
       self._read_reference_reflection_file()
@@ -332,10 +323,17 @@ class _CommandLine(object):
       Flags.set_xparm(params.xds.index.xparm)
     if params.xds.index.xparm_ub is not None:
       Flags.set_xparm_ub(params.xds.index.xparm_ub)
+    if params.xia2.settings.scale.freer_file is not None:
+      Flags.set_freer_file(params.xia2.settings.scale.freer_file)
+      Debug.write('FreeR_flag column taken from %s' %Flags.get_freer_file())
+    if params.xia2.settings.scale.free_fraction is not None:
+      Flags.set_free_fraction(params.xia2.settings.scale.free_fraction)
+      Debug.write('Free fraction set to %f' %Flags.get_free_fraction())
+    if params.xia2.settings.scale.free_total is not None:
+      Flags.set_free_total(params.xia2.settings.scale.free_total)
+      Debug.write('Free total set to %f' %Flags.get_free_total())
 
     params = PhilIndex.get_python_object()
-
-
 
     datasets = PhilIndex.params.xia2.settings.input.image
     for dataset in datasets:
@@ -510,38 +508,6 @@ class _CommandLine(object):
 
   def _help_aimless_secondary(self):
     return '-aimless_secondary N'
-
-  def _read_freer_file(self):
-    try:
-      index = self._argv.index('-freer_file')
-    except ValueError, e:
-      return
-
-    if index < 0:
-      raise RuntimeError, 'negative index'
-
-    Flags.set_freer_file(self._argv[index + 1])
-
-    self._understood.append(index)
-    self._understood.append(index + 1)
-
-    Debug.write('FreeR_flag column taken from %s' %
-                Flags.get_freer_file())
-
-    # this should also be used as an indexing reference to make
-    # sense...
-
-    Flags.set_reference_reflection_file(self._argv[index + 1])
-    Debug.write('Reference reflection file: %s' %
-                Flags.get_reference_reflection_file())
-
-    # and also the spacegroup copied out?! ok - this is done
-    # "by magic" in the scaler.
-
-    return
-
-  def _help_freer_file(self):
-    return '-freer_file my_freer_file.mtz'
 
   def _read_reference_reflection_file(self):
     try:
@@ -738,42 +704,6 @@ class _CommandLine(object):
       Flags.set_ice(True)
       self._understood.append(self._argv.index('-ice'))
       Debug.write('Ice ring exclusion ON')
-
-  def _read_free_fraction(self):
-    try:
-      index = self._argv.index('-free_fraction')
-    except ValueError, e:
-      return
-
-    if index < 0:
-      raise RuntimeError, 'negative index'
-
-    self._understood.append(index)
-    self._understood.append(index + 1)
-
-    Flags.set_free_fraction(float(self._argv[index + 1]))
-    Debug.write('Free fraction set to %f' % Flags.get_free_fraction())
-
-  def _help_free_fraction(self):
-    return '-free_fraction N'
-
-  def _read_free_total(self):
-    try:
-      index = self._argv.index('-free_total')
-    except ValueError, e:
-      return
-
-    if index < 0:
-      raise RuntimeError, 'negative index'
-
-    self._understood.append(index)
-    self._understood.append(index + 1)
-
-    Flags.set_free_total(int(self._argv[index + 1]))
-    Debug.write('Free total set to %f' % Flags.get_free_total())
-
-  def _help_free_total(self):
-    return '-free_total N'
 
   def _read_mask(self):
     try:
