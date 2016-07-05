@@ -74,6 +74,12 @@ xds {
     debug = *OFF ON
       .type = choice(multi = False)
       .help = 'output enganced debugging for indexing'
+    xparm = None
+      .type = path
+      .help = 'Use refined GXPARM.XDS geometry in indexing'
+    xparm_ub = None
+      .type = path
+      .help = 'Use refined GXPARM.XDS orientation matrix in indexing'
   }
   colspot {
     minimum_pixels_per_spot = 1

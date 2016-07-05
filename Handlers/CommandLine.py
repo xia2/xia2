@@ -197,18 +197,6 @@ class _CommandLine(object):
             (self._help_pickle(), str(e))
 
     try:
-      self._read_xparm()
-    except exceptions.Exception, e:
-      raise RuntimeError, '%s (%s)' % \
-            (self._help_xparm(), str(e))
-
-    try:
-      self._read_xparm_ub()
-    except exceptions.Exception, e:
-      raise RuntimeError, '%s (%s)' % \
-            (self._help_xparm_ub(), str(e))
-
-    try:
       self._read_xparallel()
     except exceptions.Exception, e:
       raise RuntimeError, '%s (%s)' % \
@@ -369,6 +357,11 @@ class _CommandLine(object):
     if params.dials.integrate.phil_file is not None:
       PhilIndex.update("dials.integrate.phil_file=%s" %os.path.abspath(
         params.dials.integrate.phil_file))
+    if params.xds.index.xparm is not None:
+      Flags.set_xparm(params.xds.index.xparm)
+    if params.xds.index.xparm_ub is not None:
+      Flags.set_xparm_ub(params.xds.index.xparm_ub)
+
     params = PhilIndex.get_python_object()
 
 
@@ -530,58 +523,6 @@ class _CommandLine(object):
   def get_xinfo(self):
     '''Return the XProject.'''
     return self._xinfo
-
-  def _read_xparm(self):
-    try:
-      index = self._argv.index('-xparm')
-    except ValueError, e:
-      return
-
-    if index < 0:
-      raise RuntimeError, 'negative index'
-
-    Flags.set_xparm(self._argv[index + 1])
-
-    self._understood.append(index)
-    self._understood.append(index + 1)
-
-    Debug.write('Rotation axis: %.6f %.6f %.6f' % \
-        Flags.get_xparm_rotation_axis())
-    Debug.write('Beam vector: %.6f %.6f %.6f' % \
-        Flags.get_xparm_beam_vector())
-    Debug.write('Origin: %.2f %.2f' % \
-        Flags.get_xparm_origin())
-
-    return
-
-  def _help_xparm(self):
-    return '-xparm GXPARM.XDS'
-
-  def _read_xparm_ub(self):
-    try:
-      index = self._argv.index('-xparm_ub')
-    except ValueError, e:
-      return
-
-    if index < 0:
-      raise RuntimeError, 'negative index'
-
-    Flags.set_xparm_ub(self._argv[index + 1])
-
-    self._understood.append(index)
-    self._understood.append(index + 1)
-
-    Debug.write('Real Space A: %.2f %.2f %.2f' % \
-                tuple(Flags.get_xparm_a()))
-    Debug.write('Real Space B: %.2f %.2f %.2f' % \
-                tuple(Flags.get_xparm_b()))
-    Debug.write('Real Space C: %.2f %.2f %.2f' % \
-                tuple(Flags.get_xparm_c()))
-
-    return
-
-  def _help_xparm_ub(self):
-    return '-xparm_ub GXPARM.XDS'
 
   def _read_xparallel(self):
     try:
