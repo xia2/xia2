@@ -188,25 +188,6 @@ class _CommandLine(object):
             (self._help_z_min(), str(e))
 
     try:
-<<<<<<< 9365bae4dc28f575ae12cd079093d599c18fa52f
-      self._read_aimless_secondary()
-    except exceptions.Exception, e:
-      raise RuntimeError, '%s (%s)' % \
-            (self._help_aimless_secondary(), str(e))
-=======
-      self._read_freer_file()
-    except exceptions.Exception, e:
-      raise RuntimeError, '%s (%s)' % \
-            (self._help_freer_file(), str(e))
-
-    try:
-      self._read_reference_reflection_file()
-    except exceptions.Exception, e:
-      raise RuntimeError, '%s (%s)' % \
-            (self._help_reference_reflection_file(), str(e))
->>>>>>> Cleaning scaling model stuff; removing flags; remove optimize scaling since this is almost certainly not wirking now; #42; secondary now moved to aimless scope;
-
-    try:
       self._read_rejection_threshold()
     except exceptions.Exception, e:
       raise RuntimeError, '%s (%s)' % \
