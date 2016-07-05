@@ -65,14 +65,6 @@ class _Flags(object):
     self._z_min = 0.0
     self._relax = True
 
-    # and these for the Mosflm / Aimless and perhaps XDS implementation
-
-    self._scale_model = False
-    self._scale_model_decay = False
-    self._scale_model_modulation = False
-    self._scale_model_absorption = False
-    self._scale_model_partiality = False
-
     self._rmerge_target = 'low'
 
     # options to support the -spacegroup flag - the spacegroup is
@@ -80,9 +72,6 @@ class _Flags(object):
     self._spacegroup = None
     self._pointgroup = None
     self._lattice = None
-
-    # aimless secondary correction
-    self._aimless_secondary = 6
 
     # resolution limit flags
     self._resolution_low = None
@@ -138,53 +127,6 @@ class _Flags(object):
 
   def get_rmerge_target(self):
     return self._rmerge_target
-
-  # matters relating to the manual definition of a scaling model
-
-  def set_scale_model(self, scale_model):
-    self._scale_model = scale_model
-
-    # now unpack this
-
-    self.set_scale_model_decay('decay' in scale_model)
-    self.set_scale_model_modulation('modulation' in scale_model)
-    self.set_scale_model_absorption('absorption' in scale_model)
-    self.set_scale_model_partiality('partiality' in scale_model)
-
-    return
-
-  def get_scale_model(self):
-    return self._scale_model
-
-  def set_scale_model_decay(self, scale_model_decay = True):
-    self._scale_model_decay = scale_model_decay
-    return
-
-  def get_scale_model_decay(self):
-    return self._scale_model_decay
-
-  def set_scale_model_modulation(self, scale_model_modulation = True):
-    self._scale_model_modulation = scale_model_modulation
-    return
-
-  def get_scale_model_modulation(self):
-    return self._scale_model_modulation
-
-  def set_scale_model_absorption(self, scale_model_absorption = True):
-    self._scale_model_absorption = scale_model_absorption
-    return
-
-  def get_scale_model_absorption(self):
-    return self._scale_model_absorption
-
-  def set_scale_model_partiality(self, scale_model_partiality = True):
-    self._scale_model_partiality = scale_model_partiality
-    return
-
-  def get_scale_model_partiality(self):
-    return self._scale_model_partiality
-
-  # the end of such matters
 
   ### SETTING OF RESOLUTION LIMITS #### bug # 3183
 
@@ -373,13 +315,6 @@ class _Flags(object):
 
   def get_z_min(self):
     return self._z_min
-
-  def set_aimless_secondary(self, aimless_secondary):
-    self._aimless_secondary = aimless_secondary
-    return
-
-  def get_aimless_secondary(self):
-    return self._aimless_secondary
 
   def set_freer_file(self, freer_file):
 

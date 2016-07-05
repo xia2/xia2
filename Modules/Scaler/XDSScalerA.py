@@ -73,21 +73,13 @@ class XDSScalerA(Scaler):
 
     # scaling correction choices - may be set one on the command line...
 
-    if Flags.get_scale_model():
-      self._scalr_correct_absorption = Flags.get_scale_model_absorption()
-      self._scalr_correct_modulation = Flags.get_scale_model_modulation()
-      self._scalr_correct_decay = Flags.get_scale_model_decay()
+    # flags to keep track of the corrections we will be applying
 
-      self._scalr_corrections = True
-
-    else:
-
-      self._scalr_correct_decay = True
-      self._scalr_correct_modulation = True
-      self._scalr_correct_absorption = True
-      self._scalr_corrections = True
-
-    return
+    model = PhilIndex.params.xia2.settings.scale.model
+    self._scalr_correct_absorption = 'absorption' in model
+    self._scalr_correct_modulation = 'modulation' in model
+    self._scalr_correct_decay = 'decay' in model
+    self._scalr_corrections = True
 
   def to_dict(self):
     obj = super(XDSScalerA, self).to_dict()

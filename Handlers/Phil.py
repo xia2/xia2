@@ -269,6 +269,10 @@ ccp4
     surface_link = True
       .type = bool
       .short_caption = "Surface link"
+    secondary = 6
+      .type = int
+      .expert_level = 2
+      .short_caption = "Aimless # secondary harmonics"
   }
   truncate
     .short_caption = "truncate"
@@ -386,6 +390,10 @@ xia2.settings
     reference_reflection_file = None
       .type = path
       .help = "Reference file for testing of alternative indexing schemes"
+    model = *decay *modulation *absorption partiality
+      .type = choice(multi=True)
+      .expert_level = 2
+      .short_caption = "Scaling models to apply"
   }
   space_group = None
     .type = space_group
@@ -436,11 +444,6 @@ xia2.settings
       .short_caption = "Outer shell merged <I/sigI>"
       .expert_level = 1
   }
-  optimize_scaling = False
-    .type = bool
-    .help = "Search for best scaling model"
-    .short_caption = "Optimize scaling"
-    .expert_level = 1
   unify_setting = False
     .type = bool
     .help = "For one crystal, multiple orientations, unify U matrix"

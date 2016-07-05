@@ -188,10 +188,23 @@ class _CommandLine(object):
             (self._help_z_min(), str(e))
 
     try:
+<<<<<<< 9365bae4dc28f575ae12cd079093d599c18fa52f
       self._read_aimless_secondary()
     except exceptions.Exception, e:
       raise RuntimeError, '%s (%s)' % \
             (self._help_aimless_secondary(), str(e))
+=======
+      self._read_freer_file()
+    except exceptions.Exception, e:
+      raise RuntimeError, '%s (%s)' % \
+            (self._help_freer_file(), str(e))
+
+    try:
+      self._read_reference_reflection_file()
+    except exceptions.Exception, e:
+      raise RuntimeError, '%s (%s)' % \
+            (self._help_reference_reflection_file(), str(e))
+>>>>>>> Cleaning scaling model stuff; removing flags; remove optimize scaling since this is almost certainly not wirking now; #42; secondary now moved to aimless scope;
 
     try:
       self._read_rejection_threshold()
@@ -204,12 +217,6 @@ class _CommandLine(object):
     except exceptions.Exception, e:
       raise RuntimeError, '%s (%s)' % \
             (self._help_microcrystal(), str(e))
-
-    try:
-      self._read_scale_model()
-    except exceptions.Exception, e:
-      raise RuntimeError, '%s (%s)' % \
-            (self._help_scale_model(), str(e))
 
     # FIXME add some consistency checks in here e.g. that there are
     # images assigned, there is a lattice assigned if cell constants
@@ -487,26 +494,6 @@ class _CommandLine(object):
   def _help_z_min(self):
     return '-z_min N'
 
-  def _read_aimless_secondary(self):
-    try:
-      index = self._argv.index('-aimless_secondary')
-    except ValueError, e:
-      return
-
-    if index < 0:
-      raise RuntimeError, 'negative index'
-
-    self._understood.append(index)
-    self._understood.append(index + 1)
-
-    Flags.set_aimless_secondary(float(self._argv[index + 1]))
-    Debug.write('Aimless secondary set to %f' % Flags.get_aimless_secondary())
-
-    return
-
-  def _help_aimless_secondary(self):
-    return '-aimless_secondary N'
-
   def _read_rejection_threshold(self):
     try:
       index = self._argv.index('-rejection_threshold')
@@ -590,21 +577,6 @@ class _CommandLine(object):
       PhilIndex.update("xia2.settings.unify_setting=true")
 
     return
-
-  def _read_scale_model(self):
-    try:
-      index = self._argv.index('-scale_model')
-    except ValueError, e:
-      return
-
-    if index < 0:
-      raise RuntimeError, 'negative index'
-
-    self._understood.append(index)
-    self._understood.append(index + 1)
-
-    Flags.set_scale_model(self._argv[index + 1])
-    Debug.write('Scaling model set to: %s' % Flags.get_scale_model())
 
   def _read_quick(self):
 
