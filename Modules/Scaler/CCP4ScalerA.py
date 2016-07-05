@@ -111,7 +111,7 @@ class CCP4ScalerA(Scaler):
           absorption_correction = self._scalr_correct_absorption,
           decay_correction = self._scalr_correct_decay)
 
-    aimless.set_mode(PhilIndex.params.xia2.settings.scale.mode)
+    aimless.set_mode(PhilIndex.params.xia2.settings.scale.scales)
 
     if Flags.get_small_molecule():
       aimless.set_scaling_parameters('rotation', 15.0)
