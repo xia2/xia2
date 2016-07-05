@@ -261,15 +261,7 @@ def run():
     xia2()
 
     status_message = 'Status: normal termination'
-    import datetime
-    if datetime.date.today().timetuple()[1:3] == (4, 1):
-      status_message = 'Status: all your intensities are belong to us'
-
     Chatter.write(status_message)
-    from ..Handlers.Flags import Flags
-    if Flags.get_egg():
-      from ..lib.bits import message
-      message(status_message)
 
   except exceptions.Exception, e:
     traceback.print_exc(file = open(os.path.join(wd, 'xia2.error'), 'w'))
@@ -277,7 +269,3 @@ def run():
     Chatter.write(
       'Please send the contents of xia2.txt, xia2.error and xia2-debug.txt to:')
     Chatter.write('xia2.support@gmail.com')
-    from ..Handlers.Flags import Flags
-    if Flags.get_egg():
-      from ..lib.bits import message
-      message('xia2 status error %s' % str(e))

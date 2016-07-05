@@ -278,10 +278,6 @@ def run():
   try:
     xinfo = xia2_main()
     Chatter.write('Status: normal termination')
-    from xia2.Handlers.Flags import Flags
-    if Flags.get_egg():
-      from xia2.lib.bits import message
-      message('xia2 status normal termination')
     return xinfo
 
   except exceptions.Exception, e:
@@ -290,10 +286,6 @@ def run():
     Chatter.write(
       'Please send the contents of xia2.txt, xia2.error and xia2-debug.txt to:')
     Chatter.write('xia2.support@gmail.com')
-    from xia2.Handlers.Flags import Flags
-    if Flags.get_egg():
-      from xia2.lib.bits import message
-      message('xia2 status error %s' % str(e))
     sys.exit(1)
 
 if __name__ == '__main__':

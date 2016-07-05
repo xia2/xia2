@@ -150,7 +150,6 @@ class _CommandLine(object):
     self._read_debug()
     self._read_interactive()
     self._read_ice()
-    self._read_egg()
     self._read_uniform_sd()
     self._read_trust_timestamps()
     self._read_batch_scale()
@@ -770,12 +769,6 @@ class _CommandLine(object):
       Flags.set_ice(True)
       self._understood.append(self._argv.index('-ice'))
       Debug.write('Ice ring exclusion ON')
-
-  def _read_egg(self):
-
-    if '-egg' in self._argv:
-      self._understood.append(self._argv.index('-egg'))
-      Flags.set_egg(True)
 
   def _read_uniform_sd(self):
 

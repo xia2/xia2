@@ -25,7 +25,6 @@ class _Flags(object):
     self._quick = False
     self._interactive = False
     self._ice = False
-    self._egg = False
     self._uniform_sd = True
     self._chef = False
     self._mask = None
@@ -271,13 +270,6 @@ class _Flags(object):
 
   def get_ice(self):
     return self._ice
-
-  def set_egg(self, egg):
-    self._egg = egg
-    return
-
-  def get_egg(self):
-    return self._egg
 
   def set_uniform_sd(self, uniform_sd):
     self._uniform_sd = uniform_sd
