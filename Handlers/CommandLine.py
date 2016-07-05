@@ -161,12 +161,6 @@ class _CommandLine(object):
     Debug.write('Crystal: %s' % params.xia2.settings.crystal)
 
     try:
-      self._read_phil()
-    except exceptions.Exception, e:
-      raise RuntimeError, '%s (%s)' % \
-            (self._help_phil(), str(e))
-
-    try:
       self._read_pickle()
     except exceptions.Exception, e:
       raise RuntimeError, '%s (%s)' % \
@@ -388,33 +382,6 @@ class _CommandLine(object):
 
   def get_beam(self):
     return self._beam
-
-  def _read_phil(self):
-    try:
-      index = self._argv.index('-phil')
-
-    except ValueError, e:
-      return
-
-    Chatter.bigbanner('-phil option now no longer needed: '
-                      'please just place file on command-line', size=80)
-
-    self._understood.append(index)
-
-    if True:
-      return
-
-    PhilIndex.merge_param_file(self._argv[index + 1])
-    PhilIndex.get_python_object()
-
-    self._understood.append(index + 1)
-
-    Debug.write('Phil file: %s' % self._argv[index + 1])
-
-    return
-
-  def _help_phil(self):
-    return '-phil parameters.phil'
 
   def set_xinfo(self, xinfo):
     with open(xinfo, 'rb') as f:
