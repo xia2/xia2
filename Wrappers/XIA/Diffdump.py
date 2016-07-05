@@ -779,14 +779,8 @@ def Diffdump(DriverType = None):
                 print '! exposure epoch: %d' % \
                       int(self._header['epoch'])
             else:
-              if PhilIndex.parms.xia2.settings.input.trust_timestamps:
-                self._header['epoch'] = float(
-                    os.stat(self._image)[8])
-                self._header['date'] = time.ctime(
-                    self._header['epoch'])
-              else:
-                self._header['epoch'] = 0.0
-                self._header['date'] = ''
+              self._header['epoch'] = 0.0
+              self._header['date'] = ''
 
           except exceptions.Exception, e:
 

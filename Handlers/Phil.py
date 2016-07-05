@@ -331,14 +331,6 @@ xia2.settings
               "alternative source of images header information to avoid the "
               "need to read all the image headers on start-up."
       .short_caption = "Take headers from json file"
-    trust_timestamps = False
-      .type = bool
-      .short_caption = "Trust the file time stamps"
-      .help = "If time of data collection not recorded in header but the time "
-              "stamp for the images are correct (e.g. you have not moved them "
-              "since collection) then this option can be used, which will use "
-              "the time stamps on the image files to analyse things like "
-              "radiation damage."
     reference_geometry = None
       .type = path
       .multiple = True

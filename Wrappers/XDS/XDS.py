@@ -496,21 +496,3 @@ def template_to_xds(template):
     template = master_file.split('master.h5')[0] + template.split('data_')[-1]
 
   return template.replace('#', '?')
-
-if __name__ == '__main__':
-  from xia2.Wrappers.XIA.Diffdump import Diffdump
-
-  dd = Diffdump()
-
-  if len(sys.argv) < 2:
-
-    directory = os.path.join(os.environ['XIA2_ROOT'],
-                             'Data', 'Test', 'Images')
-
-    dd.set_image(os.path.join(directory, '12287_1_E1_001.img'))
-
-  else:
-    dd.set_image(sys.argv[1])
-
-  for record in header_to_xds(dd.readheader()):
-    print record
