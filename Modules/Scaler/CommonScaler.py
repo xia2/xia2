@@ -356,9 +356,6 @@ class CommonScaler(Scaler):
 
       counter += 1
 
-    if Flags.get_chef():
-      self._sweep_information_to_chef()
-
     s = self._factory.Sortmtz()
 
     hklout = os.path.join(self.get_working_directory(),
@@ -456,9 +453,6 @@ class CommonScaler(Scaler):
     epoch = self._sweep_information.keys()[0]
     hklin = self._sweep_information[epoch]['scaled_reflections']
 
-    if Flags.get_chef():
-      self._sweep_information_to_chef()
-
     if self.get_scaler_reference_reflection_file():
       md = self._factory.Mtzdump()
       md.set_hklin(self.get_scaler_reference_reflection_file())
@@ -549,128 +543,6 @@ class CommonScaler(Scaler):
     s.sort(vrset = -99999999.0)
 
     self._prepared_reflections = hklout
-
-    return
-
-  def _sweep_information_to_chef(self):
-    '''Analyse the sweep_information data structure to work out which
-    measurements should be compared in chef. This will then print out
-    an opinion of what should be compared by sweep epoch / image name.'''
-
-    dose_rates = []
-    wavelengths = []
-    groups = { }
-    batch_groups = { }
-    resolutions = { }
-
-    # FIXME need to estimate the inscribed circle resolution from the
-    # image header information - the lowest for each group will be used
-    # for the analysis... Actually - this will be the lowest resolution
-    # of all of the integrater resolutions *and* all of the inscribed
-    # circle resolutions...
-
-    for epoch in sorted(self._sweep_information):
-      header = self._sweep_information[epoch]['header']
-      batches = self._sweep_information[epoch]['batches']
-      dr = header['exposure_time'] / header['phi_width']
-      wave = self._sweep_information[epoch]['dname']
-      template = self._sweep_information[epoch][
-          'integrater'].get_template()
-
-      # FIXME should these not really just be inherited / propogated
-      # through the FrameProcessor interface? Trac #255.
-
-      indxr = self._sweep_information[epoch][
-          'integrater'].get_integrater_indexer()
-      beam = indxr.get_indexer_beam_centre()
-      distance = indxr.get_indexer_distance()
-      wavelength = self._sweep_information[epoch][
-          'integrater'].get_wavelength()
-
-      # ok, in here decide the minimum distance from the beam centre to
-      # the edge... which will depend on the size of the detector
-
-      detector_width = header['size'][0] * header['pixel'][0]
-      detector_height = header['size'][1] * header['pixel'][1]
-
-      radius = min([beam[0], detector_width - beam[0],
-                    beam[1], detector_height - beam[1]])
-
-      theta = 0.5 * math.atan(radius / distance)
-
-      resolution = wavelength / (2 * math.sin(theta))
-
-      if not wave in wavelengths:
-        wavelengths.append(wave)
-
-      # cluster on power of sqrt(two), perhaps? also need to get the
-      # batch ranges which they will end up as so that I can fetch
-      # out the reflections I want from the scaled MTZ files.
-      # When it comes to doing this it will also need to know where
-      # those reflections may be found... - this is in sweep_information
-      # [epoch]['batches'] so should be pretty handy to get to in here.
-
-      found = False
-
-      for rate in dose_rates:
-        r = rate[1]
-        if dr / r > math.sqrt(0.5) and dr / r < math.sqrt(2.0):
-          # copy this for grouping
-          found = True
-          if (wave, rate[0]) in groups:
-            groups[(wave, rate[0])].append((epoch, template))
-            batch_groups[(wave, rate[0])].append(batches)
-            if rate[0] in resolutions:
-              resolutions[rate[0]] = max(resolutions[rate[0]],
-                                         resolution)
-            else:
-              resolutions[rate[0]] = resolution
-
-
-          else:
-            groups[(wave, rate[0])] = [(epoch, template)]
-            batch_groups[(wave, rate[0])] = [batches]
-            if rate[0] in resolutions:
-              resolutions[rate[0]] = max(resolutions[rate[0]],
-                                         resolution)
-            else:
-              resolutions[rate[0]] = resolution
-
-      if not found:
-        rate = (len(dose_rates), dr)
-        dose_rates.append(rate)
-        groups[(wave, rate[0])] = [(epoch, template)]
-        batch_groups[(wave, rate[0])] = [batches]
-
-        if rate[0] in resolutions:
-          resolutions[rate[0]] = max(resolutions[rate[0]],
-                                     resolution)
-        else:
-          resolutions[rate[0]] = resolution
-
-    # now work through the groups and print out the results, as well
-    # as storing them for future reference...
-
-    self._chef_analysis_groups = { }
-    self._chef_analysis_times = { }
-    self._chef_analysis_resolutions = { }
-
-    for rate in dose_rates:
-      self._chef_analysis_groups[rate[0]] = []
-      self._chef_analysis_times[rate[0]] = rate[1]
-      Debug.write('Dose group %d (%s s)' % rate)
-      Debug.write('Resolution limit: %.2f' % resolutions[rate[0]])
-      self._chef_analysis_resolutions[rate[0]] = resolutions[rate[0]]
-      for wave in wavelengths:
-        if (wave, rate[0]) in groups:
-          for j in range(len(groups[(wave, rate[0])])):
-            et = groups[(wave, rate[0])][j]
-            batches = batch_groups[(wave, rate[0])][j]
-            self._chef_analysis_groups[rate[0]].append(
-                (wave, et[1], batches[0], batches[1]))
-            Debug.write('%d %s %s (%d to %d)' % \
-                        (et[0], wave, et[1],
-                         batches[0], batches[1]))
 
     return
 

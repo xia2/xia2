@@ -25,7 +25,6 @@ class _Flags(object):
     self._quick = False
     self._interactive = False
     self._ice = False
-    self._chef = False
     self._mask = None
     self._reversephi = False
     self._no_lattice_test = False
@@ -269,13 +268,6 @@ class _Flags(object):
 
   def get_ice(self):
     return self._ice
-
-  def set_chef(self, chef):
-    self._chef = chef
-    return
-
-  def get_chef(self):
-    return self._chef
 
   def set_reversephi(self, reversephi):
     self._reversephi = reversephi

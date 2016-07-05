@@ -153,7 +153,6 @@ class _CommandLine(object):
     self._read_batch_scale()
     self._read_small_molecule()
     self._read_quick()
-    self._read_chef()
     self._read_mask()
     self._read_no_lattice_test()
     self._read_no_relax()
@@ -672,18 +671,6 @@ class _CommandLine(object):
       Flags.set_quick(True)
       Debug.write('Quick mode selected')
       self._understood.append(self._argv.index('-quick'))
-
-  def _read_chef(self):
-
-    if '-chef' in self._argv:
-      Flags.set_chef(True)
-      self._understood.append(self._argv.index('-chef'))
-      Debug.write('Chef mode selected')
-
-    if '-nochef' in self._argv:
-      Flags.set_chef(False)
-      self._understood.append(self._argv.index('-nochef'))
-      Debug.write('Chef mode deselected')
 
   def _read_no_lattice_test(self):
 
