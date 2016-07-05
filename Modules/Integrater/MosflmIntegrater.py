@@ -403,16 +403,8 @@ class MosflmIntegrater(Integrater):
       m = indxr.get_indexer_mosaic()
       self.set_integrater_mosaic_min_mean_max(m, m, m)
 
-    #Chatter.write('Processed batches %d to %d' % \
-    #              self._intgr_batches_out)
-
     # write the report for each image as .*-#$ to Chatter -
     # detailed report will be written automagically to science...
-
-    residuals = integrater.get_residuals()
-    mean, sd = mean_sd(residuals)
-    Chatter.write('Weighted RMSD: %.2f (%.2f)' % \
-                  (mean, sd))
 
     Chatter.write(self.show_per_image_statistics())
 
@@ -752,9 +744,6 @@ class MosflmIntegrater(Integrater):
     else:
       m = indxr.get_indexer_mosaic()
       self.set_integrater_mosaic_min_mean_max(m, m, m)
-
-    #Chatter.write('Processed batches %d to %d' % \
-    #              self._intgr_batches_out)
 
     Chatter.write(self.show_per_image_statistics())
 

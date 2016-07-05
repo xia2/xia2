@@ -2036,11 +2036,6 @@ def Mosflm(DriverType = None):
         if 'weighted_residual' in parsed_output[i]:
           residuals.append(parsed_output[i]['weighted_residual'])
 
-      mean, sd = mean_sd(residuals)
-
-      Chatter.write('Weighted RMSD: %.2f (%.2f)' % \
-                    (mean, sd))
-
       for i in images:
         data = parsed_output[i]
 

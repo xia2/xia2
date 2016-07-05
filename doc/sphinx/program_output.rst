@@ -38,7 +38,6 @@ convenient legend, and looks like the following::
 
   -------------------- Integrating SWEEP1 --------------------
   Processed batches 1 to 450
-  Weighted RMSD: 0.26 (0.09)
   Integration status per image (60/record):
   ooooooooooooooooooooooooooooooooooo.oooooooooooooooooooooooo
   ooooooooooooooooooooooo.ooooooooooooooooooo.ooooooo.oooooooo
