@@ -194,12 +194,6 @@ class _CommandLine(object):
             (self._help_aimless_secondary(), str(e))
 
     try:
-      self._read_reference_reflection_file()
-    except exceptions.Exception, e:
-      raise RuntimeError, '%s (%s)' % \
-            (self._help_reference_reflection_file(), str(e))
-
-    try:
       self._read_rejection_threshold()
     except exceptions.Exception, e:
       raise RuntimeError, '%s (%s)' % \
@@ -331,6 +325,11 @@ class _CommandLine(object):
     if params.xia2.settings.scale.free_total is not None:
       Flags.set_free_total(params.xia2.settings.scale.free_total)
       Debug.write('Free total set to %f' %Flags.get_free_total())
+    if params.xia2.settings.scale.reference_reflection_file is not None:
+      Flags.set_reference_reflection_file(
+        params.xia2.settings.scale.reference_reflection_file)
+      Debug.write(
+        'FreeR_flag column taken from %s' %Flags.get_reference_reflection_file())
 
     params = PhilIndex.get_python_object()
 
@@ -507,28 +506,6 @@ class _CommandLine(object):
 
   def _help_aimless_secondary(self):
     return '-aimless_secondary N'
-
-  def _read_reference_reflection_file(self):
-    try:
-      index = self._argv.index('-reference_reflection_file')
-    except ValueError, e:
-      return
-
-    if index < 0:
-      raise RuntimeError, 'negative index'
-
-    Flags.set_reference_reflection_file(self._argv[index + 1])
-
-    self._understood.append(index)
-    self._understood.append(index + 1)
-
-    Debug.write('Reference reflection file: %s' %
-                Flags.get_reference_reflection_file())
-
-    return
-
-  def _help_reference_reflection_file(self):
-    return '-reference_reflection_file my_reference_reflection_file.mtz'
 
   def _read_rejection_threshold(self):
     try:

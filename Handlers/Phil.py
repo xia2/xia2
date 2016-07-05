@@ -383,6 +383,9 @@ xia2.settings
     freer_file = None
       .type = path
       .help = "Copy freer flags from this file"
+    reference_reflection_file = None
+      .type = path
+      .help = "Reference file for testing of alternative indexing schemes"
   }
   space_group = None
     .type = space_group
