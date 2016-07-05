@@ -21,7 +21,6 @@ from xia2.Schema.Interfaces.Indexer import IndexerSingleSweep
 from xia2.Handlers.Streams import Chatter, Debug, Journal
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Flags import Flags
-#from xia2.Handlers.Executables import Executables
 from xia2.Handlers.Files import FileHandler
 
 # helpers

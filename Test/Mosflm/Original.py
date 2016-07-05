@@ -28,7 +28,6 @@ from xia2.Schema.Interfaces.Integrater import Integrater
 from xia2.Handlers.Streams import Chatter, Debug, Journal
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Flags import Flags
-from xia2.Handlers.Executables import Executables
 from xia2.Handlers.Files import FileHandler
 
 # helpers
@@ -88,11 +87,8 @@ def Mosflm(DriverType = None):
       # generic things
       CCP4DriverInstance.__class__.__init__(self)
 
-      if Executables.get('ipmosflm'):
-        self.set_executable(Executables.get('ipmosflm'))
-      else:
-        self.set_executable(os.path.join(
-            os.environ['CCP4'], 'bin', 'ipmosflm'))
+      self.set_executable(os.path.join(
+          os.environ['CCP4'], 'bin', 'ipmosflm'))
 
       Indexer.__init__(self)
       Integrater.__init__(self)

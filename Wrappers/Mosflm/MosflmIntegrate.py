@@ -20,11 +20,8 @@ from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
 
 from xia2.Handlers.Streams import Chatter
-from xia2.Handlers.Executables import Executables
-#from xia2.Handlers.Files import FileHandler
 
 from xia2.lib.bits import mean_sd
-
 
 from xia2.Wrappers.CCP4.MosflmHelpers import \
      _parse_mosflm_integration_output, decide_integration_resolution_limit, \
@@ -47,11 +44,8 @@ def MosflmIntegrate(DriverType = None, indxr_print = True):
       # generic things
       CCP4DriverInstance.__class__.__init__(self)
 
-      if Executables.get('ipmosflm'):
-        self.set_executable(Executables.get('ipmosflm'))
-      else:
-        self.set_executable(os.path.join(
-            os.environ['CCP4'], 'bin', 'ipmosflm'))
+      self.set_executable(os.path.join(
+          os.environ['CCP4'], 'bin', 'ipmosflm'))
 
       # local parameters used in autoindexing
       self._mosflm_autoindex_sol = 0

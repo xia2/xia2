@@ -26,7 +26,6 @@ from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import Chatter, Debug
 from xia2.Handlers.PipelineSelection import add_preference, get_preferences
-from xia2.Handlers.Executables import Executables
 
 from libtbx.utils import Sorry
 
@@ -165,8 +164,6 @@ class _CommandLine(object):
     self._read_zero_dose()
     self._read_free_fraction()
     self._read_free_total()
-
-    self._read_executables()
 
     try:
       self._read_project_name()
@@ -1321,18 +1318,6 @@ class _CommandLine(object):
 
   def get_mask(self):
     return self._mask
-
-  def _read_executables(self):
-    try:
-      index = self._argv.index('-executable')
-    except ValueError, e:
-      return
-    executable_string = self._argv[index + 1]
-    assert('=' in executable_string)
-    executable, path = executable_string.split('=')
-    Executables.add(executable, path)
-    self._understood.append(index)
-    self._understood.append(index + 1)
 
 CommandLine = _CommandLine()
 CommandLine.setup()
