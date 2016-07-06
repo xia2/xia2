@@ -24,7 +24,6 @@ class _Flags(object):
   def __init__(self):
     self._quick = False
     self._interactive = False
-    self._ice = False
     self._mask = None
 
     # XDS specific things - to help with handling tricky data sets
