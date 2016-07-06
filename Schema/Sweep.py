@@ -90,8 +90,6 @@ class Sweep(object):
 
     self.update()
 
-    return
-
   def get_template(self):
     #try:
       #return self._imageset.get_template()
@@ -135,7 +133,6 @@ class Sweep(object):
   def update(self):
     '''Check to see if any more frames have appeared - if they
     have update myself and reset.'''
-
 
     from xia2.Applications.xia2setup import is_hd5f_name
     if is_hd5f_name(os.path.join(self._directory, self._template)):
