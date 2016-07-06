@@ -262,8 +262,6 @@ class XProject(object):
           # XXX do we ever actually get here?
           lattice = Syminfo.get_lattice(
             settings.space_group.type().lookup_symbol())
-        elif Flags.get_lattice():
-          lattice = Flags.get_lattice()
         else:
           lattice = None
 

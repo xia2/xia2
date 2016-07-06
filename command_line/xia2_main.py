@@ -25,7 +25,6 @@ from xia2.Applications.xia2_helpers import process_one_sweep
 def xia2_main(stop_after=None):
   '''Actually process something...'''
 
-  #Flags.set_serialize_state(True)
   Citations.cite('xia2')
 
   # print versions of related software

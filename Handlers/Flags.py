@@ -38,17 +38,8 @@ class _Flags(object):
     self._xparm_b = None
     self._xparm_c = None
 
-    # options to support the -spacegroup flag - the spacegroup is
-    # set from this, the lattice and pointgroup derived from such
-    self._spacegroup = None
-    self._pointgroup = None
-    self._lattice = None
-
     # are we working with small molecule data?
     self._small_molecule = False
-
-    # serialization of indexer/integrater state to/from json
-    self._serialize_state = False
 
     # starting directory (to allow setting working directory && relative
     # paths on input)
@@ -58,58 +49,6 @@ class _Flags(object):
 
   def get_starting_directory(self):
     return self._starting_directory
-
-  def set_serialize_state(self, serialize_state):
-    self._serialize_state = serialize_state
-    return
-
-  def get_serialize_state(self):
-    return self._serialize_state
-
-  def set_spacegroup(self, spacegroup):
-    '''A handler for the command-line option -spacegroup - this will
-    set the spacegroup and derive from this the pointgroup and lattice
-    appropriate for such...'''
-
-    from xia2.Handlers.Syminfo import Syminfo
-
-    spacegroup = spacegroup.upper()
-
-    # validate by deriving the pointgroup and lattice...
-
-    pointgroup = Syminfo.get_pointgroup(spacegroup)
-    lattice = Syminfo.get_lattice(spacegroup)
-
-    # assign
-
-    self._spacegroup = spacegroup
-    self._pointgroup = pointgroup
-    self._lattice = lattice
-
-    # debug print
-
-    from xia2.Handlers.Streams import Debug
-
-    Debug.write('Derived information from spacegroup flag: %s' % \
-                spacegroup)
-    Debug.write('Pointgroup: %s  Lattice: %s' % (pointgroup, lattice))
-
-    # indicate that since this has been assigned, we do not wish to
-    # test it!
-
-    from xia2.Handlers.Phil import PhilIndex
-    PhilIndex.params.xia2.settings.lattice_rejection = False
-
-    return
-
-  def get_spacegroup(self):
-    return self._spacegroup
-
-  def get_pointgroup(self):
-    return self._pointgroup
-
-  def get_lattice(self):
-    return self._lattice
 
   def set_quick(self, quick):
     self._quick = quick
