@@ -16,6 +16,7 @@ import copy
 from xia2.Handlers.Streams import Debug
 from xia2.Handlers.Flags import Flags
 from xia2.Handlers.PipelineSelection import get_preferences, add_preference
+from xia2.Handlers.Phil import PhilIndex
 
 from xia2.Modules.Integrater.MosflmIntegrater import MosflmIntegrater
 from xia2.Modules.Integrater.XDSIntegrater import XDSIntegrater
@@ -58,8 +59,8 @@ def IntegraterForXSweep(xsweep, json_file=None):
   # copy across resolution limits
   if xsweep.get_resolution_high():
 
-    dmin = xsweep.get_resolution_high()
-    dmax = xsweep.get_resolution_low()
+    dmin = PhilIndex.params.xia2.settings.resolution.d_min
+    dmax = PhilIndex.params.xia2.settings.resolution.d_max
 
     if (dmin and dmax and
         (dmin != integrater.get_integrater_high_resolution() or
@@ -145,8 +146,8 @@ def Integrater():
   # check to see if resolution limits were passed in through the
   # command line...
 
-  dmin = Flags.get_resolution_high()
-  dmax = Flags.get_resolution_low()
+  dmin = PhilIndex.params.xia2.settings.resolution.d_min
+  dmax = PhilIndex.params.xia2.settings.resolution.d_max
 
   if dmin:
     Debug.write('Adding user-assigned resolution limits:')

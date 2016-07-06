@@ -355,8 +355,8 @@ def print_sweeps(out = sys.stdout):
 
     out.write('BEGIN WAVELENGTH %s\n' % name)
 
-    dmin = Flags.get_resolution_high()
-    dmax = Flags.get_resolution_low()
+    dmin = PhilIndex.params.xia2.settings.resolution.d_min
+    dmax = PhilIndex.params.xia2.settings.resolution.d_max
 
     if dmin and dmax:
       out.write('RESOLUTION %f %f\n' % (dmin, dmax))

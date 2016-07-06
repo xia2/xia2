@@ -56,10 +56,6 @@ class _Flags(object):
     self._pointgroup = None
     self._lattice = None
 
-    # resolution limit flags
-    self._resolution_low = None
-    self._resolution_high = None
-
     # are we working with small molecule data?
     self._small_molecule = False
 
@@ -81,22 +77,6 @@ class _Flags(object):
 
   def get_serialize_state(self):
     return self._serialize_state
-
-  ### SETTING OF RESOLUTION LIMITS #### bug # 3183
-
-  def set_resolution_high(self, resolution):
-    self._resolution_high = resolution
-    return
-
-  def set_resolution_low(self, resolution):
-    self._resolution_low = resolution
-    return
-
-  def get_resolution_high(self):
-    return self._resolution_high
-
-  def get_resolution_low(self):
-    return self._resolution_low
 
   def set_spacegroup(self, spacegroup):
     '''A handler for the command-line option -spacegroup - this will

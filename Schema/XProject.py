@@ -283,8 +283,8 @@ class XProject(object):
         dmax = wave_info.get('dmax', 0.0)
 
         if dmin == 0.0 and dmax == 0.0:
-          dmin = Flags.get_resolution_high()
-          dmax = Flags.get_resolution_low()
+          dmin = PhilIndex.params.xia2.settings.resolution.d_min
+          dmax = PhilIndex.params.xia2.settings.resolution.d_max
 
         # want to be able to locally override the resolution limits
         # for this sweep while leaving the rest for the data set
