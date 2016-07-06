@@ -158,12 +158,6 @@ class _CommandLine(object):
     Debug.write('Project: %s' % params.xia2.settings.project)
     Debug.write('Crystal: %s' % params.xia2.settings.crystal)
 
-    try:
-      self._read_xparallel()
-    except exceptions.Exception, e:
-      raise RuntimeError, '%s (%s)' % \
-            (self._help_xparallel(), str(e))
-
     # FIXME add some consistency checks in here e.g. that there are
     # images assigned, there is a lattice assigned if cell constants
     # are given and so on
@@ -372,26 +366,6 @@ class _CommandLine(object):
   def get_xinfo(self):
     '''Return the XProject.'''
     return self._xinfo
-
-  def _read_xparallel(self):
-    try:
-      index = self._argv.index('-xparallel')
-    except ValueError, e:
-      return
-
-    if index < 0:
-      raise RuntimeError, 'negative index'
-
-    self._understood.append(index)
-    self._understood.append(index + 1)
-
-    Flags.set_xparallel(int(self._argv[index + 1]))
-    Debug.write('XParallel set to %d' % Flags.get_xparallel())
-
-    return
-
-  def _help_xparallel(self):
-    return '-xparallel N'
 
   def get_template(self):
     return self._default_template

@@ -172,11 +172,12 @@ def XDSIntegrate(DriverType=None, params=None):
         xds_inp.write(
             'NUMBER_OF_PROFILE_GRID_POINTS_ALONG_GAMMA= %d\n' % c)
 
-      if Flags.get_xparallel() > 1:
-        xds_inp.write('MAXIMUM_NUMBER_OF_JOBS=%d\n' % \
-                      Flags.get_xparallel())
+      from libtbx import Auto
+      mp_params = PhilIndex.params.xia2.settings.multiprocessing
+      if mp_params.mode == 'serial' and mp_params.njob > 1:
+        xds_inp.write('MAXIMUM_NUMBER_OF_JOBS=%d\n' %mp_params.njob)
 
-      elif Flags.get_xparallel() == -1:
+      elif mp_params.mode == 'serial' and mp_params.njob == Auto:
         chunk_width = 30.0
         phi_width = self.get_phi_width()
         nchunks = int(

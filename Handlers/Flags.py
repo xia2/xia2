@@ -44,8 +44,6 @@ class _Flags(object):
     except:
       self._parallel = 0
 
-    self._xparallel = 0
-
     # File from which to copy the FreeR_flag column
     self._freer_file = None
 
@@ -235,13 +233,6 @@ class _Flags(object):
 
   def get_xparm_c(self):
     return self._xparm_c
-
-  def set_xparallel(self, xparallel):
-    self._xparallel = xparallel
-    return
-
-  def get_xparallel(self):
-    return self._xparallel
 
   def set_freer_file(self, freer_file):
 
