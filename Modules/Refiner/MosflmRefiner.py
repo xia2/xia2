@@ -15,14 +15,11 @@ import math
 
 from xia2.lib.bits import auto_logfiler
 from xia2.Handlers.Files import FileHandler
-
+from xia2.Handlers.Phil import PhilIndex
 from xia2.Wrappers.Mosflm.MosflmRefineCell import MosflmRefineCell
 from xia2.lib.SymmetryLib import lattice_to_spacegroup
-
 from xia2.Experts.MatrixExpert import transmogrify_matrix
-
 from xia2.Schema.Exceptions.NegativeMosaicError import NegativeMosaicError
-
 from dxtbx.model.experiment.experiment_list import ExperimentList
 
 class MosflmRefiner(Refiner):
@@ -140,7 +137,7 @@ class MosflmRefiner(Refiner):
         # are > 10 it would indicate that the images are blank (assert)
         # so ignore from the analyis / comparison
 
-        if Flags.get_no_lattice_test() or \
+        if not PhilIndex.params.xia2.settings.lattice_rejection or \
            idxr.get_indexer_sweep().get_user_lattice():
           rms_deviations_p1 = []
           br_p1 = []
@@ -216,7 +213,7 @@ class MosflmRefiner(Refiner):
                     (ratio / len(ratios)))
 
         if (ratio / (max(cycles) * len(images))) > \
-           Flags.get_rejection_threshold() and \
+           PhilIndex.params.xia2.settings.lattice_rejection_threshold and \
            not self.get_integrater_sweep().get_user_lattice():
           raise BadLatticeError, 'incorrect lattice constraints'
 
@@ -540,9 +537,7 @@ class MosflmRefiner(Refiner):
     refiner.set_limits(lim_x, lim_y)
     refiner.set_images(self._mosflm_cell_ref_images)
 
-    from xia2.Handlers.Phil import PhilIndex
-    params = PhilIndex.get_python_object()
-    failover = params.xia2.settings.failover
+    failover = PhilIndex.params.xia2.settings.failover
 
     if failover and not self._mosflm_cell_ref_add_autoindex:
       refiner.set_ignore_cell_refinement_failure(True)

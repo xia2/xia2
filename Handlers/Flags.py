@@ -27,7 +27,6 @@ class _Flags(object):
     self._ice = False
     self._mask = None
     self._reversephi = False
-    self._no_lattice_test = False
 
     # XDS specific things - to help with handling tricky data sets
 
@@ -70,9 +69,6 @@ class _Flags(object):
     # resolution limit flags
     self._resolution_low = None
     self._resolution_high = None
-
-    # and these are general rejection criteria
-    self._rejection_threshold = 1.5
 
     # are we working with small molecule data?
     self._small_molecule = False
@@ -143,7 +139,8 @@ class _Flags(object):
     # indicate that since this has been assigned, we do not wish to
     # test it!
 
-    self.set_no_lattice_test(True)
+    from xia2.Handlers.Phil import PhilIndex
+    PhilIndex.params.xia2.settings.lattice_rejection = False
 
     return
 
@@ -176,13 +173,6 @@ class _Flags(object):
 
   def get_reversephi(self):
     return self._reversephi
-
-  def set_no_lattice_test(self, no_lattice_test):
-    self._no_lattice_test = no_lattice_test
-    return
-
-  def get_no_lattice_test(self):
-    return self._no_lattice_test
 
   def set_relax(self, relax):
     self._relax = relax
@@ -322,12 +312,5 @@ class _Flags(object):
 
   def get_reference_reflection_file(self):
     return self._reference_reflection_file
-
-  def set_rejection_threshold(self, rejection_threshold):
-    self._rejection_threshold = rejection_threshold
-    return
-
-  def get_rejection_threshold(self):
-    return self._rejection_threshold
 
 Flags = _Flags()

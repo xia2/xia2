@@ -460,7 +460,7 @@ class XDSIntegrater(Integrater):
       self.set_integrater_done(False)
 
     if not self.get_integrater_reindex_matrix() and not self._intgr_cell \
-           and not Flags.get_no_lattice_test() and \
+           and PhilIndex.params.xia2.settings.lattice_rejection and \
            not self.get_integrater_sweep().get_user_lattice():
       correct = self.Correct()
 
@@ -700,8 +700,7 @@ class XDSIntegrater(Integrater):
       phi = math.sqrt(0.05 * 0.05 + \
                       p1_deviations[1] * p1_deviations[1])
 
-      threshold = Flags.get_rejection_threshold()
-
+      threshold = PhilIndex.params.xia2.settings.lattice_rejection_threshold
       Debug.write('RMSD ratio: %.2f' % (correct_deviations[0] / pixel))
       Debug.write('RMSPhi ratio: %.2f' % (correct_deviations[1] / phi))
 

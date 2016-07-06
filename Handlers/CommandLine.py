@@ -151,7 +151,6 @@ class _CommandLine(object):
     self._read_small_molecule()
     self._read_quick()
     self._read_mask()
-    self._read_no_lattice_test()
     self._read_no_relax()
 
     # pipeline options
@@ -165,12 +164,6 @@ class _CommandLine(object):
     except exceptions.Exception, e:
       raise RuntimeError, '%s (%s)' % \
             (self._help_xparallel(), str(e))
-
-    try:
-      self._read_rejection_threshold()
-    except exceptions.Exception, e:
-      raise RuntimeError, '%s (%s)' % \
-            (self._help_rejection_threshold(), str(e))
 
     # FIXME add some consistency checks in here e.g. that there are
     # images assigned, there is a lattice assigned if cell constants
@@ -401,27 +394,6 @@ class _CommandLine(object):
   def _help_xparallel(self):
     return '-xparallel N'
 
-  def _read_rejection_threshold(self):
-    try:
-      index = self._argv.index('-rejection_threshold')
-    except ValueError, e:
-      return
-
-    if index < 0:
-      raise RuntimeError, 'negative index'
-
-    self._understood.append(index)
-    self._understood.append(index + 1)
-
-    Flags.set_rejection_threshold(float(self._argv[index + 1]))
-    Debug.write('Rejection threshold set to %f' % \
-                Flags.get_rejection_threshold())
-
-    return
-
-  def _help_rejection_threshold(self):
-    return '-rejection_threshold N'
-
   def get_template(self):
     return self._default_template
 
@@ -451,13 +423,6 @@ class _CommandLine(object):
       Flags.set_quick(True)
       Debug.write('Quick mode selected')
       self._understood.append(self._argv.index('-quick'))
-
-  def _read_no_lattice_test(self):
-
-    if '-no_lattice_test' in self._argv:
-      Flags.set_no_lattice_test(True)
-      self._understood.append(self._argv.index('-no_lattice_test'))
-      Debug.write('No lattice test mode selected')
 
   def _read_no_relax(self):
 

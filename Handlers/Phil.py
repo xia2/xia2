@@ -537,6 +537,14 @@ xia2.settings
     .type = bool
     .short_caption = "Reintegrate using a corrected lattice"
     .expert_level = 1
+  lattice_rejection = True
+    .type = bool
+    .short_caption = "Reject lattice if constraints increase RMSD"
+    .expert_level = 2
+  lattice_rejection_threshold = 1.5
+    .type = float
+    .short_caption = "Threshold for lattice rejection"
+    .expert_level = 2
   xds
     .expert_level = 1
     .short_caption = "xia2 XDS settings"
