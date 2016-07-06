@@ -397,7 +397,7 @@ def print_sweeps(out = sys.stdout):
 
       out.write('BEGIN SWEEP %s\n' % name)
 
-      if Flags.get_reversephi():
+      if PhilIndex.params.xia2.settings.input.reverse_phi:
         out.write('REVERSEPHI\n')
 
       out.write('WAVELENGTH %s\n' % wavelength_map[s.get_wavelength()])

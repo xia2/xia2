@@ -205,6 +205,7 @@ class XSweep(object):
 
     # + derive template, list of images
 
+    params = PhilIndex.get_python_object()
     if directory and image:
       self._template, self._directory = \
                       image2template_directory(os.path.join(directory,
@@ -213,7 +214,7 @@ class XSweep(object):
       from xia2.Schema import load_imagesets
       imagesets = load_imagesets(
         self._template, self._directory, image_range=self._frames_to_process,
-        reversephi=(Flags.get_reversephi() or self._reversephi))
+        reversephi=(params.xia2.settings.input.reverse_phi or self._reversephi))
 
       assert len(imagesets) == 1, "one imageset expected, %d found" % \
           len(imagesets)
@@ -232,7 +233,6 @@ class XSweep(object):
 
       error = False
 
-      params = PhilIndex.get_python_object()
       if params.general.check_image_files_readable:
         for j in range(start, end + 1):
           image_name = self.get_imageset().get_path(j-start)

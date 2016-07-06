@@ -200,8 +200,6 @@ class _CommandLine(object):
     if params.xia2.settings.scaler is not None:
       add_preference("scaler", params.xia2.settings.scaler)
 
-    Flags.set_reversephi(params.xia2.settings.input.reverse_phi)
-
     input_json = params.xia2.settings.input.json
     if (input_json is not None and len(input_json)):
       for json_file in input_json:

@@ -26,7 +26,6 @@ class _Flags(object):
     self._interactive = False
     self._ice = False
     self._mask = None
-    self._reversephi = False
 
     # XDS specific things - to help with handling tricky data sets
 
@@ -136,13 +135,6 @@ class _Flags(object):
 
   def get_interactive(self):
     return self._interactive
-
-  def set_reversephi(self, reversephi):
-    self._reversephi = reversephi
-    return
-
-  def get_reversephi(self):
-    return self._reversephi
 
   def set_small_molecule(self, small_molecule):
     self._small_molecule = small_molecule
