@@ -555,6 +555,8 @@ class XSweep(object):
           and all(hbeam) and all(ibeam):
         summary.append('Beam %.2f %.2f => %.2f %.2f' % \
         (hbeam[0], hbeam[1], ibeam[0], ibeam[1]))
+      else:
+        summary.append('Beam not on detector')
 
       hdist = imgset.get_detector()[0].get_directed_distance()
       idist = indxr.get_indexer_distance()
