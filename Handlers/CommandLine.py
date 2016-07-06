@@ -200,11 +200,6 @@ class _CommandLine(object):
     if params.xia2.settings.scaler is not None:
       add_preference("scaler", params.xia2.settings.scaler)
 
-    if params.xia2.settings.resolution.d_min is not None:
-      Flags.set_resolution_high(params.xia2.settings.resolution.d_min)
-    if params.xia2.settings.resolution.d_max is not None:
-      Flags.set_resolution_low(params.xia2.settings.resolution.d_max)
-
     Flags.set_reversephi(params.xia2.settings.input.reverse_phi)
 
     input_json = params.xia2.settings.input.json
