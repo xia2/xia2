@@ -591,8 +591,8 @@ class CCP4ScalerA(Scaler):
       self._reference = self.get_scaler_reference_reflection_file()
       Debug.write('Using HKLREF %s' % self._reference)
 
-    elif Flags.get_reference_reflection_file():
-      self._reference = Flags.get_reference_reflection_file()
+    elif PhilIndex.params.xia2.settings.scale.reference_reflection_file:
+      self._reference = PhilIndex.params.xia2.settings.scale.reference_reflection_file
       Debug.write('Using HKLREF %s' % self._reference)
 
     params = PhilIndex.params

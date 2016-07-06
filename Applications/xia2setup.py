@@ -315,8 +315,9 @@ def print_sweeps(out = sys.stdout):
               settings.unit_cell.parameters())
     out.write('\n')
 
-  if Flags.get_freer_file():
-    out.write('FREER_FILE %s\n' % Flags.get_freer_file())
+  freer_file = PhilIndex.params.xia2.settings.scale.freer_file
+  if freer_file is not None:
+    out.write('FREER_FILE %s\n' % PhilIndex.params.xia2.settings.scale.freer_file)
     out.write('\n')
 
   if latest_sequence:

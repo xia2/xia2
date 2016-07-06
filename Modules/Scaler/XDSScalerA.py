@@ -445,13 +445,13 @@ class XDSScalerA(Scaler):
 
       Debug.write('Spacegroup %d' % self._xds_spacegroup)
 
-    elif Flags.get_reference_reflection_file():
-      self._reference = Flags.get_reference_reflection_file()
+    elif PhilIndex.params.xia2.settings.scale.reference_reflection_file:
+      self._reference = PhilIndex.params.xia2.settings.scale.reference_reflection_file
 
       Debug.write('Using HKLREF %s' % self._reference)
 
       md = self._factory.Mtzdump()
-      md.set_hklin(Flags.get_reference_reflection_file())
+      md.set_hklin(PhilIndex.params.xia2.settings.scale.reference_reflection_file)
       md.dump()
 
       self._xds_spacegroup = Syminfo.spacegroup_name_to_number(

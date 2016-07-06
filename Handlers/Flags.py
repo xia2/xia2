@@ -38,17 +38,6 @@ class _Flags(object):
     self._xparm_b = None
     self._xparm_c = None
 
-    # File from which to copy the FreeR_flag column
-    self._freer_file = None
-
-    # or alternatively the fraction, or total number of free
-    # reflections
-    self._free_fraction = None
-    self._free_total = None
-
-    # reference reflection file
-    self._reference_reflection_file = None
-
     # options to support the -spacegroup flag - the spacegroup is
     # set from this, the lattice and pointgroup derived from such
     self._spacegroup = None
@@ -215,43 +204,11 @@ class _Flags(object):
     self._freer_file = freer_file
     return
 
-  def get_freer_file(self):
-    return self._freer_file
-
-  def set_free_fraction(self, free_fraction):
-    self._free_fraction = free_fraction
-    return
-
-  def get_free_fraction(self):
-    return self._free_fraction
-
-  def set_free_total(self, free_total):
-    self._free_total = free_total
-    return
-
-  def get_free_total(self):
-    return self._free_total
-
   def set_mask(self, mask):
     self._mask = BackstopMask(mask)
     return
 
   def get_mask(self):
     return self._mask
-
-  def set_reference_reflection_file(self, reference_reflection_file):
-    '''Set a new reference reflection file.'''
-
-    reference_reflection_file = os.path.abspath(reference_reflection_file)
-
-    if not os.path.exists(reference_reflection_file):
-      raise RuntimeError, '%s does not exist' % reference_reflection_file
-
-    self._reference_reflection_file = reference_reflection_file
-
-    return
-
-  def get_reference_reflection_file(self):
-    return self._reference_reflection_file
 
 Flags = _Flags()

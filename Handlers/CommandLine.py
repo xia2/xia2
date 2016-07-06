@@ -252,20 +252,27 @@ class _CommandLine(object):
       Flags.set_xparm(params.xds.index.xparm)
     if params.xds.index.xparm_ub is not None:
       Flags.set_xparm_ub(params.xds.index.xparm_ub)
+
     if params.xia2.settings.scale.freer_file is not None:
-      Flags.set_freer_file(params.xia2.settings.scale.freer_file)
-      Debug.write('FreeR_flag column taken from %s' %Flags.get_freer_file())
-    if params.xia2.settings.scale.free_fraction is not None:
-      Flags.set_free_fraction(params.xia2.settings.scale.free_fraction)
-      Debug.write('Free fraction set to %f' %Flags.get_free_fraction())
-    if params.xia2.settings.scale.free_total is not None:
-      Flags.set_free_total(params.xia2.settings.scale.free_total)
-      Debug.write('Free total set to %f' %Flags.get_free_total())
+      # mtzdump this file to make sure that there is a FreeR_flag
+      # column therein...
+      freer_file = os.path.abspath(params.xia2.settings.scale.freer_file)
+      if not os.path.exists(freer_file):
+        raise RuntimeError, '%s does not exist' % freer_file
+      from xia2.Modules.FindFreeFlag import FindFreeFlag
+      column = FindFreeFlag(freer_file)
+      Debug.write('FreeR_flag column in %s found: %s' % \
+                  (freer_file, column))
+      PhilIndex.update(
+        "xia2.settings.scale.freer_file=%s" %freer_file)
+
     if params.xia2.settings.scale.reference_reflection_file is not None:
-      Flags.set_reference_reflection_file(
+      reference_reflection_file = os.path.abspath(
         params.xia2.settings.scale.reference_reflection_file)
-      Debug.write(
-        'FreeR_flag column taken from %s' %Flags.get_reference_reflection_file())
+      if not os.path.exists(reference_reflection_file):
+        raise RuntimeError, '%s does not exist' % reference_reflection_file
+      PhilIndex.update(
+        "xia2.settings.scale.reference_reflection_file=%s" %reference_reflection_file)
 
     params = PhilIndex.get_python_object()
 

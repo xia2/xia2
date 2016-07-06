@@ -724,6 +724,7 @@ class CommonScaler(Scaler):
 
     FileHandler.record_temporary_file(hklout)
 
+    scale_params = PhilIndex.params.xia2.settings.scale
     if self.get_scaler_freer_file():
       # e.g. via .xinfo file
 
@@ -737,10 +738,10 @@ class CommonScaler(Scaler):
       c.set_hklout(hklout)
       c.copyfree()
 
-    elif Flags.get_freer_file():
+    elif scale_params.freer_file is not None:
       # e.g. via -freer_file command line argument
 
-      freein = Flags.get_freer_file()
+      freein = scale_params.freer_file
 
       Debug.write('Copying FreeR_flag from %s' % freein)
 
@@ -752,8 +753,8 @@ class CommonScaler(Scaler):
 
     else:
 
-      if Flags.get_free_total():
-        ntot = Flags.get_free_total()
+      if scale_params.free_total:
+        ntot = scale_params.free_total
 
         # need to get a fraction, so...
         mtzdump = self._factory.Mtzdump()
@@ -762,7 +763,7 @@ class CommonScaler(Scaler):
         nref = mtzdump.get_reflections()
         free_fraction = float(ntot) / float(nref)
       else:
-        free_fraction = Flags.get_free_fraction()
+        free_fraction = scale_params.free_fraction
 
       f = self._factory.Freerflag()
       f.set_free_fraction(free_fraction)
@@ -780,10 +781,10 @@ class CommonScaler(Scaler):
     # default fraction of 0.05
     free_fraction = 0.05
 
-    if Flags.get_free_fraction():
-      free_fraction = Flags.get_free_fraction()
-    elif Flags.get_free_total():
-      ntot = Flags.get_free_total()
+    if scale_params.free_fraction:
+      free_fraction = scale_params.free_fraction
+    elif scale_params.free_total:
+      ntot = scale_params.free_total()
 
       # need to get a fraction, so...
       mtzdump = self._factory.Mtzdump()
