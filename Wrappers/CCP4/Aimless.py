@@ -19,6 +19,7 @@ from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
 from xia2.Handlers.Streams import Chatter, Debug
 from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Phil import PhilIndex
 from xia2.Experts.ResolutionExperts import linear
 
 def Aimless(DriverType = None,
@@ -527,7 +528,7 @@ def Aimless(DriverType = None,
 
       self.start()
 
-      nproc = Flags.get_parallel()
+      nproc = PhilIndex.params.xia2.settings.multiprocessing.nproc
       if nproc > 1:
         self.set_working_environment('OMP_NUM_THREADS', '%d' %nproc)
         self.input('refine parallel')

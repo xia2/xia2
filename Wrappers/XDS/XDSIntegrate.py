@@ -30,6 +30,7 @@ from XDSIntegrateHelpers import _parse_integrate_lp, \
 # global flags etc.
 from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Phil import PhilIndex
 
 # For details on reflecting_range, it's E.S.D., and beam divergence etc.
 # see:
@@ -56,7 +57,7 @@ def XDSIntegrate(DriverType=None, params=None):
 
       # now set myself up...
 
-      self._parallel = Flags.get_parallel()
+      self._parallel = PhilIndex.params.xia2.settings.multiprocessing.nproc
       self.set_cpu_threads(self._parallel)
 
       if self._parallel <= 1:

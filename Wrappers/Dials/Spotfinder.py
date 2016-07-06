@@ -12,10 +12,8 @@
 from __future__ import division
 import os
 
-from __init__ import _setup_xia2_environ
-_setup_xia2_environ()
-
 from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Phil import PhilIndex
 
 def Spotfinder(DriverType = None):
   '''A factory for SpotfinderWrapper classes.'''
@@ -114,7 +112,7 @@ def Spotfinder(DriverType = None):
         self.add_command_line(
           'output.datablock="%s"' % self._output_sweep_filename)
       self.add_command_line('output.reflections="%s"' % self._input_spot_filename)
-      nproc = Flags.get_parallel()
+      nproc = PhilIndex.params.xia2.settings.multiprocessing.nproc
       self.set_cpu_threads(nproc)
       self.add_command_line('nproc=%i' % nproc)
       for scan_range in self._scan_ranges:

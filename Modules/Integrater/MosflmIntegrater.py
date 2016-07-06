@@ -24,6 +24,7 @@ from xia2.Handlers.Streams import Chatter, Debug, Journal
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Files import FileHandler
+from xia2.Handlers.Phil import PhilIndex
 
 # helpers
 from xia2.Wrappers.CCP4.MosflmHelpers import \
@@ -145,9 +146,9 @@ class MosflmIntegrater(Integrater):
       if self.get_integrater_sweep_name():
         pname, xname, dname = self.get_integrater_project_info()
 
-      if Flags.get_parallel() > 1:
-        Debug.write('Parallel integration: %d jobs' %
-                    Flags.get_parallel())
+      nproc = PhilIndex.params.xia2.settings.multiprocessing.nproc
+      if nproc > 1:
+        Debug.write('Parallel integration: %d jobs' %nproc)
         self._mosflm_hklout = self._mosflm_parallel_integrate()
       else:
         self._mosflm_hklout = self._mosflm_integrate()
@@ -480,7 +481,8 @@ class MosflmIntegrater(Integrater):
     # what follows below should (i) be run in separate directories
     # and (ii) be repeated N=parallel times.
 
-    parallel = Flags.get_parallel()
+    nproc = PhilIndex.params.xia2.settings.multiprocessing.nproc
+    parallel = nproc
 
     # FIXME this is something of a kludge - if too few frames refinement
     # and integration does not work well... ideally want at least 15

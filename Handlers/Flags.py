@@ -39,11 +39,6 @@ class _Flags(object):
     self._xparm_b = None
     self._xparm_c = None
 
-    try:
-      self._parallel = get_number_cpus()
-    except:
-      self._parallel = 0
-
     # File from which to copy the FreeR_flag column
     self._freer_file = None
 
@@ -175,13 +170,6 @@ class _Flags(object):
 
   def get_small_molecule(self):
     return self._small_molecule
-
-  def set_parallel(self, parallel):
-    self._parallel = parallel
-    return
-
-  def get_parallel(self):
-    return self._parallel
 
   def set_xparm(self, xparm):
 

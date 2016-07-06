@@ -12,10 +12,8 @@ from __future__ import division
 import os
 import shutil
 
-from __init__ import _setup_xia2_environ
-_setup_xia2_environ()
-
 from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Phil import PhilIndex
 
 def Index(DriverType = None):
   '''A factory for IndexWrapper classes.'''
@@ -163,7 +161,7 @@ def Index(DriverType = None):
       for f in self._spot_filenames:
         self.add_command_line(f)
       self.add_command_line('indexing.method=%s' % method)
-      nproc = Flags.get_parallel()
+      nproc = PhilIndex.params.xia2.settings.multiprocessing.nproc
       self.set_cpu_threads(nproc)
       self.add_command_line('indexing.nproc=%i' % nproc)
       if Flags.get_small_molecule():

@@ -39,7 +39,7 @@ def XScaleR(DriverType = None,
       DriverInstance.__class__.__init__(self)
 
       # now set myself up...
-      self._parallel = Flags.get_parallel()
+      self._parallel = PhilIndex.params.xia2.settings.multiprocessing.nproc
       if self._parallel <= 1:
         self.set_executable('xscale')
       else:

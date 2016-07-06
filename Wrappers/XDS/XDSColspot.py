@@ -23,6 +23,7 @@ from xia2.Handlers.Streams import Debug
 
 # global flags
 from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Phil import PhilIndex
 
 
 def XDSColspot(DriverType=None, params=None):
@@ -45,7 +46,7 @@ def XDSColspot(DriverType=None, params=None):
 
       # now set myself up...
 
-      self._parallel = Flags.get_parallel()
+      self._parallel = PhilIndex.params.xia2.settings.multiprocessing.nproc
       self.set_cpu_threads(self._parallel)
 
       if self._parallel <= 1:

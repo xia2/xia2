@@ -22,6 +22,7 @@ from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 from XDS import imageset_to_xds, xds_check_version_supported, xds_check_error
 from XDS import XDSException, template_to_xds
 from xia2.Handlers.Streams import Debug
+from xia2.Handlers.Phil import PhilIndex
 
 # specific helper stuff
 from XDSIdxrefHelpers import _parse_idxref_lp, _parse_idxref_lp_distance_etc, \
@@ -57,7 +58,7 @@ def XDSIdxref(DriverType=None, params=None):
 
       # now set myself up...
 
-      self._parallel = Flags.get_parallel()
+      self._parallel = PhilIndex.params.xia2.settings.multiprocessing.nproc
       self.set_cpu_threads(self._parallel)
 
       if self._parallel <= 1:

@@ -177,15 +177,11 @@ class _CommandLine(object):
       elif mp_params.nproc is Auto:
         from xia2.Handlers.Environment import get_number_cpus
         mp_params.nproc = get_number_cpus()
-        Flags.set_parallel(mp_params.nproc)
-      else:
-        Flags.set_parallel(mp_params.nproc)
     elif mp_params.mode == 'serial':
       mp_params.njob = 1
       if mp_params.nproc is Auto:
         from xia2.Handlers.Environment import get_number_cpus
         mp_params.nproc = get_number_cpus()
-      Flags.set_parallel(mp_params.nproc)
 
     PhilIndex.update("xia2.settings.multiprocessing.njob=%d" %mp_params.njob)
     PhilIndex.update("xia2.settings.multiprocessing.nproc=%d" %mp_params.nproc)
