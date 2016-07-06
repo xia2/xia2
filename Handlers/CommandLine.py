@@ -151,7 +151,6 @@ class _CommandLine(object):
     self._read_small_molecule()
     self._read_quick()
     self._read_mask()
-    self._read_no_relax()
 
     # pipeline options
     self._read_pipeline()
@@ -423,13 +422,6 @@ class _CommandLine(object):
       Flags.set_quick(True)
       Debug.write('Quick mode selected')
       self._understood.append(self._argv.index('-quick'))
-
-  def _read_no_relax(self):
-
-    if '-no_relax' in self._argv:
-      Flags.set_relax(False)
-      self._understood.append(self._argv.index('-no_relax'))
-      Debug.write('XDS relax about indexing selected')
 
   def _read_pipeline(settings):
     settings = PhilIndex.get_python_object().xia2.settings

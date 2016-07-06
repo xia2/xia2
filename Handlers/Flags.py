@@ -57,9 +57,6 @@ class _Flags(object):
     # reference reflection file
     self._reference_reflection_file = None
 
-    # these are development parameters for the XDS implementation
-    self._relax = True
-
     # options to support the -spacegroup flag - the spacegroup is
     # set from this, the lattice and pointgroup derived from such
     self._spacegroup = None
@@ -173,13 +170,6 @@ class _Flags(object):
 
   def get_reversephi(self):
     return self._reversephi
-
-  def set_relax(self, relax):
-    self._relax = relax
-    return
-
-  def get_relax(self):
-    return self._relax
 
   def set_small_molecule(self, small_molecule):
     self._small_molecule = small_molecule

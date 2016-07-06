@@ -493,6 +493,9 @@ xia2.settings
     .type = floats(size = 2)
     .short_caption = "XDS cell deviation"
     .expert_level = 1
+  xds_check_cell_deviation = False
+    .type = bool
+    .short_caption = "Check cell deviation in XDS IDXREF"
   use_brehm_diederichs = False
     .type = bool
     .help = "Use the Brehm-Diederichs algorithm to resolve an indexing "

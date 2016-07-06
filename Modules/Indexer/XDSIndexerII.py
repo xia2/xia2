@@ -247,16 +247,16 @@ class XDSIndexerII(XDSIndexer):
           lattice, cell, mosaic = \
                    idxref.get_indexing_solution()
           # compare solutions
+          check = PhilIndex.params.xia2.settings.xds_check_cell_deviation
           for j in range(3):
             # allow two percent variation in unit cell length
             if math.fabs((cell[j] - original_cell[j]) / \
-                         original_cell[j]) > 0.02 and \
-                         not Flags.get_relax():
+                         original_cell[j]) > 0.02 and check:
               Debug.write('XDS unhappy and solution wrong')
               raise e
             # and two degree difference in angle
             if math.fabs(cell[j + 3] - original_cell[j + 3]) \
-                   > 2.0 and not Flags.get_relax():
+                   > 2.0 and check:
               Debug.write('XDS unhappy and solution wrong')
               raise e
           Debug.write('XDS unhappy but solution ok')
