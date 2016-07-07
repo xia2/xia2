@@ -16,14 +16,12 @@ import os
 import sys
 
 from xia2.Handlers.Environment import get_number_cpus
-from xia2.Toolkit.BackstopMask import BackstopMask
 
 class _Flags(object):
   '''A singleton to manage boolean flags.'''
 
   def __init__(self):
     self._quick = False
-    self._mask = None
 
     # XDS specific things - to help with handling tricky data sets
 
@@ -123,12 +121,5 @@ class _Flags(object):
 
     self._freer_file = freer_file
     return
-
-  def set_mask(self, mask):
-    self._mask = BackstopMask(mask)
-    return
-
-  def get_mask(self):
-    return self._mask
 
 Flags = _Flags()

@@ -148,7 +148,6 @@ class _CommandLine(object):
     # things which are single token flags...
 
     self._read_quick()
-    self._read_mask()
 
     if params.xia2.settings.small_molecule == True:
       Debug.write('Small molecule selected')
@@ -417,28 +416,6 @@ class _CommandLine(object):
       PhilIndex.update("xia2.settings.integrater=%s" % integrater)
     if scaler is not None and settings.scaler is None:
       PhilIndex.update("xia2.settings.scaler=%s" % scaler)
-
-  def _read_mask(self):
-    try:
-      index = self._argv.index('-mask')
-    except ValueError, e:
-      return
-
-    if index < 0:
-      raise RuntimeError, 'negative index'
-
-    self._understood.append(index)
-    self._understood.append(index + 1)
-    Flags.set_mask(self._argv[index + 1])
-
-  def get_mask(self):
-    return self._mask
-
-  def _help_mask(self):
-    return '-mask mask.dat'
-
-  def get_mask(self):
-    return self._mask
 
 CommandLine = _CommandLine()
 CommandLine.setup()

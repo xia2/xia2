@@ -334,8 +334,7 @@ class XDSIndexer(IndexerSingleSweep):
     # at this stage, need to (perhaps) modify the BKGINIT.cbf image
     # to mark out the back stop
 
-    if Flags.get_mask():
-
+    if PhilIndex.params.general.backstop_mask:
       Debug.write('Applying mask to BKGINIT.pck')
 
       # copy the original file
@@ -346,8 +345,9 @@ class XDSIndexer(IndexerSingleSweep):
       shutil.copyfile(cbf_old, cbf_save)
 
       # modify the file to give the new mask
-      Flags.get_mask().apply_mask_xds(self.get_header(),
-                                      cbf_save, cbf_old)
+      from xia2.Toolkit.BackstopMask import BackstopMask
+      mask = BackstopMask(PhilIndex.params.general.backstop_mask)
+      mask.apply_mask_xds(self.get_header(), cbf_save, cbf_old)
 
       init.reload()
 

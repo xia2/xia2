@@ -20,6 +20,9 @@ general {
   check_image_files_readable = True
     .type = bool
     .expert_level = 2
+  backstop_mask = None
+    .type = path
+    .short_caption = "Backstop mask"
 }
 xds {
   z_min = 0.0
