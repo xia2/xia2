@@ -147,7 +147,6 @@ class _CommandLine(object):
 
     # things which are single token flags...
 
-    self._read_interactive()
     self._read_quick()
     self._read_mask()
 
@@ -418,13 +417,6 @@ class _CommandLine(object):
       PhilIndex.update("xia2.settings.integrater=%s" % integrater)
     if scaler is not None and settings.scaler is None:
       PhilIndex.update("xia2.settings.scaler=%s" % scaler)
-
-  def _read_interactive(self):
-
-    if '-interactive' in self._argv:
-      Flags.set_interactive(True)
-      self._understood.append(self._argv.index('-interactive'))
-      Debug.write('Interactive indexing ON')
 
   def _read_mask(self):
     try:

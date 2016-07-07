@@ -23,7 +23,6 @@ class _Flags(object):
 
   def __init__(self):
     self._quick = False
-    self._interactive = False
     self._mask = None
 
     # XDS specific things - to help with handling tricky data sets
@@ -52,13 +51,6 @@ class _Flags(object):
 
   def get_quick(self):
     return self._quick
-
-  def set_interactive(self, interactive):
-    self._interactive = interactive
-    return
-
-  def get_interactive(self):
-    return self._interactive
 
   def set_xparm(self, xparm):
 

@@ -76,7 +76,7 @@ class MosflmIndexer(IndexerSingleSweep):
     phi_width = self.get_phi_width()
     images = self.get_matching_images()
 
-    if Flags.get_interactive():
+    if PhilIndex.params.xia2.settings.interactive == True:
       selected_images = index_select_images_user(phi_width, images,
                                                  Chatter)
     else:

@@ -422,12 +422,16 @@ def print_sweeps(out = sys.stdout):
       if user_beam_centre is not None:
         out.write('BEAM %6.2f %6.2f\n' % tuple(user_beam_centre))
       elif not settings.trust_beam_centre:
-        interactive = Flags.get_interactive()
-        Flags.set_interactive(False)
+        interactive = False
+        if PhilIndex.params.xia2.settings.interactive == True:
+          interactive = True
+          PhilIndex.params.xia2.settings.interactive = False
+          PhilIndex.get_python_object()
         beam_centre = compute_beam_centre(s)
         if beam_centre:
           out.write('BEAM %6.2f %6.2f\n' % tuple(beam_centre))
-        Flags.set_interactive(interactive)
+        PhilIndex.params.xia2.settings.interactive = interactive
+        PhilIndex.get_python_object()
 
       if settings.detector_distance is not None:
         out.write('DISTANCE %.2f\n' % settings.detector_distance)
@@ -444,7 +448,6 @@ def get_sweeps(templates):
   global known_sweeps
 
   from libtbx import easy_mp
-  from ..Handlers.Phil import PhilIndex
   from xia2setup_helpers import get_sweep
   params = PhilIndex.get_python_object()
   mp_params = params.xia2.settings.multiprocessing

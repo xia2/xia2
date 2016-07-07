@@ -43,6 +43,7 @@ from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
 from xia2.DriverExceptions.NotAvailableError import NotAvailableError
 from xia2.Handlers.Streams import Debug
 from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.PipelineSelection import get_preferences
 
 def IndexerForXSweep(xsweep, json_file=None):
@@ -63,7 +64,6 @@ def IndexerForXSweep(xsweep, json_file=None):
 
   crystal_lattice = xsweep.get_crystal_lattice()
 
-  from xia2.Handlers.Phil import PhilIndex
   params = PhilIndex.params
   multi_sweep_indexing = params.xia2.settings.multi_sweep_indexing == True
 
@@ -171,7 +171,7 @@ def Indexer(preselection = None):
       (XDSIndexer, 'xds', 'XDS Indexer')
     ]
 
-  if Flags.get_interactive():
+  if PhilIndex.params.xia2.settings.interactive == True:
     indexerlist.append((XDSIndexerInteractive, 'xdsii', 'XDS Interactive Indexer'))
   else:
     indexerlist.append((XDSIndexerII, 'xdsii', 'XDS II Indexer'))

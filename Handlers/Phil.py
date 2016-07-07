@@ -306,6 +306,9 @@ xia2.settings
     .type = bool
     .short_caption = 'Fail over gracefully'
     .help = 'If processing a sweep fails, keep going'
+  interactive = False
+    .type = bool
+    .short_caption = 'Interactive indexing'
   project = 'AUTOMATIC'
     .type = str
     .help = "A name for the data processing project"
