@@ -64,8 +64,6 @@ class DialsIntegrater(Integrater):
     self._integrate_parameters = { }
     self._intgr_integrated_filename = None
 
-    return
-
   # overload these methods as we don't want the resolution range
   # feeding back... aha - but we may want to assign them
   # from outside!
@@ -73,16 +71,13 @@ class DialsIntegrater(Integrater):
   def set_integrater_resolution(self, dmin, dmax, user = False):
     if user:
       Integrater.set_integrater_resolution(self, dmin, dmax, user)
-    return
 
   def set_integrater_high_resolution(self, dmin, user = False):
     if user:
       Integrater.set_integrater_high_resolution(self, dmin, user)
-    return
 
   def set_integrater_low_resolution(self, dmax, user = False):
     self._intgr_reso_low = dmax
-    return
 
   # admin functions
 
@@ -148,7 +143,6 @@ class DialsIntegrater(Integrater):
     Debug.write('Deleting all stored results.')
     self._data_files = { }
     self._integrate_parameters = { }
-    return
 
   def _integrate_prepare(self):
     '''Prepare for integration - in XDS terms this may mean rerunning
@@ -249,8 +243,6 @@ class DialsIntegrater(Integrater):
     self.set_beam_obj(experiment.beam)
     self.set_goniometer(experiment.goniometer)
 
-    return
-
   def _integrate(self):
     '''Actually do the integration - in XDS terms this will mean running
     DEFPIX and INTEGRATE to measure all the reflections.'''
@@ -287,7 +279,8 @@ class DialsIntegrater(Integrater):
     detector = imageset.get_detector()
 
     d_min_limit = detector.get_max_resolution(beam.get_s0())
-    if d_min_limit > self._intgr_reso_high:
+    if d_min_limit > self._intgr_reso_high \
+        or PhilIndex.params.xia2.settings.resolution.keep_all_reflections:
       Debug.write('Overriding high resolution limit: %f => %f' % \
                   (self._intgr_reso_high, d_min_limit))
       self._intgr_reso_high = d_min_limit

@@ -989,10 +989,11 @@ class CommonScaler(Scaler):
       else:
         Debug.write('Local scaling failed')
 
-    return
-
   def _estimate_resolution_limit(self, hklin, batch_range=None):
     params = PhilIndex.params.xia2.settings.resolution
+    if params.keep_all_reflections == True:
+      Debug.write('Keep_all_reflections set, estimating resolution = 0.0')
+      return 0.0
     m = Merger()
     m.set_working_directory(self.get_working_directory())
     from xia2.lib.bits import auto_logfiler

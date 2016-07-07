@@ -1387,6 +1387,7 @@ class _CommandLine(object):
       self._understood.append(self._argv.index('-small_molecule'))
       settings = PhilIndex.get_python_object().xia2.settings
       PhilIndex.update("xia2.settings.unify_setting=true")
+      PhilIndex.update("xia2.settings.resolution.keep_all_reflections=true")
 
     return
 
