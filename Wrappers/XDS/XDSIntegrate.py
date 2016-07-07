@@ -198,7 +198,7 @@ def XDSIntegrate(DriverType=None, params=None):
 
       if self._params.delphi:
         xds_inp.write('DELPHI=%.1f\n' % self._params.delphi)
-      elif Flags.get_small_molecule():
+      elif PhilIndex.params.xia2.settings.small_molecule == True:
         xds_inp.write('DELPHI=%.1f\n' % \
                       xds_params.delphi_small)
       else:

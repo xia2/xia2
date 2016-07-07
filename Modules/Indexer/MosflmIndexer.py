@@ -22,6 +22,7 @@ from xia2.Handlers.Streams import Chatter, Debug, Journal
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Files import FileHandler
+from xia2.Handlers.Phil import PhilIndex
 
 # helpers
 from xia2.Wrappers.CCP4.MosflmHelpers import _get_indexing_solution_number
@@ -69,7 +70,7 @@ class MosflmIndexer(IndexerSingleSweep):
   def _index_select_images(self):
     '''Select correct images based on image headers.'''
 
-    if Flags.get_small_molecule():
+    if PhilIndex.params.xia2.settings.small_molecule == True:
       return self._index_select_images_small_molecule()
 
     phi_width = self.get_phi_width()

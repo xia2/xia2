@@ -36,7 +36,7 @@ class DialsMultiIndexer(DialsIndexer, MultiIndexer):
       indexer.set_phil_file(PhilIndex.params.dials.index.phil_file)
     if PhilIndex.params.dials.index.max_cell:
       indexer.set_max_cell(PhilIndex.params.dials.index.max_cell)
-    if Flags.get_small_molecule():
+    if PhilIndex.params.xia2.settings.small_molecule == True:
       indexer.set_min_cell(3)
     if PhilIndex.params.dials.fix_geometry:
       indexer.set_detector_fix('all')

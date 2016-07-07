@@ -462,7 +462,7 @@ def Aimless(DriverType = None,
 
       self.start()
       self.input('xmlout %d_aimless.xml' % self.get_xpid())
-      if not Flags.get_small_molecule():
+      if PhilIndex.params.xia2.settings.small_molecule == False:
         self.input('bins 20')
       self.input('run 1 all')
       self.input('scales constant')
@@ -533,7 +533,7 @@ def Aimless(DriverType = None,
         self.set_working_environment('OMP_NUM_THREADS', '%d' %nproc)
         self.input('refine parallel')
       self.input('xmlout %d_aimless.xml' % self.get_xpid())
-      if not Flags.get_small_molecule():
+      if PhilIndex.params.xia2.settings.small_molecule == False:
         self.input('bins 20')
       self.input('intensities %s' %self._intensities)
 
@@ -567,7 +567,7 @@ def Aimless(DriverType = None,
 
       # FIXME this is a bit of a hack - should be better determined
       # than this...
-      if Flags.get_small_molecule():
+      if PhilIndex.params.xia2.settings.small_molecule == True:
         #self.input('sdcorrection tie sdfac 0.707 0.3 tie sdadd 0.01 0.05')
         #self.input('reject all 30')
         self.input('sdcorrection fixsdb')
@@ -748,7 +748,7 @@ def Aimless(DriverType = None,
                                   '%d_aimless.xml' % self.get_xpid())
 
       self.input('xmlout %d_aimless.xml' % self.get_xpid())
-      if not Flags.get_small_molecule():
+      if PhilIndex.params.xia2.settings.small_molecule == False:
         self.input('bins 20')
 
       if self._new_scales_file:

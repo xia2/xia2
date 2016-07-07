@@ -113,7 +113,7 @@ class CCP4ScalerA(Scaler):
 
     aimless.set_mode(PhilIndex.params.xia2.settings.scale.scales)
 
-    if Flags.get_small_molecule():
+    if PhilIndex.params.xia2.settings.small_molecule == True:
       aimless.set_scaling_parameters('rotation', 15.0)
       aimless.set_bfactor(bfactor=False)
 

@@ -37,9 +37,6 @@ class _Flags(object):
     self._xparm_b = None
     self._xparm_c = None
 
-    # are we working with small molecule data?
-    self._small_molecule = False
-
     # starting directory (to allow setting working directory && relative
     # paths on input)
     self._starting_directory = os.getcwd()
@@ -62,13 +59,6 @@ class _Flags(object):
 
   def get_interactive(self):
     return self._interactive
-
-  def set_small_molecule(self, small_molecule):
-    self._small_molecule = small_molecule
-    return
-
-  def get_small_molecule(self):
-    return self._small_molecule
 
   def set_xparm(self, xparm):
 

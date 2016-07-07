@@ -1305,7 +1305,7 @@ class XDSScalerA(Scaler):
       self._scalr_scaled_reflection_files['sca'][key] = scaout
       FileHandler.record_data_file(scaout)
 
-      if Flags.get_small_molecule():
+      if PhilIndex.params.xia2.settings.small_molecule == True:
         hklout = '%s.hkl' % f[:-4]
 
         m2v = self._factory.Mtz2various()
@@ -1315,8 +1315,6 @@ class XDSScalerA(Scaler):
 
         self._scalr_scaled_reflection_files['hkl'][key] = hklout
         FileHandler.record_data_file(hklout)
-
-    return
 
   def get_batch_to_dose(self):
     batch_to_dose = {}

@@ -148,9 +148,12 @@ class _CommandLine(object):
     # things which are single token flags...
 
     self._read_interactive()
-    self._read_small_molecule()
     self._read_quick()
     self._read_mask()
+
+    if params.xia2.settings.small_molecule == True:
+      Debug.write('Small molecule selected')
+      PhilIndex.update("xia2.settings.unify_setting=true")
 
     # pipeline options
     self._read_pipeline()
@@ -192,7 +195,7 @@ class _CommandLine(object):
       add_preference("indexer", params.xia2.settings.indexer)
     if params.xia2.settings.multi_sweep_indexing is Auto:
       params.xia2.settings.multi_sweep_indexing = \
-        Flags.get_small_molecule() and 'dials' == params.xia2.settings.indexer
+        params.xia2.settings.small_molecule == True and 'dials' == params.xia2.settings.indexer
     if params.xia2.settings.refiner is not None:
       add_preference("refiner", params.xia2.settings.refiner)
     if params.xia2.settings.integrater is not None:
@@ -374,17 +377,6 @@ class _CommandLine(object):
 
   def get_hdf5_master_files(self):
     return self._hdf5_master_files
-
-  def _read_small_molecule(self):
-
-    if '-small_molecule' in self._argv:
-      Flags.set_small_molecule(True)
-      Debug.write('Small molecule selected')
-      self._understood.append(self._argv.index('-small_molecule'))
-      settings = PhilIndex.get_python_object().xia2.settings
-      PhilIndex.update("xia2.settings.unify_setting=true")
-
-    return
 
   def _read_quick(self):
 

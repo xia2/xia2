@@ -297,6 +297,11 @@ xia2.settings
             "  3dd: as 3d, but use DIALS for indexing"
             "dials: DIALS, AIMLESS"
     .type = choice
+  small_molecule = False
+    .type = bool
+    .short_caption = "Use small molecule settings"
+    .help = "Assume that the dataset comes from a"
+            "chemical crystallography experiment"
   failover = False
     .type = bool
     .short_caption = 'Fail over gracefully'

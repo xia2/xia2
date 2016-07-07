@@ -44,7 +44,7 @@ class CommonScaler(Scaler):
     max_batches = 0
 
     for e in self._sweep_handler.get_epochs():
-      if Flags.get_small_molecule():
+      if PhilIndex.params.xia2.settings.small_molecule == True:
         continue
       si = self._sweep_handler.get_sweep_information(e)
 
@@ -193,7 +193,7 @@ class CommonScaler(Scaler):
         spacegroup = self._scalr_input_spacegroup
         reindex_operator = 'h,k,l'
 
-      elif Flags.get_small_molecule() and False:
+      elif False and PhilIndex.params.xia2.settings.small_molecule == True: ## FIXME: This still needed?
         p.decide_pointgroup()
         spacegroup = p.get_pointgroup()
         reindex_operator = p.get_reindex_operator()
@@ -615,7 +615,7 @@ class CommonScaler(Scaler):
         '%s %s %s report' %(
           self._scalr_pname, self._scalr_xname, wavelength), htmlout)
 
-    if not Flags.get_small_molecule():
+    if PhilIndex.params.xia2.settings.small_molecule == False:
 
       for wavelength in self._scalr_scaled_refl_files.keys():
 
@@ -701,7 +701,7 @@ class CommonScaler(Scaler):
           'mtz_merged'] = self._scalr_scaled_refl_files[
           self._scalr_scaled_refl_files.keys()[0]]
 
-    if Flags.get_small_molecule():
+    if PhilIndex.params.xia2.settings.small_molecule == True:
       # record this for future reference
 
       # keep 'mtz' and remove 'mtz_merged' from the dictionary for
@@ -833,7 +833,7 @@ class CommonScaler(Scaler):
     # next have a look for radiation damage... if more than one wavelength
 
     if len(self._scalr_scaled_refl_files.keys()) > 1 and \
-           not Flags.get_small_molecule():
+           PhilIndex.params.xia2.settings.small_molecule == False:
       crd = CCP4InterRadiationDamageDetector()
 
       crd.set_working_directory(self.get_working_directory())
@@ -873,7 +873,7 @@ class CommonScaler(Scaler):
     m.set_limit_cc_half(params.cc_half)
     m.set_limit_isigma(params.isigma)
     m.set_limit_misigma(params.misigma)
-    if Flags.get_small_molecule():
+    if PhilIndex.params.xia2.settings.small_molecule == True:
       m.set_nbins(20)
     if batch_range is not None:
       start, end = batch_range
