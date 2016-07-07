@@ -63,7 +63,7 @@ def run():
     params = PhilIndex.get_python_object()
     strategy_params = params.strategy
 
-    for strategy in strategy_params:
+    for istrategy, strategy in enumerate(strategy_params):
       from xia2.Wrappers.EMBL import Best
       best = Best.BestStrategy()
       for isweep, sweep in enumerate(sweeps):
@@ -78,10 +78,12 @@ def run():
         export.set_prefix(prefix)
         export.run()
         if isweep == 0:
+          imageset = sweep.get_imageset()
+          scan = imageset.get_scan()
+          best.set_t_ref(scan.get_exposure_times()[0])
           best.set_mos_dat('%s.dat' %prefix)
           best.set_mos_par('%s.par' %prefix)
         best.add_mos_hkl('%s.hkl' %prefix)
-      best.set_t_ref(0.2)
       best.set_i2s(strategy.i_over_sigi)
       best.set_T_max(strategy.max_total_exposure)
       best.set_t_min(strategy.min_exposure)
@@ -104,7 +106,7 @@ def run():
         mutiplicity = '%.2f' %multiplicity
       except TypeError:
         pass
-      Chatter.write('Native')
+      Chatter.write('Strategy %i' %istrategy)
       Chatter.write('Start / end / width: %.2f/%.2f/%.2f' % (best.get_phi_start(), best.get_phi_end(), best.get_phi_width()))
       Chatter.write('Completeness / multiplicity / resolution: %.2f/%s/%.2f' % (best.get_completeness(), multiplicity, best.get_resolution()))
       Chatter.write('Transmission / exposure %.3f/%.3f' % (best.get_transmission(), best.get_exposure_time()))
