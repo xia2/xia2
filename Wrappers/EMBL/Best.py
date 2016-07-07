@@ -33,6 +33,7 @@ def BestStrategy(DriverType=None):
       self._mos_par = None
       self._mos_hkl = []
       self._anomalous = False
+      self._xmlout = None
 
       # output parameters
       self._phi_start = None
@@ -94,6 +95,9 @@ def BestStrategy(DriverType=None):
     def set_anomalous(self, anomalous = True):
       self._anomalous = anomalous
 
+    def set_xmlout(self, xmlout):
+      self._xmlout = xmlout
+
     def get_phi_start(self):
       return self._phi_start
 
@@ -129,9 +133,9 @@ def BestStrategy(DriverType=None):
       if self._M_min is not None:
         command_line.extend(('-R', '%.3f' %self._M_min))
       if self._C_min is not None:
-        command_line.extend(('-C', '%.3f' %(0.01 * self._C_min)))
+        command_line.extend(('-C', '%.3f' %self._C_min))
       if self._i2s is not None:
-       command_line.extend(('-i2', '%.3f' %self._i2s))
+       command_line.extend(('-i2s', '%.3f' %self._i2s))
       if self._sensitivity is not None:
         command_line.extend(('-su', '%.3f' %self._sensitivity))
       if self._shape is not None:
@@ -139,6 +143,8 @@ def BestStrategy(DriverType=None):
 
       if self._anomalous:
         command_line.append('-a')
+      if self._xmlout is not None:
+        command_line.extend(('-dna', self._xmlout))
 
       command_line.append('-mos')
       command_line.append(self._mos_dat)

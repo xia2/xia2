@@ -152,6 +152,7 @@ class _CommandLine(object):
     if params.xia2.settings.small_molecule == True:
       Debug.write('Small molecule selected')
       PhilIndex.update("xia2.settings.unify_setting=true")
+      PhilIndex.update("xia2.settings.resolution.keep_all_reflections=true")
 
     # pipeline options
     self._read_pipeline()

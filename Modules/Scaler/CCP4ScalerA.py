@@ -919,9 +919,18 @@ class CCP4ScalerA(Scaler):
                       (dname, resolution))
         continue
 
-      hklin = sc.get_unmerged_reflection_file()
-      resolution = self._estimate_resolution_limit(
-        hklin, batch_range=(start, end))
+      if PhilIndex.params.xia2.settings.resolution.keep_all_reflections == True:
+        try:
+          resolution = intgr.get_detector().get_max_resolution(intgr.get_beam_obj().get_s0())
+          Debug.write('keep_all_reflections set, using detector limits')
+        except Exception:
+          hklin = sc.get_unmerged_reflection_file()
+          resolution = self._estimate_resolution_limit(
+            hklin, batch_range=(start, end))
+      else:
+        hklin = sc.get_unmerged_reflection_file()
+        resolution = self._estimate_resolution_limit(
+          hklin, batch_range=(start, end))
       Debug.write('Resolution for sweep %s: %.2f' % \
                   (sname, resolution))
 

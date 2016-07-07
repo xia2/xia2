@@ -532,27 +532,26 @@ class XSweep(object):
 
     if self._frames_to_process:
       summary.append('Images: %d to %d' % tuple(self._frames_to_process))
-
-
-    if self._frames_to_process:
       first = self._frames_to_process[0]
       start = self._frames_to_process[0] - first
       end = self._frames_to_process[1] - first + 1
       self._imageset = self._imageset[start:end]
 
-    if self._get_indexer():
+    indxr = self._get_indexer()
+    if indxr:
       # print the comparative values
-
-      indxr = self._get_indexer()
-
       from xia2.Schema.Interfaces.FrameProcessor import get_beam_centre
       imgset = self.get_input_imageset()
       hbeam = get_beam_centre(imgset.get_detector(), imgset.get_beam())
       ibeam = indxr.get_indexer_beam_centre()
 
-      if hbeam and ibeam:
+      if hbeam and ibeam and \
+          len(hbeam) == 2 and len(ibeam) == 2 \
+          and all(hbeam) and all(ibeam):
         summary.append('Beam %.2f %.2f => %.2f %.2f' % \
         (hbeam[0], hbeam[1], ibeam[0], ibeam[1]))
+      else:
+        summary.append('Beam not on detector')
 
       hdist = imgset.get_detector()[0].get_directed_distance()
       idist = indxr.get_indexer_distance()

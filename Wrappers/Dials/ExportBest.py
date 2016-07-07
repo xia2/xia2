@@ -26,6 +26,7 @@ def ExportBest(DriverType = None):
 
       self._experiments_filename = None
       self._reflections_filename = None
+      self._prefix = 'best'
       return
 
     def set_experiments_filename(self, experiments_filename):
@@ -42,6 +43,12 @@ def ExportBest(DriverType = None):
     def get_reflections_filename(self):
       return self._reflections_filename
 
+    def set_prefix(self, prefix):
+      self._prefix = prefix
+
+    def get_prefix(self):
+      return self._prefix
+
     def run(self):
       from xia2.Handlers.Streams import Debug
       Debug.write('Running dials.export')
@@ -50,6 +57,7 @@ def ExportBest(DriverType = None):
       self.add_command_line('experiments=%s' % self._experiments_filename)
       self.add_command_line('reflections=%s' % self._reflections_filename)
       self.add_command_line('format=best')
+      self.add_command_line('best.prefix=%s' %self._prefix)
       self.start()
       self.close_wait()
       self.check_for_errors()
