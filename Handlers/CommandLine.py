@@ -194,15 +194,18 @@ class _CommandLine(object):
 
     if params.xia2.settings.indexer is not None:
       add_preference("indexer", params.xia2.settings.indexer)
-    if params.xia2.settings.multi_sweep_indexing is Auto:
-      params.xia2.settings.multi_sweep_indexing = \
-        params.xia2.settings.small_molecule == True and 'dials' == params.xia2.settings.indexer
     if params.xia2.settings.refiner is not None:
       add_preference("refiner", params.xia2.settings.refiner)
     if params.xia2.settings.integrater is not None:
       add_preference("integrater", params.xia2.settings.integrater)
     if params.xia2.settings.scaler is not None:
       add_preference("scaler", params.xia2.settings.scaler)
+
+    if params.xia2.settings.multi_sweep_indexing is Auto:
+      if params.xia2.settings.small_molecule == True and 'dials' == params.xia2.settings.indexer:
+        PhilIndex.update("xia2.settings.multi_sweep_indexing=True")
+      else:
+        PhilIndex.update("xia2.settings.multi_sweep_indexing=False")
 
     input_json = params.xia2.settings.input.json
     if (input_json is not None and len(input_json)):
