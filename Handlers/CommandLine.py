@@ -125,10 +125,12 @@ class _CommandLine(object):
                      '-3di': 'pipeline=3di',
                      '-3dii': 'pipeline=3dii',
                      '-3dd': 'pipeline=3dd',
-                     '-dials': 'pipeline=dials' }
+                     '-dials': 'pipeline=dials',
+                     '-small_molecule': 'small_molecule=true'
+                   }
     for k, v in replacements.iteritems():
       if k in self._argv:
-        print "***\nCommand line option %s is deprecated. Please use %s instead\n***" % (k, v)
+        print "***\nCommand line option %s is deprecated.\nPlease use %s instead\n***" % (k, v)
         self._argv[self._argv.index(k)] = v
 
     # first of all try to interpret arguments as phil parameters/files
