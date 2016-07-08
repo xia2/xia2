@@ -91,23 +91,10 @@ def FrenchWilson(DriverType = None):
         self.add_command_line('anomalous=false')
 
       self.start()
-
-      # write the harvest files in the local directory, not
-      # in $HARVESTHOME. Though we have set this for the project
-      # so we should be fine to just plough ahead...
-      # self.input('usecwd')
-
-      #if self._nres:
-        #self.input('nres %d' % self._nres)
-
-      #if not self._wilson:
-        #self.input('scale 1')
-
       self.close_wait()
 
       try:
         self.check_for_errors()
-        #self.check_ccp4_errors()
 
       except RuntimeError, e:
         try:

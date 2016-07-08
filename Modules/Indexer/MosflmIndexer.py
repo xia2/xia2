@@ -21,8 +21,8 @@ from xia2.Schema.Interfaces.Indexer import IndexerSingleSweep
 from xia2.Handlers.Streams import Chatter, Debug, Journal
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Flags import Flags
-#from xia2.Handlers.Executables import Executables
 from xia2.Handlers.Files import FileHandler
+from xia2.Handlers.Phil import PhilIndex
 
 # helpers
 from xia2.Wrappers.CCP4.MosflmHelpers import _get_indexing_solution_number
@@ -65,25 +65,18 @@ class MosflmIndexer(IndexerSingleSweep):
     if self._indxr_images == []:
       self._index_select_images()
 
-    if self._mosflm_autoindex_thresh is None and \
-           Flags.get_microcrystal():
-      self._mosflm_autoindex_thresh = 5
-
     return
 
   def _index_select_images(self):
     '''Select correct images based on image headers.'''
 
-    if Flags.get_small_molecule():
+    if PhilIndex.params.xia2.settings.small_molecule == True:
       return self._index_select_images_small_molecule()
-
-    if Flags.get_microcrystal():
-      return self._index_select_images_microcrystal()
 
     phi_width = self.get_phi_width()
     images = self.get_matching_images()
 
-    if Flags.get_interactive():
+    if PhilIndex.params.xia2.settings.interactive == True:
       selected_images = index_select_images_user(phi_width, images,
                                                  Chatter)
     else:
@@ -119,25 +112,6 @@ class MosflmIndexer(IndexerSingleSweep):
 
       Debug.write('Selected image %s' % image_number)
       self.add_indexer_image_wedge(image_number)
-
-    return
-
-  def _index_select_images_microcrystal(self):
-    '''Select images for more difficult cases e.g. microcrystal
-    work. Will apply (up to) 20 images to the task.'''
-
-    phi_width = self.get_phi_width()
-    images = self.get_matching_images()
-
-    spacing = max(1, int(len(images) / 20))
-
-    selected = []
-
-    for j in range(0, len(images), spacing):
-      selected.append(images[j])
-
-    for image in selected[:20]:
-      self.add_indexer_image_wedge(image)
 
     return
 
@@ -341,11 +315,6 @@ class MosflmIndexer(IndexerSingleSweep):
       # only consider this if we have thus far no idea on the
       # mosaic spread...
       mosaic_spreads.append(phi_width)
-
-    #if Flags.get_microcrystal():
-      #self._indxr_mosaic = 0.5
-    #else:
-      #raise IndexingError, 'mosaicity estimation failed'
 
     intgr_params['raster'] = indexer.get_raster()
 

@@ -34,6 +34,7 @@ from xia2.Experts.ResolutionExperts import xds_integrate_hkl_to_list, \
 # global flags
 from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Streams import Debug
+from xia2.Handlers.Phil import PhilIndex
 
 def XDSCorrect(DriverType = None, params=None):
 
@@ -55,7 +56,7 @@ def XDSCorrect(DriverType = None, params=None):
 
       # now set myself up...
 
-      self._parallel = Flags.get_parallel()
+      self._parallel = PhilIndex.params.xia2.settings.multiprocessing.nproc
       self.set_cpu_threads(self._parallel)
 
       if self._parallel <= 1:
@@ -109,32 +110,25 @@ def XDSCorrect(DriverType = None, params=None):
       self._results = None
       self._remove = []
 
-      return
-
     # getter and setter for input / output data
 
     def set_anomalous(self, anomalous):
       self._anomalous = anomalous
-      return
 
     def get_anomalous(self):
       return self._anomalous
 
     def set_spacegroup_number(self, spacegroup_number):
       self._spacegroup_number = spacegroup_number
-      return
 
     def set_cell(self, cell):
       self._cell = cell
-      return
 
     def set_ice(self, ice):
       self._ice = ice
-      return
 
     def set_excluded_regions(self, excluded_regions):
       self._excluded_regions = excluded_regions
-      return
 
     def set_polarization(self, polarization):
       if polarization > 1.0 or polarization < 0.0:
@@ -146,7 +140,6 @@ def XDSCorrect(DriverType = None, params=None):
       if not len(reindex_matrix) == 12:
         raise RuntimeError, 'reindex matrix must be 12 numbers'
       self._reindex_matrix = reindex_matrix
-      return
 
     def get_reindex_used(self):
       return self._reindex_used
@@ -159,18 +152,15 @@ def XDSCorrect(DriverType = None, params=None):
 
     def set_input_data_file(self, name, data):
       self._input_data_files[name] = data
-      return
 
     def get_output_data_file(self, name):
       return self._output_data_files[name]
 
     def set_integrate_hkl(self, integrate_hkl):
       self._integrate_hkl = integrate_hkl
-      return
 
     def set_remove_hkl(self, remove_hkl):
       self._remove_hkl = remove_hkl
-      return
 
     def get_remove(self):
       return self._remove

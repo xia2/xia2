@@ -30,6 +30,7 @@ from XDSIntegrateHelpers import _parse_integrate_lp, \
 # global flags etc.
 from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Phil import PhilIndex
 
 # For details on reflecting_range, it's E.S.D., and beam divergence etc.
 # see:
@@ -56,7 +57,7 @@ def XDSIntegrate(DriverType=None, params=None):
 
       # now set myself up...
 
-      self._parallel = Flags.get_parallel()
+      self._parallel = PhilIndex.params.xia2.settings.multiprocessing.nproc
       self.set_cpu_threads(self._parallel)
 
       if self._parallel <= 1:
@@ -172,11 +173,12 @@ def XDSIntegrate(DriverType=None, params=None):
         xds_inp.write(
             'NUMBER_OF_PROFILE_GRID_POINTS_ALONG_GAMMA= %d\n' % c)
 
-      if Flags.get_xparallel() > 1:
-        xds_inp.write('MAXIMUM_NUMBER_OF_JOBS=%d\n' % \
-                      Flags.get_xparallel())
+      from libtbx import Auto
+      mp_params = PhilIndex.params.xia2.settings.multiprocessing
+      if mp_params.mode == 'serial' and mp_params.njob > 1:
+        xds_inp.write('MAXIMUM_NUMBER_OF_JOBS=%d\n' %mp_params.njob)
 
-      elif Flags.get_xparallel() == -1:
+      elif mp_params.mode == 'serial' and mp_params.njob == Auto:
         chunk_width = 30.0
         phi_width = self.get_phi_width()
         nchunks = int(
@@ -187,7 +189,7 @@ def XDSIntegrate(DriverType=None, params=None):
 
         xds_inp.write('MAXIMUM_NUMBER_OF_JOBS=%d\n' % nchunks)
 
-      profile_fitting = PhilIndex.params.xds.integrate.profile_fitting
+      profile_fitting = PhilIndex.params.xia2.settings.integration.profile_fitting
       if not profile_fitting:
         xds_inp.write('PROFILE_FITTING=FALSE\n')
 
@@ -196,7 +198,7 @@ def XDSIntegrate(DriverType=None, params=None):
 
       if self._params.delphi:
         xds_inp.write('DELPHI=%.1f\n' % self._params.delphi)
-      elif Flags.get_small_molecule():
+      elif PhilIndex.params.xia2.settings.small_molecule == True:
         xds_inp.write('DELPHI=%.1f\n' % \
                       xds_params.delphi_small)
       else:

@@ -52,10 +52,7 @@ else:
   debug = False
 
 from xia2.Driver.DriverFactory import DriverFactory
-from xia2.Handlers.Flags import Flags
-
-def get_trust_timestamps():
-  return Flags.get_trust_timestamp()
+from xia2.Handlers.Phil import PhilIndex
 
 class _HeaderCache(object):
   '''A cache for image headers.'''
@@ -782,14 +779,8 @@ def Diffdump(DriverType = None):
                 print '! exposure epoch: %d' % \
                       int(self._header['epoch'])
             else:
-              if get_trust_timestamps():
-                self._header['epoch'] = float(
-                    os.stat(self._image)[8])
-                self._header['date'] = time.ctime(
-                    self._header['epoch'])
-              else:
-                self._header['epoch'] = 0.0
-                self._header['date'] = ''
+              self._header['epoch'] = 0.0
+              self._header['date'] = ''
 
           except exceptions.Exception, e:
 

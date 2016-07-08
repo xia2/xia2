@@ -18,8 +18,8 @@ def exercise_dials_wrappers(nproc=None):
     return
 
   if nproc is not None:
-    from xia2.Handlers.Flags import Flags
-    Flags.set_parallel(nproc)
+    from xia2.Handlers.Phil import PhilIndex
+    PhilIndex.params.xia2.settings.multiprocessing.nproc = nproc
 
   from xia2.Wrappers.Dials.Import import Import
   from xia2.Wrappers.Dials.Spotfinder import Spotfinder

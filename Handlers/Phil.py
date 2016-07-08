@@ -20,8 +20,13 @@ general {
   check_image_files_readable = True
     .type = bool
     .expert_level = 2
+  backstop_mask = None
+    .type = path
+    .short_caption = "Backstop mask"
 }
 xds {
+  z_min = 0.0
+    .type = float
   delphi = 5
     .type = float
   delphi_small = 30
@@ -36,6 +41,9 @@ xds {
     .type = floats(size = 2)
   profile_grid_size = None
     .type = ints(size = 2)
+  keep_outliers = False
+    .type = bool
+    .help = "Do not remove outliers in integration and scaling"
   correct {
     refine = *DISTANCE *BEAM *AXIS *ORIENTATION *CELL *POSITION
       .type = choice(multi = True)
@@ -62,8 +70,6 @@ xds {
       .type = float
     reintegrate = true
       .type = bool
-    profile_fitting = True
-      .type = bool
   }
   init {
     fix_scale = False
@@ -76,6 +82,12 @@ xds {
     debug = *OFF ON
       .type = choice(multi = False)
       .help = 'output enganced debugging for indexing'
+    xparm = None
+      .type = path
+      .help = 'Use refined GXPARM.XDS geometry in indexing'
+    xparm_ub = None
+      .type = path
+      .help = 'Use refined GXPARM.XDS orientation matrix in indexing'
   }
   colspot {
     minimum_pixels_per_spot = 1
@@ -84,6 +96,9 @@ xds {
   xscale {
     min_isigma = 3.0
       .type = float
+    zero_dose = False
+      .type = bool
+      .help = "Enable XSCALE zero dose extrapolation"
   }
   merge2cbf {
     merge_n_images = 2
@@ -221,9 +236,6 @@ dials
     phil_file = None
       .type = path
       .short_caption = "phil file to pass to dials.integrate"
-    profile_fitting = True
-      .type = bool
-      .short_caption = "Do profile fitting"
     background_outlier_algorithm = *null nsigma truncated normal tukey mosflm
       .type = choice
       .help = "Outlier rejection performed prior to background fit"
@@ -262,6 +274,10 @@ ccp4
     surface_link = True
       .type = bool
       .short_caption = "Surface link"
+    secondary = 6
+      .type = int
+      .expert_level = 2
+      .short_caption = "Aimless # secondary harmonics"
   }
   truncate
     .short_caption = "truncate"
@@ -320,10 +336,46 @@ strategy
 xia2.settings
   .short_caption = "xia2 settings"
 {
+  pipeline = 2d 2di 3d 3dd 3di 3dii *dials
+    .short_caption = "main processing pipeline"
+    .help = "Select the xia2 main processing pipeline"
+            "   2d: MOSFLM, LABELIT (if installed), AIMLESS"
+            "  2di: as 2d, but use 3 wedges for indexing"
+            "   3d: XDS, XSCALE, LABELIT"
+            "  3di: as 3d, but use 3 wedges for indexing"
+            " 3dii: XDS, XSCALE, using all images for autoindexing"
+            "  3dd: as 3d, but use DIALS for indexing"
+            "dials: DIALS, AIMLESS"
+    .type = choice
+  small_molecule = False
+    .type = bool
+    .short_caption = "Use small molecule settings"
+    .help = "Assume that the dataset comes from a"
+            "chemical crystallography experiment"
+  failover = False
+    .type = bool
+    .short_caption = 'Fail over gracefully'
+    .help = 'If processing a sweep fails, keep going'
+  interactive = False
+    .type = bool
+    .short_caption = 'Interactive indexing'
+  project = 'AUTOMATIC'
+    .type = str
+    .help = "A name for the data processing project"
+  crystal = 'DEFAULT'
+    .type = str
+    .help = "A name for the crystal"
   input
     .short_caption = "xia2 input settings"
     .expert_level = 1
   {
+    atom = None
+      .type = str
+      .short_caption = "Heavy atom name, optional"
+      .help = "Set the heavy atom name, if appropriate"
+    anomalous = False
+      .type = bool
+      .short_caption = "Separate anomalous pairs in merging"
     working_directory = None
       .type = path
       .short_caption = "Working directory (i.e. not $CWD)"
@@ -386,6 +438,26 @@ xia2.settings
       .type = str
       .expert_level = 2
       .short_caption = "xia2 scale directory"
+    free_fraction = 0.05
+      .type = float(value_min=0.0, value_max=1.0)
+      .help = "Fraction of free reflections"
+    free_total = None
+      .type = int(value_min=0)
+      .help = "Total number of free reflections"
+    freer_file = None
+      .type = path
+      .help = "Copy freer flags from this file"
+    reference_reflection_file = None
+      .type = path
+      .help = "Reference file for testing of alternative indexing schemes"
+    model = *decay *modulation *absorption partiality
+      .type = choice(multi=True)
+      .expert_level = 2
+      .short_caption = "Scaling models to apply"
+    scales = *rotation batch
+      .type = choice
+      .expert_level = 2
+      .short_caption = "Smoothed or batch scaling"
   }
   space_group = None
     .type = space_group
@@ -436,11 +508,6 @@ xia2.settings
       .short_caption = "Outer shell merged <I/sigI>"
       .expert_level = 1
   }
-  optimize_scaling = False
-    .type = bool
-    .help = "Search for best scaling model"
-    .short_caption = "Optimize scaling"
-    .expert_level = 1
   unify_setting = False
     .type = bool
     .help = "For one crystal, multiple orientations, unify U matrix"
@@ -484,6 +551,9 @@ xia2.settings
     .type = floats(size = 2)
     .short_caption = "XDS cell deviation"
     .expert_level = 1
+  xds_check_cell_deviation = False
+    .type = bool
+    .short_caption = "Check cell deviation in XDS IDXREF"
   use_brehm_diederichs = False
     .type = bool
     .help = "Use the Brehm-Diederichs algorithm to resolve an indexing "
@@ -491,6 +561,16 @@ xia2.settings
             "See: W. Brehm and K. Diederichs, Acta Cryst. (2014). D70, 101-109."
     .short_caption = "Brehm-Diederichs"
     .expert_level = 1
+  integration {
+    profile_fitting = True
+      .type = bool
+      .help = "Use profile fitting not summation integration, default yes"
+      .short_caption = "Use profile fitting"
+    exclude_ice_regions = False
+      .type = bool
+      .help = "Exclude measurements from regions which are typically where "
+              "ice rings land"
+  }
   developmental
     .expert_level = 2
   {
@@ -518,6 +598,14 @@ xia2.settings
     .type = bool
     .short_caption = "Reintegrate using a corrected lattice"
     .expert_level = 1
+  lattice_rejection = True
+    .type = bool
+    .short_caption = "Reject lattice if constraints increase RMSD"
+    .expert_level = 2
+  lattice_rejection_threshold = 1.5
+    .type = float
+    .short_caption = "Threshold for lattice rejection"
+    .expert_level = 2
   xds
     .expert_level = 1
     .short_caption = "xia2 XDS settings"

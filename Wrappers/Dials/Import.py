@@ -38,14 +38,11 @@ def Import(DriverType = None):
       self._mosflm_beam_centre = None
       self._wavelength_tolerance = None
 
-      return
-
     def set_image_range(self, image_range):
       self._image_range = image_range
 
     def set_sweep_filename(self, sweep_filename):
       self._sweep_filename = sweep_filename
-      return
 
     def set_wavelength_tolerance(self, tolerance):
       self._wavelength_tolerance = tolerance
@@ -59,7 +56,6 @@ def Import(DriverType = None):
 
     def set_image_to_epoch(self, image_to_epoch):
       self._image_to_epoch = image_to_epoch
-      return
 
     def set_reference_geometry(self, reference_geometry):
       self._reference_geometry = reference_geometry
@@ -91,8 +87,6 @@ def Import(DriverType = None):
         scan[u'epochs'].append(self._image_to_epoch[image+offset])
       datablock[0]['scan'] = [scan]
       json.dump(datablock, open(datablock_json, 'w'))
-
-      return
 
     def run(self, fast_mode=False):
 
@@ -143,7 +137,6 @@ def Import(DriverType = None):
       import os
       assert(os.path.exists(os.path.join(self.get_working_directory(),
                                          self._sweep_filename)))
-      return
 
     def load_sweep_model(self):
       from dxtbx.serialize import load

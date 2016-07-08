@@ -24,6 +24,7 @@ from xia2.Handlers.Streams import Chatter, Debug, Journal
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Files import FileHandler
+from xia2.Handlers.Phil import PhilIndex
 
 # helpers
 from xia2.Wrappers.CCP4.MosflmHelpers import \
@@ -58,7 +59,7 @@ class MosflmIntegrater(Integrater):
     self._mosflm_cell_ref_double_mosaic = False
 
     # belt + braces for very troublesome cases - this will only
-    # be used in failover / microcrystal mode
+    # be used in failover mode
     self._mosflm_cell_ref_add_autoindex = False
 
     # and the calculation of the missetting angles
@@ -95,8 +96,6 @@ class MosflmIntegrater(Integrater):
 
     if self.get_imageset().get_detector()[0].get_type() == 'SENSOR_PAD':
       self._mosflm_gain = 1.0
-
-    #self._intgr_refiner.set_prepare_done(False)
 
     self.digest_template()
 
@@ -144,20 +143,12 @@ class MosflmIntegrater(Integrater):
 
     try:
 
-      #self.reset()
-      #auto_logfiler(self)
-
       if self.get_integrater_sweep_name():
         pname, xname, dname = self.get_integrater_project_info()
-        #FileHandler.record_log_file(
-            #'%s %s %s %s mosflm integrate' % \
-            #(self.get_integrater_sweep_name(),
-             #pname, xname, dname),
-            #self.get_log_file())
 
-      if Flags.get_parallel() > 1:
-        Debug.write('Parallel integration: %d jobs' %
-                    Flags.get_parallel())
+      nproc = PhilIndex.params.xia2.settings.multiprocessing.nproc
+      if nproc > 1:
+        Debug.write('Parallel integration: %d jobs' %nproc)
         self._mosflm_hklout = self._mosflm_parallel_integrate()
       else:
         self._mosflm_hklout = self._mosflm_integrate()
@@ -228,12 +219,6 @@ class MosflmIntegrater(Integrater):
     '''Perform the actual integration, based on the results of the
     cell refinement or indexing (they have the equivalent form.)'''
 
-    #if not self.get_integrater_indexer():
-      #Debug.write('Replacing indexer of %s with self at %d' % \
-                  #(str(self.get_integrater_indexer()), __line__))
-      #self.set_integrater_indexer(self)
-
-    #indxr = self.get_integrater_indexer()
     refinr = self.get_integrater_refiner()
 
     if not refinr.get_refiner_payload('mosflm_orientation_matrix'):
@@ -241,18 +226,13 @@ class MosflmIntegrater(Integrater):
 
     lattice = refinr.get_refiner_lattice()
     spacegroup_number = lattice_to_spacegroup(lattice)
-    #mosaic = indxr.get_indexer_mosaic()
     mosaic = refinr.get_refiner_payload('mosaic')
-    #cell = self._intgr_cell
     beam = refinr.get_refiner_payload('beam')
     distance = refinr.get_refiner_payload('distance')
     matrix = refinr.get_refiner_payload('mosflm_orientation_matrix')
 
     integration_params = refinr.get_refiner_payload(
       'mosflm_integration_parameters')
-
-    #beam = integration_params['beam']
-    #distance = integration_params['distance']
 
     if integration_params:
       if 'separation' in integration_params:
@@ -283,14 +263,7 @@ class MosflmIntegrater(Integrater):
 
     if pname is not None and xname is not None and dname is not None:
       Debug.write('Harvesting: %s/%s/%s' % (pname, xname, dname))
-
-      harvest_dir = os.path.join(os.environ['HARVESTHOME'],
-                                 'DepositFiles', pname)
-
-      if not os.path.exists(harvest_dir):
-        Debug.write('Creating harvest directory...')
-        os.makedirs(harvest_dir)
-
+      harvest_dir = self.get_working_directory()
       # harvest file name will be %s.mosflm_run_start_end % dname
       temp_dname = '%s_%s' % \
                    (dname, self.get_integrater_sweep_name())
@@ -337,9 +310,10 @@ class MosflmIntegrater(Integrater):
     if self._intgr_reso_low:
       integrater.set_d_max(self._intgr_reso_low)
 
-    if Flags.get_mask():
-      mask = Flags.get_mask().calculate_mask_mosflm(
-          self.get_header())
+    if PhilIndex.params.general.backstop_mask:
+      from xia2.Toolkit.BackstopMask import BackstopMask
+      mask = BackstopMask(PhilIndex.params.general.backstop_mask)
+      mask = mask.calculate_mask_mosflm(self.get_header())
       integrater.set_mask(mask)
 
     detector = self.get_detector()
@@ -352,12 +326,6 @@ class MosflmIntegrater(Integrater):
     integrater.set_limits(lim_x, lim_y)
 
     integrater.set_fix_mosaic(self._mosflm_postref_fix_mosaic)
-
-    ## XXX FIXME this is a horrible hack - I at least need to
-    ## sand box this ...
-    #if self.get_header_item('detector') == 'raxis':
-      #self.input('adcoffset 0')
-
     offset = self.get_frame_offset()
 
     integrater.set_image_range(
@@ -437,16 +405,8 @@ class MosflmIntegrater(Integrater):
       m = indxr.get_indexer_mosaic()
       self.set_integrater_mosaic_min_mean_max(m, m, m)
 
-    Chatter.write('Processed batches %d to %d' % \
-                  self._intgr_batches_out)
-
     # write the report for each image as .*-#$ to Chatter -
     # detailed report will be written automagically to science...
-
-    residuals = integrater.get_residuals()
-    mean, sd = mean_sd(residuals)
-    Chatter.write('Weighted RMSD: %.2f (%.2f)' % \
-                  (mean, sd))
 
     Chatter.write(self.show_per_image_statistics())
 
@@ -494,29 +454,17 @@ class MosflmIntegrater(Integrater):
     missets. This will all be kind of explicit and hence probably
     messy!'''
 
-    #if not self.get_integrater_indexer():
-      ## should I raise a RuntimeError here?!
-      #Debug.write('Replacing indexer of %s with self at %d' % \
-                  #(str(self.get_integrater_indexer()), __line__))
-      #self.set_integrater_indexer(self)
-
-    #indxr = self.get_integrater_indexer()
     refinr = self.get_integrater_refiner()
 
     lattice = refinr.get_refiner_lattice()
     spacegroup_number = lattice_to_spacegroup(lattice)
-    #mosaic = indxr.get_indexer_mosaic()
     mosaic = refinr.get_refiner_payload('mosaic')
-    #cell = self._intgr_cell
     beam = refinr.get_refiner_payload('beam')
     distance = refinr.get_refiner_payload('distance')
     matrix = refinr.get_refiner_payload('mosflm_orientation_matrix')
 
     integration_params = refinr.get_refiner_payload(
       'mosflm_integration_parameters')
-
-    #beam = integration_params['beam']
-    #distance = integration_params['distance']
 
     if integration_params:
       if 'separation' in integration_params:
@@ -534,7 +482,8 @@ class MosflmIntegrater(Integrater):
     # what follows below should (i) be run in separate directories
     # and (ii) be repeated N=parallel times.
 
-    parallel = Flags.get_parallel()
+    nproc = PhilIndex.params.xia2.settings.multiprocessing.nproc
+    parallel = nproc
 
     # FIXME this is something of a kludge - if too few frames refinement
     # and integration does not work well... ideally want at least 15
@@ -601,14 +550,7 @@ class MosflmIntegrater(Integrater):
       if pname is not None and xname is not None and dname is not None:
         Debug.write('Harvesting: %s/%s/%s' %
                     (pname, xname, dname))
-
-        harvest_dir = os.path.join(os.environ['HARVESTHOME'],
-                                   'DepositFiles', pname)
-
-        if not os.path.exists(harvest_dir):
-          Debug.write('Creating harvest directory...')
-          os.makedirs(harvest_dir)
-
+        harvest_dir = self.get_working_directory()
         temp_dname = '%s_%s' % \
                      (dname, self.get_integrater_sweep_name())
         job.set_pname_xname_dname(pname, xname, temp_dname)
@@ -654,9 +596,10 @@ class MosflmIntegrater(Integrater):
       if self._intgr_reso_low:
         job.set_d_max(self._intgr_reso_low)
 
-      if Flags.get_mask():
-        mask = Flags.get_mask().calculate_mask_mosflm(
-            self.get_header())
+      if PhilIndex.params.general.backstop_mask:
+        from xia2.Toolkit.BackstopMask import BackstopMask
+        mask = BackstopMask(PhilIndex.params.general.backstop_mask)
+        mask = mask.calculate_mask_mosflm(self.get_header())
         job.set_mask(mask)
 
       detector = self.get_detector()
@@ -805,9 +748,6 @@ class MosflmIntegrater(Integrater):
     else:
       m = indxr.get_indexer_mosaic()
       self.set_integrater_mosaic_min_mean_max(m, m, m)
-
-    Chatter.write('Processed batches %d to %d' % \
-                  self._intgr_batches_out)
 
     Chatter.write(self.show_per_image_statistics())
 

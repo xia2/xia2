@@ -139,6 +139,10 @@ class XWavelength(object):
 
     remove = []
 
+    from xia2.Handlers.Phil import PhilIndex
+    params = PhilIndex.get_python_object()
+    failover = params.xia2.settings.failover
+
     for s in self._sweeps:
 
       # would be nice to put this somewhere else in the hierarchy - not
@@ -147,7 +151,7 @@ class XWavelength(object):
       try:
         result += '%s\n' % s.get_output()
       except Exception, e:
-        if Flags.get_failover():
+        if failover:
           Chatter.write('Processing sweep %s failed: %s' % \
                         (s.get_name(), str(e)))
           remove.append(s)

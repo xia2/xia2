@@ -460,7 +460,7 @@ class XDSIntegrater(Integrater):
       self.set_integrater_done(False)
 
     if not self.get_integrater_reindex_matrix() and not self._intgr_cell \
-           and not Flags.get_no_lattice_test() and \
+           and PhilIndex.params.xia2.settings.lattice_rejection and \
            not self.get_integrater_sweep().get_user_lattice():
       correct = self.Correct()
 
@@ -700,8 +700,7 @@ class XDSIntegrater(Integrater):
       phi = math.sqrt(0.05 * 0.05 + \
                       p1_deviations[1] * p1_deviations[1])
 
-      threshold = Flags.get_rejection_threshold()
-
+      threshold = PhilIndex.params.xia2.settings.lattice_rejection_threshold
       Debug.write('RMSD ratio: %.2f' % (correct_deviations[0] / pixel))
       Debug.write('RMSPhi ratio: %.2f' % (correct_deviations[1] / phi))
 
@@ -715,11 +714,10 @@ class XDSIntegrater(Integrater):
         raise BadLatticeError, \
               'high relative deviations in postrefinement'
 
-    if not Flags.get_quick() and Flags.get_remove():
+    if not Flags.get_quick() and not PhilIndex.params.xds.keep_outliers:
       # check for alien reflections and perhaps recycle - removing them
-      if len(correct.get_remove()) > 0:
-
-        correct_remove = correct.get_remove()
+      correct_remove = correct.get_remove()
+      if correct_remove:
         current_remove = []
         final_remove = []
 
@@ -752,7 +750,7 @@ class XDSIntegrater(Integrater):
             self.get_working_directory(),
             'REMOVE.HKL'), 'w')
 
-        z_min = Flags.get_z_min()
+        z_min = PhilIndex.params.xds.z_min
         rejected = 0
 
         # write in the old reflections

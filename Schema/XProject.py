@@ -262,8 +262,6 @@ class XProject(object):
           # XXX do we ever actually get here?
           lattice = Syminfo.get_lattice(
             settings.space_group.type().lookup_symbol())
-        elif Flags.get_lattice():
-          lattice = Flags.get_lattice()
         else:
           lattice = None
 
@@ -283,8 +281,8 @@ class XProject(object):
         dmax = wave_info.get('dmax', 0.0)
 
         if dmin == 0.0 and dmax == 0.0:
-          dmin = Flags.get_resolution_high()
-          dmax = Flags.get_resolution_low()
+          dmin = PhilIndex.params.xia2.settings.resolution.d_min
+          dmax = PhilIndex.params.xia2.settings.resolution.d_max
 
         # want to be able to locally override the resolution limits
         # for this sweep while leaving the rest for the data set
@@ -322,6 +320,7 @@ class XProject(object):
             replace = True
 
           # FIXME: AJP to implement
+          # FIXME ticket number here please
           if 'ice' in sweep_info:
             pass
           if 'excluded_regions' in sweep_info:
@@ -330,9 +329,6 @@ class XProject(object):
           if sweep_info['wavelength'] == wavelength:
 
             frames_to_process = sweep_info.get('start_end')
-
-            if not frames_to_process and Flags.get_start_end():
-              frames_to_process = Flags.get_start_end()
 
             xsweep = xw.add_sweep(
               sweep_name,

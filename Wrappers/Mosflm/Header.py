@@ -11,13 +11,9 @@ def Header(DriverType = None):
     def __init__(self):
       DriverInstance.__class__.__init__(self)
 
-      from xia2.Handlers.Executables import Executables
-      if Executables.get('ipmosflm'):
-        self.set_executable(Executables.get('ipmosflm'))
-      else:
-        import os
-        self.set_executable(os.path.join(
-          os.environ['CCP4'], 'bin', 'ipmosflm'))
+      import os
+      self.set_executable(os.path.join(
+        os.environ['CCP4'], 'bin', 'ipmosflm'))
 
       from collections import defaultdict
       self._headers = defaultdict(dict)

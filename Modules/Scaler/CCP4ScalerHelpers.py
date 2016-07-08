@@ -23,6 +23,7 @@ from xia2.lib.bits import auto_logfiler
 from xia2.Handlers.Streams import Debug
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Phil import PhilIndex
 from xia2.Experts.ResolutionExperts import remove_blank
 
 ############ JIFFY FUNCTIONS #################
@@ -181,8 +182,7 @@ def _prepare_pointless_hklin(working_directory,
 
   # also remove blank images?
 
-  if not Flags.get_microcrystal() and not Flags.get_small_molecule():
-
+  if PhilIndex.params.xia2.settings.small_molecule == False:
     Debug.write('Excluding blank images')
 
     hklout = os.path.join(
@@ -205,7 +205,7 @@ def _prepare_pointless_hklin(working_directory,
 
   phi_limit = 180
 
-  if batches * phi_width < phi_limit or Flags.get_small_molecule():
+  if batches * phi_width < phi_limit or PhilIndex.params.xia2.settings.small_molecule == True:
     return hklin
 
   hklout = os.path.join(

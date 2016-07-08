@@ -52,9 +52,11 @@ class CCP4ScalerA(Scaler):
 
     # flags to keep track of the corrections we will be applying
 
-    self._scale_model_b = None
-    self._scale_model_secondary = None
-    self._scale_model_tails = None
+    model = PhilIndex.params.xia2.settings.scale.model
+    self._scalr_correct_absorption = 'absorption' in model
+    self._scalr_correct_partiality = 'partiality' in model
+    self._scalr_correct_decay = 'decay' in model
+    self._scalr_corrections = True
 
     # useful handles...!
 
@@ -104,175 +106,25 @@ class CCP4ScalerA(Scaler):
     if not self._scalr_corrections:
       aimless = self._factory.Aimless()
     else:
-
       aimless = self._factory.Aimless(
           partiality_correction = self._scalr_correct_partiality,
           absorption_correction = self._scalr_correct_absorption,
           decay_correction = self._scalr_correct_decay)
 
-    if Flags.get_microcrystal():
+    aimless.set_mode(PhilIndex.params.xia2.settings.scale.scales)
 
-      # fiddly little data sets - allow more rapid scaling...
-
-      aimless.set_scaling_parameters('rotation', 2.0)
-      if self._scalr_correct_decay:
-        aimless.set_bfactor(bfactor=True, brotation = 2.0)
-
-    if Flags.get_small_molecule():
+    if PhilIndex.params.xia2.settings.small_molecule == True:
       aimless.set_scaling_parameters('rotation', 15.0)
       aimless.set_bfactor(bfactor=False)
 
     aimless.set_surface_tie(PhilIndex.params.ccp4.aimless.surface_tie)
     aimless.set_surface_link(PhilIndex.params.ccp4.aimless.surface_link)
+    aimless.set_secondary(PhilIndex.params.ccp4.aimless.secondary)
 
     return aimless
 
   def _pointless_indexer_jiffy(self, hklin, refiner):
     return self._helper.pointless_indexer_jiffy(hklin, refiner)
-
-  def _assess_scaling_model(self, tails, bfactor, secondary):
-
-    epochs = self._sweep_handler.get_epochs()
-
-    sc_tst = self._updated_aimless()
-    sc_tst.set_cycles(5)
-
-    sc_tst.set_hklin(self._prepared_reflections)
-    sc.set_intensities(PhilIndex.params.ccp4.aimless.intensities)
-    sc_tst.set_hklout('temp.mtz')
-
-    sc_tst.set_tails(tails = tails)
-    sc_tst.set_bfactor(bfactor = bfactor)
-
-    resolutions = self._resolution_limit_estimates
-
-    if secondary:
-      sc_tst.set_scaling_parameters(
-          'rotation', secondary = Flags.get_aimless_secondary())
-    else:
-      sc_tst.set_scaling_parameters('rotation', secondary = 0)
-
-    for epoch in epochs:
-
-      si = self._sweep_handler.get_sweep_information(epoch)
-
-      start, end = si.get_batch_range()
-
-      resolution = resolutions[(start, end)]
-
-      pname, xname, dname = si.get_project_info()
-      sname = si.get_sweep_name()
-
-      sc_tst.add_run(start, end, exclude = False,
-                     resolution = resolution, name = sname)
-
-      if self.get_scaler_anomalous():
-        sc_tst.set_anomalous()
-
-    if True:
-      # try:
-      sc_tst.scale()
-    else:
-      # except RuntimeError, e:
-      if 'scaling not converged' in str(e):
-        return -1, -1
-      if 'negative scales' in str(e):
-        return -1, -1
-      raise e
-
-    data_tst = sc_tst.get_summary()
-
-    # compute average Rmerge, number of cycles to converge - these are
-    # what will form the basis of the comparison
-
-    target = {'overall':0, 'low':1, 'high':2}
-
-    rmerges_tst = [data_tst[k]['Rmerge'][target[
-        Flags.get_rmerge_target()]] for k in data_tst]
-    rmerge_tst = sum(rmerges_tst) / len(rmerges_tst)
-
-    return rmerge_tst
-
-  def _determine_best_scale_model_8way(self):
-    '''Determine the best set of corrections to apply to the data,
-    testing all eight permutations.'''
-
-    # if we have already defined the best scaling model just return
-
-    if self._scalr_corrections:
-      return
-
-    # or see if we set one on the command line...
-
-    if Flags.get_scale_model():
-      self._scalr_correct_absorption = Flags.get_scale_model_absorption()
-      self._scalr_correct_partiality = Flags.get_scale_model_partiality()
-      self._scalr_correct_decay = Flags.get_scale_model_decay()
-
-      self._scalr_corrections = True
-
-      return
-
-    Debug.write('Optimising scaling corrections...')
-
-    rmerge_def = self._assess_scaling_model(
-        tails = False, bfactor = False, secondary = False)
-
-    results = { }
-
-    consider = []
-
-    log_results = []
-
-    for partiality in True, False:
-      for decay in True, False:
-        for absorption in True, False:
-          if partiality or decay or absorption:
-            r = self._assess_scaling_model(
-                tails = partiality, bfactor = decay,
-                secondary = absorption)
-          else:
-            r = rmerge_def
-
-          results[(partiality, decay, absorption)] = r
-
-          log_results.append((partiality, decay, absorption, r))
-
-          consider.append(
-              (r, partiality, decay, absorption))
-
-
-    Debug.write('. Tails Decay  Abs  R(%s)' % \
-                Flags.get_rmerge_target())
-
-    for result in log_results:
-      Debug.write('. %5s %5s %5s %.3f' % result)
-
-    consider.sort()
-    rmerge, partiality, decay, absorption = consider[0]
-
-    if absorption:
-      Debug.write('Absorption correction: on')
-    else:
-      Debug.write('Absorption correction: off')
-
-    if partiality:
-      Debug.write('Partiality correction: on')
-    else:
-      Debug.write('Partiality correction: off')
-
-    if decay:
-      Debug.write('Decay correction: on')
-    else:
-      Debug.write('Decay correction: off')
-
-    self._scalr_correct_absorption = absorption
-    self._scalr_correct_partiality = partiality
-    self._scalr_correct_decay = decay
-
-    self._scalr_corrections = True
-
-    return
 
   def _scale_prepare(self):
     '''Perform all of the preparation required to deliver the scaled
@@ -739,8 +591,8 @@ class CCP4ScalerA(Scaler):
       self._reference = self.get_scaler_reference_reflection_file()
       Debug.write('Using HKLREF %s' % self._reference)
 
-    elif Flags.get_reference_reflection_file():
-      self._reference = Flags.get_reference_reflection_file()
+    elif PhilIndex.params.xia2.settings.scale.reference_reflection_file:
+      self._reference = PhilIndex.params.xia2.settings.scale.reference_reflection_file
       Debug.write('Using HKLREF %s' % self._reference)
 
     params = PhilIndex.params
@@ -913,14 +765,6 @@ class CCP4ScalerA(Scaler):
 
     epochs = self._sweep_handler.get_epochs()
 
-    if PhilIndex.params.xia2.settings.optimize_scaling:
-      self._determine_best_scale_model_8way()
-    else:
-      self._scalr_corrections = True
-      self._scalr_correct_absorption = True
-      self._scalr_correct_partiality = False
-      self._scalr_correct_decay = True
-
     if self._scalr_corrections:
       Journal.block(
           'scaling', self.get_scaler_xcrystal().get_name(), 'CCP4',
@@ -978,7 +822,8 @@ class CCP4ScalerA(Scaler):
 
     # what follows, sucks
 
-    if Flags.get_failover():
+    failover = PhilIndex.params.xia2.settings.failover
+    if failover:
 
       try:
         sc.scale()

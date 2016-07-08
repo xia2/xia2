@@ -117,7 +117,7 @@ def BestStrategy(DriverType=None):
 
       assert self._detector is not None
       assert self._t_ref is not None
-      
+
       command_line = []
 
       command_line.extend(('-f', '%s' %self._detector))
@@ -155,7 +155,7 @@ def BestStrategy(DriverType=None):
       self.set_command_line(command_line)
       self.start()
       self.close_wait()
-              
+
       # FIXME really I should check for bugs or errors
       output = self.get_all_output()
 
@@ -234,4 +234,3 @@ if __name__ == '__main__':
   print 'Start / end / width: %.2f/%.2f/%.2f' % (best.get_phi_start(), best.get_phi_end(), best.get_phi_width())
   print 'Completeness / multiplicity / resolution: %.2f/%.2f/%.2f' % (best.get_completeness(), best.get_multiplicity(), best.get_resolution())
   print 'Transmission / exposure %.3f/%.3f' % (best.get_transmission(), best.get_exposure_time())
-

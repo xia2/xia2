@@ -15,8 +15,8 @@ import sys
 import math
 
 from xia2.Driver.DriverFactory import DriverFactory
-
 from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Phil import PhilIndex
 
 def Cellparm(DriverType = None):
 
@@ -62,9 +62,10 @@ def Cellparm(DriverType = None):
       for j in range(1, len(self._cells)):
         cell = self._cells[j]
         for k in range(6):
+          # FIXME should use xds_cell_deviation
           average = average_cell[k] / number_cells
-          if math.fabs((cell[k] - average) / average) > 0.05 \
-                 and not Flags.get_relax():
+          check = PhilIndex.params.xia2.settings.xds_check_cell_deviation
+          if math.fabs((cell[k] - average) / average) > 0.05 and check:
             raise RuntimeError, 'incompatible unit cells'
           average = average_cell[k] / number_cells
           if math.fabs((cell[k] - average) / average) > 0.2:

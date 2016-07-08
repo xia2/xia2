@@ -19,6 +19,7 @@ from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
 from xia2.Handlers.Streams import Chatter, Debug
 from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Phil import PhilIndex
 from xia2.Experts.ResolutionExperts import linear
 
 def Aimless(DriverType = None,
@@ -111,22 +112,10 @@ def Aimless(DriverType = None,
       else:
         self._tails = partiality_correction
 
-      # alternative for this is 'batch' err.. no rotation
-      if Flags.get_batch_scale():
-        self._mode = 'batch'
-      else:
-        self._mode = 'rotation'
+      self._mode = 'rotation'
 
       # these are only relevant for 'rotation' mode scaling
       self._spacing = 5
-
-      if absorption_correction is None:
-        self._secondary = Flags.get_aimless_secondary()
-      elif absorption_correction == True:
-        self._secondary = Flags.get_aimless_secondary()
-      else:
-        self._secondary = 0
-
       self._cycles = 100
       self._brotation = None
       self._bfactor_tie = None
@@ -266,6 +255,12 @@ def Aimless(DriverType = None,
 
       self._tails = tails
       return
+
+    def set_secondary(self, secondary):
+      self._secondary = secondary
+
+    def set_mode(self, mode):
+      self._mode = mode
 
     def set_scaling_parameters(self, mode,
                                spacing = None, secondary = None):
@@ -467,7 +462,7 @@ def Aimless(DriverType = None,
 
       self.start()
       self.input('xmlout %d_aimless.xml' % self.get_xpid())
-      if not Flags.get_small_molecule():
+      if PhilIndex.params.xia2.settings.small_molecule == False:
         self.input('bins 20')
       self.input('run 1 all')
       self.input('scales constant')
@@ -533,12 +528,12 @@ def Aimless(DriverType = None,
 
       self.start()
 
-      nproc = Flags.get_parallel()
+      nproc = PhilIndex.params.xia2.settings.multiprocessing.nproc
       if nproc > 1:
         self.set_working_environment('OMP_NUM_THREADS', '%d' %nproc)
         self.input('refine parallel')
       self.input('xmlout %d_aimless.xml' % self.get_xpid())
-      if not Flags.get_small_molecule():
+      if PhilIndex.params.xia2.settings.small_molecule == False:
         self.input('bins 20')
       self.input('intensities %s' %self._intensities)
 
@@ -572,7 +567,7 @@ def Aimless(DriverType = None,
 
       # FIXME this is a bit of a hack - should be better determined
       # than this...
-      if Flags.get_small_molecule():
+      if PhilIndex.params.xia2.settings.small_molecule == True:
         #self.input('sdcorrection tie sdfac 0.707 0.3 tie sdadd 0.01 0.05')
         #self.input('reject all 30')
         self.input('sdcorrection fixsdb')
@@ -753,7 +748,7 @@ def Aimless(DriverType = None,
                                   '%d_aimless.xml' % self.get_xpid())
 
       self.input('xmlout %d_aimless.xml' % self.get_xpid())
-      if not Flags.get_small_molecule():
+      if PhilIndex.params.xia2.settings.small_molecule == False:
         self.input('bins 20')
 
       if self._new_scales_file:

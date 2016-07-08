@@ -334,8 +334,7 @@ class XDSIndexer(IndexerSingleSweep):
     # at this stage, need to (perhaps) modify the BKGINIT.cbf image
     # to mark out the back stop
 
-    if Flags.get_mask():
-
+    if PhilIndex.params.general.backstop_mask:
       Debug.write('Applying mask to BKGINIT.pck')
 
       # copy the original file
@@ -346,8 +345,9 @@ class XDSIndexer(IndexerSingleSweep):
       shutil.copyfile(cbf_old, cbf_save)
 
       # modify the file to give the new mask
-      Flags.get_mask().apply_mask_xds(self.get_header(),
-                                      cbf_save, cbf_old)
+      from xia2.Toolkit.BackstopMask import BackstopMask
+      mask = BackstopMask(PhilIndex.params.general.backstop_mask)
+      mask.apply_mask_xds(self.get_header(), cbf_save, cbf_old)
 
       init.reload()
 
@@ -508,17 +508,17 @@ class XDSIndexer(IndexerSingleSweep):
           done = idxref.continue_from_error()
           lattice, cell, mosaic = \
                    idxref.get_indexing_solution()
-          # compare solutions
+          # compare solutions FIXME should use xds_cell_deviation
+          check = PhilIndex.params.xia2.settings.xds_check_cell_deviation
           for j in range(3):
             # allow two percent variation in unit cell length
             if math.fabs((cell[j] - original_cell[j]) / \
-                         original_cell[j]) > 0.02 and \
-                         not Flags.get_relax():
+                         original_cell[j]) > 0.02 and check:
               Debug.write('XDS unhappy and solution wrong')
               raise e
             # and two degree difference in angle
             if math.fabs(cell[j + 3] - original_cell[j + 3]) \
-                   > 2.0 and not Flags.get_relax():
+                   > 2.0 and check:
               Debug.write('XDS unhappy and solution wrong')
               raise e
           Debug.write('XDS unhappy but solution ok')

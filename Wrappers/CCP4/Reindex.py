@@ -134,7 +134,7 @@ def Reindex(DriverType = None):
 
       Debug.write('Reindex... %s %s' % (self._spacegroup, self._operator))
 
-      if self._spacegroup and Flags.get_small_molecule() and False:
+      if False and self._spacegroup and PhilIndex.params.xia2.settings.small_molecule == True: ## FIXME: This still needed?
         if not self._operator or self._operator.replace(' ', '') == 'h,k,l':
           return self.cctbx_reindex()
 

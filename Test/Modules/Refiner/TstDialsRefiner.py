@@ -19,8 +19,8 @@ def exercise_dials_refiner(nproc=None):
     return
 
   if nproc is not None:
-    from xia2.Handlers.Flags import Flags
-    Flags.set_parallel(nproc)
+    from xia2.Handlers.Phil import PhilIndex
+    PhilIndex.params.xia2.settings.multiprocessing.nproc = nproc
 
   xia2_demo_data = os.path.join(xia2_regression, "test_data", "mad_example")
   template = os.path.join(xia2_demo_data, "12287_1_E%i_%03i.img")

@@ -15,14 +15,11 @@ import math
 
 from xia2.lib.bits import auto_logfiler
 from xia2.Handlers.Files import FileHandler
-
+from xia2.Handlers.Phil import PhilIndex
 from xia2.Wrappers.Mosflm.MosflmRefineCell import MosflmRefineCell
 from xia2.lib.SymmetryLib import lattice_to_spacegroup
-
 from xia2.Experts.MatrixExpert import transmogrify_matrix
-
 from xia2.Schema.Exceptions.NegativeMosaicError import NegativeMosaicError
-
 from dxtbx.model.experiment.experiment_list import ExperimentList
 
 class MosflmRefiner(Refiner):
@@ -37,7 +34,7 @@ class MosflmRefiner(Refiner):
     self._mosflm_postref_fix_mosaic = False
 
     # belt + braces for very troublesome cases - this will only
-    # be used in failover / microcrystal mode
+    # be used in failover
     self._mosflm_cell_ref_add_autoindex = False
 
   # factory functions
@@ -64,13 +61,8 @@ class MosflmRefiner(Refiner):
 
       if not self._mosflm_cell_ref_images:
         mosaic = indxr.get_indexer_mosaic()
-
-        if Flags.get_microcrystal():
-          self._mosflm_cell_ref_images = self._refine_select_twenty(
-            idxr, mosaic)
-        else:
-          self._mosflm_cell_ref_images = self._refine_select_images(
-            idxr, mosaic)
+        self._mosflm_cell_ref_images = self._refine_select_images(
+          idxr, mosaic)
 
       # generate human readable output
 
@@ -145,7 +137,7 @@ class MosflmRefiner(Refiner):
         # are > 10 it would indicate that the images are blank (assert)
         # so ignore from the analyis / comparison
 
-        if Flags.get_no_lattice_test() or \
+        if not PhilIndex.params.xia2.settings.lattice_rejection or \
            idxr.get_indexer_sweep().get_user_lattice():
           rms_deviations_p1 = []
           br_p1 = []
@@ -221,7 +213,7 @@ class MosflmRefiner(Refiner):
                     (ratio / len(ratios)))
 
         if (ratio / (max(cycles) * len(images))) > \
-           Flags.get_rejection_threshold() and \
+           PhilIndex.params.xia2.settings.lattice_rejection_threshold and \
            not self.get_integrater_sweep().get_user_lattice():
           raise BadLatticeError, 'incorrect lattice constraints'
 
@@ -354,14 +346,10 @@ class MosflmRefiner(Refiner):
     # if set, use the resolution for cell refinement - see
     # bug # 2078...
 
-    if self._mosflm_cell_ref_resolution and not \
-       Flags.get_microcrystal():
+    if self._mosflm_cell_ref_resolution:
       refiner.set_resolution(self._mosflm_cell_ref_resolution)
 
     refiner.set_fix_mosaic(self._mosflm_postref_fix_mosaic)
-
-    if Flags.get_microcrystal():
-      refiner.set_sdfac(2.0)
 
     # note well that the beam centre is coming from indexing so
     # should be already properly handled
@@ -515,14 +503,10 @@ class MosflmRefiner(Refiner):
     # if set, use the resolution for cell refinement - see
     # bug # 2078...
 
-    if self._mosflm_cell_ref_resolution and not \
-       Flags.get_microcrystal():
+    if self._mosflm_cell_ref_resolution:
       refiner.set_resolution(self._mosflm_cell_ref_resolution)
 
     refiner.set_fix_mosaic(self._mosflm_postref_fix_mosaic)
-
-    if Flags.get_microcrystal():
-      refiner.set_sdfac(2.0)
 
     # note well that the beam centre is coming from indexing so
     # should be already properly handled
@@ -553,8 +537,9 @@ class MosflmRefiner(Refiner):
     refiner.set_limits(lim_x, lim_y)
     refiner.set_images(self._mosflm_cell_ref_images)
 
-    if Flags.get_failover() and not \
-       self._mosflm_cell_ref_add_autoindex:
+    failover = PhilIndex.params.xia2.settings.failover
+
+    if failover and not self._mosflm_cell_ref_add_autoindex:
       refiner.set_ignore_cell_refinement_failure(True)
 
     refiner.run()

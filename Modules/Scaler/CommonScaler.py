@@ -44,7 +44,7 @@ class CommonScaler(Scaler):
     max_batches = 0
 
     for e in self._sweep_handler.get_epochs():
-      if Flags.get_small_molecule():
+      if PhilIndex.params.xia2.settings.small_molecule == True:
         continue
       si = self._sweep_handler.get_sweep_information(e)
 
@@ -193,7 +193,7 @@ class CommonScaler(Scaler):
         spacegroup = self._scalr_input_spacegroup
         reindex_operator = 'h,k,l'
 
-      elif Flags.get_small_molecule() and False:
+      elif False and PhilIndex.params.xia2.settings.small_molecule == True: ## FIXME: This still needed?
         p.decide_pointgroup()
         spacegroup = p.get_pointgroup()
         reindex_operator = p.get_reindex_operator()
@@ -356,9 +356,6 @@ class CommonScaler(Scaler):
 
       counter += 1
 
-    if Flags.get_chef():
-      self._sweep_information_to_chef()
-
     s = self._factory.Sortmtz()
 
     hklout = os.path.join(self.get_working_directory(),
@@ -456,9 +453,6 @@ class CommonScaler(Scaler):
     epoch = self._sweep_information.keys()[0]
     hklin = self._sweep_information[epoch]['scaled_reflections']
 
-    if Flags.get_chef():
-      self._sweep_information_to_chef()
-
     if self.get_scaler_reference_reflection_file():
       md = self._factory.Mtzdump()
       md.set_hklin(self.get_scaler_reference_reflection_file())
@@ -552,128 +546,6 @@ class CommonScaler(Scaler):
 
     return
 
-  def _sweep_information_to_chef(self):
-    '''Analyse the sweep_information data structure to work out which
-    measurements should be compared in chef. This will then print out
-    an opinion of what should be compared by sweep epoch / image name.'''
-
-    dose_rates = []
-    wavelengths = []
-    groups = { }
-    batch_groups = { }
-    resolutions = { }
-
-    # FIXME need to estimate the inscribed circle resolution from the
-    # image header information - the lowest for each group will be used
-    # for the analysis... Actually - this will be the lowest resolution
-    # of all of the integrater resolutions *and* all of the inscribed
-    # circle resolutions...
-
-    for epoch in sorted(self._sweep_information):
-      header = self._sweep_information[epoch]['header']
-      batches = self._sweep_information[epoch]['batches']
-      dr = header['exposure_time'] / header['phi_width']
-      wave = self._sweep_information[epoch]['dname']
-      template = self._sweep_information[epoch][
-          'integrater'].get_template()
-
-      # FIXME should these not really just be inherited / propogated
-      # through the FrameProcessor interface? Trac #255.
-
-      indxr = self._sweep_information[epoch][
-          'integrater'].get_integrater_indexer()
-      beam = indxr.get_indexer_beam_centre()
-      distance = indxr.get_indexer_distance()
-      wavelength = self._sweep_information[epoch][
-          'integrater'].get_wavelength()
-
-      # ok, in here decide the minimum distance from the beam centre to
-      # the edge... which will depend on the size of the detector
-
-      detector_width = header['size'][0] * header['pixel'][0]
-      detector_height = header['size'][1] * header['pixel'][1]
-
-      radius = min([beam[0], detector_width - beam[0],
-                    beam[1], detector_height - beam[1]])
-
-      theta = 0.5 * math.atan(radius / distance)
-
-      resolution = wavelength / (2 * math.sin(theta))
-
-      if not wave in wavelengths:
-        wavelengths.append(wave)
-
-      # cluster on power of sqrt(two), perhaps? also need to get the
-      # batch ranges which they will end up as so that I can fetch
-      # out the reflections I want from the scaled MTZ files.
-      # When it comes to doing this it will also need to know where
-      # those reflections may be found... - this is in sweep_information
-      # [epoch]['batches'] so should be pretty handy to get to in here.
-
-      found = False
-
-      for rate in dose_rates:
-        r = rate[1]
-        if dr / r > math.sqrt(0.5) and dr / r < math.sqrt(2.0):
-          # copy this for grouping
-          found = True
-          if (wave, rate[0]) in groups:
-            groups[(wave, rate[0])].append((epoch, template))
-            batch_groups[(wave, rate[0])].append(batches)
-            if rate[0] in resolutions:
-              resolutions[rate[0]] = max(resolutions[rate[0]],
-                                         resolution)
-            else:
-              resolutions[rate[0]] = resolution
-
-
-          else:
-            groups[(wave, rate[0])] = [(epoch, template)]
-            batch_groups[(wave, rate[0])] = [batches]
-            if rate[0] in resolutions:
-              resolutions[rate[0]] = max(resolutions[rate[0]],
-                                         resolution)
-            else:
-              resolutions[rate[0]] = resolution
-
-      if not found:
-        rate = (len(dose_rates), dr)
-        dose_rates.append(rate)
-        groups[(wave, rate[0])] = [(epoch, template)]
-        batch_groups[(wave, rate[0])] = [batches]
-
-        if rate[0] in resolutions:
-          resolutions[rate[0]] = max(resolutions[rate[0]],
-                                     resolution)
-        else:
-          resolutions[rate[0]] = resolution
-
-    # now work through the groups and print out the results, as well
-    # as storing them for future reference...
-
-    self._chef_analysis_groups = { }
-    self._chef_analysis_times = { }
-    self._chef_analysis_resolutions = { }
-
-    for rate in dose_rates:
-      self._chef_analysis_groups[rate[0]] = []
-      self._chef_analysis_times[rate[0]] = rate[1]
-      Debug.write('Dose group %d (%s s)' % rate)
-      Debug.write('Resolution limit: %.2f' % resolutions[rate[0]])
-      self._chef_analysis_resolutions[rate[0]] = resolutions[rate[0]]
-      for wave in wavelengths:
-        if (wave, rate[0]) in groups:
-          for j in range(len(groups[(wave, rate[0])])):
-            et = groups[(wave, rate[0])][j]
-            batches = batch_groups[(wave, rate[0])][j]
-            self._chef_analysis_groups[rate[0]].append(
-                (wave, et[1], batches[0], batches[1]))
-            Debug.write('%d %s %s (%d to %d)' % \
-                        (et[0], wave, et[1],
-                         batches[0], batches[1]))
-
-    return
-
   def _scale_finish(self):
 
     # compute anomalous signals if anomalous
@@ -743,7 +615,7 @@ class CommonScaler(Scaler):
         '%s %s %s report' %(
           self._scalr_pname, self._scalr_xname, wavelength), htmlout)
 
-    if not Flags.get_small_molecule():
+    if PhilIndex.params.xia2.settings.small_molecule == False:
 
       for wavelength in self._scalr_scaled_refl_files.keys():
 
@@ -829,7 +701,7 @@ class CommonScaler(Scaler):
           'mtz_merged'] = self._scalr_scaled_refl_files[
           self._scalr_scaled_refl_files.keys()[0]]
 
-    if Flags.get_small_molecule():
+    if PhilIndex.params.xia2.settings.small_molecule == True:
       # record this for future reference
 
       # keep 'mtz' and remove 'mtz_merged' from the dictionary for
@@ -852,6 +724,7 @@ class CommonScaler(Scaler):
 
     FileHandler.record_temporary_file(hklout)
 
+    scale_params = PhilIndex.params.xia2.settings.scale
     if self.get_scaler_freer_file():
       # e.g. via .xinfo file
 
@@ -865,10 +738,10 @@ class CommonScaler(Scaler):
       c.set_hklout(hklout)
       c.copyfree()
 
-    elif Flags.get_freer_file():
+    elif scale_params.freer_file is not None:
       # e.g. via -freer_file command line argument
 
-      freein = Flags.get_freer_file()
+      freein = scale_params.freer_file
 
       Debug.write('Copying FreeR_flag from %s' % freein)
 
@@ -880,13 +753,8 @@ class CommonScaler(Scaler):
 
     else:
 
-      # default fraction of 0.05
-      free_fraction = 0.05
-
-      if Flags.get_free_fraction():
-        free_fraction = Flags.get_free_fraction()
-      elif Flags.get_free_total():
-        ntot = Flags.get_free_total()
+      if scale_params.free_total:
+        ntot = scale_params.free_total
 
         # need to get a fraction, so...
         mtzdump = self._factory.Mtzdump()
@@ -894,6 +762,8 @@ class CommonScaler(Scaler):
         mtzdump.dump()
         nref = mtzdump.get_reflections()
         free_fraction = float(ntot) / float(nref)
+      else:
+        free_fraction = scale_params.free_fraction
 
       f = self._factory.Freerflag()
       f.set_free_fraction(free_fraction)
@@ -911,10 +781,10 @@ class CommonScaler(Scaler):
     # default fraction of 0.05
     free_fraction = 0.05
 
-    if Flags.get_free_fraction():
-      free_fraction = Flags.get_free_fraction()
-    elif Flags.get_free_total():
-      ntot = Flags.get_free_total()
+    if scale_params.free_fraction:
+      free_fraction = scale_params.free_fraction
+    elif scale_params.free_total:
+      ntot = scale_params.free_total()
 
       # need to get a fraction, so...
       mtzdump = self._factory.Mtzdump()
@@ -963,7 +833,7 @@ class CommonScaler(Scaler):
     # next have a look for radiation damage... if more than one wavelength
 
     if len(self._scalr_scaled_refl_files.keys()) > 1 and \
-           not Flags.get_small_molecule():
+           PhilIndex.params.xia2.settings.small_molecule == False:
       crd = CCP4InterRadiationDamageDetector()
 
       crd.set_working_directory(self.get_working_directory())
@@ -1004,7 +874,7 @@ class CommonScaler(Scaler):
     m.set_limit_cc_half(params.cc_half)
     m.set_limit_isigma(params.isigma)
     m.set_limit_misigma(params.misigma)
-    if Flags.get_small_molecule():
+    if PhilIndex.params.xia2.settings.small_molecule == True:
       m.set_nbins(20)
     if batch_range is not None:
       start, end = batch_range

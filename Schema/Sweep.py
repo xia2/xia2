@@ -24,9 +24,8 @@ from xia2.Experts.FindImages import image2template, find_matching_images, \
      template_directory_number2image, image2template_directory, \
      headers2sweeps, headers2sweep_ids
 
-# image header reading functionality
-from xia2.Wrappers.XIA.Diffdump import Diffdump
 from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Phil import PhilIndex
 
 def SweepFactory(template, directory, beam = None):
   '''A factory which will return a list of sweep objects which match
@@ -36,7 +35,8 @@ def SweepFactory(template, directory, beam = None):
 
   from xia2.Schema import load_imagesets
   imagesets = load_imagesets(
-    template, directory, reversephi=Flags.get_reversephi())
+    template, directory,
+    reversephi=PhilIndex.params.xia2.settings.input.reverse_phi)
 
   for imageset in imagesets:
     scan = imageset.get_scan()
@@ -90,8 +90,6 @@ class Sweep(object):
 
     self.update()
 
-    return
-
   def get_template(self):
     #try:
       #return self._imageset.get_template()
@@ -132,27 +130,9 @@ class Sweep(object):
                                            self._directory,
                                            number)
 
-  def _read_headers(self):
-    '''Get the image headers for all of the images - this is not designed
-    to be called externally.'''
-
-    self._headers = { }
-
-    t = time.time()
-
-    for i in self._images:
-      dd = Diffdump()
-      image = self.imagename(i)
-      dd.set_image(image)
-      header = dd.readheader()
-      self._headers[i] = header
-
-    return
-
   def update(self):
     '''Check to see if any more frames have appeared - if they
     have update myself and reset.'''
-
 
     from xia2.Applications.xia2setup import is_hd5f_name
     if is_hd5f_name(os.path.join(self._directory, self._template)):
@@ -168,7 +148,8 @@ class Sweep(object):
       from xia2.Schema import load_imagesets
       imagesets = load_imagesets(
         self._template, self._directory, id_image=self._id_image,
-        use_cache=False, reversephi=Flags.get_reversephi())
+        use_cache=False,
+        reversephi=PhilIndex.params.xia2.settings.input.reverse_phi)
 
       max_images = 0
       best_sweep = None

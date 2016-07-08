@@ -27,7 +27,6 @@ from ..Experts.FindImages import image2template_directory
 from ..Handlers.CommandLine import CommandLine
 from ..Handlers.Flags import Flags
 from ..Handlers.Phil import PhilIndex
-from ..Wrappers.CCP4.Chooch import Chooch
 from ..Modules.LabelitBeamCentre import compute_beam_centre
 from ..Handlers.Streams import streams_off
 
@@ -49,26 +48,13 @@ xds_file_names = ['ABS', 'ABSORP', 'BKGINIT', 'BKGPIX', 'BLANK', 'DECAY',
 
 known_sweeps = { }
 
-known_scan_extensions = ['scan']
-
 known_sequence_extensions = ['seq']
 
 known_hdf5_extensions = ['.h5']
 
 latest_sequence = None
 
-latest_chooch = None
-
 target_template = None
-
-def is_scan_name(file):
-  global known_scan_extensions
-
-  if os.path.isfile(file):
-    if file.split('.')[-1] in known_scan_extensions:
-      return True
-
-  return False
 
 def is_sequence_name(file):
   global known_sequence_extensions
@@ -222,17 +208,6 @@ def visit(root, directory, files):
       if template is not None:
         templates.add(template)
 
-    elif is_scan_name(full_path):
-      global latest_chooch
-      try:
-        latest_chooch = Chooch()
-        if CommandLine.get_atom_name():
-          latest_chooch.set_atom(CommandLine.get_atom_name())
-        latest_chooch.set_scan(full_path)
-        latest_chooch.scan()
-      except:
-        latest_chooch = None
-
     elif is_sequence_name(full_path):
       parse_sequence(full_path)
 
@@ -277,10 +252,10 @@ def print_sweeps(out = sys.stdout):
 
   wavelengths = []
 
-  params = PhilIndex.get_python_object()
-  wavelength_tolerance = params.xia2.settings.wavelength_tolerance
-  min_images = params.xia2.settings.input.min_images
-  min_oscillation_range = params.xia2.settings.input.min_oscillation_range
+  settings = PhilIndex.get_python_object().xia2.settings
+  wavelength_tolerance = settings.wavelength_tolerance
+  min_images = settings.input.min_images
+  min_oscillation_range = settings.input.min_oscillation_range
 
   for sweep in sweeplists:
     sweeps = known_sweeps[sweep]
@@ -319,13 +294,8 @@ def print_sweeps(out = sys.stdout):
 
   wavelength_map = { }
 
-  project = CommandLine.get_project_name()
-  if not project:
-    project = 'AUTOMATIC'
-
-  crystal = CommandLine.get_crystal_name()
-  if not crystal:
-    crystal = 'DEFAULT'
+  project = settings.project
+  crystal = settings.crystal
 
   out.write('BEGIN PROJECT %s\n' % project)
   out.write('BEGIN CRYSTAL %s\n' % crystal)
@@ -334,8 +304,6 @@ def print_sweeps(out = sys.stdout):
 
   # check to see if a user spacegroup has been assigned - if it has,
   # copy it in...
-
-  settings = PhilIndex.params.xia2.settings
 
   if settings.space_group is not None:
     out.write(
@@ -347,8 +315,9 @@ def print_sweeps(out = sys.stdout):
               settings.unit_cell.parameters())
     out.write('\n')
 
-  if Flags.get_freer_file():
-    out.write('FREER_FILE %s\n' % Flags.get_freer_file())
+  freer_file = PhilIndex.params.xia2.settings.scale.freer_file
+  if freer_file is not None:
+    out.write('FREER_FILE %s\n' % PhilIndex.params.xia2.settings.scale.freer_file)
     out.write('\n')
 
   if latest_sequence:
@@ -361,49 +330,34 @@ def print_sweeps(out = sys.stdout):
     out.write('END AA_SEQUENCE\n')
     out.write('\n')
 
-  if CommandLine.get_atom_name():
+  if settings.input.atom:
     out.write('BEGIN HA_INFO\n')
-    out.write('ATOM %s\n' % CommandLine.get_atom_name().lower())
-    if CommandLine.get_atom_name().lower() == 'se' and latest_sequence:
-      # assume that this is selenomethionine
-      out.write('! If this is SeMet uncomment next line...\n')
-      out.write('!NUMBER_PER_MONOMER %d\n' % latest_sequence.count('M'))
-      out.write('!NUMBER_TOTAL M\n')
-    else:
-      out.write('!NUMBER_PER_MONOMER N\n')
-      out.write('!NUMBER_TOTAL M\n')
+    out.write('ATOM %s\n' % settings.input.atom.lower())
+    out.write('END HA_INFO\n')
+    out.write('\n')
+  elif settings.input.anomalous:
+    out.write('BEGIN HA_INFO\n')
+    out.write('ATOM X\n')
     out.write('END HA_INFO\n')
     out.write('\n')
 
   for j in range(len(wavelengths)):
-
-    global latest_chooch
-
-    if latest_chooch:
-      name = latest_chooch.id_wavelength(wavelengths[j])
-      first_name = name
-      counter = 1
-
-      while name in [wavelength_map[w] for w in wavelength_map]:
-        counter += 1
-        name = '%s%d' % (first_name, counter)
-
-      fp, fpp = latest_chooch.get_fp_fpp(wavelengths[j])
+    anomalous = settings.input.anomalous
+    if not settings.input.atom is None:
+      anomalous = True
+    if len(wavelengths) == 1 and anomalous:
+      name = 'SAD'
+    elif len(wavelengths) == 1:
+      name = 'NATIVE'
     else:
-      fp, fpp = 0.0, 0.0
-      if len(wavelengths) == 1 and CommandLine.get_atom_name():
-        name = 'SAD'
-      elif len(wavelengths) == 1:
-        name = 'NATIVE'
-      else:
-        name = 'WAVE%d' % (j + 1)
+      name = 'WAVE%d' % (j + 1)
 
     wavelength_map[wavelengths[j]] = name
 
     out.write('BEGIN WAVELENGTH %s\n' % name)
 
-    dmin = Flags.get_resolution_high()
-    dmax = Flags.get_resolution_low()
+    dmin = PhilIndex.params.xia2.settings.resolution.d_min
+    dmax = PhilIndex.params.xia2.settings.resolution.d_max
 
     if dmin and dmax:
       out.write('RESOLUTION %f %f\n' % (dmin, dmax))
@@ -411,9 +365,6 @@ def print_sweeps(out = sys.stdout):
       out.write('RESOLUTION %f\n' % dmin)
 
     out.write('WAVELENGTH %f\n' % wavelengths[j])
-    if fp != 0.0 and fpp != 0.0:
-      out.write('F\' %5.2f\n' % fp)
-      out.write('F\'\' %5.2f\n' % fpp)
 
     out.write('END WAVELENGTH %s\n' % name)
     out.write('\n')
@@ -447,7 +398,7 @@ def print_sweeps(out = sys.stdout):
 
       out.write('BEGIN SWEEP %s\n' % name)
 
-      if Flags.get_reversephi():
+      if PhilIndex.params.xia2.settings.input.reverse_phi:
         out.write('REVERSEPHI\n')
 
       out.write('WAVELENGTH %s\n' % wavelength_map[s.get_wavelength()])
@@ -456,19 +407,7 @@ def print_sweeps(out = sys.stdout):
       imgset = s.get_imageset()
       out.write('IMAGE %s\n' % os.path.split(imgset.get_path(0))[-1])
 
-      if Flags.get_start_end():
-        start, end = Flags.get_start_end()
-
-        if start < min(s.get_images()):
-          raise RuntimeError, 'requested start %d < %d' % \
-                (start, min(s.get_images()))
-
-        if end > max(s.get_images()):
-          raise RuntimeError, 'requested end %d > %d' % \
-                (end, max(s.get_images()))
-
-        out.write('START_END %d %d\n' % (start, end))
-      elif CommandLine.get_start_end(
+      if CommandLine.get_start_end(
               os.path.join(s.get_directory(), s.get_template())):
         start_end = CommandLine.get_start_end(
               os.path.join(s.get_directory(), s.get_template()))
@@ -483,12 +422,16 @@ def print_sweeps(out = sys.stdout):
       if user_beam_centre is not None:
         out.write('BEAM %6.2f %6.2f\n' % tuple(user_beam_centre))
       elif not settings.trust_beam_centre:
-        interactive = Flags.get_interactive()
-        Flags.set_interactive(False)
+        interactive = False
+        if PhilIndex.params.xia2.settings.interactive == True:
+          interactive = True
+          PhilIndex.params.xia2.settings.interactive = False
+          PhilIndex.get_python_object()
         beam_centre = compute_beam_centre(s)
         if beam_centre:
           out.write('BEAM %6.2f %6.2f\n' % tuple(beam_centre))
-        Flags.set_interactive(interactive)
+        PhilIndex.params.xia2.settings.interactive = interactive
+        PhilIndex.get_python_object()
 
       if settings.detector_distance is not None:
         out.write('DISTANCE %.2f\n' % settings.detector_distance)
@@ -505,7 +448,6 @@ def get_sweeps(templates):
   global known_sweeps
 
   from libtbx import easy_mp
-  from ..Handlers.Phil import PhilIndex
   from xia2setup_helpers import get_sweep
   params = PhilIndex.get_python_object()
   mp_params = params.xia2.settings.multiprocessing
@@ -564,15 +506,12 @@ def rummage(directories):
   get_sweeps(templates)
 
 def write_xinfo(filename, directories, template=None, hdf5_master_files=None):
-
   global target_template
 
   target_template = template
 
-  crystal = CommandLine.get_crystal_name()
-
-  if not crystal:
-    crystal = 'DEFAULT'
+  settings = PhilIndex.get_python_object().xia2.settings
+  crystal = settings.crystal
 
   if not os.path.isabs(filename):
     filename = os.path.abspath(filename)
@@ -635,28 +574,21 @@ def run():
   directories = [os.path.abspath(d) for d in directories]
 
   # perhaps move to a new directory...
+  settings = PhilIndex.get_python_object().xia2.settings
+  crystal = settings.crystal
 
-  crystal = CommandLine.get_crystal_name()
+  with open(os.path.join(os.getcwd(), 'automatic.xinfo'), 'w') as fout:
+    start = os.path.abspath(os.getcwd())
+    directory = os.path.join(os.getcwd(), crystal, 'setup')
+    try:
+      os.makedirs(directory)
+    except OSError, e:
+      if not 'File exists' in str(e):
+        raise e
+    os.chdir(directory)
 
-  fout = open(os.path.join(os.getcwd(), 'automatic.xinfo'), 'w')
-
-  if not crystal:
-    crystal = 'DEFAULT'
-
-  start = os.path.abspath(os.getcwd())
-
-  directory = os.path.join(os.getcwd(), crystal, 'setup')
-
-  try:
-    os.makedirs(directory)
-  except OSError, e:
-    if not 'File exists' in str(e):
-      raise e
-
-  os.chdir(directory)
-
-  rummage(directories)
-  print_sweeps(fout)
+    rummage(directories)
+    print_sweeps(fout)
 
   save_datablock(os.path.join(start, 'xia2-datablock.json'))
 

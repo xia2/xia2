@@ -20,9 +20,6 @@ from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
 
 from xia2.Handlers.Streams import Chatter
-from xia2.Handlers.Executables import Executables
-#from xia2.Handlers.Files import FileHandler
-
 
 from xia2.Wrappers.CCP4.MosflmHelpers import _parse_mosflm_index_output
 
@@ -43,11 +40,8 @@ def MosflmIndex(DriverType = None, indxr_print = True):
       # generic things
       CCP4DriverInstance.__class__.__init__(self)
 
-      if Executables.get('ipmosflm'):
-        self.set_executable(Executables.get('ipmosflm'))
-      else:
-        self.set_executable(os.path.join(
-            os.environ['CCP4'], 'bin', 'ipmosflm'))
+      self.set_executable(os.path.join(
+          os.environ['CCP4'], 'bin', 'ipmosflm'))
 
       # local parameters used in autoindexing
       self._mosflm_autoindex_sol = 0
@@ -188,8 +182,6 @@ def MosflmIndex(DriverType = None, indxr_print = True):
           # mosflm built on linux in CCP4 6.0.1...
           # FIXME this should be a specific kind of
           # exception e.g. an IndexError
-          # if microcrystal mode, just assume for the moment mosaic
-          # spread is 0.5 degrees...
           raise IndexingError, 'mosaicity estimation failed'
 
         # mosflm doesn't refine this in autoindexing...

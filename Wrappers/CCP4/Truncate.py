@@ -100,11 +100,6 @@ def Truncate(DriverType = None):
 
       self.start()
 
-      # write the harvest files in the local directory, not
-      # in $HARVESTHOME. Though we have set this for the project
-      # so we should be fine to just plough ahead...
-      # self.input('usecwd')
-
       if self._anomalous:
         self.input('anomalous yes')
       else:

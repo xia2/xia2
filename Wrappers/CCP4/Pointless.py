@@ -127,6 +127,7 @@ from xia2.Decorators.DecoratorFactory import DecoratorFactory
 from xia2.Handlers.Syminfo import Syminfo
 from xia2.Handlers.Streams import Chatter, Debug
 from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Phil import PhilIndex
 
 # this was rather complicated - now simpler!
 from xia2.lib.SymmetryLib import lauegroup_to_lattice, spacegroup_name_xHM_to_old, \
@@ -381,16 +382,14 @@ def Pointless(DriverType = None):
       self.input('systematicabsences off')
       self.input('setting symmetry-based')
       if self._hklref:
-        from xia2.Handlers.Phil import PhilIndex
         dev = PhilIndex.params.xia2.settings.developmental
         if dev.pointless_tolerance > 0.0:
           self.input('tolerance %f' % dev.pointless_tolerance)
 
       # may expect more %age variation for small molecule data
-      if Flags.get_small_molecule() and self._hklref:
-        self.input('tolerance 5.0')
-
-      if Flags.get_small_molecule():
+      if PhilIndex.params.xia2.settings.small_molecule == True:
+        if self._hklref:
+          self.input('tolerance 5.0')
         self.input('chirality nonchiral')
 
       if self._input_laue_group:
@@ -623,7 +622,7 @@ def Pointless(DriverType = None):
       self.input('lauegroup hklin')
       self.input('setting symmetry-based')
 
-      if Flags.get_small_molecule():
+      if PhilIndex.params.xia2.settings.small_molecule == True:
         self.input('chirality nonchiral')
 
       self.close_wait()

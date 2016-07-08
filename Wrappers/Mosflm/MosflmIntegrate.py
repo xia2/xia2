@@ -20,11 +20,8 @@ from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
 
 from xia2.Handlers.Streams import Chatter
-from xia2.Handlers.Executables import Executables
-#from xia2.Handlers.Files import FileHandler
 
 from xia2.lib.bits import mean_sd
-
 
 from xia2.Wrappers.CCP4.MosflmHelpers import \
      _parse_mosflm_integration_output, decide_integration_resolution_limit, \
@@ -47,11 +44,8 @@ def MosflmIntegrate(DriverType = None, indxr_print = True):
       # generic things
       CCP4DriverInstance.__class__.__init__(self)
 
-      if Executables.get('ipmosflm'):
-        self.set_executable(Executables.get('ipmosflm'))
-      else:
-        self.set_executable(os.path.join(
-            os.environ['CCP4'], 'bin', 'ipmosflm'))
+      self.set_executable(os.path.join(
+          os.environ['CCP4'], 'bin', 'ipmosflm'))
 
       # local parameters used in autoindexing
       self._mosflm_autoindex_sol = 0
@@ -293,42 +287,22 @@ def MosflmIntegrate(DriverType = None, indxr_print = True):
 
       # XXX FIXME
       from xia2.Handlers.Flags import Flags
-      if Flags.get_microcrystal():
-        a = self._image_range[0]
-        if self._image_range[1] - self._image_range[0] > 20:
-          b = a + 20
-        else:
-          b = self._image_range[1]
+      if self._pre_refinement:
+        a, b = self._image_range
+        if b - a > 3:
+          b = a + 3
 
-        self.input('postref segment 1 fix all')
+        self.input('postref multi segments 1')
         self.input('process %d %d' % (a, b))
         self.input('go')
+
         self.input('postref nosegment')
 
-        self.input('separation close')
-        self.input('process %d %d block %d' % \
-                   (self._image_range[0],
-                    self._image_range[1],
-                    1 + self._image_range[1] - self._image_range[0]))
+        if self._fix_mosaic:
+          self.input('postref fix mosaic')
 
-      else:
-        if self._pre_refinement:
-          a, b = self._image_range
-
-          if b - a > 3:
-            b = a + 3
-
-          self.input('postref multi segments 1')
-          self.input('process %d %d' % (a, b))
-          self.input('go')
-
-          self.input('postref nosegment')
-
-          if self._fix_mosaic:
-            self.input('postref fix mosaic')
-
-        self.input('separation close')
-        self.input(
+      self.input('separation close')
+      self.input(
           'process %d %d' %(self._image_range[0], self._image_range[1]))
 
       self.input('go')

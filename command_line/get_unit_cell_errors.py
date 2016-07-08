@@ -307,10 +307,6 @@ def run():
   try:
     get_unit_cell_errors()
     Chatter.write('Status: normal termination')
-    from xia2.Handlers.Flags import Flags
-    if Flags.get_egg():
-      from xia2.lib.bits import message
-      message('xia2 status normal termination')
 
   except exceptions.Exception, e:
     traceback.print_exc(file = open(os.path.join(wd, 'xia2.error'), 'w'))
@@ -318,10 +314,6 @@ def run():
     Chatter.write(
       'Please send the contents of xia2.txt, xia2.error and xia2-debug.txt to:')
     Chatter.write('xia2.support@gmail.com')
-    from xia2.Handlers.Flags import Flags
-    if Flags.get_egg():
-      from xia2.lib.bits import message
-      message('xia2 status error %s' % str(e))
     sys.exit(1)
 
 if __name__ == '__main__':

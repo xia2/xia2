@@ -88,6 +88,7 @@ from xia2.Handlers.Streams import Chatter, Debug
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Environment import Environment
+from xia2.Handlers.Phil import PhilIndex
 
 # See FIXME Integrater interface definition, 27/SEP/06
 
@@ -174,11 +175,6 @@ class XSweep(object):
 
     directory = expand_path(directory)
 
-    # bug # 2274 - maybe migrate the data to a local disk (this
-    # will depend if the user has added -migrate_data to the cl)
-
-    directory = FileHandler.migrate(directory)
-
     self._name = name
     self._wavelength = wavelength
     self._sample = sample
@@ -209,6 +205,7 @@ class XSweep(object):
 
     # + derive template, list of images
 
+    params = PhilIndex.get_python_object()
     if directory and image:
       self._template, self._directory = \
                       image2template_directory(os.path.join(directory,
@@ -217,7 +214,7 @@ class XSweep(object):
       from xia2.Schema import load_imagesets
       imagesets = load_imagesets(
         self._template, self._directory, image_range=self._frames_to_process,
-        reversephi=(Flags.get_reversephi() or self._reversephi))
+        reversephi=(params.xia2.settings.input.reverse_phi or self._reversephi))
 
       assert len(imagesets) == 1, "one imageset expected, %d found" % \
           len(imagesets)
@@ -236,8 +233,6 @@ class XSweep(object):
 
       error = False
 
-      from xia2.Handlers.Phil import PhilIndex
-      params = PhilIndex.get_python_object()
       if params.general.check_image_files_readable:
         for j in range(start, end + 1):
           image_name = self.get_imageset().get_path(j-start)
@@ -634,12 +629,6 @@ class XSweep(object):
       working_directory = Environment.generate_directory(
         [crystal_id, wavelength_id, self.get_name(), 'index'])
 
-      json_file = None
-      if Flags.get_serialize_state() and os.path.isdir(working_directory):
-        json_file = os.path.join(working_directory, 'xia2.json')
-        if not os.path.isfile(json_file):
-          json_file = None
-
       # FIXME the indexer factory should probably be able to
       # take self [this object] as input, to help with deciding
       # the most appropriate indexer to use... this will certainly
@@ -649,8 +638,7 @@ class XSweep(object):
       # 06/SEP/06 no keep these interfaces separate - want to
       # keep "pure" interfaces to the programs for reuse, then
       # wrap in XStyle.
-      self._indexer = IndexerFactory.IndexerForXSweep(
-        self, json_file=json_file)
+      self._indexer = IndexerFactory.IndexerForXSweep(self)
 
       # set the user supplied lattice if there is one
       if self._user_lattice:
@@ -695,12 +683,6 @@ class XSweep(object):
       working_directory = Environment.generate_directory(
         [crystal_id, wavelength_id, self.get_name(), 'refine'])
 
-      json_file = None
-      if Flags.get_serialize_state() and os.path.isdir(working_directory):
-        json_file = os.path.join(working_directory, 'xia2.json')
-        if not os.path.isfile(json_file):
-          json_file = None
-
       # FIXME the indexer factory should probably be able to
       # take self [this object] as input, to help with deciding
       # the most appropriate indexer to use... this will certainly
@@ -710,8 +692,7 @@ class XSweep(object):
       # 06/SEP/06 no keep these interfaces separate - want to
       # keep "pure" interfaces to the programs for reuse, then
       # wrap in XStyle.
-      self._refiner = RefinerFactory.RefinerForXSweep(
-        self, json_file=json_file)
+      self._refiner = RefinerFactory.RefinerForXSweep(self)
 
       ## set the user supplied lattice if there is one
       #if self._user_lattice:
@@ -767,82 +748,75 @@ class XSweep(object):
       working_directory = Environment.generate_directory(
         [crystal_id, wavelength_id, self.get_name(), 'integrate'])
 
-      json_file = os.path.join(working_directory, 'xia2.json')
-      if (Flags.get_serialize_state() and
-          os.path.isdir(working_directory) and
-          os.path.isfile(json_file)):
-        self._integrater = IntegraterFactory.IntegraterForXSweep(
-          self, json_file=json_file)
+      self._integrater = IntegraterFactory.IntegraterForXSweep(self)
 
-      else:
-        self._integrater = IntegraterFactory.IntegraterForXSweep(self)
+      # configure the integrater with the indexer - unless
+      # we don't want to...
 
-        # configure the integrater with the indexer - unless
-        # we don't want to...
+      self._integrater.set_integrater_refiner(self._get_refiner())
 
-        self._integrater.set_integrater_refiner(self._get_refiner())
+      Debug.write('Integrater / refiner / indexer for sweep %s: %s/%s/%s' % \
+                  (self._name, self._integrater.__class__.__name__,
+                   self._get_refiner().__class__.__name__,
+                   self._get_indexer().__class__.__name__))
 
-        Debug.write('Integrater / refiner / indexer for sweep %s: %s/%s/%s' % \
-                    (self._name, self._integrater.__class__.__name__,
-                     self._get_refiner().__class__.__name__,
-                     self._get_indexer().__class__.__name__))
+      # or if we have been told this on the command-line -
+      # N.B. should really add a mechanism to specify the ice
+      # rings we want removing, #1317.
 
-        # or if we have been told this on the command-line -
-        # N.B. should really add a mechanism to specify the ice
-        # rings we want removing, #1317.
+      if PhilIndex.params.xia2.settings.integration.exclude_ice_regions:
+        Debug.write('Ice ring region exclusion ON')
+        self._integrater.set_integrater_ice(True)
 
-        if Flags.get_ice():
-          self._integrater.set_integrater_ice(Flags.get_ice())
+      # or if we were told about ice or specific excluded resolution
+      # ranges via the xinfo file
+      if self._ice:
+        self._integrater.set_integrater_ice(self._ice)
 
-        # or if we were told about ice or specific excluded resolution
-        # ranges via the xinfo file
-        if self._ice:
-          self._integrater.set_integrater_ice(self._ice)
+      if self._excluded_regions:
+        self._integrater.set_integrater_excluded_regions(
+            self._excluded_regions)
 
-        if self._excluded_regions:
-          self._integrater.set_integrater_excluded_regions(
-              self._excluded_regions)
+      self._integrater.set_integrater_project_info(
+        project_id, crystal_id, wavelength_id)
 
-        self._integrater.set_integrater_project_info(
-          project_id, crystal_id, wavelength_id)
+      self._integrater.set_integrater_sweep_name(self._name)
 
-        self._integrater.set_integrater_sweep_name(self._name)
+      # copy across anomalous flags in case it's useful - #871
 
-        # copy across anomalous flags in case it's useful - #871
+      self._integrater.set_integrater_anomalous(
+          self.get_wavelength().get_crystal().get_anomalous())
 
-        self._integrater.set_integrater_anomalous(
-            self.get_wavelength().get_crystal().get_anomalous())
+      # see if we have any useful detector parameters to pass on
 
-        # see if we have any useful detector parameters to pass on
+      if self.get_gain():
+        self._integrater.set_gain(self.get_gain())
 
-        if self.get_gain():
-          self._integrater.set_gain(self.get_gain())
+      if self.get_polarization():
+        self._integrater.set_polarization(self.get_polarization())
 
-        if self.get_polarization():
-          self._integrater.set_polarization(self.get_polarization())
+      # look to see if there are any global integration parameters
+      # we can set...
 
-        # look to see if there are any global integration parameters
-        # we can set...
+      if global_integration_parameters.get_parameters(crystal_id):
+        Debug.write('Using integration parameters for crystal %s' \
+                    % crystal_id)
+        self._integrater.set_integrater_parameters(
+            global_integration_parameters.get_parameters(crystal_id))
 
-        if global_integration_parameters.get_parameters(crystal_id):
-          Debug.write('Using integration parameters for crystal %s' \
-                      % crystal_id)
-          self._integrater.set_integrater_parameters(
-              global_integration_parameters.get_parameters(crystal_id))
+      # frames to process...
 
-        # frames to process...
+      if self._frames_to_process:
+        self._integrater._setup_from_imageset(self.get_imageset())
+        #frames = self._frames_to_process
+        #self._integrater.set_integrater_wedge(frames[0],
+                                              #frames[1])
+        #self._integrater.set_frame_wedge(frames[0],
+                                         #frames[1])
+        self._integrater.set_integrater_epoch(
+          self.get_epoch(self._frames_to_process[0]))
 
-        if self._frames_to_process:
-          self._integrater._setup_from_imageset(self.get_imageset())
-          #frames = self._frames_to_process
-          #self._integrater.set_integrater_wedge(frames[0],
-                                                #frames[1])
-          #self._integrater.set_frame_wedge(frames[0],
-                                           #frames[1])
-          self._integrater.set_integrater_epoch(
-            self.get_epoch(self._frames_to_process[0]))
-
-        self._integrater.set_working_directory(working_directory)
+      self._integrater.set_working_directory(working_directory)
 
     return self._integrater
 

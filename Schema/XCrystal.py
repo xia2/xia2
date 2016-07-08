@@ -78,8 +78,6 @@ from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import banner
 from xia2.lib.NMolLib import compute_nmol, compute_solvent
 
-# XML Marked up output for e-HTPX
-from xia2.Interfaces.ISPyB.ISPyBXmlHandler import ISPyBXmlHandler
 # Generation of Crystallographic Information Files (CIF)
 from xia2.Interfaces.CIF.CIFHandler import CIFHandler
 
@@ -426,8 +424,6 @@ class XCrystal(object):
 
     result = 'Crystal: %s\n' % self._name
 
-    if Flags.get_ispyb_xml_out():
-      ISPyBXmlHandler.add_xcrystal(self)
     CIFHandler.add_xcrystal(self)
 
     if self._aa_sequence:
@@ -541,8 +537,6 @@ class XCrystal(object):
               reflections)
           result += 'Scaled reflections: %s\n' % target
 
-    if Flags.get_ispyb_xml_out():
-      ISPyBXmlHandler.write_xml(Flags.get_ispyb_xml_out())
     CIFHandler.write_cif()
 
     return result
@@ -908,12 +902,6 @@ class XCrystal(object):
         self._scaler.set_scaler_input_spacegroup(
             self._user_spacegroup)
         self._scaler.set_scaler_input_pointgroup(pointgroup)
-
-      elif Flags.get_spacegroup():
-        self._scaler.set_scaler_input_spacegroup(
-            Flags.get_spacegroup())
-        self._scaler.set_scaler_input_pointgroup(
-            Flags.get_pointgroup())
 
       integraters = self._get_integraters()
 

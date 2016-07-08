@@ -73,21 +73,13 @@ class XDSScalerA(Scaler):
 
     # scaling correction choices - may be set one on the command line...
 
-    if Flags.get_scale_model():
-      self._scalr_correct_absorption = Flags.get_scale_model_absorption()
-      self._scalr_correct_modulation = Flags.get_scale_model_modulation()
-      self._scalr_correct_decay = Flags.get_scale_model_decay()
+    # flags to keep track of the corrections we will be applying
 
-      self._scalr_corrections = True
-
-    else:
-
-      self._scalr_correct_decay = True
-      self._scalr_correct_modulation = True
-      self._scalr_correct_absorption = True
-      self._scalr_corrections = True
-
-    return
+    model = PhilIndex.params.xia2.settings.scale.model
+    self._scalr_correct_absorption = 'absorption' in model
+    self._scalr_correct_modulation = 'modulation' in model
+    self._scalr_correct_decay = 'decay' in model
+    self._scalr_corrections = True
 
   def to_dict(self):
     obj = super(XDSScalerA, self).to_dict()
@@ -453,13 +445,13 @@ class XDSScalerA(Scaler):
 
       Debug.write('Spacegroup %d' % self._xds_spacegroup)
 
-    elif Flags.get_reference_reflection_file():
-      self._reference = Flags.get_reference_reflection_file()
+    elif PhilIndex.params.xia2.settings.scale.reference_reflection_file:
+      self._reference = PhilIndex.params.xia2.settings.scale.reference_reflection_file
 
       Debug.write('Using HKLREF %s' % self._reference)
 
       md = self._factory.Mtzdump()
-      md.set_hklin(Flags.get_reference_reflection_file())
+      md.set_hklin(PhilIndex.params.xia2.settings.scale.reference_reflection_file)
       md.dump()
 
       self._xds_spacegroup = Syminfo.spacegroup_name_to_number(
@@ -939,10 +931,6 @@ class XDSScalerA(Scaler):
     xscale.set_crystal(self._scalr_xname)
     xscale.set_anomalous(self._scalr_anomalous)
 
-    if Flags.get_zero_dose():
-      Debug.write('Switching on zero-dose extrapolation')
-      xscale.set_zero_dose()
-
     debug_memory_usage()
     xscale.run()
 
@@ -963,10 +951,9 @@ class XDSScalerA(Scaler):
     # check for outlier reflections and if a number are found
     # then iterate (that is, rerun XSCALE, rejecting these outliers)
 
-    if not Flags.get_quick() and Flags.get_remove():
-      if xscale.get_remove():
-
-        xscale_remove = xscale.get_remove()
+    if not Flags.get_quick() and not PhilIndex.params.xds.keep_outliers:
+      xscale_remove = xscale.get_remove()
+      if xscale_remove:
         current_remove = []
         final_remove = []
 
@@ -1000,7 +987,7 @@ class XDSScalerA(Scaler):
             self.get_working_directory(),
             'REMOVE.HKL'), 'w')
 
-        z_min = Flags.get_z_min()
+        z_min = PhilIndex.params.xds.z_min
         rejected = 0
 
         # write in the old reflections
@@ -1039,11 +1026,7 @@ class XDSScalerA(Scaler):
 
     if not self.get_scaler_done():
       Chatter.write('Excluding outlier reflections Z > %.2f' %
-                    Flags.get_z_min())
-
-      if Flags.get_egg():
-        for record in ttt():
-          Chatter.write(record)
+                    PhilIndex.params.xds.z_min)
       return
 
     debug_memory_usage()
@@ -1322,7 +1305,7 @@ class XDSScalerA(Scaler):
       self._scalr_scaled_reflection_files['sca'][key] = scaout
       FileHandler.record_data_file(scaout)
 
-      if Flags.get_small_molecule():
+      if PhilIndex.params.xia2.settings.small_molecule == True:
         hklout = '%s.hkl' % f[:-4]
 
         m2v = self._factory.Mtz2various()
@@ -1332,8 +1315,6 @@ class XDSScalerA(Scaler):
 
         self._scalr_scaled_reflection_files['hkl'][key] = hklout
         FileHandler.record_data_file(hklout)
-
-    return
 
   def get_batch_to_dose(self):
     batch_to_dose = {}

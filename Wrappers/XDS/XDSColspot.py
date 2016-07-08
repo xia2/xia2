@@ -23,6 +23,7 @@ from xia2.Handlers.Streams import Debug
 
 # global flags
 from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Phil import PhilIndex
 
 
 def XDSColspot(DriverType=None, params=None):
@@ -45,7 +46,7 @@ def XDSColspot(DriverType=None, params=None):
 
       # now set myself up...
 
-      self._parallel = Flags.get_parallel()
+      self._parallel = PhilIndex.params.xia2.settings.multiprocessing.nproc
       self.set_cpu_threads(self._parallel)
 
       if self._parallel <= 1:
@@ -145,12 +146,7 @@ def XDSColspot(DriverType=None, params=None):
       xds_inp.write('BACKGROUND_RANGE=%d %d\n' % \
                     self._background_range)
 
-      # microcrystals have very mall spots, perhaps?
-
-      if Flags.get_microcrystal():
-        xds_inp.write('MINIMUM_NUMBER_OF_PIXELS_IN_A_SPOT=1\n')
-
-      if Flags.get_small_molecule():
+      if PhilIndex.params.xia2.settings.small_molecule == True:
         xds_inp.write('STRONG_PIXEL=5\n')
         # FIXME should probably be moved to a phil parameter
 

@@ -141,75 +141,6 @@ def write_citations():
   out.close()
 
 
-def xia2():
-  '''Actually process something...'''
-
-  # print the version
-  Chatter.write(Version)
-  Citations.cite('xia2')
-
-  start_time = time.time()
-
-  CommandLine = get_command_line()
-
-  # check that something useful has been assigned for processing...
-  xtals = CommandLine.get_xinfo().get_crystals()
-
-  no_images = True
-
-  for name in xtals.keys():
-    xtal = xtals[name]
-
-    if not xtal.get_all_image_names():
-
-      Chatter.write('-----------------------------------' + \
-                    '-' * len(name))
-      Chatter.write('| No images assigned for crystal %s |' % name)
-      Chatter.write('-----------------------------------' + '-' \
-                    * len(name))
-    else:
-      no_images = False
-
-  # this actually gets the processing started...
-  Chatter.write(CommandLine.get_xinfo().get_output())
-
-  duration = time.time() - start_time
-
-  # write out the time taken in a human readable way
-  Chatter.write('Processing took %s' % \
-                time.strftime("%Hh %Mm %Ss", time.gmtime(duration)))
-
-  from ..Handlers.Flags import Flags
-  if Flags.get_pickle():
-    import cPickle as pickle
-    try:
-      pickle.dump(CommandLine.get_xinfo(),
-                  open(Flags.get_pickle(), 'w'))
-    except exceptions.Exception, e:
-      traceback.print_exc(file = open('xia2.pkl.error', 'w'))
-
-  # delete all of the temporary mtz files...
-  cleanup()
-
-  # maybe write out the headers
-  if Flags.get_hdr_out():
-    from ..Wrappers.XIA.Diffdump import HeaderCache
-    HeaderCache.write(Flags.get_hdr_out())
-
-  # and the summary file
-  summary_records = CommandLine.get_xinfo().summarise()
-
-  fout = open('xia2-summary.dat', 'w')
-  for record in summary_records:
-    fout.write('%s\n' % record)
-  fout.close()
-
-  write_citations()
-
-  Environment.cleanup()
-
-  return
-
 def help():
   '''Print out some help for xia2.'''
 
@@ -237,10 +168,7 @@ def help():
   sys.stdout.write('[reverse_phi=True]\n')
   sys.stdout.write(
     '[beam_centre=x,y] (in mm, following the MOSFLM convention, applies to all sweeps)\n')
-  sys.stdout.write('[-freer_file free.mtz]\n')
-  sys.stdout.write('[-reference_reflection_file free.mtz]\n')
   sys.stdout.write('[-quick]\n')
-  sys.stdout.write('[-migrate_data]\n')
   sys.stdout.write('[-atom se] (say) - this is for xia2setup\n')
   sys.stdout.write('[-project foo] (say) - this is for xia2setup\n')
   sys.stdout.write('[-crystal bar] (say) - this is for xia2setup\n\n')
@@ -248,42 +176,3 @@ def help():
   sys.stdout.write('Sensible command lines:\n')
   sys.stdout.write('xia2 (-2d|-3d|..) -xinfo foo.xinfo\n')
   sys.stdout.write('xia2 -project foo -crystal bar (-2d|-3d|..) /data/path\n')
-
-def run():
-  try:
-    check_environment()
-  except exceptions.Exception, e:
-    traceback.print_exc(file = open('xia2.error', 'w'))
-    Chatter.write('Status: error "%s"' % str(e))
-
-  if len(sys.argv) < 2 or '-help' in sys.argv:
-    help()
-    sys.exit()
-
-  # FIXME for #38 this should refer to Phil parameter
-  wd = os.getcwd()
-
-  try:
-    xia2()
-
-    status_message = 'Status: normal termination'
-    import datetime
-    if datetime.date.today().timetuple()[1:3] == (4, 1):
-      status_message = 'Status: all your intensities are belong to us'
-
-    Chatter.write(status_message)
-    from ..Handlers.Flags import Flags
-    if Flags.get_egg():
-      from ..lib.bits import message
-      message(status_message)
-
-  except exceptions.Exception, e:
-    traceback.print_exc(file = open(os.path.join(wd, 'xia2.error'), 'w'))
-    Chatter.write('Status: error "%s"' % str(e))
-    Chatter.write(
-      'Please send the contents of xia2.txt, xia2.error and xia2-debug.txt to:')
-    Chatter.write('xia2.support@gmail.com')
-    from ..Handlers.Flags import Flags
-    if Flags.get_egg():
-      from ..lib.bits import message
-      message('xia2 status error %s' % str(e))

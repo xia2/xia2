@@ -11,10 +11,8 @@
 from __future__ import division
 import os
 
-from __init__ import _setup_xia2_environ
-_setup_xia2_environ()
-
 from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Phil import PhilIndex
 
 def Integrate(DriverType = None):
   '''A factory for IntegrateWrapper classes.'''
@@ -120,7 +118,7 @@ def Integrate(DriverType = None):
 
       self.clear_command_line()
       self.add_command_line('input.experiments=%s' % self._experiments_filename)
-      nproc = Flags.get_parallel()
+      nproc = PhilIndex.params.xia2.settings.multiprocessing.nproc
       self.set_cpu_threads(nproc)
 
       if self._use_threading:

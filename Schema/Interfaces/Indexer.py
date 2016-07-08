@@ -505,19 +505,6 @@ class Indexer(object):
       if self._indxr_print:
         Chatter.write(self.show_indexer_solutions())
 
-      # FIXED 23/OCT/06 at this stage I need to look at the list of
-      # reasonable solutions and try to figure out if the indexing
-      # program has picked the highest - if not, then constrain the
-      # unit cell (need to implement this somewhere, sure it's
-      # around!) then rerun the autoindexing (perhaps?) with this
-      # new target - this means that we are always working from the
-      # top downwards with these things. Once we decide somewhere
-      # else (e.g. in cell refinement) that this cell isn't good
-      # then we can eliminate it from the list, select the next
-      # lower symmetry solution and continue. This solution is a
-      # general one, so may be implemented in the general indexer
-      # interface rather than in specific code...
-
   def show_indexer_solutions(self):
     lines = []
     lines.append('All possible indexing solutions:')
@@ -676,7 +663,6 @@ class Indexer(object):
       if (PhilIndex.params.xia2.settings.integrate_p1 and
           asserted_lattice != self.get_indexer_lattice() and
           asserted_lattice != 'aP'):
-        #Debug.write('Accepted lattice %s, will reprocess' % asserted_lattice)
         if PhilIndex.params.xia2.settings.reintegrate_correct_lattice:
           self.set_indexer_done(False)
           return self.LATTICE_POSSIBLE

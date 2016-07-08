@@ -28,13 +28,9 @@ def Autoindex(DriverType = None):
     def __init__(self):
       DriverInstance.__class__.__init__(self)
 
-      from xia2.Handlers.Executables import Executables
-      if Executables.get('ipmosflm'):
-        self.set_executable(Executables.get('ipmosflm'))
-      else:
-        import os
-        self.set_executable(os.path.join(
-            os.environ['CCP4'], 'bin', 'ipmosflm'))
+      import os
+      self.set_executable(os.path.join(
+          os.environ['CCP4'], 'bin', 'ipmosflm'))
 
       self._input_cell = None
       self._input_symmetry = None

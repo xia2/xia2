@@ -35,6 +35,7 @@ from xia2.Handlers.Streams import Chatter, Debug, Journal
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Files import FileHandler
+from xia2.Handlers.Phil import PhilIndex
 from xia2.Modules.Indexer.MosflmCheckIndexerSolution import \
      mosflm_check_indexer_solution
 
@@ -84,7 +85,7 @@ class LabelitIndexer(IndexerSingleSweep):
     phi_width = self.get_phi_width()
     images = self.get_matching_images()
 
-    if Flags.get_interactive():
+    if PhilIndex.params.xia2.settings.interactive == True:
       selected_images = index_select_images_user(phi_width, images,
                                                  Chatter)
     else:

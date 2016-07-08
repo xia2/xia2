@@ -197,30 +197,7 @@ class Refiner(object):
     return self._refinr_finish_done
 
   def add_refiner_indexer(self, epoch, indexer):
-    '''Add an indexer to this scaler, to provide the input.'''
-
-    ## epoch values are trusted as long as they are unique.
-    ## if a collision is detected, all epoch values are replaced by an
-    ## integer series, starting with 0
-
-    #if 1 or 0 in self._refinr_indexers.keys():
-      #epoch = len(self._refinr_indexers)
-
-    #else:
-      #epoch = indexer.get_integrater_epoch()
-
-      ## FIXME This is now probably superflous?
-      #if epoch == 0 and self._refinr_indexers:
-        #raise RuntimeError, 'multi-sweep indexer has epoch 0'
-
-      #if epoch in self._refinr_indexers.keys():
-        #Debug.write('indexer with epoch %d already exists. will not trust epoch values' % epoch)
-
-        ## collision. Throw away all epoch keys, and replace with integer series
-        #self._refinr_indexers = dict(zip(
-            #range(0,len(self._refinr_indexers)),
-             #self._refinr_indexers.values()))
-        #epoch = len(self._refinr_indexers)
+    '''Add an indexer to this refiner, to provide the input.'''
 
     self._refinr_indexers[epoch] = indexer
 
@@ -234,18 +211,12 @@ class Refiner(object):
       raise RuntimeError, \
             'no Indexer implementations assigned for refinement'
 
-    #xname = self._refinr_xcrystal.get_name()
-
     while not self.get_refiner_finish_done():
       while not self.get_refiner_done():
         while not self.get_refiner_prepare_done():
 
-          #Chatter.banner('Preparing %s' % xname)
-
           self._refinr_prepare_done = True
           self._refine_prepare()
-
-        #Chatter.banner('Scaling %s' % xname)
 
         self._refinr_done = True
         self._refinr_result = self._refine()
