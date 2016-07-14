@@ -300,8 +300,9 @@ class _CommandLine(object):
         start_end = int(tokens[1]), int(tokens[2])
 
       from xia2.Applications.xia2setup import is_hd5f_name
+      dataset = os.path.abspath(dataset)
       if is_hd5f_name(dataset):
-        self._hdf5_master_files.append(os.path.abspath(dataset))
+        self._hdf5_master_files.append(dataset)
         if start_end:
           Debug.write('Image range: %d %d' % start_end)
           self._default_start_end[dataset] = start_end
