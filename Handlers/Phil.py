@@ -470,10 +470,10 @@ xia2.settings
   resolution
     .short_caption = "Resolution"
   {
-    keep_all_reflections = False
+    keep_all_reflections = Auto
       .type = bool
       .help = "Keep all data regardless of resolution criteria"
-      .short_caption = "Keep all data"
+      .short_caption = "Keep all data (default for small molecule mode)"
     d_max = None
       .type = float(value_min=0.0)
       .help = "Low resolution cutoff."

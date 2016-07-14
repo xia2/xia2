@@ -151,10 +151,15 @@ class _CommandLine(object):
 
     self._read_quick()
 
+    from libtbx import Auto
+    if params.xia2.settings.resolution.keep_all_reflections is Auto:
+      if params.xia2.settings.small_molecule == True:
+        PhilIndex.update("xia2.settings.resolution.keep_all_reflections=true")
+      else:
+        PhilIndex.update("xia2.settings.resolution.keep_all_reflections=false")
     if params.xia2.settings.small_molecule == True:
       Debug.write('Small molecule selected')
       PhilIndex.update("xia2.settings.unify_setting=true")
-      PhilIndex.update("xia2.settings.resolution.keep_all_reflections=true")
 
     # pipeline options
     self._read_pipeline()
@@ -168,7 +173,6 @@ class _CommandLine(object):
 
     params = PhilIndex.get_python_object()
     mp_params = params.xia2.settings.multiprocessing
-    from libtbx import Auto
     if mp_params.mode == 'parallel':
       if mp_params.type == 'qsub':
         if which('qsub') is None:
