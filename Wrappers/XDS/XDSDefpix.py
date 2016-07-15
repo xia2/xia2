@@ -73,7 +73,8 @@ def XDSDefpix(DriverType = None):
     # this needs setting up from setup_from_image in FrameProcessor
 
     def set_data_range(self, start, end):
-      self._data_range = (start, end)
+      offset = self.get_frame_offset()
+      self._data_range = (start - offset, end - offset)
 
     def run(self):
       '''Run defpix.'''

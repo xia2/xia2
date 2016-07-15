@@ -1323,9 +1323,10 @@ class XDSScalerA(Scaler):
       epoch_to_dose.update(xsample.get_epoch_to_dose())
     for si in self._sweep_information.values():
       batch_offset = si['batch_offset']
+      frame_offset = si['integrater'].get_frame_offset()
       for b in range(si['batches'][0], si['batches'][1]+1):
         if epoch_to_dose:
-          batch_to_dose[b] = epoch_to_dose[si['image_to_epoch'][b-batch_offset]]
+          batch_to_dose[b] = epoch_to_dose[si['image_to_epoch'][b+frame_offset-batch_offset]]
         else:
           # backwards compatibility 2015-12-11
           batch_to_dose[b] = b

@@ -67,13 +67,16 @@ def XDSXycorr(DriverType = None):
     # this needs setting up from setup_from_image in FrameProcessor
 
     def set_data_range(self, start, end):
-      self._data_range = (start, end)
+      offset = self.get_frame_offset()
+      self._data_range = (start - offset, end - offset)
 
     def add_spot_range(self, start, end):
-      self._spot_range.append((start, end))
+      offset = self.get_frame_offset()
+      self._spot_range.append((start - offset, end - offset))
 
     def set_background_range(self, start, end):
-      self._background_range = (start, end)
+      offset = self.get_frame_offset()
+      self._background_range = (start - offset, end - offset)
 
     def set_beam_centre(self, x, y):
       self._org = float(x), float(y)

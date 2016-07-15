@@ -118,7 +118,8 @@ def XDSIntegrate(DriverType=None, params=None):
       self._refined_xparm = True
 
     def set_data_range(self, start, end):
-      self._data_range = (start, end)
+      offset = self.get_frame_offset()
+      self._data_range = (start - offset, end - offset)
 
     def set_updates(self, updates):
       self._updates = updates

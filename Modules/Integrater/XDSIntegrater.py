@@ -217,8 +217,8 @@ class XDSIntegrater(Integrater):
     # specified
     if not self._intgr_wedge:
       images = self.get_matching_images()
-      self.set_integrater_wedge(min(images),
-                                max(images))
+      self.set_integrater_wedge(min(images) + self.get_frame_offset(),
+                                max(images) + self.get_frame_offset())
 
     Debug.write('XDS INTEGRATE PREPARE:')
     Debug.write('Wavelength: %.6f' % self.get_wavelength())
@@ -335,8 +335,8 @@ class XDSIntegrater(Integrater):
                  'XPARM.XDS']:
       defpix.set_input_data_file(file, self._xds_data_files[file])
 
-    defpix.set_data_range(self._intgr_wedge[0],
-                          self._intgr_wedge[1])
+    defpix.set_data_range(self._intgr_wedge[0] + self.get_frame_offset(),
+                          self._intgr_wedge[1] + self.get_frame_offset())
 
     if self.get_integrater_high_resolution() > 0.0 and \
            self.get_integrater_user_resolution():
@@ -371,8 +371,8 @@ class XDSIntegrater(Integrater):
       self.set_integrater_wedge(min(images),
                                 max(images))
 
-    integrate.set_data_range(self._intgr_wedge[0],
-                             self._intgr_wedge[1])
+    integrate.set_data_range(self._intgr_wedge[0] + self.get_frame_offset(),
+                             self._intgr_wedge[1] + self.get_frame_offset())
 
     for file in ['X-CORRECTIONS.cbf',
                  'Y-CORRECTIONS.cbf',
@@ -464,8 +464,8 @@ class XDSIntegrater(Integrater):
            not self.get_integrater_sweep().get_user_lattice():
       correct = self.Correct()
 
-      correct.set_data_range(self._intgr_wedge[0],
-                             self._intgr_wedge[1])
+      correct.set_data_range(self._intgr_wedge[0] + self.get_frame_offset(),
+                             self._intgr_wedge[1] + self.get_frame_offset())
 
       if self.get_polarization() > 0.0:
         correct.set_polarization(self.get_polarization())
@@ -512,8 +512,8 @@ class XDSIntegrater(Integrater):
 
     correct = self.Correct()
 
-    correct.set_data_range(self._intgr_wedge[0],
-                           self._intgr_wedge[1])
+    correct.set_data_range(self._intgr_wedge[0] + self.get_frame_offset(),
+                           self._intgr_wedge[1] + self.get_frame_offset())
 
     if self.get_polarization() > 0.0:
       correct.set_polarization(self.get_polarization())
