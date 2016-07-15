@@ -10,9 +10,11 @@ def test():
     data.append(numbers.next())
 
   _x, _y = npp_ify(data)
-
   fit = flex.linear_regression(_x, _y)
+  fit.show_summary()
 
+  _x, _y = npp_ify(data, input_mean_variance=(1000, 1000))
+  fit = flex.linear_regression(_x, _y)
   fit.show_summary()
 
 def mean_variance(values):
@@ -21,13 +23,16 @@ def mean_variance(values):
   v = m2 - m**2
   return m, v
 
-def npp_ify(values):
+def npp_ify(values, input_mean_variance=None):
   '''Analyse data in values (assumed to be drawn from one population) and
   return the sorted list of (expected, observed) deviation from the mean.'''
 
   distribution = distributions.normal_distribution()
   values = flex.sorted(values)
-  mean, variance = mean_variance(values)
+  if input_mean_variance:
+    mean, variance = input_mean_variance
+  else:
+    mean, variance = mean_variance(values)
 
   scaled = (values - mean) / math.sqrt(variance)
   expected = distribution.quantiles(values.size())
