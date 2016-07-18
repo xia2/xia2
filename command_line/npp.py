@@ -22,9 +22,17 @@ def npp(hklin):
   all = flex.double()
   cen = flex.double()
 
-  for hkl, i, v in zip(unique, iobs, variobs):
+  for hkl, i, v, m in zip(unique, iobs, variobs, mult):
+
+    # only consider if meaningful number of observations
+    if m < 3:
+      continue
+
     sel = indices == hkl
     data = intensities.select(sel).data()
+
+    assert(m == len(data))
+
     _x, _y = npp_ify(data, input_mean_variance=(i,v))
 
     # perform linreg on (i) all data and (ii) subset between +/- 2 sigma
@@ -40,7 +48,7 @@ def npp(hklin):
     cen.append(fit_cen.slope())
 
     print '%3d %3d %3d' % hkl, '%.2f %.2f %.2f' % (i, v, i/math.sqrt(v)), \
-      '%.2f %.2f' % (fit_all.slope(), fit_cen.slope())
+      '%.2f %.2f' % (fit_all.slope(), fit_cen.slope()), '%d' % m
 
   sys.stderr.write('Mean gradients: %.2f %.2f\n' % (flex.sum(all) / all.size(),
                                                     flex.sum(cen) / cen.size()))
