@@ -153,6 +153,8 @@ class _CommandLine(object):
     self._read_quick()
 
     # sanity check input
+    from libtbx import Auto
+
     if (not params.xia2.settings.input.atom is None) and \
       (params.xia2.settings.input.anomalous is False):
        raise Sorry('Setting anomalous=false and atom type inconsistent')
@@ -160,12 +162,16 @@ class _CommandLine(object):
     if not params.xia2.settings.input.atom is None:
       params.xia2.settings.input.anomalous = True
 
-    from libtbx import Auto
+    if params.xia2.settings.input.anomalous is Auto and \
+      not params.xia2.settings.input.atom is None
+      params.xia2.settings.input.anomalous = False
+
     if params.xia2.settings.resolution.keep_all_reflections is Auto:
       if params.xia2.settings.small_molecule == True:
         PhilIndex.update("xia2.settings.resolution.keep_all_reflections=true")
       else:
         PhilIndex.update("xia2.settings.resolution.keep_all_reflections=false")
+
     if params.xia2.settings.small_molecule == True:
       Debug.write('Small molecule selected')
       PhilIndex.update("xia2.settings.unify_setting=true")

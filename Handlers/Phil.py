@@ -373,7 +373,7 @@ xia2.settings
       .type = str
       .short_caption = "Heavy atom name, optional"
       .help = "Set the heavy atom name, if appropriate"
-    anomalous = False
+    anomalous = Auto
       .type = bool
       .short_caption = "Separate anomalous pairs in merging"
     working_directory = None
