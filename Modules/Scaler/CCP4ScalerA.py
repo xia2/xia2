@@ -976,7 +976,11 @@ class CCP4ScalerA(Scaler):
     highest_resolution = 100.0
 
     sc.set_hklin(self._prepared_reflections)
-    sc.set_intensities(PhilIndex.params.ccp4.aimless.intensities)
+    # if profile fitting off use summation intensities
+    if PhilIndex.params.xia2.settings.integration.profile_fitting:
+      sc.set_intensities(PhilIndex.params.ccp4.aimless.intensities)
+    else:
+      sc.set_intensities('summation')
     sc.set_new_scales_file('%s_final.scales' % self._scalr_xname)
 
     for epoch in epochs:
@@ -1060,7 +1064,11 @@ class CCP4ScalerA(Scaler):
 
     sc = self._updated_aimless()
     sc.set_hklin(self._prepared_reflections)
-    sc.set_intensities(PhilIndex.params.ccp4.aimless.intensities)
+    # if profile fitting off use summation intensities
+    if PhilIndex.params.xia2.settings.integration.profile_fitting:
+      sc.set_intensities(PhilIndex.params.ccp4.aimless.intensities)
+    else:
+      sc.set_intensities('summation')
     sc.set_scales_file(scales_file)
 
     self._wavelengths_in_order = []
@@ -1112,7 +1120,11 @@ class CCP4ScalerA(Scaler):
 
     sc = self._updated_aimless()
     sc.set_hklin(self._prepared_reflections)
-    sc.set_intensities(PhilIndex.params.ccp4.aimless.intensities)
+    # if profile fitting off use summation intensities
+    if PhilIndex.params.xia2.settings.integration.profile_fitting:
+      sc.set_intensities(PhilIndex.params.ccp4.aimless.intensities)
+    else:
+      sc.set_intensities('summation')
     sc.set_scales_file(scales_file)
 
     self._wavelengths_in_order = []
