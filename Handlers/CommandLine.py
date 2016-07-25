@@ -143,16 +143,17 @@ class _CommandLine(object):
     # sanity check input
     from libtbx import Auto
 
-    if (not params.xia2.settings.input.atom is None) and \
+    if (not (params.xia2.settings.input.atom is None)) and \
       (params.xia2.settings.input.anomalous is False):
        raise Sorry('Setting anomalous=false and atom type inconsistent')
 
-    if not params.xia2.settings.input.atom is None:
-      params.xia2.settings.input.anomalous = True
+    if (params.xia2.settings.input.anomalous is Auto) and \
+      (params.xia2.settings.input.atom is None):
+      PhilIndex.update("xia2.settings.input.anomalous=false")
 
-    if params.xia2.settings.input.anomalous is Auto and \
-      not params.xia2.settings.input.atom is None:
-      params.xia2.settings.input.anomalous = False
+    if not (params.xia2.settings.input.atom is None):
+      params.xia2.settings.input.anomalous = True
+      PhilIndex.update("xia2.settings.input.anomalous=true")
 
     if params.xia2.settings.resolution.keep_all_reflections is Auto:
       if params.xia2.settings.small_molecule == True:
