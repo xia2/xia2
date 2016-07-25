@@ -24,6 +24,27 @@ from xia2.lib.tabulate import tabulate
 
 from scitbx.array_family import flex
 
+# make sure we can get scipy, if not try failing over to version in CCP4
+try:
+  import scipy.cluster
+  found = True
+except ImportError, e:
+  found = False
+
+if not found:
+  import sys
+  import os
+  sys.path.append(os.path.join(os.environ['CCP4'], 'lib', 'python2.7',
+                               'site-packages'))
+  try:
+    import scipy.cluster
+    found = True
+  except ImportError, e:
+    found = False
+
+if not found:
+  from libtbx.utils import Sorry
+  raise Sorry('%s depends on scipy.cluster, not available' % sys.argv[0])
 
 def multi_crystal_analysis(stop_after=None):
   '''Actually process something...'''
