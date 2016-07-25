@@ -58,7 +58,7 @@ def get_git_revision(fallback='not set'):
 
   return version
 
-VersionNumber = get_git_revision("0.4.0.0")
+VersionNumber = get_git_revision("0.5.0")
 Version = "XIA2 %s" % VersionNumber
 Directory = "xia2-%s" % VersionNumber
 
