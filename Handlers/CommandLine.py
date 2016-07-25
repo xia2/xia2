@@ -149,7 +149,13 @@ class _CommandLine(object):
 
     # things which are single token flags...
 
+    # does this do anything?!
     self._read_quick()
+
+    # sanity check input
+    if (not params.xia2.settings.input.atom is None) and \
+      (params.xia2.settings.input.anomalous is False):
+       raise Sorry('Setting anomalous=false and atom type inconsistent')
 
     from libtbx import Auto
     if params.xia2.settings.resolution.keep_all_reflections is Auto:

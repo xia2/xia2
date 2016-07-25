@@ -262,6 +262,7 @@ def xia2_main(stop_after=None):
   return
 
 def run():
+  from libtbx.utils import Sorry
   if len(sys.argv) < 2 or '-help' in sys.argv or '--help' in sys.argv:
     help()
     sys.exit()
@@ -278,7 +279,9 @@ def run():
     xinfo = xia2_main()
     Chatter.write('Status: normal termination')
     return xinfo
-
+  except Sorry, s:
+    Chatter.write('Status: error "%s"' % str(s))
+    sys.exit(1)
   except exceptions.Exception, e:
     traceback.print_exc(file = open(os.path.join(wd, 'xia2.error'), 'w'))
     Chatter.write('Status: error "%s"' % str(e))
