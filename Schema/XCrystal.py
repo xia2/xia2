@@ -824,6 +824,9 @@ class XCrystal(object):
 
     return None
 
+  def set_anomalous(self, anomalous=True):
+    self._anomalous = anomalous
+
   def get_anomalous(self):
     return self._anomalous
 

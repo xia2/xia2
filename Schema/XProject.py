@@ -131,9 +131,6 @@ class XProject(object):
       result += self._crystals[crystal].get_output()
     return result[:-1]
 
-  #def __str__(self):
-    #return self.__repr__()
-
   def summarise(self):
     '''Produce summary information.'''
 

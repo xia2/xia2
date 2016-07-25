@@ -157,6 +157,9 @@ class _CommandLine(object):
       (params.xia2.settings.input.anomalous is False):
        raise Sorry('Setting anomalous=false and atom type inconsistent')
 
+    if not params.xia2.settings.input.atom is None:
+      params.xia2.settings.input.anomalous = True
+
     from libtbx import Auto
     if params.xia2.settings.resolution.keep_all_reflections is Auto:
       if params.xia2.settings.small_molecule == True:
@@ -237,9 +240,19 @@ class _CommandLine(object):
     params = PhilIndex.get_python_object()
     if params.xia2.settings.input.xinfo is not None:
       xinfo_file = os.path.abspath(params.xia2.settings.input.xinfo)
-      PhilIndex.update("xia2.settings.input.xinfo=%s" %xinfo_file)
+      PhilIndex.update("xia2.settings.input.xinfo=%s" % xinfo_file)
       params = PhilIndex.get_python_object()
       self.set_xinfo(xinfo_file)
+
+      # issue #55 if not set ATOM in xinfo but anomalous=true or atom= set
+      # on commandline, set here, should be idempotent
+
+      if params.xia2.settings.input.anomalous is True:
+        crystals = self._xinfo.get_crystals()
+        for xname in crystals:
+          xtal = crystals[xname]
+          Debug.write("Setting anomalous for crystal %s" % xname)
+          xtal.set_anomalous(True)
 
       Debug.write(60 * '-')
       Debug.write('XINFO file: %s' % xinfo_file)
@@ -248,9 +261,9 @@ class _CommandLine(object):
         Debug.write(record[:-1])
       Debug.write(60 * '-')
     else:
-      xinfo_file = '%s/automatic.xinfo' %os.path.abspath(
+      xinfo_file = '%s/automatic.xinfo' % os.path.abspath(
         os.curdir)
-      PhilIndex.update("xia2.settings.input.xinfo=%s" %xinfo_file)
+      PhilIndex.update("xia2.settings.input.xinfo=%s" % xinfo_file)
       params = PhilIndex.get_python_object()
 
     if params.dials.find_spots.phil_file is not None:
