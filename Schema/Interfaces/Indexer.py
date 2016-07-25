@@ -251,7 +251,7 @@ class Indexer(object):
       if isinstance(v, dict):
         if v.get('__id__') == 'ExperimentList':
           from dxtbx.model.experiment.experiment_list import ExperimentListFactory
-          v = ExperimentListFactory.from_dict(v)
+          v = ExperimentListFactory.from_dict(v, check_format=False)
       setattr(return_obj, k, v)
     return return_obj
 
