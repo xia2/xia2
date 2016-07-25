@@ -132,8 +132,6 @@ def Aimless(DriverType = None,
       self._xname = None
       self._dname = None
 
-      return
-
     # getter and setter methods
 
     def set_project_info(self, pname, xname, dname):
@@ -141,7 +139,6 @@ def Aimless(DriverType = None,
       self._pname = pname
       self._xname = xname
       self._dname = dname
-      return
 
     def add_run(self, start, end,
                 pname = None, xname = None, dname = None,
@@ -152,11 +149,9 @@ def Aimless(DriverType = None,
 
       self._runs.append((start, end, pname, xname, dname,
                          exclude, resolution, name))
-      return
 
     def set_scalepack(self, scalepack = True):
       self._scalepack = scalepack
-      return
 
     def set_chef_unmerged(self, chef_unmerged = True):
       '''Output the measurements in the form suitable for
@@ -164,14 +159,12 @@ def Aimless(DriverType = None,
       in unmerged MTZ format.'''
 
       self._chef_unmerged = chef_unmerged
-      return
 
     def set_resolution(self, resolution):
       '''Set the resolution limit for the scaling -
       default is to include all reflections.'''
 
       self._resolution = resolution
-      return
 
     def get_xmlout(self):
       return self._xmlout
@@ -180,7 +173,6 @@ def Aimless(DriverType = None,
       '''Set the resolution for a particular run.'''
 
       self._resolution_by_run = { }
-      return
 
     def set_scales_file(self, scales_file):
       '''Set the file containing all of the scales required for
@@ -200,14 +192,12 @@ def Aimless(DriverType = None,
         'Nparameters', 'Nparameters '))
 
       self._scales_file = tmp_scales_file
-      return
 
     def set_new_scales_file(self, new_scales_file):
       '''Set the file to which the scales will be written. This
       will allow reusing through the above interface.'''
 
       self._new_scales_file = new_scales_file
-      return
 
     def get_new_scales_file(self):
       '''Get the file to which the scales have been written.'''
@@ -223,7 +213,6 @@ def Aimless(DriverType = None,
       input reflections are scaled already.'''
 
       self._onlymerge = onlymerge
-      return
 
     def set_bfactor(self, bfactor = True, brotation = None):
       '''Switch on/off bfactor refinement, optionally with the
@@ -234,27 +223,21 @@ def Aimless(DriverType = None,
       if brotation:
         self._brotation = brotation
 
-      return
-
     def set_surface_tie(self, surface_tie):
       self._surface_tie = surface_tie
-      return
 
     def set_surface_link(self, surface_link):
       self._surface_link = surface_link
-      return
 
     def set_anomalous(self, anomalous = True):
       '''Switch on/off separating of anomalous pairs.'''
 
       self._anomalous = anomalous
-      return
 
     def set_tails(self, tails = True):
       '''Switch on/off tails correction.'''
 
       self._tails = tails
-      return
 
     def set_secondary(self, secondary):
       self._secondary = secondary
@@ -283,18 +266,14 @@ def Aimless(DriverType = None,
       if spacing:
         self._spacing = spacing
 
-      if not secondary is None:
+      if secondary is not None:
         self._secondary = secondary
-
-      return
 
     def set_cycles(self, cycles):
       '''Set the maximum number of cycles allowed for the scaling -
       this assumes the default convergence parameters.'''
 
       self._cycles = cycles
-
-      return
 
     def set_intensities(self, intensities):
       intensities = intensities.lower()
@@ -394,8 +373,6 @@ def Aimless(DriverType = None,
           run, batches = self.identify_no_observations_run()
           raise RuntimeError, 'no observations run %d: %d to %d' % \
                 (run, batches[0], batches[1])
-
-      return
 
     def sum(self):
       '''Sum a set of reflections in a sorted mtz file - this will

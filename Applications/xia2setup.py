@@ -343,7 +343,7 @@ def print_sweeps(out = sys.stdout):
 
   for j in range(len(wavelengths)):
     anomalous = settings.input.anomalous
-    if not settings.input.atom is None:
+    if settings.input.atom is not None:
       anomalous = True
     if len(wavelengths) == 1 and anomalous:
       name = 'SAD'

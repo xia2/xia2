@@ -656,7 +656,7 @@ class Table(DocElement):
     for item in self.__header:
       # A single non-None (!) item indicates that
       # the header isn't empty
-      if not item is None: return False
+      if item is not None: return False
     # All items were None, so header is empty
     return True
 
@@ -822,7 +822,7 @@ class Table(DocElement):
     template = []
     last_nonempty_cell = 0
     for i in range(0,len(row)):
-      if not row[i] is None:
+      if row[i] is not None:
         last_nonempty_cell = i
       template.append(last_nonempty_cell)
     # Deal with supplid CSS classes

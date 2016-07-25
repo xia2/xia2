@@ -66,7 +66,7 @@ class Sweep(object):
     self._identity_attributes = ['_collect_start', '_collect_end',
                                  '_template', '_id_image']
 
-    if not id_image is None:
+    if id_image is not None:
       self._id_image = id_image
     else:
       self._id_image = -1

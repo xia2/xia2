@@ -306,7 +306,7 @@ class PipelineInfo:
         data['description'] = new_description
       if new_template:
         data['template'] = new_template
-      if not new_baublize is None:
+      if new_baublize is not None:
         data['baublize'] = new_baublize
 
   def lookupLogInfo(self,logfile):
@@ -2383,7 +2383,7 @@ class Xia2doc:
     """Add the report of ASU contents to a section"""
     nmols = xtal.molecules_in_asu()
     solvent = xtal.solvent_fraction()
-    if not nmols is None and not solvent is None:
+    if nmols is not None and solvent is not None:
       # Create a table
       asu_tbl = section.addTable()
       seq_html = ''
@@ -3182,7 +3182,7 @@ class IntegrationStatusReporter:
 
     Optionally a 'title' string can also be specified, which
     is added to the HTML."""
-    if not title is None:
+    if title is not None:
       title_attr = " title='"+str(title)+"'"
     else:
       title_attr = ""

@@ -97,8 +97,6 @@ def CCP4DecoratorFactory(DriverInstance):
           self.add_working_environment('LD_LIBRARY_PATH',
                                        os.environ['CLIB'])
 
-      return
-
     def set_hklin(self, hklin):
       return self.setHklin(hklin)
 
@@ -110,7 +108,6 @@ def CCP4DecoratorFactory(DriverInstance):
 
     def setHklin(self, hklin):
       self._hklin = hklin
-      return
 
     def getHklin(self):
       return self._hklin
@@ -132,7 +129,6 @@ def CCP4DecoratorFactory(DriverInstance):
 
     def setHklout(self, hklout):
       self._hklout = hklout
-      return
 
     def getHklout(self):
       return self._hklout
@@ -159,7 +155,6 @@ def CCP4DecoratorFactory(DriverInstance):
 
     def setXyzin(self, xyzin):
       self._xyzin = xyzin
-      return
 
     def getXyzin(self):
       return self._xyzin
@@ -181,7 +176,6 @@ def CCP4DecoratorFactory(DriverInstance):
 
     def setXyzout(self, xyzout):
       self._xyzout = xyzout
-      return
 
     def getXyzout(self):
       return self._xyzout
@@ -201,7 +195,6 @@ def CCP4DecoratorFactory(DriverInstance):
 
     def setMapin(self, mapin):
       self._mapin = mapin
-      return
 
     def getMapin(self):
       return self._mapin
@@ -223,7 +216,6 @@ def CCP4DecoratorFactory(DriverInstance):
 
     def setMapout(self, mapout):
       self._mapout = mapout
-      return
 
     def getMapout(self):
       return self._mapout
@@ -237,27 +229,27 @@ def CCP4DecoratorFactory(DriverInstance):
 
       description = 'CCP4 program: %s' % self.get_executable()
 
-      if not self._hklin is None:
+      if self._hklin is not None:
         description += ' %s' % ('hklin')
         description += ' %s' % (self._hklin)
 
-      if not self._hklout is None:
+      if self._hklout is not None:
         description += ' %s' % ('hklout')
         description += ' %s' % (self._hklout)
 
-      if not self._xyzin is None:
+      if self._xyzin is not None:
         description += ' %s' % ('xyzin')
         description += ' %s' % (self._xyzin)
 
-      if not self._xyzout is None:
+      if self._xyzout is not None:
         description += ' %s' % ('xyzout')
         description += ' %s' % (self._xyzout)
 
-      if not self._mapin is None:
+      if self._mapin is not None:
         description += ' %s' % ('mapin')
         description += ' %s' % (self._mapin)
 
-      if not self._mapout is None:
+      if self._mapout is not None:
         description += ' %s' % ('mapout')
         description += ' %s' % (self._mapout)
 
@@ -277,34 +269,32 @@ def CCP4DecoratorFactory(DriverInstance):
           except:
             pass
 
-      if not self._hklin is None:
+      if self._hklin is not None:
         self.add_command_line('hklin')
         self.add_command_line(self._hklin)
 
-      if not self._hklout is None:
+      if self._hklout is not None:
         self.add_command_line('hklout')
         self.add_command_line(self._hklout)
 
-      if not self._xyzin is None:
+      if self._xyzin is not None:
         self.add_command_line('xyzin')
         self.add_command_line(self._xyzin)
 
-      if not self._xyzout is None:
+      if self._xyzout is not None:
         self.add_command_line('xyzout')
         self.add_command_line(self._xyzout)
 
-      if not self._mapin is None:
+      if self._mapin is not None:
         self.add_command_line('mapin')
         self.add_command_line(self._mapin)
 
-      if not self._mapout is None:
+      if self._mapout is not None:
         self.add_command_line('mapout')
         self.add_command_line(self._mapout)
 
       # delegate the actual starting to the parent class
       self._original_class.start(self)
-
-      return
 
     def check_ccp4_errors(self):
       '''Look through the standard output for a few "usual" CCP4
@@ -337,8 +327,6 @@ def CCP4DecoratorFactory(DriverInstance):
 
           else:
             raise RuntimeError, error
-
-      return
 
     def get_ccp4_status(self):
       '''Check through the standard output and get the program

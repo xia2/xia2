@@ -109,7 +109,7 @@ class DefaultDriver(object):
   def __del__(self):
     # the destructor - close the log file etc.
 
-    if not self._log_file is None:
+    if self._log_file is not None:
       self._log_file.flush()
       self._log_file.close()
 
@@ -259,7 +259,7 @@ class DefaultDriver(object):
     self._input_files = []
     self._output_files = []
     self._scratch_directories = []
-    if not self._log_file is None:
+    if self._log_file is not None:
       self._log_file.flush()
       self._log_file.close()
     self._log_file = None
@@ -346,7 +346,7 @@ class DefaultDriver(object):
     # copy record somehow
     self._standard_output_records.append(record)
 
-    if not self._log_file is None:
+    if self._log_file is not None:
       self._log_file.write(record)
 
       # FIXME 07/NOV/06 I have noticed that sometimes
