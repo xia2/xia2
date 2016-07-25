@@ -512,7 +512,7 @@ def Aimless(DriverType = None,
       self.input('xmlout %d_aimless.xml' % self.get_xpid())
       if PhilIndex.params.xia2.settings.small_molecule == False:
         self.input('bins 20')
-      self.input('intensities %s' %self._intensities)
+      self.input('intensities %s' % self._intensities)
 
       if self._new_scales_file:
         self.input('dump %s' % self._new_scales_file)
