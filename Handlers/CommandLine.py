@@ -163,7 +163,7 @@ class _CommandLine(object):
       params.xia2.settings.input.anomalous = True
 
     if params.xia2.settings.input.anomalous is Auto and \
-      not params.xia2.settings.input.atom is None
+      not params.xia2.settings.input.atom is None:
       params.xia2.settings.input.anomalous = False
 
     if params.xia2.settings.resolution.keep_all_reflections is Auto:
