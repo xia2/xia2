@@ -10,6 +10,29 @@ from cctbx import crystal, miller, sgtbx, uctbx
 
 from xia2.Handlers.Streams import Chatter, Debug
 
+def get_scipy():
+  # make sure we can get scipy, if not try failing over to version in CCP4
+  try:
+    import scipy.cluster
+    found = True
+  except ImportError, e:
+    found = False
+
+  if not found and 'CCP4' in os.environ:
+    sys.path.append(os.path.join(os.environ['CCP4'], 'lib', 'python2.7',
+                                 'site-packages'))
+    try:
+      import scipy.cluster
+      found = True
+    except ImportError, e:
+      found = False
+
+  if not found:
+    from libtbx.utils import Sorry
+    raise Sorry('%s depends on scipy.cluster, not available' % sys.argv[0])
+
+get_scipy()
+
 master_phil_scope = iotbx.phil.parse("""\
 unit_cell = None
   .type = unit_cell

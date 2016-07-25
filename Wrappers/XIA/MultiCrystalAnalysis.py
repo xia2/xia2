@@ -39,7 +39,7 @@ def MultiCrystalAnalysis(DriverType = None):
 
       self.clear_command_line()
 
-      from Modules import MultiCrystalAnalysis as mca_module
+      from xia2.Modules import MultiCrystalAnalysis as mca_module
       self.add_command_line(mca_module.__file__)
 
       for arg in self._argv:
