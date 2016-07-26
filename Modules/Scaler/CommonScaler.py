@@ -811,6 +811,9 @@ class CommonScaler(Scaler):
 
     from iotbx import mtz
     m = mtz.object(hklout)
+    # FIXME in here should be able to just drop down to the lowest symmetry
+    # space group with the rotational elements for this calculation? I.e.
+    # P422 for P4/mmm?
     if not m.space_group().is_centric():
       from xia2.Toolkit.E4 import E4_mtz
       E4s = E4_mtz(hklout, native = True)
