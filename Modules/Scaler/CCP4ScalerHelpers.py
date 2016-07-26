@@ -325,6 +325,73 @@ class CCP4ScalerHelper(object):
 
     return pointgroup, reindex_op, need_to_return, probably_twinned
 
+  def pointless_indexer_multisweep(self, hklin, refiners):
+    '''A jiffy to centralise the interactions between pointless
+    and the Indexer, multisweep edition.'''
+
+    need_to_return = False
+    probably_twinned = False
+
+    pointless = self.Pointless()
+    pointless.set_hklin(hklin)
+    pointless.decide_pointgroup()
+
+    rerun_pointless = False
+
+    possible = pointless.get_possible_lattices()
+
+    correct_lattice = None
+
+    Debug.write('Possible lattices (pointless):')
+
+    Debug.write(' '.join(possible))
+
+    # any of them contain the same indexer link, so all good here.
+    refiner = refiners[0]
+
+    for lattice in possible:
+      state = refiner.set_refiner_asserted_lattice(lattice)
+      if state == refiner.LATTICE_CORRECT:
+        Debug.write('Agreed lattice %s' % lattice)
+        correct_lattice = lattice
+        break
+
+      elif state == refiner.LATTICE_IMPOSSIBLE:
+        Debug.write('Rejected lattice %s' % lattice)
+        rerun_pointless = True
+        continue
+
+      elif state == refiner.LATTICE_POSSIBLE:
+        Debug.write('Accepted lattice %s, will reprocess' % lattice)
+        need_to_return = True
+        correct_lattice = lattice
+        break
+
+    if correct_lattice is None:
+      correct_lattice = refiner.get_refiner_lattice()
+      rerun_pointless = True
+
+      Debug.write(
+          'No solution found: assuming lattice from refiner')
+
+    # now pass the correct lattice conclusion across the whole set
+    for refiner in refiners[1:]:
+      refiner.set_refiner_asserted_lattice(correct_lattice)
+
+    if rerun_pointless:
+      pointless.set_correct_lattice(correct_lattice)
+      pointless.decide_pointgroup()
+
+    Debug.write('Pointless analysis of %s' % pointless.get_hklin())
+
+    pointgroup = pointless.get_pointgroup()
+    reindex_op = pointless.get_reindex_operator()
+    probably_twinned = pointless.get_probably_twinned()
+
+    Debug.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
+
+    return pointgroup, reindex_op, need_to_return, probably_twinned
+
 # Sweep info class to replace dictionary... #884
 
 class SweepInformation(object):
