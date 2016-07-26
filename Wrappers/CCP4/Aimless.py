@@ -424,6 +424,7 @@ def Aimless(DriverType = None,
       self.start()
       self.input('scales constant')
       self.input('output unmerged')
+      self.input('sdcorrection norefine 1 0 0')
       self.close_wait()
 
       # check for errors
