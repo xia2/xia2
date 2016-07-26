@@ -132,6 +132,9 @@ class CCP4ScalerA(Scaler):
   def _pointless_indexer_jiffy(self, hklin, refiner):
     return self._helper.pointless_indexer_jiffy(hklin, refiner)
 
+  def _pointless_indexer_multisweep(self, hklin, refiners):
+    return self._helper.pointless_indexer_multisweep(hklin, refiners)
+
   def _scale_prepare(self):
     '''Perform all of the preparation required to deliver the scaled
     data. This should sort together the reflection files, ensure that
