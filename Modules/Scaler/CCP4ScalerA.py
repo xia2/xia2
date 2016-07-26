@@ -192,7 +192,6 @@ class CCP4ScalerA(Scaler):
     multi_sweep_indexing = \
       PhilIndex.params.xia2.settings.multi_sweep_indexing == True
 
-
     if len(self._sweep_handler.get_epochs()) > 1:
 
       if multi_sweep_indexing and not self._scalr_input_pointgroup:
@@ -271,9 +270,22 @@ class CCP4ScalerA(Scaler):
 
         s.sort()
 
+        # FIXME xia2-51 in here look at running constant scaling on the
+        # pointless hklin to put the runs on the same scale.
+
+        pointless_const = os.path.join(self.get_working_directory(),
+                              '%s_%s_prepointless_const.mtz' % \
+                              (self._scalr_pname, self._scalr_xname))
+
+        aimless_const = self._factory.Aimless()
+        aimless_const.set_hklin(pointless_hklin)
+        aimless_const.set_hklout(pointless_const)
+        aimless_const.const()
+
+        pointless_hklin = pointless_const
+
         pointgroup, reindex_op, ntr, pt = \
-                    self._pointless_indexer_jiffy(
-            pointless_hklin, refiner)
+                    self._pointless_indexer_jiffy(pointless_hklin, refiner)
 
         Debug.write('X1698: %s: %s' % (pointgroup, reindex_op))
 
@@ -465,11 +477,6 @@ class CCP4ScalerA(Scaler):
         si = self._sweep_handler.get_sweep_information(epoch)
 
         hklin = si.get_reflections()
-        #hklout = os.path.join(
-            #self.get_working_directory(),
-            #os.path.split(hklin)[-1].replace('.mtz', '_rdx.mtz'))
-
-        #FileHandler.record_temporary_file(hklout)
 
         integrater = si.get_integrater()
         refiner = integrater.get_integrater_refiner()

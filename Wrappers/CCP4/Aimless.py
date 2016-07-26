@@ -416,6 +416,45 @@ def Aimless(DriverType = None,
 
       return self.get_ccp4_status()
 
+    def const(self):
+      '''Const scaling; for cleaner input to pointless'''
+
+      self.check_hklin()
+      self.check_hklout()
+
+      self.start()
+
+      self.input('scales constant')
+      self.input('output unmerged')
+      self.input('sdcorrection noadjust 1.0 0.0 0.0')
+
+      self.close_wait()
+
+      # check for errors
+
+      if True:
+        # try:
+        self.check_for_errors()
+        self.check_ccp4_errors()
+        self.check_aimless_error_negative_scale_run()
+        self.check_aimless_errors()
+
+        status = 'OK'
+
+        if 'Error' in status:
+          raise RuntimeError, '[AIMLESS] %s' % status
+
+      else:
+        # except RuntimeError, e:
+        try:
+          os.remove(self.get_hklout())
+        except:
+          pass
+
+        raise e
+
+      return self.get_ccp4_status()
+
     def merge(self):
       '''Actually merge the already scaled reflections.'''
 
