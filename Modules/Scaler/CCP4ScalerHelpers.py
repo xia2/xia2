@@ -291,20 +291,17 @@ class CCP4ScalerHelper(object):
       if state == refiner.LATTICE_CORRECT:
         Debug.write('Agreed lattice %s' % lattice)
         correct_lattice = lattice
-
         break
 
       elif state == refiner.LATTICE_IMPOSSIBLE:
         Debug.write('Rejected lattice %s' % lattice)
         rerun_pointless = True
-
         continue
 
       elif state == refiner.LATTICE_POSSIBLE:
         Debug.write('Accepted lattice %s, will reprocess' % lattice)
         need_to_return = True
         correct_lattice = lattice
-
         break
 
     if correct_lattice is None:

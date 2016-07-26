@@ -224,11 +224,14 @@ class CCP4ScalerA(Scaler):
 
         counter = 0
 
+        refiners = []
+
         for epoch in self._sweep_handler.get_epochs():
           si = self._sweep_handler.get_sweep_information(epoch)
           hklin = si.get_reflections()
           integrater = si.get_integrater()
           refiner = integrater.get_integrater_refiner()
+          refiners.append(refiner)
 
           hklin = self._prepare_pointless_hklin(
             hklin, si.get_integrater().get_phi_width())
@@ -284,6 +287,8 @@ class CCP4ScalerA(Scaler):
 
         pointless_hklin = pointless_const
 
+        # FIXME xia2-51 in here need to pass all refiners to ensure that the
+        # information is passed back to all of them not just the last one...
         pointgroup, reindex_op, ntr, pt = \
                     self._pointless_indexer_jiffy(pointless_hklin, refiner)
 

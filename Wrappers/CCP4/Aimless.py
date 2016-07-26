@@ -426,7 +426,7 @@ def Aimless(DriverType = None,
 
       self.input('scales constant')
       self.input('output unmerged')
-      self.input('sdcorrection noadjust 1.0 0.0 0.0')
+      self.input('sdcorrection norefine 1.0 0.0 0.0')
 
       self.close_wait()
 
@@ -453,7 +453,7 @@ def Aimless(DriverType = None,
 
         raise e
 
-      return self.get_ccp4_status()
+      return status
 
     def merge(self):
       '''Actually merge the already scaled reflections.'''
