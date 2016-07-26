@@ -30,18 +30,14 @@ def E4(ma):
   import cStringIO
   cache_stdout = sys.stdout
   sys.stdout = cStringIO.StringIO()
+  sg = ma.space_group()
+  if sg.is_centric():
+    asg = sg.build_derived_acentric_group()
+  ma = ma.customized_copy(space_group_info=asg.info())
   from mmtbx.scaling.twin_analyses import twin_analyses
   analysis = twin_analyses(ma)
   sys.stdout = cache_stdout
   return analysis.wilson_moments.acentric_i_ratio
-
-  #f = ma.as_intensity_array()
-  #f = f.array(data=f.data()/f.epsilons().data().as_double())
-  #f.set_observation_type_xray_intensity()
-  #f.setup_binner(auto_binning = True)
-  #sm = f.second_moment(use_binning = True)
-  #moments = [m for m in [sm.data[j] for j in f.binner().range_used()] if m]
-  #return sum(moments) / len(moments)
 
 if __name__ == '__main__':
   main()
