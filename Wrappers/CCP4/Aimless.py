@@ -421,39 +421,18 @@ def Aimless(DriverType = None,
 
       self.check_hklin()
       self.check_hklout()
-
       self.start()
-
       self.input('scales constant')
       self.input('output unmerged')
-      self.input('sdcorrection norefine 1.0 0.0 0.0')
-
       self.close_wait()
 
       # check for errors
 
-      if True:
-        # try:
-        self.check_for_errors()
-        self.check_ccp4_errors()
-        self.check_aimless_error_negative_scale_run()
-        self.check_aimless_errors()
+      self.check_for_errors()
+      self.check_ccp4_errors()
+      self.check_aimless_errors()
 
-        status = 'OK'
-
-        if 'Error' in status:
-          raise RuntimeError, '[AIMLESS] %s' % status
-
-      else:
-        # except RuntimeError, e:
-        try:
-          os.remove(self.get_hklout())
-        except:
-          pass
-
-        raise e
-
-      return status
+      return 'OK'
 
     def merge(self):
       '''Actually merge the already scaled reflections.'''

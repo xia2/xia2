@@ -289,6 +289,8 @@ class CCP4ScalerA(Scaler):
 
         # FIXME xia2-51 in here need to pass all refiners to ensure that the
         # information is passed back to all of them not just the last one...
+        Debug.write('Running multisweep pointless for %d sweeps' %
+                    len(refiners))
         pointgroup, reindex_op, ntr, pt = \
                     self._pointless_indexer_multisweep(pointless_hklin,
                                                        refiners)
