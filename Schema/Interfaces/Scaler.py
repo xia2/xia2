@@ -219,6 +219,7 @@ class Scaler(object):
     # information for returning "interesting facts" about the data
     self._scalr_highest_resolution = 0.0
     self._scalr_cell = None
+    self._scalr_cell_esd = None
     self._scalr_likely_spacegroups = []
     self._scalr_unlikely_spacegroups = []
 
@@ -234,8 +235,6 @@ class Scaler(object):
     self._scalr_xcrystal = None
 
     self._scalr_resolution_limits = { }
-
-    return
 
   # serialization functions
 
@@ -349,18 +348,15 @@ class Scaler(object):
 
   def set_working_directory(self, working_directory):
     self._working_directory = working_directory
-    return
 
   def get_working_directory(self):
     return self._working_directory
 
   def set_scaler_input_spacegroup(self, spacegroup):
     self._scalr_input_spacegroup = spacegroup
-    return
 
   def set_scaler_input_pointgroup(self, pointgroup):
     self._scalr_input_pointgroup = pointgroup
-    return
 
   def get_scaler_input_spacegroup(self):
     return self._scaler_input_spacegroup
@@ -370,7 +366,6 @@ class Scaler(object):
 
   def set_scaler_xcrystal(self, xcrystal):
     self._scalr_xcrystal = xcrystal
-    return
 
   def get_scaler_xcrystal(self):
     return self._scalr_xcrystal
@@ -381,8 +376,6 @@ class Scaler(object):
     self._scalr_pname = pname
     self._scalr_xname = xname
 
-    return
-
   def get_scaler_project_info(self):
     '''Get the scaler project and crystal.'''
 
@@ -390,14 +383,12 @@ class Scaler(object):
 
   def set_scaler_reference_reflection_file(self, reference_reflection_file):
     self._scalr_reference_reflection_file = reference_reflection_file
-    return
 
   def get_scaler_reference_reflection_file(self):
     return self._scalr_reference_reflection_file
 
   def set_scaler_freer_file(self, freer_file):
     self._scalr_freer_file = freer_file
-    return
 
   def get_scaler_freer_file(self):
     return self._scalr_freer_file
@@ -413,7 +404,6 @@ class Scaler(object):
                 (mod.__name__, frm[0].f_lineno, done))
 
     self._scalr_prepare_done = done
-    return
 
   def set_scaler_done(self, done = True):
 
@@ -423,7 +413,6 @@ class Scaler(object):
                 (mod.__name__, frm[0].f_lineno, done))
 
     self._scalr_done = done
-    return
 
   def set_scaler_finish_done(self, done = True):
 
@@ -433,11 +422,9 @@ class Scaler(object):
                 (mod.__name__, frm[0].f_lineno, done))
 
     self._scalr_finish_done = done
-    return
 
   def set_scaler_anomalous(self, anomalous):
     self._scalr_anomalous = anomalous
-    return
 
   def get_scaler_anomalous(self):
     return self._scalr_anomalous
@@ -450,7 +437,6 @@ class Scaler(object):
     self._scalr_prepare_done = False
     self._scalr_finish_done = False
     self._scalr_result = None
-    return
 
   # getters for the scaling model which was used - first see that the
   # corrections were applied, then the individual getters for the
@@ -655,7 +641,7 @@ class Scaler(object):
     if format in self._scalr_scaled_reflection_files.keys():
       return self._scalr_scaled_reflection_files[format]
 
-    raise RuntimeError, 'uknown format %s' % format
+    raise RuntimeError, 'unknown format %s' % format
 
     if format == 'sca':
       # generate merged scalepack format reflections from the mtz
@@ -687,6 +673,12 @@ class Scaler(object):
 
     self.scale()
     return self._scalr_cell
+
+  def get_scaler_cell_esd(self):
+    '''Return the estimated standard deviation of the final unit cell.'''
+
+    self.scale()
+    return self._scalr_cell_esd
 
   def get_scaler_likely_spacegroups(self):
     '''Return a list of likely spacegroups - you should try using

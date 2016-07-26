@@ -474,6 +474,7 @@ class XCrystal(object):
     # explicitly...
 
     cell = self._get_scaler().get_scaler_cell()
+    cell_esd = self._get_scaler().get_scaler_cell_esd()
     spacegroups = self._get_scaler().get_scaler_likely_spacegroups()
 
     spacegroup = spacegroups[0]
@@ -489,8 +490,15 @@ class XCrystal(object):
       for sg in spacegroups[1:]:
         result += '%s\n' % sg
 
-    result += 'Unit cell:\n'
-    result += '%7.3f %7.3f %7.3f\n%7.3f %7.3f %7.3f\n' % tuple(cell)
+    if cell_esd:
+      def format_value_with_esd(value, esd, decimal_places):
+        return "%%.%df(%%d)" % decimal_places % (value, round(esd * (10 ** decimal_places)))
+      formatted_cell_esds = tuple(format_value_with_esd(v, sd, 4) for v, sd in zip(cell, cell_esd))
+      result += 'Unit cell (with estimated std devs):\n'
+      result += '%s %s %s\n%s %s %s\n' % formatted_cell_esds
+    else:
+      result += 'Unit cell:\n'
+      result += '%7.3f %7.3f %7.3f\n%7.3f %7.3f %7.3f\n' % tuple(cell)
 
     # now, use this information and the sequence (if provided)
     # and also matthews_coef (should I be using this directly, here?)

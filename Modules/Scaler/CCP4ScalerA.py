@@ -807,8 +807,6 @@ class CCP4ScalerA(Scaler):
         self._prepared_reflections, batch_ranges)
 
 
-    return
-
   def _scale(self):
     '''Perform all of the operations required to deliver the scaled
     data.'''
@@ -1183,21 +1181,40 @@ class CCP4ScalerA(Scaler):
     sc.scale()
 
     # FIXME this could be brought in-house
+    if PhilIndex.params.xia2.settings.integrater == 'dials':
+      tt_refine_experiments, tt_refine_pickles = [], []
+      for epoch in epochs:
+        si = self._sweep_handler.get_sweep_information(epoch)
+        intgr = si.get_integrater()
+        tt_refine_experiments.append(intgr.get_integrated_experiments())
+        tt_refine_pickles.append(intgr.get_integrated_reflections())
+      from xia2.Wrappers.Dials.TwoThetaRefine import RefineTwoTheta
+      from xia2.lib.bits import auto_logfiler
+      tt_refiner = RefineTwoTheta()
+      tt_refiner.set_working_directory(self.get_working_directory())
+      auto_logfiler(tt_refiner)
+      tt_refiner.set_experiments(tt_refine_experiments)
+      tt_refiner.set_pickles(tt_refine_pickles)
+      tt_refiner.run()
 
-    ami = AnalyseMyIntensities()
-    ami.set_working_directory(self.get_working_directory())
+      Debug.write('Unit cell obtained by two-theta refinement')
+      self._scalr_cell = tt_refiner.get_unit_cell()
+      self._scalr_cell_esd = tt_refiner.get_unit_cell_esd()
 
-    average_unit_cell, ignore_sg = ami.compute_average_cell(
+    else:
+      ami = AnalyseMyIntensities()
+      ami.set_working_directory(self.get_working_directory())
+
+      average_unit_cell, ignore_sg = ami.compute_average_cell(
         [self._scalr_scaled_refl_files[key] for key in
          self._scalr_scaled_refl_files])
 
-    Debug.write('Computed average unit cell (will use in all files)')
-    Debug.write('%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
-                average_unit_cell)
+      Debug.write('Computed average unit cell (will use in all files)')
+      self._scalr_cell = average_unit_cell
+      self._scalr_cell_esd = None
 
-    self._scalr_cell = average_unit_cell
-
-    return
+    Debug.write('%7.3f %7.3f %7.3f %7.3f %7.3f %7.3f' % \
+              self._scalr_cell)
 
   def _identify_sweep_epoch(self, batch):
     '''Identify the sweep epoch a given batch came from - N.B.
