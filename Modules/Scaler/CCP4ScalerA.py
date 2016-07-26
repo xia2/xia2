@@ -277,17 +277,22 @@ class CCP4ScalerA(Scaler):
         s.sort()
 
         # FIXME xia2-51 in here look at running constant scaling on the
-        # pointless hklin to put the runs on the same scale.
+        # pointless hklin to put the runs on the same scale. Ref=[A]
 
         pointless_const = os.path.join(self.get_working_directory(),
                               '%s_%s_prepointless_const.mtz' % \
                               (self._scalr_pname, self._scalr_xname))
+        FileHandler.record_temporary_file(pointless_const)
 
         aimless_const = self._factory.Aimless()
         aimless_const.set_hklin(pointless_hklin)
         aimless_const.set_hklout(pointless_const)
         aimless_const.const()
 
+        pointless_const = os.path.join(self.get_working_directory(),
+                              '%s_%s_prepointless_const_unmerged.mtz' % \
+                              (self._scalr_pname, self._scalr_xname))
+        FileHandler.record_temporary_file(pointless_const)
         pointless_hklin = pointless_const
 
         # FIXME xia2-51 in here need to pass all refiners to ensure that the
@@ -429,11 +434,14 @@ class CCP4ScalerA(Scaler):
 
       counter = 0
 
+      refiners = []
+
       for epoch in self._sweep_handler.get_epochs():
         si = self._sweep_handler.get_sweep_information(epoch)
         hklin = si.get_reflections()
         integrater = si.get_integrater()
         refiner = integrater.get_integrater_refiner()
+        refiners.append(refiner)
 
         hklin = self._prepare_pointless_hklin(
             hklin, si.get_integrater().get_phi_width())
@@ -462,6 +470,8 @@ class CCP4ScalerA(Scaler):
         # update the counter & recycle
         counter += 1
 
+      # FIXME related to xia2-51 - this looks very very similar to the logic
+      # in [A] above - is this duplicated logic?
       s = self._factory.Sortmtz()
 
       pointless_hklin = os.path.join(self.get_working_directory(),
@@ -475,9 +485,25 @@ class CCP4ScalerA(Scaler):
 
       s.sort()
 
+      pointless_const = os.path.join(self.get_working_directory(),
+                            '%s_%s_prepointless_const.mtz' % \
+                            (self._scalr_pname, self._scalr_xname))
+      FileHandler.record_temporary_file(pointless_const)
+
+      aimless_const = self._factory.Aimless()
+      aimless_const.set_hklin(pointless_hklin)
+      aimless_const.set_hklout(pointless_const)
+      aimless_const.const()
+
+      pointless_const = os.path.join(self.get_working_directory(),
+                            '%s_%s_prepointless_const_unmerged.mtz' % \
+                            (self._scalr_pname, self._scalr_xname))
+      FileHandler.record_temporary_file(pointless_const)
+      pointless_hklin = pointless_const
+
       pointgroup, reindex_op, ntr, pt = \
-                  self._pointless_indexer_jiffy(
-          pointless_hklin, refiner)
+                  self._pointless_indexer_multisweep(
+          pointless_hklin, refiners)
 
       for epoch in self._sweep_handler.get_epochs():
         pointgroups[epoch] = pointgroup

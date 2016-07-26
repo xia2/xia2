@@ -375,7 +375,8 @@ class CCP4ScalerHelper(object):
           'No solution found: assuming lattice from refiner')
 
     # now pass the correct lattice conclusion across the whole set
-    for refiner in refiners[1:]:
+    for j, refiner in enumerate(refiners[1:]):
+      Debug.write('Asserting lattice %s for %d' % (correct_lattice, j+1))
       refiner.set_refiner_asserted_lattice(correct_lattice)
 
     if rerun_pointless:
