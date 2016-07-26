@@ -33,7 +33,7 @@ def E4(ma):
   sg = ma.space_group()
   if sg.is_centric():
     asg = sg.build_derived_acentric_group()
-  ma = ma.customized_copy(space_group_info=asg.info())
+    ma = ma.customized_copy(space_group_info=asg.info())
   from mmtbx.scaling.twin_analyses import twin_analyses
   analysis = twin_analyses(ma)
   sys.stdout = cache_stdout
