@@ -492,8 +492,15 @@ class XCrystal(object):
 
     if cell_esd:
       def format_value_with_esd(value, esd, decimal_places):
-        return "%%.%df(%%d)" % decimal_places % (value, round(esd * (10 ** decimal_places)))
+        value = "%%.%df" % decimal_places % value
+        esd_value = round(esd * (10 ** decimal_places))
+        if esd_value == 0:
+          return value, ""
+        else:
+          return value, "(%d)" % esd_value
       formatted_cell_esds = tuple(format_value_with_esd(v, sd, 4) for v, sd in zip(cell, cell_esd))
+      alignment = tuple(max(len(i) for i in s) for s in zip(*formatted_cell_esds))
+      formatted_cell_esds = tuple("%%%ds%%-%ds" % alignment % param for param in formatted_cell_esds)
       result += 'Unit cell (with estimated std devs):\n'
       result += '%s %s %s\n%s %s %s\n' % formatted_cell_esds
     else:
