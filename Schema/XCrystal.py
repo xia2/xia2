@@ -252,8 +252,8 @@ formats = OrderedDict([
   ('Anomalous multiplicity', '%7.1f %7.1f %7.1f'),
   ('Anomalous correlation', '%7.3f %7.3f %7.3f'),
   ('Anomalous slope', '%7.3f %7.3f %7.3f'),
-  ('dF/F', '%.3f'),
-  ('dI/s(dI)', '%.3f'),
+  ('dF/F', '%7.3f'),
+  ('dI/s(dI)', '%7.3f'),
   ('Total observations', '%7d %7d %7d'),
   ('Total unique', '%7d %7d %7d')
 ])
