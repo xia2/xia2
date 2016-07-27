@@ -150,7 +150,6 @@ def update_with_reference_geometry(imagesets, reference_geometry_list):
 
   for imageset in imagesets:
     reference_geometry = find_relevant_reference_geometry(imageset, reference_components)
-#   print "Appropriate set: ", reference_set
     imageset.set_beam(reference_geometry['beam'])
     imageset.set_detector(reference_geometry['detector'])
 

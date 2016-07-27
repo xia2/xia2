@@ -9,6 +9,7 @@
 # xia2setup.py is run as the __main__ program.
 def get_sweep(args):
   import os
+  import traceback
   from ..Schema.Sweep import SweepFactory
 
   assert len(args) == 1
@@ -19,7 +20,8 @@ def get_sweep(args):
 
   except Exception, e:
     from ..Handlers.Streams import Debug
-    Debug.write('Exception: %s (%s)' % (str(e), args[0]))
+    Debug.write('Exception C: %s (%s)' % (str(e), args[0]))
+    Debug.write(traceback.format_exc())
     return None
 
   return sweeplist
