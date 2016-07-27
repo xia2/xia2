@@ -36,7 +36,6 @@ Modules/Scaler/CCP4ScalerA.py -text
 Modules/Scaler/CommonScaler.py -text
 Modules/Scaler/XDSScalerA.py -text
 Modules/Scaler/__init__.py -text
-Modules/Scaler/compute_average_unit_cell.py -text
 Modules/Scaler/rebatch.py -text
 Modules/TTT.py -text
 Modules/Xia2html/extras/JLogGraph.jar -text

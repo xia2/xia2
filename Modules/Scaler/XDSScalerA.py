@@ -43,8 +43,7 @@ from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
 
 # newly implemented CCTBX powered functions to replace xia2 binaries
-from xia2.Modules.Scaler.add_dose_time_to_mtz import add_dose_time_to_mtz
-from xia2.Modules.Scaler.compute_average_unit_cell import compute_average_unit_cell
+from xia2.Modules.Scaler.tools import add_dose_time_to_mtz, compute_average_unit_cell
 
 class XDSScalerA(Scaler):
   '''An implementation of the xia2 Scaler interface implemented with
