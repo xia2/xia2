@@ -152,14 +152,16 @@ def help():
   # FIXME these should also be generated in automatic way #42
 
   sys.stdout.write('An expert system for automated reduction of X-Ray\n')
-  sys.stdout.write('diffraction data from macromolecular crystals\n\n')
+  sys.stdout.write('diffraction data from macromolecular crystals\n')
 
-  sys.stdout.write('Command-line options to xia2:\n')
-  sys.stdout.write('Processing pipelines:\n')
-  sys.stdout.write(' [-2d]    MOSFLM, LABELIT (if installed), AIMLESS\n')
-  sys.stdout.write(' [-3d]    XDS, XSCALE, LABELIT\n')
-  sys.stdout.write(' [-3dii]  XDS, XSCALE, using all images for autoindexing\n')
-  sys.stdout.write(' [-dials] DIALS, AIMLESS\n')
+  sys.stdout.write('''
+Command-line options to xia2:
+[pipeline=XXX] select processing pipeline, with XXX one of:
+  2d    MOSFLM, LABELIT (if installed), AIMLESS
+  3d    XDS, XSCALE, LABELIT
+  3dii  XDS, XSCALE, using all images for autoindexing
+  dials DIALS, AIMLESS
+''')
   sys.stdout.write('[xinfo=foo.xinfo] or [/path/to/images]\n\n')
 
   sys.stdout.write('[d_min=2.8] (say, applies to all sweeps)\n')
@@ -169,10 +171,10 @@ def help():
   sys.stdout.write(
     '[beam_centre=x,y] (in mm, following the MOSFLM convention, applies to all sweeps)\n')
   sys.stdout.write('[-quick]\n')
-  sys.stdout.write('[-atom se] (say) - this is for xia2setup\n')
-  sys.stdout.write('[-project foo] (say) - this is for xia2setup\n')
-  sys.stdout.write('[-crystal bar] (say) - this is for xia2setup\n\n')
+  sys.stdout.write('[atom=se] (say) - this is for xia2setup\n')
+  sys.stdout.write('[project=foo] (say) - this is for xia2setup\n')
+  sys.stdout.write('[crystal=bar] (say) - this is for xia2setup\n\n')
 
   sys.stdout.write('Sensible command lines:\n')
-  sys.stdout.write('xia2 (-2d|-3d|..) -xinfo foo.xinfo\n')
-  sys.stdout.write('xia2 -project foo -crystal bar (-2d|-3d|..) /data/path\n')
+  sys.stdout.write('xia2 (pipeline=2d|3d|..) -xinfo foo.xinfo\n')
+  sys.stdout.write('xia2 project=foo crystal=bar (pipeline=2d|3d|..) /data/path\n')
