@@ -6,6 +6,24 @@
 #   included in the root directory of this package.
 
 #
+# Patch .mtz file and overwrite stored unit cell parameters
+#
+
+def patch_mtz_unit_cell(mtzfile, unit_cell_parameters):
+  '''Overwrite unit cell stored in mtz file'''
+
+  from iotbx import mtz
+
+  f = mtz.object(file_name=mtzfile)
+  assert f.n_crystals() == 2, 'Can only patch .mtz files with 2 crystals'
+
+  f.crystals()[0].set_unit_cell_parameters(unit_cell_parameters)
+  f.crystals()[1].set_unit_cell_parameters(unit_cell_parameters)
+
+  f.write(file_name=mtzfile)
+
+
+#
 # Replacement function centralised to replace the use of cellparm.
 #
 

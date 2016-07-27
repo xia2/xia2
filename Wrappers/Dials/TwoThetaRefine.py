@@ -111,4 +111,12 @@ def RefineTwoTheta(DriverType = None):
       experiments = ExperimentListFactory.from_json_file(self.get_output_experiments())
       self._crystal = experiments.crystals()[0]
 
+    def import_cif(self):
+      '''Import relevant lines from .cif output'''
+      import iotbx.cif
+      cif = iotbx.cif.reader(file_path=self.get_output_cif()).model()
+      block = cif['two_theta_refine']
+      subset = { k: block[k] for k in block.keys() if k.startswith(('_cell', '_diffrn')) }
+      return subset
+
   return RefineWrapper()

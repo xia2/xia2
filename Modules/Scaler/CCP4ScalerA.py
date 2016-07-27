@@ -22,8 +22,9 @@ from CommonScaler import CommonScaler as Scaler
 from xia2.Wrappers.CCP4.CCP4Factory import CCP4Factory
 
 from xia2.Handlers.Streams import Chatter, Debug, Journal
-from xia2.Handlers.Files import FileHandler
+from xia2.Handlers.CIF import CIF
 from xia2.Handlers.Citations import Citations
+from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Syminfo import Syminfo
 from xia2.Handlers.Phil import PhilIndex
@@ -1128,6 +1129,8 @@ class CCP4ScalerA(Scaler):
       sc.set_anomalous()
     sc.scale()
 
+    self._update_scaled_unit_cell()
+
     self._scalr_scaled_reflection_files['sca_unmerged'] = { }
     self._scalr_scaled_reflection_files['mtz_unmerged'] = { }
     for key in self._scalr_scaled_refl_files:
@@ -1138,6 +1141,12 @@ class CCP4ScalerA(Scaler):
       self._scalr_scaled_reflection_files['sca_unmerged'][key] = scalepack
       FileHandler.record_data_file(scalepack)
       mtz_unmerged = os.path.splitext(scalepack)[0] + '.mtz'
+
+      if self._scalr_cell_esd is not None:
+        # patch .mtz and overwrite unit cell information
+        import xia2.Modules.Scaler.tools as tools
+        tools.patch_mtz_unit_cell(mtz_unmerged, self._scalr_cell)
+
       self._scalr_scaled_reflection_files['mtz_unmerged'][key] = mtz_unmerged
       FileHandler.record_data_file(mtz_unmerged)
 
@@ -1180,8 +1189,10 @@ class CCP4ScalerA(Scaler):
       sc.set_anomalous()
     sc.scale()
 
+  def _update_scaled_unit_cell(self):
     # FIXME this could be brought in-house
-    if PhilIndex.params.xia2.settings.integrater == 'dials':
+    epochs = self._sweep_handler.get_epochs()
+    if PhilIndex.params.xia2.settings.integrater == 'dials' and len(epochs) == 1:
       tt_refine_experiments, tt_refine_pickles = [], []
       for epoch in epochs:
         si = self._sweep_handler.get_sweep_information(epoch)
@@ -1196,6 +1207,10 @@ class CCP4ScalerA(Scaler):
       tt_refiner.set_experiments(tt_refine_experiments)
       tt_refiner.set_pickles(tt_refine_pickles)
       tt_refiner.run()
+      cif_in = tt_refiner.import_cif()
+      cif_out = CIF.get_block('xia2')
+      for key in sorted(cif_in.keys()):
+        cif_out[key] = cif_in[key]
 
       Debug.write('Unit cell obtained by two-theta refinement')
       self._scalr_cell = tt_refiner.get_unit_cell()
@@ -1212,6 +1227,12 @@ class CCP4ScalerA(Scaler):
       Debug.write('Computed average unit cell (will use in all files)')
       self._scalr_cell = average_unit_cell
       self._scalr_cell_esd = None
+
+      # Write average unit cell to .cif
+      cif_out = CIF.get_block('xia2')
+      for cell, cifname in zip(self._scalr_cell,
+                               ['length_a', 'length_b', 'length_c', 'angle_alpha', 'angle_beta', 'angle_gamma']):
+        cif_out['_cell_%s' % cifname] = cell
 
     Debug.write('%7.3f %7.3f %7.3f %7.3f %7.3f %7.3f' % \
               self._scalr_cell)
