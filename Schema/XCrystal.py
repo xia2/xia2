@@ -79,7 +79,7 @@ from xia2.Handlers.Streams import banner
 from xia2.lib.NMolLib import compute_nmol, compute_solvent
 
 # Generation of Crystallographic Information Files (CIF)
-from xia2.Interfaces.CIF.CIFHandler import CIFHandler
+from xia2.Handlers.CIF import CIF
 
 def sort_o_dict(dict, metric):
   '''A generic sorter for dictionaries - will return the keys in
@@ -424,7 +424,7 @@ class XCrystal(object):
 
     result = 'Crystal: %s\n' % self._name
 
-    CIFHandler.add_xcrystal(self)
+    CIF.add_xcrystal(self)
 
     if self._aa_sequence:
       result += 'Sequence: %s\n' % self._aa_sequence.get_sequence()
@@ -552,7 +552,7 @@ class XCrystal(object):
               reflections)
           result += 'Scaled reflections: %s\n' % target
 
-    CIFHandler.write_cif()
+    CIF.write_cif()
 
     return result
 

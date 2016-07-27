@@ -34,7 +34,7 @@ class _CIFHandler(object):
     block["_computing_data_reduction"] = ', '.join(xia2.Handlers.Citations.Citations.get_programs())
     block["_publ_section_references"] = '\n'.join(xia2.Handlers.Citations.Citations.get_citations_acta())
 
-CIFHandler = _CIFHandler()
+CIF = _CIFHandler()
 
 if __name__ == '__main__':
-  CIFHandler.write_cif()
+  CIF.write_cif()
