@@ -211,6 +211,10 @@ class _CommandLine(object):
         PhilIndex.update("xia2.settings.multi_sweep_indexing=True")
       else:
         PhilIndex.update("xia2.settings.multi_sweep_indexing=False")
+    if params.xia2.settings.multi_sweep_indexing == True and \
+       params.xia2.settings.multiprocessing.mode == 'parallel':
+      Chatter.write('Multi sweep indexing disabled:\nMSI is not available for parallel processing.')
+      PhilIndex.update("xia2.settings.multi_sweep_indexing=False")
 
     input_json = params.xia2.settings.input.json
     if (input_json is not None and len(input_json)):
