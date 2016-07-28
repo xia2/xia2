@@ -806,11 +806,6 @@ class CommonScaler(Scaler):
     # changed from mtz_merged_free to plain ol' mtz
     self._scalr_scaled_reflection_files['mtz'] = hklout
 
-    if self._scalr_cell_esd is not None:
-      # patch .mtz and overwrite unit cell information
-      import xia2.Modules.Scaler.tools as tools
-      tools.patch_mtz_unit_cell(hklout, self._scalr_cell)
-
     # record this for future reference
     FileHandler.record_data_file(hklout)
 

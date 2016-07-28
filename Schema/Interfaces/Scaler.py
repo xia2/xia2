@@ -220,6 +220,7 @@ class Scaler(object):
     self._scalr_highest_resolution = 0.0
     self._scalr_cell = None
     self._scalr_cell_esd = None
+    self._scalr_cell_dict = {}
     self._scalr_likely_spacegroups = []
     self._scalr_unlikely_spacegroups = []
 

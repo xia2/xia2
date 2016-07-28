@@ -1145,7 +1145,9 @@ class CCP4ScalerA(Scaler):
       if self._scalr_cell_esd is not None:
         # patch .mtz and overwrite unit cell information
         import xia2.Modules.Scaler.tools as tools
-        tools.patch_mtz_unit_cell(mtz_unmerged, self._scalr_cell)
+        override_cell = self._scalr_cell_dict.get('%s_%s_%s' % (self._scalr_pname, self._scalr_xname, key))[0]
+        tools.patch_mtz_unit_cell(mtz_unmerged, override_cell)
+        tools.patch_mtz_unit_cell(f, override_cell)
 
       self._scalr_scaled_reflection_files['mtz_unmerged'][key] = mtz_unmerged
       FileHandler.record_data_file(mtz_unmerged)
@@ -1191,30 +1193,64 @@ class CCP4ScalerA(Scaler):
 
   def _update_scaled_unit_cell(self):
     # FIXME this could be brought in-house
-    epochs = self._sweep_handler.get_epochs()
-    if PhilIndex.params.xia2.settings.integrater == 'dials' and len(epochs) == 1:
-      tt_refine_experiments, tt_refine_pickles = [], []
-      for epoch in epochs:
-        si = self._sweep_handler.get_sweep_information(epoch)
-        intgr = si.get_integrater()
-        tt_refine_experiments.append(intgr.get_integrated_experiments())
-        tt_refine_pickles.append(intgr.get_integrated_reflections())
+
+    if PhilIndex.params.xia2.settings.integrater == 'dials':
       from xia2.Wrappers.Dials.TwoThetaRefine import RefineTwoTheta
       from xia2.lib.bits import auto_logfiler
-      tt_refiner = RefineTwoTheta()
-      tt_refiner.set_working_directory(self.get_working_directory())
-      auto_logfiler(tt_refiner)
-      tt_refiner.set_experiments(tt_refine_experiments)
-      tt_refiner.set_pickles(tt_refine_pickles)
-      tt_refiner.run()
-      cif_in = tt_refiner.import_cif()
+
+      Chatter.banner('Unit cell refinement')
+
+      # Collect a list of all sweeps, grouped by project, crystal, wavelength
+      groups = {}
+      self._scalr_cell_dict = {}
+      tt_refine_experiments, tt_refine_pickles = [], []
+      for epoch in self._sweep_handler.get_epochs():
+        si = self._sweep_handler.get_sweep_information(epoch)
+        pi = '_'.join(si.get_project_info())
+        intgr = si.get_integrater()
+        groups[pi] = groups.get(pi, []) + \
+          [(intgr.get_integrated_experiments(), intgr.get_integrated_reflections())]
+
+      # Two theta refine the unit cell for each group
+      for pi in groups.keys():
+        tt_grouprefiner = RefineTwoTheta()
+        tt_grouprefiner.set_working_directory(self.get_working_directory())
+        auto_logfiler(tt_grouprefiner)
+        files = zip(*groups[pi])
+        tt_grouprefiner.set_experiments(files[0])
+        tt_grouprefiner.set_pickles(files[1])
+        tt_refine_experiments.extend(files[0])
+        tt_refine_pickles.extend(files[1])
+        tt_grouprefiner.run()
+        Chatter.write('%s: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
+          tuple([''.join(pi.split('_')[2:])] + list(tt_grouprefiner.get_unit_cell())))
+        self._scalr_cell_dict[pi] = (tt_grouprefiner.get_unit_cell(), tt_grouprefiner.get_unit_cell_esd(), tt_grouprefiner.import_cif())
+        if len(groups) > 1:
+          cif_in = tt_grouprefiner.import_cif()
+          cif_out = CIF.get_block(pi)
+          for key in sorted(cif_in.keys()):
+            cif_out[key] = cif_in[key]
+
+      # Two theta refine everything together
+      if len(groups) > 1:
+        tt_refiner = RefineTwoTheta()
+        tt_refiner.set_working_directory(self.get_working_directory())
+        auto_logfiler(tt_refiner)
+        tt_refiner.set_experiments(tt_refine_experiments)
+        tt_refiner.set_pickles(tt_refine_pickles)
+        tt_refiner.run()
+        self._scalr_cell = tt_refiner.get_unit_cell()
+        Chatter.write('Overall: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % tt_refiner.get_unit_cell())
+        self._scalr_cell_esd = tt_refiner.get_unit_cell_esd()
+        cif_in = tt_refiner.import_cif()
+      else:
+        self._scalr_cell, self._scalr_cell_esd, cif_in = self._scalr_cell_dict.values()[0]
+
       cif_out = CIF.get_block('xia2')
       for key in sorted(cif_in.keys()):
         cif_out[key] = cif_in[key]
 
       Debug.write('Unit cell obtained by two-theta refinement')
-      self._scalr_cell = tt_refiner.get_unit_cell()
-      self._scalr_cell_esd = tt_refiner.get_unit_cell_esd()
 
     else:
       ami = AnalyseMyIntensities()
