@@ -424,8 +424,6 @@ class XCrystal(object):
 
     result = 'Crystal: %s\n' % self._name
 
-    CIF.add_xcrystal(self)
-
     if self._aa_sequence:
       result += 'Sequence: %s\n' % self._aa_sequence.get_sequence()
     for wavelength in self._wavelengths.keys():
@@ -483,6 +481,7 @@ class XCrystal(object):
     from cctbx import sgtbx
     sg = sgtbx.space_group_type(str(spacegroup))
     spacegroup = sg.lookup_symbol()
+    CIF.set_spacegroup(sg)
 
     result += 'Assuming spacegroup: %s\n' % spacegroup
     if len(spacegroups) > 1:

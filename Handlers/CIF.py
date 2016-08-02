@@ -19,9 +19,27 @@ class _CIFHandler(object):
     # prepopulate audit fields, so they end up at the top of the file
     self.collate_audit_information()
 
-  def add_xcrystal(self, xcrystal):
-#   print "CIF: Adding crystal", xcrystal
-    pass
+  def set_spacegroup(self, spacegroup, blockname=None):
+    sg = spacegroup.group()
+
+    loop = iotbx.cif.model.loop()
+    symm_ops = []
+    for i in xrange(sg.n_smx()):
+      rt_mx = sg(0, 0, i)
+      if rt_mx.is_unit_mx(): continue
+      symm_ops.append(str(rt_mx))
+    loop['_symmetry_equiv_pos_as_xyz'] = symm_ops
+
+    block = self.get_block(blockname)
+    block['_symmetry_space_group_name_H-M'] = spacegroup.lookup_symbol()
+    block['_space_group_crystal_system'] = sg.crystal_system().lower()
+    block['_space_group_IT_number'] = spacegroup.number()
+    block['_cell_formula_units_Z'] = sg.order_z()
+    block.add_loop(loop)
+
+  def set_wavelength(self, wavelength, blockname=None):
+    block = self.get_block(blockname)
+    block['_diffrn_radiation_wavelength'] = wavelength
 
   def write_cif(self):
     # update audit information for citations
@@ -30,18 +48,17 @@ class _CIFHandler(object):
     with open('xia2.cif', 'w') as fh:
       self._cif.show(out=fh)
 
-  def get_block(self, blockname):
+  def get_block(self, blockname=None):
     '''Creates (if necessary) and returns named CIF block'''
+    if blockname is None:
+      blockname = 'xia2'
     assert blockname, 'invalid block name'
     if blockname not in self._cif:
       self._cif[blockname] = iotbx.cif.model.block()
     return self._cif[blockname]
 
   def collate_audit_information(self, blockname=None):
-    if blockname is None:
-      block = self.get_block('xia2')
-    else:
-      block = self.get_block(blockname)
+    block = self.get_block(blockname)
     block["_audit_creation_method"] = xia2.XIA2Version.Version
     block["_audit_creation_date"] = datetime.date.today().isoformat()
     block["_computing_data_reduction"] = ', '.join(xia2.Handlers.Citations.Citations.get_programs())
