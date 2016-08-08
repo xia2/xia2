@@ -114,6 +114,7 @@ class _CommandLine(object):
                      '-3dii': 'pipeline=3dii',
                      '-3dd': 'pipeline=3dd',
                      '-dials': 'pipeline=dials',
+                     '-failover': 'failover=true',
                      '-small_molecule': 'small_molecule=true'
                    }
     for k, v in replacements.iteritems():
