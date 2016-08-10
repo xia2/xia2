@@ -114,12 +114,18 @@ class _CommandLine(object):
                      '-3dii': 'pipeline=3dii',
                      '-3dd': 'pipeline=3dd',
                      '-dials': 'pipeline=dials',
+                     '-failover': 'failover=true',
                      '-small_molecule': 'small_molecule=true'
                    }
     for k, v in replacements.iteritems():
       if k in self._argv:
         print "***\nCommand line option %s is deprecated.\nPlease use %s instead\n***" % (k, v)
         self._argv[self._argv.index(k)] = v
+    if '-atom' in self._argv:
+      idx = self._argv.index('-atom')
+      element = self._argv[idx+1]
+      self._argv[idx:idx+2] = [ 'atom=%s' % element ]
+      print "***\nCommand line option -atom %s is deprecated.\nPlease use atom=%s instead\n***" % (element, element)
 
     # first of all try to interpret arguments as phil parameters/files
 
