@@ -48,6 +48,8 @@ xds {
     refine = *DISTANCE *BEAM *AXIS *ORIENTATION *CELL *POSITION
       .type = choice(multi = True)
       .help = 'what to refine in the CORRECT step'
+    air = None
+      .type = float(value_min=0)
   }
   integrate {
     refine = *ORIENTATION *CELL *BEAM *DISTANCE AXIS *POSITION

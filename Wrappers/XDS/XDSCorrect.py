@@ -257,6 +257,9 @@ def XDSCorrect(DriverType = None, params=None):
         xds_inp.write('FRACTION_OF_POLARIZATION=%.2f\n' % \
                       self._polarization)
 
+      if self._params.air is not None:
+        xds_inp.write('AIR=%f' %self._params.air)
+
       for record in header:
         xds_inp.write('%s\n' % record)
 
