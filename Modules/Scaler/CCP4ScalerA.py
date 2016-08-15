@@ -15,8 +15,6 @@ import sys
 import math
 import copy
 
-# the interface definition that this will conform to
-# from xia2.Schema.Interfaces.Scaler import Scaler
 from CommonScaler import CommonScaler as Scaler
 
 from xia2.Wrappers.CCP4.CCP4Factory import CCP4Factory
@@ -116,6 +114,7 @@ class CCP4ScalerA(Scaler):
 
     if PhilIndex.params.xia2.settings.small_molecule == True:
       aimless.set_scaling_parameters('rotation', 15.0)
+      # not obvious that this is correct
       aimless.set_bfactor(bfactor=False)
 
     aimless.set_surface_tie(PhilIndex.params.ccp4.aimless.surface_tie)
@@ -198,6 +197,8 @@ class CCP4ScalerA(Scaler):
 
     if len(self._sweep_handler.get_epochs()) > 1:
 
+      # if we have multi-sweep-indexing going on then logic says all should
+      # share common lattice & UB definition => this is not used here?
       if multi_sweep_indexing and not self._scalr_input_pointgroup:
         pointless_hklins = []
 

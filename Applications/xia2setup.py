@@ -142,7 +142,7 @@ def get_template(f):
 
   except Exception, e:
     from ..Handlers.Streams import Debug
-    Debug.write('Exception: %s (%s)' % (str(e), f))
+    Debug.write('Exception A: %s (%s)' % (str(e), f))
     Debug.write(traceback.format_exc())
 
   if template is None or directory is None:
@@ -191,7 +191,7 @@ def visit(root, directory, files):
       format_class = Registry.find(full_path)
       if format_class is None:
         Debug.write(
-          'Ignoring %s (Registry can not find format class)' %full_path)
+          'Ignoring %s (Registry can not find format class)' % full_path)
         continue
       elif format_class.ignore():
         continue
@@ -202,7 +202,7 @@ def visit(root, directory, files):
         template = get_template(full_path)
       except Exception, e:
         from ..Handlers.Streams import Debug
-        Debug.write('Exception: %s' %str(e))
+        Debug.write('Exception B: %s' % str(e))
         Debug.write(traceback.format_exc())
         continue
       if template is not None:

@@ -141,12 +141,10 @@ class _CommandLine(object):
     except RuntimeError, e:
       raise Sorry(e)
 
-    # things which are single token flags...
-
     # does this do anything?!
     self._read_quick()
 
-    # sanity check input
+    # sanity check / interpret Auto in input
     from libtbx import Auto
 
     if params.xia2.settings.input.atom is None:
@@ -325,7 +323,20 @@ class _CommandLine(object):
         start_end = int(tokens[1]), int(tokens[2])
 
       from xia2.Applications.xia2setup import is_hd5f_name
-      dataset = os.path.abspath(dataset)
+      if os.path.exists(os.path.abspath(dataset)):
+        dataset = os.path.abspath(dataset)
+      else:
+        directories = [os.getcwd()] + self._argv[1:]
+        found = False
+        for d in directories:
+          if os.path.exists(os.path.join(d, dataset)):
+            dataset = os.path.join(d, dataset)
+            found = True
+            break
+        if not found:
+          raise Sorry('Cound not find %s in %s' % \
+                      (dataset, ' '.join(directories)))
+
       if is_hd5f_name(dataset):
         self._hdf5_master_files.append(dataset)
         if start_end:

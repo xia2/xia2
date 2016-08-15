@@ -113,7 +113,7 @@ class _ISPyBXmlHandler(object):
 
     fout.write('</AutoProcScalingStatistics>\n')
 
-  def write_xml(self, file):
+  def write_xml(self, file, command_line=''):
 
     fout = open(file, 'w')
 
@@ -231,11 +231,13 @@ class _ISPyBXmlHandler(object):
 
       # file unpacking nonsense
 
-      from xia2.Handlers.CommandLine import CommandLine
+      if not command_line:
+        from xia2.Handlers.CommandLine import CommandLine
+        command_line = CommandLine.get_command_line()
 
       fout.write('<AutoProcProgramContainer><AutoProcProgram>')
       fout.write('<processingCommandLine>%s</processingCommandLine>' \
-                 % sanitize(CommandLine.get_command_line()))
+                 % sanitize(command_line))
       fout.write('<processingPrograms>xia2</processingPrograms>')
       fout.write('</AutoProcProgram>')
 

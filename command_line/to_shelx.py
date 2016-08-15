@@ -130,15 +130,34 @@ def to_shelx(hklin, prefix, compound='', options=None):
   unit_cell_esds = None
   cell_data = None
   if options.cell:
-    with open(options.cell, 'r') as fh:
-      cell_data = json.load(fh)
-      solution = cell_data.get('solution_constrained', cell_data['solution_unconstrained'])
-      unit_cell_dims = tuple([
+    if options.cell.endswith('.json'):
+      with open(options.cell, 'r') as fh:
+        cell_data = json.load(fh)
+        solution = cell_data.get('solution_constrained', cell_data['solution_unconstrained'])
+        unit_cell_dims = tuple([
           solution[dim]['mean'] for dim in ['a', 'b', 'c', 'alpha', 'beta', 'gamma']
-        ])
-      unit_cell_esds = tuple([
-          solution[dim]['population_standard_deviation'] for dim in ['a', 'b', 'c', 'alpha', 'beta', 'gamma']
-        ])
+          ])
+        unit_cell_esds = tuple([
+            solution[dim]['population_standard_deviation'] for dim in ['a', 'b', 'c', 'alpha', 'beta', 'gamma']
+          ])
+    else: # treat as .cif
+      import iotbx.cif
+      cif = iotbx.cif.reader(file_path=options.cell).model()
+      unit_cell = [cif.get('xia2', {}).get(key) for key in
+        ('_cell_length_a', '_cell_length_b', '_cell_length_c',
+         '_cell_angle_alpha', '_cell_angle_beta', '_cell_angle_gamma')]
+
+      # now need to inverse transform these ESD numbers into unit_cell_dims and unit_cell_esds
+      def dim_esd(iucr_number_format):
+        if '(' not in iucr_number_format:
+          return float(iucr_number_format), 0
+        p = iucr_number_format.split('(')
+        dim = float(p[0])
+        esd = float(p[1].split(')')[0])
+        if '.' in p[0]:
+          esd = esd / (10 ** len(p[0].split('.')[1]))
+        return dim, esd
+      unit_cell_dims, unit_cell_esds = zip(*(dim_esd(p) for p in unit_cell))
 
   cb_op = crystal_symm.change_of_basis_op_to_reference_setting()
 
@@ -162,14 +181,16 @@ def to_shelx(hklin, prefix, compound='', options=None):
                      wavelength=wavelength,
                      full_matrix_least_squares_cycles=0,
                      title=prefix,
+                     unit_cell_dims=unit_cell_dims,
                      unit_cell_esds=unit_cell_esds)))
-  generate_cif(prefix=prefix, unit_cell_data=cell_data, wavelength=wavelength, structure=xray_structure)
+  if not options.cell.endswith('.cif'):
+    generate_cif(prefix=prefix, unit_cell_data=cell_data, wavelength=wavelength, structure=xray_structure)
 
 if __name__ == '__main__':
   parser = optparse.OptionParser("usage: %prog .mtz-file output-file [atoms]")
   parser.add_option("-?", action="help", help=optparse.SUPPRESS_HELP)
   parser.add_option("-w", "--wavelength", dest="wavelength", help="Override experimental wavelength (Angstrom)", default=None, type="float")
-  parser.add_option("-c", "--cell", dest="cell", metavar="FILE", help="Read unit cell information from a .json file", default=None, type="string")
+  parser.add_option("-c", "--cell", dest="cell", metavar="FILE", help="Read unit cell information from a .cif or .json file", default=None, type="string")
   options, args = parser.parse_args()
   if len(args) > 2:
     atoms = ''.join(args[2:])
