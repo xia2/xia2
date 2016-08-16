@@ -1118,7 +1118,14 @@ class XDSScalerA(Scaler):
         resolution = self._user_resolution_limits[(dname, sname)]
 
       else:
-        resolution = self._estimate_resolution_limit(hklin)
+        if PhilIndex.params.xia2.settings.resolution.keep_all_reflections == True:
+          try:
+            resolution = intgr.get_detector().get_max_resolution(intgr.get_beam_obj().get_s0())
+            Debug.write('keep_all_reflections set, using detector limits')
+          except Exception:
+            resolution = self._estimate_resolution_limit(hklin)
+        else:
+          resolution = self._estimate_resolution_limit(hklin)
 
       Chatter.write('Resolution for sweep %s/%s: %.2f' % \
                     (dname, sname, resolution))
