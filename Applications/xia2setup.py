@@ -161,7 +161,7 @@ def save_datablock(filename):
     for imageset in imagesets.values():
       datablock.append(imageset)
 
-  dump.datablock(datablock, filename)
+  dump.datablock(datablock, filename, compact=True)
 
 
 def parse_sequence(sequence_file):

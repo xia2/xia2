@@ -77,7 +77,7 @@ class XProject(object):
       setattr(return_obj, k, v)
     return return_obj
 
-  def as_json(self, filename=None, compact=False):
+  def as_json(self, filename=None, compact=True):
     import json
     obj = self.to_dict()
     if compact:
