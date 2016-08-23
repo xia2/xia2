@@ -34,6 +34,9 @@ class _Flags(object):
     self._xparm_b = None
     self._xparm_c = None
 
+    # ISPyB things
+    self._ispyb_xml_out = None
+
     # starting directory (to allow setting working directory && relative
     # paths on input)
     self._starting_directory = os.getcwd()
@@ -121,5 +124,11 @@ class _Flags(object):
 
     self._freer_file = freer_file
     return
+
+  def set_ispyb_xml_out(self, ispyb_xml_out):
+    self._ispyb_xml_out = ispyb_xml_out
+
+  def get_ispyb_xml_out(self):
+    return self._ispyb_xml_out
 
 Flags = _Flags()

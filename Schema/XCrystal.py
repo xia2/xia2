@@ -78,6 +78,7 @@ from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import banner
 from xia2.lib.NMolLib import compute_nmol, compute_solvent
 
+from xia2.Interfaces.ISPyB.ISPyBXmlHandler import ISPyBXmlHandler
 # Generation of Crystallographic Information Files (CIF)
 from xia2.Handlers.CIF import CIF
 
@@ -425,6 +426,8 @@ class XCrystal(object):
     result = 'Crystal: %s\n' % self._name
 
     CIF.add_xcrystal(self)
+    if Flags.get_ispyb_xml_out():
+      ISPyBXmlHandler.add_xcrystal(self)
 
     if self._aa_sequence:
       result += 'Sequence: %s\n' % self._aa_sequence.get_sequence()
@@ -553,6 +556,8 @@ class XCrystal(object):
           result += 'Scaled reflections: %s\n' % target
 
     CIF.write_cif()
+    if Flags.get_ispyb_xml_out():
+      ISPyBXmlHandler.write_xml(Flags.get_ispyb_xml_out())
 
     return result
 

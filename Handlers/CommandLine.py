@@ -174,6 +174,12 @@ class _CommandLine(object):
     Debug.write('Project: %s' % params.xia2.settings.project)
     Debug.write('Crystal: %s' % params.xia2.settings.crystal)
 
+    try:
+      self._read_ispyb_xml_out()
+    except exceptions.Exception, e:
+      raise RuntimeError, '%s (%s)' % \
+            (self._help_ispyb_xml_out(), str(e))
+
     # FIXME add some consistency checks in here e.g. that there are
     # images assigned, there is a lattice assigned if cell constants
     # are given and so on
@@ -395,6 +401,37 @@ class _CommandLine(object):
   def get_xinfo(self):
     '''Return the XProject.'''
     return self._xinfo
+
+  def _read_ispyb_xml_out(self):
+    try:
+      index = self._argv.index('-ispyb_xml_out')
+    except ValueError, e:
+      self._ispyb_xml_out = None
+      return
+
+    if index < 0:
+      raise RuntimeError, 'negative index'
+
+    self._understood.append(index)
+    self._understood.append(index + 1)
+    Flags.set_ispyb_xml_out(self._argv[index + 1])
+    Debug.write('ISPyB XML output set to %s' % self._argv[index + 1])
+
+    Chatter.write('')
+    Chatter.write('=======================================================================')
+    Chatter.write('DEPRECATION WARNING:')
+    Chatter.write('\'-ispyb_xml_out\' will be removed in the next release')
+    Chatter.write('-----------------------------------------------------------------------')
+    Chatter.write('If you want to generate the ISPyB XML file, please run xia2.ispyb_xml')
+    Chatter.write('after running xia2. If you are looking for machine-readable xia2')
+    Chatter.write('output not specifically for ISPyB, then please consider using xia2.json')
+    Chatter.write('instead of the ISPyB XML file. xia2.json is always generated, and is a')
+    Chatter.write('more stable and informative format than the ISPyB XML file.')
+    Chatter.write('=======================================================================')
+    Chatter.write('')
+
+  def _help_ispyb_xml_out(self):
+    return '-ispyb_xml_out project.xml'
 
   def get_template(self):
     return self._default_template
