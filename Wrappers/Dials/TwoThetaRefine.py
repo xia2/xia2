@@ -16,6 +16,8 @@ _setup_xia2_environ()
 
 def RefineTwoTheta(DriverType = None):
   '''A factory for RefineWrapper classes.'''
+  from xia2.Handlers.Citations import Citations
+  Citations.cite('dials')
 
   from xia2.Driver.DriverFactory import DriverFactory
   DriverInstance = DriverFactory.Driver(DriverType)

@@ -1248,6 +1248,7 @@ class CCP4ScalerA(Scaler):
         self._scalr_cell, self._scalr_cell_esd, cif_in = self._scalr_cell_dict.values()[0]
 
       cif_out = CIF.get_block('xia2')
+      cif_out['_computing_cell_refinement'] = 'DIALS 2theta refinement'
       for key in sorted(cif_in.keys()):
         cif_out[key] = cif_in[key]
 
@@ -1267,6 +1268,7 @@ class CCP4ScalerA(Scaler):
 
       # Write average unit cell to .cif
       cif_out = CIF.get_block('xia2')
+      cif_out['_computing_cell_refinement'] = 'AIMLESS averaged unit cell'
       for cell, cifname in zip(self._scalr_cell,
                                ['length_a', 'length_b', 'length_c', 'angle_alpha', 'angle_beta', 'angle_gamma']):
         cif_out['_cell_%s' % cifname] = cell

@@ -62,7 +62,6 @@ class _CIFHandler(object):
     block["_audit_creation_method"] = xia2.XIA2Version.Version
     block["_audit_creation_date"] = datetime.date.today().isoformat()
 
-    xia2.Handlers.Citations.Citations.cite('dials')
     xia2.Handlers.Citations.Citations.cite('xia2')
     programs = []
     for program in xia2.Handlers.Citations.Citations.get_programs():
