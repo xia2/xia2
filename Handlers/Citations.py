@@ -6,7 +6,7 @@
 #   included in the root directory of this package.
 #
 # A handler for management of program citations. This should initialise
-# from a citations.lib file which can be found in a number of places...
+# from a citations.xml file which can be found in a number of places...
 # in particular $HOME or $USERDIR (I think, on Windows) .xia2,
 # data etc...
 #
@@ -26,7 +26,7 @@ class _Citations(object):
 
     dom = xml.dom.minidom.parse(os.path.abspath(os.path.join(
         os.path.dirname(__file__), '..',
-        'Data', 'citations.lib')))
+        'Data', 'citations.xml')))
     citations = dom.getElementsByTagName(
         'citations')[0].getElementsByTagName('citation')
     for citation in citations:
