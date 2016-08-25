@@ -61,7 +61,28 @@ class _CIFHandler(object):
     block = self.get_block(blockname)
     block["_audit_creation_method"] = xia2.XIA2Version.Version
     block["_audit_creation_date"] = datetime.date.today().isoformat()
-    block["_computing_data_reduction"] = ', '.join(xia2.Handlers.Citations.Citations.get_programs())
+
+    xia2.Handlers.Citations.Citations.cite('dials')
+    xia2.Handlers.Citations.Citations.cite('xia2')
+    programs = []
+    for program in xia2.Handlers.Citations.Citations.get_programs():
+      citations = []
+      for citation in xia2.Handlers.Citations.Citations.find_citations(program):
+        if 'acta' in citation:
+          if ')' in citation['acta']:
+            citations.append(citation['acta'][0:citation['acta'].index(')')].replace(' (', ', '))
+          else:
+            citations.append(citation['acta'])
+      if program == 'xia2':
+        program = xia2.XIA2Version.Version
+      elif program == 'dials':
+        import dials.util.version
+        program = dials.util.version.dials_version()
+      if citations:
+        program = program + " (%s)" % ('; '.join(citations))
+      programs.append(program)
+    block["_computing_data_reduction"] = '\n'.join(programs)
+
     block["_publ_section_references"] = '\n'.join(xia2.Handlers.Citations.Citations.get_citations_acta())
 
 CIF = _CIFHandler()
