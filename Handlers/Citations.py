@@ -31,21 +31,32 @@ class _Citations(object):
         'citations')[0].getElementsByTagName('citation')
     for citation in citations:
       program = str(citation.attributes['program'].value)
-      bibtex = str(citation.childNodes[0].data)
+      citation_data = {}
+      for entry in citation.childNodes:
+        if entry.nodeType == entry.ELEMENT_NODE:
+          citation_data[entry.nodeName] = entry.childNodes[0].data
+
+      if 'acta' not in citation_data:
+        # construct Acta style reference if necessary
+        citation_data['acta'] = self._bibtex_to_acta(citation_data['bibtex'])
+
+      if 'url' not in citation_data:
+        # obtain URL from bibtex entry if possible
+        bibtex_data = self._parse_bibtex(citation_data['bibtex'])
+        if 'url' in bibtex_data:
+          citation_data['url'] = bibtex_data['url']
+        elif 'doi' in bibtex_data:
+          citation_data['url'] = 'http://dx.doi.org/' + bibtex_data['doi']
 
       if program not in self._citations:
         self._citations[program] = []
-      self._citations[program].append(bibtex)
-
-    return
+      self._citations[program].append(citation_data)
 
   def cite(self, program):
     '''Cite a given program.'''
 
-    if not program in self._cited:
+    if program not in self._cited:
       self._cited.append(program)
-
-    return
 
   def get_programs(self):
     '''Get a list of all of the programs which have been cited.'''
@@ -56,6 +67,11 @@ class _Citations(object):
 
   def get_citations(self):
     '''Get a list of bibtex records of citations.'''
+
+    return [ cit['bibtex'] for cit in self.get_citations_dicts() ]
+
+  def get_citations_dicts(self):
+    '''Get a list of citations dictionary objects.'''
 
     result = []
 
@@ -68,24 +84,22 @@ class _Citations(object):
   def get_citations_acta(self):
     '''Return a list of strings of Acta style references.'''
 
+    # want them in alphabetical order
+    return sorted([ cit['acta'] for cit in self.get_citations_dicts() ])
+
+  def find_citations(self, program=None, acta=None):
+    '''Return a list of citations for a program name or an Acta style reference.'''
+
     results = []
 
-    bibtex_list = self.get_citations()
+    if program:
+      results.extend(self._citations.get(program, []))
 
-    for bibtex in bibtex_list:
-      data = self._parse_bibtex(bibtex)
-      if 'pages' in data:
-        results.append(
-            '%(author)s (%(year)s) %(journal)s %(volume)s, %(pages)s' % \
-            data)
-      else:
-        results.append(
-            '%(author)s (%(year)s) %(journal)s %(volume)s' % \
-            data)
-
-    # want them in alohabetical order
-
-    results.sort()
+    if acta:
+      results.extend(citation \
+          for citations in self._citations.itervalues() \
+          for citation in citations \
+          if citation.get('acta') == acta)
 
     return results
 
@@ -113,10 +127,28 @@ class _Citations(object):
 
     return contents
 
+  def _bibtex_to_acta(self, bibtex):
+    '''Construct an Acta-like formatted reference from a bibtex entry.'''
+
+    data = self._parse_bibtex(bibtex)
+    actaformat = '%(author)s (%(year)s) %(journal)s %(volume)s.'
+
+    # drop every 'and' but the last
+    data['author'] = data['author'].replace(' and ', ', ', data['author'].count(' and ')-1)
+
+    if 'pages' in data:
+      data['pages'] = data['pages'].replace('--', '-')
+      actaformat = '%(author)s (%(year)s) %(journal)s %(volume)s, %(pages)s.'
+
+    return actaformat % data
+
 
 Citations = _Citations()
 
 if __name__ == '__main__':
+  print Citations.find_citations(program='xia2')
+  print Citations.find_citations(acta='Winter, G. (2010) J. Appl. Cryst. 43, 186-190.')
+
   Citations.cite('labelit')
   Citations.cite('denzo')
   Citations.cite('mosflm')

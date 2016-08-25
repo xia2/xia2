@@ -19,7 +19,7 @@ from xia2.Handlers.Files import cleanup
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Environment import Environment, df
 
-from xia2.Applications.xia2 import get_command_line, write_citations, help
+from xia2.Applications.xia2 import get_command_line, help
 
 from xia2.XIA2Version import Version
 
@@ -33,6 +33,9 @@ def run():
 
 def generate_xia2_html(xinfo, filename='xia2.html'):
   rst = get_xproject_rst(xinfo)
+
+  with open('debug', 'wb') as f:
+    print >> f, rst.encode("utf-8")
 
   with open(filename, 'wb') as f:
     print >> f, rst2html(rst)
@@ -130,6 +133,7 @@ def get_xproject_rst(xproject):
   lines.extend(output_files_section(xproject))
   lines.extend(integration_status_section(xproject))
   lines.extend(detailed_statistics_section(xproject))
+  lines.extend(citations(xproject))
 
   return '\n'.join(lines)
 
@@ -539,6 +543,24 @@ def integration_status_section(xproject):
 def indent_text(text, indent=3):
   return '\n'.join([indent * ' ' + line for line in text.split('\n')])
 
+def citations(xproject):
+  lines = []
+
+  lines.append('\n')
+  lines.append('References')
+  lines.append('=' * len(lines[-1]))
+
+  # Sort citations
+  citations = {}
+  for cdict in Citations.get_citations_dicts():
+    citations[cdict['acta']] = cdict.get('url')
+  for citation in sorted(citations.iterkeys()):
+    if citations[citation]:
+      lines.append("`%s\n<%s>`_\n" % (citation, citations[citation]))
+    else:
+      lines.append("%s\n" % citation)
+
+  return lines
 
 def detailed_statistics_section(xproject):
   lines = []

@@ -1,5 +1,8 @@
 <citations>
+
 <citation program="xia2">
+<acta>Winter, G. (2010) J. Appl. Cryst. 43, 186-190.</acta>
+<bibtex>
 @article{Winter:ea5113,
 author = "Winter, G.",
 title = "{{\it xia2}: an expert system for macromolecular crystallography data reduction}",
@@ -8,11 +11,34 @@ year = "2010",
 volume = "43",
 number = "1",
 month = "Feb",
+pages = "186--190",
 doi = {10.1107/S0021889809045701},
 url = {http://dx.doi.org/10.1107/S0021889809045701},
 }
+</bibtex>
 </citation>
+
+<citation program="aimless">
+<acta>Evans, P. R. and Murshudov, G. N. (2013) Acta Cryst. D69, 1204-1214.</acta>
+<url>http://journals.iucr.org/d/issues/2013/07/00/ba5190/index.html</url>
+<bibtex>
+@article{Evans:ba5190,
+author = "Evans, Philip R. and Murshudov, Garib N.",
+title = "{How good are my data and what is the resolution?}",
+journal = "Acta Crystallographica Section D",
+year = "2013",
+volume = "69",
+number = "7",
+pages = "1204--1214",
+month = "Jul",
+doi = {10.1107/S0907444913000061},
+url = {http://dx.doi.org/10.1107/S0907444913000061},
+}
+</bibtex>
+</citation>
+
 <citation program="lepage-cell-reduction">
+<bibtex>
 @article{LePage:a21775,
 author = "Le Page, Y.",
 title = "{The derivation of the axes of the conventional unit cell from the dimensions of the Buerger-reduced cell}",
@@ -25,8 +51,12 @@ month = "Jun",
 doi = {10.1107/S0021889882011959},
 url = {http://dx.doi.org/10.1107/S0021889882011959},
 }
+</bibtex>
 </citation>
+
 <citation program="xds">
+<acta>Kabsch, W. (2010) Acta Cryst. D66, 125-132.</acta>
+<bibtex>
 @article{Kabsch:dz5179,
 author = "Kabsch, Wolfgang",
 title = "{{\it XDS}}",
@@ -39,18 +69,30 @@ month = "Feb",
 doi = {10.1107/S0907444909047337},
 url = {http://dx.doi.org/10.1107/S0907444909047337},
 }
+</bibtex>
 </citation>
+
 <citation program="ccp4">
-@article{bailey1994csp,
-  title={{The CCP4 suite: programs for protein crystallography}},
-  author={},
-  journal={Acta Crystallogr. D},
-  volume={50},
-  pages={760--763},
-  year={1994}
+<acta>Winn, M. D. et al. (2011) Acta Cryst. D67, 235-242.</acta>
+<bibtex>
+@article{Winn:dz5219,
+author = "Winn, Martyn D. and Ballard, Charles C. and Cowtan, Kevin D. and Dodson, Eleanor J. and Emsley, Paul and Evans, Phil R. and Keegan, Ronan M. and Krissinel, Eugene B. and Leslie, Andrew G. W. and McCoy, Airlie and McNicholas, Stuart J. and Murshudov, Garib N. and Pannu, Navraj S. and Potterton, Elizabeth A. and Powell, Harold R. and Read, Randy J. and Vagin, Alexei and Wilson, Keith S.",
+title = "{Overview of the {\it CCP}4 suite and current developments}",
+journal = "Acta Crystallographica Section D",
+year = "2011",
+volume = "67",
+number = "4",
+pages = "235--242",
+month = "Apr",
+doi = {10.1107/S0907444910045749},
+url = {http://dx.doi.org/10.1107/S0907444910045749},
 }
+</bibtex>
 </citation>
+
 <citation program="distl">
+<acta>Zhang, Z., Sauter, N. K., van den Bedem, H., Snell, G. and Deacon, A. M. (2006) J. Appl. Cryst 39, 112-119.</acta>
+<bibtex>
 @article{zhang2006adi,
   title={{Automated diffraction image analysis and spot searching for high-throughput crystal screening}},
   author={Zhang, Z. and Sauter, N.K. and van den Bedem, H. and Snell, G. and Deacon, A.M.},
@@ -59,8 +101,12 @@ url = {http://dx.doi.org/10.1107/S0907444909047337},
   pages={112--119},
   year={2006}
 }
+</bibtex>
 </citation>
+
 <citation program="labelit">
+<acta>Sauter, N. K., Grosse-Kunstleve, R. W. and Adams, P. D. (2004) J. Appl. Cryst. 37, 399-409.</acta>
+<bibtex>
 @article{Sauter:dd5008,
 author = "Sauter, Nicholas K. and Grosse-Kunstleve, Ralf W. and Adams, Paul D.",
 title = "{Robust indexing for automatic data collection}",
@@ -73,8 +119,11 @@ month = "Jun",
 doi = {10.1107/S0021889804005874},
 url = {http://dx.doi.org/10.1107/S0021889804005874},
 }
+</bibtex>
 </citation>
+
 <citation program="d*TREK">
+<bibtex>
 @article{Pflugrath:ba0030,
 author = "Pflugrath, J. W.",
 title = "{The finer things in X-ray diffraction data collection}",
@@ -87,8 +136,12 @@ month = "Oct",
 doi = {10.1107/S090744499900935X},
 url = {http://dx.doi.org/10.1107/S090744499900935X},
 }
+</bibtex>
 </citation>
+
 <citation program="pointless">
+<acta>Evans, P. (2006) Acta Cryst. D62, 72-82.</acta>
+<bibtex>
 @article{Evans:ba5084,
 author = "Evans, Philip",
 title = "{Scaling and assessment of data quality}",
@@ -101,8 +154,11 @@ month = "Jan",
 doi = {10.1107/S0907444905036693},
 url = {http://dx.doi.org/10.1107/S0907444905036693},
 }
+</bibtex>
 </citation>
+
 <citation program="mosflm">
+<bibtex>
 @article{LesliePowellMosflm,
 author = "Leslie, A. G. W. and Powell, H. R.",
 title = "{Processing Diffraction Data with Mosflm}",
@@ -111,8 +167,11 @@ year = "2007",
 volume = "245",
 pages = "41--51",
 }
+</bibtex>
 </citation>
+
 <citation program="denzo">
+<bibtex>
 @article{otwinowski1997pxr,
   title={{Processing of X-ray diffraction data in oscillation mode}},
   author={Otwinowski, Z. and Minor, W.},
@@ -121,16 +180,22 @@ pages = "41--51",
   pages={307--326},
   year={1997}
 }
+</bibtex>
 </citation>
+
 <citation program="scala">
+<bibtex>
 @article{evans1997smd,
   title={{Scaling of MAD data}},
   author={Evans, P.R.},
   journal={Proceedings of CCP4 Study Weekend},
   year={1997}
 }
+</bibtex>
 </citation>
+
 <citation program="blend">
+<bibtex>
 @article{Foadi:dz5278,
 author = "Foadi, James and Aller, Pierre and Alguel, Yilmaz and Cameron, Alex and Axford, Danny and Owen, Robin L. and Armour, Wes and Waterman, David G. and Iwata, So and Evans, Gwyndaf",
 title = "{Clustering procedures for the optimal selection of data sets from multiple crystals in macromolecular crystallography}",
@@ -143,7 +208,8 @@ month = "Aug",
 doi = {10.1107/S0907444913012274},
 url = {http://dx.doi.org/10.1107/S0907444913012274},
 }
+</bibtex>
 </citation>
-</citations>
 
+</citations>
  
