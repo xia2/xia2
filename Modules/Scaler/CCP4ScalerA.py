@@ -1247,8 +1247,9 @@ class CCP4ScalerA(Scaler):
       else:
         self._scalr_cell, self._scalr_cell_esd, cif_in = self._scalr_cell_dict.values()[0]
 
+      import dials.util.version
       cif_out = CIF.get_block('xia2')
-      cif_out['_computing_cell_refinement'] = 'DIALS 2theta refinement'
+      cif_out['_computing_cell_refinement'] = 'DIALS 2theta refinement, %s' % dials.util.version.dials_version()
       for key in sorted(cif_in.keys()):
         cif_out[key] = cif_in[key]
 
