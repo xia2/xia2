@@ -37,11 +37,29 @@ class _CIFHandler(object):
     block['_cell_formula_units_Z'] = sg.order_z()
     block.add_loop(loop)
 
-  def set_wavelength(self, wavelength, blockname=None):
+  def set_wavelengths(self, wavelength, blockname=None):
     block = self.get_block(blockname)
-    block['_diffrn_radiation_wavelength'] = wavelength
+    if isinstance(wavelength, dict):
+      if '_diffrn_radiation_wavelength' in block:
+        del(block['_diffrn_radiation_wavelength'])
+      loop = iotbx.cif.model.loop(
+        header=['_diffrn_radiation_wavelength_id', '_diffrn_radiation_wavelength'],
+        data=[s for item in wavelength.iteritems() for s in item])
+      block.add_loop(loop)
+    else:
+      if len(wavelength) == 1:
+        block['_diffrn_radiation_wavelength'] = wavelength[0]
+      else:
+        block['_diffrn_radiation_wavelength'] = wavelength
+
+  def __str__(self):
+    '''Return CIF as string representation.'''
+    # update audit information for citations
+    self.collate_audit_information()
+    return str(self._cif)
 
   def write_cif(self):
+    '''Write CIF to file.'''
     # update audit information for citations
     self.collate_audit_information()
     # self._cif.sort(recursive=True)

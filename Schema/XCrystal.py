@@ -322,8 +322,6 @@ class XCrystal(object):
     # derived information
     self._nmol = 1
 
-    return
-
   # serialization functions
 
   def to_dict(self):
@@ -482,6 +480,15 @@ class XCrystal(object):
     sg = sgtbx.space_group_type(str(spacegroup))
     spacegroup = sg.lookup_symbol()
     CIF.set_spacegroup(sg)
+
+    if len(self._wavelengths) == 1:
+      CIF.set_wavelengths([w.get_wavelength() for w in self._wavelengths.itervalues()])
+    else:
+      for wavelength in self._wavelengths.keys():
+        full_wave_name = '%s_%s_%s' % (self._project._name, self._name, wavelength)
+        CIF.get_block(full_wave_name)['_diffrn_radiation_wavelength'] = \
+          self._wavelengths[wavelength].get_wavelength()
+      CIF.set_wavelengths({name: wave.get_wavelength() for name, wave in self._wavelengths.iteritems()})
 
     result += 'Assuming spacegroup: %s\n' % spacegroup
     if len(spacegroups) > 1:
