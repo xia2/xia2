@@ -34,8 +34,8 @@ def run():
 def generate_xia2_html(xinfo, filename='xia2.html'):
   rst = get_xproject_rst(xinfo)
 
-  with open('debug', 'wb') as f:
-    print >> f, rst.encode("utf-8")
+# with open('debug', 'wb') as f:
+#   print >> f, rst.encode("utf-8")
 
   with open(filename, 'wb') as f:
     print >> f, rst2html(rst)
