@@ -72,7 +72,7 @@ def generate_map(abscor, png_filename):
   pyplot.colorbar()
   pyplot.savefig(png_filename)
 
-def scrape_coefficients(log_file_name):
+def scrape_coefficients(log_file_name = None, log = None):
   # FIXME cope with cases where the surfaces are not LINKed => will be several
   # of them...
   Clm = { }
@@ -80,7 +80,9 @@ def scrape_coefficients(log_file_name):
   l = 0
 
   coefficients = []
-  for record in open(log_file_name):
+  if not log:
+    log = open(log_file_name)
+  for record in log:
     if 'Coefficient(Sd)' in record:
       for token in record.split()[1:]:
         coefficients.append(float(token.split('(')[0]))
@@ -88,4 +90,4 @@ def scrape_coefficients(log_file_name):
 
 if __name__ == '__main__':
   import sys
-  generate_map(evaluate_1degree(scrape_coefficients(sys.argv[1])), sys.argv[2])
+  generate_map(evaluate_1degree(scrape_coefficients(log_file_name=sys.argv[1])), sys.argv[2])

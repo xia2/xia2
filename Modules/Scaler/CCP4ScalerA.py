@@ -1191,6 +1191,7 @@ class CCP4ScalerA(Scaler):
     if self.get_scaler_anomalous():
       sc.set_anomalous()
     sc.scale()
+    self._generate_absorption_map(sc)
 
   def _update_scaled_unit_cell(self):
     # FIXME this could be brought in-house
@@ -1284,6 +1285,39 @@ class CCP4ScalerA(Scaler):
 
     Debug.write('%7.3f %7.3f %7.3f %7.3f %7.3f %7.3f' % \
               self._scalr_cell)
+
+  def _generate_absorption_map(self, scaler):
+    output = scaler.get_all_output()
+
+    aimless = 'AIMLESS, CCP4'
+    import re
+    pattern = re.compile(" +#+ *CCP4.*#+")
+    for line in output:
+      if pattern.search(line):
+        aimless = re.sub('\s\s+', ', ', line.strip("\t\n #"))
+        break
+
+    from xia2.Toolkit.AimlessSurface import evaluate_1degree, scrape_coefficients, generate_map
+    absmap = evaluate_1degree(scrape_coefficients(log=output))
+    absmin, absmax = absmap.min(), absmap.max()
+
+    block = CIF.get_block('xia2')
+    mmblock = mmCIF.get_block('xia2')
+    block["_exptl_absorpt_correction_T_min"] = mmblock["_exptl.absorpt_correction_T_min"] = \
+      absmin / absmax # = scaled
+    block["_exptl_absorpt_correction_T_max"] = mmblock["_exptl.absorpt_correction_T_max"] = \
+      absmax / absmax # = 1
+    block["_exptl_absorpt_correction_type"] = mmblock["_exptl.absorpt_correction_type"] = \
+      "empirical"
+    block["_exptl_absorpt_process_details"] = mmblock["_exptl.absorpt_process_details"] = '''
+%s
+Scaling & analysis of unmerged intensities, absorption correction using spherical harmonics
+''' % aimless
+
+    if absmax - absmin > 0.000001:
+      generate_map(absmap, 'absorption_surface.png')
+    else:
+      Debug.write("Cannot create absorption surface: map is too flat (min: %f, max: %f)" % (absmin, absmax))
 
   def _identify_sweep_epoch(self, batch):
     '''Identify the sweep epoch a given batch came from - N.B.
