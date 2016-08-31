@@ -80,6 +80,8 @@ from xia2.lib.NMolLib import compute_nmol, compute_solvent
 
 # Generation of Crystallographic Information Files (CIF)
 from xia2.Handlers.CIF import CIF
+# and their macromolecular variety (mmCIF)
+from xia2.Handlers.mmCIF import mmCIF
 
 def sort_o_dict(dict, metric):
   '''A generic sorter for dictionaries - will return the keys in
@@ -559,6 +561,7 @@ class XCrystal(object):
           result += 'Scaled reflections: %s\n' % target
 
     CIF.write_cif()
+    mmCIF.write_cif()
 
     return result
 
