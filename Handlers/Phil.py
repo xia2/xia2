@@ -484,7 +484,7 @@ xia2.settings
   unit_cell = None
     .type = unit_cell
     .help = "Provide a target unit cell to the indexing program"
-    .short_caption = "Unit cell (if space group is also set)"
+    .short_caption = "Unit cell (requires the space group to be set)"
   resolution
     .short_caption = "Resolution"
   {
