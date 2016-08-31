@@ -376,7 +376,6 @@ xia2.settings
     .help = "A name for the crystal"
   input
     .short_caption = "xia2 input settings"
-    .expert_level = 1
   {
     atom = None
       .type = str
@@ -385,14 +384,17 @@ xia2.settings
     anomalous = Auto
       .type = bool
       .short_caption = "Separate anomalous pairs in merging"
+      .expert_level = 1
     working_directory = None
       .type = path
       .short_caption = "Working directory (i.e. not $CWD)"
+      .expert_level = 1
     image = None
       .type = path
       .multiple = True
       .help = "image=/path/to/an/image_001.img"
       .short_caption = "Path to an image file"
+      .expert_level = 1
     json = None
       .type = path
       .multiple = True
@@ -400,6 +402,7 @@ xia2.settings
               "alternative source of images header information to avoid the "
               "need to read all the image headers on start-up."
       .short_caption = "Take headers from json file"
+      .expert_level = 1
     reference_geometry = None
       .type = path
       .multiple = True
@@ -407,27 +410,33 @@ xia2.settings
               "experiments.json will override the geometry from the "
               "image headers."
       .short_caption = "Take experimental geometry from json file"
+      .expert_level = 1
     xinfo = None
       .type = path
       .help = "Provide an xinfo file as input as alternative to directory "
               "containing image files."
       .short_caption = "Use xinfo instead of image directory"
+      .expert_level = 1
     reverse_phi = False
       .type = bool
       .help = "Reverse the direction of the phi axis rotation."
       .short_caption = "Reverse rotation axis"
+      .expert_level = 1
     gain = None
       .type = float
       .help = "Detector gain if using DIALS"
       .short_caption = "Detector gain"
+      .expert_level = 1
     min_images = 10
       .type = int(value_min=1)
       .help = "Minimum number of matching images to include a sweep in processing."
       .short_caption = "Minimum number of matching images"
+      .expert_level = 1
     min_oscillation_range = None
       .type = int(value_min=0)
       .help = "Minimum oscillation range of a sweep for inclusion in processing."
       .short_caption = "Minimum oscillation range"
+      .expert_level = 1
     include scope dials.util.options.tolerance_phil_scope
   }
   sweep
