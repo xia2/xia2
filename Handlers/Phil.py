@@ -16,7 +16,9 @@ from libtbx.phil import interface
 from iotbx.phil import parse
 
 master_phil = parse("""
-general {
+general
+  .short_caption = "General settings"
+{
   check_image_files_readable = True
     .type = bool
     .expert_level = 2
@@ -291,6 +293,8 @@ ccp4
 strategy
   .multiple = True
   .optional = False
+  .short_caption = "Strategy"
+  .expert_level = 1
 {
   i_over_sigi = 2.0
     .type = float(value_min=0.0)
@@ -354,13 +358,16 @@ xia2.settings
     .short_caption = "Use small molecule settings"
     .help = "Assume that the dataset comes from a"
             "chemical crystallography experiment"
+    .expert_level = 1
   failover = False
     .type = bool
     .short_caption = 'Fail over gracefully'
     .help = 'If processing a sweep fails, keep going'
+    .expert_level = 1
   interactive = False
     .type = bool
     .short_caption = 'Interactive indexing'
+    .expert_level = 1
   project = 'AUTOMATIC'
     .type = str
     .help = "A name for the data processing project"
@@ -435,10 +442,12 @@ xia2.settings
     exclude = False
       .type = bool
   }
-  scale {
+  scale
+    .expert_level = 1
+    .short_caption = "Scaling"
+  {
     directory = Auto
       .type = str
-      .expert_level = 2
       .short_caption = "xia2 scale directory"
     free_fraction = 0.05
       .type = float(value_min=0.0, value_max=1.0)
@@ -454,11 +463,9 @@ xia2.settings
       .help = "Reference file for testing of alternative indexing schemes"
     model = *decay *modulation *absorption partiality
       .type = choice(multi=True)
-      .expert_level = 2
       .short_caption = "Scaling models to apply"
     scales = *rotation batch
       .type = choice
-      .expert_level = 2
       .short_caption = "Smoothed or batch scaling"
   }
   space_group = None
@@ -556,6 +563,7 @@ xia2.settings
   xds_check_cell_deviation = False
     .type = bool
     .short_caption = "Check cell deviation in XDS IDXREF"
+    .expert_level = 1
   use_brehm_diederichs = False
     .type = bool
     .help = "Use the Brehm-Diederichs algorithm to resolve an indexing "
@@ -563,7 +571,10 @@ xia2.settings
             "See: W. Brehm and K. Diederichs, Acta Cryst. (2014). D70, 101-109."
     .short_caption = "Brehm-Diederichs"
     .expert_level = 1
-  integration {
+  integration
+    .short_caption = "Integration"
+    .expert_level = 1
+  {
     profile_fitting = True
       .type = bool
       .help = "Use profile fitting not summation integration, default yes"
@@ -572,6 +583,7 @@ xia2.settings
       .type = bool
       .help = "Exclude measurements from regions which are typically where "
               "ice rings land"
+      .short_caption = "Exclude ice regions"
   }
   developmental
     .expert_level = 2
