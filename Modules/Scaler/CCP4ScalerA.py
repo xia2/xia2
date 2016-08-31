@@ -20,7 +20,7 @@ from CommonScaler import CommonScaler as Scaler
 from xia2.Wrappers.CCP4.CCP4Factory import CCP4Factory
 
 from xia2.Handlers.Streams import Chatter, Debug, Journal
-from xia2.Handlers.CIF import CIF
+from xia2.Handlers.CIF import CIF, mmCIF
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Flags import Flags
@@ -1225,12 +1225,16 @@ class CCP4ScalerA(Scaler):
         tt_grouprefiner.run()
         Chatter.write('%s: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
           tuple([''.join(pi.split('_')[2:])] + list(tt_grouprefiner.get_unit_cell())))
-        self._scalr_cell_dict[pi] = (tt_grouprefiner.get_unit_cell(), tt_grouprefiner.get_unit_cell_esd(), tt_grouprefiner.import_cif())
+        self._scalr_cell_dict[pi] = (tt_grouprefiner.get_unit_cell(), tt_grouprefiner.get_unit_cell_esd(), tt_grouprefiner.import_cif(), tt_grouprefiner.import_mmcif())
         if len(groups) > 1:
           cif_in = tt_grouprefiner.import_cif()
           cif_out = CIF.get_block(pi)
           for key in sorted(cif_in.keys()):
             cif_out[key] = cif_in[key]
+          mmcif_in = tt_grouprefiner.import_mmcif()
+          mmcif_out = mmCIF.get_block(pi)
+          for key in sorted(mmcif_in.keys()):
+            mmcif_out[key] = mmcif_in[key]
 
       # Two theta refine everything together
       if len(groups) > 1:
@@ -1244,14 +1248,18 @@ class CCP4ScalerA(Scaler):
         Chatter.write('Overall: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % tt_refiner.get_unit_cell())
         self._scalr_cell_esd = tt_refiner.get_unit_cell_esd()
         cif_in = tt_refiner.import_cif()
+        mmcif_in = tt_refiner.import_mmcif()
       else:
-        self._scalr_cell, self._scalr_cell_esd, cif_in = self._scalr_cell_dict.values()[0]
+        self._scalr_cell, self._scalr_cell_esd, cif_in, mmcif_in = self._scalr_cell_dict.values()[0]
 
       import dials.util.version
       cif_out = CIF.get_block('xia2')
-      cif_out['_computing_cell_refinement'] = 'DIALS 2theta refinement, %s' % dials.util.version.dials_version()
+      mmcif_out = mmCIF.get_block('xia2')
+      cif_out['_computing_cell_refinement'] = mmcif_out['_computing.cell_refinement'] = 'DIALS 2theta refinement, %s' % dials.util.version.dials_version()
       for key in sorted(cif_in.keys()):
         cif_out[key] = cif_in[key]
+      for key in sorted(mmcif_in.keys()):
+        mmcif_out[key] = mmcif_in[key]
 
       Debug.write('Unit cell obtained by two-theta refinement')
 

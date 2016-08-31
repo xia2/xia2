@@ -35,6 +35,7 @@ def RefineTwoTheta(DriverType = None):
 
       # The following are set during run() call:
       self._output_cif = None
+      self._output_mmcif = None
       self._output_correlation_plot = None
       self._output_experiments = None
 
@@ -58,6 +59,9 @@ def RefineTwoTheta(DriverType = None):
     def get_output_cif(self):
       return self._output_cif
 
+    def get_output_mmcif(self):
+      return self._output_mmcif
+
     def get_output_correlation_plot(self):
       return self._output_correlation_plot
 
@@ -77,6 +81,9 @@ def RefineTwoTheta(DriverType = None):
       self._output_cif = os.path.join(
         self.get_working_directory(),
         '%s_dials.two_theta_refine.cif' % self.get_xpid())
+      self._output_mmcif = os.path.join(
+        self.get_working_directory(),
+        '%s_dials.two_theta_refine.mmcif' % self.get_xpid())
       self._output_correlation_plot = os.path.join(
         self.get_working_directory(),
         '%s_dials.two_theta_refine.png' % self.get_xpid())
@@ -90,6 +97,7 @@ def RefineTwoTheta(DriverType = None):
       for pickle in self._pickles:
         self.add_command_line(pickle)
       self.add_command_line('output.cif=%s' % self._output_cif)
+      self.add_command_line('output.mmcif=%s' % self._output_mmcif)
       if self._output_correlation_plot is not None:
         self.add_command_line(
           'output.correlation_plot.filename=%s' % self._output_correlation_plot)
@@ -118,6 +126,18 @@ def RefineTwoTheta(DriverType = None):
       import iotbx.cif
       cif = iotbx.cif.reader(file_path=self.get_output_cif()).model()
       block = cif['two_theta_refine']
+      subset = { k: block[k] for k in block.keys() if k.startswith(('_cell', '_diffrn')) }
+      return subset
+
+    def import_mmcif(self):
+      '''Import relevant lines from .mmcif output'''
+      if os.path.isfile(self.get_output_mmcif()):
+        import iotbx.cif
+        cif = iotbx.cif.reader(file_path=self.get_output_mmcif()).model()
+        block = cif['two_theta_refine']
+      else:
+        import iotbx.cif.model
+        block = iotbx.cif.model.block()
       subset = { k: block[k] for k in block.keys() if k.startswith(('_cell', '_diffrn')) }
       return subset
 

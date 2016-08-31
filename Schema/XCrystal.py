@@ -78,10 +78,8 @@ from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import banner
 from xia2.lib.NMolLib import compute_nmol, compute_solvent
 
-# Generation of Crystallographic Information Files (CIF)
-from xia2.Handlers.CIF import CIF
-# and their macromolecular variety (mmCIF)
-from xia2.Handlers.mmCIF import mmCIF
+# Generation of Crystallographic Information Files (CIF/mmCIF)
+from xia2.Handlers.CIF import CIF, mmCIF
 
 def sort_o_dict(dict, metric):
   '''A generic sorter for dictionaries - will return the keys in
@@ -482,15 +480,20 @@ class XCrystal(object):
     sg = sgtbx.space_group_type(str(spacegroup))
     spacegroup = sg.lookup_symbol()
     CIF.set_spacegroup(sg)
+    mmCIF.set_spacegroup(sg)
 
     if len(self._wavelengths) == 1:
       CIF.set_wavelengths([w.get_wavelength() for w in self._wavelengths.itervalues()])
+      mmCIF.set_wavelengths([w.get_wavelength() for w in self._wavelengths.itervalues()])
     else:
       for wavelength in self._wavelengths.keys():
         full_wave_name = '%s_%s_%s' % (self._project._name, self._name, wavelength)
         CIF.get_block(full_wave_name)['_diffrn_radiation_wavelength'] = \
           self._wavelengths[wavelength].get_wavelength()
+        mmCIF.get_block(full_wave_name)['_diffrn_radiation_wavelength'] = \
+          self._wavelengths[wavelength].get_wavelength()
       CIF.set_wavelengths({name: wave.get_wavelength() for name, wave in self._wavelengths.iteritems()})
+      mmCIF.set_wavelengths({name: wave.get_wavelength() for name, wave in self._wavelengths.iteritems()})
 
     result += 'Assuming spacegroup: %s\n' % spacegroup
     if len(spacegroups) > 1:
