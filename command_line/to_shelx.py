@@ -183,7 +183,7 @@ def to_shelx(hklin, prefix, compound='', options=None):
                      title=prefix,
                      unit_cell_dims=unit_cell_dims,
                      unit_cell_esds=unit_cell_esds)))
-  if not options.cell.endswith('.cif'):
+  if options.cell and not options.cell.endswith('.cif'):
     generate_cif(prefix=prefix, unit_cell_data=cell_data, wavelength=wavelength, structure=xray_structure)
 
 if __name__ == '__main__':
