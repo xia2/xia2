@@ -28,7 +28,6 @@ from xia2.Modules.Scaler.XDSScalerHelpers import XDSScalerHelper
 
 from xia2.Wrappers.XDS.XScaleR import XScaleR as _XScale
 from xia2.Wrappers.XDS.Cellparm import Cellparm as _Cellparm
-from xia2.Modules.TTT import ttt
 
 from xia2.Wrappers.CCP4.CCP4Factory import CCP4Factory
 
