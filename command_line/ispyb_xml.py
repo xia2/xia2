@@ -19,4 +19,7 @@ def ispyb_xml(xml_out):
 
 if __name__ == '__main__':
   import sys
-  ispyb_xml(sys.argv[1])
+  if len(sys.argv) >= 2:
+    ispyb_xml(sys.argv[1])
+  else:
+    ispyb_xml('ispyb.xml')
