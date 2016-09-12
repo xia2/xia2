@@ -9,7 +9,6 @@
 
 from xia2.Schema.Interfaces.Scaler import Scaler
 from xia2.Handlers.Streams import Debug, Chatter
-from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Phil import PhilIndex
 from CCP4ScalerHelpers import anomalous_signals
 from xia2.Modules.CCP4InterRadiationDamageDetector import \
@@ -17,7 +16,6 @@ from xia2.Modules.CCP4InterRadiationDamageDetector import \
 
 from xia2.lib.bits import nifty_power_of_ten
 import os
-import math
 
 from xia2.Handlers.Files import FileHandler
 
@@ -264,8 +262,6 @@ class CommonScaler(Scaler):
     # done preparing!
 
     self._prepared_reflections = s.get_hklout()
-
-    return
 
   def _sort_together_data_xds(self):
 
@@ -543,8 +539,6 @@ class CommonScaler(Scaler):
     s.sort(vrset = -99999999.0)
 
     self._prepared_reflections = hklout
-
-    return
 
   def _scale_finish(self):
 
@@ -864,9 +858,6 @@ class CommonScaler(Scaler):
 
   def _estimate_resolution_limit(self, hklin, batch_range=None):
     params = PhilIndex.params.xia2.settings.resolution
-    if params.keep_all_reflections == True:
-      Debug.write('Keep_all_reflections set, estimating resolution = 0.0')
-      return 0.0
     m = Merger()
     m.set_working_directory(self.get_working_directory())
     from xia2.lib.bits import auto_logfiler
@@ -913,10 +904,8 @@ class CommonScaler(Scaler):
 
     return resolution
 
-  def _compute_scaler_statistics(self, scaled_unmerged_mtz):
-
-    scalr_statistics = {}
-
+  def _compute_scaler_statistics(self, scaled_unmerged_mtz, added_band=None):
+    ''' added_band = (d_min, d_max) with None for automatic determination. '''
     # mapping of expected dictionary names to iotbx.merging_statistics attributes
     key_to_var = {
       'I/sigma': 'i_over_sigma_mean',
@@ -943,6 +932,7 @@ class CommonScaler(Scaler):
     }
 
     stats = {}
+    extra_result, extra_anom_result = None, None
 
     # don't call self.get_scaler_likely_spacegroups() since that calls
     # self.scale() which introduced a subtle bug
@@ -952,6 +942,11 @@ class CommonScaler(Scaler):
     result = self._iotbx_merging_statistics(
       scaled_unmerged_mtz, anomalous=False)
 
+    if added_band and any(added_band):
+      extra_result = self._iotbx_merging_statistics(
+        scaled_unmerged_mtz, anomalous=False,
+        d_min=added_band[0], d_max=added_band[1])
+
     if sg.is_centric():
       anom_result = None
       anom_key_to_var = {}
@@ -959,13 +954,24 @@ class CommonScaler(Scaler):
       anom_result = self._iotbx_merging_statistics(
         scaled_unmerged_mtz, anomalous=True)
       stats['Anomalous slope'] = (anom_result.anomalous_np_slope, 0, 0)
+      if added_band and any(added_band):
+        extra_anom_result = self._iotbx_merging_statistics(
+          scaled_unmerged_mtz, anomalous=True,
+          d_min=added_band[0], d_max=added_band[1])
+        stats['Anomalous slope'] = (anom_result.anomalous_np_slope, 0, 0, 0)
 
-    for d, r in ((key_to_var, result), (anom_key_to_var, anom_result)):
+    import cStringIO as StringIO
+    result_cache = StringIO.StringIO()
+    result.show(out=result_cache)
+
+    for d, r, e in ((key_to_var, result, extra_result), (anom_key_to_var, anom_result, extra_anom_result)):
       for k, v in d.iteritems():
         values = (
           getattr(r.overall, v),
           getattr(r.bins[0], v),
           getattr(r.bins[-1], v))
+        if e:
+          values = values + (getattr(e.overall, v),)
         if 'completeness' in v:
           values = [v_ * 100 for v_ in values]
         if values[0] is not None:
@@ -973,7 +979,7 @@ class CommonScaler(Scaler):
 
     return stats
 
-  def _iotbx_merging_statistics(self, scaled_unmerged_mtz, anomalous=False):
+  def _iotbx_merging_statistics(self, scaled_unmerged_mtz, anomalous=False, d_min=None, d_max=None):
     import iotbx.merging_statistics
 
     params = PhilIndex.params.xia2.settings.merging_statistics
@@ -984,8 +990,8 @@ class CommonScaler(Scaler):
     result = iotbx.merging_statistics.dataset_statistics(
       i_obs=i_obs,
       #crystal_symmetry=symm,
-      #d_min=params.high_resolution,
-      #d_max=params.low_resolution,
+      d_min=d_min,
+      d_max=d_max,
       n_bins=params.n_bins,
       anomalous=anomalous,
       #debug=params.debug,

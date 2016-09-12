@@ -798,6 +798,7 @@ class CCP4ScalerA(Scaler):
     self._sort_together_data_ccp4()
 
     self._scalr_resolution_limits = { }
+    self._scalr_resolution_statistics = { } # resolution for 4th merging stats column
 
     # store central resolution limit estimates
 
@@ -943,6 +944,7 @@ class CCP4ScalerA(Scaler):
             loggraph[key])
 
     highest_resolution = 100.0
+    highest_suggested_resolution = None
 
     # check in here that there is actually some data to scale..!
 
@@ -966,18 +968,16 @@ class CCP4ScalerA(Scaler):
                       (dname, resolution))
         continue
 
+      hklin = sc.get_unmerged_reflection_file()
+      resolution = self._estimate_resolution_limit(
+        hklin, batch_range=(start, end))
+
       if PhilIndex.params.xia2.settings.resolution.keep_all_reflections == True:
-        try:
-          resolution = intgr.get_detector().get_max_resolution(intgr.get_beam_obj().get_s0())
-          Debug.write('keep_all_reflections set, using detector limits')
-        except Exception:
-          hklin = sc.get_unmerged_reflection_file()
-          resolution = self._estimate_resolution_limit(
-            hklin, batch_range=(start, end))
-      else:
-        hklin = sc.get_unmerged_reflection_file()
-        resolution = self._estimate_resolution_limit(
-          hklin, batch_range=(start, end))
+        self._scalr_resolution_statistics[(dname, sname)] = resolution
+        if highest_suggested_resolution is None or resolution < highest_suggested_resolution:
+          highest_suggested_resolution = resolution
+        resolution = intgr.get_detector().get_max_resolution(intgr.get_beam_obj().get_s0())
+        Debug.write('keep_all_reflections set, using detector limits')
       Debug.write('Resolution for sweep %s: %.2f' % \
                   (sname, resolution))
 
@@ -991,11 +991,18 @@ class CCP4ScalerA(Scaler):
       Chatter.write('Resolution limit for %s/%s: %5.2f' % \
                     (dname, sname,
                      self._scalr_resolution_limits[(dname, sname)]))
+      if (dname, sname) in self._scalr_resolution_statistics:
+        Chatter.write('Suggested resolution limit: %5.2f' % \
+          self._scalr_resolution_statistics[(dname, sname)] )
 
     self._scalr_highest_resolution = highest_resolution
+    self._scalr_highest_suggested_resolution = highest_suggested_resolution
 
     Debug.write('Scaler highest resolution set to %5.2f' % \
                 highest_resolution)
+    if highest_suggested_resolution:
+      Debug.write('Suggested highest resolution is %5.2f' % \
+                  highest_suggested_resolution)
 
     if not self.get_scaler_done():
       Debug.write('Returning as scaling not finished...')
@@ -1015,8 +1022,6 @@ class CCP4ScalerA(Scaler):
                                                    self._scalr_xname),
                                 sc.get_log_file())
 
-    highest_resolution = 100.0
-
     sc.set_hklin(self._prepared_reflections)
     sc.set_new_scales_file('%s_final.scales' % self._scalr_xname)
 
@@ -1028,9 +1033,6 @@ class CCP4ScalerA(Scaler):
       start, end = si.get_batch_range()
 
       resolution_limit = self._scalr_resolution_limits[(dname, sname)]
-
-      if resolution_limit < highest_resolution:
-        highest_resolution = resolution_limit
 
       sc.add_run(start, end, exclude = False,
                  resolution = resolution_limit, name = xname)
@@ -1156,7 +1158,8 @@ class CCP4ScalerA(Scaler):
     if PhilIndex.params.xia2.settings.merging_statistics.source == 'cctbx':
       for key in self._scalr_scaled_refl_files:
         stats = self._compute_scaler_statistics(
-          self._scalr_scaled_reflection_files['mtz_unmerged'][key])
+          self._scalr_scaled_reflection_files['mtz_unmerged'][key],
+          added_band=(highest_suggested_resolution, None))
         self._scalr_statistics[
           (self._scalr_pname, self._scalr_xname, key)] = stats
 

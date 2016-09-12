@@ -236,6 +236,7 @@ class Scaler(object):
     self._scalr_xcrystal = None
 
     self._scalr_resolution_limits = { }
+    self._scalr_resolution_statistics = { }
 
   # serialization functions
 
@@ -264,7 +265,7 @@ class Scaler(object):
           k = json.dumps(k)
           d[k] = v
         obj[a[0]] = d
-      elif a[0] == '_scalr_resolution_limits':
+      elif a[0] in ('_scalr_resolution_limits', '_scalr_resolution_statistics'):
         d = {}
         for k, v in a[1].iteritems():
           k = json.dumps(k)
@@ -293,7 +294,7 @@ class Scaler(object):
           k_ = tuple(str(s) for s in json.loads(k_))
           d[k_] = v_
         v = d
-      elif k == '_scalr_resolution_limits':
+      elif k in ('_scalr_resolution_limits', '_scalr_resolution_statistics'):
         d = {}
         for k_, v_ in v.iteritems():
           k_ = tuple(str(s) for s in json.loads(k_))

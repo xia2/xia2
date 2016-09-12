@@ -577,7 +577,6 @@ def detailed_statistics_section(xproject):
     from collections import OrderedDict
 
     for key, statistics in statistics_all.iteritems():
-
       pname, xname, dname = key
 
       lines.append('Dataset %s' %dname)
@@ -586,6 +585,10 @@ def detailed_statistics_section(xproject):
       table = []
 
       headers = [' ', 'Overall', 'Low', 'High']
+      width = 3
+      if 'Completeness' in statistics and len(statistics['Completeness']) == 4:
+        headers = [' ', 'Overall', 'Low', 'High', 'Suggested']
+        width = 4
 
       available = statistics.keys()
 
@@ -618,10 +621,9 @@ def detailed_statistics_section(xproject):
         if k in available:
           values = [formats[k] % v for v in statistics[k]]
           if len(values) == 1:
-            values = [values[0], '', '']
-          assert len(values) == 3
+            values = [values[0]] + [''] * (width - 1)
+          assert len(values) == width
           table.append([k] + values)
-
 
       lines.append('\n')
       lines.append(tabulate(table, headers, tablefmt='grid'))

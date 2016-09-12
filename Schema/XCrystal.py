@@ -234,28 +234,28 @@ def _print_lattice(lattice):
 
 from libtbx.containers import OrderedDict
 formats = OrderedDict([
-  ('High resolution limit', ' %7.2f %7.2f %7.2f'),
-  ('Low resolution limit', ' %7.2f %7.2f %7.2f'),
-  ('Completeness', '%7.1f %7.1f %7.1f'),
-  ('Multiplicity', '%7.1f %7.1f %7.1f'),
-  ('I/sigma', '%7.1f %7.1f %7.1f'),
-  ('Rmerge(I)', '%7.3f %7.3f %7.3f'),
-  ('Rmerge(I+/-)', '%7.3f %7.3f %7.3f'),
-  ('Rmeas(I)', '%7.3f %7.3f %7.3f'),
-  ('Rmeas(I+/-)', '%7.3f %7.3f %7.3f'),
-  ('Rpim(I)', '%7.3f %7.3f %7.3f'),
-  ('Rpim(I+/-)', '%7.3f %7.3f %7.3f'),
-  ('CC half', '%7.3f %7.3f %7.3f'),
+  ('High resolution limit', ' %7.2f'),
+  ('Low resolution limit', ' %7.2f'),
+  ('Completeness', '%7.1f'),
+  ('Multiplicity', '%7.1f'),
+  ('I/sigma', '%7.1f'),
+  ('Rmerge(I)', '%7.3f'),
+  ('Rmerge(I+/-)', '%7.3f'),
+  ('Rmeas(I)', '%7.3f'),
+  ('Rmeas(I+/-)', '%7.3f'),
+  ('Rpim(I)', '%7.3f'),
+  ('Rpim(I+/-)', '%7.3f'),
+  ('CC half', '%7.3f'),
   ('Wilson B factor', '%7.3f'),
-  ('Partial bias', '%7.3f %7.3f %7.3f'),
-  ('Anomalous completeness', '%7.1f %7.1f %7.1f'),
-  ('Anomalous multiplicity', '%7.1f %7.1f %7.1f'),
-  ('Anomalous correlation', '%7.3f %7.3f %7.3f'),
-  ('Anomalous slope', '%7.3f %7.3f %7.3f'),
+  ('Partial bias', '%7.3f'),
+  ('Anomalous completeness', '%7.1f'),
+  ('Anomalous multiplicity', '%7.1f'),
+  ('Anomalous correlation', '%7.3f'),
+  ('Anomalous slope', '%7.3f'),
   ('dF/F', '%7.3f'),
   ('dI/s(dI)', '%7.3f'),
-  ('Total observations', '%7d %7d %7d'),
-  ('Total unique', '%7d %7d %7d')
+  ('Total observations', '%7d'),
+  ('Total unique', '%7d')
 ])
 
 
@@ -269,8 +269,9 @@ def format_statistics(statistics):
 
   for k, format_str in formats.iteritems():
     if k in available:
+      expanded_format_str = " ".join([format_str] + [format_str.strip()] * (len(statistics[k])-1))
       try:
-        formatted = format_str % tuple(statistics[k])
+        formatted = expanded_format_str % tuple(statistics[k])
       except TypeError:
         formatted = '(error)'
       result += k.ljust(44) + formatted + '\n'
@@ -568,9 +569,6 @@ class XCrystal(object):
 
     return result
 
-  #def __str__(self):
-    #return self.__repr__()
-
   def summarise(self):
     '''Produce a short summary of this crystal.'''
 
@@ -611,14 +609,16 @@ class XCrystal(object):
       for s in stats:
         format_str = formats[s]
         if isinstance(statistics_all[key][s], float):
+          expanded_format_str = " ".join([format_str] + [format_str.strip()] * (len(statistics_all[key][s])-1))
           summary.append(
-            '%s: ' %(s.ljust(40)) + format_str % (statistics_all[key][s]))
+            '%s: ' %(s.ljust(40)) + expanded_format_str % (statistics_all[key][s]))
         elif isinstance(statistics_all[key][s], basestring):
           summary.append(
             '%s: %s' % (s.ljust(40), statistics_all[key][s]))
         else:
+          expanded_format_str = " ".join([format_str] + [format_str.strip()] * (len(statistics_all[key][s])-1))
           summary.append(
-            '%s ' % s.ljust(43) + format_str % tuple(statistics_all[key][s]))
+            '%s ' % s.ljust(43) + expanded_format_str % tuple(statistics_all[key][s]))
 
     cell = self._get_scaler().get_scaler_cell()
     spacegroup = self._get_scaler().get_scaler_likely_spacegroups()[0]
@@ -636,19 +636,14 @@ class XCrystal(object):
     # check here it is an MTZ file
 
     self._reference_reflection_file = reference_reflection_file
-    return
 
   def set_freer_file(self, freer_file):
     '''Set a FreeR column file to use to standardise the FreeR column.'''
-
     self._freer_file = freer_file
-    return
 
   def set_user_spacegroup(self, user_spacegroup):
     '''Set a user assigned spacegroup - which needs to be propogated.'''
-
     self._user_spacegroup = user_spacegroup
-    return
 
   def get_user_spacegroup(self):
     return self._user_spacegroup
@@ -661,7 +656,6 @@ class XCrystal(object):
 
   def set_scaled_merged_reflections(self, scaled_merged_reflections):
     self._scaled_merged_reflections = scaled_merged_reflections
-    return
 
   def get_project(self):
     return self._project
@@ -677,8 +671,6 @@ class XCrystal(object):
       self._aa_sequence = _aa_sequence(aa_sequence)
     else:
       self._aa_sequence.set_sequence(aa_sequence)
-
-    return
 
   def get_ha_info(self):
     return self._ha_info
@@ -711,7 +703,6 @@ class XCrystal(object):
         self._ha_info[atom].set_number_total(
             ha_info_dict['number_total'])
 
-    return
 
   def get_wavelength_names(self):
     '''Get a list of wavelengths belonging to this crystal.'''
@@ -722,7 +713,6 @@ class XCrystal(object):
     return self._wavelengths[wavelength_name]
 
   def add_wavelength(self, xwavelength):
-
     if xwavelength.__class__.__name__ != 'XWavelength':
       raise RuntimeError, 'input should be an XWavelength object'
 
@@ -739,7 +729,6 @@ class XCrystal(object):
     if xwavelength.get_f_pr() != 0.0 or xwavelength.get_f_prpr() != 0.0:
       self._anomalous = True
 
-    return
 
   def get_xsample(self, sample_name):
     '''Get a named xsample object back.'''
@@ -756,7 +745,6 @@ class XCrystal(object):
 
     self._samples[xsample.get_name()] = xsample
 
-    return
 
   def remove_sweep(self, s):
     '''Find and remove the sweep s from this crystal.'''
@@ -764,7 +752,6 @@ class XCrystal(object):
     for wave in self._wavelengths.keys():
       self._wavelengths[wave].remove_sweep(s)
 
-    return
 
   def _get_integraters(self):
     integraters = []
@@ -807,8 +794,6 @@ class XCrystal(object):
     else:
       self._lattice_manager = _lattice_manager(lattice, cell)
 
-    return
-
   def _update_lattice(self, lattice, cell):
     '''Inspect the available lattices and see if this matches
     one of them...'''
@@ -842,8 +827,6 @@ class XCrystal(object):
 
     # if we reach here we're satisfied that the new lattice matches...
     # FIXME write out some messages here to Chatter.
-
-    return
 
   def get_lattice(self):
     if self._lattice_manager:
