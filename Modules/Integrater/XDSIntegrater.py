@@ -831,6 +831,27 @@ class XDSIntegrater(Integrater):
       reindex.reindex()
       integrate_mtz = hklout
 
+    import dxtbx
+    from dxtbx.serialize.xds import to_crystal
+    from dxtbx.model.experiment.experiment_list import Experiment, ExperimentList
+    models = dxtbx.load(self._xds_data_files['GXPARM.XDS'])
+    crystal_model = to_crystal(self._xds_data_files['GXPARM.XDS'])
+    experiment = Experiment(beam=models.get_beam(),
+                            detector=models.get_detector(),
+                            goniometer=models.get_goniometer(),
+                            scan=models.get_scan(),
+                            crystal=crystal_model,
+                            #imageset=self.get_imageset(),
+                            )
+    experiment_list = ExperimentList([experiment])
+    experiments_json = os.path.join(
+      self.get_working_directory(), 'integrated_experiments.json')
+    dxtbx.serialize.dump.experiment_list(experiment_list, experiments_json)
+    pname, xname, dname = self.get_integrater_project_info()
+    sweep = self.get_integrater_sweep_name()
+    FileHandler.record_more_data_file(
+      '%s %s %s %s experiments' % (pname, xname, dname, sweep), experiments_json)
+
     return integrate_mtz
 
 if __name__ == '__main__':

@@ -447,6 +447,12 @@ class DialsIntegrater(Integrater):
     self._intgr_integrated_filename = hklout
     self._intgr_cell = reindex.get_cell()
 
+    pname, xname, dname = self.get_integrater_project_info()
+    sweep = self.get_integrater_sweep_name()
+    FileHandler.record_more_data_file(
+      '%s %s %s %s experiments' % (pname, xname, dname, sweep),
+      self.get_integrated_experiments())
+
     return hklout
 
   def _integrate_select_images_wedges(self):
