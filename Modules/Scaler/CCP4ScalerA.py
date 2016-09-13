@@ -995,7 +995,8 @@ class CCP4ScalerA(Scaler):
         Chatter.write('Suggested resolution limit: %5.2f' % \
           self._scalr_resolution_statistics[(dname, sname)] )
 
-    if highest_resolution <= (highest_suggested_resolution + 0.004):
+    if highest_suggested_resolution is not None and \
+        highest_resolution <= (highest_suggested_resolution + 0.004):
       Debug.write('Dropping resolution cut-off suggestion since it is'
                   ' essentially identical to the actual resolution limit.')
       highest_suggested_resolution = None
