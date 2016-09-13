@@ -832,6 +832,7 @@ class XDSIntegrater(Integrater):
       integrate_mtz = hklout
 
     import dxtbx
+    import dxtbx.serialize.dump
     from dxtbx.serialize.xds import to_crystal
     from dxtbx.model.experiment.experiment_list import Experiment, ExperimentList
     models = dxtbx.load(self._xds_data_files['GXPARM.XDS'])
