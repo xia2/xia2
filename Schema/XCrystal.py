@@ -452,8 +452,11 @@ class XCrystal(object):
 
       result += '%s\n' %banner('Scaling %s' %self.get_name())
 
-      for (dname, sname), limit in scaler.get_scaler_resolution_limits().iteritems():
-        result += 'Resolution limit for %s/%s: %5.2f\n' %(dname, sname, limit)
+      for (dname, sname), (limit, suggested) in scaler.get_scaler_resolution_limits().iteritems():
+        if suggested is None or limit == suggested:
+          result += 'Resolution limit for %s/%s: %5.2f\n' %(dname, sname, limit)
+        else:
+          result += 'Resolution limit for %s/%s: %5.2f (%5.2f suggested)\n' %(dname, sname, limit, suggested)
 
     # this is now deprecated - be explicit in what you are
     # asking for...

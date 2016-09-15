@@ -919,7 +919,7 @@ class XDSScalerA(Scaler):
       Debug.write('HKL: %s (%s/%s)' % (reflections, dname, sname))
 
       resolution_low = intgr.get_integrater_low_resolution()
-      resolution_high = self._scalr_resolution_limits.get((dname, sname), 0.0)
+      resolution_high, _ = self._scalr_resolution_limits.get((dname, sname), (0.0, None))
 
       resolution = (resolution_high, resolution_low)
 
@@ -1049,10 +1049,10 @@ class XDSScalerA(Scaler):
         dmin = intgr.get_integrater_high_resolution()
 
         if rkey not in self._user_resolution_limits:
-          self._scalr_resolution_limits[rkey] = dmin
+          self._scalr_resolution_limits[rkey] = (dmin, None)
           self._user_resolution_limits[rkey] = dmin
         elif dmin < self._user_resolution_limits[rkey]:
-          self._scalr_resolution_limits[rkey] = dmin
+          self._scalr_resolution_limits[rkey] = (dmin, None)
           self._user_resolution_limits[rkey] = dmin
 
     self._scalr_scaled_refl_files = { }
@@ -1130,11 +1130,11 @@ class XDSScalerA(Scaler):
                     (dname, sname, resolution))
 
       if not (dname, sname) in self._scalr_resolution_limits:
-        self._scalr_resolution_limits[(dname, sname)] = resolution
+        self._scalr_resolution_limits[(dname, sname)] = (resolution, None)
         self.set_scaler_done(False)
       else:
         if resolution < self._scalr_resolution_limits[(dname, sname)]:
-          self._scalr_resolution_limits[(dname, sname)] = resolution
+          self._scalr_resolution_limits[(dname, sname)] = (resolution, None)
           self.set_scaler_done(False)
 
     debug_memory_usage()
@@ -1145,7 +1145,7 @@ class XDSScalerA(Scaler):
 
     self._sort_together_data_xds()
 
-    highest_resolution = min(self._scalr_resolution_limits.values())
+    highest_resolution = min(limit for limit, _ in self._scalr_resolution_limits.values())
 
     self._scalr_highest_resolution = highest_resolution
 
@@ -1181,7 +1181,7 @@ class XDSScalerA(Scaler):
       start, end = (min(input['batches']), max(input['batches']))
 
       rkey = input['dname'], input['sname']
-      run_resolution_limit = self._scalr_resolution_limits[rkey]
+      run_resolution_limit, _ = self._scalr_resolution_limits[rkey]
 
       sc.add_run(start, end, exclude = False,
                  resolution = run_resolution_limit,
@@ -1251,7 +1251,7 @@ class XDSScalerA(Scaler):
       start, end = (min(input['batches']), max(input['batches']))
 
       rkey = input['dname'], input['sname']
-      run_resolution_limit = self._scalr_resolution_limits[rkey]
+      run_resolution_limit, _ = self._scalr_resolution_limits[rkey]
 
       sc.add_run(start, end, exclude = False,
                  resolution = run_resolution_limit,

@@ -798,7 +798,6 @@ class CCP4ScalerA(Scaler):
     self._sort_together_data_ccp4()
 
     self._scalr_resolution_limits = { }
-    self._scalr_resolution_statistics = { } # resolution for 4th merging stats column
 
     # store central resolution limit estimates
 
@@ -855,7 +854,7 @@ class CCP4ScalerA(Scaler):
       start, end = si.get_batch_range()
 
       if (dname, sname) in self._scalr_resolution_limits:
-        resolution = self._scalr_resolution_limits[(dname, sname)]
+        resolution, _ = self._scalr_resolution_limits[(dname, sname)]
         sc.add_run(start, end, exclude = False,
                    resolution = resolution, name = sname)
       else:
@@ -960,55 +959,55 @@ class CCP4ScalerA(Scaler):
       start, end = si.get_batch_range()
 
       if (dname, sname) in user_resolution_limits:
-        resolution = user_resolution_limits[(dname, sname)]
-        self._scalr_resolution_limits[(dname, sname)] = resolution
-        if resolution < highest_resolution:
-          highest_resolution = resolution
+        limit = user_resolution_limits[(dname, sname)]
+        self._scalr_resolution_limits[(dname, sname)] = (limit, None)
+        if limit < highest_resolution:
+          highest_resolution = limit
         Chatter.write('Resolution limit for %s: %5.2f' % \
-                      (dname, resolution))
+                      (dname, limit))
         continue
 
       hklin = sc.get_unmerged_reflection_file()
-      resolution = self._estimate_resolution_limit(
-        hklin, batch_range=(start, end))
+      limit = self._estimate_resolution_limit(hklin, batch_range=(start, end))
 
       if PhilIndex.params.xia2.settings.resolution.keep_all_reflections == True:
-        self._scalr_resolution_statistics[(dname, sname)] = resolution
-        if highest_suggested_resolution is None or resolution < highest_suggested_resolution:
-          highest_suggested_resolution = resolution
-        resolution = intgr.get_detector().get_max_resolution(intgr.get_beam_obj().get_s0())
+        suggested = limit
+        if highest_suggested_resolution is None or limit < highest_suggested_resolution:
+          highest_suggested_resolution = limit
+        limit = intgr.get_detector().get_max_resolution(intgr.get_beam_obj().get_s0())
+        self._scalr_resolution_limits[(dname, sname)] = (limit, suggested)
         Debug.write('keep_all_reflections set, using detector limits')
       Debug.write('Resolution for sweep %s: %.2f' % \
-                  (sname, resolution))
+                  (sname, limit))
 
       if not (dname, sname) in self._scalr_resolution_limits:
-        self._scalr_resolution_limits[(dname, sname)] = resolution
+        self._scalr_resolution_limits[(dname, sname)] = (limit, None)
         self.set_scaler_done(False)
 
-      if resolution < highest_resolution:
-        highest_resolution = resolution
+      if limit < highest_resolution:
+        highest_resolution = limit
 
-      Chatter.write('Resolution limit for %s/%s: %5.2f' % \
-                    (dname, sname,
-                     self._scalr_resolution_limits[(dname, sname)]))
-      if (dname, sname) in self._scalr_resolution_statistics:
-        Chatter.write('Suggested resolution limit: %5.2f' % \
-          self._scalr_resolution_statistics[(dname, sname)] )
+      limit, suggested = self._scalr_resolution_limits[(dname, sname)]
+      if suggested is None or limit == suggested:
+        Chatter.write('Resolution limit for %s/%s: %5.2f' % \
+                      (dname, sname, limit))
+      else:
+        Chatter.write('Resolution limit for %s/%s: %5.2f (%5.2f suggested)' % \
+                      (dname, sname, limit, suggested))
 
     if highest_suggested_resolution is not None and \
-        highest_resolution <= (highest_suggested_resolution + 0.004):
+        highest_resolution >= (highest_suggested_resolution - 0.004):
       Debug.write('Dropping resolution cut-off suggestion since it is'
                   ' essentially identical to the actual resolution limit.')
       highest_suggested_resolution = None
-
     self._scalr_highest_resolution = highest_resolution
     self._scalr_highest_suggested_resolution = highest_suggested_resolution
-
-    Debug.write('Scaler highest resolution set to %5.2f' % \
+    if highest_suggested_resolution is not None:
+      Debug.write('Suggested highest resolution is %5.2f (%5.2f suggested)' % \
+                (highest_resolution, highest_suggested_resolution))
+    else:
+      Debug.write('Scaler highest resolution set to %5.2f' % \
                 highest_resolution)
-    if highest_suggested_resolution:
-      Debug.write('Suggested highest resolution is %5.2f' % \
-                  highest_suggested_resolution)
 
     if not self.get_scaler_done():
       Debug.write('Returning as scaling not finished...')
@@ -1038,7 +1037,7 @@ class CCP4ScalerA(Scaler):
       sname = si.get_sweep_name()
       start, end = si.get_batch_range()
 
-      resolution_limit = self._scalr_resolution_limits[(dname, sname)]
+      resolution_limit, _ = self._scalr_resolution_limits[(dname, sname)]
 
       sc.add_run(start, end, exclude = False,
                  resolution = resolution_limit, name = xname)
@@ -1119,7 +1118,7 @@ class CCP4ScalerA(Scaler):
       sname = si.get_sweep_name()
       start, end = si.get_batch_range()
 
-      resolution_limit = self._scalr_resolution_limits[(dname, sname)]
+      resolution_limit, _ = self._scalr_resolution_limits[(dname, sname)]
 
       sc.add_run(start, end, exclude = False,
                  resolution = resolution_limit, name = sname)
@@ -1182,7 +1181,7 @@ class CCP4ScalerA(Scaler):
       sname = si.get_sweep_name()
       start, end = si.get_batch_range()
 
-      resolution_limit = self._scalr_resolution_limits[(dname, sname)]
+      resolution_limit, _ = self._scalr_resolution_limits[(dname, sname)]
 
       sc.add_run(start, end, exclude = False,
                  resolution = resolution_limit, name = sname)
