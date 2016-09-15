@@ -26,6 +26,9 @@ def TwoThetaRefine(DriverType = None):
       DriverInstance.__class__.__init__(self)
 
       self.set_executable('dials.two_theta_refine')
+      self._reindexing_operator = None
+      self._reindexed_experiments = None
+      self._reindexed_reflections = None
 
       self._experiments = []
       self._pickles = []
@@ -68,11 +71,28 @@ def TwoThetaRefine(DriverType = None):
     def get_unit_cell_esd(self):
       return self._crystal.get_cell_parameter_sd()
 
-    def set_reindex_operator(self, reindex):
-      pass
+    def set_reindex_operator(self, operator):
+      self._reindexing_operator = operator
 
     def run(self):
       from xia2.Handlers.Streams import Chatter, Debug
+
+      if self._reindexing_operator:
+        Debug.write('Reindexing sweeps for dials.two_theta_refine')
+        from xia2.lib.bits import auto_logfiler
+        from xia2.Wrappers.Dials.Reindex import Reindex
+        self._reindexed_experiments, self._reindexed_reflections = [], []
+        for e, p in zip(self._experiments, self._pickles):
+          reindexer = Reindex()
+          reindexer.set_cb_op(self._reindexing_operator)
+          reindexer.set_experiments_filename(e)
+          reindexer.set_indexed_filename(p)
+          reindexer.set_working_directory(self.get_working_directory())
+          auto_logfiler(reindexer)
+          reindexer.run()
+          self._reindexed_experiments.append(reindexer.get_reindexed_experiments_filename())
+          self._reindexed_reflections.append(reindexer.get_reindexed_reflections_filename())
+
       Debug.write('Running dials.two_theta_refine')
 
       self._output_cif = os.path.join(
@@ -86,10 +106,17 @@ def TwoThetaRefine(DriverType = None):
         '%s_refined_cell.json' % self.get_xpid())
 
       self.clear_command_line()
-      for experiment in self._experiments:
-        self.add_command_line(experiment)
-      for pickle in self._pickles:
-        self.add_command_line(pickle)
+
+      if self._reindexing_operator:
+        for experiment in self._reindexed_experiments:
+          self.add_command_line(experiment)
+        for pickle in self._reindexed_reflections:
+          self.add_command_line(pickle)
+      else:
+        for experiment in self._experiments:
+          self.add_command_line(experiment)
+        for pickle in self._pickles:
+          self.add_command_line(pickle)
       self.add_command_line('output.cif=%s' % self._output_cif)
       if self._output_correlation_plot is not None:
         self.add_command_line(

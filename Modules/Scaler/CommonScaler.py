@@ -199,7 +199,7 @@ class CommonScaler(Scaler):
         p.decide_spacegroup()
         spacegroup = p.get_spacegroup()
         reindex_operator = p.get_spacegroup_reindex_operator()
-        self._spacegroup_reindex_operator = reindex_operator
+        self._spacegroup_reindex_operator = clean_reindex_operator(reindex_operator)
         Debug.write('Pointless thought %s (reindex as %s)' % \
                     (spacegroup, reindex_operator))
 
@@ -477,7 +477,7 @@ class CommonScaler(Scaler):
     self._scalr_likely_spacegroups = spacegroups
     spacegroup = self._scalr_likely_spacegroups[0]
 
-    self._scalr_reindex_operator = reindex_operator
+    self._scalr_reindex_operator = clean_reindex_operator(reindex_operator)
 
     Chatter.write('Likely spacegroups:')
     for spag in self._scalr_likely_spacegroups:
