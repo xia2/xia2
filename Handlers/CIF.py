@@ -10,6 +10,7 @@
 from __future__ import division
 import datetime
 import iotbx.cif.model
+import os.path
 import xia2.XIA2Version
 import xia2.Handlers.Citations
 
@@ -93,12 +94,11 @@ class _CIFHandler(object):
     '''Write CIF to file.'''
     # update audit information for citations
     self.collate_audit_information()
-    # self._cif.sort(recursive=True)
-    with open(self._outfile, 'w') as fh:
+
+    from Environment import Environment
+    data_directory = Environment.generate_directory('DataFiles')
+    with open(os.path.join(data_directory, self._outfile), 'w') as fh:
       self._cif.show(out=fh)
-#    self._cif.sort(key=iotbx.cif.category_sort_function)
-#    with open('xia2.cif.sort', 'w') as fh:
-#      self._cif.show(out=fh)
 
   def get_block(self, blockname=None):
     '''Creates (if necessary) and returns named CIF block'''

@@ -1325,7 +1325,11 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
 ''' % aimless
 
     if absmax - absmin > 0.000001:
-      generate_map(absmap, 'absorption_surface.png')
+      from xia2.Handlers.Environment import Environment
+      log_directory = Environment.generate_directory('LogFiles')
+      mapfile = os.path.join(log_directory, 'absorption_surface.png')
+      generate_map(absmap, mapfile)
+      FileHandler.record_data_file(mapfile)
     else:
       Debug.write("Cannot create absorption surface: map is too flat (min: %f, max: %f)" % (absmin, absmax))
 
