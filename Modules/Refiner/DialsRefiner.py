@@ -71,52 +71,7 @@ class DialsRefiner(Refiner):
     pass
 
   def _refine(self):
-
     for epoch, idxr in self._refinr_indexers.iteritems():
-      # decide what images we are going to process, if not already
-      # specified
-      #if not self._intgr_wedge:
-        #images = self.get_matching_images()
-        #self.set_integrater_wedge(min(images),
-                    #max(images))
-
-      #Debug.write('DIALS INTEGRATE PREPARE:')
-      #Debug.write('Wavelength: %.6f' % self.get_wavelength())
-      #Debug.write('Distance: %.2f' % self.get_distance())
-
-      #if not self._intgr_indexer:
-        #self.set_integrater_indexer(DialsIndexer())
-        #self.get_integrater_indexer().set_indexer_sweep(
-        #self.get_integrater_sweep())
-
-        #self._intgr_indexer.set_working_directory(
-        #self.get_working_directory())
-
-        #self._intgr_indexer.setup_from_imageset(self.get_imageset())
-
-        #if self.get_frame_wedge():
-        #wedge = self.get_frame_wedge()
-        #Debug.write('Propogating wedge limit: %d %d' % wedge)
-        #self._intgr_indexer.set_frame_wedge(wedge[0], wedge[1],
-                          #apply_offset = False)
-
-        ## this needs to be set up from the contents of the
-        ## Integrater frame processer - wavelength &c.
-
-        #if self.get_beam_centre():
-        #self._intgr_indexer.set_beam_centre(self.get_beam_centre())
-
-        #if self.get_distance():
-        #self._intgr_indexer.set_distance(self.get_distance())
-
-        #if self.get_wavelength():
-        #self._intgr_indexer.set_wavelength(
-          #self.get_wavelength())
-
-      # get the unit cell from this indexer to initiate processing
-      # if it is new... and also copy out all of the information for
-      # the Dials indexer if not...
-
       experiments = idxr.get_indexer_experiment_list()
 
       indexed_experiments = idxr.get_indexer_payload("experiments_filename")
@@ -160,46 +115,37 @@ class DialsRefiner(Refiner):
       crystal_model = experiments.crystals()[0]
       lattice = idxr.get_indexer_lattice()
 
-      # check if the lattice was user assigned...
-      user_assigned = idxr.get_indexer_user_input_lattice()
-
-      # XXX check that the indexer is an Dials indexer - if not then
-      # create one...
-
-      # set a low resolution limit (which isn't really used...)
-      # this should perhaps be done more intelligently from an
-      # analysis of the spot list or something...?
-
-      #if not self.get_integrater_low_resolution():
-
-        #dmax = idxr.get_indexer_low_resolution()
-        #self.set_integrater_low_resolution(dmax)
-
-        #Debug.write('Low resolution set to: %s' % \
-              #self.get_integrater_low_resolution())
-
-      ## copy the data across
-      from dxtbx.serialize import load, dump
+      from dxtbx.serialize import load
 
       refiner = self.Refine()
       refiner.set_experiments_filename(indexed_experiments)
       refiner.set_indexed_filename(indexed_reflections)
+      refiner.set_scan_varying(False)
+      refiner.run()
+      self._refinr_experiments_filename \
+        = refiner.get_refined_experiments_filename()
+      self._refinr_indexed_filename = refiner.get_refined_filename()
 
       # XXX Temporary workaround for dials.refine error for scan_varying
       # refinement with smaller wedges
       total_phi_range = idxr._indxr_imagesets[0].get_scan().get_oscillation_range()[1]
-      if total_phi_range < 5: # arbitrary value
-        refiner.set_scan_varying(False)
-      elif total_phi_range < 36:
-        refiner.set_interval_width_degrees(total_phi_range/2)
+
+      if (PhilIndex.params.dials.refine.scan_varying and total_phi_range > 5
+          and not PhilIndex.params.dials.fast_mode):
+
+        refiner = self.Refine()
+        refiner.set_experiments_filename(self._refinr_experiments_filename)
+        refiner.set_indexed_filename(self._refinr_indexed_filename)
+        if total_phi_range < 36:
+          refiner.set_interval_width_degrees(total_phi_range/2)
+        refiner.run()
+        self._refinr_experiments_filename \
+          = refiner.get_refined_experiments_filename()
+        self._refinr_indexed_filename = refiner.get_refined_filename()
 
       FileHandler.record_log_file('%s REFINE' % idxr.get_indexer_full_name(),
                                   refiner.get_log_file())
-      refiner.run()
-      self._refinr_experiments_filename \
-        = refiner.get_refined_experiments_filename()
       experiments = load.experiment_list(self._refinr_experiments_filename)
-      self._refinr_indexed_filename = refiner.get_refined_filename()
       self.set_refiner_payload("experiments.json", self._refinr_experiments_filename)
       self.set_refiner_payload("reflections.pickle", self._refinr_indexed_filename)
 
