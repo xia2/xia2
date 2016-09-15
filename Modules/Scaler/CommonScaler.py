@@ -36,6 +36,7 @@ class CommonScaler(Scaler):
     self._sweep_handler = None
     self._scalr_twinning_score = None
     self._scalr_twinning_conclusion = None
+    self._spacegroup_reindex_operator = None
 
   def _sort_together_data_ccp4(self):
     '''Sort together in the right order (rebatching as we go) the sweeps
@@ -192,21 +193,13 @@ class CommonScaler(Scaler):
 
         spacegroup = self._scalr_input_spacegroup
         reindex_operator = 'h,k,l'
-
-      elif False and PhilIndex.params.xia2.settings.small_molecule == True: ## FIXME: This still needed?
-        p.decide_pointgroup()
-        spacegroup = p.get_pointgroup()
-        reindex_operator = p.get_reindex_operator()
-
-        Debug.write('Pointless thought %s (reindex as %s)' % \
-                    (spacegroup, reindex_operator))
-        self._scalr_likely_spacegroups = [spacegroup]
+        self._spacegroup_reindex_operator = reindex_operator
 
       else:
         p.decide_spacegroup()
         spacegroup = p.get_spacegroup()
         reindex_operator = p.get_spacegroup_reindex_operator()
-
+        self._spacegroup_reindex_operator = reindex_operator
         Debug.write('Pointless thought %s (reindex as %s)' % \
                     (spacegroup, reindex_operator))
 

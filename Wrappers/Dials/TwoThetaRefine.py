@@ -14,7 +14,7 @@ import os
 from __init__ import _setup_xia2_environ
 _setup_xia2_environ()
 
-def RefineTwoTheta(DriverType = None):
+def TwoThetaRefine(DriverType = None):
   '''A factory for RefineWrapper classes.'''
 
   from xia2.Driver.DriverFactory import DriverFactory
@@ -67,6 +67,9 @@ def RefineTwoTheta(DriverType = None):
 
     def get_unit_cell_esd(self):
       return self._crystal.get_cell_parameter_sd()
+
+    def set_reindex_operator(self, reindex):
+      pass
 
     def run(self):
       from xia2.Handlers.Streams import Chatter, Debug
