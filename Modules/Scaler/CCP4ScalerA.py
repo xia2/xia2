@@ -1205,7 +1205,7 @@ class CCP4ScalerA(Scaler):
     # FIXME this could be brought in-house
 
     if PhilIndex.params.xia2.settings.integrater == 'dials':
-      from xia2.Wrappers.Dials.TwoThetaRefine import RefineTwoTheta
+      from xia2.Wrappers.Dials.TwoThetaRefine import TwoThetaRefine
       from xia2.lib.bits import auto_logfiler
 
       Chatter.banner('Unit cell refinement')
@@ -1223,7 +1223,7 @@ class CCP4ScalerA(Scaler):
 
       # Two theta refine the unit cell for each group
       for pi in groups.keys():
-        tt_grouprefiner = RefineTwoTheta()
+        tt_grouprefiner = TwoThetaRefine()
         tt_grouprefiner.set_working_directory(self.get_working_directory())
         auto_logfiler(tt_grouprefiner)
         files = zip(*groups[pi])
@@ -1231,6 +1231,7 @@ class CCP4ScalerA(Scaler):
         tt_grouprefiner.set_pickles(files[1])
         tt_refine_experiments.extend(files[0])
         tt_refine_pickles.extend(files[1])
+        tt_grouprefiner.set_reindex_operator(self._spacegroup_reindex_operator)
         tt_grouprefiner.run()
         Chatter.write('%s: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
           tuple([''.join(pi.split('_')[2:])] + list(tt_grouprefiner.get_unit_cell())))
@@ -1247,11 +1248,12 @@ class CCP4ScalerA(Scaler):
 
       # Two theta refine everything together
       if len(groups) > 1:
-        tt_refiner = RefineTwoTheta()
+        tt_refiner = TwoThetaRefine()
         tt_refiner.set_working_directory(self.get_working_directory())
         auto_logfiler(tt_refiner)
         tt_refiner.set_experiments(tt_refine_experiments)
         tt_refiner.set_pickles(tt_refine_pickles)
+        tt_refiner.set_reindex_operator(self._spacegroup_reindex_operator)
         tt_refiner.run()
         self._scalr_cell = tt_refiner.get_unit_cell()
         Chatter.write('Overall: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % tt_refiner.get_unit_cell())
