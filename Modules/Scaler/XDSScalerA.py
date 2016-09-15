@@ -1129,11 +1129,11 @@ class XDSScalerA(Scaler):
       Chatter.write('Resolution for sweep %s/%s: %.2f' % \
                     (dname, sname, resolution))
 
-      if not (dname, sname) in self._scalr_resolution_limits:
+      if (dname, sname) not in self._scalr_resolution_limits:
         self._scalr_resolution_limits[(dname, sname)] = (resolution, None)
         self.set_scaler_done(False)
       else:
-        if resolution < self._scalr_resolution_limits[(dname, sname)]:
+        if resolution < self._scalr_resolution_limits[(dname, sname)][0]:
           self._scalr_resolution_limits[(dname, sname)] = (resolution, None)
           self.set_scaler_done(False)
 
