@@ -121,6 +121,11 @@ def load_imagesets(template, directory, id_image=None, image_range=None,
     if reference_geometry is not None and len(reference_geometry) > 0:
       update_with_reference_geometry(imagesets, reference_geometry)
 
+    from dials.command_line.dials_import import ManualGeometryUpdater
+    update_geometry = ManualGeometryUpdater(
+      PhilIndex.params.xia2.settings.input)
+    imagesets = [update_geometry(imageset) for imageset in imagesets]
+
     for imageset in imagesets:
       scan = imageset.get_scan()
       _id_image = scan.get_image_range()[0]
