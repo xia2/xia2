@@ -587,7 +587,7 @@ def detailed_statistics_section(xproject):
       headers = [' ', 'Overall', 'Low', 'High']
       width = 3
       if 'Completeness' in statistics and len(statistics['Completeness']) == 4:
-        headers = [' ', 'Overall', 'Low', 'High', 'Suggested']
+        headers = [' ', 'Suggested', 'Low', 'High', 'All reflections']
         width = 4
 
       available = statistics.keys()
@@ -619,9 +619,12 @@ def detailed_statistics_section(xproject):
 
       for k in formats.keys():
         if k in available:
-          values = [formats[k] % v for v in statistics[k]]
+          values = [(formats[k] % v if v is not None else '') for v in statistics[k]]
           if len(values) == 1:
-            values = [values[0]] + [''] * (width - 1)
+            if width == 3: # number goes in the first column
+              values = [values[0]] + [''] * (width - 1)
+            else: # number goes in the last column
+              values = [''] * (width - 1) + [values[0]]
           assert len(values) == width
           table.append([k] + values)
 

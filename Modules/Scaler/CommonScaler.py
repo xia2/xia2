@@ -897,8 +897,8 @@ class CommonScaler(Scaler):
 
     return resolution
 
-  def _compute_scaler_statistics(self, scaled_unmerged_mtz, added_band=None):
-    ''' added_band = (d_min, d_max) with None for automatic determination. '''
+  def _compute_scaler_statistics(self, scaled_unmerged_mtz, selected_band=None):
+    ''' selected_band = (d_min, d_max) with None for automatic determination. '''
     # mapping of expected dictionary names to iotbx.merging_statistics attributes
     key_to_var = {
       'I/sigma': 'i_over_sigma_mean',
@@ -925,7 +925,7 @@ class CommonScaler(Scaler):
     }
 
     stats = {}
-    extra_result, extra_anom_result = None, None
+    select_result, select_anom_result = None, None
 
     # don't call self.get_scaler_likely_spacegroups() since that calls
     # self.scale() which introduced a subtle bug
@@ -935,10 +935,11 @@ class CommonScaler(Scaler):
     result = self._iotbx_merging_statistics(
       scaled_unmerged_mtz, anomalous=False)
 
-    if added_band and any(added_band):
-      extra_result = self._iotbx_merging_statistics(
+    four_column_output = selected_band and any(selected_band)
+    if four_column_output:
+      select_result = self._iotbx_merging_statistics(
         scaled_unmerged_mtz, anomalous=False,
-        d_min=added_band[0], d_max=added_band[1])
+        d_min=selected_band[0], d_max=selected_band[1])
 
     if sg.is_centric():
       anom_result = None
@@ -946,25 +947,29 @@ class CommonScaler(Scaler):
     else:
       anom_result = self._iotbx_merging_statistics(
         scaled_unmerged_mtz, anomalous=True)
-      stats['Anomalous slope'] = (anom_result.anomalous_np_slope, 0, 0)
-      if added_band and any(added_band):
-        extra_anom_result = self._iotbx_merging_statistics(
+      stats['Anomalous slope'] = [anom_result.anomalous_np_slope]
+      if four_column_output:
+        select_anom_result = self._iotbx_merging_statistics(
           scaled_unmerged_mtz, anomalous=True,
-          d_min=added_band[0], d_max=added_band[1])
-        stats['Anomalous slope'] = (anom_result.anomalous_np_slope, 0, 0, 0)
+          d_min=selected_band[0], d_max=selected_band[1])
 
     import cStringIO as StringIO
     result_cache = StringIO.StringIO()
     result.show(out=result_cache)
 
-    for d, r, e in ((key_to_var, result, extra_result), (anom_key_to_var, anom_result, extra_anom_result)):
+    for d, r, s in ((key_to_var, result, select_result), (anom_key_to_var, anom_result, select_anom_result)):
       for k, v in d.iteritems():
-        values = (
-          getattr(r.overall, v),
-          getattr(r.bins[0], v),
-          getattr(r.bins[-1], v))
-        if e:
-          values = values + (getattr(e.overall, v),)
+        if four_column_output:
+          values = (
+            getattr(s.overall, v),
+            getattr(s.bins[0], v),
+            getattr(s.bins[-1], v),
+            getattr(r.overall, v))
+        else:
+          values = (
+            getattr(r.overall, v),
+            getattr(r.bins[0], v),
+            getattr(r.bins[-1], v))
         if 'completeness' in v:
           values = [v_ * 100 for v_ in values]
         if values[0] is not None:

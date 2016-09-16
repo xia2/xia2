@@ -259,19 +259,31 @@ formats = OrderedDict([
 ])
 
 
-def format_statistics(statistics):
+def format_statistics(statistics, caption=None):
   '''Format for printing statistics from data processing, removing from
   the main XCrystal __repr__ method. See DLS #1291'''
 
   available = statistics.keys()
 
   result = ''
+  columns = len(statistics.get('Completeness', [1,2,3]))
+  if caption:
+    result += caption.ljust(44)
+    if columns == 3:
+      result += " Overall    Low     High"
+    elif columns == 4:
+      result += "Suggested   Low    High  Overall"
+    result += '\n'
 
   for k, format_str in formats.iteritems():
     if k in available:
-      expanded_format_str = " ".join([format_str] + [format_str.strip()] * (len(statistics[k])-1))
       try:
-        formatted = expanded_format_str % tuple(statistics[k])
+        row_data = statistics[k]
+        if columns == 4 and len(row_data) == 1: # place value in suggest column
+          row_data = [None] * (columns - 1) + row_data
+        row_format = [format_str] + [format_str.strip()] * (len(row_data)-1)
+        formatted = " ".join((f % k) if k is not None else (' ' * len(f % 0))
+                             for f, k in zip(row_format, row_data))
       except TypeError:
         formatted = '(error)'
       result += k.ljust(44) + formatted + '\n'
@@ -466,8 +478,7 @@ class XCrystal(object):
     # print some of these statistics, perhaps?
 
     for key in statistics_all.keys():
-      result += 'For %s/%s/%s\n' % key
-      result += format_statistics(statistics_all[key])
+      result += format_statistics(statistics_all[key], caption='For %s/%s/%s' % key)
 
     # then print out some "derived" information based on the
     # scaling - this is presented through the Scaler interface
