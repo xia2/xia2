@@ -1164,7 +1164,7 @@ class CCP4ScalerA(Scaler):
       for key in self._scalr_scaled_refl_files:
         stats = self._compute_scaler_statistics(
           self._scalr_scaled_reflection_files['mtz_unmerged'][key],
-          added_band=(highest_suggested_resolution, None))
+          selected_band=(highest_suggested_resolution, None))
         self._scalr_statistics[
           (self._scalr_pname, self._scalr_xname, key)] = stats
 
