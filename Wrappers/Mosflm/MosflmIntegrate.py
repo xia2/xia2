@@ -286,7 +286,6 @@ def MosflmIntegrate(DriverType = None, indxr_print = True):
       # add an extra chunk of orientation refinement
 
       # XXX FIXME
-      from xia2.Handlers.Flags import Flags
       if self._pre_refinement:
         a, b = self._image_range
         if b - a > 3:

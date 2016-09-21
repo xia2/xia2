@@ -8,7 +8,6 @@
 
 from xia2.Schema.Interfaces.Refiner import Refiner
 from xia2.Handlers.Streams import Debug, Chatter, Journal
-from xia2.Handlers.Flags import Flags
 
 import os
 import math

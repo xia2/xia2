@@ -31,9 +31,6 @@ from XDSIdxrefHelpers import _parse_idxref_lp, _parse_idxref_lp_distance_etc, \
 
 from xia2.Experts.LatticeExpert import SortLattices
 
-# global flags
-from xia2.Handlers.Flags import Flags
-
 # helpful expertise from elsewhere
 from xia2.Experts.SymmetryExpert import lattice_to_spacegroup_number
 from xia2.Experts.LatticeExpert import s2l

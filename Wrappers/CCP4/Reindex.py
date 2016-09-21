@@ -23,7 +23,6 @@ from xia2.Decorators.DecoratorFactory import DecoratorFactory
 from xia2.Handlers.Syminfo import Syminfo
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import Debug
-from xia2.Handlers.Flags import Flags
 
 def Reindex(DriverType = None):
   '''A new factory for ReindexWrapper classes, which will actually use

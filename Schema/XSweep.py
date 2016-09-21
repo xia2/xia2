@@ -86,7 +86,6 @@ import time
 
 from xia2.Handlers.Streams import Chatter, Debug
 from xia2.Handlers.Files import FileHandler
-from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Environment import Environment
 from xia2.Handlers.Phil import PhilIndex
 

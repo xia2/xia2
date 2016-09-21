@@ -18,7 +18,6 @@ import math
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
 from xia2.Handlers.Streams import Chatter, Debug
-from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Experts.ResolutionExperts import linear
 

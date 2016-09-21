@@ -10,8 +10,6 @@
 
 from __future__ import division
 
-from xia2.Handlers.Flags import Flags
-
 def ExportBest(DriverType = None):
   '''A factory for ExportMtzWrapper classes.'''
 

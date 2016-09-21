@@ -5,7 +5,6 @@
 #   included in the root directory of this package.
 
 from XSweep import XSweep
-from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Streams import Chatter
 
 class XSample(object):

@@ -12,7 +12,6 @@ from __future__ import division
 import os
 import shutil
 
-from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Phil import PhilIndex
 
 def DiscoverBetterExperimentalModel(DriverType = None):

@@ -30,7 +30,6 @@
 #                 reduce the least damaged data first.
 
 from XSweep import XSweep
-from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Streams import Chatter
 
 class XWavelength(object):

@@ -15,7 +15,6 @@ import sys
 import math
 
 from xia2.Driver.DriverFactory import DriverFactory
-from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Phil import PhilIndex
 
 def Cellparm(DriverType = None):

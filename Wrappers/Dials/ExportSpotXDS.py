@@ -20,9 +20,6 @@ from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 # generic helper stuff
 from xia2.Handlers.Streams import Debug
 
-# global flags
-from xia2.Handlers.Flags import Flags
-
 from libtbx import phil
 import libtbx
 

@@ -126,7 +126,6 @@ from xia2.Decorators.DecoratorFactory import DecoratorFactory
 
 from xia2.Handlers.Syminfo import Syminfo
 from xia2.Handlers.Streams import Chatter, Debug
-from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Phil import PhilIndex
 
 # this was rather complicated - now simpler!

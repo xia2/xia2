@@ -41,7 +41,6 @@ from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Experts.LatticeExpert import ApplyLattice
 from xia2.Handlers.Syminfo import Syminfo
 from xia2.Handlers.Streams import Chatter
-from xia2.Handlers.Flags import Flags
 
 from xia2.lib.SymmetryLib import lauegroup_to_lattice
 

@@ -13,8 +13,6 @@ from __future__ import division
 from __init__ import _setup_xia2_environ
 _setup_xia2_environ()
 
-from xia2.Handlers.Flags import Flags
-
 def ExportMtz(DriverType = None):
   '''A factory for ExportMtzWrapper classes.'''
 

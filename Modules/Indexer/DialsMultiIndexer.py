@@ -17,7 +17,6 @@ from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
 # odds and sods that are needed
 
 from xia2.Handlers.Streams import Debug
-from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Phil import PhilIndex
 
 class DialsMultiIndexer(DialsIndexer, MultiIndexer):

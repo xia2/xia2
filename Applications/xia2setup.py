@@ -25,7 +25,6 @@ import traceback
 
 from ..Experts.FindImages import image2template_directory
 from ..Handlers.CommandLine import CommandLine
-from ..Handlers.Flags import Flags
 from ..Handlers.Phil import PhilIndex
 from ..Modules.LabelitBeamCentre import compute_beam_centre
 from ..Handlers.Streams import streams_off

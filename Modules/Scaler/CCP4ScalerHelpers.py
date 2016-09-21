@@ -22,7 +22,6 @@ from xia2.Wrappers.CCP4.Rebatch import Rebatch
 from xia2.lib.bits import auto_logfiler
 from xia2.Handlers.Streams import Debug
 from xia2.Handlers.Files import FileHandler
-from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Experts.ResolutionExperts import remove_blank
 

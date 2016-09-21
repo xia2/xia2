@@ -15,8 +15,6 @@ import os
 from __init__ import _setup_xia2_environ
 _setup_xia2_environ()
 
-from xia2.Handlers.Flags import Flags
-
 def CheckIndexingSymmetry(DriverType = None):
   '''A factory for CheckIndexingSymmetryWrapper classes.'''
 

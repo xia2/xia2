@@ -20,7 +20,6 @@ from XDSIndexer import XDSIndexer
 # odds and sods that are needed
 
 from xia2.Handlers.Streams import Debug
-from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Phil import PhilIndex
 
 # FIXME need to put in access here to Phil parameters to know how wide to make

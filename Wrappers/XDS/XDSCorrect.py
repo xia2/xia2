@@ -31,8 +31,6 @@ from XDSCorrectHelpers import _parse_correct_lp
 from xia2.Experts.ResolutionExperts import xds_integrate_hkl_to_list, \
      bin_o_tron, digest
 
-# global flags
-from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Streams import Debug
 from xia2.Handlers.Phil import PhilIndex
 

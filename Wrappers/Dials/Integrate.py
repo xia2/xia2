@@ -11,7 +11,6 @@
 from __future__ import division
 import os
 
-from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Phil import PhilIndex
 
 def Integrate(DriverType = None):

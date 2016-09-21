@@ -46,7 +46,6 @@ class XDSIndexException(XDSException):
     return
 
 from xia2.Handlers.Streams import Debug
-from xia2.Handlers.Flags import Flags
 
 from dxtbx.format.FormatPilatusHelpers import pilatus_6M_mask, \
      pilatus_2M_mask, pilatus_300K_mask

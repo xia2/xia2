@@ -39,7 +39,6 @@ from xia2.Wrappers.CCP4.Reindex import Reindex
 from xia2.lib.bits import auto_logfiler
 from xia2.lib.SymmetryLib import lattice_to_spacegroup
 from xia2.Handlers.Streams import Chatter, Debug, Journal
-from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
 

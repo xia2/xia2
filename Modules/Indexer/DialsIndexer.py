@@ -39,7 +39,6 @@ from xia2.Schema.Interfaces.Indexer import Indexer
 
 from xia2.lib.bits import auto_logfiler, nint
 from xia2.Handlers.Streams import Chatter, Debug, Journal
-from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Files import FileHandler
 from xia2.Experts.SymmetryExpert import lattice_to_spacegroup_number

@@ -22,9 +22,6 @@ from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 from XDS import xds_check_version_supported
 from xia2.Handlers.Streams import Debug
 
-# global flags
-from xia2.Handlers.Flags import Flags
-
 import libtbx
 
 def Merge2cbf(DriverType=None, params=None):

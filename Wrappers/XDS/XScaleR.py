@@ -18,7 +18,6 @@ import shutil
 from xia2.Driver.DriverFactory import DriverFactory
 from XDS import xds_check_error
 
-from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Streams import Debug
 from xia2.Handlers.Phil import PhilIndex
 from XScaleHelpers import get_correlation_coefficients_and_group

@@ -72,7 +72,6 @@ from xia2.Handlers.Environment import Environment
 from xia2.Modules.Scaler.ScalerFactory import Scaler
 from xia2.Modules.Refiner.RefinerFactory import Refiner
 from xia2.Handlers.Syminfo import Syminfo
-from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import banner

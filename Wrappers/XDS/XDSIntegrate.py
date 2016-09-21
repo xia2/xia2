@@ -27,8 +27,6 @@ from XDS import imageset_to_xds, xds_check_version_supported, xds_check_error, \
 from XDSIntegrateHelpers import _parse_integrate_lp, \
     _parse_integrate_lp_updates
 
-# global flags etc.
-from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Streams import Chatter, Debug
 from xia2.Handlers.Phil import PhilIndex
 

@@ -22,7 +22,6 @@ from xia2.Schema.XSample import XSample
 # .xinfo parser
 
 from xia2.Handlers.XInfo import XInfo
-from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Syminfo import Syminfo
 from xia2.Handlers.Phil import PhilIndex
 

@@ -13,7 +13,6 @@ import sys
 import math
 import os
 
-from xia2.Handlers.Flags import Flags
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Streams import Debug
 

@@ -42,7 +42,6 @@ from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
 
 from xia2.DriverExceptions.NotAvailableError import NotAvailableError
 from xia2.Handlers.Streams import Debug
-from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.PipelineSelection import get_preferences
 

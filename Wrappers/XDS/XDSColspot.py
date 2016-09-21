@@ -21,10 +21,7 @@ from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 from XDS import imageset_to_xds, xds_check_version_supported, template_to_xds
 from xia2.Handlers.Streams import Debug
 
-# global flags
-from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Phil import PhilIndex
-
 
 def XDSColspot(DriverType=None, params=None):
 

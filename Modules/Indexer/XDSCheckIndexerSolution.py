@@ -19,7 +19,6 @@ import sys
 # xia2 stuff...
 
 from xia2.Handlers.Streams import Debug
-from xia2.Handlers.Flags import Flags
 from xia2.lib.bits import nint
 
 # cctbx stuff

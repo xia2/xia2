@@ -22,7 +22,6 @@ from xia2.Schema.Interfaces.Integrater import Integrater
 # output streams &c.
 from xia2.Handlers.Streams import Chatter, Debug, Journal
 from xia2.Handlers.Citations import Citations
-from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
 

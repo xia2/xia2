@@ -19,7 +19,6 @@ import sys
 from xia2.Wrappers.XIA.Printpeaks import Printpeaks
 from xia2.Wrappers.XIA.Diffdump import Diffdump
 from xia2.Handlers.Streams import Debug
-from xia2.Handlers.Flags import Flags
 from xia2.lib.bits import nint
 from xia2.Experts.MatrixExpert import format_matrix
 from xia2.Experts.LatticeExpert import l2s, s2l

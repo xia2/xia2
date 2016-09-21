@@ -8,7 +8,6 @@
 
 from xia2.Schema.Interfaces.Refiner import Refiner
 from xia2.Handlers.Streams import Debug, Chatter
-from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Files import FileHandler
 

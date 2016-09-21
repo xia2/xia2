@@ -10,7 +10,6 @@
 
 from __future__ import division
 
-from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Phil import PhilIndex
 
 def RefineBravaisSettings(DriverType = None):

@@ -24,7 +24,6 @@ from xia2.Experts.FindImages import image2template, find_matching_images, \
      template_directory_number2image, image2template_directory, \
      headers2sweeps, headers2sweep_ids
 
-from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Phil import PhilIndex
 
 def SweepFactory(template, directory, beam = None):

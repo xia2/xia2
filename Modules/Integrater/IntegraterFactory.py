@@ -14,7 +14,6 @@ import sys
 import copy
 
 from xia2.Handlers.Streams import Debug
-from xia2.Handlers.Flags import Flags
 from xia2.Handlers.PipelineSelection import get_preferences, add_preference
 from xia2.Handlers.Phil import PhilIndex
 

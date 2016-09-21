@@ -23,7 +23,6 @@ from xia2.Wrappers.CCP4.Pointless import Pointless
 from xia2.Wrappers.CCP4.Mtzdump import Mtzdump
 from xia2.Wrappers.CCP4.Rebatch import Rebatch
 from xia2.Handlers.Streams import Debug
-from xia2.Handlers.Flags import Flags
 
 # global parameters
 
