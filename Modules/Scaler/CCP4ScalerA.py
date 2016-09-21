@@ -1205,7 +1205,7 @@ class CCP4ScalerA(Scaler):
   def _update_scaled_unit_cell(self):
     # FIXME this could be brought in-house
 
-    if PhilIndex.params.xia2.settings.integrater == 'dials':
+    if PhilIndex.params.xia2.settings.integrater == 'dials' and not Flags.get_quick():
       from xia2.Wrappers.Dials.TwoThetaRefine import TwoThetaRefine
       from xia2.lib.bits import auto_logfiler
 
