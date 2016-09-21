@@ -424,6 +424,7 @@ class _CommandLine(object):
     if '-quick' in self._argv:
       Flags.set_quick(True)
       Debug.write('Quick mode selected')
+      PhilIndex.update("dials.fast_mode=True")
       self._understood.append(self._argv.index('-quick'))
 
   def _read_pipeline(settings):
