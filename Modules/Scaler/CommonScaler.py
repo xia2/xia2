@@ -935,6 +935,12 @@ class CommonScaler(Scaler):
     result = self._iotbx_merging_statistics(
       scaled_unmerged_mtz, anomalous=False)
 
+    from xia2.Handlers.Environment import Environment
+    log_directory = Environment.generate_directory('LogFiles')
+    merging_stats_file = os.path.join(log_directory, 'merging-statistics.txt')
+    with open(merging_stats_file, 'w') as fh:
+      result.show(out=fh)
+
     four_column_output = selected_band and any(selected_band)
     if four_column_output:
       select_result = self._iotbx_merging_statistics(
