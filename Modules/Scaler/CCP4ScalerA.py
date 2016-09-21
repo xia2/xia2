@@ -1199,7 +1199,8 @@ class CCP4ScalerA(Scaler):
     if self.get_scaler_anomalous():
       sc.set_anomalous()
     sc.scale()
-    self._generate_absorption_map(sc)
+    if not Flags.get_quick():
+      self._generate_absorption_map(sc)
 
   def _update_scaled_unit_cell(self):
     # FIXME this could be brought in-house
