@@ -1164,7 +1164,7 @@ class CCP4ScalerA(Scaler):
       for key in self._scalr_scaled_refl_files:
         stats = self._compute_scaler_statistics(
           self._scalr_scaled_reflection_files['mtz_unmerged'][key],
-          selected_band=(highest_suggested_resolution, None))
+          selected_band=(highest_suggested_resolution, None), wave=key)
         self._scalr_statistics[
           (self._scalr_pname, self._scalr_xname, key)] = stats
 
@@ -1199,12 +1199,13 @@ class CCP4ScalerA(Scaler):
     if self.get_scaler_anomalous():
       sc.set_anomalous()
     sc.scale()
-    self._generate_absorption_map(sc)
+    if not Flags.get_quick():
+      self._generate_absorption_map(sc)
 
   def _update_scaled_unit_cell(self):
     # FIXME this could be brought in-house
 
-    if PhilIndex.params.xia2.settings.integrater == 'dials':
+    if PhilIndex.params.xia2.settings.integrater == 'dials' and not Flags.get_quick():
       from xia2.Wrappers.Dials.TwoThetaRefine import TwoThetaRefine
       from xia2.lib.bits import auto_logfiler
 

@@ -897,7 +897,7 @@ class CommonScaler(Scaler):
 
     return resolution
 
-  def _compute_scaler_statistics(self, scaled_unmerged_mtz, selected_band=None):
+  def _compute_scaler_statistics(self, scaled_unmerged_mtz, selected_band=None, wave=None):
     ''' selected_band = (d_min, d_max) with None for automatic determination. '''
     # mapping of expected dictionary names to iotbx.merging_statistics attributes
     key_to_var = {
@@ -934,6 +934,13 @@ class CommonScaler(Scaler):
 
     result = self._iotbx_merging_statistics(
       scaled_unmerged_mtz, anomalous=False)
+
+    from xia2.Handlers.Environment import Environment
+    log_directory = Environment.generate_directory('LogFiles')
+    merging_stats_file = '%s_%s%s_merging-statistics.txt' % (
+      self._scalr_pname, self._scalr_xname, '' if wave is None else '_%s' % wave)
+    with open(os.path.join(log_directory, merging_stats_file), 'w') as fh:
+      result.show(out=fh)
 
     four_column_output = selected_band and any(selected_band)
     if four_column_output:

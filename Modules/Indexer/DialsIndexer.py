@@ -394,7 +394,7 @@ class DialsIndexer(Indexer):
     return
 
   def _index(self):
-    if PhilIndex.params.dials.index.method is None:
+    if PhilIndex.params.dials.index.method in (libtbx.Auto, None):
       if self._indxr_input_cell is not None:
         indexer = self._do_indexing("real_space_grid_search")
       else:

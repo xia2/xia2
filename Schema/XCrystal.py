@@ -517,18 +517,21 @@ class XCrystal(object):
         result += '%s\n' % sg
 
     if cell_esd:
-      def format_value_with_esd(value, esd, decimal_places):
-        value = "%%.%df" % decimal_places % value
-        esd_value = round(esd * (10 ** decimal_places))
-        if esd_value == 0:
-          return value, ""
-        else:
-          return value, "(%d)" % esd_value
-      formatted_cell_esds = tuple(format_value_with_esd(v, sd, 4) for v, sd in zip(cell, cell_esd))
-      alignment = tuple(max(len(i) for i in s) for s in zip(*formatted_cell_esds))
-      formatted_cell_esds = tuple("%%%ds%%-%ds" % alignment % param for param in formatted_cell_esds)
+      from libtbx.utils import format_float_with_standard_uncertainty
+      def match_formatting(dimA, dimB):
+        def conditional_split(s):
+          return (s[:s.index('.')],s[s.index('.'):]) if '.' in s else (s, '')
+        A, B = conditional_split(dimA), conditional_split(dimB)
+        maxlen = (max(len(A[0]), len(B[0])), max(len(A[1]), len(B[1])))
+        return (
+          A[0].rjust(maxlen[0])+A[1].ljust(maxlen[1]),
+          B[0].rjust(maxlen[0])+B[1].ljust(maxlen[1])
+        )
+      formatted_cell_esds = tuple(format_float_with_standard_uncertainty(v, sd) for v, sd in zip(cell, cell_esd))
+      formatted_rows = (formatted_cell_esds[0:3], formatted_cell_esds[3:6])
+      formatted_rows = zip(*(match_formatting(l, a) for l, a in zip(*formatted_rows)))
       result += 'Unit cell (with estimated std devs):\n'
-      result += '%s %s %s\n%s %s %s\n' % formatted_cell_esds
+      result += '%s %s %s\n%s %s %s\n' % (formatted_rows[0] + formatted_rows[1])
     else:
       result += 'Unit cell:\n'
       result += '%7.3f %7.3f %7.3f\n%7.3f %7.3f %7.3f\n' % tuple(cell)

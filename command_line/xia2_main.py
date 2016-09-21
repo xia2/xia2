@@ -227,7 +227,7 @@ def xia2_main(stop_after=None):
   xinfo.as_json(filename='xia2.json')
 
   if stop_after not in ('index', 'integrate'):
-    Chatter.write(xinfo.get_output())
+    Chatter.write(xinfo.get_output(), strip=False)
 
   for crystal in crystals.values():
     crystal.serialize()
