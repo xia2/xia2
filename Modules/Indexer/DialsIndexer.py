@@ -317,60 +317,61 @@ class DialsIndexer(Indexer):
         raise RuntimeError('No spots found in sweep %s' %xsweep.get_name())
       Chatter.write(spot_counts_per_image_plot(refl), strip=False)
 
-      detectblanks = self.DetectBlanks()
-      detectblanks.set_sweep_filename(datablocks[-1])
-      detectblanks.set_reflections_filename(spot_filename)
-      detectblanks.run()
-      json = detectblanks.get_results()
-      offset = imageset.get_scan().get_image_range()[0]
-      blank_regions = json['strong']['blank_regions']
-      if len(blank_regions):
-        blank_regions = [(int(s), int(e)) for s, e in blank_regions]
-        for blank_start, blank_end in blank_regions:
-          Chatter.write('WARNING: Potential blank images: %i -> %i' %(
-            blank_start+1, blank_end))
-
-        if PhilIndex.params.xia2.settings.remove_blanks:
-          non_blanks = []
-          start, end = imageset.get_array_range()
-          last_blank_end = start
+      if not PhilIndex.params.dials.fast_mode:
+        detectblanks = self.DetectBlanks()
+        detectblanks.set_sweep_filename(datablocks[-1])
+        detectblanks.set_reflections_filename(spot_filename)
+        detectblanks.run()
+        json = detectblanks.get_results()
+        offset = imageset.get_scan().get_image_range()[0]
+        blank_regions = json['strong']['blank_regions']
+        if len(blank_regions):
+          blank_regions = [(int(s), int(e)) for s, e in blank_regions]
           for blank_start, blank_end in blank_regions:
-            if blank_start > start:
-              non_blanks.append((last_blank_end, blank_start))
-            last_blank_end = blank_end
+            Chatter.write('WARNING: Potential blank images: %i -> %i' %(
+              blank_start+1, blank_end))
 
-          if last_blank_end+1 < end:
-            non_blanks.append((last_blank_end, end))
+          if PhilIndex.params.xia2.settings.remove_blanks:
+            non_blanks = []
+            start, end = imageset.get_array_range()
+            last_blank_end = start
+            for blank_start, blank_end in blank_regions:
+              if blank_start > start:
+                non_blanks.append((last_blank_end, blank_start))
+              last_blank_end = blank_end
 
-          xsweep = self.get_indexer_sweep()
-          xwav = xsweep.get_wavelength()
-          xsample = xsweep.get_xsample()
+            if last_blank_end+1 < end:
+              non_blanks.append((last_blank_end, end))
 
-          sweep_name = xsweep.get_name()
-          import string
-          for i, (nb_start, nb_end) in enumerate(non_blanks):
-            assert i < 26
-            if i == 0:
-              sub_imageset = imageset[nb_start-start:nb_end-start]
-              xsweep._frames_to_process = (nb_start+1, nb_end+1)
-              self.set_indexer_prepare_done(done=False)
-              self._indxr_imagesets[self._indxr_imagesets.index(imageset)] = sub_imageset
-              xsweep._integrater._setup_from_imageset(sub_imageset)
-            else:
-              new_name = '_'.join((sweep_name, string.ascii_lowercase[i]))
-              new_sweep = xwav.add_sweep(new_name,
-                             xsample,
-                             directory=os.path.join(
-                               os.path.basename(xsweep.get_directory()), new_name),
-                             image=imageset.get_path(nb_start-start),
-                             frames_to_process=(nb_start+1, nb_end),
-                             )
-              Chatter.write("Generating new sweep: %s (%s:%i:%i)" %(
-                new_sweep.get_name(),
-                new_sweep.get_image(),
-                new_sweep.get_frames_to_process()[0],
-                new_sweep.get_frames_to_process()[1]))
-          return
+            xsweep = self.get_indexer_sweep()
+            xwav = xsweep.get_wavelength()
+            xsample = xsweep.get_xsample()
+
+            sweep_name = xsweep.get_name()
+            import string
+            for i, (nb_start, nb_end) in enumerate(non_blanks):
+              assert i < 26
+              if i == 0:
+                sub_imageset = imageset[nb_start-start:nb_end-start]
+                xsweep._frames_to_process = (nb_start+1, nb_end+1)
+                self.set_indexer_prepare_done(done=False)
+                self._indxr_imagesets[self._indxr_imagesets.index(imageset)] = sub_imageset
+                xsweep._integrater._setup_from_imageset(sub_imageset)
+              else:
+                new_name = '_'.join((sweep_name, string.ascii_lowercase[i]))
+                new_sweep = xwav.add_sweep(new_name,
+                               xsample,
+                               directory=os.path.join(
+                                 os.path.basename(xsweep.get_directory()), new_name),
+                               image=imageset.get_path(nb_start-start),
+                               frames_to_process=(nb_start+1, nb_end),
+                               )
+                Chatter.write("Generating new sweep: %s (%s:%i:%i)" %(
+                  new_sweep.get_name(),
+                  new_sweep.get_image(),
+                  new_sweep.get_frames_to_process()[0],
+                  new_sweep.get_frames_to_process()[1]))
+            return
 
       if not PhilIndex.params.xia2.settings.trust_beam_centre:
         discovery = self.DiscoverBetterExperimentalModel()
@@ -425,10 +426,11 @@ class DialsIndexer(Indexer):
     indexed_file = indexer.get_indexed_filename()
     indexed_experiments = indexer.get_experiments_filename()
 
+    fast_mode = PhilIndex.params.dials.fast_mode
     trust_beam_centre = PhilIndex.params.xia2.settings.trust_beam_centre
     multi_sweep_indexing = PhilIndex.params.xia2.settings.multi_sweep_indexing == True
 
-    if not trust_beam_centre and not multi_sweep_indexing:
+    if not (trust_beam_centre or fast_mode or multi_sweep_indexing):
       checksym = self.CheckIndexingSymmetry()
       checksym.set_experiments_filename(indexed_experiments)
       checksym.set_indexed_filename(indexed_file)
