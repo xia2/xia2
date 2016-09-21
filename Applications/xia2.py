@@ -170,7 +170,7 @@ Command-line options to xia2:
   sys.stdout.write('[reverse_phi=True]\n')
   sys.stdout.write(
     '[beam_centre=x,y] (in mm, following the MOSFLM convention, applies to all sweeps)\n')
-  sys.stdout.write('[-quick]\n')
+  sys.stdout.write('[dials.fast_mode=True] for very fast processing\n')
   sys.stdout.write('[atom=se] (say) - this is for xia2setup\n')
   sys.stdout.write('[project=foo] (say) - this is for xia2setup\n')
   sys.stdout.write('[crystal=bar] (say) - this is for xia2setup\n\n')

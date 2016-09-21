@@ -173,7 +173,7 @@ class MosflmIntegrater(Integrater):
         self.set_integrater_done(False)
         self._mosflm_postref_fix_mosaic = True
 
-    if self._mosflm_rerun_integration and not Flags.get_quick():
+    if self._mosflm_rerun_integration and not PhilIndex.params.dials.fast_mode:
       # make sure that this is run again...
       Chatter.write('Need to rerun the integration...')
       self.set_integrater_done(False)

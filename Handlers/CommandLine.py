@@ -114,6 +114,7 @@ class _CommandLine(object):
                      '-3dii': 'pipeline=3dii',
                      '-3dd': 'pipeline=3dd',
                      '-dials': 'pipeline=dials',
+                     '-quick': 'dials.fast_mode=true',
                      '-failover': 'failover=true',
                      '-small_molecule': 'small_molecule=true'
                    }
@@ -140,9 +141,6 @@ class _CommandLine(object):
       params = PhilIndex.get_python_object()
     except RuntimeError, e:
       raise Sorry(e)
-
-    # does this do anything?!
-    self._read_quick()
 
     # sanity check / interpret Auto in input
     from libtbx import Auto
@@ -418,14 +416,6 @@ class _CommandLine(object):
 
   def get_hdf5_master_files(self):
     return self._hdf5_master_files
-
-  def _read_quick(self):
-
-    if '-quick' in self._argv:
-      Flags.set_quick(True)
-      Debug.write('Quick mode selected')
-      PhilIndex.update("dials.fast_mode=True")
-      self._understood.append(self._argv.index('-quick'))
 
   def _read_pipeline(settings):
     settings = PhilIndex.get_python_object().xia2.settings

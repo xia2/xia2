@@ -949,7 +949,7 @@ class XDSScalerA(Scaler):
     # check for outlier reflections and if a number are found
     # then iterate (that is, rerun XSCALE, rejecting these outliers)
 
-    if not Flags.get_quick() and not PhilIndex.params.xds.keep_outliers:
+    if not PhilIndex.params.dials.fast_mode and not PhilIndex.params.xds.keep_outliers:
       xscale_remove = xscale.get_remove()
       if xscale_remove:
         current_remove = []

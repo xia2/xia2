@@ -1199,7 +1199,7 @@ class CCP4ScalerA(Scaler):
     if self.get_scaler_anomalous():
       sc.set_anomalous()
     sc.scale()
-    if not Flags.get_quick():
+    if not PhilIndex.params.dials.fast_mode:
       self._generate_absorption_map(sc)
 
   def _update_scaled_unit_cell(self):

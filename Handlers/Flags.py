@@ -9,20 +9,15 @@
 #
 # A singleton to handle flags, which can be imported more easily
 # as it will not suffer the problems with circular references that
-# the CommandLine singleton suffers from. FIXME xia2-42 this is due
-# for retirement & working into the Phil structure
+# the CommandLine singleton suffers from.
+# xia2#42: this is due for retirement & working into the Phil structure
 
 import os
-import sys
-
-from xia2.Handlers.Environment import get_number_cpus
 
 class _Flags(object):
   '''A singleton to manage boolean flags.'''
 
   def __init__(self):
-    self._quick = False
-
     # XDS specific things - to help with handling tricky data sets
 
     self._xparm = None
@@ -38,17 +33,8 @@ class _Flags(object):
     # paths on input)
     self._starting_directory = os.getcwd()
 
-    return
-
   def get_starting_directory(self):
     return self._starting_directory
-
-  def set_quick(self, quick):
-    self._quick = quick
-    return
-
-  def get_quick(self):
-    return self._quick
 
   def set_xparm(self, xparm):
 
@@ -62,8 +48,6 @@ class _Flags(object):
     self._xparm_beam_vector = tuple(xparm_info['beam'])
     self._xparm_rotation_axis = tuple(xparm_info['axis'])
     self._xparm_distance = xparm_info['distance']
-
-    return
 
   def get_xparm(self):
     return self._xparm
@@ -89,8 +73,6 @@ class _Flags(object):
     self._xparm_a = tokens[-9:-6]
     self._xparm_b = tokens[-6:-3]
     self._xparm_c = tokens[-3:]
-
-    return
 
   def get_xparm_a(self):
     return self._xparm_a
@@ -120,6 +102,5 @@ class _Flags(object):
                 (freer_file, column))
 
     self._freer_file = freer_file
-    return
 
 Flags = _Flags()
