@@ -101,13 +101,17 @@ class _CIFHandler(object):
       self._cif.show(out=fh)
 
   def get_block(self, blockname=None):
-    '''Creates (if necessary) and returns named CIF block'''
+    '''Create (if necessary) and return named CIF block'''
     if blockname is None:
       blockname = 'xia2'
     assert blockname, 'invalid block name'
     if blockname not in self._cif:
       self._cif[blockname] = iotbx.cif.model.block()
     return self._cif[blockname]
+
+  def set_block(self, blockname, iotbxblock):
+    '''Store a block object, overwrite existing block if necessary'''
+    self._cif[blockname] = iotbxblock
 
   def collate_audit_information(self, blockname=None):
     block = self.get_block(blockname)

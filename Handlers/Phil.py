@@ -605,6 +605,9 @@ xia2.settings
     pointless_tolerance = 0.0
       .type = float(value_min=0.0)
       .help = "Tolerance to use in POINTLESS for comparison of data sets"
+    detector_id = None
+      .type = str
+      .help = "Override detector serial number information"
   }
   multi_sweep_indexing = Auto
     .type = bool

@@ -359,6 +359,8 @@ class XSweep(object):
     self._gain = gain
     self._polarization = polarization
 
+    self._add_detector_identification_to_cif()
+
   # serialization functions
 
   def to_dict(self):
@@ -900,6 +902,28 @@ class XSweep(object):
       intgr.as_json(
         filename=os.path.join(intgr.get_working_directory(), "xia2.json"))
 
+  def get_detector_identification(self):
+    detector_id = PhilIndex.get_python_object().xia2.settings.developmental.detector_id
+    # eg. 'PILATUS 2M, S/N 24-0107 Diamond'
+    if not detector_id:
+      # detector_id = self.get_imageset().get_detector().identity()
+      pass
+    Debug.write('Detector identified as %s' % detector_id)
+    return detector_id
+
+  def _add_detector_identification_to_cif(self):
+    detector_id = self.get_detector_identification()
+    if detector_id:
+      import dxtbx.data.beamline_defs as ddb
+      bl_info = ddb.get_beamline_definition(detector_id)
+      Debug.write('Beamline information available for %s: %s' % (detector_id, str(bl_info)))
+      if bl_info:
+        from xia2.Handlers.CIF import CIF, mmCIF
+        cifblock, mmcifblock = bl_info.CIF_block(), bl_info.mmCIF_block()
+        if cifblock:
+          CIF.set_block(bl_info.get_block_name(), cifblock)
+        if mmcifblock:
+          mmCIF.set_block(bl_info.get_block_name(), mmcifblock)
 
 if __name__ == '__main__':
   directory = os.path.join('z:', 'data', '12287')
