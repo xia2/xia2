@@ -66,13 +66,14 @@ def IntegraterForXSweep(xsweep, json_file=None):
         (dmin != integrater.get_integrater_high_resolution() or
          dmax != integrater.get_integrater_low_resolution())):
 
-      Debug.write('Assinging resolution limits from XINFO input:')
+      Debug.write('Assigning resolution limits from XINFO input:')
       Debug.write('dmin: %.3f dmax: %.2f' % (dmin, dmax))
       integrater.set_integrater_resolution(dmin, dmax, user = True)
 
-    elif dmin != integrater.get_integrater_high_resolution():
+    elif (dmin is not None and
+          dmin != integrater.get_integrater_high_resolution()):
 
-      Debug.write('Assinging resolution limits from XINFO input:')
+      Debug.write('Assigning resolution limits from XINFO input:')
       Debug.write('dmin: %.3f' % dmin)
       integrater.set_integrater_high_resolution(dmin, user = True)
 
