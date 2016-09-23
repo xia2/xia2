@@ -12,7 +12,6 @@
 
 import math
 import sys
-import pickle
 
 def digest_wedges(wedges):
   '''Digest the wedges defined as a list of
@@ -130,6 +129,7 @@ def digest_wedges(wedges):
 
 if __name__ == '__main__':
 
+  import cPickle as pickle
   wedges = pickle.loads(open('test.pkl').read())
 
   dmaxes, group_report = digest_wedges(wedges)
