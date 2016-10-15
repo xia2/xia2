@@ -1308,9 +1308,14 @@ class CCP4ScalerA(Scaler):
         aimless = re.sub('\s\s+', ', ', line.strip("\t\n #"))
         break
 
-    from xia2.Toolkit.AimlessSurface import evaluate_1degree, scrape_coefficients, generate_map
-    absmap = evaluate_1degree(scrape_coefficients(log=output))
-    absmin, absmax = absmap.min(), absmap.max()
+    from xia2.Toolkit.AimlessSurface import evaluate_1degree, \
+      scrape_coefficients, generate_map
+    coefficients = scrape_coefficients(log=output)
+    if coefficients:
+      absmap = evaluate_1degree(coefficients)
+      absmin, absmax = absmap.min(), absmap.max()
+    else:
+      absmin, absmax = 1.0, 1.0
 
     block = CIF.get_block('xia2')
     mmblock = mmCIF.get_block('xia2')

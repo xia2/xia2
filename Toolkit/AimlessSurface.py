@@ -74,7 +74,7 @@ def generate_map(abscor, png_filename):
 
 def scrape_coefficients(log_file_name = None, log = None):
   # FIXME cope with cases where the surfaces are not LINKed => will be several
-  # of them...
+  # of them... and cases where scaling failed need trapping too...
   Clm = { }
   c = 0
   l = 0
