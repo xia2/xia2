@@ -29,6 +29,7 @@ def exercise_dials_wrappers(nproc=None):
   from xia2.Wrappers.Dials.Refine import Refine
   from xia2.Wrappers.Dials.Reindex import Reindex
   from xia2.Wrappers.Dials.ExportMtz import ExportMtz
+  from xia2.Wrappers.Dials.ExportXDSASCII import ExportXDSASCII
 
   xia2_demo_data = os.path.join(dials_regression, "xia2_demo_data")
   template = os.path.join(xia2_demo_data, "insulin_1_%03i.img")
@@ -115,6 +116,15 @@ def exercise_dials_wrappers(nproc=None):
   print ''.join(exporter.get_all_output())
   print "Done exporting"
   assert os.path.exists(exporter.get_mtz_filename())
+
+  print "Begin exporting xds_ascii"
+  exporter = ExportXDSASCII()
+  exporter.set_experiments_filename(integrater.get_integrated_experiments())
+  exporter.set_reflections_filename(integrater.get_integrated_reflections())
+  exporter.run()
+  print ''.join(exporter.get_all_output())
+  print "Done exporting"
+  assert os.path.exists(exporter.get_hkl_filename())
 
   import shutil
   shutil.copy(indexer.get_experiments_filename(), "copy.json")

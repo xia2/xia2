@@ -452,6 +452,18 @@ class DialsIntegrater(Integrater):
       '%s %s %s %s experiments' % (pname, xname, dname, sweep),
       self.get_integrated_experiments())
 
+    from iotbx.reflection_file_reader import any_reflection_file
+    miller_arrays = any_reflection_file(hklout).as_miller_arrays()
+    # look for profile-fitted intensities
+    intensities = [ma for ma in miller_arrays
+                   if ma.info().labels == ['IPR', 'SIGIPR']]
+    if len(intensities) == 0:
+      # look instead for summation-integrated intensities
+      intensities = [ma for ma in miller_arrays
+                     if ma.info().labels == ['I', 'SIGI']]
+      assert len(intensities)
+    self._intgr_n_ref = intensities[0].size()
+
     return hklout
 
   def _integrate_select_images_wedges(self):
@@ -514,6 +526,20 @@ class DialsIntegrater(Integrater):
           wedges.append((images[- block_size], images[-1]))
 
     return wedges
+
+  def get_integrater_corrected_intensities(self):
+    self.integrate()
+    from xia2.Wrappers.Dials.ExportXDSASCII import ExportXDSASCII
+    exporter = ExportXDSASCII()
+    exporter.set_experiments_filename(self.get_integrated_experiments())
+    exporter.set_reflections_filename(self.get_integrated_reflections())
+    auto_logfiler(exporter)
+    self._intgr_corrected_hklout = '%i_DIALS.HKL' %exporter.get_xpid()
+    exporter.set_hkl_filename(self._intgr_corrected_hklout)
+    exporter.run()
+    assert os.path.exists(self._intgr_corrected_hklout)
+    return self._intgr_corrected_hklout
+
 
 if __name__ == '__main__':
 
