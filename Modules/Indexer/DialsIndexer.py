@@ -482,8 +482,6 @@ class DialsIndexer(Indexer):
                                   rbs.get_log_file())
       rbs.run()
 
-      rmsd_p1 = rbs.get_bravais_summary()[1]['rmsd']
-
       from cctbx import crystal, sgtbx
 
       for k in sorted(rbs.get_bravais_summary()):
@@ -493,12 +491,7 @@ class DialsIndexer(Indexer):
         # where R.M.S. deviation is less than twice P1 R.M.S. deviation.
 
         if self._indxr_input_lattice is None:
-          if summary['max_angular_difference'] < 0.5:
-            if summary['min_cc'] < 0.5 and summary['rmsd'] > 1.5 * rmsd_p1:
-              continue
-          elif summary['min_cc'] < 0.7 and summary['rmsd'] > 2.0 * rmsd_p1:
-            continue
-          elif summary['rmsd'] > 3 * rmsd_p1:
+          if not summary['recommended']:
             continue
 
         experiments = load.experiment_list(
