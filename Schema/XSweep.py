@@ -905,11 +905,14 @@ class XSweep(object):
   def get_detector_identification(self):
     detector_id = PhilIndex.get_python_object().xia2.settings.developmental.detector_id
     # eg. 'PILATUS 2M, S/N 24-0107 Diamond'
-    if not detector_id:
-      # detector_id = self.get_imageset().get_detector().identity()
-      pass
-    Debug.write('Detector identified as %s' % detector_id)
-    return detector_id
+    if not detector_id and self.get_imageset():
+      detector_id = self.get_imageset().get_detector()[0].get_identifier()
+    if detector_id:
+      Debug.write('Detector identified as %s' % detector_id)
+      return detector_id
+    else:
+      Debug.write('Detector could not be identified')
+      return None
 
   def _add_detector_identification_to_cif(self):
     detector_id = self.get_detector_identification()
