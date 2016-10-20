@@ -57,7 +57,7 @@ def CheckIndexingSymmetry(DriverType = None):
       assert self._indexed_filename is not None
       self.add_command_line(self._indexed_filename)
       if self._grid_search_scope is not None:
-        self.add_command_line("grid_search_scope=%s" % self._grid_search_scope)
+        self.add_command_line("grid=%d" % self._grid_search_scope)
       self.add_command_line("symop_threshold=0.7")
       self.start()
       self.close_wait()
