@@ -79,6 +79,10 @@ xds {
     fix_scale = False
       .type = bool
   }
+  defpix {
+    value_range_for_trusted_detector_pixels = None
+      .type = ints(size=2)
+  }
   index {
     refine = *ORIENTATION *CELL *BEAM *DISTANCE *AXIS *POSITION
       .type = choice(multi = True)

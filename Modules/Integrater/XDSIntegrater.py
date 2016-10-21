@@ -143,6 +143,12 @@ class XDSIntegrater(Integrater):
     if self.get_wavelength():
       defpix.set_wavelength(self.get_wavelength())
 
+    value_range_for_trusted_detector_pixels \
+      = PhilIndex.params.xds.defpix.value_range_for_trusted_detector_pixels
+    if value_range_for_trusted_detector_pixels is not None:
+      defpix.set_value_range_for_trusted_detector_pixels(
+        value_range_for_trusted_detector_pixels)
+
     auto_logfiler(defpix, 'DEFPIX')
 
     return defpix

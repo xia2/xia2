@@ -41,6 +41,8 @@ def XDSDefpix(DriverType = None):
       self._data_range = (0, 0)
       self._resolution_high = 0.0
       self._resolution_low = 40.0
+      #self._VALUE_RANGE_FOR_TRUSTED_DETECTOR_PIXELS
+      self._value_range_for_trusted_detector_pixels = None
 
       self._input_data_files = { }
       self._output_data_files = { }
@@ -56,6 +58,11 @@ def XDSDefpix(DriverType = None):
       return
 
     # getter and setter for input / output data
+
+    def set_value_range_for_trusted_detector_pixels(
+        self, value_range_for_trusted_detector_pixels):
+      self._value_range_for_trusted_detector_pixels \
+        = tuple(value_range_for_trusted_detector_pixels)
 
     def set_resolution_high(self, resolution_high):
       self._resolution_high = resolution_high
@@ -121,6 +128,10 @@ def XDSDefpix(DriverType = None):
       if self._resolution_high > 0.0 or self._resolution_low > 0.0:
         xds_inp.write('INCLUDE_RESOLUTION_RANGE=%.2f %.2f\n' % \
                       (self._resolution_low, self._resolution_high))
+
+      if self._value_range_for_trusted_detector_pixels is not None:
+        xds_inp.write('VALUE_RANGE_FOR_TRUSTED_DETECTOR_PIXELS=%i %i'
+                      %self._value_range_for_trusted_detector_pixels)
 
       xds_inp.close()
 
