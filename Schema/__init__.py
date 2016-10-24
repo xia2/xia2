@@ -56,7 +56,8 @@ def load_imagesets(template, directory, id_image=None, image_range=None,
     scan_tolerance = params.input.tolerance.scan.oscillation
 
     format_kwargs = {
-      'dynamic_shadowing' : params.input.format.dynamic_shadowing
+      'dynamic_shadowing' : params.input.format.dynamic_shadowing,
+      'multi_panel' : params.input.format.multi_panel,
     }
 
     if os.path.splitext(full_template_path)[-1] in known_hdf5_extensions:
