@@ -55,6 +55,10 @@ def load_imagesets(template, directory, id_image=None, image_range=None,
       setting_rotation_tolerance=params.input.tolerance.goniometer.setting_rotation)
     scan_tolerance = params.input.tolerance.scan.oscillation
 
+    format_kwargs = {
+      'dynamic_shadowing' : params.input.format.dynamic_shadowing
+    }
+
     if os.path.splitext(full_template_path)[-1] in known_hdf5_extensions:
       import glob
       g = glob.glob(os.path.join(directory, '*_master.h5'))
@@ -75,7 +79,8 @@ def load_imagesets(template, directory, id_image=None, image_range=None,
         compare_beam=compare_beam,
         compare_detector=compare_detector,
         compare_goniometer=compare_goniometer,
-        scan_tolerance=scan_tolerance)
+        scan_tolerance=scan_tolerance,
+        format_kwargs=format_kwargs)
       assert len(unhandled) == 0, "unhandled image files identified: %s" % \
           unhandled
       assert len(datablocks) == 1, "1 datablock expected, %d found" % \
@@ -96,7 +101,8 @@ def load_imagesets(template, directory, id_image=None, image_range=None,
           compare_beam=compare_beam,
           compare_detector=compare_detector,
           compare_goniometer=compare_goniometer,
-          scan_tolerance=scan_tolerance)
+          scan_tolerance=scan_tolerance,
+          format_kwargs=format_kwargs)
         assert len(unhandled) == 0, "unhandled image files identified: %s" % \
             unhandled
         assert len(datablocks) == 1, "1 datablock expected, %d found" % \
@@ -104,7 +110,8 @@ def load_imagesets(template, directory, id_image=None, image_range=None,
 
       else:
         from dxtbx.datablock import DataBlockTemplateImporter
-        importer = DataBlockTemplateImporter([full_template_path])
+        importer = DataBlockTemplateImporter(
+          [full_template_path], kwargs=format_kwargs)
         datablocks = importer.datablocks
 
     imagesets = datablocks[0].extract_sweeps()

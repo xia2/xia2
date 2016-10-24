@@ -443,6 +443,8 @@ xia2.settings
       .expert_level = 1
     include scope dials.util.options.tolerance_phil_scope
     include scope dials.util.options.geometry_phil_scope
+    include scope dials.util.options.format_phil_scope
+
   }
   sweep
     .multiple = True
