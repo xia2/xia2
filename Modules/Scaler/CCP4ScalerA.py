@@ -1199,7 +1199,11 @@ class CCP4ScalerA(Scaler):
       sc.set_anomalous()
     sc.scale()
     if not PhilIndex.params.dials.fast_mode:
-      self._generate_absorption_map(sc)
+      try:
+        self._generate_absorption_map(sc)
+      except StandardError, e:
+        # Map generation may fail for number of reasons, eg. matplotlib borken
+        Debug.write("Could not generate absorption map (%s)" % e)
 
   def _update_scaled_unit_cell(self):
     # FIXME this could be brought in-house
