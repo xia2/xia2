@@ -7,6 +7,7 @@
 #
 # Bits the scalers have in common - inherit from me!
 
+from iotbx import mtz
 from xia2.Schema.Interfaces.Scaler import Scaler
 from xia2.Handlers.Streams import Debug, Chatter
 from xia2.Handlers.Phil import PhilIndex
@@ -492,7 +493,6 @@ class CommonScaler(Scaler):
     if reindex_operator == '[h,k,l]':
       # just assign spacegroup
 
-      from iotbx import mtz
       from cctbx import sgtbx
 
       s = sgtbx.space_group(sgtbx.space_group_symbols(
@@ -536,11 +536,42 @@ class CommonScaler(Scaler):
   def _scale_finish(self):
 
     # compute anomalous signals if anomalous
-
     if self.get_scaler_anomalous():
-      for key in self._scalr_scaled_refl_files:
+      self._scale_finish_chunk_1_compute_anomalous()
+
+    # next transform to F's from I's etc.
+
+    if not self._scalr_scaled_refl_files:
+      raise RuntimeError, 'no reflection files stored'
+
+    # run xia2.report on each unmerged mtz file
+    self._scale_finish_chunk_2_report()
+
+    if PhilIndex.params.xia2.settings.small_molecule == False:
+      self._scale_finish_chunk_3_truncate()
+
+    self._scale_finish_chunk_4_mad_mangling()
+
+    if PhilIndex.params.xia2.settings.small_molecule == True:
+      self._scale_finish_chunk_5_finish_small_molecule()
+
+      return
+
+    # finally add a FreeR column, and record the new merged reflection
+    # file with the free column added.
+
+    self._scale_finish_chunk_6_add_free_r()
+
+    self._scale_finish_chunk_7_twinning()
+
+    # next have a look for radiation damage... if more than one wavelength
+
+    if len(self._scalr_scaled_refl_files.keys()) > 1:
+      self._scale_finish_chunk_8_raddam()
+
+  def _scale_finish_chunk_1_compute_anomalous(self):
+     for key in self._scalr_scaled_refl_files:
         f = self._scalr_scaled_refl_files[key]
-        from iotbx import mtz
         m = mtz.object(f)
         if m.space_group().is_centric():
           Debug.write('Spacegroup is centric: %s' % f)
@@ -554,15 +585,11 @@ class CommonScaler(Scaler):
             (self._scalr_pname, self._scalr_xname, key)
             ]['dI/s(dI)'] = [a_s[1]]
 
-    # next transform to F's from I's etc.
-
-    if len(self._scalr_scaled_refl_files.keys()) == 0:
-      raise RuntimeError, 'no reflection files stored'
-
-    # run xia2.report on each unmerged mtz file
-    from iotbx.reflection_file_reader import any_reflection_file
-    from iotbx import mtz
+  def _scale_finish_chunk_2_report(self):
     from cctbx.array_family import flex
+    from iotbx.reflection_file_reader import any_reflection_file
+    from xia2.lib.bits import auto_logfiler
+    from xia2.Wrappers.XIA.Report import Report
 
     for wavelength in self._scalr_scaled_refl_files.keys():
       mtz_unmerged = self._scalr_scaled_reflection_files['mtz_unmerged'][wavelength]
@@ -581,7 +608,6 @@ class CommonScaler(Scaler):
       hklin = tmp_mtz
       FileHandler.record_temporary_file(hklin)
 
-      from xia2.Wrappers.XIA.Report import Report
       report = Report()
       report.set_working_directory(self.get_working_directory())
       report.set_mtz_filename(hklin)
@@ -590,20 +616,17 @@ class CommonScaler(Scaler):
           self._scalr_pname, self._scalr_xname, wavelength))
       report.set_html_filename(htmlout)
       report.set_chef_min_completeness(0.95) # sensible?
-      from xia2.lib.bits import auto_logfiler
       auto_logfiler(report)
       try:
         report.run()
+        FileHandler.record_html_file(
+          '%s %s %s report' %(
+            self._scalr_pname, self._scalr_xname, wavelength), htmlout)
       except Exception, e:
         Debug.write('xia2.report failed:')
         Debug.write(str(e))
-        continue
-      FileHandler.record_html_file(
-        '%s %s %s report' %(
-          self._scalr_pname, self._scalr_xname, wavelength), htmlout)
 
-    if PhilIndex.params.xia2.settings.small_molecule == False:
-
+  def _scale_finish_chunk_3_truncate(self):
       for wavelength in self._scalr_scaled_refl_files.keys():
 
         hklin = self._scalr_scaled_refl_files[wavelength]
@@ -650,6 +673,7 @@ class CommonScaler(Scaler):
         # and record the reflection file..
         self._scalr_scaled_refl_files[wavelength] = hklout
 
+  def _scale_finish_chunk_4_mad_mangling(self):
     if len(self._scalr_scaled_refl_files.keys()) > 1:
 
       reflection_files = { }
@@ -688,9 +712,7 @@ class CommonScaler(Scaler):
           'mtz_merged'] = self._scalr_scaled_refl_files[
           self._scalr_scaled_refl_files.keys()[0]]
 
-    if PhilIndex.params.xia2.settings.small_molecule == True:
-      # record this for future reference
-
+  def _scale_finish_chunk_5_finish_small_molecule(self):
       # keep 'mtz' and remove 'mtz_merged' from the dictionary for
       # consistency with non-small-molecule workflow
       self._scalr_scaled_reflection_files['mtz'] = \
@@ -700,11 +722,7 @@ class CommonScaler(Scaler):
       FileHandler.record_data_file(self._scalr_scaled_reflection_files[
         'mtz'])
 
-      return
-
-    # finally add a FreeR column, and record the new merged reflection
-    # file with the free column added.
-
+  def _scale_finish_chunk_6_add_free_r(self):
     hklout = os.path.join(self.get_working_directory(),
                           '%s_%s_free_temp.mtz' % (self._scalr_pname,
                                                    self._scalr_xname))
@@ -796,7 +814,9 @@ class CommonScaler(Scaler):
     # record this for future reference
     FileHandler.record_data_file(hklout)
 
-    from iotbx import mtz
+  def _scale_finish_chunk_7_twinning(self):
+    hklout = self._scalr_scaled_reflection_files['mtz']
+
     m = mtz.object(hklout)
     # FIXME in here should be able to just drop down to the lowest symmetry
     # space group with the rotational elements for this calculation? I.e.
@@ -820,15 +840,12 @@ class CommonScaler(Scaler):
     Chatter.write('Overall twinning score: %4.2f' % self._scalr_twinning_score)
     Chatter.write(self._scalr_twinning_conclusion)
 
-    # next have a look for radiation damage... if more than one wavelength
-
-    if len(self._scalr_scaled_refl_files.keys()) > 1 and \
-           PhilIndex.params.xia2.settings.small_molecule == False:
+  def _scale_finish_chunk_8_raddam(self):
       crd = CCP4InterRadiationDamageDetector()
 
       crd.set_working_directory(self.get_working_directory())
 
-      crd.set_hklin(hklout)
+      crd.set_hklin(self._scalr_scaled_reflection_files['mtz'])
 
       if self.get_scaler_anomalous():
         crd.set_anomalous(True)
