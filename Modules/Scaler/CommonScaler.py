@@ -723,15 +723,77 @@ class CommonScaler(Scaler):
       FileHandler.record_data_file(self._scalr_scaled_reflection_files['mtz'])
 
   def _scale_finish_export_shelxt(self):
-    for wavelength in self._scalr_scaled_refl_files.keys():
-      mtz_unmerged = self._scalr_scaled_reflection_files['mtz_unmerged'][wavelength]
+    '''Read hklin (unmerged reflection file) and generate SHELXT input file
+    and HKL file'''
 
-      prefix = wavelength
+    from iotbx.reflection_file_reader import any_reflection_file
+    from iotbx.shelx import writer
+    from iotbx.shelx.hklf import miller_array_export_as_shelx_hklf
+    from cctbx.xray.structure import structure
+    from cctbx.xray import scatterer
+
+    for wavelength_name in self._scalr_scaled_refl_files.keys():
+      prefix = wavelength_name
       if len(self._scalr_scaled_refl_files.keys()) == 1:
         prefix = 'shelxt'
+      prefixpath = os.path.join(self.get_working_directory(), prefix)
 
-      from xia2.command_line.to_shelx import to_shelx
-      to_shelx(mtz_unmerged, os.path.join(self.get_working_directory(), prefix), 'CNOH')
+      mtz_unmerged = self._scalr_scaled_reflection_files['mtz_unmerged'][wavelength_name]
+      reader = any_reflection_file(mtz_unmerged)
+      intensities = [ma for ma in reader.as_miller_arrays(merge_equivalents=False)
+                     if ma.info().labels == ['I', 'SIGI']][0]
+
+      # FIXME do I need to reindex to a conventional setting here
+
+      indices = reader.file_content().extract_original_index_miller_indices()
+      intensities = intensities.customized_copy(indices=indices, info=intensities.info())
+
+      with open('%s.hkl' % prefixpath, 'wb') as hkl_file_handle:
+        # limit values to 4 digits (before decimal point), as this is what shelxt
+        # writes in its output files, and shelxl seems to read. ShelXL apparently
+        # does not read values >9999 properly
+        miller_array_export_as_shelx_hklf(intensities, hkl_file_handle,
+          scale_range=(-9999., 9999.), normalise_if_format_overflow=True)
+
+      crystal_symm = intensities.crystal_symmetry()
+
+      unit_cell_dims = self._scalr_cell
+      unit_cell_esds = self._scalr_cell_esd
+
+      cb_op = crystal_symm.change_of_basis_op_to_reference_setting()
+
+      if cb_op.c().r().as_hkl() == 'h,k,l':
+        print 'Change of basis to reference setting: %s' % cb_op
+        crystal_symm = crystal_symm.change_basis(cb_op)
+        if str(cb_op) != "a,b,c":
+          unit_cell_dims = None
+          unit_cell_esds = None
+          # Would need to apply operation to cell errors, too. Need a test case for this
+
+      # crystal_symm.show_summary()
+      xray_structure = structure(crystal_symmetry=crystal_symm)
+
+      compound = 'CNOH'
+      if compound:
+        from xia2.command_line.to_shelx import parse_compound
+        result = parse_compound(compound)
+        for element in result:
+          xray_structure.add_scatterer(scatterer(label=element,
+                                                 occupancy=result[element]))
+
+      wavelength = self._scalr_xcrystal.get_xwavelength(wavelength_name).get_wavelength()
+
+      with open('%s.ins' % prefixpath, 'w') as insfile:
+        insfile.write(''.join(writer.generator(
+               xray_structure,
+               wavelength=wavelength,
+               full_matrix_least_squares_cycles=0,
+               title=prefix,
+               unit_cell_dims=unit_cell_dims,
+               unit_cell_esds=unit_cell_esds)))
+
+      FileHandler.record_data_file('%s.ins' % prefixpath)
+      FileHandler.record_data_file('%s.hkl' % prefixpath)
 
   def _scale_finish_chunk_6_add_free_r(self):
     hklout = os.path.join(self.get_working_directory(),
