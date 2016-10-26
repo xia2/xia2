@@ -92,8 +92,6 @@ Winter, G. (2010) Journal of Applied Crystallography 43
 def to_shelx(hklin, prefix, compound='', options=None):
   '''Read hklin (unmerged reflection file) and generate SHELXT input file
   and HKL file'''
-  if options is None:
-    options = {}
 
   from iotbx.reflection_file_reader import any_reflection_file
   from iotbx.shelx import writer
@@ -120,7 +118,9 @@ def to_shelx(hklin, prefix, compound='', options=None):
 
   crystal_symm = intensities.crystal_symmetry()
 
-  wavelength = options.wavelength
+  wavelength = None
+  if options:
+    wavelength = options.wavelength
   if wavelength is None:
     mtz_crystals = mtz_object.crystals()
     wavelength = mtz_crystals[1].datasets()[0].wavelength()
@@ -129,7 +129,7 @@ def to_shelx(hklin, prefix, compound='', options=None):
   unit_cell_dims = None
   unit_cell_esds = None
   cell_data = None
-  if options.cell:
+  if options and options.cell:
     if options.cell.endswith('.json'):
       with open(options.cell, 'r') as fh:
         cell_data = json.load(fh)
@@ -183,7 +183,7 @@ def to_shelx(hklin, prefix, compound='', options=None):
                      title=prefix,
                      unit_cell_dims=unit_cell_dims,
                      unit_cell_esds=unit_cell_esds)))
-  if options.cell and not options.cell.endswith('.cif'):
+  if options and options.cell and not options.cell.endswith('.cif'):
     generate_cif(prefix=prefix, unit_cell_data=cell_data, wavelength=wavelength, structure=xray_structure)
 
 if __name__ == '__main__':

@@ -554,6 +554,7 @@ class CommonScaler(Scaler):
 
     if PhilIndex.params.xia2.settings.small_molecule == True:
       self._scale_finish_chunk_5_finish_small_molecule()
+      self._scale_finish_export_shelxt()
 
       return
 
@@ -719,8 +720,18 @@ class CommonScaler(Scaler):
         self._scalr_scaled_reflection_files['mtz_merged']
       del self._scalr_scaled_reflection_files['mtz_merged']
 
-      FileHandler.record_data_file(self._scalr_scaled_reflection_files[
-        'mtz'])
+      FileHandler.record_data_file(self._scalr_scaled_reflection_files['mtz'])
+
+  def _scale_finish_export_shelxt(self):
+    for wavelength in self._scalr_scaled_refl_files.keys():
+      mtz_unmerged = self._scalr_scaled_reflection_files['mtz_unmerged'][wavelength]
+
+      prefix = wavelength
+      if len(self._scalr_scaled_refl_files.keys()) == 1:
+        prefix = 'shelxt'
+
+      from xia2.command_line.to_shelx import to_shelx
+      to_shelx(mtz_unmerged, os.path.join(self.get_working_directory(), prefix), 'CNOH')
 
   def _scale_finish_chunk_6_add_free_r(self):
     hklout = os.path.join(self.get_working_directory(),
