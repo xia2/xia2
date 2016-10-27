@@ -389,7 +389,8 @@ def Pointless(DriverType = None):
       if PhilIndex.params.xia2.settings.small_molecule == True:
         if self._hklref:
           self.input('tolerance 5.0')
-        self.input('chirality nonchiral')
+      if PhilIndex.params.ccp4.pointless.chirality is not None:
+        self.input('chirality %s' %PhilIndex.params.ccp4.pointless.chirality)
 
       if self._input_laue_group:
         self.input('lauegroup %s' % self._input_laue_group)

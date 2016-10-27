@@ -287,6 +287,12 @@ ccp4
       .expert_level = 2
       .short_caption = "Aimless # secondary harmonics"
   }
+  pointless
+    .short_caption = "pointless"
+  {
+    chirality = chiral nonchiral centrosymmetric
+      .type = choice
+  }
   truncate
     .short_caption = "truncate"
   {

@@ -157,6 +157,8 @@ class _CommandLine(object):
     if params.xia2.settings.resolution.keep_all_reflections is Auto:
       if params.xia2.settings.small_molecule == True:
         PhilIndex.update("xia2.settings.resolution.keep_all_reflections=true")
+        if params.ccp4.pointless.chirality is not None:
+          PhilIndex.update("ccp4.pointless.chirality=nonchiral")
       else:
         PhilIndex.update("xia2.settings.resolution.keep_all_reflections=false")
 
