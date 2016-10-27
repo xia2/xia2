@@ -56,25 +56,24 @@ def IntegraterForXSweep(xsweep, json_file=None):
   integrater.set_integrater_sweep_name(xsweep.get_name())
 
   # copy across resolution limits
-  if xsweep.get_resolution_high():
+  if xsweep.get_resolution_high() or xsweep.get_resolution_low():
 
-    dmin = PhilIndex.params.xia2.settings.resolution.d_min
-    dmax = PhilIndex.params.xia2.settings.resolution.d_max
+    d_min = PhilIndex.params.xia2.settings.resolution.d_min
+    d_max = PhilIndex.params.xia2.settings.resolution.d_max
 
-    if (dmin and dmax and
-        (dmin != integrater.get_integrater_high_resolution() or
-         dmax != integrater.get_integrater_low_resolution())):
-
-      Debug.write('Assigning resolution limits from XINFO input:')
-      Debug.write('dmin: %.3f dmax: %.2f' % (dmin, dmax))
-      integrater.set_integrater_resolution(dmin, dmax, user = True)
-
-    elif (dmin is not None and
-          dmin != integrater.get_integrater_high_resolution()):
+    if (d_min is not None and
+        d_min != integrater.get_integrater_high_resolution()):
 
       Debug.write('Assigning resolution limits from XINFO input:')
-      Debug.write('dmin: %.3f' % dmin)
-      integrater.set_integrater_high_resolution(dmin, user = True)
+      Debug.write('d_min: %.3f' % d_min)
+      integrater.set_integrater_high_resolution(d_min, user = True)
+
+    if (d_max is not None and
+        d_max != integrater.get_integrater_low_resolution()):
+
+      Debug.write('Assigning resolution limits from XINFO input:')
+      Debug.write('d_max: %.3f' % d_max)
+      integrater.set_integrater_low_resolution(d_max, user = True)
 
   # check the epoch and perhaps pass this in for future reference
   # (in the scaling)
