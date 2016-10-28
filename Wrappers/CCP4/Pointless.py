@@ -622,8 +622,8 @@ def Pointless(DriverType = None):
       self.input('lauegroup hklin')
       self.input('setting symmetry-based')
 
-      if PhilIndex.params.xia2.settings.small_molecule == True:
-        self.input('chirality nonchiral')
+      if PhilIndex.params.ccp4.pointless.chirality is not None:
+        self.input('chirality %s' %PhilIndex.params.ccp4.pointless.chirality)
 
       self.close_wait()
 
