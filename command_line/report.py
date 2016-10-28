@@ -151,12 +151,13 @@ def run(args):
   intensities.setup_binner(n_bins=n_bins)
 
   merged_intensities = intensities.merge_equivalents().array()
-  from mmtbx.scaling import twin_analyses
-  normalised_intensities = twin_analyses.wilson_normalised_intensities(
-    miller_array=merged_intensities)
-  nz_test = twin_analyses.n_z_test(
-    normalised_acentric=normalised_intensities.acentric,
-    normalised_centric=normalised_intensities.centric)
+  if not intensities.space_group().is_centric():
+    from mmtbx.scaling import twin_analyses
+    normalised_intensities = twin_analyses.wilson_normalised_intensities(
+      miller_array=merged_intensities)
+    nz_test = twin_analyses.n_z_test(
+      normalised_acentric=normalised_intensities.acentric,
+      normalised_centric=normalised_intensities.centric)
 
   from mmtbx.scaling import data_statistics
   if not intensities.space_group().is_centric():
@@ -212,8 +213,9 @@ def run(args):
     return tickvals, ticktext
 
   tickvals, ticktext = d_star_sq_to_d_ticks(d_star_sq_bins, nticks=5)
-  tickvals_wilson, ticktext_wilson = d_star_sq_to_d_ticks(
-    wilson_scaling.d_star_sq, nticks=5)
+  if not intensities.space_group().is_centric():
+    tickvals_wilson, ticktext_wilson = d_star_sq_to_d_ticks(
+      wilson_scaling.d_star_sq, nticks=5)
   second_moment_d_star_sq = []
   if acentric.size():
     second_moment_d_star_sq.extend(second_moments_acentric.binner.bin_centers(2))
@@ -421,7 +423,7 @@ def run(args):
           'rangemode': 'tozero'
         },
       }
-    },
+    } if not intensities.space_group().is_centric() else {},
 
     'wilson_intensity_plot': {
       'data': ([
@@ -442,7 +444,7 @@ def run(args):
           'y': list(wilson_scaling.mean_I_normalisation),
           'type': 'scatter',
           'name': 'Smoothed',
-        }] if not intensities.space_group().is_centric() else []),
+        }]),
       'layout': {
         'title': 'Wilson intensity plot',
         'xaxis': {
@@ -456,7 +458,7 @@ def run(args):
           'rangemode': 'tozero',
         },
       },
-    },
+    } if not intensities.space_group().is_centric() else {},
   }
 
   json_data.update(pychef_dict)
