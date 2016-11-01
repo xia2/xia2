@@ -535,13 +535,15 @@ class XDSIntegrater(Integrater):
 
       filter_hkl = os.path.join(self.get_working_directory(), 'FILTER.HKL')
       with open(filter_hkl, 'wb') as f:
-
+        detector = experiments[0].detector
         for ref in shadowed:
+          p = detector[ref['panel']]
+          ox, oy = p.get_raw_image_offset()
           h, k, l = ref['miller_index']
           x, y, z = ref['xyzcal.px']
           dx, dy, dz = (2, 2, 2)
           print >> f, "%i %i %i %.1f %.1f %.1f %.1f %.1f %.1f" %(
-            h, k, l, x, y, z, dx, dy, dz)
+            h, k, l, x+ox, y+oy, z, dx, dy, dz)
 
     correct = self.Correct()
 
