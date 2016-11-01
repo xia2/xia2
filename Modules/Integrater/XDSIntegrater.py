@@ -877,8 +877,8 @@ class XDSIntegrater(Integrater):
 def integrate_hkl_to_reflection_pickle(integrate_hkl, experiments_json, working_directory):
   from xia2.Wrappers.Dials.ImportXDS import ImportXDS
   importer = ImportXDS()
-  auto_logfiler(importer)
   importer.set_working_directory(working_directory)
+  auto_logfiler(importer)
   importer.set_experiments_json(experiments_json)
   importer.set_integrate_hkl(integrate_hkl)
   importer.run()
@@ -888,8 +888,8 @@ def integrate_hkl_to_reflection_pickle(integrate_hkl, experiments_json, working_
 def xparm_xds_to_experiments_json(xparm_xds, working_directory):
   from xia2.Wrappers.Dials.ImportXDS import ImportXDS
   importer = ImportXDS()
-  auto_logfiler(importer)
   importer.set_working_directory(working_directory)
+  auto_logfiler(importer)
   importer.set_xparm_xds(xparm_xds)
   importer.run()
   return importer.get_experiments_json()
