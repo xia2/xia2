@@ -515,6 +515,34 @@ class XDSIntegrater(Integrater):
     # next run the postrefinement etc with the given
     # cell / lattice - this will be the assumed result...
 
+    integrate_hkl = os.path.join(
+      self.get_working_directory(), 'INTEGRATE.HKL')
+
+    if PhilIndex.params.xia2.settings.input.format.dynamic_shadowing:
+      from libtbx import easy_pickle
+      from dxtbx.serialize import load
+      from dials.command_line.check_strategy import filter_shadowed_reflections
+
+      experiments_json = xparm_xds_to_experiments_json(
+        self._xds_data_files['XPARM.XDS'], self.get_working_directory())
+      experiments = load.experiment_list(experiments_json, check_format=True)
+      integrate_pickle = integrate_hkl_to_reflection_pickle(
+        integrate_hkl, experiments_json, self.get_working_directory())
+      reflections = easy_pickle.load(integrate_pickle)
+
+      sel = filter_shadowed_reflections(experiments, reflections)
+      shadowed = reflections.select(sel)
+
+      filter_hkl = os.path.join(self.get_working_directory(), 'FILTER.HKL')
+      with open(filter_hkl, 'wb') as f:
+
+        for ref in shadowed:
+          h, k, l = ref['miller_index']
+          x, y, z = ref['xyzcal.px']
+          dx, dy, dz = (2, 2, 2)
+          print >> f, "%i %i %i %.1f %.1f %.1f %.1f %.1f %.1f" %(
+            h, k, l, x, y, z, dx, dy, dz)
+
     correct = self.Correct()
 
     correct.set_data_range(self._intgr_wedge[0] + self.get_frame_offset(),
@@ -802,9 +830,6 @@ class XDSIntegrater(Integrater):
     # Convert INTEGRATE.HKL to MTZ format and reapply any reindexing operations
     # spacegroup changes to allow use with CCP4 / Aimless for scaling
 
-    integrate_hkl = os.path.join(
-      self.get_working_directory(), 'INTEGRATE.HKL')
-
     hklout = os.path.splitext(integrate_hkl)[0] + ".mtz"
     self._factory.set_working_directory(self.get_working_directory())
     pointless = self._factory.Pointless()
@@ -836,29 +861,37 @@ class XDSIntegrater(Integrater):
       reindex.reindex()
       integrate_mtz = hklout
 
-    import dxtbx
-    import dxtbx.serialize.dump
-    from dxtbx.serialize.xds import to_crystal
-    from dxtbx.model.experiment.experiment_list import Experiment, ExperimentList
-    models = dxtbx.load(self._xds_data_files['GXPARM.XDS'])
-    crystal_model = to_crystal(self._xds_data_files['GXPARM.XDS'])
-    experiment = Experiment(beam=models.get_beam(),
-                            detector=models.get_detector(),
-                            goniometer=models.get_goniometer(),
-                            scan=models.get_scan(),
-                            crystal=crystal_model,
-                            #imageset=self.get_imageset(),
-                            )
-    experiment_list = ExperimentList([experiment])
-    experiments_json = os.path.join(
-      self.get_working_directory(), 'integrated_experiments.json')
-    dxtbx.serialize.dump.experiment_list(experiment_list, experiments_json)
+
+    experiments_json = xparm_xds_to_experiments_json(
+      self._xds_data_files['GXPARM.XDS'], self.get_working_directory())
     pname, xname, dname = self.get_integrater_project_info()
     sweep = self.get_integrater_sweep_name()
     FileHandler.record_more_data_file(
       '%s %s %s %s experiments' % (pname, xname, dname, sweep), experiments_json)
 
     return integrate_mtz
+
+
+def integrate_hkl_to_reflection_pickle(integrate_hkl, experiments_json, working_directory):
+  from xia2.Wrappers.Dials.ImportXDS import ImportXDS
+  importer = ImportXDS()
+  auto_logfiler(importer)
+  importer.set_working_directory(working_directory)
+  importer.set_experiments_json(experiments_json)
+  importer.set_integrate_hkl(integrate_hkl)
+  importer.run()
+  return importer.get_reflection_filename()
+
+
+def xparm_xds_to_experiments_json(xparm_xds, working_directory):
+  from xia2.Wrappers.Dials.ImportXDS import ImportXDS
+  importer = ImportXDS()
+  auto_logfiler(importer)
+  importer.set_working_directory(working_directory)
+  importer.set_xparm_xds(xparm_xds)
+  importer.run()
+  return importer.get_experiments_json()
+
 
 if __name__ == '__main__':
 
