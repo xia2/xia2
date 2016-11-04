@@ -32,8 +32,6 @@ from xia2.Wrappers.XDS.XDS import beam_centre_xds_to_mosflm
 from xia2.Wrappers.XDS.XDS import XDSException
 from xia2.Modules.Indexer.XDSCheckIndexerSolution import xds_check_indexer_solution
 
-from xia2.Toolkit.MendBKGINIT import recompute_BKGINIT
-
 # interfaces that this must implement to be an indexer
 
 from xia2.Schema.Interfaces.Indexer import IndexerSingleSweep
@@ -310,6 +308,57 @@ class XDSIndexer(IndexerSingleSweep):
       self._indxr_payload[file] = xycorr.get_output_data_file(file)
 
     # next start to process these - then init
+
+    if PhilIndex.params.xia2.settings.input.format.dynamic_shadowing:
+      # find the region of the scan with the least predicted shadow
+      # to use for background determination in XDS INIT step
+      from dxtbx.serialize import dump
+      from dxtbx.datablock import DataBlock
+      imageset = self._indxr_imagesets[0]
+      xsweep = self._indxr_sweeps[0]
+      sweep_filename = os.path.join(
+        self.get_working_directory(), '%s_datablock.json' %xsweep.get_name())
+      dump.datablock(DataBlock([imageset]), sweep_filename)
+
+      from xia2.Wrappers.Dials.ShadowPlot import ShadowPlot
+      shadow_plot = ShadowPlot()
+      shadow_plot.set_working_directory(self.get_working_directory())
+      auto_logfiler(shadow_plot)
+      shadow_plot.set_sweep_filename(sweep_filename)
+      shadow_plot.set_json_filename(
+        os.path.join(
+          self.get_working_directory(),
+          '%s_shadow_plot.json' %shadow_plot.get_xpid()))
+      shadow_plot.run()
+      results = shadow_plot.get_results()
+      from scitbx.array_family import flex
+      fraction_shadowed = flex.double(results['fraction_shadowed'])
+      scan_points = flex.double(results['scan_points'])
+
+      phi_width = self.get_phi_width()
+      scan = imageset.get_scan()
+      oscillation_range = scan.get_oscillation_range()
+      oscillation = scan.get_oscillation()
+      bg_images = self._background_images
+      bg_range_deg = (scan.get_angle_from_image_index(bg_images[0]),
+                      scan.get_angle_from_image_index(bg_images[1]))
+      bg_range_width = bg_range_deg[1] - bg_range_deg[0]
+
+      min_shadow = 100
+      best_bg_range = bg_range_deg
+      from libtbx.utils import frange
+      for bg_range_start in frange(flex.min(scan_points), flex.max(scan_points) - bg_range_width, step=oscillation[1]):
+        bg_range_deg = (bg_range_start, bg_range_start + bg_range_width)
+        sel = (scan_points >= bg_range_deg[0]) & (scan_points <= bg_range_deg[1])
+        mean_shadow = flex.mean(fraction_shadowed.select(sel))
+        if mean_shadow < min_shadow:
+          min_shadow = mean_shadow
+          best_bg_range = bg_range_deg
+
+      self._background_images = (
+        scan.get_image_index_from_angle(best_bg_range[0]),
+        scan.get_image_index_from_angle(best_bg_range[1]))
+      Debug.write('Setting background images: %s -> %s' %self._background_images)
 
     init = self.Init()
 
