@@ -218,8 +218,8 @@ def Index(DriverType = None):
           self._p1_cell = map(float, record.replace('(', '').replace(
             ')', '').replace(',', '').split()[-6:])
 
-        if 'Final RMSDs by experiment' in record:
-          values = records[i+6].strip().strip('|').split('|')
+        if 'RMSDs by experiment' in record:
+          values = records[i+5].strip().strip('|').split('|')
           if values:
             values = [float(v) for v in values]
             if values[0] == 0:
