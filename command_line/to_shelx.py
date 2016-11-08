@@ -104,7 +104,7 @@ def to_shelx(hklin, prefix, compound='', options=None):
   ma = reader.as_miller_arrays(merge_equivalents=False)
   labels = [c.info().labels for c in ma]
   if ['I', 'SIGI'] not in labels:
-    if ['I(+)', 'SIGI(+)', 'I(-)', 'SIGI(-)']:
+    if ['I(+)', 'SIGI(+)', 'I(-)', 'SIGI(-)'] in labels:
       print "Error: xia2.to_shelx must be run on unmerged data."
     else:
       print "Error: columns I / SIGI not found."
