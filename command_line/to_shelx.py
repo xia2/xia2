@@ -101,8 +101,16 @@ def to_shelx(hklin, prefix, compound='', options=None):
 
   reader = any_reflection_file(hklin)
   mtz_object = reader.file_content()
-  intensities = [ma for ma in reader.as_miller_arrays(merge_equivalents=False)
-                 if ma.info().labels == ['I', 'SIGI']][0]
+  ma = reader.as_miller_arrays(merge_equivalents=False)
+  labels = [c.info().labels for c in ma]
+  if ['I', 'SIGI'] not in labels:
+    if ['I(+)', 'SIGI(+)', 'I(-)', 'SIGI(-)']:
+      print "Error: xia2.to_shelx must be run on unmerged data."
+    else:
+      print "Error: columns I / SIGI not found."
+    sys.exit(1)
+
+  intensities = [c for c in ma if c.info().labels == ['I', 'SIGI']][0]
 
   # FIXME do I need to reindex to a conventional setting here
 
