@@ -397,18 +397,30 @@ class DialsIndexer(Indexer):
       if self._indxr_input_cell is not None:
         indexer = self._do_indexing("real_space_grid_search")
       else:
-        indexer_fft3d = self._do_indexing(method="fft3d")
-        nref_3d, rmsd_3d = indexer_fft3d.get_nref_rmsds()
-        indexer_fft1d = self._do_indexing(method="fft1d")
-        nref_1d, rmsd_1d = indexer_fft1d.get_nref_rmsds()
+        try:
+          indexer_fft3d = self._do_indexing(method="fft3d")
+          nref_3d, rmsd_3d = indexer_fft3d.get_nref_rmsds()
+        except Exception, e:
+          nref_3d = None
+          rmsd_3d = None
+        try:
+          indexer_fft1d = self._do_indexing(method="fft1d")
+          nref_1d, rmsd_1d = indexer_fft1d.get_nref_rmsds()
+        except Exception, e:
+          nref_1d = None
+          rmsd_1d = None
 
-        if (nref_1d > nref_3d and
+        if (nref_1d is not None and
+            nref_3d is None or (
+            nref_1d > nref_3d and
             rmsd_1d[0] < rmsd_3d[0] and
             rmsd_1d[1] < rmsd_3d[1] and
-            rmsd_1d[2] < rmsd_3d[2]):
+            rmsd_1d[2] < rmsd_3d[2])):
           indexer = indexer_fft1d
-        else:
+        elif nref_3d is not None:
           indexer = indexer_fft3d
+        else:
+          raise RuntimeError(e)
 
     else:
       indexer = self._do_indexing(
