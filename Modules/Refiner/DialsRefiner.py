@@ -116,14 +116,7 @@ class DialsRefiner(Refiner):
 
       from dxtbx.serialize import load
 
-      refiner = self.Refine()
-      refiner.set_experiments_filename(indexed_experiments)
-      refiner.set_indexed_filename(indexed_reflections)
-      refiner.set_scan_varying(False)
-      refiner.run()
-      self._refinr_experiments_filename \
-        = refiner.get_refined_experiments_filename()
-      self._refinr_indexed_filename = refiner.get_refined_filename()
+      scan_static = PhilIndex.params.dials.refine.scan_static
 
       # XXX Temporary workaround for dials.refine error for scan_varying
       # refinement with smaller wedges
@@ -131,7 +124,24 @@ class DialsRefiner(Refiner):
 
       if (PhilIndex.params.dials.refine.scan_varying and total_phi_range > 5
           and not PhilIndex.params.dials.fast_mode):
+        scan_varying = PhilIndex.params.dials.refine.scan_varying
+      else:
+        scan_varying = False
 
+      if scan_static:
+        refiner = self.Refine()
+        refiner.set_experiments_filename(indexed_experiments)
+        refiner.set_indexed_filename(indexed_reflections)
+        refiner.set_scan_varying(False)
+        refiner.run()
+        self._refinr_experiments_filename \
+          = refiner.get_refined_experiments_filename()
+        self._refinr_indexed_filename = refiner.get_refined_filename()
+      else:
+        self._refinr_experiments_filename = indexed_experiments
+        self._refinr_indexed_filename = indexed_reflections
+
+      if scan_varying:
         refiner = self.Refine()
         refiner.set_experiments_filename(self._refinr_experiments_filename)
         refiner.set_indexed_filename(self._refinr_indexed_filename)
@@ -142,27 +152,27 @@ class DialsRefiner(Refiner):
           = refiner.get_refined_experiments_filename()
         self._refinr_indexed_filename = refiner.get_refined_filename()
 
-      FileHandler.record_log_file('%s REFINE' % idxr.get_indexer_full_name(),
-                                  refiner.get_log_file())
+      if scan_static or scan_varying:
+        FileHandler.record_log_file('%s REFINE' % idxr.get_indexer_full_name(),
+                                    refiner.get_log_file())
+        report = self.Report()
+        report.set_experiments_filename(self._refinr_experiments_filename)
+        report.set_reflections_filename(self._refinr_indexed_filename)
+        html_filename = os.path.join(
+          self.get_working_directory(),
+          '%i_dials.refine.report.html' %report.get_xpid())
+        report.set_html_filename(html_filename)
+        report.run()
+        assert os.path.exists(html_filename)
+        FileHandler.record_html_file(
+          '%s REFINE' %idxr.get_indexer_full_name(), html_filename)
+
       experiments = load.experiment_list(self._refinr_experiments_filename)
       self.set_refiner_payload("experiments.json", self._refinr_experiments_filename)
       self.set_refiner_payload("reflections.pickle", self._refinr_indexed_filename)
 
       # this is the result of the cell refinement
       self._refinr_cell = experiments.crystals()[0].get_unit_cell().parameters()
-
-      report = self.Report()
-      report.set_experiments_filename(self._refinr_experiments_filename)
-      report.set_reflections_filename(self._refinr_indexed_filename)
-      html_filename = os.path.join(
-        self.get_working_directory(),
-        '%i_dials.refine.report.html' %report.get_xpid())
-      report.set_html_filename(html_filename)
-      report.run()
-      assert os.path.exists(html_filename)
-      FileHandler.record_html_file(
-        '%s REFINE' %idxr.get_indexer_full_name(), html_filename)
-
 
   def _refine_finish(self):
     pass

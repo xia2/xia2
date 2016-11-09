@@ -226,6 +226,9 @@ dials
     phil_file = None
       .type = path
       .short_caption = "phil file to pass to dials.refine"
+    scan_static = True
+      .expert_level = 2
+      .type = bool
     scan_varying = True
       .type = bool
       .short_caption = "Fit a scan-varying model"
