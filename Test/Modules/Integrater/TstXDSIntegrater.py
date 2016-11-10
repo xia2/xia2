@@ -87,7 +87,7 @@ def exercise_xds_integrater(nproc=None):
   assert approx_equal(integrater.get_integrater_cell(),
                       [78.066, 78.066, 78.066, 90, 90, 90], eps=3e-2)
   assert approx_equal(integrater.get_integrater_mosaic_min_mean_max(),
-                      (0.181, 0.181, 0.181), eps=1e-3)
+                      (0.180, 0.180, 0.180), eps=1e-3)
 
   # test serialization of integrater
   json_str = integrater.as_json()
