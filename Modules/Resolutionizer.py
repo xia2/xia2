@@ -576,6 +576,8 @@ resolutionizer {
     .type = float
   cc_half = 0.5
     .type = float
+  cc_half_p_value = None
+    .type = float(value_min=0, value_max=1)
   isigma = 0.25
     .type = float
   misigma = 1.0
@@ -943,14 +945,16 @@ class resolutionizer(object):
         b.append(cc_half_contrib[1])
 
     if len(a) <= 1 or len(b) <= 1:
-      return None
+      return None, None
 
     ma = sum(a) / len(a)
     mb = sum(b) / len(b)
 
-    return sum([(_a - ma) * (_b - mb) for _a, _b in zip(a, b)]) / \
+    cc_half = sum([(_a - ma) * (_b - mb) for _a, _b in zip(a, b)]) / \
       math.sqrt(sum([(_a - ma) ** 2 for _a in a]) * \
                 sum([(_b - mb) ** 2 for _b in b]))
+    n = len(a)
+    return cc_half, n
 
   def calculate_rmerge(self, hkl_list = None):
     '''Calculate the overall Rmerge.'''
@@ -1403,9 +1407,31 @@ class resolutionizer(object):
       return 1.0 / math.sqrt(max(s_s))
 
     cc_s = [self.calculate_cc_half(bin) for bin in reversed(bins)]
+    s_s = [s for s, cc in zip(s_s, cc_s) if cc[0] is not None]
+    nref = [cc[1] for cc in cc_s if cc[1] is not None]
+    cc_s = [c[0] for c in cc_s if cc[0] is not None]
 
-    s_s = [s for s, cc in zip(s_s, cc_s) if cc is not None]
-    cc_s = [cc for cc in cc_s if cc is not None]
+    p = self._params.cc_half_p_value
+
+    if p is not None:
+      significance = flex.bool()
+      confidence_limit = flex.double()
+
+      # https://en.wikipedia.org/wiki/Pearson_product-moment_correlation_coefficient#Testing_using_Student.27s_t-distribution
+      for r, n in zip(cc_s, nref):
+        t = r * math.sqrt((n-2)/(1-r**2))
+        from scitbx.math import distributions
+        dist = distributions.students_t_distribution(n-2)
+        significance.append(t > dist.quantile(p))
+        t1 = dist.quantile(p)
+        confidence_limit.append(t1/math.sqrt(t1**2 + n - 2))
+
+      #for s, cc, sig in zip(s_s, cc_s, significance):
+        #if sig:
+          #prefix = '*'
+        #else:
+          #prefix = ' '
+        #print '%s %.2f %.3f' %(prefix, 1/math.sqrt(s), cc)
 
     stamp("rch: cc_s = %s" % cc_s)
     stamp("rch: min cc_s = %s" % min(cc_s))
@@ -1414,7 +1440,25 @@ class resolutionizer(object):
     if min(cc_s) > limit:
       return 1.0 / math.sqrt(max(s_s))
 
-    cc_f = fit(s_s, cc_s, 6)
+    if p is not None:
+      # index of last insignificant bin
+      i = flex.last_index(significance, False)
+      if i is None or i == len(significance) - 1:
+        i = 0
+      else:
+        i += 1
+    else:
+      i = 0
+    cc_f = fit(s_s[i:], cc_s[i:], 6)
+
+    if 0:
+      # generate pretty plot
+      from matplotlib import pyplot
+      pyplot.plot(s_s[i:], cc_f)
+      pyplot.plot(s_s, cc_s)
+      if p is not None:
+        pyplot.plot(s_s, confidence_limit)
+      pyplot.show()
 
     stamp("rch: fits")
     rlimit = limit * max(cc_s)
