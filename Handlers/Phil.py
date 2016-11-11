@@ -377,6 +377,11 @@ xia2.settings
     .short_caption = 'Fail over gracefully'
     .help = 'If processing a sweep fails, keep going'
     .expert_level = 1
+  multi_crystal = False
+    .type = bool
+    .short_caption = 'Settings for working with multiple crystals'
+    .help = 'Settings for working with multiple crystals'
+    .expert_level = 1
   interactive = False
     .type = bool
     .short_caption = 'Interactive indexing'

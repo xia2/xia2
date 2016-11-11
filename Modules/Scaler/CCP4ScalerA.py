@@ -120,6 +120,9 @@ class CCP4ScalerA(Scaler):
     aimless.set_surface_link(PhilIndex.params.ccp4.aimless.surface_link)
     aimless.set_secondary(PhilIndex.params.ccp4.aimless.secondary)
 
+    if PhilIndex.params.xia2.settings.multi_crystal == True:
+      aimless.set_surface_link(False)
+
     # if profile fitting off use summation intensities
     if PhilIndex.params.xia2.settings.integration.profile_fitting:
       aimless.set_intensities(PhilIndex.params.ccp4.aimless.intensities)
