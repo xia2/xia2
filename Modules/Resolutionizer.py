@@ -610,6 +610,9 @@ resolutionizer {
 %s
   batch_range = None
     .type = ints(size=2, value_min=0)
+  plot_cc_half = False
+    .type = bool
+    .expert_level = 2
 }
 ''' %phil_str)
 
@@ -1476,14 +1479,15 @@ class resolutionizer(object):
       i = 0
     cc_f = fit(s_s[i:], cc_s[i:], 6)
 
-    if 0:
+    if self._params.plot_cc_half:
       # generate pretty plot
       from matplotlib import pyplot
+      pyplot.style.use('ggplot')
       pyplot.plot(s_s[i:], cc_f)
       pyplot.plot(s_s, cc_s)
       if p is not None:
         pyplot.plot(s_s, confidence_limit)
-      pyplot.show()
+      pyplot.savefig('cc_half.png')
 
     stamp("rch: fits")
     rlimit = limit * max(cc_s)
