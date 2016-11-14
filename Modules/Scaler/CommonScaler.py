@@ -949,6 +949,7 @@ class CommonScaler(Scaler):
     m.set_limit_rmerge(params.rmerge)
     m.set_limit_completeness(params.completeness)
     m.set_limit_cc_half(params.cc_half)
+    m.set_cc_half_p_value(params.cc_half_p_value)
     m.set_limit_isigma(params.isigma)
     m.set_limit_misigma(params.misigma)
     if PhilIndex.params.xia2.settings.small_molecule == True:

@@ -521,31 +521,7 @@ xia2.settings
       .type = float(value_min=0.0)
       .help = "High resolution cutoff."
       .short_caption = "High resolution cutoff"
-    rmerge = None
-      .type = float(value_min=0)
-      .help = "Maximum value of Rmerge in the outer resolution shell"
-      .short_caption = "Outer shell Rmerge"
-      .expert_level = 1
-    completeness = None
-      .type = float(value_min=0)
-      .help = "Minimum completeness in the outer resolution shell"
-      .short_caption = "Outer shell completeness"
-      .expert_level = 1
-    cc_half = 0.5
-      .type = float(value_min=0)
-      .help = "Minimum value of CC1/2 in the outer resolution shell"
-      .short_caption = "Outer shell CC1/2"
-      .expert_level = 1
-    isigma = 0.25
-      .type = float(value_min=0)
-      .help = "Minimum value of the unmerged <I/sigI> in the outer resolution shell"
-      .short_caption = "Outer shell unmerged <I/sigI>"
-      .expert_level = 1
-    misigma = 1.0
-      .type = float(value_min=0)
-      .help = "Minimum value of the merged <I/sigI> in the outer resolution shell"
-      .short_caption = "Outer shell merged <I/sigI>"
-      .expert_level = 1
+    include scope xia2.Modules.Resolutionizer.phil_str
   }
   unify_setting = False
     .type = bool

@@ -32,7 +32,7 @@ from cctbx.miller import build_set
 from cctbx.miller import map_to_asu
 from cctbx.sgtbx import rt_mx
 from iotbx import mtz
-from libtbx.phil import parse
+import libtbx.phil
 from scitbx import lbfgs
 
 def nint(a):
@@ -568,33 +568,58 @@ class unmerged_intensity(object):
 
     return result
 
-phil_defaults = '''
-resolutionizer {
-  rmerge = 0.0
-    .type = float
-  completeness = 0.0
-    .type = float
+phil_str = '''
+  rmerge = None
+    .type = float(value_min=0)
+    .help = "Maximum value of Rmerge in the outer resolution shell"
+    .short_caption = "Outer shell Rmerge"
+    .expert_level = 1
+  completeness = None
+    .type = float(value_min=0)
+    .help = "Minimum completeness in the outer resolution shell"
+    .short_caption = "Outer shell completeness"
+    .expert_level = 1
   cc_half = 0.5
-    .type = float
+    .type = float(value_min=0)
+    .help = "Minimum value of CC1/2 in the outer resolution shell"
+    .short_caption = "Outer shell CC1/2"
+    .expert_level = 1
   cc_half_p_value = None
     .type = float(value_min=0, value_max=1)
+    .expert_level = 1
   isigma = 0.25
-    .type = float
+    .type = float(value_min=0)
+    .help = "Minimum value of the unmerged <I/sigI> in the outer resolution shell"
+    .short_caption = "Outer shell unmerged <I/sigI>"
+    .expert_level = 1
   misigma = 1.0
-    .type = float
+    .type = float(value_min=0)
+    .help = "Minimum value of the merged <I/sigI> in the outer resolution shell"
+    .short_caption = "Outer shell merged <I/sigI>"
+    .expert_level = 1
   nbins = 100
     .type = int
+    .help = "Number of resolution bins to use for estimation of resolution limit."
+    .short_caption = "Number of resolution bins."
+    .expert_level = 1
+'''
+
+
+phil_defaults = libtbx.phil.parse('''
+resolutionizer {
+%s
   batch_range = None
     .type = ints(size=2, value_min=0)
 }
-'''
+''' %phil_str)
+
 
 class resolutionizer(object):
   '''A class to calculate things from merging reflections.'''
 
   def __init__(self, args):
 
-    working_phil = parse(phil_defaults)
+    working_phil = phil_defaults
     interp = working_phil.command_line_argument_interpreter(
       home_scope='resolutionizer')
     params, unhandled = interp.process_and_fetch(
