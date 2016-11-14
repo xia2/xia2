@@ -2,6 +2,7 @@
 Release notes
 +++++++++++++
 
+For more recent release notes, see https://github.com/dials/dials/releases.
 
 Changes since 0.3.8.0
 ---------------------

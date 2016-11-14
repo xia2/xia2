@@ -20,19 +20,32 @@ each wavelength separately. If only one wavelength is present xia2 will assume
 that the data are a native data set - to separate anomalous pairs provide a
 heavy atom (at this time it doesn't matter what it is...) i.e.::
 
-  xia2 -atom se /my/data/are/here
+  xia2 atom=se /my/data/are/here
 
 Other options are (type just xia2 to get this list)::
 
   Command-line options to xia2:
-  [-2d] or [-3d] or [-3dii]
-  [nproc=4] (say, for XDS usage)
+  [pipeline=XXX] select processing pipeline, with XXX one of:
+    2d    MOSFLM, LABELIT (if installed), AIMLESS
+    3d    XDS, XSCALE, LABELIT
+    3dii  XDS, XSCALE, using all images for autoindexing
+    dials DIALS, AIMLESS
+  [xinfo=foo.xinfo] or [/path/to/images]
+
   [d_min=2.8] (say, applies to all sweeps)
+  [nproc=4] run on 4 processors (automatic)
+  [space_group=C2] (for example)
+  [unit_cell=50,50,50,90,90,90] (for example)
   [reverse_phi=True]
   [beam_centre=x,y] (in mm, following the MOSFLM convention, applies to all sweeps)
-  [-freer_file free.mtz]
-  [-quick]
-  [-atom se] (say)
+  [dials.fast_mode=True] for very fast processing
+  [atom=se] (say) - this is for xia2setup
+  [project=foo] (say) - this is for xia2setup
+  [crystal=bar] (say) - this is for xia2setup
+
+  Sensible command lines:
+  xia2 (pipeline=2d|3d|..) -xinfo foo.xinfo
+  xia2 project=foo crystal=bar (pipeline=2d|3d|..) /data/path
 
 Running ths way some assumptions are made:
 

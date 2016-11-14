@@ -13,14 +13,12 @@ Examples include (but not limited to):
 * Inverse beam experiments
 
 Images or directories can be passed on the command line, as with a normal
-xia2 job processing a single sweep. We have recently modified xia2 to allow
-passing multiple directories on the command line (previously all images
-were required to be in the same directories, or nested in subdirectories),
-and to allow passing multiple images via the :samp:`image=` parameter::
+xia2 job processing a single sweep. Xia2 now allows passing multiple directories
+on the command line, or passing multiple images via the :samp:`image=` parameter::
 
-  xia2 -dials /path/to/images/dataset_1 /path/to/images/dataset_2
+  xia2 pipeline=dials /path/to/images/dataset_1 /path/to/images/dataset_2
 
-  xia2 -dials image=/path/to/images/sweep_1_0001.cbf image=/path/to/images/sweep_2_0001.cbf
+  xia2 pipeline=dials image=/path/to/images/sweep_1_0001.cbf image=/path/to/images/sweep_2_0001.cbf
 
 Alternatively, you can specify exactly which images you wish to process in an
 .xinfo file::
@@ -52,7 +50,7 @@ Alternatively, you can specify exactly which images you wish to process in an
 When processing many datasets simultaneously, it may happen that some datasets
 will process successfully, but xia2 will fail to process others. By default,
 xia2 will stop with an error message if any error is encountered, however if
-the :samp:`-failover` flag is passed on the command line, then xia2 will
+the :samp:`failover=True` is set on the command line, then xia2 will
 ignore any failed sweeps and continue processing with only those sweeps that
 processed successfully.
 
@@ -80,7 +78,7 @@ command line can help in both these situations.
 +----------------------------------+---------------------------------------+
 | Parameter                        |  Description                          |
 +==================================+=======================================+
-| ``-failover``                    | If processing fails for any sweeps,   |
+| ``failover=True``                | If processing fails for any sweeps,   |
 |                                  | ignore and just use those sweeps that |
 |                                  | processed successfully                |
 +----------------------------------+---------------------------------------+
@@ -108,7 +106,7 @@ using :samp:`multiprocessing.njob` to indicate how many sweeps should be
 processed simultaneously, using :samp:`multiprocessing.nproc` processors
 per sweep::
 
-  xia2 -dials /path/to/images multiprocessing.mode=parallel \
+  xia2 pipeline=dials /path/to/images multiprocessing.mode=parallel \
     multiprocessing.njob=2 multiprocessing.nproc=4
 
 .. note::
@@ -123,7 +121,7 @@ available (currently we only support qsub) by specifying the parameter
 :samp:`multiprocessing.qsub_command` may be used (if needed) to e.g. specify
 which queue jobs should be submitted to::
 
-  xia2 -dials /path/to/images multiprocessing.mode=parallel \
+  xia2 pipeline=dials /path/to/images multiprocessing.mode=parallel \
     multiprocessing.type=qsub multiprocessing.qsub_command="qsub -q low.q" \
     multiprocessing.njob=10 multiprocessing.nproc=16
 

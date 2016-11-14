@@ -28,10 +28,11 @@ Resolution limits
 The subject of resolution limits is one often raised - by default in xia2 they
 are:
 
-  * Merged :math:`\frac{I}{\sigma_I} > 2`
-  * Unmerged :math:`\frac{I}{\sigma_I} > 1`
+  * :math:`CC_{\frac{1}{2}} > 0.5`
+  * Merged :math:`\frac{I}{\sigma_I} > 1`
+  * Unmerged :math:`\frac{I}{\sigma_I} > 0.25`
 
-However you can override these with :samp:`misigma=...`, :samp:`isigma=...`
+However you can override these with :samp:`cc_half=...`, :samp:`misigma=...`, :samp:`isigma=...`
 
 Phil parameters
 ---------------

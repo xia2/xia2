@@ -4,28 +4,24 @@ Using xia2
 
 As mentioned in the :doc:`quick start guide </quick_start>`, to get started simply run::
 
-  xia2 -dials /here/are/my/images
+  xia2 pipeline=dials /here/are/my/images
 
 or::
 
-  xia2 -2d /here/are/my/images
+  xia2 pipeline=3d /here/are/my/images
 
-or::
-
-  xia2 -3d /here/are/my/images
-
-The program is used from the command-line; there is no GUI. The four
+The program is used from the command-line; there is no GUI. The
 most important command-line options are as follows:
 
-  =======  =====
-  Option   Usage
-  =======  =====
-  -atom X  tell xia2 to separate anomalous pairs i.e. I(+) :math:`\neq` I(−) in scaling
-  -dials   tell xia2 to use DIALS_ and Aimless_
-  -2d      tell xia2 to use MOSFLM_ and Aimless_
-  -3d      tell xia2 to use XDS_ and XSCALE_
-  -3dii    tell xia2 to use XDS_ and XSCALE_, indexing with peaks found from all images
-  =======  =====
+  =======         =====
+  Option          Usage
+  =======         =====
+  atom= X         tell xia2 to separate anomalous pairs i.e. I(+) :math:`\neq` I(−) in scaling
+  pipeline=dials  tell xia2 to use DIALS_ and Aimless_
+  pipeline=2d     tell xia2 to use MOSFLM_ and Aimless_
+  pipeline=3d     tell xia2 to use XDS_ and XSCALE_
+  pipeline=3dii   tell xia2 to use XDS_ and XSCALE_, indexing with peaks found from all images
+  =======         =====
 
 These specify in the broadest possible terms to the program the manner
 in which you would like the processing performed. The program will then

@@ -10,7 +10,7 @@ phasing, and the data were recorded as a single sweep. As may be seen
 from Figure 2, the quality of diffraction was not ideal, and radiation damage
 was an issue. Initially the data were processed with::
 
-  xia2 -3d -atom Ba /here/are/my/data
+  xia2 pipeline=3d -atom Ba /here/are/my/data
 
 giving the merging statistics shown below:
 
@@ -25,7 +25,7 @@ giving the merging statistics shown below:
   Rmeas(I+/-)            0.121  0.105 0.679
   Rpim(I)                0.034  0.038 0.267
   Rpim(I+/-)             0.043  0.041 0.368
-  Wilson B factor        12.131 
+  Wilson B factor        12.131
   Anomalous completeness 93.3   52.6  58.0
   Anomalous multiplicity 6.4    5.0   2.0
   Anomalous correlation  0.544  0.791 -0.297
@@ -58,33 +58,10 @@ the first 200 of the 450 images. While it is usual to limit the batch range in
 scaling when processing the data manually, xia2 is not set up to work like
 this as decisions made for the full data set (e.g. scaling model to use) may
 differ from those for the subset - we therefore need to rerun the whole xia2
-job after modifying the input. All that is necessary is to adjust the image
-range (START END) to get the modified input file shown below::
+job after modifying the input. It is easy to do this using the
+``image=/path/to/image_001.img:start:end syntax``::
 
-  BEGIN PROJECT AUTOMATIC
-  BEGIN CRYSTAL DEFAULT
-
-  BEGIN HA_INFO
-  ATOM Ba
-  END HA_INFO
-
-  BEGIN WAVELENGTH SAD
-  WAVELENGTH 0.979500
-  END WAVELENGTH SAD
-
-  BEGIN SWEEP SWEEP1
-  WAVELENGTH SAD
-  DIRECTORY /dls/i02/data/2011/mx1234-5
-  IMAGE K5_M1S3_3_001.img
-  START_END 1 200 ! THIS WAS 450
-  END SWEEP SWEEP1
-
-  END CRYSTAL DEFAULT
-  END PROJECT AUTOMATIC
-
-and rerun as::
-
-  xia2 -3d -xinfo modified.xinfo
+  xia2 pipeline=3d image=/dls/i02/data/2011/mx1234-5/K5_M1S3_3_001.img:1:200
 
 giving the following merging statistics:
 
@@ -112,6 +89,5 @@ These are clearly much more internally
 consistent and give nice results from experimental phasing though
 with very poor low resolution completeness. At the same time we may wish
 to adjust the resolution limits to give more complete data in the outer shell,
-which may be achieved by adding a RESOLUTION instruction to either the
-SWEEP or WAVELENGTH block.
+which may be achieved by setting the ``d_min=`` paramater on the command line.
 
