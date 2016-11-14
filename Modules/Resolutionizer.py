@@ -1481,12 +1481,22 @@ class resolutionizer(object):
 
     if self._params.plot_cc_half:
       # generate pretty plot
+      from cctbx import uctbx
+      import matplotlib
+      matplotlib.use('Agg')
       from matplotlib import pyplot
       pyplot.style.use('ggplot')
-      pyplot.plot(s_s[i:], cc_f)
-      pyplot.plot(s_s, cc_s)
+      pyplot.plot(s_s[i:], cc_f, label='CC1/2 (fit)')
+      pyplot.plot(s_s, cc_s, label='CC1/2')
+      ax = pyplot.gca()
+      xticks = ax.get_xticks()
+      xticks_d = [
+        '%.2f' %uctbx.d_star_sq_as_d(ds2) if ds2 > 0 else 0 for ds2 in xticks]
+      ax.set_xticklabels(xticks_d)
+      ax.set_xlabel('Resolution (A)')
       if p is not None:
-        pyplot.plot(s_s, confidence_limit)
+        pyplot.plot(s_s, confidence_limit, label='CC1/2 (confidence limit)')
+      pyplot.legend(loc='best')
       pyplot.savefig('cc_half.png')
 
     stamp("rch: fits")
