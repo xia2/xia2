@@ -32,7 +32,7 @@ def Merger(DriverType=None):
       self._limit_rmerge = None
       self._limit_completeness = None
       self._limit_cc_half = None
-      self._cc_half_p_value = None
+      self._cc_half_significance_level = None
       self._limit_isigma = None
       self._limit_misigma = None
       self._nbins = 100
@@ -67,8 +67,8 @@ def Merger(DriverType=None):
       self._limit_cc_half = limit_cc_half
       return
 
-    def set_cc_half_p_value(self, cc_half_p_value):
-      self._cc_half_p_value = cc_half_p_value
+    def set_cc_half_significance_level(self, cc_half_significance_level):
+      self._cc_half_significance_level = cc_half_significance_level
       return
 
     def set_limit_isigma(self, limit_isigma):
@@ -105,7 +105,7 @@ def Merger(DriverType=None):
       cl.append('rmerge=%s' % self._limit_rmerge)
       cl.append('completeness=%s' % self._limit_completeness)
       cl.append('cc_half=%s' % self._limit_cc_half)
-      cl.append('cc_half_p_value=%s' % self._cc_half_p_value)
+      cl.append('cc_half_significance_level=%s' % self._cc_half_significance_level)
       cl.append('isigma=%s' % self._limit_isigma)
       cl.append('misigma=%s' % self._limit_misigma)
       if self._batch_range is not None:

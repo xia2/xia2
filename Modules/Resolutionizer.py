@@ -584,7 +584,7 @@ phil_str = '''
     .help = "Minimum value of CC1/2 in the outer resolution shell"
     .short_caption = "Outer shell CC1/2"
     .expert_level = 1
-  cc_half_p_value = None
+  cc_half_significance_level = None
     .type = float(value_min=0, value_max=1)
     .expert_level = 1
   isigma = 0.25
@@ -1439,7 +1439,7 @@ class resolutionizer(object):
     nref = [cc[1] for cc in cc_s if cc[1] is not None]
     cc_s = [c[0] for c in cc_s if cc[0] is not None]
 
-    p = self._params.cc_half_p_value
+    p = self._params.cc_half_significance_level
 
     if p is not None:
       significance = flex.bool()
@@ -1450,8 +1450,8 @@ class resolutionizer(object):
         t = r * math.sqrt((n-2)/(1-r**2))
         from scitbx.math import distributions
         dist = distributions.students_t_distribution(n-2)
-        significance.append(t > dist.quantile(p))
-        t1 = dist.quantile(p)
+        significance.append(t > dist.quantile(1-p))
+        t1 = dist.quantile(1-p)
         confidence_limit.append(t1/math.sqrt(t1**2 + n - 2))
 
       #for s, cc, sig in zip(s_s, cc_s, significance):
@@ -1486,7 +1486,7 @@ class resolutionizer(object):
       matplotlib.use('Agg')
       from matplotlib import pyplot
       pyplot.style.use('ggplot')
-      pyplot.plot(s_s[i:], cc_f, label='CC1/2 (fit)')
+      pyplot.plot(s_s[i:], cc_f, label='fit')
       pyplot.plot(s_s, cc_s, label='CC1/2')
       ax = pyplot.gca()
       xticks = ax.get_xticks()
@@ -1494,9 +1494,11 @@ class resolutionizer(object):
         '%.2f' %uctbx.d_star_sq_as_d(ds2) if ds2 > 0 else 0 for ds2 in xticks]
       ax.set_xticklabels(xticks_d)
       ax.set_xlabel('Resolution (A)')
+      ax.set_ylabel('CC1/2')
       if p is not None:
-        pyplot.plot(s_s, confidence_limit, label='CC1/2 (confidence limit)')
-      pyplot.legend(loc='best')
+        pyplot.plot(
+          s_s, confidence_limit, label='Confidence limit (p=%g)' %p)
+      ax.legend(loc='best')
       pyplot.savefig('cc_half.png')
 
     stamp("rch: fits")
