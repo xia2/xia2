@@ -87,10 +87,6 @@ def run(args):
 
   merging_stats_table = [headers]
   merging_stats_table.extend(rows)
-  from xia2.lib.tabulate import tabulate
-  merging_stats_table_html = tabulate(rows, headers, tablefmt='html')
-  merging_stats_table_html = merging_stats_table_html.replace(
-    '<table>', '<table class="table table-hover table-condensed">')
 
   unit_cell_params = intensities.unit_cell().parameters()
 
@@ -117,22 +113,6 @@ def run(args):
   overall_stats_table = [headers]
   overall_stats_table.extend(rows)
 
-  overall_stats_table_html = tabulate(rows, headers, tablefmt='html')
-  overall_stats_table_html = overall_stats_table_html.replace(
-    '<table>', '<table class="table table-hover table-condensed">')
-
-  #headers = ['Crystal symmetry', '']
-  #rows = [
-    #[u'Unit cell: a (Å)', '%.3f' %unit_cell_params[0]],
-    #[u'b (Å)', '%.3f' %unit_cell_params[1]],
-    #[u'c (Å)', '%.3f' %unit_cell_params[2]],
-    #[u'α (°)', '%.3f' %unit_cell_params[3]],
-    #[u'β (°)', '%.3f' %unit_cell_params[4]],
-    #[u'γ (°)', '%.3f' %unit_cell_params[5]],
-    #['Space group', intensities.space_group_info().symbol_and_number()],
-  #]
-
-  #symmetry_table_html = tabulate(rows, headers, tablefmt='html')
   symmetry_table_html = """
   <p>
     <b>Filename:</b> %s
@@ -531,6 +511,7 @@ def run(args):
                          unit_cell=str(intensities.unit_cell()),
                          overall_stats_table=overall_stats_table,
                          merging_stats_table=merging_stats_table,
+                         cc_half_significance_level=cc_half_significance_level,
                          resolution_graphs=resolution_graphs,
                          batch_graphs=batch_graphs,
                          misc_graphs=misc_graphs)
