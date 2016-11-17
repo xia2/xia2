@@ -255,22 +255,12 @@ class resolution_plot(object):
 class resolutionizer(object):
   '''A class to calculate things from merging reflections.'''
 
-  def __init__(self, args):
+  def __init__(self, scaled_unmerged, params):
 
-    working_phil = phil_defaults
-    interp = working_phil.command_line_argument_interpreter(
-      home_scope='resolutionizer')
-    params, unhandled = interp.process_and_fetch(
-      args, custom_processor='collect_remaining')
-
-    assert len(unhandled)
-    hklin = unhandled[0]
-
-    self._params = params.extract().resolutionizer
+    self._params = params
 
     import iotbx.merging_statistics
-
-    i_obs = iotbx.merging_statistics.select_data(hklin, data_labels=None)
+    i_obs = iotbx.merging_statistics.select_data(scaled_unmerged, data_labels=None)
     i_obs = i_obs.customized_copy(anomalous_flag=True, info=i_obs.info())
 
     self._merging_statistics = iotbx.merging_statistics.dataset_statistics(
@@ -557,8 +547,17 @@ class resolutionizer(object):
     return r_cc
 
 def run(args):
+  working_phil = phil_defaults
+  interp = working_phil.command_line_argument_interpreter(
+    home_scope='resolutionizer')
+  params, unhandled = interp.process_and_fetch(
+    args, custom_processor='collect_remaining')
+  params = params.extract().resolutionizer
+  assert len(unhandled)
+  scaled_unmerged = unhandled[0]
+
   stamp("Resolutionizer.py starting")
-  m = resolutionizer(args)
+  m = resolutionizer(scaled_unmerged, params)
   stamp("instantiated")
   m.resolution_auto()
   stamp("the end.")
