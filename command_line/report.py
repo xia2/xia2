@@ -67,7 +67,9 @@ def run(args):
     multiplicities_centric[x] = merging_centric.redundancies().data().count(x)
 
   headers = [u'Resolution (Å)', 'N(obs)', 'N(unique)', 'Multiplicity', 'Completeness',
-             'Mean(I)', 'Mean(I/sigma)', 'Rmerge', 'Rmeas', 'Rpim', 'CC1/2', 'CCano']
+             'Mean(I)', 'Mean(I/sigma)', 'Rmerge', 'Rmeas', 'Rpim', 'CC1/2']
+  if not intensities.space_group().is_centric():
+    headers.append('CCano')
   rows = []
   for bin_stats in merging_stats.bins:
     row = ['%.2f - %.2f' %(bin_stats.d_max, bin_stats.d_min),
@@ -75,7 +77,12 @@ def run(args):
            '%.2f' %(100*bin_stats.completeness), '%.1f' %bin_stats.i_mean,
            '%.1f' %bin_stats.i_over_sigma_mean, '%.3f' %bin_stats.r_merge,
            '%.3f' %bin_stats.r_meas, '%.3f' %bin_stats.r_pim,
-           '%.3f' %bin_stats.cc_one_half, '%.3f' %bin_stats.cc_anom]
+           '%.3f%s' %(bin_stats.cc_one_half,
+                      '*' if bin_stats.cc_one_half_significance else '')]
+
+    if not intensities.space_group().is_centric():
+      row.append(
+        '%.3f%s' %(bin_stats.cc_anom, '*' if bin_stats.cc_anom_significance else ''))
     rows.append(row)
 
   merging_stats_table = [headers]
