@@ -18,6 +18,7 @@ def run(args):
     args, custom_processor='collect_remaining')
   params = params.extract()
   n_bins = params.resolution_bins
+  cc_half_significance_level = params.cc_half_significance_level
 
   args = unhandled
 
@@ -52,7 +53,7 @@ def run(args):
 
   from iotbx import merging_statistics
   merging_stats = merging_statistics.dataset_statistics(
-    intensities, n_bins=n_bins)
+    intensities, n_bins=n_bins, cc_one_half_significance_level=cc_half_significance_level)
 
   merging_acentric = intensities.select_acentric().merge_equivalents()
   merging_centric = intensities.select_centric().merge_equivalents()
@@ -179,8 +180,12 @@ def run(args):
     bin_stats.i_over_sigma_mean for bin_stats in merging_stats.bins]
   cc_one_half_bins = [
     bin_stats.cc_one_half for bin_stats in merging_stats.bins]
+  cc_one_half_critical_value_bins = [
+    bin_stats.cc_one_half_critical_value for bin_stats in merging_stats.bins]
   cc_anom_bins = [
     bin_stats.cc_anom for bin_stats in merging_stats.bins]
+  cc_anom_critical_value_bins = [
+    bin_stats.cc_anom_critical_value for bin_stats in merging_stats.bins]
 
   from xia2.Modules.PyChef2 import PyChef
   if params.chef_min_completeness:
@@ -296,12 +301,41 @@ def run(args):
           'y': cc_one_half_bins,
           'type': 'scatter',
           'name': 'CC-half',
+          'mode': 'lines',
+          'line': {
+            'color': 'rgb(31, 119, 180)',
+          },
+        },
+        {
+          'x': d_star_sq_bins, # d_star_sq
+          'y': cc_one_half_critical_value_bins,
+          'type': 'scatter',
+          'name': 'CC-half critical value (p=0.01)',
+          'line': {
+            'color': 'rgb(31, 119, 180)',
+            'dash': 'dot',
+          },
         },
         ({
           'x': d_star_sq_bins, # d_star_sq
           'y': cc_anom_bins,
           'type': 'scatter',
           'name': 'CC-anom',
+          'mode': 'lines',
+          'line': {
+            'color': 'rgb(255, 127, 14)',
+          },
+        } if not intensities.space_group().is_centric() else {}),
+        ({
+          'x': d_star_sq_bins, # d_star_sq
+          'y': cc_anom_critical_value_bins,
+          'type': 'scatter',
+          'name': 'CC-anom critical value (p=0.01)',
+          'mode': 'lines',
+          'line': {
+            'color': 'rgb(255, 127, 14)',
+            'dash': 'dot',
+          },
         } if not intensities.space_group().is_centric() else {}),
       ],
       'layout':{

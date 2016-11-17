@@ -23,6 +23,8 @@ range {
   max = None
     .type = float(value_min=0)
 }
+cc_half_significance_level = 0.01
+  .type = float(value_min=0, value_max=1)
 chef_min_completeness = None
   .type = float(value_min=0, value_max=1)
   .help = "Minimum value of completeness in outer resolution shell used to "
