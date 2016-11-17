@@ -18,6 +18,7 @@
 #
 # The standalone (moving to C++) version... FIXME use a DIALS ReflectionTable
 # in here: this would be much faster.
+# LIBTBX_PRE_DISPATCHER_INCLUDE_SH export BOOST_ADAPTBX_FPE_DEFAULT=1
 
 import sys
 import math
@@ -201,6 +202,11 @@ phil_str = '''
     .help = "Number of resolution bins to use for estimation of resolution limit."
     .short_caption = "Number of resolution bins."
     .expert_level = 1
+  binning_method = *counting_sorted volume
+    .type = choice
+    .help = "Use equal-volume bins or bins with approximately equal numbers of reflections per bin."
+    .short_caption = "Equal-volume or equal #ref binning."
+    .expert_level = 1
 '''
 
 
@@ -218,6 +224,8 @@ resolutionizer {
 
 class resolution_plot(object):
   def __init__(self, ylabel):
+    import matplotlib
+    matplotlib.use('Agg')
     from matplotlib import pyplot
     pyplot.style.use('ggplot')
     self.ylabel = ylabel
@@ -269,7 +277,7 @@ class resolutionizer(object):
       i_obs=i_obs,
       n_bins=self._params.nbins,
       cc_one_half_significance_level=self._params.cc_half_significance_level,
-      #binning_method='counting_sorted',
+      binning_method=self._params.binning_method,
       anomalous=True,
       use_internal_variance=False,
       eliminate_sys_absent=False,
