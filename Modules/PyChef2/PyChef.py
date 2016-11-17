@@ -508,6 +508,12 @@ class Statistics(PyStatistics):
       if flex.min(dose) == 0:
         dose += 1
 
+    # fix for completeness > 1 if screw axes present
+    intensities = intensities.customized_copy(
+      space_group_info=intensities.space_group().build_derived_reflection_intensity_group(
+        anomalous_flag=intensities.anomalous_flag()).info(),
+      info=intensities.info())
+
     self.intensities = intensities
     self.dose = dose
     self.n_bins = n_bins
