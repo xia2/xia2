@@ -211,5 +211,20 @@ url = {http://dx.doi.org/10.1107/S0907444913012274},
 </bibtex>
 </citation>
 
+<citation program="delta_cc_half">
+<acta>Assmann, G., Brehm, W. and Diederichs, K. (2016). J. Appl. Cryst. 49, 1021-1028.</acta>
+<bibtex>
+@article{assmann2016identification,
+  title={Identification of rogue datasets in serial crystallography},
+  author={Assmann, Greta and Brehm, Wolfgang and Diederichs, Kay},
+  journal={Journal of applied crystallography},
+  volume={49},
+  number={3},
+  year={2016},
+  publisher={International Union of Crystallography}
+}
+</bibtex>
+</citation>
+
 </citations>
- 
+

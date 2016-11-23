@@ -33,13 +33,7 @@ def get_scipy():
 
 get_scipy()
 
-master_phil_scope = iotbx.phil.parse("""\
-unit_cell = None
-  .type = unit_cell
-n_bins = 20
-  .type = int(value_min=1)
-d_min = None
-  .type = float(value_min=0)
+batch_phil_scope = """\
 batch
   .multiple = True
 {
@@ -48,7 +42,17 @@ batch
   range = None
     .type = ints(size=2, value_min=0)
 }
-""")
+"""
+
+master_phil_scope = iotbx.phil.parse("""\
+unit_cell = None
+  .type = unit_cell
+n_bins = 20
+  .type = int(value_min=1)
+d_min = None
+  .type = float(value_min=0)
+%s
+""" %batch_phil_scope)
 
 
 try:
@@ -60,19 +64,13 @@ except ImportError:
   raise Sorry("matplotlib must be installed to generate a plot.")
 
 
-class multi_crystal_analysis(object):
 
-  def __init__(self, unmerged_intensities, batches_all, n_bins=20, d_min=None,
-               id_to_batches=None):
+class separate_unmerged(object):
+
+  def __init__(self, unmerged_intensities, batches_all, id_to_batches=None):
 
     intensities = OrderedDict()
-    individual_merged_intensities = OrderedDict()
     batches = OrderedDict()
-    #m_isym = OrderedDict()
-
-    sel = unmerged_intensities.sigmas() > 0
-    unmerged_intensities = unmerged_intensities.select(sel)
-    batches_all = batches_all.select(sel)
 
     if id_to_batches is None:
       run_id_to_batch_id = None
@@ -83,9 +81,8 @@ class multi_crystal_analysis(object):
       for i, batch in enumerate(unique_batches):
         if last_batch is not None and batch > (last_batch + 1) or (i+1) == len(unique_batches):
           batch_sel = (batches_all.data() >= run_start) & (batches_all.data() <= last_batch)
-          batches[run_id] = batches_all.select(batch_sel).resolution_filter(d_min=d_min)
-          intensities[run_id] = unmerged_intensities.select(batch_sel).resolution_filter(d_min=d_min)
-          individual_merged_intensities[run_id] = intensities[run_id].merge_equivalents().array()
+          batches[run_id] = batches_all.select(batch_sel)
+          intensities[run_id] = unmerged_intensities.select(batch_sel)
           Debug.write("run %i batch %i to %i" %(run_id+1, run_start, last_batch))
           run_id += 1
           run_start = batch
@@ -98,22 +95,40 @@ class multi_crystal_analysis(object):
         run_id_to_batch_id[run_id] = batch_id
         run_start, last_batch = batch_range
         batch_sel = (batches_all.data() >= run_start) & (batches_all.data() <= last_batch)
-        batches[run_id] = batches_all.select(batch_sel).resolution_filter(d_min=d_min)
-        intensities[run_id] = unmerged_intensities.select(batch_sel).resolution_filter(d_min=d_min)
-        individual_merged_intensities[run_id] = intensities[run_id].merge_equivalents().array()
+        batches[run_id] = batches_all.select(batch_sel)
+        intensities[run_id] = unmerged_intensities.select(batch_sel)
         Debug.write("run %i batch %i to %i" %(run_id+1, run_start, last_batch))
         run_id += 1
 
+    self.run_id_to_batch_id = run_id_to_batch_id
+    self.intensities = intensities
+    self.batches = batches
+
+
+class multi_crystal_analysis(object):
+
+  def __init__(self, unmerged_intensities, batches_all, n_bins=20, d_min=None,
+               id_to_batches=None):
+
+    sel = unmerged_intensities.sigmas() > 0
+    unmerged_intensities = unmerged_intensities.select(sel)
+    batches_all = batches_all.select(sel)
+
     unmerged_intensities.setup_binner(n_bins=n_bins)
     unmerged_intensities.show_summary()
-    #result = unmerged_intensities.cc_one_half(use_binning=True)
-    #result.show()
-
     self.unmerged_intensities = unmerged_intensities
     self.merged_intensities = unmerged_intensities.merge_equivalents().array()
-    self.intensities = intensities
-    self.individual_merged_intensities = individual_merged_intensities
-    self.batches = batches
+
+    separate = separate_unmerged(
+      unmerged_intensities, batches_all, id_to_batches=id_to_batches)
+    self.intensities = separate.intensities
+    self.batches = separate.batches
+    run_id_to_batch_id = separate.run_id_to_batch_id
+    self.individual_merged_intensities = OrderedDict()
+    for k in self.intensities.keys():
+      self.intensities[k] = self.intensities[k].resolution_filter(d_min=d_min)
+      self.batches[k] = self.batches[k].resolution_filter(d_min=d_min)
+      self.individual_merged_intensities[k] = self.intensities[k].merge_equivalents().array()
 
     if run_id_to_batch_id is not None:
       labels = run_id_to_batch_id.values()
