@@ -134,8 +134,21 @@ def load_imagesets(template, directory, id_image=None, image_range=None,
       PhilIndex.params.xia2.settings.input)
     imagesets = [update_geometry(imageset) for imageset in imagesets]
 
+    from scitbx.array_family import flex
     for imageset in imagesets:
       scan = imageset.get_scan()
+      exposure_times = scan.get_exposure_times()
+      epochs = scan.get_epochs()
+      if exposure_times.all_eq(0):
+        exposure_times = flex.double(exposure_times.size(), 1)
+        scan.set_exposure_times(exposure_times)
+      elif not exposure_times.all_gt(0):
+        exposure_times = flex.double(exposure_times.size(), exposure_times[0])
+        scan.set_exposure_times(exposure_times)
+      if epochs.size() > 1 and not epochs.all_gt(0):
+        for i in range(1, epochs.size()):
+          epochs[i] = epochs[i-1] + exposure_times[i-1]
+        scan.set_epochs(epochs)
       _id_image = scan.get_image_range()[0]
       imageset_cache[full_template_path][_id_image] = imageset
 

@@ -41,10 +41,7 @@ def accumulate_dose(imagesets):
   exposure_times = flex.double()
   for imageset in imagesets:
     scan = imageset.get_scan()
-    # workaround for read_all_image_headers=False option
-    epochs.extend(flex.double(
-      e if e else float(os.stat(imageset.get_path(j)).st_mtime)
-      for (j, e) in enumerate(scan.get_epochs())))
+    epochs.extend(scan.get_epochs())
     exposure_times.extend(scan.get_exposure_times())
 
   perm = flex.sort_permutation(epochs)
