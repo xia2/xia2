@@ -1,4 +1,5 @@
 # LIBTBX_SET_DISPATCHER_NAME dev.xia2.strategy
+# LIBTBX_SET_DISPATCHER_NAME xia2.strategy
 
 import sys
 import os
