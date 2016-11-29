@@ -59,6 +59,8 @@ def run():
     from xia2.Handlers.Phil import PhilIndex
     params = PhilIndex.get_python_object()
     strategy_params = params.strategy
+    if not len(strategy_params):
+      strategy_params = [PhilIndex.get_scope_by_name('strategy')[0].extract()]
 
     for istrategy, strategy in enumerate(strategy_params):
       from xia2.Wrappers.EMBL import Best

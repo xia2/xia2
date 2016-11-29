@@ -305,7 +305,7 @@ ccp4
 }
 strategy
   .multiple = True
-  .optional = False
+  .optional = True
   .short_caption = "Strategy"
   .expert_level = 1
 {
