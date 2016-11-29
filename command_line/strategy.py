@@ -62,6 +62,19 @@ def run():
     if not len(strategy_params):
       strategy_params = [PhilIndex.get_scope_by_name('strategy')[0].extract()]
 
+    gonio = sweeps[0].get_imageset().get_goniometer()
+    if len(gonio.get_axes()) == 3 and gonio.get_scan_axis() == 2:
+      from xia2.Wrappers.Dials.AlignCrystal import AlignCrystal
+      align_crystal = AlignCrystal()
+      align_crystal.set_experiments_filename(
+        sweeps[0]._get_integrater().get_integrated_experiments())
+      align_crystal.set_working_directory(wd)
+      auto_logfiler(align_crystal)
+      align_crystal.set_json_filename(
+        '%i_align_crystal.json' %align_crystal.get_xpid())
+      align_crystal.run()
+      print "".join(align_crystal.get_all_output())
+
     for istrategy, strategy in enumerate(strategy_params):
       from xia2.Wrappers.EMBL import Best
       best = Best.BestStrategy()
