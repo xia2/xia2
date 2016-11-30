@@ -120,7 +120,8 @@ class DialsRefiner(Refiner):
 
       # XXX Temporary workaround for dials.refine error for scan_varying
       # refinement with smaller wedges
-      total_phi_range = idxr._indxr_imagesets[0].get_scan().get_oscillation_range()[1]
+      start, end = experiments[0].scan.get_oscillation_range()
+      total_phi_range = end-start
 
       if (PhilIndex.params.dials.refine.scan_varying and total_phi_range > 5
           and not PhilIndex.params.dials.fast_mode):
