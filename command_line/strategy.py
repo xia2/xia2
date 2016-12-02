@@ -126,6 +126,9 @@ def run():
         results['phi_end'] = str(
           float(results['phi_start']) +
           float(results['number_of_images']) * float(results['phi_width']))
+      from dxtbx.serialize import load
+      expt = load.experiment_list(integrater.get_integrated_experiments())[0]
+      results['spacegroup'] = expt.crystal.get_space_group().type().lookup_symbol()
       results_all[name] = results
 
       multiplicity = best.get_multiplicity()
