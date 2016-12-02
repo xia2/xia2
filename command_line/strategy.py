@@ -79,15 +79,17 @@ def run():
 
     results_all = {}
 
-    for istrategy, strategy in enumerate(strategy_params):
+    def process_one_strategy(args):
+      assert len(args) == 4
+      experiments, reflections, strategy, t_ref = args
       from xia2.Wrappers.EMBL import Best
       best = Best.BestStrategy()
-      for isweep, sweep in enumerate(sweeps):
+      for isweep, (expt, refl) in enumerate(zip(experiments, reflections)):
         integrater = sweep._get_integrater()
         from xia2.Wrappers.Dials.ExportBest import ExportBest
         export = ExportBest()
-        export.set_experiments_filename(integrater.get_integrated_experiments())
-        export.set_reflections_filename(integrater.get_integrated_reflections())
+        export.set_experiments_filename(expt)
+        export.set_reflections_filename(refl)
         export.set_working_directory(wd)
         auto_logfiler(export)
         prefix = '%i_best' %export.get_xpid()
@@ -96,7 +98,7 @@ def run():
         if isweep == 0:
           imageset = sweep.get_imageset()
           scan = imageset.get_scan()
-          best.set_t_ref(scan.get_exposure_times()[0])
+          best.set_t_ref(t_ref)
           best.set_mos_dat('%s.dat' %prefix)
           best.set_mos_par('%s.par' %prefix)
         best.add_mos_hkl('%s.hkl' %prefix)
@@ -117,9 +119,6 @@ def run():
       best.set_xmlout(xmlout)
       best.strategy()
 
-      name = strategy.name
-      if name is None:
-        name = 'Strategy%i' %(istrategy+1)
       results = best.get_results_dict()
       results['description'] = strategy.description
       if 'phi_end' not in results:
@@ -127,19 +126,46 @@ def run():
           float(results['phi_start']) +
           float(results['number_of_images']) * float(results['phi_width']))
       from dxtbx.serialize import load
-      expt = load.experiment_list(integrater.get_integrated_experiments())[0]
+      expt = load.experiment_list(experiments[0])[0]
       results['spacegroup'] = expt.crystal.get_space_group().type().lookup_symbol()
-      results_all[name] = results
+      return results
 
-      multiplicity = best.get_multiplicity()
+    args = []
+    for istrategy, strategy in enumerate(strategy_params):
+      imageset = sweeps[0].get_imageset()
+      scan = imageset.get_scan()
+      experiments = [
+        sweep._get_integrater().get_integrated_experiments() for sweep in sweeps]
+      reflections = [
+        sweep._get_integrater().get_integrated_reflections() for sweep in sweeps]
+      t_ref = scan.get_exposure_times()[0]
+      args.append((experiments, reflections, strategy, t_ref))
+
+    nproc = params.xia2.settings.multiprocessing.nproc
+    from libtbx import easy_mp
+    results = easy_mp.parallel_map(
+      process_one_strategy, args, processes=nproc,
+      method='multiprocessing',
+      preserve_order=True,
+      preserve_exception_message=True)
+
+    for result, strategy in zip(results, strategy_params):
+      name = strategy.name
+      if name is None:
+        name = 'Strategy%i' %(istrategy+1)
+      results_all[name] = result
+      multiplicity = result['redundancy']
       try:
         mutiplicity = '%.2f' %multiplicity
       except TypeError:
         pass
       Chatter.write('Strategy %i' %istrategy)
-      Chatter.write('Start / end / width: %.2f/%.2f/%.2f' % (best.get_phi_start(), best.get_phi_end(), best.get_phi_width()))
-      Chatter.write('Completeness / multiplicity / resolution: %.2f/%s/%.2f' % (best.get_completeness(), multiplicity, best.get_resolution()))
-      Chatter.write('Transmission / exposure %.3f/%.3f' % (best.get_transmission(), best.get_exposure_time()))
+      Chatter.write('Start / end / width: %.2f/%.2f/%.2f' % (
+        result['phi_start'], result['phi_end'], result['phi_width']))
+      Chatter.write('Completeness / multiplicity / resolution: %.2f/%s/%.2f' % (
+        result['completeness'], multiplicity, result['resolution']))
+      Chatter.write('Transmission / exposure %.3f/%.3f' % (
+        result['transmission'], result['exposure_time']))
       Chatter.write('XML: %s' %xmlout)
 
     import json
