@@ -77,6 +77,8 @@ def run():
       align_crystal.run()
       Chatter.write("".join(align_crystal.get_all_output()))
 
+    results_all = {}
+
     for istrategy, strategy in enumerate(strategy_params):
       from xia2.Wrappers.EMBL import Best
       best = Best.BestStrategy()
@@ -115,6 +117,17 @@ def run():
       best.set_xmlout(xmlout)
       best.strategy()
 
+      name = strategy.name
+      if name is None:
+        name = 'Strategy%i' %(istrategy+1)
+      results = best.get_results_dict()
+      results['description'] = strategy.description
+      if 'phi_end' not in results:
+        results['phi_end'] = str(
+          float(results['phi_start']) +
+          float(results['number_of_images']) * float(results['phi_width']))
+      results_all[name] = results
+
       multiplicity = best.get_multiplicity()
       try:
         mutiplicity = '%.2f' %multiplicity
@@ -125,6 +138,10 @@ def run():
       Chatter.write('Completeness / multiplicity / resolution: %.2f/%s/%.2f' % (best.get_completeness(), multiplicity, best.get_resolution()))
       Chatter.write('Transmission / exposure %.3f/%.3f' % (best.get_transmission(), best.get_exposure_time()))
       Chatter.write('XML: %s' %xmlout)
+
+    import json
+    with open('strategies.json', 'wb') as f:
+      json.dump(results_all, f, indent=2)
 
   except exceptions.Exception, e:
     traceback.print_exc(file = open(os.path.join(cwd, 'xia2.error'), 'w'))

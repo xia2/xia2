@@ -309,6 +309,12 @@ strategy
   .short_caption = "Strategy"
   .expert_level = 1
 {
+  name = None
+    .type = str
+    .help = "A name for this strategy."
+  description = None
+    .type = str
+    .help = "A description associated with this strategy."
   i_over_sigi = 2.0
     .type = float(value_min=0.0)
     .help = "Target <I/SigI> at highest resolution."

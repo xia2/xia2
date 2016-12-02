@@ -98,6 +98,9 @@ def BestStrategy(DriverType=None):
     def set_xmlout(self, xmlout):
       self._xmlout = xmlout
 
+    def get_xmlout(self):
+      return self._xmlout
+
     def get_phi_start(self):
       return self._phi_start
 
@@ -201,7 +204,45 @@ def BestStrategy(DriverType=None):
     def get_resolution(self):
       return self._resolution
 
+    def get_results_dict(self):
+      import os
+      assert self._xmlout is not None
+      assert os.path.isfile(self._xmlout)
+      return xml_to_dict(self._xmlout)
+
   return BestStrategyWrapper()
+
+xml_names = (
+  'resolution', 'distance', 'i_sigma', 'completeness', 'redundancy',
+  'transmission', 'total_exposure_time', 'total_data_collection_time',
+  'cell_a', 'cell_b', 'cell_c', 'cell_alpha', 'cell_beta', 'cell_gamma',
+  'mosaicity', 'phi_start', 'phi_end', 'number_of_images', 'phi_width',
+  'exposure_time', 'overlaps')
+
+def xml_to_dict(best_xml):
+  xml_string = open(best_xml, 'rb').read()
+  if '</edna_tables>' not in xml_string:
+    xml_string = '\n'.join((xml_string, '</edna_tables>'))
+  import xml.etree.ElementTree as ET
+  tree = ET.ElementTree(ET.fromstring(xml_string))
+  root = tree.getroot()
+  assert root.tag == 'edna_tables', root.tag
+  program = root.attrib.get('program')
+  version = root.attrib.get('version')
+
+  summary_values = {}
+
+  for table in root.findall('table'):
+    table_name = table.attrib.get('name')
+    if table_name in ('data_collection_strategy', 'general_inform', 'dc_optimal_time'):
+      for l in table.findall('list'):
+        if l.attrib.get('name') in ('summary', 'crystal_parameters', 'collection_run'):
+          for item in l.findall('item'):
+            name = item.attrib.get('name')
+            if name in xml_names:
+              summary_values.setdefault(name, item.text)
+
+  return summary_values
 
 if __name__ == '__main__':
 
@@ -229,6 +270,7 @@ if __name__ == '__main__':
 
   best.set_anomalous(True)
   best.strategy()
+  best.get_results_dict()
 
   print 'Anomalous'
   print 'Start / end / width: %.2f/%.2f/%.2f' % (best.get_phi_start(), best.get_phi_end(), best.get_phi_width())
