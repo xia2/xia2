@@ -161,12 +161,11 @@ def run():
         pass
       Chatter.write('Strategy %i' %istrategy)
       Chatter.write('Start / end / width: %.2f/%.2f/%.2f' % (
-        result['phi_start'], result['phi_end'], result['phi_width']))
+        float(result['phi_start']), float(result['phi_end']), float(result['phi_width'])))
       Chatter.write('Completeness / multiplicity / resolution: %.2f/%s/%.2f' % (
-        result['completeness'], multiplicity, result['resolution']))
+        float(result['completeness']), multiplicity, float(result['resolution'])))
       Chatter.write('Transmission / exposure %.3f/%.3f' % (
-        result['transmission'], result['exposure_time']))
-      Chatter.write('XML: %s' %xmlout)
+        float(result['transmission']), float(result['exposure_time'])))
 
     import json
     with open('strategies.json', 'wb') as f:
