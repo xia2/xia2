@@ -119,14 +119,14 @@ def Spotfinder(DriverType = None):
       if self._min_spot_size is not None:
         self.add_command_line('min_spot_size=%i' % self._min_spot_size)
       if self._min_local is not None:
-        self.add_command_line('min_local=%i' % self._min_local)
+        self.add_command_line('xds.min_local=%i' % self._min_local)
       if self._kernel_size is not None:
-        self.add_command_line('kernel_size=%i %i' % \
+        self.add_command_line('xds.kernel_size=%i %i' % \
                               (self._kernel_size, self._kernel_size))
       if self._global_threshold is not None:
-        self.add_command_line('global_threshold=%s' % self._global_threshold)
+        self.add_command_line('xds.global_threshold=%s' % self._global_threshold)
       if self._sigma_strong is not None:
-        self.add_command_line('sigma_strong=%i' % self._sigma_strong)
+        self.add_command_line('xds.sigma_strong=%i' % self._sigma_strong)
       if self._filter_ice_rings:
         self.add_command_line('ice_rings.filter=%s' % self._filter_ice_rings)
       if self._phil_file is not None:
