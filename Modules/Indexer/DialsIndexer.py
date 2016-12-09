@@ -170,10 +170,10 @@ class DialsIndexer(Indexer):
     if len(images) < 3:
       # work on the assumption that this is a reference pair
 
-      wedges.append(images[0])
-
-      if len(images) > 1:
-        wedges.append(images[1])
+      if len(images) == 1:
+        wedges.append((images[0], images[0]))
+      else:
+        wedges.append((images[0], images[1]))
 
     else:
       block_size = min(len(images), 5)
