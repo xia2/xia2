@@ -124,31 +124,32 @@ def BestStrategy(DriverType=None):
       command_line = []
 
       command_line.extend(('-f', '%s' %self._detector))
-      command_line.extend(('-t', '%.3f' %self._t_ref))
+      command_line.extend(('-t', '%s' %self._t_ref))
       if self._t_min is not None:
-        command_line.extend(('-M', '%.3f' %self._t_min))
+        command_line.extend(('-M', '%s' %self._t_min))
       if self._T_max is not None:
-        command_line.extend(('-T', '%.3f' %self._T_max))
+        command_line.extend(('-T', '%s' %self._T_max))
       if self._S_max is not None:
-       command_line.extend(('-S', '%.3f' %self._S_max))
+       command_line.extend(('-S', '%s' %self._S_max))
       if self._w_min is not None:
-       command_line.extend(('-w', '%.3f' %self._w_min))
+       command_line.extend(('-w', '%s' %self._w_min))
       if self._M_min is not None:
-        command_line.extend(('-R', '%.3f' %self._M_min))
+        command_line.extend(('-R', '%s' %self._M_min))
       if self._C_min is not None:
-        command_line.extend(('-C', '%.3f' %self._C_min))
+        command_line.extend(('-C', '%s' %self._C_min))
       if self._i2s is not None:
-       command_line.extend(('-i2s', '%.3f' %self._i2s))
+       command_line.extend(('-i2s', '%s' %self._i2s))
       if self._sensitivity is not None:
-        command_line.extend(('-su', '%.3f' %self._sensitivity))
+        command_line.extend(('-su', '%s' %self._sensitivity))
       if self._shape is not None:
-       command_line.extend(('-sh', '%.3f' %self._shape))
+       command_line.extend(('-sh', '%s' %self._shape))
 
       if self._anomalous:
         command_line.append('-a')
       if self._xmlout is not None:
         command_line.extend(('-dna', self._xmlout))
 
+      command_line.extend(('-e', 'none'))
       command_line.append('-mos')
       command_line.append(self._mos_dat)
       command_line.append(self._mos_par)
