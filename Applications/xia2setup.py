@@ -374,8 +374,10 @@ def print_sweeps(out = sys.stdout):
   j = 0
   for sweep in sweeplists:
     sweeps = known_sweeps[sweep]
-    # this should sort on exposure epoch ...?
-    sweeps.sort()
+    # sort on exposure epoch
+    epochs = [s.get_imageset().get_scan().get_epochs()[0] for s in sweeps]
+    sweeps, epochs = zip(*sorted(zip(sweeps, epochs),
+                                 key=operator.itemgetter(1)))
     for s in sweeps:
 
       # require at least n images to represent a sweep...
