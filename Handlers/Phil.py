@@ -539,7 +539,7 @@ xia2.settings
             "centre during xia2 setup phase"
     .short_caption = "Trust beam centre"
     .expert_level = 1
-  wavelength_tolerance = 0.00001
+  wavelength_tolerance = 0.00005
     .type = float(value_min=0.0)
     .help = "Tolerance for accepting two different wavelengths as the same wavelength."
     .short_caption = "Wavelength tolerance"
