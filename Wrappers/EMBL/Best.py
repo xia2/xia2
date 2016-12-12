@@ -218,7 +218,7 @@ xml_names = (
   'transmission', 'total_exposure_time', 'total_data_collection_time',
   'cell_a', 'cell_b', 'cell_c', 'cell_alpha', 'cell_beta', 'cell_gamma',
   'mosaicity', 'phi_start', 'phi_end', 'number_of_images', 'phi_width',
-  'exposure_time', 'overlaps')
+  'exposure_time', 'overlaps', 'dmin')
 
 def xml_to_dict(best_xml):
   xml_string = open(best_xml, 'rb').read()
@@ -237,7 +237,8 @@ def xml_to_dict(best_xml):
     table_name = table.attrib.get('name')
     if table_name in ('data_collection_strategy', 'general_inform', 'dc_optimal_time'):
       for l in table.findall('list'):
-        if l.attrib.get('name') in ('summary', 'crystal_parameters', 'collection_run'):
+        if l.attrib.get('name') in ('summary', 'crystal_parameters', 'collection_run',
+                                    'ranking_resolution'):
           for item in l.findall('item'):
             name = item.attrib.get('name')
             if name in xml_names:
