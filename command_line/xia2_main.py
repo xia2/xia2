@@ -186,10 +186,10 @@ def xia2_main(stop_after=None):
           if output is not None:
             Chatter.write(output)
           if not success:
-            print "Sweep failed: removing %s" %sweep.get_name()
+            Chatter.write('Sweep failed: removing %s' %sweep.get_name())
             remove_sweeps.append(sweep)
           else:
-            print "Loading sweep: %s" % sweep.get_name()
+            Chatter.write('Loading sweep: %s' % sweep.get_name())
             from xia2.Schema.XSweep import XSweep
             new_sweep = XSweep.from_dict(xsweep_dict)
             sweep._indexer = new_sweep._indexer
@@ -205,6 +205,7 @@ def xia2_main(stop_after=None):
     for crystal_id in crystals.keys():
       for wavelength_id in crystals[crystal_id].get_wavelength_names():
         wavelength = crystals[crystal_id].get_xwavelength(wavelength_id)
+        remove_sweeps = []
         sweeps = wavelength.get_sweeps()
         for sweep in sweeps:
           try:
@@ -217,11 +218,13 @@ def xia2_main(stop_after=None):
             if failover:
               Chatter.write('Processing sweep %s failed: %s' % \
                             (sweep.get_name(), str(e)))
-              wavelength.remove_sweep(sweep)
-              sample = sweep.get_xsample()
-              sample.remove_sweep(sweep)
+              remove_sweeps.append(sweep)
             else:
               raise
+        for sweep in remove_sweeps:
+          wavelength.remove_sweep(sweep)
+          sample = sweep.get_xsample()
+          sample.remove_sweep(sweep)
 
   # save intermediate xia2.json file in case scaling step fails
   xinfo.as_json(filename='xia2.json')
