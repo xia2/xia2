@@ -207,6 +207,10 @@ phil_str = '''
     .help = "Use equal-volume bins or bins with approximately equal numbers of reflections per bin."
     .short_caption = "Equal-volume or equal #ref binning."
     .expert_level = 1
+  anomalous = False
+    .type = bool
+    .short_caption = "Keep anomalous pairs separate in merging statistics"
+    .expert_level = 1
 '''
 
 
@@ -268,7 +272,7 @@ class resolutionizer(object):
       n_bins=self._params.nbins,
       cc_one_half_significance_level=self._params.cc_half_significance_level,
       binning_method=self._params.binning_method,
-      anomalous=True,
+      anomalous=params.anomalous,
       use_internal_variance=False,
       eliminate_sys_absent=False,
     )
