@@ -39,6 +39,7 @@ def Index(DriverType = None):
       self._indxr_input_lattice = None
       self._reflections_per_degree = None
       self._fft3d_n_points = None
+      self._histogram_binning = None
 
       self._experiment_filename = None
       self._indexed_filename = None
@@ -111,6 +112,10 @@ def Index(DriverType = None):
       self._fft3d_n_points = n_points
       return
 
+    def set_histogram_binning(self, histogram_binning):
+      self._histogram_binning = histogram_binning
+      return
+
     def get_sweep_filenames(self):
       return self._sweep_filenames
 
@@ -180,6 +185,8 @@ def Index(DriverType = None):
         self.add_command_line('max_cell=%d' % self._max_cell)
       if self._min_cell:
         self.add_command_line('min_cell=%d' % self._min_cell)
+      if self._histogram_binning is not None:
+        self.add_command_line('max_cell_estimation.histogram_binning=%s' %self._histogram_binning)
       if self._d_min_start:
         self.add_command_line('d_min_start=%f' % self._d_min_start)
       if self._indxr_input_lattice is not None:

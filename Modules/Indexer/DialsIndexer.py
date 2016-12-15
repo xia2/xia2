@@ -111,6 +111,7 @@ class DialsIndexer(Indexer):
       index.set_fft3d_n_points(params.fft3d.n_points)
     auto_logfiler(index)
     index.set_outlier_algorithm(PhilIndex.params.dials.outlier.algorithm)
+    index.set_histogram_binning(PhilIndex.params.dials.index.histogram_binning)
     return index
 
   def CheckIndexingSymmetry(self):

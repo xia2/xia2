@@ -218,6 +218,11 @@ dials
       .type = int
       .short_caption = "Number of reflections per degree for random subset"
       .expert_level = 1
+    histogram_binning = linear log
+      .type = choice
+      .help = "Choose between linear or logarithmic bins for nearest neighbour"
+              "histogram analysis."
+      .expert_level = 2
   }
   refine
     .short_caption = "Refinement"
