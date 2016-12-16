@@ -218,22 +218,24 @@ def Index(DriverType = None):
       self.close_wait()
       self.check_for_errors()
 
-      records = self.get_all_output()
+      from dials.array_family import flex
+      from dxtbx.serialize import load
+      self._experiment_list = load.experiment_list(self._experiment_filename)
+      self._reflections = flex.reflection_table.from_pickle(
+        self._indexed_filename)
 
-      for i, record in enumerate(records):
-        if 'Unit cell:' in record:
-          self._p1_cell = map(float, record.replace('(', '').replace(
-            ')', '').replace(',', '').split()[-6:])
+      crystal = self._experiment_list.crystals()[0]
+      self._p1_cell = crystal.get_unit_cell().parameters()
 
-        if 'RMSDs by experiment' in record:
-          values = records[i+5].strip().strip('|').split('|')
-          if values:
-            values = [float(v) for v in values]
-            if values[0] == 0:
-              self._nref = int(values[1])
-              self._rmsd_x = values[2]
-              self._rmsd_y = values[3]
-              self._rmsd_z = values[4]
+      refined_sel = self._reflections.get_flags(self._reflections.flags.used_in_refinement)
+      refl = self._reflections.select(refined_sel)
+      xc, yc, zc = refl['xyzcal.px'].parts()
+      xo, yo, zo = refl['xyzobs.px.value'].parts()
+      import math
+      self._nref = refl.size()
+      self._rmsd_x = math.sqrt(flex.mean(flex.pow2(xc - xo)))
+      self._rmsd_y = math.sqrt(flex.mean(flex.pow2(yc - yo)))
+      self._rmsd_z = math.sqrt(flex.mean(flex.pow2(zc - zo)))
 
       return
 
