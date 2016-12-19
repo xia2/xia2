@@ -18,7 +18,6 @@
 #
 # The standalone (moving to C++) version... FIXME use a DIALS ReflectionTable
 # in here: this would be much faster.
-# LIBTBX_PRE_DISPATCHER_INCLUDE_SH export BOOST_ADAPTBX_FPE_DEFAULT=1
 
 import sys
 import math
