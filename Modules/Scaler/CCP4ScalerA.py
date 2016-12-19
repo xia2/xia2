@@ -1211,8 +1211,10 @@ class CCP4ScalerA(Scaler):
   def _update_scaled_unit_cell(self):
     # FIXME this could be brought in-house
 
-    fast_mode = PhilIndex.params.dials.fast_mode
-    if PhilIndex.params.xia2.settings.integrater == 'dials' and not fast_mode:
+    params = PhilIndex.params
+    fast_mode = params.dials.fast_mode
+    if (params.xia2.settings.integrater == 'dials' and not fast_mode
+        and params.xia2.settings.scale.two_theta_refine):
       from xia2.Wrappers.Dials.TwoThetaRefine import TwoThetaRefine
       from xia2.lib.bits import auto_logfiler
 

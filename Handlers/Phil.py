@@ -508,6 +508,12 @@ xia2.settings
     scales = *rotation batch
       .type = choice
       .short_caption = "Smoothed or batch scaling"
+    two_theta_refine = True
+      .type = bool
+      .short_caption = "Run dials.two_theta_refine"
+      .help = "Run dials.two_theta_refine to refine the unit cell and obtain"
+              "estimated standard uncertainties on the cell parameters."
+              "Only relevant to DIALS pipeline."
   }
   space_group = None
     .type = space_group
