@@ -1248,9 +1248,11 @@ class CCP4ScalerA(Scaler):
         tt_refine_reindex_ops.extend(args[2])
         reindex_ops = args[2]
         from cctbx.sgtbx import change_of_basis_op as cb_op
-        reindex_ops = [(
-          cb_op(str(self._spacegroup_reindex_operator)) * cb_op(str(op))).as_hkl()
-          for op in reindex_ops]
+        if self._spacegroup_reindex_operator is not None:
+          reindex_ops = [(
+            cb_op(str(self._spacegroup_reindex_operator)) * cb_op(str(op))).as_hkl()
+            if op is not None else self._spacegroup_reindex_operator
+            for op in reindex_ops]
         tt_grouprefiner.set_reindex_operators(reindex_ops)
         tt_grouprefiner.run()
         Chatter.write('%s: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
@@ -1273,9 +1275,11 @@ class CCP4ScalerA(Scaler):
         auto_logfiler(tt_refiner)
         tt_refiner.set_experiments(tt_refine_experiments)
         tt_refiner.set_pickles(tt_refine_pickles)
-        reindex_ops = [(
-          cb_op(self._spacegroup_reindex_operator) * cb_op(op)).as_hkl()
-          for op in tt_refine_reindex_ops]
+        if self._spacegroup_reindex_operator is not None:
+          reindex_ops = [(
+            cb_op(self._spacegroup_reindex_operator) * cb_op(op)).as_hkl()
+            if op is not None else self._spacegroup_reindex_operator
+            for op in tt_refine_reindex_ops]
         tt_refiner.set_reindex_operators(reindex_ops)
         tt_refiner.run()
         self._scalr_cell = tt_refiner.get_unit_cell()
