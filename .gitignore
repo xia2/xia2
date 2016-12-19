@@ -9,5 +9,6 @@ _*.nb
 *.swp
 .olex
 .git-notifier*
+git-notifier.log
 .gitversion
 .cache
