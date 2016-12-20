@@ -1275,7 +1275,7 @@ class CCP4ScalerA(Scaler):
         tt_refiner.set_pickles(tt_refine_pickles)
         if self._spacegroup_reindex_operator is not None:
           reindex_ops = [(
-            cb_op(self._spacegroup_reindex_operator) * cb_op(op)).as_hkl()
+            cb_op(str(self._spacegroup_reindex_operator)) * cb_op(str(op))).as_hkl()
             if op is not None else self._spacegroup_reindex_operator
             for op in tt_refine_reindex_ops]
         tt_refiner.set_reindex_operators(reindex_ops)
