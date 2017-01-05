@@ -980,12 +980,12 @@ class CommonScaler(Scaler):
     if params.isigma:
       r_uis = m.get_resolution_isigma()
       resolution_limits.append(r_uis)
-      reasoning.append('isigma > %s' %params.isigma)
+      reasoning.append('unmerged <I/sigI> > %s' %params.isigma)
 
     if params.misigma:
       r_mis = m.get_resolution_misigma()
       resolution_limits.append(r_mis)
-      reasoning.append('misigma > %s' %params.misigma)
+      reasoning.append('merged <I/sigI> > %s' %params.misigma)
 
     if len(resolution_limits):
       resolution = max(resolution_limits)
