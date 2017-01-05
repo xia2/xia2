@@ -1325,12 +1325,17 @@ class XDSScalerA(Scaler):
     epoch_to_dose = {}
     for xsample in self.get_scaler_xcrystal()._samples.values():
       epoch_to_dose.update(xsample.get_epoch_to_dose())
-    for si in self._sweep_information.values():
+    for e0 in self._sweep_information.keys():
+      si = self._sweep_information[e0]
       batch_offset = si['batch_offset']
       frame_offset = si['integrater'].get_frame_offset()
       for b in range(si['batches'][0], si['batches'][1]+1):
         if epoch_to_dose:
-          batch_to_dose[b] = epoch_to_dose[si['image_to_epoch'][b+frame_offset-batch_offset]]
+          # see https://github.com/xia2/xia2/issues/90
+          if si['image_to_epoch'][b+frame_offset-batch_offset] in epoch_to_dose:
+            batch_to_dose[b] = epoch_to_dose[si['image_to_epoch'][b+frame_offset-batch_offset]]
+          else:
+            batch_to_dose[b] = epoch_to_dose[si['image_to_epoch'][b+frame_offset-batch_offset]-e0]
         else:
           # backwards compatibility 2015-12-11
           batch_to_dose[b] = b
