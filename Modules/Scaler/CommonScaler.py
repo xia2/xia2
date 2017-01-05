@@ -959,34 +959,45 @@ class CommonScaler(Scaler):
       m.set_batch_range(start, end)
     m.run()
 
+    resolution_limits = []
+    reasoning = []
+
     if params.completeness:
       r_comp = m.get_resolution_completeness()
-    else:
-      r_comp = 0.0
+      resolution_limits.append(r_comp)
+      reasoning.append('completeness > %s' %params.completeness)
 
     if params.cc_half:
       r_cc_half = m.get_resolution_cc_half()
-    else:
-      r_cc_half = 0.0
+      resolution_limits.append(r_cc_half)
+      reasoning.append('cc_half > %s' %params.cc_half)
 
     if params.rmerge:
       r_rm = m.get_resolution_rmerge()
-    else:
-      r_rm = 0.0
+      resolution_limits.append(r_rm)
+      reasoning.append('rmerge > %s' %params.rmerge)
 
     if params.isigma:
       r_uis = m.get_resolution_isigma()
-    else:
-      r_uis = 0.0
+      resolution_limits.append(r_uis)
+      reasoning.append('isigma > %s' %params.isigma)
 
     if params.misigma:
       r_mis = m.get_resolution_misigma()
+      resolution_limits.append(r_mis)
+      reasoning.append('misigma > %s' %params.misigma)
+
+    if len(resolution_limits):
+      resolution = max(resolution_limits)
+      reasoning = [
+        reason for limit, reason in zip(resolution_limits, reasoning)
+        if limit >= resolution]
+      reasoning = ', '.join(reasoning)
     else:
-      r_mis = 0.0
+      resolution = 0.0
+      reasoning = None
 
-    resolution = max([r_comp, r_rm, r_uis, r_mis, r_cc_half])
-
-    return resolution
+    return resolution, reasoning
 
   def _compute_scaler_statistics(self, scaled_unmerged_mtz, selected_band=None, wave=None):
     ''' selected_band = (d_min, d_max) with None for automatic determination. '''

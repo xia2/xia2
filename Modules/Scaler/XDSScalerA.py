@@ -1048,10 +1048,10 @@ class XDSScalerA(Scaler):
         dmin = intgr.get_integrater_high_resolution()
 
         if rkey not in self._user_resolution_limits:
-          self._scalr_resolution_limits[rkey] = (dmin, None)
+          #self._scalr_resolution_limits[rkey] = (dmin, None)
           self._user_resolution_limits[rkey] = dmin
         elif dmin < self._user_resolution_limits[rkey]:
-          self._scalr_resolution_limits[rkey] = (dmin, None)
+          #self._scalr_resolution_limits[rkey] = (dmin, None)
           self._user_resolution_limits[rkey] = dmin
 
     self._scalr_scaled_refl_files = { }
@@ -1116,19 +1116,24 @@ class XDSScalerA(Scaler):
       # let's properly listen to the user's resolution limit needs...
       if self._user_resolution_limits.get((dname, sname), False):
         resolution = self._user_resolution_limits[(dname, sname)]
+        reasoning = 'user provided'
 
       else:
         if PhilIndex.params.xia2.settings.resolution.keep_all_reflections == True:
           try:
             resolution = intgr.get_detector().get_max_resolution(intgr.get_beam_obj().get_s0())
+            reasoning = 'detector limits'
             Debug.write('keep_all_reflections set, using detector limits')
           except Exception:
-            resolution = self._estimate_resolution_limit(hklin)
+            resolution, reasoning = self._estimate_resolution_limit(hklin)
         else:
-          resolution = self._estimate_resolution_limit(hklin)
+          resolution, reasoning = self._estimate_resolution_limit(hklin)
 
-      Chatter.write('Resolution for sweep %s/%s: %.2f' % \
-                    (dname, sname, resolution))
+      reasoning_str = ''
+      if reasoning:
+        reasoning_str = ' (%s)' %reasoning
+      Chatter.write('Resolution for sweep %s/%s: %.2f%s' % \
+                    (dname, sname, resolution, reasoning_str))
 
       if (dname, sname) not in self._scalr_resolution_limits:
         self._scalr_resolution_limits[(dname, sname)] = (resolution, None)

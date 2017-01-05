@@ -968,12 +968,13 @@ class CCP4ScalerA(Scaler):
         self._scalr_resolution_limits[(dname, sname)] = (limit, None)
         if limit < highest_resolution:
           highest_resolution = limit
-        Chatter.write('Resolution limit for %s: %5.2f' % \
+        Chatter.write('Resolution limit for %s: %5.2f (user provided)' % \
                       (dname, limit))
         continue
 
       hklin = sc.get_unmerged_reflection_file()
-      limit = self._estimate_resolution_limit(hklin, batch_range=(start, end))
+      limit, reasoning = self._estimate_resolution_limit(
+        hklin, batch_range=(start, end))
 
       if PhilIndex.params.xia2.settings.resolution.keep_all_reflections == True:
         suggested = limit
@@ -994,8 +995,11 @@ class CCP4ScalerA(Scaler):
 
       limit, suggested = self._scalr_resolution_limits[(dname, sname)]
       if suggested is None or limit == suggested:
-        Chatter.write('Resolution limit for %s/%s: %5.2f' % \
-                      (dname, sname, limit))
+        reasoning_str = ''
+        if reasoning:
+          reasoning_str = ' (%s)' %reasoning
+        Chatter.write('Resolution for sweep %s/%s: %.2f%s' % \
+                      (dname, sname, limit, reasoning_str))
       else:
         Chatter.write('Resolution limit for %s/%s: %5.2f (%5.2f suggested)' % \
                       (dname, sname, limit, suggested))
