@@ -960,7 +960,10 @@ class CCP4ScalerA(Scaler):
       intgr = si.get_integrater()
       start, end = si.get_batch_range()
 
-      if (dname, sname) in user_resolution_limits:
+      if (dname, sname) in self._scalr_resolution_limits:
+        continue
+
+      elif (dname, sname) in user_resolution_limits:
         limit = user_resolution_limits[(dname, sname)]
         self._scalr_resolution_limits[(dname, sname)] = (limit, None)
         if limit < highest_resolution:

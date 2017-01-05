@@ -1110,8 +1110,10 @@ class XDSScalerA(Scaler):
       if not os.path.exists(hkl_copy):
         shutil.copyfile(hklin, hkl_copy)
 
-      # let's properly listen to the user's resolution limit needs...
+      if (dname, sname) in self._scalr_resolution_limits:
+        continue
 
+      # let's properly listen to the user's resolution limit needs...
       if self._user_resolution_limits.get((dname, sname), False):
         resolution = self._user_resolution_limits[(dname, sname)]
 
