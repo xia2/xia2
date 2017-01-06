@@ -101,6 +101,7 @@ def xia2_main(stop_after=None):
               break
             wavelength.add_sweep(
               name=sweep.get_name(),
+              sample=sweep.get_xsample(),
               directory=sweep.get_directory(),
               image=sweep.get_image(),
               beam=sweep.get_beam_centre(),
