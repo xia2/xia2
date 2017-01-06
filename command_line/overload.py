@@ -4,12 +4,46 @@ import json
 import sys
 import timeit
 
+try:
+  import bz2
+except: # intentional
+  bz2 = None
+
+try:
+  import gzip
+except: # intentional
+  gzip = None
+
+def is_bz2(filename):
+  if not '.bz2' in filename[-4:]:
+    return False
+  return 'BZh' in open(filename, 'rb').read(3)
+
+def is_gzip(filename):
+  if not '.gz' in filename[-3:]:
+    return False
+  magic = open(filename, 'rb').read(2)
+  return ord(magic[0]) == 0x1f and ord(magic[1]) == 0x8b
+
+def open_file(filename, mode='rb'):
+  if is_bz2(filename):
+    if bz2 is None:
+      raise RuntimeError, 'bz2 file provided without bz2 module'
+    return bz2.BZ2File(filename, mode)
+
+  if is_gzip(filename):
+    if gzip is None:
+      raise RuntimeError, 'gz file provided without gzip module'
+    return gzip.GzipFile(filename, mode)
+
+  return open(filename, mode)
+
 def read_cbf_image(cbf_image):
   from cbflib_adaptbx import uncompress
 
   start_tag = binascii.unhexlify('0c1a04d5')
 
-  with open(cbf_image, 'rb') as fh:
+  with open_file(cbf_image, 'rb') as fh:
     data = fh.read()
 
   data_offset = data.find(start_tag) + 4
@@ -37,7 +71,7 @@ def read_cbf_image(cbf_image):
   return pixel_values
 
 def get_overload(cbf_file):
-  with open(cbf_file, 'rb') as fh:
+  with open_file(cbf_file, 'rb') as fh:
     for record in fh:
       if 'Count_cutoff' in record:
         return float(record.split()[-2])
