@@ -366,7 +366,7 @@ class XInfo(object):
               start_end = map(int, record.split()[1:])
               if len(start_end) != 2:
                 raise RuntimeError, \
-                      'START_END start end, not "%s"' % record
+                      'START_END requires two parameters (start and end), not "%s"' % record
               self._crystals[crystal]['sweeps'][sweep]['start_end'] = start_end
 
           elif 'EXCLUDE' == record.split()[0]:
