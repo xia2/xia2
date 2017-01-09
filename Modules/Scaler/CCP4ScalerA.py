@@ -1400,14 +1400,21 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
     for e0  in self._sweep_handler._sweep_information.keys():
       si = self._sweep_handler._sweep_information[e0]
       batch_offset = si.get_batch_offset()
+      printed = False
       for b in range(si.get_batches()[0], si.get_batches()[1]+1):
         if len(epoch_to_dose):
           # when handling Eiger data this table appears to be somewhat broken
           # see https://github.com/xia2/xia2/issues/90 - proper fix should be
           # to work out why the epochs are not set correctly in first place...
           if si._image_to_epoch[b-batch_offset] in epoch_to_dose:
+            if not printed:
+              Debug.write("Epoch found; all good")
+              printed = True
             batch_to_dose[b] = epoch_to_dose[si._image_to_epoch[b-batch_offset]]
           else:
+            if not printed:
+              Debug.write("Epoch not found; using offset %f" % e0)
+              printed = True
             batch_to_dose[b] = epoch_to_dose[si._image_to_epoch[b-batch_offset]-e0]
         else:
           # backwards compatibility 2015-12-11
