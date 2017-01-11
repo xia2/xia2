@@ -208,6 +208,8 @@ phil_str = '''
     .help = "Minimum value of CC1/2 in the outer resolution shell"
     .short_caption = "Outer shell CC1/2"
     .expert_level = 1
+  cc_half_method = *half_dataset sigma_tau
+    .type = choice
   cc_half_significance_level = None
     .type = float(value_min=0, value_max=1)
     .expert_level = 1
@@ -298,6 +300,7 @@ class resolutionizer(object):
       i_obs=i_obs,
       n_bins=self._params.nbins,
       cc_one_half_significance_level=self._params.cc_half_significance_level,
+      cc_one_half_method=self._params.cc_half_method,
       binning_method=self._params.binning_method,
       anomalous=params.anomalous,
       use_internal_variance=False,

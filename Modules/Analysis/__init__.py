@@ -25,6 +25,8 @@ range {
 }
 cc_half_significance_level = 0.01
   .type = float(value_min=0, value_max=1)
+cc_half_method = *half_dataset sigma_tau
+  .type = choice
 chef_min_completeness = None
   .type = float(value_min=0, value_max=1)
   .help = "Minimum value of completeness in outer resolution shell used to "

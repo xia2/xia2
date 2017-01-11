@@ -19,6 +19,7 @@ def run(args):
   params = params.extract()
   n_bins = params.resolution_bins
   cc_half_significance_level = params.cc_half_significance_level
+  cc_half_method = params.cc_half_method
 
   args = unhandled
 
@@ -76,9 +77,15 @@ def run(args):
            bin_stats.n_obs, bin_stats.n_uniq, '%.2f' %bin_stats.mean_redundancy,
            '%.2f' %(100*bin_stats.completeness), '%.1f' %bin_stats.i_mean,
            '%.1f' %bin_stats.i_over_sigma_mean, '%.3f' %bin_stats.r_merge,
-           '%.3f' %bin_stats.r_meas, '%.3f' %bin_stats.r_pim,
-           '%.3f%s' %(bin_stats.cc_one_half,
-                      '*' if bin_stats.cc_one_half_significance else '')]
+           '%.3f' %bin_stats.r_meas, '%.3f' %bin_stats.r_pim]
+    if cc_half_method == 'sigma_tau':
+      row.append(
+        '%.3f%s' %(bin_stats.cc_one_half_sigma_tau,
+                   '*' if bin_stats.cc_one_half_sigma_tau_significance else ''))
+    else:
+      row.append(
+        '%.3f%s' %(bin_stats.cc_one_half,
+                   '*' if bin_stats.cc_one_half_significance else ''))
 
     if not intensities.space_group().is_centric():
       row.append(
@@ -106,8 +113,12 @@ def run(args):
     ['Rmerge'] + ['%.3f' %s.r_merge for s in stats],
     ['Rmeas'] + ['%.3f' %s.r_meas for s in stats],
     ['Rpim'] + ['%.3f' %s.r_pim for s in stats],
-    ['CC1/2'] + ['%.3f' %s.cc_one_half for s in stats],
   ]
+
+  if cc_half_method == 'sigma_tau':
+    rows.append(['CC1/2'] + ['%.3f' %s.cc_one_half_sigma_tau for s in stats])
+  else:
+    rows.append(['CC1/2'] + ['%.3f' %s.cc_one_half for s in stats])
   rows = [[u'<strong>%s</strong>' %r[0]] + r[1:] for r in rows]
 
   overall_stats_table = [headers]
@@ -165,10 +176,16 @@ def run(args):
     (1/bin_stats.d_min**2) for bin_stats in merging_stats.bins]
   i_over_sig_i_bins = [
     bin_stats.i_over_sigma_mean for bin_stats in merging_stats.bins]
-  cc_one_half_bins = [
-    bin_stats.cc_one_half for bin_stats in merging_stats.bins]
-  cc_one_half_critical_value_bins = [
-    bin_stats.cc_one_half_critical_value for bin_stats in merging_stats.bins]
+  if cc_half_method == 'sigma_tau':
+    cc_one_half_bins = [
+      bin_stats.cc_one_half_sigma_tau for bin_stats in merging_stats.bins]
+    cc_one_half_critical_value_bins = [
+      bin_stats.cc_one_half_sigma_tau_critical_value for bin_stats in merging_stats.bins]
+  else:
+    cc_one_half_bins = [
+      bin_stats.cc_one_half for bin_stats in merging_stats.bins]
+    cc_one_half_critical_value_bins = [
+      bin_stats.cc_one_half_critical_value for bin_stats in merging_stats.bins]
   cc_anom_bins = [
     bin_stats.cc_anom for bin_stats in merging_stats.bins]
   cc_anom_critical_value_bins = [
