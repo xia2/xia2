@@ -490,15 +490,11 @@ def integration_status_section(xproject):
            for h in headers[2:-1]] +
           [len(status)])
 
-        status_table = []
-        row = []
-        for symbol in status:
-          if len(row) == 60:
-            status_table.append(row)
-            row = []
-          row.append('<div class="%s status"></div>' %symbol_to_status[symbol])
-        if len(row):
-          status_table.append(row)
+        symbols_per_row = 60
+        symbols = [ '<div class="%s status"></div>' % symbol_to_status[symbol] for symbol in status ]
+        status_table = [symbols[i:i + symbols_per_row] for i in xrange(0, len(symbols), symbols_per_row)]
+        if len(symbols) > symbols_per_row and len(symbols) % symbols_per_row != 0:
+          status_table[-1].extend((symbols_per_row - len(symbols) % symbols_per_row) * [ None ])
 
         status_lines.append('\n')
         status_lines.append('Dataset %s' %wname)
