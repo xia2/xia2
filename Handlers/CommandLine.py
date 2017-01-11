@@ -155,7 +155,9 @@ class _CommandLine(object):
       PhilIndex.update("xia2.settings.input.anomalous=true")
 
     if params.xia2.settings.resolution.keep_all_reflections is Auto:
-      if params.xia2.settings.small_molecule == True:
+      if params.xia2.settings.small_molecule == True and \
+         params.xia2.settings.resolution.d_min is None and \
+         params.xia2.settings.resolution.d_max is None:
         PhilIndex.update("xia2.settings.resolution.keep_all_reflections=true")
       else:
         PhilIndex.update("xia2.settings.resolution.keep_all_reflections=false")
