@@ -127,6 +127,31 @@ def fit(x, y, order):
 
   return [pf.evaluate(_x) for _x in x]
 
+def tanh_fit(x, y, iqr_multiplier=None):
+
+  from scitbx.math import curve_fitting
+
+  tf = curve_fitting.tanh_fit(x, y)
+  f = curve_fitting.tanh(*tf.params)
+
+  if iqr_multiplier is not None:
+    assert iqr_multiplier > 0
+    yc = f(x)
+    dy = y - yc
+
+    from scitbx.math import five_number_summary
+    min_x, q1_x, med_x, q3_x, max_x = five_number_summary(dy)
+    iqr_x = q3_x - q1_x
+    cut_x = iqr_multiplier * iqr_x
+    outliers = (dy > q3_x + cut_x) | (dy < q1_x - cut_x)
+    if outliers.count(True) > 0:
+      xo = x.select(~outliers)
+      yo = y.select(~outliers)
+      tf = curve_fitting.tanh_fit(xo, yo)
+      f = curve_fitting.tanh(*tf.params)
+
+  return f(x)
+
 def log_fit(x, y, order):
   '''Fit the values log(y(x)) then return exp() to this fit. x, y should
   be iterables containing floats of the same size. The order is the order
@@ -185,6 +210,9 @@ phil_str = '''
     .expert_level = 1
   cc_half_significance_level = None
     .type = float(value_min=0, value_max=1)
+    .expert_level = 1
+  cc_half_fit = *polynomial tanh
+    .type = choice
     .expert_level = 1
   isigma = 0.25
     .type = float(value_min=0)
@@ -516,7 +544,10 @@ class resolutionizer(object):
         i += 1
     else:
       i = 0
-    cc_f = fit(s_s[i:], cc_s[i:], 6)
+    if self._params.cc_half_fit == 'tanh':
+      cc_f = tanh_fit(s_s[i:], cc_s[i:], iqr_multiplier=4)
+    else:
+      cc_f = fit(s_s[i:], cc_s[i:], 6)
 
     stamp("rch: fits")
     rlimit = limit * max(cc_s)
