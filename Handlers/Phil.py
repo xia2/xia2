@@ -26,101 +26,166 @@ general
     .type = path
     .short_caption = "Backstop mask"
 }
-xds {
+xds
+  .short_caption = "XDS settings"
+{
   z_min = 0.0
     .type = float
+    .short_caption="Mark Wilson outlier when Z-score greater than"
+    .expert_level=1
   delphi = 5
     .type = float
+    .short_caption="DELPHI="
+    .expert_level = 1
   delphi_small = 30
     .type = float
+    .short_caption="DELPHI= for small molecule mode"
+    .expert_level = 1
   untrusted_ellipse = None
     .type = ints(size = 4)
     .multiple = True
+    .short_caption="UNTRUSTED_ELLIPSE="
+    .expert_level = 1
   untrusted_rectangle = None
     .type = ints(size = 4)
     .multiple = True
+    .short_caption="UNTRUSTED_RECTANGLE="
+    .expert_level = 1
   trusted_region = None
     .type = floats(size = 2)
+    .short_caption="TRUSTED_REGION="
+    .expert_level = 1
   profile_grid_size = None
+    .short_caption="Number of profile grid points"
+    .help="Sets XDS parameters NUMBER_OF_PROFILE_GRID_POINTS_ALONG_ALPHA/BETA"
+          "and NUMBER_OF_PROFILE_GRID_POINTS_ALONG_GAMMA"
     .type = ints(size = 2)
+    .expert_level = 1
   keep_outliers = False
     .type = bool
+    .short_caption="Keep outliers"
     .help = "Do not remove outliers in integration and scaling"
   correct {
     refine = *DISTANCE *BEAM *AXIS *ORIENTATION *CELL *POSITION
       .type = choice(multi = True)
+      .short_caption="REFINE(CORRECT)="
       .help = 'what to refine in the CORRECT step'
+      .expert_level=1
     air = None
       .type = float(value_min=0)
+      .short_caption="AIR="
+      .expert_level=1
   }
   integrate {
     refine = *ORIENTATION *CELL *BEAM *DISTANCE AXIS *POSITION
       .type = choice(multi = True)
+      .short_caption="First pass REFINE(INTEGRATE)="
       .help = 'what to refine in first pass of integration'
+      .expert_level=1
     refine_final = *ORIENTATION *CELL BEAM DISTANCE AXIS POSITION
       .type = choice(multi = True)
+      .short_caption="Final pass REFINE(INTEGRATE)="
       .help = 'what to refine in final pass of integration'
+      .expert_level=1
     fix_scale = False
       .type = bool
+      .short_caption="Fix scale factors"
+      .expert_level=1
     delphi = 0
       .type = float
+      .short_caption="DELPHI="
+      .expert_level = 1
     reflecting_range = 0
       .type = float
+      .short_caption="REFLECTING_RANGE="
+      .expert_level = 1
     reflecting_range_esd = 0
       .type = float
+      .short_caption=REFLECTING_RANGE_E.S.D.="
+      .expert_level = 1
     beam_divergence = 0
       .type = float
+      .short_caption="BEAM_DIVERGENCE="
+      .expert_level = 1
     beam_divergence_esd = 0
       .type = float
+      .short_caption="BEAM_DIVERGENCE_E.S.D.="
+      .expert_level = 1
     reintegrate = true
       .type = bool
+      .short_caption="Reintegrate after global refinement"
+      .expert_level = 1
   }
   init {
     fix_scale = False
       .type = bool
+      .short_caption="Fix scale factors"
+      .expert_level=1
   }
   defpix {
     value_range_for_trusted_detector_pixels = None
       .type = ints(size=2)
+      .short_caption="VALUE_RANGE_FOR_TRUSTED_DETECTOR_PIXELS="
+      .expert_level=1
   }
   index {
     refine = *ORIENTATION *CELL *BEAM *DISTANCE *AXIS *POSITION
       .type = choice(multi = True)
+      .short_caption="REFINE(IDXREF)="
       .help = 'what to refine in autoindexing'
+      .expert_level=1
     debug = *OFF ON
       .type = choice(multi = False)
-      .help = 'output enganced debugging for indexing'
+      .short_caption="Debug"
+      .help = 'output enhanced debugging for indexing'
+      .expert_level=1
     xparm = None
       .type = path
+      .short_caption="Use GXPARM.XDS geometry"
       .help = 'Use refined GXPARM.XDS geometry in indexing'
+      .expert_level=1
     xparm_ub = None
       .type = path
+      .short_caption="Use GXPARM.XDS UB matrix"
       .help = 'Use refined GXPARM.XDS orientation matrix in indexing'
+      .expert_level=1
   }
   colspot {
     minimum_pixels_per_spot = 1
+      .short_caption="For PAD MINIMUM_NUMBER_OF_PIXELS_IN_A_SPOT="
       .type = int
+      .expert_level=1
   }
   xscale {
     min_isigma = 3.0
       .type = float
+      .short_caption="MINIMUM_I/SIGMA="
+      .expert_level=1
     zero_dose = False
       .type = bool
+      .short_caption="Zero dose extrapolation"
       .help = "Enable XSCALE zero dose extrapolation"
+      .expert_level=1
   }
   merge2cbf {
     merge_n_images = 2
       .type = int(value_min=1)
+      .short_caption="Number of images"
       .help = "Number of input images to average into a single output image"
+      .expert_level=1
     data_range = None
       .type = ints(size=2, value_min=0)
+      .short_caption="Data range"
+      .expert_level=1
     moving_average = False
       .type = bool
+      .short_caption="Moving average"
       .help = "If true, then perform a moving average over the sweep, i.e. given"
               "images 1, 2, 3, 4, 5, 6, ..., with averaging over three images,"
               "the output frames would cover 1-3, 2-4, 3-5, 4-6, etc."
               "Otherwise, a straight summation is performed:"
               " 1-3, 4-6, 7-9, etc."
+      .expert_level=1
   }
 }
 dials
