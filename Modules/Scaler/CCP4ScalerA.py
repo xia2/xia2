@@ -1221,25 +1221,37 @@ class CCP4ScalerA(Scaler):
       # Collect a list of all sweeps, grouped by project, crystal, wavelength
       groups = {}
       self._scalr_cell_dict = {}
-      tt_refine_experiments, tt_refine_pickles = [], []
+      tt_refine_experiments = []
+      tt_refine_pickles = []
+      tt_refine_reindex_ops = []
       for epoch in self._sweep_handler.get_epochs():
         si = self._sweep_handler.get_sweep_information(epoch)
         pi = '_'.join(si.get_project_info())
         intgr = si.get_integrater()
         groups[pi] = groups.get(pi, []) + \
-          [(intgr.get_integrated_experiments(), intgr.get_integrated_reflections())]
+          [(intgr.get_integrated_experiments(),
+            intgr.get_integrated_reflections(),
+            intgr.get_integrater_reindex_operator())]
 
       # Two theta refine the unit cell for each group
       for pi in groups.keys():
         tt_grouprefiner = TwoThetaRefine()
         tt_grouprefiner.set_working_directory(self.get_working_directory())
         auto_logfiler(tt_grouprefiner)
-        files = zip(*groups[pi])
-        tt_grouprefiner.set_experiments(files[0])
-        tt_grouprefiner.set_pickles(files[1])
-        tt_refine_experiments.extend(files[0])
-        tt_refine_pickles.extend(files[1])
-        tt_grouprefiner.set_reindex_operator(self._spacegroup_reindex_operator)
+        args = zip(*groups[pi])
+        tt_grouprefiner.set_experiments(args[0])
+        tt_grouprefiner.set_pickles(args[1])
+        tt_refine_experiments.extend(args[0])
+        tt_refine_pickles.extend(args[1])
+        tt_refine_reindex_ops.extend(args[2])
+        reindex_ops = args[2]
+        from cctbx.sgtbx import change_of_basis_op as cb_op
+        if self._spacegroup_reindex_operator is not None:
+          reindex_ops = [(
+            cb_op(str(self._spacegroup_reindex_operator)) * cb_op(str(op))).as_hkl()
+            if op is not None else self._spacegroup_reindex_operator
+            for op in reindex_ops]
+        tt_grouprefiner.set_reindex_operators(reindex_ops)
         tt_grouprefiner.run()
         Chatter.write('%s: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
           tuple([''.join(pi.split('_')[2:])] + list(tt_grouprefiner.get_unit_cell())))
@@ -1261,7 +1273,12 @@ class CCP4ScalerA(Scaler):
         auto_logfiler(tt_refiner)
         tt_refiner.set_experiments(tt_refine_experiments)
         tt_refiner.set_pickles(tt_refine_pickles)
-        tt_refiner.set_reindex_operator(self._spacegroup_reindex_operator)
+        if self._spacegroup_reindex_operator is not None:
+          reindex_ops = [(
+            cb_op(str(self._spacegroup_reindex_operator)) * cb_op(str(op))).as_hkl()
+            if op is not None else self._spacegroup_reindex_operator
+            for op in tt_refine_reindex_ops]
+        tt_refiner.set_reindex_operators(reindex_ops)
         tt_refiner.run()
         self._scalr_cell = tt_refiner.get_unit_cell()
         Chatter.write('Overall: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % tt_refiner.get_unit_cell())

@@ -28,7 +28,7 @@ def TwoThetaRefine(DriverType = None):
       DriverInstance.__class__.__init__(self)
 
       self.set_executable('dials.two_theta_refine')
-      self._reindexing_operator = None
+      self._reindexing_operators = None
       self._reindexed_experiments = None
       self._reindexed_reflections = None
 
@@ -77,20 +77,22 @@ def TwoThetaRefine(DriverType = None):
     def get_unit_cell_esd(self):
       return self._crystal.get_cell_parameter_sd()
 
-    def set_reindex_operator(self, operator):
-      self._reindexing_operator = operator
+    def set_reindex_operators(self, operators):
+      assert len(operators) == len(self._experiments)
+      self._reindexing_operators = operators
 
     def run(self):
       from xia2.Handlers.Streams import Chatter, Debug
 
-      if self._reindexing_operator:
+      if self._reindexing_operators:
         Debug.write('Reindexing sweeps for dials.two_theta_refine')
         from xia2.lib.bits import auto_logfiler
         from xia2.Wrappers.Dials.Reindex import Reindex
         self._reindexed_experiments, self._reindexed_reflections = [], []
-        for e, p in zip(self._experiments, self._pickles):
+        for e, p, op in zip(
+            self._experiments, self._pickles, self._reindexing_operators):
           reindexer = Reindex()
-          reindexer.set_cb_op(self._reindexing_operator)
+          reindexer.set_cb_op(op)
           reindexer.set_experiments_filename(e)
           reindexer.set_indexed_filename(p)
           reindexer.set_working_directory(self.get_working_directory())
@@ -116,7 +118,7 @@ def TwoThetaRefine(DriverType = None):
 
       self.clear_command_line()
 
-      if self._reindexing_operator:
+      if self._reindexing_operators:
         for experiment in self._reindexed_experiments:
           self.add_command_line(experiment)
         for pickle in self._reindexed_reflections:
