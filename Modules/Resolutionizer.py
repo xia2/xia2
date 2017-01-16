@@ -267,6 +267,9 @@ class resolution_plot(object):
 
   def plot(self, d_star_sq, values, label):
     self.ax.plot(d_star_sq, values, label=label)
+    if label == 'CC1/2':
+      ylim = self.ax.get_ylim()
+      self.ax.set_ylim(ylim[0], max(ylim[1], 1.05))
 
   def plot_resolution_limit(self, d):
     from cctbx import uctbx
@@ -528,17 +531,27 @@ class resolutionizer(object):
     if limit is None:
       limit = self._params.cc_half
 
-    cc_s = flex.double(
-      [b.cc_one_half for b in self._merging_statistics.bins]).reversed()
+    if self._params.cc_half_method == 'sigma_tau':
+      cc_s = flex.double(
+        [b.cc_one_half_sigma_tau for b in self._merging_statistics.bins]).reversed()
+    else:
+      cc_s = flex.double(
+        [b.cc_one_half for b in self._merging_statistics.bins]).reversed()
     s_s = flex.double(
       [1/b.d_min**2 for b in self._merging_statistics.bins]).reversed()
 
     p = self._params.cc_half_significance_level
     if p is not None:
-      significance = flex.bool(
-        [b.cc_one_half_significance for b in self._merging_statistics.bins]).reversed()
-      cc_half_critical_value = flex.double(
-        [b.cc_one_half_critical_value for b in self._merging_statistics.bins]).reversed()
+      if self._params.cc_half_method == 'sigma_tau':
+        significance = flex.bool(
+          [b.cc_one_half_sigma_tau_significance for b in self._merging_statistics.bins]).reversed()
+        cc_half_critical_value = flex.double(
+          [b.cc_one_half_sigma_tau_critical_value for b in self._merging_statistics.bins]).reversed()
+      else:
+        significance = flex.bool(
+          [b.cc_one_half_significance for b in self._merging_statistics.bins]).reversed()
+        cc_half_critical_value = flex.double(
+          [b.cc_one_half_critical_value for b in self._merging_statistics.bins]).reversed()
       # index of last insignificant bin
       i = flex.last_index(significance, False)
       if i is None or i == len(significance) - 1:
