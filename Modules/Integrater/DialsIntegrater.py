@@ -362,7 +362,6 @@ class DialsIntegrater(Integrater):
       '%i_dials.integrate.report.html' %report.get_xpid())
     report.set_html_filename(html_filename)
     report.run()
-    assert os.path.exists(html_filename)
     FileHandler.record_html_file('%s %s %s %s INTEGRATE' % \
                                  (pname, xname, dname, sweep),
                                  html_filename)

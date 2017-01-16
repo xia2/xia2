@@ -59,7 +59,7 @@ def Report(DriverType = None):
       if self._html_filename is not None:
         self.add_command_line('output.html=%s' %self._html_filename)
       self.start()
-      self.close_wait()
+      self.close()
       self.check_for_errors()
       return
 

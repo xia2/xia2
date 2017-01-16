@@ -164,7 +164,6 @@ class DialsRefiner(Refiner):
           '%i_dials.refine.report.html' %report.get_xpid())
         report.set_html_filename(html_filename)
         report.run()
-        assert os.path.exists(html_filename)
         FileHandler.record_html_file(
           '%s REFINE' %idxr.get_indexer_full_name(), html_filename)
 
