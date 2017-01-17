@@ -89,7 +89,7 @@ class delta_cc_half(object):
       unmerged_i.setup_binner_counting_sorted(n_bins=n_bins)
       if cc_one_half_method == 'sigma_tau':
         cc_bins = unmerged_i.cc_one_half_sigma_tau(
-          use_binning=True, use_internal_variance=True, return_n_refl=True)
+          use_binning=True, return_n_refl=True)
       else:
         cc_bins = unmerged_i.cc_one_half(use_binning=True, return_n_refl=True)
       cc_i = flex.mean_weighted(
