@@ -129,10 +129,35 @@ def load_imagesets(template, directory, id_image=None, image_range=None,
     if reference_geometry is not None and len(reference_geometry) > 0:
       update_with_reference_geometry(imagesets, reference_geometry)
 
+    # Update the geometry
+    params = PhilIndex.params.xia2.settings
+    update_geometry = []
+
     from dials.command_line.dials_import import ManualGeometryUpdater
-    update_geometry = ManualGeometryUpdater(
-      PhilIndex.params.xia2.settings.input)
-    imagesets = [update_geometry(imageset) for imageset in imagesets]
+    # Then add manual geometry
+    update_geometry.append(ManualGeometryUpdater(params.input))
+
+    from dials.command_line.dials_import import MosflmBeamCenterUpdater
+    # Then add mosflm beam centre
+    if params.input.geometry.mosflm_beam_centre is not None:
+      update_geometry.append(MosflmBeamCenterUpdater(params.input))
+
+    from dials.command_line.dials_import import PixelBeamCenterUpdater
+    # Then add slow/fast pixel beam centre
+    if params.input.geometry.slow_fast_beam_centre is not None:
+      update_geometry.append(PixelBeamCenterUpdater(params.input))
+
+    from dials.command_line.dials_import import TranslateDetectorUpdater
+    # Then add translation of detector
+    if params.input.geometry.translate_detector is not None:
+      update_geometry.append(TranslateDetectorUpdater(params.input))
+
+    imageset_list = []
+    for imageset in imagesets:
+      for updater in update_geometry:
+        imageset = updater(imageset)
+        imageset_list.append(imageset)
+    imagesets = imageset_list
 
     from scitbx.array_family import flex
     for imageset in imagesets:

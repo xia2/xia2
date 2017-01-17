@@ -422,10 +422,7 @@ def print_sweeps(out = sys.stdout):
 
       # really don't need to store the epoch in the xinfo file
       # out.write('EPOCH %d\n' % int(s.get_collect()[0]))
-      user_beam_centre = settings.beam_centre
-      if user_beam_centre is not None:
-        out.write('BEAM %6.2f %6.2f\n' % tuple(user_beam_centre))
-      elif not settings.trust_beam_centre:
+      if not settings.trust_beam_centre:
         interactive = False
         if PhilIndex.params.xia2.settings.interactive == True:
           interactive = True

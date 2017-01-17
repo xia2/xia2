@@ -610,10 +610,6 @@ xia2.settings
     .help = "For one crystal, multiple orientations, unify U matrix"
     .short_caption = "Unify crystal orientations"
     .expert_level = 1
-  beam_centre = None
-    .type = floats(size=2)
-    .help = "Beam centre (x,y) coordinates (mm, mm) using the Mosflm convention"
-    .short_caption = "Beam centre coordinates (mm, mm) using the Mosflm convention"
   trust_beam_centre = False
     .type = bool
     .help = "Whether or not to trust the beam centre in the image header."
