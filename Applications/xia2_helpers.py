@@ -72,31 +72,33 @@ def process_one_sweep(args):
     else:
       #print e
       raise
-  else:
+  finally:
     from ..Schema.XProject import XProject
-    xia2_json = os.path.join(tmpdir, 'xia2.json')
-    assert os.path.exists(xia2_json)
-
     import glob
+
+    xia2_json = os.path.join(tmpdir, 'xia2.json')
     json_files = glob.glob(os.path.join(sweep_tmp_dir, '*', '*.json'))
-    json_files.append(xia2_json)
+    if os.path.exists(xia2_json):
+      json_files.append(xia2_json)
 
     import fileinput
     for line in fileinput.FileInput(files=json_files, inplace=1):
       line = line.replace(sweep_tmp_dir, sweep_target_dir)
       print line
 
-    new_json = os.path.join(curdir, 'xia2-%s.json' %sweep_id)
+    if os.path.exists(xia2_json):
+      new_json = os.path.join(curdir, 'xia2-%s.json' %sweep_id)
 
-    shutil.copyfile(xia2_json, new_json)
+      shutil.copyfile(xia2_json, new_json)
+
     move_output_folder(sweep_tmp_dir, sweep_target_dir)
 
-    xinfo = XProject.from_json(new_json)
-    xcryst = xinfo.get_crystals().values()[0]
-    xsweep = xcryst.get_xwavelength(wavelength_id).get_sweeps()[0]
-    xsweep_dict = xsweep.to_dict()
+    if success:
+      xinfo = XProject.from_json(new_json)
+      xcryst = xinfo.get_crystals().values()[0]
+      xsweep = xcryst.get_xwavelength(wavelength_id).get_sweeps()[0]
+      xsweep_dict = xsweep.to_dict()
 
-  finally:
     shutil.rmtree(tmpdir, ignore_errors=True)
     if os.path.exists(tmpdir):
       shutil.rmtree(tmpdir, ignore_errors=True)
