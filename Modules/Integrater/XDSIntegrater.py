@@ -69,6 +69,7 @@ class XDSIntegrater(Integrater):
 
     # place to store working data
     self._xds_data_files = { }
+    self._intgr_experiments_filename = None
 
     # internal parameters to pass around
     self._xds_integrate_parameters = { }
@@ -871,7 +872,12 @@ class XDSIntegrater(Integrater):
     FileHandler.record_more_data_file(
       '%s %s %s %s experiments' % (pname, xname, dname, sweep), experiments_json)
 
+    self._intgr_experiments_filename = experiments_json
+
     return integrate_mtz
+
+  def get_integrated_experiments(self):
+    return self._intgr_experiments_filename
 
 
 def integrate_hkl_to_reflection_pickle(integrate_hkl, experiments_json, working_directory):
