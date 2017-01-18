@@ -218,6 +218,12 @@ def Index(DriverType = None):
       self.close_wait()
       self.check_for_errors()
 
+      if not os.path.isfile(self._experiment_filename) or \
+         not os.path.isfile(self._indexed_filename):
+        raise RuntimeError(
+          "dials.index failed, see log file for more details: %s"
+          %self.get_log_file())
+
       from dials.array_family import flex
       from dxtbx.serialize import load
       self._experiment_list = load.experiment_list(self._experiment_filename)
