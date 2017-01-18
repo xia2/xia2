@@ -478,7 +478,6 @@ xia2.settings
     anomalous = Auto
       .type = bool
       .short_caption = "Separate anomalous pairs in merging"
-      .expert_level = 1
     working_directory = None
       .type = path
       .short_caption = "Working directory (i.e. not $CWD)"
