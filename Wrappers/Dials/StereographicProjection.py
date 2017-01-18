@@ -29,6 +29,8 @@ def StereographicProjection(DriverType = None):
 
       self._experiments_filenames = []
       self._hkl = None
+      self._plot_filename = None
+      self._json_filename = None
       return
 
     def add_experiments(self, experiments_filename):
@@ -38,6 +40,12 @@ def StereographicProjection(DriverType = None):
     def set_hkl(self, hkl):
       assert len(hkl) == 3
       self._hkl = hkl
+
+    def get_plot_filename(self):
+      return self._plot_filename
+
+    def get_json_filename(self):
+      return self._json_filename
 
     def run(self):
       from xia2.Handlers.Streams import Debug
@@ -52,8 +60,10 @@ def StereographicProjection(DriverType = None):
       self.add_command_line('frame=laboratory')
       self.add_command_line('plot.show=False')
       self.add_command_line('hkl=%i,%i,%i' %self._hkl)
-      self.add_command_line('plot.filename=stereographic_projection_%i%i%i.png' %self._hkl)
-      #self.add_command_line('json.filename=stereographic_projection_%i%i%i.json' %self._hkl)
+      self._plot_filename = 'stereographic_projection_%i%i%i.png' %self._hkl
+      self._json_filename = 'stereographic_projection_%i%i%i.json' %self._hkl
+      self.add_command_line('plot.filename=%s' %self._plot_filename)
+      self.add_command_line('json.filename=%s' %self._json_filename)
 
       self.start()
       self.close_wait()

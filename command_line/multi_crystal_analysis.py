@@ -71,14 +71,16 @@ def multi_crystal_analysis(stop_after=None):
         epoch_to_experiments[epoch] = intgr.get_integrated_experiments()
 
     from xia2.Wrappers.Dials.StereographicProjection import StereographicProjection
-    sp = StereographicProjection()
-    auto_logfiler(sp)
-    sp.set_working_directory(working_directory)
-    for experiments in epoch_to_experiments.values():
-      sp.add_experiments(experiments)
+    sp_json_files = {}
     for hkl in ((1,0,0), (0,1,0), (0,0,1)):
+      sp = StereographicProjection()
+      auto_logfiler(sp)
+      sp.set_working_directory(working_directory)
+      for experiments in epoch_to_experiments.values():
+        sp.add_experiments(experiments)
       sp.set_hkl(hkl)
       sp.run()
+      sp_json_files[hkl] = sp.get_json_filename()
 
     unmerged_mtz = scaler.get_scaled_reflections('mtz_unmerged').values()[0]
     from iotbx.reflection_file_reader import any_reflection_file
@@ -237,13 +239,21 @@ def multi_crystal_analysis(stop_after=None):
   json_data['intensity_clustering'] = mca.get_dict()
   del json_data['intensity_clustering']['clusters']
 
-  json_str = json.dumps(json_data)
+  for hkl in ((1,0,0), (0,1,0), (0,0,1)):
+    with open(sp_json_files[hkl], 'rb') as f:
+      json_data['stereographic_projection_%s%s%s' %hkl] = json.load(f)
+
+  json_str = json.dumps(json_data, indent=2)
 
   javascript = ['var graphs = %s' %(json_str)]
   javascript.append(
     'Plotly.newPlot(blend_dendrogram, graphs.blend_dendrogram.data, graphs.blend_dendrogram.layout);')
   javascript.append(
     'Plotly.newPlot(intensity_clustering, graphs.intensity_clustering.data, graphs.intensity_clustering.layout);')
+  for hkl in ((1,0,0), (0,1,0), (0,0,1)):
+    javascript.append(
+      'Plotly.newPlot(stereographic_projection_%(hkl)s, graphs.stereographic_projection_%(hkl)s.data, graphs.stereographic_projection_%(hkl)s.layout);' %(
+      {'hkl': "%s%s%s" %hkl}))
 
   html_header = '''
 <head>
@@ -288,6 +298,21 @@ body {
 
 <div class="panel-group">
   <div class="panel panel-default">
+    <div class="panel-heading" data-toggle="collapse" href="#collapse_stereographic_projection">
+      <h4 class="panel-title">
+        <a>Stereographic projections</a>
+      </h4>
+    </div>
+    <div id="collapse_stereographic_projection" class="panel-collapse collapse">
+      <div class="panel-body">
+        <div class="col-xs-12 col-sm-12 col-md-12 plot" id="stereographic_projection_100"></div>
+        <div class="col-xs-12 col-sm-12 col-md-12 plot" id="stereographic_projection_010"></div>
+        <div class="col-xs-12 col-sm-12 col-md-12 plot" id="stereographic_projection_001"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel panel-default">
     <div class="panel-heading" data-toggle="collapse" href="#collapse_cell">
       <h4 class="panel-title">
         <a>Unit cell clustering</a>
@@ -302,6 +327,7 @@ body {
       </div>
     </div>
   </div>
+
   <div class="panel panel-default">
     <div class="panel-heading" data-toggle="collapse" href="#collapse_intensity">
       <h4 class="panel-title">
