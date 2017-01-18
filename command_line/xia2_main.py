@@ -183,13 +183,14 @@ def xia2_main(stop_after=None):
         sweeps = wavelength.get_sweeps()
         for sweep in sweeps:
           success, output, xsweep_dict = results[i_sweep]
-          assert xsweep_dict is not None
+          print success, xsweep_dict
           if output is not None:
             Chatter.write(output)
           if not success:
             Chatter.write('Sweep failed: removing %s' %sweep.get_name())
             remove_sweeps.append(sweep)
           else:
+            assert xsweep_dict is not None
             Chatter.write('Loading sweep: %s' % sweep.get_name())
             from xia2.Schema.XSweep import XSweep
             new_sweep = XSweep.from_dict(xsweep_dict)
