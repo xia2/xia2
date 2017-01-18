@@ -85,12 +85,13 @@ def multi_crystal_analysis(stop_after=None):
     reader = any_reflection_file(unmerged_mtz)
 
     from xia2.Wrappers.XIA.PlotMultiplicity import PlotMultiplicity
-    pm = PlotMultiplicity()
-    auto_logfiler(pm)
-    pm.set_working_directory(working_directory)
-    pm.set_mtz_filename(unmerged_mtz)
     for axis in ('h', 'k', 'l'):
+      pm = PlotMultiplicity()
+      auto_logfiler(pm)
+      pm.set_working_directory(working_directory)
+      pm.set_mtz_filename(unmerged_mtz)
       pm.set_slice_axis(axis)
+      pm.set_show_missing(True)
       pm.run()
 
     intensities = None
