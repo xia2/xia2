@@ -42,20 +42,13 @@ def multi_crystal_analysis(stop_after=None):
       [crystal.get_name(), 'analysis'])
     os.chdir(working_directory)
 
-    from xia2.Wrappers.CCP4.Blend import Blend
-
-    from xia2.lib.bits import auto_logfiler
-    hand_blender = Blend()
-    hand_blender.set_working_directory(working_directory)
-    auto_logfiler(hand_blender)
-    Citations.cite('blend')
-
     scaler = crystal._get_scaler()
 
     #epoch_to_si = {}
     epoch_to_batches = {}
     epoch_to_integrated_intensities = {}
     epoch_to_sweep_name = {}
+    epoch_to_experiments = {}
 
     try:
       epochs = scaler._sweep_information.keys()
@@ -64,6 +57,9 @@ def multi_crystal_analysis(stop_after=None):
         epoch_to_batches[epoch] = si['batches']
         epoch_to_integrated_intensities[epoch] = si['corrected_intensities']
         epoch_to_sweep_name[epoch] = si['sname']
+        intgr = si['integrater']
+        epoch_to_experiments[epoch] = intgr.get_integrated_experiments()
+
     except AttributeError, e:
       epochs = scaler._sweep_handler.get_epochs()
       for epoch in epochs:
@@ -71,6 +67,18 @@ def multi_crystal_analysis(stop_after=None):
         epoch_to_batches[epoch] = si.get_batches()
         epoch_to_integrated_intensities[epoch] = si.get_reflections()
         epoch_to_sweep_name[epoch] = si.get_sweep_name()
+        intgr = si.get_integrater()
+        epoch_to_experiments[epoch] = intgr.get_integrated_experiments()
+
+    from xia2.Wrappers.Dials.StereographicProjection import StereographicProjection
+    sp = StereographicProjection()
+    auto_logfiler(sp)
+    sp.set_working_directory(working_directory)
+    for experiments in epoch_to_experiments.values():
+      sp.add_experiments(experiments)
+    for hkl in ((1,0,0), (0,1,0), (0,0,1)):
+      sp.set_hkl(hkl)
+      sp.run()
 
     unmerged_mtz = scaler.get_scaled_reflections('mtz_unmerged').values()[0]
     from iotbx.reflection_file_reader import any_reflection_file
@@ -87,6 +95,12 @@ def multi_crystal_analysis(stop_after=None):
         intensities = ma
       elif ma.info().labels == ['I(+)', 'SIGI(+)', 'I(-)', 'SIGI(-)']:
         intensities = ma
+
+    from xia2.Wrappers.CCP4.Blend import Blend
+    hand_blender = Blend()
+    hand_blender.set_working_directory(working_directory)
+    auto_logfiler(hand_blender)
+    Citations.cite('blend')
 
     from xia2.Handlers.Environment import which
     Rscript_binary = which('Rscript', debug=False)
