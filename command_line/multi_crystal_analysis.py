@@ -84,6 +84,15 @@ def multi_crystal_analysis(stop_after=None):
     from iotbx.reflection_file_reader import any_reflection_file
     reader = any_reflection_file(unmerged_mtz)
 
+    from xia2.Wrappers.XIA.PlotMultiplicity import PlotMultiplicity
+    pm = PlotMultiplicity()
+    auto_logfiler(pm)
+    pm.set_working_directory(working_directory)
+    pm.set_mtz_filename(unmerged_mtz)
+    for axis in ('h', 'k', 'l'):
+      pm.set_slice_axis(axis)
+      pm.run()
+
     intensities = None
     batches = None
     assert reader.file_type() == 'ccp4_mtz'
