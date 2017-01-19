@@ -87,6 +87,7 @@ def multi_crystal_analysis(stop_after=None):
     reader = any_reflection_file(unmerged_mtz)
 
     from xia2.Wrappers.XIA.PlotMultiplicity import PlotMultiplicity
+    mult_json_files = {}
     for axis in ('h', 'k', 'l'):
       pm = PlotMultiplicity()
       auto_logfiler(pm)
@@ -95,6 +96,7 @@ def multi_crystal_analysis(stop_after=None):
       pm.set_slice_axis(axis)
       pm.set_show_missing(True)
       pm.run()
+      mult_json_files[axis] = pm.get_json_filename()
 
     intensities = None
     batches = None
@@ -243,6 +245,10 @@ def multi_crystal_analysis(stop_after=None):
     with open(sp_json_files[hkl], 'rb') as f:
       json_data['stereographic_projection_%s%s%s' %hkl] = json.load(f)
 
+  for axis in ('h', 'k', 'l'):
+    with open(mult_json_files[axis], 'rb') as f:
+      json_data['multiplicity_%s' %axis] = json.load(f)
+
   json_str = json.dumps(json_data, indent=2)
 
   javascript = ['var graphs = %s' %(json_str)]
@@ -254,6 +260,10 @@ def multi_crystal_analysis(stop_after=None):
     javascript.append(
       'Plotly.newPlot(stereographic_projection_%(hkl)s, graphs.stereographic_projection_%(hkl)s.data, graphs.stereographic_projection_%(hkl)s.layout);' %(
       {'hkl': "%s%s%s" %hkl}))
+  for axis in ('h', 'k', 'l'):
+    javascript.append(
+      'Plotly.newPlot(multiplicity_%(axis)s, graphs.multiplicity_%(axis)s.data, graphs.multiplicity_%(axis)s.layout);' %(
+      {'axis': axis}))
 
   html_header = '''
 <head>
@@ -282,6 +292,13 @@ body {
   margin-bottom: 20px;
 }
 
+.square_plot {
+  float: left;
+  width: 800px;
+  height: 800px;
+  margin-bottom: 20px;
+}
+
 </style>
 
 </head>
@@ -297,6 +314,22 @@ body {
 </div>
 
 <div class="panel-group">
+
+  <div class="panel panel-default">
+    <div class="panel-heading" data-toggle="collapse" href="#collapse_multiplicity">
+      <h4 class="panel-title">
+        <a>Multiplicity plots</a>
+      </h4>
+    </div>
+    <div id="collapse_multiplicity" class="panel-collapse collapse">
+      <div class="panel-body">
+        <div class="col-xs-12 col-sm-12 col-md-12 square_plot" id="multiplicity_h"></div>
+        <div class="col-xs-12 col-sm-12 col-md-12 square_plot" id="multiplicity_k"></div>
+        <div class="col-xs-12 col-sm-12 col-md-12 square_plot" id="multiplicity_l"></div>
+      </div>
+    </div>
+  </div>
+
   <div class="panel panel-default">
     <div class="panel-heading" data-toggle="collapse" href="#collapse_stereographic_projection">
       <h4 class="panel-title">
@@ -305,9 +338,9 @@ body {
     </div>
     <div id="collapse_stereographic_projection" class="panel-collapse collapse">
       <div class="panel-body">
-        <div class="col-xs-12 col-sm-12 col-md-12 plot" id="stereographic_projection_100"></div>
-        <div class="col-xs-12 col-sm-12 col-md-12 plot" id="stereographic_projection_010"></div>
-        <div class="col-xs-12 col-sm-12 col-md-12 plot" id="stereographic_projection_001"></div>
+        <div class="col-xs-12 col-sm-12 col-md-12 square_plot" id="stereographic_projection_100"></div>
+        <div class="col-xs-12 col-sm-12 col-md-12 square_plot" id="stereographic_projection_010"></div>
+        <div class="col-xs-12 col-sm-12 col-md-12 square_plot" id="stereographic_projection_001"></div>
       </div>
     </div>
   </div>
@@ -320,10 +353,10 @@ body {
     </div>
     <div id="collapse_cell" class="panel-collapse collapse">
       <div class="panel-body">
+        <div class="col-xs-12 col-sm-12 col-md-12 plot" id="blend_dendrogram"></div>
         <div class="table-responsive" style="width: 800px">
           %(blend_html)s
         </div>
-        <div class="col-xs-12 col-sm-12 col-md-12 plot" id="blend_dendrogram"></div>
       </div>
     </div>
   </div>
@@ -336,10 +369,10 @@ body {
     </div>
     <div id="collapse_intensity" class="panel-collapse collapse">
       <div class="panel-body">
+        <div class="col-xs-12 col-sm-12 col-md-12 plot" id="intensity_clustering"></div>
         <div class="table-responsive" style="width: 800px">
           %(intensity_clustering_html)s
         </div>
-        <div class="col-xs-12 col-sm-12 col-md-12 plot" id="intensity_clustering"></div>
       </div>
     </div>
   </div>

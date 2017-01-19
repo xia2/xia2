@@ -61,7 +61,7 @@ class MultiplicityViewPng(render_2d):
       data = self.scene.multiplicities.data()
       cmap_d = {
         'heatmap': 'hot',
-        'redblue': colors.LinearSegmentedColormap.from_list("RedBlud",["b","r"]),
+        'redblue': colors.LinearSegmentedColormap.from_list("RedBlue",["b","r"]),
         'grayscale': 'Greys_r' if self.settings.black_background else 'Greys',
         'mono': (colors.LinearSegmentedColormap.from_list("mono",["w","w"])
                  if self.settings.black_background
@@ -93,8 +93,132 @@ class MultiplicityViewPng(render_2d):
 
     self.fig.tight_layout()
     self.fig.savefig(
-      self.settings.filename, bbox_inches='tight', facecolor=self._background)
+      self.settings.plot.filename, bbox_inches='tight', facecolor=self._background)
 
+class MultiplicityViewJson(render_2d):
+
+  def __init__(self, scene, settings=None):
+    render_2d.__init__(self, scene, settings)
+
+    self._open_circle_points = flex.vec2_double()
+    self._open_circle_radii = []
+    self._open_circle_colors = []
+    self._filled_circle_points = flex.vec2_double()
+    self._filled_circle_radii = []
+    self._filled_circle_colors = []
+    json_d = self.render(None)
+    import json
+    json_str = json.dumps(json_d, indent=2)
+    with open(self.settings.json.filename, 'wb') as f:
+      print >> f, json_str
+
+  def GetSize (self) :
+    return 100, 100 # size in pixels
+
+  def draw_line (self, ax, x1, y1, x2, y2) :
+    return
+    ax.plot([x1, x2], [y1, y2], c=self._foreground)
+
+  def draw_text (self, ax, text, x, y) :
+    return
+    ax.text(x, y, text, color=self._foreground, size=self.settings.font_size)
+
+  def draw_open_circle (self, ax, x, y, radius, color=None) :
+    self._open_circle_points.append((x, y))
+    self._open_circle_radii.append(2 * radius)
+    if color is None:
+      color = self._foreground
+    self._open_circle_colors.append(color)
+
+  def draw_filled_circle (self, ax, x, y, radius, color) :
+    self._filled_circle_points.append((x, y))
+    self._filled_circle_radii.append(2 * radius)
+    self._filled_circle_colors.append(color)
+
+  def render(self, ax):
+    render_2d.render(self, ax)
+    data = []
+    if self._open_circle_points.size():
+      x, y = self._open_circle_points.parts()
+      z = self._open_circle_colors
+      data.append({
+        'x': list(x),
+        'y': list(y),
+        #'z': list(z),
+        'type': 'scatter',
+        'mode': 'markers',
+        'name': 'missing reflections',
+        'marker': {
+          #'color': list(z),
+          'color': 'white',
+          'line': {
+            'color': 'black',
+            'width': 1,
+          },
+          'symbol': 'circle',
+          'size': 5,
+        },
+      })
+    if self._filled_circle_points.size():
+      x, y = self._filled_circle_points.parts()
+      z = self.scene.multiplicities.data().select(self.scene.slice_selection)
+
+      # why doesn't this work?
+      #colorscale = []
+      #assert len(z) == len(self._filled_circle_colors)
+      #for zi in range(flex.max(z)+1):
+      #  i = flex.first_index(z, zi)
+      #  if i is None: continue
+      #  print i, self._filled_circle_colors[i], 'rgb(%i,%i,%i)' %tuple(rgb * 264 for rgb in self._filled_circle_colors[i])
+      #  colorscale.append([zi, 'rgb(%i,%i,%i)' %self._filled_circle_colors[i]])
+
+      cmap_d = {
+        'rainbow': 'Jet',
+        'heatmap': 'Hot',
+        'redblue': 'RdbU',
+        'grayscale': 'Greys',
+        'mono': None,
+      }
+
+      color = list(z)
+      colorscale = cmap_d.get(
+        self.settings.color_scheme, self.settings.color_scheme)
+
+      if self.settings.color_scheme == 'mono':
+        color = 'black'
+        colorscale = None
+
+      data.append({
+        'x': list(x),
+        'y': list(y),
+        #'z': list(z),
+        'type': 'scatter',
+        'mode': 'markers',
+        'name': 'multiplicity',
+        'marker': {
+          'color': color,
+          'colorscale': colorscale,
+          'cmin': 0,
+          'cmax': flex.max(self.scene.multiplicities.data()),
+          'showscale': True,
+          'line': {
+            'color': 'white',
+            'width': 1,
+          },
+          'symbol': 'circle',
+          'size': 5,
+        },
+      })
+
+    d = {
+      'data': data,
+      'layout': {
+        'title': 'Multiplicity plot',
+        #'xaxis': {'range': [-1.0, 1.0]},
+        #'yaxis': {'range': [-1.0, 1.0]},
+      },
+    }
+    return d
 
 import iotbx.phil
 master_phil = iotbx.phil.parse("""
@@ -103,8 +227,14 @@ unit_cell = None
   .type = unit_cell
 space_group = None
   .type = space_group
-filename = multiplicities.png
-  .type = path
+plot {
+  filename = multiplicities.png
+    .type = path
+}
+json {
+  filename = None
+    .type = path
+}
 size_inches = 20,20
   .type = floats(size=2, value_min=0)
 font_size = 20
@@ -153,9 +283,13 @@ def run(args):
   settings.expand_anomalous = True
   settings.slice_mode = True
 
-  view = MultiplicityViewPng(
-    scene(miller_array, settings, merge=True), settings=settings)
+  if settings.plot.filename is not None:
+    view = MultiplicityViewPng(
+      scene(miller_array, settings, merge=True), settings=settings)
 
+  if settings.json.filename is not None:
+    view = MultiplicityViewJson(
+      scene(miller_array, settings, merge=True), settings=settings)
 
 if __name__ == '__main__':
   import sys

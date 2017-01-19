@@ -27,6 +27,7 @@ def PlotMultiplicity(DriverType = None):
       self._slice_index = 0
       self._show_missing = False
       self._plot_filename = None
+      self._json_filename = None
       return
 
     def set_mtz_filename(self, mtz_filename):
@@ -42,8 +43,11 @@ def PlotMultiplicity(DriverType = None):
     def set_show_missing(self, show_missing):
       self._show_missing = show_missing
 
-    def plot_filename(self):
+    def get_plot_filename(self):
       return self._plot_filename
+
+    def get_json_filename(self):
+      return self._json_filename
 
     def run(self):
       from xia2.Handlers.Streams import Debug
@@ -58,7 +62,9 @@ def PlotMultiplicity(DriverType = None):
       self.add_command_line('show_missing=%s' %self._show_missing)
       self.add_command_line('uniform_size=True')
       self._plot_filename = 'multiplicities_%s_%i.png' %(self._slice_axis, self._slice_index)
-      self.add_command_line('filename=%s' %self._plot_filename)
+      self.add_command_line('plot.filename=%s' %self._plot_filename)
+      self._json_filename = 'multiplicities_%s_%i.json' %(self._slice_axis, self._slice_index)
+      self.add_command_line('json.filename=%s' %self._json_filename)
       self.start()
       self.close_wait()
       self.check_for_errors()
