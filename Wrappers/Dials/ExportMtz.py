@@ -8,10 +8,7 @@
 #
 # Export DIALS integration output in MTZ format.
 
-from __future__ import division
-
-from __init__ import _setup_xia2_environ
-_setup_xia2_environ()
+from __future__ import absolute_import, division
 
 def ExportMtz(DriverType = None):
   '''A factory for ExportMtzWrapper classes.'''
@@ -30,28 +27,23 @@ def ExportMtz(DriverType = None):
       self._mtz_filename = "hklout.mtz"
       self._include_partials = False
 
-      return
-
     def set_include_partials(self, include_partials):
       self._include_partials = include_partials
 
     def set_experiments_filename(self, experiments_filename):
       self._experiments_filename = experiments_filename
-      return
 
     def get_experiments_filename(self):
       return self._experiments_filename
 
     def set_reflections_filename(self, reflections_filename):
       self._reflections_filename = reflections_filename
-      return
 
     def get_reflections_filename(self):
       return self._reflections_filename
 
     def set_mtz_filename(self, mtz_filename):
       self._mtz_filename = mtz_filename
-      return
 
     def get_mtz_filename(self):
       return self._mtz_filename
@@ -70,7 +62,5 @@ def ExportMtz(DriverType = None):
       self.start()
       self.close_wait()
       self.check_for_errors()
-
-      return
 
   return ExportMtzWrapper()

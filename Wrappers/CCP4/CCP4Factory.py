@@ -10,8 +10,9 @@
 # A factory for CCP4 program wrappers.
 #
 
+from __future__ import absolute_import, division
+
 import os
-import sys
 
 # the wrappers that this will use - these are renamed so that the internal
 # factory version can be used...
@@ -40,7 +41,6 @@ class CCP4Factory(object):
 
   def set_working_directory(self, working_directory):
     self._working_directory = working_directory
-    return
 
   def get_working_directory(self):
     return self._working_directory

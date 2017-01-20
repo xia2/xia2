@@ -8,10 +8,10 @@
 #
 # Code to allow background (i.e. threaded) running of tasks.
 
+from __future__ import absolute_import, division
+
 import threading
 import exceptions
-import time
-import os
 import sys
 import traceback
 
@@ -86,7 +86,6 @@ if __name__ == '__cpu.py__':
   # this be a script! #!/usr/bin/env python
 
   import math
-  import sys
 
   for record in sys.stdin:
     pass

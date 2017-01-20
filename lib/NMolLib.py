@@ -13,7 +13,8 @@
 #
 # Relies on $XIA2_ROOT/Data/nmol-params.dat
 
-import os, sys, math
+from __future__ import absolute_import, division
+import os, math
 
 from xia2.Handlers.Syminfo import Syminfo
 from xia2.Handlers.Streams import Chatter
@@ -60,7 +61,7 @@ def spacegroup_number_operators(spacegroup):
 
   try:
     spacegroup_number = int(spacegroup)
-  except:
+  except: # intentional
     # spacegroup was passed in as a name
     spacegroup_number = Syminfo.spacegroup_name_to_number(
         spacegroup.upper())

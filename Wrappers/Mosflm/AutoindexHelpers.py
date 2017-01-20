@@ -1,4 +1,4 @@
-from __future__ import division
+from __future__ import absolute_import, division
 
 def index_solution(tokens):
   from collections import namedtuple
@@ -15,7 +15,7 @@ def parse_index_log(mosflm_output):
 
   for record in mosflm_output:
     if 'DIRECT SPACE VECTORS DID NOT RESULT INTO A ORIENTATION' in record:
-      from Exceptions import AutoindexError
+      from xia2.Wrappers.Mosflm.Exceptions import AutoindexError
       raise AutoindexError, 'indexing failed'
 
   for j, record in enumerate(mosflm_output):

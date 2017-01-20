@@ -1,5 +1,5 @@
+from __future__ import absolute_import, division
 import os
-import sys
 
 from xia2.Driver.DriverFactory import DriverFactory
 
@@ -44,8 +44,6 @@ def BestStrategy(DriverType=None):
       self._exposure_time = None
       self._transmission = None
       self._resolution = None
-
-      return
 
     def set_detector(self, detector):
       self._detector = detector
@@ -188,8 +186,6 @@ def BestStrategy(DriverType=None):
           self._transmission = float(tokens[6].replace('%', ''))
           self._resolution = float(tokens[2].replace('=', ''))
 
-      return
-
     def get_completeness(self):
       return self._completeness
 
@@ -206,7 +202,6 @@ def BestStrategy(DriverType=None):
       return self._resolution
 
     def get_results_dict(self):
-      import os
       assert self._xmlout is not None
       assert os.path.isfile(self._xmlout)
       return xml_to_dict(self._xmlout)

@@ -7,12 +7,7 @@
 #   included in the root directory of this package.
 #
 
-from __future__ import division
-
-import os
-from __init__ import _setup_xia2_environ
-_setup_xia2_environ()
-
+from __future__ import absolute_import, division
 
 def StereographicProjection(DriverType = None):
   '''A factory for StereographicProjectionWrapper classes.'''
@@ -31,11 +26,9 @@ def StereographicProjection(DriverType = None):
       self._hkl = None
       self._plot_filename = None
       self._json_filename = None
-      return
 
     def add_experiments(self, experiments_filename):
       self._experiments_filenames.append(experiments_filename)
-      return
 
     def set_hkl(self, hkl):
       assert len(hkl) == 3
@@ -68,6 +61,5 @@ def StereographicProjection(DriverType = None):
       self.start()
       self.close_wait()
       self.check_for_errors()
-      return
 
   return StereographicProjectionWrapper()

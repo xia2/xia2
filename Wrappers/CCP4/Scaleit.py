@@ -13,7 +13,8 @@
 # 15/JAN/07 FIXME - need to be able to cope with a native data set
 #                   scaled together with anomalous derivatives.
 #
-#
+
+from __future__ import absolute_import, division
 
 import os
 import sys
@@ -23,7 +24,7 @@ from xia2.Decorators.DecoratorFactory import DecoratorFactory
 
 # locally required wrappers
 
-from Mtzdump import Mtzdump
+from xia2.Wrappers.CCP4.Mtzdump import Mtzdump
 
 def Scaleit(DriverType = None):
   '''A factory for ScaleitWrapper classes.'''

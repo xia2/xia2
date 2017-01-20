@@ -6,14 +6,14 @@
 #   included in the root directory of this package.
 #
 
+from __future__ import absolute_import, division
+
 from xia2.Schema.Interfaces.Refiner import Refiner
 from xia2.Handlers.Streams import Debug, Chatter, Journal
 
 import os
-import math
 
 from xia2.lib.bits import auto_logfiler
-from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Wrappers.Mosflm.MosflmRefineCell import MosflmRefineCell
 from xia2.lib.SymmetryLib import lattice_to_spacegroup

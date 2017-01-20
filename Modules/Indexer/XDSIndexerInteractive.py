@@ -10,12 +10,11 @@
 # have the indexing fully interactive i.e. user can run index, select solution,
 # change images to use etc. so it becomes fully interactive.
 
-import os
-import sys
+from __future__ import absolute_import, division
 
 # the class that we are extending
 
-from XDSIndexer import XDSIndexer
+from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
 
 # odds and sods that are needed
 
@@ -45,7 +44,7 @@ class XDSIndexerInteractive(XDSIndexer):
 
     images = self.get_matching_images()
 
-    from IndexerSelectImages import index_select_image_wedges_user
+    from xia2.Modules.Indexer.IndexerSelectImages import index_select_image_wedges_user
 
     wedges = index_select_image_wedges_user(
         self.get_template(), phi_width, images, Chatter)

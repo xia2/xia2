@@ -10,12 +10,13 @@
 # An reimplementation of the XDS indexer to work by first summing images before
 # the spot finding for indexing. May or may not help...
 
+from __future__ import absolute_import, division
+
 import os
-import sys
 
 # the class that we are extending
 
-from XDSIndexer import XDSIndexer
+from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
 
 # odds and sods that are needed
 

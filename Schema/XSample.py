@@ -4,8 +4,7 @@
 #   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 
-from XSweep import XSweep
-from xia2.Handlers.Streams import Chatter
+from __future__ import absolute_import, division
 
 class XSample(object):
   '''An object representation of a sample.'''
@@ -91,11 +90,7 @@ class XSample(object):
 
   def get_output(self):
     result = 'Sample name: %s\n' % self._name
-
     result += 'Sweeps:\n'
-
-    from xia2.Driver.DriverFactory import DriverFactory
-
     return result[:-1]
 
   def get_crystal(self):

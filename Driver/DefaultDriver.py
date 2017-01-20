@@ -42,14 +42,14 @@
 # will have tokens PREPENDED to the environment by the IMPLEMENTATION of the
 # Driver interface.
 
+from __future__ import absolute_import, division
 import os
-import sys
 
-from DriverHelper import error_no_program, error_kill, error_abrt
-from DriverHelper import error_segv, check_return_code, error_missing_library
-from DriverHelper import error_fp, error_python_traceback
-from DriverHelper import error_library_not_loaded
-from DriverHelper import generate_random_name, executable_exists
+from xia2.Driver.DriverHelper import error_no_program, error_kill, error_abrt
+from xia2.Driver.DriverHelper import error_segv, check_return_code, error_missing_library
+from xia2.Driver.DriverHelper import error_fp, error_python_traceback
+from xia2.Driver.DriverHelper import error_library_not_loaded
+from xia2.Driver.DriverHelper import generate_random_name, executable_exists
 
 # out of context stuff
 

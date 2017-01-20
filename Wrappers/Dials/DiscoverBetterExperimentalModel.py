@@ -8,9 +8,8 @@
 #
 # DiscoverBetterExperimentalModel using the DIALS code: assumes spots found from same.
 
-from __future__ import division
+from __future__ import absolute_import, division
 import os
-import shutil
 
 from xia2.Handlers.Phil import PhilIndex
 
@@ -32,31 +31,23 @@ def DiscoverBetterExperimentalModel(DriverType = None):
       self._phil_file = None
       self._scan_ranges = []
 
-      return
-
     def set_sweep_filename(self, sweep_filename):
       self._sweep_filename = sweep_filename
-      return
 
     def set_spot_filename(self, spot_filename):
       self._spot_filename = spot_filename
-      return
 
     def set_optimized_datablock_filename(self, optimized_filename):
       self._optimized_filename = optimized_filename
-      return
 
     def set_phil_file(self, phil_file):
       self._phil_file = phil_file
-      return
 
     def set_scan_ranges(self, scan_ranges):
       self._scan_ranges = scan_ranges
-      return
 
     def add_scan_range(self, scan_range):
       self._scan_ranges.append(scan_range)
-      return
 
     def get_optimized_datablock_filename(self):
       return self._optimized_filename
@@ -88,7 +79,5 @@ def DiscoverBetterExperimentalModel(DriverType = None):
       records = self.get_all_output()
 
       assert os.path.exists(self._optimized_filename), self._optimized_filename
-
-      return
 
   return DiscoverBetterExperimentalModelWrapper()

@@ -14,16 +14,13 @@
 # migrated to a local disk. This will use a directory created by
 # tempfile.mkdtemp().
 
+from __future__ import absolute_import, division
 import os
-import sys
 import exceptions
 import shutil
 import tempfile
-import time
 
-from Environment import Environment
-from xia2.Handlers.Streams import Chatter, Debug
-from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Environment import Environment
 
 def get_mosflm_commands(lines_of_input):
   '''Get the commands which were sent to Mosflm.'''

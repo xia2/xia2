@@ -11,16 +11,16 @@
 # wavelength / position or h, k, l, / unit cell.
 #
 
+from __future__ import absolute_import, division
+
 import os
 import sys
 import math
 import random
 import tempfile
-import shutil
 import time
 
 from xia2.Wrappers.CCP4.Pointless import Pointless
-from xia2.Wrappers.CCP4.Mtzdump import Mtzdump
 from xia2.Wrappers.CCP4.Rebatch import Rebatch
 from xia2.Handlers.Streams import Debug
 

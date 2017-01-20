@@ -1,4 +1,4 @@
-from __future__ import division
+from __future__ import absolute_import, division
 
 def Header(DriverType = None):
   '''A factory for HeaderWrapper(ipmosflm) classes.'''
@@ -17,8 +17,6 @@ def Header(DriverType = None):
 
       from collections import defaultdict
       self._headers = defaultdict(dict)
-
-      return
 
     def __call__(self, fp, images = None):
       from xia2.Handlers.Streams import Debug
@@ -58,7 +56,5 @@ def Header(DriverType = None):
         if 'Wavelength of' in record:
           self._headers['wavelength'] = float(
             record.split()[2].replace('A', ''))
-
-      return
 
   return HeaderWrapper()

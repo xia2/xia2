@@ -8,8 +8,9 @@
 # 5th June 2006
 #
 
+from __future__ import absolute_import, division
+
 import os
-import sys
 
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
@@ -33,11 +34,8 @@ def Freerflag(DriverType = None):
 
       self._free_fraction = 0.05
 
-      return
-
     def set_free_fraction(self, free_fraction):
       self._free_fraction = free_fraction
-      return
 
     def add_free_flag(self):
       self.check_hklin()
@@ -49,8 +47,6 @@ def Freerflag(DriverType = None):
       self.check_for_errors()
       self.check_ccp4_errors()
 
-      return
-
     def complete_free_flag(self):
       self.check_hklin()
       self.check_hklout()
@@ -61,7 +57,5 @@ def Freerflag(DriverType = None):
       self.close_wait()
       self.check_for_errors()
       self.check_ccp4_errors()
-
-      return
 
   return FreerflagWrapper()

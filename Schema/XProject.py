@@ -8,10 +8,7 @@
 # This represents the "top level" of the .xinfo hierarchy, and should
 # exactly correspond to the contents of the .xinfo file.
 
-import os
-import sys
-import math
-import exceptions
+from __future__ import absolute_import, division
 
 # hooks to all of the child objects
 
@@ -26,7 +23,7 @@ from xia2.Handlers.Syminfo import Syminfo
 from xia2.Handlers.Phil import PhilIndex
 
 # output stream
-from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Streams import Debug
 
 class XProject(object):
   '''A representation of a complete project. This will contain a dictionary

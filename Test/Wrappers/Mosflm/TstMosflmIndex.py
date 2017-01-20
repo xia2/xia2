@@ -1,9 +1,9 @@
+from __future__ import absolute_import, division
+
 import os
-import sys
 
 import libtbx.load_env
-from libtbx import easy_run
-from libtbx.test_utils import approx_equal, open_tmp_directory, show_diff
+from libtbx.test_utils import approx_equal, open_tmp_directory
 
 try:
   dials_regression = libtbx.env.dist_path('dials_regression')

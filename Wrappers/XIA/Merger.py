@@ -9,9 +9,8 @@
 # A wrapper for the new Resolutionizer module, using the PythonDriver to get a
 # nice subprocess...
 
+from __future__ import absolute_import, division
 import sys
-import math
-import os
 
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Streams import Debug
@@ -45,43 +44,32 @@ def Merger(DriverType=None):
       self._resolution_isigma = None
       self._resolution_misigma = None
 
-      return
-
     def set_hklin(self, hklin):
       self._hklin = hklin
-      return
 
     def set_nbins(self, nbins):
       self._nbins = nbins
-      return
 
     def set_limit_rmerge(self, limit_rmerge):
       self._limit_rmerge = limit_rmerge
-      return
 
     def set_limit_completeness(self, limit_completeness):
       self._limit_completeness = limit_completeness
-      return
 
     def set_limit_cc_half(self, limit_cc_half):
       self._limit_cc_half = limit_cc_half
-      return
 
     def set_cc_half_significance_level(self, cc_half_significance_level):
       self._cc_half_significance_level = cc_half_significance_level
-      return
 
     def set_limit_isigma(self, limit_isigma):
       self._limit_isigma = limit_isigma
-      return
 
     def set_limit_misigma(self, limit_misigma):
       self._limit_misigma = limit_misigma
-      return
 
     def set_batch_range(self, start, end):
       self._batch_range = (start, end)
-      return
 
     def get_resolution_rmerge(self):
       return self._resolution_rmerge
@@ -126,8 +114,6 @@ def Merger(DriverType=None):
           self._resolution_isigma = float(record.split()[-1])
         if 'Resolution Mn(I/sig)' in record:
           self._resolution_misigma = float(record.split()[-1])
-
-      return
 
   return MergerWrapper()
 

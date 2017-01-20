@@ -18,13 +18,9 @@
 #                 the "useful" integration limit (e.g. where the individual
 #                 reflections have an I/sigma ~ 1)
 
-import os
+from __future__ import absolute_import, division
 import sys
 import math
-
-# output streams
-
-from xia2.Handlers.Streams import Chatter, Debug
 
 def detector_class_to_mosflm(detector_class):
   '''Get the mosflm detector type from the detector class.'''

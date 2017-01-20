@@ -12,14 +12,15 @@
 # few other jiffys. Then Aimless for the merging...
 #
 
+from __future__ import absolute_import, division
+
 import os
-import sys
 import shutil
 import copy
 
 # the interface definition that this will conform to
 # from xia2.Schema.Interfaces.Scaler import Scaler
-from CommonScaler import CommonScaler as Scaler
+from xia2.Modules.Scaler.CommonScaler import CommonScaler as Scaler
 
 # other tools that this will need
 from xia2.Modules.Scaler.XDSScalerHelpers import XDSScalerHelper
@@ -41,7 +42,7 @@ from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
 
 # newly implemented CCTBX powered functions to replace xia2 binaries
-from xia2.Modules.Scaler.tools import add_dose_time_to_mtz, compute_average_unit_cell
+from xia2.Modules.Scaler.tools import compute_average_unit_cell
 
 class XDSScalerA(Scaler):
   '''An implementation of the xia2 Scaler interface implemented with

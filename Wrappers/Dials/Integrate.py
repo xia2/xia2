@@ -8,7 +8,7 @@
 #
 # Integration using DIALS.
 
-from __future__ import division
+from __future__ import absolute_import, division
 import os
 
 from xia2.Handlers.Phil import PhilIndex
@@ -41,8 +41,6 @@ def Integrate(DriverType = None):
       self._reflections_per_degree = None
       self._integration_report = {}
 
-      return
-
     def get_per_image_statistics(self):
       return self._per_image_statistics
 
@@ -51,35 +49,30 @@ def Integrate(DriverType = None):
 
     def set_experiments_filename(self, experiments_filename):
       self._experiments_filename = experiments_filename
-      return
 
     def get_experiments_filename(self):
       return self._experiments_filename
 
     def set_reflections_filename(self, reflections_filename):
       self._reflections_filename = reflections_filename
-      return
 
     def get_reflections_filename(self):
       return self._reflections_filename
 
     def set_profile_fitting(self, profile_fitting):
       self._profile_fitting = profile_fitting
-      return
 
     def get_profile_fitting(self):
       return self._profile_fitting
 
     def set_background_outlier_algorithm(self, algorithm):
       self._outlier_algorithm = algorithm
-      return
 
     def get_background_outlier_algorithm(self):
       return self._outlier_algorithm
 
     def set_background_algorithm(self, algorithm):
       self._background_algorithm = algorithm
-      return
 
     def get_background_algorithm(self):
       return self._background_algorithm
@@ -89,15 +82,12 @@ def Integrate(DriverType = None):
 
     def set_phil_file(self, phil_file):
       self._phil_file = phil_file
-      return
 
     def set_d_max(self, d_max):
       self._d_max = d_max
-      return
 
     def set_d_min(self, d_min):
       self._d_min = d_min
-      return
 
     def add_scan_range(self, start, stop):
       self._scan_range.append((start, stop))
@@ -193,7 +183,5 @@ Try using a machine with more memory or using fewer processor.''')
           'rmsd_pixel': float(row['rmsd_xy']),
           'strong': n_ref,
         }
-
-      return
 
   return IntegrateWrapper()

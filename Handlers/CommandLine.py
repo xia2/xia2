@@ -14,21 +14,20 @@
 # This is a hook into a global data repository, should mostly be replaced with
 # a Phil interface.
 
+from __future__ import absolute_import, division
 import sys
 import os
-import exceptions
 import copy
-import traceback
 
 from xia2.Experts.FindImages import image2template_directory
 from xia2.Schema.XProject import XProject
 from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import Chatter, Debug
-from xia2.Handlers.PipelineSelection import add_preference, get_preferences
+from xia2.Handlers.PipelineSelection import add_preference
 
 from libtbx.utils import Sorry
-from Environment import which
+from xia2.Handlers.Environment import which
 
 def load_datablock(filename):
   from xia2.Schema import imageset_cache, update_with_reference_geometry

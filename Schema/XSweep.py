@@ -75,7 +75,8 @@
 #                 merging. This will come from the .xinfo file in an
 #                 INTEGRATED_REFLECTION_FILE record.
 
-import sys
+from __future__ import absolute_import, division
+
 import os
 import math
 import exceptions
@@ -85,7 +86,6 @@ import time
 # allow output
 
 from xia2.Handlers.Streams import Chatter, Debug
-from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Environment import Environment
 from xia2.Handlers.Phil import PhilIndex
 
@@ -127,7 +127,7 @@ global_integration_parameters = _global_integration_parameters()
 # Things which are needed to populate this object from the pointer to a
 # single image.
 
-from xia2.Experts.FindImages import image2template, find_matching_images, \
+from xia2.Experts.FindImages import \
      template_directory_number2image, image2template_directory
 from xia2.Experts.Filenames import expand_path
 

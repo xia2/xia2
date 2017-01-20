@@ -8,12 +8,7 @@
 #
 # Estimate resolution limit after integration using DIALS
 
-from __future__ import division
-
-import os
-
-from __init__ import _setup_xia2_environ
-_setup_xia2_environ()
+from __future__ import absolute_import, division
 
 def EstimateResolutionLimit(DriverType = None):
   '''A factory for EstimateResolutionLimitWrapper classes.'''
@@ -31,15 +26,11 @@ def EstimateResolutionLimit(DriverType = None):
       self._reflections_filename = None
       self._estimated_d_min = None
 
-      return
-
     def set_experiments_filename(self, experiments_filename):
       self._experiments_filename = experiments_filename
-      return
 
     def set_reflections_filename(self, reflections_filename):
       self._reflections_filename = reflections_filename
-      return
 
     def get_estimated_d_min(self):
       return self._estimated_d_min

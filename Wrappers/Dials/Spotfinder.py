@@ -9,7 +9,7 @@
 # Find spots for autoindexing using the DIALS code; this will probably be
 # renamed to Spotfinder at some point.
 
-from __future__ import division
+from __future__ import absolute_import, division
 import os
 
 from xia2.Handlers.Phil import PhilIndex
@@ -41,15 +41,11 @@ def Spotfinder(DriverType = None):
       self._write_hot_mask = False
       self._gain = None
 
-      return
-
     def set_input_sweep_filename(self, sweep_filename):
       self._input_sweep_filename = sweep_filename
-      return
 
     def set_output_sweep_filename(self, sweep_filename):
       self._output_sweep_filename = sweep_filename
-      return
 
     def set_write_hot_mask(self, write_hot_mask=True):
       self._write_hot_mask = write_hot_mask
@@ -59,7 +55,6 @@ def Spotfinder(DriverType = None):
 
     def set_input_spot_filename(self, spot_filename):
       self._input_spot_filename = spot_filename
-      return
 
     def get_spot_filename(self):
       return os.path.join(
@@ -67,18 +62,15 @@ def Spotfinder(DriverType = None):
 
     def set_scan_ranges(self, scan_ranges):
       self._scan_ranges = scan_ranges
-      return
 
     def add_scan_range(self, scan_range):
       self._scan_ranges.append(scan_range)
-      return
 
     def get_nspots(self):
       return self._nspots
 
     def set_phil_file(self, phil_file):
       self._phil_file = phil_file
-      return
 
     def set_min_spot_size(self, min_spot_size):
       self._min_spot_size = int(min_spot_size)
@@ -142,7 +134,5 @@ def Spotfinder(DriverType = None):
       for record in self.get_all_output():
         if record.startswith('Saved') and 'reflections to' in record:
           self._nspots = int(record.split()[1])
-
-      return
 
   return SpotfinderWrapper()

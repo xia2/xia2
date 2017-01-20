@@ -63,14 +63,14 @@
 #                 the FreeR column. This should probably be enforced as an
 #                 MTZ file.
 
+from __future__ import absolute_import, division
+
 import os
-import sys
 import math
 
 from xia2.Wrappers.CCP4.Othercell import Othercell
 from xia2.Handlers.Environment import Environment
 from xia2.Modules.Scaler.ScalerFactory import Scaler
-from xia2.Modules.Refiner.RefinerFactory import Refiner
 from xia2.Handlers.Syminfo import Syminfo
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex

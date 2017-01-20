@@ -9,8 +9,8 @@
 # output IDXREF.LP.
 #
 
-import math
-import os
+from __future__ import absolute_import, division
+
 import sys
 
 from xia2.Experts.LatticeExpert import ApplyLattice
@@ -57,7 +57,6 @@ def _parse_idxref_index_origin(lp_file_lines):
           pass
 
       return origins
-
 
   raise RuntimeError, 'should never reach this point'
 

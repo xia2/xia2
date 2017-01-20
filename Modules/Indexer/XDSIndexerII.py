@@ -14,25 +14,23 @@
 # the original XDSIndexer and only the necessary method overloaded (as I
 # should have done this in the first place.)
 
+from __future__ import absolute_import, division
+
 import os
-import sys
 import math
 import exceptions
 
 # the class that we are extending
 
-from XDSIndexer import XDSIndexer
+from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
 
 # helper functions
 
-#from xia2.Wrappers.XDS.XDS import beam_centre_mosflm_to_xds
-from xia2.Wrappers.XDS.XDS import beam_centre_xds_to_mosflm
 from xia2.Wrappers.XDS.XDS import XDSException
-from xia2.Modules.Indexer.XDSCheckIndexerSolution import xds_check_indexer_solution
 
 # odds and sods that are needed
 
-from xia2.lib.bits import auto_logfiler, nint
+from xia2.lib.bits import auto_logfiler
 from xia2.Handlers.Streams import Chatter, Debug, Journal
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex

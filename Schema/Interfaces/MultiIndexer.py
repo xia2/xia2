@@ -6,18 +6,10 @@
 #   included in the root directory of this package.
 #
 
-import os
-import sys
-import inspect
-
-from xia2.Handlers.Streams import Debug, Chatter
-from xia2.Handlers.Phil import PhilIndex
-
-from xia2.Experts.LatticeExpert import SortLattices
+from __future__ import absolute_import, division
 
 # interfaces that this inherits from ...
 from xia2.Schema.Interfaces.Indexer import Indexer
-
 
 class MultiIndexer(Indexer):
   '''A class interface to present autoindexing functionality in a standard
@@ -26,13 +18,10 @@ class MultiIndexer(Indexer):
   implementation.'''
 
   def __init__(self):
-
     super(MultiIndexer, self).__init__()
 
     self._indxr_sweeps = []
     self._indxr_indexers = []
-
-    return
 
   def add_indexer_sweep(self, sweep):
     self._indxr_sweeps.append(sweep)

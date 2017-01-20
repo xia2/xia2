@@ -11,6 +11,7 @@
 # XIA. This program will test the standard input handling. It will write
 # "Hello, ${user input}!" over and over until user input is ^D or "quit".
 
+from __future__ import absolute_import, division
 import time
 import sys
 

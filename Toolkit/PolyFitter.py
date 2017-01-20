@@ -11,6 +11,8 @@
 # be helpful to transform the measurements to a "sensible" form - for example
 # taking log(I/sigI).
 
+from __future__ import absolute_import, division
+
 import math
 
 from cctbx.array_family import flex

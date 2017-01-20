@@ -18,13 +18,14 @@
 # Distance (mm), wavelength (ang), beam centre (mm, mm),
 # image header information
 
+from __future__ import absolute_import, division
+
 import os
 import sys
 
 from xia2.Experts.FindImages import image2template_directory, \
     template_directory_number2image, image2image, find_matching_images, \
     digest_template
-
 
 from xia2.Handlers.Streams import Debug
 
@@ -67,11 +68,8 @@ class FrameProcessor(object):
     if image:
       self._setup_from_image(image)
 
-    return
-
   def set_template(self, template):
     self._fp_template = template
-    return
 
   def set_frame_wedge(self, start, end, apply_offset = True):
     '''Set the allowed range of images for processing.'''
@@ -133,7 +131,6 @@ class FrameProcessor(object):
 
   def set_directory(self, directory):
     self._fp_directory = directory
-    return
 
   def get_directory(self):
     return self._fp_directory
@@ -144,7 +141,6 @@ class FrameProcessor(object):
   def set_wavelength(self, wavelength):
     self.get_beam_obj().set_wavelength(wavelength)
     self._fp_wavelength_prov = 'user'
-    return
 
   def get_wavelength(self):
     return self.get_beam_obj().get_wavelength()
@@ -158,21 +154,18 @@ class FrameProcessor(object):
     from xia2.Wrappers.Mosflm.AutoindexHelpers import set_distance
     set_distance(self.get_detector(), distance)
     self._fp_distance_prov = 'user'
-    return
 
   def get_distance(self):
     return self.get_detector()[0].get_directed_distance()
 
   def set_gain(self, gain):
     self._fp_gain = gain
-    return
 
   def get_gain(self):
     return self._fp_gain
 
   def set_polarization(self, polarization):
     self._fp_polarization = polarization
-    return
 
   def get_polarization(self):
     return self._fp_polarization
@@ -189,7 +182,6 @@ class FrameProcessor(object):
       self._fp_beam_prov = 'user'
     except AssertionError, e:
       Debug.write('Error setting mosflm beam centre: %s' % e)
-    return
 
   def get_beam_centre(self):
     detector = self.get_detector()
@@ -202,7 +194,6 @@ class FrameProcessor(object):
   def set_two_theta(self, two_theta):
     self._fp_two_theta = two_theta
     self._fp_two_theta_prov = 'user'
-    return
 
   def get_two_theta(self):
     return self._fp_two_theta
@@ -215,7 +206,6 @@ class FrameProcessor(object):
 
   def set_header(self, header):
     self._fp_header = header
-    return
 
   def get_header(self):
     return self._fp_header
@@ -301,7 +291,6 @@ class FrameProcessor(object):
     imageset = imagesets[0]
 
     self._setup_from_imageset(imageset)
-    return
 
   def _setup_from_imageset(self, imageset):
     '''Configure myself from an image name.'''
@@ -335,8 +324,6 @@ class FrameProcessor(object):
     if self._fp_template is not None:
       self.digest_template()
 
-    return
-
   def digest_template(self):
     '''Strip out common characters from the image list and move them
     to the template.'''
@@ -347,8 +334,6 @@ class FrameProcessor(object):
     self._fp_template = template
     self._fp_matching_images = images
     self._fp_offset = offset
-
-    return
 
   # end of class
 

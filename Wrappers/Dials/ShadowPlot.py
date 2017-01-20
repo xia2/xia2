@@ -7,7 +7,7 @@
 #   included in the root directory of this package.
 #
 
-from __future__ import division
+from __future__ import absolute_import, division
 
 import os
 
@@ -29,15 +29,11 @@ def ShadowPlot(DriverType = None):
       self._sweep_filename = None
       self._json_filename = None
 
-      return
-
     def set_sweep_filename(self, sweep_filename):
       self._sweep_filename = sweep_filename
-      return
 
     def set_json_filename(self, json_filename):
       self._json_filename = json_filename
-      return
 
     def get_json_filename(self):
       return self._json_filename
@@ -63,6 +59,5 @@ def ShadowPlot(DriverType = None):
       self.close_wait()
       self.check_for_errors()
 
-      return
 
   return ShadowPlotWrapper()

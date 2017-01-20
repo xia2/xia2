@@ -15,12 +15,13 @@
 # Applicability: Windows/OS X/UNIX
 #
 
+from __future__ import absolute_import, division
 import subprocess
 import os
 import copy
 
-from DefaultDriver import DefaultDriver
-from DriverHelper import kill_process
+from xia2.Driver.DefaultDriver import DefaultDriver
+from xia2.Driver.DriverHelper import kill_process
 
 class SimpleDriver(DefaultDriver):
 

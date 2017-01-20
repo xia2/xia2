@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division
+
 def read_image(image_name):
   import dxtbx
   from scitbx.array_family import flex

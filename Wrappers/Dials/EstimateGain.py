@@ -8,11 +8,7 @@
 #
 # Estimation of gain
 
-from __future__ import division
-
-import os
-from __init__ import _setup_xia2_environ
-_setup_xia2_environ()
+from __future__ import absolute_import, division
 
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 
@@ -34,21 +30,16 @@ def EstimateGain(DriverType = None):
       self._kernel_size = None
       self._gain = None
 
-      return
-
     def set_sweep_filename(self, sweep_filename):
       self._sweep_filename = sweep_filename
-      return
 
     def set_kernel_size(self, kernel_size):
       self._kernel_size = kernel_size
-      return
 
     def get_gain(self):
       return self._gain
 
     def run(self):
-
       self.clear_command_line()
 
       assert self._sweep_filename is not None
@@ -62,7 +53,5 @@ def EstimateGain(DriverType = None):
       for line in self.get_all_output():
         if 'Estimated gain:' in line:
           self._gain = float(line.split(':')[-1].strip())
-
-      return
 
   return EstimateGainWrapper()

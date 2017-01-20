@@ -13,10 +13,10 @@
 # Index the lattce.
 #
 
+from __future__ import absolute_import, division
+
 import os
-import sys
 import copy
-import shutil
 import math
 
 # interfaces that this inherits from ...

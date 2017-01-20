@@ -7,12 +7,9 @@
 #   included in the root directory of this package.
 #
 
-from __future__ import division
+from __future__ import absolute_import, division
 
 import os
-from __init__ import _setup_xia2_environ
-_setup_xia2_environ()
-
 
 def CombineExperiments(DriverType = None):
   '''A factory for CombineExperimentsWrapper classes.'''
@@ -40,18 +37,14 @@ def CombineExperiments(DriverType = None):
       self._same_detector = True
       self._same_goniometer = True
 
-      return
-
     def add_experiments(self, experiments_filename):
       self._experiments_filenames.append(experiments_filename)
-      return
 
     def get_experiments_filenames(self):
       return self._experiments_filenames
 
     def add_reflections(self, indexed_filename):
       self._reflections_filenames.append(indexed_filename)
-      return
 
     def get_combined_experiments_filename(self):
       return self._combined_experiments_filename
@@ -109,6 +102,5 @@ def CombineExperiments(DriverType = None):
       self.start()
       self.close_wait()
       self.check_for_errors()
-      return
 
   return CombineExperimentsWrapper()

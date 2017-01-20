@@ -33,14 +33,13 @@
 # This class has been deprecated. See SunGridEngineClusterDriver.
 #
 
+from __future__ import absolute_import, division
 import os
-import sys
 import subprocess
 import time
-import random
 
-from DefaultDriver import DefaultDriver
-from DriverHelper import script_writer
+from xia2.Driver.DefaultDriver import DefaultDriver
+from xia2.Driver.DriverHelper import script_writer
 
 # Now depend on Phil scope from xia2...
 

@@ -9,6 +9,8 @@
 # Replacement for CCP4 program rebatch, using cctbx Python.
 #
 
+from __future__ import absolute_import, division
+
 import sys
 
 from iotbx import mtz

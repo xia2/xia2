@@ -10,21 +10,16 @@
 # A small expert to handle symmetry calculations.
 #
 
-import os
-import sys
-import math
+from __future__ import absolute_import, division
+
 from scitbx import matrix
 from cctbx import sgtbx
-
-# from xia2.Wrappers.XIA.Mat2symop import Mat2symop
-# from xia2.Wrappers.XIA.Symop2mat import Symop2mat
-from xia2.Handlers.Syminfo import Syminfo
 
 def gen_rot_mat_euler(alpha, beta, gamma):
   '''Compute a rotation matrix (stored as e11 e12 e13 e22 e23...)
   as product R(x, gamma).R(y, beta).R(z, alpha).'''
 
-  from MatrixExpert import rot_x, rot_y, rot_z
+  from xia2.Experts.MatrixExpert import rot_x, rot_y, rot_z
 
   rz = rot_z(alpha)
   ry = rot_y(beta)

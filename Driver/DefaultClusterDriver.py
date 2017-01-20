@@ -14,12 +14,13 @@
 # submission, which should be handled by classes derived from this.
 #
 
+from __future__ import absolute_import, division
 import os
 import time
 
-from DefaultDriver import DefaultDriver
-from DriverHelper import script_writer
-from DriverHelper import executable_exists
+from xia2.Driver.DefaultDriver import DefaultDriver
+from xia2.Driver.DriverHelper import script_writer
+from xia2.Driver.DriverHelper import executable_exists
 
 class DefaultClusterDriver(DefaultDriver):
   '''A general class for Driving programs on clusters. This should not

@@ -20,9 +20,9 @@
 # Scaleit.py
 #
 
+from __future__ import absolute_import, division
+
 import os
-import sys
-import math
 
 from xia2.Wrappers.CCP4.Scaleit import Scaleit
 from xia2.lib.bits import auto_logfiler

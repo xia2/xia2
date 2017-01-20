@@ -10,6 +10,7 @@
 # An example program to test input, output, job control etc. in the new
 # XIA. This one tests command line input.
 
+from __future__ import absolute_import, division
 import time
 import sys
 

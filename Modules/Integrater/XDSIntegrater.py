@@ -15,8 +15,9 @@
 #
 # 02/JAN/07 FIXME need to ensure that the indexing is repeated if necessary.
 
+from __future__ import absolute_import, division
+
 import os
-import sys
 import math
 import copy
 import shutil
@@ -31,7 +32,6 @@ from xia2.Wrappers.CCP4.Reindex import Reindex
 
 # helper functions
 
-from xia2.Wrappers.XDS.XDS import beam_centre_xds_to_mosflm
 from xia2.Experts.SymmetryExpert import r_to_rt, rt_to_r
 from xia2.Experts.SymmetryExpert import symop_to_mat, mat_to_symop
 

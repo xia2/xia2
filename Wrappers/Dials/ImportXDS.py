@@ -8,7 +8,7 @@
 #
 # Import xds files into dxtbx/dials format
 
-from __future__ import division
+from __future__ import absolute_import, division
 
 import os
 
@@ -31,11 +31,8 @@ def ImportXDS(DriverType = None):
       self._experiments_json = None
       self._reflection_filename = None
 
-      return
-
     def set_spot_xds(self, spot_xds):
       self._spot_xds = spot_xds
-      return
 
     def set_integrate_hkl(self, integrate_hkl):
       self._integrate_hkl = integrate_hkl
@@ -90,7 +87,5 @@ def ImportXDS(DriverType = None):
         assert os.path.exists(self._reflection_filename), self._reflection_filename
       else:
         assert os.path.exists(self._experiments_json), self._experiments_json
-
-      return
 
   return ImportXDSWrapper()

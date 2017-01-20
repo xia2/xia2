@@ -11,6 +11,8 @@
 # to .sca format.
 #
 
+from __future__ import absolute_import, division
+
 import os
 import sys
 
@@ -37,14 +39,11 @@ def Mtz2various(DriverType = None):
       # from a multi-set reflection file
       self._dataset_suffix = ''
 
-      return
-
     def set_suffix(self, suffix):
       if suffix:
         self._dataset_suffix = '_%s' % suffix
       else:
         self._dataset_suffix = suffix
-      return
 
     def convert(self):
       '''Convert the input reflection file to .sca format.'''
@@ -75,7 +74,6 @@ def Mtz2various(DriverType = None):
           os.remove(self.get_hklout())
         except:
           pass
-      return
 
     def convert_shelx(self, unmerged = False):
       '''Convert the input reflection file to SHELX hklf4 format.'''
@@ -108,7 +106,6 @@ def Mtz2various(DriverType = None):
           os.remove(self.get_hklout())
         except:
           pass
-      return
 
   return Mtz2variousWrapper()
 

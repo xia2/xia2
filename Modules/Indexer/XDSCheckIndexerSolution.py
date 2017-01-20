@@ -12,6 +12,8 @@
 # comes out as centered when it should not be)
 #
 
+from __future__ import absolute_import, division
+
 import os
 import math
 import sys
@@ -19,14 +21,11 @@ import sys
 # xia2 stuff...
 
 from xia2.Handlers.Streams import Debug
-from xia2.lib.bits import nint
 
 # cctbx stuff
 
 from cctbx import sgtbx
 from cctbx import crystal
-from scitbx import matrix
-
 
 def s2l(spacegroup):
   lattice_to_spacegroup = {'aP':1, 'mP':3, 'mC':5,

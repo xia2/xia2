@@ -7,7 +7,7 @@
 #
 # A handler to manage the data ending up in CIF output file
 
-from __future__ import division
+from __future__ import absolute_import, division
 import datetime
 import iotbx.cif.model
 import os.path
@@ -95,7 +95,7 @@ class _CIFHandler(object):
     # update audit information for citations
     self.collate_audit_information()
 
-    from Environment import Environment
+    from xia2.Handlers.Environment import Environment
     data_directory = Environment.generate_directory('DataFiles')
     with open(os.path.join(data_directory, self._outfile), 'w') as fh:
       self._cif.show(out=fh)

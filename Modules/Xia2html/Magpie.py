@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division
+
 #     Magpie.py: Text file processor
 #     Copyright (C) Diamond 2009 Peter Briggs
 #
@@ -18,7 +20,7 @@ __version__ = "0.0.1"
 #######################################################################
 import re
 import copy
-import smartie
+import xia2.Modules.Xia2html.smartie as smartie
 
 #######################################################################
 # Module constants

@@ -29,7 +29,9 @@
 #                 order for the data reduction, to make sure that we
 #                 reduce the least damaged data first.
 
-from XSweep import XSweep
+from __future__ import absolute_import, division
+
+from xia2.Schema.XSweep import XSweep
 from xia2.Handlers.Streams import Chatter
 
 class XWavelength(object):

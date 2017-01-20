@@ -15,7 +15,7 @@
 # third case (symmetry known but unit cell not) will be handled at the higher
 # level.
 
-from __future__ import division
+from __future__ import absolute_import, division
 
 def Autoindex(DriverType = None):
   '''A factory for AutoindexWrapper(ipmosflm) classes.'''
@@ -88,7 +88,7 @@ def Autoindex(DriverType = None):
       self.input('go')
       self.close_wait()
 
-      from AutoindexHelpers import parse_index_log
+      from xia2.Wrappers.Mosflm.AutoindexHelpers import parse_index_log
       return parse_index_log(self.get_all_output())
 
   return AutoindexWrapper()

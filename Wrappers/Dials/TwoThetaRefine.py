@@ -8,11 +8,9 @@
 #
 # Obtain refined unit cell with estimated standard deviations
 
-from __future__ import division
+from __future__ import absolute_import, division
 
 import os
-from __init__ import _setup_xia2_environ
-_setup_xia2_environ()
 
 def TwoThetaRefine(DriverType = None):
   '''A factory for RefineWrapper classes.'''

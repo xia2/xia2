@@ -6,14 +6,14 @@
 #   included in the root directory of this package.
 #
 
+from __future__ import absolute_import, division
+
 from xia2.Schema.Interfaces.Refiner import Refiner
 from xia2.Handlers.Streams import Debug, Chatter
 
 import os
-import math
 
 from xia2.lib.bits import auto_logfiler
-from xia2.Handlers.Files import FileHandler
 
 class XDSRefiner(Refiner):
 

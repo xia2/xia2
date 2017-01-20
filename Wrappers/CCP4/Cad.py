@@ -23,8 +23,9 @@
 # This should almost be implemented as two wrappers - oh well! Aha - implement
 # two methods - merge & update - this can handle the two distinct use cases.
 
+from __future__ import absolute_import, division
+
 import os
-import sys
 
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
@@ -32,7 +33,7 @@ from xia2.Handlers.Streams import Debug
 
 # locally required wrappers
 
-from Mtzdump import Mtzdump
+from xia2.Wrappers.CCP4.Mtzdump import Mtzdump
 
 # external functionality
 

@@ -13,8 +13,9 @@
 #                   which are needed for integration should be placed in the
 #                   indexer "payload".
 
+from __future__ import absolute_import, division
+
 import os
-import sys
 import math
 import shutil
 
@@ -27,8 +28,6 @@ from xia2.Wrappers.XDS.XDSIdxref import XDSIdxref as _Idxref
 
 # helper functions
 
-#from xia2.Wrappers.XDS.XDS import beam_centre_mosflm_to_xds
-from xia2.Wrappers.XDS.XDS import beam_centre_xds_to_mosflm
 from xia2.Wrappers.XDS.XDS import XDSException
 from xia2.Modules.Indexer.XDSCheckIndexerSolution import xds_check_indexer_solution
 
@@ -38,7 +37,7 @@ from xia2.Schema.Interfaces.Indexer import IndexerSingleSweep
 
 # odds and sods that are needed
 
-from xia2.lib.bits import auto_logfiler, nint
+from xia2.lib.bits import auto_logfiler
 from xia2.Handlers.Streams import Chatter, Debug, Journal
 from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Phil import PhilIndex

@@ -8,12 +8,9 @@
 #
 # Reindex indexing results from DIALS
 
-from __future__ import division
+from __future__ import absolute_import, division
 
 import os
-
-from __init__ import _setup_xia2_environ
-_setup_xia2_environ()
 
 def Reindex(DriverType = None):
   '''A factory for ReindexWrapper classes.'''
@@ -34,27 +31,20 @@ def Reindex(DriverType = None):
       self._cb_op = None
       self._hkl_offset = None
 
-      return
-
     def set_experiments_filename(self, experiments_filename):
       self._experiments_filename = experiments_filename
-      return
 
     def set_indexed_filename(self, indexed_filename):
       self._indexed_filename = indexed_filename
-      return
 
     def set_reference_filename(self, reference_filename):
       self._reference_filename = reference_filename
-      return
 
     def set_space_group(self, space_group):
       self._space_group = space_group
-      return
 
     def set_cb_op(self, cb_op):
       self._cb_op = cb_op
-      return
 
     def set_hkl_offset(self, hkl_offset):
       assert len(hkl_offset) == 3

@@ -1,8 +1,7 @@
-from cctbx.array_family import flex
-from iotbx.data_plots import table_data
-from libtbx import phil
+from __future__ import absolute_import, division
 
-import math
+from cctbx.array_family import flex
+from libtbx import phil
 
 from xia2.Modules.PyChef2.PyChef import dose_phil_str
 

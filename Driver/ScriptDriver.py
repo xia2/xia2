@@ -14,11 +14,12 @@
 # Applicability: Windows/OS X/UNIX
 #
 
+from __future__ import absolute_import, division
 import os
 import subprocess
 
-from DefaultDriver import DefaultDriver
-from DriverHelper import script_writer
+from xia2.Driver.DefaultDriver import DefaultDriver
+from xia2.Driver.DriverHelper import script_writer
 
 # Workings on Windows:
 #

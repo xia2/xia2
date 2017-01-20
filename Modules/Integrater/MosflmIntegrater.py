@@ -10,9 +10,9 @@
 # A wrapper for the data processing program Mosflm, with the following
 # methods to provide functionality:
 
+from __future__ import absolute_import, division
+
 import os
-import sys
-import shutil
 
 from xia2.Background.Background import Background
 
@@ -26,15 +26,12 @@ from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
 
 # helpers
-from xia2.Wrappers.CCP4.MosflmHelpers import \
-     _parse_mosflm_integration_output, decide_integration_resolution_limit, \
-     standard_mask, detector_class_to_mosflm, \
-     _parse_summary_file
+from xia2.Wrappers.CCP4.MosflmHelpers import standard_mask
 from xia2.Wrappers.Mosflm.MosflmIntegrate import MosflmIntegrate
 
 from xia2.Modules.GainEstimater import gain
 
-from xia2.lib.bits import auto_logfiler, mean_sd
+from xia2.lib.bits import auto_logfiler
 from xia2.lib.SymmetryLib import lattice_to_spacegroup
 
 # exceptions

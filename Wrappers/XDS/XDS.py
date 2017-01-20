@@ -27,8 +27,8 @@
 # different axes (beam, detector x, detector y) trusted regions of the
 # detector (e.g. does the picture go to the corners) and so on.
 
-import os
-import sys
+from __future__ import absolute_import, division
+
 import exceptions
 import math
 from scitbx import matrix
@@ -46,9 +46,6 @@ class XDSIndexException(XDSException):
     return
 
 from xia2.Handlers.Streams import Debug
-
-from dxtbx.format.FormatPilatusHelpers import pilatus_6M_mask, \
-     pilatus_2M_mask, pilatus_300K_mask
 
 _running_xds_version_stamp = None
 
@@ -116,8 +113,6 @@ def rotate_cbf_to_xds_convention(fast, slow, axis = (1, 0, 0)):
   '''Rotate fast and slow directions about rotation axis to give XDS
   conventional directions for fast and slow. This should be a rotation
   of 180 degrees about principle axis, defined to be 1,0,0.'''
-
-  from scitbx import matrix
 
   R = matrix.col(axis).axis_and_angle_as_r3_rotation_matrix(
       180.0, deg = True)

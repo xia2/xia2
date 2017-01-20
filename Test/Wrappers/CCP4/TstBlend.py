@@ -1,10 +1,9 @@
-from __future__ import division
+from __future__ import absolute_import, division
 
 import os
 import glob
 
 import libtbx.load_env
-from libtbx import easy_run
 #from libtbx.test_utils import approx_equal
 from libtbx.test_utils import open_tmp_directory
 

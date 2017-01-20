@@ -10,8 +10,7 @@
 # Chef where we could consider cutting the data at... N.B. this will now
 # take the digested wedges from the Chef wrapper.
 
-import math
-import sys
+from __future__ import absolute_import, division
 
 def digest_wedges(wedges):
   '''Digest the wedges defined as a list of

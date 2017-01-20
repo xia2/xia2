@@ -9,6 +9,8 @@
 # lattice it is interating with is not appropriate for the reflections -
 # most often this is the result of a pseudo-higher-symmetry lattice.
 
+from __future__ import absolute_import, division
+
 from exceptions import Exception
 
 class NegativeMosaicError(Exception):

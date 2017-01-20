@@ -8,10 +8,7 @@
 #
 # Export DIALS models for XDS processing.
 
-from __future__ import division
-
-from __init__ import _setup_xia2_environ
-_setup_xia2_environ()
+from __future__ import absolute_import, division
 
 def ExportXDSASCII(DriverType = None):
   '''A factory for ExportXDSASCIISWrapper classes.'''

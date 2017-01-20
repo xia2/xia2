@@ -8,9 +8,9 @@
 # CCP4ScalerImplementation (e.g. PNAME_XNAME_scaled_DNAME.sca)
 #
 
+from __future__ import absolute_import, division
+
 import os
-import sys
-import math
 
 from xia2.Wrappers.CCP4.Mtzdump import Mtzdump as _Mtzdump
 from xia2.Wrappers.CCP4.Mtz2various import Mtz2various as _Mtz2various

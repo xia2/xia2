@@ -8,10 +8,7 @@
 #
 # Wrapper for cctbx.brehm_diederichs command.
 
-from __future__ import division
-
-from __init__ import _setup_xia2_environ
-_setup_xia2_environ()
+from __future__ import absolute_import, division
 
 def BrehmDiederichs(DriverType = None):
   '''A factory for BrehmDiederichsWrapper classes.'''

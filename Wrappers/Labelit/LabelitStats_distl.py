@@ -29,8 +29,8 @@
 # The output should be identical to the last labelit.distl run.
 # Note that this does not take any image as input
 
+from __future__ import absolute_import, division
 import os
-import sys
 
 from xia2.Driver.DriverFactory import DriverFactory
 

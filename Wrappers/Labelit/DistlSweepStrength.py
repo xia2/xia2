@@ -9,6 +9,7 @@
 #
 # A wrapper for the replacement for distl.sweep_strength.
 
+from __future__ import absolute_import, division
 import libtbx.load_env
 
 import os
@@ -16,7 +17,6 @@ import sys
 
 from xia2.Driver.DriverFactory import DriverFactory
 
-import spotfinder
 from spotfinder.command_line import sweep_strength
 import libtbx.phil
 

@@ -10,9 +10,9 @@
 # bits which don't really need to be embedded in the main program.
 #
 
+from __future__ import absolute_import, division
+
 import sys
-import math
-import os
 
 from iotbx.mtz import object as mtz_factory
 

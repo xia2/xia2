@@ -14,10 +14,11 @@
 # N.B. similar calculations could use the XDS refined XPARM to record the
 # rotation axis then reuse it here.
 
+from __future__ import absolute_import, division
+
 from scitbx import matrix
 from scitbx.math import r3_rotation_axis_and_angle_from_matrix
 from scitbx.math.euler_angles import xyz_angles, xyz_matrix
-import math
 
 class MosflmMissetExpert(object):
   '''A class to calculate the missetting angles to use for integration

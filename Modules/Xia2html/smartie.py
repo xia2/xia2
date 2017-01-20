@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division
+
 #     smartie.py: CCP4 logfile parsing classes and functions
 #     Copyright (C) 2006-2007 Peter Briggs, Wanjuan Yang, CCLRC
 #

@@ -15,14 +15,14 @@
 # 21/JUN/06 added imagename(i) method.
 # 22/JUN/06 added storage of user provided details
 
+from __future__ import absolute_import, division
+
 import os
 import sys
 import copy
-import time
 
-from xia2.Experts.FindImages import image2template, find_matching_images, \
-     template_directory_number2image, image2template_directory, \
-     headers2sweeps, headers2sweep_ids
+from xia2.Experts.FindImages import find_matching_images, \
+     template_directory_number2image, image2template_directory
 
 from xia2.Handlers.Phil import PhilIndex
 

@@ -146,11 +146,11 @@
 # XDSScaler &c., which will be a composite class which performs the operation,
 # using wrapper classes for the different programs...
 
+from __future__ import absolute_import, division
+
 import os
-import sys
 import inspect
 
-from xia2.lib.bits import inherits_from
 from xia2.lib.SymmetryLib import lauegroup_to_lattice, sort_lattices
 
 from xia2.Handlers.Streams import Chatter, Debug

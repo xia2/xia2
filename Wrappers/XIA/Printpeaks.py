@@ -10,6 +10,7 @@
 # A wrapper for the program "printpeaks" derived from the DiffractionImage
 # code in XIA1 by Francois Remacle.
 #
+from __future__ import absolute_import, division
 
 import os
 import sys
@@ -17,9 +18,9 @@ import copy
 import math
 
 from xia2.Driver.DriverFactory import DriverFactory
-from Diffdump import Diffdump
+from xia2.Wrappers.XIA.Diffdump import Diffdump
 
-from PrintpeaksMosflm import PrintpeaksMosflm
+from xia2.Wrappers.XIA.PrintpeaksMosflm import PrintpeaksMosflm
 
 def Printpeaks(DriverType = None):
   '''A factory for wrappers for the printpeaks.'''

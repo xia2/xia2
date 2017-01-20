@@ -11,6 +11,7 @@
 # XIA. This one will raise an exception on startup (e.g. this must be
 # handled equivalently to a load library missing).
 
+from __future__ import absolute_import, division
 __doc__ = '''A small program which will raise an exception on startup,
 for testing of the XIA core.'''
 

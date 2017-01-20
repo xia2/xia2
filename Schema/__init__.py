@@ -1,12 +1,12 @@
+from __future__ import absolute_import, division
+
 import os
-import sys
 
 from libtbx.containers import OrderedDict
 from xia2.Handlers.Phil import PhilIndex
 
 class _ImagesetCache(dict):
   pass
-
 
 imageset_cache = _ImagesetCache()
 

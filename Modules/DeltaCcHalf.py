@@ -1,15 +1,10 @@
-from __future__ import division
-import os
+from __future__ import absolute_import, division
 import sys
 
 import iotbx.phil
 from libtbx.phil import command_line
 from cctbx.array_family import flex
-from libtbx.containers import OrderedDict
 from cctbx import crystal, miller, sgtbx, uctbx
-
-from xia2.Handlers.Streams import Chatter, Debug
-
 
 master_phil_scope = iotbx.phil.parse("""\
 cc_one_half_method = half_dataset *sigma_tau

@@ -10,6 +10,8 @@
 # A file containing the version number of the current xia2. Generally useful.
 #
 
+from __future__ import absolute_import, division
+
 def get_git_revision(fallback='not set'):
   '''Try to obtain the current git revision number
      and store a copy in .gitversion'''

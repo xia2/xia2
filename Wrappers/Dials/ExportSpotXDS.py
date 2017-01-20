@@ -8,17 +8,14 @@
 # A wrapper to handle the dials.spotfinder program.
 #
 
+from __future__ import absolute_import, division
 import os
 import sys
-import shutil
 
 from xia2.Driver.DriverFactory import DriverFactory
 
 # interfaces that this inherits from ...
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
-
-# generic helper stuff
-from xia2.Handlers.Streams import Debug
 
 from libtbx import phil
 import libtbx
@@ -58,7 +55,6 @@ def ExportSpotXDS(DriverType=None, params=None):
 
     def set_input_data_file(self, name, data):
       self._input_data_files[name] = data
-      return
 
     def get_output_data_file(self, name):
       return self._output_data_files[name]

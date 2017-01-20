@@ -15,7 +15,8 @@
 # Bug # 2798.
 #
 
-import os, sys
+from __future__ import absolute_import, division
+import sys
 
 from xia2.Wrappers.XIA.Diffdump import Diffdump
 from xia2.Handlers.Streams import Debug

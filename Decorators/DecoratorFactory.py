@@ -13,7 +13,8 @@
 # "ccp4" -> A CCP4 Decorator
 #
 
-from CCP4Decorator import CCP4DecoratorFactory
+from __future__ import absolute_import, division
+from xia2.Decorators.CCP4Decorator import CCP4DecoratorFactory
 
 class _DecoratorFactory(object):
   '''A factory singleton to dress Driver instances with decoration

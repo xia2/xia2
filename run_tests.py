@@ -1,18 +1,15 @@
 # xia2 tests - these may require the xia2_regression or dials_regression
 # repositories to be available...
 
-from __future__ import division
+from __future__ import absolute_import, division
 from libtbx import test_utils
 import libtbx.load_env
-
-import os
 import sys
 
 # Needed to make xia2 imports work correctly
 xia2_root_dir = libtbx.env.find_in_repositories("xia2", optional=False)
 if xia2_root_dir is None:
-  from sys import exit
-  exit("xia2 not in cctbx repositories")
+  sys.exit("xia2 not in cctbx repositories")
 sys.path.insert(0, xia2_root_dir)
 
 tst_list = (

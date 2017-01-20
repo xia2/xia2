@@ -7,13 +7,13 @@
 #
 # 21/SEP/06
 
-import os
-import sys
+from __future__ import absolute_import, division
+
 import copy
 
 # scaler implementations
-from CCP4ScalerA import CCP4ScalerA
-from XDSScalerA import XDSScalerA
+from xia2.Modules.Scaler.CCP4ScalerA import CCP4ScalerA
+from xia2.Modules.Scaler.XDSScalerA import XDSScalerA
 
 # selection stuff
 from xia2.Handlers.PipelineSelection import get_preferences

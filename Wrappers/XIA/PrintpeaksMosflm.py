@@ -7,6 +7,7 @@
 #
 # A replacement for the printpeaks tool and wrapper, using Mosflm.
 #
+from __future__ import absolute_import, division
 
 import os
 import sys
@@ -14,7 +15,7 @@ import copy
 import math
 
 from xia2.Driver.DriverFactory import DriverFactory
-from Diffdump import Diffdump
+from xia2.Wrappers.XIA.Diffdump import Diffdump
 
 from xia2.Experts.FindImages import image2template_directory, image2image, \
      template_number2image

@@ -8,6 +8,8 @@
 # Helpers for the wrapper for XSCALE, the XDS Scaling program.
 #
 
+from __future__ import absolute_import, division
+
 import math
 import sys
 

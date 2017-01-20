@@ -38,6 +38,7 @@
 #           could be a hidden gremlin, though is in general not an
 #           important problem.
 
+from __future__ import absolute_import, division
 import os
 import signal
 import stat

@@ -8,10 +8,7 @@
 #
 # Export DIALS models for XDS processing.
 
-from __future__ import division
-
-from __init__ import _setup_xia2_environ
-_setup_xia2_environ()
+from __future__ import absolute_import, division
 
 def ExportXDS(DriverType = None):
   '''A factory for ExportXDSWrapper classes.'''
@@ -28,11 +25,8 @@ def ExportXDS(DriverType = None):
       self._sweep_filename = None
       self._crystal_filename = None
 
-      return
-
     def set_experiments_filename(self, experiments_filename):
       self._experiments_filename = experiments_filename
-      return
 
     def run(self):
       from xia2.Handlers.Streams import Debug
@@ -44,8 +38,6 @@ def ExportXDS(DriverType = None):
       self.start()
       self.close_wait()
       self.check_for_errors()
-
-      return
 
   return ExportXDSWrapper()
 

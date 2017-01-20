@@ -8,19 +8,19 @@
 # A wrapper for XSCALE, the XDS Scaling program.
 #
 
+from __future__ import absolute_import, division
+
 import os
-import sys
 import copy
-import math
 import time
 import shutil
 
 from xia2.Driver.DriverFactory import DriverFactory
-from XDS import xds_check_error
+from xia2.Wrappers.XDS.XDS import xds_check_error
 
 from xia2.Handlers.Streams import Debug
 from xia2.Handlers.Phil import PhilIndex
-from XScaleHelpers import get_correlation_coefficients_and_group
+from xia2.Wrappers.XDS.XScaleHelpers import get_correlation_coefficients_and_group
 
 def XScaleR(DriverType = None,
             correct_decay = True,

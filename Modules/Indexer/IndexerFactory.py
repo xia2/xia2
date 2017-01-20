@@ -27,8 +27,8 @@
 # And will make a decision based on the screen information if available.
 # Integral unit test was also out of date, because the interface has changed.
 
+from __future__ import absolute_import, division
 import os
-import sys
 import copy
 
 from xia2.Modules.Indexer.MosflmIndexer import MosflmIndexer

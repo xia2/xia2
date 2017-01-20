@@ -8,12 +8,7 @@
 #
 # Wrapper for dials.check_indexing_symmetry
 
-from __future__ import division
-
-import os
-
-from __init__ import _setup_xia2_environ
-_setup_xia2_environ()
+from __future__ import absolute_import, division
 
 def CheckIndexingSymmetry(DriverType = None):
   '''A factory for CheckIndexingSymmetryWrapper classes.'''
@@ -31,19 +26,14 @@ def CheckIndexingSymmetry(DriverType = None):
       self._indexed_filename = None
       self._grid_search_scope = None
 
-      return
-
     def set_experiments_filename(self, experiments_filename):
       self._experiments_filename = experiments_filename
-      return
 
     def set_indexed_filename(self, indexed_filename):
       self._indexed_filename = indexed_filename
-      return
 
     def set_grid_search_scope(self, grid_search_scope):
       self._grid_search_scope = abs(int(grid_search_scope))
-      return
 
     def run(self):
       from xia2.Handlers.Streams import Debug

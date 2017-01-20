@@ -25,6 +25,8 @@
 #                 for use with phenix.hyss.
 #
 
+from __future__ import absolute_import, division
+
 import os
 
 symop = os.path.abspath(os.path.join(

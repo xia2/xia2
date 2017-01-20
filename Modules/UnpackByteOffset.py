@@ -1,7 +1,7 @@
+from __future__ import absolute_import, division
+
 import binascii
 import struct
-import math
-import os
 import sys
 import random
 

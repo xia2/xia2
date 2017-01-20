@@ -35,9 +35,9 @@
 #     e.g. XDS or Mosflm - will not necessarily select the best one.
 #     This is left to the implementation to sort out.
 
+from __future__ import absolute_import, division
+
 import os
-import sys
-import exceptions
 import math
 
 from xia2.lib.bits import inherits_from

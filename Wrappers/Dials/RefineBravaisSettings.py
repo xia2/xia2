@@ -8,7 +8,7 @@
 #
 # Refine result of P1 DIALS indexing in all possible settings; publish results.
 
-from __future__ import division
+from __future__ import absolute_import, division
 
 from xia2.Handlers.Phil import PhilIndex
 
@@ -30,27 +30,20 @@ def RefineBravaisSettings(DriverType = None):
       self._beam_fix = None
       self._close_to_spindle_cutoff = None
 
-      return
-
     def set_experiments_filename(self, experiments_filename):
       self._experiments_filename = experiments_filename
-      return
 
     def set_indexed_filename(self, indexed_filename):
       self._indexed_filename = indexed_filename
-      return
 
     def set_detector_fix(self, detector_fix):
       self._detector_fix = detector_fix
-      return
 
     def set_beam_fix(self, beam_fix):
       self._beam_fix = beam_fix
-      return
 
     def set_close_to_spindle_cutoff(self, close_to_spindle_cutoff):
       self._close_to_spindle_cutoff = close_to_spindle_cutoff
-      return
 
     def get_bravais_summary(self):
       import copy, os
@@ -90,7 +83,5 @@ def RefineBravaisSettings(DriverType = None):
       import os
       self._bravais_summary = loads(open(os.path.join(
           self.get_working_directory(), 'bravais_summary.json'), 'r').read())
-
-      return
 
   return RefineBravaisSettingsWrapper()

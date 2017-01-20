@@ -11,15 +11,14 @@
 # This is a replacement for the more venerable program Scala, and shares the
 # same interface as the Scala wrapper. Mostly.
 
+from __future__ import absolute_import, division
+
 import os
-import sys
-import math
 
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
 from xia2.Handlers.Streams import Chatter, Debug
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Experts.ResolutionExperts import linear
 
 def Aimless(DriverType = None,
             partiality_correction = None,
@@ -888,7 +887,7 @@ def Aimless(DriverType = None,
       xml_file = self.get_xmlout()
       assert os.path.isfile(xml_file)
 
-      from AimlessHelpers import parse_aimless_xml
+      from xia2.Wrappers.CCP4.AimlessHelpers import parse_aimless_xml
       return parse_aimless_xml(xml_file)
 
   return AimlessWrapper()

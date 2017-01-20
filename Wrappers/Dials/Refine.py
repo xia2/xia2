@@ -8,11 +8,9 @@
 #
 # Assign indices to reflection centroids given a crystal model
 
-from __future__ import division
+from __future__ import absolute_import, division
 
 import os
-from __init__ import _setup_xia2_environ
-_setup_xia2_environ()
 
 def Refine(DriverType = None):
   '''A factory for RefineWrapper classes.'''
@@ -43,18 +41,14 @@ def Refine(DriverType = None):
       self._outlier_algorithm = None
       self._close_to_spindle_cutoff = None
 
-      return
-
     def set_experiments_filename(self, experiments_filename):
       self._experiments_filename = experiments_filename
-      return
 
     def get_experiments_filename(self):
       return self._experiments_filename
 
     def set_indexed_filename(self, indexed_filename):
       self._indexed_filename = indexed_filename
-      return
 
     def get_refined_filename(self):
       return self._refined_filename
@@ -70,11 +64,9 @@ def Refine(DriverType = None):
 
     def set_detector_fix(self, detector_fix):
       self._detector_fix = detector_fix
-      return
 
     def set_beam_fix(self, beam_fix):
       self._beam_fix = beam_fix
-      return
 
     def set_reflections_per_degree(self, reflections_per_degree):
       self._reflections_per_degree = int(reflections_per_degree)
@@ -84,15 +76,12 @@ def Refine(DriverType = None):
 
     def set_phil_file(self, phil_file):
       self._phil_file = phil_file
-      return
 
     def set_outlier_algorithm(self, outlier_algorithm):
       self._outlier_algorithm = outlier_algorithm
-      return
 
     def set_close_to_spindle_cutoff(self, close_to_spindle_cutoff):
       self._close_to_spindle_cutoff = close_to_spindle_cutoff
-      return
 
     def run(self):
       from xia2.Handlers.Streams import Debug
@@ -143,6 +132,5 @@ def Refine(DriverType = None):
           raise RuntimeError, record.strip()
 
       self.check_for_errors()
-      return
 
   return RefineWrapper()

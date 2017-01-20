@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division
+
 #     Canary.py: HTML document generation
 #     Copyright (C) Diamond 2009 Peter Briggs
 #
@@ -26,8 +28,9 @@ __version__ = "0.0.3"
 #######################################################################
 # Import modules that this module depends on
 #######################################################################
+
 import os
-import smartie
+import xia2.Modules.Xia2html.smartie as smartie
 
 #######################################################################
 # Module constants

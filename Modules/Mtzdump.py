@@ -8,6 +8,8 @@
 # A replacement for the wrapper for the CCP4 program MTZDUMP using CCTBX
 # to access the file directly.
 
+from __future__ import absolute_import, division
+
 import os
 import sys
 import copy

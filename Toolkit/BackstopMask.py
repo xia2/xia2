@@ -22,11 +22,11 @@ from which a backstop mask for the input images is calculated. N.B. positions
 position. The positions may be read from ADXV and will be applied to both XDS
 and Mosflm.'''
 
+from __future__ import absolute_import, division
+
 import math
-import os
 import sys
 import binascii
-import time
 
 from xia2.Modules.UnpackByteOffset import unpack_values, pack_values
 

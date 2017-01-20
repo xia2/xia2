@@ -8,8 +8,9 @@
 # A wrapper to handle the JOB=IDXREF module in XDS.
 #
 
+from __future__ import absolute_import, division
+
 import os
-import sys
 import math
 import shutil
 
@@ -19,13 +20,13 @@ from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 
 # generic helper stuff
-from XDS import imageset_to_xds, xds_check_version_supported, xds_check_error
-from XDS import XDSException, template_to_xds
+from xia2.Wrappers.XDS.XDS import imageset_to_xds, xds_check_version_supported, xds_check_error
+from xia2.Wrappers.XDS.XDS import template_to_xds
 from xia2.Handlers.Streams import Debug
 from xia2.Handlers.Phil import PhilIndex
 
 # specific helper stuff
-from XDSIdxrefHelpers import _parse_idxref_lp, _parse_idxref_lp_distance_etc, \
+from xia2.Wrappers.XDS.XDSIdxrefHelpers import _parse_idxref_lp, _parse_idxref_lp_distance_etc, \
      _parse_idxref_lp_subtree, _parse_idxref_index_origin, \
      _parse_idxref_lp_quality
 

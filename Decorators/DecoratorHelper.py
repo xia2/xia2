@@ -11,6 +11,8 @@
 # Helper functions for Decorator implementations.
 #
 
+from __future__ import absolute_import, division
+
 def inherits_from(this_class,
                   base_class_name):
   '''Return True if base_class_name contributes to the this_class class.'''

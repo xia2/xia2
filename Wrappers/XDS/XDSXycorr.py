@@ -8,8 +8,9 @@
 # A wrapper to handle the JOB=XYCORR module in XDS.
 #
 
+from __future__ import absolute_import, division
+
 import os
-import sys
 import shutil
 
 from xia2.Driver.DriverFactory import DriverFactory
@@ -18,8 +19,8 @@ from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 
 # generic helper stuff
-from XDS import imageset_to_xds, xds_check_version_supported, xds_check_error
-from XDS import template_to_xds
+from xia2.Wrappers.XDS.XDS import imageset_to_xds, xds_check_version_supported, xds_check_error
+from xia2.Wrappers.XDS.XDS import template_to_xds
 
 def XDSXycorr(DriverType = None):
 
@@ -53,13 +54,10 @@ def XDSXycorr(DriverType = None):
       self._output_data_files_list = ['X-CORRECTIONS.cbf',
                                       'Y-CORRECTIONS.cbf']
 
-      return
-
     # getter and setter for input / output data
 
     def set_input_data_file(self, name, data):
       self._input_data_files[name] = data
-      return
 
     def get_output_data_file(self, name):
       return self._output_data_files[name]

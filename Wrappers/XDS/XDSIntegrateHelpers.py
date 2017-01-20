@@ -9,11 +9,10 @@
 # output INTEGRATE.LP.
 #
 
-import math
+from __future__ import absolute_import, division
+
 import os
 import sys
-
-from xia2.Handlers.Streams import Chatter
 
 def _parse_integrate_lp_updates(filename):
   '''Parse the integrate.lp file to get the values for any updated

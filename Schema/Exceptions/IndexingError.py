@@ -8,6 +8,8 @@
 # An exception to be raised when an indexing program decides that there
 # is a specific problem with indexing - this should be recoverable.
 
+from __future__ import absolute_import, division
+
 from exceptions import Exception
 
 class IndexingError(Exception):

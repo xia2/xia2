@@ -26,7 +26,7 @@ def run():
   wd = os.getcwd()
 
   try:
-    from xia2_main import xia2_main
+    from xia2.command_line.xia2_main import xia2_main
     xia2_main(stop_after='integrate')
     Chatter.write('Status: normal termination')
 

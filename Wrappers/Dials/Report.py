@@ -8,11 +8,7 @@
 #
 # Assign indices to reflection centroids given a crystal model
 
-from __future__ import division
-
-import os
-from __init__ import _setup_xia2_environ
-_setup_xia2_environ()
+from __future__ import absolute_import, division
 
 def Report(DriverType = None):
   '''A factory for ReportWrapper classes.'''
@@ -25,25 +21,20 @@ def Report(DriverType = None):
     def __init__(self):
       DriverInstance.__class__.__init__(self)
 
-
       self.set_executable('dials.report')
 
       self._experiments_filename = None
       self._reflections_filename = None
       self._html_filename = None
-      return
 
     def set_experiments_filename(self, experiments_filename):
       self._experiments_filename = experiments_filename
-      return
 
     def set_reflections_filename(self, reflections_filename):
       self._reflections_filename = reflections_filename
-      return
 
     def set_html_filename(self, html_filename):
       self._html_filename = html_filename
-      return
 
     def run(self):
       from xia2.Handlers.Streams import Debug
@@ -61,6 +52,5 @@ def Report(DriverType = None):
       self.start()
       self.close()
       self.check_for_errors()
-      return
 
   return ReportWrapper()

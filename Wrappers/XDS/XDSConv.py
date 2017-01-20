@@ -8,12 +8,12 @@
 # A wrapper to run xdsconv
 #
 
+from __future__ import absolute_import, division
+
 import os
-import sys
 import shutil
 
 from xia2.Driver.DriverFactory import DriverFactory
-from xia2.Handlers.Streams import Debug
 
 def XDSConv(DriverType = None):
 

@@ -10,8 +10,9 @@
 # A wrapper for the data processing program Mosflm, with the following
 # methods to provide functionality:
 
+from __future__ import absolute_import, division
+
 import os
-import sys
 import math
 
 # interfaces that this will present
@@ -336,7 +337,6 @@ class MosflmIndexer(IndexerSingleSweep):
     from xia2.Wrappers.Mosflm.AutoindexHelpers import set_distance
     from xia2.Wrappers.Mosflm.AutoindexHelpers import crystal_model_from_mosflm_mat
     from cctbx import sgtbx, uctbx
-    from dxtbx.model.crystal import crystal_model_from_mosflm_matrix
 
     # update the beam centre (i.e. shift the origin of the detector)
     detector = copy.deepcopy(self.get_detector())

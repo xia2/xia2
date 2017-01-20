@@ -38,10 +38,10 @@
 #                 running together.
 #
 
+from __future__ import absolute_import, division
 import os
-import sys
 
-from DecoratorHelper import inherits_from
+from xia2.Decorators.DecoratorHelper import inherits_from
 
 def CCP4DecoratorFactory(DriverInstance):
   '''Create a CCP4 decorated Driver instance - based on the Driver

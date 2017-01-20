@@ -8,7 +8,7 @@
 #
 # Export DIALS integration output in MTZ format.
 
-from __future__ import division
+from __future__ import absolute_import, division
 
 def ExportBest(DriverType = None):
   '''A factory for ExportMtzWrapper classes.'''
@@ -25,18 +25,15 @@ def ExportBest(DriverType = None):
       self._experiments_filename = None
       self._reflections_filename = None
       self._prefix = 'best'
-      return
 
     def set_experiments_filename(self, experiments_filename):
       self._experiments_filename = experiments_filename
-      return
 
     def get_experiments_filename(self):
       return self._experiments_filename
 
     def set_reflections_filename(self, reflections_filename):
       self._reflections_filename = reflections_filename
-      return
 
     def get_reflections_filename(self):
       return self._reflections_filename
@@ -59,8 +56,6 @@ def ExportBest(DriverType = None):
       self.start()
       self.close_wait()
       self.check_for_errors()
-
-      return
 
   return ExportBestWrapper()
 

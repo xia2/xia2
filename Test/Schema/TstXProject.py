@@ -1,9 +1,10 @@
+from __future__ import absolute_import, division
+
 import os
 import sys
 
 import libtbx.load_env
-from libtbx import easy_run
-from libtbx.test_utils import approx_equal, open_tmp_directory, show_diff
+from libtbx.test_utils import open_tmp_directory
 
 try:
   dials_regression = libtbx.env.dist_path('dials_regression')
@@ -16,8 +17,6 @@ def exercise_serialization():
   if not have_dials_regression:
     print "Skipping exercise_serialization(): dials_regression not configured"
     return
-
-  from xia2.Handlers.CommandLine import CommandLine
 
   xia2_demo_data = os.path.join(dials_regression, "xia2_demo_data")
   template = os.path.join(xia2_demo_data, "insulin_1_###.img")

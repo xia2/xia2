@@ -15,9 +15,10 @@
 #
 #
 
+from __future__ import absolute_import, division
 import os
 
-from SunGridEngineClusterDriver import SunGridEngineClusterDriver
+from xia2.Driver.SunGridEngineClusterDriver import SunGridEngineClusterDriver
 
 class _ClusterDriverFactory(object):
 

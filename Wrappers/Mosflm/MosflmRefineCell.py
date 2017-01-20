@@ -10,11 +10,10 @@
 # Index the lattce.
 #
 
+from __future__ import absolute_import, division
+
 import os
-import sys
 import copy
-import shutil
-import math
 
 from xia2.Schema.Exceptions.BadLatticeError import BadLatticeError
 from xia2.Schema.Exceptions.NegativeMosaicError import NegativeMosaicError
@@ -23,7 +22,6 @@ from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
 
 from xia2.Handlers.Streams import Chatter, Debug
-from xia2.Wrappers.CCP4.MosflmHelpers import _parse_mosflm_index_output
 
 def MosflmRefineCell(DriverType = None, indxr_print = True):
   '''Factory for MosflmRefineCell wrapper classes, with the specified

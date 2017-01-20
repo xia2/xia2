@@ -13,7 +13,7 @@
 #
 # N.B. this is only included in more recent versions of Labelit.
 
-import os
+from __future__ import absolute_import, division
 import sys
 
 from xia2.Driver.DriverFactory import DriverFactory

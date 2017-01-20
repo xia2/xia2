@@ -10,8 +10,9 @@
 # Python routines which don't really belong anywhere else.
 #
 
+from __future__ import absolute_import, division
+
 import os
-import sys
 import math
 
 from xia2.Handlers.Streams import Chatter, Debug

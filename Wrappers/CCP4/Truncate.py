@@ -21,6 +21,8 @@
 #                 as systematic absences and verify that this is equal to
 #                 the number of reflections going in - number coming out.
 
+from __future__ import absolute_import, division
+
 import os
 import sys
 
@@ -30,7 +32,7 @@ from xia2.lib.bits import transpose_loggraph
 from xia2.Handlers.Streams import Chatter, Debug
 from xia2.Handlers.Phil import PhilIndex
 
-from Ctruncate import Ctruncate
+from xia2.Wrappers.CCP4.Ctruncate import Ctruncate
 
 def Truncate(DriverType = None):
   '''A factory for TruncateWrapper classes.'''

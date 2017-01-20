@@ -8,11 +8,9 @@
 #
 # Analyse DIALS reflections for blank images
 
-from __future__ import division
+from __future__ import absolute_import, division
 
 import os
-#from __init__ import _setup_xia2_environ
-#_setup_xia2_environ()
 
 def DetectBlanks(DriverType = None):
   '''A factory for DetectBlanksWrapper classes.'''
@@ -36,44 +34,34 @@ def DetectBlanks(DriverType = None):
       self._misigma_fractional_loss = None
       self._results = None
 
-      return
-
     def set_sweep_filename(self, sweep_filename):
       self._sweep_filename = sweep_filename
-      return
 
     def set_experiments_filename(self, experiments_filename):
       self._experiments_filename = experiments_filename
-      return
 
     def set_reflections_filename(self, reflections_filename):
       self._reflections_filename = reflections_filename
-      return
 
     def set_json_filename(self, json_filename):
       self._json_filename = json_filename
-      return
 
     def get_json_filename(self):
       return self._json_filename
 
     def set_phi_step(self, phi_step):
       self._phi_step = phi_step
-      return
 
     def set_counts_fractional_loss(self, counts_fractional_loss):
       self._counts_fractional_loss = counts_fractional_loss
-      return
 
     def set_misigma_fractional_loss(self, misigma_fractional_loss):
       self._misigma_fractional_loss = misigma_fractional_loss
-      return
 
     def get_results(self):
       return self._results
 
     def run(self):
-
       self.clear_command_line()
 
       if self._sweep_filename is not None:
@@ -102,8 +90,6 @@ def DetectBlanks(DriverType = None):
       import json
       with open(self._json_filename, 'rb') as f:
         self._results= json.load(f)
-
-      return
 
   return DetectBlanksWrapper()
 

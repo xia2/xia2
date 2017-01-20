@@ -8,8 +8,7 @@
 #
 # Test platform for new Dials wrapper implementations.
 
-from __future__ import division
-import os
+from __future__ import absolute_import, division
 import sys
 
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor

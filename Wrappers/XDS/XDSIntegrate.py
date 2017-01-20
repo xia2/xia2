@@ -8,10 +8,10 @@
 # A wrapper to handle the JOB=INTEGRATE module in XDS.
 #
 
+from __future__ import absolute_import, division
+
 import os
-import sys
 import shutil
-import math
 import copy
 
 from xia2.Driver.DriverFactory import DriverFactory
@@ -20,11 +20,11 @@ from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 
 # generic helper stuff
-from XDS import imageset_to_xds, xds_check_version_supported, xds_check_error, \
+from xia2.Wrappers.XDS.XDS import imageset_to_xds, xds_check_version_supported, xds_check_error, \
     _running_xds_version, template_to_xds
 
 # specific helper stuff
-from XDSIntegrateHelpers import _parse_integrate_lp, \
+from xia2.Wrappers.XDS.XDSIntegrateHelpers import _parse_integrate_lp, \
     _parse_integrate_lp_updates
 
 from xia2.Handlers.Streams import Chatter, Debug

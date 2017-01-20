@@ -10,10 +10,9 @@
 # A handler for matters of the operating environment, which will impact
 # on data harvesting, working directories, a couple of other odds & sods.
 
+from __future__ import absolute_import, division
+
 import os
-import sys
-import subprocess
-import stat
 import platform
 import ctypes
 import tempfile

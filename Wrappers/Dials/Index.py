@@ -8,9 +8,8 @@
 #
 # Autoindex using the DIALS code: assumes spots found from same.
 
-from __future__ import division
+from __future__ import absolute_import, division
 import os
-import shutil
 
 from xia2.Handlers.Phil import PhilIndex
 
@@ -58,23 +57,17 @@ def Index(DriverType = None):
       self._outlier_algorithm = None
       self._close_to_spindle_cutoff = None
 
-      return
-
     def add_sweep_filename(self, sweep_filename):
       self._sweep_filenames.append(sweep_filename)
-      return
 
     def add_spot_filename(self, spot_filename):
       self._spot_filenames.append(spot_filename)
-      return
 
     def set_indexer_input_lattice(self, lattice):
       self._indxr_input_lattice = lattice
-      return
 
     def set_indexer_user_input_lattice(self, user):
       self._indxr_user_input_lattice = user
-      return
 
     def set_indexer_input_cell(self, cell):
       if not type(cell) == type(()):
@@ -84,23 +77,18 @@ def Index(DriverType = None):
         raise RuntimeError, 'cell must be a 6-tuple de floats'
 
       self._indxr_input_cell = tuple(map(float, cell))
-      return
 
     def set_maximum_spot_error(self, maximum_spot_error):
       self._maximum_spot_error = maximum_spot_error
-      return
 
     def set_detector_fix(self, detector_fix):
       self._detector_fix = detector_fix
-      return
 
     def set_beam_fix(self, beam_fix):
       self._beam_fix = beam_fix
-      return
 
     def set_indexing_method(self, method):
       self._indexing_method = method
-      return
 
     def set_indexing_method(self):
       return self._indexing_method
@@ -110,11 +98,9 @@ def Index(DriverType = None):
 
     def set_fft3d_n_points(self, n_points):
       self._fft3d_n_points = n_points
-      return
 
     def set_histogram_binning(self, histogram_binning):
       self._histogram_binning = histogram_binning
-      return
 
     def get_sweep_filenames(self):
       return self._sweep_filenames
@@ -130,30 +116,24 @@ def Index(DriverType = None):
 
     def set_phil_file(self, phil_file):
       self._phil_file = phil_file
-      return
 
     def set_outlier_algorithm(self, outlier_algorithm):
       self._outlier_algorithm = outlier_algorithm
-      return
 
     def get_nref_rmsds(self):
       return self._nref, (self._rmsd_x, self._rmsd_y, self._rmsd_z)
 
     def set_max_cell(self, max_cell):
       self._max_cell = max_cell
-      return
 
     def set_min_cell(self, min_cell):
       self._min_cell = min_cell
-      return
 
     def set_d_min_start(self, d_min_start):
       self._d_min_start = d_min_start
-      return
 
     def set_close_to_spindle_cutoff(self, close_to_spindle_cutoff):
       self._close_to_spindle_cutoff = close_to_spindle_cutoff
-      return
 
     def run(self, method):
       from xia2.Handlers.Streams import Debug
@@ -242,7 +222,5 @@ def Index(DriverType = None):
       self._rmsd_x = math.sqrt(flex.mean(flex.pow2(xc - xo)))
       self._rmsd_y = math.sqrt(flex.mean(flex.pow2(yc - yo)))
       self._rmsd_z = math.sqrt(flex.mean(flex.pow2(zc - zo)))
-
-      return
 
   return IndexWrapper()

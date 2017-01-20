@@ -9,8 +9,9 @@
 # support only Mosflm, XDS and the null integrater implementation.
 #
 
+from __future__ import absolute_import, division
+
 import os
-import sys
 import copy
 
 from xia2.Handlers.Streams import Debug

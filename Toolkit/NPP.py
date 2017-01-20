@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division
+
 from scitbx.array_family import flex
 from scitbx.math import distributions
 from scitbx.random import variate, poisson_distribution

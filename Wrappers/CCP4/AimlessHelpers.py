@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division
+
 def parse_aimless_xml(xml_file):
   import xml.dom.minidom
 

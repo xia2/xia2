@@ -10,7 +10,8 @@
 # A small expert to handle orientation matrix calculations.
 #
 
-import os
+from __future__ import absolute_import, division
+
 import sys
 import math
 
@@ -28,7 +29,7 @@ from xia2.Handlers.Syminfo import Syminfo
 from xia2.lib.bits import auto_logfiler
 from xia2.Handlers.Streams import Debug
 
-from ReferenceFrame import mosflm_to_xia2, xia2_to_mosflm
+from xia2.Experts.ReferenceFrame import mosflm_to_xia2, xia2_to_mosflm
 
 # jiffies to convert matrix format (messy)
 

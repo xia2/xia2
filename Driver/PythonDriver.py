@@ -9,13 +9,14 @@
 # A driver class to launch Python subprocesses with the shared environment
 # but in a new address space.
 
+from __future__ import absolute_import, division
 import subprocess
 import os
 import sys
 import copy
 
-from DefaultDriver import DefaultDriver
-from DriverHelper import kill_process
+from xia2.Driver.DefaultDriver import DefaultDriver
+from xia2.Driver.DriverHelper import kill_process
 
 class PythonDriver(DefaultDriver):
 

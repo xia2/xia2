@@ -15,10 +15,11 @@
 #
 #
 
+from __future__ import absolute_import, division
+
 import os
 import sys
 import exceptions
-import time
 
 from xia2.Modules.Indexer.LabelitIndexer import LabelitIndexer
 
@@ -42,8 +43,8 @@ def compute_beam_centre(sweep, working_directory=None):
   except exceptions.Exception, e:
     # do not have labelit installed?
     # need to check the exception
-    import sys
-    import traceback
+    # import sys
+    # import traceback
     # traceback.print_exc(sys.stderr)
 
     return None

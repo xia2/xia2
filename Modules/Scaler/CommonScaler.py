@@ -7,11 +7,13 @@
 #
 # Bits the scalers have in common - inherit from me!
 
+from __future__ import absolute_import, division
+
 from iotbx import mtz
 from xia2.Schema.Interfaces.Scaler import Scaler
 from xia2.Handlers.Streams import Debug, Chatter
 from xia2.Handlers.Phil import PhilIndex
-from CCP4ScalerHelpers import anomalous_signals
+from xia2.Modules.Scaler.CCP4ScalerHelpers import anomalous_signals
 from xia2.Modules.CCP4InterRadiationDamageDetector import \
      CCP4InterRadiationDamageDetector
 

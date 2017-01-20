@@ -10,12 +10,13 @@
 # An implementation of the Scaler interface using CCP4 programs and Aimless.
 #
 
+from __future__ import absolute_import, division
+
 import os
-import sys
 import math
 import copy
 
-from CommonScaler import CommonScaler as Scaler
+from xia2.Modules.Scaler.CommonScaler import CommonScaler as Scaler
 
 from xia2.Wrappers.CCP4.CCP4Factory import CCP4Factory
 
@@ -31,7 +32,7 @@ from xia2.lib.bits import is_mtz_file
 from xia2.lib.bits import transpose_loggraph
 from xia2.lib.SymmetryLib import sort_lattices
 
-from CCP4ScalerHelpers import _prepare_pointless_hklin, \
+from xia2.Modules.Scaler.CCP4ScalerHelpers import _prepare_pointless_hklin, \
      CCP4ScalerHelper, SweepInformationHandler, ersatz_resolution, \
      get_umat_bmat_lattice_symmetry_from_mtz
 
@@ -65,12 +66,9 @@ class CCP4ScalerA(Scaler):
     self._factory = CCP4Factory()
     self._helper = CCP4ScalerHelper()
 
-    return
-
   # overloaded from the Scaler interface... to plumb in the factory
 
   def to_dict(self):
-    import json
     obj = super(CCP4ScalerA, self).to_dict()
     if self._sweep_handler is not None:
       obj['_sweep_handler'] = self._sweep_handler.to_dict()
@@ -79,7 +77,6 @@ class CCP4ScalerA(Scaler):
 
   @classmethod
   def from_dict(cls, obj):
-    import json
     return_obj = super(CCP4ScalerA, cls).from_dict(obj)
     if return_obj._sweep_handler is not None:
       return_obj._sweep_handler = SweepInformationHandler.from_dict(
@@ -91,7 +88,6 @@ class CCP4ScalerA(Scaler):
     self._working_directory = working_directory
     self._factory.set_working_directory(working_directory)
     self._helper.set_working_directory(working_directory)
-    return
 
   # this is an overload from the factory - it returns Aimless wrapper set up
   # with the desired corrections

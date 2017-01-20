@@ -9,9 +9,10 @@
 # the XDS package.
 #
 
+from __future__ import absolute_import, division
+
 import os
 import sys
-import shutil
 
 from xia2.Driver.DriverFactory import DriverFactory
 
@@ -19,8 +20,7 @@ from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 
 # generic helper stuff
-from XDS import xds_check_version_supported
-from xia2.Handlers.Streams import Debug
+from xia2.Wrappers.XDS.XDS import xds_check_version_supported
 
 import libtbx
 
@@ -53,8 +53,6 @@ def Merge2cbf(DriverType=None, params=None):
 
       self._input_data_files_list = []
       self._output_data_files_list = []
-
-      return
 
     class data_range(libtbx.property):
       def fset(self, start, end):

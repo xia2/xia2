@@ -10,10 +10,10 @@
 # 04/JAN/07 FIXME - need to know if we want anomalous pairs separating
 #                   in this module...
 
+from __future__ import absolute_import, division
+
 import os
-import sys
 import shutil
-import math
 from cctbx.uctbx import unit_cell
 
 from xia2.Driver.DriverFactory import DriverFactory
@@ -22,14 +22,11 @@ from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 
 # generic helper stuff
-from XDS import imageset_to_xds, xds_check_version_supported, xds_check_error
-from XDS import template_to_xds
+from xia2.Wrappers.XDS.XDS import imageset_to_xds, xds_check_version_supported, xds_check_error
+from xia2.Wrappers.XDS.XDS import template_to_xds
 
 # specific helper stuff
-from XDSCorrectHelpers import _parse_correct_lp
-
-from xia2.Experts.ResolutionExperts import xds_integrate_hkl_to_list, \
-     bin_o_tron, digest
+from xia2.Wrappers.XDS.XDSCorrectHelpers import _parse_correct_lp
 
 from xia2.Handlers.Streams import Debug
 from xia2.Handlers.Phil import PhilIndex

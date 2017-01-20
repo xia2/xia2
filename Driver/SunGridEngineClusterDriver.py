@@ -13,10 +13,11 @@
 #
 # Inherited from DefaultClusterDriver
 
+from __future__ import absolute_import, division
 import os
 import subprocess
 
-from DefaultClusterDriver import DefaultClusterDriver
+from xia2.Driver.DefaultClusterDriver import DefaultClusterDriver
 
 class SunGridEngineClusterDriver(DefaultClusterDriver):
 

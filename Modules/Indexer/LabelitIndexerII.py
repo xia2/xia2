@@ -83,8 +83,8 @@
 #
 #                 Need to be able to handle this...
 
-import os
-import sys
+from __future__ import absolute_import, division
+
 import copy
 import math
 

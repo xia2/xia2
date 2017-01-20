@@ -10,16 +10,15 @@
 #
 # 11th November 2009
 
+from __future__ import absolute_import, division
 import time
 import os
-import sys
 
 from xia2.Handlers.Files import FileHandler
 
 def sanitize(path):
   '''Replace double path separators with single ones.'''
 
-  import os
   double = os.sep * 2
   return path.replace(double, os.sep)
 

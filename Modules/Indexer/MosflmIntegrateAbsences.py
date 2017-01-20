@@ -1,12 +1,10 @@
-import math
+from __future__ import absolute_import, division
+
 import sys
-import os
 
 from iotbx import mtz
 from cctbx import sgtbx
 from cctbx import crystal
-from cctbx import uctbx
-from scitbx import matrix
 
 def measure(hklin, spacegroup):
   '''Look at HKLIN, see how strong the absences (according to the given

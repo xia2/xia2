@@ -9,7 +9,7 @@
 # Find spots for autoindexing - now separating this out into two steps; finding
 # spots in index prepare and doing indexing in index proper.
 
-from __future__ import division
+from __future__ import absolute_import, division
 
 def Findspots(DriverType = None):
   '''A factory for FindspotsWrapper(ipmosflm) classes.'''
@@ -25,8 +25,6 @@ def Findspots(DriverType = None):
       import os
       self.set_executable(os.path.join(
           os.environ['CCP4'], 'bin', 'ipmosflm'))
-
-      return
 
     def __call__(self, fp, images):
       from xia2.Handlers.Streams import Debug

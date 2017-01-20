@@ -27,10 +27,11 @@
 #       fraction is 0.5 - this is improved by CORRECT. Pointless copies this
 #       across correctly and computes LP column.
 
+from __future__ import absolute_import, division
+
 import sys
 import math
 import os
-import time
 import itertools
 import copy
 
@@ -41,12 +42,12 @@ from cctbx.miller import map_to_asu
 from cctbx.crystal import symmetry as crystal_symmetry
 from cctbx.sgtbx import rt_mx
 
-from MtzFactory import mtz_file
-from PolyFitter import fit
-from PolyFitter import log_fit
-from PolyFitter import log_inv_fit
-from PolyFitter import interpolate_value
-from PolyFitter import get_positive_values
+from xia2.Toolkit.MtzFactory import mtz_file
+from xia2.Toolkit.PolyFitter import fit
+from xia2.Toolkit.PolyFitter import log_fit
+from xia2.Toolkit.PolyFitter import log_inv_fit
+from xia2.Toolkit.PolyFitter import interpolate_value
+from xia2.Toolkit.PolyFitter import get_positive_values
 from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Streams import streams_off
 

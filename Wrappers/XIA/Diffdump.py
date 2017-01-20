@@ -35,6 +35,7 @@
 #                 the centre of the image.
 #
 
+from __future__ import absolute_import, division
 import os
 import sys
 import copy
@@ -52,7 +53,6 @@ else:
   debug = False
 
 from xia2.Driver.DriverFactory import DriverFactory
-from xia2.Handlers.Phil import PhilIndex
 
 class _HeaderCache(object):
   '''A cache for image headers.'''

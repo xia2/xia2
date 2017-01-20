@@ -11,7 +11,7 @@
 # N.B. this is subtly different to Findspots as it takes as input an Indexer
 # implementation not FrameProcessor.
 
-from __future__ import division
+from __future__ import absolute_import, division
 
 def GenerateRaster(DriverType = None):
   '''A factory for GenerateRasterWrapper(ipmosflm) classes.'''
@@ -27,8 +27,6 @@ def GenerateRaster(DriverType = None):
       import os
       self.set_executable(os.path.join(
           os.environ['CCP4'], 'bin', 'ipmosflm'))
-
-      return
 
     def __call__(self, indxr, images):
       from xia2.Handlers.Streams import Debug

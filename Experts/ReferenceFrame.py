@@ -10,6 +10,9 @@
 # with a rotation axis which is parallel to a detector axis and with the
 # beam perpendicular (approximately) to the detector face.
 #
+
+from __future__ import absolute_import, division
+
 # Reference frame definitions
 # ---------------------------
 #
@@ -61,14 +64,14 @@ Mos2Xia2 = (0, 0, 1, 0, 1, 0, -1, 0, 0)
 def mosflm_to_xia2(v):
   '''Convert a vector v from Mosflm reference frame to xia2.'''
 
-  from MatrixExpert import matvecmul, invert
+  from xia2.Experts.MatrixExpert import matvecmul, invert
 
   return matvecmul(Mos2Xia2, v)
 
 def xia2_to_mosflm(v):
   '''Convert a vector v from xia2 frame to Mosflm.'''
 
-  from MatrixExpert import matvecmul, invert
+  from xia2.Experts.MatrixExpert import matvecmul, invert
 
   Xia22Mos = invert(Mos2Xia2)
 

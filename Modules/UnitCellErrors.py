@@ -1,9 +1,8 @@
 # Refine list of space group candidate and HKL indices against observed 2theta values.
 
-from cctbx import miller, uctbx
+from __future__ import absolute_import, division
 from cctbx.array_family import flex
 import scitbx.lbfgs
-import random
 
 class _refinery:
   # Modelled after cctbx/examples/unit_cell_refinement.py

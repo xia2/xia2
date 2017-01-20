@@ -19,19 +19,14 @@
 # The standalone (moving to C++) version... FIXME use a DIALS ReflectionTable
 # in here: this would be much faster.
 
+from __future__ import absolute_import, division
+
 import sys
 import math
-import os
 import time
-import itertools
 import copy
 
 from cctbx.array_family import flex
-from cctbx.crystal import symmetry as crystal_symmetry
-from cctbx.miller import build_set
-from cctbx.miller import map_to_asu
-from cctbx.sgtbx import rt_mx
-from iotbx import mtz
 import libtbx.phil
 from scitbx import lbfgs
 

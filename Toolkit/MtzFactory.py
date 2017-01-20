@@ -10,10 +10,9 @@
 # functionality in iotbx. This will return a data structure to represent
 # merged and unmerged MTZ files.
 
+from __future__ import absolute_import, division
+
 import sys
-import math
-import os
-import time
 
 from iotbx import mtz
 
@@ -202,6 +201,4 @@ def mtz_dump(hklin):
     print column
 
 if __name__ == '__main__':
-  import sys
-
   mtz_dump(sys.argv[1])

@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division
+
 #     baubles.py: a smarter CCP4 logfile browser
 #     Copyright (C) STFC 2007 Peter Briggs, Kevin Cowtan
 #
@@ -34,7 +36,7 @@
 # Backend for a smarter logfile browser
 # using smartie
 #
-import smartie
+import xia2.Modules.Xia2html.smartie as smartie
 import sys
 import os
 import re

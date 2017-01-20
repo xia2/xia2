@@ -13,8 +13,9 @@
 #                 from the input reflection file...
 #
 
+from __future__ import absolute_import, division
+
 import os
-import sys
 
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
@@ -44,29 +45,22 @@ def Rebatch(DriverType = None):
       self._xname = None
       self._dname = None
 
-      return
-
     def set_project_info(self, pname, xname, dname):
       self._pname = pname
       self._xname = xname
       self._dname = dname
-      return
 
     def set_first_batch(self, first_batch):
       self._first_batch = first_batch
-      return
 
     def set_add_batch(self, add_batch):
       self._add_batch = add_batch
-      return
 
     def exclude_batch(self, batch):
       if not batch in self._exclude_batches:
         self._exclude_batches.append(batch)
-      return
 
     def exclude_batches(self):
-
       self.check_hklin()
       self.check_hklout()
 
@@ -94,8 +88,6 @@ def Rebatch(DriverType = None):
         raise e
 
       output = self.get_all_output()
-
-      return
 
     def limit_batches(self, first, last):
       '''Limit the batches to first to last.'''

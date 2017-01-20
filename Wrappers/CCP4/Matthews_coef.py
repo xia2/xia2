@@ -15,8 +15,9 @@
 # Solvent contents given a number of molecules, a sequence length and a unit
 # cell and symmetry.
 
+from __future__ import absolute_import, division
+
 import os
-import sys
 
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Decorators.DecoratorFactory import DecoratorFactory

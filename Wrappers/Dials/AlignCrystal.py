@@ -8,7 +8,7 @@
 #
 # Wrapper for dials.align_crystal.
 
-from __future__ import division
+from __future__ import absolute_import, division
 
 def AlignCrystal(DriverType = None):
   '''A factory for AlignCrystalWrapper classes.'''
@@ -24,18 +24,15 @@ def AlignCrystal(DriverType = None):
 
       self._experiments_filename = None
       self._json_filename = 'align_crystal.json'
-      return
 
     def set_experiments_filename(self, experiments_filename):
       self._experiments_filename = experiments_filename
-      return
 
     def get_experiments_filename(self):
       return self._experiments_filename
 
     def set_json_filename(self, json_filename):
       self._json_filename = json_filename
-      return
 
     def get_json_filename(self):
       return self._json_filename
@@ -50,8 +47,6 @@ def AlignCrystal(DriverType = None):
       self.start()
       self.close_wait()
       self.check_for_errors()
-
-      return
 
   return AlignCrystalWrapper()
 

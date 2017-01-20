@@ -6,18 +6,10 @@
 #   included in the root directory of this package.
 #
 
-import os
-import sys
-import inspect
-
-from xia2.Handlers.Streams import Debug, Chatter
-from xia2.Handlers.Phil import PhilIndex
-
-from xia2.Experts.LatticeExpert import SortLattices
+from __future__ import absolute_import, division
 
 # interfaces that this inherits from ...
 from xia2.Schema.Interfaces.Indexer import Indexer
-
 
 class MultiIndexerSingle(Indexer):
   '''A class interface to present autoindexing functionality in a standard
@@ -33,7 +25,6 @@ class MultiIndexerSingle(Indexer):
 
     super(MultiIndexerSingle, self).__init__()
     self._indxr_multi_indexer = None
-    return
 
   def set_multi_indexer(self, multi_indexer):
     self._indxr_multi_indexer = multi_indexer
@@ -45,17 +36,14 @@ class MultiIndexerSingle(Indexer):
   def set_indexer_prepare_done(self, done = True):
     assert self._indxr_multi_indexer is not None
     self._indxr_multi_indexer.set_indexer_prepare_done(done)
-    return
 
   def set_indexer_done(self, done = True):
     assert self._indxr_multi_indexer is not None
     self._indxr_multi_indexer.set_indexer_done(done)
-    return
 
   def set_indexer_finish_done(self, done = True):
     assert self._indxr_multi_indexer is not None
     self._indxr_multi_indexer.set_indexer_finish_done(done)
-    return
 
   def get_indexer_prepare_done(self):
     assert self._indxr_multi_indexer is not None
@@ -72,7 +60,6 @@ class MultiIndexerSingle(Indexer):
   def index(self):
     assert self._indxr_multi_indexer is not None
     self._indxr_multi_indexer.index()
-    return
 
 def multi_indexer_single_factory(indexer_cls):
 
