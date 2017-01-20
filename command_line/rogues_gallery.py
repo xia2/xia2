@@ -1,7 +1,6 @@
-from __future__ import division
+from __future__ import absolute_import, division
 # LIBTBX_SET_DISPATCHER_NAME xia2.rogues_gallery
 
-import exceptions
 import json
 import os
 import sys
@@ -123,7 +122,6 @@ def reconstruct_rogues(params):
 
 if __name__ == '__main__':
   from libtbx.phil import parse
-  import sys
   phil_scope = parse('''
 rogues {
   extract = False

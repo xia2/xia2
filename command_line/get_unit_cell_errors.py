@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division
+
 import exceptions
 import json
 import math
@@ -13,7 +15,7 @@ from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Environment import Environment
 from xia2.lib.bits import auto_logfiler
 
-from xia2.Applications.xia2 import check_environment
+from xia2.Applications.xia2_main import check_environment
 from cctbx import miller
 from cctbx.array_family import flex
 

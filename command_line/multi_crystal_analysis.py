@@ -1,9 +1,9 @@
 # LIBTBX_SET_DISPATCHER_NAME xia2.multi_crystal_analysis
 
+from __future__ import absolute_import, division
+
 import sys
 import os
-import math
-import time
 import exceptions
 import traceback
 
@@ -13,13 +13,10 @@ from xia2.Handlers.Streams import Chatter, Debug
 
 from xia2.Handlers.Files import cleanup
 from xia2.Handlers.Citations import Citations
-from xia2.Handlers.Environment import Environment, df
+from xia2.Handlers.Environment import Environment
 from xia2.lib.bits import auto_logfiler
 
-from xia2.XIA2Version import Version
-
-from xia2.Applications.xia2 import check_environment
-from xia2.Applications.xia2 import get_command_line, write_citations, help
+from xia2.Applications.xia2_main import check_environment, write_citations, help
 from xia2.lib.tabulate import tabulate
 
 from scitbx.array_family import flex

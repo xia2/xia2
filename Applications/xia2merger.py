@@ -11,12 +11,8 @@
 # To resolve the naming conflict between this file and the entire xia2 module
 # any xia2.* imports in this directory must instead be imported as ..*
 
-
-import os
-import sys
-import time
-
-from ..Toolkit.Merger import merger
+from __future__ import absolute_import, division
+from xia2.Toolkit.Merger import merger
 
 if __name__ == '__main__':
   import argparse

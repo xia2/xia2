@@ -1,6 +1,8 @@
+from __future__ import absolute_import, division
+
 def npp(hklin):
   from iotbx.reflection_file_reader import any_reflection_file
-  from xia2.Toolkit.NPP import npp_ify, mean_variance
+  from xia2.Toolkit.NPP import npp_ify
   from scitbx.array_family import flex
   import math
   import sys

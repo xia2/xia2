@@ -1,5 +1,5 @@
 # LIBTBX_SET_DISPATCHER_NAME dev.xia2.create_mask
-from __future__ import division
+from __future__ import absolute_import, division
 
 def main(filename, threshold, images):
   '''Read and sum all images, define those pixels which are POSITIVE but which
@@ -25,7 +25,6 @@ def main(filename, threshold, images):
   dump((mask,), open(filename, 'w'))
 
   print 'Mask written to %s' % filename
-  return
 
 if __name__ == '__main__':
   import sys

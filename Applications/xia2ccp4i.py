@@ -6,12 +6,6 @@
 #
 #   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-#
-#
-# 03/MAR/16
-# To resolve the naming conflict between this file and the entire xia2 module
-# any xia2.* imports in this directory must instead be imported as ..*
-
 
 """
 xia2ccp4i.py:
@@ -20,6 +14,8 @@ A demonstration for a user friendly way to link data processing with downstream
 analysis. This script finds data processed by xia2, creates a standalone CCP4
 project and starts ccp4i with it.
 """
+
+from __future__ import absolute_import, division
 
 import sys
 import os

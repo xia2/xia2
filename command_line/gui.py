@@ -1,7 +1,7 @@
 # LIBTBX_PRE_DISPATCHER_INCLUDE_SH export PHENIX_GUI_ENVIRONMENT=1
 # LIBTBX_PRE_DISPATCHER_INCLUDE_SH export BOOST_ADAPTBX_FPE_DEFAULT=1
 # LIBTBX_SET_DISPATCHER_NAME dev.xia2.gui
-from __future__ import division
+from __future__ import absolute_import, division
 
 #from rstbx.viewer import results_base, indexing, integration
 from rstbx.viewer.frame import XrayFrame
@@ -9,7 +9,7 @@ from wxtbx import process_control, icons
 import wxtbx.app
 from wxtbx.phil_controls import path
 from wxtbx.utils import LogViewer
-import wx.lib.agw.flatnotebook
+import wx.lib.agw.flatnotebook as fnb
 import wx
 import wx.html
 import wx.html2
@@ -31,7 +31,6 @@ class ProcessingFrame (wx.Frame) :
     self.statusbar = self.CreateStatusBar()
     self.sizer = wx.BoxSizer(wx.VERTICAL)
     self.SetSizer(self.sizer)
-    from wx.lib.agw import flatnotebook as fnb
     self.nb = fnb.FlatNotebook(
       self, agwStyle=fnb.FNB_DEFAULT_STYLE|fnb.FNB_NO_X_BUTTON)
     self.sizer.Add(self.nb, 1, wx.EXPAND)
@@ -264,7 +263,6 @@ class xia2Thread(threading.Thread):
     sys.argv = old_sys_argv
 
     wx.CallAfter(self.window.callback_final, self)
-    return
 
 
 if (__name__ == "__main__") :

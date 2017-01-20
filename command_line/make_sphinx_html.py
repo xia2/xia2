@@ -1,6 +1,6 @@
 # LIBTBX_SET_DISPATCHER_NAME dev.xia2.make_sphinx_html
 
-from __future__ import division
+from __future__ import absolute_import, division
 import libtbx.load_env
 from dials.util.procrunner import run_process
 import shutil

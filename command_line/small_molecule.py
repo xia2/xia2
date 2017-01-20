@@ -1,4 +1,4 @@
-from __future__ import division
+from __future__ import absolute_import, division
 
 if __name__ == '__main__':
   import sys
@@ -9,5 +9,5 @@ if __name__ == '__main__':
   # itself
   import libtbx.load_env
   libtbx.env.dispatcher_name = 'xia2'
-  from xia2_main import run
+  from xia2.command_line.xia2_main import run
   run()

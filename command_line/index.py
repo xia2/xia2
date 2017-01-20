@@ -1,9 +1,8 @@
 # LIBTBX_SET_DISPATCHER_NAME xia2.index
+from __future__ import absolute_import, division
 
 import sys
 import os
-import math
-import time
 import exceptions
 import traceback
 
@@ -11,14 +10,7 @@ import traceback
 import libtbx.load_env
 from xia2.Handlers.Streams import Chatter, Debug
 
-from xia2.Handlers.Files import cleanup
-from xia2.Handlers.Citations import Citations
-from xia2.Handlers.Environment import Environment, df
-
-from xia2.XIA2Version import Version
-
-from xia2.Applications.xia2 import check_environment
-from xia2.Applications.xia2 import get_command_line, write_citations, help
+from xia2.Applications.xia2_main import check_environment, help
 
 
 def run():
@@ -36,7 +28,7 @@ def run():
 
   try:
     #xia2_index()
-    from xia2_main import xia2_main
+    from xia2.command_line.xia2_main import xia2_main
     xia2_main(stop_after='index')
     Chatter.write('Status: normal termination')
 

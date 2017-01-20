@@ -1,25 +1,16 @@
 # LIBTBX_SET_DISPATCHER_NAME xia2.integrate
 
+from __future__ import absolute_import, division
+
 import sys
 import os
-import math
-import time
 import exceptions
 import traceback
 
 # Needed to make xia2 imports work correctly
 import libtbx.load_env
 from xia2.Handlers.Streams import Chatter, Debug
-
-from xia2.Handlers.Files import cleanup
-from xia2.Handlers.Citations import Citations
-from xia2.Handlers.Environment import Environment, df
-
-from xia2.XIA2Version import Version
-
-from xia2.Applications.xia2 import check_environment
-from xia2.Applications.xia2 import get_command_line, write_citations, help
-
+from xia2.Applications.xia2_main import check_environment, help
 
 def run():
   try:

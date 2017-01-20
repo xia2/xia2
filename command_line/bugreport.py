@@ -1,4 +1,4 @@
-import base64
+from __future__ import absolute_import, division
 import json
 import urllib2
 import xia2.XIA2Version

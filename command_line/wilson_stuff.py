@@ -1,4 +1,4 @@
-from __future__ import division
+from __future__ import absolute_import, division
 from mmtbx.scaling import data_statistics
 from iotbx import mtz
 import sys

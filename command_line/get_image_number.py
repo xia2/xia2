@@ -1,4 +1,4 @@
-from __future__ import division
+from __future__ import absolute_import, division
 
 def image_path_obtainer(summary_file):
   '''Read a xia2-summary.dat file and return a function capable of

@@ -1,4 +1,4 @@
-from __future__ import division
+from __future__ import absolute_import, division
 
 def to_shelxcde(hklin, prefix, sites=0):
   '''Read hklin (unmerged reflection file) and generate SHELXC input file

@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import division
+from __future__ import absolute_import, division
 from cctbx.array_family import flex
-import math
 import os
 
 from libtbx.containers import OrderedDict

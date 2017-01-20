@@ -1,8 +1,8 @@
 # LIBTBX_SET_DISPATCHER_NAME xia2.rescale
 
+from __future__ import absolute_import, division
 import sys
 import os
-import math
 import time
 import exceptions
 import traceback
@@ -14,12 +14,11 @@ from xia2.Handlers.Phil import PhilIndex
 
 from xia2.Handlers.Files import cleanup
 from xia2.Handlers.Citations import Citations
-from xia2.Handlers.Environment import Environment, df
+from xia2.Handlers.Environment import Environment
 
 from xia2.XIA2Version import Version
 
-from xia2.Applications.xia2 import check_environment
-from xia2.Applications.xia2 import get_command_line, write_citations, help
+from xia2.Applications.xia2_main import check_environment, write_citations
 
 
 def run():
@@ -77,8 +76,6 @@ def run():
   xinfo.as_json(filename='xia2.json')
 
   Environment.cleanup()
-
-  return
 
 if __name__ == '__main__':
   run()

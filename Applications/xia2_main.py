@@ -8,24 +8,18 @@
 # 21/SEP/06
 #
 # A top-level interface to the whole of xia2, for data processing & analysis.
-#
-# 03/MAR/16
-# To resolve the naming conflict between this file and the entire xia2 module
-# any xia2.* imports in this directory must instead be imported as ..*
+
+from __future__ import absolute_import, division
 
 import sys
 import os
 import math
-import time
-import exceptions
-import traceback
 
-from ..Handlers.Streams import Chatter, Debug
-from ..Handlers.Files import cleanup
-from ..Handlers.Citations import Citations
-from ..Handlers.Environment import Environment, df
+from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Citations import Citations
+from xia2.Handlers.Environment import Environment, df
 
-from ..XIA2Version import Version
+from xia2.XIA2Version import Version
 
 import libtbx.load_env
 
@@ -61,7 +55,7 @@ def check_environment():
       raise RuntimeError, 'spaces around "%s"' % v
     Chatter.write('%s => %s' % (k, v))
 
-  from ..Handlers.Flags import Flags
+  from xia2.Handlers.Flags import Flags
   Chatter.write('Starting directory: %s' % Flags.get_starting_directory())
   Chatter.write('Working directory: %s' % os.getcwd())
   Chatter.write('Free space:        %.2f GB' % (df() / math.pow(2, 30)))
@@ -79,10 +73,9 @@ def check_environment():
   Chatter.write('Contact: xia2.support@gmail.com')
 
   Chatter.write(Version)
-  return
 
 def get_command_line():
-  from ..Handlers.CommandLine import CommandLine
+  from xia2.Handlers.CommandLine import CommandLine
 
   CommandLine.print_command_line()
 
@@ -107,7 +100,7 @@ def get_command_line():
       directories = CommandLine.get_directory()
 
     directories = [os.path.abspath(d) for d in directories]
-    from xia2setup import write_xinfo
+    from xia2.Applications.xia2setup import write_xinfo
 
     if CommandLine.get_template() or CommandLine.get_hdf5_master_files():
       write_xinfo(xinfo, directories, template=CommandLine.get_template(),
@@ -117,7 +110,7 @@ def get_command_line():
 
     CommandLine.set_xinfo(xinfo)
 
-  from xia2setup import save_datablock
+  from xia2.Applications.xia2setup import save_datablock
   save_datablock(os.path.join(os.getcwd(), 'xia2-datablock.json'))
 
   return CommandLine
@@ -144,7 +137,6 @@ def write_citations():
 def help():
   '''Print out some help for xia2.'''
 
-  from ..XIA2Version import Version
   sys.stdout.write('%s\n' % Version);
 
   # FIXME also needs to make reference to Phil input

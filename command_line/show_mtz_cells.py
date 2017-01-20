@@ -1,6 +1,5 @@
 # LIBTBX_SET_DISPATCHER_NAME dev.xia2.show_mtz_cells
-
-import sys
+from __future__ import absolute_import, division
 import os
 
 # Needed to make xia2 imports work correctly
