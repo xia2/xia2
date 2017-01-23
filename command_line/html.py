@@ -3,6 +3,7 @@
 
 from __future__ import absolute_import, division
 
+import cgi
 import docutils
 import glob
 import os
@@ -47,6 +48,26 @@ def make_logfile_html(logfile):
       return
 
     rst = []
+    ## local files in xia2 distro
+    #c3css = os.path.join(xia2_root_dir, 'c3', 'c3.css')
+    #c3js = os.path.join(xia2_root_dir, 'c3', 'c3.min.js')
+    #d3js = os.path.join(xia2_root_dir, 'd3', 'd3.min.js')
+
+    # webhosted files
+    c3css = 'https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.10/c3.css'
+    c3js = 'https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.10/c3.min.js'
+    d3js = 'https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js'
+
+    rst.append('.. raw:: html')
+    rst.append('\n    '.join([
+      '',
+      '<!-- Load c3.css -->',
+      '<link href="%s" rel="stylesheet" type="text/css">' %c3css,
+      '<!-- Load d3.js and c3.js -->',
+      '<script src="%s" charset="utf-8"></script>' %d3js,
+      '<script src="%s"></script>' %c3js,
+      ''
+    ]))
 
     for table in tables:
       try:
@@ -739,25 +760,10 @@ var chart_%(name)s = c3.generate({
 
   divs = []
 
-  ## local files in xia2 distro
-  #c3css = os.path.join(xia2_root_dir, 'c3', 'c3.css')
-  #c3js = os.path.join(xia2_root_dir, 'c3', 'c3.min.js')
-  #d3js = os.path.join(xia2_root_dir, 'd3', 'd3.min.js')
-
-  # webhosted files
-  c3css = 'https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.10/c3.css'
-  c3js = 'https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.10/c3.min.js'
-  d3js = 'https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js'
-
   for i_graph, graph_name in enumerate(table.graph_names):
     #print graph_name
 
     script = [
-      '<!-- Load c3.css -->',
-      '<link href="%s" rel="stylesheet" type="text/css">' %c3css,
-      '<!-- Load d3.js and c3.js -->',
-      '<script src="%s" charset="utf-8"></script>' %d3js,
-      '<script src="%s"></script>' %c3js,
       '<script type="text/javascript">',
     ]
 
@@ -807,7 +813,7 @@ tick: {
     script.append(draw_chart_template %({
       'name': name,
       'id': name,
-      'data': json.dumps(data_dict, indent=2),
+      'data': json.dumps(data_dict),
       'axis': axis,
      }))
 
@@ -815,8 +821,8 @@ tick: {
     divs.append('''\
 <div>
   <p>%s</p>
-  <div class="graph" id="chart_%s"></div
-</div>''' %(graph_name, name))
+  <div class="graph" id="chart_%s"></div>
+</div>''' %(cgi.escape(graph_name), name))
 
     script.append('</script>')
 
