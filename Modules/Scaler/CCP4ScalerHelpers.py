@@ -376,8 +376,13 @@ class CCP4ScalerHelper(object):
           'No solution found: assuming lattice from refiner')
 
     if need_to_return:
-      for refiner in refiners[1:]:
-        refiner.refiner_reset()
+      if (PhilIndex.params.xia2.settings.integrate_p1 and not
+          PhilIndex.params.xia2.settings.reintegrate_correct_lattice):
+        need_to_return = False
+        rerun_pointless = True
+      else:
+        for refiner in refiners[1:]:
+          refiner.refiner_reset()
 
     if rerun_pointless:
       pointless.set_correct_lattice(correct_lattice)
