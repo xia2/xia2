@@ -533,8 +533,10 @@ class DialsIntegrater(Integrater):
     exporter = ExportXDSASCII()
     exporter.set_experiments_filename(self.get_integrated_experiments())
     exporter.set_reflections_filename(self.get_integrated_reflections())
+    exporter.set_working_directory(self.get_working_directory())
     auto_logfiler(exporter)
-    self._intgr_corrected_hklout = '%i_DIALS.HKL' %exporter.get_xpid()
+    self._intgr_corrected_hklout = os.path.join(
+      self.get_working_directory(), '%i_DIALS.HKL' %exporter.get_xpid())
     exporter.set_hkl_filename(self._intgr_corrected_hklout)
     exporter.run()
     assert os.path.exists(self._intgr_corrected_hklout)
