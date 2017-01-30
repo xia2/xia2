@@ -720,6 +720,9 @@ class CCP4ScalerA(Scaler):
 
         # if we are working with unified UB matrix then this should not
         # be a problem here (note, *if*; *should*)
+
+        # what about e.g. alternative P1 settings?
+        # see JIRA MXSW-904
         if PhilIndex.params.xia2.settings.unify_setting:
           continue
 

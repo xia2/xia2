@@ -163,7 +163,7 @@ class _CommandLine(object):
 
     if params.xia2.settings.small_molecule == True:
       Debug.write('Small molecule selected')
-      PhilIndex.update("xia2.settings.unify_setting=true")
+      #PhilIndex.update("xia2.settings.unify_setting=true")
       if params.ccp4.pointless.chirality is None:
         PhilIndex.update("ccp4.pointless.chirality=nonchiral")
       params = PhilIndex.get_python_object()
