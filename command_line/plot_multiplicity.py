@@ -106,6 +106,8 @@ class MultiplicityViewJson(render_2d):
     self._filled_circle_points = flex.vec2_double()
     self._filled_circle_radii = []
     self._filled_circle_colors = []
+    self._text = []
+    self._lines = []
     json_d = self.render(None)
     import json
     json_str = json.dumps(json_d, indent=2)
@@ -113,15 +115,13 @@ class MultiplicityViewJson(render_2d):
       print >> f, json_str
 
   def GetSize (self) :
-    return 100, 100 # size in pixels
+    return 1600, 1600 # size in pixels
 
   def draw_line (self, ax, x1, y1, x2, y2) :
-    return
-    ax.plot([x1, x2], [y1, y2], c=self._foreground)
+    self._lines.append((x1, y1, x2, y2))
 
   def draw_text (self, ax, text, x, y) :
-    return
-    ax.text(x, y, text, color=self._foreground, size=self.settings.font_size)
+    self._text.append((x, y, text))
 
   def draw_open_circle (self, ax, x, y, radius, color=None) :
     self._open_circle_points.append((x, y))
@@ -148,6 +148,7 @@ class MultiplicityViewJson(render_2d):
         'type': 'scatter',
         'mode': 'markers',
         'name': 'missing reflections',
+        'showlegend': False,
         'marker': {
           #'color': list(z),
           'color': 'white',
@@ -195,6 +196,7 @@ class MultiplicityViewJson(render_2d):
         'type': 'scatter',
         'mode': 'markers',
         'name': 'multiplicity',
+        'showlegend': False,
         'marker': {
           'color': color,
           'colorscale': colorscale,
@@ -210,12 +212,53 @@ class MultiplicityViewJson(render_2d):
         },
       })
 
+    text = {
+      'x': [x for x, y, text in self._text],
+      'y': [y for x, y, text in self._text],
+      'text': [text for x, y, text in self._text],
+      'mode': 'text',
+      'showlegend': False,
+      'textposition': 'top right',
+    }
+    data.append(text)
+
+    shapes = []
+    for x0, y0, x1, y1 in self._lines:
+      #color = 'rgb(%i,%i,%i)' %tuple(rgb * 264 for rgb in self._foreground)
+      color = 'black'
+      shapes.append({
+        'type': 'line',
+        'x0': x0,
+        'y0': y0,
+        'x1': x1,
+        'y1': y1,
+        'layer': 'below',
+        'line': {
+          'color': color,
+          'width': 2,
+        }
+      })
+
     d = {
       'data': data,
       'layout': {
         'title': 'Multiplicity plot',
-        #'xaxis': {'range': [-1.0, 1.0]},
-        #'yaxis': {'range': [-1.0, 1.0]},
+        'shapes': shapes,
+        'xaxis': {
+          'showgrid': False,
+          'zeroline': False,
+          'showline': False,
+          'ticks': '',
+          'showticklabels': False,
+        },
+        'yaxis': {
+          'autorange': 'reversed',
+          'showgrid': False,
+          'zeroline': False,
+          'showline': False,
+          'ticks': '',
+          'showticklabels': False,
+        },
       },
     }
     return d
