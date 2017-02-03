@@ -61,15 +61,16 @@ def PlotMultiplicity(DriverType = None):
       self.add_command_line('slice_index=%s' %self._slice_index)
       self.add_command_line('show_missing=%s' %self._show_missing)
       self.add_command_line('uniform_size=True')
-      self._plot_filename = 'multiplicities_%s_%i.png' %(self._slice_axis, self._slice_index)
-      self.add_command_line('plot.filename=%s' %self._plot_filename)
+      #self._plot_filename = 'multiplicities_%s_%i.png' %(self._slice_axis, self._slice_index)
+      #self.add_command_line('plot.filename=%s' %self._plot_filename)
+      self.add_command_line('plot.filename=None')
       self._json_filename = 'multiplicities_%s_%i.json' %(self._slice_axis, self._slice_index)
       self.add_command_line('json.filename=%s' %self._json_filename)
       self.start()
       self.close_wait()
       self.check_for_errors()
 
-      assert os.path.exists(self._plot_filename)
+      #assert os.path.exists(self._plot_filename)
       return
 
   return PlotMultiplicityWrapper()
