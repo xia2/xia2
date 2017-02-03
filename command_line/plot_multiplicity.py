@@ -203,6 +203,10 @@ class MultiplicityViewJson(render_2d):
           'cmin': 0,
           'cmax': flex.max(self.scene.multiplicities.data()),
           'showscale': True,
+          'colorbar': {
+            'title': 'Multiplicity',
+            'titleside': 'right',
+          },
           'line': {
             'color': 'white',
             'width': 1,
@@ -242,7 +246,8 @@ class MultiplicityViewJson(render_2d):
     d = {
       'data': data,
       'layout': {
-        'title': 'Multiplicity plot',
+        'title': 'Multiplicity plot (%s=%s)' %(
+          self.settings.slice_axis, self.settings.slice_index),
         'shapes': shapes,
         'xaxis': {
           'showgrid': False,
