@@ -27,7 +27,8 @@ def run(args):
   scales = None
   dose = None
 
-  reader = any_reflection_file(args[0])
+  unmerged_mtz = args[0]
+  reader = any_reflection_file(unmerged_mtz)
   assert reader.file_type() == 'ccp4_mtz'
   arrays = reader.as_miller_arrays(merge_equivalents=False)
   for ma in arrays:
@@ -50,6 +51,18 @@ def run(args):
   intensities = intensities.customized_copy(
     indices=indices, info=intensities.info())
   batches = batches.customized_copy(indices=indices, info=batches.info())
+
+  from xia2.Wrappers.XIA.PlotMultiplicity import PlotMultiplicity
+  mult_json_files = {}
+  for axis in ('h', 'k', 'l'):
+    pm = PlotMultiplicity()
+    #auto_logfiler(pm)
+    #pm.set_working_directory(working_directory)
+    pm.set_mtz_filename(unmerged_mtz)
+    pm.set_slice_axis(axis)
+    pm.set_show_missing(True)
+    pm.run()
+    mult_json_files[axis] = pm.get_json_filename()
 
   from iotbx import merging_statistics
   merging_stats = merging_statistics.dataset_statistics(
@@ -515,6 +528,14 @@ def run(args):
     (k, json.dumps(json_data[k])) for k in
     ('multiplicities', 'cumulative_intensity_distribution'))
 
+  misc_graphs.update(OrderedDict(
+    ('multiplicity_%s' %axis, open(mult_json_files[axis], 'rb').read())
+    for axis in ('h', 'k', 'l')))
+
+  styles = {}
+  for axis in ('h', 'k', 'l'):
+    styles['multiplicity_%s' %axis] = 'square-plot'
+
   from jinja2 import Environment, ChoiceLoader, PackageLoader
   loader = ChoiceLoader([PackageLoader('xia2', 'templates'),
                          PackageLoader('dials', 'templates')])
@@ -530,7 +551,8 @@ def run(args):
                          cc_half_significance_level=cc_half_significance_level,
                          resolution_graphs=resolution_graphs,
                          batch_graphs=batch_graphs,
-                         misc_graphs=misc_graphs)
+                         misc_graphs=misc_graphs,
+                         styles=styles)
 
   json_str = json.dumps(json_data)
   with open('xia2-report.json', 'wb') as f:
