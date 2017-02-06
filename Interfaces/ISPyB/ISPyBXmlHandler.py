@@ -290,9 +290,9 @@ class _ISPyBXmlHandler(object):
       result['AutoProcScalingContainer'] = { }
       tmp = result['AutoProcScalingContainer']
       tmp['AutoProcScaling'] = {
-        'recordTimeStamp':time.strftime('%Y-%m-%d %H:%M:%S', 
+        'recordTimeStamp':time.strftime('%Y-%m-%d %H:%M:%S',
                                         time.localtime())}
-      
+
       statistics_all = xcrystal.get_statistics()
       reflection_files = xcrystal.get_scaled_merged_reflections()
 
@@ -361,7 +361,7 @@ class _ISPyBXmlHandler(object):
           image_name = sweep.get_all_image_names()[0]
           cell = sweep.get_integrater_cell()
           intgr_tmp = { }
-          for name, value in zip(['a', 'b', 'c', 'alpha', 'beta', 'gamma'], 
+          for name, value in zip(['a', 'b', 'c', 'alpha', 'beta', 'gamma'],
                                  cell):
             intgr_tmp['cell_%s' % name] = value
 
@@ -373,7 +373,7 @@ class _ISPyBXmlHandler(object):
 
           intgr_tmp['startImageNumber'] = start
           intgr_tmp['endImageNumber'] = end
-          
+
           intgr_tmp['refinedDetectorDistance'] = indxr.get_indexer_distance()
 
           beam = indxr.get_indexer_beam_centre()
@@ -385,7 +385,7 @@ class _ISPyBXmlHandler(object):
             {'Image':{'fileName':os.path.split(image_name)[-1],
                       'fileLocation':sanitize(os.path.split(image_name)[0])},
              'AutoProcIntegration': intgr_tmp})
-                     
+
       # file unpacking nonsense
       tmp = result['AutoProcScalingContainer']
       tmp['AutoProcProgramContainer'] = { }
@@ -424,7 +424,7 @@ class _ISPyBXmlHandler(object):
                    'filePath':sanitize(os.getcwd())})
 
     return result
-  
+
 
 ISPyBXmlHandler = _ISPyBXmlHandler()
 
