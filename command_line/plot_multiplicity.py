@@ -249,6 +249,7 @@ class MultiplicityViewJson(render_2d):
         'title': 'Multiplicity plot (%s=%s)' %(
           self.settings.slice_axis, self.settings.slice_index),
         'shapes': shapes,
+        'hovermode': False,
         'xaxis': {
           'showgrid': False,
           'zeroline': False,

@@ -240,7 +240,9 @@ def multi_crystal_analysis(stop_after=None):
 
   for hkl in ((1,0,0), (0,1,0), (0,0,1)):
     with open(sp_json_files[hkl], 'rb') as f:
-      json_data['stereographic_projection_%s%s%s' %hkl] = json.load(f)
+      d = json.load(f)
+      d['layout']['title'] = 'Stereographic projection (hkl=%i%i%i)' %hkl
+      json_data['stereographic_projection_%s%s%s' %hkl] = d
 
   for axis in ('h', 'k', 'l'):
     with open(mult_json_files[axis], 'rb') as f:
@@ -366,7 +368,7 @@ body {
     </div>
     <div id="collapse_intensity" class="panel-collapse collapse">
       <div class="panel-body">
-        <div class="col-xs-12 col-sm-12 col-md-12 plot" id="intensity_clustering"></div>
+        <div class="col-xs-12 col-sm-12 col-md-12 plot" id="intensity_clustering" style="height:1000px"></div>
         <div class="table-responsive" style="width: 800px">
           %(intensity_clustering_html)s
         </div>
