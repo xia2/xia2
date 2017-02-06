@@ -91,11 +91,16 @@ class DialsIntegrater(Integrater):
     params = PhilIndex.params.dials.integrate
     integrate = _Integrate()
     integrate.set_phil_file(params.phil_file)
+
+    if params.mosaic == 'new':
+      integrate.set_new_mosaic()
+
     if PhilIndex.params.dials.fast_mode:
       integrate.set_profile_fitting(False)
     else:
       profile_fitting = PhilIndex.params.xia2.settings.integration.profile_fitting
       integrate.set_profile_fitting(profile_fitting)
+
     integrate.set_background_outlier_algorithm(
       params.background_outlier_algorithm)
     integrate.set_background_algorithm(

@@ -25,6 +25,7 @@ def Integrate(DriverType = None):
       DriverInstance.__class__.__init__(self)
       self.set_executable('dials.integrate')
 
+      self._new_mosaic = False
       self._experiments_filename = None
       self._reflections_filename = None
       self._integrated_reflections = None
@@ -58,6 +59,9 @@ def Integrate(DriverType = None):
 
     def get_reflections_filename(self):
       return self._reflections_filename
+
+    def set_new_mosaic(self):
+      self._new_mosaic = True
 
     def set_profile_fitting(self, profile_fitting):
       self._profile_fitting = profile_fitting
@@ -128,6 +132,8 @@ def Integrate(DriverType = None):
       self.add_command_line('output.include_bad_reference=True')
       self.add_command_line(
         'profile.fitting=%s' % self._profile_fitting)
+      if self._new_mosaic:
+        self.add_command_line('sigma_m_algorithm=extended')
       if self._outlier_algorithm is not None:
         self.add_command_line(
           'outlier.algorithm=%s' % self._outlier_algorithm)

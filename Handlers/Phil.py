@@ -331,6 +331,10 @@ dials
       .type = bool
       .help = "Include partial reflections (scaled) in output"
       .short_caption = "Include partials"
+    mosaic = *old new
+      .type = choice
+      .help = "Mosaicity determination method to use"
+      .expert_level = 2
   }
 }
 ccp4
