@@ -270,6 +270,162 @@ class _ISPyBXmlHandler(object):
     fout.write('</AutoProcContainer>\n')
     fout.close()
 
+  def json_object(self, command_line=''):
+
+    result = {}
+
+    for crystal in sorted(self._crystals):
+      xcrystal = self._crystals[crystal]
+
+      cell = xcrystal.get_cell()
+      spacegroup = xcrystal.get_likely_spacegroups()[0]
+
+      result['AutoProc'] = { }
+      tmp = result['AutoProc']
+
+      tmp['SpaceGroup'] = spacegroup
+      for name, value in zip(['a', 'b', 'c', 'alpha', 'beta', 'gamma'], cell):
+        tmp['refinedCell_%s' % name] = value
+
+      result['AutoProcScalingContainer'] = { }
+      tmp = result['AutoProcScalingContainer']
+      tmp['AutoProcScaling'] = {
+        'recordTimeStamp':time.strftime('%Y-%m-%d %H:%M:%S', 
+                                        time.localtime())}
+      
+      statistics_all = xcrystal.get_statistics()
+      reflection_files = xcrystal.get_scaled_merged_reflections()
+
+      wavelength_names = xcrystal.get_wavelength_names()
+
+      for key in statistics_all.keys():
+        pname, xname, dname = key
+
+        # FIXME should assert that the dname is a
+        # valid wavelength name
+
+        available = statistics_all[key].keys()
+
+        stats = []
+        keys = [
+            'High resolution limit',
+            'Low resolution limit',
+            'Completeness',
+            'Multiplicity',
+            'I/sigma',
+            'Rmerge(I+/-)',
+            'CC half',
+            'Anomalous completeness',
+            'Anomalous correlation',
+            'Anomalous multiplicity',
+            'Total observations',
+            'Total unique',
+            'Rmeas(I)',
+            'Rmeas(I+/-)',
+            'Rpim(I)',
+            'Rpim(I+/-)',
+            'Partial Bias'
+            ]
+
+        for k in keys:
+          if k in available:
+            stats.append(k)
+
+        xwavelength = xcrystal.get_xwavelength(dname)
+        sweeps = xwavelength.get_sweeps()
+
+        tmp['AutoProcScalingStatistics'] = []
+        tmp2 = tmp['AutoProcScalingStatistics']
+
+        for j, name in enumerate(
+            ['overall', 'innerShell', 'outerShell']):
+          statistics_cache = {'scalingStatisticsType':name}
+
+          for s in stats:
+
+            if s in self._name_map:
+              n = self._name_map[s]
+            else:
+              continue
+
+            if type(statistics_all[key][s]) == type([]):
+              statistics_cache[n] = statistics_all[key][s][j]
+            elif type(statistics_all[key][s]) == type(()):
+              statistics_cache[n] = statistics_all[key][s][j]
+
+          tmp2.append(statistics_cache)
+
+        tmp['AutoProcIntegrationContainer'] = []
+        tmp2 = tmp['AutoProcIntegrationContainer']
+        for sweep in sweeps:
+          image_name = sweep.get_all_image_names()[0]
+          cell = sweep.get_integrater_cell()
+          intgr_tmp = { }
+          for name, value in zip(['a', 'b', 'c', 'alpha', 'beta', 'gamma'], 
+                                 cell):
+            intgr_tmp['cell_%s' % name] = value
+
+          # FIXME this is naughty
+          indxr = sweep._get_indexer()
+          intgr = sweep._get_integrater()
+
+          start, end = intgr.get_integrater_wedge()
+
+          intgr_tmp['startImageNumber'] = start
+          intgr_tmp['endImageNumber'] = end
+          
+          intgr_tmp['refinedDetectorDistance'] = indxr.get_indexer_distance()
+
+          beam = indxr.get_indexer_beam_centre()
+
+          intgr_tmp['refinedXBeam'] = beam[0]
+          intgr_tmp['refinedYBeam'] = beam[1]
+
+          tmp2.append(
+            {'Image':{'fileName':os.path.split(image_name)[-1],
+                      'fileLocation':sanitize(os.path.split(image_name)[0])},
+             'AutoProcIntegration': intgr_tmp})
+                     
+      # file unpacking nonsense
+      tmp = result['AutoProcScalingContainer']
+      tmp['AutoProcProgramContainer'] = { }
+      tmp2 = { }
+
+      if not command_line:
+        from xia2.Handlers.CommandLine import CommandLine
+        command_line = CommandLine.get_command_line()
+
+      tmp2['processingCommandLine'] = sanitize(command_line)
+      tmp2['processingProgram'] = 'xia2'
+
+      tmp['AutoProcProgramContainer']['AutoProcProgram'] = tmp2
+      tmp['AutoProcProgramContainer']['AutoProcProgramAttachment'] = []
+      tmp2 = tmp['AutoProcProgramContainer']['AutoProcProgramAttachment']
+
+      for k in reflection_files:
+
+        tmp3 = { }
+
+        reflection_file = reflection_files[k]
+
+        if not type(reflection_file) == type(''):
+          continue
+
+        reflection_file = FileHandler.get_data_file(reflection_file)
+
+        tmp3['fileType'] = 'Result'
+        tmp3['fileName'] = os.path.split(reflection_file)[-1]
+        tmp3['filePath'] = sanitize(os.path.split(reflection_file)[0])
+
+        tmp2.append(tmp3)
+
+      tmp2.append({'fileType':'Log',
+                   'fileName':'xia2.txt',
+                   'filePath':sanitize(os.getcwd())})
+
+    return result
+  
+
 ISPyBXmlHandler = _ISPyBXmlHandler()
 
 if __name__ == '__main__':
