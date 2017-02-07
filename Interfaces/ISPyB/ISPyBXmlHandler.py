@@ -387,8 +387,8 @@ class _ISPyBXmlHandler(object):
              'AutoProcIntegration': intgr_tmp})
 
       # file unpacking nonsense
-      tmp = result['AutoProcScalingContainer']
-      tmp['AutoProcProgramContainer'] = { }
+      result['AutoProcProgramContainer'] = { }
+      tmp = result['AutoProcProgramContainer']
       tmp2 = { }
 
       if not command_line:
@@ -398,9 +398,9 @@ class _ISPyBXmlHandler(object):
       tmp2['processingCommandLine'] = sanitize(command_line)
       tmp2['processingProgram'] = 'xia2'
 
-      tmp['AutoProcProgramContainer']['AutoProcProgram'] = tmp2
-      tmp['AutoProcProgramContainer']['AutoProcProgramAttachment'] = []
-      tmp2 = tmp['AutoProcProgramContainer']['AutoProcProgramAttachment']
+      tmp['AutoProcProgram'] = tmp2
+      tmp['AutoProcProgramAttachment'] = []
+      tmp2 = tmp['AutoProcProgramAttachment']
 
       for k in reflection_files:
 
