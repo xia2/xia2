@@ -68,6 +68,12 @@ def run(args):
   merging_stats = merging_statistics.dataset_statistics(
     intensities, n_bins=n_bins, cc_one_half_significance_level=cc_half_significance_level)
 
+  intensities_anom = intensities.as_anomalous_array()
+  intensities_anom = intensities_anom.map_to_asu().customized_copy(info=intensities.info())
+  merging_stats_anom = merging_statistics.dataset_statistics(
+    intensities_anom, n_bins=n_bins, anomalous=True,
+    cc_one_half_significance_level=cc_half_significance_level)
+
   merging_acentric = intensities.select_acentric().merge_equivalents()
   merging_centric = intensities.select_centric().merge_equivalents()
 
@@ -152,7 +158,6 @@ def run(args):
     intensities = intensities.as_anomalous_array()
     batches = batches.as_anomalous_array()
 
-
   from xia2.Modules.PyChef2.PyChef import remove_batch_gaps
   new_batch_data = remove_batch_gaps(batches.data())
   new_batches = batches.customized_copy(data=new_batch_data)
@@ -203,6 +208,15 @@ def run(args):
   cc_anom_critical_value_bins = [
     bin_stats.cc_anom_critical_value for bin_stats in merging_stats.bins]
 
+  completeness_bins = [
+    bin_stats.completeness for bin_stats in merging_stats.bins]
+  anom_completeness_bins = [
+    bin_stats.anom_completeness for bin_stats in merging_stats_anom.bins]
+  multiplicity_bins = [
+    bin_stats.mean_redundancy for bin_stats in merging_stats.bins]
+  anom_multiplicity_bins = [
+    bin_stats.mean_redundancy for bin_stats in merging_stats_anom.bins]
+
   from xia2.Modules.PyChef2 import PyChef
   if params.chef_min_completeness:
     d_min = PyChef.resolution_limit(
@@ -246,6 +260,62 @@ def run(args):
     second_moment_d_star_sq, nticks=5)
 
   json_data = {
+
+    'completeness': {
+      'data': [
+        {
+          'x': d_star_sq_bins,
+          'y': completeness_bins,
+          'type': 'scatter',
+          'name': 'Completeness',
+        },
+        ({
+          'x': d_star_sq_bins,
+          'y': anom_completeness_bins,
+          'type': 'scatter',
+          'name': 'Anomalous completeness',
+        } if not intensities.space_group().is_centric() else {}),
+      ],
+      'layout':{
+        'title': 'Completeness vs resolution',
+        'xaxis': {
+          'title': u'Resolution (Å)',
+          'tickvals': tickvals,
+          'ticktext': ticktext,
+        },
+        'yaxis': {
+          'title': 'Completeness',
+        },
+      },
+    },
+
+    'multiplicity_vs_resolution': {
+      'data': [
+        {
+          'x': d_star_sq_bins,
+          'y': multiplicity_bins,
+          'type': 'scatter',
+          'name': 'Multiplicity',
+        },
+        ({
+          'x': d_star_sq_bins,
+          'y': anom_multiplicity_bins,
+          'type': 'scatter',
+          'name': 'Anomalous multiplicity',
+        } if not intensities.space_group().is_centric() else {}),
+      ],
+      'layout':{
+        'title': 'Multiplicity vs resolution',
+        'xaxis': {
+          'title': u'Resolution (Å)',
+          'tickvals': tickvals,
+          'ticktext': ticktext,
+        },
+        'yaxis': {
+          'title': 'Multiplicity',
+        },
+      },
+    },
 
     'multiplicities': {
       'data': [
@@ -517,7 +587,8 @@ def run(args):
 
   resolution_graphs = OrderedDict(
     (k, json.dumps(json_data[k])) for k in
-    ('cc_one_half', 'i_over_sig_i', 'second_moments', 'wilson_intensity_plot'))
+    ('cc_one_half', 'i_over_sig_i', 'second_moments', 'wilson_intensity_plot',
+     'completeness', 'multiplicity_vs_resolution'))
 
   batch_graphs = OrderedDict(
     (k, json.dumps(json_data[k])) for k in
