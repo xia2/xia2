@@ -283,7 +283,7 @@ class _ISPyBXmlHandler(object):
       result['AutoProc'] = { }
       tmp = result['AutoProc']
 
-      tmp['SpaceGroup'] = spacegroup
+      tmp['spaceGroup'] = spacegroup
       for name, value in zip(['a', 'b', 'c', 'alpha', 'beta', 'gamma'], cell):
         tmp['refinedCell_%s' % name] = value
 
