@@ -543,8 +543,7 @@ def run(args):
   id_to_batches = None
 
   if len(params.batch) > 0:
-    id_to_batches = {
-    }
+    id_to_batches = OrderedDict()
     for b in params.batch:
       assert b.id is not None
       assert b.range is not None
