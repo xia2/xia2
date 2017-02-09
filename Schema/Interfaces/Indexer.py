@@ -689,7 +689,9 @@ class Indexer(object):
 
     while self._indxr_helper.get()[0] != asserted_lattice:
       self._indxr_helper.eliminate()
-      self.set_indexer_done(False)
+      if (not PhilIndex.params.xia2.settings.integrate_p1 or
+          PhilIndex.params.xia2.settings.reintegrate_correct_lattice):
+        self.set_indexer_done(False)
 
     return self.LATTICE_POSSIBLE
 
