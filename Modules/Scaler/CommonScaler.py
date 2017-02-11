@@ -964,27 +964,27 @@ class CommonScaler(Scaler):
     resolution_limits = []
     reasoning = []
 
-    if params.completeness:
+    if params.completeness is not None:
       r_comp = m.get_resolution_completeness()
       resolution_limits.append(r_comp)
       reasoning.append('completeness > %s' %params.completeness)
 
-    if params.cc_half:
+    if params.cc_half is not None:
       r_cc_half = m.get_resolution_cc_half()
       resolution_limits.append(r_cc_half)
       reasoning.append('cc_half > %s' %params.cc_half)
 
-    if params.rmerge:
+    if params.rmerge is not None:
       r_rm = m.get_resolution_rmerge()
       resolution_limits.append(r_rm)
       reasoning.append('rmerge > %s' %params.rmerge)
 
-    if params.isigma:
+    if params.isigma is not None:
       r_uis = m.get_resolution_isigma()
       resolution_limits.append(r_uis)
       reasoning.append('unmerged <I/sigI> > %s' %params.isigma)
 
-    if params.misigma:
+    if params.misigma is not None:
       r_mis = m.get_resolution_misigma()
       resolution_limits.append(r_mis)
       reasoning.append('merged <I/sigI> > %s' %params.misigma)
