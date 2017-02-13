@@ -1,7 +1,6 @@
 from __future__ import absolute_import, division
-import libtbx.load_env
 
-def ispyb_json(json_out):
+def ispyb_object():
   from xia2.Interfaces.ISPyB.ISPyBXmlHandler import ISPyBXmlHandler
   import os
   assert os.path.exists('xia2.json')
@@ -16,9 +15,11 @@ def ispyb_json(json_out):
   assert len(crystals) == 1
   crystal = next(crystals.itervalues())
   ISPyBXmlHandler.add_xcrystal(crystal)
+  return ISPyBXmlHandler.json_object(command_line=command_line)
+
+def ispyb_json(json_out):
   import json
-  json.dump(ISPyBXmlHandler.json_object(command_line=command_line),
-            open(json_out, 'w'))
+  json.dump(ispyb_object(), open(json_out, 'w'), indent=2)
 
 if __name__ == '__main__':
   import sys
