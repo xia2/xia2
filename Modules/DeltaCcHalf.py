@@ -101,33 +101,35 @@ class delta_cc_half(object):
       labels = ["%i" %(j+1) for j in range(len(self.delta_cc))]
     return labels
 
-  def _sigma_delta_cc_i(self):
+  def _normalised_delta_cc_i(self):
     mav = flex.mean_and_variance(self.delta_cc)
-    return self.delta_cc/mav.unweighted_sample_standard_deviation()
+    return (self.delta_cc - mav.mean())/mav.unweighted_sample_standard_deviation()
 
   def get_table(self):
     from libtbx import table_utils
     rows = [["dataset", "batches", "delta_cc_i", "sigma"]]
     labels = self._labels()
-    sigmas = self._sigma_delta_cc_i()
+    normalised_score = self._normalised_delta_cc_i()
     perm = flex.sort_permutation(self.delta_cc)
     for i in perm:
       bmin = flex.min(self.batches[i].data())
       bmax = flex.max(self.batches[i].data())
       rows.append(
         [str(labels[i]), '%i to %i' %(bmin, bmax),
-         '% .3f' %self.delta_cc[i], '% .2f' %sigmas[i]])
+         '% .3f' %self.delta_cc[i], '% .2f' %normalised_score[i]])
     return table_utils.format(rows, has_header=True, prefix="|", postfix="|")
 
   def plot_histogram(self, filename):
     import math
     from matplotlib import pyplot
-    sigmas = self._sigma_delta_cc_i()
+    normalised_score = self._normalised_delta_cc_i()
     f = pyplot.figure()
-    nbins = int(math.ceil(flex.max(sigmas))-math.floor(flex.min(sigmas)))
-    bins = range(
-      int(math.floor(flex.min(sigmas))), int(math.ceil(flex.max(sigmas)))+1)
-    n, bins, patches = pyplot.hist(sigmas.as_numpy_array(), bins=bins, fill=False)
+    #bins = range(
+      #int(math.floor(flex.min(normalised_score))), int(math.ceil(flex.max(normalised_score)))+1)
+    from libtbx.utils import frange
+    bins = frange(
+      math.floor(flex.min(normalised_score)), math.ceil(flex.max(normalised_score))+1, step=0.1)
+    n, bins, patches = pyplot.hist(normalised_score.as_numpy_array(), bins=bins, fill=False)
     pyplot.xlabel(r'$\sigma$')
     pyplot.ylabel('Frequency')
     pyplot.savefig(filename)
