@@ -403,6 +403,18 @@ class DialsIntegrater(Integrater):
     FileHandler.record_more_data_file(
         '%s %s %s %s INTEGRATE' % (pname, xname, dname, sweep), mtz_filename)
 
+    from iotbx.reflection_file_reader import any_reflection_file
+    miller_arrays = any_reflection_file(self._intgr_integrated_filename).as_miller_arrays()
+    # look for profile-fitted intensities
+    intensities = [ma for ma in miller_arrays
+                   if ma.info().labels == ['IPR', 'SIGIPR']]
+    if len(intensities) == 0:
+      # look instead for summation-integrated intensities
+      intensities = [ma for ma in miller_arrays
+                     if ma.info().labels == ['I', 'SIGI']]
+      assert len(intensities)
+    self._intgr_n_ref = intensities[0].size()
+
     if not os.path.isfile(self._intgr_integrated_filename):
       raise RuntimeError("dials.export failed: %s does not exist."
                          % self._intgr_integrated_filename)
@@ -451,18 +463,6 @@ class DialsIntegrater(Integrater):
     FileHandler.record_more_data_file(
       '%s %s %s %s experiments' % (pname, xname, dname, sweep),
       self.get_integrated_experiments())
-
-    from iotbx.reflection_file_reader import any_reflection_file
-    miller_arrays = any_reflection_file(hklout).as_miller_arrays()
-    # look for profile-fitted intensities
-    intensities = [ma for ma in miller_arrays
-                   if ma.info().labels == ['IPR', 'SIGIPR']]
-    if len(intensities) == 0:
-      # look instead for summation-integrated intensities
-      intensities = [ma for ma in miller_arrays
-                     if ma.info().labels == ['I', 'SIGI']]
-      assert len(intensities)
-    self._intgr_n_ref = intensities[0].size()
 
     return hklout
 
