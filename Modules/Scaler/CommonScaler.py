@@ -575,20 +575,20 @@ class CommonScaler(Scaler):
     self._scale_finish_chunk_9_xtriage()
 
   def _scale_finish_chunk_1_compute_anomalous(self):
-     for key in self._scalr_scaled_refl_files:
-        f = self._scalr_scaled_refl_files[key]
-        m = mtz.object(f)
-        if m.space_group().is_centric():
-          Debug.write('Spacegroup is centric: %s' % f)
-          continue
-        Debug.write('Running anomalous signal analysis on %s' % f)
-        a_s = anomalous_signals(f)
-        self._scalr_statistics[
-            (self._scalr_pname, self._scalr_xname, key)
-            ]['dF/F'] = [a_s[0]]
-        self._scalr_statistics[
-            (self._scalr_pname, self._scalr_xname, key)
-            ]['dI/s(dI)'] = [a_s[1]]
+    for key in self._scalr_scaled_refl_files:
+      f = self._scalr_scaled_refl_files[key]
+      m = mtz.object(f)
+      if m.space_group().is_centric():
+        Debug.write('Spacegroup is centric: %s' % f)
+        continue
+      Debug.write('Running anomalous signal analysis on %s' % f)
+      a_s = anomalous_signals(f)
+      self._scalr_statistics[
+        (self._scalr_pname, self._scalr_xname, key)
+        ]['dF/F'] = [a_s[0]]
+      self._scalr_statistics[
+        (self._scalr_pname, self._scalr_xname, key)
+        ]['dI/s(dI)'] = [a_s[1]]
 
   def _scale_finish_chunk_2_report(self):
     from cctbx.array_family import flex
@@ -632,51 +632,51 @@ class CommonScaler(Scaler):
         Debug.write(str(e))
 
   def _scale_finish_chunk_3_truncate(self):
-      for wavelength in self._scalr_scaled_refl_files.keys():
+    for wavelength in self._scalr_scaled_refl_files.keys():
 
-        hklin = self._scalr_scaled_refl_files[wavelength]
+      hklin = self._scalr_scaled_refl_files[wavelength]
 
-        truncate = self._factory.Truncate()
-        truncate.set_hklin(hklin)
+      truncate = self._factory.Truncate()
+      truncate.set_hklin(hklin)
 
-        if self.get_scaler_anomalous():
-          truncate.set_anomalous(True)
-        else:
-          truncate.set_anomalous(False)
+      if self.get_scaler_anomalous():
+        truncate.set_anomalous(True)
+      else:
+        truncate.set_anomalous(False)
 
-        FileHandler.record_log_file('%s %s %s truncate' % \
+      FileHandler.record_log_file('%s %s %s truncate' % \
+                                  (self._scalr_pname,
+                                   self._scalr_xname,
+                                   wavelength),
+                                  truncate.get_log_file())
+
+      hklout = os.path.join(self.get_working_directory(),
+                            '%s_truncated.mtz' % wavelength)
+
+      truncate.set_hklout(hklout)
+      truncate.truncate()
+
+      xmlout = truncate.get_xmlout()
+      if xmlout is not None:
+        FileHandler.record_xml_file('%s %s %s truncate' % \
                                     (self._scalr_pname,
                                      self._scalr_xname,
                                      wavelength),
-                                    truncate.get_log_file())
+                                    xmlout)
 
-        hklout = os.path.join(self.get_working_directory(),
-                              '%s_truncated.mtz' % wavelength)
+      Debug.write('%d absent reflections in %s removed' % \
+                  (truncate.get_nabsent(), wavelength))
 
-        truncate.set_hklout(hklout)
-        truncate.truncate()
+      b_factor = truncate.get_b_factor()
 
-        xmlout = truncate.get_xmlout()
-        if xmlout is not None:
-          FileHandler.record_xml_file('%s %s %s truncate' % \
-                                      (self._scalr_pname,
-                                       self._scalr_xname,
-                                       wavelength),
-                                      xmlout)
+      # record the b factor somewhere (hopefully) useful...
 
-        Debug.write('%d absent reflections in %s removed' % \
-                    (truncate.get_nabsent(), wavelength))
+      self._scalr_statistics[
+          (self._scalr_pname, self._scalr_xname, wavelength)
+          ]['Wilson B factor'] = [b_factor]
 
-        b_factor = truncate.get_b_factor()
-
-        # record the b factor somewhere (hopefully) useful...
-
-        self._scalr_statistics[
-            (self._scalr_pname, self._scalr_xname, wavelength)
-            ]['Wilson B factor'] = [b_factor]
-
-        # and record the reflection file..
-        self._scalr_scaled_refl_files[wavelength] = hklout
+      # and record the reflection file..
+      self._scalr_scaled_refl_files[wavelength] = hklout
 
   def _scale_finish_chunk_4_mad_mangling(self):
     if len(self._scalr_scaled_refl_files.keys()) > 1:
@@ -687,8 +687,8 @@ class CommonScaler(Scaler):
         cad = self._factory.Cad()
         cad.add_hklin(self._scalr_scaled_refl_files[wavelength])
         cad.set_hklout(os.path.join(
-            self.get_working_directory(),
-            'cad-tmp-%s.mtz' % wavelength))
+          self.get_working_directory(),
+          'cad-tmp-%s.mtz' % wavelength))
         cad.set_new_suffix(wavelength)
         cad.update()
 
@@ -714,8 +714,8 @@ class CommonScaler(Scaler):
     else:
 
       self._scalr_scaled_reflection_files[
-          'mtz_merged'] = self._scalr_scaled_refl_files[
-          self._scalr_scaled_refl_files.keys()[0]]
+        'mtz_merged'] = self._scalr_scaled_refl_files[
+        self._scalr_scaled_refl_files.keys()[0]]
 
   def _scale_finish_chunk_5_finish_small_molecule(self):
       # keep 'mtz' and remove 'mtz_merged' from the dictionary for
@@ -918,30 +918,30 @@ class CommonScaler(Scaler):
     Chatter.write(self._scalr_twinning_conclusion)
 
   def _scale_finish_chunk_8_raddam(self):
-      crd = CCP4InterRadiationDamageDetector()
+    crd = CCP4InterRadiationDamageDetector()
 
-      crd.set_working_directory(self.get_working_directory())
+    crd.set_working_directory(self.get_working_directory())
 
-      crd.set_hklin(self._scalr_scaled_reflection_files['mtz'])
+    crd.set_hklin(self._scalr_scaled_reflection_files['mtz'])
 
-      if self.get_scaler_anomalous():
-        crd.set_anomalous(True)
+    if self.get_scaler_anomalous():
+      crd.set_anomalous(True)
 
-      hklout = os.path.join(self.get_working_directory(), 'temp.mtz')
-      FileHandler.record_temporary_file(hklout)
+    hklout = os.path.join(self.get_working_directory(), 'temp.mtz')
+    FileHandler.record_temporary_file(hklout)
 
-      crd.set_hklout(hklout)
+    crd.set_hklout(hklout)
 
-      status = crd.detect()
+    status = crd.detect()
 
-      if status:
-        Chatter.write('')
-        Chatter.banner('Local Scaling %s' % self._scalr_xname)
-        for s in status:
-          Chatter.write('%s %s' % s)
-        Chatter.banner('')
-      else:
-        Debug.write('Local scaling failed')
+    if status:
+      Chatter.write('')
+      Chatter.banner('Local Scaling %s' % self._scalr_xname)
+      for s in status:
+        Chatter.write('%s %s' % s)
+      Chatter.banner('')
+    else:
+      Debug.write('Local scaling failed')
 
   def _scale_finish_chunk_9_xtriage(self):
     if PhilIndex.params.xia2.settings.small_molecule:
