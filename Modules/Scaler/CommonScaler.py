@@ -572,6 +572,8 @@ class CommonScaler(Scaler):
     if len(self._scalr_scaled_refl_files.keys()) > 1:
       self._scale_finish_chunk_8_raddam()
 
+    self._scale_finish_chunk_9_xtriage()
+
   def _scale_finish_chunk_1_compute_anomalous(self):
      for key in self._scalr_scaled_refl_files:
         f = self._scalr_scaled_refl_files[key]
@@ -940,6 +942,24 @@ class CommonScaler(Scaler):
         Chatter.banner('')
       else:
         Debug.write('Local scaling failed')
+
+  def _scale_finish_chunk_9_xtriage(self):
+    if PhilIndex.params.xia2.settings.small_molecule:
+      return
+
+    from xia2.Wrappers.Phenix.Xtriage import Xtriage
+    from xia2.lib.bits import auto_logfiler
+
+    xtriage = Xtriage()
+    xtriage.set_working_directory(self.get_working_directory())
+    auto_logfiler(xtriage)
+    xtriage.set_mtz(self._scalr_scaled_reflection_files['mtz'])
+    xtriage.run()
+
+    FileHandler.record_log_file('%s %s xtriage' % \
+                                (self._scalr_pname,
+                                 self._scalr_xname),
+                                xtriage.get_log_file())
 
   def _estimate_resolution_limit(self, hklin, batch_range=None):
     params = PhilIndex.params.xia2.settings.resolution
