@@ -20,6 +20,14 @@ from xia2.Applications.xia2_main import check_environment, get_command_line, wri
 
 from xia2.Applications.xia2_helpers import process_one_sweep
 
+def get_ccp4_version():
+  CCP4 = os.environ.get('CCP4')
+  if CCP4 is not None:
+    version_file = os.path.join(CCP4, 'lib', 'ccp4', 'MAJOR_MINOR')
+    if os.path.exists(version_file):
+      with open(version_file, 'rb') as f:
+        version = f.read().strip()
+        return version
 
 def xia2_main(stop_after=None):
   '''Actually process something...'''
@@ -29,6 +37,10 @@ def xia2_main(stop_after=None):
   # print versions of related software
   from dials.util.version import dials_version
   Chatter.write(dials_version())
+
+  ccp4_version = get_ccp4_version()
+  if ccp4_version is not None:
+    Chatter.write('CCP4 %s' %ccp4_version)
 
   start_time = time.time()
 
