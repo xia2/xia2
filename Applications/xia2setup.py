@@ -578,7 +578,5 @@ def run():
     rummage(directories)
     print_sweeps(fout)
 
-  save_datablock(os.path.join(start, 'xia2-datablock.json'))
-
 if __name__ == '__main__':
   run()
