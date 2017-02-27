@@ -144,13 +144,13 @@ class _FileHandler(object):
       out.write('Copied data file %s to %s\n' % \
                 (f, filename))
 
-    for f in self._more_data_file_keys:
-      exten = self._more_data_files[f].split('.')[-1]
-      filename = os.path.join(data_directory,
-                              '%s.%s' % (f.replace(' ', '_'), exten))
-      shutil.copyfile(self._more_data_files[f], filename)
-      out.write('Copied extra data file %s to %s\n' % \
-                (self._more_data_files[f], filename))
+    for tag, ext in self._more_data_file_keys:
+      filename_out = os.path.join(
+        data_directory, '%s.%s' % (tag.replace(' ', '_'), ext))
+      filename_in = self._more_data_files[(tag, ext)]
+      shutil.copyfile(filename_in, filename_out)
+      out.write(
+        'Copied extra data file %s to %s\n' % (filename_in, filename_out))
 
     out.close()
     return
@@ -188,9 +188,11 @@ class _FileHandler(object):
 
   def record_more_data_file(self, tag, filename):
     '''Record an extra data file.'''
-    self._more_data_files[tag] = filename
+    ext = os.path.splitext(filename)[1][1:]
+    key = (tag, ext)
+    self._more_data_files[key] = filename
     if not tag in self._more_data_file_keys:
-      self._more_data_file_keys.append(tag)
+      self._more_data_file_keys.append(key)
     return
 
   def get_data_file(self, filename):
