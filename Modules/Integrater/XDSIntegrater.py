@@ -871,6 +871,8 @@ class XDSIntegrater(Integrater):
     sweep = self.get_integrater_sweep_name()
     FileHandler.record_more_data_file(
       '%s %s %s %s experiments' % (pname, xname, dname, sweep), experiments_json)
+    FileHandler.record_more_data_file(
+      '%s %s %s %s INTEGRATE' % (pname, xname, dname, sweep), integrate_mtz)
 
     self._intgr_experiments_filename = experiments_json
 
