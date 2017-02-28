@@ -50,7 +50,7 @@ def check_environment():
   for k in ccp4_keys:
     v = Environment.getenv(k)
     if not v:
-      raise RuntimeError, '%s not defined - is CCP4 set up?'
+      raise RuntimeError, '%s not defined - is CCP4 set up?' %k
     if not v == v.strip():
       raise RuntimeError, 'spaces around "%s"' % v
     Chatter.write('%s => %s' % (k, v))
