@@ -47,12 +47,13 @@ def xds_check_indexer_solution(xparm_file,
   an estimate of it) and try this if it is centred. Returns tuple
   (space_group_number, cell).'''
 
+  from scitbx import matrix
   from dxtbx.serialize.xds import to_crystal as xparm_to_crystal
   cm = xparm_to_crystal(xparm_file)
   sg = cm.get_space_group()
   spacegroup = sg.type().hall_symbol()
   space_group_number = sg.type().number()
-  A_inv = cm.get_A().inverse()
+  A_inv = matrix.sqr(cm.get_A()).inverse()
   cell = cm.get_unit_cell().parameters()
 
   import dxtbx

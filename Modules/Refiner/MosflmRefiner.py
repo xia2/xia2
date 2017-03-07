@@ -446,14 +446,14 @@ class MosflmRefiner(Refiner):
     # cell refinement process...
 
     from cctbx import sgtbx
-    from dxtbx.model import crystal
+    from dxtbx.model import Crystal
     from dxtbx.model.detector_helpers import set_mosflm_beam_centre
     experiment = idxr.get_indexer_experiment_list()[0]
     set_mosflm_beam_centre(
       experiment.detector, experiment.beam, beam_centre)
     space_group = sgtbx.space_group_info(number=spacegroup_number).group()
     a, b, c = experiment.crystal.get_real_space_vectors()
-    experiment.crystal = crystal.crystal_model(
+    experiment.crystal = Crystal(
       a, b, c, space_group=space_group)
 
     # FIXME surely these have been assigned further up?!
