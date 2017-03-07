@@ -287,7 +287,11 @@ def run():
     check_environment()
   except exceptions.Exception, e:
     traceback.print_exc(file = open('xia2.error', 'w'))
-    Chatter.write('Status: error "%s"' % str(e))
+    Chatter.write('Error setting up xia2 environment: %s' % str(e))
+    Chatter.write(
+      'Please send the contents of xia2.txt, xia2.error and xia2-debug.txt to:')
+    Chatter.write('xia2.support@gmail.com')
+    sys.exit(1)
 
   wd = os.getcwd()
 
