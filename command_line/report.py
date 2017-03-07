@@ -3,10 +3,38 @@
 from __future__ import absolute_import, division
 from cctbx.array_family import flex
 import os
+from cStringIO import StringIO
 
 from libtbx.containers import OrderedDict
 
 from xia2.Modules.Analysis import *
+
+from mmtbx.scaling import printed_output
+class xtriage_output(printed_output):
+
+  def __init__(self, out):
+    super(xtriage_output, self).__init__(out)
+    self.gui_output = True
+    self._out_orig = self.out
+    self.out = StringIO()
+    self._sub_header_to_out = {}
+
+  def show_header (self, text) :
+    self._out_orig.write(self.out.getvalue())
+    self.out = StringIO()
+    super(xtriage_output, self).show_header(text)
+
+  def show_sub_header (self, title) :
+    self._out_orig.write(self.out.getvalue())
+    self.out = StringIO()
+    self._current_sub_header = title
+    assert title not in self._sub_header_to_out
+    self._sub_header_to_out[title] = self.out
+
+  def flush(self):
+    self._out_orig.write(self.out.getvalue())
+    self.out.flush()
+    self._out_orig.flush()
 
 def run(args):
   from iotbx.reflection_file_reader import any_reflection_file
@@ -167,18 +195,36 @@ def run(args):
   intensities.setup_binner(n_bins=n_bins)
 
   merged_intensities = intensities.merge_equivalents().array()
-  if not intensities.space_group().is_centric():
-    from mmtbx.scaling import twin_analyses
-    normalised_intensities = twin_analyses.wilson_normalised_intensities(
-      miller_array=merged_intensities)
-    nz_test = twin_analyses.n_z_test(
-      normalised_acentric=normalised_intensities.acentric,
-      normalised_centric=normalised_intensities.centric)
 
-  from mmtbx.scaling import data_statistics
+  xtriage_issues = []
   if not intensities.space_group().is_centric():
-    wilson_scaling = data_statistics.wilson_scaling(
-      miller_array=merged_intensities, n_residues=200) # XXX default n_residues?
+    s = StringIO()
+    xout = xtriage_output(s)
+    from mmtbx.scaling.xtriage import xtriage_analyses
+    xanalysis = xtriage_analyses(
+      miller_obs=merged_intensities,
+      unmerged_obs=intensities, text_out=xout)
+    xout.flush()
+    sub_header_to_out = xout._sub_header_to_out
+    issues = xanalysis.summarize_issues()
+    issues.show()
+    nz_test = xanalysis.twin_results.nz_test
+    wilson_scaling = xanalysis.wilson_scaling
+    i = 0
+    only_warnings = False
+    for issue in issues._issues:
+        i += 1
+        level, text, sub_header = issue
+        if only_warnings and level == 0:
+          continue
+        summary = sub_header_to_out.get(sub_header, StringIO()).getvalue()
+        summary = summary.replace('<', '&lt;').replace('>', '&gt;')
+        xtriage_issues.append({
+          'level': level,
+          'text': text,
+          'summary': summary,
+          'header': sub_header,
+        })
 
   acentric = intensities.select_acentric()
   centric = intensities.select_centric()
@@ -617,6 +663,7 @@ def run(args):
                          filename=os.path.abspath(reader.file_name()),
                          space_group=intensities.space_group_info().symbol_and_number(),
                          unit_cell=str(intensities.unit_cell()),
+                         xtriage_warnings=xtriage_issues,
                          overall_stats_table=overall_stats_table,
                          merging_stats_table=merging_stats_table,
                          cc_half_significance_level=cc_half_significance_level,

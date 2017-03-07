@@ -1,3 +1,41 @@
+{% macro warnings(warnings) -%}
+    <div>
+        {% for warning in warnings %}
+            <!-- Trigger the modal with a button -->
+            {% if warning.level == 0 %}
+                <button type="button" class="btn btn-success btn-lg alert alert-success" data-toggle="modal" data-target="#issue{{ loop.index }}">
+            {% elif warning.level == 1 %}
+                <button type="button" class="btn btn-warning btn-lg alert alert-warning" data-toggle="modal" data-target="#issue{{ loop.index }}">
+            {% elif warning.level == 2 %}
+                <button type="button" class="btn btn-danger btn-lg alert alert-danger" data-toggle="modal" data-target="#issue{{ loop.index }}">
+            {% endif %}
+            {{ warning.text }}
+            </button>
+
+            <!-- Modal -->
+            <div id="issue{{ loop.index }}" class="modal fade" role="dialog">
+              <div class="modal-dialog modal-lg">
+
+                <!-- Modal content-->
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">{{ warning.header }}</h4>
+                  </div>
+                  <div class="modal-body">
+                    <p><pre>{{ warning.summary }}</pre></p>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+        {% endfor %}
+    </div>
+{%- endmacro %}
+
 {% extends "report_base.html" %}
 {% block content %}
 <div class="page-header">
@@ -13,6 +51,11 @@
         <b>Unit cell:</b> {{ space_group }}
         <br>
         <b>Space group:</b> {{ unit_cell }}
+        {% if xtriage_warnings %}
+            <br>
+            <b>Xtriage issues:</b>
+            {{ warnings(xtriage_warnings) }}
+        {% endif %}
     </p>
 
     <div class="panel-group">
