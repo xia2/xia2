@@ -3,13 +3,13 @@
         {% for warning in warnings %}
             <!-- Trigger the modal with a button -->
             {% if warning.level == 0 %}
-                <button type="button" class="btn btn-success btn-lg" data-toggle="modal" data-target="#issue{{ loop.index }}">
+                <button type="button" class="btn btn-success btn-block" style="text-align:left; padding-left:6px" data-toggle="modal" data-target="#issue{{ loop.index }}">
                 <span class="glyphicon glyphicon-ok-sign"></span>
             {% elif warning.level == 1 %}
-                <button type="button" class="btn btn-warning btn-lg" data-toggle="modal" data-target="#issue{{ loop.index }}">
+                <button type="button" class="btn btn-warning btn-block" style="text-align:left; padding-left:6px" data-toggle="modal" data-target="#issue{{ loop.index }}">
                 <span class="glyphicon glyphicon-exclamation-sign"></span>
             {% elif warning.level == 2 %}
-                <button type="button" class="btn btn-danger btn-lg" data-toggle="modal" data-target="#issue{{ loop.index }}">
+                <button type="button" class="btn btn-danger btn-block" style="text-align:left; padding-left:6px" data-toggle="modal" data-target="#issue{{ loop.index }}">
                 <span class="glyphicon glyphicon-remove-sign"></span>
             {% endif %}
             {{ warning.text }}
