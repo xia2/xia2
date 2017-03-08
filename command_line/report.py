@@ -102,16 +102,18 @@ def run(args):
     intensities_anom, n_bins=n_bins, anomalous=True,
     cc_one_half_significance_level=cc_half_significance_level)
 
-  merging_acentric = intensities.select_acentric().merge_equivalents()
-  merging_centric = intensities.select_centric().merge_equivalents()
+  merging = intensities.merge_equivalents()
+  multiplicities = merging.redundancies().complete_array(new_data_value=0)
+  mult_acentric = multiplicities.select_acentric().data()
+  mult_centric = multiplicities.select_centric().data()
 
   multiplicities_acentric = {}
   multiplicities_centric = {}
 
-  for x in sorted(set(merging_acentric.redundancies().data())):
-    multiplicities_acentric[x] = merging_acentric.redundancies().data().count(x)
-  for x in sorted(set(merging_centric.redundancies().data())):
-    multiplicities_centric[x] = merging_centric.redundancies().data().count(x)
+  for x in sorted(set(mult_acentric)):
+    multiplicities_acentric[x] = mult_acentric.count(x)
+  for x in sorted(set(mult_centric)):
+    multiplicities_centric[x] = mult_centric.count(x)
 
   headers = [u'Resolution (Å)', 'N(obs)', 'N(unique)', 'Multiplicity', 'Completeness',
              'Mean(I)', 'Mean(I/sigma)', 'Rmerge', 'Rmeas', 'Rpim', 'CC1/2']
