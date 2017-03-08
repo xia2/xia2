@@ -196,7 +196,9 @@ def run(args):
 
   merged_intensities = intensities.merge_equivalents().array()
 
-  xtriage_issues = []
+  xtriage_success = []
+  xtriage_warnings = []
+  xtriage_danger = []
   if not intensities.space_group().is_centric():
     s = StringIO()
     xout = xtriage_output(s)
@@ -211,20 +213,20 @@ def run(args):
     nz_test = xanalysis.twin_results.nz_test
     wilson_scaling = xanalysis.wilson_scaling
     i = 0
-    only_warnings = False
     for issue in issues._issues:
         i += 1
         level, text, sub_header = issue
-        if only_warnings and level == 0:
-          continue
         summary = sub_header_to_out.get(sub_header, StringIO()).getvalue()
         summary = summary.replace('<', '&lt;').replace('>', '&gt;')
-        xtriage_issues.append({
+        d = {
           'level': level,
           'text': text,
           'summary': summary,
           'header': sub_header,
-        })
+        }
+        if level == 0: xtriage_success.append(d)
+        elif level == 1: xtriage_warnings.append(d)
+        elif level == 2: xtriage_danger.append(d)
 
   acentric = intensities.select_acentric()
   centric = intensities.select_centric()
@@ -663,7 +665,9 @@ def run(args):
                          filename=os.path.abspath(reader.file_name()),
                          space_group=intensities.space_group_info().symbol_and_number(),
                          unit_cell=str(intensities.unit_cell()),
-                         xtriage_warnings=xtriage_issues,
+                         xtriage_success=xtriage_success,
+                         xtriage_warnings=xtriage_warnings,
+                         xtriage_danger=xtriage_danger,
                          overall_stats_table=overall_stats_table,
                          merging_stats_table=merging_stats_table,
                          cc_half_significance_level=cc_half_significance_level,
