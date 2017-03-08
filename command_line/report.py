@@ -19,6 +19,8 @@ class xtriage_output(printed_output):
     self.out = StringIO()
     self._sub_header_to_out = {}
 
+  def show_big_header (self, text) : pass
+
   def show_header (self, text) :
     self._out_orig.write(self.out.getvalue())
     self.out = StringIO()
@@ -84,8 +86,6 @@ def run(args):
   mult_json_files = {}
   for axis in ('h', 'k', 'l'):
     pm = PlotMultiplicity()
-    #auto_logfiler(pm)
-    #pm.set_working_directory(working_directory)
     pm.set_mtz_filename(unmerged_mtz)
     pm.set_slice_axis(axis)
     pm.set_show_missing(True)
@@ -201,11 +201,16 @@ def run(args):
   xtriage_danger = []
   if not intensities.space_group().is_centric():
     s = StringIO()
-    xout = xtriage_output(s)
+    pout = printed_output(out=s)
     from mmtbx.scaling.xtriage import xtriage_analyses
     xanalysis = xtriage_analyses(
       miller_obs=merged_intensities,
-      unmerged_obs=intensities, text_out=xout)
+      unmerged_obs=intensities, text_out=pout)
+    with open('xtriage.log', 'wb') as f:
+      print >> f, s.getvalue()
+    xs = StringIO()
+    xout = xtriage_output(xs)
+    xanalysis.show(out=xout)
     xout.flush()
     sub_header_to_out = xout._sub_header_to_out
     issues = xanalysis.summarize_issues()
