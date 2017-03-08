@@ -141,6 +141,8 @@ def to_shelx(hklin, prefix, compound='', options=None):
     if options.cell.endswith('.json'):
       with open(options.cell, 'r') as fh:
         cell_data = json.load(fh)
+      if 'solution_constrained' in cell_data:
+        # json from xia2.get_unit_cell_errors (obsolete)
         solution = cell_data.get('solution_constrained', cell_data['solution_unconstrained'])
         unit_cell_dims = tuple([
           solution[dim]['mean'] for dim in ['a', 'b', 'c', 'alpha', 'beta', 'gamma']
@@ -148,6 +150,15 @@ def to_shelx(hklin, prefix, compound='', options=None):
         unit_cell_esds = tuple([
             solution[dim]['population_standard_deviation'] for dim in ['a', 'b', 'c', 'alpha', 'beta', 'gamma']
           ])
+      else:
+        # json from dials.two_theta_refine
+        cell_data = None
+        from dxtbx.model.experiment.experiment_list import ExperimentListFactory
+        experiments = ExperimentListFactory.from_json_file(options.cell)
+        crystal = experiments.crystals()[0]
+        unit_cell_dims = crystal.get_unit_cell().parameters()
+        unit_cell_esds = crystal.get_cell_parameter_sd()
+
     else: # treat as .cif
       import iotbx.cif
       cif = iotbx.cif.reader(file_path=options.cell).model()
