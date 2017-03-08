@@ -1098,18 +1098,13 @@ class CommonScaler(Scaler):
 
     result = iotbx.merging_statistics.dataset_statistics(
       i_obs=i_obs,
-      #crystal_symmetry=symm,
       d_min=d_min,
       d_max=d_max,
       n_bins=params.n_bins,
       anomalous=anomalous,
-      #debug=params.debug,
-      #file_name=params.file_name,
-      #sigma_filtering=params.sigma_filtering,
       use_internal_variance=params.use_internal_variance,
       eliminate_sys_absent=params.eliminate_sys_absent,
-      #extend_d_max_min=params.extend_d_max_min,
-      #log=out
+      assert_is_not_unique_set_under_symmetry=False,
     )
 
     if anomalous:

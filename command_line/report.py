@@ -94,13 +94,16 @@ def run(args):
 
   from iotbx import merging_statistics
   merging_stats = merging_statistics.dataset_statistics(
-    intensities, n_bins=n_bins, cc_one_half_significance_level=cc_half_significance_level)
+    intensities, n_bins=n_bins,
+    cc_one_half_significance_level=cc_half_significance_level,
+    assert_is_not_unique_set_under_symmetry=False)
 
   intensities_anom = intensities.as_anomalous_array()
   intensities_anom = intensities_anom.map_to_asu().customized_copy(info=intensities.info())
   merging_stats_anom = merging_statistics.dataset_statistics(
     intensities_anom, n_bins=n_bins, anomalous=True,
-    cc_one_half_significance_level=cc_half_significance_level)
+    cc_one_half_significance_level=cc_half_significance_level,
+    assert_is_not_unique_set_under_symmetry=False)
 
   merging = intensities.merge_equivalents()
   multiplicities = merging.redundancies().complete_array(new_data_value=0)

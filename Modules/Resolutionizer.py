@@ -303,6 +303,7 @@ class resolutionizer(object):
       anomalous=params.anomalous,
       use_internal_variance=False,
       eliminate_sys_absent=False,
+      assert_is_not_unique_set_under_symmetry=False,
     )
 
     return
