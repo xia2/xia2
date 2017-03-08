@@ -151,7 +151,7 @@ def to_shelx(hklin, prefix, compound='', options=None):
     else: # treat as .cif
       import iotbx.cif
       cif = iotbx.cif.reader(file_path=options.cell).model()
-      unit_cell = [cif.get('xia2', {}).get(key) for key in
+      unit_cell = [cif.get('xia2', cif.get('two_theta_refine', {})).get(key) for key in
         ('_cell_length_a', '_cell_length_b', '_cell_length_c',
          '_cell_angle_alpha', '_cell_angle_beta', '_cell_angle_gamma')]
 
