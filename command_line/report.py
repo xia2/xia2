@@ -208,9 +208,14 @@ def run(args):
     s = StringIO()
     pout = printed_output(out=s)
     from mmtbx.scaling.xtriage import xtriage_analyses
+    from mmtbx.scaling.xtriage import master_params as xtriage_master_params
+    xtriage_params = xtriage_master_params.fetch(sources=[]).extract()
+    xtriage_params.scaling.input.xray_data.skip_sanity_checks = True
     xanalysis = xtriage_analyses(
       miller_obs=merged_intensities,
-      unmerged_obs=intensities, text_out=pout)
+      unmerged_obs=intensities, text_out=pout,
+      params=xtriage_params,
+      )
     with open('xtriage.log', 'wb') as f:
       print >> f, s.getvalue()
     xs = StringIO()
