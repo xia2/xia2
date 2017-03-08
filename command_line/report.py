@@ -216,6 +216,8 @@ def run(args):
     issues = xanalysis.summarize_issues()
     issues.show()
     nz_test = xanalysis.twin_results.nz_test
+    l_test = xanalysis.twin_results.l_test
+
     wilson_scaling = xanalysis.wilson_scaling
     i = 0
     for issue in issues._issues:
@@ -590,10 +592,62 @@ def run(args):
       ],
       'layout': {
         'title': 'Cumulative intensity distribution',
-        'xaxis': {'title': 'z'},
+        'xaxis': {
+          'title': 'z',
+          'range': (0, 1),
+        },
         'yaxis': {
           'title': 'P(Z <= Z)',
-          'rangemode': 'tozero'
+          'range': (0, 1),
+        },
+      }
+    } if not intensities.space_group().is_centric() else {},
+
+    'l_test': {
+      'data': [
+        {
+          'x': list(l_test.l_values),
+          'y': list(l_test.l_cumul_untwinned),
+          'type': 'scatter',
+          'name': 'Untwinned',
+          'mode': 'lines',
+          'line': {
+            'color': 'rgb(31, 119, 180)',
+            'dash': 'dashdot',
+          },
+        },
+        {
+          'x': list(l_test.l_values),
+          'y': list(l_test.l_cumul_perfect_twin),
+          'type': 'scatter',
+          'name': 'Perfect twin',
+          'mode': 'lines',
+          'line': {
+            'color': 'rgb(31, 119, 180)',
+            'dash': 'dot',
+          },
+          'opacity': 0.8,
+        },
+        {
+          'x': list(l_test.l_values),
+          'y': list(l_test.l_cumul),
+          'type': 'scatter',
+          'name': 'Observed',
+          'mode': 'lines',
+          'line': {
+            'color': 'rgb(255, 127, 14)',
+          },
+        },
+      ],
+      'layout': {
+        'title': 'L test (Padilla and Yeates)',
+        'xaxis': {
+          'title': '|l|',
+          'range': (0, 1),
+        },
+        'yaxis': {
+          'title': 'P(L >= l)',
+          'range': (0, 1),
         },
       }
     } if not intensities.space_group().is_centric() else {},
@@ -650,7 +704,7 @@ def run(args):
 
   misc_graphs = OrderedDict(
     (k, json.dumps(json_data[k])) for k in
-    ('multiplicities', 'cumulative_intensity_distribution'))
+    ('cumulative_intensity_distribution', 'l_test', 'multiplicities'))
 
   misc_graphs.update(OrderedDict(
     ('multiplicity_%s' %axis, open(mult_json_files[axis], 'rb').read())
