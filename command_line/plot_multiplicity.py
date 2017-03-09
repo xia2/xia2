@@ -142,8 +142,8 @@ class MultiplicityViewJson(render_2d):
       x, y = self._open_circle_points.parts()
       z = self._open_circle_colors
       data.append({
-        'x': list(x),
-        'y': list(y),
+        'x': list(x.round(1)),
+        'y': list(y.round(1)),
         #'z': list(z),
         'type': 'scatter',
         'mode': 'markers',
@@ -151,10 +151,10 @@ class MultiplicityViewJson(render_2d):
         'showlegend': False,
         'marker': {
           #'color': list(z),
-          'color': 'white',
+          'color': ('white' if self.settings.black_background else 'black'),
           'line': {
-            'color': 'black',
-            'width': 1,
+            #'color': 'black',
+            'width': 0,
           },
           'symbol': 'circle',
           'size': 5,
@@ -190,8 +190,8 @@ class MultiplicityViewJson(render_2d):
         colorscale = None
 
       data.append({
-        'x': list(x),
-        'y': list(y),
+        'x': list(x.round(1)),
+        'y': list(y.round(1)),
         #'z': list(z),
         'type': 'scatter',
         'mode': 'markers',
@@ -208,8 +208,8 @@ class MultiplicityViewJson(render_2d):
             'titleside': 'right',
           },
           'line': {
-            'color': 'white',
-            'width': 1,
+            #'color': 'white',
+            'width': 0,
           },
           'symbol': 'circle',
           'size': 5,
@@ -246,6 +246,7 @@ class MultiplicityViewJson(render_2d):
     d = {
       'data': data,
       'layout': {
+        'plot_bgcolor': 'rgb(%i,%i,%i)' %tuple(rgb * 264 for rgb in self._background),
         'title': 'Multiplicity plot (%s=%s)' %(
           self.settings.slice_axis, self.settings.slice_index),
         'shapes': shapes,
