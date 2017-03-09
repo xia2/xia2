@@ -110,7 +110,11 @@ class MultiplicityViewJson(render_2d):
     self._lines = []
     json_d = self.render(None)
     import json
-    json_str = json.dumps(json_d, indent=2)
+    if self.settings.json.compact:
+      indent = None
+    else:
+      indent = 2
+    json_str = json.dumps(json_d, indent=indent)
     with open(self.settings.json.filename, 'wb') as f:
       print >> f, json_str
 
@@ -284,6 +288,8 @@ plot {
 json {
   filename = None
     .type = path
+  compact = True
+    .type = bool
 }
 size_inches = 20,20
   .type = floats(size=2, value_min=0)
