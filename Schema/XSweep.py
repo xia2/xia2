@@ -410,7 +410,7 @@ class XSweep(object):
           v.set_integrater_sweep(return_obj, reset=False)
       if isinstance(v, dict):
         #if v.get('__id__') == 'ExperimentList':
-          #from dxtbx.model.experiment.experiment_list import ExperimentListFactory
+          #from dxtbx.model.experiment_list import ExperimentListFactory
           #v = ExperimentListFactory.from_dict(v)
         if v.get('__id__') == 'imageset':
           from dxtbx.serialize.imageset import imageset_from_dict

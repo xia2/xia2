@@ -87,7 +87,7 @@ class Refiner(object):
         v = v_new
       if isinstance(v, dict):
         if v.get('__id__') == 'ExperimentList':
-          from dxtbx.model.experiment.experiment_list import ExperimentListFactory
+          from dxtbx.model.experiment_list import ExperimentListFactory
           v = ExperimentListFactory.from_dict(v, check_format=False)
       setattr(return_obj, k, v)
     return return_obj

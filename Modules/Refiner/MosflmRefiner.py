@@ -19,7 +19,7 @@ from xia2.Wrappers.Mosflm.MosflmRefineCell import MosflmRefineCell
 from xia2.lib.SymmetryLib import lattice_to_spacegroup
 from xia2.Experts.MatrixExpert import transmogrify_matrix
 from xia2.Schema.Exceptions.NegativeMosaicError import NegativeMosaicError
-from dxtbx.model.experiment.experiment_list import ExperimentList
+from dxtbx.model.experiment_list import ExperimentList
 
 class MosflmRefiner(Refiner):
 

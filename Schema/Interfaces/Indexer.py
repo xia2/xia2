@@ -251,7 +251,7 @@ class Indexer(object):
         v = [imageset_from_dict(v_, check_format=False) for v_ in v]
       if isinstance(v, dict):
         if v.get('__id__') == 'ExperimentList':
-          from dxtbx.model.experiment.experiment_list import ExperimentListFactory
+          from dxtbx.model.experiment_list import ExperimentListFactory
           v = ExperimentListFactory.from_dict(v, check_format=False)
       setattr(return_obj, k, v)
     return return_obj

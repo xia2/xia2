@@ -10,7 +10,7 @@ def reconstruct_peabox(params):
   from xia2.Schema.XProject import XProject
   xinfo = XProject.from_json(filename='xia2.json')
 
-  from dxtbx.model.experiment.experiment_list import ExperimentListFactory
+  from dxtbx.model.experiment_list import ExperimentListFactory
   import cPickle as pickle
   import dials # because WARNING:root:No profile class gaussian_rs registered
   from dials.array_family import flex

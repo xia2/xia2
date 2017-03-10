@@ -172,7 +172,7 @@ class Integrater(FrameProcessor):
         v = cls.from_dict(v)
       if isinstance(v, dict):
         if v.get('__id__') == 'ExperimentList':
-          from dxtbx.model.experiment.experiment_list import ExperimentListFactory
+          from dxtbx.model.experiment_list import ExperimentListFactory
           v = ExperimentListFactory.from_dict(v)
         elif v.get('__id__') == 'imageset':
           from dxtbx.serialize.imageset import imageset_from_dict

@@ -353,7 +353,7 @@ class MosflmIndexer(IndexerSingleSweep):
       space_group=space_group)
 
     # construct an experiment_list
-    from dxtbx.model.experiment.experiment_list import Experiment, ExperimentList
+    from dxtbx.model import Experiment, ExperimentList
     experiment = Experiment(beam=beam,
                             detector=detector,
                             goniometer=self.get_goniometer(),

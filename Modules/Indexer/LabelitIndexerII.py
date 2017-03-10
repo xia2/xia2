@@ -370,7 +370,7 @@ class LabelitIndexerII(LabelitIndexer):
         tuple(self._solution['cell'])),
       space_group=space_group)
 
-    from dxtbx.model.experiment.experiment_list import Experiment, ExperimentList
+    from dxtbx.model import Experiment, ExperimentList
     experiment = Experiment(beam=beam,
                             detector=detector,
                             goniometer=self.get_goniometer(),

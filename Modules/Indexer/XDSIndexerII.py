@@ -285,7 +285,7 @@ class XDSIndexerII(XDSIndexer):
     models = dxtbx.load(xparm_file)
     crystal_model = to_crystal(xparm_file)
 
-    from dxtbx.model.experiment.experiment_list import Experiment, ExperimentList
+    from dxtbx.model import Experiment, ExperimentList
     experiment = Experiment(beam=models.get_beam(),
                             detector=models.get_detector(),
                             goniometer=models.get_goniometer(),

@@ -190,7 +190,7 @@ class XDSRefiner(Refiner):
 
   def _refine(self):
     import copy
-    from dxtbx.model.experiment.experiment_list import ExperimentList
+    from dxtbx.model import ExperimentList
     self._refinr_refined_experiment_list = ExperimentList()
     for epoch, idxr in self._refinr_indexers.iteritems():
       self._refinr_payload[epoch] = copy.deepcopy(idxr._indxr_payload)
