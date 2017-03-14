@@ -245,8 +245,8 @@ def run(args):
         elif level == 1: xtriage_warnings.append(d)
         elif level == 2: xtriage_danger.append(d)
 
-  acentric = intensities.select_acentric()
-  centric = intensities.select_centric()
+  acentric = merged_intensities.select_acentric()
+  centric = merged_intensities.select_centric()
   if acentric.size():
     acentric.setup_binner(n_bins=n_bins)
     second_moments_acentric = acentric.second_moment_of_intensities(use_binning=True)
