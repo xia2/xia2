@@ -191,7 +191,11 @@ class _ISPyBXmlHandler(object):
 
         for sweep in sweeps:
           fout.write('<AutoProcIntegrationContainer>\n')
-          image_name = sweep.get_all_image_names()[0]
+          if '#' in sweep.get_template():
+            image_name = sweep.get_image_name(0)
+          else:
+            image_name = os.path.join(sweep.get_directory(),
+                                      sweep.get_template())
           fout.write('<Image><fileName>%s</fileName>' % \
                      os.path.split(image_name)[-1])
           fout.write('<fileLocation>%s</fileLocation></Image>' %
@@ -358,7 +362,11 @@ class _ISPyBXmlHandler(object):
         tmp['AutoProcIntegrationContainer'] = []
         tmp2 = tmp['AutoProcIntegrationContainer']
         for sweep in sweeps:
-          image_name = sweep.get_all_image_names()[0]
+          if '#' in sweep.get_template():
+            image_name = sweep.get_image_name(0)
+          else:
+            image_name = os.path.join(sweep.get_directory(),
+                                      sweep.get_template())
           cell = sweep.get_integrater_cell()
           intgr_tmp = { }
           for name, value in zip(['a', 'b', 'c', 'alpha', 'beta', 'gamma'],
