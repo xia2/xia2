@@ -572,6 +572,21 @@ class CommonScaler(Scaler):
     if len(self._scalr_scaled_refl_files.keys()) > 1:
       self._scale_finish_chunk_8_raddam()
 
+    # finally add xia2 version to mtz history
+    from iotbx.reflection_file_reader import any_reflection_file
+    from xia2.XIA2Version import Version
+    import time
+    mtz_files = [self._scalr_scaled_reflection_files['mtz']]
+    mtz_files.extend(
+      self._scalr_scaled_reflection_files['mtz_unmerged'].values())
+    for mtz_file in mtz_files:
+      reader = any_reflection_file(mtz_file)
+      mtz_object = reader.file_content()
+      date_str = time.strftime('%d/%m/%Y at %H:%M:%S', time.gmtime())
+      mtz_object.add_history(
+        'From %s, run on %s' %(Version, date_str))
+      mtz_object.write(mtz_file)
+
   def _scale_finish_chunk_1_compute_anomalous(self):
     for key in self._scalr_scaled_refl_files:
       f = self._scalr_scaled_refl_files[key]
