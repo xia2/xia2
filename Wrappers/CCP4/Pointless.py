@@ -327,6 +327,10 @@ def Pointless(DriverType = None):
 
       # FIXME need to check the status and so on here
 
+      if self._xdsin:
+        from xia2.Wrappers.XDS import XDS
+        XDS.add_xds_version_to_mtz_history(self.get_hklout())
+
       return
 
     def decide_pointgroup(self):
@@ -709,6 +713,10 @@ def Pointless(DriverType = None):
 
       n = len(self._cell_info['datasets'])
       self._cell = (a / n, b / n, c / n, alpha / n, beta / n, gamma / n)
+
+      if self._xdsin:
+        from xia2.Wrappers.XDS import XDS
+        XDS.add_xds_version_to_mtz_history(self.get_hklout())
 
       return 'ok'
 

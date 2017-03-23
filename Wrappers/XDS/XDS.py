@@ -47,6 +47,22 @@ class XDSIndexException(XDSException):
 
 from xia2.Handlers.Streams import Debug
 
+
+_xds_version_cache = None
+
+def get_xds_version():
+  global _xds_version_cache
+  if _xds_version_cache is None:
+    import subprocess
+    xds_version_str = subprocess.check_output('xds')
+    assert 'VERSION' in xds_version_str
+    first_line = xds_version_str.split('\n')[1].strip()
+
+    _xds_version_cache = first_line.split('(')[1].split(')')[0]
+    assert 'VERSION' in _xds_version_cache, _xds_version_cache
+
+  return _xds_version_cache
+
 _running_xds_version_stamp = None
 
 def _running_xds_version():
@@ -80,6 +96,20 @@ def _xds_version(xds_output_list):
       return line.split('(VERSION')[1].split(')')[0].strip()
 
   raise RuntimeError, 'XDS version not found'
+
+
+def add_xds_version_to_mtz_history(mtz_file):
+  import time
+  from iotbx.reflection_file_reader import any_reflection_file
+  from xia2.Wrappers.XDS import XDS
+  reader = any_reflection_file(mtz_file)
+  assert reader.file_type() == 'ccp4_mtz'
+  mtz_object = reader.file_content()
+  date_str = time.strftime('%d/%m/%Y at %H:%M:%S', time.gmtime())
+  mtz_object.add_history(
+    'From XDS %s, run on %s' %(XDS.get_xds_version(), date_str))
+  mtz_object.write(mtz_file)
+
 
 def xds_check_version_supported(xds_output_list):
   '''No longer check that the XDS version is supported.'''
