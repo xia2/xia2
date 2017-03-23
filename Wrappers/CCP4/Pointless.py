@@ -231,28 +231,7 @@ def Pointless(DriverType = None):
 
     def set_xdsin(self, xdsin):
 
-      # copy this file for debugging purposes - may take up a lot
-      # of disk space so remove before release!
-
-      if True:
-        self._xdsin = xdsin
-        return
-
-      # now use this step to remove the misfit reflections
-      # from the XDS_ASCII file.
-
-      copyto = os.path.join(self.get_working_directory(), '%s_%s' % \
-                            (self.get_xpid(), os.path.split(xdsin)[-1]))
-
-      # shutil.copyfile(xdsin, copyto)
-
-      ignored = remove_misfits(xdsin, copyto)
-
-      Debug.write('Copied XDSIN to %s' % copyto)
-      Debug.write('Removed %d misfits' % ignored)
-
-      self._xdsin = copyto
-
+      self._xdsin = xdsin
       return
 
     def get_xdsin(self):
