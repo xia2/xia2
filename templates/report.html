@@ -125,6 +125,24 @@
     </p>
 
     <div class="panel-group">
+
+        <div class="panel panel-default">
+            <div class="panel-heading" data-toggle="collapse" href="#collapse_history">
+                <h4 class="panel-title">
+                    <a>MTZ history</a>
+                </h4>
+            </div>
+            <div id="collapse_history" class="panel-collapse collapse">
+                <div class="panel-body">
+                    <ul class="list-group">
+                    {% for item in mtz_history %}
+                        <li class="list-group-item">{{ item }}</li>
+                    {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
         <div class="panel panel-default">
             <div class="panel-heading" data-toggle="collapse" href="#collapse_expt">
                 <h4 class="panel-title">

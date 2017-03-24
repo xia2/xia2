@@ -734,6 +734,7 @@ def run(args):
                          filename=os.path.abspath(reader.file_name()),
                          space_group=intensities.space_group_info().symbol_and_number(),
                          unit_cell=str(intensities.unit_cell()),
+                         mtz_history=[h.strip() for h in mtz_object.history()],
                          xtriage_success=xtriage_success,
                          xtriage_warnings=xtriage_warnings,
                          xtriage_danger=xtriage_danger,
