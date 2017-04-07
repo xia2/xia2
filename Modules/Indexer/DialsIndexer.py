@@ -93,6 +93,7 @@ class DialsIndexer(Indexer):
     spotfinder = _Spotfinder()
     spotfinder.set_working_directory(self.get_working_directory())
     auto_logfiler(spotfinder)
+    spotfinder.set_hot_mask_prefix('%d_hot_mask' %spotfinder.get_xpid())
     return spotfinder
 
   def DetectBlanks(self):
