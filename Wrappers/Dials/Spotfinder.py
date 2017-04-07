@@ -39,6 +39,7 @@ def Spotfinder(DriverType = None):
       self._filter_ice_rings = False
       self._phil_file = None
       self._write_hot_mask = False
+      self._hot_mask_prefix = None
       self._gain = None
 
     def set_input_sweep_filename(self, sweep_filename):
@@ -49,6 +50,9 @@ def Spotfinder(DriverType = None):
 
     def set_write_hot_mask(self, write_hot_mask=True):
       self._write_hot_mask = write_hot_mask
+
+    def set_hot_mask_prefix(self, hot_mask_prefix):
+      self._hot_mask_prefix = hot_mask_prefix
 
     def get_output_sweep_filename(self):
       return self._output_sweep_filename
@@ -125,6 +129,8 @@ def Spotfinder(DriverType = None):
         self.add_command_line("%s" % self._phil_file)
       if self._write_hot_mask:
         self.add_command_line("write_hot_mask=true")
+      if self._hot_mask_prefix:
+        self.add_command_line("hot_mask_prefix=%s" %self._hot_mask_prefix)
       if self._gain:
         self.add_command_line("gain=%f" % self._gain)
       self.start()
