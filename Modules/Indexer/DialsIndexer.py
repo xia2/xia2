@@ -16,6 +16,7 @@ import libtbx
 # wrappers for programs that this needs: DIALS
 
 from xia2.Wrappers.Dials.Import import Import as _Import
+from xia2.Wrappers.Dials.GenerateMask import GenerateMask as _GenerateMask
 from xia2.Wrappers.Dials.EstimateGain import EstimateGain as _EstimateGain
 from xia2.Wrappers.Dials.Spotfinder import Spotfinder as _Spotfinder
 from xia2.Wrappers.Dials.DetectBlanks import DetectBlanks as _DetectBlanks
@@ -75,6 +76,12 @@ class DialsIndexer(Indexer):
       os.path.join(self.get_working_directory(),
                    '%s_datablock_import.json' %importer.get_xpid()))
     return importer
+
+  def GenerateMask(self):
+    genmask = _GenerateMask()
+    genmask.set_working_directory(self.get_working_directory())
+    auto_logfiler(genmask)
+    return genmask
 
   def EstimateGain(self):
     estimater = _EstimateGain()
@@ -246,6 +253,15 @@ class DialsIndexer(Indexer):
       sweep_filename = os.path.join(
         self.get_working_directory(), '%s_datablock.json' %xsweep.get_name())
       dump.datablock(DataBlock([imageset]), sweep_filename)
+
+      genmask = self.GenerateMask()
+      genmask.set_input_datablock(sweep_filename)
+      genmask.set_output_datablock(os.path.join(
+        self.get_working_directory(), '%s_%s_datablock.json' %(
+          genmask.get_xpid(), xsweep.get_name())))
+      genmask.set_params(PhilIndex.params.dials.masking)
+      sweep_filename, mask_pickle = genmask.run()
+      Debug.write('Generated mask for %s: %s' %(xsweep.get_name(), mask_pickle))
 
       gain = PhilIndex.params.xia2.settings.input.gain
       if gain is libtbx.Auto:
