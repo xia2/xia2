@@ -120,7 +120,7 @@ def exercise_xds_integrater(nproc=None):
   reader = any_reflection_file(integrater2_intensities)
   assert reader.file_type() == "ccp4_mtz"
   mtz_object = reader.file_content()
-  assert approx_equal(mtz_object.n_reflections(), 50000, eps=300)
+  assert approx_equal(mtz_object.n_reflections(), 50100, eps=300)
 
 
 def run(args):
