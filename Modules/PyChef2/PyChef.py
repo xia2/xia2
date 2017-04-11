@@ -502,8 +502,10 @@ class Statistics(PyStatistics):
     if isinstance(dose, flex.double):
       sorted_dose = flex.sorted(dose)
       dd = sorted_dose[1:] - sorted_dose[:-1]
-      step_size = flex.min(dd.select(dd > 0))
-      dose /= step_size
+      dd = dd.select(dd > 0)
+      if len(dd):
+        step_size = flex.min(dd)
+        dose /= step_size
       dose = dose.iround()
       if flex.min(dose) == 0:
         dose += 1
