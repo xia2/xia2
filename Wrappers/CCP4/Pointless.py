@@ -333,7 +333,7 @@ def Pointless(DriverType = None):
 
       return
 
-    def decide_pointgroup(self):
+    def decide_pointgroup(self, ignore_errors=False):
       '''Decide on the correct pointgroup for hklin.'''
 
       if not self._xdsin:
@@ -387,13 +387,21 @@ def Pointless(DriverType = None):
 
       # check for fatal errors
       output = self.get_all_output()
+
+      fatal_error = False
+
       for j, record in enumerate(output):
         if 'FATAL ERROR message:' in record:
-          raise RuntimeError, 'Pointless error: %s' % output[j+1].strip()
+          if ignore_errors:
+            fatal_error = True
+          else:
+            raise RuntimeError, 'Pointless error: %s' % output[j+1].strip()
 
       hklin_spacegroup = ''
       hklin_lattice = ''
 
+      # split loop - first seek hklin symmetry then later look for everything
+      # else
       for o in self.get_all_output():
 
         if 'Spacegroup from HKLIN file' in o:
@@ -403,7 +411,20 @@ def Pointless(DriverType = None):
               o.replace(
               'Spacegroup from HKLIN file :', '').strip())
           hklin_lattice = Syminfo.get_lattice(hklin_spacegroup)
+          break
 
+      # https://github.com/xia2/xia2/issues/115
+      if fatal_error:
+        self._pointgroup = hklin_spacegroup
+        self._confidence = 1.0
+        self._totalprob = 1.0
+        self._reindex_matrix = [1.0, 0.0, 0.0,
+                                0.0, 1.0, 0.0,
+                                0.0, 0.0, 1.0]
+        self._reindex_operator = 'h,k,l'
+        return 'ok'
+
+      for o in self.get_all_output():
         if 'No alternative indexing possible' in o:
           # then the XML file will be broken - no worries...
 
@@ -765,4 +786,3 @@ if __name__ == '__main__':
   cell = p.sum_mtz('foo.hkl')
 
   print cell
-

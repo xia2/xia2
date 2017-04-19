@@ -745,8 +745,12 @@ class CCP4ScalerA(Scaler):
 
         pl.set_hklref(self._reference)
 
-        # write a pointless log file...
-        pl.decide_pointgroup()
+        # https://github.com/xia2/xia2/issues/115 - should ideally iteratively
+        # construct a reference or a tree of correlations to ensure correct
+        # reference setting - however if small molecule assume has been
+        # multi-sweep-indexed so can ignore "fatal errors" - temporary hack
+        pl.decide_pointgroup(
+          ignore_errors=PhilIndex.params.xia2.settings.small_molecule)
 
         Debug.write('Reindexing analysis of %s' % pl.get_hklin())
 
