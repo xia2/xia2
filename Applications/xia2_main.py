@@ -58,6 +58,11 @@ def check_environment():
   from xia2.Handlers.Flags import Flags
   Chatter.write('Starting directory: %s' % Flags.get_starting_directory())
   Chatter.write('Working directory: %s' % os.getcwd())
+
+  # temporary workaround to bug in pointless...
+  if ' ' in os.getcwd():
+    raise RuntimeError, 'Space in working directory ' \
+        '(https://github.com/xia2/xia2/issues/114)'
   Chatter.write('Free space:        %.2f GB' % (df() / math.pow(2, 30)))
 
   try:
