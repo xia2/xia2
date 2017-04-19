@@ -338,7 +338,7 @@ class resolutionizer(object):
 
     return
 
-  def resolution_rmerge(self, limit = None, log = None):
+  def resolution_rmerge(self, limit=None, log=None):
     '''Compute a resolution limit where either rmerge = 1.0 (limit if
     set) or the full extent of the data. N.B. this fit is only meaningful
     for positive values.'''
@@ -356,37 +356,41 @@ class resolutionizer(object):
     s_s = s_s.select(sel)
 
     if limit == 0.0:
-      return 1.0 / math.sqrt(flex.max(s_s))
-
-    if limit > flex.max(rmerge_s):
-      return 1.0 / math.sqrt(flex.max(s_s))
-
-    rmerge_f = log_inv_fit(s_s, rmerge_s, 6)
-
-    if log:
-      fout = open(log, 'w')
-      for j, s in enumerate(s_s):
-        d = 1.0 / math.sqrt(s)
-        o = rmerge_s[j]
-        m = rmerge_f[j]
-        fout.write('%f %f %f %f\n' % (s, d, o, m))
-      fout.close()
-
-    try:
-      r_rmerge = 1.0 / math.sqrt(interpolate_value(s_s, rmerge_f, limit))
-    except:
       r_rmerge = 1.0 / math.sqrt(flex.max(s_s))
+      rmerge_f = None
+
+    elif limit > flex.max(rmerge_s):
+      r_rmerge = 1.0 / math.sqrt(flex.max(s_s))
+      rmerge_f = None
+
+    else:
+      rmerge_f = log_inv_fit(s_s, rmerge_s, 6)
+
+      if log:
+        fout = open(log, 'w')
+        for j, s in enumerate(s_s):
+          d = 1.0 / math.sqrt(s)
+          o = rmerge_s[j]
+          m = rmerge_f[j]
+          fout.write('%f %f %f %f\n' % (s, d, o, m))
+        fout.close()
+
+      try:
+        r_rmerge = 1.0 / math.sqrt(interpolate_value(s_s, rmerge_f, limit))
+      except:
+        r_rmerge = 1.0 / math.sqrt(flex.max(s_s))
 
     if self._params.plot:
       plot = resolution_plot(ylabel='Rmerge')
-      plot.plot(s_s, rmerge_f, label='fit')
+      if rmerge_f is not None:
+        plot.plot(s_s, rmerge_f, label='fit')
       plot.plot(s_s, rmerge_s, label='Rmerge')
       plot.plot_resolution_limit(r_rmerge)
       plot.savefig('rmerge.png')
 
     return r_rmerge
 
-  def resolution_unmerged_isigma(self, limit = None, log = None):
+  def resolution_unmerged_isigma(self, limit=None, log=None):
     '''Compute a resolution limit where either I/sigma = 1.0 (limit if
     set) or the full extent of the data.'''
 
@@ -403,34 +407,37 @@ class resolutionizer(object):
     s_s = s_s.select(sel)
 
     if flex.min(isigma_s) > limit:
-      return 1.0 / math.sqrt(flex.max(s_s))
-
-    isigma_f = log_fit(s_s, isigma_s, 6)
-
-    if log:
-      fout = open(log, 'w')
-      for j, s in enumerate(s_s):
-        d = 1.0 / math.sqrt(s)
-        o = isigma_s[j]
-        m = isigma_f[j]
-        fout.write('%f %f %f %f\n' % (s, d, o, m))
-      fout.close()
-
-    try:
-      r_isigma = 1.0 / math.sqrt(interpolate_value(s_s, isigma_f, limit))
-    except:
       r_isigma = 1.0 / math.sqrt(flex.max(s_s))
+      isigma_f = None
+
+    else:
+      isigma_f = log_fit(s_s, isigma_s, 6)
+
+      if log:
+        fout = open(log, 'w')
+        for j, s in enumerate(s_s):
+          d = 1.0 / math.sqrt(s)
+          o = isigma_s[j]
+          m = isigma_f[j]
+          fout.write('%f %f %f %f\n' % (s, d, o, m))
+        fout.close()
+
+      try:
+        r_isigma = 1.0 / math.sqrt(interpolate_value(s_s, isigma_f, limit))
+      except:
+        r_isigma = 1.0 / math.sqrt(flex.max(s_s))
 
     if self._params.plot:
       plot = resolution_plot(ylabel='Unmerged I/sigma')
-      plot.plot(s_s, isigma_f, label='fit')
+      if isigma_f is not None:
+        plot.plot(s_s, isigma_f, label='fit')
       plot.plot(s_s, isigma_s, label='Unmerged I/sigma')
       plot.plot_resolution_limit(r_isigma)
       plot.savefig('isigma.png')
 
     return r_isigma
 
-  def resolution_merged_isigma(self, limit = None, log = None):
+  def resolution_merged_isigma(self, limit=None, log=None):
     '''Compute a resolution limit where either Mn(I/sigma) = 1.0 (limit if
     set) or the full extent of the data.'''
 
@@ -447,35 +454,38 @@ class resolutionizer(object):
     s_s = s_s.select(sel)
 
     if flex.min(misigma_s) > limit:
-      return 1.0 / math.sqrt(flex.max(s_s))
-
-    misigma_f = log_fit(s_s, misigma_s, 6)
-
-    if log:
-      fout = open(log, 'w')
-      for j, s in enumerate(s_s):
-        d = 1.0 / math.sqrt(s)
-        o = misigma_s[j]
-        m = misigma_f[j]
-        fout.write('%f %f %f %f\n' % (s, d, o, m))
-      fout.close()
-
-    try:
-      r_misigma = 1.0 / math.sqrt(
-          interpolate_value(s_s, misigma_f, limit))
-    except:
       r_misigma = 1.0 / math.sqrt(flex.max(s_s))
+      misigma_f = None
+
+    else:
+      misigma_f = log_fit(s_s, misigma_s, 6)
+
+      if log:
+        fout = open(log, 'w')
+        for j, s in enumerate(s_s):
+          d = 1.0 / math.sqrt(s)
+          o = misigma_s[j]
+          m = misigma_f[j]
+          fout.write('%f %f %f %f\n' % (s, d, o, m))
+        fout.close()
+
+      try:
+        r_misigma = 1.0 / math.sqrt(
+            interpolate_value(s_s, misigma_f, limit))
+      except:
+        r_misigma = 1.0 / math.sqrt(flex.max(s_s))
 
     if self._params.plot:
       plot = resolution_plot(ylabel='Merged I/sigma')
-      plot.plot(s_s, misigma_f, label='fit')
+      if misigma_f is not None:
+        plot.plot(s_s, misigma_f, label='fit')
       plot.plot(s_s, misigma_s, label='Merged I/sigma')
       plot.plot_resolution_limit(r_misigma)
       plot.savefig('misigma.png')
 
     return r_misigma
 
-  def resolution_completeness(self, limit = None, log = None):
+  def resolution_completeness(self, limit=None, log=None):
     '''Compute a resolution limit where completeness < 0.5 (limit if
     set) or the full extent of the data. N.B. this completeness is
     with respect to the *maximum* completeness in a shell, to reflect
@@ -490,37 +500,40 @@ class resolutionizer(object):
       [1/b.d_min**2 for b in self._merging_statistics.bins]).reversed()
 
     if flex.min(comp_s) > limit:
-      return 1.0 / math.sqrt(flex.max(s_s))
-
-    comp_f = fit(s_s, comp_s, 6)
-
-    rlimit = limit * max(comp_s)
-
-    if log:
-      fout = open(log, 'w')
-      for j, s in enumerate(s_s):
-        d = 1.0 / math.sqrt(s)
-        o = comp_s[j]
-        m = comp_f[j]
-        fout.write('%f %f %f %f\n' % (s, d, o, m))
-      fout.close()
-
-    try:
-      r_comp = 1.0 / math.sqrt(
-          interpolate_value(s_s, comp_f, rlimit))
-    except Exception:
       r_comp = 1.0 / math.sqrt(flex.max(s_s))
+      comp_f = None
+
+    else:
+      comp_f = fit(s_s, comp_s, 6)
+
+      rlimit = limit * max(comp_s)
+
+      if log:
+        fout = open(log, 'w')
+        for j, s in enumerate(s_s):
+          d = 1.0 / math.sqrt(s)
+          o = comp_s[j]
+          m = comp_f[j]
+          fout.write('%f %f %f %f\n' % (s, d, o, m))
+        fout.close()
+
+      try:
+        r_comp = 1.0 / math.sqrt(
+            interpolate_value(s_s, comp_f, rlimit))
+      except Exception:
+        r_comp = 1.0 / math.sqrt(flex.max(s_s))
 
     if self._params.plot:
       plot = resolution_plot(ylabel='Completeness')
-      plot.plot(s_s, comp_f, label='fit')
+      if comp_f is not None:
+        plot.plot(s_s, comp_f, label='fit')
       plot.plot(s_s, comp_s, label='Completeness')
       plot.plot_resolution_limit(r_comp)
       plot.savefig('completeness.png')
 
     return r_comp
 
-  def resolution_cc_half(self, limit = None, log = None):
+  def resolution_cc_half(self, limit=None, log=None):
     '''Compute a resolution limit where cc_half < 0.5 (limit if
     set) or the full extent of the data.'''
 
@@ -599,7 +612,11 @@ def run(args):
   params, unhandled = interp.process_and_fetch(
     args, custom_processor='collect_remaining')
   params = params.extract().resolutionizer
-  assert len(unhandled)
+  if len(unhandled) == 0:
+    working_phil.show()
+    exit()
+
+  assert len(unhandled) == 1
   scaled_unmerged = unhandled[0]
 
   stamp("Resolutionizer.py starting")
