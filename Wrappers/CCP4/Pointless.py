@@ -402,20 +402,24 @@ def Pointless(DriverType = None):
 
       # split loop - first seek hklin symmetry then later look for everything
       # else
+
       for o in self.get_all_output():
-
         if 'Spacegroup from HKLIN file' in o:
-
-          # hklin_spacegroup = o.split(':')[-1].strip()
           hklin_spacegroup = spacegroup_name_xHM_to_old(
               o.replace(
               'Spacegroup from HKLIN file :', '').strip())
           hklin_lattice = Syminfo.get_lattice(hklin_spacegroup)
-          break
+        if 'Space group from HKLREF file' in o:
+          hklref_spacegroup = spacegroup_name_xHM_to_old(
+              o.replace(
+              'Space group from HKLREF file :', '').strip())
+          hklref_lattice = Syminfo.get_lattice(hklref_spacegroup)
 
       # https://github.com/xia2/xia2/issues/115
       if fatal_error:
-        self._pointgroup = hklin_spacegroup
+        assert hklref_spacegroup
+
+        self._pointgroup = hklref_spacegroup
         self._confidence = 1.0
         self._totalprob = 1.0
         self._reindex_matrix = [1.0, 0.0, 0.0,
