@@ -213,6 +213,11 @@ dials
     .type = float(value_min=0.0)
     .short_caption = "Closeness to the spindle cutoff for including reflections in refinement"
     .expert_level = 2
+
+  masking {
+    include scope dials.util.masking.phil_scope
+  }
+
   find_spots
     .short_caption = "Spot finding"
   {

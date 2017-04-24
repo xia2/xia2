@@ -88,7 +88,7 @@ def exercise_xds_integrater(nproc=None):
   assert approx_equal(integrater.get_integrater_cell(),
                       [78.066, 78.066, 78.066, 90, 90, 90], eps=3e-2)
   assert approx_equal(integrater.get_integrater_mosaic_min_mean_max(),
-                      (0.180, 0.180, 0.180), eps=1e-3)
+                      (0.180, 0.180, 0.180), eps=2e-3)
 
   # test serialization of integrater
   json_str = integrater.as_json()
@@ -120,7 +120,7 @@ def exercise_xds_integrater(nproc=None):
   reader = any_reflection_file(integrater2_intensities)
   assert reader.file_type() == "ccp4_mtz"
   mtz_object = reader.file_content()
-  assert approx_equal(mtz_object.n_reflections(), 50000, eps=300)
+  assert approx_equal(mtz_object.n_reflections(), 50100, eps=300)
 
 
 def run(args):
