@@ -1055,7 +1055,7 @@ class CommonScaler(Scaler):
     merging_stats_file = '%s_%s%s_merging-statistics.txt' % (
       self._scalr_pname, self._scalr_xname, '' if wave is None else '_%s' % wave)
 
-    result = None
+    result, select_result, anom_result, select_anom_result = None, None, None, None
     n_bins = PhilIndex.params.xia2.settings.merging_statistics.n_bins
     import iotbx.merging_statistics
     while result is None:
