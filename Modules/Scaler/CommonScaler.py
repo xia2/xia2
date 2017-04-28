@@ -1050,34 +1050,47 @@ class CommonScaler(Scaler):
     # self.scale() which introduced a subtle bug
     from cctbx import sgtbx
     sg = sgtbx.space_group_info(str(self._scalr_likely_spacegroups[0])).group()
-
-    result = self._iotbx_merging_statistics(
-      scaled_unmerged_mtz, anomalous=False)
-
     from xia2.Handlers.Environment import Environment
     log_directory = Environment.generate_directory('LogFiles')
     merging_stats_file = '%s_%s%s_merging-statistics.txt' % (
       self._scalr_pname, self._scalr_xname, '' if wave is None else '_%s' % wave)
-    with open(os.path.join(log_directory, merging_stats_file), 'w') as fh:
-      result.show(out=fh)
 
-    four_column_output = selected_band and any(selected_band)
-    if four_column_output:
-      select_result = self._iotbx_merging_statistics(
-        scaled_unmerged_mtz, anomalous=False,
-        d_min=selected_band[0], d_max=selected_band[1])
+    result = None
+    n_bins = PhilIndex.params.xia2.settings.merging_statistics.n_bins
+    import iotbx.merging_statistics
+    while result is None:
+      try:
 
-    if sg.is_centric():
-      anom_result = None
-      anom_key_to_var = {}
-    else:
-      anom_result = self._iotbx_merging_statistics(
-        scaled_unmerged_mtz, anomalous=True)
-      stats['Anomalous slope'] = [anom_result.anomalous_np_slope]
-      if four_column_output:
-        select_anom_result = self._iotbx_merging_statistics(
-          scaled_unmerged_mtz, anomalous=True,
-          d_min=selected_band[0], d_max=selected_band[1])
+        result = self._iotbx_merging_statistics(
+          scaled_unmerged_mtz, anomalous=False, n_bins=n_bins)
+        with open(os.path.join(log_directory, merging_stats_file), 'w') as fh:
+          result.show(out=fh)
+
+        four_column_output = selected_band and any(selected_band)
+        if four_column_output:
+          select_result = self._iotbx_merging_statistics(
+            scaled_unmerged_mtz, anomalous=False,
+            d_min=selected_band[0], d_max=selected_band[1], n_bins=n_bins)
+
+        if sg.is_centric():
+          anom_result = None
+          anom_key_to_var = {}
+        else:
+          anom_result = self._iotbx_merging_statistics(
+            scaled_unmerged_mtz, anomalous=True, n_bins=n_bins)
+          stats['Anomalous slope'] = [anom_result.anomalous_np_slope]
+          if four_column_output:
+            select_anom_result = self._iotbx_merging_statistics(
+              scaled_unmerged_mtz, anomalous=True,
+              d_min=selected_band[0], d_max=selected_band[1], n_bins=n_bins)
+
+      except iotbx.merging_statistics.StatisticsErrorNoReflectionsInRange:
+        # Too few reflections for too many bins. Reduce number of bins and try again.
+        n_bins = n_bins - 3
+        if n_bins > 5:
+          continue
+        else:
+          raise
 
     import cStringIO as StringIO
     result_cache = StringIO.StringIO()
@@ -1103,7 +1116,7 @@ class CommonScaler(Scaler):
 
     return stats
 
-  def _iotbx_merging_statistics(self, scaled_unmerged_mtz, anomalous=False, d_min=None, d_max=None):
+  def _iotbx_merging_statistics(self, scaled_unmerged_mtz, anomalous=False, d_min=None, d_max=None, n_bins=None):
     import iotbx.merging_statistics
 
     params = PhilIndex.params.xia2.settings.merging_statistics
@@ -1115,7 +1128,7 @@ class CommonScaler(Scaler):
       i_obs=i_obs,
       d_min=d_min,
       d_max=d_max,
-      n_bins=params.n_bins,
+      n_bins=n_bins or params.n_bins,
       anomalous=anomalous,
       use_internal_variance=params.use_internal_variance,
       eliminate_sys_absent=params.eliminate_sys_absent,
