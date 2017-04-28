@@ -1086,6 +1086,7 @@ class CommonScaler(Scaler):
 
       except iotbx.merging_statistics.StatisticsErrorNoReflectionsInRange:
         # Too few reflections for too many bins. Reduce number of bins and try again.
+        result = None
         n_bins = n_bins - 3
         if n_bins > 5:
           continue
