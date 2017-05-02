@@ -295,7 +295,7 @@ def lauegroup_to_lattice(lauegroup):
 
   return lauegroup_to_lattice[updated_laue]
 
-if __name__ == '__main__':
+if __name__ == '__main__1':
   print lauegroup_to_lattice('I m m m')
   print lauegroup_to_lattice('C 1 2/m 1')
   print lauegroup_to_lattice('P -1')
@@ -305,10 +305,15 @@ if __name__ == '__main__':
 
   print spacegroup_name_old_to_xHM('H 3 2')
 
-if __name__ == '__main__':
+if __name__ == '__main__2':
 
   for spacegroup in get_all_spacegroups_long():
     enantiomorph = compute_enantiomorph(spacegroup)
 
     if enantiomorph != spacegroup:
       print '%s -> %s' % (spacegroup, enantiomorph)
+
+if __name__ == '__main__':
+  import sys
+  for sg in sys.argv[1:]:
+    print spacegroup_name_xHM_to_old(sg)
