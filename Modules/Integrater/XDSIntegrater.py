@@ -484,20 +484,6 @@ class XDSIntegrater(Integrater):
 
       correct.run()
 
-      # record the log file -
-
-      pname, xname, dname = self.get_integrater_project_info()
-      sweep = self.get_integrater_sweep_name()
-      FileHandler.record_log_file('%s %s %s %s CORRECT' % \
-                                  (pname, xname, dname, sweep),
-                                  os.path.join(
-          self.get_working_directory(),
-          'CORRECT.LP'))
-
-      FileHandler.record_more_data_file(
-          '%s %s %s %s CORRECT' % (pname, xname, dname, sweep),
-          os.path.join(self.get_working_directory(), 'XDS_ASCII.HKL'))
-
       cell = correct.get_result('cell')
       cell_esd = correct.get_result('cell_esd')
 
@@ -621,6 +607,20 @@ class XDSIntegrater(Integrater):
       correct.set_reindex_matrix(mult_matrix)
 
     correct.run()
+
+    # record the log file -
+
+    pname, xname, dname = self.get_integrater_project_info()
+    sweep = self.get_integrater_sweep_name()
+    FileHandler.record_log_file('%s %s %s %s CORRECT' % \
+                                (pname, xname, dname, sweep),
+                                os.path.join(
+                                  self.get_working_directory(),
+                                  'CORRECT.LP'))
+
+    FileHandler.record_more_data_file(
+      '%s %s %s %s CORRECT' % (pname, xname, dname, sweep),
+      os.path.join(self.get_working_directory(), 'XDS_ASCII.HKL'))
 
     # erm. just to be sure
     if self.get_integrater_reindex_matrix() and \
