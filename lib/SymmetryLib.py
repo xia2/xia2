@@ -69,6 +69,8 @@ def spacegroup_name_xHM_to_old(xHM):
   current_old = ''
   current_xHM = ''
 
+  old_names = []
+
   for line in open(syminfo, 'r').readlines():
     if line[0] == '#':
       continue
@@ -81,10 +83,13 @@ def spacegroup_name_xHM_to_old(xHM):
 
     if 'end_spacegroup' in line:
       mapping[current_xHM] = current_old
+      old_names.append(current_old)
 
   xHM = xHM.upper()
 
   if not xHM in mapping.keys():
+    if xHM in old_names:
+      return xHM
     raise RuntimeError, 'spacegroup %s unknown' % xHM
 
   return mapping[xHM]
