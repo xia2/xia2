@@ -37,7 +37,7 @@ Other options are (type just xia2 to get this list)::
   [space_group=C2] (for example)
   [unit_cell=50,50,50,90,90,90] (for example)
   [reverse_phi=True]
-  [beam_centre=x,y] (in mm, following the MOSFLM convention, applies to all sweeps)
+  [mosflm_beam_centre=x,y] (in mm, following the MOSFLM convention, applies to all sweeps)
   [dials.fast_mode=True] for very fast processing
   [atom=se] (say) - this is for xia2setup
   [project=foo] (say) - this is for xia2setup
