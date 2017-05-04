@@ -1,7 +1,4 @@
-<!DOCTYPE html>
-
 {% import 'xia2_macros.html' as xia2_macros %}
-
 {% extends "report_base.html" %}
 {% block content %}
 <div class="page-header">
@@ -82,6 +79,10 @@
         {{ macros.panel('Miscellaneous', 'misc', misc_graphs, styles=styles) }}
     </div>
 
+</div>
+
+<div>
+  <p>{{ xia2_version }}</p>
 </div>
 
 {% endblock %}

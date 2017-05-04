@@ -773,8 +773,9 @@ def d_star_sq_to_d_ticks(d_star_sq, nticks):
 
 
 def run(args):
-
   from xia2.Modules.Analysis import phil_scope
+  from xia2.XIA2Version import Version
+
   interp = phil_scope.command_line_argument_interpreter()
   params, unhandled = interp.process_and_fetch(
     args, custom_processor='collect_remaining')
@@ -849,7 +850,9 @@ def run(args):
                          resolution_graphs=resolution_graphs,
                          batch_graphs=batch_graphs,
                          misc_graphs=misc_graphs,
-                         styles=styles)
+                         styles=styles,
+                         xia2_version=Version,
+                        )
 
   with open('xia2-report.json', 'wb') as f:
     json.dump(json_data, f)
