@@ -209,6 +209,7 @@ class xia2_report(object):
     xtriage_success = []
     xtriage_warnings = []
     xtriage_danger = []
+    self._xanalysis = None
     if not self.intensities.space_group().is_centric():
       s = StringIO()
       pout = printed_output(out=s)
@@ -247,7 +248,7 @@ class xia2_report(object):
         elif level == 1: xtriage_warnings.append(d)
         elif level == 2: xtriage_danger.append(d)
 
-    self._xanalysis = xanalysis
+      self._xanalysis = xanalysis
     return xtriage_success, xtriage_warnings, xtriage_danger
 
   def i_over_sig_i_plot(self):
@@ -575,6 +576,8 @@ class xia2_report(object):
     }
 
   def cumulative_intensity_distribution_plot(self):
+    if self._xanalysis is None:
+      return {'cumulative_intensity_distribution': {}}
     nz_test = self._xanalysis.twin_results.nz_test
     return {
       'cumulative_intensity_distribution': {
@@ -635,10 +638,12 @@ class xia2_report(object):
             'range': (0, 1),
           },
         }
-      } if not self.intensities.space_group().is_centric() else {},
+      }
     }
 
   def l_test_plot(self):
+    if self._xanalysis is None:
+      return {'l_test': {}}
     l_test = self._xanalysis.twin_results.l_test
     return {
       'l_test': {
@@ -688,16 +693,16 @@ class xia2_report(object):
             'range': (0, 1),
           },
         }
-      } if not self.intensities.space_group().is_centric() else {},
+      }
     }
 
   def wilson_plot(self):
+    if self._xanalysis is None:
+      return {'wilson_intensity_plot': {}}
 
     wilson_scaling = self._xanalysis.wilson_scaling
-
-    if not self.intensities.space_group().is_centric():
-      tickvals_wilson, ticktext_wilson = d_star_sq_to_d_ticks(
-        wilson_scaling.d_star_sq, nticks=5)
+    tickvals_wilson, ticktext_wilson = d_star_sq_to_d_ticks(
+      wilson_scaling.d_star_sq, nticks=5)
 
     return {
       'wilson_intensity_plot': {
@@ -733,7 +738,7 @@ class xia2_report(object):
             'rangemode': 'tozero',
           },
         },
-      } if not self.intensities.space_group().is_centric() else {},
+      }
     }
 
   def pychef_plots(self):
