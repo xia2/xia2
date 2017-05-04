@@ -19,14 +19,14 @@ class xtriage_output(printed_output):
     self.out = StringIO()
     self._sub_header_to_out = {}
 
-  def show_big_header (self, text) : pass
+  def show_big_header(self, text): pass
 
-  def show_header (self, text) :
+  def show_header(self, text):
     self._out_orig.write(self.out.getvalue())
     self.out = StringIO()
     super(xtriage_output, self).show_header(text)
 
-  def show_sub_header (self, title) :
+  def show_sub_header(self, title):
     self._out_orig.write(self.out.getvalue())
     self.out = StringIO()
     self._current_sub_header = title
@@ -205,50 +205,43 @@ class xia2_report(object):
     return symmetry_table_html
 
   def xtriage_report(self):
-
     xtriage_success = []
     xtriage_warnings = []
     xtriage_danger = []
-    self._xanalysis = None
-    if not self.intensities.space_group().is_centric():
-      s = StringIO()
-      pout = printed_output(out=s)
-      from mmtbx.scaling.xtriage import xtriage_analyses
-      from mmtbx.scaling.xtriage import master_params as xtriage_master_params
-      xtriage_params = xtriage_master_params.fetch(sources=[]).extract()
-      xtriage_params.scaling.input.xray_data.skip_sanity_checks = True
-      xanalysis = xtriage_analyses(
-        miller_obs=self.merged_intensities,
-        unmerged_obs=self.intensities, text_out=pout,
-        params=xtriage_params,
-        )
-      with open('xtriage.log', 'wb') as f:
-        print >> f, s.getvalue()
-      xs = StringIO()
-      xout = xtriage_output(xs)
-      xanalysis.show(out=xout)
-      xout.flush()
-      sub_header_to_out = xout._sub_header_to_out
-      issues = xanalysis.summarize_issues()
-      issues.show()
+    s = StringIO()
+    pout = printed_output(out=s)
+    from mmtbx.scaling.xtriage import xtriage_analyses
+    from mmtbx.scaling.xtriage import master_params as xtriage_master_params
+    xtriage_params = xtriage_master_params.fetch(sources=[]).extract()
+    xtriage_params.scaling.input.xray_data.skip_sanity_checks = True
+    xanalysis = xtriage_analyses(
+      miller_obs=self.merged_intensities,
+      unmerged_obs=self.intensities, text_out=pout,
+      params=xtriage_params,
+      )
+    with open('xtriage.log', 'wb') as f:
+      print >> f, s.getvalue()
+    xs = StringIO()
+    xout = xtriage_output(xs)
+    xanalysis.show(out=xout)
+    xout.flush()
+    sub_header_to_out = xout._sub_header_to_out
+    issues = xanalysis.summarize_issues()
+    issues.show()
 
-      i = 0
-      for issue in issues._issues:
-        i += 1
-        level, text, sub_header = issue
-        summary = sub_header_to_out.get(sub_header, StringIO()).getvalue()
-        summary = summary.replace('<', '&lt;').replace('>', '&gt;')
-        d = {
-          'level': level,
-          'text': text,
-          'summary': summary,
-          'header': sub_header,
-        }
-        if level == 0: xtriage_success.append(d)
-        elif level == 1: xtriage_warnings.append(d)
-        elif level == 2: xtriage_danger.append(d)
-
-      self._xanalysis = xanalysis
+    for level, text, sub_header in issues._issues:
+      summary = sub_header_to_out.get(sub_header, StringIO()).getvalue()
+      summary = summary.replace('<', '&lt;').replace('>', '&gt;')
+      d = {
+        'level': level,
+        'text': text,
+        'summary': summary,
+        'header': sub_header,
+      }
+      if level == 0: xtriage_success.append(d)
+      elif level == 1: xtriage_warnings.append(d)
+      elif level == 2: xtriage_danger.append(d)
+    self._xanalysis = xanalysis
     return xtriage_success, xtriage_warnings, xtriage_danger
 
   def i_over_sig_i_plot(self):
@@ -576,8 +569,8 @@ class xia2_report(object):
     }
 
   def cumulative_intensity_distribution_plot(self):
-    if self._xanalysis is None:
-      return {'cumulative_intensity_distribution': {}}
+    if not self._xanalysis.twin_results:
+      return {}
     nz_test = self._xanalysis.twin_results.nz_test
     return {
       'cumulative_intensity_distribution': {
@@ -642,8 +635,8 @@ class xia2_report(object):
     }
 
   def l_test_plot(self):
-    if self._xanalysis is None:
-      return {'l_test': {}}
+    if not self._xanalysis.twin_results:
+      return {}
     l_test = self._xanalysis.twin_results.l_test
     return {
       'l_test': {
@@ -697,9 +690,8 @@ class xia2_report(object):
     }
 
   def wilson_plot(self):
-    if self._xanalysis is None:
-      return {'wilson_intensity_plot': {}}
-
+    if not self._xanalysis.wilson_scaling:
+      return {}
     wilson_scaling = self._xanalysis.wilson_scaling
     tickvals_wilson, ticktext_wilson = d_star_sq_to_d_ticks(
       wilson_scaling.d_star_sq, nticks=5)
@@ -820,7 +812,7 @@ def run(args):
   resolution_graphs = OrderedDict(
     (k, json.dumps(json_data[k])) for k in
     ('cc_one_half', 'i_over_sig_i', 'second_moments', 'wilson_intensity_plot',
-     'completeness', 'multiplicity_vs_resolution'))
+     'completeness', 'multiplicity_vs_resolution') if k in json_data)
 
   batch_graphs = OrderedDict(
     (k, json.dumps(json_data[k])) for k in
@@ -829,7 +821,7 @@ def run(args):
 
   misc_graphs = OrderedDict(
     (k, json.dumps(json_data[k])) for k in
-    ('cumulative_intensity_distribution', 'l_test', 'multiplicities'))
+    ('cumulative_intensity_distribution', 'l_test', 'multiplicities') if k in json_data)
 
   misc_graphs.update(report.multiplicity_plots())
 
@@ -859,15 +851,11 @@ def run(args):
                          misc_graphs=misc_graphs,
                          styles=styles)
 
-  json_str = json.dumps(json_data)
   with open('xia2-report.json', 'wb') as f:
-    print >> f, json_str
+    json.dump(json_data, f)
 
   with open('xia2-report.html', 'wb') as f:
     print >> f, html.encode('ascii', 'xmlcharrefreplace')
-
-  return
-
 
 if __name__ == '__main__':
   import sys
