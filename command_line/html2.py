@@ -37,6 +37,14 @@ def generate_xia2_html(xinfo, filename='xia2.html'):
   from xia2.command_line.report import xia2_report
   crystal = xinfo.get_crystals().values()[0]
 
+  xia2_txt = os.path.join(os.path.abspath(os.path.curdir), 'xia2.txt')
+  assert os.path.isfile(xia2_txt), xia2_txt
+
+  with open(xia2_txt, 'rb') as f:
+    xia2_output = f.read().encode('ascii', 'xmlcharrefreplace')
+
+  xia2_output = cgi.escape(xia2_output)
+
   styles = {}
   reports = []
 
@@ -162,8 +170,8 @@ def generate_xia2_html(xinfo, filename='xia2.html'):
     for i in range(len(row)):
       row[i] = row[i].encode('ascii', 'xmlcharrefreplace')
 
-  from libtbx import table_utils
-  print table_utils.format(rows=table, has_header=True)
+  #from libtbx import table_utils
+  #print table_utils.format(rows=table, has_header=True)
 
   # reflection files
 
@@ -191,24 +199,24 @@ def generate_xia2_html(xinfo, filename='xia2.html'):
     mtz_files = [
       headers,
       ['All datasets',
-       '<a href="%s">%s</a>' %(os.path.basename(merged_mtz), os.path.relpath(merged_mtz))]]
+       '<a href="%s">%s</a>' %(os.path.relpath(merged_mtz), os.path.basename(merged_mtz))]]
 
     for wname, unmerged_mtz in reflection_files['mtz_unmerged'].iteritems():
       mtz_files.append(
         [wname,
-         '<a href="%s">%s</a>' %(os.path.basename(unmerged_mtz), os.path.relpath(unmerged_mtz))])
+         '<a href="%s">%s</a>' %(os.path.relpath(unmerged_mtz), os.path.basename(unmerged_mtz))])
 
     sca_files = [headers]
     for wname, merged_sca in reflection_files['sca'].iteritems():
       sca_files.append(
         [wname,
-         '<a href="%s">%s</a>' %(os.path.basename(merged_sca), os.path.relpath(merged_sca))])
+         '<a href="%s">%s</a>' %(os.path.relpath(merged_sca), os.path.basename(merged_sca))])
 
     unmerged_sca_files = [headers]
     for wname, unmerged_sca in reflection_files['sca_unmerged'].iteritems():
       unmerged_sca_files.append(
         [wname,
-         '<a href="%s">%s</a>' %(os.path.basename(unmerged_sca), os.path.relpath(unmerged_sca))])
+         '<a href="%s">%s</a>' %(os.path.relpath(unmerged_sca), os.path.basename(unmerged_sca))])
 
   # log files
   log_files_table = []
@@ -243,6 +251,7 @@ def generate_xia2_html(xinfo, filename='xia2.html'):
 
   template = env.get_template('xia2.html')
   html = template.render(page_title='xia2 processing report',
+                         xia2_output=xia2_output,
                          space_group=space_group,
                          alternative_space_groups=alternative_space_groups,
                          unit_cell=unit_cell,

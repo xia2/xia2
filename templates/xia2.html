@@ -1,5 +1,3 @@
-<!DOCTYPE html>
-
 {% import 'xia2_macros.html' as xia2_macros %}
 
 
@@ -28,22 +26,27 @@
 
             <h2>Merging statistics</h2>
 
-            <p>
-                <!--<b>Filename:</b> {{ filename }}-->
-                <!--<br>-->
-                <b>Space group:</b> {{ space_group }}
+            <!--<b>Filename:</b> {{ filename }}-->
+            <!--<br>-->
+            <b>Space group:</b> {{ space_group }}
+            <br>
+
+            {% if alternative_space_groups %}
+                <b>Alternative space groups:</b>
+                    {% for item in alternative_space_groups %}
+                        {{ item }}
+                    {% endfor %}
                 <br>
+            {% endif %}
+            <b>Unit cell:</b> {{ unit_cell }}
+            <br>
 
-                {% if alternative_space_groups %}
-                    <b>Alternative space groups:</b>
-                        {% for item in alternative_space_groups %}
-                            {{ item }}
-                        {% endfor %}
-                    <br>
-                {% endif %}
-                <b>Unit cell:</b> {{ unit_cell }}
-            </p>
-
+            <div>
+                <p></p>
+                <button type="button" class="btn btn-default" data-toggle="modal" data-target="#xia2_output">xia2 output</button>
+                {{ xia2_macros.xtriage_modal("xia2.txt", xia2_output, "xia2_output")}}
+                <p></p>
+            </div>
 
             <div class="panel-group">
 
@@ -63,12 +66,6 @@
                         </div>
                     </div>
                 </div>
-
-            </div>
-
-
-
-            <div class="panel-group">
 
                 <div class="panel panel-default">
                     <div class="panel-heading" data-toggle="collapse" href="#collapse_references">
@@ -90,93 +87,65 @@
 
             </div>
 
-
-
         </div>
-
-
 
         <div id="output_files" class="tab-pane">
 
-            <div class="panel panel-default">
-                <div class="panel-heading" data-toggle="collapse" href="#collapse_reflection_files">
-                    <h4 class="panel-title">
-                        <a>Reflection data files</a>
-                    </h4>
-                </div>
-                    <p>
-                        xia2 produced the following reflection data files - to download,
-                        right-click on the link and select "Save Link As..."
-                    </p>
+            <h2>xia2 output files</h2>
 
-                <div id="collapse_reflection_files" class="panel-collapse collapse in">
+            <div class="panel-group">
 
-                    <div class="panel panel-default">
-                        <div class="panel-heading" data-toggle="collapse" href="#collapse_mtz">
-                            <h4 class="panel-title">
-                                <a>Mtz files (useful for CCP4 and Phenix)</a>
-                            </h4>
-                        </div>
-                        <div id="collapse_mtz" class="panel-collapse collapse in">
-                            <div class="panel-body">
+                <div class="panel panel-default">
+                    <div class="panel-heading" data-toggle="collapse" href="#collapse_reflection_files">
+                        <h4 class="panel-title">
+                            <a>Reflection data files</a>
+                        </h4>
+                    </div>
+
+                    <div id="collapse_reflection_files" class="panel-collapse collapse in">
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <h5>Mtz files (useful for CCP4 and Phenix)</h5>
                                 <div style="width: 800px">
                                     {{ macros.table(mtz_files,
                                                     has_column_header=true,
                                                     has_row_header=false) }}
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="panel panel-default">
-                        <div class="panel-heading" data-toggle="collapse" href="#collapse_sca">
-                            <h4 class="panel-title">
-                                <a>SCA files (useful for autoSHARP, etc.)</a>
-                            </h4>
-                        </div>
-                        <div id="collapse_sca" class="panel-collapse collapse in">
-                            <div class="panel-body">
+                            </li>
+                            <li class="list-group-item">
+                                <h5>SCA files (useful for autoSHARP, etc.)</h5>
                                 <div style="width: 800px">
                                     {{ macros.table(sca_files,
                                                     has_column_header=true,
                                                     has_row_header=false) }}
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="panel panel-default">
-                        <div class="panel-heading" data-toggle="collapse" href="#collapse_sca_unmerged">
-                            <h4 class="panel-title">
-                                <a>SCA unmerged files (useful for XPREP and SHELXC/D/E)</a>
-                            </h4>
-                        </div>
-                        <div id="collapse_sca_unmerged" class="panel-collapse collapse in">
-                            <div class="panel-body">
+                            </li>
+                            <li class="list-group-item">
+                                <h5>SCA unmerged files (useful for XPREP and SHELXC/D/E)</h5>
                                 <div style="width: 800px">
                                     {{ macros.table(unmerged_sca_files,
                                                     has_column_header=true,
                                                     has_row_header=false) }}
                                 </div>
-                            </div>
-                        </div>
+                            </li>
+                        </ul>
                     </div>
 
                 </div>
-            </div>
 
-            <div class="panel panel-default">
-                <div class="panel-heading" data-toggle="collapse" href="#collapse_log_files">
-                    <h4 class="panel-title">
-                        <a>Log files</a>
-                    </h4>
-                </div>
-                <div id="collapse_log_files" class="panel-collapse collapse in">
-                    <div class="panel-body">
-                        <div style="width: 800px">
-                            {{ macros.table(log_files_table,
-                                            has_column_header=false,
-                                            has_row_header=false) }}
+                <div class="panel panel-default">
+                    <div class="panel-heading" data-toggle="collapse" href="#collapse_log_files">
+                        <h4 class="panel-title">
+                            <a>Log files</a>
+                        </h4>
+                    </div>
+                    <div id="collapse_log_files" class="panel-collapse collapse in">
+                        <div class="panel-body">
+                            <div style="width: 800px">
+                                {{ macros.table(log_files_table,
+                                                has_column_header=false,
+                                                has_row_header=false) }}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -195,12 +164,12 @@
                     <div class="panel-group">
 
                         <div class="panel panel-default">
-                            <div class="panel-heading" data-toggle="collapse" href="#collapse_overall">
+                            <div class="panel-heading" data-toggle="collapse" href="#collapse_overall_{{ wname }}">
                                 <h4 class="panel-title">
                                     <a>Overall</a>
                                 </h4>
                             </div>
-                            <div id="collapse_overall" class="panel-collapse collapse in">
+                            <div id="collapse_overall_{{ wname }}" class="panel-collapse collapse in">
                                 <div class="panel-body">
                                     <div style="width: 800px">
                                         {{ macros.table(item['overall_statistics_table'],
@@ -212,12 +181,12 @@
                         </div>
 
                         <div class="panel panel-default">
-                            <div class="panel-heading" data-toggle="collapse" href="#collapse_merging_stats">
+                            <div class="panel-heading" data-toggle="collapse" href="#collapse_merging_stats_{{ wname }}">
                                 <h4 class="panel-title">
                                     <a>Resolution shells</a>
                                 </h4>
                             </div>
-                            <div id="collapse_merging_stats" class="panel-collapse collapse">
+                            <div id="collapse_merging_stats_{{ wname }}" class="panel-collapse collapse">
                                 <div class="panel-body">
                                     {{ macros.table(item['merging_statistics_table'],
                                                     has_column_header=true) }}

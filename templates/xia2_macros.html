@@ -1,13 +1,12 @@
-<!DOCTYPE html>
 {% macro xtriage_results(success, warning, danger, suffix='') -%}
 
 <div class="panel panel-default">
-    <div class="panel-heading" data-toggle="collapse" href="#collapse_xtriage">
+    <div class="panel-heading" data-toggle="collapse" href="#collapse_xtriage{{ suffix }}">
         <h4 class="panel-title">
             <a>Xtriage</a>
         </h4>
     </div>
-    <div id="collapse_xtriage" class="panel-collapse collapse in">
+    <div id="collapse_xtriage{{ suffix }}" class="panel-collapse collapse in">
         <div class="panel-body">
             <div class="panel-group">
                 {% if danger %}
@@ -96,7 +95,7 @@
         <h4 class="modal-title">{{ header }}</h4>
       </div>
       <div class="modal-body">
-        <p><pre>{{ content }}</pre></p>
+        <pre>{{ content }}</pre>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
