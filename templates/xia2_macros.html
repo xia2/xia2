@@ -1,7 +1,7 @@
 {% macro xtriage_results(success, warning, danger, suffix='') -%}
 
 <div class="panel panel-default">
-    <div class="panel-heading" data-toggle="collapse" href="#collapse_xtriage{{ suffix }}">
+    <div class="panel-heading" data-toggle="collapse" data-target="#collapse_xtriage{{ suffix }}">
         <h4 class="panel-title">
             <a>Xtriage</a>
         </h4>
@@ -11,7 +11,7 @@
             <div class="panel-group">
                 {% if danger %}
                     <div class="panel panel-danger">
-                        <div class="panel-heading" data-toggle="collapse" href="#collapse_xtriage_danger{{suffix}}">
+                        <div class="panel-heading" data-toggle="collapse" data-target="#collapse_xtriage_danger{{suffix}}">
                             <h4 class="panel-title">
                                 <span class="glyphicon glyphicon-remove"></span>
                                 <a>{{ danger|length}} serious warning{% if danger|length > 1%}s{% endif %}</a>
@@ -32,7 +32,7 @@
                 {% endif %}
                 {% if warning %}
                     <div class="panel panel-warning">
-                        <div class="panel-heading" data-toggle="collapse" href="#collapse_xtriage_warning{{suffix}}">
+                        <div class="panel-heading" data-toggle="collapse" data-target="#collapse_xtriage_warning{{suffix}}">
                             <h4 class="panel-title">
                                 <span class="glyphicon glyphicon-exclamation-sign"></span>
                                 <a>{{ warning|length}} alert{% if warning|length > 1%}s{% endif %}</a>
@@ -53,7 +53,7 @@
                 {% endif %}
                 {% if success %}
                     <div class="panel panel-success">
-                        <div class="panel-heading" data-toggle="collapse" href="#collapse_xtriage_success{{suffix}}">
+                        <div class="panel-heading" data-toggle="collapse" data-target="#collapse_xtriage_success{{suffix}}">
                             <h4 class="panel-title">
                                 <span class="glyphicon glyphicon-ok"></span>
                                 <a>{{ success|length}} check{% if success|length > 1%}s{% endif %} passed</a>

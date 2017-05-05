@@ -11,14 +11,13 @@
     </div>
 
     <ul class="nav nav-tabs">
-        <li class="active"><a data-toggle="tab" href="#home">Summary</a></li>
+        <li class="active"><a data-toggle="tab" data-target="#home">Summary</a></li>
 
         {% for wname, item in individual_dataset_reports.items() %}
-            <li><a data-toggle="tab" href="#dataset_{{ wname }}">Dataset {{ wname }}</a></li>
+            <li><a data-toggle="tab" data-target="#dataset_{{ wname }}">Dataset {{ wname }}</a></li>
         {% endfor %}
 
-        <li><a data-toggle="tab" href="#output_files">Output files</a></li>
-        <!--<li><a data-toggle="tab" href="#menu3">Menu 3</a></li>-->
+        <li><a data-toggle="tab" data-target="#output_files">Output files</a></li>
     </ul>
 
     <div class="tab-content">
@@ -51,7 +50,7 @@
             <div class="panel-group">
 
                 <div class="panel panel-default">
-                    <div class="panel-heading" data-toggle="collapse" href="#collapse_expt">
+                    <div class="panel-heading" data-toggle="collapse" data-target="#collapse_expt">
                         <h4 class="panel-title">
                             <a>Overall</a>
                         </h4>
@@ -68,7 +67,7 @@
                 </div>
 
                 <div class="panel panel-default">
-                    <div class="panel-heading" data-toggle="collapse" href="#collapse_references">
+                    <div class="panel-heading" data-toggle="collapse" data-target="#collapse_references">
                         <h4 class="panel-title">
                             <a>References</a>
                         </h4>
@@ -96,7 +95,7 @@
             <div class="panel-group">
 
                 <div class="panel panel-default">
-                    <div class="panel-heading" data-toggle="collapse" href="#collapse_reflection_files">
+                    <div class="panel-heading" data-toggle="collapse" data-target="#collapse_reflection_files">
                         <h4 class="panel-title">
                             <a>Reflection data files</a>
                         </h4>
@@ -134,7 +133,7 @@
                 </div>
 
                 <div class="panel panel-default">
-                    <div class="panel-heading" data-toggle="collapse" href="#collapse_log_files">
+                    <div class="panel-heading" data-toggle="collapse" data-target="#collapse_log_files">
                         <h4 class="panel-title">
                             <a>Log files</a>
                         </h4>
@@ -164,7 +163,7 @@
                     <div class="panel-group">
 
                         <div class="panel panel-default">
-                            <div class="panel-heading" data-toggle="collapse" href="#collapse_overall_{{ wname }}">
+                            <div class="panel-heading" data-toggle="collapse" data-target="#collapse_overall_{{ wname }}">
                                 <h4 class="panel-title">
                                     <a>Overall</a>
                                 </h4>
@@ -181,7 +180,7 @@
                         </div>
 
                         <div class="panel panel-default">
-                            <div class="panel-heading" data-toggle="collapse" href="#collapse_merging_stats_{{ wname }}">
+                            <div class="panel-heading" data-toggle="collapse" data-target="#collapse_merging_stats_{{ wname }}">
                                 <h4 class="panel-title">
                                     <a>Resolution shells</a>
                                 </h4>
