@@ -25,8 +25,6 @@
 
     <div class="tab-content">
         <div id="home" class="tab-pane in active">
-        <!--<div id="home" class="tab-pane active">-->
-            <h3>HOME</h3>
 
             <h2>Merging statistics</h2>
 
@@ -228,6 +226,12 @@
                             </div>
                         </div>
 
+                        {{ xia2_macros.xtriage_results(
+                            item['xtriage']['success'],
+                            item['xtriage']['warnings'],
+                            item['xtriage']['danger'],
+                            suffix="_"+wname) }}
+
                     </div>
 
                 </div>
@@ -242,12 +246,6 @@
                     </div>
 
                 </div>
-
-                {{ xia2_macros.xtriage_results(
-                    item['xtriage']['success'],
-                    item['xtriage']['warnings'],
-                    item['xtriage']['danger'],
-                    suffix="_"+wname) }}
 
             </div>
 
