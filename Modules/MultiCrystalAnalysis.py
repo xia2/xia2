@@ -187,7 +187,7 @@ class multi_crystal_analysis(object):
 
   def plot_relative_anomalous_cc(self, racc, labels=None):
     perm = flex.sort_permutation(racc)
-    fig = pyplot.figure(dpi=1200, figsize=(16,12))
+    fig = pyplot.figure(dpi=200, figsize=(16,12))
     pyplot.bar(range(len(racc)), list(racc.select(perm)))
     if labels is None:
       labels = ["%.0f" %(j+1) for j in perm]
@@ -236,7 +236,7 @@ class multi_crystal_analysis(object):
     ind = hierarchy.fcluster(linkage_matrix, t=0.05, criterion='distance')
 
     # Compute and plot dendrogram.
-    fig = pyplot.figure(dpi=1200, figsize=(16,12))
+    fig = pyplot.figure(dpi=200, figsize=(16,12))
     axdendro = fig.add_axes([0.09,0.1,0.2,0.8])
     Y = linkage_matrix
     Z = hierarchy.dendrogram(Y,
@@ -267,7 +267,7 @@ class multi_crystal_analysis(object):
     fig.savefig('correlation_matrix.png')
     fig.clear()
 
-    fig = pyplot.figure(dpi=1200, figsize=(16,12))
+    fig = pyplot.figure(dpi=200, figsize=(16,12))
 
     if labels is None:
       labels = ['%i' %(i+1) for i in range(len(self.intensities))]
