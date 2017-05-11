@@ -115,7 +115,19 @@ def generate_xia2_html(xinfo, filename='xia2.html'):
       json_data.update(report.cumulative_intensity_distribution_plot())
       json_data.update(report.l_test_plot())
       json_data.update(report.wilson_plot())
-      json_data.update(report.pychef_plots())
+      json_data.update(report.pychef_plots(n_bins=1))
+
+      from scitbx.array_family import flex
+      max_points = 500
+      for g in ('scale_rmerge_vs_batch', 'completeness_vs_dose',
+        'rcp_vs_dose', 'scp_vs_dose', 'rd_vs_batch_difference'):
+        for i, data in enumerate(json_data[g]['data']):
+          x = data['x']
+          n = len(x)
+          step = n//max_points
+          sel = (flex.int_range(n) % step) == 0
+          data['x'] = list(flex.int(data['x']).select(sel))
+          data['y'] = list(flex.double(data['y']).select(sel))
 
       import json
 

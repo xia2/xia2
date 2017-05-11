@@ -733,7 +733,7 @@ class xia2_report(object):
       }
     }
 
-  def pychef_plots(self):
+  def pychef_plots(self, n_bins=8):
 
     from xia2.Modules.PyChef2 import PyChef
 
@@ -743,7 +743,7 @@ class xia2_report(object):
 
     if self.params.chef_min_completeness:
       d_min = PyChef.resolution_limit(
-        mtz_file=self.unmerged_mtz, min_completeness=self.params.chef_min_completeness, n_bins=8)
+        mtz_file=self.unmerged_mtz, min_completeness=self.params.chef_min_completeness, n_bins=n_bins)
       print 'Estimated d_min for CHEF analysis: %.2f' %d_min
       sel = flex.bool(intensities.size(), True)
       d_spacings = intensities.d_spacings().data()
@@ -757,7 +757,7 @@ class xia2_report(object):
       dose = PyChef.batches_to_dose(batches.data(), self.params.dose)
     else:
       dose = dose.data()
-    pychef_stats = PyChef.Statistics(intensities, dose)
+    pychef_stats = PyChef.Statistics(intensities, dose, n_bins=n_bins)
 
     return pychef_stats.to_dict()
 

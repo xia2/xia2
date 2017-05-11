@@ -708,52 +708,53 @@ class Statistics(PyStatistics):
         'line': {'width': 3},
       })
 
-    for j in xrange(self.binner.n_bins_used()):
-      bin_range_suffix = ' (%.2f-%.2f A)' %self.binner.bin_d_range(j+1)
-      scp_data.append({
-        'x': x,
-        'y': list(self.scp_bins[j:j+1,:].as_1d()),
-        'type': 'scatter',
-        'name': 'Scp' + bin_range_suffix,
-        'line': {'width': 1, 'dash': 'dot'},
-        })
-      rcp_data.append({
-        'x': x,
-        'y': list(self.rcp_bins[j:j+1,:].as_1d()),
-        'type': 'scatter',
-        'name': 'Rcp' + bin_range_suffix,
-        'line': {'width': 1, 'dash': 'dot'},
-        })
+    if self.binner.n_bins_used() > 1:
+      for j in xrange(self.binner.n_bins_used()):
+        bin_range_suffix = ' (%.2f-%.2f A)' %self.binner.bin_d_range(j+1)
+        scp_data.append({
+          'x': x,
+          'y': list(self.scp_bins[j:j+1,:].as_1d()),
+          'type': 'scatter',
+          'name': 'Scp' + bin_range_suffix,
+          'line': {'width': 1, 'dash': 'dot'},
+          })
+        rcp_data.append({
+          'x': x,
+          'y': list(self.rcp_bins[j:j+1,:].as_1d()),
+          'type': 'scatter',
+          'name': 'Rcp' + bin_range_suffix,
+          'line': {'width': 1, 'dash': 'dot'},
+          })
 
-      completeness_data.append({
-        'x': x,
-        'y': list(self.ieither_comp_bins[j:j+1,:].as_1d()),
-        'type': 'scatter',
-        'name': 'I' + bin_range_suffix,
-        'line': {'width': 1, 'dash': 'dot'},
-        })
-      #if anomalous:
-        #completeness_data.append({
-          #'x': x,
-          #'y': list(self.iboth_comp_bins[j:j+1,:].as_1d()),
-          #'type': 'scatter',
-          #'name': 'dI' + bin_range_suffix,
-          #'line': {'width': 1, 'dash': 'dot'},
-        #})
-        #completeness_data.append({
-          #'x': x,
-          #'y': list(self.iplus_comp_bins[j:j+1,:].as_1d()),
-          #'type': 'scatter',
-          #'name': 'I+' + bin_range_suffix,
-          #'line': {'width': 1, 'dash': 'dot'},
-        #})
-        #completeness_data.append({
-          #'x': x,
-          #'y': list(self.iminus_comp_bins[j:j+1,:].as_1d()),
-          #'type': 'scatter',
-          #'name': 'I-' + bin_range_suffix,
-          #'line': {'width': 1, 'dash': 'dot'},
-        #})
+        completeness_data.append({
+          'x': x,
+          'y': list(self.ieither_comp_bins[j:j+1,:].as_1d()),
+          'type': 'scatter',
+          'name': 'I' + bin_range_suffix,
+          'line': {'width': 1, 'dash': 'dot'},
+          })
+        #if anomalous:
+          #completeness_data.append({
+            #'x': x,
+            #'y': list(self.iboth_comp_bins[j:j+1,:].as_1d()),
+            #'type': 'scatter',
+            #'name': 'dI' + bin_range_suffix,
+            #'line': {'width': 1, 'dash': 'dot'},
+          #})
+          #completeness_data.append({
+            #'x': x,
+            #'y': list(self.iplus_comp_bins[j:j+1,:].as_1d()),
+            #'type': 'scatter',
+            #'name': 'I+' + bin_range_suffix,
+            #'line': {'width': 1, 'dash': 'dot'},
+          #})
+          #completeness_data.append({
+            #'x': x,
+            #'y': list(self.iminus_comp_bins[j:j+1,:].as_1d()),
+            #'type': 'scatter',
+            #'name': 'I-' + bin_range_suffix,
+            #'line': {'width': 1, 'dash': 'dot'},
+          #})
 
     d = {
       'scp_vs_dose': {
