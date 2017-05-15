@@ -328,10 +328,6 @@ dials
     background_algorithm = simple null *glm
       .type = choice
       .short_caption = "Background fit method"
-    use_threading = False
-      .type = bool
-      .short_caption = "Use threading"
-      .expert_level = 2
     include_partials = True
       .type = bool
       .help = "Include partial reflections (scaled) in output"

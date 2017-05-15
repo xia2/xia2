@@ -37,16 +37,12 @@ def Integrate(DriverType = None):
       self._mosaic = None
       self._d_max = None
       self._d_min = None
-      self._use_threading = False
       self._scan_range = []
       self._reflections_per_degree = None
       self._integration_report = {}
 
     def get_per_image_statistics(self):
       return self._per_image_statistics
-
-    def set_use_threading(self, use_threading):
-      self._use_threading = use_threading
 
     def set_experiments_filename(self, experiments_filename):
       self._experiments_filename = experiments_filename
@@ -112,13 +108,15 @@ def Integrate(DriverType = None):
       self.clear_command_line()
       self.add_command_line('input.experiments=%s' % self._experiments_filename)
       nproc = PhilIndex.params.xia2.settings.multiprocessing.nproc
+      njob = PhilIndex.params.xia2.settings.multiprocessing.njob
+      mp_mode = PhilIndex.params.xia2.settings.multiprocessing.mode
+      mp_type = PhilIndex.params.xia2.settings.multiprocessing.type
       self.set_cpu_threads(nproc)
 
-      if self._use_threading:
-        self.add_command_line('nthreads=%i' %nproc)
-        nproc = 1
-
       self.add_command_line('nproc=%i' % nproc)
+      if mp_mode == 'serial' and mp_type == 'qsub' and njob > 1:
+        self.add_command_line('mp.method=drmaa')
+        self.add_command_line('mp.njobs=%i' %njob)
       self.add_command_line(('input.reflections=%s' % self._reflections_filename))
       self._integrated_reflections = os.path.join(
         self.get_working_directory(), '%d_integrated.pickle' %self.get_xpid())

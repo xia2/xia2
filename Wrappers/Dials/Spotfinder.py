@@ -108,8 +108,14 @@ def Spotfinder(DriverType = None):
           'output.datablock="%s"' % self._output_sweep_filename)
       self.add_command_line('output.reflections="%s"' % self._input_spot_filename)
       nproc = PhilIndex.params.xia2.settings.multiprocessing.nproc
+      njob = PhilIndex.params.xia2.settings.multiprocessing.njob
+      mp_mode = PhilIndex.params.xia2.settings.multiprocessing.mode
+      mp_type = PhilIndex.params.xia2.settings.multiprocessing.type
       self.set_cpu_threads(nproc)
       self.add_command_line('nproc=%i' % nproc)
+      if mp_mode == 'serial' and mp_type == 'qsub' and njob > 1:
+        self.add_command_line('mp.method=drmaa')
+        self.add_command_line('mp.njobs=%i' %njob)
       for scan_range in self._scan_ranges:
         self.add_command_line('spotfinder.scan_range=%d,%d' % scan_range)
       if self._min_spot_size is not None:

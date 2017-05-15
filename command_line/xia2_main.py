@@ -135,7 +135,7 @@ def xia2_main(stop_after=None):
 
   failover = params.xia2.settings.failover
 
-  if njob > 1:
+  if mp_params.mode == 'parallel' and njob > 1:
     driver_type = mp_params.type
     command_line_args = CommandLine.get_argv()[1:]
     for crystal_id in crystals.keys():

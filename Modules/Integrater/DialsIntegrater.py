@@ -111,8 +111,6 @@ class DialsIntegrater(Integrater):
 
     integrate.set_reflections_filename(self._intgr_indexed_filename)
 
-    integrate.set_use_threading(params.use_threading)
-
     auto_logfiler(integrate, 'INTEGRATE')
 
     return integrate

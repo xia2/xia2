@@ -193,7 +193,11 @@ class _CommandLine(object):
         from xia2.Handlers.Environment import get_number_cpus
         mp_params.nproc = get_number_cpus()
     elif mp_params.mode == 'serial':
-      mp_params.njob = 1
+      if mp_params.type == 'qsub':
+        if which('qsub') is None:
+          raise Sorry('qsub not available')
+      if mp_params.njob is Auto:
+        mp_params.njob = 1
       if mp_params.nproc is Auto:
         from xia2.Handlers.Environment import get_number_cpus
         mp_params.nproc = get_number_cpus()
