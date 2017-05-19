@@ -132,12 +132,16 @@ class xia2_report(object):
     if not self.intensities.space_group().is_centric():
       headers.append('CCano')
     rows = []
+
+    def safe_format(format_str, item):
+      return format_str %item if item is not None else ''
+
     for bin_stats in self.merging_stats.bins:
       row = ['%.2f - %.2f' %(bin_stats.d_max, bin_stats.d_min),
              bin_stats.n_obs, bin_stats.n_uniq, '%.2f' %bin_stats.mean_redundancy,
              '%.2f' %(100*bin_stats.completeness), '%.1f' %bin_stats.i_mean,
-             '%.1f' %bin_stats.i_over_sigma_mean, '%.3f' %bin_stats.r_merge,
-             '%.3f' %bin_stats.r_meas, '%.3f' %bin_stats.r_pim]
+             '%.1f' %bin_stats.i_over_sigma_mean, safe_format('%.3f', bin_stats.r_merge),
+             safe_format('%.3f', bin_stats.r_meas), safe_format('%.3f', bin_stats.r_pim)]
       if self.params.cc_half_method == 'sigma_tau':
         row.append(
           '%.3f%s' %(bin_stats.cc_one_half_sigma_tau,
