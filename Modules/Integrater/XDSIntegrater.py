@@ -508,7 +508,7 @@ class XDSIntegrater(Integrater):
     if PhilIndex.params.xia2.settings.input.format.dynamic_shadowing:
       from libtbx import easy_pickle
       from dxtbx.serialize import load
-      from dials.command_line.check_strategy import filter_shadowed_reflections
+      from dials.algorithms.shadowing.filter import filter_shadowed_reflections
 
       experiments_json = xparm_xds_to_experiments_json(
         self._xds_data_files['XPARM.XDS'], self.get_working_directory())
