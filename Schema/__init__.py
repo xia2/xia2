@@ -112,7 +112,7 @@ def load_imagesets(template, directory, id_image=None, image_range=None,
       else:
         from dxtbx.datablock import DataBlockTemplateImporter
         importer = DataBlockTemplateImporter(
-          [full_template_path], kwargs=format_kwargs)
+          [full_template_path], format_kwargs=format_kwargs)
         datablocks = importer.datablocks
 
     imagesets = datablocks[0].extract_sweeps()
