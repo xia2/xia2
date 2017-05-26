@@ -147,8 +147,7 @@ def generate_xia2_html(xinfo, filename='xia2.html'):
         ('cumulative_intensity_distribution', 'l_test', 'multiplicities') if k in json_data)
 
       for k, v in report.multiplicity_plots().iteritems():
-        misc_graphs[k + '_' + wname] = v
-        styles[k + '_' + wname] = 'square-plot'
+        misc_graphs[k + '_' + wname] = {'img': v}
 
       d['resolution_graphs'] = resolution_graphs
       d['batch_graphs'] = batch_graphs

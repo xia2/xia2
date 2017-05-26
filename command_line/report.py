@@ -113,16 +113,21 @@ class xia2_report(object):
 
     from xia2.Wrappers.XIA.PlotMultiplicity import PlotMultiplicity
     mult_json_files = {}
+    mult_img_files = {}
+    from xia2.lib.bits import auto_logfiler
     for axis in ('h', 'k', 'l'):
       pm = PlotMultiplicity()
       pm.set_mtz_filename(self.unmerged_mtz)
       pm.set_slice_axis(axis)
       pm.set_show_missing(True)
+      auto_logfiler(pm)
       pm.run()
       mult_json_files[axis] = pm.get_json_filename()
+      mult_img_files[axis] = pm.get_plot_filename()
 
     return OrderedDict(
-      ('multiplicity_%s' %axis, open(mult_json_files[axis], 'rb').read())
+      ('multiplicity_%s' %axis,
+       open(mult_img_files[axis], 'rb').read().encode('base64').replace('\n', ''))
       for axis in ('h', 'k', 'l'))
 
   def merging_statistics_table(self):
