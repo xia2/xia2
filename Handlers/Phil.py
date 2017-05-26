@@ -756,25 +756,29 @@ xia2.settings
     .expert_level = 1
   multiprocessing
     .short_caption = "Multiprocessing"
-    .expert_level = 1
   {
     mode = *serial parallel
       .type = choice
       .help = "Whether to process each sweep in serial (using n processes per"
               " sweep) or to process sweeps in parallel (using 1 process per"
               " sweep)."
+      .expert_level = 1
     nproc = Auto
       .type = int(value_min=1)
       .help = "The number of processors to use per job."
+      .expert_level = 0
     njob = Auto
       .type = int(value_min=1)
       .help = "The number of sweeps to process simultaneously."
+      .expert_level = 1
     type = *simple qsub
       .type = choice
       .help = "How to run the parallel processing jobs, e.g. over a cluster"
+      .expert_level = 1
     qsub_command = ''
       .type = str
       .help = "The command to use to submit qsub jobs"
+      .expert_level = 1
   }
 }
 """, process_includes=True)
