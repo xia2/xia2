@@ -3,27 +3,47 @@ from __future__ import absolute_import, division
 from dials.array_family import flex
 import cPickle as pickle
 
-def mosaic_profile(profile):
+def mosaic_profile_xyz(profile):
   nz, ny, nx = profile.focus()
-  z = flex.double(nz, 0.0)
 
+  x = flex.double(nx, 0.0)
+  for j in range(nx):
+    x[j] = flex.sum(profile[:,:,j:j+1])
+
+  y = flex.double(ny, 0.0)
+  for j in range(ny):
+    y[j] = flex.sum(profile[:,j:j+1,:])
+
+  z = flex.double(nz, 0.0)
   for j in range(nz):
     z[j] = flex.sum(profile[j:j+1,:,:])
 
-  return z
+  return x, y, z
 
 def go(filename):
   allprof = pickle.load(open(filename))
   for prof in allprof:
-    z = mosaic_profile(prof[0])
+    x, y, z = mosaic_profile_xyz(prof[0])
     for profile in prof[1:]:
-      z += mosaic_profile(profile)
+      _x, _y, _z = mosaic_profile_xyz(profile)
+      x += _x
+      y += _y
+      z += _z
+
+    x /= flex.max(x)
+    data = (100 * x).iround()
+    fmt = '%3d ' * x.size()
+    print 'X:', fmt % tuple(data)
+
+    y /= flex.max(y)
+    data = (100 * y).iround()
+    fmt = '%3d ' * y.size()
+    print 'Y:', fmt % tuple(data)
+
     z /= flex.max(z)
     data = (100 * z).iround()
-
     fmt = '%3d ' * z.size()
-
-    print fmt % tuple(data)
+    print 'Z:', fmt % tuple(data)
 
 if __name__ == '__main__':
   import sys
