@@ -3,10 +3,10 @@ _*.nb
 *.fdb_latexmk
 *.gz
 *.pdf
-*.pyc
+*.py[cod]
 .DS_Store
 *~
-*.swp
+*.sw[op]
 .olex
 .git-notifier*
 git-notifier.log
