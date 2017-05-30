@@ -70,7 +70,7 @@ def exercise_dials_integrater(nproc=None):
   reader = any_reflection_file(integrater_intensities)
   assert reader.file_type() == "ccp4_mtz"
   mtz_object = reader.file_content()
-  assert abs(mtz_object.n_reflections() - 48117) < 300, mtz_object.n_reflections()
+  assert abs(mtz_object.n_reflections() - 48504) < 300, mtz_object.n_reflections()
 
   assert mtz_object.column_labels() == [
     'H', 'K', 'L', 'M_ISYM', 'BATCH', 'IPR', 'SIGIPR', 'I', 'SIGI',

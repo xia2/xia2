@@ -104,7 +104,6 @@ def build_hist(nproc=1):
     "python Counter" if use_python_counter else "flex arrays")
 
   def process_image(process):
-    import sys
     last_update = start = timeit.default_timer()
 
     i = process
