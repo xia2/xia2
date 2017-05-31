@@ -450,7 +450,7 @@ def scipy_dendrogram_to_plotly_json(ddict):
       xticktext.append(ivl[k_leaf_node])
       xtickvals.append(x[0])
       k_leaf_node += 1
-    if y[3] == 0:
+    elif y[3] == 0:
       xticktext.append(ivl[k_leaf_node])
       xtickvals.append(x[3])
       k_leaf_node += 1
