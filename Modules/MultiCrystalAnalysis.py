@@ -440,31 +440,26 @@ def scipy_dendrogram_to_plotly_json(ddict):
   xticktext = []
   xtickvals = []
 
-  k_leaf_node = 0
-
   for k in range(len(dcoord)):
     x = icoord[k]
     y = dcoord[k]
 
     if y[0] == 0:
-      xticktext.append(ivl[k_leaf_node])
       xtickvals.append(x[0])
-      k_leaf_node += 1
-    elif y[3] == 0:
-      xticktext.append(ivl[k_leaf_node])
+    if y[3] == 0:
       xtickvals.append(x[3])
-      k_leaf_node += 1
 
     data.append({
       'x': x,
       'y': y,
-      'name': ivl,
       'marker': {
         'color': colors.get(color_list[k]),
       },
       'mode':"lines",
     })
 
+  xtickvals = sorted(xtickvals)
+  xticktext = ivl
   d = {
     'data': data,
     'layout': {
