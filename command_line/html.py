@@ -124,10 +124,11 @@ def generate_xia2_html(xinfo, filename='xia2.html'):
         for i, data in enumerate(json_data[g]['data']):
           x = data['x']
           n = len(x)
-          step = n//max_points
-          sel = (flex.int_range(n) % step) == 0
-          data['x'] = list(flex.int(data['x']).select(sel))
-          data['y'] = list(flex.double(data['y']).select(sel))
+          if n > max_points:
+            step = n//max_points
+            sel = (flex.int_range(n) % step) == 0
+            data['x'] = list(flex.int(data['x']).select(sel))
+            data['y'] = list(flex.double(data['y']).select(sel))
 
       import json
 
@@ -164,7 +165,7 @@ def generate_xia2_html(xinfo, filename='xia2.html'):
   from cctbx import sgtbx
   space_groups = xcryst.get_likely_spacegroups()
   space_groups = [
-    sgtbx.space_group_info(symbol=symbol) for symbol in space_groups]
+    sgtbx.space_group_info(symbol=str(symbol)) for symbol in space_groups]
   space_group = space_groups[0].symbol_and_number()
   alternative_space_groups = [sg.symbol_and_number() for sg in space_groups[1:]]
   unit_cell = str(report.intensities.unit_cell())
