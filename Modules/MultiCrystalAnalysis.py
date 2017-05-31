@@ -139,13 +139,13 @@ class multi_crystal_analysis(object):
       self.plot_relative_anomalous_cc(racc, labels=labels)
     correlation_matrix, linkage_matrix = self.compute_correlation_coefficient_matrix()
 
-    self._cluster_dict = self.to_dict(correlation_matrix, linkage_matrix)
+    self._cluster_dict = self.to_dict(linkage_matrix)
 
     self.plot_cc_matrix(correlation_matrix, linkage_matrix, labels=labels)
 
     self.write_output()
 
-  def to_dict(self, correlation_matrix, linkage_matrix):
+  def to_dict(self, linkage_matrix):
 
     from scipy.cluster import hierarchy
     tree = hierarchy.to_tree(linkage_matrix, rd=False)
