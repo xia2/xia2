@@ -236,7 +236,7 @@ class xia2_report(object):
     xout.flush()
     sub_header_to_out = xout._sub_header_to_out
     issues = xanalysis.summarize_issues()
-    issues.show()
+    #issues.show()
 
     for level, text, sub_header in issues._issues:
       summary = sub_header_to_out.get(sub_header, StringIO()).getvalue()
