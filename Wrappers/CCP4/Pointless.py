@@ -333,7 +333,7 @@ def Pointless(DriverType = None):
 
       return
 
-    def decide_pointgroup(self, ignore_errors=False):
+    def decide_pointgroup(self, ignore_errors=False, batches=None):
       '''Decide on the correct pointgroup for hklin.'''
 
       if not self._xdsin:
@@ -362,6 +362,11 @@ def Pointless(DriverType = None):
         self.add_command_line(self._hklref)
 
       self.start()
+
+      # https://github.com/xia2/xia2/issues/125 pass in run limits for this
+      # HKLIN file - prevents automated RUN determination from causing errors
+      if batches:
+        self.input('run 1 batch %d to %d' % tuple(batches))
 
       self.input('systematicabsences off')
       self.input('setting symmetry-based')

@@ -144,6 +144,20 @@ class XDSScalerA(Scaler):
     auto_logfiler(cellparm)
     return cellparm
 
+  def _xdsin_to_batch_range(self, xdsin):
+    for record in open(xdsin):
+      if not record.startswith('!'):
+        break
+      if record.startswith('!DATA_RANGE'):
+        return map(int, record.split()[-2:])
+    raise RuntimeError, 'BATCH range not found in %s' % xdsin
+
+  def _hklin_to_batch_range(self, hklin):
+    from iotbx import mtz
+    m = mtz.object(hklin)
+    b = m.batches()
+    return b[0].num(), b[-1].num()
+
   def _pointless_indexer_jiffy(self, hklin, refiner):
     '''A jiffy to centralise the interactions between pointless
     (in the blue corner) and the Indexer, in the red corner.'''
@@ -155,12 +169,16 @@ class XDSScalerA(Scaler):
 
     pointless = self._factory.Pointless()
 
+    batches = None
+
     if is_mtz_file(hklin):
+      batches = self._hklin_to_batch_range(hklin)
       pointless.set_hklin(hklin)
     else:
+      batches = self._xdsin_to_batch_range(hklin)
       pointless.set_xdsin(hklin)
 
-    pointless.decide_pointgroup()
+    pointless.decide_pointgroup(batches=batches)
 
     rerun_pointless = False
 
@@ -684,7 +702,7 @@ class XDSScalerA(Scaler):
         pointless.set_xdsin(hklin)
         hklout = os.path.join(
           self.get_working_directory(),
-          '%d_xds-pointgroup-unsorted.mtz' %pointless.get_xpid())
+          '%d_xds-pointgroup-unsorted.mtz' % pointless.get_xpid())
         FileHandler.record_temporary_file(hklout)
         pointless.set_hklout(hklout)
         pointless.xds_to_mtz()
@@ -692,7 +710,8 @@ class XDSScalerA(Scaler):
         pointless = self._factory.Pointless()
         pointless.set_hklin(hklout)
         pointless.set_hklref(self._reference)
-        pointless.decide_pointgroup()
+        batches = self._hklin_to_batch_range(hklout)
+        pointless.decide_pointgroup(batches=batches)
 
         pointgroup = pointless.get_pointgroup()
         reindex_op = pointless.get_reindex_operator()
