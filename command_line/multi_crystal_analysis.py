@@ -160,8 +160,8 @@ def multi_crystal_analysis(stop_after=None):
           assert len(expts) == 1, len(expts)
           expt = expts[0]
           uc_params = expt.crystal.get_unit_cell().parameters()
-          for i in range(6):
-            cluster_uc_params[i].append(uc_params[i])
+          for k in range(6):
+            cluster_uc_params[k].append(uc_params[k])
         intensities_cluster = intensities.select(sel_cluster)
         merging = intensities_cluster.merge_equivalents()
         merged_intensities = merging.array()
@@ -245,8 +245,8 @@ def multi_crystal_analysis(stop_after=None):
       assert len(expts) == 1, len(expts)
       expt = expts[0]
       uc_params = expt.crystal.get_unit_cell().parameters()
-      for i in range(6):
-        cluster_uc_params[i].append(uc_params[i])
+      for k in range(6):
+        cluster_uc_params[k].append(uc_params[k])
     intensities_cluster = intensities.select(sel_cluster)
     merging = intensities_cluster.merge_equivalents()
     merged_intensities = merging.array()
