@@ -234,8 +234,10 @@ def multi_crystal_analysis(stop_after=None):
   average_unit_cell_params = []
   for i, cluster in intensity_clusters.iteritems():
     sel_cluster = flex.bool(batches.size(), False)
+    cluster_uc_params = [flex.double() for i in range(6)]
     for j in cluster['datasets']:
-      batch_start, batch_end = epoch_to_batches[epochs[j-1]]
+      epoch = epochs[j-1]
+      batch_start, batch_end = epoch_to_batches[epoch]
       sel_cluster |= (
         (batches.data() >= batch_start) & (batches.data() <= batch_end))
       expts = epoch_to_experiments.get(epoch)
