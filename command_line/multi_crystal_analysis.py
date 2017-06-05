@@ -45,8 +45,12 @@ def multi_crystal_analysis(stop_after=None):
     epoch_to_batches = {}
     epoch_to_integrated_intensities = {}
     epoch_to_sweep_name = {}
+    epoch_to_experiments_filename = {}
     epoch_to_experiments = {}
+    sweep_name_to_epoch = {}
+    epoch_to_first_image = {}
 
+    from dxtbx.serialize import load
     try:
       epochs = scaler._sweep_information.keys()
       for epoch in epochs:
@@ -54,8 +58,11 @@ def multi_crystal_analysis(stop_after=None):
         epoch_to_batches[epoch] = si['batches']
         epoch_to_integrated_intensities[epoch] = si['corrected_intensities']
         epoch_to_sweep_name[epoch] = si['sname']
+        sweep_name_to_epoch[si['name']] = epoch
         intgr = si['integrater']
-        epoch_to_experiments[epoch] = intgr.get_integrated_experiments()
+        epoch_to_experiments_filename[epoch] = intgr.get_integrated_experiments()
+        epoch_to_experiments[epoch] = load.experiment_list(
+          intgr.get_integrated_experiments())
 
     except AttributeError, e:
       epochs = scaler._sweep_handler.get_epochs()
@@ -64,8 +71,11 @@ def multi_crystal_analysis(stop_after=None):
         epoch_to_batches[epoch] = si.get_batches()
         epoch_to_integrated_intensities[epoch] = si.get_reflections()
         epoch_to_sweep_name[epoch] = si.get_sweep_name()
+        sweep_name_to_epoch[si.get_sweep_name()] = epoch
         intgr = si.get_integrater()
-        epoch_to_experiments[epoch] = intgr.get_integrated_experiments()
+        epoch_to_experiments_filename[epoch] = intgr.get_integrated_experiments()
+        epoch_to_experiments[epoch] = load.experiment_list(
+          intgr.get_integrated_experiments())
 
     from xia2.Wrappers.Dials.StereographicProjection import StereographicProjection
     sp_json_files = {}
@@ -73,7 +83,7 @@ def multi_crystal_analysis(stop_after=None):
       sp = StereographicProjection()
       auto_logfiler(sp)
       sp.set_working_directory(working_directory)
-      for experiments in epoch_to_experiments.values():
+      for experiments in epoch_to_experiments_filename.values():
         sp.add_experiments(experiments)
       sp.set_hkl(hkl)
       sp.run()
@@ -127,30 +137,56 @@ def multi_crystal_analysis(stop_after=None):
       summary = hand_blender.get_summary()
       clusters = hand_blender.get_clusters()
 
-      linkage_matrix = hand_blender.get_linkage_matrix()
       ddict = hand_blender.plot_dendrogram()
 
+      phil_files_dir = 'phil_files'
+      if not os.path.exists(phil_files_dir):
+        os.makedirs(phil_files_dir)
+
       rows = []
-      headers = ['Cluster', 'Datasets', 'Multiplicity', 'Completeness', 'LCV', 'aLCV']
+      headers = ['Cluster', 'Datasets', 'Multiplicity', 'Completeness', 'LCV', 'aLCV', 'Average unit cell']
       completeness = flex.double()
+      average_unit_cell_params = []
       for i, cluster in clusters.iteritems():
         sel_cluster = flex.bool(batches.size(), False)
+        cluster_uc_params = [flex.double() for i in range(6)]
         for j in cluster['dataset_ids']:
-          batch_start, batch_end = epoch_to_batches[epochs[j-1]]
+          epoch = epochs[j-1]
+          batch_start, batch_end = epoch_to_batches[epoch]
           sel_cluster |= (
             (batches.data() >= batch_start) & (batches.data() <= batch_end))
+          expts = epoch_to_experiments.get(epoch)
+          assert expts is not None, (epoch)
+          assert len(expts) == 1, len(expts)
+          expt = expts[0]
+          uc_params = expt.crystal.get_unit_cell().parameters()
+          for i in range(6):
+            cluster_uc_params[i].append(uc_params[i])
         intensities_cluster = intensities.select(sel_cluster)
         merging = intensities_cluster.merge_equivalents()
         merged_intensities = merging.array()
         multiplicities = merging.redundancies()
         completeness.append(merged_intensities.completeness())
+        average_unit_cell_params.append(tuple(flex.mean(p) for p in cluster_uc_params))
         dataset_ids = cluster['dataset_ids']
+
+        assert min(dataset_ids) > 0
+        with open(os.path.join(
+                  phil_files_dir, 'blend_cluster_%i_images.phil' %i), 'wb') as f:
+          sweep_names = [hand_blender._labels[dataset_id-1] for dataset_id in dataset_ids]
+          for sweep_name in sweep_names:
+            expts = epoch_to_experiments.get(sweep_name_to_epoch.get(sweep_name))
+            assert expts is not None, (sweep_name, sweep_name_to_epoch.get(sweep_name))
+            assert len(expts) == 1, len(expts)
+            expt = expts[0]
+            print >> f, 'xia2.settings.input.image = %s' %expt.imageset.get_path(0)
 
         rows.append(
           ['%i' %i, ' '.join(['%i'] * len(dataset_ids)) %tuple(dataset_ids),
            '%.1f' %flex.mean(multiplicities.data().as_double()),
            '%.2f' %completeness[-1],
-           '%.2f' %cluster['lcv'], '%.2f' %cluster['alcv']])
+           '%.2f' %cluster['lcv'], '%.2f' %cluster['alcv'],
+           '%g %g %g %g %g %g' %average_unit_cell_params[-1]])
 
       # sort table by completeness
       perm = flex.sort_permutation(completeness)
@@ -193,26 +229,36 @@ def multi_crystal_analysis(stop_after=None):
 
   intensity_clusters = mca.get_clusters()
   rows = []
-  headers = ['Cluster', 'Datasets', 'Multiplicity', 'Completeness', 'Height']
+  headers = ['Cluster', 'Datasets', 'Multiplicity', 'Completeness', 'Height', 'Average unit cell']
   completeness = flex.double()
+  average_unit_cell_params = []
   for i, cluster in intensity_clusters.iteritems():
     sel_cluster = flex.bool(batches.size(), False)
     for j in cluster['datasets']:
       batch_start, batch_end = epoch_to_batches[epochs[j-1]]
       sel_cluster |= (
         (batches.data() >= batch_start) & (batches.data() <= batch_end))
+      expts = epoch_to_experiments.get(epoch)
+      assert expts is not None, (epoch)
+      assert len(expts) == 1, len(expts)
+      expt = expts[0]
+      uc_params = expt.crystal.get_unit_cell().parameters()
+      for i in range(6):
+        cluster_uc_params[i].append(uc_params[i])
     intensities_cluster = intensities.select(sel_cluster)
     merging = intensities_cluster.merge_equivalents()
     merged_intensities = merging.array()
     multiplicities = merging.redundancies()
     completeness.append(merged_intensities.completeness())
+    average_unit_cell_params.append(tuple(flex.mean(p) for p in cluster_uc_params))
     dataset_ids = cluster['datasets']
 
     rows.append(
       ['%i' %int(i), ' '.join(['%i'] * len(dataset_ids)) %tuple(dataset_ids),
        '%.1f' %flex.mean(multiplicities.data().as_double()),
        '%.2f' %completeness[-1],
-       '%.2f' %cluster['height']])
+       '%.2f' %cluster['height'],
+       '%g %g %g %g %g %g' %average_unit_cell_params[-1]])
 
   # sort table by completeness
   perm = flex.sort_permutation(completeness)
