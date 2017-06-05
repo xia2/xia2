@@ -148,8 +148,9 @@ def multi_crystal_analysis(stop_after=None):
       completeness = flex.double()
       average_unit_cell_params = []
       for i, cluster in clusters.iteritems():
+        print i
         sel_cluster = flex.bool(batches.size(), False)
-        cluster_uc_params = [flex.double() for i in range(6)]
+        cluster_uc_params = [flex.double() for k in range(6)]
         for j in cluster['dataset_ids']:
           epoch = epochs[j-1]
           batch_start, batch_end = epoch_to_batches[epoch]
@@ -234,7 +235,7 @@ def multi_crystal_analysis(stop_after=None):
   average_unit_cell_params = []
   for i, cluster in intensity_clusters.iteritems():
     sel_cluster = flex.bool(batches.size(), False)
-    cluster_uc_params = [flex.double() for i in range(6)]
+    cluster_uc_params = [flex.double() for k in range(6)]
     for j in cluster['datasets']:
       epoch = epochs[j-1]
       batch_start, batch_end = epoch_to_batches[epoch]
