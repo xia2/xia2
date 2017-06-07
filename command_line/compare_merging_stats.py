@@ -75,8 +75,17 @@ def plot_merging_stats(results, labels=None, plots=None, prefix=None,
   from matplotlib import pyplot
   pyplot.style.use('ggplot')
 
+  from cycler import cycler
+  colors = pyplot.rcParams['axes.prop_cycle'].by_key()['color']
+  linestyles = []
+  for style in ('-', '--', ':', '-.'):
+    linestyles.extend([style]*len(colors))
+  colors = colors * len(set(linestyles))
+  pyplot.rc('axes', prop_cycle=(cycler('c', colors) + cycler('ls', linestyles)))
+
   if plots is None:
-    plots = ('r_merge', 'r_meas', 'r_pim', 'cc_one_half', 'cc_anom',
+    plots = ('r_merge', 'r_meas', 'r_pim', 'cc_one_half',
+             'cc_one_half_sigma_tau', 'cc_anom',
              'i_over_sigma_mean', 'completeness', 'mean_redundancy')
   if prefix is None:
     prefix = ''
@@ -84,8 +93,10 @@ def plot_merging_stats(results, labels=None, plots=None, prefix=None,
     assert len(results) == len(labels)
   if image_dir is None:
     image_dir = '.'
+  elif not os.path.exists(image_dir):
+    os.makedirs(image_dir)
   for k in plots:
-    def plot_data(results, k, labels, linestyle):
+    def plot_data(results, k, labels, linestyle=None):
       for i, result in enumerate(results):
         if labels is not None:
           label = labels[i]
@@ -96,13 +107,10 @@ def plot_merging_stats(results, labels=None, plots=None, prefix=None,
         x = [uctbx.d_as_d_star_sq(d) for d in x]
         y = [getattr(bins[i], k) for i in range(len(bins))]
         pyplot.plot(x, y, label=label, linestyle=linestyle)
-    plot_data(results, k, labels, linestyle='-')
-    if k == 'cc_one_half':
-      pyplot.gca().set_prop_cycle(None)
-      plot_data(results, 'cc_one_half_sigma_tau', labels, linestyle='--')
+    plot_data(results, k, labels)
     pyplot.xlabel('d spacing')
     pyplot.ylabel(k)
-    if k in ('cc_one_half', 'completeness'):
+    if k in ('cc_one_half', 'cc_one_half_sigma_tau', 'completeness'):
       pyplot.ylim(0, 1.05)
     else:
       pyplot.ylim(0, pyplot.ylim()[1])
