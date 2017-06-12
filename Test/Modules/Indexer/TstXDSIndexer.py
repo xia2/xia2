@@ -52,8 +52,8 @@ def exercise_xds_indexer(nproc=None):
   indexer.index()
 
   assert approx_equal(
-    indexer.get_indexer_cell(), (78.07336, 78.07337, 78.07336, 90, 90, 90),
-    eps=1e-3), indexer.get_indexer_cell()
+    indexer.get_indexer_cell(), (78.076, 78.076, 78.076, 90, 90, 90),
+    eps=1e-2), indexer.get_indexer_cell()
   experiment = indexer.get_indexer_experiment_list()[0]
   sgi = experiment.crystal.get_space_group().info()
   assert sgi.type().number() == 197
