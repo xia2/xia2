@@ -175,7 +175,7 @@ def XDSIntegrate(DriverType=None, params=None):
       from libtbx import Auto
       mp_params = PhilIndex.params.xia2.settings.multiprocessing
       if mp_params.mode == 'serial' and mp_params.njob > 1:
-        xds_inp.write('MAXIMUM_NUMBER_OF_JOBS=%d\n' %mp_params.njob)
+        xds_inp.write('MAXIMUM_NUMBER_OF_JOBS=%d\n' % mp_params.njob)
 
       elif mp_params.mode == 'serial' and mp_params.njob == Auto:
         chunk_width = 30.0
@@ -187,6 +187,8 @@ def XDSIntegrate(DriverType=None, params=None):
         Debug.write('Xparallel: -1 using %d chunks' % nchunks)
 
         xds_inp.write('MAXIMUM_NUMBER_OF_JOBS=%d\n' % nchunks)
+      else:
+        xds_inp.write('MAXIMUM_NUMBER_OF_JOBS=1\n')
 
       profile_fitting = PhilIndex.params.xia2.settings.integration.profile_fitting
       if not profile_fitting:

@@ -123,6 +123,7 @@ def XDSColspot(DriverType=None, params=None):
       xds_inp.write('JOB=COLSPOT\n')
       xds_inp.write('MAXIMUM_NUMBER_OF_PROCESSORS=%d\n' % \
                     self._parallel)
+      xds_inp.write('MAXIMUM_NUMBER_OF_JOBS=1\n')
 
       #if image_header['detector'] in ('pilatus', 'dectris'):
       if self.get_imageset().get_detector()[0].get_type() == 'SENSOR_PAD':
