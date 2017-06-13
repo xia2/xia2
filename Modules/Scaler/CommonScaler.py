@@ -547,7 +547,7 @@ class CommonScaler(Scaler):
       raise RuntimeError, 'no reflection files stored'
 
     # run xia2.report on each unmerged mtz file
-    self._scale_finish_chunk_2_report()
+    #self._scale_finish_chunk_2_report()
 
     if PhilIndex.params.xia2.settings.small_molecule == False:
       self._scale_finish_chunk_3_truncate()

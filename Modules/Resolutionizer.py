@@ -291,8 +291,44 @@ class resolutionizer(object):
     self._params = params
 
     import iotbx.merging_statistics
-    i_obs = iotbx.merging_statistics.select_data(scaled_unmerged, data_labels=None)
+
+    from iotbx import reflection_file_reader
+    hkl_in = reflection_file_reader.any_reflection_file(scaled_unmerged)
+    miller_arrays = hkl_in.as_miller_arrays(merge_equivalents=False)
+    i_obs = None
+    batches = None
+    all_i_obs = []
+    for array in miller_arrays :
+      labels = array.info().label_string()
+      if (array.is_xray_intensity_array()) :
+        all_i_obs.append(array)
+      if (labels == 'BATCH'):
+        assert batches is None
+        batches = array
+    if (i_obs is None) :
+      if (len(all_i_obs) == 0) :
+        raise Sorry("No intensities found in %s." % file_name)
+      elif (len(all_i_obs) > 1) :
+        raise Sorry("Multiple intensity arrays - please specify one:\n%s" %
+          "\n".join(["  labels=%s"%a.info().label_string() for a in all_i_obs]))
+      else :
+        i_obs = all_i_obs[0]
+    if hkl_in.file_type() == 'ccp4_mtz':
+      # need original miller indices otherwise we don't get correct anomalous
+      # merging statistics
+      mtz_object = hkl_in.file_content()
+      if "M_ISYM" in mtz_object.column_labels():
+        indices = mtz_object.extract_original_index_miller_indices()
+        i_obs = i_obs.customized_copy(indices=indices, info=i_obs.info())
+
     i_obs = i_obs.customized_copy(anomalous_flag=True, info=i_obs.info())
+
+    if self._params.batch_range is not None:
+      batch_min, batch_max = self._params.batch_range
+      assert batches is not None
+      sel = (batches.data() >= batch_min) & (batches.data() <= batch_max)
+      batches = batches.select(sel).set_info(batches.info())
+      i_obs = i_obs.select(sel).set_info(i_obs.info())
 
     self._merging_statistics = iotbx.merging_statistics.dataset_statistics(
       i_obs=i_obs,
