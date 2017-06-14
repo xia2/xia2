@@ -171,5 +171,6 @@ Command-line options to xia2:
   sys.stdout.write('[crystal=bar] (say) - this is for xia2setup\n\n')
 
   sys.stdout.write('Sensible command lines:\n')
-  sys.stdout.write('xia2 (pipeline=2d|3d|..) -xinfo foo.xinfo\n')
+  sys.stdout.write('xia2 (pipeline=2d|3d|..) xinfo=foo.xinfo\n')
   sys.stdout.write('xia2 project=foo crystal=bar (pipeline=2d|3d|..) /data/path\n')
+  sys.stdout.write('xia2 image=/data/path/segment_1_0001.cbf:1:900\n')
