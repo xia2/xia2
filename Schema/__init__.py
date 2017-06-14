@@ -72,7 +72,7 @@ def load_imagesets(template, directory, id_image=None, image_range=None,
             master_file = p
 
       if master_file is None:
-        raise RuntimeError("Can't find master file for %s" %full_template_path)
+        raise RuntimeError("Can't find master file for %s" % full_template_path)
 
       unhandled = []
       datablocks = DataBlockFactory.from_filenames(
@@ -82,6 +82,7 @@ def load_imagesets(template, directory, id_image=None, image_range=None,
         compare_goniometer=compare_goniometer,
         scan_tolerance=scan_tolerance,
         format_kwargs=format_kwargs)
+
       assert len(unhandled) == 0, "unhandled image files identified: %s" % \
           unhandled
       assert len(datablocks) == 1, "1 datablock expected, %d found" % \
@@ -191,7 +192,8 @@ def update_with_reference_geometry(imagesets, reference_geometry_list):
   reference_components = load_reference_geometries(reference_geometry_list)
 
   for imageset in imagesets:
-    reference_geometry = find_relevant_reference_geometry(imageset, reference_components)
+    reference_geometry = find_relevant_reference_geometry(imageset,
+                                                          reference_components)
     imageset.set_beam(reference_geometry['beam'])
     imageset.set_detector(reference_geometry['detector'])
 
@@ -212,7 +214,8 @@ def load_reference_geometries(geometry_file_list):
       imageset = datablock[0].extract_imagesets()[0]
       reference_detector = imageset.get_detector()
       reference_beam = imageset.get_beam()
-    reference_components.append({'detector': reference_detector, 'beam': reference_beam, 'file': file})
+    reference_components.append({'detector': reference_detector,
+                                 'beam': reference_beam, 'file': file})
 
   import itertools
   for combination in itertools.combinations(reference_components, 2):
