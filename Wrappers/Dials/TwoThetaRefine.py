@@ -37,6 +37,7 @@ def TwoThetaRefine(DriverType = None):
       # The following are set during run() call:
       self._output_cif = None
       self._output_mmcif = None
+      self._output_p4p = None
       self._output_correlation_plot = None
       self._output_experiments = None
 
@@ -62,6 +63,12 @@ def TwoThetaRefine(DriverType = None):
 
     def get_output_mmcif(self):
       return self._output_mmcif
+
+    def set_output_p4p(self, filename):
+      self._output_p4p = filename
+
+    def get_output_p4p(self):
+      return self._output_p4p
 
     def get_output_correlation_plot(self):
       return self._output_correlation_plot
@@ -107,6 +114,10 @@ def TwoThetaRefine(DriverType = None):
       self._output_mmcif = os.path.join(
         self.get_working_directory(),
         '%s_dials.two_theta_refine.mmcif' % self.get_xpid())
+      if not self._output_p4p:
+        self._output_p4p = os.path.join(
+          self.get_working_directory(),
+          '%s_dials.two_theta_refine.p4p' % self.get_xpid())
       self._output_correlation_plot = os.path.join(
         self.get_working_directory(),
         '%s_dials.two_theta_refine.png' % self.get_xpid())
@@ -128,6 +139,7 @@ def TwoThetaRefine(DriverType = None):
           self.add_command_line(pickle)
       self.add_command_line('output.cif=%s' % self._output_cif)
       self.add_command_line('output.mmcif=%s' % self._output_mmcif)
+      self.add_command_line('output.p4p=%s' % self._output_p4p)
       if self._output_correlation_plot is not None:
         self.add_command_line(
           'output.correlation_plot.filename=%s' % self._output_correlation_plot)

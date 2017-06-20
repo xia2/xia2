@@ -214,7 +214,10 @@ dials
     .short_caption = "Closeness to the spindle cutoff for including reflections in refinement"
     .expert_level = 2
 
-  masking {
+  masking
+    .short_caption = "Masking"
+    .expert_level = 1
+  {
     include scope dials.util.masking.phil_scope
   }
 

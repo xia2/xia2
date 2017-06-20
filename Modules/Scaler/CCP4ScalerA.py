@@ -1246,6 +1246,8 @@ class CCP4ScalerA(Scaler):
             intgr.get_integrater_reindex_operator())]
 
       # Two theta refine the unit cell for each group
+      p4p_file = os.path.join(self.get_working_directory(),
+                              '%s_%s.p4p' % (self._scalr_pname, self._scalr_xname))
       for pi in groups.keys():
         tt_grouprefiner = TwoThetaRefine()
         tt_grouprefiner.set_working_directory(self.get_working_directory())
@@ -1253,6 +1255,7 @@ class CCP4ScalerA(Scaler):
         args = zip(*groups[pi])
         tt_grouprefiner.set_experiments(args[0])
         tt_grouprefiner.set_pickles(args[1])
+        tt_grouprefiner.set_output_p4p(p4p_file)
         tt_refine_experiments.extend(args[0])
         tt_refine_pickles.extend(args[1])
         tt_refine_reindex_ops.extend(args[2])
@@ -1282,6 +1285,7 @@ class CCP4ScalerA(Scaler):
       if len(groups) > 1:
         tt_refiner = TwoThetaRefine()
         tt_refiner.set_working_directory(self.get_working_directory())
+        tt_refiner.set_output_p4p(p4p_file)
         auto_logfiler(tt_refiner)
         tt_refiner.set_experiments(tt_refine_experiments)
         tt_refiner.set_pickles(tt_refine_pickles)
@@ -1299,6 +1303,8 @@ class CCP4ScalerA(Scaler):
         mmcif_in = tt_refiner.import_mmcif()
       else:
         self._scalr_cell, self._scalr_cell_esd, cif_in, mmcif_in = self._scalr_cell_dict.values()[0]
+      if params.xia2.settings.small_molecule == True:
+        FileHandler.record_data_file(p4p_file)
 
       import dials.util.version
       cif_out = CIF.get_block('xia2')
