@@ -439,6 +439,7 @@ class xia2_report(object):
           },
           'yaxis': {
             'title': 'Completeness',
+            'range': (0, 1),
           },
         },
       }
