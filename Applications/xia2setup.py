@@ -384,49 +384,48 @@ def print_sweeps(out = sys.stdout):
                     %(width, min_oscillation_range))
         continue
 
-      j += 1
-      name = 'SWEEP%d' % j
-
-      out.write('BEGIN SWEEP %s\n' % name)
-
-      if PhilIndex.params.xia2.settings.input.reverse_phi:
-        out.write('REVERSEPHI\n')
-
-      out.write('WAVELENGTH %s\n' % wavelength_map[s.get_wavelength()])
-
-      out.write('DIRECTORY %s\n' % s.get_directory())
-      imgset = s.get_imageset()
-      out.write('IMAGE %s\n' % os.path.split(imgset.get_path(0))[-1])
-
-      if CommandLine.get_start_end(
-              os.path.join(s.get_directory(), s.get_template())):
-        start_end = CommandLine.get_start_end(
-              os.path.join(s.get_directory(), s.get_template()))
-        out.write('START_END %d %d\n' % start_end)
+      key = os.path.join(s.get_directory(), s.get_template())
+      if CommandLine.get_start_ends(key):
+        start_ends = CommandLine.get_start_ends(key)
       else:
-        out.write('START_END %d %d\n' % (min(s.get_images()),
-                                         max(s.get_images())))
+        start_ends = [(min(s.get_images()), max(s.get_images()))]
 
-      # really don't need to store the epoch in the xinfo file
-      # out.write('EPOCH %d\n' % int(s.get_collect()[0]))
-      if not settings.trust_beam_centre:
-        interactive = False
-        if PhilIndex.params.xia2.settings.interactive == True:
-          interactive = True
-          PhilIndex.params.xia2.settings.interactive = False
+      for start_end in start_ends:
+        j += 1
+        name = 'SWEEP%d' % j
+
+        out.write('BEGIN SWEEP %s\n' % name)
+
+        if PhilIndex.params.xia2.settings.input.reverse_phi:
+          out.write('REVERSEPHI\n')
+
+        out.write('WAVELENGTH %s\n' % wavelength_map[s.get_wavelength()])
+
+        out.write('DIRECTORY %s\n' % s.get_directory())
+        imgset = s.get_imageset()
+        out.write('IMAGE %s\n' % os.path.split(imgset.get_path(0))[-1])
+        out.write('START_END %d %d\n' % start_end)
+
+        # really don't need to store the epoch in the xinfo file
+        # out.write('EPOCH %d\n' % int(s.get_collect()[0]))
+        if not settings.trust_beam_centre:
+          interactive = False
+          if PhilIndex.params.xia2.settings.interactive == True:
+            interactive = True
+            PhilIndex.params.xia2.settings.interactive = False
+            PhilIndex.get_python_object()
+          beam_centre = compute_beam_centre(s)
+          if beam_centre:
+            out.write('BEAM %6.2f %6.2f\n' % tuple(beam_centre))
+          PhilIndex.params.xia2.settings.interactive = interactive
           PhilIndex.get_python_object()
-        beam_centre = compute_beam_centre(s)
-        if beam_centre:
-          out.write('BEAM %6.2f %6.2f\n' % tuple(beam_centre))
-        PhilIndex.params.xia2.settings.interactive = interactive
-        PhilIndex.get_python_object()
 
-      if settings.detector_distance is not None:
-        out.write('DISTANCE %.2f\n' % settings.detector_distance)
+        if settings.detector_distance is not None:
+          out.write('DISTANCE %.2f\n' % settings.detector_distance)
 
-      out.write('END SWEEP %s\n' % name)
+        out.write('END SWEEP %s\n' % name)
 
-      out.write('\n')
+        out.write('\n')
 
   out.write('END CRYSTAL %s\n' % crystal)
   out.write('END PROJECT %s\n' % project)
