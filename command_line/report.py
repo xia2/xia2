@@ -56,6 +56,7 @@ class xia2_report(object):
     self.batches = None
     self.scales = None
     self.dose = None
+    self._xanalysis = None
 
     for ma in arrays:
       if ma.info().labels == ['BATCH']:
@@ -578,7 +579,7 @@ class xia2_report(object):
     }
 
   def cumulative_intensity_distribution_plot(self):
-    if not self._xanalysis.twin_results:
+    if not self._xanalysis or not self._xanalysis.twin_results:
       return {}
     nz_test = self._xanalysis.twin_results.nz_test
     return {
@@ -644,7 +645,7 @@ class xia2_report(object):
     }
 
   def l_test_plot(self):
-    if not self._xanalysis.twin_results:
+    if not self._xanalysis or not self._xanalysis.twin_results:
       return {}
     l_test = self._xanalysis.twin_results.l_test
     return {
@@ -699,7 +700,7 @@ class xia2_report(object):
     }
 
   def wilson_plot(self):
-    if not self._xanalysis.wilson_scaling:
+    if not self._xanalysis or not self._xanalysis.wilson_scaling:
       return {}
     wilson_scaling = self._xanalysis.wilson_scaling
     tickvals_wilson, ticktext_wilson = d_star_sq_to_d_ticks(
