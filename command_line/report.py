@@ -265,7 +265,7 @@ class xia2_report(object):
           'x': self.d_star_sq_bins, # d_star_sq
           'y': i_over_sig_i_bins,
           'type': 'scatter',
-          'name': 'Scales vs batch',
+          'name': 'I/sigI vs resolution',
         }],
         'layout': {
           'title': '<I/sig(I)> vs resolution',
@@ -279,6 +279,36 @@ class xia2_report(object):
             'rangemode': 'tozero'
           },
         }
+      }
+    }
+
+  def i_over_sig_i_vs_batch_plot(self):
+
+    from xia2.Modules.PyChef2.PyChef import remove_batch_gaps
+    new_batch_data = remove_batch_gaps(self.batches.data())
+    new_batches = self.batches.customized_copy(data=new_batch_data)
+
+    result = i_sig_i_vs_batch(self.intensities, new_batches)
+
+    return {
+      'i_over_sig_i_vs_batch': {
+        'data': [
+          {
+            'x': result.batches,
+            'y': result.data,
+            'type': 'scatter',
+            'name': 'I/sigI vs batch',
+            'opacity': 0.75,
+          },
+        ],
+        'layout': {
+          'title': '<I/sig(I)> vs batch',
+          'xaxis': {'title': 'N'},
+          'yaxis': {
+            'title': '<I/sig(I)>',
+            'rangemode': 'tozero'
+          },
+        },
       }
     }
 
@@ -813,6 +843,7 @@ def run(args):
   json_data.update(report.scale_rmerge_vs_batch_plot())
   json_data.update(report.cc_one_half_plot())
   json_data.update(report.i_over_sig_i_plot())
+  json_data.update(report.i_over_sig_i_vs_batch_plot())
   json_data.update(report.second_moments_plot())
   json_data.update(report.cumulative_intensity_distribution_plot())
   json_data.update(report.l_test_plot())
@@ -828,7 +859,7 @@ def run(args):
 
   batch_graphs = OrderedDict(
     (k, json.dumps(json_data[k])) for k in
-    ('scale_rmerge_vs_batch', 'completeness_vs_dose',
+    ('scale_rmerge_vs_batch', 'i_over_sig_i_vs_batch', 'completeness_vs_dose',
      'rcp_vs_dose', 'scp_vs_dose', 'rd_vs_batch_difference'))
 
   misc_graphs = OrderedDict(

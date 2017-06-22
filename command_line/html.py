@@ -119,6 +119,7 @@ def generate_xia2_html(xinfo, filename='xia2.html'):
       json_data.update(report.scale_rmerge_vs_batch_plot())
       json_data.update(report.cc_one_half_plot())
       json_data.update(report.i_over_sig_i_plot())
+      json_data.update(report.i_over_sig_i_vs_batch_plot())
       json_data.update(report.second_moments_plot())
       json_data.update(report.cumulative_intensity_distribution_plot())
       json_data.update(report.l_test_plot())
@@ -148,7 +149,7 @@ def generate_xia2_html(xinfo, filename='xia2.html'):
 
       batch_graphs = OrderedDict(
         (k + '_' + wname, json.dumps(json_data[k])) for k in
-        ('scale_rmerge_vs_batch', 'completeness_vs_dose',
+        ('scale_rmerge_vs_batch', 'i_over_sig_i_vs_batch', 'completeness_vs_dose',
          'rcp_vs_dose', 'scp_vs_dose', 'rd_vs_batch_difference'))
 
       misc_graphs = OrderedDict(
