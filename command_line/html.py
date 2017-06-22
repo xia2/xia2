@@ -95,7 +95,15 @@ def generate_xia2_html(xinfo, filename='xia2.html'):
       ]
       columns.append(column)
 
-      xtriage_success, xtriage_warnings, xtriage_danger = report.xtriage_report()
+      try:
+        xtriage_success, xtriage_warnings, xtriage_danger = report.xtriage_report()
+      except Exception, e:
+        from xia2.Handlers.Phil import PhilIndex
+        if PhilIndex.params.xia2.settings.small_molecule == True:
+          print "Xtriage output not available: %s" % str(e)
+          xtriage_success, xtriage_warnings, xtriage_danger = None, None, None
+        else:
+          raise
 
       d = {}
       d['merging_statistics_table'] = report.merging_statistics_table()
@@ -271,6 +279,7 @@ def generate_xia2_html(xinfo, filename='xia2.html'):
                          xtriage_warnings=xtriage_warnings,
                          xtriage_danger=xtriage_danger,
                          overall_stats_table=table,
+                         cc_half_significance_level=params.cc_half_significance_level,
                          mtz_files=mtz_files,
                          sca_files=sca_files,
                          unmerged_sca_files=unmerged_sca_files,
