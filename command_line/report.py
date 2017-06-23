@@ -116,20 +116,24 @@ class xia2_report(object):
     mult_json_files = {}
     mult_img_files = {}
     from xia2.lib.bits import auto_logfiler
-    for axis in ('h', 'k', 'l'):
-      pm = PlotMultiplicity()
-      pm.set_mtz_filename(self.unmerged_mtz)
-      pm.set_slice_axis(axis)
-      pm.set_show_missing(True)
-      auto_logfiler(pm)
-      pm.run()
-      mult_json_files[axis] = pm.get_json_filename()
-      mult_img_files[axis] = pm.get_plot_filename()
+    cwd = os.getcwd()
+    try:
+      os.chdir(os.path.dirname(os.path.abspath(self.unmerged_mtz)))
+      for axis in ('h', 'k', 'l'):
+        pm = PlotMultiplicity()
+        pm.set_mtz_filename(self.unmerged_mtz)
+        pm.set_slice_axis(axis)
+        pm.set_show_missing(True)
+        auto_logfiler(pm)
+        pm.run()
+        mult_json_files[axis] = pm.get_json_filename()
+        with open(pm.get_plot_filename(), 'rb') as fh:
+          mult_img_files[axis] = fh.read().encode('base64').replace('\n', '')
 
-    return OrderedDict(
-      ('multiplicity_%s' %axis,
-       open(mult_img_files[axis], 'rb').read().encode('base64').replace('\n', ''))
-      for axis in ('h', 'k', 'l'))
+      return OrderedDict(('multiplicity_%s' %axis, mult_img_files[axis])
+                         for axis in ('h', 'k', 'l'))
+    finally:
+      os.chdir(cwd)
 
   def merging_statistics_table(self):
 
