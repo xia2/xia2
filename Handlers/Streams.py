@@ -210,6 +210,10 @@ if cl:
 else:
   cl = 'xia2'
 
+if cl.endswith('.bat'):
+  # windows adds .bat extension to dispatcher
+  cl = cl[:-4]
+
 Chatter = _Stream('%s' % cl, None)
 Journal = _Stream('%s-journal' % cl, None)
 Stdout = _Stream(None, None)
