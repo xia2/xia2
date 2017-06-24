@@ -210,7 +210,6 @@ if cl:
 else:
   cl = 'xia2'
 
-cl = 'xia2.bat'
 if cl.endswith('.bat'):
   # windows adds .bat extension to dispatcher
   cl = cl[:-4]
