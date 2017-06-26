@@ -3,6 +3,7 @@
 
 from __future__ import absolute_import, division
 from libtbx import test_utils
+from libtbx.test_utils.pytest import discover
 import libtbx.load_env
 import sys
 
@@ -12,7 +13,7 @@ if xia2_root_dir is None:
   sys.exit("xia2 not in cctbx repositories")
 sys.path.insert(0, xia2_root_dir)
 
-tst_list = (
+tst_list = [
   "$D/Test/Schema/TstXProject.py",
   "$D/Test/Handlers/TstXinfo.py",
   ["$D/Test/Wrappers/Dials/TstDialsWrappers.py", "1"],
@@ -35,7 +36,7 @@ tst_list = (
   "$D/Test/Wrappers/Mosflm/TstMosflmRefineCell.py",
   "$D/Test/System/TstRunXia2.py",
   "$D/Test/Modules/TstPychef.py",
-)
+] + discover('xia2')
 
 def run():
   build_dir = libtbx.env.under_build("xia2")
