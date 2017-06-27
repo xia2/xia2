@@ -141,8 +141,9 @@ def run():
       preserve_order=True,
       preserve_exception_message=True)
 
-    for result, strategy in zip(results, strategy_params):
+    for istrategy, (result, strategy) in enumerate(zip(results, strategy_params)):
       name = strategy.name
+      description = strategy.description
       if name is None:
         name = 'Strategy%i' %(istrategy+1)
       results_all[name] = result
@@ -152,6 +153,8 @@ def run():
       except TypeError:
         pass
       Chatter.write('Strategy %i' %istrategy)
+      if description is not None:
+        Chatter.write(description)
       Chatter.write('Start / end / width: %.2f/%.2f/%.2f' % (
         float(result['phi_start']), float(result['phi_end']), float(result['phi_width'])))
       Chatter.write('Completeness / multiplicity / resolution: %.2f/%s/%.2f' % (
