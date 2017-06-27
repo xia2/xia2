@@ -130,6 +130,9 @@ class DialsIntegrater(Integrater):
 
     export.set_experiments_filename(self._intgr_experiments_filename)
     export.set_include_partials(params.include_partials)
+    if len(self.get_matching_images()) == 1:
+      export.set_keep_partials(True)
+      export.set_scale_partials(False)
 
     auto_logfiler(export, 'EXPORTMTZ')
 

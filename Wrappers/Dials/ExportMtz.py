@@ -26,9 +26,17 @@ def ExportMtz(DriverType = None):
       self._reflections_filename = None
       self._mtz_filename = "hklout.mtz"
       self._include_partials = False
+      self._keep_partials = False
+      self._scale_partials = True
 
     def set_include_partials(self, include_partials):
       self._include_partials = include_partials
+
+    def set_keep_partials(self, keep_partials):
+      self._keep_partials = keep_partials
+
+    def set_scale_partials(self, scale_partials):
+      self._scale_partials = scale_partials
 
     def set_experiments_filename(self, experiments_filename):
       self._experiments_filename = experiments_filename
@@ -58,6 +66,9 @@ def ExportMtz(DriverType = None):
       self.add_command_line('mtz.hklout=%s' % self._mtz_filename)
       if self._include_partials:
         self.add_command_line('include_partials=true')
+      if self._keep_partials:
+        self.add_command_line('keep_partials=true')
+      self.add_command_line('scale_partials=%s' %self._scale_partials)
       self.add_command_line('ignore_panels=true')
       self.start()
       self.close_wait()
