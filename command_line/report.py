@@ -56,6 +56,7 @@ class xia2_report(object):
     self.batches = None
     self.scales = None
     self.dose = None
+    self._xanalysis = None
 
     for ma in arrays:
       if ma.info().labels == ['BATCH']:
@@ -115,20 +116,24 @@ class xia2_report(object):
     mult_json_files = {}
     mult_img_files = {}
     from xia2.lib.bits import auto_logfiler
-    for axis in ('h', 'k', 'l'):
-      pm = PlotMultiplicity()
-      pm.set_mtz_filename(self.unmerged_mtz)
-      pm.set_slice_axis(axis)
-      pm.set_show_missing(True)
-      auto_logfiler(pm)
-      pm.run()
-      mult_json_files[axis] = pm.get_json_filename()
-      mult_img_files[axis] = pm.get_plot_filename()
+    cwd = os.getcwd()
+    try:
+      os.chdir(os.path.dirname(os.path.abspath(self.unmerged_mtz)))
+      for axis in ('h', 'k', 'l'):
+        pm = PlotMultiplicity()
+        pm.set_mtz_filename(self.unmerged_mtz)
+        pm.set_slice_axis(axis)
+        pm.set_show_missing(True)
+        auto_logfiler(pm)
+        pm.run()
+        mult_json_files[axis] = pm.get_json_filename()
+        with open(pm.get_plot_filename(), 'rb') as fh:
+          mult_img_files[axis] = fh.read().encode('base64').replace('\n', '')
 
-    return OrderedDict(
-      ('multiplicity_%s' %axis,
-       open(mult_img_files[axis], 'rb').read().encode('base64').replace('\n', ''))
-      for axis in ('h', 'k', 'l'))
+      return OrderedDict(('multiplicity_%s' %axis, mult_img_files[axis])
+                         for axis in ('h', 'k', 'l'))
+    finally:
+      os.chdir(cwd)
 
   def merging_statistics_table(self):
 
@@ -264,7 +269,7 @@ class xia2_report(object):
           'x': self.d_star_sq_bins, # d_star_sq
           'y': i_over_sig_i_bins,
           'type': 'scatter',
-          'name': 'Scales vs batch',
+          'name': 'I/sigI vs resolution',
         }],
         'layout': {
           'title': '<I/sig(I)> vs resolution',
@@ -278,6 +283,36 @@ class xia2_report(object):
             'rangemode': 'tozero'
           },
         }
+      }
+    }
+
+  def i_over_sig_i_vs_batch_plot(self):
+
+    from xia2.Modules.PyChef2.PyChef import remove_batch_gaps
+    new_batch_data = remove_batch_gaps(self.batches.data())
+    new_batches = self.batches.customized_copy(data=new_batch_data)
+
+    result = i_sig_i_vs_batch(self.intensities, new_batches)
+
+    return {
+      'i_over_sig_i_vs_batch': {
+        'data': [
+          {
+            'x': result.batches,
+            'y': result.data,
+            'type': 'scatter',
+            'name': 'I/sigI vs batch',
+            'opacity': 0.75,
+          },
+        ],
+        'layout': {
+          'title': '<I/sig(I)> vs batch',
+          'xaxis': {'title': 'N'},
+          'yaxis': {
+            'title': '<I/sig(I)>',
+            'rangemode': 'tozero'
+          },
+        },
       }
     }
 
@@ -434,6 +469,7 @@ class xia2_report(object):
           },
           'yaxis': {
             'title': 'Completeness',
+            'range': (0, 1),
           },
         },
       }
@@ -578,7 +614,7 @@ class xia2_report(object):
     }
 
   def cumulative_intensity_distribution_plot(self):
-    if not self._xanalysis.twin_results:
+    if not self._xanalysis or not self._xanalysis.twin_results:
       return {}
     nz_test = self._xanalysis.twin_results.nz_test
     return {
@@ -644,7 +680,7 @@ class xia2_report(object):
     }
 
   def l_test_plot(self):
-    if not self._xanalysis.twin_results:
+    if not self._xanalysis or not self._xanalysis.twin_results:
       return {}
     l_test = self._xanalysis.twin_results.l_test
     return {
@@ -699,7 +735,7 @@ class xia2_report(object):
     }
 
   def wilson_plot(self):
-    if not self._xanalysis.wilson_scaling:
+    if not self._xanalysis or not self._xanalysis.wilson_scaling:
       return {}
     wilson_scaling = self._xanalysis.wilson_scaling
     tickvals_wilson, ticktext_wilson = d_star_sq_to_d_ticks(
@@ -811,6 +847,7 @@ def run(args):
   json_data.update(report.scale_rmerge_vs_batch_plot())
   json_data.update(report.cc_one_half_plot())
   json_data.update(report.i_over_sig_i_plot())
+  json_data.update(report.i_over_sig_i_vs_batch_plot())
   json_data.update(report.second_moments_plot())
   json_data.update(report.cumulative_intensity_distribution_plot())
   json_data.update(report.l_test_plot())
@@ -826,7 +863,7 @@ def run(args):
 
   batch_graphs = OrderedDict(
     (k, json.dumps(json_data[k])) for k in
-    ('scale_rmerge_vs_batch', 'completeness_vs_dose',
+    ('scale_rmerge_vs_batch', 'i_over_sig_i_vs_batch', 'completeness_vs_dose',
      'rcp_vs_dose', 'scp_vs_dose', 'rd_vs_batch_difference'))
 
   misc_graphs = OrderedDict(

@@ -117,3 +117,32 @@ def rmerge_vs_batch(intensities, batches):
         current_batch = batches[i_batch_start]
 
   return batch_binned_data(bins, data)
+
+def i_sig_i_vs_batch(intensities, batches):
+  assert intensities.size() == batches.size()
+  assert intensities.sigmas() is not None
+  sel = intensities.sigmas() > 0
+
+  i_sig_i = intensities.data().select(sel)/intensities.sigmas().select(sel)
+  batches = batches.select(sel)
+
+  bins = []
+  data = []
+
+  perm = flex.sort_permutation(batches.data())
+  batches = batches.data().select(perm)
+  i_sig_i = i_sig_i.select(perm)
+
+  i_batch_start = 0
+  current_batch = flex.min(batches)
+  n_ref = batches.size()
+  for i_ref in range(n_ref+1):
+    if i_ref == n_ref or batches[i_ref] != current_batch:
+      assert batches[i_batch_start:i_ref].all_eq(current_batch)
+      data.append(flex.mean(i_sig_i[i_batch_start:i_ref]))
+      bins.append(current_batch)
+      i_batch_start = i_ref
+      if i_ref < n_ref:
+        current_batch = batches[i_batch_start]
+
+  return batch_binned_data(bins, data)

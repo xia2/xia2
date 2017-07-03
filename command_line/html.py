@@ -95,7 +95,15 @@ def generate_xia2_html(xinfo, filename='xia2.html'):
       ]
       columns.append(column)
 
-      xtriage_success, xtriage_warnings, xtriage_danger = report.xtriage_report()
+      try:
+        xtriage_success, xtriage_warnings, xtriage_danger = report.xtriage_report()
+      except Exception, e:
+        from xia2.Handlers.Phil import PhilIndex
+        if PhilIndex.params.xia2.settings.small_molecule == True:
+          print "Xtriage output not available: %s" % str(e)
+          xtriage_success, xtriage_warnings, xtriage_danger = None, None, None
+        else:
+          raise
 
       d = {}
       d['merging_statistics_table'] = report.merging_statistics_table()
@@ -111,6 +119,7 @@ def generate_xia2_html(xinfo, filename='xia2.html'):
       json_data.update(report.scale_rmerge_vs_batch_plot())
       json_data.update(report.cc_one_half_plot())
       json_data.update(report.i_over_sig_i_plot())
+      json_data.update(report.i_over_sig_i_vs_batch_plot())
       json_data.update(report.second_moments_plot())
       json_data.update(report.cumulative_intensity_distribution_plot())
       json_data.update(report.l_test_plot())
@@ -140,7 +149,7 @@ def generate_xia2_html(xinfo, filename='xia2.html'):
 
       batch_graphs = OrderedDict(
         (k + '_' + wname, json.dumps(json_data[k])) for k in
-        ('scale_rmerge_vs_batch', 'completeness_vs_dose',
+        ('scale_rmerge_vs_batch', 'i_over_sig_i_vs_batch', 'completeness_vs_dose',
          'rcp_vs_dose', 'scp_vs_dose', 'rd_vs_batch_difference'))
 
       misc_graphs = OrderedDict(
@@ -271,6 +280,7 @@ def generate_xia2_html(xinfo, filename='xia2.html'):
                          xtriage_warnings=xtriage_warnings,
                          xtriage_danger=xtriage_danger,
                          overall_stats_table=table,
+                         cc_half_significance_level=params.cc_half_significance_level,
                          mtz_files=mtz_files,
                          sca_files=sca_files,
                          unmerged_sca_files=unmerged_sca_files,
