@@ -22,6 +22,7 @@ from xia2.Handlers.Environment import Environment, df
 from xia2.XIA2Version import Version
 
 import libtbx.load_env
+from libtbx.utils import Sorry
 
 def check_environment():
   '''Check the environment we are running in...'''
@@ -98,8 +99,9 @@ def get_command_line():
         if os.path.isdir(arg):
           directories.append(os.path.abspath(arg))
 
-      if len(directories) == 0 and not CommandLine.get_hdf5_master_files():
-        raise RuntimeError('directory not found in arguments')
+      if not directories and not CommandLine.get_hdf5_master_files():
+        raise Sorry("No image directory found in command line arguments. "
+                    "Run xia2 without any options for command line help.")
 
     else:
       directories = CommandLine.get_directory()
