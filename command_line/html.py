@@ -20,18 +20,18 @@ from xia2.XIA2Version import Version
 
 from xia2.lib.tabulate import tabulate
 
-def run():
+def run(args=None):
   assert os.path.exists('xia2.json')
   from xia2.Schema.XProject import XProject
   xinfo = XProject.from_json(filename='xia2.json')
-  generate_xia2_html(xinfo)
+  generate_xia2_html(xinfo, args=args)
 
-def generate_xia2_html(xinfo, filename='xia2.html'):
+def generate_xia2_html(xinfo, filename='xia2.html', args=None):
 
   from xia2.Modules.Analysis import phil_scope
   interp = phil_scope.command_line_argument_interpreter()
   params, unhandled = interp.process_and_fetch(
-    [], custom_processor='collect_remaining')
+    args, custom_processor='collect_remaining')
   params = params.extract()
 
   from xia2.command_line.report import xia2_report
@@ -95,15 +95,16 @@ def generate_xia2_html(xinfo, filename='xia2.html'):
       ]
       columns.append(column)
 
-      try:
-        xtriage_success, xtriage_warnings, xtriage_danger = report.xtriage_report()
-      except Exception, e:
-        from xia2.Handlers.Phil import PhilIndex
-        if PhilIndex.params.xia2.settings.small_molecule == True:
-          print "Xtriage output not available: %s" % str(e)
-          xtriage_success, xtriage_warnings, xtriage_danger = None, None, None
-        else:
-          raise
+      xtriage_success, xtriage_warnings, xtriage_danger = None, None, None
+      if params.xtriage_analysis:
+        try:
+          xtriage_success, xtriage_warnings, xtriage_danger = report.xtriage_report()
+        except Exception, e:
+          from xia2.Handlers.Phil import PhilIndex
+          if PhilIndex.params.xia2.settings.small_molecule == True:
+            print "Xtriage output not available: %s" % str(e)
+          else:
+            raise
 
       d = {}
       d['merging_statistics_table'] = report.merging_statistics_table()
@@ -475,4 +476,6 @@ tick: {
 
 
 if __name__ == '__main__':
-  run()
+  import sys
+  args = sys.argv[1:]
+  run(args)

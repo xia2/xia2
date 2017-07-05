@@ -837,7 +837,9 @@ def run(args):
   symmetry_table_html = report.symmetry_table_html()
 
   # xtriage
-  xtriage_success, xtriage_warnings, xtriage_danger = report.xtriage_report()
+  xtriage_success, xtriage_warnings, xtriage_danger = None, None, None
+  if params.xtriage_analysis:
+    xtriage_success, xtriage_warnings, xtriage_danger = report.xtriage_report()
 
   json_data = {}
 

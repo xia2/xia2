@@ -31,6 +31,8 @@ chef_min_completeness = None
   .help = "Minimum value of completeness in outer resolution shell used to "
           "determine suitable resolution cutoff for CHEF analysis"
 %s
+xtriage_analysis = True
+  .type = bool
 """ %dose_phil_str)
 
 
