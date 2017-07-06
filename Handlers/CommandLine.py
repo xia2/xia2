@@ -347,7 +347,9 @@ class _CommandLine(object):
         self._hdf5_master_files.append(dataset)
         if start_end:
           Debug.write('Image range: %d %d' % start_end)
-          self._default_start_end[dataset] = start_end
+          if not dataset in self._default_start_end:
+            self._default_start_end[dataset] = []
+          self._default_start_end[dataset].append(start_end)
         else:
           Debug.write('No image range specified')
 
