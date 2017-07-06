@@ -783,6 +783,11 @@ xia2.settings
       .help = "The command to use to submit qsub jobs"
       .expert_level = 1
   }
+  report
+    .expert_level = 1
+  {
+    include scope xia2.Modules.Analysis.phil_scope
+  }
 }
 """, process_includes=True)
 

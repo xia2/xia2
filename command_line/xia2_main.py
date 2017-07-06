@@ -266,7 +266,8 @@ def xia2_main(stop_after=None):
     fout.close()
 
     from xia2.command_line.html import generate_xia2_html
-    generate_xia2_html(xinfo, filename='xia2.html')
+    generate_xia2_html(xinfo, filename='xia2.html',
+      params=params.xia2.settings.report)
 
   write_citations()
 

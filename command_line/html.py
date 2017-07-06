@@ -26,13 +26,15 @@ def run(args):
   xinfo = XProject.from_json(filename='xia2.json')
   generate_xia2_html(xinfo, args=args)
 
-def generate_xia2_html(xinfo, filename='xia2.html', args=[]):
+def generate_xia2_html(xinfo, filename='xia2.html', params=None, args=[]):
 
-  from xia2.Modules.Analysis import phil_scope
-  interp = phil_scope.command_line_argument_interpreter()
-  params, unhandled = interp.process_and_fetch(
-    args, custom_processor='collect_remaining')
-  params = params.extract()
+  assert params is None or len(args) == 0
+  if params is None:
+    from xia2.Modules.Analysis import phil_scope
+    interp = phil_scope.command_line_argument_interpreter()
+    params, unhandled = interp.process_and_fetch(
+      args, custom_processor='collect_remaining')
+    params = params.extract()
 
   from xia2.command_line.report import xia2_report
   crystal = xinfo.get_crystals().values()[0]
