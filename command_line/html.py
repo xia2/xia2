@@ -20,13 +20,13 @@ from xia2.XIA2Version import Version
 
 from xia2.lib.tabulate import tabulate
 
-def run(args=None):
+def run(args):
   assert os.path.exists('xia2.json')
   from xia2.Schema.XProject import XProject
   xinfo = XProject.from_json(filename='xia2.json')
   generate_xia2_html(xinfo, args=args)
 
-def generate_xia2_html(xinfo, filename='xia2.html', args=None):
+def generate_xia2_html(xinfo, filename='xia2.html', args=[]):
 
   from xia2.Modules.Analysis import phil_scope
   interp = phil_scope.command_line_argument_interpreter()
