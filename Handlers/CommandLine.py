@@ -49,6 +49,35 @@ def load_datablock(filename):
       imageset_cache[template][
         imageset.get_scan().get_image_range()[0]] = imageset
 
+def unroll_datasets(datasets):
+  '''Unroll datasets i.e. if input img:1:900:450 make this into 1:450;
+  451:900'''
+
+  unrolled = []
+
+  for dataset in datasets:
+    if not ':' in dataset:
+      unrolled.append(dataset)
+      continue
+    tokens = dataset.split(':')
+    if len(tokens[0]) == 1:
+      # because windows
+      tokens = ['%s:%s' % (tokens[0], tokens[1])] + tokens[2:]
+    if len(tokens) == 3:
+      unrolled.append(dataset)
+      continue
+    if len(tokens) != 4:
+      raise RuntimeError, '/path/to/image_0001.cbf:start:end[:chunk]'
+    start, end, incr = map(int, tokens[1:])
+    if start + incr > end:
+      raise RuntimeError, 'chunk size greater than total'
+    for s in range(start, end, incr):
+      e = s + incr - 1
+      if e > end:
+        e = end
+      unrolled.append('%s:%d:%d' % (tokens[0], s, e))
+
+  return unrolled
 
 class _CommandLine(object):
   '''A class to represent the command line input.'''
@@ -163,7 +192,6 @@ class _CommandLine(object):
 
     if params.xia2.settings.small_molecule == True:
       Debug.write('Small molecule selected')
-      #PhilIndex.update("xia2.settings.unify_setting=true")
       if params.ccp4.pointless.chirality is None:
         PhilIndex.update("ccp4.pointless.chirality=nonchiral")
       params = PhilIndex.get_python_object()
@@ -312,7 +340,8 @@ class _CommandLine(object):
 
     params = PhilIndex.get_python_object()
 
-    datasets = PhilIndex.params.xia2.settings.input.image
+    datasets = unroll_datasets(PhilIndex.params.xia2.settings.input.image)
+
     for dataset in datasets:
 
       start_end = None
