@@ -177,7 +177,8 @@ def Rebatch(DriverType = None):
       batch_col.set_values(batch_vals)
 
       if self._pname and self._xname and self._dname:
-        batch_col.mtz_dataset().set_name(self._dname)
+        for col in m.columns():
+          col.mtz_dataset().set_name(self._dname)
         for c in m.crystals():
           if c.name() == 'HKL_base':
             continue
