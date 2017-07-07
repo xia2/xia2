@@ -19,6 +19,7 @@ import os
 
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
+from xia2.Handlers.Streams import Debug
 
 def Rebatch(DriverType = None):
   '''A factory for RebatchWrapper classes.'''
@@ -157,6 +158,8 @@ def Rebatch(DriverType = None):
         raise RuntimeError, 'neither first nor add specified'
 
       from iotbx import mtz
+      import time
+
       m = mtz.object(self.get_hklin())
 
       batches = [b.num() for b in m.batches()]
@@ -168,24 +171,35 @@ def Rebatch(DriverType = None):
       else:
         offset = self._add_batch
 
-      for b in m.batches():
-        b.set_num(b.num() + offset)
+      t0 = time.time()
 
-      batch_col = m.get_column('BATCH')
-      batch_vals = batch_col.extract_values()
-      batch_vals += offset
-      batch_col.set_values(batch_vals)
+      if offset != 0:
+        Debug.write('Applying batch offset of %d' % offset)
+
+        for b in m.batches():
+          b.set_num(b.num() + offset)
+
+        batch_col = m.get_column('BATCH')
+        batch_vals = batch_col.extract_values()
+        batch_vals += offset
+        batch_col.set_values(batch_vals)
 
       if self._pname and self._xname and self._dname:
-        for col in m.columns():
-          col.mtz_dataset().set_name(self._dname)
+        Debug.write('Assigning pname / xname / dname %s / %s / %s' %
+                    (self._pname, self._xname, self._dname))
+
         for c in m.crystals():
+          for d in c.datasets():
+            d.set_name(self._dname)
           if c.name() == 'HKL_base':
             continue
           c.set_project_name(self._pname)
           c.set_name(self._xname)
 
       m.write(self.get_hklout())
+      t1 = time.time()
+
+      Debug.write('Rewriting BATCH etc. took %.1fs' % (t1 - t0))
 
       new_batches = (min(batches) + offset, max(batches) + offset)
 
