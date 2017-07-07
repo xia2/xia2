@@ -20,7 +20,7 @@ import math
 from iotbx import mtz
 
 from xia2.Wrappers.CCP4.Mtzdump import Mtzdump
-from xia2.Wrappers.CCP4.Rebatch import Rebatch
+from xia2.Wrappers.CCP4.Pointless import Pointless
 from xia2.lib.bits import auto_logfiler
 from xia2.Handlers.Streams import Debug
 from xia2.Handlers.Files import FileHandler
@@ -178,7 +178,7 @@ def _prepare_pointless_hklin(working_directory,
                              hklin,
                              phi_width):
   '''Prepare some data for pointless - this will take only 180 degrees
-  of data if there is more than this (through a "rebatch" command) else
+  of data if there is more than this (through a "pointless" command) else
   will simply return hklin.'''
 
   # also remove blank images?
@@ -213,11 +213,11 @@ def _prepare_pointless_hklin(working_directory,
       working_directory,
       '%s_prepointless.mtz' % (os.path.split(hklin)[-1][:-4]))
 
-  rb = Rebatch()
-  rb.set_working_directory(working_directory)
-  auto_logfiler(rb)
-  rb.set_hklin(hklin)
-  rb.set_hklout(hklout)
+  pl = Pointless()
+  pl.set_working_directory(working_directory)
+  auto_logfiler(pl)
+  pl.set_hklin(hklin)
+  pl.set_hklout(hklout)
 
   first = min(md.get_batches())
   last = first + int(phi_limit / phi_width)
@@ -225,7 +225,7 @@ def _prepare_pointless_hklin(working_directory,
   Debug.write('Preparing data for pointless - %d batches (%d degrees)' % \
               ((last - first), phi_limit))
 
-  rb.limit_batches(first, last)
+  pl.limit_batches(first, last)
 
   # we will want to delete this one exit
   FileHandler.record_temporary_file(hklout)
