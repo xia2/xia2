@@ -156,59 +156,37 @@ def Rebatch(DriverType = None):
       if self._first_batch == 0 and self._add_batch == 0:
         raise RuntimeError, 'neither first nor add specified'
 
-      self.start()
+      from iotbx import mtz
+      m = mtz.object(self.get_hklin())
+
+      batches = [b.num() for b in m.batches()]
+
+      start = min(batches)
 
       if self._first_batch > 0:
-        command = 'batch all start %d' % self._first_batch
+        offset = self._first_batch - start
       else:
-        command = 'batch all add %d' % self._add_batch
+        offset = self._add_batch
 
-      self.input(command)
+      for b in m.batches():
+        b.set_num(b.num() + offset)
+
+      batch_col = m.get_column('BATCH')
+      batch_vals = batch_col.extract_values()
+      batch_vals += offset
+      batch_col.set_values(batch_vals)
 
       if self._pname and self._xname and self._dname:
-        command = 'batch all pname %s xname %s dname %s' % \
-                  (self._pname, self._xname, self._dname)
-        self.input(command)
+        batch_col.mtz_dataset().set_name(self._dname)
+        for c in m.crystals():
+          if c.name() == 'HKL_base':
+            continue
+          c.set_project_name(self._pname)
+          c.set_name(self._xname)
 
-      self.close_wait()
+      m.write(self.get_hklout())
 
-      # check for errors...
-      try:
-        self.check_for_errors()
-        self.check_ccp4_errors()
-
-      except RuntimeError, e:
-        try:
-          os.remove(self.get_hklout())
-        except:
-          pass
-
-        raise e
-
-      # get out the new batch range...
-
-      output = self.get_all_output()
-
-      min = 10000000
-      max = -10000000
-
-      for i in range(len(output)):
-        o = output[i]
-        if o.split()[:5] == ['Old', 'batch', 'New', 'batch', 'Max']:
-          j = i + 2
-          m = output[j]
-          while not 'SUMMARY_END' in m:
-            l = m.split()
-            if len(l) >= 3:
-              batch = int(l[1])
-              if batch < min:
-                min = batch
-              if batch > max:
-                max = batch
-            j += 1
-            m = output[j]
-
-      new_batches = (min, max)
+      new_batches = (min(batches) + offset, max(batches) + offset)
 
       return new_batches
 
