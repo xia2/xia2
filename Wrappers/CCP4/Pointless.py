@@ -314,7 +314,7 @@ def Pointless(DriverType = None):
 
       self.start()
 
-      for b in compact_batches(batches):
+      for b in self.compact_batches(batches):
         if len(b) == 1:
           self.input('exclude batch %d' % b[0])
         else:
