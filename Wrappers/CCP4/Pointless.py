@@ -297,6 +297,32 @@ def Pointless(DriverType = None):
       self.close_wait()
       return
 
+    def compact_batches(self, batches):
+      '''Pack down batches to lists of continuous batches.'''
+      from operator import itemgetter
+      from itertools import groupby
+      return [map(itemgetter(1), g) for k, g in groupby(enumerate(batches),
+                                                        lambda (i,x):i-x)]
+
+    def exclude_batches(self, batches):
+      '''Replacement for rebatch, removing batches.'''
+
+      self.check_hklin()
+      self.check_hklout()
+
+      self.add_command_line('-c')
+
+      self.start()
+
+      for b in compact_batches(batches):
+        if len(b) == 1:
+          self.input('exclude batch %d' % b[0])
+        else:
+          self.input('exclude batch %d to %d' % (b[0], b[-1]))
+
+      self.close_wait()
+      return
+
     def xds_to_mtz(self):
       '''Use pointless to convert XDS file to MTZ.'''
 

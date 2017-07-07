@@ -21,7 +21,6 @@ import tempfile
 import time
 
 from xia2.Wrappers.CCP4.Pointless import Pointless
-from xia2.Wrappers.CCP4.Rebatch import Rebatch
 from xia2.Handlers.Streams import Debug
 
 # global parameters
@@ -588,14 +587,11 @@ def remove_blank(hklin, hklout):
     Debug.write('%d blank vs. %d good: ignore' % (len(blanks), len(goods)))
     return hklin
 
-  rb = Rebatch()
-  rb.set_hklin(hklin)
-  rb.set_hklout(hklout)
-
-  for b in blanks:
-    rb.exclude_batch(b)
-
-  rb.exclude_batches()
+  pl = Pointless()
+  pl.set_hklin(hklin)
+  pl.set_hklout(hklout)
+  pl.exclude_batch(blanks)
+  pl.exclude_batches()
 
   return hklout
 
