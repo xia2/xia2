@@ -590,8 +590,7 @@ def remove_blank(hklin, hklout):
   pl = Pointless()
   pl.set_hklin(hklin)
   pl.set_hklout(hklout)
-  pl.exclude_batch(blanks)
-  pl.exclude_batches()
+  pl.exclude_batches(blanks)
 
   return hklout
 
