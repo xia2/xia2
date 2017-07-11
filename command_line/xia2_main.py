@@ -247,6 +247,9 @@ def xia2_main(stop_after=None):
   for crystal in crystals.values():
     crystal.serialize()
 
+  # save final xia2.json file in case report generation fails
+  xinfo.as_json(filename='xia2.json')
+
   duration = time.time() - start_time
 
   # write out the time taken in a human readable way
@@ -264,8 +267,6 @@ def xia2_main(stop_after=None):
       params=params.xia2.settings.report)
 
   write_citations()
-
-  xinfo.as_json(filename='xia2.json')
 
   # delete all of the temporary mtz files...
   cleanup()
