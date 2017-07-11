@@ -240,6 +240,22 @@ def generate_xia2_html(xinfo, filename='xia2.html', params=None, args=[]):
         [wname,
          '<a href="%s">%s</a>' %(os.path.relpath(unmerged_sca), os.path.basename(unmerged_sca))])
 
+  # other files
+  other_files = []
+  other_files.append(['File name', 'Description'])
+  for other_file, description in sorted([
+        ('xia2.cif', 'Crystallographic information file'),
+        ('xia2.mmcif', 'Macromolecular crystallographic information file'),
+        ('shelxt.hkl', 'merged structure factors for SHELXT'),
+        ('shelxt.ins', 'SHELXT instruction file'),
+      ] + [
+        (fn, 'XPREP input file') for fn in os.listdir(os.path.join(data_dir)) \
+                                 if fn.endswith('.p4p')
+      ]):
+    if os.path.exists(os.path.join(data_dir, other_file)):
+      other_files.append(['<a href="DataFiles/{filename}">{filename}</a>'.format(filename=other_file),
+                          description])
+
   # log files
   log_files_table = []
   log_dir = os.path.join(os.path.abspath(os.path.curdir), 'LogFiles')
@@ -285,6 +301,7 @@ def generate_xia2_html(xinfo, filename='xia2.html', params=None, args=[]):
                          mtz_files=mtz_files,
                          sca_files=sca_files,
                          unmerged_sca_files=unmerged_sca_files,
+                         other_files=other_files,
                          log_files_table=log_files_table,
                          individual_dataset_reports=individual_dataset_reports,
                          references=references,
