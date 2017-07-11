@@ -117,14 +117,13 @@ class xia2_report(object):
 
 
   def multiplicity_plots(self):
-
     from xia2.Wrappers.XIA.PlotMultiplicity import PlotMultiplicity
     mult_json_files = {}
     mult_img_files = {}
     from xia2.lib.bits import auto_logfiler
     cwd = os.getcwd()
     try:
-      os.chdir(os.path.dirname(os.path.abspath(self.unmerged_mtz)))
+      os.chdir(self.report_dir)
       for axis in ('h', 'k', 'l'):
         pm = PlotMultiplicity()
         pm.set_mtz_filename(self.unmerged_mtz)
