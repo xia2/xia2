@@ -253,17 +253,11 @@ def xia2_main(stop_after=None):
   Chatter.write('Processing took %s' % \
                 time.strftime("%Hh %Mm %Ss", time.gmtime(duration)))
 
-  # delete all of the temporary mtz files...
-  cleanup()
-
   if stop_after not in ('index', 'integrate'):
     # and the summary file
-    summary_records = xinfo.summarise()
-
-    fout = open('xia2-summary.dat', 'w')
-    for record in summary_records:
-      fout.write('%s\n' % record)
-    fout.close()
+    with open('xia2-summary.dat', 'w') as fh:
+      for record in xinfo.summarise():
+        fh.write('%s\n' % record)
 
     from xia2.command_line.html import generate_xia2_html
     generate_xia2_html(xinfo, filename='xia2.html',
@@ -273,9 +267,9 @@ def xia2_main(stop_after=None):
 
   xinfo.as_json(filename='xia2.json')
 
+  # delete all of the temporary mtz files...
+  cleanup()
   Environment.cleanup()
-
-  return
 
 def run():
   from libtbx.utils import Sorry
