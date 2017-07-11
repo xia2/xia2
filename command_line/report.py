@@ -2,14 +2,15 @@
 
 from __future__ import absolute_import, division
 from cctbx.array_family import flex
-import os
 from cStringIO import StringIO
-
+import json
 from libtbx.containers import OrderedDict
-
-from xia2.Modules.Analysis import *
-
 from mmtbx.scaling import printed_output
+import os
+from xia2.Modules.Analysis import *
+import xia2.Handlers.Environment
+import xia2.Handlers.Files
+
 class xtriage_output(printed_output):
 
   def __init__(self, out):
@@ -41,7 +42,7 @@ class xtriage_output(printed_output):
 
 class xia2_report(object):
 
-  def __init__(self, unmerged_mtz, params):
+  def __init__(self, unmerged_mtz, params, base_dir=None):
 
     from iotbx.reflection_file_reader import any_reflection_file
 
@@ -73,6 +74,11 @@ class xia2_report(object):
     assert self.intensities is not None
     assert self.batches is not None
     self.mtz_object = reader.file_content()
+
+    crystal_name = (filter(lambda c: c != 'HKL_base',
+                           map(lambda c: c.name(), self.mtz_object.crystals()))
+                    or ['DEFAULT'])[0]
+    self.report_dir = base_dir or xia2.Handlers.Environment.Environment.generate_directory([crystal_name, 'report'])
 
     self.indices = self.mtz_object.extract_original_index_miller_indices()
     self.intensities = self.intensities.customized_copy(
@@ -233,8 +239,10 @@ class xia2_report(object):
       unmerged_obs=self.intensities, text_out=pout,
       params=xtriage_params,
       )
-    with open('xtriage.log', 'wb') as f:
-      print >> f, s.getvalue()
+    with open(os.path.join(self.report_dir, 'xtriage.log'), 'wb') as f:
+      f.write(s.getvalue())
+    xia2.Handlers.Files.FileHandler.record_log_file('Xtriage',
+        os.path.join(self.report_dir, 'xtriage.log'))
     xs = StringIO()
     xout = xtriage_output(xs)
     xanalysis.show(out=xout)
@@ -830,7 +838,7 @@ def run(args):
 
   unmerged_mtz = args[0]
 
-  report = xia2_report(unmerged_mtz, params)
+  report = xia2_report(unmerged_mtz, params, base_dir='.')
 
   overall_stats_table = report.overall_statistics_table()
   merging_stats_table = report.merging_statistics_table()
@@ -855,8 +863,6 @@ def run(args):
   json_data.update(report.l_test_plot())
   json_data.update(report.wilson_plot())
   json_data.update(report.pychef_plots())
-
-  import json
 
   resolution_graphs = OrderedDict(
     (k, json_data[k]) for k in
