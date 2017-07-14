@@ -397,6 +397,19 @@ class xia2_report(object):
             'range': [min(cc_one_half_bins + cc_anom_bins + [0]), 1]
             },
           },
+        'help': '''\
+The correlation coefficients, CC1/2, between random half-datasets. A correlation
+coefficient of +1 indicates good correlation, and 0 indicates no correlation.
+CC1/2 is typically close to 1 at low resolution, falling off to close to zero at
+higher resolution. A typical resolution cutoff based on CC1/2 is around 0.3-0.5.
+
+[1] Karplus, P. A., & Diederichs, K. (2012). Science, 336(6084), 1030-1033.
+    https://doi.org/10.1126/science.1218231
+[2] Diederichs, K., & Karplus, P. A. (2013). Acta Cryst D, 69(7), 1215-1222.
+    https://doi.org/10.1107/S0907444913001121
+[3] Evans, P. R., & Murshudov, G. N. (2013). Acta Cryst D, 69(7), 1204-1214.
+    https://doi.org/10.1107/S0907444913000061
+'''
       }
     }
 
