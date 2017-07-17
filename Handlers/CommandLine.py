@@ -347,7 +347,9 @@ class _CommandLine(object):
         self._hdf5_master_files.append(dataset)
         if start_end:
           Debug.write('Image range: %d %d' % start_end)
-          self._default_start_end[dataset] = start_end
+          if not dataset in self._default_start_end:
+            self._default_start_end[dataset] = []
+          self._default_start_end[dataset].append(start_end)
         else:
           Debug.write('No image range specified')
 
@@ -363,7 +365,10 @@ class _CommandLine(object):
 
         if start_end:
           Debug.write('Image range: %d %d' % start_end)
-          self._default_start_end[os.path.join(directory, template)] = start_end
+          key = os.path.join(directory, template)
+          if not key in self._default_start_end:
+            self._default_start_end[key] = []
+          self._default_start_end[key].append(start_end)
         else:
           Debug.write('No image range specified')
 
@@ -416,8 +421,8 @@ class _CommandLine(object):
   def get_template(self):
     return self._default_template
 
-  def get_start_end(self, full_template):
-    return self._default_start_end.get(full_template)
+  def get_start_ends(self, full_template):
+    return self._default_start_end.get(full_template, [])
 
   def get_directory(self):
     return self._default_directory
