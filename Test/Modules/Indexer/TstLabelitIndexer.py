@@ -40,17 +40,18 @@ def exercise_labelit_indexer():
   ls.add_indexer_imageset(imageset)
   ls.index()
 
-  assert approx_equal(ls.get_indexer_cell(), (78.58, 78.58, 78.58, 90, 90, 90))
+  assert approx_equal(ls.get_indexer_cell(), (78.58, 78.58, 78.58, 90, 90, 90),
+                      eps=0.5)
   solution = ls.get_solution()
-  assert approx_equal(solution['rmsd'], 0.076)
-  assert approx_equal(solution['metric'], 0.1566, eps=1e-3)
+  assert solution['rmsd'] <= 0.2
+  assert solution['metric'] <= 0.16
   assert solution['number'] == 22
   assert solution['lattice'] == 'cI'
-  assert solution['mosaic'] == 0.025
-  assert abs(solution['nspots'] - 860) <= 1
+  assert solution['mosaic'] <= 0.25
+  assert abs(solution['nspots'] - 860) <= 30
 
   beam_centre = ls.get_indexer_beam_centre()
-  assert approx_equal(beam_centre, (94.3416, 94.4994), eps=1e-2)
+  assert approx_equal(beam_centre, (94.3416, 94.4994), eps=2e-1)
   assert ls.get_indexer_images() == [(1, 1), (22, 22), (45, 45)]
   print ls.get_indexer_experiment_list()[0].crystal
   print ls.get_indexer_experiment_list()[0].detector
@@ -77,11 +78,10 @@ def exercise_labelit_indexer():
   print ls1.get_indexer_cell()
   print ls1.get_solution()
   assert approx_equal(ls.get_indexer_cell(),
-                      (111.11, 111.11, 68.08, 90.0, 90.0, 120.0), 1e-1)
+                      (111.11, 111.11, 68.08, 90.0, 90.0, 120.0), 5e-1)
   solution = ls1.get_solution()
   assert solution['rmsd'] >= 0.07, solution['rmsd']
   assert approx_equal(solution['metric'], 0.1291, eps=1e-3)
-  #assert solution['number'] == 8
   assert solution['lattice'] == 'hR', solution['lattice']
   assert solution['mosaic'] == 0.025, solution['mosaic']
   assert abs(solution['nspots'] - 856) <= 3
