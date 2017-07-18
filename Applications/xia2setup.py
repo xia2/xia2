@@ -128,6 +128,7 @@ def get_template(f):
 
   try:
     template, directory = image2template_directory(f)
+    template = os.path.join(directory, template)
 
     if target_template:
       if template not in target_template:
@@ -140,7 +141,7 @@ def get_template(f):
   if template is None or directory is None:
     raise RuntimeError, 'template not recognised for %s' % f
 
-  return os.path.join(directory, template)
+  return template
 
 
 def save_datablock(filename):

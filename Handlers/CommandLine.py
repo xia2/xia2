@@ -385,7 +385,7 @@ class _CommandLine(object):
       else:
         template, directory = image2template_directory(os.path.abspath(dataset))
 
-        self._default_template.append(template)
+        self._default_template.append(os.path.join(directory, template))
         self._default_directory.append(directory)
 
         Debug.write('Interpreted from image %s:' % dataset)
