@@ -112,6 +112,8 @@ def plot_merging_stats(results, labels=None, plots=None, prefix=None,
     pyplot.ylabel(k)
     if k in ('cc_one_half', 'cc_one_half_sigma_tau', 'completeness'):
       pyplot.ylim(0, 1.05)
+    elif k in ('cc_anom',):
+      pyplot.ylim(min(0, pyplot.ylim()[0]), 1.05)
     else:
       pyplot.ylim(0, pyplot.ylim()[1])
     ax = pyplot.gca()
