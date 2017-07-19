@@ -309,6 +309,13 @@ class XDSIndexer(IndexerSingleSweep):
     # next start to process these - then init
 
     if PhilIndex.params.xia2.settings.input.format.dynamic_shadowing:
+      imageset = self._indxr_imagesets[0]
+      masker = imageset.reader().get_format().get_goniometer_shadow_masker()
+      if masker is None:
+        # disable dynamic_shadowing
+        PhilIndex.params.xia2.settings.input.format.dynamic_shadowing = False
+
+    if PhilIndex.params.xia2.settings.input.format.dynamic_shadowing:
       # find the region of the scan with the least predicted shadow
       # to use for background determination in XDS INIT step
       from dxtbx.serialize import dump
