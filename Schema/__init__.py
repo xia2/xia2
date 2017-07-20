@@ -229,7 +229,8 @@ def compare_geometries(detectorA, detectorB):
   return detectorA.is_similar_to(detectorB,
              fast_axis_tolerance=0.1,
              slow_axis_tolerance=0.1,
-             origin_tolerance=10)
+             origin_tolerance=10,
+             ignore_trusted_range=True)
 
 def find_relevant_reference_geometry(imageset, geometry_list):
   for geometry in geometry_list:
