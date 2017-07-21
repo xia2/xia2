@@ -144,6 +144,8 @@ def Index(DriverType = None):
         self.add_command_line(f)
       for f in self._spot_filenames:
         self.add_command_line(f)
+      if len(self._sweep_filenames) > 1:
+        self.add_command_line('auto_reduction.action=fix')
       self.add_command_line('indexing.method=%s' % method)
       nproc = PhilIndex.params.xia2.settings.multiprocessing.nproc
       self.set_cpu_threads(nproc)
@@ -203,6 +205,10 @@ def Index(DriverType = None):
         raise RuntimeError(
           "dials.index failed, see log file for more details: %s"
           %self.get_log_file())
+
+      for record in self.get_all_output():
+        if 'Too few reflections to parameterise' in record:
+          Debug.write(record.strip())
 
       from dials.array_family import flex
       from dxtbx.serialize import load
