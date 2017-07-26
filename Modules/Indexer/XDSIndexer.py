@@ -339,32 +339,35 @@ class XDSIndexer(IndexerSingleSweep):
       results = shadow_plot.get_results()
       from scitbx.array_family import flex
       fraction_shadowed = flex.double(results['fraction_shadowed'])
-      scan_points = flex.double(results['scan_points'])
+      if flex.max(fraction_shadowed) == 0:
+        PhilIndex.params.xia2.settings.input.format.dynamic_shadowing = False
+      else:
+        scan_points = flex.double(results['scan_points'])
 
-      phi_width = self.get_phi_width()
-      scan = imageset.get_scan()
-      oscillation_range = scan.get_oscillation_range()
-      oscillation = scan.get_oscillation()
-      bg_images = self._background_images
-      bg_range_deg = (scan.get_angle_from_image_index(bg_images[0]),
-                      scan.get_angle_from_image_index(bg_images[1]))
-      bg_range_width = bg_range_deg[1] - bg_range_deg[0]
+        phi_width = self.get_phi_width()
+        scan = imageset.get_scan()
+        oscillation_range = scan.get_oscillation_range()
+        oscillation = scan.get_oscillation()
+        bg_images = self._background_images
+        bg_range_deg = (scan.get_angle_from_image_index(bg_images[0]),
+                        scan.get_angle_from_image_index(bg_images[1]))
+        bg_range_width = bg_range_deg[1] - bg_range_deg[0]
 
-      min_shadow = 100
-      best_bg_range = bg_range_deg
-      from libtbx.utils import frange
-      for bg_range_start in frange(flex.min(scan_points), flex.max(scan_points) - bg_range_width, step=oscillation[1]):
-        bg_range_deg = (bg_range_start, bg_range_start + bg_range_width)
-        sel = (scan_points >= bg_range_deg[0]) & (scan_points <= bg_range_deg[1])
-        mean_shadow = flex.mean(fraction_shadowed.select(sel))
-        if mean_shadow < min_shadow:
-          min_shadow = mean_shadow
-          best_bg_range = bg_range_deg
+        min_shadow = 100
+        best_bg_range = bg_range_deg
+        from libtbx.utils import frange
+        for bg_range_start in frange(flex.min(scan_points), flex.max(scan_points) - bg_range_width, step=oscillation[1]):
+          bg_range_deg = (bg_range_start, bg_range_start + bg_range_width)
+          sel = (scan_points >= bg_range_deg[0]) & (scan_points <= bg_range_deg[1])
+          mean_shadow = flex.mean(fraction_shadowed.select(sel))
+          if mean_shadow < min_shadow:
+            min_shadow = mean_shadow
+            best_bg_range = bg_range_deg
 
-      self._background_images = (
-        scan.get_image_index_from_angle(best_bg_range[0]),
-        scan.get_image_index_from_angle(best_bg_range[1]))
-      Debug.write('Setting background images: %s -> %s' %self._background_images)
+        self._background_images = (
+          scan.get_image_index_from_angle(best_bg_range[0]),
+          scan.get_image_index_from_angle(best_bg_range[1]))
+        Debug.write('Setting background images: %s -> %s' %self._background_images)
 
     init = self.Init()
 
