@@ -310,7 +310,8 @@ class XDSIndexer(IndexerSingleSweep):
 
     if PhilIndex.params.xia2.settings.input.format.dynamic_shadowing:
       imageset = self._indxr_imagesets[0]
-      masker = imageset.reader().get_format().get_goniometer_shadow_masker()
+      #masker = imageset.reader().get_format().get_goniometer_shadow_masker()
+      masker = imageset.masker().format_class(imageset.paths()[0]).get_goniometer_shadow_masker()
       if masker is None:
         # disable dynamic_shadowing
         PhilIndex.params.xia2.settings.input.format.dynamic_shadowing = False
