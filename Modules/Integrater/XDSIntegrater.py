@@ -514,14 +514,18 @@ class XDSIntegrater(Integrater):
         self._xds_data_files['XPARM.XDS'], self.get_working_directory())
       experiments = load.experiment_list(experiments_json, check_format=True)
       imageset = experiments[0].imageset
-      masker = imageset.reader().get_format().get_goniometer_shadow_masker()
+      masker = imageset.masker().format_class(imageset.paths()[0]).get_goniometer_shadow_masker()
       if masker is not None:
         integrate_pickle = integrate_hkl_to_reflection_pickle(
           integrate_hkl, experiments_json, self.get_working_directory())
         reflections = easy_pickle.load(integrate_pickle)
 
+        import time
+        t0 = time.time()
         sel = filter_shadowed_reflections(experiments, reflections)
         shadowed = reflections.select(sel)
+        t1 = time.time()
+        Debug.write("Filtered %i reflections in %.1f seconds" %(sel.count(True), t1-t0))
 
         filter_hkl = os.path.join(self.get_working_directory(), 'FILTER.HKL')
         with open(filter_hkl, 'wb') as f:
@@ -534,6 +538,8 @@ class XDSIntegrater(Integrater):
             dx, dy, dz = (2, 2, 2)
             print >> f, "%i %i %i %.1f %.1f %.1f %.1f %.1f %.1f" %(
               h, k, l, x+ox, y+oy, z, dx, dy, dz)
+        t2 = time.time()
+        Debug.write("Written FILTER.HKL in %.1f seconds" %(t2-t1))
 
     correct = self.Correct()
 
