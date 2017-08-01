@@ -102,6 +102,8 @@ class xia2_report(object):
     self.merging_stats = merging_statistics.dataset_statistics(
       self.intensities, n_bins=self.params.resolution_bins,
       cc_one_half_significance_level=self.params.cc_half_significance_level,
+      eliminate_sys_absent=self.params.eliminate_sys_absent,
+      use_internal_variance=self.params.use_internal_variance,
       assert_is_not_unique_set_under_symmetry=False)
 
     intensities_anom = self.intensities.as_anomalous_array()
@@ -109,6 +111,8 @@ class xia2_report(object):
     self.merging_stats_anom = merging_statistics.dataset_statistics(
       intensities_anom, n_bins=self.params.resolution_bins, anomalous=True,
       cc_one_half_significance_level=self.params.cc_half_significance_level,
+      eliminate_sys_absent=self.params.eliminate_sys_absent,
+      use_internal_variance=self.params.use_internal_variance,
       assert_is_not_unique_set_under_symmetry=False)
 
     self.d_star_sq_bins = [

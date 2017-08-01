@@ -14,6 +14,14 @@ resolution_bins = 20
   .type = int
 anomalous = False
   .type = bool
+use_internal_variance = False
+  .type = bool
+  .help = Use internal variance of the data in the calculation of the merged sigmas
+  .short_caption = "Use internal variance"
+eliminate_sys_absent = False
+  .type = bool
+  .help = Eliminate systematically absent reflections before computation of merging statistics.
+  .short_caption = "Eliminate systematic absences before calculation"
 range {
   width = 1
     .type = float(value_min=0)
