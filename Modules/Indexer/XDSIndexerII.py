@@ -60,6 +60,7 @@ class XDSIndexerII(XDSIndexer):
     # use five degrees for the background calculation
 
     five_deg = int(round(5.0 / phi_width)) - 1
+    turn = int(round(360.0 / phi_width)) - 1
 
     if five_deg < 5:
       five_deg = 5
@@ -80,17 +81,21 @@ class XDSIndexerII(XDSIndexer):
             'This INDEXER cannot be used for only %d images' % \
             len(images)
 
-    Debug.write('Adding images for indexer: %d -> %d' % \
-                (min(images), max(images)))
+    # including > 360 degrees in indexing does not add fresh information
+    start = min(images)
+    end = max(images)
+    if (end - start) > turn:
+      end = start + turn
+    Debug.write('Adding images for indexer: %d -> %d' % (start, end))
 
-    wedges.append((min(images), max(images)))
+    wedges.append((start, end))
 
     # FIXME this should have a wrapper function!
 
-    if min(images) + five_deg in images:
-      self._background_images = (min(images), min(images) + five_deg)
+    if start + five_deg in images:
+      self._background_images = (start, start + five_deg)
     else:
-      self._background_images = (min(images), max(images))
+      self._background_images = (start, end)
 
     return wedges
 
