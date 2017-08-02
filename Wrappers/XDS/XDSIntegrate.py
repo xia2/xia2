@@ -20,8 +20,9 @@ from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 
 # generic helper stuff
-from xia2.Wrappers.XDS.XDS import imageset_to_xds, xds_check_version_supported, xds_check_error, \
-    _running_xds_version, template_to_xds
+from xia2.Wrappers.XDS.XDS import imageset_to_xds, \
+     xds_check_version_supported, xds_check_error, \
+    _running_xds_version, template_to_xds, find_hdf5_lib
 
 # specific helper stuff
 from xia2.Wrappers.XDS.XDSIntegrateHelpers import _parse_integrate_lp, \
@@ -257,8 +258,12 @@ def XDSIntegrate(DriverType=None, params=None):
 
       xds_inp.write(record)
 
+      lib_str = find_hdf5_lib(os.path.join(self.get_directory(),
+                                           self.get_template()))
+      if lib_str:
+        xds_inp.write(lib_str)
+
       xds_inp.write('DATA_RANGE=%d %d\n' % self._data_range)
-      # xds_inp.write('MINIMUM_ZETA=0.1\n')
 
       xds_inp.close()
 

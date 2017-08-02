@@ -327,7 +327,7 @@ def imageset_to_xds(imageset, synchrotron = None, refined_beam_vector = None,
       Debug.write('Error occured during sensor thickness determination. Assuming default PILATUS 0.32mm')
     result.append('SENSOR_THICKNESS=%f' % thickness)
 
-  #  # FIXME: Sensor absorption coefficient calculation probably requires a more general solution
+  #  FIXME: Sensor absorption coefficient calculation probably requires a more general solution
   #  if converter.get_detector()[0].get_material() == 'CdTe':
   #    print "CdTe detector detected. Beam wavelength is %8.6f Angstrom" % converter.wavelength
 
@@ -514,9 +514,24 @@ def template_to_xds(template):
     master_file = template
     import glob
     g = glob.glob(master_file.split('master.h5')[0]+'data_*[0-9].h5')
-    assert len(g), 'No associated data files found for %s' %master_file
+    assert len(g), 'No associated data files found for %s' % master_file
     from xia2.Experts.FindImages import image2template
     template = image2template(g[0])
     template = master_file.split('master.h5')[0] + template.split('data_')[-1]
 
   return template.replace('#', '?')
+
+__hdf5_lib = ''
+def find_hdf5_lib(template):
+  global __hdf5_lib
+  from xia2.Applications.xia2setup import is_hd5f_name
+  if not is_hd5f_name(template):
+    return ''
+  if __hdf5_lib:
+    return __hdf5_lib
+  import os
+  for d in os.environ['PATH'].split(os.pathsep):
+    if os.path.exists(os.path.join(d,'xds_par')):
+      __hdf5_lib = 'LIB=%s\n' % os.path.join(d,'dectris-neggia.so')
+      return __hdf5_lib
+  return ''

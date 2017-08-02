@@ -19,7 +19,8 @@ from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 
 # generic helper stuff
-from xia2.Wrappers.XDS.XDS import imageset_to_xds, xds_check_version_supported, template_to_xds
+from xia2.Wrappers.XDS.XDS import imageset_to_xds,\
+     xds_check_version_supported, template_to_xds, find_hdf5_lib
 
 from xia2.Handlers.Phil import PhilIndex
 
@@ -140,6 +141,11 @@ def XDSColspot(DriverType=None, params=None):
                name_template
 
       xds_inp.write(record)
+
+      lib_str = find_hdf5_lib(os.path.join(self.get_directory(),
+                                           self.get_template()))
+      if lib_str:
+        xds_inp.write(lib_str)
 
       xds_inp.write('DATA_RANGE=%d %d\n' % self._data_range)
       for spot_range in self._spot_range:
