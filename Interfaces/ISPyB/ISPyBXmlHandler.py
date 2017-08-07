@@ -262,6 +262,16 @@ class _ISPyBXmlHandler(object):
         fout.write('</AutoProcProgramAttachment>\n')
 
 
+      from xia2.Handlers.Environment import Environment
+      log_directory = Environment.generate_directory('LogFiles')
+      import glob
+      g = glob.glob(os.path.join(log_directory, '*merging-statistics.json'))
+      for merging_stats_json in g:
+        fout.write('<AutoProcProgramAttachment><fileType>Graph')
+        fout.write('</fileType><fileName>%s</fileName>' % merging_stats_json)
+        fout.write('<filePath>%s</filePath>' % sanitize(log_directory))
+        fout.write('</AutoProcProgramAttachment>\n')
+
       # add the xia2.txt file...
 
       fout.write('<AutoProcProgramAttachment><fileType>Log')
