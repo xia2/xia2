@@ -70,6 +70,17 @@ def df(path = os.getcwd()):
 
   return 0
 
+def ulimit_n():
+  # see xia2#172 - change limit on number of file handles to smaller of
+  # hard limit, 4096
+
+  import resource
+  current, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
+  demand = min(4096, hard)
+  resource.setrlimit(resource.RLIMIT_NOFILE, (demand, demand))
+  current, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
+  return current, demand, hard
+
 class _Environment(object):
   '''A class to store environmental considerations.'''
 
@@ -97,6 +108,9 @@ class _Environment(object):
     ccp4_scr = tempfile.mkdtemp()
     os.environ['CCP4_SCR'] = ccp4_scr
     Debug.write('Created CCP4_SCR: %s' % ccp4_scr)
+
+    ulimit = ulimit_n()
+    Debug.write('File handle limits: %d/%d/%d' % ulimit)
 
     self._is_setup = True
 
