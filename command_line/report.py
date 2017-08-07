@@ -841,8 +841,15 @@ def d_star_sq_to_d_ticks(d_star_sq, nticks):
   return tickvals, ticktext
 
 
+import iotbx.phil
+phil_scope = iotbx.phil.parse('''\
+title = 'xia2 report'
+  .type = str
+include scope xia2.Modules.Analysis.phil_scope
+''', process_includes=True)
+
+
 def run(args):
-  from xia2.Modules.Analysis import phil_scope
   from xia2.XIA2Version import Version
 
   interp = phil_scope.command_line_argument_interpreter()
@@ -906,7 +913,7 @@ def run(args):
   env = Environment(loader=loader)
 
   template = env.get_template('report.html')
-  html = template.render(page_title='xia2 report',
+  html = template.render(page_title=params.title,
                          filename=os.path.abspath(unmerged_mtz),
                          space_group=report.intensities.space_group_info().symbol_and_number(),
                          unit_cell=str(report.intensities.unit_cell()),
