@@ -268,7 +268,8 @@ class _ISPyBXmlHandler(object):
       g = glob.glob(os.path.join(log_directory, '*merging-statistics.json'))
       for merging_stats_json in g:
         fout.write('<AutoProcProgramAttachment><fileType>Graph')
-        fout.write('</fileType><fileName>%s</fileName>' % merging_stats_json)
+        fout.write('</fileType><fileName>%s</fileName>' % os.path.split(
+          merging_stats_json)[-1])
         fout.write('<filePath>%s</filePath>' % sanitize(log_directory))
         fout.write('</AutoProcProgramAttachment>\n')
 
