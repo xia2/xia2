@@ -1053,13 +1053,11 @@ class CommonScaler(Scaler):
     from xia2.Handlers.Environment import Environment
     log_directory = Environment.generate_directory('LogFiles')
     merging_stats_file = os.path.join(
-      self.get_working_directory(), '%s_%s%s_merging-statistics.txt' % (
+      log_directory, '%s_%s%s_merging-statistics.txt' % (
       self._scalr_pname, self._scalr_xname, '' if wave is None else '_%s' % wave))
     merging_stats_json = os.path.join(
-      self.get_working_directory(),'%s_%s%s_merging-statistics.json' % (
+      log_directory,'%s_%s%s_merging-statistics.json' % (
       self._scalr_pname, self._scalr_xname, '' if wave is None else '_%s' % wave))
-    FileHandler.record_log_file('merging_statistics', merging_stats_file)
-    FileHandler.record_log_file('merging_statistics_json', merging_stats_json)
 
     result, select_result, anom_result, select_anom_result = None, None, None, None
     n_bins = PhilIndex.params.xia2.settings.merging_statistics.n_bins
