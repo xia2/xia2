@@ -845,6 +845,8 @@ import iotbx.phil
 phil_scope = iotbx.phil.parse('''\
 title = 'xia2 report'
   .type = str
+prefix = 'xia2'
+  .type = str
 include scope xia2.Modules.Analysis.phil_scope
 ''', process_includes=True)
 
@@ -931,10 +933,10 @@ def run(args):
                          xia2_version=Version,
                         )
 
-  with open('xia2-report.json', 'wb') as f:
+  with open('%s-report.json' % params.prefix, 'wb') as f:
     json.dump(json_data, f)
 
-  with open('xia2-report.html', 'wb') as f:
+  with open('%s-report.html' % params.prefix, 'wb') as f:
     print >> f, html.encode('ascii', 'xmlcharrefreplace')
 
 if __name__ == '__main__':
