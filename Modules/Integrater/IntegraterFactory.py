@@ -62,6 +62,12 @@ def IntegraterForXSweep(xsweep, json_file=None):
     d_min = PhilIndex.params.xia2.settings.resolution.d_min
     d_max = PhilIndex.params.xia2.settings.resolution.d_max
 
+    # override with sweep versions if set - xia2#146
+    if xsweep.get_resolution_high():
+      d_min = xsweep.get_resolution_high()
+    if xsweep.get_resolution_low():
+      d_max = xsweep.get_resolution_low()
+
     if (d_min is not None and
         d_min != integrater.get_integrater_high_resolution()):
 
