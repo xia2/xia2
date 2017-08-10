@@ -9,11 +9,6 @@
 #
 # A class to represent a sweep of frames collected under the same conditions.
 # This pertains to the dataset object in the early phases of processing.
-#
-# Update history:
-#
-# 21/JUN/06 added imagename(i) method.
-# 22/JUN/06 added storage of user provided details
 
 from __future__ import absolute_import, division
 
