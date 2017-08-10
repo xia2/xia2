@@ -312,13 +312,6 @@ class XProject(object):
 
             replace = True
 
-          # FIXME: AJP to implement
-          # FIXME ticket number here please
-          if 'ice' in sweep_info:
-            pass
-          if 'excluded_regions' in sweep_info:
-            pass
-
           if sweep_info['wavelength'] == wavelength:
 
             frames_to_process = sweep_info.get('start_end')
@@ -326,21 +319,21 @@ class XProject(object):
             xsweep = xw.add_sweep(
               sweep_name,
               sample=xsample,
-              directory = sweep_info.get('DIRECTORY'),
-              image = sweep_info.get('IMAGE'),
-              beam = sweep_info.get('beam'),
-              reversephi = sweep_info.get('reversephi', False),
-              distance = sweep_info.get('distance'),
-              gain = float(sweep_info.get('GAIN', 0.0)),
-              dmin = dmin, dmax = dmax,
-              polarization = float(sweep_info.get(
+              directory=sweep_info.get('DIRECTORY'),
+              image=sweep_info.get('IMAGE'),
+              beam=sweep_info.get('beam'),
+              reversephi=sweep_info.get('reversephi', False),
+              distance=sweep_info.get('distance'),
+              gain=float(sweep_info.get('GAIN', 0.0)),
+              dmin=dmin, dmax=dmax,
+              polarization=float(sweep_info.get(
                   'POLARIZATION', 0.0)),
-              frames_to_process = frames_to_process,
-              user_lattice = lattice,
-              user_cell = cell,
-              epoch = sweep_info.get('epoch', 0),
-              ice = sweep_info.get('ice', False),
-              excluded_regions = sweep_info.get(
+              frames_to_process=frames_to_process,
+              user_lattice=lattice,
+              user_cell=cell,
+              epoch=sweep_info.get('epoch', 0),
+              ice=sweep_info.get('ice', False),
+              excluded_regions=sweep_info.get(
                 'excluded_regions', []),
               )
 
