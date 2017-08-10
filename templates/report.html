@@ -18,6 +18,25 @@
 
     <div class="panel-group">
 
+        {% if log_text %}
+
+        <div class="panel panel-default">
+            <div class="panel-heading" data-toggle="collapse" data-target="#collapse_history">
+                <h4 class="panel-title">
+                    <a>{{ page_title }} log text</a>
+                </h4>
+            </div>
+            <div id="collapse_history" class="panel-collapse collapse">
+                <div class="panel-body">
+                    <pre>
+{{ log_text }}
+                    </pre>
+                </div>
+            </div>
+        </div>
+
+        {% endif %}
+
         <div class="panel panel-default">
             <div class="panel-heading" data-toggle="collapse" data-target="#collapse_history">
                 <h4 class="panel-title">

@@ -847,6 +847,8 @@ title = 'xia2 report'
   .type = str
 prefix = 'xia2'
   .type = str
+log_include = None
+  .type = path
 include scope xia2.Modules.Analysis.phil_scope
 ''', process_includes=True)
 
@@ -914,6 +916,11 @@ def run(args):
                          PackageLoader('dials', 'templates')])
   env = Environment(loader=loader)
 
+  if params.log_include:
+    log_text = open(params.log_include).read()
+  else:
+    log_text = ''
+
   template = env.get_template('report.html')
   html = template.render(page_title=params.title,
                          filename=os.path.abspath(unmerged_mtz),
@@ -931,6 +938,7 @@ def run(args):
                          misc_graphs=misc_graphs,
                          styles=styles,
                          xia2_version=Version,
+                         log_text=log_text,
                         )
 
   with open('%s-report.json' % params.prefix, 'wb') as f:
