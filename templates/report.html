@@ -21,12 +21,12 @@
         {% if log_text %}
 
         <div class="panel panel-default">
-            <div class="panel-heading" data-toggle="collapse" data-target="#collapse_history">
+            <div class="panel-heading" data-toggle="collapse" data-target="#collapse_log">
                 <h4 class="panel-title">
                     <a>{{ page_title }} log text</a>
                 </h4>
             </div>
-            <div id="collapse_history" class="panel-collapse collapse">
+            <div id="collapse_log" class="panel-collapse collapse">
                 <div class="panel-body">
                     <pre>
 {{ log_text }}
@@ -36,6 +36,8 @@
         </div>
 
         {% endif %}
+
+        {% if mtz_history %}
 
         <div class="panel panel-default">
             <div class="panel-heading" data-toggle="collapse" data-target="#collapse_history">
@@ -53,6 +55,8 @@
                 </div>
             </div>
         </div>
+
+        {% endif %}
 
         <div class="panel panel-default">
             <div class="panel-heading" data-toggle="collapse" data-target="#collapse_expt">
