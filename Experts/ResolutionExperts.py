@@ -587,10 +587,8 @@ def remove_blank(hklin, hklout):
     Debug.write('%d blank vs. %d good: ignore' % (len(blanks), len(goods)))
     return hklin
 
-  pl = Pointless()
-  pl.set_hklin(hklin)
-  pl.set_hklout(hklout)
-  pl.exclude_batches(blanks)
+  from xia2.Modules.Scaler.rebatch import rebatch
+  rebatch(hklin, hklout, exclude_batches=blanks)
 
   return hklout
 

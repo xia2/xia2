@@ -16,8 +16,17 @@ import sys
 from iotbx import mtz
 from cctbx.array_family import flex
 
+
+def compact_batches(batches):
+  '''Pack down batches to lists of continuous batches.'''
+  from operator import itemgetter
+  from itertools import groupby
+  return [map(itemgetter(1), g) for k, g in groupby(enumerate(batches),
+                                                    lambda (i,x):i-x)]
+
+
 def rebatch(hklin, hklout, first_batch=None, add_batch=None,
-            include_range=None, exclude_range=None,
+            include_range=None, exclude_range=None, exclude_batches=None,
             pname=None, xname=None, dname=None):
   '''Need to implement: include batch range, exclude batches, add N to
   batches, start batches at N.'''
@@ -33,8 +42,12 @@ def rebatch(hklin, hklout, first_batch=None, add_batch=None,
     #raise RuntimeError, 'neither first nor add specified'
 
   assert not (len(include_range) and len(exclude_range))
+  assert not (len(exclude_range) and len(exclude_batches))
   assert not (len(include_range) and first_batch)
   assert not (len(exclude_range) and first_batch)
+
+  if exclude_batches:
+    exclude_range = [(b[0], b[-1]) for b in compact_batches(exclude_batches)]
 
   mtz_obj = mtz.object(file_name=hklin)
 
