@@ -151,59 +151,11 @@ def Rebatch(DriverType = None):
       self.check_hklin()
       self.check_hklout()
 
-      if self._first_batch > 0 and self._add_batch > 0:
-        raise RuntimeError, 'both first and add specified'
-
-      if self._first_batch == 0 and self._add_batch == 0:
-        raise RuntimeError, 'neither first nor add specified'
-
-      from iotbx import mtz
-      import time
-
-      m = mtz.object(self.get_hklin())
-
-      batches = [b.num() for b in m.batches()]
-
-      start = min(batches)
-
-      if self._first_batch > 0:
-        offset = self._first_batch - start
-      else:
-        offset = self._add_batch
-
-      t0 = time.time()
-
-      if offset != 0:
-        Debug.write('Applying batch offset of %d' % offset)
-
-        for b in m.batches():
-          b.set_num(b.num() + offset)
-
-        batch_col = m.get_column('BATCH')
-        batch_vals = batch_col.extract_values()
-        batch_vals += offset
-        batch_col.set_values(batch_vals)
-
-      if self._pname and self._xname and self._dname:
-        Debug.write('Assigning pname / xname / dname %s / %s / %s' %
-                    (self._pname, self._xname, self._dname))
-
-        for c in m.crystals():
-          for d in c.datasets():
-            d.set_name(self._dname)
-          if c.name() == 'HKL_base':
-            continue
-          c.set_project_name(self._pname)
-          c.set_name(self._xname)
-
-      m.write(self.get_hklout())
-      t1 = time.time()
-
-      Debug.write('Rewriting BATCH etc. took %.1fs' % (t1 - t0))
-
-      new_batches = (min(batches) + offset, max(batches) + offset)
-
-      return new_batches
+      from xia2.Modules.Scaler.rebatch import rebatch
+      return rebatch(
+        self.get_hklin(), self.get_hklout(),
+        first_batch=self._first_batch, add_batch=self._add_batch,
+        pname=self._pname, xname=self._xname, dname=self._dname)
 
   return RebatchWrapper()
 

@@ -16,8 +16,9 @@ import sys
 from iotbx import mtz
 from cctbx.array_family import flex
 
-def rebatch(hklin, hklout, first_batch=None,
-            include_range=None, exclude_range=None):
+def rebatch(hklin, hklout, first_batch=None, add_batch=None,
+            include_range=None, exclude_range=None,
+            pname=None, xname=None, dname=None):
   '''Need to implement: include batch range, exclude batches, add N to
   batches, start batches at N.'''
   if include_range is None:
@@ -25,11 +26,17 @@ def rebatch(hklin, hklout, first_batch=None,
   if exclude_range is None:
     exclude_range = []
 
+  if first_batch is not None and add_batch is not None:
+    raise RuntimeError, 'both first and add specified'
+
+  #if first_batch is None and add_batch is None:
+    #raise RuntimeError, 'neither first nor add specified'
+
   assert not (len(include_range) and len(exclude_range))
   assert not (len(include_range) and first_batch)
   assert not (len(exclude_range) and first_batch)
 
-  mtz_obj = mtz.object(file_name = hklin)
+  mtz_obj = mtz.object(file_name=hklin)
 
   batch_column = None
   batch_dataset = None
@@ -44,10 +51,12 @@ def rebatch(hklin, hklout, first_batch=None,
   if not batch_column:
     raise RuntimeError, 'no BATCH column found in %s' % hklin
 
+  batches = [b.num() for b in mtz_obj.batches()]
   batch_column_values = batch_column.extract_values(
       not_a_number_substitute = -1)
 
   valid = flex.bool()
+  offset = 0
 
   if exclude_range:
     exclude_sel = flex.bool(batch_column_values.size(), False)
@@ -65,8 +74,12 @@ def rebatch(hklin, hklout, first_batch=None,
 
   # modify batch columns, and also the batch headers
 
-  elif first_batch is not None:
-    offset = first_batch - min(batch_column_values)
+  elif first_batch is not None or add_batch is not None:
+    if first_batch is not None:
+      offset = first_batch - min(batches)
+    else:
+      offset = add_batch
+
     batch_column_values = batch_column_values + offset
 
     for batch in mtz_obj.batches():
@@ -76,10 +89,25 @@ def rebatch(hklin, hklout, first_batch=None,
 
     batch_column.set_values(values=batch_column_values, selection_valid=valid)
 
+  if pname and xname and dname:
+    #Debug.write('Assigning pname / xname / dname %s / %s / %s' %
+                #(pname, xname, dname))
+
+    for c in mtz_obj.crystals():
+      for d in c.datasets():
+        d.set_name(dname)
+      if c.name() == 'HKL_base':
+        continue
+      c.set_project_name(pname)
+      c.set_name(xname)
+
   # and write this lot out as hklout
 
-  mtz_obj.write(file_name = hklout)
+  mtz_obj.write(file_name=hklout)
 
+  new_batches = (min(batches) + offset, max(batches) + offset)
+
+  return new_batches
 
 def copy_r_file(hklin, hklout):
 
@@ -166,6 +194,13 @@ include_range = None
 exclude_range = None
   .type = ints(size=2)
   .multiple=True
+project_name = None
+  .type = str
+crystal_name = None
+  .type = str
+dataset_name = None
+  .type = str
+
 """
 
 def run(args):

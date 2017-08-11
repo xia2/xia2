@@ -113,7 +113,6 @@ class CommonScaler(Scaler):
     for epoch in self._sweep_handler.get_epochs():
 
       si = self._sweep_handler.get_sweep_information(epoch)
-      rb = self._factory.Rebatch()
 
       hklin = si.get_reflections()
 
@@ -127,12 +126,10 @@ class CommonScaler(Scaler):
       first_batch = min(si.get_batches())
       si.set_batch_offset(counter * max_batches - first_batch + 1)
 
-      rb.set_hklin(hklin)
-      rb.set_first_batch(counter * max_batches + 1)
-      rb.set_project_info(pname, xname, dname)
-      rb.set_hklout(hklout)
-
-      new_batches = rb.rebatch()
+      from xia2.Modules.Scaler.rebatch import rebatch
+      new_batches = rebatch(
+        hklin, hklout, first_batch=counter * max_batches + 1,
+        pname=pname, xname=xname, dname=dname)
 
       # update the "input information"
 
@@ -304,7 +301,6 @@ class CommonScaler(Scaler):
     counter = 0
 
     for epoch in epochs:
-      rb = self._factory.Rebatch()
 
       hklin = self._sweep_information[epoch]['scaled_reflections']
 
@@ -330,14 +326,13 @@ class CommonScaler(Scaler):
           'batches'] = intgr.get_integrater_batches()
 
       first_batch = min(self._sweep_information[epoch]['batches'])
-      self._sweep_information[epoch][
-          'batch_offset'] = counter * max_batches - first_batch + 1
+      offset = counter * max_batches - first_batch + 1
+      self._sweep_information[epoch]['batch_offset'] = offset
 
-      rb.set_hklin(hklin)
-      rb.set_first_batch(counter * max_batches + 1)
-      rb.set_hklout(hklout)
-
-      new_batches = rb.rebatch()
+      from xia2.Modules.Scaler.rebatch import rebatch
+      new_batches = rebatch(
+        hklin, hklout, add_batch=offset,
+        pname=pname, xname=xname, dname=dname)
 
       # update the "input information"
 

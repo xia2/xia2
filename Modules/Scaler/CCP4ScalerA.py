@@ -239,8 +239,6 @@ class CCP4ScalerA(Scaler):
           hklin = self._prepare_pointless_hklin(
             hklin, si.get_integrater().get_phi_width())
 
-          rb = self._factory.Rebatch()
-
           hklout = os.path.join(self.get_working_directory(),
                                 '%s_%s_%s_%s_prepointless.mtz' % \
                                 (pname, xname, dname, si.get_sweep_name()))
@@ -251,12 +249,10 @@ class CCP4ScalerA(Scaler):
           first_batch = min(si.get_batches())
           si.set_batch_offset(counter * max_batches - first_batch + 1)
 
-          rb.set_hklin(hklin)
-          rb.set_first_batch(counter * max_batches + 1)
-          rb.set_project_info(pname, xname, dname)
-          rb.set_hklout(hklout)
-
-          new_batches = rb.rebatch()
+          from xia2.Modules.Scaler.rebatch import rebatch
+          new_batches = rebatch(
+            hklin, hklout, first_batch=counter * max_batches + 1,
+            pname=pname, xname=xname, dname=dname)
 
           pointless_hklins.append(hklout)
 
@@ -446,8 +442,6 @@ class CCP4ScalerA(Scaler):
         hklin = self._prepare_pointless_hklin(
             hklin, si.get_integrater().get_phi_width())
 
-        rb = self._factory.Rebatch()
-
         hklout = os.path.join(self.get_working_directory(),
                               '%s_%s_%s_%s_prepointless.mtz' % \
                               (pname, xname, dname, si.get_sweep_name()))
@@ -458,12 +452,10 @@ class CCP4ScalerA(Scaler):
         first_batch = min(si.get_batches())
         si.set_batch_offset(counter * max_batches - first_batch + 1)
 
-        rb.set_hklin(hklin)
-        rb.set_first_batch(counter * max_batches + 1)
-        rb.set_project_info(pname, xname, dname)
-        rb.set_hklout(hklout)
-
-        new_batches = rb.rebatch()
+        from xia2.Modules.Scaler.rebatch import rebatch
+        new_batches = rebatch(
+          hklin, hklout, first_batch=counter * max_batches + 1,
+          pname=pname, xname=xname, dname=dname)
 
         pointless_hklins.append(hklout)
 
