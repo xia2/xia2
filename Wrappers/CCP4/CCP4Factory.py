@@ -92,14 +92,6 @@ class CCP4Factory(object):
     auto_logfiler(truncate)
     return truncate
 
-  def Rebatch(self):
-    '''Create a Rebatch wrapper from _Rebatch - set the working directory
-    and log file stuff as a part of this...'''
-    rebatch = _Rebatch()
-    rebatch.set_working_directory(self.get_working_directory())
-    auto_logfiler(rebatch)
-    return rebatch
-
   def Reindex(self):
     '''Create a Reindex wrapper from _Reindex - set the working directory
     and log file stuff as a part of this...'''
