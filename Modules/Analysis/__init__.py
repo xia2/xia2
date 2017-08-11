@@ -41,7 +41,9 @@ chef_min_completeness = None
 %s
 xtriage_analysis = True
   .type = bool
-""" %dose_phil_str)
+include_radiation_damage = True
+  .type = bool
+""" % dose_phil_str)
 
 
 class batch_binned_data(object):

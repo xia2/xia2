@@ -896,10 +896,15 @@ def run(args):
     ('cc_one_half', 'i_over_sig_i', 'second_moments', 'wilson_intensity_plot',
      'completeness', 'multiplicity_vs_resolution') if k in json_data)
 
-  batch_graphs = OrderedDict(
-    (k, json_data[k]) for k in
-    ('scale_rmerge_vs_batch', 'i_over_sig_i_vs_batch', 'completeness_vs_dose',
-     'rcp_vs_dose', 'scp_vs_dose', 'rd_vs_batch_difference'))
+  if params.include_radiation_damage:
+    batch_graphs = OrderedDict(
+      (k, json_data[k]) for k in
+      ('scale_rmerge_vs_batch', 'i_over_sig_i_vs_batch', 'completeness_vs_dose',
+      'rcp_vs_dose', 'scp_vs_dose', 'rd_vs_batch_difference'))
+  else:
+    batch_graphs = OrderedDict(
+      (k, json_data[k]) for k in
+      ('scale_rmerge_vs_batch', 'i_over_sig_i_vs_batch'))
 
   misc_graphs = OrderedDict(
     (k, json_data[k]) for k in

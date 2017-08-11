@@ -265,7 +265,14 @@ def xia2_main(stop_after=None):
       for record in xinfo.summarise():
         fh.write('%s\n' % record)
 
+    # looks like this import overwrites the initial command line
+    # Phil overrides so... for https://github.com/xia2/xia2/issues/150
     from xia2.command_line.html import generate_xia2_html
+
+    if params.xia2.settings.small_molecule == True:
+      params.xia2.settings.report.xtriage_analysis = False
+      params.xia2.settings.report.include_radiation_damage = False
+
     generate_xia2_html(xinfo, filename='xia2.html',
       params=params.xia2.settings.report)
 
