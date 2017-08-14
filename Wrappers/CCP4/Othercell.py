@@ -8,31 +8,6 @@
 # A program wrapper for Phil Evan's program othercell (a part of
 # pointless) for providing other reasonable lattice solutions
 # given a unit cell and lattice type (pcif)
-#
-# FIXME 24/AUG/06 this needs to be tied into the indexing possibilities...
-#
-# FIXME 08/SEP/06 this also needs to parse the xml coming from othercell.
-#                 - after some tinkering ot does, and also needed to mod
-#                   the xml output from othercell - hence the -gw suffix.
-#                 Done - but I need to decide what I want from this next.
-#
-# FIXME 08/SEP/06 would be nice to also apply the latice constraints on
-#                 the output unit cells, based on the standard numbers
-#                 in IUCR Tables A. For instance, if tP set alpha =
-#                 beta = gamma = 90.0 degrees.
-#
-#                 This will be spacegroup -> lattice: new_cell =
-#                 apply_lattice('tP', old_cell) [say] return new_cell.
-#
-# FIXME 08/SEP/06 want to feed the unit cell from autoindexing into this,
-#                 then write out the possibles with penalties to the
-#                 "chatter" stream. This should go into Indexer interface,
-#                 perhaps?
-#
-# FIXME 12/SEP/06 perhaps I should clean up, that is, delete the othercell.xml
-#                 file. Perhaps further, I should call it something random not
-#                 othercell.xml, in case I have two jobs running in one
-#                 directory.
 
 from __future__ import absolute_import, division
 
