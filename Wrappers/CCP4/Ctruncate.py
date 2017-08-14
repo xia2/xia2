@@ -9,17 +9,6 @@
 #
 # A wrapper for the CCP4 program Ctruncate, which calculates F's from
 # I's and gives a few useful statistics about the data set.
-#
-# FIXME 26/OCT/06 this needs to be able to take into account the solvent
-#                 content of the crystal (at the moment it will be assumed
-#                 to be 50%.)
-#
-# FIXME 16/NOV/06 need to be able to get the estimates B factor from the
-#                 Wilson plot and also second moment stuff, perhaps?
-#
-# FIXME 02/FEB/11 read the number of reflections excluded from the data set
-#                 as systematic absences and verify that this is equal to
-#                 the number of reflections going in - number coming out.
 
 from __future__ import absolute_import, division
 

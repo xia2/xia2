@@ -9,10 +9,6 @@
 #
 # A wrapper for the CCP4 program scaleit, for use when scaling together
 # multiple data sets from a single crystal.
-#
-# 15/JAN/07 FIXME - need to be able to cope with a native data set
-#                   scaled together with anomalous derivatives.
-#
 
 from __future__ import absolute_import, division
 
