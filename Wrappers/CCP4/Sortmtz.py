@@ -106,16 +106,7 @@ def Sortmtz(DriverType = None):
 
       if self._hklin_files:
         for m in self._hklin_files:
-          # FIXME have removed the quotes as this breaks the parser
-          # it is assumed that the file is a comment! This is not
-          # a problem in 6.0.2 - so allow for the quotes to
-          # be added if and only if there is a space...
-          if ' ' in m:
-            Chatter.write(
-                'Quoting input files - you have been warned!')
-            self.input('"%s"' % m)
-          else:
-            self.input('%s' % m)
+          self.input('"%s"' % m)
 
       self.close_wait()
 
@@ -144,38 +135,3 @@ def Sortmtz(DriverType = None):
 
   return SortmtzWrapper()
 
-if __name__ == '__main_2_':
-  # run some tests
-
-  dpa = os.environ['XIA2_ROOT']
-
-  hklin1 = os.path.join(dpa,
-                        'Data', 'Test', 'Mtz', '12287_1_E1_1_10.mtz')
-  hklin2 = os.path.join(dpa,
-                        'Data', 'Test', 'Mtz', '12287_1_E1_11_20.mtz')
-
-  s = Sortmtz()
-  s.add_hklin(hklin1)
-  s.add_hklin(hklin2)
-  s.set_hklout('null.mtz')
-
-  try:
-    print s.sort()
-  except RuntimeError, e:
-    print 'Error => %s' % e
-
-  s = Sortmtz()
-  s.add_hklin(hklin1)
-  s.add_hklin(hklin1)
-  s.set_hklout('null.mtz')
-
-  try:
-    print s.sort()
-  except RuntimeError, e:
-    print 'Error => %s' % e
-
-if __name__ == '__main__':
-  s = Sortmtz()
-  s.add_hklin('TS00_13185_unmerged_INFL.mtz')
-  s.set_hklout('TS00_13185_sorted_INFL.mtz')
-  s.sort()
