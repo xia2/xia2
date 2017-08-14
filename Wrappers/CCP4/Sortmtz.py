@@ -66,11 +66,6 @@ def Sortmtz(DriverType = None):
     def sort(self, vrset = None):
       '''Actually sort the reflections.'''
 
-      # if we have not specified > 1 hklin file via the add method,
-      # check that the set_hklin method has been used. If exactly one
-      # set this as HKLIN on command line as a workaround for a bug
-      # in sortmtz with big reflection files giving SEGV
-
       if len(self._hklin_files) == 1:
         self.set_hklin(self._hklin_files[0])
         self._hklin_files = []
@@ -81,11 +76,8 @@ def Sortmtz(DriverType = None):
       self.check_hklout()
 
       if self._hklin_files:
-        task = ''
-        for hklin in self._hklin_files:
-          task += ' %s' % hklin
-        self.set_task('Sorting reflections%s => %s' % \
-                     (task,
+        self.set_task('Sorting reflections %s => %s' % \
+                     (' '.join(self._hklin_files),
                       os.path.split(self.get_hklout())[-1]))
       else:
         self.set_task('Sorting reflections %s => %s' % \
@@ -102,8 +94,6 @@ def Sortmtz(DriverType = None):
 
       self.input(self._sort_order)
 
-      # multiple mtz files get passed in on the command line...
-
       if self._hklin_files:
         for m in self._hklin_files:
           self.input('"%s"' % m)
@@ -111,23 +101,16 @@ def Sortmtz(DriverType = None):
       self.close_wait()
 
       try:
-
-        # general errors - SEGV and the like
         self.check_for_errors()
-
-        # ccp4 specific errors
         self.check_ccp4_errors()
         if 'Error' in self.get_ccp4_status():
           raise RuntimeError, '[SORTMTZ] %s' % status
-
-        # sortmtz specific errors
         self.check_sortmtz_errors()
 
       except RuntimeError, e:
-        # something went wrong; remove the output file
         try:
           os.remove(self.get_hklout())
-        except:
+        except: #deliberate
           pass
         raise e
 
