@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-f# Aimless.py
+# Aimless.py
 #   Copyright (C) 2011 Diamond Light Source, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is
