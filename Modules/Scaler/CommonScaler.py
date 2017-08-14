@@ -45,19 +45,11 @@ class CommonScaler(Scaler):
 
     max_batches = 0
 
-    for e in self._sweep_handler.get_epochs():
-      if PhilIndex.params.xia2.settings.small_molecule == True:
-        continue
-      si = self._sweep_handler.get_sweep_information(e)
-
-      pname, xname, dname = si.get_project_info()
-      sname = si.get_sweep_name()
-
-
-
     for epoch in self._sweep_handler.get_epochs():
 
       si = self._sweep_handler.get_sweep_information(epoch)
+      pname, xname, dname = si.get_project_info()
+      sname = si.get_sweep_name()
       hklin = si.get_reflections()
 
       # limit the reflections - e.g. if we are re-running the scaling step

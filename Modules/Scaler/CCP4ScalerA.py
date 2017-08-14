@@ -584,7 +584,7 @@ class CCP4ScalerA(Scaler):
       self.set_scaler_prepare_done(False)
       return
 
-    # in here now optinally work through the data files which should be
+    # in here now optionally work through the data files which should be
     # indexed with a consistent point group, and transform the orientation
     # matrices by the lattice symmetry operations (if possible) to get a
     # consistent definition of U matrix modulo fixed rotations
