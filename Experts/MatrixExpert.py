@@ -264,16 +264,12 @@ def _Othercell():
   '''A factory to produce either a wrapper for LaticeSymmetry or
   OtherCell depending on what is available.'''
 
-  o = None
-
   try:
-    o = LatticeSymmetry()
+    return LatticeSymmetry()
     Debug.write('Using iotbx.lattice_symmetry')
-  except:
-    o = Othercell()
+  except: #deliberate
+    return Othercell()
     Debug.write('Using othercell')
-
-  return o
 
 def get_real_space_primitive_matrix(lattice, matrix, wd = None):
   '''Get the primitive real space vectors for the unit cell and
@@ -383,9 +379,6 @@ def mosflm_a_matrix_to_real_space(wavelength, lattice, matrix):
   ls = _Othercell()
   ls.set_cell(cell)
   ls.set_lattice(lattice)
-
-  # ls.set_spacegroup(spacegroup)
-  # cell, reindex = ls.generate_primative_reindex()
   ls.generate()
 
   cell = ls.get_cell('aP')
