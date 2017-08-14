@@ -21,7 +21,6 @@ from xia2.Wrappers.CCP4.Scaleit import Scaleit as _Scaleit
 from xia2.Wrappers.CCP4.Sortmtz import Sortmtz as _Sortmtz
 from xia2.Wrappers.CCP4.Mtzdump import Mtzdump as _Mtzdump
 from xia2.Wrappers.CCP4.Truncate import Truncate as _Truncate
-from xia2.Wrappers.CCP4.Rebatch import Rebatch as _Rebatch
 from xia2.Wrappers.CCP4.Reindex import Reindex as _Reindex
 from xia2.Wrappers.CCP4.Mtz2various import Mtz2various as _Mtz2various
 from xia2.Wrappers.CCP4.Cad import Cad as _Cad
