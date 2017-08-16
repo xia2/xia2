@@ -319,8 +319,6 @@ class _CommandLine(object):
       Flags.set_xparm_ub(params.xds.index.xparm_ub)
 
     if params.xia2.settings.scale.freer_file is not None:
-      # mtzdump this file to make sure that there is a FreeR_flag
-      # column therein...
       freer_file = os.path.abspath(params.xia2.settings.scale.freer_file)
       if not os.path.exists(freer_file):
         raise RuntimeError, '%s does not exist' % freer_file

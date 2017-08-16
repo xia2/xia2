@@ -31,6 +31,7 @@ from xia2.Handlers.Phil import PhilIndex
 from xia2.lib.bits import is_mtz_file
 from xia2.lib.bits import transpose_loggraph
 from xia2.lib.SymmetryLib import sort_lattices
+from xia2.Modules import MtzUtils
 
 from xia2.Modules.Scaler.CCP4ScalerHelpers import _prepare_pointless_hklin, \
      CCP4ScalerHelper, SweepInformationHandler, ersatz_resolution, \
@@ -205,21 +206,9 @@ class CCP4ScalerA(Scaler):
           si = self._sweep_handler.get_sweep_information(epoch)
           hklin = si.get_reflections()
 
-          md = self._factory.Mtzdump()
-          md.set_hklin(hklin)
-          md.dump()
-
-          batches = md.get_batches()
+          batches = MtzUtils.batches_from_mtz(hklin)
           if 1 + max(batches) - min(batches) > max_batches:
             max_batches = max(batches) - min(batches) + 1
-
-          datasets = md.get_datasets()
-
-          Debug.write('In reflection file %s found:' % hklin)
-          for d in datasets:
-            Debug.write('... %s' % d)
-
-          dataset_info = md.get_dataset_info(datasets[0])
 
         from xia2.lib.bits import nifty_power_of_ten
         Debug.write('Biggest sweep has %d batches' % max_batches)
@@ -408,21 +397,9 @@ class CCP4ScalerA(Scaler):
         si = self._sweep_handler.get_sweep_information(epoch)
         hklin = si.get_reflections()
 
-        md = self._factory.Mtzdump()
-        md.set_hklin(hklin)
-        md.dump()
-
-        batches = md.get_batches()
+        batches = MtzUtils.batches_from_mtz(hklin)
         if 1 + max(batches) - min(batches) > max_batches:
           max_batches = max(batches) - min(batches) + 1
-
-        datasets = md.get_datasets()
-
-        Debug.write('In reflection file %s found:' % hklin)
-        for d in datasets:
-          Debug.write('... %s' % d)
-
-        dataset_info = md.get_dataset_info(datasets[0])
 
       from xia2.lib.bits import nifty_power_of_ten
       Debug.write('Biggest sweep has %d batches' % max_batches)

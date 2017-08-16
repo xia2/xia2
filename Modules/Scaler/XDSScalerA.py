@@ -40,6 +40,7 @@ from xia2.Handlers.Syminfo import Syminfo
 from xia2.Handlers.Streams import Chatter, Debug, Journal
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
+from xia2.Modules import MtzUtils
 
 # newly implemented CCTBX powered functions to replace xia2 binaries
 from xia2.Modules.Scaler.tools import compute_average_unit_cell
@@ -452,13 +453,7 @@ class XDSScalerA(Scaler):
       self._reference = self.get_scaler_reference_reflection_file()
       Debug.write('Using HKLREF %s' % self._reference)
 
-      md = self._factory.Mtzdump()
-      md.set_hklin(self.get_scaler_reference_reflection_file())
-      md.dump()
-
-      self._xds_spacegroup = Syminfo.spacegroup_name_to_number(
-          md.get_spacegroup())
-
+      self._xds_spacegroup = MtzUtils.space_group_number_from_mtz(self._reference)
       Debug.write('Spacegroup %d' % self._xds_spacegroup)
 
     elif PhilIndex.params.xia2.settings.scale.reference_reflection_file:
@@ -466,13 +461,7 @@ class XDSScalerA(Scaler):
 
       Debug.write('Using HKLREF %s' % self._reference)
 
-      md = self._factory.Mtzdump()
-      md.set_hklin(PhilIndex.params.xia2.settings.scale.reference_reflection_file)
-      md.dump()
-
-      self._xds_spacegroup = Syminfo.spacegroup_name_to_number(
-          md.get_spacegroup())
-
+      self._xds_spacegroup = MtzUtils.space_group_number_from_mtz(self._reference)
       Debug.write('Spacegroup %d' % self._xds_spacegroup)
 
     params = PhilIndex.params

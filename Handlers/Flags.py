@@ -86,9 +86,6 @@ class _Flags(object):
 
   def set_freer_file(self, freer_file):
 
-    # mtzdump this file to make sure that there is a FreeR_flag
-    # column therein...
-
     freer_file = os.path.abspath(freer_file)
 
     if not os.path.exists(freer_file):

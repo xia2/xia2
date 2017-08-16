@@ -26,6 +26,7 @@ from xia2.Handlers.Streams import Debug
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Experts.ResolutionExperts import remove_blank
+from xia2.Modules import MtzUtils
 
 ############ JIFFY FUNCTIONS #################
 
@@ -196,17 +197,12 @@ def _prepare_pointless_hklin(working_directory,
 
   # find the number of batches
 
-  md = Mtzdump()
-  md.set_working_directory(working_directory)
-  auto_logfiler(md)
-  md.set_hklin(hklin)
-  md.dump()
-
-  batches = max(md.get_batches()) - min(md.get_batches())
+  batches = MtzUtils.batches_from_mtz(hklin)
+  n_batches = max(batches) - min(batches)
 
   phi_limit = 180
 
-  if batches * phi_width < phi_limit or PhilIndex.params.xia2.settings.small_molecule == True:
+  if n_batches * phi_width < phi_limit or PhilIndex.params.xia2.settings.small_molecule == True:
     return hklin
 
   hklout = os.path.join(

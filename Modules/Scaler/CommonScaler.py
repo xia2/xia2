@@ -21,6 +21,7 @@ from xia2.lib.bits import nifty_power_of_ten
 import os
 
 from xia2.Handlers.Files import FileHandler
+from xia2.Modules import MtzUtils
 
 # new resolution limit code
 from xia2.Wrappers.XIA.Merger import Merger
@@ -78,21 +79,10 @@ class CommonScaler(Scaler):
       # this will be used to make rebatch work below.
 
       hklin = si.get_reflections()
-      md = self._factory.Mtzdump()
-      md.set_hklin(hklin)
-      md.dump()
 
-      batches = md.get_batches()
+      batches = MtzUtils.batches_from_mtz(hklin)
       if 1 + max(batches) - min(batches) > max_batches:
         max_batches = max(batches) - min(batches) + 1
-
-      datasets = md.get_datasets()
-
-      Debug.write('In reflection file %s found:' % hklin)
-      for d in datasets:
-        Debug.write('... %s' % d)
-
-      dataset_info = md.get_dataset_info(datasets[0])
 
     Debug.write('Biggest sweep has %d batches' % max_batches)
     max_batches = nifty_power_of_ten(max_batches)
@@ -207,12 +197,8 @@ class CommonScaler(Scaler):
           (spacegroup, clean_reindex_operator(reindex_operator)))
 
     else:
-
-      md = self._factory.Mtzdump()
-      md.set_hklin(self.get_scaler_reference_reflection_file())
-      md.dump()
-
-      spacegroup = md.get_spacegroup()
+      spacegroup = MtzUtils.space_group_name_from_mtz(
+        self.get_scaler_reference_reflection_file())
       reindex_operator = 'h,k,l'
 
       self._scalr_likely_spacegroups = [spacegroup]
@@ -259,14 +245,10 @@ class CommonScaler(Scaler):
 
       hklin = self._sweep_information[epoch]['scaled_reflections']
 
-      md = self._factory.Mtzdump()
-      md.set_hklin(hklin)
-      md.dump()
-
       if self._sweep_information[epoch]['batches'] == [0, 0]:
 
         Chatter.write('Getting batches from %s' % hklin)
-        batches = md.get_batches()
+        batches = MtzUtils.batches_from_mtz(hklin)
         self._sweep_information[epoch]['batches'] = [min(batches),
                                                      max(batches)]
         Chatter.write('=> %d to %d' % (min(batches),
@@ -275,14 +257,6 @@ class CommonScaler(Scaler):
       batches = self._sweep_information[epoch]['batches']
       if 1 + max(batches) - min(batches) > max_batches:
         max_batches = max(batches) - min(batches) + 1
-
-      datasets = md.get_datasets()
-
-      Debug.write('In reflection file %s found:' % hklin)
-      for d in datasets:
-        Debug.write('... %s' % d)
-
-      dataset_info = md.get_dataset_info(datasets[0])
 
     Debug.write('Biggest sweep has %d batches' % max_batches)
     max_batches = nifty_power_of_ten(max_batches)
@@ -351,15 +325,11 @@ class CommonScaler(Scaler):
     self._prepared_reflections = hklout
 
     if self.get_scaler_reference_reflection_file():
-      md = self._factory.Mtzdump()
-      md.set_hklin(self.get_scaler_reference_reflection_file())
-      md.dump()
-
-      spacegroups = [md.get_spacegroup()]
+      spacegroups = [MtzUtils.space_group_name_from_mtz(
+        self.get_scaler_reference_reflection_file())]
       reindex_operator = 'h,k,l'
 
     else:
-
       pointless = self._factory.Pointless()
       pointless.set_hklin(hklout)
       pointless.decide_spacegroup()
@@ -433,11 +403,8 @@ class CommonScaler(Scaler):
     hklin = self._sweep_information[epoch]['scaled_reflections']
 
     if self.get_scaler_reference_reflection_file():
-      md = self._factory.Mtzdump()
-      md.set_hklin(self.get_scaler_reference_reflection_file())
-      md.dump()
-
-      spacegroups = [md.get_spacegroup()]
+      spacegroups = [MtzUtils.space_group_name_from_mtz(
+        self.get_scaler_reference_reflection_file())]
       reindex_operator = 'h,k,l'
 
     elif self._scalr_input_spacegroup:
@@ -458,7 +425,6 @@ class CommonScaler(Scaler):
 
       spacegroups = pointless.get_likely_spacegroups()
       reindex_operator = pointless.get_spacegroup_reindex_operator()
-
 
     self._scalr_likely_spacegroups = spacegroups
     spacegroup = self._scalr_likely_spacegroups[0]
@@ -839,10 +805,7 @@ class CommonScaler(Scaler):
         ntot = scale_params.free_total
 
         # need to get a fraction, so...
-        mtzdump = self._factory.Mtzdump()
-        mtzdump.set_hklin(hklin)
-        mtzdump.dump()
-        nref = mtzdump.get_reflections()
+        nref = MtzUtils.nref_from_mtz(hklin)
         free_fraction = float(ntot) / float(nref)
       else:
         free_fraction = scale_params.free_fraction
@@ -869,10 +832,7 @@ class CommonScaler(Scaler):
       ntot = scale_params.free_total()
 
       # need to get a fraction, so...
-      mtzdump = self._factory.Mtzdump()
-      mtzdump.set_hklin(hklin)
-      mtzdump.dump()
-      nref = mtzdump.get_reflections()
+      nref = MtzUtils.nref_from_mtz(hklin)
       free_fraction = float(ntot) / float(nref)
 
     f = self._factory.Freerflag()
