@@ -104,7 +104,6 @@ class _CommandLine(object):
   def print_command_line(self):
     cl = self.get_command_line()
     Chatter.write('Command line: %s' % cl)
-    return
 
   def get_command_line(self):
     import libtbx.load_env
@@ -126,6 +125,8 @@ class _CommandLine(object):
     '''Set everything up...'''
 
     # check arguments are all ascii
+
+    Debug.write('Start parsing command line: ' + str(sys.argv))
 
     for token in sys.argv:
       try:

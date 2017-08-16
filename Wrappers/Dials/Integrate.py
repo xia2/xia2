@@ -158,7 +158,7 @@ def Integrate(DriverType = None):
         if 'There was a problem allocating memory for shoeboxes' in record:
           raise RuntimeError(
 '''dials.integrate requires more memory than is available.
-Try using a machine with more memory or using fewer processor.''')
+Try using a machine with more memory or using fewer processors.''')
 
       self.check_for_errors()
 
