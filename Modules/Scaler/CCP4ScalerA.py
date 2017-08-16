@@ -1071,22 +1071,6 @@ class CCP4ScalerA(Scaler):
     self._scalr_scaled_refl_files = copy.deepcopy(
         sc.get_scaled_reflection_files())
 
-    self._scalr_scaled_reflection_files = { }
-    self._scalr_scaled_reflection_files['sca'] = { }
-
-    for key in self._scalr_scaled_refl_files:
-      f = self._scalr_scaled_refl_files[key]
-      scaout = '%s.sca' % f[:-4]
-
-      m2v = self._factory.Mtz2various()
-      m2v.set_hklin(f)
-      m2v.set_hklout(scaout)
-      m2v.convert()
-
-      self._scalr_scaled_reflection_files['sca'][key] = scaout
-
-      FileHandler.record_data_file(scaout)
-
     sc = self._updated_aimless()
     sc.set_hklin(self._prepared_reflections)
     sc.set_scales_file(scales_file)
@@ -1120,16 +1104,20 @@ class CCP4ScalerA(Scaler):
 
     self._update_scaled_unit_cell()
 
+    self._scalr_scaled_reflection_files = { }
+    self._scalr_scaled_reflection_files['sca'] = { }
     self._scalr_scaled_reflection_files['sca_unmerged'] = { }
     self._scalr_scaled_reflection_files['mtz_unmerged'] = { }
+
     for key in self._scalr_scaled_refl_files:
       f = self._scalr_scaled_refl_files[key]
-      scalepack = os.path.join(os.path.split(f)[0],
-                               os.path.split(f)[1].replace(
-          '_scaled', '_scaled_unmerged').replace('.mtz', '.sca'))
-      self._scalr_scaled_reflection_files['sca_unmerged'][key] = scalepack
+      scalepack = os.path.splitext(f)[0] + '.sca'
+      scalepack_unmerged = os.path.splitext(f)[0] + '_unmerged.sca'
+      self._scalr_scaled_reflection_files['sca'][key] = scalepack
+      self._scalr_scaled_reflection_files['sca_unmerged'][key] = scalepack_unmerged
       FileHandler.record_data_file(scalepack)
-      mtz_unmerged = os.path.splitext(scalepack)[0] + '.mtz'
+      FileHandler.record_data_file(scalepack_unmerged)
+      mtz_unmerged = os.path.splitext(scalepack_unmerged)[0] + '.mtz'
 
       if self._scalr_cell_esd is not None:
         # patch .mtz and overwrite unit cell information
