@@ -1317,11 +1317,6 @@ class XDSScalerA(Scaler):
       f = self._scalr_scaled_refl_files[key]
       scaout = '%s.sca' % f[:-4]
 
-      m2v = self._factory.Mtz2various()
-      m2v.set_hklin(f)
-      m2v.set_hklout(scaout)
-      m2v.convert()
-
       self._scalr_scaled_reflection_files['sca'][key] = scaout
       FileHandler.record_data_file(scaout)
 
