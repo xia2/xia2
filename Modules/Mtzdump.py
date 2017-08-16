@@ -61,15 +61,8 @@ class Mtzdump(object):
     self._header['column_types'] = [column.type() for column
                                     in mtz_obj.columns()]
     self._resolution_range = mtz_obj.max_min_resolution()
-    spacegroup_and_no = mtz_obj.space_group().info().symbol_and_number()
 
-    spacegroup_number = int(spacegroup_and_no.replace(')', '').split()[-1])
-
-    from xia2.Handlers.Syminfo import Syminfo
-
-    spacegroup = Syminfo.spacegroup_number_to_name(spacegroup_number)
-
-    self._header['spacegroup'] = spacegroup
+    self._header['spacegroup'] = mtz_obj.space_group().type().lookup_symbol()
     self._reflections = mtz_obj.n_reflections()
 
     for crystal in mtz_obj.crystals():
