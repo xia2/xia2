@@ -157,7 +157,6 @@ from xia2.Handlers.Streams import Chatter, Debug
 
 # file conversion (and merging) jiffies
 
-from xia2.Modules.Mtz2Scalepack import Mtz2Scalepack
 
 class Scaler(object):
   '''An interface to present scaling functionality in a similar way to the
@@ -643,18 +642,6 @@ class Scaler(object):
       return self._scalr_scaled_reflection_files[format]
 
     raise RuntimeError, 'unknown format %s' % format
-
-    if format == 'sca':
-      # generate merged scalepack format reflections from the mtz
-      # format
-
-      m2s = Mtz2Scalepack()
-
-      m2s.set_hklin(self._scalr_scaled_reflection_files['mtz'])
-      self._scalr_scaled_reflection_files['sca'] = m2s.convert()
-      return self._scalr_scaled_reflection_files['sca']
-
-    raise RuntimeError, 'cannot possibly reach this point'
 
   def get_scaled_merged_reflections(self):
     '''Return the reflection files and so on.'''
