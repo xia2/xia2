@@ -348,8 +348,8 @@ ccp4
   reindex
     .short_caption = "reindex"
   {
-    program = 'pointless'
-      .type = str
+    program = *pointless reindex cctbx
+      .type = choice
   }
   aimless
     .short_caption = "aimless"

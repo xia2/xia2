@@ -117,11 +117,19 @@ def Reindex(DriverType = None):
 
       return 'OK'
 
+    def cctbx_reindex(self):
+      from xia2.Modules.MtzUtils import reindex
+      reindex(self._hklin, self._hklin, self._operator, space_group=self._spacegroup)
+      return 'OK'
+
     def reindex(self):
       '''Actually perform the reindexing.'''
 
       if PhilIndex.params.ccp4.reindex.program == 'reindex':
         return self.reindex_old()
+
+      elif PhilIndex.params.ccp4.reindex.program == 'cctbx':
+        return self.cctbx_reindex()
 
       self.check_hklin()
       self.check_hklout()
