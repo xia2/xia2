@@ -62,7 +62,7 @@ class Mtzdump(object):
                                     in mtz_obj.columns()]
     self._resolution_range = mtz_obj.max_min_resolution()
 
-    self._header['spacegroup'] = mtz_obj.space_group().type().lookup_symbol()
+    self._header['spacegroup'] = mtz_obj.space_group_name()
     self._reflections = mtz_obj.n_reflections()
 
     for crystal in mtz_obj.crystals():
