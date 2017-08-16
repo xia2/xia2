@@ -119,7 +119,7 @@ def Reindex(DriverType = None):
 
     def cctbx_reindex(self):
       from xia2.Modules.MtzUtils import reindex
-      reindex(self._hklin, self._hklin, self._operator, space_group=self._spacegroup)
+      reindex(self._hklin, self._hklout, self._operator, space_group=self._spacegroup)
       return 'OK'
 
     def reindex(self):
