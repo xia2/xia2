@@ -59,14 +59,6 @@ class CCP4Factory(object):
     auto_logfiler(aimless)
     return aimless
 
-  def Scaleit(self):
-    '''Create a Scaleit wrapper from _Scaleit - set the working directory
-    and log file stuff as a part of this...'''
-    scaleit = _Scaleit()
-    scaleit.set_working_directory(self.get_working_directory())
-    auto_logfiler(scaleit)
-    return scaleit
-
   def Sortmtz(self):
     '''Create a Sortmtz wrapper from _Sortmtz - set the working directory
     and log file stuff as a part of this...'''

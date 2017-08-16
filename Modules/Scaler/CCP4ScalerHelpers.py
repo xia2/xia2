@@ -19,7 +19,6 @@ import sys
 import math
 from iotbx import mtz
 
-from xia2.Wrappers.CCP4.Mtzdump import Mtzdump
 from xia2.Wrappers.CCP4.Pointless import Pointless
 from xia2.lib.bits import auto_logfiler
 from xia2.Handlers.Streams import Debug
