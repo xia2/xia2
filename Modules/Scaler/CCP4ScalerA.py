@@ -1114,16 +1114,16 @@ class CCP4ScalerA(Scaler):
     for key in self._scalr_scaled_refl_files:
       hklout = self._scalr_scaled_refl_files[key]
 
-      # then mark the scalepack files for copying...
-
+      scaout = '%s.sca' % hklout[:-4]
+      self._scalr_scaled_reflection_files['sca'][key] = scaout
+      FileHandler.record_data_file(scaout)
       scalepack = os.path.join(os.path.split(hklout)[0],
                                os.path.split(hklout)[1].replace(
           '_scaled', '_scaled_unmerged').replace('.mtz', '.sca'))
-      self._scalr_scaled_reflection_files['sca_unmerged'][
-          dataset] = scalepack
+      self._scalr_scaled_reflection_files['sca_unmerged'][key] = scalepack
       FileHandler.record_data_file(scalepack)
       mtz_unmerged = os.path.splitext(scalepack)[0] + '.mtz'
-      self._scalr_scaled_reflection_files['mtz_unmerged'][dataset] = mtz_unmerged
+      self._scalr_scaled_reflection_files['mtz_unmerged'][key] = mtz_unmerged
       FileHandler.record_data_file(mtz_unmerged)
 
       if self._scalr_cell_esd is not None:
