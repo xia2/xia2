@@ -1109,25 +1109,33 @@ class CCP4ScalerA(Scaler):
     self._scalr_scaled_reflection_files['sca_unmerged'] = { }
     self._scalr_scaled_reflection_files['mtz_unmerged'] = { }
 
+
+
     for key in self._scalr_scaled_refl_files:
-      f = self._scalr_scaled_refl_files[key]
-      scalepack = os.path.splitext(f)[0] + '.sca'
-      scalepack_unmerged = os.path.splitext(f)[0] + '_unmerged.sca'
-      self._scalr_scaled_reflection_files['sca'][key] = scalepack
-      self._scalr_scaled_reflection_files['sca_unmerged'][key] = scalepack_unmerged
+      hklout = self._scalr_scaled_refl_files[key]
+
+      # then mark the scalepack files for copying...
+
+      scalepack = os.path.join(os.path.split(hklout)[0],
+                               os.path.split(hklout)[1].replace(
+          '_scaled', '_scaled_unmerged').replace('.mtz', '.sca'))
+      self._scalr_scaled_reflection_files['sca_unmerged'][
+          dataset] = scalepack
       FileHandler.record_data_file(scalepack)
-      FileHandler.record_data_file(scalepack_unmerged)
-      mtz_unmerged = os.path.splitext(scalepack_unmerged)[0] + '.mtz'
+      mtz_unm = os.path.splitext(scalepack)[0] + '.mtz'
+      self._scalr_scaled_reflection_files['mtz_unmerged'][dataset] = mtz_unm
+      FileHandler.record_data_file(mtz_unm)
 
       if self._scalr_cell_esd is not None:
         # patch .mtz and overwrite unit cell information
         import xia2.Modules.Scaler.tools as tools
-        override_cell = self._scalr_cell_dict.get('%s_%s_%s' % (self._scalr_pname, self._scalr_xname, key))[0]
-        tools.patch_mtz_unit_cell(mtz_unmerged, override_cell)
-        tools.patch_mtz_unit_cell(f, override_cell)
+        override_cell = self._scalr_cell_dict.get('%s_%s_%s' %
+          (self._scalr_pname, self._scalr_xname, key))[0]
+        tools.patch_mtz_unit_cell(mtz_unm, override_cell)
+        tools.patch_mtz_unit_cell(hklout, override_cell)
 
-      self._scalr_scaled_reflection_files['mtz_unmerged'][key] = mtz_unmerged
-      FileHandler.record_data_file(mtz_unmerged)
+      self._scalr_scaled_reflection_files['mtz_unmerged'][key] = mtz_unm
+      FileHandler.record_data_file(mtz_unm)
 
     if PhilIndex.params.xia2.settings.merging_statistics.source == 'cctbx':
       for key in self._scalr_scaled_refl_files:
