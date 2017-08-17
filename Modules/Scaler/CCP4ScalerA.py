@@ -1122,20 +1122,20 @@ class CCP4ScalerA(Scaler):
       self._scalr_scaled_reflection_files['sca_unmerged'][
           dataset] = scalepack
       FileHandler.record_data_file(scalepack)
-      mtz_unm = os.path.splitext(scalepack)[0] + '.mtz'
-      self._scalr_scaled_reflection_files['mtz_unmerged'][dataset] = mtz_unm
-      FileHandler.record_data_file(mtz_unm)
+      mtz_unmerged = os.path.splitext(scalepack)[0] + '.mtz'
+      self._scalr_scaled_reflection_files['mtz_unmerged'][dataset] = mtz_unmerged
+      FileHandler.record_data_file(mtz_unmerged)
 
       if self._scalr_cell_esd is not None:
         # patch .mtz and overwrite unit cell information
         import xia2.Modules.Scaler.tools as tools
         override_cell = self._scalr_cell_dict.get('%s_%s_%s' %
           (self._scalr_pname, self._scalr_xname, key))[0]
-        tools.patch_mtz_unit_cell(mtz_unm, override_cell)
+        tools.patch_mtz_unit_cell(mtz_unmerged, override_cell)
         tools.patch_mtz_unit_cell(hklout, override_cell)
 
-      self._scalr_scaled_reflection_files['mtz_unmerged'][key] = mtz_unm
-      FileHandler.record_data_file(mtz_unm)
+      self._scalr_scaled_reflection_files['mtz_unmerged'][key] = mtz_unmerged
+      FileHandler.record_data_file(mtz_unmerged)
 
     if PhilIndex.params.xia2.settings.merging_statistics.source == 'cctbx':
       for key in self._scalr_scaled_refl_files:
