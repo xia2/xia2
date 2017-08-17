@@ -214,7 +214,7 @@ def _prepare_pointless_hklin(working_directory,
   pl.set_hklin(hklin)
   pl.set_hklout(hklout)
 
-  first = min(md.get_batches())
+  first = min(batches)
   last = first + int(phi_limit / phi_width)
 
   Debug.write('Preparing data for pointless - %d batches (%d degrees)' % \
