@@ -218,7 +218,18 @@ class XDSIndexer(IndexerSingleSweep):
         wedges.append(images[1])
 
     else:
-      block_size = min(len(images), 5)
+      max_wedge_size_degrees = PhilIndex.params.xds.index.max_wedge_size_degrees
+      max_wedge_size = PhilIndex.params.xds.index.max_wedge_size
+      if max_wedge_size_degrees is not None:
+        n = int(math.floor(max_wedge_size_degrees / self.get_phi_width()))
+        if max_wedge_size is not None:
+          max_wedge_size = min(max_wedge_size, max(n, 1))
+        else:
+          max_wedge_size = n
+
+      Debug.write('Using max_wedge_size: %d' %max_wedge_size)
+
+      block_size = min(len(images), max_wedge_size)
 
       Debug.write('Adding images for indexer: %d -> %d' % \
                   (images[0], images[block_size - 1]))

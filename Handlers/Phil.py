@@ -148,6 +148,10 @@ xds
       .short_caption="Use GXPARM.XDS UB matrix"
       .help = 'Use refined GXPARM.XDS orientation matrix in indexing'
       .expert_level=1
+    max_wedge_size = 5
+      .type = int(value_min=1)
+    max_wedge_size_degrees = None
+      .type = float(value_min=0)
   }
   colspot {
     minimum_pixels_per_spot = 1
