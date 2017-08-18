@@ -141,22 +141,23 @@ class XDSIndexerII(XDSIndexer):
                    'template':self.get_template(),
                    'directory':dirname})
 
+    self._index_remove_masked_regions()
+
+    if self._i_or_ii is None:
+      self._i_or_ii = self.decide_i_or_ii()
+      Debug.write('Selecting I or II, chose %s' % self._i_or_ii)
+
     idxref = self.Idxref()
 
-    self._index_remove_masked_regions()
     for file in ['SPOT.XDS']:
       idxref.set_input_data_file(file, self._indxr_payload[file])
+
+    # set the phi start etc correctly
 
     idxref.set_data_range(self._indxr_images[0][0],
                           self._indxr_images[0][1])
     idxref.set_background_range(self._indxr_images[0][0],
                                 self._indxr_images[0][1])
-
-    # set the phi start etc correctly
-
-    if self._i_or_ii is None:
-      self._i_or_ii = self.decide_i_or_ii()
-      Debug.write('Selecting I or II, chose %s' % self._i_or_ii)
 
     if self._i_or_ii == 'i':
       blocks = self._index_select_images_i()
