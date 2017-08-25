@@ -26,9 +26,10 @@ def BestStrategy(DriverType=None):
       self._w_min = None
       self._M_min = None
       self._C_min = None
+      self._GpS = None
       self._i2s = None
-      self._sensitivity = None
       self._shape = None
+      self._susceptibility = None
       self._mos_dat = None
       self._mos_par = None
       self._mos_hkl = []
@@ -72,14 +73,17 @@ def BestStrategy(DriverType=None):
     def set_C_min(self, C_min):
       self._C_min = C_min
 
+    def set_GpS(self, GpS):
+      self._GpS = GpS
+
     def set_i2s(self, i2s):
       self._i2s = i2s
 
-    def set_sensitivity(self, sensitivity):
-      self._sensitivity = sensitivity
-
     def set_shape(self, shape):
       self._shape = shape
+
+    def set_susceptibility(self, susceptibility):
+      self._susceptibility = susceptibility
 
     def set_mos_dat(self, mos_dat):
       self._mos_dat = mos_dat
@@ -128,19 +132,21 @@ def BestStrategy(DriverType=None):
       if self._T_max is not None:
         command_line.extend(('-T', '%s' %self._T_max))
       if self._S_max is not None:
-       command_line.extend(('-S', '%s' %self._S_max))
+        command_line.extend(('-S', '%s' %self._S_max))
       if self._w_min is not None:
-       command_line.extend(('-w', '%s' %self._w_min))
+        command_line.extend(('-w', '%s' %self._w_min))
       if self._M_min is not None:
         command_line.extend(('-R', '%s' %self._M_min))
       if self._C_min is not None:
         command_line.extend(('-C', '%s' %self._C_min))
+      if self._GpS is not None:
+        command_line.extend(('-GpS', '%s' %self._GpS))
       if self._i2s is not None:
-       command_line.extend(('-i2s', '%s' %self._i2s))
-      if self._sensitivity is not None:
-        command_line.extend(('-su', '%s' %self._sensitivity))
+        command_line.extend(('-i2s', '%s' %self._i2s))
+      if self._susceptibility is not None:
+        command_line.extend(('-su', '%s' %self._susceptibility))
       if self._shape is not None:
-       command_line.extend(('-sh', '%s' %self._shape))
+        command_line.extend(('-sh', '%s' %self._shape))
 
       if self._anomalous:
         command_line.append('-a')
