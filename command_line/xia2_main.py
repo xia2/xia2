@@ -223,6 +223,10 @@ def xia2_main(stop_after=None):
         remove_sweeps = []
         sweeps = wavelength.get_sweeps()
         for sweep in sweeps:
+          from dials.command_line.show import show_datablocks
+          from dxtbx.datablock import DataBlock
+          Debug.write(sweep.get_name())
+          Debug.write(show_datablocks([DataBlock([sweep.get_imageset()])]))
           try:
             if stop_after == 'index':
               sweep.get_indexer_cell()
