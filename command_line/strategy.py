@@ -102,6 +102,9 @@ def run():
       best.set_w_min(strategy.min_oscillation_width)
       best.set_M_min(strategy.multiplicity)
       best.set_C_min(strategy.completeness)
+      best.set_GpS(strategy.dose_rate)
+      best.set_shape(strategy.shape)
+      best.set_susceptibility(strategy.susceptibility)
       best.set_anomalous(strategy.anomalous)
 
       best.set_detector('pilatus6m')
