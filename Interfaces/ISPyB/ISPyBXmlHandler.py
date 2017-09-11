@@ -244,6 +244,10 @@ class _ISPyBXmlHandler(object):
       fout.write('<processingPrograms>xia2</processingPrograms>')
       fout.write('</AutoProcProgram>')
 
+      from xia2.Handlers.Environment import Environment
+      data_directory = Environment.generate_directory('DataFiles')
+      log_directory = Environment.generate_directory('LogFiles')
+
       for k in reflection_files:
 
         reflection_file = reflection_files[k]
@@ -253,6 +257,11 @@ class _ISPyBXmlHandler(object):
 
         reflection_file = FileHandler.get_data_file(reflection_file)
 
+        basename = os.path.basename(reflection_file)
+        if os.path.isfile(os.path.join(data_directory, basename)):
+          # Use file in DataFiles directory in preference (if it exists)
+          reflection_file = os.path.join(data_directory, basename)
+
         fout.write(
             '<AutoProcProgramAttachment><fileType>Result')
         fout.write('</fileType><fileName>%s</fileName>' % \
@@ -261,9 +270,6 @@ class _ISPyBXmlHandler(object):
                    sanitize(os.path.split(reflection_file)[0]))
         fout.write('</AutoProcProgramAttachment>\n')
 
-
-      from xia2.Handlers.Environment import Environment
-      log_directory = Environment.generate_directory('LogFiles')
       import glob
       g = glob.glob(os.path.join(log_directory, '*merging-statistics.json'))
       for merging_stats_json in g:
