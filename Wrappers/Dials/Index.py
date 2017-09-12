@@ -39,6 +39,7 @@ def Index(DriverType = None):
       self._reflections_per_degree = None
       self._fft3d_n_points = None
       self._histogram_binning = None
+      self._nearest_neighbor_percentile = None
 
       self._experiment_filename = None
       self._indexed_filename = None
@@ -101,6 +102,9 @@ def Index(DriverType = None):
 
     def set_histogram_binning(self, histogram_binning):
       self._histogram_binning = histogram_binning
+
+    def set_nearest_neighbor_percentile(self, nearest_neighbor_percentile):
+      self._nearest_neighbor_percentile = nearest_neighbor_percentile
 
     def get_sweep_filenames(self):
       return self._sweep_filenames
@@ -168,7 +172,11 @@ def Index(DriverType = None):
       if self._min_cell:
         self.add_command_line('min_cell=%d' % self._min_cell)
       if self._histogram_binning is not None:
-        self.add_command_line('max_cell_estimation.histogram_binning=%s' %self._histogram_binning)
+        self.add_command_line(
+          'max_cell_estimation.histogram_binning=%s' %self._histogram_binning)
+      if self._nearest_neighbor_percentile is not None:
+        self.add_command_line(
+          'max_cell_estimation.nearest_neighbor_percentile=%s' %self._nearest_neighbor_percentile)
       if self._d_min_start:
         self.add_command_line('d_min_start=%f' % self._d_min_start)
       if self._indxr_input_lattice is not None:
