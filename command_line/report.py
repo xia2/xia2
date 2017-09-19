@@ -910,7 +910,8 @@ def run(args):
     (k, json_data[k]) for k in
     ('cumulative_intensity_distribution', 'l_test', 'multiplicities') if k in json_data)
 
-  misc_graphs.update(report.multiplicity_plots())
+  for k, v in report.multiplicity_plots().iteritems():
+    misc_graphs[k] = {'img': v}
 
   styles = {}
   for axis in ('h', 'k', 'l'):

@@ -295,6 +295,10 @@ dials
       .help = "Choose between linear or logarithmic bins for nearest neighbour"
               "histogram analysis."
       .expert_level = 2
+    nearest_neighbor_percentile = None
+      .type = float(value_min=0, value_max=1)
+      .help = "Percentile of NN histogram to use for max cell determination."
+      .expert_level = 2
   }
   refine
     .short_caption = "Refinement"

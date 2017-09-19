@@ -119,6 +119,8 @@ class DialsIndexer(Indexer):
     auto_logfiler(index)
     index.set_outlier_algorithm(PhilIndex.params.dials.outlier.algorithm)
     index.set_histogram_binning(PhilIndex.params.dials.index.histogram_binning)
+    index.set_nearest_neighbor_percentile(
+      PhilIndex.params.dials.index.nearest_neighbor_percentile)
     return index
 
   def CheckIndexingSymmetry(self):
