@@ -12,6 +12,8 @@ import traceback
 
 # Needed to make xia2 imports work correctly
 import libtbx.load_env
+
+from dials.util.version import dials_version
 from xia2.Handlers.Streams import Chatter, Debug
 
 from xia2.Handlers.Flags import Flags
@@ -22,6 +24,7 @@ from xia2.Handlers.Environment import Environment
 from xia2.Applications.xia2_main import check_environment, get_command_line, write_citations, help
 
 from xia2.Applications.xia2_helpers import process_one_sweep
+import xia2.XIA2Version
 
 def get_ccp4_version():
   CCP4 = os.environ.get('CCP4')
@@ -34,11 +37,9 @@ def get_ccp4_version():
 
 def xia2_main(stop_after=None):
   '''Actually process something...'''
-
   Citations.cite('xia2')
 
   # print versions of related software
-  from dials.util.version import dials_version
   Chatter.write(dials_version())
 
   ccp4_version = get_ccp4_version()
@@ -290,6 +291,14 @@ def run():
   from libtbx.utils import Sorry
   if len(sys.argv) < 2 or '-help' in sys.argv or '--help' in sys.argv:
     help()
+    sys.exit()
+
+  if '-version' in sys.argv or '--version' in sys.argv:
+    print xia2.XIA2Version.Version
+    print dials_version()
+    ccp4_version = get_ccp4_version()
+    if ccp4_version is not None:
+      print 'CCP4 %s' % ccp4_version
     sys.exit()
 
   try:
