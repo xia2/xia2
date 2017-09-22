@@ -19,6 +19,7 @@ from __future__ import absolute_import, division
 import subprocess
 import os
 import copy
+import time
 
 from xia2.Driver.DefaultDriver import DefaultDriver
 from xia2.Driver.DriverHelper import kill_process
@@ -66,6 +67,7 @@ class SimpleDriver(DefaultDriver):
       else:
         environment[name] = added
 
+    self._runtime_log['process start'] = time.time()
     self._popen = subprocess.Popen(command_line,
                                    bufsize = 1,
                                    stdin = subprocess.PIPE,

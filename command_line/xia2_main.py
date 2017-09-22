@@ -316,6 +316,10 @@ def run():
   try:
     xinfo = xia2_main()
     Chatter.write('Status: normal termination')
+
+    Debug.write('\n------\nTiming summary:')
+    import xia2.Driver.DefaultDriver
+    xia2.Driver.DefaultDriver.output_timing_information()
     return xinfo
   except Sorry, s:
     Chatter.write('Status: error "%s"' % str(s))
