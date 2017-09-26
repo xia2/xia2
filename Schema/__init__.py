@@ -33,6 +33,7 @@ def load_imagesets(template, directory, id_image=None, image_range=None,
   from xia2.Applications.xia2setup import known_hdf5_extensions
 
   full_template_path = os.path.join(directory, template)
+
   if full_template_path not in imageset_cache or not use_cache:
 
     from dxtbx.datablock import BeamComparison
@@ -68,8 +69,14 @@ def load_imagesets(template, directory, id_image=None, image_range=None,
         substr = longest_common_substring(template, p)
         if substr:
           if (master_file is None or
-              (len(substr) > len(longest_common_substring(template, master_file)))):
+              (len(substr) > len(longest_common_substring(
+                  template, master_file)))):
             master_file = p
+
+      if master_file is None and \
+            os.path.exists(full_template_path) and \
+            os.path.isfile(full_template_path):
+        master_file = full_template_path
 
       if master_file is None:
         raise RuntimeError("Can't find master file for %s" % full_template_path)

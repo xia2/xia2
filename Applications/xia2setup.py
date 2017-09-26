@@ -44,7 +44,7 @@ known_sweeps = { }
 
 known_sequence_extensions = ['seq']
 
-known_hdf5_extensions = ['.h5']
+known_hdf5_extensions = ['.h5', '.nxs']
 
 latest_sequence = None
 
