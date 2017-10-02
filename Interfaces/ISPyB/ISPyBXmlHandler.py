@@ -427,22 +427,27 @@ class _ISPyBXmlHandler(object):
       tmp['AutoProcProgramAttachment'] = []
       tmp2 = tmp['AutoProcProgramAttachment']
 
+      from xia2.Handlers.Environment import Environment
+      data_directory = Environment.generate_directory('DataFiles')
+
       for k in reflection_files:
-
-        tmp3 = { }
-
         reflection_file = reflection_files[k]
 
         if not type(reflection_file) == type(''):
           continue
 
         reflection_file = FileHandler.get_data_file(reflection_file)
+        basename = os.path.basename(reflection_file)
 
-        tmp3['fileType'] = 'Result'
-        tmp3['fileName'] = os.path.split(reflection_file)[-1]
-        tmp3['filePath'] = sanitize(os.path.split(reflection_file)[0])
+        if os.path.isfile(os.path.join(data_directory, basename)):
+          # Use file in DataFiles directory in preference (if it exists)
+          reflection_file = os.path.join(data_directory, basename)
 
-        tmp2.append(tmp3)
+        tmp2.append({
+          'fileType': 'Result',
+          'fileName': os.path.split(reflection_file)[-1],
+          'filePath': sanitize(os.path.split(reflection_file)[0]),
+        })
 
       tmp2.append({'fileType':'Log',
                    'fileName':'xia2.txt',
