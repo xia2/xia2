@@ -54,23 +54,30 @@ def Merge2cbf(DriverType=None, params=None):
       self._input_data_files_list = []
       self._output_data_files_list = []
 
-    class data_range(libtbx.property):
-      def fset(self, start, end):
-        self._params.data_range = (start, end)
-      def fget(self):
-        return self._params.data_range
+    @property
+    def data_range(self):
+      return self._params.data_range
 
-    class moving_average(libtbx.property):
-      def fset(self, value):
+    @data_range.setter
+    def data_range(self, value):
+      start, end = value
+      self._params.data_range = (start, end)
+    
+    @property
+    def moving_average(self):
+      return self._params.moving_average
+
+    @moving_average.setter
+    def moving_average(self, value):
         self._params.moving_average = value
-      def fget(self):
-        return self._params.moving_average
 
-    class merge_n_images(libtbx.property):
-      def fset(self, n):
-        self._params.merge_n_images = n
-      def fget(self):
-        return self._params.merge_n_images
+    @property
+    def merge_n_images(self):
+      return self._params.merge_n_images
+    
+    @merge_n_images.setter
+    def merge_n_images(self, n):
+      self._params.merge_n_images = n
 
     def run_core(self, data_range, moving_average=False):
       '''Actually run merge2cbf itself.'''
