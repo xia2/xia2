@@ -25,7 +25,7 @@ from xia2.Modules.LabelitBeamCentre import compute_beam_centre
 from xia2.Handlers.Streams import Debug, streams_off
 
 image_extensions = ['img', 'mccd', 'mar2300', 'mar1200', 'mar1600',
-                    'mar3450', 'osc', 'cbf', 'mar2000', 'sfrm']
+                    'mar3450', 'osc', 'cbf', 'mar2000', 'sfrm', '']
 
 compression = ['', '.bz2', '.gz']
 
