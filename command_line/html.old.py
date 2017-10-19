@@ -76,7 +76,7 @@ def make_logfile_html(logfile):
           #rst.append('.. __%s:\n' %graph_name)
           rst.append('.. raw:: html')
           rst.append('\n    '.join(html.split('\n')))
-      except StandardError, e:
+      except StandardError as e:
         Chatter.write('=' * 80)
         Chatter.write('Error (%s) while processing table' % str(e))
         Chatter.write("  '%s'" % table.title)

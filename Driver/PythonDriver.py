@@ -25,15 +25,13 @@ class PythonDriver(DefaultDriver):
 
     self._popen = None
 
-    return
-
   def start(self):
 
     # here self._executable refers to the Python program which should be
     # executed
 
     if self._executable is None:
-      raise RuntimeError, 'no executable is set.'
+      raise RuntimeError('no executable is set.')
 
     if os.name == 'nt':
       # pass in CL as a list of tokens
@@ -74,8 +72,6 @@ class PythonDriver(DefaultDriver):
                                    env = environment,
                                    shell = True)
 
-    return
-
   def check(self):
     '''Overload the default check method.'''
 
@@ -90,11 +86,9 @@ class PythonDriver(DefaultDriver):
   def _input(self, record):
 
     if not self.check():
-      raise RuntimeError, 'child process has termimated'
+      raise RuntimeError('child process has termimated')
 
     self._popen.stdin.write(record)
-
-    return
 
   def _output(self):
     # need to put some kind of timeout facility on this...
@@ -109,16 +103,12 @@ class PythonDriver(DefaultDriver):
   def close(self):
 
     if not self.check():
-      raise RuntimeError, 'child process has termimated'
+      raise RuntimeError('child process has termimated')
 
     self._popen.stdin.close()
 
-    return
-
   def kill(self):
     kill_process(self._popen)
-
-    return
 
 if __name__ == '__main__':
   pd = PythonDriver()

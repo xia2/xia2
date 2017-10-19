@@ -55,7 +55,7 @@ class QSubDriver(DefaultDriver):
 
   def __init__(self):
     if os.name != 'posix':
-      raise RuntimeError, 'os "%s" not supported' % os.name
+      raise RuntimeError('os "%s" not supported' % os.name)
 
     super(QSubDriver, self).__init__()
 
@@ -71,13 +71,9 @@ class QSubDriver(DefaultDriver):
 
     self._output_file = None
 
-    return
-
   def set_qsub_name(self, name):
     '''Set the name to something sensible.'''
     self._script_name = 'J%s' % name
-
-    return
 
   def start(self):
     '''This is pretty meaningless in terms of running things through
@@ -97,13 +93,10 @@ class QSubDriver(DefaultDriver):
     for o in sge_stderr_list:
       if 'command not found' in o:
         missing_program = o.split(':')[2].strip()
-        raise RuntimeError, 'executable "%s" missing' % \
-              missing_program
+        raise RuntimeError('executable "%s" missing' % missing_program)
 
   def _input(self, record):
     self._script_standard_input.append(record)
-
-    return
 
   def _output(self):
     return self._output_file.readline()
@@ -120,7 +113,7 @@ class QSubDriver(DefaultDriver):
 
     try:
       os.mkdir(os.path.join(self._working_directory, 'jobs'))
-    except OSError, e:
+    except OSError:
       if not os.path.exists(os.path.join(self._working_directory, 'jobs')):
         raise
 
@@ -169,9 +162,9 @@ class QSubDriver(DefaultDriver):
     if stderr:
       # something probably went wrong
       if 'error opening' in stderr:
-        raise RuntimeError, 'executable "%s" does not exist' % \
+        raise RuntimeError('executable "%s" does not exist' % \
               stdout.split('\n')[0].split(':')[0].replace(
-            'error opening ', '')
+            'error opening ', ''))
 
     # probably everything is ok then
 
@@ -247,11 +240,9 @@ class QSubDriver(DefaultDriver):
       if os.path.exists(sge_pstderr):
         os.remove(sge_pstderr)
 
-    except:
+    except Exception:
       # something wrong with this deletion?
       pass
-
-    return
 
   def kill(self):
     '''This is meaningless...'''

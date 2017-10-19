@@ -169,7 +169,7 @@ def BestStrategy(DriverType=None):
 
       for record in output:
         if 'ERROR' in record:
-          raise RuntimeError, record.strip()
+          raise RuntimeError(record.strip())
 
       # BEWARE this is dependent on order of output
       for j, record in enumerate(output):

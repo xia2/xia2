@@ -36,10 +36,10 @@ def rebatch(hklin, hklout, first_batch=None, add_batch=None,
     exclude_range = []
 
   if first_batch is not None and add_batch is not None:
-    raise RuntimeError, 'both first and add specified'
+    raise RuntimeError('both first and add specified')
 
   #if first_batch is None and add_batch is None:
-    #raise RuntimeError, 'neither first nor add specified'
+    #raise RuntimeError('neither first nor add specified')
 
   assert not (len(include_range) and len(exclude_range))
   assert not (len(exclude_range) and len(exclude_batches))
@@ -62,7 +62,7 @@ def rebatch(hklin, hklout, first_batch=None, add_batch=None,
           batch_dataset = dataset
 
   if not batch_column:
-    raise RuntimeError, 'no BATCH column found in %s' % hklin
+    raise RuntimeError('no BATCH column found in %s' % hklin)
 
   batches = [b.num() for b in mtz_obj.batches()]
   batch_column_values = batch_column.extract_values(
@@ -160,7 +160,7 @@ def copy_r_file(hklin, hklout):
           batch_column = column
 
   if not batch_column:
-    raise RuntimeError, 'no BATCH column found in %s' % hklin
+    raise RuntimeError('no BATCH column found in %s' % hklin)
 
   batch_column_values = batch_column.extract_values(
       not_a_number_substitute = -1)

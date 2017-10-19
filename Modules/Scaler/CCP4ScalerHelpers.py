@@ -244,11 +244,9 @@ class CCP4ScalerHelper(object):
 
   def __init__(self):
     self._working_directory = os.getcwd()
-    return
 
   def set_working_directory(self, working_directory):
     self._working_directory = working_directory
-    return
 
   def get_working_directory(self):
     return self._working_directory
@@ -414,8 +412,6 @@ class SweepInformation(object):
 
     self._reflections = None
 
-    return
-
   def to_dict(self):
     obj = {}
     obj['__id__'] = 'SweepInformation'
@@ -457,11 +453,9 @@ class SweepInformation(object):
 
   def set_batches(self, batches):
     self._batches = batches
-    return
 
   def set_batch_offset(self, batch_offset):
     self._batch_offset = batch_offset
-    return
 
   def get_batch_offset(self):
     return self._batch_offset
@@ -480,8 +474,6 @@ class SweepInformation(object):
       e = self._image_to_epoch[i]
       d = epoch_to_dose[e]
       self._image_to_dose[i] = d
-
-    return
 
   def get_circle_resolution(self):
     '''Get the resolution of the inscribed circle used for this sweep.'''
@@ -516,7 +508,6 @@ class SweepInformation(object):
 
   def set_reflections(self, reflections):
     self._reflections = reflections
-    return
 
 
 
@@ -531,8 +522,6 @@ class SweepInformationHandler(object):
           epoch_to_integrater[epoch])
 
     self._first = sorted(self._sweep_information)[0]
-
-    return
 
   def to_dict(self):
     obj = {}
@@ -594,7 +583,7 @@ def anomalous_signals(hklin):
     data = ma
 
   if not data:
-    raise RuntimeError, 'no anomalous data found'
+    raise RuntimeError('no anomalous data found')
 
   df_f = data.anomalous_signal()
   differences = data.anomalous_differences()

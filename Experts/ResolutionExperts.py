@@ -43,7 +43,6 @@ def _small_molecule():
   global _scale_bins, _number_bins
   _scale_bins = 0.04
   _number_bins = nint(2.0 / _scale_bins)
-  return
 
 def real_to_reciprocal(a, b, c, alpha, beta, gamma):
   '''Convert real cell parameters to reciprocal space.'''
@@ -128,14 +127,10 @@ def B(a, b, c, alpha, beta, gamma):
   lb = math.sqrt(dot(b_, b_))
   lc = math.sqrt(dot(c_, c_))
 
-  if (math.fabs(la - a) / la) > 0.001:
-    raise RuntimeError, 'inversion error'
-
-  if (math.fabs(lb - b) / lb) > 0.001:
-    raise RuntimeError, 'inversion error'
-
-  if (math.fabs(lc - c) / lc) > 0.001:
-    raise RuntimeError, 'inversion error'
+  if (math.fabs(la - a) / la) > 0.001 or \
+     (math.fabs(lb - b) / lb) > 0.001 or \
+     (math.fabs(lc - c) / lc) > 0.001:
+    raise RuntimeError('inversion error')
 
   return a_, b_, c_
 
@@ -418,22 +413,22 @@ def xds_integrate_header_read(xds_hkl):
       beam = tuple(map(float, lst[1:]))
 
   if not pixel:
-    raise RuntimeError, 'pixel size not found'
+    raise RuntimeError('pixel size not found')
 
   if not cell:
-    raise RuntimeError, 'cell not found'
+    raise RuntimeError('cell not found')
 
   if not origin:
-    raise RuntimeError, 'origin not found'
+    raise RuntimeError('origin not found')
 
   if not distance:
-    raise RuntimeError, 'distance not found'
+    raise RuntimeError('distance not found')
 
   if not wavelength:
-    raise RuntimeError, 'wavelength not found'
+    raise RuntimeError('wavelength not found')
 
   if not beam:
-    raise RuntimeError, 'beam vector not found'
+    raise RuntimeError('beam vector not found')
 
   # no calculate the beam centre offset
 

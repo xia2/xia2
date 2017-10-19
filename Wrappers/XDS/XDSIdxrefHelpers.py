@@ -58,7 +58,7 @@ def _parse_idxref_index_origin(lp_file_lines):
 
       return origins
 
-  raise RuntimeError, 'should never reach this point'
+  raise RuntimeError('should never reach this point')
 
 def _parse_idxref_lp(lp_file_lines):
   '''Parse the list of lines from idxref.lp.'''

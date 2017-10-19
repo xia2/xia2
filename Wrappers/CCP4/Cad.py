@@ -67,12 +67,9 @@ def Cad(DriverType = None):
       self._freein = None
       self._freein_column = 'FreeR_flag'
 
-      return
-
     def add_hklin(self, hklin):
       '''Add a reflection file to the list to be sorted together.'''
       self._hklin_files.append(hklin)
-      return
 
     def set_freein(self, freein):
 
@@ -80,8 +77,8 @@ def Cad(DriverType = None):
       # exists... - also that it has a sensible FreeR column...
 
       if not os.path.exists(freein):
-        raise RuntimeError, 'reflection file does not exist: %s' % \
-              freein
+        raise RuntimeError('reflection file does not exist: %s' % \
+              freein)
 
       cname = FindFreeFlag(freein)
 
@@ -112,7 +109,7 @@ def Cad(DriverType = None):
       '''Merge multiple reflection files into one file.'''
 
       if not self._hklin_files:
-        raise RuntimeError, 'no hklin files defined'
+        raise RuntimeError('no hklin files defined')
 
       self.check_hklout()
 
@@ -139,7 +136,7 @@ def Cad(DriverType = None):
           spacegroup = spag
 
         if spag != spacegroup:
-          raise RuntimeError, 'spacegroups do not match'
+          raise RuntimeError('spacegroups do not match')
 
         column_names_by_file[hklin] = []
 
@@ -148,7 +145,7 @@ def Cad(DriverType = None):
           if name in ['H', 'K', 'L']:
             continue
           if name in column_names:
-            raise RuntimeError, 'duplicate column names'
+            raise RuntimeError('duplicate column names')
           column_names.append(name)
           column_names_by_file[hklin].append(name)
 
@@ -182,11 +179,11 @@ def Cad(DriverType = None):
         self.check_for_errors()
         self.check_ccp4_errors()
 
-      except RuntimeError, e:
+      except RuntimeError as e:
         # something went wrong; remove the output file
         try:
           os.remove(self.get_hklout())
-        except:
+        except Exception:
           pass
         raise e
 
@@ -196,10 +193,10 @@ def Cad(DriverType = None):
       '''Update the information for one reflection file.'''
 
       if not self._hklin_files:
-        raise RuntimeError, 'no hklin files defined'
+        raise RuntimeError('no hklin files defined')
 
       if len(self._hklin_files) > 1:
-        raise RuntimeError, 'can have only one hklin to update'
+        raise RuntimeError('can have only one hklin to update')
 
       hklin = self._hklin_files[0]
 
@@ -280,11 +277,11 @@ def Cad(DriverType = None):
         self.check_for_errors()
         self.check_ccp4_errors()
 
-      except RuntimeError, e:
+      except RuntimeError as e:
         # something went wrong; remove the output file
         try:
           os.remove(self.get_hklout())
-        except:
+        except Exception:
           pass
         raise e
 
@@ -294,10 +291,10 @@ def Cad(DriverType = None):
       '''Copy the free column from freein into hklin -> hklout.'''
 
       if not self._hklin_files:
-        raise RuntimeError, 'no hklin files defined'
+        raise RuntimeError('no hklin files defined')
 
       if len(self._hklin_files) > 1:
-        raise RuntimeError, 'can have only one hklin to update'
+        raise RuntimeError('can have only one hklin to update')
 
       hklin = self._hklin_files[0]
 
@@ -312,9 +309,9 @@ def Cad(DriverType = None):
 
       self.check_hklout()
       if self._freein is None:
-        raise RuntimeError, 'freein not defined'
+        raise RuntimeError('freein not defined')
       if self._freein_column is None:
-        raise RuntimeError, 'freein column not defined'
+        raise RuntimeError('freein column not defined')
 
       self.add_command_line('hklin1')
       self.add_command_line(self._freein)
@@ -332,11 +329,11 @@ def Cad(DriverType = None):
         self.check_for_errors()
         self.check_ccp4_errors()
 
-      except RuntimeError, e:
+      except RuntimeError as e:
         # something went wrong; remove the output file
         try:
           os.remove(self.get_hklout())
-        except:
+        except Exception:
           pass
         raise e
 

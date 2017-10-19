@@ -64,7 +64,7 @@ def multi_crystal_analysis(stop_after=None):
         epoch_to_experiments[epoch] = load.experiment_list(
           intgr.get_integrated_experiments())
 
-    except AttributeError, e:
+    except AttributeError:
       epochs = scaler._sweep_handler.get_epochs()
       for epoch in epochs:
         si = scaler._sweep_handler.get_sweep_information(epoch)
@@ -210,7 +210,7 @@ def multi_crystal_analysis(stop_after=None):
         print >> f, "  id=%s" %si['sname']
         print >> f, "  range=%i,%i" %tuple(si['batches'])
         print >> f, "}"
-    except AttributeError, e:
+    except AttributeError:
       for epoch in scaler._sweep_handler.get_epochs():
         si = scaler._sweep_handler.get_sweep_information(epoch)
         print >> f, "batch {"
@@ -452,7 +452,7 @@ def run():
     sys.argv.append('xia2-working.phil')
   try:
     check_environment()
-  except exceptions.Exception, e:
+  except exceptions.Exception as e:
     traceback.print_exc(file = open('xia2.error', 'w'))
     Chatter.write('Status: error "%s"' % str(e))
 
@@ -466,7 +466,7 @@ def run():
     multi_crystal_analysis()
     Chatter.write('Status: normal termination')
 
-  except exceptions.Exception, e:
+  except exceptions.Exception as e:
     traceback.print_exc(file = open(os.path.join(wd, 'xia2.error'), 'w'))
     Chatter.write('Status: error "%s"' % str(e))
     Chatter.write(

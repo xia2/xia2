@@ -95,7 +95,7 @@ def _xds_version(xds_output_list):
     if 'XDS' in line and 'VERSION' in line:
       return line.split('(VERSION')[1].split(')')[0].strip()
 
-  raise RuntimeError, 'XDS version not found'
+  raise RuntimeError('XDS version not found')
 
 
 def add_xds_version_to_mtz_history(mtz_file):
@@ -116,10 +116,8 @@ def xds_check_version_supported(xds_output_list):
 
   for record in xds_output_list:
     if 'Sorry, license expired' in record:
-      raise RuntimeError, 'installed XDS expired on %s' % \
-            record.split()[-1]
-
-  return
+      raise RuntimeError('installed XDS expired on %s' % \
+            record.split()[-1])
 
 xds_error_database = {
   'cannot open or read file lp_01.tmp':'Error running forkintegrate'
@@ -135,9 +133,7 @@ def xds_check_error(xds_output_list):
       if message in xds_error_database:
         message = xds_error_database[message]
       error = '[XDS] %s' % message
-      raise XDSException, error
-
-  return
+      raise XDSException(error)
 
 def rotate_cbf_to_xds_convention(fast, slow, axis = (1, 0, 0)):
   '''Rotate fast and slow directions about rotation axis to give XDS
@@ -389,10 +385,10 @@ def beam_centre_mosflm_to_xds(x, y, header):
   # next ensure that the beam centre is on the detector
 
   if px < 0 or px > width:
-    raise RuntimeError, 'beam x coordinate outside detector'
+    raise RuntimeError('beam x coordinate outside detector')
 
   if py < 0 or py > width:
-    raise RuntimeError, 'beam y coordinate outside detector'
+    raise RuntimeError('beam y coordinate outside detector')
 
   # next perform some detector specific transformation to put
   # the centre in the right place... from looking at the papers

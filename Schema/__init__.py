@@ -215,7 +215,7 @@ def load_reference_geometries(geometry_file_list):
       assert len(experiments.beams()) == 1
       reference_detector = experiments.detectors()[0]
       reference_beam = experiments.beams()[0]
-    except Exception, e:
+    except Exception:
       datablock = load.datablock(file)
       assert len(datablock) == 1
       imageset = datablock[0].extract_imagesets()[0]

@@ -234,7 +234,7 @@ def xia2_main(stop_after=None):
             else:
               sweep.get_integrater_intensities()
             sweep.serialize()
-          except Exception, e:
+          except Exception as e:
             if failover:
               Chatter.write('Processing sweep %s failed: %s' % \
                             (sweep.get_name(), str(e)))
@@ -303,7 +303,7 @@ def run():
 
   try:
     check_environment()
-  except exceptions.Exception, e:
+  except exceptions.Exception as e:
     traceback.print_exc(file = open('xia2.error', 'w'))
     Chatter.write('Error setting up xia2 environment: %s' % str(e))
     Chatter.write(
@@ -321,10 +321,10 @@ def run():
     import xia2.Driver.DefaultDriver
     xia2.Driver.DefaultDriver.output_timing_information()
     return xinfo
-  except Sorry, s:
+  except Sorry as s:
     Chatter.write('Status: error "%s"' % str(s))
     sys.exit(1)
-  except exceptions.Exception, e:
+  except exceptions.Exception as e:
     traceback.print_exc(file = open(os.path.join(wd, 'xia2.error'), 'w'))
     Chatter.write('Status: error "%s"' % str(e))
     Chatter.write(

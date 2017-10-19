@@ -26,7 +26,7 @@ def run():
     sys.argv.append('xia2-working.phil')
   try:
     check_environment()
-  except exceptions.Exception, e:
+  except exceptions.Exception as e:
     traceback.print_exc(file = open('xia2.error', 'w'))
     Chatter.write('Status: error "%s"' % str(e))
 

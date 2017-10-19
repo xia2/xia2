@@ -136,12 +136,12 @@ def get_template(f):
       if template not in target_template:
         return
 
-  except Exception, e:
+  except Exception as e:
     Debug.write('Exception A: %s (%s)' % (str(e), f))
     Debug.write(traceback.format_exc())
 
   if template is None or directory is None:
-    raise RuntimeError, 'template not recognised for %s' % f
+    raise RuntimeError('template not recognised for %s' % f)
 
   return template
 
@@ -169,7 +169,6 @@ def parse_sequence(sequence_file):
 
   global latest_sequence
   latest_sequence = sequence
-  return
 
 def visit(root, directory, files):
   files.sort()
@@ -195,7 +194,7 @@ def visit(root, directory, files):
     elif is_image_name(full_path):
       try:
         template = get_template(full_path)
-      except Exception, e:
+      except Exception as e:
         Debug.write('Exception B: %s' % str(e))
         Debug.write(traceback.format_exc())
         continue
@@ -510,7 +509,7 @@ def write_xinfo(filename, directories, template=None, hdf5_master_files=None):
 
   try:
     os.makedirs(directory)
-  except OSError, e:
+  except OSError as e:
     if not 'File exists' in str(e):
       raise
 
@@ -572,7 +571,7 @@ def run():
     directory = os.path.join(os.getcwd(), crystal, 'setup')
     try:
       os.makedirs(directory)
-    except OSError, e:
+    except OSError as e:
       if not 'File exists' in str(e):
         raise e
     os.chdir(directory)

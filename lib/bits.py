@@ -235,13 +235,13 @@ def message(text):
   if platform.system() == 'Darwin':
     try:
       message_Darwin(text)
-    except IOError, e: # deliberately ignoring errors
+    except IOError: # deliberately ignoring errors
       pass
 
   elif platform.system() == 'Linux':
     try:
       message_Linux(text)
-    except: # deliberately ignoring errors
+    except Exception: # deliberately ignoring errors
       pass
 
   return

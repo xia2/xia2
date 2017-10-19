@@ -110,7 +110,7 @@ class _FileHandler(object):
       try:
         os.remove(f)
         out.write('Deleted: %s\n' % f)
-      except exceptions.Exception, e:
+      except exceptions.Exception as e:
         out.write('Failed to delete: %s (%s)\n' % \
                   (f, str(e)))
 
@@ -153,38 +153,32 @@ class _FileHandler(object):
         'Copied extra data file %s to %s\n' % (filename_in, filename_out))
 
     out.close()
-    return
 
   def record_output_file(self, filename, type):
     self._output_files.append((type, filename))
-    return
 
   def record_log_file(self, tag, filename):
     '''Record a log file.'''
     self._log_files[tag] = filename
     if not tag in self._log_file_keys:
       self._log_file_keys.append(tag)
-    return
 
   def record_xml_file(self, tag, filename):
     '''Record an xml file.'''
     self._xml_files[tag] = filename
     if not tag in self._xml_file_keys:
       self._xml_file_keys.append(tag)
-    return
 
   def record_html_file(self, tag, filename):
     '''Record an html file.'''
     self._html_files[tag] = filename
     if not tag in self._html_file_keys:
       self._html_file_keys.append(tag)
-    return
 
   def record_data_file(self, filename):
     '''Record a data file.'''
     if not filename in self._data_files:
       self._data_files.append(filename)
-    return
 
   def record_more_data_file(self, tag, filename):
     '''Record an extra data file.'''
@@ -193,7 +187,6 @@ class _FileHandler(object):
     self._more_data_files[key] = filename
     if not tag in self._more_data_file_keys:
       self._more_data_file_keys.append(key)
-    return
 
   def get_data_file(self, filename):
     '''Return the point where this data file will end up!'''
@@ -208,7 +201,6 @@ class _FileHandler(object):
     # allow for file overwrites etc.
     if not filename in self._temporary_files:
       self._temporary_files.append(filename)
-    return
 
 FileHandler = _FileHandler()
 

@@ -37,8 +37,6 @@ class XDSIndexerSum(XDSIndexer):
     # XDSIndexer.__init__ modfies this!
     self._index_select_images = _index_select_images
 
-    return
-
   # helper functions
 
   def _index_select_images(self):
@@ -72,7 +70,7 @@ class XDSIndexerSum(XDSIndexer):
     phi_width = self.get_header_item('phi_width')
 
     if phi_width == 0.0:
-      raise RuntimeError, 'cannot use still images'
+      raise RuntimeError('cannot use still images')
 
     # use five degrees for the background calculation
 
@@ -93,9 +91,9 @@ class XDSIndexerSum(XDSIndexer):
     min_images = params.xia2.settings.input.min_images
 
     if len(images) < 3 and len(images) < min_images:
-      raise RuntimeError, \
+      raise RuntimeError( \
             'This INDEXER cannot be used for only %d images' % \
-            len(images)
+            len(images))
 
     Debug.write('Adding images for indexer: %d -> %d' % \
                 (min(images), max(images)))

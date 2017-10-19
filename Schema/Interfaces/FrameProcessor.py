@@ -118,8 +118,6 @@ class FrameProcessor(object):
             self._fp_beam_prov == 'header':
         self._fp_beam_prov = 'header'
 
-    return
-
   def get_frame_wedge(self):
     return self._fp_wedge
 
@@ -180,7 +178,7 @@ class FrameProcessor(object):
                              self.get_beam_obj(),
                              beam_centre)
       self._fp_beam_prov = 'user'
-    except AssertionError, e:
+    except AssertionError as e:
       Debug.write('Error setting mosflm beam centre: %s' % e)
 
   def get_beam_centre(self):
@@ -256,13 +254,13 @@ class FrameProcessor(object):
 
   def setup_from_image(self, image):
     if self._fp_template and self._fp_directory:
-      raise RuntimeError, 'FrameProcessor implementation already set up'
+      raise RuntimeError('FrameProcessor implementation already set up')
 
     self._setup_from_image(image)
 
   def setup_from_imageset(self, imageset):
     if self._fp_imageset:
-      raise RuntimeError, 'FrameProcessor implementation already set up'
+      raise RuntimeError('FrameProcessor implementation already set up')
 
     self._setup_from_imageset(imageset)
 

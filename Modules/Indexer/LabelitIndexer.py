@@ -65,18 +65,14 @@ class LabelitIndexer(IndexerSingleSweep):
 
     self._indxr_print = indxr_print
 
-    return
-
   def set_refine_beam(self, refine_beam):
     self._refine_beam = refine_beam
-    return
 
   def _index_prepare(self):
     # prepare to do some autoindexing
 
     if self._indxr_images == []:
       self._index_select_images()
-    return
 
   def _index_select_images(self):
     '''Select correct images based on image headers.'''
@@ -93,8 +89,6 @@ class LabelitIndexer(IndexerSingleSweep):
     for image in selected_images:
       Debug.write('Selected image %s' % image)
       self.add_indexer_image_wedge(image)
-
-    return
 
   def _compare_cell(self, c_ref, c_test):
     '''Compare two sets of unit cell constants: if they differ by
@@ -158,7 +152,7 @@ class LabelitIndexer(IndexerSingleSweep):
            'directory':dirname})
 
     if len(_images) > 4:
-      raise RuntimeError, 'cannot use more than 4 images'
+      raise RuntimeError('cannot use more than 4 images')
 
     from xia2.Wrappers.Labelit.LabelitIndex import LabelitIndex
     index = LabelitIndex()
@@ -202,7 +196,7 @@ class LabelitIndexer(IndexerSingleSweep):
 
     try:
       index.run()
-    except RuntimeError, e:
+    except RuntimeError as e:
 
       if self._refine_beam is False:
         raise e
@@ -243,7 +237,7 @@ class LabelitIndexer(IndexerSingleSweep):
     # check the RMSD from the triclinic unit cell
     if self._solutions[1]['rmsd'] > 1.0 and False:
       # don't know when this is useful - but I know when it is not!
-      raise RuntimeError, 'high RMSD for triclinic solution'
+      raise RuntimeError('high RMSD for triclinic solution')
 
     # configure the "right" solution
     self._solution = self.get_solution()
@@ -349,11 +343,10 @@ class LabelitIndexer(IndexerSingleSweep):
       if self.get_indexer_sweep().get_user_lattice():
         return
 
-    try:
-      raise RuntimeError, 'no, lets not'
+    if False:
       status, lattice, matrix, cell = mosflm_check_indexer_solution(
           self)
-    except:
+    else:
       status = None
 
     if status is None:
@@ -379,8 +372,6 @@ class LabelitIndexer(IndexerSingleSweep):
     self._indxr_replace(lattice, cell, indxr_print = self._indxr_print)
 
     self._indxr_payload['mosflm_orientation_matrix'] = matrix
-
-    return
 
   # things to get results from the indexing
 
@@ -414,9 +405,9 @@ class LabelitIndexer(IndexerSingleSweep):
           else:
             del(self._solutions[s])
 
-        raise RuntimeError, \
+        raise RuntimeError( \
               'no solution for lattice %s with given cell' % \
-              self._indxr_input_lattice
+              self._indxr_input_lattice)
 
       else:
         for s in self._solutions.keys():
@@ -426,6 +417,6 @@ class LabelitIndexer(IndexerSingleSweep):
           else:
             del(self._solutions[s])
 
-        raise RuntimeError, 'no solution for lattice %s' % \
-              self._indxr_input_lattice
+        raise RuntimeError('no solution for lattice %s' % \
+              self._indxr_input_lattice)
 

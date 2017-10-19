@@ -127,13 +127,13 @@ def XDSCorrect(DriverType = None, params=None):
 
     def set_polarization(self, polarization):
       if polarization > 1.0 or polarization < 0.0:
-        raise RuntimeError, 'bad value for polarization: %.2f' % \
-              polarization
+        raise RuntimeError('bad value for polarization: %.2f' % \
+              polarization)
       self._polarization = polarization
 
     def set_reindex_matrix(self, reindex_matrix):
       if not len(reindex_matrix) == 12:
-        raise RuntimeError, 'reindex matrix must be 12 numbers'
+        raise RuntimeError('reindex matrix must be 12 numbers')
       self._reindex_matrix = reindex_matrix
 
     def get_reindex_used(self):
@@ -179,10 +179,10 @@ def XDSCorrect(DriverType = None, params=None):
 
     def get_result(self, name):
       if not self._results:
-        raise RuntimeError, 'no results'
+        raise RuntimeError('no results')
 
       if name not in self._results:
-        raise RuntimeError, 'result name "%s" unknown' % name
+        raise RuntimeError('result name "%s" unknown' % name)
 
       return self._results[name]
 
@@ -191,9 +191,9 @@ def XDSCorrect(DriverType = None, params=None):
 
       # this is ok...
       # if not self._cell:
-      # raise RuntimeError, 'cell not set'
+      # raise RuntimeError('cell not set')
       # if not self._spacegroup_number:
-      # raise RuntimeError, 'spacegroup not set'
+      # raise RuntimeError('spacegroup not set')
 
       #image_header = self.get_header()
 
@@ -281,8 +281,7 @@ def XDSCorrect(DriverType = None, params=None):
 
       if self._spacegroup_number:
         if not self._cell:
-          raise RuntimeError, \
-                'cannot set spacegroup without unit cell'
+          raise RuntimeError('cannot set spacegroup without unit cell')
 
         xds_inp.write('SPACE_GROUP_NUMBER=%d\n' % \
                       self._spacegroup_number)
@@ -351,10 +350,10 @@ def XDSCorrect(DriverType = None, params=None):
       refined = unit_cell(self._results['cell'])
 
       if original.volume() / refined.volume() > 10:
-        raise RuntimeError, 'catastrophic change in unit cell volume'
+        raise RuntimeError('catastrophic change in unit cell volume')
 
       if refined.volume() / original.volume() > 10:
-        raise RuntimeError, 'catastrophic change in unit cell volume'
+        raise RuntimeError('catastrophic change in unit cell volume')
 
       # record reindex operation used for future reference... this
       # is to trap trac #419

@@ -69,11 +69,8 @@ def Truncate(DriverType = None):
 
       self._xmlout = None
 
-      return
-
     def set_anomalous(self, anomalous):
       self._anomalous = anomalous
-      return
 
     def set_wilson(self, wilson):
       '''Set the use of Wilson scaling - if you set this to False
@@ -108,13 +105,13 @@ def Truncate(DriverType = None):
         self.check_for_errors()
         self.check_ccp4_errors()
 
-      except RuntimeError, e:
+      except RuntimeError:
         try:
           os.remove(self.get_hklout())
         except:
           pass
 
-        raise RuntimeError, 'truncate failure'
+        raise RuntimeError('truncate failure')
 
       # parse the output for interesting things, including the
       # numbers of reflections in and out (isn't that a standard CCP4
@@ -140,9 +137,9 @@ def Truncate(DriverType = None):
                         min(self._wilson_fit_range)
           if self._wilson_fit_grad > 0 and resol_width > 1.0 \
                  and False:
-            raise RuntimeError, \
+            raise RuntimeError( \
                   'wilson plot gradient positive: %.2f' % \
-                  self._wilson_fit_grad
+                  self._wilson_fit_grad)
           elif self._wilson_fit_grad > 0:
             Debug.write(
                 'Positive gradient but not much wilson plot')
@@ -166,8 +163,6 @@ def Truncate(DriverType = None):
       # MomentZ2. The last of these should be around two, but is
       # likely to be a little different to this.
       self._moments = moments
-
-      return
 
     def get_b_factor(self):
       return self._b_factor

@@ -32,10 +32,10 @@ class _DecoratorFactory(object):
     if type == 'ccp4':
       return CCP4DecoratorFactory(DriverInstance)
 
-    raise RuntimeError, 'unknown decorator class "%s"' % type
+    raise RuntimeError('unknown decorator class "%s"' % type)
 
 DecoratorFactory = _DecoratorFactory()
 
 if __name__ == '__main__':
   # run some kind of test here
-  raise RuntimeError, 'no test available'
+  raise RuntimeError('no test available')

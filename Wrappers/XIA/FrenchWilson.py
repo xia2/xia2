@@ -44,11 +44,8 @@ def FrenchWilson(DriverType = None):
       self._nabsent = 0
       self._xmlout = None
 
-      return
-
     def set_anomalous(self, anomalous):
       self._anomalous = anomalous
-      return
 
     def set_wilson(self, wilson):
       '''Set the use of Wilson scaling - if you set this to False
@@ -93,19 +90,18 @@ def FrenchWilson(DriverType = None):
       try:
         self.check_for_errors()
 
-      except RuntimeError, e:
+      except RuntimeError:
         try:
           os.remove(self.get_hklout())
         except:
           pass
 
-        raise RuntimeError, 'truncate failure'
+        raise RuntimeError('truncate failure')
 
       lines = self.get_all_output()
       for i, line in enumerate(lines):
         if 'ML estimate of overall B value:' in line:
           self._b_factor = float(lines[i+1].strip().split()[0])
-      return
 
     def get_b_factor(self):
       return self._b_factor

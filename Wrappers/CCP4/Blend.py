@@ -171,7 +171,7 @@ def parse_summary_file(summary_file):
 
     try:
       crystal_id = int(row[0])
-    except ValueError, e:
+    except ValueError:
       continue
 
     cell = tuple(float(s) for s in row[1].split())
@@ -210,7 +210,7 @@ def parse_clusters_file(clusters_file):
 
     try:
       cluster_id = int(row[0])
-    except ValueError, e:
+    except ValueError:
       continue
 
     n_datasets = int(row[1])

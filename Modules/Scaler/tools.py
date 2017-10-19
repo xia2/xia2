@@ -88,7 +88,7 @@ def add_dose_time_to_mtz(hklin, hklout, doses, times = None):
           batch_dataset = dataset
 
   if not batch_column:
-    raise RuntimeError, 'no BATCH column found in %s' % hklin
+    raise RuntimeError('no BATCH column found in %s' % hklin)
 
   # right, so get the values out from the batch column, create a flex
   # array of the same size and assign DOSE, TIME, then add these to the
@@ -127,7 +127,7 @@ def add_dose_time_to_mtz(hklin, hklout, doses, times = None):
 
   mtz_obj.write(file_name = hklout)
 
-if (__name__ == "__main__"):
+if __name__ == "__main__":
   doses = { }
   times = { }
 

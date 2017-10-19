@@ -116,7 +116,7 @@ class XSample(object):
 
     try:
       self._sweeps.remove(sweep)
-    except ValueError, e:
+    except ValueError:
       pass
 
     return

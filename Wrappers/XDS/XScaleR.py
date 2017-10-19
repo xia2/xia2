@@ -140,7 +140,7 @@ def XScaleR(DriverType = None,
 
     def set_reindex_matrix(self, reindex_matrix):
       if not len(reindex_matrix) == 12:
-        raise RuntimeError, 'reindex matrix must be 12 numbers'
+        raise RuntimeError('reindex matrix must be 12 numbers')
       self._reindex_matrix = reindex_matrix
 
     def _write_xscale_inp(self):
@@ -290,9 +290,9 @@ def XScaleR(DriverType = None,
             for file_name in groups[name]:
               Debug.write(file_name)
 
-          raise RuntimeError, 'reindexing error: %s' % \
+          raise RuntimeError('reindexing error: %s' % \
                 os.path.join(self.get_working_directory(),
-                             'XSCALE.LP')
+                             'XSCALE.LP'))
 
     def get_scale_factor(self):
       return self._scale_factor

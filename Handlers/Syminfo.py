@@ -29,8 +29,6 @@ class _Syminfo(object):
 
     self._int_re = re.compile('^[0-9]*$')
 
-    return
-
   def _generate_lattice(self,
                         lattice_type,
                         shortname):
@@ -115,8 +113,6 @@ class _Syminfo(object):
         self._symop[current]['symops'] += 1
         self._symop[current]['operations'].append(line.strip())
 
-    return
-
   def get_syminfo(self, spacegroup_number):
     '''Return the syminfo for spacegroup number.'''
     return copy.deepcopy(self._symop[spacegroup_number])
@@ -183,7 +179,7 @@ class _Syminfo(object):
 
     try:
       number = int(spacegroup)
-    except ValueError, e:
+    except ValueError:
       number = self.spacegroup_name_to_number(spacegroup)
 
     return self._symop[number]['operations']
@@ -194,7 +190,7 @@ class _Syminfo(object):
 
     try:
       number = int(spacegroup)
-    except ValueError, e:
+    except ValueError:
       number = self.spacegroup_name_to_number(spacegroup)
 
     symops = self._symop[number]['operations']

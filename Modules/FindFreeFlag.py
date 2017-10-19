@@ -31,7 +31,7 @@ def FindFreeFlag(hklin):
 
   if 'FreeR_flag' in ctypes.keys():
     if ctypes['FreeR_flag'] != 'I':
-      raise RuntimeError, 'FreeR_flag column found: type not I'
+      raise RuntimeError('FreeR_flag column found: type not I')
 
     return 'FreeR_flag'
 
@@ -45,20 +45,20 @@ def FindFreeFlag(hklin):
       possibilities.append(c)
 
   if len(possibilities) == 0:
-    raise RuntimeError, 'no candidate FreeR_flag columns found'
+    raise RuntimeError('no candidate FreeR_flag columns found')
 
   if len(possibilities) == 1:
     if ctypes[possibilities[0]] != 'I':
-      raise RuntimeError, 'FreeR_flag column found (%s): type not I' % \
-            possibilities[0]
+      raise RuntimeError('FreeR_flag column found (%s): type not I' % \
+            possibilities[0])
 
     return possibilities[0]
 
-  raise RuntimeError, 'Multiple candidate FreeR_flag columns found'
+  raise RuntimeError('Multiple candidate FreeR_flag columns found')
 
 if __name__ == '__main__':
 
   if len(sys.argv) < 2:
-    raise RuntimeError, '%s hklin' % sys.argv[0]
+    raise RuntimeError('%s hklin' % sys.argv[0])
 
   print FindFreeFlag(sys.argv[1])

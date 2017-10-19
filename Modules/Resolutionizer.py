@@ -175,7 +175,7 @@ def interpolate_value(x, y, t):
   '''Find the value of x: y(x) = t.'''
 
   if t > max(y) or t < min(y):
-    raise RuntimeError, 't outside of [%f, %f]' % (min(y), max(y))
+    raise RuntimeError('t outside of [%f, %f]' % (min(y), max(y)))
 
   for j in range(1, len(x)):
     x0 = x[j - 1]
@@ -342,8 +342,6 @@ class resolutionizer(object):
       assert_is_not_unique_set_under_symmetry=False,
     )
 
-    return
-
   def resolution_auto(self):
     '''Compute resolution limits based on the current self._params set.'''
 
@@ -371,8 +369,6 @@ class resolutionizer(object):
       stamp("ra: mnisig")
       print 'Resolution Mn(I/sig):    %.2f' % \
           self.resolution_merged_isigma()
-
-    return
 
   def resolution_rmerge(self, limit=None, log=None):
     '''Compute a resolution limit where either rmerge = 1.0 (limit if

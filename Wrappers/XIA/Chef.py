@@ -108,7 +108,7 @@ def Chef(DriverType = None,
       '''Actually run chef...'''
 
       if not self._hklin_list:
-        raise RuntimeError, 'HKLIN not defined'
+        raise RuntimeError('HKLIN not defined')
 
       for j in range(len(self._hklin_list)):
         self.add_command_line('HKLIN%d' % (j + 1))
@@ -569,7 +569,7 @@ if __name__ == '__main__':
       dose_column = 'BATCH'
 
     if not dose_column:
-      raise RuntimeError, 'no DOSE/BATCH column found'
+      raise RuntimeError('no DOSE/BATCH column found')
 
     dmin = min(md.get_resolution_range())
 

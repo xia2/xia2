@@ -37,8 +37,6 @@ class XProject(object):
     else:
       self._name = name
 
-    return
-
   # serialization functions
 
   def to_dict(self):
@@ -144,15 +142,13 @@ class XProject(object):
     '''Add a new xcrystal to the project.'''
 
     if not xcrystal.__class__.__name__ == 'XCrystal':
-      raise RuntimeError, 'crystal must be class XCrystal.'
+      raise RuntimeError('crystal must be class XCrystal.')
 
     if xcrystal.get_name() in self._crystals.keys():
-      raise RuntimeError, 'XCrystal with name %s already exists' % \
-          xcrystal.get_name()
+      raise RuntimeError('XCrystal with name %s already exists' % \
+          xcrystal.get_name())
 
     self._crystals[xcrystal.get_name()] = xcrystal
-
-    return
 
   def get_crystals(self):
     return self._crystals
@@ -307,8 +303,7 @@ class XProject(object):
               dmin = min(values)
               dmax = max(values)
             else:
-              raise RuntimeError, \
-                  'bad resolution for sweep %s' % sweep_name
+              raise RuntimeError('bad resolution for sweep %s' % sweep_name)
 
             replace = True
 
@@ -346,14 +341,9 @@ class XProject(object):
 
       self.add_crystal(xc)
 
-    return
-
   def write_xifo(self):
     '''Write an updated .xinfo file which takes into account the input
     provided by the user on the command line and any input xinfo
     file: this is what xia2 understood to be the problem.'''
 
-    raise RuntimeError, 'FIXME this method must be implemented'
-
-if __name__ == '__main__':
-  raise RuntimeError, 'need to define a unit test'
+    raise NotImplementedError('FIXME this method must be implemented')

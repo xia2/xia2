@@ -37,10 +37,10 @@ def IntegraterForXSweep(xsweep, json_file=None):
 
   # FIXME this needs properly implementing...
   if xsweep is None:
-    raise RuntimeError, 'XSweep instance needed'
+    raise RuntimeError('XSweep instance needed')
 
   if not xsweep.__class__.__name__ == 'XSweep':
-    raise RuntimeError, 'XSweep instance needed'
+    raise RuntimeError('XSweep instance needed')
 
   integrater = Integrater()
 
@@ -118,11 +118,11 @@ def Integrater():
     try:
       integrater = DialsIntegrater()
       Debug.write('Using Dials Integrater')
-    except NotAvailableError, e:
+    except NotAvailableError:
       if preselection == 'dials':
-        raise RuntimeError, \
+        raise RuntimeError( \
               'preselected integrater dials not available: ' + \
-              'dials not installed?'
+              'dials not installed?')
 
   if not integrater and (not preselection or preselection == 'mosflmr'):
     try:
@@ -130,24 +130,23 @@ def Integrater():
       Debug.write('Using MosflmR Integrater')
       if not get_preferences().get('scaler'):
         add_preference('scaler', 'ccp4a')
-    except NotAvailableError, e:
+    except NotAvailableError:
       if preselection == 'mosflmr':
-        raise RuntimeError, \
-              'preselected integrater mosflmr not available'
+        raise RuntimeError('preselected integrater mosflmr not available')
 
   if not integrater and \
          (not preselection or preselection == 'xdsr'):
     try:
       integrater = XDSIntegrater()
       Debug.write('Using XDS Integrater in new resolution mode')
-    except NotAvailableError, e:
+    except NotAvailableError:
       if preselection == 'xdsr':
-        raise RuntimeError, \
+        raise RuntimeError( \
               'preselected integrater xdsr not available: ' + \
-              'xds not installed?'
+              'xds not installed?')
 
   if not integrater:
-    raise RuntimeError, 'no integrater implementations found'
+    raise RuntimeError('no integrater implementations found')
 
   # check to see if resolution limits were passed in through the
   # command line...

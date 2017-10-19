@@ -28,12 +28,12 @@ def is_gzip(filename):
 def open_file(filename, mode='rb'):
   if is_bz2(filename):
     if bz2 is None:
-      raise RuntimeError, 'bz2 file provided without bz2 module'
+      raise RuntimeError('bz2 file provided without bz2 module')
     return bz2.BZ2File(filename, mode)
 
   if is_gzip(filename):
     if gzip is None:
-      raise RuntimeError, 'gz file provided without gzip module'
+      raise RuntimeError('gz file provided without gzip module')
     return gzip.GzipFile(filename, mode)
 
   return open(filename, mode)

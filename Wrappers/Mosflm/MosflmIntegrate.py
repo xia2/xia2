@@ -92,8 +92,6 @@ def MosflmIntegrate(DriverType = None, indxr_print = True):
       self._detector_gain_error = False
       self._suggested_gain = None
 
-      return
-
     def set_image_range(self, image_range):
       self._image_range = image_range
 
@@ -316,8 +314,8 @@ def MosflmIntegrate(DriverType = None, indxr_print = True):
       for i in range(len(output)):
         o = output[i]
         if 'LWBAT: error in ccp4_lwbat' in o:
-          raise RuntimeError, 'serious mosflm error - inspect %s' % \
-                self.get_log_file()
+          raise RuntimeError('serious mosflm error - inspect %s' % \
+                self.get_log_file())
 
       mosaics = []
 
@@ -362,7 +360,7 @@ def MosflmIntegrate(DriverType = None, indxr_print = True):
         if 'Smoothed value for refined mosaic spread' in o:
           mosaic = float(o.split()[-1])
           if mosaic < 0.0:
-            raise IntegrationError, 'negative mosaic spread'
+            raise IntegrationError('negative mosaic spread')
 
         if 'WRITTEN OUTPUT MTZ FILE' in o:
           self._mosflm_hklout = os.path.join(
@@ -382,12 +380,12 @@ def MosflmIntegrate(DriverType = None, indxr_print = True):
           self._getprof_error = True
 
         if 'MOSFLM HAS TERMINATED EARLY' in o:
-          raise RuntimeError, \
+          raise RuntimeError(
                 'integration failed: reason unknown (log %s)' % \
-                self.get_log_file()
+                self.get_log_file())
 
       if not self._mosflm_hklout:
-        raise RuntimeError, 'processing abandoned'
+        raise RuntimeError('processing abandoned')
 
       self._batches_out = (integrated_images_first, integrated_images_last)
 
@@ -414,7 +412,7 @@ def MosflmIntegrate(DriverType = None, indxr_print = True):
       try:
         self._postref_result = _parse_summary_file(
           os.path.join(self.get_working_directory(), summary_file))
-      except AssertionError, e:
+      except AssertionError:
         self._postref_result = { }
 
       return self._mosflm_hklout

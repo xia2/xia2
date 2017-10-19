@@ -62,11 +62,8 @@ class unmerged_intensity(object):
   def __init__(self):
     self._observations = []
 
-    return
-
   def add(self, misym, i, sigi, b):
     self._observations.append((misym, i, sigi, b))
-    return
 
   def apply_scale(self, s):
     '''Apply scale factor s.'''
@@ -77,8 +74,6 @@ class unmerged_intensity(object):
       scaled_observations.append((o[0], s * o[1], s * o[2], o[3]))
 
     self._observations = scaled_observations
-
-    return
 
   def get(self):
     return self._observations
@@ -243,15 +238,13 @@ class merger(object):
     elif 'BATCH' in all_columns:
       self._b_column = 'BATCH'
     else:
-      raise RuntimeError, 'no baseline column (DOSE or BATCH) found'
+      raise RuntimeError('no baseline column (DOSE or BATCH) found')
 
     self._read_unmerged_reflections()
     self._merge_reflections()
     self._merge_reflections_anomalous()
 
     # self._calculate_unmerged_di()
-
-    return
 
   def debug_info(self):
     '''Pull out some information for debugging, namely total intensity,
@@ -277,8 +270,6 @@ class merger(object):
     self._read_unmerged_reflections()
     self._merge_reflections()
     self._merge_reflections_anomalous()
-
-    return
 
   def accumulate(self, other_merger):
     '''Accumulate all of the measurements from another merger class

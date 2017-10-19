@@ -133,7 +133,7 @@ class _lattice_manager(object):
     # remove the top one from the list
 
     if len(self._allowed_lattice_order) == 1:
-      raise RuntimeError, 'out of lattices'
+      raise RuntimeError('out of lattices')
 
     self._allowed_lattice_order = self._allowed_lattice_order[1:]
 
@@ -142,11 +142,9 @@ class _aa_sequence(object):
 
   def __init__(self, sequence):
     self._sequence = sequence
-    return
 
   def set_sequence(self, sequence):
     self._sequence = sequence
-    return
 
   def get_sequence(self):
     return self._sequence
@@ -185,15 +183,12 @@ class _ha_info(object):
     self._atom = atom
     self._number_per_monomer = number_per_monomer
     self._number_total = number_total
-    return
 
   def set_number_per_monomer(self, number_per_monomer):
     self._number_per_monomer = number_per_monomer
-    return
 
   def set_number_total(self, number_total):
     self._number_total = number_total
-    return
 
   def get_atom(self):
     return self._atom
@@ -730,11 +725,11 @@ class XCrystal(object):
 
   def add_wavelength(self, xwavelength):
     if xwavelength.__class__.__name__ != 'XWavelength':
-      raise RuntimeError, 'input should be an XWavelength object'
+      raise RuntimeError('input should be an XWavelength object')
 
     if xwavelength.get_name() in self._wavelengths.keys():
-      raise RuntimeError, 'XWavelength with name %s already exists' % \
-            xwavelength.get_name()
+      raise RuntimeError('XWavelength with name %s already exists' % \
+            xwavelength.get_name())
 
     self._wavelengths[xwavelength.get_name()] = xwavelength
 
@@ -753,11 +748,11 @@ class XCrystal(object):
   def add_sample(self, xsample):
 
     if xsample.__class__.__name__ != 'XSample':
-      raise RuntimeError, 'input should be an XSample object'
+      raise RuntimeError('input should be an XSample object')
 
     if xsample.get_name() in self._samples.keys():
-      raise RuntimeError, 'XSample with name %s already exists' % \
-            xsample.get_name()
+      raise RuntimeError('XSample with name %s already exists' % \
+            xsample.get_name())
 
     self._samples[xsample.get_name()] = xsample
 
@@ -835,11 +830,11 @@ class XCrystal(object):
 
     # allow average of 1 degree, 1 angstrom
     if dist > 6.0:
-      raise RuntimeError, 'new lattice incompatible: %s vs. %s' % \
+      raise RuntimeError('new lattice incompatible: %s vs. %s' % \
             ('[%6.2f, %6.2f, %6.2f, %6.2f, %6.2f, %6.2f]' % \
              tuple(cell),
              '[%6.2f, %6.2f, %6.2f, %6.2f, %6.2f, %6.2f]' % \
-             tuple(cell_orig))
+             tuple(cell_orig)))
 
     # if we reach here we're satisfied that the new lattice matches...
     # FIXME write out some messages here to Chatter.

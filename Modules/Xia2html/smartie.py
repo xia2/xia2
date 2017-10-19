@@ -327,10 +327,7 @@ class logfile:
     A fragment can be a program, table, CCP4i message or
     keytext object.
     Note that i counts up from zero."""
-    try:
-      return self.__fragments[i]
-    except:
-      raise
+    return self.__fragments[i]
 
   def addprogram(self):
     """Add a new program object to the logfile."""
@@ -348,10 +345,7 @@ class logfile:
     """Return the i'th program object in the logfile.
 
     Note that i counts up starting from zero."""
-    try:
-      return self.__programs[i]
-    except:
-      raise
+    return self.__programs[i]
 
   def addtable(self,thistable=False,tabletext=""):
     """Add a table object to the list of tables.
@@ -388,10 +382,7 @@ class logfile:
     instead.
 
     Note that i counts up starting from zero."""
-    try:
-      return self.__tables[i]
-    except:
-      raise
+    return self.__tables[i]
 
   def findtable(self,title_pattern,index=0):
     """Fetch a table in the logfile by matching the title.
@@ -461,10 +452,7 @@ class logfile:
     """Return the i'th keytext object in the logfile.
 
     Note that i counts up starting from zero."""
-    try:
-      return self.__keytexts[i]
-    except:
-      raise
+    return self.__keytexts[i]
 
   def addccp4i_info(self):
     """Add another ccp4i_info object to the logfile.
@@ -488,10 +476,7 @@ class logfile:
     """Return the i'th ccp4i_info object in the logfile.
 
     Note that i counts up starting from zero."""
-    try:
-      return self.__ccp4i_info[i]
-    except:
-      raise
+    return self.__ccp4i_info[i]
 
   def addsummary(self,start_line=-1):
     """Add another summary object to the logfile.
@@ -512,10 +497,7 @@ class logfile:
     """Return the i'th summary object in the logfile.
 
     Note that i counts up starting from zero."""
-    try:
-      return self.__summaries[i]
-    except:
-      raise
+    return self.__summaries[i]
 
   def set_fragment_start(self,line_no):
     """Set the start line of the most recent fragment.
@@ -717,7 +699,7 @@ class fragment:
     try:
       return self.__dict[key]
     except KeyError:
-      raise AttributeError, "Unknown attribute '"+str(key)+"'"
+      raise AttributeError("Unknown attribute '"+str(key)+"'")
 
   def has_attribute(self,key):
     """Check whether a fragment attribute has been set.
@@ -789,10 +771,7 @@ class fragment:
 
     Use the ntables method to get the total number of table
     objects associated with the fragment."""
-    try:
-      return self.__tables[i]
-    except:
-      raise
+    return self.__tables[i]
 
   def findtable(self,title_pattern,index=0):
     """Fetch a table in the fragment by matching the title.
@@ -869,10 +848,7 @@ class fragment:
 
     Use the nkeytexts method to get the total number of
     keytext objects associated with the program/fragment."""
-    try:
-      return self.__keytexts[i]
-    except:
-      raise
+    return self.__keytexts[i]
 
   def set_startline(self,line_no):
     """Set the start line of the fragment in the source document."""
@@ -1098,7 +1074,7 @@ class program(fragment):
     try:
       return self.__logicalnames[logical_name]
     except KeyError:
-      raise KeyError, "Logical name '"+str(logical_name)+"' not found"
+      raise KeyError("Logical name '"+str(logical_name)+"' not found")
 
 #
 # table
@@ -1172,7 +1148,6 @@ class table:
         # instead
         if str(tabletext).count("\n") == 0:
           self.settitle(tabletext)
-    return
 
   def __nonzero__(self):
     """Builtin: provides the True/False test.
@@ -1312,8 +1287,8 @@ class table:
       self.__type = "SCATTER"
     else:
       # Unknown type of graph - raise an exception
-      raise ValueError, "Unknown graph type: "+graphtype+"\n"+\
-            "Must be one of 'GRAPHS' or 'SCATTER'"
+      raise ValueError("Unknown graph type: "+graphtype+"\n"+\
+            "Must be one of 'GRAPHS' or 'SCATTER'")
     self.__nonzero = True
 
   def type(self):
@@ -1521,8 +1496,8 @@ class table:
         self.list_columns().index(colnam)
       except ValueError:
         # The column name wasn't found
-        raise ValueError, "Column "+str(colnam)+\
-              " is not defined in the table"
+        raise ValueError("Column "+str(colnam)+\
+              " is not defined in the table")
     for icol in range(0,self.ncolumns()):
       # Look up whether the column has an
       # explicit value assigned
@@ -1559,7 +1534,7 @@ class table:
     """
     # Check that there are at least two columns
     if len(columns) < 2:
-      raise ValueError, "Graph definition needs at least two columns"
+      raise ValueError("Graph definition needs at least two columns")
     # Build the graph description i.e. list of comma-separated
     # column numbers (this is the loggraph format)
     graph_desc = ""
@@ -1573,7 +1548,7 @@ class table:
       if not found:
         # The specified column wasn't located
         # Raise an exception
-        raise ValueError, "Column "+str(colnam)+" not found in table"
+        raise ValueError("Column "+str(colnam)+" not found in table")
     # Built the list - strip any leading commas
     graph_desc = graph_desc.strip(",")
     # Add a 'blank' table_graph
@@ -1596,10 +1571,7 @@ class table:
     'table_column' method. The 'col' method allows data
     to be retrieved by column name, and returns the
     column of data as a Python list."""
-    try:
-      return self.__column_list[i]
-    except:
-      raise
+    return self.__column_list[i]
 
   def col(self,name):
     """Return the data in the column identified by 'name'.
@@ -1617,7 +1589,7 @@ class table:
       if self.table_column(i).title() == name:
         return copy.copy(self.table_column(i).data())
     # Column not found
-    raise LookupError, "Column called '"+str(name)+"' not found"
+    raise LookupError("Column called '"+str(name)+"' not found")
 
   def ngraphs(self):
     """Return the number of graphs defined in the table.
@@ -1646,10 +1618,7 @@ class table:
     This method returns the i'th table_graph object
     associated with the table. (Note that i starts from
     zero.)"""
-    try:
-      return self.__graph_list[i]
-    except:
-      raise
+    return self.__graph_list[i]
 
   def jloggraph(self,codebase="",width=400,height=300):
     """Return a jloggraph-formatted table.

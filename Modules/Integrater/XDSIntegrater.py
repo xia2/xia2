@@ -558,7 +558,7 @@ class XDSIntegrater(Integrater):
       correct.set_spacegroup_number(
           self.get_integrater_spacegroup_number())
       if not self._intgr_cell:
-        raise RuntimeError, 'no unit cell to recycle'
+        raise RuntimeError('no unit cell to recycle')
       correct.set_cell(self._intgr_cell)
 
     # BUG # 3113 - new version of XDS will try and figure the
@@ -603,8 +603,8 @@ class XDSIntegrater(Integrater):
       elif lattice[1] == 'F':
         mult = 4
       else:
-        raise RuntimeError, 'unknown multiplier for lattice %s' % \
-              lattice
+        raise RuntimeError('unknown multiplier for lattice %s' % \
+              lattice)
 
       Debug.write('REIDX multiplier for lattice %s: %d' % \
                   (lattice, mult))
@@ -634,7 +634,7 @@ class XDSIntegrater(Integrater):
     # erm. just to be sure
     if self.get_integrater_reindex_matrix() and \
            correct.get_reindex_used():
-      raise RuntimeError, 'Reindex panic!'
+      raise RuntimeError('Reindex panic!')
 
     # get the reindex operation used, which may be useful if none was
     # set but XDS decided to apply one, e.g. #419.
@@ -756,8 +756,7 @@ class XDSIntegrater(Integrater):
         'Eliminating this indexing solution as postrefinement')
         Chatter.write(
         'deviations rather high relative to triclinic')
-        raise BadLatticeError, \
-              'high relative deviations in postrefinement'
+        raise BadLatticeError('high relative deviations in postrefinement')
 
     if not PhilIndex.params.dials.fast_mode and not PhilIndex.params.xds.keep_outliers:
       # check for alien reflections and perhaps recycle - removing them

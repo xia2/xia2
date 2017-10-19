@@ -56,7 +56,7 @@ def lattice_to_spacegroup(lattice):
                             'cI':197}
 
   if not lattice in _lattice_to_spacegroup.keys():
-    raise RuntimeError, 'lattice "%s" unknown' % lattice
+    raise RuntimeError('lattice "%s" unknown' % lattice)
 
   return _lattice_to_spacegroup[lattice]
 
@@ -90,7 +90,7 @@ def spacegroup_name_xHM_to_old(xHM):
   if not xHM in mapping.keys():
     if xHM in old_names:
       return xHM
-    raise RuntimeError, 'spacegroup %s unknown' % xHM
+    raise RuntimeError('spacegroup %s unknown' % xHM)
 
   return mapping[xHM]
 
@@ -119,7 +119,7 @@ def spacegroup_name_old_to_xHM(old):
   old = old.upper()
 
   if not old in mapping.keys():
-    raise RuntimeError, 'spacegroup %s unknown' % old
+    raise RuntimeError('spacegroup %s unknown' % old)
 
   return mapping[old]
 

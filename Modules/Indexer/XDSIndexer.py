@@ -564,7 +564,7 @@ class XDSIndexer(IndexerSingleSweep):
         # pass done is FALSE however there should be a refined
         # P1 orientation matrix etc. available - so keep it!
 
-      except XDSException, e:
+      except XDSException as e:
         # inspect this - if we have complaints about not
         # enough reflections indexed, and we have a target
         # unit cell, and they are the same, well ignore it

@@ -44,11 +44,8 @@ def Scaleit(DriverType = None):
 
       self._anomalous = False
 
-      return
-
     def set_anomalous(self, anomalous):
       self._anomalous = anomalous
-      return
 
     def find_columns(self):
       '''Identify columns to use with scaleit.'''
@@ -111,7 +108,7 @@ def Scaleit(DriverType = None):
     def check_scaleit_errors(self):
       for record in self.get_all_output():
         if 'SCALEIT:  ** No reflections **' in record:
-          raise RuntimeError, 'no reflections'
+          raise RuntimeError('no reflections')
 
     def scaleit(self):
       '''Run scaleit and get some interesting facts out.'''
@@ -165,7 +162,7 @@ def Scaleit(DriverType = None):
         self.check_ccp4_errors()
         self.check_scaleit_errors()
 
-      except RuntimeError, e:
+      except RuntimeError as e:
         try:
           os.remove(self.get_hklout())
         except:

@@ -14,7 +14,7 @@ def get_sweep(args):
   try:
     sweeplist = SweepFactory(template, directory)
 
-  except Exception, e:
+  except Exception as e:
     from xia2.Handlers.Streams import Debug
     Debug.write('Exception C: %s (%s)' % (str(e), args[0]))
     Debug.write(traceback.format_exc())

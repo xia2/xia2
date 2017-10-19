@@ -60,8 +60,6 @@ def MosflmIndex(DriverType = None, indxr_print = True):
 
       self._solutions = { }
 
-      return
-
     def set_images(self, images):
       self._images = list(images)
 
@@ -179,7 +177,7 @@ def MosflmIndex(DriverType = None, indxr_print = True):
           # mosflm built on linux in CCP4 6.0.1...
           # FIXME this should be a specific kind of
           # exception e.g. an IndexError
-          raise IndexingError, 'mosaicity estimation failed'
+          raise IndexingError('mosaicity estimation failed')
 
         # mosflm doesn't refine this in autoindexing...
         if 'Crystal to detector distance of' in o:

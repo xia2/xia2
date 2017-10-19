@@ -246,17 +246,11 @@ def transmogrify_matrix(lattice, matrix, target_lattice,
   lb = math.sqrt(dot(_b, _b))
   lc = math.sqrt(dot(_c, _c))
 
-  if math.fabs(la - new_cell[0]) / new_cell[0] > 0.01:
-    raise RuntimeError, 'cell check failed (wavelength != %f)' % \
-          wavelength
-
-  if math.fabs(lb - new_cell[1]) / new_cell[1] > 0.01:
-    raise RuntimeError, 'cell check failed (wavelength != %f)' % \
-          wavelength
-
-  if math.fabs(lc - new_cell[2]) / new_cell[2] > 0.01:
-    raise RuntimeError, 'cell check failed (wavelength != %f)' % \
-          wavelength
+  if math.fabs(la - new_cell[0]) / new_cell[0] > 0.01 or \
+     math.fabs(lb - new_cell[1]) / new_cell[1] > 0.01 or \
+     math.fabs(lc - new_cell[2]) / new_cell[2] > 0.01:
+    raise RuntimeError('cell check failed (wavelength != %f)' % \
+          wavelength)
 
   return format_matrix(new_cell, a, u)
 
@@ -267,7 +261,7 @@ def _Othercell():
   try:
     return LatticeSymmetry()
     Debug.write('Using iotbx.lattice_symmetry')
-  except: #deliberate
+  except Exception:
     return Othercell()
     Debug.write('Using othercell')
 
@@ -421,17 +415,11 @@ def mosflm_a_matrix_to_real_space(wavelength, lattice, matrix):
   Debug.write('Calculated from matrix: %.3f %.3f %.3f' % \
               (la, lb, lc))
 
-  if math.fabs(la - cell[0]) / cell[0] > 0.01:
-    raise RuntimeError, 'cell check failed (wavelength != %f)' % \
-          wavelength
-
-  if math.fabs(lb - cell[1]) / cell[1] > 0.01:
-    raise RuntimeError, 'cell check failed (wavelength != %f)' % \
-          wavelength
-
-  if math.fabs(lc - cell[2]) / cell[2] > 0.01:
-    raise RuntimeError, 'cell check failed (wavelength != %f)' % \
-          wavelength
+  if math.fabs(la - cell[0]) / cell[0] > 0.01 or \
+     math.fabs(lb - cell[1]) / cell[1] > 0.01 or \
+     math.fabs(lc - cell[2]) / cell[2] > 0.01:
+    raise RuntimeError('cell check failed (wavelength != %f)' % \
+          wavelength)
 
   # return these vectors
   return ax, bx, cx

@@ -124,7 +124,7 @@ def interpolate_value(x, y, t):
   '''Find the value of x: y(x) = t.'''
 
   if t > max(y) or t < min(y):
-    raise RuntimeError, 't outside of [%f, %f]' % (min(y), max(y))
+    raise RuntimeError('t outside of [%f, %f]' % (min(y), max(y)))
 
   for j in range(1, len(x)):
     x0 = x[j - 1]

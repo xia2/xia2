@@ -299,7 +299,7 @@ class DialsIntegrater(Integrater):
 
     try:
       integrate.run()
-    except RuntimeError, e:
+    except RuntimeError as e:
       s = str(e)
       if ('dials.integrate requires more memory than is available.' in s
           and not self._intgr_reso_high):

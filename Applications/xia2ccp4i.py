@@ -100,7 +100,7 @@ MG_CURRENT_PROJECT        _default_project          $PROJ_NAME
     # Go ahead and make CCP4_DATABASE if we have write access
     try:
       os.mkdir(db_dir)
-    except OSError, err:
+    except OSError:
       self._reason_for_failure = ("ERROR: Problem encountered while "
           "creating CCP4_DATABASE in " + proj_dir)
       return False

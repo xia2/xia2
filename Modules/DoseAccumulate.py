@@ -107,7 +107,7 @@ def accumulate(images):
 
 if __name__ == '__main__':
   if len(sys.argv) < 2:
-    raise RuntimeError, '%s /path/to/image' % sys.argv[0]
+    raise RuntimeError('%s /path/to/image' % sys.argv[0])
 
   # FIXME with this I would like to be able to give a first batch
   # for a template, then print out the batch numbers computed from

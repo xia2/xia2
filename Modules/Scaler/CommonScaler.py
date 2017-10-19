@@ -497,7 +497,7 @@ class CommonScaler(Scaler):
     # next transform to F's from I's etc.
 
     if not self._scalr_scaled_refl_files:
-      raise RuntimeError, 'no reflection files stored'
+      raise RuntimeError('no reflection files stored')
 
     # run xia2.report on each unmerged mtz file
     #self._scale_finish_chunk_2_report()
@@ -593,7 +593,7 @@ class CommonScaler(Scaler):
         FileHandler.record_html_file(
           '%s %s %s report' %(
             self._scalr_pname, self._scalr_xname, wavelength), htmlout)
-      except Exception, e:
+      except Exception as e:
         Debug.write('xia2.report failed:')
         Debug.write(str(e))
 

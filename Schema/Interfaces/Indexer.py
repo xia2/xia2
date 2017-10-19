@@ -101,7 +101,7 @@ class _IndexerHelper(object):
     '''Eliminate the highest currently allowed lattice.'''
 
     if len(self._sorted_list) <= 1:
-      raise RuntimeError, 'cannot eliminate only solution'
+      raise RuntimeError('cannot eliminate only solution')
 
     if indxr_print:
       Chatter.write('Eliminating indexing solution:')
@@ -292,11 +292,11 @@ class Indexer(object):
 
   def _index_prepare(self):
     '''Prepare to index, e.g. finding spots on the images.'''
-    raise RuntimeError, 'overload me'
+    raise NotImplementedError('overload me')
 
   def _index(self):
     '''Actually perform the autoindexing calculations.'''
-    raise RuntimeError, 'overload me'
+    raise NotImplementedError('overload me')
 
   def _index_finish(self):
     '''This may be a no-op if you have no use for it...'''
@@ -391,7 +391,7 @@ class Indexer(object):
     '''Eliminate the current solution for autoindexing.'''
 
     if not self._indxr_helper:
-      raise RuntimeError, 'no indexing done yet'
+      raise RuntimeError('no indexing done yet')
 
     # not allowed to eliminate a solution provided by the
     # user via set_indexer_lattice... - this is determined by
@@ -399,7 +399,7 @@ class Indexer(object):
     # an argument
 
     if self._indxr_user_input_lattice:
-      raise RuntimeError, 'eliminating user supplied lattice'
+      raise RuntimeError('eliminating user supplied lattice')
 
     self._indxr_helper.eliminate(indxr_print = indxr_print)
     self.set_indexer_done(False)
@@ -568,10 +568,10 @@ class Indexer(object):
     '''Set the input unit cell (optional.)'''
 
     if not (type(cell) == type(()) or type(cell) == type([])):
-      raise RuntimeError, 'cell must be a 6-tuple of floats, is %s' % str(cell)
+      raise RuntimeError('cell must be a 6-tuple of floats, is %s' % str(cell))
 
     if len(cell) != 6:
-      raise RuntimeError, 'cell must be a 6-tuple of floats'
+      raise RuntimeError('cell must be a 6-tuple of floats')
 
     self._indxr_input_cell = tuple(map(float, cell))
     self.set_indexer_done(False)

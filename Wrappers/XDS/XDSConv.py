@@ -31,15 +31,11 @@ def XDSConv(DriverType = None):
       self._symmetry = None
       self._output_file = None
 
-      return
-
     def set_input_file(self, input_file):
       self._input_file = input_file
-      return
 
     def set_cell(self, cell):
       self._cell = cell
-      return
 
     def get_cell(self):
       return self._cell
@@ -49,11 +45,9 @@ def XDSConv(DriverType = None):
 
     def set_symmetry(self, symmetry):
       self._symmetry = symmetry
-      return
 
     def set_output_file(self, output_file):
       self._output_file = output_file
-      return
 
     def parse_xds_ascii(self, file):
       '''Parse the XDS ascii file for interesting things.'''
@@ -69,7 +63,7 @@ def XDSConv(DriverType = None):
           for t in tokens:
             if 'MERGED' in t:
               if t.split('=')[-1].lower() == 'false':
-                raise RuntimeError, 'input unmerged'
+                raise RuntimeError('input unmerged')
             if 'FRIEDEL' in t:
               results['friedel'] = t.split('=')[-1].lower()
 
@@ -88,10 +82,10 @@ def XDSConv(DriverType = None):
 
     def convert(self):
       if not self._input_file:
-        raise RuntimeError, 'no input file specified'
+        raise RuntimeError('no input file specified')
 
       if not self._output_file:
-        raise RuntimeError, 'no output file specified'
+        raise RuntimeError('no output file specified')
 
       # make the output file link a relative rather than
       # absolute path... FIXME this is unix specific!
@@ -103,7 +97,7 @@ def XDSConv(DriverType = None):
 
       if len(self._input_file) > 49:
         if len(os.path.split(self._input_file)[-1]) > 49:
-          raise RuntimeError, 'input file name too long'
+          raise RuntimeError('input file name too long')
 
         shutil.copyfile(
             self._input_file,

@@ -9,8 +9,6 @@
 
 from __future__ import absolute_import, division
 
-import copy
-
 # scaler implementations
 from xia2.Modules.Scaler.CCP4ScalerA import CCP4ScalerA
 from xia2.Modules.Scaler.XDSScalerA import XDSScalerA
@@ -33,17 +31,17 @@ def Scaler():
     try:
       scaler = CCP4ScalerA()
       Debug.write('Using CCP4A Scaler')
-    except NotAvailableError, e:
+    except NotAvailableError:
       if preselection == 'ccp4a':
-        raise RuntimeError, 'preselected scaler ccp4a not available'
+        raise RuntimeError('preselected scaler ccp4a not available')
 
   if not scaler and \
     (not preselection or preselection == 'xdsa'):
     try:
       scaler = XDSScalerA()
       Debug.write('Using XDSA Scaler')
-    except NotAvailableError, e:
+    except NotAvailableError:
       if preselection == 'xdsa':
-        raise RuntimeError, 'preselected scaler xdsa not available'
+        raise RuntimeError('preselected scaler xdsa not available')
 
   return scaler

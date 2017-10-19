@@ -119,7 +119,7 @@ def line_intersect_rectangle(o, d, nx, ny):
       if dot((intersection - o[0], ny - o[1]), d) > 0.0:
         return (intersection, ny)
 
-  raise RuntimeError, 'intersection not found'
+  raise RuntimeError('intersection not found')
 
 def invert_2x2(a, b, c, d):
 
@@ -133,7 +133,7 @@ def equation_of_line(p1, p2):
 
   # first check that the points are different
   if (p1[0] == p2[0]) and (p1[1] == p2[1]):
-    raise RuntimeError, 'points are identical'
+    raise RuntimeError('points are identical')
 
   # then check for the special case: vertical line
   if p1[0] == p2[0]:
@@ -222,8 +222,6 @@ class BackstopMask(object):
     self._d21 = compute_fit(distances, d21)
     self._d34 = compute_fit(distances, d34)
 
-    return
-
   def calculate_mask(self, header):
     '''Calculate the pixel positions for the mask, given the image
     header.'''
@@ -310,8 +308,6 @@ class BackstopMask(object):
 
     open(cbf_out, 'w').write(result)
 
-    return
-
   def rectangle(self, header):
     '''Return a configured rectangle object to test whether pixels are
     within the backstop region.'''
@@ -345,8 +341,6 @@ class rectangle(object):
     self._in23 = self._evaluate(self._l23, centre)
     self._in34 = self._evaluate(self._l34, centre)
     self._in41 = self._evaluate(self._l41, centre)
-
-    return
 
   def _evaluate(self, abc, p):
     a, b, c = abc
@@ -388,8 +382,6 @@ def work_line_intersect_angle():
 
     assert(math.fabs(
         (dot(x, d) / math.sqrt(dot(x, x) * dot(d, d))) - 1) < 0.001)
-
-  return
 
 if __name__ == '__main_work__':
   work_equation_of_line()

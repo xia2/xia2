@@ -11,7 +11,7 @@ def E4_mtz(hklin, native = True):
   reflection_file = reflection_file_reader.any_reflection_file(
       file_name = hklin)
   if reflection_file.file_type() is None:
-    raise RuntimeError, 'error reading %s' % hklin
+    raise RuntimeError('error reading %s' % hklin)
   miller_arrays = reflection_file.as_miller_arrays()
 
   E4s = { }

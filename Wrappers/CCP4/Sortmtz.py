@@ -37,12 +37,9 @@ def Sortmtz(DriverType = None):
 
       self._hklin_files = []
 
-      return
-
     def add_hklin(self, hklin):
       '''Add a reflection file to the list to be sorted together.'''
       self._hklin_files.append(hklin)
-      return
 
     def check_sortmtz_errors(self):
       '''Check the output for "standard" errors.'''
@@ -55,13 +52,13 @@ def Sortmtz(DriverType = None):
           lwbat_warning = l.split('warning:')[1].strip()
 
         if 'error in ccp4_lwbat' in l:
-          raise RuntimeError, lwbat_warning
+          raise RuntimeError(lwbat_warning)
 
         if 'Sorting failed' in l:
-          raise RuntimeError, 'sorting failed'
+          raise RuntimeError('sorting failed')
 
         if 'Inconsistent operator orders in input file' in l:
-          raise RuntimeError, 'different sort orders'
+          raise RuntimeError('different sort orders')
 
     def sort(self, vrset = None):
       '''Actually sort the reflections.'''
@@ -104,10 +101,10 @@ def Sortmtz(DriverType = None):
         self.check_for_errors()
         self.check_ccp4_errors()
         if 'Error' in self.get_ccp4_status():
-          raise RuntimeError, '[SORTMTZ] %s' % status
+          raise RuntimeError('[SORTMTZ] %s' % status)
         self.check_sortmtz_errors()
 
-      except RuntimeError, e:
+      except RuntimeError as e:
         try:
           os.remove(self.get_hklout())
         except: #deliberate

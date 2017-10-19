@@ -21,6 +21,3 @@ class BadLatticeError(Exception):
 
   def __str__(self):
     return repr(self.parameter)
-
-if __name__ == '__main__':
-  raise BadLatticeError, 'rmsd variation too large'

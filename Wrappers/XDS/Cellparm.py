@@ -37,21 +37,17 @@ def Cellparm(DriverType = None):
       self._cells = []
       self._n_refs = []
 
-      return
-
     def add_cell(self, cell, n_ref):
       '''Add a unit cell which belongs to n_ref reflections.'''
 
       self._cells.append(cell)
       self._n_refs.append(n_ref)
 
-      return
-
     def get_cell(self):
       '''Compute an average cell.'''
 
       if not self._cells:
-        raise RuntimeError, 'no input unit cell parameters'
+        raise RuntimeError('no input unit cell parameters')
 
       # check that the input cells are reasonably uniform -
       # be really relaxed and allow 5% variation!
@@ -66,10 +62,10 @@ def Cellparm(DriverType = None):
           average = average_cell[k] / number_cells
           check = PhilIndex.params.xia2.settings.xds_check_cell_deviation
           if math.fabs((cell[k] - average) / average) > 0.05 and check:
-            raise RuntimeError, 'incompatible unit cells'
+            raise RuntimeError('incompatible unit cells')
           average = average_cell[k] / number_cells
           if math.fabs((cell[k] - average) / average) > 0.2:
-            raise RuntimeError, 'very incompatible unit cells'
+            raise RuntimeError('very incompatible unit cells')
 
         # it was ok to remember for later on..
         for k in range(6):

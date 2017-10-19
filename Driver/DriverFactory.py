@@ -43,16 +43,12 @@ class _DriverFactory(object):
     if 'XIA2CORE_DRIVERTYPE' in os.environ:
       self.set_driver_type(os.environ['XIA2CORE_DRIVERTYPE'])
 
-    return
-
   def set_driver_type(self, type):
     '''Set the kind of driver this factory should produce.'''
     if not type in self._implemented_types:
-      raise RuntimeError, 'unimplemented driver class: %s' % type
+      raise RuntimeError('unimplemented driver class: %s' % type)
 
     self._driver_type = type
-
-    return
 
   def get_driver_type(self):
     return self._driver_type
@@ -79,7 +75,7 @@ class _DriverFactory(object):
     if type == 'qsub':
       return QSubDriver()
 
-    raise RuntimeError, 'Driver class "%s" unknown' % type
+    raise RuntimeError('Driver class "%s" unknown' % type)
 
 DriverFactory = _DriverFactory()
 

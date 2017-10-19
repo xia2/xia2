@@ -38,8 +38,6 @@ def banner():
   print '#' * 60
   print 'User: %s                  Run at: %s' % (user, now)
 
-  return
-
 def get_hklin_files():
   '''From the command-line, get the list of hklin files. Set up thus
   as it may be useful externally. Assumes that the list of reflection
@@ -57,7 +55,7 @@ def get_hklin_files():
         hklin = os.path.join(os.getcwd(), hklin)
 
       if not os.path.exists(hklin):
-        raise RuntimeError, 'hklin %s does not exist' % hklin
+        raise RuntimeError('hklin %s does not exist' % hklin)
 
       hklin_files.append(hklin)
 

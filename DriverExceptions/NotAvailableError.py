@@ -13,6 +13,3 @@ from exceptions import Exception
 class NotAvailableError(Exception):
   '''An exception to be raised when a program is not available'''
   pass
-
-if __name__ == '__main__':
-  raise NotAvailableError, 'program x nopt available'

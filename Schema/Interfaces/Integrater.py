@@ -219,13 +219,13 @@ class Integrater(FrameProcessor):
   # ------------------------------------------------------------------
 
   def _integrate_prepare(self):
-    raise RuntimeError, 'overload me'
+    raise NotImplementedError('overload me')
 
   def _integrate(self):
-    raise RuntimeError, 'overload me'
+    raise NotImplementedError('overload me')
 
   def _integrate_finish(self):
-    raise RuntimeError, 'overload me'
+    raise NotImplementedError('overload me')
 
   # ------------------------------------
   # end methods which MUST be overloaded
@@ -408,7 +408,7 @@ class Integrater(FrameProcessor):
     '''Set both resolution limits.'''
 
     if self._intgr_reso_user and not user:
-      raise RuntimeError, 'cannot override user set limits'
+      raise RuntimeError('cannot override user set limits')
 
     if user:
       self._intgr_reso_user = True
@@ -422,7 +422,7 @@ class Integrater(FrameProcessor):
     '''Set high resolution limit.'''
 
     if self._intgr_reso_user and not user:
-      raise RuntimeError, 'cannot override user set limits'
+      raise RuntimeError('cannot override user set limits')
 
     if user:
       self._intgr_reso_user = True
@@ -508,8 +508,8 @@ class Integrater(FrameProcessor):
     '''Set the indexer implementation to use for this integration.'''
 
     if not inherits_from(indexer.__class__, 'Indexer'):
-      raise RuntimeError, 'input %s is not an Indexer implementation' % \
-            indexer.__name__
+      raise RuntimeError('input %s is not an Indexer implementation' % \
+            indexer.__name__)
 
     self._intgr_indexer = indexer
     self.set_integrater_prepare_done(False)
@@ -518,8 +518,8 @@ class Integrater(FrameProcessor):
     '''Set the refiner implementation to use for this integration.'''
 
     if not inherits_from(refiner.__class__, 'Refiner'):
-      raise RuntimeError, 'input %s is not a Refiner implementation' % \
-            refiner.__name__
+      raise RuntimeError('input %s is not a Refiner implementation' % \
+            refiner.__name__)
 
     self._intgr_refiner = refiner
     self.set_integrater_prepare_done(False)
@@ -542,7 +542,7 @@ class Integrater(FrameProcessor):
           try:
             self._integrate_prepare()
 
-          except BadLatticeError, e:
+          except BadLatticeError as e:
 
             Journal.banner('eliminated this lattice', size = 80)
 
@@ -572,7 +572,7 @@ class Integrater(FrameProcessor):
           #1698
           self._intgr_hklout_raw = self._integrate()
 
-        except BadLatticeError, e:
+        except BadLatticeError as e:
           Chatter.write('Rejecting bad lattice %s' % str(e))
 
           Journal.banner('eliminated this lattice', size = 80)
@@ -588,7 +588,7 @@ class Integrater(FrameProcessor):
 
         self._intgr_hklout = self._integrate_finish()
 
-      except BadLatticeError, e:
+      except BadLatticeError as e:
         Chatter.write('Bad Lattice Error: %s' % str(e))
         self._intgr_refiner.eliminate()
         self._integrater_reset()
@@ -838,7 +838,7 @@ class Integrater(FrameProcessor):
 
         lines.append('Maximum relative deviation in cell: %.3f' %max_rel_dev)
 
-    except KeyError, e:
-      raise RuntimeError, 'Refinement not performed...'
+    except KeyError:
+      raise RuntimeError('Refinement not performed...')
 
     return '\n'.join(lines)

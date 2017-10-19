@@ -57,8 +57,6 @@ class DialsIndexer(Indexer):
     # FIXME this is a stupid low resolution limit to use...
     self._indxr_low_resolution = 40.0
 
-    return
-
   # admin functions
 
   def get_indexed_filename(self):
@@ -400,7 +398,7 @@ class DialsIndexer(Indexer):
         #discovery.set_scan_ranges([(first + offset, last + offset)])
         try:
           discovery.run()
-        except Exception, e:
+        except Exception as e:
           Debug.write('DIALS beam centre search failed: %s' %str(e))
         else:
           # overwrite datablock.json in datablocks list
@@ -419,13 +417,13 @@ class DialsIndexer(Indexer):
         try:
           indexer_fft3d = self._do_indexing(method="fft3d")
           nref_3d, rmsd_3d = indexer_fft3d.get_nref_rmsds()
-        except Exception, e:
+        except Exception:
           nref_3d = None
           rmsd_3d = None
         try:
           indexer_fft1d = self._do_indexing(method="fft1d")
           nref_1d, rmsd_1d = indexer_fft1d.get_nref_rmsds()
-        except Exception, e:
+        except Exception:
           nref_1d = None
           rmsd_1d = None
 
@@ -724,9 +722,9 @@ class DialsIndexer(Indexer):
           else:
             del(self._solutions[s])
 
-        raise RuntimeError, \
+        raise RuntimeError( \
           'no solution for lattice %s with given cell' % \
-          self._indxr_input_lattice
+          self._indxr_input_lattice)
 
       else:
         for s in self._solutions.keys():
@@ -736,10 +734,8 @@ class DialsIndexer(Indexer):
           else:
             del(self._solutions[s])
 
-        raise RuntimeError, 'no solution for lattice %s' % \
-          self._indxr_input_lattice
-
-    return
+        raise RuntimeError('no solution for lattice %s' % \
+          self._indxr_input_lattice)
 
   def _index_finish(self):
     # get estimate of low resolution limit from lowest resolution indexed
@@ -759,5 +755,3 @@ class DialsIndexer(Indexer):
     d_max *= 1.05 # include an upper margin to avoid rounding errors
     Debug.write('Low resolution limit assigned as: %.2f' % d_max)
     self._indxr_low_resolution = d_max
-
-    return

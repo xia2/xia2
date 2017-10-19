@@ -48,8 +48,6 @@ def DistlSweepStrength(DriverType=None, params=None):
         params = master_params.extract()
       self._params = params
 
-
-
       self.set_executable('distl.sweep_strength')
 
       self._images = []
@@ -57,14 +55,10 @@ def DistlSweepStrength(DriverType=None, params=None):
       self._statistics = { }
       self._peaks = []
 
-      return
-
     def set_image(self, image):
       '''Set an image for analysis.'''
 
       self._images.append(image)
-
-      return
 
     def distl(self):
       '''Actually analyse the images.'''
@@ -99,8 +93,6 @@ def DistlSweepStrength(DriverType=None, params=None):
           self._statistics[
               'saturation'] = float(l[-1])
 
-      return
-
     def run(self):
       '''Actually analyse the images.'''
 
@@ -120,7 +112,7 @@ def DistlSweepStrength(DriverType=None, params=None):
 if __name__ == '__main__':
 
   if len(sys.argv) < 2:
-    raise RuntimeError, '%s image' % sys.argv[0]
+    raise RuntimeError('%s image' % sys.argv[0])
 
   print '%s ... %s' % (sys.argv[1], sys.argv[-1])
 

@@ -330,18 +330,18 @@ class Scaler(object):
   # FIXME x1698 these not currently used yet
 
   def _scale_list_likely_pointgroups(self, integrater):
-    raise RuntimeError, 'overload me'
+    raise NotImplementedError('overload me')
 
   def _scale_reindex_to_reference(self, reference, integrater):
-    raise RuntimeError, 'overload me'
+    raise NotImplementedError('overload me')
 
   # FIXME to here
 
   def _scale_prepare(self):
-    raise RuntimeError, 'overload me'
+    raise NotImplementedError('overload me')
 
   def _scale(self):
-    raise RuntimeError, 'overload me'
+    raise NotImplementedError('overload me')
 
   def _scale_finish(self):
     pass
@@ -491,7 +491,7 @@ class Scaler(object):
 
       # FIXME This is now probably superflous?
       if epoch == 0 and self._scalr_integraters:
-        raise RuntimeError, 'multi-sweep integrater has epoch 0'
+        raise RuntimeError('multi-sweep integrater has epoch 0')
 
       if epoch in self._scalr_integraters.keys():
         Debug.write('integrater with epoch %d already exists. will not trust epoch values' % epoch)
@@ -505,8 +505,6 @@ class Scaler(object):
     self._scalr_integraters[epoch] = integrater
 
     self.scaler_reset()
-
-    return
 
   # FIXME x1698 these not currently used yet
 
@@ -605,8 +603,8 @@ class Scaler(object):
     implementation.'''
 
     if self._scalr_integraters == { }:
-      raise RuntimeError, \
-            'no Integrater implementations assigned for scaling'
+      raise RuntimeError( \
+            'no Integrater implementations assigned for scaling')
 
     xname = self._scalr_xcrystal.get_name()
 
@@ -634,14 +632,14 @@ class Scaler(object):
     trigger transmogrification of files.'''
 
     if not format in ['mtz', 'sca', 'mtz_unmerged', 'sca_unmerged']:
-      raise RuntimeError, 'format %s unknown' % format
+      raise RuntimeError('format %s unknown' % format)
 
     self.scale()
 
     if format in self._scalr_scaled_reflection_files.keys():
       return self._scalr_scaled_reflection_files[format]
 
-    raise RuntimeError, 'unknown format %s' % format
+    raise RuntimeError('unknown format %s' % format)
 
   def get_scaled_merged_reflections(self):
     '''Return the reflection files and so on.'''

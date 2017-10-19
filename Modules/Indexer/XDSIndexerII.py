@@ -45,8 +45,6 @@ class XDSIndexerII(XDSIndexer):
 
     self._i_or_ii = None
 
-    return
-
   # helper functions
 
   def _index_select_images_ii(self):
@@ -55,7 +53,7 @@ class XDSIndexerII(XDSIndexer):
     phi_width = self.get_phi_width()
 
     if phi_width == 0.0:
-      raise RuntimeError, 'cannot use still images'
+      raise RuntimeError('cannot use still images')
 
     # use five degrees for the background calculation
 
@@ -77,9 +75,9 @@ class XDSIndexerII(XDSIndexer):
     min_images = PhilIndex.params.xia2.settings.input.min_images
 
     if len(images) < 3 and len(images) < min_images:
-      raise RuntimeError, \
+      raise RuntimeError( \
             'This INDEXER cannot be used for only %d images' % \
-            len(images)
+            len(images))
 
     # including > 360 degrees in indexing does not add fresh information
     start = min(images)
@@ -234,7 +232,7 @@ class XDSIndexerII(XDSIndexer):
         # pass done is FALSE however there should be a refined
         # P1 orientation matrix etc. available - so keep it!
 
-      except XDSException, e:
+      except XDSException as e:
         # inspect this - if we have complaints about not
         # enough reflections indexed, and we have a target
         # unit cell, and they are the same, well ignore it
@@ -330,7 +328,7 @@ class XDSIndexerII(XDSIndexer):
 
       return 'ii'
 
-    except exceptions.Exception, e:
+    except exceptions.Exception as e:
       Debug.write(str(e))
       return 'ii'
 

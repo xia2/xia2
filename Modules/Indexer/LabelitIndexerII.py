@@ -110,7 +110,6 @@ class LabelitIndexerII(LabelitIndexer):
   def __init__(self, indxr_print=True):
     super(LabelitIndexerII, self).__init__(indxr_print=indxr_print)
     self._primitive_unit_cell = []
-    return
 
   def _index_prepare(self):
     # prepare to do some autoindexing
@@ -135,8 +134,6 @@ class LabelitIndexerII(LabelitIndexer):
 
       Debug.write('%7.2f %7.2f %7.2f %6.2f %6.2f %6.2f' % \
                   tuple(self._primitive_unit_cell))
-
-    return
 
   def _index_select_images(self):
     '''Select correct images based on image headers. This will in
@@ -168,8 +165,6 @@ class LabelitIndexerII(LabelitIndexer):
       if spots > 10:
         self.add_indexer_image_wedge(image)
 
-    return
-
   def _index(self):
     '''Actually index the diffraction pattern. Note well that
     this is not going to compute the matrix...'''
@@ -177,7 +172,7 @@ class LabelitIndexerII(LabelitIndexer):
     # acknowledge this program
 
     if not self._indxr_images:
-      raise RuntimeError, 'No good spots found on any images'
+      raise RuntimeError('No good spots found on any images')
 
     Citations.cite('labelit')
     Citations.cite('distl')
@@ -269,7 +264,7 @@ class LabelitIndexerII(LabelitIndexer):
 
     try:
       index.run()
-    except RuntimeError, e:
+    except RuntimeError as e:
 
       if self._refine_beam is False:
         raise e
@@ -310,7 +305,7 @@ class LabelitIndexerII(LabelitIndexer):
     # check the RMSD from the triclinic unit cell
     if self._solutions[1]['rmsd'] > 1.0 and False:
       # don't know when this is useful - but I know when it is not!
-      raise RuntimeError, 'high RMSD for triclinic solution'
+      raise RuntimeError('high RMSD for triclinic solution')
 
     # configure the "right" solution
     self._solution = self.get_solution()
@@ -419,15 +414,11 @@ class LabelitIndexerII(LabelitIndexer):
         self)
 
     if status is None:
-
       # basis is primitive
-
       return
 
     if status is False:
-
       # basis is centred, and passes test
-
       return
 
     # ok need to update internals...
@@ -441,5 +432,3 @@ class LabelitIndexerII(LabelitIndexer):
     self._indxr_replace(lattice, cell)
 
     self._indxr_payload['mosflm_orientation_matrix'] = matrix
-
-    return

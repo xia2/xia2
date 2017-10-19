@@ -146,8 +146,8 @@ class DefaultDriver(object):
     if full_path:
       self._executable = full_path
     else:
-      raise NotAvailableError, 'executable %s does not exist in PATH' % \
-            executable
+      raise NotAvailableError('executable %s does not exist in PATH' % \
+            executable)
 
   def get_executable(self):
     '''Get the name of the executable.'''
@@ -232,7 +232,7 @@ class DefaultDriver(object):
     '''Set the command line which wants to be run.'''
 
     if not type(command_line) == type([]):
-      raise RuntimeError, 'command line should be a list'
+      raise RuntimeError('command line should be a list')
 
     self._command_line = command_line
 
@@ -278,7 +278,7 @@ class DefaultDriver(object):
     interactive job, if batch start the batch job. This implementation
     will fail because youre not supposed to use it!'''
 
-    raise RuntimeError, 'Do not use the DefaultDriver class directly'
+    raise NotImplementedError('Do not use the DefaultDriver class directly')
 
   def check(self):
     '''Check that the running process is ok - this is an optional
@@ -301,7 +301,7 @@ class DefaultDriver(object):
 
     try:
       error_python_traceback(records)
-    except Exception, e:
+    except Exception:
       raise RuntimeError('%s terminated with an error: see %s for more details' %(
         os.path.basename(self._executable), self.get_log_file()))
 
@@ -322,7 +322,7 @@ class DefaultDriver(object):
   def _input(self, record):
     '''Pass record into the child programs standard input.'''
 
-    raise RuntimeError, 'Do not use the DefaultDriver class directly'
+    raise NotImplementedError('Do not use the DefaultDriver class directly')
 
   def input(self, record, newline = True):
     '''Pass record into child program via _input & copying mechanism.'''
@@ -342,7 +342,7 @@ class DefaultDriver(object):
   def _output(self):
     '''Pass record from the child programs standard output.'''
 
-    raise RuntimeError, 'Do not use the DefaultDriver class directly'
+    raise NotImplementedError('Do not use the DefaultDriver class directly')
 
   def output(self):
     '''Pull a record from the child program via _output.'''
@@ -411,7 +411,7 @@ class DefaultDriver(object):
   def close(self):
     '''Close the standard input channel.'''
 
-    raise RuntimeError, 'Do not use the DefaultDriver class directly'
+    raise NotImplementedError('Do not use the DefaultDriver class directly')
 
   def close_wait(self):
     '''Close the standard input channel and wait for the standard
@@ -457,7 +457,7 @@ class DefaultDriver(object):
   def kill(self):
     '''Kill the child process.'''
 
-    raise RuntimeError, 'Do not use the DefaultDriver class directly'
+    raise NotImplementedError('Do not use the DefaultDriver class directly')
 
   def cleanup(self):
     pass
@@ -472,7 +472,7 @@ class DefaultDriver(object):
     '''The acrual implementation - this MUST be overridden - at the
     very least return 0.'''
 
-    raise RuntimeError, 'Do not use the DefaultDriver class directly'
+    raise NotImplementedError('Do not use the DefaultDriver class directly')
 
   # debugging methods
 
@@ -503,5 +503,5 @@ if __name__ == '__main__':
     d = DefaultDriver()
     d.start()
     print 'You should never see this message'
-  except RuntimeError, e:
+  except RuntimeError:
     print 'All is well'

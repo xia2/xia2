@@ -58,14 +58,10 @@ class MosflmIndexer(IndexerSingleSweep):
     self._mosflm_autoindex_thresh = None
     #self._mosflm_spot_file = None
 
-    return
-
   def _index_prepare(self):
 
     if self._indxr_images == []:
       self._index_select_images()
-
-    return
 
   def _index_select_images(self):
     '''Select correct images based on image headers.'''
@@ -85,8 +81,6 @@ class MosflmIndexer(IndexerSingleSweep):
     for image in selected_images:
       Debug.write('Selected image %s' % image)
       self.add_indexer_image_wedge(image)
-
-    return
 
   def _index_select_images_small_molecule(self):
     '''Select correct images based on image headers. This one is for
@@ -112,8 +106,6 @@ class MosflmIndexer(IndexerSingleSweep):
 
       Debug.write('Selected image %s' % image_number)
       self.add_indexer_image_wedge(image_number)
-
-    return
 
   def _index(self):
     '''Implement the indexer interface.'''
@@ -280,16 +272,14 @@ class MosflmIndexer(IndexerSingleSweep):
             Chatter.write(
                 'Mosflm autoindexing did not select ' +
                 'correct (target) unit cell')
-            raise RuntimeError, \
-                  'something horrible happened in indexing'
+            raise RuntimeError('something horrible happened in indexing')
 
-    except RuntimeError, e:
+    except RuntimeError as e:
       # check if mosflm rejected a solution we have it
       if 'horribl' in str(e):
         # ok it did - time to break out the big guns...
         if not self._indxr_input_cell:
-          raise RuntimeError, \
-                'error in solution selection when not preset'
+          raise RuntimeError('error in solution selection when not preset')
 
         # XXX FIXME
         self._mosflm_autoindex_sol = _get_indexing_solution_number(
@@ -363,7 +353,6 @@ class MosflmIndexer(IndexerSingleSweep):
 
     experiment_list = ExperimentList([experiment])
     self.set_indexer_experiment_list(experiment_list)
-    return
 
   def _index_finish(self):
     '''Check that the autoindexing gave a convincing result, and
@@ -397,5 +386,3 @@ class MosflmIndexer(IndexerSingleSweep):
     self._indxr_replace(lattice, cell)
 
     self._indxr_payload['mosflm_orientation_matrix'] = matrix
-
-    return

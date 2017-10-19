@@ -41,24 +41,21 @@ def Printpeaks(DriverType = None):
       self._image = None
       self._peaks = { }
 
-      return
-
     def set_image(self, image):
       '''Set an image to read the header of.'''
       self._image = image
       self._peaks = { }
-      return
 
     def get_maxima(self):
       '''Run diffdump, printpeaks to get a list of diffraction maxima
       at their image positions, to allow for further analysis.'''
 
       if not self._image:
-        raise RuntimeError, 'image not set'
+        raise RuntimeError('image not set')
 
       if not os.path.exists(self._image):
-        raise RuntimeError, 'image %s does not exist' % \
-              self._image
+        raise RuntimeError('image %s does not exist' % \
+              self._image)
 
       dd = Diffdump()
       dd.set_image(self._image)
@@ -101,11 +98,11 @@ def Printpeaks(DriverType = None):
       this to a histogram.'''
 
       if not self._image:
-        raise RuntimeError, 'image not set'
+        raise RuntimeError('image not set')
 
       if not os.path.exists(self._image):
-        raise RuntimeError, 'image %s does not exist' % \
-              self._image
+        raise RuntimeError('image %s does not exist' % \
+              self._image)
 
       self.add_command_line(self._image)
       self.start()
@@ -167,11 +164,11 @@ def Printpeaks(DriverType = None):
 
     def screen(self):
       if not self._image:
-        raise RuntimeError, 'image not set'
+        raise RuntimeError('image not set')
 
       if not os.path.exists(self._image):
-        raise RuntimeError, 'image %s does not exist' % \
-              self._image
+        raise RuntimeError('image %s does not exist' % \
+              self._image)
 
       self.add_command_line('-th')
       self.add_command_line('10')
@@ -207,11 +204,11 @@ def Printpeaks(DriverType = None):
       '''Just get the list of peaks out, as (x, y, i).'''
 
       if not self._image:
-        raise RuntimeError, 'image not set'
+        raise RuntimeError('image not set')
 
       if not os.path.exists(self._image):
-        raise RuntimeError, 'image %s does not exist' % \
-              self._image
+        raise RuntimeError('image %s does not exist' % \
+              self._image)
 
       self.add_command_line(self._image)
       self.start()

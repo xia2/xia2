@@ -55,7 +55,6 @@ def Reindex(DriverType = None):
       '''Set the spacegroup to reindex the reflections to.'''
 
       self._spacegroup = spacegroup
-      return
 
     def set_operator(self, operator):
       '''Set the reindexing operator for mapping from in to out.'''
@@ -64,7 +63,6 @@ def Reindex(DriverType = None):
       if operator is not None:
         operator = operator.replace('*', '')
       self._operator = operator
-      return
 
     def get_cell(self):
       return self._cell
@@ -81,7 +79,7 @@ def Reindex(DriverType = None):
       self.check_hklout()
 
       if not self._spacegroup and not self._operator:
-        raise RuntimeError, 'reindex requires spacegroup or operator'
+        raise RuntimeError('reindex requires spacegroup or operator')
 
       self.start()
 
@@ -101,10 +99,10 @@ def Reindex(DriverType = None):
       try:
         self.check_for_errors()
 
-      except RuntimeError, e:
+      except RuntimeError as e:
         try:
           os.remove(self.get_hklout())
-        except:
+        except Exception:
           pass
 
         raise e
@@ -135,7 +133,7 @@ def Reindex(DriverType = None):
       self.check_hklout()
 
       if not self._spacegroup and not self._operator:
-        raise RuntimeError, 'reindex requires spacegroup or operator'
+        raise RuntimeError('reindex requires spacegroup or operator')
 
       if self._operator:
         self._operator = self._operator.replace('[', '').replace(']', '')
@@ -174,10 +172,10 @@ def Reindex(DriverType = None):
       try:
         self.check_for_errors()
 
-      except RuntimeError, e:
+      except RuntimeError as e:
         try:
           os.remove(self.get_hklout())
-        except:
+        except Exception:
           pass
 
         raise e

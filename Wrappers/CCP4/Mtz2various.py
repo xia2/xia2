@@ -69,10 +69,10 @@ def Mtz2various(DriverType = None):
         self.check_for_errors()
         self.check_ccp4_errors()
 
-      except RuntimeError, e:
+      except RuntimeError:
         try:
           os.remove(self.get_hklout())
-        except:
+        except Exception:
           pass
 
     def convert_shelx(self, unmerged = False):
@@ -101,10 +101,10 @@ def Mtz2various(DriverType = None):
         self.check_for_errors()
         self.check_ccp4_errors()
 
-      except RuntimeError, e:
+      except RuntimeError:
         try:
           os.remove(self.get_hklout())
-        except:
+        except Exception:
           pass
 
   return Mtz2variousWrapper()

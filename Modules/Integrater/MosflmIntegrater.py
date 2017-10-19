@@ -69,8 +69,6 @@ class MosflmIntegrater(Integrater):
 
     self._mosflm_gain = None
 
-    return
-
   def to_dict(self):
     obj = super(MosflmIntegrater, self).to_dict()
     import inspect
@@ -107,8 +105,6 @@ class MosflmIntegrater(Integrater):
 
     self.set_integrater_parameters(
       {'mosflm': self._intgr_refiner.get_refiner_parameters('mosflm')})
-
-    return
 
   def _integrate(self):
     '''Implement the integrater interface.'''
@@ -157,12 +153,12 @@ class MosflmIntegrater(Integrater):
             '%s %s %s %s INTEGRATE' % (pname, xname, dname, sweep),
             self._mosflm_hklout)
 
-    except IntegrationError, e:
+    except IntegrationError as e:
       if 'negative mosaic spread' in str(e):
         if self._mosflm_postref_fix_mosaic:
           Chatter.write(
               'Negative mosaic spread - stopping integration')
-          raise BadLatticeError, 'negative mosaic spread'
+          raise BadLatticeError('negative mosaic spread')
 
         Chatter.write(
             'Negative mosaic spread - rerunning integration')
@@ -218,7 +214,7 @@ class MosflmIntegrater(Integrater):
     refinr = self.get_integrater_refiner()
 
     if not refinr.get_refiner_payload('mosflm_orientation_matrix'):
-      raise RuntimeError, 'unexpected situation in indexing'
+      raise RuntimeError('unexpected situation in indexing')
 
     lattice = refinr.get_refiner_lattice()
     spacegroup_number = lattice_to_spacegroup(lattice)
@@ -329,7 +325,7 @@ class MosflmIntegrater(Integrater):
 
     try:
       integrater.run()
-    except RuntimeError, e:
+    except RuntimeError as e:
       if 'integration failed: reason unknown' in str(e):
         Chatter.write('Mosflm has failed in integration')
         message = 'The input was:\n\n'
@@ -356,7 +352,7 @@ class MosflmIntegrater(Integrater):
 
     if integrater.get_bgsig_too_large():
       if not self._mosflm_refine_profiles:
-        raise RuntimeError, 'BGSIG error with profiles fixed'
+        raise RuntimeError('BGSIG error with profiles fixed')
 
       Debug.write(
           'BGSIG error detected - try fixing profile...')
@@ -389,7 +385,7 @@ class MosflmIntegrater(Integrater):
         self._mosflm_rerun_integration = True
 
     if not self._mosflm_hklout:
-      raise RuntimeError, 'processing abandoned'
+      raise RuntimeError('processing abandoned')
 
     self._intgr_batches_out = integrater.get_batches_out()
 
@@ -490,9 +486,9 @@ class MosflmIntegrater(Integrater):
       parallel = nframes // 15
 
     if not parallel:
-      raise RuntimeError, 'parallel not set'
+      raise RuntimeError('parallel not set')
     if parallel < 2:
-      raise RuntimeError, 'parallel not parallel: %s' % parallel
+      raise RuntimeError('parallel not parallel: %s' % parallel)
 
     jobs = []
     hklouts = []
@@ -679,7 +675,7 @@ class MosflmIntegrater(Integrater):
       mosaics.extend(job.get_mosaic_spreads())
 
       if min(mosaics) < 0:
-        raise IntegrationError, 'negative mosaic spread: %s' % min(mosaic)
+        raise IntegrationError('negative mosaic spread: %s' % min(mosaic))
 
       if (job.get_detector_gain_error() and not
           (self.get_imageset().get_detector()[0].get_type() == 'SENSOR_PAD')):
@@ -706,7 +702,7 @@ class MosflmIntegrater(Integrater):
 
       if job.get_bgsig_too_large():
         if not self._mosflm_refine_profiles:
-          raise RuntimeError, 'BGSIG error with profiles fixed'
+          raise RuntimeError('BGSIG error with profiles fixed')
 
         Debug.write(
             'BGSIG error detected - try fixing profile...')
@@ -803,7 +799,7 @@ class MosflmIntegrater(Integrater):
 
   def _reorder_cell_refinement_images(self):
     if not self._mosflm_cell_ref_images:
-      raise RuntimeError, 'no cell refinement images to reorder'
+      raise RuntimeError('no cell refinement images to reorder')
 
     hashmap = { }
 
@@ -815,18 +811,14 @@ class MosflmIntegrater(Integrater):
 
     cell_ref_images = [(k, hashmap[k]) for k in keys]
     self._mosflm_cell_ref_images = cell_ref_images
-    return
 
   def set_integrater_resolution(self, dmin, dmax, user = False):
     if user:
       Integrater.set_integrater_resolution(self, dmin, dmax, user)
-    return
 
   def set_integrater_high_resolution(self, dmin, user = False):
     if user:
       Integrater.set_integrater_high_resolution(self, dmin, user)
-    return
 
   def set_integrater_low_resolution(self, dmax, user = False):
     self._intgr_reso_low = dmax
-    return

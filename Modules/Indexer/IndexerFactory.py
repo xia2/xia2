@@ -51,10 +51,10 @@ def IndexerForXSweep(xsweep, json_file=None):
   # check what is going on
 
   if xsweep is None:
-    raise RuntimeError, 'XSweep instance needed'
+    raise RuntimeError('XSweep instance needed')
 
   if not xsweep.__class__.__name__ == 'XSweep':
-    raise RuntimeError, 'XSweep instance needed'
+    raise RuntimeError('XSweep instance needed')
 
   # if the xsweep has a crystal lattice defined, use mosflm which
   # FIXME needs to be modified to take a crystal cell as input.
@@ -185,13 +185,12 @@ def Indexer(preselection = None):
       try:
         indexer = idxfactory()
         Debug.write('Using %s' % idxdisplayname)
-      except NotAvailableError, e:
+      except NotAvailableError:
         if preselection:
-          raise RuntimeError, \
-              'preselected indexer %s not available' % idxname
+          raise RuntimeError('preselected indexer %s not available' % idxname)
 
   if not indexer:
-    raise RuntimeError, 'no indexer implementations found'
+    raise RuntimeError('no indexer implementations found')
 
   return indexer
 

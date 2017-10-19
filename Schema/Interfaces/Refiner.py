@@ -82,7 +82,7 @@ class Refiner(object):
         for k_, v_ in v.iteritems():
           try:
             v_new[float(k_)] = v_
-          except ValueError, e:
+          except ValueError:
             v_new[k_] = v_
         v = v_new
       if isinstance(v, dict):
@@ -119,10 +119,10 @@ class Refiner(object):
     return cls.from_dict(obj)
 
   def _refine_prepare(self):
-    raise RuntimeError, 'overload me'
+    raise NotImplementedError('overload me')
 
   def _refine(self):
-    raise RuntimeError, 'overload me'
+    raise NotImplementedError('overload me')
 
   def _refine_finish(self):
     pass
@@ -206,8 +206,8 @@ class Refiner(object):
     implementation.'''
 
     if self._refinr_indexers == { }:
-      raise RuntimeError, \
-            'no Indexer implementations assigned for refinement'
+      raise RuntimeError( \
+            'no Indexer implementations assigned for refinement')
 
     while not self.get_refiner_finish_done():
       while not self.get_refiner_done():

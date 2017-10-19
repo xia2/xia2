@@ -34,8 +34,8 @@ class SunGridEngineClusterDriver(DefaultClusterDriver):
     for o in sge_stderr_list:
       if 'command not found' in o:
         missing_program = o.split(':')[2].strip()
-        raise RuntimeError, 'executable "%s" missing' % \
-              missing_program
+        raise RuntimeError('executable "%s" missing' % \
+              missing_program)
 
   def submit(self):
     '''This is where most of the work will be done - in here is
@@ -57,9 +57,9 @@ class SunGridEngineClusterDriver(DefaultClusterDriver):
     if stderr:
       # something probably went wrong
       if 'error opening' in stderr:
-        raise RuntimeError, 'executable "%s" does not exist' % \
+        raise RuntimeError('executable "%s" does not exist' % \
               stdout.split('\n')[0].split(':')[0].replace(
-            'error opening ', '')
+            'error opening ', ''))
 
     # probably everything is ok then
 

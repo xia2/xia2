@@ -130,7 +130,7 @@ def Chooch(DriverType = None):
       '''Get the fp, fpp for a wavelength.'''
 
       if not self._data:
-        raise RuntimeError, 'data array empty'
+        raise RuntimeError('data array empty')
 
       fp = 0.0
       fpp = 0.0
@@ -210,7 +210,7 @@ if __name__ == '__main__':
                                           edges[key]['fp'],
                                           edges[key]['fpp'],
                                           edges[key]['wave'])
-      except exceptions.Exception, e:
+      except exceptions.Exception as e:
         print 'failed (%s)' % str(e)
 
 

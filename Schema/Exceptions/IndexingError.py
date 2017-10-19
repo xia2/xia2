@@ -20,6 +20,3 @@ class IndexingError(Exception):
 
   def __str__(self):
     return repr(self.parameter)
-
-if __name__ == '__main__':
-  raise IndexingError, 'mosaic estimation failed'

@@ -63,8 +63,6 @@ class XWavelength(object):
 
     self._sweeps = []
 
-    return
-
   # serialization functions
 
   def to_dict(self):
@@ -126,7 +124,7 @@ class XWavelength(object):
 
       try:
         s.get_integrater_intensities()
-      except Exception, e:
+      except Exception as e:
         if failover:
           Chatter.write('Processing sweep %s failed: %s' % \
                         (s.get_name(), str(e)))
@@ -151,7 +149,7 @@ class XWavelength(object):
 
       try:
         result += '%s\n' % s.get_output()
-      except Exception, e:
+      except Exception as e:
         if failover:
           Chatter.write('Processing sweep %s failed: %s' % \
                         (s.get_name(), str(e)))
@@ -182,17 +180,14 @@ class XWavelength(object):
 
   def set_wavelength(self, wavelength):
     if self._wavelength != 0.0:
-      raise RuntimeError, 'setting wavelength when already set'
+      raise RuntimeError('setting wavelength when already set')
     self._wavelength = wavelength
-    return
 
   def set_resolution_high(self, resolution_high):
     self._resolution_high = resolution_high
-    return
 
   def set_resolution_low(self, resolution_low):
     self._resolution_low = resolution_low
-    return
 
   def get_resolution_high(self):
     return self._resolution_high
@@ -260,10 +255,8 @@ class XWavelength(object):
 
     try:
       self._sweeps.remove(sweep)
-    except ValueError, e:
+    except ValueError:
       pass
-
-    return
 
   def _get_integraters(self):
     integraters = []

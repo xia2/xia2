@@ -47,44 +47,35 @@ class CCP4InterRadiationDamageDetector(object):
     self._hklout = None
     self._anomalous = False
 
-    return
-
   def set_hklin(self, hklin):
     self._hklin = hklin
-    return
 
   def set_anomalous(self, anomalous):
     self._anomalous = anomalous
-    return
 
   def get_hklin(self):
     return self._hklin
 
   def check_hklin(self):
     if self._hklin is None:
-      raise RuntimeError, 'hklin not defined'
+      raise RuntimeError('hklin not defined')
     if not os.path.exists(self._hklin):
-      raise RuntimeError, 'hklin %s does not exist' % self._hklin
-
-    return
+      raise RuntimeError('hklin %s does not exist' % self._hklin)
 
   def set_hklout(self, hklout):
     self._hklout = hklout
-    return
 
   def get_hklout(self):
     return self._hklout
 
   def check_hklout(self):
     if self._hklout is None:
-      raise RuntimeError, 'hklout not defined'
+      raise RuntimeError('hklout not defined')
 
     # check that these are different files!
 
     if self._hklout == self._hklin:
-      raise RuntimeError, 'hklout and hklin are the same file'
-
-    return
+      raise RuntimeError('hklout and hklin are the same file')
 
   def set_working_directory(self, working_directory):
     self._working_directory = working_directory
@@ -114,7 +105,7 @@ class CCP4InterRadiationDamageDetector(object):
 
     try:
       scaleit.scaleit()
-    except RuntimeError, e:
+    except RuntimeError:
       return ()
 
     statistics = scaleit.get_statistics()

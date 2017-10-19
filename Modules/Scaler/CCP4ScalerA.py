@@ -360,8 +360,8 @@ class CCP4ScalerA(Scaler):
             Chatter.write('Lattice %s ok for sweep %s' % \
                           (correct_lattice, sname))
           elif state == refiner.LATTICE_IMPOSSIBLE:
-            raise RuntimeError, 'Lattice %s impossible for %s' \
-                  % (correct_lattice, sname)
+            raise RuntimeError('Lattice %s impossible for %s' \
+                  % (correct_lattice, sname))
           elif state == refiner.LATTICE_POSSIBLE:
             Chatter.write('Lattice %s assigned for sweep %s' % \
                           (correct_lattice, sname))
@@ -524,7 +524,7 @@ class CCP4ScalerA(Scaler):
 
     if len(pointgroup_set) > 1 and \
        not probably_twinned:
-      raise RuntimeError, 'non uniform pointgroups'
+      raise RuntimeError('non uniform pointgroups')
 
     if len(pointgroup_set) > 1:
       Debug.write('Probably twinned, pointgroups: %s' % \
@@ -667,14 +667,14 @@ class CCP4ScalerA(Scaler):
       md.dump()
 
       if md.get_batches() and False:
-        raise RuntimeError, 'reference reflection file %s unmerged' % \
-              self._reference
+        raise RuntimeError('reference reflection file %s unmerged' % \
+              self._reference)
 
       datasets = md.get_datasets()
 
       if len(datasets) > 1 and False:
-        raise RuntimeError, 'more than one dataset in %s' % \
-              self._reference
+        raise RuntimeError('more than one dataset in %s' % \
+              self._reference)
 
       # then get the unit cell, lattice etc.
 
@@ -745,8 +745,8 @@ class CCP4ScalerA(Scaler):
         datasets = md.get_datasets()
 
         if len(datasets) > 1:
-          raise RuntimeError, 'more than one dataset in %s' % \
-                si.get_reflections()
+          raise RuntimeError('more than one dataset in %s' % \
+                si.get_reflections())
 
         # then get the unit cell, lattice etc.
 
@@ -754,8 +754,8 @@ class CCP4ScalerA(Scaler):
         cell = md.get_dataset_info(datasets[0])['cell']
 
         if lattice != reference_lattice:
-          raise RuntimeError, 'lattices differ in %s and %s' % \
-                (self._reference, si.get_reflections())
+          raise RuntimeError('lattices differ in %s and %s' % \
+                (self._reference, si.get_reflections()))
 
         Debug.write('Cell: %.2f %.2f %.2f %.2f %.2f %.2f' % cell)
         Debug.write('Ref:  %.2f %.2f %.2f %.2f %.2f %.2f' % reference_cell)
@@ -763,9 +763,9 @@ class CCP4ScalerA(Scaler):
         for j in range(6):
           if math.fabs((cell[j] - reference_cell[j]) /
                        reference_cell[j]) > 0.1:
-            raise RuntimeError, \
+            raise RuntimeError( \
                   'unit cell parameters differ in %s and %s' % \
-                  (self._reference, si.get_reflections())
+                  (self._reference, si.get_reflections()))
 
     # ---------- SORT TOGETHER DATA ----------
 
@@ -848,7 +848,7 @@ class CCP4ScalerA(Scaler):
 
       try:
         sc.scale()
-      except RuntimeError, e:
+      except RuntimeError as e:
 
         es = str(e)
 
@@ -922,7 +922,7 @@ class CCP4ScalerA(Scaler):
     # check in here that there is actually some data to scale..!
 
     if len(resolution_info) == 0:
-      raise RuntimeError, 'no resolution info'
+      raise RuntimeError('no resolution info')
 
     for epoch in epochs:
 
@@ -1179,7 +1179,7 @@ class CCP4ScalerA(Scaler):
     if not PhilIndex.params.dials.fast_mode:
       try:
         self._generate_absorption_map(sc)
-      except StandardError, e:
+      except StandardError as e:
         # Map generation may fail for number of reasons, eg. matplotlib borken
         Debug.write("Could not generate absorption map (%s)" % e)
 
@@ -1358,7 +1358,7 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
         epochs.append(epoch)
 
     if len(epochs) > 1:
-      raise RuntimeError, 'batch %d found in multiple sweeps' % batch
+      raise RuntimeError('batch %d found in multiple sweeps' % batch)
 
     return epochs[0]
 

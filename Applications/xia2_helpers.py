@@ -61,7 +61,7 @@ def process_one_sweep(args):
     xia2_integrate.run()
     output = get_sweep_output_only(xia2_integrate.get_all_output())
     success = True
-  except Exception, e:
+  except Exception as e:
     if failover:
       Chatter.write('Processing sweep %s failed: %s' % \
                     (sweep_id, str(e)))

@@ -146,14 +146,14 @@ class MosflmRefiner(Refiner):
 
         rms_deviations, br = self._mosflm_refine_cell(idxr)
 
-      except NegativeMosaicError, nme:
+      except NegativeMosaicError:
 
         if self._mosflm_cell_ref_double_mosaic:
 
           # reset flag; half mosaic; raise BadLatticeError
           Debug.write('Mosaic negative even x2 -> BadLattice')
           self._mosflm_cell_ref_double_mosaic = False
-          raise BadLatticeError, 'negative mosaic spread'
+          raise BadLatticeError('negative mosaic spread')
 
         else:
 
@@ -214,7 +214,7 @@ class MosflmRefiner(Refiner):
         if (ratio / (max(cycles) * len(images))) > \
            PhilIndex.params.xia2.settings.lattice_rejection_threshold and \
            not self.get_integrater_sweep().get_user_lattice():
-          raise BadLatticeError, 'incorrect lattice constraints'
+          raise BadLatticeError('incorrect lattice constraints')
 
       else:
         Debug.write('Cell refinement in P1 failed... or was not run')
@@ -310,7 +310,7 @@ class MosflmRefiner(Refiner):
     spacegroup_number = lattice_to_spacegroup(test_lattice)
 
     if not self._mosflm_cell_ref_images:
-      raise RuntimeError, 'wedges must be assigned already'
+      raise RuntimeError('wedges must be assigned already')
 
     open(os.path.join(self.get_working_directory(),
                       'test-xiaindex-%s.mat' % lattice),
@@ -401,7 +401,7 @@ class MosflmRefiner(Refiner):
     #idxr = self.get_integrater_indexer()
 
     if not idxr.get_indexer_payload('mosflm_orientation_matrix'):
-      raise RuntimeError, 'unexpected situation in indexing'
+      raise RuntimeError('unexpected situation in indexing')
 
     lattice = idxr.get_indexer_lattice()
     mosaic = idxr.get_indexer_mosaic()

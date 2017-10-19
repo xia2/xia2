@@ -167,22 +167,18 @@ def kill_process(process):
 
     win32api.TerminateProcess(handle, -1)
 
-    return
-
   else:
     '''A wrapper for the os.kill() function.'''
     pid = process.pid
 
     os.kill(pid, signal.SIGKILL)
 
-    return
-
 def error_library_not_loaded(record):
   '''Look in a record (output from program) for signs that this died
   due to a missing library.'''
 
   if 'dyld: Library not loaded' in record:
-    raise RuntimeError, record
+    raise RuntimeError(record)
 
 def error_no_program(record):
   '''Look in a record (output from program) for signs that this died
@@ -190,12 +186,12 @@ def error_no_program(record):
 
   if os.name == 'nt':
     if 'is not recognized as an internal' in record:
-      raise RuntimeError, 'executable "%s" does not exist' % \
-            record.split('\'')[1]
+      raise RuntimeError('executable "%s" does not exist' % \
+            record.split('\'')[1])
   else:
     if 'command not found' in record:
-      raise RuntimeError, 'executable "%s" does not exist' % \
-            record.split()[-4].replace(':', '')
+      raise RuntimeError('executable "%s" does not exist' % \
+            record.split()[-4].replace(':', ''))
 
 def error_missing_library(record):
   '''Look in the record for indications that a library was missing.'''
@@ -214,11 +210,11 @@ def error_missing_library(record):
           break
 
       if missing_library:
-        raise RuntimeError, 'child missing library %s' % \
-              missing_library
+        raise RuntimeError('child missing library %s' % \
+              missing_library)
       else:
-        raise RuntimeError, 'child missing library (%s)' % \
-              record.strip()
+        raise RuntimeError('child missing library (%s)' % \
+              record.strip())
 
 def error_segv(record):
   '''Look in record for signs of a segmentation fault.'''
@@ -230,7 +226,7 @@ def error_segv(record):
 
   else:
     if 'Segmentation fault' in record:
-      raise RuntimeError, 'child segmentation fault'
+      raise RuntimeError('child segmentation fault')
 
 def error_fp(record):
   '''Look for signs of a floating point exception.'''
@@ -239,7 +235,7 @@ def error_fp(record):
 
   else:
     if 'Floating Exception' in record:
-      raise RuntimeError, 'child killed'
+      raise RuntimeError('child killed')
 
 def error_kill(record):
   '''Look in record for signs of a killed child process.'''
@@ -251,7 +247,7 @@ def error_kill(record):
 
   else:
     if 'Killed' in record:
-      raise RuntimeError, 'child killed'
+      raise RuntimeError('child killed')
 
 def error_abrt(record):
   '''Look in record for signs of a abort signal.'''
@@ -268,10 +264,10 @@ def error_abrt(record):
     name = os.uname()[0]
 
     if name == 'Linux' and 'Aborted' in record:
-      raise RuntimeError, 'process failed'
+      raise RuntimeError('process failed')
 
     if name == 'Darwin' and 'Abort trap' in record:
-      raise RuntimeError, 'process failed'
+      raise RuntimeError('process failed')
 
 def error_python_traceback(records):
   import string
@@ -310,7 +306,7 @@ def check_return_code(code):
 
   if os.name == 'nt':
     if code == 3:
-      raise RuntimeError, 'child error'
+      raise RuntimeError('child error')
 
   else:
     if code >= 0:
@@ -323,13 +319,13 @@ def check_return_code(code):
     abrt = signal.SIGABRT * -1
 
     if code == segv:
-      raise RuntimeError, 'child segmentation fault'
+      raise RuntimeError('child segmentation fault')
 
     if code == kill:
-      raise RuntimeError, 'child killed'
+      raise RuntimeError('child killed')
 
     if code == abrt:
-      raise RuntimeError, 'process failed'
+      raise RuntimeError('process failed')
 
 executable_exists_cache = { }
 

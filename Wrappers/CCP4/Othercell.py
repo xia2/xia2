@@ -43,25 +43,19 @@ def Othercell(DriverType = None):
       self._cells = { }
       self._reindex_ops = { }
 
-      return
-
     def set_cell(self, cell):
       self._initial_cell = cell
-
-      return
 
     def set_lattice(self, lattice):
       '''Set the full lattice - not just the centering operator!.'''
 
       self._initial_lattice_type = lattice[1].lower()
 
-      return
-
     def generate(self):
       if not self._initial_cell:
-        raise RuntimeError, 'must set the cell'
+        raise RuntimeError('must set the cell')
       if not self._initial_lattice_type:
-        raise RuntimeError, 'must set the lattice'
+        raise RuntimeError('must set the lattice')
 
       self.start()
 
@@ -101,7 +95,7 @@ def Othercell(DriverType = None):
 
         try:
           lattice = lauegroup_to_lattice(modded_lauegroup)
-        except KeyError, e:
+        except KeyError:
           # there was some kind of mess made of the othercell
           # output - this happens!
           continue

@@ -38,7 +38,7 @@ def detector_class_to_mosflm(detector_class):
   if 'saturn' in detector_class:
     return 'saturn'
 
-  raise RuntimeError, 'unknown detector class "%s"' % detector_class
+  raise RuntimeError('unknown detector class "%s"' % detector_class)
 
 def _resolution_estimate(ordered_pair_list, cutoff):
   '''Come up with a linearly interpolated estimate of resolution at
@@ -296,7 +296,7 @@ def _parse_mosflm_index_output(index_output_list):
 
   if correct_number == 0:
     # cannot find what Mosflm considers the correct answer
-    raise RuntimeError, 'cannot determine correct answer'
+    raise RuntimeError('cannot determine correct answer')
 
   keys = solutions.keys()
   keys.sort()
@@ -342,7 +342,7 @@ def _parse_mosflm_index_output(index_output_list):
   # this should raise a HorribleIndexingException or something
 
   if acceptable_rms == 0.0:
-    raise RuntimeError, 'something horribly bad has happened in indexing'
+    raise RuntimeError('something horribly bad has happened in indexing')
 
   # then print those which should be ok...
 

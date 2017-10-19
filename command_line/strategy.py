@@ -18,7 +18,7 @@ from xia2.lib.bits import auto_logfiler
 def run():
   try:
     check_environment()
-  except exceptions.Exception, e:
+  except exceptions.Exception as e:
     traceback.print_exc(file = open('xia2.error', 'w'))
     Chatter.write('Status: error "%s"' % str(e))
 
@@ -169,7 +169,7 @@ def run():
     with open('strategies.json', 'wb') as f:
       json.dump(results_all, f, indent=2)
 
-  except exceptions.Exception, e:
+  except exceptions.Exception as e:
     traceback.print_exc(file = open(os.path.join(cwd, 'xia2.error'), 'w'))
     Chatter.write('Status: error "%s"' % str(e))
   os.chdir(cwd)

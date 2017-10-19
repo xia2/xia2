@@ -39,14 +39,10 @@ def DistlSignalStrength(DriverType = None):
       self._statistics = { }
       self._peaks = []
 
-      return
-
     def set_image(self, image):
       '''Set an image for analysis.'''
 
       self._image = image
-
-      return
 
     def distl(self):
       '''Actually analyse the images.'''
@@ -80,8 +76,6 @@ def DistlSignalStrength(DriverType = None):
         if l[:3] == ['%Saturation,', 'Top', '50']:
           self._statistics[
               'saturation'] = float(l[-1])
-
-      return
 
     def find_peaks(self):
       '''Actually analyse the images.'''
@@ -138,7 +132,7 @@ def DistlSignalStrength(DriverType = None):
 if __name__ == '__main__':
 
   if len(sys.argv) < 2:
-    raise RuntimeError, '%s image' % sys.argv[0]
+    raise RuntimeError('%s image' % sys.argv[0])
 
   d = DistlSignalStrength()
   d.set_image(sys.argv[1])

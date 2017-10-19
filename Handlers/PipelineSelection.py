@@ -26,17 +26,17 @@ def check(key, value):
 
   if key == 'indexer':
     if not value in allowed_indexers:
-      raise RuntimeError, 'indexer %s unknown' % value
+      raise RuntimeError('indexer %s unknown' % value)
     return value
 
   if key == 'refiner':
     if not value in allowed_refiners:
-      raise RuntimeError, 'refiner %s unknown' % value
+      raise RuntimeError('refiner %s unknown' % value)
     return value
 
   if key == 'integrater':
     if not value in allowed_integraters:
-      raise RuntimeError, 'integrater %s unknown' % value
+      raise RuntimeError('integrater %s unknown' % value)
     if value == 'mosflm':
       return 'mosflmr'
     if value == 'xds':
@@ -45,10 +45,8 @@ def check(key, value):
 
   if key == 'scaler':
     if not value in allowed_scalers:
-      raise RuntimeError, 'scaler %s unknown' % value
+      raise RuntimeError('scaler %s unknown' % value)
     return value
-
-  return
 
 preferences = { }
 
@@ -69,12 +67,10 @@ def add_preference(key, value):
 
   if key in preferences:
     if preferences[key] != value:
-      raise RuntimeError, 'setting %s to %s: already %s' % \
-            (key, value, preferences[key])
+      raise RuntimeError('setting %s to %s: already %s' % \
+            (key, value, preferences[key]))
 
   preferences[key] = value
-
-  return
 
 def search_for_preferences():
   '''Search for a preferences file, first in HOME then here.'''

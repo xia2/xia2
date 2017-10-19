@@ -59,9 +59,9 @@ def locate_maxima(image):
       peaks = dss.find_peaks()
 
       if not peaks:
-        raise RuntimeError, 'no peaks found'
+        raise RuntimeError('no peaks found')
 
-    except Exception, e:
+    except Exception:
       use_distl = False
 
   if not use_distl:

@@ -101,7 +101,7 @@ def lattice_to_spacegroup_number(lattice):
                                    'cI':197}
 
   if not lattice in _lattice_to_spacegroup_number.keys():
-    raise RuntimeError, 'lattice %s unknown' % lattice
+    raise RuntimeError('lattice %s unknown' % lattice)
 
   return _lattice_to_spacegroup_number[lattice]
 

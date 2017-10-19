@@ -51,7 +51,6 @@ def mend_pointless_xml(xml_file):
     assert(len(tokens) == 3)
     result.append('%sCenProb%s/CenProb%s' % tuple(tokens))
   open(xml_file, 'w').write('\n'.join(result))
-  return
 
 def Pointless(DriverType = None):
   '''A factory for PointlessWrapper classes.'''
@@ -106,11 +105,9 @@ def Pointless(DriverType = None):
 
     def set_scale_factor(self, scale_factor):
       self._scale_factor = scale_factor
-      return
 
     def set_hklref(self, hklref):
       self._hklref = hklref
-      return
 
     def get_hklref(self):
       return self._hklref
@@ -119,27 +116,24 @@ def Pointless(DriverType = None):
       self._pname = pname
       self._xname = xname
       self._dname = dname
-      return
 
     def check_hklref(self):
       if self._hklref is None:
-        raise RuntimeError, 'hklref not defined'
+        raise RuntimeError('hklref not defined')
       if not os.path.exists(self._hklref):
-        raise RuntimeError, 'hklref %s does not exist' % self._hklref
+        raise RuntimeError('hklref %s does not exist' % self._hklref)
 
     def set_xdsin(self, xdsin):
-
       self._xdsin = xdsin
-      return
 
     def get_xdsin(self):
       return self._xdsin
 
     def check_xdsin(self):
       if self._xdsin is None:
-        raise RuntimeError, 'xdsin not defined'
+        raise RuntimeError('xdsin not defined')
       if not os.path.exists(self._xdsin):
-        raise RuntimeError, 'xdsin %s does not exist' % self._xdsin
+        raise RuntimeError('xdsin %s does not exist' % self._xdsin)
 
     def set_correct_lattice(self, lattice):
       '''In a rerunning situation, set the correct lattice, which will
@@ -147,14 +141,12 @@ def Pointless(DriverType = None):
       program...'''
 
       if self._lattice_to_laue == { }:
-        raise RuntimeError, 'no lattice to lauegroup mapping'
+        raise RuntimeError('no lattice to lauegroup mapping')
 
       if lattice not in self._lattice_to_laue:
-        raise RuntimeError, 'lattice %s not possible' % lattice
+        raise RuntimeError('lattice %s not possible' % lattice)
 
       self._input_laue_group = self._lattice_to_laue[lattice]
-
-      return
 
     def sum_mtz(self, summedlist):
       '''Sum partials in an MTZ file from Mosflm to a text file.'''
@@ -193,13 +185,12 @@ def Pointless(DriverType = None):
         self.input('exclude batch %d to %d' % (0, first - 1))
       self.input('exclude batch %d to %d' % (last + 1, 9999999))
       self.close_wait()
-      return
 
     def xds_to_mtz(self):
       '''Use pointless to convert XDS file to MTZ.'''
 
       if not self._xdsin:
-        raise RuntimeError, 'XDSIN not set'
+        raise RuntimeError('XDSIN not set')
 
       self.check_hklout()
 
@@ -228,8 +219,6 @@ def Pointless(DriverType = None):
       if self._xdsin:
         from xia2.Wrappers.XDS import XDS
         XDS.add_xds_version_to_mtz_history(self.get_hklout())
-
-      return
 
     def decide_pointgroup(self, ignore_errors=False, batches=None):
       '''Decide on the correct pointgroup for hklin.'''
@@ -298,7 +287,7 @@ def Pointless(DriverType = None):
           if ignore_errors:
             fatal_error = True
           else:
-            raise RuntimeError, 'Pointless error: %s' % output[j+1].strip()
+            raise RuntimeError('Pointless error: %s' % output[j+1].strip())
         if 'Resolution range of Reference data and observed data do not' \
           in record and ignore_errors:
             fatal_error = True
@@ -349,11 +338,11 @@ def Pointless(DriverType = None):
           return 'ok'
 
         if '**** Incompatible symmetries ****' in o:
-          raise RuntimeError, \
-                                                'reindexing against a reference with different symmetry'
+          raise RuntimeError( \
+                'reindexing against a reference with different symmetry')
 
         if '***** Stopping because cell discrepancy between files' in o:
-                                        raise RuntimeError, 'incompatible unit cells between data sets'
+          raise RuntimeError('incompatible unit cells between data sets')
 
         if 'L-test suggests that the data may be twinned' in o:
           self._probably_twinned = True
@@ -376,8 +365,8 @@ def Pointless(DriverType = None):
 
         try:
           best = dom.getElementsByTagName('BestSolution')[0]
-        except IndexError, e:
-          raise RuntimeError, 'error getting solution from pointless'
+        except IndexError:
+          raise RuntimeError('error getting solution from pointless')
         self._pointgroup = best.getElementsByTagName(
             'GroupName')[0].childNodes[0].data
         self._confidence = float(best.getElementsByTagName(
@@ -405,7 +394,7 @@ def Pointless(DriverType = None):
 
         try:
           best = dom.getElementsByTagName('IndexScores')[0]
-        except IndexError, e:
+        except IndexError:
           Debug.write('Reindex not found in xml output')
 
           # check for this legend then
@@ -415,7 +404,7 @@ def Pointless(DriverType = None):
               found = True
 
           if not found:
-            raise RuntimeError, 'error finding solution'
+            raise RuntimeError('error finding solution')
 
           best = None
 
@@ -434,7 +423,7 @@ def Pointless(DriverType = None):
             # hklref_pointgroup)
 
         if hklref_pointgroup == '':
-          raise RuntimeError, 'error finding HKLREF pointgroup'
+          raise RuntimeError('error finding HKLREF pointgroup')
 
         self._pointgroup = hklref_pointgroup
 

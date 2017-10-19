@@ -8,7 +8,7 @@ from libtbx.test_utils import open_tmp_directory
 try:
   dials_regression = libtbx.env.dist_path('dials_regression')
   have_dials_regression = True
-except KeyError, e:
+except KeyError:
   have_dials_regression = False
 
 

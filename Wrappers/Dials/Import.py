@@ -10,6 +10,8 @@
 
 from __future__ import absolute_import, division
 
+import os
+
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 
 def Import(DriverType = None):
@@ -45,7 +47,6 @@ def Import(DriverType = None):
       self._wavelength_tolerance = tolerance
 
     def get_sweep_filename(self):
-      import os
       if os.path.abspath(self._sweep_filename):
         return self._sweep_filename
       else:
@@ -62,7 +63,6 @@ def Import(DriverType = None):
 
     def fix_datablock_import(self):
       import json
-      import os
 
       datablock_json = self.get_sweep_filename()
 
@@ -93,7 +93,7 @@ def Import(DriverType = None):
       from xia2.Handlers.Streams import Debug
       if fast_mode:
         if not self._image_to_epoch:
-          raise RuntimeError, 'fast mode needs image_to_epoch map'
+          raise RuntimeError('fast mode needs image_to_epoch map')
         Debug.write('Running dials.import in fast mode')
       else:
         Debug.write('Running dials.import in slow mode')
@@ -131,13 +131,11 @@ def Import(DriverType = None):
       if fast_mode:
         self.fix_datablock_import()
 
-      import os
       assert(os.path.exists(os.path.join(self.get_working_directory(),
                                          self._sweep_filename)))
 
     def load_sweep_model(self):
       from dxtbx.serialize import load
-      import os
       return load.imageset_from_string(
         open(os.path.join(self.get_working_directory(),
                           self._sweep_filename), 'r').read())

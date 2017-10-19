@@ -155,7 +155,7 @@ def TwoThetaRefine(DriverType = None):
       if not os.path.isfile(self._output_cif):
         Chatter.write(
           "TwoTheta refinement failed, see log file for more details:\n  %s" % self.get_log_file())
-        raise RuntimeError, 'unit cell not refined'
+        raise RuntimeError('unit cell not refined')
 
       self.check_for_errors()
 

@@ -114,8 +114,6 @@ def XDSIdxref(DriverType=None, params=None):
 
       self._fraction_rmsd_rmsphi = None
 
-      return
-
     # getter and setter for input / output data
 
     def set_starting_frame(self, starting_frame):
@@ -126,37 +124,30 @@ def XDSIdxref(DriverType=None, params=None):
 
     def set_indexer_input_lattice(self, lattice):
       self._indxr_input_lattice = lattice
-      return
 
     def set_indexer_user_input_lattice(self, user):
       self._indxr_user_input_lattice = user
-      return
 
     def set_indexer_input_cell(self, cell):
       if not type(cell) == type(()):
-        raise RuntimeError, 'cell must be a 6-tuple de floats'
+        raise RuntimeError('cell must be a 6-tuple de floats')
 
       if len(cell) != 6:
-        raise RuntimeError, 'cell must be a 6-tuple de floats'
+        raise RuntimeError('cell must be a 6-tuple de floats')
 
       self._indxr_input_cell = tuple(map(float, cell))
-      return
 
     def set_a_axis(self, a_axis):
       self._a_axis = a_axis
-      return
 
     def set_b_axis(self, b_axis):
       self._b_axis = b_axis
-      return
 
     def set_c_axis(self, c_axis):
       self._c_axis = c_axis
-      return
 
     def set_input_data_file(self, name, data):
       self._input_data_files[name] = data
-      return
 
     def get_output_data_file(self, name):
       return self._output_data_files[name]
@@ -211,25 +202,21 @@ def XDSIdxref(DriverType=None, params=None):
 
     def set_refined_distance(self, refined_distance):
       self._refined_distance = refined_distance
-      return
 
     def set_refined_origin(self, refined_origin):
       self._refined_origin = refined_origin
-      return
 
     def get_refined_origin(self):
       return self._refined_origin
 
     def set_refined_beam_vector(self, refined_beam_vector):
       self._refined_beam_vector = refined_beam_vector
-      return
 
     def get_refined_beam_vector(self):
       return self._refined_beam_vector
 
     def set_refined_rotation_axis(self, refined_rotation_axis):
       self._refined_rotation_axis = refined_rotation_axis
-      return
 
     def get_refined_rotation_axis(self):
       return self._refined_rotation_axis
@@ -402,7 +389,7 @@ def XDSIdxref(DriverType=None, params=None):
       self._idxref_data = _parse_idxref_lp(lp)
 
       if not self._idxref_data:
-        raise RuntimeError, 'indexing failed'
+        raise RuntimeError('indexing failed')
 
       st = _parse_idxref_lp_subtree(lp)
 

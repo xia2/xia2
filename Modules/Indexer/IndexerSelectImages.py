@@ -63,7 +63,7 @@ def index_select_images_user(phi_width, images, out_stream):
 
       return images
 
-    except ValueError, e:
+    except ValueError:
       pass
 
   # should not reach here but...
@@ -93,7 +93,7 @@ def index_select_image_wedges_user(sweep_id, phi_width, images, out_stream):
 
       return images
 
-    except ValueError, e:
+    except ValueError:
       pass
 
   # should not reach here but...

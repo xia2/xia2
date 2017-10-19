@@ -30,7 +30,7 @@ class DefaultClusterDriver(DefaultDriver):
     super(DefaultClusterDriver, self).__init__()
 
     if os.name != 'posix':
-      raise RuntimeError, 'os "%s" not supported' % os.name
+      raise RuntimeError('os "%s" not supported' % os.name)
 
     DefaultDriver.__init__(self)
 
@@ -46,13 +46,9 @@ class DefaultClusterDriver(DefaultDriver):
 
     self._output_file = None
 
-    return
-
   def set_name(self, name):
     '''Set the name to something sensible.'''
     self._script_name = name
-
-    return
 
   def start(self):
     '''This is pretty meaningless in terms of running things through
@@ -63,11 +59,11 @@ class DefaultClusterDriver(DefaultDriver):
 
   def submit(self):
     '''Submit to the queue - this MUST be overloaded.'''
-    raise RuntimeError, 'do not use this class directly'
+    raise NotImplementedError('do not use this class directly')
 
   def cleanup(self):
     '''Cleanup after the job is finished.'''
-    raise RuntimeError, 'do not use this class directly'
+    raise NotImplementedError('do not use this class directly')
 
   def check(self):
     '''NULL overloading of the default check method.'''
@@ -80,8 +76,6 @@ class DefaultClusterDriver(DefaultDriver):
 
   def _input(self, record):
     self._script_standard_input.append(record)
-
-    return
 
   def _output(self):
     return self._output_file.readline()
@@ -131,9 +125,6 @@ class DefaultClusterDriver(DefaultDriver):
 
     self.cleanup()
 
-    return
-
   def kill(self):
     '''This is meaningless...'''
-
     pass

@@ -20,10 +20,10 @@ def remove_misfits(xdsin, xdsout):
   reflections (SD < 0.0) - write out the remains to xdsout.'''
 
   if xdsin == xdsout:
-    raise RuntimeError, 'xdsin and xdsout same file'
+    raise RuntimeError('xdsin and xdsout same file')
 
   if not os.path.exists(xdsin):
-    raise RuntimeError, 'xdsin does not exist'
+    raise RuntimeError('xdsin does not exist')
 
   ignored = 0
 

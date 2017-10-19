@@ -24,7 +24,7 @@ nmolparams = os.path.abspath(os.path.join(
           os.path.dirname(__file__), '..', 'Data', 'nmol-params.dat'))
 
 if not os.path.exists(nmolparams):
-  raise RuntimeError, 'nmol-params.dat not found'
+  raise RuntimeError('nmol-params.dat not found')
 
 def unit_cell_volume(cell_a, cell_b, cell_c,
                      cell_alpha, cell_beta, cell_gamma):
@@ -99,7 +99,6 @@ def compute_nmol_from_volume(volume, mass, resolution):
   file.close()
 
   if resolution > resolutions[-1]:
-    # raise RuntimeError, 'Resolution outside useful range'
     Chatter.write('Resolution lower than %s -> computing for %f' % \
                   (resolutions[-1], resolution))
     resolution = resolutions[-1]
@@ -217,10 +216,10 @@ if __name__ == '__main__':
                       'P 43 21 2', 1.8, 82)
 
   if nmol != 2:
-    raise RuntimeError, 'error in nmol per asu'
+    raise RuntimeError('error in nmol per asu')
 
   solvent = compute_solvent(96.0, 96.0, 36.75, 90.0, 90.0, 90.0,
                             'P 43 21 2', nmol, 82)
 
   if math.fabs(solvent - 0.46) > 0.1:
-    raise RuntimeError, 'error in solvent content'
+    raise RuntimeError('error in solvent content')

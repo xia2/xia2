@@ -28,8 +28,6 @@ class XDSScalerHelper(object):
   def __init__(self):
     self._working_directory = os.getcwd()
 
-    return
-
   def Pointless(self):
     '''Create a Pointless wrapper from _Pointless - set working directory
     and log file stuff as a part of this...'''
@@ -40,7 +38,6 @@ class XDSScalerHelper(object):
 
   def set_working_directory(self, working_directory):
     self._working_directory = working_directory
-    return
 
   def get_working_directory(self):
     return self._working_directory
@@ -82,7 +79,7 @@ class XDSScalerHelper(object):
         Debug.write('Set %d wavelength %f' % (set, wavelength))
 
     if len(wavelength_dict.keys()) > 1:
-      raise RuntimeError, 'more than one wavelength found'
+      raise RuntimeError('more than one wavelength found')
 
     return wavelength_dict[wavelength_dict.keys()[0]]
 
@@ -151,8 +148,8 @@ class XDSScalerHelper(object):
     for token in data_map.keys():
 
       if token not in project_info:
-        raise RuntimeError, 'project info for %s not available' % \
-              token
+        raise RuntimeError('project info for %s not available' % \
+              token)
 
       hklin = os.path.join(self.get_working_directory(),
                            data_map[token])

@@ -31,7 +31,7 @@ def windows_environment_vars_to_unix(token):
   the UNIX form ($WINDIR) for python environment token replacement.'''
 
   if token.count('%') % 2:
-    raise RuntimeError, 'must have even number of % tokens'
+    raise RuntimeError('must have even number of % tokens')
 
   in_env_variable = False
 

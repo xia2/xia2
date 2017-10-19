@@ -16,7 +16,7 @@ __doc__ = '''A small program which will raise an exception on startup,
 for testing of the XIA core.'''
 
 def run():
-  raise RuntimeError, 'program run'
+  raise RuntimeError('program run')
 
 if __name__ == '__main__':
   run()

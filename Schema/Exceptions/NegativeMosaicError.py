@@ -21,6 +21,3 @@ class NegativeMosaicError(Exception):
 
   def __str__(self):
     return repr(self.parameter)
-
-if __name__ == '__main__':
-  raise NegativeMosaicError, 'mosaicity = -0.02'

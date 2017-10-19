@@ -29,11 +29,9 @@ class InteractiveDriver(DefaultDriver):
 
     self._popen = None
 
-    return
-
   def start(self):
     if self._executable is None:
-      raise RuntimeError, 'no executable is set.'
+      raise RuntimeError('no executable is set.')
 
     command_line = []
     command_line.append(self._executable)
@@ -59,8 +57,6 @@ class InteractiveDriver(DefaultDriver):
       # program has stopped unexpectedly not just been instant
       pass
 
-    return
-
   def check(self):
     '''Overload the default check method.'''
 
@@ -72,11 +68,9 @@ class InteractiveDriver(DefaultDriver):
   def _input(self, record):
 
     if not self.check():
-      raise RuntimeError, 'child process has termimated'
+      raise RuntimeError('child process has termimated')
 
     self._popen.stdin.write(record)
-
-    return
 
   def _output(self):
     # need to put some kind of timeout facility on this...
@@ -94,16 +88,12 @@ class InteractiveDriver(DefaultDriver):
 
   def close(self):
     if not self.check():
-      raise RuntimeError, 'child process has termimated'
+      raise RuntimeError('child process has termimated')
 
     self._popen.stdin.close()
 
-    return
-
   def kill(self):
     kill_process(self._popen)
-
-    return
 
 if __name__ == '__main__':
   # run a test for segmentation fault

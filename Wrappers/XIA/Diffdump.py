@@ -135,7 +135,7 @@ def read_A200(image):
   '''Read the header from a Rigaku A200 image. This is to work around the
   diffdump program falling over with such images.'''
 
-  raise RuntimeError, 'this needs implementing!'
+  raise RuntimeError('this needs implementing!')
 
 # FIXME get proper specifications for these detectors...
 
@@ -216,7 +216,7 @@ def failover_full_cbf(cbf_file):
   elif 'adsc' in header['detector_class']:
     header['detector'] = 'adsc'
   else:
-    raise RuntimeError, 'unknown detector %s' % header['detector_class']
+    raise RuntimeError('unknown detector %s' % header['detector_class'])
 
   cbf_handle.rewind_datablock()
 
@@ -445,8 +445,8 @@ def failover_dxtbx(image_file):
     Debug.write('Using dxtbx format instance: %s' % iformat.__name__)
 
   if not iformat.understand(image_file):
-    raise RuntimeError, 'image file %s not understood by dxtbx' % \
-          image_file
+    raise RuntimeError('image file %s not understood by dxtbx' % \
+          image_file)
 
   last_format = iformat
 
@@ -558,7 +558,7 @@ def Diffdump(DriverType = None):
       '''Unpack a date string to a structure.'''
 
       if not datestring:
-        raise RuntimeError, 'empty date'
+        raise RuntimeError('empty date')
 
       if datestring == 'N/A':
         # we don't have the date!
@@ -646,19 +646,19 @@ def Diffdump(DriverType = None):
         return copy.deepcopy(self._header)
 
       if os.path.getsize(self._image) == 0:
-        raise RuntimeError, 'empty file: %s' % self._image
+        raise RuntimeError('empty file: %s' % self._image)
 
       if not self._previous_crashed:
         try:
           return self.readheader_diffdump()
-        except exceptions.Exception, e:
+        except exceptions.Exception:
           self._previous_crashed = True
 
       try:
         self._header = failover_dxtbx(self._image)
         HeaderCache.put(self._image, self._header)
         return copy.deepcopy(self._header)
-      except exceptions.Exception, e:
+      except exceptions.Exception:
         traceback.print_exc(file = sys.stdout)
 
     def readheader_diffdump(self):
@@ -669,8 +669,8 @@ def Diffdump(DriverType = None):
       # check that the input file exists..
 
       if not os.path.exists(self._image):
-        raise RuntimeError, 'image %s does not exist' % \
-              self._image
+        raise RuntimeError('image %s does not exist' % \
+              self._image)
 
       # consider using more recent code to read these images in
       # first instance, to replace diffdump
@@ -683,7 +683,7 @@ def Diffdump(DriverType = None):
           self._header = header
           HeaderCache.put(self._image, self._header)
           return copy.deepcopy(self._header)
-      except exceptions.Exception, e:
+      except exceptions.Exception:
         if '.cbf' in self._image[-4:]:
           header = failover_full_cbf(self._image)
           self._header = header
@@ -782,7 +782,7 @@ def Diffdump(DriverType = None):
               self._header['epoch'] = 0.0
               self._header['date'] = ''
 
-          except exceptions.Exception, e:
+          except exceptions.Exception as e:
 
             if debug:
               print '! error interpreting date: %s' % str(e)
@@ -856,7 +856,7 @@ def Diffdump(DriverType = None):
           try:
             two_theta = float(o.split(':')[1].split()[0])
             self._header['two_theta'] = two_theta * -1.0
-          except ValueError, e:
+          except ValueError:
             self._header['two_theta'] = 0.0
 
       # check to see if the beam centre needs to be converted
@@ -933,7 +933,7 @@ def Diffdump(DriverType = None):
         self._header['phi_end'] = osc_start + osc_range
 
       if detector == 'adsc' and abs(header['two_theta']) > 1.0:
-        raise RuntimeError, 'adsc + two-theta not supported'
+        raise RuntimeError('adsc + two-theta not supported')
 
       HeaderCache.put(self._image, self._header)
 
@@ -945,8 +945,8 @@ def Diffdump(DriverType = None):
       # check that the input file exists..
 
       if not os.path.exists(self._image):
-        raise RuntimeError, 'image %s does not exist' % \
-              self._image
+        raise RuntimeError('image %s does not exist' % \
+              self._image)
 
       self.add_command_line('-gain')
       self.add_command_line(self._image)

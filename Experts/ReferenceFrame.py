@@ -80,8 +80,8 @@ def xia2_to_mosflm(v):
 if __name__ == '__main__':
 
   if mosflm_to_xia2((1, 0, 0)) != [0, 0, -1]:
-    raise RuntimeError, 'transformation error i'
+    raise RuntimeError('transformation error i')
   if mosflm_to_xia2((0, 1, 0)) != [0, 1, 0]:
-    raise RuntimeError, 'transformation error j'
+    raise RuntimeError('transformation error j')
   if mosflm_to_xia2((0, 0, 1)) != [1, 0, 0]:
-    raise RuntimeError, 'transformation error k'
+    raise RuntimeError('transformation error k')

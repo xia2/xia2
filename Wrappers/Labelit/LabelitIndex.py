@@ -155,17 +155,11 @@ def LabelitIndex(DriverType = None, indxr_print = True):
       output = self.get_all_output()
 
       for o in output:
-        if 'No_Indexing_Solution' in o:
-          raise RuntimeError, 'indexing failed: %s' % \
-                o.split(':')[-1].strip()
-        if 'InputFileError' in o:
-          raise RuntimeError, 'indexing failed: %s' % \
-                o.split(':')[-1].strip()
-        if 'INDEXING UNRELIABLE' in o:
-          raise RuntimeError, 'indexing failed: %s' % \
-                o.split(':')[-1].strip()
-
-      return
+        if 'No_Indexing_Solution' in o or \
+           'InputFileError' in o or \
+           'INDEXING UNRELIABLE' in o:
+          raise RuntimeError('indexing failed: %s' % \
+                o.split(':')[-1].strip())
 
     def run(self):
       '''Run labelit.index'''
@@ -174,7 +168,7 @@ def LabelitIndex(DriverType = None, indxr_print = True):
       self._images.sort()
 
       if self._max_cell is None and len(self._images) > 4:
-        raise RuntimeError, 'cannot use more than 4 images'
+        raise RuntimeError('cannot use more than 4 images')
 
       #task = 'Autoindex from images:'
 
@@ -326,7 +320,7 @@ def LabelitIndex(DriverType = None, indxr_print = True):
       # we need to gather the output
 
       if counter >= len(output):
-        raise RuntimeError, 'error in indexing'
+        raise RuntimeError('error in indexing')
 
       # FIXME this needs to check the smilie status e.g.
       # ":)" or ";(" or "  ".

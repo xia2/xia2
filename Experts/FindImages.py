@@ -74,7 +74,7 @@ def template_regex(filename):
     break
 
   if not template:
-    raise RuntimeError, 'template not recognised for %s' %filename
+    raise RuntimeError('template not recognised for %s' %filename)
 
   return template, int(digits)
 
@@ -100,7 +100,7 @@ def image2template_old(filename):
 
   # check that the file name doesn't contain anything mysterious
   if filename.count('#'):
-    raise RuntimeError, '# characters in filename'
+    raise RuntimeError('# characters in filename')
 
   # the patterns in the order I want to test them
 
@@ -133,8 +133,7 @@ def image2template_old(filename):
 
       return patterns[pattern] % (prefix, number, exten)
 
-  raise RuntimeError, 'filename %s not understood as a template' % \
-        filename
+  raise RuntimeError('filename %s not understood as a template' % filename)
 
 def image2image(filename):
   return template_regex(filename)[1]
@@ -144,7 +143,7 @@ def image2image_old(filename):
 
   # check that the file name doesn't contain anything mysterious
   if filename.count('#'):
-    raise RuntimeError, '# characters in filename'
+    raise RuntimeError('# characters in filename')
 
   # the patterns in the order I want to test them
 
@@ -166,8 +165,7 @@ def image2image_old(filename):
 
       return int(number)
 
-  raise RuntimeError, 'filename %s not understood as a template' % \
-        filename
+  raise RuntimeError('filename %s not understood as a template' % filename)
 
 def image2template_directory(filename):
   '''Separate out the template and directory from an image name.'''
@@ -234,7 +232,7 @@ def template_directory_number2image(template, directory, number):
   # check that the number will fit in the template
 
   if (math.pow(10, length) - 1) < number:
-    raise RuntimeError, 'number too big for template'
+    raise RuntimeError('number too big for template')
 
   # construct a format statement to give the number part of the
   # template
@@ -255,7 +253,7 @@ def template_number2image(template, number):
   # check that the number will fit in the template
 
   if (math.pow(10, length) - 1) < number:
-    raise RuntimeError, 'number too big for template'
+    raise RuntimeError('number too big for template')
 
   format = '%%0%dd' % length
 
@@ -392,7 +390,7 @@ def ensure_no_batches_numbered_zero(template, images, offset):
 
   while min(images) == 0:
     if not prefix[-1] in string.digits:
-      raise RuntimeError, 'image 0 found matching %s' % template
+      raise RuntimeError('image 0 found matching %s' % template)
 
     add = int(prefix[-1]) * int(math.pow(10, hashes))
     offset -= add
@@ -426,7 +424,7 @@ def digest_template(template, images):
   try:
     template, images, offset = ensure_no_batches_numbered_zero(
         template, images, offset)
-  except RuntimeError, e:
+  except RuntimeError:
     Debug.write('Throwing away image 0 from template %s' % template)
     template, images, offset = ensure_no_batches_numbered_zero(
         template, images[1:], offset)

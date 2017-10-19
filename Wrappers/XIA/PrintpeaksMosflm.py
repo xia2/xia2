@@ -39,24 +39,21 @@ def PrintpeaksMosflm(DriverType = None):
       self._image = None
       self._peaks = { }
 
-      return
-
     def set_image(self, image):
       '''Set an image to read the header of.'''
       self._image = image
       self._peaks = { }
-      return
 
     def get_maxima(self, threshold = 5.0):
       '''Run diffdump, printpeaks to get a list of diffraction maxima
       at their image positions, to allow for further analysis.'''
 
       if not self._image:
-        raise RuntimeError, 'image not set'
+        raise RuntimeError('image not set')
 
       if not os.path.exists(self._image):
-        raise RuntimeError, 'image %s does not exist' % \
-              self._image
+        raise RuntimeError('image %s does not exist' % \
+              self._image)
 
       dd = Diffdump()
       dd.set_image(self._image)
@@ -113,11 +110,11 @@ def PrintpeaksMosflm(DriverType = None):
       this to a histogram.'''
 
       if not self._image:
-        raise RuntimeError, 'image not set'
+        raise RuntimeError('image not set')
 
       if not os.path.exists(self._image):
-        raise RuntimeError, 'image %s does not exist' % \
-              self._image
+        raise RuntimeError('image %s does not exist' % \
+              self._image)
 
       _peaks = self.get_maxima()
       peaks = []
@@ -165,11 +162,11 @@ def PrintpeaksMosflm(DriverType = None):
 
     def screen(self):
       if not self._image:
-        raise RuntimeError, 'image not set'
+        raise RuntimeError('image not set')
 
       if not os.path.exists(self._image):
-        raise RuntimeError, 'image %s does not exist' % \
-              self._image
+        raise RuntimeError('image %s does not exist' % \
+              self._image)
 
       _peaks = self.get_maxima()
 
@@ -185,54 +182,6 @@ def PrintpeaksMosflm(DriverType = None):
       return 'ok'
 
   return PrintpeaksMosflmWrapper()
-
-if __name__ == '__main-old__':
-
-  import time
-
-  def printer(peaks):
-    keys = peaks.keys()
-    keys.sort()
-    for k in keys:
-      print '%.5f %d' % (k, peaks[k])
-
-  directory = os.path.join(os.environ['XIA2_ROOT'],
-                           'Data', 'Test', 'Images')
-
-  if len(sys.argv) == 1:
-    p = Printpeaks()
-    image = os.path.join(directory, '12287_1_E1_001.img')
-    p.set_image(image)
-    peaks = p.printpeaks()
-    printer(peaks)
-
-  else:
-
-    # for image in sys.argv[1:]:
-    if 1 == 0:
-
-      print image
-      p = Printpeaks()
-      p.set_image(image)
-
-      peaks = p.printpeaks()
-      printer(peaks)
-
-      thresh = p.threshold(200)
-      print '200 peak threshold: %f' % thresh
-
-    t0 = time.time()
-    count = 0
-    for image in sys.argv[1:]:
-      count += 1
-      p = Printpeaks()
-      p.set_image(image)
-      status = p.screen()
-      print os.path.split(image)[-1], status
-    t1 = time.time()
-
-    print 'Total time: %.1f' % (t1 - t0)
-    print 'Per image: %.3f' % ((t1 - t0) / count)
 
 if __name__ == '__main__':
   # run a test of some of the new code...

@@ -89,7 +89,7 @@ class _Flags(object):
     freer_file = os.path.abspath(freer_file)
 
     if not os.path.exists(freer_file):
-      raise RuntimeError, '%s does not exist' % freer_file
+      raise RuntimeError('%s does not exist' % freer_file)
 
     from xia2.Modules.FindFreeFlag import FindFreeFlag
     from xia2.Handlers.Streams import Debug

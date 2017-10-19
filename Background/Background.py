@@ -24,7 +24,7 @@ class Background(threading.Thread):
     threading.Thread.__init__(self)
 
     if not hasattr(o, m):
-      raise RuntimeError, 'method missing from object'
+      raise RuntimeError('method missing from object')
 
     self._object = o
     self._method = m
@@ -32,8 +32,6 @@ class Background(threading.Thread):
     self._exception = None
     self._traceback = None
     self._result = None
-
-    return
 
   def run(self):
     '''Run o.m with arguments a in background.'''
@@ -45,11 +43,9 @@ class Background(threading.Thread):
         self._result = task(self._arguments)
       else:
         self._result = task()
-    except exceptions.Exception, e:
+    except exceptions.Exception as e:
       self._traceback = traceback.format_exc()
       self._exception = e
-
-    return
 
   def get_traceback(self):
     return self._traceback

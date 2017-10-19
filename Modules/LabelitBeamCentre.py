@@ -40,7 +40,7 @@ def compute_beam_centre(sweep, working_directory=None):
     ls.set_working_directory(working_directory)
     ls.setup_from_imageset(sweep.get_imageset())
     beam_centre = ls.get_indexer_beam_centre()
-  except exceptions.Exception, e:
+  except exceptions.Exception:
     # do not have labelit installed?
     # need to check the exception
     # import sys

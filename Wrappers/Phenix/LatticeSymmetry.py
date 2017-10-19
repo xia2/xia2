@@ -38,8 +38,7 @@ def LatticeSymmetry(DriverType = None):
       self.set_executable('iotbx.lattice_symmetry')
 
       if 'phaser-1.3' in self.get_executable():
-        raise RuntimeError, \
-              'unsupported version of lattice_symmetry'
+        raise RuntimeError('unsupported version of lattice_symmetry')
 
       self._cell = None
       self._spacegroup = None
@@ -52,15 +51,11 @@ def LatticeSymmetry(DriverType = None):
       self._reindex_ops = { }
       self._reindex_ops_basis = { }
 
-      return
-
     def set_cell(self, cell):
       self._cell = cell
-      return
 
     def set_spacegroup(self, spacegroup):
       self._spacegroup = spacegroup
-      return
 
     def set_lattice(self, lattice):
       lattice_to_spacegroup = {'aP':1,
@@ -92,10 +87,10 @@ def LatticeSymmetry(DriverType = None):
 
     def generate(self):
       if not self._cell:
-        raise RuntimeError, 'no unit cell specified'
+        raise RuntimeError('no unit cell specified')
 
       if not self._spacegroup:
-        raise RuntimeError, 'no spacegroup specified'
+        raise RuntimeError('no spacegroup specified')
 
       self.add_command_line('--unit_cell=%f,%f,%f,%f,%f,%f' % \
                             tuple(self._cell))
@@ -198,10 +193,10 @@ def LatticeSymmetry(DriverType = None):
 
     def generate_primative_reindex(self):
       if not self._cell:
-        raise RuntimeError, 'no unit cell specified'
+        raise RuntimeError('no unit cell specified')
 
       if not self._spacegroup:
-        raise RuntimeError, 'no spacegroup specified'
+        raise RuntimeError('no spacegroup specified')
 
       self.add_command_line('--unit_cell=%f,%f,%f,%f,%f,%f' % \
                             tuple(self._cell))

@@ -30,8 +30,6 @@ class Mtzdump(object):
     self._reflections = 0
     self._resolution_range = (0, 0)
 
-    return
-
   def set_working_directory(self, wd):
     pass
 
@@ -40,7 +38,6 @@ class Mtzdump(object):
 
   def set_hklin(self, hklin):
     self._hklin = hklin
-    return
 
   def dump(self):
     '''Actually obtain the contents of the mtz file header.'''
@@ -90,8 +87,6 @@ class Mtzdump(object):
         self._header['dataset_info'][
             dataset_id]['id'] = dataset_number
 
-    return
-
   def dump_batch_headers(self):
     '''Actually print the contents of the mtz file batch headers.'''
 
@@ -105,8 +100,6 @@ class Mtzdump(object):
       umat = batch.umat()
 
       self._batch_header[current_batch] = {'umat': umat}
-
-    return
 
   def get_batch_header(self, batch):
     return copy.deepcopy(self._batch_header[batch])
@@ -169,7 +162,7 @@ if __name__ == '__main__':
   if len(sys.argv) > 1:
     m.set_hklin(sys.argv[1])
   else:
-    raise RuntimeError, '%s hklin.mtz' % sys.argv[0]
+    raise RuntimeError('%s hklin.mtz' % sys.argv[0])
 
   m.dump()
   print m.get_spacegroup()

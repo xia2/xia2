@@ -101,7 +101,7 @@ def generate_xia2_html(xinfo, filename='xia2.html', params=None, args=[]):
       if params.xtriage_analysis:
         try:
           xtriage_success, xtriage_warnings, xtriage_danger = report.xtriage_report()
-        except Exception, e:
+        except Exception as e:
           from xia2.Handlers.Phil import PhilIndex
           if PhilIndex.params.xia2.settings.small_molecule == True:
             print "Xtriage output not available: %s" % str(e)
@@ -349,7 +349,7 @@ def make_logfile_html(logfile):
         for graph_name, html in table_to_c3js_charts(table).iteritems():
           rst.append('.. raw:: html')
           rst.append('\n    '.join(html.split('\n')))
-      except StandardError, e:
+      except StandardError as e:
         Chatter.write('=' * 80)
         Chatter.write('Error (%s) while processing table' % str(e))
         Chatter.write("  '%s'" % table.title)

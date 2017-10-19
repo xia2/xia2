@@ -39,18 +39,14 @@ def LabelitMosflmMatrix(DriverType = None):
       self._solution = None
       self._mosflm_beam = None
 
-      return
-
     def set_solution(self, solution):
       self._solution = solution
-
-      return
 
     def calculate(self):
       '''Compute matrix for solution #.'''
 
       if self._solution is None:
-        raise RuntimeError, 'solution not selected'
+        raise RuntimeError('solution not selected')
 
       task = 'Compute matrix for solution %02d' % self._solution
 

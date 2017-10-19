@@ -40,8 +40,6 @@ class XInfo(object):
 
     self._validate()
 
-    return
-
   def get_output(self):
     '''Generate a string representation of the project.'''
 
@@ -93,7 +91,7 @@ class XInfo(object):
       if 'END PROJECT' in record:
         if not self._project == record.replace(
             'END PROJECT', '').strip():
-          raise RuntimeError, 'error parsing END PROJECT record'
+          raise RuntimeError('error parsing END PROJECT record')
 
       # next look for crystals
       if 'BEGIN CRYSTAL ' in record:
@@ -110,8 +108,6 @@ class XInfo(object):
       # that's everything, because parse_crystal handles
       # the rest...
 
-    return
-
   def _parse_crystal(self, crystal_records):
     '''Parse the interesting information out of the crystal
     description.'''
@@ -126,12 +122,12 @@ class XInfo(object):
         # a call to this method
 
         if crystal != '':
-          raise RuntimeError, 'error in BEGIN CRYSTAL record'
+          raise RuntimeError('error in BEGIN CRYSTAL record')
 
         crystal = record.replace('BEGIN CRYSTAL ', '').strip()
         if crystal in self._crystals:
-          raise RuntimeError, 'crystal %s already exists' % \
-                crystal
+          raise RuntimeError('crystal %s already exists' % \
+                crystal)
 
         # cardinality:
         #
@@ -167,7 +163,7 @@ class XInfo(object):
           record = crystal_records[i]
 
         if self._crystals[crystal]['sequence'] != '':
-          raise RuntimeError, 'error two SEQUENCE records found'
+          raise RuntimeError('error two SEQUENCE records found')
 
         self._crystals[crystal]['sequence'] = sequence
 
@@ -217,9 +213,9 @@ class XInfo(object):
 
         # check that this is a new wavelength definition
         if wavelength in self._crystals[crystal]['wavelengths']:
-          raise RuntimeError, \
+          raise RuntimeError( \
                 'wavelength %s already exists for crystal %s' % \
-                (wavelength, crystal)
+                (wavelength, crystal))
 
         self._crystals[crystal]['wavelengths'][wavelength] = { }
         i += 1
@@ -252,7 +248,7 @@ class XInfo(object):
             lst = record.split()
 
             if len(lst) < 2 or len(lst) > 3:
-              raise RuntimeError, 'resolution dmin [dmax]'
+              raise RuntimeError('resolution dmin [dmax]')
 
             if len(lst) == 2:
               dmin = float(lst[1])
@@ -275,12 +271,12 @@ class XInfo(object):
             continue
 
           if len(record.split()) == 1:
-            raise RuntimeError, 'missing value for token %s' % \
-                  record.split()[0]
+            raise RuntimeError('missing value for token %s' % \
+                  record.split()[0])
 
           try:
             value = float(record.split()[1])
-          except ValueError, e:
+          except ValueError:
             value = record.replace(record.split()[0], '').strip()
 
           self._crystals[crystal]['wavelengths'][
@@ -303,9 +299,9 @@ class XInfo(object):
           start_end = None
 
         if sweep in self._crystals[crystal]['sweeps']:
-          raise RuntimeError, \
+          raise RuntimeError( \
                 'sweep %s already exists for crystal %s' % \
-                (sweep, crystal)
+                (sweep, crystal))
 
         self._crystals[crystal]['sweeps'][sweep] = { }
         self._crystals[crystal]['sweeps'][sweep][
@@ -335,16 +331,16 @@ class XInfo(object):
           if 'WAVELENGTH' == record.split()[0]:
             wavelength = record.replace('WAVELENGTH', '').strip()
             if not wavelength in self._crystals[crystal]['wavelengths'].keys():
-              raise RuntimeError, \
+              raise RuntimeError( \
                     'wavelength %s unknown for crystal %s' % \
-                    (wavelength, crystal)
+                    (wavelength, crystal))
             self._crystals[crystal]['sweeps'][sweep]['wavelength'] = wavelength
 
           elif 'SAMPLE' == record.split()[0]:
             sample = record.replace('SAMPLE ', '').strip()
             if not sample in self._crystals[crystal]['samples'].keys():
-              raise RuntimeError, \
-                  'sample %s unknown for crystal %s' % (sample, crystal)
+              raise RuntimeError( \
+                  'sample %s unknown for crystal %s' % (sample, crystal))
             self._crystals[crystal]['sweeps'][sweep]['sample'] = sample
 
           elif 'BEAM' == record.split()[0]:
@@ -366,8 +362,8 @@ class XInfo(object):
             if 'start_end' not in self._crystals[crystal]['sweeps'][sweep]:
               start_end = map(int, record.split()[1:])
               if len(start_end) != 2:
-                raise RuntimeError, \
-                      'START_END requires two parameters (start and end), not "%s"' % record
+                raise RuntimeError( \
+                      'START_END requires two parameters (start and end), not "%s"' % record)
               self._crystals[crystal]['sweeps'][sweep]['start_end'] = start_end
 
           elif 'EXCLUDE' == record.split()[0]:
@@ -376,14 +372,14 @@ class XInfo(object):
             else:
               excluded_region = map(float, record.split()[1:])
               if len(excluded_region) != 2:
-                raise RuntimeError, \
+                raise RuntimeError( \
                       'EXCLUDE upper lower, not "%s". \
-                       eg. EXCLUDE 2.28 2.22' % record
+                       eg. EXCLUDE 2.28 2.22' % record)
               if excluded_region[0] <= excluded_region[1]:
-                raise RuntimeError, \
+                raise RuntimeError( \
                       'EXCLUDE upper lower, where upper \
                        must be greater than lower (not "%s").\n\
-                       eg. EXCLUDE 2.28 2.22' % record
+                       eg. EXCLUDE 2.28 2.22' % record)
               self._crystals[crystal]['sweeps'][sweep]['excluded_regions'].append(
                 excluded_region)
 

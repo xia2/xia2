@@ -36,6 +36,6 @@ def run(message):
 
 if __name__ == '__main__':
   if len(sys.argv) < 2:
-    raise RuntimeError, '%s message' % sys.argv[0]
+    raise RuntimeError('%s message' % sys.argv[0])
 
   run(sys.argv[1])

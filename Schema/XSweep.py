@@ -245,7 +245,7 @@ class XSweep(object):
             continue
 
         if error:
-          raise RuntimeError, 'problem with sweep %s' % self._name
+          raise RuntimeError('problem with sweep %s' % self._name)
 
       # + read the image header information into here?
       #   or don't I need it? it would be useful for checking
@@ -278,8 +278,8 @@ class XSweep(object):
                      wavelength.get_wavelength()) > 0.0001:
           # format = 'wavelength for sweep %s does not ' + \
           # 'match wavelength %s'
-          # raise RuntimeError, format  % \
-          # (name, wavelength.get_name())
+          # raise RuntimeError(format  % \
+          # (name, wavelength.get_name()))
 
           format = 'Header wavelength for sweep %s different' + \
                    ' to assigned value (%4.2f vs. %4.2f)'
@@ -347,7 +347,7 @@ class XSweep(object):
         set_mosflm_beam_centre(self.get_imageset().get_detector(),
                                self.get_imageset().get_beam(),
                                beam)
-      except AssertionError, e:
+      except AssertionError as e:
         Debug.write('Error setting mosflm beam centre: %s' % e)
 
     if distance is not None:
@@ -654,7 +654,7 @@ class XSweep(object):
 
       else:
         if self._user_cell:
-          raise RuntimeError, 'cannot assign cell without lattice'
+          raise RuntimeError('cannot assign cell without lattice')
 
       self._indexer.set_working_directory(working_directory)
 
@@ -708,7 +708,7 @@ class XSweep(object):
 
       #else:
         #if self._user_cell:
-          #raise RuntimeError, 'cannot assign cell without lattice'
+          #raise RuntimeError('cannot assign cell without lattice')
 
       self._refiner.set_working_directory(working_directory)
 
@@ -874,7 +874,7 @@ class XSweep(object):
         Debug.write('Stored integration parameters' + \
                     ' for crystal %s' % crystal_id)
 
-    except exceptions.Exception, e:
+    except exceptions.Exception as e:
       # Chatter.write('Error storing parameters for crystal %s' % \
       # crystal_id)
       # Chatter.write('%s' % str(e))

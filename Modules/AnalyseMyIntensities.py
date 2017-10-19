@@ -58,8 +58,7 @@ class AnalyseMyIntensities(object):
   def compute_average_cell(self, hklin_list):
 
     if len(hklin_list) == 0:
-      raise RuntimeError, \
-            'no input reflection files to compute cell from'
+      raise RuntimeError('no input reflection files to compute cell from')
 
     cell_a = 0.0
     cell_b = 0.0
@@ -82,14 +81,13 @@ class AnalyseMyIntensities(object):
       datasets = mtzdump.get_datasets()
       reflections = mtzdump.get_reflections()
       if len(datasets) > 1:
-        raise RuntimeError, 'more than one dataset in %s' % hklin
+        raise RuntimeError('more than one dataset in %s' % hklin)
       info = mtzdump.get_dataset_info(datasets[0])
 
       if not sg:
         sg = info['spacegroup']
-      else:
-        if sg != info['spacegroup']:
-          raise RuntimeError, 'inconsistent spacegroup'
+      elif sg != info['spacegroup']:
+        raise RuntimeError('inconsistent spacegroup')
 
       # check that this u/c is in agreement with the others -
       # allow 10% grace (!)
@@ -105,22 +103,22 @@ class AnalyseMyIntensities(object):
       else:
         if math.fabs(n_input * info['cell'][0] - cell_a) / \
                cell_a > 0.1:
-          raise RuntimeError, 'inconsistent unit cell'
+          raise RuntimeError('inconsistent unit cell')
         if math.fabs(n_input * info['cell'][1] - cell_b) / \
                cell_b > 0.1:
-          raise RuntimeError, 'inconsistent unit cell'
+          raise RuntimeError('inconsistent unit cell')
         if math.fabs(n_input * info['cell'][2] - cell_c) / \
                cell_c > 0.1:
-          raise RuntimeError, 'inconsistent unit cell'
+          raise RuntimeError('inconsistent unit cell')
         if math.fabs(n_input * info['cell'][3] - cell_alpha) / \
                cell_alpha > 0.1:
-          raise RuntimeError, 'inconsistent unit cell'
+          raise RuntimeError('inconsistent unit cell')
         if math.fabs(n_input * info['cell'][4] - cell_beta) / \
                cell_beta > 0.1:
-          raise RuntimeError, 'inconsistent unit cell'
+          raise RuntimeError('inconsistent unit cell')
         if math.fabs(n_input * info['cell'][5] - cell_gamma) / \
                cell_gamma > 0.1:
-          raise RuntimeError, 'inconsistent unit cell'
+          raise RuntimeError('inconsistent unit cell')
 
         cell_a += info['cell'][0] * reflections
         cell_b += info['cell'][1] * reflections

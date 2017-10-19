@@ -67,10 +67,10 @@ def unroll_datasets(datasets):
       unrolled.append(dataset)
       continue
     if len(tokens) != 4:
-      raise RuntimeError, '/path/to/image_0001.cbf:start:end[:chunk]'
+      raise RuntimeError('/path/to/image_0001.cbf:start:end[:chunk]')
     start, end, incr = map(int, tokens[1:])
     if start + incr > end:
-      raise RuntimeError, 'chunk size greater than total'
+      raise RuntimeError('chunk size greater than total')
     for s in range(start, end, incr):
       e = s + incr - 1
       if e > end:
@@ -95,8 +95,6 @@ class _CommandLine(object):
 
     # deprecated options prior to removal
     self._xinfo = None
-
-    return
 
   def get_argv(self):
     return self._argv
@@ -131,8 +129,8 @@ class _CommandLine(object):
     for token in sys.argv:
       try:
         token.encode('ascii')
-      except UnicodeDecodeError, e:
-        raise RuntimeError, 'non-ascii characters in input'
+      except UnicodeDecodeError:
+        raise RuntimeError('non-ascii characters in input')
 
     self._argv = copy.deepcopy(sys.argv)
 
@@ -168,7 +166,7 @@ class _CommandLine(object):
     PhilIndex.merge_phil(working_phil)
     try:
       params = PhilIndex.get_python_object()
-    except RuntimeError, e:
+    except RuntimeError as e:
       raise Sorry(e)
 
     # sanity check / interpret Auto in input
@@ -321,7 +319,7 @@ class _CommandLine(object):
     if params.xia2.settings.scale.freer_file is not None:
       freer_file = os.path.abspath(params.xia2.settings.scale.freer_file)
       if not os.path.exists(freer_file):
-        raise RuntimeError, '%s does not exist' % freer_file
+        raise RuntimeError('%s does not exist' % freer_file)
       from xia2.Modules.FindFreeFlag import FindFreeFlag
       column = FindFreeFlag(freer_file)
       Debug.write('FreeR_flag column in %s found: %s' % \
@@ -333,7 +331,7 @@ class _CommandLine(object):
       reference_reflection_file = os.path.abspath(
         params.xia2.settings.scale.reference_reflection_file)
       if not os.path.exists(reference_reflection_file):
-        raise RuntimeError, '%s does not exist' % reference_reflection_file
+        raise RuntimeError('%s does not exist' % reference_reflection_file)
       PhilIndex.update(
         "xia2.settings.scale.reference_reflection_file=%s" %reference_reflection_file)
 
@@ -351,7 +349,7 @@ class _CommandLine(object):
         if len(tokens[0]) == 1:
           tokens = ['%s:%s' % (tokens[0], tokens[1])] + tokens[2:]
         if len(tokens) != 3:
-          raise RuntimeError, '/path/to/image_0001.cbf:start:end'
+          raise RuntimeError('/path/to/image_0001.cbf:start:end')
 
         dataset = tokens[0]
         start_end = int(tokens[1]), int(tokens[2])
@@ -427,9 +425,7 @@ class _CommandLine(object):
         was_nonsense = True
 
     if was_nonsense:
-      raise RuntimeError, nonsense
-
-    return
+      raise RuntimeError(nonsense)
 
   # command line parsers, getters and help functions.
 

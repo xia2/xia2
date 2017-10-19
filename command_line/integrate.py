@@ -15,7 +15,7 @@ from xia2.Applications.xia2_main import check_environment, help
 def run():
   try:
     check_environment()
-  except exceptions.Exception, e:
+  except exceptions.Exception as e:
     traceback.print_exc(file = open('xia2.error', 'w'))
     Chatter.write('Status: error "%s"' % str(e))
 
@@ -30,7 +30,7 @@ def run():
     xia2_main(stop_after='integrate')
     Chatter.write('Status: normal termination')
 
-  except exceptions.Exception, e:
+  except exceptions.Exception as e:
     traceback.print_exc(file = open(os.path.join(wd, 'xia2.error'), 'w'))
     Chatter.write('Status: error "%s"' % str(e))
 

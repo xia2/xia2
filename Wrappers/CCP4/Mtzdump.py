@@ -30,7 +30,7 @@ if __name__ == '__main__':
   if len(sys.argv) > 1:
     m.set_hklin(sys.argv[1])
   else:
-    raise RuntimeError, '%s hklin.mtz' % sys.argv[0]
+    raise RuntimeError('%s hklin.mtz' % sys.argv[0])
 
   m.dump()
   print m.get_spacegroup()

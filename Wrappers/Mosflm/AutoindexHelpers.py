@@ -16,7 +16,7 @@ def parse_index_log(mosflm_output):
   for record in mosflm_output:
     if 'DIRECT SPACE VECTORS DID NOT RESULT INTO A ORIENTATION' in record:
       from xia2.Wrappers.Mosflm.Exceptions import AutoindexError
-      raise AutoindexError, 'indexing failed'
+      raise AutoindexError('indexing failed')
 
   for j, record in enumerate(mosflm_output):
     if ' No PENALTY SDCELL FRACN LATT      a        b        c' in record:
@@ -30,10 +30,7 @@ def parse_index_log(mosflm_output):
 
           n_solutions += 1
           k += 1
-        except ValueError, e:
-          k += 1
-          continue
-        except IndexError, e:
+        except (ValueError, IndexError):
           k += 1
           continue
 

@@ -40,7 +40,7 @@ def Aimless(DriverType = None,
           os.environ.get('CBIN', ''), 'aimless'))
 
       if not os.path.exists(self.get_executable()):
-        raise RuntimeError, 'aimless binary not found'
+        raise RuntimeError('aimless binary not found')
 
       self.start()
       self.close_wait()
@@ -52,7 +52,7 @@ def Aimless(DriverType = None,
           version = record.split()[5]
 
       if not version:
-        raise RuntimeError, 'version not found'
+        raise RuntimeError('version not found')
 
       Debug.write('Using version: %s' % version)
 
@@ -203,7 +203,7 @@ def Aimless(DriverType = None,
         if not os.path.isfile(os.path.join(self.get_working_directory(), self._new_scales_file)):
           Chatter.write(
             "Aimless did not scale the data, see log file for more details:\n  %s" %self.get_log_file())
-          raise RuntimeError, 'data not scaled'
+          raise RuntimeError('data not scaled')
       return os.path.join(self.get_working_directory(), self._new_scales_file)
 
     def set_onlymerge(self, onlymerge = True):
@@ -253,7 +253,7 @@ def Aimless(DriverType = None,
       to work most of the time.'''
 
       if not mode in ['rotation', 'batch']:
-        raise RuntimeError, 'unknown scaling mode "%s"' % mode
+        raise RuntimeError('unknown scaling mode "%s"' % mode)
 
       if mode == 'batch':
         self._mode = 'batch'
@@ -345,10 +345,8 @@ def Aimless(DriverType = None,
 
       for record in self.get_all_output():
         if ' **** Negative scale factor' in record:
-          raise RuntimeError, 'bad batch %d' % \
-                int(record.split()[-3])
-
-      return
+          raise RuntimeError('bad batch %d' % \
+                int(record.split()[-3]))
 
     def check_aimless_errors(self):
       '''Check for Aimless specific errors. Raise RuntimeError if
@@ -360,17 +358,17 @@ def Aimless(DriverType = None,
 
       for line in output:
         if 'File must be sorted' in line:
-          raise RuntimeError, 'hklin not sorted'
+          raise RuntimeError('hklin not sorted')
         if 'Negative scales' in line:
           run, batches = self.identify_negative_scale_run()
-          raise RuntimeError, 'negative scales run %d: %d to %d' % \
-                (run, batches[0], batches[1])
+          raise RuntimeError('negative scales run %d: %d to %d' % \
+                (run, batches[0], batches[1]))
         if 'Scaling has failed to converge' in line:
-          raise RuntimeError, 'scaling not converged'
+          raise RuntimeError('scaling not converged')
         if '*** No observations ***' in line:
           run, batches = self.identify_no_observations_run()
-          raise RuntimeError, 'no observations run %d: %d to %d' % \
-                (run, batches[0], batches[1])
+          raise RuntimeError('no observations run %d: %d to %d' % \
+                (run, batches[0], batches[1]))
 
     def sum(self):
       '''Sum a set of reflections in a sorted mtz file - this will
@@ -401,10 +399,10 @@ def Aimless(DriverType = None,
         status = 'OK'
 
         if 'Error' in status:
-          raise RuntimeError, '[AIMLESS] %s' % status
+          raise RuntimeError('[AIMLESS] %s' % status)
 
       else:
-        # except RuntimeError, e:
+        # except RuntimeError as e:
         try:
           os.remove(self.get_hklout())
         except:
@@ -440,7 +438,7 @@ def Aimless(DriverType = None,
       self.check_hklout()
 
       if not self._onlymerge:
-        raise RuntimeError, 'for scaling use scale()'
+        raise RuntimeError('for scaling use scale()')
 
       if not self._scalepack:
         self.set_task('Merging scaled reflections from %s => %s' % \
@@ -484,9 +482,9 @@ def Aimless(DriverType = None,
         status = self.get_ccp4_status()
 
         if 'Error' in status:
-          raise RuntimeError, '[AIMLESS] %s' % status
+          raise RuntimeError('[AIMLESS] %s' % status)
 
-      except RuntimeError, e:
+      except RuntimeError as e:
         try:
           os.remove(self.get_hklout())
         except:
@@ -503,10 +501,10 @@ def Aimless(DriverType = None,
       self.check_hklout()
 
       if self._chef_unmerged and self._scalepack:
-        raise RuntimeError, 'CHEF and scalepack incompatible'
+        raise RuntimeError('CHEF and scalepack incompatible')
 
       if self._onlymerge:
-        raise RuntimeError, 'use merge() method'
+        raise RuntimeError('use merge() method')
 
       if not self._scalepack:
         self.set_task('Scaling reflections from %s => %s' % \
@@ -663,7 +661,7 @@ def Aimless(DriverType = None,
           self.check_ccp4_errors()
           self.check_aimless_error_negative_scale_run()
           self.check_aimless_errors()
-        except Exception, e:
+        except Exception:
           Chatter.write(
             "Aimless failed, see log file for more details:\n  %s" %self.get_log_file())
           raise
@@ -673,10 +671,10 @@ def Aimless(DriverType = None,
         Debug.write('Aimless status: %s' % status)
 
         if 'Error' in status:
-          raise RuntimeError, '[AIMLESS] %s' % status
+          raise RuntimeError('[AIMLESS] %s' % status)
 
       else:
-        # except RuntimeError, e:
+        # except RuntimeError as e:
         try:
           os.remove(self.get_hklout())
         except:
@@ -808,12 +806,12 @@ def Aimless(DriverType = None,
         Debug.write('Aimless status: %s' % status)
 
         if 'Error' in status:
-          raise RuntimeError, '[AIMLESS] %s' % status
+          raise RuntimeError('[AIMLESS] %s' % status)
 
-      except RuntimeError, e:
+      except RuntimeError as e:
         try:
           os.remove(self.get_hklout())
-        except:
+        except Exception:
           pass
 
         raise e

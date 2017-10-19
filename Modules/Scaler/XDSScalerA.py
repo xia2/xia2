@@ -117,7 +117,6 @@ class XDSScalerA(Scaler):
   def set_working_directory(self, working_directory):
     self._working_directory = working_directory
     self._factory.set_working_directory(working_directory)
-    return
 
   # program factory - this will provide configured wrappers
   # for the programs we need...
@@ -151,7 +150,7 @@ class XDSScalerA(Scaler):
         break
       if record.startswith('!DATA_RANGE'):
         return map(int, record.split()[-2:])
-    raise RuntimeError, 'BATCH range not found in %s' % xdsin
+    raise RuntimeError('BATCH range not found in %s' % xdsin)
 
   def _hklin_to_batch_range(self, hklin):
     from iotbx import mtz
@@ -314,11 +313,11 @@ class XDSScalerA(Scaler):
       dname = self._sweep_information[epoch]['dname']
       sname = self._sweep_information[epoch]['sname']
       if self._scalr_pname != pname:
-        raise RuntimeError, 'all data must have a common project name'
+        raise RuntimeError('all data must have a common project name')
       xname = self._sweep_information[epoch]['xname']
       if self._scalr_xname != xname:
-        raise RuntimeError, \
-              'all data for scaling must come from one crystal'
+        raise RuntimeError(\
+              'all data for scaling must come from one crystal')
 
       xsh = XDSScalerHelper()
       xsh.set_working_directory(self.get_working_directory())
@@ -423,8 +422,8 @@ class XDSScalerA(Scaler):
             Debug.write('Lattice %s ok for sweep %s' % \
                         (correct_lattice, sname))
           elif state == refiner.LATTICE_IMPOSSIBLE:
-            raise RuntimeError, 'Lattice %s impossible for %s' % \
-                  (correct_lattice, sname)
+            raise RuntimeError('Lattice %s impossible for %s' % \
+                  (correct_lattice, sname))
           elif state == refiner.LATTICE_POSSIBLE:
             Debug.write('Lattice %s assigned for sweep %s' % \
                         (correct_lattice, sname))
@@ -884,8 +883,6 @@ class XDSScalerA(Scaler):
 
       Debug.write('Deleting REMOVE.HKL at end of scale prepare.')
 
-    return
-
   def _scale(self):
     '''Actually scale all of the data together.'''
 
@@ -1100,7 +1097,7 @@ class XDSScalerA(Scaler):
               os.path.split(hklout)[-1]:
             if self._sweep_information[epoch][
                 'scaled_reflections'] is not None:
-              raise RuntimeError, 'duplicate entries'
+              raise RuntimeError('duplicate entries')
             self._sweep_information[epoch][
                 'scaled_reflections'] = ref[hklout]
 

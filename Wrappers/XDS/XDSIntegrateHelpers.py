@@ -19,7 +19,7 @@ def _parse_integrate_lp_updates(filename):
   parameters.'''
 
   if not os.path.split(filename)[-1] == 'INTEGRATE.LP':
-    raise RuntimeError, 'input filename not INTEGRATE.LP'
+    raise RuntimeError('input filename not INTEGRATE.LP')
 
   file_contents = open(filename, 'r').readlines()
 
@@ -41,7 +41,7 @@ def _parse_integrate_lp(filename):
   '''Parse the contents of the INTEGRATE.LP file pointed to by filename.'''
 
   if not os.path.split(filename)[-1] == 'INTEGRATE.LP':
-    raise RuntimeError, 'input filename not INTEGRATE.LP'
+    raise RuntimeError('input filename not INTEGRATE.LP')
 
   file_contents = open(filename, 'r').readlines()
 

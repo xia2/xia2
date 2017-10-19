@@ -44,7 +44,7 @@ class _ClusterDriverFactory(object):
     '''Set the kind of driver this factory should produce.'''
 
     if not type in self._implemented_types:
-      raise RuntimeError, 'unimplemented driver class: %s' % type
+      raise RuntimeError('unimplemented driver class: %s' % type)
 
     self._driver_type = type
 
@@ -60,7 +60,7 @@ class _ClusterDriverFactory(object):
     if type == 'cluster.sge':
       return SunGridEngineClusterDriver()
 
-    raise RuntimeError, 'Driver class "%s" unknown' % type
+    raise RuntimeError('Driver class "%s" unknown' % type)
 
 ClusterDriverFactory = _ClusterDriverFactory()
 

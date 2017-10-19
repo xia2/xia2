@@ -49,23 +49,17 @@ def Ctruncate(DriverType = None):
 
       self._xmlout = None
 
-      return
-
     def set_hklin(self, hklin):
       self._hklin = hklin
-      return
 
     def set_hklout(self, hklout):
       self._hklout = hklout
-      return
 
     def set_nres(self, nres):
       self._nres = nres
-      return
 
     def set_anomalous(self, anomalous):
       self._anomalous = anomalous
-      return
 
     def get_xmlout(self):
       return self._xmlout
@@ -74,9 +68,9 @@ def Ctruncate(DriverType = None):
       '''Actually perform the truncation procedure.'''
 
       if not self._hklin:
-        raise RuntimeError, 'hklin not defined'
+        raise RuntimeError('hklin not defined')
       if not self._hklout:
-        raise RuntimeError, 'hklout not defined'
+        raise RuntimeError('hklout not defined')
 
       self.add_command_line('-hklin')
       self.add_command_line(self._hklin)
@@ -105,14 +99,14 @@ def Ctruncate(DriverType = None):
       try:
         self.check_for_errors()
 
-      except RuntimeError, e:
+      except RuntimeError as e:
         try:
           os.remove(self._hklout)
         except:
           pass
 
         Debug.write(str(e))
-        raise RuntimeError, 'ctruncate failure'
+        raise RuntimeError('ctruncate failure')
 
       nref = 0
 
@@ -143,8 +137,6 @@ def Ctruncate(DriverType = None):
         Debug.write('Acentric moments of E/I not found')
 
       self._moments = moments
-
-      return
 
     def get_b_factor(self):
       return self._b_factor
@@ -199,7 +191,7 @@ def Ctruncate(DriverType = None):
           self._loggraph[current]['columns'] = tokens[1].split()
 
           if len(tokens) < 4:
-            raise RuntimeError, 'loggraph "%s" broken' % current
+            raise RuntimeError('loggraph "%s" broken' % current)
 
           data = tokens[3].split('\n')
 

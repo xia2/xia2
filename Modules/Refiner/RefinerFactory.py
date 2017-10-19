@@ -9,7 +9,6 @@
 from __future__ import absolute_import, division
 
 import os
-import copy
 
 # scaler implementations
 from xia2.Modules.Refiner.DialsRefiner import DialsRefiner
@@ -24,17 +23,16 @@ from xia2.DriverExceptions.NotAvailableError import NotAvailableError
 from xia2.Handlers.Streams import Debug
 
 
-
 def RefinerForXSweep(xsweep, json_file=None):
   '''Create a Refiner implementation to work with the provided
   XSweep.'''
 
   # FIXME this needs properly implementing...
   if xsweep is None:
-    raise RuntimeError, 'XSweep instance needed'
+    raise RuntimeError('XSweep instance needed')
 
   if not xsweep.__class__.__name__ == 'XSweep':
-    raise RuntimeError, 'XSweep instance needed'
+    raise RuntimeError('XSweep instance needed')
 
   refiner = Refiner()
 
@@ -59,26 +57,26 @@ def Refiner():
     try:
       refiner = DialsRefiner()
       Debug.write('Using Dials Refiner')
-    except NotAvailableError, e:
+    except NotAvailableError:
       if preselection == 'dials':
-        raise RuntimeError, 'preselected refiner dials not available'
+        raise RuntimeError('preselected refiner dials not available')
 
   if not refiner and \
      (not preselection or preselection == 'mosflm'):
     try:
       refiner = MosflmRefiner()
       Debug.write('Using Mosflm Refiner')
-    except NotAvailableError, e:
+    except NotAvailableError:
       if preselection == 'mosflm':
-        raise RuntimeError, 'preselected refiner mosflm not available'
+        raise RuntimeError('preselected refiner mosflm not available')
 
   if not refiner and \
      (not preselection or preselection == 'xds'):
     try:
       refiner = XDSRefiner()
       Debug.write('Using XDS Refiner')
-    except NotAvailableError, e:
+    except NotAvailableError:
       if preselection == 'xds':
-        raise RuntimeError, 'preselected refiner xds not available'
+        raise RuntimeError('preselected refiner xds not available')
 
   return refiner

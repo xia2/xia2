@@ -80,9 +80,6 @@ def MosflmRefineCell(DriverType = None, indxr_print = True):
       self._cell_refinement_ok = False
       self._separation = None
 
-
-      return
-
     def set_images(self, images):
       self._images = list(images)
 
@@ -265,10 +262,10 @@ def MosflmRefineCell(DriverType = None, indxr_print = True):
         o = output[i]
 
         if 'Processing will be aborted' in o:
-          raise BadLatticeError, 'cell refinement failed'
+          raise BadLatticeError('cell refinement failed')
 
         if 'An unrecoverable error has occurred in MOSFLM' in o:
-          raise BadLatticeError, 'cell refinement failed'
+          raise BadLatticeError('cell refinement failed')
 
         if 'Processing Image' in o:
           new_image_counter = int(o.split()[2])
@@ -321,7 +318,7 @@ def MosflmRefineCell(DriverType = None, indxr_print = True):
                 values = map(float, record)
                 for v in values:
                   rms_values[cycle].append(v)
-              except ValueError, e:
+              except ValueError:
                 Debug.write(
                     'Error parsing %s as floats' % \
                     output[j][12:])
@@ -381,7 +378,7 @@ def MosflmRefineCell(DriverType = None, indxr_print = True):
           Debug.write(
               'Cell refinement is unstable...')
 
-          raise BadLatticeError, 'Cell refinement failed'
+          raise BadLatticeError('Cell refinement failed')
 
         # other possible problems in the cell refinement - a
         # negative mosaic spread, for instance
@@ -393,7 +390,7 @@ def MosflmRefineCell(DriverType = None, indxr_print = True):
             Debug.write('Negative mosaic spread (%5.2f)' %
                         mosaic)
 
-            raise NegativeMosaicError, 'refinement failed'
+            raise NegativeMosaicError('refinement failed')
 
       parse_cycle = 1
       parse_image = 0
@@ -485,7 +482,7 @@ def MosflmRefineCell(DriverType = None, indxr_print = True):
 
     def _reorder_cell_refinement_images(self):
       if not self._images:
-        raise RuntimeError, 'no cell refinement images to reorder'
+        raise RuntimeError('no cell refinement images to reorder')
 
       hashmap = { }
 
@@ -497,7 +494,6 @@ def MosflmRefineCell(DriverType = None, indxr_print = True):
 
       cell_ref_images = [(k, hashmap[k]) for k in keys]
       self._images = cell_ref_images
-      return
 
     def get_rms_values(self):
       return self._rms_values

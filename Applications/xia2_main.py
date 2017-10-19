@@ -27,17 +27,12 @@ from libtbx.utils import Sorry
 def check_environment():
   '''Check the environment we are running in...'''
 
-  import cctbx
+  if sys.hexversion < 0x02070000:
+    raise RuntimeError('Python versions older than 2.7 are not supported')
 
-  version = sys.version_info
+  import cctbx
   executable = sys.executable
   cctbx_dir = os.sep.join(cctbx.__file__.split(os.sep)[:-3])
-
-  if version[0] < 2:
-    raise RuntimeError, 'Python 1.x not supported'
-
-  if version[0] == 2 and version[1] < 4:
-    raise RuntimeError, 'Python 2.x before 2.4 not supported'
 
   # to help wrapper code - print process id...
 
@@ -51,9 +46,9 @@ def check_environment():
   for k in ccp4_keys:
     v = Environment.getenv(k)
     if not v:
-      raise RuntimeError, '%s not defined - is CCP4 set up?' %k
+      raise RuntimeError('%s not defined - is CCP4 set up?' % k)
     if not v == v.strip():
-      raise RuntimeError, 'spaces around "%s"' % v
+      raise RuntimeError('spaces around "%s"' % v)
     Chatter.write('%s => %s' % (k, v))
 
   from xia2.Handlers.Flags import Flags
@@ -62,8 +57,8 @@ def check_environment():
 
   # temporary workaround to bug in pointless...
   if ' ' in os.getcwd():
-    raise RuntimeError, 'Space in working directory ' \
-        '(https://github.com/xia2/xia2/issues/114)'
+    raise RuntimeError('Space in working directory ' \
+        '(https://github.com/xia2/xia2/issues/114)')
   Chatter.write('Free space:        %.2f GB' % (df() / math.pow(2, 30)))
 
   try:
@@ -73,7 +68,7 @@ def check_environment():
       hostname = os.environ['HOSTNAME'].split('.')[0]
 
     Chatter.write('Host: %s' % hostname)
-  except KeyError, e:
+  except KeyError:
     pass
 
   Chatter.write('Contact: xia2.support@gmail.com')

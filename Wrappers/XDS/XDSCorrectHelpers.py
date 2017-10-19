@@ -63,7 +63,7 @@ def _parse_correct_lp(filename):
   '''Parse the contents of the CORRECT.LP file pointed to by filename.'''
 
   if not os.path.split(filename)[-1] == 'CORRECT.LP':
-    raise RuntimeError, 'input filename not CORRECT.LP'
+    raise RuntimeError('input filename not CORRECT.LP')
 
   file_contents = open(filename, 'r').readlines()
 
@@ -119,7 +119,7 @@ def _parse_correct_lp(filename):
         try:
           l = file_contents[j].split()
           resolution_info.append((float(l[1]),float(l[2])))
-        except ValueError, e:
+        except ValueError:
           l = file_contents[j].split()
           m = re.match(r'(\d+\.\d{2})(\d+\.\d+)', l[2])
           resolution_info.append((float(l[1]),float(m.group(1))))
