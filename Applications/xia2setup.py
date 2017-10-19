@@ -33,7 +33,9 @@ known_image_extensions = []
 
 for c in compression:
   for ie in image_extensions:
-    known_image_extensions.append('%s%s' % (ie, c))
+    ext = '%s%s' % (ie, c)
+    if ext:
+      known_image_extensions.append(ext)
 
 xds_file_names = ['ABS', 'ABSORP', 'BKGINIT', 'BKGPIX', 'BLANK', 'DECAY',
                   'X-CORRECTIONS', 'Y-CORRECTIONS', 'MODPIX', 'FRAME',
