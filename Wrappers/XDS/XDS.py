@@ -247,7 +247,7 @@ def imageset_to_xds(imageset, synchrotron = None, refined_beam_vector = None,
       detector_helpers_types.get(sensor, fast, slow, df, ds))
   trusted = converter.get_detector()[0].get_trusted_range()
 
-  # if CCD; undo dxtbx pedestal offset, hard code minimum 1; else use trusted 
+  # if CCD; undo dxtbx pedestal offset, hard code minimum 1; else use trusted
   # range verbatim (i.e. for PAD)
 
   if sensor == 'SENSOR_CCD':

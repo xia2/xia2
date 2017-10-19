@@ -1,9 +1,13 @@
+# Compiled Python files
+__pycache__/
+*.py[cod]
+*$py.class
+
 # Ignored Mathematica files shall be prefixed by _
 _*.nb
 *.fdb_latexmk
 *.gz
 *.pdf
-*.py[cod]
 .DS_Store
 *~
 *.sw[op]
