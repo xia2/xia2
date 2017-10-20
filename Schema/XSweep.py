@@ -856,7 +856,7 @@ class XSweep(object):
 
     try:
       return self.get_wavelength().get_wavelength()
-    except:
+    except Exception:
       return 0.0
 
   def get_integrater_intensities(self):
@@ -886,7 +886,7 @@ class XSweep(object):
     '''Get the parent crystal lattice pointer.'''
     try:
       lattice = self.get_wavelength().get_crystal().get_lattice()
-    except:
+    except Exception:
       lattice = None
 
     return lattice

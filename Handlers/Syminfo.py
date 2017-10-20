@@ -164,7 +164,7 @@ class _Syminfo(object):
     try:
       number = int(spacegroup)
       return number
-    except:
+    except Exception:
       pass
 
     return sgtbx.space_group_info(str(spacegroup)).type().number()

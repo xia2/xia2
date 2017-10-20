@@ -107,7 +107,7 @@ def Sortmtz(DriverType = None):
       except RuntimeError as e:
         try:
           os.remove(self.get_hklout())
-        except: #deliberate
+        except Exception:
           pass
         raise e
 

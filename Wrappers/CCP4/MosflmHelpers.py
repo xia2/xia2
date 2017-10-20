@@ -275,7 +275,7 @@ def _parse_mosflm_index_output(index_output_list):
       try:
         number = int(output.split()[0])
         solutions[number] = output[:-1]
-      except:
+      except Exception:
         pass
 
     # this will not be in the file if Mosflm doesn't think you have
@@ -392,7 +392,7 @@ def _parse_mosflm_index_output_all(index_output_list):
       try:
         number = int(output.split()[0])
         solutions[number] = output[:-1]
-      except:
+      except Exception:
         pass
 
   keys = solutions.keys()

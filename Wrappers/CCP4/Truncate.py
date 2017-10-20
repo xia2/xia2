@@ -108,7 +108,7 @@ def Truncate(DriverType = None):
       except RuntimeError:
         try:
           os.remove(self.get_hklout())
-        except:
+        except Exception:
           pass
 
         raise RuntimeError('truncate failure')

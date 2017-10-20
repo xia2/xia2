@@ -53,7 +53,7 @@ def _parse_idxref_index_origin(lp_file_lines):
           quality, delta, xd, yd = tuple(
               map(float, line.split()[3:7]))
           origins[hkl] = quality, delta, xd, yd
-        except:
+        except Exception:
           pass
 
       return origins

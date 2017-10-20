@@ -274,7 +274,7 @@ class Refiner(object):
 
     try:
       return self._refinr_program_parameters[program][parameter]
-    except:
+    except Exception:
       return None
 
   def get_refiner_parameters(self, program):
@@ -282,7 +282,7 @@ class Refiner(object):
 
     try:
       return self._refinr_program_parameters[program]
-    except:
+    except Exception:
       return { }
 
   def set_refiner_parameters(self, parameters):

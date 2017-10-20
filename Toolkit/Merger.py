@@ -719,7 +719,7 @@ class merger(object):
 
     try:
       r_rmerge = 1.0 / math.sqrt(interpolate_value(s_s, rmerge_f, limit))
-    except:
+    except Exception:
       r_rmerge = 1.0 / math.sqrt(max(s_s))
 
     return r_rmerge
@@ -772,7 +772,7 @@ class merger(object):
     try:
       r_isigma = 1.0 / math.sqrt(interpolate_value(_s_s, _isigma_f,
                                                    limit))
-    except:
+    except Exception:
       r_isigma = 1.0 / math.sqrt(max(_s_s))
 
     return r_isigma
@@ -807,7 +807,7 @@ class merger(object):
 
     try:
       r_isigma = 1.0 / math.sqrt(interpolate_value(s_s, isigma_f, limit))
-    except:
+    except Exception:
       r_isigma = 1.0 / math.sqrt(max(s_s))
 
     return r_isigma
@@ -859,7 +859,7 @@ class merger(object):
     try:
       r_misigma = 1.0 / math.sqrt(interpolate_value(_s_s, _misigma_f,
                                                     limit))
-    except:
+    except Exception:
       r_misigma = 1.0 / math.sqrt(max(_s_s))
 
     return r_misigma
@@ -894,7 +894,7 @@ class merger(object):
     try:
       r_misigma = 1.0 / math.sqrt(
           interpolate_value(s_s, misigma_f, limit))
-    except:
+    except Exception:
       r_misigma = 1.0 / math.sqrt(max(s_s))
 
     return r_misigma
@@ -937,7 +937,7 @@ class merger(object):
     try:
       r_comp = 1.0 / math.sqrt(
           interpolate_value(s_s, comp_f, rlimit))
-    except:
+    except Exception:
       r_comp = 1.0 / math.sqrt(max(s_s))
 
     return r_comp

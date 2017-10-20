@@ -405,7 +405,7 @@ def Aimless(DriverType = None,
         # except RuntimeError as e:
         try:
           os.remove(self.get_hklout())
-        except:
+        except Exception:
           pass
 
         raise e
@@ -487,7 +487,7 @@ def Aimless(DriverType = None,
       except RuntimeError as e:
         try:
           os.remove(self.get_hklout())
-        except:
+        except Exception:
           pass
 
         raise e
@@ -677,7 +677,7 @@ def Aimless(DriverType = None,
         # except RuntimeError as e:
         try:
           os.remove(self.get_hklout())
-        except:
+        except Exception:
           pass
 
         raise e

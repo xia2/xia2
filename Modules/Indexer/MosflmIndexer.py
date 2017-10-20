@@ -369,7 +369,7 @@ class MosflmIndexer(IndexerSingleSweep):
     try:
       status, lattice, matrix, cell = mosflm_check_indexer_solution(
           self)
-    except:
+    except Exception:
       return
 
     if status is False or status is None:

@@ -3280,7 +3280,7 @@ def find_table_by_title(table_list,title_pattern,index=0):
   rtable_list = find_tables_by_title(table_list,title_pattern)
   try:
     return rtable_list[index]
-  except:
+  except Exception:
     return None
 
 def find_tables_by_title(table_list,title_pattern):
@@ -3487,7 +3487,7 @@ def retrieve(filen,start,end):
       for i in range(start,end+1):
         text = text+str(linecache.getline(filen,i))
       return text
-    except:
+    except Exception:
       print "Exception raised in retrieve method:"
       print "\tSource file  = \""+str(filen)+"\""
       print "\tStart line   = "+str(start)

@@ -462,7 +462,7 @@ class Integrater(FrameProcessor):
 
     try:
       return self._intgr_program_parameters[program][parameter]
-    except:
+    except Exception:
       return None
 
   def get_integrater_parameters(self, program):
@@ -470,7 +470,7 @@ class Integrater(FrameProcessor):
 
     try:
       return self._intgr_program_parameters[program]
-    except:
+    except Exception:
       return { }
 
   def set_integrater_parameters(self, parameters):
@@ -493,7 +493,7 @@ class Integrater(FrameProcessor):
 
     try:
       return self._intgr_export_program_parameters[program][parameter]
-    except:
+    except Exception:
       return None
 
   def get_integrater_export_parameters(self):
@@ -501,7 +501,7 @@ class Integrater(FrameProcessor):
 
     try:
       return self._intgr_export_program_parameters
-    except:
+    except Exception:
       return { }
 
   def set_integrater_indexer(self, indexer):

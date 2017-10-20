@@ -84,7 +84,7 @@ def is_image_name(filename):
       j = int(end)
       if not '.log.' in filename and len(end) > 1:
         return True
-    except:
+    except Exception:
       pass
 
     if is_hd5f_name(filename):

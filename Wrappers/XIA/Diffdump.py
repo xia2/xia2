@@ -170,7 +170,7 @@ def find_detector_id(cbf_handle):
         break
       try:
         cbf_handle.next_column()
-      except:
+      except Exception:
         break
 
   return detector_id
@@ -395,7 +395,7 @@ def failover_cbf(cbf_file):
       header['date'] = time.asctime(struct_time)
       header['epoch'] = time.mktime(struct_time)
 
-    except:
+    except Exception:
       pass
 
     try:
@@ -407,7 +407,7 @@ def failover_cbf(cbf_file):
         header['date'] = time.asctime(struct_time)
         header['epoch'] = time.mktime(struct_time)
 
-    except:
+    except Exception:
       pass
 
     try:
@@ -419,7 +419,7 @@ def failover_cbf(cbf_file):
         header['date'] = time.asctime(struct_time)
         header['epoch'] = time.mktime(struct_time)
 
-    except:
+    except Exception:
       pass
 
   header['phi_end'] = header['phi_start'] + header['phi_width']
@@ -581,7 +581,7 @@ def Diffdump(DriverType = None):
         ms = 0.001 * int(datestring.split('.')[1])
         _datestring = datestring.split('.')[0]
         struct_time = time.strptime(_datestring, format)
-      except:
+      except Exception:
         struct_time = None
 
       # ADSC CBF format
@@ -592,13 +592,13 @@ def Diffdump(DriverType = None):
           ms = 0.001 * int(datestring.split('.')[1])
           _datestring = datestring.split('.')[0]
           struct_time = time.strptime(_datestring, format)
-        except:
+        except Exception:
           struct_time = None
 
       if not struct_time:
         try:
           struct_time = time.strptime(datestring)
-        except:
+        except Exception:
           struct_time = None
 
       if not struct_time:

@@ -21,5 +21,3 @@ scientists. In all cases however the usage of the program is the same.
 Website: https://xia2.github.io  
 Source code: https://github.com/xia2/xia2  
 Support: xia2.support@gmail.com
-
-[![Code Issues](https://www.quantifiedcode.com/api/v1/project/cf52e1d762794254b33eb1ace63ae937/badge.svg)](https://www.quantifiedcode.com/app/project/cf52e1d762794254b33eb1ace63ae937)

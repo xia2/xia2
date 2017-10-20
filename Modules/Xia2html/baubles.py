@@ -1075,7 +1075,7 @@ def plainTextMarkup(text):
           if word != "-" and word != "*":
             try:
               f = float(word)
-            except:
+            except Exception:
               nnum = 0
         nnums.append(nnum)
       if nnum > 0:
@@ -1125,7 +1125,7 @@ def plainTextMarkup(text):
           try:
             f = float(words[w])
             row += "<td>"+words[w]+"</td>"
-          except:
+          except Exception:
             row += "<th>"+words[w]+"</th>"
         row += "</tr>\n"
         result += row
@@ -1262,7 +1262,7 @@ def polarrfn_plot(pltfile,imgbase=""):
                           os.path.splitext(os.path.basename(pltfile))[0]+".ps")
     os.popen("pltdev -xp 0.7 -yp 0.7 -dev ps -o "+ \
              str(psfile)+" "+str(pltfile))
-  except:
+  except Exception:
     # Unable to generate the name or run the program
     raise
   if not os.path.exists(psfile):

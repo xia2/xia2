@@ -102,7 +102,7 @@ def Ctruncate(DriverType = None):
       except RuntimeError as e:
         try:
           os.remove(self._hklout)
-        except:
+        except Exception:
           pass
 
         Debug.write(str(e))

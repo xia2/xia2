@@ -1,3 +1,4 @@
+from __future__ import absolute_import, division
 # LIBTBX_SET_DISPATCHER_NAME dev.xia2.file_statistics
 
 

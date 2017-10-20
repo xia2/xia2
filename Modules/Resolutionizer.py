@@ -409,7 +409,7 @@ class resolutionizer(object):
 
       try:
         r_rmerge = 1.0 / math.sqrt(interpolate_value(s_s, rmerge_f, limit))
-      except:
+      except Exception:
         r_rmerge = 1.0 / math.sqrt(flex.max(s_s))
 
     if self._params.plot:
@@ -456,7 +456,7 @@ class resolutionizer(object):
 
       try:
         r_isigma = 1.0 / math.sqrt(interpolate_value(s_s, isigma_f, limit))
-      except:
+      except Exception:
         r_isigma = 1.0 / math.sqrt(flex.max(s_s))
 
     if self._params.plot:
@@ -504,7 +504,7 @@ class resolutionizer(object):
       try:
         r_misigma = 1.0 / math.sqrt(
             interpolate_value(s_s, misigma_f, limit))
-      except:
+      except Exception:
         r_misigma = 1.0 / math.sqrt(flex.max(s_s))
 
     if self._params.plot:
@@ -621,7 +621,7 @@ class resolutionizer(object):
     try:
       r_cc = 1.0 / math.sqrt(
           interpolate_value(s_s[i:], cc_f, rlimit))
-    except:
+    except Exception:
       r_cc = 1.0 / math.sqrt(max(s_s[i:]))
     stamp("rch: done : %s" % r_cc)
 

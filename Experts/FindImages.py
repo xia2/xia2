@@ -125,7 +125,7 @@ def image2template_old(filename):
       number = match.group(2)
       try:
         exten = match.group(3)
-      except:
+      except Exception:
         exten = ''
 
       for digit in string.digits:
@@ -160,7 +160,7 @@ def image2image_old(filename):
       number = match.group(2)
       try:
         exten = match.group(3)
-      except:
+      except Exception:
         exten = ''
 
       return int(number)

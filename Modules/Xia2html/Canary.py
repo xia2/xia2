@@ -1064,7 +1064,7 @@ class ExternalFile:
           text += line
         f.close()
         text += self.inline_end
-      except:
+      except Exception:
         # Failed to get the stylesheet
         text = "<!-- Failed to inline external file "+ \
             self.__filename+"-->\n"

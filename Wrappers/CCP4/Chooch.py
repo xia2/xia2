@@ -36,9 +36,10 @@ def preprocess_scan(scan_file):
   '''Preprocess the scan file to a form that chooch will accept.'''
 
   try:
-    i = int(open(scan_file, 'r').readlines()[1])
+    with open(scan_file, 'r') as fh:
+      i = int(fh.readlines()[1])
     return scan_file
-  except:
+  except Exception:
     # assume that this is not in the friendly format...
     data = open(scan_file, 'r').readlines()
     more_data = []

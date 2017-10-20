@@ -60,8 +60,6 @@ class ScriptDriver(DefaultDriver):
 
     self._output_file = None
 
-    return
-
   def reset(self):
     DefaultDriver.reset(self)
 
@@ -75,13 +73,9 @@ class ScriptDriver(DefaultDriver):
 
     self._output_file = None
 
-    return
-
   def set_name(self, name):
     '''Set the name to something sensible.'''
     self._script_name = name
-
-    return
 
   def start(self):
     '''This is pretty meaningless in terms of running things through
@@ -96,8 +90,6 @@ class ScriptDriver(DefaultDriver):
 
   def _input(self, record):
     self._script_standard_input.append(record)
-
-    return
 
   def _output(self):
     return self._output_file.readline()
@@ -135,7 +127,7 @@ class ScriptDriver(DefaultDriver):
       xstatus_file = os.path.join(self._working_directory,
                                   '%s.xstatus' % self._script_name)
       self._script_status = int(open(xstatus_file, 'r').read())
-    except:
+    except Exception:
       # this could happen on windows if the program in question
       # is a batch file...
       self._script_status = 0
@@ -143,8 +135,6 @@ class ScriptDriver(DefaultDriver):
     self._output_file = open(os.path.join(self._working_directory,
                                           '%s.xout' % self._script_name),
                              'r')
-
-    return
 
   def kill(self):
     '''This is meaningless...'''
