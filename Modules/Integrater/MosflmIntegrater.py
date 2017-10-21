@@ -273,7 +273,7 @@ class MosflmIntegrater(Integrater):
     # exclude specified resolution ranges
     if len(self.get_integrater_excluded_regions()) != 0:
       regions = self.get_integrater_excluded_regions()
-      Debug.write('Excluding regions: %s' % `regions`)
+      Debug.write('Excluding regions: %s' % repr(regions))
       integrater.set_exclude_regions(regions)
 
     mask = standard_mask(self.get_detector())
@@ -559,7 +559,7 @@ class MosflmIntegrater(Integrater):
       # exclude specified resolution ranges
       if len(self.get_integrater_excluded_regions()) != 0:
         regions = self.get_integrater_excluded_regions()
-        Debug.write('Excluding regions: %s' % `regions`)
+        Debug.write('Excluding regions: %s' % repr(regions))
         job.set_exclude_regions(regions)
 
       mask = standard_mask(self.get_detector())
