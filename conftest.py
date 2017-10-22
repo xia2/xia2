@@ -68,7 +68,9 @@ def pytest_collect_file(path, parent):
 
     def runtest(self):
       rc = run_command(self.full_cmd)
-      assert rc is not None
+      if rc is None:
+        # run_command only returns None if CTRL+C pressed
+        raise KeyboardInterrupt()
       self.add_report_section('call', 'stdout', '\n'.join(rc.stdout_lines))
       self.add_report_section('call', 'stderr', '\n'.join(rc.stderr_lines))
       if rc.stderr_lines or rc.return_code != 0:
