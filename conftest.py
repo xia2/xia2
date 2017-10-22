@@ -16,6 +16,12 @@ def dials_regression():
   except KeyError:
     pytest.skip("dials_regression required for this test")
 
+@pytest.fixture
+def xia2_regression():
+  try:
+    return libtbx.env.dist_path('xia2_regression')
+  except KeyError:
+    pytest.skip("xia2_regression required for this test")
 
 def pytest_addoption(parser):
   '''Add a '--runslow' option to py.test.'''

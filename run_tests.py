@@ -19,5 +19,4 @@ tst_list = [
   "$D/Test/Wrappers/Mosflm/TstMosflmIndex.py",
   "$D/Test/Wrappers/Mosflm/TstMosflmRefineCell.py",
   "$D/Test/System/TstRunXia2.py",
-  "$D/Test/Modules/TstPychef.py",
 ] + discover('xia2')

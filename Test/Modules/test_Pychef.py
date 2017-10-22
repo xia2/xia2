@@ -1,7 +1,6 @@
-from __future__ import absolute_import, division
-from libtbx.test_utils import approx_equal
+from __future__ import absolute_import, division, print_function
 
-def exercise_observations():
+def test_exercise_observations():
   from xia2.Modules.PyChef2 import Observations
   from cctbx.array_family import flex
   from cctbx import sgtbx
@@ -13,20 +12,14 @@ def exercise_observations():
   groups = observations.observation_groups()
   assert list(groups[(1,2,3)].iplus()) == [0]
   assert list(groups[(1,2,3)].iminus()) == [1,2]
-  print "OK"
 
-def exercise_accumulators():
+def test_exercise_accumulators(xia2_regression):
   from xia2.Modules.PyChef2 import PyChef
   from xia2.Modules.PyChef2 import ChefStatistics
   from iotbx.reflection_file_reader import any_reflection_file
   from cctbx.array_family import flex
-  import libtbx.load_env
+  from libtbx.test_utils import approx_equal
   import os
-
-  xia2_regression = libtbx.env.find_in_repositories("xia2_regression")
-  if xia2_regression is None:
-    print "Skipping exercise_accumulators(): xia2_regression not available"
-    return
 
   f = os.path.join(xia2_regression, "test/insulin_dials_scaled_unmerged.mtz")
   reader = any_reflection_file(f)
@@ -85,12 +78,3 @@ def exercise_accumulators():
   # test Rd
 
   assert approx_equal(chef_stats.rd(), pystats.rd)
-
-  print "OK"
-
-def run():
-  exercise_observations()
-  exercise_accumulators()
-
-if __name__ == '__main__':
-  run()
