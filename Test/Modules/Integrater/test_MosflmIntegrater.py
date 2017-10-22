@@ -3,31 +3,17 @@ from __future__ import absolute_import, division
 import os
 import sys
 
-import libtbx.load_env
-from libtbx.test_utils import approx_equal, open_tmp_directory
+import mock
+from libtbx.test_utils import approx_equal
+import pytest
 
-try:
-  dials_regression = libtbx.env.dist_path('dials_regression')
-  have_dials_regression = True
-except KeyError:
-  have_dials_regression = False
-
-
-def exercise_mosflm_integrater(nproc=None):
-  if not have_dials_regression:
-    print "Skipping exercise_mosflm_integrater(): dials_regression not configured"
-    return
-
-  if nproc is not None:
-    from xia2.Handlers.Phil import PhilIndex
-    PhilIndex.params.xia2.settings.multiprocessing.nproc = nproc
+def exercise_mosflm_integrater(dials_regression, tmp_dir, nproc):
+  from xia2.Handlers.Phil import PhilIndex
+  PhilIndex.params.xia2.settings.multiprocessing.nproc = nproc
 
   xia2_demo_data = os.path.join(dials_regression, "xia2_demo_data")
   template = os.path.join(xia2_demo_data, "insulin_1_###.img")
 
-  cwd = os.path.abspath(os.curdir)
-  tmp_dir = os.path.abspath(open_tmp_directory())
-  os.chdir(tmp_dir)
   # otherwise if this test is running multiple times simultaneously two mosflm
   # processes try to write to the same genfile
   os.environ['CCP4_SCR'] = tmp_dir
@@ -120,16 +106,14 @@ def exercise_mosflm_integrater(nproc=None):
   assert abs(mtz_object.n_reflections() - 81116) < nref_error, \
          mtz_object.n_reflections()
 
+@pytest.mark.slow
+def test_mosflm_integrater_serial(dials_regression, tmpdir):
+  with tmpdir.as_cwd():
+    with mock.patch.object(sys, 'argv', []):
+      exercise_mosflm_integrater(dials_regression, tmpdir.strpath, nproc=1)
 
-def run(args):
-  assert len(args) <= 1, args
-  if len(args) == 1:
-    nproc = int(args[0])
-  else:
-    nproc = None
-  exercise_mosflm_integrater(nproc=nproc)
-  print "OK"
-
-
-if __name__ == '__main__':
-  run(sys.argv[1:])
+@pytest.mark.slow
+def test_mosflm_integrater_parallel(dials_regression, tmpdir):
+  with tmpdir.as_cwd():
+    with mock.patch.object(sys, 'argv', []):
+      exercise_mosflm_integrater(dials_regression, tmpdir.strpath, nproc=2)

@@ -1,28 +1,14 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
+import mock
 import os
+import pytest
 import sys
 
-import libtbx.load_env
-from libtbx.test_utils import open_tmp_directory
-
-try:
-  dials_regression = libtbx.env.dist_path('dials_regression')
-  have_dials_regression = True
-except KeyError:
-  have_dials_regression = False
-
-
-def exercise_serialization():
-  if not have_dials_regression:
-    print "Skipping exercise_serialization(): dials_regression not configured"
-    return
-
+def exercise_serialization(dials_regression, tmp_dir):
   xia2_demo_data = os.path.join(dials_regression, "xia2_demo_data")
   template = os.path.join(xia2_demo_data, "insulin_1_###.img")
 
-  cwd = os.path.abspath(os.curdir)
-  tmp_dir = os.path.abspath(open_tmp_directory())
   os.chdir(tmp_dir)
 
   from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
@@ -111,8 +97,8 @@ def exercise_serialization():
   json_str = proj.as_json()
   xproj = XProject.from_json(string=json_str)
   assert xproj.get_crystals().values()[0].get_project() is xproj
-  print xproj.get_output()
-  print "\n".join(xproj.summarise())
+  print(xproj.get_output())
+  print("\n".join(xproj.summarise()))
   json_str = xproj.as_json()
   xproj = XProject.from_json(string=json_str)
   assert xproj.get_crystals().values()[0].get_project() is xproj
@@ -122,15 +108,11 @@ def exercise_serialization():
   assert xcryst._get_scaler()._sweep_handler.get_sweep_information(
     intgr.get_integrater_epoch()).get_integrater() is intgr
 
-  print xproj.get_output()
-  print "\n".join(xproj.summarise())
-  print
+  print(xproj.get_output())
+  print("\n".join(xproj.summarise()))
 
-
-def run(args):
-  exercise_serialization()
-  print "OK"
-
-
-if __name__ == '__main__':
-  run(sys.argv[1:])
+@pytest.mark.slow
+def test_serialization(dials_regression, tmpdir):
+  with tmpdir.as_cwd():
+    with mock.patch.object(sys, 'argv', []):
+      exercise_serialization(dials_regression, tmpdir.strpath)

@@ -1,9 +1,8 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 import os
 
-def run():
+def test_insulin_xinfo():
   from xia2.Handlers.XInfo import XInfo
-
   import libtbx.load_env
   xinfo_dir = os.path.join(libtbx.env.dist_path('xia2'), 'Test', 'Handlers')
 
@@ -11,12 +10,17 @@ def run():
   assert xinfo.get_crystals().keys() == ['DEFAULT']
   assert xinfo.get_crystals()['DEFAULT']['wavelengths'] == {
     'NATIVE': {'wavelength': 0.979}}
-  assert xinfo.get_crystals()['DEFAULT']['sweeps'] ==  {
+  assert xinfo.get_crystals()['DEFAULT']['sweeps'] == {
     'SWEEP1': {
       'excluded_regions': [], 'IMAGE': 'insulin_1_001.img',
       'beam': [94.34, 94.5], 'start_end': [1, 45],
       'DIRECTORY': '/path/to/build/xia2_regression/test_data/insulin',
       'wavelength': 'NATIVE'}}
+
+def test_multi_xinfo():
+  from xia2.Handlers.XInfo import XInfo
+  import libtbx.load_env
+  xinfo_dir = os.path.join(libtbx.env.dist_path('xia2'), 'Test', 'Handlers')
 
   xinfo = XInfo(os.path.join(xinfo_dir, 'multi.xinfo'))
   assert xinfo.get_crystals().keys() == ['DEFAULT']
@@ -36,6 +40,11 @@ def run():
                'IMAGE': 'sweep_1_0001.cbf', 'start_end': [1, 900],
                'excluded_regions': []}}
 
+def test_load_specific_sweeps_from_multi_xinfo():
+  from xia2.Handlers.XInfo import XInfo
+  import libtbx.load_env
+  xinfo_dir = os.path.join(libtbx.env.dist_path('xia2'), 'Test', 'Handlers')
+
   xinfo = XInfo(os.path.join(xinfo_dir, 'multi.xinfo'),
                 sweep_ids=['SWEEP1', 'swEEp4'])
   assert xinfo.get_crystals()['DEFAULT']['sweeps'] == {
@@ -45,8 +54,3 @@ def run():
   'SWEEP1': {'DIRECTORY': '/path/to/data/dir1', 'wavelength': 'NATIVE',
              'IMAGE': 'sweep_1_0001.cbf', 'start_end': [1, 900],
              'excluded_regions': []}}
-
-
-if __name__ == '__main__':
-  run()
-  print 'OK'
