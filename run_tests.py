@@ -2,7 +2,6 @@ from __future__ import absolute_import, division, print_function
 from libtbx.test_utils.pytest import discover
 
 tst_list = [
-  ["$D/Test/Wrappers/Dials/TstDialsWrappers.py", "1"],
   #["$D/Test/Modules/Refiner/TstDialsRefiner.py", "1"],
   ["$D/Test/Modules/Integrater/TstDialsIntegrater.py", "1"],
   ["$D/Test/Modules/Integrater/TstXDSIntegrater.py", "1"],
@@ -14,9 +13,7 @@ tst_list = [
   ["$D/Test/Modules/Indexer/TstXDSIndexerII.py", "1"],
   ["$D/Test/Modules/Scaler/TstCCP4ScalerA.py", "1"],
   ["$D/Test/Modules/Scaler/TstXDSScalerA.py", "1"],
-  "$D/Test/Wrappers/CCP4/TstBlend.py",
   "$D/Test/Wrappers/Labelit/TstLabelitIndex.py",
   "$D/Test/Wrappers/Mosflm/TstMosflmIndex.py",
   "$D/Test/Wrappers/Mosflm/TstMosflmRefineCell.py",
-  "$D/Test/System/TstRunXia2.py",
 ] + discover('xia2')

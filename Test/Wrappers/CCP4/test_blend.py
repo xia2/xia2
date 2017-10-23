@@ -1,40 +1,31 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 import glob
 
-import libtbx.load_env
-#from libtbx.test_utils import approx_equal
-from libtbx.test_utils import open_tmp_directory
-
-xia2_regression = libtbx.env.under_build('xia2_regression')
+from libtbx.test_utils import approx_equal
+import pytest
 
 def cmd_exists(cmd):
   import subprocess
   return subprocess.call('type ' + cmd, shell=True,
     stdout=subprocess.PIPE, stderr=subprocess.PIPE) == 0
 
-def exercise_blend_wrapper():
+def test_blend_wrapper(xia2_regression_build, tmpdir):
   if not cmd_exists('blend'):
-    print "Skipping exercise_blend_wrapper(): blend not available"
-    exit(0)
+    pytest.skip('blend not available')
 
-  if (not libtbx.env.has_module('xia2_regression')) or (xia2_regression is None):
-    print "Skipping exercise_blend_wrapper(): xia2_regression not present."
-    exit(0)
-
-  cwd = os.path.abspath(os.curdir)
-  tmp_dir = os.path.abspath(open_tmp_directory())
+  tmp_dir = tmpdir.strpath
   os.chdir(tmp_dir)
 
-  blend_tutorial_dir = os.path.join(xia2_regression, 'blend_tutorial')
+  blend_tutorial_dir = os.path.join(xia2_regression_build, 'blend_tutorial')
   tar_gz = os.path.join(blend_tutorial_dir, 'data02.tgz')
   import tarfile
   tar = tarfile.open(tar_gz, "r:gz")
   for tarinfo in tar:
     if tarinfo.isreg():
       # extract the file
-      print "Extracting", tarinfo.name
+      print("Extracting", tarinfo.name)
       tar.extract(tarinfo, path=tmp_dir)
   tar.close()
 
@@ -47,7 +38,7 @@ def exercise_blend_wrapper():
     b.add_hklin(f)
   b.analysis()
 
-  #print "".join(b.get_all_output())
+  #print("".join(b.get_all_output()))
   analysis = b.get_analysis()
   summary = b.get_summary()
   clusters = b.get_clusters()
@@ -82,8 +73,6 @@ def exercise_blend_wrapper():
     'height': 17.335
   }
 
-  from libtbx.test_utils import approx_equal
-
   import numpy
   assert approx_equal(list(linkage_matrix.flat), list(numpy.array(
     [[  1.2000e+01,   1.3000e+01,   1.0000e-03,   2.0000e+00],
@@ -115,12 +104,3 @@ def exercise_blend_wrapper():
      [  5.2000e+01,   5.3000e+01,   1.7335e+01,   2.8000e+01]]).flat))
 
   assert os.path.exists(b.get_dendrogram_file())
-
-def run(args):
-  exercise_blend_wrapper()
-
-if __name__ == '__main__':
-  import sys
-  from libtbx.utils import show_times_at_exit
-  show_times_at_exit()
-  run(sys.argv[1:])

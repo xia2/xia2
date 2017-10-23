@@ -23,6 +23,13 @@ def xia2_regression():
   except KeyError:
     pytest.skip("xia2_regression required for this test")
 
+@pytest.fixture
+def xia2_regression_build():
+  x2rpath = libtbx.env.under_build('xia2_regression')
+  if not os.path.exists(x2rpath):
+    pytest.skip("xia2_regression required for this test")
+  return x2rpath
+
 def pytest_addoption(parser):
   '''Add a '--runslow' option to py.test.'''
   parser.addoption("--runslow", action="store_true",
