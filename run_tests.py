@@ -16,4 +16,4 @@ tst_list = [
   "$D/Test/Wrappers/Labelit/TstLabelitIndex.py",
   "$D/Test/Wrappers/Mosflm/TstMosflmIndex.py",
   "$D/Test/Wrappers/Mosflm/TstMosflmRefineCell.py",
-] + discover('xia2')
+] + discover()
