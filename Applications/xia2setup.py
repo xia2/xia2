@@ -25,7 +25,7 @@ from xia2.Modules.LabelitBeamCentre import compute_beam_centre
 from xia2.Handlers.Streams import Debug, streams_off
 
 image_extensions = ['img', 'mccd', 'mar2300', 'mar1200', 'mar1600',
-                    'mar3450', 'osc', 'cbf', 'mar2000', 'sfrm']
+                    'mar3450', 'osc', 'cbf', 'mar2000', 'sfrm', '']
 
 compression = ['', '.bz2', '.gz']
 
@@ -33,7 +33,9 @@ known_image_extensions = []
 
 for c in compression:
   for ie in image_extensions:
-    known_image_extensions.append('%s%s' % (ie, c))
+    ext = '%s%s' % (ie, c)
+    if ext:
+      known_image_extensions.append(ext)
 
 xds_file_names = ['ABS', 'ABSORP', 'BKGINIT', 'BKGPIX', 'BLANK', 'DECAY',
                   'X-CORRECTIONS', 'Y-CORRECTIONS', 'MODPIX', 'FRAME',
