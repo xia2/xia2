@@ -40,11 +40,12 @@ from __future__ import absolute_import, division
 import os
 import math
 
-from xia2.lib.bits import inherits_from
 from xia2.Handlers.Streams import Chatter, Debug, Journal
 from xia2.Handlers.Phil import PhilIndex
 
 from xia2.Schema.Exceptions.BadLatticeError import BadLatticeError
+import xia2.Schema.Interfaces.Indexer
+import xia2.Schema.Interfaces.Refiner
 
 # symmetry operator management functionality
 from xia2.Experts.SymmetryExpert import compose_symops
@@ -507,9 +508,8 @@ class Integrater(FrameProcessor):
   def set_integrater_indexer(self, indexer):
     '''Set the indexer implementation to use for this integration.'''
 
-    if not inherits_from(indexer.__class__, 'Indexer'):
-      raise RuntimeError('input %s is not an Indexer implementation' % \
-            indexer.__name__)
+    assert issubclass(indexer.__class__, xia2.Schema.Interfaces.Indexer.Indexer), \
+           '%s is not an Indexer implementation' % indexer
 
     self._intgr_indexer = indexer
     self.set_integrater_prepare_done(False)
@@ -517,9 +517,8 @@ class Integrater(FrameProcessor):
   def set_integrater_refiner(self, refiner):
     '''Set the refiner implementation to use for this integration.'''
 
-    if not inherits_from(refiner.__class__, 'Refiner'):
-      raise RuntimeError('input %s is not a Refiner implementation' % \
-            refiner.__name__)
+    assert issubclass(refiner.__class__, xia2.Schema.Interfaces.Refiner.Refiner), \
+           '%s is not a Refiner implementation' % refiner
 
     self._intgr_refiner = refiner
     self.set_integrater_prepare_done(False)

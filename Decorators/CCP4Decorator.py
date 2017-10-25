@@ -38,10 +38,10 @@
 #                 running together.
 #
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 import os
 
-from xia2.Decorators.DecoratorHelper import inherits_from
+import xia2.Driver.DefaultDriver
 
 def CCP4DecoratorFactory(DriverInstance):
   '''Create a CCP4 decorated Driver instance - based on the Driver
@@ -56,9 +56,8 @@ def CCP4DecoratorFactory(DriverInstance):
   # note well - instances of DefaultDriver must not be used
   # directly.
 
-  if not inherits_from(DriverInstanceClass, 'DefaultDriver'):
-    raise RuntimeError('object %s is not a Driver implementation' % \
-          str(DriverInstance))
+  assert issubclass(DriverInstanceClass, xia2.Driver.DefaultDriver.DefaultDriver), \
+          '%s is not a Driver implementation' % DriverInstance
 
   # verify that the object matches the Driver specification
 
@@ -454,4 +453,4 @@ if __name__ == '__main__':
 
   from pydoc import help
 
-  print help(d.__class__)
+  print(help(d.__class__))

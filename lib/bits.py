@@ -10,26 +10,12 @@
 # Python routines which don't really belong anywhere else.
 #
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 import math
 
 from xia2.Handlers.Streams import Chatter, Debug
-
-def inherits_from(this_class,
-                  base_class_name):
-  '''Return True if base_class_name contributes to the this_class class.'''
-
-  if this_class.__bases__:
-    for b in this_class.__bases__:
-      if inherits_from(b, base_class_name):
-        return True
-
-  if this_class.__name__ == base_class_name:
-    return True
-
-  return False
 
 def is_mtz_file(filename):
   '''Check if a file is MTZ format - at least according to the
