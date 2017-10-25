@@ -1,33 +1,19 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 import sys
 
-import libtbx.load_env
-from libtbx.test_utils import approx_equal, open_tmp_directory
+from libtbx.test_utils import approx_equal
+import mock
+import pytest
 
-try:
-  dials_regression = libtbx.env.dist_path('dials_regression')
-  have_dials_regression = True
-except KeyError:
-  have_dials_regression = False
-
-
-def exercise_dials_integrater(nproc=None):
-  if not have_dials_regression:
-    print "Skipping exercise_dials_integrater(): dials_regression not configured"
-    return
-
-  if nproc is not None:
+def exercise_dials_integrater(dials_regression, tmp_dir, nproc=None):
+  if nproc:
     from xia2.Handlers.Phil import PhilIndex
     PhilIndex.params.xia2.settings.multiprocessing.nproc = nproc
 
   xia2_demo_data = os.path.join(dials_regression, "xia2_demo_data")
   template = os.path.join(xia2_demo_data, "insulin_1_###.img")
-
-  cwd = os.path.abspath(os.curdir)
-  tmp_dir = os.path.abspath(open_tmp_directory())
-  os.chdir(tmp_dir)
 
   from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
   from xia2.Modules.Integrater.DialsIntegrater import DialsIntegrater
@@ -83,7 +69,7 @@ def exercise_dials_integrater(nproc=None):
 
   # test serialization of integrater
   json_str = integrater.as_json()
-  #print json_str
+  #print(json_str)
   integrater2 = DialsIntegrater.from_json(string=json_str)
   integrater2.set_integrater_sweep(sweep, reset=False)
   integrater2_intensities = integrater.get_integrater_intensities()
@@ -113,16 +99,8 @@ def exercise_dials_integrater(nproc=None):
   mtz_object = reader.file_content()
   assert abs(mtz_object.n_reflections() - expected_reflections) < 300, mtz_object.n_reflections()
 
-
-def run(args):
-  assert len(args) <= 1, args
-  if len(args) == 1:
-    nproc = int(args[0])
-  else:
-    nproc = None
-  exercise_dials_integrater(nproc=nproc)
-  print "OK"
-
-
-if __name__ == '__main__':
-  run(sys.argv[1:])
+@pytest.mark.slow
+def test_dials_integrater_serial(dials_regression, tmpdir):
+  with tmpdir.as_cwd():
+    with mock.patch.object(sys, 'argv', []):
+      exercise_dials_integrater(dials_regression, tmpdir.strpath, nproc=1)

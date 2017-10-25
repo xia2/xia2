@@ -1,23 +1,13 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
+import pytest
+import mock
+import sys
 
-import libtbx.load_env
-from libtbx.test_utils import open_tmp_directory
-
-try:
-  dials_regression = libtbx.env.dist_path('dials_regression')
-  have_dials_regression = True
-except KeyError:
-  have_dials_regression = False
-
-
-def exercise_mosflm_refine_cell():
-  if not have_dials_regression:
-    print "Skipping exercise_mosflm_refine_cell(): dials_regression not configured"
-    return
-
-
+@pytest.mark.slow
+def test_mosflm_refine_cell(dials_regression, tmpdir):
+  tmpdir.chdir()
   xia2_demo_data = os.path.join(dials_regression, "xia2_demo_data")
   template = os.path.join(xia2_demo_data, "insulin_1_%03i.img")
 
@@ -25,12 +15,9 @@ def exercise_mosflm_refine_cell():
   from xia2.Wrappers.Mosflm.MosflmRefineCell import MosflmRefineCell
 
   # exercise basic indexing from two images
-  cwd = os.path.abspath(os.curdir)
-  tmp_dir = open_tmp_directory()
-  os.chdir(tmp_dir)
-
   from xia2.Experts.FindImages import image2template_directory
-  templ, directory = image2template_directory(template %1)
+  with mock.patch.object(sys, 'argv', []):
+    templ, directory = image2template_directory(template %1)
 
   indexer = MosflmIndex()
   indexer.set_images((1,45))
@@ -49,7 +36,7 @@ def exercise_mosflm_refine_cell():
     sum(indexer.get_mosaic_spreads())/len(indexer.get_mosaic_spreads()))
   refiner.run()
   output = ''.join(refiner.get_all_output())
-  print output
+  print(output)
 
   background_residual = refiner.get_background_residual()
   rms_values = refiner.get_rms_values()
@@ -74,12 +61,3 @@ def exercise_mosflm_refine_cell():
   for cycle in rms_values:
     for frame in range(len(rms_values[cycle])):
       assert abs(rms_values[cycle][frame] - ref_values[cycle][frame]) <= 0.05
-
-
-def run():
-  exercise_mosflm_refine_cell()
-  print "OK"
-
-
-if __name__ == '__main__':
-  run()

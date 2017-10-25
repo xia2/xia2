@@ -1,33 +1,19 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 import sys
 
-import libtbx.load_env
-from libtbx.test_utils import approx_equal, open_tmp_directory
+from libtbx.test_utils import approx_equal
+import mock
+import pytest
 
-try:
-  dials_regression = libtbx.env.dist_path('dials_regression')
-  have_dials_regression = True
-except KeyError:
-  have_dials_regression = False
-
-
-def exercise_xds_integrater(nproc=None):
-  if not have_dials_regression:
-    print "Skipping exercise_xds_integrater(): dials_regression not configured"
-    return
-
-  if nproc is not None:
+def exercise_xds_integrater(dials_regression, tmp_dir, nproc=None):
+  if nproc:
     from xia2.Handlers.Phil import PhilIndex
     PhilIndex.params.xia2.settings.multiprocessing.nproc = nproc
 
   xia2_demo_data = os.path.join(dials_regression, "xia2_demo_data")
   template = os.path.join(xia2_demo_data, "insulin_1_###.img")
-
-  cwd = os.path.abspath(os.curdir)
-  tmp_dir = os.path.abspath(open_tmp_directory())
-  os.chdir(tmp_dir)
 
   from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
   from xia2.Modules.Integrater.XDSIntegrater import XDSIntegrater
@@ -63,9 +49,9 @@ def exercise_xds_integrater(nproc=None):
   integrater.set_integrater_sweep(sweep)
   integrater.integrate()
 
+  from iotbx.reflection_file_reader import any_reflection_file
   integrater_intensities = integrater.get_integrater_intensities()
   assert os.path.exists(integrater_intensities)
-  from iotbx.reflection_file_reader import any_reflection_file
   reader = any_reflection_file(integrater_intensities)
   assert reader.file_type() == "ccp4_mtz"
   mtz_object = reader.file_content()
@@ -76,7 +62,6 @@ def exercise_xds_integrater(nproc=None):
 
   corrected_intensities = integrater.get_integrater_corrected_intensities()
   assert os.path.exists(corrected_intensities)
-  from iotbx.reflection_file_reader import any_reflection_file
   reader = any_reflection_file(corrected_intensities)
   assert reader.file_type() == "xds_ascii"
   ma = reader.as_miller_arrays(merge_equivalents=False)[0]
@@ -90,7 +75,7 @@ def exercise_xds_integrater(nproc=None):
 
   # test serialization of integrater
   json_str = integrater.as_json()
-  #print json_str
+  #print(json_str)
   integrater2 = XDSIntegrater.from_json(string=json_str)
   integrater2.set_integrater_sweep(sweep, reset=False)
   integrater2_intensities = integrater.get_integrater_intensities()
@@ -120,16 +105,8 @@ def exercise_xds_integrater(nproc=None):
   mtz_object = reader.file_content()
   assert approx_equal(mtz_object.n_reflections(), 50100, eps=400)
 
-
-def run(args):
-  assert len(args) <= 1, args
-  if len(args) == 1:
-    nproc = int(args[0])
-  else:
-    nproc = None
-  exercise_xds_integrater(nproc=nproc)
-  print "OK"
-
-
-if __name__ == '__main__':
-  run(sys.argv[1:])
+@pytest.mark.slow
+def test_xds_integrater_serial(dials_regression, tmpdir):
+  with tmpdir.as_cwd():
+    with mock.patch.object(sys, 'argv', []):
+      exercise_xds_integrater(dials_regression, tmpdir.strpath, nproc=1)

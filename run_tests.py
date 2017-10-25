@@ -3,8 +3,6 @@ from libtbx.test_utils.pytest import discover
 
 tst_list = [
   #["$D/Test/Modules/Refiner/TstDialsRefiner.py", "1"],
-  ["$D/Test/Modules/Integrater/TstDialsIntegrater.py", "1"],
-  ["$D/Test/Modules/Integrater/TstXDSIntegrater.py", "1"],
   ["$D/Test/Modules/Indexer/TstMosflmIndexer.py", "1"],
   ["$D/Test/Modules/Indexer/TstDialsIndexer.py", "1"],
   "$D/Test/Modules/Indexer/TstLabelitIndexer.py",
@@ -14,6 +12,4 @@ tst_list = [
   ["$D/Test/Modules/Scaler/TstCCP4ScalerA.py", "1"],
   ["$D/Test/Modules/Scaler/TstXDSScalerA.py", "1"],
   "$D/Test/Wrappers/Labelit/TstLabelitIndex.py",
-  "$D/Test/Wrappers/Mosflm/TstMosflmIndex.py",
-  "$D/Test/Wrappers/Mosflm/TstMosflmRefineCell.py",
 ] + discover()
