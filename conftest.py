@@ -5,30 +5,9 @@
 
 from __future__ import absolute_import, division, print_function
 
-import libtbx.load_env
-import os
 import pytest
 
-@pytest.fixture
-def dials_regression():
-  try:
-    return libtbx.env.dist_path('dials_regression')
-  except KeyError:
-    pytest.skip("dials_regression required for this test")
-
-@pytest.fixture
-def xia2_regression():
-  try:
-    return libtbx.env.dist_path('xia2_regression')
-  except KeyError:
-    pytest.skip("xia2_regression required for this test")
-
-@pytest.fixture
-def xia2_regression_build():
-  x2rpath = libtbx.env.under_build('xia2_regression')
-  if not os.path.exists(x2rpath):
-    pytest.skip("xia2_regression required for this test")
-  return x2rpath
+from dials.conftest import dials_regression, xia2_regression, xia2_regression_build
 
 def pytest_addoption(parser):
   '''Add a '--runslow' option to py.test.'''
