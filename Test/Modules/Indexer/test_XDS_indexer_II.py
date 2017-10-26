@@ -1,23 +1,13 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 import sys
 
-import libtbx.load_env
-from libtbx.test_utils import approx_equal, open_tmp_directory
+import mock
+import pytest
+from libtbx.test_utils import approx_equal
 
-try:
-  dials_regression = libtbx.env.dist_path('dials_regression')
-  have_dials_regression = True
-except KeyError:
-  have_dials_regression = False
-
-
-def exercise_dials_indexer(nproc=None):
-  if not have_dials_regression:
-    print "Skipping exercise_dials_indexer(): dials_regression not configured"
-    return
-
+def exercise_xds_indexer(dials_regression, tmp_dir, nproc=None):
   if nproc is not None:
     from xia2.Handlers.Phil import PhilIndex
     PhilIndex.params.xia2.settings.multiprocessing.nproc = nproc
@@ -25,12 +15,8 @@ def exercise_dials_indexer(nproc=None):
   xia2_demo_data = os.path.join(dials_regression, "xia2_demo_data")
   template = os.path.join(xia2_demo_data, "insulin_1_###.img")
 
-  cwd = os.path.abspath(os.curdir)
-  tmp_dir = os.path.abspath(open_tmp_directory())
-  os.chdir(tmp_dir)
-
-  from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
-  indexer = DialsIndexer()
+  from xia2.Modules.Indexer.XDSIndexerII import XDSIndexerII
+  indexer = XDSIndexerII()
   indexer.set_working_directory(tmp_dir)
   from dxtbx.datablock import DataBlockTemplateImporter
   importer = DataBlockTemplateImporter([template])
@@ -51,28 +37,30 @@ def exercise_dials_indexer(nproc=None):
 
   indexer.index()
 
-  assert approx_equal(indexer.get_indexer_cell(),
-                      (78.14, 78.14, 78.14, 90, 90, 90), eps=1e-1)
-  solution = indexer.get_solution()
-  assert approx_equal(solution['rmsd'], 0.041, eps=1e-2)
-  assert approx_equal(solution['metric'], 0.027, eps=1e-2)
-  assert solution['number'] == 22
-  assert solution['lattice'] == 'cI'
+  assert approx_equal(
+    indexer.get_indexer_cell(), (78.054, 78.054, 78.054, 90, 90, 90),
+    eps=1), indexer.get_indexer_cell()
+  experiment = indexer.get_indexer_experiment_list()[0]
+  sgi = experiment.crystal.get_space_group().info()
+  assert sgi.type().number() == 197
 
   beam_centre = indexer.get_indexer_beam_centre()
-  assert approx_equal(beam_centre, (94.4223, 94.5097), eps=1e-2)
-  print indexer.get_indexer_experiment_list()[0].crystal
-  print indexer.get_indexer_experiment_list()[0].detector
+  assert approx_equal(beam_centre, (94.4239, 94.5110), eps=1e-1)
+  assert indexer.get_indexer_images() == [(1, 45)]
+  print(indexer.get_indexer_experiment_list()[0].crystal)
+  print(indexer.get_indexer_experiment_list()[0].detector)
 
   # test serialization of indexer
   json_str = indexer.as_json()
-  #print json_str
-  indexer2 = DialsIndexer.from_json(string=json_str)
+  print(json_str)
+  indexer2 = XDSIndexerII.from_json(string=json_str)
   indexer2.index()
 
   assert approx_equal(indexer.get_indexer_cell(), indexer2.get_indexer_cell())
   assert approx_equal(
     indexer.get_indexer_beam_centre(), indexer2.get_indexer_beam_centre())
+  assert approx_equal(
+    indexer.get_indexer_images(), indexer2.get_indexer_images())
 
   indexer.eliminate()
   indexer2.eliminate()
@@ -81,16 +69,8 @@ def exercise_dials_indexer(nproc=None):
   assert indexer.get_indexer_lattice() == 'hR'
   assert indexer2.get_indexer_lattice() == 'hR'
 
-
-def run(args):
-  assert len(args) <= 1, args
-  if len(args) == 1:
-    nproc = int(args[0])
-  else:
-    nproc = None
-  exercise_dials_indexer(nproc=nproc)
-  print "OK"
-
-
-if __name__ == '__main__':
-  run(sys.argv[1:])
+@pytest.mark.slow
+def test_xds_indexer_serial(dials_regression, tmpdir):
+  with tmpdir.as_cwd():
+    with mock.patch.object(sys, 'argv', []):
+      exercise_xds_indexer(dials_regression, tmpdir.strpath, nproc=1)

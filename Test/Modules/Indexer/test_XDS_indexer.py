@@ -1,33 +1,19 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 import sys
 
-import libtbx.load_env
-from libtbx.test_utils import approx_equal, open_tmp_directory
+import mock
+import pytest
+from libtbx.test_utils import approx_equal
 
-try:
-  dials_regression = libtbx.env.dist_path('dials_regression')
-  have_dials_regression = True
-except KeyError:
-  have_dials_regression = False
-
-
-def exercise_xds_indexer(nproc=None):
-  if not have_dials_regression:
-    print "Skipping exercise_xds_indexer(): dials_regression not configured"
-    return
-
+def exercise_xds_indexer(dials_regression, tmp_dir, nproc=None):
   if nproc is not None:
     from xia2.Handlers.Phil import PhilIndex
     PhilIndex.params.xia2.settings.multiprocessing.nproc = nproc
 
   xia2_demo_data = os.path.join(dials_regression, "xia2_demo_data")
   template = os.path.join(xia2_demo_data, "insulin_1_###.img")
-
-  cwd = os.path.abspath(os.curdir)
-  tmp_dir = os.path.abspath(open_tmp_directory())
-  os.chdir(tmp_dir)
 
   from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
   indexer = XDSIndexer()
@@ -61,12 +47,12 @@ def exercise_xds_indexer(nproc=None):
   beam_centre = indexer.get_indexer_beam_centre()
   assert approx_equal(beam_centre, (94.4221, 94.5096), eps=1e-1)
   assert indexer.get_indexer_images() == [(1, 5), (20, 24), (41, 45)]
-  print indexer.get_indexer_experiment_list()[0].crystal
-  print indexer.get_indexer_experiment_list()[0].detector
+  print(indexer.get_indexer_experiment_list()[0].crystal)
+  print(indexer.get_indexer_experiment_list()[0].detector)
 
   # test serialization of indexer
   json_str = indexer.as_json()
-  print json_str
+  print(json_str)
   indexer2 = XDSIndexer.from_json(string=json_str)
   indexer2.index()
 
@@ -83,16 +69,8 @@ def exercise_xds_indexer(nproc=None):
   assert indexer.get_indexer_lattice() == 'hR'
   assert indexer2.get_indexer_lattice() == 'hR'
 
-
-def run(args):
-  assert len(args) <= 1, args
-  if len(args) == 1:
-    nproc = int(args[0])
-  else:
-    nproc = None
-  exercise_xds_indexer(nproc=nproc)
-  print "OK"
-
-
-if __name__ == '__main__':
-  run(sys.argv[1:])
+@pytest.mark.slow
+def test_xds_indexer_serial(dials_regression, tmpdir):
+  with tmpdir.as_cwd():
+    with mock.patch.object(sys, 'argv', []):
+      exercise_xds_indexer(dials_regression, tmpdir.strpath, nproc=1)
