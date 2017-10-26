@@ -11,8 +11,9 @@
 # XIA. This one tests command line input.
 
 from __future__ import absolute_import, division
-import time
+
 import sys
+import time
 
 __doc__ = '''A small program which will write output to the standard output
 every so often, for testing of the XIA core.'''

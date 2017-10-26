@@ -11,6 +11,7 @@
 #
 
 from __future__ import absolute_import, division
+
 import os
 
 _original_wd = os.getcwd()

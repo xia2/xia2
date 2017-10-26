@@ -9,16 +9,15 @@
 #
 from __future__ import absolute_import, division
 
-import os
-import sys
 import copy
 import math
+import os
+import sys
 
 from xia2.Driver.DriverFactory import DriverFactory
+from xia2.Experts.FindImages import (image2image, image2template_directory,
+                                     template_number2image)
 from xia2.Wrappers.XIA.Diffdump import Diffdump
-
-from xia2.Experts.FindImages import image2template_directory, image2image, \
-     template_number2image
 
 def PrintpeaksMosflm(DriverType = None):
   '''A factory for wrappers for the printpeaks/mosflm.'''

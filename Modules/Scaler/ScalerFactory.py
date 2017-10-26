@@ -9,16 +9,14 @@
 
 from __future__ import absolute_import, division
 
+# other odds and ends
+from xia2.DriverExceptions.NotAvailableError import NotAvailableError
+# selection stuff
+from xia2.Handlers.PipelineSelection import get_preferences
+from xia2.Handlers.Streams import Debug
 # scaler implementations
 from xia2.Modules.Scaler.CCP4ScalerA import CCP4ScalerA
 from xia2.Modules.Scaler.XDSScalerA import XDSScalerA
-
-# selection stuff
-from xia2.Handlers.PipelineSelection import get_preferences
-
-# other odds and ends
-from xia2.DriverExceptions.NotAvailableError import NotAvailableError
-from xia2.Handlers.Streams import Debug
 
 def Scaler():
   '''Create a Scaler implementation.'''

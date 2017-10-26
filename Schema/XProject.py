@@ -10,20 +10,21 @@
 
 from __future__ import absolute_import, division
 
+from xia2.Handlers.Phil import PhilIndex
+# output stream
+from xia2.Handlers.Streams import Debug
+from xia2.Handlers.Syminfo import Syminfo
+from xia2.Handlers.XInfo import XInfo
+from xia2.Schema.XCrystal import XCrystal
+from xia2.Schema.XSample import XSample
+from xia2.Schema.XWavelength import XWavelength
+
 # hooks to all of the child objects
 
-from xia2.Schema.XCrystal import XCrystal
-from xia2.Schema.XWavelength import XWavelength
-from xia2.Schema.XSample import XSample
 
 # .xinfo parser
 
-from xia2.Handlers.XInfo import XInfo
-from xia2.Handlers.Syminfo import Syminfo
-from xia2.Handlers.Phil import PhilIndex
 
-# output stream
-from xia2.Handlers.Streams import Debug
 
 class XProject(object):
   '''A representation of a complete project. This will contain a dictionary

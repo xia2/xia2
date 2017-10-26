@@ -88,19 +88,18 @@ from __future__ import absolute_import, division
 import copy
 import math
 
+from xia2.Handlers.Citations import Citations
+from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.lib.bits import auto_logfiler
+from xia2.lib.SymmetryLib import lattice_to_spacegroup
+from xia2.Modules.Indexer.LabelitIndexer import LabelitIndexer
+from xia2.Modules.Indexer.MosflmCheckIndexerSolution import \
+    mosflm_check_indexer_solution
+from xia2.Wrappers.Labelit.LabelitDistl import LabelitDistl
 # other labelit things that this uses
 from xia2.Wrappers.Labelit.LabelitMosflmMatrix import LabelitMosflmMatrix
 from xia2.Wrappers.Labelit.LabelitStats_distl import LabelitStats_distl
-from xia2.Wrappers.Labelit.LabelitDistl import LabelitDistl
 from xia2.Wrappers.Phenix.LatticeSymmetry import LatticeSymmetry
-
-from xia2.lib.bits import auto_logfiler
-from xia2.lib.SymmetryLib import lattice_to_spacegroup
-from xia2.Handlers.Streams import Chatter, Debug, Journal
-from xia2.Handlers.Citations import Citations
-from xia2.Modules.Indexer.MosflmCheckIndexerSolution import \
-     mosflm_check_indexer_solution
-from xia2.Modules.Indexer.LabelitIndexer import LabelitIndexer
 
 class LabelitIndexerII(LabelitIndexer):
   '''A wrapper for the program labelit.index - which will provide

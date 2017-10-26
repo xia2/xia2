@@ -1,4 +1,10 @@
 from __future__ import absolute_import, division
+
+import os
+import sys
+
+import alabaster
+
 # -*- coding: utf-8 -*-
 
 ### build documentation with: phenix.python `which sphinx-build` -b html source build/html
@@ -16,8 +22,6 @@ from __future__ import absolute_import, division
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys
-import os
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -110,7 +114,6 @@ pygments_style = 'sphinx'
 
 # -- Options for HTML output ----------------------------------------------
 
-import alabaster
 
 html_theme_path = [alabaster.get_path()]
 extensions.append('alabaster')

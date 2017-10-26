@@ -28,22 +28,22 @@
 # Integral unit test was also out of date, because the interface has changed.
 
 from __future__ import absolute_import, division
-import os
-import copy
 
-from xia2.Modules.Indexer.MosflmIndexer import MosflmIndexer
+import copy
+import os
+
+from xia2.DriverExceptions.NotAvailableError import NotAvailableError
+from xia2.Handlers.Phil import PhilIndex
+from xia2.Handlers.PipelineSelection import get_preferences
+from xia2.Handlers.Streams import Debug
+from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
 from xia2.Modules.Indexer.LabelitIndexer import LabelitIndexer
 from xia2.Modules.Indexer.LabelitIndexerII import LabelitIndexerII
+from xia2.Modules.Indexer.MosflmIndexer import MosflmIndexer
 from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
 from xia2.Modules.Indexer.XDSIndexerII import XDSIndexerII
 from xia2.Modules.Indexer.XDSIndexerInteractive import XDSIndexerInteractive
 from xia2.Modules.Indexer.XDSIndexerSum import XDSIndexerSum
-from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
-
-from xia2.DriverExceptions.NotAvailableError import NotAvailableError
-from xia2.Handlers.Streams import Debug
-from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.PipelineSelection import get_preferences
 
 def IndexerForXSweep(xsweep, json_file=None):
   '''Provide an indexer to work with XSweep instance xsweep.'''

@@ -24,8 +24,8 @@ from __future__ import absolute_import, division
 
 import os
 
-from xia2.Wrappers.CCP4.Scaleit import Scaleit
 from xia2.lib.bits import auto_logfiler
+from xia2.Wrappers.CCP4.Scaleit import Scaleit
 
 # Operation:
 #

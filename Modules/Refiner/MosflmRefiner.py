@@ -8,18 +8,17 @@
 
 from __future__ import absolute_import, division
 
-from xia2.Schema.Interfaces.Refiner import Refiner
-from xia2.Handlers.Streams import Debug, Chatter, Journal
-
 import os
 
-from xia2.lib.bits import auto_logfiler
-from xia2.Handlers.Phil import PhilIndex
-from xia2.Wrappers.Mosflm.MosflmRefineCell import MosflmRefineCell
-from xia2.lib.SymmetryLib import lattice_to_spacegroup
-from xia2.Experts.MatrixExpert import transmogrify_matrix
-from xia2.Schema.Exceptions.NegativeMosaicError import NegativeMosaicError
 from dxtbx.model.experiment_list import ExperimentList
+from xia2.Experts.MatrixExpert import transmogrify_matrix
+from xia2.Handlers.Phil import PhilIndex
+from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.lib.bits import auto_logfiler
+from xia2.lib.SymmetryLib import lattice_to_spacegroup
+from xia2.Schema.Exceptions.NegativeMosaicError import NegativeMosaicError
+from xia2.Schema.Interfaces.Refiner import Refiner
+from xia2.Wrappers.Mosflm.MosflmRefineCell import MosflmRefineCell
 
 class MosflmRefiner(Refiner):
 

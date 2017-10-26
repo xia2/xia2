@@ -17,14 +17,14 @@ project and starts ccp4i with it.
 
 from __future__ import absolute_import, division
 
-import sys
-import os
-import shutil
-import subprocess
-import re
 import datetime
-import string
 import getopt
+import os
+import re
+import shutil
+import string
+import subprocess
+import sys
 
 __author__ = "David Waterman"
 __credits__ = "Andrey Lebedev"

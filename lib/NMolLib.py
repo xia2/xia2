@@ -14,10 +14,12 @@
 # Relies on $XIA2_ROOT/Data/nmol-params.dat
 
 from __future__ import absolute_import, division
-import os, math
 
-from xia2.Handlers.Syminfo import Syminfo
+import math
+import os
+
 from xia2.Handlers.Streams import Chatter
+from xia2.Handlers.Syminfo import Syminfo
 from xia2.Wrappers.CCP4.Matthews_coef import Matthews_coef
 
 nmolparams = os.path.abspath(os.path.join(

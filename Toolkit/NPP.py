@@ -1,9 +1,10 @@
 from __future__ import absolute_import, division
 
+import math
+
 from scitbx.array_family import flex
 from scitbx.math import distributions
-from scitbx.random import variate, poisson_distribution
-import math
+from scitbx.random import poisson_distribution, variate
 
 def test():
   numbers = variate(poisson_distribution(mean = 1000))

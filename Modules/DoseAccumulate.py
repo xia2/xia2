@@ -16,10 +16,11 @@
 #
 
 from __future__ import absolute_import, division
+
 import sys
 
-from xia2.Wrappers.XIA.Diffdump import Diffdump
 from xia2.Handlers.Streams import Debug
+from xia2.Wrappers.XIA.Diffdump import Diffdump
 
 def epocher(images):
   '''Get a list of epochs for each image in this list, returning as

@@ -54,4 +54,3 @@ def EstimateResolutionLimit(DriverType = None):
       return self._estimated_d_min
 
   return EstimateResolutionLimitWrapper()
-

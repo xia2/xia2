@@ -28,9 +28,9 @@
 
 from __future__ import absolute_import, division
 
-import os
-import math
 import copy
+import math
+import os
 
 from xia2.Wrappers.CCP4.CCP4Factory import CCP4Factory
 
@@ -139,4 +139,3 @@ class AnalyseMyIntensities(object):
                     cell_alpha, cell_beta, cell_gamma)
 
     return average_cell, sg
-

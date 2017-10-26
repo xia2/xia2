@@ -15,28 +15,25 @@
 
 from __future__ import absolute_import, division
 
-import os
 import copy
 import math
+import os
 
-# interfaces that this inherits from ...
-from xia2.Schema.Interfaces.Indexer import IndexerSingleSweep
-
-# other labelit things that this uses
-from xia2.Wrappers.Labelit.LabelitMosflmScript import LabelitMosflmScript
-from xia2.Wrappers.Labelit.LabelitStats_distl import LabelitStats_distl
-
-from xia2.Modules.Indexer.IndexerSelectImages import index_select_images_lone, \
-     index_select_images_user
-
-from xia2.lib.bits import auto_logfiler
-from xia2.lib.SymmetryLib import lattice_to_spacegroup
-from xia2.Handlers.Streams import Chatter, Debug, Journal
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
+from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.lib.bits import auto_logfiler
+from xia2.lib.SymmetryLib import lattice_to_spacegroup
+from xia2.Modules.Indexer.IndexerSelectImages import (index_select_images_lone,
+                                                      index_select_images_user)
 from xia2.Modules.Indexer.MosflmCheckIndexerSolution import \
-     mosflm_check_indexer_solution
+    mosflm_check_indexer_solution
+# interfaces that this inherits from ...
+from xia2.Schema.Interfaces.Indexer import IndexerSingleSweep
+# other labelit things that this uses
+from xia2.Wrappers.Labelit.LabelitMosflmScript import LabelitMosflmScript
+from xia2.Wrappers.Labelit.LabelitStats_distl import LabelitStats_distl
 
 class LabelitIndexer(IndexerSingleSweep):
   '''A wrapper for the program labelit.index - which will provide
@@ -419,4 +416,3 @@ class LabelitIndexer(IndexerSingleSweep):
 
         raise RuntimeError('no solution for lattice %s' % \
               self._indxr_input_lattice)
-

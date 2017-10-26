@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 """Pretty-print tabular data."""
-from __future__ import absolute_import, division
-from __future__ import print_function, unicode_literals
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
+
+import re
 from collections import namedtuple
 from platform import python_version_tuple
-import re
-
 
 if python_version_tuple()[0] < "3":
   from itertools import izip_longest

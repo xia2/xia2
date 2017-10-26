@@ -20,6 +20,8 @@
 
 from __future__ import absolute_import, division
 
+import math
+
 # Hard coded "expertise" - this is encoded by hand, because it is
 # easier that way... or is it better to properly encode the
 # symmetry constraints and calculate the rest from this? Quite possibly.
@@ -58,7 +60,6 @@ allowed_lattices = ['aP', 'mP', 'mC', 'oP', 'oC', 'oI',
 # Which I will do - see ApplyLattice(lattice, cell) below.
 #
 
-import math
 
 def ApplyLattice(lattice, cell):
   '''Apply lattice constraints for a given lattice to a given input cell.

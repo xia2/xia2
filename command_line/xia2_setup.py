@@ -4,6 +4,7 @@
 # LIBTBX_PRE_DISPATCHER_INCLUDE_SH ulimit -n `ulimit -Hn 2>&1 |sed 's/unlimited/4096/'`
 
 from __future__ import absolute_import, division
+
 from xia2.Applications import xia2setup
 
 if __name__ == '__main__':

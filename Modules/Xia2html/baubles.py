@@ -1,5 +1,10 @@
 from __future__ import absolute_import, division
 
+import os
+import re
+import sys
+import time
+
 #     baubles.py: a smarter CCP4 logfile browser
 #     Copyright (C) STFC 2007 Peter Briggs, Kevin Cowtan
 #
@@ -37,10 +42,6 @@ from __future__ import absolute_import, division
 # using smartie
 #
 import xia2.Modules.Xia2html.smartie as smartie
-import sys
-import os
-import re
-import time
 
 __cvs_id__ = "$Id$"
 __version__ = "0.0.8"

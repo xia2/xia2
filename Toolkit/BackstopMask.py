@@ -24,11 +24,11 @@ and Mosflm.'''
 
 from __future__ import absolute_import, division
 
+import binascii
 import math
 import sys
-import binascii
 
-from xia2.Modules.UnpackByteOffset import unpack_values, pack_values
+from xia2.Modules.UnpackByteOffset import pack_values, unpack_values
 
 def mmcc(ds, xs, ys):
   '''Fit a straight line

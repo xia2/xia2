@@ -12,16 +12,14 @@
 
 from __future__ import absolute_import, division
 
-import os
 import copy
+import os
 
+from xia2.Decorators.DecoratorFactory import DecoratorFactory
+from xia2.Driver.DriverFactory import DriverFactory
+from xia2.Handlers.Streams import Chatter, Debug
 from xia2.Schema.Exceptions.BadLatticeError import BadLatticeError
 from xia2.Schema.Exceptions.NegativeMosaicError import NegativeMosaicError
-
-from xia2.Driver.DriverFactory import DriverFactory
-from xia2.Decorators.DecoratorFactory import DecoratorFactory
-
-from xia2.Handlers.Streams import Chatter, Debug
 
 def MosflmRefineCell(DriverType = None, indxr_print = True):
   '''Factory for MosflmRefineCell wrapper classes, with the specified

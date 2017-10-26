@@ -1,9 +1,11 @@
 from __future__ import absolute_import, division
-# LIBTBX_SET_DISPATCHER_NAME dev.xia2.pea_in_box
 
 import math
 import os
 import sys
+
+# LIBTBX_SET_DISPATCHER_NAME dev.xia2.pea_in_box
+
 
 def reconstruct_peabox(params):
   assert os.path.exists('xia2.json')

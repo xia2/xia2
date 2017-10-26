@@ -19,8 +19,8 @@ from __future__ import absolute_import, division
 
 import os
 
-from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
+from xia2.Driver.DriverFactory import DriverFactory
 
 def Matthews_coef(DriverType = None):
   '''A factory for Matthews_coefWrapper classes.'''

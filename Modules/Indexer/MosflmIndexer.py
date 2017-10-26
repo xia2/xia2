@@ -12,39 +12,35 @@
 
 from __future__ import absolute_import, division
 
-import os
 import math
+import os
 
-# interfaces that this will present
-from xia2.Schema.Interfaces.Indexer import IndexerSingleSweep
-
-# output streams &c.
-from xia2.Handlers.Streams import Chatter, Debug, Journal
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
-
+# output streams &c.
+from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.lib.bits import auto_logfiler
+from xia2.lib.SymmetryLib import lattice_to_spacegroup
+# things we are moving towards...
+from xia2.Modules.Indexer.IndexerSelectImages import (index_select_images_lone,
+                                                      index_select_images_user)
+# cell refinement image helpers
+from xia2.Modules.Indexer.MosflmCheckIndexerSolution import \
+    mosflm_check_indexer_solution
+# interfaces that this will present
+from xia2.Schema.Interfaces.Indexer import IndexerSingleSweep
 # helpers
 from xia2.Wrappers.CCP4.MosflmHelpers import _get_indexing_solution_number
 from xia2.Wrappers.Mosflm.MosflmIndex import MosflmIndex
-
-# things we are moving towards...
-from xia2.Modules.Indexer.IndexerSelectImages import index_select_images_lone, \
-     index_select_images_user
-
-from xia2.lib.bits import auto_logfiler
-from xia2.lib.SymmetryLib import lattice_to_spacegroup
+from xia2.Wrappers.XIA.Printpeaks import Printpeaks
 
 # exceptions
 #from xia2.Schema.Exceptions.BadLatticeError import BadLatticeError
 #from xia2.Schema.Exceptions.NegativeMosaicError import NegativeMosaicError
 #from xia2.Schema.Exceptions.IndexingError import IndexingError
 
-from xia2.Wrappers.XIA.Printpeaks import Printpeaks
 
-# cell refinement image helpers
-from xia2.Modules.Indexer.MosflmCheckIndexerSolution import \
-     mosflm_check_indexer_solution
 
 
 class MosflmIndexer(IndexerSingleSweep):

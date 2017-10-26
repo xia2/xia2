@@ -31,8 +31,8 @@
 
 from __future__ import absolute_import, division
 
-from xia2.Schema.XSweep import XSweep
 from xia2.Handlers.Streams import Chatter
+from xia2.Schema.XSweep import XSweep
 
 class XWavelength(object):
   '''An object representation of a wavelength, which will after data

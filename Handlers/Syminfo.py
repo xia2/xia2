@@ -12,10 +12,11 @@
 #
 
 from __future__ import absolute_import, division
-import sys
-import os
+
 import copy
+import os
 import re
+import sys
 
 from cctbx import sgtbx
 

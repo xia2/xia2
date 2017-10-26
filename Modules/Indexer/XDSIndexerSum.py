@@ -14,19 +14,20 @@ from __future__ import absolute_import, division
 
 import os
 
+from xia2.Handlers.Phil import PhilIndex
+from xia2.Handlers.Streams import Debug
+from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
+from xia2.Wrappers.XDS.Merge2cbf import Merge2cbf
+
 # the class that we are extending
 
-from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
 
 # odds and sods that are needed
 
-from xia2.Handlers.Streams import Debug
-from xia2.Handlers.Phil import PhilIndex
 
 # FIXME need to put in access here to Phil parameters to know how wide to make
 # the summed images
 
-from xia2.Wrappers.XDS.Merge2cbf import Merge2cbf
 
 class XDSIndexerSum(XDSIndexer):
   '''An extension of XDSIndexer using all available images.'''

@@ -14,22 +14,19 @@ from __future__ import absolute_import, division
 
 import os
 import shutil
+
 from cctbx.uctbx import unit_cell
-
 from xia2.Driver.DriverFactory import DriverFactory
-
+from xia2.Handlers.Phil import PhilIndex
+from xia2.Handlers.Streams import Debug
 # interfaces that this inherits from ...
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
-
 # generic helper stuff
-from xia2.Wrappers.XDS.XDS import imageset_to_xds, xds_check_version_supported, xds_check_error
-from xia2.Wrappers.XDS.XDS import template_to_xds
-
+from xia2.Wrappers.XDS.XDS import (imageset_to_xds, template_to_xds,
+                                   xds_check_error,
+                                   xds_check_version_supported)
 # specific helper stuff
 from xia2.Wrappers.XDS.XDSCorrectHelpers import _parse_correct_lp
-
-from xia2.Handlers.Streams import Debug
-from xia2.Handlers.Phil import PhilIndex
 
 def XDSCorrect(DriverType = None, params=None):
 

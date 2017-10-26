@@ -2,15 +2,15 @@
 
 from __future__ import absolute_import, division
 
-import sys
-import os
 import exceptions
+import os
+import sys
 import traceback
 
 # Needed to make xia2 imports work correctly
 import libtbx.load_env
-from xia2.Handlers.Streams import Chatter, Debug
 from xia2.Applications.xia2_main import check_environment, help
+from xia2.Handlers.Streams import Chatter, Debug
 
 def run():
   try:

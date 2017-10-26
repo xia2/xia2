@@ -45,14 +45,12 @@
 
 from __future__ import absolute_import, division
 
-import os
 import inspect
-
-from xia2.Handlers.Streams import Debug, Chatter
-from xia2.Handlers.Phil import PhilIndex
+import os
 
 from xia2.Experts.LatticeExpert import SortLattices
-
+from xia2.Handlers.Phil import PhilIndex
+from xia2.Handlers.Streams import Chatter, Debug
 # interfaces that this inherits from ...
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 

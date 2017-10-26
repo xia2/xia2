@@ -1,10 +1,9 @@
-from __future__ import division
-from __future__ import absolute_import
+from __future__ import absolute_import, division
 
 import os
 
-from cctbx import uctbx
 import iotbx.phil
+from cctbx import uctbx
 from dials.util.options import OptionParser
 
 help_message = '''

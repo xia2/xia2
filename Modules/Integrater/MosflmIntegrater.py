@@ -15,33 +15,26 @@ from __future__ import absolute_import, division
 import os
 
 from xia2.Background.Background import Background
-
-# interfaces that this will present
-from xia2.Schema.Interfaces.Integrater import Integrater
-
-# output streams &c.
-from xia2.Handlers.Streams import Chatter, Debug, Journal
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
-
-# helpers
-from xia2.Wrappers.CCP4.MosflmHelpers import standard_mask
-from xia2.Wrappers.Mosflm.MosflmIntegrate import MosflmIntegrate
-
-from xia2.Modules.GainEstimater import gain
-
+# output streams &c.
+from xia2.Handlers.Streams import Chatter, Debug, Journal
 from xia2.lib.bits import auto_logfiler
 from xia2.lib.SymmetryLib import lattice_to_spacegroup
-
+from xia2.Modules.GainEstimater import gain
 # exceptions
 from xia2.Schema.Exceptions.BadLatticeError import BadLatticeError
 from xia2.Schema.Exceptions.IntegrationError import IntegrationError
-
+# interfaces that this will present
+from xia2.Schema.Interfaces.Integrater import Integrater
+# helpers
+from xia2.Wrappers.CCP4.MosflmHelpers import standard_mask
 # other classes which are necessary to implement the integrater
 # interface (e.g. new version, with reindexing as the finish...)
 from xia2.Wrappers.CCP4.Reindex import Reindex
 from xia2.Wrappers.CCP4.Sortmtz import Sortmtz
+from xia2.Wrappers.Mosflm.MosflmIntegrate import MosflmIntegrate
 
 class MosflmIntegrater(Integrater):
   '''A wrapper for Mosflm integration.'''

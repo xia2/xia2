@@ -1,5 +1,15 @@
 from __future__ import absolute_import, division
 
+import copy
+import linecache
+import os
+import re
+#######################################################################
+# Import modules that this module depends on
+#######################################################################
+import sys
+import time
+
 #     smartie.py: CCP4 logfile parsing classes and functions
 #     Copyright (C) 2006-2007 Peter Briggs, Wanjuan Yang, CCLRC
 #
@@ -31,15 +41,6 @@ smartie_overview.html."""
 __cvs_id__ = "$Id$"
 __version__ = "0.0.15"
 
-#######################################################################
-# Import modules that this module depends on
-#######################################################################
-import sys
-import os
-import re
-import copy
-import linecache
-import time
 
 #######################################################################
 # Class definitions

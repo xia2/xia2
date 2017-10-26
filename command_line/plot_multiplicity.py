@@ -3,6 +3,7 @@
 
 from __future__ import absolute_import, division
 
+import iotbx.phil
 import libtbx.load_env
 from cctbx.miller.display import render_2d, scene
 from scitbx.array_family import flex
@@ -274,7 +275,6 @@ class MultiplicityViewJson(render_2d):
     }
     return d
 
-import iotbx.phil
 master_phil = iotbx.phil.parse("""
 include scope cctbx.miller.display.master_phil
 unit_cell = None

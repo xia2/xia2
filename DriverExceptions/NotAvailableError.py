@@ -8,6 +8,7 @@
 # An exception to be raised if a program or class is not available.
 
 from __future__ import absolute_import, division
+
 from exceptions import Exception
 
 class NotAvailableError(Exception):

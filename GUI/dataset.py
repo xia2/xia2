@@ -1,10 +1,9 @@
 from __future__ import absolute_import, division
 
-from wxtbx.phil_controls import path, ints
-from wxtbx import phil_controls
-from wxtbx import icons, app
 import wx
 from libtbx.utils import Sorry
+from wxtbx import app, icons, phil_controls
+from wxtbx.phil_controls import ints, path
 
 RSTBX_SELECT_IMAGE_IDS = 0
 

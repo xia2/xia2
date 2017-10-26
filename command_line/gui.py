@@ -3,18 +3,22 @@
 # LIBTBX_SET_DISPATCHER_NAME dev.xia2.gui
 from __future__ import absolute_import, division
 
-#from rstbx.viewer import results_base, indexing, integration
-from rstbx.viewer.frame import XrayFrame
-from wxtbx import process_control, icons
-import wxtbx.app
-from wxtbx.phil_controls import path
-from wxtbx.utils import LogViewer
-import wx.lib.agw.flatnotebook as fnb
+import os
+import random
+import sys
+import threading
+
 import wx
 import wx.html
 import wx.html2
-import os
-import sys
+import wx.lib.agw.flatnotebook as fnb
+import wxtbx.app
+#from rstbx.viewer import results_base, indexing, integration
+from rstbx.viewer.frame import XrayFrame
+from wxtbx import icons, process_control
+from wxtbx.phil_controls import path
+from wxtbx.utils import LogViewer
+from xia2.GUI import dataset
 
 class ProcessingFrame (wx.Frame) :
   def __init__ (self, *args, **kwds) :
@@ -166,7 +170,6 @@ class ProcessingFrame (wx.Frame) :
     print event
 
 
-from xia2.GUI import dataset
 class StartPanel (wx.Panel, dataset.SelectDatasetPanelMixin) :
   def __init__ (self, *args, **kwds) :
     wx.Panel.__init__(self, *args, **kwds)
@@ -194,8 +197,6 @@ class StartPanel (wx.Panel, dataset.SelectDatasetPanelMixin) :
     return self.output_ctrl.GetPhilValue()
 
 
-import threading
-import random
 class WorkerThread(threading.Thread):
   """
   This just simulates some long-running task that periodically sends

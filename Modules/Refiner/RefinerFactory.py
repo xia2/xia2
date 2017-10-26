@@ -10,18 +10,15 @@ from __future__ import absolute_import, division
 
 import os
 
+# other odds and ends
+from xia2.DriverExceptions.NotAvailableError import NotAvailableError
+# selection stuff
+from xia2.Handlers.PipelineSelection import get_preferences
+from xia2.Handlers.Streams import Debug
 # scaler implementations
 from xia2.Modules.Refiner.DialsRefiner import DialsRefiner
 from xia2.Modules.Refiner.MosflmRefiner import MosflmRefiner
 from xia2.Modules.Refiner.XDSRefiner import XDSRefiner
-
-# selection stuff
-from xia2.Handlers.PipelineSelection import get_preferences
-
-# other odds and ends
-from xia2.DriverExceptions.NotAvailableError import NotAvailableError
-from xia2.Handlers.Streams import Debug
-
 
 def RefinerForXSweep(xsweep, json_file=None):
   '''Create a Refiner implementation to work with the provided

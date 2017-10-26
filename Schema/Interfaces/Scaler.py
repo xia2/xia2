@@ -148,12 +148,11 @@
 
 from __future__ import absolute_import, division
 
-import os
 import inspect
-
-from xia2.lib.SymmetryLib import lauegroup_to_lattice, sort_lattices
+import os
 
 from xia2.Handlers.Streams import Chatter, Debug
+from xia2.lib.SymmetryLib import lauegroup_to_lattice, sort_lattices
 
 # file conversion (and merging) jiffies
 

@@ -8,12 +8,11 @@
 
 from __future__ import absolute_import, division
 
-from xia2.Schema.Interfaces.Refiner import Refiner
-from xia2.Handlers.Streams import Debug, Chatter
-
 import os
 
+from xia2.Handlers.Streams import Chatter, Debug
 from xia2.lib.bits import auto_logfiler
+from xia2.Schema.Interfaces.Refiner import Refiner
 
 class XDSRefiner(Refiner):
 

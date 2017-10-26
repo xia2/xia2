@@ -9,6 +9,7 @@
 # wrapper for xia2 MultiCrystalAnalysis module
 
 from __future__ import absolute_import, division
+
 import os
 
 def MultiCrystalAnalysis(DriverType = None):

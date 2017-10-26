@@ -16,8 +16,8 @@ import os
 import sys
 
 from xia2.Driver.DriverFactory import DriverFactory
-from xia2.lib.bits import transpose_loggraph
 from xia2.Handlers.Streams import Chatter, Debug
+from xia2.lib.bits import transpose_loggraph
 
 def Ctruncate(DriverType = None):
   '''A factory for CtruncateWrapper classes.'''

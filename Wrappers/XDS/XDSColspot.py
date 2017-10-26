@@ -14,15 +14,13 @@ import os
 import shutil
 
 from xia2.Driver.DriverFactory import DriverFactory
-
+from xia2.Handlers.Phil import PhilIndex
 # interfaces that this inherits from ...
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
-
 # generic helper stuff
-from xia2.Wrappers.XDS.XDS import imageset_to_xds,\
-     xds_check_version_supported, template_to_xds, find_hdf5_lib
-
-from xia2.Handlers.Phil import PhilIndex
+from xia2.Wrappers.XDS.XDS import (find_hdf5_lib, imageset_to_xds,
+                                   template_to_xds,
+                                   xds_check_version_supported)
 
 def XDSColspot(DriverType=None, params=None):
 

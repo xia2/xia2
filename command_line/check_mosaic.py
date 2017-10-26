@@ -1,7 +1,9 @@
 # LIBTBX_SET_DISPATCHER_NAME dev.xia2.check_mosaic
 from __future__ import absolute_import, division
-from dials.array_family import flex
+
 import cPickle as pickle
+
+from dials.array_family import flex
 
 def mosaic_profile_xyz(profile):
   nz, ny, nx = profile.focus()

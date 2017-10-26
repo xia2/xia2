@@ -14,36 +14,33 @@
 
 from __future__ import absolute_import, division
 
+import copy
 import os
 import shutil
-import copy
 
-# the interface definition that this will conform to
-# from xia2.Schema.Interfaces.Scaler import Scaler
+from xia2.Handlers.Citations import Citations
+from xia2.Handlers.Files import FileHandler
+from xia2.Handlers.Phil import PhilIndex
+from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.Handlers.Syminfo import Syminfo
+# random odds and sods - the resolution estimate should be somewhere better
+from xia2.lib.bits import auto_logfiler, is_mtz_file, transpose_loggraph
+from xia2.lib.SymmetryLib import lattices_in_order
+from xia2.Modules import MtzUtils
 from xia2.Modules.Scaler.CommonScaler import CommonScaler as Scaler
-
+# newly implemented CCTBX powered functions to replace xia2 binaries
+from xia2.Modules.Scaler.tools import compute_average_unit_cell
 # other tools that this will need
 from xia2.Modules.Scaler.XDSScalerHelpers import XDSScalerHelper
+from xia2.Wrappers.CCP4.CCP4Factory import CCP4Factory
+from xia2.Wrappers.XDS.Cellparm import Cellparm as _Cellparm
+from xia2.Wrappers.XDS.XScaleR import XScaleR as _XScale
 
 # program wrappers that we will need
 
-from xia2.Wrappers.XDS.XScaleR import XScaleR as _XScale
-from xia2.Wrappers.XDS.Cellparm import Cellparm as _Cellparm
 
-from xia2.Wrappers.CCP4.CCP4Factory import CCP4Factory
 
-# random odds and sods - the resolution estimate should be somewhere better
-from xia2.lib.bits import auto_logfiler, transpose_loggraph, is_mtz_file
-from xia2.lib.SymmetryLib import lattices_in_order
-from xia2.Handlers.Citations import Citations
-from xia2.Handlers.Syminfo import Syminfo
-from xia2.Handlers.Streams import Chatter, Debug, Journal
-from xia2.Handlers.Files import FileHandler
-from xia2.Handlers.Phil import PhilIndex
-from xia2.Modules import MtzUtils
 
-# newly implemented CCTBX powered functions to replace xia2 binaries
-from xia2.Modules.Scaler.tools import compute_average_unit_cell
 
 class XDSScalerA(Scaler):
   '''An implementation of the xia2 Scaler interface implemented with

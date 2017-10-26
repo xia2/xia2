@@ -10,10 +10,11 @@
 # but in a new address space.
 
 from __future__ import absolute_import, division
-import subprocess
-import os
-import sys
+
 import copy
+import os
+import subprocess
+import sys
 
 from xia2.Driver.DefaultDriver import DefaultDriver
 from xia2.Driver.DriverHelper import kill_process

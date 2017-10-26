@@ -26,11 +26,12 @@
 #
 
 from __future__ import absolute_import, division
+
+import copy
+import math
 import os
 import re
 import string
-import math
-import copy
 
 from xia2.Handlers.Streams import Debug
 

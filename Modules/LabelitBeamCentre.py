@@ -17,9 +17,9 @@
 
 from __future__ import absolute_import, division
 
+import exceptions
 import os
 import sys
-import exceptions
 
 from xia2.Modules.Indexer.LabelitIndexer import LabelitIndexer
 

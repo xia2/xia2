@@ -23,10 +23,9 @@ from __future__ import absolute_import, division
 import os
 import sys
 
-from xia2.Experts.FindImages import image2template_directory, \
-    template_directory_number2image, image2image, find_matching_images, \
-    digest_template
-
+from xia2.Experts.FindImages import (digest_template, find_matching_images,
+                                     image2image, image2template_directory,
+                                     template_directory_number2image)
 from xia2.Handlers.Streams import Debug
 
 class FrameProcessor(object):

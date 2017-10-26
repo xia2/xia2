@@ -12,14 +12,13 @@
 #
 from __future__ import absolute_import, division
 
-import os
-import sys
 import copy
 import math
+import os
+import sys
 
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Wrappers.XIA.Diffdump import Diffdump
-
 from xia2.Wrappers.XIA.PrintpeaksMosflm import PrintpeaksMosflm
 
 def Printpeaks(DriverType = None):

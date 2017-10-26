@@ -15,11 +15,11 @@
 
 from __future__ import absolute_import, division
 
-import os
-import sys
-import math
-import string
 import exceptions
+import math
+import os
+import string
+import sys
 
 from xia2.Driver.DriverFactory import DriverFactory
 

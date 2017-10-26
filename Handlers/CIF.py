@@ -8,11 +8,13 @@
 # A handler to manage the data ending up in CIF output file
 
 from __future__ import absolute_import, division
+
 import datetime
-import iotbx.cif.model
 import os.path
-import xia2.XIA2Version
+
+import iotbx.cif.model
 import xia2.Handlers.Citations
+import xia2.XIA2Version
 
 class _CIFHandler(object):
   def __init__(self, mmCIFsemantics=False):

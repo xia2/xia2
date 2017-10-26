@@ -10,9 +10,10 @@
 
 from __future__ import absolute_import, division
 
+import copy
 import os
 import sys
-import copy
+
 from iotbx import mtz
 
 class Mtzdump(object):

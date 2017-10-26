@@ -4,21 +4,17 @@
 from __future__ import absolute_import, division
 
 import cgi
-import docutils
 import glob
 import os
 import traceback
 
+import docutils
 # Needed to make xia2 imports work correctly
 import libtbx.load_env
-
-from xia2.Handlers.Streams import Chatter, Debug
-
 from xia2.Handlers.Citations import Citations
-
-from xia2.XIA2Version import Version
-
+from xia2.Handlers.Streams import Chatter, Debug
 from xia2.lib.tabulate import tabulate
+from xia2.XIA2Version import Version
 
 def run():
   assert os.path.exists('xia2.json')

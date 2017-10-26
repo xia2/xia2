@@ -1,10 +1,13 @@
 from __future__ import absolute_import, division
+
+import sys
+
+from iotbx.reflection_file_reader import any_reflection_file
+from scitbx.array_family import flex
+
 # LIBTBX_SET_DISPATCHER_NAME dev.xia2.file_statistics
 
 
-from iotbx.reflection_file_reader import any_reflection_file
-import sys
-from scitbx.array_family import flex
 
 m = any_reflection_file(sys.argv[1]).file_content()
 sg = m.space_group()

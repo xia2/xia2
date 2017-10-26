@@ -49,4 +49,3 @@ def AlignCrystal(DriverType = None):
       self.check_for_errors()
 
   return AlignCrystalWrapper()
-

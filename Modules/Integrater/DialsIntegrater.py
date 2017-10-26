@@ -11,34 +11,35 @@
 
 from __future__ import absolute_import, division
 
+import copy
+import math
 import os
 import sys
-import math
-import copy
+
+from xia2.Handlers.Files import FileHandler
+from xia2.Handlers.Phil import PhilIndex
+from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.lib.bits import auto_logfiler
+from xia2.lib.SymmetryLib import lattice_to_spacegroup
+from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
+from xia2.Schema.Interfaces.Integrater import Integrater
+from xia2.Wrappers.CCP4.Reindex import Reindex
+from xia2.Wrappers.Dials.ExportMtz import ExportMtz as _ExportMtz
+from xia2.Wrappers.Dials.Integrate import Integrate as _Integrate
+from xia2.Wrappers.Dials.Report import Report as _Report
 
 # wrappers for programs that this needs
 
-from xia2.Wrappers.Dials.Integrate import Integrate as _Integrate
-from xia2.Wrappers.Dials.Report import Report as _Report
-from xia2.Wrappers.Dials.ExportMtz import ExportMtz as _ExportMtz
 
 # interfaces that this must implement to be an integrater
 
-from xia2.Schema.Interfaces.Integrater import Integrater
 
 # indexing functionality if not already provided - even if it is
 # we still need to reindex with DIALS.
 
-from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
-from xia2.Wrappers.CCP4.Reindex import Reindex
 
 # odds and sods that are needed
 
-from xia2.lib.bits import auto_logfiler
-from xia2.lib.SymmetryLib import lattice_to_spacegroup
-from xia2.Handlers.Streams import Chatter, Debug, Journal
-from xia2.Handlers.Files import FileHandler
-from xia2.Handlers.Phil import PhilIndex
 
 class DialsIntegrater(Integrater):
   '''A class to implement the Integrater interface using *only* DIALS

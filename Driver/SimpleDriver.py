@@ -16,9 +16,10 @@
 #
 
 from __future__ import absolute_import, division
-import subprocess
-import os
+
 import copy
+import os
+import subprocess
 import time
 
 from xia2.Driver.DefaultDriver import DefaultDriver

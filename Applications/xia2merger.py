@@ -12,6 +12,7 @@
 # any xia2.* imports in this directory must instead be imported as ..*
 
 from __future__ import absolute_import, division
+
 from xia2.Toolkit.Merger import merger
 
 if __name__ == '__main__':

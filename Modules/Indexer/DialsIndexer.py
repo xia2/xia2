@@ -8,40 +8,41 @@
 # An indexer using the DIALS methods.
 
 from __future__ import absolute_import, division
-import os
+
 import math
+import os
 
 import libtbx
+from xia2.Experts.SymmetryExpert import lattice_to_spacegroup_number
+from xia2.Handlers.Files import FileHandler
+from xia2.Handlers.Phil import PhilIndex
+from xia2.Handlers.Streams import Chatter, Debug
+from xia2.lib.bits import auto_logfiler
+from xia2.Schema.Interfaces.Indexer import Indexer
+from xia2.Wrappers.Dials.CheckIndexingSymmetry import \
+    CheckIndexingSymmetry as _CheckIndexingSymmetry
+from xia2.Wrappers.Dials.DetectBlanks import DetectBlanks as _DetectBlanks
+from xia2.Wrappers.Dials.DiscoverBetterExperimentalModel import \
+    DiscoverBetterExperimentalModel as _DiscoverBetterExperimentalModel
+from xia2.Wrappers.Dials.EstimateGain import EstimateGain as _EstimateGain
+from xia2.Wrappers.Dials.GenerateMask import GenerateMask as _GenerateMask
+from xia2.Wrappers.Dials.Import import Import as _Import
+from xia2.Wrappers.Dials.Index import Index as _Index
+from xia2.Wrappers.Dials.Refine import Refine as _Refine
+from xia2.Wrappers.Dials.RefineBravaisSettings import \
+    RefineBravaisSettings as _RefineBravaisSettings
+from xia2.Wrappers.Dials.Reindex import Reindex as _Reindex
+from xia2.Wrappers.Dials.Report import Report as _Report
+from xia2.Wrappers.Dials.Spotfinder import Spotfinder as _Spotfinder
 
 # wrappers for programs that this needs: DIALS
 
-from xia2.Wrappers.Dials.Import import Import as _Import
-from xia2.Wrappers.Dials.GenerateMask import GenerateMask as _GenerateMask
-from xia2.Wrappers.Dials.EstimateGain import EstimateGain as _EstimateGain
-from xia2.Wrappers.Dials.Spotfinder import Spotfinder as _Spotfinder
-from xia2.Wrappers.Dials.DetectBlanks import DetectBlanks as _DetectBlanks
-from xia2.Wrappers.Dials.DiscoverBetterExperimentalModel \
-     import DiscoverBetterExperimentalModel as _DiscoverBetterExperimentalModel
-from xia2.Wrappers.Dials.Index import Index as _Index
-from xia2.Wrappers.Dials.CheckIndexingSymmetry \
-     import CheckIndexingSymmetry as _CheckIndexingSymmetry
-from xia2.Wrappers.Dials.Reindex import Reindex as _Reindex
-from xia2.Wrappers.Dials.Refine import Refine as _Refine
-from xia2.Wrappers.Dials.RefineBravaisSettings import RefineBravaisSettings as \
-     _RefineBravaisSettings
-from xia2.Wrappers.Dials.Report import Report as _Report
 
 # interfaces that this must implement to be an indexer
 
-from xia2.Schema.Interfaces.Indexer import Indexer
 
 # odds and sods that are needed
 
-from xia2.lib.bits import auto_logfiler
-from xia2.Handlers.Streams import Chatter, Debug
-from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Files import FileHandler
-from xia2.Experts.SymmetryExpert import lattice_to_spacegroup_number
 
 class DialsIndexer(Indexer):
   def __init__(self):

@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import, division
-from cctbx.array_family import flex
-from cStringIO import StringIO
+
 import json
-from libtbx.containers import OrderedDict
-from mmtbx.scaling import printed_output
 import os
-from xia2.Modules.Analysis import *
+from cStringIO import StringIO
+
+import iotbx.phil
 import xia2.Handlers.Environment
 import xia2.Handlers.Files
+from cctbx.array_family import flex
+from libtbx.containers import OrderedDict
+from mmtbx.scaling import printed_output
+from xia2.Modules.Analysis import *
 
 class xtriage_output(printed_output):
 
@@ -841,7 +844,6 @@ def d_star_sq_to_d_ticks(d_star_sq, nticks):
   return tickvals, ticktext
 
 
-import iotbx.phil
 phil_scope = iotbx.phil.parse('''\
 title = 'xia2 report'
   .type = str

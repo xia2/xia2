@@ -12,8 +12,9 @@
 
 from __future__ import absolute_import, division, print_function
 
-import os
 import math
+import os
+from multiprocessing import Lock, Value
 
 from xia2.Handlers.Streams import Chatter, Debug
 
@@ -88,7 +89,6 @@ def remove_outliers(values, limit):
 # Shared counter for multiprocessing
 # http://eli.thegreenplace.net/2012/01/04/shared-counter-with-pythons-multiprocessing/
 
-from multiprocessing import Value, Lock
 
 class Counter(object):
   def __init__(self, initval=0):

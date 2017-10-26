@@ -1,9 +1,11 @@
 from __future__ import absolute_import, division
+
 import datetime
-import iotbx.cif.model
 import json
 import optparse
 import sys
+
+import iotbx.cif.model
 import xia2.XIA2Version
 
 def parse_compound(compound):

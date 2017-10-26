@@ -11,8 +11,8 @@
 
 from __future__ import absolute_import, division
 
-from libtbx.phil import interface
 from iotbx.phil import parse
+from libtbx.phil import interface
 
 master_phil = parse("""
 general

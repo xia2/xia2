@@ -21,13 +21,13 @@
 
 from __future__ import absolute_import, division
 
-import sys
-import math
-import time
 import copy
+import math
+import sys
+import time
 
-from cctbx.array_family import flex
 import libtbx.phil
+from cctbx.array_family import flex
 from scitbx import lbfgs
 
 def nint(a):

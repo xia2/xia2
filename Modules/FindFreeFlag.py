@@ -9,6 +9,7 @@
 #
 
 from __future__ import absolute_import, division
+
 import sys
 
 from xia2.Wrappers.CCP4.Mtzdump import Mtzdump

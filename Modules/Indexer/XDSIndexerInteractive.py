@@ -12,13 +12,14 @@
 
 from __future__ import absolute_import, division
 
+from xia2.Handlers.Streams import Chatter
+from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
+
 # the class that we are extending
 
-from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
 
 # odds and sods that are needed
 
-from xia2.Handlers.Streams import Chatter
 
 class XDSIndexerInteractive(XDSIndexer):
   '''An extension of XDSIndexer using all available images.'''

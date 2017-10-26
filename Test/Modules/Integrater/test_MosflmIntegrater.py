@@ -4,8 +4,8 @@ import os
 import sys
 
 import mock
-from libtbx.test_utils import approx_equal
 import pytest
+from libtbx.test_utils import approx_equal
 
 def exercise_mosflm_integrater(dials_regression, tmp_dir, nproc):
   from xia2.Handlers.Phil import PhilIndex

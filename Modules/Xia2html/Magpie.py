@@ -1,5 +1,13 @@
 from __future__ import absolute_import, division
 
+import copy
+#######################################################################
+# Import modules that this module depends on
+#######################################################################
+import re
+
+import xia2.Modules.Xia2html.smartie as smartie
+
 #     Magpie.py: Text file processor
 #     Copyright (C) Diamond 2009 Peter Briggs
 #
@@ -15,12 +23,6 @@ from __future__ import absolute_import, division
 __cvs_id__ = "$Id$"
 __version__ = "0.0.1"
 
-#######################################################################
-# Import modules that this module depends on
-#######################################################################
-import re
-import copy
-import xia2.Modules.Xia2html.smartie as smartie
 
 #######################################################################
 # Module constants

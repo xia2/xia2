@@ -10,9 +10,9 @@
 
 from __future__ import absolute_import, division
 
-import threading
 import exceptions
 import sys
+import threading
 import traceback
 
 class Background(threading.Thread):

@@ -43,19 +43,20 @@
 # Driver interface.
 
 from __future__ import absolute_import, division
+
 import os
 import time
 
-from xia2.Driver.DriverHelper import error_no_program, error_kill, error_abrt
-from xia2.Driver.DriverHelper import error_segv, check_return_code, error_missing_library
-from xia2.Driver.DriverHelper import error_fp, error_python_traceback
-from xia2.Driver.DriverHelper import error_library_not_loaded
-from xia2.Driver.DriverHelper import generate_random_name, executable_exists
+from xia2.Driver.DriverHelper import (check_return_code, error_abrt, error_fp,
+                                      error_kill, error_library_not_loaded,
+                                      error_missing_library, error_no_program,
+                                      error_python_traceback, error_segv,
+                                      executable_exists, generate_random_name)
+from xia2.DriverExceptions.NotAvailableError import NotAvailableError
 from xia2.Handlers.Streams import Debug
 
 # out of context stuff
 
-from xia2.DriverExceptions.NotAvailableError import NotAvailableError
 
 timing_db = []
 

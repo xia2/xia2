@@ -15,8 +15,9 @@
 # tempfile.mkdtemp().
 
 from __future__ import absolute_import, division
-import os
+
 import exceptions
+import os
 import shutil
 import tempfile
 

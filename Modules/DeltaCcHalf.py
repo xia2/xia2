@@ -1,10 +1,12 @@
 from __future__ import absolute_import, division
+
 import sys
 
 import iotbx.phil
-from libtbx.phil import command_line
-from cctbx.array_family import flex
 from cctbx import crystal, miller, sgtbx, uctbx
+from cctbx.array_family import flex
+from libtbx.phil import command_line
+from xia2.Modules.MultiCrystalAnalysis import separate_unmerged
 
 master_phil_scope = iotbx.phil.parse("""\
 cc_one_half_method = half_dataset *sigma_tau
@@ -26,7 +28,6 @@ batch
 include scope xia2.Modules.MultiCrystalAnalysis.batch_phil_scope
 """, process_includes=True)
 
-from xia2.Modules.MultiCrystalAnalysis import separate_unmerged
 
 
 

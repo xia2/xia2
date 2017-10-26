@@ -4,12 +4,12 @@
 
 from __future__ import absolute_import, division
 
-import sys
 import binascii
 import copy
+import sys
 
+from cbflib_adaptbx import compress, uncompress
 from scitbx.array_family import flex
-from cbflib_adaptbx import uncompress, compress
 
 def recompute_BKGINIT(bkginit_in, init_lp, bkginit_out):
 

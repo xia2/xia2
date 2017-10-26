@@ -13,8 +13,8 @@ from __future__ import absolute_import, division
 
 import os
 
-from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
+from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Streams import Chatter
 
 def Sortmtz(DriverType = None):
@@ -114,4 +114,3 @@ def Sortmtz(DriverType = None):
       return self.get_ccp4_status()
 
   return SortmtzWrapper()
-

@@ -1,7 +1,9 @@
 from __future__ import absolute_import, division
-from mmtbx.scaling import data_statistics
-from iotbx import mtz
+
 import sys
+
+from iotbx import mtz
+from mmtbx.scaling import data_statistics
 
 m = mtz.object(sys.argv[1])
 mas = m.as_miller_arrays()
@@ -25,4 +27,3 @@ n_res = nres_from_mtz(m)
 wilson_scaling = data_statistics.wilson_scaling(miller_array=data,
                                                 n_residues=n_res)
 wilson_scaling.show()
-

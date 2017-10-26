@@ -1,9 +1,10 @@
 from __future__ import absolute_import, division, print_function
 
-import mock
 import os
-import pytest
 import sys
+
+import mock
+import pytest
 
 def exercise_serialization(dials_regression, tmp_dir):
   xia2_demo_data = os.path.join(dials_regression, "xia2_demo_data")

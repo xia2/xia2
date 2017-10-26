@@ -16,8 +16,8 @@ from __future__ import absolute_import, division
 import os
 import sys
 
-from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
+from xia2.Driver.DriverFactory import DriverFactory
 
 def Mtz2various(DriverType = None):
   '''A factory for Mtz2variousWrapper classes.'''

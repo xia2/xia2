@@ -16,24 +16,25 @@
 
 from __future__ import absolute_import, division
 
-import os
-import math
 import exceptions
+import math
+import os
+
+from xia2.Handlers.Files import FileHandler
+from xia2.Handlers.Phil import PhilIndex
+from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.lib.bits import auto_logfiler
+from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
+from xia2.Wrappers.XDS.XDS import XDSException
 
 # the class that we are extending
 
-from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
 
 # helper functions
 
-from xia2.Wrappers.XDS.XDS import XDSException
 
 # odds and sods that are needed
 
-from xia2.lib.bits import auto_logfiler
-from xia2.Handlers.Streams import Chatter, Debug, Journal
-from xia2.Handlers.Files import FileHandler
-from xia2.Handlers.Phil import PhilIndex
 
 class XDSIndexerII(XDSIndexer):
   '''An extension of XDSIndexer using all available images.'''

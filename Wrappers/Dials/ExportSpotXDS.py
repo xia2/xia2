@@ -9,16 +9,15 @@
 #
 
 from __future__ import absolute_import, division
+
 import os
 import sys
 
+import libtbx
+from libtbx import phil
 from xia2.Driver.DriverFactory import DriverFactory
-
 # interfaces that this inherits from ...
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
-
-from libtbx import phil
-import libtbx
 
 master_params = phil.parse("""
 """)

@@ -1,10 +1,10 @@
 from __future__ import absolute_import, division, print_function
 
-import os
 import glob
+import os
 
-from libtbx.test_utils import approx_equal
 import pytest
+from libtbx.test_utils import approx_equal
 
 def cmd_exists(cmd):
   import subprocess

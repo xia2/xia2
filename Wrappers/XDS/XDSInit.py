@@ -14,14 +14,12 @@ import os
 import shutil
 
 from xia2.Driver.DriverFactory import DriverFactory
-
 # interfaces that this inherits from ...
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
-
 # generic helper stuff
-from xia2.Wrappers.XDS.XDS import imageset_to_xds, xds_check_version_supported
-from xia2.Wrappers.XDS.XDS import _running_xds_version, template_to_xds, \
-     find_hdf5_lib
+from xia2.Wrappers.XDS.XDS import (_running_xds_version, find_hdf5_lib,
+                                   imageset_to_xds, template_to_xds,
+                                   xds_check_version_supported)
 
 def XDSInit(DriverType = None, params = None):
 

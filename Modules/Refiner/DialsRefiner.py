@@ -8,16 +8,14 @@
 
 from __future__ import absolute_import, division
 
-from xia2.Schema.Interfaces.Refiner import Refiner
-from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Files import FileHandler
-
 import os
 
+from xia2.Handlers.Files import FileHandler
+from xia2.Handlers.Phil import PhilIndex
 from xia2.lib.bits import auto_logfiler
-
-from xia2.Wrappers.Dials.CombineExperiments import CombineExperiments \
-     as _CombineExperiments
+from xia2.Schema.Interfaces.Refiner import Refiner
+from xia2.Wrappers.Dials.CombineExperiments import \
+    CombineExperiments as _CombineExperiments
 from xia2.Wrappers.Dials.Refine import Refine as _Refine
 from xia2.Wrappers.Dials.Report import Report as _Report
 

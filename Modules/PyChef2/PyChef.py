@@ -2,6 +2,7 @@ from __future__ import absolute_import, division
 
 import math
 from collections import Mapping
+
 from cctbx.array_family import flex
 from iotbx.data_plots import table_data
 from libtbx import phil

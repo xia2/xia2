@@ -13,15 +13,15 @@
 
 from __future__ import absolute_import, division
 
-import os
-import sys
 import math
+import os
 import random
+import sys
 import tempfile
 import time
 
-from xia2.Wrappers.CCP4.Pointless import Pointless
 from xia2.Handlers.Streams import Debug
+from xia2.Wrappers.CCP4.Pointless import Pointless
 
 # global parameters
 

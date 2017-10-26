@@ -79,4 +79,3 @@ def GenerateMask(DriverType = None):
       return self._output_datablock_filename, self._output_mask_filename
 
   return GenerateMaskWrapper()
-

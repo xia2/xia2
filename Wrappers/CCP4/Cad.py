@@ -27,17 +27,17 @@ from __future__ import absolute_import, division
 
 import os
 
-from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
+from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Streams import Debug
+from xia2.Modules.FindFreeFlag import FindFreeFlag
+from xia2.Wrappers.CCP4.Mtzdump import Mtzdump
 
 # locally required wrappers
 
-from xia2.Wrappers.CCP4.Mtzdump import Mtzdump
 
 # external functionality
 
-from xia2.Modules.FindFreeFlag import FindFreeFlag
 
 def Cad(DriverType = None):
   '''A factory for CadWrapper classes.'''

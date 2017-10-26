@@ -11,18 +11,16 @@
 
 from __future__ import absolute_import, division
 
-import os
 import copy
-
-from xia2.Handlers.Streams import Debug
-from xia2.Handlers.PipelineSelection import get_preferences, add_preference
-from xia2.Handlers.Phil import PhilIndex
-
-from xia2.Modules.Integrater.MosflmIntegrater import MosflmIntegrater
-from xia2.Modules.Integrater.XDSIntegrater import XDSIntegrater
-from xia2.Modules.Integrater.DialsIntegrater import DialsIntegrater
+import os
 
 from xia2.DriverExceptions.NotAvailableError import NotAvailableError
+from xia2.Handlers.Phil import PhilIndex
+from xia2.Handlers.PipelineSelection import add_preference, get_preferences
+from xia2.Handlers.Streams import Debug
+from xia2.Modules.Integrater.DialsIntegrater import DialsIntegrater
+from xia2.Modules.Integrater.MosflmIntegrater import MosflmIntegrater
+from xia2.Modules.Integrater.XDSIntegrater import XDSIntegrater
 
 # FIXME 06/SEP/06 this should take an implementation of indexer to
 #                 help with the decision about which integrater to

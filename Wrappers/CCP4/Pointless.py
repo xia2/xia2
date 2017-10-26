@@ -14,24 +14,20 @@
 
 from __future__ import absolute_import, division
 
-import os
-import sys
 import math
+import os
 import shutil
-
+import sys
 import xml.dom.minidom
 
-from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
-
-from xia2.Handlers.Syminfo import Syminfo
-from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
-
+from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Syminfo import Syminfo
 # this was rather complicated - now simpler!
-from xia2.lib.SymmetryLib import lauegroup_to_lattice, spacegroup_name_xHM_to_old, \
-     clean_reindex_operator
-
+from xia2.lib.SymmetryLib import (clean_reindex_operator, lauegroup_to_lattice,
+                                  spacegroup_name_xHM_to_old)
 # XDS_ASCII meddling things
 from xia2.Modules.XDS_ASCII import remove_misfits
 

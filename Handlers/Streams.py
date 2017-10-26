@@ -18,8 +18,13 @@
 # going on inside the program which tells you it's doing things.
 
 from __future__ import absolute_import, division
-import sys
+
 import inspect
+import os
+import sys
+from datetime import date
+
+import libtbx.load_env
 
 april = {
     'CC half   ':'Cromulence',
@@ -202,7 +207,6 @@ class _Stream(object):
 # FIXME 23/NOV/06 now write a xia2.txt from chatter and rename that
 # output stream Stdout... then copy everything there!
 
-import libtbx.load_env
 cl = libtbx.env.dispatcher_name
 if cl:
   if ('xia2' not in cl or 'python' in cl or cl == 'xia2.new'):
@@ -217,8 +221,6 @@ if cl.endswith('.bat'):
 Chatter = _Stream('%s' % cl, None)
 Journal = _Stream('%s-journal' % cl, None)
 Stdout = _Stream(None, None)
-from datetime import date
-import os
 day = date.today().timetuple()
 if (day.tm_mday == 1 and day.tm_mon == 4) or 'XIA2_APRIL' in os.environ:
   Stdout.filter(april)

@@ -65,20 +65,20 @@
 
 from __future__ import absolute_import, division
 
-import os
 import math
+import os
 
-from xia2.Wrappers.CCP4.Othercell import Othercell
+from libtbx.containers import OrderedDict
+# Generation of Crystallographic Information Files (CIF/mmCIF)
+from xia2.Handlers.CIF import CIF, mmCIF
 from xia2.Handlers.Environment import Environment
-from xia2.Modules.Scaler.ScalerFactory import Scaler
-from xia2.Handlers.Syminfo import Syminfo
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import banner
+from xia2.Handlers.Syminfo import Syminfo
 from xia2.lib.NMolLib import compute_nmol, compute_solvent
-
-# Generation of Crystallographic Information Files (CIF/mmCIF)
-from xia2.Handlers.CIF import CIF, mmCIF
+from xia2.Modules.Scaler.ScalerFactory import Scaler
+from xia2.Wrappers.CCP4.Othercell import Othercell
 
 def sort_o_dict(dict, metric):
   '''A generic sorter for dictionaries - will return the keys in
@@ -226,7 +226,6 @@ def _print_lattice(lattice):
                                         lattice['lattice'])
 
 
-from libtbx.containers import OrderedDict
 formats = OrderedDict([
   ('High resolution limit', ' %7.2f'),
   ('Low resolution limit', ' %7.2f'),

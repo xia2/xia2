@@ -17,9 +17,9 @@ from __future__ import absolute_import, division
 import math
 import time
 
-from xia2.Modules.PyChef.PyChefHelpers import get_mtz_column_list, compute_unique_reflections
-
 from iotbx import mtz
+from xia2.Modules.PyChef.PyChefHelpers import (compute_unique_reflections,
+                                               get_mtz_column_list)
 
 class PyChef(object):
   '''The main PyChef class.'''

@@ -29,27 +29,22 @@
 
 from __future__ import absolute_import, division
 
-import sys
+import copy
+import itertools
 import math
 import os
-import itertools
-import copy
+import sys
 
 from cctbx.array_family import flex
-from iotbx import mtz
-from cctbx.miller import build_set
-from cctbx.miller import map_to_asu
 from cctbx.crystal import symmetry as crystal_symmetry
+from cctbx.miller import build_set, map_to_asu
 from cctbx.sgtbx import rt_mx
-
-from xia2.Toolkit.MtzFactory import mtz_file
-from xia2.Toolkit.PolyFitter import fit
-from xia2.Toolkit.PolyFitter import log_fit
-from xia2.Toolkit.PolyFitter import log_inv_fit
-from xia2.Toolkit.PolyFitter import interpolate_value
-from xia2.Toolkit.PolyFitter import get_positive_values
+from iotbx import mtz
 from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Streams import streams_off
+from xia2.Toolkit.MtzFactory import mtz_file
+from xia2.Toolkit.PolyFitter import (fit, get_positive_values,
+                                     interpolate_value, log_fit, log_inv_fit)
 
 def nint(a):
   return int(round(a))

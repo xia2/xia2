@@ -10,31 +10,28 @@
 
 from __future__ import absolute_import, division
 
-import os
 import math
+import os
 import shutil
 
 from xia2.Driver.DriverFactory import DriverFactory
-
-# interfaces that this inherits from ...
-from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
-
-# generic helper stuff
-from xia2.Wrappers.XDS.XDS import imageset_to_xds, xds_check_version_supported, xds_check_error
-from xia2.Wrappers.XDS.XDS import template_to_xds
-from xia2.Handlers.Streams import Debug
-from xia2.Handlers.Phil import PhilIndex
-
-# specific helper stuff
-from xia2.Wrappers.XDS.XDSIdxrefHelpers import _parse_idxref_lp, _parse_idxref_lp_distance_etc, \
-     _parse_idxref_lp_subtree, _parse_idxref_index_origin, \
-     _parse_idxref_lp_quality
-
-from xia2.Experts.LatticeExpert import SortLattices
-
+from xia2.Experts.LatticeExpert import SortLattices, s2l
 # helpful expertise from elsewhere
 from xia2.Experts.SymmetryExpert import lattice_to_spacegroup_number
-from xia2.Experts.LatticeExpert import s2l
+from xia2.Handlers.Phil import PhilIndex
+from xia2.Handlers.Streams import Debug
+# interfaces that this inherits from ...
+from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
+# generic helper stuff
+from xia2.Wrappers.XDS.XDS import (imageset_to_xds, template_to_xds,
+                                   xds_check_error,
+                                   xds_check_version_supported)
+# specific helper stuff
+from xia2.Wrappers.XDS.XDSIdxrefHelpers import (_parse_idxref_index_origin,
+                                                _parse_idxref_lp,
+                                                _parse_idxref_lp_distance_etc,
+                                                _parse_idxref_lp_quality,
+                                                _parse_idxref_lp_subtree)
 
 def XDSIdxref(DriverType=None, params=None):
 

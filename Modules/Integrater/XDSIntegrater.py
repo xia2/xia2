@@ -17,43 +17,44 @@
 
 from __future__ import absolute_import, division
 
-import os
-import math
 import copy
+import math
+import os
 import shutil
+
+from xia2.Experts.SymmetryExpert import (lattice_to_spacegroup_number,
+                                         mat_to_symop, r_to_rt, rt_to_r,
+                                         symop_to_mat)
+from xia2.Handlers.Files import FileHandler
+from xia2.Handlers.Phil import PhilIndex
+from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.lib.bits import auto_logfiler
+from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
+from xia2.Schema.Exceptions.BadLatticeError import BadLatticeError
+from xia2.Schema.Interfaces.Integrater import Integrater
+from xia2.Wrappers.CCP4.CCP4Factory import CCP4Factory
+from xia2.Wrappers.CCP4.Reindex import Reindex
+from xia2.Wrappers.XDS.XDSCorrect import XDSCorrect as _Correct
+from xia2.Wrappers.XDS.XDSDefpix import XDSDefpix as _Defpix
+from xia2.Wrappers.XDS.XDSIntegrate import XDSIntegrate as _Integrate
 
 # wrappers for programs that this needs
 
-from xia2.Wrappers.XDS.XDSDefpix import XDSDefpix as _Defpix
-from xia2.Wrappers.XDS.XDSIntegrate import XDSIntegrate as _Integrate
-from xia2.Wrappers.XDS.XDSCorrect import XDSCorrect as _Correct
-from xia2.Wrappers.CCP4.CCP4Factory import CCP4Factory
-from xia2.Wrappers.CCP4.Reindex import Reindex
 
 # helper functions
 
-from xia2.Experts.SymmetryExpert import r_to_rt, rt_to_r
-from xia2.Experts.SymmetryExpert import symop_to_mat, mat_to_symop
 
 # interfaces that this must implement to be an integrater
 
-from xia2.Schema.Interfaces.Integrater import Integrater
 
-from xia2.Schema.Exceptions.BadLatticeError import BadLatticeError
 
 # indexing functionality if not already provided - even if it is
 # we still need to reindex with XDS.
 
-from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
 
 # odds and sods that are needed
 
-from xia2.lib.bits import auto_logfiler
-from xia2.Handlers.Streams import Chatter, Debug, Journal
-from xia2.Handlers.Files import FileHandler
-from xia2.Handlers.Phil import PhilIndex
 
-from xia2.Experts.SymmetryExpert import lattice_to_spacegroup_number
 
 class XDSIntegrater(Integrater):
   '''A class to implement the Integrater interface using *only* XDS

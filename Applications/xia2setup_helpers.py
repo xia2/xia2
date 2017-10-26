@@ -21,4 +21,3 @@ def get_sweep(args):
     return None
 
   return sweeplist
-

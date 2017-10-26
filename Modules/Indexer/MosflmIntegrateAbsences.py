@@ -2,9 +2,8 @@ from __future__ import absolute_import, division
 
 import sys
 
+from cctbx import crystal, sgtbx
 from iotbx import mtz
-from cctbx import sgtbx
-from cctbx import crystal
 
 def measure(hklin, spacegroup):
   '''Look at HKLIN, see how strong the absences (according to the given

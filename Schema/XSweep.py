@@ -77,17 +77,25 @@
 
 from __future__ import absolute_import, division
 
-import os
-import math
-import exceptions
 import copy
+import exceptions
+import math
+import os
 import time
+
+from xia2.Experts.Filenames import expand_path
+from xia2.Experts.FindImages import (image2template_directory,
+                                     template_directory_number2image)
+from xia2.Handlers.Environment import Environment
+from xia2.Handlers.Phil import PhilIndex
+from xia2.Handlers.Streams import Chatter, Debug
+# access to factory classes
+from xia2.Modules.Indexer import IndexerFactory
+from xia2.Modules.Integrater import IntegraterFactory
+from xia2.Modules.Refiner import RefinerFactory
 
 # allow output
 
-from xia2.Handlers.Streams import Chatter, Debug
-from xia2.Handlers.Environment import Environment
-from xia2.Handlers.Phil import PhilIndex
 
 # See FIXME Integrater interface definition, 27/SEP/06
 
@@ -127,14 +135,7 @@ global_integration_parameters = _global_integration_parameters()
 # Things which are needed to populate this object from the pointer to a
 # single image.
 
-from xia2.Experts.FindImages import \
-     template_directory_number2image, image2template_directory
-from xia2.Experts.Filenames import expand_path
 
-# access to factory classes
-from xia2.Modules.Indexer import IndexerFactory
-from xia2.Modules.Refiner import RefinerFactory
-from xia2.Modules.Integrater import IntegraterFactory
 
 class XSweep(object):
   '''An object representation of the sweep.'''

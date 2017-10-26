@@ -14,6 +14,7 @@
 #
 
 from __future__ import absolute_import, division
+
 from xia2.Decorators.CCP4Decorator import CCP4DecoratorFactory
 
 class _DecoratorFactory(object):

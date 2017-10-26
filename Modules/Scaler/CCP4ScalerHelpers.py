@@ -14,18 +14,18 @@
 
 from __future__ import absolute_import, division
 
+import math
 import os
 import sys
-import math
-from iotbx import mtz
 
-from xia2.Wrappers.CCP4.Pointless import Pointless
-from xia2.lib.bits import auto_logfiler
-from xia2.Handlers.Streams import Debug
+from iotbx import mtz
+from xia2.Experts.ResolutionExperts import remove_blank
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Experts.ResolutionExperts import remove_blank
+from xia2.Handlers.Streams import Debug
+from xia2.lib.bits import auto_logfiler
 from xia2.Modules import MtzUtils
+from xia2.Wrappers.CCP4.Pointless import Pointless as _Pointless
 
 ############ JIFFY FUNCTIONS #################
 
@@ -235,7 +235,6 @@ def _fraction_difference(value, reference):
 
   return math.fabs((value - reference) / reference)
 
-from xia2.Wrappers.CCP4.Pointless import Pointless as _Pointless
 
 ############### HELPER CLASS #########################
 

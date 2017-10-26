@@ -14,10 +14,9 @@ from __future__ import absolute_import, division
 
 import sys
 
-from iotbx.mtz import object as mtz_factory
-
-from cctbx.miller import build_set
 from cctbx.crystal import symmetry as crystal_symmetry
+from cctbx.miller import build_set
+from iotbx.mtz import object as mtz_factory
 
 def get_mtz_column_list(hklin):
 

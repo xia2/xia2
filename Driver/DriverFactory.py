@@ -18,15 +18,15 @@
 #
 
 from __future__ import absolute_import, division
-import os
 
-from xia2.Driver.SimpleDriver import SimpleDriver
-from xia2.Driver.ScriptDriver import ScriptDriver
-from xia2.Driver.QSubDriver import QSubDriver
-from xia2.Driver.InteractiveDriver import InteractiveDriver
+import os
 
 # another factory to delegate to
 from xia2.Driver.ClusterDriverFactory import ClusterDriverFactory
+from xia2.Driver.InteractiveDriver import InteractiveDriver
+from xia2.Driver.QSubDriver import QSubDriver
+from xia2.Driver.ScriptDriver import ScriptDriver
+from xia2.Driver.SimpleDriver import SimpleDriver
 
 class _DriverFactory(object):
 

@@ -9,6 +9,7 @@
 # wrapper for xia2.plot_multiplicity
 
 from __future__ import absolute_import, division
+
 import os
 
 def PlotMultiplicity(DriverType = None):

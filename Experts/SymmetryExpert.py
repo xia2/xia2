@@ -12,8 +12,8 @@
 
 from __future__ import absolute_import, division
 
-from scitbx import matrix
 from cctbx import sgtbx
+from scitbx import matrix
 
 def gen_rot_mat_euler(alpha, beta, gamma):
   '''Compute a rotation matrix (stored as e11 e12 e13 e22 e23...)

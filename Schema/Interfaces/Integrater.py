@@ -37,20 +37,16 @@
 
 from __future__ import absolute_import, division
 
-import os
 import math
+import os
 
-from xia2.Handlers.Streams import Chatter, Debug, Journal
-from xia2.Handlers.Phil import PhilIndex
-
-from xia2.Schema.Exceptions.BadLatticeError import BadLatticeError
 import xia2.Schema.Interfaces.Indexer
 import xia2.Schema.Interfaces.Refiner
-
 # symmetry operator management functionality
-from xia2.Experts.SymmetryExpert import compose_symops
-from xia2.Experts.SymmetryExpert import symop_to_mat
-
+from xia2.Experts.SymmetryExpert import compose_symops, symop_to_mat
+from xia2.Handlers.Phil import PhilIndex
+from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.Schema.Exceptions.BadLatticeError import BadLatticeError
 # interfaces that this inherits from ...
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 

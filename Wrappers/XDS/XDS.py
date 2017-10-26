@@ -31,7 +31,9 @@ from __future__ import absolute_import, division
 
 import exceptions
 import math
+
 from scitbx import matrix
+from xia2.Handlers.Streams import Debug
 
 class XDSException(exceptions.Exception):
   def __init__(self, value):
@@ -45,7 +47,6 @@ class XDSIndexException(XDSException):
     XDSException.__init__(self, value)
     return
 
-from xia2.Handlers.Streams import Debug
 
 
 _xds_version_cache = None

@@ -15,10 +15,10 @@ from __future__ import absolute_import, division
 
 import os
 
-from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
-from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
+from xia2.Handlers.Streams import Chatter, Debug
 
 def Aimless(DriverType = None,
             partiality_correction = None,

@@ -12,13 +12,13 @@
 
 from __future__ import absolute_import, division
 
+import copy
 import os
 import sys
-import copy
 
-from xia2.Experts.FindImages import find_matching_images, \
-     template_directory_number2image, image2template_directory
-
+from xia2.Experts.FindImages import (find_matching_images,
+                                     image2template_directory,
+                                     template_directory_number2image)
 from xia2.Handlers.Phil import PhilIndex
 
 def SweepFactory(template, directory, beam = None):

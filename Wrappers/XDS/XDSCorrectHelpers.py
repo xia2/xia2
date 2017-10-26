@@ -16,10 +16,10 @@
 
 from __future__ import absolute_import, division
 
+import copy
 import os
 import re
 import sys
-import copy
 
 # helper methods/functions - these can be used externally for the purposes
 # of testing...

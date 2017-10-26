@@ -2,18 +2,18 @@
 # LIBTBX_SET_DISPATCHER_NAME xia2.strategy
 
 from __future__ import absolute_import, division
-import sys
-import os
+
 import exceptions
+import os
+import sys
 import traceback
 
 # Needed to make xia2 imports work correctly
 import libtbx.load_env
+from xia2.Applications.xia2_main import (check_environment, get_command_line,
+                                         help)
 from xia2.Handlers.Streams import Chatter, Debug
-
-from xia2.Applications.xia2_main import check_environment, get_command_line, help
 from xia2.lib.bits import auto_logfiler
-
 
 def run():
   try:
@@ -176,4 +176,3 @@ def run():
 
 if __name__ == '__main__':
   run()
-

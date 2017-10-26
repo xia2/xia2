@@ -12,32 +12,28 @@
 
 from __future__ import absolute_import, division
 
-import os
-import math
 import copy
+import math
+import os
 
-from xia2.Modules.Scaler.CommonScaler import CommonScaler as Scaler
-
-from xia2.Wrappers.CCP4.CCP4Factory import CCP4Factory
-
-from xia2.Handlers.Streams import Chatter, Debug, Journal
 from xia2.Handlers.CIF import CIF, mmCIF
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Files import FileHandler
-from xia2.Handlers.Syminfo import Syminfo
 from xia2.Handlers.Phil import PhilIndex
-
+from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.Handlers.Syminfo import Syminfo
 # jiffys
-from xia2.lib.bits import is_mtz_file
-from xia2.lib.bits import transpose_loggraph
+from xia2.lib.bits import is_mtz_file, transpose_loggraph
 from xia2.lib.SymmetryLib import sort_lattices
 from xia2.Modules import MtzUtils
-
-from xia2.Modules.Scaler.CCP4ScalerHelpers import _prepare_pointless_hklin, \
-     CCP4ScalerHelper, SweepInformationHandler, ersatz_resolution, \
-     get_umat_bmat_lattice_symmetry_from_mtz
-
 from xia2.Modules.AnalyseMyIntensities import AnalyseMyIntensities
+from xia2.Modules.Scaler.CCP4ScalerHelpers import (CCP4ScalerHelper,
+                                                   SweepInformationHandler,
+                                                   _prepare_pointless_hklin,
+                                                   ersatz_resolution,
+                                                   get_umat_bmat_lattice_symmetry_from_mtz)
+from xia2.Modules.Scaler.CommonScaler import CommonScaler as Scaler
+from xia2.Wrappers.CCP4.CCP4Factory import CCP4Factory
 
 class CCP4ScalerA(Scaler):
   '''An implementation of the Scaler interface using CCP4 programs.'''

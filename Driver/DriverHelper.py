@@ -39,10 +39,11 @@
 #           important problem.
 
 from __future__ import absolute_import, division
+
 import os
+import random
 import signal
 import stat
-import random
 
 def script_writer(working_directory,
                   script_name,

@@ -14,13 +14,12 @@ import os
 import shutil
 
 from xia2.Driver.DriverFactory import DriverFactory
-
 # interfaces that this inherits from ...
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
-
 # generic helper stuff
-from xia2.Wrappers.XDS.XDS import imageset_to_xds, xds_check_version_supported, xds_check_error
-from xia2.Wrappers.XDS.XDS import template_to_xds
+from xia2.Wrappers.XDS.XDS import (imageset_to_xds, template_to_xds,
+                                   xds_check_error,
+                                   xds_check_version_supported)
 
 def XDSXycorr(DriverType = None):
 

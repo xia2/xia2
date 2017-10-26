@@ -15,15 +15,16 @@
 #
 
 from __future__ import absolute_import, division
-import os
-import sys
+
 import copy
-import shutil
 import math
+import os
+import shutil
+import sys
 
 from xia2.Driver.DriverFactory import DriverFactory
-
 from xia2.Handlers.Streams import Chatter
+
 #from xia2.Handlers.Files import FileHandler
 
 def LabelitIndex(DriverType = None, indxr_print = True):

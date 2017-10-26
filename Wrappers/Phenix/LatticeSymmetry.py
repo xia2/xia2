@@ -17,12 +17,12 @@
 #
 
 from __future__ import absolute_import, division
+
 import sys
 
 from xia2.Driver.DriverFactory import DriverFactory
-
-from xia2.lib.SymmetryLib import lauegroup_to_lattice
 from xia2.Handlers.Syminfo import Syminfo
+from xia2.lib.SymmetryLib import lauegroup_to_lattice
 
 def LatticeSymmetry(DriverType = None):
   '''A factory for the LatticeSymmetry wrappers.'''

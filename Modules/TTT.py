@@ -8,6 +8,7 @@
 # itself.
 
 from __future__ import absolute_import, division
+
 from random import *
 from string import *
 

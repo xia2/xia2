@@ -1,25 +1,22 @@
 # LIBTBX_SET_DISPATCHER_NAME xia2.rescale
 
 from __future__ import absolute_import, division
-import sys
-import os
-import time
+
 import exceptions
+import os
+import sys
+import time
 import traceback
 
 # Needed to make xia2 imports work correctly
 import libtbx.load_env
-from xia2.Handlers.Streams import Chatter, Debug
-from xia2.Handlers.Phil import PhilIndex
-
-from xia2.Handlers.Files import cleanup
+from xia2.Applications.xia2_main import check_environment, write_citations
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Environment import Environment
-
+from xia2.Handlers.Files import cleanup
+from xia2.Handlers.Phil import PhilIndex
+from xia2.Handlers.Streams import Chatter, Debug
 from xia2.XIA2Version import Version
-
-from xia2.Applications.xia2_main import check_environment, write_citations
-
 
 def run():
   if os.path.exists('xia2-working.phil'):

@@ -15,18 +15,21 @@ from __future__ import absolute_import, division
 import math
 import sys
 
-# xia2 stuff...
-
-from xia2.Wrappers.XIA.Printpeaks import Printpeaks
-from xia2.Wrappers.XIA.Diffdump import Diffdump
+from cctbx import crystal, sgtbx, uctbx
+from scitbx import matrix
+from xia2.Experts.LatticeExpert import l2s, s2l
+from xia2.Experts.MatrixExpert import format_matrix
 from xia2.Handlers.Streams import Debug
 from xia2.lib.bits import nint
-from xia2.Experts.MatrixExpert import format_matrix
-from xia2.Experts.LatticeExpert import l2s, s2l
+from xia2.Wrappers.Labelit.DistlSignalStrength import DistlSignalStrength
+from xia2.Wrappers.XIA.Diffdump import Diffdump
+from xia2.Wrappers.XIA.Printpeaks import Printpeaks
+
+# xia2 stuff...
+
 
 # optional labelit stuff
 
-from xia2.Wrappers.Labelit.DistlSignalStrength import DistlSignalStrength
 
 # things we can work on...
 
@@ -34,10 +37,6 @@ use_distl = False
 
 # cctbx stuff
 
-from cctbx import sgtbx
-from cctbx import crystal
-from cctbx import uctbx
-from scitbx import matrix
 
 # check for deprecation, add workaround (thanks to RWGK 21/APR/10)
 

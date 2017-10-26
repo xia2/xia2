@@ -12,8 +12,8 @@
 
 from __future__ import absolute_import, division
 
-import os
 import math
+import os
 
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex

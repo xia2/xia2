@@ -4,6 +4,7 @@ import os
 
 import libtbx.load_env
 from libtbx.test_utils import approx_equal, open_tmp_directory
+from xia2.Handlers.Streams import Debug, Stdout
 
 try:
   dials_regression = libtbx.env.dist_path('dials_regression')
@@ -11,7 +12,6 @@ try:
 except KeyError:
   have_dials_regression = False
 
-from xia2.Handlers.Streams import Debug, Stdout
 Debug.join(Stdout)
 
 def exercise_mosflm_indexer():

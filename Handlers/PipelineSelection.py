@@ -11,6 +11,7 @@
 # and the current working directory.
 
 from __future__ import absolute_import, division
+
 import os
 
 def check(key, value):

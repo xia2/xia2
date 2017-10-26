@@ -18,12 +18,11 @@ from __future__ import absolute_import, division
 
 import os
 
-from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
-
-from xia2.Handlers.Syminfo import Syminfo
+from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import Debug
+from xia2.Handlers.Syminfo import Syminfo
 
 def Reindex(DriverType = None):
   '''A new factory for ReindexWrapper classes, which will actually use

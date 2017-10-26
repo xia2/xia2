@@ -12,9 +12,10 @@
 # Will also include some test code to estimate the error on that average.
 
 from __future__ import absolute_import, division
+
+import math
 import os
 import sys
-import math
 
 from xia2.Wrappers.XIA.Diffdump import Diffdump
 

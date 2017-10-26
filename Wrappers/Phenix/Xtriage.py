@@ -9,7 +9,6 @@ from __future__ import absolute_import, division
 
 from xia2.Driver.DriverFactory import DriverFactory
 
-
 def Xtriage(DriverType = None):
   '''A factory for the Xtriage wrappers.'''
 

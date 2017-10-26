@@ -13,9 +13,8 @@ from __future__ import absolute_import, division
 
 import sys
 
-from iotbx import mtz
 from cctbx.array_family import flex
-
+from iotbx import mtz
 
 def compact_batches(batches):
   '''Pack down batches to lists of continuous batches.'''

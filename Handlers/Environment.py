@@ -12,9 +12,9 @@
 
 from __future__ import absolute_import, division
 
+import ctypes
 import os
 import platform
-import ctypes
 import tempfile
 
 from xia2.Handlers.Streams import Chatter, Debug

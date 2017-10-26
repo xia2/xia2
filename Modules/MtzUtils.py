@@ -1,6 +1,6 @@
 from __future__ import absolute_import, division
-import iotbx.mtz
 
+import iotbx.mtz
 
 def space_group_from_mtz(file_name):
   mtz_obj = iotbx.mtz.object(file_name=file_name)

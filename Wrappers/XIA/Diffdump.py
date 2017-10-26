@@ -36,23 +36,26 @@
 #
 
 from __future__ import absolute_import, division
+
+import copy
+import datetime
+import exceptions
+import math
 import os
 import sys
-import copy
 import time
-import datetime
-import math
-import exceptions
 import traceback
+
+import pycbf
 from scitbx import matrix
 from scitbx.math import r3_rotation_axis_and_angle_from_matrix
+from xia2.Driver.DriverFactory import DriverFactory
 
 if __name__ == '__main__':
   debug = False
 else:
   debug = False
 
-from xia2.Driver.DriverFactory import DriverFactory
 
 class _HeaderCache(object):
   '''A cache for image headers.'''
@@ -139,7 +142,6 @@ def read_A200(image):
 
 # FIXME get proper specifications for these detectors...
 
-import pycbf
 
 def find_detector_id(cbf_handle):
 
@@ -981,4 +983,3 @@ if __name__ == '__main__':
 
     for token in sorted(header):
       print token, header[token]
-

@@ -2,27 +2,25 @@
 
 from __future__ import absolute_import, division
 
-import sys
-import os
 import exceptions
+import os
+import sys
 import traceback
 
 # Needed to make xia2 imports work correctly
 import libtbx.load_env
-from xia2.Handlers.Streams import Chatter, Debug
-
-from xia2.Handlers.Files import cleanup
+from scitbx.array_family import flex
+from xia2.Applications.xia2_main import (check_environment, help,
+                                         write_citations)
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Environment import Environment
+from xia2.Handlers.Files import cleanup
+from xia2.Handlers.Streams import Chatter, Debug
 from xia2.lib.bits import auto_logfiler
-
-from xia2.Applications.xia2_main import check_environment, write_citations, help
 from xia2.lib.tabulate import tabulate
-
-from scitbx.array_family import flex
-
 # try to get scipy set up right...
 from xia2.Modules.MultiCrystalAnalysis import get_scipy
+
 get_scipy()
 
 def multi_crystal_analysis(stop_after=None):

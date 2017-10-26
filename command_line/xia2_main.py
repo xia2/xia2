@@ -4,27 +4,25 @@
 # LIBTBX_PRE_DISPATCHER_INCLUDE_SH ulimit -n `ulimit -Hn 2>&1 |sed 's/unlimited/4096/'`
 
 from __future__ import absolute_import, division
-import sys
-import os
-import time
+
 import exceptions
+import os
+import sys
+import time
 import traceback
 
 # Needed to make xia2 imports work correctly
 import libtbx.load_env
-
+import xia2.XIA2Version
 from dials.util.version import dials_version
-from xia2.Handlers.Streams import Chatter, Debug
-
-from xia2.Handlers.Flags import Flags
-from xia2.Handlers.Files import cleanup
+from xia2.Applications.xia2_helpers import process_one_sweep
+from xia2.Applications.xia2_main import (check_environment, get_command_line,
+                                         help, write_citations)
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Environment import Environment
-
-from xia2.Applications.xia2_main import check_environment, get_command_line, write_citations, help
-
-from xia2.Applications.xia2_helpers import process_one_sweep
-import xia2.XIA2Version
+from xia2.Handlers.Files import cleanup
+from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Streams import Chatter, Debug
 
 def get_ccp4_version():
   CCP4 = os.environ.get('CCP4')

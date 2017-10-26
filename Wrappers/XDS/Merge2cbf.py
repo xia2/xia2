@@ -14,15 +14,12 @@ from __future__ import absolute_import, division
 import os
 import sys
 
+import libtbx
 from xia2.Driver.DriverFactory import DriverFactory
-
 # interfaces that this inherits from ...
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
-
 # generic helper stuff
 from xia2.Wrappers.XDS.XDS import xds_check_version_supported
-
-import libtbx
 
 def Merge2cbf(DriverType=None, params=None):
 
@@ -62,7 +59,7 @@ def Merge2cbf(DriverType=None, params=None):
     def data_range(self, value):
       start, end = value
       self._params.data_range = (start, end)
-    
+
     @property
     def moving_average(self):
       return self._params.moving_average
@@ -74,7 +71,7 @@ def Merge2cbf(DriverType=None, params=None):
     @property
     def merge_n_images(self):
       return self._params.merge_n_images
-    
+
     @merge_n_images.setter
     def merge_n_images(self, n):
       self._params.merge_n_images = n

@@ -13,6 +13,7 @@
 #
 
 from __future__ import absolute_import, division
+
 import os
 
 def remove_misfits(xdsin, xdsout):

@@ -17,6 +17,7 @@
 #
 
 from __future__ import absolute_import, division
+
 import subprocess
 
 from xia2.Driver.DefaultDriver import DefaultDriver

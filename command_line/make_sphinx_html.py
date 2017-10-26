@@ -1,10 +1,12 @@
 # LIBTBX_SET_DISPATCHER_NAME dev.xia2.make_sphinx_html
 
 from __future__ import absolute_import, division
+
+import os
+import shutil
+
 import libtbx.load_env
 from dials.util.procrunner import run_process
-import shutil
-import os
 
 if (__name__ == "__main__") :
   xia2_dir = libtbx.env.find_in_repositories("xia2", optional=False)

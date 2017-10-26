@@ -1,9 +1,11 @@
 from __future__ import absolute_import, division
-# LIBTBX_SET_DISPATCHER_NAME xia2.rogues_gallery
 
 import json
 import os
 import sys
+
+# LIBTBX_SET_DISPATCHER_NAME xia2.rogues_gallery
+
 
 def munch_rogues(rogues):
   rogue_reflections = []

@@ -10,6 +10,7 @@
 # xia2 information / input file reader
 
 from __future__ import absolute_import, division
+
 from libtbx.containers import OrderedDict
 
 class XInfo(object):

@@ -9,20 +9,18 @@
 
 from __future__ import absolute_import, division
 
-from iotbx import mtz
-from xia2.Schema.Interfaces.Scaler import Scaler
-from xia2.Handlers.Streams import Debug, Chatter
-from xia2.Handlers.Phil import PhilIndex
-from xia2.Modules.Scaler.CCP4ScalerHelpers import anomalous_signals
-from xia2.Modules.CCP4InterRadiationDamageDetector import \
-     CCP4InterRadiationDamageDetector
-
-from xia2.lib.bits import nifty_power_of_ten
 import os
 
+from iotbx import mtz
 from xia2.Handlers.Files import FileHandler
+from xia2.Handlers.Phil import PhilIndex
+from xia2.Handlers.Streams import Chatter, Debug
+from xia2.lib.bits import nifty_power_of_ten
 from xia2.Modules import MtzUtils
-
+from xia2.Modules.CCP4InterRadiationDamageDetector import \
+    CCP4InterRadiationDamageDetector
+from xia2.Modules.Scaler.CCP4ScalerHelpers import anomalous_signals
+from xia2.Schema.Interfaces.Scaler import Scaler
 # new resolution limit code
 from xia2.Wrappers.XIA.Merger import Merger
 

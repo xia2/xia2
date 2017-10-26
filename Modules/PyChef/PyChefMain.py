@@ -19,9 +19,9 @@
 from __future__ import absolute_import, division
 
 import os
+import subprocess
 import sys
 import time
-import subprocess
 
 from xia2.Modules.PyChef.PyChef import PyChef
 

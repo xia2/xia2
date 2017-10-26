@@ -21,16 +21,15 @@
 
 from __future__ import absolute_import, division
 
-import sys
 import math
+import sys
 
-from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
-from xia2.lib.bits import transpose_loggraph, mean_sd
-from xia2.Wrappers.CCP4.Mtzdump import Mtzdump
+from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Experts.WedgeExpert import digest_wedges
-
 from xia2.Handlers.Streams import Chatter, Stdout
+from xia2.lib.bits import mean_sd, transpose_loggraph
+from xia2.Wrappers.CCP4.Mtzdump import Mtzdump
 
 def Chef(DriverType = None,
          stream = Chatter):

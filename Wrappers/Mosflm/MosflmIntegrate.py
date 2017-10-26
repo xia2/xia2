@@ -12,16 +12,14 @@
 
 from __future__ import absolute_import, division
 
-import os
 import copy
 import math
+import os
 
-from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
-
-from xia2.Wrappers.CCP4.MosflmHelpers import \
-     _parse_mosflm_integration_output, \
-     _parse_summary_file
+from xia2.Driver.DriverFactory import DriverFactory
+from xia2.Wrappers.CCP4.MosflmHelpers import (_parse_mosflm_integration_output,
+                                              _parse_summary_file)
 
 def MosflmIntegrate(DriverType = None, indxr_print = True):
   '''Factory for MosflmIntegrate wrapper classes, with the specified

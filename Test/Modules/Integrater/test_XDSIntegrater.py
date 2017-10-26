@@ -3,9 +3,9 @@ from __future__ import absolute_import, division, print_function
 import os
 import sys
 
-from libtbx.test_utils import approx_equal
 import mock
 import pytest
+from libtbx.test_utils import approx_equal
 
 def exercise_xds_integrater(dials_regression, tmp_dir, nproc=None):
   if nproc:

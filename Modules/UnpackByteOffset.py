@@ -1,9 +1,9 @@
 from __future__ import absolute_import, division
 
 import binascii
+import random
 import struct
 import sys
-import random
 
 def pack_values(data):
   current = 0
