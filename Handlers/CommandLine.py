@@ -207,17 +207,16 @@ class _CommandLine(object):
 
     params = PhilIndex.get_python_object()
     mp_params = params.xia2.settings.multiprocessing
+    from xia2.Handlers.Environment import get_number_cpus
     if mp_params.mode == 'parallel':
       if mp_params.type == 'qsub':
         if which('qsub') is None:
           raise Sorry('qsub not available')
       if mp_params.njob is Auto:
-        from xia2.Handlers.Environment import get_number_cpus
         mp_params.njob = get_number_cpus()
         if mp_params.nproc is Auto:
           mp_params.nproc = 1
       elif mp_params.nproc is Auto:
-        from xia2.Handlers.Environment import get_number_cpus
         mp_params.nproc = get_number_cpus()
     elif mp_params.mode == 'serial':
       if mp_params.type == 'qsub':
@@ -226,7 +225,6 @@ class _CommandLine(object):
       if mp_params.njob is Auto:
         mp_params.njob = 1
       if mp_params.nproc is Auto:
-        from xia2.Handlers.Environment import get_number_cpus
         mp_params.nproc = get_number_cpus()
 
     PhilIndex.update("xia2.settings.multiprocessing.njob=%d" %mp_params.njob)

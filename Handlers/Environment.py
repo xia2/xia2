@@ -156,6 +156,13 @@ Environment = _Environment()
 
 def get_number_cpus():
   '''Portably get the number of processor cores available.'''
+
+  # if environmental variable NSLOTS is set to a number then use that
+  try:
+    return int(os.environ.get('NSLOTS'))
+  except (ValueError, TypeError):
+    pass
+
   from libtbx.introspection import number_of_processors
   return number_of_processors(return_value_if_unknown=-1)
 
