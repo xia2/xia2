@@ -249,9 +249,10 @@ def imageset_to_xds(imageset, synchrotron = None, refined_beam_vector = None,
   trusted = converter.get_detector()[0].get_trusted_range()
 
   # if CCD; undo dxtbx pedestal offset, hard code minimum 1; else use trusted
-  # range verbatim (i.e. for PAD)
+  # range verbatim (i.e. for PAD) (later in pipeline sensor is SENSOR_UNKNOWN
+  # so additional test)
 
-  if sensor == 'SENSOR_CCD':
+  if sensor == 'SENSOR_CCD' or detector == 'CCDCHESS':
     trusted = 1, trusted[1] - trusted[0]
 
   result.append('DETECTOR=%s MINIMUM_VALID_PIXEL_VALUE=%d OVERLOAD=%d' %
