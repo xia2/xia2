@@ -13,7 +13,6 @@ import traceback
 
 # Needed to make xia2 imports work correctly
 import libtbx.load_env
-import xia2.XIA2Version
 from dials.util.version import dials_version
 from xia2.Applications.xia2_helpers import process_one_sweep
 from xia2.Applications.xia2_main import (check_environment, get_command_line,
@@ -292,6 +291,7 @@ def run():
     sys.exit()
 
   if '-version' in sys.argv or '--version' in sys.argv:
+    import xia2.XIA2Version
     print xia2.XIA2Version.Version
     print dials_version()
     ccp4_version = get_ccp4_version()
