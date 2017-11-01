@@ -15,35 +15,33 @@
 
 from __future__ import absolute_import, division
 
-import math
 import os
+import math
 import shutil
-
-from xia2.Handlers.Files import FileHandler
-from xia2.Handlers.Flags import Flags
-from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter, Debug, Journal
-from xia2.lib.bits import auto_logfiler
-from xia2.Modules.Indexer.XDSCheckIndexerSolution import \
-    xds_check_indexer_solution
-from xia2.Schema.Interfaces.Indexer import IndexerSingleSweep
-from xia2.Wrappers.XDS.XDS import XDSException
-from xia2.Wrappers.XDS.XDSColspot import XDSColspot as _Colspot
-from xia2.Wrappers.XDS.XDSIdxref import XDSIdxref as _Idxref
-from xia2.Wrappers.XDS.XDSInit import XDSInit as _Init
-from xia2.Wrappers.XDS.XDSXycorr import XDSXycorr as _Xycorr
 
 # wrappers for programs that this needs
 
+from xia2.Wrappers.XDS.XDSXycorr import XDSXycorr as _Xycorr
+from xia2.Wrappers.XDS.XDSInit import XDSInit as _Init
+from xia2.Wrappers.XDS.XDSColspot import XDSColspot as _Colspot
+from xia2.Wrappers.XDS.XDSIdxref import XDSIdxref as _Idxref
 
 # helper functions
 
+from xia2.Wrappers.XDS.XDS import XDSException
+from xia2.Modules.Indexer.XDSCheckIndexerSolution import xds_check_indexer_solution
 
 # interfaces that this must implement to be an indexer
 
+from xia2.Schema.Interfaces.Indexer import IndexerSingleSweep
 
 # odds and sods that are needed
 
+from xia2.lib.bits import auto_logfiler
+from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.Handlers.Flags import Flags
+from xia2.Handlers.Phil import PhilIndex
+from xia2.Handlers.Files import FileHandler
 
 class XDSIndexer(IndexerSingleSweep):
   '''An implementation of the Indexer interface using XDS.'''
