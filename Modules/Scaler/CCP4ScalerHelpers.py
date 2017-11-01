@@ -201,14 +201,15 @@ def _prepare_pointless_hklin(working_directory,
 
   phi_limit = 180
 
-  if n_batches * phi_width < phi_limit or PhilIndex.params.xia2.settings.small_molecule == True:
+  if n_batches * phi_width < phi_limit or \
+    PhilIndex.params.xia2.settings.small_molecule == True:
     return hklin
 
   hklout = os.path.join(
       working_directory,
       '%s_prepointless.mtz' % (os.path.split(hklin)[-1][:-4]))
 
-  pl = Pointless()
+  pl = _Pointless()
   pl.set_working_directory(working_directory)
   auto_logfiler(pl)
   pl.set_hklin(hklin)
