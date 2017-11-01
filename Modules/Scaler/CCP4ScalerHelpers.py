@@ -25,7 +25,7 @@ from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import Debug
 from xia2.lib.bits import auto_logfiler
 from xia2.Modules import MtzUtils
-from xia2.Wrappers.CCP4.Pointless import Pointless as _Pointless
+import xia2.Wrappers.CCP4.Pointless
 
 ############ JIFFY FUNCTIONS #################
 
@@ -209,7 +209,7 @@ def _prepare_pointless_hklin(working_directory,
       working_directory,
       '%s_prepointless.mtz' % (os.path.split(hklin)[-1][:-4]))
 
-  pl = _Pointless()
+  pl = xia2.Wrappers.CCP4.Pointless.Pointless()
   pl.set_working_directory(working_directory)
   auto_logfiler(pl)
   pl.set_hklin(hklin)
@@ -252,9 +252,9 @@ class CCP4ScalerHelper(object):
     return self._working_directory
 
   def Pointless(self):
-    '''Create a Pointless wrapper from _Pointless - and set the
+    '''Create a Pointless wrapper from the xia2 wrapper - and set the
     working directory and log file stuff as a part of this...'''
-    pointless = _Pointless()
+    pointless = xia2.Wrappers.CCP4.Pointless.Pointless()
     pointless.set_working_directory(self.get_working_directory())
     auto_logfiler(pointless)
     return pointless
