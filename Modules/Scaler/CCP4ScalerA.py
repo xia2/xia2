@@ -106,8 +106,10 @@ class CCP4ScalerA(Scaler):
 
     if PhilIndex.params.xia2.settings.small_molecule == True:
       aimless.set_scaling_parameters('rotation', 15.0)
-      # not obvious that this is correct
-      aimless.set_bfactor(bfactor=False)
+      # not obvious that this is correct, in fact probably it is not
+      # at all correct...?
+      aimless.set_bfactor(
+        bfactor=PhilIndex.params.xia2.settings.small_molecule_bfactor)
 
     aimless.set_surface_tie(PhilIndex.params.ccp4.aimless.surface_tie)
     aimless.set_surface_link(PhilIndex.params.ccp4.aimless.surface_link)

@@ -463,6 +463,11 @@ xia2.settings
     .help = "Assume that the dataset comes from a"
             "chemical crystallography experiment"
     .expert_level = 1
+  small_molecule_bfactor = False
+    .type = bool
+    .short_caption = "B factor scaling for small molecule sets"
+    .help = "Use B factor scaling for small molecule sets"
+    .expert_level = 2
   failover = False
     .type = bool
     .short_caption = 'Fail over gracefully'
