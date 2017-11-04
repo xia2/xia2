@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # SymmetryLib.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
@@ -25,7 +24,7 @@
 #                 for use with phenix.hyss.
 #
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 
@@ -166,11 +165,7 @@ def is_own_enantiomorph(spacegroup):
   hand is itself.'''
 
   enantiomorph = compute_enantiomorph(spacegroup)
-
-  if enantiomorph == spacegroup:
-    return True
-
-  return False
+  return enantiomorph == spacegroup
 
 def compute_enantiomorph(spacegroup):
   '''Compute the spacegroup enantiomorph name. There are 11 pairs where
@@ -294,26 +289,3 @@ def lauegroup_to_lattice(lauegroup):
       updated_laue += l
 
   return lauegroup_to_lattice[updated_laue]
-
-if __name__ == '__main__1':
-  print lauegroup_to_lattice('I m m m')
-  print lauegroup_to_lattice('C 1 2/m 1')
-  print lauegroup_to_lattice('P -1')
-  print lauegroup_to_lattice('P 4/mmm')
-
-  print lattices_in_order()
-
-  print spacegroup_name_old_to_xHM('H 3 2')
-
-if __name__ == '__main__2':
-
-  for spacegroup in get_all_spacegroups_long():
-    enantiomorph = compute_enantiomorph(spacegroup)
-
-    if enantiomorph != spacegroup:
-      print '%s -> %s' % (spacegroup, enantiomorph)
-
-if __name__ == '__main__':
-  import sys
-  for sg in sys.argv[1:]:
-    print spacegroup_name_xHM_to_old(sg)

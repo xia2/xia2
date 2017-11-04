@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # XIA2Version.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
@@ -10,7 +9,7 @@
 # A file containing the version number of the current xia2. Generally useful.
 #
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 def get_git_revision(fallback='not set'):
   '''Try to obtain the current git revision number
@@ -63,7 +62,3 @@ def get_git_revision(fallback='not set'):
 VersionNumber = get_git_revision("0.5.0")
 Version = "XIA2 %s" % VersionNumber
 Directory = "xia2-%s" % VersionNumber
-
-if __name__ == '__main__':
-  print 'This is XIA 2 version %s' % VersionNumber
-  print 'This should be in a directory called "%s"' % Directory
