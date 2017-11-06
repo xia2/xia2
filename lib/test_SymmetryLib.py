@@ -1,13 +1,13 @@
 from __future__ import absolute_import, division, print_function
 
-def test_lauegroup_to_lattice_functions():
+def test_lauegroup_to_lattice_functions(ccp4):
   from xia2.lib.SymmetryLib import lauegroup_to_lattice
   assert lauegroup_to_lattice('I m m m') == 'oI'
   assert lauegroup_to_lattice('C 1 2/m 1') == 'mC'
   assert lauegroup_to_lattice('P -1') == 'aP'
   assert lauegroup_to_lattice('P 4/mmm') == 'tP'
 
-def test_lattice_order():
+def test_lattice_order(ccp4):
   from xia2.lib.SymmetryLib import lattices_in_order
   assert lattices_in_order() == ['aP',
                                  'mP', 'mC',
@@ -17,11 +17,11 @@ def test_lattice_order():
                                  'cP', 'cF', 'cI',
                                 ]
 
-def test_spacegroup_conversion():
+def test_spacegroup_conversion(ccp4):
   from xia2.lib.SymmetryLib import spacegroup_name_old_to_xHM
   assert spacegroup_name_old_to_xHM('H 3 2') == 'R 3 2 :H'
 
-def test_hrm():
+def test_hrm(ccp4):
   from xia2.lib.SymmetryLib import compute_enantiomorph, get_all_spacegroups_long
 
   spacegroups = get_all_spacegroups_long()

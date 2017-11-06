@@ -5,6 +5,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+import os
+
 import pytest
 from dials.conftest import (dials_regression, xia2_regression,
                             xia2_regression_build)
@@ -24,5 +26,14 @@ def pytest_collection_modifyitems(config, items):
     for item in items:
       if "slow" in item.keywords:
         item.add_marker(skip_slow)
+
+@pytest.fixture
+def ccp4():
+  '''Return the absolute path to the CCP4 installation.
+     Skip the test if CCP4 is not installed.'''
+  try:
+    return os.environ['CCP4']
+  except KeyError:
+    pytest.skip("CCP4 installation required for this test")
 
 pytest_collect_file = libtbx_collector()
