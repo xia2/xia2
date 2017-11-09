@@ -73,7 +73,11 @@ def ulimit_n():
   # see xia2#172 - change limit on number of file handles to smaller of
   # hard limit, 4096
 
-  import resource
+  try:
+    import resource
+  except ImportError:
+    # not available on all operating systems. do nothing.
+    return
   current, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
   demand = min(4096, hard)
   resource.setrlimit(resource.RLIMIT_NOFILE, (demand, demand))
@@ -109,7 +113,8 @@ class _Environment(object):
     Debug.write('Created CCP4_SCR: %s' % ccp4_scr)
 
     ulimit = ulimit_n()
-    Debug.write('File handle limits: %d/%d/%d' % ulimit)
+    if ulimit:
+      Debug.write('File handle limits: %d/%d/%d' % ulimit)
 
     self._is_setup = True
 
