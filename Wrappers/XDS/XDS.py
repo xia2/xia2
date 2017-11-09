@@ -255,6 +255,10 @@ def imageset_to_xds(imageset, synchrotron = None, refined_beam_vector = None,
   if sensor == 'SENSOR_CCD' or detector == 'CCDCHESS':
     trusted = 1, trusted[1] - trusted[0]
 
+  # XDS upset if we trust < 0 see #193
+  if trusted[0] < 0:
+    trusted = 0, trusted[1]
+
   result.append('DETECTOR=%s MINIMUM_VALID_PIXEL_VALUE=%d OVERLOAD=%d' %
                 (detector, trusted[0], trusted[1]))
 
