@@ -81,7 +81,7 @@ xds
       .short_caption="First pass REFINE(INTEGRATE)="
       .help = 'what to refine in first pass of integration'
       .expert_level=1
-    refine_final = *ORIENTATION *CELL BEAM DISTANCE AXIS POSITION
+    refine_final = *ORIENTATION *CELL BEAM *DISTANCE AXIS *POSITION
       .type = choice(multi = True)
       .short_caption="Final pass REFINE(INTEGRATE)="
       .help = 'what to refine in final pass of integration'
