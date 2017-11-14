@@ -11,6 +11,7 @@ _*.nb
 .DS_Store
 *~
 *.sw[op]
+*.log
 .olex
 .git-notifier*
 git-notifier.log
