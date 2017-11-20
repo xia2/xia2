@@ -88,7 +88,10 @@ class XInfo(object):
     for i in range(len(project_records)):
       record = project_records[i]
       if 'BEGIN PROJECT' in record:
-        self._project = record.replace('BEGIN PROJECT', '').strip()
+        pname = record.replace('BEGIN PROJECT', '').strip()
+        if len(pname.split()) != 1:
+          raise RuntimeError('project name contains white space: %s' % pname)
+        self._project = pname
       if 'END PROJECT' in record:
         if not self._project == record.replace(
             'END PROJECT', '').strip():
