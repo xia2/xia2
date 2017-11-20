@@ -129,6 +129,8 @@ class XInfo(object):
           raise RuntimeError('error in BEGIN CRYSTAL record')
 
         crystal = record.replace('BEGIN CRYSTAL ', '').strip()
+        if len(crystal.split()) != 1:
+          raise RuntimeError('crystal name contains white space: %s' % crystal)
         if crystal in self._crystals:
           raise RuntimeError('crystal %s already exists' % \
                 crystal)
@@ -214,7 +216,9 @@ class XInfo(object):
 
       if 'BEGIN WAVELENGTH ' in record:
         wavelength = record.replace('BEGIN WAVELENGTH ', '').strip()
-
+        if len(wavelength.split()) != 1:
+          raise RuntimeError('wavelength name contains white space: %s' %
+                             wavelength)
         # check that this is a new wavelength definition
         if wavelength in self._crystals[crystal]['wavelengths']:
           raise RuntimeError( \
