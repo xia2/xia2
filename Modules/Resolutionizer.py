@@ -27,6 +27,7 @@ import sys
 import time
 
 import libtbx.phil
+from libtbx.utils import Sorry
 from cctbx.array_family import flex
 from scitbx import lbfgs
 
@@ -235,6 +236,8 @@ phil_str = '''
     .type = bool
     .short_caption = "Keep anomalous pairs separate in merging statistics"
     .expert_level = 1
+  labels = None
+    .type = strings
 '''
 
 
@@ -309,8 +312,13 @@ class resolutionizer(object):
       if (len(all_i_obs) == 0) :
         raise Sorry("No intensities found in %s." % file_name)
       elif (len(all_i_obs) > 1) :
-        raise Sorry("Multiple intensity arrays - please specify one:\n%s" %
-          "\n".join(["  labels=%s"%a.info().label_string() for a in all_i_obs]))
+        if params.labels is not None:
+          from iotbx.reflection_file_utils import label_table
+          lab_tab = label_table(all_i_obs)
+          i_obs = lab_tab.select_array(label=params.labels[0], command_line_switch='labels')
+        if i_obs is None:
+          raise Sorry("Multiple intensity arrays - please specify one:\n%s" %
+            "\n".join(["  labels=%s"%a.info().label_string() for a in all_i_obs]))
       else :
         i_obs = all_i_obs[0]
     if hkl_in.file_type() == 'ccp4_mtz':
