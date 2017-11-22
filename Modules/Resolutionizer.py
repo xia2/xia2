@@ -294,11 +294,35 @@ class resolution_plot(object):
 class resolutionizer(object):
   '''A class to calculate things from merging reflections.'''
 
-  def __init__(self, scaled_unmerged, params):
+  def __init__(self, i_obs, batches, params):
 
     self._params = params
 
+    i_obs = i_obs.customized_copy(anomalous_flag=True, info=i_obs.info())
+
+    if self._params.batch_range is not None:
+      batch_min, batch_max = self._params.batch_range
+      assert batches is not None
+      sel = (batches.data() >= batch_min) & (batches.data() <= batch_max)
+      batches = batches.select(sel).set_info(batches.info())
+      i_obs = i_obs.select(sel).set_info(i_obs.info())
+
     import iotbx.merging_statistics
+    self._merging_statistics = iotbx.merging_statistics.dataset_statistics(
+      i_obs=i_obs,
+      n_bins=self._params.nbins,
+      cc_one_half_significance_level=self._params.cc_half_significance_level,
+      cc_one_half_method=self._params.cc_half_method,
+      binning_method=self._params.binning_method,
+      anomalous=params.anomalous,
+      use_internal_variance=False,
+      eliminate_sys_absent=False,
+      assert_is_not_unique_set_under_symmetry=False,
+    )
+
+  @classmethod
+  def from_unmerged_mtz(cls, scaled_unmerged, params):
+
 
     from iotbx import reflection_file_reader
     hkl_in = reflection_file_reader.any_reflection_file(scaled_unmerged)
@@ -334,26 +358,7 @@ class resolutionizer(object):
         indices = mtz_object.extract_original_index_miller_indices()
         i_obs = i_obs.customized_copy(indices=indices, info=i_obs.info())
 
-    i_obs = i_obs.customized_copy(anomalous_flag=True, info=i_obs.info())
-
-    if self._params.batch_range is not None:
-      batch_min, batch_max = self._params.batch_range
-      assert batches is not None
-      sel = (batches.data() >= batch_min) & (batches.data() <= batch_max)
-      batches = batches.select(sel).set_info(batches.info())
-      i_obs = i_obs.select(sel).set_info(i_obs.info())
-
-    self._merging_statistics = iotbx.merging_statistics.dataset_statistics(
-      i_obs=i_obs,
-      n_bins=self._params.nbins,
-      cc_one_half_significance_level=self._params.cc_half_significance_level,
-      cc_one_half_method=self._params.cc_half_method,
-      binning_method=self._params.binning_method,
-      anomalous=params.anomalous,
-      use_internal_variance=False,
-      eliminate_sys_absent=False,
-      assert_is_not_unique_set_under_symmetry=False,
-    )
+    return cls(i_obs, batches, params)
 
   def resolution_auto(self):
     '''Compute resolution limits based on the current self._params set.'''
@@ -716,7 +721,7 @@ def run(args):
   scaled_unmerged = unhandled[0]
 
   stamp("Resolutionizer.py starting")
-  m = resolutionizer(scaled_unmerged, params)
+  m = resolutionizer.from_unmerged_mtz(scaled_unmerged, params)
   stamp("instantiated")
   m.resolution_auto()
   stamp("the end.")
