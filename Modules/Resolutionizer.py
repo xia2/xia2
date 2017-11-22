@@ -222,6 +222,11 @@ phil_str = '''
     .help = "Minimum value of the merged <I/sigI> in the outer resolution shell"
     .short_caption = "Outer shell merged <I/sigI>"
     .expert_level = 1
+  i_mean_over_sigma_mean = None
+    .type = float(value_min=0)
+    .help = "Minimum value of the unmerged <I>/<sigI> in the outer resolution shell"
+    .short_caption = "Outer shell unmerged <I>/<sigI>"
+    .expert_level = 2
   nbins = 100
     .type = int
     .help = "Number of resolution bins to use for estimation of resolution limit."
@@ -378,6 +383,10 @@ class resolutionizer(object):
       print 'Resolution Mn(I/sig):    %.2f' % \
           self.resolution_merged_isigma()
 
+    if self._params.i_mean_over_sigma_mean:
+      print 'Resolution Mn(I)/Mn(sig):    %.2f' % \
+          self.resolution_i_mean_over_sigma_mean()
+
   def resolution_rmerge(self, limit=None, log=None):
     '''Compute a resolution limit where either rmerge = 1.0 (limit if
     set) or the full extent of the data. N.B. this fit is only meaningful
@@ -429,6 +438,53 @@ class resolutionizer(object):
       plot.savefig('rmerge.png')
 
     return r_rmerge
+
+  def resolution_i_mean_over_sigma_mean(self, limit=None, log=None):
+    '''Compute a resolution limit where either <I>/<sigma> = 1.0 (limit if
+    set) or the full extent of the data.'''
+
+    if limit is None:
+      limit = self._params.i_mean_over_sigma_mean
+
+    isigma_s = flex.double(
+      [b.i_mean_over_sigi_mean for b in self._merging_statistics.bins]).reversed()
+    s_s = flex.double(
+      [1/b.d_min**2 for b in self._merging_statistics.bins]).reversed()
+
+    sel = isigma_s > 0
+    isigma_s = isigma_s.select(sel)
+    s_s = s_s.select(sel)
+
+    if flex.min(isigma_s) > limit:
+      r_isigma = 1.0 / math.sqrt(flex.max(s_s))
+      isigma_f = None
+
+    else:
+      isigma_f = log_fit(s_s, isigma_s, 6)
+
+      if log:
+        fout = open(log, 'w')
+        for j, s in enumerate(s_s):
+          d = 1.0 / math.sqrt(s)
+          o = isigma_s[j]
+          m = isigma_f[j]
+          fout.write('%f %f %f %f\n' % (s, d, o, m))
+        fout.close()
+
+      try:
+        r_isigma = 1.0 / math.sqrt(interpolate_value(s_s, isigma_f, limit))
+      except Exception:
+        r_isigma = 1.0 / math.sqrt(flex.max(s_s))
+
+    if self._params.plot:
+      plot = resolution_plot(ylabel='Unmerged <I>/<sigma>')
+      if isigma_f is not None:
+        plot.plot(s_s, isigma_f, label='fit')
+      plot.plot(s_s, isigma_s, label='Unmerged <I>/<sigma>')
+      plot.plot_resolution_limit(r_isigma)
+      plot.savefig('i_mean_over_sigma_mean.png')
+
+    return r_isigma
 
   def resolution_unmerged_isigma(self, limit=None, log=None):
     '''Compute a resolution limit where either I/sigma = 1.0 (limit if
