@@ -5,9 +5,9 @@ Insulin tutorial
 This tutorial uses test images which are available from the links below.
 Thanks to John Cowan for providing this test data!
 
-* `Windows (as .zip file) <http://www.ccp4.ac.uk/xia/demo.zip>`_
-* `Unix (as .tar.bz2 file) <http://www.ccp4.ac.uk/xia/demo.tar.bz2>`_
-* `Unix (as .tar.gz file) <http://www.ccp4.ac.uk/xia/demo.tar.gz>`_
+* `Windows (as .zip file) <ftp://ftp.ccp4.ac.uk/xia/demo.zip>`_
+* `Unix (as .tar.bz2 file) <ftp://ftp.ccp4.ac.uk/xia/demo.tar.bz2>`_
+* `Unix (as .tar.gz file) <ftp://ftp.ccp4.ac.uk/xia/demo.tar.gz>`_
 
 There are two ways of running xia2 - with and without an input file, an
 example of which follows below. If you just run::
