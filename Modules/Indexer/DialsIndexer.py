@@ -417,13 +417,13 @@ class DialsIndexer(Indexer):
         try:
           indexer_fft3d = self._do_indexing(method="fft3d")
           nref_3d, rmsd_3d = indexer_fft3d.get_nref_rmsds()
-        except Exception:
+        except Exception as e:
           nref_3d = None
           rmsd_3d = None
         try:
           indexer_fft1d = self._do_indexing(method="fft1d")
           nref_1d, rmsd_1d = indexer_fft1d.get_nref_rmsds()
-        except Exception:
+        except Exception as e:
           nref_1d = None
           rmsd_1d = None
 
