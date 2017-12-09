@@ -180,11 +180,11 @@ def MosflmIndex(DriverType = None, indxr_print = True):
 
         # mosflm doesn't refine this in autoindexing...
         if 'Crystal to detector distance of' in o:
-          if self._distance < 0:
-            self._refined_detector_distance = -float(o.split()[5].replace('mm', ''))
+          d = float(o.split()[5].replace('mm', ''))
+          if self._distance is None or self._distance >= 0:
+            self._refined_detector_distance = d
           else:
-            self._refined_detector_distance = float(o.split()[5].replace('mm', ''))
-
+            self._refined_detector_distance = - d
 
         # but it does complain if it is different to the header
         # value - so just use the input value in this case...

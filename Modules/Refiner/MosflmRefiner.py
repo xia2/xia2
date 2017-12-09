@@ -447,6 +447,7 @@ class MosflmRefiner(Refiner):
     from cctbx import sgtbx
     from dxtbx.model import Crystal
     from dxtbx.model.detector_helpers import set_mosflm_beam_centre
+
     experiment = idxr.get_indexer_experiment_list()[0]
     set_mosflm_beam_centre(
       experiment.detector, experiment.beam, beam_centre)
