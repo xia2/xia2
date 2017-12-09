@@ -212,10 +212,6 @@ class MosflmIndexer(IndexerSingleSweep):
 
     indexer.run()
 
-    #sweep = self.get_indexer_sweep_name()
-    #FileHandler.record_log_file(
-        #'%s INDEX' % (sweep), self.get_log_file())
-
     indxr_cell = indexer.get_refined_unit_cell()
     self._indxr_lattice = indexer.get_lattice()
     space_group_number = indexer.get_indexed_space_group_number()
@@ -344,8 +340,7 @@ class MosflmIndexer(IndexerSingleSweep):
                             detector=detector,
                             goniometer=self.get_goniometer(),
                             scan=self.get_scan(),
-                            crystal=crystal_model,
-                            )
+                            crystal=crystal_model)
 
     experiment_list = ExperimentList([experiment])
     self.set_indexer_experiment_list(experiment_list)
