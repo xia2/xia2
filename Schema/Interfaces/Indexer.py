@@ -112,7 +112,7 @@ def beam_centre(detector, beam):
   x, y = (None, None)
   for panel_id, panel in enumerate(detector):
     try:
-      x, y = panel.get_ray_intersection(s0)
+      x, y = panel.get_bidirectional_ray_intersection(s0)
     except RuntimeError:
       continue
     else:

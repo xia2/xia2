@@ -78,7 +78,7 @@ def MosflmIndex(DriverType = None, indxr_print = True):
       self._wavelength = wavelength
 
     def set_distance(self, distance):
-      self._distance = abs(distance)
+      self._distance = distance
 
     def set_unit_cell(self, unit_cell):
       self._unit_cell
@@ -113,7 +113,7 @@ def MosflmIndex(DriverType = None, indxr_print = True):
       if self._wavelength is not None:
         self.input('wavelength %f' %self._wavelength)
       if self._distance is not None:
-        self.input('distance %f' %self._distance)
+        self.input('distance %f' % abs(self._distance))
       if self._unit_cell is not None:
         self.input('cell %f %f %f %f %f %f' %self._unit_cell)
       if self._space_group_number is not None:
@@ -180,7 +180,11 @@ def MosflmIndex(DriverType = None, indxr_print = True):
 
         # mosflm doesn't refine this in autoindexing...
         if 'Crystal to detector distance of' in o:
-          self._refined_detector_distance = float(o.split()[5].replace('mm', ''))
+          d = float(o.split()[5].replace('mm', ''))
+          if self._distance is None or self._distance >= 0:
+            self._refined_detector_distance = d
+          else:
+            self._refined_detector_distance = - d
 
         # but it does complain if it is different to the header
         # value - so just use the input value in this case...
