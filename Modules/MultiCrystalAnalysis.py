@@ -557,6 +557,10 @@ def run(args):
     else:
       unmerged_intensities = unmerged_intensities.concatenate(intensities, assert_is_similar_symmetry=False)
 
+  if len(id_to_batches) == 1:
+    # single file as input
+    id_to_batches = None
+
   if len(params.batch) > 0:
     id_to_batches = OrderedDict()
     for b in params.batch:
