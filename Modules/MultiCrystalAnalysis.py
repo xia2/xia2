@@ -516,26 +516,46 @@ def run(args):
     crystal_symmetry = None
 
   from iotbx.reflection_file_reader import any_reflection_file
-  result = any_reflection_file(args[0])
+
   unmerged_intensities = None
   batches_all = None
-
-  for ma in result.as_miller_arrays(
-    merge_equivalents=False, crystal_symmetry=crystal_symmetry):
-    #print ma.info().labels
-    if ma.info().labels == ['I(+)', 'SIGI(+)', 'I(-)', 'SIGI(-)']:
-      assert ma.anomalous_flag()
-      unmerged_intensities = ma
-    elif ma.info().labels == ['I', 'SIGI']:
-      assert not ma.anomalous_flag()
-      unmerged_intensities = ma
-    elif ma.info().labels == ['BATCH']:
-      batches_all = ma
-
-  assert batches_all is not None
-  assert unmerged_intensities is not None
-
+  batch_add = None
   id_to_batches = None
+
+  for i, file_name in enumerate(args):
+
+    result = any_reflection_file(file_name)
+    intensities = None
+    batches = None
+
+    for ma in result.as_miller_arrays(
+      merge_equivalents=False, crystal_symmetry=crystal_symmetry):
+      if ma.info().labels == ['I(+)', 'SIGI(+)', 'I(-)', 'SIGI(-)']:
+        assert ma.anomalous_flag()
+        intensities = ma
+      elif ma.info().labels == ['I', 'SIGI']:
+        assert not ma.anomalous_flag()
+        intensities = ma
+      elif ma.info().labels == ['BATCH']:
+        batches = ma
+
+    assert batches is not None
+    assert intensities is not None
+
+    if batches_all is None:
+      batches_all = batches
+      id_to_batches = {}
+    else:
+      if batch_add is None:
+        import math
+        batch_add = 10 ** int(math.ceil(math.log10(flex.max(batches_all.data()) + 10)))
+      batches = batches.customized_copy(data=batches.data() + batch_add * i)
+      batches_all = batches_all.concatenate(batches, assert_is_similar_symmetry=False)
+    id_to_batches[i] = (flex.min(batches.data()), flex.max(batches.data()))
+    if unmerged_intensities is None:
+      unmerged_intensities = intensities
+    else:
+      unmerged_intensities = unmerged_intensities.concatenate(intensities, assert_is_similar_symmetry=False)
 
   if len(params.batch) > 0:
     id_to_batches = OrderedDict()
