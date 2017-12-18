@@ -217,6 +217,9 @@ class multi_crystal_analysis(object):
         correlation_matrix[(i_wedge,j_wedge)] = cc_ij
         correlation_matrix[j_wedge,i_wedge] = cc_ij
 
+    # clip values of correlation matrix to account for floating point errors
+    correlation_matrix.set_selected(correlation_matrix < -1, -1)
+    correlation_matrix.set_selected(correlation_matrix > 1, 1)
     diffraction_dissimilarity = 1-correlation_matrix
 
     dist_mat = diffraction_dissimilarity.as_numpy_array()
