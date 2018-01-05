@@ -1,6 +1,6 @@
 # LIBTBX_SET_DISPATCHER_NAME dev.xia2.mca
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import exceptions
 import os
@@ -119,17 +119,17 @@ def multi_crystal_analysis(stop_after=None):
   with open('batches.phil', 'wb') as f:
     try:
       for epoch, si in scaler._sweep_information.iteritems():
-        print >> f, "batch {"
-        print >> f, "  id=%s" %si['sname']
-        print >> f, "  range=%i,%i" %tuple(si['batches'])
-        print >> f, "}"
+        print("batch {", file=f)
+        print("  id=%s" % si['sname'], file=f)
+        print("  range=%i,%i" % tuple(si['batches']), file=f)
+        print("}", file=f)
     except AttributeError:
       for epoch in scaler._sweep_handler.get_epochs():
         si = scaler._sweep_handler.get_sweep_information(epoch)
-        print >> f, "batch {"
-        print >> f, "  id=%s" %si.get_sweep_name()
-        print >> f, "  range=%i,%i" %tuple(si.get_batches())
-        print >> f, "}"
+        print("batch {", file=f)
+        print("  id=%s" %si.get_sweep_name(), file=f)
+        print("  range=%i,%i" %tuple(si.get_batches()), file=f)
+        print("}", file=f)
 
   from xia2.Wrappers.XIA.MultiCrystalAnalysis import MultiCrystalAnalysis
   mca = MultiCrystalAnalysis()
@@ -180,9 +180,9 @@ def multi_crystal_analysis(stop_after=None):
   perm = flex.sort_permutation(completeness)
   rows = [rows[i] for i in perm]
 
-  print 'Intensity clustering summary:'
-  print tabulate(rows, headers, tablefmt='rst')
-  print
+  print('Intensity clustering summary:')
+  print(tabulate(rows, headers, tablefmt='rst'))
+  print('')
 
   intensity_clustering_html = tabulate(rows, headers, tablefmt='html').replace(
     '<table>', '<table class="table table-hover table-condensed">').replace(
@@ -328,10 +328,9 @@ body {
 
   html = '\n'.join([html_header, html_body])
 
-  print "Writing html report to: %s" %'multi-crystal-report.html'
+  print("Writing html report to: %s" %'multi-crystal-report.html')
   with open('multi-crystal-report.html', 'wb') as f:
-    print >> f, html.encode('ascii', 'xmlcharrefreplace')
-
+    print(html.encode('ascii', 'xmlcharrefreplace'), file=f)
 
   write_citations()
 
