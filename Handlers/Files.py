@@ -179,6 +179,7 @@ class _FileHandler(object):
   def record_data_file(self, filename):
     '''Record a data file.'''
     if not filename in self._data_files:
+      assert os.path.isfile(filename), 'Required file %s not found' % filename
       self._data_files.append(filename)
 
   def record_more_data_file(self, tag, filename):
