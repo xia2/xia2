@@ -23,7 +23,6 @@ def compact_batches(batches):
   return [map(itemgetter(1), g) for k, g in groupby(enumerate(batches),
                                                     lambda (i,x):i-x)]
 
-
 def rebatch(hklin, hklout, first_batch=None, add_batch=None,
             include_range=None, exclude_range=None, exclude_batches=None,
             pname=None, xname=None, dname=None):
@@ -183,3 +182,12 @@ def copy_r_file(hklin, hklout):
   mtz_out.write(file_name = hklout)
 
   return
+
+if __name__ == '__main__':
+  import sys
+
+  hklin = sys.argv[1]
+  hklout = sys.argv[2]
+
+  # should be a no-op essentially...
+  rebatch(hklin, hklout, first_batch=42, pname="pname", xname="xname", dname="dname")
