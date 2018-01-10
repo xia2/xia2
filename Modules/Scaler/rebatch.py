@@ -37,9 +37,6 @@ def rebatch(hklin, hklout, first_batch=None, add_batch=None,
   if first_batch is not None and add_batch is not None:
     raise RuntimeError('both first and add specified')
 
-  #if first_batch is None and add_batch is None:
-    #raise RuntimeError('neither first nor add specified')
-
   assert not (len(include_range) and len(exclude_range))
   assert not (len(exclude_range) and len(exclude_batches))
   assert not (len(include_range) and first_batch)
@@ -102,8 +99,6 @@ def rebatch(hklin, hklout, first_batch=None, add_batch=None,
     batch_column.set_values(values=batch_column_values, selection_valid=valid)
 
   if pname and xname and dname:
-    #Debug.write('Assigning pname / xname / dname %s / %s / %s' %
-                #(pname, xname, dname))
 
     for c in mtz_obj.crystals():
       for d in c.datasets():
