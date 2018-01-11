@@ -16,6 +16,7 @@ import math
 import os
 import sys
 
+from libtbx.utils import Sorry
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import Chatter, Debug, Journal
@@ -25,21 +26,8 @@ from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
 from xia2.Schema.Interfaces.Integrater import Integrater
 from xia2.Wrappers.CCP4.Reindex import Reindex
 from xia2.Wrappers.Dials.ExportMtz import ExportMtz as _ExportMtz
-from xia2.Wrappers.Dials.Integrate import Integrate as _Integrate
+import xia2.Wrappers.Dials.Integrate
 from xia2.Wrappers.Dials.Report import Report as _Report
-
-# wrappers for programs that this needs
-
-
-# interfaces that this must implement to be an integrater
-
-
-# indexing functionality if not already provided - even if it is
-# we still need to reindex with DIALS.
-
-
-# odds and sods that are needed
-
 
 class DialsIntegrater(Integrater):
   '''A class to implement the Integrater interface using *only* DIALS
@@ -51,7 +39,7 @@ class DialsIntegrater(Integrater):
     # check that the programs exist - this will raise an exception if
     # they do not...
 
-    integrate = _Integrate()
+    integrate = xia2.Wrappers.Dials.Integrate.Integrate()
 
     # place to store working data
     self._data_files = { }
@@ -90,7 +78,7 @@ class DialsIntegrater(Integrater):
 
   def Integrate(self, indexed_filename=None):
     params = PhilIndex.params.dials.integrate
-    integrate = _Integrate()
+    integrate = xia2.Wrappers.Dials.Integrate.Integrate()
     integrate.set_phil_file(params.phil_file)
 
     if params.mosaic == 'new':
@@ -300,7 +288,7 @@ class DialsIntegrater(Integrater):
 
     try:
       integrate.run()
-    except RuntimeError as e:
+    except xia2.Wrappers.Dials.Integrate.DIALSIntegrateError as e:
       s = str(e)
       if ('dials.integrate requires more memory than is available.' in s
           and not self._intgr_reso_high):
@@ -338,7 +326,7 @@ class DialsIntegrater(Integrater):
         self._intgr_reso_high = d_min
         self.set_integrater_done(False)
         return
-      raise
+      raise Sorry(e)
 
     self._intgr_experiments_filename = integrate.get_integrated_experiments()
 

@@ -8,11 +8,16 @@
 #
 # Integration using DIALS.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
+import json
+import math
 import os
 
 from xia2.Handlers.Phil import PhilIndex
+
+class DIALSIntegrateError(RuntimeError):
+  '''Custom error class for problems encountered by dials.integrate'''
 
 def Integrate(DriverType = None):
   '''A factory for IntegrateWrapper classes.'''
@@ -155,22 +160,24 @@ def Integrate(DriverType = None):
       self.start()
       self.close_wait()
 
-      for record in self.get_all_output():
+      dials_output = self.get_all_output()
+      for n, record in enumerate(dials_output):
         if 'There was a problem allocating memory for shoeboxes' in record:
-          raise RuntimeError(
+          raise DIALSIntegrateError(
 '''dials.integrate requires more memory than is available.
 Try using a machine with more memory or using fewer processors.''')
+        if 'Too few reflections for profile modelling' in record:
+          raise DIALSIntegrateError("%s\n%s, %s\nsee %%s for more details" %
+                                    tuple(dials_output[n+i].strip() for i in (0, 1, 2)) %
+                                    self.get_log_file())
 
       self.check_for_errors()
 
       # save some of the output for future reference - the per-image
       # results
 
-      import json
       self._integration_report = json.load(
         open(self._integration_report_filename, 'rb'))
-
-      import math
 
       self._per_image_statistics = {}
       table = self._integration_report['tables']['integration.image.summary']
