@@ -139,6 +139,9 @@ class multi_crystal_analysis(object):
       self.plot_relative_anomalous_cc(racc, labels=labels)
     correlation_matrix, linkage_matrix = self.compute_correlation_coefficient_matrix()
 
+    import cPickle as pickle
+    pickle.dump(correlation_matrix, open('correlation_matrix.pickle', 'w'))
+
     self._cluster_dict = self.to_dict(linkage_matrix)
 
     self.plot_cc_matrix(correlation_matrix, linkage_matrix, labels=labels)
