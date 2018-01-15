@@ -1,5 +1,24 @@
 <citations>
 
+<citation program="dials">
+<acta>Winter, G. et al. (2018) Acta Cryst. D74.</acta>
+<url>http://journals.iucr.org/d/services/forthcoming.html</url>
+<bibtex>
+@article{Winter:di5011,
+author = "Winter, G., Waterman, D. G., Parkhurst, J. M., Brewster, A. S., Gildea, R. J., Gerstel, M., Fuentes-Montero, L., Vollmar, M., Michels-Clark, T., Young, I. D., Sauter, N. K. and Evans, G.",
+title = "{DIALS: implementation and evaluation of a new integration package}",
+journal = "Acta Crystallographica Section D",
+year = "2018",
+volume = "74",
+number = "?",
+pages = "????--????",
+month = "???",
+doi = {???},
+url = {???},
+}
+</bibtex>
+</citation>
+
 <citation program="xia2">
 <acta>Winter, G. (2010) J. Appl. Cryst. 43, 186-190.</acta>
 <bibtex>
