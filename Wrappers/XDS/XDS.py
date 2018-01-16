@@ -190,7 +190,7 @@ def imageset_to_xds(imageset, synchrotron = None, refined_beam_vector = None,
   h5_names = ['h5', 'nxs']
   if imageset.get_template().split('.')[-1] in h5_names:
     if not check_xds_ok_with_h5():
-      raise RuntimeError, 'HDF5 input with no converter for XDS'
+      raise RuntimeError('HDF5 input with no converter for XDS')
 
   detector_class_is_square = {
       'adsc q4':True,
