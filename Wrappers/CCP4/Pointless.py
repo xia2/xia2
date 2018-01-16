@@ -289,6 +289,9 @@ def Pointless(DriverType = None):
           fatal_error = True
         if 'All reflection pairs rejected' in record and ignore_errors:
           fatal_error = True
+        if 'Reference data and observed data do not overlap' in record and \
+          ignore_errors:
+          fatal_error = True
 
       hklin_spacegroup = ''
       hklin_lattice = ''
