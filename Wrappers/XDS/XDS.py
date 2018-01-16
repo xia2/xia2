@@ -27,7 +27,7 @@
 # different axes (beam, detector x, detector y) trusted regions of the
 # detector (e.g. does the picture go to the corners) and so on.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import exceptions
 import math
@@ -186,6 +186,11 @@ def imageset_to_xds(imageset, synchrotron = None, refined_beam_vector = None,
 
   from dxtbx.serialize.xds import to_xds, xds_detector_name
   converter = to_xds(imageset)
+
+  h5_names = ['h5', 'nxs']
+  if imageset.get_template().split('.')[-1] in h5_names:
+    if not check_xds_ok_with_h5():
+      raise RuntimeError, 'HDF5 input with no converter for XDS'
 
   detector_class_is_square = {
       'adsc q4':True,
@@ -527,16 +532,34 @@ def template_to_xds(template):
   return template.replace('#', '?')
 
 __hdf5_lib = ''
-def find_hdf5_lib(template):
+def find_hdf5_lib(template=None):
   global __hdf5_lib
   from xia2.Applications.xia2setup import is_hd5f_name
-  if not is_hd5f_name(template):
+  if template and not is_hd5f_name(template):
     return ''
   if __hdf5_lib:
     return __hdf5_lib
   import os
   for d in os.environ['PATH'].split(os.pathsep):
-    if os.path.exists(os.path.join(d,'xds_par')):
-      __hdf5_lib = 'LIB=%s\n' % os.path.join(d,'dectris-neggia.so')
+    if os.path.exists(os.path.join(d, 'dectris-neggia.so')):
+      __hdf5_lib = 'LIB=%s\n' % os.path.join(d, 'dectris-neggia.so')
       return __hdf5_lib
   return ''
+
+__h5toxds = ''
+def find_h5toxds():
+  global __h5toxds
+  if __h5toxds:
+    return __h5toxds
+  import os
+  for d in os.environ['PATH'].split(os.pathsep):
+    if os.path.exists(os.path.join(d, 'H5ToXDS')):
+      __h5toxds = os.path.join(d, 'H5ToXDS')
+  return __h5toxds
+
+def check_xds_ok_with_h5():
+  if find_hdf5_lib():
+    return True
+  if find_h5toxds():
+    return True
+  return False
