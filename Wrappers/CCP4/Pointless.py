@@ -286,7 +286,9 @@ def Pointless(DriverType = None):
             raise RuntimeError('Pointless error: %s' % output[j+1].strip())
         if 'Resolution range of Reference data and observed data do not' \
           in record and ignore_errors:
-            fatal_error = True
+          fatal_error = True
+        if 'All reflection pairs rejected' in record and ignore_errors:
+          fatal_error = True
 
       hklin_spacegroup = ''
       hklin_lattice = ''
