@@ -356,7 +356,7 @@ def Aimless(DriverType = None,
 
       output = self.get_all_output()
 
-      for line in output:
+      for n, line in enumerate(output):
         if 'File must be sorted' in line:
           raise RuntimeError('hklin not sorted')
         if 'Negative scales' in line:
@@ -369,6 +369,8 @@ def Aimless(DriverType = None,
           run, batches = self.identify_no_observations_run()
           raise RuntimeError('no observations run %d: %d to %d' % \
                 (run, batches[0], batches[1]))
+        if 'FATAL ERROR message:' in line:
+          raise RuntimeError(output[n+1].strip())
 
     def sum(self):
       '''Sum a set of reflections in a sorted mtz file - this will
@@ -395,11 +397,6 @@ def Aimless(DriverType = None,
         self.check_ccp4_errors()
         self.check_aimless_error_negative_scale_run()
         self.check_aimless_errors()
-
-        status = 'OK'
-
-        if 'Error' in status:
-          raise RuntimeError('[AIMLESS] %s' % status)
 
       else:
         # except RuntimeError as e:
@@ -480,7 +477,6 @@ def Aimless(DriverType = None,
         self.check_aimless_errors()
 
         status = self.get_ccp4_status()
-
         if 'Error' in status:
           raise RuntimeError('[AIMLESS] %s' % status)
 
@@ -666,12 +662,7 @@ def Aimless(DriverType = None,
             "Aimless failed, see log file for more details:\n  %s" %self.get_log_file())
           raise
 
-        status = 'OK'
-
-        Debug.write('Aimless status: %s' % status)
-
-        if 'Error' in status:
-          raise RuntimeError('[AIMLESS] %s' % status)
+        Debug.write('Aimless status: OK')
 
       else:
         # except RuntimeError as e:
@@ -801,12 +792,7 @@ def Aimless(DriverType = None,
         self.check_ccp4_errors()
         self.check_aimless_errors()
 
-        status = 'OK'
-
-        Debug.write('Aimless status: %s' % status)
-
-        if 'Error' in status:
-          raise RuntimeError('[AIMLESS] %s' % status)
+        Debug.write('Aimless status: ok')
 
       except RuntimeError as e:
         try:
