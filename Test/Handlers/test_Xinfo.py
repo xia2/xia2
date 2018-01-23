@@ -4,8 +4,8 @@ import os
 
 def test_insulin_xinfo():
   from xia2.Handlers.XInfo import XInfo
-  import libtbx.load_env
-  xinfo_dir = os.path.join(libtbx.env.dist_path('xia2'), 'Test', 'Handlers')
+  import xia2
+  xinfo_dir = os.path.join(xia2.__path__[0], 'Test', 'Handlers')
 
   xinfo = XInfo(os.path.join(xinfo_dir, 'insulin.xinfo'))
   assert xinfo.get_crystals().keys() == ['DEFAULT']
@@ -20,8 +20,8 @@ def test_insulin_xinfo():
 
 def test_multi_xinfo():
   from xia2.Handlers.XInfo import XInfo
-  import libtbx.load_env
-  xinfo_dir = os.path.join(libtbx.env.dist_path('xia2'), 'Test', 'Handlers')
+  import xia2
+  xinfo_dir = os.path.join(xia2.__path__[0], 'Test', 'Handlers')
 
   xinfo = XInfo(os.path.join(xinfo_dir, 'multi.xinfo'))
   assert xinfo.get_crystals().keys() == ['DEFAULT']
@@ -43,8 +43,8 @@ def test_multi_xinfo():
 
 def test_load_specific_sweeps_from_multi_xinfo():
   from xia2.Handlers.XInfo import XInfo
-  import libtbx.load_env
-  xinfo_dir = os.path.join(libtbx.env.dist_path('xia2'), 'Test', 'Handlers')
+  import xia2
+  xinfo_dir = os.path.join(xia2.__path__[0], 'Test', 'Handlers')
 
   xinfo = XInfo(os.path.join(xinfo_dir, 'multi.xinfo'),
                 sweep_ids=['SWEEP1', 'swEEp4'])
