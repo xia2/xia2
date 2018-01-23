@@ -10,7 +10,7 @@ def test():
   numbers = variate(poisson_distribution(mean = 1000))
   data = flex.double()
   for j in range(1000):
-    data.append(numbers.next())
+    data.append(next(numbers))
 
   _x, _y = npp_ify(data)
   fit = flex.linear_regression(_x, _y)

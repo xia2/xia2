@@ -84,8 +84,8 @@ def reconstruct_peabox(params):
       wdat = iter(c['weights'])
       for z in range(s[0]):
         for y in range(s[1]):
-          count = [ sdat.next() for x in range(s[2]) ]
-          weight = [ wdat.next() for x in range(s[2]) ]
+          count = [ next(sdat) for x in range(s[2]) ]
+          weight = [ next(wdat) for x in range(s[2]) ]
           truecount = ( 0 if w == 0 else 10 * c / w for c, w in zip(count, weight) )
           visualize = ( "X" if c < 0 else ("." if c < 10 else str(int(math.log10(c)))) for c in truecount )
           print "".join(visualize)
