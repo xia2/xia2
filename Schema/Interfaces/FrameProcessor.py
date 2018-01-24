@@ -221,7 +221,7 @@ class FrameProcessor(object):
   def get_image_number(self, image):
     '''Convert an image name to a number.'''
 
-    if type(image) == type(1):
+    if isinstance(image, type(1)):
       return image
 
     return image2image(image)

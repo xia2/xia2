@@ -232,7 +232,7 @@ class DefaultDriver(object):
   def set_command_line(self, command_line):
     '''Set the command line which wants to be run.'''
 
-    if not type(command_line) == type([]):
+    if not isinstance(command_line, type([])):
       raise RuntimeError('command line should be a list')
 
     self._command_line = command_line

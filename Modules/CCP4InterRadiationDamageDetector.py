@@ -113,8 +113,7 @@ class CCP4InterRadiationDamageDetector(object):
     wavelengths = statistics['mapping']
     b_factors = statistics['b_factor']
 
-    derivatives = wavelengths.keys()
-    derivatives.sort()
+    derivatives = sorted(wavelengths.keys())
 
     status = []
 

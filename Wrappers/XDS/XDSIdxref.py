@@ -126,7 +126,7 @@ def XDSIdxref(DriverType=None, params=None):
       self._indxr_user_input_lattice = user
 
     def set_indexer_input_cell(self, cell):
-      if not type(cell) == type(()):
+      if not isinstance(cell, type(())):
         raise RuntimeError('cell must be a 6-tuple de floats')
 
       if len(cell) != 6:

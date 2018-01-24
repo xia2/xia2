@@ -324,8 +324,7 @@ def MosflmRefineCell(DriverType = None, indxr_print = True):
             j += 1
 
           for cycle in new_rms_values.keys():
-            images = new_rms_values[cycle].keys()
-            images.sort()
+            images = sorted(new_rms_values[cycle].keys())
             rms_values[cycle] = []
             for i in images:
               rms_values[cycle].append(
@@ -487,8 +486,7 @@ def MosflmRefineCell(DriverType = None, indxr_print = True):
       for m in self._images:
         hashmap[m[0]] = m[1]
 
-      keys = hashmap.keys()
-      keys.sort()
+      keys = sorted(hashmap.keys())
 
       cell_ref_images = [(k, hashmap[k]) for k in keys]
       self._images = cell_ref_images

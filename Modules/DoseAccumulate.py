@@ -76,9 +76,8 @@ def accumulate(images):
 
     dose[e] = d
 
-  keys = dose.keys()
+  keys = sorted(dose.keys())
 
-  keys.sort()
 
   accum = 0.0
 
@@ -161,8 +160,7 @@ if __name__ == '__main__':
       batches[epochs[j][1]] = batch
 
   dose = accumulate(image_names)
-  epochs = dose.keys()
-  epochs.sort()
+  epochs = sorted(dose.keys())
 
   e0 = min(epochs)
 

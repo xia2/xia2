@@ -21,7 +21,7 @@ def compact_batches(batches):
   from operator import itemgetter
   from itertools import groupby
   return [map(itemgetter(1), g) for k, g in groupby(enumerate(batches),
-                                                    lambda (i,x):i-x)]
+                                                    lambda i_x:i_x[0]-i_x[1])]
 
 def rebatch(hklin, hklout, first_batch=None, add_batch=None,
             include_range=None, exclude_range=None, exclude_batches=None,

@@ -393,8 +393,7 @@ def MosflmIntegrate(DriverType = None, indxr_print = True):
 
       # inspect the output for e.g. very high weighted residuals
 
-      images = self._per_image_statistics.keys()
-      images.sort()
+      images = sorted(self._per_image_statistics.keys())
 
       # FIXME bug 2175 this should probably look at the distribution
       # of values rather than the peak, since this is probably a better

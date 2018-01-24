@@ -151,8 +151,7 @@ def PrintpeaksMosflm(DriverType = None):
         peaks = self.printpeaks()
       else:
         peaks = self._peaks
-      keys = peaks.keys()
-      keys.sort()
+      keys = sorted(peaks.keys())
       keys.reverse()
       for thresh in keys:
         if peaks[thresh] > nspots:

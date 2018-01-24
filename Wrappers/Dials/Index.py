@@ -72,7 +72,7 @@ def Index(DriverType = None):
       self._indxr_user_input_lattice = user
 
     def set_indexer_input_cell(self, cell):
-      if not type(cell) == type(()) or \
+      if not isinstance(cell, type(())) or \
          len(cell) != 6:
         raise RuntimeError('cell must be a 6-tuple de floats')
 

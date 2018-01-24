@@ -301,7 +301,7 @@ def _isint(string):
   >>> _isint("123.45")
   False
   """
-  return type(string) is int or \
+  return isinstance(string, int) or \
          (isinstance(string, _binary_type) or isinstance(string, _text_type)) and \
          _isconvertible(int, string)
 

@@ -148,8 +148,7 @@ class _Syminfo(object):
   def get_spacegroup_numbers(self):
     '''Get a list of all spacegroup numbers.'''
 
-    numbers = self._symop.keys()
-    numbers.sort()
+    numbers = sorted(self._symop.keys())
 
     return numbers
 

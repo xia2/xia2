@@ -139,9 +139,8 @@ def SortLattices(lattice_list):
   for k in lattice_to_spacegroup.keys():
     spacegroup_to_lattice[lattice_to_spacegroup[k]] = k
 
-  spacegroups = [lattice_to_spacegroup[l] for l in lattices]
+  spacegroups = sorted(lattice_to_spacegroup[l] for l in lattices)
 
-  spacegroups.sort()
   spacegroups.reverse()
   lattices = [spacegroup_to_lattice[s] for s in spacegroups]
 

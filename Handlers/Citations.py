@@ -12,7 +12,7 @@
 #
 # That would be %USERPROFILE%
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 import xml.dom.minidom
@@ -62,10 +62,7 @@ class _Citations(object):
 
   def get_programs(self):
     '''Get a list of all of the programs which have been cited.'''
-
-    result = [c for c in self._cited]
-    result.sort()
-    return result
+    return sorted(self._cited)
 
   def get_citations(self):
     '''Get a list of bibtex records of citations.'''
@@ -148,8 +145,8 @@ class _Citations(object):
 Citations = _Citations()
 
 if __name__ == '__main__':
-  print Citations.find_citations(program='xia2')
-  print Citations.find_citations(acta='Winter, G. (2010) J. Appl. Cryst. 43, 186-190.')
+  print(Citations.find_citations(program='xia2'))
+  print(Citations.find_citations(acta='Winter, G. (2010) J. Appl. Cryst. 43, 186-190.'))
 
   Citations.cite('labelit')
   Citations.cite('denzo')
@@ -158,6 +155,6 @@ if __name__ == '__main__':
   Citations.cite('xia2')
 
   for citation in Citations.get_citations_acta():
-    print citation
+    print(citation)
 
-  print Citations.get_programs()
+  print(Citations.get_programs())

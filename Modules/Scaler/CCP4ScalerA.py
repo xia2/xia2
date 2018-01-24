@@ -1177,7 +1177,7 @@ class CCP4ScalerA(Scaler):
     if not PhilIndex.params.dials.fast_mode:
       try:
         self._generate_absorption_map(sc)
-      except StandardError as e:
+      except Exception as e:
         # Map generation may fail for number of reasons, eg. matplotlib borken
         Debug.write("Could not generate absorption map (%s)" % e)
 

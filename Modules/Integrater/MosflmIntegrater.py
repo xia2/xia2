@@ -799,8 +799,7 @@ class MosflmIntegrater(Integrater):
     for m in self._mosflm_cell_ref_images:
       hashmap[m[0]] = m[1]
 
-    keys = hashmap.keys()
-    keys.sort()
+    keys = sorted(hashmap.keys())
 
     cell_ref_images = [(k, hashmap[k]) for k in keys]
     self._mosflm_cell_ref_images = cell_ref_images

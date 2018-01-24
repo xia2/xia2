@@ -228,8 +228,7 @@ def lattices_in_order():
                           ] = lattice
   # lattice_to_spacegroup(lattice)
 
-  spacegroups = spacegroup_to_lattice.keys()
-  spacegroups.sort()
+  spacegroups = sorted(spacegroup_to_lattice.keys())
 
   return [spacegroup_to_lattice[s] for s in spacegroups]
 

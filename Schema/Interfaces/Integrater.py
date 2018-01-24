@@ -727,8 +727,7 @@ class Integrater(FrameProcessor):
     # are unhappy with something, so that the indexing solution
     # can be eliminated in the integrater.
 
-    images = stats.keys()
-    images.sort()
+    images = sorted(stats.keys())
 
     # these may not be present if only a couple of the
     # images were integrated...
@@ -740,8 +739,7 @@ class Integrater(FrameProcessor):
       # fix to bug # 2501 - remove the extreme values from this
       # list...
 
-      stddev_pixel = list(set(stddev_pixel))
-      stddev_pixel.sort()
+      stddev_pixel = sorted(set(stddev_pixel))
 
       # only remove the extremes if there are enough values
       # that this is meaningful... very good data may only have

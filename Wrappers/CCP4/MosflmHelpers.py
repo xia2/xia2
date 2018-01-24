@@ -230,8 +230,7 @@ def _parse_mosflm_integration_output(integration_output_list):
 def _print_integrate_lp(integrate_lp_stats):
   '''Print the contents of the integrate.lp dictionary.'''
 
-  images = integrate_lp_stats.keys()
-  images.sort()
+  images = sorted(integrate_lp_stats.keys())
 
   for i in images:
     data = integrate_lp_stats[i]
@@ -299,8 +298,7 @@ def _parse_mosflm_index_output(index_output_list):
     # cannot find what Mosflm considers the correct answer
     raise RuntimeError('cannot determine correct answer')
 
-  keys = solutions.keys()
-  keys.sort()
+  keys = sorted(solutions.keys())
 
   solutions_by_lattice = { }
 
@@ -396,8 +394,7 @@ def _parse_mosflm_index_output_all(index_output_list):
       except Exception:
         pass
 
-  keys = solutions.keys()
-  keys.sort()
+  keys = sorted(solutions.keys())
 
   results = { }
 

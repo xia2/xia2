@@ -127,7 +127,7 @@ class _Environment(object):
 
     path = self._working_directory
 
-    if type(path_tuple) == type('string'):
+    if isinstance(path_tuple, type('string')):
       path_tuple = (path_tuple,)
 
     for p in path_tuple:

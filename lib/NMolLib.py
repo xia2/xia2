@@ -76,7 +76,7 @@ def sequence_mass(sequence):
   # if input is simply a sequence length, return the appropriate
   # multiple
 
-  if type(sequence) == type(42):
+  if isinstance(sequence, type(42)):
     return 128.0 * sequence
 
   # otherwise it must be a string
@@ -87,7 +87,7 @@ def compute_nmol_from_volume(volume, mass, resolution):
 
   file = open(nmolparams, 'r')
 
-  while 1:
+  while True:
     line = file.readline()
     if not line[0] == '#':
       break
@@ -134,7 +134,7 @@ def compute_nmol_from_volume(volume, mass, resolution):
 
   nmol = 1
   Vm = volume / (mass * nmol)
-  while 1:
+  while True:
     z = (Vm - Vm_bar) / w
     p = P0 + A * math.exp(- math.exp(-z) - z * s + 1)
     nmols.append(nmol)

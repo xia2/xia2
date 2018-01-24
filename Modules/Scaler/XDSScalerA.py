@@ -295,8 +295,7 @@ class XDSScalerA(Scaler):
     # next work through all of the reflection files and make sure that
     # they are XDS_ASCII format...
 
-    epochs = self._sweep_information.keys()
-    epochs.sort()
+    epochs = sorted(self._sweep_information.keys())
 
     self._first_epoch = min(epochs)
 
@@ -890,8 +889,7 @@ class XDSScalerA(Scaler):
         'scaling', self.get_scaler_xcrystal().get_name(), 'XSCALE',
         {'scaling model':'default (all)'})
 
-    epochs = self._sweep_information.keys()
-    epochs.sort()
+    epochs = sorted(self._sweep_information.keys())
 
     xscale = self.XScale()
 

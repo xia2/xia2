@@ -345,7 +345,7 @@ def make_logfile_html(logfile):
         for graph_name, html in table_to_c3js_charts(table).iteritems():
           rst.append('.. raw:: html')
           rst.append('\n    '.join(html.split('\n')))
-      except StandardError as e:
+      except Exception as e:
         Chatter.write('=' * 80)
         Chatter.write('Error (%s) while processing table' % str(e))
         Chatter.write("  '%s'" % table.title)

@@ -53,6 +53,7 @@ from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import Chatter, Debug
 # interfaces that this inherits from ...
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
+from functools import reduce
 
 class _IndexerHelper(object):
   '''A class to manage autoindexing results in a useful way, to ensure
@@ -566,7 +567,7 @@ class Indexer(object):
   def set_indexer_input_cell(self, cell):
     '''Set the input unit cell (optional.)'''
 
-    if not (type(cell) == type(()) or type(cell) == type([])):
+    if not (isinstance(cell, type(())) or isinstance(cell, type([]))):
       raise RuntimeError('cell must be a 6-tuple of floats, is %s' % str(cell))
 
     if len(cell) != 6:
@@ -763,9 +764,9 @@ class IndexerSingleSweep(Indexer):
     '''Add some images for autoindexing (optional) input is a 2-tuple
     or an integer.'''
 
-    if type(image) == type(()):
+    if isinstance(image, type(())):
       self._indxr_images.append(image)
-    if type(image) == type(1):
+    if isinstance(image, type(1)):
       self._indxr_images.append((image, image))
 
     if reset:
@@ -779,9 +780,9 @@ class IndexerSingleSweep(Indexer):
 
     for image in indexer_image_wedges:
 
-      if type(image) == type(()):
+      if isinstance(image, type(())):
         self._indxr_images.append(image)
-      if type(image) == type(1):
+      if isinstance(image, type(1)):
         self._indxr_images.append((image, image))
 
     if reset:

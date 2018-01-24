@@ -259,8 +259,7 @@ class CommonScaler(Scaler):
     Debug.write('Biggest sweep has %d batches' % max_batches)
     max_batches = nifty_power_of_ten(max_batches)
 
-    epochs = self._sweep_information.keys()
-    epochs.sort()
+    epochs = sorted(self._sweep_information.keys())
 
     counter = 0
 

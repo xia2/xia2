@@ -154,8 +154,7 @@ def _parse_integrate_lp(filename):
 def _print_integrate_lp(integrate_lp_stats):
   '''Print the contents of the integrate.lp dictionary.'''
 
-  images = integrate_lp_stats.keys()
-  images.sort()
+  images = sorted(integrate_lp_stats.keys())
 
   for i in images:
     data = integrate_lp_stats[i]
@@ -188,8 +187,7 @@ if __name__ == '__main__':
   # fix to bug # 2501 - remove the extreme values from this
   # list...
 
-  stddev_pixel = list(set(stddev_pixel))
-  stddev_pixel.sort()
+  stddev_pixel = sorted(set(stddev_pixel))
   stddev_pixel = stddev_pixel[1:-1]
 
   print stddev_pixel

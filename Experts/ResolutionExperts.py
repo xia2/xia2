@@ -785,9 +785,8 @@ def digest(bins, isigma_limit = 1.0):
 
   # print 'Debugging! isigma_limit = %f' % isigma_limit
 
-  ss = bins.keys()
+  ss = sorted(bins.keys())
 
-  ss.sort()
 
   for j in range(_number_bins):
     s = ss[j]

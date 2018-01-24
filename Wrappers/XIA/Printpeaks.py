@@ -153,8 +153,7 @@ def Printpeaks(DriverType = None):
         peaks = self.printpeaks()
       else:
         peaks = self._peaks
-      keys = peaks.keys()
-      keys.sort()
+      keys = sorted(peaks.keys())
       keys.reverse()
       for thresh in keys:
         if peaks[thresh] > nspots:
@@ -242,8 +241,7 @@ if __name__ == '__main-old__':
   import time
 
   def printer(peaks):
-    keys = peaks.keys()
-    keys.sort()
+    keys = sorted(peaks.keys())
     for k in keys:
       print '%.5f %d' % (k, peaks[k])
 

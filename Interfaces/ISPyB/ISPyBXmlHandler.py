@@ -181,9 +181,9 @@ class _ISPyBXmlHandler(object):
           statistics_cache = { }
 
           for s in stats:
-            if type(statistics_all[key][s]) == type([]):
+            if isinstance(statistics_all[key][s], type([])):
               statistics_cache[s] = statistics_all[key][s][j]
-            elif type(statistics_all[key][s]) == type(()):
+            elif isinstance(statistics_all[key][s], type(())):
               statistics_cache[s] = statistics_all[key][s][j]
 
           # send these to be written out
@@ -253,7 +253,7 @@ class _ISPyBXmlHandler(object):
 
         reflection_file = reflection_files[k]
 
-        if not type(reflection_file) == type(''):
+        if not isinstance(reflection_file, type('')):
           continue
 
         reflection_file = FileHandler.get_data_file(reflection_file)
@@ -370,9 +370,9 @@ class _ISPyBXmlHandler(object):
             else:
               continue
 
-            if type(statistics_all[key][s]) == type([]):
+            if isinstance(statistics_all[key][s], type([])):
               statistics_cache[n] = statistics_all[key][s][j]
-            elif type(statistics_all[key][s]) == type(()):
+            elif isinstance(statistics_all[key][s], type(())):
               statistics_cache[n] = statistics_all[key][s][j]
 
           tmp2.append(statistics_cache)
@@ -434,7 +434,7 @@ class _ISPyBXmlHandler(object):
       for k in reflection_files:
         reflection_file = reflection_files[k]
 
-        if not type(reflection_file) == type(''):
+        if not isinstance(reflection_file, type('')):
           continue
 
         reflection_file = FileHandler.get_data_file(reflection_file)

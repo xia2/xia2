@@ -557,12 +557,12 @@ class XCrystal(object):
 
         self._nmol = nmol
 
-    if type(reflections_all) == type({}):
+    if isinstance(reflections_all, type({})):
       for format in reflections_all.keys():
         result += '%s format:\n' % format
         reflections = reflections_all[format]
 
-        if type(reflections) == type({}):
+        if isinstance(reflections, type({})):
           for wavelength in reflections.keys():
             target = FileHandler.get_data_file(
                 reflections[wavelength])
