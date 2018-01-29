@@ -24,7 +24,7 @@ def DiscoverBetterExperimentalModel(DriverType = None):
 
     def __init__(self):
       DriverInstance.__class__.__init__(self)
-      self.set_executable('dials.discover_better_experimental_model')
+      self.set_executable('dials.search_beam_position')
 
       self._sweep_filename = None
       self._spot_filename = None
