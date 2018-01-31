@@ -2,7 +2,6 @@
 
 from __future__ import absolute_import, division
 
-import exceptions
 import os
 import sys
 import traceback
@@ -450,7 +449,7 @@ def run():
     sys.argv.append('xia2-working.phil')
   try:
     check_environment()
-  except exceptions.Exception as e:
+  except Exception as e:
     traceback.print_exc(file = open('xia2.error', 'w'))
     Chatter.write('Status: error "%s"' % str(e))
 
@@ -464,7 +463,7 @@ def run():
     multi_crystal_analysis()
     Chatter.write('Status: normal termination')
 
-  except exceptions.Exception as e:
+  except Exception as e:
     traceback.print_exc(file = open(os.path.join(wd, 'xia2.error'), 'w'))
     Chatter.write('Status: error "%s"' % str(e))
     Chatter.write(

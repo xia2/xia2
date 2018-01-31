@@ -29,25 +29,20 @@
 
 from __future__ import absolute_import, division, print_function
 
-import exceptions
 import math
 
 from scitbx import matrix
 from xia2.Handlers.Streams import Debug
 
-class XDSException(exceptions.Exception):
+class XDSException(Exception):
   def __init__(self, value):
     self.value = value
-    return
   def __str__(self):
     return str(self.value)
 
 class XDSIndexException(XDSException):
   def __init__(self, value):
     XDSException.__init__(self, value)
-    return
-
-
 
 _xds_version_cache = None
 

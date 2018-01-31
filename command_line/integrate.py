@@ -2,7 +2,6 @@
 
 from __future__ import absolute_import, division
 
-import exceptions
 import os
 import sys
 import traceback
@@ -15,7 +14,7 @@ from xia2.Handlers.Streams import Chatter, Debug
 def run():
   try:
     check_environment()
-  except exceptions.Exception as e:
+  except Exception as e:
     traceback.print_exc(file = open('xia2.error', 'w'))
     Chatter.write('Status: error "%s"' % str(e))
 
@@ -30,7 +29,7 @@ def run():
     xia2_main(stop_after='integrate')
     Chatter.write('Status: normal termination')
 
-  except exceptions.Exception as e:
+  except Exception as e:
     traceback.print_exc(file = open(os.path.join(wd, 'xia2.error'), 'w'))
     Chatter.write('Status: error "%s"' % str(e))
 

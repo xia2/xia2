@@ -5,7 +5,6 @@
 
 from __future__ import absolute_import, division
 
-import exceptions
 import os
 import sys
 import time
@@ -301,7 +300,7 @@ def run():
 
   try:
     check_environment()
-  except exceptions.Exception as e:
+  except Exception as e:
     traceback.print_exc(file = open('xia2.error', 'w'))
     Chatter.write('Error setting up xia2 environment: %s' % str(e))
     Chatter.write(
@@ -322,7 +321,7 @@ def run():
   except Sorry as s:
     Chatter.write('Status: error "%s"' % str(s))
     sys.exit(1)
-  except exceptions.Exception as e:
+  except Exception as e:
     traceback.print_exc(file = open(os.path.join(wd, 'xia2.error'), 'w'))
     Chatter.write('Status: error "%s"' % str(e))
     Chatter.write(

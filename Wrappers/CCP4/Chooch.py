@@ -15,7 +15,6 @@
 
 from __future__ import absolute_import, division
 
-import exceptions
 import math
 import os
 import string
@@ -211,7 +210,7 @@ if __name__ == '__main__':
                                           edges[key]['fp'],
                                           edges[key]['fpp'],
                                           edges[key]['wave'])
-      except exceptions.Exception as e:
+      except Exception as e:
         print 'failed (%s)' % str(e)
 
 

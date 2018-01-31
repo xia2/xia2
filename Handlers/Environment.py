@@ -32,14 +32,12 @@ def memory_usage():
   try:
     import resource
     return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-  except exceptions.Exception as e:
+  except Exception as e:
     Debug.write('Error getting RAM usage: %s' % str(e))
     return 0
 
 def debug_memory_usage():
   '''Print line, file, memory usage.'''
-
-  import exceptions
 
   try:
     import inspect
@@ -48,7 +46,7 @@ def debug_memory_usage():
     Debug.write('RAM usage at %s %d: %d' %
                 (os.path.split(frameinfo.filename)[-1], frameinfo.lineno,
                  memory_usage()))
-  except exceptions.Exception as e:
+  except Exception as e:
     Debug.write('Error getting RAM usage: %s' % str(e))
 
 def df(path = os.getcwd()):
@@ -60,7 +58,7 @@ def df(path = os.getcwd()):
       ctypes.windll.kernel32.GetDiskFreeSpaceExW(
         ctypes.c_wchar_p(path), None, None, ctypes.pointer(bytes))
       return bytes.value
-    except exceptions.Exception as e:
+    except Exception as e:
       Debug.write('Error getting disk space: %s' % str(e))
       return 0
   else:

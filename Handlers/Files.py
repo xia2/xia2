@@ -16,7 +16,6 @@
 
 from __future__ import absolute_import, division
 
-import exceptions
 import os
 import shutil
 import tempfile
@@ -111,7 +110,7 @@ class _FileHandler(object):
       try:
         os.remove(f)
         out.write('Deleted: %s\n' % f)
-      except exceptions.Exception as e:
+      except Exception as e:
         out.write('Failed to delete: %s (%s)\n' % \
                   (f, str(e)))
 

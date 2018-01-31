@@ -78,7 +78,6 @@
 from __future__ import absolute_import, division
 
 import copy
-import exceptions
 import math
 import os
 import time
@@ -875,7 +874,7 @@ class XSweep(object):
         Debug.write('Stored integration parameters' + \
                     ' for crystal %s' % crystal_id)
 
-    except exceptions.Exception as e:
+    except Exception as e:
       # Chatter.write('Error storing parameters for crystal %s' % \
       # crystal_id)
       # Chatter.write('%s' % str(e))

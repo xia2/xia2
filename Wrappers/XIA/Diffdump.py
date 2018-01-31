@@ -39,7 +39,6 @@ from __future__ import absolute_import, division
 
 import copy
 import datetime
-import exceptions
 import math
 import os
 import sys
@@ -653,14 +652,14 @@ def Diffdump(DriverType = None):
       if not self._previous_crashed:
         try:
           return self.readheader_diffdump()
-        except exceptions.Exception:
+        except Exception:
           self._previous_crashed = True
 
       try:
         self._header = failover_dxtbx(self._image)
         HeaderCache.put(self._image, self._header)
         return copy.deepcopy(self._header)
-      except exceptions.Exception:
+      except Exception:
         traceback.print_exc(file = sys.stdout)
 
     def readheader_diffdump(self):
@@ -685,7 +684,7 @@ def Diffdump(DriverType = None):
           self._header = header
           HeaderCache.put(self._image, self._header)
           return copy.deepcopy(self._header)
-      except exceptions.Exception:
+      except Exception:
         if '.cbf' in self._image[-4:]:
           header = failover_full_cbf(self._image)
           self._header = header
@@ -784,7 +783,7 @@ def Diffdump(DriverType = None):
               self._header['epoch'] = 0.0
               self._header['date'] = ''
 
-          except exceptions.Exception as e:
+          except Exception as e:
 
             if debug:
               print '! error interpreting date: %s' % str(e)

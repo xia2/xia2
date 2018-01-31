@@ -11,8 +11,6 @@
 
 from __future__ import absolute_import, division
 
-from exceptions import Exception
-
 class BadLatticeError(Exception):
   '''An exception to be raised when a lattice is not right.'''
 

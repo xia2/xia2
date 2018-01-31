@@ -11,8 +11,6 @@
 
 from __future__ import absolute_import, division
 
-from exceptions import Exception
-
 class NegativeMosaicError(Exception):
   '''An exception to be raised when the mosaic spread is negative.'''
 

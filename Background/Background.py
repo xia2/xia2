@@ -10,7 +10,6 @@
 
 from __future__ import absolute_import, division
 
-import exceptions
 import sys
 import threading
 import traceback
@@ -43,7 +42,7 @@ class Background(threading.Thread):
         self._result = task(self._arguments)
       else:
         self._result = task()
-    except exceptions.Exception as e:
+    except Exception as e:
       self._traceback = traceback.format_exc()
       self._exception = e
 

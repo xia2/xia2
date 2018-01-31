@@ -16,7 +16,6 @@
 
 from __future__ import absolute_import, division
 
-import exceptions
 import math
 import os
 
@@ -329,7 +328,7 @@ class XDSIndexerII(XDSIndexer):
 
       return 'ii'
 
-    except exceptions.Exception as e:
+    except Exception as e:
       Debug.write(str(e))
       return 'ii'
 
