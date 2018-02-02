@@ -2,7 +2,7 @@
 
 <citation program="dials">
 <acta>Winter, G. et al. (2018) Acta Cryst. D74.</acta>
-<url>http://journals.iucr.org/d/services/forthcoming.html</url>
+<url>https://doi.org/10.1107/S2059798317017235</url>
 <bibtex>
 @article{Winter:di5011,
 author = "Winter, G., Waterman, D. G., Parkhurst, J. M., Brewster, A. S., Gildea, R. J., Gerstel, M., Fuentes-Montero, L., Vollmar, M., Michels-Clark, T., Young, I. D., Sauter, N. K. and Evans, G.",
@@ -10,11 +10,13 @@ title = "{DIALS: implementation and evaluation of a new integration package}",
 journal = "Acta Crystallographica Section D",
 year = "2018",
 volume = "74",
-number = "?",
-pages = "????--????",
-month = "???",
-doi = {???},
-url = {???},
+number = "2",
+pages = "85--97",
+month = "Feb",
+doi = {10.1107/S2059798317017235},
+url = {https://doi.org/10.1107/S2059798317017235},
+abstract = {The {\it DIALS} project is a collaboration between Diamond Light Source, Lawrence Berkeley National Laboratory and CCP4 to develop a new software suite for the analysis of crystallographic X-ray diffraction data, initially encompassing spot finding, indexing, refinement and integration. The design, core algorithms and structure of the software are introduced, alongside results from the analysis of data from biological and chemical crystallography experiments.},
+keywords = {X-ray diffraction, data processing, methods development, DIALS},
 }
 </bibtex>
 </citation>
