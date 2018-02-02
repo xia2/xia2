@@ -84,7 +84,7 @@ class MultiplicityViewPng(render_2d):
       [t.set_color(self._foreground) for t in cb.ax.get_yticklabels()]
       [t.set_fontsize(self.settings.font_size) for t in cb.ax.get_yticklabels()]
     self.ax.set_aspect('equal')
-    self.ax.set_axis_bgcolor(self._background)
+    self.ax.set_facecolor(self._background)
     xmax, ymax = self.GetSize()
     ax.set_xlim(0, xmax)
     ax.set_ylim(0, ymax)
