@@ -72,15 +72,12 @@ class XInfo(object):
 
     project_records = []
 
-    for r in open(xinfo_file, 'r').readlines():
-      record = r.strip()
-      if not record:
-        pass
-      elif record[0] == '!' or record[0] == '#':
-        pass
-      else :
-        # then it may contain something useful...
-        project_records.append(record)
+    with open(xinfo_file, 'rU') as fh:
+      for r in fh.readlines():
+        record = r.strip()
+        if record and record[0] not in ('!', '#'):
+          # then it may contain something useful...
+          project_records.append(record)
 
     # so now we have loaded the whole file into memory stripping
     # out the crud... let's look for something useful
