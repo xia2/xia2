@@ -7,6 +7,4 @@ tst_list = [
   ["$D/Test/Modules/Indexer/TstMosflmIndexer.py", "1"],
   "$D/Test/Modules/Indexer/TstLabelitIndexer.py",
   "$D/Test/Modules/Indexer/TstLabelitIndexerII.py",
-  ["$D/Test/Modules/Scaler/TstCCP4ScalerA.py", "1"],
-  ["$D/Test/Modules/Scaler/TstXDSScalerA.py", "1"],
 ] + discover()

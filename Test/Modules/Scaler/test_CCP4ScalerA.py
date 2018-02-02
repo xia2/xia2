@@ -1,39 +1,29 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 import sys
 
-import libtbx.load_env
-from libtbx.test_utils import open_tmp_directory
+import mock
+import pytest
 
-try:
-  dials_regression = libtbx.env.dist_path('dials_regression')
-  have_dials_regression = True
-except KeyError:
-  have_dials_regression = False
-
-
-def exercise_xds_scaler(nproc=None):
-  if not have_dials_regression:
-    print "Skipping exercise_xds_scaler(): dials_regression not configured"
-    return
-
+@pytest.mark.slow
+@pytest.mark.parametrize('nproc', [1])
+def test_ccp4_scalerA(dials_regression, tmpdir, nproc):
   if nproc is not None:
     from xia2.Handlers.Phil import PhilIndex
     PhilIndex.params.xia2.settings.multiprocessing.nproc = nproc
 
-  xia2_demo_data = os.path.join(dials_regression, "xia2_demo_data")
-  template = os.path.join(xia2_demo_data, "insulin_1_###.img")
+  template = os.path.join(dials_regression, "xia2_demo_data", "insulin_1_###.img")
 
-  cwd = os.path.abspath(os.curdir)
-  tmp_dir = os.path.abspath(open_tmp_directory())
-  os.chdir(tmp_dir)
+  tmpdir.chdir()
+  tmpdir = tmpdir.strpath
 
-  from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
-  from xia2.Modules.Integrater.XDSIntegrater import XDSIntegrater
-  from xia2.Modules.Scaler.XDSScalerA import XDSScalerA
-  indexer = XDSIndexer()
-  indexer.set_working_directory(tmp_dir)
+  from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
+  from xia2.Modules.Refiner.DialsRefiner import DialsRefiner
+  from xia2.Modules.Integrater.DialsIntegrater import DialsIntegrater
+  from xia2.Modules.Scaler.CCP4ScalerA import CCP4ScalerA
+  indexer = DialsIndexer()
+  indexer.set_working_directory(tmpdir)
   from dxtbx.datablock import DataBlockTemplateImporter
   importer = DataBlockTemplateImporter([template])
   datablocks = importer.datablocks
@@ -48,16 +38,16 @@ def exercise_xds_scaler(nproc=None):
   wav = XWavelength("WAVE1", cryst, imageset.get_beam().get_wavelength())
   samp = XSample("X1", cryst)
   directory, image = os.path.split(imageset.get_path(1))
-  sweep = XSweep('SWEEP1', wav, samp, directory=directory, image=image)
+  with mock.patch.object(sys, 'argv', []):
+    sweep = XSweep('SWEEP1', wav, samp, directory=directory, image=image)
   indexer.set_indexer_sweep(sweep)
 
-  from xia2.Modules.Refiner.XDSRefiner import XDSRefiner
-  refiner = XDSRefiner()
-  refiner.set_working_directory(tmp_dir)
+  refiner = DialsRefiner()
+  refiner.set_working_directory(tmpdir)
   refiner.add_refiner_indexer(sweep.get_epoch(1), indexer)
 
-  integrater = XDSIntegrater()
-  integrater.set_working_directory(tmp_dir)
+  integrater = DialsIntegrater()
+  integrater.set_working_directory(tmpdir)
   integrater.setup_from_image(imageset.get_path(1))
   integrater.set_integrater_refiner(refiner)
   #integrater.set_integrater_indexer(indexer)
@@ -65,7 +55,7 @@ def exercise_xds_scaler(nproc=None):
   integrater.set_integrater_sweep_name('SWEEP1')
   integrater.set_integrater_project_info('CRYST1', 'WAVE1', 'SWEEP1')
 
-  scaler = XDSScalerA()
+  scaler = CCP4ScalerA()
   scaler.add_scaler_integrater(integrater)
   scaler.set_scaler_xcrystal(cryst)
   scaler.set_scaler_project_info('CRYST1', 'WAVE1')
@@ -75,7 +65,7 @@ def exercise_xds_scaler(nproc=None):
   # test serialization of scaler
   json_str = scaler.as_json()
   #print json_str
-  scaler2 = XDSScalerA.from_json(string=json_str)
+  scaler2 = CCP4ScalerA.from_json(string=json_str)
   scaler2.set_scaler_xcrystal(cryst)
 
   check_scaler_files_exist(scaler2)
@@ -102,18 +92,3 @@ def check_scaler_files_exist(scaler):
       files = merged[filetype].values()
     for f in files:
       assert os.path.isfile(f)
-
-
-
-def run(args):
-  assert len(args) <= 1, args
-  if len(args) == 1:
-    nproc = int(args[0])
-  else:
-    nproc = None
-  exercise_xds_scaler(nproc=nproc)
-  print "OK"
-
-
-if __name__ == '__main__':
-  run(sys.argv[1:])
