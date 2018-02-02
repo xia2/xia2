@@ -76,6 +76,7 @@ def Pointless(DriverType = None):
       self._hklref = None
       self._xdsin = None
       self._probably_twinned = False
+      self._allow_out_of_sequence_files = False
 
       # pname, xname, dname stuff for when we are copying reflections
       self._pname = None
@@ -104,6 +105,9 @@ def Pointless(DriverType = None):
 
     def set_hklref(self, hklref):
       self._hklref = hklref
+
+    def set_allow_out_of_sequence_files(self, allow=True):
+      self._allow_out_of_sequence_files = allow
 
     def get_hklref(self):
       return self._hklref
@@ -245,6 +249,9 @@ def Pointless(DriverType = None):
         self.add_command_line(self._hklref)
 
       self.start()
+
+      if self._allow_out_of_sequence_files:
+        self.input('allow outofsequencefiles')
 
       # https://github.com/xia2/xia2/issues/125 pass in run limits for this
       # HKLIN file - prevents automated RUN determination from causing errors
