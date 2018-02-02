@@ -10,6 +10,7 @@
 
 from __future__ import absolute_import, division
 
+import libtbx.utils
 import os
 
 from xia2.Handlers.Phil import PhilIndex
@@ -139,7 +140,7 @@ def Index(DriverType = None):
       self._close_to_spindle_cutoff = close_to_spindle_cutoff
 
     def run(self, method):
-      from xia2.Handlers.Streams import Debug
+      from xia2.Handlers.Streams import Chatter, Debug
       Debug.write('Running dials.index')
 
       self.clear_command_line()
@@ -209,9 +210,19 @@ def Index(DriverType = None):
 
       if not os.path.isfile(self._experiment_filename) or \
          not os.path.isfile(self._indexed_filename):
-        raise RuntimeError(
-          "dials.index failed, see log file for more details: %s"
-          %self.get_log_file())
+        # Indexing failed
+        with open(self.get_log_file(), 'r') as fh:
+          if 'No suitable lattice could be found' in fh.read():
+            raise libtbx.utils.Sorry(
+                "No suitable indexing solution could be found.\n\n"
+                "You can view the reciprocal space with:\n"
+                "dials.reciprocal_lattice_viewer %s" %
+                " ".join(os.path.normpath(os.path.join(self.get_working_directory(), p))
+                         for p in self._sweep_filenames + self._spot_filenames))
+          else:
+            raise RuntimeError(
+                "dials.index failed, see log file for more details: %s"
+                % self.get_log_file())
 
       for record in self.get_all_output():
         if 'Too few reflections to parameterise' in record:
