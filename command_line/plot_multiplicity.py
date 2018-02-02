@@ -25,6 +25,7 @@ class MultiplicityViewPng(render_2d):
 
     self.fig, self.ax = pyplot.subplots(figsize=self.settings.size_inches)
     self.render(self.ax)
+    pyplot.close()
 
   def GetSize (self) :
     return self.fig.get_size_inches() * self.fig.dpi # size in pixels
