@@ -319,11 +319,11 @@ def run():
     xia2.Driver.DefaultDriver.output_timing_information()
     return xinfo
   except Sorry as s:
-    Chatter.write('Status: error "%s"' % str(s))
+    Chatter.write('Error: %s' % str(s))
     sys.exit(1)
   except Exception as e:
     traceback.print_exc(file = open(os.path.join(wd, 'xia2.error'), 'w'))
-    Chatter.write('Status: error "%s"' % str(e))
+    Chatter.write('Error: %s' % str(e))
     Chatter.write(
       'Please send the contents of xia2.txt, xia2.error and xia2-debug.txt to:')
     Chatter.write('xia2.support@gmail.com')
