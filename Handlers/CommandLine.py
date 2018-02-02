@@ -16,6 +16,7 @@
 
 from __future__ import absolute_import, division
 
+import collections
 import copy
 import os
 import sys
@@ -32,7 +33,6 @@ from xia2.Schema.XProject import XProject
 def load_datablock(filename):
   from xia2.Schema import imageset_cache, update_with_reference_geometry
   from dxtbx.serialize import load
-  from libtbx.containers import OrderedDict
 
   datablocks = load.datablock(filename, check_format=False)
 
@@ -45,7 +45,7 @@ def load_datablock(filename):
     for imageset in imagesets:
       template = imageset.get_template()
       if template not in imageset_cache:
-        imageset_cache[template] = OrderedDict()
+        imageset_cache[template] = collections.OrderedDict()
       imageset_cache[template][
         imageset.get_scan().get_image_range()[0]] = imageset
 

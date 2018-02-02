@@ -1,8 +1,8 @@
 from __future__ import absolute_import, division
 
+import collections
 import os
 
-from libtbx.containers import OrderedDict
 from xia2.Handlers.Phil import PhilIndex
 
 class _ImagesetCache(dict):
@@ -126,7 +126,7 @@ def load_imagesets(template, directory, id_image=None, image_range=None,
     imagesets = datablocks[0].extract_sweeps()
     assert len(imagesets) > 0, "no imageset found"
 
-    imageset_cache[full_template_path] = OrderedDict()
+    imageset_cache[full_template_path] = collections.OrderedDict()
     if reversephi:
       for imageset in imagesets:
         goniometer = imageset.get_goniometer()

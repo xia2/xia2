@@ -65,10 +65,10 @@
 
 from __future__ import absolute_import, division
 
+import collections
 import math
 import os
 
-from libtbx.containers import OrderedDict
 # Generation of Crystallographic Information Files (CIF/mmCIF)
 from xia2.Handlers.CIF import CIF, mmCIF
 from xia2.Handlers.Environment import Environment
@@ -226,7 +226,7 @@ def _print_lattice(lattice):
                                         lattice['lattice'])
 
 
-formats = OrderedDict([
+formats = collections.OrderedDict([
   ('High resolution limit', ' %7.2f'),
   ('Low resolution limit', ' %7.2f'),
   ('Completeness', '%7.1f'),

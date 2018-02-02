@@ -17,6 +17,7 @@
 
 from __future__ import absolute_import, division
 
+import collections
 import sys
 
 from xia2.Handlers.Streams import Debug
@@ -50,8 +51,7 @@ def accumulate_dose(imagesets):
   epochs = epochs.select(perm)
   exposure_times = exposure_times.select(perm)
 
-  from libtbx.containers import OrderedDict
-  integrated_dose = OrderedDict()
+  integrated_dose = collections.OrderedDict()
 
   total = 0.0
   for e, t in zip(epochs, exposure_times):

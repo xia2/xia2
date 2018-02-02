@@ -13,6 +13,7 @@
 
 from __future__ import absolute_import, division
 
+import collections
 import os
 import sys
 import time
@@ -465,7 +466,6 @@ def get_sweeps(templates):
     results_list = [get_sweep((template,)) for template in templates]
 
   from xia2.Schema import imageset_cache
-  from libtbx.containers import OrderedDict
 
   for template, sweeplist in zip(templates, results_list):
     if sweeplist is not None:
@@ -473,7 +473,7 @@ def get_sweeps(templates):
       for sweep in sweeplist:
         imageset = sweep.get_imageset()
         if template not in imageset_cache:
-          imageset_cache[template] = OrderedDict()
+          imageset_cache[template] = collections.OrderedDict()
         imageset_cache[template][
           imageset.get_scan().get_image_range()[0]] = imageset
 

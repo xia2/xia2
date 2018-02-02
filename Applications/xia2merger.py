@@ -11,7 +11,7 @@
 # To resolve the naming conflict between this file and the entire xia2 module
 # any xia2.* imports in this directory must instead be imported as ..*
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 from xia2.Toolkit.Merger import merger
 
@@ -43,17 +43,13 @@ if __name__ == '__main__':
   m.calculate_resolution_ranges(nbins = nbins)
 
   if args.completeness:
-    print 'COMPLETENESS %f' % m.resolution_completeness(
-        limit = args.completeness)
+    print('COMPLETENESS %f' % m.resolution_completeness(limit=args.completeness))
 
   if args.rmerge:
-    print 'RMERGE %f' % m.resolution_rmerge(
-        limit = args.rmerge)
+    print('RMERGE %f' % m.resolution_rmerge(limit=args.rmerge))
 
   if args.isigma:
-    print 'ISIGMA %f' % m.resolution_unmerged_isigma(
-        limit = args.isigma)
+    print('ISIGMA %f' % m.resolution_unmerged_isigma(limit=args.isigma))
 
   if args.misigma:
-    print 'MISIGMA %f' % m.resolution_merged_isigma(
-        limit = args.misigma)
+    print('MISIGMA %f' % m.resolution_merged_isigma(limit=args.misigma))

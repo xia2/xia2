@@ -11,7 +11,7 @@
 
 from __future__ import absolute_import, division
 
-from libtbx.containers import OrderedDict
+from collections import OrderedDict
 
 class XInfo(object):
   '''A class to represent all of the input to the xia2dpa system, with

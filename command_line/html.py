@@ -3,6 +3,7 @@
 
 from __future__ import absolute_import, division
 
+import collections
 import cgi
 import glob
 import os
@@ -138,23 +139,22 @@ def generate_xia2_html(xinfo, filename='xia2.html', params=None, args=[]):
             data['x'] = list(flex.int(data['x']).select(sel))
             data['y'] = list(flex.double(data['y']).select(sel))
 
-      from libtbx.containers import OrderedDict
-      resolution_graphs = OrderedDict(
+      resolution_graphs = collections.OrderedDict(
         (k + '_' + wname, json_data[k]) for k in
         ('cc_one_half', 'i_over_sig_i', 'second_moments', 'wilson_intensity_plot',
          'completeness', 'multiplicity_vs_resolution') if k in json_data)
 
       if params.include_radiation_damage:
-        batch_graphs = OrderedDict(
+        batch_graphs = collections.OrderedDict(
           (k + '_' + wname, json_data[k]) for k in
           ('scale_rmerge_vs_batch', 'i_over_sig_i_vs_batch', 'completeness_vs_dose',
            'rcp_vs_dose', 'scp_vs_dose', 'rd_vs_batch_difference'))
       else:
-        batch_graphs = OrderedDict(
+        batch_graphs = collections.OrderedDict(
           (k + '_' + wname, json_data[k]) for k in
           ('scale_rmerge_vs_batch', 'i_over_sig_i_vs_batch'))
 
-      misc_graphs = OrderedDict(
+      misc_graphs = collections.OrderedDict(
         (k + '_' + wname, json_data[k]) for k in
         ('cumulative_intensity_distribution', 'l_test', 'multiplicities') if k in json_data)
 

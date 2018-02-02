@@ -10,7 +10,7 @@ import iotbx.phil
 import xia2.Handlers.Environment
 import xia2.Handlers.Files
 from cctbx.array_family import flex
-from libtbx.containers import OrderedDict
+from collections import OrderedDict
 from mmtbx.scaling import printed_output
 from xia2.Modules.Analysis import *
 
