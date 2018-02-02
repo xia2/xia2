@@ -115,8 +115,13 @@ def CCP4DecoratorFactory(DriverInstance):
     def checkHklin(self):
       if self._hklin is None:
         raise RuntimeError('hklin not defined')
-      if not os.path.exists(self._hklin):
-        raise RuntimeError('hklin %s does not exist' % self._hklin)
+      elif isinstance(self._hklin, basestring):
+        if not os.path.exists(self._hklin):
+          raise RuntimeError('hklin %s does not exist' % self._hklin)
+      else:
+        for hklin in self._hklin:
+          if not os.path.exists(hklin):
+            raise RuntimeError('hklin %s does not exist' % hklin)
 
     def set_hklout(self, hklout):
       return self.setHklout(hklout)
@@ -271,7 +276,11 @@ def CCP4DecoratorFactory(DriverInstance):
 
       if self._hklin is not None:
         self.add_command_line('hklin')
-        self.add_command_line(self._hklin)
+        if isinstance(self._hklin, basestring):
+          self.add_command_line(self._hklin)
+        else:
+          for hklin in self._hklin:
+            self.add_command_line(hklin)
 
       if self._hklout is not None:
         self.add_command_line('hklout')
