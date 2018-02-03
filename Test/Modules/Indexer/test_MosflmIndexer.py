@@ -6,6 +6,7 @@ import sys
 import mock
 import pytest
 
+@pytest.mark.slow
 def test_mosflm_indexer(dials_regression, tmpdir):
   template = os.path.join(dials_regression, "xia2_demo_data", "insulin_1_###.img")
   tmpdir.chdir()
