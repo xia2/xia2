@@ -557,9 +557,9 @@ def Aimless(DriverType = None,
       if self._mode == 'rotation':
         scale_command = 'scales rotation spacing %f' % self._spacing
 
-        if self._secondary:
+        if self._secondary is not None:
           nterm = int(self._secondary)
-          if self._fixed_secondary_lmax:
+          if nterm > 0 and self._fixed_secondary_lmax:
             scale_command += ' secondary %d %d absorption %d %d' % \
               (nterm, nterm - 1, nterm, nterm - 1)
           else:
