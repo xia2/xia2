@@ -160,7 +160,8 @@ def TwoThetaRefine(DriverType = None):
       self.check_for_errors()
 
       from dxtbx.model.experiment_list import ExperimentListFactory
-      experiments = ExperimentListFactory.from_json_file(self.get_output_experiments())
+      experiments = ExperimentListFactory.from_json_file(
+        self.get_output_experiments(), check_format=False)
       self._crystal = experiments.crystals()[0]
 
     def import_cif(self):
