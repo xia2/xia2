@@ -21,7 +21,6 @@ from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import Chatter, Debug
 
 def Aimless(DriverType = None,
-            partiality_correction = None,
             absorption_correction = None,
             decay_correction = None):
   '''A factory for AimlessWrapper classes.'''
@@ -103,12 +102,6 @@ def Aimless(DriverType = None,
 
       # this will often be wanted
       self._anomalous = False
-
-      # by default switch this on too...
-      if partiality_correction is None:
-        self._tails = True
-      else:
-        self._tails = partiality_correction
 
       self._mode = 'rotation'
 
@@ -231,11 +224,6 @@ def Aimless(DriverType = None,
       '''Switch on/off separating of anomalous pairs.'''
 
       self._anomalous = anomalous
-
-    def set_tails(self, tails = True):
-      '''Switch on/off tails correction.'''
-
-      self._tails = tails
 
     def set_secondary(self, secondary):
       self._secondary = secondary
@@ -588,9 +576,6 @@ def Aimless(DriverType = None,
         else:
           scale_command += ' bfactor off'
 
-        if self._tails:
-          scale_command += ' tails'
-
         self.input(scale_command)
 
       else:
@@ -609,9 +594,6 @@ def Aimless(DriverType = None,
 
         else:
           scale_command += ' bfactor off'
-
-        if self._tails:
-          scale_command += ' tails'
 
         self.input(scale_command)
 

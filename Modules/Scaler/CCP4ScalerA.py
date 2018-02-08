@@ -50,7 +50,6 @@ class CCP4ScalerA(Scaler):
 
     model = PhilIndex.params.xia2.settings.scale.model
     self._scalr_correct_absorption = 'absorption' in model
-    self._scalr_correct_partiality = 'partiality' in model
     self._scalr_correct_decay = 'decay' in model
     self._scalr_corrections = True
 
@@ -98,7 +97,6 @@ class CCP4ScalerA(Scaler):
       aimless = self._factory.Aimless()
     else:
       aimless = self._factory.Aimless(
-          partiality_correction = self._scalr_correct_partiality,
           absorption_correction = self._scalr_correct_absorption,
           decay_correction = self._scalr_correct_decay)
 
@@ -792,7 +790,6 @@ class CCP4ScalerA(Scaler):
           'scaling', self.get_scaler_xcrystal().get_name(), 'CCP4',
           {'scaling model':'automatic',
            'absorption':self._scalr_correct_absorption,
-           'tails':self._scalr_correct_partiality,
            'decay':self._scalr_correct_decay
            })
 

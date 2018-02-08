@@ -174,7 +174,6 @@ class Scaler(object):
     self._scalr_correct_decay = None
     self._scalr_correct_modulation = None
     self._scalr_correct_absorption = None
-    self._scalr_correct_partiality = None
 
     # integraters have the following methods for pulling interesting
     # information out:
@@ -452,9 +451,6 @@ class Scaler(object):
 
   def get_scaler_correct_absorption(self):
     return self._scalr_correct_absorption
-
-  def get_scaler_correct_partiality(self):
-    return self._scalr_correct_partiality
 
   # getters of the status - note how the gets cascade to ensure that
   # everything is up-to-date...

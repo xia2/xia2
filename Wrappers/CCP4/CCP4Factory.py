@@ -47,14 +47,12 @@ class CCP4Factory(object):
   # factory methods...
 
   def Aimless(self,
-              partiality_correction = None,
-              absorption_correction = None,
-              decay_correction = None):
+              absorption_correction=None,
+              decay_correction=None):
     '''Create a Aimless wrapper from _Aimless - set the working directory
     and log file stuff as a part of this...'''
-    aimless = _Aimless(partiality_correction = partiality_correction,
-                       absorption_correction = absorption_correction,
-                       decay_correction = decay_correction)
+    aimless = _Aimless(absorption_correction=absorption_correction,
+                       decay_correction=decay_correction)
     aimless.set_working_directory(self.get_working_directory())
     auto_logfiler(aimless)
     return aimless
