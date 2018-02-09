@@ -370,7 +370,7 @@ ccp4
     surface_link = True
       .type = bool
       .short_caption = "Surface link"
-    rotation.spacing = None
+    rotation.spacing = 5
       .type = int
       .expert_level = 2
       .short_caption = "Interval (in degrees) between scale factors on rotation axis"

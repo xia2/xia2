@@ -93,7 +93,7 @@ def Aimless(DriverType = None,
       self._mode = 'rotation'
 
       # these are only relevant for 'rotation' mode scaling
-      self._spacing = None
+      self._spacing = 5
       self._cycles = 100
       self._brotation = None
       self._bfactor_tie = None
@@ -525,9 +525,7 @@ def Aimless(DriverType = None,
 
       # assemble the scales command
       if self._mode == 'rotation':
-        scale_command = 'scales rotation'
-        if self._spacing:
-          scale_command += ' spacing %g' % self._spacing
+        scale_command = 'scales rotation %g' % self._spacing
 
         if self._secondary_lmax is not None:
           scale_command += ' %s %d' % \
