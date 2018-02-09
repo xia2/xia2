@@ -495,7 +495,7 @@ def Aimless(DriverType = None,
                                                 run[0], run[1]))
 
         if run[6] != 0.0 and not run[5]:
-          self.input('resolution run %d high %f' % \
+          self.input('resolution run %d high %g' % \
                      (run_number, run[6]))
 
       run_number = 0
@@ -539,7 +539,7 @@ def Aimless(DriverType = None,
           scale_command += ' bfactor on'
 
           if self._brotation:
-            scale_command += ' brotation %f' % \
+            scale_command += ' brotation %g' % \
                              self._brotation
 
         else:
@@ -555,10 +555,10 @@ def Aimless(DriverType = None,
           scale_command += ' bfactor on'
 
           if self._brotation:
-            scale_command += ' brotation %f' % \
+            scale_command += ' brotation %g' % \
                              self._brotation
           else:
-            scale_command += ' brotation %f' % \
+            scale_command += ' brotation %g' % \
                              self._spacing
 
         else:
@@ -571,7 +571,7 @@ def Aimless(DriverType = None,
       # next any 'generic' parameters
 
       if self._resolution:
-        self.input('resolution %f' % self._resolution)
+        self.input('resolution %g' % self._resolution)
 
       if self._resolution_by_run != { }:
         # FIXME 20/NOV/06 this needs implementing somehow...
@@ -689,7 +689,7 @@ def Aimless(DriverType = None,
         self.input('dump %s' % self._new_scales_file)
 
       if self._resolution:
-        self.input('resolution %f' % self._resolution)
+        self.input('resolution %g' % self._resolution)
 
       run_number = 0
       for run in self._runs:
@@ -700,7 +700,7 @@ def Aimless(DriverType = None,
                                                 run[0], run[1]))
 
         if run[6] != 0.0 and not run[5]:
-          self.input('resolution run %d high %f' % \
+          self.input('resolution run %d high %g' % \
                      (run_number, run[6]))
 
       # put in the pname, xname, dname stuff
