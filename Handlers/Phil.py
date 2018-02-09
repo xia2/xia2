@@ -286,6 +286,12 @@ dials
       .help = "Maximum length of candidate unit cell basis vectors (in Angstrom)."
       .short_caption = "Maximum cell length"
       .expert_level = 1
+    #include scope dials.algorithms.indexing.indexer.max_cell_estimation
+    max_cell_estimation {
+      max_height_fraction = None
+        .type = float(value_min=0, value_max=1)
+        .expert_level=2
+    }
     fft3d.n_points = None
       .type = int(value_min=0)
       .short_caption = "Number of reciprocal space grid points"

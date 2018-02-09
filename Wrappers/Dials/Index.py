@@ -52,6 +52,7 @@ def Index(DriverType = None):
       self._rmsd_z = None
 
       self._max_cell = None
+      self._max_cell_max_height_fraction = None
       self._min_cell = None
 
       self._d_min_start = None
@@ -127,8 +128,11 @@ def Index(DriverType = None):
     def get_nref_rmsds(self):
       return self._nref, (self._rmsd_x, self._rmsd_y, self._rmsd_z)
 
-    def set_max_cell(self, max_cell):
-      self._max_cell = max_cell
+    def set_max_cell(self, max_cell=None, max_height_fraction=None):
+      if max_cell is not None:
+        self._max_cell = max_cell
+      if max_height_fraction is not None:
+        self._max_cell_max_height_fraction = max_height_fraction
 
     def set_min_cell(self, min_cell):
       self._min_cell = min_cell
@@ -168,7 +172,9 @@ def Index(DriverType = None):
       if self._outlier_algorithm:
         self.add_command_line('outlier.algorithm=%s' % self._outlier_algorithm)
       if self._max_cell:
-        self.add_command_line('max_cell=%d' % self._max_cell)
+        self.add_command_line('max_cell=%g' % self._max_cell)
+      if self._max_cell_max_height_fraction is not None:
+        self.add_command_line('max_height_fraction=%g' % self._max_cell_max_height_fraction)
       if self._min_cell:
         self.add_command_line('min_cell=%d' % self._min_cell)
       if self._histogram_binning is not None:
