@@ -370,10 +370,6 @@ ccp4
     surface_link = True
       .type = bool
       .short_caption = "Surface link"
-    secondary = 6
-      .type = int
-      .expert_level = 2
-      .short_caption = "Aimless # secondary harmonics"
     rotation.spacing = None
       .type = int
       .expert_level = 2
@@ -382,6 +378,16 @@ ccp4
       .type = int
       .expert_level = 2
       .short_caption = "Interval (in degrees) between B-factors on rotation axis"
+    secondary {
+      frame = camera *crystal
+        .type = choice
+        .help = "Whether to do the secondary beam correction in the camera spindle"
+                "frame or the crystal frame"
+      lmax = 6
+        .type = int
+        .expert_level = 2
+        .short_caption = "Aimless # secondary harmonics"
+    }
 
   }
   pointless

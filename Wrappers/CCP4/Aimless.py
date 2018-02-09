@@ -212,35 +212,18 @@ def Aimless(DriverType = None,
 
       self._anomalous = anomalous
 
-    def set_secondary(self, secondary):
-      self._secondary = secondary
+    def set_secondary(self, mode, lmax):
+      assert mode in ('secondary', 'absorption')
+      self._secondary = mode
+      self._secondary_lmax = lmax
 
     def set_mode(self, mode):
-      self._mode = mode
-
-    def set_scaling_parameters(self, mode,
-                               spacing = None, secondary = None):
-      '''Set up the scaling: mode is either rotation or batch.
-      Spacing indicates the width of smoothing for scales with
-      rotation mode scaling, secondary defines the number
-      of spherical harmonics which can be used for the secondary
-      beam correction. Defaults (5, 6) provided for these seem
-      to work most of the time.'''
-
       if not mode in ['rotation', 'batch']:
         raise RuntimeError('unknown scaling mode "%s"' % mode)
+      self._mode = mode
 
-      if mode == 'batch':
-        self._mode = 'batch'
-        return
-
-      self._mode = 'rotation'
-
-      if spacing:
-        self._spacing = spacing
-
-      if secondary is not None:
-        self._secondary = secondary
+    def set_spacing(self, spacing):
+      self._spacing = spacing
 
     def set_cycles(self, cycles):
       '''Set the maximum number of cycles allowed for the scaling -
@@ -535,7 +518,7 @@ def Aimless(DriverType = None,
         #self.input('reject all 30')
         self.input('sdcorrection fixsdb')
 
-      if self._secondary and self._surface_tie:
+      if self._secondary_lmax and self._surface_tie:
         self.input('tie surface %.4f' % self._surface_tie)
         if not self._surface_link:
           self.input('unlink all')
@@ -546,10 +529,11 @@ def Aimless(DriverType = None,
         if self._spacing:
           scale_command += ' spacing %g' % self._spacing
 
-        if self._secondary is not None:
-          nterm = int(self._secondary)
-          scale_command += ' secondary %d absorption %d' % \
-            (nterm, nterm)
+        if self._secondary_lmax is not None:
+          scale_command += ' %s %d' % \
+            (self._secondary, int(self._secondary_lmax))
+        else:
+          scale_command += ' %s' % self._secondary
 
         if self._bfactor:
           scale_command += ' bfactor on'

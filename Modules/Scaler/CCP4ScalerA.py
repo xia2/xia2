@@ -104,14 +104,11 @@ class CCP4ScalerA(Scaler):
 
     aimless.set_mode(PhilIndex.params.xia2.settings.scale.scales)
 
-    if params.rotation.spacing is not None:
-      aimless.set_scaling_parameters(
-        'rotation', spacing=params.rotation.spacing,
-        secondary=params.secondary)
-      aimless.set_bfactor(brotation=params.brotation.spacing)
+    aimless.set_spacing(params.rotation.spacing)
+    aimless.set_bfactor(brotation=params.brotation.spacing)
 
     if PhilIndex.params.xia2.settings.small_molecule == True:
-      aimless.set_scaling_parameters('rotation', 15.0)
+      aimless.set_spacing(15.0)
       # not obvious that this is correct, in fact probably it is not
       # at all correct...?
       aimless.set_bfactor(
@@ -119,7 +116,12 @@ class CCP4ScalerA(Scaler):
 
     aimless.set_surface_tie(params.surface_tie)
     aimless.set_surface_link(params.surface_link)
-    aimless.set_secondary(params.secondary)
+    if params.secondary.frame == 'camera':
+      secondary = 'secondary'
+    else:
+      secondary = 'absorption'
+    lmax = params.secondary.lmax
+    aimless.set_secondary(secondary, lmax)
 
     if PhilIndex.params.xia2.settings.multi_crystal == True:
       aimless.set_surface_link(False)
