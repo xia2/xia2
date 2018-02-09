@@ -374,6 +374,15 @@ ccp4
       .type = int
       .expert_level = 2
       .short_caption = "Aimless # secondary harmonics"
+    rotation.spacing = None
+      .type = int
+      .expert_level = 2
+      .short_caption = "Interval (in degrees) between scale factors on rotation axis"
+    brotation.spacing = None
+      .type = int
+      .expert_level = 2
+      .short_caption = "Interval (in degrees) between B-factors on rotation axis"
+
   }
   pointless
     .short_caption = "pointless"

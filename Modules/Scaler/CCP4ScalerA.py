@@ -93,6 +93,8 @@ class CCP4ScalerA(Scaler):
 
     aimless = None
 
+    params = PhilIndex.params.ccp4.aimless
+
     if not self._scalr_corrections:
       aimless = self._factory.Aimless()
     else:
@@ -102,6 +104,12 @@ class CCP4ScalerA(Scaler):
 
     aimless.set_mode(PhilIndex.params.xia2.settings.scale.scales)
 
+    if params.rotation.spacing is not None:
+      aimless.set_scaling_parameters(
+        'rotation', spacing=params.rotation.spacing,
+        secondary=params.secondary)
+      aimless.set_bfactor(brotation=params.brotation.spacing)
+
     if PhilIndex.params.xia2.settings.small_molecule == True:
       aimless.set_scaling_parameters('rotation', 15.0)
       # not obvious that this is correct, in fact probably it is not
@@ -109,16 +117,16 @@ class CCP4ScalerA(Scaler):
       aimless.set_bfactor(
         bfactor=PhilIndex.params.xia2.settings.small_molecule_bfactor)
 
-    aimless.set_surface_tie(PhilIndex.params.ccp4.aimless.surface_tie)
-    aimless.set_surface_link(PhilIndex.params.ccp4.aimless.surface_link)
-    aimless.set_secondary(PhilIndex.params.ccp4.aimless.secondary)
+    aimless.set_surface_tie(params.surface_tie)
+    aimless.set_surface_link(params.surface_link)
+    aimless.set_secondary(params.secondary)
 
     if PhilIndex.params.xia2.settings.multi_crystal == True:
       aimless.set_surface_link(False)
 
     # if profile fitting off use summation intensities
     if PhilIndex.params.xia2.settings.integration.profile_fitting:
-      aimless.set_intensities(PhilIndex.params.ccp4.aimless.intensities)
+      aimless.set_intensities(params.intensities)
     else:
       aimless.set_intensities('summation')
 
