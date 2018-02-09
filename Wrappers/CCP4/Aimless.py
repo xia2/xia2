@@ -55,19 +55,6 @@ def Aimless(DriverType = None,
 
       Debug.write('Using version: %s' % version)
 
-      # FIXME (i) check program exists and (ii) version is known -
-      # if not then default back in the calling code to using scala.
-
-      # recently fixed things...
-
-      version_values = map(int, version.split('.'))
-
-      if (version_values[1] > 5) or (version_values[1] == 5 and \
-                                     version_values[2] > 10):
-        self._fixed_secondary_lmax = True
-      else:
-        self._fixed_secondary_lmax = False
-
       # clear all the header junk
       self.reset()
 
@@ -561,12 +548,8 @@ def Aimless(DriverType = None,
 
         if self._secondary is not None:
           nterm = int(self._secondary)
-          if nterm > 0 and self._fixed_secondary_lmax:
-            scale_command += ' secondary %d %d absorption %d %d' % \
-              (nterm, nterm - 1, nterm, nterm - 1)
-          else:
-            scale_command += ' secondary %d absorption %d' % \
-              (nterm, nterm)
+          scale_command += ' secondary %d absorption %d' % \
+            (nterm, nterm)
 
         if self._bfactor:
           scale_command += ' bfactor on'
