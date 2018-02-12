@@ -10,7 +10,6 @@ import os
 import pytest
 from dials.conftest import (dials_regression, xia2_regression,
                             xia2_regression_build)
-from libtbx.test_utils.pytest import libtbx_collector
 
 def pytest_addoption(parser):
   '''Add a '--runslow' option to py.test.'''
@@ -35,5 +34,3 @@ def ccp4():
     return os.environ['CCP4']
   except KeyError:
     pytest.skip("CCP4 installation required for this test")
-
-pytest_collect_file = libtbx_collector()
