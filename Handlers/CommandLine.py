@@ -284,13 +284,6 @@ class _CommandLine(object):
           xtal = crystals[xname]
           Debug.write("Setting anomalous for crystal %s" % xname)
           xtal.set_anomalous(True)
-
-      Debug.write(60 * '-')
-      Debug.write('XINFO file: %s' % xinfo_file)
-      for record in open(xinfo_file, 'r').readlines():
-        # don't want \n on the end...
-        Debug.write(record[:-1])
-      Debug.write(60 * '-')
     else:
       xinfo_file = '%s/automatic.xinfo' % os.path.abspath(
         os.curdir)
@@ -431,9 +424,11 @@ class _CommandLine(object):
     return self._beam
 
   def set_xinfo(self, xinfo):
-    with open(xinfo, 'rb') as f:
-      Debug.write('\n' + xinfo)
-      Debug.write(f.read())
+    Debug.write(60 * '-')
+    Debug.write('XINFO file: %s' % xinfo)
+    with open(xinfo, 'rU') as fh:
+      Debug.write(fh.read().strip())
+    Debug.write(60 * '-')
     self._xinfo = XProject(xinfo)
 
   def get_xinfo(self):
