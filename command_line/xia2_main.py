@@ -224,6 +224,7 @@ def xia2_main(stop_after=None):
           from dxtbx.datablock import DataBlock
           Debug.write(sweep.get_name())
           Debug.write(show_datablocks([DataBlock([sweep.get_imageset()])]))
+          Citations.cite('dials')
           try:
             if stop_after == 'index':
               sweep.get_indexer_cell()
