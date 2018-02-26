@@ -3,6 +3,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Temporary files
+.cache
+.pytest_cache
+
 # Ignored Mathematica files shall be prefixed by _
 _*.nb
 *.fdb_latexmk
@@ -16,4 +20,3 @@ _*.nb
 .git-notifier*
 git-notifier.log
 .gitversion
-.cache
