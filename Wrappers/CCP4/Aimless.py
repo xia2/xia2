@@ -475,7 +475,7 @@ def Aimless(DriverType = None,
       self.start()
 
       nproc = PhilIndex.params.xia2.settings.multiprocessing.nproc
-      if nproc > 1:
+      if isinstance(nproc, int) and nproc > 1:
         self.set_working_environment('OMP_NUM_THREADS', '%d' %nproc)
         self.input('refine parallel')
       self.input('xmlout %d_aimless.xml' % self.get_xpid())
