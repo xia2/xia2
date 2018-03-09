@@ -548,8 +548,8 @@ def find_h5toxds():
     return __h5toxds
   import os
   for d in os.environ['PATH'].split(os.pathsep):
-    if os.path.exists(os.path.join(d, 'H5ToXDS')):
-      __h5toxds = os.path.join(d, 'H5ToXDS')
+    if os.path.exists(os.path.join(d, 'H5ToXds')):
+      __h5toxds = os.path.join(d, 'H5ToXds')
   return __h5toxds
 
 def check_xds_ok_with_h5():
