@@ -6,7 +6,7 @@ import os
 import shutil
 
 import libtbx.load_env
-from dials.util.procrunner import run_process
+from procrunner import run_process
 
 if (__name__ == "__main__") :
   xia2_dir = libtbx.env.find_in_repositories("xia2", optional=False)
