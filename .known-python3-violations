@@ -1,6 +1,5 @@
 Applications/xia2_helpers.py
 Applications/xia2ccp4i.py
-Applications/xia2merger.py
 Background/Background.py
 Driver/DefaultDriver.py
 Driver/DriverHelper.py
@@ -15,7 +14,6 @@ Experts/ResolutionExperts.py
 Experts/SymmetryExpert.py
 Experts/WedgeExpert.py
 GUI/dataset.py
-Handlers/Citations.py
 Handlers/CommandLine.py
 Handlers/Environment.py
 Handlers/PipelineSelection.py
@@ -55,13 +53,7 @@ Schema/Sweep.py
 Schema/XCrystal.py
 Test/Dials/Platform.py
 Test/Modules/Indexer/TstDialsMultiIndexer.py
-Test/Modules/Indexer/TstLabelitIndexer.py
-Test/Modules/Indexer/TstLabelitIndexerII.py
-Test/Modules/Indexer/TstMosflmIndexer.py
 Test/Modules/Refiner/TstDialsRefiner.py
-Test/Modules/Scaler/TstCCP4ScalerA.py
-Test/Modules/Scaler/TstXDSScalerA.py
-Test/Wrappers/Labelit/TstLabelitIndex.py
 Test/Wrappers/Mosflm/TstMosflmIntegrate.py
 Toolkit/AimlessSurface.py
 Toolkit/BackstopMask.py
