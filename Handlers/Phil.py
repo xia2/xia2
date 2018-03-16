@@ -643,7 +643,7 @@ xia2.settings
       .type = float(value_min=0.0)
       .help = "High resolution cutoff."
       .short_caption = "High resolution cutoff"
-    include scope xia2.Modules.Resolutionizer.phil_str
+    include scope dials.util.Resolutionizer.phil_str
   }
   unify_setting = False
     .type = bool

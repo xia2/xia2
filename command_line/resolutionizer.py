@@ -4,5 +4,5 @@ from __future__ import absolute_import, division
 import sys
 
 if __name__ == '__main__':
-  from xia2.Modules.Resolutionizer import run
+  from dials.util.Resolutionizer import run
   run(sys.argv[1:])
