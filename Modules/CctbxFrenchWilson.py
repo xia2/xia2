@@ -14,12 +14,10 @@ anomalous = False
 include scope cctbx.french_wilson.master_phil
 """, process_includes=True)
 
-
 class french_wilson(object):
-
   def __init__(self, mtz_file, params=None):
 
-    print 'Reading reflections from %s' %mtz_file
+    print 'Reading reflections from %s' % mtz_file
     from iotbx.reflection_file_reader import any_reflection_file
     result = any_reflection_file(mtz_file)
     assert result.file_type() == 'ccp4_mtz'
@@ -52,22 +50,20 @@ class french_wilson(object):
     mtz_dataset = mtz_object.crystals()[1].datasets()[0]
     mtz_dataset.add_miller_array(amplitudes, column_root_label='F')
     mtz_object.add_history('cctbx.french_wilson analysis')
-    print 'Writing reflections to %s' %(params.hklout)
+    print 'Writing reflections to %s' % (params.hklout)
     mtz_object.show_summary()
     mtz_object.write(params.hklout)
-
 
 def run(args):
 
   cmd_line = command_line.argument_interpreter(master_params=master_phil_scope)
   working_phil, args = cmd_line.process_and_fetch(
-    args=args, custom_processor="collect_remaining")
+      args=args, custom_processor="collect_remaining")
   working_phil.show()
   params = working_phil.extract()
   assert len(args) == 1
 
   french_wilson(args[0], params=params)
-
 
 if __name__ == '__main__':
   import sys

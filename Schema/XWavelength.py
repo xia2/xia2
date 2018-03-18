@@ -69,7 +69,7 @@ class XWavelength(object):
     obj = {}
     obj['__id__'] = 'XWavelength'
     import inspect
-    attributes = inspect.getmembers(self, lambda m:not(inspect.isroutine(m)))
+    attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
     for a in attributes:
       if a[0] == '_sweeps':
         sweeps = []

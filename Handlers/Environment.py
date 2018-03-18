@@ -49,14 +49,14 @@ def debug_memory_usage():
   except Exception as e:
     Debug.write('Error getting RAM usage: %s' % str(e))
 
-def df(path = os.getcwd()):
+def df(path=os.getcwd()):
   '''Return disk space in bytes in path.'''
 
   if platform.system() == 'Windows':
     try:
       bytes = ctypes.c_ulonglong(0)
       ctypes.windll.kernel32.GetDiskFreeSpaceExW(
-        ctypes.c_wchar_p(path), None, None, ctypes.pointer(bytes))
+          ctypes.c_wchar_p(path), None, None, ctypes.pointer(bytes))
       return bytes.value
     except Exception as e:
       Debug.write('Error getting disk space: %s' % str(e))
@@ -126,7 +126,7 @@ class _Environment(object):
     path = self._working_directory
 
     if isinstance(path_tuple, type('string')):
-      path_tuple = (path_tuple,)
+      path_tuple = (path_tuple, )
 
     for p in path_tuple:
       path = os.path.join(path, p)

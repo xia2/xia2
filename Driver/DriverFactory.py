@@ -53,7 +53,7 @@ class _DriverFactory(object):
   def get_driver_type(self):
     return self._driver_type
 
-  def Driver(self, type = None):
+  def Driver(self, type=None):
     '''Create a new Driver instance, optionally providing the
     type of Driver we want.'''
 

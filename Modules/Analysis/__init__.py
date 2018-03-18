@@ -44,7 +44,6 @@ include_radiation_damage = True
   .type = bool
 """ % dose_phil_str)
 
-
 class batch_binned_data(object):
   def __init__(self, batches, data, data_fmt=None):
     self.batches = batches
@@ -53,7 +52,6 @@ class batch_binned_data(object):
 
   def as_simple_table(self, data_label, data_fmt=None):
     pass
-
 
 def scales_vs_batch(scales, batches):
   assert scales.size() == batches.size()
@@ -68,7 +66,7 @@ def scales_vs_batch(scales, batches):
   i_batch_start = 0
   current_batch = flex.min(batches)
   n_ref = batches.size()
-  for i_ref in range(n_ref+1):
+  for i_ref in range(n_ref + 1):
     if i_ref == n_ref or batches[i_ref] != current_batch:
       assert batches[i_batch_start:i_ref].all_eq(current_batch)
       data.append(flex.mean(scales[i_batch_start:i_ref]))
@@ -78,7 +76,6 @@ def scales_vs_batch(scales, batches):
         current_batch = batches[i_batch_start]
 
   return batch_binned_data(bins, data)
-
 
 def rmerge_vs_batch(intensities, batches):
   assert intensities.size() == batches.size()
@@ -104,7 +101,7 @@ def rmerge_vs_batch(intensities, batches):
   i_batch_start = 0
   current_batch = flex.min(batches)
   n_ref = batches.size()
-  for i_ref in range(n_ref+1):
+  for i_ref in range(n_ref + 1):
     if i_ref == n_ref or batches[i_ref] != current_batch:
       assert batches[i_batch_start:i_ref].all_eq(current_batch)
 
@@ -119,7 +116,7 @@ def rmerge_vs_batch(intensities, batches):
 
       bins.append(current_batch)
       if denominator > 0:
-        data.append(numerator/denominator)
+        data.append(numerator / denominator)
       else:
         data.append(0)
 
@@ -134,7 +131,7 @@ def i_sig_i_vs_batch(intensities, batches):
   assert intensities.sigmas() is not None
   sel = intensities.sigmas() > 0
 
-  i_sig_i = intensities.data().select(sel)/intensities.sigmas().select(sel)
+  i_sig_i = intensities.data().select(sel) / intensities.sigmas().select(sel)
   batches = batches.select(sel)
 
   bins = []
@@ -147,7 +144,7 @@ def i_sig_i_vs_batch(intensities, batches):
   i_batch_start = 0
   current_batch = flex.min(batches)
   n_ref = batches.size()
-  for i_ref in range(n_ref+1):
+  for i_ref in range(n_ref + 1):
     if i_ref == n_ref or batches[i_ref] != current_batch:
       assert batches[i_batch_start:i_ref].all_eq(current_batch)
       data.append(flex.mean(i_sig_i[i_batch_start:i_ref]))

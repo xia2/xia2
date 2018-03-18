@@ -290,7 +290,7 @@ def headers2sweeps(header_dict):
   Debug.write('Removing %d apparently still images' % len(zap))
 
   for z in zap:
-    del(header_dict[z])
+    del header_dict[z]
 
   images = sorted(header_dict)
 
@@ -326,12 +326,9 @@ def headers2sweeps(header_dict):
     # next frame in the sweep. otherwise it is the first frame in
     # a new sweep.
 
-    delta_lambda = math.fabs(
-        header['wavelength'] - current_sweep['wavelength'])
-    delta_distance = math.fabs(
-        header['distance'] - current_sweep['distance'])
-    delta_phi = math.fabs(
-        header['phi_start'] - current_sweep['phi_end']) % 360.0
+    delta_lambda = math.fabs(header['wavelength'] - current_sweep['wavelength'])
+    delta_distance = math.fabs(header['distance'] - current_sweep['distance'])
+    delta_phi = math.fabs(header['phi_start'] - current_sweep['phi_end']) % 360.0
 
     # Debug.write('Image %d %f %f %f' % \
     # (i, delta_lambda, delta_distance,

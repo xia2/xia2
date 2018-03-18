@@ -222,7 +222,7 @@ class XInfo(object):
                 'wavelength %s already exists for crystal %s' % \
                 (wavelength, crystal))
 
-        self._crystals[crystal]['wavelengths'][wavelength] = { }
+        self._crystals[crystal]['wavelengths'][wavelength] = {}
         i += 1
         record = crystal_records[i]
 
@@ -258,18 +258,15 @@ class XInfo(object):
             if len(lst) == 2:
               dmin = float(lst[1])
 
-              self._crystals[crystal]['wavelengths'][
-                  wavelength]['dmin'] = dmin
+              self._crystals[crystal]['wavelengths'][wavelength]['dmin'] = dmin
 
             else:
               dmin = min(map(float, lst[1:]))
               dmax = max(map(float, lst[1:]))
 
-              self._crystals[crystal]['wavelengths'][
-                  wavelength]['dmin'] = dmin
+              self._crystals[crystal]['wavelengths'][wavelength]['dmin'] = dmin
 
-              self._crystals[crystal]['wavelengths'][
-                  wavelength]['dmax'] = dmax
+              self._crystals[crystal]['wavelengths'][wavelength]['dmax'] = dmax
 
             i += 1
             record = crystal_records[i]
@@ -284,8 +281,7 @@ class XInfo(object):
           except ValueError:
             value = record.replace(record.split()[0], '').strip()
 
-          self._crystals[crystal]['wavelengths'][
-              wavelength][key] = value
+          self._crystals[crystal]['wavelengths'][wavelength][key] = value
           i += 1
           record = crystal_records[i]
 
@@ -308,13 +304,11 @@ class XInfo(object):
                 'sweep %s already exists for crystal %s' % \
                 (sweep, crystal))
 
-        self._crystals[crystal]['sweeps'][sweep] = { }
-        self._crystals[crystal]['sweeps'][sweep][
-            'excluded_regions'] = []
+        self._crystals[crystal]['sweeps'][sweep] = {}
+        self._crystals[crystal]['sweeps'][sweep]['excluded_regions'] = []
 
         if start_end is not None:
-          self._crystals[crystal]['sweeps'][sweep][
-            'start_end'] = start_end
+          self._crystals[crystal]['sweeps'][sweep]['start_end'] = start_end
 
         # in here I expect to find IMAGE, DIRECTORY, WAVELENGTH
         # and optionally BEAM
@@ -330,8 +324,7 @@ class XInfo(object):
         while not 'END SWEEP' in record:
           # allow for WAVELENGTH_ID (bug # 2358)
           if 'WAVELENGTH_ID' == record.split()[0]:
-            record = record.replace('WAVELENGTH_ID',
-                                    'WAVELENGTH')
+            record = record.replace('WAVELENGTH_ID', 'WAVELENGTH')
 
           if 'WAVELENGTH' == record.split()[0]:
             wavelength = record.replace('WAVELENGTH', '').strip()

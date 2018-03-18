@@ -51,8 +51,8 @@ class DialsIndexer(Indexer):
 
     # place to store working data
 
-    self._data_files = { }
-    self._solutions = { }
+    self._data_files = {}
+    self._solutions = {}
 
     # FIXME this is a stupid low resolution limit to use...
     self._indxr_low_resolution = 40.0
@@ -71,8 +71,8 @@ class DialsIndexer(Indexer):
     auto_logfiler(importer)
     importer.set_mosflm_beam_centre(self.get_beam_centre())
     importer.set_sweep_filename(
-      os.path.join(self.get_working_directory(),
-                   '%s_datablock_import.json' %importer.get_xpid()))
+        os.path.join(self.get_working_directory(),
+                     '%s_datablock_import.json' % importer.get_xpid()))
     return importer
 
   def GenerateMask(self):
@@ -91,7 +91,7 @@ class DialsIndexer(Indexer):
     spotfinder = _Spotfinder()
     spotfinder.set_working_directory(self.get_working_directory())
     auto_logfiler(spotfinder)
-    spotfinder.set_hot_mask_prefix('%d_hot_mask' %spotfinder.get_xpid())
+    spotfinder.set_hot_mask_prefix('%d_hot_mask' % spotfinder.get_xpid())
     return spotfinder
 
   def DetectBlanks(self):
@@ -118,7 +118,7 @@ class DialsIndexer(Indexer):
     index.set_outlier_algorithm(PhilIndex.params.dials.outlier.algorithm)
     index.set_histogram_binning(PhilIndex.params.dials.index.histogram_binning)
     index.set_nearest_neighbor_percentile(
-      PhilIndex.params.dials.index.nearest_neighbor_percentile)
+        PhilIndex.params.dials.index.nearest_neighbor_percentile)
     return index
 
   def CheckIndexingSymmetry(self):
@@ -140,7 +140,7 @@ class DialsIndexer(Indexer):
     refine.set_scan_varying(False)
     refine.set_outlier_algorithm(PhilIndex.params.dials.outlier.algorithm)
     refine.set_close_to_spindle_cutoff(
-      PhilIndex.params.dials.close_to_spindle_cutoff)
+        PhilIndex.params.dials.close_to_spindle_cutoff)
     if PhilIndex.params.dials.fix_geometry:
       refine.set_detector_fix('all')
       refine.set_beam_fix('all')
@@ -151,7 +151,7 @@ class DialsIndexer(Indexer):
     rbs = _RefineBravaisSettings()
     rbs.set_working_directory(self.get_working_directory())
     rbs.set_close_to_spindle_cutoff(
-      PhilIndex.params.dials.close_to_spindle_cutoff)
+        PhilIndex.params.dials.close_to_spindle_cutoff)
     auto_logfiler(rbs)
     return rbs
 
@@ -168,7 +168,7 @@ class DialsIndexer(Indexer):
     '''Select correct images based on image headers.'''
 
     start, end = imageset.get_scan().get_array_range()
-    images = tuple(range(start+1, end+1))
+    images = tuple(range(start + 1, end + 1))
 
     # characterise the images - are there just two (e.g. dna-style
     # reference images) or is there a full block?
@@ -202,12 +202,10 @@ class DialsIndexer(Indexer):
                     (int(90.0 / phi_width) + images[0],
                      int(90.0 / phi_width) + images[0] +
                      block_size - 1))
-        wedges.append(
-            (int(45.0 / phi_width) + images[0],
-             int(45.0 / phi_width) + images[0] + block_size - 1))
-        wedges.append(
-            (int(90.0 / phi_width) + images[0],
-             int(90.0 / phi_width) + images[0] + block_size - 1))
+        wedges.append((int(45.0 / phi_width) + images[0],
+                       int(45.0 / phi_width) + images[0] + block_size - 1))
+        wedges.append((int(90.0 / phi_width) + images[0],
+                       int(90.0 / phi_width) + images[0] + block_size - 1))
 
       else:
 
@@ -221,7 +219,7 @@ class DialsIndexer(Indexer):
         if len(images) > block_size:
           Debug.write('Adding images for indexer: %d -> %d' % \
                       (images[- block_size], images[-1]))
-          wedges.append((images[- block_size], images[-1]))
+          wedges.append((images[-block_size], images[-1]))
 
     return wedges
 
@@ -239,7 +237,7 @@ class DialsIndexer(Indexer):
 
     for imageset, xsweep in zip(self._indxr_imagesets, self._indxr_sweeps):
 
-      Chatter.banner('Spotfinding %s' %xsweep.get_name())
+      Chatter.banner('Spotfinding %s' % xsweep.get_name())
 
       first, last = imageset.get_scan().get_image_range()
 
@@ -270,7 +268,7 @@ class DialsIndexer(Indexer):
         gain_estimater.set_sweep_filename(sweep_filename)
         gain_estimater.run()
         gain = gain_estimater.get_gain()
-        Chatter.write('Estimated gain: %.2f' %gain)
+        Chatter.write('Estimated gain: %.2f' % gain)
         PhilIndex.params.xia2.settings.input.gain = gain
 
       # FIXME this should really use the assigned spot finding regions
@@ -330,7 +328,7 @@ class DialsIndexer(Indexer):
       from dials.util.ascii_art import spot_counts_per_image_plot
       refl = easy_pickle.load(spot_filename)
       if not len(refl):
-        raise RuntimeError('No spots found in sweep %s' %xsweep.get_name())
+        raise RuntimeError('No spots found in sweep %s' % xsweep.get_name())
       Chatter.write(spot_counts_per_image_plot(refl), strip=False)
 
       if not PhilIndex.params.dials.fast_mode:
@@ -344,8 +342,8 @@ class DialsIndexer(Indexer):
         if len(blank_regions):
           blank_regions = [(int(s), int(e)) for s, e in blank_regions]
           for blank_start, blank_end in blank_regions:
-            Chatter.write('WARNING: Potential blank images: %i -> %i' %(
-              blank_start+1, blank_end))
+            Chatter.write('WARNING: Potential blank images: %i -> %i' %
+                          (blank_start + 1, blank_end))
 
           if PhilIndex.params.xia2.settings.remove_blanks:
             non_blanks = []
@@ -356,7 +354,7 @@ class DialsIndexer(Indexer):
                 non_blanks.append((last_blank_end, blank_start))
               last_blank_end = blank_end
 
-            if last_blank_end+1 < end:
+            if last_blank_end + 1 < end:
               non_blanks.append((last_blank_end, end))
 
             xsweep = self.get_indexer_sweep()
@@ -399,7 +397,7 @@ class DialsIndexer(Indexer):
         try:
           discovery.run()
         except Exception as e:
-          Debug.write('DIALS beam centre search failed: %s' %str(e))
+          Debug.write('DIALS beam centre search failed: %s' % str(e))
         else:
           # overwrite datablock.json in datablocks list
           datablocks[-1] = discovery.get_optimized_datablock_filename()
@@ -440,13 +438,11 @@ class DialsIndexer(Indexer):
           raise RuntimeError(e)
 
     else:
-      indexer = self._do_indexing(
-        method=PhilIndex.params.dials.index.method)
+      indexer = self._do_indexing(method=PhilIndex.params.dials.index.method)
 
     # not strictly the P1 cell, rather the cell that was used in indexing
     self._p1_cell = indexer._p1_cell
-    self.set_indexer_payload(
-      "indexed_filename", indexer.get_indexed_filename())
+    self.set_indexer_payload("indexed_filename", indexer.get_indexed_filename())
 
     from cctbx.sgtbx import bravais_types
     from dxtbx.serialize import load
@@ -465,8 +461,8 @@ class DialsIndexer(Indexer):
       checksym.set_grid_search_scope(1)
       checksym.run()
       hkl_offset = checksym.get_hkl_offset()
-      Debug.write("hkl_offset: %s" %str(hkl_offset))
-      if hkl_offset is not None and hkl_offset != (0,0,0):
+      Debug.write("hkl_offset: %s" % str(hkl_offset))
+      if hkl_offset is not None and hkl_offset != (0, 0, 0):
         reindex = self.Reindex()
         reindex.set_hkl_offset(hkl_offset)
         reindex.set_indexed_filename(indexed_file)

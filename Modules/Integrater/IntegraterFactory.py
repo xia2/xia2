@@ -44,12 +44,12 @@ def IntegraterForXSweep(xsweep, json_file=None):
 
   if json_file is not None:
     assert os.path.isfile(json_file)
-    Debug.write("Loading integrater from json: %s" %json_file)
+    Debug.write("Loading integrater from json: %s" % json_file)
     import time
     t0 = time.time()
     integrater = integrater.__class__.from_json(filename=json_file)
     t1 = time.time()
-    Debug.write("Loaded integrater in %.2f seconds" %(t1-t0))
+    Debug.write("Loaded integrater in %.2f seconds" % (t1 - t0))
   else:
     integrater.setup_from_imageset(xsweep.get_imageset())
   integrater.set_integrater_sweep_name(xsweep.get_name())
@@ -66,19 +66,19 @@ def IntegraterForXSweep(xsweep, json_file=None):
     if xsweep.get_resolution_low():
       d_max = xsweep.get_resolution_low()
 
-    if (d_min is not None and
-        d_min != integrater.get_integrater_high_resolution()):
+    if (d_min is not None
+        and d_min != integrater.get_integrater_high_resolution()):
 
       Debug.write('Assigning resolution limits from XINFO input:')
       Debug.write('d_min: %.3f' % d_min)
-      integrater.set_integrater_high_resolution(d_min, user = True)
+      integrater.set_integrater_high_resolution(d_min, user=True)
 
-    if (d_max is not None and
-        d_max != integrater.get_integrater_low_resolution()):
+    if (d_max is not None
+        and d_max != integrater.get_integrater_low_resolution()):
 
       Debug.write('Assigning resolution limits from XINFO input:')
       Debug.write('d_max: %.3f' % d_max)
-      integrater.set_integrater_low_resolution(d_max, user = True)
+      integrater.set_integrater_low_resolution(d_max, user=True)
 
   # check the epoch and perhaps pass this in for future reference
   # (in the scaling)
@@ -158,13 +158,12 @@ def Integrater():
     if dmax:
 
       Debug.write('dmin: %.3f dmax: %.2f' % (dmin, dmax))
-      integrater.set_integrater_resolution(dmin, dmax, user = True)
+      integrater.set_integrater_resolution(dmin, dmax, user=True)
 
     else:
 
       Debug.write('dmin: %.3f' % dmin)
-      integrater.set_integrater_high_resolution(dmin, user = True)
-
+      integrater.set_integrater_high_resolution(dmin, user=True)
 
   return integrater
 

@@ -30,9 +30,7 @@ class _Syminfo(object):
 
     self._int_re = re.compile('^[0-9]*$')
 
-  def _generate_lattice(self,
-                        lattice_type,
-                        shortname):
+  def _generate_lattice(self, lattice_type, shortname):
     '''Generate a lattice name (e.g. tP) from TETRAGONAL and P422.'''
 
     hash = {'TRICLINIC':'a',
@@ -54,12 +52,12 @@ class _Syminfo(object):
   def _parse_symop(self):
     '''Parse the CCP4 symop library.'''
 
-    self._symop = { }
-    self._spacegroup_name_to_lattice = { }
-    self._spacegroup_short_to_long = { }
-    self._spacegroup_long_to_short = { }
-    self._spacegroup_name_to_number = { }
-    self._spacegroup_name_to_pointgroup = { }
+    self._symop = {}
+    self._spacegroup_name_to_lattice = {}
+    self._spacegroup_short_to_long = {}
+    self._spacegroup_long_to_short = {}
+    self._spacegroup_name_to_number = {}
+    self._spacegroup_name_to_pointgroup = {}
 
     current = 0
 
@@ -73,8 +71,7 @@ class _Syminfo(object):
         lattice_type = list[5].lower()
         longname = line.split('\'')[1]
 
-        lattice = self._generate_lattice(lattice_type,
-                                         shortname)
+        lattice = self._generate_lattice(lattice_type, shortname)
 
         pointgroup = ''
         for token in longname.split():

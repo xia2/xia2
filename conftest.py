@@ -13,8 +13,8 @@ from dials.conftest import (dials_regression, xia2_regression,
 
 def pytest_addoption(parser):
   '''Add a '--runslow' option to py.test.'''
-  parser.addoption("--runslow", action="store_true",
-                   default=False, help="run slow tests")
+  parser.addoption("--runslow", action="store_true", default=False,
+                   help="run slow tests")
 
 def pytest_collection_modifyitems(config, items):
   '''Tests marked as slow will not be run unless slow tests are enabled with

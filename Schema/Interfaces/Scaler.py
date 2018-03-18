@@ -156,7 +156,6 @@ from xia2.lib.SymmetryLib import lauegroup_to_lattice, sort_lattices
 
 # file conversion (and merging) jiffies
 
-
 class Scaler(object):
   '''An interface to present scaling functionality in a similar way to the
   integrater interface.'''
@@ -167,7 +166,7 @@ class Scaler(object):
 
     # key this by the epoch, if available, else will need to
     # do something different.
-    self._scalr_integraters = { }
+    self._scalr_integraters = {}
 
     # the corrections to apply - see trac #162
     self._scalr_corrections = False
@@ -232,7 +231,7 @@ class Scaler(object):
     # link to parent xcrystal
     self._scalr_xcrystal = None
 
-    self._scalr_resolution_limits = { }
+    self._scalr_resolution_limits = {}
 
   # serialization functions
 
@@ -243,7 +242,7 @@ class Scaler(object):
     obj['__module__'] = self.__class__.__module__
     obj['__name__'] = self.__class__.__name__
     import inspect
-    attributes = inspect.getmembers(self, lambda m:not(inspect.isroutine(m)))
+    attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
     for a in attributes:
       if a[0] == '_scalr_xcrystal':
         # XXX I guess we probably want this?
@@ -394,7 +393,7 @@ class Scaler(object):
   def get_scaler_resolution_limits(self):
     return self._scalr_resolution_limits
 
-  def set_scaler_prepare_done(self, done = True):
+  def set_scaler_prepare_done(self, done=True):
 
     frm = inspect.stack()[1]
     mod = inspect.getmodule(frm[0])
@@ -403,7 +402,7 @@ class Scaler(object):
 
     self._scalr_prepare_done = done
 
-  def set_scaler_done(self, done = True):
+  def set_scaler_done(self, done=True):
 
     frm = inspect.stack()[1]
     mod = inspect.getmodule(frm[0])
@@ -412,7 +411,7 @@ class Scaler(object):
 
     self._scalr_done = done
 
-  def set_scaler_finish_done(self, done = True):
+  def set_scaler_finish_done(self, done=True):
 
     frm = inspect.stack()[1]
     mod = inspect.getmodule(frm[0])
@@ -466,8 +465,7 @@ class Scaler(object):
 
   def get_scaler_finish_done(self):
     if not self.get_scaler_done():
-      Debug.write(
-          'Resetting scaler finish done as scaling not done')
+      Debug.write('Resetting scaler finish done as scaling not done')
       self.set_scaler_finish_done(False)
     return self._scalr_finish_done
 
@@ -530,7 +528,7 @@ class Scaler(object):
         correct_lattice = lattice
         break
 
-    assert(correct_lattice)
+    assert correct_lattice
 
     # run this analysis again, which may respond in different conclusions
     # if it triggers the reprocessing of the data with a new lattice
@@ -544,7 +542,7 @@ class Scaler(object):
     '''Set things up for scaling, in particular mediate pointgroup /
     lattice with the indexers.'''
 
-    assert(self._scalr_integraters)
+    assert self._scalr_integraters
 
     epochs = sorted(self._scalr_integraters)
     integraters = [self._scalr_integraters[e] for e in epochs]
@@ -563,7 +561,7 @@ class Scaler(object):
         refiner = integrater.get_integrater_refiner()
         state = refiner.set_refiner_asserted_lattice(consensus_lattice)
 
-        assert(state != refiner.LATTICE_IMPOSSIBLE)
+        assert state != refiner.LATTICE_IMPOSSIBLE
 
     # then decide on the consensus pointgroup
 
@@ -577,7 +575,7 @@ class Scaler(object):
     # FIXME will need to handle twinned cases more gracefully sometime
     # FIXME also need to "mend" the integrater set spacegroup API
 
-    assert(len(pointgroups) == 1)
+    assert len(pointgroups) == 1
 
     for integrater in integraters:
       integrater.set_integrater_spacegroup_number(pointgroup)
@@ -597,7 +595,7 @@ class Scaler(object):
     '''Actually perform the scaling - this is delegated to the
     implementation.'''
 
-    if self._scalr_integraters == { }:
+    if self._scalr_integraters == {}:
       raise RuntimeError( \
             'no Integrater implementations assigned for scaling')
 

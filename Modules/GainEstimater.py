@@ -48,17 +48,17 @@ def generate_gain(image_list):
 
 if __name__ == '__main__':
 
-  directory = os.path.join(os.environ['XIA2_ROOT'],
-                           'Data', 'Test', 'Images')
+  directory = os.path.join(os.environ['XIA2_ROOT'], 'Data', 'Test', 'Images')
 
   if len(sys.argv) == 1:
 
     print gain(os.path.join(directory, '12287_1_E1_001.img'))
     print gain(os.path.join(directory, '12287_1_E1_090.img'))
 
-    print generate_gain([os.path.join(directory, '12287_1_E1_001.img'),
-                         os.path.join(directory, '12287_1_E1_090.img')])
-
+    print generate_gain([
+        os.path.join(directory, '12287_1_E1_001.img'),
+        os.path.join(directory, '12287_1_E1_090.img')
+    ])
 
   else:
 

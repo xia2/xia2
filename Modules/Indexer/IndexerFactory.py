@@ -89,18 +89,18 @@ def IndexerForXSweep(xsweep, json_file=None):
       get_preferences().get('integrater') and \
       'xds' in get_preferences().get('integrater'):
     Debug.write('Overriding indexer as XDSII')
-    indexer = Indexer(preselection = 'xdsii')
+    indexer = Indexer(preselection='xdsii')
   else:
     indexer = Indexer()
 
   if json_file is not None:
     assert os.path.isfile(json_file)
-    Debug.write("Loading indexer from json: %s" %json_file)
+    Debug.write("Loading indexer from json: %s" % json_file)
     import time
     t0 = time.time()
     indexer = indexer.__class__.from_json(filename=json_file)
     t1 = time.time()
-    Debug.write("Loaded indexer in %.2f seconds" %(t1-t0))
+    Debug.write("Loaded indexer in %.2f seconds" % (t1 - t0))
   else:
     # configure the indexer
     indexer.add_indexer_imageset(xsweep.get_imageset())
@@ -150,10 +150,9 @@ def IndexerForXSweep(xsweep, json_file=None):
 
   return indexer
 
-
 # FIXME need to provide framework for input passing
 
-def Indexer(preselection = None):
+def Indexer(preselection=None):
   '''Create an instance of Indexer for use with a dataset.'''
 
   # FIXME need to check that these implement indexer
@@ -196,8 +195,7 @@ def Indexer(preselection = None):
 
 if __name__ == '__main__':
 
-  directory = os.path.join(os.environ['X2TD_ROOT'],
-                           'DL', 'insulin', 'images')
+  directory = os.path.join(os.environ['X2TD_ROOT'], 'DL', 'insulin', 'images')
 
   i = Indexer()
 

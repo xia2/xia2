@@ -58,8 +58,8 @@ class MosflmMissetExpert(object):
   def missets(self, phi):
     '''Calculate the missetting angles for the given rotation angle.'''
 
-    P = self._z.axis_and_angle_as_r3_rotation_matrix(phi, deg = True)
-    R = self._r.axis_and_angle_as_r3_rotation_matrix(phi, deg = True)
+    P = self._z.axis_and_angle_as_r3_rotation_matrix(phi, deg=True)
+    R = self._r.axis_and_angle_as_r3_rotation_matrix(phi, deg=True)
     M = P.inverse() * R * self._M0
 
     return xyz_angles(M)

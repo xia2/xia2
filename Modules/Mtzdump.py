@@ -21,11 +21,11 @@ class Mtzdump(object):
   MTZDUMP program.'''
 
   def __init__(self):
-    self._header = { }
+    self._header = {}
     self._header['datasets'] = []
-    self._header['dataset_info'] = { }
+    self._header['dataset_info'] = {}
 
-    self._batch_header = { }
+    self._batch_header = {}
 
     self._batches = None
     self._reflections = 0
@@ -77,16 +77,13 @@ class Mtzdump(object):
         dataset_id = '%s/%s/%s' % (pname, xname, dname)
         dataset_number = dataset.i_dataset()
 
-        assert(not dataset_id in self._header['datasets'])
+        assert dataset_id not in self._header['datasets']
 
         self._header['datasets'].append(dataset_id)
-        self._header['dataset_info'][dataset_id] = { }
-        self._header['dataset_info'][
-            dataset_id]['wavelength'] = wavelength
-        self._header['dataset_info'][
-            dataset_id]['cell'] = cell
-        self._header['dataset_info'][
-            dataset_id]['id'] = dataset_number
+        self._header['dataset_info'][dataset_id] = {}
+        self._header['dataset_info'][dataset_id]['wavelength'] = wavelength
+        self._header['dataset_info'][dataset_id]['cell'] = cell
+        self._header['dataset_info'][dataset_id]['id'] = dataset_number
 
   def dump_batch_headers(self):
     '''Actually print the contents of the mtz file batch headers.'''

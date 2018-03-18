@@ -119,7 +119,7 @@ def B(a, b, c, alpha, beta, gamma):
 
   a_ = (a, 0.0, 0.0)
   b_ = (b * cg, b * sg, 0.0)
-  c_ = (c * cb, - c * sb * car, c * sb * sar)
+  c_ = (c * cb, -c * sb * car, c * sb * sar)
 
   # verify...
 
@@ -532,9 +532,9 @@ def find_blank(hklin):
   if not os.path.isfile(hklout):
     Debug.write('Pointless failed:')
     Debug.write(''.join(p.get_all_output()))
-    raise RuntimeError('Pointless failed: %s does not exist' %hklout)
+    raise RuntimeError('Pointless failed: %s does not exist' % hklout)
 
-  isig = { }
+  isig = {}
 
   for record in open(hklout, 'r'):
     lst = record.split()
@@ -604,7 +604,7 @@ def bin_o_tron0(sisigma):
     if qs in bins:
       bins[qs].append((i / sigma))
 
-  result = { }
+  result = {}
 
   for j in range(_number_bins):
     result[_scale_bins * (j + 1)] = meansd(bins[j + 1])
@@ -638,10 +638,9 @@ def outlier(sisigma):
     if qs in bins:
       bins[qs].append((i / sigma))
 
-
   # then look for outliers... first calculate the mean in each bin...
 
-  result = { }
+  result = {}
   keys = []
 
   fout = open('q.txt', 'w')
@@ -707,8 +706,8 @@ def bin_o_tron(sisigma):
 
   # sisigma = outlier(sisigma)
 
-  bins_i = { }
-  bins_s = { }
+  bins_i = {}
+  bins_s = {}
 
   for j in range(_number_bins):
     bins_i[j + 1] = []
@@ -723,21 +722,18 @@ def bin_o_tron(sisigma):
       bins_i[qs].append(i)
       bins_s[qs].append(sigma)
 
-  result = { }
+  result = {}
 
   for j in range(_number_bins):
     msd = meansd(bins_i[j + 1])
-    result[_scale_bins * (j + 1)] = (msd[0], msd[1],
-                                     meansd(bins_s[j + 1])[0])
+    result[_scale_bins * (j + 1)] = (msd[0], msd[1], meansd(bins_s[j + 1])[0])
 
     if False:
       print result[_scale_bins * (j + 1)][0], \
             result[_scale_bins * (j + 1)][1], \
             len(bins[j + 1])
 
-
   return result
-
 
 def linear(x, y):
 
@@ -779,14 +775,12 @@ def ice(s):
 
   return False
 
-
-def digest(bins, isigma_limit = 1.0):
+def digest(bins, isigma_limit=1.0):
   '''Digest a list of bins to calculate a sensible resolution limit.'''
 
   # print 'Debugging! isigma_limit = %f' % isigma_limit
 
   ss = sorted(bins.keys())
-
 
   for j in range(_number_bins):
     s = ss[j]

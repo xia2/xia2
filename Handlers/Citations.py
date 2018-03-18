@@ -105,7 +105,7 @@ class _Citations(object):
   def _parse_bibtex(self, bibtex):
     '''A jiffy to parse a bibtex entry.'''
 
-    contents = { }
+    contents = {}
 
     # default values
     contents['volume'] = ''

@@ -40,7 +40,7 @@ if __name__ == '__main__':
     nbins = 100
 
   m = merger(args.hklin)
-  m.calculate_resolution_ranges(nbins = nbins)
+  m.calculate_resolution_ranges(nbins=nbins)
 
   if args.completeness:
     print('COMPLETENESS %f' % m.resolution_completeness(limit=args.completeness))

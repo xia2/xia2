@@ -24,31 +24,30 @@ def sanitize(path):
   return path.replace(double, os.sep)
 
 class _ISPyBXmlHandler(object):
-
   def __init__(self):
-    self._crystals = { }
+    self._crystals = {}
     self._per_crystal_data = {}
     self._project = None
 
     self._name_map = {
-        'High resolution limit':'resolutionLimitHigh',
-        'Low resolution limit':'resolutionLimitLow',
-        'Completeness':'completeness',
-        'Multiplicity':'multiplicity',
-        'CC half':'ccHalf',
-        'Anomalous completeness':'anomalousCompleteness',
-        'Anomalous correlation':'ccAnomalous',
-        'Anomalous multiplicity':'anomalousMultiplicity',
-        'Total observations':'nTotalObservations',
-        'Total unique':'nTotalUniqueObservations',
-        'Rmerge(I+/-)':'rMerge',
-        'Rmeas(I)':'rMeasAllIPlusIMinus',
-        'Rmeas(I+/-)':'rMeasWithinIPlusIMinus',
-        'Rpim(I)':'rPimAllIPlusIMinus',
-        'Rpim(I+/-)':'rPimWithinIPlusIMinus',
-        'Partial Bias':'fractionalPartialBias',
-        'I/sigma':'meanIOverSigI',
-        }
+        'High resolution limit': 'resolutionLimitHigh',
+        'Low resolution limit': 'resolutionLimitLow',
+        'Completeness': 'completeness',
+        'Multiplicity': 'multiplicity',
+        'CC half': 'ccHalf',
+        'Anomalous completeness': 'anomalousCompleteness',
+        'Anomalous correlation': 'ccAnomalous',
+        'Anomalous multiplicity': 'anomalousMultiplicity',
+        'Total observations': 'nTotalObservations',
+        'Total unique': 'nTotalUniqueObservations',
+        'Rmerge(I+/-)': 'rMerge',
+        'Rmeas(I)': 'rMeasAllIPlusIMinus',
+        'Rmeas(I+/-)': 'rMeasWithinIPlusIMinus',
+        'Rpim(I)': 'rPimAllIPlusIMinus',
+        'Rpim(I+/-)': 'rPimWithinIPlusIMinus',
+        'Partial Bias': 'fractionalPartialBias',
+        'I/sigma': 'meanIOverSigI',
+    }
 
   def add_xcrystal(self, xcrystal):
     if not xcrystal.get_name() in self._crystals:
@@ -59,10 +58,8 @@ class _ISPyBXmlHandler(object):
     # resolution and overall...
 
   def add_crystal_log_file(self, crystal, log_file):
-    if not log_file in self._per_crystal_data[crystal][
-        'log_files']:
-      self._per_crystal_data[crystal]['log_files'].append(
-          log_file)
+    if not log_file in self._per_crystal_data[crystal]['log_files']:
+      self._per_crystal_data[crystal]['log_files'].append(log_file)
 
   def write_date(self, fout):
     '''Write the current date and time out as XML.'''
@@ -176,9 +173,8 @@ class _ISPyBXmlHandler(object):
         xwavelength = xcrystal.get_xwavelength(dname)
         sweeps = xwavelength.get_sweeps()
 
-        for j, name in enumerate(
-            ['overall', 'innerShell', 'outerShell']):
-          statistics_cache = { }
+        for j, name in enumerate(['overall', 'innerShell', 'outerShell']):
+          statistics_cache = {}
 
           for s in stats:
             if isinstance(statistics_all[key][s], type([])):
@@ -187,8 +183,7 @@ class _ISPyBXmlHandler(object):
               statistics_cache[s] = statistics_all[key][s][j]
 
           # send these to be written out
-          self.write_scaling_statistics(fout, name,
-                                        statistics_cache)
+          self.write_scaling_statistics(fout, name, statistics_cache)
 
         for sweep in sweeps:
           fout.write('<AutoProcIntegrationContainer>\n')
@@ -263,8 +258,7 @@ class _ISPyBXmlHandler(object):
           # Use file in DataFiles directory in preference (if it exists)
           reflection_file = os.path.join(data_directory, basename)
 
-        fout.write(
-            '<AutoProcProgramAttachment><fileType>Result')
+        fout.write('<AutoProcProgramAttachment><fileType>Result')
         fout.write('</fileType><fileName>%s</fileName>' % \
                    os.path.split(reflection_file)[-1])
         fout.write('<filePath>%s</filePath>' % \
@@ -275,8 +269,8 @@ class _ISPyBXmlHandler(object):
       g = glob.glob(os.path.join(log_directory, '*merging-statistics.json'))
       for merging_stats_json in g:
         fout.write('<AutoProcProgramAttachment><fileType>Graph')
-        fout.write('</fileType><fileName>%s</fileName>' % os.path.split(
-          merging_stats_json)[-1])
+        fout.write('</fileType><fileName>%s</fileName>' %
+                   os.path.split(merging_stats_json)[-1])
         fout.write('<filePath>%s</filePath>' % sanitize(log_directory))
         fout.write('</AutoProcProgramAttachment>\n')
 
@@ -302,18 +296,19 @@ class _ISPyBXmlHandler(object):
       cell = xcrystal.get_cell()
       spacegroup = xcrystal.get_likely_spacegroups()[0]
 
-      result['AutoProc'] = { }
+      result['AutoProc'] = {}
       tmp = result['AutoProc']
 
       tmp['spaceGroup'] = spacegroup
       for name, value in zip(['a', 'b', 'c', 'alpha', 'beta', 'gamma'], cell):
         tmp['refinedCell_%s' % name] = value
 
-      result['AutoProcScalingContainer'] = { }
+      result['AutoProcScalingContainer'] = {}
       tmp = result['AutoProcScalingContainer']
       tmp['AutoProcScaling'] = {
-        'recordTimeStamp':time.strftime('%Y-%m-%d %H:%M:%S',
-                                        time.localtime())}
+          'recordTimeStamp': time.strftime('%Y-%m-%d %H:%M:%S',
+                                           time.localtime())
+      }
 
       statistics_all = xcrystal.get_statistics()
       reflection_files = xcrystal.get_scaled_merged_reflections()
@@ -386,7 +381,7 @@ class _ISPyBXmlHandler(object):
             image_name = os.path.join(sweep.get_directory(),
                                       sweep.get_template())
           cell = sweep.get_integrater_cell()
-          intgr_tmp = { }
+          intgr_tmp = {}
           for name, value in zip(['a', 'b', 'c', 'alpha', 'beta', 'gamma'],
                                  cell):
             intgr_tmp['cell_%s' % name] = value
@@ -413,9 +408,9 @@ class _ISPyBXmlHandler(object):
              'AutoProcIntegration': intgr_tmp})
 
       # file unpacking nonsense
-      result['AutoProcProgramContainer'] = { }
+      result['AutoProcProgramContainer'] = {}
       tmp = result['AutoProcProgramContainer']
-      tmp2 = { }
+      tmp2 = {}
 
       if not command_line:
         from xia2.Handlers.CommandLine import CommandLine

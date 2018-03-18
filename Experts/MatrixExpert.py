@@ -261,7 +261,7 @@ def _Othercell():
     return Othercell()
     Debug.write('Using othercell')
 
-def get_real_space_primitive_matrix(lattice, matrix, wd = None):
+def get_real_space_primitive_matrix(lattice, matrix, wd=None):
   '''Get the primitive real space vectors for the unit cell and
   lattice type. Note that the resulting matrix will need to be
   scaled by a factor equal to the wavelength in Angstroms.'''
@@ -295,7 +295,7 @@ def get_real_space_primitive_matrix(lattice, matrix, wd = None):
 
   return real_a[0:3], real_a[3:6], real_a[6:9]
 
-def get_reciprocal_space_primitive_matrix(lattice, matrix, wd = None):
+def get_reciprocal_space_primitive_matrix(lattice, matrix, wd=None):
   '''Get the primitive reciprocal space vectors for this matrix.'''
 
   # parse the orientation matrix
@@ -323,7 +323,7 @@ def get_reciprocal_space_primitive_matrix(lattice, matrix, wd = None):
 
   return mat2vec(primitive_a)
 
-def find_primitive_axes(lattice, matrix, wd = None):
+def find_primitive_axes(lattice, matrix, wd=None):
   '''From an orientation matrix file, calculate the angles (phi) where
   the primitive cell axes a, b, c are in the plane of the detector
   (that is, orthogonal to the direct beam vector.'''
@@ -336,7 +336,7 @@ def find_primitive_axes(lattice, matrix, wd = None):
           dtor * math.atan( - b[2] / b[0]), \
           dtor * math.atan( - c[2] / c[0]))
 
-def find_primitive_reciprocal_axes(lattice, matrix, wd = None):
+def find_primitive_reciprocal_axes(lattice, matrix, wd=None):
   '''From an orientation matrix file, calculate the angles (phi) where
   the primitive reciprical space cell axes a, b, c are in the plane of
   the detector (that is, orthogonal to the direct beam vector.'''
@@ -476,8 +476,7 @@ def mosflm_matrix_centred_to_primitive(lattice, mosflm_a_matrix):
 
   sgp = sg.build_derived_group(True, False)
   lattice_p = s2l(sgp.type().number())
-  symm = crystal.symmetry(unit_cell = cell,
-                          space_group = sgp)
+  symm = crystal.symmetry(unit_cell=cell, space_group=sgp)
 
   rdx = symm.change_of_basis_op_to_best_cell()
   symm_new = symm.change_basis(rdx)

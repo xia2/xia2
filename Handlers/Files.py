@@ -62,7 +62,7 @@ def get_ccp4_commands(lines_of_input):
 
   # first look through for hklin / hklout
 
-  logicals = { }
+  logicals = {}
 
   for line in lines_of_input:
     if 'Logical Name:' in line:
@@ -87,13 +87,13 @@ class _FileHandler(object):
     self._temporary_files = []
     self._output_files = []
 
-    self._log_files = { }
+    self._log_files = {}
     self._log_file_keys = []
 
-    self._xml_files = { }
+    self._xml_files = {}
     self._xml_file_keys = []
 
-    self._html_files = { }
+    self._html_files = {}
     self._html_file_keys = []
 
     # for putting the reflection files somewhere nice...
@@ -101,7 +101,7 @@ class _FileHandler(object):
 
     # same mechanism as log files - I want to rename files copied to the
     # DataFiles directory
-    self._more_data_files = { }
+    self._more_data_files = {}
     self._more_data_file_keys = []
 
   def cleanup(self):
@@ -123,12 +123,12 @@ class _FileHandler(object):
     for f in self._log_file_keys:
       filename = os.path.join(log_directory, '%s.log' % f.replace(' ', '_'))
       shutil.copyfile(self._log_files[f], filename)
-      out.write('Copied log file %s to %s\n' %  (self._log_files[f], filename))
+      out.write('Copied log file %s to %s\n' % (self._log_files[f], filename))
 
     for f in self._xml_file_keys:
       filename = os.path.join(log_directory, '%s.xml' % f.replace(' ', '_'))
       shutil.copyfile(self._xml_files[f], filename)
-      out.write('Copied xml file %s to %s\n' %  (self._xml_files[f], filename))
+      out.write('Copied xml file %s to %s\n' % (self._xml_files[f], filename))
 
       for f in self._html_file_keys:
         filename = os.path.join(log_directory, '%s.html' % f.replace(' ', '_'))
@@ -138,8 +138,7 @@ class _FileHandler(object):
     # copy the data files
     data_directory = Environment.generate_directory('DataFiles')
     for f in self._data_files:
-      filename = os.path.join(data_directory,
-                              os.path.split(f)[-1])
+      filename = os.path.join(data_directory, os.path.split(f)[-1])
       shutil.copyfile(f, filename)
       out.write('Copied data file %s to %s\n' % \
                 (f, filename))

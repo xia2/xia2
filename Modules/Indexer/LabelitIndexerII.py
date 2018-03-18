@@ -158,8 +158,7 @@ class LabelitIndexerII(LabelitIndexer):
       auto_logfiler(ld)
       ld.add_image(self.get_image_name(image))
       ld.distl()
-      spots = ld.get_statistics(
-          self.get_image_name(image))['spots_good']
+      spots = ld.get_statistics(self.get_image_name(image))['spots_good']
       Debug.write('Image %d good spots %d' % (image, spots))
       if spots > 10:
         self.add_indexer_image_wedge(image)
@@ -365,12 +364,13 @@ class LabelitIndexerII(LabelitIndexer):
       space_group=space_group)
 
     from dxtbx.model import Experiment, ExperimentList
-    experiment = Experiment(beam=beam,
-                            detector=detector,
-                            goniometer=self.get_goniometer(),
-                            scan=self.get_scan(),
-                            crystal=crystal_model,
-                            )
+    experiment = Experiment(
+        beam=beam,
+        detector=detector,
+        goniometer=self.get_goniometer(),
+        scan=self.get_scan(),
+        crystal=crystal_model,
+    )
 
     experiment_list = ExperimentList([experiment])
     self.set_indexer_experiment_list(experiment_list)
@@ -409,8 +409,7 @@ class LabelitIndexerII(LabelitIndexer):
     if self.get_indexer_sweep().get_user_lattice():
       return
 
-    status, lattice, matrix, cell = mosflm_check_indexer_solution(
-        self)
+    status, lattice, matrix, cell = mosflm_check_indexer_solution(self)
 
     if status is None:
       # basis is primitive

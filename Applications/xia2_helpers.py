@@ -30,7 +30,7 @@ def process_one_sweep(args):
 
   if '-xinfo' in command_line_args:
     idx = command_line_args.index('-xinfo')
-    del command_line_args[idx+1]
+    del command_line_args[idx + 1]
     del command_line_args[idx]
 
   xia2_integrate = XIA2Integrate()
@@ -43,7 +43,7 @@ def process_one_sweep(args):
   xia2_integrate.set_working_directory(tmpdir)
   xia2_integrate.add_command_line_args(args.command_line_args)
   xia2_integrate.set_phil_file(os.path.join(curdir, 'xia2-working.phil'))
-  xia2_integrate.add_command_line_args(['sweep.id=%s' %sweep_id])
+  xia2_integrate.add_command_line_args(['sweep.id=%s' % sweep_id])
   xia2_integrate.set_nproc(nproc)
   xia2_integrate.set_njob(1)
   xia2_integrate.set_mp_mode('serial')
@@ -81,7 +81,7 @@ def process_one_sweep(args):
       print line
 
     if os.path.exists(xia2_json):
-      new_json = os.path.join(curdir, 'xia2-%s.json' %sweep_id)
+      new_json = os.path.join(curdir, 'xia2-%s.json' % sweep_id)
 
       shutil.copyfile(xia2_json, new_json)
 
@@ -105,7 +105,8 @@ def get_sweep_output_only(all_output):
   for line in all_output:
     if line.startswith("Processing took "):
       break
-    elif in_sweep: sweep_lines.append(line)
+    elif in_sweep:
+      sweep_lines.append(line)
     elif line.startswith("Command line: "):
       in_sweep = True
   return "".join(sweep_lines)

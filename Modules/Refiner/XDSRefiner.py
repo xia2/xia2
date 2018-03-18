@@ -15,7 +15,6 @@ from xia2.lib.bits import auto_logfiler
 from xia2.Schema.Interfaces.Refiner import Refiner
 
 class XDSRefiner(Refiner):
-
   def __init__(self):
     super(XDSRefiner, self).__init__()
 
@@ -126,7 +125,6 @@ class XDSRefiner(Refiner):
         # results will be re-got, no additional processing will
         # be performed...
 
-
         # set the indexer up as per the frameprocessor interface...
         # this would usually happen within the IndexerFactory.
 
@@ -184,8 +182,6 @@ class XDSRefiner(Refiner):
         # switched around...
 
         # FIXME comparison needed
-
-
 
   def _refine(self):
     import copy

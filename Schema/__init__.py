@@ -10,7 +10,6 @@ class _ImagesetCache(dict):
 
 imageset_cache = _ImagesetCache()
 
-
 def longest_common_substring(s1, s2):
   m = [[0] * (1 + len(s2)) for i in xrange(1 + len(s1))]
   longest, x_longest = 0, 0
@@ -171,7 +170,7 @@ def load_imagesets(template, directory, id_image=None, image_range=None,
         if epochs[0] == 0:
           epochs[0] = 1
         for i in range(1, epochs.size()):
-          epochs[i] = epochs[i-1] + exposure_times[i-1]
+          epochs[i] = epochs[i - 1] + exposure_times[i - 1]
         scan.set_epochs(epochs)
       _id_image = scan.get_image_range()[0]
       imageset_cache[full_template_path][_id_image] = imageset

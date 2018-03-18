@@ -6,7 +6,6 @@
 #
 #   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-
 """
 xia2ccp4i.py:
 
@@ -88,7 +87,7 @@ MG_CURRENT_PROJECT        _default_project          $PROJ_NAME
     # Does CCP4_PROJECT already exist here?
     if os.path.exists(db_dir):
       self._reason_for_failure = ("ERROR: Directory '%s' already "
-          "contains CCP4_DATABASE") % directory
+                                  "contains CCP4_DATABASE") % directory
       return False
 
     # Is the project_name valid?
@@ -119,7 +118,7 @@ MG_CURRENT_PROJECT        _default_project          $PROJ_NAME
       database = open(os.path.join(db_dir, "database.def"), 'w')
     except OSError as err:
       self._reason_for_failure = ("ERROR: Problem encountered while "
-          "writing database.def")
+                                  "writing database.def")
       return False
 
     database.write(database_txt)
@@ -129,7 +128,7 @@ MG_CURRENT_PROJECT        _default_project          $PROJ_NAME
       directories = open(os.path.join(db_dir, "directories.def"), 'w')
     except OSError as err:
       self._reason_for_failure = ("ERROR: Problem encountered while "
-          "writing directories.def")
+                                  "writing directories.def")
       return False
 
     directories.write(directories_txt)
@@ -139,7 +138,7 @@ MG_CURRENT_PROJECT        _default_project          $PROJ_NAME
       status = open(os.path.join(db_dir, "status.def"), 'w')
     except OSError as err:
       self._reason_for_failure = ("ERROR: Problem encountered while "
-          "writing status.def")
+                                  "writing status.def")
       return False
 
     status.write(status_txt)
@@ -163,8 +162,7 @@ class Xia2Info(object):
 
     # check the processing directory exists
     if not os.path.exists(xia2dir):
-      self._problems.append("Directory %s is not "
-          "accessible" % xia2dir)
+      self._problems.append("Directory %s is not accessible" % xia2dir)
       return
 
     # check we can read the xia2-summary.dat file
@@ -174,7 +172,7 @@ class Xia2Info(object):
       f.close()
     except IOError as err:
       self._problems.append("Unable to read xia2-summary.dat "
-          "inside %s" % xia2dir)
+                            "inside %s" % xia2dir)
       return
 
     # attempt to extract the project name
@@ -184,13 +182,13 @@ class Xia2Info(object):
 
     if not self._proj_name:
       self._problems.append("Unable to find a project name in "
-          "xia2-summary.dat")
+                            "xia2-summary.dat")
     else:
       # check the project name is sensible
       if self._proj_name.lower() in ["automatic", "default"]:
         self._problems.append("The project name '%s' read from "
-            "xia2-summary.dat is probably not "
-            "desirable" % self._proj_name)
+                              "xia2-summary.dat is probably not "
+                              "desirable" % self._proj_name)
         self._proj_name = None
 
     # make a list of the data files
@@ -297,8 +295,8 @@ if __name__ == '__main__':
     val = subprocess.call("ccp4i", cwd=db_dir)
     sys.exit(val)
   except OSError as err:
-    print ("It seems that ccp4i is not currently available. To start ccp4i "
-           "with the isolated project %s, please set up the CCP4 "
-           "environment and type:\n\n"
-           "cd %s\n"
-           "ccp4i") % (proj_name, db_dir)
+    print("It seems that ccp4i is not currently available. To start ccp4i "
+          "with the isolated project %s, please set up the CCP4 "
+          "environment and type:\n\n"
+          "cd %s\n"
+          "ccp4i") % (proj_name, db_dir)

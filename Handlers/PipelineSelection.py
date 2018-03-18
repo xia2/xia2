@@ -49,12 +49,12 @@ def check(key, value):
       raise RuntimeError('scaler %s unknown' % value)
     return value
 
-preferences = { }
+preferences = {}
 
 def get_preferences():
   global preferences
 
-  if preferences == { }:
+  if preferences == {}:
     search_for_preferences()
 
   return preferences
@@ -119,6 +119,6 @@ def parse_preferences(file, preferences):
 
   return preferences
 
-if __name__== '__main__':
+if __name__ == '__main__':
 
   print search_for_preferences()

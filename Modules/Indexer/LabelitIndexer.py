@@ -78,8 +78,7 @@ class LabelitIndexer(IndexerSingleSweep):
     images = self.get_matching_images()
 
     if PhilIndex.params.xia2.settings.interactive == True:
-      selected_images = index_select_images_user(phi_width, images,
-                                                 Chatter)
+      selected_images = index_select_images_user(phi_width, images, Chatter)
     else:
       selected_images = index_select_images_lone(phi_width, images)
 
@@ -295,12 +294,13 @@ class LabelitIndexer(IndexerSingleSweep):
       space_group=space_group)
 
     from dxtbx.model import Experiment, ExperimentList
-    experiment = Experiment(beam=beam,
-                            detector=detector,
-                            goniometer=self.get_goniometer(),
-                            scan=self.get_scan(),
-                            crystal=crystal_model,
-                            )
+    experiment = Experiment(
+        beam=beam,
+        detector=detector,
+        goniometer=self.get_goniometer(),
+        scan=self.get_scan(),
+        crystal=crystal_model,
+    )
 
     experiment_list = ExperimentList([experiment])
     self.set_indexer_experiment_list(experiment_list)
@@ -341,8 +341,7 @@ class LabelitIndexer(IndexerSingleSweep):
         return
 
     if False:
-      status, lattice, matrix, cell = mosflm_check_indexer_solution(
-          self)
+      status, lattice, matrix, cell = mosflm_check_indexer_solution(self)
     else:
       status = None
 
@@ -366,7 +365,7 @@ class LabelitIndexer(IndexerSingleSweep):
     Debug.write('Inserting solution: %s ' % lattice +
                 '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % cell)
 
-    self._indxr_replace(lattice, cell, indxr_print = self._indxr_print)
+    self._indxr_replace(lattice, cell, indxr_print=self._indxr_print)
 
     self._indxr_payload['mosflm_orientation_matrix'] = matrix
 
@@ -380,8 +379,7 @@ class LabelitIndexer(IndexerSingleSweep):
     if self._indxr_input_lattice is None:
       # FIXME in here I need to check that there is a
       # "good" smiley
-      return copy.deepcopy(
-          self._solutions[max(self._solutions.keys())])
+      return copy.deepcopy(self._solutions[max(self._solutions.keys())])
     else:
       # look through for a solution for this lattice -
       # FIXME should it delete all other solutions?
@@ -393,14 +391,13 @@ class LabelitIndexer(IndexerSingleSweep):
         for s in self._solutions.keys():
           if self._solutions[s]['lattice'] == \
                  self._indxr_input_lattice:
-            if self._compare_cell(
-                self._indxr_input_cell,
-                self._solutions[s]['cell']):
+            if self._compare_cell(self._indxr_input_cell,
+                                  self._solutions[s]['cell']):
               return copy.deepcopy(self._solutions[s])
             else:
-              del(self._solutions[s])
+              del self._solutions[s]
           else:
-            del(self._solutions[s])
+            del self._solutions[s]
 
         raise RuntimeError( \
               'no solution for lattice %s with given cell' % \
@@ -412,7 +409,7 @@ class LabelitIndexer(IndexerSingleSweep):
                  self._indxr_input_lattice:
             return copy.deepcopy(self._solutions[s])
           else:
-            del(self._solutions[s])
+            del self._solutions[s]
 
         raise RuntimeError('no solution for lattice %s' % \
               self._indxr_input_lattice)

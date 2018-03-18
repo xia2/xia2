@@ -47,10 +47,7 @@ range {
     .type = float(value_min=0)
 }
 %s
-""" %dose_phil_str)
-
-
-
+""" % dose_phil_str)
 
 class observation_group(object):
 
@@ -89,9 +86,7 @@ class observation_group(object):
   def is_centric(self):
     return self._centric
 
-
 class unmerged_observations(Mapping):
-
   def __init__(self, unmerged_intensities):
     self._intensities_original_index = unmerged_intensities
 
@@ -152,11 +147,9 @@ class unmerged_observations(Mapping):
   def __contains__(self, hkl):
     return hkl in self._observations
 
-
 class PyStatistics(object):
-
-  def __init__(self, intensities, dose, n_bins=8,
-               range_min=None, range_max=None, range_width=1):
+  def __init__(self, intensities, dose, n_bins=8, range_min=None,
+               range_max=None, range_width=1):
 
     self.intensities = intensities
     self.dose = dose
@@ -342,7 +335,7 @@ class PyStatistics(object):
         scp = 0.
 
         if bottom > 0:
-          rcp = top/bottom
+          rcp = top / bottom
           if count[i_bin][j] > 100:
             isig = isigma[i_bin][j] / count[i_bin][j]
             scp = rcp / (1.1284 / isig)
@@ -354,7 +347,7 @@ class PyStatistics(object):
       ob = sum(B[i_bin][j] for i_bin in xrange(self.n_bins))
 
       if ob > 0:
-        overall = ot/ob
+        overall = ot / ob
       else:
         overall = 0.
       rcp_overall[j] = overall

@@ -25,7 +25,7 @@ def FindFreeFlag(hklin):
   mtzdump.dump()
   columns = mtzdump.get_columns()
 
-  ctypes = { }
+  ctypes = {}
 
   for c in columns:
     ctypes[c[0]] = c[1]

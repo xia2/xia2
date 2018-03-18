@@ -150,7 +150,7 @@ def ttt():
                'B1', 'B2', 'B3',
                'C1', 'C2', 'C3']
 
-    choice = choices[randint(0,8)]
+    choice = choices[randint(0, 8)]
 
     if choice[0] in ['1', '2', '3']:
       row = int(choice[0])

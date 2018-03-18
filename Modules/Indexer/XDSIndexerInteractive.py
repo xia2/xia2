@@ -17,9 +17,7 @@ from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
 
 # the class that we are extending
 
-
 # odds and sods that are needed
-
 
 class XDSIndexerInteractive(XDSIndexer):
   '''An extension of XDSIndexer using all available images.'''

@@ -28,25 +28,21 @@ batch
 include scope xia2.Modules.MultiCrystalAnalysis.batch_phil_scope
 """, process_includes=True)
 
-
-
-
 class delta_cc_half(object):
-
   def __init__(self, unmerged_intensities, batches_all, n_bins=20, d_min=None,
                cc_one_half_method='sigma_tau', id_to_batches=None):
 
     sel = unmerged_intensities.sigmas() > 0
     unmerged_intensities = unmerged_intensities.select(sel).set_info(
-      unmerged_intensities.info())
+        unmerged_intensities.info())
     batches_all = batches_all.select(sel)
 
     unmerged_intensities.setup_binner(n_bins=n_bins)
     self.unmerged_intensities = unmerged_intensities
     self.merged_intensities = unmerged_intensities.merge_equivalents().array()
 
-    separate = separate_unmerged(
-      unmerged_intensities, batches_all, id_to_batches=id_to_batches)
+    separate = separate_unmerged(unmerged_intensities, batches_all,
+                                 id_to_batches=id_to_batches)
     self.intensities = separate.intensities
     self.batches = separate.batches
     self.run_id_to_batch_id = separate.run_id_to_batch_id
@@ -89,8 +85,8 @@ class delta_cc_half(object):
       else:
         cc_bins = unmerged_i.cc_one_half(use_binning=True, return_n_refl=True)
       cc_i = flex.mean_weighted(
-        flex.double(b[0] for b in cc_bins.data[1:-1]),
-        flex.double(b[1] for b in cc_bins.data[1:-1]))
+          flex.double(b[0] for b in cc_bins.data[1:-1]),
+          flex.double(b[1] for b in cc_bins.data[1:-1]))
 
       delta_cc_i = cc_i - cc_overall
       self.delta_cc.append(delta_cc_i)
@@ -99,7 +95,7 @@ class delta_cc_half(object):
     if self.run_id_to_batch_id is not None:
       labels = self.run_id_to_batch_id.values()
     else:
-      labels = ["%i" %(j+1) for j in range(len(self.delta_cc))]
+      labels = ["%i" % (j + 1) for j in range(len(self.delta_cc))]
     return labels
 
   def _normalised_delta_cc_i(self):
@@ -134,9 +130,6 @@ class delta_cc_half(object):
     pyplot.xlabel(r'$\sigma$')
     pyplot.ylabel('Frequency')
     pyplot.savefig(filename)
-
-
-
 
 def run(args):
 
@@ -174,12 +167,11 @@ def run(args):
   id_to_batches = None
 
   if len(params.batch) > 0:
-    id_to_batches = {
-    }
+    id_to_batches = {}
     for b in params.batch:
       assert b.id is not None
       assert b.range is not None
-      assert b.id not in id_to_batches, "Duplicate batch id: %s" %b.id
+      assert b.id not in id_to_batches, "Duplicate batch id: %s" % b.id
       id_to_batches[b.id] = b.range
 
   result = delta_cc_half(unmerged_intensities, batches_all,
@@ -187,14 +179,13 @@ def run(args):
                          cc_one_half_method=params.cc_one_half_method,
                          id_to_batches=id_to_batches)
   hist_filename = 'delta_cc_hist.png'
-  print 'Saving histogram to %s' %hist_filename
+  print 'Saving histogram to %s' % hist_filename
   result.plot_histogram(hist_filename)
   print result.get_table()
   from xia2.Handlers.Citations import Citations
   Citations.cite('delta_cc_half')
   for citation in Citations.get_citations_acta():
     print citation
-
 
 if __name__ == '__main__':
   import sys

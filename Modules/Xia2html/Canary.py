@@ -12,7 +12,6 @@ import xia2.Modules.Xia2html.smartie as smartie
 # Canary.py
 #
 ########################################################################
-
 """Canary: classes and functions for building HTML documents.
 
 Canary provides classes and functions that can be used build HTML

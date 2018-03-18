@@ -36,7 +36,7 @@ april = {
     'Resolution limit for':'Littlest visible thing'
     }
 
-def banner(comment, forward = True, size = 60):
+def banner(comment, forward=True, size=60):
 
   if not comment:
     return '-' * size
@@ -45,7 +45,6 @@ def banner(comment, forward = True, size = 60):
   m = (size - (l + 2)) // 2
   n = size - (l + 2 + m)
   return '%s %s %s' % ('-' * m, comment, '-' * n)
-
 
 class _Stream(object):
   '''A class to represent an output stream. This will be used as a number
@@ -130,11 +129,10 @@ class _Stream(object):
 
     for r in record.split('\n'):
       if self._prefix:
-        result = self.get_file().write('[%s]  %s\n' %
-                                       (self._prefix, r.strip() if strip else r))
+        result = self.get_file().write('[%s]  %s\n' % (self._prefix, r.strip()
+                                                       if strip else r))
       else:
-        result = self.get_file().write('%s\n' %
-                                       (r.strip() if strip else r))
+        result = self.get_file().write('%s\n' % (r.strip() if strip else r))
 
       self.get_file().flush()
 
@@ -143,7 +141,7 @@ class _Stream(object):
 
     return result
 
-  def bigbanner(self, comment, forward = True, size=60):
+  def bigbanner(self, comment, forward=True, size=60):
     '''Write a big banner for something.'''
 
     hashes = '#' * size
@@ -154,7 +152,7 @@ class _Stream(object):
 
     return
 
-  def banner(self, comment, forward = True, size = 60):
+  def banner(self, comment, forward=True, size=60):
     self.write(banner(comment, forward=forward, size=size))
     return
 
@@ -173,7 +171,7 @@ class _Stream(object):
     the program and a dictionary of options which will be printed
     in alphabetical order.'''
 
-    self.banner('%s %s with %s' % (task, data, program), size = 80)
+    self.banner('%s %s with %s' % (task, data, program), size=80)
     for o in sorted(options):
       if options[o]:
         oname = '%s:' % o

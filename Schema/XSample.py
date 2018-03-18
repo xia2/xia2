@@ -46,14 +46,13 @@ class XSample(object):
         #marker='+', color='bg'[i])
     #pyplot.show()
 
-
   # serialization functions
 
   def to_dict(self):
     obj = {}
     obj['__id__'] = 'XSample'
     import inspect
-    attributes = inspect.getmembers(self, lambda m:not(inspect.isroutine(m)))
+    attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
     for a in attributes:
       if a[0] == '_sweeps':
         sweeps = []

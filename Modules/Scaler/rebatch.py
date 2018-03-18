@@ -20,12 +20,14 @@ def compact_batches(batches):
   '''Pack down batches to lists of continuous batches.'''
   from operator import itemgetter
   from itertools import groupby
-  return [map(itemgetter(1), g) for k, g in groupby(enumerate(batches),
-                                                    lambda i_x:i_x[0]-i_x[1])]
+  return [
+      map(itemgetter(1), g)
+      for k, g in groupby(enumerate(batches), lambda i_x: i_x[0] - i_x[1])
+  ]
 
-def rebatch(hklin, hklout, first_batch=None, add_batch=None,
-            include_range=None, exclude_range=None, exclude_batches=None,
-            pname=None, xname=None, dname=None):
+def rebatch(hklin, hklout, first_batch=None, add_batch=None, include_range=None,
+            exclude_range=None, exclude_batches=None, pname=None, xname=None,
+            dname=None):
   '''Need to implement: include batch range, exclude batches, add N to
   batches, start batches at N.'''
   if include_range is None:
@@ -70,14 +72,14 @@ def rebatch(hklin, hklout, first_batch=None, add_batch=None,
     exclude_sel = flex.bool(batch_column_values.size(), False)
     for (start, end) in exclude_range:
       exclude_sel.set_selected(
-        (batch_column_values >= start) & (batch_column_values <= end), True)
+          (batch_column_values >= start) & (batch_column_values <= end), True)
     mtz_obj.delete_reflections(exclude_sel.iselection())
 
   elif include_range:
     exclude_sel = flex.bool(batch_column_values.size(), True)
     for (start, end) in include_range:
       exclude_sel.set_selected(
-        (batch_column_values >= start) & (batch_column_values <= end), False)
+          (batch_column_values >= start) & (batch_column_values <= end), False)
     mtz_obj.delete_reflections(exclude_sel.iselection())
 
   # modify batch columns, and also the batch headers
@@ -117,7 +119,7 @@ def rebatch(hklin, hklout, first_batch=None, add_batch=None,
 
 def copy_r_file(hklin, hklout):
 
-  mtz_obj = mtz.object(file_name = hklin)
+  mtz_obj = mtz.object(file_name=hklin)
 
   mtz_out = mtz.object()
 
@@ -155,8 +157,7 @@ def copy_r_file(hklin, hklout):
   if not batch_column:
     raise RuntimeError('no BATCH column found in %s' % hklin)
 
-  batch_column_values = batch_column.extract_values(
-      not_a_number_substitute = -1)
+  batch_column_values = batch_column.extract_values(not_a_number_substitute=-1)
 
   valid = flex.bool()
 
@@ -172,14 +173,13 @@ def copy_r_file(hklin, hklout):
     for dataset in crystal.datasets():
       for column in dataset.columns():
         print column.label()
-        values = column.extract_values(
-            not_a_number_substitute = -999999)
+        values = column.extract_values(not_a_number_substitute=-999999)
         for r in remove:
           del(values[r])
         mtz_out.get_column(column.label()).set_values(
             values = values, selection_valid = valid)
 
-  mtz_out.write(file_name = hklout)
+  mtz_out.write(file_name=hklout)
 
   return
 

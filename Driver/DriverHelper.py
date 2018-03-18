@@ -61,8 +61,7 @@ def script_writer(working_directory,
   if os.name == 'nt':
     # write out a windows batch file
 
-    script = open('%s.bat' % os.path.join(working_directory,
-                                          script_name), 'w')
+    script = open('%s.bat' % os.path.join(working_directory, script_name), 'w')
 
     # try to delete the .xstatus file - if it exists
     script.write('@if exist %s.xstatus del %s.xstatus\n' % \
@@ -76,8 +75,7 @@ def script_writer(working_directory,
       added = environment[name][0]
       for value in environment[name][1:]:
         added += '%s%s' % (os.pathsep, value)
-      script.write('@set %s=%s%s%%%s%%\n' % (name, added,
-                                             os.pathsep, name))
+      script.write('@set %s=%s%s%%%s%%\n' % (name, added, os.pathsep, name))
     # make the directories we've been asked to
     for dir in mkdirs:
       script.write('@mkdir %s\n' % dir)
@@ -101,8 +99,7 @@ def script_writer(working_directory,
 
     script.close()
 
-    input = open('%s.xin' % os.path.join(working_directory,
-                                         script_name), 'w')
+    input = open('%s.xin' % os.path.join(working_directory, script_name), 'w')
     for i in input_records:
       input.write('%s' % i)
     input.close()
@@ -110,8 +107,7 @@ def script_writer(working_directory,
   if os.name == 'posix':
     # write out a bash script
 
-    script = open('%s.sh' % os.path.join(working_directory,
-                                         script_name), 'w')
+    script = open('%s.sh' % os.path.join(working_directory, script_name), 'w')
 
     script.write('#!/bin/bash\n\n')
 
@@ -123,8 +119,7 @@ def script_writer(working_directory,
       added = environment[name][0]
       for value in environment[name][1:]:
         added += '%s%s' % (os.pathsep, value)
-      script.write('export %s=%s%s$%s\n' % (name, added,
-                                            os.pathsep, name))
+      script.write('export %s=%s%s$%s\n' % (name, added, os.pathsep, name))
 
     # delete the xatstus file if it exists
     script.write('rm -f %s.xstatus\n' % script_name)
@@ -304,7 +299,6 @@ def error_python_traceback(records):
 def check_return_code(code):
   '''Check the return code for indications of errors.'''
 
-
   if os.name == 'nt':
     if code == 3:
       raise RuntimeError('child error')
@@ -328,7 +322,7 @@ def check_return_code(code):
     if code == abrt:
       raise RuntimeError('process failed')
 
-executable_exists_cache = { }
+executable_exists_cache = {}
 
 def executable_exists(executable):
   '''Search the PATH for this executable, return "" if it is not
@@ -339,8 +333,7 @@ def executable_exists(executable):
 
   if os.name == 'nt':
     if not executable.split('.')[-1] in ['exe', 'bat']:
-      executable_files = ['%s.bat' % executable,
-                          '%s.exe' % executable]
+      executable_files = ['%s.bat' % executable, '%s.exe' % executable]
     else:
       executable_files = [executable]
   else:

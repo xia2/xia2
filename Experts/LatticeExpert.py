@@ -60,7 +60,6 @@ allowed_lattices = ['aP', 'mP', 'mC', 'oP', 'oC', 'oI',
 # Which I will do - see ApplyLattice(lattice, cell) below.
 #
 
-
 def ApplyLattice(lattice, cell):
   '''Apply lattice constraints for a given lattice to a given input cell.
   This will return a new cell and also compute the distortion required

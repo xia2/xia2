@@ -60,16 +60,14 @@ def compose_matrices_rt(mat_a, mat_b):
   '''Compose symmetry matrix files for XDS. These are 12 element
   matrices...'''
 
-  mat_c = _multiply_symmetry_matrix(rt_to_r(mat_a),
-                                    rt_to_r(mat_b))
+  mat_c = _multiply_symmetry_matrix(rt_to_r(mat_a), rt_to_r(mat_b))
 
   return r_to_rt(mat_c)
 
 def compose_matrices_r(mat_a, mat_b):
   '''Compose symmetry matrix applying b then a.'''
 
-  mat_c = _multiply_symmetry_matrix(mat_a,
-                                    mat_b)
+  mat_c = _multiply_symmetry_matrix(mat_a, mat_b)
 
   return mat_c
 
@@ -110,7 +108,7 @@ if __name__ == '__main__':
   s = compose_symops('-y,x+y,z', 'h,k,l')
   m = symop_to_mat(s)
 
-  assert(s == mat_to_symop(m))
+  assert s == mat_to_symop(m)
 
   s = '-h,-k,h+l'
 

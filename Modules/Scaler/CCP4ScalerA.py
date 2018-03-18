@@ -43,7 +43,7 @@ class CCP4ScalerA(Scaler):
 
     self._sweep_handler = None
 
-    self._scalr_scaled_refl_files = { }
+    self._scalr_scaled_refl_files = {}
     self._wavelengths_in_order = []
 
     # flags to keep track of the corrections we will be applying
@@ -99,8 +99,8 @@ class CCP4ScalerA(Scaler):
       aimless = self._factory.Aimless()
     else:
       aimless = self._factory.Aimless(
-          absorption_correction = self._scalr_correct_absorption,
-          decay_correction = self._scalr_correct_decay)
+          absorption_correction=self._scalr_correct_absorption,
+          decay_correction=self._scalr_correct_decay)
 
     aimless.set_mode(PhilIndex.params.xia2.settings.scale.scales)
 
@@ -174,7 +174,7 @@ class CCP4ScalerA(Scaler):
 
       if exclude_sweep:
         self._sweep_handler.remove_epoch(epoch)
-        Debug.write('Excluding sweep %s' %sname)
+        Debug.write('Excluding sweep %s' % sname)
       else:
         Journal.entry({'adding data from':'%s/%s/%s' % \
                        (xname, dname, sname)})
@@ -386,8 +386,8 @@ class CCP4ScalerA(Scaler):
     # all should share the same pointgroup, unless twinned... in which
     # case force them to be...
 
-    pointgroups = { }
-    reindex_ops = { }
+    pointgroups = {}
+    reindex_ops = {}
     probably_twinned = False
 
     need_to_return = False
@@ -538,8 +538,7 @@ class CCP4ScalerA(Scaler):
                             list(pointgroup_set)]))
       numbers = [Syminfo.spacegroup_name_to_number(s) for s in \
                  pointgroup_set]
-      overall_pointgroup = Syminfo.spacegroup_number_to_name(
-          min(numbers))
+      overall_pointgroup = Syminfo.spacegroup_number_to_name(min(numbers))
       self._scalr_input_pointgroup = overall_pointgroup
 
       Chatter.write('Twinning detected, assume pointgroup %s' % \
@@ -777,17 +776,17 @@ class CCP4ScalerA(Scaler):
 
     self._sort_together_data_ccp4()
 
-    self._scalr_resolution_limits = { }
+    self._scalr_resolution_limits = {}
 
     # store central resolution limit estimates
 
-    batch_ranges = [self._sweep_handler.get_sweep_information(
-        epoch).get_batch_range() for epoch in
-                    self._sweep_handler.get_epochs()]
+    batch_ranges = [
+        self._sweep_handler.get_sweep_information(epoch).get_batch_range()
+        for epoch in self._sweep_handler.get_epochs()
+    ]
 
     self._resolution_limit_estimates = ersatz_resolution(
         self._prepared_reflections, batch_ranges)
-
 
   def _scale(self):
     '''Perform all of the operations required to deliver the scaled
@@ -813,7 +812,7 @@ class CCP4ScalerA(Scaler):
     sc.set_chef_unmerged(True)
     sc.set_new_scales_file('%s.scales' % self._scalr_xname)
 
-    user_resolution_limits = { }
+    user_resolution_limits = {}
 
     for epoch in epochs:
 
@@ -834,10 +833,9 @@ class CCP4ScalerA(Scaler):
 
       if (dname, sname) in self._scalr_resolution_limits:
         resolution, _ = self._scalr_resolution_limits[(dname, sname)]
-        sc.add_run(start, end, exclude = False,
-                   resolution = resolution, name = sname)
+        sc.add_run(start, end, exclude=False, resolution=resolution, name=sname)
       else:
-        sc.add_run(start, end, name = sname)
+        sc.add_run(start, end, name=sname)
 
     sc.set_hklout(os.path.join(self.get_working_directory(),
                                '%s_%s_scaled_test.mtz' % \
@@ -865,8 +863,7 @@ class CCP4ScalerA(Scaler):
 
           batch = int(es.split()[-1])
           epoch = self._identify_sweep_epoch(batch)
-          sweep = self._scalr_integraters[
-              epoch].get_integrater_sweep()
+          sweep = self._scalr_integraters[epoch].get_integrater_sweep()
 
           # then remove it from my parent xcrystal
 
@@ -875,7 +872,7 @@ class CCP4ScalerA(Scaler):
           # then remove it from the scaler list of intergraters
           # - this should really be a scaler interface method
 
-          del(self._scalr_integraters[epoch])
+          del self._scalr_integraters[epoch]
 
           # then tell the user what is happening
 
@@ -897,7 +894,6 @@ class CCP4ScalerA(Scaler):
 
           raise e
 
-
     else:
       sc.scale()
 
@@ -908,7 +904,7 @@ class CCP4ScalerA(Scaler):
 
     loggraph = sc.parse_ccp4_loggraph()
 
-    resolution_info = { }
+    resolution_info = {}
 
     reflection_files = sc.get_scaled_reflection_files()
 
@@ -918,8 +914,7 @@ class CCP4ScalerA(Scaler):
     for key in loggraph:
       if 'Analysis against resolution' in key:
         dataset = key.split(',')[-1].strip()
-        resolution_info[dataset] = transpose_loggraph(
-            loggraph[key])
+        resolution_info[dataset] = transpose_loggraph(loggraph[key])
 
     highest_resolution = 100.0
     highest_suggested_resolution = None
@@ -974,7 +969,7 @@ class CCP4ScalerA(Scaler):
       if suggested is None or limit == suggested:
         reasoning_str = ''
         if reasoning:
-          reasoning_str = ' (%s)' %reasoning
+          reasoning_str = ' (%s)' % reasoning
         Chatter.write('Resolution for sweep %s/%s: %.2f%s' % \
                       (dname, sname, limit, reasoning_str))
       else:
@@ -999,13 +994,12 @@ class CCP4ScalerA(Scaler):
       Debug.write('Returning as scaling not finished...')
       return
 
-    batch_info = { }
+    batch_info = {}
 
     for key in loggraph:
       if 'Analysis against Batch' in key:
         dataset = key.split(',')[-1].strip()
-        batch_info[dataset] = transpose_loggraph(
-            loggraph[key])
+        batch_info[dataset] = transpose_loggraph(loggraph[key])
 
     sc = self._updated_aimless()
 
@@ -1025,8 +1019,8 @@ class CCP4ScalerA(Scaler):
 
       resolution_limit, _ = self._scalr_resolution_limits[(dname, sname)]
 
-      sc.add_run(start, end, exclude = False,
-                 resolution = resolution_limit, name = xname)
+      sc.add_run(start, end, exclude=False, resolution=resolution_limit,
+                 name=xname)
 
     sc.set_hklout(os.path.join(self.get_working_directory(),
                                '%s_%s_scaled.mtz' % \
@@ -1045,29 +1039,26 @@ class CCP4ScalerA(Scaler):
     scales_file = sc.get_new_scales_file()
     loggraph = sc.parse_ccp4_loggraph()
 
-    standard_deviation_info = { }
+    standard_deviation_info = {}
 
     for key in loggraph:
       if 'standard deviation v. Intensity' in key:
         dataset = key.split(',')[-1].strip()
-        standard_deviation_info[dataset] = transpose_loggraph(
-            loggraph[key])
+        standard_deviation_info[dataset] = transpose_loggraph(loggraph[key])
 
-    resolution_info = { }
+    resolution_info = {}
 
     for key in loggraph:
       if 'Analysis against resolution' in key:
         dataset = key.split(',')[-1].strip()
-        resolution_info[dataset] = transpose_loggraph(
-            loggraph[key])
+        resolution_info[dataset] = transpose_loggraph(loggraph[key])
 
-    batch_info = { }
+    batch_info = {}
 
     for key in loggraph:
       if 'Analysis against Batch' in key:
         dataset = key.split(',')[-1].strip()
-        batch_info[dataset] = transpose_loggraph(
-            loggraph[key])
+        batch_info[dataset] = transpose_loggraph(loggraph[key])
 
     # finally put all of the results "somewhere useful"
 
@@ -1090,8 +1081,8 @@ class CCP4ScalerA(Scaler):
 
       resolution_limit, _ = self._scalr_resolution_limits[(dname, sname)]
 
-      sc.add_run(start, end, exclude = False,
-                 resolution = resolution_limit, name = sname)
+      sc.add_run(start, end, exclude=False, resolution=resolution_limit,
+                 name=sname)
 
       if not dname in self._wavelengths_in_order:
         self._wavelengths_in_order.append(dname)
@@ -1109,12 +1100,10 @@ class CCP4ScalerA(Scaler):
 
     self._update_scaled_unit_cell()
 
-    self._scalr_scaled_reflection_files = { }
-    self._scalr_scaled_reflection_files['sca'] = { }
-    self._scalr_scaled_reflection_files['sca_unmerged'] = { }
-    self._scalr_scaled_reflection_files['mtz_unmerged'] = { }
-
-
+    self._scalr_scaled_reflection_files = {}
+    self._scalr_scaled_reflection_files['sca'] = {}
+    self._scalr_scaled_reflection_files['sca_unmerged'] = {}
+    self._scalr_scaled_reflection_files['mtz_unmerged'] = {}
 
     for key in self._scalr_scaled_refl_files:
       hklout = self._scalr_scaled_refl_files[key]
@@ -1165,8 +1154,8 @@ class CCP4ScalerA(Scaler):
 
       resolution_limit, _ = self._scalr_resolution_limits[(dname, sname)]
 
-      sc.add_run(start, end, exclude = False,
-                 resolution = resolution_limit, name = sname)
+      sc.add_run(start, end, exclude=False, resolution=resolution_limit,
+                 name=sname)
 
       if not dname in self._wavelengths_in_order:
         self._wavelengths_in_order.append(dname)

@@ -63,8 +63,8 @@ def accumulate_dose(imagesets):
 def accumulate(images):
   '''Accumulate dose as a function of image epoch.'''
 
-  dose = { }
-  integrated_dose = { }
+  dose = {}
+  integrated_dose = {}
 
   for i in images:
     dd = Diffdump()
@@ -77,7 +77,6 @@ def accumulate(images):
     dose[e] = d
 
   keys = sorted(dose.keys())
-
 
   accum = 0.0
 
@@ -149,8 +148,7 @@ if __name__ == '__main__':
     batch_images = []
 
     for i in images:
-      image = template_directory_number2image(
-          template, directory, i)
+      image = template_directory_number2image(template, directory, i)
       image_names.append(image)
       batch_images.append(image)
 

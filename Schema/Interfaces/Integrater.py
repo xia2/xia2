@@ -82,11 +82,11 @@ class Integrater(FrameProcessor):
 
     # implementation dependent parameters - these should be keyed by
     # say 'mosflm':{'yscale':0.9999} etc.
-    self._intgr_program_parameters = { }
+    self._intgr_program_parameters = {}
 
     # the same, but for export to other instances of this interface
     # via the .xinfo hierarchy
-    self._intgr_export_program_parameters = { }
+    self._intgr_export_program_parameters = {}
 
     # batches to integrate, batches which were integrated - this is
     # to allow programs like rebatch to work c/f self._intgr_wedge
@@ -141,7 +141,7 @@ class Integrater(FrameProcessor):
     obj['__module__'] = self.__class__.__module__
     obj['__name__'] = self.__class__.__name__
     import inspect
-    attributes = inspect.getmembers(self, lambda m:not(inspect.isroutine(m)))
+    attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
     for a in attributes:
       if a[0] in ('_intgr_indexer', '_intgr_refiner') and a[1] is not None:
         obj[a[0]] = a[1].to_dict()
@@ -248,7 +248,7 @@ class Integrater(FrameProcessor):
 
     self._intgr_hklout_raw = None
     self._intgr_hklout = None
-    self._intgr_program_parameters = { }
+    self._intgr_program_parameters = {}
 
     self._integrater_reset_callback()
 
@@ -263,12 +263,12 @@ class Integrater(FrameProcessor):
   # setters and getters for the "done"-ness of different operations
   # note that this cascades
 
-  def set_integrater_prepare_done(self, done = True):
+  def set_integrater_prepare_done(self, done=True):
     self._intgr_prepare_done = done
     if not done:
       self.set_integrater_done(False)
 
-  def set_integrater_done(self, done = True):
+  def set_integrater_done(self, done=True):
     self._intgr_done = done
 
     # FIXME should I remove / reset the reindexing operation here?
@@ -280,7 +280,7 @@ class Integrater(FrameProcessor):
     if not done:
       self.set_integrater_finish_done(False)
 
-  def set_integrater_finish_done(self, done = True):
+  def set_integrater_finish_done(self, done=True):
     self._intgr_finish_done = done
 
   # getters of the status - note how these cascade the get to ensure
@@ -308,8 +308,7 @@ class Integrater(FrameProcessor):
   def get_integrater_finish_done(self):
 
     if not self.get_integrater_done():
-      Debug.write(
-          'Resetting integrater finish done as integrate not done')
+      Debug.write('Resetting integrater finish done as integrate not done')
       self.set_integrater_finish_done(False)
 
     return self._intgr_finish_done
@@ -401,7 +400,7 @@ class Integrater(FrameProcessor):
     the user? See bug # 3183'''
     return self._intgr_reso_user
 
-  def set_integrater_resolution(self, dmin, dmax, user = False):
+  def set_integrater_resolution(self, dmin, dmax, user=False):
     '''Set both resolution limits.'''
 
     if self._intgr_reso_user and not user:
@@ -415,7 +414,7 @@ class Integrater(FrameProcessor):
 
     self.set_integrater_done(False)
 
-  def set_integrater_high_resolution(self, dmin, user = False):
+  def set_integrater_high_resolution(self, dmin, user=False):
     '''Set high resolution limit.'''
 
     if self._intgr_reso_user and not user:
@@ -450,7 +449,7 @@ class Integrater(FrameProcessor):
     use in integration, e.g. the YSCALE or GAIN values in Mosflm.'''
 
     if program not in self._intgr_program_parameters:
-      self._intgr_program_parameters[program] = { }
+      self._intgr_program_parameters[program] = {}
 
     self._intgr_program_parameters[program][parameter] = value
 
@@ -468,7 +467,7 @@ class Integrater(FrameProcessor):
     try:
       return self._intgr_program_parameters[program]
     except Exception:
-      return { }
+      return {}
 
   def set_integrater_parameters(self, parameters):
     '''Set all parameters and values.'''
@@ -481,7 +480,7 @@ class Integrater(FrameProcessor):
     use in integration, e.g. the YSCALE or GAIN values in Mosflm.'''
 
     if program not in self._intgr_export_program_parameters:
-      self._intgr_export_program_parameters[program] = { }
+      self._intgr_export_program_parameters[program] = {}
 
     self._intgr_export_program_parameters[program][parameter] = value
 
@@ -499,7 +498,7 @@ class Integrater(FrameProcessor):
     try:
       return self._intgr_export_program_parameters
     except Exception:
-      return { }
+      return {}
 
   def set_integrater_indexer(self, indexer):
     '''Set the indexer implementation to use for this integration.'''
@@ -539,7 +538,7 @@ class Integrater(FrameProcessor):
 
           except BadLatticeError as e:
 
-            Journal.banner('eliminated this lattice', size = 80)
+            Journal.banner('eliminated this lattice', size=80)
 
             Chatter.write('Rejecting bad lattice %s' % str(e))
             self._intgr_refiner.eliminate()
@@ -570,7 +569,7 @@ class Integrater(FrameProcessor):
         except BadLatticeError as e:
           Chatter.write('Rejecting bad lattice %s' % str(e))
 
-          Journal.banner('eliminated this lattice', size = 80)
+          Journal.banner('eliminated this lattice', size=80)
 
           self._intgr_refiner.eliminate()
           self._integrater_reset()
@@ -628,7 +627,6 @@ class Integrater(FrameProcessor):
 
   def get_integrater_excluded_regions(self):
     return self._intgr_excluded_regions
-
 
   # these methods which follow should probably be respected by
   # the Mosflm implementation of integrater
@@ -799,12 +797,9 @@ class Integrater(FrameProcessor):
       for chunk in [status_record[i:i + 60] \
                     for i in range(0, len(status_record), 60)]:
         lines.append(chunk)
-      lines.append(
-          '"o" => good        "%" => ok        "!" => bad rmsd')
-      lines.append(
-          '"O" => overloaded  "#" => many bad  "." => weak')
-      lines.append(
-          '"@" => abandoned')
+      lines.append('"o" => good        "%" => ok        "!" => bad rmsd')
+      lines.append('"O" => overloaded  "#" => many bad  "." => weak')
+      lines.append('"@" => abandoned')
 
       # next look for variations in the unit cell parameters
       if 'unit_cell' in stats.values()[0]:
@@ -829,7 +824,7 @@ class Integrater(FrameProcessor):
               max_rel_dev = math.fabs(uc[j] - uc_mean[j]) / \
                             uc_mean[j]
 
-        lines.append('Maximum relative deviation in cell: %.3f' %max_rel_dev)
+        lines.append('Maximum relative deviation in cell: %.3f' % max_rel_dev)
 
     except KeyError:
       raise RuntimeError('Refinement not performed...')

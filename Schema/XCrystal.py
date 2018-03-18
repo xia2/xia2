@@ -112,7 +112,7 @@ class _lattice_manager(object):
     '''Initialise the whole system from the original indexing
     results.'''
 
-    self._allowed_lattices = { }
+    self._allowed_lattices = {}
     self._allowed_lattice_order = []
 
     o = Othercell()
@@ -155,7 +155,7 @@ class _aa_sequence(object):
     obj = {}
     obj['__id__'] = 'aa_sequence'
     import inspect
-    attributes = inspect.getmembers(self, lambda m:not(inspect.isroutine(m)))
+    attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
     for a in attributes:
       if a[0].startswith('__'):
         continue
@@ -179,7 +179,7 @@ class _ha_info(object):
   # just think in terms of a single one (though couldn't hurt to
   # keep them in a list.)
 
-  def __init__(self, atom, number_per_monomer = 0, number_total = 0):
+  def __init__(self, atom, number_per_monomer=0, number_total=0):
     self._atom = atom
     self._number_per_monomer = number_per_monomer
     self._number_total = number_total
@@ -203,7 +203,7 @@ class _ha_info(object):
     obj = {}
     obj['__id__'] = 'ha_info'
     import inspect
-    attributes = inspect.getmembers(self, lambda m:not(inspect.isroutine(m)))
+    attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
     for a in attributes:
       if a[0].startswith('__'):
         continue
@@ -259,7 +259,7 @@ def format_statistics(statistics, caption=None):
   available = statistics.keys()
 
   result = ''
-  columns = len(statistics.get('Completeness', [1,2,3]))
+  columns = len(statistics.get('Completeness', [1, 2, 3]))
   if caption:
     result += caption.ljust(44)
     if columns == 3:
@@ -274,7 +274,7 @@ def format_statistics(statistics, caption=None):
         row_data = statistics[k]
         if columns == 4 and len(row_data) == 1: # place value in suggest column
           row_data = [None] * (columns - 1) + row_data
-        row_format = [format_str] + [format_str.strip()] * (len(row_data)-1)
+        row_format = [format_str] + [format_str.strip()] * (len(row_data) - 1)
         formatted = " ".join((f % k) if k is not None else (' ' * len(f % 0))
                              for f, k in zip(row_format, row_data))
       except TypeError:
@@ -334,7 +334,7 @@ class XCrystal(object):
     obj = {}
     obj['__id__'] = 'XCrystal'
     import inspect
-    attributes = inspect.getmembers(self, lambda m:not(inspect.isroutine(m)))
+    attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
     for a in attributes:
       if a[0] == '_scaler' and a[1] is not None:
         obj[a[0]] = a[1].to_dict()
@@ -755,13 +755,11 @@ class XCrystal(object):
 
     self._samples[xsample.get_name()] = xsample
 
-
   def remove_sweep(self, s):
     '''Find and remove the sweep s from this crystal.'''
 
     for wave in self._wavelengths.keys():
       self._wavelengths[wave].remove_sweep(s)
-
 
   def _get_integraters(self):
     integraters = []
@@ -922,8 +920,7 @@ class XCrystal(object):
 
         pointgroup = Syminfo.get_pointgroup(self._user_spacegroup)
 
-        self._scaler.set_scaler_input_spacegroup(
-            self._user_spacegroup)
+        self._scaler.set_scaler_input_spacegroup(self._user_spacegroup)
         self._scaler.set_scaler_input_pointgroup(pointgroup)
 
       integraters = self._get_integraters()

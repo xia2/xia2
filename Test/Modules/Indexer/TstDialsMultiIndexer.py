@@ -12,7 +12,6 @@ try:
 except KeyError:
   have_dials_regression = False
 
-
 def exercise_dials_multi_indexer(nproc=None):
   template = "/Volumes/touro/data/i19/4sweep/56_Reza-H2-normalhem_100K_3.75mmAl/56-RezaH2-hem_%02i_#####.cbf"
 
@@ -34,7 +33,7 @@ def exercise_dials_multi_indexer(nproc=None):
   indexer.set_working_directory(tmp_dir)
   for i in range(4):
     from dxtbx.datablock import DataBlockTemplateImporter
-    importer = DataBlockTemplateImporter([template %(i+1)])
+    importer = DataBlockTemplateImporter([template % (i + 1)])
     datablocks = importer.datablocks
     imageset = datablocks[0].extract_imagesets()[0]
     indexer.add_indexer_imageset(imageset)
@@ -55,10 +54,8 @@ def exercise_dials_multi_indexer(nproc=None):
 
   indexer.index()
 
-  assert approx_equal(
-    indexer.get_indexer_cell(),
-    (9.088, 12.415, 17.420, 90.000, 90.000, 90.000), eps=1e-2)
-
+  assert approx_equal(indexer.get_indexer_cell(),
+                      (9.088, 12.415, 17.420, 90.000, 90.000, 90.000), eps=1e-2)
 
 def run(args):
   assert len(args) <= 1, args
@@ -68,7 +65,6 @@ def run(args):
     nproc = None
   exercise_dials_multi_indexer(nproc=nproc)
   print "OK"
-
 
 if __name__ == '__main__':
   run(sys.argv[1:])

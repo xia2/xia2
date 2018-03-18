@@ -76,7 +76,7 @@ def unpack_values(data, length):
   return values
 
 def unpack_tiff(filename):
-  data = open(filename, 'rb'),read()
+  data = open(filename, 'rb'), read()
   header = data[:4096]
   data = data[4096:]
 
@@ -94,7 +94,7 @@ def work():
   unpacked = unpack_values(packed, l)
 
   for j in range(l):
-    assert(unpacked[j] == values[j])
+    assert unpacked[j] == values[j]
 
   return
 
@@ -120,7 +120,7 @@ def unpackbyteoffset(filename):
     if 'X-Binary-Number-of-Elements' in record:
       length = int(record.split()[-1])
 
-  assert(length == fast * slow)
+  assert length == fast * slow
 
   values = unpack_values(data[data_offset:], length)
   hist = [0 for j in range(min(0, min(values)), max(values) + 1)]
@@ -154,11 +154,11 @@ def sumbyteoffset(filename):
     if 'X-Binary-Number-of-Elements' in record:
       length = int(record.split()[-1])
 
-  assert(length == fast * slow)
+  assert length == fast * slow
 
   values = unpack_values(data[data_offset:], length)
 
-  assert(len(values) == length)
+  assert len(values) == length
 
   return sum(values), length
 

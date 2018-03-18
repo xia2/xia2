@@ -34,9 +34,9 @@ class PyChef(object):
 
     self._hklin_list = []
 
-    self._reflections = { }
-    self._unit_cells = { }
-    self._space_groups = { }
+    self._reflections = {}
+    self._unit_cells = {}
+    self._space_groups = {}
 
     self._range_min = None
     self._range_max = None
@@ -44,7 +44,7 @@ class PyChef(object):
 
     # Dose / batch information for reporting purposes
 
-    self._dose_information = { }
+    self._dose_information = {}
 
     self._resolution_high = None
     self._resolution_low = None
@@ -77,7 +77,7 @@ class PyChef(object):
 
     columns = get_mtz_column_list(hklin)
 
-    assert(self._base_column in columns)
+    assert self._base_column in columns
 
     self._hklin_list.append(hklin)
 
@@ -87,8 +87,8 @@ class PyChef(object):
     '''Set the range of e.g. dose to consider for analysis, with
     binning width set.'''
 
-    assert(range_max > range_min)
-    assert(range_max - range_min > range_width)
+    assert range_max > range_min
+    assert range_max - range_min > range_width
 
     self._range_min = range_min
     self._range_max = range_max
@@ -96,13 +96,13 @@ class PyChef(object):
 
     return
 
-  def set_resolution(self, resolution_high, resolution_low = None):
+  def set_resolution(self, resolution_high, resolution_low=None):
     '''Set the resolution range for analysis.'''
 
     self._resolution_high = resolution_high
 
     if resolution_low:
-      assert(resolution_low > resolution_high)
+      assert resolution_low > resolution_high
       self._resolution_low = resolution_low
 
     return
@@ -170,7 +170,7 @@ class PyChef(object):
       if not symmetry:
         symmetry = sg
       else:
-        assert(symmetry == sg)
+        assert symmetry == sg
 
       # now have a rummage through to get the columns out that I want
 
@@ -214,22 +214,20 @@ class PyChef(object):
             if column.label() == 'SIGI':
               sigi_column = column
 
-      assert(base_column is not None)
-      assert(misym_column is not None)
-      assert(i_column is not None)
-      assert(sigi_column is not None)
+      assert base_column is not None
+      assert misym_column is not None
+      assert i_column is not None
+      assert sigi_column is not None
 
       if batch_column and dose_column:
 
         # read, accumulate the dose information - assume that these
         # are correctly structured as per xia2 handling...
 
-        batch_values = batch_column.extract_values(
-            not_a_number_substitute = 0.0)
-        dose_values = dose_column.extract_values(
-            not_a_number_substitute = 0.0)
+        batch_values = batch_column.extract_values(not_a_number_substitute=0.0)
+        dose_values = dose_column.extract_values(not_a_number_substitute=0.0)
 
-        assert(len(batch_values) == len(dose_values))
+        assert len(batch_values) == len(dose_values)
 
         if min(dose_values) != max(dose_values):
 
@@ -243,8 +241,7 @@ class PyChef(object):
       print 'Reading in data from %s/%s' % (crystal_name, dataset_name)
       print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
             tuple(uc.parameters())
-      print 'Spacegroup: %s' % sg.type(
-          ).universal_hermann_mauguin_symbol()
+      print 'Spacegroup: %s' % sg.type().universal_hermann_mauguin_symbol()
       if self._base_unique:
         print 'Using: %s/%s/%s (unique)' % \
               (i_column.label(), sigi_column.label(), base_column.label())
@@ -254,10 +251,9 @@ class PyChef(object):
 
       if base_column == batch_column and self._base_unique:
         from scitbx.array_family import flex
-        batch_values = batch_column.extract_values(
-          not_a_number_substitute = 0.0)
+        batch_values = batch_column.extract_values(not_a_number_substitute=0.0)
         batches = list(set(batch_values))
-        lookup = { }
+        lookup = {}
         for j, b in enumerate(sorted(batches)):
           lookup[b] = j
         base_values = flex.double(len(batch_values))
@@ -268,8 +264,7 @@ class PyChef(object):
           self._range_width = 1
 
       else:
-        base_values = base_column.extract_values(
-          not_a_number_substitute = 0.0)
+        base_values = base_column.extract_values(not_a_number_substitute=0.0)
 
       min_base = min(base_values)
       max_base = max(base_values)
@@ -296,18 +291,15 @@ class PyChef(object):
         if max_base > overall_range_max:
           overall_range_max = max_base
 
-      misym_values = misym_column.extract_values(
-          not_a_number_substitute = 0.0)
+      misym_values = misym_column.extract_values(not_a_number_substitute=0.0)
 
-      i_values = i_column.extract_values(
-          not_a_number_substitute = 0.0)
+      i_values = i_column.extract_values(not_a_number_substitute=0.0)
       i_values_valid = i_column.selection_valid()
 
-      sigi_values = sigi_column.extract_values(
-          not_a_number_substitute = 0.0)
+      sigi_values = sigi_column.extract_values(not_a_number_substitute=0.0)
       sigi_values_valid = sigi_column.selection_valid()
 
-      reflections = { }
+      reflections = {}
 
       for j in range(mi.size()):
 
@@ -571,8 +563,7 @@ class PyChef(object):
     wavelengths. This will obviously result in one plot for each of the
     input data sets.'''
 
-    nsteps = 1 + int(
-        (self._range_max - self._range_min) / self._range_width)
+    nsteps = 1 + int((self._range_max - self._range_min) / self._range_width)
 
     for crystal_name, dataset_name in sorted(self._reflections):
 
@@ -585,8 +576,7 @@ class PyChef(object):
 
         for hkl in reflections:
 
-          observations = self._reflections[
-              (crystal_name, dataset_name)][hkl]
+          observations = self._reflections[(crystal_name, dataset_name)][hkl]
 
           iplus = []
           iminus = []
@@ -599,15 +589,13 @@ class PyChef(object):
 
           for n, (base, i, sigi) in enumerate(iplus):
             for _base, _i, _sigi in iplus[n + 1:]:
-              d = int(round(math.fabs(base - _base) /
-                            self._range_width))
+              d = int(round(math.fabs(base - _base) / self._range_width))
               rd_top[d] += math.fabs(i - _i)
               rd_bottom[d] += 0.5 * (i + _i)
 
           for n, (base, i, sigi) in enumerate(iminus):
             for _base, _i, _sigi in iminus[n + 1:]:
-              d = int(round(math.fabs(base - _base) /
-                            self._range_width))
+              d = int(round(math.fabs(base - _base) / self._range_width))
               rd_top[d] += math.fabs(i - _i)
               rd_bottom[d] += 0.5 * (i + _i)
 
@@ -615,14 +603,11 @@ class PyChef(object):
 
         for hkl in reflections:
 
-          observations = self._reflections[
-              (crystal_name, dataset_name)][hkl]
-
+          observations = self._reflections[(crystal_name, dataset_name)][hkl]
 
           for n, (pm, base, i, sigi) in enumerate(observations):
             for _pm, _base, _i, _sigi in observations[n + 1:]:
-              d = int(round(math.fabs(base - _base) /
-                            self._range_width))
+              d = int(round(math.fabs(base - _base) / self._range_width))
               rd_top[d] += math.fabs(i - _i)
               rd_bottom[d] += 0.5 * (i + _i)
 
@@ -650,10 +635,10 @@ class PyChef(object):
     assumulated dose across a number of resolution bins, from
     measurements already cached in memory.'''
 
-    rcp_top = { }
-    rcp_bottom = { }
-    isigma = { }
-    count = { }
+    rcp_top = {}
+    rcp_bottom = {}
+    isigma = {}
+    count = {}
 
     if self._resolution_low:
       smin = 1.0 / (self._resolution_low * self._resolution_low)
@@ -662,8 +647,7 @@ class PyChef(object):
 
     smax = 1.0 / (self._resolution_high * self._resolution_high)
 
-    nsteps = 1 + int(
-        (self._range_max - self._range_min) / self._range_width)
+    nsteps = 1 + int((self._range_max - self._range_min) / self._range_width)
 
     # lay out the storage
 
@@ -796,8 +780,8 @@ class PyChef(object):
     assumulated dose across a number of resolution bins, from
     measurements already cached in memory.'''
 
-    rcp_top = { }
-    rcp_bottom = { }
+    rcp_top = {}
+    rcp_bottom = {}
 
     if self._resolution_low:
       smin = 1.0 / (self._resolution_low * self._resolution_low)
@@ -1101,8 +1085,7 @@ class PyChef(object):
     ieither_count = []
     iboth_count = []
 
-    nsteps = 1 + int(
-        (self._range_max - self._range_min) / self._range_width)
+    nsteps = 1 + int((self._range_max - self._range_min) / self._range_width)
 
     for j in range(nsteps):
       iplus_count.append(0)

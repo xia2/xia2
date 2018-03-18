@@ -46,7 +46,7 @@ class XDSScalerHelper(object):
     '''Parse out the input reflection files which contributed to this
     reflection file.'''
 
-    file_map = { }
+    file_map = {}
 
     for line in open(xds_ascii_file, 'r').readlines():
       if not line[0] == '!':
@@ -64,7 +64,7 @@ class XDSScalerHelper(object):
 
   def parse_xscale_ascii_wavelength(self, xds_ascii_file):
 
-    wavelength_dict = { }
+    wavelength_dict = {}
 
     for line in open(xds_ascii_file, 'r').readlines():
       if not line[0] == '!':
@@ -89,8 +89,8 @@ class XDSScalerHelper(object):
 
     file_map = self.parse_xscale_ascii_header(xds_ascii_file)
 
-    files = { }
-    return_map = { }
+    files = {}
+    return_map = {}
 
     keys = file_map.keys()
 
@@ -151,10 +151,8 @@ class XDSScalerHelper(object):
         raise RuntimeError('project info for %s not available' % \
               token)
 
-      hklin = os.path.join(self.get_working_directory(),
-                           data_map[token])
-      hklout = os.path.join(self.get_working_directory(),
-                            '%s.mtz' % hklin[:-4])
+      hklin = os.path.join(self.get_working_directory(), data_map[token])
+      hklout = os.path.join(self.get_working_directory(), '%s.mtz' % hklin[:-4])
 
       wavelength = self.parse_xscale_ascii_wavelength(hklin)
 

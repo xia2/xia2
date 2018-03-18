@@ -337,14 +337,14 @@ function setDisplayByClass(classname,value)
 """)
   return
 
-def writeLoggraphFolder(html,program,n):
+def writeLoggraphFolder(html, program, n):
   """Write HTML and Javascript for a 'loggraph folder'."""
 
   ntables = program.ntables()
   if ntables == 0:
     # Nothing to do
     return
-  name = identifyProgram(program).upper()+"_"+str(n)
+  name = identifyProgram(program).upper() + "_" + str(n)
   # Write out the start of the containing division and table
   html.write("<div id=\""+str(name)+"_loggraph_folder\" class=\"loggraphs\">\n\n")
   html.write("<table class=\"loggraph_tables\">\n<tr>\n")
@@ -352,7 +352,7 @@ def writeLoggraphFolder(html,program,n):
   html.write("<td class=\"loggraph_tables\">\n<div class=\"loggraph_tables\">\n")
   html.write("<p>The following tables were found in the logfile:</p>\n")
   fontWeight = "bold"
-  for i in range(0,ntables):
+  for i in range(0, ntables):
     tbl = program.table(i)
     title = smartie.escape_xml_characters(tbl.title())
     html.write("<p id=\""+str(name)+"_loggraph_title_"+str(i)+"\" " \
@@ -366,7 +366,7 @@ def writeLoggraphFolder(html,program,n):
   # Write each of the jloggraph applets
   html.write("<td>\n<div class=\"loggraph_applets\">\n")
   style = "block"
-  for i in range(0,ntables):
+  for i in range(0, ntables):
     tbl = program.table(i)
     title = smartie.escape_xml_characters(tbl.title())
     if not tbl.parse_error():
@@ -402,7 +402,7 @@ def writeLoggraphFolder(html,program,n):
                  "\" style=\"display:"+str(style)+"\">\n")
       html.write("<p><b>Sorry, the graphs in this table cannot be ")
       html.write("displayed:</b></p>")
-      html.write("<p>&quot;"+str(title)+"&quot;</p>")
+      html.write("<p>&quot;" + str(title) + "&quot;</p>")
       html.write("<p>baubles was unable to process the data in the table ")
       html.write("(possibly due to a formatting error in the columns)</p>")
       html.write("</div>\n")
@@ -415,13 +415,13 @@ def writeLoggraphFolder(html,program,n):
   html.write("</tr>\n</table>\n")
   html.write("</div>\n")
 
-def writeFragmentFolder(html,logfile,fragment,n):
+def writeFragmentFolder(html, logfile, fragment, n):
   """Write HTML and Javascript for an arbitrary 'fragment folder'."""
 
   # Create the "visibility controls" at the start of the fragment
   # display
   html.write("\n<!-- Top-level visibility controls for fragment -->\n\n")
-  html.write("<div class=\"fragment_closed_"+str(n)+"\">\n")
+  html.write("<div class=\"fragment_closed_" + str(n) + "\">\n")
   html.write("   <!-- What is seen when fragment is completely hidden -->\n")
   html.write("   <p>\n")
   html.write("   <a href=\"javascript://\"\n")
@@ -439,19 +439,19 @@ def writeFragmentFolder(html,logfile,fragment,n):
 
   # The fragment goes in here
   html.write("<div class=\"logfile\">\n\n")
-  print "len(fragment)="+str(len(fragment))
-  html.write("<p>Fragment with "+str(len(fragment))+" lines</p>\n")
-  writeLogfileSummary(html,fragment.retrieve())
+  print "len(fragment)=" + str(len(fragment))
+  html.write("<p>Fragment with " + str(len(fragment)) + " lines</p>\n")
+  writeLogfileSummary(html, fragment.retrieve())
   html.write("</div>\n")
 
   # End the open fragment section
   html.write("</div>\n\n")
 
-def writeAdvancedLogfileFolder(html,logfile,program,n):
+def writeAdvancedLogfileFolder(html, logfile, program, n):
   """Write HTML and Javascript for an advanced program 'logfile folder'."""
 
   # Start up
-  name = identifyProgram(program).upper()+"_"+str(n)
+  name = identifyProgram(program).upper() + "_" + str(n)
 
   # Find start and end of the program log
   prog_beg = program.get_startline()
@@ -472,7 +472,7 @@ def writeAdvancedLogfileFolder(html,logfile,program,n):
   # Write the log file content as summaries interleaved with
   # non-summary blocks
   found_summary = False
-  for i in range(0,logfile.nsummaries()):
+  for i in range(0, logfile.nsummaries()):
 
     if found_summary:
       # Check whether the next summary block starts
@@ -490,9 +490,9 @@ def writeAdvancedLogfileFolder(html,logfile,program,n):
           html,name,smartie.retrieve(\
           logfilen,curr_line,logfile.summary(i).start()-1))
       # Fetch the summary itself
-      writeLogfileSummary(html,logfile.summary(i).retrieve())
+      writeLogfileSummary(html, logfile.summary(i).retrieve())
       # Update the current line
-      curr_line = logfile.summary(i).end()+1
+      curr_line = logfile.summary(i).end() + 1
 
       # Test for stop condition in loop so we don't look
       # at every single summary
@@ -518,9 +518,9 @@ def writeAdvancedLogfileFolder(html,logfile,program,n):
         html,name,smartie.retrieve(\
         logfilen,prog_beg,logfile.summary(i).start()-1))
       # Fetch the summary itself
-      writeLogfileSummary(html,logfile.summary(i).retrieve())
+      writeLogfileSummary(html, logfile.summary(i).retrieve())
       # Initialise the current line
-      curr_line = logfile.summary(i).end()+1
+      curr_line = logfile.summary(i).end() + 1
 
   # Check if there is some more (non-summary) logfile to write after the
   # last summary in the program log
@@ -531,7 +531,7 @@ def writeAdvancedLogfileFolder(html,logfile,program,n):
 
   # If there were no summaries then just dump the log with no processing
   # Mark it as summary
-  if not found_summary: writeLogfileSummary(html,program.retrieve())
+  if not found_summary: writeLogfileSummary(html, program.retrieve())
 
   # Close off the folder
   html.write("\n</div>\n")
@@ -541,9 +541,9 @@ def writeAdvancedLogfileFolder(html,logfile,program,n):
   writeLogfileControls(html,name)
 
   # Close off completely
-  html.write("</div>\n<!-- End of "+str(name)+" logfile -->\n\n")
+  html.write("</div>\n<!-- End of " + str(name) + " logfile -->\n\n")
 
-def writeLogfileControls(html,name):
+def writeLogfileControls(html, name):
   """Generate a set of 'visibility controls' for a logfile folder."""
 
   html.write("<div class=\""+str(name)+"_logfile_closed_controls\">\n")
@@ -571,7 +571,7 @@ def writeLogfileControls(html,name):
              "')\">[Hide logfile]</a>\n")
   html.write("     </p>\n")
   html.write("   </div>\n")
-  html.write("   <div class=\""+str(name)+"_show_summary_control\">\n")
+  html.write("   <div class=\"" + str(name) + "_show_summary_control\">\n")
   html.write("      <p>Current view: full logfile\n")
   html.write("      <a href=\"javascript://\"\n")
   html.write("         onclick=\"show_only_summary('"+str(name)+\
@@ -583,7 +583,7 @@ def writeLogfileControls(html,name):
   html.write("   </div>\n")
   html.write("</div>\n\n")
 
-def writeLogfileSummary(html,text):
+def writeLogfileSummary(html, text):
   """Write a block of summary logfile text."""
   html.write("<div class=\"summary\"><pre>")
   html.write(smartie.strip_logfile_html(text))
@@ -592,29 +592,29 @@ def writeLogfileSummary(html,text):
   #html.write(plainTextMarkup(text))
   #html.write("</div>\n\n")
 
-def writeLogfileNonSummary(html,name,text):
+def writeLogfileNonSummary(html, name, text):
   """Write a block of non-summary logfile text."""
-  html.write("<div class=\""+str(name)+"_non_summary non_summary\"><pre>")
+  html.write("<div class=\"" + str(name) + "_non_summary non_summary\"><pre>")
   html.write(smartie.strip_logfile_html(text))
   html.write("</pre>\n")
   html.write("  <!-- Add a control in the non-summary to flip back\n")
   html.write("     to the summary only -->\n")
   html.write("  <div class=\""+str(name)+\
              "_inner_control inner_control\">\n")
-  html.write("     <a href=\"javascript://\" onclick=\"show_only_summary('"+
-             str(name)+"')\">[Show summary only]</a>\n")
+  html.write("     <a href=\"javascript://\" onclick=\"show_only_summary('" +
+             str(name) + "')\">[Show summary only]</a>\n")
   html.write("  </div>\n")
   html.write("</div>\n\n")
 
-def writeBanner(html,name,program,anchor):
+def writeBanner(html, name, program, anchor):
   """Write a generic HTML banner for the program"""
 
   html.write("<div class=\"banner\">\n")
   if anchor != "":
-    html.write("<a name=\""+str(anchor)+"\">\n")
+    html.write("<a name=\"" + str(anchor) + "\">\n")
   # Program name
   try:
-    html.write("<span class=\"progname\">"+str(name)+"</span>\n")
+    html.write("<span class=\"progname\">" + str(name) + "</span>\n")
   except AttributeError:
     pass
   # Version
@@ -641,12 +641,12 @@ def writeBanner(html,name,program,anchor):
   html.write("</div>\n")
   return
 
-def writeDocumentationLink(html,program):
+def writeDocumentationLink(html, program):
   """Write a link to the program documentation."""
 
   if "CHTML" in os.environ:
-    name = identifyProgram(program).lower()+".html"
-    docfile = os.path.join(os.environ["CHTML"],name)
+    name = identifyProgram(program).lower() + ".html"
+    docfile = os.path.join(os.environ["CHTML"], name)
     if os.path.isfile(docfile):
       html.write("<div class=\"doclink\"><p><a href=\""+ \
                  str(docfile)+ \
@@ -679,10 +679,10 @@ class javaloggraph:
     if self.__codebase is None:
       if "CBIN" in os.environ:
         # Local version of java
-        self.__codebase = "file:"+os.sep*2+os.environ["CBIN"]
-        if os.path.exists(os.path.join(os.environ["CBIN"],"JLogView.jar")):
+        self.__codebase = "file:" + os.sep * 2 + os.environ["CBIN"]
+        if os.path.exists(os.path.join(os.environ["CBIN"], "JLogView.jar")):
           self.__archive = "JLogView.jar"
-        elif os.path.exists(os.path.join(os.environ["CBIN"],"JLogGraph.jar")):
+        elif os.path.exists(os.path.join(os.environ["CBIN"], "JLogGraph.jar")):
           self.__archive = "JLogGraph.jar"
       else:
         # No local version - use the web version instead
@@ -690,13 +690,13 @@ class javaloggraph:
 
     # Set the 'code' parameter according to the archive name
     if self.__archive == "JLogGraph.jar":
-      self.__code="JLogGraph.class"
+      self.__code = "JLogGraph.class"
     elif self.__archive == "JLogView.jar":
-      self.__code="JLogView_.LGApplet.class"
+      self.__code = "JLogView_.LGApplet.class"
 
-  def setCodebase(self,codebase):
+  def setCodebase(self, codebase):
     """Explicitly set the codebase for the applet"""
-    self.__codebase = codebase;
+    self.__codebase = codebase
 
   def codebase(self):
     """Return the value of the codebase for the applet."""
@@ -728,7 +728,7 @@ class extendedpatternmatch(smartie.patternmatch):
   def __init__(self):
     smartie.patternmatch.__init__(self)
 
-  def isrecognisedbanner(self,text):
+  def isrecognisedbanner(self, text):
     """Check text against a set of possible program banners."""
 
     # Try SFCHECK banner
@@ -741,7 +741,7 @@ class extendedpatternmatch(smartie.patternmatch):
       return result
     return result
 
-  def issfcheckbanner(self,text):
+  def issfcheckbanner(self, text):
     """Regular expression match to SFCHECK program banner.
 
     If the match fails then return False, otherwise return
@@ -764,7 +764,7 @@ class extendedpatternmatch(smartie.patternmatch):
       result["version"] = banner.group(1)
     return result
 
-  def islibcheckbanner(self,text):
+  def islibcheckbanner(self, text):
     """Regular expression match to LIBCHECK program banner.
 
     If the match fails then return False, otherwise return
@@ -784,7 +784,7 @@ class extendedpatternmatch(smartie.patternmatch):
       result["version"] = banner.group(1)
     return result
 
-  def matthews_table(self,text):
+  def matthews_table(self, text):
     """Regular expression match to Matthews_coeff data.
 
     Attempts to match the tabulated values from the
@@ -816,19 +816,22 @@ class extendedpatternmatch(smartie.patternmatch):
     # _____________________________________________________________
     # 1234567890123456789012345678901234567890123456789012345678901
     #
-    table = self.compile("matthews_table",r"For estimated molecular weight *([0-9.]+)\n(Nmol/asym) *(Matthews Coeff) *(%solvent) *(P\([0-9.]*\))? *(P\(tot\))\n_{48,61}\n([ 0-9.\n]*)\n_{48,61}").search(text)
+    table = self.compile(
+        "matthews_table",
+        r"For estimated molecular weight *([0-9.]+)\n(Nmol/asym) *(Matthews Coeff) *(%solvent) *(P\([0-9.]*\))? *(P\(tot\))\n_{48,61}\n([ 0-9.\n]*)\n_{48,61}"
+    ).search(text)
     result = dict()
     if table:
       result["table_text"] = table.group(0)
       result["mol_weight"] = table.group(1)
       result["table_head"] = []
-      for i in range(2,7):
+      for i in range(2, 7):
         if table.group(i):
           result["table_head"].append(table.group(i))
       result["table_data"] = table.group(7)
     return result
 
-  def phaser_module(self,text):
+  def phaser_module(self, text):
     """Regular expression match to identify 'Phaser module' data.
 
     Attempts to identify the 'Phaser module' and the associated
@@ -914,27 +917,27 @@ def processRefmac(program):
   try:
     # Summary of initial and final Rfactors
     tbl = program.tables("Rfactor analysis, stats vs cycle")[0]
-    program.set_attribute("Ncycles",int(tbl.col("Ncyc")[-1]))
-    program.set_attribute("Rfact_init",tbl.col("Rfact")[0])
-    program.set_attribute("Rfact_final",tbl.col("Rfact")[-1])
-    program.set_attribute("Rfree_init",tbl.col("Rfree")[0])
-    program.set_attribute("Rfree_final",tbl.col("Rfree")[-1])
-    program.set_attribute("rmsBOND_init",tbl.col("rmsBOND")[0])
-    program.set_attribute("rmsBOND_final",tbl.col("rmsBOND")[-1])
-    program.set_attribute("rmsCHIRAL_init",tbl.col("rmsCHIRAL")[0])
-    program.set_attribute("rmsCHIRAL_final",tbl.col("rmsCHIRAL")[-1])
+    program.set_attribute("Ncycles", int(tbl.col("Ncyc")[-1]))
+    program.set_attribute("Rfact_init", tbl.col("Rfact")[0])
+    program.set_attribute("Rfact_final", tbl.col("Rfact")[-1])
+    program.set_attribute("Rfree_init", tbl.col("Rfree")[0])
+    program.set_attribute("Rfree_final", tbl.col("Rfree")[-1])
+    program.set_attribute("rmsBOND_init", tbl.col("rmsBOND")[0])
+    program.set_attribute("rmsBOND_final", tbl.col("rmsBOND")[-1])
+    program.set_attribute("rmsCHIRAL_init", tbl.col("rmsCHIRAL")[0])
+    program.set_attribute("rmsCHIRAL_final", tbl.col("rmsCHIRAL")[-1])
     # Looks like there was a change in the spelling of ANGL(E)
     # between versions once
     try:
-      program.set_attribute("rmsANGLE_init",tbl.col("rmsANGLE")[0])
-      program.set_attribute("rmsANGLE_final",tbl.col("rmsANGLE")[-1])
+      program.set_attribute("rmsANGLE_init", tbl.col("rmsANGLE")[0])
+      program.set_attribute("rmsANGLE_final", tbl.col("rmsANGLE")[-1])
     except LookupError:
-      program.set_attribute("rmsANGLE_init",tbl.col("rmsANGL")[0])
-      program.set_attribute("rmsANGLE_final",tbl.col("rmsANGL")[-1])
-    program.set_attribute("Result",True)
+      program.set_attribute("rmsANGLE_init", tbl.col("rmsANGL")[0])
+      program.set_attribute("rmsANGLE_final", tbl.col("rmsANGL")[-1])
+    program.set_attribute("Result", True)
   except IndexError:
     # Probably couldn't find the table
-    program.set_attribute("Result",False)
+    program.set_attribute("Result", False)
   return
 
 def processPhaser(program):
@@ -983,7 +986,7 @@ def identifyProgram(program):
 def collectReferences(program):
   """Collect program references for citation"""
   result = []
-  for i in range(0,program.nkeytexts()):
+  for i in range(0, program.nkeytexts()):
     keytext = program.keytext(i)
     if keytext.name().find("Reference") >= 0:
       result.append(str(keytext.message()))
@@ -1036,7 +1039,7 @@ def plainTextMarkup(text):
   merged into a single table with a thin-separator between the
   paragraphs.
   """
-  lines = smartie.escape_xml_characters(text).split("\n");
+  lines = smartie.escape_xml_characters(text).split("\n")
   # split into paragraphs
   paras = []
   para = []
@@ -1146,23 +1149,23 @@ def plainTextMarkup(text):
       result += "</p>\n"
   # close tags
   if intable: result += "</table>\n"
-  if inlist:  result += "</ul>\n"
+  if inlist: result += "</ul>\n"
   return result
 
 ############################################################
 # Summarising functions
 ############################################################
 
-def summariseGeneric(html,program):
+def summariseGeneric(html, program):
   """Generate a summary for a program object"""
 
   # collect warning a results messages for summary
   warnings = []
   result = None
-  for i in range(0,program.nkeytexts()):
+  for i in range(0, program.nkeytexts()):
     keytext = program.keytext(i)
-    if   keytext.name() == "Warning":
-      warnings.append( str(keytext.message() ) )
+    if keytext.name() == "Warning":
+      warnings.append(str(keytext.message()))
     elif keytext.name() == "Result":
       result = str(keytext.message())
   if result is not None:
@@ -1224,13 +1227,13 @@ def summarisePhaser(html,program):
     html.write("<p><b>Phaser module</b>: "+\
                str(program.phaser_module).title()+"</p>")
   # Write a list of warnings
-  summariseGeneric(html,program)
+  summariseGeneric(html, program)
 
 ############################################################
 # Experimental conversion functions
 ############################################################
 
-def polarrfn_plot(pltfile,imgbase=""):
+def polarrfn_plot(pltfile, imgbase=""):
   """Convert .plt output from Polarrfn to multiple gif images.
 
   Note that this function is still under development.
@@ -1249,14 +1252,14 @@ def polarrfn_plot(pltfile,imgbase=""):
   extension '.gif' instead of '.plt'."""
   # Check for the pltdev program
   try:
-    pltdev = os.path.join(os.environ["CBIN"],"pltdev")
+    pltdev = os.path.join(os.environ["CBIN"], "pltdev")
   except KeyError:
     # Unable to get CBIN from the environment
     print "Unable to make path name for pltdev"
     return
   # Make a temporary ps file
   if not os.path.exists(pltfile):
-    print str(pltfile)+": file not found"
+    print str(pltfile) + ": file not found"
     return
   try:
     psfile = os.path.join(os.environ["CCP4_SCR"], \
@@ -1275,13 +1278,13 @@ def polarrfn_plot(pltfile,imgbase=""):
     for line in ps:
       if line.count("%%Page:") > 0:
         npages = npages + 1
-  print "Number of pages (=frames): "+str(npages)
+  print "Number of pages (=frames): " + str(npages)
   # Loop over pages and use convert to turn them
   # into gifs
-  for i in range(0,npages):
-    frame = os.path.splitext(psfile)[0]+"_"+str(i)+".gif"
-    cmd = "convert "+str(psfile)+"'["+str(i)+"]' "+str(frame)
-    print "Processing frame "+str(i)+"... ("+str(frame)+")"
+  for i in range(0, npages):
+    frame = os.path.splitext(psfile)[0] + "_" + str(i) + ".gif"
+    cmd = "convert " + str(psfile) + "'[" + str(i) + "]' " + str(frame)
+    print "Processing frame " + str(i) + "... (" + str(frame) + ")"
     os.popen(cmd)
   return
 
@@ -1289,7 +1292,7 @@ def polarrfn_plot(pltfile,imgbase=""):
 # Core baubles functions
 ############################################################
 
-def baubles_html(logfile,htmlfile=None):
+def baubles_html(logfile, htmlfile=None):
   """Create an HTML summary of the logfile.
 
   logfile specifies the log file to process; htmlfile
@@ -1300,10 +1303,10 @@ def baubles_html(logfile,htmlfile=None):
   # Process the logfile
   log = smartie.parselog(logfile)
   # Generate the HTML
-  baubles(log,htmlfile)
+  baubles(log, htmlfile)
   return
 
-def baubles(log,htmlfile=None):
+def baubles(log, htmlfile=None):
   """Given a smartie logfile object, generate HTML summary
 
   'log' specifies a populated smartie logfile object; htmlfile
@@ -1313,7 +1316,7 @@ def baubles(log,htmlfile=None):
 
   # Open the file
   if htmlfile:
-    html = open(htmlfile,"w")
+    html = open(htmlfile, "w")
   else:
     import sys
     html = sys.stdout
@@ -1360,7 +1363,7 @@ def baubles(log,htmlfile=None):
                         str(program.termination_message)
         else:
           termination = ""
-        anchor = str(name)+"_"+str(i)
+        anchor = str(name) + "_" + str(i)
         html.write("<li><a href=\"#"+str(anchor)+"\">"+ \
                    str(name)+"</a> "+ \
                    "<span class=\"termination_message\">"+ \
@@ -1369,7 +1372,7 @@ def baubles(log,htmlfile=None):
 
   # List of references
   refs = {}
-  for i in range(0,log.nfragments()):
+  for i in range(0, log.nfragments()):
     fragment = log.fragment(i)
     if fragment.isprogram():
       program = fragment
@@ -1486,14 +1489,14 @@ if __name__ == "__main__":
 
   # Needs at least one argument to run (i.e. name of a log file)
   if len(sys.argv) < 2:
-    print "Usage: "+str(usage)
+    print "Usage: " + str(usage)
     sys.exit(0)
   # Assume that the logfile is the last argument
   logfile = sys.argv[-1]
 
   # Check the target file exists
   if not os.path.exists(logfile):
-    print "File not found: \""+str(logfile)+"\""
+    print "File not found: \"" + str(logfile) + "\""
     sys.exit(1)
 
   # Initialise
@@ -1501,18 +1504,18 @@ if __name__ == "__main__":
 
   # Process the command line options
   i = 1
-  nargs = len(sys.argv)-1
+  nargs = len(sys.argv) - 1
   while i < nargs:
     arg = str(sys.argv[i])
     if arg == "-o":
       # Output file name
-      i=i+1
+      i = i + 1
       htmlfile = str(sys.argv[i])
-      print "Output file: "+str(htmlfile)
+      print "Output file: " + str(htmlfile)
     elif arg == "-summary":
       # Write out a summary
       log = smartie.parselog(logfile)
-      for i in range(0,log.nsummaries()):
+      for i in range(0, log.nsummaries()):
         print str(smartie.strip_logfile_html(log.summary(i).retrieve()))
       sys.exit(0)
     elif arg == "-polarrfn_plot":
@@ -1522,11 +1525,11 @@ if __name__ == "__main__":
       sys.exit(0)
     else:
       # Unrecognised option
-      print "Unrecognised option: "+str(arg)
-      print "Usage: "+str(usage)
+      print "Unrecognised option: " + str(arg)
+      print "Usage: " + str(usage)
       sys.exit(1)
     # Next argument
-    i=i+1
+    i = i + 1
 
   # Don't knowingly overwrite the input file
   if htmlfile:
@@ -1535,4 +1538,4 @@ if __name__ == "__main__":
       sys.exit(1)
 
   # Run baubles
-  baubles_html(logfile,htmlfile)
+  baubles_html(logfile, htmlfile)

@@ -21,7 +21,6 @@ import subprocess
 from xia2.Driver.DefaultClusterDriver import DefaultClusterDriver
 
 class SunGridEngineClusterDriver(DefaultClusterDriver):
-
   def __init__(self):
 
     DefaultClusterDriver.__init__(self)
@@ -101,7 +100,6 @@ class SunGridEngineClusterDriver(DefaultClusterDriver):
     '''This is meaningless...'''
 
     pass
-
 
 if __name__ == '__main__':
   # Then run a simple test

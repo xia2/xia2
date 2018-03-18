@@ -24,7 +24,6 @@ from xia2.Driver.DefaultDriver import DefaultDriver
 from xia2.Driver.DriverHelper import kill_process
 
 class InteractiveDriver(DefaultDriver):
-
   def __init__(self):
     DefaultDriver.__init__(self)
 

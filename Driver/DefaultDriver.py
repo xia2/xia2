@@ -57,7 +57,6 @@ from xia2.Handlers.Streams import Debug
 
 # out of context stuff
 
-
 timing_db = []
 
 class DefaultDriver(object):
@@ -77,7 +76,7 @@ class DefaultDriver(object):
     # note well that this is different to how things worked before
     self._command_line = []
     self._working_directory = os.getcwd()
-    self._working_environment = { }
+    self._working_environment = {}
     self._working_environment_exclusive = []
 
     # presuming here that the number of input commands is
@@ -111,7 +110,7 @@ class DefaultDriver(object):
 
     self._cpu_threads = 1
 
-    self._runtime_log = { 'object initialization': time.time() }
+    self._runtime_log = {'object initialization': time.time()}
 
   def __del__(self):
     # the destructor - close the log file etc.
@@ -325,7 +324,7 @@ class DefaultDriver(object):
 
     raise NotImplementedError('Do not use the DefaultDriver class directly')
 
-  def input(self, record, newline = True):
+  def input(self, record, newline=True):
     '''Pass record into child program via _input & copying mechanism.'''
 
     # copy record somehow

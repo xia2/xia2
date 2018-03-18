@@ -42,25 +42,25 @@ class DialsIntegrater(Integrater):
     integrate = xia2.Wrappers.Dials.Integrate.Integrate()
 
     # place to store working data
-    self._data_files = { }
+    self._data_files = {}
 
     # internal parameters to pass around
-    self._integrate_parameters = { }
+    self._integrate_parameters = {}
     self._intgr_integrated_filename = None
 
   # overload these methods as we don't want the resolution range
   # feeding back... aha - but we may want to assign them
   # from outside!
 
-  def set_integrater_resolution(self, dmin, dmax, user = False):
+  def set_integrater_resolution(self, dmin, dmax, user=False):
     if user:
       Integrater.set_integrater_resolution(self, dmin, dmax, user)
 
-  def set_integrater_high_resolution(self, dmin, user = False):
+  def set_integrater_high_resolution(self, dmin, user=False):
     if user:
       Integrater.set_integrater_high_resolution(self, dmin, user)
 
-  def set_integrater_low_resolution(self, dmax, user = False):
+  def set_integrater_low_resolution(self, dmax, user=False):
     self._intgr_reso_low = dmax
 
   # admin functions
@@ -132,8 +132,8 @@ class DialsIntegrater(Integrater):
   def _integrater_reset_callback(self):
     '''Delete all results on a reset.'''
     Debug.write('Deleting all stored results.')
-    self._data_files = { }
-    self._integrate_parameters = { }
+    self._data_files = {}
+    self._integrate_parameters = {}
 
   def _integrate_prepare(self):
     '''Prepare for integration - in XDS terms this may mean rerunning
@@ -262,8 +262,7 @@ class DialsIntegrater(Integrater):
 
     if not self._intgr_wedge:
       images = self.get_matching_images()
-      self.set_integrater_wedge(min(images),
-                                max(images))
+      self.set_integrater_wedge(min(images), max(images))
 
     imageset = self.get_imageset()
     beam = imageset.get_beam()
@@ -297,8 +296,8 @@ class DialsIntegrater(Integrater):
         images = self._integrate_select_images_wedges()
 
         Debug.write(
-          'Integrating subset of images to estimate resolution limit.\n'
-          'Integrating images %s' %images)
+            'Integrating subset of images to estimate resolution limit.\n'
+            'Integrating images %s' % images)
 
         integrate = self.Integrate()
         integrate.set_experiments_filename(self._intgr_experiments_filename)
@@ -320,7 +319,7 @@ class DialsIntegrater(Integrater):
         d_min_estimater.set_reflections_filename(integrated_pickle)
         d_min = d_min_estimater.run()
 
-        Debug.write('Estimate for d_min: %.2f' %d_min)
+        Debug.write('Estimate for d_min: %.2f' % d_min)
         Debug.write('Re-running integration to this resolution limit')
 
         self._intgr_reso_high = d_min
@@ -477,7 +476,7 @@ class DialsIntegrater(Integrater):
         wedges.append(images[1])
 
     else:
-      block_size = min(len(images), int(math.ceil(5/phi_width)))
+      block_size = min(len(images), int(math.ceil(5 / phi_width)))
 
       Debug.write('Adding images for indexer: %d -> %d' % \
                   (images[0], images[block_size - 1]))
@@ -494,12 +493,10 @@ class DialsIntegrater(Integrater):
                     (int(90.0 / phi_width) + images[0],
                      int(90.0 / phi_width) + images[0] +
                      block_size - 1))
-        wedges.append(
-            (int(45.0 / phi_width) + images[0],
-             int(45.0 / phi_width) + images[0] + block_size - 1))
-        wedges.append(
-            (int(90.0 / phi_width) + images[0],
-             int(90.0 / phi_width) + images[0] + block_size - 1))
+        wedges.append((int(45.0 / phi_width) + images[0],
+                       int(45.0 / phi_width) + images[0] + block_size - 1))
+        wedges.append((int(90.0 / phi_width) + images[0],
+                       int(90.0 / phi_width) + images[0] + block_size - 1))
 
       else:
 
@@ -513,7 +510,7 @@ class DialsIntegrater(Integrater):
         if len(images) > block_size:
           Debug.write('Adding images for indexer: %d -> %d' % \
                       (images[- block_size], images[-1]))
-          wedges.append((images[- block_size], images[-1]))
+          wedges.append((images[-block_size], images[-1]))
 
     return wedges
 
@@ -531,7 +528,6 @@ class DialsIntegrater(Integrater):
     exporter.run()
     assert os.path.exists(self._intgr_corrected_hklout)
     return self._intgr_corrected_hklout
-
 
 if __name__ == '__main__':
 

@@ -32,7 +32,7 @@ class FrameProcessor(object):
   '''A class to handle the information needed to process X-Ray
   diffraction frames.'''
 
-  def __init__(self, image = None):
+  def __init__(self, image=None):
     super(FrameProcessor, self).__init__()
 
     self._fp_template = None
@@ -52,7 +52,7 @@ class FrameProcessor(object):
     self._fp_gain = 0.0
     self._fp_polarization = 0.0
 
-    self._fp_header = { }
+    self._fp_header = {}
 
     # see FIXME for 06/SEP/06
     self._fp_xsweep = None
@@ -70,7 +70,7 @@ class FrameProcessor(object):
   def set_template(self, template):
     self._fp_template = template
 
-  def set_frame_wedge(self, start, end, apply_offset = True):
+  def set_frame_wedge(self, start, end, apply_offset=True):
     '''Set the allowed range of images for processing.'''
 
     # XXX RJG Better to pass slice of imageset here?
@@ -305,7 +305,7 @@ class FrameProcessor(object):
     except Exception:
       pass
 
-    self._fp_matching_images = tuple(range(image_range[0], image_range[1]+1))
+    self._fp_matching_images = tuple(range(image_range[0], image_range[1] + 1))
 
     if self._fp_wavelength_prov is None:
       self._fp_wavelength_prov = 'header'
@@ -333,7 +333,6 @@ class FrameProcessor(object):
     self._fp_offset = offset
 
   # end of class
-
 
 def get_beam_centre(detector, beam):
   from scitbx import matrix
@@ -369,11 +368,10 @@ def get_beam_centre(detector, beam):
   # compute beam centre at two-theta=0
   Ro = R * o
   Rn = R * n
-  b = - Ro + Ro.dot(s0) * s0
+  b = -Ro + Ro.dot(s0) * s0
   beam_x = b.dot(R * f)
   beam_y = b.dot(R * s)
   return beam_y, beam_x
-
 
 if __name__ == '__main__':
   # run a quick test

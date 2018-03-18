@@ -96,7 +96,7 @@ class _IndexerHelper(object):
 
     self._sorted_list = SortLattices(lattices)
 
-  def eliminate(self, indxr_print = True):
+  def eliminate(self, indxr_print=True):
     '''Eliminate the highest currently allowed lattice.'''
 
     if len(self._sorted_list) <= 1:
@@ -165,7 +165,7 @@ class Indexer(object):
 
     # a place to store other plausible solutions - used
     # for populating the helper in the main index() method
-    self._indxr_other_lattice_cell = { }
+    self._indxr_other_lattice_cell = {}
 
     # refined experimental parameters
     self._indxr_mosaic = None
@@ -191,7 +191,7 @@ class Indexer(object):
 
     # extra indexing guff - a dictionary which the implementation
     # can store things in
-    self._indxr_payload = { }
+    self._indxr_payload = {}
 
     self._indxr_print = True
 
@@ -215,7 +215,7 @@ class Indexer(object):
     obj['__module__'] = self.__class__.__module__
     obj['__name__'] = self.__class__.__name__
     import inspect
-    attributes = inspect.getmembers(self, lambda m:not(inspect.isroutine(m)))
+    attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
     for a in attributes:
       if a[0] == '_indxr_helper' and a[1] is not None:
         lattice_cell_dict = {}
@@ -306,18 +306,18 @@ class Indexer(object):
   # these will cascade, so setting an early task not done will
   # set later tasks not done.
 
-  def set_indexer_prepare_done(self, done = True):
+  def set_indexer_prepare_done(self, done=True):
     self._indxr_prepare_done = done
 
     if not done:
       self.set_indexer_done(False)
 
-  def set_indexer_done(self, done = True):
+  def set_indexer_done(self, done=True):
     self._indxr_done = done
     if not done:
       self.set_indexer_finish_done(False)
 
-  def set_indexer_finish_done(self, done = True):
+  def set_indexer_finish_done(self, done=True):
     self._indxr_finish_done = done
 
   def set_indexer_sweep(self, sweep):
@@ -339,8 +339,7 @@ class Indexer(object):
   def get_indexer_sweep_name(self):
     return self._indxr_sweep_name
 
-  def set_indexer_project_info(
-      self, project_name, crystal_name, dataset_name):
+  def set_indexer_project_info(self, project_name, crystal_name, dataset_name):
     self._indxr_pname = project_name
     self._indxr_xname = crystal_name
     self._indxr_dname = dataset_name
@@ -387,7 +386,7 @@ class Indexer(object):
   # the next solution down.
   # ----------------------------------------------------------
 
-  def eliminate(self, indxr_print = True):
+  def eliminate(self, indxr_print=True):
     '''Eliminate the current solution for autoindexing.'''
 
     if not self._indxr_helper:
@@ -401,16 +400,15 @@ class Indexer(object):
     if self._indxr_user_input_lattice:
       raise RuntimeError('eliminating user supplied lattice')
 
-    self._indxr_helper.eliminate(indxr_print = indxr_print)
+    self._indxr_helper.eliminate(indxr_print=indxr_print)
     self.set_indexer_done(False)
 
-  def _indxr_replace(self, lattice, cell, indxr_print = True):
+  def _indxr_replace(self, lattice, cell, indxr_print=True):
     '''Replace the highest symmetry in the solution table with this...
     Only use this method if you REALLY know what you are doing!'''
 
-    self._indxr_helper.eliminate(indxr_print = indxr_print)
+    self._indxr_helper.eliminate(indxr_print=indxr_print)
     self._indxr_helper.insert(lattice, cell)
-
 
   def index(self):
 
@@ -442,17 +440,19 @@ class Indexer(object):
         self.set_indexer_done(True)
 
         if self.get_indexer_sweeps():
-          xsweeps = [ s.get_name() for s in self.get_indexer_sweeps() ]
+          xsweeps = [s.get_name() for s in self.get_indexer_sweeps()]
           if len(xsweeps) > 1:
             # find "SWEEPn, SWEEP(n+1), (..), SWEEPm" and aggregate to "SWEEPS n-m"
             xsweeps = map(lambda x: (int(x[5:]), int(x[5:])) if x.startswith('SWEEP') else x, xsweeps)
             xsweeps[0] = [xsweeps[0]]
+
             def compress(seen, nxt):
               if isinstance(seen[-1], tuple) and isinstance(nxt, tuple) and (seen[-1][1] + 1 == nxt[0]):
                 seen[-1] = (seen[-1][0], nxt[1])
               else:
                 seen.append(nxt)
               return seen
+
             xsweeps = reduce(compress, xsweeps)
             xsweeps = map(lambda x: ('SWEEP%d' % x[0] if x[0] == x[1] else
                                      'SWEEPS %d to %d' % (x[0], x[1])) if isinstance(x, tuple)
@@ -465,25 +465,21 @@ class Indexer(object):
 
           if PhilIndex.params.xia2.settings.show_template:
             template = self.get_indexer_sweep().get_template()
-            Chatter.banner(
-              'Autoindexing %s (%s)' %(sweep_names, template))
+            Chatter.banner('Autoindexing %s (%s)' % (sweep_names, template))
           else:
-            Chatter.banner('Autoindexing %s' %sweep_names)
-
+            Chatter.banner('Autoindexing %s' % sweep_names)
 
         if not self._indxr_helper:
 
           result = self._index()
 
           if not self._indxr_done:
-            Debug.write(
-              'Looks like indexing failed - try again!')
+            Debug.write('Looks like indexing failed - try again!')
             continue
 
-          solutions = { }
+          solutions = {}
           for k in self._indxr_other_lattice_cell.keys():
-            solutions[k] = self._indxr_other_lattice_cell[k][
-              'cell']
+            solutions[k] = self._indxr_other_lattice_cell[k]['cell']
 
           # create a helper for the indexer to manage solutions
           self._indxr_helper = _IndexerHelper(solutions)
@@ -663,7 +659,7 @@ class Indexer(object):
     If this is different to the current favourite then processing
     may ensue, otherwise nothing will happen.'''
 
-    assert(self._indxr_helper)
+    assert self._indxr_helper
 
     all_lattices = self._indxr_helper.get_all()
 
@@ -705,11 +701,9 @@ class Indexer(object):
 
 # class for legacy Indexers that only support indexing from a single sweep
 class IndexerSingleSweep(Indexer):
-
   def __init__(self):
     super(IndexerSingleSweep, self).__init__()
     self._indxr_images = []
-
 
   # functionality that was previously provided by FrameProcessor
 
@@ -748,11 +742,11 @@ class IndexerSingleSweep(Indexer):
 
   def get_matching_images(self):
     start, end = self.get_scan().get_array_range()
-    return tuple(range(start+1, end+1))
+    return tuple(range(start + 1, end + 1))
 
   def get_image_name(self, number):
     first = self.get_scan().get_image_range()[0]
-    return self.get_imageset().get_path(number-first)
+    return self.get_imageset().get_path(number - first)
 
   def get_template(self):
     return self.get_imageset().get_template()
@@ -760,7 +754,7 @@ class IndexerSingleSweep(Indexer):
   def get_directory(self):
     return os.path.dirname(self.get_template())
 
-  def add_indexer_image_wedge(self, image, reset = True):
+  def add_indexer_image_wedge(self, image, reset=True):
     '''Add some images for autoindexing (optional) input is a 2-tuple
     or an integer.'''
 
@@ -772,7 +766,7 @@ class IndexerSingleSweep(Indexer):
     if reset:
       self.set_indexer_prepare_done(False)
 
-  def set_indexer_image_wedges(self, indexer_image_wedges, reset = True):
+  def set_indexer_image_wedges(self, indexer_image_wedges, reset=True):
     '''Assign images to use for autoindexing, will clobber existing
     values. Use with interactive indexing...'''
 

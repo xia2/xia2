@@ -45,7 +45,6 @@ from xia2.Driver.DriverHelper import script_writer
 # This will make an input .xin and output .xout file.
 
 class ScriptDriver(DefaultDriver):
-
   def __init__(self):
     super(ScriptDriver, self).__init__()
 

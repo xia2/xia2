@@ -28,12 +28,9 @@ from xia2.Wrappers.XDS.XDS import XDSException
 
 # the class that we are extending
 
-
 # helper functions
 
-
 # odds and sods that are needed
-
 
 class XDSIndexerII(XDSIndexer):
   '''An extension of XDSIndexer using all available images.'''
@@ -98,17 +95,16 @@ class XDSIndexerII(XDSIndexer):
     return wedges
 
   def _index_prepare(self):
-    Chatter.banner('Spotfinding %s' %self.get_indexer_sweep_name())
+    Chatter.banner('Spotfinding %s' % self.get_indexer_sweep_name())
     super(XDSIndexerII, self)._index_prepare()
 
     from dials.array_family import flex
     from dials.util.ascii_art import spot_counts_per_image_plot
     reflection_pickle = spot_xds_to_reflection_pickle(
-      self._indxr_payload['SPOT.XDS'],
-      working_directory=self.get_working_directory())
+        self._indxr_payload['SPOT.XDS'],
+        working_directory=self.get_working_directory())
     refl = flex.reflection_table.from_pickle(reflection_pickle)
     Chatter.write(spot_counts_per_image_plot(refl), strip=False)
-
 
   def _index(self):
     '''Actually do the autoindexing using the data prepared by the
@@ -238,8 +234,7 @@ class XDSIndexerII(XDSIndexer):
         # unit cell, and they are the same, well ignore it
 
         if 'solution is inaccurate' in str(e):
-          Debug.write(
-              'XDS complains solution inaccurate - ignoring')
+          Debug.write('XDS complains solution inaccurate - ignoring')
           done = idxref.continue_from_error()
         elif ('insufficient percentage (< 70%)' in str(e) or
               'insufficient percentage (< 50%)' in str(e)) and \
@@ -272,8 +267,7 @@ class XDSIndexerII(XDSIndexer):
                                 os.path.join(self.get_working_directory(),
                                              'IDXREF.LP'))
 
-    for file in ['SPOT.XDS',
-                 'XPARM.XDS']:
+    for file in ['SPOT.XDS', 'XPARM.XDS']:
       self._indxr_payload[file] = idxref.get_output_data_file(file)
 
     # need to get the indexing solutions out somehow...
@@ -290,13 +284,14 @@ class XDSIndexerII(XDSIndexer):
     crystal_model = to_crystal(xparm_file)
 
     from dxtbx.model import Experiment, ExperimentList
-    experiment = Experiment(beam=models.get_beam(),
-                            detector=models.get_detector(),
-                            goniometer=models.get_goniometer(),
-                            scan=models.get_scan(),
-                            crystal=crystal_model,
-                            #imageset=self.get_imageset(),
-                            )
+    experiment = Experiment(
+        beam=models.get_beam(),
+        detector=models.get_detector(),
+        goniometer=models.get_goniometer(),
+        scan=models.get_scan(),
+        crystal=crystal_model,
+        #imageset=self.get_imageset(),
+    )
 
     experiment_list = ExperimentList([experiment])
     self.set_indexer_experiment_list(experiment_list)
@@ -408,7 +403,6 @@ class XDSIndexerII(XDSIndexer):
     idxref.run()
 
     return idxref.get_fraction_rmsd_rmsphi()
-
 
 def spot_xds_to_reflection_pickle(spot_xds, working_directory):
   from xia2.Wrappers.Dials.ImportXDS import ImportXDS

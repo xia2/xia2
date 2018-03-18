@@ -40,21 +40,14 @@ from xia2.Wrappers.XDS.XDSIntegrate import XDSIntegrate as _Integrate
 
 # wrappers for programs that this needs
 
-
 # helper functions
 
-
 # interfaces that this must implement to be an integrater
-
-
 
 # indexing functionality if not already provided - even if it is
 # we still need to reindex with XDS.
 
-
 # odds and sods that are needed
-
-
 
 class XDSIntegrater(Integrater):
   '''A class to implement the Integrater interface using *only* XDS
@@ -69,11 +62,11 @@ class XDSIntegrater(Integrater):
     integrate = _Integrate()
 
     # place to store working data
-    self._xds_data_files = { }
+    self._xds_data_files = {}
     self._intgr_experiments_filename = None
 
     # internal parameters to pass around
-    self._xds_integrate_parameters = { }
+    self._xds_integrate_parameters = {}
 
     # factory for pointless -used for converting INTEGRATE.HKL to .mtz
     self._factory = CCP4Factory()
@@ -83,7 +76,7 @@ class XDSIntegrater(Integrater):
   def to_dict(self):
     obj = Integrater.to_dict(self)
     import inspect
-    attributes = inspect.getmembers(self, lambda m:not(inspect.isroutine(m)))
+    attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
     for a in attributes:
       if a[0].startswith('_xds_'):
         obj[a[0]] = a[1]
@@ -99,17 +92,17 @@ class XDSIntegrater(Integrater):
   # feeding back... aha - but we may want to assign them
   # from outside!
 
-  def set_integrater_resolution(self, dmin, dmax, user = False):
+  def set_integrater_resolution(self, dmin, dmax, user=False):
     if user:
       Integrater.set_integrater_resolution(self, dmin, dmax, user)
     return
 
-  def set_integrater_high_resolution(self, dmin, user = False):
+  def set_integrater_high_resolution(self, dmin, user=False):
     if user:
       Integrater.set_integrater_high_resolution(self, dmin, user)
     return
 
-  def set_integrater_low_resolution(self, dmax, user = False):
+  def set_integrater_low_resolution(self, dmax, user=False):
     self._intgr_reso_low = dmax
     return
 
@@ -122,12 +115,8 @@ class XDSIntegrater(Integrater):
   def _set_integrater_reindex_operator_callback(self):
     '''If a REMOVE.HKL file exists in the working
     directory, remove it...'''
-    if os.path.exists(os.path.join(
-        self.get_working_directory(),
-        'REMOVE.HKL')):
-      os.remove(os.path.join(
-          self.get_working_directory(),
-          'REMOVE.HKL'))
+    if os.path.exists(os.path.join(self.get_working_directory(), 'REMOVE.HKL')):
+      os.remove(os.path.join(self.get_working_directory(), 'REMOVE.HKL'))
       Debug.write('Deleting REMOVE.HKL as reindex op set.')
     return
 
@@ -149,7 +138,7 @@ class XDSIntegrater(Integrater):
       = PhilIndex.params.xds.defpix.value_range_for_trusted_detector_pixels
     if value_range_for_trusted_detector_pixels is not None:
       defpix.set_value_range_for_trusted_detector_pixels(
-        value_range_for_trusted_detector_pixels)
+          value_range_for_trusted_detector_pixels)
 
     auto_logfiler(defpix, 'DEFPIX')
 
@@ -196,8 +185,7 @@ class XDSIntegrater(Integrater):
       Debug.write('Using low resolution limit: %.2f' % \
                   self.get_integrater_low_resolution())
       correct.set_resolution_high(0.0)
-      correct.set_resolution_low(
-          self.get_integrater_low_resolution())
+      correct.set_resolution_low(self.get_integrater_low_resolution())
 
     auto_logfiler(correct, 'CORRECT')
 
@@ -208,8 +196,8 @@ class XDSIntegrater(Integrater):
   def _integrater_reset_callback(self):
     '''Delete all results on a reset.'''
     Debug.write('Deleting all stored results.')
-    self._xds_data_files = { }
-    self._xds_integrate_parameters = { }
+    self._xds_data_files = {}
+    self._xds_integrate_parameters = {}
     return
 
   def _integrate_prepare(self):
@@ -248,7 +236,7 @@ class XDSIntegrater(Integrater):
       if self.get_frame_wedge():
         wedge = self.get_frame_wedge()
         Debug.write('Propogating wedge limit: %d %d' % wedge)
-        idxr.set_frame_wedge(wedge[0], wedge[1], apply_offset = False)
+        idxr.set_frame_wedge(wedge[0], wedge[1], apply_offset=False)
 
       # this needs to be set up from the contents of the
       # Integrater frame processer - wavelength &c.
@@ -311,12 +299,12 @@ class XDSIntegrater(Integrater):
     DEFPIX and INTEGRATE to measure all the reflections.'''
 
     experiment = self._intgr_refiner.get_refined_experiment_list(
-      self.get_integrater_epoch())[0]
+        self.get_integrater_epoch())[0]
     crystal_model = experiment.crystal
     self._intgr_refiner_cell = crystal_model.get_unit_cell().parameters()
 
     images_str = '%d to %d' % tuple(self._intgr_wedge)
-    cell_str = '%.2f %.2f %.2f %.2f %.2f %.2f' %tuple(self._intgr_refiner_cell)
+    cell_str = '%.2f %.2f %.2f %.2f %.2f %.2f' % tuple(self._intgr_refiner_cell)
 
     if len(self._fp_directory) <= 50:
       dirname = self._fp_directory
@@ -462,8 +450,7 @@ class XDSIntegrater(Integrater):
 
     if 'GXPARM.XDS' not in self._xds_data_files and \
       PhilIndex.params.xds.integrate.reintegrate:
-      Debug.write(
-          'Resetting integrater, to ensure refined orientation is used')
+      Debug.write('Resetting integrater, to ensure refined orientation is used')
       self.set_integrater_done(False)
 
     if not self.get_integrater_reindex_matrix() and not self._intgr_cell \
@@ -503,8 +490,7 @@ class XDSIntegrater(Integrater):
     # next run the postrefinement etc with the given
     # cell / lattice - this will be the assumed result...
 
-    integrate_hkl = os.path.join(
-      self.get_working_directory(), 'INTEGRATE.HKL')
+    integrate_hkl = os.path.join(self.get_working_directory(), 'INTEGRATE.HKL')
 
     if PhilIndex.params.xia2.settings.input.format.dynamic_shadowing:
       from libtbx import easy_pickle
@@ -540,7 +526,7 @@ class XDSIntegrater(Integrater):
             print >> f, "%i %i %i %.1f %.1f %.1f %.1f %.1f %.1f" %(
               h, k, l, x+ox, y+oy, z, dx, dy, dz)
         t2 = time.time()
-        Debug.write("Written FILTER.HKL in %.1f seconds" %(t2-t1))
+        Debug.write("Written FILTER.HKL in %.1f seconds" % (t2 - t1))
 
     correct = self.Correct()
 
@@ -556,8 +542,7 @@ class XDSIntegrater(Integrater):
     # needs to be set to None...
 
     if self.get_integrater_spacegroup_number():
-      correct.set_spacegroup_number(
-          self.get_integrater_spacegroup_number())
+      correct.set_spacegroup_number(self.get_integrater_spacegroup_number())
       if not self._intgr_cell:
         raise RuntimeError('no unit cell to recycle')
       correct.set_cell(self._intgr_cell)
@@ -670,7 +655,6 @@ class XDSIntegrater(Integrater):
       # self.set_integrater_reindex_operator(reindex)
 
       self._intgr_reindex_operator = reindex_op
-
 
     # record the log file -
 
@@ -901,7 +885,6 @@ def integrate_hkl_to_reflection_pickle(integrate_hkl, experiments_json, working_
   importer.run()
   return importer.get_reflection_filename()
 
-
 def xparm_xds_to_experiments_json(xparm_xds, working_directory):
   from xia2.Wrappers.Dials.ImportXDS import ImportXDS
   importer = ImportXDS()
@@ -910,7 +893,6 @@ def xparm_xds_to_experiments_json(xparm_xds, working_directory):
   importer.set_xparm_xds(xparm_xds)
   importer.run()
   return importer.get_experiments_json()
-
 
 if __name__ == '__main__':
 

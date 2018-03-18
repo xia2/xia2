@@ -40,9 +40,6 @@ from xia2.Wrappers.XIA.Printpeaks import Printpeaks
 #from xia2.Schema.Exceptions.NegativeMosaicError import NegativeMosaicError
 #from xia2.Schema.Exceptions.IndexingError import IndexingError
 
-
-
-
 class MosflmIndexer(IndexerSingleSweep):
   '''A wrapper for Mosflm indexing'''
 
@@ -69,8 +66,7 @@ class MosflmIndexer(IndexerSingleSweep):
     images = self.get_matching_images()
 
     if PhilIndex.params.xia2.settings.interactive == True:
-      selected_images = index_select_images_user(phi_width, images,
-                                                 Chatter)
+      selected_images = index_select_images_user(phi_width, images, Chatter)
     else:
       selected_images = index_select_images_lone(phi_width, images)
 
@@ -222,9 +218,8 @@ class MosflmIndexer(IndexerSingleSweep):
     if min(list(indxr_cell)) < 10.0 and \
        indxr_cell[2] / indxr_cell[0] > 6:
 
-      Debug.write(
-          'Unrealistic autoindexing solution: ' +
-          '%.2f %.2f %.2f %.2f %.2f %.2f' % indxr_cell)
+      Debug.write('Unrealistic autoindexing solution: ' +
+                  '%.2f %.2f %.2f %.2f %.2f %.2f' % indxr_cell)
 
       # tweak some parameters and try again...
       self._mosflm_autoindex_thresh *= 1.5
@@ -232,7 +227,7 @@ class MosflmIndexer(IndexerSingleSweep):
 
       return
 
-    intgr_params = { }
+    intgr_params = {}
 
     # look up other possible indexing solutions (not well - in
     # standard settings only!) This is moved earlier as it could
@@ -245,14 +240,15 @@ class MosflmIndexer(IndexerSingleSweep):
       # Change 27/FEB/08 to support user assigned spacegroups
       if self._indxr_user_input_lattice:
         lattice_to_spacegroup_dict = {
-            'aP':1, 'mP':3, 'mC':5, 'oP':16, 'oC':20, 'oF':22,
-            'oI':23, 'tP':75, 'tI':79, 'hP':143, 'hR':146,
-            'cP':195, 'cF':196, 'cI':197}
+            'aP': 1, 'mP': 3, 'mC': 5, 'oP': 16, 'oC': 20, 'oF': 22, 'oI': 23,
+            'tP': 75, 'tI': 79, 'hP': 143, 'hR': 146, 'cP': 195, 'cF': 196,
+            'cI': 197
+        }
         for k in self._indxr_other_lattice_cell.keys():
           if lattice_to_spacegroup_dict[k] > \
                  lattice_to_spacegroup_dict[
               self._indxr_input_lattice]:
-            del(self._indxr_other_lattice_cell[k])
+            del self._indxr_other_lattice_cell[k]
 
       # check that the selected unit cell matches - and if
       # not raise a "horrible" exception
@@ -261,9 +257,8 @@ class MosflmIndexer(IndexerSingleSweep):
         assert indxr_cell is not None
         for j in range(6):
           if math.fabs(self._indxr_input_cell[j] - indxr_cell[j]) > 2.0:
-            Chatter.write(
-                'Mosflm autoindexing did not select ' +
-                'correct (target) unit cell')
+            Chatter.write('Mosflm autoindexing did not select ' +
+                          'correct (target) unit cell')
             raise RuntimeError('something horrible happened in indexing')
 
     except RuntimeError as e:
@@ -275,9 +270,8 @@ class MosflmIndexer(IndexerSingleSweep):
 
         # XXX FIXME
         self._mosflm_autoindex_sol = _get_indexing_solution_number(
-          indexer.get_all_output(),
-          self._indxr_input_cell,
-          self._indxr_input_lattice)
+            indexer.get_all_output(), self._indxr_input_cell,
+            self._indxr_input_lattice)
 
         # set the fact that we are not done...
         self.set_indexer_done(False)
@@ -358,8 +352,7 @@ class MosflmIndexer(IndexerSingleSweep):
         return
 
     try:
-      status, lattice, matrix, cell = mosflm_check_indexer_solution(
-          self)
+      status, lattice, matrix, cell = mosflm_check_indexer_solution(self)
     except Exception:
       return
 

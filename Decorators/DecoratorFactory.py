@@ -24,7 +24,7 @@ class _DecoratorFactory(object):
   def __init__(self):
     self._type = 'ccp4'
 
-  def Decorate(self, DriverInstance, type = None):
+  def Decorate(self, DriverInstance, type=None):
     '''Decorate DriverInstance as type or self._type if not specified.'''
 
     if type is None:

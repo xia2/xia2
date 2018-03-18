@@ -21,13 +21,10 @@ from xia2.Wrappers.XDS.Merge2cbf import Merge2cbf
 
 # the class that we are extending
 
-
 # odds and sods that are needed
-
 
 # FIXME need to put in access here to Phil parameters to know how wide to make
 # the summed images
-
 
 class XDSIndexerSum(XDSIndexer):
   '''An extension of XDSIndexer using all available images.'''
@@ -48,7 +45,7 @@ class XDSIndexerSum(XDSIndexer):
     # the header contents to correspond to those new images. Finally make
     # a note of these changes so we can correct XPARM file at the end.
 
-    assert(min(self.get_matching_images()) == 1)
+    assert min(self.get_matching_images()) == 1
 
     # make a note so we can fix the XPARM.XDS file at the end
     self._true_phi_width = self.get_header_item('phi_width')
@@ -119,8 +116,7 @@ class XDSIndexerSum(XDSIndexer):
 
   def _modify_xparm_xds(self):
     import fileinput
-    xparm_filename = os.path.join(
-        self.get_working_directory(), 'XPARM.XDS')
+    xparm_filename = os.path.join(self.get_working_directory(), 'XPARM.XDS')
     assert os.path.isfile(xparm_filename)
     f = fileinput.input(xparm_filename, mode='rb', inplace=1)
     updated_oscillation_range = False
@@ -134,9 +130,9 @@ class XDSIndexerSum(XDSIndexer):
         if len(tokens) == 6:
           summed_oscillation_range = float(tokens[2])
           # sanity check - is this actually necessary?
-          assert (summed_oscillation_range
-                  - self.get_header_item('phi_width')) < 1e-6
-          tokens[2] = '%.4f' %self._true_phi_width
+          assert (summed_oscillation_range -
+                  self.get_header_item('phi_width')) < 1e-6
+          tokens[2] = '%.4f' % self._true_phi_width
           print " ".join(tokens)
           continue
       print line,

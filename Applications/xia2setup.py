@@ -43,7 +43,7 @@ xds_file_names = ['ABS', 'ABSORP', 'BKGINIT', 'BKGPIX', 'BLANK', 'DECAY',
                   'GX-CORRECTIONS', 'GY-CORRECTIONS', 'DX-CORRECTIONS',
                   'DY-CORRECTIONS', 'GAIN']
 
-known_sweeps = { }
+known_sweeps = {}
 
 known_sequence_extensions = ['seq']
 
@@ -146,7 +146,6 @@ def get_template(f):
 
   return template
 
-
 def save_datablock(filename):
   from xia2.Schema import imageset_cache
   from dxtbx.datablock import DataBlock
@@ -158,7 +157,6 @@ def save_datablock(filename):
       datablock.append(imageset)
 
   dump.datablock(datablock, filename, compact=True)
-
 
 def parse_sequence(sequence_file):
   sequence = ''
@@ -207,7 +205,7 @@ def visit(root, directory, files):
 
   return templates
 
-def print_sweeps(out = sys.stdout):
+def print_sweeps(out=sys.stdout):
 
   global known_sweeps, latest_sequence
 
@@ -286,7 +284,7 @@ def print_sweeps(out = sys.stdout):
 
   assert len(wavelengths), "No sweeps found matching criteria"
 
-  wavelength_map = { }
+  wavelength_map = {}
 
   project = settings.project
   crystal = settings.crystal
@@ -433,7 +431,6 @@ def print_sweeps(out = sys.stdout):
   out.write('END CRYSTAL %s\n' % crystal)
   out.write('END PROJECT %s\n' % project)
 
-
 def get_sweeps(templates):
   global known_sweeps
 
@@ -449,10 +446,10 @@ def get_sweeps(templates):
     # If xia2 was a proper cctbx module, then we wouldn't have to do this
     # FIXME xia2 is now a proper cctbx module ;o)
 
-    python_path = 'PYTHONPATH="%s"' %":".join(sys.path)
-    qsub_command="qsub -v %s -V" %python_path
+    python_path = 'PYTHONPATH="%s"' % ":".join(sys.path)
+    qsub_command = "qsub -v %s -V" % python_path
 
-    args = [(template,) for template in templates]
+    args = [(template, ) for template in templates]
     results_list = easy_mp.parallel_map(
       get_sweep, args,
       processes=nproc,

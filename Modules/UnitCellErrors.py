@@ -16,22 +16,22 @@ class _refinery:
 
     self.constraints, self.restraints, self.side_restraints = {}, {}, {}
     if lattice == 'm':
-      self.constraints = { 3:90, 5:90 } # alpha, gamma = 90
+      self.constraints = {3: 90, 5: 90} # alpha, gamma = 90
 
     elif lattice == 'o':
-      self.constraints = { 3:90, 4:90, 5:90 }
+      self.constraints = {3: 90, 4: 90, 5: 90}
 
     elif lattice == 't':
-      self.constraints = { 3:90, 4:90, 5:90 }
-      self.side_restraints = { 1: 0 } # b = a
+      self.constraints = {3: 90, 4: 90, 5: 90}
+      self.side_restraints = {1: 0} # b = a
 
     elif lattice == 'h':
-      self.constraints = { 3:90, 4:90, 5:120 }
-      self.side_restraints = { 1: 0 }
+      self.constraints = {3: 90, 4: 90, 5: 120}
+      self.side_restraints = {1: 0}
 
     elif lattice == 'c':
-      self.constraints = { 3:90, 4:90, 5:90 }
-      self.side_restraints = { 1: 0, 2: 0 } # b = a, c = a
+      self.constraints = {3: 90, 4: 90, 5: 90}
+      self.side_restraints = {1: 0, 2: 0} # b = a, c = a
 
     self.x = flex.double(unit_cell.parameters())
     scitbx.lbfgs.run(target_evaluator=self)

@@ -85,8 +85,10 @@ def index_select_image_wedges_user(sweep_id, phi_width, images, out_stream):
       return images
 
     try:
-      images = [tuple([int(t.strip()) for t in r.split('-')])
-                for r in record.split(',')]
+      images = [
+          tuple([int(t.strip()) for t in r.split('-')])
+          for r in record.split(',')
+      ]
       images_list = ', '.join(['%d-%d' % i for i in images])
       out_stream.write('New images for indexing: %s' % \
                        images_list)
@@ -104,11 +106,11 @@ if __name__ == '__main__':
 
   images = range(1, 91)
 
-  assert(index_select_images_lone(0.5, images) == [1, 45, 90])
-  assert(index_select_images_lone(1.0, images) == [1, 45, 90])
-  assert(index_select_images_lone(2.0, images) == [1, 22, 45])
+  assert index_select_images_lone(0.5, images) == [1, 45, 90]
+  assert index_select_images_lone(1.0, images) == [1, 45, 90]
+  assert index_select_images_lone(2.0, images) == [1, 22, 45]
 
   images = range(1, 361)
 
-  assert(index_select_images_lone(0.5, images) == [1, 90, 180])
-  assert(index_select_images_lone(1.0, images) == [1, 45, 90])
+  assert index_select_images_lone(0.5, images) == [1, 90, 180]
+  assert index_select_images_lone(1.0, images) == [1, 45, 90]

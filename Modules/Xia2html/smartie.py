@@ -23,7 +23,6 @@ import time
 # smartie.py
 #
 #########################################################################
-
 """smartie: CCP4 logfile parsing functions
 
 The smartie module provides a set of classes and methods for parsing
@@ -41,7 +40,6 @@ smartie_overview.html."""
 __cvs_id__ = "$Id$"
 __version__ = "0.0.15"
 
-
 #######################################################################
 # Class definitions
 #######################################################################
@@ -57,7 +55,7 @@ class buffer:
   The buffer object holds lines of text which are added
   a line at a time via the 'append' method."""
 
-  def __init__(self,maxsize=0):
+  def __init__(self, maxsize=0):
     """Initialise a new buffer object.
 
     If 'maxsize' is greater than zero then it sets the
@@ -75,7 +73,7 @@ class buffer:
     """Builtin: return the number of lines stored in the buffer."""
     return len(self.__contents)
 
-  def append(self,line):
+  def append(self, line):
     """Append a line of text to the buffer.
 
     The line will have any trailing 'end of line'
@@ -91,13 +89,13 @@ class buffer:
     Deprecated: use len(table) instead."""
     return self.__len__()
 
-  def line(self,n):
+  def line(self, n):
     """Return the n'th line of text from the buffer.
 
     The line will be returned without end-of-line characters."""
     return self.__contents[n]
 
-  def tail(self,n=10):
+  def tail(self, n=10):
     """Return the 'tail' of the buffer.
 
     This returns the last n lines of text stored in the
@@ -109,23 +107,23 @@ class buffer:
     nstart = nend - n
     if nstart < 0:
       nstart = 0
-    return self.contents(nstart,nend)
+    return self.contents(nstart, nend)
 
-  def getlines(self,n,m):
+  def getlines(self, n, m):
     """Return lines 'n' through to 'm' as a list.
 
     Return a set of lines starting from line index 'n' up to
     but not including line index 'm', as a list."""
     return self.__contents[n:m]
 
-  def contents(self,n,m):
+  def contents(self, n, m):
     """Return lines 'n' through to 'm' as a string.
 
     Return the specified lines from the buffer concatenated
     into a single string with line ends terminated by a newline
     character."""
     str = ""
-    subset = self.getlines(n,m)
+    subset = self.getlines(n, m)
     for line in subset:
       str = str + line + "\n"
     return str.rstrip("\n")
@@ -158,14 +156,14 @@ class tablebuffer(buffer):
   This class extends the 'buffer' class with additional
   data and methods specialised for CCP4 tables."""
 
-  def __init__(self,maxsize=0):
+  def __init__(self, maxsize=0):
     """Initialise a new tablebuffer object."""
     self.__hasTABLE = False
     self.__hasGRAPHS = False
     self.__ndoubledollar = 0
-    buffer.__init__(self,maxsize)
+    buffer.__init__(self, maxsize)
 
-  def append(self,line):
+  def append(self, line):
     """Append a line of text to the tablebuffer.
 
     This overrides the append method of the parent class
@@ -183,7 +181,7 @@ class tablebuffer(buffer):
       self.__hasTABLE = True
     # Check if line has "$(GRAPHS|SCATTER)"
     if self.__hasTABLE:
-      buffer.append(self,line)
+      buffer.append(self, line)
       hasGRAPHS = re.compile(r"\$(GRAPHS|SCATTER)").search(line)
       if hasGRAPHS:
         self.__hasGRAPHS = True
@@ -245,15 +243,14 @@ class logfile:
   been found in the logfile. These are kept distinct from
   the logfile fragments above."""
 
-  def __init__(self,filename):
+  def __init__(self, filename):
     """Initialise the logfile object."""
     # Source file
     if os.path.isabs(filename):
       self.__filename = os.path.normpath(filename)
     else:
       # Construct an absolute path
-      self.__filename = os.path.abspath(
-          os.path.join(os.getcwd(),filename))
+      self.__filename = os.path.abspath(os.path.join(os.getcwd(), filename))
     # CCP4i header and tail
     self.__isccp4i = False
     self.__ccp4i_header = []
@@ -277,7 +274,7 @@ class logfile:
       return True
     return False
 
-  def append_ccp4i_header(self,line):
+  def append_ccp4i_header(self, line):
     """Append a line of text to the CCP4i header."""
     # FIXME should be internally accessible only?
     self.__ccp4i_header.append(line)
@@ -287,7 +284,7 @@ class logfile:
     """Return the CCP4i header content."""
     return self.__ccp4i_header
 
-  def append_ccp4i_tail(self,line):
+  def append_ccp4i_tail(self, line):
     """Append a line of text to the CCP4i tail."""
     # FIXME should be internally accessible only?
     self.__ccp4i_tail.append(line)
@@ -314,7 +311,7 @@ class logfile:
     self.addfragment(newfragment)
     return newfragment
 
-  def addfragment(self,fragment):
+  def addfragment(self, fragment):
     """Add an existing fragment-like object to the logfile."""
     self.__fragments.append(fragment)
 
@@ -322,7 +319,7 @@ class logfile:
     """Return the number of fragments."""
     return len(self.__fragments)
 
-  def fragment(self,i):
+  def fragment(self, i):
     """Return the i'th fragment in the logfile.
 
     A fragment can be a program, table, CCP4i message or
@@ -342,13 +339,13 @@ class logfile:
     """Return the number of program objects."""
     return len(self.__programs)
 
-  def program(self,i):
+  def program(self, i):
     """Return the i'th program object in the logfile.
 
     Note that i counts up starting from zero."""
     return self.__programs[i]
 
-  def addtable(self,thistable=False,tabletext=""):
+  def addtable(self, thistable=False, tabletext=""):
     """Add a table object to the list of tables.
 
     If an existing table object is specified with the
@@ -376,7 +373,7 @@ class logfile:
     """Return the number of tables in the logfile."""
     return len(self.__tables)
 
-  def table(self,i):
+  def table(self, i):
     """Return the i'th table object in the logfile.
 
     This method is deprecated, use 'logfile.tables()[i]'
@@ -385,7 +382,7 @@ class logfile:
     Note that i counts up starting from zero."""
     return self.__tables[i]
 
-  def findtable(self,title_pattern,index=0):
+  def findtable(self, title_pattern, index=0):
     """Fetch a table in the logfile by matching the title.
 
     This method is deprecated; use the 'tables' method
@@ -402,9 +399,9 @@ class logfile:
     no matching tables) then return 'None'.
 
     It calls the 'find_table_by_title' function."""
-    return find_table_by_title(self.__tables,title_pattern,index)
+    return find_table_by_title(self.__tables, title_pattern, index)
 
-  def tables(self,select_title=""):
+  def tables(self, select_title=""):
     """Return a list of tables in the logfile.
 
     If no 'select_title' is specifed then this returns
@@ -423,9 +420,9 @@ class logfile:
     if select_title == "":
       # Return everything
       return copy.copy(self.__tables)
-    return find_tables_by_title(self.__tables,select_title)
+    return find_tables_by_title(self.__tables, select_title)
 
-  def addkeytext(self,thiskeytext=False,name="",junk_text="",message=""):
+  def addkeytext(self, thiskeytext=False, name="", junk_text="", message=""):
     """Add a keytext object to the list of keytexts.
 
     If an existing keytext object is supplied with the
@@ -441,7 +438,7 @@ class logfile:
       return thiskeytext
     else:
       # Make a new keytext
-      new_keytext = keytext(name,junk_text,message)
+      new_keytext = keytext(name, junk_text, message)
       self.__keytexts.append(new_keytext)
       return new_keytext
 
@@ -449,7 +446,7 @@ class logfile:
     """Return the number of keytexts in the logfile."""
     return len(self.__keytexts)
 
-  def keytext(self,i):
+  def keytext(self, i):
     """Return the i'th keytext object in the logfile.
 
     Note that i counts up starting from zero."""
@@ -473,20 +470,20 @@ class logfile:
     """Return the number of ccp4i_info messages."""
     return len(self.__ccp4i_info)
 
-  def ccp4i_info(self,i):
+  def ccp4i_info(self, i):
     """Return the i'th ccp4i_info object in the logfile.
 
     Note that i counts up starting from zero."""
     return self.__ccp4i_info[i]
 
-  def addsummary(self,start_line=-1):
+  def addsummary(self, start_line=-1):
     """Add another summary object to the logfile.
 
     A new summary object is created and returned. The
     new object is also added to the list of summaries
     for the logfile."""
 
-    new_summary = summary(self.__filename,start_line)
+    new_summary = summary(self.__filename, start_line)
     self.__summaries.append(new_summary)
     return new_summary
 
@@ -494,13 +491,13 @@ class logfile:
     """Return the number of summaries found in the log."""
     return len(self.__summaries)
 
-  def summary(self,i):
+  def summary(self, i):
     """Return the i'th summary object in the logfile.
 
     Note that i counts up starting from zero."""
     return self.__summaries[i]
 
-  def set_fragment_start(self,line_no):
+  def set_fragment_start(self, line_no):
     """Set the start line of the most recent fragment.
 
     The most recent fragment is the last fragment object
@@ -515,12 +512,12 @@ class logfile:
     fragment then it is assumed to start from the first
     line of the file"""
     fragment = self.__fragments[-1]
-    fragment.set_attribute("source_file",self.__filename)
+    fragment.set_attribute("source_file", self.__filename)
     if fragment.has_attribute("nlines"):
       # Calculate the start of the fragment from the
       # current position
       offset = fragment.nlines
-      fragment.set_startline(line_no-offset)
+      fragment.set_startline(line_no - offset)
     else:
       if self.nfragments() > 1:
         # Assume that the fragment starts from here
@@ -533,9 +530,9 @@ class logfile:
     if self.nfragments() > 1:
       last_fragment = self.__fragments[-2]
       if last_fragment.get_endline() < 0:
-        last_fragment.set_endline(fragment.get_startline()-1)
+        last_fragment.set_endline(fragment.get_startline() - 1)
 
-  def set_fragment_end(self,line_no):
+  def set_fragment_end(self, line_no):
     """Set the end line of the most recent fragment.
 
     The most recent fragment is the last fragment object
@@ -558,7 +555,7 @@ class logfile:
     if fragment.get_endline() > -1:
       # Don't reset the value if it's already set
       return
-    fragment.set_attribute("source_file",self.__filename)
+    fragment.set_attribute("source_file", self.__filename)
     fragment.set_endline(line_no)
     # Check if the start is also set
     if fragment.get_startline() < 1:
@@ -566,12 +563,12 @@ class logfile:
         # Assume that the fragment started from the
         # end of the previous fragment
         last_fragment = self.__fragments[-2]
-        fragment.set_startline(last_fragment.get_endline()+1)
+        fragment.set_startline(last_fragment.get_endline() + 1)
       else:
         # This is the first fragment
         fragment.set_startline(1)
 
-  def fragment_to_program(self,i):
+  def fragment_to_program(self, i):
     """Convert the i'th fragment to a program.
 
     This method allows a fragment in the logfile to be
@@ -585,19 +582,19 @@ class logfile:
 
     if self.fragment(i).isprogram():
       return self.fragment(i)
-    prog = copyfragment(self.fragment(i),program())
+    prog = copyfragment(self.fragment(i), program())
     # Add the converted program fragment to the
     # list of programs
     # To do this we need to work out where it belongs
     if i == 0:
       # Fragment was the first in the list
       # Add to the start of the program list
-      self.__programs.insert(0,prog)
+      self.__programs.insert(0, prog)
     else:
       # Look for a fragment after this one
       # in the list which is also a program
       nextprog = None
-      for j in range(i,self.nfragments()):
+      for j in range(i, self.nfragments()):
         if self.fragment(j).isprogram():
           nextprog = self.fragment(j)
           break
@@ -607,7 +604,7 @@ class logfile:
       else:
         # Locate this in the list of programs
         j = self.__programs.index(nextprog)
-        self.__programs.insert(j,prog)
+        self.__programs.insert(j, prog)
     # Remove the converted fragment
     self.__fragments.remove(self.fragment(i))
     return prog
@@ -672,25 +669,25 @@ class fragment:
     """Return True if this is a CCP4i information fragment."""
     return False
 
-  def __setitem__(self,key,value):
+  def __setitem__(self, key, value):
     """Implements the functionality for program[key] = value
 
     Wrapper for the set_attribute method."""
-    self.set_attribute(key,value)
+    self.set_attribute(key, value)
 
-  def __getitem__(self,key):
+  def __getitem__(self, key):
     """Implements the functionality for value = fragment[key]
 
     Wrapper for the get_attribute method."""
     return self.get_attribute(key)
 
-  def __getattr__(self,key):
+  def __getattr__(self, key):
     """Implements the functionality for value = fragment.key
 
     Wrapper for the get_attribute method."""
     return self.get_attribute(key)
 
-  def get_attribute(self,key):
+  def get_attribute(self, key):
     """Return the value of a fragment attribute.
 
     The key is a string specifying a particular fragment
@@ -700,9 +697,9 @@ class fragment:
     try:
       return self.__dict[key]
     except KeyError:
-      raise AttributeError("Unknown attribute '"+str(key)+"'")
+      raise AttributeError("Unknown attribute '" + str(key) + "'")
 
-  def has_attribute(self,key):
+  def has_attribute(self, key):
     """Check whether a fragment attribute has been set.
 
     The key is a string specifying a particular fragment
@@ -717,7 +714,7 @@ class fragment:
     set for the fragment."""
     return self.__dict.keys()
 
-  def set_attribute(self,key,value):
+  def set_attribute(self, key, value):
     """Set the value of a fragment attribute.
 
     The key is a string specifying a particular fragment
@@ -728,7 +725,7 @@ class fragment:
     self.__dict[key] = value
     self.__nonzero = True
 
-  def set_attributes_from_dictionary(self,dict):
+  def set_attributes_from_dictionary(self, dict):
     """Set the values of multiple fragment attributes.
 
     For each key in dictionary 'dict', the value of a
@@ -738,7 +735,7 @@ class fragment:
       self.__dict[key] = dict[key]
     self.__nonzero = True
 
-  def addtable(self,tabletext=""):
+  def addtable(self, tabletext=""):
     """Add a new table object to the fragment.
 
     Create a new table object and add it to the list of
@@ -759,7 +756,7 @@ class fragment:
     """Return the number of tables found in the fragment."""
     return len(self.__tables)
 
-  def table(self,i):
+  def table(self, i):
     """Return the i'th table object.
 
     This method is deprecated, use 'fragment.tables()[i]'
@@ -774,7 +771,7 @@ class fragment:
     objects associated with the fragment."""
     return self.__tables[i]
 
-  def findtable(self,title_pattern,index=0):
+  def findtable(self, title_pattern, index=0):
     """Fetch a table in the fragment by matching the title.
 
     This method is deprecated; use the 'tables' method
@@ -791,9 +788,9 @@ class fragment:
     no matching tables) then return 'None'.
 
     It calls the 'find_table_by_title' function."""
-    return find_table_by_title(self.__tables,title_pattern,index)
+    return find_table_by_title(self.__tables, title_pattern, index)
 
-  def tables(self,select_title=""):
+  def tables(self, select_title=""):
     """Return a list of tables in the fragment.
 
     If no 'select_title' is specifed then this returns
@@ -812,9 +809,9 @@ class fragment:
     if select_title == "":
       # Return everything
       return copy.copy(self.__tables)
-    return find_tables_by_title(self.__tables,select_title)
+    return find_tables_by_title(self.__tables, select_title)
 
-  def addkeytext(self,name="",junk_text="",message=""):
+  def addkeytext(self, name="", junk_text="", message=""):
     """Add a new keytext object to the fragment.
 
     Create a new keytext object and add it to the list of
@@ -825,7 +822,7 @@ class fragment:
 
     This method returns the new keytext object."""
     # FIXME should be internally accessible only?
-    newkeytext = keytext(name,junk_text,message)
+    newkeytext = keytext(name, junk_text, message)
     self.__keytexts.append(newkeytext)
     self.__nonzero = True
     return newkeytext
@@ -839,7 +836,7 @@ class fragment:
     http://www.ccp4.ac.uk/dist/html/loggraphformat.html"""
     return len(self.__keytexts)
 
-  def keytext(self,i):
+  def keytext(self, i):
     """Return the i'th keytext object.
 
     For example: program.keytext(i) returns the i'th keytext
@@ -851,28 +848,28 @@ class fragment:
     keytext objects associated with the program/fragment."""
     return self.__keytexts[i]
 
-  def set_startline(self,line_no):
+  def set_startline(self, line_no):
     """Set the start line of the fragment in the source document."""
-    self.set_attribute("startline",line_no)
+    self.set_attribute("startline", line_no)
 
   def get_startline(self):
     """Get the start line of the fragment in the source document."""
     return self.get_attribute("startline")
 
-  def set_endline(self,line_no):
+  def set_endline(self, line_no):
     """Set the end line of the fragment in the source document."""
-    self.set_attribute("endline",line_no)
+    self.set_attribute("endline", line_no)
 
   def get_endline(self):
     """Get the end line of the fragment in the source document."""
     return self.get_attribute("endline")
 
-  def set_source_file(self,source_file):
+  def set_source_file(self, source_file):
     """Set the source document for the fragment.
 
     The source document is specified as the name of the file that
     the fragment is part of."""
-    self.set_attribute("source_file",source_file)
+    self.set_attribute("source_file", source_file)
 
   def get_source_file(self):
     """Get the source document for the fragment."""
@@ -886,7 +883,7 @@ class fragment:
     filen = self.get_source_file()
     start = self.get_startline()
     end = self.get_endline()
-    return retrieve(filen,start,end)
+    return retrieve(filen, start, end)
 
 #
 # program
@@ -993,7 +990,7 @@ class program(fragment):
     Overrides the 'isfragment' method in the base class."""
     return False
 
-  def set_isccp4(self,isccp4):
+  def set_isccp4(self, isccp4):
     """Set whether the logfile fragment is from a CCP4 program or not.
 
     This method sets the value of the isccp4 flag to True
@@ -1010,7 +1007,7 @@ class program(fragment):
     be from a CCP4 program, and False otherwise."""
     return self.__isccp4
 
-  def set_termination(self,termination):
+  def set_termination(self, termination):
     """Set whether the logfile has a termination message.
 
     This sets the value of the 'termination' flag to be
@@ -1029,7 +1026,7 @@ class program(fragment):
     message may have terminated prematurely due to an error."""
     return self.__termination
 
-  def addkeyword(self,line):
+  def addkeyword(self, line):
     """Append a keyword input line to the program logfile.
 
     This appends a keyword input line (with any leading text
@@ -1047,7 +1044,7 @@ class program(fragment):
     reflect the order that they appear in the logfile."""
     return self.__keywords
 
-  def addlogicalname(self,logical_name,filename):
+  def addlogicalname(self, logical_name, filename):
     """Add a logical name/filename reference.
 
     This adds a logical name and the associated filename to
@@ -1066,7 +1063,7 @@ class program(fragment):
     be retrieved using the 'logicalnamefile' method."""
     return self.__logicalnames.keys()
 
-  def logicalnamefile(self,logical_name):
+  def logicalnamefile(self, logical_name):
     """Return the filename associated with a logical name.
 
     Given a logical name, return the associated filename.
@@ -1075,7 +1072,7 @@ class program(fragment):
     try:
       return self.__logicalnames[logical_name]
     except KeyError:
-      raise KeyError("Logical name '"+str(logical_name)+"' not found")
+      raise KeyError("Logical name '" + str(logical_name) + "' not found")
 
 #
 # table
@@ -1110,7 +1107,7 @@ class table:
   CCP4 format using the 'show' and 'jloggraph' methods."""
 
   # Initialise the table object
-  def __init__(self,tabletext=""):
+  def __init__(self, tabletext=""):
     """Create a new table object.
 
     If tabletext contains the text of an existing
@@ -1164,7 +1161,7 @@ class table:
       return self.__title
     return "<Unpopulated table>"
 
-  def __buildtable(self,tabletext):
+  def __buildtable(self, tabletext):
     """Internal: populates the table object from an existing
     formatted table.
 
@@ -1218,9 +1215,9 @@ class table:
       # This error could be due to two data items
       # no longer being separated by whitespace
       print "Unable to parse table - too many data items (or not enough)?"
-      print "Table title: \""+str(self.title())+"\""
-      print "Number of columns   : "+str(self.ncolumns())
-      print "Number of data items: "+str(len(self.__data.split()))
+      print "Table title: \"" + str(self.title()) + "\""
+      print "Number of columns   : " + str(self.ncolumns())
+      print "Number of data items: " + str(len(self.__data.split()))
       self.__table_parse_error = True
 
   def parse_error(self):
@@ -1234,7 +1231,7 @@ class table:
     # Check the table_parse_error flag
     return self.__table_parse_error
 
-  def setrawtable(self,rawtable):
+  def setrawtable(self, rawtable):
     """Store the 'raw' table text from the original logfile.
 
     The raw table data is the original text (for example, the
@@ -1257,7 +1254,7 @@ class table:
     loggraph tags."""
     return self.__rawtable
 
-  def settitle(self,title):
+  def settitle(self, title):
     """Store the table title.
 
     The table title is an arbitrary string of text that is
@@ -1270,7 +1267,7 @@ class table:
     """Return the table title stored in the object."""
     return self.__title
 
-  def settype(self,graphtype):
+  def settype(self, graphtype):
     """Store the table graph type.
 
     This is currently one of two possible loggraph keywords,
@@ -1307,11 +1304,11 @@ class table:
     if self.ncolumns() == 0:
       return 0
     nrows = self.table_column(0).nrows()
-    for i in range(1,self.ncolumns()):
-      nrows = min(self.table_column(i).nrows(),nrows)
+    for i in range(1, self.ncolumns()):
+      nrows = min(self.table_column(i).nrows(), nrows)
     return nrows
 
-  def setgraphs(self,graphs):
+  def setgraphs(self, graphs):
     """Store the graph definitions in the table in 'raw' format.
 
     Within a CCP4-formatted table, one or more graphs are
@@ -1348,7 +1345,7 @@ class table:
     data is probably not very useful."""
     return self.__graphs
 
-  def setcolumns(self,columns):
+  def setcolumns(self, columns):
     """Create new columns in the table from the 'raw' data.
 
     Within a CCP4-formatted table, titles of columns are
@@ -1387,7 +1384,7 @@ class table:
     data is probably not very useful."""
     return self.__columns
 
-  def settext(self,text):
+  def settext(self, text):
     """Store the arbitrary text from the table.
 
     Within a CCP4-formatted table there is space for a
@@ -1406,7 +1403,7 @@ class table:
     'settext' method."""
     return self.__text
 
-  def setdata(self,data):
+  def setdata(self, data):
     """Store the raw tabulated data for the table.
 
     The body of a CCP4-formatted table contains tabulated
@@ -1445,7 +1442,7 @@ class table:
     objects associated with the table."""
     return len(self.__column_list)
 
-  def addcolumn(self,title=""):
+  def addcolumn(self, title=""):
     """Add a new column to the table.
 
     This method adds a new 'table_column' object to
@@ -1464,11 +1461,11 @@ class table:
   def list_columns(self):
     """Return a list of the column names defined in the graph."""
     columns = []
-    for icol in range(0,self.ncolumns()):
+    for icol in range(0, self.ncolumns()):
       columns.append(self.table_column(icol).title())
     return columns
 
-  def add_data(self,rowdata):
+  def add_data(self, rowdata):
     """Add a row of values to the table.
 
     'rowdata' is a dictionary which specifies column
@@ -1499,7 +1496,7 @@ class table:
         # The column name wasn't found
         raise ValueError("Column "+str(colnam)+\
               " is not defined in the table")
-    for icol in range(0,self.ncolumns()):
+    for icol in range(0, self.ncolumns()):
       # Look up whether the column has an
       # explicit value assigned
       colnam = self.table_column(icol).title()
@@ -1509,7 +1506,7 @@ class table:
         # Assign a null value
         self.table_column(icol).append("*")
 
-  def definegraph(self,title,columns,scaling=""):
+  def definegraph(self, title, columns, scaling=""):
     """Add a new graph definition to the table.
 
     This provides an interface to adding new graph
@@ -1541,15 +1538,15 @@ class table:
     graph_desc = ""
     for colnam in columns:
       found = False
-      for icol in range(0,self.ncolumns()):
+      for icol in range(0, self.ncolumns()):
         if self.table_column(icol).title() == colnam:
-          graph_desc = graph_desc+","+str(icol+1)
+          graph_desc = graph_desc + "," + str(icol + 1)
           found = True
           break
       if not found:
         # The specified column wasn't located
         # Raise an exception
-        raise ValueError("Column "+str(colnam)+" not found in table")
+        raise ValueError("Column " + str(colnam) + " not found in table")
     # Built the list - strip any leading commas
     graph_desc = graph_desc.strip(",")
     # Add a 'blank' table_graph
@@ -1560,7 +1557,7 @@ class table:
     new_graph.setcolumns(graph_desc)
     return new_graph
 
-  def table_column(self,i):
+  def table_column(self, i):
     """Return the i'th column associated with the table.
 
     This returns the i'th table_column object in the
@@ -1574,7 +1571,7 @@ class table:
     column of data as a Python list."""
     return self.__column_list[i]
 
-  def col(self,name):
+  def col(self, name):
     """Return the data in the column identified by 'name'.
 
     This method returns the data in the table column
@@ -1586,11 +1583,11 @@ class table:
     exception is raised."""
     # Identify the column corresponding to the
     # supplied name and return a copy of the data
-    for i in range(0,self.ncolumns()):
+    for i in range(0, self.ncolumns()):
       if self.table_column(i).title() == name:
         return copy.copy(self.table_column(i).data())
     # Column not found
-    raise LookupError("Column called '"+str(name)+"' not found")
+    raise LookupError("Column called '" + str(name) + "' not found")
 
   def ngraphs(self):
     """Return the number of graphs defined in the table.
@@ -1599,7 +1596,7 @@ class table:
     objects associated with the table."""
     return len(self.__graph_list)
 
-  def addgraph(self,title=""):
+  def addgraph(self, title=""):
     """Add a new graph object to the table.
 
     This method adds a new 'table_graph' object to the
@@ -1613,7 +1610,7 @@ class table:
       new_graph.settitle(title)
     return new_graph
 
-  def table_graph(self,i):
+  def table_graph(self, i):
     """Return the i'th graph object.
 
     This method returns the i'th table_graph object
@@ -1621,7 +1618,7 @@ class table:
     zero.)"""
     return self.__graph_list[i]
 
-  def jloggraph(self,codebase="",width=400,height=300):
+  def jloggraph(self, codebase="", width=400, height=300):
     """Return a jloggraph-formatted table.
 
     This method returns the text for CCP4-formatted table
@@ -1638,11 +1635,11 @@ class table:
                 "\" code=\"JLogGraph.class\"\n"+ \
                 "codebase=\""+str(codebase)+ \
                 "\"><param name=\"table\" value=\"\n"
-    jloggraph = jloggraph+self.show(loggraph=True)
-    jloggraph = jloggraph+"\"><b>For inline graphs use a Java browser</b></applet>"
+    jloggraph = jloggraph + self.show(loggraph=True)
+    jloggraph = jloggraph + "\"><b>For inline graphs use a Java browser</b></applet>"
     return jloggraph
 
-  def loggraph(self,pad_columns=True):
+  def loggraph(self, pad_columns=True):
     """Return a loggraph-formatted table.
 
     The loggraph method generates the text of the table based
@@ -1655,9 +1652,9 @@ class table:
 
     To generate jloggraph-formatted tables use the
     jloggraph method."""
-    return self.show(loggraph=True,html=True,pad_columns=pad_columns)
+    return self.show(loggraph=True, html=True, pad_columns=pad_columns)
 
-  def show(self,loggraph=False,html=False,pad_columns=True):
+  def show(self, loggraph=False, html=False, pad_columns=True):
     """Return the text of a CCP4-formatted table.
 
     The show method generates the text of the table based
@@ -1688,10 +1685,10 @@ class table:
                     graph_title+":"+ \
                     graph.scaling()+":"
         for col in graph.columns():
-          tabletext = tabletext+str(col+1)+","
+          tabletext = tabletext + str(col + 1) + ","
         tabletext = tabletext.rstrip(",")
-        tabletext = tabletext+":\n"
-      tabletext = tabletext+"$$\n"
+        tabletext = tabletext + ":\n"
+      tabletext = tabletext + "$$\n"
 
     # Columns and rows
     ncolumns = self.ncolumns()
@@ -1702,49 +1699,49 @@ class table:
     # Determine field widths for printing
     field_width = []
     if pad_columns:
-      for i in range(0,ncolumns):
+      for i in range(0, ncolumns):
         max_width = len(self.table_column(i).title())
         for item in self.table_column(i).data():
           if len(str(item)) > max_width:
             max_width = len(str(item))
         if max_width >= len(self.table_column(i).title()):
           # Put in an extra space again
-          max_width = max_width+1
+          max_width = max_width + 1
         field_width.append(max_width)
     else:
-      for i in range(0,ncolumns):
+      for i in range(0, ncolumns):
         field_width.append(0)
     # Column titles
-    for i in range(0,ncolumns):
+    for i in range(0, ncolumns):
       title = self.table_column(i).title()
       while len(title) < field_width[i]:
-        title = " "+title
-      tabletext = tabletext+" "+title
+        title = " " + title
+      tabletext = tabletext + " " + title
 
     # Arbitrary text in loggraph format
     if loggraph:
-      tabletext = tabletext+" $$"
+      tabletext = tabletext + " $$"
       if self.text():
-        tabletext = tabletext+self.text()
-      tabletext = tabletext+" $$\n"
+        tabletext = tabletext + self.text()
+      tabletext = tabletext + " $$\n"
     else:
-      tabletext = tabletext+"\n\n"
+      tabletext = tabletext + "\n\n"
 
     # The columns of data
-    for i in range(0,nrows):
-      for j in range(0,ncolumns):
+    for i in range(0, nrows):
+      for j in range(0, ncolumns):
         item = self.table_column(j)[i]
         while len(str(item)) < field_width[j]:
-          item = " "+str(item)
-        tabletext = tabletext+" "+str(item)
-      tabletext = tabletext+"\n"
+          item = " " + str(item)
+        tabletext = tabletext + " " + str(item)
+      tabletext = tabletext + "\n"
 
     # End of table
     if loggraph:
-      tabletext = tabletext+"$$"
+      tabletext = tabletext + "$$"
     return tabletext
 
-  def html(self,border=2):
+  def html(self, border=2):
     """Return the text of a table with HTML formatting.
 
     This method returns the body of the table (column
@@ -1755,7 +1752,7 @@ class table:
     column titles or data items are automatically
     converted to the correct form for HTML."""
 
-    tabletext = "<table border=\""+str(border)+"\">\n"
+    tabletext = "<table border=\"" + str(border) + "\">\n"
 
     # Columns and rows
     ncolumns = self.ncolumns()
@@ -1765,26 +1762,26 @@ class table:
       nrows = 0
 
     # Column titles
-    tabletext = tabletext+"<tr>\n"
-    for i in range(0,ncolumns):
+    tabletext = tabletext + "<tr>\n"
+    for i in range(0, ncolumns):
       title = self.table_column(i).title()
       tabletext = tabletext+" <th>"+ \
                   str(escape_xml_characters(title))+ \
                   "</th>\n"
-    tabletext = tabletext+"</tr>\n"
+    tabletext = tabletext + "</tr>\n"
 
     # The columns of data
-    for i in range(0,nrows):
-      tabletext = tabletext+"<tr>\n"
-      for j in range(0,ncolumns):
+    for i in range(0, nrows):
+      tabletext = tabletext + "<tr>\n"
+      for j in range(0, ncolumns):
         item = self.table_column(j)[i]
         tabletext = tabletext+" <td>"+ \
                     str(escape_xml_characters(item))+ \
                     "</td>\n"
-      tabletext = tabletext+"</tr>\n"
+      tabletext = tabletext + "</tr>\n"
 
     # End of table
-    tabletext = tabletext+"</table>"
+    tabletext = tabletext + "</table>"
     return tabletext
 
 #
@@ -1803,7 +1800,7 @@ class table_graph:
   collection of table_columns storing columns of data."""
 
   # Initialise the table_graph object
-  def __init__(self,title="",scaling="",column_list=None):
+  def __init__(self, title="", scaling="", column_list=None):
     """Create a new table_graph object.
 
     The 'title' argument is a string containing the title
@@ -1831,7 +1828,7 @@ class table_graph:
   def __nonzero__(self):
     return self.__nonzero
 
-  def settitle(self,title):
+  def settitle(self, title):
     """Store the title of the graph."""
     self.__title = title
 
@@ -1839,7 +1836,7 @@ class table_graph:
     """Return the title of the graph."""
     return self.__title
 
-  def set_parent_table(self,table):
+  def set_parent_table(self, table):
     """Store a reference to the parent table object."""
     self.__parent_table = table
 
@@ -1851,7 +1848,7 @@ class table_graph:
       columns.append(table.table_column(col).title())
     return columns
 
-  def setscaling(self,scaling):
+  def setscaling(self, scaling):
     """Store the scaling description.
 
     This is a string which should take one of three possible
@@ -1871,7 +1868,7 @@ class table_graph:
     """Return the scaling description."""
     return self.__scaling
 
-  def setcolumns(self,columns):
+  def setcolumns(self, columns):
     """Set the table_columns associated with the graph.
 
     The columns are specified as a string of the form
@@ -1882,7 +1879,7 @@ class table_graph:
     self.__column_list = []
     for i in columns.split(","):
       if str(i).strip().isdigit():
-        self.__column_list.append(int(i)-1)
+        self.__column_list.append(int(i) - 1)
 
   def columns(self):
     """Return the list of columns associated with the graph.
@@ -1899,7 +1896,7 @@ class table_graph:
 class table_column:
   """Object describing a column in a CCP4i logfile table"""
 
-  def __init__(self,title=""):
+  def __init__(self, title=""):
     """Initialise the table_column object."""
     self.__title = title
     self.__data = []
@@ -1916,11 +1913,11 @@ class table_column:
     """Implements len(table_column)."""
     return len(self.__data)
 
-  def __getitem__(self,key):
+  def __getitem__(self, key):
     """Implement table_column[i] to return the i'th data value."""
     return self.__data[key]
 
-  def settitle(self,title):
+  def settitle(self, title):
     """Set the title of the column."""
     self.__title = title
 
@@ -1928,7 +1925,7 @@ class table_column:
     """Return the title of the column."""
     return self.__title
 
-  def append(self,item):
+  def append(self, item):
     """Append a data value to the end of the column.
 
     The value will be stored as integer, float or string as
@@ -1955,6 +1952,7 @@ class table_column:
   def nrows(self):
     """Return the number of rows in the column."""
     return len(self.__data)
+
 #
 # keytext
 #
@@ -1962,13 +1960,14 @@ class table_column:
 #
 class keytext:
   """Object describing a keytext message in a CCP4 logfile"""
+
   # Initialise the keytext object
-  def __init__(self,name="",junk_text="",message=""):
+  def __init__(self, name="", junk_text="", message=""):
     self.setname(name)
     self.setjunk_text(junk_text)
     self.setmessage(message)
 
-  def setname(self,name):
+  def setname(self, name):
     # Set the name attribute
     self.__name = str(name).strip()
 
@@ -1976,7 +1975,7 @@ class keytext:
     # Return the name attribute
     return self.__name
 
-  def setjunk_text(self,junk_text):
+  def setjunk_text(self, junk_text):
     # Set the junk_text attribute
     self.__junk_text = str(junk_text).strip()
 
@@ -1984,7 +1983,7 @@ class keytext:
     # Return the junk_text attribute
     return self.__junk_text
 
-  def setmessage(self,message):
+  def setmessage(self, message):
     # Set the message attribute
     self.__message = str(message).strip()
 
@@ -2003,6 +2002,7 @@ class ccp4i_info(fragment):
   The ccp4i_info class has the following attributes:
 
   'message': the text of the CCP4i information message."""
+
   # Initialise the ccp4i_info object
 
   def __init__(self):
@@ -2010,13 +2010,14 @@ class ccp4i_info(fragment):
     fragment.__init__(self)
     # Initialise program-specific flags and
     # attributes
-    self.set_attribute("message","")
+    self.set_attribute("message", "")
 
   def isccp4i_info(self):
     return True
 
   def isfragment(self):
     return False
+
 #
 # summary
 #
@@ -2037,8 +2038,9 @@ class summary:
   not stored. It can be fetched using the 'retrieve' method,
   in which case it is read directly from the file and
   returned."""
+
   # Initialise the keytext object
-  def __init__(self,source_file,start_line=-1):
+  def __init__(self, source_file, start_line=-1):
     self.__source_file = source_file
     if start_line > 0:
       self.__start_line = start_line
@@ -2046,11 +2048,11 @@ class summary:
       self.__start_line = -1
     self.__end_line = -1
 
-  def set_start(self,start_line):
+  def set_start(self, start_line):
     """Set the start line for the summary block."""
     self.__start_line = start_line
 
-  def set_end(self,end_line):
+  def set_end(self, end_line):
     """Set the end line for the summary block."""
     self.__end_line = end_line
 
@@ -2077,9 +2079,7 @@ class summary:
     """Return the text within the summary block."""
 
     if not self.iscomplete(): return ""
-    return retrieve(self.__source_file,
-                    self.__start_line,
-                    self.__end_line)
+    return retrieve(self.__source_file, self.__start_line, self.__end_line)
 
 class patternmatch:
   """Object holding regular expressions for logfile features.
@@ -2115,7 +2115,7 @@ class patternmatch:
     # Create a dictionary to hold the regular expressions
     self.__patterns = dict()
 
-  def compile(self,name,pattern):
+  def compile(self, name, pattern):
     """Returns a compiled regular expression from the pattern.
 
     This method returns a compiled regular expression associated
@@ -2126,13 +2126,13 @@ class patternmatch:
     try:
       return self.get_pattern(name)
     except KeyError:
-      return self.store_pattern(name,re.compile(pattern))
+      return self.store_pattern(name, re.compile(pattern))
 
-  def has_pattern(self,name):
+  def has_pattern(self, name):
     """Returns True if there is a pattern associated 'name'."""
     return name in self.__patterns
 
-  def store_pattern(self,name,cpattern):
+  def store_pattern(self, name, cpattern):
     """Store a compiled regular expression associated with 'name'.
 
     'cpattern' is a compiled regular expression which
@@ -2147,11 +2147,11 @@ class patternmatch:
     # stored with the same name
     raise KeyError
 
-  def get_pattern(self,name):
+  def get_pattern(self, name):
     """Fetch a compiled regular expression associated with 'name'."""
     return self.__patterns[name]
 
-  def isccp4banner(self,text):
+  def isccp4banner(self, text):
     """Regular expression match to CCP4 program banner.
 
     Given a block of text, attempts to match it against
@@ -2174,7 +2174,7 @@ class patternmatch:
     return result
 
   # Match CCP4 program termination
-  def isccp4termination(self,text):
+  def isccp4termination(self, text):
     """Regular expression match to CCP4 program termination.
 
     Given a block of text, attempts to match it against
@@ -2194,7 +2194,7 @@ class patternmatch:
     return result
 
   # Match standard CCP4 program banner
-  def isccp4banner_standard(self,text):
+  def isccp4banner_standard(self, text):
     """Test if text matches a standard CCP4 program banner.
 
     If the match fails then return False; if it succeeds then
@@ -2258,7 +2258,7 @@ class patternmatch:
     return result
 
   # Match standard CCP4 program termination
-  def isccp4termination_standard(self,text):
+  def isccp4termination_standard(self, text):
     """Test if text matches a standard CCP4 program termination.
 
     If the match fails then return False; if it succeeds then
@@ -2301,7 +2301,7 @@ class patternmatch:
     return result
 
   # Match "phaser-style" CCP4 banner
-  def isccp4banner_phaser(self,text):
+  def isccp4banner_phaser(self, text):
     """Test if text matches a 'phaser-style' CCP4 program banner.
 
     'Phaser-style' banners look similar to CCP4 banners but
@@ -2368,7 +2368,7 @@ class patternmatch:
     return result
 
   # Match "phaser-style" CCP4 program termination
-  def isccp4termination_phaser(self,text):
+  def isccp4termination_phaser(self, text):
     """Test if text matches a 'phaser-style' CCP4 program termination.
 
     If the match fails then return False; if it succeeds then
@@ -2405,7 +2405,7 @@ class patternmatch:
     return result
 
   # Match old-style standard CCP4 program banner
-  def isccp4banner_old(self,text):
+  def isccp4banner_old(self, text):
     """Test if text matches an old-style CCP4 program banner.
 
     'Old-style' banners come from versions of CCP4 predating
@@ -2463,7 +2463,7 @@ class patternmatch:
     return result
 
   # Match CCP4 keytext i.e. $TEXT ...
-  def isccp4keytext(self,text):
+  def isccp4keytext(self, text):
     """Test if text matches CCP4 keytext message ($TEXT).
 
     If the match fails then return False; if it succeeds then
@@ -2493,7 +2493,7 @@ class patternmatch:
     return result
 
   # Match CCP4 TABLE
-  def isccp4table(self,text):
+  def isccp4table(self, text):
     """Test if text matches CCP4 logfile table ($TABLE).
 
     If the match fails then return False; if it succeeds then
@@ -2548,7 +2548,10 @@ class patternmatch:
       return result
     # If there wasn't a match then try a simpler match
     # This relaxes some of the rules in the format definintion
-    table = self.compile("isccp4simplertable",r" *\$TABLE ?:([^\n]*)\n+\$(GRAPHS|SCATTER)[^:]*(:[^\$]*)\$\$([^\$]*)\$\$([^\$]*)\$\$([^\$]*)\$\$").search(text)
+    table = self.compile(
+        "isccp4simplertable",
+        r" *\$TABLE ?:([^\n]*)\n+\$(GRAPHS|SCATTER)[^:]*(:[^\$]*)\$\$([^\$]*)\$\$([^\$]*)\$\$([^\$]*)\$\$"
+    ).search(text)
     if table:
       result["rawtable"] = table.group(0)
       result["title"] = table.group(1).strip()
@@ -2562,7 +2565,7 @@ class patternmatch:
     return result
 
   # Match CCP4i header information
-  def isccp4iheader(self,text):
+  def isccp4iheader(self, text):
     """Test if text matches a CCP4i header line."""
     #
     # CCP4i header lines look like:
@@ -2573,14 +2576,14 @@ class patternmatch:
     if self.isccp4itail(text):
       # Reject tail elements
       return ""
-    header = self.compile("isccp4iheader",r"#CCP4I (.*)").search(text)
+    header = self.compile("isccp4iheader", r"#CCP4I (.*)").search(text)
     result = ""
     if header:
       result = header.group(0)
     return result
 
   # Match CCP4i header information
-  def isccp4itail(self,text):
+  def isccp4itail(self, text):
     """Test if text matches a CCP4i tail line."""
     #
     # CCP4i tail lines look like:
@@ -2635,7 +2638,7 @@ class patternmatch:
   #  +  Started at 14:30:36 on 21 Apr 2006                              +
   #  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   #
-  def isshelxbanner(self,text):
+  def isshelxbanner(self, text):
     """Test if text matches a SHELX program banner.
 
     This function tries to match the banners from SHELXC,
@@ -2686,7 +2689,7 @@ class patternmatch:
     return result
 
   # Match SHELX program termination
-  def isshelxtermination(self,text):
+  def isshelxtermination(self, text):
     """Test if text matches a SHELX program termination.
 
     This function tries to match the messages from SHELXC,
@@ -2730,7 +2733,7 @@ class patternmatch:
     return result
 
   # Match program keyword input line ("Data line")
-  def isdataline(self,line):
+  def isdataline(self, line):
     """Test if line matches a CCP4 keyword input line.
 
     This function tries to match the keyword input lines.
@@ -2754,7 +2757,7 @@ class patternmatch:
     return result
 
   # Match CCP4 file opening line (logical name/filename)
-  def isfileopen(self,line):
+  def isfileopen(self, line):
     """Test if line matches a CCP4 file opening report.
 
     This function tries to match the reports of a file opening
@@ -2781,7 +2784,7 @@ class patternmatch:
     return result
 
   # Match CCP4 SUMMARY_BEGIN line (summary start)
-  def issummary_begin(self,line):
+  def issummary_begin(self, line):
     """Test if line matches a CCP4 SUMMARY_BEGIN line.
 
     This function tries to match lines that indicate the start
@@ -2795,13 +2798,14 @@ class patternmatch:
     # <B><FONT COLOR="#FF0000"><!--SUMMARY_BEGIN-->
     #
     # Set up regular expression for SUMMARY_BEGIN lines
-    summary = self.compile("issummary_begin",r"<\!--SUMMARY_BEGIN-->").search(line)
+    summary = self.compile("issummary_begin",
+                           r"<\!--SUMMARY_BEGIN-->").search(line)
     if summary:
       return True
     return False
 
   # Match CCP4 SUMMARY_END line (summary end)
-  def issummary_end(self,line):
+  def issummary_end(self, line):
     """Test if line matches a CCP4 SUMMARY_END line.
 
     This function tries to match lines that indicate the end
@@ -2815,7 +2819,7 @@ class patternmatch:
     # <!--SUMMARY_END--></FONT></B>
     #
     # Set up regular expression for SUMMARY_BEGIN lines
-    summary = self.compile("issummary_end",r"<\!--SUMMARY_END-->").search(line)
+    summary = self.compile("issummary_end", r"<\!--SUMMARY_END-->").search(line)
     if summary:
       return True
     return False
@@ -2829,7 +2833,7 @@ class patternmatch:
 # Given the name of a logfile, populates and returns a
 # logfile object
 
-def parselog(filen,progress=0):
+def parselog(filen, progress=0):
   """Process a file and return a populated logfile object.
 
   parselog takes a file name as input; optionally if the
@@ -2885,7 +2889,7 @@ def parselog(filen,progress=0):
   prog = False
   summary = None
   # Open the file for reading
-  f = open(filen,"r")
+  f = open(filen, "r")
   # Read line-by-line
   for line in f:
     linecount += 1
@@ -2893,7 +2897,7 @@ def parselog(filen,progress=0):
     # Report reaching "progress" number of lines
     if progress:
       if not linecount % progress:
-        print "Processed "+str(linecount)+" lines"
+        print "Processed " + str(linecount) + " lines"
     # Append line to buffers
     buff.append(line)
     tablebuff.append(line)
@@ -2912,7 +2916,7 @@ def parselog(filen,progress=0):
         # Set the start line to be immediately
         # after the previous fragment
         try:
-          previous_fragment = log.fragment(log.nfragments()-2)
+          previous_fragment = log.fragment(log.nfragments() - 2)
           start = previous_fragment.get_endline() + 1
         except IndexError:
           # Failed to get end line of previous
@@ -2933,7 +2937,7 @@ def parselog(filen,progress=0):
         # Set the start line to be immediately
         # after the previous fragment
         try:
-          previous_fragment = log.fragment(log.nfragments()-2)
+          previous_fragment = log.fragment(log.nfragments() - 2)
           start = previous_fragment.get_endline() + 1
         except IndexError:
           # Failed to get end line of previous
@@ -2941,7 +2945,7 @@ def parselog(filen,progress=0):
           start = 0
         log.set_fragment_start(start)
       # Store the logical name/filename pair
-      prog.addlogicalname(result["logical_name"],result["filename"])
+      prog.addlogicalname(result["logical_name"], result["filename"])
     # Start of a summary block i.e. <!--SUMMARY_BEGIN-->
     result = regex.issummary_begin(line)
     if result:
@@ -2987,13 +2991,13 @@ def parselog(filen,progress=0):
       if not prog:
         # Outside the context of any fragment, and
         # found the end of a program before its start
-        log.set_fragment_end(offsetline(linecount,result))
+        log.set_fragment_end(offsetline(linecount, result))
         prog = log.addprogram()
       elif not prog.isprogram():
         # Within the context of a fragment which
         # is not a program and found the end of a
         # program before its start
-        log.set_fragment_end(offsetline(linecount,result))
+        log.set_fragment_end(offsetline(linecount, result))
         prog = log.addprogram()
       prog.set_attributes_from_dictionary(result)
       log.set_fragment_end(linecount)
@@ -3035,9 +3039,9 @@ def parselog(filen,progress=0):
         print "*** Failed to parse table data ***"
         table_error = True
       if table_error:
-        print "\tLogfile: "+str(log.filename())
-        print "\tTable start: L"+str(linecount - len(tablebuff) + 1)
-        print "\tTable end  : L"+str(linecount)
+        print "\tLogfile: " + str(log.filename())
+        print "\tTable start: L" + str(linecount - len(tablebuff) + 1)
+        print "\tTable end  : L" + str(linecount)
       # Add the table to the log, regardless of status
       log.addtable(table)
       # clear the buffers
@@ -3114,18 +3118,18 @@ def summarise(thislog):
   and so on) to stdout."""
 
   # Logfile name
-  print "Summary for "+thislog.filename()+"\n"
+  print "Summary for " + thislog.filename() + "\n"
   # Was it from CCP4i?
   if thislog.isccp4i():
     print "This is a CCP4i logfile\n"
   # Number of programs or pseudo-programs
-  print str(thislog.nfragments())+" logfile fragments\n"
+  print str(thislog.nfragments()) + " logfile fragments\n"
   print "Fragments:"
-  for i in range(0,thislog.nfragments()):
+  for i in range(0, thislog.nfragments()):
     fragment = thislog.fragment(i)
     if fragment.isprogram():
       if fragment.has_attribute("name"):
-        print "\tProgram: "+str(fragment.name)
+        print "\tProgram: " + str(fragment.name)
       else:
         print "\tProgram: <no name>"
     else:
@@ -3134,16 +3138,16 @@ def summarise(thislog):
       elif fragment.isfragment():
         print "\tFragment"
       if fragment.ntables():
-        print "\t\t"+str(fragment.ntables())+" tables"
+        print "\t\t" + str(fragment.ntables()) + " tables"
       if fragment.nkeytexts():
-        print "\t\t"+str(fragment.nkeytexts())+" keytexts"
+        print "\t\t" + str(fragment.nkeytexts()) + " keytexts"
 
   print ""
   # Summarise program logfile fragments
   if thislog.nprograms() > 0:
-    print str(thislog.nprograms())+" program logfiles\n"
+    print str(thislog.nprograms()) + " program logfiles\n"
     print "Programs:"
-    for i in range(0,thislog.nprograms()):
+    for i in range(0, thislog.nprograms()):
       prog = thislog.program(i)
       # Is it a CCP4 program?
       if prog.isccp4():
@@ -3154,24 +3158,24 @@ def summarise(thislog):
       else:
         # Print name and version
         if prog.has_attribute("name") and prog.has_attribute("version"):
-          print "\t"+prog.name+"\t"+prog.version
+          print "\t" + prog.name + "\t" + prog.version
         else:
           print "\t<No name and/or version>"
       if prog.termination():
-        print "\tTerminated with: "+prog.termination_message
+        print "\tTerminated with: " + prog.termination_message
       else:
         print "\tNo termination message found"
       # Keytexts
       if prog.nkeytexts():
         print "\n\t\tKeytext messages:"
-        for j in range(0,prog.nkeytexts()):
+        for j in range(0, prog.nkeytexts()):
           print "\t\t"+str(prog.keytext(j).name())+ \
                 ": \""+str(prog.keytext(j).message())+"\""
       # Tables
       if prog.ntables():
         print "\n\t\tTables:"
         for table in prog.tables():
-          print "\t\tTable: \""+table.title()+"\""
+          print "\t\tTable: \"" + table.title() + "\""
       print ""
   else:
     print "No program logfiles found"
@@ -3179,8 +3183,8 @@ def summarise(thislog):
   # Total set of CCP4i information messages in the file
   print "CCP4i messages in file:"
   if thislog.nccp4i_info():
-    for i in range(0,thislog.nccp4i_info()):
-      print "\tCCP4i info: \""+thislog.ccp4i_info(i).message+"\""
+    for i in range(0, thislog.nccp4i_info()):
+      print "\tCCP4i info: \"" + thislog.ccp4i_info(i).message + "\""
   else:
     print "\tNo messages found"
   print ""
@@ -3188,14 +3192,15 @@ def summarise(thislog):
   print "Tables in file:"
   if thislog.ntables():
     for table in thislog.tables():
-      print "\tTable: \""+table.title()+"\" ("+str(table.nrows())+" rows)"
+      print "\tTable: \"" + table.title() + "\" (" + str(
+          table.nrows()) + " rows)"
   else:
     print "\tNo tables found"
   print ""
   # Total set of keytexts in the file
   print "Keytext messages in file:"
   if thislog.nkeytexts():
-    for i in range(0,thislog.nkeytexts()):
+    for i in range(0, thislog.nkeytexts()):
       print "\t"+str(thislog.keytext(i).name())+ \
             ": \""+thislog.keytext(i).message()+"\""
   else:
@@ -3206,7 +3211,7 @@ def summarise(thislog):
 # Utility Functions
 #######################################################################
 
-def copyfragment(fragment0,newobj):
+def copyfragment(fragment0, newobj):
   """Copy the data in a fragment to another object.
 
   The data in the source fragment 'fragment0' is copied to the
@@ -3241,7 +3246,7 @@ def copyfragment(fragment0,newobj):
   # Return the populated object
   return newobj
 
-def offsetline(linen,pattern_result):
+def offsetline(linen, pattern_result):
   """Return the line number offset by the size of a matched pattern.
 
   This is an internal utility function.
@@ -3263,7 +3268,7 @@ def offsetline(linen,pattern_result):
   else:
     return new_linen
 
-def find_table_by_title(table_list,title_pattern,index=0):
+def find_table_by_title(table_list, title_pattern, index=0):
   """Fetch a table object from a list by matching the title.
 
   This method is deprecated; use find_tables_by_title instead.
@@ -3278,13 +3283,13 @@ def find_table_by_title(table_list,title_pattern,index=0):
   should be returned. If index is out of range (or there are
   no matching tables) then return 'None'."""
 
-  rtable_list = find_tables_by_title(table_list,title_pattern)
+  rtable_list = find_tables_by_title(table_list, title_pattern)
   try:
     return rtable_list[index]
   except Exception:
     return None
 
-def find_tables_by_title(table_list,title_pattern):
+def find_tables_by_title(table_list, title_pattern):
   """Return a list of tables by matching the title.
 
   This method returns a list of table objects containing
@@ -3301,7 +3306,7 @@ def find_tables_by_title(table_list,title_pattern):
   returned."""
 
   rtitle = re.compile(title_pattern)
-  rtable_list=[]
+  rtable_list = []
   for table in table_list:
     if rtitle.match(table.title()): rtable_list.append(table)
   return rtable_list
@@ -3423,12 +3428,12 @@ def process_start_tag(tag_text):
       try:
         i = token.index("=")
         key = token[0:i]
-        value = token[i+1:].strip(" \"")
+        value = token[i + 1:].strip(" \"")
       except ValueError:
         key = token
         value = ""
       attributes[key] = value
-  return (tag,attributes)
+  return (tag, attributes)
 
 def salvage_tag_data(tag_text):
   """Extract data from a HTML tag.

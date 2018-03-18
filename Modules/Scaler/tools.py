@@ -24,7 +24,6 @@ def patch_mtz_unit_cell(mtzfile, unit_cell_parameters):
 
   f.write(file_name=mtzfile)
 
-
 #
 # Replacement function centralised to replace the use of cellparm.
 #
@@ -65,7 +64,7 @@ def compute_average_unit_cell(unit_cell_list):
 # single program now...
 #
 
-def add_dose_time_to_mtz(hklin, hklout, doses, times = None):
+def add_dose_time_to_mtz(hklin, hklout, doses, times=None):
   '''Add doses and times from dictionaries doses, times (optional)
   to hklin to produce hklout. The dictionaries are indexed by the
   BATCH column in hklin. Will raise exception if no BATCH column.'''
@@ -75,7 +74,7 @@ def add_dose_time_to_mtz(hklin, hklout, doses, times = None):
   from iotbx import mtz
   from cctbx.array_family import flex
 
-  mtz_obj = mtz.object(file_name = hklin)
+  mtz_obj = mtz.object(file_name=hklin)
 
   batch_column = None
   batch_dataset = None
@@ -94,14 +93,13 @@ def add_dose_time_to_mtz(hklin, hklout, doses, times = None):
   # array of the same size and assign DOSE, TIME, then add these to the
   # same dataset.
 
-  batch_column_values = batch_column.extract_values(
-      not_a_number_substitute = -1)
+  batch_column_values = batch_column.extract_values(not_a_number_substitute=-1)
 
-  dose_column = batch_dataset.add_column(label = 'DOSE', type = 'R')
+  dose_column = batch_dataset.add_column(label='DOSE', type='R')
   dose_column_values = flex.float()
 
   if times:
-    time_column = batch_dataset.add_column(label = 'TIME', type = 'R')
+    time_column = batch_dataset.add_column(label='TIME', type='R')
     time_column_values = flex.float()
 
   valid = flex.bool()
@@ -116,20 +114,18 @@ def add_dose_time_to_mtz(hklin, hklout, doses, times = None):
 
   # add the columns back to the MTZ file structure
 
-  dose_column.set_values(values = dose_column_values,
-                         selection_valid = valid)
+  dose_column.set_values(values=dose_column_values, selection_valid=valid)
 
   if times:
-    time_column.set_values(values = time_column_values,
-                           selection_valid = valid)
+    time_column.set_values(values=time_column_values, selection_valid=valid)
 
   # and write this lot out as hklout
 
-  mtz_obj.write(file_name = hklout)
+  mtz_obj.write(file_name=hklout)
 
 if __name__ == "__main__":
-  doses = { }
-  times = { }
+  doses = {}
+  times = {}
 
   for record in open('doser.in', 'r').readlines():
     values = record.split()

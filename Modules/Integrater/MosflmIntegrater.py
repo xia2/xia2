@@ -65,7 +65,7 @@ class MosflmIntegrater(Integrater):
   def to_dict(self):
     obj = super(MosflmIntegrater, self).to_dict()
     import inspect
-    attributes = inspect.getmembers(self, lambda m:not(inspect.isroutine(m)))
+    attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
     for a in attributes:
       if a[0].startswith('_mosflm_'):
         obj[a[0]] = a[1]
@@ -87,14 +87,13 @@ class MosflmIntegrater(Integrater):
     self.digest_template()
 
     experiment = self._intgr_refiner.get_refined_experiment_list(
-      self.get_integrater_epoch())[0]
+        self.get_integrater_epoch())[0]
     crystal_model = experiment.crystal
     self._intgr_cell = crystal_model.get_unit_cell().parameters()
 
     if not self._intgr_wedge:
       images = self.get_matching_images()
-      self.set_integrater_wedge(min(images),
-      max(images))
+      self.set_integrater_wedge(min(images), max(images))
 
     self.set_integrater_parameters(
       {'mosflm': self._intgr_refiner.get_refiner_parameters('mosflm')})
@@ -133,7 +132,7 @@ class MosflmIntegrater(Integrater):
 
       nproc = PhilIndex.params.xia2.settings.multiprocessing.nproc
       if nproc > 1:
-        Debug.write('Parallel integration: %d jobs' %nproc)
+        Debug.write('Parallel integration: %d jobs' % nproc)
         self._mosflm_hklout = self._mosflm_parallel_integrate()
       else:
         self._mosflm_hklout = self._mosflm_integrate()
@@ -149,12 +148,10 @@ class MosflmIntegrater(Integrater):
     except IntegrationError as e:
       if 'negative mosaic spread' in str(e):
         if self._mosflm_postref_fix_mosaic:
-          Chatter.write(
-              'Negative mosaic spread - stopping integration')
+          Chatter.write('Negative mosaic spread - stopping integration')
           raise BadLatticeError('negative mosaic spread')
 
-        Chatter.write(
-            'Negative mosaic spread - rerunning integration')
+        Chatter.write('Negative mosaic spread - rerunning integration')
         self.set_integrater_done(False)
         self._mosflm_postref_fix_mosaic = True
 
@@ -336,7 +333,7 @@ class MosflmIntegrater(Integrater):
     self._intgr_per_image_statistics = integrater.get_per_image_statistics()
 
     self._mosflm_hklout = integrater.get_hklout()
-    Debug.write('Integration output: %s' %self._mosflm_hklout)
+    Debug.write('Integration output: %s' % self._mosflm_hklout)
 
     self._intgr_n_ref = integrater.get_nref()
 
@@ -347,8 +344,7 @@ class MosflmIntegrater(Integrater):
       if not self._mosflm_refine_profiles:
         raise RuntimeError('BGSIG error with profiles fixed')
 
-      Debug.write(
-          'BGSIG error detected - try fixing profile...')
+      Debug.write('BGSIG error detected - try fixing profile...')
 
       self._mosflm_refine_profiles = False
       self.set_integrater_done(False)
@@ -508,8 +504,7 @@ class MosflmIntegrater(Integrater):
     for j in range(parallel):
 
       # make some working directories, as necessary - chunk-(0:N-1)
-      wd = os.path.join(self.get_working_directory(),
-                        'chunk-%d' % j)
+      wd = os.path.join(self.get_working_directory(), 'chunk-%d' % j)
       if not os.path.exists(wd):
         os.makedirs(wd)
 
@@ -533,8 +528,7 @@ class MosflmIntegrater(Integrater):
       # N.B. for harvesting need to append N to dname.
 
       if pname is not None and xname is not None and dname is not None:
-        Debug.write('Harvesting: %s/%s/%s' %
-                    (pname, xname, dname))
+        Debug.write('Harvesting: %s/%s/%s' % (pname, xname, dname))
         harvest_dir = self.get_working_directory()
         temp_dname = '%s_%s' % \
                      (dname, self.get_integrater_sweep_name())
@@ -601,7 +595,6 @@ class MosflmIntegrater(Integrater):
       job.set_pre_refinement(True)
       job.set_image_range(chunks[j])
 
-
       # these are now running so ...
 
       jobs.append(job)
@@ -633,7 +626,7 @@ class MosflmIntegrater(Integrater):
       threads.append(thread)
 
     mosaics = []
-    postref_result = { }
+    postref_result = {}
 
     integrated_images_first = 1.0e6
     integrated_images_last = -1.0e6
@@ -697,8 +690,7 @@ class MosflmIntegrater(Integrater):
         if not self._mosflm_refine_profiles:
           raise RuntimeError('BGSIG error with profiles fixed')
 
-        Debug.write(
-            'BGSIG error detected - try fixing profile...')
+        Debug.write('BGSIG error detected - try fixing profile...')
 
         self._mosflm_refine_profiles = False
         self.set_integrater_done(False)
@@ -706,8 +698,7 @@ class MosflmIntegrater(Integrater):
         return
 
       if job.get_getprof_error():
-        Debug.write(
-            'GETPROF error detected - try fixing profile...')
+        Debug.write('GETPROF error detected - try fixing profile...')
         self._mosflm_refine_profiles = False
         self.set_integrater_done(False)
 
@@ -794,7 +785,7 @@ class MosflmIntegrater(Integrater):
     if not self._mosflm_cell_ref_images:
       raise RuntimeError('no cell refinement images to reorder')
 
-    hashmap = { }
+    hashmap = {}
 
     for m in self._mosflm_cell_ref_images:
       hashmap[m[0]] = m[1]
@@ -804,13 +795,13 @@ class MosflmIntegrater(Integrater):
     cell_ref_images = [(k, hashmap[k]) for k in keys]
     self._mosflm_cell_ref_images = cell_ref_images
 
-  def set_integrater_resolution(self, dmin, dmax, user = False):
+  def set_integrater_resolution(self, dmin, dmax, user=False):
     if user:
       Integrater.set_integrater_resolution(self, dmin, dmax, user)
 
-  def set_integrater_high_resolution(self, dmin, user = False):
+  def set_integrater_high_resolution(self, dmin, user=False):
     if user:
       Integrater.set_integrater_high_resolution(self, dmin, user)
 
-  def set_integrater_low_resolution(self, dmax, user = False):
+  def set_integrater_low_resolution(self, dmax, user=False):
     self._intgr_reso_low = dmax

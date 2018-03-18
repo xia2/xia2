@@ -247,10 +247,8 @@ class CommonScaler(Scaler):
 
         Chatter.write('Getting batches from %s' % hklin)
         batches = MtzUtils.batches_from_mtz(hklin)
-        self._sweep_information[epoch]['batches'] = [min(batches),
-                                                     max(batches)]
-        Chatter.write('=> %d to %d' % (min(batches),
-                                       max(batches)))
+        self._sweep_information[epoch]['batches'] = [min(batches), max(batches)]
+        Chatter.write('=> %d to %d' % (min(batches), max(batches)))
 
       batches = self._sweep_information[epoch]['batches']
       if 1 + max(batches) - min(batches) > max_batches:
@@ -285,17 +283,15 @@ class CommonScaler(Scaler):
 
       # hack - reset this as it gets in a muddle...
       intgr = self._sweep_information[epoch]['integrater']
-      self._sweep_information[epoch][
-          'batches'] = intgr.get_integrater_batches()
+      self._sweep_information[epoch]['batches'] = intgr.get_integrater_batches()
 
       first_batch = min(self._sweep_information[epoch]['batches'])
       offset = counter * max_batches - first_batch + 1
       self._sweep_information[epoch]['batch_offset'] = offset
 
       from xia2.Modules.Scaler.rebatch import rebatch
-      new_batches = rebatch(
-        hklin, hklout, add_batch=offset,
-        pname=pname, xname=xname, dname=dname)
+      new_batches = rebatch(hklin, hklout, add_batch=offset, pname=pname,
+                            xname=xname, dname=dname)
 
       # update the "input information"
 
@@ -317,13 +313,15 @@ class CommonScaler(Scaler):
     for epoch in epochs:
       s.add_hklin(self._sweep_information[epoch]['hklin'])
 
-    s.sort(vrset = -99999999.0)
+    s.sort(vrset=-99999999.0)
 
     self._prepared_reflections = hklout
 
     if self.get_scaler_reference_reflection_file():
-      spacegroups = [MtzUtils.space_group_name_from_mtz(
-        self.get_scaler_reference_reflection_file())]
+      spacegroups = [
+          MtzUtils.space_group_name_from_mtz(
+              self.get_scaler_reference_reflection_file())
+      ]
       reindex_operator = 'h,k,l'
 
     else:
@@ -381,7 +379,7 @@ class CommonScaler(Scaler):
     s.set_hklin(hklin)
     s.set_hklout(hklout)
 
-    s.sort(vrset = -99999999.0)
+    s.sort(vrset=-99999999.0)
 
     self._prepared_reflections = hklout
 
@@ -394,14 +392,16 @@ class CommonScaler(Scaler):
 
   def _sort_together_data_xds_one_sweep(self):
 
-    assert(len(self._sweep_information) == 1)
+    assert len(self._sweep_information) == 1
 
     epoch = self._sweep_information.keys()[0]
     hklin = self._sweep_information[epoch]['scaled_reflections']
 
     if self.get_scaler_reference_reflection_file():
-      spacegroups = [MtzUtils.space_group_name_from_mtz(
-        self.get_scaler_reference_reflection_file())]
+      spacegroups = [
+          MtzUtils.space_group_name_from_mtz(
+              self.get_scaler_reference_reflection_file())
+      ]
       reindex_operator = 'h,k,l'
 
     elif self._scalr_input_spacegroup:
@@ -447,8 +447,7 @@ class CommonScaler(Scaler):
 
       from cctbx import sgtbx
 
-      s = sgtbx.space_group(sgtbx.space_group_symbols(
-           str(spacegroup)).hall())
+      s = sgtbx.space_group(sgtbx.space_group_symbols(str(spacegroup)).hall())
 
       m = mtz.object(hklin)
       m.set_space_group(s).write(hklout)
@@ -456,8 +455,8 @@ class CommonScaler(Scaler):
       Debug.write(
           'Updating unit cell to %.2f %.2f %.2f %.2f %.2f %.2f' % \
           tuple(self._scalr_cell))
-      del(m)
-      del(s)
+      del m
+      del s
 
     else:
       ri = self._factory.Reindex()
@@ -481,7 +480,7 @@ class CommonScaler(Scaler):
     s.set_hklin(hklin)
     s.set_hklout(hklout)
 
-    s.sort(vrset = -99999999.0)
+    s.sort(vrset=-99999999.0)
 
     self._prepared_reflections = hklout
 
@@ -528,13 +527,12 @@ class CommonScaler(Scaler):
     import time
     mtz_files = [self._scalr_scaled_reflection_files['mtz']]
     mtz_files.extend(
-      self._scalr_scaled_reflection_files['mtz_unmerged'].values())
+        self._scalr_scaled_reflection_files['mtz_unmerged'].values())
     for mtz_file in mtz_files:
       reader = any_reflection_file(mtz_file)
       mtz_object = reader.file_content()
       date_str = time.strftime('%d/%m/%Y at %H:%M:%S', time.gmtime())
-      mtz_object.add_history(
-        'From %s, run on %s' %(Version, date_str))
+      mtz_object.add_history('From %s, run on %s' % (Version, date_str))
       mtz_object.write(mtz_file)
 
   def _scale_finish_chunk_1_compute_anomalous(self):
@@ -644,7 +642,7 @@ class CommonScaler(Scaler):
   def _scale_finish_chunk_4_mad_mangling(self):
     if len(self._scalr_scaled_refl_files.keys()) > 1:
 
-      reflection_files = { }
+      reflection_files = {}
 
       for wavelength in self._scalr_scaled_refl_files.keys():
         cad = self._factory.Cad()
@@ -857,7 +855,7 @@ class CommonScaler(Scaler):
     # P422 for P4/mmm?
     if not m.space_group().is_centric():
       from xia2.Toolkit.E4 import E4_mtz
-      E4s = E4_mtz(hklout, native = True)
+      E4s = E4_mtz(hklout, native=True)
       self._scalr_twinning_score = E4s.items()[0][1]
 
       if self._scalr_twinning_score > 1.9:
@@ -926,33 +924,34 @@ class CommonScaler(Scaler):
     if params.completeness is not None:
       r_comp = m.get_resolution_completeness()
       resolution_limits.append(r_comp)
-      reasoning.append('completeness > %s' %params.completeness)
+      reasoning.append('completeness > %s' % params.completeness)
 
     if params.cc_half is not None:
       r_cc_half = m.get_resolution_cc_half()
       resolution_limits.append(r_cc_half)
-      reasoning.append('cc_half > %s' %params.cc_half)
+      reasoning.append('cc_half > %s' % params.cc_half)
 
     if params.rmerge is not None:
       r_rm = m.get_resolution_rmerge()
       resolution_limits.append(r_rm)
-      reasoning.append('rmerge > %s' %params.rmerge)
+      reasoning.append('rmerge > %s' % params.rmerge)
 
     if params.isigma is not None:
       r_uis = m.get_resolution_isigma()
       resolution_limits.append(r_uis)
-      reasoning.append('unmerged <I/sigI> > %s' %params.isigma)
+      reasoning.append('unmerged <I/sigI> > %s' % params.isigma)
 
     if params.misigma is not None:
       r_mis = m.get_resolution_misigma()
       resolution_limits.append(r_mis)
-      reasoning.append('merged <I/sigI> > %s' %params.misigma)
+      reasoning.append('merged <I/sigI> > %s' % params.misigma)
 
     if len(resolution_limits):
       resolution = max(resolution_limits)
       reasoning = [
-        reason for limit, reason in zip(resolution_limits, reasoning)
-        if limit >= resolution]
+          reason for limit, reason in zip(resolution_limits, reasoning)
+          if limit >= resolution
+      ]
       reasoning = ', '.join(reasoning)
     else:
       resolution = 0.0
@@ -964,27 +963,27 @@ class CommonScaler(Scaler):
     ''' selected_band = (d_min, d_max) with None for automatic determination. '''
     # mapping of expected dictionary names to iotbx.merging_statistics attributes
     key_to_var = {
-      'I/sigma': 'i_over_sigma_mean',
-      'Completeness': 'completeness',
-      'Low resolution limit': 'd_max',
-      'Multiplicity': 'mean_redundancy',
-      'Rmerge(I)': 'r_merge',
-      #'Wilson B factor':,
-      'Rmeas(I)': 'r_meas',
-      'High resolution limit': 'd_min',
-      'Total observations': 'n_obs',
-      'Rpim(I)': 'r_pim',
-      'CC half': 'cc_one_half',
-      'Total unique': 'n_uniq',
+        'I/sigma': 'i_over_sigma_mean',
+        'Completeness': 'completeness',
+        'Low resolution limit': 'd_max',
+        'Multiplicity': 'mean_redundancy',
+        'Rmerge(I)': 'r_merge',
+        #'Wilson B factor':,
+        'Rmeas(I)': 'r_meas',
+        'High resolution limit': 'd_min',
+        'Total observations': 'n_obs',
+        'Rpim(I)': 'r_pim',
+        'CC half': 'cc_one_half',
+        'Total unique': 'n_uniq',
     }
 
     anom_key_to_var = {
-      'Rmerge(I+/-)': 'r_merge',
-      'Rpim(I+/-)': 'r_pim',
-      'Rmeas(I+/-)': 'r_meas',
-      'Anomalous completeness': 'anom_completeness',
-      'Anomalous correlation': 'anom_half_corr',
-      'Anomalous multiplicity': 'mean_redundancy',
+        'Rmerge(I+/-)': 'r_merge',
+        'Rpim(I+/-)': 'r_pim',
+        'Rmeas(I+/-)': 'r_meas',
+        'Anomalous completeness': 'anom_completeness',
+        'Anomalous correlation': 'anom_half_corr',
+        'Anomalous multiplicity': 'mean_redundancy',
     }
 
     stats = {}
@@ -1075,14 +1074,14 @@ class CommonScaler(Scaler):
     i_obs = i_obs.customized_copy(anomalous_flag=True, info=i_obs.info())
 
     result = iotbx.merging_statistics.dataset_statistics(
-      i_obs=i_obs,
-      d_min=d_min,
-      d_max=d_max,
-      n_bins=n_bins or params.n_bins,
-      anomalous=anomalous,
-      use_internal_variance=params.use_internal_variance,
-      eliminate_sys_absent=params.eliminate_sys_absent,
-      assert_is_not_unique_set_under_symmetry=False,
+        i_obs=i_obs,
+        d_min=d_min,
+        d_max=d_max,
+        n_bins=n_bins or params.n_bins,
+        anomalous=anomalous,
+        use_internal_variance=params.use_internal_variance,
+        eliminate_sys_absent=params.eliminate_sys_absent,
+        assert_is_not_unique_set_under_symmetry=False,
     )
 
     if anomalous:
@@ -1091,9 +1090,9 @@ class CommonScaler(Scaler):
       slope, intercept, n_pairs = anomalous_probability_plot(merged_intensities)
 
       Debug.write('Anomalous difference normal probability plot:')
-      Debug.write('Slope: %.2f' %slope)
-      Debug.write('Intercept: %.2f' %intercept)
-      Debug.write('Number of pairs: %i' %n_pairs)
+      Debug.write('Slope: %.2f' % slope)
+      Debug.write('Intercept: %.2f' % intercept)
+      Debug.write('Number of pairs: %i' % n_pairs)
 
       slope, intercept, n_pairs = anomalous_probability_plot(
         merged_intensities, expected_delta=0.9)
@@ -1117,7 +1116,7 @@ def anomalous_probability_plot(intensities, expected_delta=None):
   assert intensities.anomalous_flag()
 
   dI = intensities.anomalous_differences()
-  y = dI.data()/dI.sigmas()
+  y = dI.data() / dI.sigmas()
   perm = flex.sort_permutation(y)
   y = y.select(perm)
   distribution = distributions.normal_distribution()

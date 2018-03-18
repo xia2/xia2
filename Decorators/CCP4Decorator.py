@@ -84,18 +84,16 @@ def CCP4DecoratorFactory(DriverInstance):
       self._mapout = None
 
       # somewhere to store the loggraph output
-      self._loggraph = { }
+      self._loggraph = {}
 
       # put the CCP4 library directory at teh start of the
       # LD_LIBRARY_PATH in case it mashes CCP4 programs...
       # N.B. need to check the syntax!
       if 'CLIB' in os.environ and os.name == 'posix':
         if os.uname()[0] == 'Darwin':
-          self.add_working_environment('DYLD_LIBRARY_PATH',
-                                       os.environ['CLIB'])
+          self.add_working_environment('DYLD_LIBRARY_PATH', os.environ['CLIB'])
         else:
-          self.add_working_environment('LD_LIBRARY_PATH',
-                                       os.environ['CLIB'])
+          self.add_working_environment('LD_LIBRARY_PATH', os.environ['CLIB'])
 
     def set_hklin(self, hklin):
       return self.setHklin(hklin)
@@ -383,7 +381,7 @@ def CCP4DecoratorFactory(DriverInstance):
       local dictionary to allow exploration.'''
 
       # reset the loggraph store
-      self._loggraph = { }
+      self._loggraph = {}
 
       output = self.get_all_output()
 
@@ -393,9 +391,8 @@ def CCP4DecoratorFactory(DriverInstance):
 
           n_dollar = line.count('$$')
 
-          current = line.split(':')[1].replace('>',
-                                                        '').strip()
-          self._loggraph[current] = { }
+          current = line.split(':')[1].replace('>', '').strip()
+          self._loggraph[current] = {}
           self._loggraph[current]['columns'] = []
           self._loggraph[current]['data'] = []
 

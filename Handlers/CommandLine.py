@@ -91,7 +91,7 @@ class _CommandLine(object):
     self._default_template = []
     self._default_directory = []
     self._hdf5_master_files = []
-    self._default_start_end = { }
+    self._default_start_end = {}
 
     # deprecated options prior to removal
     self._xinfo = None
@@ -114,7 +114,7 @@ class _CommandLine(object):
 
     for arg in sys.argv[1:]:
       if ' ' in arg:
-        arg = '"%s"' %arg
+        arg = '"%s"' % arg
       cl += ' %s' % arg
 
     return cl
@@ -161,7 +161,7 @@ class _CommandLine(object):
     from libtbx.phil import command_line
     cmd_line = command_line.argument_interpreter(master_phil=master_phil)
     working_phil, self._argv = cmd_line.process_and_fetch(
-      args=self._argv, custom_processor="collect_remaining")
+        args=self._argv, custom_processor="collect_remaining")
 
     PhilIndex.merge_phil(working_phil)
     try:
@@ -227,8 +227,8 @@ class _CommandLine(object):
       if mp_params.nproc is Auto:
         mp_params.nproc = get_number_cpus()
 
-    PhilIndex.update("xia2.settings.multiprocessing.njob=%d" %mp_params.njob)
-    PhilIndex.update("xia2.settings.multiprocessing.nproc=%d" %mp_params.nproc)
+    PhilIndex.update("xia2.settings.multiprocessing.njob=%d" % mp_params.njob)
+    PhilIndex.update("xia2.settings.multiprocessing.nproc=%d" % mp_params.nproc)
     params = PhilIndex.get_python_object()
     mp_params = params.xia2.settings.multiprocessing
 
@@ -285,23 +285,22 @@ class _CommandLine(object):
           Debug.write("Setting anomalous for crystal %s" % xname)
           xtal.set_anomalous(True)
     else:
-      xinfo_file = '%s/automatic.xinfo' % os.path.abspath(
-        os.curdir)
+      xinfo_file = '%s/automatic.xinfo' % os.path.abspath(os.curdir)
       PhilIndex.update("xia2.settings.input.xinfo=%s" % xinfo_file)
       params = PhilIndex.get_python_object()
 
     if params.dials.find_spots.phil_file is not None:
-      PhilIndex.update("dials.find_spots.phil_file=%s" %os.path.abspath(
-        params.dials.find_spots.phil_file))
+      PhilIndex.update("dials.find_spots.phil_file=%s" % os.path.abspath(
+          params.dials.find_spots.phil_file))
     if params.dials.index.phil_file is not None:
-      PhilIndex.update("dials.index.phil_file=%s" %os.path.abspath(
-        params.dials.index.phil_file))
+      PhilIndex.update("dials.index.phil_file=%s" % os.path.abspath(
+          params.dials.index.phil_file))
     if params.dials.refine.phil_file is not None:
-      PhilIndex.update("dials.refine.phil_file=%s" %os.path.abspath(
-        params.dials.refine.phil_file))
+      PhilIndex.update("dials.refine.phil_file=%s" % os.path.abspath(
+          params.dials.refine.phil_file))
     if params.dials.integrate.phil_file is not None:
-      PhilIndex.update("dials.integrate.phil_file=%s" %os.path.abspath(
-        params.dials.integrate.phil_file))
+      PhilIndex.update("dials.integrate.phil_file=%s" % os.path.abspath(
+          params.dials.integrate.phil_file))
     if params.xds.index.xparm is not None:
       Flags.set_xparm(params.xds.index.xparm)
     if params.xds.index.xparm_ub is not None:
@@ -315,16 +314,15 @@ class _CommandLine(object):
       column = FindFreeFlag(freer_file)
       Debug.write('FreeR_flag column in %s found: %s' % \
                   (freer_file, column))
-      PhilIndex.update(
-        "xia2.settings.scale.freer_file=%s" %freer_file)
+      PhilIndex.update("xia2.settings.scale.freer_file=%s" % freer_file)
 
     if params.xia2.settings.scale.reference_reflection_file is not None:
       reference_reflection_file = os.path.abspath(
-        params.xia2.settings.scale.reference_reflection_file)
+          params.xia2.settings.scale.reference_reflection_file)
       if not os.path.exists(reference_reflection_file):
         raise RuntimeError('%s does not exist' % reference_reflection_file)
-      PhilIndex.update(
-        "xia2.settings.scale.reference_reflection_file=%s" %reference_reflection_file)
+      PhilIndex.update("xia2.settings.scale.reference_reflection_file=%s" %
+                       reference_reflection_file)
 
     params = PhilIndex.get_python_object()
 

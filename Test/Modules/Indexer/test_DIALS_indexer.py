@@ -57,8 +57,8 @@ def exercise_dials_indexer(dials_regression, tmp_dir, nproc=None):
   indexer2.index()
 
   assert approx_equal(indexer.get_indexer_cell(), indexer2.get_indexer_cell())
-  assert approx_equal(
-    indexer.get_indexer_beam_centre(), indexer2.get_indexer_beam_centre())
+  assert approx_equal(indexer.get_indexer_beam_centre(),
+                      indexer2.get_indexer_beam_centre())
 
   indexer.eliminate()
   indexer2.eliminate()

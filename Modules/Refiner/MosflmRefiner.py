@@ -21,7 +21,6 @@ from xia2.Schema.Interfaces.Refiner import Refiner
 from xia2.Wrappers.Mosflm.MosflmRefineCell import MosflmRefineCell
 
 class MosflmRefiner(Refiner):
-
   def __init__(self):
     super(MosflmRefiner, self).__init__()
 
@@ -59,8 +58,7 @@ class MosflmRefiner(Refiner):
 
       if not self._mosflm_cell_ref_images:
         mosaic = indxr.get_indexer_mosaic()
-        self._mosflm_cell_ref_images = self._refine_select_images(
-          idxr, mosaic)
+        self._mosflm_cell_ref_images = self._refine_select_images(idxr, mosaic)
 
       # generate human readable output
 
@@ -91,8 +89,7 @@ class MosflmRefiner(Refiner):
       # we may not, so if this is the case call a function to generate
       # them...
 
-      if not indxr.get_indexer_payload(
-        'mosflm_integration_parameters'):
+      if not indxr.get_indexer_payload('mosflm_integration_parameters'):
 
         # generate a list of first images
 
@@ -140,8 +137,7 @@ class MosflmRefiner(Refiner):
           rms_deviations_p1 = []
           br_p1 = []
         else:
-          rms_deviations_p1, br_p1 = self._mosflm_test_refine_cell(
-            idxr, 'aP')
+          rms_deviations_p1, br_p1 = self._mosflm_test_refine_cell(idxr, 'aP')
 
         rms_deviations, br = self._mosflm_refine_cell(idxr)
 
@@ -190,8 +186,7 @@ class MosflmRefiner(Refiner):
           Debug.write('Cycle %d' % c)
           for j, image in enumerate(images):
 
-            background_residual = max(br_p1[c][image],
-                                      br[c][image])
+            background_residual = max(br_p1[c][image], br[c][image])
 
             if background_residual > 10:
               Debug.write('. %4d   %.2f     %.2f (ignored)' % \
@@ -204,8 +199,7 @@ class MosflmRefiner(Refiner):
                          rms_deviations_p1[c][j]))
 
             ratio += rms_deviations[c][j] / rms_deviations_p1[c][j]
-            ratios.append(
-              (rms_deviations[c][j] / rms_deviations_p1[c][j]))
+            ratios.append((rms_deviations[c][j] / rms_deviations_p1[c][j]))
 
         Debug.write('Average ratio: %.2f' % \
                     (ratio / len(ratios)))
@@ -221,7 +215,7 @@ class MosflmRefiner(Refiner):
       cell_str = '%.2f %.2f %.2f %.2f %.2f %.2f' % \
         self._refinr_cell
 
-      Journal.entry({'refined cell':cell_str})
+      Journal.entry({'refined cell': cell_str})
 
   def _refine_finish(self):
     pass

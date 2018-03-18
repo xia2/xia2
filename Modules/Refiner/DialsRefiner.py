@@ -20,7 +20,6 @@ from xia2.Wrappers.Dials.Refine import Refine as _Refine
 from xia2.Wrappers.Dials.Report import Report as _Report
 
 class DialsRefiner(Refiner):
-
   def __init__(self):
     super(DialsRefiner, self).__init__()
 
@@ -31,8 +30,7 @@ class DialsRefiner(Refiner):
     combiner.set_working_directory(self.get_working_directory())
     auto_logfiler(combiner)
     for idxr in self._refinr_indexers.values():
-      combiner.add_experiments(
-        idxr.get_indexer_payload("experiments_filename"))
+      combiner.add_experiments(idxr.get_indexer_payload("experiments_filename"))
       combiner.add_reflections(idxr.get_indexed_filename())
     return combiner
 
@@ -41,7 +39,7 @@ class DialsRefiner(Refiner):
     params = PhilIndex.params.dials.refine
     refine.set_phil_file(params.phil_file)
     refine.set_working_directory(self.get_working_directory())
-    if  PhilIndex.params.dials.fast_mode:
+    if PhilIndex.params.dials.fast_mode:
       # scan-static refinement in fast mode
       refine.set_scan_varying(False)
     else:
@@ -53,7 +51,7 @@ class DialsRefiner(Refiner):
       refine.set_detector_fix('all')
       refine.set_beam_fix('all')
     refine.set_close_to_spindle_cutoff(
-      PhilIndex.params.dials.close_to_spindle_cutoff)
+        PhilIndex.params.dials.close_to_spindle_cutoff)
     auto_logfiler(refine, 'REFINE')
 
     return refine
@@ -119,7 +117,7 @@ class DialsRefiner(Refiner):
       # XXX Temporary workaround for dials.refine error for scan_varying
       # refinement with smaller wedges
       start, end = experiments[0].scan.get_oscillation_range()
-      total_phi_range = end-start
+      total_phi_range = end - start
 
       if (PhilIndex.params.dials.refine.scan_varying and total_phi_range > 5
           and not PhilIndex.params.dials.fast_mode):

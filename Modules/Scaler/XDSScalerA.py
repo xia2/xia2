@@ -38,10 +38,6 @@ from xia2.Wrappers.XDS.XScaleR import XScaleR as _XScale
 
 # program wrappers that we will need
 
-
-
-
-
 class XDSScalerA(Scaler):
   '''An implementation of the xia2 Scaler interface implemented with
   xds and xscale, possibly with some help from a couple of CCP4
@@ -50,7 +46,7 @@ class XDSScalerA(Scaler):
   def __init__(self):
     super(XDSScalerA, self).__init__()
 
-    self._sweep_information = { }
+    self._sweep_information = {}
 
     self._reference = None
 
@@ -61,11 +57,11 @@ class XDSScalerA(Scaler):
     self._xds_spacegroup = None
     self._factory = CCP4Factory()
 
-    self._chef_analysis_groups = { }
-    self._chef_analysis_times = { }
-    self._chef_analysis_resolutions = { }
+    self._chef_analysis_groups = {}
+    self._chef_analysis_times = {}
+    self._chef_analysis_resolutions = {}
 
-    self._user_resolution_limits = { }
+    self._user_resolution_limits = {}
 
     # scaling correction choices - may be set one on the command line...
 
@@ -80,7 +76,7 @@ class XDSScalerA(Scaler):
   def to_dict(self):
     obj = super(XDSScalerA, self).to_dict()
     import inspect
-    attributes = inspect.getmembers(self, lambda m:not(inspect.isroutine(m)))
+    attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
     for a in attributes:
       if a[0].startswith('_xds_'):
         obj[a[0]] = a[1]
@@ -190,25 +186,21 @@ class XDSScalerA(Scaler):
       state = refiner.set_refiner_asserted_lattice(lattice)
       if state == refiner.LATTICE_CORRECT:
 
-        Debug.write(
-            'Agreed lattice %s' % lattice)
+        Debug.write('Agreed lattice %s' % lattice)
         correct_lattice = lattice
 
         break
 
       elif state == refiner.LATTICE_IMPOSSIBLE:
-        Debug.write(
-            'Rejected lattice %s' % lattice)
+        Debug.write('Rejected lattice %s' % lattice)
 
         rerun_pointless = True
 
         continue
 
       elif state == refiner.LATTICE_POSSIBLE:
-        Debug.write(
-            'Accepted lattice %s ...' % lattice)
-        Debug.write(
-            '... will reprocess accordingly')
+        Debug.write('Accepted lattice %s ...' % lattice)
+        Debug.write('... will reprocess accordingly')
 
         need_to_return = True
 
@@ -220,8 +212,7 @@ class XDSScalerA(Scaler):
       correct_lattice = refiner.get_refiner_lattice()
       rerun_pointless = True
 
-      Debug.write(
-          'No solution found: assuming lattice from refiner')
+      Debug.write('No solution found: assuming lattice from refiner')
 
     if rerun_pointless:
       pointless.set_correct_lattice(correct_lattice)
@@ -384,8 +375,7 @@ class XDSScalerA(Scaler):
           # when a new pointgroup is assigned in the
           # pointless indexer jiffy above?!
 
-          intgr.set_integrater_reindex_operator(
-              reindex_op, compose = False)
+          intgr.set_integrater_reindex_operator(reindex_op, compose=False)
 
           need_to_return = True
 
@@ -404,16 +394,14 @@ class XDSScalerA(Scaler):
 
         # transfer this information back to the indexers
         for epoch in self._sweep_information.keys():
-          integrater = self._sweep_information[
-              epoch]['integrater']
+          integrater = self._sweep_information[epoch]['integrater']
           refiner = integrater.get_integrater_refiner()
           sname = integrater.get_integrater_sweep_name()
 
           if not refiner:
             continue
 
-          state = refiner.set_refiner_asserted_lattice(
-              correct_lattice)
+          state = refiner.set_refiner_asserted_lattice(correct_lattice)
           if state == refiner.LATTICE_CORRECT:
             Debug.write('Lattice %s ok for sweep %s' % \
                         (correct_lattice, sname))
@@ -483,8 +471,7 @@ class XDSScalerA(Scaler):
             Debug.write('Reindex to standard (PIJ): %s' % \
                         reindex_op)
 
-            intgr.set_integrater_reindex_operator(
-                reindex_op, compose = False)
+            intgr.set_integrater_reindex_operator(reindex_op, compose=False)
             reindex_op = 'h,k,l'
             need_to_return = True
 
@@ -591,8 +578,7 @@ class XDSScalerA(Scaler):
 
         # Bug # 3373
 
-        intgr.set_integrater_reindex_operator(
-            reindex_op, compose = False)
+        intgr.set_integrater_reindex_operator(reindex_op, compose=False)
         reindex_op = 'h,k,l'
         need_to_return = True
 
@@ -653,8 +639,7 @@ class XDSScalerA(Scaler):
             Debug.write('Reindex to standard (PIJ): %s' % \
                         reindex_op)
 
-            intgr.set_integrater_reindex_operator(
-                reindex_op, compose = False)
+            intgr.set_integrater_reindex_operator(reindex_op, compose=False)
             reindex_op = 'h,k,l'
             need_to_return = True
 
@@ -685,8 +670,8 @@ class XDSScalerA(Scaler):
         pointless = self._factory.Pointless()
         pointless.set_xdsin(hklin)
         hklout = os.path.join(
-          self.get_working_directory(),
-          '%d_xds-pointgroup-unsorted.mtz' % pointless.get_xpid())
+            self.get_working_directory(),
+            '%d_xds-pointgroup-unsorted.mtz' % pointless.get_xpid())
         FileHandler.record_temporary_file(hklout)
         pointless.set_hklout(hklout)
         pointless.xds_to_mtz()
@@ -768,8 +753,8 @@ class XDSScalerA(Scaler):
       else:
         for epoch in self._sweep_information.keys():
           self._sweep_information[epoch] = run_one_sweep(
-            (self._sweep_information[epoch], self._pointless_indexer_jiffy,
-             self._factory, None))
+              (self._sweep_information[epoch], self._pointless_indexer_jiffy,
+               self._factory, None))
 
     else:
       # convert the XDS_ASCII for this sweep to mtz
@@ -812,8 +797,7 @@ class XDSScalerA(Scaler):
         # individual pointgroups?? Bug # 3373
 
         reindex_op = 'h,k,l'
-        intgr.set_integrater_reindex_operator(
-            reindex_op, compose = False)
+        intgr.set_integrater_reindex_operator(reindex_op, compose=False)
 
         need_to_return = True
 
@@ -865,17 +849,13 @@ class XDSScalerA(Scaler):
 
     self._scalr_cell = compute_average_unit_cell(unit_cell_list)
 
-    self._scalr_resolution_limits = { }
+    self._scalr_resolution_limits = {}
 
     Debug.write('Determined unit cell: %.2f %.2f %.2f %.2f %.2f %.2f' % \
                 tuple(self._scalr_cell))
 
-    if os.path.exists(os.path.join(
-        self.get_working_directory(),
-        'REMOVE.HKL')):
-      os.remove(os.path.join(
-          self.get_working_directory(),
-          'REMOVE.HKL'))
+    if os.path.exists(os.path.join(self.get_working_directory(), 'REMOVE.HKL')):
+      os.remove(os.path.join(self.get_working_directory(), 'REMOVE.HKL'))
 
       Debug.write('Deleting REMOVE.HKL at end of scale prepare.')
 
@@ -906,8 +886,7 @@ class XDSScalerA(Scaler):
     for epoch in epochs:
 
       # get the prepared reflections
-      reflections = self._sweep_information[epoch][
-          'prepared_reflections']
+      reflections = self._sweep_information[epoch]['prepared_reflections']
 
       # and the get wavelength that this belongs to
       dname = self._sweep_information[epoch]['dname']
@@ -1055,14 +1034,14 @@ class XDSScalerA(Scaler):
           #self._scalr_resolution_limits[rkey] = (dmin, None)
           self._user_resolution_limits[rkey] = dmin
 
-    self._scalr_scaled_refl_files = { }
+    self._scalr_scaled_refl_files = {}
 
-    self._scalr_statistics = { }
+    self._scalr_statistics = {}
 
     max_batches = 0
-    mtz_dict = { }
+    mtz_dict = {}
 
-    project_info = { }
+    project_info = {}
     for epoch in self._sweep_information.keys():
       pname = self._scalr_pname
       xname = self._scalr_xname
@@ -1090,13 +1069,11 @@ class XDSScalerA(Scaler):
           if os.path.split(self._sweep_information[epoch][
               'prepared_reflections'])[-1] == \
               os.path.split(hklout)[-1]:
-            if self._sweep_information[epoch][
-                'scaled_reflections'] is not None:
+            if self._sweep_information[epoch]['scaled_reflections'] is not None:
               raise RuntimeError('duplicate entries')
-            self._sweep_information[epoch][
-                'scaled_reflections'] = ref[hklout]
+            self._sweep_information[epoch]['scaled_reflections'] = ref[hklout]
 
-      del(xsh)
+      del xsh
 
     debug_memory_usage()
 
@@ -1132,7 +1109,7 @@ class XDSScalerA(Scaler):
 
       reasoning_str = ''
       if reasoning:
-        reasoning_str = ' (%s)' %reasoning
+        reasoning_str = ' (%s)' % reasoning
       Chatter.write('Resolution for sweep %s/%s: %.2f%s' % \
                     (dname, sname, resolution, reasoning_str))
 
@@ -1210,32 +1187,28 @@ class XDSScalerA(Scaler):
 
     loggraph = sc.parse_ccp4_loggraph()
 
-    standard_deviation_info = { }
+    standard_deviation_info = {}
 
     for key in loggraph.keys():
       if 'standard deviation v. Intensity' in key:
         dataset = key.split(',')[-1].strip()
-        standard_deviation_info[dataset] = transpose_loggraph(
-            loggraph[key])
+        standard_deviation_info[dataset] = transpose_loggraph(loggraph[key])
 
-    resolution_info = { }
+    resolution_info = {}
 
     for key in loggraph.keys():
       if 'Analysis against resolution' in key:
         dataset = key.split(',')[-1].strip()
-        resolution_info[dataset] = transpose_loggraph(
-            loggraph[key])
+        resolution_info[dataset] = transpose_loggraph(loggraph[key])
 
     # and also radiation damage stuff...
 
-    batch_info = { }
+    batch_info = {}
 
     for key in loggraph.keys():
       if 'Analysis against Batch' in key:
         dataset = key.split(',')[-1].strip()
-        batch_info[dataset] = transpose_loggraph(
-            loggraph[key])
-
+        batch_info[dataset] = transpose_loggraph(loggraph[key])
 
     # finally put all of the results "somewhere useful"
 
@@ -1244,7 +1217,7 @@ class XDSScalerA(Scaler):
     self._scalr_scaled_refl_files = copy.deepcopy(
         sc.get_scaled_reflection_files())
 
-    self._scalr_scaled_reflection_files = { }
+    self._scalr_scaled_reflection_files = {}
 
     # also output the unmerged scalepack format files...
 
@@ -1274,8 +1247,8 @@ class XDSScalerA(Scaler):
 
     sc.multi_merge()
 
-    self._scalr_scaled_reflection_files['sca_unmerged'] = { }
-    self._scalr_scaled_reflection_files['mtz_unmerged'] = { }
+    self._scalr_scaled_reflection_files['sca_unmerged'] = {}
+    self._scalr_scaled_reflection_files['mtz_unmerged'] = {}
 
     for dataset in sc.get_scaled_reflection_files().keys():
       hklout = sc.get_scaled_reflection_files()[dataset]
@@ -1301,8 +1274,8 @@ class XDSScalerA(Scaler):
 
     # convert reflection files to .sca format - use mtz2various for this
 
-    self._scalr_scaled_reflection_files['sca'] = { }
-    self._scalr_scaled_reflection_files['hkl'] = { }
+    self._scalr_scaled_reflection_files['sca'] = {}
+    self._scalr_scaled_reflection_files['hkl'] = {}
 
     for key in self._scalr_scaled_refl_files:
 
@@ -1333,7 +1306,7 @@ class XDSScalerA(Scaler):
       batch_offset = si['batch_offset']
       frame_offset = si['integrater'].get_frame_offset()
       printed = False
-      for b in range(si['batches'][0], si['batches'][1]+1):
+      for b in range(si['batches'][0], si['batches'][1] + 1):
         if epoch_to_dose:
           # see https://github.com/xia2/xia2/issues/90
           if si['image_to_epoch'][b+frame_offset-batch_offset] in epoch_to_dose:

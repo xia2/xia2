@@ -21,7 +21,7 @@ from xia2.Experts.FindImages import (find_matching_images,
                                      template_directory_number2image)
 from xia2.Handlers.Phil import PhilIndex
 
-def SweepFactory(template, directory, beam = None):
+def SweepFactory(template, directory, beam=None):
   '''A factory which will return a list of sweep objects which match
   the input template and directory.'''
 
@@ -76,7 +76,7 @@ class Sweep(object):
     if imageset is not None:
       self._imageset = imageset
       image_range = imageset.get_scan().get_image_range()
-      self._images = list(range(image_range[0], image_range[1]+1))
+      self._images = list(range(image_range[0], image_range[1] + 1))
 
     # if the beam has been specified, then this will
     # override the headers
@@ -100,7 +100,7 @@ class Sweep(object):
     # check if any more images have appeared
     self.update()
     image_range = self._imageset.get_scan().get_image_range()
-    return list(range(image_range[0], image_range[1]+1))
+    return list(range(image_range[0], image_range[1] + 1))
 
   def get_distance(self):
     return self._imageset.get_detector()[0].get_directed_distance()

@@ -21,10 +21,7 @@ from xia2.Schema.XWavelength import XWavelength
 
 # hooks to all of the child objects
 
-
 # .xinfo parser
-
-
 
 class XProject(object):
   '''A representation of a complete project. This will contain a dictionary
@@ -32,7 +29,7 @@ class XProject(object):
 
   def __init__(self, xinfo_file=None, name=None):
 
-    self._crystals = { }
+    self._crystals = {}
     if xinfo_file:
       self.setup_from_xinfo_file(xinfo_file)
     else:
@@ -44,7 +41,7 @@ class XProject(object):
     obj = {}
     obj['__id__'] = 'XProject'
     import inspect
-    attributes = inspect.getmembers(self, lambda m:not(inspect.isroutine(m)))
+    attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
     for a in attributes:
       if a[0] == '_crystals':
         crystals = {}
@@ -177,16 +174,16 @@ class XProject(object):
       if 'sequence' in crystals[crystal]:
         xc.set_aa_sequence(crystals[crystal]['sequence'])
       if 'ha_info' in crystals[crystal]:
-        if crystals[crystal]['ha_info'] != { }:
+        if crystals[crystal]['ha_info'] != {}:
           xc.set_ha_info(crystals[crystal]['ha_info'])
 
       if 'scaled_merged_reflection_file' in crystals[crystal]:
         xc.set_scaled_merged_reflections(
-          crystals[crystal]['scaled_merged_reflections'])
+            crystals[crystal]['scaled_merged_reflections'])
 
       if 'reference_reflection_file' in crystals[crystal]:
         xc.set_reference_reflection_file(
-          crystals[crystal]['reference_reflection_file'])
+            crystals[crystal]['reference_reflection_file'])
       if 'freer_file' in crystals[crystal]:
         xc.set_freer_file(crystals[crystal]['freer_file'])
 
@@ -222,7 +219,7 @@ class XProject(object):
 
         if 'wavelength' not in wave_info:
           Debug.write(
-            'No wavelength value given for wavelength %s' % wavelength)
+              'No wavelength value given for wavelength %s' % wavelength)
         else:
           Debug.write(
             'Overriding value for wavelength %s to %8.6f' % \
@@ -286,7 +283,7 @@ class XProject(object):
             if len(crystals[crystal]['samples']) == 1:
               sample_name = crystals[crystal]['samples'].keys()[0]
             else:
-              raise RuntimeError('No sample given for sweep %s' %sweep_name)
+              raise RuntimeError('No sample given for sweep %s' % sweep_name)
 
           xsample = xc.get_xsample(sample_name)
           assert xsample is not None
@@ -313,25 +310,24 @@ class XProject(object):
             frames_to_process = sweep_info.get('start_end')
 
             xsweep = xw.add_sweep(
-              sweep_name,
-              sample=xsample,
-              directory=sweep_info.get('DIRECTORY'),
-              image=sweep_info.get('IMAGE'),
-              beam=sweep_info.get('beam'),
-              reversephi=sweep_info.get('reversephi', False),
-              distance=sweep_info.get('distance'),
-              gain=float(sweep_info.get('GAIN', 0.0)),
-              dmin=dmin, dmax=dmax,
-              polarization=float(sweep_info.get(
-                  'POLARIZATION', 0.0)),
-              frames_to_process=frames_to_process,
-              user_lattice=lattice,
-              user_cell=cell,
-              epoch=sweep_info.get('epoch', 0),
-              ice=sweep_info.get('ice', False),
-              excluded_regions=sweep_info.get(
-                'excluded_regions', []),
-              )
+                sweep_name,
+                sample=xsample,
+                directory=sweep_info.get('DIRECTORY'),
+                image=sweep_info.get('IMAGE'),
+                beam=sweep_info.get('beam'),
+                reversephi=sweep_info.get('reversephi', False),
+                distance=sweep_info.get('distance'),
+                gain=float(sweep_info.get('GAIN', 0.0)),
+                dmin=dmin,
+                dmax=dmax,
+                polarization=float(sweep_info.get('POLARIZATION', 0.0)),
+                frames_to_process=frames_to_process,
+                user_lattice=lattice,
+                user_cell=cell,
+                epoch=sweep_info.get('epoch', 0),
+                ice=sweep_info.get('ice', False),
+                excluded_regions=sweep_info.get('excluded_regions', []),
+            )
 
             xsample.add_sweep(xsweep)
 

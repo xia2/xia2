@@ -35,13 +35,12 @@ def RefinerForXSweep(xsweep, json_file=None):
 
   if json_file is not None:
     assert os.path.isfile(json_file)
-    Debug.write("Loading refiner from json: %s" %json_file)
+    Debug.write("Loading refiner from json: %s" % json_file)
     refiner = refiner.__class__.from_json(filename=json_file)
 
   refiner.add_refiner_sweep(xsweep)
 
   return refiner
-
 
 def Refiner():
   '''Create a Refiner implementation.'''

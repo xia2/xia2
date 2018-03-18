@@ -58,7 +58,7 @@ class XDSIndexer(IndexerSingleSweep):
     self._index_select_images = 'i'
 
     # place to store working data
-    self._data_files = { }
+    self._data_files = {}
 
     return
 
@@ -227,7 +227,7 @@ class XDSIndexer(IndexerSingleSweep):
         else:
           max_wedge_size = n
 
-      Debug.write('Using max_wedge_size: %d' %max_wedge_size)
+      Debug.write('Using max_wedge_size: %d' % max_wedge_size)
 
       block_size = min(len(images), max_wedge_size)
 
@@ -246,12 +246,10 @@ class XDSIndexer(IndexerSingleSweep):
                     (int(90.0 / phi_width) + images[0],
                      int(90.0 / phi_width) + images[0] +
                      block_size - 1))
-        wedges.append(
-            (int(45.0 / phi_width) + images[0],
-             int(45.0 / phi_width) + images[0] + block_size - 1))
-        wedges.append(
-            (int(90.0 / phi_width) + images[0],
-             int(90.0 / phi_width) + images[0] + block_size - 1))
+        wedges.append((int(45.0 / phi_width) + images[0],
+                       int(45.0 / phi_width) + images[0] + block_size - 1))
+        wedges.append((int(90.0 / phi_width) + images[0],
+                       int(90.0 / phi_width) + images[0] + block_size - 1))
 
       else:
 
@@ -265,7 +263,7 @@ class XDSIndexer(IndexerSingleSweep):
         if len(images) > block_size:
           Debug.write('Adding images for indexer: %d -> %d' % \
                       (images[- block_size], images[-1]))
-          wedges.append((images[- block_size], images[-1]))
+          wedges.append((images[-block_size], images[-1]))
 
     return wedges
 
@@ -409,10 +407,8 @@ class XDSIndexer(IndexerSingleSweep):
       Debug.write('Applying mask to BKGINIT.pck')
 
       # copy the original file
-      cbf_old = os.path.join(init.get_working_directory(),
-                             'BKGINIT.cbf')
-      cbf_save = os.path.join(init.get_working_directory(),
-                              'BKGINIT.sav')
+      cbf_old = os.path.join(init.get_working_directory(), 'BKGINIT.cbf')
+      cbf_save = os.path.join(init.get_working_directory(), 'BKGINIT.sav')
       shutil.copyfile(cbf_old, cbf_save)
 
       # modify the file to give the new mask
@@ -570,8 +566,7 @@ class XDSIndexer(IndexerSingleSweep):
         # unit cell, and they are the same, well ignore it
 
         if 'solution is inaccurate' in str(e):
-          Debug.write(
-              'XDS complains solution inaccurate - ignoring')
+          Debug.write('XDS complains solution inaccurate - ignoring')
           done = idxref.continue_from_error()
         elif ('insufficient percentage (< 70%)' in str(e) or
               'insufficient percentage (< 50%)' in str(e)) and \
@@ -604,8 +599,7 @@ class XDSIndexer(IndexerSingleSweep):
                                 os.path.join(self.get_working_directory(),
                                              'IDXREF.LP'))
 
-    for file in ['SPOT.XDS',
-                 'XPARM.XDS']:
+    for file in ['SPOT.XDS', 'XPARM.XDS']:
       self._indxr_payload[file] = idxref.get_output_data_file(file)
 
     # need to get the indexing solutions out somehow...
@@ -622,13 +616,14 @@ class XDSIndexer(IndexerSingleSweep):
     crystal_model = to_crystal(xparm_file)
 
     from dxtbx.model import Experiment, ExperimentList
-    experiment = Experiment(beam=models.get_beam(),
-                            detector=models.get_detector(),
-                            goniometer=models.get_goniometer(),
-                            scan=models.get_scan(),
-                            crystal=crystal_model,
-                            #imageset=self.get_imageset(),
-                            )
+    experiment = Experiment(
+        beam=models.get_beam(),
+        detector=models.get_detector(),
+        goniometer=models.get_goniometer(),
+        scan=models.get_scan(),
+        crystal=crystal_model,
+        #imageset=self.get_imageset(),
+    )
 
     experiment_list = ExperimentList([experiment])
     self.set_indexer_experiment_list(experiment_list)
@@ -706,8 +701,8 @@ class XDSIndexer(IndexerSingleSweep):
     miller_indices = flex.miller_index(spot_xds_handle.miller_index)
 
     # only those reflections that were actually indexed
-    centroids_px = centroids_px.select(miller_indices != (0,0,0))
-    miller_indices = miller_indices.select(miller_indices != (0,0,0))
+    centroids_px = centroids_px.select(miller_indices != (0, 0, 0))
+    miller_indices = miller_indices.select(miller_indices != (0, 0, 0))
 
     from scitbx import matrix
     ub = matrix.sqr(crystal_model.get_A())
@@ -724,8 +719,7 @@ if __name__ == '__main_old__':
 
   xi = XDSIndexer()
 
-  directory = os.path.join(os.environ['XIA2_ROOT'],
-                           'Data', 'Test', 'Images')
+  directory = os.path.join(os.environ['XIA2_ROOT'], 'Data', 'Test', 'Images')
 
   # directory = '/data/graeme/12287'
   xi.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
@@ -738,7 +732,6 @@ if __name__ == '__main_old__':
   print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % xi.get_indexer_cell()
   print 'Lattice: %s' % xi.get_indexer_lattice()
   print 'Mosaic: %6.2f' % xi.get_indexer_mosaic()
-
 
 if __name__ == '__main__':
 

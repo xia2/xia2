@@ -103,9 +103,9 @@ def ersatz_resolution(reflection_file, batch_ranges):
         elif column.label() == 'SIGI':
           sigi_column = column
 
-  assert(ipr_column or i_column)
-  assert(sigipr_column or sigi_column)
-  assert(batch_column)
+  assert ipr_column or i_column
+  assert sigipr_column or sigi_column
+  assert batch_column
 
   if ipr_column is None: ipr_column = i_column
   if sigipr_column is None: sigipr_column = sigi_column
@@ -114,7 +114,7 @@ def ersatz_resolution(reflection_file, batch_ranges):
   sigipr_values = sigipr_column.extract_values()
   batch_values = batch_column.extract_values()
   batches = batch_values.as_double().iround()
-  resolutions = { }
+  resolutions = {}
 
   for start, end in batch_ranges:
     sel = (batches >= start) & (batches <= end)
@@ -136,7 +136,7 @@ def compute_resolution(dmax, dmin, d, isig):
   if False:
     return dmin
 
-  bins = { }
+  bins = {}
 
   smax = 1.0 / (dmax * dmax)
   smin = 1.0 / (dmin * dmin)
@@ -236,7 +236,6 @@ def _fraction_difference(value, reference):
 
   return math.fabs((value - reference) / reference)
 
-
 ############### HELPER CLASS #########################
 
 class CCP4ScalerHelper(object):
@@ -302,8 +301,7 @@ class CCP4ScalerHelper(object):
       correct_lattice = refiner.get_refiner_lattice()
       rerun_pointless = True
 
-      Debug.write(
-          'No solution found: assuming lattice from refiner')
+      Debug.write('No solution found: assuming lattice from refiner')
 
     if rerun_pointless:
       pointless.set_correct_lattice(correct_lattice)
@@ -365,8 +363,7 @@ class CCP4ScalerHelper(object):
       correct_lattice = refiner.get_refiner_lattice()
       rerun_pointless = True
 
-      Debug.write(
-          'No solution found: assuming lattice from refiner')
+      Debug.write('No solution found: assuming lattice from refiner')
 
     if need_to_return:
       if (PhilIndex.params.xia2.settings.integrate_p1 and not
@@ -394,7 +391,6 @@ class CCP4ScalerHelper(object):
 # Sweep info class to replace dictionary... #884
 
 class SweepInformation(object):
-
   def __init__(self, integrater):
 
     self._project_info = integrater.get_integrater_project_info()
@@ -416,7 +412,7 @@ class SweepInformation(object):
     obj = {}
     obj['__id__'] = 'SweepInformation'
     import inspect
-    attributes = inspect.getmembers(self, lambda m:not(inspect.isroutine(m)))
+    attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
     for a in attributes:
       if a[0].startswith('__'): continue
       elif a[0] == '_integrater':
@@ -509,13 +505,10 @@ class SweepInformation(object):
   def set_reflections(self, reflections):
     self._reflections = reflections
 
-
-
 class SweepInformationHandler(object):
-
   def __init__(self, epoch_to_integrater):
 
-    self._sweep_information = { }
+    self._sweep_information = {}
 
     for epoch in epoch_to_integrater:
       self._sweep_information[epoch] = SweepInformation(
@@ -560,8 +553,8 @@ class SweepInformationHandler(object):
     for e in self._sweep_information:
       si = self._sweep_information[e]
 
-      assert(si.get_project_info()[0] == pname)
-      assert(si.get_project_info()[1] == xname)
+      assert si.get_project_info()[0] == pname
+      assert si.get_project_info()[1] == xname
 
     return pname, xname
 
@@ -587,8 +580,7 @@ def anomalous_signals(hklin):
 
   df_f = data.anomalous_signal()
   differences = data.anomalous_differences()
-  di_sigdi = (sum(abs(differences.data())) /
-              sum(differences.sigmas()))
+  di_sigdi = sum(abs(differences.data())) / sum(differences.sigmas())
 
   return df_f, di_sigdi
 

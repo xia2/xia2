@@ -22,7 +22,6 @@ import os
 from xia2.Driver.SunGridEngineClusterDriver import SunGridEngineClusterDriver
 
 class _ClusterDriverFactory(object):
-
   def __init__(self):
 
     self._driver_type = 'cluster.sge'
@@ -51,7 +50,7 @@ class _ClusterDriverFactory(object):
 
     return
 
-  def Driver(self, type = None):
+  def Driver(self, type=None):
     '''Create a new Driver instance, optionally providing the
     type of Driver we want.'''
 

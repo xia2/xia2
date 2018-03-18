@@ -23,9 +23,7 @@ from xia2.Handlers.Streams import Debug
 
 # xia2 stuff...
 
-
 # cctbx stuff
-
 
 def s2l(spacegroup):
   lattice_to_spacegroup = {'aP':1, 'mP':3, 'mC':5,
@@ -34,13 +32,12 @@ def s2l(spacegroup):
                            'hP':143, 'hR':146, 'cP':195,
                            'cF':196, 'cI':197}
 
-  spacegroup_to_lattice = { }
+  spacegroup_to_lattice = {}
   for k in lattice_to_spacegroup.keys():
     spacegroup_to_lattice[lattice_to_spacegroup[k]] = k
   return spacegroup_to_lattice[spacegroup]
 
-def xds_check_indexer_solution(xparm_file,
-                               spot_file):
+def xds_check_indexer_solution(xparm_file, spot_file):
   '''Read XPARM file from XDS IDXREF (assumes that this is in the putative
   correct symmetry, not P1! and test centring operations if present. Note
   that a future version will boost to the putative correct symmetry (or
@@ -81,12 +78,11 @@ def xds_check_indexer_solution(xparm_file,
 
   # based on code in dials/algorithms/indexing/indexer2.py
   s1 = detector[0].get_lab_coord(flex.vec2_double(x_mm, y_mm))
-  s1 = s1/s1.norms() * (1/beam.get_wavelength())
+  s1 = s1 / s1.norms() * (1 / beam.get_wavelength())
   S = s1 - beam.get_s0()
   # XXX what about if goniometer fixed rotation is not identity?
   reciprocal_space_points = S.rotate_around_origin(
-    goniometer.get_rotation_axis(),
-    -z_rad)
+      goniometer.get_rotation_axis(), -z_rad)
 
   # now index the reflections
   hkl_float = tuple(A_inv) * reciprocal_space_points
@@ -100,8 +96,7 @@ def xds_check_indexer_solution(xparm_file,
   tolerance = 0.1
   sel = (dh < tolerance) and (dk < tolerance) and (dl < tolerance)
 
-  is_sys_absent = sg.is_sys_absent(
-    flex.miller_index(list(hkl_int.select(sel))))
+  is_sys_absent = sg.is_sys_absent(flex.miller_index(list(hkl_int.select(sel))))
 
   total = is_sys_absent.size()
   absent = is_sys_absent.count(True)
@@ -131,8 +126,7 @@ def xds_check_indexer_solution(xparm_file,
 
   # also determine the best setting for the new cell ...
 
-  symm = crystal.symmetry(unit_cell = cell,
-                          space_group = sg_new)
+  symm = crystal.symmetry(unit_cell=cell, space_group=sg_new)
 
   rdx = symm.change_of_basis_op_to_best_cell()
   symm_new = symm.change_basis(rdx)
@@ -150,7 +144,6 @@ def is_centred(space_group_number):
     return True
 
   return False
-
 
 if __name__ == '__main__':
 

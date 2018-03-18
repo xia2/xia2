@@ -27,16 +27,13 @@ from xia2.Wrappers.XIA.Printpeaks import Printpeaks
 
 # xia2 stuff...
 
-
 # optional labelit stuff
-
 
 # things we can work on...
 
 use_distl = False
 
 # cctbx stuff
-
 
 # check for deprecation, add workaround (thanks to RWGK 21/APR/10)
 
@@ -128,7 +125,7 @@ def mosflm_check_indexer_solution(indexer):
 
   spots_r = []
 
-  spots_r_j =  { }
+  spots_r_j = {}
 
   for i in images:
     image = indexer.get_image_name(i)
@@ -151,20 +148,19 @@ def mosflm_check_indexer_solution(indexer):
       xp = pixel[0] * y - beam[0]
       yp = pixel[1] * x - beam[1]
 
-      scale = wavelength * math.sqrt(
-          xp * xp + yp * yp + distance * distance)
+      scale = wavelength * math.sqrt(xp * xp + yp * yp + distance * distance)
 
       X = distance / scale
       X -= 1.0 / wavelength
-      Y = - xp / scale
+      Y = -xp / scale
       Z = yp / scale
 
       S = matrix.col([X, Y, Z])
 
       rtod = 180.0 / math.pi
 
-      spots_r.append(S.rotate(axis, - phi / rtod))
-      spots_r_j[i].append(S.rotate(axis, - phi / rtod))
+      spots_r.append(S.rotate(axis, -phi / rtod))
+      spots_r_j[i].append(S.rotate(axis, -phi / rtod))
 
   # now reindex the reciprocal space spot list and count - n.b. need
   # to transform the Bravais lattice to an assumed spacegroup and hence
@@ -228,8 +224,7 @@ def mosflm_check_indexer_solution(indexer):
 
   sgp = sg.build_derived_group(True, False)
   lattice_p = s2l(sgp.type().number())
-  symm = crystal.symmetry(unit_cell = cell,
-                          space_group = sgp)
+  symm = crystal.symmetry(unit_cell=cell, space_group=sgp)
 
   rdx = symm.change_of_basis_op_to_best_cell()
   symm_new = symm.change_basis(rdx)

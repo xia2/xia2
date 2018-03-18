@@ -95,7 +95,6 @@ from xia2.Modules.Refiner import RefinerFactory
 
 # allow output
 
-
 # See FIXME Integrater interface definition, 27/SEP/06
 
 class _global_integration_parameters(object):
@@ -106,14 +105,14 @@ class _global_integration_parameters(object):
   # FIXME added copy.deepcopy to help prevent mashing of parameters...
 
   def __init__(self):
-    self._parameter_dict = { }
+    self._parameter_dict = {}
 
   def set_parameters(self, crystal, parameters):
     self._parameter_dict[crystal] = copy.deepcopy(parameters)
     return
 
   def get_parameters(self, crystal):
-    return copy.deepcopy(self._parameter_dict.get(crystal, { }))
+    return copy.deepcopy(self._parameter_dict.get(crystal, {}))
 
 global_integration_parameters = _global_integration_parameters()
 
@@ -183,7 +182,7 @@ class XSweep(object):
     self._epoch = epoch
     self._user_lattice = user_lattice
     self._user_cell = user_cell
-    self._header = { }
+    self._header = {}
     self._resolution_high = dmin
     self._resolution_low = dmax
     self._ice = ice
@@ -195,8 +194,8 @@ class XSweep(object):
     # a _epoch_to_dose dictionary or some such... may be fiddly as
     # this will need to parse across multiple templates. c/f Bug # 2798
 
-    self._epoch_to_image = { }
-    self._image_to_epoch = { }
+    self._epoch_to_image = {}
+    self._image_to_epoch = {}
 
     # to allow first, last image for processing to be
     # set... c/f integrater interface
@@ -219,7 +218,7 @@ class XSweep(object):
           len(imagesets)
       self._imageset = copy.deepcopy(imagesets[0])
       start, end = self._imageset.get_array_range()
-      self._images = list(range(start+1, end+1))
+      self._images = list(range(start + 1, end + 1))
 
       # FIXME in here check that (1) the list of images is continuous
       # and (2) that all of the images are readable. This should also
@@ -234,13 +233,13 @@ class XSweep(object):
 
       if params.general.check_image_files_readable:
         for j in range(start, end + 1):
-          image_name = self.get_imageset().get_path(j-start)
+          image_name = self.get_imageset().get_path(j - start)
           if not j in self._images:
-            Debug.write('image %s missing' %image_name)
+            Debug.write('image %s missing' % image_name)
             error = True
             continue
           if not os.access(image_name, os.R_OK):
-            Debug.write('image %s unreadable' %image_name)
+            Debug.write('image %s unreadable' % image_name)
             error = True
             continue
 
@@ -286,7 +285,6 @@ class XSweep(object):
 
           Chatter.write(format % (name, beam_.get_wavelength(),
                                   wavelength.get_wavelength()))
-
 
       # also in here look at the image headers to see if we can
       # construct a mapping between exposure epoch and image ...
@@ -367,7 +365,7 @@ class XSweep(object):
     obj = {}
     obj['__id__'] = 'XSweep'
     import inspect
-    attributes = inspect.getmembers(self, lambda m:not(inspect.isroutine(m)))
+    attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
     for a in attributes:
       if a[0] in ('_indexer', '_refiner', '_integrater') and a[1] is not None:
         obj[a[0]] = a[1].to_dict()

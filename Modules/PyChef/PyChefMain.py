@@ -88,7 +88,7 @@ def get_number_cpus():
   # os X
 
   output = subprocess.Popen(['system_profiler', 'SPHardwareDataType'],
-                            stdout = subprocess.PIPE).communicate()[0]
+                            stdout=subprocess.PIPE).communicate()[0]
   for record in output.split('\n'):
     if 'Total Number Of Cores' in record:
       return int(record.split()[-1])
@@ -129,8 +129,8 @@ def parse_standard_input():
     #### KEYWORD RESOLUTION ####
 
     if key == 'RESO':
-      assert(len(tokens) < 4)
-      assert(len(tokens) > 1)
+      assert len(tokens) < 4
+      assert len(tokens) > 1
 
       if len(tokens) == 2:
         resolution_high = float(tokens[1])
@@ -144,8 +144,8 @@ def parse_standard_input():
     #### KEYWORD RANGE ####
 
     elif key == 'RANG':
-      assert(len(tokens) < 8)
-      assert(len(tokens) > 2)
+      assert (len(tokens) < 8)
+      assert (len(tokens) > 2)
 
       for j in range(1, len(tokens)):
         subkey = tokens[j][:4].upper()
@@ -159,7 +159,7 @@ def parse_standard_input():
     #### KEYWORD ANOMALOUS ####
 
     elif key == 'ANOM':
-      assert(len(tokens) < 3)
+      assert len(tokens) < 3
 
       anomalous = True
 
@@ -172,8 +172,8 @@ def parse_standard_input():
     #### KEYWORD LABIN ####
 
     elif key == 'LABI':
-      assert(len(tokens) == 2)
-      assert('BASE=' in tokens[1])
+      assert len(tokens) == 2
+      assert 'BASE=' in tokens[1]
 
       base_column = tokens[1].replace('BASE=', '')
 
@@ -192,7 +192,6 @@ def parse_standard_input():
 
     elif key == 'UNIQ':
       base_unique = True
-
 
   # check that these values are sound - where they are needed...
   # assert(base_column)

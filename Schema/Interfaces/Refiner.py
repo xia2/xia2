@@ -31,7 +31,7 @@ class Refiner(object):
 
     # implementation dependent parameters - these should be keyed by
     # say 'mosflm':{'yscale':0.9999} etc.
-    self._refinr_program_parameters = { }
+    self._refinr_program_parameters = {}
 
   # serialization functions
 
@@ -42,7 +42,7 @@ class Refiner(object):
     obj['__module__'] = self.__class__.__module__
     obj['__name__'] = self.__class__.__name__
     import inspect
-    attributes = inspect.getmembers(self, lambda m:not(inspect.isroutine(m)))
+    attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
     for a in attributes:
       if 0 and a[0] == '_scalr_xcrystal':
         # XXX I guess we probably want this?
@@ -139,7 +139,7 @@ class Refiner(object):
   def get_working_directory(self):
     return self._working_directory
 
-  def set_refiner_prepare_done(self, done = True):
+  def set_refiner_prepare_done(self, done=True):
 
     frm = inspect.stack()[1]
     mod = inspect.getmodule(frm[0])
@@ -148,7 +148,7 @@ class Refiner(object):
 
     self._refinr_prepare_done = done
 
-  def set_refiner_done(self, done = True):
+  def set_refiner_done(self, done=True):
 
     frm = inspect.stack()[1]
     mod = inspect.getmodule(frm[0])
@@ -157,7 +157,7 @@ class Refiner(object):
 
     self._refinr_done = done
 
-  def set_refiner_finish_done(self, done = True):
+  def set_refiner_finish_done(self, done=True):
 
     frm = inspect.stack()[1]
     mod = inspect.getmodule(frm[0])
@@ -189,8 +189,7 @@ class Refiner(object):
 
   def get_refiner_finish_done(self):
     if not self.get_refiner_done():
-      Debug.write(
-          'Resetting refiner finish done as refinement not done')
+      Debug.write('Resetting refiner finish done as refinement not done')
       self.set_refiner_finish_done(False)
     return self._refinr_finish_done
 
@@ -205,7 +204,7 @@ class Refiner(object):
     '''Actually perform the refinement - this is delegated to the
     implementation.'''
 
-    if self._refinr_indexers == { }:
+    if self._refinr_indexers == {}:
       raise RuntimeError( \
             'no Indexer implementations assigned for refinement')
 
@@ -265,7 +264,7 @@ class Refiner(object):
     use in refinement, e.g. the YSCALE or GAIN values in Mosflm.'''
 
     if program not in self._refinr_program_parameters:
-      self._refinr_program_parameters[program] = { }
+      self._refinr_program_parameters[program] = {}
 
     self._refinr_program_parameters[program][parameter] = value
 
@@ -283,7 +282,7 @@ class Refiner(object):
     try:
       return self._refinr_program_parameters[program]
     except Exception:
-      return { }
+      return {}
 
   def set_refiner_parameters(self, parameters):
     '''Set all parameters and values.'''

@@ -17,7 +17,7 @@ import traceback
 class Background(threading.Thread):
   '''A class to allow background operation.'''
 
-  def __init__(self, o, m, a = None):
+  def __init__(self, o, m, a=None):
     '''Create a thread to call o.m(a).'''
 
     threading.Thread.__init__(self)

@@ -130,11 +130,10 @@ def write_citations():
 
   out.close()
 
-
 def help():
   '''Print out some help for xia2.'''
 
-  sys.stdout.write('%s\n' % Version);
+  sys.stdout.write('%s\n' % Version)
 
   # FIXME also needs to make reference to Phil input
   # FIXME ideally should move all command-line functionality over to Phil...

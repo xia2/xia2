@@ -52,8 +52,7 @@ n_bins = 20
 d_min = None
   .type = float(value_min=0)
 %s
-""" %batch_phil_scope)
-
+""" % batch_phil_scope)
 
 try:
   import matplotlib
@@ -63,10 +62,7 @@ try:
 except ImportError:
   raise Sorry("matplotlib must be installed to generate a plot.")
 
-
-
 class separate_unmerged(object):
-
   def __init__(self, unmerged_intensities, batches_all, id_to_batches=None):
 
     intensities = OrderedDict()
@@ -104,9 +100,7 @@ class separate_unmerged(object):
     self.intensities = intensities
     self.batches = batches
 
-
 class multi_crystal_analysis(object):
-
   def __init__(self, unmerged_intensities, batches_all, n_bins=20, d_min=None,
                id_to_batches=None):
 
@@ -242,21 +236,19 @@ class multi_crystal_analysis(object):
     ind = hierarchy.fcluster(linkage_matrix, t=0.05, criterion='distance')
 
     # Compute and plot dendrogram.
-    fig = pyplot.figure(dpi=200, figsize=(16,12))
-    axdendro = fig.add_axes([0.09,0.1,0.2,0.8])
+    fig = pyplot.figure(dpi=200, figsize=(16, 12))
+    axdendro = fig.add_axes([0.09, 0.1, 0.2, 0.8])
     Y = linkage_matrix
-    Z = hierarchy.dendrogram(Y,
-                             color_threshold=0.05,
-                             orientation='right')
+    Z = hierarchy.dendrogram(Y, color_threshold=0.05, orientation='right')
     axdendro.set_xticks([])
     axdendro.set_yticks([])
 
     # Plot distance matrix.
-    axmatrix = fig.add_axes([0.3,0.1,0.6,0.8])
+    axmatrix = fig.add_axes([0.3, 0.1, 0.6, 0.8])
     index = Z['leaves']
     D = correlation_matrix.as_numpy_array()
-    D = D[index,:]
-    D = D[:,index]
+    D = D[index, :]
+    D = D[:, index]
     im = axmatrix.matshow(D, aspect='auto', origin='lower')
     axmatrix.yaxis.tick_right()
     if labels is not None:
@@ -266,14 +258,14 @@ class multi_crystal_analysis(object):
       axmatrix.yaxis.set_ticks([])
 
     # Plot colorbar.
-    axcolor = fig.add_axes([0.91,0.1,0.02,0.8])
+    axcolor = fig.add_axes([0.91, 0.1, 0.02, 0.8])
     pyplot.colorbar(im, cax=axcolor)
 
     # Display and save figure.
     fig.savefig('correlation_matrix.png')
     fig.clear()
 
-    fig = pyplot.figure(dpi=200, figsize=(16,12))
+    fig = pyplot.figure(dpi=200, figsize=(16, 12))
 
     if labels is None:
       labels = ['%i' %(i+1) for i in range(len(self.intensities))]
@@ -413,7 +405,6 @@ class multi_crystal_analysis(object):
     with open('intensity_clusters.json', 'wb') as f:
       json.dump(d, f, indent=2)
 
-
   def write_output(self):
 
     rows = [["cluster_id", "# datasets", "height", "datasets"]]
@@ -430,10 +421,11 @@ class multi_crystal_analysis(object):
 
 
 def scipy_dendrogram_to_plotly_json(ddict):
-  colors = { 'b': 'rgb(31, 119, 180)',
-             'g': 'rgb(44, 160, 44)',
-             'o': 'rgb(255, 127, 14)',
-             'r': 'rgb(214, 39, 40)',
+  colors = {
+      'b': 'rgb(31, 119, 180)',
+      'g': 'rgb(44, 160, 44)',
+      'o': 'rgb(255, 127, 14)',
+      'r': 'rgb(214, 39, 40)',
   }
 
   dcoord = ddict['dcoord']
@@ -572,13 +564,12 @@ def run(args):
     for b in params.batch:
       assert b.id is not None
       assert b.range is not None
-      assert b.id not in id_to_batches, "Duplicate batch id: %s" %b.id
+      assert b.id not in id_to_batches, "Duplicate batch id: %s" % b.id
       id_to_batches[b.id] = b.range
 
   multi_crystal_analysis(unmerged_intensities, batches_all,
                          n_bins=params.n_bins, d_min=params.d_min,
                          id_to_batches=id_to_batches)
-
 
 if __name__ == '__main__':
   import sys

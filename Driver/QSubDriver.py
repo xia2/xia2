@@ -53,7 +53,6 @@ def get_qsub_command():
   return None
 
 class QSubDriver(DefaultDriver):
-
   def __init__(self):
     if os.name != 'posix':
       raise RuntimeError('os "%s" not supported' % os.name)
@@ -201,20 +200,16 @@ class QSubDriver(DefaultDriver):
     # standard error output will appear below...
 
     sge_stdout = os.path.join(self._working_directory,
-                              '%s.sh.o%s' % (self._script_name,
-                                             job_id))
+                              '%s.sh.o%s' % (self._script_name, job_id))
 
     sge_stderr = os.path.join(self._working_directory,
-                              '%s.sh.e%s' % (self._script_name,
-                                             job_id))
+                              '%s.sh.e%s' % (self._script_name, job_id))
 
     sge_pstdout = os.path.join(self._working_directory,
-                               '%s.sh.po%s' % (self._script_name,
-                                               job_id))
+                               '%s.sh.po%s' % (self._script_name, job_id))
 
     sge_pstderr = os.path.join(self._working_directory,
-                               '%s.sh.pe%s' % (self._script_name,
-                                               job_id))
+                               '%s.sh.pe%s' % (self._script_name, job_id))
 
     # check the standard error file for any indications that
     # something went wrong running this job...
@@ -249,7 +244,6 @@ class QSubDriver(DefaultDriver):
     '''This is meaningless...'''
 
     pass
-
 
 if __name__ == '__main__':
   # Then run a simple test

@@ -20,7 +20,6 @@ from xia2.Driver.DefaultDriver import DefaultDriver
 from xia2.Driver.DriverHelper import kill_process
 
 class PythonDriver(DefaultDriver):
-
   def __init__(self):
     super(PythonDriver, self).__init__()
 
@@ -82,7 +81,6 @@ class PythonDriver(DefaultDriver):
     if os.path.exists(executable):
       return executable
     return ''
-
 
   def _input(self, record):
 

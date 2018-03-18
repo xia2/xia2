@@ -27,9 +27,9 @@ def digest_wedges(wedges):
   if False:
     return
 
-  doses = { }
+  doses = {}
 
-  belonging_wedges = { }
+  belonging_wedges = {}
 
   for w in wedges:
     dose, batch, size, exposure, dataset = w
@@ -43,8 +43,8 @@ def digest_wedges(wedges):
       belonging_wedges[k_new] = belonging_wedges[k_old]
       belonging_wedges[k_new].append(w)
 
-      del(doses[k_old])
-      del(belonging_wedges[k_old])
+      del doses[k_old]
+      del belonging_wedges[k_old]
 
     else:
       end_dose = dose + exposure * (size - 1)
@@ -54,7 +54,7 @@ def digest_wedges(wedges):
 
   # now invert
 
-  sweeps = { }
+  sweeps = {}
 
   for k in doses:
     sweeps[doses[k]] = k
@@ -83,7 +83,7 @@ def digest_wedges(wedges):
     # check that the group structure is correct, i.e. all have the
     # uniform number of wedges...
 
-    group_wedges = { }
+    group_wedges = {}
 
     for s in g:
       all_wedges = belonging_wedges[sweeps[s]]
@@ -99,10 +99,10 @@ def digest_wedges(wedges):
     datasets = list({k[0] for k in group_wedges})
 
     if len(g) == 1:
-      assert(len(belonging_wedges[sweeps[g[0]]]) == 1)
+      assert len(belonging_wedges[sweeps[g[0]]]) == 1
       group_report.append('Single wedge')
     elif len(datasets) == 1:
-      assert(len(group_wedges) == 2)
+      assert len(group_wedges) == 2
       group_report.append('Inverse beam')
     else:
       group_report.append('%d-wedge data collection' % \
@@ -112,7 +112,7 @@ def digest_wedges(wedges):
       if not size:
         size = len(group_wedges[(dataset, last_image)])
 
-      assert(size == len(group_wedges[(dataset, last_image)]))
+      assert size == len(group_wedges[(dataset, last_image)])
 
     for j in range(size):
 
