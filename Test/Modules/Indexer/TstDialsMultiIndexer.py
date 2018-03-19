@@ -1,4 +1,4 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 import sys
@@ -64,7 +64,7 @@ def run(args):
   else:
     nproc = None
   exercise_dials_multi_indexer(nproc=nproc)
-  print "OK"
+  print("OK")
 
 if __name__ == '__main__':
   run(sys.argv[1:])

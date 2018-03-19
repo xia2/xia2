@@ -1,4 +1,4 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import sys
 
@@ -179,13 +179,13 @@ def run(args):
                          cc_one_half_method=params.cc_one_half_method,
                          id_to_batches=id_to_batches)
   hist_filename = 'delta_cc_hist.png'
-  print 'Saving histogram to %s' % hist_filename
+  print('Saving histogram to %s' % hist_filename)
   result.plot_histogram(hist_filename)
-  print result.get_table()
+  print(result.get_table())
   from xia2.Handlers.Citations import Citations
   Citations.cite('delta_cc_half')
   for citation in Citations.get_citations_acta():
-    print citation
+    print(citation)
 
 if __name__ == '__main__':
   import sys

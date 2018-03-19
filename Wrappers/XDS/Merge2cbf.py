@@ -9,7 +9,7 @@
 # the XDS package.
 #
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 import sys
@@ -152,10 +152,10 @@ def Merge2cbf(DriverType=None, params=None):
             processing_array_header_contents = True
           elif processing_array_header_contents:
             if not printed_array_header_contents:
-              print """;\n%s\n;\n""" %minicbf_header_content
+              print(""";\n%s\n;\n""" %minicbf_header_content)
               printed_array_header_contents = True
             continue
-          print line,
+          print(line, end=' ')
         f.close()
 
     def get_minicbf_header_contents(self, i_output_image, moving_average=False):

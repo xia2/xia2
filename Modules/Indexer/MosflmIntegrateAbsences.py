@@ -1,4 +1,4 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import sys
 
@@ -44,8 +44,8 @@ def measure(hklin, spacegroup):
     else:
       present.append(ipr_values[j] / sigipr_values[j])
 
-  print 'A: %f' % (sum(absent) / len(absent))
-  print 'P: %f' % (sum(present) / len(present))
+  print('A: %f' % (sum(absent) / len(absent)))
+  print('P: %f' % (sum(present) / len(present)))
 
 if __name__ == '__main__':
 

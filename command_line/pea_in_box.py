@@ -1,4 +1,4 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import math
 import os
@@ -55,11 +55,11 @@ def reconstruct_peabox(params):
       r['flags'] = ', '.join(r['flags'])
 #     pprint(r)
 
-    print "Collecting shoeboxes for %d reflections" % len(reflections)
+    print("Collecting shoeboxes for %d reflections" % len(reflections))
 
     reflections["shoebox"] = flex.shoebox(reflections["panel"],reflections["bbox"],allocate=True)
     reflections.extract_shoeboxes(experiments.imagesets()[0], verbose=True)
-    print "Consolidating..."
+    print("Consolidating...")
 
     sizes = {}
     for r in reflections:
@@ -76,10 +76,10 @@ def reconstruct_peabox(params):
       sizes[a]['weights'] += s.mask
       sizes[a]['count'] += 1
 
-    print len(sizes), "shoebox sizes extracted"
+    print(len(sizes), "shoebox sizes extracted")
 
     for s, c in sizes.iteritems():
-      print "%dx %s" % (c['count'], str(s))
+      print("%dx %s" % (c['count'], str(s)))
       sdat = iter(c['sum'])
       wdat = iter(c['weights'])
       for z in range(s[0]):
@@ -88,9 +88,9 @@ def reconstruct_peabox(params):
           weight = [ next(wdat) for x in range(s[2]) ]
           truecount = ( 0 if w == 0 else 10 * c / w for c, w in zip(count, weight) )
           visualize = ( "X" if c < 0 else ("." if c < 10 else str(int(math.log10(c)))) for c in truecount )
-          print "".join(visualize)
-        print ""
-      print ""
+          print("".join(visualize))
+        print()
+      print()
 #   debug_console()
 
   # - look up reflection in reflection list, get bounding box

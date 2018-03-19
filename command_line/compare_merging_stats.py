@@ -1,4 +1,4 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 
@@ -42,7 +42,7 @@ def run(args):
 
   results = []
   for mtz in args:
-    print mtz
+    print(mtz)
     assert os.path.isfile(mtz), mtz
     results.append(get_merging_stats(
                      mtz, anomalous=params.anomalous,

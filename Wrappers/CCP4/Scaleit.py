@@ -10,7 +10,7 @@
 # A wrapper for the CCP4 program scaleit, for use when scaling together
 # multiple data sets from a single crystal.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 import sys
@@ -260,13 +260,13 @@ if __name__ == '__main__':
   s.set_hklout('junk.mtz')
   s.set_anomalous(True)
 
-  print s.find_columns()
+  print(s.find_columns())
 
   s.scaleit()
 
   stats = s.get_statistics()
 
-  print stats['b_factor']
+  print(stats['b_factor'])
 
   if 'max_difference' in stats:
-    print stats['max_difference']
+    print(stats['max_difference'])

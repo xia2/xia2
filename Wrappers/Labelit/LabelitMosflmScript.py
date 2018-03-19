@@ -13,7 +13,7 @@
 # to the Indexer payload in LabelitIndex.py.
 #
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 
@@ -78,4 +78,4 @@ if __name__ == '__main__':
   lms = LabelitMosflmScript()
   lms.set_solution(9)
   for m in lms.calculate():
-    print m[:-1]
+    print(m[:-1])

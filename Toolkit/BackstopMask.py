@@ -22,7 +22,7 @@ from which a backstop mask for the input images is calculated. N.B. positions
 position. The positions may be read from ADXV and will be applied to both XDS
 and Mosflm.'''
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import binascii
 import math
@@ -405,7 +405,7 @@ if __name__ == '__main__':
 
     return result
 
-  print format_limits(bm.calculate_mask_mosflm(header))
+  print(format_limits(bm.calculate_mask_mosflm(header)))
 
   if len(sys.argv) == 5:
     cbf_in = sys.argv[3]

@@ -1,4 +1,4 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import sys
 
@@ -17,7 +17,7 @@ include scope cctbx.french_wilson.master_phil
 class french_wilson(object):
   def __init__(self, mtz_file, params=None):
 
-    print 'Reading reflections from %s' % mtz_file
+    print('Reading reflections from %s' % mtz_file)
     from iotbx.reflection_file_reader import any_reflection_file
     result = any_reflection_file(mtz_file)
     assert result.file_type() == 'ccp4_mtz'
@@ -45,12 +45,12 @@ class french_wilson(object):
       wilson_scaling = data_statistics.wilson_scaling(
         miller_array=merged_intensities, n_residues=200) # XXX default n_residues?
       wilson_scaling.show()
-      print
+      print()
 
     mtz_dataset = mtz_object.crystals()[1].datasets()[0]
     mtz_dataset.add_miller_array(amplitudes, column_root_label='F')
     mtz_object.add_history('cctbx.french_wilson analysis')
-    print 'Writing reflections to %s' % (params.hklout)
+    print('Writing reflections to %s' % (params.hklout))
     mtz_object.show_summary()
     mtz_object.write(params.hklout)
 

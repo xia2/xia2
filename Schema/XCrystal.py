@@ -63,7 +63,7 @@
 #                 the FreeR column. This should probably be enforced as an
 #                 MTZ file.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import collections
 import math
@@ -221,9 +221,9 @@ class _ha_info(object):
 
 
 def _print_lattice(lattice):
-  print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % lattice['cell']
-  print 'Number: %s     Lattice: %s' % (lattice['number'],
-                                        lattice['lattice'])
+  print('Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % lattice['cell'])
+  print('Number: %s     Lattice: %s' % (lattice['number'],
+                                        lattice['lattice']))
 
 
 formats = collections.OrderedDict([

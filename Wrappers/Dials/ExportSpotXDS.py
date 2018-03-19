@@ -8,7 +8,7 @@
 # A wrapper to handle the dials.spotfinder program.
 #
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 import sys
@@ -71,7 +71,7 @@ def ExportSpotXDS(DriverType=None, params=None):
               self.get_working_directory(), 'SPOT.XDS'), 'rb').read())
 
       output = self.get_all_output()
-      print "".join(output)
+      print("".join(output))
 
   return ExportSpotXDSWrapper(params=params)
 

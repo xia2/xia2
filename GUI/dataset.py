@@ -1,4 +1,4 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import wx
 from libtbx.utils import Sorry
@@ -86,7 +86,7 @@ class SelectDatasetPanelMixin(object):
         self.stack_ctrl.SetSelection(i)
 
   def OnChooseDataset(self, event):
-    print self.stack_ctrl.GetSelections()
+    print(self.stack_ctrl.GetSelections())
 
 class SelectDatasetDialog(wx.Dialog, SelectDatasetPanelMixin):
   def __init__(self, *args, **kwds):
@@ -124,4 +124,4 @@ if __name__ == "__main__":
   app = app.CCTBXApp(0)
   imagesets = select_imageset(pick_frames=True)
   for imageset in imagesets:
-    print imageset
+    print(imageset)

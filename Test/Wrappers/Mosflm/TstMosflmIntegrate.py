@@ -1,4 +1,4 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 
@@ -14,7 +14,7 @@ except KeyError:
 
 def exercise_mosflm_integrate():
   if not have_dials_regression:
-    print "Skipping exercise_mosflm_integrate(): dials_regression not configured"
+    print("Skipping exercise_mosflm_integrate(): dials_regression not configured")
     return
 
 
@@ -105,7 +105,7 @@ def exercise_mosflm_integrate():
 
 def run():
   exercise_mosflm_integrate()
-  print "OK"
+  print("OK")
 
 
 if __name__ == '__main__':

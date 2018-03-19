@@ -9,7 +9,7 @@
 # Replacement for CCP4 program rebatch, using cctbx Python.
 #
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import sys
 
@@ -172,7 +172,7 @@ def copy_r_file(hklin, hklout):
   for crystal in mtz_obj.crystals():
     for dataset in crystal.datasets():
       for column in dataset.columns():
-        print column.label()
+        print(column.label())
         values = column.extract_values(not_a_number_substitute=-999999)
         for r in remove:
           del(values[r])

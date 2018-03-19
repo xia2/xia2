@@ -7,7 +7,7 @@
 #
 # Bits the scalers have in common - inherit from me!
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 
@@ -728,7 +728,7 @@ class CommonScaler(Scaler):
       cb_op = crystal_symm.change_of_basis_op_to_reference_setting()
 
       if cb_op.c().r().as_hkl() == 'h,k,l':
-        print 'Change of basis to reference setting: %s' % cb_op
+        print('Change of basis to reference setting: %s' % cb_op)
         crystal_symm = crystal_symm.change_basis(cb_op)
         if str(cb_op) != "a,b,c":
           unit_cell_dims = None

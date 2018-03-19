@@ -14,6 +14,7 @@
 #                   indexer "payload".
 
 from __future__ import absolute_import, division
+from __future__ import print_function
 
 import os
 import math
@@ -727,11 +728,11 @@ if __name__ == '__main_old__':
 
   xi.index()
 
-  print 'Refined beam is: %6.2f %6.2f' % xi.get_indexer_beam_centre()
-  print 'Distance:        %6.2f' % xi.get_indexer_distance()
-  print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % xi.get_indexer_cell()
-  print 'Lattice: %s' % xi.get_indexer_lattice()
-  print 'Mosaic: %6.2f' % xi.get_indexer_mosaic()
+  print('Refined beam is: %6.2f %6.2f' % xi.get_indexer_beam_centre())
+  print('Distance:        %6.2f' % xi.get_indexer_distance())
+  print('Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % xi.get_indexer_cell())
+  print('Lattice: %s' % xi.get_indexer_lattice())
+  print('Mosaic: %6.2f' % xi.get_indexer_mosaic())
 
 if __name__ == '__main__':
 
@@ -743,8 +744,8 @@ if __name__ == '__main__':
 
   xi.index()
 
-  print 'Refined beam is: %6.2f %6.2f' % xi.get_indexer_beam_centre()
-  print 'Distance:        %6.2f' % xi.get_indexer_distance()
-  print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % xi.get_indexer_cell()
-  print 'Lattice: %s' % xi.get_indexer_lattice()
-  print 'Mosaic: %6.2f' % xi.get_indexer_mosaic()
+  print('Refined beam is: %6.2f %6.2f' % xi.get_indexer_beam_centre())
+  print('Distance:        %6.2f' % xi.get_indexer_distance())
+  print('Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % xi.get_indexer_cell())
+  print('Lattice: %s' % xi.get_indexer_lattice())
+  print('Mosaic: %6.2f' % xi.get_indexer_mosaic())

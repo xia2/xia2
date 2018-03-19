@@ -29,7 +29,7 @@
 # The output should be identical to the last labelit.distl run.
 # Note that this does not take any image as input
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 
@@ -120,8 +120,8 @@ if __name__ == '__main__':
 
   stats = l.get_statistics('12287_1_E1_001.img')
 
-  print 'Fraction of good spots: %4.2f' % (float(stats['spots_good']) /
-                                           float(stats['spots']))
-  print 'Ice rings:              %d' % stats['ice_rings']
-  print 'Resolutions:            %f  %f' % \
-        (stats['resol_one'], stats['resol_two'])
+  print('Fraction of good spots: %4.2f' % (float(stats['spots_good']) /
+                                           float(stats['spots'])))
+  print('Ice rings:              %d' % stats['ice_rings'])
+  print('Resolutions:            %f  %f' % \
+        (stats['resol_one'], stats['resol_two']))

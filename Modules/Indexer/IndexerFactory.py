@@ -27,7 +27,7 @@
 # And will make a decision based on the screen information if available.
 # Integral unit test was also out of date, because the interface has changed.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import copy
 import os
@@ -201,8 +201,8 @@ if __name__ == '__main__':
 
   i.setup_from_image(os.path.join(directory, 'insulin_1_001.img'))
 
-  print 'Refined beam is: %6.2f %6.2f' % i.get_indexer_beam_centre()
-  print 'Distance:        %6.2f' % i.get_indexer_distance()
-  print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % i.get_indexer_cell()
-  print 'Lattice: %s' % i.get_indexer_lattice()
-  print 'Mosaic: %6.2f' % i.get_indexer_mosaic()
+  print('Refined beam is: %6.2f %6.2f' % i.get_indexer_beam_centre())
+  print('Distance:        %6.2f' % i.get_indexer_distance())
+  print('Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % i.get_indexer_cell())
+  print('Lattice: %s' % i.get_indexer_lattice())
+  print('Mosaic: %6.2f' % i.get_indexer_mosaic())

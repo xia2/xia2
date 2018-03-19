@@ -24,7 +24,7 @@
 #        Maximum unit cell :  242.8
 #%Saturation, Top 50 Peaks :  14.35
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 import sys
@@ -139,4 +139,4 @@ if __name__ == '__main__':
   for image in sys.argv[1:]:
     stats = l.get_statistics(image)
 
-    print image, stats['spots_good'], stats['spots']
+    print(image, stats['spots_good'], stats['spots'])

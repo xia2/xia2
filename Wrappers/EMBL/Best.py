@@ -1,4 +1,4 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 
@@ -267,16 +267,16 @@ if __name__ == '__main__':
   best.set_anomalous(False)
   best.strategy()
 
-  print 'Native'
-  print 'Start / end / width: %.2f/%.2f/%.2f' % (best.get_phi_start(), best.get_phi_end(), best.get_phi_width())
-  print 'Completeness / multiplicity / resolution: %.2f/%.2f/%.2f' % (best.get_completeness(), best.get_multiplicity(), best.get_resolution())
-  print 'Transmission / exposure %.3f/%.3f' % (best.get_transmission(), best.get_exposure_time())
+  print('Native')
+  print('Start / end / width: %.2f/%.2f/%.2f' % (best.get_phi_start(), best.get_phi_end(), best.get_phi_width()))
+  print('Completeness / multiplicity / resolution: %.2f/%.2f/%.2f' % (best.get_completeness(), best.get_multiplicity(), best.get_resolution()))
+  print('Transmission / exposure %.3f/%.3f' % (best.get_transmission(), best.get_exposure_time()))
 
   best.set_anomalous(True)
   best.strategy()
   best.get_results_dict()
 
-  print 'Anomalous'
-  print 'Start / end / width: %.2f/%.2f/%.2f' % (best.get_phi_start(), best.get_phi_end(), best.get_phi_width())
-  print 'Completeness / multiplicity / resolution: %.2f/%.2f/%.2f' % (best.get_completeness(), best.get_multiplicity(), best.get_resolution())
-  print 'Transmission / exposure %.3f/%.3f' % (best.get_transmission(), best.get_exposure_time())
+  print('Anomalous')
+  print('Start / end / width: %.2f/%.2f/%.2f' % (best.get_phi_start(), best.get_phi_end(), best.get_phi_width()))
+  print('Completeness / multiplicity / resolution: %.2f/%.2f/%.2f' % (best.get_completeness(), best.get_multiplicity(), best.get_resolution()))
+  print('Transmission / exposure %.3f/%.3f' % (best.get_transmission(), best.get_exposure_time()))

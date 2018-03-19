@@ -11,7 +11,7 @@
 # This is a replacement for the more venerable program Scala, and shares the
 # same interface as the Scala wrapper. Mostly.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 
@@ -836,9 +836,9 @@ if __name__ == '__output_main__':
 
   results = s.parse_ccp4_loggraph()
 
-  print 'The following loggraphs were found'
+  print('The following loggraphs were found')
   for k in results.keys():
-    print k
+    print(k)
 
 
   summary = s.get_summary()
@@ -846,7 +846,7 @@ if __name__ == '__output_main__':
   for k in summary.keys():
     dataset = summary[k]
     for property in dataset.keys():
-      print k, property, dataset[property]
+      print(k, property, dataset[property])
 
 
 if __name__ == '__main__':
@@ -867,11 +867,11 @@ if __name__ == '__main__':
 
   results = s.parse_ccp4_loggraph()
 
-  print 'The following loggraphs were found'
+  print('The following loggraphs were found')
   for k in results.keys():
-    print k
+    print(k)
 
   summary = s.get_summary()
 
   for k in summary.keys():
-    print k, summary[k]
+    print(k, summary[k])

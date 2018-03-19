@@ -9,7 +9,7 @@
 # A driver class to launch Python subprocesses with the shared environment
 # but in a new address space.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import copy
 import os
@@ -117,4 +117,4 @@ if __name__ == '__main__':
   pd.close_wait()
 
   for record in pd.get_all_output():
-    print record[:-1]
+    print(record[:-1])

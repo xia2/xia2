@@ -5,7 +5,7 @@
 #   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 from xia2.Driver.DriverFactory import DriverFactory
 
@@ -49,4 +49,4 @@ if __name__ == '__main__':
   xtriage = Xtriage()
   xtriage.set_mtz(sys.argv[1])
   xtriage.run()
-  print ''.join(xtriage.get_all_output())
+  print(''.join(xtriage.get_all_output()))

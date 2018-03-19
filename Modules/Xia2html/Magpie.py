@@ -1,4 +1,4 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import copy
 #######################################################################
@@ -194,7 +194,7 @@ class Magpie:
     """Internal: print to stdout
 
     Controlled by the __verbose attribute."""
-    if self.__verbose: print text
+    if self.__verbose: print(text)
 
 class Data:
   """Data items from the output"""
@@ -395,7 +395,7 @@ class Block:
     """Internal: print to stdout
 
     Controlled by the __verbose attribute."""
-    if self.__verbose: print text
+    if self.__verbose: print(text)
 
 class PatternMatcher:
   """Store and invoke regexp pattern matches

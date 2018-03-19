@@ -10,7 +10,7 @@
 # A small expert to handle symmetry calculations.
 #
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 from cctbx import sgtbx
 from scitbx import matrix
@@ -115,4 +115,4 @@ if __name__ == '__main__':
   m = symop_to_mat(s)
 
   for i in map(int, m):
-    print i,
+    print(i, end=' ')

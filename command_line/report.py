@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import json
 import os
@@ -816,7 +816,7 @@ higher resolution. A typical resolution cutoff based on CC1/2 is around 0.3-0.5.
     if self.params.chef_min_completeness:
       d_min = PyChef.resolution_limit(
         mtz_file=self.unmerged_mtz, min_completeness=self.params.chef_min_completeness, n_bins=n_bins)
-      print 'Estimated d_min for CHEF analysis: %.2f' %d_min
+      print('Estimated d_min for CHEF analysis: %.2f' % d_min)
       sel = flex.bool(intensities.size(), True)
       d_spacings = intensities.d_spacings().data()
       sel &= d_spacings >= d_min
@@ -953,7 +953,7 @@ def run(args):
     json.dump(json_data, f)
 
   with open('%s-report.html' % params.prefix, 'wb') as f:
-    print >> f, html.encode('ascii', 'xmlcharrefreplace')
+    f.write(html.encode('ascii', 'xmlcharrefreplace'))
 
 if __name__ == '__main__':
   import sys

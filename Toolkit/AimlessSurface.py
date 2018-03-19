@@ -1,4 +1,4 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 def work():
   from scitbx import math
@@ -12,7 +12,7 @@ def work():
   t = 1
   p = 1
 
-  print nsssphe.spherical_harmonic(2, 1, 1, 1)
+  print(nsssphe.spherical_harmonic(2, 1, 1, 1))
 
 def n_terms():
   orders = {}
@@ -22,7 +22,7 @@ def n_terms():
       for l in range(-k, k+1):
         nterms += 1
     orders[nterms] = j
-  print orders
+  print(orders)
 
 def order_from_nterm(n):
   return {0: 0, 80: 8, 3: 1, 8: 2, 15: 3, 48: 6, 99: 9, 35: 5, 24: 4, 63: 7}[n]

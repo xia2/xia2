@@ -11,7 +11,7 @@
 # wavelength / position or h, k, l, / unit cell.
 #
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import math
 import os
@@ -291,7 +291,7 @@ def main(mtzdump):
     mean, sd = meansd(isigma)
     mf = meansd(f)[0]
     ms = meansd(sf)[0]
-    print 1.0 / math.sqrt(sum(s) / len(s)), c, len(bin), mean, sd, mf / ms
+    print(1.0 / math.sqrt(sum(s) / len(s)), c, len(bin), mean, sd, mf / ms)
 
     j += binsize
 
@@ -322,7 +322,7 @@ def model():
       ccl.append(cc(i, i_sigma))
 
     za, zb = meansd(ccl)
-    print isigma, za, zb
+    print(isigma, za, zb)
     sys.stdout.flush()
 
 class ResolutionCell(object):
@@ -610,9 +610,9 @@ def bin_o_tron0(sisigma):
     result[_scale_bins * (j + 1)] = meansd(bins[j + 1])
 
     if False:
-      print result[_scale_bins * (j + 1)][0], \
+      print(result[_scale_bins * (j + 1)][0], \
             result[_scale_bins * (j + 1)][1], \
-            len(bins[j + 1])
+            len(bins[j + 1]))
 
   return result
 
@@ -729,9 +729,9 @@ def bin_o_tron(sisigma):
     result[_scale_bins * (j + 1)] = (msd[0], msd[1], meansd(bins_s[j + 1])[0])
 
     if False:
-      print result[_scale_bins * (j + 1)][0], \
+      print(result[_scale_bins * (j + 1)][0], \
             result[_scale_bins * (j + 1)][1], \
-            len(bins[j + 1])
+            len(bins[j + 1]))
 
   return result
 
@@ -787,7 +787,7 @@ def digest(bins, isigma_limit=1.0):
     mean, sdm, sd = bins[s]
 
     if False:
-      print s, 1.0 / math.sqrt(s), mean, sd
+      print(s, 1.0 / math.sqrt(s), mean, sd)
 
   # ok, really the first thing I need to do is see if the reflections
   # fall off the edge of the detector - i.e. this is a close-in low
@@ -879,7 +879,7 @@ def digest(bins, isigma_limit=1.0):
   if False:
     for isigma in 1.0, 2.0, 3.0, 4.0, 5.0:
       s = (math.log10(isigma) - c) / m
-      print 'Debugging again... %.1f %.2f' % (isigma, 1.0 / math.sqrt(s))
+      print('Debugging again... %.1f %.2f' % (isigma, 1.0 / math.sqrt(s)))
 
   s = (L - c) / m
 
@@ -901,8 +901,8 @@ if __name__ == '__main__':
   for b in sorted(bot):
     mean, spread, sigma = bot[b]
     if mean:
-      print 1.0 / math.sqrt(b), mean, spread, sigma, mean / sigma
+      print(1.0 / math.sqrt(b), mean, spread, sigma, mean / sigma)
 
   s, r = digest(bot)
 
-  print s, r
+  print(s, r)

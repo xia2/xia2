@@ -14,7 +14,7 @@
 # Reindexing functionality for MTZ formatted reflection files.
 #
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 
@@ -206,4 +206,4 @@ if __name__ == '__main__':
   r.set_operator('h,k,l')
   r.set_spacegroup('P 4 2 2')
 
-  print r.reindex()
+  print(r.reindex())

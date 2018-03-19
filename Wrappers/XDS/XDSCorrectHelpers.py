@@ -14,7 +14,7 @@
 #    and a generic xds writer
 #  - parse the output from CORRECT.LP
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import copy
 import os
@@ -154,4 +154,4 @@ if __name__ == '__main__':
   #correct_lp = os.path.join(os.environ['XIA2_ROOT'], 'Wrappers', 'XDS',
                             #'Doc', 'CORRECT.LP')
   correct_lp = sys.argv[1]
-  print _parse_correct_lp(correct_lp)
+  print(_parse_correct_lp(correct_lp))

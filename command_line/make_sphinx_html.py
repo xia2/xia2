@@ -1,6 +1,6 @@
 # LIBTBX_SET_DISPATCHER_NAME dev.xia2.make_sphinx_html
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 import shutil
@@ -21,5 +21,5 @@ if (__name__ == "__main__") :
   result = run_process(["make", "html"])
   assert result['exitcode'] == 0, \
       'make html failed with exit code %d' % result['exitcode']
-  print "Moving HTML pages to", dest_dir
+  print("Moving HTML pages to", dest_dir)
   shutil.move("build/html", dest_dir)

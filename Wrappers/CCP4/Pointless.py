@@ -12,7 +12,7 @@
 # for computing reindexing operations to map one (merged or unmerged) data
 # set onto a merged reference set.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import math
 import os
@@ -692,4 +692,4 @@ if __name__ == '__main__':
 
   cell = p.sum_mtz('foo.hkl')
 
-  print cell
+  print(cell)

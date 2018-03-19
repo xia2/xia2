@@ -15,7 +15,7 @@
 #
 # 02/JAN/07 FIXME need to ensure that the indexing is repeated if necessary.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import copy
 import math
@@ -523,8 +523,8 @@ class XDSIntegrater(Integrater):
             h, k, l = ref['miller_index']
             x, y, z = ref['xyzcal.px']
             dx, dy, dz = (2, 2, 2)
-            print >> f, "%i %i %i %.1f %.1f %.1f %.1f %.1f %.1f" %(
-              h, k, l, x+ox, y+oy, z, dx, dy, dz)
+            print("%i %i %i %.1f %.1f %.1f %.1f %.1f %.1f" %(
+              h, k, l, x+ox, y+oy, z, dx, dy, dz), file=f)
         t2 = time.time()
         Debug.write("Written FILTER.HKL in %.1f seconds" % (t2 - t1))
 

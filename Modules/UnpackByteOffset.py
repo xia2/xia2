@@ -1,4 +1,4 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import binascii
 import random
@@ -82,7 +82,7 @@ def unpack_tiff(filename):
 
   values = struct.unpack('<i', data)
 
-  print min(values), max(values)
+  print(min(values), max(values))
 
 def work():
   values = [int(random.random() * 65536) for j in range(1024 * 1024)]
@@ -166,5 +166,5 @@ if __name__ == '__main__':
 
   for j, image in enumerate(sys.argv[1:]):
     total, pixels = sumbyteoffset(image)
-    print j, total, pixels, image
+    print(j, total, pixels, image)
     sys.stdout.flush()

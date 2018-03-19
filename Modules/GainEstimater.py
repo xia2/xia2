@@ -11,7 +11,7 @@
 #
 # Will also include some test code to estimate the error on that average.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import math
 import os
@@ -52,14 +52,14 @@ if __name__ == '__main__':
 
   if len(sys.argv) == 1:
 
-    print gain(os.path.join(directory, '12287_1_E1_001.img'))
-    print gain(os.path.join(directory, '12287_1_E1_090.img'))
+    print(gain(os.path.join(directory, '12287_1_E1_001.img')))
+    print(gain(os.path.join(directory, '12287_1_E1_090.img')))
 
-    print generate_gain([
+    print(generate_gain([
         os.path.join(directory, '12287_1_E1_001.img'),
         os.path.join(directory, '12287_1_E1_090.img')
-    ])
+    ]))
 
   else:
 
-    print generate_gain(sys.argv[1:])
+    print(generate_gain(sys.argv[1:]))

@@ -16,7 +16,7 @@
 # 19 November 2007
 #
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import sys
 
@@ -235,5 +235,5 @@ if __name__ == '__main__':
   lattices = ls.get_lattices()
 
   for lattice in lattices:
-    print '%s %.3f %.3f %.3f %.3f %.3f %.3f' % tuple(
-        [lattice] + ls.get_cell(lattice))
+    print('%s %.3f %.3f %.3f %.3f %.3f %.3f' % tuple(
+        [lattice] + ls.get_cell(lattice)))

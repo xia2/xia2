@@ -10,7 +10,7 @@
 # functionality in iotbx. This will return a data structure to represent
 # merged and unmerged MTZ files.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import sys
 
@@ -170,35 +170,35 @@ def mtz_dump(hklin):
 
   mtz = mtz_file(hklin)
 
-  print 'Reading file: %s' % hklin
-  print 'Spacegroup: %s' % mtz.get_space_group().type(
-       ).universal_hermann_mauguin_symbol()
+  print('Reading file: %s' % hklin)
+  print('Spacegroup: %s' % mtz.get_space_group().type(
+       ).universal_hermann_mauguin_symbol())
 
-  print 'Centring operations:'
+  print('Centring operations:')
   for cenop in mtz.get_centring_operations():
-    print cenop
+    print(cenop)
 
-  print 'Symmetry operations:'
+  print('Symmetry operations:')
   for symop in mtz.get_symmetry_operations():
-    print symop
+    print(symop)
 
   for xname in mtz.get_crystal_names():
     crystal = mtz.get_crystal(xname)
-    print 'Crystal: %s' % xname
-    print 'Cell: %.3f %.3f %.3f %.3f %.3f %.3f' % \
-          crystal.get_unit_cell_parameters()
+    print('Crystal: %s' % xname)
+    print('Cell: %.3f %.3f %.3f %.3f %.3f %.3f' % \
+          crystal.get_unit_cell_parameters())
 
     for dname in crystal.get_dataset_names():
       dataset = crystal.get_dataset(dname)
-      print 'Dataset: %s' % dname
-      print 'Columns (with min / max)'
+      print('Dataset: %s' % dname)
+      print('Columns (with min / max)')
       for column in dataset.get_column_names():
         values = dataset.get_column_values(column)
-        print '%20s %.4e %.4e' % (column, min(values), max(values))
+        print('%20s %.4e %.4e' % (column, min(values), max(values)))
 
-  print 'All columns:'
+  print('All columns:')
   for column in mtz.get_column_names():
-    print column
+    print(column)
 
 if __name__ == '__main__':
   mtz_dump(sys.argv[1])

@@ -9,7 +9,7 @@
 #
 # A wrapper for the replacement for distl.sweep_strength.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 import sys
@@ -104,7 +104,7 @@ def DistlSweepStrength(DriverType=None, params=None):
       self.check_for_errors()
 
       output = self.get_all_output()
-      print "".join(output)
+      print("".join(output))
 
   return DistlSweepStrengthWrapper()
 
@@ -113,7 +113,7 @@ if __name__ == '__main__':
   if len(sys.argv) < 2:
     raise RuntimeError('%s image' % sys.argv[0])
 
-  print '%s ... %s' % (sys.argv[1], sys.argv[-1])
+  print('%s ... %s' % (sys.argv[1], sys.argv[-1]))
 
   d = DistlSweepStrength()
   for arg in sys.argv[1:]:

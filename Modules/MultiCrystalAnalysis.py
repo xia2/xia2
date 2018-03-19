@@ -1,4 +1,4 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 import sys
@@ -416,8 +416,8 @@ class multi_crystal_analysis(object):
 
     with open('intensity_clustering.txt', 'wb') as f:
       from libtbx import table_utils
-      print >> f, table_utils.format(
-        rows, has_header=True, prefix="|", postfix="|")
+      f.write(table_utils.format(
+        rows, has_header=True, prefix="|", postfix="|"))
 
 
 def scipy_dendrogram_to_plotly_json(ddict):

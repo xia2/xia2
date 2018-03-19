@@ -8,7 +8,7 @@
 #
 # Wrapper for cctbx.brehm_diederichs command.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 def BrehmDiederichs(DriverType = None):
   '''A factory for BrehmDiederichsWrapper classes.'''
@@ -78,4 +78,4 @@ if __name__ == '__main__':
   bd.run()
   reindexing_dict = bd.get_reindexing_dict()
   for f, cb_op in reindexing_dict.iteritems():
-    print f, cb_op
+    print(f, cb_op)

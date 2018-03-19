@@ -1,4 +1,4 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import math
 from collections import Mapping
@@ -422,7 +422,7 @@ class PyStatistics(object):
           + [self.ieither_comp_overall[i]]
       table_completeness.add_row(row)
 
-    print table_completeness.format_loggraph()
+    print(table_completeness.format_loggraph())
 
   def print_rcp_vs_dose(self):
 
@@ -444,7 +444,7 @@ class PyStatistics(object):
         + [self.rcp_bins[j][i] for j in xrange(len(self.rcp_bins))] + [self.rcp[i]]
       table_rcp.add_row(row)
 
-    print table_rcp.format_loggraph()
+    print(table_rcp.format_loggraph())
 
   def print_scp_vs_dose(self):
 
@@ -466,7 +466,7 @@ class PyStatistics(object):
         + [self.scp_bins[j][i] for j in xrange(len(self.scp_bins))] + [self.scp[i]]
       table_scp.add_row(row)
 
-    print table_scp.format_loggraph()
+    print(table_scp.format_loggraph())
 
   def print_rd_vs_dose(self):
 
@@ -485,7 +485,7 @@ class PyStatistics(object):
       row = [i * self.range_width + self.range_min, self.rd[i]]
       table_rd.add_row(row)
 
-    print table_rd.format_loggraph()
+    print(table_rd.format_loggraph())
 
 
 class Statistics(PyStatistics):
@@ -599,7 +599,7 @@ class Statistics(PyStatistics):
           + [self.ieither_comp_overall[i]]
       table_completeness.add_row(row)
 
-    print table_completeness.format_loggraph()
+    print(table_completeness.format_loggraph())
 
   def print_rcp_vs_dose(self):
 
@@ -620,7 +620,7 @@ class Statistics(PyStatistics):
         + [self.rcp_bins[j, i] for j in xrange(self.binner.n_bins_used())] + [self.rcp[i]]
       table_rcp.add_row(row)
 
-    print table_rcp.format_loggraph()
+    print(table_rcp.format_loggraph())
 
   def print_scp_vs_dose(self):
 
@@ -641,7 +641,7 @@ class Statistics(PyStatistics):
         + [self.scp_bins[j, i] for j in xrange(self.binner.n_bins_used())] + [self.scp[i]]
       table_scp.add_row(row)
 
-    print table_scp.format_loggraph()
+    print(table_scp.format_loggraph())
 
   def to_dict(self):
     x = [i * self.range_width + self.range_min for i in xrange(self.n_steps)]
@@ -856,7 +856,7 @@ def run(args):
     params.d_min = resolution_limit(
       mtz_file=args[0], min_completeness=params.min_completeness,
       n_bins=params.resolution_bins)
-    print 'Estimated d_min: %.2f' %params.d_min
+    print('Estimated d_min: %.2f' %params.d_min)
   if params.d_min or params.d_max:
     sel = flex.bool(intensities.size(), True)
     d_spacings = intensities.d_spacings().data()

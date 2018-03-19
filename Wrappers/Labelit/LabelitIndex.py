@@ -14,7 +14,7 @@
 # Index the lattce.
 #
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import copy
 import math
@@ -368,4 +368,4 @@ if __name__ == '__main__':
   for filename in sys.argv[1:]:
     indexer.add_image(filename)
   indexer.run()
-  print ''.join(indexer.get_all_output())
+  print(''.join(indexer.get_all_output()))

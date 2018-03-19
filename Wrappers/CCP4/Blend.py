@@ -7,7 +7,7 @@
 #
 # A wrapper for the CCP4 program Blend.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 import sys
@@ -50,7 +50,7 @@ def Blend(DriverType = None):
         self.get_working_directory(), 'input_files.dat')
       with open(input_files_dat, 'wb') as f:
         for hklin in self._hklin_files:
-          print >> f, hklin
+          print(hklin, file=f)
 
       self.add_command_line('-a')
       self.add_command_line(input_files_dat)
@@ -310,7 +310,7 @@ if __name__ == '__main__':
   for arg in sys.argv[1:]:
     b.add_hklin(arg)
   b.analysis()
-  print "".join(b.get_all_output())
-  print b.get_analysis()
-  print b.get_summary()
-  print b.get_clusters()
+  print("".join(b.get_all_output()))
+  print(b.get_analysis())
+  print(b.get_summary())
+  print(b.get_clusters())

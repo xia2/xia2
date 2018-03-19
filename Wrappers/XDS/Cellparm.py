@@ -10,7 +10,7 @@
 # a single XSCALE run.
 #
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import math
 import os
@@ -112,4 +112,4 @@ if __name__ == '__main__':
   cellparm.add_cell(
       (64.658, 30.972, 34.918, 90.000, 105.823, 90.000), 1966)
 
-  print cellparm.get_cell()
+  print(cellparm.get_cell())

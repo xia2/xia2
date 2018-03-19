@@ -15,7 +15,7 @@
 # Bug # 2798.
 #
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import collections
 import sys
@@ -163,5 +163,5 @@ if __name__ == '__main__':
   e0 = min(epochs)
 
   for e in epochs:
-    print 'batch %d time %f dose %f' % \
-          (batches[e], e - e0, dose[e])
+    print('batch %d time %f dose %f' % \
+          (batches[e], e - e0, dose[e]))

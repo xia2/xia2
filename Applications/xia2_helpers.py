@@ -1,4 +1,4 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 import shutil
@@ -78,7 +78,7 @@ def process_one_sweep(args):
     import fileinput
     for line in fileinput.FileInput(files=json_files, inplace=1):
       line = line.replace(sweep_tmp_dir, sweep_target_dir)
-      print line
+      print(line)
 
     if os.path.exists(xia2_json):
       new_json = os.path.join(curdir, 'xia2-%s.json' % sweep_id)

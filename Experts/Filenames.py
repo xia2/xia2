@@ -10,7 +10,7 @@
 # are...
 #
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 
@@ -64,7 +64,7 @@ def expand_path(path):
 if __name__ == '__main__':
 
   if os.name == 'nt':
-    print expand_path(r'%USERPROFILE%\test')
-    print expand_path(r'~\test')
+    print(expand_path(r'%USERPROFILE%\test'))
+    print(expand_path(r'~\test'))
   else:
-    print expand_path(r'~\test')
+    print(expand_path(r'~\test'))

@@ -1,4 +1,4 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 def npp(hklin):
   from iotbx.reflection_file_reader import any_reflection_file
@@ -49,8 +49,8 @@ def npp(hklin):
     all.append(fit_all.slope())
     cen.append(fit_cen.slope())
 
-    print '%3d %3d %3d' % hkl, '%.2f %.2f %.2f' % (i, v, i/math.sqrt(v)), \
-      '%.2f %.2f' % (fit_all.slope(), fit_cen.slope()), '%d' % m
+    print('%3d %3d %3d' % hkl, '%.2f %.2f %.2f' % (i, v, i/math.sqrt(v)), \
+      '%.2f %.2f' % (fit_all.slope(), fit_cen.slope()), '%d' % m)
 
   sys.stderr.write('Mean gradients: %.2f %.2f\n' % (flex.sum(all) / all.size(),
                                                     flex.sum(cen) / cen.size()))

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # LIBTBX_SET_DISPATCHER_NAME xia2.html.old
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import cgi
 import glob
@@ -29,7 +29,7 @@ def generate_xia2_html(xinfo, filename='xia2.html'):
 #   print >> f, rst.encode("utf-8")
 
   with open(filename, 'wb') as f:
-    print >> f, rst2html(rst)
+    f.write(rst2html(rst))
 
   #with open('xia2.tex', 'wb') as f:
     #print >> f, rst2latex(rst)
@@ -86,7 +86,7 @@ def make_logfile_html(logfile):
     html_file = '%s.html' %(
       os.path.splitext(logfile)[0])
     with open(html_file, 'wb') as f:
-      print >> f, rst2html(rst)
+      f.write(rst2html(rst))
     return html_file
 
 

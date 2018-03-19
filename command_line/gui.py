@@ -1,7 +1,7 @@
 # LIBTBX_PRE_DISPATCHER_INCLUDE_SH export PHENIX_GUI_ENVIRONMENT=1
 # LIBTBX_PRE_DISPATCHER_INCLUDE_SH export BOOST_ADAPTBX_FPE_DEFAULT=1
 # LIBTBX_SET_DISPATCHER_NAME dev.xia2.gui
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 import random
@@ -126,7 +126,7 @@ class ProcessingFrame (wx.Frame) :
     self.event_dispatcher.callback_stdout(data)
 
   def callback_other (self, data) :
-    print 'other'
+    print('other')
     self.event_dispatcher.callback_other(data)
 
   def callback_abort (self) :
@@ -140,7 +140,7 @@ class ProcessingFrame (wx.Frame) :
     import glob
     html_files = glob.glob(os.path.join(
       result.output_dir, 'LogFiles/*_report.html'))
-    print html_files
+    print(html_files)
     if html_files:
       html_file = html_files[0]
       try:
@@ -167,7 +167,7 @@ class ProcessingFrame (wx.Frame) :
     pass
 
   def OnLogEvent(self, event):
-    print event
+    print(event)
 
 
 class StartPanel (wx.Panel, dataset.SelectDatasetPanelMixin) :

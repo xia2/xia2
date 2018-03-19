@@ -8,7 +8,7 @@
 #
 # Generate an image mask for DIALS
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 
@@ -57,7 +57,7 @@ def GenerateMask(DriverType = None):
       phil_filename = os.path.join(
         self.get_working_directory(), '%s_mask.phil' %self.get_xpid())
       with open(phil_filename, 'wb') as f:
-        print >> f, diff_phil.as_str()
+        f.write(diff_phil.as_str())
 
       self.add_command_line('input.datablock="%s"' % self._input_datablock_filename)
       if self._output_mask_filename is None:

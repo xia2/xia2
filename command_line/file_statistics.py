@@ -1,4 +1,4 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import sys
 
@@ -24,13 +24,13 @@ for ma in mas:
 
 assert intensities, 'intensity data not found in %s' % sys.argv[1]
 
-print 'Removing %d absent reflections' % absent.count(True)
+print('Removing %d absent reflections' % absent.count(True))
 intensities = intensities.select(~absent)
 
 i_over_sig = intensities.data() / intensities.sigmas()
 hist = flex.histogram(i_over_sig, n_slots=50)
 
-print 'I/sig(I)  N'
+print('I/sig(I)  N')
 
 for centre, value in zip(hist.slot_centers(), hist.slots()):
-  print '%5.1f %d' % (centre, value)
+  print('%5.1f %d' % (centre, value))

@@ -8,7 +8,7 @@
 #
 # Test platform for new Dials wrapper implementations.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import sys
 
@@ -29,7 +29,7 @@ def tst_findspots(image):
 
 def tst_all():
   tst_findspots(sys.argv[1])
-  print 'OK'
+  print('OK')
 
 if __name__ == '__main__':
   tst_all()

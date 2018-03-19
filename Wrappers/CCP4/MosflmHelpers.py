@@ -18,7 +18,7 @@
 #                 the "useful" integration limit (e.g. where the individual
 #                 reflections have an I/sigma ~ 1)
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import math
 import sys
@@ -234,11 +234,11 @@ def _print_integrate_lp(integrate_lp_stats):
 
   for i in images:
     data = integrate_lp_stats[i]
-    print '%4d %5.3f %5d %5d %5d %4.2f %6.2f %5.2f' % \
+    print('%4d %5.3f %5d %5d %5d %4.2f %6.2f %5.2f' % \
           (i, data['scale'], data['strong'],
            data['overloads'], data['rejected'],
            data.get('mosaic', 0.0), data['distance'],
-           data['resolution'])
+           data['resolution']))
 
 def decide_integration_resolution_limit(mosflm_integration_output):
   '''Define the resolution limit for integration, where I/sigma
@@ -564,6 +564,6 @@ if __name__ == '__main__':
     result.update(_parse_summary_file(argv))
 
   for image in sorted(result):
-    print '%3d %.2f %.2f %.2f' % (image, result[image].get('phix', 0),
+    print('%3d %.2f %.2f %.2f' % (image, result[image].get('phix', 0),
                                   result[image].get('phiy', 0),
-                                  result[image].get('phiz', 0))
+                                  result[image].get('phiz', 0)))

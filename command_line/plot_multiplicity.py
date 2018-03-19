@@ -1,7 +1,7 @@
 # LIBTBX_PRE_DISPATCHER_INCLUDE_SH export PHENIX_GUI_ENVIRONMENT=1
 # LIBTBX_PRE_DISPATCHER_INCLUDE_SH export BOOST_ADAPTBX_FPE_DEFAULT=1
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import iotbx.phil
 import libtbx.load_env
@@ -116,9 +116,8 @@ class MultiplicityViewJson(render_2d):
       indent = None
     else:
       indent = 2
-    json_str = json.dumps(json_d, indent=indent)
-    with open(self.settings.json.filename, 'wb') as f:
-      print >> f, json_str
+    with open(self.settings.json.filename, 'wb') as fh:
+      json_str = json.dump(json_d, fh, indent=indent)
 
   def GetSize (self) :
     return 1600, 1600 # size in pixels

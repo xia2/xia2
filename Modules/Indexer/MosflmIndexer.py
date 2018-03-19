@@ -10,7 +10,7 @@
 # A wrapper for the data processing program Mosflm, with the following
 # methods to provide functionality:
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import math
 import os
@@ -188,7 +188,7 @@ class MosflmIndexer(IndexerSingleSweep):
         self._mosflm_autoindex_thresh = thresh
 
       except Exception as e:
-        print str(e) #XXX this should disappear!
+        print(str(e)) #XXX this should disappear!
         Debug.write('Error computing threshold: %s' % str(e))
         Debug.write('Using default of 20.0')
         thresh = 20.0

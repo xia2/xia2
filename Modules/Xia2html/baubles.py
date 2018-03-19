@@ -1,4 +1,4 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 import re
@@ -439,7 +439,7 @@ def writeFragmentFolder(html, logfile, fragment, n):
 
   # The fragment goes in here
   html.write("<div class=\"logfile\">\n\n")
-  print "len(fragment)=" + str(len(fragment))
+  print("len(fragment)=" + str(len(fragment)))
   html.write("<p>Fragment with " + str(len(fragment)) + " lines</p>\n")
   writeLogfileSummary(html, fragment.retrieve())
   html.write("</div>\n")
@@ -1255,11 +1255,11 @@ def polarrfn_plot(pltfile, imgbase=""):
     pltdev = os.path.join(os.environ["CBIN"], "pltdev")
   except KeyError:
     # Unable to get CBIN from the environment
-    print "Unable to make path name for pltdev"
+    print("Unable to make path name for pltdev")
     return
   # Make a temporary ps file
   if not os.path.exists(pltfile):
-    print str(pltfile) + ": file not found"
+    print(str(pltfile) + ": file not found")
     return
   try:
     psfile = os.path.join(os.environ["CCP4_SCR"], \
@@ -1270,7 +1270,7 @@ def polarrfn_plot(pltfile, imgbase=""):
     # Unable to generate the name or run the program
     raise
   if not os.path.exists(psfile):
-    print "Failed to make postscript file"
+    print("Failed to make postscript file")
     return
   # Count the number of pages in the file
   npages = 0
@@ -1278,13 +1278,13 @@ def polarrfn_plot(pltfile, imgbase=""):
     for line in ps:
       if line.count("%%Page:") > 0:
         npages = npages + 1
-  print "Number of pages (=frames): " + str(npages)
+  print("Number of pages (=frames): " + str(npages))
   # Loop over pages and use convert to turn them
   # into gifs
   for i in range(0, npages):
     frame = os.path.splitext(psfile)[0] + "_" + str(i) + ".gif"
     cmd = "convert " + str(psfile) + "'[" + str(i) + "]' " + str(frame)
-    print "Processing frame " + str(i) + "... (" + str(frame) + ")"
+    print("Processing frame " + str(i) + "... (" + str(frame) + ")")
     os.popen(cmd)
   return
 
@@ -1489,14 +1489,14 @@ if __name__ == "__main__":
 
   # Needs at least one argument to run (i.e. name of a log file)
   if len(sys.argv) < 2:
-    print "Usage: " + str(usage)
+    print("Usage: " + str(usage))
     sys.exit(0)
   # Assume that the logfile is the last argument
   logfile = sys.argv[-1]
 
   # Check the target file exists
   if not os.path.exists(logfile):
-    print "File not found: \"" + str(logfile) + "\""
+    print("File not found: \"" + str(logfile) + "\"")
     sys.exit(1)
 
   # Initialise
@@ -1511,12 +1511,12 @@ if __name__ == "__main__":
       # Output file name
       i = i + 1
       htmlfile = str(sys.argv[i])
-      print "Output file: " + str(htmlfile)
+      print("Output file: " + str(htmlfile))
     elif arg == "-summary":
       # Write out a summary
       log = smartie.parselog(logfile)
       for i in range(0, log.nsummaries()):
-        print str(smartie.strip_logfile_html(log.summary(i).retrieve()))
+        print(str(smartie.strip_logfile_html(log.summary(i).retrieve())))
       sys.exit(0)
     elif arg == "-polarrfn_plot":
       # Assume that the input file is a
@@ -1525,8 +1525,8 @@ if __name__ == "__main__":
       sys.exit(0)
     else:
       # Unrecognised option
-      print "Unrecognised option: " + str(arg)
-      print "Usage: " + str(usage)
+      print("Unrecognised option: " + str(arg))
+      print("Usage: " + str(usage))
       sys.exit(1)
     # Next argument
     i = i + 1
@@ -1534,7 +1534,7 @@ if __name__ == "__main__":
   # Don't knowingly overwrite the input file
   if htmlfile:
     if htmlfile == logfile:
-      print "Input and output files are the same!"
+      print("Input and output files are the same!")
       sys.exit(1)
 
   # Run baubles

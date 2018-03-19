@@ -18,7 +18,7 @@
 # Distance (mm), wavelength (ang), beam centre (mm, mm),
 # image header information
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 import sys
@@ -98,10 +98,10 @@ class FrameProcessor(object):
 
       # print this to the debug channel
       Debug.write('Latest header information for image %d:' % start)
-      print >> Debug, imageset.get_detector()
-      print >> Debug, imageset.get_scan()
-      print >> Debug, imageset.get_beam()
-      print >> Debug, imageset.get_goniometer()
+      Debug.write(imageset.get_detector())
+      Debug.write(imageset.get_scan())
+      Debug.write(imageset.get_beam())
+      Debug.write(imageset.get_goniometer())
 
       # populate wavelength, beam etc from this
 
@@ -380,8 +380,8 @@ if __name__ == '__main__':
 
   fp = FrameProcessor(sys.argv[1])
 
-  print fp.get_beam_centre()
-  print fp.get_wavelength()
-  print fp.get_header()
-  print fp.get_matching_images()
-  print fp.get_two_theta()
+  print(fp.get_beam_centre())
+  print(fp.get_wavelength())
+  print(fp.get_header())
+  print(fp.get_matching_images())
+  print(fp.get_two_theta())

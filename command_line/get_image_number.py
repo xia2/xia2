@@ -1,4 +1,4 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 def image_path_obtainer(summary_file):
   '''Read a xia2-summary.dat file and return a function capable of
@@ -51,14 +51,14 @@ if __name__ == '__main__':
         else:
           images = [int(parameter)]
         if 0 in images:
-          print "The first image number is 1. Image number 0 is disallowed"
+          print("The first image number is 1. Image number 0 is disallowed")
           sys.exit(1)
         for i in images:
-          print obtainer(i)
+          print(obtainer(i))
     else:
-      print "required file %s not found. Are you in a xia2 run directory?" % summary_file
+      print("required file %s not found. Are you in a xia2 run directory?" % summary_file)
   else:
-    print "Usage: xia2.get_image_number [n[-m] ...]"
-    print
-    print "Can be run after xia2 completed processing to obtain the file"
-    print "names of images and image ranges"
+    print("Usage: xia2.get_image_number [n[-m] ...]")
+    print()
+    print("Can be run after xia2 completed processing to obtain the file")
+    print("names of images and image ranges")

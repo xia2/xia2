@@ -1,5 +1,5 @@
 # LIBTBX_SET_DISPATCHER_NAME dev.xia2.check_mosaic
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import cPickle as pickle
 
@@ -35,17 +35,17 @@ def go(filename):
     x /= flex.max(x)
     data = (100 * x).iround()
     fmt = '%3d ' * x.size()
-    print 'X:', fmt % tuple(data)
+    print('X:', fmt % tuple(data))
 
     y /= flex.max(y)
     data = (100 * y).iround()
     fmt = '%3d ' * y.size()
-    print 'Y:', fmt % tuple(data)
+    print('Y:', fmt % tuple(data))
 
     z /= flex.max(z)
     data = (100 * z).iround()
     fmt = '%3d ' * z.size()
-    print 'Z:', fmt % tuple(data)
+    print('Z:', fmt % tuple(data))
 
 if __name__ == '__main__':
   import sys

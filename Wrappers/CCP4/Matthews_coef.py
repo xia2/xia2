@@ -15,7 +15,7 @@
 # Solvent contents given a number of molecules, a sequence length and a unit
 # cell and symmetry.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 
@@ -111,4 +111,4 @@ if __name__ == '__main__':
 
   m.compute_solvent()
 
-  print m.get_solvent()
+  print(m.get_solvent())

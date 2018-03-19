@@ -1,4 +1,4 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import json
 import urllib2
@@ -19,7 +19,7 @@ url_request.add_header("Authorization", "Basic %s" % token)
 
 socket = urllib2.urlopen(url_request)
 if socket.getcode() == 201:
-  print "Bug report submitted"
+  print("Bug report submitted")
 else:
-  print socket.info()
-  print "\nCould not submit bug report"
+  print(socket.info())
+  print("\nCould not submit bug report")

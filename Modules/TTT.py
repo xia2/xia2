@@ -7,7 +7,7 @@
 # and heavily modified to be an easter egg of the computer playing against
 # itself.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 from random import *
 from string import *
@@ -193,4 +193,4 @@ if __name__ == '__main__':
 
   result = ttt()
   for r in result:
-    print r
+    print(r)

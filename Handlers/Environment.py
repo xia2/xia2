@@ -10,7 +10,7 @@
 # A handler for matters of the operating environment, which will impact
 # on data harvesting, working directories, a couple of other odds & sods.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import ctypes
 import os
@@ -171,5 +171,5 @@ def get_number_cpus():
 
 if __name__ == '__main__':
 
-  print get_number_cpus()
-  print df(os.getcwd())
+  print(get_number_cpus())
+  print(df(os.getcwd()))

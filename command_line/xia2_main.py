@@ -3,7 +3,7 @@
 # see https://github.com/xia2/xia2/issues/172
 # LIBTBX_PRE_DISPATCHER_INCLUDE_SH ulimit -n `ulimit -Hn 2>&1 |sed 's/unlimited/4096/'`
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 import sys
@@ -292,11 +292,11 @@ def run():
 
   if '-version' in sys.argv or '--version' in sys.argv:
     import xia2.XIA2Version
-    print xia2.XIA2Version.Version
-    print dials_version()
+    print(xia2.XIA2Version.Version)
+    print(dials_version())
     ccp4_version = get_ccp4_version()
     if ccp4_version is not None:
-      print 'CCP4 %s' % ccp4_version
+      print('CCP4 %s' % ccp4_version)
     sys.exit()
 
   try:

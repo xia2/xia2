@@ -10,7 +10,7 @@
 # A small expert to handle orientation matrix calculations.
 #
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import math
 import sys
@@ -522,4 +522,4 @@ if __name__ == '__main__':
   result = mosflm_matrix_centred_to_primitive(lattice, mosflm_a_matrix)
 
   for r in result:
-    print r[:-1]
+    print(r[:-1])

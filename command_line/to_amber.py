@@ -1,4 +1,4 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 # LIBTBX_SET_DISPATCHER_NAME dev.xia2.to_amber
 # hacky amber wants this ersatz hkl thing *** do not use ***
@@ -17,9 +17,9 @@ def to_amber(hklin, prefix):
   labels = [c.info().labels for c in ma]
   if ['I', 'SIGI'] not in labels:
     if ['I(+)', 'SIGI(+)', 'I(-)', 'SIGI(-)'] in labels:
-      print "Error: xia2.to_shelx must be run on unmerged data."
+      print("Error: xia2.to_shelx must be run on unmerged data.")
     else:
-      print "Error: columns I / SIGI not found."
+      print("Error: columns I / SIGI not found.")
     sys.exit(1)
 
   intensities = [c for c in ma if c.info().labels == ['I', 'SIGI']][0]

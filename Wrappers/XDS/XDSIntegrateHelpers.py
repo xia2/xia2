@@ -9,7 +9,7 @@
 # output INTEGRATE.LP.
 #
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 import sys
@@ -158,10 +158,10 @@ def _print_integrate_lp(integrate_lp_stats):
 
   for i in images:
     data = integrate_lp_stats[i]
-    print '%4d %5.3f %5d %5d %5d %4.2f %6.2f' % \
+    print('%4d %5.3f %5d %5d %5d %4.2f %6.2f' % \
           (i, data['scale'], data['strong'],
            data['overloads'], data['rejected'],
-           data['mosaic'], data['distance'])
+           data['mosaic'], data['distance']))
 
 
 if __name__ == '__main__':
@@ -180,7 +180,7 @@ if __name__ == '__main__':
   # images were integrated...
 
   for i in images:
-    print stats[i]['rmsd_pixel']
+    print(stats[i]['rmsd_pixel'])
 
   stddev_pixel = [stats[i]['rmsd_pixel'] for i in images]
 
@@ -190,4 +190,4 @@ if __name__ == '__main__':
   stddev_pixel = sorted(set(stddev_pixel))
   stddev_pixel = stddev_pixel[1:-1]
 
-  print stddev_pixel
+  print(stddev_pixel)

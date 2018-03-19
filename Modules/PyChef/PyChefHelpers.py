@@ -10,7 +10,7 @@
 # bits which don't really need to be embedded in the main program.
 #
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import sys
 
@@ -61,11 +61,11 @@ if __name__ == '__main__':
 
       for dataset in crystal.datasets():
 
-        print crystal.name(), dataset.name()
+        print(crystal.name(), dataset.name())
 
     dmax, dmin = mtz_obj.max_min_resolution()
 
-    print len(compute_unique_reflections(uc, sg, True, dmin, dmax))
+    print(len(compute_unique_reflections(uc, sg, True, dmin, dmax)))
 
     ms = set()
 
@@ -74,4 +74,4 @@ if __name__ == '__main__':
     for hkl in miller_indices:
       ms.add(hkl)
 
-    print len(ms)
+    print(len(ms))

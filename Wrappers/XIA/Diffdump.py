@@ -35,7 +35,7 @@
 #                 the centre of the image.
 #
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import copy
 import datetime
@@ -704,9 +704,9 @@ def Diffdump(DriverType = None):
       output = self.get_all_output()
 
       if debug:
-        print '! all diffdump output follows'
+        print('! all diffdump output follows')
         for o in output:
-          print '! %s' % o[:-1]
+          print('! %s' % o[:-1])
 
       # note that some of the records in the image header
       # will depend on the detector class - this should
@@ -748,7 +748,7 @@ def Diffdump(DriverType = None):
 
         if ('Image type' in o) or ('Manufacturer' in o):
           if debug:
-            print '! found image type: %s' % l[1].strip().lower()
+            print('! found image type: %s' % l[1].strip().lower())
           self._header['detector'] = l[1].strip().lower()
 
           # correct spelling, perhaps
@@ -777,8 +777,8 @@ def Diffdump(DriverType = None):
               self._header['epoch'] = self._epoch(d.strip())
               self._header['date'] = self._date(d.strip())
               if debug:
-                print '! exposure epoch: %d' % \
-                      int(self._header['epoch'])
+                print('! exposure epoch: %d' % \
+                      int(self._header['epoch']))
             else:
               self._header['epoch'] = 0.0
               self._header['date'] = ''
@@ -786,7 +786,7 @@ def Diffdump(DriverType = None):
           except Exception as e:
 
             if debug:
-              print '! error interpreting date: %s' % str(e)
+              print('! error interpreting date: %s' % str(e))
 
             # this is badly formed....
             # so perhaps read the file creation date?
@@ -806,8 +806,8 @@ def Diffdump(DriverType = None):
           self._header['wavelength'] = float(l2[0]) * \
                                        fudge[detector]['wavelength']
           if debug:
-            print '! found wavelength: %f' % \
-                  self._header['wavelength']
+            print('! found wavelength: %f' % \
+                  self._header['wavelength'])
 
 
         if 'Distance' in o:
@@ -981,4 +981,4 @@ if __name__ == '__main__':
     header = p.readheader()
 
     for token in sorted(header):
-      print token, header[token]
+      print(token, header[token])

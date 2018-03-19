@@ -13,7 +13,7 @@
 #
 #
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import math
 import os
@@ -186,15 +186,15 @@ if __name__ == '__main__':
     edges = c.get_edges()
 
     for key in edges.keys():
-      print '%s %6.2f %6.2f %8.6f' % (key,
+      print('%s %6.2f %6.2f %8.6f' % (key,
                                       edges[key]['fp'],
                                       edges[key]['fpp'],
-                                      edges[key]['wave'])
+                                      edges[key]['wave']))
 
   else:
     for scan in sys.argv[1:]:
 
-      print os.path.split(scan)[-1]
+      print(os.path.split(scan)[-1])
 
       try:
 
@@ -206,12 +206,12 @@ if __name__ == '__main__':
         edges = c.get_edges()
 
         for key in edges.keys():
-          print '%s %6.2f %6.2f %8.6f' % (key,
+          print('%s %6.2f %6.2f %8.6f' % (key,
                                           edges[key]['fp'],
                                           edges[key]['fpp'],
-                                          edges[key]['wave'])
+                                          edges[key]['wave']))
       except Exception as e:
-        print 'failed (%s)' % str(e)
+        print('failed (%s)' % str(e))
 
 
-      print ''
+      print('')

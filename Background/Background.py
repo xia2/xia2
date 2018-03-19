@@ -8,7 +8,7 @@
 #
 # Code to allow background (i.e. threaded) running of tasks.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import sys
 import threading
@@ -97,4 +97,4 @@ if __name__ == '__cpu.py__':
     return [v]
 
   for j in range(10000000000, 10000000100):
-    print factor(j)
+    print(factor(j))

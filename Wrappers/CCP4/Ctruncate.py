@@ -10,7 +10,7 @@
 # A wrapper for the CCP4 program Ctruncate, which calculates F's from
 # I's and gives a few useful statistics about the data set.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 import sys
@@ -213,5 +213,5 @@ if __name__ == '__main__':
   ctruncate.set_hklout(sys.argv[2])
   ctruncate.truncate()
 
-  print ctruncate.get_nref_in(), ctruncate.get_nref_out(), \
-        ctruncate.get_nabsent()
+  print(ctruncate.get_nref_in(), ctruncate.get_nref_out(), \
+        ctruncate.get_nabsent())

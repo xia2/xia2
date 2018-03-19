@@ -7,7 +7,7 @@
 #
 # A replacement for the printpeaks tool and wrapper, using Mosflm.
 #
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import copy
 import math
@@ -189,4 +189,4 @@ if __name__ == '__main__':
   peaks = p.get_maxima()
 
   for m in peaks:
-    print '%6.1f %6.1f %6.1f' % m
+    print('%6.1f %6.1f %6.1f' % m)

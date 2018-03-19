@@ -8,7 +8,7 @@
 #
 # Import data into the DIALS models for subsequent analysis
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 
@@ -151,7 +151,7 @@ if __name__ == '__main__':
   importer.setup_from_image(first_image)
   importer.run()
   sweep = importer.load_sweep_model()
-  print sweep.get_detector()
-  print sweep.get_beam()
-  print sweep.get_goniometer()
-  print sweep.get_scan()
+  print(sweep.get_detector())
+  print(sweep.get_beam())
+  print(sweep.get_goniometer())
+  print(sweep.get_scan())

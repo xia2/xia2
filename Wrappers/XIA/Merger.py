@@ -9,7 +9,7 @@
 # A wrapper for the new Resolutionizer module, using the PythonDriver to get a
 # nice subprocess...
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import sys
 
@@ -123,6 +123,6 @@ if __name__ == '__main__':
   m = Merger()
   m.set_hklin(sys.argv[1])
   m.run()
-  print 'Resolutions:'
-  print 'I/sig:      %.2f' % m.get_resolution_isigma()
-  print 'Mn(I/sig):  %.2f' % m.get_resolution_misigma()
+  print('Resolutions:')
+  print('I/sig:      %.2f' % m.get_resolution_isigma())
+  print('Mn(I/sig):  %.2f' % m.get_resolution_misigma())

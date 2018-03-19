@@ -9,7 +9,7 @@
 # output IDXREF.LP.
 #
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import sys
 
@@ -159,8 +159,8 @@ if __name__ == '__main__':
 
   d = _parse_idxref_lp(lines)
   for k, v in d.iteritems():
-    print k, v
+    print(k, v)
 
   fraction, rmsd, rmsphi = _parse_idxref_lp_quality(lines)
 
-  print '%.2f %.2f %.2f' % (fraction, rmsd, rmsphi)
+  print('%.2f %.2f %.2f' % (fraction, rmsd, rmsphi))

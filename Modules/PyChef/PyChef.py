@@ -12,7 +12,7 @@
 # impact of radiation damage.
 #
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import math
 import time
@@ -238,16 +238,16 @@ class PyChef(object):
             if not batch in self._dose_information:
               self._dose_information[batch] = dose, dataset_name
 
-      print 'Reading in data from %s/%s' % (crystal_name, dataset_name)
-      print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
-            tuple(uc.parameters())
-      print 'Spacegroup: %s' % sg.type().universal_hermann_mauguin_symbol()
+      print('Reading in data from %s/%s' % (crystal_name, dataset_name))
+      print('Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
+            tuple(uc.parameters()))
+      print('Spacegroup: %s' % sg.type().universal_hermann_mauguin_symbol())
       if self._base_unique:
-        print 'Using: %s/%s/%s (unique)' % \
-              (i_column.label(), sigi_column.label(), base_column.label())
+        print('Using: %s/%s/%s (unique)' % \
+              (i_column.label(), sigi_column.label(), base_column.label()))
       else:
-        print 'Using: %s/%s/%s' % \
-              (i_column.label(), sigi_column.label(), base_column.label())
+        print('Using: %s/%s/%s' % \
+              (i_column.label(), sigi_column.label(), base_column.label()))
 
       if base_column == batch_column and self._base_unique:
         from scitbx.array_family import flex
@@ -350,32 +350,32 @@ class PyChef(object):
       self._space_groups[(crystal_name, dataset_name)] = sg
 
     if not self._resolution_low:
-      print 'Assigning low resolution limit: %.2f' % overall_dmax
+      print('Assigning low resolution limit: %.2f' % overall_dmax)
       self._resolution_low = overall_dmax
 
     if not self._resolution_high:
-      print 'Assigning high resolution limit: %.2f' % overall_dmin
+      print('Assigning high resolution limit: %.2f' % overall_dmin)
       self._resolution_high = overall_dmin
 
     if not self._range_width:
-      print 'Assigning baseline width:   %.2f' % \
-            overall_range_width
+      print('Assigning baseline width:   %.2f' % \
+            overall_range_width)
       self._range_width = overall_range_width
 
     if not self._range_min:
-      print 'Assigning baseline minimum: %.2f' % \
-            (overall_range_min - self._range_width)
+      print('Assigning baseline minimum: %.2f' % \
+            (overall_range_min - self._range_width))
       self._range_min = overall_range_min - self._range_width
 
     if not self._range_max:
-      print 'Assigning baseline maximum: %.2f' % \
-            overall_range_max
+      print('Assigning baseline maximum: %.2f' % \
+            overall_range_max)
       self._range_max = overall_range_max
 
     # if > 1 data set assume that this is anomalous data...
 
     if len(self._reflections) > 1:
-      print 'More than one data set: assume anomalous'
+      print('More than one data set: assume anomalous')
       self._anomalous = True
 
     # FIXME add warning if measurements don't reach the edge...
@@ -411,9 +411,9 @@ class PyChef(object):
                                               self._resolution_high,
                                               self._resolution_low))
 
-      print 'Cumulative completeness analysis for %s/%s' % \
-            (crystal_name, dataset_name)
-      print 'Expecting %d reflections' % nref
+      print('Cumulative completeness analysis for %s/%s' % \
+            (crystal_name, dataset_name))
+      print('Expecting %d reflections' % nref)
 
       # Right, in here I need to get the lowest dose for a given
       # h, k, l and then add this reflection for completeness to all
@@ -445,11 +445,11 @@ class PyChef(object):
 
       if self._anomalous:
 
-        print '$TABLE : Completeness vs. %s, %s/%s:' % \
-              (self._base_column, crystal_name, dataset_name)
-        print '$GRAPHS: Completeness:N:1,2,3,4,5: $$'
-        print '%8s %5s %5s %5s %5s $$ $$' % \
-              (self._base_column, 'I+', 'I-', 'I', 'dI')
+        print('$TABLE : Completeness vs. %s, %s/%s:' % \
+              (self._base_column, crystal_name, dataset_name))
+        print('$GRAPHS: Completeness:N:1,2,3,4,5: $$')
+        print('%8s %5s %5s %5s %5s $$ $$' % \
+              (self._base_column, 'I+', 'I-', 'I', 'dI'))
 
         iplus_count = []
         iminus_count = []
@@ -511,18 +511,18 @@ class PyChef(object):
           ieither = ieither_count[j] / float(nref_n)
           iboth = iboth_count[j] / float(nref_n)
 
-          print '%8.1f %5.3f %5.3f %5.3f %5.3f' % \
+          print('%8.1f %5.3f %5.3f %5.3f %5.3f' % \
                 (self._range_min + j * self._range_width,
-                 iplus, iminus, ieither, iboth)
+                 iplus, iminus, ieither, iboth))
 
-        print '$$'
+        print('$$')
 
       else:
 
-        print '$TABLE : Completeness vs. %s, %s/%s:' % \
-              (self._base_column, crystal_name, dataset_name)
-        print '$GRAPHS: Completeness:N:1, 2: $$'
-        print '%8s %5s $$ $$' % (self._base_column, 'I')
+        print('$TABLE : Completeness vs. %s, %s/%s:' % \
+              (self._base_column, crystal_name, dataset_name))
+        print('$GRAPHS: Completeness:N:1, 2: $$')
+        print('%8s %5s $$ $$' % (self._base_column, 'I'))
 
         i_count = []
 
@@ -551,10 +551,10 @@ class PyChef(object):
         for j in range(nsteps):
           i = i_count[j] / float(nref)
 
-          print '%8.1f %5.3f' % \
-                (self._range_min + j * self._range_width, i)
+          print('%8.1f %5.3f' % \
+                (self._range_min + j * self._range_width, i))
 
-        print '$$'
+        print('$$')
 
     return
 
@@ -613,10 +613,10 @@ class PyChef(object):
 
       # print the report...
 
-      print '$TABLE : R vs. %s difference, %s/%s:' % \
-            (self._base_column, crystal_name, dataset_name)
-      print '$GRAPHS: Rd:N:1, 2: $$'
-      print '%8s %5s $$ $$' % (self._base_column, 'Rd')
+      print('$TABLE : R vs. %s difference, %s/%s:' % \
+            (self._base_column, crystal_name, dataset_name))
+      print('$GRAPHS: Rd:N:1, 2: $$')
+      print('%8s %5s $$ $$' % (self._base_column, 'Rd'))
 
       for j in range(nsteps):
         d = self._range_width * j
@@ -624,9 +624,9 @@ class PyChef(object):
           r = rd_top[j] / rd_bottom[j]
         else:
           r = 0.0
-        print '%8.1f %5.3f' % (d, r)
+        print('%8.1f %5.3f' % (d, r))
 
-      print '$$'
+      print('$$')
 
     return
 
@@ -668,7 +668,7 @@ class PyChef(object):
 
     for xname, dname in sorted(self._reflections):
 
-      print 'Accumulating from %s %s' % (xname, dname)
+      print('Accumulating from %s %s' % (xname, dname))
 
       for h, k, l in self._reflections[(xname, dname)]:
 
@@ -733,19 +733,19 @@ class PyChef(object):
     # now digest the results - as a function of dose and resolution...
 
     if self._title:
-      print '$TABLE : Normalised radiation damage analysis (%s):' % \
-            self._title
+      print('$TABLE : Normalised radiation damage analysis (%s):' % \
+            self._title)
 
     else:
-      print '$TABLE : Normalised radiation damage analysis:'
+      print('$TABLE : Normalised radiation damage analysis:')
 
-    print '$GRAPHS: Scp(d):N:1,%d: $$' % (self._resolution_bins + 2)
+    print('$GRAPHS: Scp(d):N:1,%d: $$' % (self._resolution_bins + 2))
 
     columns = ''
     for j in range(self._resolution_bins):
       columns += ' S%d' % j
 
-    print '%s %s Scp(d) $$ $$' % (self._base_column, columns)
+    print('%s %s Scp(d) $$ $$' % (self._base_column, columns))
     format = '%8.1f %6.4f'
     for k in range(self._resolution_bins):
       format += ' %6.4f'
@@ -769,9 +769,9 @@ class PyChef(object):
 
       values.append((sum(values[1:]) / self._resolution_bins))
 
-      print format % tuple(values)
+      print(format % tuple(values))
 
-    print '$$'
+    print('$$')
 
     return
 
@@ -808,7 +808,7 @@ class PyChef(object):
 
     for xname, dname in sorted(self._reflections):
 
-      print 'Accumulating from %s %s' % (xname, dname)
+      print('Accumulating from %s %s' % (xname, dname))
 
       for h, k, l in self._reflections[(xname, dname)]:
 
@@ -865,19 +865,19 @@ class PyChef(object):
     # now digest the results - as a function of dose and resolution...
 
     if self._title:
-      print '$TABLE : Cumulative radiation damage analysis (%s):' % \
-            self._title
+      print('$TABLE : Cumulative radiation damage analysis (%s):' % \
+            self._title)
 
     else:
-      print '$TABLE : Cumulative radiation damage analysis:'
+      print('$TABLE : Cumulative radiation damage analysis:')
 
-    print '$GRAPHS: Rcp(d):N:1,%d: $$' % (self._resolution_bins + 2)
+    print('$GRAPHS: Rcp(d):N:1,%d: $$' % (self._resolution_bins + 2))
 
     columns = ''
     for j in range(self._resolution_bins):
       columns += ' S%d' % j
 
-    print '%s %s Rcp(d) $$ $$' % (self._base_column, columns)
+    print('%s %s Rcp(d) $$ $$' % (self._base_column, columns))
     format = '%8.1f %6.4f'
     for k in range(self._resolution_bins):
       format += ' %6.4f'
@@ -905,9 +905,9 @@ class PyChef(object):
 
       values.append(overall)
 
-      print format % tuple(values)
+      print(format % tuple(values))
 
-    print '$$'
+    print('$$')
 
     return
 
@@ -916,15 +916,15 @@ class PyChef(object):
     if not self._dose_information:
       return
 
-    print '$TABLE: Dose vs. BATCH:'
-    print '$GRAPHS: Dose Profile:N:1,2: $$'
-    print 'BATCH DOSE DATASET $$ $$'
+    print('$TABLE: Dose vs. BATCH:')
+    print('$GRAPHS: Dose Profile:N:1,2: $$')
+    print('BATCH DOSE DATASET $$ $$')
 
     for j in sorted(self._dose_information):
       d, n = self._dose_information[j]
-      print '%d %f %s' % (j, d, n)
+      print('%d %f %s' % (j, d, n))
 
-    print '$$'
+    print('$$')
 
     return
 

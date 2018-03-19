@@ -42,7 +42,7 @@
 # will have tokens PREPENDED to the environment by the IMPLEMENTATION of the
 # Driver interface.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 import time
@@ -502,6 +502,6 @@ if __name__ == '__main__':
   try:
     d = DefaultDriver()
     d.start()
-    print 'You should never see this message'
+    print('You should never see this message')
   except RuntimeError:
-    print 'All is well'
+    print('All is well')

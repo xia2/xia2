@@ -14,7 +14,7 @@
 # This is a hook into a global data repository, should mostly be replaced with
 # a Phil interface.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import collections
 import copy
@@ -147,13 +147,13 @@ class _CommandLine(object):
                    }
     for k, v in replacements.iteritems():
       if k in self._argv:
-        print "***\nCommand line option %s is deprecated.\nPlease use %s instead\n***" % (k, v)
+        print("***\nCommand line option %s is deprecated.\nPlease use %s instead\n***" % (k, v))
         self._argv[self._argv.index(k)] = v
     if '-atom' in self._argv:
       idx = self._argv.index('-atom')
       element = self._argv[idx+1]
       self._argv[idx:idx+2] = [ 'atom=%s' % element ]
-      print "***\nCommand line option -atom %s is deprecated.\nPlease use atom=%s instead\n***" % (element, element)
+      print("***\nCommand line option -atom %s is deprecated.\nPlease use atom=%s instead\n***" % (element, element))
 
     # first of all try to interpret arguments as phil parameters/files
 
@@ -391,9 +391,9 @@ class _CommandLine(object):
     # if any of them were nonsense.
 
     with open('xia2-working.phil', 'wb') as f:
-      print >> f, PhilIndex.working_phil.as_str()
+      f.write(PhilIndex.working_phil.as_str())
     with open('xia2-diff.phil', 'wb') as f:
-      print >> f, PhilIndex.get_diff().as_str()
+      f.write(PhilIndex.get_diff().as_str())
 
     Debug.write('\nDifference PHIL:')
     Debug.write(PhilIndex.get_diff().as_str(), strip=False)
@@ -483,5 +483,5 @@ CommandLine = _CommandLine()
 CommandLine.setup()
 
 if __name__ == '__main__':
-  print CommandLine.get_beam()
-  print CommandLine.get_xinfo()
+  print(CommandLine.get_beam())
+  print(CommandLine.get_xinfo())

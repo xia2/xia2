@@ -14,7 +14,7 @@
 # N.B. similar calculations could use the XDS refined XPARM to record the
 # rotation axis then reuse it here.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 from scitbx import matrix
 from scitbx.math import r3_rotation_axis_and_angle_from_matrix
@@ -74,4 +74,4 @@ if __name__ == '__main__':
   for j in range(0, 320, 20):
     phi = 0.5 * j + 0.25
     x, y, z = mme.missets(phi)
-    print '%8.2f %8.2f %8.2f %8.2f' % (j + 1, x, y, z)
+    print('%8.2f %8.2f %8.2f %8.2f' % (j + 1, x, y, z))

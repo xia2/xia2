@@ -14,7 +14,7 @@ analysis. This script finds data processed by xia2, creates a standalone CCP4
 project and starts ccp4i with it.
 """
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import datetime
 import getopt
@@ -244,15 +244,14 @@ if __name__ == '__main__':
                              ["help", "project=", "xia2dir="])
   except getopt.GetoptError as err:
     # Exit with a useful message:
-    print str(err)
+    print(str(err))
     sys.exit(usage())
 
   proj_name = None
   xia2dir = "."
   for o, a in opts:
     if o in ("-h", "--help"):
-      print usage()
-      sys.exit()
+      sys.exit(usage())
     elif o in ("-p", "--project"):
       proj_name = a
     elif o in ("-x", "--xia2dir"):
@@ -295,8 +294,8 @@ if __name__ == '__main__':
     val = subprocess.call("ccp4i", cwd=db_dir)
     sys.exit(val)
   except OSError as err:
-    print("It seems that ccp4i is not currently available. To start ccp4i "
+    print(("It seems that ccp4i is not currently available. To start ccp4i "
           "with the isolated project %s, please set up the CCP4 "
           "environment and type:\n\n"
           "cd %s\n"
-          "ccp4i") % (proj_name, db_dir)
+          "ccp4i") % (proj_name, db_dir))

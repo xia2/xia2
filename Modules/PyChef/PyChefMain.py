@@ -16,7 +16,7 @@
 # This is the same program interface as used to come from the program CHEF.
 #
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 import subprocess
@@ -30,13 +30,13 @@ def banner():
   user = os.environ.get('USER', '')
   now = time.asctime()
 
-  print '#' * 60
-  print '#' * 60
-  print '#' * 60
-  print '### PyCHEF                                           %s ###' % \
-        version
-  print '#' * 60
-  print 'User: %s                  Run at: %s' % (user, now)
+  print('#' * 60)
+  print('#' * 60)
+  print('#' * 60)
+  print('### PyCHEF                                           %s ###' % \
+        version)
+  print('#' * 60)
+  print('User: %s                  Run at: %s' % (user, now))
 
 def get_hklin_files():
   '''From the command-line, get the list of hklin files. Set up thus
@@ -60,7 +60,7 @@ def get_hklin_files():
       hklin_files.append(hklin)
 
   for hklin in hklin_files:
-    print 'HKLIN: %s' % hklin
+    print('HKLIN: %s' % hklin)
 
   return hklin_files
 
@@ -121,7 +121,7 @@ def parse_standard_input():
     if not record:
       continue
 
-    print '> %s' % record
+    print('> %s' % record)
 
     key = record[:4].upper()
     tokens = record.split()
@@ -235,7 +235,7 @@ def main():
 
   pychef.set_ncpu(standard_input['ncpu'])
 
-  print 'Using %d threads' % standard_input['ncpu']
+  print('Using %d threads' % standard_input['ncpu'])
 
   if standard_input['base_column']:
     pychef.set_base_column(standard_input['base_column'])
@@ -268,8 +268,8 @@ def main():
   pychef.rd()
   pychef.print_dose_profile()
 
-  print ' PyChef: ** Normal termination **'
-  print ' Times: Elapsed: %.1f' % (time.time() - start_time)
+  print(' PyChef: ** Normal termination **')
+  print(' Times: Elapsed: %.1f' % (time.time() - start_time))
 
   return
 

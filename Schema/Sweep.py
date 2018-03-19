@@ -10,7 +10,7 @@
 # A class to represent a sweep of frames collected under the same conditions.
 # This pertains to the dataset object in the early phases of processing.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import copy
 import os
@@ -172,10 +172,10 @@ if __name__ == '__main__':
   for s in sl:
 
     t = s.get_collect()
-    print 'Data collection took %s seconds' % (t[1] - t[0])
-    print 'For a total of %s seconds of exposure' % \
+    print('Data collection took %s seconds' % (t[1] - t[0]))
+    print('For a total of %s seconds of exposure' % \
           (s.get_exposure_time() * \
-           len(s.get_images()))
-    print 'Images: %d to %d' % (min(s.get_images()), max(s.get_images()))
-    print 'Template: %s' % s.get_template()
-    print ''
+           len(s.get_images())))
+    print('Images: %d to %d' % (min(s.get_images()), max(s.get_images())))
+    print('Template: %s' % s.get_template())
+    print('')

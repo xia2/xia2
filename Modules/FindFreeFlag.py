@@ -8,7 +8,7 @@
 # of the FreeR column.
 #
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import sys
 
@@ -62,4 +62,4 @@ if __name__ == '__main__':
   if len(sys.argv) < 2:
     raise RuntimeError('%s hklin' % sys.argv[0])
 
-  print FindFreeFlag(sys.argv[1])
+  print(FindFreeFlag(sys.argv[1]))

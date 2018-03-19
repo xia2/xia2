@@ -13,7 +13,7 @@
 #
 # N.B. this is only included in more recent versions of Labelit.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import sys
 
@@ -140,4 +140,4 @@ if __name__ == '__main__':
   peaks = d.find_peaks()
 
   for m in peaks:
-    print '%6.1f %6.1f %6.1f' % m
+    print('%6.1f %6.1f %6.1f' % m)

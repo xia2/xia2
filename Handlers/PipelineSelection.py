@@ -10,7 +10,7 @@
 # This will look for a file preferences.xia in ~/.xia2 or equivalent,
 # and the current working directory.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 
@@ -121,4 +121,4 @@ def parse_preferences(file, preferences):
 
 if __name__ == '__main__':
 
-  print search_for_preferences()
+  print(search_for_preferences())

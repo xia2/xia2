@@ -1,6 +1,6 @@
 # Refine list of space group candidate and HKL indices against observed 2theta values.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import scitbx.lbfgs
 from cctbx.array_family import flex
@@ -89,5 +89,5 @@ class _refinery:
   def show_fit(self, unit_cell):
     two_thetas_calc = unit_cell.two_theta(self.miller_indices, self.wavelength, deg=True)
     for h,o,c in zip(self.miller_indices, self.two_thetas_obs, two_thetas_calc):
-      print "(%2d, %2d, %2d)" % h, "%6.2f - %6.2f = %6.2f" % (o, c, o-c)
-    print
+      print("(%2d, %2d, %2d)" % h, "%6.2f - %6.2f = %6.2f" % (o, c, o-c))
+    print()

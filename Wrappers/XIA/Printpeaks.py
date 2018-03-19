@@ -10,7 +10,7 @@
 # A wrapper for the program "printpeaks" derived from the DiffractionImage
 # code in XIA1 by Francois Remacle.
 #
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import copy
 import math
@@ -191,7 +191,7 @@ def Printpeaks(DriverType = None):
         intensity = float(record.split(':')[-1])
         peaks.append(intensity)
 
-      print len(peaks), max(peaks)
+      print(len(peaks), max(peaks))
 
       if len(peaks) < 10:
         return 'blank'
@@ -243,7 +243,7 @@ if __name__ == '__main-old__':
   def printer(peaks):
     keys = sorted(peaks.keys())
     for k in keys:
-      print '%.5f %d' % (k, peaks[k])
+      print('%.5f %d' % (k, peaks[k]))
 
   directory = os.path.join(os.environ['XIA2_ROOT'],
                            'Data', 'Test', 'Images')
@@ -260,7 +260,7 @@ if __name__ == '__main-old__':
     # for image in sys.argv[1:]:
     if 1 == 0:
 
-      print image
+      print(image)
       p = Printpeaks()
       p.set_image(image)
 
@@ -268,7 +268,7 @@ if __name__ == '__main-old__':
       printer(peaks)
 
       thresh = p.threshold(200)
-      print '200 peak threshold: %f' % thresh
+      print('200 peak threshold: %f' % thresh)
 
     t0 = time.time()
     count = 0
@@ -277,11 +277,11 @@ if __name__ == '__main-old__':
       p = Printpeaks()
       p.set_image(image)
       status = p.screen()
-      print os.path.split(image)[-1], status
+      print(os.path.split(image)[-1], status)
     t1 = time.time()
 
-    print 'Total time: %.1f' % (t1 - t0)
-    print 'Per image: %.3f' % ((t1 - t0) / count)
+    print('Total time: %.1f' % (t1 - t0))
+    print('Per image: %.3f' % ((t1 - t0) / count))
 
 if __name__ == '__main__':
   # run a test of some of the new code...
@@ -291,4 +291,4 @@ if __name__ == '__main__':
   peaks = p.get_maxima()
 
   for m in peaks:
-    print '%6.1f %6.1f %6.1f' % m
+    print('%6.1f %6.1f %6.1f' % m)

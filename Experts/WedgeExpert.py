@@ -10,7 +10,7 @@
 # Chef where we could consider cutting the data at... N.B. this will now
 # take the digested wedges from the Chef wrapper.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 def digest_wedges(wedges):
   '''Digest the wedges defined as a list of
@@ -134,4 +134,4 @@ if __name__ == '__main__':
   dmaxes, group_report = digest_wedges(wedges)
 
   for gr in group_report:
-    print gr
+    print(gr)

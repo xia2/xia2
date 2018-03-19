@@ -1,4 +1,4 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 import sys
@@ -16,7 +16,7 @@ except KeyError:
 
 def exercise_dials_refiner(nproc=None):
   if not have_xia2_regression:
-    print "Skipping exercise_dials_refiner(): xia2_regression not configured"
+    print("Skipping exercise_dials_refiner(): xia2_regression not configured")
     return
 
   if nproc is not None:
@@ -122,7 +122,7 @@ def run(args):
   else:
     nproc = None
   exercise_dials_refiner(nproc=nproc)
-  print "OK"
+  print("OK")
 
 
 if __name__ == '__main__':

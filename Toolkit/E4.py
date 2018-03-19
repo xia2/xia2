@@ -1,10 +1,10 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 def main():
   import sys
 
   for argv in sys.argv[1:]:
-    print E4_mtz(argv)
+    print(E4_mtz(argv))
 
 def E4_mtz(hklin, native = True):
   from iotbx import reflection_file_reader

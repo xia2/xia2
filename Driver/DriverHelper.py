@@ -38,7 +38,7 @@
 #           could be a hidden gremlin, though is in general not an
 #           important problem.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 import random
@@ -385,4 +385,4 @@ def generate_random_name():
 if __name__ == '__main__':
 
   for i in range(10):
-    print '"%s"' % generate_random_name()
+    print('"%s"' % generate_random_name())

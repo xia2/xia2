@@ -9,7 +9,7 @@
 #
 # xia2 information / input file reader
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 from collections import OrderedDict
 
@@ -432,4 +432,4 @@ if __name__ == '__main__':
 
   xi = XInfo(os.path.join(os.environ['XIA2_ROOT'], 'Data', 'Test', 'Xinfo', '1vrm-post-scale.xinfo'))
 
-  print xi
+  print(xi)

@@ -33,7 +33,7 @@
 # This class has been deprecated. See SunGridEngineClusterDriver.
 #
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 import subprocess
@@ -260,4 +260,4 @@ if __name__ == '__main__':
     if not line:
       break
 
-    print line.strip()
+    print(line.strip())

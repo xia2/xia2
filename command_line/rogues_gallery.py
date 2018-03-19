@@ -1,4 +1,4 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import json
 import os
@@ -112,13 +112,13 @@ def reconstruct_rogues(params):
     if len(reflections_run) > 1:
       output = params.output.reflections.replace(
           '.pickle', '-%s.pickle' % name)
-      print 'Extracted %d rogue reflections for %s to %s' % \
-        (len(reflections), name, output)
+      print('Extracted %d rogue reflections for %s to %s' % \
+        (len(reflections), name, output))
       reflections.as_pickle(output)
     else:
       output = params.output.reflections
-      print 'Extracted %d rogue reflections to %s' % \
-        (len(reflections), output)
+      print('Extracted %d rogue reflections to %s' % \
+        (len(reflections), output))
       reflections.as_pickle(output)
 
 

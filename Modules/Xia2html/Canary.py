@@ -1,4 +1,4 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 
@@ -1285,4 +1285,4 @@ if __name__ == "__main__":
   buglist = bugs.addList()
   buglist.addItem("Memory leak").addItem("Floating divide by zero")
 
-  print d.render()
+  print(d.render())

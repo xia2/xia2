@@ -10,7 +10,7 @@
 # An reimplementation of the XDS indexer to work by first summing images before
 # the spot finding for indexing. May or may not help...
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 
@@ -133,9 +133,9 @@ class XDSIndexerSum(XDSIndexer):
           assert (summed_oscillation_range -
                   self.get_header_item('phi_width')) < 1e-6
           tokens[2] = '%.4f' % self._true_phi_width
-          print " ".join(tokens)
+          print(" ".join(tokens))
           continue
-      print line,
+      print(line, end=' ')
     f.close()
 
     # copy across file contents internally

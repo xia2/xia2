@@ -1,4 +1,4 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import datetime
 import json
@@ -107,9 +107,9 @@ def to_shelx(hklin, prefix, compound='', options=None):
   labels = [c.info().labels for c in ma]
   if ['I', 'SIGI'] not in labels:
     if ['I(+)', 'SIGI(+)', 'I(-)', 'SIGI(-)'] in labels:
-      print "Error: xia2.to_shelx must be run on unmerged data."
+      print("Error: xia2.to_shelx must be run on unmerged data.")
     else:
-      print "Error: columns I / SIGI not found."
+      print("Error: columns I / SIGI not found.")
     sys.exit(1)
 
   intensities = [c for c in ma if c.info().labels == ['I', 'SIGI']][0]
@@ -134,7 +134,7 @@ def to_shelx(hklin, prefix, compound='', options=None):
   if wavelength is None:
     mtz_crystals = mtz_object.crystals()
     wavelength = mtz_crystals[1].datasets()[0].wavelength()
-  print 'Experimental wavelength: %.3f Angstroms' % wavelength
+  print('Experimental wavelength: %.3f Angstroms' % wavelength)
 
   unit_cell_dims = None
   unit_cell_esds = None
@@ -183,7 +183,7 @@ def to_shelx(hklin, prefix, compound='', options=None):
   cb_op = crystal_symm.change_of_basis_op_to_reference_setting()
 
   if cb_op.c().r().as_hkl() == 'h,k,l':
-    print 'Change of basis to reference setting: %s' % cb_op
+    print('Change of basis to reference setting: %s' % cb_op)
     crystal_symm = crystal_symm.change_basis(cb_op)
     if str(cb_op) != "a,b,c":
       unit_cell_dims = None
@@ -215,10 +215,10 @@ if __name__ == '__main__':
   options, args = parser.parse_args()
   if len(args) > 2:
     atoms = ''.join(args[2:])
-    print 'Atoms: %s' % atoms
+    print('Atoms: %s' % atoms)
     to_shelx(args[0], args[1], atoms, options)
   elif len(args) == 2:
-    print options
+    print(options)
     to_shelx(args[0], args[1], options=options)
   else:
     parser.print_help()

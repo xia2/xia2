@@ -15,7 +15,7 @@
 # The content of the MTZ file header, as a dictionary.
 #
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import sys
 
@@ -34,4 +34,4 @@ if __name__ == '__main__':
     raise RuntimeError('%s hklin.mtz' % sys.argv[0])
 
   m.dump()
-  print m.get_spacegroup()
+  print(m.get_spacegroup())

@@ -18,7 +18,7 @@
 # To give you what is left...
 #
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import math
 
@@ -173,4 +173,4 @@ def s2l(spacegroup):
 if __name__ == '__main__':
   cell, dist = ApplyLattice('oP', (23.0, 24.0, 25.0, 88.9, 90.0, 90.1))
 
-  print cell, dist
+  print(cell, dist)

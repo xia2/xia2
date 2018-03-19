@@ -1,4 +1,4 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 def random_selection(fraction, list):
     import random
@@ -51,7 +51,7 @@ def add_free_set(hklin, fraction, hklout_work, hklout_free):
         if hkl in free_set:
             flag_values[j] += 50
             free += 1
-    print '%d observations / %d free' % (len(mi), free)
+    print('%d observations / %d free' % (len(mi), free))
 
     # now write this back out to a test reflection file
 

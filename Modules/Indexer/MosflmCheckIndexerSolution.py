@@ -10,7 +10,7 @@
 # pseudo-centred (i.e. comes out as centered when it should not be)
 #
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import math
 import sys
@@ -288,19 +288,19 @@ if __name__ == '__main__':
 
   i.setup_from_image(sys.argv[1])
 
-  print 'Refined beam is: %6.2f %6.2f' % i.get_indexer_beam_centre()
-  print 'Distance:        %6.2f' % i.get_indexer_distance()
-  print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % i.get_indexer_cell()
-  print 'Lattice: %s' % i.get_indexer_lattice()
-  print 'Mosaic: %6.2f' % i.get_indexer_mosaic()
+  print('Refined beam is: %6.2f %6.2f' % i.get_indexer_beam_centre())
+  print('Distance:        %6.2f' % i.get_indexer_distance())
+  print('Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % i.get_indexer_cell())
+  print('Lattice: %s' % i.get_indexer_lattice())
+  print('Mosaic: %6.2f' % i.get_indexer_mosaic())
 
   status = mosflm_check_indexer_solution(i)
 
   if status is True:
-    print 'putative centred solution came out as wrong'
+    print('putative centred solution came out as wrong')
 
   elif status is False:
-    print 'putative centred solution came out as right'
+    print('putative centred solution came out as right')
 
   elif status is None:
-    print 'putative solution not centred'
+    print('putative solution not centred')

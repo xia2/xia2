@@ -12,7 +12,7 @@
 # small functions for computing e.g. resolution limits.
 #
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import math
 import os
@@ -617,4 +617,4 @@ if __name__ == '__main__':
 
   for arg in sys.argv[1:]:
     df_f, di_sigdi = anomalous_signals(arg)
-    print '%s: %.3f %.3f' % (os.path.split(arg)[-1], df_f, di_sigdi)
+    print('%s: %.3f %.3f' % (os.path.split(arg)[-1], df_f, di_sigdi))

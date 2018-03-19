@@ -27,7 +27,7 @@
 #       fraction is 0.5 - this is improved by CORRECT. Pointless copies this
 #       across correctly and computes LP column.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import copy
 import itertools
@@ -957,12 +957,12 @@ if __name__ == '__main__':
 
   m.calculate_resolution_ranges(nbins = nbins)
 
-  print 'Resolutions:'
-  print 'Rmerge:     %.2f' % m.resolution_rmerge(limit = 1.0,
-                                                 log = l_rmerge)
-  print 'I/sig:      %.2f' % m.resolution_unmerged_isigma(log = l_isigma)
-  print 'Mn(I/sig):  %.2f' % m.resolution_merged_isigma(log = l_misigma)
+  print('Resolutions:')
+  print('Rmerge:     %.2f' % m.resolution_rmerge(limit = 1.0,
+                                                 log = l_rmerge))
+  print('I/sig:      %.2f' % m.resolution_unmerged_isigma(log = l_isigma))
+  print('Mn(I/sig):  %.2f' % m.resolution_merged_isigma(log = l_misigma))
 
   if False:
-    print 'Comp:       %.2f' % m.resolution_completeness(limit = 0.5,
-                                                         log = l_comp)
+    print('Comp:       %.2f' % m.resolution_completeness(limit = 0.5,
+                                                         log = l_comp))

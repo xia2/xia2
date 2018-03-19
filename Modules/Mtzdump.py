@@ -8,7 +8,7 @@
 # A replacement for the wrapper for the CCP4 program MTZDUMP using CCTBX
 # to access the file directly.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import copy
 import os
@@ -163,4 +163,4 @@ if __name__ == '__main__':
     raise RuntimeError('%s hklin.mtz' % sys.argv[0])
 
   m.dump()
-  print m.get_spacegroup()
+  print(m.get_spacegroup())

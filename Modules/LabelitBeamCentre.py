@@ -15,7 +15,7 @@
 #
 #
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 import sys
@@ -67,4 +67,4 @@ if __name__ == '__main__':
 
   for s in sl:
 
-    print '%6.2f %6.2f' % compute_beam_centre(s)
+    print('%6.2f %6.2f' % compute_beam_centre(s))

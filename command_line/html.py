@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # LIBTBX_SET_DISPATCHER_NAME xia2.html
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import cgi
 import collections
@@ -101,7 +101,7 @@ def generate_xia2_html(xinfo, filename='xia2.html', params=None, args=[]):
         except Exception as e:
           from xia2.Handlers.Phil import PhilIndex
           if PhilIndex.params.xia2.settings.small_molecule == True:
-            print "Xtriage output not available: %s" % str(e)
+            print("Xtriage output not available: %s" % str(e))
           else:
             raise
 
@@ -310,7 +310,7 @@ def generate_xia2_html(xinfo, filename='xia2.html', params=None, args=[]):
                          )
 
   with open(filename, 'wb') as f:
-    print >> f, html.encode('ascii', 'xmlcharrefreplace')
+    f.write(html.encode('ascii', 'xmlcharrefreplace'))
 
 
 def make_logfile_html(logfile):
@@ -359,7 +359,7 @@ def make_logfile_html(logfile):
     html_file = '%s.html' %(
       os.path.splitext(logfile)[0])
     with open(html_file, 'wb') as f:
-      print >> f, rst2html(rst)
+      f.write(rst2html(rst))
     return html_file
 
 

@@ -11,7 +11,7 @@
 # be helpful to transform the measurements to a "sensible" form - for example
 # taking log(I/sigI).
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import math
 
@@ -160,4 +160,4 @@ if __name__ == '__main__':
   m = log_fit(x, y, 6)
 
   for j in range(len(x)):
-    print x[j], y[j], m[j]
+    print(x[j], y[j], m[j])

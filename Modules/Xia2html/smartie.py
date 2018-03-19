@@ -1,4 +1,4 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import copy
 import linecache
@@ -1214,10 +1214,10 @@ class table:
     if i != 0:
       # This error could be due to two data items
       # no longer being separated by whitespace
-      print "Unable to parse table - too many data items (or not enough)?"
-      print "Table title: \"" + str(self.title()) + "\""
-      print "Number of columns   : " + str(self.ncolumns())
-      print "Number of data items: " + str(len(self.__data.split()))
+      print("Unable to parse table - too many data items (or not enough)?")
+      print("Table title: \"" + str(self.title()) + "\"")
+      print("Number of columns   : " + str(self.ncolumns()))
+      print("Number of data items: " + str(len(self.__data.split())))
       self.__table_parse_error = True
 
   def parse_error(self):
@@ -2897,7 +2897,7 @@ def parselog(filen, progress=0):
     # Report reaching "progress" number of lines
     if progress:
       if not linecount % progress:
-        print "Processed " + str(linecount) + " lines"
+        print("Processed " + str(linecount) + " lines")
     # Append line to buffers
     buff.append(line)
     tablebuff.append(line)
@@ -3033,15 +3033,15 @@ def parselog(filen, progress=0):
       table_error = False
       table = prog.addtable(tablebuff.all())
       if not table:
-        print "*** Failed to extract table data ***"
+        print("*** Failed to extract table data ***")
         table_error = True
       elif table.parse_error():
-        print "*** Failed to parse table data ***"
+        print("*** Failed to parse table data ***")
         table_error = True
       if table_error:
-        print "\tLogfile: " + str(log.filename())
-        print "\tTable start: L" + str(linecount - len(tablebuff) + 1)
-        print "\tTable end  : L" + str(linecount)
+        print("\tLogfile: " + str(log.filename()))
+        print("\tTable start: L" + str(linecount - len(tablebuff) + 1))
+        print("\tTable end  : L" + str(linecount))
       # Add the table to the log, regardless of status
       log.addtable(table)
       # clear the buffers
@@ -3118,94 +3118,94 @@ def summarise(thislog):
   and so on) to stdout."""
 
   # Logfile name
-  print "Summary for " + thislog.filename() + "\n"
+  print("Summary for " + thislog.filename() + "\n")
   # Was it from CCP4i?
   if thislog.isccp4i():
-    print "This is a CCP4i logfile\n"
+    print("This is a CCP4i logfile\n")
   # Number of programs or pseudo-programs
-  print str(thislog.nfragments()) + " logfile fragments\n"
-  print "Fragments:"
+  print(str(thislog.nfragments()) + " logfile fragments\n")
+  print("Fragments:")
   for i in range(0, thislog.nfragments()):
     fragment = thislog.fragment(i)
     if fragment.isprogram():
       if fragment.has_attribute("name"):
-        print "\tProgram: " + str(fragment.name)
+        print("\tProgram: " + str(fragment.name))
       else:
-        print "\tProgram: <no name>"
+        print("\tProgram: <no name>")
     else:
       if fragment.isccp4i_info():
-        print "\tCCP4i info"
+        print("\tCCP4i info")
       elif fragment.isfragment():
-        print "\tFragment"
+        print("\tFragment")
       if fragment.ntables():
-        print "\t\t" + str(fragment.ntables()) + " tables"
+        print("\t\t" + str(fragment.ntables()) + " tables")
       if fragment.nkeytexts():
-        print "\t\t" + str(fragment.nkeytexts()) + " keytexts"
+        print("\t\t" + str(fragment.nkeytexts()) + " keytexts")
 
-  print ""
+  print("")
   # Summarise program logfile fragments
   if thislog.nprograms() > 0:
-    print str(thislog.nprograms()) + " program logfiles\n"
-    print "Programs:"
+    print(str(thislog.nprograms()) + " program logfiles\n")
+    print("Programs:")
     for i in range(0, thislog.nprograms()):
       prog = thislog.program(i)
       # Is it a CCP4 program?
       if prog.isccp4():
         # Print name, version (and CCP4 version)
-        print "\t"+prog.name+ \
+        print("\t"+prog.name+ \
               "\tv"+prog.version+ \
-              "\t(CCP4 "+prog.ccp4version+")"
+              "\t(CCP4 "+prog.ccp4version+")")
       else:
         # Print name and version
         if prog.has_attribute("name") and prog.has_attribute("version"):
-          print "\t" + prog.name + "\t" + prog.version
+          print("\t" + prog.name + "\t" + prog.version)
         else:
-          print "\t<No name and/or version>"
+          print("\t<No name and/or version>")
       if prog.termination():
-        print "\tTerminated with: " + prog.termination_message
+        print("\tTerminated with: " + prog.termination_message)
       else:
-        print "\tNo termination message found"
+        print("\tNo termination message found")
       # Keytexts
       if prog.nkeytexts():
-        print "\n\t\tKeytext messages:"
+        print("\n\t\tKeytext messages:")
         for j in range(0, prog.nkeytexts()):
-          print "\t\t"+str(prog.keytext(j).name())+ \
-                ": \""+str(prog.keytext(j).message())+"\""
+          print("\t\t"+str(prog.keytext(j).name())+ \
+                ": \""+str(prog.keytext(j).message())+"\"")
       # Tables
       if prog.ntables():
-        print "\n\t\tTables:"
+        print("\n\t\tTables:")
         for table in prog.tables():
-          print "\t\tTable: \"" + table.title() + "\""
-      print ""
+          print("\t\tTable: \"" + table.title() + "\"")
+      print("")
   else:
-    print "No program logfiles found"
-  print ""
+    print("No program logfiles found")
+  print("")
   # Total set of CCP4i information messages in the file
-  print "CCP4i messages in file:"
+  print("CCP4i messages in file:")
   if thislog.nccp4i_info():
     for i in range(0, thislog.nccp4i_info()):
-      print "\tCCP4i info: \"" + thislog.ccp4i_info(i).message + "\""
+      print("\tCCP4i info: \"" + thislog.ccp4i_info(i).message + "\"")
   else:
-    print "\tNo messages found"
-  print ""
+    print("\tNo messages found")
+  print("")
   # Total set of tables in the file
-  print "Tables in file:"
+  print("Tables in file:")
   if thislog.ntables():
     for table in thislog.tables():
-      print "\tTable: \"" + table.title() + "\" (" + str(
-          table.nrows()) + " rows)"
+      print("\tTable: \"" + table.title() + "\" (" + str(
+          table.nrows()) + " rows)")
   else:
-    print "\tNo tables found"
-  print ""
+    print("\tNo tables found")
+  print("")
   # Total set of keytexts in the file
-  print "Keytext messages in file:"
+  print("Keytext messages in file:")
   if thislog.nkeytexts():
     for i in range(0, thislog.nkeytexts()):
-      print "\t"+str(thislog.keytext(i).name())+ \
-            ": \""+thislog.keytext(i).message()+"\""
+      print("\t"+str(thislog.keytext(i).name())+ \
+            ": \""+thislog.keytext(i).message()+"\"")
   else:
-    print "\tNo keytext messages found"
-  print ""
+    print("\tNo keytext messages found")
+  print("")
 
 #######################################################################
 # Utility Functions
@@ -3494,11 +3494,11 @@ def retrieve(filen,start,end):
         text = text+str(linecache.getline(filen,i))
       return text
     except Exception:
-      print "Exception raised in retrieve method:"
-      print "\tSource file  = \""+str(filen)+"\""
-      print "\tStart line   = "+str(start)
-      print "\tEnd line     = "+str(end)
-      print "\tCurrent line = "+str(i)
+      print("Exception raised in retrieve method:")
+      print("\tSource file  = \""+str(filen)+"\"")
+      print("\tStart line   = "+str(start))
+      print("\tEnd line     = "+str(end))
+      print("\tCurrent line = "+str(i))
       raise
   # Otherwise return nothing
   return ""
@@ -3565,7 +3565,7 @@ def table_tags(filen):
   scans the file for occurances of the $TABLE tag, and
   reports this to stdout."""
 
-  print "Scanning file "+str(filen)
+  print("Scanning file "+str(filen))
   rtable = re.compile(r"\$TABLE *:")
   f = open(filen,"r")
   linecount = 0
@@ -3576,10 +3576,10 @@ def table_tags(filen):
     table = rtable.search(line)
     if table:
       tablecount = tablecount + 1
-      print str(linecount)+": "+str(line.rstrip("\n"))
+      print(str(linecount)+": "+str(line.rstrip("\n")))
       tablelist.append(line.rstrip("\n"))
   f.close()
-  print str(linecount)+" lines and "+str(tablecount)+" tables"
+  print(str(linecount)+" lines and "+str(tablecount)+" tables")
   return tablelist
 
 # An example of making a new table from scratch
@@ -3592,7 +3592,7 @@ def table_example():
   and then adds some graph definitions before outputting the
   formatted table to stdout."""
 
-  print "\nExample making a new table from scratch:\n"
+  print("\nExample making a new table from scratch:\n")
   # Make a new (empty) table object
   tbl = table("A table with random data")
   # Add three columns called "x", "x^2" and "1/x"
@@ -3614,8 +3614,8 @@ def table_example():
   tbl.definegraph("Y = 1/X",("x","1/x"))
   tbl.definegraph("All data",("x","x^2","1/x"))
   # Print out the data as a simple "table" and in loggraph markup
-  print tbl.show()
-  print tbl.loggraph()
+  print(tbl.show())
+  print(tbl.loggraph())
 
 if __name__ == "__main__":
   """Usage example and demonstration for smartie.
@@ -3628,18 +3628,18 @@ if __name__ == "__main__":
   and then use the logfile 'summarise' method to print out
   a summary of the file's contents."""
 
-  print "Running test on logparser code"
+  print("Running test on logparser code")
   # Get the command line args
-  print "command line: "+str(sys.argv)
+  print("command line: "+str(sys.argv))
   if len(sys.argv) == 1:
-    print "Usage: smartie.py file1 [file2 [...] ]"
+    print("Usage: smartie.py file1 [file2 [...] ]")
     sys.exit(0)
   # Cycle over files and process
   for filen in sys.argv[1:]:
-    print "**** Parsing file \""+filen+"\""
+    print("**** Parsing file \""+filen+"\"")
     start_time = time.clock()
     log = parselog(filen)
     end_time = time.clock()
     # Use the summarise function
     summarise(log)
-    print "\nTime: "+str(end_time-start_time)+"\n"
+    print("\nTime: "+str(end_time-start_time)+"\n")

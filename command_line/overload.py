@@ -1,4 +1,4 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import binascii
 import json
@@ -101,8 +101,8 @@ def build_hist(nproc=1):
   histbins = int(limit * binfactor) + 1
   use_python_counter = histbins > 90000000 # empirically determined
 
-  print "Processing %d images in %d processes using %s\n" % (image_count, nproc, \
-    "python Counter" if use_python_counter else "flex arrays")
+  print("Processing %d images in %d processes using %s\n" % (image_count, nproc, \
+    "python Counter" if use_python_counter else "flex arrays"))
 
   def process_image(process):
     last_update = start = timeit.default_timer()
@@ -127,7 +127,7 @@ def build_hist(nproc=1):
           last_update = timeit.default_timer()
           if sys.stdout.isatty():
             sys.stdout.write('\033[A')
-          print 'Processed %d%% (%d seconds remain)    ' % (100 * i // image_count, round((image_count - i) * (last_update - start) / (i+1)))
+          print('Processed %d%% (%d seconds remain)    ' % (100 * i // image_count, round((image_count - i) * (last_update - start) / (i+1))))
     return local_hist
 
   results = easy_mp.parallel_map(
@@ -136,7 +136,7 @@ def build_hist(nproc=1):
     processes=nproc,
     preserve_exception_message=True)
 
-  print "Merging results"
+  print("Merging results")
   result_hist = None
   for hist in results:
     if result_hist is None:
@@ -153,7 +153,7 @@ def build_hist(nproc=1):
               'overload_limit': limit,
               'counts': result_hist }
 
-  print "Writing results to overload.json"
+  print("Writing results to overload.json")
   with open('overload.json', 'w') as fh:
     json.dump(results, fh, indent=1, sort_keys=True)
 
