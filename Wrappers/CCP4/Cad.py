@@ -23,7 +23,7 @@
 # This should almost be implemented as two wrappers - oh well! Aha - implement
 # two methods - merge & update - this can handle the two distinct use cases.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 

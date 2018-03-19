@@ -8,7 +8,7 @@
 #
 # wrapper for xia2.integrate
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 def Integrate(DriverType = None):
   '''A factory for IntegrateWrapper classes.'''

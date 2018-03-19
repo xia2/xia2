@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 def test_find_python3_violations():
   import xia2
   import pytest

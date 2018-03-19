@@ -8,7 +8,7 @@
 # A wrapper to handle the JOB=COLSPOT module in XDS.
 #
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 import shutil

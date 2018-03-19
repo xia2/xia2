@@ -13,7 +13,7 @@
 # "ccp4" -> A CCP4 Decorator
 #
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 from xia2.Decorators.CCP4Decorator import CCP4DecoratorFactory
 

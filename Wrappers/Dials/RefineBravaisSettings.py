@@ -8,7 +8,7 @@
 #
 # Refine result of P1 DIALS indexing in all possible settings; publish results.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 from xia2.Handlers.Phil import PhilIndex
 

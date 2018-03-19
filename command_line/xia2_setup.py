@@ -3,7 +3,7 @@
 # see https://github.com/xia2/xia2/issues/172
 # LIBTBX_PRE_DISPATCHER_INCLUDE_SH ulimit -n `ulimit -Hn 2>&1 |sed 's/unlimited/4096/'`
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 from xia2.Applications import xia2setup
 

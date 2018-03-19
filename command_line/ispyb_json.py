@@ -1,4 +1,4 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 def ispyb_object():
   from xia2.Interfaces.ISPyB.ISPyBXmlHandler import ISPyBXmlHandler

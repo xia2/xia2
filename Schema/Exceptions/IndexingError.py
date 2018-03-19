@@ -8,7 +8,7 @@
 # An exception to be raised when an indexing program decides that there
 # is a specific problem with indexing - this should be recoverable.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 class IndexingError(Exception):
   '''An exception to be raised when a lattice is not right.'''

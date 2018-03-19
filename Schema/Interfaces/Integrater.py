@@ -35,7 +35,7 @@
 #     e.g. XDS or Mosflm - will not necessarily select the best one.
 #     This is left to the implementation to sort out.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import math
 import os

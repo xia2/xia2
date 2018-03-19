@@ -75,7 +75,7 @@
 #                 merging. This will come from the .xinfo file in an
 #                 INTEGRATED_REFLECTION_FILE record.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import copy
 import math

@@ -10,7 +10,7 @@
 # An implementation of the Scaler interface using CCP4 programs and Aimless.
 #
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import copy
 import math

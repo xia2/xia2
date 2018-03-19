@@ -8,7 +8,7 @@
 # This represents the "top level" of the .xinfo hierarchy, and should
 # exactly correspond to the contents of the .xinfo file.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 from xia2.Handlers.Phil import PhilIndex
 # output stream

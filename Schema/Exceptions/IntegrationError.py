@@ -8,7 +8,7 @@
 # An exception to be raised when an integration program decides that there
 # is a specific probllem with integration - this should be recoverable.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 class IntegrationError(Exception):
   '''An exception to be raised when a lattice is not right.'''

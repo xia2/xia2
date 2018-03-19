@@ -1,4 +1,4 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 # this must be defined in a separate file from xia2setup.py to be
 # compatible with easy_mp.parallel_map with method="sge" when

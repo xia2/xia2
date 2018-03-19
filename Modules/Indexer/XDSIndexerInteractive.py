@@ -10,7 +10,7 @@
 # have the indexing fully interactive i.e. user can run index, select solution,
 # change images to use etc. so it becomes fully interactive.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 from xia2.Handlers.Streams import Chatter
 from xia2.Modules.Indexer.XDSIndexer import XDSIndexer

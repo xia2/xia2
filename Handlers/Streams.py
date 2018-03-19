@@ -17,7 +17,7 @@
 # to add a stream for "chatter", that is the odds and ends which are
 # going on inside the program which tells you it's doing things.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import inspect
 import os

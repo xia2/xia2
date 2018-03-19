@@ -11,7 +11,7 @@
 # N.B. this is subtly different to Findspots as it takes as input an Indexer
 # implementation not FrameProcessor.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 def GenerateRaster(DriverType = None):
   '''A factory for GenerateRasterWrapper(ipmosflm) classes.'''

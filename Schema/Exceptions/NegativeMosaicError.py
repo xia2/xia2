@@ -9,7 +9,7 @@
 # lattice it is interating with is not appropriate for the reflections -
 # most often this is the result of a pseudo-higher-symmetry lattice.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 class NegativeMosaicError(Exception):
   '''An exception to be raised when the mosaic spread is negative.'''

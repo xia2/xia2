@@ -11,7 +11,7 @@
 #
 # This is not used as part of xia2, it is a developer thing.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 def remove_tags(text):
   import re

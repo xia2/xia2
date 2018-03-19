@@ -9,7 +9,7 @@
 # Find spots for autoindexing - now separating this out into two steps; finding
 # spots in index prepare and doing indexing in index proper.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 def Findspots(DriverType = None):
   '''A factory for FindspotsWrapper(ipmosflm) classes.'''

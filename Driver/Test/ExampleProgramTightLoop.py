@@ -11,7 +11,7 @@
 # XIA. This example program will hang after one iteration and need to
 # be killed.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import sys
 import time

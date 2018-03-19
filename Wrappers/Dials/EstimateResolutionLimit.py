@@ -8,7 +8,7 @@
 #
 # Estimate resolution limit after integration using DIALS
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 def EstimateResolutionLimit(DriverType = None):
   '''A factory for EstimateResolutionLimitWrapper classes.'''

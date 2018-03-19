@@ -9,7 +9,7 @@
 #
 # A wrapper for the CCP4 program sortmtz.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 

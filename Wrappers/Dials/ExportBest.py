@@ -8,7 +8,7 @@
 #
 # Export DIALS integration output in MTZ format.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 def ExportBest(DriverType = None):
   '''A factory for ExportMtzWrapper classes.'''

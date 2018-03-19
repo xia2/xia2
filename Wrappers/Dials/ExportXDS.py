@@ -8,7 +8,7 @@
 #
 # Export DIALS models for XDS processing.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 def ExportXDS(DriverType = None):
   '''A factory for ExportXDSWrapper classes.'''

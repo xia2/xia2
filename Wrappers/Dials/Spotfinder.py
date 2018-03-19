@@ -9,7 +9,7 @@
 # Find spots for autoindexing using the DIALS code; this will probably be
 # renamed to Spotfinder at some point.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 

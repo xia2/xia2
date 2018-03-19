@@ -10,7 +10,7 @@
 # A wrapper for the data processing program Mosflm, with the following
 # methods to provide functionality:
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 

@@ -10,7 +10,7 @@
 # 04/JAN/07 FIXME - need to know if we want anomalous pairs separating
 #                   in this module...
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 import shutil

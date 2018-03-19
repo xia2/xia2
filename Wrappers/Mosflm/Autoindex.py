@@ -15,7 +15,7 @@
 # third case (symmetry known but unit cell not) will be handled at the higher
 # level.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 def Autoindex(DriverType = None):
   '''A factory for AutoindexWrapper(ipmosflm) classes.'''

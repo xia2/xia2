@@ -9,7 +9,7 @@
 #
 # A top-level interface to the whole of xia2, for data processing & analysis.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import math
 import os

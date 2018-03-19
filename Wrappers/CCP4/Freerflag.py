@@ -8,7 +8,7 @@
 # 5th June 2006
 #
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 

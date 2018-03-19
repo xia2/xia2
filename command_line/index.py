@@ -1,5 +1,5 @@
 # LIBTBX_SET_DISPATCHER_NAME xia2.index
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 import sys

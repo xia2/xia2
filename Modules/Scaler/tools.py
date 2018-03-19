@@ -9,7 +9,7 @@
 # Patch .mtz file and overwrite stored unit cell parameters
 #
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 def patch_mtz_unit_cell(mtzfile, unit_cell_parameters):
   '''Overwrite unit cell stored in mtz file'''

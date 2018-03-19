@@ -7,7 +7,7 @@
 #
 # 21/SEP/06
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 # other odds and ends
 from xia2.DriverExceptions.NotAvailableError import NotAvailableError

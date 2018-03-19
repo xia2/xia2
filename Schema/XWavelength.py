@@ -29,7 +29,7 @@
 #                 order for the data reduction, to make sure that we
 #                 reduce the least damaged data first.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 from xia2.Handlers.Streams import Chatter
 from xia2.Schema.XSweep import XSweep

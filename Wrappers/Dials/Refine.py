@@ -8,7 +8,7 @@
 #
 # Assign indices to reflection centroids given a crystal model
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import os
 

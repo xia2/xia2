@@ -9,7 +9,7 @@
 # Code for the selection of images for autoindexing - selecting lone images
 # from a list or wedges from a list, for Mosflm / Labelit and XDS respectively.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 def index_select_images_lone(phi_width, images):
   '''Select images close to 0, 45 and 90 degrees from the list of available

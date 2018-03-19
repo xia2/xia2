@@ -1,4 +1,4 @@
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 def parse_aimless_xml(xml_file):
   import xml.dom.minidom

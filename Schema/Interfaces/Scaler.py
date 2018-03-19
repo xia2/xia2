@@ -146,7 +146,7 @@
 # XDSScaler &c., which will be a composite class which performs the operation,
 # using wrapper classes for the different programs...
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import inspect
 import os

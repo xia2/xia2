@@ -8,7 +8,7 @@
 #
 # Wrapper for dials.check_indexing_symmetry
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 def CheckIndexingSymmetry(DriverType = None):
   '''A factory for CheckIndexingSymmetryWrapper classes.'''
