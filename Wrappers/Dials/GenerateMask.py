@@ -58,6 +58,7 @@ def GenerateMask(DriverType = None):
         self.get_working_directory(), '%s_mask.phil' %self.get_xpid())
       with open(phil_filename, 'wb') as f:
         f.write(diff_phil.as_str())
+        f.write(os.linesep) # temporarily required for https://github.com/dials/dials/issues/522
 
       self.add_command_line('input.datablock="%s"' % self._input_datablock_filename)
       if self._output_mask_filename is None:
