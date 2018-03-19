@@ -16,6 +16,7 @@ import math
 import os
 import sys
 
+import xia2.Wrappers.Dials.Integrate
 from libtbx.utils import Sorry
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
@@ -26,7 +27,6 @@ from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
 from xia2.Schema.Interfaces.Integrater import Integrater
 from xia2.Wrappers.CCP4.Reindex import Reindex
 from xia2.Wrappers.Dials.ExportMtz import ExportMtz as _ExportMtz
-import xia2.Wrappers.Dials.Integrate
 from xia2.Wrappers.Dials.Report import Report as _Report
 
 class DialsIntegrater(Integrater):

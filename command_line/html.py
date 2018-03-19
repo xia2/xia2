@@ -3,8 +3,8 @@
 
 from __future__ import absolute_import, division
 
-import collections
 import cgi
+import collections
 import glob
 import os
 import traceback

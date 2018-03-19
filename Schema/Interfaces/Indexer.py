@@ -47,13 +47,13 @@ from __future__ import absolute_import, division
 
 import inspect
 import os
+from functools import reduce
 
 from xia2.Experts.LatticeExpert import SortLattices
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import Chatter, Debug
 # interfaces that this inherits from ...
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
-from functools import reduce
 
 class _IndexerHelper(object):
   '''A class to manage autoindexing results in a useful way, to ensure

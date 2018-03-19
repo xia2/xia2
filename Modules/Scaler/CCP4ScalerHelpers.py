@@ -18,6 +18,7 @@ import math
 import os
 import sys
 
+import xia2.Wrappers.CCP4.Pointless
 from iotbx import mtz
 from xia2.Experts.ResolutionExperts import remove_blank
 from xia2.Handlers.Files import FileHandler
@@ -25,7 +26,6 @@ from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import Debug
 from xia2.lib.bits import auto_logfiler
 from xia2.Modules import MtzUtils
-import xia2.Wrappers.CCP4.Pointless
 
 ############ JIFFY FUNCTIONS #################
 

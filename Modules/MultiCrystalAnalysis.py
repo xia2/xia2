@@ -2,10 +2,10 @@ from __future__ import absolute_import, division
 
 import os
 import sys
+from collections import OrderedDict
 
 import iotbx.phil
 from cctbx import crystal, miller, sgtbx, uctbx
-from collections import OrderedDict
 from libtbx.phil import command_line
 from scitbx.array_family import flex
 from xia2.Handlers.Streams import Chatter, Debug

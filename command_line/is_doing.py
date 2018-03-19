@@ -1,6 +1,8 @@
 from __future__ import print_function
+
+import sys
+
 def tail(filename):
-  import sys
   for record in open(filename):
     print(record[:-1])
   return

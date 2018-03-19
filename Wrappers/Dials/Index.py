@@ -10,9 +10,9 @@
 
 from __future__ import absolute_import, division
 
-import libtbx.utils
 import os
 
+import libtbx.utils
 from xia2.Handlers.Phil import PhilIndex
 
 def Index(DriverType = None):

@@ -4,13 +4,13 @@ from __future__ import absolute_import, division
 
 import json
 import os
+from collections import OrderedDict
 from cStringIO import StringIO
 
 import iotbx.phil
 import xia2.Handlers.Environment
 import xia2.Handlers.Files
 from cctbx.array_family import flex
-from collections import OrderedDict
 from mmtbx.scaling import printed_output
 from xia2.Modules.Analysis import *
 

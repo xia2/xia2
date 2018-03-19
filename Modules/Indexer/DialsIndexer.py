@@ -8,8 +8,9 @@
 # An indexer using the DIALS methods.
 
 from __future__ import absolute_import, division
-import os
+
 import math
+import os
 
 import libtbx
 

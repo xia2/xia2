@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+
 import pytest
 
 def test_indexing_with_labelit_on_two_images(dials_regression, tmpdir):
