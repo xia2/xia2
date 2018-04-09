@@ -26,7 +26,7 @@ def pytest_collection_modifyitems(config, items):
       if "slow" in item.keywords:
         item.add_marker(skip_slow)
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def ccp4():
   '''Return the absolute path to the CCP4 installation.
      Skip the test if CCP4 is not installed.'''
