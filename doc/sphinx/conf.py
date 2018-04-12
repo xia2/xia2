@@ -40,13 +40,17 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
-    'sphinx.ext.pngmath',
+    'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
-    'numpydoc',
+    'sphinx.ext.napoleon',
     'libtbx.sphinx.phil',
     'libtbx.sphinx.python_string',
     'libtbx.sphinx.pubmed',
 ]
+
+# Add CDN path for mathjax script, converting Latex to readable text on the fly.
+# (The Sphinx builtin path is deprecated.)
+mathjax_path = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

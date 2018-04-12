@@ -62,7 +62,7 @@ a couple of reasons:
    them correctly. A speedup can be obtained with the parameter
    :samp:`read_all_image_headers=False`, which tells xia2 to only read the
    first image header for each set of files with a matching template, and
-  infer the rest of the sweep from the first image header.
+   infer the rest of the sweep from the first image header.
 
 #. If available, xia2 will run a beam centre search on each sweep using
    labelit.index. This step can be disabled using the parameter
