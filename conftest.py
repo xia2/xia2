@@ -31,6 +31,8 @@ def ccp4():
   '''Return the absolute path to the CCP4 installation.
      Skip the test if CCP4 is not installed.'''
   try:
+    if not os.environ['CCP4']:
+      pytest.skip("CCP4 installation required for this test")
     return os.environ['CCP4']
   except KeyError:
     pytest.skip("CCP4 installation required for this test")

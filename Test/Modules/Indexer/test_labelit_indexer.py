@@ -5,7 +5,7 @@ import os
 import pytest
 
 @pytest.mark.slow
-def test_labelit_indexer(dials_regression, tmpdir):
+def test_labelit_indexer(ccp4, dials_regression, tmpdir):
   template = os.path.join(dials_regression, "xia2_demo_data", "insulin_1_###.img")
 
   tmpdir.chdir()

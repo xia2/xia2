@@ -22,7 +22,7 @@ two_images_indexing = {
 }
 
 @pytest.mark.slow
-def test_index_two_images_with_mosflm(dials_regression, tmpdir):
+def test_index_two_images_with_mosflm(ccp4, dials_regression, tmpdir):
   tmpdir.chdir()
   templ, directory = get_template_and_directory(dials_regression)
 
@@ -45,7 +45,7 @@ def test_index_two_images_with_mosflm(dials_regression, tmpdir):
   assert indexer.get_lattice() == 'cI'
 
 @pytest.mark.slow
-def test_indexing_multiple_images_with_mosflm(dials_regression, tmpdir):
+def test_indexing_multiple_images_with_mosflm(ccp4, dials_regression, tmpdir):
   tmpdir.chdir()
   templ, directory = get_template_and_directory(dials_regression)
 
@@ -71,7 +71,7 @@ def test_indexing_multiple_images_with_mosflm(dials_regression, tmpdir):
   assert indexer.get_lattice() == 'cI'
 
 @pytest.mark.slow
-def test_mosflm_refine_cell(dials_regression, tmpdir):
+def test_mosflm_refine_cell(ccp4, dials_regression, tmpdir):
   tmpdir.chdir()
   templ, directory = get_template_and_directory(dials_regression)
 

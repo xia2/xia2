@@ -130,7 +130,7 @@ def exercise_dials_wrappers(dials_regression, nproc=None):
   assert os.path.exists(exporter.get_combined_reflections_filename())
 
 @pytest.mark.slow
-def test_dials_wrappers_serial(dials_regression, tmpdir):
+def test_dials_wrappers_serial(ccp4, dials_regression, tmpdir):
   with tmpdir.as_cwd():
     with mock.patch.object(sys, 'argv', []):
       exercise_dials_wrappers(dials_regression, nproc=1)

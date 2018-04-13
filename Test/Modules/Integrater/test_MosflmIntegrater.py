@@ -107,13 +107,13 @@ def exercise_mosflm_integrater(dials_regression, tmp_dir, nproc):
          mtz_object.n_reflections()
 
 @pytest.mark.slow
-def test_mosflm_integrater_serial(dials_regression, tmpdir):
+def test_mosflm_integrater_serial(ccp4, dials_regression, tmpdir):
   with tmpdir.as_cwd():
     with mock.patch.object(sys, 'argv', []):
       exercise_mosflm_integrater(dials_regression, tmpdir.strpath, nproc=1)
 
 @pytest.mark.slow
-def test_mosflm_integrater_parallel(dials_regression, tmpdir):
+def test_mosflm_integrater_parallel(ccp4, dials_regression, tmpdir):
   with tmpdir.as_cwd():
     with mock.patch.object(sys, 'argv', []):
       exercise_mosflm_integrater(dials_regression, tmpdir.strpath, nproc=2)

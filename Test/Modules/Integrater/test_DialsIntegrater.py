@@ -100,7 +100,7 @@ def exercise_dials_integrater(dials_regression, tmp_dir, nproc=None):
   assert abs(mtz_object.n_reflections() - expected_reflections) < 300, mtz_object.n_reflections()
 
 @pytest.mark.slow
-def test_dials_integrater_serial(dials_regression, tmpdir):
+def test_dials_integrater_serial(ccp4, dials_regression, tmpdir):
   with tmpdir.as_cwd():
     with mock.patch.object(sys, 'argv', []):
       exercise_dials_integrater(dials_regression, tmpdir.strpath, nproc=1)

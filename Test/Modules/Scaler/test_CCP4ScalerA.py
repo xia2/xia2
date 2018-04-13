@@ -8,7 +8,7 @@ import pytest
 
 @pytest.mark.slow
 @pytest.mark.parametrize('nproc', [1])
-def test_ccp4_scalerA(dials_regression, tmpdir, nproc):
+def test_ccp4_scalerA(ccp4, dials_regression, tmpdir, nproc):
   if nproc is not None:
     from xia2.Handlers.Phil import PhilIndex
     PhilIndex.params.xia2.settings.multiprocessing.nproc = nproc

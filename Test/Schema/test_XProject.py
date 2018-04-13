@@ -113,7 +113,7 @@ def exercise_serialization(dials_regression, tmp_dir):
   print("\n".join(xproj.summarise()))
 
 @pytest.mark.slow
-def test_serialization(dials_regression, tmpdir):
+def test_serialization(ccp4, dials_regression, tmpdir):
   with tmpdir.as_cwd():
     with mock.patch.object(sys, 'argv', []):
       exercise_serialization(dials_regression, tmpdir.strpath)

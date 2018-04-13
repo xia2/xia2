@@ -106,7 +106,7 @@ def exercise_xds_integrater(dials_regression, tmp_dir, nproc=None):
   assert approx_equal(mtz_object.n_reflections(), 50100, eps=400)
 
 @pytest.mark.slow
-def test_xds_integrater_serial(dials_regression, tmpdir):
+def test_xds_integrater_serial(ccp4, dials_regression, tmpdir):
   with tmpdir.as_cwd():
     with mock.patch.object(sys, 'argv', []):
       exercise_xds_integrater(dials_regression, tmpdir.strpath, nproc=1)

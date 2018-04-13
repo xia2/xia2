@@ -11,7 +11,7 @@ def cmd_exists(cmd):
   return subprocess.call('type ' + cmd, shell=True,
     stdout=subprocess.PIPE, stderr=subprocess.PIPE) == 0
 
-def test_blend_wrapper(xia2_regression_build, tmpdir):
+def test_blend_wrapper(ccp4, xia2_regression_build, tmpdir):
   if not cmd_exists('blend'):
     pytest.skip('blend not available')
 

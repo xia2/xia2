@@ -70,7 +70,7 @@ def exercise_xds_indexer(dials_regression, tmp_dir, nproc=None):
   assert indexer2.get_indexer_lattice() == 'hR'
 
 @pytest.mark.slow
-def test_xds_indexer_serial(dials_regression, tmpdir):
+def test_xds_indexer_serial(ccp4, dials_regression, tmpdir):
   with tmpdir.as_cwd():
     with mock.patch.object(sys, 'argv', []):
       exercise_xds_indexer(dials_regression, tmpdir.strpath, nproc=1)
