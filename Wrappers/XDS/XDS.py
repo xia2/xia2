@@ -530,14 +530,28 @@ __hdf5_lib = ''
 def find_hdf5_lib(template=None):
   global __hdf5_lib
   from xia2.Applications.xia2setup import is_hd5f_name
+
   if template and not is_hd5f_name(template):
     return ''
+
   if __hdf5_lib:
     return __hdf5_lib
+
   import os
+  from xia2.Handlers.Phil import PhilIndex
+  from libtbx.utils import Sorry
+
+  plugin_name = PhilIndex.get_python_object().xds.hdf5_plugin
+
+  if os.path.isabs(plugin_name):
+    if not os.path.exists(plugin_name):
+      raise Sorry('Cannot find plugin %s' % plugin_name)
+    __hdf5_lib = 'LIB=%s\n' % plugin_name
+    return __hdf5_lib
+
   for d in os.environ['PATH'].split(os.pathsep):
-    if os.path.exists(os.path.join(d, 'dectris-neggia.so')):
-      __hdf5_lib = 'LIB=%s\n' % os.path.join(d, 'dectris-neggia.so')
+    if os.path.exists(os.path.join(d, plugin_name)):
+      __hdf5_lib = 'LIB=%s\n' % os.path.join(d, plugin_name)
       return __hdf5_lib
   return ''
 

@@ -28,6 +28,11 @@ general
 xds
   .short_caption = "XDS settings"
 {
+  hdf5_plugin = "dectris-neggia.so"
+    .type = path
+    .help = "HDF5 plugin file reader name, either filename or full path"
+    .short_caption = "LIB=/path/to/(this)"
+    .expert_level=1
   z_min = 0.0
     .type = float
     .short_caption="Mark Wilson outlier when Z-score greater than"
