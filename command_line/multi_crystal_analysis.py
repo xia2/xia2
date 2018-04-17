@@ -4,6 +4,7 @@ from __future__ import absolute_import, division, print_function
 
 import os
 import sys
+import tabulate
 import traceback
 
 # Needed to make xia2 imports work correctly
@@ -16,7 +17,6 @@ from xia2.Handlers.Environment import Environment
 from xia2.Handlers.Files import cleanup
 from xia2.Handlers.Streams import Chatter, Debug
 from xia2.lib.bits import auto_logfiler
-from xia2.lib.tabulate import tabulate
 # try to get scipy set up right...
 from xia2.Modules.MultiCrystalAnalysis import get_scipy
 

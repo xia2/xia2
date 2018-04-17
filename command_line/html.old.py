@@ -4,16 +4,16 @@
 from __future__ import absolute_import, division, print_function
 
 import cgi
+import docutils
 import glob
 import os
+import tabulate
 import traceback
 
-import docutils
 # Needed to make xia2 imports work correctly
 import libtbx.load_env
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Streams import Chatter, Debug
-from xia2.lib.tabulate import tabulate
 from xia2.XIA2Version import Version
 
 def run():
