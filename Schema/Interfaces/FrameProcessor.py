@@ -325,6 +325,10 @@ class FrameProcessor(object):
     '''Strip out common characters from the image list and move them
     to the template.'''
 
+    if self._fp_template.endswith('.h5'):
+      # do not mess with the templates if container file
+      return
+
     template, images, offset = digest_template(self._fp_template,
                                                self._fp_matching_images)
 
