@@ -221,6 +221,7 @@ Journal = _Stream('%s-journal' % cl, None)
 Stdout = _Stream(None, None)
 day = date.today().timetuple()
 if (day.tm_mday == 1 and day.tm_mon == 4) or 'XIA2_APRIL' in os.environ:
+  # turning log fonts to GREEN
   Stdout.filter(april)
 Debug = _Stream('%s-debug' % cl, None)
 
