@@ -336,13 +336,13 @@ class XInfo(object):
 
           elif 'SAMPLE' == record.split()[0]:
             sample = record.replace('SAMPLE ', '').strip()
-            if not sample in self._crystals[crystal]['samples'].keys():
+            if not sample in list(self._crystals[crystal]['samples'].keys()):
               raise RuntimeError( \
                   'sample %s unknown for crystal %s' % (sample, crystal))
             self._crystals[crystal]['sweeps'][sweep]['sample'] = sample
 
           elif 'BEAM' == record.split()[0]:
-            beam = map(float, record.split()[1:])
+            beam = list(map(float, record.split()[1:]))
             self._crystals[crystal]['sweeps'][sweep]['beam'] = beam
 
           elif 'DISTANCE' == record.split()[0]:
@@ -358,7 +358,7 @@ class XInfo(object):
 
           elif 'START_END' == record.split()[0]:
             if 'start_end' not in self._crystals[crystal]['sweeps'][sweep]:
-              start_end = map(int, record.split()[1:])
+              start_end = list(map(int, record.split()[1:]))
               if len(start_end) != 2:
                 raise RuntimeError( \
                       'START_END requires two parameters (start and end), not "%s"' % record)
@@ -368,7 +368,7 @@ class XInfo(object):
             if record.split()[1].upper() == 'ICE':
               self._crystals[crystal]['sweeps'][sweep]['ice'] = True
             else:
-              excluded_region = map(float, record.split()[1:])
+              excluded_region = list(map(float, record.split()[1:]))
               if len(excluded_region) != 2:
                 raise RuntimeError( \
                       'EXCLUDE upper lower, not "%s". \
