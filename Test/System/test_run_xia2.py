@@ -3,10 +3,7 @@
 from __future__ import absolute_import, division, print_function
 
 def test_start_xia2():
-  from subprocess import Popen, PIPE
+  import procrunner
 
-  process = Popen(["xia2"], stdout=PIPE)
-  (output, err) = process.communicate()
-  exit_code = process.wait()
-  if (exit_code != 0):
-    exit(exit_code)
+  result = procrunner.run(['xia2'])
+  assert result['exitcode'] == 0
