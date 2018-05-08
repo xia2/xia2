@@ -453,6 +453,9 @@ class DialsIntegrater(Integrater):
     FileHandler.record_more_data_file(
       '%s %s %s %s experiments' % (pname, xname, dname, sweep),
       self.get_integrated_experiments())
+    FileHandler.record_more_data_file(
+      '%s %s %s %s reflections' % (pname, xname, dname, sweep),
+      self.get_integrated_reflections())
 
     return hklout
 

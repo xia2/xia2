@@ -62,21 +62,23 @@ def load_imagesets(template, directory, id_image=None, image_range=None,
     }
 
     if os.path.splitext(full_template_path)[-1] in known_hdf5_extensions:
-      import glob
-      g = glob.glob(os.path.join(directory, '*_master.h5'))
-      master_file = None
-      for p in g:
-        substr = longest_common_substring(template, p)
-        if substr:
-          if (master_file is None or
-              (len(substr) > len(longest_common_substring(
-                  template, master_file)))):
-            master_file = p
+      # if we are passed the correct file, use this, else look for a master
+      # file (i.e. something_master.h5)
 
-      if master_file is None and \
-            os.path.exists(full_template_path) and \
-            os.path.isfile(full_template_path):
+      if os.path.exists(full_template_path) and \
+        os.path.isfile(full_template_path):
         master_file = full_template_path
+      else:
+        import glob
+        g = glob.glob(os.path.join(directory, '*_master.h5'))
+        master_file = None
+        for p in g:
+          substr = longest_common_substring(template, p)
+          if substr:
+            if (master_file is None or
+                (len(substr) > len(longest_common_substring(
+                    template, master_file)))):
+              master_file = p
 
       if master_file is None:
         raise RuntimeError("Can't find master file for %s" % full_template_path)
