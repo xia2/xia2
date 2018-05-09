@@ -61,7 +61,7 @@ def exercise_dials_integrater(dials_regression, tmp_dir, nproc=None):
 
   assert mtz_object.column_labels() == [
     'H', 'K', 'L', 'M_ISYM', 'BATCH', 'IPR', 'SIGIPR', 'I', 'SIGI',
-    'BG', 'SIGBG', 'FRACTIONCALC', 'XDET', 'YDET', 'ROT', 'LP', 'DQE']
+    'BG', 'SIGBG', 'FRACTIONCALC', 'XDET', 'YDET', 'ROT', 'LP', 'QE']
 
   assert integrater.get_integrater_wedge() == (1, 45)
   assert approx_equal(integrater.get_integrater_cell(),
