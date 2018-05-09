@@ -410,8 +410,8 @@ ccp4
   truncate
     .short_caption = "truncate"
   {
-    program = 'ctruncate'
-      .type = str
+    program = *ctruncate cctbx
+      .type = choice
   }
 }
 strategy
