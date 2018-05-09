@@ -8,7 +8,7 @@ def test_insulin_xinfo():
   xinfo_dir = os.path.join(xia2.__path__[0], 'Test', 'Handlers')
 
   xinfo = XInfo(os.path.join(xinfo_dir, 'insulin.xinfo'))
-  assert xinfo.get_crystals().keys() == ['DEFAULT']
+  assert list(xinfo.get_crystals()) == ['DEFAULT']
   assert xinfo.get_crystals()['DEFAULT']['wavelengths'] == {
     'NATIVE': {'wavelength': 0.979}}
   assert xinfo.get_crystals()['DEFAULT']['sweeps'] == {
@@ -24,7 +24,7 @@ def test_multi_xinfo():
   xinfo_dir = os.path.join(xia2.__path__[0], 'Test', 'Handlers')
 
   xinfo = XInfo(os.path.join(xinfo_dir, 'multi.xinfo'))
-  assert xinfo.get_crystals().keys() == ['DEFAULT']
+  assert list(xinfo.get_crystals()) == ['DEFAULT']
   assert xinfo.get_crystals()['DEFAULT']['wavelengths'] == {
     'NATIVE': {'wavelength': 1.77}}
   assert xinfo.get_crystals()['DEFAULT']['sweeps'] == {
