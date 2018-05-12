@@ -48,7 +48,7 @@ class _Citations(object):
         if 'url' in bibtex_data:
           citation_data['url'] = bibtex_data['url']
         elif 'doi' in bibtex_data:
-          citation_data['url'] = 'http://dx.doi.org/' + bibtex_data['doi']
+          citation_data['url'] = 'https://doi.org/' + bibtex_data['doi']
 
       if program not in self._citations:
         self._citations[program] = []

@@ -34,7 +34,7 @@ number = "1",
 month = "Feb",
 pages = "186--190",
 doi = {10.1107/S0021889809045701},
-url = {http://dx.doi.org/10.1107/S0021889809045701},
+url = {https://doi.org/10.1107/S0021889809045701},
 }
 </bibtex>
 </citation>
@@ -53,7 +53,7 @@ number = "7",
 pages = "1204--1214",
 month = "Jul",
 doi = {10.1107/S0907444913000061},
-url = {http://dx.doi.org/10.1107/S0907444913000061},
+url = {https://doi.org/10.1107/S0907444913000061},
 }
 </bibtex>
 </citation>
@@ -70,7 +70,7 @@ number = "3",
 pages = "255--259",
 month = "Jun",
 doi = {10.1107/S0021889882011959},
-url = {http://dx.doi.org/10.1107/S0021889882011959},
+url = {https://doi.org/10.1107/S0021889882011959},
 }
 </bibtex>
 </citation>
@@ -88,7 +88,7 @@ number = "2",
 pages = "125--132",
 month = "Feb",
 doi = {10.1107/S0907444909047337},
-url = {http://dx.doi.org/10.1107/S0907444909047337},
+url = {https://doi.org/10.1107/S0907444909047337},
 }
 </bibtex>
 </citation>
@@ -106,7 +106,7 @@ number = "4",
 pages = "235--242",
 month = "Apr",
 doi = {10.1107/S0907444910045749},
-url = {http://dx.doi.org/10.1107/S0907444910045749},
+url = {https://doi.org/10.1107/S0907444910045749},
 }
 </bibtex>
 </citation>
@@ -138,7 +138,7 @@ number = "3",
 pages = "399--409",
 month = "Jun",
 doi = {10.1107/S0021889804005874},
-url = {http://dx.doi.org/10.1107/S0021889804005874},
+url = {https://doi.org/10.1107/S0021889804005874},
 }
 </bibtex>
 </citation>
@@ -155,7 +155,7 @@ number = "10",
 pages = "1718--1725",
 month = "Oct",
 doi = {10.1107/S090744499900935X},
-url = {http://dx.doi.org/10.1107/S090744499900935X},
+url = {https://doi.org/10.1107/S090744499900935X},
 }
 </bibtex>
 </citation>
@@ -173,7 +173,7 @@ number = "1",
 pages = "72--82",
 month = "Jan",
 doi = {10.1107/S0907444905036693},
-url = {http://dx.doi.org/10.1107/S0907444905036693},
+url = {https://doi.org/10.1107/S0907444905036693},
 }
 </bibtex>
 </citation>
@@ -227,7 +227,7 @@ number = "8",
 pages = "1617--1632",
 month = "Aug",
 doi = {10.1107/S0907444913012274},
-url = {http://dx.doi.org/10.1107/S0907444913012274},
+url = {https://doi.org/10.1107/S0907444913012274},
 }
 </bibtex>
 </citation>
