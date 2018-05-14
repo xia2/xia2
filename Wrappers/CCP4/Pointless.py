@@ -464,25 +464,11 @@ def Pointless(DriverType = None):
         scorelist = dom.getElementsByTagName('LaueGroupScoreList')[0]
         scores = scorelist.getElementsByTagName('LaueGroupScore')
 
-        lauegroups = { }
-        netzcs = { }
-        likelihoods = { }
-
         for s in scores:
-          number = int(s.getElementsByTagName(
-              'number')[0].childNodes[0].data)
           lauegroup = s.getElementsByTagName(
               'LaueGroupName')[0].childNodes[0].data
-          reindex = s.getElementsByTagName(
-              'ReindexOperator')[0].childNodes[0].data
           netzc = float(s.getElementsByTagName(
               'NetZCC')[0].childNodes[0].data)
-          likelihood = float(s.getElementsByTagName(
-              'Likelihood')[0].childNodes[0].data)
-          r_merge = float(s.getElementsByTagName(
-              'R')[0].childNodes[0].data)
-          delta = float(s.getElementsByTagName(
-              'CellDelta')[0].childNodes[0].data)
 
           # record this as a possible lattice... if it's Z score
           # is positive, anyway
