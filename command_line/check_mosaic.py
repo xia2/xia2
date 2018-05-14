@@ -1,7 +1,7 @@
 # LIBTBX_SET_DISPATCHER_NAME dev.xia2.check_mosaic
 from __future__ import absolute_import, division, print_function
 
-import cPickle as pickle
+import six.moves.cPickle as pickle
 
 from dials.array_family import flex
 
@@ -23,7 +23,8 @@ def mosaic_profile_xyz(profile):
   return x, y, z
 
 def go(filename):
-  allprof = pickle.load(open(filename))
+  with open(filename, 'rb') as fh:
+    allprof = pickle.load(fh)
   for prof in allprof:
     x, y, z = mosaic_profile_xyz(prof[0])
     for profile in prof[1:]:

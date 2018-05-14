@@ -28,7 +28,7 @@ def reconstruct_rogues(params):
   xinfo = XProject.from_json(filename='xia2.json')
 
   from dxtbx.model.experiment_list import ExperimentListFactory
-  import cPickle as pickle
+  import six.moves.cPickle as pickle
   import dials # because WARNING:root:No profile class gaussian_rs registered
   crystals = xinfo.get_crystals()
   assert len(crystals) == 1
@@ -52,7 +52,8 @@ def reconstruct_rogues(params):
     intgr = si.get_integrater()
     experiments = ExperimentListFactory.from_json_file(
       intgr.get_integrated_experiments())
-    reflections = pickle.load(open(intgr.get_integrated_reflections()))
+    with open(intgr.get_integrated_reflections(), 'rb') as fh:
+      reflections = pickle.load(fh)
     batched_reflections[si.get_batch_range()] = (experiments, reflections,
                                                  si.get_sweep_name())
 

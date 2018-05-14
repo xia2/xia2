@@ -8,7 +8,7 @@ def main(filename, threshold, images):
 
   from dxtbx import load
   from dials.array_family import flex
-  from cPickle import dump
+  import six.moves.cPickle as pickle
 
   image_data = None
 
@@ -22,7 +22,8 @@ def main(filename, threshold, images):
 
   mask_inverse = (image_data >= 0) & (image_data < threshold)
   mask = ~ mask_inverse
-  dump((mask,), open(filename, 'w'))
+  with open(filename, 'wb') as fh:
+    pickle.dump((mask,), fh, pickle.HIGHEST_PROTOCOL)
 
   print('Mask written to %s' % filename)
 

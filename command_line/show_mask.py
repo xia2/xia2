@@ -6,10 +6,11 @@ def main(filename):
   '''Show a mask from create_mask.'''
 
   from dials.array_family import flex
-  from cPickle import load
+  import six.moves.cPickle as pickle
   from matplotlib import pylab
 
-  m = load(open(filename))
+  with open(filename, 'rb') as fh:
+    m = pickle.load(fh)
 
   pylab.imshow(m[0].as_numpy_array())
   pylab.show()

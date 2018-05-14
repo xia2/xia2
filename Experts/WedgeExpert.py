@@ -128,8 +128,9 @@ def digest_wedges(wedges):
 
 if __name__ == '__main__':
 
-  import cPickle as pickle
-  wedges = pickle.loads(open('test.pkl').read())
+  import six.moves.cPickle as pickle
+  with open('test.pkl', 'rb') as fh:
+    wedges = pickle.loads(fh.read())
 
   dmaxes, group_report = digest_wedges(wedges)
 
