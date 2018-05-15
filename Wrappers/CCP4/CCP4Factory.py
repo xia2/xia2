@@ -28,6 +28,7 @@ from xia2.Wrappers.CCP4.Reindex import Reindex as _Reindex
 from xia2.Wrappers.CCP4.Scaleit import Scaleit as _Scaleit
 from xia2.Wrappers.CCP4.Sortmtz import Sortmtz as _Sortmtz
 from xia2.Wrappers.CCP4.Truncate import Truncate as _Truncate
+from xia2.Wrappers.Dials.Symmetry import DialsSymmetry as _DialsSymmetry
 from xia2.Wrappers.XIA.Chef import Chef as _Chef
 
 class CCP4Factory(object):
@@ -119,6 +120,12 @@ class CCP4Factory(object):
     pointless.set_working_directory(self.get_working_directory())
     auto_logfiler(pointless)
     return pointless
+
+  def dials_symmetry(self):
+    symmetry = _DialsSymmetry()
+    symmetry.set_working_directory(self.get_working_directory())
+    auto_logfiler(symmetry)
+    return symmetry
 
   def Matthews_coef(self):
     '''Create a Matthews_coef wrapper from _Matthews_coef - set the

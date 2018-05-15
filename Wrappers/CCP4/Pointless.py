@@ -269,8 +269,8 @@ def Pointless(DriverType = None):
       if PhilIndex.params.xia2.settings.small_molecule == True:
         if self._hklref:
           self.input('tolerance 5.0')
-      if PhilIndex.params.ccp4.pointless.chirality is not None:
-        self.input('chirality %s' %PhilIndex.params.ccp4.pointless.chirality)
+      if PhilIndex.params.xia2.settings.symmetry.chirality is not None:
+        self.input('chirality %s' %PhilIndex.params.xia2.settings.symmetry.chirality)
 
       if self._input_laue_group:
         self.input('lauegroup %s' % self._input_laue_group)
@@ -470,8 +470,7 @@ def Pointless(DriverType = None):
           netzc = float(s.getElementsByTagName(
               'NetZCC')[0].childNodes[0].data)
 
-          # record this as a possible lattice... if it's Z score
-          # is positive, anyway
+          # record this as a possible lattice if its Z score is positive
 
           lattice = lauegroup_to_lattice(lauegroup)
           if not lattice in self._possible_lattices:
@@ -521,8 +520,8 @@ def Pointless(DriverType = None):
       self.input('lauegroup hklin')
       self.input('setting symmetry-based')
 
-      if PhilIndex.params.ccp4.pointless.chirality is not None:
-        self.input('chirality %s' %PhilIndex.params.ccp4.pointless.chirality)
+      if PhilIndex.params.xia2.settings.symmetry.chirality is not None:
+        self.input('chirality %s' %PhilIndex.params.xia2.settings.symmetry.chirality)
 
       self.close_wait()
 

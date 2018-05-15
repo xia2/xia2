@@ -142,7 +142,10 @@ class CommonScaler(Scaler):
 
     if not self.get_scaler_reference_reflection_file():
 
-      p = self._factory.Pointless()
+      if PhilIndex.params.xia2.settings.symmetry.program == 'dials':
+        p = self._factory.dials_symmetry()
+      else:
+        p = self._factory.Pointless()
 
       FileHandler.record_log_file('%s %s pointless' % \
                                   (self._scalr_pname,

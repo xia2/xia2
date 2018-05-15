@@ -401,12 +401,6 @@ ccp4
     }
 
   }
-  pointless
-    .short_caption = "pointless"
-  {
-    chirality = chiral nonchiral centrosymmetric
-      .type = choice
-  }
   truncate
     .short_caption = "truncate"
   {
@@ -826,6 +820,14 @@ xia2.settings
     .expert_level = 1
   {
     include scope xia2.Modules.Analysis.phil_scope
+  }
+  symmetry
+    .short_caption = "symmetry"
+  {
+    chirality = chiral nonchiral centrosymmetric
+      .type = choice
+    program = *pointless dials
+      .type = choice
   }
 }
 """, process_includes=True)

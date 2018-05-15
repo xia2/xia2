@@ -19,6 +19,7 @@ import os
 import sys
 
 import xia2.Wrappers.CCP4.Pointless
+import xia2.Wrappers.Dials.Symmetry
 from iotbx import mtz
 from xia2.Experts.ResolutionExperts import remove_blank
 from xia2.Handlers.Files import FileHandler
@@ -258,6 +259,12 @@ class CCP4ScalerHelper(object):
     auto_logfiler(pointless)
     return pointless
 
+  def dials_symmetry(self):
+    symmetry = xia2.Wrappers.Dials.Symmetry.DialsSymmetry()
+    symmetry.set_working_directory(self.get_working_directory())
+    auto_logfiler(symmetry)
+    return symmetry
+
   def pointless_indexer_jiffy(self, hklin, refiner):
     '''A jiffy to centralise the interactions between pointless
     and the Indexer.'''
@@ -265,13 +272,17 @@ class CCP4ScalerHelper(object):
     need_to_return = False
     probably_twinned = False
 
-    pointless = self.Pointless()
-    pointless.set_hklin(hklin)
-    pointless.decide_pointgroup()
+    if PhilIndex.params.xia2.settings.symmetry.program == 'dials':
+      symmetry = self.dials_symmetry()
+    else:
+      symmetry = self.Pointless()
+
+    symmetry.set_hklin(hklin)
+    symmetry.decide_pointgroup()
 
     rerun_pointless = False
 
-    possible = pointless.get_possible_lattices()
+    possible = symmetry.get_possible_lattices()
 
     correct_lattice = None
 
@@ -304,14 +315,14 @@ class CCP4ScalerHelper(object):
       Debug.write('No solution found: assuming lattice from refiner')
 
     if rerun_pointless:
-      pointless.set_correct_lattice(correct_lattice)
-      pointless.decide_pointgroup()
+      symmetry.set_correct_lattice(correct_lattice)
+      symmetry.decide_pointgroup()
 
-    Debug.write('Pointless analysis of %s' % pointless.get_hklin())
+    Debug.write('Pointless analysis of %s' % symmetry.get_hklin())
 
-    pointgroup = pointless.get_pointgroup()
-    reindex_op = pointless.get_reindex_operator()
-    probably_twinned = pointless.get_probably_twinned()
+    pointgroup = symmetry.get_pointgroup()
+    reindex_op = symmetry.get_reindex_operator()
+    probably_twinned = symmetry.get_probably_twinned()
 
     Debug.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
 

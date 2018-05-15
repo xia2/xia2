@@ -191,8 +191,8 @@ class _CommandLine(object):
 
     if params.xia2.settings.small_molecule == True:
       Debug.write('Small molecule selected')
-      if params.ccp4.pointless.chirality is None:
-        PhilIndex.update("ccp4.pointless.chirality=nonchiral")
+      if params.xia2.settings.symmetry.chirality is None:
+        PhilIndex.update("xia2.settings.symmetry.chirality=nonchiral")
       params = PhilIndex.get_python_object()
 
     # pipeline options
