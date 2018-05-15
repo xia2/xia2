@@ -36,12 +36,12 @@ def test_index_two_images_with_mosflm(ccp4, dials_regression, tmpdir):
   assert approx_equal(indexer.get_refined_beam_centre(),
                       two_images_indexing['beam_centre'])
   assert approx_equal(indexer.get_refined_unit_cell(),
-                      (78.655, 78.655, 78.655, 90.0, 90.0, 90.0), 1e-3)
+                      (78.655, 78.655, 78.655, 90.0, 90.0, 90.0), 1e-2)
   assert approx_equal(indexer.get_refined_distance(), 160.0)
   assert approx_equal(indexer.get_resolution_estimate(), 2.12)
   assert approx_equal(indexer.get_separation(), [0.57, 0.57])
   assert approx_equal(indexer.get_raster(), [17, 17, 10, 5, 5])
-  assert approx_equal(indexer.get_mosaic_spreads(), [two_images_indexing['mosaicity']]*2)
+  assert indexer.get_mosaic_spreads() == pytest.approx([two_images_indexing['mosaicity']]*2, abs=0.05)
   assert indexer.get_lattice() == 'cI'
 
 @pytest.mark.slow
@@ -59,7 +59,7 @@ def test_indexing_multiple_images_with_mosflm(ccp4, dials_regression, tmpdir):
   indexer.set_space_group_number(197)
   indexer.run()
   print(''.join(indexer.get_all_output()))
-  assert approx_equal(indexer.get_refined_beam_centre(), (94.33, 94.57))
+  assert indexer.get_refined_beam_centre() == pytest.approx((94.33, 94.57), abs=0.3)
   assert approx_equal(indexer.get_refined_unit_cell(),
                       (78.2082, 78.2082, 78.2082, 90.0, 90.0, 90.0))
   assert approx_equal(indexer.get_refined_distance(), 159.0)
