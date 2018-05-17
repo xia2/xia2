@@ -45,6 +45,7 @@ def test_index_two_images_with_mosflm(ccp4, dials_regression, tmpdir):
   assert indexer.get_lattice() == 'cI'
 
 @pytest.mark.slow
+@pytest.mark.xfail(reason='broken on CCP4 > 7.0.53')
 def test_indexing_multiple_images_with_mosflm(ccp4, dials_regression, tmpdir):
   tmpdir.chdir()
   templ, directory = get_template_and_directory(dials_regression)
