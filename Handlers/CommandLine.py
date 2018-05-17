@@ -452,9 +452,11 @@ class _CommandLine(object):
     indexer, refiner, integrater, scaler = None, None, None, None
     if settings.pipeline == '2d':
       Debug.write('2DA pipeline selected')
+      print("***\n\nWarning: Pipeline '%s' is no longer supported and will be removed in a future release.\n\n***" % settings.pipeline)
       indexer, refiner, integrater, scaler = 'mosflm', 'mosflm', 'mosflmr', 'ccp4a'
     elif settings.pipeline == '2di':
       Debug.write('2DA pipeline; mosflm indexing selected')
+      print("***\n\nWarning: Pipeline '%s' is no longer supported and will be removed in a future release.\n\n***" % settings.pipeline)
       indexer, refiner, integrater, scaler = 'mosflm', 'mosflm', 'mosflmr', 'ccp4a'
     elif settings.pipeline == '3d':
       Debug.write('3DR pipeline selected')
