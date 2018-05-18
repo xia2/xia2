@@ -62,10 +62,12 @@ def PlotMultiplicity(DriverType = None):
       self.add_command_line('slice_index=%s' %self._slice_index)
       self.add_command_line('show_missing=%s' %self._show_missing)
       self.add_command_line('uniform_size=True')
-      self._plot_filename = 'multiplicities_%s_%i.png' %(self._slice_axis, self._slice_index)
+      self._plot_filename = '%i_multiplicities_%s_%i.png' %(
+        self.get_xpid(), self._slice_axis, self._slice_index)
       self.add_command_line('plot.filename=%s' %self._plot_filename)
       self.add_command_line('size_inches=5,5')
-      self._json_filename = 'multiplicities_%s_%i.json' %(self._slice_axis, self._slice_index)
+      self._json_filename = '%i_multiplicities_%s_%i.json' %(
+        self.get_xpid(), self._slice_axis, self._slice_index)
       self.add_command_line('json.filename=%s' %self._json_filename)
       self.start()
       self.close_wait()
