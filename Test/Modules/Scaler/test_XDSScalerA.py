@@ -8,12 +8,12 @@ import pytest
 
 @pytest.mark.slow
 @pytest.mark.parametrize('nproc', [1])
-def test_xds_scalerA(ccp4, dials_regression, tmpdir, nproc):
+def test_xds_scalerA(ccp4, xia2_regression_build, tmpdir, nproc):
   if nproc is not None:
     from xia2.Handlers.Phil import PhilIndex
     PhilIndex.params.xia2.settings.multiprocessing.nproc = nproc
 
-  template = os.path.join(dials_regression, "xia2_demo_data", "insulin_1_###.img")
+  template = os.path.join(xia2_regression_build, "test_data", "insulin", "insulin_1_###.img")
 
   tmpdir.chdir()
   tmpdir = tmpdir.strpath

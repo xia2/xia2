@@ -10,8 +10,8 @@ from xia2.Experts.FindImages import image2template_directory
 from xia2.Wrappers.Mosflm.MosflmIndex import MosflmIndex
 from xia2.Wrappers.Mosflm.MosflmRefineCell import MosflmRefineCell
 
-def get_template_and_directory(dials_regression):
-  xia2_demo_data = os.path.join(dials_regression, "xia2_demo_data")
+def get_template_and_directory(xia2_regression_build):
+  xia2_demo_data = os.path.join(xia2_regression_build, "test_data", "insulin")
   template = os.path.join(xia2_demo_data, "insulin_1_%03i.img")
   with mock.patch.object(sys, 'argv', []):
     return image2template_directory(template %1)
@@ -22,9 +22,9 @@ two_images_indexing = {
 }
 
 @pytest.mark.slow
-def test_index_two_images_with_mosflm(ccp4, dials_regression, tmpdir):
+def test_index_two_images_with_mosflm(ccp4, xia2_regression_build, tmpdir):
   tmpdir.chdir()
-  templ, directory = get_template_and_directory(dials_regression)
+  templ, directory = get_template_and_directory(xia2_regression_build)
 
   # exercise basic indexing from two images
   indexer = MosflmIndex()
@@ -46,9 +46,9 @@ def test_index_two_images_with_mosflm(ccp4, dials_regression, tmpdir):
 
 @pytest.mark.slow
 @pytest.mark.xfail(reason='broken on CCP4 > 7.0.53')
-def test_indexing_multiple_images_with_mosflm(ccp4, dials_regression, tmpdir):
+def test_indexing_multiple_images_with_mosflm(ccp4, xia2_regression_build, tmpdir):
   tmpdir.chdir()
-  templ, directory = get_template_and_directory(dials_regression)
+  templ, directory = get_template_and_directory(xia2_regression_build)
 
   # now exercise indexing off multiple images and test more settings
   indexer = MosflmIndex()
@@ -72,9 +72,9 @@ def test_indexing_multiple_images_with_mosflm(ccp4, dials_regression, tmpdir):
   assert indexer.get_lattice() == 'cI'
 
 @pytest.mark.slow
-def test_mosflm_refine_cell(ccp4, dials_regression, tmpdir):
+def test_mosflm_refine_cell(ccp4, xia2_regression_build, tmpdir):
   tmpdir.chdir()
-  templ, directory = get_template_and_directory(dials_regression)
+  templ, directory = get_template_and_directory(xia2_regression_build)
 
   matrix = ''' -0.00728371 -0.00173706 -0.00994261
   0.01008485 -0.00175152 -0.00708190

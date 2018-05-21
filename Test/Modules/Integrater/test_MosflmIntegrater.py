@@ -7,11 +7,11 @@ import mock
 import pytest
 from libtbx.test_utils import approx_equal
 
-def exercise_mosflm_integrater(dials_regression, tmp_dir, nproc):
+def exercise_mosflm_integrater(xia2_regression_build, tmp_dir, nproc):
   from xia2.Handlers.Phil import PhilIndex
   PhilIndex.params.xia2.settings.multiprocessing.nproc = nproc
 
-  xia2_demo_data = os.path.join(dials_regression, "xia2_demo_data")
+  xia2_demo_data = os.path.join(xia2_regression_build, "test_data", "insulin")
   template = os.path.join(xia2_demo_data, "insulin_1_###.img")
 
   # otherwise if this test is running multiple times simultaneously two mosflm
@@ -107,13 +107,13 @@ def exercise_mosflm_integrater(dials_regression, tmp_dir, nproc):
          mtz_object.n_reflections()
 
 @pytest.mark.slow
-def test_mosflm_integrater_serial(ccp4, dials_regression, tmpdir):
+def test_mosflm_integrater_serial(ccp4, xia2_regression_build, tmpdir):
   with tmpdir.as_cwd():
     with mock.patch.object(sys, 'argv', []):
-      exercise_mosflm_integrater(dials_regression, tmpdir.strpath, nproc=1)
+      exercise_mosflm_integrater(xia2_regression_build, tmpdir.strpath, nproc=1)
 
 @pytest.mark.slow
-def test_mosflm_integrater_parallel(ccp4, dials_regression, tmpdir):
+def test_mosflm_integrater_parallel(ccp4, xia2_regression_build, tmpdir):
   with tmpdir.as_cwd():
     with mock.patch.object(sys, 'argv', []):
-      exercise_mosflm_integrater(dials_regression, tmpdir.strpath, nproc=2)
+      exercise_mosflm_integrater(xia2_regression_build, tmpdir.strpath, nproc=2)

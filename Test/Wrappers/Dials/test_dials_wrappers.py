@@ -7,7 +7,7 @@ import mock
 import pytest
 from libtbx.test_utils import approx_equal
 
-def exercise_dials_wrappers(dials_regression, nproc=None):
+def exercise_dials_wrappers(xia2_regression_build, nproc=None):
   if nproc is not None:
     from xia2.Handlers.Phil import PhilIndex
     PhilIndex.params.xia2.settings.multiprocessing.nproc = nproc
@@ -22,7 +22,7 @@ def exercise_dials_wrappers(dials_regression, nproc=None):
   from xia2.Wrappers.Dials.ExportMtz import ExportMtz
   from xia2.Wrappers.Dials.ExportXDSASCII import ExportXDSASCII
 
-  xia2_demo_data = os.path.join(dials_regression, "xia2_demo_data")
+  xia2_demo_data = os.path.join(xia2_regression_build, "test_data", "insulin")
   template = os.path.join(xia2_demo_data, "insulin_1_%03i.img")
   scan_ranges = [(1, 45)]
   image_range = (1, 45)
@@ -130,7 +130,7 @@ def exercise_dials_wrappers(dials_regression, nproc=None):
   assert os.path.exists(exporter.get_combined_reflections_filename())
 
 @pytest.mark.slow
-def test_dials_wrappers_serial(ccp4, dials_regression, tmpdir):
+def test_dials_wrappers_serial(ccp4, xia2_regression_build, tmpdir):
   with tmpdir.as_cwd():
     with mock.patch.object(sys, 'argv', []):
-      exercise_dials_wrappers(dials_regression, nproc=1)
+      exercise_dials_wrappers(xia2_regression_build, nproc=1)

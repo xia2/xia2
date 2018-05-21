@@ -4,8 +4,8 @@ import os
 
 import pytest
 
-def test_indexing_with_labelit_on_two_images(dials_regression, tmpdir):
-  template = os.path.join(dials_regression, "xia2_demo_data", "insulin_1_%03i.img")
+def test_indexing_with_labelit_on_two_images(xia2_regression_build, tmpdir):
+  template = os.path.join(xia2_regression_build, "test_data", "insulin", "insulin_1_%03i.img")
   tmpdir.chdir()
 
   from xia2.DriverExceptions.NotAvailableError import NotAvailableError
@@ -36,8 +36,8 @@ def test_indexing_with_labelit_on_two_images(dials_regression, tmpdir):
   assert solutions[22]['mosaic'] <= 0.2
   assert solutions[22]['nspots'] == pytest.approx(563, abs=30)
 
-def test_indexing_with_labelit_on_multiple_images(dials_regression, tmpdir):
-  template = os.path.join(dials_regression, "xia2_demo_data", "insulin_1_%03i.img")
+def test_indexing_with_labelit_on_multiple_images(xia2_regression_build, tmpdir):
+  template = os.path.join(xia2_regression_build, "test_data", "insulin", "insulin_1_%03i.img")
   tmpdir.chdir()
 
   from xia2.DriverExceptions.NotAvailableError import NotAvailableError

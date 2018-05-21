@@ -8,8 +8,8 @@ import pytest
 
 @pytest.mark.slow
 @pytest.mark.xfail(reason='broken on CCP4 > 7.0.53')
-def test_mosflm_indexer(ccp4, dials_regression, tmpdir):
-  template = os.path.join(dials_regression, "xia2_demo_data", "insulin_1_###.img")
+def test_mosflm_indexer(ccp4, xia2_regression_build, tmpdir):
+  template = os.path.join(xia2_regression_build, "test_data", "insulin", "insulin_1_###.img")
   tmpdir.chdir()
 
   from xia2.Modules.Indexer.MosflmIndexer import MosflmIndexer
