@@ -6,6 +6,7 @@ import logging
 
 
 from libtbx.utils import Sorry
+import iotbx.phil
 
 from dials.array_family import flex
 from dials.util.options import OptionParser
@@ -19,6 +20,20 @@ logger = logging.getLogger('xia2.multi_crystal_scale_and_merge')
 help_message = '''
 '''
 
+phil_scope = iotbx.phil.parse('''
+include scope xia2.Modules.MultiCrystal.ScaleAndMerge.phil_scope
+
+seed = 42
+  .type = int(value_min=0)
+
+output {
+  log = xia2.multi_crystal_scale_and_merge.log
+    .type = str
+  debug_log = xia2.multi_crystal_scale_and_merge.debug.log
+    .type = str
+}
+''', process_includes=True)
+
 
 def run():
 
@@ -30,7 +45,7 @@ def run():
   # Create the parser
   parser = OptionParser(
     usage=usage,
-    phil=ScaleAndMerge.phil_scope,
+    phil=phil_scope,
     read_reflections=True,
     read_experiments=True,
     check_format=False,
@@ -43,8 +58,8 @@ def run():
 
   for name in ('xia2', 'dials'):
     log.config(
-      info='multi_crystal_scale_and_merge.log',
-      #debug=params.output.debug_log
+      info=params.output.log,
+      debug=params.output.debug_log,
       name=name)
   from dials.util.version import dials_version
   logger.info(dials_version())
@@ -63,6 +78,11 @@ def run():
   except AssertionError:
     raise Sorry("The number of input reflections files does not match the "
       "number of input experiments")
+
+  if params.seed is not None:
+    import random
+    flex.set_random_seed(params.seed)
+    random.seed(params.seed)
 
   expt_filenames = OrderedDict((e.filename, e.data) for e in params.input.experiments)
   refl_filenames = OrderedDict((r.filename, r.data) for r in params.input.reflections)
