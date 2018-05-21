@@ -35,6 +35,15 @@ from xia2.Wrappers.Dials.TwoThetaRefine import TwoThetaRefine
 logger = logging.getLogger(__name__)
 
 
+try:
+  import matplotlib
+  # http://matplotlib.org/faq/howto_faq.html#generate-images-without-having-a-window-appear
+  matplotlib.use('Agg') # use a non-interactive backend
+  from matplotlib import pyplot
+except ImportError:
+  raise Sorry("matplotlib must be installed to generate a plot.")
+
+
 # The phil scope
 phil_scope = iotbx.phil.parse('''
 unit_cell_clustering {
