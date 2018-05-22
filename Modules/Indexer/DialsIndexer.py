@@ -454,8 +454,9 @@ class DialsIndexer(Indexer):
     fast_mode = PhilIndex.params.dials.fast_mode
     trust_beam_centre = PhilIndex.params.xia2.settings.trust_beam_centre
     multi_sweep_indexing = PhilIndex.params.xia2.settings.multi_sweep_indexing == True
+    check_indexing_symmetry = PhilIndex.params.dials.check_indexing_symmetry
 
-    if not (trust_beam_centre or fast_mode or multi_sweep_indexing):
+    if check_indexing_symmetry and not (trust_beam_centre or fast_mode or multi_sweep_indexing):
       checksym = self.CheckIndexingSymmetry()
       checksym.set_experiments_filename(indexed_experiments)
       checksym.set_indexed_filename(indexed_file)
