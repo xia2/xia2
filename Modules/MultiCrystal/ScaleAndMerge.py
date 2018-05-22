@@ -92,6 +92,8 @@ symmetry {
   cosym {
     include scope dials.algorithms.symmetry.cosym.phil_scope
   }
+  le_page_max_delta = 5
+    .type = float(value_min=0)
 }
 
 resolution
@@ -380,7 +382,6 @@ class MultiCrystalScale(object):
     from xfel.clustering.cluster import Cluster
     from xfel.clustering.cluster_groups import unit_cell_info
     ucs = Cluster.from_crystal_symmetries(crystal_symmetries, lattice_ids=lattice_ids)
-    threshold = 1000
     if plot_name is not None:
       from matplotlib import pyplot as plt
       plt.figure("Andrews-Bernstein distance dendogram", figsize=(12, 8))
@@ -505,7 +506,7 @@ class MultiCrystalScale(object):
     for i, expt in enumerate(self._data_manager.experiments):
       crystal_symmetry = expt.crystal.get_crystal_symmetry()
       metric_subgroups = sgtbx.lattice_symmetry.metric_subgroups(
-        crystal_symmetry, max_delta=5)
+        crystal_symmetry, max_delta=self._params.symmetry.le_page_max_delta)
       subgroup = metric_subgroups.result_groups[0]
       cb_op_inp_best = subgroup['cb_op_inp_best']
       crystal_symmetry_best = crystal_symmetry.change_basis(cb_op_inp_best)
