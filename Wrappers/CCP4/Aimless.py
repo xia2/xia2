@@ -67,8 +67,6 @@ def Aimless(DriverType = None,
       # scaling parameters
       self._resolution = None
 
-      self._resolution_by_run = { }
-
       # scales file for recycling
       self._scales_file = None
 
@@ -146,11 +144,6 @@ def Aimless(DriverType = None,
 
     def get_xmlout(self):
       return self._xmlout
-
-    def set_resolution_by_run(self, run, resolution):
-      '''Set the resolution for a particular run.'''
-
-      self._resolution_by_run = { }
 
     def set_scales_file(self, scales_file):
       '''Set the file containing all of the scales required for
@@ -570,10 +563,6 @@ def Aimless(DriverType = None,
 
       if self._resolution:
         self.input('resolution %g' % self._resolution)
-
-      if self._resolution_by_run != { }:
-        # FIXME 20/NOV/06 this needs implementing somehow...
-        pass
 
       self.input('cycles %d' % self._cycles)
 
