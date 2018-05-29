@@ -18,8 +18,10 @@ use_internal_variance = False
   .type = bool
 eliminate_sys_absent = False
   .type = bool
-labels = None
+plot_labels = None
   .type = strings
+data_labels = None
+  .type = str
 size_inches = None
   .type = floats(size=2, value_min=0)
 image_dir = None
@@ -48,16 +50,18 @@ def run(args):
                      mtz, anomalous=params.anomalous,
                      n_bins=params.n_bins,
                      use_internal_variance=params.use_internal_variance,
-                     eliminate_sys_absent=params.eliminate_sys_absent))
-  plot_merging_stats(results, labels=params.labels,
+                     eliminate_sys_absent=params.eliminate_sys_absent,
+                     data_labels=params.data_labels))
+  plot_merging_stats(results, labels=params.plot_labels,
                      size_inches=params.size_inches,
                      image_dir=params.image_dir)
 
 def get_merging_stats(scaled_unmerged_mtz, anomalous=False, n_bins=20,
-                  use_internal_variance=False, eliminate_sys_absent=False):
+                  use_internal_variance=False, eliminate_sys_absent=False,
+                  data_labels=None):
   import iotbx.merging_statistics
   i_obs = iotbx.merging_statistics.select_data(
-    scaled_unmerged_mtz, data_labels=None)
+    scaled_unmerged_mtz, data_labels=data_labels)
   i_obs = i_obs.customized_copy(anomalous_flag=False, info=i_obs.info())
   result = iotbx.merging_statistics.dataset_statistics(
     i_obs=i_obs,
