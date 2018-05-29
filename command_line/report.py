@@ -425,19 +425,20 @@ higher resolution. A typical resolution cutoff based on CC1/2 is around 0.3-0.5.
     from xia2.Modules.PyChef2.PyChef import remove_batch_gaps
     new_batch_data = remove_batch_gaps(self.batches.data())
     new_batches = self.batches.customized_copy(data=new_batch_data)
-    sc_vs_b = scales_vs_batch(self.scales, new_batches)
+    if self.scales is not None:
+      sc_vs_b = scales_vs_batch(self.scales, new_batches)
     rmerge_vs_b = rmerge_vs_batch(self.intensities, new_batches)
 
     return {
       'scale_rmerge_vs_batch': {
         'data': [
-          {
+          ({
             'x': sc_vs_b.batches,
             'y': sc_vs_b.data,
             'type': 'scatter',
             'name': 'Scale',
             'opacity': 0.75,
-          },
+          } if self.scales is not None else {}),
           {
             'x': rmerge_vs_b.batches,
             'y': rmerge_vs_b.data,
