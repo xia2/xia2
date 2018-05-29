@@ -20,7 +20,7 @@ from xia2.lib.SymmetryLib import (clean_reindex_operator, lauegroup_to_lattice,
 from xia2.Modules.XDS_ASCII import remove_misfits
 
 def DialsSymmetry(DriverType = None):
-  '''A factory for PointlessWrapper classes.'''
+  '''A factory for DialsSymmetryWrapper classes.'''
 
   DriverInstance = DriverFactory.Driver(DriverType)
 
