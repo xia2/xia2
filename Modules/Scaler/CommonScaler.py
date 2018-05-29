@@ -1044,7 +1044,7 @@ class CommonScaler(Scaler):
         else:
           raise
 
-    import cStringIO as StringIO
+    from six.moves import cStringIO as StringIO
     result_cache = StringIO.StringIO()
     result.show(out=result_cache)
 

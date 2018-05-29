@@ -5,7 +5,7 @@ from __future__ import absolute_import, division, print_function
 import json
 import os
 from collections import OrderedDict
-from cStringIO import StringIO
+from six.moves import cStringIO as StringIO
 
 import iotbx.phil
 import xia2.Handlers.Environment

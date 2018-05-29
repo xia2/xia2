@@ -28,9 +28,9 @@ def E4_mtz(hklin, native = True):
 
 def E4(ma):
   import sys
-  import cStringIO
+  from six.moves import cStringIO as StringIO
   cache_stdout = sys.stdout
-  sys.stdout = cStringIO.StringIO()
+  sys.stdout = StringIO()
   sg = ma.space_group()
   if sg.is_centric():
     asg = sg.build_derived_acentric_group()
