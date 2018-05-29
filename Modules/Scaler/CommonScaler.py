@@ -1045,7 +1045,7 @@ class CommonScaler(Scaler):
           raise
 
     from six.moves import cStringIO as StringIO
-    result_cache = StringIO.StringIO()
+    result_cache = StringIO()
     result.show(out=result_cache)
 
     for d, r, s in ((key_to_var, result, select_result), (anom_key_to_var, anom_result, select_anom_result)):
