@@ -72,6 +72,18 @@ def DialsSymmetry(DriverType = None):
     def get_hklin(self):
       return self._hklin
 
+    def set_experiments_filename(self, experiments_filename):
+      self._experiments_filename = experiments_filename
+
+    def set_reflections_filename(self, reflections_filename):
+      self._reflections_filename = reflections_filename
+
+    def set_output_experiments_filename(self, experiments_filename):
+      self._output_experiments_filename = experiments_filename
+
+    def set_output_reflections_filename(self, reflections_filename):
+      self._output_reflections_filename = reflections_filename
+
     def set_json(self, json):
       self.json = json
 
@@ -107,10 +119,19 @@ def DialsSymmetry(DriverType = None):
         self.add_command_line('hklref')
         self.add_command_line(self._hklref)
 
-      assert self._hklin is not None
-      assert os.path.isfile(self._hklin)
-
-      self.add_command_line("'%s'" % self._hklin)
+      if self._hklin is not None:
+        assert os.path.isfile(self._hklin)
+        self.add_command_line("'%s'" % self._hklin)
+      else:
+        assert self._experiments_filename is not None
+        assert self._reflections_filename is not None
+        self.add_command_line("'%s'" % self._experiments_filename)
+        self.add_command_line("'%s'" % self._reflections_filename)
+        if self._output_experiments_filename is not None:
+          self.add_command_line(
+            "output.experiments='%s'" % self._output_experiments_filename)
+          self.add_command_line(
+            "output.reflections='%s'" % self._output_reflections_filename)
 
       self._json = os.path.join(self.get_working_directory(),
                                 '%d_dials_symmetry.json' % self.get_xpid())

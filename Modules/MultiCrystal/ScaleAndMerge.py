@@ -29,6 +29,7 @@ import xia2.Modules.Scaler.tools as tools
 from xia2.Wrappers.CCP4.Aimless import Aimless
 from xia2.Wrappers.CCP4.Pointless import Pointless
 from xia2.Wrappers.Dials.Refine import Refine
+from xia2.Wrappers.Dials.Symmetry import DialsSymmetry
 from xia2.Wrappers.Dials.TwoThetaRefine import TwoThetaRefine
 
 
@@ -94,6 +95,8 @@ symmetry {
   }
   le_page_max_delta = 5
     .type = float(value_min=0)
+  program = *pointless dials
+    .type = choice
 }
 
 resolution
@@ -621,17 +624,10 @@ class Scale(object):
     self.scale(d_min=d_min)
 
   def decide_space_group(self):
-    # decide space group
-    self._sorted_mtz = 'sorted.mtz'
-    space_group, reindex_op = self._decide_space_group_pointless(
-      self._integrated_combined_mtz, self._sorted_mtz)
-
-    # reindex to correct bravais setting
-    self._data_manager.reindex(cb_op=reindex_op, space_group=space_group)
-    self._experiments_filename = 'experiments_reindexed.json'
-    self._reflections_filename = 'reflections_reindexed.pickle'
-    self._data_manager.export_experiments(self._experiments_filename)
-    self._data_manager.export_reflections(self._reflections_filename)
+    if self._params.symmetry.program == 'pointless':
+      space_group, reindex_op = self._decide_space_group_pointless()
+    else:
+      space_group, reindex_op = self._decide_space_group_dials()
 
   def refine(self):
     # refine in correct bravais setting
@@ -669,19 +665,59 @@ class Scale(object):
   def data_manager(self):
     return self._data_manager
 
-  @staticmethod
-  def _decide_space_group_pointless(hklin, hklout):
-    pointless = Pointless()
-    auto_logfiler(pointless)
-    pointless.set_hklin(hklin)
-    pointless.set_hklout(hklout)
-    pointless.set_allow_out_of_sequence_files(allow=True)
-    pointless.decide_pointgroup()
-    possible = pointless.get_possible_lattices()
+  def _decide_space_group_pointless(self):
+    symmetry = Pointless()
+    auto_logfiler(symmetry)
+
+    self._sorted_mtz = '%i_sorted.mtz' % symmetry.get_xpid()
+    self._experiments_filename = '%i_experiments_reindexed.json' % symmetry.get_xpid()
+    self._reflections_filename = '%i_reflections_reindexed.pickle' % symmetry.get_xpid()
+
+    symmetry.set_hklin(self._integrated_combined_mtz)
+    symmetry.set_hklout(self._sorted_mtz)
+    symmetry.set_allow_out_of_sequence_files(allow=True)
+    symmetry.decide_pointgroup()
     space_group = sgtbx.space_group_info(
-      symbol=str(pointless.get_pointgroup())).group()
-    cb_op =  sgtbx.change_of_basis_op(pointless.get_reindex_operator())
-    #probably_twinned = pointless.get_probably_twinned()
+      symbol=str(symmetry.get_pointgroup())).group()
+    cb_op =  sgtbx.change_of_basis_op(symmetry.get_reindex_operator())
+
+    # reindex to correct bravais setting
+    self._data_manager.reindex(cb_op=cb_op, space_group=space_group)
+    self._data_manager.export_experiments(self._experiments_filename)
+    self._data_manager.export_reflections(self._reflections_filename)
+
+    return space_group, cb_op
+
+  def _decide_space_group_dials(self):
+    symmetry = DialsSymmetry()
+    auto_logfiler(symmetry)
+
+    self._sorted_mtz = '%i_sorted.mtz' % symmetry.get_xpid()
+    self._experiments_filename = '%i_experiments_reindexed.json' % symmetry.get_xpid()
+    self._reflections_filename = '%i_reflections_reindexed.pickle' % symmetry.get_xpid()
+
+    experiments_filename = 'tmp_experiments.json'
+    reflections_filename = 'tmp_reflections.pickle'
+    self._data_manager.export_experiments(experiments_filename)
+    self._data_manager.export_reflections(reflections_filename)
+
+    symmetry.set_experiments_filename(experiments_filename)
+    symmetry.set_reflections_filename(reflections_filename)
+    symmetry.set_output_experiments_filename(self._experiments_filename)
+    symmetry.set_output_reflections_filename(self._reflections_filename)
+    symmetry.decide_pointgroup()
+    space_group = sgtbx.space_group_info(
+      symbol=str(symmetry.get_pointgroup())).group()
+    cb_op =  sgtbx.change_of_basis_op(symmetry.get_reindex_operator())
+
+    self._data_manager.experiments = load.experiment_list(
+      self._experiments_filename, check_format=False)
+    self._data_manager.reflections = flex.reflection_table.from_pickle(
+      self._reflections_filename)
+    # export reflections
+    self._sorted_mtz = self._data_manager.export_mtz(
+      filename=self._sorted_mtz)
+
     return space_group, cb_op
 
   @staticmethod
