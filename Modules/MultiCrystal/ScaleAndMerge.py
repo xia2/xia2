@@ -29,6 +29,7 @@ import xia2.Modules.Scaler.tools as tools
 from xia2.Wrappers.CCP4.Aimless import Aimless
 from xia2.Wrappers.CCP4.Pointless import Pointless
 from xia2.Wrappers.Dials.Refine import Refine
+from xia2.Wrappers.Dials.Scale import DialsScale
 from xia2.Wrappers.Dials.Symmetry import DialsSymmetry
 from xia2.Wrappers.Dials.TwoThetaRefine import TwoThetaRefine
 
@@ -59,6 +60,8 @@ unit_cell_clustering {
 scaling
   .short_caption = "aimless"
 {
+  program = *aimless dials
+    .type = choice
   #intensities = summation profile *combine
     #.type = choice
   surface_tie = 0.001
@@ -84,6 +87,10 @@ scaling
       .type = int
       .expert_level = 2
       .short_caption = "Aimless # secondary harmonics"
+  }
+  dials {
+    model = *physical array KB
+      .type = choice
   }
 }
 
@@ -646,12 +653,12 @@ class Scale(object):
 
   def scale(self, d_min=None):
 
-    # scale data with aimless
-    aimless = self._aimless_scale(
-      self._sorted_mtz, self._params.scaling, d_min=d_min)
-    self._scaled_mtz = aimless.get_hklout()
-    self._scaled_unmerged_mtz \
-      = os.path.splitext(self._scaled_mtz)[0] + '_unmerged.mtz'
+    if self._params.scaling.program == 'aimless':
+      # scale data with aimless
+      scaled = self._scale_aimless(d_min=d_min)
+    elif self._params.scaling.program == 'dials':
+      scaled = self._scale_dials(d_min=d_min)
+    return scaled
 
   @property
   def scaled_mtz(self):
@@ -666,6 +673,7 @@ class Scale(object):
     return self._data_manager
 
   def _decide_space_group_pointless(self):
+    logger.debug('Deciding space group with pointless')
     symmetry = Pointless()
     auto_logfiler(symmetry)
 
@@ -686,9 +694,11 @@ class Scale(object):
     self._data_manager.export_experiments(self._experiments_filename)
     self._data_manager.export_reflections(self._reflections_filename)
 
+    logger.info('Space group determined by pointless: %s' % space_group.info())
     return space_group, cb_op
 
   def _decide_space_group_dials(self):
+    logger.debug('Deciding space group with dials.symmetry')
     symmetry = DialsSymmetry()
     auto_logfiler(symmetry)
 
@@ -718,6 +728,7 @@ class Scale(object):
     self._sorted_mtz = self._data_manager.export_mtz(
       filename=self._sorted_mtz)
 
+    logger.info('Space group determined by dials.symmetry: %s' % space_group.info())
     return space_group, cb_op
 
   @staticmethod
@@ -740,27 +751,60 @@ class Scale(object):
     unit_cell_esd = tt_refiner.get_unit_cell_esd()
     return unit_cell, unit_cell_esd
 
-  @staticmethod
-  def _aimless_scale(hklin, params, d_min=None):
+  def _scale_aimless(self, d_min=None):
+    logger.debug('Scaling with aimless')
     PhilIndex.params.xia2.settings.multiprocessing.nproc = 1
-    aimless = Aimless()
-    auto_logfiler(aimless)
-    hklout = '%i_scaled.mtz' % aimless.get_xpid()
-    aimless.set_surface_link(False) # multi-crystal
-    aimless.set_hklin(hklin)
-    aimless.set_hklout(hklout)
-    aimless.set_surface_tie(params.surface_tie)
-    if params.secondary.frame == 'camera':
+    scaler = Aimless()
+    auto_logfiler(scaler)
+    self._scaled_mtz = '%i_scaled.mtz' % scaler.get_xpid()
+    scaler.set_surface_link(False) # multi-crystal
+    scaler.set_hklin(self._sorted_mtz)
+    scaler.set_hklout(self._scaled_mtz)
+    scaler.set_surface_tie(self._params.scaling.surface_tie)
+    if self._params.scaling.secondary.frame == 'camera':
       secondary = 'secondary'
     else:
       secondary = 'absorption'
-    lmax = params.secondary.lmax
-    aimless.set_secondary(mode=secondary, lmax=lmax)
-    aimless.set_spacing(params.rotation.spacing)
+    lmax = self._params.scaling.secondary.lmax
+    scaler.set_secondary(mode=secondary, lmax=lmax)
+    scaler.set_spacing(self._params.scaling.rotation.spacing)
     if d_min is not None:
-      aimless.set_resolution(d_min)
-    aimless.scale()
-    return aimless
+      scaler.set_resolution(d_min)
+    scaler.scale()
+    self._scaled_unmerged_mtz \
+      = os.path.splitext(self._scaled_mtz)[0] + '_unmerged.mtz'
+    return scaler
+
+  def _scale_dials(self, d_min=None):
+    logger.debug('Scaling with dials.scale')
+    #PhilIndex.params.xia2.settings.multiprocessing.nproc = 1
+    scaler = DialsScale()
+    auto_logfiler(scaler)
+    #scaler.set_surface_link(False) # multi-crystal
+    scaler.add_experiments_json(self._experiments_filename)
+    scaler.add_reflections_pickle(self._reflections_filename)
+    #scaler.set_surface_tie(self._params.scaling.surface_tie)
+    lmax = self._params.scaling.secondary.lmax
+    if lmax:
+      scaler.set_lmax(lmax)
+    scaler.set_spacing(self._params.scaling.rotation.spacing)
+    if d_min is not None:
+      scaler.set_resolution(d_min)
+
+    scaler.set_full_matrix(False)
+    scaler.set_model(self._params.scaling.dials.model)
+
+    scaler.scale()
+    self._scaled_mtz = scaler.get_scaled_mtz()
+    self._scaled_unmerged_mtz = scaler.get_scaled_unmerged_mtz()
+    self._experiments_filename = scaler.get_scaled_experiments()
+    self._reflections_filename = scaler.get_scaled_reflections()
+    DataManager.experiments = load.experiment_list(
+      self._experiments_filename, check_format=False)
+    DataManager.reflections = flex.reflection_table.from_pickle(
+      self._reflections_filename)
+    self._params.resolution.labels = 'IPR,SIGIPR'
+    return scaler
 
   def estimate_resolution_limit(self):
     # see also xia2/Modules/Scaler/CommonScaler.py: CommonScaler._estimate_resolution_limit()
@@ -775,6 +819,7 @@ class Scale(object):
     m.set_cc_half_significance_level(params.cc_half_significance_level)
     m.set_limit_isigma(params.isigma)
     m.set_limit_misigma(params.misigma)
+    m.set_labels(params.labels)
     #if batch_range is not None:
       #start, end = batch_range
       #m.set_batch_range(start, end)
