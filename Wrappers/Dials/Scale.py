@@ -41,6 +41,7 @@ def DialsScale(DriverType=None,
       self._model = 'physical'
       self._full_matrix = True
       self._absorption_correction = True
+      self._optimise_errors = True
 
       # input and output files
       self._unmerged_reflections = None
@@ -141,6 +142,9 @@ def DialsScale(DriverType=None,
       assert intensities in ("summation", "profile", "combine")
       self._intensities = intensities
 
+    def set_optimise_errors(self, optimise_errors=True):
+      self._optimise_errors = optimise_errors
+
     def get_scaled_mtz(self):
       return self._merged_reflections
 
@@ -178,6 +182,7 @@ def DialsScale(DriverType=None,
       self.add_command_line('model=%s' % self._model)
       self.add_command_line('full_matrix=%s' % self._full_matrix)
       self.add_command_line('scale_interval=%g' % self._spacing)
+      self.add_command_line('optimise_errors=%s' % self._optimise_errors)
 
       self.add_command_line('absorption_term=%s' % self._absorption_correction)
       if self._absorption_correction and self._lmax is not None:
@@ -191,8 +196,6 @@ def DialsScale(DriverType=None,
 
       if self._resolution:
         self.add_command_line('d_min=%g' % self._resolution)
-        # should hopefully not need to set this soon
-        self.add_command_line('max_resolution=%g' % self._resolution)
 
       if self._cycles is not None:
         self.add_command_line('max_iterations=%d' % self._cycles)
