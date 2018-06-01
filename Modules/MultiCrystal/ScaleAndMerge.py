@@ -86,7 +86,7 @@ scaling
     lmax = 0
       .type = int
       .expert_level = 2
-      .short_caption = "Aimless # secondary harmonics"
+      .short_caption = "Number of spherical harmonics for absorption correction"
   }
   dials {
     model = *physical array KB
@@ -786,7 +786,10 @@ class Scale(object):
     #scaler.set_surface_tie(self._params.scaling.surface_tie)
     lmax = self._params.scaling.secondary.lmax
     if lmax:
+      scaler.set_absorption_correction(True)
       scaler.set_lmax(lmax)
+    else:
+      scaler.set_absorption_correction(False)
     scaler.set_spacing(self._params.scaling.rotation.spacing)
     if d_min is not None:
       scaler.set_resolution(d_min)
