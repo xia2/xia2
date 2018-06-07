@@ -53,9 +53,9 @@ def set_distance(detector, distance):
   slow = panel.get_slow_axis()
   panel.set_frame(panel.get_fast_axis(), panel.get_slow_axis(), new_origin.elems)
   d_fast = matrix.col(panel.get_fast_axis()).angle(matrix.col(fast), deg=True)
-  assert d_fast < 1e-6, d_fast
+  assert d_fast < 1e-4, d_fast
   d_slow = matrix.col(panel.get_slow_axis()).angle(matrix.col(slow), deg=True)
-  assert d_slow < 1e-6, d_slow
+  assert d_slow < 1e-4, d_slow
   d_distance = math.fabs(panel.get_directed_distance() - distance)
   assert d_distance < 0.001, d_distance
 
