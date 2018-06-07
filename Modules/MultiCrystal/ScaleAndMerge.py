@@ -142,6 +142,7 @@ phil_scope = phil_scope.fetch(source=iotbx.phil.parse(
 resolution {
   cc_half_method = sigma_tau
   cc_half_fit = tanh
+  cc_half = 0.3
 }
 """))
 
@@ -822,6 +823,7 @@ class Scale(object):
     m.set_limit_rmerge(params.rmerge)
     m.set_limit_completeness(params.completeness)
     m.set_limit_cc_half(params.cc_half)
+    m.set_cc_half_fit(params.cc_half_fit)
     m.set_cc_half_significance_level(params.cc_half_significance_level)
     m.set_limit_isigma(params.isigma)
     m.set_limit_misigma(params.misigma)

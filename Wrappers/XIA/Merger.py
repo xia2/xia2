@@ -32,6 +32,7 @@ def Merger(DriverType=None):
       self._limit_rmerge = None
       self._limit_completeness = None
       self._limit_cc_half = None
+      self._cc_half_fit = None
       self._cc_half_significance_level = None
       self._limit_isigma = None
       self._limit_misigma = None
@@ -60,6 +61,9 @@ def Merger(DriverType=None):
 
     def set_limit_cc_half(self, limit_cc_half):
       self._limit_cc_half = limit_cc_half
+
+    def set_cc_half_fit(self, cc_half_fit):
+      self._cc_half_fit = cc_half_fit
 
     def set_cc_half_significance_level(self, cc_half_significance_level):
       self._cc_half_significance_level = cc_half_significance_level
@@ -98,6 +102,8 @@ def Merger(DriverType=None):
       cl.append('rmerge=%s' % self._limit_rmerge)
       cl.append('completeness=%s' % self._limit_completeness)
       cl.append('cc_half=%s' % self._limit_cc_half)
+      if self._cc_half_fit is not None:
+        cl.append('cc_half_fit=%s' % self._cc_half_fit)
       cl.append('cc_half_significance_level=%s' % self._cc_half_significance_level)
       cl.append('isigma=%s' % self._limit_isigma)
       cl.append('misigma=%s' % self._limit_misigma)

@@ -911,6 +911,7 @@ class CommonScaler(Scaler):
     m.set_limit_rmerge(params.rmerge)
     m.set_limit_completeness(params.completeness)
     m.set_limit_cc_half(params.cc_half)
+    m.set_cc_half_fit(params.cc_half_fit)
     m.set_cc_half_significance_level(params.cc_half_significance_level)
     m.set_limit_isigma(params.isigma)
     m.set_limit_misigma(params.misigma)
