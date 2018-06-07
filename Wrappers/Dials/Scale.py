@@ -42,6 +42,7 @@ def DialsScale(DriverType=None,
       self._full_matrix = True
       self._absorption_correction = True
       self._optimise_errors = True
+      self._outlier_rejection = 'standard'
 
       # input and output files
       self._unmerged_reflections = None
@@ -145,6 +146,9 @@ def DialsScale(DriverType=None,
     def set_optimise_errors(self, optimise_errors=True):
       self._optimise_errors = optimise_errors
 
+    def set_outlier_rejection(self, outlier_rejection):
+      self._outlier_rejection = outlier_rejection
+
     def get_scaled_mtz(self):
       return self._merged_reflections
 
@@ -183,6 +187,7 @@ def DialsScale(DriverType=None,
       self.add_command_line('full_matrix=%s' % self._full_matrix)
       self.add_command_line('scale_interval=%g' % self._spacing)
       self.add_command_line('optimise_errors=%s' % self._optimise_errors)
+      self.add_command_line('outlier_rejection=%s' % self._outlier_rejection)
 
       self.add_command_line('absorption_term=%s' % self._absorption_correction)
       if self._absorption_correction and self._lmax is not None:

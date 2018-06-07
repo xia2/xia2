@@ -91,6 +91,8 @@ scaling
   dials {
     model = *physical array KB
       .type = choice
+    outlier_rejection = simple *standard
+      .type = choice
   }
 }
 
@@ -796,6 +798,7 @@ class Scale(object):
 
     scaler.set_full_matrix(False)
     scaler.set_model(self._params.scaling.dials.model)
+    scaler.set_outlier_rejection(self._params.scaling.dials.outlier_rejection)
 
     scaler.scale()
     self._scaled_mtz = scaler.get_scaled_mtz()
