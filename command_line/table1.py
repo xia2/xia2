@@ -51,6 +51,7 @@ def table1_tex(crystal_params, merging_stats):
       cell_tmp += ', \\beta=%.5f' % cell[4]
     if 5 in constraints.independent_indices:
       cell_tmp += ', \\gamma=%.5f' % cell[5]
+    cell_tmp += '$'
     cell_str.append(cell_tmp)
   print(' & '.join(cell_str) + ' \\\\')
   print('Data statistics' + ' & ' * ncols + '\\\\')
