@@ -6,13 +6,13 @@ def table1_tex(crystal_params, merging_stats):
   # http://journals.iucr.org/d/issues/2018/02/00/di5011/index.html
 
   assert len(crystal_params) == len(merging_stats)
-  
+
   # first iterate through and work out how many columns we will be needing
   columns = [len(ms) for ms in merging_stats]
 
   if max(columns) > 1:
     raise RuntimeError(':TODO: make this work for multiwavelength data sets')
-  
+
   ncols = sum(columns)
 
   print('\\begin{tabular}{%s}' % ('l' * (ncols + 1)))
@@ -25,48 +25,61 @@ def table1_tex(crystal_params, merging_stats):
 
   print(' & '.join(name_str) + ' \\\\')
   print('Crystal parameters' + ' & ' * ncols + '\\\\')
-  print('Space group & ' + 
+  print('Space group & ' +
           ' & '.join([cp['space_group'] for cp in crystal_params]) + ' \\\\')
   print('Unit-cell parameters (\\AA) & ' + ' & '.join(
-          ['$a=%.5f b=%.5f c=%.5f \\alpha=%.5f \\beta=%.5f \\gamma=%.5f$'
+          ['$a=%.5f, b=%.5f, c=%.5f, \\alpha=%.5f, \\beta=%.5f, \\gamma=%.5f$'
              % tuple(cp['cell']) for cp in crystal_params]) + ' \\\\')
   print('Data statistics' + ' & ' * ncols + '\\\\')
 
   # resolution ranges, shells
 
   resolution_str = ['Resolution range (\\AA)']
-  
+
   for ms in merging_stats:
     for name in ms:
-      import pprint
-      pprint.pprint(ms[name])
       low = ms[name]['Low resolution limit']
       high = ms[name]['High resolution limit']
       resolution_str.append('%.2f-%.2f (%.2f-%.2f)' %
                               (low[0], high[0], low[2], high[2]))
-  
+
   print(' & '.join(resolution_str) + ' \\\\')
 
   # loopy boiler plate stuff - https://xkcd.com/1421/ - sorry - and why do
-  # grown ups sometimes need things in %ages? x_x 
+  # grown ups sometimes need things in %ages? x_x
 
   magic_words_and_places_and_multipliers = [
-    ('No. of unique reflections', 'Total unique', 1),
-    ('Multiplicity', 'Multiplicity', 1),
-    ('$R_{\\rm{merge}}$', 'Rmerge(I)', 1),
-    ('$R_{\\rm{meas}}$', 'Rmeas(I)', 1),
-    ('$R_{\\rm{pim}}$', 'Rpim(I)', 1),
-    ('Completeness (\\%)', 'Completeness', 100),
-    ('$<I/\\sigma(I)>$', 'I/sigma', 1),
-    ]
-    
-  
+    ('No. of unique reflections', 'Total unique', 1, '%d'),
+    ('Multiplicity', 'Multiplicity', 1, '%.1f'),
+    ('$R_{\\rm{merge}}$', 'Rmerge(I)', 1, '%.3f'),
+    ('$R_{\\rm{meas}}$', 'Rmeas(I)', 1, '%.3f'),
+    ('$R_{\\rm{pim}}$', 'Rpim(I)', 1, '%.3f'),
+    ('Completeness (\\%)', 'Completeness', 1, '%.1f'),
+    ('$<I/\\sigma(I)>$', 'I/sigma', 1, '%.1f'),
+    ('$CC_{\\frac{1}{2}}$', 'CC half', 1, '%.3f')
+  ]
+
+  for mw, p, m, fmt in magic_words_and_places_and_multipliers:
+
+    magic_str = [mw]
+
+    for ms in merging_stats:
+      for name in ms:
+        data = ms[name][p]
+        magic_str.append(('%s (%s)' % (fmt, fmt)) % (data[0] * m, data[2] * m))
+
+    print(' & '.join(magic_str) + ' \\\\')
+
+  print('\\end{tabular}')
+
+
+
 
 def table1():
   import sys
   import os
   import json
-  
+
   jsons = []
   for xia2 in sys.argv[1:]:
     assert os.path.exists(os.path.join(xia2, 'xia2.json')), xia2
@@ -78,7 +91,7 @@ def table1():
 
   merging_stats = []
   crystal_params = []
-    
+
   for j in jsons:
     for x in j['_crystals']:
       s = j['_crystals'][x]['_scaler']
@@ -87,11 +100,11 @@ def table1():
         'cell':s['_scalr_cell'],
         'cell_esd':s['_scalr_cell_esd']
         }
-          
+
       merging_stats.append(s['_scalr_statistics'])
       crystal_params.append(crystal_param)
 
   table1_tex(crystal_params, merging_stats)
-      
+
 if __name__ == '__main__':
   table1()
