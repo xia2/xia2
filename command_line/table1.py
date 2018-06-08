@@ -36,6 +36,12 @@ def table1_tex(crystal_params, merging_stats):
                                                   reciprocal_space=False)
     cell_tmp = '$'
     cell = cp['cell']
+    independent = constraints.independent_indices
+
+    # weird case spotted with P3 - this set is impossible
+    if independent == (2, 3):
+      independent = (1, 2) 
+
     if 0 in constraints.independent_indices:
       cell_tmp += 'a=%.5f, ' % cell[0]
     else:
