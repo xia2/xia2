@@ -40,22 +40,22 @@ def table1_tex(crystal_params, merging_stats):
 
     # weird case spotted with P3 - this set is impossible
     if independent == (2, 3):
-      independent = (1, 2) 
+      independent = (1, 2)
 
-    if 0 in constraints.independent_indices:
+    if 0 in independent:
       cell_tmp += 'a=%.5f, ' % cell[0]
     else:
       cell_tmp += 'a='
-    if 1 in constraints.independent_indices:
+    if 1 in independent:
       cell_tmp += 'b=%.5f, ' % cell[1]
     else:
       cell_tmp += 'b='
     cell_tmp += 'c=%.5f' % cell[2]
-    if 3 in constraints.independent_indices:
+    if 3 in independent:
       cell_tmp += ', \\alpha=%.5f' % cell[3]
-    if 4 in constraints.independent_indices:
+    if 4 in independent:
       cell_tmp += ', \\beta=%.5f' % cell[4]
-    if 5 in constraints.independent_indices:
+    if 5 in independent:
       cell_tmp += ', \\gamma=%.5f' % cell[5]
     cell_tmp += '$'
     cell_str.append(cell_tmp)
