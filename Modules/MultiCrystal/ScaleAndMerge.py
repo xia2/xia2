@@ -143,6 +143,8 @@ resolution {
   cc_half_method = sigma_tau
   cc_half_fit = tanh
   cc_half = 0.3
+  isigma = None
+  misigma = None
 }
 """))
 
