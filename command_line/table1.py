@@ -25,10 +25,34 @@ def table1_tex(crystal_params, merging_stats):
   print('Crystal parameters' + ' & ' * ncols + '\\\\')
   print('Space group & ' +
           ' & '.join([cp['space_group'] for cp in crystal_params]) + ' \\\\')
-  print('Unit-cell parameters (\\AA) & ' + ' & '.join(
-        ['$a=%.5f, b=%.5f, c=%.5f, \\alpha=%.5f, \\beta=%.5f, \\gamma=%.5f$'
-         % tuple(cp['cell']) for cp in crystal_params]) + ' \\\\')
 
+  # witchcraft to work out how to write out the unit cell
+  from cctbx import sgtbx
+  cell_str = ['Unit-cell parameters (\\AA)']
+  for cp in crystal_params:
+    sgi = sgtbx.space_group_info(str(cp['space_group']))
+    sg = sgi.group()
+    constraints = sgtbx.tensor_rank_2_constraints(space_group=sg,
+                                                  reciprocal_space=False)
+    cell_tmp = '$'
+    cell = cp['cell']
+    if 0 in constraints.independent_indices:
+      cell_tmp += 'a=%.5f, ' % cell[0]
+    else:
+      cell_tmp += 'a='
+    if 1 in constraints.independent_indices:
+      cell_tmp += 'b=%.5f, ' % cell[1]
+    else:
+      cell_tmp += 'b='
+    cell_tmp += 'c=%.5f' % cell[2]
+    if 3 in constraints.independent_indices:
+      cell_tmp += ', \\alpha=%.5f' % cell[3]
+    if 4 in constraints.independent_indices:
+      cell_tmp += ', \\beta=%.5f' % cell[4]
+    if 5 in constraints.independent_indices:
+      cell_tmp += ', \\gamma=%.5f' % cell[5]
+    cell_str.append(cell_tmp)
+  print(' & '.join(cell_str) + ' \\\\')
   print('Data statistics' + ' & ' * ncols + '\\\\')
 
   # resolution ranges, shells
