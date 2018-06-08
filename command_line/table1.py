@@ -38,19 +38,34 @@ def table1_tex(crystal_params, merging_stats):
   
   for ms in merging_stats:
     for name in ms:
+      import pprint
+      pprint.pprint(ms[name])
       low = ms[name]['Low resolution limit']
       high = ms[name]['High resolution limit']
       resolution_str.append('%.2f-%.2f (%.2f-%.2f)' %
                               (low[0], high[0], low[2], high[2]))
   
   print(' & '.join(resolution_str) + ' \\\\')
+
+  # loopy boiler plate stuff - https://xkcd.com/1421/ - sorry - and why do
+  # grown ups sometimes need things in %ages? x_x 
+
+  magic_words_and_places_and_multipliers = [
+    ('No. of unique reflections', 'Total unique', 1),
+    ('Multiplicity', 'Multiplicity', 1),
+    ('$R_{\\rm{merge}}$', 'Rmerge(I)', 1),
+    ('$R_{\\rm{meas}}$', 'Rmeas(I)', 1),
+    ('$R_{\\rm{pim}}$', 'Rpim(I)', 1),
+    ('Completeness (\\%)', 'Completeness', 100),
+    ('$<I/\\sigma(I)>$', 'I/sigma', 1),
+    ]
+    
   
 
 def table1():
   import sys
   import os
   import json
-  import pprint
   
   jsons = []
   for xia2 in sys.argv[1:]:
