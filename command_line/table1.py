@@ -18,18 +18,17 @@ def table1_tex(crystal_params, merging_stats):
   print('\\begin{tabular}{%s}' % ('l' * (ncols + 1)))
 
   name_str = ['']
-  for ms in merging_stats:
-    for name in ms:
-      _name = eval(name)
-      name_str.append('%s/%s/%s' % tuple(_name))
+  for cp in crystal_params:
+    name_str.append(cp['name'].replace('_', '\_'))
 
   print(' & '.join(name_str) + ' \\\\')
   print('Crystal parameters' + ' & ' * ncols + '\\\\')
   print('Space group & ' +
           ' & '.join([cp['space_group'] for cp in crystal_params]) + ' \\\\')
   print('Unit-cell parameters (\\AA) & ' + ' & '.join(
-          ['$a=%.5f, b=%.5f, c=%.5f, \\alpha=%.5f, \\beta=%.5f, \\gamma=%.5f$'
-             % tuple(cp['cell']) for cp in crystal_params]) + ' \\\\')
+        ['$a=%.5f, b=%.5f, c=%.5f, \\alpha=%.5f, \\beta=%.5f, \\gamma=%.5f$'
+         % tuple(cp['cell']) for cp in crystal_params]) + ' \\\\')
+
   print('Data statistics' + ' & ' * ncols + '\\\\')
 
   # resolution ranges, shells
@@ -92,13 +91,14 @@ def table1():
   merging_stats = []
   crystal_params = []
 
-  for j in jsons:
+  for _j, j in enumerate(jsons):
     for x in j['_crystals']:
       s = j['_crystals'][x]['_scaler']
       crystal_param = {
         'space_group':s['_scalr_likely_spacegroups'][0],
         'cell':s['_scalr_cell'],
-        'cell_esd':s['_scalr_cell_esd']
+        'cell_esd':s['_scalr_cell_esd'],
+        'name':sys.argv[_j+1]
         }
 
       merging_stats.append(s['_scalr_statistics'])
