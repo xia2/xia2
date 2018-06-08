@@ -219,7 +219,7 @@ def DialsScale(DriverType=None,
         '%i_scaled.mtz' % self.get_xpid())
 
       self.add_command_line("output.experiments='%s'" % self._scaled_experiments)
-      self.add_command_line("output.scaled='%s'" % self._scaled_reflections)
+      self.add_command_line("output.reflections='%s'" % self._scaled_reflections)
 
       self.add_command_line("output.unmerged_mtz='%s'" % self._unmerged_reflections)
       self.add_command_line("output.merged_mtz='%s'" % self._merged_reflections)
