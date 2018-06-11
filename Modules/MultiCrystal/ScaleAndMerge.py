@@ -218,7 +218,8 @@ class DataManager(object):
       variances = refl[variance_key]
       if return_batches:
         batch_offset = expt.scan.get_batch_offset()
-        batches = refl['xyzcal.px'].parts()[2] + batch_offset
+        zdet = refl['xyzobs.px.value'].parts()[2]
+        batches = flex.floor(zdet).iround() + 1 + batch_offset
 
       # FIXME probably need to do some filtering of intensities similar to that
       # done in export_mtz
@@ -891,14 +892,12 @@ class Scale(object):
       d_min = PyChef.resolution_limit(
         mtz_file=self.unmerged_mtz, min_completeness=self.params.chef_min_completeness, n_bins=8)
       logger.info('Estimated d_min for CHEF analysis: %.2f' % d_min)
-
     miller_arrays = self._data_manager.reflections_as_miller_arrays(
       return_batches=True)
     for i, (intensities, batches) in enumerate(miller_arrays):
       # convert batches to dose
-      data = batches.data() - self._data_manager.experiments[i].scan.get_batch_offset() + 2 # so that dose starts at 1
-      miller_arrays[i][1] = batches.array(
-        data=data.iround()).set_info(batches.info())
+      data = batches.data() - self._data_manager.experiments[i].scan.get_batch_offset()
+      miller_arrays[i][1] = batches.array(data=data).set_info(batches.info())
     intensities, dose = miller_arrays[0]
     for (i, d) in miller_arrays[1:]:
       intensities = intensities.concatenate(i)
