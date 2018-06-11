@@ -199,7 +199,7 @@ class DataManager(object):
     assert self.reflections.are_experiment_identifiers_consistent(
       self._experiments)
 
-  def reflections_as_miller_arrays(self, intensity_key='intensity.sum.value'):
+  def reflections_as_miller_arrays(self, intensity_key='intensity.sum.value', return_batches=False):
     from cctbx import crystal, miller
     variance_key = intensity_key.replace('.value', '.variance')
     assert intensity_key in self._reflections
@@ -216,6 +216,10 @@ class DataManager(object):
       refl = self._reflections.select(sel)
       data = refl[intensity_key]
       variances = refl[variance_key]
+      if return_batches:
+        batch_offset = expt.scan.get_batch_offset()
+        batches = refl['xyzcal.px'].parts()[2] + batch_offset
+
       # FIXME probably need to do some filtering of intensities similar to that
       # done in export_mtz
       miller_indices = refl['miller_index']
@@ -226,10 +230,13 @@ class DataManager(object):
       intensities = miller.array(miller_set, data=data, sigmas=sigmas)
       intensities.set_observation_type_xray_intensity()
       intensities.set_info(miller.array_info(
-        source='DIALS',
-        source_type='pickle'
-      ))
-      miller_arrays.append(intensities)
+        source='DIALS', source_type='pickle'))
+      if return_batches:
+        batches = miller.array(miller_set, data=batches).set_info(
+          intensities.info())
+        miller_arrays.append([intensities, batches])
+      else:
+        miller_arrays.append(intensities)
     return miller_arrays
 
   def reindex(self, cb_op=None, cb_ops=None, space_group=None):
@@ -634,6 +641,7 @@ class Scale(object):
     logger.info('Resolution limit: %.2f (%s)' % (d_min, reason))
 
     self.scale(d_min=d_min)
+    self.radiation_damage_analysis(d_min=d_min)
 
   def decide_space_group(self):
     if self._params.symmetry.program == 'pointless':
@@ -876,6 +884,38 @@ class Scale(object):
 
     return resolution, reasoning
 
+  def radiation_damage_analysis(self, d_min=None):
+    from xia2.Modules.PyChef2.PyChef import Statistics
+
+    if d_min is None:
+      d_min = PyChef.resolution_limit(
+        mtz_file=self.unmerged_mtz, min_completeness=self.params.chef_min_completeness, n_bins=8)
+      logger.info('Estimated d_min for CHEF analysis: %.2f' % d_min)
+
+    miller_arrays = self._data_manager.reflections_as_miller_arrays(
+      return_batches=True)
+    for i, (intensities, batches) in enumerate(miller_arrays):
+      # convert batches to dose
+      data = batches.data() - self._data_manager.experiments[i].scan.get_batch_offset() + 2 # so that dose starts at 1
+      miller_arrays[i][1] = batches.array(
+        data=data.iround()).set_info(batches.info())
+    intensities, dose = miller_arrays[0]
+    for (i, d) in miller_arrays[1:]:
+      intensities = intensities.concatenate(i)
+      dose = dose.concatenate(d)
+
+    intensities = intensities.resolution_filter(d_min=d_min)
+    dose = dose.resolution_filter(d_min=d_min)
+    stats = Statistics(intensities, dose.data())
+
+    stats.print_completeness_vs_dose()
+    stats.print_rcp_vs_dose()
+    stats.print_scp_vs_dose()
+    stats.print_rd_vs_dose()
+
+    with open('chef.json', 'wb') as f:
+      import json
+      json.dump(stats.to_dict(), f)
 
 if __name__ == "__main__":
   run()
