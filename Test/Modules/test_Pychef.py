@@ -1,9 +1,15 @@
 from __future__ import absolute_import, division, print_function
 
+import os
+import pytest
+from cctbx.array_family import flex
+from cctbx import sgtbx
+from iotbx.reflection_file_reader import any_reflection_file
+from xia2.Modules import PyChef
+from xia2.Modules.PyChef import Observations
+from xia2.Modules.PyChef import ChefStatistics
+
 def test_observations():
-  from xia2.Modules.PyChef import Observations
-  from cctbx.array_family import flex
-  from cctbx import sgtbx
   miller_indices = flex.miller_index(
     ((1,2,3),(-1,2,3),(1,-2,3), (4,5,6),(4,5,-6)))
   sg = sgtbx.space_group_info(symbol="I222").group()
@@ -14,13 +20,6 @@ def test_observations():
   assert list(groups[(1,2,3)].iminus()) == [1,2]
 
 def test_accumulators(xia2_regression):
-  from xia2.Modules.PyChef import PyChef
-  from xia2.Modules.PyChef import ChefStatistics
-  from iotbx.reflection_file_reader import any_reflection_file
-  from cctbx.array_family import flex
-  from libtbx.test_utils import approx_equal
-  import os
-
   f = os.path.join(xia2_regression, "test/insulin_dials_scaled_unmerged.mtz")
   reader = any_reflection_file(f)
   assert reader.file_type() == 'ccp4_mtz'
@@ -39,42 +38,21 @@ def test_accumulators(xia2_regression):
   if anomalous_flag:
     intensities = intensities.as_anomalous_array()
 
-  pystats = PyChef.PyStatistics(intensities, batches.data())
-
-  miller_indices = batches.indices()
-  sg = batches.space_group()
-
-  n_steps = pystats.n_steps
-  dose = batches.data()
-  range_width  = 1
-  range_max = flex.max(dose)
-  range_min = flex.min(dose) - range_width
-  dose /= range_width
-  dose -= range_min
-
-  binner_non_anom = intensities.as_non_anomalous_array().use_binning(
-    pystats.binner)
-  n_complete = flex.size_t(binner_non_anom.counts_complete()[1:-1])
-
-  dose = flex.size_t(list(dose))
-
-  chef_stats = ChefStatistics(
-    miller_indices, intensities.data(), intensities.sigmas(),
-    intensities.d_star_sq().data(), dose, n_complete, pystats.binner,
-    sg, anomalous_flag, n_steps)
+  stats = PyChef.Statistics(intensities, batches.data())
 
   # test completeness
-
-  assert approx_equal(chef_stats.iplus_completeness(), pystats.iplus_comp_overall)
-  assert approx_equal(chef_stats.iminus_completeness(), pystats.iminus_comp_overall)
-  assert approx_equal(chef_stats.ieither_completeness(), pystats.ieither_comp_overall)
-  assert approx_equal(chef_stats.iboth_completeness(), pystats.iboth_comp_overall)
+  assert stats.iplus_comp_overall.size() == 46
+  assert stats.iplus_comp_overall[45] == pytest.approx(0.9428352196431997)
+  assert stats.iminus_comp_overall[44] == pytest.approx(0.07769038941108766)
+  assert stats.ieither_comp_overall[1] == pytest.approx(0.03721465566852101)
+  assert stats.iboth_comp_overall[-1] == pytest.approx(0.0779781315940917)
 
   # test rcp,scp
-
-  assert approx_equal(chef_stats.rcp(), pystats.rcp)
-  assert approx_equal(chef_stats.scp(), pystats.scp)
+  print(list(stats.rcp))
+  print(list(stats.scp))
+  assert stats.rcp[45] == pytest.approx(0.04844584637191411)
+  assert stats.scp[45] == pytest.approx(0.9201295853457298)
 
   # test Rd
-
-  assert approx_equal(chef_stats.rd(), pystats.rd)
+  print(list(stats.rd))
+  assert stats.rd[0] == pytest.approx(0.05234416616316846)
