@@ -908,9 +908,9 @@ class Scale(object):
     stats = Statistics(intensities, dose.data())
 
     logger.info(stats.completeness_vs_dose_str())
-    logger.info(stats.rcp_vs_dose_str()
-    logger.info(stats.scp_vs_dose_str()
-    logger.info(stats.rd_vs_dose_str()
+    logger.info(stats.rcp_vs_dose_str())
+    logger.info(stats.scp_vs_dose_str())
+    logger.info(stats.rd_vs_dose_str())
 
     with open('chef.json', 'wb') as f:
       import json
