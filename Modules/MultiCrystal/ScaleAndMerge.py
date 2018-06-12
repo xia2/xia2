@@ -886,7 +886,7 @@ class Scale(object):
     return resolution, reasoning
 
   def radiation_damage_analysis(self, d_min=None):
-    from xia2.Modules.PyChef2.PyChef import Statistics
+    from xia2.Modules.PyChef import Statistics
 
     if d_min is None:
       d_min = PyChef.resolution_limit(

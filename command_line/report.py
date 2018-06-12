@@ -302,7 +302,7 @@ class xia2_report(object):
 
   def i_over_sig_i_vs_batch_plot(self):
 
-    from xia2.Modules.PyChef2.PyChef import remove_batch_gaps
+    from xia2.Modules.PyChef import remove_batch_gaps
     new_batch_data = remove_batch_gaps(self.batches.data())
     new_batches = self.batches.customized_copy(data=new_batch_data)
 
@@ -422,7 +422,7 @@ higher resolution. A typical resolution cutoff based on CC1/2 is around 0.3-0.5.
 
   def scale_rmerge_vs_batch_plot(self):
 
-    from xia2.Modules.PyChef2.PyChef import remove_batch_gaps
+    from xia2.Modules.PyChef import remove_batch_gaps
     new_batch_data = remove_batch_gaps(self.batches.data())
     new_batches = self.batches.customized_copy(data=new_batch_data)
     if self.scales is not None:
@@ -808,7 +808,7 @@ higher resolution. A typical resolution cutoff based on CC1/2 is around 0.3-0.5.
 
   def pychef_plots(self, n_bins=8):
 
-    from xia2.Modules.PyChef2 import PyChef
+    from xia2.Modules import PyChef
 
     intensities = self.intensities
     batches = self.batches

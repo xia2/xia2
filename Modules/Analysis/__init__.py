@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 from cctbx.array_family import flex
 from libtbx import phil
-from xia2.Modules.PyChef2.PyChef import dose_phil_str
+from xia2.Modules.PyChef import dose_phil_str
 
 phil_scope = phil.parse("""\
 d_min = None

@@ -1,7 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
-def test_exercise_observations():
-  from xia2.Modules.PyChef2 import Observations
+def test_observations():
+  from xia2.Modules.PyChef import Observations
   from cctbx.array_family import flex
   from cctbx import sgtbx
   miller_indices = flex.miller_index(
@@ -13,9 +13,9 @@ def test_exercise_observations():
   assert list(groups[(1,2,3)].iplus()) == [0]
   assert list(groups[(1,2,3)].iminus()) == [1,2]
 
-def test_exercise_accumulators(xia2_regression):
-  from xia2.Modules.PyChef2 import PyChef
-  from xia2.Modules.PyChef2 import ChefStatistics
+def test_accumulators(xia2_regression):
+  from xia2.Modules.PyChef import PyChef
+  from xia2.Modules.PyChef import ChefStatistics
   from iotbx.reflection_file_reader import any_reflection_file
   from cctbx.array_family import flex
   from libtbx.test_utils import approx_equal
