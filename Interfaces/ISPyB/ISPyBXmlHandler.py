@@ -16,6 +16,7 @@ import os
 import time
 
 from xia2.Handlers.Files import FileHandler
+from xia2.Handlers.Phil import PhilIndex
 
 def sanitize(path):
   '''Replace double path separators with single ones.'''
@@ -110,7 +111,10 @@ class _ISPyBXmlHandler(object):
 
     fout.write('</AutoProcScalingStatistics>\n')
 
-  def write_xml(self, file, command_line=''):
+  def write_xml(self, file, command_line='', working_phil=None):
+    if working_phil is not None:
+      PhilIndex.merge_phil(working_phil)
+    params = PhilIndex.get_python_object()
 
     fout = open(file, 'w')
 
@@ -234,10 +238,11 @@ class _ISPyBXmlHandler(object):
         from xia2.Handlers.CommandLine import CommandLine
         command_line = CommandLine.get_command_line()
 
+      pipeline = params.xia2.settings.pipeline
       fout.write('<AutoProcProgramContainer><AutoProcProgram>')
       fout.write('<processingCommandLine>%s</processingCommandLine>' \
                  % sanitize(command_line))
-      fout.write('<processingPrograms>xia2</processingPrograms>')
+      fout.write('<processingPrograms>xia2 %s</processingPrograms>' % pipeline)
       fout.write('</AutoProcProgram>')
 
       from xia2.Handlers.Environment import Environment
