@@ -134,6 +134,9 @@ min_multiplicity = None
 identifiers = None
   .type = strings
 
+dose = None
+  .type = ints(size=2, value_min=0)
+
 ''', process_includes=True)
 
 # override default parameters
@@ -198,6 +201,14 @@ class DataManager(object):
     self._reflections = self._reflections.select(sel)
     assert self.reflections.are_experiment_identifiers_consistent(
       self._experiments)
+
+  def filter_dose(self, dose_min, dose_max):
+    from dials.command_line.slice_sweep import slice_experiments, slice_reflections
+    image_range = [(dose_min, dose_max)] * len(self._experiments)
+    self._experiments = slice_experiments(self._experiments, image_range)
+    self._reflections = slice_reflections(self._reflections, image_range)
+    logger.info('%i reflections remaining after filtering for dose' %
+                self._reflections.size())
 
   def reflections_as_miller_arrays(self, intensity_key='intensity.sum.value', return_batches=False):
     from cctbx import crystal, miller
@@ -323,6 +334,8 @@ class MultiCrystalScale(object):
 
     if self._params.identifiers is not None:
       self._data_manager.select(self._params.identifiers)
+    if self._params.dose is not None:
+      self._data_manager.filter_dose(*self._params.dose)
 
     experiments = self._data_manager.experiments
     reflections = self._data_manager.reflections
