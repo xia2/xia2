@@ -233,11 +233,12 @@ class XSweep(object):
 
       if params.general.check_image_files_readable:
         for j in range(start, end + 1):
-          image_name = self.get_imageset().get_path(j - start)
           if not j in self._images:
-            Debug.write('image %s missing' % image_name)
+            Debug.write('image %i missing for %s' % (
+              j, self.get_imageset().get_template()))
             error = True
             continue
+          image_name = self.get_imageset().get_path(j - start)
           if not os.access(image_name, os.R_OK):
             Debug.write('image %s unreadable' % image_name)
             error = True

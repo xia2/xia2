@@ -213,6 +213,9 @@ dials
       .short_caption = "Outlier rejection algorithm"
       .expert_level = 1
   }
+  check_indexing_symmetry = False
+    .type = bool
+    .expert_level = 2
   fast_mode = False
     .type = bool
     .help = "Set various parameters for rapid processing, compromising on quality"
