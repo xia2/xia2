@@ -25,9 +25,8 @@ def _parse_integrate_lp_updates(filename):
 
   updates = { }
 
-  for i in range(len(file_contents)):
-    if ' ***** SUGGESTED VALUES FOR INPUT PARAMETERS *****' in \
-       file_contents[i]:
+  for i, content in enumerate(file_contents):
+    if ' ***** SUGGESTED VALUES FOR INPUT PARAMETERS *****' in content:
       beam_parms = file_contents[i + 1].replace('=', '').split()
       reflecting_parms = file_contents[i + 2].replace('=', '').split()
       updates[beam_parms[0]] = float(beam_parms[1])
@@ -53,22 +52,22 @@ def _parse_integrate_lp(filename):
 
   block_images = []
 
-  for i in range(len(file_contents)):
+  for i, content in enumerate(file_contents):
 
     # check for the header contents - this is basically a duplicate
     # of the input data....
 
-    if 'OSCILLATION_RANGE=' in file_contents[i]:
-      oscillation_range = float(file_contents[i].split()[1])
+    if 'OSCILLATION_RANGE=' in content:
+      oscillation_range = float(content.split()[1])
 
-    if 'PROCESSING OF IMAGES' in file_contents[i]:
-      lst = file_contents[i].split()
+    if 'PROCESSING OF IMAGES' in content:
+      lst = content.split()
       block_start_finish = (int(lst[3]), int(lst[5]))
 
       block_images = [j for j in range(int(lst[3]), int(lst[5]) + 1)]
 
     # look for explicitly per-image information
-    if 'IMAGE IER  SCALE' in file_contents[i]:
+    if 'IMAGE IER  SCALE' in content:
       j = i + 1
       while file_contents[j].strip():
         lst = file_contents[j].split()
@@ -105,28 +104,28 @@ def _parse_integrate_lp(filename):
     # then look for per-block information - this will be mapped onto
     # individual images using the block_start_finish information
 
-    if 'CRYSTAL MOSAICITY (DEGREES)' in file_contents[i]:
-      mosaic = float(file_contents[i].split()[3])
+    if 'CRYSTAL MOSAICITY (DEGREES)' in content:
+      mosaic = float(content.split()[3])
       # for image in range(block_start_finish[0],
       # block_start_finish[1] + 1):
       for image in block_images:
         per_image_stats[image]['mosaic'] = mosaic
 
-    if 'OF SPOT    POSITION (PIXELS)' in file_contents[i]:
-      rmsd_pixel = float(file_contents[i].split()[-1])
+    if 'OF SPOT    POSITION (PIXELS)' in content:
+      rmsd_pixel = float(content.split()[-1])
       # for image in range(block_start_finish[0],
       # block_start_finish[1] + 1):
       for image in block_images:
         per_image_stats[image]['rmsd_pixel'] = rmsd_pixel
 
-    if 'UNIT CELL PARAMETERS' in file_contents[i]:
-      unit_cell = tuple(map(float, file_contents[i].split()[-6:]))
+    if 'UNIT CELL PARAMETERS' in content:
+      unit_cell = tuple(map(float, content.split()[-6:]))
       for image in block_images:
         per_image_stats[image]['unit_cell'] = unit_cell
 
 
-    if 'OF SPINDLE POSITION (DEGREES)' in file_contents[i]:
-      rmsd_phi = float(file_contents[i].split()[-1])
+    if 'OF SPINDLE POSITION (DEGREES)' in content:
+      rmsd_phi = float(content.split()[-1])
       # for image in range(block_start_finish[0],
       # block_start_finish[1] + 1):
       for image in block_images:
@@ -134,15 +133,15 @@ def _parse_integrate_lp(filename):
                                            rmsd_phi / oscillation_range
 
     # want to convert this to mm in some standard setting!
-    if 'DETECTOR COORDINATES (PIXELS) OF DIRECT BEAM' in file_contents[i]:
-      beam = map(float, file_contents[i].split()[-2:])
+    if 'DETECTOR COORDINATES (PIXELS) OF DIRECT BEAM' in content:
+      beam = map(float, content.split()[-2:])
       # for image in range(block_start_finish[0],
       # block_start_finish[1] + 1):
       for image in block_images:
         per_image_stats[image]['beam'] = beam
 
-    if 'CRYSTAL TO DETECTOR DISTANCE (mm)' in file_contents[i]:
-      distance = float(file_contents[i].split()[-1])
+    if 'CRYSTAL TO DETECTOR DISTANCE (mm)' in content:
+      distance = float(content.split()[-1])
       # for image in range(block_start_finish[0],
       # block_start_finish[1] + 1):
       for image in block_images:
@@ -173,8 +172,7 @@ if __name__ == '__main__':
 
   stats = _parse_integrate_lp(integrate_lp)
 
-  images = stats.keys()
-  images.sort()
+  images = sorted(stats.keys())
 
   # these may not be present if only a couple of the
   # images were integrated...
