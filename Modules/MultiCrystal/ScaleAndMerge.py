@@ -254,6 +254,7 @@ class DataManager(object):
   def reindex(self, cb_op=None, cb_ops=None, space_group=None):
     assert [cb_op, cb_ops].count(None) == 1
 
+    remove = []
     if cb_op is not None:
       logger.info('Reindexing: %s' % cb_op)
       self._reflections['miller_index'] = cb_op.apply(self._reflections['miller_index'])
@@ -277,8 +278,12 @@ class DataManager(object):
             cryst_reindexed.set_space_group(space_group)
           expt.crystal.update(cryst_reindexed)
           sel = self._reflections['identifier'] == expt.identifier
-          self._reflections['miller_index'].set_selected(sel, cb_op.apply(
-            self._reflections['miller_index'].select(sel)))
+          try:
+            self._reflections['miller_index'].set_selected(sel, cb_op.apply(
+              self._reflections['miller_index'].select(sel)))
+          except RuntimeError, e:
+            if 'cctbx Error: Change of basis yields non-integral Miller index.' in str(e):
+              remove.append(expt.identifier)
 
     else:
       assert len(cb_ops) == len(self._experiments)
@@ -290,8 +295,18 @@ class DataManager(object):
           cryst_reindexed.set_space_group(space_group)
         expt.crystal.update(cryst_reindexed)
         sel = self._reflections['identifier'] == expt.identifier
-        self._reflections['miller_index'].set_selected(sel, cb_op.apply(
-          self._reflections['miller_index'].select(sel)))
+        try:
+          self._reflections['miller_index'].set_selected(sel, cb_op.apply(
+            self._reflections['miller_index'].select(sel)))
+        except RuntimeError, e:
+          if 'cctbx Error: Change of basis yields non-integral Miller index.' in str(e):
+            remove.append(expt.identifier)
+
+    if len(remove):
+      logger.info('Removing experiments: %s' % str(remove))
+      identifiers = [expt.identifier for expt in self._experiments
+                     if expt.identifier not in remove]
+      self.select(identifiers)
 
   def export_reflections(self, filename):
     self._reflections.as_pickle(filename)
