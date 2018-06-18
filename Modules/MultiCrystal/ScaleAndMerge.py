@@ -281,7 +281,7 @@ class DataManager(object):
           try:
             self._reflections['miller_index'].set_selected(sel, cb_op.apply(
               self._reflections['miller_index'].select(sel)))
-          except RuntimeError, e:
+          except RuntimeError as e:
             if 'cctbx Error: Change of basis yields non-integral Miller index.' in str(e):
               remove.append(expt.identifier)
 
@@ -298,7 +298,7 @@ class DataManager(object):
         try:
           self._reflections['miller_index'].set_selected(sel, cb_op.apply(
             self._reflections['miller_index'].select(sel)))
-        except RuntimeError, e:
+        except RuntimeError as e:
           if 'cctbx Error: Change of basis yields non-integral Miller index.' in str(e):
             remove.append(expt.identifier)
 
