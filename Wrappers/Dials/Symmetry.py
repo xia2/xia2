@@ -49,6 +49,9 @@ def DialsSymmetry(DriverType = None):
       self._probably_twinned = False
       self._allow_out_of_sequence_files = False
 
+      self._relative_length_tolerance = 0.05
+      self._absolute_angle_tolerance = 2
+
       # space to store all possible solutions, to allow discussion of
       # the correct lattice with the indexer... this should be a
       # list containing e.g. 'tP'
@@ -89,6 +92,10 @@ def DialsSymmetry(DriverType = None):
 
     def set_allow_out_of_sequence_files(self, allow=True):
       self._allow_out_of_sequence_files = allow
+
+    def set_tolerance(self, relative_length_tolerance=0.05, absolute_angle_tolerance=2):
+      self._relative_length_tolerance=relative_length_tolerance
+      self._absolute_angle_tolerance=absolute_angle_tolerance
 
     #def get_hklref(self):
       #return self._hklref
@@ -132,6 +139,9 @@ def DialsSymmetry(DriverType = None):
             "output.experiments='%s'" % self._output_experiments_filename)
           self.add_command_line(
             "output.reflections='%s'" % self._output_reflections_filename)
+
+      self.add_command_line('relative_length_tolerance=%s' % self._relative_length_tolerance)
+      self.add_command_line('absolute_angle_tolerance=%s' % self._absolute_angle_tolerance)
 
       self._json = os.path.join(self.get_working_directory(),
                                 '%d_dials_symmetry.json' % self.get_xpid())

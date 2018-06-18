@@ -757,6 +757,8 @@ class Scale(object):
     symmetry.set_reflections_filename(reflections_filename)
     symmetry.set_output_experiments_filename(self._experiments_filename)
     symmetry.set_output_reflections_filename(self._reflections_filename)
+    symmetry.set_tolerance(
+      relative_length_tolerance=None, absolute_angle_tolerance=None)
     symmetry.decide_pointgroup()
     space_group = sgtbx.space_group_info(
       symbol=str(symmetry.get_pointgroup())).group()
