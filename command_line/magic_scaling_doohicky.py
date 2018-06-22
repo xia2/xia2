@@ -26,6 +26,16 @@ def find_pickle_and_json():
   integrate_pickles = []
   integrate_jsons = []
 
+  d_min = None
+  d_max = None
+
+  for _j, j in enumerate(jsons):
+    for x in j['_crystals']:
+      s = j['_crystals'][x]['_scaler']['_scalr_statistics']
+      for name in s:
+        d_max = s[name]['Low resolution limit'][0]
+        d_min = s[name]['High resolution limit'][0]
+
   for _j, j in enumerate(jsons):
     for x in j['_crystals']:
       s = j['_crystals'][x]['_scaler']['_scalr_integraters']
@@ -40,8 +50,7 @@ def find_pickle_and_json():
 
   args = integrate_pickles + integrate_jsons
   from dials.command_line.symmetry import run as symmetry_run
-  sys.argv = [sys.argv[0]] + args
-  symmetry_run([])
+  symmetry_run(args)
 
   from dials.command_line.scale import Script, phil_scope
 
@@ -54,7 +63,8 @@ def find_pickle_and_json():
     'reindexed_reflections.pickle')
 
   spells = ['unmerged_mtz=dials_unmerged.mtz',
-            'optimise_errors=true']
+            'optimise_errors=true',
+            'd_min=%f' % d_min, 'd_max=%f' % d_max]
 
   interp = phil_scope.command_line_argument_interpreter()
   for s in spells:
