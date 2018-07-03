@@ -939,8 +939,8 @@ class Scale(object):
       miller_arrays[i][1] = batches.array(data=data).set_info(batches.info())
     intensities, dose = miller_arrays[0]
     for (i, d) in miller_arrays[1:]:
-      intensities = intensities.concatenate(i)
-      dose = dose.concatenate(d)
+      intensities = intensities.concatenate(i, assert_is_similar_symmetry=False)
+      dose = dose.concatenate(d, assert_is_similar_symmetry=False)
 
     intensities = intensities.resolution_filter(d_min=d_min)
     dose = dose.resolution_filter(d_min=d_min)
