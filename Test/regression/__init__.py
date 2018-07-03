@@ -81,6 +81,7 @@ def check_result(test_name, result, tmpdir, ccp4, xds=None, expected_data_files=
   with open(os.path.join(expected_result_dir, expected_result_file), 'r') as fh:
     expected_summary_lines = fh.readlines()
 
+  print()
   print('CCP4 version is %d.%d.%d' % (ccp4[0], ccp4[1], ccp4[2]))
   if xds:
     print('XDS revision is %d' % xds)
