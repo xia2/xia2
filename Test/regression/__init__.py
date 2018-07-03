@@ -4,7 +4,7 @@ import os
 import platform
 import re
 
-import xia2_regression
+import xia2.Test.regression
 
 default_data_files = [
     'AUTOMATIC_DEFAULT_free.mtz',
@@ -37,10 +37,13 @@ def check_result(test_name, result, tmpdir, ccp4, xds=None, expected_data_files=
   system = platform.system()
   if system != 'Linux': template_name += '.' + system
 
-  with open(template_name, 'w') as fh:
+  output_result_dir = os.path.join(os.path.dirname(xia2.Test.regression.__file__), 'output')
+  if not os.path.exists(output_result_dir):
+    os.mkdir(output_result_dir)
+  with open(os.path.join(output_result_dir, template_name), 'w') as fh:
     fh.write(generate_tolerant_template(summary_text_lines))
 
-  expected_result_dir = os.path.join(os.path.dirname(xia2_regression.__file__), 'test', 'xia2', 'expected')
+  expected_result_dir = os.path.join(os.path.dirname(xia2.Test.regression.__file__), 'expected')
   if not os.path.exists(expected_result_dir):
     return False, "Reference result directory (%s) not found" % expected_result_dir
 

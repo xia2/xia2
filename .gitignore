@@ -7,6 +7,9 @@ __pycache__/
 .cache
 .pytest_cache
 
+# Regression test outputs
+/Test/regression/output
+
 # Ignored Mathematica files shall be prefixed by _
 _*.nb
 *.fdb_latexmk
