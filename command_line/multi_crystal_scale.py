@@ -27,9 +27,9 @@ seed = 42
   .type = int(value_min=0)
 
 output {
-  log = xia2.multi_crystal_scale_and_merge.log
+  log = xia2.multi_crystal_scale.log
     .type = str
-  debug_log = xia2.multi_crystal_scale_and_merge.debug.log
+  debug_log = xia2.multi_crystal_scale.debug.log
     .type = str
 }
 ''', process_includes=True)
