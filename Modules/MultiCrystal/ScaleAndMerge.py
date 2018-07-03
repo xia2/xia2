@@ -7,6 +7,7 @@ import logging
 import math
 import os
 
+from libtbx import Auto
 import iotbx.phil
 from iotbx.reflection_file_reader import any_reflection_file
 from cctbx import crystal
@@ -19,10 +20,11 @@ from dials.algorithms.symmetry.cosym import analyse_datasets as cosym_analyse_da
 
 from dials.command_line.export import phil_scope as export_phil_scope
 from dials.util.export_mtz import export_mtz
-
+from dials.util import log
 
 from xia2.lib.bits import auto_logfiler
 from xia2.Handlers.Phil import PhilIndex
+from xia2.Handlers.Environment import get_number_cpus
 from xia2.Modules.MultiCrystal import multi_crystal_analysis
 from xia2.Modules.MultiCrystal import separate_unmerged
 import xia2.Modules.Scaler.tools as tools
@@ -136,6 +138,11 @@ identifiers = None
 
 dose = None
   .type = ints(size=2, value_min=0)
+
+nproc = Auto
+  .type = int(value_min=1)
+  .help = "The number of processors to use"
+  .expert_level = 0
 
 ''', process_includes=True)
 
@@ -346,6 +353,10 @@ class MultiCrystalScale(object):
 
     self._data_manager = DataManager(experiments, reflections)
     self._params = params
+
+    if self._params.nproc is Auto:
+      self._params.nproc = get_number_cpus()
+    PhilIndex.params.xia2.settings.multiprocessing.nproc = self._params.nproc
 
     if self._params.identifiers is not None:
       self._data_manager.select(self._params.identifiers)
@@ -797,7 +808,6 @@ class Scale(object):
 
   def _scale_aimless(self, d_min=None):
     logger.debug('Scaling with aimless')
-    PhilIndex.params.xia2.settings.multiprocessing.nproc = 1
     scaler = Aimless()
     auto_logfiler(scaler)
     self._scaled_mtz = '%i_scaled.mtz' % scaler.get_xpid()
@@ -821,7 +831,6 @@ class Scale(object):
 
   def _scale_dials(self, d_min=None):
     logger.debug('Scaling with dials.scale')
-    #PhilIndex.params.xia2.settings.multiprocessing.nproc = 1
     scaler = DialsScale()
     auto_logfiler(scaler)
     #scaler.set_surface_link(False) # multi-crystal
