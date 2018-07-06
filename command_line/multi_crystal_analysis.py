@@ -4,7 +4,7 @@ from __future__ import absolute_import, division, print_function
 
 import os
 import sys
-import tabulate
+from tabulate import tabulate
 import traceback
 
 # Needed to make xia2 imports work correctly
