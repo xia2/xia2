@@ -193,11 +193,13 @@ class multi_crystal_analysis(object):
     self.cc_clusters = self.cluster_info(
       self.linkage_matrix_to_dict(self.cc_linkage_matrix))
 
+    from tabulate import tabulate
     logger.info('\nIntensity correlation clustering summary:')
-    logger.info(self.as_table(self.cc_clusters))
-
+    logger.info(tabulate(
+      self.as_table(self.cc_clusters), headers='firstrow', tablefmt='rst'))
     logger.info('\nCos(angle) clustering summary:')
-    logger.info(self.as_table(self.cos_angle_clusters))
+    logger.info(tabulate(
+      self.as_table(self.cos_angle_clusters), headers='firstrow', tablefmt='rst'))
 
   def cluster_info(self, cluster_dict):
     info = []
@@ -221,8 +223,8 @@ class multi_crystal_analysis(object):
 
   def as_table(self, cluster_info):
     from libtbx.str_utils import wordwrap
-    rows = []
     headers = ['Cluster', 'Datasets', 'Height', 'Multiplicity', 'Completeness']
+    rows = []
     for info in cluster_info:
       rows.append(
         ['%i' % info.cluster_id,
@@ -237,9 +239,8 @@ class multi_crystal_analysis(object):
     perm = flex.sort_permutation(
       flex.double(c.completeness for c in cluster_info))
     rows = [rows[i] for i in perm]
-
-    import tabulate
-    return tabulate.tabulate(rows, headers, tablefmt='rst')
+    rows.insert(0, headers)
+    return rows
 
   @staticmethod
   def linkage_matrix_to_dict(linkage_matrix):
@@ -341,6 +342,9 @@ class multi_crystal_analysis(object):
       d['xaxis'] = 'x3'
 
     D = correlation_matrix.as_numpy_array()
+    index = ddict['leaves']
+    D = D[index,:]
+    D = D[:,index]
     ccdict = {
       'data': [{
         'name': 'correlation_matrix',
@@ -353,7 +357,7 @@ class multi_crystal_analysis(object):
           'titleside': 'right',
           'xpad': 0,
         },
-        'colorscale': 'Jet',
+        'colorscale': 'YIOrRd',
         'xaxis': 'x',
         'yaxis': 'y',
       }],

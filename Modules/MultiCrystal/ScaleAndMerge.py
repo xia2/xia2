@@ -384,7 +384,8 @@ class MultiCrystalScale(object):
 
     self._data_manager.export_experiments('experiments_reindexed_all.json')
     self._data_manager.export_reflections('reflections_reindexed_all.pickle')
-    self.stereographic_projections('experiments_reindexed_all.json')
+    self._stereographic_projection_files = self.stereographic_projections(
+      'experiments_reindexed_all.json')
     self.plot_multiplicity(self._scaled.scaled_unmerged_mtz)
 
     min_completeness = self._params.min_completeness
@@ -404,6 +405,8 @@ class MultiCrystalScale(object):
         data_manager = copy.deepcopy(self._data_manager_original)
         data_manager.select(cluster.labels)
         scaled = Scale(data_manager, self._params)
+
+    self.report()
 
     return
 
@@ -656,7 +659,113 @@ class MultiCrystalScale(object):
       prefix=prefix
     )
 
+    self._cc_cluster_json = mca.to_plotly_json(
+      mca.cc_matrix, mca.cc_linkage_matrix,
+      labels=separate.run_id_to_batch_id.values())
+    self._cc_cluster_table = mca.as_table(mca.cc_clusters)
+
+    self._cos_angle_cluster_json = mca.to_plotly_json(
+      mca.cos_angle_matrix, mca.cos_angle_linkage_matrix,
+      labels=separate.run_id_to_batch_id.values())
+    self._cos_angle_cluster_table = mca.as_table(mca.cos_angle_clusters)
+
     return mca
+
+  def report(self):
+    import json
+    from xia2.XIA2Version import Version
+    from xia2.command_line.report import xia2_report
+    from xia2.command_line.report import phil_scope as report_phil_scope
+    params = report_phil_scope.extract()
+    params.prefix = 'multi-crystal'
+    params.title = 'Multi crystal report'
+
+    unmerged_mtz = self._scaled.scaled_unmerged_mtz
+    report = xia2_report(unmerged_mtz, params, base_dir='.')
+
+    overall_stats_table = report.overall_statistics_table()
+    merging_stats_table = report.merging_statistics_table()
+    symmetry_table_html = report.symmetry_table_html()
+
+    json_data = {}
+    json_data.update(report.multiplicity_vs_resolution_plot())
+    json_data.update(report.multiplicity_histogram())
+    json_data.update(report.completeness_plot())
+    json_data.update(report.scale_rmerge_vs_batch_plot())
+    json_data.update(report.cc_one_half_plot())
+    json_data.update(report.i_over_sig_i_plot())
+    json_data.update(report.i_over_sig_i_vs_batch_plot())
+    json_data.update(report.second_moments_plot())
+    json_data.update(report.cumulative_intensity_distribution_plot())
+    json_data.update(report.l_test_plot())
+    json_data.update(report.wilson_plot())
+    json_data.update(self._scaled._chef_stats.to_dict())
+
+    styles = {}
+    for hkl in ((1,0,0), (0,1,0), (0,0,1)):
+      with open(self._stereographic_projection_files[hkl], 'rb') as f:
+        d = json.load(f)
+        d['layout']['title'] = 'Stereographic projection (hkl=%i%i%i)' %hkl
+        key = 'stereographic_projection_%s%s%s' %hkl
+        json_data[key] = d
+        styles[key] = 'square-plot'
+
+    resolution_graphs = OrderedDict(
+      (k, json_data[k]) for k in
+      ('cc_one_half', 'i_over_sig_i', 'second_moments', 'wilson_intensity_plot',
+       'completeness', 'multiplicity_vs_resolution') if k in json_data)
+
+    batch_graphs = OrderedDict(
+      (k, json_data[k]) for k in
+      ('scale_rmerge_vs_batch', 'i_over_sig_i_vs_batch', 'completeness_vs_dose',
+       'rcp_vs_dose', 'scp_vs_dose', 'rd_vs_batch_difference'))
+
+    misc_graphs = OrderedDict(
+      (k, json_data[k]) for k in
+      ('cumulative_intensity_distribution', 'l_test', 'multiplicities',
+       ) if k in json_data)
+
+    for k, v in report.multiplicity_plots().iteritems():
+      misc_graphs[k] = {'img': v}
+
+    for k in ('stereographic_projection_100', 'stereographic_projection_010',
+              'stereographic_projection_001'):
+      misc_graphs[k] = json_data[k]
+
+    for axis in ('h', 'k', 'l'):
+      styles['multiplicity_%s' %axis] = 'square-plot'
+
+    from jinja2 import Environment, ChoiceLoader, PackageLoader
+    loader = ChoiceLoader([PackageLoader('xia2', 'templates'),
+                           PackageLoader('dials', 'templates')])
+    env = Environment(loader=loader)
+
+    template = env.get_template('multi_crystal.html')
+    html = template.render(
+      page_title=params.title,
+      filename=os.path.abspath(unmerged_mtz),
+      space_group=report.intensities.space_group_info().symbol_and_number(),
+      unit_cell=str(report.intensities.unit_cell()),
+      mtz_history=[h.strip() for h in report.mtz_object.history()],
+      overall_stats_table=overall_stats_table,
+      merging_stats_table=merging_stats_table,
+      cc_half_significance_level=params.cc_half_significance_level,
+      resolution_graphs=resolution_graphs,
+      batch_graphs=batch_graphs,
+      misc_graphs=misc_graphs,
+      cc_cluster_table=self._cc_cluster_table,
+      cc_cluster_json=self._cc_cluster_json,
+      cos_angle_cluster_table=self._cos_angle_cluster_table,
+      cos_angle_cluster_json=self._cos_angle_cluster_json,
+      styles=styles,
+      xia2_version=Version,
+    )
+
+    with open('%s-report.json' % params.prefix, 'wb') as f:
+      json.dump(json_data, f)
+
+    with open('%s-report.html' % params.prefix, 'wb') as f:
+      f.write(html.encode('ascii', 'xmlcharrefreplace'))
 
 
 class Scale(object):
@@ -955,5 +1064,5 @@ class Scale(object):
       import json
       json.dump(stats.to_dict(), f)
 
-if __name__ == "__main__":
-  run()
+    self._chef_stats = stats
+    return stats

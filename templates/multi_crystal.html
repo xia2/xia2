@@ -1,0 +1,163 @@
+{% import 'xia2_macros.html' as xia2_macros %}
+{% extends "report_base.html" %}
+{% block content %}
+<div class="page-header">
+    <h1>{{ page_title }}</h1>
+</div>
+
+<div>
+    <h2>Merging statistics</h2>
+
+    <p>
+        <b>Filename:</b> {{ filename }}
+        <br>
+        <b>Space group:</b> {{ space_group }}
+        <br>
+        <b>Unit cell:</b> {{ unit_cell }}
+    </p>
+
+    <div class="panel-group">
+
+        {% if log_text %}
+
+        <div class="panel panel-default">
+            <div class="panel-heading" data-toggle="collapse" data-target="#collapse_log">
+                <h4 class="panel-title">
+                    <a>{{ page_title }} log text</a>
+                </h4>
+            </div>
+            <div id="collapse_log" class="panel-collapse collapse">
+                <div class="panel-body">
+                    <pre>
+{{ log_text }}
+                    </pre>
+                </div>
+            </div>
+        </div>
+
+        {% endif %}
+
+        {% if mtz_history %}
+
+        <div class="panel panel-default">
+            <div class="panel-heading" data-toggle="collapse" data-target="#collapse_history">
+                <h4 class="panel-title">
+                    <a>MTZ history</a>
+                </h4>
+            </div>
+            <div id="collapse_history" class="panel-collapse collapse">
+                <div class="panel-body">
+                    <ul class="list-group">
+                    {% for item in mtz_history %}
+                        <li class="list-group-item">{{ item }}</li>
+                    {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        {% endif %}
+
+        <div class="panel panel-default">
+            <div class="panel-heading" data-toggle="collapse" data-target="#collapse_expt">
+                <h4 class="panel-title">
+                    <a>Overall</a>
+                </h4>
+            </div>
+            <div id="collapse_expt" class="panel-collapse collapse in">
+                <div class="panel-body">
+                    <div style="width: 800px">
+                        {{ macros.table(overall_stats_table,
+                                        has_column_header=true,
+                                        has_row_header=true) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading" data-toggle="collapse" data-target="#collapse_geom">
+                <h4 class="panel-title">
+                    <a>Resolution shells</a>
+                </h4>
+            </div>
+            <div id="collapse_geom" class="panel-collapse collapse">
+                <div class="panel-body">
+                    {{ macros.table(merging_stats_table, has_column_header=true) }}
+                  *significant at p={{ cc_half_significance_level }}
+                </div>
+            </div>
+        </div>
+        {% if xtriage_success or xtriage_warnings or xtriage_danger %}
+            {{ xia2_macros.xtriage_results(xtriage_success, xtriage_warnings, xtriage_danger) }}
+        {% endif %}
+    </div>
+</div>
+
+<div>
+    <h2>Analysis plots</h2>
+
+    <div class="panel-group">
+        {{ macros.panel('Analysis by resolution', 'resolution', resolution_graphs) }}
+        {{ macros.panel('Analysis by batch', 'batch', batch_graphs) }}
+        {{ macros.panel('Miscellaneous', 'misc', misc_graphs, styles=styles) }}
+
+        <div class="panel panel-default">
+            <div class="panel-heading" data-toggle="collapse" data-target="#collapse_intensity_cluster">
+                <h4 class="panel-title">
+                    <a>Intensity clustering</a>
+                </h4>
+            </div>
+            <div id="collapse_intensity_cluster" class="panel-collapse collapse">
+                <div class="panel-body">
+
+                    <div class="panel panel-default">
+                        <div class="panel-heading" data-toggle="collapse" data-target="#collapse_cc_cluster">
+                            <h4 class="panel-title">
+                                <a>Correlation coefficient clustering</a>
+                            </h4>
+                        </div>
+                        <div id="collapse_cc_cluster" class="panel-collapse collapse">
+                            <div class="panel-body">
+
+                                <div class="container-fluid">
+                                    {{ macros.plotly_graph("cc_cluster", cc_cluster_json, style="dendgrogram-plot") }}
+                                    {{ macros.table(cc_cluster_table,
+                                                    has_column_header=true,
+                                                    has_row_header=true) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel panel-default">
+                        <div class="panel-heading" data-toggle="collapse" data-target="#collapse_cos_angle_cluster">
+                            <h4 class="panel-title">
+                                <a>Cos angle clustering</a>
+                            </h4>
+                        </div>
+                        <div id="collapse_cos_angle_cluster" class="panel-collapse collapse">
+                            <div class="panel-body">
+
+                                <div class="container-fluid">
+                                    {{ macros.plotly_graph("cos_angle_cluster", cos_angle_cluster_json, style="dendgrogram-plot") }}
+                                    {{ macros.table(cos_angle_cluster_table,
+                                                    has_column_header=true,
+                                                    has_row_header=true) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<div>
+  <p>{{ xia2_version }}</p>
+</div>
+
+{% endblock %}
