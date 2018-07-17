@@ -75,6 +75,8 @@ def DialsScale(DriverType=None,
       #self._surface_link = True
       self._lmax = None
 
+      self._isigma_selection = None
+
       self._intensities = None
 
       self._project_crystal_dataset = { }
@@ -143,6 +145,10 @@ def DialsScale(DriverType=None,
       assert intensities in ("summation", "profile", "combine")
       self._intensities = intensities
 
+    def set_isigma_selection(self, isigma_selection):
+      assert len(isigma_selection) == 2
+      self._isigma_selection = isigma_selection
+
     def set_optimise_errors(self, optimise_errors=True):
       self._optimise_errors = optimise_errors
 
@@ -198,6 +204,10 @@ def DialsScale(DriverType=None,
         self.add_command_line('decay_interval=%g' % self._brotation)
 
       # next any 'generic' parameters
+
+      if self._isigma_selection is not None:
+        self.add_command_line(
+          'reflection_selection.Isigma_range=%f,%f' % tuple(self._isigma_selection))
 
       if self._resolution:
         self.add_command_line('d_min=%g' % self._resolution)

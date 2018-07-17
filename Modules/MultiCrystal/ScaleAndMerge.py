@@ -95,6 +95,8 @@ scaling
       .type = choice
     outlier_rejection = simple *standard
       .type = choice
+    Isigma_range = 2.0,100000
+      .type = floats(size=2)
   }
 }
 
@@ -931,6 +933,8 @@ class Scale(object):
     lmax = self._params.scaling.secondary.lmax
     scaler.set_secondary(mode=secondary, lmax=lmax)
     scaler.set_spacing(self._params.scaling.rotation.spacing)
+    if self._params.scaling.brotation.spacing is not None:
+      scaler.set_bfactor(brotation=self._params.scaling.brotation.spacing)
     if d_min is not None:
       scaler.set_resolution(d_min)
     scaler.scale()
@@ -953,8 +957,12 @@ class Scale(object):
     else:
       scaler.set_absorption_correction(False)
     scaler.set_spacing(self._params.scaling.rotation.spacing)
+    if self._params.scaling.brotation.spacing is not None:
+      scaler.set_bfactor(brotation=self._params.scaling.brotation.spacing)
     if d_min is not None:
       scaler.set_resolution(d_min)
+    if self._params.scaling.dials.Isigma_range is not None:
+      scaler.set_isigma_selection(self._params.scaling.dials.Isigma_range)
 
     scaler.set_full_matrix(False)
     scaler.set_model(self._params.scaling.dials.model)
