@@ -30,6 +30,7 @@ from xia2.Modules.MultiCrystal import separate_unmerged
 import xia2.Modules.Scaler.tools as tools
 from xia2.Wrappers.CCP4.Aimless import Aimless
 from xia2.Wrappers.CCP4.Pointless import Pointless
+from xia2.Wrappers.Dials.Cosym import DialsCosym
 from xia2.Wrappers.Dials.Refine import Refine
 from xia2.Wrappers.Dials.Scale import DialsScale
 from xia2.Wrappers.Dials.Symmetry import DialsSymmetry
@@ -319,9 +320,11 @@ class DataManager(object):
 
   def export_reflections(self, filename):
     self._reflections.as_pickle(filename)
+    return filename
 
   def export_experiments(self, filename):
     dump.experiment_list(self._experiments, filename)
+    return filename
 
   def export_mtz(self, filename=None, params=None):
     if params is None:
@@ -565,6 +568,25 @@ class MultiCrystalScale(object):
     plt.close(f)
 
   def cosym(self):
+    logger.debug('Running cosym analysis')
+    cosym = DialsCosym()
+    auto_logfiler(cosym)
+
+    experiments_filename = self._data_manager.export_experiments(
+      'tmp_experiments.json')
+    reflections_filename = self._data_manager.export_reflections(
+      'tmp_reflections.pickle')
+    cosym.add_experiments_json(experiments_filename)
+    cosym.add_reflections_pickle(reflections_filename)
+    cosym.run()
+
+    self._experiments_filename = cosym.get_reindexed_experiments()
+    self._reflections_filename = cosym.get_reindexed_reflections()
+    self._data_manager.experiments = load.experiment_list(
+      self._experiments_filename, check_format=False)
+    self._data_manager.reflections = flex.reflection_table.from_pickle(
+      self._reflections_filename)
+    return
 
     # per-dataset change of basis operator to ensure all consistent
 
