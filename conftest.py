@@ -19,6 +19,8 @@ def pytest_addoption(parser):
                    help="run slow tests")
   parser.addoption("--regression", action="store_true", default=False,
                    help="run regression tests")
+  parser.addoption("--regression-only", action="store_true", default=False,
+                   help="run only regression tests")
 
 def pytest_collection_modifyitems(config, items):
   '''Tests marked as slow will not be run unless slow tests are enabled with
@@ -31,7 +33,12 @@ def pytest_collection_modifyitems(config, items):
     for item in items:
       if "slow" in item.keywords:
         item.add_marker(skip_slow)
-  if not config.getoption("--regression"):
+  if config.getoption("--regression-only"):
+    skip_regression = pytest.mark.skip(reason="Test only runs without --regression-only")
+    for item in items:
+      if "regression" not in item.keywords:
+        item.add_marker(skip_regression)
+  elif not config.getoption("--regression"):
     skip_regression = pytest.mark.skip(reason="Test only runs with --regression")
     for item in items:
       if "regression" in item.keywords:
