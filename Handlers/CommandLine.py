@@ -56,18 +56,15 @@ def unroll_datasets(datasets):
   unrolled = []
 
   for dataset in datasets:
-    if not ':' in dataset:
-      unrolled.append(dataset)
-      continue
     tokens = dataset.split(':')
     if len(tokens[0]) == 1:
       # because windows
       tokens = ['%s:%s' % (tokens[0], tokens[1])] + tokens[2:]
-    if len(tokens) == 3:
+    if len(tokens) in (1, 3):
       unrolled.append(dataset)
       continue
     if len(tokens) != 4:
-      raise RuntimeError('/path/to/image_0001.cbf:start:end[:chunk]')
+      raise RuntimeError('Dataset ranges must be passed as /path/to/image_0001.cbf:start:end[:chunk]')
     start, end, incr = map(int, tokens[1:])
     if start + incr > end:
       raise RuntimeError('chunk size greater than total')
