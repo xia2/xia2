@@ -414,6 +414,7 @@ class MultiCrystalScale(object):
     min_multiplicity = self._params.min_multiplicity
     if min_completeness is not None or min_multiplicity is not None:
       self._data_manager_original = self._data_manager
+      cwd = os.path.abspath(os.getcwd())
       for cluster in mca.cos_angle_clusters:
         if min_completeness is not None and cluster.completeness < min_completeness:
           continue
@@ -424,9 +425,13 @@ class MultiCrystalScale(object):
 
         logger.info('Scaling cos angle cluster %i:' % cluster.cluster_id)
         logger.info(cluster)
+        cluster_dir = 'cos_angle_cluster_%i' % cluster.cluster_id
+        os.mkdir(cluster_dir)
+        os.chdir(cluster_dir)
         data_manager = copy.deepcopy(self._data_manager_original)
         data_manager.select(cluster.labels)
         scaled = Scale(data_manager, self._params)
+        os.chdir(cwd)
 
     self.report()
 
