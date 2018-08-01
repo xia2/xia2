@@ -146,6 +146,8 @@ nproc = Auto
   .type = int(value_min=1)
   .help = "The number of processors to use"
   .expert_level = 0
+remove_profile_fitting_failures = True
+  .type = bool
 
 ''', process_includes=True)
 
@@ -357,6 +359,19 @@ class MultiCrystalScale(object):
   def __init__(self, experiments, reflections, params):
 
     self._data_manager = DataManager(experiments, reflections)
+
+    if params.remove_profile_fitting_failures:
+      profile_fitted_mask = reflections.get_flags(reflections.flags.integrated_prf)
+      keep_expts = []
+      for i, expt in enumerate(experiments):
+        refl_sel = reflections['identifier'] == expt.identifier
+        if profile_fitted_mask.select(refl_sel).count(True):
+          keep_expts.append(experiments[i].identifier)
+      if len(keep_expts):
+        logger.info('Selecting %i experiments with profile-fitted reflections'
+                     % len(keep_expts))
+        self._data_manager.select(keep_expts)
+
     self._params = params
 
     if self._params.nproc is Auto:
