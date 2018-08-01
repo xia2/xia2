@@ -111,6 +111,8 @@ symmetry {
     .type = float(value_min=0)
   program = *pointless dials
     .type = choice
+  space_group = None
+    .type = space_group
 }
 
 resolution
@@ -593,6 +595,8 @@ class MultiCrystalScale(object):
       'tmp_reflections.pickle')
     cosym.add_experiments_json(experiments_filename)
     cosym.add_reflections_pickle(reflections_filename)
+    if self._params.symmetry.space_group is not None:
+      cosym.set_space_group(self._params.symmetry.space_group.group())
     cosym.run()
 
     self._experiments_filename = cosym.get_reindexed_experiments()
@@ -832,6 +836,20 @@ class Scale(object):
     self.radiation_damage_analysis(d_min=d_min)
 
   def decide_space_group(self):
+    if self._params.symmetry.space_group is not None:
+      self._sorted_mtz = 'sorted.mtz'
+      # reindex to correct bravais setting
+      cb_op = sgtbx.change_of_basis_op()
+      self._data_manager.reindex(
+        cb_op=cb_op, space_group=self._params.symmetry.space_group.group())
+      # export reflections
+      self._sorted_mtz = self._data_manager.export_mtz(
+        filename=self._sorted_mtz)
+      self._experiments_filename = 'experiments.json'
+      self._reflections_filename = 'reflections.pickle'
+      self._data_manager.export_experiments(self._experiments_filename)
+      self._data_manager.export_reflections(self._reflections_filename)
+      return
     if self._params.symmetry.program == 'pointless':
       space_group, reindex_op = self._decide_space_group_pointless()
     else:

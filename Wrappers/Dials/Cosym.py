@@ -28,6 +28,8 @@ def DialsCosym(DriverType=None,
       self._experiments_json = []
       self._reflections_pickle = []
 
+      self._space_group = None
+
     # getter and setter methods
 
     def add_experiments_json(self, experiments_json):
@@ -41,6 +43,9 @@ def DialsCosym(DriverType=None,
 
     def get_reindexed_reflections(self):
       return self._reindexed_reflections
+
+    def set_space_group(self, space_group):
+      self._space_group = space_group
 
     def run(self):
       assert len(self._experiments_json)
@@ -62,9 +67,12 @@ def DialsCosym(DriverType=None,
         self.get_working_directory(),
         '%i_reindexed_reflections.pickle' % self.get_xpid())
 
-      self.add_command_line("output.experiments='%s'" % self._reindexed_experiments)
-      self.add_command_line("output.reflections='%s'" % self._reindexed_reflections)
+      self.add_command_line('output.experiments="%s"' % self._reindexed_experiments)
+      self.add_command_line('output.reflections="%s"' % self._reindexed_reflections)
       self.add_command_line('plot_prefix=%s_' % self.get_xpid())
+      if self._space_group is not None:
+        self.add_command_line(
+          'space_group="%s"' % self._space_group.type().lookup_symbol())
 
       self.start()
       self.close_wait()
