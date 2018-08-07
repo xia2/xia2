@@ -98,6 +98,10 @@ scaling
       .type = choice
     Isigma_range = 2.0,100000
       .type = floats(size=2)
+    min_partiality = None
+      .type = float(value_min=0, value_max=1)
+    partiality_cutoff = None
+      .type = float(value_min=0, value_max=1)
   }
 }
 
@@ -1012,6 +1016,10 @@ class Scale(object):
       scaler.set_resolution(d_min)
     if self._params.scaling.dials.Isigma_range is not None:
       scaler.set_isigma_selection(self._params.scaling.dials.Isigma_range)
+    if self._params.scaling.dials.min_partiality is not None:
+      scaler.set_min_partiality = self._params.scaling.dials.min_partiality
+    if self._params.scaling.dials.partiality_cutoff is not None:
+      scaler.set_partiality_cutoff = self._params.scaling.dials.partiality_cutoff
 
     scaler.set_full_matrix(False)
     scaler.set_model(self._params.scaling.dials.model)

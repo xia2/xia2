@@ -43,6 +43,8 @@ def DialsScale(DriverType=None,
       self._absorption_correction = True
       self._optimise_errors = True
       self._outlier_rejection = 'standard'
+      self._min_partiality = None
+      self._partiality_cutoff = None
 
       # input and output files
       self._unmerged_reflections = None
@@ -101,7 +103,7 @@ def DialsScale(DriverType=None,
 
       self._resolution = resolution
 
-    def set_bfactor(self, bfactor = True, brotation = None):
+    def set_bfactor(self, bfactor=True, brotation=None):
       '''Switch on/off bfactor refinement, optionally with the
       spacing for the bfactor refinement (in degrees.)'''
 
@@ -109,6 +111,12 @@ def DialsScale(DriverType=None,
 
       if brotation:
         self._brotation = brotation
+
+    def set_min_partiality(self, min_partiality):
+      self._min_partiality = min_partiality
+
+    def set_partiality_cutoff(self, v):
+      self._partiality_cutoff = partiality_cutoff
 
     #def set_surface_tie(self, surface_tie):
       #self._surface_tie = surface_tie
@@ -198,6 +206,12 @@ def DialsScale(DriverType=None,
       self.add_command_line('absorption_term=%s' % self._absorption_correction)
       if self._absorption_correction and self._lmax is not None:
         self.add_command_line('lmax=%i' % self._lmax)
+
+      if self._min_partiality is not None:
+        min_partiality = self._min_partiality
+
+      if self._partiality_cutoff is not None:
+        partiality_cutoff = self._partiality_cutoff
 
       self.add_command_line('decay_term=%s' % self._bfactor)
       if self._bfactor and self._brotation is not None:
