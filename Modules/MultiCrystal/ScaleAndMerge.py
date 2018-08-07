@@ -336,18 +336,7 @@ class DataManager(object):
     if filename is not None:
       params.mtz.hklout = filename
 
-    m = export_mtz(
-      self._reflections,
-      self._experiments,
-      params.mtz.hklout,
-      include_partials=params.mtz.include_partials,
-      keep_partials=params.mtz.keep_partials,
-      scale_partials=params.mtz.scale_partials,
-      min_isigi=params.mtz.min_isigi,
-      force_static_model=params.mtz.force_static_model,
-      filter_ice_rings=params.mtz.filter_ice_rings,
-      ignore_profile_fitting=params.mtz.ignore_profile_fitting,
-      apply_scales=params.mtz.apply_scales)
+    m = export_mtz(self._reflections, self._experiments, params)
     m.show_summary()
 
     b1 = set(b.num() for b in m.batches())
