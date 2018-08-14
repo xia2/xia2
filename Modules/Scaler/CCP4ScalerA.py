@@ -1031,8 +1031,8 @@ class CCP4ScalerA(Scaler):
 
     sc.scale()
 
-    FileHandler.record_xml_file('%s %s aimless xml' % (self._scalr_pname,
-                                                       self._scalr_xname),
+    FileHandler.record_xml_file('%s %s aimless' % (self._scalr_pname,
+                                                   self._scalr_xname),
                                 sc.get_xmlout())
 
     data = sc.get_summary()
