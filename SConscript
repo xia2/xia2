@@ -1,10 +1,5 @@
-import libtbx.load_env
-import os
-import platform
 Import("env_etc")
 
-env_etc.xia2_dist = libtbx.env.dist_path("xia2")
-env_etc.xia2_include = os.path.dirname(env_etc.xia2_dist)
 if (not env_etc.no_boost_python and hasattr(env_etc, "boost_adaptbx_include")):
     Import("env_no_includes_boost_python_ext")
     env = env_no_includes_boost_python_ext.Clone()
