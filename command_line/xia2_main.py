@@ -77,6 +77,7 @@ def xia2_main(stop_after=None):
   xinfo = CommandLine.get_xinfo()
 
   if os.path.exists('xia2.json'):
+    Debug.write('==== Starting from existing xia2.json ====')
     from xia2.Schema.XProject import XProject
     xinfo_new = xinfo
     xinfo = XProject.from_json(filename='xia2.json')
