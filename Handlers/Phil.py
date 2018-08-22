@@ -353,10 +353,12 @@ dials
     background_algorithm = simple null *glm
       .type = choice
       .short_caption = "Background fit method"
-    include_partials = True
+    combine_partials = True
       .type = bool
-      .help = "Include partial reflections (scaled) in output"
-      .short_caption = "Include partials"
+      .help = "Combine partial reflections for output"
+    partiality_threshold = 0.99
+      .type = float
+      .help = "Minimum combined partiality for output"
     mosaic = *old new
       .type = choice
       .help = "Mosaicity determination method to use"

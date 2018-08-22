@@ -25,18 +25,15 @@ def ExportMtz(DriverType = None):
       self._experiments_filename = None
       self._reflections_filename = None
       self._mtz_filename = "hklout.mtz"
-      self._include_partials = False
-      self._keep_partials = False
-      self._scale_partials = True
+      self._partiality_threshold = 0.99
+      self._combine_partials = True
+      self._intensity_choice = 'prf+sum'
 
-    def set_include_partials(self, include_partials):
-      self._include_partials = include_partials
+    def set_partiality_threshold(self, partiality_threshold):
+      self._partiality_threshold = partiality_threshold
 
-    def set_keep_partials(self, keep_partials):
-      self._keep_partials = keep_partials
-
-    def set_scale_partials(self, scale_partials):
-      self._scale_partials = scale_partials
+    def set_combine_partials(self, combine_partials):
+      self._combine_partials = combine_partials
 
     def set_experiments_filename(self, experiments_filename):
       self._experiments_filename = experiments_filename
@@ -64,12 +61,11 @@ def ExportMtz(DriverType = None):
       self.add_command_line('experiments=%s' % self._experiments_filename)
       self.add_command_line('reflections=%s' % self._reflections_filename)
       self.add_command_line('mtz.hklout=%s' % self._mtz_filename)
-      if self._include_partials:
-        self.add_command_line('include_partials=true')
-      if self._keep_partials:
-        self.add_command_line('keep_partials=true')
-      self.add_command_line('scale_partials=%s' %self._scale_partials)
+      if self._combine_partials:
+        self.add_command_line('combine_partials=true')
+      self.add_command_line('partiality_threshold=%s' % self._partiality_threshold)
       self.add_command_line('ignore_panels=true')
+      self.add_command_line('intensity=%s' % self._intensity_choice)
       self.start()
       self.close_wait()
       self.check_for_errors()

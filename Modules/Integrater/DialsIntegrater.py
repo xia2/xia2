@@ -118,10 +118,10 @@ class DialsIntegrater(Integrater):
     export.set_working_directory(self.get_working_directory())
 
     export.set_experiments_filename(self._intgr_experiments_filename)
-    export.set_include_partials(params.include_partials)
+    export.set_combine_partials(params.combine_partials)
+    export.set_partiality_threshold(params.partiality_threshold)
     if len(self.get_matching_images()) == 1:
-      export.set_keep_partials(True)
-      export.set_scale_partials(False)
+      export.set_partiality_threshold(0.1)
 
     auto_logfiler(export, 'EXPORTMTZ')
 
