@@ -100,11 +100,13 @@ class separate_unmerged(object):
 
 class ClusterInfo(object):
   def __init__(self, cluster_id, labels,
-               multiplicity, completeness, height=None):
+               multiplicity, completeness, unit_cell,
+               height=None):
     self.cluster_id = cluster_id
     self.labels = labels
     self.multiplicity = multiplicity
     self.completeness = completeness
+    self.unit_cell = unit_cell
     self.height = height
 
   def __str__(self):
@@ -142,11 +144,12 @@ class multi_crystal_analysis(object):
 
     for i, unmerged in enumerate(self.intensities):
       self.individual_merged_intensities.append(
-        unmerged.merge_equivalents().array())
+        unmerged.merge_equivalents().array().set_info(unmerged.info()))
       if self._intensities_all is None:
         self._intensities_all = unmerged.deep_copy()
       else:
-        self._intensities_all = self._intensities_all.concatenate(unmerged)
+        self._intensities_all = self._intensities_all.concatenate(
+          unmerged, assert_is_similar_symmetry=False)
       self._labels_all.extend(flex.size_t(unmerged.size(), i))
 
     self.run_cosym()
@@ -205,8 +208,13 @@ class multi_crystal_analysis(object):
     info = []
     for cluster_id, cluster in cluster_dict.iteritems():
       sel_cluster = flex.bool(self._labels_all.size(), False)
+      uc_params = [flex.double() for i in range(6)]
       for j in cluster['datasets']:
         sel_cluster |= (self._labels_all == j)
+        uc_j = self.intensities[j-1].unit_cell().parameters()
+        for i in range(6):
+          uc_params[i].append(uc_j[i])
+      average_uc = [flex.mean(uc_params[i]) for i in range(6)]
       intensities_cluster = self._intensities_all.select(sel_cluster)
       merging = intensities_cluster.merge_equivalents()
       merged_intensities = merging.array()
@@ -217,17 +225,19 @@ class multi_crystal_analysis(object):
         cluster_id, labels,
         flex.mean(multiplicities.data().as_double()),
         merged_intensities.completeness(),
+        unit_cell=average_uc,
         height=cluster.get('height')
       ))
     return info
 
   def as_table(self, cluster_info):
     from libtbx.str_utils import wordwrap
-    headers = ['Cluster', 'Datasets', 'Height', 'Multiplicity', 'Completeness']
+    headers = ['Cluster', 'No. datasets', 'Datasets', 'Height', 'Multiplicity', 'Completeness']
     rows = []
     for info in cluster_info:
       rows.append(
         ['%i' % info.cluster_id,
+         '%i' % len(info.labels),
          wordwrap(' '.join('%s' % l for l in info.labels)),
          '%.2g' % info.height,
          '%.1f' % info.multiplicity,
@@ -281,7 +291,7 @@ class multi_crystal_analysis(object):
     params.cluster.method = "dbscan"
     params.plot_prefix = self._prefix
 
-    results = analyse_datasets(self.individual_merged_intensities, params)
+    results = analyse_datasets(datasets, params)
     results.plot()
     self.cosym = results
 

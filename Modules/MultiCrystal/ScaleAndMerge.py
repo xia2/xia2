@@ -231,8 +231,8 @@ class DataManager(object):
   def reflections_as_miller_arrays(self, intensity_key='intensity.sum.value', return_batches=False):
     from cctbx import crystal, miller
     variance_key = intensity_key.replace('.value', '.variance')
-    assert intensity_key in self._reflections
-    assert variance_key in self._reflections
+    assert intensity_key in self._reflections, intensity_key
+    assert variance_key in self._reflections, variance_key
 
     miller_arrays = []
     for expt in self._experiments:
@@ -243,15 +243,31 @@ class DataManager(object):
               & (self._reflections['identifier'] == expt.identifier)))
       assert sel.count(True) > 0
       refl = self._reflections.select(sel)
-      data = refl[intensity_key]
-      variances = refl[variance_key]
+
+      from dials.util.filter_reflections import filter_reflection_table
+      if intensity_key == 'intensity.scale.value':
+        intensity_choice = ['scale']
+        intensity_to_use = 'scale'
+      elif intensity_key == 'intensity.prf.value':
+        intensity_choice.append('prf')
+        intensity_to_use = 'prf'
+      else:
+        intensity_choice = ['sum']
+        intensity_to_use = 'sum'
+
+      partiality_threshold = 0.99
+      refl = filter_reflection_table(refl, intensity_choice, min_isigi=-5,
+        filter_ice_rings=False, combine_partials=True,
+        partiality_threshold=partiality_threshold)
+      assert refl.size() > 0
+      data = refl['intensity.'+intensity_to_use+'.value']
+      variances = refl['intensity.'+intensity_to_use+'.variance']
+
       if return_batches:
         batch_offset = expt.scan.get_batch_offset()
         zdet = refl['xyzobs.px.value'].parts()[2]
         batches = flex.floor(zdet).iround() + 1 + batch_offset
 
-      # FIXME probably need to do some filtering of intensities similar to that
-      # done in export_mtz
       miller_indices = refl['miller_index']
       assert variances.all_gt(0)
       sigmas = flex.sqrt(variances)
@@ -694,9 +710,13 @@ class MultiCrystalScale(object):
     xpid = bits._get_number()
     prefix = '%i_' % xpid
 
+    intensities = self._data_manager.reflections_as_miller_arrays(
+      intensity_key='intensity.scale.value',
+      return_batches=False)
+    labels = self._data_manager.experiments.identifiers()
     mca = multi_crystal_analysis(
-      separate.intensities.values(),
-      labels=separate.run_id_to_batch_id.values(),
+      intensities,
+      labels=labels,
       prefix=prefix
     )
 
@@ -1017,9 +1037,9 @@ class Scale(object):
     if self._params.scaling.dials.Isigma_range is not None:
       scaler.set_isigma_selection(self._params.scaling.dials.Isigma_range)
     if self._params.scaling.dials.min_partiality is not None:
-      scaler.set_min_partiality = self._params.scaling.dials.min_partiality
+      scaler.set_min_partiality(self._params.scaling.dials.min_partiality)
     if self._params.scaling.dials.partiality_cutoff is not None:
-      scaler.set_partiality_cutoff = self._params.scaling.dials.partiality_cutoff
+      scaler.set_partiality_cutoff(self._params.scaling.dials.partiality_cutoff)
 
     scaler.set_full_matrix(False)
     scaler.set_model(self._params.scaling.dials.model)
@@ -1030,9 +1050,9 @@ class Scale(object):
     self._scaled_unmerged_mtz = scaler.get_scaled_unmerged_mtz()
     self._experiments_filename = scaler.get_scaled_experiments()
     self._reflections_filename = scaler.get_scaled_reflections()
-    DataManager.experiments = load.experiment_list(
+    self._data_manager.experiments = load.experiment_list(
       self._experiments_filename, check_format=False)
-    DataManager.reflections = flex.reflection_table.from_pickle(
+    self._data_manager.reflections = flex.reflection_table.from_pickle(
       self._reflections_filename)
     self._params.resolution.labels = 'IPR,SIGIPR'
     return scaler
