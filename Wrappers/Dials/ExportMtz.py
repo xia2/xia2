@@ -27,7 +27,7 @@ def ExportMtz(DriverType = None):
       self._mtz_filename = "hklout.mtz"
       self._partiality_threshold = 0.99
       self._combine_partials = True
-      self._intensity_choice = 'prf+sum'
+      self._intensity_choice = 'profile+sum'
 
     def set_partiality_threshold(self, partiality_threshold):
       self._partiality_threshold = partiality_threshold
