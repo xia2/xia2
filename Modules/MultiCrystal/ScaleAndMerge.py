@@ -249,7 +249,7 @@ class DataManager(object):
         intensity_choice = ['scale']
         intensity_to_use = 'scale'
       elif intensity_key == 'intensity.prf.value':
-        intensity_choice.append('prf')
+        intensity_choice.append('profile')
         intensity_to_use = 'prf'
       else:
         intensity_choice = ['sum']
