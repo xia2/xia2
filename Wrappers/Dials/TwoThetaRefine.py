@@ -40,6 +40,7 @@ def TwoThetaRefine(DriverType = None):
       self._output_p4p = None
       self._output_correlation_plot = None
       self._output_experiments = None
+      self._output_reflections = None
 
       self._crystal = None
 
@@ -75,6 +76,12 @@ def TwoThetaRefine(DriverType = None):
 
     def get_output_experiments(self):
       return self._output_experiments
+
+    def get_reindexed_experiments(self):
+      return self._reindexed_experiments
+
+    def get_reindexed_reflections(self):
+      return self._reindexed_reflections
 
     def get_unit_cell(self):
       return self._crystal.get_unit_cell().parameters()

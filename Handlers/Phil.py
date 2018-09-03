@@ -364,6 +364,16 @@ dials
       .help = "Mosaicity determination method to use"
       .expert_level = 2
   }
+  scale
+    .expert_level = 1
+    .short_caption = "Scaling"
+  {
+    outlier_rejection = *standard simple
+      .type = choice
+      .help = "Choice of outlier rejection routine. Standard may take a
+        significant amount of time to run for large datasets or high
+        multiplicities, whereas simple should be quick for these datasets."
+  }
 }
 ccp4
   .short_caption = "CCP4 data reduction options"
@@ -471,7 +481,7 @@ strategy
 xia2.settings
   .short_caption = "xia2 settings"
 {
-  pipeline = 2d 2di 3d 3dd 3di 3dii *dials
+  pipeline = 2d 2di 3d 3dd 3di 3dii *dials dials-full
     .short_caption = "main processing pipeline"
     .help = "Select the xia2 main processing pipeline"
             "   2d: MOSFLM, LABELIT (if installed), AIMLESS"
@@ -481,6 +491,7 @@ xia2.settings
             " 3dii: XDS, XSCALE, using all images for autoindexing"
             "  3dd: as 3d, but use DIALS for indexing"
             "dials: DIALS, AIMLESS"
+            "dials-full: DIALS, including scaling"
     .type = choice
   small_molecule = False
     .type = bool
@@ -769,7 +780,7 @@ xia2.settings
   integrater = mosflmr xdsr mosflm xds dials
     .type = choice
     .expert_level = 2
-  scaler = ccp4a xdsa
+  scaler = ccp4a xdsa dials
     .type = choice
     .expert_level = 2
   merging_statistics

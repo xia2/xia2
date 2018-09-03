@@ -23,7 +23,7 @@ def check(key, value):
       'mosflm', 'labelit', 'labelitii', 'xds', 'xdsii', 'xdssum', 'dials']
   allowed_integraters = ['mosflmr', 'xdsr', 'mosflm', 'xds', 'dials']
   allowed_refiners = ['mosflm', 'xds', 'dials']
-  allowed_scalers = ['ccp4a', 'xdsa']
+  allowed_scalers = ['ccp4a', 'xdsa', 'dials']
 
   if key == 'indexer':
     if not value in allowed_indexers:

@@ -40,11 +40,17 @@ def CombineExperiments(DriverType = None):
     def add_experiments(self, experiments_filename):
       self._experiments_filenames.append(experiments_filename)
 
+    def add_reflections(self, indexed_filename):
+      self._reflections_filenames.append(indexed_filename)
+
     def get_experiments_filenames(self):
       return self._experiments_filenames
 
-    def add_reflections(self, indexed_filename):
-      self._reflections_filenames.append(indexed_filename)
+    def set_combined_experiments_filename(self, filename):
+      self._combined_experiments_filename = filename
+
+    def set_combined_reflections_filename(self, filename):
+      self._combined_reflections_filename = filename
 
     def get_combined_experiments_filename(self):
       return self._combined_experiments_filename
@@ -87,17 +93,19 @@ def CombineExperiments(DriverType = None):
       if self._same_detector:
         self.add_command_line("detector=0")
 
-      self._combined_experiments_filename = os.path.join(
-        self.get_working_directory(),
-        '%s_combined_experiments.json' % self.get_xpid())
+      if not self._combined_experiments_filename:
+        self._combined_experiments_filename = os.path.join(
+          self.get_working_directory(),
+          '%s_combined_experiments.json' % self.get_xpid())
       self.add_command_line(
-        'output.experiments_filename=%s' %self._combined_experiments_filename)
+        'output.experiments_filename=%s' % self._combined_experiments_filename)
 
-      self._combined_reflections_filename = os.path.join(
-        self.get_working_directory(),
-        '%s_combined_reflections.pickle' % self.get_xpid())
+      if not self._combined_reflections_filename:
+        self._combined_reflections_filename = os.path.join(
+          self.get_working_directory(),
+          '%s_combined_reflections.pickle' % self.get_xpid())
       self.add_command_line(
-        'output.reflections_filename=%s' %self._combined_reflections_filename)
+        'output.reflections_filename=%s' % self._combined_reflections_filename)
 
       self.start()
       self.close_wait()

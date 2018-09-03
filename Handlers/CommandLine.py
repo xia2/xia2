@@ -470,6 +470,9 @@ class _CommandLine(object):
     elif settings.pipeline == 'dials':
       Debug.write('DIALS pipeline selected')
       indexer, refiner, integrater, scaler = 'dials', 'dials', 'dials', 'ccp4a'
+    elif settings.pipeline == 'dials-full':
+      Debug.write('DIALS-FULL pipeline selected')
+      indexer, refiner, integrater, scaler = 'dials', 'dials', 'dials', 'dials'
 
     if indexer is not None and settings.indexer is None:
       PhilIndex.update("xia2.settings.indexer=%s" % indexer)
