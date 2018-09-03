@@ -502,7 +502,8 @@ class CommonScaler(Scaler):
     #self._scale_finish_chunk_2_report()
 
     if PhilIndex.params.xia2.settings.small_molecule == False:
-      self._scale_finish_chunk_3_truncate()
+      #self._scale_finish_chunk_3_truncate()
+      pass
 
     self._scale_finish_chunk_4_mad_mangling()
 

@@ -17,6 +17,7 @@ from xia2.Handlers.Streams import Debug
 # scaler implementations
 from xia2.Modules.Scaler.CCP4ScalerA import CCP4ScalerA
 from xia2.Modules.Scaler.XDSScalerA import XDSScalerA
+from xia2.Modules.Scaler.DialsScaler import DialsScaler
 
 def Scaler():
   '''Create a Scaler implementation.'''
@@ -41,5 +42,14 @@ def Scaler():
     except NotAvailableError:
       if preselection == 'xdsa':
         raise RuntimeError('preselected scaler xdsa not available')
+
+  if not scaler and \
+    (not preselection or preselection == 'dials'):
+    try:
+      scaler = DialsScaler()
+      Debug.write('Using DIALS Scaler')
+    except NotAvailableError:
+      if preselection == 'dials':
+        raise RuntimeError('preselected scaler dials not available')
 
   return scaler

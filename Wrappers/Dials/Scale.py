@@ -45,6 +45,8 @@ def DialsScale(DriverType=None,
       self._outlier_rejection = 'standard'
       self._min_partiality = None
       self._partiality_cutoff = None
+      self._dmin = None
+      self._dmax = None
 
       # input and output files
       self._unmerged_reflections = None
@@ -89,6 +91,11 @@ def DialsScale(DriverType=None,
       self._xname = None
       self._dname = None
 
+      self._scaled_experiments = None
+      self._scaled_reflections = None
+      self._unmerged_reflections = None
+      self._merged_reflections = None
+
     # getter and setter methods
 
     def add_experiments_json(self, experiments_json):
@@ -96,6 +103,10 @@ def DialsScale(DriverType=None,
 
     def add_reflections_pickle(self, reflections_pickle):
       self._reflections_pickle.append(reflections_pickle)
+
+    def clear_datafiles(self):
+      self._experiments_json = []
+      self._reflections_pickle = []
 
     def set_resolution(self, resolution):
       '''Set the resolution limit for the scaling -
@@ -116,7 +127,7 @@ def DialsScale(DriverType=None,
       self._min_partiality = min_partiality
 
     def set_partiality_cutoff(self, v):
-      self._partiality_cutoff = partiality_cutoff
+      self._partiality_cutoff = v
 
     #def set_surface_tie(self, surface_tie):
       #self._surface_tie = surface_tie
@@ -175,8 +186,23 @@ def DialsScale(DriverType=None,
     def get_scaled_experiments(self):
       return self._scaled_experiments
 
+    def set_scaled_experiments(self, filepath):
+      self._scaled_experiments = filepath
+
+    def set_scaled_reflections(self, filepath):
+      self._scaled_reflections = filepath
+
+    def set_scaled_mtz(self, filepath):
+      self._merged_reflections = filepath
+
+    def set_scaled_unmerged_mtz(self, filepath):
+      self._unmerged_reflections = filepath
+
     def scale(self):
       '''Actually perform the scaling.'''
+
+      self._command_line = [] #reset the command line in case has already
+      # been run previously
 
       assert len(self._experiments_json)
       assert len(self._reflections_pickle)
@@ -195,7 +221,7 @@ def DialsScale(DriverType=None,
       if self._intensities == 'summation':
         self.add_command_line('integration_method=sum')
       elif self._intensities == 'profile':
-        self.add_command_line('integration_method=prf')
+        self.add_command_line('integration_method=profile')
 
       self.add_command_line('model=%s' % self._model)
       self.add_command_line('full_matrix=%s' % self._full_matrix)
@@ -224,23 +250,27 @@ def DialsScale(DriverType=None,
           'reflection_selection.Isigma_range=%f,%f' % tuple(self._isigma_selection))
 
       if self._resolution:
-        self.add_command_line('d_min=%g' % self._resolution)
+        self.add_command_line('cut_data.d_min=%g' % self._resolution)
 
       if self._cycles is not None:
         self.add_command_line('max_iterations=%d' % self._cycles)
 
-      self._scaled_experiments = os.path.join(
-        self.get_working_directory(),
-        '%i_scaled_experiments.json' % self.get_xpid())
-      self._scaled_reflections = os.path.join(
-        self.get_working_directory(),
-        '%i_scaled_reflections.pickle' % self.get_xpid())
-      self._unmerged_reflections = os.path.join(
-        self.get_working_directory(),
-        '%i_scaled_unmerged.mtz' % self.get_xpid())
-      self._merged_reflections = os.path.join(
-        self.get_working_directory(),
-        '%i_scaled.mtz' % self.get_xpid())
+      if not self._scaled_experiments:
+        self._scaled_experiments = os.path.join(
+          self.get_working_directory(),
+          '%i_scaled_experiments.json' % self.get_xpid())
+      if not self._scaled_reflections:
+        self._scaled_reflections = os.path.join(
+          self.get_working_directory(),
+          '%i_scaled_reflections.pickle' % self.get_xpid())
+      if not self._unmerged_reflections:
+        self._unmerged_reflections = os.path.join(
+          self.get_working_directory(),
+          '%i_scaled_unmerged.mtz' % self.get_xpid())
+      if not self._merged_reflections:
+        self._merged_reflections = os.path.join(
+          self.get_working_directory(),
+          '%i_scaled.mtz' % self.get_xpid())
 
       self.add_command_line("output.experiments='%s'" % self._scaled_experiments)
       self.add_command_line("output.reflections='%s'" % self._scaled_reflections)
@@ -249,7 +279,6 @@ def DialsScale(DriverType=None,
       self.add_command_line("output.merged_mtz='%s'" % self._merged_reflections)
 
       # run using previously determined scales
-
       self.start()
       self.close_wait()
 
@@ -259,7 +288,7 @@ def DialsScale(DriverType=None,
         self.check_for_errors()
       except Exception:
         Chatter.write(
-          "dials.scale failed, see log file for more details:\n  %s" %self.get_log_file())
+          "dials.scale failed, see log file for more details:\n  %s" % self.get_log_file())
         raise
 
       Debug.write('dials.scale status: OK')
@@ -268,6 +297,9 @@ def DialsScale(DriverType=None,
       output = self.get_all_output()
 
       return 'OK'
+
+    def get_scaled_reflection_files(self):
+      return self._scalr_scaled_reflection_files
 
     def get_unmerged_reflection_file(self):
       return self._unmerged_reflections

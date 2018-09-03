@@ -230,16 +230,18 @@ def generate_xia2_html(xinfo, filename='xia2.html', params=None, args=[]):
          '<a href="%s">%s</a>' %(os.path.relpath(unmerged_mtz), os.path.basename(unmerged_mtz))])
 
     sca_files = [headers]
-    for wname, merged_sca in reflection_files['sca'].iteritems():
-      sca_files.append(
-        [wname,
-         '<a href="%s">%s</a>' %(os.path.relpath(merged_sca), os.path.basename(merged_sca))])
+    if 'sca' in reflection_files:
+      for wname, merged_sca in reflection_files['sca'].iteritems():
+        sca_files.append(
+          [wname,
+          '<a href="%s">%s</a>' %(os.path.relpath(merged_sca), os.path.basename(merged_sca))])
 
     unmerged_sca_files = [headers]
-    for wname, unmerged_sca in reflection_files['sca_unmerged'].iteritems():
-      unmerged_sca_files.append(
-        [wname,
-         '<a href="%s">%s</a>' %(os.path.relpath(unmerged_sca), os.path.basename(unmerged_sca))])
+    if 'sca_unmerged' in reflection_files:
+      for wname, unmerged_sca in reflection_files['sca_unmerged'].iteritems():
+        unmerged_sca_files.append(
+          [wname,
+          '<a href="%s">%s</a>' %(os.path.relpath(unmerged_sca), os.path.basename(unmerged_sca))])
 
   # other files
   other_files = []
