@@ -11,6 +11,10 @@ if __name__ == '__main__':
   parser.add_option("-d", "--destination", dest="destination", default=None,
                     help="Target directory for files, will be created if not present."
                          "Defaults to <build>/xia2_regression.")
+  parser.add_option("--td", dest="download_threads", type="int", default=8, help="Number of download threads (8)")
+  parser.add_option("--tv", dest="verify_threads", type="int", default=8, help="Number of file verification threads (8)")
+  parser.add_option("-r", "--retry", dest="retry", type="int", default=3, help="Number of times downloads are retried (3)")
+
   (options, args) = parser.parse_args(sys.argv[1:])
   if args:
     parser.print_help()
@@ -19,4 +23,12 @@ if __name__ == '__main__':
   from xia2.Test.fetch_test_data import fetch_test_data
   if options.destination:
     print("Downloading into directory %s" % options.destination)
-  fetch_test_data(options.destination)
+  try:
+    fetch_test_data(
+        options.destination,
+        retry_limit=options.retry,
+        verify_threads=options.verify_threads, download_threads=options.download_threads,
+    )
+  except KeyboardInterrupt:
+    print("\n\nInterrupted.")
+    sys.exit(1)
