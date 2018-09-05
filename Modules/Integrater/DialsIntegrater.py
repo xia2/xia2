@@ -122,6 +122,11 @@ class DialsIntegrater(Integrater):
     export.set_partiality_threshold(params.partiality_threshold)
     if len(self.get_matching_images()) == 1:
       export.set_partiality_threshold(0.1)
+    if len(self.get_matching_images()) == 1 or \
+        PhilIndex.params.dials.fast_mode or \
+        PhilIndex.params.xia2.settings.integration.profile_fitting == False:
+      # With no profiles available have to rely on summation alone
+      export.set_intensity_choice('sum')
 
     auto_logfiler(export, 'EXPORTMTZ')
 
