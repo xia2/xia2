@@ -28,7 +28,7 @@ def pytest_collection_modifyitems(config, items):
      latter allows running slow tests via the libtbx compatibility layer.
      Tests marked as regression are only run with --regression.
   '''
-  if not config.getoption("--runslow") and len(items) > 1:
+  if not config.getoption("--runslow") and len(items) > 1 and not config.getoption("--regression"):
     skip_slow = pytest.mark.skip(reason="need --runslow option to run")
     for item in items:
       if "slow" in item.keywords:
