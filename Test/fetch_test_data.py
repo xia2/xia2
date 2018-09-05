@@ -140,23 +140,16 @@ def fetch_test_data(target_dir, skip_existing_files=True, retry_limit=3, verify_
   for n in range(verify_threads):
     FileVerifier().start()
 
-  file_count = 0
   index_url = 'http://dials.diamond.ac.uk/xia2/filelist-v2.dat'
-  result = download_to_file(index_url, 'filelist-v2.dat')
-  if result == -1:
-    raise RuntimeError('Could not download file list.')
-
-  with open('filelist-v2.dat') as fh:
-    for record in fh:
-      checksum = record[0:32]
-      filename = record[34:].strip()
-      url = 'http://dials.diamond.ac.uk/xia2/' + filename
-      item = {'url': url, 'filename': filename, 'checksum': checksum, 'retry': 0}
-      if os.path.exists(item['filename']):
-        verify_queue.put(item)
-      else:
-        download_queue.put(item)
-      file_count = file_count + 1
+  for record in urllib2.urlopen(index_url).readlines():
+    checksum = record[0:32]
+    filename = record[34:].strip()
+    url = 'http://dials.diamond.ac.uk/xia2/' + filename
+    item = {'url': url, 'filename': filename, 'checksum': checksum, 'retry': 0}
+    if os.path.exists(item['filename']):
+      verify_queue.put(item)
+    else:
+      download_queue.put(item)
 
   def queue_join(q):
     '''Working around .join() blocking Ctrl+C'''
