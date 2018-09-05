@@ -14,6 +14,7 @@ if __name__ == '__main__':
   parser.add_option("--td", dest="download_threads", type="int", default=8, help="Number of download threads (8)")
   parser.add_option("--tv", dest="verify_threads", type="int", default=8, help="Number of file verification threads (8)")
   parser.add_option("-r", "--retry", dest="retry", type="int", default=3, help="Number of times downloads are retried (3)")
+  parser.add_option("-v", "--verbose", dest="verbose", action="store_true", default=False, help="Be more verbose")
 
   (options, args) = parser.parse_args(sys.argv[1:])
   if args:
@@ -21,12 +22,14 @@ if __name__ == '__main__':
     sys.exit(1)
 
   from xia2.Test.fetch_test_data import fetch_test_data
-  if options.destination:
-    print("Downloading into directory %s" % options.destination)
+  if not options.destination:
+    import libtbx.load_env
+    options.destination = libtbx.env.under_build('xia2_regression')
+  print("Downloading xia2 regression data into directory %s\n" % options.destination)
   try:
     fetch_test_data(
         options.destination,
-        retry_limit=options.retry,
+        retry_limit=options.retry, verbose=options.verbose,
         verify_threads=options.verify_threads, download_threads=options.download_threads,
     )
   except KeyboardInterrupt:

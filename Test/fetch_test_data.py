@@ -8,11 +8,6 @@ import threading
 import time
 import urllib2
 
-#files_to_download = {
-#  'http://www.ccp4.ac.uk/tutorials/tutorial_files/blend_tutorial/data02.tgz':
-#    'blend_tutorial/data02.tgz',
-#}
-
 def download_to_file(url, file):
   """Downloads a URL to file. Returns the file size.
      Returns -1 if the downloaded file size does not match the expected file
@@ -44,12 +39,8 @@ def file_md5(filename):
       hash_md5.update(chunk)
   return hash_md5.hexdigest().lower()
 
-def fetch_test_data(target_dir=None, skip_existing_files=True, retry_limit=3, verify_threads=8, download_threads=8):
-  sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
-
-  if not target_dir:
-    import libtbx.load_env
-    target_dir = libtbx.env.under_build('xia2_regression')
+def fetch_test_data(target_dir, skip_existing_files=True, retry_limit=3, verify_threads=8, download_threads=8,
+    verbose=False):
   if not os.path.exists(target_dir):
     os.mkdir(target_dir)
   os.chdir(target_dir)
@@ -64,18 +55,23 @@ def fetch_test_data(target_dir=None, skip_existing_files=True, retry_limit=3, ve
       threading.Thread.__init__(self)
       self.daemon = True
     def print(self, string):
-      print("\r" + string, end=" "*max(0, getattr(self, 'last_line_length', 0)-len(string)))
-      self.last_line_length = len(string)
+      if verbose:
+        print(string)
+      else:
+        print("\r" + string, end=" "*max(0, getattr(self, 'last_line_length', 0)-len(string)))
+        sys.stdout.flush()
+        self.last_line_length = len(string)
     def run(self):
       while True:
         item = print_queue.get()
-        aggregate = time.time()
-        try:
-          while time.time() < aggregate + 0.01:
-            print_queue.get(False)
-            print_queue.task_done()
-        except queue.Empty:
-          pass
+        if not verbose:
+          aggregate = time.time()
+          try:
+            while time.time() < aggregate + 0.01:
+              print_queue.get(False)
+              print_queue.task_done()
+          except queue.Empty:
+            pass
         prefix = ""
         verify_count = verify_queue.qsize()
         download_count = download_queue.qsize()
@@ -85,7 +81,8 @@ def fetch_test_data(target_dir=None, skip_existing_files=True, retry_limit=3, ve
           prefix = prefix + "[ %d files left to download ] " % download_count
         self.print(prefix + item.get('status', '') + ' ' + item['filename'])
         print_queue.task_done()
-        time.sleep(0.3)
+        if not verbose:
+          time.sleep(0.3)
 
   class FileVerifier(threading.Thread):
     def __init__(self, *args, **kwargs):
@@ -144,7 +141,7 @@ def fetch_test_data(target_dir=None, skip_existing_files=True, retry_limit=3, ve
     FileVerifier().start()
 
   file_count = 0
-  index_url = 'http://dials.diamond.ac.uk/xia2/test_data/filelist-v2.dat'
+  index_url = 'http://dials.diamond.ac.uk/xia2/filelist-v2.dat'
   result = download_to_file(index_url, 'filelist-v2.dat')
   if result == -1:
     raise RuntimeError('Could not download file list.')
