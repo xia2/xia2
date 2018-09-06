@@ -880,9 +880,6 @@ class XSweep(object):
 
     return reflections
 
-  def get_scaler_intensities(self):
-    reflections = self._get_scaler().get_scaler_intensities()
-
   def get_crystal_lattice(self):
     '''Get the parent crystal lattice pointer.'''
     try:

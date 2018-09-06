@@ -26,10 +26,9 @@ class DialsScaler(Scaler):
   def __init__(self):
     super(DialsScaler, self).__init__()
 
-    self._scalr_scaled_refl_files = {} #dials.scale outputs all data into one file,
-    #so behaviour is different to other scaling methods perhaps.
+    self._scalr_scaled_refl_files = {}
     self._scalr_statistics = {}
-    self._factory = CCP4Factory()
+    self._factory = CCP4Factory() # allows lots of post scaling calculations
     self._scaler = DialsScale()
     self._res_limit = None # Don't call _resolution_limit else causes bug
 
@@ -61,8 +60,9 @@ class DialsScaler(Scaler):
         'gathering', self.get_scaler_xcrystal().get_name(), 'Dials',
         {'working directory':self.get_working_directory()})
 
-    '''# First do stuff to work out if excluding any data
-
+    # First do stuff to work out if excluding any data
+    # Note - does this actually work? I could seem to get it to work
+    # in either this pipleline or the standard dials pipeline
     for epoch in self._sweep_handler.get_epochs():
       si = self._sweep_handler.get_sweep_information(epoch)
       pname, xname, dname = si.get_project_info()
@@ -82,32 +82,34 @@ class DialsScaler(Scaler):
         Journal.entry({'adding data from':'%s/%s/%s' % \
                        (xname, dname, sname)})
 
-    for e in self._sweep_handler.get_epochs():
-      si = self._sweep_handler.get_sweep_information(e)
-      assert is_mtz_file(si.get_reflections())'''
 
-    #Run dials.symmetry
+    # In here, we don't want to be starting from scratch each time, so if
+    # scaled_experiments already exists, then do symmetry on this
+
+    # Run dials.symmetry
+    self._symmetry_analyser = DialsSymmetry()
+
     exp_path = os.path.join(self.get_working_directory(), 'scaled_experiments.json')
     refl_path = os.path.join(self.get_working_directory(), 'scaled_reflections.pickle')
+
     if not os.path.exists(exp_path):
-      self._symmetry_analyser = DialsSymmetry()
-      #no files currently in scaler,  so populate from integraters
+      #no files currently in symmetry analyser,  so populate from integraters
       for integrater in self._scalr_integraters.itervalues():
         self._symmetry_analyser.add_experiments(integrater.get_integrated_experiments())
         self._symmetry_analyser.add_reflections(integrater.get_integrated_reflections())
     else:
-      self._symmetry_analyser = DialsSymmetry()
       self._symmetry_analyser.add_experiments(exp_path)
       self._symmetry_analyser.add_reflections(refl_path)
 
+    # set output filepaths
     reind_exp = os.path.join(self.get_working_directory(), 'reindexed_experiments.json')
     reind_refl = os.path.join(self.get_working_directory(), 'reindexed_reflections.pickle')
     reind_json = os.path.join(self.get_working_directory(), 'dials_symmetry.json')
-
     self._symmetry_analyser.set_json(reind_json)
     self._symmetry_analyser.set_output_experiments_filename(reind_exp)
     self._symmetry_analyser.set_output_reflections_filename(reind_refl)
 
+    # do the symmetry analysis
     self._symmetry_analyser.decide_pointgroup()
 
     self._scalr_likely_spacegroups = self._symmetry_analyser.get_likely_spacegroups()
@@ -130,11 +132,6 @@ class DialsScaler(Scaler):
     self._scalr_pname = p
     self._scalr_xname = x
 
-    #self._sort_together_data_ccp4()
-
-  def _prepare_pointless_hklin(self, hklin, phi_width):
-    return _prepare_pointless_hklin(self.get_working_directory(),
-                                    hklin, phi_width)
 
   def _scale(self):
     '''Perform all of the operations required to deliver the scaled
@@ -157,6 +154,7 @@ class DialsScaler(Scaler):
 
     sc = self._updated_dials_scaler()
 
+    # Set paths
     scaled_mtz_path = os.path.join(self.get_working_directory(),
                                '%s_%s_scaled.mtz' % \
                                (self._scalr_pname,
@@ -176,6 +174,8 @@ class DialsScaler(Scaler):
     self._scalr_scaled_reflection_files['mtz_unmerged'] = {'NATIVE' : scaled_unmerged_mtz_path}
     self._scalr_scaled_reflection_files['mtz'] = {'NATIVE' : scaled_mtz_path}
 
+    user_resolution_limits = {}
+
     for epoch in epochs:
 
       si = self._sweep_handler.get_sweep_information(epoch)
@@ -183,27 +183,30 @@ class DialsScaler(Scaler):
       sname = si.get_sweep_name()
       intgr = si.get_integrater()
 
-      '''if intgr.get_integrater_user_resolution():
+      if intgr.get_integrater_user_resolution():
+        # record user resolution here but don't use it until later - why?
         dmin = intgr.get_integrater_high_resolution()
 
         if (dname, sname) not in user_resolution_limits:
           user_resolution_limits[(dname, sname)] = dmin
         elif dmin < user_resolution_limits[(dname, sname)]:
-          user_resolution_limits[(dname, sname)] = dmin'''
-
-      start, end = si.get_batch_range()
+          user_resolution_limits[(dname, sname)] = dmin
 
       if (dname, sname) in self._scalr_resolution_limits:
         resolution, _ = self._scalr_resolution_limits[(dname, sname)]
         sc.set_resolution(resolution)
-        self._res_limit = resolution
+        #self._res_limit = resolution
 
     sc.scale()
 
+    # make it so that only scaled.pickle and scaled_experiments.json are
+    # the files that dials.scale knows about, so that if scale is called again,
+    # scaling resumes from where it left off.
     self._scaler.clear_datafiles()
     self._scaler.add_experiments_json(exp_path)
     self._scaler.add_reflections_pickle(refl_path)
 
+    # Run twotheta refine
     self._update_scaled_unit_cell()
 
     hklout = copy.deepcopy(self._scaler.get_scaled_mtz())
@@ -212,62 +215,8 @@ class DialsScaler(Scaler):
 
     highest_suggested_resolution = None
     highest_resolution = 100.0
-    user_resolution_limits = {}
 
-    epochs = self._sweep_handler.get_epochs()
-
-    #copypasta from CCP4ScalerA
-    for epoch in epochs:
-
-      si = self._sweep_handler.get_sweep_information(epoch)
-      pname, xname, dname = si.get_project_info()
-      sname = si.get_sweep_name()
-      intgr = si.get_integrater()
-      start, end = si.get_batch_range()
-
-      if (dname, sname) in self._scalr_resolution_limits:
-        continue
-
-      elif (dname, sname) in user_resolution_limits:
-        limit = user_resolution_limits[(dname, sname)]
-        self._scalr_resolution_limits[(dname, sname)] = (limit, None)
-        if limit < highest_resolution:
-          highest_resolution = limit
-        Chatter.write('Resolution limit for %s: %5.2f (user provided)' % \
-                      (dname, limit))
-        continue
-
-      hklin = sc.get_unmerged_reflection_file()
-      limit, reasoning = self._estimate_resolution_limit(
-        hklin, batch_range=(start, end))
-
-      if not (dname, sname) in self._scalr_resolution_limits:
-        self._scalr_resolution_limits[(dname, sname)] = (limit, None)
-        self.set_scaler_done(False)
-
-      if reasoning:
-        reasoning_str = ' (%s)' % reasoning
-        Chatter.write('Resolution for sweep %s/%s: %.2f%s' % \
-                      (dname, sname, limit, reasoning_str))
-
-    # Adds merging statistics to be reported later in output - in log and html
-    if PhilIndex.params.xia2.settings.merging_statistics.source == 'cctbx':
-      for key in self._scalr_scaled_refl_files:
-        stats = self._compute_scaler_statistics(
-          self._scalr_scaled_reflection_files['mtz_unmerged'][key],
-          selected_band=(self._res_limit, None), wave=key)
-        self._scalr_statistics[
-          (self._scalr_pname, self._scalr_xname, key)] = stats #adds here
-
-  def _analyse_resolution_cutoff(self):
-
-    highest_suggested_resolution = None
-    highest_resolution = 100.0
-    user_resolution_limits = {}
-
-    epochs = self._sweep_handler.get_epochs()
-
-    #copypasta from CCP4ScalerA
+    #copypasta from CCP4ScalerA - could be grouped into common method?
     for epoch in epochs:
 
       si = self._sweep_handler.get_sweep_information(epoch)
@@ -305,8 +254,6 @@ class DialsScaler(Scaler):
       if not (dname, sname) in self._scalr_resolution_limits:
         self._scalr_resolution_limits[(dname, sname)] = (limit, None)
         self.set_scaler_done(False)
-        self._scaler.clear_datafiles()
-        #self.set_scaler_prepare_done(False)
 
       if limit < highest_resolution:
         highest_resolution = limit
@@ -322,8 +269,31 @@ class DialsScaler(Scaler):
         Chatter.write('Resolution limit for %s/%s: %5.2f (%5.2f suggested)' % \
                       (dname, sname, limit, suggested))
 
+    if highest_suggested_resolution is not None and \
+        highest_resolution >= (highest_suggested_resolution - 0.004):
+      Debug.write('Dropping resolution cut-off suggestion since it is'
+                  ' essentially identical to the actual resolution limit.')
+      highest_suggested_resolution = None
+    self._scalr_highest_resolution = highest_resolution
+    self._scalr_highest_suggested_resolution = highest_suggested_resolution
+    if highest_suggested_resolution is not None:
+      Debug.write('Suggested highest resolution is %5.2f (%5.2f suggested)' % \
+                (highest_resolution, highest_suggested_resolution))
+    else:
+      Debug.write('Scaler highest resolution set to %5.2f' % \
+                highest_resolution)
+    # Resolution code same as CCP4ScalerA down to here?
 
-  #more copypasta
+    # Adds merging statistics to be reported later in output - in log and html
+    if PhilIndex.params.xia2.settings.merging_statistics.source == 'cctbx':
+      for key in self._scalr_scaled_refl_files:
+        stats = self._compute_scaler_statistics(
+          self._scalr_scaled_reflection_files['mtz_unmerged'][key],
+          selected_band=(highest_suggested_resolution, None), wave=key)
+        self._scalr_statistics[
+          (self._scalr_pname, self._scalr_xname, key)] = stats #adds here
+
+  #more copypasta - exactly same as CCP4ScalerA, move to CommonScaler?
   def _update_scaled_unit_cell(self):
         # FIXME this could be brought in-house
 
