@@ -4,7 +4,7 @@ from optparse import SUPPRESS_HELP, OptionParser
 import sys
 
 if __name__ == '__main__':
-  parser = OptionParser(usage="xia2.fetch_test_data [-h | --help] [-d destination]",
+  parser = OptionParser(usage="xia2.fetch_test_data [-h | --help] [-d destination] [test group]",
                         description="This program is used to download data files used for xia2 regression tests. "
                                     "These files are not required to run xia2, and are only used in tests.")
   parser.add_option("-?", action="help", help=SUPPRESS_HELP)
@@ -17,9 +17,6 @@ if __name__ == '__main__':
   parser.add_option("-v", "--verbose", dest="verbose", action="store_true", default=False, help="Be more verbose")
 
   (options, args) = parser.parse_args(sys.argv[1:])
-  if args:
-    parser.print_help()
-    sys.exit(1)
 
   from xia2.Test.fetch_test_data import fetch_test_data
   if not options.destination:
@@ -27,11 +24,21 @@ if __name__ == '__main__':
     options.destination = libtbx.env.under_build('xia2_regression')
   print("Downloading xia2 regression data into directory %s\n" % options.destination)
   try:
-    fetch_test_data(
-        options.destination,
-        retry_limit=options.retry, verbose=options.verbose,
-        verify_threads=options.verify_threads, download_threads=options.download_threads,
-    )
+    if not args:
+      args = [None]
+    for group in args:
+      if group:
+        print("Downloading files for test group %s" % group)
+      success = fetch_test_data(
+          options.destination,
+          retry_limit=options.retry, verbose=options.verbose,
+          verify_threads=options.verify_threads, download_threads=options.download_threads,
+          pre_scan=False, file_group=group,
+      )
+      if success:
+        print("Download completed successfully.")
+      else:
+        sys.exit(1)
   except KeyboardInterrupt:
     print("\n\nInterrupted.")
     sys.exit(1)
