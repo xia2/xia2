@@ -200,10 +200,13 @@ class CCP4ScalerA(Scaler):
     multi_sweep_indexing = \
       PhilIndex.params.xia2.settings.multi_sweep_indexing == True
 
+    # START OF if more than one epoch
     if len(self._sweep_handler.get_epochs()) > 1:
 
       # if we have multi-sweep-indexing going on then logic says all should
       # share common lattice & UB definition => this is not used here?
+
+      #START OF if multi_sweep indexing and not input pg
       if multi_sweep_indexing and not self._scalr_input_pointgroup:
         pointless_hklins = []
 
@@ -253,6 +256,8 @@ class CCP4ScalerA(Scaler):
 
           # update the counter & recycle
           counter += 1
+
+          #SUMMARY - have added all sweeps to pointless_hklins
 
         s = self._factory.Sortmtz()
 
@@ -308,6 +313,12 @@ class CCP4ScalerA(Scaler):
             intgr.integrater_reset_reindex_operator()
             need_to_return = True
 
+        #SUMMARY - added all sweeps together into an mtz, ran
+        # _pointless_indexer_multisweep on this, made a list of one lattice
+        # and potentially reset reindex op?
+      #END OF if multi_sweep indexing and not input pg
+
+      #START OF if not multi_sweep, or input pg given
       else:
         lattices = []
 
@@ -342,7 +353,14 @@ class CCP4ScalerA(Scaler):
 
             intgr.integrater_reset_reindex_operator()
             need_to_return = True
+        #SUMMARY do pointless_indexer on each sweep, get lattices and make a list
+        # of unique lattices, potentially reset reindex op.
+      #END OF if not multi_sweep, or input pg given
 
+      #SUMMARY - still within if more than one epoch, now have a list of number
+      # of lattices
+
+      # START OF if multiple-lattices
       if len(lattices) > 1:
 
         # why not using pointless indexer jiffy??!
@@ -372,6 +390,9 @@ class CCP4ScalerA(Scaler):
             Chatter.write('Lattice %s assigned for sweep %s' % \
                           (correct_lattice, sname))
             need_to_return = True
+      # END OF if multiple-lattices
+      #SUMMARY - forced all lattices to be same and hope its okay.
+    # END OF if more than one epoch
 
     # if one or more of them was not in the lowest lattice,
     # need to return here to allow reprocessing
@@ -395,6 +416,7 @@ class CCP4ScalerA(Scaler):
     multi_sweep_indexing = \
       PhilIndex.params.xia2.settings.multi_sweep_indexing == True
 
+    # START OF if multi-sweep and not input pg
     if multi_sweep_indexing and not self._scalr_input_pointgroup:
       pointless_hklins = []
 
@@ -483,7 +505,11 @@ class CCP4ScalerA(Scaler):
       for epoch in self._sweep_handler.get_epochs():
         pointgroups[epoch] = pointgroup
         reindex_ops[epoch] = reindex_op
+      #SUMMARY ran pointless multisweep on combined mtz and made a dict
+      # of  pointgroups and reindex_ops (all same)
+    #END OF if multi-sweep and not input pg
 
+    #START OF if not mulit-sweep or pg given
     else:
       for epoch in self._sweep_handler.get_epochs():
         si = self._sweep_handler.get_sweep_information(epoch)
@@ -523,6 +549,10 @@ class CCP4ScalerA(Scaler):
 
         pointgroups[epoch] = pointgroup
         reindex_ops[epoch] = reindex_op
+      #SUMMARY - for each sweep, run indexer jiffy and get reindex operators
+      # and pointgroups dictionaries (could be different between sweeps)
+
+    #END OF if not mulit-sweep or pg given
 
     overall_pointgroup = None
 
@@ -548,7 +578,10 @@ class CCP4ScalerA(Scaler):
 
     else:
       overall_pointgroup = pointgroup_set.pop()
+    # SUMMARY - Have handled if different pointgroups & chosen an overall_pointgroup
+    # which is the lowest symmetry
 
+    # Now go through sweeps and do reindexing
     for epoch in self._sweep_handler.get_epochs():
       si = self._sweep_handler.get_sweep_information(epoch)
 
@@ -658,6 +691,7 @@ class CCP4ScalerA(Scaler):
             reindex_op, reason='match reference')
           si.set_reflections(intgr.get_integrater_intensities())
 
+    # If not Brehm-deidrichs, set reference as first sweep
     elif len(self._sweep_handler.get_epochs()) > 1 and \
            not self._reference:
 
@@ -665,6 +699,8 @@ class CCP4ScalerA(Scaler):
       si = self._sweep_handler.get_sweep_information(first)
       self._reference = si.get_reflections()
 
+    # Now reindex to be consistent with first dataset - run pointless on each
+    # dataset with reference
     if self._reference:
 
       md = self._factory.Mtzdump()
