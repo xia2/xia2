@@ -43,6 +43,7 @@ def DialsScale(DriverType=None,
       self._absorption_correction = True
       self._optimise_errors = True
       self._outlier_rejection = 'standard'
+      self._outlier_zmax = None
       self._min_partiality = None
       self._partiality_cutoff = None
       self._dmin = None
@@ -78,6 +79,10 @@ def DialsScale(DriverType=None,
       #self._surface_tie = None
       #self._surface_link = True
       self._lmax = None
+
+      # Array model terms
+      self._n_resolution_bins = None
+      self._n_absorption_bins = None
 
       self._isigma_selection = None
 
@@ -122,6 +127,12 @@ def DialsScale(DriverType=None,
 
       if brotation:
         self._brotation = brotation
+
+    def set_decay_bins(self, n_bins):
+      self._n_resolution_bins = n_bins
+
+    def set_absorption_bins(self, n_bins):
+      self._n_absorption_bins = n_bins
 
     def set_min_partiality(self, min_partiality):
       self._min_partiality = min_partiality
@@ -173,6 +184,9 @@ def DialsScale(DriverType=None,
 
     def set_outlier_rejection(self, outlier_rejection):
       self._outlier_rejection = outlier_rejection
+
+    def set_outlier_zmax(self, z_max):
+      self._outlier_zmax = z_max
 
     def get_scaled_mtz(self):
       return self._merged_reflections
@@ -254,6 +268,14 @@ def DialsScale(DriverType=None,
 
       if self._cycles is not None:
         self.add_command_line('max_iterations=%d' % self._cycles)
+
+      if self._outlier_zmax:
+        self.add_command_line('outlier_zmax=%d' % self._outlier_zmax)
+
+      if self._n_resolution_bins:
+        self.add_command_line('n_resolution_bins=%d' % self._n_resolution_bins)
+      if self._n_absorption_bins:
+        self.add_command_line('n_absorption_bins=%d' % self._n_absorption_bins)
 
       if not self._scaled_experiments:
         self._scaled_experiments = os.path.join(

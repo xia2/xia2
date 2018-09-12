@@ -368,11 +368,57 @@ dials
     .expert_level = 1
     .short_caption = "Scaling"
   {
+    model = *physical array kb
+      .type = choice
+      .help = "Choice of scaling model parameterisation to apply"
+    rotation_spacing = 15.0
+      .type = float
+      .help = "Parameter spacing for scale (rotation) term"
+    Bfactor = True
+      .type = bool
+      .help = "Include decay component in scaling"
+    absorption = True
+      .type = bool
+      .help = "Include an absorption correction in scaling"
+    physical_model {
+      Bfactor_spacing = 20.0
+        .type = float
+        .help = "Parameter spacing for B-factor correction"
+      lmax = 4
+        .type = int(value_min=2)
+        .help = "Order of spherical harmonics to use for absorption surface"
+    }
+    array_model {
+      resolution_bins = 10
+        .type = int(value_min=1)
+        .help = "Number of bins to parameterise decay component"
+      absorption_bins = 3
+        .type = int(value_min=1)
+        .help = "Number of bins in each dimension (applied to both x and y) for"
+                "binning the detector position for the absorption term of the"
+                "array model."
+    }
+    intensity_choice = profile sum *combine
+      .type = choice
+      .help = "choose from profile fitted or summation intensities, or"
+               "an optimised combination of profile/sum."
+    optimise_errors = True
+      .type = bool
+      .help = "Option to allow optimisation of weights for scaling. Performs"
+               "and additional scale factor minimisation after adjusting weights."
+    full_matrix = True
+      .type = bool
+      .help = "Option to turn off GN/LM refinement round used to determine"
+               "error estimates on scale factors."
     outlier_rejection = *standard simple
       .type = choice
-      .help = "Choice of outlier rejection routine. Standard may take a
-        significant amount of time to run for large datasets or high
-        multiplicities, whereas simple should be quick for these datasets."
+      .help = "Choice of outlier rejection routine. Standard may take a"
+        "significant amount of time to run for large datasets or high"
+        "multiplicities, whereas simple should be quick for these datasets."
+    outlier_zmax = 6.0
+      .type = float(value_min=3.0)
+      .help = "Cutoff z-score value for identifying outliers based on their"
+               "normalised deviation within the group of equivalent reflections"
   }
 }
 ccp4
