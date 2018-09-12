@@ -32,7 +32,9 @@ class DialsScaler(Scaler):
     self._scalr_statistics = {}
     self._factory = CCP4Factory() # allows lots of post scaling calculations
     self._scaler = DialsScale()
-    self._res_limit = None # Don't call _resolution_limit else causes bug
+
+    self._reference_reflections = None
+    self._reference_experiments = None
 
   # Schema/Sweep.py wants these two methods need to be implemented by subclasses,
   # but are not actually used at the moment?
@@ -43,9 +45,37 @@ class DialsScaler(Scaler):
     pass
 
   def _updated_dials_scaler(self):
+    #Sets the relevant parameters from the PhilIndex
 
     if PhilIndex.params.xia2.settings.resolution.d_min:
       self._scaler.set_resolution(PhilIndex.params.xia2.settings.resolution.d_min)
+
+    self._scaler.set_model(PhilIndex.params.dials.scale.model)
+    self._scaler.set_intensities(PhilIndex.params.dials.scale.intensity_choice)
+
+    self._scaler.set_full_matrix(PhilIndex.params.dials.scale.full_matrix)
+    self._scaler.set_outlier_rejection(PhilIndex.params.dials.scale.outlier_rejection)
+    self._scaler.set_outlier_zmax(PhilIndex.params.dials.scale.outlier_zmax)
+    self._scaler.set_optimise_errors(PhilIndex.params.dials.scale.optimise_errors)
+
+    if PhilIndex.params.dials.scale.model == 'physical':
+      self._scaler.set_spacing(PhilIndex.params.dials.scale.rotation_spacing)
+      if PhilIndex.params.dials.scale.Bfactor:
+        self._scaler.set_bfactor(True, PhilIndex.params.dials.scale.physical_model.Bfactor_spacing)
+      if PhilIndex.params.dials.scale.absorption:
+        self._scaler.set_absorption_correction(True)
+        self._scaler.set_lmax(PhilIndex.params.dials.scale.physical_model.lmax)
+    elif PhilIndex.params.dials.scale.model == 'kb':
+      # For KB model, want both Bfactor and scale terms
+      self._scaler.set_bfactor(True)
+    elif PhilIndex.params.dials.scale.model == 'array':
+      self._scaler.set_spacing(PhilIndex.params.dials.scale.rotation_spacing)
+      if PhilIndex.params.dials.scale.Bfactor:
+        self._scaler.set_bfactor(True)
+        self._scaler.set_decay_bins(PhilIndex.params.dials.scale.array_model.resolution_bins)
+      if PhilIndex.params.dials.scale.absorption:
+        self._scaler.set_absorption_correction(True)
+        self._scaler.set_lmax(PhilIndex.params.dials.scale.array_model.absorption_bins)
 
     return self._scaler
 
@@ -323,8 +353,6 @@ class DialsScaler(Scaler):
     # SUMMARY - Have handled if different pointgroups & chosen an overall_pointgroup
     # which is the lowest symmetry
 
-    self._reference_reflections = None
-    self._reference_experiments = None
 
     # Now go through sweeps and do reindexing
     for epoch in self._sweep_handler.get_epochs():
@@ -346,7 +374,7 @@ class DialsScaler(Scaler):
     self._reference = None
     if PhilIndex.params.xia2.settings.unify_setting:
       pass
-      #copy code from CCP4scalerA
+      #FIXME copy code from CCP4scalerA here
 
     if self.get_scaler_reference_reflection_file():
       self._reference = self.get_scaler_reference_reflection_file()
@@ -369,33 +397,17 @@ class DialsScaler(Scaler):
       si = self._sweep_handler.get_sweep_information(first)
       self._reference_experiments = si.get_integrater().get_integrated_experiments()
       self._reference_reflections = si.get_integrater().get_integrated_reflections()
-      #self._reference = si.get_reflections()
 
     # Now reindex to be consistent with first dataset - run reindex on each
     # dataset with reference
     if self._reference_reflections:
       assert self._reference_experiments
 
-      '''md = self._factory.Mtzdump()
-      md.set_hklin(self._reference)
-      md.dump()
-
-      if md.get_batches() and False:
-        raise RuntimeError('reference reflection file %s unmerged' % \
-              self._reference)
-
-      datasets = md.get_datasets()
-
-      if len(datasets) > 1 and False:
-        raise RuntimeError('more than one dataset in %s' % \
-              self._reference)'''
-
       # then get the unit cell, lattice etc.
 
-      # Need to get spacegroup and lattice by loading experiments file
+      # FIXME Need to get spacegroup and lattice by loading experiments file?
       #reference_lattice = Syminfo.get_lattice(self._reference_experiments.crsytal.get_spacegroup())
-
-      #reference_cell = md.get_dataset_info(datasets[0])['cell'] #FIXME how to get this from exp?
+      #reference_cell = md.get_dataset_info(datasets[0])['cell']
 
       # then compute the pointgroup from this...
 
@@ -431,10 +443,7 @@ class DialsScaler(Scaler):
 
         Debug.write('Reindexing analysis of %s' % ' '.join([exp, refl]))
 
-        '''pointgroup = pl.get_pointgroup()
-        reindex_op = pl.get_reindex_operator()
-
-        Debug.write('Operator: %s' % reindex_op)'''
+        # FIXME how to get some indication of the reindexing used?
 
         # apply this...
 
@@ -442,10 +451,8 @@ class DialsScaler(Scaler):
         integrater.set_integrated_reflections(reindexed_refl_fpath)
         integrater.set_integrated_experiments(reindexed_exp_fpath)
 
-        '''integrater.set_integrater_reindex_operator(reindex_op,
-                                                   reason='match reference')'''
         #integrater.set_integrater_spacegroup_number(
-        #    Syminfo.spacegroup_name_to_number(pointgroup))
+        #    Syminfo.spacegroup_name_to_number(pointgroup))  #needed for?
         si.set_reflections(integrater.get_integrater_intensities())
         counter += 1
         '''md = self._factory.Mtzdump()
@@ -479,6 +486,7 @@ class DialsScaler(Scaler):
 
     # Now all have been reindexed, run a round of space group determination on
     # joint set.
+
     # FIXME not yet implemented for dials.symmetry? just take point group now
     epoch = self._sweep_handler.get_epochs()[0]
     symmetry_analyser = DialsSymmetry()
@@ -494,58 +502,6 @@ class DialsScaler(Scaler):
     Chatter.write('Likely spacegroups:')
     for spag in self._scalr_likely_spacegroups:
       Chatter.write('%s' % spag)
-
-
-    '''exp_path = os.path.join(self.get_working_directory(), 'scaled_experiments.json')
-    refl_path = os.path.join(self.get_working_directory(), 'scaled_reflections.pickle')
-
-    if not os.path.exists(exp_path):
-      #no files currently in symmetry analyser,  so populate from integraters
-      for integrater in self._scalr_integraters.itervalues():
-        self._symmetry_analyser = DialsSymmetry()
-        self._symmetry_analyser.add_experiments(integrater.get_integrated_experiments())
-        self._symmetry_analyser.add_reflections(integrater.get_integrated_reflections())
-        reind_exp = os.path.join(self.get_working_directory(), 'reindexed_experiments.json')
-        reind_refl = os.path.join(self.get_working_directory(), 'reindexed_reflections.pickle')
-        reind_json = os.path.join(self.get_working_directory(), 'dials_symmetry.json')
-        self._symmetry_analyser.set_json(reind_json)
-        self._symmetry_analyser.set_output_experiments_filename(reind_exp)
-        self._symmetry_analyser.set_output_reflections_filename(reind_refl)
-        self._symmetry_analyser.decide_pointgroup()
-        self._scalr_likely_spacegroups = self._symmetry_analyser.get_likely_spacegroups()
-        Chatter.write('Likely spacegroups:')
-        for spag in self._scalr_likely_spacegroups:
-          Chatter.write('%s' % spag)
-    else:
-      self._symmetry_analyser.add_experiments(exp_path)
-      self._symmetry_analyser.add_reflections(refl_path)
-
-    # set output filepaths
-    reind_exp = os.path.join(self.get_working_directory(), 'reindexed_experiments.json')
-    reind_refl = os.path.join(self.get_working_directory(), 'reindexed_reflections.pickle')
-    reind_json = os.path.join(self.get_working_directory(), 'dials_symmetry.json')
-    self._symmetry_analyser.set_json(reind_json)
-    self._symmetry_analyser.set_output_experiments_filename(reind_exp)
-    self._symmetry_analyser.set_output_reflections_filename(reind_refl)
-
-    # do the symmetry analysis
-    self._symmetry_analyser.decide_pointgroup()
-
-    self._scalr_likely_spacegroups = self._symmetry_analyser.get_likely_spacegroups()
-
-    Chatter.write('Likely spacegroups:')
-    for spag in self._scalr_likely_spacegroups:
-      Chatter.write('%s' % spag)
-
-    spacegroup = self._symmetry_analyser.get_spacegroup()
-    reindex_operator = self._symmetry_analyser.get_spacegroup_reindex_operator()
-    Chatter.write(
-        'Reindexing to first spacegroup setting: %s (%s)' % \
-        (spacegroup, clean_reindex_operator(reindex_operator)))'''
-
-    #Now add files to scaler
-    #self._scaler.add_experiments_json(reind_exp)
-    #self._scaler.add_reflections_pickle(reind_refl)
 
     p, x = self._sweep_handler.get_project_info()
     self._scalr_pname = p
@@ -623,7 +579,6 @@ class DialsScaler(Scaler):
       if (dname, sname) in self._scalr_resolution_limits:
         resolution, _ = self._scalr_resolution_limits[(dname, sname)]
         sc.set_resolution(resolution)
-        #self._res_limit = resolution
 
     sc.scale()
 
@@ -644,7 +599,8 @@ class DialsScaler(Scaler):
     highest_suggested_resolution = None
     highest_resolution = 100.0
 
-    #copypasta from CCP4ScalerA - could be grouped into common method?
+    #copypasta from CCP4ScalerA - could be grouped into common method? -
+    #no, different in future for how get individual mtz files from combined dataset
     for epoch in epochs:
 
       si = self._sweep_handler.get_sweep_information(epoch)
@@ -667,6 +623,7 @@ class DialsScaler(Scaler):
 
       #FIXME need to separate out data into different sweeps based on experiment
       #id in order to calculate a res limit for each dataset.
+      # However dials.scale does not yet allow different resolutions per dataset
 
       hklin = sc.get_unmerged_reflection_file() #combined for all datasets
       # Need to get an individual mtz for each dataset
@@ -714,7 +671,6 @@ class DialsScaler(Scaler):
     else:
       Debug.write('Scaler highest resolution set to %5.2f' % \
                 highest_resolution)
-    # Resolution code same as CCP4ScalerA down to here?
 
     # Adds merging statistics to be reported later in output - in log and html
     if PhilIndex.params.xia2.settings.merging_statistics.source == 'cctbx':
@@ -727,7 +683,7 @@ class DialsScaler(Scaler):
 
   #more copypasta - exactly same as CCP4ScalerA, move to CommonScaler?
   def _update_scaled_unit_cell(self):
-        # FIXME this could be brought in-house
+    # FIXME this could be brought in-house
 
     params = PhilIndex.params
     fast_mode = params.dials.fast_mode
