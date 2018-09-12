@@ -27,9 +27,12 @@ def Reindex(DriverType = None):
       self._experiments_filename = None
       self._indexed_filename = None
       self._reference_filename = None
+      self._reference_reflections = None
       self._space_group = None
       self._cb_op = None
       self._hkl_offset = None
+      self._reindexed_experiments_filename = None
+      self._reindexed_reflections_filename = None
 
     def set_experiments_filename(self, experiments_filename):
       self._experiments_filename = experiments_filename
@@ -39,6 +42,9 @@ def Reindex(DriverType = None):
 
     def set_reference_filename(self, reference_filename):
       self._reference_filename = reference_filename
+
+    def set_reference_reflections(self, reference_reflections):
+      self._reference_reflections = reference_reflections
 
     def set_space_group(self, space_group):
       self._space_group = space_group
@@ -56,6 +62,15 @@ def Reindex(DriverType = None):
     def get_reindexed_reflections_filename(self):
       return self._reindexed_reflections_filename
 
+    def get_reindex_reference(self):
+      from dials.algorithms.symmetry.reindex_to_reference import determine_reindex_operator_against_reference
+
+    def set_reindexed_experiments_filename(self, filepath):
+      self._reindexed_experiments_filename = filepath
+
+    def set_reindexed_reflections_filename(self, filepath):
+      self._reindexed_reflections_filename = filepath
+
     def run(self):
       from xia2.Handlers.Streams import Debug
       Debug.write('Running dials.reindex')
@@ -65,18 +80,22 @@ def Reindex(DriverType = None):
       self.clear_command_line()
       if self._experiments_filename is not None:
         self.add_command_line(self._experiments_filename)
-        self._reindexed_experiments_filename = os.path.join(
-          wd, "%d_experiments_reindexed.json" %self.get_xpid())
+        if not self._reindexed_experiments_filename:
+          self._reindexed_experiments_filename = os.path.join(
+            wd, "%d_experiments_reindexed.json" %self.get_xpid())
         self.add_command_line(
           "output.experiments=%s" %self._reindexed_experiments_filename)
       if self._indexed_filename is not None:
         self.add_command_line(self._indexed_filename)
-        self._reindexed_reflections_filename = os.path.join(
-          wd, "%d_reflections_reindexed.pickle" %self.get_xpid())
+        if not self._reindexed_reflections_filename:
+          self._reindexed_reflections_filename = os.path.join(
+            wd, "%d_reflections_reindexed.pickle" %self.get_xpid())
         self.add_command_line(
           "output.reflections=%s" %self._reindexed_reflections_filename)
       if self._reference_filename is not None:
         self.add_command_line("reference=%s" % self._reference_filename)
+      if self._reference_reflections is not None:
+        self.add_command_line("reference_reflections=%s" % self._reference_reflections)
       if self._cb_op:
         self.add_command_line("change_of_basis_op=%s" % self._cb_op)
       if self._space_group:

@@ -74,6 +74,12 @@ class DialsIntegrater(Integrater):
   def get_integrated_reflections(self):
     return self._intgr_integrated_pickle
 
+  def set_integrated_experiments(self, filename):
+    Integrater.set_integrated_experiments = filename
+
+  def set_integrated_reflections(self, filename):
+    Integrater.set_integrated_reflections = filename
+
   # factory functions
 
   def Integrate(self, indexed_filename=None):

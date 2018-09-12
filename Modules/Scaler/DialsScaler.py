@@ -7,16 +7,18 @@ import copy as copy
 from xia2.Handlers.CIF import CIF, mmCIF
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Files import FileHandler
-from xia2.lib.bits import is_mtz_file, auto_logfiler
+from xia2.lib.bits import auto_logfiler
 from xia2.Handlers.Phil import PhilIndex
+from xia2.lib.SymmetryLib import sort_lattices
 from xia2.Handlers.Streams import Chatter, Debug, Journal
 from xia2.Modules.Scaler.CommonScaler import CommonScaler as Scaler
 from xia2.Wrappers.Dials.Scale import DialsScale
 from xia2.Modules.AnalyseMyIntensities import AnalyseMyIntensities
 from xia2.Wrappers.CCP4.CCP4Factory import CCP4Factory
-from xia2.Modules.Scaler.CCP4ScalerHelpers import SweepInformationHandler, _prepare_pointless_hklin
+from xia2.Modules.Scaler.CCP4ScalerHelpers import SweepInformationHandler
 from xia2.Wrappers.Dials.Symmetry import DialsSymmetry
-from xia2.Wrappers.Dials.CombineExperiments import CombineExperiments
+from xia2.Wrappers.Dials.Reindex import Reindex as DialsReindex
+from xia2.Handlers.Syminfo import Syminfo
 
 def clean_reindex_operator(reindex_operator):
   return reindex_operator.replace('[', '').replace(']', '')
@@ -32,8 +34,8 @@ class DialsScaler(Scaler):
     self._scaler = DialsScale()
     self._res_limit = None # Don't call _resolution_limit else causes bug
 
-  # return the dials.scale wrapper with the correct setup
-
+  # Schema/Sweep.py wants these two methods need to be implemented by subclasses,
+  # but are not actually used at the moment?
   def _scale_list_likely_pointgroups(self):
     pass
 
@@ -53,6 +55,8 @@ class DialsScaler(Scaler):
     they are correctly indexed (via dials.symmetry) and generally tidy
     things up.'''
 
+    need_to_return = False
+
     self._scaler.clear_datafiles()
     self._sweep_handler = SweepInformationHandler(self._scalr_integraters)
 
@@ -61,7 +65,7 @@ class DialsScaler(Scaler):
         {'working directory':self.get_working_directory()})
 
     # First do stuff to work out if excluding any data
-    # Note - does this actually work? I could seem to get it to work
+    # Note - does this actually work? I couldn't seem to get it to work
     # in either this pipleline or the standard dials pipeline
     for epoch in self._sweep_handler.get_epochs():
       si = self._sweep_handler.get_sweep_information(epoch)
@@ -87,16 +91,431 @@ class DialsScaler(Scaler):
     # scaled_experiments already exists, then do symmetry on this
 
     # Run dials.symmetry
+
+    # If multiple files, want to run symmetry to check for consistent indexing
+    # also
     self._symmetry_analyser = DialsSymmetry()
 
-    exp_path = os.path.join(self.get_working_directory(), 'scaled_experiments.json')
+    multi_sweep_indexing = \
+      PhilIndex.params.xia2.settings.multi_sweep_indexing == True
+
+    # try to reproduce what CCP4ScalerA is doing
+
+    # START OF if more than one epoch
+    if len(self._sweep_handler.get_epochs()) > 1:
+
+      # First - force all lattices to be same and hope its okay.
+      #START OF if multi_sweep indexing and not input pg
+      if multi_sweep_indexing and not self._scalr_input_pointgroup:
+
+        refiners = []
+        experiments = []
+        reflections = []
+
+        for epoch in self._sweep_handler.get_epochs():
+          si = self._sweep_handler.get_sweep_information(epoch)
+          integrater = si.get_integrater()
+          experiments.append(integrater.get_integrated_experiments())
+          reflections.append(integrater.get_integrated_reflections())
+          refiners.append(integrater.get_integrater_refiner())
+
+        #SUMMARY - have added all sweeps to exps, refls, refiners
+
+        Debug.write('Running multisweep dials.symmetry for %d sweeps' %
+                    len(refiners))
+        pointgroup, reindex_op, ntr, pt = \
+                    symmetry_indexer_multisweep(experiments, reflections, refiners)
+
+        Debug.write('X1698: %s: %s' % (pointgroup, reindex_op))
+
+        lattices = [Syminfo.get_lattice(pointgroup)]
+
+        for epoch in self._sweep_handler.get_epochs():
+          si = self._sweep_handler.get_sweep_information(epoch)
+          intgr = si.get_integrater()
+          if ntr:
+            intgr.integrater_reset_reindex_operator()
+            need_to_return = True
+
+        #SUMMARY - got data from all sweeps, ran _symmetry_indexer_multisweep
+        # on this, made a list of one lattice and potentially reset reindex op?
+      #END OF if multi_sweep indexing and not input pg
+
+      #START OF if not multi_sweep, or input pg given
+      else:
+        lattices = []
+
+        for epoch in self._sweep_handler.get_epochs():
+
+          si = self._sweep_handler.get_sweep_information(epoch)
+          intgr = si.get_integrater()
+          experiment = intgr.get_integrated_experiments()
+          reflections = intgr.get_integrated_reflections()
+          refiner = intgr.get_integrater_refiner()
+
+          if self._scalr_input_pointgroup:
+            pointgroup = self._scalr_input_pointgroup
+            reindex_op = 'h,k,l'
+            ntr = False
+
+          else:
+
+            pointgroup, reindex_op, ntr, pt = \
+              dials_symmetry_indexer_jiffy(experiment, reflections, refiner)
+
+            Debug.write('X1698: %s: %s' % (pointgroup, reindex_op))
+
+          lattice = Syminfo.get_lattice(pointgroup)
+
+          if not lattice in lattices:
+            lattices.append(lattice)
+
+          if ntr:
+
+            intgr.integrater_reset_reindex_operator()
+            need_to_return = True
+        #SUMMARY do dials.symmetry on each sweep, get lattices and make a list
+        # of unique lattices, potentially reset reindex op.
+      #END OF if not multi_sweep, or input pg given
+
+      #SUMMARY - still within if more than one epoch, now have a list of number
+      # of lattices
+
+      # START OF if multiple-lattices
+      if len(lattices) > 1:
+        correct_lattice = sort_lattices(lattices)[0]
+        Chatter.write('Correct lattice asserted to be %s' % \
+                      correct_lattice)
+
+        # transfer this information back to the indexers
+        for epoch in self._sweep_handler.get_epochs():
+
+          si = self._sweep_handler.get_sweep_information(epoch)
+          refiner = si.get_integrater().get_integrater_refiner()
+          sname = si.get_sweep_name()
+
+          state = refiner.set_refiner_asserted_lattice(
+              correct_lattice)
+
+          if state == refiner.LATTICE_CORRECT:
+            Chatter.write('Lattice %s ok for sweep %s' % \
+                          (correct_lattice, sname))
+          elif state == refiner.LATTICE_IMPOSSIBLE:
+            raise RuntimeError('Lattice %s impossible for %s' \
+                  % (correct_lattice, sname))
+          elif state == refiner.LATTICE_POSSIBLE:
+            Chatter.write('Lattice %s assigned for sweep %s' % \
+                          (correct_lattice, sname))
+            need_to_return = True
+      # END OF if multiple-lattices
+      #SUMMARY - forced all lattices to be same and hope its okay.
+    # END OF if more than one epoch
+
+    # if one or more of them was not in the lowest lattice,
+    # need to return here to allow reprocessing
+
+    if need_to_return:
+      self.set_scaler_done(False)
+      self.set_scaler_prepare_done(False)
+      return
+
+    # ---------- REINDEX ALL DATA TO CORRECT POINTGROUP ----------
+
+    # all should share the same pointgroup, unless twinned... in which
+    # case force them to be...
+
+    pointgroups = {}
+    reindex_ops = {}
+    probably_twinned = False
+
+    need_to_return = False
+
+    multi_sweep_indexing = \
+      PhilIndex.params.xia2.settings.multi_sweep_indexing == True
+
+    # START OF if multi-sweep and not input pg
+    if multi_sweep_indexing and not self._scalr_input_pointgroup:
+
+      refiners = []
+      experiments = []
+      reflections = []
+
+      for epoch in self._sweep_handler.get_epochs():
+        si = self._sweep_handler.get_sweep_information(epoch)
+        integrater = si.get_integrater()
+        experiments.append(integrater.get_integrated_experiments())
+        reflections.append(integrater.get_integrated_reflections())
+        refiners.append(integrater.get_integrater_refiner())
+
+      pointgroup, reindex_op, ntr, pt = \
+        symmetry_indexer_multisweep(experiments, reflections, refiners)
+
+      for epoch in self._sweep_handler.get_epochs():
+        pointgroups[epoch] = pointgroup
+        reindex_ops[epoch] = reindex_op
+      #SUMMARY ran dials.symmetry multisweep and made a dict
+      # of pointgroups and reindex_ops (all same??)
+    #END OF if multi-sweep and not input pg
+
+    #START OF if not mulit-sweep or pg given
+    else:
+
+      for epoch in self._sweep_handler.get_epochs():
+        si = self._sweep_handler.get_sweep_information(epoch)
+        intgr = si.get_integrater()
+        experiment = intgr.get_integrated_experiments()
+        reflections = intgr.get_integrated_reflections()
+        refiner = intgr.get_integrater_refiner()
+
+        if self._scalr_input_pointgroup:
+          Debug.write('Using input pointgroup: %s' % \
+                      self._scalr_input_pointgroup)
+          pointgroup = self._scalr_input_pointgroup
+          reindex_op = 'h,k,l'
+          pt = False
+
+        else:
+          pointgroup, reindex_op, ntr, pt = \
+            dials_symmetry_indexer_jiffy(experiment, reflections, refiner)
+
+          Debug.write('X1698: %s: %s' % (pointgroup, reindex_op))
+
+          if ntr:
+            integrater.integrater_reset_reindex_operator()
+            need_to_return = True
+
+        if pt and not probably_twinned:
+          probably_twinned = True
+
+        Debug.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
+
+        pointgroups[epoch] = pointgroup
+        reindex_ops[epoch] = reindex_op
+      #SUMMARY - for each sweep, run indexer jiffy and get reindex operators
+      # and pointgroups dictionaries (could be different between sweeps)
+
+    #END OF if not mulit-sweep or pg given
+
+    overall_pointgroup = None
+
+    pointgroup_set = {pointgroups[e] for e in pointgroups}
+
+    if len(pointgroup_set) > 1 and \
+       not probably_twinned:
+      raise RuntimeError('non uniform pointgroups')
+
+    if len(pointgroup_set) > 1:
+      Debug.write('Probably twinned, pointgroups: %s' % \
+                  ' '.join([p.replace(' ', '') for p in \
+                            list(pointgroup_set)]))
+      numbers = [Syminfo.spacegroup_name_to_number(s) for s in \
+                 pointgroup_set]
+      overall_pointgroup = Syminfo.spacegroup_number_to_name(min(numbers))
+      self._scalr_input_pointgroup = overall_pointgroup
+
+      Chatter.write('Twinning detected, assume pointgroup %s' % \
+                    overall_pointgroup)
+
+      need_to_return = True
+
+    else:
+      overall_pointgroup = pointgroup_set.pop()
+    # SUMMARY - Have handled if different pointgroups & chosen an overall_pointgroup
+    # which is the lowest symmetry
+
+    self._reference_reflections = None
+    self._reference_experiments = None
+
+    # Now go through sweeps and do reindexing
+    for epoch in self._sweep_handler.get_epochs():
+      si = self._sweep_handler.get_sweep_information(epoch)
+
+      integrater = si.get_integrater()
+
+      integrater.set_integrater_spacegroup_number(
+          Syminfo.spacegroup_name_to_number(overall_pointgroup))
+      integrater.set_integrater_reindex_operator(
+          reindex_ops[epoch], reason='setting point group')
+      # This will give us the reflections in the correct point group
+      si.set_reflections(integrater.get_integrater_intensities())
+
+    if need_to_return:
+      self.set_scaler_done(False)
+      self.set_scaler_prepare_done(False)
+      return
+    self._reference = None
+    if PhilIndex.params.xia2.settings.unify_setting:
+      pass
+      #copy code from CCP4scalerA
+
+    if self.get_scaler_reference_reflection_file():
+      self._reference = self.get_scaler_reference_reflection_file()
+      Debug.write('Using HKLREF %s' % self._reference)
+
+    elif PhilIndex.params.xia2.settings.scale.reference_reflection_file:
+      self._reference = PhilIndex.params.xia2.settings.scale.reference_reflection_file
+      Debug.write('Using HKLREF %s' % self._reference)
+
+    params = PhilIndex.params
+    use_brehm_diederichs = params.xia2.settings.use_brehm_diederichs
+    if len(self._sweep_handler.get_epochs()) > 1 and use_brehm_diederichs and False:
+      pass
+      #group code later with CCP4scalerA
+    # If not Brehm-deidrichs, set reference as first sweep
+    elif len(self._sweep_handler.get_epochs()) > 1 and \
+           not self._reference:
+
+      first = self._sweep_handler.get_epochs()[0]
+      si = self._sweep_handler.get_sweep_information(first)
+      self._reference_experiments = si.get_integrater().get_integrated_experiments()
+      self._reference_reflections = si.get_integrater().get_integrated_reflections()
+      #self._reference = si.get_reflections()
+
+    # Now reindex to be consistent with first dataset - run reindex on each
+    # dataset with reference
+    if self._reference_reflections:
+      assert self._reference_experiments
+
+      '''md = self._factory.Mtzdump()
+      md.set_hklin(self._reference)
+      md.dump()
+
+      if md.get_batches() and False:
+        raise RuntimeError('reference reflection file %s unmerged' % \
+              self._reference)
+
+      datasets = md.get_datasets()
+
+      if len(datasets) > 1 and False:
+        raise RuntimeError('more than one dataset in %s' % \
+              self._reference)'''
+
+      # then get the unit cell, lattice etc.
+
+      # Need to get spacegroup and lattice by loading experiments file
+      #reference_lattice = Syminfo.get_lattice(self._reference_experiments.crsytal.get_spacegroup())
+
+      #reference_cell = md.get_dataset_info(datasets[0])['cell'] #FIXME how to get this from exp?
+
+      # then compute the pointgroup from this...
+
+      # ---------- REINDEX TO CORRECT (REFERENCE) SETTING ----------
+      Chatter.write('Reindexing all datasets to common reference')
+      counter = 0
+      for epoch in self._sweep_handler.get_epochs():
+        reindexed_exp_fpath = str(counter) + '_reindexed_experiments.json'
+        reindexed_refl_fpath = str(counter) + '_reindexed_reflections.pickle'
+
+        # if we are working with unified UB matrix then this should not
+        # be a problem here (note, *if*; *should*)
+
+        # what about e.g. alternative P1 settings?
+        # see JIRA MXSW-904
+        if PhilIndex.params.xia2.settings.unify_setting:
+          continue
+
+        reindexer = DialsReindex()
+
+        si = self._sweep_handler.get_sweep_information(epoch)
+        exp = si.get_integrater().get_integrated_experiments()
+        refl = si.get_integrater().get_integrated_experiments()
+
+        reindexer.set_reference_filename(self._reference_experiments)
+        reindexer.set_reference_reflections(self._reference_reflections)
+        reindexer.set_indexed_filename(refl)
+        reindexer.set_experiments_filename(exp)
+        reindexer.set_reindexed_experiments_filename(reindexed_exp_fpath)
+        reindexer.set_reindexed_reflections_filename(reindexed_refl_fpath)
+
+        reindexer.run()
+
+        Debug.write('Reindexing analysis of %s' % ' '.join([exp, refl]))
+
+        '''pointgroup = pl.get_pointgroup()
+        reindex_op = pl.get_reindex_operator()
+
+        Debug.write('Operator: %s' % reindex_op)'''
+
+        # apply this...
+
+        integrater = si.get_integrater()
+        integrater.set_integrated_reflections(reindexed_refl_fpath)
+        integrater.set_integrated_experiments(reindexed_exp_fpath)
+
+        '''integrater.set_integrater_reindex_operator(reindex_op,
+                                                   reason='match reference')'''
+        #integrater.set_integrater_spacegroup_number(
+        #    Syminfo.spacegroup_name_to_number(pointgroup))
+        si.set_reflections(integrater.get_integrater_intensities())
+        counter += 1
+        '''md = self._factory.Mtzdump()
+        md.set_hklin(si.get_reflections())
+        md.dump()
+
+        datasets = md.get_datasets()
+
+        if len(datasets) > 1:
+          raise RuntimeError('more than one dataset in %s' % \
+                si.get_reflections())
+
+        # then get the unit cell, lattice etc.
+
+        lattice = Syminfo.get_lattice(md.get_spacegroup())
+        cell = md.get_dataset_info(datasets[0])['cell']
+
+        if lattice != reference_lattice:
+          raise RuntimeError('lattices differ in %s and %s' % \
+                (self._reference, si.get_reflections()))
+
+        Debug.write('Cell: %.2f %.2f %.2f %.2f %.2f %.2f' % cell)
+        Debug.write('Ref:  %.2f %.2f %.2f %.2f %.2f %.2f' % reference_cell)
+
+        for j in range(6):
+          if math.fabs((cell[j] - reference_cell[j]) /
+                       reference_cell[j]) > 0.1:
+            raise RuntimeError( \
+                  'unit cell parameters differ in %s and %s' % \
+                  (self._reference, si.get_reflections()))'''
+
+    # Now all have been reindexed, run a round of space group determination on
+    # joint set.
+    # FIXME not yet implemented for dials.symmetry? just take point group now
+    epoch = self._sweep_handler.get_epochs()[0]
+    symmetry_analyser = DialsSymmetry()
+
+    si = self._sweep_handler.get_sweep_information(epoch)
+    exp = si.get_integrater().get_integrated_experiments()
+    refl = si.get_integrater().get_integrated_reflections()
+    symmetry_analyser.add_experiments(exp)
+    symmetry_analyser.add_reflections(refl)
+    symmetry_analyser.decide_pointgroup()
+    spacegroup = symmetry_analyser.get_pointgroup()
+    self._scalr_likely_spacegroups = [spacegroup]
+    Chatter.write('Likely spacegroups:')
+    for spag in self._scalr_likely_spacegroups:
+      Chatter.write('%s' % spag)
+
+
+    '''exp_path = os.path.join(self.get_working_directory(), 'scaled_experiments.json')
     refl_path = os.path.join(self.get_working_directory(), 'scaled_reflections.pickle')
 
     if not os.path.exists(exp_path):
       #no files currently in symmetry analyser,  so populate from integraters
       for integrater in self._scalr_integraters.itervalues():
+        self._symmetry_analyser = DialsSymmetry()
         self._symmetry_analyser.add_experiments(integrater.get_integrated_experiments())
         self._symmetry_analyser.add_reflections(integrater.get_integrated_reflections())
+        reind_exp = os.path.join(self.get_working_directory(), 'reindexed_experiments.json')
+        reind_refl = os.path.join(self.get_working_directory(), 'reindexed_reflections.pickle')
+        reind_json = os.path.join(self.get_working_directory(), 'dials_symmetry.json')
+        self._symmetry_analyser.set_json(reind_json)
+        self._symmetry_analyser.set_output_experiments_filename(reind_exp)
+        self._symmetry_analyser.set_output_reflections_filename(reind_refl)
+        self._symmetry_analyser.decide_pointgroup()
+        self._scalr_likely_spacegroups = self._symmetry_analyser.get_likely_spacegroups()
+        Chatter.write('Likely spacegroups:')
+        for spag in self._scalr_likely_spacegroups:
+          Chatter.write('%s' % spag)
     else:
       self._symmetry_analyser.add_experiments(exp_path)
       self._symmetry_analyser.add_reflections(refl_path)
@@ -122,11 +541,11 @@ class DialsScaler(Scaler):
     reindex_operator = self._symmetry_analyser.get_spacegroup_reindex_operator()
     Chatter.write(
         'Reindexing to first spacegroup setting: %s (%s)' % \
-        (spacegroup, clean_reindex_operator(reindex_operator)))
+        (spacegroup, clean_reindex_operator(reindex_operator)))'''
 
     #Now add files to scaler
-    self._scaler.add_experiments_json(reind_exp)
-    self._scaler.add_reflections_pickle(reind_refl)
+    #self._scaler.add_experiments_json(reind_exp)
+    #self._scaler.add_reflections_pickle(reind_refl)
 
     p, x = self._sweep_handler.get_project_info()
     self._scalr_pname = p
@@ -166,6 +585,15 @@ class DialsScaler(Scaler):
 
     exp_path = os.path.join(self.get_working_directory(), 'scaled_experiments.json')
     refl_path = os.path.join(self.get_working_directory(), 'scaled_reflections.pickle')
+    if not os.path.exists(exp_path): # FIXME What about if the data have been reindexed
+      #inbetween runs, such that we need to reload the data and start again?
+      for epoch in self._sweep_handler.get_epochs():
+        si = self._sweep_handler.get_sweep_information(epoch)
+        intgr = si.get_integrater()
+        experiment = intgr.get_integrated_experiments()
+        reflections = intgr.get_integrated_reflections()
+        self._scaler.add_experiments_json(experiment)
+        self._scaler.add_reflections_pickle(reflections)
     self._scaler.set_scaled_experiments(exp_path)
     self._scaler.set_scaled_reflections(refl_path)
     self._scaler.set_scaled_unmerged_mtz(scaled_unmerged_mtz_path)
@@ -237,9 +665,13 @@ class DialsScaler(Scaler):
                       (dname, limit))
         continue
 
-      hklin = sc.get_unmerged_reflection_file()
+      #FIXME need to separate out data into different sweeps based on experiment
+      #id in order to calculate a res limit for each dataset.
+
+      hklin = sc.get_unmerged_reflection_file() #combined for all datasets
+      # Need to get an individual mtz for each dataset
       limit, reasoning = self._estimate_resolution_limit(
-        hklin, batch_range=(start, end))
+        hklin, batch_range=None)
 
       if PhilIndex.params.xia2.settings.resolution.keep_all_reflections == True:
         suggested = limit
@@ -414,3 +846,137 @@ class DialsScaler(Scaler):
 
     Debug.write('%7.3f %7.3f %7.3f %7.3f %7.3f %7.3f' % \
               self._scalr_cell)
+
+def symmetry_indexer_multisweep(experiments, reflections, refiners):
+  '''A jiffy to centralise the interactions between dials.symmetry
+  and the Indexer, multisweep edition.'''
+
+  need_to_return = False
+  probably_twinned = False
+
+  symmetry_analyser = DialsSymmetry()
+  for (exp, refl) in zip(experiments, reflections):
+    symmetry_analyser.add_experiments(exp)
+    symmetry_analyser.add_reflections(refl)
+  symmetry_analyser.decide_pointgroup()
+
+  rerun_symmetry = False
+
+  possible = symmetry_analyser.get_possible_lattices()
+
+  correct_lattice = None
+
+  Debug.write('Possible lattices (dials.symmetry):')
+
+  Debug.write(' '.join(possible))
+
+  # any of them contain the same indexer link, so all good here.
+  refiner = refiners[0]
+
+  for lattice in possible:
+    state = refiner.set_refiner_asserted_lattice(lattice)
+    if state == refiner.LATTICE_CORRECT:
+      Debug.write('Agreed lattice %s' % lattice)
+      correct_lattice = lattice
+      break
+
+    elif state == refiner.LATTICE_IMPOSSIBLE:
+      Debug.write('Rejected lattice %s' % lattice)
+      rerun_symmetry = True
+      continue
+
+    elif state == refiner.LATTICE_POSSIBLE:
+      Debug.write('Accepted lattice %s, will reprocess' % lattice)
+      need_to_return = True
+      correct_lattice = lattice
+      break
+
+  if correct_lattice is None:
+    correct_lattice = refiner.get_refiner_lattice()
+    rerun_symmetry = True
+
+    Debug.write('No solution found: assuming lattice from refiner')
+
+  if need_to_return:
+    if (PhilIndex.params.xia2.settings.integrate_p1 and not
+        PhilIndex.params.xia2.settings.reintegrate_correct_lattice):
+      need_to_return = False
+      rerun_symmetry = True
+    else:
+      for refiner in refiners[1:]:
+        refiner.refiner_reset()
+
+  if rerun_symmetry:
+    symmetry_analyser.set_correct_lattice(correct_lattice)
+    symmetry_analyser.decide_pointgroup()
+
+  Debug.write('Symmetry analysis of %s' % ' '.join(experiments) + ' '.join(reflections))
+
+  pointgroup = symmetry_analyser.get_pointgroup()
+  reindex_op = symmetry_analyser.get_reindex_operator()
+  probably_twinned = symmetry_analyser.get_probably_twinned()
+
+  Debug.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
+
+  return pointgroup, reindex_op, need_to_return, probably_twinned
+
+def dials_symmetry_indexer_jiffy(experiment, reflection, refiner):
+  '''A jiffy to centralise the interactions between pointless
+  and the Indexer.'''
+
+  need_to_return = False
+  probably_twinned = False
+
+  symmetry_analyser = DialsSymmetry()
+
+  symmetry_analyser.add_experiments(experiment)
+  symmetry_analyser.add_reflections(reflection)
+  symmetry_analyser.decide_pointgroup()
+
+  rerun_symmetry = False
+
+  possible = symmetry_analyser.get_possible_lattices()
+
+  correct_lattice = None
+
+  Debug.write('Possible lattices (dials.symmetry):')
+
+  Debug.write(' '.join(possible))
+
+  for lattice in possible:
+    state = refiner.set_refiner_asserted_lattice(lattice)
+    if state == refiner.LATTICE_CORRECT:
+      Debug.write('Agreed lattice %s' % lattice)
+      correct_lattice = lattice
+      break
+
+    elif state == refiner.LATTICE_IMPOSSIBLE:
+      Debug.write('Rejected lattice %s' % lattice)
+      rerun_symmetry = True
+      continue
+
+    elif state == refiner.LATTICE_POSSIBLE:
+      Debug.write('Accepted lattice %s, will reprocess' % lattice)
+      need_to_return = True
+      correct_lattice = lattice
+      break
+
+  if correct_lattice is None:
+    correct_lattice = refiner.get_refiner_lattice()
+    rerun_symmetry = True
+
+    Debug.write('No solution found: assuming lattice from refiner')
+
+  if rerun_symmetry:
+    symmetry_analyser.set_correct_lattice(correct_lattice)
+    symmetry_analyser.decide_pointgroup()
+
+  Debug.write('dial.symmetry analysis of %s' % ' '.join([experiment, reflection]))
+
+  pointgroup = symmetry_analyser.get_pointgroup()
+  reindex_op = symmetry_analyser.get_reindex_operator()
+  probably_twinned = symmetry_analyser.get_probably_twinned()
+
+  Debug.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
+
+  return pointgroup, reindex_op, need_to_return, probably_twinned

@@ -37,6 +37,8 @@ def DialsSymmetry(DriverType = None):
 
       self._experiments_filenames = []
       self._reflections_filenames = []
+      self._output_experiments_filename = None
+      self._output_reflections_filename = None
 
       self._hklin = None
       self._hklout = None

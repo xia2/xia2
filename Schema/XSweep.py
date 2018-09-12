@@ -517,6 +517,7 @@ class XSweep(object):
       text += 'IMAGES UNKNOWN\n'
 
     # add some stuff to implement the actual processing implicitly
+
     text += 'MTZ file: %s\n' % self.get_integrater_intensities()
 
     return text

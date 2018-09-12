@@ -104,6 +104,12 @@ def Integrate(DriverType = None):
     def get_integrated_experiments(self):
       return self._integrated_experiments
 
+    def set_integrated_experiments(self, exp):
+      self._integrated_experiments = exp
+
+    def set_integrated_reflections(self, refl):
+      self._integrated_reflections = refl
+
     def get_integration_report(self):
       return self._integration_report
 
