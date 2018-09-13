@@ -1213,7 +1213,7 @@ class CCP4ScalerA(Scaler):
         # Map generation may fail for number of reasons, eg. matplotlib borken
         Debug.write("Could not generate absorption map (%s)" % e)
 
-  def _update_scaled_unit_cell(self):
+  '''def _update_scaled_unit_cell(self):
     # FIXME this could be brought in-house
 
     params = PhilIndex.params
@@ -1332,7 +1332,7 @@ class CCP4ScalerA(Scaler):
         cif_out['_cell_%s' % cifname] = cell
 
     Debug.write('%7.3f %7.3f %7.3f %7.3f %7.3f %7.3f' % \
-              self._scalr_cell)
+              self._scalr_cell)'''
 
   def _generate_absorption_map(self, scaler):
     output = scaler.get_all_output()

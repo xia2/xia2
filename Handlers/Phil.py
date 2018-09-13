@@ -668,6 +668,9 @@ xia2.settings
     reference_reflection_file = None
       .type = path
       .help = "Reference file for testing of alternative indexing schemes"
+    reference_experiment_file = None
+      .type = path
+      .help = "Reference experiments.json for testing of alternative indexing schemes"
     model = *decay *modulation *absorption partiality
       .type = choice(multi=True)
       .short_caption = "Scaling models to apply"
