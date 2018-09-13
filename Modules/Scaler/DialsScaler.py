@@ -2,6 +2,7 @@
 
 from __future__ import absolute_import, division, print_function
 import os
+import math
 import copy as copy
 
 from xia2.Handlers.CIF import CIF, mmCIF
@@ -15,7 +16,8 @@ from xia2.Modules.Scaler.CommonScaler import CommonScaler as Scaler
 from xia2.Wrappers.Dials.Scale import DialsScale
 from xia2.Modules.AnalyseMyIntensities import AnalyseMyIntensities
 from xia2.Wrappers.CCP4.CCP4Factory import CCP4Factory
-from xia2.Modules.Scaler.CCP4ScalerHelpers import SweepInformationHandler
+from xia2.Modules.Scaler.CCP4ScalerHelpers import SweepInformationHandler,\
+  get_umat_bmat_lattice_symmetry_from_mtz
 from xia2.Wrappers.Dials.Symmetry import DialsSymmetry
 from xia2.Wrappers.Dials.Reindex import Reindex as DialsReindex
 from xia2.Handlers.Syminfo import Syminfo
@@ -280,6 +282,9 @@ class DialsScaler(Scaler):
       pointgroup, reindex_op, ntr, pt = \
         symmetry_indexer_multisweep(experiments, reflections, refiners)
 
+      Chatter.write('Point grop determined for multi sweep indexing: %s' % pointgroup)
+      Chatter.write('Reindexing operator for multi sweep indexing: %s' % reindex_op)
+
       for epoch in self._sweep_handler.get_epochs():
         pointgroups[epoch] = pointgroup
         reindex_ops[epoch] = reindex_op
@@ -371,28 +376,100 @@ class DialsScaler(Scaler):
       self.set_scaler_done(False)
       self.set_scaler_prepare_done(False)
       return
-    self._reference = None
+
     if PhilIndex.params.xia2.settings.unify_setting:
-      pass
-      #FIXME copy code from CCP4scalerA here
+      from scitbx.matrix import sqr
+      reference_U = None
+      i3 = sqr((1, 0, 0, 0, 1, 0, 0, 0, 1))
 
-    if self.get_scaler_reference_reflection_file():
-      self._reference = self.get_scaler_reference_reflection_file()
-      Debug.write('Using HKLREF %s' % self._reference)
+      for epoch in self._sweep_handler.get_epochs():
+        si = self._sweep_handler.get_sweep_information(epoch)
+        intgr = si.get_integrater()
+        fixed = sqr(intgr.get_goniometer().get_fixed_rotation())
+        u, b, s = get_umat_bmat_lattice_symmetry_from_mtz(si.get_reflections())
+        U = fixed.inverse() * sqr(u).transpose()
+        B = sqr(b)
 
-    elif PhilIndex.params.xia2.settings.scale.reference_reflection_file:
-      self._reference = PhilIndex.params.xia2.settings.scale.reference_reflection_file
-      Debug.write('Using HKLREF %s' % self._reference)
+        if reference_U is None:
+          reference_U = U
+          continue
+
+        results = []
+        for op in s.all_ops():
+          R = B * sqr(op.r().as_double()).transpose() * B.inverse()
+          nearly_i3 = (U * R).inverse() * reference_U
+          score = sum([abs(_n - _i) for (_n, _i) in zip(nearly_i3, i3)])
+          results.append((score, op.r().as_hkl(), op))
+
+        results.sort()
+        best = results[0]
+        Debug.write('Best reindex: %s %.3f' % (best[1], best[0]))
+        intgr.set_integrater_reindex_operator(best[2].r().inverse().as_hkl(),
+                                              reason='unifying [U] setting')
+        si.set_reflections(intgr.get_integrater_intensities())
+
+        # recalculate to verify
+        u, b, s = get_umat_bmat_lattice_symmetry_from_mtz(si.get_reflections())
+        U = fixed.inverse() * sqr(u).transpose()
+        Debug.write('New reindex: %s' % (U.inverse() * reference_U))
+
+    #FIXME use a reference reflection file as set by xcrystal?
+    #if self.get_scaler_reference_reflection_file():
+    #  Debug.write('Using HKLREF %s' % self._reference)
+    #  self._reference = self.get_scaler_reference_reflection_file()
+
+    if PhilIndex.params.xia2.settings.scale.reference_reflection_file:
+      if not PhilIndex.params.xia2.settings.scale.reference_experiment_file:
+        Chatter.write('No reference experiments.json provided, reference reflection file will not be used')
+      else:
+        self._reference_reflections = PhilIndex.params.xia2.settings.scale.reference_reflection_file
+        self._reference_experiments = PhilIndex.params.xia2.settings.scale.reference_experiment_file
+        Debug.write('Using reference reflections %s' % self._reference_reflections)
+        Debug.write('Using reference experiments %s' % self._reference_experiments)
 
     params = PhilIndex.params
     use_brehm_diederichs = params.xia2.settings.use_brehm_diederichs
-    if len(self._sweep_handler.get_epochs()) > 1 and use_brehm_diederichs and False:
-      pass
-      #group code later with CCP4scalerA
+    if len(self._sweep_handler.get_epochs()) > 1 and use_brehm_diederichs:
+
+      brehm_diederichs_files_in = []
+      for epoch in self._sweep_handler.get_epochs():
+
+        si = self._sweep_handler.get_sweep_information(epoch)
+        hklin = si.get_reflections()
+        brehm_diederichs_files_in.append(hklin)
+
+      # now run cctbx.brehm_diederichs to figure out the indexing hand for
+      # each sweep
+      from xia2.Wrappers.Cctbx.BrehmDiederichs import BrehmDiederichs
+      brehm_diederichs = BrehmDiederichs()
+      brehm_diederichs.set_working_directory(self.get_working_directory())
+      auto_logfiler(brehm_diederichs)
+      brehm_diederichs.set_input_filenames(brehm_diederichs_files_in)
+      # 1 or 3? 1 seems to work better?
+      brehm_diederichs.set_asymmetric(1)
+      brehm_diederichs.run()
+      reindexing_dict = brehm_diederichs.get_reindexing_dict()
+
+      for epoch in self._sweep_handler.get_epochs():
+
+        si = self._sweep_handler.get_sweep_information(epoch)
+        intgr = si.get_integrater()
+        hklin = si.get_reflections()
+
+        reindex_op = reindexing_dict.get(os.path.abspath(hklin))
+        assert reindex_op is not None
+
+        if 1 or reindex_op != 'h,k,l':
+          # apply the reindexing operator
+          intgr.set_integrater_reindex_operator(
+            reindex_op, reason='match reference')
+          si.set_reflections(intgr.get_integrater_intensities())
+
     # If not Brehm-deidrichs, set reference as first sweep
     elif len(self._sweep_handler.get_epochs()) > 1 and \
-           not self._reference:
+           not self._reference_reflections:
 
+      Chatter.write('First sweep will be used as reference for reindexing')
       first = self._sweep_handler.get_epochs()[0]
       si = self._sweep_handler.get_sweep_information(first)
       self._reference_experiments = si.get_integrater().get_integrated_experiments()
@@ -403,11 +480,9 @@ class DialsScaler(Scaler):
     if self._reference_reflections:
       assert self._reference_experiments
 
-      # then get the unit cell, lattice etc.
-
-      # FIXME Need to get spacegroup and lattice by loading experiments file?
-      #reference_lattice = Syminfo.get_lattice(self._reference_experiments.crsytal.get_spacegroup())
-      #reference_cell = md.get_dataset_info(datasets[0])['cell']
+      from dxtbx.model.experiment_list import ExperimentListFactory
+      exp = ExperimentListFactory.from_serialized_format(self._reference_experiments)
+      reference_cell = exp[0].crystal.get_unit_cell().parameters()
 
       # then compute the pointgroup from this...
 
@@ -415,8 +490,10 @@ class DialsScaler(Scaler):
       Chatter.write('Reindexing all datasets to common reference')
       counter = 0
       for epoch in self._sweep_handler.get_epochs():
-        reindexed_exp_fpath = str(counter) + '_reindexed_experiments.json'
-        reindexed_refl_fpath = str(counter) + '_reindexed_reflections.pickle'
+        reindexed_exp_fpath = os.path.join(self.get_working_directory(),
+          str(counter) + '_reindexed_experiments.json')
+        reindexed_refl_fpath = os.path.join(self.get_working_directory(),
+          str(counter) + '_reindexed_reflections.pickle')
 
         # if we are working with unified UB matrix then this should not
         # be a problem here (note, *if*; *should*)
@@ -430,7 +507,7 @@ class DialsScaler(Scaler):
 
         si = self._sweep_handler.get_sweep_information(epoch)
         exp = si.get_integrater().get_integrated_experiments()
-        refl = si.get_integrater().get_integrated_experiments()
+        refl = si.get_integrater().get_integrated_reflections()
 
         reindexer.set_reference_filename(self._reference_experiments)
         reindexer.set_reference_reflections(self._reference_reflections)
@@ -441,7 +518,7 @@ class DialsScaler(Scaler):
 
         reindexer.run()
 
-        Debug.write('Reindexing analysis of %s' % ' '.join([exp, refl]))
+        Debug.write('Completed reindexing of %s' % ' '.join([exp, refl]))
 
         # FIXME how to get some indication of the reindexing used?
 
@@ -455,25 +532,10 @@ class DialsScaler(Scaler):
         #    Syminfo.spacegroup_name_to_number(pointgroup))  #needed for?
         si.set_reflections(integrater.get_integrater_intensities())
         counter += 1
-        '''md = self._factory.Mtzdump()
-        md.set_hklin(si.get_reflections())
-        md.dump()
+        exp = ExperimentListFactory.from_serialized_format(reindexed_exp_fpath)
+        cell = exp[0].crystal.get_unit_cell().parameters()
 
-        datasets = md.get_datasets()
-
-        if len(datasets) > 1:
-          raise RuntimeError('more than one dataset in %s' % \
-                si.get_reflections())
-
-        # then get the unit cell, lattice etc.
-
-        lattice = Syminfo.get_lattice(md.get_spacegroup())
-        cell = md.get_dataset_info(datasets[0])['cell']
-
-        if lattice != reference_lattice:
-          raise RuntimeError('lattices differ in %s and %s' % \
-                (self._reference, si.get_reflections()))
-
+        # Note - no lattice check as this will already be caught by reindex
         Debug.write('Cell: %.2f %.2f %.2f %.2f %.2f %.2f' % cell)
         Debug.write('Ref:  %.2f %.2f %.2f %.2f %.2f %.2f' % reference_cell)
 
@@ -482,7 +544,7 @@ class DialsScaler(Scaler):
                        reference_cell[j]) > 0.1:
             raise RuntimeError( \
                   'unit cell parameters differ in %s and %s' % \
-                  (self._reference, si.get_reflections()))'''
+                  (self._reference, si.get_reflections()))
 
     # Now all have been reindexed, run a round of space group determination on
     # joint set.
@@ -499,7 +561,7 @@ class DialsScaler(Scaler):
     symmetry_analyser.decide_pointgroup()
     spacegroup = symmetry_analyser.get_pointgroup()
     self._scalr_likely_spacegroups = [spacegroup]
-    Chatter.write('Likely spacegroups:')
+    Chatter.write('Likely pointgroup determined by dials.symmetry:')
     for spag in self._scalr_likely_spacegroups:
       Chatter.write('%s' % spag)
 
@@ -681,131 +743,10 @@ class DialsScaler(Scaler):
         self._scalr_statistics[
           (self._scalr_pname, self._scalr_xname, key)] = stats #adds here
 
-  #more copypasta - exactly same as CCP4ScalerA, move to CommonScaler?
-  def _update_scaled_unit_cell(self):
-    # FIXME this could be brought in-house
-
-    params = PhilIndex.params
-    fast_mode = params.dials.fast_mode
-    if (params.xia2.settings.integrater == 'dials' and not fast_mode
-        and params.xia2.settings.scale.two_theta_refine):
-      from xia2.Wrappers.Dials.TwoThetaRefine import TwoThetaRefine
-      from xia2.lib.bits import auto_logfiler
-
-      Chatter.banner('Unit cell refinement')
-
-      # Collect a list of all sweeps, grouped by project, crystal, wavelength
-      groups = {}
-      self._scalr_cell_dict = {}
-      tt_refine_experiments = []
-      tt_refine_pickles = []
-      tt_refine_reindex_ops = []
-      for epoch in self._sweep_handler.get_epochs():
-        si = self._sweep_handler.get_sweep_information(epoch)
-        pi = '_'.join(si.get_project_info())
-        intgr = si.get_integrater()
-        groups[pi] = groups.get(pi, []) + \
-          [(intgr.get_integrated_experiments(),
-            intgr.get_integrated_reflections(),
-            intgr.get_integrater_reindex_operator())]
-
-      # Two theta refine the unit cell for each group
-      p4p_file = os.path.join(self.get_working_directory(),
-                              '%s_%s.p4p' % (self._scalr_pname, self._scalr_xname))
-      for pi in groups.keys():
-        tt_grouprefiner = TwoThetaRefine()
-        tt_grouprefiner.set_working_directory(self.get_working_directory())
-        auto_logfiler(tt_grouprefiner)
-        args = zip(*groups[pi])
-        tt_grouprefiner.set_experiments(args[0])
-        tt_grouprefiner.set_pickles(args[1])
-        tt_grouprefiner.set_output_p4p(p4p_file)
-        tt_refine_experiments.extend(args[0])
-        tt_refine_pickles.extend(args[1])
-        tt_refine_reindex_ops.extend(args[2])
-        reindex_ops = args[2]
-        from cctbx.sgtbx import change_of_basis_op as cb_op
-        if self._spacegroup_reindex_operator is not None:
-          reindex_ops = [(
-            cb_op(str(self._spacegroup_reindex_operator)) * cb_op(str(op))).as_hkl()
-            if op is not None else self._spacegroup_reindex_operator
-            for op in reindex_ops]
-        tt_grouprefiner.set_reindex_operators(reindex_ops)
-        tt_grouprefiner.run()
-        Chatter.write('%s: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
-          tuple([''.join(pi.split('_')[2:])] + list(tt_grouprefiner.get_unit_cell())))
-        self._scalr_cell_dict[pi] = (tt_grouprefiner.get_unit_cell(), tt_grouprefiner.get_unit_cell_esd(), tt_grouprefiner.import_cif(), tt_grouprefiner.import_mmcif())
-        if len(groups) > 1:
-          cif_in = tt_grouprefiner.import_cif()
-          cif_out = CIF.get_block(pi)
-          for key in sorted(cif_in.keys()):
-            cif_out[key] = cif_in[key]
-          mmcif_in = tt_grouprefiner.import_mmcif()
-          mmcif_out = mmCIF.get_block(pi)
-          for key in sorted(mmcif_in.keys()):
-            mmcif_out[key] = mmcif_in[key]
-
-      # Two theta refine everything together
-      if len(groups) > 1:
-        tt_refiner = TwoThetaRefine()
-        tt_refiner.set_working_directory(self.get_working_directory())
-        tt_refiner.set_output_p4p(p4p_file)
-        auto_logfiler(tt_refiner)
-        tt_refiner.set_experiments(tt_refine_experiments)
-        tt_refiner.set_pickles(tt_refine_pickles)
-        if self._spacegroup_reindex_operator is not None:
-          reindex_ops = [(
-            cb_op(str(self._spacegroup_reindex_operator)) * cb_op(str(op))).as_hkl()
-            if op is not None else self._spacegroup_reindex_operator
-            for op in tt_refine_reindex_ops]
-        tt_refiner.set_reindex_operators(reindex_ops)
-        tt_refiner.run()
-        self._scalr_cell = tt_refiner.get_unit_cell()
-        Chatter.write('Overall: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % tt_refiner.get_unit_cell())
-        self._scalr_cell_esd = tt_refiner.get_unit_cell_esd()
-        cif_in = tt_refiner.import_cif()
-        mmcif_in = tt_refiner.import_mmcif()
-      else:
-        self._scalr_cell, self._scalr_cell_esd, cif_in, mmcif_in = self._scalr_cell_dict.values()[0]
-      if params.xia2.settings.small_molecule == True:
-        FileHandler.record_data_file(p4p_file)
-
-      import dials.util.version
-      cif_out = CIF.get_block('xia2')
-      mmcif_out = mmCIF.get_block('xia2')
-      cif_out['_computing_cell_refinement'] = mmcif_out['_computing.cell_refinement'] = 'DIALS 2theta refinement, %s' % dials.util.version.dials_version()
-      for key in sorted(cif_in.keys()):
-        cif_out[key] = cif_in[key]
-      for key in sorted(mmcif_in.keys()):
-        mmcif_out[key] = mmcif_in[key]
-
-      Debug.write('Unit cell obtained by two-theta refinement')
-
-    else:
-      ami = AnalyseMyIntensities()
-      ami.set_working_directory(self.get_working_directory())
-
-      average_unit_cell, ignore_sg = ami.compute_average_cell(
-        [self._scalr_scaled_refl_files[key] for key in
-        self._scalr_scaled_refl_files])
-
-      Debug.write('Computed average unit cell (will use in all files)')
-      self._scalr_cell = average_unit_cell
-      self._scalr_cell_esd = None
-
-      # Write average unit cell to .cif
-      cif_out = CIF.get_block('xia2')
-      cif_out['_computing_cell_refinement'] = 'AIMLESS averaged unit cell'
-      for cell, cifname in zip(self._scalr_cell,
-                              ['length_a', 'length_b', 'length_c', 'angle_alpha', 'angle_beta', 'angle_gamma']):
-        cif_out['_cell_%s' % cifname] = cell
-
-    Debug.write('%7.3f %7.3f %7.3f %7.3f %7.3f %7.3f' % \
-              self._scalr_cell)
-
 def symmetry_indexer_multisweep(experiments, reflections, refiners):
   '''A jiffy to centralise the interactions between dials.symmetry
   and the Indexer, multisweep edition.'''
+  #FIXME dials.symmetry only uses the first datafile at the moment
 
   need_to_return = False
   probably_twinned = False
