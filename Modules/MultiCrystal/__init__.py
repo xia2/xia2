@@ -245,10 +245,6 @@ class multi_crystal_analysis(object):
          ]
       )
 
-    # sort table by completeness
-    perm = flex.sort_permutation(
-      flex.double(c.completeness for c in cluster_info))
-    rows = [rows[i] for i in perm]
     rows.insert(0, headers)
     return rows
 
