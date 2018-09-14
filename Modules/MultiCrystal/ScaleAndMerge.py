@@ -219,8 +219,9 @@ class DataManager(object):
       sel.set_selected(sel_expt, True)
       self._reflections['id'].set_selected(sel_expt, i_expt)
     self._reflections = self._reflections.select(sel)
-    assert self.reflections.are_experiment_identifiers_consistent(
-      self._experiments)
+    #assert len(self._reflections.experiment_identifiers()) == len(self._experiments), (len(self._reflections.experiment_identifiers()), len(self._experiments))
+    #self.reflections.assert_experiment_identifiers_are_consistent(
+    #  self._experiments)
 
   def filter_dose(self, dose_min, dose_max):
     from dials.command_line.slice_sweep import slice_experiments, slice_reflections
