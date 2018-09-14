@@ -574,7 +574,7 @@ class MultiCrystalScale(object):
       steps_per_A = steps_per_angstrom
       Amin = math.floor(mmm.min * steps_per_A)/steps_per_A
       Amax = math.floor(mmm.max * steps_per_A)/steps_per_A
-      n_slots = int((Amax - Amin) * steps_per_A)
+      n_slots = max(1, int((Amax - Amin) * steps_per_A))
       hist = flex.histogram(uc_params[i], Amin, Amax, n_slots=n_slots)
       hist_inliers = flex.histogram(
         uc_params[i].select(~outliers), Amin, Amax, n_slots=n_slots)
