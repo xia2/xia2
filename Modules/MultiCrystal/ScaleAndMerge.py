@@ -141,6 +141,8 @@ min_completeness = None
   .type = float(value_min=0, value_max=1)
 min_multiplicity = None
   .type = float(value_min=0)
+max_clusters = None
+  .type = int(value_min=1)
 
 identifiers = None
   .type = strings
@@ -421,16 +423,22 @@ class MultiCrystalScale(object):
 
     min_completeness = self._params.min_completeness
     min_multiplicity = self._params.min_multiplicity
-    if min_completeness is not None or min_multiplicity is not None:
+    max_clusters = self._params.max_clusters
+    if ((max_clusters is not None and max_clusters > 1)
+        or min_completeness is not None or min_multiplicity is not None):
       self._data_manager_original = self._data_manager
       cwd = os.path.abspath(os.getcwd())
-      for cluster in mca.cos_angle_clusters:
+      n_processed = 0
+      for cluster in reversed(mca.cos_angle_clusters):
+        if max_clusters is not None and n_processed == max_clusters:
+          break
         if min_completeness is not None and cluster.completeness < min_completeness:
           continue
         if min_multiplicity is not None and cluster.multiplicity < min_multiplicity:
           continue
         if len(cluster.labels) == len(self._data_manager_original.experiments):
           continue
+        n_processed += 1
 
         logger.info('Scaling cos angle cluster %i:' % cluster.cluster_id)
         logger.info(cluster)
