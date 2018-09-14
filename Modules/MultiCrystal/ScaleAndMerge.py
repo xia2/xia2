@@ -1148,10 +1148,10 @@ class Scale(object):
     dose = dose.resolution_filter(d_min=d_min)
     stats = Statistics(intensities, dose.data())
 
-    logger.info(stats.completeness_vs_dose_str())
-    logger.info(stats.rcp_vs_dose_str())
-    logger.info(stats.scp_vs_dose_str())
-    logger.info(stats.rd_vs_dose_str())
+    logger.debug(stats.completeness_vs_dose_str())
+    logger.debug(stats.rcp_vs_dose_str())
+    logger.debug(stats.scp_vs_dose_str())
+    logger.debug(stats.rd_vs_dose_str())
 
     with open('chef.json', 'wb') as f:
       import json
