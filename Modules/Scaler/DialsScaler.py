@@ -5,7 +5,6 @@ import os
 import math
 import copy as copy
 
-from xia2.Handlers.CIF import CIF, mmCIF
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Files import FileHandler
 from xia2.lib.bits import auto_logfiler
@@ -34,6 +33,8 @@ class DialsScaler(Scaler):
     self._scalr_statistics = {}
     self._factory = CCP4Factory() # allows lots of post scaling calculations
     self._scaler = DialsScale()
+    self._helper = DialsScalerHelper()
+
 
     self._reference_reflections = None
     self._reference_experiments = None
@@ -87,6 +88,8 @@ class DialsScaler(Scaler):
     they are correctly indexed (via dials.symmetry) and generally tidy
     things up.'''
 
+    self._helper.set_working_directory(self.get_working_directory())
+
     need_to_return = False
 
     self._scaler.clear_datafiles()
@@ -126,7 +129,6 @@ class DialsScaler(Scaler):
 
     # If multiple files, want to run symmetry to check for consistent indexing
     # also
-    self._symmetry_analyser = DialsSymmetry()
 
     multi_sweep_indexing = \
       PhilIndex.params.xia2.settings.multi_sweep_indexing == True
@@ -156,7 +158,7 @@ class DialsScaler(Scaler):
         Debug.write('Running multisweep dials.symmetry for %d sweeps' %
                     len(refiners))
         pointgroup, reindex_op, ntr, pt = \
-                    symmetry_indexer_multisweep(experiments, reflections, refiners)
+                    self._symmetry_indexer_multisweep(experiments, reflections, refiners)
 
         Debug.write('X1698: %s: %s' % (pointgroup, reindex_op))
 
@@ -193,7 +195,7 @@ class DialsScaler(Scaler):
           else:
 
             pointgroup, reindex_op, ntr, pt = \
-              dials_symmetry_indexer_jiffy(experiment, reflections, refiner)
+              self._dials_symmetry_indexer_jiffy(experiment, reflections, refiner)
 
             Debug.write('X1698: %s: %s' % (pointgroup, reindex_op))
 
@@ -280,7 +282,7 @@ class DialsScaler(Scaler):
         refiners.append(integrater.get_integrater_refiner())
 
       pointgroup, reindex_op, ntr, pt = \
-        symmetry_indexer_multisweep(experiments, reflections, refiners)
+        self._symmetry_indexer_multisweep(experiments, reflections, refiners)
 
       Chatter.write('Point grop determined for multi sweep indexing: %s' % pointgroup)
       Chatter.write('Reindexing operator for multi sweep indexing: %s' % reindex_op)
@@ -311,7 +313,7 @@ class DialsScaler(Scaler):
 
         else:
           pointgroup, reindex_op, ntr, pt = \
-            dials_symmetry_indexer_jiffy(experiment, reflections, refiner)
+            self._dials_symmetry_indexer_jiffy(experiment, reflections, refiner)
 
           Debug.write('X1698: %s: %s' % (pointgroup, reindex_op))
 
@@ -367,8 +369,8 @@ class DialsScaler(Scaler):
 
       integrater.set_integrater_spacegroup_number(
           Syminfo.spacegroup_name_to_number(overall_pointgroup))
-      integrater.set_integrater_reindex_operator(
-          reindex_ops[epoch], reason='setting point group')
+      #integrater.set_integrater_reindex_operator(
+      #    reindex_ops[epoch], reason='setting point group')
       # This will give us the reflections in the correct point group
       si.set_reflections(integrater.get_integrater_intensities())
 
@@ -504,6 +506,8 @@ class DialsScaler(Scaler):
           continue
 
         reindexer = DialsReindex()
+        reindexer.set_working_directory(self.get_working_directory())
+        auto_logfiler(reindexer)
 
         si = self._sweep_handler.get_sweep_information(epoch)
         exp = si.get_integrater().get_integrated_experiments()
@@ -517,6 +521,8 @@ class DialsScaler(Scaler):
         reindexer.set_reindexed_reflections_filename(reindexed_refl_fpath)
 
         reindexer.run()
+        FileHandler.record_temporary_file(reindexed_exp_fpath)
+        FileHandler.record_temporary_file(reindexed_refl_fpath)
 
         Debug.write('Completed reindexing of %s' % ' '.join([exp, refl]))
 
@@ -532,7 +538,8 @@ class DialsScaler(Scaler):
         #    Syminfo.spacegroup_name_to_number(pointgroup))  #needed for?
         si.set_reflections(integrater.get_integrater_intensities())
         counter += 1
-        exp = ExperimentListFactory.from_serialized_format(reindexed_exp_fpath)
+        from dxtbx.serialize import load
+        exp = load.experiment_list(reindexed_exp_fpath)
         cell = exp[0].crystal.get_unit_cell().parameters()
 
         # Note - no lattice check as this will already be caught by reindex
@@ -551,7 +558,10 @@ class DialsScaler(Scaler):
 
     # FIXME not yet implemented for dials.symmetry? just take point group now
     epoch = self._sweep_handler.get_epochs()[0]
+
     symmetry_analyser = DialsSymmetry()
+    symmetry_analyser.set_working_directory(self.get_working_directory())
+    auto_logfiler(symmetry_analyser)
 
     si = self._sweep_handler.get_sweep_information(epoch)
     exp = si.get_integrater().get_integrated_experiments()
@@ -617,8 +627,11 @@ class DialsScaler(Scaler):
     self._scaler.set_scaled_unmerged_mtz(scaled_unmerged_mtz_path)
     self._scaler.set_scaled_mtz(scaled_mtz_path)
     self._scalr_scaled_reflection_files = {}
-    self._scalr_scaled_reflection_files['mtz_unmerged'] = {'NATIVE' : scaled_unmerged_mtz_path}
-    self._scalr_scaled_reflection_files['mtz'] = {'NATIVE' : scaled_mtz_path}
+    for epoch in self._sweep_handler.get_epochs():
+        si = self._sweep_handler.get_sweep_information(epoch)
+        pname, xname, dname = si.get_project_info()
+    self._scalr_scaled_reflection_files['mtz_unmerged'] = {dname : scaled_unmerged_mtz_path}
+    self._scalr_scaled_reflection_files['mtz'] = {dname : scaled_mtz_path}
 
     user_resolution_limits = {}
 
@@ -642,7 +655,12 @@ class DialsScaler(Scaler):
         resolution, _ = self._scalr_resolution_limits[(dname, sname)]
         sc.set_resolution(resolution)
 
+    sc.set_working_directory(self.get_working_directory())
+    auto_logfiler(sc)
     sc.scale()
+
+    FileHandler.record_data_file(scaled_unmerged_mtz_path)
+    FileHandler.record_data_file(scaled_mtz_path)
 
     # make it so that only scaled.pickle and scaled_experiments.json are
     # the files that dials.scale knows about, so that if scale is called again,
@@ -655,7 +673,7 @@ class DialsScaler(Scaler):
     self._update_scaled_unit_cell()
 
     hklout = copy.deepcopy(self._scaler.get_scaled_mtz())
-    self._scalr_scaled_refl_files = {'NATIVE' : hklout}
+    self._scalr_scaled_refl_files = {dname : hklout}
     FileHandler.record_data_file(hklout)
 
     highest_suggested_resolution = None
@@ -743,137 +761,160 @@ class DialsScaler(Scaler):
         self._scalr_statistics[
           (self._scalr_pname, self._scalr_xname, key)] = stats #adds here
 
-def symmetry_indexer_multisweep(experiments, reflections, refiners):
-  '''A jiffy to centralise the interactions between dials.symmetry
-  and the Indexer, multisweep edition.'''
-  #FIXME dials.symmetry only uses the first datafile at the moment
+  def _symmetry_indexer_multisweep(self, experiments, reflections, refiners):
+    return self._helper.symmetry_indexer_multisweep(experiments, reflections, refiners)
 
-  need_to_return = False
-  probably_twinned = False
+  def _dials_symmetry_indexer_jiffy(self, experiment, reflection, refiner):
+    return self._helper.dials_symmetry_indexer_jiffy(experiment, reflection, refiner)
 
-  symmetry_analyser = DialsSymmetry()
-  for (exp, refl) in zip(experiments, reflections):
-    symmetry_analyser.add_experiments(exp)
-    symmetry_analyser.add_reflections(refl)
-  symmetry_analyser.decide_pointgroup()
+class DialsScalerHelper(object):
+  '''A class to help the CCP4 Scaler along a little.'''
 
-  rerun_symmetry = False
+  def __init__(self):
+    self._working_directory = os.getcwd()
 
-  possible = symmetry_analyser.get_possible_lattices()
+  def set_working_directory(self, working_directory):
+    self._working_directory = working_directory
 
-  correct_lattice = None
+  def get_working_directory(self):
+    return self._working_directory
 
-  Debug.write('Possible lattices (dials.symmetry):')
+  def symmetry_indexer_multisweep(self, experiments, reflections, refiners):
+    '''A jiffy to centralise the interactions between dials.symmetry
+    and the Indexer, multisweep edition.'''
+    #FIXME dials.symmetry only uses the first datafile at the moment
 
-  Debug.write(' '.join(possible))
+    need_to_return = False
+    probably_twinned = False
 
-  # any of them contain the same indexer link, so all good here.
-  refiner = refiners[0]
+    symmetry_analyser = DialsSymmetry()
+    symmetry_analyser.set_working_directory(self.get_working_directory())
+    auto_logfiler(symmetry_analyser)
 
-  for lattice in possible:
-    state = refiner.set_refiner_asserted_lattice(lattice)
-    if state == refiner.LATTICE_CORRECT:
-      Debug.write('Agreed lattice %s' % lattice)
-      correct_lattice = lattice
-      break
-
-    elif state == refiner.LATTICE_IMPOSSIBLE:
-      Debug.write('Rejected lattice %s' % lattice)
-      rerun_symmetry = True
-      continue
-
-    elif state == refiner.LATTICE_POSSIBLE:
-      Debug.write('Accepted lattice %s, will reprocess' % lattice)
-      need_to_return = True
-      correct_lattice = lattice
-      break
-
-  if correct_lattice is None:
-    correct_lattice = refiner.get_refiner_lattice()
-    rerun_symmetry = True
-
-    Debug.write('No solution found: assuming lattice from refiner')
-
-  if need_to_return:
-    if (PhilIndex.params.xia2.settings.integrate_p1 and not
-        PhilIndex.params.xia2.settings.reintegrate_correct_lattice):
-      need_to_return = False
-      rerun_symmetry = True
-    else:
-      for refiner in refiners[1:]:
-        refiner.refiner_reset()
-
-  if rerun_symmetry:
-    symmetry_analyser.set_correct_lattice(correct_lattice)
+    for (exp, refl) in zip(experiments, reflections):
+      symmetry_analyser.add_experiments(exp)
+      symmetry_analyser.add_reflections(refl)
     symmetry_analyser.decide_pointgroup()
 
-  Debug.write('Symmetry analysis of %s' % ' '.join(experiments) + ' '.join(reflections))
+    rerun_symmetry = False
 
-  pointgroup = symmetry_analyser.get_pointgroup()
-  reindex_op = symmetry_analyser.get_reindex_operator()
-  probably_twinned = symmetry_analyser.get_probably_twinned()
+    possible = symmetry_analyser.get_possible_lattices()
 
-  Debug.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
+    correct_lattice = None
 
-  return pointgroup, reindex_op, need_to_return, probably_twinned
+    Debug.write('Possible lattices (dials.symmetry):')
 
-def dials_symmetry_indexer_jiffy(experiment, reflection, refiner):
-  '''A jiffy to centralise the interactions between pointless
-  and the Indexer.'''
+    Debug.write(' '.join(possible))
 
-  need_to_return = False
-  probably_twinned = False
+    # any of them contain the same indexer link, so all good here.
+    refiner = refiners[0]
 
-  symmetry_analyser = DialsSymmetry()
+    for lattice in possible:
+      state = refiner.set_refiner_asserted_lattice(lattice)
+      if state == refiner.LATTICE_CORRECT:
+        Debug.write('Agreed lattice %s' % lattice)
+        correct_lattice = lattice
+        break
 
-  symmetry_analyser.add_experiments(experiment)
-  symmetry_analyser.add_reflections(reflection)
-  symmetry_analyser.decide_pointgroup()
+      elif state == refiner.LATTICE_IMPOSSIBLE:
+        Debug.write('Rejected lattice %s' % lattice)
+        rerun_symmetry = True
+        continue
 
-  rerun_symmetry = False
+      elif state == refiner.LATTICE_POSSIBLE:
+        Debug.write('Accepted lattice %s, will reprocess' % lattice)
+        need_to_return = True
+        correct_lattice = lattice
+        break
 
-  possible = symmetry_analyser.get_possible_lattices()
-
-  correct_lattice = None
-
-  Debug.write('Possible lattices (dials.symmetry):')
-
-  Debug.write(' '.join(possible))
-
-  for lattice in possible:
-    state = refiner.set_refiner_asserted_lattice(lattice)
-    if state == refiner.LATTICE_CORRECT:
-      Debug.write('Agreed lattice %s' % lattice)
-      correct_lattice = lattice
-      break
-
-    elif state == refiner.LATTICE_IMPOSSIBLE:
-      Debug.write('Rejected lattice %s' % lattice)
+    if correct_lattice is None:
+      correct_lattice = refiner.get_refiner_lattice()
       rerun_symmetry = True
-      continue
 
-    elif state == refiner.LATTICE_POSSIBLE:
-      Debug.write('Accepted lattice %s, will reprocess' % lattice)
-      need_to_return = True
-      correct_lattice = lattice
-      break
+      Debug.write('No solution found: assuming lattice from refiner')
 
-  if correct_lattice is None:
-    correct_lattice = refiner.get_refiner_lattice()
-    rerun_symmetry = True
+    if need_to_return:
+      if (PhilIndex.params.xia2.settings.integrate_p1 and not
+          PhilIndex.params.xia2.settings.reintegrate_correct_lattice):
+        need_to_return = False
+        rerun_symmetry = True
+      else:
+        for refiner in refiners[1:]:
+          refiner.refiner_reset()
 
-    Debug.write('No solution found: assuming lattice from refiner')
+    if rerun_symmetry:
+      symmetry_analyser.set_correct_lattice(correct_lattice)
+      symmetry_analyser.decide_pointgroup()
 
-  if rerun_symmetry:
-    symmetry_analyser.set_correct_lattice(correct_lattice)
+    Debug.write('Symmetry analysis of %s' % ' '.join(experiments) + ' '.join(reflections))
+
+    pointgroup = symmetry_analyser.get_pointgroup()
+    reindex_op = symmetry_analyser.get_reindex_operator()
+    probably_twinned = symmetry_analyser.get_probably_twinned()
+
+    Debug.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
+
+    return pointgroup, reindex_op, need_to_return, probably_twinned
+
+  def dials_symmetry_indexer_jiffy(self, experiment, reflection, refiner):
+    '''A jiffy to centralise the interactions between pointless
+    and the Indexer.'''
+
+    need_to_return = False
+    probably_twinned = False
+
+    symmetry_analyser = DialsSymmetry()
+    symmetry_analyser.set_working_directory(self.get_working_directory())
+    auto_logfiler(symmetry_analyser)
+
+    symmetry_analyser.add_experiments(experiment)
+    symmetry_analyser.add_reflections(reflection)
     symmetry_analyser.decide_pointgroup()
 
-  Debug.write('dial.symmetry analysis of %s' % ' '.join([experiment, reflection]))
+    rerun_symmetry = False
 
-  pointgroup = symmetry_analyser.get_pointgroup()
-  reindex_op = symmetry_analyser.get_reindex_operator()
-  probably_twinned = symmetry_analyser.get_probably_twinned()
+    possible = symmetry_analyser.get_possible_lattices()
 
-  Debug.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
+    correct_lattice = None
 
-  return pointgroup, reindex_op, need_to_return, probably_twinned
+    Debug.write('Possible lattices (dials.symmetry):')
+
+    Debug.write(' '.join(possible))
+
+    for lattice in possible:
+      state = refiner.set_refiner_asserted_lattice(lattice)
+      if state == refiner.LATTICE_CORRECT:
+        Debug.write('Agreed lattice %s' % lattice)
+        correct_lattice = lattice
+        break
+
+      elif state == refiner.LATTICE_IMPOSSIBLE:
+        Debug.write('Rejected lattice %s' % lattice)
+        rerun_symmetry = True
+        continue
+
+      elif state == refiner.LATTICE_POSSIBLE:
+        Debug.write('Accepted lattice %s, will reprocess' % lattice)
+        need_to_return = True
+        correct_lattice = lattice
+        break
+
+    if correct_lattice is None:
+      correct_lattice = refiner.get_refiner_lattice()
+      rerun_symmetry = True
+
+      Debug.write('No solution found: assuming lattice from refiner')
+
+    if rerun_symmetry:
+      symmetry_analyser.set_correct_lattice(correct_lattice)
+      symmetry_analyser.decide_pointgroup()
+
+    Debug.write('dial.symmetry analysis of %s' % ' '.join([experiment, reflection]))
+
+    pointgroup = symmetry_analyser.get_pointgroup()
+    reindex_op = symmetry_analyser.get_reindex_operator()
+    probably_twinned = symmetry_analyser.get_probably_twinned()
+
+    Debug.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
+
+    return pointgroup, reindex_op, need_to_return, probably_twinned
