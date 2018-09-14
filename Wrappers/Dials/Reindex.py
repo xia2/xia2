@@ -62,9 +62,6 @@ def Reindex(DriverType = None):
     def get_reindexed_reflections_filename(self):
       return self._reindexed_reflections_filename
 
-    def get_reindex_reference(self):
-      from dials.algorithms.symmetry.reindex_to_reference import determine_reindex_operator_against_reference
-
     def set_reindexed_experiments_filename(self, filepath):
       self._reindexed_experiments_filename = filepath
 
@@ -93,9 +90,9 @@ def Reindex(DriverType = None):
         self.add_command_line(
           "output.reflections=%s" %self._reindexed_reflections_filename)
       if self._reference_filename is not None:
-        self.add_command_line("reference=%s" % self._reference_filename)
+        self.add_command_line("reference.experiments=%s" % self._reference_filename)
       if self._reference_reflections is not None:
-        self.add_command_line("reference_reflections=%s" % self._reference_reflections)
+        self.add_command_line("reference.reflections=%s" % self._reference_reflections)
       if self._cb_op:
         self.add_command_line("change_of_basis_op=%s" % self._cb_op)
       if self._space_group:
