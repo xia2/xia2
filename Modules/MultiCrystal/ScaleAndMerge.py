@@ -63,7 +63,7 @@ unit_cell_clustering {
 scaling
   .short_caption = "aimless"
 {
-  program = *aimless dials
+  program = aimless *dials
     .type = choice
   #intensities = summation profile *combine
     #.type = choice
@@ -113,7 +113,7 @@ symmetry {
   }
   le_page_max_delta = 5
     .type = float(value_min=0)
-  program = *pointless dials
+  program = pointless *dials
     .type = choice
   space_group = None
     .type = space_group
