@@ -29,6 +29,9 @@ def ExportMtz(DriverType = None):
       self._combine_partials = True
       self._intensity_choice = 'profile+sum'
 
+    def set_intensity_choice(self, choice):
+      self._intensity_choice = choice
+
     def set_partiality_threshold(self, partiality_threshold):
       self._partiality_threshold = partiality_threshold
 
