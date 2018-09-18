@@ -36,6 +36,7 @@ class DialsScaler(Scaler):
     self._helper = DialsScalerHelper()
     self._reference_reflections = None
     self._reference_experiments = None
+    self._no_times_scaled = 0
 
   # Schema/Sweep.py wants these two methods need to be implemented by subclasses,
   # but are not actually used at the moment?
@@ -618,8 +619,12 @@ class DialsScaler(Scaler):
 
     exp_path = os.path.join(self.get_working_directory(), 'scaled_experiments.json')
     refl_path = os.path.join(self.get_working_directory(), 'scaled_reflections.pickle')
-    if not os.path.exists(exp_path): # FIXME What about if the data have been reindexed
+    if self._no_times_scaled > 0:
+      assert os.path.exists(exp_path) #going to continue-where-left-off
+      assert os.path.exists(refl_path)
+      # FIXME What about if the data have been reindexed
       #inbetween runs, such that we need to reload the data and start again?
+    else:
       for epoch in self._sweep_handler.get_epochs():
         si = self._sweep_handler.get_sweep_information(epoch)
         intgr = si.get_integrater()
@@ -663,6 +668,7 @@ class DialsScaler(Scaler):
     sc.set_working_directory(self.get_working_directory())
     auto_logfiler(sc)
     sc.scale()
+    self._no_times_scaled += 1
 
     FileHandler.record_data_file(scaled_unmerged_mtz_path)
     FileHandler.record_data_file(scaled_mtz_path)
