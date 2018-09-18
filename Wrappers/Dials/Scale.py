@@ -48,6 +48,7 @@ def DialsScale(DriverType=None,
       self._partiality_cutoff = None
       self._dmin = None
       self._dmax = None
+      self._crystal_name = None
 
       # input and output files
       self._unmerged_reflections = None
@@ -191,6 +192,9 @@ def DialsScale(DriverType=None,
     def get_scaled_mtz(self):
       return self._merged_reflections
 
+    def set_crystal_name(self, name):
+      self._crystal_name = name
+
     def get_scaled_unmerged_mtz(self):
       return self._unmerged_reflections
 
@@ -293,6 +297,9 @@ def DialsScale(DriverType=None,
         self._merged_reflections = os.path.join(
           self.get_working_directory(),
           '%i_scaled.mtz' % self.get_xpid())
+      if self._crystal_name:
+        print("output.crystal_name=%s" % self._crystal_name)
+        self.add_command_line("output.crystal_name=%s" % self._crystal_name)
 
       self.add_command_line("output.experiments='%s'" % self._scaled_experiments)
       self.add_command_line("output.reflections='%s'" % self._scaled_reflections)

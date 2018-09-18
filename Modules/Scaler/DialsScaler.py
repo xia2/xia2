@@ -583,6 +583,7 @@ class DialsScaler(Scaler):
     self._scalr_pname = p
     self._scalr_xname = x
 
+    self._scaler.set_crystal_name(self._scalr_xname)
 
   def _scale(self):
     '''Perform all of the operations required to deliver the scaled
