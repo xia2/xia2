@@ -298,7 +298,6 @@ def DialsScale(DriverType=None,
           self.get_working_directory(),
           '%i_scaled.mtz' % self.get_xpid())
       if self._crystal_name:
-        print("output.crystal_name=%s" % self._crystal_name)
         self.add_command_line("output.crystal_name=%s" % self._crystal_name)
 
       self.add_command_line("output.experiments='%s'" % self._scaled_experiments)
