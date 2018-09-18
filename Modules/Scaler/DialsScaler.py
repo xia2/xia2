@@ -34,8 +34,6 @@ class DialsScaler(Scaler):
     self._factory = CCP4Factory() # allows lots of post scaling calculations
     self._scaler = DialsScale()
     self._helper = DialsScalerHelper()
-
-
     self._reference_reflections = None
     self._reference_experiments = None
 
@@ -46,6 +44,11 @@ class DialsScaler(Scaler):
 
   def _scale_reindex_to_reference(self):
     pass
+
+  def set_working_directory(self, working_directory):
+    self._working_directory = working_directory
+    self._factory.set_working_directory(working_directory)
+    self._helper.set_working_directory(working_directory)
 
   def _updated_dials_scaler(self):
     #Sets the relevant parameters from the PhilIndex
@@ -89,6 +92,7 @@ class DialsScaler(Scaler):
     things up.'''
 
     self._helper.set_working_directory(self.get_working_directory())
+    self._factory.set_working_directory(self.get_working_directory())
 
     need_to_return = False
 
