@@ -9,9 +9,10 @@ import os
 import re
 
 import procrunner
+import py.path
 import pytest
 from dials.conftest import (dials_regression, xia2_regression,
-                            xia2_regression_build)
+                            xia2_regression_build, run_in_tmpdir)
 
 def pytest_addoption(parser):
   '''Add '--runslow' and '--regression' options to pytest.'''
@@ -83,3 +84,32 @@ def xds():
   return {
       'version': int(version.groups()[0])
   }
+
+@pytest.fixture(scope="session")
+def regression_data():
+  '''Return the location of a regression data set as py.path object.
+     Download the files if they are not on disk already.
+     Skip the test if the data can not be downloaded.
+  '''
+  dls_dir = '/dls/science/groups/scisoft/DIALS/repositories/current/xia2_regression_data'
+  read_only = False
+  if os.getenv('REGRESSIONDATA'):
+    target_dir = os.getenv('REGRESSIONDATA')
+  elif os.path.exists(os.path.join(dls_dir, 'filelist.json')):
+    target_dir = dls_dir
+    read_only = True
+  elif os.getenv('LIBTBX_BUILD'):
+    target_dir = os.path.join(os.getenv('LIBTBX_BUILD'), 'xia2_regression')
+  else:
+    pytest.skip('Can not determine regression data location. Use environment variable REGRESSIONDATA')
+
+  from xia2.Test.fetch_test_data import download_lock, fetch_test_data
+  _cache = {}
+  def data_fetcher(test_data):
+    if test_data not in _cache:
+      with download_lock(target_dir):
+        _cache[test_data] = fetch_test_data(target_dir, pre_scan=True, file_group=test_data, read_only=read_only)
+    if not _cache[test_data]:
+      pytest.skip('Automated download of test data failed. Run xia2.fetch_test_data')
+    return py.path.local(_cache[test_data])
+  return data_fetcher

@@ -52,7 +52,24 @@ def file_md5(filename):
   return hash_md5.hexdigest().lower()
 
 def fetch_test_data(target_dir, retry_limit=3, verify_threads=8, download_threads=8, verbose=False,
-                    file_group=None, pre_scan=False):
+                    file_group=None, pre_scan=False, read_only=False):
+  '''Return a the location of a local copy of the test dataset repository.
+     If this repository is no not available or out of date then attempt to
+     download/update it transparently.
+
+     :param target_dir:       The base directory of the local test dataset repository.
+     :param retry_limit:      When downloading, the maximum number of times any
+                              download should be attempted.
+     :param verify_threads:   The number of threads used to verify data integrity.
+     :param download_threads: The number of threads used to download data.
+     :param verbose:          Show everything as it happens.
+     :param file_group:       Return the location of this subset of test data only.
+                              Only verify/download files relating to this set.
+     :param pre_scan:         If all files are present and all file sizes match
+                              then skip file integrity check and exit quicker.
+     :param read_only:        Only use existing data, never download anything.
+                              Implies pre_scan=True.
+  '''
   if not os.path.exists(target_dir):
     os.mkdir(target_dir)
 
@@ -158,7 +175,7 @@ def fetch_test_data(target_dir, retry_limit=3, verify_threads=8, download_thread
   use_cached_index = False
   if os.path.isfile(index_file):
     file_age = time.time() - os.path.getmtime(index_file)
-    if file_age >= 0 and file_age < 24 * 60 * 60:
+    if read_only or (file_age >= 0 and file_age < 24 * 60 * 60):
       # file is less than 24 hours old, consider using existing file
       try:
         with open(index_file) as fh:
@@ -168,21 +185,25 @@ def fetch_test_data(target_dir, retry_limit=3, verify_threads=8, download_thread
       except Exception:
         pass # Don't use cache
   if not use_cached_index:
+    if read_only:
+      return False # Must not download index.
     result = download_to_file(index_url, index_file)
     if result == -1:
       raise RuntimeError('Could not download file list.')
-  with open(index_file) as fh:
-    index = json.load(fh)
+    with open(index_file) as fh:
+      index = json.load(fh)
 
   filelist = []
+  group_prefix = target_dir
   for group in index:
     if group == '_meta':
       continue
     if file_group and not (group == file_group or group.endswith('/' + file_group)):
       continue
+    group_prefix = os.path.join(*([target_dir] + group.split('/')))
     for filename, fileinfo in index[group].items():
       filelist.append({'url': base_url + group + '/' + filename,
-          'filename': os.path.join(*([target_dir] + group.split('/') + [filename])),
+          'filename': os.path.join(group_prefix, filename),
           'checksum': fileinfo['hash'],
           'size': fileinfo['size'],
           'retry': 0,
@@ -190,11 +211,13 @@ def fetch_test_data(target_dir, retry_limit=3, verify_threads=8, download_thread
   if file_group and not filelist:
     raise KeyError("Unknown test group " + file_group)
 
-  if pre_scan:
+  if pre_scan or read_only:
     if all(os.path.exists(item['filename'])
            and os.stat(item['filename']).st_size == item['size']
            for item in filelist):
-      return True
+      return group_prefix
+    if read_only:
+      return False
 
   Printer().start()
   for n in range(download_threads):
@@ -237,4 +260,4 @@ Error downloading file {0[filename]}
       success = False
   except queue.Empty:
     pass
-  return success
+  return group_prefix if success else False
