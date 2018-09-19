@@ -6,12 +6,6 @@ import sys
 import libtbx.load_env
 from libtbx.test_utils import approx_equal, open_tmp_directory
 
-try:
-  dials_regression = libtbx.env.dist_path('dials_regression')
-  have_dials_regression = True
-except KeyError:
-  have_dials_regression = False
-
 def exercise_dials_multi_indexer(nproc=None):
   template = "/Volumes/touro/data/i19/4sweep/56_Reza-H2-normalhem_100K_3.75mmAl/56-RezaH2-hem_%02i_#####.cbf"
 
@@ -25,8 +19,6 @@ def exercise_dials_multi_indexer(nproc=None):
 
   from xia2.Handlers.Phil import PhilIndex
   PhilIndex.params.xia2.settings.trust_beam_centre = True
-
-  from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
 
   from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
   indexer = DialsIndexer()
