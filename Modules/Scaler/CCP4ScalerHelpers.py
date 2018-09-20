@@ -459,6 +459,9 @@ class SweepInformation(object):
     return self._batches
 
   def set_batches(self, batches):
+    Debug.write(
+      'Setting batches for sweep %s: %i to %i' % (
+        self.get_sweep_name(), batches[0], batches[1]))
     self._batches = batches
 
   def set_batch_offset(self, batch_offset):
