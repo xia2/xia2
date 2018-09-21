@@ -59,7 +59,7 @@ scaling when processing the data manually, xia2 is not set up to work like
 this as decisions made for the full data set (e.g. scaling model to use) may
 differ from those for the subset - we therefore need to rerun the whole xia2
 job after modifying the input. It is easy to do this using the
-``image=/path/to/image_001.img:start:end syntax``::
+``image=/path/to/image_001.img:start:end`` syntax::
 
   xia2 pipeline=3d image=/dls/i02/data/2011/mx1234-5/K5_M1S3_3_001.img:1:200
 
