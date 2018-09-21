@@ -1,6 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-import os
 import sys
 
 import mock
@@ -8,13 +7,12 @@ import pytest
 
 @pytest.mark.slow
 @pytest.mark.xfail(reason='broken on CCP4 > 7.0.53')
-def test_mosflm_indexer(ccp4, xia2_regression_build, tmpdir):
-  template = os.path.join(xia2_regression_build, "test_data", "insulin", "insulin_1_###.img")
-  tmpdir.chdir()
+def test_mosflm_indexer(ccp4, regression_data, run_in_tmpdir):
+  template = regression_data('insulin').join("insulin_1_###.img").strpath
 
   from xia2.Modules.Indexer.MosflmIndexer import MosflmIndexer
   indexer = MosflmIndexer()
-  indexer.set_working_directory(tmpdir.strpath)
+  indexer.set_working_directory(run_in_tmpdir.strpath)
   from dxtbx.datablock import DataBlockTemplateImporter
   importer = DataBlockTemplateImporter([template])
   datablocks = importer.datablocks

@@ -1,13 +1,10 @@
 from __future__ import absolute_import, division, print_function
 
-import os
-
 import pytest
 
 @pytest.mark.slow
-def test_labelit_indexer_II(ccp4, xia2_regression_build, tmpdir):
-  template = os.path.join(xia2_regression_build, "test_data", "insulin", "insulin_1_###.img")
-  tmpdir.chdir()
+def test_labelit_indexer_II(ccp4, regression_data, run_in_tmpdir):
+  template = regression_data('insulin').join("insulin_1_###.img").strpath
 
   from xia2.Modules.Indexer.LabelitIndexerII import LabelitIndexerII
   from xia2.DriverExceptions.NotAvailableError import NotAvailableError
@@ -15,7 +12,7 @@ def test_labelit_indexer_II(ccp4, xia2_regression_build, tmpdir):
     ls = LabelitIndexerII(indxr_print=True)
   except NotAvailableError:
     pytest.skip("labelit not found")
-  ls.set_working_directory(tmpdir.strpath)
+  ls.set_working_directory(run_in_tmpdir.strpath)
   from dxtbx.datablock import DataBlockTemplateImporter
   importer = DataBlockTemplateImporter([template])
   datablocks = importer.datablocks

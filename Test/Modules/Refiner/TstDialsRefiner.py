@@ -7,7 +7,6 @@ import libtbx.load_env
 from libtbx.test_utils import open_tmp_directory
 
 try:
-  #dials_regression = libtbx.env.dist_path('dials_regression')
   xia2_regression = libtbx.env.under_build("xia2_regression")
   have_xia2_regression = True
 except KeyError:

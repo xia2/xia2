@@ -4,10 +4,7 @@ import os
 
 import pytest
 
-def test_indexing_with_labelit_on_two_images(xia2_regression_build, tmpdir):
-  template = os.path.join(xia2_regression_build, "test_data", "insulin", "insulin_1_%03i.img")
-  tmpdir.chdir()
-
+def test_indexing_with_labelit_on_two_images(regression_data, run_in_tmpdir):
   from xia2.DriverExceptions.NotAvailableError import NotAvailableError
   from xia2.Wrappers.Labelit.LabelitIndex import LabelitIndex
   try:
@@ -15,6 +12,7 @@ def test_indexing_with_labelit_on_two_images(xia2_regression_build, tmpdir):
   except NotAvailableError:
     pytest.skip("labelit not found")
 
+  template = (regression_data('insulin') / "insulin_1_%03i.img").strpath
   indexer.set_beam_search_scope(4.0)
   for image in (1, 45):
     indexer.add_image(template % image)
@@ -36,10 +34,7 @@ def test_indexing_with_labelit_on_two_images(xia2_regression_build, tmpdir):
   assert solutions[22]['mosaic'] <= 0.2
   assert solutions[22]['nspots'] == pytest.approx(563, abs=30)
 
-def test_indexing_with_labelit_on_multiple_images(xia2_regression_build, tmpdir):
-  template = os.path.join(xia2_regression_build, "test_data", "insulin", "insulin_1_%03i.img")
-  tmpdir.chdir()
-
+def test_indexing_with_labelit_on_multiple_images(regression_data, run_in_tmpdir):
   from xia2.DriverExceptions.NotAvailableError import NotAvailableError
   from xia2.Wrappers.Labelit.LabelitIndex import LabelitIndex
   try:
@@ -47,6 +42,7 @@ def test_indexing_with_labelit_on_multiple_images(xia2_regression_build, tmpdir)
   except NotAvailableError:
     pytest.skip("labelit not found")
 
+  template = (regression_data('insulin') / "insulin_1_%03i.img").strpath
   for image in (1, 22, 45):
     indexer.add_image(template % image)
   indexer.set_distance(160)
