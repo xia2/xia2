@@ -15,8 +15,8 @@ are:
   ``pipeline=3dii``                          Tell xia2 to use XDS_ and XSCALE_, indexing with peaks found from all images.
   ``pipeline=dials``                         Tell xia2 to use DIALS_ and Aimless_.
   ``xinfo=some.xinfo``                       Use specific modified .xinfo input file.
-  ``image=/path/to/an/image.img``            Process specific scan.  Pass multiple ``image=`` parameters to include multiple scans.
-  ``image=/path/to/an/image.img:start:end``  Process specific image range within scan.  ``start`` and ``end`` are numbers denoting the image range, e.g. ``image=/path/to/an/image.img:1:100`` processes images 1–100 inclusive.  As above, one can pass multiple ``image=`` parameters.
+  ``image=/path/to/an/image.img``            Process a specific scan.  Pass multiple ``image=`` parameters to include multiple scans.
+  ``image=/path/to/an/image.img:start:end``  Process a specific image range within a scan.  ``start`` and ``end`` are numbers denoting the image range, e.g. ``image=/path/to/an/image.img:1:100`` processes images 1–100 inclusive.  As above, one can pass multiple ``image=`` parameters.
   ``small_molecule=true``                    Process in manner more suited to small molecule data.
   ``space_group=sg``                         Set the spacegroup, e.g. ``P21``.
   ``unit_cell=a,b,c,α,β,γ``                  Set the cell constants.
