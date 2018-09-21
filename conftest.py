@@ -104,12 +104,17 @@ def regression_data():
     pytest.skip('Can not determine regression data location. Use environment variable REGRESSIONDATA')
 
   from xia2.Test.fetch_test_data import download_lock, fetch_test_data
-  _cache = {}
-  def data_fetcher(test_data):
-    if test_data not in _cache:
-      with download_lock(target_dir):
-        _cache[test_data] = fetch_test_data(target_dir, pre_scan=True, file_group=test_data, read_only=read_only)
-    if not _cache[test_data]:
-      pytest.skip('Automated download of test data failed. Run xia2.fetch_test_data')
-    return py.path.local(_cache[test_data])
-  return data_fetcher
+  class DataFetcher():
+    _cache = {}
+    def __call__(self, test_data):
+      if test_data not in self._cache:
+        with download_lock(target_dir):
+          self._cache[test_data] = fetch_test_data(target_dir, pre_scan=True, file_group=test_data, read_only=read_only)
+          self._cache[test_data] = str(self._cache[test_data]) # https://github.com/cctbx/cctbx_project/issues/234
+      if not self._cache[test_data]:
+        pytest.skip('Automated download of test data failed. Run xia2.fetch_test_data')
+      return py.path.local(self._cache[test_data])
+    def __repr__(self):
+      return "<%sDataFetcher: %s>" % ('R/O ' if read_only else '', target_dir)
+
+  return DataFetcher()
