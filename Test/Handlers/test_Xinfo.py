@@ -15,7 +15,7 @@ def test_insulin_xinfo():
     'SWEEP1': {
       'excluded_regions': [], 'IMAGE': 'insulin_1_001.img',
       'beam': [94.34, 94.5], 'start_end': [1, 45],
-      'DIRECTORY': '/path/to/build/xia2_regression/test_data/insulin',
+      'DIRECTORY': '/path/to/build/regression_data/insulin',
       'wavelength': 'NATIVE'}}
 
 def test_multi_xinfo():

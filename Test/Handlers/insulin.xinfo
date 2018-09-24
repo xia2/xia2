@@ -7,7 +7,7 @@ END WAVELENGTH NATIVE
 
 BEGIN SWEEP SWEEP1
 WAVELENGTH NATIVE
-DIRECTORY /path/to/build/xia2_regression/test_data/insulin
+DIRECTORY /path/to/build/regression_data/insulin
 IMAGE insulin_1_001.img
 START_END 1 45
 BEAM  94.34  94.50
