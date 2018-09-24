@@ -387,87 +387,142 @@ class DialsIntegrater(Integrater):
     # we want a different exported MTZ file every time (I do not think
     # that we do; these can be very large) - was exporter.get_xpid() ->
     # now dials
+    print('output format is %s' % self._output_format)
+    if self._output_format == 'khl':
+      exporter = self.ExportMtz()
+      exporter.set_reflections_filename(self._intgr_integrated_pickle)
+      mtz_filename = os.path.join(
+        self.get_working_directory(), '%s_integrated.mtz' % 'dials')
+      exporter.set_mtz_filename(mtz_filename)
+      exporter.run()
+      self._intgr_integrated_filename = mtz_filename
 
-    exporter = self.ExportMtz()
-    exporter.set_reflections_filename(self._intgr_integrated_pickle)
-    mtz_filename = os.path.join(
-      self.get_working_directory(), '%s_integrated.mtz' % 'dials')
-    exporter.set_mtz_filename(mtz_filename)
-    exporter.run()
-    self._intgr_integrated_filename = mtz_filename
+      # record integrated MTZ file for e.g. BLEND.
 
-    # record integrated MTZ file for e.g. BLEND.
+      pname, xname, dname = self.get_integrater_project_info()
+      sweep = self.get_integrater_sweep_name()
+      FileHandler.record_more_data_file(
+          '%s %s %s %s INTEGRATE' % (pname, xname, dname, sweep), mtz_filename)
 
-    pname, xname, dname = self.get_integrater_project_info()
-    sweep = self.get_integrater_sweep_name()
-    FileHandler.record_more_data_file(
-        '%s %s %s %s INTEGRATE' % (pname, xname, dname, sweep), mtz_filename)
-
-    from iotbx.reflection_file_reader import any_reflection_file
-    miller_arrays = any_reflection_file(self._intgr_integrated_filename).as_miller_arrays()
-    # look for profile-fitted intensities
-    intensities = [ma for ma in miller_arrays
-                   if ma.info().labels == ['IPR', 'SIGIPR']]
-    if len(intensities) == 0:
-      # look instead for summation-integrated intensities
+      from iotbx.reflection_file_reader import any_reflection_file
+      miller_arrays = any_reflection_file(self._intgr_integrated_filename).as_miller_arrays()
+      # look for profile-fitted intensities
       intensities = [ma for ma in miller_arrays
-                     if ma.info().labels == ['I', 'SIGI']]
-      assert len(intensities)
-    self._intgr_n_ref = intensities[0].size()
+                    if ma.info().labels == ['IPR', 'SIGIPR']]
+      if len(intensities) == 0:
+        # look instead for summation-integrated intensities
+        intensities = [ma for ma in miller_arrays
+                      if ma.info().labels == ['I', 'SIGI']]
+        assert len(intensities)
+      self._intgr_n_ref = intensities[0].size()
 
-    if not os.path.isfile(self._intgr_integrated_filename):
-      raise RuntimeError("dials.export failed: %s does not exist."
-                         % self._intgr_integrated_filename)
+      if not os.path.isfile(self._intgr_integrated_filename):
+        raise RuntimeError("dials.export failed: %s does not exist."
+                          % self._intgr_integrated_filename)
 
-    if self._intgr_reindex_operator is None and \
-      self._intgr_spacegroup_number == lattice_to_spacegroup(
-        self.get_integrater_refiner().get_refiner_lattice()):
-      Debug.write('Not reindexing to spacegroup %d (%s)' % \
-                    (self._intgr_spacegroup_number,
-                     self._intgr_reindex_operator))
-      return mtz_filename
+      if self._intgr_reindex_operator is None and \
+        self._intgr_spacegroup_number == lattice_to_spacegroup(
+          self.get_integrater_refiner().get_refiner_lattice()):
+        Debug.write('Not reindexing to spacegroup %d (%s)' % \
+                      (self._intgr_spacegroup_number,
+                      self._intgr_reindex_operator))
+        return mtz_filename
 
-    if self._intgr_reindex_operator is None and \
-      self._intgr_spacegroup_number == 0:
-      Debug.write('Not reindexing to spacegroup %d (%s)' % \
-                    (self._intgr_spacegroup_number,
-                     self._intgr_reindex_operator))
-      return mtz_filename
+      if self._intgr_reindex_operator is None and \
+        self._intgr_spacegroup_number == 0:
+        Debug.write('Not reindexing to spacegroup %d (%s)' % \
+                      (self._intgr_spacegroup_number,
+                      self._intgr_reindex_operator))
+        return mtz_filename
 
-    Debug.write('Reindexing to spacegroup %d (%s)' % \
-                (self._intgr_spacegroup_number,
-                 self._intgr_reindex_operator))
+      Debug.write('Reindexing to spacegroup %d (%s)' % \
+                  (self._intgr_spacegroup_number,
+                  self._intgr_reindex_operator))
 
-    hklin = mtz_filename
-    reindex = Reindex()
-    reindex.set_working_directory(self.get_working_directory())
-    auto_logfiler(reindex)
+      hklin = mtz_filename
+      reindex = Reindex()
+      reindex.set_working_directory(self.get_working_directory())
+      auto_logfiler(reindex)
 
-    reindex.set_operator(self._intgr_reindex_operator)
+      reindex.set_operator(self._intgr_reindex_operator)
 
-    if self._intgr_spacegroup_number:
-      reindex.set_spacegroup(self._intgr_spacegroup_number)
-    else:
-      reindex.set_spacegroup(lattice_to_spacegroup(
-        self.get_integrater_refiner().get_refiner_lattice()))
+      if self._intgr_spacegroup_number:
+        reindex.set_spacegroup(self._intgr_spacegroup_number)
+      else:
+        reindex.set_spacegroup(lattice_to_spacegroup(
+          self.get_integrater_refiner().get_refiner_lattice()))
 
-    hklout = '%s_reindex.mtz' % hklin[:-4]
-    reindex.set_hklin(hklin)
-    reindex.set_hklout(hklout)
-    reindex.reindex()
-    self._intgr_integrated_filename = hklout
-    self._intgr_cell = reindex.get_cell()
+      hklout = '%s_reindex.mtz' % hklin[:-4]
+      reindex.set_hklin(hklin)
+      reindex.set_hklout(hklout)
+      reindex.reindex()
+      self._intgr_integrated_filename = hklout
+      self._intgr_cell = reindex.get_cell()
 
-    pname, xname, dname = self.get_integrater_project_info()
-    sweep = self.get_integrater_sweep_name()
-    FileHandler.record_more_data_file(
-      '%s %s %s %s experiments' % (pname, xname, dname, sweep),
-      self.get_integrated_experiments())
-    FileHandler.record_more_data_file(
-      '%s %s %s %s reflections' % (pname, xname, dname, sweep),
-      self.get_integrated_reflections())
+      pname, xname, dname = self.get_integrater_project_info()
+      sweep = self.get_integrater_sweep_name()
+      FileHandler.record_more_data_file(
+        '%s %s %s %s experiments' % (pname, xname, dname, sweep),
+        self.get_integrated_experiments())
+      FileHandler.record_more_data_file(
+        '%s %s %s %s reflections' % (pname, xname, dname, sweep),
+        self.get_integrated_reflections())
 
-    return hklout
+      return hklout
+
+    elif self._output_format == 'pickle':
+
+      if self._intgr_reindex_operator is None and \
+        self._intgr_spacegroup_number == lattice_to_spacegroup(
+          self.get_integrater_refiner().get_refiner_lattice()):
+        Debug.write('Not reindexing to spacegroup %d (%s)' % \
+                      (self._intgr_spacegroup_number,
+                      self._intgr_reindex_operator))
+        return self._intgr_integrated_pickle
+
+      if self._intgr_reindex_operator is None and \
+        self._intgr_spacegroup_number == 0:
+        Debug.write('Not reindexing to spacegroup %d (%s)' % \
+                      (self._intgr_spacegroup_number,
+                      self._intgr_reindex_operator))
+        return self._intgr_integrated_pickle
+
+      Debug.write('Reindexing to spacegroup %d (%s)' % \
+                  (self._intgr_spacegroup_number,
+                  self._intgr_reindex_operator))
+      from xia2.Wrappers.Dials.Reindex import Reindex
+      reindex = Reindex()
+      reindex.set_working_directory(self.get_working_directory())
+      auto_logfiler(reindex)
+
+      reindex.set_cb_op(self._intgr_reindex_operator)
+
+      if self._intgr_spacegroup_number:
+        reindex.set_space_group(self._intgr_spacegroup_number)
+      else:
+        reindex.set_space_group(lattice_to_spacegroup(
+          self.get_integrater_refiner().get_refiner_lattice()))
+
+      reindex.run()
+      self._intgr_integrated_filename = reindex.get_reindexed_reflections_filename()
+      self._intgr_experiments_filename = reindex.get_reindexed_experiments_filename()
+      #self._intgr_cell = reindex.get_cell()
+      #self._intgr_integrated_experiments = reindex.get_reindexed_experiments_filename()
+      self.set_integrated_experiments(self._intgr_experiments_filename)
+      self.set_integrated_reflections(self._intgr_integrated_filename)
+      print(self._intgr_integrated_filename)
+      print(self._intgr_integrated_experiments)
+
+      pname, xname, dname = self.get_integrater_project_info()
+      sweep = self.get_integrater_sweep_name()
+      FileHandler.record_more_data_file(
+        '%s %s %s %s experiments' % (pname, xname, dname, sweep),
+        self.get_integrated_experiments())
+      FileHandler.record_more_data_file(
+        '%s %s %s %s reflections' % (pname, xname, dname, sweep),
+        self.get_integrated_reflections())
+      print(reindex.get_reindexed_reflections_filename())
+      return reindex.get_reindexed_reflections_filename()
 
   def _integrate_select_images_wedges(self):
     '''Select correct images based on image headers.'''

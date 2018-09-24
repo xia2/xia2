@@ -100,6 +100,12 @@ class DialsScaler(Scaler):
     self._scaler.clear_datafiles()
     self._sweep_handler = SweepInformationHandler(self._scalr_integraters)
 
+    p, x = self._sweep_handler.get_project_info()
+    self._scalr_pname = p
+    self._scalr_xname = x
+
+    self._helper.set_pname_xname(p, x)
+
     Journal.block(
         'gathering', self.get_scaler_xcrystal().get_name(), 'Dials',
         {'working directory':self.get_working_directory()})
@@ -109,6 +115,8 @@ class DialsScaler(Scaler):
     # in either this pipleline or the standard dials pipeline
     for epoch in self._sweep_handler.get_epochs():
       si = self._sweep_handler.get_sweep_information(epoch)
+      intgr = si.get_integrater()
+      print('intgr space group no %s' % intgr._intgr_spacegroup_number)
       pname, xname, dname = si.get_project_info()
       sname = si.get_sweep_name()
 
@@ -324,6 +332,7 @@ class DialsScaler(Scaler):
 
           if ntr:
             integrater.integrater_reset_reindex_operator()
+            print('resetting reindex op')
             need_to_return = True
 
         if pt and not probably_twinned:
@@ -372,12 +381,20 @@ class DialsScaler(Scaler):
 
       integrater = si.get_integrater()
 
+      # In CCP4 scaler, this bit is where the reindex op is set, and integrater
+      # reindexes the data and saves a new mtz file which is accessed by 
+      # get_integrater_intensities. Here, need similar but return the pickle and
+      # experiments instead.
+      integrater.set_output_format('pickle')
       integrater.set_integrater_spacegroup_number(
           Syminfo.spacegroup_name_to_number(overall_pointgroup))
-      #integrater.set_integrater_reindex_operator(
-      #    reindex_ops[epoch], reason='setting point group')
+      integrater.set_integrater_reindex_operator(
+          reindex_ops[epoch], reason='setting point group')
+      print('reindex ops %s' % reindex_ops[epoch])
       # This will give us the reflections in the correct point group
-      si.set_reflections(integrater.get_integrater_intensities())
+      print('overall pointgroup %s ' % overall_pointgroup)
+      si.set_reflections(integrater.get_integrated_reflections())
+      si.set_experiments(integrater.get_integrated_experiments())
 
     if need_to_return:
       self.set_scaler_done(False)
@@ -580,10 +597,6 @@ class DialsScaler(Scaler):
     for spag in self._scalr_likely_spacegroups:
       Chatter.write('%s' % spag)
 
-    p, x = self._sweep_handler.get_project_info()
-    self._scalr_pname = p
-    self._scalr_xname = x
-
     self._scaler.set_crystal_name(self._scalr_xname)
 
   def _scale(self):
@@ -607,6 +620,10 @@ class DialsScaler(Scaler):
 
     sc = self._updated_dials_scaler()
 
+    FileHandler.record_log_file('%s %s SCALE' % (self._scalr_pname,
+                                                   self._scalr_xname),
+                                sc.get_log_file())
+
     # Set paths
     scaled_mtz_path = os.path.join(self.get_working_directory(),
                                '%s_%s_scaled.mtz' % \
@@ -627,9 +644,12 @@ class DialsScaler(Scaler):
     else:
       for epoch in self._sweep_handler.get_epochs():
         si = self._sweep_handler.get_sweep_information(epoch)
-        intgr = si.get_integrater()
-        experiment = intgr.get_integrated_experiments()
-        reflections = intgr.get_integrated_reflections()
+        experiment = si._experiments
+        reflections = si._reflections
+
+        #intgr = si.get_integrater()
+        #experiment = intgr.get_integrated_experiments()
+        #reflections = intgr.get_integrated_reflections()
         self._scaler.add_experiments_json(experiment)
         self._scaler.add_reflections_pickle(reflections)
     self._scaler.set_scaled_experiments(exp_path)
@@ -784,6 +804,10 @@ class DialsScalerHelper(object):
   def __init__(self):
     self._working_directory = os.getcwd()
 
+  def set_pname_xname(self, pname, xname):
+    self._scalr_xname = xname
+    self._scalr_pname = pname
+
   def set_working_directory(self, working_directory):
     self._working_directory = working_directory
 
@@ -801,6 +825,10 @@ class DialsScalerHelper(object):
     symmetry_analyser = DialsSymmetry()
     symmetry_analyser.set_working_directory(self.get_working_directory())
     auto_logfiler(symmetry_analyser)
+
+    FileHandler.record_log_file('%s %s SYMMETRY' % (self._scalr_pname,
+                                                    self._scalr_xname),
+                            symmetry_analyser.get_log_file())
 
     for (exp, refl) in zip(experiments, reflections):
       symmetry_analyser.add_experiments(exp)
@@ -877,6 +905,9 @@ class DialsScalerHelper(object):
     symmetry_analyser = DialsSymmetry()
     symmetry_analyser.set_working_directory(self.get_working_directory())
     auto_logfiler(symmetry_analyser)
+
+    FileHandler.record_log_file('%s %s SYMMETRY' % \
+      (self._scalr_pname, self._scalr_xname), symmetry_analyser.get_log_file())
 
     symmetry_analyser.add_experiments(experiment)
     symmetry_analyser.add_reflections(reflection)
