@@ -5,12 +5,12 @@ import sys
 
 if __name__ == '__main__':
   parser = OptionParser(usage="xia2.fetch_test_data [-h | --help] [-d destination] [test group]",
-                        description="This program is used to download data files used for xia2 regression tests. "
+                        description="This program is used to download data files used for regression tests. "
                                     "These files are not required to run xia2, and are only used in tests.")
   parser.add_option("-?", action="help", help=SUPPRESS_HELP)
   parser.add_option("-d", "--destination", dest="destination", default=None,
                     help="Target directory for files, will be created if not present."
-                         "Defaults to <build>/xia2_regression.")
+                         "Defaults to <build>/regression_data.")
   parser.add_option("--td", dest="download_threads", type="int", default=8, help="Number of download threads (8)")
   parser.add_option("--tv", dest="verify_threads", type="int", default=8, help="Number of file verification threads (8)")
   parser.add_option("-r", "--retry", dest="retry", type="int", default=3, help="Number of times downloads are retried (3)")
@@ -21,7 +21,7 @@ if __name__ == '__main__':
   from xia2.Test.fetch_test_data import fetch_test_data
   if not options.destination:
     import libtbx.load_env
-    options.destination = libtbx.env.under_build('xia2_regression')
+    options.destination = libtbx.env.under_build('regression_data')
   print("Downloading xia2 regression data into directory %s\n" % options.destination)
   try:
     if not args:

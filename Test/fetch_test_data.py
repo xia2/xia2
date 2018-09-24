@@ -12,7 +12,7 @@ import urllib2
 
 import dials.util
 
-base_url = 'http://dials.diamond.ac.uk/xia2/'
+base_url = 'http://dials.diamond.ac.uk/regression_data/'
 
 @contextlib.contextmanager
 def download_lock(target_dir):
@@ -180,7 +180,7 @@ def fetch_test_data(target_dir, retry_limit=3, verify_threads=8, download_thread
       try:
         with open(index_file) as fh:
           index = json.load(fh)
-        if index['_meta']['timestamp']:
+        if index['.meta']['timestamp']:
           use_cached_index = True
       except Exception:
         pass # Don't use cache
@@ -196,7 +196,7 @@ def fetch_test_data(target_dir, retry_limit=3, verify_threads=8, download_thread
   filelist = []
   group_prefix = target_dir
   for group in index:
-    if group == '_meta':
+    if group == '.meta':
       continue
     if file_group and not (group == file_group or group.endswith('/' + file_group)):
       continue

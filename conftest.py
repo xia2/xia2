@@ -91,7 +91,7 @@ def regression_data():
      Download the files if they are not on disk already.
      Skip the test if the data can not be downloaded.
   '''
-  dls_dir = '/dls/science/groups/scisoft/DIALS/repositories/current/xia2_regression_data'
+  dls_dir = '/dls/science/groups/scisoft/DIALS/regression_data'
   read_only = False
   if os.getenv('REGRESSIONDATA'):
     target_dir = os.getenv('REGRESSIONDATA')
@@ -99,7 +99,7 @@ def regression_data():
     target_dir = dls_dir
     read_only = True
   elif os.getenv('LIBTBX_BUILD'):
-    target_dir = os.path.join(os.getenv('LIBTBX_BUILD'), 'xia2_regression')
+    target_dir = os.path.join(os.getenv('LIBTBX_BUILD'), 'regression_data')
   else:
     pytest.skip('Can not determine regression data location. Use environment variable REGRESSIONDATA')
 
