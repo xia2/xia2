@@ -110,9 +110,13 @@ def regression_data():
       if test_data not in self._cache:
         with download_lock(target_dir):
           self._cache[test_data] = fetch_test_data(target_dir, pre_scan=True, file_group=test_data, read_only=read_only)
-          self._cache[test_data] = str(self._cache[test_data]) # https://github.com/cctbx/cctbx_project/issues/234
+          if self._cache[test_data]:
+            self._cache[test_data] = str(self._cache[test_data]) # https://github.com/cctbx/cctbx_project/issues/234
       if not self._cache[test_data]:
-        pytest.skip('Automated download of test data failed. Run xia2.fetch_test_data')
+        if read_only:
+          pytest.skip('Regression data is required to run this test. Run with --regression or run xia2.fetch_test_data')
+        else:
+          pytest.skip('Automated download of test data failed. Run xia2.fetch_test_data')
       return py.path.local(self._cache[test_data])
     def __repr__(self):
       return "<%sDataFetcher: %s>" % ('R/O ' if read_only else '', target_dir)
