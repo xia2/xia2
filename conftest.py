@@ -11,8 +11,7 @@ import re
 import procrunner
 import py.path
 import pytest
-from dials.conftest import (dials_regression, xia2_regression,
-                            xia2_regression_build, run_in_tmpdir)
+from dials.conftest import dials_regression, run_in_tmpdir
 
 def pytest_addoption(parser):
   '''Add '--runslow' and '--regression' options to pytest.'''
