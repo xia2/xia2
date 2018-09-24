@@ -523,6 +523,9 @@ class SweepInformation(object):
   def set_experiments(self, experiments):
     self._experiments = experiments
 
+  def get_experiments(self):
+    return self._experiments
+
 class SweepInformationHandler(object):
   def __init__(self, epoch_to_integrater):
 

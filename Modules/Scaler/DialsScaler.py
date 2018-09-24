@@ -116,7 +116,6 @@ class DialsScaler(Scaler):
     for epoch in self._sweep_handler.get_epochs():
       si = self._sweep_handler.get_sweep_information(epoch)
       intgr = si.get_integrater()
-      print('intgr space group no %s' % intgr._intgr_spacegroup_number)
       pname, xname, dname = si.get_project_info()
       sname = si.get_sweep_name()
 
@@ -332,7 +331,6 @@ class DialsScaler(Scaler):
 
           if ntr:
             integrater.integrater_reset_reindex_operator()
-            print('resetting reindex op')
             need_to_return = True
 
         if pt and not probably_twinned:
@@ -373,7 +371,10 @@ class DialsScaler(Scaler):
       overall_pointgroup = pointgroup_set.pop()
     # SUMMARY - Have handled if different pointgroups & chosen an overall_pointgroup
     # which is the lowest symmetry
-
+    self._scalr_likely_spacegroups = [overall_pointgroup]
+    Chatter.write('Likely pointgroup determined by dials.symmetry:')
+    for spag in self._scalr_likely_spacegroups:
+      Chatter.write('%s' % spag)
 
     # Now go through sweeps and do reindexing
     for epoch in self._sweep_handler.get_epochs():
@@ -381,18 +382,17 @@ class DialsScaler(Scaler):
 
       integrater = si.get_integrater()
 
-      # In CCP4 scaler, this bit is where the reindex op is set, and integrater
-      # reindexes the data and saves a new mtz file which is accessed by 
-      # get_integrater_intensities. Here, need similar but return the pickle and
-      # experiments instead.
+      # Update the space group in integrated_experiments and reindex the
+      # integrated data using the set_integrater_reindex_operator. First, set
+      # the output format to pickle so that integrater.get_integrated_reflections()
+      # returns a pickle file and not an mtz file.
+      # Set it in the si for later access
+
       integrater.set_output_format('pickle')
       integrater.set_integrater_spacegroup_number(
           Syminfo.spacegroup_name_to_number(overall_pointgroup))
       integrater.set_integrater_reindex_operator(
           reindex_ops[epoch], reason='setting point group')
-      print('reindex ops %s' % reindex_ops[epoch])
-      # This will give us the reflections in the correct point group
-      print('overall pointgroup %s ' % overall_pointgroup)
       si.set_reflections(integrater.get_integrated_reflections())
       si.set_experiments(integrater.get_integrated_experiments())
 
@@ -496,16 +496,16 @@ class DialsScaler(Scaler):
       Chatter.write('First sweep will be used as reference for reindexing')
       first = self._sweep_handler.get_epochs()[0]
       si = self._sweep_handler.get_sweep_information(first)
-      self._reference_experiments = si.get_integrater().get_integrated_experiments()
-      self._reference_reflections = si.get_integrater().get_integrated_reflections()
+      self._reference_experiments = si.get_experiments()
+      self._reference_reflections = si.get_reflections()
 
     # Now reindex to be consistent with first dataset - run reindex on each
     # dataset with reference
     if self._reference_reflections:
       assert self._reference_experiments
 
-      from dxtbx.model.experiment_list import ExperimentListFactory
-      exp = ExperimentListFactory.from_serialized_format(self._reference_experiments)
+      from dxtbx.serialize import load
+      exp = load.experiment_list(self._reference_experiments)
       reference_cell = exp[0].crystal.get_unit_cell().parameters()
 
       # then compute the pointgroup from this...
@@ -532,8 +532,8 @@ class DialsScaler(Scaler):
         auto_logfiler(reindexer)
 
         si = self._sweep_handler.get_sweep_information(epoch)
-        exp = si.get_integrater().get_integrated_experiments()
-        refl = si.get_integrater().get_integrated_reflections()
+        exp = si.get_experiments()
+        refl = si.get_reflections()
 
         reindexer.set_reference_filename(self._reference_experiments)
         reindexer.set_reference_reflections(self._reference_reflections)
@@ -543,6 +543,10 @@ class DialsScaler(Scaler):
         reindexer.set_reindexed_reflections_filename(reindexed_refl_fpath)
 
         reindexer.run()
+
+        si.set_reflections(reindexed_refl_fpath)
+        si.set_experiments(reindexed_exp_fpath)
+
         FileHandler.record_temporary_file(reindexed_exp_fpath)
         FileHandler.record_temporary_file(reindexed_refl_fpath)
 
@@ -550,15 +554,6 @@ class DialsScaler(Scaler):
 
         # FIXME how to get some indication of the reindexing used?
 
-        # apply this...
-
-        integrater = si.get_integrater()
-        integrater.set_integrated_reflections(reindexed_refl_fpath)
-        integrater.set_integrated_experiments(reindexed_exp_fpath)
-
-        #integrater.set_integrater_spacegroup_number(
-        #    Syminfo.spacegroup_name_to_number(pointgroup))  #needed for?
-        si.set_reflections(integrater.get_integrater_intensities())
         counter += 1
         from dxtbx.serialize import load
         exp = load.experiment_list(reindexed_exp_fpath)
@@ -579,23 +574,29 @@ class DialsScaler(Scaler):
     # joint set.
 
     # FIXME not yet implemented for dials.symmetry? just take point group now
-    epoch = self._sweep_handler.get_epochs()[0]
+    # from first experiment - better to merge all into one refl file?
+
+    # why was the next bit here before, as have already run dials.symmetry on
+    # all data - was only setting self._scalr_likely_spacegroups?
+    '''epoch = self._sweep_handler.get_epochs()[0]
 
     symmetry_analyser = DialsSymmetry()
     symmetry_analyser.set_working_directory(self.get_working_directory())
     auto_logfiler(symmetry_analyser)
 
     si = self._sweep_handler.get_sweep_information(epoch)
-    exp = si.get_integrater().get_integrated_experiments()
-    refl = si.get_integrater().get_integrated_reflections()
+    exp = si.get_experiments()
+    refl = si.get_reflections()
     symmetry_analyser.add_experiments(exp)
     symmetry_analyser.add_reflections(refl)
     symmetry_analyser.decide_pointgroup()
     spacegroup = symmetry_analyser.get_pointgroup()
-    self._scalr_likely_spacegroups = [spacegroup]
+    self._scalr_likely_spacegroups = [spacegroup] 
     Chatter.write('Likely pointgroup determined by dials.symmetry:')
     for spag in self._scalr_likely_spacegroups:
-      Chatter.write('%s' % spag)
+      Chatter.write('%s' % spag)'''
+
+    # should this now be passed back to integrater?
 
     self._scaler.set_crystal_name(self._scalr_xname)
 
@@ -619,6 +620,7 @@ class DialsScaler(Scaler):
           {'scaling model':'default'})
 
     sc = self._updated_dials_scaler()
+    auto_logfiler(sc, 'SCALE')
 
     FileHandler.record_log_file('%s %s SCALE' % (self._scalr_pname,
                                                    self._scalr_xname),
@@ -644,12 +646,9 @@ class DialsScaler(Scaler):
     else:
       for epoch in self._sweep_handler.get_epochs():
         si = self._sweep_handler.get_sweep_information(epoch)
-        experiment = si._experiments
-        reflections = si._reflections
+        experiment = si.get_experiments()
+        reflections = si.get_reflections()
 
-        #intgr = si.get_integrater()
-        #experiment = intgr.get_integrated_experiments()
-        #reflections = intgr.get_integrated_reflections()
         self._scaler.add_experiments_json(experiment)
         self._scaler.add_reflections_pickle(reflections)
     self._scaler.set_scaled_experiments(exp_path)
@@ -686,7 +685,7 @@ class DialsScaler(Scaler):
         sc.set_resolution(resolution)
 
     sc.set_working_directory(self.get_working_directory())
-    auto_logfiler(sc)
+    #auto_logfiler(sc)
     sc.scale()
     self._no_times_scaled += 1
 
@@ -951,7 +950,7 @@ class DialsScalerHelper(object):
       symmetry_analyser.set_correct_lattice(correct_lattice)
       symmetry_analyser.decide_pointgroup()
 
-    Debug.write('dial.symmetry analysis of %s' % ' '.join([experiment, reflection]))
+    Debug.write('dials.symmetry analysis of %s' % ' '.join([experiment, reflection]))
 
     pointgroup = symmetry_analyser.get_pointgroup()
     reindex_op = symmetry_analyser.get_reindex_operator()

@@ -577,22 +577,19 @@ class Integrater(FrameProcessor):
           self._integrater_reset()
 
       self.set_integrater_finish_done(True)
-      print('now setting integrater finish done')
       try:
         # allow for the fact that postrefinement may be used
         # to reject the lattice...
-        print('setting intgr hklout from integrate_finish')
         self._intgr_hklout = self._integrate_finish()
 
       except BadLatticeError as e:
         Chatter.write('Bad Lattice Error: %s' % str(e))
         self._intgr_refiner.eliminate()
         self._integrater_reset()
-        print('failed try, resetting instead')
     return self._intgr_hklout
 
   def set_output_format(self, output_format='hkl'):
-    print('setting output format to %s' % output_format)
+    Debug.write('setting integrator output format to %s' % output_format)
     assert output_format in ['hkl', 'pickle']
     self._output_format = output_format
 
@@ -656,14 +653,12 @@ class Integrater(FrameProcessor):
     self._intgr_spacegroup_number = spacegroup_number
     # if space group is different, need to set this in the integrated_experiments
     # object.
-    from dxtbx.model.experiment_list import ExperimentListFactory
-    explist = ExperimentListFactory.from_serialized_format(
-      self.get_integrated_experiments())
+    from dxtbx.serialize import dump, load
+    explist = load.experiment_list(self.get_integrated_experiments())
     from cctbx import sgtbx
     space_group = sgtbx.space_group_info(number=spacegroup_number).group()
     explist[0].crystal.set_space_group(space_group)
     #save back to file
-    from dxtbx.serialize import dump
     dump.experiment_list(explist, self.get_integrated_experiments())
 
     self.set_integrater_finish_done(False)

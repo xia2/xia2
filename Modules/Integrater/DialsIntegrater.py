@@ -387,7 +387,7 @@ class DialsIntegrater(Integrater):
     # we want a different exported MTZ file every time (I do not think
     # that we do; these can be very large) - was exporter.get_xpid() ->
     # now dials
-    print('output format is %s' % self._output_format)
+
     if self._output_format == 'khl':
       exporter = self.ExportMtz()
       exporter.set_reflections_filename(self._intgr_integrated_pickle)
@@ -506,12 +506,8 @@ class DialsIntegrater(Integrater):
       reindex.run()
       self._intgr_integrated_filename = reindex.get_reindexed_reflections_filename()
       self._intgr_experiments_filename = reindex.get_reindexed_experiments_filename()
-      #self._intgr_cell = reindex.get_cell()
-      #self._intgr_integrated_experiments = reindex.get_reindexed_experiments_filename()
       self.set_integrated_experiments(self._intgr_experiments_filename)
       self.set_integrated_reflections(self._intgr_integrated_filename)
-      print(self._intgr_integrated_filename)
-      print(self._intgr_integrated_experiments)
 
       pname, xname, dname = self.get_integrater_project_info()
       sweep = self.get_integrater_sweep_name()
@@ -521,7 +517,6 @@ class DialsIntegrater(Integrater):
       FileHandler.record_more_data_file(
         '%s %s %s %s reflections' % (pname, xname, dname, sweep),
         self.get_integrated_reflections())
-      print(reindex.get_reindexed_reflections_filename())
       return reindex.get_reindexed_reflections_filename()
 
   def _integrate_select_images_wedges(self):
