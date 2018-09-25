@@ -289,7 +289,7 @@ class DialsScaler(Scaler):
       pointgroup, reindex_op, ntr, pt = \
         self._symmetry_indexer_multisweep(experiments, reflections, refiners)
 
-      Chatter.write('Point grop determined for multi sweep indexing: %s' % pointgroup)
+      Chatter.write('Point group determined for multi sweep indexing: %s' % pointgroup)
       Chatter.write('Reindexing operator for multi sweep indexing: %s' % reindex_op)
 
       for epoch in self._sweep_handler.get_epochs():
