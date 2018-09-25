@@ -9,40 +9,15 @@ import os
 import re
 
 import procrunner
-import py.path
 import pytest
 from dials.conftest import run_in_tmpdir
 
 def pytest_addoption(parser):
-  '''Add '--runslow' and '--regression' options to pytest.'''
-  parser.addoption("--runslow", action="store_true", default=False,
-                   help="run slow tests")
+  '''Tests that use regression_data will not be run unless '--regression' is
+     given as command line parameter.
+  '''
   parser.addoption("--regression", action="store_true", default=False,
                    help="run regression tests")
-  parser.addoption("--regression-only", action="store_true", default=False,
-                   help="run only regression tests")
-
-def pytest_collection_modifyitems(config, items):
-  '''Tests marked as slow will not be run unless slow tests are enabled with
-     the '--runslow' parameter or the test is selected specifically. The
-     latter allows running slow tests via the libtbx compatibility layer.
-     Tests marked as regression are only run with --regression.
-  '''
-  if not config.getoption("--runslow") and len(items) > 1 and not config.getoption("--regression"):
-    skip_slow = pytest.mark.skip(reason="need --runslow option to run")
-    for item in items:
-      if "slow" in item.keywords:
-        item.add_marker(skip_slow)
-  if config.getoption("--regression-only"):
-    skip_regression = pytest.mark.skip(reason="Test only runs without --regression-only")
-    for item in items:
-      if "regression" not in item.keywords:
-        item.add_marker(skip_regression)
-  elif not config.getoption("--regression"):
-    skip_regression = pytest.mark.skip(reason="Test only runs with --regression")
-    for item in items:
-      if "regression" in item.keywords:
-        item.add_marker(skip_regression)
 
 @pytest.fixture(scope="session")
 def ccp4():
@@ -85,11 +60,14 @@ def xds():
   }
 
 @pytest.fixture(scope="session")
-def regression_data():
+def regression_data(request):
   '''Return the location of a regression data set as py.path object.
      Download the files if they are not on disk already.
      Skip the test if the data can not be downloaded.
   '''
+  if not request.config.getoption("--regression"):
+    pytest.skip("Test requires --regression option to run.")
+
   dls_dir = '/dls/science/groups/scisoft/DIALS/regression_data'
   read_only = False
   if os.getenv('REGRESSIONDATA'):
