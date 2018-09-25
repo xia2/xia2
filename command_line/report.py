@@ -46,6 +46,7 @@ class xtriage_output(printed_output):
 class batch_manager(object):
   def __init__(self, batches, batch_params):
     self.batch_params = batch_params
+    self.batch_params.sort(key=lambda b: b.range[0])
     self.batches = batches
     self.reduced_batches, self._batch_increments = self._reduce()
 
