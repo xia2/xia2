@@ -25,7 +25,7 @@ from xia2.lib.bits import auto_logfiler
 from xia2.lib.SymmetryLib import lattice_to_spacegroup
 from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
 from xia2.Schema.Interfaces.Integrater import Integrater
-from xia2.Wrappers.CCP4.Reindex import Reindex
+
 from xia2.Wrappers.Dials.ExportMtz import ExportMtz as _ExportMtz
 from xia2.Wrappers.Dials.Report import Report as _Report
 
@@ -47,6 +47,9 @@ class DialsIntegrater(Integrater):
     # internal parameters to pass around
     self._integrate_parameters = {}
     self._intgr_integrated_filename = None
+
+    self._intgr_integrated_pickle = None
+    self._intgr_experiments_filename = None
 
   # overload these methods as we don't want the resolution range
   # feeding back... aha - but we may want to assign them
@@ -388,7 +391,7 @@ class DialsIntegrater(Integrater):
     # that we do; these can be very large) - was exporter.get_xpid() ->
     # now dials
 
-    if self._output_format == 'khl':
+    if self._output_format == 'hkl':
       exporter = self.ExportMtz()
       exporter.set_reflections_filename(self._intgr_integrated_pickle)
       mtz_filename = os.path.join(
@@ -440,6 +443,7 @@ class DialsIntegrater(Integrater):
                   self._intgr_reindex_operator))
 
       hklin = mtz_filename
+      from xia2.Wrappers.CCP4.Reindex import Reindex
       reindex = Reindex()
       reindex.set_working_directory(self.get_working_directory())
       auto_logfiler(reindex)
@@ -504,10 +508,9 @@ class DialsIntegrater(Integrater):
           self.get_integrater_refiner().get_refiner_lattice()))
 
       reindex.run()
+      self._intgr_integrated_pickle = reindex.get_reindexed_reflections_filename()
       self._intgr_integrated_filename = reindex.get_reindexed_reflections_filename()
       self._intgr_experiments_filename = reindex.get_reindexed_experiments_filename()
-      self.set_integrated_experiments(self._intgr_experiments_filename)
-      self.set_integrated_reflections(self._intgr_integrated_filename)
 
       pname, xname, dname = self.get_integrater_project_info()
       sweep = self.get_integrater_sweep_name()
@@ -517,7 +520,8 @@ class DialsIntegrater(Integrater):
       FileHandler.record_more_data_file(
         '%s %s %s %s reflections' % (pname, xname, dname, sweep),
         self.get_integrated_reflections())
-      return reindex.get_reindexed_reflections_filename()
+      return None # this will be set to intgr_hklout - better to cause failure
+      # due to it being none than it be set wrong and not knowing?
 
   def _integrate_select_images_wedges(self):
     '''Select correct images based on image headers.'''

@@ -388,7 +388,8 @@ class DialsScaler(Scaler):
       # returns a pickle file and not an mtz file.
       # Set it in the si for later access
 
-      integrater.set_output_format('pickle')
+      integrater.set_output_format('pickle') #make the integrate_finish save the
+      # updated results to intgr_integrated_pickle
       integrater.set_integrater_spacegroup_number(
           Syminfo.spacegroup_name_to_number(overall_pointgroup))
       integrater.set_integrater_reindex_operator(
@@ -620,11 +621,6 @@ class DialsScaler(Scaler):
           {'scaling model':'default'})
 
     sc = self._updated_dials_scaler()
-    auto_logfiler(sc, 'SCALE')
-
-    FileHandler.record_log_file('%s %s SCALE' % (self._scalr_pname,
-                                                   self._scalr_xname),
-                                sc.get_log_file())
 
     # Set paths
     scaled_mtz_path = os.path.join(self.get_working_directory(),
@@ -685,7 +681,10 @@ class DialsScaler(Scaler):
         sc.set_resolution(resolution)
 
     sc.set_working_directory(self.get_working_directory())
-    #auto_logfiler(sc)
+    auto_logfiler(sc)
+    FileHandler.record_log_file('%s %s SCALE' % (self._scalr_pname,
+                                                self._scalr_xname),
+                            sc.get_log_file())
     sc.scale()
     self._no_times_scaled += 1
 
