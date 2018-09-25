@@ -16,6 +16,8 @@ base_url = 'http://dials.diamond.ac.uk/regression_data/'
 
 @contextlib.contextmanager
 def download_lock(target_dir):
+  if not os.path.exists(target_dir):
+    os.makedirs(target_dir)
   with open(os.path.join(target_dir, '.lock'), 'w') as fh:
     with dials.util.locked(fh):
       yield
