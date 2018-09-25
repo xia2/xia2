@@ -11,7 +11,7 @@ import re
 import procrunner
 import py.path
 import pytest
-from dials.conftest import dials_regression, run_in_tmpdir
+from dials.conftest import run_in_tmpdir
 
 def pytest_addoption(parser):
   '''Add '--runslow' and '--regression' options to pytest.'''
@@ -102,22 +102,14 @@ def regression_data():
   else:
     pytest.skip('Can not determine regression data location. Use environment variable REGRESSIONDATA')
 
-  from xia2.Test.fetch_test_data import download_lock, fetch_test_data
-  class DataFetcher():
-    _cache = {}
-    def __call__(self, test_data):
-      if test_data not in self._cache:
-        with download_lock(target_dir):
-          self._cache[test_data] = fetch_test_data(target_dir, pre_scan=True, file_group=test_data, read_only=read_only)
-          if self._cache[test_data]:
-            self._cache[test_data] = str(self._cache[test_data]) # https://github.com/cctbx/cctbx_project/issues/234
-      if not self._cache[test_data]:
-        if read_only:
-          pytest.skip('Regression data is required to run this test. Run with --regression or run xia2.fetch_test_data')
-        else:
-          pytest.skip('Automated download of test data failed. Run xia2.fetch_test_data')
-      return py.path.local(self._cache[test_data])
-    def __repr__(self):
-      return "<%sDataFetcher: %s>" % ('R/O ' if read_only else '', target_dir)
-
-  return DataFetcher()
+  import dials.util.regression_data
+  df = dials.util.regression_data.DataFetcher(target_dir, read_only=read_only)
+  def skip_test_if_lookup_failed(result):
+    if not result:
+      if read_only:
+        pytest.skip('Regression data is required to run this test. Run with --regression or run dials.fetch_test_data')
+      else:
+        pytest.skip('Automated download of test data failed. Run dials.fetch_test_data')
+    return result
+  setattr(df, 'result_filter', skip_test_if_lookup_failed)
+  return df
