@@ -391,7 +391,7 @@ class DialsScaler(Scaler):
       integrater.set_output_format('pickle') #make the integrate_finish save the
       # updated results to intgr_integrated_pickle
       integrater.set_integrater_spacegroup_number(
-          Syminfo.spacegroup_name_to_number(overall_pointgroup))
+          Syminfo.spacegroup_name_to_number(overall_pointgroup), update_experiments=True)
       integrater.set_integrater_reindex_operator(
           reindex_ops[epoch], reason='setting point group')
       si.set_reflections(integrater.get_integrated_reflections())
