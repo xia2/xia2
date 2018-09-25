@@ -13,6 +13,7 @@ import traceback
 
 # Needed to make xia2 imports work correctly
 import libtbx.load_env
+from libtbx import phil
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Streams import Chatter, Debug
 from xia2.XIA2Version import Version
@@ -68,6 +69,15 @@ def generate_xia2_html(xinfo, filename='xia2.html', params=None, args=[]):
     reflection_files = xcryst.get_scaled_merged_reflections()
     for wname, unmerged_mtz in reflection_files['mtz_unmerged'].iteritems():
       xwav = xcryst.get_xwavelength(wname)
+
+      from xia2.Modules.MultiCrystalAnalysis import batch_phil_scope
+      scope = phil.parse(batch_phil_scope)
+      for e, si in xcryst._scaler._sweep_handler._sweep_information.iteritems():
+        batch_params = scope.extract().batch[0]
+        batch_params.id = si.get_sweep_name()
+        batch_params.range = si.get_batch_range()
+        params.batch.append(batch_params)
+
       report = xia2_report(unmerged_mtz, params)
       reports.append(report)
 
