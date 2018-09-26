@@ -261,8 +261,8 @@ class DialsIndexer(Indexer):
         sweep_filename)
 
       genmask = self.GenerateMask()
-      genmask.set_input_experiment(sweep_filename)
-      genmask.set_output_experiment(os.path.join(
+      genmask.set_input_experiments(sweep_filename)
+      genmask.set_output_experiments(os.path.join(
         self.get_working_directory(), '%s_%s_experiments.json' %(
           genmask.get_xpid(), xsweep.get_name())))
       genmask.set_params(PhilIndex.params.dials.masking)
