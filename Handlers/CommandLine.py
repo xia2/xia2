@@ -30,24 +30,23 @@ from xia2.Handlers.PipelineSelection import add_preference
 from xia2.Handlers.Streams import Chatter, Debug
 from xia2.Schema.XProject import XProject
 
-def load_datablock(filename):
+def load_experiments(filename):
   from xia2.Schema import imageset_cache, update_with_reference_geometry
   from dxtbx.serialize import load
 
-  datablocks = load.datablock(filename, check_format=False)
+  experiments = load.experiment_list(filename, check_format=False)
 
-  for datablock in datablocks:
-    imagesets = datablock.extract_imagesets()
-    params = PhilIndex.get_python_object()
-    reference_geometry = params.xia2.settings.input.reference_geometry
-    if reference_geometry is not None and len(reference_geometry) > 0:
-      update_with_reference_geometry(imagesets, reference_geometry)
-    for imageset in imagesets:
-      template = imageset.get_template()
-      if template not in imageset_cache:
-        imageset_cache[template] = collections.OrderedDict()
-      imageset_cache[template][
-        imageset.get_scan().get_image_range()[0]] = imageset
+  imagesets = experiments.imagesets()
+  params = PhilIndex.get_python_object()
+  reference_geometry = params.xia2.settings.input.reference_geometry
+  if reference_geometry is not None and len(reference_geometry) > 0:
+    update_with_reference_geometry(imagesets, reference_geometry)
+  for imageset in imagesets:
+    template = imageset.get_template()
+    if template not in imageset_cache:
+      imageset_cache[template] = collections.OrderedDict()
+    imageset_cache[template][
+      imageset.get_scan().get_image_range()[0]] = imageset
 
 def unroll_datasets(datasets):
   '''Unroll datasets i.e. if input img:1:900:450 make this into 1:450;
@@ -252,7 +251,7 @@ class _CommandLine(object):
     if (input_json is not None and len(input_json)):
       for json_file in input_json:
         assert os.path.isfile(json_file)
-        load_datablock(json_file)
+        load_experiments(json_file)
 
     reference_geometry = params.xia2.settings.input.reference_geometry
     if reference_geometry is not None and len(reference_geometry) > 0:

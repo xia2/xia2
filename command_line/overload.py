@@ -87,9 +87,9 @@ def build_hist(nproc=1):
     nproc=int(sys.argv[1][6:])
     sys.argv = sys.argv[1:]
   if len(sys.argv) == 2 and sys.argv[1].endswith('.json'):
-    from dxtbx import datablock
-    db = datablock.DataBlockFactory.from_json_file(sys.argv[1])[0]
-    image_list = db.extract_imagesets()[0].paths()
+    from dxtbx.model.experiment_list import ExperimentListFactory
+    experiments = ExperimentListFactory.from_json_file(sys.argv[1])
+    image_list = experiments.imagesets()[0].paths()
   else:
     image_list = sys.argv[1:]
   image_count = len(image_list)

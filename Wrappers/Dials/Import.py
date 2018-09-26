@@ -31,7 +31,7 @@ def Import(DriverType = None):
       self._images = []
       self._image_range = []
 
-      self._sweep_filename = 'datablock_import.json'
+      self._sweep_filename = 'experiments_import.json'
       self._image_to_epoch = None
       self._reference_geometry = None
       self._mosflm_beam_centre = None
@@ -61,13 +61,13 @@ def Import(DriverType = None):
     def set_mosflm_beam_centre(self, mosflm_beam_centre):
       self._mosflm_beam_centre = mosflm_beam_centre
 
-    def fix_datablock_import(self):
+    def fix_experiments_import(self):
       import json
 
-      datablock_json = self.get_sweep_filename()
+      experiments_json = self.get_sweep_filename()
 
-      datablock = json.load(open(datablock_json))
-      scan = datablock[0]['scan'][0]
+      experiments = json.load(open(experiments_json))
+      scan = experiments['scan'][0]
 
       # fix image_range, exposure_time, epochs
 
@@ -82,8 +82,8 @@ def Import(DriverType = None):
       for image in range(first, last + 1):
         scan[u'exposure_time'].append(exposure_time)
         scan[u'epochs'].append(self._image_to_epoch[image+offset])
-      datablock[0]['scan'] = [scan]
-      json.dump(datablock, open(datablock_json, 'w'))
+      experiments['scan'] = [scan]
+      json.dump(experiments, open(experiments_json, 'w'))
 
     def run(self, fast_mode=False):
 
@@ -123,13 +123,13 @@ def Import(DriverType = None):
         for image in self._images:
           self.add_command_line(image)
 
-      self.add_command_line('output.datablock=%s' % self._sweep_filename)
+      self.add_command_line('output.experiments=%s' % self._sweep_filename)
       self.start()
       self.close_wait()
       self.check_for_errors()
 
       if fast_mode:
-        self.fix_datablock_import()
+        self.fix_experiments_import()
 
       assert(os.path.exists(os.path.join(self.get_working_directory(),
                                          self._sweep_filename)))

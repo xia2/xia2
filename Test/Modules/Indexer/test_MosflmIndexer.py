@@ -12,10 +12,10 @@ def test_mosflm_indexer(regression_test, ccp4, dials_data, run_in_tmpdir):
   from xia2.Modules.Indexer.MosflmIndexer import MosflmIndexer
   indexer = MosflmIndexer()
   indexer.set_working_directory(run_in_tmpdir.strpath)
-  from dxtbx.datablock import DataBlockTemplateImporter
-  importer = DataBlockTemplateImporter([template])
-  datablocks = importer.datablocks
-  imageset = datablocks[0].extract_imagesets()[0]
+  from dxtbx.model.experiment_list import ExperimentListTemplateImporter
+  importer = ExperimentListTemplateImporter([template])
+  experiments = importer.experiments
+  imageset = experiments.imagesets()[0]
   indexer.add_indexer_imageset(imageset)
 
   with mock.patch.object(sys, 'argv', []): # otherwise indexing fails when running pytest with '--runslow'

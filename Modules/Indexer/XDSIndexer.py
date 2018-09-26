@@ -329,12 +329,14 @@ class XDSIndexer(IndexerSingleSweep):
       # find the region of the scan with the least predicted shadow
       # to use for background determination in XDS INIT step
       from dxtbx.serialize import dump
-      from dxtbx.datablock import DataBlock
+      from dxtbx.model.experiment_list import ExperimentListFactory
       imageset = self._indxr_imagesets[0]
       xsweep = self._indxr_sweeps[0]
       sweep_filename = os.path.join(
-        self.get_working_directory(), '%s_datablock.json' %xsweep.get_name())
-      dump.datablock(DataBlock([imageset]), sweep_filename)
+        self.get_working_directory(), '%s_experiments.json' %xsweep.get_name())
+      dump.experiment_list(
+        ExperimentsListFactory.from_imageset_and_crystal(imageset, None), 
+        sweep_filename)
 
       from xia2.Wrappers.Dials.ShadowPlot import ShadowPlot
       shadow_plot = ShadowPlot()

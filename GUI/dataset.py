@@ -71,9 +71,9 @@ class SelectDatasetPanelMixin(object):
   def OnChooseDirectory(self, event):
     dir_name = self.dir_ctrl.GetPhilValue()
     if dir_name is not None:
-      from dxtbx.datablock import DataBlockFactory
-      datablocks = DataBlockFactory.from_filenames([dir_name])
-      imagesets = datablocks[0].extract_imagesets()
+      from dxtbx.model.experiment_list import ExperimentListFactory
+      experiments = ExperimentListFactory.from_filenames([dir_name])
+      imagesets = experiments.imagesets()
 
       self._imagesets = imagesets
 

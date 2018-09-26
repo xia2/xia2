@@ -28,16 +28,17 @@ def longest_common_substring(s1, s2):
 def load_imagesets(template, directory, id_image=None, image_range=None,
                    use_cache=True, reversephi=False):
   global imageset_cache
-  from dxtbx.datablock import DataBlockFactory
+  from dxtbx.model.experiment_list import ExperimentListFactory
   from xia2.Applications.xia2setup import known_hdf5_extensions
+  from dxtbx.imageset import ImageSweep
 
   full_template_path = os.path.join(directory, template)
 
   if full_template_path not in imageset_cache or not use_cache:
 
-    from dxtbx.datablock import BeamComparison
-    from dxtbx.datablock import DetectorComparison
-    from dxtbx.datablock import GoniometerComparison
+    from dxtbx.model.experiment_list import BeamComparison
+    from dxtbx.model.experiment_list import DetectorComparison
+    from dxtbx.model.experiment_list import GoniometerComparison
 
     params = PhilIndex.params.xia2.settings
     compare_beam = BeamComparison(
@@ -83,7 +84,7 @@ def load_imagesets(template, directory, id_image=None, image_range=None,
         raise RuntimeError("Can't find master file for %s" % full_template_path)
 
       unhandled = []
-      datablocks = DataBlockFactory.from_filenames(
+      experiments = ExperimentListFactory.from_filenames(
         [master_file], verbose=False, unhandled=unhandled,
         compare_beam=compare_beam,
         compare_detector=compare_detector,
@@ -93,8 +94,6 @@ def load_imagesets(template, directory, id_image=None, image_range=None,
 
       assert len(unhandled) == 0, "unhandled image files identified: %s" % \
           unhandled
-      assert len(datablocks) == 1, "1 datablock expected, %d found" % \
-          len(datablocks)
 
     else:
 
@@ -106,7 +105,7 @@ def load_imagesets(template, directory, id_image=None, image_range=None,
       if read_all_image_headers:
         paths = sorted(locate_files_matching_template_string(full_template_path))
         unhandled = []
-        datablocks = DataBlockFactory.from_filenames(
+        experiments = ExperimentListFactory.from_filenames(
           paths, verbose=False, unhandled=unhandled,
           compare_beam=compare_beam,
           compare_detector=compare_detector,
@@ -115,16 +114,14 @@ def load_imagesets(template, directory, id_image=None, image_range=None,
           format_kwargs=format_kwargs)
         assert len(unhandled) == 0, "unhandled image files identified: %s" % \
             unhandled
-        assert len(datablocks) == 1, "1 datablock expected, %d found" % \
-            len(datablocks)
 
       else:
-        from dxtbx.datablock import DataBlockTemplateImporter
-        importer = DataBlockTemplateImporter(
+        from dxtbx.model.experiment_list import ExperimentListTemplateImporter
+        importer = ExperimentListTemplateImporter(
           [full_template_path], format_kwargs=format_kwargs)
-        datablocks = importer.datablocks
+        experiments = importer.experiments
 
-    imagesets = datablocks[0].extract_sweeps()
+    imagesets = [iset for iset in experiments.imagesets() if isinstance(iset, ImageSweep)]
     assert len(imagesets) > 0, "no imageset found"
 
     imageset_cache[full_template_path] = collections.OrderedDict()
@@ -217,9 +214,8 @@ def load_reference_geometries(geometry_file_list):
       reference_detector = experiments.detectors()[0]
       reference_beam = experiments.beams()[0]
     except Exception:
-      datablock = load.datablock(file)
-      assert len(datablock) == 1
-      imageset = datablock[0].extract_imagesets()[0]
+      experiments = load.experiment_list(file)
+      imageset = experiments.imagesets()[0]
       reference_detector = imageset.get_detector()
       reference_beam = imageset.get_beam()
     reference_components.append({'detector': reference_detector,

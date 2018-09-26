@@ -219,10 +219,11 @@ def xia2_main(stop_after=None):
         remove_sweeps = []
         sweeps = wavelength.get_sweeps()
         for sweep in sweeps:
-          from dials.command_line.show import show_datablocks
-          from dxtbx.datablock import DataBlock
+          from dials.command_line.show import show_experiments
+          from dxtbx.model.experiment_list import ExperimentListFactory
           Debug.write(sweep.get_name())
-          Debug.write(show_datablocks([DataBlock([sweep.get_imageset()])]))
+          Debug.write(show_experiments(
+            ExperimentListFactory.from_imageset_and_crystal(sweep.get_imageset(), None)))
           Citations.cite('dials')
           try:
             if stop_after == 'index':

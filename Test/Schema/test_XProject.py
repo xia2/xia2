@@ -14,10 +14,10 @@ def exercise_serialization(dials_data, tmp_dir):
   from xia2.Modules.Integrater.DialsIntegrater import DialsIntegrater
   from xia2.Modules.Scaler.CCP4ScalerA import CCP4ScalerA
 
-  from dxtbx.datablock import DataBlockTemplateImporter
-  importer = DataBlockTemplateImporter([template])
-  datablocks = importer.datablocks
-  imageset = datablocks[0].extract_imagesets()[0]
+  from dxtbx.model.experiment_list import ExperimentListTemplateImporter
+  importer = ExperimentListTemplateImporter([template])
+  experiments = importer.experiments
+  imageset = experiments.imagesets()[0]
 
   from xia2.Schema.XProject import XProject
   from xia2.Schema.XCrystal import XCrystal

@@ -38,7 +38,7 @@ def DiscoverBetterExperimentalModel(DriverType = None):
     def set_spot_filename(self, spot_filename):
       self._spot_filename = spot_filename
 
-    def set_optimized_datablock_filename(self, optimized_filename):
+    def set_optimized_experiments_filename(self, optimized_filename):
       self._optimized_filename = optimized_filename
 
     def set_phil_file(self, phil_file):
@@ -50,7 +50,7 @@ def DiscoverBetterExperimentalModel(DriverType = None):
     def add_scan_range(self, scan_range):
       self._scan_ranges.append(scan_range)
 
-    def get_optimized_datablock_filename(self):
+    def get_optimized_experiments_filename(self):
       return self._optimized_filename
 
     def run(self):
@@ -70,8 +70,8 @@ def DiscoverBetterExperimentalModel(DriverType = None):
         self.add_command_line("%s" %self._phil_file)
 
       self._optimized_filename = os.path.join(
-        self.get_working_directory(), '%d_optimized_datablock.json' %self.get_xpid())
-      self.add_command_line("output.datablock=%s" %self._optimized_filename)
+        self.get_working_directory(), '%d_optimized_experiments.json' %self.get_xpid())
+      self.add_command_line("output.experiments=%s" %self._optimized_filename)
 
       self.start()
       self.close_wait()

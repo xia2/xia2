@@ -625,7 +625,7 @@ xia2.settings
     json = None
       .type = path
       .multiple = True
-      .help = "dxtbx-format datablock.json file which can be provided as an "
+      .help = "dxtbx-format experiments.json file which can be provided as an "
               "alternative source of images header information to avoid the "
               "need to read all the image headers on start-up."
       .short_caption = "Take headers from json file"
@@ -633,9 +633,8 @@ xia2.settings
     reference_geometry = None
       .type = path
       .multiple = True
-      .help = "Experimental geometry from this datablock.json or "
-              "experiments.json will override the geometry from the "
-              "image headers."
+      .help = "Experimental geometry from this experiments.json will"
+              "override the geometry from the image headers."
       .short_caption = "Take experimental geometry from json file"
       .expert_level = 1
     xinfo = None

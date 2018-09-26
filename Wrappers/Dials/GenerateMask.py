@@ -26,16 +26,16 @@ def GenerateMask(DriverType = None):
 
       self.set_executable('dials.generate_mask')
 
-      self._input_datablock_filename = None
-      self._output_datablock_filename = None
+      self._input_experiments_filename = None
+      self._output_experiments_filename = None
       self._output_mask_filename = None
       self._params = None
 
-    def set_input_datablock(self, datablock_filename):
-      self._input_datablock_filename = datablock_filename
+    def set_input_experiments(self, experiments_filename):
+      self._input_experiments_filename = experiments_filename
 
-    def set_output_datablock(self, datablock_filename):
-      self._output_datablock_filename = datablock_filename
+    def set_output_experiments(self, experiments_filename):
+      self._output_experiments_filename = experiments_filename
 
     def set_output_mask_filename(self, mask_filename):
       self._output_mask_filename = mask_filename
@@ -60,23 +60,22 @@ def GenerateMask(DriverType = None):
         f.write(diff_phil.as_str())
         f.write(os.linesep) # temporarily required for https://github.com/dials/dials/issues/522
 
-      self.add_command_line('input.datablock="%s"' % self._input_datablock_filename)
+      self.add_command_line('input.experiments="%s"' % self._input_experiments_filename)
       if self._output_mask_filename is None:
         self._output_mask_filename = os.path.join(
           self.get_working_directory(), '%s_mask.pickle' %self.get_xpid())
-      if self._output_datablock_filename is None:
-        self._output_datablock_filename = os.path.join(
-          self.get_working_directory(), '%s_datablock.pickle' %self.get_xpid())
+      if self._output_experiments_filename is None:
+        self._output_experiments_filename = os.path.join(
+          self.get_working_directory(), '%s_experiments.pickle' %self.get_xpid())
       self.add_command_line(
         'output.mask="%s"' % self._output_mask_filename)
-      self.add_command_line(
-        'output.datablock="%s"' % self._output_datablock_filename)
+      self.add_command_line('output.experiments="%s"' % self._output_experiments_filename)
       self.add_command_line(phil_filename)
       self.start()
       self.close_wait()
       self.check_for_errors()
       assert os.path.exists(self._output_mask_filename), self._output_mask_filename
-      assert os.path.exists(self._output_datablock_filename), self._output_datablock_filename
-      return self._output_datablock_filename, self._output_mask_filename
+      assert os.path.exists(self._output_experiments_filename), self._output_experiments_filename
+      return self._output_experiments_filename, self._output_mask_filename
 
   return GenerateMaskWrapper()

@@ -103,10 +103,10 @@ def Spotfinder(DriverType = None):
       Debug.write('Running dials.find_spots')
 
       self.clear_command_line()
-      self.add_command_line('input.datablock="%s"' % self._input_sweep_filename)
+      self.add_command_line('input.experiments="%s"' % self._input_sweep_filename)
       if self._output_sweep_filename is not None:
         self.add_command_line(
-          'output.datablock="%s"' % self._output_sweep_filename)
+          'output.experiments="%s"' % self._output_sweep_filename)
       self.add_command_line('output.reflections="%s"' % self._input_spot_filename)
       nproc = PhilIndex.params.xia2.settings.multiprocessing.nproc
       njob = PhilIndex.params.xia2.settings.multiprocessing.njob

@@ -17,10 +17,10 @@ def exercise_dials_indexer(dials_data, tmp_dir, nproc=None):
   from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
   indexer = DialsIndexer()
   indexer.set_working_directory(tmp_dir)
-  from dxtbx.datablock import DataBlockTemplateImporter
-  importer = DataBlockTemplateImporter([template])
-  datablocks = importer.datablocks
-  imageset = datablocks[0].extract_imagesets()[0]
+  from dxtbx.model_experiment_list import ExperimentListTemplateImporter
+  importer = ExperimentListTemplateImporter([template])
+  experiments = importer.experiments
+  imageset = experiments.imagesets()[0]
   indexer.add_indexer_imageset(imageset)
 
   from xia2.Schema.XCrystal import XCrystal
