@@ -330,7 +330,7 @@ class DialsScaler(Scaler):
           Debug.write('X1698: %s: %s' % (pointgroup, reindex_op))
 
           if ntr:
-            integrater.integrater_reset_reindex_operator()
+            intgr.integrater_reset_reindex_operator()
             need_to_return = True
 
         if pt and not probably_twinned:
