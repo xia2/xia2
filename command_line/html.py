@@ -72,11 +72,19 @@ def generate_xia2_html(xinfo, filename='xia2.html', params=None, args=[]):
 
       from xia2.Modules.MultiCrystalAnalysis import batch_phil_scope
       scope = phil.parse(batch_phil_scope)
-      for e, si in xcryst._scaler._sweep_handler._sweep_information.iteritems():
-        batch_params = scope.extract().batch[0]
-        batch_params.id = si.get_sweep_name()
-        batch_params.range = si.get_batch_range()
-        params.batch.append(batch_params)
+      scaler = xcryst._scaler
+      try:
+        for e, si in scaler._sweep_information.iteritems():
+          batch_params = scope.extract().batch[0]
+          batch_params.id = si['sname']
+          batch_params.range = si['batches']
+          params.batch.append(batch_params)
+      except AttributeError:
+        for e, si in scaler._sweep_handler._sweep_information.iteritems():
+          batch_params = scope.extract().batch[0]
+          batch_params.id = si.get_sweep_name()
+          batch_params.range = si.get_batch_range()
+          params.batch.append(batch_params)
 
       report = xia2_report(unmerged_mtz, params)
       reports.append(report)
