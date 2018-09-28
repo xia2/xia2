@@ -22,6 +22,7 @@ from xia2.Wrappers.Dials.Reindex import Reindex as DialsReindex
 from xia2.Wrappers.Dials.SplitExperiments import SplitExperiments
 from xia2.Handlers.Syminfo import Syminfo
 from dxtbx.serialize import load
+from dials.util.batch_handling import calculate_batch_offsets
 
 def clean_reindex_operator(reindex_operator):
   return reindex_operator.replace('[', '').replace(']', '')
@@ -338,7 +339,7 @@ class DialsScaler(Scaler):
         si.set_experiments(split_exp)
         experiments_to_rebatch.append(load.experiment_list(split_exp)[0])
 
-      offsets = _calculate_batch_offsets(experiments_to_rebatch)
+      offsets = calculate_batch_offsets(experiments_to_rebatch)
 
       for i, epoch in enumerate(self._sweep_handler.get_epochs()):
         si = self._sweep_handler.get_sweep_information(epoch)
@@ -399,7 +400,7 @@ class DialsScaler(Scaler):
       #SUMMARY - for each sweep, run indexer jiffy and get reindex operators
       # and pointgroups dictionaries (could be different between sweeps)
 
-      offsets = _calculate_batch_offsets(experiments_to_rebatch)
+      offsets = calculate_batch_offsets(experiments_to_rebatch)
 
       for i, epoch in enumerate(self._sweep_handler.get_epochs()):
         si = self._sweep_handler.get_sweep_information(epoch)
@@ -999,66 +1000,3 @@ class DialsScalerHelper(object):
 
     return pointgroup, reindex_op, need_to_return, probably_twinned,\
       reindexed_reflections, reindexed_experiments
-
-def _calculate_batch_offsets(experiments):
-  """Take a list of experiments and resolve and return the batch offsets.
-
-  This is the number added to the image number to give the
-  batch number, such that:
-  - Each experiment has a unique, nonoverlapping, nonconsecutive range
-  - None are zero
-  - Image number ranges are kept if at all possible
-  """
-
-  experiments_to_shift = []
-  existing_ranges = set()
-  maximum_batch_number = 0
-  batch_offsets = [0]*len(experiments)
-
-  # Handle zeroth shifts and kept ranges
-  for i, experiment in enumerate(experiments):
-    ilow, ihigh = experiment.scan.get_image_range()
-    # Check assumptions
-    assert ilow <= ihigh, "Inverted image order!?"
-    assert ilow >= 0, "Negative image indices are not expected"
-    # Don't emit zero: Causes problems with C/fortran number conversion
-    if ilow == 0:
-      ilow, ihigh = ilow+1, ihigh+1
-    # If we overlap with anything, then process later
-    if any( ilow <= high+1 and ihigh >= low-1 for low, high in existing_ranges):
-      experiments_to_shift.append((i, experiment))
-    else:
-      batch_offsets[i] = ilow-experiment.scan.get_image_range()[0]
-      existing_ranges.add((ilow, ihigh))
-      maximum_batch_number = max(maximum_batch_number, ihigh)
-
-  # Now handle all the experiments that overlapped by pushing them higher
-  for i, experiment in experiments_to_shift:
-    start_number = _next_epoch(maximum_batch_number)
-    range_width = experiment.scan.get_image_range()[1]-experiment.scan.get_image_range()[0]+1
-    end_number = start_number + range_width - 1
-    batch_offsets[i] = start_number - experiment.scan.get_image_range()[0]
-    maximum_batch_number = end_number
-    experiment.scan.set_batch_offset(batch_offsets[i])
-
-  return batch_offsets
-
-def _next_epoch(val):
-  from math import ceil, floor, log
-  """Find a reasonably round epoch a small number above an existing one.
-
-  Examples: 130-138     => 140
-            139         => 150
-            1234        => 1300
-            19999-20998 => 21000
-  """
-
-  # Find the order of magnitude-1 (minimum: 1 as want no fractional values)
-  small_magnitude = 10**max(1, int(floor(log(val, 10))-1))
-  # How many units of this we have (float cast for __division__ insensitivity)
-  mag_multiple = int(ceil(val / float(small_magnitude)))
-  epoch = small_magnitude * mag_multiple
-  # If this would give a consecutive number then offset it by a magnitude step
-  if epoch <= val + 1:
-    epoch = small_magnitude * (mag_multiple+1)
-  return epoch
