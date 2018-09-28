@@ -100,7 +100,7 @@ class xia2_report(object):
     self.merged_intensities = self.intensities.merge_equivalents().array()
 
     rtable, elist = data_from_unmerged_mtz(unmerged_mtz)
-    self.z_score_data = IntensityDist(rtable, elist)
+    self.z_score_data = IntensityDist(rtable, elist).rtable
 
 
   def _compute_merging_stats(self):
