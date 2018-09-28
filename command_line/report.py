@@ -1075,6 +1075,12 @@ def run(args):
   json_data.update(report.l_test_plot())
   json_data.update(report.wilson_plot())
   json_data.update(report.pychef_plots())
+  json_data.update(report.z_score_hist())
+  json_data.update(report.normal_probability_plot())
+  json_data.update(report.z_vs_multiplicity())
+  json_data.update(report.z_time_series())
+  json_data.update(report.z_vs_I())
+  json_data.update(report.z_vs_I_over_sigma())
 
   resolution_graphs = OrderedDict(
     (k, json_data[k]) for k in
