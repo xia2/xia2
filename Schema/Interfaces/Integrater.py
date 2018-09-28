@@ -635,8 +635,7 @@ class Integrater(FrameProcessor):
   # these methods which follow should probably be respected by
   # the Mosflm implementation of integrater
 
-  def set_integrater_spacegroup_number(self, spacegroup_number,
-    update_experiments=False):
+  def set_integrater_spacegroup_number(self, spacegroup_number):
     # FIXME check that this is appropriate with what the
     # indexer things is currently correct. Also - should this
     # really just refer to a point group??
@@ -652,16 +651,6 @@ class Integrater(FrameProcessor):
     self._intgr_reindex_matrix = None
 
     self._intgr_spacegroup_number = spacegroup_number
-    # if space group is different, need to set this in the integrated_experiments
-    # object.
-    if update_experiments:
-      from dxtbx.serialize import dump, load
-      explist = load.experiment_list(self.get_integrated_experiments())
-      from cctbx import sgtbx
-      space_group = sgtbx.space_group_info(number=spacegroup_number).group()
-      explist[0].crystal.set_space_group(space_group)
-      #save back to file
-      dump.experiment_list(explist, self.get_integrated_experiments())
 
     self.set_integrater_finish_done(False)
 

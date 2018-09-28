@@ -19,7 +19,9 @@ from xia2.Modules.Scaler.CCP4ScalerHelpers import SweepInformationHandler,\
   get_umat_bmat_lattice_symmetry_from_mtz
 from xia2.Wrappers.Dials.Symmetry import DialsSymmetry
 from xia2.Wrappers.Dials.Reindex import Reindex as DialsReindex
+from xia2.Wrappers.Dials.SplitExperiments import SplitExperiments
 from xia2.Handlers.Syminfo import Syminfo
+from dxtbx.serialize import load
 
 def clean_reindex_operator(reindex_operator):
   return reindex_operator.replace('[', '').replace(']', '')
@@ -92,6 +94,9 @@ class DialsScaler(Scaler):
     they are correctly indexed (via dials.symmetry) and generally tidy
     things up.'''
 
+    # AIM discover symmetry and reindex with dials.symmetry, and set the correct
+    # reflections in si.reflections, si.experiments
+
     self._helper.set_working_directory(self.get_working_directory())
     self._factory.set_working_directory(self.get_working_directory())
 
@@ -142,8 +147,7 @@ class DialsScaler(Scaler):
     # If multiple files, want to run symmetry to check for consistent indexing
     # also
 
-    multi_sweep_indexing = \
-      PhilIndex.params.xia2.settings.multi_sweep_indexing == True
+    multi_sweep_indexing = PhilIndex.params.xia2.settings.multi_sweep_indexing
 
     # try to reproduce what CCP4ScalerA is doing
 
@@ -169,8 +173,26 @@ class DialsScaler(Scaler):
 
         Debug.write('Running multisweep dials.symmetry for %d sweeps' %
                     len(refiners))
-        pointgroup, reindex_op, ntr, pt = \
+        pointgroup, reindex_op, ntr, pt, reind_refl, reind_exp = \
                     self._symmetry_indexer_multisweep(experiments, reflections, refiners)
+
+        FileHandler.record_temporary_file(reind_refl)
+        FileHandler.record_temporary_file(reind_exp)
+        
+        '''# need to split experiments and give back to si
+        splitter = SplitExperiments()
+        splitter.add_experiments(reind_exp)
+        splitter.add_reflections(reind_refl)
+        splitter.set_working_directory(self.get_working_directory())
+        splitter.run()
+        for i, epoch in enumerate(self._sweep_handler.get_epochs()):
+          si = self._sweep_handler.get_sweep_information(epoch)
+          split_exp = 'split_experiments_%s.json' % i
+          split_refl = 'split_reflections_%s.pickle' % i
+          FileHandler.record_temporary_file(split_exp)
+          FileHandler.record_temporary_file(split_refl)
+          si.set_reflections(split_refl)
+          si.set_experiments(split_exp)'''
 
         Debug.write('X1698: %s: %s' % (pointgroup, reindex_op))
 
@@ -206,8 +228,11 @@ class DialsScaler(Scaler):
 
           else:
 
-            pointgroup, reindex_op, ntr, pt = \
+            pointgroup, reindex_op, ntr, pt, reind_refl, reind_exp = \
               self._dials_symmetry_indexer_jiffy(experiment, reflections, refiner)
+
+            si.set_experiments(reind_exp)
+            si.set_reflections(reind_refl)
 
             Debug.write('X1698: %s: %s' % (pointgroup, reindex_op))
 
@@ -276,8 +301,7 @@ class DialsScaler(Scaler):
 
     need_to_return = False
 
-    multi_sweep_indexing = \
-      PhilIndex.params.xia2.settings.multi_sweep_indexing == True
+    multi_sweep_indexing = PhilIndex.params.xia2.settings.multi_sweep_indexing
 
     # START OF if multi-sweep and not input pg
     if multi_sweep_indexing and not self._scalr_input_pointgroup:
@@ -293,8 +317,34 @@ class DialsScaler(Scaler):
         reflections.append(integrater.get_integrated_reflections())
         refiners.append(integrater.get_integrater_refiner())
 
-      pointgroup, reindex_op, ntr, pt = \
+      pointgroup, reindex_op, ntr, pt, reind_refl, reind_exp = \
         self._symmetry_indexer_multisweep(experiments, reflections, refiners)
+
+      splitter = SplitExperiments()
+      splitter.add_experiments(reind_exp)
+      splitter.add_reflections(reind_refl)
+      splitter.set_working_directory(self.get_working_directory())
+      splitter.run()
+      experiments_to_rebatch = []
+      for i, epoch in enumerate(self._sweep_handler.get_epochs()):
+        si = self._sweep_handler.get_sweep_information(epoch)
+        split_exp = os.path.join(
+          self.get_working_directory(), 'split_experiments_%s.json' % i)
+        split_refl = os.path.join(
+          self.get_working_directory(), 'split_reflections_%s.pickle' % i)
+        FileHandler.record_temporary_file(split_exp)
+        FileHandler.record_temporary_file(split_refl)
+        si.set_reflections(split_refl)
+        si.set_experiments(split_exp)
+        experiments_to_rebatch.append(load.experiment_list(split_exp)[0])
+
+      offsets = _calculate_batch_offsets(experiments_to_rebatch)
+
+      for i, epoch in enumerate(self._sweep_handler.get_epochs()):
+        si = self._sweep_handler.get_sweep_information(epoch)
+        r = si.get_batch_range()
+        si.set_batch_offset(offsets[i])
+        si.set_batches([r[0]+offsets[i], r[1]+offsets[i]])
 
       Chatter.write('Point group determined for multi sweep indexing: %s' % pointgroup)
       Chatter.write('Reindexing operator for multi sweep indexing: %s' % reindex_op)
@@ -308,6 +358,8 @@ class DialsScaler(Scaler):
 
     #START OF if not mulit-sweep or pg given
     else:
+      
+      experiments_to_rebatch = []
 
       for epoch in self._sweep_handler.get_epochs():
         si = self._sweep_handler.get_sweep_information(epoch)
@@ -324,8 +376,12 @@ class DialsScaler(Scaler):
           pt = False
 
         else:
-          pointgroup, reindex_op, ntr, pt = \
+          pointgroup, reindex_op, ntr, pt, reind_refl, reind_exp = \
             self._dials_symmetry_indexer_jiffy(experiment, reflections, refiner)
+          experiments_to_rebatch.append(load.experiment_list(reind_exp)[0])
+
+          si.set_experiments(reind_exp)
+          si.set_reflections(reind_refl)
 
           Debug.write('X1698: %s: %s' % (pointgroup, reindex_op))
 
@@ -342,6 +398,14 @@ class DialsScaler(Scaler):
         reindex_ops[epoch] = reindex_op
       #SUMMARY - for each sweep, run indexer jiffy and get reindex operators
       # and pointgroups dictionaries (could be different between sweeps)
+
+      offsets = _calculate_batch_offsets(experiments_to_rebatch)
+
+      for i, epoch in enumerate(self._sweep_handler.get_epochs()):
+        si = self._sweep_handler.get_sweep_information(epoch)
+        r = si.get_batch_range()
+        si.set_batch_offset(offsets[i])
+        si.set_batches([r[0]+offsets[i], r[1]+offsets[i]])
 
     #END OF if not mulit-sweep or pg given
 
@@ -375,27 +439,6 @@ class DialsScaler(Scaler):
     Chatter.write('Likely pointgroup determined by dials.symmetry:')
     for spag in self._scalr_likely_spacegroups:
       Chatter.write('%s' % spag)
-
-    # Now go through sweeps and do reindexing
-    for epoch in self._sweep_handler.get_epochs():
-      si = self._sweep_handler.get_sweep_information(epoch)
-
-      integrater = si.get_integrater()
-
-      # Update the space group in integrated_experiments and reindex the
-      # integrated data using the set_integrater_reindex_operator. First, set
-      # the output format to pickle so that integrater.get_integrated_reflections()
-      # returns a pickle file and not an mtz file.
-      # Set it in the si for later access
-
-      integrater.set_output_format('pickle') #make the integrate_finish save the
-      # updated results to intgr_integrated_pickle
-      integrater.set_integrater_spacegroup_number(
-          Syminfo.spacegroup_name_to_number(overall_pointgroup), update_experiments=True)
-      integrater.set_integrater_reindex_operator(
-          reindex_ops[epoch], reason='setting point group')
-      si.set_reflections(integrater.get_integrated_reflections())
-      si.set_experiments(integrater.get_integrated_experiments())
 
     if need_to_return:
       self.set_scaler_done(False)
@@ -460,7 +503,7 @@ class DialsScaler(Scaler):
       for epoch in self._sweep_handler.get_epochs():
 
         si = self._sweep_handler.get_sweep_information(epoch)
-        hklin = si.get_reflections()
+        hklin = si.get_reflections() #FIXME this currently gets a pickle, needs mtz
         brehm_diederichs_files_in.append(hklin)
 
       # now run cctbx.brehm_diederichs to figure out the indexing hand for
@@ -505,7 +548,6 @@ class DialsScaler(Scaler):
     if self._reference_reflections:
       assert self._reference_experiments
 
-      from dxtbx.serialize import load
       exp = load.experiment_list(self._reference_experiments)
       reference_cell = exp[0].crystal.get_unit_cell().parameters()
 
@@ -556,7 +598,6 @@ class DialsScaler(Scaler):
         # FIXME how to get some indication of the reindexing used?
 
         counter += 1
-        from dxtbx.serialize import load
         exp = load.experiment_list(reindexed_exp_fpath)
         cell = exp[0].crystal.get_unit_cell().parameters()
 
@@ -632,23 +673,18 @@ class DialsScaler(Scaler):
                                (self._scalr_pname,
                                 self._scalr_xname))
 
-    exp_path = os.path.join(self.get_working_directory(), 'scaled_experiments.json')
-    refl_path = os.path.join(self.get_working_directory(), 'scaled_reflections.pickle')
-    if self._no_times_scaled > 0:
-      assert os.path.exists(exp_path) #going to continue-where-left-off
-      assert os.path.exists(refl_path)
-      # FIXME What about if the data have been reindexed
-      #inbetween runs, such that we need to reload the data and start again?
-    else:
+    if not sc.get_scaled_experiments():
       for epoch in self._sweep_handler.get_epochs():
         si = self._sweep_handler.get_sweep_information(epoch)
         experiment = si.get_experiments()
         reflections = si.get_reflections()
-
         self._scaler.add_experiments_json(experiment)
         self._scaler.add_reflections_pickle(reflections)
-    self._scaler.set_scaled_experiments(exp_path)
-    self._scaler.set_scaled_reflections(refl_path)
+    else:
+      #going to continue-where-left-off
+      self._scaler.add_experiments_json(self._scaler.get_scaled_experiments())
+      self._scaler.add_reflections_pickle(self._scaler.get_scaled_reflections())
+
     self._scaler.set_scaled_unmerged_mtz(scaled_unmerged_mtz_path)
     self._scaler.set_scaled_mtz(scaled_mtz_path)
     self._scalr_scaled_reflection_files = {}
@@ -686,7 +722,6 @@ class DialsScaler(Scaler):
                                                 self._scalr_xname),
                             sc.get_log_file())
     sc.scale()
-    self._no_times_scaled += 1
 
     FileHandler.record_data_file(scaled_unmerged_mtz_path)
     FileHandler.record_data_file(scaled_mtz_path)
@@ -695,8 +730,6 @@ class DialsScaler(Scaler):
     # the files that dials.scale knows about, so that if scale is called again,
     # scaling resumes from where it left off.
     self._scaler.clear_datafiles()
-    self._scaler.add_experiments_json(exp_path)
-    self._scaler.add_reflections_pickle(refl_path)
 
     # Run twotheta refine
     self._update_scaled_unit_cell()
@@ -889,9 +922,13 @@ class DialsScalerHelper(object):
     reindex_op = symmetry_analyser.get_reindex_operator()
     probably_twinned = symmetry_analyser.get_probably_twinned()
 
+    reindexed_reflections = symmetry_analyser.get_output_reflections_filename()
+    reindexed_experiments = symmetry_analyser.get_output_experiments_filename()
+
     Debug.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
 
-    return pointgroup, reindex_op, need_to_return, probably_twinned
+    return pointgroup, reindex_op, need_to_return, probably_twinned,\
+      reindexed_reflections, reindexed_experiments
 
   def dials_symmetry_indexer_jiffy(self, experiment, reflection, refiner):
     '''A jiffy to centralise the interactions between pointless
@@ -955,6 +992,73 @@ class DialsScalerHelper(object):
     reindex_op = symmetry_analyser.get_reindex_operator()
     probably_twinned = symmetry_analyser.get_probably_twinned()
 
+    reindexed_reflections = symmetry_analyser.get_output_reflections_filename()
+    reindexed_experiments = symmetry_analyser.get_output_experiments_filename()
+
     Debug.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
 
-    return pointgroup, reindex_op, need_to_return, probably_twinned
+    return pointgroup, reindex_op, need_to_return, probably_twinned,\
+      reindexed_reflections, reindexed_experiments
+
+def _calculate_batch_offsets(experiments):
+  """Take a list of experiments and resolve and return the batch offsets.
+
+  This is the number added to the image number to give the
+  batch number, such that:
+  - Each experiment has a unique, nonoverlapping, nonconsecutive range
+  - None are zero
+  - Image number ranges are kept if at all possible
+  """
+
+  experiments_to_shift = []
+  existing_ranges = set()
+  maximum_batch_number = 0
+  batch_offsets = [0]*len(experiments)
+
+  # Handle zeroth shifts and kept ranges
+  for i, experiment in enumerate(experiments):
+    ilow, ihigh = experiment.scan.get_image_range()
+    # Check assumptions
+    assert ilow <= ihigh, "Inverted image order!?"
+    assert ilow >= 0, "Negative image indices are not expected"
+    # Don't emit zero: Causes problems with C/fortran number conversion
+    if ilow == 0:
+      ilow, ihigh = ilow+1, ihigh+1
+    # If we overlap with anything, then process later
+    if any( ilow <= high+1 and ihigh >= low-1 for low, high in existing_ranges):
+      experiments_to_shift.append((i, experiment))
+    else:
+      batch_offsets[i] = ilow-experiment.scan.get_image_range()[0]
+      existing_ranges.add((ilow, ihigh))
+      maximum_batch_number = max(maximum_batch_number, ihigh)
+
+  # Now handle all the experiments that overlapped by pushing them higher
+  for i, experiment in experiments_to_shift:
+    start_number = _next_epoch(maximum_batch_number)
+    range_width = experiment.scan.get_image_range()[1]-experiment.scan.get_image_range()[0]+1
+    end_number = start_number + range_width - 1
+    batch_offsets[i] = start_number - experiment.scan.get_image_range()[0]
+    maximum_batch_number = end_number
+    experiment.scan.set_batch_offset(batch_offsets[i])
+
+  return batch_offsets
+
+def _next_epoch(val):
+  from math import ceil, floor, log
+  """Find a reasonably round epoch a small number above an existing one.
+
+  Examples: 130-138     => 140
+            139         => 150
+            1234        => 1300
+            19999-20998 => 21000
+  """
+
+  # Find the order of magnitude-1 (minimum: 1 as want no fractional values)
+  small_magnitude = 10**max(1, int(floor(log(val, 10))-1))
+  # How many units of this we have (float cast for __division__ insensitivity)
+  mag_multiple = int(ceil(val / float(small_magnitude)))
+  epoch = small_magnitude * mag_multiple
+  # If this would give a consecutive number then offset it by a magnitude step
+  if epoch <= val + 1:
+    epoch = small_magnitude * (mag_multiple+1)
+  return epoch

@@ -100,6 +100,12 @@ def DialsSymmetry(DriverType = None):
     def set_output_reflections_filename(self, reflections_filename):
       self._output_reflections_filename = reflections_filename
 
+    def get_output_reflections_filename(self):
+      return self._output_reflections_filename
+
+    def get_output_experiments_filename(self):
+      return self._output_experiments_filename
+
     def set_json(self, json):
       self._json = json
 
@@ -149,11 +155,16 @@ def DialsSymmetry(DriverType = None):
           self.add_command_line("'%s'" % exp)
         for refl in self._reflections_filenames:
           self.add_command_line("'%s'" % refl)
-        if self._output_experiments_filename is not None:
-          self.add_command_line(
-            "output.experiments='%s'" % self._output_experiments_filename)
-          self.add_command_line(
-            "output.reflections='%s'" % self._output_reflections_filename)
+
+        if not self._output_experiments_filename:
+          self._output_experiments_filename = os.path.join(
+            self.get_working_directory(), '%d_reindexed_experiments.json' % self.get_xpid())
+        if not self._output_reflections_filename:
+          self._output_reflections_filename = os.path.join(
+            self.get_working_directory(), '%d_reindexed_reflections.pickle' % self.get_xpid())
+
+        self.add_command_line("output.experiments='%s'" % self._output_experiments_filename)
+        self.add_command_line("output.reflections='%s'" % self._output_reflections_filename)
 
       self.add_command_line('relative_length_tolerance=%s' % self._relative_length_tolerance)
       self.add_command_line('absolute_angle_tolerance=%s' % self._absolute_angle_tolerance)
