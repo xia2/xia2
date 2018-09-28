@@ -76,6 +76,8 @@ class separate_unmerged(object):
       run_start = unique_batches[0]
       for i, batch in enumerate(unique_batches):
         if last_batch is not None and batch > (last_batch + 1) or (i+1) == len(unique_batches):
+          if (i+1) == len(unique_batches):
+            last_batch += 1
           batch_sel = (batches_all.data() >= run_start) & (batches_all.data() <= last_batch)
           batches[run_id] = batches_all.select(batch_sel)
           intensities[run_id] = unmerged_intensities.select(batch_sel)

@@ -7,13 +7,12 @@ import mock
 import pytest
 from libtbx.test_utils import approx_equal
 
-def exercise_xds_integrater(xia2_regression_build, tmp_dir, nproc=None):
+def exercise_xds_integrater(regression_data, tmp_dir, nproc=None):
   if nproc:
     from xia2.Handlers.Phil import PhilIndex
     PhilIndex.params.xia2.settings.multiprocessing.nproc = nproc
 
-  xia2_demo_data = os.path.join(xia2_regression_build, "test_data", "insulin")
-  template = os.path.join(xia2_demo_data, "insulin_1_###.img")
+  template = regression_data('insulin').join("insulin_1_###.img").strpath
 
   from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
   from xia2.Modules.Integrater.XDSIntegrater import XDSIntegrater
@@ -106,7 +105,6 @@ def exercise_xds_integrater(xia2_regression_build, tmp_dir, nproc=None):
   assert approx_equal(mtz_object.n_reflections(), 50100, eps=400)
 
 @pytest.mark.slow
-def test_xds_integrater_serial(ccp4, xia2_regression_build, tmpdir):
-  with tmpdir.as_cwd():
-    with mock.patch.object(sys, 'argv', []):
-      exercise_xds_integrater(xia2_regression_build, tmpdir.strpath, nproc=1)
+def test_xds_integrater_serial(ccp4, regression_data, run_in_tmpdir):
+  with mock.patch.object(sys, 'argv', []):
+    exercise_xds_integrater(regression_data, run_in_tmpdir.strpath, nproc=1)

@@ -10,11 +10,11 @@ from xia2.Experts.FindImages import image2template_directory
 from xia2.Wrappers.Mosflm.MosflmIndex import MosflmIndex
 from xia2.Wrappers.Mosflm.MosflmRefineCell import MosflmRefineCell
 
-def get_template_and_directory(xia2_regression_build):
-  xia2_demo_data = os.path.join(xia2_regression_build, "test_data", "insulin")
-  template = os.path.join(xia2_demo_data, "insulin_1_%03i.img")
+def get_template_and_directory(regression_data):
+  xia2_demo_data = regression_data('insulin')
+  template = xia2_demo_data.join("insulin_1_%03i.img").strpath
   with mock.patch.object(sys, 'argv', []):
-    return image2template_directory(template %1)
+    return image2template_directory(template % 1)
 
 two_images_indexing = {
   'beam_centre': (94.33, 94.58),
@@ -22,9 +22,8 @@ two_images_indexing = {
 }
 
 @pytest.mark.slow
-def test_index_two_images_with_mosflm(ccp4, xia2_regression_build, tmpdir):
-  tmpdir.chdir()
-  templ, directory = get_template_and_directory(xia2_regression_build)
+def test_index_two_images_with_mosflm(ccp4, regression_data, run_in_tmpdir):
+  templ, directory = get_template_and_directory(regression_data)
 
   # exercise basic indexing from two images
   indexer = MosflmIndex()
@@ -46,9 +45,8 @@ def test_index_two_images_with_mosflm(ccp4, xia2_regression_build, tmpdir):
 
 @pytest.mark.slow
 @pytest.mark.xfail(reason='broken on CCP4 > 7.0.53')
-def test_indexing_multiple_images_with_mosflm(ccp4, xia2_regression_build, tmpdir):
-  tmpdir.chdir()
-  templ, directory = get_template_and_directory(xia2_regression_build)
+def test_indexing_multiple_images_with_mosflm(ccp4, regression_data, run_in_tmpdir):
+  templ, directory = get_template_and_directory(regression_data)
 
   # now exercise indexing off multiple images and test more settings
   indexer = MosflmIndex()
@@ -72,9 +70,8 @@ def test_indexing_multiple_images_with_mosflm(ccp4, xia2_regression_build, tmpdi
   assert indexer.get_lattice() == 'cI'
 
 @pytest.mark.slow
-def test_mosflm_refine_cell(ccp4, xia2_regression_build, tmpdir):
-  tmpdir.chdir()
-  templ, directory = get_template_and_directory(xia2_regression_build)
+def test_mosflm_refine_cell(ccp4, regression_data, run_in_tmpdir):
+  templ, directory = get_template_and_directory(regression_data)
 
   matrix = ''' -0.00728371 -0.00173706 -0.00994261
   0.01008485 -0.00175152 -0.00708190
@@ -86,7 +83,7 @@ def test_mosflm_refine_cell(ccp4, xia2_regression_build, tmpdir):
      78.6541     78.6541     78.6542     90.0000     90.0000     90.0000
        0.000       0.000       0.000
 SYMM I23       \n'''
-  tmpdir.join('xiaindex.mat').write(matrix)
+  run_in_tmpdir.join('xiaindex.mat').write(matrix)
 
   refiner = MosflmRefineCell()
   refiner.set_images(((1,3), (21,23), (43,45)))

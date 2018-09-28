@@ -1,6 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-import os
 import pytest
 from cctbx.array_family import flex
 from cctbx import sgtbx
@@ -19,8 +18,8 @@ def test_observations():
   assert list(groups[(1,2,3)].iplus()) == [0]
   assert list(groups[(1,2,3)].iminus()) == [1,2]
 
-def test_accumulators(xia2_regression):
-  f = os.path.join(xia2_regression, "test/insulin_dials_scaled_unmerged.mtz")
+def test_accumulators(regression_data):
+  f = regression_data('pychef').join("insulin_dials_scaled_unmerged.mtz").strpath
   reader = any_reflection_file(f)
   assert reader.file_type() == 'ccp4_mtz'
   arrays = reader.as_miller_arrays(merge_equivalents=False)

@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 from cctbx.array_family import flex
 from libtbx import phil
 from xia2.Modules.PyChef import dose_phil_str
+from xia2.Modules.MultiCrystalAnalysis import batch_phil_scope
 
 phil_scope = phil.parse("""\
 d_min = None
@@ -42,7 +43,8 @@ xtriage_analysis = True
   .type = bool
 include_radiation_damage = True
   .type = bool
-""" % dose_phil_str)
+%s
+""" % (dose_phil_str, batch_phil_scope))
 
 class batch_binned_data(object):
   def __init__(self, batches, data, data_fmt=None):

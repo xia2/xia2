@@ -418,6 +418,7 @@ class SweepInformation(object):
     self._image_to_dose = { }
 
     self._reflections = None
+    self._experiments = None
 
   def to_dict(self):
     obj = {}
@@ -518,6 +519,12 @@ class SweepInformation(object):
 
   def set_reflections(self, reflections):
     self._reflections = reflections
+
+  def set_experiments(self, experiments):
+    self._experiments = experiments
+
+  def get_experiments(self):
+    return self._experiments
 
 class SweepInformationHandler(object):
   def __init__(self, epoch_to_integrater):

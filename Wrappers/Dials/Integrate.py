@@ -133,7 +133,7 @@ def Integrate(DriverType = None):
       self._integrated_reflections = os.path.join(
         self.get_working_directory(), '%d_integrated.pickle' %self.get_xpid())
       self._integrated_experiments = os.path.join(
-        self.get_working_directory(), '%d_integrated_experiments.json' %self.get_xpid())
+        self.get_working_directory(), '%d_integrated_experiments.json' % self.get_xpid())
       self._integration_report_filename = os.path.join(
         self.get_working_directory(), '%d_integration_report.json' %self.get_xpid())
       self.add_command_line('output.experiments=%s' % self._integrated_experiments)

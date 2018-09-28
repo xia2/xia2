@@ -1,6 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-import glob
 import os
 
 import pytest
@@ -11,31 +10,16 @@ def cmd_exists(cmd):
   return subprocess.call('type ' + cmd, shell=True,
     stdout=subprocess.PIPE, stderr=subprocess.PIPE) == 0
 
-def test_blend_wrapper(ccp4, xia2_regression_build, tmpdir):
+def test_blend_wrapper(ccp4, regression_data, run_in_tmpdir):
   if not cmd_exists('blend'):
     pytest.skip('blend not available')
-
-  tmp_dir = tmpdir.strpath
-  os.chdir(tmp_dir)
-
-  blend_tutorial_dir = os.path.join(xia2_regression_build, 'blend_tutorial')
-  tar_gz = os.path.join(blend_tutorial_dir, 'data02.tgz')
-  import tarfile
-  tar = tarfile.open(tar_gz, "r:gz")
-  for tarinfo in tar:
-    if tarinfo.isreg():
-      # extract the file
-      print("Extracting", tarinfo.name)
-      tar.extract(tarinfo, path=tmp_dir)
-  tar.close()
-
-  g = sorted(glob.glob(os.path.join(tmp_dir, 'data', 'lysozyme', 'dataset_*.mtz')))
 
   from xia2.Wrappers.CCP4.Blend import Blend
 
   b = Blend()
-  for f in g:
-    b.add_hklin(f)
+  for f in regression_data('blend_tutorial').listdir(sort=True):
+    if f.ext == '.mtz':
+      b.add_hklin(f.strpath)
   b.analysis()
 
   #print("".join(b.get_all_output()))
@@ -48,7 +32,7 @@ def test_blend_wrapper(ccp4, xia2_regression_build, tmpdir):
   assert analysis[1] == {
     'start_image': 1, 'radiation_damage_cutoff': 50, 'd_min': 1.739,
     'final_image': 50,
-    'input_file': os.path.join(tmp_dir, 'data', 'lysozyme', 'dataset_001.mtz')
+    'input_file': regression_data('blend_tutorial').join('dataset_001.mtz').strpath
   }, analysis[1]
 
   assert summary.keys() == range(1, 29)

@@ -44,6 +44,71 @@ class xtriage_output(printed_output):
     self._out_orig.flush()
 
 
+class batch_manager(object):
+  def __init__(self, batches, batch_params):
+    self.batch_params = batch_params
+    self.batch_params.sort(key=lambda b: b.range[0])
+    self.batches = batches
+    self.reduced_batches, self._batch_increments = self._reduce()
+
+  def _reduce(self):
+    reduced_batches = flex.int(self.batches)
+    batch_increments = []
+    incr = 0
+    for batch in self.batch_params:
+      sel = (reduced_batches >= batch.range[0]) & (reduced_batches <= batch.range[1])
+      reduced_batches.set_selected(sel, reduced_batches.select(sel) - (batch.range[0]-incr) + 1)
+      batch_increments.append(incr)
+      incr += batch.range[1] - batch.range[0] + 1
+    assert len(set(reduced_batches)) == len(reduced_batches)
+    return list(reduced_batches), batch_increments
+
+  def batch_plot_shapes_and_annotations(self):
+    light_grey = '#d3d3d3'
+    grey = '#808080'
+    shapes = []
+    annotations = []
+    batches = flex.int(self.batches)
+    text = flex.std_string(batches.size())
+    for i, batch in enumerate(self.batch_params):
+      fillcolor = [light_grey, grey][i%2] # alternate colours
+      shapes.append({
+        'type': 'rect',
+        # x-reference is assigned to the x-values
+        'xref': 'x',
+        # y-reference is assigned to the plot paper [0,1]
+        'yref': 'paper',
+        'x0': self._batch_increments[i],
+        'y0': 0,
+        'x1': self._batch_increments[i] + (batch.range[1] - batch.range[0]),
+        'y1': 1,
+        'fillcolor': fillcolor,
+        'opacity': 0.2,
+        'line': {
+          'width': 0
+        }
+      })
+      annotations.append({
+        # x-reference is assigned to the x-values
+        'xref': 'x',
+        # y-reference is assigned to the plot paper [0,1]
+        'yref': 'paper',
+        'x': self._batch_increments[i] + (batch.range[1] - batch.range[0])/2,
+        'y': 1,
+        'text': '%s' % batch.id,
+        'showarrow': False,
+        'yshift': 20,
+        #'arrowhead': 7,
+        #'ax': 0,
+        #'ay': -40
+      })
+      sel = (batches >= batch.range[0]) & (batches <= batch.range[1])
+      text.set_selected(sel, flex.std_string(
+        ['%s: %s' % (batch.id, j - batch.range[0] + 1)
+         for j in batches.select(sel)]))
+    return shapes, annotations, list(text)
+
+
 class xia2_report(object):
 
   def __init__(self, unmerged_mtz, params, base_dir=None):
@@ -89,6 +154,17 @@ class xia2_report(object):
       indices=self.indices, info=self.intensities.info())
     self.batches = self.batches.customized_copy(
       indices=self.indices, info=self.batches.info())
+
+    if len(self.params.batch) == 0:
+      from xia2.Modules.MultiCrystalAnalysis import separate_unmerged
+      separate = separate_unmerged(
+        self.intensities, self.batches)
+      scope = phil.parse(batch_phil_scope)
+      for i, batches in separate.batches.iteritems():
+        batch_params = scope.extract().batch[0]
+        batch_params.id = i
+        batch_params.range = (flex.min(batches.data()), flex.max(batches.data()))
+        self.params.batch.append(batch_params)
 
     self._compute_merging_stats()
 
@@ -306,17 +382,16 @@ class xia2_report(object):
 
   def i_over_sig_i_vs_batch_plot(self):
 
-    from xia2.Modules.PyChef import remove_batch_gaps
-    new_batch_data = remove_batch_gaps(self.batches.data())
-    new_batches = self.batches.customized_copy(data=new_batch_data)
-
-    result = i_sig_i_vs_batch(self.intensities, new_batches)
+    result = i_sig_i_vs_batch(self.intensities, self.batches)
+    bm = batch_manager(result.batches, self.params.batch)
+    reduced_batches = bm.reduced_batches
+    shapes, annotations, text = bm.batch_plot_shapes_and_annotations()
 
     return {
       'i_over_sig_i_vs_batch': {
         'data': [
           {
-            'x': result.batches,
+            'x': reduced_batches,
             'y': result.data,
             'type': 'scatter',
             'name': 'I/sigI vs batch',
@@ -330,6 +405,8 @@ class xia2_report(object):
             'title': '<I/sig(I)>',
             'rangemode': 'tozero'
           },
+          'shapes': shapes,
+          'annotations': annotations,
         },
       }
     }
@@ -426,30 +503,32 @@ higher resolution. A typical resolution cutoff based on CC1/2 is around 0.3-0.5.
 
   def scale_rmerge_vs_batch_plot(self):
 
-    from xia2.Modules.PyChef import remove_batch_gaps
-    new_batch_data = remove_batch_gaps(self.batches.data())
-    new_batches = self.batches.customized_copy(data=new_batch_data)
     if self.scales is not None:
-      sc_vs_b = scales_vs_batch(self.scales, new_batches)
-    rmerge_vs_b = rmerge_vs_batch(self.intensities, new_batches)
+      sc_vs_b = scales_vs_batch(self.scales, self.batches)
+    rmerge_vs_b = rmerge_vs_batch(self.intensities, self.batches)
+    bm = batch_manager(rmerge_vs_b.batches, self.params.batch)
+    reduced_batches = bm.reduced_batches
+    shapes, annotations, text = bm.batch_plot_shapes_and_annotations()
 
     return {
       'scale_rmerge_vs_batch': {
         'data': [
           ({
-            'x': sc_vs_b.batches,
+            'x': reduced_batches,
             'y': sc_vs_b.data,
             'type': 'scatter',
             'name': 'Scale',
             'opacity': 0.75,
+            'text': text,
           } if self.scales is not None else {}),
           {
-            'x': rmerge_vs_b.batches,
+            'x': reduced_batches,
             'y': rmerge_vs_b.data,
             'yaxis': 'y2',
             'type': 'scatter',
             'name': 'Rmerge',
             'opacity': 0.75,
+            'text': text,
           },
         ],
         'layout': {
@@ -464,7 +543,9 @@ higher resolution. A typical resolution cutoff based on CC1/2 is around 0.3-0.5.
             'overlaying': 'y',
             'side': 'right',
             'rangemode': 'tozero'
-          }
+          },
+          'shapes': shapes,
+          'annotations': annotations,
         },
       }
     }

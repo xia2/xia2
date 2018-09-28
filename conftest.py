@@ -9,41 +9,15 @@ import os
 import re
 
 import procrunner
-import py.path
 import pytest
-from dials.conftest import (dials_regression, xia2_regression,
-                            xia2_regression_build, run_in_tmpdir)
+from dials.conftest import run_in_tmpdir
 
 def pytest_addoption(parser):
-  '''Add '--runslow' and '--regression' options to pytest.'''
-  parser.addoption("--runslow", action="store_true", default=False,
-                   help="run slow tests")
+  '''Tests that use regression_data will not be run unless '--regression' is
+     given as command line parameter.
+  '''
   parser.addoption("--regression", action="store_true", default=False,
                    help="run regression tests")
-  parser.addoption("--regression-only", action="store_true", default=False,
-                   help="run only regression tests")
-
-def pytest_collection_modifyitems(config, items):
-  '''Tests marked as slow will not be run unless slow tests are enabled with
-     the '--runslow' parameter or the test is selected specifically. The
-     latter allows running slow tests via the libtbx compatibility layer.
-     Tests marked as regression are only run with --regression.
-  '''
-  if not config.getoption("--runslow") and len(items) > 1 and not config.getoption("--regression"):
-    skip_slow = pytest.mark.skip(reason="need --runslow option to run")
-    for item in items:
-      if "slow" in item.keywords:
-        item.add_marker(skip_slow)
-  if config.getoption("--regression-only"):
-    skip_regression = pytest.mark.skip(reason="Test only runs without --regression-only")
-    for item in items:
-      if "regression" not in item.keywords:
-        item.add_marker(skip_regression)
-  elif not config.getoption("--regression"):
-    skip_regression = pytest.mark.skip(reason="Test only runs with --regression")
-    for item in items:
-      if "regression" in item.keywords:
-        item.add_marker(skip_regression)
 
 @pytest.fixture(scope="session")
 def ccp4():
@@ -86,12 +60,15 @@ def xds():
   }
 
 @pytest.fixture(scope="session")
-def regression_data():
+def regression_data(request):
   '''Return the location of a regression data set as py.path object.
      Download the files if they are not on disk already.
      Skip the test if the data can not be downloaded.
   '''
-  dls_dir = '/dls/science/groups/scisoft/DIALS/repositories/current/xia2_regression_data'
+  if not request.config.getoption("--regression"):
+    pytest.skip("Test requires --regression option to run.")
+
+  dls_dir = '/dls/science/groups/scisoft/DIALS/regression_data'
   read_only = False
   if os.getenv('REGRESSIONDATA'):
     target_dir = os.getenv('REGRESSIONDATA')
@@ -99,22 +76,18 @@ def regression_data():
     target_dir = dls_dir
     read_only = True
   elif os.getenv('LIBTBX_BUILD'):
-    target_dir = os.path.join(os.getenv('LIBTBX_BUILD'), 'xia2_regression')
+    target_dir = os.path.join(os.getenv('LIBTBX_BUILD'), 'regression_data')
   else:
     pytest.skip('Can not determine regression data location. Use environment variable REGRESSIONDATA')
 
-  from xia2.Test.fetch_test_data import download_lock, fetch_test_data
-  class DataFetcher():
-    _cache = {}
-    def __call__(self, test_data):
-      if test_data not in self._cache:
-        with download_lock(target_dir):
-          self._cache[test_data] = fetch_test_data(target_dir, pre_scan=True, file_group=test_data, read_only=read_only)
-          self._cache[test_data] = str(self._cache[test_data]) # https://github.com/cctbx/cctbx_project/issues/234
-      if not self._cache[test_data]:
-        pytest.skip('Automated download of test data failed. Run xia2.fetch_test_data')
-      return py.path.local(self._cache[test_data])
-    def __repr__(self):
-      return "<%sDataFetcher: %s>" % ('R/O ' if read_only else '', target_dir)
-
-  return DataFetcher()
+  import dials.util.regression_data
+  df = dials.util.regression_data.DataFetcher(target_dir, read_only=read_only)
+  def skip_test_if_lookup_failed(result):
+    if not result:
+      if read_only:
+        pytest.skip('Regression data is required to run this test. Run with --regression or run dials.fetch_test_data')
+      else:
+        pytest.skip('Automated download of test data failed. Run dials.fetch_test_data')
+    return result
+  setattr(df, 'result_filter', skip_test_if_lookup_failed)
+  return df

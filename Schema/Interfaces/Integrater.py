@@ -103,6 +103,8 @@ class Integrater(FrameProcessor):
     # the output reflections
     self._intgr_hklout_raw = None
     self._intgr_hklout = None
+    self._output_format = 'hkl' #'hkl' or 'pickle', if pickle then self._intgr_hklout
+    # returns a refl table.
 
     # a place to store the project, crystal, wavelength, sweep information
     # to interface with the scaling...
@@ -575,19 +577,21 @@ class Integrater(FrameProcessor):
           self._integrater_reset()
 
       self.set_integrater_finish_done(True)
-
       try:
         # allow for the fact that postrefinement may be used
         # to reject the lattice...
-
         self._intgr_hklout = self._integrate_finish()
 
       except BadLatticeError as e:
         Chatter.write('Bad Lattice Error: %s' % str(e))
         self._intgr_refiner.eliminate()
         self._integrater_reset()
-
     return self._intgr_hklout
+
+  def set_output_format(self, output_format='hkl'):
+    Debug.write('setting integrator output format to %s' % output_format)
+    assert output_format in ['hkl', 'pickle']
+    self._output_format = output_format
 
   def get_integrater_indexer(self):
     return self._intgr_indexer
@@ -640,7 +644,6 @@ class Integrater(FrameProcessor):
 
     # certainly should wipe the reindexing operation! erp! only
     # if the spacegroup number is DIFFERENT
-
     if spacegroup_number == self._intgr_spacegroup_number:
       return
 
@@ -648,6 +651,7 @@ class Integrater(FrameProcessor):
     self._intgr_reindex_matrix = None
 
     self._intgr_spacegroup_number = spacegroup_number
+
     self.set_integrater_finish_done(False)
 
   def get_integrater_spacegroup_number(self):
