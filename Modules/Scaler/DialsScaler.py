@@ -23,6 +23,7 @@ from xia2.Wrappers.Dials.SplitExperiments import SplitExperiments
 from xia2.Handlers.Syminfo import Syminfo
 from dxtbx.serialize import load
 from dials.util.batch_handling import calculate_batch_offsets
+from cctbx import sgtbx
 
 def clean_reindex_operator(reindex_operator):
   return reindex_operator.replace('[', '').replace(']', '')
@@ -280,6 +281,10 @@ class DialsScaler(Scaler):
             Chatter.write('Lattice %s assigned for sweep %s' % \
                           (correct_lattice, sname))
             need_to_return = True
+
+        self._correct_lattice = correct_lattice
+      else:
+        self._correct_lattice = lattices[0]
       # END OF if multiple-lattices
       #SUMMARY - forced all lattices to be same and hope its okay.
     # END OF if more than one epoch
@@ -291,6 +296,7 @@ class DialsScaler(Scaler):
       self.set_scaler_done(False)
       self.set_scaler_prepare_done(False)
       return
+
 
     # ---------- REINDEX ALL DATA TO CORRECT POINTGROUP ----------
 
@@ -438,6 +444,9 @@ class DialsScaler(Scaler):
     # SUMMARY - Have handled if different pointgroups & chosen an overall_pointgroup
     # which is the lowest symmetry
     self._scalr_likely_spacegroups = [overall_pointgroup]
+    from cctbx.sgtbx import bravais_types
+    sginfo = sgtbx.space_group_info(symbol=overall_pointgroup)
+    self._correct_lattice = bravais_types.bravais_lattice(group=sginfo.group())
     Chatter.write('Likely pointgroup determined by dials.symmetry:')
     for spag in self._scalr_likely_spacegroups:
       Chatter.write('%s' % spag)
@@ -557,62 +566,64 @@ class DialsScaler(Scaler):
 
       # ---------- REINDEX TO CORRECT (REFERENCE) SETTING ----------
       Chatter.write('Reindexing all datasets to common reference')
-      counter = 0
+      counter = 1
+      first = self._sweep_handler.get_epochs()[0]
       for epoch in self._sweep_handler.get_epochs():
-        reindexed_exp_fpath = os.path.join(self.get_working_directory(),
-          str(counter) + '_reindexed_experiments.json')
-        reindexed_refl_fpath = os.path.join(self.get_working_directory(),
-          str(counter) + '_reindexed_reflections.pickle')
+        if epoch != first:
+          reindexed_exp_fpath = os.path.join(self.get_working_directory(),
+            str(counter) + '_reindexed_experiments.json')
+          reindexed_refl_fpath = os.path.join(self.get_working_directory(),
+            str(counter) + '_reindexed_reflections.pickle')
 
-        # if we are working with unified UB matrix then this should not
-        # be a problem here (note, *if*; *should*)
+          # if we are working with unified UB matrix then this should not
+          # be a problem here (note, *if*; *should*)
 
-        # what about e.g. alternative P1 settings?
-        # see JIRA MXSW-904
-        if PhilIndex.params.xia2.settings.unify_setting:
-          continue
+          # what about e.g. alternative P1 settings?
+          # see JIRA MXSW-904
+          if PhilIndex.params.xia2.settings.unify_setting:
+            continue
 
-        reindexer = DialsReindex()
-        reindexer.set_working_directory(self.get_working_directory())
-        auto_logfiler(reindexer)
+          reindexer = DialsReindex()
+          reindexer.set_working_directory(self.get_working_directory())
+          auto_logfiler(reindexer)
 
-        si = self._sweep_handler.get_sweep_information(epoch)
-        exp = si.get_experiments()
-        refl = si.get_reflections()
+          si = self._sweep_handler.get_sweep_information(epoch)
+          exp = si.get_experiments()
+          refl = si.get_reflections()
 
-        reindexer.set_reference_filename(self._reference_experiments)
-        reindexer.set_reference_reflections(self._reference_reflections)
-        reindexer.set_indexed_filename(refl)
-        reindexer.set_experiments_filename(exp)
-        reindexer.set_reindexed_experiments_filename(reindexed_exp_fpath)
-        reindexer.set_reindexed_reflections_filename(reindexed_refl_fpath)
+          reindexer.set_reference_filename(self._reference_experiments)
+          reindexer.set_reference_reflections(self._reference_reflections)
+          reindexer.set_indexed_filename(refl)
+          reindexer.set_experiments_filename(exp)
+          reindexer.set_reindexed_experiments_filename(reindexed_exp_fpath)
+          reindexer.set_reindexed_reflections_filename(reindexed_refl_fpath)
 
-        reindexer.run()
+          reindexer.run()
 
-        si.set_reflections(reindexed_refl_fpath)
-        si.set_experiments(reindexed_exp_fpath)
+          si.set_reflections(reindexed_refl_fpath)
+          si.set_experiments(reindexed_exp_fpath)
 
-        FileHandler.record_temporary_file(reindexed_exp_fpath)
-        FileHandler.record_temporary_file(reindexed_refl_fpath)
+          FileHandler.record_temporary_file(reindexed_exp_fpath)
+          FileHandler.record_temporary_file(reindexed_refl_fpath)
 
-        Debug.write('Completed reindexing of %s' % ' '.join([exp, refl]))
+          Debug.write('Completed reindexing of %s' % ' '.join([exp, refl]))
 
-        # FIXME how to get some indication of the reindexing used?
+          # FIXME how to get some indication of the reindexing used?
 
-        counter += 1
-        exp = load.experiment_list(reindexed_exp_fpath)
-        cell = exp[0].crystal.get_unit_cell().parameters()
+          counter += 1
+          exp = load.experiment_list(reindexed_exp_fpath)
+          cell = exp[0].crystal.get_unit_cell().parameters()
 
-        # Note - no lattice check as this will already be caught by reindex
-        Debug.write('Cell: %.2f %.2f %.2f %.2f %.2f %.2f' % cell)
-        Debug.write('Ref:  %.2f %.2f %.2f %.2f %.2f %.2f' % reference_cell)
+          # Note - no lattice check as this will already be caught by reindex
+          Debug.write('Cell: %.2f %.2f %.2f %.2f %.2f %.2f' % cell)
+          Debug.write('Ref:  %.2f %.2f %.2f %.2f %.2f %.2f' % reference_cell)
 
-        for j in range(6):
-          if math.fabs((cell[j] - reference_cell[j]) /
-                       reference_cell[j]) > 0.1:
-            raise RuntimeError( \
-                  'unit cell parameters differ in %s and %s' % \
-                  (self._reference, si.get_reflections()))
+          for j in range(6):
+            if math.fabs((cell[j] - reference_cell[j]) /
+                        reference_cell[j]) > 0.1:
+              raise RuntimeError( \
+                    'unit cell parameters differ in %s and %s' % \
+                    (self._reference, si.get_reflections()))
 
     # Now all have been reindexed, run a round of space group determination on
     # joint set.
@@ -622,23 +633,6 @@ class DialsScaler(Scaler):
 
     # why was the next bit here before, as have already run dials.symmetry on
     # all data - was only setting self._scalr_likely_spacegroups?
-    '''epoch = self._sweep_handler.get_epochs()[0]
-
-    symmetry_analyser = DialsSymmetry()
-    symmetry_analyser.set_working_directory(self.get_working_directory())
-    auto_logfiler(symmetry_analyser)
-
-    si = self._sweep_handler.get_sweep_information(epoch)
-    exp = si.get_experiments()
-    refl = si.get_reflections()
-    symmetry_analyser.add_experiments(exp)
-    symmetry_analyser.add_reflections(refl)
-    symmetry_analyser.decide_pointgroup()
-    spacegroup = symmetry_analyser.get_pointgroup()
-    self._scalr_likely_spacegroups = [spacegroup] 
-    Chatter.write('Likely pointgroup determined by dials.symmetry:')
-    for spag in self._scalr_likely_spacegroups:
-      Chatter.write('%s' % spag)'''
 
     # should this now be passed back to integrater?
 
@@ -869,9 +863,9 @@ CC1/2: %.4f, Anomalous correlation %.4f""" % (
     refiner = si.get_integrater().get_integrater_refiner()
     point_group, reindex_op, need_to_return, probably_twinned,\
       reindexed_reflections, reindexed_experiments = self._helper.symmetry_indexer_multisweep(
-      [self._scaler.get_scaled_experiments()], [self._scaler.get_scaled_reflections()], [refiner])
+      [self._scaler.get_scaled_experiments()], [self._scaler.get_scaled_reflections()],\
+      [refiner], self._correct_lattice)
     Debug.write("Point group determined by dials.symmetry on scaled dataset: %s" % point_group)
-    from cctbx import sgtbx
     sginfo = sgtbx.space_group_info(symbol=point_group)
     patt_group = sginfo.group().build_derived_patterson_group().type().lookup_symbol()
     self._scaler_symmetry_check_count += 1
@@ -885,11 +879,11 @@ Data will be rescaled in new point group""" % (current_patt_group, patt_group))
     else:
       Chatter.write("Consistent space group determined before and after scaling")
 
-  def _symmetry_indexer_multisweep(self, experiments, reflections, refiners):
-    return self._helper.symmetry_indexer_multisweep(experiments, reflections, refiners)
+  def _symmetry_indexer_multisweep(self, experiments, reflections, refiners, correct_lattice=None):
+    return self._helper.symmetry_indexer_multisweep(experiments, reflections, refiners, correct_lattice)
 
-  def _dials_symmetry_indexer_jiffy(self, experiment, reflection, refiner):
-    return self._helper.dials_symmetry_indexer_jiffy(experiment, reflection, refiner)
+  def _dials_symmetry_indexer_jiffy(self, experiment, reflection, refiner, correct_lattice=None):
+    return self._helper.dials_symmetry_indexer_jiffy(experiment, reflection, refiner, correct_lattice)
 
 class DialsScalerHelper(object):
   '''A class to help the CCP4 Scaler along a little.'''
@@ -907,7 +901,7 @@ class DialsScalerHelper(object):
   def get_working_directory(self):
     return self._working_directory
 
-  def symmetry_indexer_multisweep(self, experiments, reflections, refiners):
+  def symmetry_indexer_multisweep(self, experiments, reflections, refiners, correct_lattice=None):
     '''A jiffy to centralise the interactions between dials.symmetry
     and the Indexer, multisweep edition.'''
     #FIXME dials.symmetry only uses the first datafile at the moment
@@ -932,7 +926,7 @@ class DialsScalerHelper(object):
 
     possible = symmetry_analyser.get_possible_lattices()
 
-    correct_lattice = None
+    #correct_lattice = None
 
     Debug.write('Possible lattices (dials.symmetry):')
 
@@ -992,7 +986,7 @@ class DialsScalerHelper(object):
     return pointgroup, reindex_op, need_to_return, probably_twinned,\
       reindexed_reflections, reindexed_experiments
 
-  def dials_symmetry_indexer_jiffy(self, experiment, reflection, refiner):
+  def dials_symmetry_indexer_jiffy(self, experiment, reflection, refiner, correct_lattice=None):
     '''A jiffy to centralise the interactions between pointless
     and the Indexer.'''
 
@@ -1014,7 +1008,7 @@ class DialsScalerHelper(object):
 
     possible = symmetry_analyser.get_possible_lattices()
 
-    correct_lattice = None
+    #correct_lattice = None
 
     Debug.write('Possible lattices (dials.symmetry):')
 
