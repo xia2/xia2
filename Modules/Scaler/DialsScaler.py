@@ -40,6 +40,7 @@ class DialsScaler(Scaler):
     self._reference_reflections = None
     self._reference_experiments = None
     self._no_times_scaled = 0
+    self._scaler_symmetry_check_count = 0
 
   # Schema/Sweep.py wants these two methods need to be implemented by subclasses,
   # but are not actually used at the moment?
@@ -646,7 +647,6 @@ class DialsScaler(Scaler):
   def _scale(self):
     '''Perform all of the operations required to deliver the scaled
     data.'''
-
     epochs = self._sweep_handler.get_epochs()
 
     if self._scalr_corrections:
@@ -724,6 +724,7 @@ class DialsScaler(Scaler):
                             sc.get_log_file())
     sc.scale()
 
+
     FileHandler.record_data_file(scaled_unmerged_mtz_path)
     FileHandler.record_data_file(scaled_mtz_path)
 
@@ -732,8 +733,14 @@ class DialsScaler(Scaler):
     # scaling resumes from where it left off.
     self._scaler.clear_datafiles()
 
-    # Run twotheta refine
-    self._update_scaled_unit_cell()
+    self._determine_scaled_pointgroup()
+
+    if self._scalr_done is False:
+      if self._scaler_symmetry_check_count > 4:
+        Chatter.write("""Scaling symmetry check and rescale appears unstable,
+No further scaling will be performed.""")
+      else:
+        return
 
     hklout = copy.deepcopy(self._scaler.get_scaled_mtz())
     self._scalr_scaled_refl_files = {dname : hklout}
@@ -823,6 +830,58 @@ class DialsScaler(Scaler):
           selected_band=(highest_suggested_resolution, None), wave=key)
         self._scalr_statistics[
           (self._scalr_pname, self._scalr_xname, key)] = stats #adds here
+        Chatter.write("""Short summary of current overall merging statistics:
+Resolution limits: %.2f, %.2f
+Total observations/unique: %s, %s""" % (
+          stats['High resolution limit'][0], stats['Low resolution limit'][0],
+          stats['Total observations'][0], stats['Total unique'][0]))
+        if PhilIndex.params.xia2.settings.small_molecule:
+          try:
+            Chatter.write("Rmerge: %.4f, Rmeas: %.4f, Rpim: %.4f, CC1/2: %.4f)" % (
+              stats['Rmerge(I)'][0], stats['Rmeas(I)'][0],
+              stats['Rpim(I)'][0], stats['CC half'][0]))
+          except (KeyError, IndexError):
+            pass
+        else:
+          try:
+            Chatter.write("""Rmerge (I+/-): %.4f, Rmeas (I+/-): %.4f, Rpim (I+/-): %.4f
+CC1/2: %.4f, Anomalous correlation %.4f""" % (
+              stats['Rmerge(I+/-)'][0], stats['Rmeas(I+/-)'][0], stats['Rpim(I+/-)'][0],\
+              stats['CC half'][0], stats['Anomalous correlation'][0]))
+          except (KeyError, IndexError):
+            pass
+
+    if self._scalr_done is False:
+      return
+
+    # Run twotheta refine
+    self._update_scaled_unit_cell()
+
+  def _determine_scaled_pointgroup(self):
+    """Rerun symmetry after scaling to check for consistent space group. If not,
+    then new space group should be used and data rescaled."""
+
+    current_pointgroup = load.experiment_list(self._scaler.get_scaled_experiments()
+      )[0].crystal.get_space_group()
+    Debug.write("Space group used in scaling: %s" % current_pointgroup.type().lookup_symbol())
+    first = self._sweep_handler.get_epochs()[0]
+    si = self._sweep_handler.get_sweep_information(first)
+    refiner = si.get_integrater().get_integrater_refiner()
+    patt_group, reindex_op, need_to_return, probably_twinned,\
+      reindexed_reflections, reindexed_experiments = self._helper.symmetry_indexer_multisweep(
+      [self._scaler.get_scaled_experiments()], [self._scaler.get_scaled_reflections()], [refiner])
+    Debug.write("Point group determined by dials.symmetry on scaled dataset: %s" % patt_group)
+    current_patt_group = current_pointgroup.build_derived_patterson_group().type().lookup_symbol()
+    self._scaler_symmetry_check_count += 1
+    if patt_group != current_patt_group:
+      self._scaler.set_scaled_experiments(reindexed_experiments)
+      self._scaler.set_scaled_reflections(reindexed_reflections)
+      self.set_scaler_done(False)
+      Chatter.write("""Inconsistent space groups determined before and after scaling: %s, %s \n
+Data will be rescaled in new point group""" % (current_patt_group, patt_group))
+      return
+    else:
+      Chatter.write("Consistent space group determined before and after scaling")
 
   def _symmetry_indexer_multisweep(self, experiments, reflections, refiners):
     return self._helper.symmetry_indexer_multisweep(experiments, reflections, refiners)
