@@ -822,7 +822,6 @@ No further scaling will be performed.""")
       Debug.write('Scaler highest resolution set to %5.2f' % \
                 highest_resolution)
 
-    # Adds merging statistics to be reported later in output - in log and html
     if PhilIndex.params.xia2.settings.merging_statistics.source == 'cctbx':
       for key in self._scalr_scaled_refl_files:
         stats = self._compute_scaler_statistics(
@@ -863,15 +862,18 @@ CC1/2: %.4f, Anomalous correlation %.4f""" % (
 
     current_pointgroup = load.experiment_list(self._scaler.get_scaled_experiments()
       )[0].crystal.get_space_group()
+    current_patt_group = current_pointgroup.build_derived_patterson_group().type().lookup_symbol()
     Debug.write("Space group used in scaling: %s" % current_pointgroup.type().lookup_symbol())
     first = self._sweep_handler.get_epochs()[0]
     si = self._sweep_handler.get_sweep_information(first)
     refiner = si.get_integrater().get_integrater_refiner()
-    patt_group, reindex_op, need_to_return, probably_twinned,\
+    point_group, reindex_op, need_to_return, probably_twinned,\
       reindexed_reflections, reindexed_experiments = self._helper.symmetry_indexer_multisweep(
       [self._scaler.get_scaled_experiments()], [self._scaler.get_scaled_reflections()], [refiner])
-    Debug.write("Point group determined by dials.symmetry on scaled dataset: %s" % patt_group)
-    current_patt_group = current_pointgroup.build_derived_patterson_group().type().lookup_symbol()
+    Debug.write("Point group determined by dials.symmetry on scaled dataset: %s" % point_group)
+    from cctbx import sgtbx
+    sginfo = sgtbx.space_group_info(symbol=point_group)
+    patt_group = sginfo.group().build_derived_patterson_group().type().lookup_symbol()
     self._scaler_symmetry_check_count += 1
     if patt_group != current_patt_group:
       self._scaler.set_scaled_experiments(reindexed_experiments)
