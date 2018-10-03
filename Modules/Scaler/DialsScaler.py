@@ -42,6 +42,7 @@ class DialsScaler(Scaler):
     self._reference_experiments = None
     self._no_times_scaled = 0
     self._scaler_symmetry_check_count = 0
+    self._correct_lattice = None
 
   # Schema/Sweep.py wants these two methods need to be implemented by subclasses,
   # but are not actually used at the moment?
@@ -925,7 +926,7 @@ class DialsScalerHelper(object):
     rerun_symmetry = False
 
     possible = symmetry_analyser.get_possible_lattices()
-
+    possible_sg = symmetry_analyser.get_likely_spacegroups()
     #correct_lattice = None
 
     Debug.write('Possible lattices (dials.symmetry):')
@@ -935,23 +936,40 @@ class DialsScalerHelper(object):
     # any of them contain the same indexer link, so all good here.
     refiner = refiners[0]
 
-    for lattice in possible:
-      state = refiner.set_refiner_asserted_lattice(lattice)
-      if state == refiner.LATTICE_CORRECT:
-        Debug.write('Agreed lattice %s' % lattice)
-        correct_lattice = lattice
-        break
+    # In a situation where the initial correct lattice has been found again
+    # Need to preempt the call to refiner.set_refiner_asserted_lattice in some
+    # situations e.g refined in oP lattice, symmetry says P1 because of bad
+    # rad damage, refiner is set to aP lattice, but then after scaling the
+    # best symmetry is back to orthorhombic - lattice is oP but fails the
+    # assertion. So need to first compare to the original'''
+    # ACTUALLY WANT TO TEST SUBLATTICES. Issue - no re-refinement
+    if correct_lattice:
+      from cctbx.sgtbx.subgroups import subgroups
+      subg = subgroups(correct_lattice.space_group.info()).groups_parent_setting()
+      subg_list = [s.type().lookup_symbol() for s in subg]
+      for sg in possible_sg:
+        if sg in subg_list:
+          Chatter.write('Space group %s consistent with initial lattice %s' %\
+            (sg, correct_lattice))
+          break
+    else:
+      for lattice in possible:
+        state = refiner.set_refiner_asserted_lattice(lattice)
+        if state == refiner.LATTICE_CORRECT:
+          Debug.write('Agreed lattice %s' % lattice)
+          correct_lattice = lattice
+          break
 
-      elif state == refiner.LATTICE_IMPOSSIBLE:
-        Debug.write('Rejected lattice %s' % lattice)
-        rerun_symmetry = True
-        continue
+        elif state == refiner.LATTICE_IMPOSSIBLE:
+          Debug.write('Rejected lattice %s' % lattice)
+          rerun_symmetry = True
+          continue
 
-      elif state == refiner.LATTICE_POSSIBLE:
-        Debug.write('Accepted lattice %s, will reprocess' % lattice)
-        need_to_return = True
-        correct_lattice = lattice
-        break
+        elif state == refiner.LATTICE_POSSIBLE:
+          Debug.write('Accepted lattice %s, will reprocess' % lattice)
+          need_to_return = True
+          correct_lattice = lattice
+          break
 
     if correct_lattice is None:
       correct_lattice = refiner.get_refiner_lattice()
