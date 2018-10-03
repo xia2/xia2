@@ -766,9 +766,19 @@ class MultiCrystalScale(object):
     from xia2.XIA2Version import Version
     from xia2.command_line.report import xia2_report
     from xia2.command_line.report import phil_scope as report_phil_scope
+    from xia2.Modules.MultiCrystalAnalysis import batch_phil_scope
     params = report_phil_scope.extract()
     params.prefix = 'multi-crystal'
     params.title = 'Multi crystal report'
+    params.batch = []
+
+    from libtbx import phil
+    scope = phil.parse(batch_phil_scope)
+    for expt in self._data_manager.experiments:
+      batch_params = scope.extract().batch[0]
+      batch_params.id = expt.identifier
+      batch_params.range = expt.scan.get_batch_range()
+      params.batch.append(batch_params)
 
     unmerged_mtz = self._scaled.scaled_unmerged_mtz
     report = xia2_report(unmerged_mtz, params, base_dir='.')
