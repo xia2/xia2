@@ -211,7 +211,7 @@ def DialsSymmetry(DriverType = None):
           netzc = score['z_cc_net']
           # record this as a possible lattice if its Z score is positive
           lattice = str(bravais_types.bravais_lattice(
-            group=sgtbx.space_group(str(best_solution['patterson_group']))))
+            group=patterson_group))
           if not lattice in self._possible_lattices:
             if netzc > 0.0:
               self._possible_lattices.append(lattice)
