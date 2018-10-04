@@ -68,26 +68,12 @@ def regression_data(request):
   if not request.config.getoption("--regression"):
     pytest.skip("Test requires --regression option to run.")
 
-  dls_dir = '/dls/science/groups/scisoft/DIALS/regression_data'
-  read_only = False
-  if os.getenv('REGRESSIONDATA'):
-    target_dir = os.getenv('REGRESSIONDATA')
-  elif os.path.exists(os.path.join(dls_dir, 'filelist.json')):
-    target_dir = dls_dir
-    read_only = True
-  elif os.getenv('LIBTBX_BUILD'):
-    target_dir = os.path.join(os.getenv('LIBTBX_BUILD'), 'regression_data')
-  else:
-    pytest.skip('Can not determine regression data location. Use environment variable REGRESSIONDATA')
-
   import dials.util.regression_data
-  df = dials.util.regression_data.DataFetcher(target_dir, read_only=read_only)
+  df = dials.util.regression_data.DataFetcher()
+
   def skip_test_if_lookup_failed(result):
     if not result:
-      if read_only:
-        pytest.skip('Regression data is required to run this test. Run with --regression or run dials.fetch_test_data')
-      else:
-        pytest.skip('Automated download of test data failed. Run dials.fetch_test_data')
+      pytest.skip('Automated download of test data failed. Run dials.fetch_test_data')
     return result
   setattr(df, 'result_filter', skip_test_if_lookup_failed)
   return df
