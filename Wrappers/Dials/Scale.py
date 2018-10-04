@@ -237,9 +237,9 @@ def DialsScale(DriverType=None,
         #self.input('bins 20')
 
       if self._intensities == 'summation':
-        self.add_command_line('integration_method=sum')
+        self.add_command_line('intensity_choice=sum')
       elif self._intensities == 'profile':
-        self.add_command_line('integration_method=profile')
+        self.add_command_line('intensity_choice=profile')
 
       self.add_command_line('model=%s' % self._model)
       self.add_command_line('full_matrix=%s' % self._full_matrix)

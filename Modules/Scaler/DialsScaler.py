@@ -734,6 +734,7 @@ class DialsScaler(Scaler):
       if self._scaler_symmetry_check_count > 4:
         Chatter.write("""Scaling symmetry check and rescale appears unstable,
 No further scaling will be performed.""")
+        self.set_scaler_done(True)
       else:
         return
 
