@@ -13,6 +13,7 @@ import xia2.Handlers.Files
 from cctbx.array_family import flex
 from mmtbx.scaling import printed_output
 from xia2.Modules.Analysis import *
+from dials.util.intensity_explorer import data_from_unmerged_mtz, IntensityDist
 
 class xtriage_output(printed_output):
 
@@ -173,6 +174,9 @@ class xia2_report(object):
 
     self.intensities.setup_binner(n_bins=self.params.resolution_bins)
     self.merged_intensities = self.intensities.merge_equivalents().array()
+
+    rtable, elist = data_from_unmerged_mtz(unmerged_mtz)
+    self.z_score_data = IntensityDist(rtable, elist).rtable
 
 
   def _compute_merging_stats(self):
@@ -915,6 +919,184 @@ higher resolution. A typical resolution cutoff based on CC1/2 is around 0.3-0.5.
 
     return pychef_stats.to_dict()
 
+  def z_score_hist(self):
+    """
+    Plot a histogram of z-scores.
+
+    :return: A dictionary describing a Plotly plot.
+    :rtype:`dict`
+    """
+
+    z_scores = self.z_score_data['intensity.z_score']
+    hist = flex.histogram(z_scores, -10, 10, 100)
+
+    return {
+      'z_score_histogram': {
+        'data'  : [{
+          'x'   : hist.slot_centers().as_numpy_array().tolist(),
+          'y'   : hist.slots().as_numpy_array().tolist(),
+          'type': 'bar',
+          'name': 'z_hist',
+        }],
+        'layout': {
+          'title' : 'Histogram of z-scores',
+          'xaxis' : {'title': 'z-score', 'range': [-10, 10]},
+          'yaxis' : {'title': 'Number of reflections'},
+          'bargap': 0,
+        },
+      },
+    }
+
+  def normal_probability_plot(self):
+    """
+    Display a normal probability plot of the z-scores of the intensities.
+
+    :return: A dictionary describing a Plotly plot.
+    :rtype:`dict`
+    """
+
+    z_scores = self.z_score_data['intensity.z_score']
+    osm = self.z_score_data['intensity.order_statistic_medians']
+
+    return {
+      'normal_probability_plot': {
+        'data'  : [{
+          'x'   : osm.as_numpy_array().tolist(),
+          'y'   : z_scores.as_numpy_array().tolist(),
+          'type': 'scattergl',
+          'mode': 'markers',
+          'name': 'Data',
+        },
+          {
+            'x'   : [-5, 5],
+            'y'   : [-5, 5],
+            'type': 'scatter',
+            'mode': 'lines',
+            'name': 'z = m',
+          }],
+        'layout': {
+          'title': 'Normal probability plot',
+          'xaxis': {'title': 'z-score order statistic medians, m'},
+          'yaxis': {'title': 'Ordered z-score responses, z',
+                    'range': [-10, 10]}
+        }
+      }
+    }
+
+  def z_vs_multiplicity(self):
+    """
+    Plot z-score as a function of multiplicity of observation.
+
+    :return: A dictionary describing a Plotly plot.
+    :rtype:`dict`
+    """
+
+    multiplicity = self.z_score_data['multiplicity']
+    z_scores = self.z_score_data['intensity.z_score']
+
+    return {
+      'z_score_vs_multiplicity': {
+        'data'  : [{
+          'x'   : multiplicity.as_numpy_array().tolist(),
+          'y'   : z_scores.as_numpy_array().tolist(),
+          'type': 'scattergl',
+          'mode': 'markers',
+          'name': 'Data',
+        }],
+        'layout': {
+          'title': 'z-scores versus multiplicity',
+          'xaxis': {'title': 'Multiplicity'},
+          'yaxis': {'title': 'z-score'},
+        }
+      }
+    }
+
+  def z_time_series(self):
+    """
+    Plot a crude time-series of z-scores, with image number serving as a
+    proxy for time.
+
+    :return: A dictionary describing a Plotly plot.
+    :rtype:`dict`
+    """
+
+    batch_number = self.z_score_data['xyzobs.px.value'].parts()[2]
+    z_scores = self.z_score_data['intensity.z_score']
+
+    return {
+      'z_score_time_series': {
+        'data'  : [{
+          'x'   : batch_number.as_numpy_array().tolist(),
+          'y'   : z_scores.as_numpy_array().tolist(),
+          'type': 'scattergl',
+          'mode': 'markers',
+          'name': 'Data',
+        }],
+        'layout': {
+          'title': 'z-scores versus image number',
+          'xaxis': {'title': 'Image number'},
+          'yaxis': {'title': 'z-score'},
+        }
+      }
+    }
+
+  def z_vs_I(self):
+    """
+    Plot z-scores versus intensity.
+
+    :return: A dictionary describing a Plotly plot.
+    :rtype:`dict`
+    """
+
+    intensity = self.z_score_data['intensity.mean.value']
+    z_scores = self.z_score_data['intensity.z_score']
+
+    return {
+      'z_score_vs_I': {
+        'data'  : [{
+          'x'   : intensity.as_numpy_array().tolist(),
+          'y'   : z_scores.as_numpy_array().tolist(),
+          'type': 'scattergl',
+          'mode': 'markers',
+          'name': 'Data',
+        }],
+        'layout': {
+          'title': 'z-scores versus weighted mean intensity',
+          'xaxis': {'title': 'Intensity (photon count)', 'type': 'log'},
+          'yaxis': {'title': 'z-score'},
+        }
+      }
+    }
+
+  def z_vs_I_over_sigma(self):
+    """
+    Plot z-scores versus intensity.
+
+    :return: A dictionary describing a Plotly plot.
+    :rtype:`dict`
+    """
+
+    i_over_sigma = (self.z_score_data['intensity.mean.value']
+                    / self.z_score_data['intensity.mean.std_error'])
+    z_scores = self.z_score_data['intensity.z_score']
+
+    return {
+      'z_score_vs_I_over_sigma': {
+        'data'  : [{
+          'x'   : i_over_sigma.as_numpy_array().tolist(),
+          'y'   : z_scores.as_numpy_array().tolist(),
+          'type': 'scattergl',
+          'mode': 'markers',
+          'name': 'Data',
+        }],
+        'layout': {
+          'title': u'z-scores versus I/σ',
+          'xaxis': {'title': u'I/σ', 'type': 'log'},
+          'yaxis': {'title': 'z-score'},
+        }
+      }
+    }
+
 
 def d_star_sq_to_d_ticks(d_star_sq, nticks):
   from cctbx import uctbx
@@ -974,6 +1156,12 @@ def run(args):
   json_data.update(report.l_test_plot())
   json_data.update(report.wilson_plot())
   json_data.update(report.pychef_plots())
+  json_data.update(report.z_score_hist())
+  json_data.update(report.normal_probability_plot())
+  json_data.update(report.z_vs_multiplicity())
+  json_data.update(report.z_time_series())
+  json_data.update(report.z_vs_I())
+  json_data.update(report.z_vs_I_over_sigma())
 
   resolution_graphs = OrderedDict(
     (k, json_data[k]) for k in
@@ -992,7 +1180,11 @@ def run(args):
 
   misc_graphs = OrderedDict(
     (k, json_data[k]) for k in
-    ('cumulative_intensity_distribution', 'l_test', 'multiplicities') if k in json_data)
+    ('cumulative_intensity_distribution', 'l_test', 'multiplicities',
+     'z_score_histogram', 'normal_probability_plot',
+     'z_score_vs_multiplicity', 'z_score_time_series', 'z_score_vs_I',
+     'z_score_vs_I_over_sigma')
+    if k in json_data)
 
   for k, v in report.multiplicity_plots().iteritems():
     misc_graphs[k] = {'img': v}
