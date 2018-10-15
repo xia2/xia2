@@ -178,7 +178,7 @@ def generate_xia2_html(xinfo, filename='xia2.html', params=None, args=[]):
           (k + '_' + wname, json_data[k]) for k in
           ('scale_rmerge_vs_batch', 'i_over_sig_i_vs_batch'))
 
-      misc_graphs = OrderedDict(
+      misc_graphs = collections.OrderedDict(
           (k, json_data[k]) for k in
           ('cumulative_intensity_distribution', 'l_test', 'multiplicities',
            'z_score_histogram', 'normal_probability_plot',
