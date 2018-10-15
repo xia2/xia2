@@ -95,7 +95,7 @@ def table1_tex(merging_stats):
   # grown ups sometimes need things in %ages? x_x
 
   magic_words_and_places_and_multipliers = [
-    ('No. of unique reflections', 'n_obs', 1, '%d'),
+    ('No. of unique reflections', 'n_uniq', 1, '%d'),
     ('Multiplicity', 'multiplicity', 1, '%.1f'),
     ('$R_{\\rm{merge}}$', 'r_merge', 1, '%.3f'),
     ('$R_{\\rm{meas}}$', 'r_meas', 1, '%.3f'),
