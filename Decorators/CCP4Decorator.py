@@ -86,9 +86,8 @@ def CCP4DecoratorFactory(DriverInstance):
       # somewhere to store the loggraph output
       self._loggraph = {}
 
-      # put the CCP4 library directory at teh start of the
+      # put the CCP4 library directory at the start of the
       # LD_LIBRARY_PATH in case it mashes CCP4 programs...
-      # N.B. need to check the syntax!
       if 'CLIB' in os.environ and os.name == 'posix':
         if os.uname()[0] == 'Darwin':
           self.add_working_environment('DYLD_LIBRARY_PATH', os.environ['CLIB'])

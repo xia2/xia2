@@ -32,7 +32,8 @@ def Blend(DriverType = None):
       self._hklin_files = []
       self._labels = []
 
-      return
+      # Blend/R crashes with cctbx dispatcher mangling of LD_LIBRARY_PATH
+      self.set_working_environment('LD_LIBRARY_PATH', '')
 
     def add_hklin(self, hklin, label=None):
       '''Add a reflection file to the list to be sorted together.'''
