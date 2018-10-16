@@ -903,7 +903,7 @@ class CommonScaler(Scaler):
     else:
       Debug.write('Local scaling failed')
 
-  def _estimate_resolution_limit(self, hklin, batch_range=None):
+  def _estimate_resolution_limit(self, hklin, batch_range=None, use_isigma=True, use_misigma=True):
     params = PhilIndex.params.xia2.settings.resolution
     m = Merger()
     m.set_working_directory(self.get_working_directory())
@@ -915,8 +915,10 @@ class CommonScaler(Scaler):
     m.set_limit_cc_half(params.cc_half)
     m.set_cc_half_fit(params.cc_half_fit)
     m.set_cc_half_significance_level(params.cc_half_significance_level)
-    m.set_limit_isigma(params.isigma)
-    m.set_limit_misigma(params.misigma)
+    if use_isigma:
+      m.set_limit_isigma(params.isigma)
+    if use_misigma:
+      m.set_limit_misigma(params.misigma)
     if PhilIndex.params.xia2.settings.small_molecule == True:
       m.set_nbins(20)
     if batch_range is not None:

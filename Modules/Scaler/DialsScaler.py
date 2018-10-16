@@ -741,7 +741,7 @@ No further scaling will be performed.""")
       hklin = sc.get_unmerged_reflection_file() #combined for all datasets
       # Need to get an individual mtz for each dataset
       limit, reasoning = self._estimate_resolution_limit(
-        hklin, batch_range=None)
+        hklin, batch_range=None, use_misigma=False)
 
       if PhilIndex.params.xia2.settings.resolution.keep_all_reflections == True:
         suggested = limit
