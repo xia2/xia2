@@ -219,7 +219,7 @@ def DialsScale(DriverType=None,
     def scale(self):
       '''Actually perform the scaling.'''
 
-      self._command_line = [] #reset the command line in case has already
+      self.clear_command_line() #reset the command line in case has already
       # been run previously
 
       assert len(self._experiments_json)
@@ -324,6 +324,7 @@ def DialsScale(DriverType=None,
       # here get a list of all output files...
       output = self.get_all_output()
 
+      Chatter.write("Completed a round of scaling using dials.scale")
       return 'OK'
 
     def get_scaled_reflection_files(self):

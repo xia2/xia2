@@ -141,6 +141,8 @@ def DialsSymmetry(DriverType = None):
     def decide_pointgroup(self, ignore_errors=False, batches=None):
       '''Decide on the correct pointgroup for hklin.'''
 
+      self.clear_command_line()
+
       if self._hklref:
         self.add_command_line('hklref')
         self.add_command_line(self._hklref)

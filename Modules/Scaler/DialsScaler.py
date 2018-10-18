@@ -686,7 +686,6 @@ class DialsScaler(Scaler):
                             sc.get_log_file())
     sc.scale()
 
-
     FileHandler.record_data_file(scaled_unmerged_mtz_path)
     FileHandler.record_data_file(scaled_mtz_path)
 
@@ -814,6 +813,7 @@ CC1/2: %.4f, Anomalous correlation %.4f""" % (
             pass
 
     if self._scalr_done is False:
+      self._scaler_symmetry_check_count = 0 # reset for when resolution limit applied
       return
 
     # Run twotheta refine
