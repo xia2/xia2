@@ -549,12 +549,13 @@ class CommonScaler(Scaler):
         continue
       Debug.write('Running anomalous signal analysis on %s' % f)
       a_s = anomalous_signals(f)
-      self._scalr_statistics[
-        (self._scalr_pname, self._scalr_xname, key)
-        ]['dF/F'] = [a_s[0]]
-      self._scalr_statistics[
-        (self._scalr_pname, self._scalr_xname, key)
-        ]['dI/s(dI)'] = [a_s[1]]
+      if a_s is not None:
+        self._scalr_statistics[
+          (self._scalr_pname, self._scalr_xname, key)
+          ]['dF/F'] = [a_s[0]]
+        self._scalr_statistics[
+          (self._scalr_pname, self._scalr_xname, key)
+          ]['dI/s(dI)'] = [a_s[1]]
 
   def _scale_finish_chunk_2_report(self):
     from cctbx.array_family import flex
@@ -1092,27 +1093,26 @@ class CommonScaler(Scaler):
         assert_is_not_unique_set_under_symmetry=False,
     )
 
+    result.anomalous_np_slope = None
     if anomalous:
       merged_intensities = i_obs.merge_equivalents(
         use_internal_variance=params.use_internal_variance).array()
-      slope, intercept, n_pairs = anomalous_probability_plot(merged_intensities)
 
-      Debug.write('Anomalous difference normal probability plot:')
-      Debug.write('Slope: %.2f' % slope)
-      Debug.write('Intercept: %.2f' % intercept)
-      Debug.write('Number of pairs: %i' % n_pairs)
+      slope, intercept, n_pairs = anomalous_probability_plot(merged_intensities)
+      if slope is not None:
+        Debug.write('Anomalous difference normal probability plot:')
+        Debug.write('Slope: %.2f' % slope)
+        Debug.write('Intercept: %.2f' % intercept)
+        Debug.write('Number of pairs: %i' % n_pairs)
 
       slope, intercept, n_pairs = anomalous_probability_plot(
         merged_intensities, expected_delta=0.9)
-      result.anomalous_np_slope = slope
-
-      Debug.write('Anomalous difference normal probability plot (within expected delta 0.9):')
-      Debug.write('Slope: %.2f' %slope)
-      Debug.write('Intercept: %.2f' %intercept)
-      Debug.write('Number of pairs: %i' %n_pairs)
-
-    else:
-      result.anomalous_np_slope = None
+      if slope is not None:
+        result.anomalous_np_slope = slope
+        Debug.write('Anomalous difference normal probability plot (within expected delta 0.9):')
+        Debug.write('Slope: %.2f' %slope)
+        Debug.write('Intercept: %.2f' %intercept)
+        Debug.write('Number of pairs: %i' %n_pairs)
 
     return result
 
@@ -1244,13 +1244,15 @@ def anomalous_probability_plot(intensities, expected_delta=None):
   assert intensities.anomalous_flag()
 
   dI = intensities.anomalous_differences()
+  if not dI.size():
+    return None, None, None
+
   y = dI.data() / dI.sigmas()
   perm = flex.sort_permutation(y)
   y = y.select(perm)
   distribution = distributions.normal_distribution()
 
   x = distribution.quantiles(y.size())
-
   if expected_delta is not None:
     sel = flex.abs(x) < expected_delta
     x = x.select(sel)

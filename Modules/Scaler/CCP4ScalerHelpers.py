@@ -597,7 +597,8 @@ def anomalous_signals(hklin):
     data = ma
 
   if not data:
-    raise RuntimeError('no anomalous data found')
+    Debug.write('no anomalous data found')
+    return
 
   df_f = data.anomalous_signal()
   differences = data.anomalous_differences()
