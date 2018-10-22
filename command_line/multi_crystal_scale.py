@@ -104,7 +104,7 @@ def run():
     assert 'identifier' in reflections_all
     assert len(set(reflections_all['identifier'])) == len(experiments)
 
-  assert reflections_all.are_experiment_identifiers_consistent(experiments)
+  reflections_all.assert_experiment_identifiers_are_consistent(experiments)
 
   if params.identifiers is not None:
     identifiers = []
