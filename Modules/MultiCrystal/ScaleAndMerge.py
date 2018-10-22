@@ -225,7 +225,10 @@ class DataManager(object):
 
   def filter_dose(self, dose_min, dose_max):
     from dials.command_line.slice_sweep import slice_experiments, slice_reflections
-    image_range = [(dose_min, dose_max)] * len(self._experiments)
+    image_range = [
+      (max(dose_min, expt.scan.get_image_range()[0]),
+       min(dose_max, expt.scan.get_image_range()[1]))
+      for expt in self._experiments]
     n_refl_before = self._reflections.size()
     self._experiments = slice_experiments(self._experiments, image_range)
     flex.min_max_mean_double(self._reflections['xyzobs.px.value'].parts()[2]).show()
