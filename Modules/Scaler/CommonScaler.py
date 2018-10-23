@@ -744,13 +744,8 @@ class CommonScaler(Scaler):
       # crystal_symm.show_summary()
       xray_structure = structure(crystal_symmetry=crystal_symm)
 
-      compound = 'CNOH'
-      if compound:
-        from xia2.command_line.to_shelx import parse_compound
-        result = parse_compound(compound)
-        for element in result:
-          xray_structure.add_scatterer(scatterer(label=element,
-                                                 occupancy=result[element]))
+      for element in 'CNOH':
+        xray_structure.add_scatterer(scatterer(label=element, occupancy=1))
 
       wavelength = self._scalr_xcrystal.get_xwavelength(wavelength_name).get_wavelength()
 
