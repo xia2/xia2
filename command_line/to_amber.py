@@ -17,7 +17,7 @@ def to_amber(hklin, prefix):
   labels = [c.info().labels for c in ma]
   if ['I', 'SIGI'] not in labels:
     if ['I(+)', 'SIGI(+)', 'I(-)', 'SIGI(-)'] in labels:
-      print("Error: xia2.to_shelx must be run on unmerged data.")
+      print("Error: xia2.to_amber must be run on unmerged data.")
     else:
       print("Error: columns I / SIGI not found.")
     sys.exit(1)
