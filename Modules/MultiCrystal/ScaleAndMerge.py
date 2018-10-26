@@ -926,8 +926,11 @@ class Scale(object):
 
   def two_theta_refine(self):
     # two-theta refinement to get best estimate of unit cell
-    self.best_unit_cell, self.best_unit_cell_esd = self._dials_two_theta_refine(
-      self._experiments_filename, self._reflections_filename)
+    self.best_unit_cell, self.best_unit_cell_esd, self._experiments_filename \
+      = self._dials_two_theta_refine(
+          self._experiments_filename, self._reflections_filename)
+    self._data_manager.experiments = load.experiment_list(
+      self._experiments_filename, check_format=False)
     tools.patch_mtz_unit_cell(self._sorted_mtz, self.best_unit_cell)
 
   def scale(self, d_min=None):
@@ -1030,7 +1033,7 @@ class Scale(object):
     tt_refiner.run()
     unit_cell = tt_refiner.get_unit_cell()
     unit_cell_esd = tt_refiner.get_unit_cell_esd()
-    return unit_cell, unit_cell_esd
+    return unit_cell, unit_cell_esd, tt_refiner.get_output_experiments()
 
   def _scale_aimless(self, d_min=None):
     logger.debug('Scaling with aimless')

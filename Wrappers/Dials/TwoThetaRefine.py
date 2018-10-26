@@ -40,7 +40,6 @@ def TwoThetaRefine(DriverType = None):
       self._output_p4p = None
       self._output_correlation_plot = None
       self._output_experiments = None
-      self._output_reflections = None
 
       self._crystal = None
 
