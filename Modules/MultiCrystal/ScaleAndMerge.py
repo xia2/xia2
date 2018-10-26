@@ -250,7 +250,7 @@ class DataManager(object):
         space_group=expt.crystal.get_space_group())
       sel = ((self._reflections.get_flags(self._reflections.flags.integrated_sum)
               & (self._reflections['identifier'] == expt.identifier)))
-      assert sel.count(True) > 0
+      assert sel.count(True) > 0, expt.identifier
       refl = self._reflections.select(sel)
 
       from dials.util.filter_reflections import filter_reflection_table
@@ -370,7 +370,7 @@ class DataManager(object):
 
     b1 = set(b.num() for b in m.batches())
     b2 = set(m.get_column('BATCH').extract_values().as_double().iround())
-    assert len(b2.difference(b1)) == 0
+    assert len(b2.difference(b1)) == 0, (b2.difference(b1), b1.difference(b2))
 
     return params.mtz.hklout
 
