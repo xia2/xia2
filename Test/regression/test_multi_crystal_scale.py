@@ -15,7 +15,7 @@ expected_data_files = [
 ]
 
 @pytest.mark.regression
-def test_protk(regression_data, run_in_tmpdir, ccp4):
+def test_proteinase_k(regression_data, run_in_tmpdir, ccp4):
   data_dir = regression_data('multi_crystal_proteinase_k')
   expts = sorted(glob.glob(data_dir.join('experiments*.json').strpath))
   refls = sorted(glob.glob(data_dir.join('reflections*.pickle').strpath))
@@ -26,6 +26,15 @@ def test_protk(regression_data, run_in_tmpdir, ccp4):
   result = procrunner.run(command_line, print_stdout=False, print_stderr=False)
   for f in expected_data_files:
     assert os.path.exists(f), f
-  success, issues = xia2.Test.regression.check_result(
-      'insulin.2d', result, run_in_tmpdir, ccp4, expected_data_files=expected_data_files
-  )
+
+def test_proteinase_k_dose(regression_data, run_in_tmpdir, ccp4):
+  data_dir = regression_data('multi_crystal_proteinase_k')
+  expts = sorted(glob.glob(data_dir.join('experiments*.json').strpath))
+  refls = sorted(glob.glob(data_dir.join('reflections*.pickle').strpath))
+  command_line = [
+    'xia2.multi_crystal_scale', 'dose=1,20',
+  ] + expts + refls
+  print(' '.join(command_line))
+  result = procrunner.run(command_line, print_stdout=False, print_stderr=False)
+  for f in expected_data_files:
+    assert os.path.exists(f), f
