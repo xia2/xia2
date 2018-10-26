@@ -368,9 +368,9 @@ class DataManager(object):
     m = export_mtz(self._reflections, self._experiments, params)
     m.show_summary()
 
-    b1 = set(b.num() for b in m.batches())
-    b2 = set(m.get_column('BATCH').extract_values().as_double().iround())
-    assert len(b2.difference(b1)) == 0, (b2.difference(b1), b1.difference(b2))
+    #b1 = set(b.num() for b in m.batches())
+    #b2 = set(m.get_column('BATCH').extract_values().as_double().iround())
+    #assert len(b2.difference(b1)) == 0, (b2.difference(b1), b1.difference(b2))
 
     return params.mtz.hklout
 
