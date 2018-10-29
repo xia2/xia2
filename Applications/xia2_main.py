@@ -13,6 +13,7 @@ from __future__ import absolute_import, division, print_function
 
 import math
 import os
+import platform
 import sys
 
 import libtbx.load_env
@@ -52,26 +53,19 @@ def check_environment():
   from xia2.Handlers.Flags import Flags
   Chatter.write('Starting directory: %s' % Flags.get_starting_directory())
   Chatter.write('Working directory: %s' % os.getcwd())
+  Chatter.write('Free space:        %.2f GB' % (df() / math.pow(2, 30)))
+
+  hostname = platform.node().split('.')[0]
+  Chatter.write('Host: %s' % hostname)
+
+  Chatter.write('Contact: xia2.support@gmail.com')
+
+  Chatter.write(Version)
 
   # temporary workaround to bug in pointless...
   if ' ' in os.getcwd():
     raise RuntimeError('Space in working directory ' \
         '(https://github.com/xia2/xia2/issues/114)')
-  Chatter.write('Free space:        %.2f GB' % (df() / math.pow(2, 30)))
-
-  try:
-    if os.name == 'nt':
-      hostname = os.environ['COMPUTERNAME'].split('.')[0]
-    else:
-      hostname = os.environ['HOSTNAME'].split('.')[0]
-
-    Chatter.write('Host: %s' % hostname)
-  except KeyError:
-    pass
-
-  Chatter.write('Contact: xia2.support@gmail.com')
-
-  Chatter.write(Version)
 
 def get_command_line():
   from xia2.Handlers.CommandLine import CommandLine
