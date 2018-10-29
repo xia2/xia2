@@ -214,14 +214,16 @@ class DataManager(object):
        if expt.identifier in experiment_identifiers])
     experiment_identifiers = self._experiments.identifiers()
     sel = flex.bool(len(self._reflections), False)
+    for k in self._reflections.experiment_identifiers().keys():
+      del self._reflections.experiment_identifiers()[k]
     for i_expt, identifier in enumerate(experiment_identifiers):
       sel_expt = self._reflections['identifier'] == identifier
       sel.set_selected(sel_expt, True)
       self._reflections['id'].set_selected(sel_expt, i_expt)
+      self._reflections.experiment_identifiers()[i_expt] = identifier
     self._reflections = self._reflections.select(sel)
-    #assert len(self._reflections.experiment_identifiers()) == len(self._experiments), (len(self._reflections.experiment_identifiers()), len(self._experiments))
-    #self.reflections.assert_experiment_identifiers_are_consistent(
-    #  self._experiments)
+    self.reflections.assert_experiment_identifiers_are_consistent(
+      self.experiments)
 
   def filter_dose(self, dose_min, dose_max):
     from dials.command_line.slice_sweep import slice_experiments, slice_reflections
