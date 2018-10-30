@@ -212,16 +212,9 @@ class DataManager(object):
     self._experiments = ExperimentList(
       [expt for expt in self._experiments
        if expt.identifier in experiment_identifiers])
-    experiment_identifiers = self._experiments.identifiers()
-    sel = flex.bool(len(self._reflections), False)
-    for k in self._reflections.experiment_identifiers().keys():
-      del self._reflections.experiment_identifiers()[k]
-    for i_expt, identifier in enumerate(experiment_identifiers):
-      sel_expt = self._reflections['identifier'] == identifier
-      sel.set_selected(sel_expt, True)
-      self._reflections['id'].set_selected(sel_expt, i_expt)
-      self._reflections.experiment_identifiers()[i_expt] = identifier
-    self._reflections = self._reflections.select(sel)
+    self.reflections = self.reflections.select_on_experiment_identifiers(
+      experiment_identifiers)
+    self.reflections.reset_ids()
     self.reflections.assert_experiment_identifiers_are_consistent(
       self.experiments)
 
