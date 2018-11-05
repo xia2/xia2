@@ -16,8 +16,11 @@ def pytest_addoption(parser):
   '''Tests that use regression_data will not be run unless '--regression' is
      given as command line parameter.
   '''
-  parser.addoption("--regression", action="store_true", default=False,
-                   help="run regression tests")
+  try:
+    parser.addoption("--regression", action="store_true", default=False,
+                     help="run regression tests")
+  except ValueError:
+    pass # Thrown in case the command line option is already defined
 
 @pytest.fixture(scope="session")
 def ccp4():
