@@ -96,8 +96,12 @@ class DialsIndexer(Indexer):
     return spotfinder
 
   def DetectBlanks(self):
+    params = PhilIndex.params.dials.detect_blanks
     detectblanks = _DetectBlanks()
     detectblanks.set_working_directory(self.get_working_directory())
+    detectblanks.set_phi_step(params.phi_step)
+    detectblanks.set_counts_fractional_loss(params.counts_fractional_loss)
+    detectblanks.set_misigma_fractional_loss(params.misigma_fractional_loss)
     auto_logfiler(detectblanks)
     return detectblanks
 
