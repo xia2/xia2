@@ -377,6 +377,9 @@ class DialsIndexer(Indexer):
                 self._indxr_imagesets[self._indxr_imagesets.index(imageset)] = sub_imageset
                 xsweep._integrater._setup_from_imageset(sub_imageset)
               else:
+                min_images = PhilIndex.params.xia2.settings.input.min_images
+                if (nb_end - nb_start) < min_images:
+                  continue
                 new_name = '_'.join((sweep_name, string.ascii_lowercase[i]))
                 new_sweep = xwav.add_sweep(new_name,
                                xsample,
