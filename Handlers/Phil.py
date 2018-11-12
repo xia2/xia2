@@ -230,11 +230,11 @@ dials
     phi_step = 2
       .help = "Width of bins in degrees."
       .type = float(value_min=0, allow_none=True)
-    counts_fractional_loss = 0.05
+    counts_fractional_loss = 0.1
       .help = "Fractional loss (relative to the bin with the most counts) after "
               "which a bin is flagged as potentially containing blank images."
       .type = float(value_min=0, value_max=1, allow_none=True)
-    misigma_fractional_loss = 0.05
+    misigma_fractional_loss = 0.1
       .help = "Fractional loss (relative to the bin with the highest misigma)"
               "after  which a bin is flagged as potentially containing blank"
               "images."
