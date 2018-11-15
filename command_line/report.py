@@ -14,6 +14,7 @@ from cctbx.array_family import flex
 from mmtbx.scaling import printed_output
 from xia2.Modules.Analysis import *
 from dials.util.intensity_explorer import data_from_unmerged_mtz, IntensityDist
+from dials.util.options import OptionParser
 
 class xtriage_output(printed_output):
 
@@ -1119,18 +1120,30 @@ log_include = None
 probability_plots = False
   .type = bool
 include scope xia2.Modules.Analysis.phil_scope
+json {
+  indent = None
+    .type = int(value_min=0)
+}
 ''', process_includes=True)
 
+help_message = '''
+'''
 
 def run(args):
   from xia2.XIA2Version import Version
+  usage = "xia2.report [options] scaled_unmerged.mtz"
 
-  interp = phil_scope.command_line_argument_interpreter()
-  params, unhandled = interp.process_and_fetch(
-    args, custom_processor='collect_remaining')
-  params = params.extract()
+  parser = OptionParser(
+    usage=usage,
+    phil=phil_scope,
+    check_format=False,
+    epilog=help_message)
 
-  args = unhandled
+  params, options, args = parser.parse_args(
+    show_diff_phil=True, return_unhandled=True)
+  if len(args) == 0:
+    parser.print_help()
+    return
 
   unmerged_mtz = args[0]
 
@@ -1234,7 +1247,7 @@ def run(args):
                         )
 
   with open('%s-report.json' % params.prefix, 'wb') as f:
-    json.dump(json_data, f)
+    json.dump(json_data, f, indent=params.json.indent)
 
   with open('%s-report.html' % params.prefix, 'wb') as f:
     f.write(html.encode('ascii', 'xmlcharrefreplace'))
