@@ -1158,6 +1158,9 @@ def run(args):
 
   json_data = {}
 
+  if params.xtriage_analysis:
+    json_data['xtriage'] = xtriage_success + xtriage_warnings + xtriage_danger
+
   json_data.update(report.multiplicity_vs_resolution_plot())
   json_data.update(report.multiplicity_histogram())
   json_data.update(report.completeness_plot())

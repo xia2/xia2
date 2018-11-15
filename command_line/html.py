@@ -10,6 +10,8 @@ import glob
 import os
 import tabulate
 import traceback
+import json
+
 
 # Needed to make xia2 imports work correctly
 import libtbx.load_env
@@ -130,6 +132,9 @@ def generate_xia2_html(xinfo, filename='xia2.html', params=None, args=[]):
       individual_dataset_reports[wname] = d
 
       json_data = {}
+
+      if params.xtriage_analysis:
+        json_data['xtriage'] = xtriage_success + xtriage_warnings + xtriage_danger
 
       json_data.update(report.multiplicity_vs_resolution_plot())
       json_data.update(report.multiplicity_histogram())
@@ -346,6 +351,9 @@ def generate_xia2_html(xinfo, filename='xia2.html', params=None, args=[]):
                          styles=styles
                          )
 
+  with open('%s-report.json' % os.path.splitext(filename)[0], 'wb') as f:
+    json.dump(json_data, f, indent=2)
+
   with open(filename, 'wb') as f:
     f.write(html.encode('ascii', 'xmlcharrefreplace'))
 
@@ -475,8 +483,6 @@ var chart_%(name)s = c3.generate({
                    'value': [table.column_labels[i_col]
                              for i_col in graph_columns[1:]]}
                  }
-
-    import json
 
     xlabel = table.column_labels[graph_columns[0]]
     if xlabel in ('1/d^2', '1/resol^2'):
