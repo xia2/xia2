@@ -176,7 +176,7 @@ class xia2_report(object):
     self.intensities.setup_binner(n_bins=self.params.resolution_bins)
     self.merged_intensities = self.intensities.merge_equivalents().array()
 
-    if params.probability_plots:
+    if params.include_probability_plots:
       rtable, elist = data_from_unmerged_mtz(unmerged_mtz)
       self.z_score_data = IntensityDist(rtable, elist).rtable
 
@@ -1117,8 +1117,6 @@ prefix = 'xia2'
   .type = str
 log_include = None
   .type = path
-probability_plots = False
-  .type = bool
 include scope xia2.Modules.Analysis.phil_scope
 json {
   indent = None
@@ -1172,7 +1170,7 @@ def run(args):
   json_data.update(report.l_test_plot())
   json_data.update(report.wilson_plot())
   json_data.update(report.pychef_plots())
-  if params.probability_plots:
+  if params.include_probability_plots:
     json_data.update(report.z_score_hist())
     json_data.update(report.normal_probability_plot())
     json_data.update(report.z_vs_multiplicity())
@@ -1195,7 +1193,7 @@ def run(args):
       (k, json_data[k]) for k in
       ('scale_rmerge_vs_batch', 'i_over_sig_i_vs_batch'))
 
-  if params.probability_plots:
+  if params.include_probability_plots:
     misc_graphs = OrderedDict(
       (k, json_data[k]) for k in
       ('cumulative_intensity_distribution', 'l_test', 'multiplicities',
