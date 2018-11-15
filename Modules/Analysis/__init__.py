@@ -43,6 +43,8 @@ xtriage_analysis = True
   .type = bool
 include_radiation_damage = True
   .type = bool
+include_probability_plots = False
+  .type = bool
 %s
 """ % (dose_phil_str, batch_phil_scope))
 
