@@ -96,8 +96,12 @@ class DialsIndexer(Indexer):
     return spotfinder
 
   def DetectBlanks(self):
+    params = PhilIndex.params.dials.detect_blanks
     detectblanks = _DetectBlanks()
     detectblanks.set_working_directory(self.get_working_directory())
+    detectblanks.set_phi_step(params.phi_step)
+    detectblanks.set_counts_fractional_loss(params.counts_fractional_loss)
+    detectblanks.set_misigma_fractional_loss(params.misigma_fractional_loss)
     auto_logfiler(detectblanks)
     return detectblanks
 
@@ -373,6 +377,9 @@ class DialsIndexer(Indexer):
                 self._indxr_imagesets[self._indxr_imagesets.index(imageset)] = sub_imageset
                 xsweep._integrater._setup_from_imageset(sub_imageset)
               else:
+                min_images = PhilIndex.params.xia2.settings.input.min_images
+                if (nb_end - nb_start) < min_images:
+                  continue
                 new_name = '_'.join((sweep_name, string.ascii_lowercase[i]))
                 new_sweep = xwav.add_sweep(new_name,
                                xsample,

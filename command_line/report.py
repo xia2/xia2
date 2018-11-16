@@ -14,6 +14,7 @@ from cctbx.array_family import flex
 from mmtbx.scaling import printed_output
 from xia2.Modules.Analysis import *
 from dials.util.intensity_explorer import data_from_unmerged_mtz, IntensityDist
+from dials.util.options import OptionParser
 
 class xtriage_output(printed_output):
 
@@ -175,8 +176,9 @@ class xia2_report(object):
     self.intensities.setup_binner(n_bins=self.params.resolution_bins)
     self.merged_intensities = self.intensities.merge_equivalents().array()
 
-    rtable, elist = data_from_unmerged_mtz(unmerged_mtz)
-    self.z_score_data = IntensityDist(rtable, elist).rtable
+    if params.include_probability_plots:
+      rtable, elist = data_from_unmerged_mtz(unmerged_mtz)
+      self.z_score_data = IntensityDist(rtable, elist).rtable
 
 
   def _compute_merging_stats(self):
@@ -1116,18 +1118,30 @@ prefix = 'xia2'
 log_include = None
   .type = path
 include scope xia2.Modules.Analysis.phil_scope
+json {
+  indent = None
+    .type = int(value_min=0)
+}
 ''', process_includes=True)
 
+help_message = '''
+'''
 
 def run(args):
   from xia2.XIA2Version import Version
+  usage = "xia2.report [options] scaled_unmerged.mtz"
 
-  interp = phil_scope.command_line_argument_interpreter()
-  params, unhandled = interp.process_and_fetch(
-    args, custom_processor='collect_remaining')
-  params = params.extract()
+  parser = OptionParser(
+    usage=usage,
+    phil=phil_scope,
+    check_format=False,
+    epilog=help_message)
 
-  args = unhandled
+  params, options, args = parser.parse_args(
+    show_diff_phil=True, return_unhandled=True)
+  if len(args) == 0:
+    parser.print_help()
+    return
 
   unmerged_mtz = args[0]
 
@@ -1144,6 +1158,9 @@ def run(args):
 
   json_data = {}
 
+  if params.xtriage_analysis:
+    json_data['xtriage'] = xtriage_success + xtriage_warnings + xtriage_danger
+
   json_data.update(report.multiplicity_vs_resolution_plot())
   json_data.update(report.multiplicity_histogram())
   json_data.update(report.completeness_plot())
@@ -1156,12 +1173,13 @@ def run(args):
   json_data.update(report.l_test_plot())
   json_data.update(report.wilson_plot())
   json_data.update(report.pychef_plots())
-  json_data.update(report.z_score_hist())
-  json_data.update(report.normal_probability_plot())
-  json_data.update(report.z_vs_multiplicity())
-  json_data.update(report.z_time_series())
-  json_data.update(report.z_vs_I())
-  json_data.update(report.z_vs_I_over_sigma())
+  if params.include_probability_plots:
+    json_data.update(report.z_score_hist())
+    json_data.update(report.normal_probability_plot())
+    json_data.update(report.z_vs_multiplicity())
+    json_data.update(report.z_time_series())
+    json_data.update(report.z_vs_I())
+    json_data.update(report.z_vs_I_over_sigma())
 
   resolution_graphs = OrderedDict(
     (k, json_data[k]) for k in
@@ -1178,13 +1196,19 @@ def run(args):
       (k, json_data[k]) for k in
       ('scale_rmerge_vs_batch', 'i_over_sig_i_vs_batch'))
 
-  misc_graphs = OrderedDict(
-    (k, json_data[k]) for k in
-    ('cumulative_intensity_distribution', 'l_test', 'multiplicities',
-     'z_score_histogram', 'normal_probability_plot',
-     'z_score_vs_multiplicity', 'z_score_time_series', 'z_score_vs_I',
-     'z_score_vs_I_over_sigma')
-    if k in json_data)
+  if params.include_probability_plots:
+    misc_graphs = OrderedDict(
+      (k, json_data[k]) for k in
+      ('cumulative_intensity_distribution', 'l_test', 'multiplicities',
+       'z_score_histogram', 'normal_probability_plot',
+       'z_score_vs_multiplicity', 'z_score_time_series', 'z_score_vs_I',
+       'z_score_vs_I_over_sigma')
+      if k in json_data)
+  else:
+    misc_graphs = OrderedDict(
+      (k, json_data[k]) for k in
+      ('cumulative_intensity_distribution', 'l_test', 'multiplicities')
+      if k in json_data)
 
   for k, v in report.multiplicity_plots().iteritems():
     misc_graphs[k] = {'img': v}
@@ -1224,7 +1248,7 @@ def run(args):
                         )
 
   with open('%s-report.json' % params.prefix, 'wb') as f:
-    json.dump(json_data, f)
+    json.dump(json_data, f, indent=params.json.indent)
 
   with open('%s-report.html' % params.prefix, 'wb') as f:
     f.write(html.encode('ascii', 'xmlcharrefreplace'))

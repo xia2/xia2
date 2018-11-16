@@ -226,6 +226,21 @@ dials
     .short_caption = "Closeness to the spindle cutoff for including reflections in refinement"
     .expert_level = 2
 
+  detect_blanks {
+    phi_step = 2
+      .help = "Width of bins in degrees."
+      .type = float(value_min=0, allow_none=True)
+    counts_fractional_loss = 0.1
+      .help = "Fractional loss (relative to the bin with the most counts) after "
+              "which a bin is flagged as potentially containing blank images."
+      .type = float(value_min=0, value_max=1, allow_none=True)
+    misigma_fractional_loss = 0.1
+      .help = "Fractional loss (relative to the bin with the highest misigma)"
+              "after  which a bin is flagged as potentially containing blank"
+              "images."
+      .type = float(value_min=0, value_max=1, allow_none=True)
+  }
+
   masking
     .short_caption = "Masking"
     .expert_level = 1
@@ -363,6 +378,14 @@ dials
       .type = choice
       .help = "Mosaicity determination method to use"
       .expert_level = 2
+    d_min = None
+      .type = float(value_min=0.0)
+      .short_caption = "High resolution cutoff for integration"
+      .expert_level = 1
+    d_max = None
+      .type = float(value_min=0.0)
+      .short_caption = "Low resolution cutoff for integration"
+      .expert_level = 1
   }
   scale
     .expert_level = 1

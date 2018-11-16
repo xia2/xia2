@@ -5,11 +5,13 @@ from __future__ import absolute_import, division, print_function
 
 import cgi
 import docutils
-import collections
+from collections import OrderedDict
 import glob
 import os
 import tabulate
 import traceback
+import json
+
 
 # Needed to make xia2 imports work correctly
 import libtbx.load_env
@@ -131,6 +133,9 @@ def generate_xia2_html(xinfo, filename='xia2.html', params=None, args=[]):
 
       json_data = {}
 
+      if params.xtriage_analysis:
+        json_data['xtriage'] = xtriage_success + xtriage_warnings + xtriage_danger
+
       json_data.update(report.multiplicity_vs_resolution_plot())
       json_data.update(report.multiplicity_histogram())
       json_data.update(report.completeness_plot())
@@ -143,12 +148,13 @@ def generate_xia2_html(xinfo, filename='xia2.html', params=None, args=[]):
       json_data.update(report.l_test_plot())
       json_data.update(report.wilson_plot())
       json_data.update(report.pychef_plots(n_bins=1))
-      json_data.update(report.z_score_hist())
-      json_data.update(report.normal_probability_plot())
-      json_data.update(report.z_vs_multiplicity())
-      json_data.update(report.z_time_series())
-      json_data.update(report.z_vs_I())
-      json_data.update(report.z_vs_I_over_sigma())
+      if params.include_probability_plots:
+        json_data.update(report.z_score_hist())
+        json_data.update(report.normal_probability_plot())
+        json_data.update(report.z_vs_multiplicity())
+        json_data.update(report.z_time_series())
+        json_data.update(report.z_vs_I())
+        json_data.update(report.z_vs_I_over_sigma())
 
       from scitbx.array_family import flex
       max_points = 500
@@ -163,27 +169,33 @@ def generate_xia2_html(xinfo, filename='xia2.html', params=None, args=[]):
             data['x'] = list(flex.int(data['x']).select(sel))
             data['y'] = list(flex.double(data['y']).select(sel))
 
-      resolution_graphs = collections.OrderedDict(
+      resolution_graphs = OrderedDict(
         (k + '_' + wname, json_data[k]) for k in
         ('cc_one_half', 'i_over_sig_i', 'second_moments', 'wilson_intensity_plot',
          'completeness', 'multiplicity_vs_resolution') if k in json_data)
 
       if params.include_radiation_damage:
-        batch_graphs = collections.OrderedDict(
+        batch_graphs = OrderedDict(
           (k + '_' + wname, json_data[k]) for k in
           ('scale_rmerge_vs_batch', 'i_over_sig_i_vs_batch', 'completeness_vs_dose',
            'rcp_vs_dose', 'scp_vs_dose', 'rd_vs_batch_difference'))
       else:
-        batch_graphs = collections.OrderedDict(
+        batch_graphs = OrderedDict(
           (k + '_' + wname, json_data[k]) for k in
           ('scale_rmerge_vs_batch', 'i_over_sig_i_vs_batch'))
 
-      misc_graphs = collections.OrderedDict(
+      if params.include_probability_plots:
+        misc_graphs = OrderedDict(
           (k, json_data[k]) for k in
           ('cumulative_intensity_distribution', 'l_test', 'multiplicities',
            'z_score_histogram', 'normal_probability_plot',
            'z_score_vs_multiplicity', 'z_score_time_series', 'z_score_vs_I',
            'z_score_vs_I_over_sigma')
+          if k in json_data)
+      else:
+        misc_graphs = OrderedDict(
+          (k, json_data[k]) for k in
+          ('cumulative_intensity_distribution', 'l_test', 'multiplicities')
           if k in json_data)
 
       for k, v in report.multiplicity_plots().iteritems():
@@ -339,6 +351,9 @@ def generate_xia2_html(xinfo, filename='xia2.html', params=None, args=[]):
                          styles=styles
                          )
 
+  with open('%s-report.json' % os.path.splitext(filename)[0], 'wb') as f:
+    json.dump(json_data, f, indent=2)
+
   with open(filename, 'wb') as f:
     f.write(html.encode('ascii', 'xmlcharrefreplace'))
 
@@ -468,8 +483,6 @@ var chart_%(name)s = c3.generate({
                    'value': [table.column_labels[i_col]
                              for i_col in graph_columns[1:]]}
                  }
-
-    import json
 
     xlabel = table.column_labels[graph_columns[0]]
     if xlabel in ('1/d^2', '1/resol^2'):

@@ -560,7 +560,8 @@ class CCP4ScalerA(Scaler):
 
     if len(pointgroup_set) > 1 and \
        not probably_twinned:
-      raise RuntimeError('non uniform pointgroups')
+      raise RuntimeError(
+        'non uniform pointgroups: %s' % str(list(pointgroup_set)))
 
     if len(pointgroup_set) > 1:
       Debug.write('Probably twinned, pointgroups: %s' % \
