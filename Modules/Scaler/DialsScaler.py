@@ -18,6 +18,7 @@ from xia2.Modules.Scaler.CCP4ScalerHelpers import SweepInformationHandler,\
   get_umat_bmat_lattice_symmetry_from_mtz
 from xia2.Wrappers.Dials.Symmetry import DialsSymmetry
 from xia2.Wrappers.Dials.Reindex import Reindex as DialsReindex
+from xia2.Wrappers.Dials.AssignUniqueIdentifiers import DialsAssignIdentifiers
 from xia2.Wrappers.Dials.SplitExperiments import SplitExperiments
 from xia2.Handlers.Syminfo import Syminfo
 from dxtbx.serialize import load
@@ -924,9 +925,16 @@ class DialsScalerHelper(object):
                                                     self._scalr_xname),
                             symmetry_analyser.get_log_file())
 
+    assigner = DialsAssignIdentifiers()
+    assigner.set_working_directory(self.get_working_directory())
+    auto_logfiler(assigner)
     for (exp, refl) in zip(experiments, reflections):
-      symmetry_analyser.add_experiments(exp)
-      symmetry_analyser.add_reflections(refl)
+      assigner.add_experiments(exp)
+      assigner.add_reflections(refl)
+    assigner.assign_identifiers()
+
+    symmetry_analyser.add_experiments(assigner.get_output_experiments_filename())
+    symmetry_analyser.add_reflections(assigner.get_output_reflections_filename())
     symmetry_analyser.decide_pointgroup()
 
     return symmetry_analyser
