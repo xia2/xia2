@@ -291,8 +291,14 @@ class DialsIntegrater(Integrater):
 
     integrate.set_experiments_filename(self._intgr_experiments_filename)
     integrate.set_reflections_filename(self._intgr_indexed_filename)
-    integrate.set_d_max(self._intgr_reso_low)
-    integrate.set_d_min(self._intgr_reso_high)
+    if PhilIndex.params.dials.integrate.d_max:
+      integrate.set_d_max(PhilIndex.params.dials.integrate.d_max)
+    else:
+      integrate.set_d_max(self._intgr_reso_low)
+    if PhilIndex.params.dials.integrate.d_min:
+      integrate.set_d_min(PhilIndex.params.dials.integrate.d_min)
+    else:
+      integrate.set_d_min(self._intgr_reso_high)
     pname, xname, dname = self.get_integrater_project_info()
     sweep = self.get_integrater_sweep_name()
     FileHandler.record_log_file('%s %s %s %s INTEGRATE' % \
