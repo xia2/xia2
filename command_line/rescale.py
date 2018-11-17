@@ -7,8 +7,6 @@ import sys
 import time
 import traceback
 
-# Needed to make xia2 imports work correctly
-import libtbx.load_env
 from xia2.Applications.xia2_main import check_environment, write_citations
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Environment import Environment

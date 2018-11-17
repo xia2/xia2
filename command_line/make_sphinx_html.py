@@ -5,12 +5,11 @@ from __future__ import absolute_import, division, print_function
 import os
 import shutil
 
-import libtbx.load_env
 from procrunner import run_process
+import xia2
 
-if (__name__ == "__main__") :
-  xia2_dir = libtbx.env.find_in_repositories("xia2", optional=False)
-  assert (xia2_dir is not None)
+if __name__ == "__main__":
+  xia2_dir = os.path.dirname(xia2.__file__)
   dest_dir = os.path.join(xia2_dir, "html")
   if os.path.exists(dest_dir):
     shutil.rmtree(dest_dir)

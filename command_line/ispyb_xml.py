@@ -1,7 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
 import os
-import libtbx.load_env
 import iotbx.phil
 from xia2.Interfaces.ISPyB.ISPyBXmlHandler import ISPyBXmlHandler
 from xia2.Schema.XProject import XProject

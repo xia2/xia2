@@ -16,7 +16,6 @@ import os
 import platform
 import sys
 
-import libtbx.load_env
 from libtbx.utils import Sorry
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Environment import Environment, df

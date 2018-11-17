@@ -7,8 +7,6 @@ import os
 import sys
 import traceback
 
-# Needed to make xia2 imports work correctly
-import libtbx.load_env
 from xia2.Applications.xia2_main import (check_environment, get_command_line,
                                          help)
 from xia2.Handlers.Streams import Chatter, Debug

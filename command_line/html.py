@@ -13,8 +13,6 @@ import traceback
 import json
 
 
-# Needed to make xia2 imports work correctly
-import libtbx.load_env
 from libtbx import phil
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Streams import Chatter, Debug
@@ -426,7 +424,8 @@ def rst2html(rst):
     def write_colspecs(self):
       self.colspecs = []
 
-  xia2_root_dir = libtbx.env.find_in_repositories("xia2", optional=False)
+  import xia2
+  xia2_root_dir = os.path.dirname(xia2.__file__)
 
   args = {
     'stylesheet_path': os.path.join(xia2_root_dir, 'css', 'voidspace.css')

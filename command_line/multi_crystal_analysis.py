@@ -7,8 +7,6 @@ import sys
 from tabulate import tabulate
 import traceback
 
-# Needed to make xia2 imports work correctly
-import libtbx.load_env
 from scitbx.array_family import flex
 from xia2.Applications.xia2_main import (check_environment, help,
                                          write_citations)

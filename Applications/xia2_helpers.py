@@ -3,8 +3,6 @@ from __future__ import absolute_import, division, print_function
 import os
 import shutil
 
-# Needed to make xia2 imports work correctly
-import libtbx.load_env
 from xia2.Handlers.Streams import Chatter, Debug
 from xia2.Wrappers.XIA.Integrate import Integrate as XIA2Integrate
 

@@ -3,8 +3,6 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-# Needed to make xia2 imports work correctly
-import libtbx.load_env
 from iotbx import mtz
 
 for f in os.listdir('DataFiles'):

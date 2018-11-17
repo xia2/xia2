@@ -13,7 +13,6 @@ from __future__ import absolute_import, division, print_function
 import os
 import sys
 
-import libtbx
 from libtbx import phil
 from xia2.Driver.DriverFactory import DriverFactory
 # interfaces that this inherits from ...

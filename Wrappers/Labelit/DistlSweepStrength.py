@@ -14,7 +14,6 @@ from __future__ import absolute_import, division, print_function
 import os
 import sys
 
-import libtbx.load_env
 import libtbx.phil
 from spotfinder.command_line import sweep_strength
 from xia2.Driver.DriverFactory import DriverFactory

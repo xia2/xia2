@@ -2,8 +2,6 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-# Needed to make xia2 imports work correctly
-import libtbx.load_env
 from xia2.Applications.xia2_main import write_citations
 from xia2.Handlers.Streams import Chatter, Debug
 

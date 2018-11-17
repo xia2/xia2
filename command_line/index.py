@@ -5,8 +5,6 @@ import os
 import sys
 import traceback
 
-# Needed to make xia2 imports work correctly
-import libtbx.load_env
 from xia2.Applications.xia2_main import check_environment, help
 from xia2.Handlers.Streams import Chatter, Debug
 
@@ -14,7 +12,8 @@ def run():
   try:
     check_environment()
   except Exception as e:
-    traceback.print_exc(file = open('xia2.error', 'w'))
+    with open('xia2.error', 'w') as fh:
+      traceback.print_exc(file=fh)
     Chatter.write('Status: error "%s"' % str(e))
 
   if len(sys.argv) < 2 or '-help' in sys.argv:
@@ -30,7 +29,8 @@ def run():
     Chatter.write('Status: normal termination')
 
   except Exception as e:
-    traceback.print_exc(file = open(os.path.join(wd, 'xia2.error'), 'w'))
+    with open(os.path.join(wd, 'xia2.error'), 'w') as fh:
+      traceback.print_exc(file=fh)
     Chatter.write('Status: error "%s"' % str(e))
 
 if __name__ == '__main__':

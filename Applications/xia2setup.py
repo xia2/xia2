@@ -542,7 +542,6 @@ def write_xinfo(filename, directories, template=None, hdf5_master_files=None):
   # if we have given a template and directory on the command line, just
   # look there (i.e. not in the subdirectories)
 
-  import libtbx.load_env
   if CommandLine.get_template() and CommandLine.get_directory():
     templates = set()
     for directory in CommandLine.get_directory():
@@ -553,8 +552,8 @@ def write_xinfo(filename, directories, template=None, hdf5_master_files=None):
   else:
     rummage(directories)
 
-  fout = open(filename, 'w')
-  print_sweeps(fout)
+  with open(filename, 'w') as fout:
+    print_sweeps(fout)
 
   # change back directory c/f bug # 2693 - important for error files...
   os.chdir(start)
