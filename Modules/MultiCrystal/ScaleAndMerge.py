@@ -6,6 +6,7 @@ import copy
 import logging
 import math
 import os
+import py
 
 from libtbx import Auto
 import iotbx.phil
@@ -439,6 +440,11 @@ class MultiCrystalScale(object):
     self._stereographic_projection_files = self.stereographic_projections(
       'experiments_reindexed_all.json')
     self.plot_multiplicity(self._scaled.scaled_unmerged_mtz)
+
+    scaled_unmerged_mtz = py.path.local(self._scaled.scaled_unmerged_mtz)
+    scaled_unmerged_mtz.copy(py.path.local('scaled_unmerged.mtz'))
+    scaled_mtz = py.path.local(self._scaled.scaled_mtz)
+    scaled_mtz.copy(py.path.local('scaled.mtz'))
 
     min_completeness = self._params.min_completeness
     min_multiplicity = self._params.min_multiplicity
