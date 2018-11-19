@@ -823,9 +823,15 @@ CC1/2: %.4f, Anomalous correlation %.4f""" % (
   def _determine_scaled_pointgroup(self):
     """Rerun symmetry after scaling to check for consistent space group. If not,
     then new space group should be used and data rescaled."""
-
-    current_pointgroup = load.experiment_list(self._scaler.get_scaled_experiments()
-      )[0].crystal.get_space_group()
+    from cctbx import crystal
+    exp_crystal = load.experiment_list(self._scaler.get_scaled_experiments()
+      )[0].crystal
+    cs = crystal.symmetry(space_group=exp_crystal.get_space_group(),
+      unit_cell=exp_crystal.get_unit_cell())
+    cs_ref = cs.as_reference_setting()
+    current_pointgroup = cs_ref.space_group()
+    #current_pointgroup = load.experiment_list(self._scaler.get_scaled_experiments()
+    #  )[0].crystal.get_space_group()
     current_patt_group = current_pointgroup.build_derived_patterson_group().type().lookup_symbol()
     Debug.write("Space group used in scaling: %s" % current_pointgroup.type().lookup_symbol())
     first = self._sweep_handler.get_epochs()[0]
