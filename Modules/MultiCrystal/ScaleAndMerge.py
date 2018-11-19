@@ -435,10 +435,10 @@ class MultiCrystalScale(object):
       for expt in self._data_manager.experiments)
     mca = self.multi_crystal_analysis(id_to_batches=id_to_batches)
 
-    self._data_manager.export_experiments('experiments_reindexed_all.json')
-    self._data_manager.export_reflections('reflections_reindexed_all.pickle')
+    self._data_manager.export_experiments('experiments_final.json')
+    self._data_manager.export_reflections('reflections_final.pickle')
     self._stereographic_projection_files = self.stereographic_projections(
-      'experiments_reindexed_all.json')
+      'experiments_final.json')
     self.plot_multiplicity(self._scaled.scaled_unmerged_mtz)
 
     scaled_unmerged_mtz = py.path.local(self._scaled.scaled_unmerged_mtz)
