@@ -148,6 +148,13 @@ class DialsScaler(Scaler):
 
     # try to reproduce what CCP4ScalerA is doing
 
+    # first assign identifiers to avoid dataset-id collisions
+    # Idea is that this should be called anytime you get data anew from the
+    # integrater, to intercept and assign unique ids, then set in the
+    # sweep_information (si) and always use si.set_reflections/
+    # si.get_reflections as we process.
+    self._sweep_handler = self._helper.assign_and_return_datasets(self._sweep_handler)
+
     # START OF if more than one epoch
     if len(self._sweep_handler.get_epochs()) > 1:
 
@@ -162,8 +169,8 @@ class DialsScaler(Scaler):
         for epoch in self._sweep_handler.get_epochs():
           si = self._sweep_handler.get_sweep_information(epoch)
           integrater = si.get_integrater()
-          experiments.append(integrater.get_integrated_experiments())
-          reflections.append(integrater.get_integrated_reflections())
+          experiments.append(si.get_experiments())
+          reflections.append(si.get_reflections())
           refiners.append(integrater.get_integrater_refiner())
 
         Debug.write('Running multisweep dials.symmetry for %d sweeps' %
@@ -294,30 +301,20 @@ class DialsScaler(Scaler):
       for epoch in self._sweep_handler.get_epochs():
         si = self._sweep_handler.get_sweep_information(epoch)
         integrater = si.get_integrater()
-        experiments.append(integrater.get_integrated_experiments())
-        reflections.append(integrater.get_integrated_reflections())
+        experiments.append(si.get_experiments())
+        reflections.append(si.get_reflections())
         refiners.append(integrater.get_integrater_refiner())
 
       pointgroup, reindex_op, ntr, pt, reind_refl, reind_exp = \
         self._dials_symmetry_indexer_jiffy(experiments, reflections, refiners, multisweep=True)
 
-      splitter = SplitExperiments()
-      splitter.add_experiments(reind_exp)
-      splitter.add_reflections(reind_refl)
-      splitter.set_working_directory(self.get_working_directory())
-      splitter.run()
+      self._sweep_handler = self._helper.split_experiments(
+        reind_exp, reind_refl, self._sweep_handler)
+
       experiments_to_rebatch = []
-      for i, epoch in enumerate(self._sweep_handler.get_epochs()):
+      for epoch in self._sweep_handler.get_epochs():
         si = self._sweep_handler.get_sweep_information(epoch)
-        split_exp = os.path.join(
-          self.get_working_directory(), 'split_experiments_%s.json' % i)
-        split_refl = os.path.join(
-          self.get_working_directory(), 'split_reflections_%s.pickle' % i)
-        FileHandler.record_temporary_file(split_exp)
-        FileHandler.record_temporary_file(split_refl)
-        si.set_reflections(split_refl)
-        si.set_experiments(split_exp)
-        experiments_to_rebatch.append(load.experiment_list(split_exp)[0])
+        experiments_to_rebatch.append(load.experiment_list(si.get_experiments())[0])
 
       offsets = calculate_batch_offsets(experiments_to_rebatch)
 
@@ -344,8 +341,8 @@ class DialsScaler(Scaler):
       for epoch in self._sweep_handler.get_epochs():
         si = self._sweep_handler.get_sweep_information(epoch)
         intgr = si.get_integrater()
-        experiment = intgr.get_integrated_experiments()
-        reflections = intgr.get_integrated_reflections()
+        experiment = si.get_experiments()
+        reflections = si.get_reflections()
         refiner = intgr.get_integrater_refiner()
 
         if self._scalr_input_pointgroup:
@@ -460,6 +457,8 @@ class DialsScaler(Scaler):
         u, b, s = get_umat_bmat_lattice_symmetry_from_mtz(si.get_reflections())
         U = fixed.inverse() * sqr(u).transpose()
         Debug.write('New reindex: %s' % (U.inverse() * reference_U))
+      # need to set identifiers again
+      self._sweep_handler = assign_and_return_datasets(self._sweep_handler)
 
     #FIXME use a reference reflection file as set by xcrystal?
     #if self.get_scaler_reference_reflection_file():
@@ -875,6 +874,51 @@ class DialsScalerHelper(object):
   def get_working_directory(self):
     return self._working_directory
 
+  def assign_dataset_identifiers(self, experiments, reflections):
+    """Assign unique identifiers to the datasets"""
+    assigner = DialsAssignIdentifiers()
+    assigner.set_working_directory(self.get_working_directory())
+    auto_logfiler(assigner)
+    for (exp, refl) in zip(experiments, reflections):
+      assigner.add_experiments(exp)
+      assigner.add_reflections(refl)
+    assigner.assign_identifiers()
+    return assigner
+
+  def split_experiments(self, experiment, reflection, sweep_handler):
+    """Split a multi-experiment dataset into individual datasets and set in the
+    sweep handler."""
+    splitter = SplitExperiments()
+    splitter.add_experiments(experiment)
+    splitter.add_reflections(reflection)
+    splitter.set_working_directory(self.get_working_directory())
+    auto_logfiler(splitter)
+    splitter.run()
+    for i, epoch in enumerate(sweep_handler.get_epochs()):
+      si = sweep_handler.get_sweep_information(epoch)
+      si.set_reflections(os.path.join(
+        self.get_working_directory(), 'split_reflections_%s.pickle' % i))
+      si.set_experiments(os.path.join(
+        self.get_working_directory(), 'split_experiments_%s.json' % i))
+    return sweep_handler
+
+  def assign_and_return_datasets(self, sweep_handler):
+    """Assign unique identifiers to all integrated experiments & reflections,
+    and set these in the sweep_information for each epoch."""
+    experiments = []
+    reflections = []
+    for epoch in sweep_handler.get_epochs():
+      si = sweep_handler.get_sweep_information(epoch)
+      integrater = si.get_integrater()
+      experiments.append(integrater.get_integrated_experiments())
+      reflections.append(integrater.get_integrated_reflections())
+    assigner = self.assign_dataset_identifiers(experiments, reflections)
+    sweep_handler = self.split_experiments(
+      assigner.get_output_experiments_filename(),
+      assigner.get_output_reflections_filename(),
+      sweep_handler)
+    return sweep_handler
+
   def dials_symmetry_indexer_jiffy(self, experiments, reflections, refiners,
     multisweep=False):
     '''A jiffy to centralise the interactions between dials.symmetry
@@ -931,16 +975,9 @@ class DialsScalerHelper(object):
                                                     self._scalr_xname),
                             symmetry_analyser.get_log_file())
 
-    assigner = DialsAssignIdentifiers()
-    assigner.set_working_directory(self.get_working_directory())
-    auto_logfiler(assigner)
     for (exp, refl) in zip(experiments, reflections):
-      assigner.add_experiments(exp)
-      assigner.add_reflections(refl)
-    assigner.assign_identifiers()
-
-    symmetry_analyser.add_experiments(assigner.get_output_experiments_filename())
-    symmetry_analyser.add_reflections(assigner.get_output_reflections_filename())
+      symmetry_analyser.add_experiments(exp)
+      symmetry_analyser.add_reflections(refl)
     symmetry_analyser.decide_pointgroup()
 
     return symmetry_analyser
