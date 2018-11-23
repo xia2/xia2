@@ -329,7 +329,8 @@ class _CommandLine(object):
 
       start_end = None
 
-      if ':' in dataset:
+      # here we only care about ':' which are later than C:\
+      if ':' in dataset[3:]:
         tokens = dataset.split(':')
         # cope with windows drives i.e. C:\data\blah\thing_0001.cbf:1:100
         if len(tokens[0]) == 1:
