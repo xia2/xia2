@@ -897,15 +897,7 @@ class DialsScalerHelper(object):
     splitter.run()
 
     nn = len(sweep_handler.get_epochs())
-
-    if nn < 10:
-      fmt = '%d'
-    elif nn < 100:
-      fmt = '%02d'
-    elif nn < 1000:
-      fmt = '%03d'
-    else:
-      raise RuntimeError('haha surely not')
+    fmt = '%%0%dd' % (math.log10(nn) + 1)
 
     for i, epoch in enumerate(sweep_handler.get_epochs()):
       si = sweep_handler.get_sweep_information(epoch)
