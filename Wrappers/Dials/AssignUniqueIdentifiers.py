@@ -40,7 +40,7 @@ def DialsAssignIdentifiers(DriverType = None):
       return self._output_experiments_filename
 
     def assign_identifiers(self):
-      
+
       self.clear_command_line()
       assert self._experiments_filenames
       assert self._reflections_filenames

@@ -47,7 +47,7 @@ def SplitExperiments(DriverType = None):
       assert len(self._experiments_filename) == 1
       assert len(self._experiments_filename) == len(self._reflections_filename)
 
-      
+
       self.add_command_line(self._experiments_filename)
       self.add_command_line(self._reflections_filename)
 
