@@ -895,12 +895,25 @@ class DialsScalerHelper(object):
     splitter.set_working_directory(self.get_working_directory())
     auto_logfiler(splitter)
     splitter.run()
+
+    nn = len(sweep_handler.get_epochs())
+
+    if nn < 10:
+      fmt = '%d'
+    elif nn < 100:
+      fmt = '%02d'
+    elif nn < 1000:
+      fmt = '%03d'
+    else:
+      raise RuntimeError, 'haha surely not'
+
     for i, epoch in enumerate(sweep_handler.get_epochs()):
       si = sweep_handler.get_sweep_information(epoch)
+      nums = fmt % i
       si.set_reflections(os.path.join(
-        self.get_working_directory(), 'split_reflections_%s.pickle' % i))
+        self.get_working_directory(), 'split_reflections_%s.pickle' % nums))
       si.set_experiments(os.path.join(
-        self.get_working_directory(), 'split_experiments_%s.json' % i))
+        self.get_working_directory(), 'split_experiments_%s.json' % nums))
     # now make sure all dataset ids are unique
     sweep_handler = self._renumber_ids_in_tables(sweep_handler)
     return sweep_handler
