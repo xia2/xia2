@@ -905,7 +905,7 @@ class DialsScalerHelper(object):
     elif nn < 1000:
       fmt = '%03d'
     else:
-      raise RuntimeError, 'haha surely not'
+      raise RuntimeError('haha surely not')
 
     for i, epoch in enumerate(sweep_handler.get_epochs()):
       si = sweep_handler.get_sweep_information(epoch)
