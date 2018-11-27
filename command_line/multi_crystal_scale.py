@@ -12,6 +12,8 @@ from dials.array_family import flex
 from dials.util.options import OptionParser
 from dials.util import log
 from dials.util.options import flatten_experiments, flatten_reflections
+from dials.util.multi_dataset_handling import assign_unique_identifiers,\
+  parse_multiple_datasets
 
 from xia2.Modules.MultiCrystal import ScaleAndMerge
 
@@ -89,21 +91,15 @@ def run():
 
   experiments = flatten_experiments(params.input.experiments)
   reflections = flatten_reflections(params.input.reflections)
+  reflections = parse_multiple_datasets(reflections)
+  experiments, reflections = assign_unique_identifiers(
+    experiments, reflections, params.identifiers)
 
   reflections_all = flex.reflection_table()
   assert len(reflections) == 1 or len(reflections) == len(experiments)
   if len(reflections) > 1:
     for i, (expt, refl) in enumerate(zip(experiments, reflections)):
-      expt.identifier = '%i' % i
-      refl['identifier'] = flex.std_string(refl.size(), expt.identifier)
-      refl['id'] = flex.int(refl.size(), i)
       reflections_all.extend(refl)
-      reflections_all.experiment_identifiers()[i] = expt.identifier
-  else:
-    reflections_all = reflections[0]
-    assert 'identifier' in reflections_all
-    assert len(set(reflections_all['identifier'])) == len(experiments)
-
   reflections_all.assert_experiment_identifiers_are_consistent(experiments)
 
   if params.identifiers is not None:

@@ -237,10 +237,10 @@ class DataManager(object):
       crystal_symmetry = crystal.symmetry(
         unit_cell=expt.crystal.get_unit_cell(),
         space_group=expt.crystal.get_space_group())
-      sel = ((self._reflections.get_flags(self._reflections.flags.integrated_sum)
-              & (self._reflections['identifier'] == expt.identifier)))
-      assert sel.count(True) > 0, expt.identifier
-      refl = self._reflections.select(sel)
+      refl = self._reflections.select(
+        self._reflections.get_flags(self._reflections.flags.integrated_sum))
+      refl = refl.select_on_experiment_identifiers([expt.identifier])
+      assert refl.size() > 0, expt.identifier
 
       from dials.util.filter_reflections import filter_reflection_table
       if intensity_key == 'intensity.scale.value':
@@ -283,62 +283,15 @@ class DataManager(object):
         miller_arrays.append(intensities)
     return miller_arrays
 
-  def reindex(self, cb_op=None, cb_ops=None, space_group=None):
-    assert [cb_op, cb_ops].count(None) == 1
+  def reindex(self, cb_op, space_group=None):
+    logger.info('Reindexing: %s' % cb_op)
+    self._reflections['miller_index'] = cb_op.apply(self._reflections['miller_index'])
 
-    remove = []
-    if cb_op is not None:
-      logger.info('Reindexing: %s' % cb_op)
-      self._reflections['miller_index'] = cb_op.apply(self._reflections['miller_index'])
-
-      for expt in self._experiments:
-        cryst_reindexed = expt.crystal.change_basis(cb_op)
-        if space_group is not None:
-          cryst_reindexed.set_space_group(space_group)
-        expt.crystal.update(cryst_reindexed)
-
-    elif isinstance(cb_ops, dict):
-      for cb_op, dataset_ids in cb_ops.iteritems():
-        cb_op = sgtbx.change_of_basis_op(cb_op)
-
-        for dataset_id in dataset_ids:
-          expt = self._experiments[dataset_id]
-          logger.info('Reindexing experiment %s: %s' % (
-            expt.identifier, cb_op.as_xyz()))
-          cryst_reindexed = expt.crystal.change_basis(cb_op)
-          if space_group is not None:
-            cryst_reindexed.set_space_group(space_group)
-          expt.crystal.update(cryst_reindexed)
-          sel = self._reflections['identifier'] == expt.identifier
-          try:
-            self._reflections['miller_index'].set_selected(sel, cb_op.apply(
-              self._reflections['miller_index'].select(sel)))
-          except RuntimeError as e:
-            if 'cctbx Error: Change of basis yields non-integral Miller index.' in str(e):
-              remove.append(expt.identifier)
-
-    else:
-      assert len(cb_ops) == len(self._experiments)
-      for cb_op, expt in zip(cb_ops, self._experiments):
-        logger.info('Reindexing experiment %s: %s' % (
-          expt.identifier, cb_op.as_xyz()))
-        cryst_reindexed = expt.crystal.change_basis(cb_op)
-        if space_group is not None:
-          cryst_reindexed.set_space_group(space_group)
-        expt.crystal.update(cryst_reindexed)
-        sel = self._reflections['identifier'] == expt.identifier
-        try:
-          self._reflections['miller_index'].set_selected(sel, cb_op.apply(
-            self._reflections['miller_index'].select(sel)))
-        except RuntimeError as e:
-          if 'cctbx Error: Change of basis yields non-integral Miller index.' in str(e):
-            remove.append(expt.identifier)
-
-    if len(remove):
-      logger.info('Removing experiments: %s' % str(remove))
-      identifiers = [expt.identifier for expt in self._experiments
-                     if expt.identifier not in remove]
-      self.select(identifiers)
+    for expt in self._experiments:
+      cryst_reindexed = expt.crystal.change_basis(cb_op)
+      if space_group is not None:
+        cryst_reindexed.set_space_group(space_group)
+      expt.crystal.update(cryst_reindexed)
 
   def export_reflections(self, filename):
     self._reflections.as_pickle(filename)
@@ -385,8 +338,9 @@ class MultiCrystalScale(object):
       profile_fitted_mask = reflections.get_flags(reflections.flags.integrated_prf)
       keep_expts = []
       for i, expt in enumerate(experiments):
-        refl_sel = reflections['identifier'] == expt.identifier
-        if profile_fitted_mask.select(refl_sel).count(True):
+        if reflections.select(
+            profile_fitted_mask).select_on_experiment_identifiers(
+              [expt.identifier]).size():
           keep_expts.append(expt.identifier)
       if len(keep_expts):
         logger.info('Selecting %i experiments with profile-fitted reflections'
@@ -397,8 +351,9 @@ class MultiCrystalScale(object):
     used_in_refinement_mask = reflections.get_flags(reflections.flags.used_in_refinement)
     keep_expts = []
     for i, expt in enumerate(experiments):
-      refl_sel = reflections['identifier'] == expt.identifier
-      if used_in_refinement_mask.select(refl_sel).count(True):
+      if reflections.select(
+          used_in_refinement_mask).select_on_experiment_identifiers(
+            [expt.identifier]).size():
         keep_expts.append(expt.identifier)
       else:
         logger.info(
