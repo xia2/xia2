@@ -6,7 +6,7 @@ import os
 import shutil
 import sys
 
-from cctbx import sgtbx, crystal, uctbx
+from cctbx import sgtbx, crystal
 from cctbx.sgtbx import bravais_types
 
 from xia2.Driver.DriverFactory import DriverFactory
@@ -195,8 +195,9 @@ def DialsSymmetry(DriverType = None):
       if PhilIndex.params.xia2.settings.symmetry.chirality in (None, 'chiral'):
         patterson_group = patterson_group.build_derived_acentric_group()
 
+      unit_cell = d['input_symmetry']['unit_cell']
       #dummy unit cell values to allow .as_reference_setting() call
-      cs = crystal.symmetry(unit_cell=uctbx.unit_cell((1, 1, 1, 90, 90, 90)),
+      cs = crystal.symmetry(unit_cell=unit_cell,
         space_group=patterson_group)
       cb_op_best_to_ref = cs.change_of_basis_op_to_reference_setting()
       cs_reference = cs.as_reference_setting()
@@ -215,7 +216,7 @@ def DialsSymmetry(DriverType = None):
           patterson_group = sgtbx.space_group(str(score['patterson_group']))
           if PhilIndex.params.xia2.settings.symmetry.chirality in (None, 'chiral'):
             patterson_group = patterson_group.build_derived_acentric_group()
-          cs = crystal.symmetry(unit_cell=uctbx.unit_cell((1, 1, 1, 90, 90, 90)),
+          cs = crystal.symmetry(unit_cell=unit_cell,
             space_group=patterson_group)
           cs_reference = cs.as_reference_setting()
           patterson_group = cs_reference.space_group()
