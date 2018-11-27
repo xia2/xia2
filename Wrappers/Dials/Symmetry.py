@@ -18,6 +18,7 @@ from xia2.lib.SymmetryLib import (clean_reindex_operator, lauegroup_to_lattice,
                                   spacegroup_name_xHM_to_old)
 # XDS_ASCII meddling things
 from xia2.Modules.XDS_ASCII import remove_misfits
+from dxtbx.serialize import load
 
 def DialsSymmetry(DriverType = None):
   '''A factory for DialsSymmetryWrapper classes.'''
@@ -195,8 +196,9 @@ def DialsSymmetry(DriverType = None):
       if PhilIndex.params.xia2.settings.symmetry.chirality in (None, 'chiral'):
         patterson_group = patterson_group.build_derived_acentric_group()
 
-      unit_cell = d['input_symmetry']['unit_cell']
-      #dummy unit cell values to allow .as_reference_setting() call
+      exp = load.experiment_list(
+        self.get_output_experiments_filename(), check_format=0)[0]
+      unit_cell = exp.crystal.get_unit_cell()
       cs = crystal.symmetry(unit_cell=unit_cell,
         space_group=patterson_group)
       cb_op_best_to_ref = cs.change_of_basis_op_to_reference_setting()
