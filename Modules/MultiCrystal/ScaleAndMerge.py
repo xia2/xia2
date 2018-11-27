@@ -29,8 +29,6 @@ from xia2.Handlers.Environment import get_number_cpus
 from xia2.Modules.MultiCrystal import multi_crystal_analysis
 from xia2.Modules.MultiCrystal import separate_unmerged
 import xia2.Modules.Scaler.tools as tools
-from xia2.Wrappers.CCP4.Aimless import Aimless
-from xia2.Wrappers.CCP4.Pointless import Pointless
 from xia2.Wrappers.Dials.Cosym import DialsCosym
 from xia2.Wrappers.Dials.Refine import Refine
 from xia2.Wrappers.Dials.Scale import DialsScale
@@ -62,10 +60,7 @@ unit_cell_clustering {
 }
 
 scaling
-  .short_caption = "aimless"
 {
-  program = aimless *dials
-    .type = choice
   #intensities = summation profile *combine
     #.type = choice
   surface_tie = 0.001
@@ -114,8 +109,6 @@ symmetry {
   }
   le_page_max_delta = 5
     .type = float(value_min=0)
-  program = pointless *dials
-    .type = choice
   space_group = None
     .type = space_group
 }
@@ -659,68 +652,6 @@ class MultiCrystalScale(object):
       self._reflections_filename)
     return
 
-    # per-dataset change of basis operator to ensure all consistent
-
-    cb_op_best_min = None
-    change_of_basis_ops = []
-    for i, expt in enumerate(self._data_manager.experiments):
-      crystal_symmetry = expt.crystal.get_crystal_symmetry()
-      metric_subgroups = sgtbx.lattice_symmetry.metric_subgroups(
-        crystal_symmetry, max_delta=self._params.symmetry.le_page_max_delta)
-      subgroup = metric_subgroups.result_groups[0]
-      cb_op_inp_best = subgroup['cb_op_inp_best']
-      crystal_symmetry_best = crystal_symmetry.change_basis(cb_op_inp_best)
-      if cb_op_best_min is None:
-        cb_op_best_min = crystal_symmetry_best.change_of_basis_op_to_niggli_cell()
-      cb_op_inp_min = cb_op_best_min * cb_op_inp_best
-      change_of_basis_ops.append(cb_op_inp_min)
-    self._data_manager.reindex(
-      cb_ops=change_of_basis_ops, space_group=sgtbx.space_group())
-
-    miller_arrays = self._data_manager.reflections_as_miller_arrays(
-      intensity_key='intensity.sum.value')
-
-    miller_arrays_p1 = []
-    for ma in miller_arrays:
-      cb_op_to_primitive = ma.change_of_basis_op_to_primitive_setting()
-      ma = ma.change_basis(cb_op_to_primitive)
-      space_group_info = sgtbx.space_group_info('P1')
-      ma = ma.customized_copy(space_group_info=space_group_info)
-      ma = ma.merge_equivalents().array()
-      miller_arrays_p1.append(ma)
-
-    params = self._params.symmetry.cosym
-    from xia2.lib import bits
-    xpid = bits._get_number()
-    params.plot_prefix = '%i_' % xpid
-
-    result = cosym_analyse_datasets(miller_arrays_p1, params)
-
-    space_groups = {}
-    reindexing_ops = {}
-    for dataset_id in result.reindexing_ops.iterkeys():
-      if 0 in result.reindexing_ops[dataset_id]:
-        cb_op = result.reindexing_ops[dataset_id][0]
-        reindexing_ops.setdefault(cb_op, [])
-        reindexing_ops[cb_op].append(dataset_id)
-      if dataset_id in result.space_groups:
-        space_groups.setdefault(result.space_groups[dataset_id], [])
-        space_groups[result.space_groups[dataset_id]].append(dataset_id)
-
-    logger.info('Space groups:')
-    for sg, datasets in space_groups.iteritems():
-      logger.info(str(sg.info().reference_setting()))
-      logger.info(datasets)
-
-    logger.info('Reindexing operators:')
-    for cb_op, datasets in reindexing_ops.iteritems():
-      logger.info(cb_op)
-      logger.info(datasets)
-
-    self._data_manager.reindex(cb_ops=reindexing_ops)
-
-    return
-
   def multi_crystal_analysis(self, id_to_batches):
 
     result = any_reflection_file(self._scaled.scaled_unmerged_mtz)
@@ -902,6 +833,7 @@ class Scale(object):
     self.radiation_damage_analysis(d_min=d_min)
 
   def decide_space_group(self):
+
     if self._params.symmetry.space_group is not None:
       self._sorted_mtz = 'sorted.mtz'
       # reindex to correct bravais setting
@@ -916,76 +848,7 @@ class Scale(object):
       self._data_manager.export_experiments(self._experiments_filename)
       self._data_manager.export_reflections(self._reflections_filename)
       return
-    if self._params.symmetry.program == 'pointless':
-      space_group, reindex_op = self._decide_space_group_pointless()
-    else:
-      space_group, reindex_op = self._decide_space_group_dials()
 
-  def refine(self):
-    # refine in correct bravais setting
-    self._experiments_filename, self._reflections_filename = self._dials_refine(
-      self._experiments_filename, self._reflections_filename)
-    self._data_manager.experiments = load.experiment_list(
-      self._experiments_filename, check_format=False)
-    self._data_manager.reflections = flex.reflection_table.from_pickle(
-      self._reflections_filename)
-
-  def two_theta_refine(self):
-    # two-theta refinement to get best estimate of unit cell
-    self.best_unit_cell, self.best_unit_cell_esd, self._experiments_filename \
-      = self._dials_two_theta_refine(
-          self._experiments_filename, self._reflections_filename)
-    self._data_manager.experiments = load.experiment_list(
-      self._experiments_filename, check_format=False)
-    tools.patch_mtz_unit_cell(self._sorted_mtz, self.best_unit_cell)
-
-  def scale(self, d_min=None):
-
-    if self._params.scaling.program == 'aimless':
-      # scale data with aimless
-      scaled = self._scale_aimless(d_min=d_min)
-    elif self._params.scaling.program == 'dials':
-      scaled = self._scale_dials(d_min=d_min)
-    return scaled
-
-  @property
-  def scaled_mtz(self):
-    return self._scaled_mtz
-
-  @property
-  def scaled_unmerged_mtz(self):
-    return self._scaled_unmerged_mtz
-
-  @property
-  def data_manager(self):
-    return self._data_manager
-
-  def _decide_space_group_pointless(self):
-    logger.debug('Deciding space group with pointless')
-    symmetry = Pointless()
-    auto_logfiler(symmetry)
-
-    self._sorted_mtz = '%i_sorted.mtz' % symmetry.get_xpid()
-    self._experiments_filename = '%i_experiments_reindexed.json' % symmetry.get_xpid()
-    self._reflections_filename = '%i_reflections_reindexed.pickle' % symmetry.get_xpid()
-
-    symmetry.set_hklin(self._integrated_combined_mtz)
-    symmetry.set_hklout(self._sorted_mtz)
-    symmetry.set_allow_out_of_sequence_files(allow=True)
-    symmetry.decide_pointgroup()
-    space_group = sgtbx.space_group_info(
-      symbol=str(symmetry.get_pointgroup())).group()
-    cb_op =  sgtbx.change_of_basis_op(symmetry.get_reindex_operator())
-
-    # reindex to correct bravais setting
-    self._data_manager.reindex(cb_op=cb_op, space_group=space_group)
-    self._data_manager.export_experiments(self._experiments_filename)
-    self._data_manager.export_reflections(self._reflections_filename)
-
-    logger.info('Space group determined by pointless: %s' % space_group.info())
-    return space_group, cb_op
-
-  def _decide_space_group_dials(self):
     logger.debug('Deciding space group with dials.symmetry')
     symmetry = DialsSymmetry()
     auto_logfiler(symmetry)
@@ -1019,7 +882,36 @@ class Scale(object):
       filename=self._sorted_mtz)
 
     logger.info('Space group determined by dials.symmetry: %s' % space_group.info())
-    return space_group, cb_op
+
+  def refine(self):
+    # refine in correct bravais setting
+    self._experiments_filename, self._reflections_filename = self._dials_refine(
+      self._experiments_filename, self._reflections_filename)
+    self._data_manager.experiments = load.experiment_list(
+      self._experiments_filename, check_format=False)
+    self._data_manager.reflections = flex.reflection_table.from_pickle(
+      self._reflections_filename)
+
+  def two_theta_refine(self):
+    # two-theta refinement to get best estimate of unit cell
+    self.best_unit_cell, self.best_unit_cell_esd, self._experiments_filename \
+      = self._dials_two_theta_refine(
+          self._experiments_filename, self._reflections_filename)
+    self._data_manager.experiments = load.experiment_list(
+      self._experiments_filename, check_format=False)
+    tools.patch_mtz_unit_cell(self._sorted_mtz, self.best_unit_cell)
+
+  @property
+  def scaled_mtz(self):
+    return self._scaled_mtz
+
+  @property
+  def scaled_unmerged_mtz(self):
+    return self._scaled_unmerged_mtz
+
+  @property
+  def data_manager(self):
+    return self._data_manager
 
   @staticmethod
   def _dials_refine(experiments_filename, reflections_filename):
@@ -1041,32 +933,7 @@ class Scale(object):
     unit_cell_esd = tt_refiner.get_unit_cell_esd()
     return unit_cell, unit_cell_esd, tt_refiner.get_output_experiments()
 
-  def _scale_aimless(self, d_min=None):
-    logger.debug('Scaling with aimless')
-    scaler = Aimless()
-    auto_logfiler(scaler)
-    self._scaled_mtz = '%i_scaled.mtz' % scaler.get_xpid()
-    scaler.set_surface_link(False) # multi-crystal
-    scaler.set_hklin(self._sorted_mtz)
-    scaler.set_hklout(self._scaled_mtz)
-    scaler.set_surface_tie(self._params.scaling.surface_tie)
-    if self._params.scaling.secondary.frame == 'camera':
-      secondary = 'secondary'
-    else:
-      secondary = 'absorption'
-    lmax = self._params.scaling.secondary.lmax
-    scaler.set_secondary(mode=secondary, lmax=lmax)
-    scaler.set_spacing(self._params.scaling.rotation.spacing)
-    if self._params.scaling.brotation.spacing is not None:
-      scaler.set_bfactor(brotation=self._params.scaling.brotation.spacing)
-    if d_min is not None:
-      scaler.set_resolution(d_min)
-    scaler.scale()
-    self._scaled_unmerged_mtz \
-      = os.path.splitext(self._scaled_mtz)[0] + '_unmerged.mtz'
-    return scaler
-
-  def _scale_dials(self, d_min=None):
+  def scale(self, d_min=None):
     logger.debug('Scaling with dials.scale')
     scaler = DialsScale()
     auto_logfiler(scaler)
