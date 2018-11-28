@@ -6,7 +6,7 @@ import os
 import shutil
 import sys
 
-from cctbx import sgtbx, crystal
+from cctbx import sgtbx, crystal, uctbx
 from cctbx.sgtbx import bravais_types
 
 from xia2.Driver.DriverFactory import DriverFactory
@@ -18,7 +18,6 @@ from xia2.lib.SymmetryLib import (clean_reindex_operator, lauegroup_to_lattice,
                                   spacegroup_name_xHM_to_old)
 # XDS_ASCII meddling things
 from xia2.Modules.XDS_ASCII import remove_misfits
-from dxtbx.serialize import load
 
 def DialsSymmetry(DriverType = None):
   '''A factory for DialsSymmetryWrapper classes.'''
@@ -196,10 +195,16 @@ def DialsSymmetry(DriverType = None):
       if PhilIndex.params.xia2.settings.symmetry.chirality in (None, 'chiral'):
         patterson_group = patterson_group.build_derived_acentric_group()
 
-      exp = load.experiment_list(
-        self.get_output_experiments_filename(), check_format=0)[0]
-      unit_cell = exp.crystal.get_unit_cell()
-      cs = crystal.symmetry(unit_cell=unit_cell,
+      cb_op_inp_min = sgtbx.change_of_basis_op(str(d['cb_op_inp_min']))
+      cb_op_min_best = sgtbx.change_of_basis_op(str(best_solution['cb_op']))
+
+      input_cell = uctbx.unit_cell(d['input_symmetry']['unit_cell'])
+      cb_op_inp_best = cb_op_min_best * cb_op_inp_min
+      best_cell = input_cell.change_basis(
+        cb_op=sgtbx.change_of_basis_op(str(cb_op_inp_best)))
+      # ^^ not necessarily in reference setting e.g I2/m not C2/m
+
+      cs = crystal.symmetry(unit_cell=best_cell,
         space_group=patterson_group)
       cb_op_best_to_ref = cs.change_of_basis_op_to_reference_setting()
       cs_reference = cs.as_reference_setting()
@@ -207,9 +212,7 @@ def DialsSymmetry(DriverType = None):
 
       self._confidence = best_solution['confidence']
       self._totalprob = best_solution['likelihood']
-      cb_op_inp_min = sgtbx.change_of_basis_op(str(d['cb_op_inp_min']))
-      cb_op_min_best = sgtbx.change_of_basis_op(str(best_solution['cb_op']))
-      cb_op_inp_best = cb_op_min_best * cb_op_inp_min * cb_op_best_to_ref
+      cb_op_inp_best = cb_op_inp_best * cb_op_best_to_ref
       self._reindex_operator = cb_op_inp_best.as_xyz()
       self._reindex_matrix = cb_op_inp_best.c().r().as_double()
 
@@ -218,6 +221,11 @@ def DialsSymmetry(DriverType = None):
           patterson_group = sgtbx.space_group(str(score['patterson_group']))
           if PhilIndex.params.xia2.settings.symmetry.chirality in (None, 'chiral'):
             patterson_group = patterson_group.build_derived_acentric_group()
+
+          cb_op_min_this = sgtbx.change_of_basis_op(str(score['cb_op']))
+          cb_op_inp_this = cb_op_min_this * cb_op_inp_min
+          unit_cell = input_cell.change_basis(
+            cb_op=sgtbx.change_of_basis_op(str(cb_op_inp_this)))
           cs = crystal.symmetry(unit_cell=unit_cell,
             space_group=patterson_group)
           cs_reference = cs.as_reference_setting()
