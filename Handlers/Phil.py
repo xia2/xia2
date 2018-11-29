@@ -21,9 +21,6 @@ general
   check_image_files_readable = True
     .type = bool
     .expert_level = 2
-  backstop_mask = None
-    .type = path
-    .short_caption = "Backstop mask"
 }
 xds
   .short_caption = "XDS settings"
@@ -58,6 +55,10 @@ xds
   trusted_region = None
     .type = floats(size = 2)
     .short_caption="TRUSTED_REGION="
+    .expert_level = 1
+  backstop_mask = None
+    .type = path
+    .short_caption = "Backstop mask"
     .expert_level = 1
   profile_grid_size = None
     .short_caption="Number of profile grid points"
