@@ -259,11 +259,9 @@ class XSweep(object):
       scan = self._imageset.get_scan()
       if wavelength is not None:
 
-        # FIXME 29/NOV/06 if the wavelength wavelength value
-        # is 0.0 then first set it to the header value - note
-        # that this assumes that the header value is correct
+        # If the wavelength value is 0.0 then first set it to the header
+        # value - note that this assumes that the header value is correct
         # (a reasonable assumption)
-
         if wavelength.get_wavelength() == 0.0:
           wavelength.set_wavelength(beam_.get_wavelength())
 
