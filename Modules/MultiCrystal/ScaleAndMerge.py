@@ -88,7 +88,7 @@ scaling
       .short_caption = "Number of spherical harmonics for absorption correction"
   }
   dials {
-    model = *physical array KB
+    model = physical array KB *auto
       .type = choice
     outlier_rejection = simple *standard
       .type = choice
