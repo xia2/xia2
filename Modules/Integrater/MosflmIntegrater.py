@@ -292,9 +292,9 @@ class MosflmIntegrater(Integrater):
     if self._intgr_reso_low:
       integrater.set_d_max(self._intgr_reso_low)
 
-    if PhilIndex.params.general.backstop_mask:
+    if PhilIndex.params.mosflm.backstop_mask:
       from xia2.Toolkit.BackstopMask import BackstopMask
-      mask = BackstopMask(PhilIndex.params.general.backstop_mask)
+      mask = BackstopMask(PhilIndex.params.mosflm.backstop_mask)
       mask = mask.calculate_mask_mosflm(self.get_header())
       integrater.set_mask(mask)
 
@@ -575,9 +575,9 @@ class MosflmIntegrater(Integrater):
       if self._intgr_reso_low:
         job.set_d_max(self._intgr_reso_low)
 
-      if PhilIndex.params.general.backstop_mask:
+      if PhilIndex.params.mosflm.backstop_mask:
         from xia2.Toolkit.BackstopMask import BackstopMask
-        mask = BackstopMask(PhilIndex.params.general.backstop_mask)
+        mask = BackstopMask(PhilIndex.params.mosflm.backstop_mask)
         mask = mask.calculate_mask_mosflm(self.get_header())
         job.set_mask(mask)
 

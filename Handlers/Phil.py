@@ -22,6 +22,14 @@ general
     .type = bool
     .expert_level = 2
 }
+mosflm
+  .short_caption = "Mosflm settings"
+{
+  backstop_mask = None
+    .type = path
+    .short_caption = "Backstop mask"
+    .expert_level = 1
+}
 xds
   .short_caption = "XDS settings"
 {
