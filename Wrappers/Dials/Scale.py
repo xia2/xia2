@@ -15,6 +15,8 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
+from libtbx import Auto
+
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
@@ -38,7 +40,7 @@ def DialsScale(DriverType=None,
       # clear all the header junk
       self.reset()
 
-      self._model = 'physical'
+      self._model = None
       self._full_matrix = True
       self._absorption_correction = True
       self._optimise_errors = True
@@ -151,9 +153,6 @@ def DialsScale(DriverType=None,
       self._lmax = lmax
 
     def set_model(self, model):
-      model = model.lower()
-      if model not in ('physical', 'array', 'kb'):
-        raise RuntimeError('unknown scaling model "%s"' % model)
       self._model = model
 
     def set_full_matrix(self, full_matrix=True):
@@ -241,7 +240,8 @@ def DialsScale(DriverType=None,
       elif self._intensities == 'profile':
         self.add_command_line('intensity_choice=profile')
 
-      self.add_command_line('model=%s' % self._model)
+      if self._model is not None:
+        self.add_command_line('model=%s' % self._model)
       self.add_command_line('full_matrix=%s' % self._full_matrix)
       self.add_command_line('scale_interval=%g' % self._spacing)
       self.add_command_line('optimise_errors=%s' % self._optimise_errors)

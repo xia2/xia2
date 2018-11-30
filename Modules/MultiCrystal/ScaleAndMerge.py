@@ -88,7 +88,7 @@ scaling
       .short_caption = "Number of spherical harmonics for absorption correction"
   }
   dials {
-    model = physical array KB *auto
+    model = physical array KB auto
       .type = choice
     outlier_rejection = simple *standard
       .type = choice
@@ -915,7 +915,8 @@ class Scale(object):
       scaler.set_partiality_cutoff(self._params.scaling.dials.partiality_cutoff)
 
     scaler.set_full_matrix(False)
-    scaler.set_model(self._params.scaling.dials.model)
+    if self._params.scaling.dials.model is not None:
+      scaler.set_model(self._params.scaling.dials.model)
     scaler.set_outlier_rejection(self._params.scaling.dials.outlier_rejection)
 
     scaler.scale()
