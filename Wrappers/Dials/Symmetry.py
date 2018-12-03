@@ -205,7 +205,7 @@ def DialsSymmetry(DriverType = None):
       # ^^ not necessarily in reference setting e.g I2/m not C2/m
 
       cs = crystal.symmetry(unit_cell=best_cell,
-        space_group=patterson_group)
+        space_group=patterson_group, assert_is_compatible_unit_cell=False)
       cb_op_best_to_ref = cs.change_of_basis_op_to_reference_setting()
       cs_reference = cs.as_reference_setting()
       self._pointgroup = cs_reference.space_group().type().lookup_symbol()
@@ -227,7 +227,7 @@ def DialsSymmetry(DriverType = None):
           unit_cell = input_cell.change_basis(
             cb_op=sgtbx.change_of_basis_op(str(cb_op_inp_this)))
           cs = crystal.symmetry(unit_cell=unit_cell,
-            space_group=patterson_group)
+            space_group=patterson_group, assert_is_compatible_unit_cell=False)
           cs_reference = cs.as_reference_setting()
           patterson_group = cs_reference.space_group()
 
