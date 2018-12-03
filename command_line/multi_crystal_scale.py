@@ -93,7 +93,7 @@ def run():
   reflections = flatten_reflections(params.input.reflections)
   reflections = parse_multiple_datasets(reflections)
   experiments, reflections = assign_unique_identifiers(
-    experiments, reflections, params.identifiers)
+    experiments, reflections)
 
   reflections_all = flex.reflection_table()
   assert len(reflections) == 1 or len(reflections) == len(experiments)

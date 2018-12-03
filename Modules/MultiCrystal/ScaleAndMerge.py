@@ -337,7 +337,7 @@ class MultiCrystalScale(object):
       reflections = self._data_manager.reflections
       profile_fitted_mask = reflections.get_flags(reflections.flags.integrated_prf)
       keep_expts = []
-      for i, expt in enumerate(experiments):
+      for i, expt in enumerate(self._data_manager.experiments):
         if reflections.select(
             profile_fitted_mask).select_on_experiment_identifiers(
               [expt.identifier]).size():
@@ -350,7 +350,7 @@ class MultiCrystalScale(object):
     reflections = self._data_manager.reflections
     used_in_refinement_mask = reflections.get_flags(reflections.flags.used_in_refinement)
     keep_expts = []
-    for i, expt in enumerate(experiments):
+    for i, expt in enumerate(self._data_manager.experiments):
       if reflections.select(
           used_in_refinement_mask).select_on_experiment_identifiers(
             [expt.identifier]).size():
