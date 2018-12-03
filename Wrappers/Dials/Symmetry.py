@@ -6,7 +6,7 @@ import os
 import shutil
 import sys
 
-from cctbx import sgtbx
+from cctbx import sgtbx, crystal, uctbx
 from cctbx.sgtbx import bravais_types
 
 from xia2.Driver.DriverFactory import DriverFactory
@@ -194,13 +194,25 @@ def DialsSymmetry(DriverType = None):
         str(best_solution['patterson_group']))
       if PhilIndex.params.xia2.settings.symmetry.chirality in (None, 'chiral'):
         patterson_group = patterson_group.build_derived_acentric_group()
-      self._pointgroup = patterson_group.type().lookup_symbol()
+
+      cb_op_inp_min = sgtbx.change_of_basis_op(str(d['cb_op_inp_min']))
+      cb_op_min_best = sgtbx.change_of_basis_op(str(best_solution['cb_op']))
+
+      input_cell = uctbx.unit_cell(d['input_symmetry']['unit_cell'])
+      cb_op_inp_best = cb_op_min_best * cb_op_inp_min
+      best_cell = input_cell.change_basis(
+        cb_op=sgtbx.change_of_basis_op(str(cb_op_inp_best)))
+      # ^^ not necessarily in reference setting e.g I2/m not C2/m
+
+      cs = crystal.symmetry(unit_cell=best_cell,
+        space_group=patterson_group)
+      cb_op_best_to_ref = cs.change_of_basis_op_to_reference_setting()
+      cs_reference = cs.as_reference_setting()
+      self._pointgroup = cs_reference.space_group().type().lookup_symbol()
 
       self._confidence = best_solution['confidence']
       self._totalprob = best_solution['likelihood']
-      cb_op_inp_min = sgtbx.change_of_basis_op(str(d['cb_op_inp_min']))
-      cb_op_min_best = sgtbx.change_of_basis_op(str(best_solution['cb_op']))
-      cb_op_inp_best = cb_op_min_best * cb_op_inp_min
+      cb_op_inp_best = cb_op_inp_best * cb_op_best_to_ref
       self._reindex_operator = cb_op_inp_best.as_xyz()
       self._reindex_matrix = cb_op_inp_best.c().r().as_double()
 
@@ -209,6 +221,15 @@ def DialsSymmetry(DriverType = None):
           patterson_group = sgtbx.space_group(str(score['patterson_group']))
           if PhilIndex.params.xia2.settings.symmetry.chirality in (None, 'chiral'):
             patterson_group = patterson_group.build_derived_acentric_group()
+
+          cb_op_min_this = sgtbx.change_of_basis_op(str(score['cb_op']))
+          cb_op_inp_this = cb_op_min_this * cb_op_inp_min
+          unit_cell = input_cell.change_basis(
+            cb_op=sgtbx.change_of_basis_op(str(cb_op_inp_this)))
+          cs = crystal.symmetry(unit_cell=unit_cell,
+            space_group=patterson_group)
+          cs_reference = cs.as_reference_setting()
+          patterson_group = cs_reference.space_group()
 
           netzc = score['z_cc_net']
           # record this as a possible lattice if its Z score is positive
