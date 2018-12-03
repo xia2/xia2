@@ -341,7 +341,6 @@ class xia2_report(object):
 
     for level, text, sub_header in issues._issues:
       summary = sub_header_to_out.get(sub_header, StringIO()).getvalue()
-      summary = summary.replace('<', '&lt;').replace('>', '&gt;')
       d = {
         'level': level,
         'text': text,
