@@ -1,4 +1,5 @@
-#!/usr/bin/env dials.python
+# -*- coding: utf-8 -*-
+#!/usr/bin/env xia2.python
 from __future__ import absolute_import, division, print_function
 
 from collections import OrderedDict
@@ -130,9 +131,99 @@ class multi_crystal_analysis(xia2_report_base):
 
     return mca
 
+  def unit_cell_analysis(self):
+    from dials.command_line.unit_cell_histogram import uc_params_from_experiments, \
+      panel_distances_from_experiments, outlier_selection
+    experiments = self._data_manager.experiments
+    uc_params = uc_params_from_experiments(experiments)
+    panel_distances = panel_distances_from_experiments(experiments)
+    outliers = outlier_selection(uc_params)
+
+    d = {}
+    d.update(
+      self._plot_uc_histograms(uc_params, outliers,
+        #params.steps_per_angstrom
+    ))
+    #self._plot_uc_vs_detector_distance(uc_params, panel_distances, outliers, params.steps_per_angstrom)
+    #self._plot_number_of_crystals(experiments)
+    return d
+
+  @staticmethod
+  def _plot_uc_histograms(uc_params, outliers, steps_per_angstrom=20):
+    uc_labels = ['a', 'b', 'c']
+    a, b, c = uc_params[:3]
+    d = OrderedDict()
+
+    def uc_param_hist1d(p, l):
+      nbins = 100
+      return {
+        'uc_hist_%s' % l: {
+          'data': [{
+            'x': list(p),
+            'type': 'histogram',
+            'connectgaps': False,
+            'name': 'unit_cell_hist_%s' % l,
+            'nbins': 'auto',
+          }],
+          'layout': {
+            'title': 'Histogram of unit cell parameters',
+            'xaxis': {
+              'domain': [0, 0.85],
+              'title': '%s (Å)' % l,
+            },
+            'yaxis': {
+              'title': 'Frequency',
+            },
+            'width': 500,
+            'height': 450,
+          },
+        },
+      }
+
+    def uc_param_hist2d(p1, p2, l1, l2):
+      nbins = 100
+      return {
+        'uc_hist_%s_%s' % (l1, l2): {
+          'data': [{
+            'x': list(p1),
+            'y': list(p2),
+            'type': 'histogram2d',
+            'connectgaps': False,
+            'name': 'unit_cell_hist_%s_%s' % (l1, l2),
+            'nbinsx': nbins,
+            'nbinsy': nbins,
+            'colorscale': 'Jet',
+            'showscale': False,
+          }],
+          'layout': {
+            'title': 'Histogram of unit cell parameters',
+            'xaxis': {
+              'domain': [0, 0.85],
+              'title': '%s (Å)' % l1,
+            },
+            'yaxis': {
+              'title': '%s (Å)' % l2,
+            },
+            'width': 500,
+            'height': 450,
+          },
+        },
+      }
+
+    d.update(uc_param_hist1d(a, 'a'))
+    d.update(uc_param_hist1d(b, 'b'))
+    d.update(uc_param_hist1d(c, 'c'))
+
+    d.update(uc_param_hist2d(a, b, 'a', 'b'))
+    d.update(uc_param_hist2d(b, c, 'b', 'c'))
+    d.update(uc_param_hist2d(c, a, 'c', 'a'))
+
+    return d
+
   def report(self):
     super(multi_crystal_analysis, self).report()
-    
+
+    unit_cell_graphs = self.unit_cell_analysis()
     self.radiation_damage_analysis()
     self._cluster_analysis = self.cluster_analysis()
 
@@ -153,6 +244,7 @@ class multi_crystal_analysis(xia2_report_base):
     json_data.update(self.l_test_plot())
     json_data.update(self.wilson_plot())
     json_data.update(self._chef_stats.to_dict())
+    json_data.update(unit_cell_graphs)
 
     #return
 
@@ -212,6 +304,7 @@ class multi_crystal_analysis(xia2_report_base):
       resolution_graphs=resolution_graphs,
       batch_graphs=batch_graphs,
       misc_graphs=misc_graphs,
+      unit_cell_graphs=unit_cell_graphs,
       cc_cluster_table=self._cc_cluster_table,
       cc_cluster_json=self._cc_cluster_json,
       cos_angle_cluster_table=self._cos_angle_cluster_table,

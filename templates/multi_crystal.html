@@ -97,6 +97,7 @@
     <h2>Analysis plots</h2>
 
     <div class="panel-group">
+        {{ macros.panel('Unit cell analysis', 'misc', unit_cell_graphs, styles=styles) }}
         {{ macros.panel('Analysis by resolution', 'resolution', resolution_graphs) }}
         {{ macros.panel('Analysis by batch', 'batch', batch_graphs) }}
         {{ macros.panel('Miscellaneous', 'misc', misc_graphs, styles=styles) }}
