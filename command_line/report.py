@@ -110,53 +110,24 @@ class batch_manager(object):
     return shapes, annotations, list(text)
 
 
-class xia2_report(object):
+class xia2_report_base(object):
 
-  def __init__(self, unmerged_mtz, params, base_dir=None):
+  def __init__(self, params, base_dir=None):
 
-    from iotbx.reflection_file_reader import any_reflection_file
-
-    self.unmerged_mtz = unmerged_mtz
     self.params = params
-
-    reader = any_reflection_file(unmerged_mtz)
-    assert reader.file_type() == 'ccp4_mtz'
-    arrays = reader.as_miller_arrays(merge_equivalents=False)
 
     self.intensities = None
     self.batches = None
     self.scales = None
     self.dose = None
     self._xanalysis = None
+    self.report_dir = None
 
-    for ma in arrays:
-      if ma.info().labels == ['BATCH']:
-        self.batches = ma
-      elif ma.info().labels == ['DOSE']:
-        self.dose = ma
-      elif ma.info().labels == ['I', 'SIGI']:
-        self.intensities = ma
-      elif ma.info().labels == ['I(+)', 'SIGI(+)', 'I(-)', 'SIGI(-)']:
-        self.intensities = ma
-      elif ma.info().labels == ['SCALEUSED']:
-        self.scales = ma
-
+  def report(self):
     assert self.intensities is not None
-    assert self.batches is not None
-    self.mtz_object = reader.file_content()
+    #assert self.batches is not None
 
-    crystal_name = (filter(lambda c: c != 'HKL_base',
-                           map(lambda c: c.name(), self.mtz_object.crystals()))
-                    or ['DEFAULT'])[0]
-    self.report_dir = base_dir or xia2.Handlers.Environment.Environment.generate_directory([crystal_name, 'report'])
-
-    self.indices = self.mtz_object.extract_original_index_miller_indices()
-    self.intensities = self.intensities.customized_copy(
-      indices=self.indices, info=self.intensities.info())
-    self.batches = self.batches.customized_copy(
-      indices=self.indices, info=self.batches.info())
-
-    if len(self.params.batch) == 0:
+    if self.batches is not None and len(self.params.batch) == 0:
       from xia2.Modules.MultiCrystalAnalysis import separate_unmerged
       separate = separate_unmerged(
         self.intensities, self.batches)
@@ -169,17 +140,17 @@ class xia2_report(object):
 
     self._compute_merging_stats()
 
-    if params.anomalous:
+    if self.params.anomalous:
       self.intensities = self.intensities.as_anomalous_array()
-      self.batches = self.batches.as_anomalous_array()
+      if self.batches is not None:
+        self.batches = self.batches.as_anomalous_array()
 
     self.intensities.setup_binner(n_bins=self.params.resolution_bins)
     self.merged_intensities = self.intensities.merge_equivalents().array()
 
-    if params.include_probability_plots:
-      rtable, elist = data_from_unmerged_mtz(unmerged_mtz)
-      self.z_score_data = IntensityDist(rtable, elist).rtable
-
+    #if params.include_probability_plots:
+    #  rtable, elist = data_from_unmerged_mtz(unmerged_mtz)
+    #  self.z_score_data = IntensityDist(rtable, elist).rtable
 
   def _compute_merging_stats(self):
 
@@ -204,30 +175,28 @@ class xia2_report(object):
       (1/bin_stats.d_min**2) for bin_stats in self.merging_stats.bins]
     self.d_star_sq_tickvals, self.d_star_sq_ticktext = d_star_sq_to_d_ticks(self.d_star_sq_bins, nticks=5)
 
-
   def multiplicity_plots(self):
-    from xia2.Wrappers.XIA.PlotMultiplicity import PlotMultiplicity
+    from xia2.command_line.plot_multiplicity import plot_multiplicity, master_phil
+    settings = master_phil.extract()
+    settings.size_inches = (5,5)
+    settings.show_missing = True
+    settings.slice_index = 0
+
     mult_json_files = {}
     mult_img_files = {}
-    from xia2.lib.bits import auto_logfiler
-    cwd = os.getcwd()
-    try:
-      os.chdir(self.report_dir)
-      for axis in ('h', 'k', 'l'):
-        pm = PlotMultiplicity()
-        pm.set_mtz_filename(self.unmerged_mtz)
-        pm.set_slice_axis(axis)
-        pm.set_show_missing(True)
-        auto_logfiler(pm)
-        pm.run()
-        mult_json_files[axis] = pm.get_json_filename()
-        with open(pm.get_plot_filename(), 'rb') as fh:
-          mult_img_files[axis] = fh.read().encode('base64').replace('\n', '')
+    for settings.slice_axis in ('h', 'k', 'l'):
+      settings.plot.filename = 'multiplicities_%s_%i.png' %(
+        settings.slice_axis, settings.slice_index)
+      settings.json.filename = 'multiplicities_%s_%i.json' %(
+        settings.slice_axis, settings.slice_index)
+      #settings.slice_axis = axis
+      plot_multiplicity(self.intensities, settings)
+      mult_json_files[settings.slice_axis] = settings.json.filename
+      with open(settings.plot.filename, 'rb') as fh:
+        mult_img_files[settings.slice_axis] = fh.read().encode('base64').replace('\n', '')
 
-      return OrderedDict(('multiplicity_%s' %axis, mult_img_files[axis])
-                         for axis in ('h', 'k', 'l'))
-    finally:
-      os.chdir(cwd)
+    return OrderedDict(('multiplicity_%s' %axis, mult_img_files[axis])
+                       for axis in ('h', 'k', 'l'))
 
   def merging_statistics_table(self):
 
@@ -301,15 +270,12 @@ class xia2_report(object):
 
     symmetry_table_html = """
   <p>
-    <b>Filename:</b> %s
-    <br>
     <b>Unit cell:</b> %s
     <br>
     <b>Space group:</b> %s
   </p>
-""" %(os.path.abspath(self.unmerged_mtz),
-        self.intensities.space_group_info().symbol_and_number(),
-        str(self.intensities.unit_cell()))
+""" %(self.intensities.space_group_info().symbol_and_number(),
+      str(self.intensities.unit_cell()))
     return symmetry_table_html
 
   def xtriage_report(self):
@@ -1097,6 +1063,78 @@ higher resolution. A typical resolution cutoff based on CC1/2 is around 0.3-0.5.
         }
       }
     }
+
+
+class xia2_report(xia2_report_base):
+
+  def __init__(self, unmerged_mtz, params, base_dir=None):
+
+    from iotbx.reflection_file_reader import any_reflection_file
+
+    self.unmerged_mtz = unmerged_mtz
+    self.params = params
+
+    reader = any_reflection_file(unmerged_mtz)
+    assert reader.file_type() == 'ccp4_mtz'
+    arrays = reader.as_miller_arrays(merge_equivalents=False)
+
+    self.intensities = None
+    self.batches = None
+    self.scales = None
+    self.dose = None
+    self._xanalysis = None
+
+    for ma in arrays:
+      if ma.info().labels == ['BATCH']:
+        self.batches = ma
+      elif ma.info().labels == ['DOSE']:
+        self.dose = ma
+      elif ma.info().labels == ['I', 'SIGI']:
+        self.intensities = ma
+      elif ma.info().labels == ['I(+)', 'SIGI(+)', 'I(-)', 'SIGI(-)']:
+        self.intensities = ma
+      elif ma.info().labels == ['SCALEUSED']:
+        self.scales = ma
+
+    assert self.intensities is not None
+    assert self.batches is not None
+    self.mtz_object = reader.file_content()
+
+    crystal_name = (filter(lambda c: c != 'HKL_base',
+                           map(lambda c: c.name(), self.mtz_object.crystals()))
+                    or ['DEFAULT'])[0]
+    self.report_dir = base_dir or xia2.Handlers.Environment.Environment.generate_directory([crystal_name, 'report'])
+
+    self.indices = self.mtz_object.extract_original_index_miller_indices()
+    self.intensities = self.intensities.customized_copy(
+      indices=self.indices, info=self.intensities.info())
+    self.batches = self.batches.customized_copy(
+      indices=self.indices, info=self.batches.info())
+
+    if len(self.params.batch) == 0:
+      from xia2.Modules.MultiCrystalAnalysis import separate_unmerged
+      separate = separate_unmerged(
+        self.intensities, self.batches)
+      scope = phil.parse(batch_phil_scope)
+      for i, batches in separate.batches.iteritems():
+        batch_params = scope.extract().batch[0]
+        batch_params.id = i
+        batch_params.range = (flex.min(batches.data()), flex.max(batches.data()))
+        self.params.batch.append(batch_params)
+
+    self._compute_merging_stats()
+
+    if params.anomalous:
+      self.intensities = self.intensities.as_anomalous_array()
+      self.batches = self.batches.as_anomalous_array()
+
+    self.intensities.setup_binner(n_bins=self.params.resolution_bins)
+    self.merged_intensities = self.intensities.merge_equivalents().array()
+
+    if params.include_probability_plots:
+      rtable, elist = data_from_unmerged_mtz(unmerged_mtz)
+      self.z_score_data = IntensityDist(rtable, elist).rtable
+
 
 
 def d_star_sq_to_d_ticks(d_star_sq, nticks):

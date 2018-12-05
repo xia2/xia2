@@ -309,11 +309,6 @@ class DataManager(object):
 
     m = export_mtz(self._reflections, self._experiments, params)
     m.show_summary()
-
-    #b1 = set(b.num() for b in m.batches())
-    #b2 = set(m.get_column('BATCH').extract_values().as_double().iround())
-    #assert len(b2.difference(b1)) == 0, (b2.difference(b1), b1.difference(b2))
-
     return params.mtz.hklout
 
 
@@ -378,20 +373,15 @@ class MultiCrystalScale(object):
 
     self.unit_cell_clustering(plot_name='cluster_unit_cell_sg.png')
 
-    id_to_batches = OrderedDict(
-      (expt.identifier, expt.scan.get_batch_range())
-      for expt in self._data_manager.experiments)
-    mca = self.multi_crystal_analysis(id_to_batches=id_to_batches)
-
     self._data_manager.export_experiments('experiments_final.json')
     self._data_manager.export_reflections('reflections_final.pickle')
-    self._stereographic_projection_files = self.stereographic_projections(
-      'experiments_final.json')
 
     scaled_unmerged_mtz = py.path.local(self._scaled.scaled_unmerged_mtz)
     scaled_unmerged_mtz.copy(py.path.local('scaled_unmerged.mtz'))
     scaled_mtz = py.path.local(self._scaled.scaled_mtz)
     scaled_mtz.copy(py.path.local('scaled.mtz'))
+
+    self.report()
 
     min_completeness = self._params.min_completeness
     min_multiplicity = self._params.min_multiplicity
@@ -401,7 +391,7 @@ class MultiCrystalScale(object):
       self._data_manager_original = self._data_manager
       cwd = os.path.abspath(os.getcwd())
       n_processed = 0
-      for cluster in reversed(mca.cos_angle_clusters):
+      for cluster in reversed(self._cos_angle_clusters):
         if max_clusters is not None and n_processed == max_clusters:
           break
         if min_completeness is not None and cluster.completeness < min_completeness:
@@ -421,10 +411,6 @@ class MultiCrystalScale(object):
         data_manager.select(cluster.labels)
         scaled = Scale(data_manager, self._params)
         os.chdir(cwd)
-
-    self.report()
-
-    return
 
   @staticmethod
   def stereographic_projections(experiments_filename):
@@ -592,160 +578,18 @@ class MultiCrystalScale(object):
       self._reflections_filename)
     return
 
-  def multi_crystal_analysis(self, id_to_batches):
-
-    result = any_reflection_file(self._scaled.scaled_unmerged_mtz)
-    intensities = None
-    batches = None
-
-    for ma in result.as_miller_arrays(
-      merge_equivalents=False, crystal_symmetry=None):
-      if ma.info().labels == ['I(+)', 'SIGI(+)', 'I(-)', 'SIGI(-)']:
-        assert ma.anomalous_flag()
-        intensities = ma
-      elif ma.info().labels == ['I', 'SIGI']:
-        assert not ma.anomalous_flag()
-        intensities = ma
-      elif ma.info().labels == ['BATCH']:
-        batches = ma
-
-    assert batches is not None
-    assert intensities is not None
-
-    separate = separate_unmerged(
-      intensities, batches, id_to_batches=id_to_batches)
-
-    from xia2.lib import bits
-    xpid = bits._get_number()
-    prefix = '%i_' % xpid
-
-    intensities = self._data_manager.reflections_as_miller_arrays(
-      intensity_key='intensity.scale.value',
-      return_batches=False)
-    labels = self._data_manager.experiments.identifiers()
-    mca = multi_crystal_analysis(
-      intensities,
-      labels=labels,
-      prefix=prefix
-    )
-
-    self._cc_cluster_json = mca.to_plotly_json(
-      mca.cc_matrix, mca.cc_linkage_matrix,
-      labels=separate.run_id_to_batch_id.values())
-    self._cc_cluster_table = mca.as_table(mca.cc_clusters)
-
-    self._cos_angle_cluster_json = mca.to_plotly_json(
-      mca.cos_angle_matrix, mca.cos_angle_linkage_matrix,
-      labels=separate.run_id_to_batch_id.values())
-    self._cos_angle_cluster_table = mca.as_table(mca.cos_angle_clusters)
-
-    return mca
-
   def report(self):
-    import json
-    from xia2.XIA2Version import Version
-    from xia2.command_line.report import xia2_report
-    from xia2.command_line.report import phil_scope as report_phil_scope
-    from xia2.Modules.MultiCrystalAnalysis import batch_phil_scope
-    params = report_phil_scope.extract()
+    from xia2.command_line.multi_crystal_analysis import multi_crystal_analysis
+    from xia2.command_line.multi_crystal_analysis import phil_scope as mca_phil
+    params = mca_phil.extract()
     params.prefix = 'multi-crystal'
     params.title = 'Multi crystal report'
-    params.batch = []
-
-    from libtbx import phil
-    scope = phil.parse(batch_phil_scope)
-    for expt in self._data_manager.experiments:
-      batch_params = scope.extract().batch[0]
-      batch_params.id = expt.identifier
-      batch_params.range = expt.scan.get_batch_range()
-      params.batch.append(batch_params)
-
-    unmerged_mtz = self._scaled.scaled_unmerged_mtz
-    report = xia2_report(unmerged_mtz, params, base_dir='.')
-
-    overall_stats_table = report.overall_statistics_table()
-    merging_stats_table = report.merging_statistics_table()
-    symmetry_table_html = report.symmetry_table_html()
-
-    json_data = {}
-    json_data.update(report.multiplicity_vs_resolution_plot())
-    json_data.update(report.multiplicity_histogram())
-    json_data.update(report.completeness_plot())
-    json_data.update(report.scale_rmerge_vs_batch_plot())
-    json_data.update(report.cc_one_half_plot())
-    json_data.update(report.i_over_sig_i_plot())
-    json_data.update(report.i_over_sig_i_vs_batch_plot())
-    json_data.update(report.second_moments_plot())
-    json_data.update(report.cumulative_intensity_distribution_plot())
-    json_data.update(report.l_test_plot())
-    json_data.update(report.wilson_plot())
-    json_data.update(self._scaled._chef_stats.to_dict())
-
-    styles = {}
-    for hkl in ((1,0,0), (0,1,0), (0,0,1)):
-      with open(self._stereographic_projection_files[hkl], 'rb') as f:
-        d = json.load(f)
-        d['layout']['title'] = 'Stereographic projection (hkl=%i%i%i)' %hkl
-        key = 'stereographic_projection_%s%s%s' %hkl
-        json_data[key] = d
-        styles[key] = 'square-plot'
-
-    resolution_graphs = OrderedDict(
-      (k, json_data[k]) for k in
-      ('cc_one_half', 'i_over_sig_i', 'second_moments', 'wilson_intensity_plot',
-       'completeness', 'multiplicity_vs_resolution') if k in json_data)
-
-    batch_graphs = OrderedDict(
-      (k, json_data[k]) for k in
-      ('scale_rmerge_vs_batch', 'i_over_sig_i_vs_batch', 'completeness_vs_dose',
-       'rcp_vs_dose', 'scp_vs_dose', 'rd_vs_batch_difference'))
-
-    misc_graphs = OrderedDict(
-      (k, json_data[k]) for k in
-      ('cumulative_intensity_distribution', 'l_test', 'multiplicities',
-       ) if k in json_data)
-
-    for k, v in report.multiplicity_plots().iteritems():
-      misc_graphs[k] = {'img': v}
-
-    for k in ('stereographic_projection_100', 'stereographic_projection_010',
-              'stereographic_projection_001'):
-      misc_graphs[k] = json_data[k]
-
-    for axis in ('h', 'k', 'l'):
-      styles['multiplicity_%s' %axis] = 'square-plot'
-
-    from jinja2 import Environment, ChoiceLoader, PackageLoader
-    loader = ChoiceLoader([PackageLoader('xia2', 'templates'),
-                           PackageLoader('dials', 'templates')])
-    env = Environment(loader=loader)
-
-    template = env.get_template('multi_crystal.html')
-    html = template.render(
-      page_title=params.title,
-      filename=os.path.abspath(unmerged_mtz),
-      space_group=report.intensities.space_group_info().symbol_and_number(),
-      unit_cell=str(report.intensities.unit_cell()),
-      mtz_history=[h.strip() for h in report.mtz_object.history()],
-      overall_stats_table=overall_stats_table,
-      merging_stats_table=merging_stats_table,
-      cc_half_significance_level=params.cc_half_significance_level,
-      resolution_graphs=resolution_graphs,
-      batch_graphs=batch_graphs,
-      misc_graphs=misc_graphs,
-      cc_cluster_table=self._cc_cluster_table,
-      cc_cluster_json=self._cc_cluster_json,
-      cos_angle_cluster_table=self._cos_angle_cluster_table,
-      cos_angle_cluster_json=self._cos_angle_cluster_json,
-      styles=styles,
-      xia2_version=Version,
+    mca = multi_crystal_analysis(
+      self._data_manager.experiments,
+      self._data_manager.reflections,
+      params
     )
-
-    with open('%s-report.json' % params.prefix, 'wb') as f:
-      json.dump(json_data, f)
-
-    with open('%s-report.html' % params.prefix, 'wb') as f:
-      f.write(html.encode('ascii', 'xmlcharrefreplace'))
+    self._cos_angle_clusters = mca._cluster_analysis.cos_angle_clusters
 
 
 class Scale(object):
@@ -770,7 +614,6 @@ class Scale(object):
     logger.info('Resolution limit: %.2f (%s)' % (d_min, reason))
 
     self.scale(d_min=d_min)
-    self.radiation_damage_analysis(d_min=d_min)
 
   def decide_space_group(self):
 
@@ -977,36 +820,3 @@ class Scale(object):
 
     return resolution, reasoning
 
-  def radiation_damage_analysis(self, d_min=None):
-    from xia2.Modules.PyChef import Statistics
-
-    if d_min is None:
-      d_min = PyChef.resolution_limit(
-        mtz_file=self.unmerged_mtz, min_completeness=self.params.chef_min_completeness, n_bins=8)
-      logger.info('Estimated d_min for CHEF analysis: %.2f' % d_min)
-    miller_arrays = self._data_manager.reflections_as_miller_arrays(
-      return_batches=True)
-    for i, (intensities, batches) in enumerate(miller_arrays):
-      # convert batches to dose
-      data = batches.data() - self._data_manager.experiments[i].scan.get_batch_offset()
-      miller_arrays[i][1] = batches.array(data=data).set_info(batches.info())
-    intensities, dose = miller_arrays[0]
-    for (i, d) in miller_arrays[1:]:
-      intensities = intensities.concatenate(i, assert_is_similar_symmetry=False)
-      dose = dose.concatenate(d, assert_is_similar_symmetry=False)
-
-    intensities = intensities.resolution_filter(d_min=d_min)
-    dose = dose.resolution_filter(d_min=d_min)
-    stats = Statistics(intensities, dose.data())
-
-    logger.debug(stats.completeness_vs_dose_str())
-    logger.debug(stats.rcp_vs_dose_str())
-    logger.debug(stats.scp_vs_dose_str())
-    logger.debug(stats.rd_vs_dose_str())
-
-    with open('chef.json', 'wb') as f:
-      import json
-      json.dump(stats.to_dict(), f)
-
-    self._chef_stats = stats
-    return stats

@@ -299,6 +299,8 @@ font_size = 20
 
 def run(args):
   from libtbx.utils import Sorry
+  from iotbx.reflection_file_reader import any_reflection_file
+  from iotbx.gui_tools.reflections import get_array_description
   pcl = iotbx.phil.process_command_line_with_files(
     args=args,
     master_phil=master_phil,
@@ -308,9 +310,6 @@ def run(args):
   settings = pcl.work.extract()
   file_name = settings.data
 
-  data_only = True
-  from iotbx.reflection_file_reader import any_reflection_file
-  from iotbx.gui_tools.reflections import get_array_description
   try :
     hkl_file = any_reflection_file(file_name)
   except Exception as e:
@@ -321,9 +320,8 @@ def run(args):
   for array in arrays :
     if array.is_hendrickson_lattman_array() :
       continue
-    elif (data_only) :
-      if (not array.is_real_array()) and (not array.is_complex_array()) :
-        continue
+    if (not array.is_real_array()) and (not array.is_complex_array()) :
+      continue
     labels = array.info().label_string()
     desc = get_array_description(array)
     array_info.append("%s (%s)" % (labels, desc))
@@ -332,6 +330,9 @@ def run(args):
     msg = "No arrays of the supported types in this file."
     raise Sorry(msg)
   miller_array = valid_arrays[0]
+  plot_multiplicity(miller_array, settings)
+
+def plot_multiplicity(miller_array, settings):
 
   settings.scale_colors_multiplicity = True
   settings.scale_radii_multiplicity = True
