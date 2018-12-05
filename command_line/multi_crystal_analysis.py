@@ -30,6 +30,13 @@ output {
 }
 ''', process_includes=True)
 
+# local overrides for refiner.phil_scope
+phil_overrides = iotbx.phil.parse('''
+prefix = xia2-multi-crystal
+''')
+
+phil_scope = phil_scope.fetch(sources=[phil_overrides])
+
 import json
 from xia2.XIA2Version import Version
 from xia2.command_line.report import xia2_report_base
