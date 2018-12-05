@@ -20,7 +20,6 @@ from dials.array_family import flex
 from dials.algorithms.symmetry.cosym import analyse_datasets as cosym_analyse_datasets
 
 from dials.command_line.export import phil_scope as export_phil_scope
-from dials.util.export_mtz import export_mtz
 from dials.util import log
 
 from xia2.lib.bits import auto_logfiler
@@ -300,16 +299,6 @@ class DataManager(object):
   def export_experiments(self, filename):
     dump.experiment_list(self._experiments, filename)
     return filename
-
-  def export_mtz(self, filename=None, params=None):
-    if params is None:
-      params = export_phil_scope.extract()
-    if filename is not None:
-      params.mtz.hklout = filename
-
-    m = export_mtz(self._reflections, self._experiments, params)
-    m.show_summary()
-    return params.mtz.hklout
 
 
 class MultiCrystalScale(object):
@@ -597,10 +586,6 @@ class Scale(object):
     self._data_manager = data_manager
     self._params = params
 
-    # export reflections
-    self._integrated_combined_mtz = self._data_manager.export_mtz(
-      filename='integrated_combined.mtz')
-
     self.decide_space_group()
 
     self.two_theta_refine()
@@ -618,14 +603,10 @@ class Scale(object):
   def decide_space_group(self):
 
     if self._params.symmetry.space_group is not None:
-      self._sorted_mtz = 'sorted.mtz'
       # reindex to correct bravais setting
       cb_op = sgtbx.change_of_basis_op()
       self._data_manager.reindex(
         cb_op=cb_op, space_group=self._params.symmetry.space_group.group())
-      # export reflections
-      self._sorted_mtz = self._data_manager.export_mtz(
-        filename=self._sorted_mtz)
       self._experiments_filename = 'experiments.json'
       self._reflections_filename = 'reflections.pickle'
       self._data_manager.export_experiments(self._experiments_filename)
@@ -636,7 +617,6 @@ class Scale(object):
     symmetry = DialsSymmetry()
     auto_logfiler(symmetry)
 
-    self._sorted_mtz = '%i_sorted.mtz' % symmetry.get_xpid()
     self._experiments_filename = '%i_experiments_reindexed.json' % symmetry.get_xpid()
     self._reflections_filename = '%i_reflections_reindexed.pickle' % symmetry.get_xpid()
 
@@ -660,9 +640,6 @@ class Scale(object):
       self._experiments_filename, check_format=False)
     self._data_manager.reflections = flex.reflection_table.from_pickle(
       self._reflections_filename)
-    # export reflections
-    self._sorted_mtz = self._data_manager.export_mtz(
-      filename=self._sorted_mtz)
 
     logger.info('Space group determined by dials.symmetry: %s' % space_group.info())
 
@@ -682,7 +659,6 @@ class Scale(object):
           self._experiments_filename, self._reflections_filename)
     self._data_manager.experiments = load.experiment_list(
       self._experiments_filename, check_format=False)
-    tools.patch_mtz_unit_cell(self._sorted_mtz, self.best_unit_cell)
 
   @property
   def scaled_mtz(self):
