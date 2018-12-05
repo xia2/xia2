@@ -8,7 +8,6 @@ import iotbx.phil
 from cctbx import crystal
 from libtbx.phil import command_line
 from scitbx.array_family import flex
-from xia2.Handlers.Streams import Debug
 
 def get_scipy():
   # make sure we can get scipy, if not try failing over to version in CCP4
@@ -81,7 +80,6 @@ class separate_unmerged(object):
           batch_sel = (batches_all.data() >= run_start) & (batches_all.data() <= last_batch)
           batches[run_id] = batches_all.select(batch_sel)
           intensities[run_id] = unmerged_intensities.select(batch_sel)
-          Debug.write("run %i batch %i to %i" %(run_id+1, run_start, last_batch))
           run_id += 1
           run_start = batch
         last_batch = batch
@@ -95,7 +93,6 @@ class separate_unmerged(object):
         batch_sel = (batches_all.data() >= run_start) & (batches_all.data() <= last_batch)
         batches[run_id] = batches_all.select(batch_sel)
         intensities[run_id] = unmerged_intensities.select(batch_sel)
-        Debug.write("run %i batch %i to %i" %(run_id+1, run_start, last_batch))
         run_id += 1
 
     self.run_id_to_batch_id = run_id_to_batch_id
