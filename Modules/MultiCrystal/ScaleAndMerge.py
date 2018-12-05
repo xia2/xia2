@@ -15,6 +15,7 @@ from dxtbx.serialize import dump, load
 from dxtbx.model import ExperimentList
 
 from dials.array_family import flex
+from dials.command_line.unit_cell_histogram import plot_uc_histograms
 
 from dials.util import log
 
@@ -468,66 +469,7 @@ class MultiCrystalScale(object):
       outliers.set_selected(p < q1_x - cut_x, True)
     logger.info('Identified %i unit cell outliers' % outliers.count(True))
 
-    self.plot_uc_histograms(uc_params, outliers,
-                            #self._params.steps_per_angstrom
-                            )
-
-  @staticmethod
-  def plot_uc_histograms(uc_params, outliers, steps_per_angstrom=20,
-                         plot_name='uc_histograms.png'):
-    from matplotlib import pyplot as plt
-    plt.style.use('ggplot')
-    uc_labels = ['a', 'b', 'c']
-    f, ax = plt.subplots(nrows=2, ncols=3, figsize=(12,8))
-    a, b, c = uc_params[:3]
-
-    def uc_param_hist2d(p1, p2, ax):
-      nbins = 100
-      import numpy as np
-      H, xedges, yedges = np.histogram2d(p1, p2, bins=nbins)
-      H = np.rot90(H)
-      H = np.flipud(H)
-      Hmasked = np.ma.masked_where(H==0, H)
-      ax.pcolormesh(xedges, yedges, Hmasked)
-
-    uc_param_hist2d(a, b, ax[0][0])
-    uc_param_hist2d(b, c, ax[0][1])
-    uc_param_hist2d(c, a, ax[0][2])
-
-    for i in range(3):
-      mmm = flex.min_max_mean_double(uc_params[i])
-      import math
-      steps_per_A = steps_per_angstrom
-      Amin = math.floor(mmm.min * steps_per_A)/steps_per_A
-      Amax = math.floor(mmm.max * steps_per_A)/steps_per_A
-      n_slots = max(1, int((Amax - Amin) * steps_per_A))
-      if Amin == Amax:
-        eps = 0.05
-        Amin -= eps
-        Amax += eps
-      hist = flex.histogram(uc_params[i], Amin, Amax, n_slots=n_slots)
-      hist_inliers = flex.histogram(
-        uc_params[i].select(~outliers), Amin, Amax, n_slots=n_slots)
-      ax[1][i].bar(
-        hist.slot_centers(), hist.slots(), align='center',
-        width=hist.slot_width(), zorder=10, color='black', edgecolor=None,
-        linewidth=0)
-      ax[1][i].bar(
-        hist_inliers.slot_centers(), hist_inliers.slots(), align='center',
-        width=hist_inliers.slot_width(), zorder=10, color='red', edgecolor=None,
-        linewidth=0)
-      ax[0][i].set_xlim(ax[1][i].get_xlim())
-
-    ax[0][0].set_ylabel('b ($\AA$)')
-    ax[0][1].set_ylabel('c ($\AA$)')
-    ax[0][2].set_ylabel('a ($\AA$)')
-    ax[1][0].set_xlabel('a ($\AA$)')
-    ax[1][1].set_xlabel('b ($\AA$)')
-    ax[1][2].set_xlabel('c ($\AA$)')
-
-    f.savefig(plot_name)
-    plt.tight_layout()
-    plt.close(f)
+    plot_uc_histograms(uc_params, outliers)
 
   def cosym(self):
     logger.debug('Running cosym analysis')
