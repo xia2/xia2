@@ -1,7 +1,6 @@
 #!/usr/bin/env dials.python
 from __future__ import absolute_import, division, print_function
 
-from collections import OrderedDict
 import copy
 import logging
 import math
@@ -10,24 +9,19 @@ import py
 
 from libtbx import Auto
 import iotbx.phil
-from iotbx.reflection_file_reader import any_reflection_file
 from cctbx import crystal
 from cctbx import sgtbx
 from dxtbx.serialize import dump, load
 from dxtbx.model import ExperimentList
 
 from dials.array_family import flex
-from dials.algorithms.symmetry.cosym import analyse_datasets as cosym_analyse_datasets
 
-from dials.command_line.export import phil_scope as export_phil_scope
 from dials.util import log
 
 from xia2.lib.bits import auto_logfiler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Environment import get_number_cpus
 from xia2.Modules.MultiCrystal import multi_crystal_analysis
-from xia2.Modules.MultiCrystal import separate_unmerged
-import xia2.Modules.Scaler.tools as tools
 from xia2.Wrappers.Dials.Cosym import DialsCosym
 from xia2.Wrappers.Dials.Refine import Refine
 from xia2.Wrappers.Dials.Scale import DialsScale
@@ -36,15 +30,6 @@ from xia2.Wrappers.Dials.TwoThetaRefine import TwoThetaRefine
 
 
 logger = logging.getLogger(__name__)
-
-
-try:
-  import matplotlib
-  # http://matplotlib.org/faq/howto_faq.html#generate-images-without-having-a-window-appear
-  matplotlib.use('Agg') # use a non-interactive backend
-  from matplotlib import pyplot
-except ImportError:
-  raise Sorry("matplotlib must be installed to generate a plot.")
 
 
 # The phil scope

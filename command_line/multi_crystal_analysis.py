@@ -12,8 +12,7 @@ from dials.array_family import flex
 from dials.util.options import OptionParser
 from dials.util import log
 from dials.util.options import flatten_experiments, flatten_reflections
-from dials.util.multi_dataset_handling import assign_unique_identifiers,\
-  parse_multiple_datasets
+from dials.util.multi_dataset_handling import parse_multiple_datasets
 from xia2.lib.bits import auto_logfiler
 
 logger = logging.getLogger('xia2.multi_crystal_analysis')
@@ -34,7 +33,6 @@ output {
 import json
 from xia2.XIA2Version import Version
 from xia2.command_line.report import xia2_report_base
-from xia2.command_line.report import phil_scope as report_phil_scope
 from xia2.Modules.MultiCrystalAnalysis import batch_phil_scope
 from xia2.Modules.MultiCrystal.ScaleAndMerge import DataManager
 from libtbx import phil
