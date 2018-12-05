@@ -54,7 +54,7 @@ def run():
     epilog=help_message)
 
   # Parse the command line
-  params, options = parser.parse_args(show_diff_phil=True)
+  params, options = parser.parse_args(show_diff_phil=False)
 
   # Configure the logging
 
@@ -65,6 +65,12 @@ def run():
       name=name)
   from dials.util.version import dials_version
   logger.info(dials_version())
+
+  # Log the diff phil
+  diff_phil = parser.diff_phil.as_str()
+  if diff_phil is not '':
+    logger.info('The following parameters have been modified:\n')
+    logger.info(diff_phil)
 
   # Try to load the models and data
   if len(params.input.experiments) == 0:
