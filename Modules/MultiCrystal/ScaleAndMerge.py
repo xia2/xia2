@@ -116,6 +116,11 @@ multi_crystal_analysis {
   include scope xia2.Modules.MultiCrystal.master_phil_scope
 }
 
+two_theta_refine = True
+  .type = bool
+  .help = "Run dials.two_theta_refine to obtain an overall best estimate of"
+          "the unit cell parameters."
+
 min_completeness = None
   .type = float(value_min=0, value_max=1)
 min_multiplicity = None
@@ -515,7 +520,8 @@ class Scale(object):
 
     self.decide_space_group()
 
-    self.two_theta_refine()
+    if self._params.two_theta_refine:
+      self.two_theta_refine()
 
     #self.unit_cell_clustering(plot_name='cluster_unit_cell_sg.png')
 
