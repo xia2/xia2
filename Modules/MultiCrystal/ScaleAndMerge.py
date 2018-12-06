@@ -116,10 +116,15 @@ multi_crystal_analysis {
   include scope xia2.Modules.MultiCrystal.master_phil_scope
 }
 
-two_theta_refine = True
-  .type = bool
-  .help = "Run dials.two_theta_refine to obtain an overall best estimate of"
-          "the unit cell parameters."
+unit_cell {
+  refine = *two_theta
+    .type = choice(multi=True)
+}
+
+two_theta_refine {
+  combine_crystal_models = True
+    .type = bool
+}
 
 min_completeness = None
   .type = float(value_min=0, value_max=1)
@@ -496,7 +501,7 @@ class Scale(object):
 
     self.decide_space_group()
 
-    if self._params.two_theta_refine:
+    if 'two_theta' in self._params.unit_cell.refine:
       self.two_theta_refine()
 
     #self.unit_cell_clustering(plot_name='cluster_unit_cell_sg.png')
@@ -565,7 +570,8 @@ class Scale(object):
     # two-theta refinement to get best estimate of unit cell
     self.best_unit_cell, self.best_unit_cell_esd, self._experiments_filename \
       = self._dials_two_theta_refine(
-          self._experiments_filename, self._reflections_filename)
+          self._experiments_filename, self._reflections_filename,
+          combine_crystal_models=self._params.two_theta_refine.combine_crystal_models)
     self._data_manager.experiments = load.experiment_list(
       self._experiments_filename, check_format=False)
 
@@ -591,11 +597,13 @@ class Scale(object):
     return refiner.get_refined_experiments_filename(), refiner.get_refined_filename()
 
   @staticmethod
-  def _dials_two_theta_refine(experiments_filename, reflections_filename):
+  def _dials_two_theta_refine(experiments_filename, reflections_filename,
+                              combine_crystal_models=True):
     tt_refiner = TwoThetaRefine()
     auto_logfiler(tt_refiner)
     tt_refiner.set_experiments([experiments_filename])
     tt_refiner.set_pickles([reflections_filename])
+    tt_refiner.set_combine_crystal_models(combine_crystal_models)
     tt_refiner.run()
     unit_cell = tt_refiner.get_unit_cell()
     unit_cell_esd = tt_refiner.get_unit_cell_esd()

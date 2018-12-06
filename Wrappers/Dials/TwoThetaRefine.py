@@ -33,6 +33,7 @@ def TwoThetaRefine(DriverType = None):
       self._experiments = []
       self._pickles = []
       self._phil_file = None
+      self._combine_crystal_models = True
 
       # The following are set during run() call:
       self._output_cif = None
@@ -57,6 +58,9 @@ def TwoThetaRefine(DriverType = None):
 
     def set_phil_file(self, phil_file):
       self._phil_file = phil_file
+
+    def set_combine_crystal_models(self, combine_crystal_models):
+      self._combine_crystal_models = combine_crystal_models
 
     def get_output_cif(self):
       return self._output_cif
@@ -143,6 +147,8 @@ def TwoThetaRefine(DriverType = None):
           self.add_command_line(experiment)
         for pickle in self._pickles:
           self.add_command_line(pickle)
+      self.add_command_line(
+        'combine_crystal_models=%s' % self._combine_crystal_models)
       self.add_command_line('output.cif=%s' % self._output_cif)
       self.add_command_line('output.mmcif=%s' % self._output_mmcif)
       self.add_command_line('output.p4p=%s' % self._output_p4p)
