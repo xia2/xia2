@@ -53,10 +53,14 @@ def StereographicProjection(DriverType = None):
       self.add_command_line('frame=laboratory')
       self.add_command_line('plot.show=False')
       self.add_command_line('hkl=%i,%i,%i' %self._hkl)
-      self._plot_filename = '%i_stereographic_projection_%i%i%i.png' % (
-        self.get_xpid(), self._hkl[0], self._hkl[1], self._hkl[2])
-      self._json_filename = '%i_stereographic_projection_%i%i%i.json' % (
-        self.get_xpid(), self._hkl[0], self._hkl[1], self._hkl[2])
+      if self.get_xpid():
+        prefix = '%i_' % self.get_xpid()
+      else:
+        prefix = ''
+      self._plot_filename = '%sstereographic_projection_%i%i%i.png' % (
+        prefix, self._hkl[0], self._hkl[1], self._hkl[2])
+      self._json_filename = '%sstereographic_projection_%i%i%i.json' % (
+        prefix, self._hkl[0], self._hkl[1], self._hkl[2])
       self.add_command_line('plot.filename=%s' %self._plot_filename)
       self.add_command_line('json.filename=%s' %self._json_filename)
 

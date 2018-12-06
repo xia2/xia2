@@ -96,7 +96,7 @@ class multi_crystal_analysis(xia2_report_base):
     sp_json_files = {}
     for hkl in ((1,0,0), (0,1,0), (0,0,1)):
       sp = StereographicProjection()
-      auto_logfiler(sp)
+      #auto_logfiler(sp)
       sp.add_experiments(experiments_filename)
       sp.set_hkl(hkl)
       sp.run()
