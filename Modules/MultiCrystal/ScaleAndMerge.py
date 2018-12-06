@@ -393,19 +393,6 @@ class MultiCrystalScale(object):
         scaled = Scale(data_manager, self._params)
         os.chdir(cwd)
 
-  @staticmethod
-  def stereographic_projections(experiments_filename):
-    from xia2.Wrappers.Dials.StereographicProjection import StereographicProjection
-    sp_json_files = {}
-    for hkl in ((1,0,0), (0,1,0), (0,0,1)):
-      sp = StereographicProjection()
-      auto_logfiler(sp)
-      sp.add_experiments(experiments_filename)
-      sp.set_hkl(hkl)
-      sp.run()
-      sp_json_files[hkl] = sp.get_json_filename()
-    return sp_json_files
-
   def unit_cell_clustering(self, plot_name=None):
     from xia2.command_line.multi_crystal_analysis import multi_crystal_analysis
     from xfel.clustering.cluster_groups import unit_cell_info
