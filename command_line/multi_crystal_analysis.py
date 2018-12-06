@@ -45,6 +45,13 @@ from xia2.Modules.MultiCrystalAnalysis import batch_phil_scope
 from xia2.Modules.MultiCrystal.ScaleAndMerge import DataManager
 from libtbx import phil
 
+
+def flex_double_as_string(flex_array, n_digits=None):
+  if n_digits is not None:
+    flex_array = flex_array.round(n_digits)
+  return list(flex_array.as_string())
+
+
 class multi_crystal_analysis(xia2_report_base):
   def __init__(self, experiments, reflections, params):
     super(multi_crystal_analysis, self).__init__(params)
@@ -146,14 +153,15 @@ class multi_crystal_analysis(xia2_report_base):
 
   @staticmethod
   def _plot_uc_histograms(uc_params):
-    a, b, c = uc_params[:3]
+
+    a, b, c = (flex_double_as_string(p, n_digits=4) for p in uc_params[:3])
     d = OrderedDict()
 
     d['uc_scatter'] = {
       'data': [
         {
-          'x': list(a),
-          'y': list(b),
+          'x': a,
+          'y': b,
           'type': 'scatter',
           'mode': 'markers',
           'name': 'a vs. b',
@@ -161,8 +169,8 @@ class multi_crystal_analysis(xia2_report_base):
           'yaxis': 'y',
         },
         {
-          'x': list(b),
-          'y': list(c),
+          'x': b,
+          'y': c,
           'type': 'scatter',
           'mode': 'markers',
           'name': 'b vs. c',
@@ -170,8 +178,8 @@ class multi_crystal_analysis(xia2_report_base):
           'yaxis': 'y2',
         },
         {
-          'x': list(c),
-          'y': list(a),
+          'x': c,
+          'y': a,
           'type': 'scatter',
           'mode': 'markers',
           'name': 'c vs. a',
@@ -211,7 +219,7 @@ class multi_crystal_analysis(xia2_report_base):
     d['uc_hist'] = {
       'data': [
         {
-          'x': list(a),
+          'x': a,
           'type': 'histogram',
           'connectgaps': False,
           'name': 'uc_hist_a',
@@ -220,7 +228,7 @@ class multi_crystal_analysis(xia2_report_base):
           'yaxis': 'y',
         },
         {
-          'x': list(b),
+          'x': b,
           'type': 'histogram',
           'connectgaps': False,
           'name': 'uc_hist_b',
@@ -229,7 +237,7 @@ class multi_crystal_analysis(xia2_report_base):
           'yaxis': 'y',
         },
         {
-          'x': list(c),
+          'x': c,
           'type': 'histogram',
           'connectgaps': False,
           'name': 'uc_hist_c',
