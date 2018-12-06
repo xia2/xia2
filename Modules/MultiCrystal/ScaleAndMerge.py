@@ -344,14 +344,10 @@ class MultiCrystalScale(object):
 
     self.unit_cell_clustering(plot_name='cluster_unit_cell_p1.png')
 
-    self.unit_cell_histogram(plot_name='unit_cell_histogram.png')
-
     if self._params.symmetry.resolve_indexing_ambiguity:
       self.cosym()
 
     self._scaled = Scale(self._data_manager, self._params)
-
-    self.unit_cell_clustering(plot_name='cluster_unit_cell_sg.png')
 
     self._data_manager.export_experiments('experiments_final.json')
     self._data_manager.export_reflections('reflections_final.pickle')
@@ -406,33 +402,15 @@ class MultiCrystalScale(object):
     return sp_json_files
 
   def unit_cell_clustering(self, plot_name=None):
-    crystal_symmetries = []
-    for expt in self._data_manager.experiments:
-      crystal_symmetry = expt.crystal.get_crystal_symmetry(
-        assert_is_compatible_unit_cell=False)
-      crystal_symmetries.append(crystal_symmetry.niggli_cell())
-    lattice_ids = [expt.identifier for expt in self._data_manager.experiments]
-    from xfel.clustering.cluster import Cluster
+    from xia2.command_line.multi_crystal_analysis import multi_crystal_analysis
     from xfel.clustering.cluster_groups import unit_cell_info
-    ucs = Cluster.from_crystal_symmetries(crystal_symmetries, lattice_ids=lattice_ids)
-    if plot_name is not None:
-      from matplotlib import pyplot as plt
-      plt.figure("Andrews-Bernstein distance dendogram", figsize=(12, 8))
-      ax = plt.gca()
-    else:
-      ax = None
-    clusters, _ = ucs.ab_cluster(
-      self._params.unit_cell_clustering.threshold,
+
+    clusters, dendrogram = multi_crystal_analysis.unit_cell_clustering(
+      self._data_manager.experiments,
+      threshold=self._params.unit_cell_clustering.threshold,
       log=self._params.unit_cell_clustering.log,
-      write_file_lists=False,
-      schnell=False,
-      doplot=(plot_name is not None),
-      ax=ax
+      plot_name=plot_name,
     )
-    if plot_name is not None:
-      plt.tight_layout()
-      plt.savefig(plot_name)
-      plt.clf()
     logger.info(unit_cell_info(clusters))
     largest_cluster = None
     largest_cluster_lattice_ids = None
@@ -443,7 +421,7 @@ class MultiCrystalScale(object):
       elif len(cluster_lattice_ids) > len(largest_cluster_lattice_ids):
         largest_cluster_lattice_ids = cluster_lattice_ids
 
-    if len(largest_cluster_lattice_ids) < len(crystal_symmetries):
+    if len(largest_cluster_lattice_ids) < len(self._data_manager.experiments):
       logger.info(
         'Selecting subset of data sets for subsequent analysis: %s' %str(largest_cluster_lattice_ids))
       self._data_manager.select(largest_cluster_lattice_ids)
@@ -503,13 +481,11 @@ class MultiCrystalScale(object):
     from xia2.command_line.multi_crystal_analysis import multi_crystal_analysis
     from xia2.command_line.multi_crystal_analysis import phil_scope as mca_phil
     params = mca_phil.extract()
-    params.prefix = 'multi-crystal'
-    params.title = 'Multi crystal report'
     mca = multi_crystal_analysis(
-      self._data_manager.experiments,
-      self._data_manager.reflections,
-      params
+      params=params,
+      data_manager=self._data_manager,
     )
+    mca.report()
     self._cos_angle_clusters = mca._cluster_analysis.cos_angle_clusters
 
 

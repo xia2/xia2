@@ -23,6 +23,16 @@ help_message = '''
 
 phil_scope = iotbx.phil.parse('''
 include scope xia2.command_line.report.phil_scope
+
+unit_cell_clustering {
+  threshold = 5000
+    .type = float(value_min=0)
+    .help = 'Threshold value for the clustering'
+  log = False
+    .type = bool
+    .help = 'Display the dendrogram with a log scale'
+}
+
 output {
   log = xia2.multi_crystal_analysis.log
     .type = str
@@ -34,6 +44,7 @@ output {
 # local overrides for refiner.phil_scope
 phil_overrides = iotbx.phil.parse('''
 prefix = xia2-multi-crystal
+title = 'xia2 multi-crystal report'
 ''')
 
 phil_scope = phil_scope.fetch(sources=[phil_overrides])
@@ -53,9 +64,14 @@ def flex_double_as_string(flex_array, n_digits=None):
 
 
 class multi_crystal_analysis(xia2_report_base):
-  def __init__(self, experiments, reflections, params):
+  def __init__(self, params, experiments=None, reflections=None, data_manager=None):
     super(multi_crystal_analysis, self).__init__(params)
-    self._data_manager = DataManager(experiments, reflections)
+    if data_manager is not None:
+      self._data_manager = data_manager
+    else:
+      assert experiments is not None and reflections is not None
+      self._data_manager = DataManager(experiments, reflections)
+
     self._intensities_separate = self._data_manager.reflections_as_miller_arrays(
       intensity_key='intensity.scale.value', return_batches=True)
     self.intensities = self._intensities_separate[0][0].deep_copy()
@@ -73,7 +89,6 @@ class multi_crystal_analysis(xia2_report_base):
       self.params.batch.append(batch_params)
 
     self.intensities.set_observation_type_xray_intensity()
-    self.report()
 
   @staticmethod
   def stereographic_projections(experiments_filename):
@@ -87,6 +102,38 @@ class multi_crystal_analysis(xia2_report_base):
       sp.run()
       sp_json_files[hkl] = sp.get_json_filename()
     return sp_json_files
+
+  @staticmethod
+  def unit_cell_clustering(experiments, threshold, log=True, plot_name=None):
+    from xia2.Modules.MultiCrystalAnalysis import UnitCellCluster
+
+    crystal_symmetries = []
+    for expt in experiments:
+      crystal_symmetry = expt.crystal.get_crystal_symmetry(
+        assert_is_compatible_unit_cell=False)
+      crystal_symmetries.append(crystal_symmetry.niggli_cell())
+    lattice_ids = [expt.identifier for expt in experiments]
+    ucs = UnitCellCluster.from_crystal_symmetries(crystal_symmetries, lattice_ids=lattice_ids)
+    if plot_name is not None:
+      from matplotlib import pyplot as plt
+      plt.figure("Andrews-Bernstein distance dendogram", figsize=(12, 8))
+      ax = plt.gca()
+    else:
+      ax = None
+    clusters, dendrogram, _ = ucs.ab_cluster(
+      threshold,
+      log=log,
+      labels='lattice_id',
+      write_file_lists=False,
+      schnell=False,
+      doplot=(plot_name is not None),
+      ax=ax
+    )
+    if plot_name is not None:
+      plt.tight_layout()
+      plt.savefig(plot_name)
+      plt.clf()
+    return clusters, dendrogram
 
   def radiation_damage_analysis(self):
     from xia2.Modules.PyChef import Statistics
@@ -145,10 +192,24 @@ class multi_crystal_analysis(xia2_report_base):
     uc_params = uc_params_from_experiments(experiments)
     panel_distances = panel_distances_from_experiments(experiments)
 
-    d = {}
+    d = OrderedDict()
     d.update(self._plot_uc_histograms(uc_params))
     #self._plot_uc_vs_detector_distance(uc_params, panel_distances, outliers, params.steps_per_angstrom)
     #self._plot_number_of_crystals(experiments)
+
+    clustering, dendrogram = self.unit_cell_clustering(
+      experiments,
+      threshold=self.params.unit_cell_clustering.threshold,
+      log=self.params.unit_cell_clustering.log,
+    )
+    from xia2.Modules.MultiCrystalAnalysis import scipy_dendrogram_to_plotly_json
+    d['uc_clustering'] = scipy_dendrogram_to_plotly_json(
+      dendrogram,
+      title='Unit cell clustering',
+      xtitle='Dataset',
+      ytitle='Distance (Å^2)',
+    )
+
     return d
 
   @staticmethod
@@ -431,7 +492,7 @@ def run():
     joint_table.extend(reflections[i])
   reflections = joint_table
 
-  multi_crystal_analysis(experiments, reflections, params)
+  multi_crystal_analysis(params, experiments=experiments, reflections=reflections).report()
 
 if __name__ == '__main__':
   run()
