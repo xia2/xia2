@@ -137,86 +137,129 @@ class multi_crystal_analysis(xia2_report_base):
     experiments = self._data_manager.experiments
     uc_params = uc_params_from_experiments(experiments)
     panel_distances = panel_distances_from_experiments(experiments)
-    outliers = outlier_selection(uc_params)
 
     d = {}
-    d.update(
-      self._plot_uc_histograms(uc_params, outliers,
-        #params.steps_per_angstrom
-    ))
+    d.update(self._plot_uc_histograms(uc_params))
     #self._plot_uc_vs_detector_distance(uc_params, panel_distances, outliers, params.steps_per_angstrom)
     #self._plot_number_of_crystals(experiments)
     return d
 
   @staticmethod
-  def _plot_uc_histograms(uc_params, outliers, steps_per_angstrom=20):
-    uc_labels = ['a', 'b', 'c']
+  def _plot_uc_histograms(uc_params):
     a, b, c = uc_params[:3]
     d = OrderedDict()
 
-    def uc_param_hist1d(p, l):
-      nbins = 100
-      return {
-        'uc_hist_%s' % l: {
-          'data': [{
-            'x': list(p),
-            'type': 'histogram',
-            'connectgaps': False,
-            'name': 'unit_cell_hist_%s' % l,
-            'nbins': 'auto',
-          }],
-          'layout': {
-            'title': 'Histogram of unit cell parameters',
-            'xaxis': {
-              'domain': [0, 0.85],
-              'title': '%s (Å)' % l,
-            },
-            'yaxis': {
-              'title': 'Frequency',
-            },
-            'width': 500,
-            'height': 450,
-          },
+    d['uc_scatter'] = {
+      'data': [
+        {
+          'x': list(a),
+          'y': list(b),
+          'type': 'scatter',
+          'mode': 'markers',
+          'name': 'a vs. b',
+          'xaxis': 'x',
+          'yaxis': 'y',
         },
-      }
-
-    def uc_param_hist2d(p1, p2, l1, l2):
-      nbins = 100
-      return {
-        'uc_hist_%s_%s' % (l1, l2): {
-          'data': [{
-            'x': list(p1),
-            'y': list(p2),
-            'type': 'histogram2d',
-            'connectgaps': False,
-            'name': 'unit_cell_hist_%s_%s' % (l1, l2),
-            'nbinsx': nbins,
-            'nbinsy': nbins,
-            'colorscale': 'Jet',
-            'showscale': False,
-          }],
-          'layout': {
-            'title': 'Histogram of unit cell parameters',
-            'xaxis': {
-              'domain': [0, 0.85],
-              'title': '%s (Å)' % l1,
-            },
-            'yaxis': {
-              'title': '%s (Å)' % l2,
-            },
-            'width': 500,
-            'height': 450,
-          },
+        {
+          'x': list(b),
+          'y': list(c),
+          'type': 'scatter',
+          'mode': 'markers',
+          'name': 'b vs. c',
+          'xaxis': 'x2',
+          'yaxis': 'y2',
         },
-      }
+        {
+          'x': list(c),
+          'y': list(a),
+          'type': 'scatter',
+          'mode': 'markers',
+          'name': 'c vs. a',
+          'xaxis': 'x3',
+          'yaxis': 'y3',
+        },
+      ],
+      'layout': {
+        'grid': {
+          'rows': 1,
+          'columns': 3,
+          'pattern': 'independent',
+        },
+        'title': 'Distribution of unit cell parameters',
+        'showlegend': False,
+        'xaxis': {
+          'title': 'a (Å)',
+        },
+        'yaxis': {
+          'title': 'b (Å)',
+        },
+        'xaxis2': {
+          'title': 'b (Å)',
+        },
+        'yaxis2': {
+          'title': 'c (Å)',
+        },
+        'xaxis3': {
+          'title': 'c (Å)',
+        },
+        'yaxis3': {
+          'title': 'a (Å)',
+        },
+      },
+    }
 
-    d.update(uc_param_hist1d(a, 'a'))
-    d.update(uc_param_hist1d(b, 'b'))
-    d.update(uc_param_hist1d(c, 'c'))
-
-    d.update(uc_param_hist2d(a, b, 'a', 'b'))
-    d.update(uc_param_hist2d(b, c, 'b', 'c'))
-    d.update(uc_param_hist2d(c, a, 'c', 'a'))
+    d['uc_hist'] = {
+      'data': [
+        {
+          'x': list(a),
+          'type': 'histogram',
+          'connectgaps': False,
+          'name': 'uc_hist_a',
+          'nbins': 'auto',
+          'xaxis': 'x',
+          'yaxis': 'y',
+        },
+        {
+          'x': list(b),
+          'type': 'histogram',
+          'connectgaps': False,
+          'name': 'uc_hist_b',
+          'nbins': 'auto',
+          'xaxis': 'x2',
+          'yaxis': 'y',
+        },
+        {
+          'x': list(c),
+          'type': 'histogram',
+          'connectgaps': False,
+          'name': 'uc_hist_c',
+          'nbins': 'auto',
+          'xaxis': 'x3',
+          'yaxis': 'y',
+        },
+      ],
+      'layout': {
+        'grid': {
+          'rows': 1,
+          'columns': 3,
+          'subplots': [['xy', 'x2y', 'x3y']],
+        },
+        'title': 'Histogram of unit cell parameters',
+        'showlegend': False,
+        'xaxis': {
+          'title': 'a (Å)',
+        },
+        'yaxis': {
+          'title': 'Frequency',
+        },
+        'xaxis2': {
+          'title': 'b (Å)',
+        },
+        'xaxis3': {
+          'title': 'c (Å)',
+        },
+      },
+    }
 
     return d
 
