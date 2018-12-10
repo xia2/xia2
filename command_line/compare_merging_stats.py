@@ -123,7 +123,7 @@ def plot_merging_stats(results, labels=None, plots=None, prefix=None,
     def plot_data(results, k, labels, linestyle=None):
       for i, result in enumerate(results):
         if labels is not None:
-          label = labels[i]
+          label = labels[i].replace('\\$', '$')
         else:
           label = None
         bins = result.bins
