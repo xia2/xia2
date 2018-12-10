@@ -26,6 +26,10 @@ size_inches = None
   .type = floats(size=2, value_min=0)
 image_dir = None
   .type = path
+format = *png pdf
+  .type = choice
+style = *ggplot
+  .type = choice
 """, process_includes=True)
 
 
@@ -54,7 +58,9 @@ def run(args):
                      data_labels=params.data_labels))
   plot_merging_stats(results, labels=params.plot_labels,
                      size_inches=params.size_inches,
-                     image_dir=params.image_dir)
+                     image_dir=params.image_dir,
+                     format=params.format,
+                     style=params.style)
 
 def get_merging_stats(scaled_unmerged_mtz, anomalous=False, n_bins=20,
                   use_internal_variance=False, eliminate_sys_absent=False,
@@ -73,11 +79,13 @@ def get_merging_stats(scaled_unmerged_mtz, anomalous=False, n_bins=20,
   return result
 
 def plot_merging_stats(results, labels=None, plots=None, prefix=None,
-                       size_inches=None, image_dir=None):
+                       size_inches=None, image_dir=None, format='png',
+                       style='ggplot'):
   import matplotlib
   matplotlib.use('Agg')
   from matplotlib import pyplot
-  pyplot.style.use('ggplot')
+  if style is not None:
+    pyplot.style.use(style)
 
   from cycler import cycler
   colors = pyplot.rcParams['axes.prop_cycle'].by_key()['color']
@@ -87,10 +95,22 @@ def plot_merging_stats(results, labels=None, plots=None, prefix=None,
   colors = colors * len(set(linestyles))
   pyplot.rc('axes', prop_cycle=(cycler('c', colors) + cycler('ls', linestyles)))
 
+  plots_ = {
+    'r_merge': '$R_{merge}$',
+    'r_meas': '$R_{meas}$',
+    'r_pim': '$R_{pim}$',
+    'cc_one_half': r'$CC_{\frac{1}{2}}$',
+    'cc_one_half_sigma_tau': r'$CC_{\frac{1}{2}}$',
+    'cc_anom': '$CC_{anom}$',
+    'i_over_sigma_mean': r'$< I / \sigma(I) >$',
+    'completeness': 'Completeness',
+    'mean_redundancy': 'Multiplicity',
+  }
+
   if plots is None:
-    plots = ('r_merge', 'r_meas', 'r_pim', 'cc_one_half',
-             'cc_one_half_sigma_tau', 'cc_anom',
-             'i_over_sigma_mean', 'completeness', 'mean_redundancy')
+    plots = plots_
+  else:
+    plots = dict((k, plots_[k]) for k in plots)
   if prefix is None:
     prefix = ''
   if labels is not None:
@@ -112,8 +132,8 @@ def plot_merging_stats(results, labels=None, plots=None, prefix=None,
         y = [getattr(bins[i], k) for i in range(len(bins))]
         pyplot.plot(x, y, label=label, linestyle=linestyle)
     plot_data(results, k, labels)
-    pyplot.xlabel('d spacing')
-    pyplot.ylabel(k)
+    pyplot.xlabel(r'$Resolution (\AA)$')
+    pyplot.ylabel(plots.get(k, k))
     if k in ('cc_one_half', 'cc_one_half_sigma_tau', 'completeness'):
       pyplot.ylim(0, 1.05)
     elif k in ('cc_anom',):
@@ -131,7 +151,7 @@ def plot_merging_stats(results, labels=None, plots=None, prefix=None,
     if labels is not None:
       pyplot.legend(loc='best')
     pyplot.tight_layout()
-    pyplot.savefig(os.path.join(image_dir, prefix+ k + '.png'))
+    pyplot.savefig(os.path.join(image_dir, prefix+ k + '.%s' % format))
     pyplot.clf()
 
 
