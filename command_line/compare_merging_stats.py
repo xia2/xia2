@@ -149,7 +149,14 @@ def plot_merging_stats(results, labels=None, plots=None, prefix=None,
       fig = pyplot.gcf()
       fig.set_size_inches(size_inches)
     if labels is not None:
-      pyplot.legend(loc='best')
+      if k.startswith('cc'):
+        pyplot.legend(loc='lower left')
+      elif k.startswith('r_'):
+        pyplot.legend(loc='upper left')
+      elif k.startswith('i_'):
+        pyplot.legend(loc='upper right')
+      else:
+        pyplot.legend(loc='best')
     pyplot.tight_layout()
     pyplot.savefig(os.path.join(image_dir, prefix+ k + '.%s' % format))
     pyplot.clf()
