@@ -132,7 +132,7 @@ def plot_merging_stats(results, labels=None, plots=None, prefix=None,
         y = [getattr(bins[i], k) for i in range(len(bins))]
         pyplot.plot(x, y, label=label, linestyle=linestyle)
     plot_data(results, k, labels)
-    pyplot.xlabel(r'$Resolution (\AA)$')
+    pyplot.xlabel(r'Resolution ($\AA$)')
     pyplot.ylabel(plots.get(k, k))
     if k in ('cc_one_half', 'cc_one_half_sigma_tau', 'completeness'):
       pyplot.ylim(0, 1.05)
