@@ -5,11 +5,9 @@ import os
 import procrunner
 
 expected_data_files = [
-  '4_scaled.mtz',
-  '4_scaled_unmerged.mtz',
-  '6_scaled.mtz',
-  '6_scaled_unmerged.mtz',
-  'multi-crystal-report.html'
+  'scaled.mtz',
+  'scaled_unmerged.mtz',
+  'xia2-multi-crystal-report.html'
 ]
 
 def test_proteinase_k(regression_data, run_in_tmpdir, ccp4):
