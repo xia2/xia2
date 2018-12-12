@@ -282,7 +282,9 @@ class multi_crystal_analysis(object):
     params = phil_scope.extract()
     from dials.algorithms.symmetry.cosym import analyse_datasets
     datasets = self.individual_merged_intensities
-    datasets = [d.primitive_setting() for d in datasets]
+    datasets = [
+      d.eliminate_sys_absent(integral_only=True).primitive_setting()
+      for d in datasets]
     params.lattice_group = datasets[0].space_group_info()
     params.cluster.method = "dbscan"
     params.plot_prefix = self._prefix
