@@ -77,8 +77,10 @@ class multi_crystal_analysis(xia2_report_base):
     self.intensities = self._intensities_separate[0][0].deep_copy()
     self.batches = self._intensities_separate[0][1].deep_copy()
     for intensities, batches in self._intensities_separate[1:]:
-      self.intensities = self.intensities.concatenate(intensities)
-      self.batches = self.batches.concatenate(batches)
+      self.intensities = self.intensities.concatenate(
+        intensities, assert_is_similar_symmetry=False)
+      self.batches = self.batches.concatenate(
+        batches, assert_is_similar_symmetry=False)
 
     self.params.batch = []
     scope = phil.parse(batch_phil_scope)
