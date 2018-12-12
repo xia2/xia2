@@ -345,13 +345,13 @@ class DialsScaler(Scaler):
         experiment = si.get_experiments()
         reflections = si.get_reflections()
         refiner = intgr.get_integrater_refiner()
-
         if self._scalr_input_pointgroup:
           Debug.write('Using input pointgroup: %s' % \
                       self._scalr_input_pointgroup)
           pointgroup = self._scalr_input_pointgroup
           reindex_op = 'h,k,l'
           pt = False
+          experiments_to_rebatch.append(load.experiment_list(experiment)[0])
 
         else:
           pointgroup, reindex_op, ntr, pt, reind_refl, reind_exp = \
@@ -414,9 +414,13 @@ class DialsScaler(Scaler):
     # SUMMARY - Have handled if different pointgroups & chosen an overall_pointgroup
     # which is the lowest symmetry
     self._scalr_likely_spacegroups = [overall_pointgroup]
-    Chatter.write('Likely pointgroup determined by dials.symmetry:')
-    for spag in self._scalr_likely_spacegroups:
-      Chatter.write('%s' % spag)
+    if not self._scalr_input_pointgroup:
+      Chatter.write('Likely pointgroup determined by dials.symmetry:')
+      for spag in self._scalr_likely_spacegroups:
+        Chatter.write('%s' % spag)
+    else:
+      assert len(self._scalr_likely_spacegroups) == 1
+      Chatter.write('Using preselected space group: %s' % self._scalr_likely_spacegroups[0])
 
     if need_to_return:
       self.set_scaler_done(False)
@@ -695,7 +699,8 @@ class DialsScaler(Scaler):
     # scaling resumes from where it left off.
     self._scaler.clear_datafiles()
 
-    self._determine_scaled_pointgroup()
+    if not self._scalr_input_spacegroup:
+      self._determine_scaled_pointgroup()
 
     if self._scalr_done is False:
       if self._scaler_symmetry_check_count > 3:
