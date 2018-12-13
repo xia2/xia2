@@ -507,8 +507,11 @@ class Scale(object):
     if self._params.symmetry.space_group is not None:
       # reindex to correct bravais setting
       cb_op = sgtbx.change_of_basis_op()
-      self._data_manager.reindex(
-        cb_op=cb_op, space_group=self._params.symmetry.space_group.group())
+      space_group = self._params.symmetry.space_group.primitive_setting().group()
+      self._data_manager.reindex(cb_op=cb_op, space_group=space_group)
+      crystal_symmetry = self._data_manager.experiments[0].crystal.get_crystal_symmetry()
+      cb_op_to_ref = crystal_symmetry.change_of_basis_op_to_reference_setting()
+      self._data_manager.reindex(cb_op=cb_op_to_ref)
       self._experiments_filename = 'experiments.json'
       self._reflections_filename = 'reflections.pickle'
       self._data_manager.export_experiments(self._experiments_filename)
