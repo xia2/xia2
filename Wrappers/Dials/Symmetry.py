@@ -138,6 +138,21 @@ def DialsSymmetry(DriverType = None):
 
       self._input_laue_group = self._lattice_to_laue[lattice]
 
+      with open(self._json, 'rb') as f:
+        d = json.load(f)
+      for soln in d['subgroup_scores']:
+        patterson_group = sgtbx.space_group(str(soln['patterson_group']))
+        if PhilIndex.params.xia2.settings.symmetry.chirality in (None, 'chiral'):
+          patterson_group = patterson_group.build_derived_acentric_group()
+
+        if patterson_group == sgtbx.space_group(self._input_laue_group):
+          # set this as correct solution
+          self.set_best_solution(d, soln)
+          break
+      # okay so now set pg and lattices, but need to update output file by reindexing
+
+
+
     def decide_pointgroup(self, ignore_errors=False, batches=None):
       '''Decide on the correct pointgroup for hklin.'''
 
@@ -176,6 +191,9 @@ def DialsSymmetry(DriverType = None):
 
       self.add_command_line("output.json='%s'" % self._json)
 
+      if self._input_laue_group:
+        self.add_command_line("lattice_group='%s'" % self._input_laue_group)
+
       self.start()
 
       self.close_wait()
@@ -188,13 +206,17 @@ def DialsSymmetry(DriverType = None):
       assert os.path.exists(self._json)
       with open(self._json, 'rb') as f:
         d = json.load(f)
-
       best_solution = d['subgroup_scores'][0]
+
+      self.set_best_solution(d, best_solution)
+
+      return
+
+    def set_best_solution(self, d, best_solution):
       patterson_group = sgtbx.space_group(
         str(best_solution['patterson_group']))
       if PhilIndex.params.xia2.settings.symmetry.chirality in (None, 'chiral'):
         patterson_group = patterson_group.build_derived_acentric_group()
-
       cb_op_inp_min = sgtbx.change_of_basis_op(str(d['cb_op_inp_min']))
       cb_op_min_best = sgtbx.change_of_basis_op(str(best_solution['cb_op']))
 
@@ -240,7 +262,11 @@ def DialsSymmetry(DriverType = None):
               self._possible_lattices.append(lattice)
             self._lattice_to_laue[lattice] = patterson_group.type().lookup_symbol()
           self._likely_spacegroups.append(patterson_group.type().lookup_symbol())
-      return
+
+      elif self._input_laue_group:
+        self._possible_lattices = [str(bravais_types.bravais_lattice(
+            group=patterson_group))]
+        self._likely_spacegroups = [patterson_group.type().lookup_symbol()]
 
     def get_reindex_matrix(self):
       return self._reindex_matrix

@@ -176,7 +176,7 @@ class DialsScaler(Scaler):
 
         Debug.write('Running multisweep dials.symmetry for %d sweeps' %
           len(refiners))
-        pointgroup, reindex_op, ntr, pt, reind_refl, reind_exp = \
+        pointgroup, reindex_op, ntr, pt, reind_refl, reind_exp, reindex_initial = \
           self._dials_symmetry_indexer_jiffy(experiments, reflections, refiners,
             multisweep=True)
 
@@ -215,11 +215,13 @@ class DialsScaler(Scaler):
             reindex_op = 'h,k,l'
             ntr = False
           else:
-            pointgroup, reindex_op, ntr, pt, reind_refl, reind_exp = \
+            pointgroup, reindex_op, ntr, pt, reind_refl, reind_exp, reindex_initial = \
               self._dials_symmetry_indexer_jiffy([experiment], [reflections], [refiner])
-
-            si.set_experiments(reind_exp)
-            si.set_reflections(reind_refl)
+            if reindex_initial:
+              self._helper.reindex_jiffy(si, reindex_op=reindex_op)
+            else:
+              si.set_experiments(reind_exp)
+              si.set_reflections(reind_refl)
 
             Debug.write('X1698: %s: %s' % (pointgroup, reindex_op))
 
@@ -306,11 +308,14 @@ class DialsScaler(Scaler):
         reflections.append(si.get_reflections())
         refiners.append(integrater.get_integrater_refiner())
 
-      pointgroup, reindex_op, ntr, pt, reind_refl, reind_exp = \
+      pointgroup, reindex_op, ntr, pt, reind_refl, reind_exp, reindex_initial = \
         self._dials_symmetry_indexer_jiffy(experiments, reflections, refiners, multisweep=True)
 
-      self._sweep_handler = self._helper.split_experiments(
-        reind_exp, reind_refl, self._sweep_handler)
+      if reindex_initial:
+        self._helper.reindex_jiffy(si, reindex_op=reindex_op)
+      else:
+        self._sweep_handler = self._helper.split_experiments(
+          reind_exp, reind_refl, self._sweep_handler)
 
       experiments_to_rebatch = []
       for epoch in self._sweep_handler.get_epochs():
@@ -354,12 +359,15 @@ class DialsScaler(Scaler):
           experiments_to_rebatch.append(load.experiment_list(experiment)[0])
 
         else:
-          pointgroup, reindex_op, ntr, pt, reind_refl, reind_exp = \
+          pointgroup, reindex_op, ntr, pt, reind_refl, reind_exp, reindex_initial = \
             self._dials_symmetry_indexer_jiffy([experiment], [reflections], [refiner])
-          experiments_to_rebatch.append(load.experiment_list(reind_exp)[0])
-
-          si.set_experiments(reind_exp)
-          si.set_reflections(reind_refl)
+          if reindex_initial:
+            self._helper.reindex_jiffy(si, reindex_op=reindex_op)
+            experiments_to_rebatch.append(load.experiment_list(si.get_experiments())[0])
+          else:
+            experiments_to_rebatch.append(load.experiment_list(reind_exp)[0])
+            si.set_experiments(reind_exp)
+            si.set_reflections(reind_refl)
 
           Debug.write('X1698: %s: %s' % (pointgroup, reindex_op))
 
@@ -835,14 +843,12 @@ CC1/2: %.4f, Anomalous correlation %.4f""" % (
       unit_cell=exp_crystal.get_unit_cell())
     cs_ref = cs.as_reference_setting()
     current_pointgroup = cs_ref.space_group()
-    #current_pointgroup = load.experiment_list(self._scaler.get_scaled_experiments()
-    #  )[0].crystal.get_space_group()
     current_patt_group = current_pointgroup.build_derived_patterson_group().type().lookup_symbol()
     Debug.write("Space group used in scaling: %s" % current_pointgroup.type().lookup_symbol())
     first = self._sweep_handler.get_epochs()[0]
     si = self._sweep_handler.get_sweep_information(first)
     refiner = si.get_integrater().get_integrater_refiner()
-    point_group, _, _, _, reind_refl, reind_exp = \
+    point_group, reindex_op, _, _, reind_refl, reind_exp, reindex_initial = \
       self._dials_symmetry_indexer_jiffy([self._scaler.get_scaled_experiments()],
         [self._scaler.get_scaled_reflections()], [refiner])
     Debug.write("Point group determined by dials.symmetry on scaled dataset: %s" % point_group)
@@ -850,8 +856,19 @@ CC1/2: %.4f, Anomalous correlation %.4f""" % (
     patt_group = sginfo.group().build_derived_patterson_group().type().lookup_symbol()
     self._scaler_symmetry_check_count += 1
     if patt_group != current_patt_group:
-      self._scaler.set_scaled_experiments(reind_exp)
-      self._scaler.set_scaled_reflections(reind_refl)
+      if reindex_initial:
+        reindexer = DialsReindex()
+        reindexer.set_working_directory(self.get_working_directory())
+        auto_logfiler(reindexer)
+        reindexer.set_experiments_filename(self._scaler.get_scaled_experiments())
+        reindexer.set_reflections_filename(self._scaler.get_scaled_reflections())
+        reindexer.set_cb_op(reindex_op)
+        reindexer.run()
+        self._scaler.set_scaled_experiments(reindexer.get_reindexed_experiments_filename())
+        self._scaler.set_scaled_reflections(reindexer.get_reindexed_reflections_filename())
+      else:
+        self._scaler.set_scaled_experiments(reind_exp)
+        self._scaler.set_scaled_reflections(reind_refl)
       self.set_scaler_done(False)
       Chatter.write("""Inconsistent space groups determined before and after scaling: %s, %s \n
 Data will be rescaled in new point group""" % (current_patt_group, patt_group))
@@ -955,9 +972,15 @@ class DialsScalerHelper(object):
     multisweep=False):
     '''A jiffy to centralise the interactions between dials.symmetry
     and the Indexer, multisweep edition.'''
-    #FIXME dials.symmetry only uses the first datafile at the moment?
+    #First check format of input against expected input
+    assert len(experiments) == len(reflections), """
+Unequal number of experiments/reflections passed to dials_symmetry_indexer_jiffy"""
+    if len(experiments) > 1:
+      assert multisweep, """
+Passing multple datasets to indexer_jiffy but not set multisweep=True"""
 
     probably_twinned = False
+    reindex_initial = False
 
     symmetry_analyser = self.dials_symmetry_decide_pointgroup(experiments, reflections)
 
@@ -980,8 +1003,12 @@ class DialsScalerHelper(object):
           refiner.refiner_reset()
 
     if rerun_symmetry:
+      # don't actually need to rerun, just set correct solution - this
+      # call updates the relevant info in the Wrapper - but will need to reindex later
       symmetry_analyser.set_correct_lattice(correct_lattice)
-      symmetry_analyser.decide_pointgroup()
+      reindex_initial = True
+      # rather than reindexing here, just set the reindex_inital and let the
+      # scaler manage this as necessary
 
     Debug.write('Symmetry analysis of %s' % ' '.join(experiments) + ' '.join(reflections))
 
@@ -995,7 +1022,7 @@ class DialsScalerHelper(object):
     Debug.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
 
     return pointgroup, reindex_op, need_to_return, probably_twinned,\
-      reindexed_reflections, reindexed_experiments
+      reindexed_reflections, reindexed_experiments, reindex_initial
 
   def dials_symmetry_decide_pointgroup(self, experiments, reflections):
     """Run the symmetry analyser and return it for later inspection."""
@@ -1013,6 +1040,19 @@ class DialsScalerHelper(object):
     symmetry_analyser.decide_pointgroup()
 
     return symmetry_analyser
+
+  def reindex_jiffy(self, si, reindex_op=None):
+    """Add data from si and reindex, setting back in si"""
+    reindexer = DialsReindex()
+    reindexer.set_working_directory(self.get_working_directory())
+    auto_logfiler(reindexer)
+    reindexer.set_experiments_filename(si.get_experiments())
+    reindexer.set_reflections_filename(si.get_reflections())
+    if reindex_op:
+      reindexer.set_cb_op(reindex_op)
+    reindexer.run()
+    si.set_experiments(reindexer.get_reindexed_experiments_filename())
+    si.set_reflections(reindexer.get_reindexed_reflections_filename())
 
 def decide_correct_lattice_using_refiner(possible_lattices, refiner):
   """Use the refiner to determine which of the possible lattices is the
