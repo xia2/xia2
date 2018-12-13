@@ -493,11 +493,12 @@ class Scale(object):
 
     #self.unit_cell_clustering(plot_name='cluster_unit_cell_sg.png')
 
-    self.scale()
-
-    d_min, reason = self.estimate_resolution_limit()
-
-    logger.info('Resolution limit: %.2f (%s)' % (d_min, reason))
+    if self._params.resolution.d_min is None:
+      self.scale()
+      d_min, reason = self.estimate_resolution_limit()
+      logger.info('Resolution limit: %.2f (%s)' % (d_min, reason))
+    else:
+      d_min = self._params.resolution.d_min
 
     self.scale(d_min=d_min)
 
