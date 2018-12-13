@@ -519,10 +519,12 @@ def template_to_xds(template):
     master_file = template
     import glob
     g = glob.glob(master_file.split('master.h5')[0]+'data_*[0-9].h5')
+    g.extend(glob.glob(master_file.split('master.h5')[0]+'*[0-9].h5'))
     assert len(g), 'No associated data files found for %s' % master_file
     from xia2.Experts.FindImages import image2template
     template = image2template(g[0])
-    template = master_file.split('master.h5')[0] + template.split('data_')[-1]
+    if 'data_' in template:
+      template = master_file.split('master.h5')[0] + template.split('data_')[-1]
 
   return template.replace('#', '?')
 
