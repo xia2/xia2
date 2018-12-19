@@ -109,8 +109,6 @@ class CCP4ScalerA(Scaler):
 
     if PhilIndex.params.xia2.settings.small_molecule == True:
       aimless.set_spacing(15.0)
-      # not obvious that this is correct, in fact probably it is not
-      # at all correct...?
       aimless.set_bfactor(
         bfactor=PhilIndex.params.xia2.settings.small_molecule_bfactor)
 
