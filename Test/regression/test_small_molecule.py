@@ -49,7 +49,7 @@ def test_xds(regression_data, run_in_tmpdir, ccp4, xds):
   ]
   result = procrunner.run(command_line)
   success, issues = xia2.Test.regression.check_result(
-      'small_molecule.xds', result, run_in_tmpdir, ccp4, expected_data_files=expected_data_files
+      'small_molecule.xds', result, run_in_tmpdir, ccp4, xds, expected_data_files=expected_data_files
   )
   assert success, issues
 
@@ -64,6 +64,6 @@ def test_xds_ccp4a(regression_data, run_in_tmpdir, ccp4, xds):
   ]
   result = procrunner.run(command_line)
   success, issues = xia2.Test.regression.check_result(
-      'small_molecule.ccp4a', result, run_in_tmpdir, ccp4, expected_data_files=expected_data_files
+      'small_molecule.ccp4a', result, run_in_tmpdir, ccp4, xds, expected_data_files=expected_data_files
   )
   assert success, issues
