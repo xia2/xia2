@@ -290,7 +290,6 @@ class multi_crystal_analysis(object):
     params.plot_prefix = self._prefix
 
     results = analyse_datasets(datasets, params)
-    results.plot()
     self.cosym = results
 
   def compute_correlation_coefficient_matrix(self):
