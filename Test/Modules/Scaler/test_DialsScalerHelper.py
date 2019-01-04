@@ -4,7 +4,7 @@ from mock import Mock
 
 from cctbx import miller, crystal
 from cctbx import sgtbx
-from dials.algorithms.symmetry.cosym.generate_test_data import generate_intensities
+from dials.algorithms.symmetry.cosym._generate_test_data import generate_intensities
 from dials.array_family import flex
 from dxtbx.model.experiment_list import ExperimentList
 from dxtbx.model import Crystal, Scan, Beam, Goniometer, Detector, Experiment
