@@ -76,16 +76,12 @@ class _Stream(object):
 
     self._filter = None
 
-    return
-
   def cache(self):
     self._cache = True
     self._cachelines = []
-    return
 
   def filter(self, filter):
     self._filter = filter
-    return
 
   def uncache(self):
     if not self._cache:
@@ -150,11 +146,8 @@ class _Stream(object):
     self.write('# %s' % comment, forward)
     self.write(hashes, forward)
 
-    return
-
   def banner(self, comment, forward=True, size=60):
     self.write(banner(comment, forward=forward, size=size))
-    return
 
   def smallbanner(self, comment, forward):
     '''Write a small batter for something, like this:
@@ -163,8 +156,6 @@ class _Stream(object):
     dashes = '-' * 10
 
     self.write('%s %s %s' % (dashes, comment, dashes), forward)
-
-    return
 
   def block(self, task, data, program, options):
     '''Print out a description of the task being performed with
@@ -177,8 +168,6 @@ class _Stream(object):
         oname = '%s:' % o
         self.write('%s %s' % (oname.ljust(30), options[o]))
 
-    return
-
   def entry(self, options):
     '''Print subsequent entries to the above block.'''
 
@@ -186,8 +175,6 @@ class _Stream(object):
       if options[o]:
         oname = '%s:' % o
         self.write('%s %s' % (oname.ljust(30), options[o]))
-
-    return
 
   def join(self, otherstream):
     '''Join another stream so that all output from this stream goes also
@@ -199,8 +186,6 @@ class _Stream(object):
     '''Switch the stream writing off...'''
 
     self._off = True
-
-    return
 
 # FIXME 23/NOV/06 now write a xia2.txt from chatter and rename that
 # output stream Stdout... then copy everything there!
@@ -232,7 +217,6 @@ def streams_off():
   Chatter.off()
   Journal.off()
   Debug.off()
-  return
 
 if __name__ == '__main__':
   Chatter.write('nothing much, really')
