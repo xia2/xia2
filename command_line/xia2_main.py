@@ -302,6 +302,7 @@ def run():
     check_environment()
   except Exception as e:
     traceback.print_exc(file = open('xia2.error', 'w'))
+    Debug.write(traceback.format_exc(), strip=False)
     Chatter.write('Error setting up xia2 environment: %s' % str(e))
     Chatter.write(
       'Please send the contents of xia2.txt, xia2.error and xia2-debug.txt to:')
@@ -340,6 +341,7 @@ def run():
     sys.exit(1)
   except Exception as e:
     traceback.print_exc(file = open(os.path.join(wd, 'xia2.error'), 'w'))
+    Debug.write(traceback.format_exc(), strip=False)
     Chatter.write('Error: %s' % str(e))
     Chatter.write(
       'Please send the contents of xia2.txt, xia2.error and xia2-debug.txt to:')
