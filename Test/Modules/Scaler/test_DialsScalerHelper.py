@@ -1,4 +1,3 @@
-from xia2.Modules.Scaler.DialsScaler import DialsScalerHelper, decide_correct_lattice_using_refiner
 import pytest
 from mock import Mock
 
@@ -41,6 +40,7 @@ def generated_exp(n=1, space_group="P 2", assign_ids=False, id_=None):
 @pytest.fixture
 def helper(run_in_tmpdir):
   """Initialise a DialsScalerHelper"""
+  from xia2.Modules.Scaler.DialsScaler import DialsScalerHelper
   helper = DialsScalerHelper()
   helper.set_pname_xname('AUTOMATIC', 'DEFAULT')
   helper.set_working_directory(run_in_tmpdir.strpath)
@@ -270,6 +270,7 @@ def test_decide_correct_lattice_using_refiner(
   refiner_lattices, possible_lattices, expected_output):
 
   refiner = simple_refiner(refiner_lattices)
+  from xia2.Modules.Scaler.DialsScaler import decide_correct_lattice_using_refiner
   result = decide_correct_lattice_using_refiner(possible_lattices, refiner)
   assert result == expected_output
 
