@@ -17,7 +17,7 @@ from dials.util.multi_dataset_handling import assign_unique_identifiers,\
 
 from xia2.Modules.MultiCrystal import ScaleAndMerge
 
-logger = logging.getLogger('xia2.multi_crystal_scale_and_merge')
+logger = logging.getLogger('xia2.multiplex')
 
 help_message = '''
 '''
@@ -29,9 +29,9 @@ seed = 42
   .type = int(value_min=0)
 
 output {
-  log = xia2.multi_crystal_scale.log
+  log = xia2.multiplex.log
     .type = str
-  debug_log = xia2.multi_crystal_scale.debug.log
+  debug_log = xia2.multiplex.debug.log
     .type = str
 }
 ''', process_includes=True)
@@ -40,7 +40,7 @@ output {
 def run():
 
   # The script usage
-  usage  = "usage: xia2.multi_crystal_scale_and_merge [options] [param.phil] " \
+  usage  = "usage: xia2.multiplex [options] [param.phil] " \
            "experiments1.json experiments2.json reflections1.pickle " \
            "reflections2.pickle..."
 

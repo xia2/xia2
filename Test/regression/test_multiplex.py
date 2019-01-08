@@ -15,7 +15,7 @@ def test_proteinase_k(regression_data, run_in_tmpdir, ccp4):
   expts = sorted(glob.glob(data_dir.join('experiments*.json').strpath))
   refls = sorted(glob.glob(data_dir.join('reflections*.pickle').strpath))
   command_line = [
-    'xia2.multi_crystal_scale',
+    'xia2.multiplex',
   ] + expts + refls
   print(' '.join(command_line))
   result = procrunner.run(command_line)
@@ -27,7 +27,7 @@ def test_proteinase_k_dose(regression_data, run_in_tmpdir, ccp4):
   expts = sorted(glob.glob(data_dir.join('experiments*.json').strpath))
   refls = sorted(glob.glob(data_dir.join('reflections*.pickle').strpath))
   command_line = [
-    'xia2.multi_crystal_scale', 'dose=1,20',
+    'xia2.multiplex', 'dose=1,20',
   ] + expts + refls
   print(' '.join(command_line))
   result = procrunner.run(command_line)
