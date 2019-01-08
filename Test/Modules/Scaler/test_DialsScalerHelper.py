@@ -1,5 +1,4 @@
 import pytest
-from mock import Mock
 
 from cctbx import miller, crystal
 from cctbx import sgtbx
@@ -10,9 +9,13 @@ from dxtbx.model import Crystal, Scan, Beam, Goniometer, Detector, Experiment
 from dxtbx.serialize import dump, load
 
 @pytest.fixture
-def mock_refiner():
-  refiner = Mock()
-  return refiner
+def helper(ccp4, run_in_tmpdir):
+  """Initialise a DialsScalerHelper, ensure CCP4 is available for test"""
+  from xia2.Modules.Scaler.DialsScaler import DialsScalerHelper
+  helper = DialsScalerHelper()
+  helper.set_pname_xname('AUTOMATIC', 'DEFAULT')
+  helper.set_working_directory(run_in_tmpdir.strpath)
+  return helper
 
 def generated_exp(n=1, space_group="P 2", assign_ids=False, id_=None):
   """Generate an experiment list with two experiments."""
@@ -36,15 +39,6 @@ def generated_exp(n=1, space_group="P 2", assign_ids=False, id_=None):
       else:
         experiments.append(Experiment(beam=beam, scan=scan, crystal=crystal))
   return experiments
-
-@pytest.fixture
-def helper(run_in_tmpdir):
-  """Initialise a DialsScalerHelper"""
-  from xia2.Modules.Scaler.DialsScaler import DialsScalerHelper
-  helper = DialsScalerHelper()
-  helper.set_pname_xname('AUTOMATIC', 'DEFAULT')
-  helper.set_working_directory(run_in_tmpdir.strpath)
-  return helper
 
 def generate_reflections_in_sg(space_group, id_=0, assign_id=False):
   """Generate reflections with intensities consistent with space group"""
