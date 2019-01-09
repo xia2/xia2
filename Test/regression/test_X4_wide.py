@@ -1,7 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
 import procrunner
-import pytest
 import xia2.Test.regression
 
 def split_xinfo(data_dir, tmpdir):
@@ -36,7 +35,6 @@ END PROJECT AUTOMATIC
   xinfo_file.write(split_xinfo_template.format(data_dir.strpath.replace('\\', '\\\\')))
   return xinfo_file.strpath
 
-@pytest.mark.regression
 def test_dials(dials_data, run_in_tmpdir, ccp4):
   command_line = [
       'xia2', 'pipeline=dials', 'nproc=1',
@@ -47,52 +45,47 @@ def test_dials(dials_data, run_in_tmpdir, ccp4):
   success, issues = xia2.Test.regression.check_result('X4_wide.dials', result, run_in_tmpdir, ccp4)
   assert success, issues
 
-@pytest.mark.regression
-def test_dials_split(regression_data, run_in_tmpdir, ccp4):
+def test_dials_split(dials_data, run_in_tmpdir, ccp4):
   command_line = [
       'xia2', 'pipeline=dials', 'nproc=1', 'njob=2', 'mode=parallel',
-      'trust_beam_centre=True', 'xinfo=%s' % split_xinfo(regression_data("X4_wide"), run_in_tmpdir),
+      'trust_beam_centre=True', 'xinfo=%s' % split_xinfo(dials_data("x4wide"), run_in_tmpdir),
   ]
   result = procrunner.run(command_line)
   success, issues = xia2.Test.regression.check_result('X4_wide_split.dials', result, run_in_tmpdir, ccp4)
   assert success, issues
 
-@pytest.mark.regression
-def test_xds(regression_data, run_in_tmpdir, ccp4, xds):
+def test_xds(dials_data, run_in_tmpdir, ccp4, xds):
   command_line = [
       'xia2', 'pipeline=3di', 'nproc=1', 'trust_beam_centre=True',
-      'read_all_image_headers=False', regression_data("X4_wide").strpath,
+      'read_all_image_headers=False', dials_data("x4wide").strpath,
   ]
   result = procrunner.run(command_line)
   success, issues = xia2.Test.regression.check_result('X4_wide.xds', result, run_in_tmpdir, ccp4, xds)
   assert success, issues
 
-@pytest.mark.regression
-def test_xds_split(regression_data, run_in_tmpdir, ccp4, xds):
+def test_xds_split(dials_data, run_in_tmpdir, ccp4, xds):
   command_line = [
       'xia2', 'pipeline=3di', 'nproc=1', 'njob=2', 'mode=parallel',
-      'trust_beam_centre=True', 'xinfo=%s' % split_xinfo(regression_data("X4_wide"), run_in_tmpdir),
+      'trust_beam_centre=True', 'xinfo=%s' % split_xinfo(dials_data("x4wide"), run_in_tmpdir),
   ]
   result = procrunner.run(command_line)
   success, issues = xia2.Test.regression.check_result('X4_wide_split.xds', result, run_in_tmpdir, ccp4, xds)
   assert success, issues
 
-@pytest.mark.regression
-def test_xds_ccp4a(regression_data, run_in_tmpdir, ccp4, xds):
+def test_xds_ccp4a(dials_data, run_in_tmpdir, ccp4, xds):
   command_line = [
       'xia2', 'pipeline=3di', 'nproc=1',
-      'scaler=ccp4a', 'trust_beam_centre=True', regression_data("X4_wide").strpath,
+      'scaler=ccp4a', 'trust_beam_centre=True', dials_data("x4wide").strpath,
   ]
   result = procrunner.run(command_line)
   success, issues = xia2.Test.regression.check_result('X4_wide.ccp4a', result, run_in_tmpdir, ccp4, xds)
   assert success, issues
 
-@pytest.mark.regression
-def test_xds_ccp4a_split(regression_data, run_in_tmpdir, ccp4, xds):
+def test_xds_ccp4a_split(dials_data, run_in_tmpdir, ccp4, xds):
   command_line = [
     'xia2', 'pipeline=3di', 'nproc=1', 'scaler=ccp4a', 'njob=2',
     'merging_statistics.source=aimless',
-    'trust_beam_centre=True', 'mode=parallel', 'xinfo=%s' % split_xinfo(regression_data("X4_wide"), run_in_tmpdir),
+    'trust_beam_centre=True', 'mode=parallel', 'xinfo=%s' % split_xinfo(dials_data("x4wide"), run_in_tmpdir),
   ]
   result = procrunner.run(command_line)
   success, issues = xia2.Test.regression.check_result('X4_wide_split.ccp4a', result, run_in_tmpdir, ccp4, xds)
