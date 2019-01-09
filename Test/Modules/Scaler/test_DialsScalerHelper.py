@@ -260,7 +260,7 @@ test_data = [
   # but next best is lower than refiner
 
 @pytest.mark.parametrize("refiner_lattices, possible_lattices, expected_output", test_data)
-def test_decide_correct_lattice_using_refiner(
+def test_decide_correct_lattice_using_refiner(ccp4,
   refiner_lattices, possible_lattices, expected_output):
 
   refiner = simple_refiner(refiner_lattices)
