@@ -12,15 +12,22 @@ import procrunner
 import pytest
 from dials.conftest import run_in_tmpdir
 
-def pytest_addoption(parser):
-  '''Tests that use regression_data will not be run unless '--regression' is
-     given as command line parameter.
-  '''
-  try:
-    parser.addoption("--regression", action="store_true", default=False,
-                     help="run regression tests")
-  except ValueError:
-    pass # Thrown in case the command line option is already defined
+try:
+  from dials_data import *
+except ImportError:
+  @pytest.fixture
+  def dials_data():
+    pytest.skip("Test requires python package dials_data")
+
+  def pytest_addoption(parser):
+    '''Tests that use regression_data will not be run unless '--regression' is
+       given as command line parameter.
+    '''
+    try:
+      parser.addoption("--regression", action="store_true", default=False,
+                       help="run regression tests")
+    except ValueError:
+      pass # Thrown in case the command line option is already defined
 
 @pytest.fixture(scope="session")
 def ccp4():

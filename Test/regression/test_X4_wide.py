@@ -37,11 +37,11 @@ END PROJECT AUTOMATIC
   return xinfo_file.strpath
 
 @pytest.mark.regression
-def test_dials(regression_data, run_in_tmpdir, ccp4):
+def test_dials(dials_data, run_in_tmpdir, ccp4):
   command_line = [
       'xia2', 'pipeline=dials', 'nproc=1',
       'trust_beam_centre=True', 'read_all_image_headers=False',
-      'truncate=cctbx', regression_data("X4_wide").strpath,
+      'truncate=cctbx', dials_data("x4wide").strpath,
   ]
   result = procrunner.run(command_line)
   success, issues = xia2.Test.regression.check_result('X4_wide.dials', result, run_in_tmpdir, ccp4)
