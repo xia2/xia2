@@ -18,8 +18,8 @@ def test_observations():
   assert list(groups[(1,2,3)].iplus()) == [0]
   assert list(groups[(1,2,3)].iminus()) == [1,2]
 
-def test_accumulators(regression_data):
-  f = regression_data('pychef').join("insulin_dials_scaled_unmerged.mtz").strpath
+def test_accumulators(dials_data):
+  f = dials_data("pychef").join("insulin_dials_scaled_unmerged.mtz").strpath
   reader = any_reflection_file(f)
   assert reader.file_type() == 'ccp4_mtz'
   arrays = reader.as_miller_arrays(merge_equivalents=False)
