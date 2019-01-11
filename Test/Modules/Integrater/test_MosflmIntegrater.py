@@ -7,11 +7,11 @@ import mock
 import pytest
 from libtbx.test_utils import approx_equal
 
-def exercise_mosflm_integrater(regression_data, tmp_dir, nproc):
+def exercise_mosflm_integrater(dials_data, tmp_dir, nproc):
   from xia2.Handlers.Phil import PhilIndex
   PhilIndex.params.xia2.settings.multiprocessing.nproc = nproc
 
-  template = regression_data('insulin').join("insulin_1_###.img").strpath
+  template = dials_data('insulin').join("insulin_1_###.img").strpath
 
   # otherwise if this test is running multiple times simultaneously two mosflm
   # processes try to write to the same genfile
@@ -105,12 +105,10 @@ def exercise_mosflm_integrater(regression_data, tmp_dir, nproc):
   assert abs(mtz_object.n_reflections() - 81116) < nref_error, \
          mtz_object.n_reflections()
 
-@pytest.mark.slow
-def test_mosflm_integrater_serial(ccp4, regression_data, run_in_tmpdir):
+def test_mosflm_integrater_serial(regression_test, ccp4, dials_data, run_in_tmpdir):
   with mock.patch.object(sys, 'argv', []):
-    exercise_mosflm_integrater(regression_data, run_in_tmpdir.strpath, nproc=1)
+    exercise_mosflm_integrater(dials_data, run_in_tmpdir.strpath, nproc=1)
 
-@pytest.mark.slow
-def test_mosflm_integrater_parallel(ccp4, regression_data, run_in_tmpdir):
+def test_mosflm_integrater_parallel(regression_test, ccp4, dials_data, run_in_tmpdir):
   with mock.patch.object(sys, 'argv', []):
-    exercise_mosflm_integrater(regression_data, run_in_tmpdir.strpath, nproc=2)
+    exercise_mosflm_integrater(dials_data, run_in_tmpdir.strpath, nproc=2)

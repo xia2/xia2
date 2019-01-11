@@ -76,7 +76,6 @@ symmetry_test_data = [
   ('P 2 ', 'P 2 ', ['mP', 'aP', 'oP'], ['P 1 2 1', 'P 1', 'P 1 2 1', 'P 1 2 1', 'P 2 2 2']),
   ('P 1 ', 'P 2 ', ['aP', 'mP', 'oP'], ['P 1', 'P 1 2 1', 'P 1 2 1', 'P 1 2 1', 'P 2 2 2'])]
 
-@pytest.mark.slow
 @pytest.mark.parametrize("""reflection_spacegroup, experiments_spacegroup,
   expected_lattices, expected_spacegroups""", symmetry_test_data)
 def test_dials_symmetry_decide_pointgroup(reflection_spacegroup, experiments_spacegroup,

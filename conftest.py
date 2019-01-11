@@ -5,6 +5,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import argparse
 import os
 import re
 
@@ -13,21 +14,51 @@ import pytest
 from dials.conftest import run_in_tmpdir
 
 try:
-  from dials_data import *
-except ImportError:
-  @pytest.fixture
-  def dials_data():
-    pytest.skip("Test requires python package dials_data")
+    import dials_data as pkg_dials_data
 
-  def pytest_addoption(parser):
-    '''Tests that use regression_data will not be run unless '--regression' is
-       given as command line parameter.
-    '''
+    dials_data = pkg_dials_data.dials_data
+except ImportError:
+    pkg_dials_data = None
+
+    @pytest.fixture
+    def dials_data():
+        pytest.skip("Test requires python package dials_data")
+
+def pytest_addoption(parser):
+    """
+    Tests that use regression_data will not be run unless '--regression' is
+    given as command line parameter.
+    """
+    if pkg_dials_data:
+        pkg_dials_data.pytest_addoption(parser)
     try:
-      parser.addoption("--regression", action="store_true", default=False,
-                       help="run regression tests")
+        parser.addoption(
+            "--regression",
+            action="store_true",
+            default=False,
+            help="run simple tests relying on regression data",
+        )
     except ValueError:
-      pass # Thrown in case the command line option is already defined
+        pass  # Thrown in case the command line option is already defined
+
+    class RFAction(argparse.Action):
+        def __call__(self, parser, namespace, values, option_string):
+            namespace.regression = True
+            namespace.regression_full = True
+
+    parser.addoption(
+        "--regression-full",
+        nargs=0,
+        action=RFAction,
+        help="run all regression tests, this will take a while. Implies --regression",
+    )
+
+
+@pytest.fixture(scope="session")
+def regression_test(request):
+    if not request.config.getoption("--regression-full"):
+        pytest.skip("Test requires --regression-full option to run.")
+
 
 @pytest.fixture(scope="session")
 def ccp4():

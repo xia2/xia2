@@ -10,7 +10,7 @@ expected_data_files = [
   'xia2-multi-crystal-report.html'
 ]
 
-def test_proteinase_k(regression_data, run_in_tmpdir, ccp4):
+def test_proteinase_k(regression_test, regression_data, run_in_tmpdir, ccp4):
   data_dir = regression_data('multi_crystal_proteinase_k')
   expts = sorted(glob.glob(data_dir.join('experiments*.json').strpath))
   refls = sorted(glob.glob(data_dir.join('reflections*.pickle').strpath))
@@ -22,7 +22,7 @@ def test_proteinase_k(regression_data, run_in_tmpdir, ccp4):
   for f in expected_data_files:
     assert os.path.exists(f), f
 
-def test_proteinase_k_dose(regression_data, run_in_tmpdir, ccp4):
+def test_proteinase_k_dose(regression_test, regression_data, run_in_tmpdir, ccp4):
   data_dir = regression_data('multi_crystal_proteinase_k')
   expts = sorted(glob.glob(data_dir.join('experiments*.json').strpath))
   refls = sorted(glob.glob(data_dir.join('reflections*.pickle').strpath))

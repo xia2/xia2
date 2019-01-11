@@ -127,8 +127,7 @@ def exercise_dials_wrappers(template, nproc=None):
   assert os.path.exists(exporter.get_combined_experiments_filename())
   assert os.path.exists(exporter.get_combined_reflections_filename())
 
-@pytest.mark.slow
-def test_dials_wrappers_serial(ccp4, regression_data, run_in_tmpdir):
-  template = (regression_data('insulin') / "insulin_1_%03i.img").strpath
+def test_dials_wrappers_serial(regression_test, ccp4, dials_data, run_in_tmpdir):
+  template = (dials_data('insulin') / "insulin_1_%03i.img").strpath
   with mock.patch.object(sys, 'argv', []):
     exercise_dials_wrappers(template, nproc=1)

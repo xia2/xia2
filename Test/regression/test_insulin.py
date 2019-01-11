@@ -13,12 +13,11 @@ expected_data_files = [
 ]
 
 
-@pytest.mark.regression
-def test_2d(regression_data, run_in_tmpdir, ccp4):
+def test_2d(regression_test, dials_data, run_in_tmpdir, ccp4):
   command_line = [
       'xia2', 'pipeline=2di', 'nproc=1',
       'trust_beam_centre=True',
-      regression_data('insulin').strpath,
+      dials_data('insulin').strpath,
   ]
   result = procrunner.run(command_line)
   success, issues = xia2.Test.regression.check_result(

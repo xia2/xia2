@@ -7,12 +7,12 @@ import mock
 import pytest
 from libtbx.test_utils import approx_equal
 
-def exercise_dials_integrater(regression_data, tmp_dir, nproc=None):
+def exercise_dials_integrater(dials_data, tmp_dir, nproc=None):
   if nproc:
     from xia2.Handlers.Phil import PhilIndex
     PhilIndex.params.xia2.settings.multiprocessing.nproc = nproc
 
-  template = regression_data('insulin').join("insulin_1_###.img").strpath
+  template = dials_data('insulin').join("insulin_1_###.img").strpath
 
   from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
   from xia2.Modules.Integrater.DialsIntegrater import DialsIntegrater
@@ -98,7 +98,6 @@ def exercise_dials_integrater(regression_data, tmp_dir, nproc=None):
   mtz_object = reader.file_content()
   assert abs(mtz_object.n_reflections() - expected_reflections) < 300, mtz_object.n_reflections()
 
-@pytest.mark.slow
-def test_dials_integrater_serial(ccp4, regression_data, run_in_tmpdir):
+def test_dials_integrater_serial(regression_test, ccp4, dials_data, run_in_tmpdir):
   with mock.patch.object(sys, 'argv', []):
-    exercise_dials_integrater(regression_data, run_in_tmpdir.strpath, nproc=1)
+    exercise_dials_integrater(dials_data, run_in_tmpdir.strpath, nproc=1)

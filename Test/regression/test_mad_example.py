@@ -14,8 +14,7 @@ expected_data_files = [
     'AUTOMATIC_DEFAULT_scaled_unmerged_WAVE2.mtz',
 ]
 
-@pytest.mark.regression
-def test_dials(regression_data, run_in_tmpdir, ccp4):
+def test_dials(regression_test, regression_data, run_in_tmpdir, ccp4):
   command_line = [
       'xia2', 'pipeline=dials', 'nproc=1', 'njob=2', 'mode=parallel',
       'trust_beam_centre=True',
@@ -28,8 +27,7 @@ def test_dials(regression_data, run_in_tmpdir, ccp4):
   assert success, issues
 
 
-@pytest.mark.regression
-def test_xds(regression_data, run_in_tmpdir, ccp4, xds):
+def test_xds(regression_test, regression_data, run_in_tmpdir, ccp4, xds):
   command_line = [
       'xia2', 'pipeline=3di', 'nproc=1', 'njob=2', 'mode=parallel',
       'trust_beam_centre=True',
@@ -42,8 +40,7 @@ def test_xds(regression_data, run_in_tmpdir, ccp4, xds):
   assert success, issues
 
 
-@pytest.mark.regression
-def test_xds_ccp4a(regression_data, run_in_tmpdir, ccp4, xds):
+def test_xds_ccp4a(regression_test, regression_data, run_in_tmpdir, ccp4, xds):
   command_line = [
       'xia2', 'pipeline=3di', 'nproc=1', 'njob=2', 'mode=parallel',
       'trust_beam_centre=True', 'scaler=ccp4a',

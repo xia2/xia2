@@ -6,8 +6,8 @@ import sys
 import mock
 import pytest
 
-def exercise_serialization(regression_data, tmp_dir):
-  template = regression_data('insulin').join("insulin_1_###.img").strpath
+def exercise_serialization(dials_data, tmp_dir):
+  template = dials_data('insulin').join("insulin_1_###.img").strpath
 
   from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
   from xia2.Modules.Refiner.DialsRefiner import DialsRefiner
@@ -109,7 +109,6 @@ def exercise_serialization(regression_data, tmp_dir):
   print(xproj.get_output())
   print("\n".join(xproj.summarise()))
 
-@pytest.mark.slow
-def test_serialization(ccp4, regression_data, run_in_tmpdir):
+def test_serialization(regression_test, ccp4, dials_data, run_in_tmpdir):
   with mock.patch.object(sys, 'argv', []):
-    exercise_serialization(regression_data, run_in_tmpdir.strpath)
+    exercise_serialization(dials_data, run_in_tmpdir.strpath)

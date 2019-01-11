@@ -10,8 +10,8 @@ from xia2.Experts.FindImages import image2template_directory
 from xia2.Wrappers.Mosflm.MosflmIndex import MosflmIndex
 from xia2.Wrappers.Mosflm.MosflmRefineCell import MosflmRefineCell
 
-def get_template_and_directory(regression_data):
-  xia2_demo_data = regression_data('insulin')
+def get_template_and_directory(dials_data):
+  xia2_demo_data = dials_data('insulin')
   template = xia2_demo_data.join("insulin_1_%03i.img").strpath
   with mock.patch.object(sys, 'argv', []):
     return image2template_directory(template % 1)
@@ -21,9 +21,8 @@ two_images_indexing = {
   'mosaicity': 0.4
 }
 
-@pytest.mark.slow
-def test_index_two_images_with_mosflm(ccp4, regression_data, run_in_tmpdir):
-  templ, directory = get_template_and_directory(regression_data)
+def test_index_two_images_with_mosflm(ccp4, dials_data, run_in_tmpdir):
+  templ, directory = get_template_and_directory(dials_data)
 
   # exercise basic indexing from two images
   indexer = MosflmIndex()
@@ -43,10 +42,9 @@ def test_index_two_images_with_mosflm(ccp4, regression_data, run_in_tmpdir):
   assert indexer.get_mosaic_spreads() == pytest.approx([two_images_indexing['mosaicity']]*2, abs=0.05)
   assert indexer.get_lattice() == 'cI'
 
-@pytest.mark.slow
 @pytest.mark.xfail(reason='broken on CCP4 > 7.0.53')
-def test_indexing_multiple_images_with_mosflm(ccp4, regression_data, run_in_tmpdir):
-  templ, directory = get_template_and_directory(regression_data)
+def test_indexing_multiple_images_with_mosflm(regression_test, ccp4, dials_data, run_in_tmpdir):
+  templ, directory = get_template_and_directory(dials_data)
 
   # now exercise indexing off multiple images and test more settings
   indexer = MosflmIndex()
@@ -69,9 +67,8 @@ def test_indexing_multiple_images_with_mosflm(ccp4, regression_data, run_in_tmpd
     indexer.get_mosaic_spreads(), [0.5, 0.35, 0.45, 0.65, 0.4], eps=1e-1)
   assert indexer.get_lattice() == 'cI'
 
-@pytest.mark.slow
-def test_mosflm_refine_cell(ccp4, regression_data, run_in_tmpdir):
-  templ, directory = get_template_and_directory(regression_data)
+def test_mosflm_refine_cell(ccp4, dials_data, run_in_tmpdir):
+  templ, directory = get_template_and_directory(dials_data)
 
   matrix = ''' -0.00728371 -0.00173706 -0.00994261
   0.01008485 -0.00175152 -0.00708190

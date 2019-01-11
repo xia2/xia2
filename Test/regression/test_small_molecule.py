@@ -12,8 +12,7 @@ expected_data_files = [
 ]
 
 
-@pytest.mark.regression
-def test_dials(regression_data, run_in_tmpdir, ccp4):
+def test_dials(regression_test, regression_data, run_in_tmpdir, ccp4):
   command_line = [
       'xia2', 'pipeline=dials', 'nproc=2',
       'small_molecule=True', 'read_all_image_headers=False', 'trust_beam_centre=True',
@@ -25,8 +24,7 @@ def test_dials(regression_data, run_in_tmpdir, ccp4):
   )
   assert success, issues
 
-@pytest.mark.regression
-def test_dials_full(regression_data, run_in_tmpdir, ccp4):
+def test_dials_full(regression_test, regression_data, run_in_tmpdir, ccp4):
     command_line = [
         'xia2', 'pipeline=dials-full', 'nproc=2',
         'small_molecule=True', 'read_all_image_headers=False', 'trust_beam_centre=True',
@@ -40,8 +38,7 @@ def test_dials_full(regression_data, run_in_tmpdir, ccp4):
     assert success, issues
 
 
-@pytest.mark.regression
-def test_xds(regression_data, run_in_tmpdir, ccp4, xds):
+def test_xds(regression_test, regression_data, run_in_tmpdir, ccp4, xds):
   command_line = [
       'xia2', 'pipeline=3dii', 'nproc=2',
       'small_molecule=True', 'read_all_image_headers=False', 'trust_beam_centre=True',
@@ -54,8 +51,7 @@ def test_xds(regression_data, run_in_tmpdir, ccp4, xds):
   assert success, issues
 
 
-@pytest.mark.regression
-def test_xds_ccp4a(regression_data, run_in_tmpdir, ccp4, xds):
+def test_xds_ccp4a(regression_test, regression_data, run_in_tmpdir, ccp4, xds):
   command_line = [
       'xia2', 'pipeline=3dii', 'nproc=2',
       'small_molecule=True', 'read_all_image_headers=False', 'trust_beam_centre=True',

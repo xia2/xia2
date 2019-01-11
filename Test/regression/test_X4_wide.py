@@ -35,7 +35,7 @@ END PROJECT AUTOMATIC
   xinfo_file.write(split_xinfo_template.format(data_dir.strpath.replace('\\', '\\\\')))
   return xinfo_file.strpath
 
-def test_dials(dials_data, run_in_tmpdir, ccp4):
+def test_dials(regression_test, dials_data, run_in_tmpdir, ccp4):
   command_line = [
       'xia2', 'pipeline=dials', 'nproc=1',
       'trust_beam_centre=True', 'read_all_image_headers=False',
@@ -45,7 +45,7 @@ def test_dials(dials_data, run_in_tmpdir, ccp4):
   success, issues = xia2.Test.regression.check_result('X4_wide.dials', result, run_in_tmpdir, ccp4)
   assert success, issues
 
-def test_dials_split(dials_data, run_in_tmpdir, ccp4):
+def test_dials_split(regression_test, dials_data, run_in_tmpdir, ccp4):
   command_line = [
       'xia2', 'pipeline=dials', 'nproc=1', 'njob=2', 'mode=parallel',
       'trust_beam_centre=True', 'xinfo=%s' % split_xinfo(dials_data("x4wide"), run_in_tmpdir),
@@ -54,7 +54,7 @@ def test_dials_split(dials_data, run_in_tmpdir, ccp4):
   success, issues = xia2.Test.regression.check_result('X4_wide_split.dials', result, run_in_tmpdir, ccp4)
   assert success, issues
 
-def test_xds(dials_data, run_in_tmpdir, ccp4, xds):
+def test_xds(regression_test, dials_data, run_in_tmpdir, ccp4, xds):
   command_line = [
       'xia2', 'pipeline=3di', 'nproc=1', 'trust_beam_centre=True',
       'read_all_image_headers=False', dials_data("x4wide").strpath,
@@ -63,7 +63,7 @@ def test_xds(dials_data, run_in_tmpdir, ccp4, xds):
   success, issues = xia2.Test.regression.check_result('X4_wide.xds', result, run_in_tmpdir, ccp4, xds)
   assert success, issues
 
-def test_xds_split(dials_data, run_in_tmpdir, ccp4, xds):
+def test_xds_split(regression_test, dials_data, run_in_tmpdir, ccp4, xds):
   command_line = [
       'xia2', 'pipeline=3di', 'nproc=1', 'njob=2', 'mode=parallel',
       'trust_beam_centre=True', 'xinfo=%s' % split_xinfo(dials_data("x4wide"), run_in_tmpdir),
@@ -72,7 +72,7 @@ def test_xds_split(dials_data, run_in_tmpdir, ccp4, xds):
   success, issues = xia2.Test.regression.check_result('X4_wide_split.xds', result, run_in_tmpdir, ccp4, xds)
   assert success, issues
 
-def test_xds_ccp4a(dials_data, run_in_tmpdir, ccp4, xds):
+def test_xds_ccp4a(regression_test, dials_data, run_in_tmpdir, ccp4, xds):
   command_line = [
       'xia2', 'pipeline=3di', 'nproc=1',
       'scaler=ccp4a', 'trust_beam_centre=True', dials_data("x4wide").strpath,
@@ -81,7 +81,7 @@ def test_xds_ccp4a(dials_data, run_in_tmpdir, ccp4, xds):
   success, issues = xia2.Test.regression.check_result('X4_wide.ccp4a', result, run_in_tmpdir, ccp4, xds)
   assert success, issues
 
-def test_xds_ccp4a_split(dials_data, run_in_tmpdir, ccp4, xds):
+def test_xds_ccp4a_split(regression_test, dials_data, run_in_tmpdir, ccp4, xds):
   command_line = [
     'xia2', 'pipeline=3di', 'nproc=1', 'scaler=ccp4a', 'njob=2',
     'merging_statistics.source=aimless',

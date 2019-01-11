@@ -1,16 +1,16 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+import subprocess
 
 import pytest
 from libtbx.test_utils import approx_equal
 
 def cmd_exists(cmd):
-  import subprocess
   return subprocess.call('type ' + cmd, shell=True,
     stdout=subprocess.PIPE, stderr=subprocess.PIPE) == 0
 
-def test_blend_wrapper(ccp4, regression_data, run_in_tmpdir):
+def test_blend_wrapper(regression_test, ccp4, regression_data, run_in_tmpdir):
   if not cmd_exists('blend'):
     pytest.skip('blend not available')
 

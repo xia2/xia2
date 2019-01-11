@@ -2,9 +2,8 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
-@pytest.mark.slow
-def test_labelit_indexer(ccp4, regression_data, run_in_tmpdir):
-  template = regression_data('insulin').join("insulin_1_###.img").strpath
+def test_labelit_indexer(regression_test, ccp4, dials_data, run_in_tmpdir):
+  template = dials_data('insulin').join("insulin_1_###.img").strpath
 
   from xia2.Modules.Indexer.LabelitIndexer import LabelitIndexer
   from xia2.DriverExceptions.NotAvailableError import NotAvailableError
