@@ -16,6 +16,7 @@ def run():
     with open('xia2.error', 'w') as fh:
       traceback.print_exc(file=fh)
     Chatter.write('Status: error "%s"' % str(e))
+    sys.exit(1)
 
   if len(sys.argv) < 2 or '-help' in sys.argv:
     help()
@@ -32,6 +33,7 @@ def run():
     with open(os.path.join(wd, 'xia2.error'), 'w') as fh:
       traceback.print_exc(file=fh)
     Chatter.write('Status: error "%s"' % str(e))
+    sys.exit(1)
 
 if __name__ == '__main__':
   run()
