@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 import os
 import shutil
 
+from xia2.lib.bits import auto_logfiler
 from xia2.Handlers.Streams import Chatter, Debug
 from xia2.Wrappers.XIA.Integrate import Integrate as XIA2Integrate
 
@@ -45,6 +46,7 @@ def process_one_sweep(args):
   xia2_integrate.set_nproc(nproc)
   xia2_integrate.set_njob(1)
   xia2_integrate.set_mp_mode('serial')
+  auto_logfiler(xia2_integrate)
 
   sweep_tmp_dir = os.path.join(tmpdir, crystal_id, wavelength_id, sweep_id)
   sweep_target_dir = os.path.join(curdir, crystal_id, wavelength_id, sweep_id)
