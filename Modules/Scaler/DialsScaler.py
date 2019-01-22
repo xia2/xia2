@@ -928,15 +928,16 @@ class DialsScalerHelper(object):
         self.get_working_directory(), 'split_reflections_%s.pickle' % nums))
       si.set_experiments(os.path.join(
         self.get_working_directory(), 'split_experiments_%s.json' % nums))
-    # now make sure all dataset ids are unique
-    sweep_handler = self._renumber_ids_in_tables(sweep_handler)
     return sweep_handler
 
   def _renumber_ids_in_tables(self, sweep_handler):
     """Renumber all dataset ids in tables to be unique, as this is not
     done in the current version of split_experiments, for backwards compability."""
+    nn = len(sweep_handler.get_epochs())
+    fmt = '%%0%dd' % (math.log10(nn) + 1)
     for i, epoch in enumerate(sweep_handler.get_epochs()):
       si = sweep_handler.get_sweep_information(epoch)
+      nums = fmt % i
       r = flex.reflection_table.from_pickle(si.get_reflections())
       if len(set(r['id']).difference(set([-1]))) > 1:
         raise ValueError("Only single-experiment tables expected")
@@ -946,7 +947,7 @@ class DialsScalerHelper(object):
       r['id'].set_selected(r['id'] == old_id, i)
       r.experiment_identifiers()[i] = exp_id
       fname = os.path.join(
-        self.get_working_directory(), "split_reflections_%s.pickle" % i)
+        self.get_working_directory(), "split_reflections_%s.pickle" % nums)
       r.as_pickle(fname)
       si.set_reflections(fname)
     return sweep_handler
