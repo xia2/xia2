@@ -175,8 +175,8 @@ def check_data_in_sweep_handler(sweephandler):
   for i, epoch in enumerate(sweephandler.get_epochs()):
     si = sweephandler.get_sweep_information(epoch)
     r = flex.reflection_table.from_pickle(si.get_reflections())
-    assert list(set(r['id'])) == [i]
-    assert list(r.experiment_identifiers().keys()) == [i]
+    assert list(set(r['id'])) == [0]
+    assert list(r.experiment_identifiers().keys()) == [0]
     assert list(r.experiment_identifiers().values()) == [str(i)]
     experiment = load.experiment_list(si.get_experiments())
     assert len(experiment) == 1
