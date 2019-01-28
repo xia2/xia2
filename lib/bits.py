@@ -39,11 +39,6 @@ def is_xds_file(filename):
 
   return False
 
-def is_scalepack_file(filename):
-  '''Determine if a file looks like scalepack format.'''
-
-  return True
-
 def nifty_power_of_ten(num):
   '''Return 10^n: 10^n > num; 10^(n-1) <= num.'''
 
