@@ -1,7 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 import wx
-from libtbx.utils import Sorry
+from dials.util import Sorry
 from wxtbx import app, icons, phil_controls
 from wxtbx.phil_controls import ints, path
 

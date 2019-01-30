@@ -284,7 +284,7 @@ def xia2_main(stop_after=None):
   Environment.cleanup()
 
 def run():
-  from libtbx.utils import Sorry
+  from dials.util import Sorry
   if len(sys.argv) < 2 or '-help' in sys.argv or '--help' in sys.argv:
     help()
     sys.exit()

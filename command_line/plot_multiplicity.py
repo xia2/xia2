@@ -298,7 +298,7 @@ font_size = 20
 """, process_includes=True)
 
 def run(args):
-  from libtbx.utils import Sorry
+  from dials.util import Sorry
   from iotbx.reflection_file_reader import any_reflection_file
   from iotbx.gui_tools.reflections import get_array_description
   pcl = iotbx.phil.process_command_line_with_files(

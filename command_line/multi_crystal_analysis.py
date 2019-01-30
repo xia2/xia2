@@ -6,7 +6,7 @@ from collections import OrderedDict
 import logging
 
 
-from libtbx.utils import Sorry
+from dials.util import Sorry
 import iotbx.phil
 
 from dials.array_family import flex

@@ -31,7 +31,7 @@ def get_scipy():
       found = False
 
   if not found:
-    from libtbx.utils import Sorry
+    from dials.util import Sorry
     raise Sorry('%s depends on scipy.cluster, not available' % sys.argv[0])
 
 get_scipy()

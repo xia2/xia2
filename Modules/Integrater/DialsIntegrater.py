@@ -17,7 +17,7 @@ import os
 import sys
 
 import xia2.Wrappers.Dials.Integrate
-from libtbx.utils import Sorry
+from dials.util import Sorry
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import Chatter, Debug, Journal

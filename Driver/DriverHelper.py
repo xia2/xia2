@@ -293,7 +293,7 @@ def error_python_traceback(records):
       buf.append(line)
 
   if error_messages:
-    from libtbx.utils import Sorry
+    from dials.util import Sorry
     raise Sorry(error_messages[0])
 
 def check_return_code(code):

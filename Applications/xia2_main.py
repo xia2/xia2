@@ -16,7 +16,7 @@ import os
 import platform
 import sys
 
-from libtbx.utils import Sorry
+from dials.util import Sorry
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Environment import Environment, df
 from xia2.Handlers.Streams import Chatter, Debug

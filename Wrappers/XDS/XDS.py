@@ -541,7 +541,7 @@ def find_hdf5_lib(template=None):
 
   import os
   from xia2.Handlers.Phil import PhilIndex
-  from libtbx.utils import Sorry
+  from dials.util import Sorry
 
   plugin_name = PhilIndex.get_python_object().xds.hdf5_plugin
 

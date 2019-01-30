@@ -21,7 +21,7 @@ import copy
 import os
 import sys
 
-from libtbx.utils import Sorry
+from dials.util import Sorry
 from xia2.Experts.FindImages import image2template_directory
 from xia2.Handlers.Environment import which
 from xia2.Handlers.Flags import Flags
