@@ -861,7 +861,7 @@ CC1/2: %.4f, Anomalous correlation %.4f""" % (
         reindexer.set_working_directory(self.get_working_directory())
         auto_logfiler(reindexer)
         reindexer.set_experiments_filename(self._scaler.get_scaled_experiments())
-        reindexer.set_reflections_filename(self._scaler.get_scaled_reflections())
+        reindexer.set_indexed_filename(self._scaler.get_scaled_reflections())
         reindexer.set_cb_op(reindex_op)
         reindexer.run()
         self._scaler.set_scaled_experiments(reindexer.get_reindexed_experiments_filename())
@@ -1048,7 +1048,7 @@ Passing multple datasets to indexer_jiffy but not set multisweep=True"""
     reindexer.set_working_directory(self.get_working_directory())
     auto_logfiler(reindexer)
     reindexer.set_experiments_filename(si.get_experiments())
-    reindexer.set_reflections_filename(si.get_reflections())
+    reindexer.set_indexed_filename(si.get_reflections())
     if reindex_op:
       reindexer.set_cb_op(reindex_op)
     reindexer.run()
