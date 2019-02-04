@@ -430,6 +430,21 @@ class DialsScaler(Scaler):
       assert len(self._scalr_likely_spacegroups) == 1
       Chatter.write('Using preselected space group: %s' % self._scalr_likely_spacegroups[0])
 
+    # Now go through sweeps and do reindexing
+    for epoch in self._sweep_handler.get_epochs():
+      si = self._sweep_handler.get_sweep_information(epoch)
+
+      integrater = si.get_integrater()
+
+      integrater.set_integrater_spacegroup_number(
+          Syminfo.spacegroup_name_to_number(overall_pointgroup))
+      integrater.set_integrater_reindex_operator(
+          reindex_ops[epoch], reason='setting point group')
+      integrater.integrate()
+      # This will give us the reflections in the correct point group
+      si.set_reflections(integrater.get_integrated_reflections())
+      si.set_experiments(integrater.get_integrated_experiments())
+
     if need_to_return:
       self.set_scaler_done(False)
       self.set_scaler_prepare_done(False)
@@ -580,6 +595,17 @@ class DialsScaler(Scaler):
           reindexer.set_reindexed_reflections_filename(reindexed_refl_fpath)
 
           reindexer.run()
+
+          # FIXME : Should implement something like the following - problem
+          # is currently no way to get reindex op from reindexer?
+          # integrater = si.get_integrater()
+          # integrater.set_integrater_reindex_operator(reindex_op,
+          #                                         reason='match reference')
+          # integrater.set_integrater_spacegroup_number(
+          #   Syminfo.spacegroup_name_to_number(pointgroup))
+          # integrater.integrate()
+          # si.set_reflections(integrater.get_integrated_reflections)
+          # si.set_experiments(integrater.get_integrated_experiments)
 
           si.set_reflections(reindexed_refl_fpath)
           si.set_experiments(reindexed_exp_fpath)
@@ -1042,18 +1068,14 @@ Passing multple datasets to indexer_jiffy but not set multisweep=True"""
 
     return symmetry_analyser
 
-  def reindex_jiffy(self, si, reindex_op=None):
+  def reindex_jiffy(self, si, reindex_op):
     """Add data from si and reindex, setting back in si"""
-    reindexer = DialsReindex()
-    reindexer.set_working_directory(self.get_working_directory())
-    auto_logfiler(reindexer)
-    reindexer.set_experiments_filename(si.get_experiments())
-    reindexer.set_indexed_filename(si.get_reflections())
-    if reindex_op:
-      reindexer.set_cb_op(reindex_op)
-    reindexer.run()
-    si.set_experiments(reindexer.get_reindexed_experiments_filename())
-    si.set_reflections(reindexer.get_reindexed_reflections_filename())
+    integrater = si.get_integrater()
+    integrater.set_integrater_reindex_operator(reindex_op,
+      reason='eliminated lattice')
+    integrater.integrate()
+    si.set_reflections(integrater.get_integrated_reflections())
+    si.set_experiments(integrater.get_integrated_experiments())
 
 def decide_correct_lattice_using_refiner(possible_lattices, refiner):
   """Use the refiner to determine which of the possible lattices is the
