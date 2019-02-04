@@ -597,7 +597,7 @@ class DialsScaler(Scaler):
           reindexer.run()
 
           # FIXME : Should implement something like the following - problem
-          # is currently no way to get reindex op from reindexer?
+          # is currently no way to get reindex op from reindexer?
           # integrater = si.get_integrater()
           # integrater.set_integrater_reindex_operator(reindex_op,
           #                                         reason='match reference')
