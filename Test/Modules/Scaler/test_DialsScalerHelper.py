@@ -73,13 +73,13 @@ def generate_test_refl(id_=0, assign_id=False):
   return reflections
 
 symmetry_test_data = [
-  ('P 2 ', 'P 2 ', ['mP', 'aP', 'oP'], ['P 1 2 1', 'P 1', 'P 1 2 1', 'P 1 2 1', 'P 2 2 2']),
-  ('P 1 ', 'P 2 ', ['aP', 'mP', 'oP'], ['P 1', 'P 1 2 1', 'P 1 2 1', 'P 1 2 1', 'P 2 2 2'])]
+  ('P 2 ', 'P 2 ', ['mP', 'aP', 'oP'], ['P 1 2 1', 'P 1'], ['P 1 2 1', 'P 1 2 1', 'P 2 2 2']),
+  ('P 1 ', 'P 2 ', ['aP', 'mP', 'oP'], ['P 1', 'P 1 2 1'], ['P 1 2 1', 'P 1 2 1', 'P 2 2 2'])]
 
 @pytest.mark.parametrize("""reflection_spacegroup, experiments_spacegroup,
-  expected_lattices, expected_spacegroups""", symmetry_test_data)
+  expected_lattices, required_spacegroup_order, other_spacegroups""", symmetry_test_data)
 def test_dials_symmetry_decide_pointgroup(reflection_spacegroup, experiments_spacegroup,
-  expected_lattices, expected_spacegroups, helper):
+  expected_lattices, required_spacegroup_order, other_spacegroups, helper):
   """Test for the dials_symmetry_decide_pointgroup helper function """
 
   dump.experiment_list(generated_exp(space_group=experiments_spacegroup), 'test_exp.json')
@@ -88,8 +88,15 @@ def test_dials_symmetry_decide_pointgroup(reflection_spacegroup, experiments_spa
   symmetry_analyser = helper.dials_symmetry_decide_pointgroup(
     ['test_exp.json'], ['test_refl.pickle'])
 
+  # Note : instabilities have been observed in the order of the end of the
+  # spacegroup list - this is likely due to the use of unseeded random number
+  # generation in dials.symmetry symmetry element scoring, but this only seems
+  # to affect the order of groups with a score near zero. Hence only assert the
+  # order of the spacegroups that must be in order, near the start of the list.
   assert symmetry_analyser.get_possible_lattices() == expected_lattices
-  assert symmetry_analyser.get_likely_spacegroups() == expected_spacegroups
+  spacegroups = symmetry_analyser.get_likely_spacegroups()
+  assert spacegroups[:len(required_spacegroup_order)] == required_spacegroup_order
+  assert set(spacegroups[len(required_spacegroup_order):]) == set(other_spacegroups)
 
 def test_assign_identifiers(helper):
   """Test the call to the assign identifiers wrapper"""
