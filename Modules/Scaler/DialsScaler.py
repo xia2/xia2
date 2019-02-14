@@ -440,8 +440,9 @@ class DialsScaler(Scaler):
           Syminfo.spacegroup_name_to_number(overall_pointgroup))
       integrater.set_integrater_reindex_operator(
           reindex_ops[epoch], reason='setting point group')
-      integrater.integrate()
-      # This will give us the reflections in the correct point group
+      integrater.set_output_format('pickle')
+      _ = integrater.get_integrater_intensities()
+      # ^ This will give us the reflections in the correct point group
       si.set_reflections(integrater.get_integrated_reflections())
       si.set_experiments(integrater.get_integrated_experiments())
 
@@ -1073,7 +1074,9 @@ Passing multple datasets to indexer_jiffy but not set multisweep=True"""
     integrater = si.get_integrater()
     integrater.set_integrater_reindex_operator(reindex_op,
       reason='eliminated lattice')
-    integrater.integrate()
+    integrater.set_output_format('pickle')
+    _ = integrater.get_integrater_intensities()
+    # ^ This will give us the reflections in the correct point group
     si.set_reflections(integrater.get_integrated_reflections())
     si.set_experiments(integrater.get_integrated_experiments())
 

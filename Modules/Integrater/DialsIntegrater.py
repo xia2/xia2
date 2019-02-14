@@ -513,6 +513,9 @@ class DialsIntegrater(Integrater):
         reindex.set_space_group(lattice_to_spacegroup(
           self.get_integrater_refiner().get_refiner_lattice()))
 
+      reindex.set_experiments_filename(self.get_integrated_experiments())
+      reindex.set_indexed_filename(self.get_integrated_reflections())
+
       reindex.run()
       self._intgr_integrated_pickle = reindex.get_reindexed_reflections_filename()
       self._intgr_integrated_filename = reindex.get_reindexed_reflections_filename()
