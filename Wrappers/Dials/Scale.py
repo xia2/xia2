@@ -115,6 +115,8 @@ def DialsScale(DriverType=None,
     def clear_datafiles(self):
       self._experiments_json = []
       self._reflections_pickle = []
+      self._scaled_experiments = []
+      self._scaled_reflections = []
 
     def set_resolution(self, resolution):
       '''Set the resolution limit for the scaling -

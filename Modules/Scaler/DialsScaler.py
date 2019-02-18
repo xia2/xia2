@@ -36,9 +36,11 @@ class DialsScaler(Scaler):
 
     self._scalr_scaled_refl_files = {}
     self._scalr_statistics = {}
-    self._factory = CCP4Factory() # allows lots of post scaling calculations
-    self._scaler = DialsScale()
+    self._factory = CCP4Factory() # allows lots of post-scaling calculations
     self._helper = DialsScalerHelper()
+    self._scaler = None
+    self._scaled_experiments = None
+    self._scaled_reflections = None
     self._reference_reflections = None
     self._reference_experiments = None
     self._no_times_scaled = 0
@@ -106,7 +108,6 @@ class DialsScaler(Scaler):
 
     need_to_return = False
 
-    self._scaler.clear_datafiles()
     self._sweep_handler = SweepInformationHandler(self._scalr_integraters)
 
     p, x = self._sweep_handler.get_project_info()
@@ -644,7 +645,7 @@ class DialsScaler(Scaler):
 
     # should this now be passed back to integrater?
 
-    self._scaler.set_crystal_name(self._scalr_xname)
+
 
   def _scale(self):
     '''Perform all of the operations required to deliver the scaled
@@ -664,7 +665,8 @@ class DialsScaler(Scaler):
           'scaling', self.get_scaler_xcrystal().get_name(), 'Dials',
           {'scaling model':'default'})
 
-    sc = self._updated_dials_scaler()
+    self._scaler = DialsScale()
+    self._scaler = self._updated_dials_scaler()
 
     # Set paths
     scaled_mtz_path = os.path.join(self.get_working_directory(),
@@ -676,20 +678,21 @@ class DialsScaler(Scaler):
                                (self._scalr_pname,
                                 self._scalr_xname))
 
-    if not sc.get_scaled_experiments():
+    if self._scaled_experiments and self._scaled_reflections:
+      #going to continue-where-left-off
+      self._scaler.add_experiments_json(self._scaled_experiments())
+      self._scaler.add_reflections_pickle(self._scaled_reflections())
+    else:
       for epoch in self._sweep_handler.get_epochs():
         si = self._sweep_handler.get_sweep_information(epoch)
         experiment = si.get_experiments()
         reflections = si.get_reflections()
         self._scaler.add_experiments_json(experiment)
         self._scaler.add_reflections_pickle(reflections)
-    else:
-      #going to continue-where-left-off
-      self._scaler.add_experiments_json(self._scaler.get_scaled_experiments())
-      self._scaler.add_reflections_pickle(self._scaler.get_scaled_reflections())
 
     self._scaler.set_scaled_unmerged_mtz(scaled_unmerged_mtz_path)
     self._scaler.set_scaled_mtz(scaled_mtz_path)
+    self._scaler.set_crystal_name(self._scalr_xname)
     self._scalr_scaled_reflection_files = {}
     for epoch in self._sweep_handler.get_epochs():
         si = self._sweep_handler.get_sweep_information(epoch)
@@ -717,14 +720,16 @@ class DialsScaler(Scaler):
 
       if (dname, sname) in self._scalr_resolution_limits:
         resolution, _ = self._scalr_resolution_limits[(dname, sname)]
-        sc.set_resolution(resolution)
+        self._scaler.set_resolution(resolution)
 
-    sc.set_working_directory(self.get_working_directory())
-    auto_logfiler(sc)
+    self._scaler.set_working_directory(self.get_working_directory())
+    auto_logfiler(self._scaler)
     FileHandler.record_log_file('%s %s SCALE' % (self._scalr_pname,
                                                 self._scalr_xname),
-                            sc.get_log_file())
-    sc.scale()
+                            self._scaler.get_log_file())
+    self._scaler.scale()
+    self._scaled_experiments = self._scaler.get_scaled_experiments()
+    self._scaled_reflections = self._scaler.get_scaled_reflections()
 
     FileHandler.record_data_file(scaled_unmerged_mtz_path)
     FileHandler.record_data_file(scaled_mtz_path)
@@ -734,7 +739,7 @@ class DialsScaler(Scaler):
     # scaling resumes from where it left off.
     self._scaler.clear_datafiles()
 
-    if not self._scalr_input_spacegroup:
+    '''if not self._scalr_input_spacegroup:
       self._determine_scaled_pointgroup()
 
     if self._scalr_done is False:
@@ -743,7 +748,7 @@ class DialsScaler(Scaler):
 No further scaling will be performed.""")
         self.set_scaler_done(True)
       else:
-        return
+        return'''
 
     hklout = copy.deepcopy(self._scaler.get_scaled_mtz())
     self._scalr_scaled_refl_files = {dname : hklout}
@@ -778,7 +783,7 @@ No further scaling will be performed.""")
       #id in order to calculate a res limit for each dataset.
       # However dials.scale does not yet allow different resolutions per dataset
 
-      hklin = sc.get_unmerged_reflection_file() #combined for all datasets
+      hklin = self._scaler.get_unmerged_reflection_file() #combined for all datasets
       # Need to get an individual mtz for each dataset
       limit, reasoning = self._estimate_resolution_limit(
         hklin, batch_range=None, use_misigma=False)
