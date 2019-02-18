@@ -10,14 +10,14 @@ def cmd_exists(cmd):
   return subprocess.call('type ' + cmd, shell=True,
     stdout=subprocess.PIPE, stderr=subprocess.PIPE) == 0
 
-def test_blend_wrapper(regression_test, ccp4, regression_data, run_in_tmpdir):
+def test_blend_wrapper(regression_test, ccp4, dials_data, run_in_tmpdir):
   if not cmd_exists('blend'):
     pytest.skip('blend not available')
 
   from xia2.Wrappers.CCP4.Blend import Blend
 
   b = Blend()
-  for f in regression_data('blend_tutorial').listdir(sort=True):
+  for f in dials_data('blend_tutorial').listdir(sort=True):
     if f.ext == '.mtz':
       b.add_hklin(f.strpath)
   b.analysis()
@@ -32,7 +32,7 @@ def test_blend_wrapper(regression_test, ccp4, regression_data, run_in_tmpdir):
   assert analysis[1] == {
     'start_image': 1, 'radiation_damage_cutoff': 50, 'd_min': 1.739,
     'final_image': 50,
-    'input_file': regression_data('blend_tutorial').join('dataset_001.mtz').strpath
+    'input_file': dials_data('blend_tutorial').join('dataset_001.mtz').strpath
   }, analysis[1]
 
   assert summary.keys() == range(1, 29)
