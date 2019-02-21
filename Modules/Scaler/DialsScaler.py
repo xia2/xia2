@@ -680,8 +680,8 @@ class DialsScaler(Scaler):
 
     if self._scaled_experiments and self._scaled_reflections:
       #going to continue-where-left-off
-      self._scaler.add_experiments_json(self._scaled_experiments())
-      self._scaler.add_reflections_pickle(self._scaled_reflections())
+      self._scaler.add_experiments_json(self._scaled_experiments)
+      self._scaler.add_reflections_pickle(self._scaled_reflections)
     else:
       for epoch in self._sweep_handler.get_epochs():
         si = self._sweep_handler.get_sweep_information(epoch)
