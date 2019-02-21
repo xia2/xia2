@@ -135,7 +135,6 @@ def DialsSymmetry(DriverType = None):
 
       if lattice not in self._lattice_to_laue:
         raise RuntimeError('lattice %s not possible' % lattice)
-
       self._input_laue_group = self._lattice_to_laue[lattice]
 
       with open(self._json, 'rb') as f:
@@ -145,7 +144,7 @@ def DialsSymmetry(DriverType = None):
         if PhilIndex.params.xia2.settings.symmetry.chirality in (None, 'chiral'):
           patterson_group = patterson_group.build_derived_acentric_group()
 
-        if patterson_group == sgtbx.space_group(self._input_laue_group):
+        if patterson_group == self._input_laue_group:
           # set this as correct solution
           self.set_best_solution(d, soln)
           break
@@ -260,7 +259,7 @@ def DialsSymmetry(DriverType = None):
           if not lattice in self._possible_lattices:
             if netzc > 0.0:
               self._possible_lattices.append(lattice)
-            self._lattice_to_laue[lattice] = patterson_group.type().lookup_symbol()
+            self._lattice_to_laue[lattice] = patterson_group
           self._likely_spacegroups.append(patterson_group.type().lookup_symbol())
 
       elif self._input_laue_group:
