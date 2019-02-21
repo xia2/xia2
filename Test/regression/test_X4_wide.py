@@ -45,6 +45,19 @@ def test_dials(regression_test, dials_data, run_in_tmpdir, ccp4):
   success, issues = xia2.Test.regression.check_result('X4_wide.dials', result, run_in_tmpdir, ccp4)
   assert success, issues
 
+def test_dials_full(regression_test, dials_data, run_in_tmpdir, ccp4):
+  command_line = [
+      'xia2', 'pipeline=dials-full', 'nproc=1',
+      'trust_beam_centre=True', 'read_all_image_headers=False',
+      'truncate=cctbx', dials_data("x4wide").strpath,
+  ]
+  result = procrunner.run(command_line)
+  print(result)
+  success, issues = xia2.Test.regression.check_result('X4_wide.dials-full',
+    result, run_in_tmpdir, ccp4, expected_data_files=[
+    'AUTOMATIC_DEFAULT_scaled.mtz', 'AUTOMATIC_DEFAULT_scaled_unmerged.mtz'])
+  assert success, issues
+
 def test_dials_split(regression_test, dials_data, run_in_tmpdir, ccp4):
   command_line = [
       'xia2', 'pipeline=dials', 'nproc=1', 'njob=2', 'mode=parallel',
