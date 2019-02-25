@@ -304,8 +304,6 @@ def check_return_code(code):
       raise RuntimeError('child error')
 
   else:
-    if code >= 0:
-      return
 
     # return codes in POSIX are -ve
 
@@ -321,6 +319,10 @@ def check_return_code(code):
 
     if code == abrt:
       raise RuntimeError('process failed')
+
+  if code == 0:
+    return
+  raise RuntimeError("subprocess failed with exitcode {code}".format(code=code))
 
 executable_exists_cache = {}
 
