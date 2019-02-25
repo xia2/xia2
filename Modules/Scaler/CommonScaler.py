@@ -950,7 +950,7 @@ class CommonScaler(Scaler):
       resolution_limits.append(r_mis)
       reasoning.append('merged <I/sigI> > %s' % params.misigma)
 
-    if len(resolution_limits):
+    if any(resolution_limits):
       resolution = max(resolution_limits)
       reasoning = [
           reason for limit, reason in zip(resolution_limits, reasoning)
