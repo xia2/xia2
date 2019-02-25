@@ -231,7 +231,7 @@ def error_fp(record):
 
   else:
     if 'Floating Exception' in record:
-      raise RuntimeError('child killed')
+      raise RuntimeError('subprocess killed')
 
 def error_kill(record):
   '''Look in record for signs of a killed child process.'''
@@ -243,7 +243,7 @@ def error_kill(record):
 
   else:
     if 'Killed' in record:
-      raise RuntimeError('child killed')
+      raise RuntimeError('subprocess killed')
 
 def error_abrt(record):
   '''Look in record for signs of a abort signal.'''
@@ -317,7 +317,7 @@ def check_return_code(code):
       raise RuntimeError('child segmentation fault')
 
     if code == kill:
-      raise RuntimeError('child killed')
+      raise RuntimeError('subprocess killed')
 
     if code == abrt:
       raise RuntimeError('process failed')
