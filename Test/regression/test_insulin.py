@@ -13,14 +13,14 @@ expected_data_files = [
 ]
 
 
-def test_2d(regression_test, dials_data, run_in_tmpdir, ccp4):
+def test_2d(regression_test, dials_data, tmpdir, ccp4):
   command_line = [
       'xia2', 'pipeline=2di', 'nproc=1',
       'trust_beam_centre=True',
       dials_data('insulin').strpath,
   ]
-  result = procrunner.run(command_line)
+  result = procrunner.run(command_line, working_directory=tmpdir.strpath)
   success, issues = xia2.Test.regression.check_result(
-      'insulin.2d', result, run_in_tmpdir, ccp4, expected_data_files=expected_data_files
+      'insulin.2d', result, tmpdir, ccp4, expected_data_files=expected_data_files
   )
   assert success, issues

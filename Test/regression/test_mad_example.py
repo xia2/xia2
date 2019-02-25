@@ -14,7 +14,7 @@ expected_data_files = [
 ]
 
 
-def test_dials(regression_test, dials_data, run_in_tmpdir, ccp4):
+def test_dials(regression_test, dials_data, tmpdir, ccp4):
     command_line = [
         "xia2",
         "pipeline=dials",
@@ -24,18 +24,18 @@ def test_dials(regression_test, dials_data, run_in_tmpdir, ccp4):
         "trust_beam_centre=True",
         dials_data("fumarase").strpath,
     ]
-    result = procrunner.run(command_line)
+    result = procrunner.run(command_line, working_directory=tmpdir.strpath)
     success, issues = xia2.Test.regression.check_result(
         "mad_example.dials",
         result,
-        run_in_tmpdir,
+        tmpdir,
         ccp4,
         expected_data_files=expected_data_files,
     )
     assert success, issues
 
 
-def test_xds(regression_test, dials_data, run_in_tmpdir, ccp4, xds):
+def test_xds(regression_test, dials_data, tmpdir, ccp4, xds):
     command_line = [
         "xia2",
         "pipeline=3di",
@@ -45,11 +45,11 @@ def test_xds(regression_test, dials_data, run_in_tmpdir, ccp4, xds):
         "trust_beam_centre=True",
         dials_data("fumarase").strpath,
     ]
-    result = procrunner.run(command_line)
+    result = procrunner.run(command_line, working_directory=tmpdir.strpath)
     success, issues = xia2.Test.regression.check_result(
         "mad_example.xds",
         result,
-        run_in_tmpdir,
+        tmpdir,
         ccp4,
         xds,
         expected_data_files=expected_data_files,
@@ -57,7 +57,7 @@ def test_xds(regression_test, dials_data, run_in_tmpdir, ccp4, xds):
     assert success, issues
 
 
-def test_xds_ccp4a(regression_test, dials_data, run_in_tmpdir, ccp4, xds):
+def test_xds_ccp4a(regression_test, dials_data, tmpdir, ccp4, xds):
     command_line = [
         "xia2",
         "pipeline=3di",
@@ -68,11 +68,11 @@ def test_xds_ccp4a(regression_test, dials_data, run_in_tmpdir, ccp4, xds):
         "scaler=ccp4a",
         dials_data("fumarase").strpath,
     ]
-    result = procrunner.run(command_line)
+    result = procrunner.run(command_line, working_directory=tmpdir.strpath)
     success, issues = xia2.Test.regression.check_result(
         "mad_example.ccp4a",
         result,
-        run_in_tmpdir,
+        tmpdir,
         ccp4,
         xds,
         expected_data_files=expected_data_files,
