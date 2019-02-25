@@ -299,6 +299,9 @@ def error_python_traceback(records):
 def check_return_code(code):
   '''Check the return code for indications of errors.'''
 
+  if not code:
+    return
+
   if os.name == 'nt':
     if code == 3:
       raise RuntimeError('child error')
@@ -320,8 +323,6 @@ def check_return_code(code):
     if code == abrt:
       raise RuntimeError('process failed')
 
-  if code == 0:
-    return
   raise RuntimeError("subprocess failed with exitcode {code}".format(code=code))
 
 executable_exists_cache = {}
