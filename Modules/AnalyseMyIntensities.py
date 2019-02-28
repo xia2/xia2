@@ -63,7 +63,7 @@ class AnalyseMyIntensities(object):
     cell_a = 0.0
     cell_b = 0.0
     cell_c = 0.0
-    cell_alpga = 0.0
+    cell_alpha = 0.0
     cell_beta = 0.0
     cell_gamma = 0.0
     n_input = 0
