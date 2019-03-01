@@ -15,20 +15,23 @@ from __future__ import absolute_import, division, print_function
 import sys
 import time
 
-__doc__ = '''A small program which will write output to the standard output
-every so often, for testing of the XIA core.'''
+__doc__ = """A small program which will write output to the standard output
+every so often, for testing of the XIA core."""
+
 
 def ep(message, times, spacing):
-  '''Write a message $message to the screen $times times with spacing of
-  $spacing seconds.'''
+    """Write a message $message to the screen $times times with spacing of
+    $spacing seconds."""
 
-  for i in range(times):
-    sys.stdout.write('%s\n' % message)
-    sys.stdout.flush()
-    time.sleep(spacing)
+    for i in range(times):
+        sys.stdout.write("%s\n" % message)
+        sys.stdout.flush()
+        time.sleep(spacing)
+
 
 def run():
-  ep('Hello, world!', 10, 1)
+    ep("Hello, world!", 10, 1)
 
-if __name__ == '__main__':
-  run()
+
+if __name__ == "__main__":
+    run()

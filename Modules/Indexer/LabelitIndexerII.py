@@ -93,340 +93,368 @@ from xia2.Handlers.Streams import Chatter, Debug, Journal
 from xia2.lib.bits import auto_logfiler
 from xia2.lib.SymmetryLib import lattice_to_spacegroup
 from xia2.Modules.Indexer.LabelitIndexer import LabelitIndexer
-from xia2.Modules.Indexer.MosflmCheckIndexerSolution import \
-    mosflm_check_indexer_solution
+from xia2.Modules.Indexer.MosflmCheckIndexerSolution import (
+    mosflm_check_indexer_solution,
+)
 from xia2.Wrappers.Labelit.LabelitDistl import LabelitDistl
+
 # other labelit things that this uses
 from xia2.Wrappers.Labelit.LabelitMosflmMatrix import LabelitMosflmMatrix
 from xia2.Wrappers.Labelit.LabelitStats_distl import LabelitStats_distl
 from xia2.Wrappers.Phenix.LatticeSymmetry import LatticeSymmetry
 
+
 class LabelitIndexerII(LabelitIndexer):
-  '''A wrapper for the program labelit.index - which will provide
-  functionality for deciding the beam centre and indexing the
-  diffraction pattern.'''
+    """A wrapper for the program labelit.index - which will provide
+    functionality for deciding the beam centre and indexing the
+    diffraction pattern."""
 
-  def __init__(self, indxr_print=True):
-    super(LabelitIndexerII, self).__init__(indxr_print=indxr_print)
-    self._primitive_unit_cell = []
-
-  def _index_prepare(self):
-    # prepare to do some autoindexing
+    def __init__(self, indxr_print=True):
+        super(LabelitIndexerII, self).__init__(indxr_print=indxr_print)
+        self._primitive_unit_cell = []
+
+    def _index_prepare(self):
+        # prepare to do some autoindexing
+
+        super(LabelitIndexerII, self)._index_prepare()
+
+        assert (
+            self._indxr_input_cell is not None
+        ), "Unit cell required for LabelitIndexerII"
+
+        # calculate the correct primitive unit cell
+        if self._indxr_input_cell and self._indxr_input_lattice:
+            ls = LatticeSymmetry()
+            ls.set_lattice(self._indxr_input_lattice)
+            ls.set_cell(self._indxr_input_cell)
+            ls.generate()
+            self._primitive_unit_cell = ls.get_cell("aP")
+
+            Debug.write("Given lattice %s and unit cell:" % self._indxr_input_lattice)
+            Debug.write(
+                "%7.2f %7.2f %7.2f %6.2f %6.2f %6.2f" % tuple(self._indxr_input_cell)
+            )
+            Debug.write("Derived primitive cell:")
 
-    super(LabelitIndexerII, self)._index_prepare()
+            Debug.write(
+                "%7.2f %7.2f %7.2f %6.2f %6.2f %6.2f" % tuple(self._primitive_unit_cell)
+            )
 
-    assert self._indxr_input_cell is not None, "Unit cell required for LabelitIndexerII"
-
-    # calculate the correct primitive unit cell
-    if self._indxr_input_cell and self._indxr_input_lattice:
-      ls = LatticeSymmetry()
-      ls.set_lattice(self._indxr_input_lattice)
-      ls.set_cell(self._indxr_input_cell)
-      ls.generate()
-      self._primitive_unit_cell = ls.get_cell('aP')
+    def _index_select_images(self):
+        """Select correct images based on image headers. This will in
+        general use the 20 frames. N.B. only if they have good
+        spots on them!"""
 
-      Debug.write('Given lattice %s and unit cell:' % \
-                  self._indxr_input_lattice)
-      Debug.write('%7.2f %7.2f %7.2f %6.2f %6.2f %6.2f' % \
-                  tuple(self._indxr_input_cell))
-      Debug.write('Derived primitive cell:')
+        phi_width = self.get_phi_width()
+        images = self.get_matching_images()
 
-      Debug.write('%7.2f %7.2f %7.2f %6.2f %6.2f %6.2f' % \
-                  tuple(self._primitive_unit_cell))
+        # N.B. now bodging this to use up to 20 frames which have decent
+        # spots on, spaced from throughout the data set.
 
-  def _index_select_images(self):
-    '''Select correct images based on image headers. This will in
-    general use the 20 frames. N.B. only if they have good
-    spots on them!'''
+        spacing = max(1, int(len(images) // 20))
 
-    phi_width = self.get_phi_width()
-    images = self.get_matching_images()
+        selected = []
 
-    # N.B. now bodging this to use up to 20 frames which have decent
-    # spots on, spaced from throughout the data set.
+        for j in range(0, len(images), spacing):
+            selected.append(images[j])
 
-    spacing = max(1, int(len(images) // 20))
+        for image in selected[:20]:
+            ld = LabelitDistl()
+            ld.set_working_directory(self.get_working_directory())
+            auto_logfiler(ld)
+            ld.add_image(self.get_image_name(image))
+            ld.distl()
+            spots = ld.get_statistics(self.get_image_name(image))["spots_good"]
+            Debug.write("Image %d good spots %d" % (image, spots))
+            if spots > 10:
+                self.add_indexer_image_wedge(image)
+
+    def _index(self):
+        """Actually index the diffraction pattern. Note well that
+        this is not going to compute the matrix..."""
+
+        # acknowledge this program
+
+        if not self._indxr_images:
+            raise RuntimeError("No good spots found on any images")
+
+        Citations.cite("labelit")
+        Citations.cite("distl")
+
+        _images = []
+        for i in self._indxr_images:
+            for j in i:
+                if not j in _images:
+                    _images.append(j)
+
+        _images.sort()
 
-    selected = []
+        images_str = "%d" % _images[0]
+        for i in _images[1:]:
+            images_str += ", %d" % i
 
-    for j in range(0, len(images), spacing):
-      selected.append(images[j])
+        cell_str = None
+        if self._indxr_input_cell:
+            cell_str = "%.2f %.2f %.2f %.2f %.2f %.2f" % self._indxr_input_cell
 
-    for image in selected[:20]:
-      ld = LabelitDistl()
-      ld.set_working_directory(self.get_working_directory())
-      auto_logfiler(ld)
-      ld.add_image(self.get_image_name(image))
-      ld.distl()
-      spots = ld.get_statistics(self.get_image_name(image))['spots_good']
-      Debug.write('Image %d good spots %d' % (image, spots))
-      if spots > 10:
-        self.add_indexer_image_wedge(image)
+        if self._indxr_sweep_name:
 
-  def _index(self):
-    '''Actually index the diffraction pattern. Note well that
-    this is not going to compute the matrix...'''
+            # then this is a proper autoindexing run - describe this
+            # to the journal entry
 
-    # acknowledge this program
+            if len(self._fp_directory) <= 50:
+                dirname = self._fp_directory
+            else:
+                dirname = "...%s" % self._fp_directory[-46:]
 
-    if not self._indxr_images:
-      raise RuntimeError('No good spots found on any images')
+            Journal.block(
+                "autoindexing",
+                self._indxr_sweep_name,
+                "labelit",
+                {
+                    "images": images_str,
+                    "target cell": cell_str,
+                    "target lattice": self._indxr_input_lattice,
+                    "template": self._fp_template,
+                    "directory": dirname,
+                },
+            )
 
-    Citations.cite('labelit')
-    Citations.cite('distl')
+        # auto_logfiler(self)
 
-    _images = []
-    for i in self._indxr_images:
-      for j in i:
-        if not j in _images:
-          _images.append(j)
+        from xia2.Wrappers.Labelit.LabelitIndex import LabelitIndex
 
-    _images.sort()
+        index = LabelitIndex()
+        index.set_working_directory(self.get_working_directory())
+        auto_logfiler(index)
 
-    images_str = '%d' % _images[0]
-    for i in _images[1:]:
-      images_str += ', %d' % i
+        # task = 'Autoindex from images:'
 
-    cell_str = None
-    if self._indxr_input_cell:
-      cell_str = '%.2f %.2f %.2f %.2f %.2f %.2f' % \
-                  self._indxr_input_cell
+        # for i in _images:
+        # task += ' %s' % self.get_image_name(i)
 
-    if self._indxr_sweep_name:
+        # self.set_task(task)
+
+        # self.add_command_line('--index_only')
 
-      # then this is a proper autoindexing run - describe this
-      # to the journal entry
+        Debug.write("Indexing from images:")
+        for i in _images:
+            index.add_image(self.get_image_name(i))
+            Debug.write("%s" % self.get_image_name(i))
 
-      if len(self._fp_directory) <= 50:
-        dirname = self._fp_directory
-      else:
-        dirname = '...%s' % self._fp_directory[-46:]
+        if self._indxr_input_lattice and False:
+            index.set_space_group_number(
+                lattice_to_spacegroup(self._indxr_input_lattice)
+            )
+
+        if self._primitive_unit_cell:
+            index.set_primitive_unit_cell(self._primitive_unit_cell)
 
-      Journal.block(
-          'autoindexing', self._indxr_sweep_name, 'labelit',
-          {'images':images_str,
-           'target cell':cell_str,
-           'target lattice':self._indxr_input_lattice,
-           'template':self._fp_template,
-           'directory':dirname})
+        if self._indxr_input_cell:
+            index.set_max_cell(1.25 * max(self._indxr_input_cell[:3]))
+
+        xsweep = self.get_indexer_sweep()
+        if xsweep is not None:
+            if xsweep.get_distance() is not None:
+                index.set_distance(xsweep.get_distance())
+            # if self.get_wavelength_prov() == 'user':
+            # index.set_wavelength(self.get_wavelength())
+            if xsweep.get_beam_centre() is not None:
+                index.set_beam_centre(xsweep.get_beam_centre())
 
-    #auto_logfiler(self)
+        if self._refine_beam is False:
+            index.set_refine_beam(False)
+        else:
+            index.set_refine_beam(True)
+            index.set_beam_search_scope(self._beam_search_scope)
 
-    from xia2.Wrappers.Labelit.LabelitIndex import LabelitIndex
-    index = LabelitIndex()
-    index.set_working_directory(self.get_working_directory())
-    auto_logfiler(index)
+        if (math.fabs(self.get_wavelength() - 1.54) < 0.01) or (
+            math.fabs(self.get_wavelength() - 2.29) < 0.01
+        ):
+            index.set_Cu_KA_or_Cr_KA(True)
 
-    #task = 'Autoindex from images:'
+        try:
+            index.run()
+        except RuntimeError as e:
 
-    #for i in _images:
-      #task += ' %s' % self.get_image_name(i)
+            if self._refine_beam is False:
+                raise e
 
-    #self.set_task(task)
+            # can we improve the situation?
 
-    #self.add_command_line('--index_only')
+            if self._beam_search_scope < 4.0:
+                self._beam_search_scope += 4.0
+
+                # try repeating the indexing!
+
+                self.set_indexer_done(False)
+                return "failed"
+
+            # otherwise this is beyond redemption
+
+            raise e
+
+        self._solutions = index.get_solutions()
+
+        # FIXME this needs to check the smilie status e.g.
+        # ":)" or ";(" or "  ".
+
+        # FIXME need to check the value of the RMSD and raise an
+        # exception if the P1 solution has an RMSD > 1.0...
+
+        # Change 27/FEB/08 to support user assigned spacegroups
+        # (euugh!) have to "ignore" solutions with higher symmetry
+        # otherwise the rest of xia will override us. Bummer.
+
+        for i, solution in self._solutions.iteritems():
+            if self._indxr_user_input_lattice:
+                if lattice_to_spacegroup(solution["lattice"]) > lattice_to_spacegroup(
+                    self._indxr_input_lattice
+                ):
+                    Debug.write("Ignoring solution: %s" % solution["lattice"])
+                    del self._solutions[i]
+
+        # check the RMSD from the triclinic unit cell
+        if self._solutions[1]["rmsd"] > 1.0 and False:
+            # don't know when this is useful - but I know when it is not!
+            raise RuntimeError("high RMSD for triclinic solution")
+
+        # configure the "right" solution
+        self._solution = self.get_solution()
 
-    Debug.write('Indexing from images:')
-    for i in _images:
-      index.add_image(self.get_image_name(i))
-      Debug.write('%s' % self.get_image_name(i))
+        # now store also all of the other solutions... keyed by the
+        # lattice - however these should only be added if they
+        # have a smiley in the appropriate record, perhaps?
 
-    if self._indxr_input_lattice and False:
-      index.set_space_group_number(
-        lattice_to_spacegroup(self._indxr_input_lattice))
+        for solution in self._solutions.keys():
+            lattice = self._solutions[solution]["lattice"]
+            if lattice in self._indxr_other_lattice_cell:
+                if (
+                    self._indxr_other_lattice_cell[lattice]["goodness"]
+                    < self._solutions[solution]["metric"]
+                ):
+                    continue
 
-    if self._primitive_unit_cell:
-      index.set_primitive_unit_cell(self._primitive_unit_cell)
+            self._indxr_other_lattice_cell[lattice] = {
+                "goodness": self._solutions[solution]["metric"],
+                "cell": self._solutions[solution]["cell"],
+            }
 
-    if self._indxr_input_cell:
-      index.set_max_cell(1.25 * max(self._indxr_input_cell[:3]))
+        self._indxr_lattice = self._solution["lattice"]
+        self._indxr_cell = tuple(self._solution["cell"])
+        self._indxr_mosaic = self._solution["mosaic"]
 
-    xsweep = self.get_indexer_sweep()
-    if xsweep is not None:
-      if xsweep.get_distance() is not None:
-        index.set_distance(xsweep.get_distance())
-      #if self.get_wavelength_prov() == 'user':
-        #index.set_wavelength(self.get_wavelength())
-      if xsweep.get_beam_centre() is not None:
-        index.set_beam_centre(xsweep.get_beam_centre())
+        lms = LabelitMosflmMatrix()
+        lms.set_working_directory(self.get_working_directory())
+        lms.set_solution(self._solution["number"])
+        self._indxr_payload["mosflm_orientation_matrix"] = lms.calculate()
 
-    if self._refine_beam is False:
-      index.set_refine_beam(False)
-    else:
-      index.set_refine_beam(True)
-      index.set_beam_search_scope(self._beam_search_scope)
+        # get the beam centre from the mosflm script - mosflm
+        # may have inverted the beam centre and labelit will know
+        # this!
 
-    if ((math.fabs(self.get_wavelength() - 1.54) < 0.01) or
-        (math.fabs(self.get_wavelength() - 2.29) < 0.01)):
-      index.set_Cu_KA_or_Cr_KA(True)
-
-    try:
-      index.run()
-    except RuntimeError as e:
-
-      if self._refine_beam is False:
-        raise e
-
-      # can we improve the situation?
-
-      if self._beam_search_scope < 4.0:
-        self._beam_search_scope += 4.0
-
-        # try repeating the indexing!
-
-        self.set_indexer_done(False)
-        return 'failed'
-
-      # otherwise this is beyond redemption
-
-      raise e
-
-    self._solutions = index.get_solutions()
-
-    # FIXME this needs to check the smilie status e.g.
-    # ":)" or ";(" or "  ".
-
-    # FIXME need to check the value of the RMSD and raise an
-    # exception if the P1 solution has an RMSD > 1.0...
-
-    # Change 27/FEB/08 to support user assigned spacegroups
-    # (euugh!) have to "ignore" solutions with higher symmetry
-    # otherwise the rest of xia will override us. Bummer.
-
-    for i, solution in self._solutions.iteritems():
-      if self._indxr_user_input_lattice:
-        if (lattice_to_spacegroup(solution['lattice']) >
-            lattice_to_spacegroup(self._indxr_input_lattice)):
-          Debug.write('Ignoring solution: %s' % solution['lattice'])
-          del self._solutions[i]
-
-    # check the RMSD from the triclinic unit cell
-    if self._solutions[1]['rmsd'] > 1.0 and False:
-      # don't know when this is useful - but I know when it is not!
-      raise RuntimeError('high RMSD for triclinic solution')
+        mosflm_beam_centre = lms.get_mosflm_beam()
 
-    # configure the "right" solution
-    self._solution = self.get_solution()
+        if mosflm_beam_centre:
+            self._indxr_payload["mosflm_beam_centre"] = tuple(mosflm_beam_centre)
 
-    # now store also all of the other solutions... keyed by the
-    # lattice - however these should only be added if they
-    # have a smiley in the appropriate record, perhaps?
+        import copy
 
-    for solution in self._solutions.keys():
-      lattice = self._solutions[solution]['lattice']
-      if lattice in self._indxr_other_lattice_cell:
-        if self._indxr_other_lattice_cell[lattice]['goodness'] < \
-           self._solutions[solution]['metric']:
-          continue
+        detector = copy.deepcopy(self.get_detector())
+        beam = copy.deepcopy(self.get_beam())
+        from dxtbx.model.detector_helpers import set_mosflm_beam_centre
 
-      self._indxr_other_lattice_cell[lattice] = {
-          'goodness':self._solutions[solution]['metric'],
-          'cell':self._solutions[solution]['cell']}
+        set_mosflm_beam_centre(detector, beam, mosflm_beam_centre)
 
-    self._indxr_lattice = self._solution['lattice']
-    self._indxr_cell = tuple(self._solution['cell'])
-    self._indxr_mosaic = self._solution['mosaic']
+        from xia2.Experts.SymmetryExpert import lattice_to_spacegroup_number
+        from scitbx import matrix
+        from cctbx import sgtbx, uctbx
+        from dxtbx.model import CrystalFactory
 
-    lms = LabelitMosflmMatrix()
-    lms.set_working_directory(self.get_working_directory())
-    lms.set_solution(self._solution['number'])
-    self._indxr_payload['mosflm_orientation_matrix'] = lms.calculate()
+        mosflm_matrix = matrix.sqr(
+            [
+                float(i)
+                for line in lms.calculate()
+                for i in line.replace("-", " -").split()
+            ][:9]
+        )
 
-    # get the beam centre from the mosflm script - mosflm
-    # may have inverted the beam centre and labelit will know
-    # this!
+        space_group = sgtbx.space_group_info(
+            lattice_to_spacegroup_number(self._solution["lattice"])
+        ).group()
+        crystal_model = CrystalFactory.from_mosflm_matrix(
+            mosflm_matrix,
+            unit_cell=uctbx.unit_cell(tuple(self._solution["cell"])),
+            space_group=space_group,
+        )
 
-    mosflm_beam_centre = lms.get_mosflm_beam()
+        from dxtbx.model import Experiment, ExperimentList
 
-    if mosflm_beam_centre:
-      self._indxr_payload['mosflm_beam_centre'] = tuple(mosflm_beam_centre)
+        experiment = Experiment(
+            beam=beam,
+            detector=detector,
+            goniometer=self.get_goniometer(),
+            scan=self.get_scan(),
+            crystal=crystal_model,
+        )
 
-    import copy
-    detector = copy.deepcopy(self.get_detector())
-    beam = copy.deepcopy(self.get_beam())
-    from dxtbx.model.detector_helpers import set_mosflm_beam_centre
-    set_mosflm_beam_centre(detector, beam, mosflm_beam_centre)
+        experiment_list = ExperimentList([experiment])
+        self.set_indexer_experiment_list(experiment_list)
 
-    from xia2.Experts.SymmetryExpert import lattice_to_spacegroup_number
-    from scitbx import matrix
-    from cctbx import sgtbx, uctbx
-    from dxtbx.model import CrystalFactory
-    mosflm_matrix = matrix.sqr(
-      [float(i) for line in lms.calculate()
-       for i in line.replace("-", " -").split() ][:9])
+        # also get an estimate of the resolution limit from the
+        # labelit.stats_distl output... FIXME the name is wrong!
 
-    space_group = sgtbx.space_group_info(lattice_to_spacegroup_number(
-      self._solution['lattice'])).group()
-    crystal_model = CrystalFactory.from_mosflm_matrix(
-      mosflm_matrix,
-      unit_cell=uctbx.unit_cell(
-        tuple(self._solution['cell'])),
-      space_group=space_group)
+        lsd = LabelitStats_distl()
+        lsd.set_working_directory(self.get_working_directory())
+        lsd.stats_distl()
 
-    from dxtbx.model import Experiment, ExperimentList
-    experiment = Experiment(
-        beam=beam,
-        detector=detector,
-        goniometer=self.get_goniometer(),
-        scan=self.get_scan(),
-        crystal=crystal_model,
-    )
+        resolution = 1.0e6
+        for i in _images:
+            stats = lsd.get_statistics(self.get_image_name(i))
 
-    experiment_list = ExperimentList([experiment])
-    self.set_indexer_experiment_list(experiment_list)
+            resol = 0.5 * (stats["resol_one"] + stats["resol_two"])
 
-    # also get an estimate of the resolution limit from the
-    # labelit.stats_distl output... FIXME the name is wrong!
+            if resol < resolution:
+                resolution = resol
 
-    lsd = LabelitStats_distl()
-    lsd.set_working_directory(self.get_working_directory())
-    lsd.stats_distl()
+        self._indxr_resolution_estimate = resolution
 
-    resolution = 1.0e6
-    for i in _images:
-      stats = lsd.get_statistics(self.get_image_name(i))
+        return "ok"
 
-      resol = 0.5 * (stats['resol_one'] + stats['resol_two'])
+    def _index_finish(self):
+        """Check that the autoindexing gave a convincing result, and
+        if not (i.e. it gave a centred lattice where a primitive one
+        would be correct) pick up the correct solution."""
 
-      if resol < resolution:
-        resolution = resol
+        # strictly speaking, given the right input there should be
+        # no need to test...
 
-    self._indxr_resolution_estimate = resolution
+        if self._indxr_input_lattice:
+            return
 
-    return 'ok'
+        if self.get_indexer_sweep().get_user_lattice():
+            return
 
-  def _index_finish(self):
-    '''Check that the autoindexing gave a convincing result, and
-    if not (i.e. it gave a centred lattice where a primitive one
-    would be correct) pick up the correct solution.'''
+        status, lattice, matrix, cell = mosflm_check_indexer_solution(self)
 
-    # strictly speaking, given the right input there should be
-    # no need to test...
+        if status is None:
+            # basis is primitive
+            return
 
-    if self._indxr_input_lattice:
-      return
+        if status is False:
+            # basis is centred, and passes test
+            return
 
-    if self.get_indexer_sweep().get_user_lattice():
-      return
+        # ok need to update internals...
 
-    status, lattice, matrix, cell = mosflm_check_indexer_solution(self)
+        self._indxr_lattice = lattice
+        self._indxr_cell = cell
 
-    if status is None:
-      # basis is primitive
-      return
+        Debug.write(
+            "Inserting solution: %s " % lattice
+            + "%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f" % cell
+        )
 
-    if status is False:
-      # basis is centred, and passes test
-      return
+        self._indxr_replace(lattice, cell)
 
-    # ok need to update internals...
-
-    self._indxr_lattice = lattice
-    self._indxr_cell = cell
-
-    Debug.write('Inserting solution: %s ' % lattice +
-                '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % cell)
-
-    self._indxr_replace(lattice, cell)
-
-    self._indxr_payload['mosflm_orientation_matrix'] = matrix
+        self._indxr_payload["mosflm_orientation_matrix"] = matrix

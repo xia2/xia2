@@ -1,5 +1,7 @@
 # xia2
 
+![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)
+
 xia2 is an expert system to perform X-ray diffraction data processing
 on your behalf, using your software with little or no input from you.
 It will correctly handle multi-pass, multi-wavelength data sets as described
@@ -18,6 +20,6 @@ The last of these may be most useful for users in a pharmaceutical setting,
 or people wishing to test or benchmark equipment, for example beamline
 scientists. In all cases however the usage of the program is the same.
 
-Website: https://xia2.github.io  
-Source code: https://github.com/xia2/xia2  
+Website: https://xia2.github.io
+Source code: https://github.com/xia2/xia2
 Support: xia2.support@gmail.com

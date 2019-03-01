@@ -35,93 +35,95 @@ import os
 
 from xia2.Driver.DriverFactory import DriverFactory
 
-def LabelitStats_distl(DriverType = None):
-  '''Factory for LabelitStats_distl wrapper classes, with the specified
-  Driver type.'''
 
-  DriverInstance = DriverFactory.Driver(DriverType)
+def LabelitStats_distl(DriverType=None):
+    """Factory for LabelitStats_distl wrapper classes, with the specified
+    Driver type."""
 
-  class LabelitStats_distlWrapper(DriverInstance.__class__):
-    '''A wrapper for the program labelit.stats_distl - which will provide
-    functionality for looking for ice rings and screening diffraction
-    images.'''
+    DriverInstance = DriverFactory.Driver(DriverType)
 
-    def __init__(self):
+    class LabelitStats_distlWrapper(DriverInstance.__class__):
+        """A wrapper for the program labelit.stats_distl - which will provide
+        functionality for looking for ice rings and screening diffraction
+        images."""
 
-      DriverInstance.__class__.__init__(self)
+        def __init__(self):
 
-      self.set_executable('labelit.stats_distl')
+            DriverInstance.__class__.__init__(self)
 
-      self._statistics = { }
+            self.set_executable("labelit.stats_distl")
 
-    def stats_distl(self):
-      '''Return the image statistics.'''
+            self._statistics = {}
 
-      self.set_task('Return statistics from last distl run')
+        def stats_distl(self):
+            """Return the image statistics."""
 
-      self.start()
-      self.close_wait()
+            self.set_task("Return statistics from last distl run")
 
-      # check for errors
-      self.check_for_errors()
+            self.start()
+            self.close_wait()
 
-      # ok now we're done, let's look through for some useful stuff
+            # check for errors
+            self.check_for_errors()
 
-      output = self.get_all_output()
+            # ok now we're done, let's look through for some useful stuff
 
-      current_image = None
+            output = self.get_all_output()
 
-      for o in output:
+            current_image = None
 
-        if 'None' in o and 'Resolution' in o:
-          l = o.replace('None', '0.0').split()
-        else:
-          l = o.split()
+            for o in output:
 
-        if l[:1] == ['File']:
-          current_image = l[2]
-          self._statistics[current_image] = { }
+                if "None" in o and "Resolution" in o:
+                    l = o.replace("None", "0.0").split()
+                else:
+                    l = o.split()
 
-        if l[:2] == ['Spot', 'Total']:
-          self._statistics[current_image]['spots_total'] = int(l[-1])
-        if l[:2] == ['In-Resolution', 'Total']:
-          self._statistics[current_image]['spots'] = int(l[-1])
-        if l[:3] == ['Good', 'Bragg', 'Candidates']:
-          self._statistics[current_image]['spots_good'] = int(l[-1])
-        if l[:2] == ['Ice', 'Rings']:
-          self._statistics[current_image]['ice_rings'] = int(l[-1])
-        if l[:3] == ['Method', '1', 'Resolution']:
-          self._statistics[current_image]['resol_one'] = float(l[-1])
-        if l[:3] == ['Method', '2', 'Resolution']:
-          self._statistics[current_image]['resol_two'] = float(l[-1])
-        if l[:3] == ['%Saturation,', 'Top', '50']:
-          self._statistics[current_image][
-              'saturation'] = float(l[-1])
+                if l[:1] == ["File"]:
+                    current_image = l[2]
+                    self._statistics[current_image] = {}
 
-      return 'ok'
+                if l[:2] == ["Spot", "Total"]:
+                    self._statistics[current_image]["spots_total"] = int(l[-1])
+                if l[:2] == ["In-Resolution", "Total"]:
+                    self._statistics[current_image]["spots"] = int(l[-1])
+                if l[:3] == ["Good", "Bragg", "Candidates"]:
+                    self._statistics[current_image]["spots_good"] = int(l[-1])
+                if l[:2] == ["Ice", "Rings"]:
+                    self._statistics[current_image]["ice_rings"] = int(l[-1])
+                if l[:3] == ["Method", "1", "Resolution"]:
+                    self._statistics[current_image]["resol_one"] = float(l[-1])
+                if l[:3] == ["Method", "2", "Resolution"]:
+                    self._statistics[current_image]["resol_two"] = float(l[-1])
+                if l[:3] == ["%Saturation,", "Top", "50"]:
+                    self._statistics[current_image]["saturation"] = float(l[-1])
 
-    # things to get results from the indexing
+            return "ok"
 
-    def get_statistics(self, image):
-      '''Get the screening statistics from image as dictionary.
-      The keys are spots_total, spots, spots_good, ice_rings,
-      resol_one, resol_two.'''
+        # things to get results from the indexing
 
-      return self._statistics[os.path.split(image)[-1]]
+        def get_statistics(self, image):
+            """Get the screening statistics from image as dictionary.
+            The keys are spots_total, spots, spots_good, ice_rings,
+            resol_one, resol_two."""
 
-  return LabelitStats_distlWrapper()
+            return self._statistics[os.path.split(image)[-1]]
 
-if __name__ == '__main__':
+    return LabelitStats_distlWrapper()
 
-  # run a demo test
 
-  l = LabelitStats_distl()
-  l.stats_distl()
+if __name__ == "__main__":
 
-  stats = l.get_statistics('12287_1_E1_001.img')
+    # run a demo test
 
-  print('Fraction of good spots: %4.2f' % (float(stats['spots_good']) /
-                                           float(stats['spots'])))
-  print('Ice rings:              %d' % stats['ice_rings'])
-  print('Resolutions:            %f  %f' % \
-        (stats['resol_one'], stats['resol_two']))
+    l = LabelitStats_distl()
+    l.stats_distl()
+
+    stats = l.get_statistics("12287_1_E1_001.img")
+
+    print(
+        "Fraction of good spots: %4.2f"
+        % (float(stats["spots_good"]) / float(stats["spots"]))
+    )
+    print("Ice rings:              %d" % stats["ice_rings"])
+    print("Resolutions:            %f  %f" % (stats["resol_one"], stats["resol_two"]))

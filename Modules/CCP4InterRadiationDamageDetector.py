@@ -38,119 +38,123 @@ from xia2.Wrappers.CCP4.Scaleit import Scaleit
 # This will return a list of wavelengths which are "ok" and a list of ones
 # which are "damaged".
 
+
 class CCP4InterRadiationDamageDetector(object):
-  '''A class to detect radiation damage.'''
+    """A class to detect radiation damage."""
 
-  def __init__(self):
-    self._working_directory = os.getcwd()
-    self._hklin = None
-    self._hklout = None
-    self._anomalous = False
+    def __init__(self):
+        self._working_directory = os.getcwd()
+        self._hklin = None
+        self._hklout = None
+        self._anomalous = False
 
-  def set_hklin(self, hklin):
-    self._hklin = hklin
+    def set_hklin(self, hklin):
+        self._hklin = hklin
 
-  def set_anomalous(self, anomalous):
-    self._anomalous = anomalous
+    def set_anomalous(self, anomalous):
+        self._anomalous = anomalous
 
-  def get_hklin(self):
-    return self._hklin
+    def get_hklin(self):
+        return self._hklin
 
-  def check_hklin(self):
-    if self._hklin is None:
-      raise RuntimeError('hklin not defined')
-    if not os.path.exists(self._hklin):
-      raise RuntimeError('hklin %s does not exist' % self._hklin)
+    def check_hklin(self):
+        if self._hklin is None:
+            raise RuntimeError("hklin not defined")
+        if not os.path.exists(self._hklin):
+            raise RuntimeError("hklin %s does not exist" % self._hklin)
 
-  def set_hklout(self, hklout):
-    self._hklout = hklout
+    def set_hklout(self, hklout):
+        self._hklout = hklout
 
-  def get_hklout(self):
-    return self._hklout
+    def get_hklout(self):
+        return self._hklout
 
-  def check_hklout(self):
-    if self._hklout is None:
-      raise RuntimeError('hklout not defined')
+    def check_hklout(self):
+        if self._hklout is None:
+            raise RuntimeError("hklout not defined")
 
-    # check that these are different files!
+        # check that these are different files!
 
-    if self._hklout == self._hklin:
-      raise RuntimeError('hklout and hklin are the same file')
+        if self._hklout == self._hklin:
+            raise RuntimeError("hklout and hklin are the same file")
 
-  def set_working_directory(self, working_directory):
-    self._working_directory = working_directory
+    def set_working_directory(self, working_directory):
+        self._working_directory = working_directory
 
-  def get_working_directory(self):
-    return self._working_directory
+    def get_working_directory(self):
+        return self._working_directory
 
-  def detect(self):
-    '''Detect radiation damage between wavelengths / datasets in a
-    reflection file. Will assume that the input is in order of data
-    collection. Will further assume that this is for MAD phasing.'''
+    def detect(self):
+        """Detect radiation damage between wavelengths / datasets in a
+        reflection file. Will assume that the input is in order of data
+        collection. Will further assume that this is for MAD phasing."""
 
-    self.check_hklin()
-    self.check_hklout()
+        self.check_hklin()
+        self.check_hklout()
 
-    # check that hklin is an mtz file.
+        # check that hklin is an mtz file.
 
-    scaleit = Scaleit()
-    scaleit.set_working_directory(self.get_working_directory())
-    auto_logfiler(scaleit)
+        scaleit = Scaleit()
+        scaleit.set_working_directory(self.get_working_directory())
+        auto_logfiler(scaleit)
 
-    if self._anomalous:
-      scaleit.set_anomalous(True)
+        if self._anomalous:
+            scaleit.set_anomalous(True)
 
-    scaleit.set_hklin(self.get_hklin())
-    scaleit.set_hklout(self.get_hklout())
+        scaleit.set_hklin(self.get_hklin())
+        scaleit.set_hklout(self.get_hklout())
 
-    try:
-      scaleit.scaleit()
-    except RuntimeError:
-      return ()
+        try:
+            scaleit.scaleit()
+        except RuntimeError:
+            return ()
 
-    statistics = scaleit.get_statistics()
+        statistics = scaleit.get_statistics()
 
-    wavelengths = statistics['mapping']
-    b_factors = statistics['b_factor']
+        wavelengths = statistics["mapping"]
+        b_factors = statistics["b_factor"]
 
-    derivatives = sorted(wavelengths.keys())
+        derivatives = sorted(wavelengths.keys())
 
-    status = []
+        status = []
 
-    for j in derivatives:
-      name = b_factors[j]['dname']
-      b = b_factors[j]['b']
-      r = b_factors[j]['r']
+        for j in derivatives:
+            name = b_factors[j]["dname"]
+            b = b_factors[j]["b"]
+            r = b_factors[j]["r"]
 
-      # this is arbitrary!
+            # this is arbitrary!
 
-      if r > 0.50:
-        misindexed = ', misindexed'
-      else:
-        misindexed = ''
+            if r > 0.50:
+                misindexed = ", misindexed"
+            else:
+                misindexed = ""
 
-      if b < -3:
-        status.append((name, '%5.1f %4.2f (damaged%s)' % \
-                       (b, r, misindexed)))
-      else:
-        status.append((name, '%5.1f %4.2f (ok%s)' % \
-                       (b, r, misindexed)))
+            if b < -3:
+                status.append((name, "%5.1f %4.2f (damaged%s)" % (b, r, misindexed)))
+            else:
+                status.append((name, "%5.1f %4.2f (ok%s)" % (b, r, misindexed)))
 
-    return status
+        return status
 
-if __name__ == '__main__':
 
-  c = CCP4InterRadiationDamageDetector()
+if __name__ == "__main__":
 
-  hklin = os.path.join(
-      os.environ['X2TD_ROOT'],
-      'Test', 'UnitTest', 'Wrappers', 'Scaleit',
-      'TS03_INTER_RD.mtz')
+    c = CCP4InterRadiationDamageDetector()
 
-  c.set_hklin(hklin)
-  c.set_hklout('junk.mtz')
+    hklin = os.path.join(
+        os.environ["X2TD_ROOT"],
+        "Test",
+        "UnitTest",
+        "Wrappers",
+        "Scaleit",
+        "TS03_INTER_RD.mtz",
+    )
 
-  status = c.detect()
+    c.set_hklin(hklin)
+    c.set_hklout("junk.mtz")
 
-  for s in status:
-    print('%s %s' % s)
+    status = c.detect()
+
+    for s in status:
+        print("%s %s" % s)

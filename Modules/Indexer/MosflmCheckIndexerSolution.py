@@ -37,270 +37,278 @@ use_distl = False
 
 # check for deprecation, add workaround (thanks to RWGK 21/APR/10)
 
-if (hasattr(matrix.rec, "rotate_around_origin")):
-  matrix.rec.rotate = matrix.rec.rotate_around_origin
+if hasattr(matrix.rec, "rotate_around_origin"):
+    matrix.rec.rotate = matrix.rec.rotate_around_origin
 
 # end workaround
 
 # failover on spot picking...
 
+
 def locate_maxima(image):
 
-  global use_distl
+    global use_distl
 
-  if use_distl:
-    try:
-      dss = DistlSignalStrength()
-      dss.set_image(image)
-      peaks = dss.find_peaks()
+    if use_distl:
+        try:
+            dss = DistlSignalStrength()
+            dss.set_image(image)
+            peaks = dss.find_peaks()
 
-      if not peaks:
-        raise RuntimeError('no peaks found')
+            if not peaks:
+                raise RuntimeError("no peaks found")
 
-    except Exception:
-      use_distl = False
+        except Exception:
+            use_distl = False
 
-  if not use_distl:
+    if not use_distl:
 
-    pp = Printpeaks()
-    pp.set_image(image)
-    peaks = pp.get_maxima()
+        pp = Printpeaks()
+        pp.set_image(image)
+        peaks = pp.get_maxima()
 
-  return peaks
+    return peaks
+
 
 def mosflm_check_indexer_solution(indexer):
 
-  distance = indexer.get_indexer_distance()
-  axis = matrix.col([0, 0, 1])
-  beam = indexer.get_indexer_beam_centre()
-  cell = indexer.get_indexer_cell()
-  wavelength = indexer.get_wavelength()
+    distance = indexer.get_indexer_distance()
+    axis = matrix.col([0, 0, 1])
+    beam = indexer.get_indexer_beam_centre()
+    cell = indexer.get_indexer_cell()
+    wavelength = indexer.get_wavelength()
 
-  space_group_number = l2s(indexer.get_indexer_lattice())
-  spacegroup = sgtbx.space_group_symbols(space_group_number).hall()
-  phi = indexer.get_header()['phi_width']
+    space_group_number = l2s(indexer.get_indexer_lattice())
+    spacegroup = sgtbx.space_group_symbols(space_group_number).hall()
+    phi = indexer.get_header()["phi_width"]
 
-  sg = sgtbx.space_group(spacegroup)
+    sg = sgtbx.space_group(spacegroup)
 
-  if not (sg.n_ltr() - 1):
-    # primitive solution - just return ... something
-    return None, None, None, None
+    if not (sg.n_ltr() - 1):
+        # primitive solution - just return ... something
+        return None, None, None, None
 
-  # FIXME need to raise an exception if this is not available!
-  m_matrix = indexer.get_indexer_payload('mosflm_orientation_matrix')
+    # FIXME need to raise an exception if this is not available!
+    m_matrix = indexer.get_indexer_payload("mosflm_orientation_matrix")
 
-  # N.B. in the calculation below I am using the Cambridge frame
-  # and Mosflm definitions of X & Y...
+    # N.B. in the calculation below I am using the Cambridge frame
+    # and Mosflm definitions of X & Y...
 
-  m_elems = []
+    m_elems = []
 
-  for record in m_matrix[:3]:
-    record = record.replace('-', ' -')
-    for e in map(float, record.split()):
-      m_elems.append(e / wavelength)
+    for record in m_matrix[:3]:
+        record = record.replace("-", " -")
+        for e in map(float, record.split()):
+            m_elems.append(e / wavelength)
 
-  mi = matrix.sqr(m_elems)
-  m = mi.inverse()
+    mi = matrix.sqr(m_elems)
+    m = mi.inverse()
 
-  A = matrix.col(m.elems[0:3])
-  B = matrix.col(m.elems[3:6])
-  C = matrix.col(m.elems[6:9])
+    A = matrix.col(m.elems[0:3])
+    B = matrix.col(m.elems[3:6])
+    C = matrix.col(m.elems[6:9])
 
-  # now select the images - start with the images that the indexer
-  # used for indexing, though can interrogate the FrameProcessor
-  # interface of the indexer to put together a completely different
-  # list if I like...
+    # now select the images - start with the images that the indexer
+    # used for indexing, though can interrogate the FrameProcessor
+    # interface of the indexer to put together a completely different
+    # list if I like...
 
-  images = []
+    images = []
 
-  for i in indexer.get_indexer_images():
-    for j in i:
-      if not j in images:
-        images.append(j)
+    for i in indexer.get_indexer_images():
+        for j in i:
+            if not j in images:
+                images.append(j)
 
-  images.sort()
+    images.sort()
 
-  # now construct the reciprocal-space peak list n.b. should
-  # really run this in parallel...
+    # now construct the reciprocal-space peak list n.b. should
+    # really run this in parallel...
 
-  spots_r = []
+    spots_r = []
 
-  spots_r_j = {}
+    spots_r_j = {}
 
-  for i in images:
-    image = indexer.get_image_name(i)
-    dd = Diffdump()
-    dd.set_image(image)
-    header = dd.readheader()
-    phi = header['phi_start'] + 0.5 * header['phi_width']
-    pixel = header['pixel']
-    wavelength = header['wavelength']
-    peaks = locate_maxima(image)
+    for i in images:
+        image = indexer.get_image_name(i)
+        dd = Diffdump()
+        dd.set_image(image)
+        header = dd.readheader()
+        phi = header["phi_start"] + 0.5 * header["phi_width"]
+        pixel = header["pixel"]
+        wavelength = header["wavelength"]
+        peaks = locate_maxima(image)
 
-    spots_r_j[i] = []
+        spots_r_j[i] = []
 
-    for p in peaks:
-      x, y, isigma = p
+        for p in peaks:
+            x, y, isigma = p
 
-      if isigma < 5.0:
-        continue
+            if isigma < 5.0:
+                continue
 
-      xp = pixel[0] * y - beam[0]
-      yp = pixel[1] * x - beam[1]
+            xp = pixel[0] * y - beam[0]
+            yp = pixel[1] * x - beam[1]
 
-      scale = wavelength * math.sqrt(xp * xp + yp * yp + distance * distance)
+            scale = wavelength * math.sqrt(xp * xp + yp * yp + distance * distance)
 
-      X = distance / scale
-      X -= 1.0 / wavelength
-      Y = -xp / scale
-      Z = yp / scale
+            X = distance / scale
+            X -= 1.0 / wavelength
+            Y = -xp / scale
+            Z = yp / scale
 
-      S = matrix.col([X, Y, Z])
+            S = matrix.col([X, Y, Z])
 
-      rtod = 180.0 / math.pi
+            rtod = 180.0 / math.pi
 
-      spots_r.append(S.rotate(axis, -phi / rtod))
-      spots_r_j[i].append(S.rotate(axis, -phi / rtod))
+            spots_r.append(S.rotate(axis, -phi / rtod))
+            spots_r_j[i].append(S.rotate(axis, -phi / rtod))
 
-  # now reindex the reciprocal space spot list and count - n.b. need
-  # to transform the Bravais lattice to an assumed spacegroup and hence
-  # to a cctbx spacegroup!
+    # now reindex the reciprocal space spot list and count - n.b. need
+    # to transform the Bravais lattice to an assumed spacegroup and hence
+    # to a cctbx spacegroup!
 
-  # lists = [spots_r_j[j] for j in spots_r_j]
-  lists = []
-  lists.append(spots_r)
+    # lists = [spots_r_j[j] for j in spots_r_j]
+    lists = []
+    lists.append(spots_r)
 
-  for l in lists:
+    for l in lists:
 
-    absent = 0
-    present = 0
-    total = 0
+        absent = 0
+        present = 0
+        total = 0
 
-    for spot in l:
-      hkl = (m * spot).elems
+        for spot in l:
+            hkl = (m * spot).elems
 
-      total += 1
+            total += 1
 
-      ihkl = map(nint, hkl)
+            ihkl = map(nint, hkl)
 
-      if math.fabs(hkl[0] - ihkl[0]) > 0.1:
-        continue
+            if math.fabs(hkl[0] - ihkl[0]) > 0.1:
+                continue
 
-      if math.fabs(hkl[1] - ihkl[1]) > 0.1:
-        continue
+            if math.fabs(hkl[1] - ihkl[1]) > 0.1:
+                continue
 
-      if math.fabs(hkl[2] - ihkl[2]) > 0.1:
-        continue
+            if math.fabs(hkl[2] - ihkl[2]) > 0.1:
+                continue
 
-      # now determine if it is absent
+            # now determine if it is absent
 
-      if sg.is_sys_absent(ihkl):
-        absent += 1
-      else:
-        present += 1
+            if sg.is_sys_absent(ihkl):
+                absent += 1
+            else:
+                present += 1
 
-    # now perform the analysis on these numbers...
+        # now perform the analysis on these numbers...
 
-    sd = math.sqrt(absent)
+        sd = math.sqrt(absent)
 
-    if total:
+        if total:
 
-      Debug.write('Counts: %d %d %d %.3f' % \
-                  (total, present, absent, (absent - 3 * sd) / total))
+            Debug.write(
+                "Counts: %d %d %d %.3f"
+                % (total, present, absent, (absent - 3 * sd) / total)
+            )
 
-    else:
+        else:
 
-      Debug.write('Not enough spots found for analysis')
-      return False, None, None, None
+            Debug.write("Not enough spots found for analysis")
+            return False, None, None, None
 
-    if (absent - 3 * sd) / total < 0.008:
-      return False, None, None, None
+        if (absent - 3 * sd) / total < 0.008:
+            return False, None, None, None
 
-  # in here need to calculate the new orientation matrix for the
-  # primitive basis and reconfigure the indexer - somehow...
+    # in here need to calculate the new orientation matrix for the
+    # primitive basis and reconfigure the indexer - somehow...
 
-  # ok, so the bases are fine, but what I will want to do is reorder them
-  # to give the best primitive choice of unit cell...
+    # ok, so the bases are fine, but what I will want to do is reorder them
+    # to give the best primitive choice of unit cell...
 
-  sgp = sg.build_derived_group(True, False)
-  lattice_p = s2l(sgp.type().number())
-  symm = crystal.symmetry(unit_cell=cell, space_group=sgp)
+    sgp = sg.build_derived_group(True, False)
+    lattice_p = s2l(sgp.type().number())
+    symm = crystal.symmetry(unit_cell=cell, space_group=sgp)
 
-  rdx = symm.change_of_basis_op_to_best_cell()
-  symm_new = symm.change_basis(rdx)
+    rdx = symm.change_of_basis_op_to_best_cell()
+    symm_new = symm.change_basis(rdx)
 
-  # now apply this to the reciprocal-space orientation matrix mi
+    # now apply this to the reciprocal-space orientation matrix mi
 
-  # cb_op = sgtbx.change_of_basis_op(rdx)
-  cb_op = rdx
-  R = cb_op.c_inv().r().as_rational().as_float().transpose().inverse()
-  mi_r = mi * R
+    # cb_op = sgtbx.change_of_basis_op(rdx)
+    cb_op = rdx
+    R = cb_op.c_inv().r().as_rational().as_float().transpose().inverse()
+    mi_r = mi * R
 
-  # now re-derive the cell constants, just to be sure
+    # now re-derive the cell constants, just to be sure
 
-  m_r = mi_r.inverse()
-  Ar = matrix.col(m_r.elems[0:3])
-  Br = matrix.col(m_r.elems[3:6])
-  Cr = matrix.col(m_r.elems[6:9])
+    m_r = mi_r.inverse()
+    Ar = matrix.col(m_r.elems[0:3])
+    Br = matrix.col(m_r.elems[3:6])
+    Cr = matrix.col(m_r.elems[6:9])
 
-  a = math.sqrt(Ar.dot())
-  b = math.sqrt(Br.dot())
-  c = math.sqrt(Cr.dot())
+    a = math.sqrt(Ar.dot())
+    b = math.sqrt(Br.dot())
+    c = math.sqrt(Cr.dot())
 
-  rtod = 180.0 / math.pi
+    rtod = 180.0 / math.pi
 
-  alpha = rtod * Br.angle(Cr)
-  beta = rtod * Cr.angle(Ar)
-  gamma = rtod * Ar.angle(Br)
+    alpha = rtod * Br.angle(Cr)
+    beta = rtod * Cr.angle(Ar)
+    gamma = rtod * Ar.angle(Br)
 
-  # print '%6.3f %6.3f %6.3f %6.3f %6.3f %6.3f' % \
-  # (a, b, c, alpha, beta, gamma)
+    # print '%6.3f %6.3f %6.3f %6.3f %6.3f %6.3f' % \
+    # (a, b, c, alpha, beta, gamma)
 
-  cell = uctbx.unit_cell((a, b, c, alpha, beta, gamma))
+    cell = uctbx.unit_cell((a, b, c, alpha, beta, gamma))
 
-  amat = [wavelength * e for e in mi_r.elems]
-  bmat = matrix.sqr(cell.fractionalization_matrix())
-  umat = mi_r * bmat.inverse()
+    amat = [wavelength * e for e in mi_r.elems]
+    bmat = matrix.sqr(cell.fractionalization_matrix())
+    umat = mi_r * bmat.inverse()
 
-  # yuk! surely I don't need to do this...
+    # yuk! surely I don't need to do this...
 
-  # I do need to do this, and don't call me shirley!
+    # I do need to do this, and don't call me shirley!
 
-  new_matrix = ['%s\n' % r for r in \
-                format_matrix((a, b, c, alpha, beta, gamma),
-                              amat, umat.elems).split('\n')]
+    new_matrix = [
+        "%s\n" % r
+        for r in format_matrix((a, b, c, alpha, beta, gamma), amat, umat.elems).split(
+            "\n"
+        )
+    ]
 
-  # ok - this gives back the right matrix in the right setting - excellent!
-  # now need to apply this back at base to the results of the indexer.
+    # ok - this gives back the right matrix in the right setting - excellent!
+    # now need to apply this back at base to the results of the indexer.
 
-  # N.B. same should be applied to the same calculations for the XDS
-  # version of this.
+    # N.B. same should be applied to the same calculations for the XDS
+    # version of this.
 
-  return True, lattice_p, new_matrix, (a, b, c, alpha, beta, gamma)
+    return True, lattice_p, new_matrix, (a, b, c, alpha, beta, gamma)
 
-if __name__ == '__main__':
 
-  # run a test!
+if __name__ == "__main__":
 
-  from xia2.Modules.Indexer.IndexerFactory import Indexer
+    # run a test!
 
-  i = Indexer()
+    from xia2.Modules.Indexer.IndexerFactory import Indexer
 
-  i.setup_from_image(sys.argv[1])
+    i = Indexer()
 
-  print('Refined beam is: %6.2f %6.2f' % i.get_indexer_beam_centre())
-  print('Distance:        %6.2f' % i.get_indexer_distance())
-  print('Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % i.get_indexer_cell())
-  print('Lattice: %s' % i.get_indexer_lattice())
-  print('Mosaic: %6.2f' % i.get_indexer_mosaic())
+    i.setup_from_image(sys.argv[1])
 
-  status = mosflm_check_indexer_solution(i)
+    print("Refined beam is: %6.2f %6.2f" % i.get_indexer_beam_centre())
+    print("Distance:        %6.2f" % i.get_indexer_distance())
+    print("Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f" % i.get_indexer_cell())
+    print("Lattice: %s" % i.get_indexer_lattice())
+    print("Mosaic: %6.2f" % i.get_indexer_mosaic())
 
-  if status is True:
-    print('putative centred solution came out as wrong')
+    status = mosflm_check_indexer_solution(i)
 
-  elif status is False:
-    print('putative centred solution came out as right')
+    if status is True:
+        print("putative centred solution came out as wrong")
 
-  elif status is None:
-    print('putative solution not centred')
+    elif status is False:
+        print("putative centred solution came out as right")
+
+    elif status is None:
+        print("putative solution not centred")

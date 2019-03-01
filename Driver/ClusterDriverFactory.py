@@ -21,52 +21,54 @@ import os
 
 from xia2.Driver.SunGridEngineClusterDriver import SunGridEngineClusterDriver
 
+
 class _ClusterDriverFactory(object):
-  def __init__(self):
+    def __init__(self):
 
-    self._driver_type = 'cluster.sge'
+        self._driver_type = "cluster.sge"
 
-    self._implemented_types = ['cluster.sge']
+        self._implemented_types = ["cluster.sge"]
 
-    # should probably write a message or something explaining
-    # that the following Driver implementation is being used
+        # should probably write a message or something explaining
+        # that the following Driver implementation is being used
 
-    if 'XIA2CORE_DRIVERTYPE' in os.environ:
-      if 'cluster' in os.environ['XIA2CORE_DRIVERTYPE']:
-        self.setDriver_type(os.environ['XIA2CORE_DRIVERTYPE'])
+        if "XIA2CORE_DRIVERTYPE" in os.environ:
+            if "cluster" in os.environ["XIA2CORE_DRIVERTYPE"]:
+                self.setDriver_type(os.environ["XIA2CORE_DRIVERTYPE"])
 
-    return
+        return
 
-  def set_driver_type(self, type):
-    return self.setDriver_type(type)
+    def set_driver_type(self, type):
+        return self.setDriver_type(type)
 
-  def setDriver_type(self, type):
-    '''Set the kind of driver this factory should produce.'''
+    def setDriver_type(self, type):
+        """Set the kind of driver this factory should produce."""
 
-    if not type in self._implemented_types:
-      raise RuntimeError('unimplemented driver class: %s' % type)
+        if not type in self._implemented_types:
+            raise RuntimeError("unimplemented driver class: %s" % type)
 
-    self._driver_type = type
+        self._driver_type = type
 
-    return
+        return
 
-  def Driver(self, type=None):
-    '''Create a new Driver instance, optionally providing the
-    type of Driver we want.'''
+    def Driver(self, type=None):
+        """Create a new Driver instance, optionally providing the
+        type of Driver we want."""
 
-    if not type:
-      type = self._driver_type
+        if not type:
+            type = self._driver_type
 
-    if type == 'cluster.sge':
-      return SunGridEngineClusterDriver()
+        if type == "cluster.sge":
+            return SunGridEngineClusterDriver()
 
-    raise RuntimeError('Driver class "%s" unknown' % type)
+        raise RuntimeError('Driver class "%s" unknown' % type)
+
 
 ClusterDriverFactory = _ClusterDriverFactory()
 
-if __name__ == '__main__':
-  # then run a test
+if __name__ == "__main__":
+    # then run a test
 
-  d = ClusterDriverFactory.Driver()
+    d = ClusterDriverFactory.Driver()
 
-  d = ClusterDriverFactory.Driver('nosuchtype')
+    d = ClusterDriverFactory.Driver("nosuchtype")

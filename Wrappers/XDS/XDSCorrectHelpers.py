@@ -24,134 +24,137 @@ import sys
 # helper methods/functions - these can be used externally for the purposes
 # of testing...
 
+
 def _resolution_estimate(ordered_pair_list, cutoff):
-  '''Come up with a linearly interpolated estimate of resolution at
-  cutoff cutoff from input data [(resolution, i_sigma)].'''
+    """Come up with a linearly interpolated estimate of resolution at
+    cutoff cutoff from input data [(resolution, i_sigma)]."""
 
-  x = []
-  y = []
+    x = []
+    y = []
 
-  for o in ordered_pair_list:
-    x.append(o[0])
-    y.append(o[1])
+    for o in ordered_pair_list:
+        x.append(o[0])
+        y.append(o[1])
 
-  if max(y) < cutoff:
-    # there is no point where this exceeds the resolution
-    # cutoff
-    return -1.0
+    if max(y) < cutoff:
+        # there is no point where this exceeds the resolution
+        # cutoff
+        return -1.0
 
-  # this means that there is a place where the resolution cutof
-  # can be reached - get there by working backwards
+    # this means that there is a place where the resolution cutof
+    # can be reached - get there by working backwards
 
-  x.reverse()
-  y.reverse()
+    x.reverse()
+    y.reverse()
 
-  if y[0] >= cutoff:
-    # this exceeds the resolution limit requested
-    return x[0]
+    if y[0] >= cutoff:
+        # this exceeds the resolution limit requested
+        return x[0]
 
-  j = 0
-  while y[j] < cutoff:
-    j += 1
+    j = 0
+    while y[j] < cutoff:
+        j += 1
 
-  resolution = x[j] + (cutoff - y[j]) * (x[j - 1] - x[j]) / \
-               (y[j - 1] - y[j])
+    resolution = x[j] + (cutoff - y[j]) * (x[j - 1] - x[j]) / (y[j - 1] - y[j])
 
-  return resolution
+    return resolution
+
 
 def _parse_correct_lp(filename):
-  '''Parse the contents of the CORRECT.LP file pointed to by filename.'''
+    """Parse the contents of the CORRECT.LP file pointed to by filename."""
 
-  if not os.path.split(filename)[-1] == 'CORRECT.LP':
-    raise RuntimeError('input filename not CORRECT.LP')
+    if not os.path.split(filename)[-1] == "CORRECT.LP":
+        raise RuntimeError("input filename not CORRECT.LP")
 
-  file_contents = open(filename, 'r').readlines()
+    file_contents = open(filename, "r").readlines()
 
-  postrefinement_stats = { }
+    postrefinement_stats = {}
 
-  # default values - this may not be refined if the multiplicity
-  # is low...
-  postrefinement_stats['sdcorrection'] = (1.0, 0.0)
+    # default values - this may not be refined if the multiplicity
+    # is low...
+    postrefinement_stats["sdcorrection"] = (1.0, 0.0)
 
-  for i in range(len(file_contents)):
-    if 'OF SPOT    POSITION (PIXELS)' in file_contents[i]:
-      rmsd_pixel = float(file_contents[i].split()[-1])
-      postrefinement_stats.setdefault('rmsd_pixel', rmsd_pixel)
+    for i in range(len(file_contents)):
+        if "OF SPOT    POSITION (PIXELS)" in file_contents[i]:
+            rmsd_pixel = float(file_contents[i].split()[-1])
+            postrefinement_stats.setdefault("rmsd_pixel", rmsd_pixel)
 
-    if 'OF SPINDLE POSITION (DEGREES)' in file_contents[i]:
-      rmsd_phi = float(file_contents[i].split()[-1])
-      postrefinement_stats.setdefault('rmsd_phi', rmsd_phi)
+        if "OF SPINDLE POSITION (DEGREES)" in file_contents[i]:
+            rmsd_phi = float(file_contents[i].split()[-1])
+            postrefinement_stats.setdefault("rmsd_phi", rmsd_phi)
 
-    # want to convert this to mm in some standard setting!
-    if 'DETECTOR COORDINATES (PIXELS) OF DIRECT BEAM' in file_contents[i]:
-      beam = map(float, file_contents[i].split()[-2:])
-      postrefinement_stats['beam'] = beam
+        # want to convert this to mm in some standard setting!
+        if "DETECTOR COORDINATES (PIXELS) OF DIRECT BEAM" in file_contents[i]:
+            beam = map(float, file_contents[i].split()[-2:])
+            postrefinement_stats["beam"] = beam
 
-    if 'CRYSTAL TO DETECTOR DISTANCE (mm)' in file_contents[i]:
-      distance = float(file_contents[i].split()[-1])
-      postrefinement_stats['distance'] = distance
+        if "CRYSTAL TO DETECTOR DISTANCE (mm)" in file_contents[i]:
+            distance = float(file_contents[i].split()[-1])
+            postrefinement_stats["distance"] = distance
 
-    if 'UNIT CELL PARAMETERS' in file_contents[i]:
-      cell = map(float, file_contents[i].split()[-6:])
-      postrefinement_stats['cell'] = cell
+        if "UNIT CELL PARAMETERS" in file_contents[i]:
+            cell = map(float, file_contents[i].split()[-6:])
+            postrefinement_stats["cell"] = cell
 
-    if 'E.S.D. OF CELL PARAMETERS' in file_contents[i]:
-      # bug # 3132 - check that the last token is not
-      # "-1.0E+00-1.0E+00-1.0E+00-1.0E+00-1.0E+00-1.0E+00" -
-      # if it is it means that the refinement didn't
-      # happen (for some reason...)
+        if "E.S.D. OF CELL PARAMETERS" in file_contents[i]:
+            # bug # 3132 - check that the last token is not
+            # "-1.0E+00-1.0E+00-1.0E+00-1.0E+00-1.0E+00-1.0E+00" -
+            # if it is it means that the refinement didn't
+            # happen (for some reason...)
 
-      if '-1.0E+00-1.0E+00-1.0E+00' in file_contents[i]:
-        cell_esd = [-1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
-      else:
-        cell_esd = map(float, file_contents[i].split()[-6:])
-      postrefinement_stats['cell_esd'] = cell_esd
+            if "-1.0E+00-1.0E+00-1.0E+00" in file_contents[i]:
+                cell_esd = [-1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
+            else:
+                cell_esd = map(float, file_contents[i].split()[-6:])
+            postrefinement_stats["cell_esd"] = cell_esd
 
-    if 'REFLECTIONS ACCEPTED' in file_contents[i]:
-      postrefinement_stats['n_ref'] = int(file_contents[i].split()[0])
+        if "REFLECTIONS ACCEPTED" in file_contents[i]:
+            postrefinement_stats["n_ref"] = int(file_contents[i].split()[0])
 
-    # look for I/sigma (resolution) information...
-    if 'RESOLUTION RANGE  I/Sigma  Chi^2  R-FACTOR  R-FACTOR' in \
-       file_contents[i]:
-      resolution_info = []
-      j = i + 3
-      while not '-----' in file_contents[j]:
-        try:
-          l = file_contents[j].split()
-          resolution_info.append((float(l[1]),float(l[2])))
-        except ValueError:
-          l = file_contents[j].split()
-          m = re.match(r'(\d+\.\d{2})(\d+\.\d+)', l[2])
-          resolution_info.append((float(l[1]),float(m.group(1))))
-        j += 1
+        # look for I/sigma (resolution) information...
+        if "RESOLUTION RANGE  I/Sigma  Chi^2  R-FACTOR  R-FACTOR" in file_contents[i]:
+            resolution_info = []
+            j = i + 3
+            while not "-----" in file_contents[j]:
+                try:
+                    l = file_contents[j].split()
+                    resolution_info.append((float(l[1]), float(l[2])))
+                except ValueError:
+                    l = file_contents[j].split()
+                    m = re.match(r"(\d+\.\d{2})(\d+\.\d+)", l[2])
+                    resolution_info.append((float(l[1]), float(m.group(1))))
+                j += 1
 
-      # bug # 2409 - this seems a little harsh set as 1.0 so
-      # set this to 0.75 - even then 0.5 may be better..
-      resolution_old = _resolution_estimate(resolution_info, 0.5)
-      postrefinement_stats['resolution_estimate_old'] = resolution_old
+            # bug # 2409 - this seems a little harsh set as 1.0 so
+            # set this to 0.75 - even then 0.5 may be better..
+            resolution_old = _resolution_estimate(resolution_info, 0.5)
+            postrefinement_stats["resolution_estimate_old"] = resolution_old
 
-      # also recover the highest resolution limit of the data
-      j += 1
-      postrefinement_stats['highest_resolution'] = float(
-          file_contents[j].split()[1])
+            # also recover the highest resolution limit of the data
+            j += 1
+            postrefinement_stats["highest_resolution"] = float(
+                file_contents[j].split()[1]
+            )
 
-    if 'a          b              INPUT DATA SET' in file_contents[i]:
-      sdcorrection = map(float, file_contents[i + 1].split()[:2])
+        if "a          b              INPUT DATA SET" in file_contents[i]:
+            sdcorrection = map(float, file_contents[i + 1].split()[:2])
 
-      postrefinement_stats['sdcorrection'] = tuple(sdcorrection)
+            postrefinement_stats["sdcorrection"] = tuple(sdcorrection)
 
-    if 'CORRELATION  NPAIR  Rmeas  COMPARED  ESD' in file_contents[i]:
-      j = i + 2
-      while file_contents[j].strip():
-        if '*' in file_contents[j]:
-          postrefinement_stats['reindex_op'] = map(
-              int, file_contents[j].split()[-12:])
-        j += 1
+        if "CORRELATION  NPAIR  Rmeas  COMPARED  ESD" in file_contents[i]:
+            j = i + 2
+            while file_contents[j].strip():
+                if "*" in file_contents[j]:
+                    postrefinement_stats["reindex_op"] = map(
+                        int, file_contents[j].split()[-12:]
+                    )
+                j += 1
 
-  return postrefinement_stats
+    return postrefinement_stats
 
-if __name__ == '__main__':
-  #correct_lp = os.path.join(os.environ['XIA2_ROOT'], 'Wrappers', 'XDS',
-                            #'Doc', 'CORRECT.LP')
-  correct_lp = sys.argv[1]
-  print(_parse_correct_lp(correct_lp))
+
+if __name__ == "__main__":
+    # correct_lp = os.path.join(os.environ['XIA2_ROOT'], 'Wrappers', 'XDS',
+    #'Doc', 'CORRECT.LP')
+    correct_lp = sys.argv[1]
+    print(_parse_correct_lp(correct_lp))

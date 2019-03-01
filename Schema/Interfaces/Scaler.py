@@ -156,526 +156,561 @@ from xia2.lib.SymmetryLib import lauegroup_to_lattice, sort_lattices
 
 # file conversion (and merging) jiffies
 
+
 class Scaler(object):
-  '''An interface to present scaling functionality in a similar way to the
-  integrater interface.'''
-
-  def __init__(self):
-    # set up a framework for storing all of the input information...
-    # this should really only consist of integraters...
-
-    # key this by the epoch, if available, else will need to
-    # do something different.
-    self._scalr_integraters = {}
-
-    # the corrections to apply - see trac #162
-    self._scalr_corrections = False
-    self._scalr_correct_decay = None
-    self._scalr_correct_modulation = None
-    self._scalr_correct_absorption = None
-
-    # integraters have the following methods for pulling interesting
-    # information out:
-    #
-    # get_integrater_project_info() - pname, xname, dname
-    # get_integrater_epoch() - measurement of first frame
-
-    self.scaler_reset()
-
-    self._scalr_reference_reflection_file = None
-    self._scalr_freer_file = None
-
-    # user input to guide spacegroup choices
-    self._scalr_input_spacegroup = None
-    self._scalr_input_pointgroup = None
-
-    # places to hold the output
-
-    # this should be a dictionary keyed by datset / format, or
-    # format / dataset
-    self._scalr_scaled_reflection_files = None
-
-    # this needs to be a dictionary keyed by dataset etc, e.g.
-    # key = pname, xname, dname
-    self._scalr_statistics = None
-
-    # and also the following keys:
-    self._scalr_statistics_keys = [
-        'High resolution limit', 'Low resolution limit',
-        'Completeness', 'Multiplicity',
-        'I/sigma', 'Rmerge(I)', 'Rmerge(I+/I-)',
-        'Rmeas(I)', 'Rmeas(I+/-)',
-        'Rpim(I)', 'Rpim(I+/-)', 'CC half',
-        'Wilson B factor', 'Partial bias',
-        'Anomalous completeness', 'Anomalous multiplicity',
-        'Anomalous correlation', 'Anomalous slope',
-        'dF/F', 'dI/s(dI)',
-        'Total observations', 'Total unique']
-
-    # information for returning "interesting facts" about the data
-    self._scalr_highest_resolution = 0.0
-    self._scalr_cell = None
-    self._scalr_cell_esd = None
-    self._scalr_cell_dict = {}
-    self._scalr_likely_spacegroups = []
-    self._scalr_unlikely_spacegroups = []
-
-    # do we want anomalous pairs separating?
-    self._scalr_anomalous = False
-
-    # admin junk
-    self._working_directory = os.getcwd()
-    self._scalr_pname = None
-    self._scalr_xname = None
-
-    # link to parent xcrystal
-    self._scalr_xcrystal = None
-
-    self._scalr_resolution_limits = {}
-
-  # serialization functions
-
-  def to_dict(self):
-    import json
-    obj = {}
-    obj['__id__'] = 'Scaler'
-    obj['__module__'] = self.__class__.__module__
-    obj['__name__'] = self.__class__.__name__
-    import inspect
-    attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
-    for a in attributes:
-      if a[0] == '_scalr_xcrystal':
-        # XXX I guess we probably want this?
-        continue
-      elif a[0] == '_scalr_integraters':
-        d = {}
-        for k, v in a[1].iteritems():
-          d[k] = v.to_dict()
-        obj[a[0]] = d
-      elif a[0] == '_scalr_statistics' and a[1] is not None:
-        # dictionary has tuples as keys - json can't handle this so serialize
-        # keys in place
-        d = {}
-        for k, v in a[1].iteritems():
-          k = json.dumps(k)
-          d[k] = v
-        obj[a[0]] = d
-      elif a[0] in ('_scalr_resolution_limits'):
-        d = {}
-        for k, v in a[1].iteritems():
-          k = json.dumps(k)
-          d[k] = v
-        obj[a[0]] = d
-      elif (a[0].startswith('_scalr_')):
-        obj[a[0]] = a[1]
-    return obj
-
-  @classmethod
-  def from_dict(cls, obj):
-    import json
-    assert obj['__id__'] == 'Scaler'
-    return_obj = cls()
-    for k, v in obj.iteritems():
-      if k == '_scalr_integraters':
-        for k_, v_ in v.iteritems():
-          from libtbx.utils import import_python_object
-          integrater_cls = import_python_object(
-            import_path=".".join((v_['__module__'], v_['__name__'])),
-            error_prefix='', target_must_be='', where_str='').object
-          v[k_] = integrater_cls.from_dict(v_)
-      elif k == '_scalr_statistics' and v is not None:
-        d = {}
-        for k_, v_ in v.iteritems():
-          k_ = tuple(str(s) for s in json.loads(k_))
-          d[k_] = v_
-        v = d
-      elif k in ('_scalr_resolution_limits'):
-        d = {}
-        for k_, v_ in v.iteritems():
-          k_ = tuple(str(s) for s in json.loads(k_))
-          d[k_] = v_
-        v = d
-      setattr(return_obj, k, v)
-    return return_obj
-
-  def as_json(self, filename=None, compact=False):
-    import json
-    obj = self.to_dict()
-    if compact:
-      text = json.dumps(obj, skipkeys=False, separators=(',',':'), ensure_ascii=True)
-    else:
-      text = json.dumps(obj, skipkeys=False, indent=2, ensure_ascii=True)
-
-    # If a filename is set then dump to file otherwise return string
-    if filename is not None:
-      with open(filename, 'w') as outfile:
-        outfile.write(text)
-    else:
-      return text
-
-  @classmethod
-  def from_json(cls, filename=None, string=None):
-    import json
-    from dxtbx.serialize.load import _decode_dict
-    assert [filename, string].count(None) == 1
-    if filename is not None:
-      with open(filename, 'rb') as f:
-        string = f.read()
-    obj = json.loads(string, object_hook=_decode_dict)
-    return cls.from_dict(obj)
-
-  # FIXME x1698 these not currently used yet
-
-  def _scale_list_likely_pointgroups(self, integrater):
-    raise NotImplementedError('overload me')
-
-  def _scale_reindex_to_reference(self, reference, integrater):
-    raise NotImplementedError('overload me')
-
-  # FIXME to here
-
-  def _scale_prepare(self):
-    raise NotImplementedError('overload me')
-
-  def _scale(self):
-    raise NotImplementedError('overload me')
-
-  def _scale_finish(self):
-    pass
-
-  def set_working_directory(self, working_directory):
-    self._working_directory = working_directory
-
-  def get_working_directory(self):
-    return self._working_directory
-
-  def set_scaler_input_spacegroup(self, spacegroup):
-    self._scalr_input_spacegroup = spacegroup
-
-  def set_scaler_input_pointgroup(self, pointgroup):
-    self._scalr_input_pointgroup = pointgroup
-
-  def get_scaler_input_spacegroup(self):
-    return self._scaler_input_spacegroup
-
-  def get_scaler_input_pointgroup(self):
-    return self._scaler_input_pointgroup
-
-  def set_scaler_xcrystal(self, xcrystal):
-    self._scalr_xcrystal = xcrystal
-
-  def get_scaler_xcrystal(self):
-    return self._scalr_xcrystal
-
-  def set_scaler_project_info(self, pname, xname):
-    '''Set the project and crystal this scaler is working with.'''
-
-    self._scalr_pname = pname
-    self._scalr_xname = xname
-
-  def get_scaler_project_info(self):
-    '''Get the scaler project and crystal.'''
-
-    return self._scalr_pname, self._scalr_xname
-
-  def set_scaler_reference_reflection_file(self, reference_reflection_file):
-    self._scalr_reference_reflection_file = reference_reflection_file
-
-  def get_scaler_reference_reflection_file(self):
-    return self._scalr_reference_reflection_file
-
-  def set_scaler_freer_file(self, freer_file):
-    self._scalr_freer_file = freer_file
-
-  def get_scaler_freer_file(self):
-    return self._scalr_freer_file
-
-  def get_scaler_resolution_limits(self):
-    return self._scalr_resolution_limits
-
-  def set_scaler_prepare_done(self, done=True):
-
-    frm = inspect.stack()[1]
-    mod = inspect.getmodule(frm[0])
-    Debug.write('Called scaler prepare done from %s %d (%s)' %
-                (mod.__name__, frm[0].f_lineno, done))
-
-    self._scalr_prepare_done = done
-
-  def set_scaler_done(self, done=True):
-
-    frm = inspect.stack()[1]
-    mod = inspect.getmodule(frm[0])
-    Debug.write('Called scaler done from %s %d (%s)' %
-                (mod.__name__, frm[0].f_lineno, done))
-
-    self._scalr_done = done
-
-  def set_scaler_finish_done(self, done=True):
-
-    frm = inspect.stack()[1]
-    mod = inspect.getmodule(frm[0])
-    Debug.write('Called scaler finish done from %s %d (%s)' %
-                (mod.__name__, frm[0].f_lineno, done))
-
-    self._scalr_finish_done = done
-
-  def set_scaler_anomalous(self, anomalous):
-    self._scalr_anomalous = anomalous
-
-  def get_scaler_anomalous(self):
-    return self._scalr_anomalous
-
-  def scaler_reset(self):
-
-    Debug.write('Scaler reset')
-
-    self._scalr_done = False
-    self._scalr_prepare_done = False
-    self._scalr_finish_done = False
-    self._scalr_result = None
-
-  # getters for the scaling model which was used - first see that the
-  # corrections were applied, then the individual getters for the
-  # separate corrections
-
-  def get_scaler_corrections(self):
-    return self._scalr_corrections
-
-  def get_scaler_correct_decay(self):
-    return self._scalr_correct_decay
-
-  def get_scaler_correct_modulation(self):
-    return self._scalr_correct_modulation
-
-  def get_scaler_correct_absorption(self):
-    return self._scalr_correct_absorption
-
-  # getters of the status - note how the gets cascade to ensure that
-  # everything is up-to-date...
-
-  def get_scaler_prepare_done(self):
-    return self._scalr_prepare_done
-
-  def get_scaler_done(self):
-    if not self.get_scaler_prepare_done():
-      Debug.write('Resetting Scaler done as prepare not done')
-      self.set_scaler_done(False)
-    return self._scalr_done
-
-  def get_scaler_finish_done(self):
-    if not self.get_scaler_done():
-      Debug.write('Resetting scaler finish done as scaling not done')
-      self.set_scaler_finish_done(False)
-    return self._scalr_finish_done
-
-  def add_scaler_integrater(self, integrater):
-    '''Add an integrater to this scaler, to provide the input.'''
-
-    # epoch values are trusted as long as they are unique.
-    # if a collision is detected, all epoch values are replaced by an
-    # integer series, starting with 0
-
-    if 0 in self._scalr_integraters.keys():
-      epoch = len(self._scalr_integraters)
-
-    else:
-      epoch = integrater.get_integrater_epoch()
-
-      # FIXME This is now probably superflous?
-      if epoch == 0 and self._scalr_integraters:
-        raise RuntimeError('multi-sweep integrater has epoch 0')
-
-      if epoch in self._scalr_integraters.keys():
-        Debug.write('integrater with epoch %d already exists. will not trust epoch values' % epoch)
-
-        # collision. Throw away all epoch keys, and replace with integer series
-        self._scalr_integraters = dict(zip(
-            range(0,len(self._scalr_integraters)),
-             self._scalr_integraters.values()))
-        epoch = len(self._scalr_integraters)
-
-    self._scalr_integraters[epoch] = integrater
-
-    self.scaler_reset()
-
-  # FIXME x1698 these not currently used yet
-
-  def _scale_setup_integrater(self, integrater):
-    '''Check that the pointgroup for a data set is consistent with
-    the lattice used for integration, then determine the pointgroup for
-    the data.'''
-
-    # FIXME will have to handle gracefully user provided pointgroup
-
-    pointgroups = self._scale_list_likely_pointgroups(integrater)
-    refiner = integrater.get_integrater_refiner()
-    lattices = [lauegroup_to_lattice(p) for p in pointgroups]
-
-    correct_lattice = None
-
-    for lattice in lattices:
-      state = refiner.set_refiner_asserted_lattice(lattice)
-
-      if state == refiner.LATTICE_CORRECT:
-        correct_lattice = lattice
-        break
-
-      elif state == refiner.LATTICE_IMPOSSIBLE:
-        continue
-
-      elif state == refiner.LATTICE_POSSIBLE:
-        correct_lattice = lattice
-        break
-
-    assert correct_lattice
-
-    # run this analysis again, which may respond in different conclusions
-    # if it triggers the reprocessing of the data with a new lattice
-
-    pointgroups = self._scale_list_likely_pointgroups(integrater)
-    lattices = [lauegroup_to_lattice(p) for p in pointgroups]
-
-    return pointgroups[lattices.index(correct_lattice)]
-
-  def _scale_setup(self):
-    '''Set things up for scaling, in particular mediate pointgroup /
-    lattice with the indexers.'''
-
-    assert self._scalr_integraters
-
-    epochs = sorted(self._scalr_integraters)
-    integraters = [self._scalr_integraters[e] for e in epochs]
-
-    pointgroups = [self._scale_setup_integrater(i) for i in integraters]
-    lattices = [lauegroup_to_lattice(p) for p in pointgroups]
-
-    unique_lattices = list(set(lattices))
-
-    # consider the situation that they arrived at more than one conclusion
-
-    if len(unique_lattices) > 1:
-      consensus_lattice = sort_lattices(unique_lattices)[0]
-
-      for integrater in integraters:
+    """An interface to present scaling functionality in a similar way to the
+    integrater interface."""
+
+    def __init__(self):
+        # set up a framework for storing all of the input information...
+        # this should really only consist of integraters...
+
+        # key this by the epoch, if available, else will need to
+        # do something different.
+        self._scalr_integraters = {}
+
+        # the corrections to apply - see trac #162
+        self._scalr_corrections = False
+        self._scalr_correct_decay = None
+        self._scalr_correct_modulation = None
+        self._scalr_correct_absorption = None
+
+        # integraters have the following methods for pulling interesting
+        # information out:
+        #
+        # get_integrater_project_info() - pname, xname, dname
+        # get_integrater_epoch() - measurement of first frame
+
+        self.scaler_reset()
+
+        self._scalr_reference_reflection_file = None
+        self._scalr_freer_file = None
+
+        # user input to guide spacegroup choices
+        self._scalr_input_spacegroup = None
+        self._scalr_input_pointgroup = None
+
+        # places to hold the output
+
+        # this should be a dictionary keyed by datset / format, or
+        # format / dataset
+        self._scalr_scaled_reflection_files = None
+
+        # this needs to be a dictionary keyed by dataset etc, e.g.
+        # key = pname, xname, dname
+        self._scalr_statistics = None
+
+        # and also the following keys:
+        self._scalr_statistics_keys = [
+            "High resolution limit",
+            "Low resolution limit",
+            "Completeness",
+            "Multiplicity",
+            "I/sigma",
+            "Rmerge(I)",
+            "Rmerge(I+/I-)",
+            "Rmeas(I)",
+            "Rmeas(I+/-)",
+            "Rpim(I)",
+            "Rpim(I+/-)",
+            "CC half",
+            "Wilson B factor",
+            "Partial bias",
+            "Anomalous completeness",
+            "Anomalous multiplicity",
+            "Anomalous correlation",
+            "Anomalous slope",
+            "dF/F",
+            "dI/s(dI)",
+            "Total observations",
+            "Total unique",
+        ]
+
+        # information for returning "interesting facts" about the data
+        self._scalr_highest_resolution = 0.0
+        self._scalr_cell = None
+        self._scalr_cell_esd = None
+        self._scalr_cell_dict = {}
+        self._scalr_likely_spacegroups = []
+        self._scalr_unlikely_spacegroups = []
+
+        # do we want anomalous pairs separating?
+        self._scalr_anomalous = False
+
+        # admin junk
+        self._working_directory = os.getcwd()
+        self._scalr_pname = None
+        self._scalr_xname = None
+
+        # link to parent xcrystal
+        self._scalr_xcrystal = None
+
+        self._scalr_resolution_limits = {}
+
+    # serialization functions
+
+    def to_dict(self):
+        import json
+
+        obj = {}
+        obj["__id__"] = "Scaler"
+        obj["__module__"] = self.__class__.__module__
+        obj["__name__"] = self.__class__.__name__
+        import inspect
+
+        attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
+        for a in attributes:
+            if a[0] == "_scalr_xcrystal":
+                # XXX I guess we probably want this?
+                continue
+            elif a[0] == "_scalr_integraters":
+                d = {}
+                for k, v in a[1].iteritems():
+                    d[k] = v.to_dict()
+                obj[a[0]] = d
+            elif a[0] == "_scalr_statistics" and a[1] is not None:
+                # dictionary has tuples as keys - json can't handle this so serialize
+                # keys in place
+                d = {}
+                for k, v in a[1].iteritems():
+                    k = json.dumps(k)
+                    d[k] = v
+                obj[a[0]] = d
+            elif a[0] in ("_scalr_resolution_limits"):
+                d = {}
+                for k, v in a[1].iteritems():
+                    k = json.dumps(k)
+                    d[k] = v
+                obj[a[0]] = d
+            elif a[0].startswith("_scalr_"):
+                obj[a[0]] = a[1]
+        return obj
+
+    @classmethod
+    def from_dict(cls, obj):
+        import json
+
+        assert obj["__id__"] == "Scaler"
+        return_obj = cls()
+        for k, v in obj.iteritems():
+            if k == "_scalr_integraters":
+                for k_, v_ in v.iteritems():
+                    from libtbx.utils import import_python_object
+
+                    integrater_cls = import_python_object(
+                        import_path=".".join((v_["__module__"], v_["__name__"])),
+                        error_prefix="",
+                        target_must_be="",
+                        where_str="",
+                    ).object
+                    v[k_] = integrater_cls.from_dict(v_)
+            elif k == "_scalr_statistics" and v is not None:
+                d = {}
+                for k_, v_ in v.iteritems():
+                    k_ = tuple(str(s) for s in json.loads(k_))
+                    d[k_] = v_
+                v = d
+            elif k in ("_scalr_resolution_limits"):
+                d = {}
+                for k_, v_ in v.iteritems():
+                    k_ = tuple(str(s) for s in json.loads(k_))
+                    d[k_] = v_
+                v = d
+            setattr(return_obj, k, v)
+        return return_obj
+
+    def as_json(self, filename=None, compact=False):
+        import json
+
+        obj = self.to_dict()
+        if compact:
+            text = json.dumps(
+                obj, skipkeys=False, separators=(",", ":"), ensure_ascii=True
+            )
+        else:
+            text = json.dumps(obj, skipkeys=False, indent=2, ensure_ascii=True)
+
+        # If a filename is set then dump to file otherwise return string
+        if filename is not None:
+            with open(filename, "w") as outfile:
+                outfile.write(text)
+        else:
+            return text
+
+    @classmethod
+    def from_json(cls, filename=None, string=None):
+        import json
+        from dxtbx.serialize.load import _decode_dict
+
+        assert [filename, string].count(None) == 1
+        if filename is not None:
+            with open(filename, "rb") as f:
+                string = f.read()
+        obj = json.loads(string, object_hook=_decode_dict)
+        return cls.from_dict(obj)
+
+    # FIXME x1698 these not currently used yet
+
+    def _scale_list_likely_pointgroups(self, integrater):
+        raise NotImplementedError("overload me")
+
+    def _scale_reindex_to_reference(self, reference, integrater):
+        raise NotImplementedError("overload me")
+
+    # FIXME to here
+
+    def _scale_prepare(self):
+        raise NotImplementedError("overload me")
+
+    def _scale(self):
+        raise NotImplementedError("overload me")
+
+    def _scale_finish(self):
+        pass
+
+    def set_working_directory(self, working_directory):
+        self._working_directory = working_directory
+
+    def get_working_directory(self):
+        return self._working_directory
+
+    def set_scaler_input_spacegroup(self, spacegroup):
+        self._scalr_input_spacegroup = spacegroup
+
+    def set_scaler_input_pointgroup(self, pointgroup):
+        self._scalr_input_pointgroup = pointgroup
+
+    def get_scaler_input_spacegroup(self):
+        return self._scaler_input_spacegroup
+
+    def get_scaler_input_pointgroup(self):
+        return self._scaler_input_pointgroup
+
+    def set_scaler_xcrystal(self, xcrystal):
+        self._scalr_xcrystal = xcrystal
+
+    def get_scaler_xcrystal(self):
+        return self._scalr_xcrystal
+
+    def set_scaler_project_info(self, pname, xname):
+        """Set the project and crystal this scaler is working with."""
+
+        self._scalr_pname = pname
+        self._scalr_xname = xname
+
+    def get_scaler_project_info(self):
+        """Get the scaler project and crystal."""
+
+        return self._scalr_pname, self._scalr_xname
+
+    def set_scaler_reference_reflection_file(self, reference_reflection_file):
+        self._scalr_reference_reflection_file = reference_reflection_file
+
+    def get_scaler_reference_reflection_file(self):
+        return self._scalr_reference_reflection_file
+
+    def set_scaler_freer_file(self, freer_file):
+        self._scalr_freer_file = freer_file
+
+    def get_scaler_freer_file(self):
+        return self._scalr_freer_file
+
+    def get_scaler_resolution_limits(self):
+        return self._scalr_resolution_limits
+
+    def set_scaler_prepare_done(self, done=True):
+
+        frm = inspect.stack()[1]
+        mod = inspect.getmodule(frm[0])
+        Debug.write(
+            "Called scaler prepare done from %s %d (%s)"
+            % (mod.__name__, frm[0].f_lineno, done)
+        )
+
+        self._scalr_prepare_done = done
+
+    def set_scaler_done(self, done=True):
+
+        frm = inspect.stack()[1]
+        mod = inspect.getmodule(frm[0])
+        Debug.write(
+            "Called scaler done from %s %d (%s)" % (mod.__name__, frm[0].f_lineno, done)
+        )
+
+        self._scalr_done = done
+
+    def set_scaler_finish_done(self, done=True):
+
+        frm = inspect.stack()[1]
+        mod = inspect.getmodule(frm[0])
+        Debug.write(
+            "Called scaler finish done from %s %d (%s)"
+            % (mod.__name__, frm[0].f_lineno, done)
+        )
+
+        self._scalr_finish_done = done
+
+    def set_scaler_anomalous(self, anomalous):
+        self._scalr_anomalous = anomalous
+
+    def get_scaler_anomalous(self):
+        return self._scalr_anomalous
+
+    def scaler_reset(self):
+
+        Debug.write("Scaler reset")
+
+        self._scalr_done = False
+        self._scalr_prepare_done = False
+        self._scalr_finish_done = False
+        self._scalr_result = None
+
+    # getters for the scaling model which was used - first see that the
+    # corrections were applied, then the individual getters for the
+    # separate corrections
+
+    def get_scaler_corrections(self):
+        return self._scalr_corrections
+
+    def get_scaler_correct_decay(self):
+        return self._scalr_correct_decay
+
+    def get_scaler_correct_modulation(self):
+        return self._scalr_correct_modulation
+
+    def get_scaler_correct_absorption(self):
+        return self._scalr_correct_absorption
+
+    # getters of the status - note how the gets cascade to ensure that
+    # everything is up-to-date...
+
+    def get_scaler_prepare_done(self):
+        return self._scalr_prepare_done
+
+    def get_scaler_done(self):
+        if not self.get_scaler_prepare_done():
+            Debug.write("Resetting Scaler done as prepare not done")
+            self.set_scaler_done(False)
+        return self._scalr_done
+
+    def get_scaler_finish_done(self):
+        if not self.get_scaler_done():
+            Debug.write("Resetting scaler finish done as scaling not done")
+            self.set_scaler_finish_done(False)
+        return self._scalr_finish_done
+
+    def add_scaler_integrater(self, integrater):
+        """Add an integrater to this scaler, to provide the input."""
+
+        # epoch values are trusted as long as they are unique.
+        # if a collision is detected, all epoch values are replaced by an
+        # integer series, starting with 0
+
+        if 0 in self._scalr_integraters.keys():
+            epoch = len(self._scalr_integraters)
+
+        else:
+            epoch = integrater.get_integrater_epoch()
+
+            # FIXME This is now probably superflous?
+            if epoch == 0 and self._scalr_integraters:
+                raise RuntimeError("multi-sweep integrater has epoch 0")
+
+            if epoch in self._scalr_integraters.keys():
+                Debug.write(
+                    "integrater with epoch %d already exists. will not trust epoch values"
+                    % epoch
+                )
+
+                # collision. Throw away all epoch keys, and replace with integer series
+                self._scalr_integraters = dict(
+                    zip(
+                        range(0, len(self._scalr_integraters)),
+                        self._scalr_integraters.values(),
+                    )
+                )
+                epoch = len(self._scalr_integraters)
+
+        self._scalr_integraters[epoch] = integrater
+
+        self.scaler_reset()
+
+    # FIXME x1698 these not currently used yet
+
+    def _scale_setup_integrater(self, integrater):
+        """Check that the pointgroup for a data set is consistent with
+        the lattice used for integration, then determine the pointgroup for
+        the data."""
+
+        # FIXME will have to handle gracefully user provided pointgroup
+
+        pointgroups = self._scale_list_likely_pointgroups(integrater)
         refiner = integrater.get_integrater_refiner()
-        state = refiner.set_refiner_asserted_lattice(consensus_lattice)
+        lattices = [lauegroup_to_lattice(p) for p in pointgroups]
 
-        assert state != refiner.LATTICE_IMPOSSIBLE
+        correct_lattice = None
 
-    # then decide on the consensus pointgroup
+        for lattice in lattices:
+            state = refiner.set_refiner_asserted_lattice(lattice)
 
-    pointgroups = set([])
+            if state == refiner.LATTICE_CORRECT:
+                correct_lattice = lattice
+                break
 
-    for integrater in integraters:
-      pointgroups = self._scale_list_likely_pointgroups(integrater)
-      lattices = [lauegroup_to_lattice(p) for p in pointgroups]
-      poingroups.add(pointgroups[lattices.index(consensus_lattice)])
+            elif state == refiner.LATTICE_IMPOSSIBLE:
+                continue
 
-    # FIXME will need to handle twinned cases more gracefully sometime
-    # FIXME also need to "mend" the integrater set spacegroup API
+            elif state == refiner.LATTICE_POSSIBLE:
+                correct_lattice = lattice
+                break
 
-    assert len(pointgroups) == 1
+        assert correct_lattice
 
-    for integrater in integraters:
-      integrater.set_integrater_spacegroup_number(pointgroup)
+        # run this analysis again, which may respond in different conclusions
+        # if it triggers the reprocessing of the data with a new lattice
 
-    # now reindex to the correct setting
+        pointgroups = self._scale_list_likely_pointgroups(integrater)
+        lattices = [lauegroup_to_lattice(p) for p in pointgroups]
 
-    reference = integraters[0]
+        return pointgroups[lattices.index(correct_lattice)]
 
-    for integrater in integraters[1:]:
-      self._scale_reindex_to_reference(reference, integrater)
+    def _scale_setup(self):
+        """Set things up for scaling, in particular mediate pointgroup /
+        lattice with the indexers."""
 
-    return pointgroups[0]
+        assert self._scalr_integraters
 
-  # FIXME to here
+        epochs = sorted(self._scalr_integraters)
+        integraters = [self._scalr_integraters[e] for e in epochs]
 
-  def scale(self):
-    '''Actually perform the scaling - this is delegated to the
-    implementation.'''
+        pointgroups = [self._scale_setup_integrater(i) for i in integraters]
+        lattices = [lauegroup_to_lattice(p) for p in pointgroups]
 
-    if self._scalr_integraters == {}:
-      raise RuntimeError( \
-            'no Integrater implementations assigned for scaling')
+        unique_lattices = list(set(lattices))
 
-    xname = self._scalr_xcrystal.get_name()
+        # consider the situation that they arrived at more than one conclusion
 
-    while not self.get_scaler_finish_done():
-      while not self.get_scaler_done():
-        while not self.get_scaler_prepare_done():
+        if len(unique_lattices) > 1:
+            consensus_lattice = sort_lattices(unique_lattices)[0]
 
-          Chatter.banner('Preparing %s' % xname)
+            for integrater in integraters:
+                refiner = integrater.get_integrater_refiner()
+                state = refiner.set_refiner_asserted_lattice(consensus_lattice)
 
-          self._scalr_prepare_done = True
-          self._scale_prepare()
+                assert state != refiner.LATTICE_IMPOSSIBLE
 
-        Chatter.banner('Scaling %s' % xname)
+        # then decide on the consensus pointgroup
 
-        self._scalr_done = True
-        self._scalr_result = self._scale()
+        pointgroups = set([])
 
-      self._scalr_finish_done = True
-      self._scale_finish()
+        for integrater in integraters:
+            pointgroups = self._scale_list_likely_pointgroups(integrater)
+            lattices = [lauegroup_to_lattice(p) for p in pointgroups]
+            poingroups.add(pointgroups[lattices.index(consensus_lattice)])
 
-    return self._scalr_result
+        # FIXME will need to handle twinned cases more gracefully sometime
+        # FIXME also need to "mend" the integrater set spacegroup API
 
-  def get_scaled_reflections(self, format):
-    '''Get a specific format of scaled reflection files. This may
-    trigger transmogrification of files.'''
+        assert len(pointgroups) == 1
 
-    if not format in ['mtz', 'sca', 'mtz_unmerged', 'sca_unmerged']:
-      raise RuntimeError('format %s unknown' % format)
+        for integrater in integraters:
+            integrater.set_integrater_spacegroup_number(pointgroup)
 
-    self.scale()
+        # now reindex to the correct setting
 
-    if format in self._scalr_scaled_reflection_files.keys():
-      return self._scalr_scaled_reflection_files[format]
+        reference = integraters[0]
 
-    raise RuntimeError('unknown format %s' % format)
+        for integrater in integraters[1:]:
+            self._scale_reindex_to_reference(reference, integrater)
 
-  def get_scaled_merged_reflections(self):
-    '''Return the reflection files and so on.'''
+        return pointgroups[0]
 
-    self.scale()
-    return self._scalr_scaled_reflection_files
+    # FIXME to here
 
-  def get_scaler_statistics(self):
-    '''Return the overall scaling statistics.'''
+    def scale(self):
+        """Actually perform the scaling - this is delegated to the
+        implementation."""
 
-    self.scale()
+        if self._scalr_integraters == {}:
+            raise RuntimeError("no Integrater implementations assigned for scaling")
 
-    return self._scalr_statistics
+        xname = self._scalr_xcrystal.get_name()
 
-  def get_scaler_cell(self):
-    '''Return the final unit cell from scaling.'''
+        while not self.get_scaler_finish_done():
+            while not self.get_scaler_done():
+                while not self.get_scaler_prepare_done():
 
-    self.scale()
-    return self._scalr_cell
+                    Chatter.banner("Preparing %s" % xname)
 
-  def get_scaler_cell_esd(self):
-    '''Return the estimated standard deviation of the final unit cell.'''
+                    self._scalr_prepare_done = True
+                    self._scale_prepare()
 
-    self.scale()
-    return self._scalr_cell_esd
+                Chatter.banner("Scaling %s" % xname)
 
-  def get_scaler_likely_spacegroups(self):
-    '''Return a list of likely spacegroups - you should try using
-    the first in this list first.'''
+                self._scalr_done = True
+                self._scalr_result = self._scale()
 
-    self.scale()
-    return self._scalr_likely_spacegroups
+            self._scalr_finish_done = True
+            self._scale_finish()
 
-  def get_scaler_unlikely_spacegroups(self):
-    '''Return a list of unlikely spacegroups - you should try using
-    the likely ones first. These are spacegroups in the correct
-    pointgroup but with systematic absences which dont match up.'''
+        return self._scalr_result
 
-    self.scale()
-    return self._scalr_unlikely_spacegroups
+    def get_scaled_reflections(self, format):
+        """Get a specific format of scaled reflection files. This may
+        trigger transmogrification of files."""
 
-  def get_scaler_highest_resolution(self):
-    '''Get the highest resolution achieved by the crystal.'''
+        if not format in ["mtz", "sca", "mtz_unmerged", "sca_unmerged"]:
+            raise RuntimeError("format %s unknown" % format)
 
-    self.scale()
-    return self._scalr_highest_resolution
+        self.scale()
+
+        if format in self._scalr_scaled_reflection_files.keys():
+            return self._scalr_scaled_reflection_files[format]
+
+        raise RuntimeError("unknown format %s" % format)
+
+    def get_scaled_merged_reflections(self):
+        """Return the reflection files and so on."""
+
+        self.scale()
+        return self._scalr_scaled_reflection_files
+
+    def get_scaler_statistics(self):
+        """Return the overall scaling statistics."""
+
+        self.scale()
+
+        return self._scalr_statistics
+
+    def get_scaler_cell(self):
+        """Return the final unit cell from scaling."""
+
+        self.scale()
+        return self._scalr_cell
+
+    def get_scaler_cell_esd(self):
+        """Return the estimated standard deviation of the final unit cell."""
+
+        self.scale()
+        return self._scalr_cell_esd
+
+    def get_scaler_likely_spacegroups(self):
+        """Return a list of likely spacegroups - you should try using
+        the first in this list first."""
+
+        self.scale()
+        return self._scalr_likely_spacegroups
+
+    def get_scaler_unlikely_spacegroups(self):
+        """Return a list of unlikely spacegroups - you should try using
+        the likely ones first. These are spacegroups in the correct
+        pointgroup but with systematic absences which dont match up."""
+
+        self.scale()
+        return self._scalr_unlikely_spacegroups
+
+    def get_scaler_highest_resolution(self):
+        """Get the highest resolution achieved by the crystal."""
+
+        self.scale()
+        return self._scalr_highest_resolution

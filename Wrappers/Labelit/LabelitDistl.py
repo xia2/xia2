@@ -31,112 +31,113 @@ import sys
 
 from xia2.Driver.DriverFactory import DriverFactory
 
-def LabelitDistl(DriverType = None):
-  '''Factory for LabelitDistl wrapper classes, with the specified
-  Driver type.'''
 
-  DriverInstance = DriverFactory.Driver(DriverType)
+def LabelitDistl(DriverType=None):
+    """Factory for LabelitDistl wrapper classes, with the specified
+    Driver type."""
 
-  class LabelitDistlWrapper(DriverInstance.__class__):
-    '''A wrapper for the program labelit.distl - which will provide
-    functionality for looking for ice rings and screening diffraction
-    images.'''
+    DriverInstance = DriverFactory.Driver(DriverType)
 
-    def __init__(self):
+    class LabelitDistlWrapper(DriverInstance.__class__):
+        """A wrapper for the program labelit.distl - which will provide
+        functionality for looking for ice rings and screening diffraction
+        images."""
 
-      DriverInstance.__class__.__init__(self)
+        def __init__(self):
 
-      self.set_executable('labelit.distl')
+            DriverInstance.__class__.__init__(self)
 
-      self._images = []
+            self.set_executable("labelit.distl")
 
-      self._statistics = { }
+            self._images = []
 
-    def add_image(self, image):
-      '''Add an image for indexing.'''
+            self._statistics = {}
 
-      if not image in self._images:
-        self._images.append(image)
+        def add_image(self, image):
+            """Add an image for indexing."""
 
-      return
+            if not image in self._images:
+                self._images.append(image)
 
-    def distl(self):
-      '''Actually analyse the images.'''
+            return
 
-      self._images.sort()
+        def distl(self):
+            """Actually analyse the images."""
 
-      for i in self._images:
-        self.add_command_line(i)
+            self._images.sort()
 
-      task = 'Screen images:'
+            for i in self._images:
+                self.add_command_line(i)
 
-      for i in self._images:
-        task += ' %s' % i
+            task = "Screen images:"
 
-      self.set_task(task)
+            for i in self._images:
+                task += " %s" % i
 
-      self.start()
-      self.close_wait()
+            self.set_task(task)
 
-      # check for errors
-      self.check_for_errors()
+            self.start()
+            self.close_wait()
 
-      # ok now we're done, let's look through for some useful stuff
+            # check for errors
+            self.check_for_errors()
 
-      output = self.get_all_output()
+            # ok now we're done, let's look through for some useful stuff
 
-      current_image = None
+            output = self.get_all_output()
 
-      for o in output:
-        if 'None' in o and 'Resolution' in o:
-          l = o.replace('None', '0.0').split()
-        else:
-          l = o.split()
+            current_image = None
 
-        if l[:1] == ['File']:
-          current_image = l[2]
-          self._statistics[current_image] = { }
+            for o in output:
+                if "None" in o and "Resolution" in o:
+                    l = o.replace("None", "0.0").split()
+                else:
+                    l = o.split()
 
-        if l[:2] == ['Spot', 'Total']:
-          self._statistics[current_image]['spots_total'] = int(l[-1])
-        if l[:2] == ['In-Resolution', 'Total']:
-          self._statistics[current_image]['spots'] = int(l[-1])
-        if l[:3] == ['Good', 'Bragg', 'Candidates']:
-          self._statistics[current_image]['spots_good'] = int(l[-1])
-        if l[:2] == ['Ice', 'Rings']:
-          self._statistics[current_image]['ice_rings'] = int(l[-1])
-        if l[:3] == ['Method', '1', 'Resolution']:
-          self._statistics[current_image]['resol_one'] = float(l[-1])
-        if l[:3] == ['Method', '2', 'Resolution']:
-          self._statistics[current_image]['resol_two'] = float(l[-1])
-        if l[:3] == ['%Saturation,', 'Top', '50']:
-          self._statistics[current_image][
-              'saturation'] = float(l[-1])
+                if l[:1] == ["File"]:
+                    current_image = l[2]
+                    self._statistics[current_image] = {}
 
-      return 'ok'
+                if l[:2] == ["Spot", "Total"]:
+                    self._statistics[current_image]["spots_total"] = int(l[-1])
+                if l[:2] == ["In-Resolution", "Total"]:
+                    self._statistics[current_image]["spots"] = int(l[-1])
+                if l[:3] == ["Good", "Bragg", "Candidates"]:
+                    self._statistics[current_image]["spots_good"] = int(l[-1])
+                if l[:2] == ["Ice", "Rings"]:
+                    self._statistics[current_image]["ice_rings"] = int(l[-1])
+                if l[:3] == ["Method", "1", "Resolution"]:
+                    self._statistics[current_image]["resol_one"] = float(l[-1])
+                if l[:3] == ["Method", "2", "Resolution"]:
+                    self._statistics[current_image]["resol_two"] = float(l[-1])
+                if l[:3] == ["%Saturation,", "Top", "50"]:
+                    self._statistics[current_image]["saturation"] = float(l[-1])
 
-    # things to get results from the indexing
+            return "ok"
 
-    def get_statistics(self, image):
-      '''Get the screening statistics from image as dictionary.
-      The keys are spots_total, spots, spots_good, ice_rings,
-      resol_one, resol_two.'''
+        # things to get results from the indexing
 
-      return self._statistics[os.path.split(image)[-1]]
+        def get_statistics(self, image):
+            """Get the screening statistics from image as dictionary.
+            The keys are spots_total, spots, spots_good, ice_rings,
+            resol_one, resol_two."""
 
-  return LabelitDistlWrapper()
+            return self._statistics[os.path.split(image)[-1]]
 
-if __name__ == '__main__':
+    return LabelitDistlWrapper()
 
-  # run a demo test
 
-  l = LabelitDistl()
-  for image in sys.argv[1:]:
-    l.add_image(image)
+if __name__ == "__main__":
 
-  l.distl()
+    # run a demo test
 
-  for image in sys.argv[1:]:
-    stats = l.get_statistics(image)
+    l = LabelitDistl()
+    for image in sys.argv[1:]:
+        l.add_image(image)
 
-    print(image, stats['spots_good'], stats['spots'])
+    l.distl()
+
+    for image in sys.argv[1:]:
+        stats = l.get_statistics(image)
+
+        print(image, stats["spots_good"], stats["spots"])

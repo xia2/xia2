@@ -22,199 +22,204 @@ from xia2.Handlers.Streams import Chatter, Debug
 from xia2.lib.bits import transpose_loggraph
 from xia2.Wrappers.CCP4.Ctruncate import Ctruncate
 
-def Truncate(DriverType = None):
-  '''A factory for TruncateWrapper classes.'''
 
-  DriverInstance = DriverFactory.Driver(DriverType)
-  CCP4DriverInstance = DecoratorFactory.Decorate(DriverInstance, 'ccp4')
+def Truncate(DriverType=None):
+    """A factory for TruncateWrapper classes."""
 
-  if PhilIndex.params.ccp4.truncate.program == 'ctruncate':
-    return Ctruncate(DriverType)
-  elif PhilIndex.params.ccp4.truncate.program == 'cctbx':
-    from xia2.Wrappers.XIA.FrenchWilson import FrenchWilson
-    return FrenchWilson(DriverType)
+    DriverInstance = DriverFactory.Driver(DriverType)
+    CCP4DriverInstance = DecoratorFactory.Decorate(DriverInstance, "ccp4")
 
-  class TruncateWrapper(CCP4DriverInstance.__class__):
-    '''A wrapper for Truncate, using the CCP4-ified Driver.'''
+    if PhilIndex.params.ccp4.truncate.program == "ctruncate":
+        return Ctruncate(DriverType)
+    elif PhilIndex.params.ccp4.truncate.program == "cctbx":
+        from xia2.Wrappers.XIA.FrenchWilson import FrenchWilson
 
-    def __init__(self):
-      # generic things
-      CCP4DriverInstance.__class__.__init__(self)
+        return FrenchWilson(DriverType)
 
-      self.set_executable(os.path.join(
-          os.environ.get('CBIN', ''), 'truncate'))
+    class TruncateWrapper(CCP4DriverInstance.__class__):
+        """A wrapper for Truncate, using the CCP4-ified Driver."""
 
-      self._anomalous = False
-      self._nres = 0
+        def __init__(self):
+            # generic things
+            CCP4DriverInstance.__class__.__init__(self)
 
-      # should we do wilson scaling?
-      self._wilson = True
+            self.set_executable(os.path.join(os.environ.get("CBIN", ""), "truncate"))
 
-      self._b_factor = 0.0
-      self._moments = None
+            self._anomalous = False
+            self._nres = 0
 
-      self._wilson_fit_grad = 0.0
-      self._wilson_fit_grad_sd = 0.0
-      self._wilson_fit_m = 0.0
-      self._wilson_fit_m_sd = 0.0
-      self._wilson_fit_range = None
+            # should we do wilson scaling?
+            self._wilson = True
 
-      # numbers of reflections in and out, and number of absences
-      # counted
+            self._b_factor = 0.0
+            self._moments = None
 
-      self._nref_in = 0
-      self._nref_out = 0
-      self._nabsent = 0
+            self._wilson_fit_grad = 0.0
+            self._wilson_fit_grad_sd = 0.0
+            self._wilson_fit_m = 0.0
+            self._wilson_fit_m_sd = 0.0
+            self._wilson_fit_range = None
 
-      self._xmlout = None
+            # numbers of reflections in and out, and number of absences
+            # counted
 
-    def set_anomalous(self, anomalous):
-      self._anomalous = anomalous
+            self._nref_in = 0
+            self._nref_out = 0
+            self._nabsent = 0
 
-    def set_wilson(self, wilson):
-      '''Set the use of Wilson scaling - if you set this to False
-      Wilson scaling will be switched off...'''
-      self._wilson = wilson
+            self._xmlout = None
 
-    def get_xmlout(self):
-      return self._xmlout
+        def set_anomalous(self, anomalous):
+            self._anomalous = anomalous
 
-    def truncate(self):
-      '''Actually perform the truncation procedure.'''
+        def set_wilson(self, wilson):
+            """Set the use of Wilson scaling - if you set this to False
+            Wilson scaling will be switched off..."""
+            self._wilson = wilson
 
-      self.check_hklin()
-      self.check_hklout()
+        def get_xmlout(self):
+            return self._xmlout
 
-      self.start()
+        def truncate(self):
+            """Actually perform the truncation procedure."""
 
-      if self._anomalous:
-        self.input('anomalous yes')
-      else:
-        self.input('anomalous no')
+            self.check_hklin()
+            self.check_hklout()
 
-      if self._nres:
-        self.input('nres %d' % self._nres)
+            self.start()
 
-      if not self._wilson:
-        self.input('scale 1')
+            if self._anomalous:
+                self.input("anomalous yes")
+            else:
+                self.input("anomalous no")
 
-      self.close_wait()
+            if self._nres:
+                self.input("nres %d" % self._nres)
 
-      try:
-        self.check_for_errors()
-        self.check_ccp4_errors()
+            if not self._wilson:
+                self.input("scale 1")
 
-      except RuntimeError:
-        try:
-          os.remove(self.get_hklout())
-        except Exception:
-          pass
+            self.close_wait()
 
-        raise RuntimeError('truncate failure')
+            try:
+                self.check_for_errors()
+                self.check_ccp4_errors()
 
-      # parse the output for interesting things, including the
-      # numbers of reflections in and out (isn't that a standard CCP4
-      # report?) and the number of absent reflections.
+            except RuntimeError:
+                try:
+                    os.remove(self.get_hklout())
+                except Exception:
+                    pass
 
-      self._nref_in, self._nref_out = self.read_nref_hklin_hklout(
-          self.get_all_output())
+                raise RuntimeError("truncate failure")
 
-      # FIXME guess I should be reading this properly...
-      self._nabsent = self._nref_in - self._nref_out
+            # parse the output for interesting things, including the
+            # numbers of reflections in and out (isn't that a standard CCP4
+            # report?) and the number of absent reflections.
 
-      for line in self.get_all_output():
-        if 'Least squares straight line gives' in line:
-          list = line.replace('=', ' ').split()
-          if not '***' in list[6]:
-            self._b_factor = float(list[6])
-          else:
-            Debug.write('no B factor available')
+            self._nref_in, self._nref_out = self.read_nref_hklin_hklout(
+                self.get_all_output()
+            )
 
-        if 'LSQ Line Gradient' in line:
-          self._wilson_fit_grad = float(line.split()[-1])
-          resol_width = max(self._wilson_fit_range) - \
-                        min(self._wilson_fit_range)
-          if self._wilson_fit_grad > 0 and resol_width > 1.0 \
-                 and False:
-            raise RuntimeError( \
-                  'wilson plot gradient positive: %.2f' % \
-                  self._wilson_fit_grad)
-          elif self._wilson_fit_grad > 0:
-            Debug.write(
-                'Positive gradient but not much wilson plot')
+            # FIXME guess I should be reading this properly...
+            self._nabsent = self._nref_in - self._nref_out
+
+            for line in self.get_all_output():
+                if "Least squares straight line gives" in line:
+                    list = line.replace("=", " ").split()
+                    if not "***" in list[6]:
+                        self._b_factor = float(list[6])
+                    else:
+                        Debug.write("no B factor available")
+
+                if "LSQ Line Gradient" in line:
+                    self._wilson_fit_grad = float(line.split()[-1])
+                    resol_width = max(self._wilson_fit_range) - min(
+                        self._wilson_fit_range
+                    )
+                    if self._wilson_fit_grad > 0 and resol_width > 1.0 and False:
+                        raise RuntimeError(
+                            "wilson plot gradient positive: %.2f"
+                            % self._wilson_fit_grad
+                        )
+                    elif self._wilson_fit_grad > 0:
+                        Debug.write("Positive gradient but not much wilson plot")
+
+                if "Uncertainty in Gradient" in line:
+                    self._wilson_fit_grad_sd = float(line.split()[-1])
+                if "X Intercept" in line:
+                    self._wilson_fit_m = float(line.split()[-1])
+                if "Uncertainty in Intercept" in line:
+                    self._wilson_fit_m_sd = float(line.split()[-1])
+                if "Resolution range" in line:
+                    self._wilson_fit_range = map(float, line.split()[-2:])
+
+            results = self.parse_ccp4_loggraph()
+            moments = transpose_loggraph(
+                results["Acentric Moments of E for k = 1,3,4,6,8"]
+            )
+
+            # keys we want in this are "Resln_Range" "1/resol^2" and
+            # MomentZ2. The last of these should be around two, but is
+            # likely to be a little different to this.
+            self._moments = moments
+
+        def get_b_factor(self):
+            return self._b_factor
+
+        def get_wilson_fit(self):
+            return (
+                self._wilson_fit_grad,
+                self._wilson_fit_grad_sd,
+                self._wilson_fit_m,
+                self._wilson_fit_m_sd,
+            )
+
+        def get_wilson_fit_range(self):
+            return self._wilson_fit_range
+
+        def get_moments(self):
+            return self._moments
+
+        def get_nref_in(self):
+            return self._nref_in
+
+        def get_nref_out(self):
+            return self._nref_out
+
+        def get_nabsent(self):
+            return self._nabsent
+
+        def read_nref_hklin_hklout(self, records):
+            """Look to see how many reflections came in through HKLIN, and
+            how many went out again in HKLOUT."""
+
+            nref_in = 0
+            nref_out = 0
+
+            current_logical = None
+
+            for record in records:
+                if "Logical Name" in record:
+                    current_logical = record.split()[2]
+                    assert current_logical in ["HKLIN", "HKLOUT", "SYMINFO"]
+
+                if "Number of Reflections" in record:
+                    if current_logical == "HKLIN":
+                        nref_in = int(record.split()[-1])
+                    elif current_logical == "HKLOUT":
+                        nref_out = int(record.split()[-1])
+
+            return nref_in, nref_out
+
+    return TruncateWrapper()
 
 
-        if 'Uncertainty in Gradient' in line:
-          self._wilson_fit_grad_sd = float(line.split()[-1])
-        if 'X Intercept' in line:
-          self._wilson_fit_m = float(line.split()[-1])
-        if 'Uncertainty in Intercept' in line:
-          self._wilson_fit_m_sd = float(line.split()[-1])
-        if 'Resolution range' in line:
-          self._wilson_fit_range = map(float, line.split()[-2:])
+if __name__ == "__main__":
 
+    truncate = Truncate()
+    truncate.set_hklin(sys.argv[1])
+    truncate.set_hklout(sys.argv[2])
+    truncate.truncate()
 
-      results = self.parse_ccp4_loggraph()
-      moments = transpose_loggraph(
-          results['Acentric Moments of E for k = 1,3,4,6,8'])
-
-      # keys we want in this are "Resln_Range" "1/resol^2" and
-      # MomentZ2. The last of these should be around two, but is
-      # likely to be a little different to this.
-      self._moments = moments
-
-    def get_b_factor(self):
-      return self._b_factor
-
-    def get_wilson_fit(self):
-      return self._wilson_fit_grad, self._wilson_fit_grad_sd, \
-             self._wilson_fit_m, self._wilson_fit_m_sd
-
-    def get_wilson_fit_range(self):
-      return self._wilson_fit_range
-
-    def get_moments(self):
-      return self._moments
-
-    def get_nref_in(self):
-      return self._nref_in
-
-    def get_nref_out(self):
-      return self._nref_out
-
-    def get_nabsent(self):
-      return self._nabsent
-
-    def read_nref_hklin_hklout(self, records):
-      '''Look to see how many reflections came in through HKLIN, and
-      how many went out again in HKLOUT.'''
-
-      nref_in = 0
-      nref_out = 0
-
-      current_logical = None
-
-      for record in records:
-        if 'Logical Name' in record:
-          current_logical = record.split()[2]
-          assert(current_logical in ['HKLIN', 'HKLOUT', 'SYMINFO'])
-
-        if 'Number of Reflections' in record:
-          if current_logical == 'HKLIN':
-            nref_in = int(record.split()[-1])
-          elif current_logical == 'HKLOUT':
-            nref_out = int(record.split()[-1])
-
-      return nref_in, nref_out
-
-  return TruncateWrapper()
-
-if __name__ == '__main__':
-
-  truncate = Truncate()
-  truncate.set_hklin(sys.argv[1])
-  truncate.set_hklout(sys.argv[2])
-  truncate.truncate()
-
-  print(truncate.get_nref_in(), truncate.get_nref_out(), \
-        truncate.get_nabsent())
+    print(truncate.get_nref_in(), truncate.get_nref_out(), truncate.get_nabsent())

@@ -10,11 +10,12 @@
 
 from __future__ import absolute_import, division, print_function
 
+
 class IndexingError(Exception):
-  '''An exception to be raised when a lattice is not right.'''
+    """An exception to be raised when a lattice is not right."""
 
-  def __init__(self, value):
-    self.parameter = value
+    def __init__(self, value):
+        self.parameter = value
 
-  def __str__(self):
-    return repr(self.parameter)
+    def __str__(self):
+        return repr(self.parameter)

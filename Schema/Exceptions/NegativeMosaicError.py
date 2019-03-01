@@ -11,11 +11,12 @@
 
 from __future__ import absolute_import, division, print_function
 
+
 class NegativeMosaicError(Exception):
-  '''An exception to be raised when the mosaic spread is negative.'''
+    """An exception to be raised when the mosaic spread is negative."""
 
-  def __init__(self, value):
-    self.parameter = value
+    def __init__(self, value):
+        self.parameter = value
 
-  def __str__(self):
-    return repr(self.parameter)
+    def __str__(self):
+        return repr(self.parameter)

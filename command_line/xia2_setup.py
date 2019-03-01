@@ -7,5 +7,5 @@ from __future__ import absolute_import, division, print_function
 
 from xia2.Applications import xia2setup
 
-if __name__ == '__main__':
-  xia2setup.run()
+if __name__ == "__main__":
+    xia2setup.run()

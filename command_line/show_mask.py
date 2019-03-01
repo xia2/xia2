@@ -2,19 +2,22 @@
 # LIBTBX_PRE_DISPATCHER_INCLUDE_SH export BOOST_ADAPTBX_FPE_DEFAULT=1
 from __future__ import absolute_import, division, print_function
 
+
 def main(filename):
-  '''Show a mask from create_mask.'''
+    """Show a mask from create_mask."""
 
-  from dials.array_family import flex
-  import six.moves.cPickle as pickle
-  from matplotlib import pylab
+    from dials.array_family import flex
+    import six.moves.cPickle as pickle
+    from matplotlib import pylab
 
-  with open(filename, 'rb') as fh:
-    m = pickle.load(fh)
+    with open(filename, "rb") as fh:
+        m = pickle.load(fh)
 
-  pylab.imshow(m[0].as_numpy_array())
-  pylab.show()
+    pylab.imshow(m[0].as_numpy_array())
+    pylab.show()
 
-if __name__ == '__main__':
-  import sys
-  main(sys.argv[1])
+
+if __name__ == "__main__":
+    import sys
+
+    main(sys.argv[1])

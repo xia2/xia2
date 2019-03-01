@@ -19,19 +19,22 @@ from __future__ import absolute_import, division, print_function
 
 import sys
 
-def Mtzdump(DriverType = None):
-  '''A factory for MtzdumpWrapper classes.'''
 
-  from xia2.Modules.Mtzdump import Mtzdump as _Mtzdump
-  return _Mtzdump()
+def Mtzdump(DriverType=None):
+    """A factory for MtzdumpWrapper classes."""
 
-if __name__ == '__main__':
-  m = Mtzdump()
+    from xia2.Modules.Mtzdump import Mtzdump as _Mtzdump
 
-  if len(sys.argv) > 1:
-    m.set_hklin(sys.argv[1])
-  else:
-    raise RuntimeError('%s hklin.mtz' % sys.argv[0])
+    return _Mtzdump()
 
-  m.dump()
-  print(m.get_spacegroup())
+
+if __name__ == "__main__":
+    m = Mtzdump()
+
+    if len(sys.argv) > 1:
+        m.set_hklin(sys.argv[1])
+    else:
+        raise RuntimeError("%s hklin.mtz" % sys.argv[0])
+
+    m.dump()
+    print(m.get_spacegroup())
