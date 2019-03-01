@@ -19,12 +19,12 @@ def exercise_mosflm_integrater(dials_data, tmp_dir, nproc):
 
   from xia2.Modules.Indexer.MosflmIndexer import MosflmIndexer
   from xia2.Modules.Integrater.MosflmIntegrater import MosflmIntegrater
-  from dxtbx.datablock import DataBlockTemplateImporter
+  from dxtbx.model.experiment_list import ExperimentListTemplateImporter
   indexer = MosflmIndexer()
   indexer.set_working_directory(tmp_dir)
-  importer = DataBlockTemplateImporter([template])
-  datablocks = importer.datablocks
-  imageset = datablocks[0].extract_imagesets()[0]
+  importer = ExperimentListTemplateImporter([template])
+  experiments = importer.experiments
+  imageset = experiments.imagesets()[0]
   indexer.add_indexer_imageset(imageset)
 
   from xia2.Schema.XCrystal import XCrystal

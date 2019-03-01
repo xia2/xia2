@@ -12,10 +12,10 @@ def test_labelit_indexer(regression_test, ccp4, dials_data, run_in_tmpdir):
   except NotAvailableError:
     pytest.skip("labelit not found")
   ls.set_working_directory(run_in_tmpdir.strpath)
-  from dxtbx.datablock import DataBlockTemplateImporter
-  importer = DataBlockTemplateImporter([template])
-  datablocks = importer.datablocks
-  imageset = datablocks[0].extract_imagesets()[0]
+  from dxtbx.model.experiment_list import ExperimentListTemplateImporter
+  importer = ExperimentListTemplateImporter([template])
+  experiments = importer.experiments
+  imageset = experiments.imagesets()[0]
   ls.add_indexer_imageset(imageset)
   ls.index()
 

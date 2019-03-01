@@ -21,10 +21,10 @@ def test_xds_scalerA(regression_test, ccp4, dials_data, run_in_tmpdir, nproc):
   from xia2.Modules.Scaler.XDSScalerA import XDSScalerA
   indexer = XDSIndexer()
   indexer.set_working_directory(tmpdir)
-  from dxtbx.datablock import DataBlockTemplateImporter
-  importer = DataBlockTemplateImporter([template])
-  datablocks = importer.datablocks
-  imageset = datablocks[0].extract_imagesets()[0]
+  from dxtbx.model.experiment_list import ExperimentListTemplateImporter
+  importer = ExperimentListTemplateImporter([template])
+  experiments = importer.experiments
+  imageset = experiments.imagesets()[0]
   indexer.add_indexer_imageset(imageset)
 
   from xia2.Schema.XCrystal import XCrystal

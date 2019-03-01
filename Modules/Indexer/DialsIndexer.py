@@ -73,7 +73,7 @@ class DialsIndexer(Indexer):
     importer.set_mosflm_beam_centre(self.get_beam_centre())
     importer.set_sweep_filename(
         os.path.join(self.get_working_directory(),
-                     '%s_datablock_import.json' % importer.get_xpid()))
+                     '%s_experiments_import.json' % importer.get_xpid()))
     return importer
 
   def GenerateMask(self):
@@ -238,7 +238,7 @@ class DialsIndexer(Indexer):
     #last = max(all_images)
 
     spot_lists = []
-    datablocks = []
+    experiments_filenames = []
 
     for imageset, xsweep in zip(self._indxr_imagesets, self._indxr_sweeps):
 
@@ -253,15 +253,17 @@ class DialsIndexer(Indexer):
       # FIXME need to adjust this to allow (say) three chunks of images
 
       from dxtbx.serialize import dump
-      from dxtbx.datablock import DataBlock
+      from dxtbx.model.experiment_list import ExperimentListFactory
       sweep_filename = os.path.join(
-        self.get_working_directory(), '%s_datablock.json' %xsweep.get_name())
-      dump.datablock(DataBlock([imageset]), sweep_filename)
+        self.get_working_directory(), '%s_experiments.json' %xsweep.get_name())
+      dump.experiment_list(
+        ExperimentListFactory.from_imageset_and_crystal(imageset,None), 
+        sweep_filename)
 
       genmask = self.GenerateMask()
-      genmask.set_input_datablock(sweep_filename)
-      genmask.set_output_datablock(os.path.join(
-        self.get_working_directory(), '%s_%s_datablock.json' %(
+      genmask.set_input_experiments(sweep_filename)
+      genmask.set_output_experiments(os.path.join(
+        self.get_working_directory(), '%s_%s_experiments.json' %(
           genmask.get_xpid(), xsweep.get_name())))
       genmask.set_params(PhilIndex.params.dials.masking)
       sweep_filename, mask_pickle = genmask.run()
@@ -283,7 +285,7 @@ class DialsIndexer(Indexer):
         spotfinder.set_write_hot_mask(True)
       spotfinder.set_input_sweep_filename(sweep_filename)
       spotfinder.set_output_sweep_filename(
-        '%s_%s_datablock.json' %(spotfinder.get_xpid(), xsweep.get_name()))
+        '%s_%s_experiments.json' %(spotfinder.get_xpid(), xsweep.get_name()))
       spotfinder.set_input_spot_filename(
         '%s_%s_strong.pickle' %(spotfinder.get_xpid(), xsweep.get_name()))
       if PhilIndex.params.dials.fast_mode:
@@ -327,7 +329,7 @@ class DialsIndexer(Indexer):
                            %os.path.basename(spot_filename))
 
       spot_lists.append(spot_filename)
-      datablocks.append(spotfinder.get_output_sweep_filename())
+      experiments_filenames.append(spotfinder.get_output_sweep_filename())
 
       from libtbx import easy_pickle
       from dials.util.ascii_art import spot_counts_per_image_plot
@@ -338,7 +340,7 @@ class DialsIndexer(Indexer):
 
       if not PhilIndex.params.dials.fast_mode:
         detectblanks = self.DetectBlanks()
-        detectblanks.set_sweep_filename(datablocks[-1])
+        detectblanks.set_sweep_filename(experiments_filenames[-1])
         detectblanks.set_reflections_filename(spot_filename)
         detectblanks.run()
         json = detectblanks.get_results()
@@ -397,7 +399,7 @@ class DialsIndexer(Indexer):
 
       if not PhilIndex.params.xia2.settings.trust_beam_centre:
         discovery = self.DiscoverBetterExperimentalModel()
-        discovery.set_sweep_filename(datablocks[-1])
+        discovery.set_sweep_filename(experiments_filenames[-1])
         discovery.set_spot_filename(spot_filename)
         #wedges = self._index_select_images_i(imageset)
         #discovery.set_scan_ranges(wedges)
@@ -407,11 +409,11 @@ class DialsIndexer(Indexer):
         except Exception as e:
           Debug.write('DIALS beam centre search failed: %s' % str(e))
         else:
-          # overwrite datablock.json in datablocks list
-          datablocks[-1] = discovery.get_optimized_datablock_filename()
+          # overwrite experiments.json in experiments list
+          experiments_filenames[-1] = discovery.get_optimized_experiments_filename()
 
     self.set_indexer_payload("spot_lists", spot_lists)
-    self.set_indexer_payload("datablocks", datablocks)
+    self.set_indexer_payload("experiments", experiments_filenames)
 
     return
 
@@ -630,8 +632,8 @@ class DialsIndexer(Indexer):
     indexer = self.Index()
     for spot_list in self._indxr_payload["spot_lists"]:
       indexer.add_spot_filename(spot_list)
-    for datablock in self._indxr_payload["datablocks"]:
-      indexer.add_sweep_filename(datablock)
+    for filename in self._indxr_payload["experiments"]:
+      indexer.add_sweep_filename(filename)
     if PhilIndex.params.dials.index.phil_file is not None:
       indexer.set_phil_file(PhilIndex.params.dials.index.phil_file)
     indexer.set_max_cell(
