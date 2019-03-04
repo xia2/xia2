@@ -38,131 +38,131 @@ xds
     .type = path
     .help = "HDF5 plugin file reader name, either filename or full path"
     .short_caption = "LIB=/path/to/(this)"
-    .expert_level=1
+    .expert_level = 1
   z_min = 0.0
     .type = float
-    .short_caption="Mark Wilson outlier when Z-score greater than"
-    .expert_level=1
+    .short_caption = "Mark Wilson outlier when Z-score greater than"
+    .expert_level = 1
   delphi = 5
     .type = float
-    .short_caption="DELPHI="
+    .short_caption = "DELPHI ="
     .expert_level = 1
   delphi_small = 30
     .type = float
-    .short_caption="DELPHI= for small molecule mode"
+    .short_caption = "For small molecule mode, DELPHI ="
     .expert_level = 1
   untrusted_ellipse = None
     .type = ints(size = 4)
     .multiple = True
-    .short_caption="UNTRUSTED_ELLIPSE="
+    .short_caption = "UNTRUSTED_ELLIPSE ="
     .expert_level = 1
   untrusted_rectangle = None
     .type = ints(size = 4)
     .multiple = True
-    .short_caption="UNTRUSTED_RECTANGLE="
+    .short_caption = "UNTRUSTED_RECTANGLE ="
     .expert_level = 1
   trusted_region = None
     .type = floats(size = 2)
-    .short_caption="TRUSTED_REGION="
+    .short_caption = "TRUSTED_REGION ="
     .expert_level = 1
   backstop_mask = None
     .type = path
     .short_caption = "Backstop mask"
     .expert_level = 1
   profile_grid_size = None
-    .short_caption="Number of profile grid points"
-    .help="Sets XDS parameters NUMBER_OF_PROFILE_GRID_POINTS_ALONG_ALPHA/BETA"
-          "and NUMBER_OF_PROFILE_GRID_POINTS_ALONG_GAMMA"
+    .short_caption = "Number of profile grid points"
+    .help = "Sets XDS parameters NUMBER_OF_PROFILE_GRID_POINTS_ALONG_ALPHA/BETA " \
+            "and NUMBER_OF_PROFILE_GRID_POINTS_ALONG_GAMMA."
     .type = ints(size = 2)
     .expert_level = 1
   keep_outliers = False
     .type = bool
-    .short_caption="Keep outliers"
+    .short_caption = "Keep outliers"
     .help = "Do not remove outliers in integration and scaling"
   correct {
     refine = *DISTANCE *BEAM *AXIS *ORIENTATION *CELL *POSITION
       .type = choice(multi = True)
-      .short_caption="REFINE(CORRECT)="
+      .short_caption = "REFINE(CORRECT) ="
       .help = 'what to refine in the CORRECT step'
-      .expert_level=1
+      .expert_level = 1
     air = None
       .type = float(value_min=0)
-      .short_caption="AIR="
-      .expert_level=1
+      .short_caption = "AIR ="
+      .expert_level = 1
   }
   integrate {
     refine = *ORIENTATION *CELL *BEAM *DISTANCE AXIS *POSITION
       .type = choice(multi = True)
-      .short_caption="First pass REFINE(INTEGRATE)="
+      .short_caption = "First pass REFINE(INTEGRATE) ="
       .help = 'what to refine in first pass of integration'
-      .expert_level=1
+      .expert_level = 1
     refine_final = *ORIENTATION *CELL BEAM *DISTANCE AXIS *POSITION
       .type = choice(multi = True)
-      .short_caption="Final pass REFINE(INTEGRATE)="
-      .help = 'what to refine in final pass of integration'
-      .expert_level=1
+      .short_caption = "Final pass REFINE(INTEGRATE) ="
+      .help = 'What to refine in final pass of integration'
+      .expert_level = 1
     fix_scale = False
       .type = bool
-      .short_caption="Fix scale factors"
-      .expert_level=1
+      .short_caption = "Fix scale factors"
+      .expert_level = 1
     delphi = 0
       .type = float
-      .short_caption="DELPHI="
+      .short_caption = "DELPHI ="
       .expert_level = 1
     reflecting_range = 0
       .type = float
-      .short_caption="REFLECTING_RANGE="
+      .short_caption = "REFLECTING_RANGE ="
       .expert_level = 1
     reflecting_range_esd = 0
       .type = float
-      .short_caption=REFLECTING_RANGE_E.S.D.="
+      .short_caption = "REFLECTING_RANGE_E.S.D. ="
       .expert_level = 1
     beam_divergence = 0
       .type = float
-      .short_caption="BEAM_DIVERGENCE="
+      .short_caption = "BEAM_DIVERGENCE ="
       .expert_level = 1
     beam_divergence_esd = 0
       .type = float
-      .short_caption="BEAM_DIVERGENCE_E.S.D.="
+      .short_caption = "BEAM_DIVERGENCE_E.S.D. ="
       .expert_level = 1
     reintegrate = true
       .type = bool
-      .short_caption="Reintegrate after global refinement"
+      .short_caption = "Reintegrate after global refinement"
       .expert_level = 1
   }
   init {
     fix_scale = False
       .type = bool
-      .short_caption="Fix scale factors"
-      .expert_level=1
+      .short_caption = "Fix scale factors"
+      .expert_level = 1
   }
   defpix {
     value_range_for_trusted_detector_pixels = None
       .type = ints(size=2)
-      .short_caption="VALUE_RANGE_FOR_TRUSTED_DETECTOR_PIXELS="
-      .expert_level=1
+      .short_caption = "VALUE_RANGE_FOR_TRUSTED_DETECTOR_PIXELS ="
+      .expert_level = 1
   }
   index {
     refine = *ORIENTATION *CELL *BEAM *DISTANCE *AXIS *POSITION
       .type = choice(multi = True)
-      .short_caption="REFINE(IDXREF)="
+      .short_caption = "REFINE(IDXREF) ="
       .help = 'what to refine in autoindexing'
-      .expert_level=1
+      .expert_level = 1
     debug = *OFF ON
       .type = choice(multi = False)
-      .short_caption="Debug"
+      .short_caption = "Debug"
       .help = 'output enhanced debugging for indexing'
-      .expert_level=1
+      .expert_level = 1
     xparm = None
       .type = path
-      .short_caption="Use GXPARM.XDS geometry"
+      .short_caption = "Use GXPARM.XDS geometry"
       .help = 'Use refined GXPARM.XDS geometry in indexing'
-      .expert_level=1
+      .expert_level = 1
     xparm_ub = None
       .type = path
-      .short_caption="Use GXPARM.XDS UB matrix"
+      .short_caption = "Use GXPARM.XDS UB matrix"
       .help = 'Use refined GXPARM.XDS orientation matrix in indexing'
-      .expert_level=1
+      .expert_level = 1
     max_wedge_size = 5
       .type = int(value_min=1)
     max_wedge_size_degrees = None
@@ -170,40 +170,40 @@ xds
   }
   colspot {
     minimum_pixels_per_spot = 1
-      .short_caption="For PAD MINIMUM_NUMBER_OF_PIXELS_IN_A_SPOT="
+      .short_caption = "For PAD MINIMUM_NUMBER_OF_PIXELS_IN_A_SPOT ="
       .type = int
-      .expert_level=1
+      .expert_level = 1
   }
   xscale {
     min_isigma = 3.0
       .type = float
-      .short_caption="MINIMUM_I/SIGMA="
-      .expert_level=1
+      .short_caption = "MINIMUM_I/SIGMA ="
+      .expert_level = 1
     zero_dose = False
       .type = bool
-      .short_caption="Zero dose extrapolation"
+      .short_caption = "Zero dose extrapolation"
       .help = "Enable XSCALE zero dose extrapolation"
-      .expert_level=1
+      .expert_level = 1
   }
   merge2cbf {
     merge_n_images = 2
       .type = int(value_min=1)
-      .short_caption="Number of images"
+      .short_caption = "Number of images"
       .help = "Number of input images to average into a single output image"
-      .expert_level=1
+      .expert_level = 1
     data_range = None
       .type = ints(size=2, value_min=0)
-      .short_caption="Data range"
-      .expert_level=1
+      .short_caption = "Data range"
+      .expert_level = 1
     moving_average = False
       .type = bool
-      .short_caption="Moving average"
-      .help = "If true, then perform a moving average over the sweep, i.e. given"
-              "images 1, 2, 3, 4, 5, 6, ..., with averaging over three images,"
-              "the output frames would cover 1-3, 2-4, 3-5, 4-6, etc."
-              "Otherwise, a straight summation is performed:"
-              " 1-3, 4-6, 7-9, etc."
-      .expert_level=1
+      .short_caption = "Moving average"
+      .help = ("If true, then perform a moving average over the sweep, i.e. given "
+               "images 1, 2, 3, 4, 5, 6, ..., with averaging over three images, "
+               "the output frames would cover 1-3, 2-4, 3-5, 4-6, etc. "
+               "Otherwise, a straight summation is performed: "
+               "1-3, 4-6, 7-9, etc.")
+      .expert_level = 1
   }
 }
 dials
@@ -211,7 +211,7 @@ dials
 {
   fix_geometry = False
     .type = bool
-    .help = "Whether or not to refine geometry in dials.index and dials.refine."
+    .help = "Whether or not to refine geometry in dials.index and dials.refine. " \
             "Most useful when also providing a reference geometry to xia2."
     .short_caption = "Fix geometry"
     .expert_level = 1
@@ -233,7 +233,8 @@ dials
     .expert_level = 1
   close_to_spindle_cutoff = 0.02
     .type = float(value_min=0.0)
-    .short_caption = "Closeness to the spindle cutoff for including reflections in refinement"
+    .short_caption = "Closeness to the spindle cutoff for including " \
+                     "reflections in refinement"
     .expert_level = 2
 
   detect_blanks {
@@ -241,13 +242,13 @@ dials
       .help = "Width of bins in degrees."
       .type = float(value_min=0, allow_none=True)
     counts_fractional_loss = 0.1
-      .help = "Fractional loss (relative to the bin with the most counts) after "
+      .help = "Fractional loss (relative to the bin with the most counts) after " \
               "which a bin is flagged as potentially containing blank images."
       .type = float(value_min=0, value_max=1, allow_none=True)
     misigma_fractional_loss = 0.1
-      .help = "Fractional loss (relative to the bin with the highest misigma)"
-              "after  which a bin is flagged as potentially containing blank"
-              "images."
+      .help = ("Fractional loss (relative to the bin with the highest misigma) "
+               "after  which a bin is flagged as potentially containing blank "
+               "images.")
       .type = float(value_min=0, value_max=1, allow_none=True)
   }
 
@@ -267,25 +268,25 @@ dials
       .expert_level = 1
     min_spot_size = Auto
       .type = int
-      .help = "The minimum number of contiguous pixels for a spot to be"
+      .help = "The minimum number of contiguous pixels for a spot to be " \
               "accepted by the filtering algorithm."
       .short_caption = "Minimum spot size"
       .expert_level = 1
     min_local = 0
       .type = int
-      .help = "The minimum number of pixels under the image processing"
-              "kernel that are need to do the thresholding operation."
-              "Setting the value between 2 and the total number of pixels"
-              "under the kernel will force the algorithm to use that number"
-              "as the minimum. If the value is less than or equal to zero,"
-              "then the algorithm will use all pixels under the kernel. In"
-              "effect this will add a border of pixels which are always"
-              "classed as background around the edge of the image and around"
-              "any masked out pixels."
-      .expert_level=2
+      .help = ("The minimum number of pixels under the image processing "
+               "kernel that are need to do the thresholding operation. "
+               "Setting the value between 2 and the total number of pixels "
+               "under the kernel will force the algorithm to use that number "
+               "as the minimum. If the value is less than or equal to zero, "
+               "then the algorithm will use all pixels under the kernel. In "
+               "effect this will add a border of pixels which are always "
+               "classed as background around the edge of the image and around "
+               "any masked out pixels.")
+      .expert_level = 2
     sigma_strong = None
       .type = float
-      .help = "The number of standard deviations above the mean in the local"
+      .help = "The number of standard deviations above the mean in the local " \
               "area above which the pixel will be classified as strong."
       .short_caption = "Strong pixel sigma cutoff"
       .expert_level = 1
@@ -294,12 +295,12 @@ dials
       .short_caption = "Filter ice rings"
     kernel_size = 3
       .type = int
-      .help = "The size of the local area around the spot in which to"
+      .help = "The size of the local area around the spot in which to " \
               "calculate the mean and variance. The kernel is given as a box"
       .expert_level = 1
     global_threshold = None
       .type = float
-      .help = "The global threshold value. Consider all pixels less than"
+      .help = "The global threshold value. Consider all pixels less than " \
               "this value to be part of the background."
       .short_caption = "Global threshold cutoff"
       .expert_level = 1
@@ -323,7 +324,7 @@ dials
     max_cell_estimation {
       max_height_fraction = None
         .type = float(value_min=0, value_max=1)
-        .expert_level=2
+        .expert_level = 2
     }
     fft3d.n_points = None
       .type = int(value_min=0)
@@ -427,31 +428,31 @@ dials
         .help = "Number of bins to parameterise decay component"
       absorption_bins = 3
         .type = int(value_min=1)
-        .help = "Number of bins in each dimension (applied to both x and y) for"
-                "binning the detector position for the absorption term of the"
-                "array model."
+        .help = ("Number of bins in each dimension (applied to both x and y) for "
+                 "binning the detector position for the absorption term of the "
+                 "array model.")
     }
     intensity_choice = profile sum *combine
       .type = choice
-      .help = "choose from profile fitted or summation intensities, or"
-               "an optimised combination of profile/sum."
+      .help = "Choose from profile fitted or summation intensities, or " \
+              "an optimised combination of profile/sum."
     optimise_errors = True
       .type = bool
-      .help = "Option to allow optimisation of weights for scaling. Performs"
-               "and additional scale factor minimisation after adjusting weights."
+      .help = "Option to allow optimisation of weights for scaling. Performs " \
+              "and additional scale factor minimisation after adjusting weights."
     full_matrix = True
       .type = bool
-      .help = "Option to turn off GN/LM refinement round used to determine"
-               "error estimates on scale factors."
+      .help = "Option to turn off GN/LM refinement round used to determine " \
+              "error estimates on scale factors."
     outlier_rejection = *standard simple
       .type = choice
-      .help = "Choice of outlier rejection routine. Standard may take a"
-        "significant amount of time to run for large datasets or high"
-        "multiplicities, whereas simple should be quick for these datasets."
+      .help = ("Choice of outlier rejection routine. Standard may take a "
+               "significant amount of time to run for large datasets or high "
+               "multiplicities, whereas simple should be quick for these datasets.")
     outlier_zmax = 6.0
       .type = float(value_min=3.0)
-      .help = "Cutoff z-score value for identifying outliers based on their"
-               "normalised deviation within the group of equivalent reflections"
+      .help = "Cutoff z-score value for identifying outliers based on their " \
+              "normalised deviation within the group of equivalent reflections"
   }
 }
 ccp4
@@ -486,7 +487,7 @@ ccp4
     secondary {
       frame = camera *crystal
         .type = choice
-        .help = "Whether to do the secondary beam correction in the camera spindle"
+        .help = "Whether to do the secondary beam correction in the camera spindle " \
                 "frame or the crystal frame"
       lmax = 6
         .type = int
@@ -562,20 +563,20 @@ xia2.settings
 {
   pipeline = 2d 2di 3d 3dd 3di 3dii *dials dials-full
     .short_caption = "main processing pipeline"
-    .help = "Select the xia2 main processing pipeline"
-            "   2d: MOSFLM, LABELIT (if installed), AIMLESS"
-            "  2di: as 2d, but use 3 wedges for indexing"
-            "   3d: XDS, XSCALE, LABELIT"
-            "  3di: as 3d, but use 3 wedges for indexing"
-            " 3dii: XDS, XSCALE, using all images for autoindexing"
-            "  3dd: as 3d, but use DIALS for indexing"
-            "dials: DIALS, AIMLESS"
-            "dials-full: DIALS, including scaling"
+    .help = ("Select the xia2 main processing pipeline\n"
+             "   2d: MOSFLM, LABELIT (if installed), AIMLESS\n"
+             "  2di: as 2d, but use 3 wedges for indexing\n"
+             "   3d: XDS, XSCALE, LABELIT\n"
+             "  3di: as 3d, but use 3 wedges for indexing\n"
+             " 3dii: XDS, XSCALE, using all images for autoindexing\n"
+             "  3dd: as 3d, but use DIALS for indexing\n"
+             "dials: DIALS, AIMLESS\n"
+             "dials-full: DIALS, including scaling")
     .type = choice
   small_molecule = False
     .type = bool
     .short_caption = "Use small molecule settings"
-    .help = "Assume that the dataset comes from a"
+    .help = "Assume that the dataset comes from a " \
             "chemical crystallography experiment"
     .expert_level = 1
   small_molecule_bfactor = True
@@ -626,21 +627,21 @@ xia2.settings
     json = None
       .type = path
       .multiple = True
-      .help = "dxtbx-format experiments.json file which can be provided as an "
-              "alternative source of images header information to avoid the "
-              "need to read all the image headers on start-up."
+      .help = ("dxtbx-format experiments.json file which can be provided as an "
+               "alternative source of images header information to avoid the "
+               "need to read all the image headers on start-up.")
       .short_caption = "Take headers from json file"
       .expert_level = 1
     reference_geometry = None
       .type = path
       .multiple = True
-      .help = "Experimental geometry from this experiments.json will"
+      .help = "Experimental geometry from this experiments.json will " \
               "override the geometry from the image headers."
       .short_caption = "Take experimental geometry from json file"
       .expert_level = 1
     xinfo = None
       .type = path
-      .help = "Provide an xinfo file as input as alternative to directory "
+      .help = "Provide an xinfo file as input as alternative to directory " \
               "containing image files."
       .short_caption = "Use xinfo instead of image directory"
       .expert_level = 1
@@ -712,9 +713,9 @@ xia2.settings
     two_theta_refine = True
       .type = bool
       .short_caption = "Run dials.two_theta_refine"
-      .help = "Run dials.two_theta_refine to refine the unit cell and obtain"
-              "estimated standard uncertainties on the cell parameters."
-              "Only relevant to DIALS pipeline."
+      .help = ("Run dials.two_theta_refine to refine the unit cell and obtain "
+               "estimated standard uncertainties on the cell parameters. "
+               "Only relevant to DIALS pipeline.")
   }
   space_group = None
     .type = space_group
@@ -748,9 +749,9 @@ xia2.settings
     .expert_level = 1
   trust_beam_centre = False
     .type = bool
-    .help = "Whether or not to trust the beam centre in the image header."
-            "If false, then labelit.index is used to determine a better beam "
-            "centre during xia2 setup phase"
+    .help = ("Whether or not to trust the beam centre in the image header. "
+             "If false, then labelit.index is used to determine a better beam "
+             "centre during xia2 setup phase.")
     .short_caption = "Trust beam centre"
     .expert_level = 1
   wavelength_tolerance = 0.00005
@@ -786,9 +787,9 @@ xia2.settings
     .expert_level = 1
   use_brehm_diederichs = False
     .type = bool
-    .help = "Use the Brehm-Diederichs algorithm to resolve an indexing "
-            "ambiguity."
-            "See: W. Brehm and K. Diederichs, Acta Cryst. (2014). D70, 101-109."
+    .help = ("Use the Brehm-Diederichs algorithm to resolve an indexing "
+             "ambiguity. "
+             "See: W. Brehm and K. Diederichs, Acta Cryst. (2014). D70, 101-109.")
     .short_caption = "Brehm-Diederichs"
     .expert_level = 1
   integration
@@ -801,7 +802,7 @@ xia2.settings
       .short_caption = "Use profile fitting"
     exclude_ice_regions = False
       .type = bool
-      .help = "Exclude measurements from regions which are typically where "
+      .help = "Exclude measurements from regions which are typically where " \
               "ice rings land"
       .short_caption = "Exclude ice regions"
   }
@@ -810,7 +811,7 @@ xia2.settings
   {
     use_dials_spotfinder = False
       .type = bool
-      .help = "This feature requires the dials project to be installed, and"
+      .help = "This feature requires the dials project to be installed, and " \
               "is not currently intended for general use. Use at your peril!"
     pointless_tolerance = 0.0
       .type = float(value_min=0.0)
@@ -821,7 +822,7 @@ xia2.settings
   }
   multi_sweep_indexing = Auto
     .type = bool
-    .help = "Index all sweeps together rather than combining individual results"
+    .help = "Index all sweeps together rather than combining individual results " \
             "(requires dials indexer)"
     .expert_level = 2
   remove_blanks = False
@@ -877,11 +878,13 @@ xia2.settings
       .short_caption = "Number of bins"
     use_internal_variance = False
       .type = bool
-      .help = Use internal variance of the data in the calculation of the merged sigmas
+      .help = "Use internal variance of the data in the calculation of the " \
+              "merged sigmas."
       .short_caption = "Use internal variance"
     eliminate_sys_absent = False
       .type = bool
-      .help = Eliminate systematically absent reflections before computation of merging statistics.
+      .help = "Eliminate systematically absent reflections before computation " \
+              "of merging statistics."
       .short_caption = "Eliminate systematic absences before calculation"
   }
   verbose = False
@@ -892,9 +895,9 @@ xia2.settings
   {
     mode = *serial parallel
       .type = choice
-      .help = "Whether to process each sweep in serial (using n processes per"
-              " sweep) or to process sweeps in parallel (using 1 process per"
-              " sweep)."
+      .help = ("Whether to process each sweep in serial (using n processes per"
+               " sweep) or to process sweeps in parallel (using 1 process per"
+               " sweep).")
       .expert_level = 1
     nproc = Auto
       .type = int(value_min=1)
