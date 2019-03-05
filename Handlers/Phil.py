@@ -198,11 +198,11 @@ xds
     moving_average = False
       .type = bool
       .short_caption = "Moving average"
-      .help = ("If true, then perform a moving average over the sweep, i.e. given "
-               "images 1, 2, 3, 4, 5, 6, ..., with averaging over three images, "
-               "the output frames would cover 1-3, 2-4, 3-5, 4-6, etc. "
-               "Otherwise, a straight summation is performed: "
-               "1-3, 4-6, 7-9, etc.")
+      .help = "If true, then perform a moving average over the sweep, i.e. given " \
+              "images 1, 2, 3, 4, 5, 6, ..., with averaging over three images, " \
+              "the output frames would cover 1-3, 2-4, 3-5, 4-6, etc. " \
+              "Otherwise, a straight summation is performed: " \
+              "1-3, 4-6, 7-9, etc."
       .expert_level = 1
   }
 }
@@ -246,9 +246,9 @@ dials
               "which a bin is flagged as potentially containing blank images."
       .type = float(value_min=0, value_max=1, allow_none=True)
     misigma_fractional_loss = 0.1
-      .help = ("Fractional loss (relative to the bin with the highest misigma) "
-               "after  which a bin is flagged as potentially containing blank "
-               "images.")
+      .help = "Fractional loss (relative to the bin with the highest misigma) " \
+              "after  which a bin is flagged as potentially containing blank " \
+              "images."
       .type = float(value_min=0, value_max=1, allow_none=True)
   }
 
@@ -274,15 +274,15 @@ dials
       .expert_level = 1
     min_local = 0
       .type = int
-      .help = ("The minimum number of pixels under the image processing "
-               "kernel that are need to do the thresholding operation. "
-               "Setting the value between 2 and the total number of pixels "
-               "under the kernel will force the algorithm to use that number "
-               "as the minimum. If the value is less than or equal to zero, "
-               "then the algorithm will use all pixels under the kernel. In "
-               "effect this will add a border of pixels which are always "
-               "classed as background around the edge of the image and around "
-               "any masked out pixels.")
+      .help = "The minimum number of pixels under the image processing " \
+              "kernel that are need to do the thresholding operation. " \
+              "Setting the value between 2 and the total number of pixels " \
+              "under the kernel will force the algorithm to use that number " \
+              "as the minimum. If the value is less than or equal to zero, " \
+              "then the algorithm will use all pixels under the kernel. In " \
+              "effect this will add a border of pixels which are always " \
+              "classed as background around the edge of the image and around " \
+              "any masked out pixels."
       .expert_level = 2
     sigma_strong = None
       .type = float
@@ -428,9 +428,9 @@ dials
         .help = "Number of bins to parameterise decay component"
       absorption_bins = 3
         .type = int(value_min=1)
-        .help = ("Number of bins in each dimension (applied to both x and y) for "
-                 "binning the detector position for the absorption term of the "
-                 "array model.")
+        .help = "Number of bins in each dimension (applied to both x and y) for " \
+                "binning the detector position for the absorption term of the " \
+                "array model."
     }
     intensity_choice = profile sum *combine
       .type = choice
@@ -446,9 +446,9 @@ dials
               "error estimates on scale factors."
     outlier_rejection = *standard simple
       .type = choice
-      .help = ("Choice of outlier rejection routine. Standard may take a "
-               "significant amount of time to run for large datasets or high "
-               "multiplicities, whereas simple should be quick for these datasets.")
+      .help = "Choice of outlier rejection routine. Standard may take a " \
+              "significant amount of time to run for large datasets or high " \
+              "multiplicities, whereas simple should be quick for these datasets."
     outlier_zmax = 6.0
       .type = float(value_min=3.0)
       .help = "Cutoff z-score value for identifying outliers based on their " \
@@ -563,15 +563,15 @@ xia2.settings
 {
   pipeline = 2d 2di 3d 3dd 3di 3dii *dials dials-full
     .short_caption = "main processing pipeline"
-    .help = ("Select the xia2 main processing pipeline\n"
-             "   2d: MOSFLM, LABELIT (if installed), AIMLESS\n"
-             "  2di: as 2d, but use 3 wedges for indexing\n"
-             "   3d: XDS, XSCALE, LABELIT\n"
-             "  3di: as 3d, but use 3 wedges for indexing\n"
-             " 3dii: XDS, XSCALE, using all images for autoindexing\n"
-             "  3dd: as 3d, but use DIALS for indexing\n"
-             "dials: DIALS, AIMLESS\n"
-             "dials-full: DIALS, including scaling")
+    .help = "Select the xia2 main processing pipeline\n" \
+            "   2d: MOSFLM, LABELIT (if installed), AIMLESS\n" \
+            "  2di: as 2d, but use 3 wedges for indexing\n" \
+            "   3d: XDS, XSCALE, LABELIT\n" \
+            "  3di: as 3d, but use 3 wedges for indexing\n" \
+            " 3dii: XDS, XSCALE, using all images for autoindexing\n" \
+            "  3dd: as 3d, but use DIALS for indexing\n" \
+            "dials: DIALS, AIMLESS\n" \
+            "dials-full: DIALS, including scaling"
     .type = choice
   small_molecule = False
     .type = bool
@@ -627,9 +627,9 @@ xia2.settings
     json = None
       .type = path
       .multiple = True
-      .help = ("dxtbx-format experiments.json file which can be provided as an "
-               "alternative source of images header information to avoid the "
-               "need to read all the image headers on start-up.")
+      .help = "dxtbx-format experiments.json file which can be provided as an " \
+              "alternative source of images header information to avoid the " \
+              "need to read all the image headers on start-up."
       .short_caption = "Take headers from json file"
       .expert_level = 1
     reference_geometry = None
@@ -713,9 +713,9 @@ xia2.settings
     two_theta_refine = True
       .type = bool
       .short_caption = "Run dials.two_theta_refine"
-      .help = ("Run dials.two_theta_refine to refine the unit cell and obtain "
-               "estimated standard uncertainties on the cell parameters. "
-               "Only relevant to DIALS pipeline.")
+      .help = "Run dials.two_theta_refine to refine the unit cell and obtain " \
+              "estimated standard uncertainties on the cell parameters. " \
+              "Only relevant to DIALS pipeline."
   }
   space_group = None
     .type = space_group
@@ -749,9 +749,9 @@ xia2.settings
     .expert_level = 1
   trust_beam_centre = False
     .type = bool
-    .help = ("Whether or not to trust the beam centre in the image header. "
-             "If false, then labelit.index is used to determine a better beam "
-             "centre during xia2 setup phase.")
+    .help = "Whether or not to trust the beam centre in the image header. " \
+            "If false, then labelit.index is used to determine a better beam " \
+            "centre during xia2 setup phase."
     .short_caption = "Trust beam centre"
     .expert_level = 1
   wavelength_tolerance = 0.00005
@@ -787,9 +787,9 @@ xia2.settings
     .expert_level = 1
   use_brehm_diederichs = False
     .type = bool
-    .help = ("Use the Brehm-Diederichs algorithm to resolve an indexing "
-             "ambiguity. "
-             "See: W. Brehm and K. Diederichs, Acta Cryst. (2014). D70, 101-109.")
+    .help = "Use the Brehm-Diederichs algorithm to resolve an indexing " \
+            "ambiguity. " \
+            "See: W. Brehm and K. Diederichs, Acta Cryst. (2014). D70, 101-109.")
     .short_caption = "Brehm-Diederichs"
     .expert_level = 1
   integration
@@ -895,9 +895,9 @@ xia2.settings
   {
     mode = *serial parallel
       .type = choice
-      .help = ("Whether to process each sweep in serial (using n processes per"
-               " sweep) or to process sweeps in parallel (using 1 process per"
-               " sweep).")
+      .help = "Whether to process each sweep in serial (using n processes per" \
+              " sweep) or to process sweeps in parallel (using 1 process per" \
+              " sweep)."
       .expert_level = 1
     nproc = Auto
       .type = int(value_min=1)
