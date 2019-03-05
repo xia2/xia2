@@ -21,6 +21,11 @@ def to_shelxcde(hklin, prefix, sites=0):
         miller_array_export_as_shelx_hklf(intensities, hkl_file_handle)
     uc = intensities.unit_cell().parameters()
     sg = intensities.space_group().type().lookup_symbol().replace(" ", "")
+
+    # spacegroup name disputes
+    if sg == "R3:H":
+        sg = "H3"
+
     open("%s.sh" % prefix, "w").write(
         "\n".join(
             [
