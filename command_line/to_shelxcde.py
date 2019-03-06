@@ -23,8 +23,10 @@ def to_shelxcde(hklin, prefix, sites=0):
     sg = intensities.space_group().type().lookup_symbol().replace(" ", "")
 
     # spacegroup name disputes
-    if sg == "R3:H":
+    if sg.startswith("R3:"):
         sg = "H3"
+    elif sg.startswith("R32:"):
+        sg = "H32"
 
     open("%s.sh" % prefix, "w").write(
         "\n".join(
