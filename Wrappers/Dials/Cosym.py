@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+import json
 import os
 
 from xia2.Driver.DriverFactory import DriverFactory
@@ -29,6 +30,7 @@ def DialsCosym(DriverType=None, decay_correction=None):
             self._reflections_pickle = []
 
             self._space_group = None
+            self._json = None
 
         # getter and setter methods
 
@@ -46,6 +48,9 @@ def DialsCosym(DriverType=None, decay_correction=None):
 
         def set_space_group(self, space_group):
             self._space_group = space_group
+
+        def set_json(self, json):
+            self._json = json
 
         def run(self):
             assert len(self._experiments_json)
@@ -81,6 +86,13 @@ def DialsCosym(DriverType=None, decay_correction=None):
                     'space_group="%s"' % self._space_group.type().lookup_symbol()
                 )
 
+            if not self._json:
+                self._json = os.path.join(
+                    self.get_working_directory(),
+                    "%d_dials_cosym.json" % self.get_xpid(),
+                    )
+            self.add_command_line("output.json='%s'" % self._json)
+
             self.start()
             self.close_wait()
 
@@ -97,9 +109,17 @@ def DialsCosym(DriverType=None, decay_correction=None):
 
             Debug.write("dials.cosym status: OK")
 
+            assert os.path.exists(self._json)
+            with open(self._json, "rb") as f:
+                d = json.load(f)
+            self._best_solution = d["subgroup_scores"][0]
+
             return "OK"
 
         def get_unmerged_reflection_file(self):
             return self._unmerged_reflections
+
+        def get_best_solution(self):
+            return self._best_solution
 
     return DialsCosymWrapper()

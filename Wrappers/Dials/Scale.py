@@ -103,6 +103,7 @@ def DialsScale(DriverType=None, decay_correction=None):
             self._scaled_reflections = None
             self._unmerged_reflections = None
             self._merged_reflections = None
+            self._best_unit_cell = None
 
         # getter and setter methods
 
@@ -217,6 +218,9 @@ def DialsScale(DriverType=None, decay_correction=None):
         def set_scaled_unmerged_mtz(self, filepath):
             self._unmerged_reflections = filepath
 
+        def set_best_unit_cell(self, unit_cell):
+            self._best_unit_cell = unit_cell
+
         def scale(self):
             """Actually perform the scaling."""
 
@@ -284,6 +288,8 @@ def DialsScale(DriverType=None, decay_correction=None):
                 self.add_command_line("n_resolution_bins=%d" % self._n_resolution_bins)
             if self._n_absorption_bins:
                 self.add_command_line("n_absorption_bins=%d" % self._n_absorption_bins)
+            if self._best_unit_cell is not None:
+                self.add_command_line('best_unit_cell=%s,%s,%s,%s,%s,%s' % self._best_unit_cell)
 
             if not self._scaled_experiments:
                 self._scaled_experiments = os.path.join(

@@ -399,6 +399,8 @@ class MultiCrystalScale(object):
         if self._params.symmetry.resolve_indexing_ambiguity:
             self.cosym()
 
+        self.decide_space_group()
+
         self._scaled = Scale(self._data_manager, self._params)
 
         self._data_manager.export_experiments("experiments_final.json")
@@ -531,38 +533,13 @@ class MultiCrystalScale(object):
         self._data_manager.reflections = flex.reflection_table.from_pickle(
             self._reflections_filename
         )
+
+        best_solution = cosym.get_best_solution()
+        best_space_group = sgtbx.space_group(str(best_solution['patterson_group'])).build_derived_acentric_group()
+        self._params.symmetry.space_group = best_space_group.info()
+        logger.info("Space group determined by dials.cosym: %s" % best_space_group.info())
+
         return
-
-    def report(self):
-        from xia2.command_line.multi_crystal_analysis import multi_crystal_analysis
-        from xia2.command_line.multi_crystal_analysis import phil_scope as mca_phil
-
-        params = mca_phil.extract()
-        mca = multi_crystal_analysis(params=params, data_manager=self._data_manager)
-        mca.report()
-        self._cos_angle_clusters = mca._cluster_analysis.cos_angle_clusters
-
-
-class Scale(object):
-    def __init__(self, data_manager, params):
-        self._data_manager = data_manager
-        self._params = params
-
-        self.decide_space_group()
-
-        if "two_theta" in self._params.unit_cell.refine:
-            self.two_theta_refine()
-
-        # self.unit_cell_clustering(plot_name='cluster_unit_cell_sg.png')
-
-        if self._params.resolution.d_min is None:
-            self.scale()
-            d_min, reason = self.estimate_resolution_limit()
-            logger.info("Resolution limit: %.2f (%s)" % (d_min, reason))
-        else:
-            d_min = self._params.resolution.d_min
-
-        self.scale(d_min=d_min)
 
     def decide_space_group(self):
 
@@ -609,7 +586,6 @@ class Scale(object):
         space_group = sgtbx.space_group_info(
             symbol=str(symmetry.get_pointgroup())
         ).group()
-        cb_op = sgtbx.change_of_basis_op(symmetry.get_reindex_operator())
 
         self._data_manager.experiments = load.experiment_list(
             self._experiments_filename, check_format=False
@@ -619,6 +595,41 @@ class Scale(object):
         )
 
         logger.info("Space group determined by dials.symmetry: %s" % space_group.info())
+
+    def report(self):
+        from xia2.command_line.multi_crystal_analysis import multi_crystal_analysis
+        from xia2.command_line.multi_crystal_analysis import phil_scope as mca_phil
+
+        params = mca_phil.extract()
+        mca = multi_crystal_analysis(params=params, data_manager=self._data_manager)
+        mca.report()
+        self._cos_angle_clusters = mca._cluster_analysis.cos_angle_clusters
+
+
+class Scale(object):
+    def __init__(self, data_manager, params):
+        self._data_manager = data_manager
+        self._params = params
+
+        self._experiments_filename = "experiments.json"
+        self._reflections_filename = "reflections.pickle"
+        self._data_manager.export_experiments(self._experiments_filename)
+        self._data_manager.export_reflections(self._reflections_filename)
+        self.best_unit_cell = None
+
+        if "two_theta" in self._params.unit_cell.refine:
+            self.two_theta_refine()
+
+        # self.unit_cell_clustering(plot_name='cluster_unit_cell_sg.png')
+
+        if self._params.resolution.d_min is None:
+            self.scale()
+            d_min, reason = self.estimate_resolution_limit()
+            logger.info("Resolution limit: %.2f (%s)" % (d_min, reason))
+        else:
+            d_min = self._params.resolution.d_min
+
+        self.scale(d_min=d_min)
 
     def refine(self):
         # refine in correct bravais setting
@@ -634,13 +645,10 @@ class Scale(object):
 
     def two_theta_refine(self):
         # two-theta refinement to get best estimate of unit cell
-        self.best_unit_cell, self.best_unit_cell_esd, self._experiments_filename = self._dials_two_theta_refine(
+        self.best_unit_cell, self.best_unit_cell_esd, experiments_filename = self._dials_two_theta_refine(
             self._experiments_filename,
             self._reflections_filename,
             combine_crystal_models=self._params.two_theta_refine.combine_crystal_models,
-        )
-        self._data_manager.experiments = load.experiment_list(
-            self._experiments_filename, check_format=False
         )
 
     @property
@@ -706,6 +714,8 @@ class Scale(object):
             scaler.set_min_partiality(self._params.scaling.dials.min_partiality)
         if self._params.scaling.dials.partiality_cutoff is not None:
             scaler.set_partiality_cutoff(self._params.scaling.dials.partiality_cutoff)
+        if self.best_unit_cell is not None:
+            scaler.set_best_unit_cell(self.best_unit_cell)
 
         scaler.set_full_matrix(False)
         if self._params.scaling.dials.model is not None:
