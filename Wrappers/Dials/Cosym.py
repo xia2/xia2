@@ -90,7 +90,7 @@ def DialsCosym(DriverType=None, decay_correction=None):
                 self._json = os.path.join(
                     self.get_working_directory(),
                     "%d_dials_cosym.json" % self.get_xpid(),
-                    )
+                )
             self.add_command_line("output.json='%s'" % self._json)
 
             self.start()

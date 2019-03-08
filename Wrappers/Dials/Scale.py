@@ -15,9 +15,6 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-from libtbx import Auto
-
-from xia2.Decorators.DecoratorFactory import DecoratorFactory
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import Chatter, Debug
@@ -289,7 +286,9 @@ def DialsScale(DriverType=None, decay_correction=None):
             if self._n_absorption_bins:
                 self.add_command_line("n_absorption_bins=%d" % self._n_absorption_bins)
             if self._best_unit_cell is not None:
-                self.add_command_line('best_unit_cell=%s,%s,%s,%s,%s,%s' % self._best_unit_cell)
+                self.add_command_line(
+                    "best_unit_cell=%s,%s,%s,%s,%s,%s" % self._best_unit_cell
+                )
 
             if not self._scaled_experiments:
                 self._scaled_experiments = os.path.join(

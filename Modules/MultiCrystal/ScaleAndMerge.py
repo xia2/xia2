@@ -9,7 +9,7 @@ import py
 
 from libtbx import Auto
 import iotbx.phil
-from cctbx import crystal
+from cctbx import crystal, miller
 from cctbx import sgtbx
 from dxtbx.serialize import dump, load
 from dxtbx.model import ExperimentList
@@ -17,12 +17,9 @@ from dxtbx.model import ExperimentList
 from dials.array_family import flex
 from dials.command_line.unit_cell_histogram import plot_uc_histograms
 
-from dials.util import log
-
 from xia2.lib.bits import auto_logfiler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Environment import get_number_cpus
-from xia2.Modules.MultiCrystal import multi_crystal_analysis
 from xia2.Wrappers.Dials.Cosym import DialsCosym
 from xia2.Wrappers.Dials.Refine import Refine
 from xia2.Wrappers.Dials.Scale import DialsScale
@@ -242,8 +239,6 @@ class DataManager(object):
     def reflections_as_miller_arrays(
         self, intensity_key="intensity.sum.value", return_batches=False
     ):
-        from cctbx import crystal, miller
-
         variance_key = intensity_key.replace(".value", ".variance")
         assert intensity_key in self._reflections, intensity_key
         assert variance_key in self._reflections, variance_key
@@ -535,9 +530,13 @@ class MultiCrystalScale(object):
         )
 
         best_solution = cosym.get_best_solution()
-        best_space_group = sgtbx.space_group(str(best_solution['patterson_group'])).build_derived_acentric_group()
+        best_space_group = sgtbx.space_group(
+            str(best_solution["patterson_group"])
+        ).build_derived_acentric_group()
         self._params.symmetry.space_group = best_space_group.info()
-        logger.info("Space group determined by dials.cosym: %s" % best_space_group.info())
+        logger.info(
+            "Space group determined by dials.cosym: %s" % best_space_group.info()
+        )
 
         return
 
