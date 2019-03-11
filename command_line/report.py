@@ -426,6 +426,9 @@ class xia2_report_base(object):
         bm = batch_manager(result.batches, self.params.batch)
         reduced_batches = bm.reduced_batches
         shapes, annotations, text = bm.batch_plot_shapes_and_annotations()
+        if len(annotations) > 30:
+            # at a certain point the annotations become unreadable
+            annotations = None
 
         return {
             "i_over_sig_i_vs_batch": {
@@ -550,6 +553,9 @@ higher resolution. A typical resolution cutoff based on CC1/2 is around 0.3-0.5.
         bm = batch_manager(rmerge_vs_b.batches, self.params.batch)
         reduced_batches = bm.reduced_batches
         shapes, annotations, text = bm.batch_plot_shapes_and_annotations()
+        if len(annotations) > 30:
+            # at a certain point the annotations become unreadable
+            annotations = None
 
         return {
             "scale_rmerge_vs_batch": {
