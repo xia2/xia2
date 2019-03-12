@@ -5,7 +5,7 @@ from __future__ import absolute_import, division, print_function
 import os
 import shutil
 
-from procrunner import run_process
+import procrunner
 import xia2
 
 if __name__ == "__main__":
@@ -14,11 +14,11 @@ if __name__ == "__main__":
     if os.path.exists(dest_dir):
         shutil.rmtree(dest_dir)
     os.chdir(os.path.join(xia2_dir, "doc", "sphinx"))
-    result = run_process(["make", "clean"])
+    result = procrunner.run(["make", "clean"])
     assert result["exitcode"] == 0, (
         "make clean failed with exit code %d" % result["exitcode"]
     )
-    result = run_process(["make", "html"])
+    result = procrunner.run(["make", "html"])
     assert result["exitcode"] == 0, (
         "make html failed with exit code %d" % result["exitcode"]
     )
