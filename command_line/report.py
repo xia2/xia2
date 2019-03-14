@@ -212,14 +212,19 @@ class xia2_report_base(object):
 
         mult_json_files = {}
         mult_img_files = {}
+
+        rd = self.report_dir
+
         for settings.slice_axis in ("h", "k", "l"):
-            settings.plot.filename = "multiplicities_%s_%i.png" % (
-                settings.slice_axis,
-                settings.slice_index,
+            settings.plot.filename = os.path.join(
+                rd,
+                "multiplicities_%s_%i.png"
+                % (settings.slice_axis, settings.slice_index),
             )
-            settings.json.filename = "multiplicities_%s_%i.json" % (
-                settings.slice_axis,
-                settings.slice_index,
+            settings.json.filename = os.path.join(
+                rd,
+                "multiplicities_%s_%i.json"
+                % (settings.slice_axis, settings.slice_index),
             )
             # settings.slice_axis = axis
             plot_multiplicity(self.intensities, settings)
