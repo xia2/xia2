@@ -5,7 +5,6 @@ import os
 import math
 import copy as copy
 
-from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Files import FileHandler
 from xia2.lib.bits import auto_logfiler
 from xia2.Handlers.Phil import PhilIndex
@@ -65,8 +64,8 @@ class DialsScaler(Scaler):
     def _updated_dials_scaler(self):
         # Sets the relevant parameters from the PhilIndex
 
-        if PhilIndex.params.xia2.settings.resolution.d_min:
-            self._scaler.set_resolution(PhilIndex.params.xia2.settings.resolution.d_min)
+        resolution = PhilIndex.params.xia2.settings.resolution
+        self._scaler.set_resolution(d_min=resolution.d_min, d_max=resolution.d_max)
 
         self._scaler.set_model(PhilIndex.params.dials.scale.model)
         self._scaler.set_intensities(PhilIndex.params.dials.scale.intensity_choice)
@@ -789,8 +788,8 @@ class DialsScaler(Scaler):
                     user_resolution_limits[(dname, sname)] = dmin
 
             if (dname, sname) in self._scalr_resolution_limits:
-                resolution, _ = self._scalr_resolution_limits[(dname, sname)]
-                self._scaler.set_resolution(resolution)
+                d_min, d_max = self._scalr_resolution_limits[(dname, sname)]
+                self._scaler.set_resolution(d_min=d_min, d_max=d_max)
 
         self._scaler.set_working_directory(self.get_working_directory())
         auto_logfiler(self._scaler)

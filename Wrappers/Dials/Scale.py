@@ -45,8 +45,8 @@ def DialsScale(DriverType=None, decay_correction=None):
             self._outlier_zmax = None
             self._min_partiality = None
             self._partiality_cutoff = None
-            self._dmin = None
-            self._dmax = None
+            self._d_min = None
+            self._d_max = None
             self._crystal_name = None
 
             # input and output files
@@ -54,9 +54,6 @@ def DialsScale(DriverType=None, decay_correction=None):
 
             self._experiments_json = []
             self._reflections_pickle = []
-
-            # scaling parameters
-            self._resolution = None
 
             # this flag indicates that the input reflections are already
             # scaled and just need merging e.g. from XDS/XSCALE.
@@ -116,11 +113,12 @@ def DialsScale(DriverType=None, decay_correction=None):
             self._scaled_experiments = []
             self._scaled_reflections = []
 
-        def set_resolution(self, resolution):
+        def set_resolution(self, d_min=None, d_max=None):
             """Set the resolution limit for the scaling -
             default is to include all reflections."""
 
-            self._resolution = resolution
+            self._d_min = d_min
+            self._d_max = d_max
 
         def set_bfactor(self, bfactor=True, brotation=None):
             """Switch on/off bfactor refinement, optionally with the
@@ -272,8 +270,11 @@ def DialsScale(DriverType=None, decay_correction=None):
                     % tuple(self._isigma_selection)
                 )
 
-            if self._resolution:
-                self.add_command_line("cut_data.d_min=%g" % self._resolution)
+            if self._d_min is not None:
+                self.add_command_line("cut_data.d_min=%g" % self._d_min)
+
+            if self._d_max is not None:
+                self.add_command_line("cut_data.d_max=%g" % self._d_max)
 
             if self._cycles is not None:
                 self.add_command_line("max_iterations=%d" % self._cycles)

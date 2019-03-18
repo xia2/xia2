@@ -627,8 +627,9 @@ class Scale(object):
             logger.info("Resolution limit: %.2f (%s)" % (d_min, reason))
         else:
             d_min = self._params.resolution.d_min
+        d_max = self._params.resolution.d_max
 
-        self.scale(d_min=d_min)
+        self.scale(d_min=d_min, d_max=d_max)
 
     def refine(self):
         # refine in correct bravais setting
@@ -688,7 +689,7 @@ class Scale(object):
         unit_cell_esd = tt_refiner.get_unit_cell_esd()
         return unit_cell, unit_cell_esd, tt_refiner.get_output_experiments()
 
-    def scale(self, d_min=None):
+    def scale(self, d_min=None, d_max=None):
         logger.debug("Scaling with dials.scale")
         scaler = DialsScale()
         auto_logfiler(scaler)
@@ -705,8 +706,7 @@ class Scale(object):
         scaler.set_spacing(self._params.scaling.rotation.spacing)
         if self._params.scaling.brotation.spacing is not None:
             scaler.set_bfactor(brotation=self._params.scaling.brotation.spacing)
-        if d_min is not None:
-            scaler.set_resolution(d_min)
+        scaler.set_resolution(d_min=d_min, d_max=d_max)
         if self._params.scaling.dials.Isigma_range is not None:
             scaler.set_isigma_selection(self._params.scaling.dials.Isigma_range)
         if self._params.scaling.dials.min_partiality is not None:
