@@ -9,70 +9,76 @@ from __future__ import division, print_function
 # from xia2 droppings extract pickle and json files from integration
 # plumb together all this stuff \o/
 
+
 def find_pickle_and_json():
-  import sys
-  import os
-  import json
+    import sys
+    import os
+    import json
 
-  jsons = []
-  for xia2 in sys.argv[1:]:
-    assert os.path.exists(os.path.join(xia2, 'xia2.json')), xia2
-    jsons.append(json.load(open(os.path.join(xia2, 'xia2.json'), 'r')))
+    jsons = []
+    for xia2 in sys.argv[1:]:
+        assert os.path.exists(os.path.join(xia2, "xia2.json")), xia2
+        jsons.append(json.load(open(os.path.join(xia2, "xia2.json"), "r")))
 
-  # extract out the information needed - for the moment just the merging
-  # statistics though could later extract data collection statistics from
-  # the image headers :TODO:
+    # extract out the information needed - for the moment just the merging
+    # statistics though could later extract data collection statistics from
+    # the image headers :TODO:
 
-  integrate_pickles = []
-  integrate_jsons = []
+    integrate_pickles = []
+    integrate_jsons = []
 
-  d_min = None
-  d_max = None
+    d_min = None
+    d_max = None
 
-  for _j, j in enumerate(jsons):
-    for x in j['_crystals']:
-      s = j['_crystals'][x]['_scaler']['_scalr_statistics']
-      for name in s:
-        d_max = s[name]['Low resolution limit'][0]
-        d_min = s[name]['High resolution limit'][0]
+    for _j, j in enumerate(jsons):
+        for x in j["_crystals"]:
+            s = j["_crystals"][x]["_scaler"]["_scalr_statistics"]
+            for name in s:
+                d_max = s[name]["Low resolution limit"][0]
+                d_min = s[name]["High resolution limit"][0]
 
-  for _j, j in enumerate(jsons):
-    for x in j['_crystals']:
-      s = j['_crystals'][x]['_scaler']['_scalr_integraters']
-      for k in s:
-        p = s[k]['_intgr_integrated_pickle']
-        integrate_pickles.append(p)
-        integrate_jsons.append(p.replace('.pickle', '_experiments.json'))
+    for _j, j in enumerate(jsons):
+        for x in j["_crystals"]:
+            s = j["_crystals"][x]["_scaler"]["_scalr_integraters"]
+            for k in s:
+                p = s[k]["_intgr_integrated_pickle"]
+                integrate_pickles.append(p)
+                integrate_jsons.append(p.replace(".pickle", "_experiments.json"))
 
-  for p, j in zip(integrate_pickles, integrate_jsons):
-    assert(os.path.exists(p))
-    assert(os.path.exists(j))
+    for p, j in zip(integrate_pickles, integrate_jsons):
+        assert os.path.exists(p)
+        assert os.path.exists(j)
 
-  args = integrate_pickles + integrate_jsons
-  from dials.command_line.symmetry import run as symmetry_run
-  symmetry_run(args)
+    args = integrate_pickles + integrate_jsons
+    from dials.command_line.symmetry import run as symmetry_run
 
-  from dials.command_line.scale import Script, phil_scope
+    symmetry_run(args)
 
-  from dxtbx.serialize import load as load_experiment
-  from dials.array_family import flex
+    from dials.command_line.scale import Script, phil_scope
 
-  experiments = load_experiment.experiment_list('reindexed_experiments.json',
-                                                check_format=False)
-  reflections = flex.reflection_table.from_pickle(
-    'reindexed_reflections.pickle')
+    from dxtbx.serialize import load as load_experiment
+    from dials.array_family import flex
 
-  spells = ['unmerged_mtz=dials_unmerged.mtz',
-            'optimise_errors=true',
-            'd_min=%f' % d_min, 'd_max=%f' % d_max]
+    experiments = load_experiment.experiment_list(
+        "reindexed_experiments.json", check_format=False
+    )
+    reflections = flex.reflection_table.from_pickle("reindexed_reflections.pickle")
 
-  interp = phil_scope.command_line_argument_interpreter()
-  for s in spells:
-    phil_scope = phil_scope.fetch(interp.process_arg(s))
-  params = phil_scope.extract()
+    spells = [
+        "unmerged_mtz=dials_unmerged.mtz",
+        "optimise_errors=true",
+        "d_min=%f" % d_min,
+        "d_max=%f" % d_max,
+    ]
 
-  phil_scope.show()
-  Script(params, experiments=experiments, reflections=[reflections]).run()
+    interp = phil_scope.command_line_argument_interpreter()
+    for s in spells:
+        phil_scope = phil_scope.fetch(interp.process_arg(s))
+    params = phil_scope.extract()
 
-if __name__ == '__main__':
-  find_pickle_and_json()
+    phil_scope.show()
+    Script(params, experiments=experiments, reflections=[reflections]).run()
+
+
+if __name__ == "__main__":
+    find_pickle_and_json()

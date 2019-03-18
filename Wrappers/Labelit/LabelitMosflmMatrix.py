@@ -21,63 +21,67 @@ import os
 
 from xia2.Driver.DriverFactory import DriverFactory
 
-def LabelitMosflmMatrix(DriverType = None):
-  '''Factory for LabelitMosflmMatrix wrapper classes, with the specified
-  Driver type.'''
 
-  DriverInstance = DriverFactory.Driver(DriverType)
+def LabelitMosflmMatrix(DriverType=None):
+    """Factory for LabelitMosflmMatrix wrapper classes, with the specified
+  Driver type."""
 
-  class LabelitMosflmMatrixWrapper(DriverInstance.__class__):
-    '''A wrapper for the program labelit.mosflm_matrix - which will
-    calculate the matrix for mosflm integration.'''
+    DriverInstance = DriverFactory.Driver(DriverType)
 
-    def __init__(self):
+    class LabelitMosflmMatrixWrapper(DriverInstance.__class__):
+        """A wrapper for the program labelit.mosflm_matrix - which will
+    calculate the matrix for mosflm integration."""
 
-      DriverInstance.__class__.__init__(self)
-      self.set_executable('labelit.mosflm_matrix')
+        def __init__(self):
 
-      self._solution = None
-      self._mosflm_beam = None
+            DriverInstance.__class__.__init__(self)
+            self.set_executable("labelit.mosflm_matrix")
 
-    def set_solution(self, solution):
-      self._solution = solution
+            self._solution = None
+            self._mosflm_beam = None
 
-    def calculate(self):
-      '''Compute matrix for solution #.'''
+        def set_solution(self, solution):
+            self._solution = solution
 
-      if self._solution is None:
-        raise RuntimeError('solution not selected')
+        def calculate(self):
+            """Compute matrix for solution #."""
 
-      task = 'Compute matrix for solution %02d' % self._solution
+            if self._solution is None:
+                raise RuntimeError("solution not selected")
 
-      self.add_command_line('%d' % self._solution)
+            task = "Compute matrix for solution %02d" % self._solution
 
-      self.start()
-      self.close_wait()
+            self.add_command_line("%d" % self._solution)
 
-      output = open(os.path.join(self.get_working_directory(),
-                                 'integration%02d.csh' % self._solution)
-                   ).readlines()
-      matrix = output[2:11]
+            self.start()
+            self.close_wait()
 
-      # also check for the beam centre in mosflm land! - ignoring
-      # SWUNG OUT though I should probably check the two-theta
-      # value too...
+            output = open(
+                os.path.join(
+                    self.get_working_directory(), "integration%02d.csh" % self._solution
+                )
+            ).readlines()
+            matrix = output[2:11]
 
-      for o in output:
-        if 'BEAM' in o[:4]:
-          self._mosflm_beam = map(float, o.split()[-2:])
+            # also check for the beam centre in mosflm land! - ignoring
+            # SWUNG OUT though I should probably check the two-theta
+            # value too...
 
-      return matrix
+            for o in output:
+                if "BEAM" in o[:4]:
+                    self._mosflm_beam = map(float, o.split()[-2:])
 
-    def get_mosflm_beam(self):
-      return self._mosflm_beam
+            return matrix
 
-  return LabelitMosflmMatrixWrapper()
+        def get_mosflm_beam(self):
+            return self._mosflm_beam
 
-if __name__ == '__main__':
+    return LabelitMosflmMatrixWrapper()
 
-  lms = LabelitMosflmMatrix()
-  lms.set_solution(9)
-  for m in lms.calculate():
-    print(m[:-1])
+
+if __name__ == "__main__":
+
+    lms = LabelitMosflmMatrix()
+    lms.set_solution(9)
+    for m in lms.calculate():
+        print(m[:-1])

@@ -61,27 +61,30 @@ from __future__ import absolute_import, division, print_function
 
 Mos2Xia2 = (0, 0, 1, 0, 1, 0, -1, 0, 0)
 
+
 def mosflm_to_xia2(v):
-  '''Convert a vector v from Mosflm reference frame to xia2.'''
+    """Convert a vector v from Mosflm reference frame to xia2."""
 
-  from xia2.Experts.MatrixExpert import matvecmul, invert
+    from xia2.Experts.MatrixExpert import matvecmul, invert
 
-  return matvecmul(Mos2Xia2, v)
+    return matvecmul(Mos2Xia2, v)
+
 
 def xia2_to_mosflm(v):
-  '''Convert a vector v from xia2 frame to Mosflm.'''
+    """Convert a vector v from xia2 frame to Mosflm."""
 
-  from xia2.Experts.MatrixExpert import matvecmul, invert
+    from xia2.Experts.MatrixExpert import matvecmul, invert
 
-  Xia22Mos = invert(Mos2Xia2)
+    Xia22Mos = invert(Mos2Xia2)
 
-  return matvecmul(Xia22Mos, v)
+    return matvecmul(Xia22Mos, v)
 
-if __name__ == '__main__':
 
-  if mosflm_to_xia2((1, 0, 0)) != [0, 0, -1]:
-    raise RuntimeError('transformation error i')
-  if mosflm_to_xia2((0, 1, 0)) != [0, 1, 0]:
-    raise RuntimeError('transformation error j')
-  if mosflm_to_xia2((0, 0, 1)) != [1, 0, 0]:
-    raise RuntimeError('transformation error k')
+if __name__ == "__main__":
+
+    if mosflm_to_xia2((1, 0, 0)) != [0, 0, -1]:
+        raise RuntimeError("transformation error i")
+    if mosflm_to_xia2((0, 1, 0)) != [0, 1, 0]:
+        raise RuntimeError("transformation error j")
+    if mosflm_to_xia2((0, 0, 1)) != [1, 0, 0]:
+        raise RuntimeError("transformation error k")

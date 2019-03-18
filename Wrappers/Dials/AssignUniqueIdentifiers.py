@@ -3,69 +3,78 @@ from __future__ import absolute_import, division, print_function
 import os
 from xia2.Driver.DriverFactory import DriverFactory
 
-def DialsAssignIdentifiers(DriverType = None):
-  '''A factory for DialsSymmetryWrapper classes.'''
 
-  DriverInstance = DriverFactory.Driver(DriverType)
+def DialsAssignIdentifiers(DriverType=None):
+    """A factory for DialsSymmetryWrapper classes."""
 
-  class DialsAssignIdentifiersWrapper(DriverInstance.__class__):
-    '''A wrapper for dials.symmetry'''
+    DriverInstance = DriverFactory.Driver(DriverType)
 
-    def __init__(self):
-      # generic things
-      super(DialsAssignIdentifiersWrapper, self).__init__()
+    class DialsAssignIdentifiersWrapper(DriverInstance.__class__):
+        """A wrapper for dials.symmetry"""
 
-      self.set_executable('dev.dials.assign_experiment_identifiers')
-      self._experiments_filenames = []
-      self._reflections_filenames = []
-      self._output_experiments_filename = None
-      self._output_reflections_filename = None
+        def __init__(self):
+            # generic things
+            super(DialsAssignIdentifiersWrapper, self).__init__()
 
-    def add_experiments(self, experiments):
-      self._experiments_filenames.append(experiments)
+            self.set_executable("dev.dials.assign_experiment_identifiers")
+            self._experiments_filenames = []
+            self._reflections_filenames = []
+            self._output_experiments_filename = None
+            self._output_reflections_filename = None
 
-    def add_reflections(self, reflections):
-      self._reflections_filenames.append(reflections)
+        def add_experiments(self, experiments):
+            self._experiments_filenames.append(experiments)
 
-    def set_output_experiments_filename(self, experiments_filename):
-      self._output_experiments_filename = experiments_filename
+        def add_reflections(self, reflections):
+            self._reflections_filenames.append(reflections)
 
-    def set_output_reflections_filename(self, reflections_filename):
-      self._output_reflections_filename = reflections_filename
+        def set_output_experiments_filename(self, experiments_filename):
+            self._output_experiments_filename = experiments_filename
 
-    def get_output_reflections_filename(self):
-      return self._output_reflections_filename
+        def set_output_reflections_filename(self, reflections_filename):
+            self._output_reflections_filename = reflections_filename
 
-    def get_output_experiments_filename(self):
-      return self._output_experiments_filename
+        def get_output_reflections_filename(self):
+            return self._output_reflections_filename
 
-    def assign_identifiers(self):
+        def get_output_experiments_filename(self):
+            return self._output_experiments_filename
 
-      self.clear_command_line()
-      assert self._experiments_filenames
-      assert self._reflections_filenames
-      for exp in self._experiments_filenames:
-        self.add_command_line("'%s'" % exp)
-      for refl in self._reflections_filenames:
-        self.add_command_line("'%s'" % refl)
+        def assign_identifiers(self):
 
-      if not self._output_experiments_filename:
-        self._output_experiments_filename = os.path.join(
-          self.get_working_directory(), '%d_assigned_experiments.json' % self.get_xpid())
-      if not self._output_reflections_filename:
-        self._output_reflections_filename = os.path.join(
-          self.get_working_directory(), '%d_assigned_reflections.pickle' % self.get_xpid())
+            self.clear_command_line()
+            assert self._experiments_filenames
+            assert self._reflections_filenames
+            for exp in self._experiments_filenames:
+                self.add_command_line("'%s'" % exp)
+            for refl in self._reflections_filenames:
+                self.add_command_line("'%s'" % refl)
 
-      self.add_command_line("output.experiments='%s'" % self._output_experiments_filename)
-      self.add_command_line("output.reflections='%s'" % self._output_reflections_filename)
+            if not self._output_experiments_filename:
+                self._output_experiments_filename = os.path.join(
+                    self.get_working_directory(),
+                    "%d_assigned_experiments.json" % self.get_xpid(),
+                )
+            if not self._output_reflections_filename:
+                self._output_reflections_filename = os.path.join(
+                    self.get_working_directory(),
+                    "%d_assigned_reflections.pickle" % self.get_xpid(),
+                )
 
-      self.start()
+            self.add_command_line(
+                "output.experiments='%s'" % self._output_experiments_filename
+            )
+            self.add_command_line(
+                "output.reflections='%s'" % self._output_reflections_filename
+            )
 
-      self.close_wait()
+            self.start()
 
-      # check for errors
-      self.check_for_errors()
+            self.close_wait()
 
-      return
+            # check for errors
+            self.check_for_errors()
 
-  return DialsAssignIdentifiersWrapper()
+            return
+
+    return DialsAssignIdentifiersWrapper()

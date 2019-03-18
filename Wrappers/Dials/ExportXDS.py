@@ -10,33 +10,35 @@
 
 from __future__ import absolute_import, division, print_function
 
-def ExportXDS(DriverType = None):
-  '''A factory for ExportXDSWrapper classes.'''
 
-  from xia2.Driver.DriverFactory import DriverFactory
-  DriverInstance = DriverFactory.Driver(DriverType)
+def ExportXDS(DriverType=None):
+    """A factory for ExportXDSWrapper classes."""
 
-  class ExportXDSWrapper(DriverInstance.__class__):
+    from xia2.Driver.DriverFactory import DriverFactory
 
-    def __init__(self):
-      DriverInstance.__class__.__init__(self)
-      self.set_executable('dials.export')
+    DriverInstance = DriverFactory.Driver(DriverType)
 
-      self._sweep_filename = None
-      self._crystal_filename = None
+    class ExportXDSWrapper(DriverInstance.__class__):
+        def __init__(self):
+            DriverInstance.__class__.__init__(self)
+            self.set_executable("dials.export")
 
-    def set_experiments_filename(self, experiments_filename):
-      self._experiments_filename = experiments_filename
+            self._sweep_filename = None
+            self._crystal_filename = None
 
-    def run(self):
-      from xia2.Handlers.Streams import Debug
-      Debug.write('Running dials.export')
+        def set_experiments_filename(self, experiments_filename):
+            self._experiments_filename = experiments_filename
 
-      self.clear_command_line()
-      self.add_command_line(self._experiments_filename)
-      self.add_command_line('format=xds')
-      self.start()
-      self.close_wait()
-      self.check_for_errors()
+        def run(self):
+            from xia2.Handlers.Streams import Debug
 
-  return ExportXDSWrapper()
+            Debug.write("Running dials.export")
+
+            self.clear_command_line()
+            self.add_command_line(self._experiments_filename)
+            self.add_command_line("format=xds")
+            self.start()
+            self.close_wait()
+            self.check_for_errors()
+
+    return ExportXDSWrapper()

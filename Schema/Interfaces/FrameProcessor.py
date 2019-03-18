@@ -23,369 +23,382 @@ from __future__ import absolute_import, division, print_function
 import os
 import sys
 
-from xia2.Experts.FindImages import (digest_template, find_matching_images,
-                                     image2image, image2template_directory,
-                                     template_directory_number2image)
+from xia2.Experts.FindImages import (
+    digest_template,
+    find_matching_images,
+    image2image,
+    image2template_directory,
+    template_directory_number2image,
+)
 from xia2.Handlers.Streams import Debug
 
+
 class FrameProcessor(object):
-  '''A class to handle the information needed to process X-Ray
-  diffraction frames.'''
+    """A class to handle the information needed to process X-Ray
+  diffraction frames."""
 
-  def __init__(self, image=None):
-    super(FrameProcessor, self).__init__()
+    def __init__(self, image=None):
+        super(FrameProcessor, self).__init__()
 
-    self._fp_template = None
-    self._fp_directory = None
+        self._fp_template = None
+        self._fp_directory = None
 
-    self._fp_matching_images = []
+        self._fp_matching_images = []
 
-    self._fp_offset = 0
+        self._fp_offset = 0
 
-    self._fp_two_theta = 0.0
-    self._fp_two_theta_prov = None
+        self._fp_two_theta = 0.0
+        self._fp_two_theta_prov = None
 
-    self._fp_wavelength_prov = None
-    self._fp_distance_prov = None
-    self._fp_beam_prov = None
+        self._fp_wavelength_prov = None
+        self._fp_distance_prov = None
+        self._fp_beam_prov = None
 
-    self._fp_gain = 0.0
-    self._fp_polarization = 0.0
+        self._fp_gain = 0.0
+        self._fp_polarization = 0.0
 
-    self._fp_header = {}
+        self._fp_header = {}
 
-    # see FIXME for 06/SEP/06
-    self._fp_xsweep = None
+        # see FIXME for 06/SEP/06
+        self._fp_xsweep = None
 
-    # also need to keep track of allowed images in here
-    self._fp_wedge = None
+        # also need to keep track of allowed images in here
+        self._fp_wedge = None
 
-    self._fp_imageset = None
-    # if image has been specified, construct much of this information
-    # from the image
+        self._fp_imageset = None
+        # if image has been specified, construct much of this information
+        # from the image
 
-    if image:
-      self._setup_from_image(image)
+        if image:
+            self._setup_from_image(image)
 
-  def set_template(self, template):
-    self._fp_template = template
+    def set_template(self, template):
+        self._fp_template = template
 
-  def set_frame_wedge(self, start, end, apply_offset=True):
-    '''Set the allowed range of images for processing.'''
+    def set_frame_wedge(self, start, end, apply_offset=True):
+        """Set the allowed range of images for processing."""
 
-    # XXX RJG Better to pass slice of imageset here?
+        # XXX RJG Better to pass slice of imageset here?
 
-    if apply_offset:
-      start = start - self._fp_offset
-      end = end - self._fp_offset
+        if apply_offset:
+            start = start - self._fp_offset
+            end = end - self._fp_offset
 
-    self._fp_wedge = start, end
+        self._fp_wedge = start, end
 
-    if self._fp_matching_images:
-      images = []
-      for j in self._fp_matching_images:
-        if j < start or j > end:
-          continue
-        images.append(j)
-      self._fp_matching_images = images
+        if self._fp_matching_images:
+            images = []
+            for j in self._fp_matching_images:
+                if j < start or j > end:
+                    continue
+                images.append(j)
+            self._fp_matching_images = images
 
-      ## reload the header information as well - this will be
-      ## for the old wedge...# read the image header
-      ## XXX this shouldn't be needed
+            ## reload the header information as well - this will be
+            ## for the old wedge...# read the image header
+            ## XXX this shouldn't be needed
 
-      from dxtbx.imageset import ImageSetFactory
-      imageset = ImageSetFactory.new(self.get_image_name(start))[0]
+            from dxtbx.imageset import ImageSetFactory
 
-      # print this to the debug channel
-      Debug.write('Latest header information for image %d:' % start)
-      Debug.write(imageset.get_detector())
-      Debug.write(imageset.get_scan())
-      Debug.write(imageset.get_beam())
-      Debug.write(imageset.get_goniometer())
+            imageset = ImageSetFactory.new(self.get_image_name(start))[0]
 
-      # populate wavelength, beam etc from this
+            # print this to the debug channel
+            Debug.write("Latest header information for image %d:" % start)
+            Debug.write(imageset.get_detector())
+            Debug.write(imageset.get_scan())
+            Debug.write(imageset.get_beam())
+            Debug.write(imageset.get_goniometer())
 
-      if self._fp_wavelength_prov is None or \
-                      self._fp_wavelength_prov == 'header':
-        self._fp_wavelength_prov = 'header'
+            # populate wavelength, beam etc from this
 
-      if self._fp_distance_prov is None or \
-                      self._fp_distance_prov == 'header':
-        self._fp_distance_prov = 'header'
+            if self._fp_wavelength_prov is None or self._fp_wavelength_prov == "header":
+                self._fp_wavelength_prov = "header"
 
-      if self._fp_beam_prov is None or \
-            self._fp_beam_prov == 'header':
-        self._fp_beam_prov = 'header'
+            if self._fp_distance_prov is None or self._fp_distance_prov == "header":
+                self._fp_distance_prov = "header"
 
-  def get_frame_wedge(self):
-    return self._fp_wedge
+            if self._fp_beam_prov is None or self._fp_beam_prov == "header":
+                self._fp_beam_prov = "header"
 
-  def get_template(self):
-    return self._fp_template
+    def get_frame_wedge(self):
+        return self._fp_wedge
 
-  def get_frame_offset(self):
-    return self._fp_offset
+    def get_template(self):
+        return self._fp_template
 
-  def set_directory(self, directory):
-    self._fp_directory = directory
+    def get_frame_offset(self):
+        return self._fp_offset
 
-  def get_directory(self):
-    return self._fp_directory
+    def set_directory(self, directory):
+        self._fp_directory = directory
 
-  def get_matching_images(self):
-    return self._fp_matching_images
+    def get_directory(self):
+        return self._fp_directory
 
-  def set_wavelength(self, wavelength):
-    self.get_beam_obj().set_wavelength(wavelength)
-    self._fp_wavelength_prov = 'user'
+    def get_matching_images(self):
+        return self._fp_matching_images
 
-  def get_wavelength(self):
-    return self.get_beam_obj().get_wavelength()
+    def set_wavelength(self, wavelength):
+        self.get_beam_obj().set_wavelength(wavelength)
+        self._fp_wavelength_prov = "user"
 
-  def get_wavelength_prov(self):
-    return self._fp_wavelength_prov
+    def get_wavelength(self):
+        return self.get_beam_obj().get_wavelength()
 
-  def set_distance(self, distance):
-    if distance is None:
-      return
-    from xia2.Wrappers.Mosflm.AutoindexHelpers import set_distance
-    set_distance(self.get_detector(), distance)
-    self._fp_distance_prov = 'user'
+    def get_wavelength_prov(self):
+        return self._fp_wavelength_prov
 
-  def get_distance(self):
-    return self.get_detector()[0].get_directed_distance()
+    def set_distance(self, distance):
+        if distance is None:
+            return
+        from xia2.Wrappers.Mosflm.AutoindexHelpers import set_distance
 
-  def set_gain(self, gain):
-    self._fp_gain = gain
+        set_distance(self.get_detector(), distance)
+        self._fp_distance_prov = "user"
 
-  def get_gain(self):
-    return self._fp_gain
+    def get_distance(self):
+        return self.get_detector()[0].get_directed_distance()
 
-  def set_polarization(self, polarization):
-    self._fp_polarization = polarization
+    def set_gain(self, gain):
+        self._fp_gain = gain
 
-  def get_polarization(self):
-    return self._fp_polarization
+    def get_gain(self):
+        return self._fp_gain
 
-  def get_distance_prov(self):
-    return self._fp_distance_prov
+    def set_polarization(self, polarization):
+        self._fp_polarization = polarization
 
-  def set_beam_centre(self, beam_centre):
-    from dxtbx.model.detector_helpers import set_mosflm_beam_centre
-    try:
-      set_mosflm_beam_centre(self.get_detector(),
-                             self.get_beam_obj(),
-                             beam_centre)
-      self._fp_beam_prov = 'user'
-    except AssertionError as e:
-      Debug.write('Error setting mosflm beam centre: %s' % e)
+    def get_polarization(self):
+        return self._fp_polarization
 
-  def get_beam_centre(self):
-    detector = self.get_detector()
-    beam = self.get_beam_obj()
-    return get_beam_centre(detector, beam)
+    def get_distance_prov(self):
+        return self._fp_distance_prov
 
-  def get_beam_prov(self):
-    return self._fp_beam_prov
+    def set_beam_centre(self, beam_centre):
+        from dxtbx.model.detector_helpers import set_mosflm_beam_centre
 
-  def set_two_theta(self, two_theta):
-    self._fp_two_theta = two_theta
-    self._fp_two_theta_prov = 'user'
+        try:
+            set_mosflm_beam_centre(
+                self.get_detector(), self.get_beam_obj(), beam_centre
+            )
+            self._fp_beam_prov = "user"
+        except AssertionError as e:
+            Debug.write("Error setting mosflm beam centre: %s" % e)
 
-  def get_two_theta(self):
-    return self._fp_two_theta
+    def get_beam_centre(self):
+        detector = self.get_detector()
+        beam = self.get_beam_obj()
+        return get_beam_centre(detector, beam)
 
-  def get_two_theta_prov(self):
-    return self._fp_two_theta_prov
+    def get_beam_prov(self):
+        return self._fp_beam_prov
 
-  def get_phi_width(self):
-    return self.get_scan().get_oscillation()[1]
+    def set_two_theta(self, two_theta):
+        self._fp_two_theta = two_theta
+        self._fp_two_theta_prov = "user"
 
-  def set_header(self, header):
-    self._fp_header = header
+    def get_two_theta(self):
+        return self._fp_two_theta
 
-  def get_header(self):
-    return self._fp_header
+    def get_two_theta_prov(self):
+        return self._fp_two_theta_prov
 
-  def get_header_item(self, item):
-    return self._fp_header[item]
+    def get_phi_width(self):
+        return self.get_scan().get_oscillation()[1]
 
-  # utility functions
-  def get_image_name(self, number):
-    '''Convert an image number into a name.'''
+    def set_header(self, header):
+        self._fp_header = header
 
-    return template_directory_number2image(self.get_template(),
-                                           self.get_directory(),
-                                           number)
+    def get_header(self):
+        return self._fp_header
 
-  def get_image_number(self, image):
-    '''Convert an image name to a number.'''
+    def get_header_item(self, item):
+        return self._fp_header[item]
 
-    if isinstance(image, type(1)):
-      return image
+    # utility functions
+    def get_image_name(self, number):
+        """Convert an image number into a name."""
 
-    return image2image(image)
+        return template_directory_number2image(
+            self.get_template(), self.get_directory(), number
+        )
 
-  # getters/setters for dxtbx objects
-  def get_imageset(self):
-    return self._fp_imageset
+    def get_image_number(self, image):
+        """Convert an image name to a number."""
 
-  def get_scan(self):
-    return self._fp_imageset.get_scan()
+        if isinstance(image, type(1)):
+            return image
 
-  def get_detector(self):
-    return self._fp_imageset.get_detector()
+        return image2image(image)
 
-  def set_detector(self, detector):
-    self._fp_imageset.set_detector(detector)
+    # getters/setters for dxtbx objects
+    def get_imageset(self):
+        return self._fp_imageset
 
-  def get_goniometer(self):
-    return self._fp_imageset.get_goniometer()
+    def get_scan(self):
+        return self._fp_imageset.get_scan()
 
-  def set_goniometer(self, goniometer):
-    self._fp_imageset.set_goniometer(goniometer)
+    def get_detector(self):
+        return self._fp_imageset.get_detector()
 
-  def get_beam_obj(self):
-    return self._fp_imageset.get_beam()
+    def set_detector(self, detector):
+        self._fp_imageset.set_detector(detector)
 
-  def set_beam_obj(self, beam):
-    self._fp_imageset.set_beam(beam)
+    def get_goniometer(self):
+        return self._fp_imageset.get_goniometer()
 
-  def setup_from_image(self, image):
-    if self._fp_template and self._fp_directory:
-      raise RuntimeError('FrameProcessor implementation already set up')
+    def set_goniometer(self, goniometer):
+        self._fp_imageset.set_goniometer(goniometer)
 
-    self._setup_from_image(image)
+    def get_beam_obj(self):
+        return self._fp_imageset.get_beam()
 
-  def setup_from_imageset(self, imageset):
-    if self._fp_imageset:
-      raise RuntimeError('FrameProcessor implementation already set up')
+    def set_beam_obj(self, beam):
+        self._fp_imageset.set_beam(beam)
 
-    self._setup_from_imageset(imageset)
+    def setup_from_image(self, image):
+        if self._fp_template and self._fp_directory:
+            raise RuntimeError("FrameProcessor implementation already set up")
 
-  # private methods
+        self._setup_from_image(image)
 
-  def _setup_from_image(self, image):
-    '''Configure myself from an image name.'''
-    template, directory = image2template_directory(image)
-    self._fp_matching_images = find_matching_images(template, directory)
+    def setup_from_imageset(self, imageset):
+        if self._fp_imageset:
+            raise RuntimeError("FrameProcessor implementation already set up")
 
-    # trim this down to only allowed images...
-    if self._fp_wedge:
-      start, end = self._fp_wedge
-      images = []
-      for j in self._fp_matching_images:
-        if j < start or j > end:
-          continue
-        images.append(j)
-      self._fp_matching_images = images
+        self._setup_from_imageset(imageset)
 
-    from xia2.Schema import load_imagesets
-    imagesets = load_imagesets(
-      template, directory,
-      image_range=(self._fp_matching_images[0], self._fp_matching_images[-1]))
-    assert len(imagesets) == 1, 'multiple imagesets match %s' % template
-    imageset = imagesets[0]
+    # private methods
 
-    self._setup_from_imageset(imageset)
+    def _setup_from_image(self, image):
+        """Configure myself from an image name."""
+        template, directory = image2template_directory(image)
+        self._fp_matching_images = find_matching_images(template, directory)
 
-  def _setup_from_imageset(self, imageset):
-    '''Configure myself from an image name.'''
-    image_range = imageset.get_scan().get_image_range()
+        # trim this down to only allowed images...
+        if self._fp_wedge:
+            start, end = self._fp_wedge
+            images = []
+            for j in self._fp_matching_images:
+                if j < start or j > end:
+                    continue
+                images.append(j)
+            self._fp_matching_images = images
 
-    self._fp_imageset = imageset
-    try:
-      self._fp_directory, self._fp_template = os.path.split(
-        imageset.get_template())
-    except AttributeError:
-      try:
-        self._fp_directory = os.path.dirname(imageset.get_path(image_range[0]))
-      except Exception:
-        pass
-    except Exception:
-      pass
+        from xia2.Schema import load_imagesets
 
-    self._fp_matching_images = tuple(range(image_range[0], image_range[1] + 1))
+        imagesets = load_imagesets(
+            template,
+            directory,
+            image_range=(self._fp_matching_images[0], self._fp_matching_images[-1]),
+        )
+        assert len(imagesets) == 1, "multiple imagesets match %s" % template
+        imageset = imagesets[0]
 
-    if self._fp_wavelength_prov is None:
-      self._fp_wavelength_prov = 'header'
-    if self._fp_distance_prov is None:
-      self._fp_distance_prov = 'header'
-    if self._fp_beam_prov is None:
-      beam = imageset.get_beam()
-      detector = imageset.get_detector()
-      y, x = get_beam_centre(detector, beam)
-      self._fp_beam = y, x
-      self._fp_beam_prov = 'header'
+        self._setup_from_imageset(imageset)
 
-    if self._fp_template is not None:
-      self.digest_template()
+    def _setup_from_imageset(self, imageset):
+        """Configure myself from an image name."""
+        image_range = imageset.get_scan().get_image_range()
 
-  def digest_template(self):
-    '''Strip out common characters from the image list and move them
-    to the template.'''
+        self._fp_imageset = imageset
+        try:
+            self._fp_directory, self._fp_template = os.path.split(
+                imageset.get_template()
+            )
+        except AttributeError:
+            try:
+                self._fp_directory = os.path.dirname(imageset.get_path(image_range[0]))
+            except Exception:
+                pass
+        except Exception:
+            pass
 
-    if self._fp_template.endswith('.h5'):
-      # do not mess with the templates if container file
-      return
+        self._fp_matching_images = tuple(range(image_range[0], image_range[1] + 1))
 
-    template, images, offset = digest_template(self._fp_template,
-                                               self._fp_matching_images)
+        if self._fp_wavelength_prov is None:
+            self._fp_wavelength_prov = "header"
+        if self._fp_distance_prov is None:
+            self._fp_distance_prov = "header"
+        if self._fp_beam_prov is None:
+            beam = imageset.get_beam()
+            detector = imageset.get_detector()
+            y, x = get_beam_centre(detector, beam)
+            self._fp_beam = y, x
+            self._fp_beam_prov = "header"
 
-    self._fp_template = template
-    self._fp_matching_images = images
-    self._fp_offset = offset
+        if self._fp_template is not None:
+            self.digest_template()
 
-  # end of class
+    def digest_template(self):
+        """Strip out common characters from the image list and move them
+    to the template."""
+
+        if self._fp_template.endswith(".h5"):
+            # do not mess with the templates if container file
+            return
+
+        template, images, offset = digest_template(
+            self._fp_template, self._fp_matching_images
+        )
+
+        self._fp_template = template
+        self._fp_matching_images = images
+        self._fp_offset = offset
+
+    # end of class
+
 
 def get_beam_centre(detector, beam):
-  from scitbx import matrix
-  import math
-  if len(detector) > 1:
-    panel_id = detector.get_panel_intersection(beam.get_s0())
-  else:
-    panel_id = 0
+    from scitbx import matrix
+    import math
 
-  panel = detector[panel_id]
-  s0 = matrix.col(beam.get_s0())
-  f = matrix.col(panel.get_fast_axis())
-  s = matrix.col(panel.get_slow_axis())
-  n = matrix.col(panel.get_normal())
-  o = matrix.col(panel.get_origin())
-  # find axis of 2theta shift
-  if abs(f.dot(s0)) > abs(s.dot(s0)):
-    r = n.cross(s0)
-    a = n.angle(s0)
-  else:
-    r = n.cross(s0)
-    a = n.angle(s0)
+    if len(detector) > 1:
+        panel_id = detector.get_panel_intersection(beam.get_s0())
+    else:
+        panel_id = 0
 
-  # if two theta small use old version of code - remembering modulo pi
-  if abs(a % math.pi) < 5.0 * math.pi / 180.0:
-    D = matrix.sqr(panel.get_D_matrix())
-    v = D * beam.get_s0()
-    x, y = v[0] / v[2], v[1] / v[2]
-    return y, x
+    panel = detector[panel_id]
+    s0 = matrix.col(beam.get_s0())
+    f = matrix.col(panel.get_fast_axis())
+    s = matrix.col(panel.get_slow_axis())
+    n = matrix.col(panel.get_normal())
+    o = matrix.col(panel.get_origin())
+    # find axis of 2theta shift
+    if abs(f.dot(s0)) > abs(s.dot(s0)):
+        r = n.cross(s0)
+        a = n.angle(s0)
+    else:
+        r = n.cross(s0)
+        a = n.angle(s0)
 
-  # apply matrix
-  R = r.axis_and_angle_as_r3_rotation_matrix(a)
-  # compute beam centre at two-theta=0
-  Ro = R * o
-  Rn = R * n
-  b = -Ro + Ro.dot(s0) * s0
-  beam_x = b.dot(R * f)
-  beam_y = b.dot(R * s)
-  return beam_y, beam_x
+    # if two theta small use old version of code - remembering modulo pi
+    if abs(a % math.pi) < 5.0 * math.pi / 180.0:
+        D = matrix.sqr(panel.get_D_matrix())
+        v = D * beam.get_s0()
+        x, y = v[0] / v[2], v[1] / v[2]
+        return y, x
 
-if __name__ == '__main__':
-  # run a quick test
+    # apply matrix
+    R = r.axis_and_angle_as_r3_rotation_matrix(a)
+    # compute beam centre at two-theta=0
+    Ro = R * o
+    Rn = R * n
+    b = -Ro + Ro.dot(s0) * s0
+    beam_x = b.dot(R * f)
+    beam_y = b.dot(R * s)
+    return beam_y, beam_x
 
-  import sys
 
-  fp = FrameProcessor(sys.argv[1])
+if __name__ == "__main__":
+    # run a quick test
 
-  print(fp.get_beam_centre())
-  print(fp.get_wavelength())
-  print(fp.get_header())
-  print(fp.get_matching_images())
-  print(fp.get_two_theta())
+    import sys
+
+    fp = FrameProcessor(sys.argv[1])
+
+    print(fp.get_beam_centre())
+    print(fp.get_wavelength())
+    print(fp.get_header())
+    print(fp.get_matching_images())
+    print(fp.get_two_theta())

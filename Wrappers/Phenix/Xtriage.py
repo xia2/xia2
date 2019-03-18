@@ -9,44 +9,48 @@ from __future__ import absolute_import, division, print_function
 
 from xia2.Driver.DriverFactory import DriverFactory
 
-def Xtriage(DriverType = None):
-  '''A factory for the Xtriage wrappers.'''
 
-  DriverInstance = DriverFactory.Driver('simple')
+def Xtriage(DriverType=None):
+    """A factory for the Xtriage wrappers."""
 
-  class XtriageWrapper(DriverInstance.__class__):
-    '''A wrapper class for phenix.xtriage.'''
+    DriverInstance = DriverFactory.Driver("simple")
 
-    def __init__(self):
-      DriverInstance.__class__.__init__(self)
+    class XtriageWrapper(DriverInstance.__class__):
+        """A wrapper class for phenix.xtriage."""
 
-      self.set_executable('mmtbx.xtriage')
+        def __init__(self):
+            DriverInstance.__class__.__init__(self)
 
-      self._mtz = None
+            self.set_executable("mmtbx.xtriage")
 
-      return
+            self._mtz = None
 
-    def set_mtz(self, mtz):
-      self._mtz = mtz
-      return
+            return
 
-    def run(self):
-      import os
-      assert self._mtz is not None
-      assert os.path.isfile(self._mtz)
+        def set_mtz(self, mtz):
+            self._mtz = mtz
+            return
 
-      self.add_command_line(self._mtz)
+        def run(self):
+            import os
 
-      self.start()
-      self.close_wait()
-      self.check_for_errors()
+            assert self._mtz is not None
+            assert os.path.isfile(self._mtz)
 
-  return XtriageWrapper()
+            self.add_command_line(self._mtz)
 
-if __name__ == '__main__':
-  import sys
-  assert len(sys.argv[1:]) == 1
-  xtriage = Xtriage()
-  xtriage.set_mtz(sys.argv[1])
-  xtriage.run()
-  print(''.join(xtriage.get_all_output()))
+            self.start()
+            self.close_wait()
+            self.check_for_errors()
+
+    return XtriageWrapper()
+
+
+if __name__ == "__main__":
+    import sys
+
+    assert len(sys.argv[1:]) == 1
+    xtriage = Xtriage()
+    xtriage.set_mtz(sys.argv[1])
+    xtriage.run()
+    print("".join(xtriage.get_all_output()))

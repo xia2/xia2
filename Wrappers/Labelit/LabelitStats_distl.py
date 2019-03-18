@@ -35,93 +35,95 @@ import os
 
 from xia2.Driver.DriverFactory import DriverFactory
 
-def LabelitStats_distl(DriverType = None):
-  '''Factory for LabelitStats_distl wrapper classes, with the specified
-  Driver type.'''
 
-  DriverInstance = DriverFactory.Driver(DriverType)
+def LabelitStats_distl(DriverType=None):
+    """Factory for LabelitStats_distl wrapper classes, with the specified
+  Driver type."""
 
-  class LabelitStats_distlWrapper(DriverInstance.__class__):
-    '''A wrapper for the program labelit.stats_distl - which will provide
+    DriverInstance = DriverFactory.Driver(DriverType)
+
+    class LabelitStats_distlWrapper(DriverInstance.__class__):
+        """A wrapper for the program labelit.stats_distl - which will provide
     functionality for looking for ice rings and screening diffraction
-    images.'''
+    images."""
 
-    def __init__(self):
+        def __init__(self):
 
-      DriverInstance.__class__.__init__(self)
+            DriverInstance.__class__.__init__(self)
 
-      self.set_executable('labelit.stats_distl')
+            self.set_executable("labelit.stats_distl")
 
-      self._statistics = { }
+            self._statistics = {}
 
-    def stats_distl(self):
-      '''Return the image statistics.'''
+        def stats_distl(self):
+            """Return the image statistics."""
 
-      self.set_task('Return statistics from last distl run')
+            self.set_task("Return statistics from last distl run")
 
-      self.start()
-      self.close_wait()
+            self.start()
+            self.close_wait()
 
-      # check for errors
-      self.check_for_errors()
+            # check for errors
+            self.check_for_errors()
 
-      # ok now we're done, let's look through for some useful stuff
+            # ok now we're done, let's look through for some useful stuff
 
-      output = self.get_all_output()
+            output = self.get_all_output()
 
-      current_image = None
+            current_image = None
 
-      for o in output:
+            for o in output:
 
-        if 'None' in o and 'Resolution' in o:
-          l = o.replace('None', '0.0').split()
-        else:
-          l = o.split()
+                if "None" in o and "Resolution" in o:
+                    l = o.replace("None", "0.0").split()
+                else:
+                    l = o.split()
 
-        if l[:1] == ['File']:
-          current_image = l[2]
-          self._statistics[current_image] = { }
+                if l[:1] == ["File"]:
+                    current_image = l[2]
+                    self._statistics[current_image] = {}
 
-        if l[:2] == ['Spot', 'Total']:
-          self._statistics[current_image]['spots_total'] = int(l[-1])
-        if l[:2] == ['In-Resolution', 'Total']:
-          self._statistics[current_image]['spots'] = int(l[-1])
-        if l[:3] == ['Good', 'Bragg', 'Candidates']:
-          self._statistics[current_image]['spots_good'] = int(l[-1])
-        if l[:2] == ['Ice', 'Rings']:
-          self._statistics[current_image]['ice_rings'] = int(l[-1])
-        if l[:3] == ['Method', '1', 'Resolution']:
-          self._statistics[current_image]['resol_one'] = float(l[-1])
-        if l[:3] == ['Method', '2', 'Resolution']:
-          self._statistics[current_image]['resol_two'] = float(l[-1])
-        if l[:3] == ['%Saturation,', 'Top', '50']:
-          self._statistics[current_image][
-              'saturation'] = float(l[-1])
+                if l[:2] == ["Spot", "Total"]:
+                    self._statistics[current_image]["spots_total"] = int(l[-1])
+                if l[:2] == ["In-Resolution", "Total"]:
+                    self._statistics[current_image]["spots"] = int(l[-1])
+                if l[:3] == ["Good", "Bragg", "Candidates"]:
+                    self._statistics[current_image]["spots_good"] = int(l[-1])
+                if l[:2] == ["Ice", "Rings"]:
+                    self._statistics[current_image]["ice_rings"] = int(l[-1])
+                if l[:3] == ["Method", "1", "Resolution"]:
+                    self._statistics[current_image]["resol_one"] = float(l[-1])
+                if l[:3] == ["Method", "2", "Resolution"]:
+                    self._statistics[current_image]["resol_two"] = float(l[-1])
+                if l[:3] == ["%Saturation,", "Top", "50"]:
+                    self._statistics[current_image]["saturation"] = float(l[-1])
 
-      return 'ok'
+            return "ok"
 
-    # things to get results from the indexing
+        # things to get results from the indexing
 
-    def get_statistics(self, image):
-      '''Get the screening statistics from image as dictionary.
+        def get_statistics(self, image):
+            """Get the screening statistics from image as dictionary.
       The keys are spots_total, spots, spots_good, ice_rings,
-      resol_one, resol_two.'''
+      resol_one, resol_two."""
 
-      return self._statistics[os.path.split(image)[-1]]
+            return self._statistics[os.path.split(image)[-1]]
 
-  return LabelitStats_distlWrapper()
+    return LabelitStats_distlWrapper()
 
-if __name__ == '__main__':
 
-  # run a demo test
+if __name__ == "__main__":
 
-  l = LabelitStats_distl()
-  l.stats_distl()
+    # run a demo test
 
-  stats = l.get_statistics('12287_1_E1_001.img')
+    l = LabelitStats_distl()
+    l.stats_distl()
 
-  print('Fraction of good spots: %4.2f' % (float(stats['spots_good']) /
-                                           float(stats['spots'])))
-  print('Ice rings:              %d' % stats['ice_rings'])
-  print('Resolutions:            %f  %f' % \
-        (stats['resol_one'], stats['resol_two']))
+    stats = l.get_statistics("12287_1_E1_001.img")
+
+    print(
+        "Fraction of good spots: %4.2f"
+        % (float(stats["spots_good"]) / float(stats["spots"]))
+    )
+    print("Ice rings:              %d" % stats["ice_rings"])
+    print("Resolutions:            %f  %f" % (stats["resol_one"], stats["resol_two"]))

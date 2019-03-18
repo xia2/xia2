@@ -15,61 +15,67 @@ from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import Chatter, Debug
 from xia2.XIA2Version import Version
 
+
 def run():
-  if os.path.exists('xia2-working.phil'):
-    sys.argv.append('xia2-working.phil')
-  try:
-    check_environment()
-  except Exception as e:
-    traceback.print_exc(file = open('xia2.error', 'w'))
-    Chatter.write('Status: error "%s"' % str(e))
+    if os.path.exists("xia2-working.phil"):
+        sys.argv.append("xia2-working.phil")
+    try:
+        check_environment()
+    except Exception as e:
+        traceback.print_exc(file=open("xia2.error", "w"))
+        Chatter.write('Status: error "%s"' % str(e))
 
-  # print the version
-  Chatter.write(Version)
-  Citations.cite('xia2')
+    # print the version
+    Chatter.write(Version)
+    Citations.cite("xia2")
 
-  start_time = time.time()
+    start_time = time.time()
 
-  assert os.path.exists('xia2.json')
-  from xia2.Schema.XProject import XProject
-  xinfo = XProject.from_json(filename='xia2.json')
+    assert os.path.exists("xia2.json")
+    from xia2.Schema.XProject import XProject
 
-  crystals = xinfo.get_crystals()
-  for crystal_id, crystal in crystals.iteritems():
-    #cwd = os.path.abspath(os.curdir)
-    from libtbx import Auto
-    scale_dir = PhilIndex.params.xia2.settings.scale.directory
-    if scale_dir is Auto:
-      scale_dir = 'scale'
-      i = 0
-      while os.path.exists(os.path.join(crystal.get_name(), scale_dir)):
-        i += 1
-        scale_dir = 'scale%i' %i
-      PhilIndex.params.xia2.settings.scale.directory = scale_dir
-    working_directory = Environment.generate_directory(
-      [crystal.get_name(), scale_dir])
-    #os.chdir(working_directory)
+    xinfo = XProject.from_json(filename="xia2.json")
 
-    crystals[crystal_id]._scaler = None # reset scaler
+    crystals = xinfo.get_crystals()
+    for crystal_id, crystal in crystals.iteritems():
+        # cwd = os.path.abspath(os.curdir)
+        from libtbx import Auto
 
-    scaler = crystal._get_scaler()
-    Chatter.write(xinfo.get_output())
-    crystal.serialize()
+        scale_dir = PhilIndex.params.xia2.settings.scale.directory
+        if scale_dir is Auto:
+            scale_dir = "scale"
+            i = 0
+            while os.path.exists(os.path.join(crystal.get_name(), scale_dir)):
+                i += 1
+                scale_dir = "scale%i" % i
+            PhilIndex.params.xia2.settings.scale.directory = scale_dir
+        working_directory = Environment.generate_directory(
+            [crystal.get_name(), scale_dir]
+        )
+        # os.chdir(working_directory)
 
-  duration = time.time() - start_time
+        crystals[crystal_id]._scaler = None  # reset scaler
 
-  # write out the time taken in a human readable way
-  Chatter.write('Processing took %s' % \
-                time.strftime("%Hh %Mm %Ss", time.gmtime(duration)))
+        scaler = crystal._get_scaler()
+        Chatter.write(xinfo.get_output())
+        crystal.serialize()
 
-  # delete all of the temporary mtz files...
-  cleanup()
+    duration = time.time() - start_time
 
-  write_citations()
+    # write out the time taken in a human readable way
+    Chatter.write(
+        "Processing took %s" % time.strftime("%Hh %Mm %Ss", time.gmtime(duration))
+    )
 
-  xinfo.as_json(filename='xia2.json')
+    # delete all of the temporary mtz files...
+    cleanup()
 
-  Environment.cleanup()
+    write_citations()
 
-if __name__ == '__main__':
-  run()
+    xinfo.as_json(filename="xia2.json")
+
+    Environment.cleanup()
+
+
+if __name__ == "__main__":
+    run()

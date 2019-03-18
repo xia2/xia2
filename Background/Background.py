@@ -14,87 +14,89 @@ import sys
 import threading
 import traceback
 
+
 class Background(threading.Thread):
-  '''A class to allow background operation.'''
+    """A class to allow background operation."""
 
-  def __init__(self, o, m, a=None):
-    '''Create a thread to call o.m(a).'''
+    def __init__(self, o, m, a=None):
+        """Create a thread to call o.m(a)."""
 
-    threading.Thread.__init__(self)
+        threading.Thread.__init__(self)
 
-    if not hasattr(o, m):
-      raise RuntimeError('method missing from object')
+        if not hasattr(o, m):
+            raise RuntimeError("method missing from object")
 
-    self._object = o
-    self._method = m
-    self._arguments = a
-    self._exception = None
-    self._traceback = None
-    self._result = None
+        self._object = o
+        self._method = m
+        self._arguments = a
+        self._exception = None
+        self._traceback = None
+        self._result = None
 
-  def run(self):
-    '''Run o.m with arguments a in background.'''
+    def run(self):
+        """Run o.m with arguments a in background."""
 
-    task = getattr(self._object, self._method)
+        task = getattr(self._object, self._method)
 
-    try:
-      if self._arguments:
-        self._result = task(self._arguments)
-      else:
-        self._result = task()
-    except Exception as e:
-      self._traceback = traceback.format_exc()
-      self._exception = e
+        try:
+            if self._arguments:
+                self._result = task(self._arguments)
+            else:
+                self._result = task()
+        except Exception as e:
+            self._traceback = traceback.format_exc()
+            self._exception = e
 
-  def get_traceback(self):
-    return self._traceback
+    def get_traceback(self):
+        return self._traceback
 
-  def stop(self):
-    '''Rejoin the thread.'''
+    def stop(self):
+        """Rejoin the thread."""
 
-    self.join()
+        self.join()
 
-    if self._exception:
-      raise self._exception
+        if self._exception:
+            raise self._exception
 
-    return self._result
+        return self._result
 
-if __name__ == '__main__':
-  from xia2.Driver.DriverFactory import DriverFactory
 
-  drivers = []
-  backgrounds = []
+if __name__ == "__main__":
+    from xia2.Driver.DriverFactory import DriverFactory
 
-  for j in range(4):
+    drivers = []
+    backgrounds = []
 
-    driver = DriverFactory.Driver()
-    driver.set_executable('/tmp/920/cpu.py')
-    driver.start()
-    drivers.append(driver)
-    backgrounds.append(Background(driver, 'close_wait'))
-    backgrounds[-1].start()
+    for j in range(4):
 
-  for j in range(4):
-    backgrounds[j].stop()
+        driver = DriverFactory.Driver()
+        driver.set_executable("/tmp/920/cpu.py")
+        driver.start()
+        drivers.append(driver)
+        backgrounds.append(Background(driver, "close_wait"))
+        backgrounds[-1].start()
 
-if __name__ == '__cpu.py__':
-  # this be a script! #!/usr/bin/env python
+    for j in range(4):
+        backgrounds[j].stop()
 
-  import math
+if __name__ == "__cpu.py__":
+    # this be a script! #!/usr/bin/env python
 
-  for record in sys.stdin:
-    pass
+    import math
 
-  def factor(v):
-    m = int(math.sqrt(v)) + 1
+    for record in sys.stdin:
+        pass
 
-    for j in range(2, m):
-      if v % j == 0:
-        f = [j]
-        f.extend(factor(v / j))
-        return f
+    def factor(v):
+        m = int(math.sqrt(v)) + 1
 
-    return [v]
+        for j in range(2, m):
+            if v % j == 0:
+                f = [j]
+                f.extend(factor(v / j))
+                return f
 
-  for j in range(10000000000, 10000000100):
-    print(factor(j))
+        return [v]
+
+    for j in range(10000000000, 10000000100):
+        print(factor(j))

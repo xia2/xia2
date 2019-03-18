@@ -24,186 +24,195 @@ from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import Debug
 from xia2.Handlers.Syminfo import Syminfo
 
-def Reindex(DriverType = None):
-  '''A new factory for ReindexWrapper classes, which will actually use
-  pointless.'''
 
-  DriverInstance = DriverFactory.Driver(DriverType)
-  CCP4DriverInstance = DecoratorFactory.Decorate(DriverInstance, 'ccp4')
+def Reindex(DriverType=None):
+    """A new factory for ReindexWrapper classes, which will actually use
+  pointless."""
 
-  class ReindexWrapper(CCP4DriverInstance.__class__):
-    '''A wrapper for Reindex, using the CCP4-ified Driver.'''
+    DriverInstance = DriverFactory.Driver(DriverType)
+    CCP4DriverInstance = DecoratorFactory.Decorate(DriverInstance, "ccp4")
 
-    def __init__(self):
-      # generic things
-      CCP4DriverInstance.__class__.__init__(self)
+    class ReindexWrapper(CCP4DriverInstance.__class__):
+        """A wrapper for Reindex, using the CCP4-ified Driver."""
 
-      self.set_executable(os.path.join(
-          os.environ.get('CBIN', ''), 'pointless'))
+        def __init__(self):
+            # generic things
+            CCP4DriverInstance.__class__.__init__(self)
 
-      # reindex specific things
-      self._spacegroup = None
+            self.set_executable(os.path.join(os.environ.get("CBIN", ""), "pointless"))
 
-      # this should be of the form e.g. k, l, h
-      self._operator = None
+            # reindex specific things
+            self._spacegroup = None
 
-      # results
-      self._cell = None
+            # this should be of the form e.g. k, l, h
+            self._operator = None
 
-    def set_spacegroup(self, spacegroup):
-      '''Set the spacegroup to reindex the reflections to.'''
+            # results
+            self._cell = None
 
-      self._spacegroup = spacegroup
+        def set_spacegroup(self, spacegroup):
+            """Set the spacegroup to reindex the reflections to."""
 
-    def set_operator(self, operator):
-      '''Set the reindexing operator for mapping from in to out.'''
+            self._spacegroup = spacegroup
 
-      # pointless doesn't like reindex operators with '*'
-      if operator is not None:
-        operator = operator.replace('*', '')
-      self._operator = operator
+        def set_operator(self, operator):
+            """Set the reindexing operator for mapping from in to out."""
 
-    def get_cell(self):
-      return self._cell
+            # pointless doesn't like reindex operators with '*'
+            if operator is not None:
+                operator = operator.replace("*", "")
+            self._operator = operator
 
-    def check_reindex_errors(self):
-      '''Check the standard output for standard reindex errors.'''
+        def get_cell(self):
+            return self._cell
 
-      pass
+        def check_reindex_errors(self):
+            """Check the standard output for standard reindex errors."""
 
-    def reindex_old(self):
-      self.set_executable(os.path.join(os.environ.get('CBIN', ''),
-                                       'reindex'))
-      self.check_hklin()
-      self.check_hklout()
+            pass
 
-      if not self._spacegroup and not self._operator:
-        raise RuntimeError('reindex requires spacegroup or operator')
+        def reindex_old(self):
+            self.set_executable(os.path.join(os.environ.get("CBIN", ""), "reindex"))
+            self.check_hklin()
+            self.check_hklout()
 
-      self.start()
+            if not self._spacegroup and not self._operator:
+                raise RuntimeError("reindex requires spacegroup or operator")
 
-      # look up the space group number to cope with complex symbols
-      # that old fashioned CCP4 reindex does not understand...
-      from cctbx.sgtbx import space_group, space_group_symbols
-      sg_t = space_group(space_group_symbols(str(self._spacegroup))).type()
+            self.start()
 
-      if self._operator:
-        self.input('reindex %s' % str(self._operator))
-      if self._spacegroup:
-        self.input('symmetry %d' % sg_t.number())
-      self.close_wait()
+            # look up the space group number to cope with complex symbols
+            # that old fashioned CCP4 reindex does not understand...
+            from cctbx.sgtbx import space_group, space_group_symbols
 
-      # check for errors
+            sg_t = space_group(space_group_symbols(str(self._spacegroup))).type()
 
-      try:
-        self.check_for_errors()
+            if self._operator:
+                self.input("reindex %s" % str(self._operator))
+            if self._spacegroup:
+                self.input("symmetry %d" % sg_t.number())
+            self.close_wait()
 
-      except RuntimeError as e:
-        try:
-          os.remove(self.get_hklout())
-        except Exception:
-          pass
+            # check for errors
 
-        raise e
+            try:
+                self.check_for_errors()
 
-      output = self.get_all_output()
+            except RuntimeError as e:
+                try:
+                    os.remove(self.get_hklout())
+                except Exception:
+                    pass
 
-      for j, o in enumerate(output):
-        if 'Cell Dimensions : (obsolete' in o:
-          self._cell = map(float, output[j + 2].split())
+                raise e
 
-      return 'OK'
+            output = self.get_all_output()
 
-    def cctbx_reindex(self):
-      from xia2.Modules.MtzUtils import reindex
-      reindex(self._hklin, self._hklout, self._operator, space_group=self._spacegroup)
-      return 'OK'
+            for j, o in enumerate(output):
+                if "Cell Dimensions : (obsolete" in o:
+                    self._cell = map(float, output[j + 2].split())
 
-    def reindex(self):
-      '''Actually perform the reindexing.'''
+            return "OK"
 
-      if PhilIndex.params.ccp4.reindex.program == 'reindex':
-        return self.reindex_old()
+        def cctbx_reindex(self):
+            from xia2.Modules.MtzUtils import reindex
 
-      elif PhilIndex.params.ccp4.reindex.program == 'cctbx':
-        return self.cctbx_reindex()
+            reindex(
+                self._hklin, self._hklout, self._operator, space_group=self._spacegroup
+            )
+            return "OK"
 
-      self.check_hklin()
-      self.check_hklout()
+        def reindex(self):
+            """Actually perform the reindexing."""
 
-      if not self._spacegroup and not self._operator:
-        raise RuntimeError('reindex requires spacegroup or operator')
+            if PhilIndex.params.ccp4.reindex.program == "reindex":
+                return self.reindex_old()
 
-      if self._operator:
-        self._operator = self._operator.replace('[', '').replace(']', '')
+            elif PhilIndex.params.ccp4.reindex.program == "cctbx":
+                return self.cctbx_reindex()
 
-      Debug.write('Reindex... %s %s' % (self._spacegroup, self._operator))
+            self.check_hklin()
+            self.check_hklout()
 
-      if False and self._spacegroup and PhilIndex.params.xia2.settings.small_molecule == True: ## FIXME: This still needed?
-        if not self._operator or self._operator.replace(' ', '') == 'h,k,l':
-          return self.cctbx_reindex()
+            if not self._spacegroup and not self._operator:
+                raise RuntimeError("reindex requires spacegroup or operator")
 
-      self.start()
+            if self._operator:
+                self._operator = self._operator.replace("[", "").replace("]", "")
 
-      if self._spacegroup:
+            Debug.write("Reindex... %s %s" % (self._spacegroup, self._operator))
 
-        if isinstance(self._spacegroup, type(0)):
-          spacegroup = Syminfo.spacegroup_number_to_name(
-              self._spacegroup)
-        elif self._spacegroup[0] in '0123456789':
-          spacegroup = Syminfo.spacegroup_number_to_name(
-              int(self._spacegroup))
-        else:
-          spacegroup = self._spacegroup
+            if (
+                False
+                and self._spacegroup
+                and PhilIndex.params.xia2.settings.small_molecule == True
+            ):  ## FIXME: This still needed?
+                if not self._operator or self._operator.replace(" ", "") == "h,k,l":
+                    return self.cctbx_reindex()
 
-        self.input('spacegroup \'%s\'' % spacegroup)
+            self.start()
 
-      if self._operator:
-        # likewise
-        self.input('reindex \'%s\'' % self._operator)
-      else:
-        self.input('reindex \'h,k,l\'')
+            if self._spacegroup:
 
-      self.close_wait()
+                if isinstance(self._spacegroup, type(0)):
+                    spacegroup = Syminfo.spacegroup_number_to_name(self._spacegroup)
+                elif self._spacegroup[0] in "0123456789":
+                    spacegroup = Syminfo.spacegroup_number_to_name(
+                        int(self._spacegroup)
+                    )
+                else:
+                    spacegroup = self._spacegroup
 
-      # check for errors
+                self.input("spacegroup '%s'" % spacegroup)
 
-      try:
-        self.check_for_errors()
+            if self._operator:
+                # likewise
+                self.input("reindex '%s'" % self._operator)
+            else:
+                self.input("reindex 'h,k,l'")
 
-      except RuntimeError as e:
-        try:
-          os.remove(self.get_hklout())
-        except Exception:
-          pass
+            self.close_wait()
 
-        raise e
+            # check for errors
 
-      output = self.get_all_output()
+            try:
+                self.check_for_errors()
 
-      for j, o in enumerate(output):
-        if 'Cell Dimensions : (obsolete' in o:
-          self._cell = map(float, output[j + 2].split())
-        elif 'ReindexOp: syntax error in operator' in o:
-          raise RuntimeError(o)
+            except RuntimeError as e:
+                try:
+                    os.remove(self.get_hklout())
+                except Exception:
+                    pass
 
-      return 'OK'
+                raise e
 
-  return ReindexWrapper()
+            output = self.get_all_output()
 
-if __name__ == '__main__':
-  # run some tests
+            for j, o in enumerate(output):
+                if "Cell Dimensions : (obsolete" in o:
+                    self._cell = map(float, output[j + 2].split())
+                elif "ReindexOp: syntax error in operator" in o:
+                    raise RuntimeError(o)
 
-  import os
+            return "OK"
 
-  hklin = os.path.join(os.environ['XIA2_ROOT'],
-                       'Data', 'Test', 'Mtz', '12287_1_E1_1_10.mtz')
+    return ReindexWrapper()
 
-  r = Reindex()
-  r.set_hklin(hklin)
-  r.set_hklout('null.mtz')
 
-  r.set_operator('h,k,l')
-  r.set_spacegroup('P 4 2 2')
+if __name__ == "__main__":
+    # run some tests
 
-  print(r.reindex())
+    import os
+
+    hklin = os.path.join(
+        os.environ["XIA2_ROOT"], "Data", "Test", "Mtz", "12287_1_E1_1_10.mtz"
+    )
+
+    r = Reindex()
+    r.set_hklin(hklin)
+    r.set_hklout("null.mtz")
+
+    r.set_operator("h,k,l")
+    r.set_spacegroup("P 4 2 2")
+
+    print(r.reindex())

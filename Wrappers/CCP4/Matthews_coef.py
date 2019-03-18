@@ -22,93 +22,95 @@ import os
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
 from xia2.Driver.DriverFactory import DriverFactory
 
-def Matthews_coef(DriverType = None):
-  '''A factory for Matthews_coefWrapper classes.'''
 
-  DriverInstance = DriverFactory.Driver(DriverType)
-  CCP4DriverInstance = DecoratorFactory.Decorate(DriverInstance, 'ccp4')
+def Matthews_coef(DriverType=None):
+    """A factory for Matthews_coefWrapper classes."""
 
-  class Matthews_coefWrapper(CCP4DriverInstance.__class__):
-    '''A wrapper for Matthews_coef, using the CCP4-ified Driver.'''
+    DriverInstance = DriverFactory.Driver(DriverType)
+    CCP4DriverInstance = DecoratorFactory.Decorate(DriverInstance, "ccp4")
 
-    def __init__(self):
-      # generic things
-      CCP4DriverInstance.__class__.__init__(self)
+    class Matthews_coefWrapper(CCP4DriverInstance.__class__):
+        """A wrapper for Matthews_coef, using the CCP4-ified Driver."""
 
-      self.set_executable(os.path.join(
-          os.environ.get('CBIN', ''), 'matthews_coef'))
+        def __init__(self):
+            # generic things
+            CCP4DriverInstance.__class__.__init__(self)
 
-      self._nmol = 1
-      self._nres = 0
-      self._cell = None
-      self._spacegroup = None
+            self.set_executable(
+                os.path.join(os.environ.get("CBIN", ""), "matthews_coef")
+            )
 
-      # results
+            self._nmol = 1
+            self._nres = 0
+            self._cell = None
+            self._spacegroup = None
 
-      self._solvent = 0.0
+            # results
 
-      return
+            self._solvent = 0.0
 
-    # setters follow
+            return
 
-    def set_nmol(self, nmol):
-      self._nmol = nmol
-      return
+        # setters follow
 
-    def set_nres(self, nres):
-      self._nres = nres
-      return
+        def set_nmol(self, nmol):
+            self._nmol = nmol
+            return
 
-    def set_cell(self, cell):
-      self._cell = cell
-      return
+        def set_nres(self, nres):
+            self._nres = nres
+            return
 
-    def set_spacegroup(self, spacegroup):
-      self._spacegroup = spacegroup
-      return
+        def set_cell(self, cell):
+            self._cell = cell
+            return
 
-    def compute_solvent(self):
+        def set_spacegroup(self, spacegroup):
+            self._spacegroup = spacegroup
+            return
 
-      self.start()
+        def compute_solvent(self):
 
-      self.input('cell %f %f %f %f %f %f' % tuple(self._cell))
+            self.start()
 
-      # cannot cope with spaces in the spacegroup!
+            self.input("cell %f %f %f %f %f %f" % tuple(self._cell))
 
-      self.input('symmetry %s' % self._spacegroup.replace(' ', ''))
-      self.input('nres %d' % self._nres)
-      self.input('nmol %d' % self._nmol)
+            # cannot cope with spaces in the spacegroup!
 
-      self.close_wait()
+            self.input("symmetry %s" % self._spacegroup.replace(" ", ""))
+            self.input("nres %d" % self._nres)
+            self.input("nmol %d" % self._nmol)
 
-      self.check_for_errors()
-      self.check_ccp4_errors()
+            self.close_wait()
 
-      # get the useful information out from here...
+            self.check_for_errors()
+            self.check_ccp4_errors()
 
-      for line in self.get_all_output():
-        if 'Assuming protein density' in line:
-          self._solvent = 0.01 * float(line.split()[-1])
+            # get the useful information out from here...
 
-      return
+            for line in self.get_all_output():
+                if "Assuming protein density" in line:
+                    self._solvent = 0.01 * float(line.split()[-1])
 
-    def get_solvent(self):
-      return self._solvent
+            return
+
+        def get_solvent(self):
+            return self._solvent
+
+    return Matthews_coefWrapper()
 
 
-  return Matthews_coefWrapper()
+if __name__ == "__main__":
 
-if __name__ == '__main__':
+    # then run a test!
 
-  # then run a test!
+    m = Matthews_coef()
 
-  m = Matthews_coef()
+    m.set_spacegroup("P43212")
+    m.set_cell((96.0, 96.0, 36.75, 90.0, 90.0, 90.0))
+    m.set_nmol(2)
+    m.set_nres(82)
 
-  m.set_spacegroup('P43212')
-  m.set_cell((96.0, 96.0, 36.75, 90.0, 90.0, 90.0))
-  m.set_nmol(2)
-  m.set_nres(82)
+    m.compute_solvent()
 
-  m.compute_solvent()
-
-  print(m.get_solvent())
+    print(m.get_solvent())

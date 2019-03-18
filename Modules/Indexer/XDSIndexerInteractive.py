@@ -19,38 +19,42 @@ from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
 
 # odds and sods that are needed
 
+
 class XDSIndexerInteractive(XDSIndexer):
-  '''An extension of XDSIndexer using all available images.'''
+    """An extension of XDSIndexer using all available images."""
 
-  def __init__(self):
-    super(XDSIndexerInteractive, self).__init__()
-    self._index_select_images = 'interactive'
+    def __init__(self):
+        super(XDSIndexerInteractive, self).__init__()
+        self._index_select_images = "interactive"
 
-    return
+        return
 
-  # helper functions
+    # helper functions
 
-  def _index_select_images_interactive(self):
+    def _index_select_images_interactive(self):
 
-    phi_width = self.get_phi_width()
+        phi_width = self.get_phi_width()
 
-    # use five degrees for the background calculation
+        # use five degrees for the background calculation
 
-    five_deg = int(round(5.0 / phi_width)) - 1
+        five_deg = int(round(5.0 / phi_width)) - 1
 
-    if five_deg < 5:
-      five_deg = 5
+        if five_deg < 5:
+            five_deg = 5
 
-    images = self.get_matching_images()
+        images = self.get_matching_images()
 
-    from xia2.Modules.Indexer.IndexerSelectImages import index_select_image_wedges_user
+        from xia2.Modules.Indexer.IndexerSelectImages import (
+            index_select_image_wedges_user,
+        )
 
-    wedges = index_select_image_wedges_user(
-        self.get_template(), phi_width, images, Chatter)
+        wedges = index_select_image_wedges_user(
+            self.get_template(), phi_width, images, Chatter
+        )
 
-    if min(images) + five_deg in images:
-      self._background_images = (min(images), min(images) + five_deg)
-    else:
-      self._background_images = (min(images), max(images))
+        if min(images) + five_deg in images:
+            self._background_images = (min(images), min(images) + five_deg)
+        else:
+            self._background_images = (min(images), max(images))
 
-    return wedges
+        return wedges

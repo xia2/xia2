@@ -34,240 +34,263 @@ from __future__ import absolute_import, division, print_function
 from xia2.Handlers.Streams import Chatter
 from xia2.Schema.XSweep import XSweep
 
+
 class XWavelength(object):
-  '''An object representation of a wavelength, which will after data
-  reduction correspond to an MTZ hierarchy dataset.'''
+    """An object representation of a wavelength, which will after data
+  reduction correspond to an MTZ hierarchy dataset."""
 
-  def __init__(self, name, crystal, wavelength,
-               f_pr=0.0, f_prpr=0.0, dmin=0.0, dmax=0.0):
-    '''Create a new wavelength named name, belonging to XCrystal object
-    crystal, with wavelength and optionally f_pr, f_prpr assigned.'''
+    def __init__(
+        self, name, crystal, wavelength, f_pr=0.0, f_prpr=0.0, dmin=0.0, dmax=0.0
+    ):
+        """Create a new wavelength named name, belonging to XCrystal object
+    crystal, with wavelength and optionally f_pr, f_prpr assigned."""
 
-    # check that the crystal is an XCrystal
+        # check that the crystal is an XCrystal
 
-    if not crystal.__class__.__name__ == 'XCrystal':
-      pass
+        if not crystal.__class__.__name__ == "XCrystal":
+            pass
 
-    # set up this object
+        # set up this object
 
-    self._name = name
-    self._crystal = crystal
-    self._wavelength = wavelength
-    self._f_pr = f_pr
-    self._f_prpr = f_prpr
-    self._resolution_high = dmin
-    self._resolution_low = dmax
+        self._name = name
+        self._crystal = crystal
+        self._wavelength = wavelength
+        self._f_pr = f_pr
+        self._f_prpr = f_prpr
+        self._resolution_high = dmin
+        self._resolution_low = dmax
 
-    # then create space to store things which are contained
-    # in here - the sweeps
+        # then create space to store things which are contained
+        # in here - the sweeps
 
-    self._sweeps = []
+        self._sweeps = []
 
-  # serialization functions
+    # serialization functions
 
-  def to_dict(self):
-    obj = {}
-    obj['__id__'] = 'XWavelength'
-    import inspect
-    attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
-    for a in attributes:
-      if a[0] == '_sweeps':
-        sweeps = []
-        for sweep in a[1]:
-          sweeps.append(sweep.to_dict())
-        obj[a[0]] = sweeps
-      elif a[0] == '_crystal':
-        # don't serialize this since the parent xwavelength *should* contain
-        # the reference to the child xsweeo
-        continue
-      elif a[0].startswith('__'):
-        continue
-      else:
-        obj[a[0]] = a[1]
-    return obj
+    def to_dict(self):
+        obj = {}
+        obj["__id__"] = "XWavelength"
+        import inspect
 
-  @classmethod
-  def from_dict(cls, obj):
-    assert obj['__id__'] == 'XWavelength'
-    return_obj = cls(name=None, crystal=None, wavelength=None)
-    for k, v in obj.iteritems():
-      if k == '_sweeps':
-        v = [XSweep.from_dict(s_dict) for s_dict in v]
-        for sweep in v:
-          sweep._wavelength = return_obj
-      setattr(return_obj, k, v)
-    return return_obj
+        attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
+        for a in attributes:
+            if a[0] == "_sweeps":
+                sweeps = []
+                for sweep in a[1]:
+                    sweeps.append(sweep.to_dict())
+                obj[a[0]] = sweeps
+            elif a[0] == "_crystal":
+                # don't serialize this since the parent xwavelength *should* contain
+                # the reference to the child xsweeo
+                continue
+            elif a[0].startswith("__"):
+                continue
+            else:
+                obj[a[0]] = a[1]
+        return obj
 
-  def get_output(self):
-    result = 'Wavelength name: %s\n' % self._name
-    result += 'Wavelength %7.5f\n' % self._wavelength
-    if self._f_pr != 0.0 and self._f_prpr != 0.0:
-      result += 'F\', F\'\' = (%5.2f, %5.2f)\n' % (self._f_pr,
-                                                   self._f_prpr)
+    @classmethod
+    def from_dict(cls, obj):
+        assert obj["__id__"] == "XWavelength"
+        return_obj = cls(name=None, crystal=None, wavelength=None)
+        for k, v in obj.iteritems():
+            if k == "_sweeps":
+                v = [XSweep.from_dict(s_dict) for s_dict in v]
+                for sweep in v:
+                    sweep._wavelength = return_obj
+            setattr(return_obj, k, v)
+        return return_obj
 
-    result += 'Sweeps:\n'
+    def get_output(self):
+        result = "Wavelength name: %s\n" % self._name
+        result += "Wavelength %7.5f\n" % self._wavelength
+        if self._f_pr != 0.0 and self._f_prpr != 0.0:
+            result += "F', F'' = (%5.2f, %5.2f)\n" % (self._f_pr, self._f_prpr)
 
-    from xia2.Driver.DriverFactory import DriverFactory
+        result += "Sweeps:\n"
 
-    def run_one_sweep(args):
+        from xia2.Driver.DriverFactory import DriverFactory
 
-      from xia2.Handlers.Streams import Debug
+        def run_one_sweep(args):
 
-      assert len(args) == 3
-      s, failover, job_type = args
+            from xia2.Handlers.Streams import Debug
 
-      if job_type:
-        DriverFactory.set_driver_type(job_type)
+            assert len(args) == 3
+            s, failover, job_type = args
 
-      Chatter.cache()
-      Debug.cache()
+            if job_type:
+                DriverFactory.set_driver_type(job_type)
 
-      try:
-        s.get_integrater_intensities()
-      except Exception as e:
-        if failover:
-          Chatter.write('Processing sweep %s failed: %s' % \
-                        (s.get_name(), str(e)))
-          s = None
-        else:
-          raise
-      finally:
-        Chatter.uncache()
-        Debug.uncache()
-        return s
+            Chatter.cache()
+            Debug.cache()
 
-    remove = []
+            try:
+                s.get_integrater_intensities()
+            except Exception as e:
+                if failover:
+                    Chatter.write(
+                        "Processing sweep %s failed: %s" % (s.get_name(), str(e))
+                    )
+                    s = None
+                else:
+                    raise
+            finally:
+                Chatter.uncache()
+                Debug.uncache()
+                return s
 
-    from xia2.Handlers.Phil import PhilIndex
-    params = PhilIndex.get_python_object()
-    failover = params.xia2.settings.failover
+        remove = []
 
-    for s in self._sweeps:
+        from xia2.Handlers.Phil import PhilIndex
 
-      # would be nice to put this somewhere else in the hierarchy - not
-      # sure how to do that though (should be handled in Interfaces?)
+        params = PhilIndex.get_python_object()
+        failover = params.xia2.settings.failover
 
-      try:
-        result += '%s\n' % s.get_output()
-      except Exception as e:
-        if failover:
-          Chatter.write('Processing sweep %s failed: %s' % \
-                        (s.get_name(), str(e)))
-          remove.append(s)
-        else:
-          raise
+        for s in self._sweeps:
 
-    for s in remove:
-      self._sweeps.remove(s)
+            # would be nice to put this somewhere else in the hierarchy - not
+            # sure how to do that though (should be handled in Interfaces?)
 
-    return result[:-1]
+            try:
+                result += "%s\n" % s.get_output()
+            except Exception as e:
+                if failover:
+                    Chatter.write(
+                        "Processing sweep %s failed: %s" % (s.get_name(), str(e))
+                    )
+                    remove.append(s)
+                else:
+                    raise
 
-  def summarise(self):
+        for s in remove:
+            self._sweeps.remove(s)
 
-    summary = ['Wavelength: %s (%7.5f)' % (self._name, self._wavelength)]
+        return result[:-1]
 
-    for s in self._sweeps:
-      for record in s.summarise():
-        summary.append(record)
+    def summarise(self):
 
-    return summary
+        summary = ["Wavelength: %s (%7.5f)" % (self._name, self._wavelength)]
 
-  #def __str__(self):
-    #return self.__repr__()
+        for s in self._sweeps:
+            for record in s.summarise():
+                summary.append(record)
 
-  def get_wavelength(self):
-    return self._wavelength
+        return summary
 
-  def set_wavelength(self, wavelength):
-    if self._wavelength != 0.0:
-      raise RuntimeError('setting wavelength when already set')
-    self._wavelength = wavelength
+    # def __str__(self):
+    # return self.__repr__()
 
-  def set_resolution_high(self, resolution_high):
-    self._resolution_high = resolution_high
+    def get_wavelength(self):
+        return self._wavelength
 
-  def set_resolution_low(self, resolution_low):
-    self._resolution_low = resolution_low
+    def set_wavelength(self, wavelength):
+        if self._wavelength != 0.0:
+            raise RuntimeError("setting wavelength when already set")
+        self._wavelength = wavelength
 
-  def get_resolution_high(self):
-    return self._resolution_high
+    def set_resolution_high(self, resolution_high):
+        self._resolution_high = resolution_high
 
-  def get_resolution_low(self):
-    return self._resolution_low
+    def set_resolution_low(self, resolution_low):
+        self._resolution_low = resolution_low
 
-  def get_f_pr(self):
-    return self._f_pr
+    def get_resolution_high(self):
+        return self._resolution_high
 
-  def get_f_prpr(self):
-    return self._f_prpr
+    def get_resolution_low(self):
+        return self._resolution_low
 
-  def get_crystal(self):
-    return self._crystal
+    def get_f_pr(self):
+        return self._f_pr
 
-  def get_name(self):
-    return self._name
+    def get_f_prpr(self):
+        return self._f_prpr
 
-  def get_all_image_names(self):
-    '''Get a full list of all images in this wavelength...'''
+    def get_crystal(self):
+        return self._crystal
 
-    # for RD analysis ...
+    def get_name(self):
+        return self._name
 
-    result = []
-    for sweep in self._sweeps:
-      result.extend(sweep.get_all_image_names())
-    return result
+    def get_all_image_names(self):
+        """Get a full list of all images in this wavelength..."""
 
-  def add_sweep(self, name, sample, directory=None, image=None,
-                beam=None, reversephi=False, distance=None,
-                gain=0.0, dmin=0.0, dmax=0.0, polarization=0.0,
-                frames_to_process=None, user_lattice=None,
-                user_cell=None, epoch=0, ice=False, excluded_regions=None):
-    '''Add a sweep to this wavelength.'''
-    if excluded_regions is None:
-      excluded_regions = []
+        # for RD analysis ...
 
-    xsweep = XSweep(name, self,
-                    sample=sample,
-                    directory=directory,
-                    image=image,
-                    beam=beam,
-                    reversephi=reversephi,
-                    distance=distance,
-                    gain=gain,
-                    dmin=dmin,
-                    dmax=dmax,
-                    polarization=polarization,
-                    frames_to_process=frames_to_process,
-                    user_lattice=user_lattice,
-                    user_cell=user_cell,
-                    epoch=epoch,
-                    ice=ice,
-                    excluded_regions=excluded_regions)
-    self._sweeps.append(xsweep)
+        result = []
+        for sweep in self._sweeps:
+            result.extend(sweep.get_all_image_names())
+        return result
 
-    return xsweep
+    def add_sweep(
+        self,
+        name,
+        sample,
+        directory=None,
+        image=None,
+        beam=None,
+        reversephi=False,
+        distance=None,
+        gain=0.0,
+        dmin=0.0,
+        dmax=0.0,
+        polarization=0.0,
+        frames_to_process=None,
+        user_lattice=None,
+        user_cell=None,
+        epoch=0,
+        ice=False,
+        excluded_regions=None,
+    ):
+        """Add a sweep to this wavelength."""
+        if excluded_regions is None:
+            excluded_regions = []
 
-  def get_sweeps(self):
-    return self._sweeps
+        xsweep = XSweep(
+            name,
+            self,
+            sample=sample,
+            directory=directory,
+            image=image,
+            beam=beam,
+            reversephi=reversephi,
+            distance=distance,
+            gain=gain,
+            dmin=dmin,
+            dmax=dmax,
+            polarization=polarization,
+            frames_to_process=frames_to_process,
+            user_lattice=user_lattice,
+            user_cell=user_cell,
+            epoch=epoch,
+            ice=ice,
+            excluded_regions=excluded_regions,
+        )
+        self._sweeps.append(xsweep)
 
-  def remove_sweep(self, sweep):
-    '''Remove a sweep object from this wavelength.'''
+        return xsweep
 
-    try:
-      self._sweeps.remove(sweep)
-    except ValueError:
-      pass
+    def get_sweeps(self):
+        return self._sweeps
 
-  def _get_integraters(self):
-    integraters = []
-    for s in self._sweeps:
-      integraters.append(s._get_integrater())
+    def remove_sweep(self, sweep):
+        """Remove a sweep object from this wavelength."""
 
-    return integraters
+        try:
+            self._sweeps.remove(sweep)
+        except ValueError:
+            pass
 
-  def _get_indexers(self):
-    indexers = []
-    for s in self._sweeps:
-      indexers.append(s._get_indexer())
+    def _get_integraters(self):
+        integraters = []
+        for s in self._sweeps:
+            integraters.append(s._get_integrater())
 
-    return indexers
+        return integraters
+
+    def _get_indexers(self):
+        indexers = []
+        for s in self._sweeps:
+            indexers.append(s._get_indexer())
+
+        return indexers

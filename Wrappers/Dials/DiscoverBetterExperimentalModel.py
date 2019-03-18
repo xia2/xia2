@@ -14,71 +14,75 @@ import os
 
 from xia2.Handlers.Phil import PhilIndex
 
-def DiscoverBetterExperimentalModel(DriverType = None):
-  '''A factory for DiscoverBetterExperimentalModel classes.'''
 
-  from xia2.Driver.DriverFactory import DriverFactory
-  DriverInstance = DriverFactory.Driver(DriverType)
+def DiscoverBetterExperimentalModel(DriverType=None):
+    """A factory for DiscoverBetterExperimentalModel classes."""
 
-  class DiscoverBetterExperimentalModelWrapper(DriverInstance.__class__):
+    from xia2.Driver.DriverFactory import DriverFactory
 
-    def __init__(self):
-      DriverInstance.__class__.__init__(self)
-      self.set_executable('dials.search_beam_position')
+    DriverInstance = DriverFactory.Driver(DriverType)
 
-      self._sweep_filename = None
-      self._spot_filename = None
-      self._optimized_filename = None
-      self._phil_file = None
-      self._scan_ranges = []
+    class DiscoverBetterExperimentalModelWrapper(DriverInstance.__class__):
+        def __init__(self):
+            DriverInstance.__class__.__init__(self)
+            self.set_executable("dials.search_beam_position")
 
-    def set_sweep_filename(self, sweep_filename):
-      self._sweep_filename = sweep_filename
+            self._sweep_filename = None
+            self._spot_filename = None
+            self._optimized_filename = None
+            self._phil_file = None
+            self._scan_ranges = []
 
-    def set_spot_filename(self, spot_filename):
-      self._spot_filename = spot_filename
+        def set_sweep_filename(self, sweep_filename):
+            self._sweep_filename = sweep_filename
 
-    def set_optimized_datablock_filename(self, optimized_filename):
-      self._optimized_filename = optimized_filename
+        def set_spot_filename(self, spot_filename):
+            self._spot_filename = spot_filename
 
-    def set_phil_file(self, phil_file):
-      self._phil_file = phil_file
+        def set_optimized_datablock_filename(self, optimized_filename):
+            self._optimized_filename = optimized_filename
 
-    def set_scan_ranges(self, scan_ranges):
-      self._scan_ranges = scan_ranges
+        def set_phil_file(self, phil_file):
+            self._phil_file = phil_file
 
-    def add_scan_range(self, scan_range):
-      self._scan_ranges.append(scan_range)
+        def set_scan_ranges(self, scan_ranges):
+            self._scan_ranges = scan_ranges
 
-    def get_optimized_datablock_filename(self):
-      return self._optimized_filename
+        def add_scan_range(self, scan_range):
+            self._scan_ranges.append(scan_range)
 
-    def run(self):
-      from xia2.Handlers.Streams import Debug
-      Debug.write('Running %s' %self.get_executable())
+        def get_optimized_datablock_filename(self):
+            return self._optimized_filename
 
-      self.clear_command_line()
-      self.add_command_line(self._sweep_filename)
-      self.add_command_line(self._spot_filename)
-      nproc = PhilIndex.params.xia2.settings.multiprocessing.nproc
-      self.set_cpu_threads(nproc)
-      self.add_command_line('nproc=%i' % nproc)
-      for scan_range in self._scan_ranges:
-        self.add_command_line('scan_range=%d,%d' % scan_range)
+        def run(self):
+            from xia2.Handlers.Streams import Debug
 
-      if self._phil_file is not None:
-        self.add_command_line("%s" %self._phil_file)
+            Debug.write("Running %s" % self.get_executable())
 
-      self._optimized_filename = os.path.join(
-        self.get_working_directory(), '%d_optimized_datablock.json' %self.get_xpid())
-      self.add_command_line("output.datablock=%s" %self._optimized_filename)
+            self.clear_command_line()
+            self.add_command_line(self._sweep_filename)
+            self.add_command_line(self._spot_filename)
+            nproc = PhilIndex.params.xia2.settings.multiprocessing.nproc
+            self.set_cpu_threads(nproc)
+            self.add_command_line("nproc=%i" % nproc)
+            for scan_range in self._scan_ranges:
+                self.add_command_line("scan_range=%d,%d" % scan_range)
 
-      self.start()
-      self.close_wait()
-      self.check_for_errors()
+            if self._phil_file is not None:
+                self.add_command_line("%s" % self._phil_file)
 
-      records = self.get_all_output()
+            self._optimized_filename = os.path.join(
+                self.get_working_directory(),
+                "%d_optimized_datablock.json" % self.get_xpid(),
+            )
+            self.add_command_line("output.datablock=%s" % self._optimized_filename)
 
-      assert os.path.exists(self._optimized_filename), self._optimized_filename
+            self.start()
+            self.close_wait()
+            self.check_for_errors()
 
-  return DiscoverBetterExperimentalModelWrapper()
+            records = self.get_all_output()
+
+            assert os.path.exists(self._optimized_filename), self._optimized_filename
+
+    return DiscoverBetterExperimentalModelWrapper()

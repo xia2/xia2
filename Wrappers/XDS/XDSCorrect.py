@@ -19,371 +19,389 @@ from cctbx.uctbx import unit_cell
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import Debug
+
 # interfaces that this inherits from ...
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
+
 # generic helper stuff
-from xia2.Wrappers.XDS.XDS import (imageset_to_xds, template_to_xds,
-                                   xds_check_error,
-                                   xds_check_version_supported)
+from xia2.Wrappers.XDS.XDS import (
+    imageset_to_xds,
+    template_to_xds,
+    xds_check_error,
+    xds_check_version_supported,
+)
+
 # specific helper stuff
 from xia2.Wrappers.XDS.XDSCorrectHelpers import _parse_correct_lp
 
-def XDSCorrect(DriverType = None, params=None):
 
-  DriverInstance = DriverFactory.Driver(DriverType)
+def XDSCorrect(DriverType=None, params=None):
 
-  class XDSCorrectWrapper(DriverInstance.__class__,
-                          FrameProcessor):
-    '''A wrapper for wrapping XDS in correct mode.'''
+    DriverInstance = DriverFactory.Driver(DriverType)
 
-    def __init__(self, params=None):
-      super(XDSCorrectWrapper, self).__init__()
+    class XDSCorrectWrapper(DriverInstance.__class__, FrameProcessor):
+        """A wrapper for wrapping XDS in correct mode."""
 
-      # phil parameters
+        def __init__(self, params=None):
+            super(XDSCorrectWrapper, self).__init__()
 
-      if not params:
-        from xia2.Handlers.Phil import master_phil
-        params = master_phil.extract().xds.correct
-      self._params = params
+            # phil parameters
 
-      # now set myself up...
+            if not params:
+                from xia2.Handlers.Phil import master_phil
 
-      self._parallel = PhilIndex.params.xia2.settings.multiprocessing.nproc
-      self.set_cpu_threads(self._parallel)
+                params = master_phil.extract().xds.correct
+            self._params = params
 
-      if self._parallel <= 1:
-        self.set_executable('xds')
-      else:
-        self.set_executable('xds_par')
+            # now set myself up...
 
-      # generic bits
+            self._parallel = PhilIndex.params.xia2.settings.multiprocessing.nproc
+            self.set_cpu_threads(self._parallel)
 
-      self._data_range = (0, 0)
-      self._spot_range = []
-      self._background_range = (0, 0)
-      self._resolution_range = (0, 0)
-      self._resolution_high = 0.0
-      self._resolution_low = 40.0
+            if self._parallel <= 1:
+                self.set_executable("xds")
+            else:
+                self.set_executable("xds_par")
 
-      # specific information
+            # generic bits
 
-      self._cell = None
-      self._spacegroup_number = None
-      self._anomalous = False
+            self._data_range = (0, 0)
+            self._spot_range = []
+            self._background_range = (0, 0)
+            self._resolution_range = (0, 0)
+            self._resolution_high = 0.0
+            self._resolution_low = 40.0
 
-      self._polarization = 0.0
+            # specific information
 
-      self._reindex_matrix = None
-      self._reindex_used = None
+            self._cell = None
+            self._spacegroup_number = None
+            self._anomalous = False
 
-      self._input_data_files = { }
-      self._output_data_files = { }
+            self._polarization = 0.0
 
-      self._input_data_files_list = []
+            self._reindex_matrix = None
+            self._reindex_used = None
 
-      self._output_data_files_list = ['GXPARM.XDS']
+            self._input_data_files = {}
+            self._output_data_files = {}
 
-      self._ice = 0
-      self._excluded_regions = []
+            self._input_data_files_list = []
 
-      # the following input files are also required:
-      #
-      # INTEGRATE.HKL
-      # REMOVE.HKL
-      #
-      # and XDS_ASCII.HKL is produced.
+            self._output_data_files_list = ["GXPARM.XDS"]
 
-      # in
-      self._integrate_hkl = None
-      self._remove_hkl = None
+            self._ice = 0
+            self._excluded_regions = []
 
-      # out
-      self._xds_ascii_hkl = None
-      self._results = None
-      self._remove = []
+            # the following input files are also required:
+            #
+            # INTEGRATE.HKL
+            # REMOVE.HKL
+            #
+            # and XDS_ASCII.HKL is produced.
 
-    # getter and setter for input / output data
+            # in
+            self._integrate_hkl = None
+            self._remove_hkl = None
 
-    def set_anomalous(self, anomalous):
-      self._anomalous = anomalous
+            # out
+            self._xds_ascii_hkl = None
+            self._results = None
+            self._remove = []
 
-    def get_anomalous(self):
-      return self._anomalous
+        # getter and setter for input / output data
 
-    def set_spacegroup_number(self, spacegroup_number):
-      self._spacegroup_number = spacegroup_number
+        def set_anomalous(self, anomalous):
+            self._anomalous = anomalous
 
-    def set_cell(self, cell):
-      self._cell = cell
+        def get_anomalous(self):
+            return self._anomalous
 
-    def set_ice(self, ice):
-      self._ice = ice
+        def set_spacegroup_number(self, spacegroup_number):
+            self._spacegroup_number = spacegroup_number
 
-    def set_excluded_regions(self, excluded_regions):
-      self._excluded_regions = excluded_regions
+        def set_cell(self, cell):
+            self._cell = cell
 
-    def set_polarization(self, polarization):
-      if polarization > 1.0 or polarization < 0.0:
-        raise RuntimeError('bad value for polarization: %.2f' % \
-              polarization)
-      self._polarization = polarization
+        def set_ice(self, ice):
+            self._ice = ice
 
-    def set_reindex_matrix(self, reindex_matrix):
-      if not len(reindex_matrix) == 12:
-        raise RuntimeError('reindex matrix must be 12 numbers')
-      self._reindex_matrix = reindex_matrix
+        def set_excluded_regions(self, excluded_regions):
+            self._excluded_regions = excluded_regions
 
-    def get_reindex_used(self):
-      return self._reindex_used
+        def set_polarization(self, polarization):
+            if polarization > 1.0 or polarization < 0.0:
+                raise RuntimeError("bad value for polarization: %.2f" % polarization)
+            self._polarization = polarization
 
-    def set_resolution_high(self, resolution_high):
-      self._resolution_high = resolution_high
+        def set_reindex_matrix(self, reindex_matrix):
+            if not len(reindex_matrix) == 12:
+                raise RuntimeError("reindex matrix must be 12 numbers")
+            self._reindex_matrix = reindex_matrix
 
-    def set_resolution_low(self, resolution_low):
-      self._resolution_low = resolution_low
+        def get_reindex_used(self):
+            return self._reindex_used
 
-    def set_input_data_file(self, name, data):
-      self._input_data_files[name] = data
+        def set_resolution_high(self, resolution_high):
+            self._resolution_high = resolution_high
 
-    def get_output_data_file(self, name):
-      return self._output_data_files[name]
+        def set_resolution_low(self, resolution_low):
+            self._resolution_low = resolution_low
 
-    def set_integrate_hkl(self, integrate_hkl):
-      self._integrate_hkl = integrate_hkl
+        def set_input_data_file(self, name, data):
+            self._input_data_files[name] = data
 
-    def set_remove_hkl(self, remove_hkl):
-      self._remove_hkl = remove_hkl
+        def get_output_data_file(self, name):
+            return self._output_data_files[name]
 
-    def get_remove(self):
-      return self._remove
+        def set_integrate_hkl(self, integrate_hkl):
+            self._integrate_hkl = integrate_hkl
 
-    def get_xds_ascii_hkl(self):
-      return self._xds_ascii_hkl
+        def set_remove_hkl(self, remove_hkl):
+            self._remove_hkl = remove_hkl
 
-    # this needs setting up from setup_from_image in FrameProcessor
+        def get_remove(self):
+            return self._remove
 
-    def set_data_range(self, start, end):
-      offset = self.get_frame_offset()
-      self._data_range = (start - offset, end - offset)
+        def get_xds_ascii_hkl(self):
+            return self._xds_ascii_hkl
 
-    def add_spot_range(self, start, end):
-      offset = self.get_frame_offset()
-      self._spot_range.append((start - offset, end - offset))
+        # this needs setting up from setup_from_image in FrameProcessor
 
-    def set_background_range(self, start, end):
-      offset = self.get_frame_offset()
-      self._background_range = (start - offset, end - offset)
+        def set_data_range(self, start, end):
+            offset = self.get_frame_offset()
+            self._data_range = (start - offset, end - offset)
 
-    def get_result(self, name):
-      if not self._results:
-        raise RuntimeError('no results')
+        def add_spot_range(self, start, end):
+            offset = self.get_frame_offset()
+            self._spot_range.append((start - offset, end - offset))
 
-      if name not in self._results:
-        raise RuntimeError('result name "%s" unknown' % name)
+        def set_background_range(self, start, end):
+            offset = self.get_frame_offset()
+            self._background_range = (start - offset, end - offset)
 
-      return self._results[name]
+        def get_result(self, name):
+            if not self._results:
+                raise RuntimeError("no results")
 
-    def run(self):
-      '''Run correct.'''
+            if name not in self._results:
+                raise RuntimeError('result name "%s" unknown' % name)
 
-      # this is ok...
-      # if not self._cell:
-      # raise RuntimeError('cell not set')
-      # if not self._spacegroup_number:
-      # raise RuntimeError('spacegroup not set')
+            return self._results[name]
 
-      #image_header = self.get_header()
+        def run(self):
+            """Run correct."""
 
-      ## crank through the header dictionary and replace incorrect
-      ## information with updated values through the indexer
-      ## interface if available...
+            # this is ok...
+            # if not self._cell:
+            # raise RuntimeError('cell not set')
+            # if not self._spacegroup_number:
+            # raise RuntimeError('spacegroup not set')
 
-      ## need to add distance, wavelength - that should be enough...
+            # image_header = self.get_header()
 
-      #if self.get_distance():
-        #image_header['distance'] = self.get_distance()
+            ## crank through the header dictionary and replace incorrect
+            ## information with updated values through the indexer
+            ## interface if available...
 
-      #if self.get_wavelength():
-        #image_header['wavelength'] = self.get_wavelength()
+            ## need to add distance, wavelength - that should be enough...
 
-      #if self.get_two_theta():
-        #image_header['two_theta'] = self.get_two_theta()
+            # if self.get_distance():
+            # image_header['distance'] = self.get_distance()
 
-      header = imageset_to_xds(self.get_imageset())
+            # if self.get_wavelength():
+            # image_header['wavelength'] = self.get_wavelength()
 
-      xds_inp = open(os.path.join(self.get_working_directory(),
-                                  'XDS.INP'), 'w')
+            # if self.get_two_theta():
+            # image_header['two_theta'] = self.get_two_theta()
 
-      # what are we doing?
-      xds_inp.write('JOB=CORRECT\n')
-      xds_inp.write('MAXIMUM_NUMBER_OF_PROCESSORS=%d\n' % \
-                    self._parallel)
+            header = imageset_to_xds(self.get_imageset())
 
-      # check to see if we are excluding ice rings
-      if self._ice != 0:
-        Debug.write('Excluding ice rings')
+            xds_inp = open(os.path.join(self.get_working_directory(), "XDS.INP"), "w")
 
-        for record in open(os.path.abspath(os.path.join(
-            os.path.dirname(__file__), '..', '..',
-            'Data', 'ice-rings.dat'))).readlines():
+            # what are we doing?
+            xds_inp.write("JOB=CORRECT\n")
+            xds_inp.write("MAXIMUM_NUMBER_OF_PROCESSORS=%d\n" % self._parallel)
 
-          resol = tuple(map(float, record.split()[:2]))
+            # check to see if we are excluding ice rings
+            if self._ice != 0:
+                Debug.write("Excluding ice rings")
 
-          xds_inp.write('EXCLUDE_RESOLUTION_RANGE= %.2f %.2f\n' % \
-                        resol)
+                for record in open(
+                    os.path.abspath(
+                        os.path.join(
+                            os.path.dirname(__file__),
+                            "..",
+                            "..",
+                            "Data",
+                            "ice-rings.dat",
+                        )
+                    )
+                ).readlines():
 
-      # exclude requested resolution ranges
-      if self._excluded_regions:
-        Debug.write('Excluding regions: %s' % repr(self._excluded_regions))
+                    resol = tuple(map(float, record.split()[:2]))
 
-        for upper, lower in self._excluded_regions:
-          xds_inp.write('EXCLUDE_RESOLUTION_RANGE= %.2f %.2f\n' % \
-                         (upper, lower))
+                    xds_inp.write("EXCLUDE_RESOLUTION_RANGE= %.2f %.2f\n" % resol)
 
-      # postrefine everything to give better values to the
-      # next INTEGRATE run
-      xds_inp.write(
-          'REFINE(CORRECT)=%s\n' %' '.join(self._params.refine))
+            # exclude requested resolution ranges
+            if self._excluded_regions:
+                Debug.write("Excluding regions: %s" % repr(self._excluded_regions))
 
-      if self._polarization > 0.0:
-        xds_inp.write('FRACTION_OF_POLARIZATION=%.2f\n' % \
-                      self._polarization)
+                for upper, lower in self._excluded_regions:
+                    xds_inp.write(
+                        "EXCLUDE_RESOLUTION_RANGE= %.2f %.2f\n" % (upper, lower)
+                    )
 
-      if self._params.air is not None:
-        xds_inp.write('AIR=%f' %self._params.air)
+            # postrefine everything to give better values to the
+            # next INTEGRATE run
+            xds_inp.write("REFINE(CORRECT)=%s\n" % " ".join(self._params.refine))
 
-      for record in header:
-        xds_inp.write('%s\n' % record)
+            if self._polarization > 0.0:
+                xds_inp.write("FRACTION_OF_POLARIZATION=%.2f\n" % self._polarization)
 
-      name_template = template_to_xds(
-        os.path.join(self.get_directory(), self.get_template()))
+            if self._params.air is not None:
+                xds_inp.write("AIR=%f" % self._params.air)
 
-      record = 'NAME_TEMPLATE_OF_DATA_FRAMES=%s\n' % \
-               name_template
+            for record in header:
+                xds_inp.write("%s\n" % record)
 
-      xds_inp.write(record)
+            name_template = template_to_xds(
+                os.path.join(self.get_directory(), self.get_template())
+            )
 
-      xds_inp.write('DATA_RANGE=%d %d\n' % self._data_range)
-      # xds_inp.write('MINIMUM_ZETA=0.1\n')
-      # include the resolution range, perhaps
-      if self._resolution_high or self._resolution_low:
-        xds_inp.write('INCLUDE_RESOLUTION_RANGE=%.2f %.2f\n' % \
-                      (self._resolution_low, self._resolution_high))
+            record = "NAME_TEMPLATE_OF_DATA_FRAMES=%s\n" % name_template
 
-      if self._anomalous:
-        xds_inp.write('FRIEDEL\'S_LAW=FALSE\n')
-        xds_inp.write('STRICT_ABSORPTION_CORRECTION=TRUE\n')
-      else:
-        xds_inp.write('FRIEDEL\'S_LAW=TRUE\n')
+            xds_inp.write(record)
 
-      if self._spacegroup_number:
-        if not self._cell:
-          raise RuntimeError('cannot set spacegroup without unit cell')
+            xds_inp.write("DATA_RANGE=%d %d\n" % self._data_range)
+            # xds_inp.write('MINIMUM_ZETA=0.1\n')
+            # include the resolution range, perhaps
+            if self._resolution_high or self._resolution_low:
+                xds_inp.write(
+                    "INCLUDE_RESOLUTION_RANGE=%.2f %.2f\n"
+                    % (self._resolution_low, self._resolution_high)
+                )
 
-        xds_inp.write('SPACE_GROUP_NUMBER=%d\n' % \
-                      self._spacegroup_number)
-      if self._cell:
-        xds_inp.write('UNIT_CELL_CONSTANTS=')
-        xds_inp.write('%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f\n' % \
-                      tuple(self._cell))
-      if self._reindex_matrix:
-        xds_inp.write('REIDX=%d %d %d %d %d %d %d %d %d %d %d %d' % \
-                      tuple(map(int, self._reindex_matrix)))
+            if self._anomalous:
+                xds_inp.write("FRIEDEL'S_LAW=FALSE\n")
+                xds_inp.write("STRICT_ABSORPTION_CORRECTION=TRUE\n")
+            else:
+                xds_inp.write("FRIEDEL'S_LAW=TRUE\n")
 
+            if self._spacegroup_number:
+                if not self._cell:
+                    raise RuntimeError("cannot set spacegroup without unit cell")
 
-      xds_inp.close()
+                xds_inp.write("SPACE_GROUP_NUMBER=%d\n" % self._spacegroup_number)
+            if self._cell:
+                xds_inp.write("UNIT_CELL_CONSTANTS=")
+                xds_inp.write(
+                    "%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f\n" % tuple(self._cell)
+                )
+            if self._reindex_matrix:
+                xds_inp.write(
+                    "REIDX=%d %d %d %d %d %d %d %d %d %d %d %d"
+                    % tuple(map(int, self._reindex_matrix))
+                )
 
-      # copy the input file...
-      shutil.copyfile(os.path.join(self.get_working_directory(),
-                                   'XDS.INP'),
-                      os.path.join(self.get_working_directory(),
-                                   '%d_CORRECT.INP' % self.get_xpid()))
+            xds_inp.close()
 
-      # write the input data files...
+            # copy the input file...
+            shutil.copyfile(
+                os.path.join(self.get_working_directory(), "XDS.INP"),
+                os.path.join(
+                    self.get_working_directory(), "%d_CORRECT.INP" % self.get_xpid()
+                ),
+            )
 
-      for file_name in self._input_data_files_list:
-        src = self._input_data_files[file_name]
-        dst = os.path.join(
-            self.get_working_directory(), file_name)
-        if src != dst:
-          shutil.copyfile(src, dst)
+            # write the input data files...
 
-      self.start()
-      self.close_wait()
+            for file_name in self._input_data_files_list:
+                src = self._input_data_files[file_name]
+                dst = os.path.join(self.get_working_directory(), file_name)
+                if src != dst:
+                    shutil.copyfile(src, dst)
 
-      xds_check_version_supported(self.get_all_output())
-      xds_check_error(self.get_all_output())
+            self.start()
+            self.close_wait()
 
-      # look for errors
-      # like this perhaps
-      #   !!! ERROR !!! ILLEGAL SPACE GROUP NUMBER OR UNIT CELL
+            xds_check_version_supported(self.get_all_output())
+            xds_check_error(self.get_all_output())
 
-      # copy the LP file
-      shutil.copyfile(os.path.join(self.get_working_directory(),
-                                   'CORRECT.LP'),
-                      os.path.join(self.get_working_directory(),
-                                   '%d_CORRECT.LP' % self.get_xpid()))
+            # look for errors
+            # like this perhaps
+            #   !!! ERROR !!! ILLEGAL SPACE GROUP NUMBER OR UNIT CELL
 
-      # gather the output files
+            # copy the LP file
+            shutil.copyfile(
+                os.path.join(self.get_working_directory(), "CORRECT.LP"),
+                os.path.join(
+                    self.get_working_directory(), "%d_CORRECT.LP" % self.get_xpid()
+                ),
+            )
 
-      for file in self._output_data_files_list:
-        self._output_data_files[file] = os.path.join(
-          self.get_working_directory(), file)
+            # gather the output files
 
-      self._xds_ascii_hkl = os.path.join(
-          self.get_working_directory(), 'XDS_ASCII.HKL')
+            for file in self._output_data_files_list:
+                self._output_data_files[file] = os.path.join(
+                    self.get_working_directory(), file
+                )
 
-      # do some parsing of the correct output...
+            self._xds_ascii_hkl = os.path.join(
+                self.get_working_directory(), "XDS_ASCII.HKL"
+            )
 
-      self._results = _parse_correct_lp(os.path.join(
-          self.get_working_directory(),
-          'CORRECT.LP'))
+            # do some parsing of the correct output...
 
-      # check that the unit cell is comparable to what went in i.e.
-      # the volume is the same to within a factor of 10 (which is
-      # extremely generous and should only spot gross errors)
+            self._results = _parse_correct_lp(
+                os.path.join(self.get_working_directory(), "CORRECT.LP")
+            )
 
-      original = unit_cell(self._cell)
-      refined = unit_cell(self._results['cell'])
+            # check that the unit cell is comparable to what went in i.e.
+            # the volume is the same to within a factor of 10 (which is
+            # extremely generous and should only spot gross errors)
 
-      if original.volume() / refined.volume() > 10:
-        raise RuntimeError('catastrophic change in unit cell volume')
+            original = unit_cell(self._cell)
+            refined = unit_cell(self._results["cell"])
 
-      if refined.volume() / original.volume() > 10:
-        raise RuntimeError('catastrophic change in unit cell volume')
+            if original.volume() / refined.volume() > 10:
+                raise RuntimeError("catastrophic change in unit cell volume")
 
-      # record reindex operation used for future reference... this
-      # is to trap trac #419
+            if refined.volume() / original.volume() > 10:
+                raise RuntimeError("catastrophic change in unit cell volume")
 
-      if 'reindex_op' in self._results:
-        format = 'XDS applied reindex:' + 12 * ' %d'
-        Debug.write(format % tuple(self._results['reindex_op']))
-        self._reindex_used = self._results['reindex_op']
+            # record reindex operation used for future reference... this
+            # is to trap trac #419
 
-      # get the reflections to remove...
-      for line in open(os.path.join(
-          self.get_working_directory(),
-          'CORRECT.LP'), 'r').readlines():
-        if '"alien"' in line:
-          h, k, l = tuple(map(int, line.split()[:3]))
-          z = float(line.split()[4])
-          if not (h, k, l, z) in self._remove:
-            self._remove.append((h, k, l, z))
+            if "reindex_op" in self._results:
+                format = "XDS applied reindex:" + 12 * " %d"
+                Debug.write(format % tuple(self._results["reindex_op"]))
+                self._reindex_used = self._results["reindex_op"]
 
-      return
+            # get the reflections to remove...
+            for line in open(
+                os.path.join(self.get_working_directory(), "CORRECT.LP"), "r"
+            ).readlines():
+                if '"alien"' in line:
+                    h, k, l = tuple(map(int, line.split()[:3]))
+                    z = float(line.split()[4])
+                    if not (h, k, l, z) in self._remove:
+                        self._remove.append((h, k, l, z))
 
-  return XDSCorrectWrapper()
+            return
 
-if __name__ == '__main__':
+    return XDSCorrectWrapper()
 
-  correct = XDSCorrect()
-  directory = os.path.join(os.environ['XIA2_ROOT'],
-                           'Data', 'Test', 'Images')
 
-  correct.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
+if __name__ == "__main__":
 
-  correct.set_data_range(1, 1)
-  correct.set_background_range(1, 1)
-  correct.add_spot_range(1, 1)
+    correct = XDSCorrect()
+    directory = os.path.join(os.environ["XIA2_ROOT"], "Data", "Test", "Images")
 
-  correct.run()
+    correct.setup_from_image(os.path.join(directory, "12287_1_E1_001.img"))
+
+    correct.set_data_range(1, 1)
+    correct.set_background_range(1, 1)
+    correct.add_spot_range(1, 1)
+
+    correct.run()

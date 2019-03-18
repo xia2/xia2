@@ -20,847 +20,889 @@ from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import Chatter, Debug
 
-def Aimless(DriverType = None,
-            absorption_correction = None,
-            decay_correction = None):
-  '''A factory for AimlessWrapper classes.'''
 
-  DriverInstance = DriverFactory.Driver(DriverType)
-  CCP4DriverInstance = DecoratorFactory.Decorate(DriverInstance, 'ccp4')
+def Aimless(DriverType=None, absorption_correction=None, decay_correction=None):
+    """A factory for AimlessWrapper classes."""
 
-  class AimlessWrapper(CCP4DriverInstance.__class__):
-    '''A wrapper for Aimless, using the CCP4-ified Driver.'''
+    DriverInstance = DriverFactory.Driver(DriverType)
+    CCP4DriverInstance = DecoratorFactory.Decorate(DriverInstance, "ccp4")
 
-    def __init__(self):
-      # generic things
-      CCP4DriverInstance.__class__.__init__(self)
+    class AimlessWrapper(CCP4DriverInstance.__class__):
+        """A wrapper for Aimless, using the CCP4-ified Driver."""
 
-      self.set_executable(os.path.join(
-          os.environ.get('CBIN', ''), 'aimless'))
+        def __init__(self):
+            # generic things
+            CCP4DriverInstance.__class__.__init__(self)
 
-      if not os.path.exists(self.get_executable()):
-        raise RuntimeError('aimless binary not found')
+            self.set_executable(os.path.join(os.environ.get("CBIN", ""), "aimless"))
 
-      self.start()
-      self.close_wait()
+            if not os.path.exists(self.get_executable()):
+                raise RuntimeError("aimless binary not found")
 
-      version = None
+            self.start()
+            self.close_wait()
 
-      for record in self.get_all_output():
-        if '##' in record and 'AIMLESS' in record:
-          version = record.split()[5]
+            version = None
 
-      if not version:
-        raise RuntimeError('version not found')
+            for record in self.get_all_output():
+                if "##" in record and "AIMLESS" in record:
+                    version = record.split()[5]
 
-      Debug.write('Using version: %s' % version)
+            if not version:
+                raise RuntimeError("version not found")
 
-      # clear all the header junk
-      self.reset()
+            Debug.write("Using version: %s" % version)
 
-      # input and output files
-      self._scalepack = False
-      self._chef_unmerged = False
-      self._unmerged_reflections = None
-      self._xmlout = None
+            # clear all the header junk
+            self.reset()
 
-      # scaling parameters
-      self._resolution = None
+            # input and output files
+            self._scalepack = False
+            self._chef_unmerged = False
+            self._unmerged_reflections = None
+            self._xmlout = None
 
-      # scales file for recycling
-      self._scales_file = None
+            # scaling parameters
+            self._resolution = None
 
-      # this defaults to SCALES - and is useful for when we
-      # want to refine the SD parameters because we can
-      # recycle the scale factors through the above interface
-      self._new_scales_file = None
+            # scales file for recycling
+            self._scales_file = None
 
-      # this flag indicates that the input reflections are already
-      # scaled and just need merging e.g. from XDS/XSCALE.
-      self._onlymerge = False
+            # this defaults to SCALES - and is useful for when we
+            # want to refine the SD parameters because we can
+            # recycle the scale factors through the above interface
+            self._new_scales_file = None
 
-      # by default, switch this on
-      if decay_correction is None:
-        self._bfactor = True
-      else:
-        self._bfactor = decay_correction
+            # this flag indicates that the input reflections are already
+            # scaled and just need merging e.g. from XDS/XSCALE.
+            self._onlymerge = False
 
-      # this will often be wanted
-      self._anomalous = False
+            # by default, switch this on
+            if decay_correction is None:
+                self._bfactor = True
+            else:
+                self._bfactor = decay_correction
 
-      self._mode = 'rotation'
+            # this will often be wanted
+            self._anomalous = False
 
-      # these are only relevant for 'rotation' mode scaling
-      self._spacing = 5
-      self._cycles = 100
-      self._brotation = None
-      self._bfactor_tie = None
-      self._surface_tie = None
-      self._surface_link = True
+            self._mode = "rotation"
 
-      self._intensities = 'combine'
+            # these are only relevant for 'rotation' mode scaling
+            self._spacing = 5
+            self._cycles = 100
+            self._brotation = None
+            self._bfactor_tie = None
+            self._surface_tie = None
+            self._surface_link = True
 
-      self._project_crystal_dataset = { }
-      self._runs = []
+            self._intensities = "combine"
 
-      # for adding data on merge - one dname
-      self._pname = None
-      self._xname = None
-      self._dname = None
+            self._project_crystal_dataset = {}
+            self._runs = []
 
-    # getter and setter methods
+            # for adding data on merge - one dname
+            self._pname = None
+            self._xname = None
+            self._dname = None
 
-    def set_project_info(self, pname, xname, dname):
-      '''Only use this for the merge() method.'''
-      self._pname = pname
-      self._xname = xname
-      self._dname = dname
+        # getter and setter methods
 
-    def add_run(self, start, end,
-                pname = None, xname = None, dname = None,
-                exclude = False, resolution = 0.0,
-                name = None):
-      '''Add another run to the run table, optionally not including
-      it in the scaling - for solution to bug 2229.'''
+        def set_project_info(self, pname, xname, dname):
+            """Only use this for the merge() method."""
+            self._pname = pname
+            self._xname = xname
+            self._dname = dname
 
-      self._runs.append((start, end, pname, xname, dname,
-                         exclude, resolution, name))
+        def add_run(
+            self,
+            start,
+            end,
+            pname=None,
+            xname=None,
+            dname=None,
+            exclude=False,
+            resolution=0.0,
+            name=None,
+        ):
+            """Add another run to the run table, optionally not including
+      it in the scaling - for solution to bug 2229."""
 
-    def set_scalepack(self, scalepack = True):
-      self._scalepack = scalepack
+            self._runs.append(
+                (start, end, pname, xname, dname, exclude, resolution, name)
+            )
 
-    def set_chef_unmerged(self, chef_unmerged = True):
-      '''Output the measurements in the form suitable for
+        def set_scalepack(self, scalepack=True):
+            self._scalepack = scalepack
+
+        def set_chef_unmerged(self, chef_unmerged=True):
+            """Output the measurements in the form suitable for
       input to chef, that is with SDCORRECTION 1 0 0 and
-      in unmerged MTZ format.'''
+      in unmerged MTZ format."""
 
-      self._chef_unmerged = chef_unmerged
+            self._chef_unmerged = chef_unmerged
 
-    def set_resolution(self, resolution):
-      '''Set the resolution limit for the scaling -
-      default is to include all reflections.'''
+        def set_resolution(self, resolution):
+            """Set the resolution limit for the scaling -
+      default is to include all reflections."""
 
-      self._resolution = resolution
+            self._resolution = resolution
 
-    def get_xmlout(self):
-      return self._xmlout
+        def get_xmlout(self):
+            return self._xmlout
 
-    def set_scales_file(self, scales_file):
-      '''Set the file containing all of the scales required for
+        def set_scales_file(self, scales_file):
+            """Set the file containing all of the scales required for
       this run. Used when fiddling the error parameters or
       obtaining stats to different resolutions. See also
-      set_new_scales_file(). This will switch on ONLYMERGE RESTORE.'''
+      set_new_scales_file(). This will switch on ONLYMERGE RESTORE."""
 
-      # bodge: take this file and make a temporary local copy which will
-      # have the Nparameters token spaced from the number which follows
-      # it....
+            # bodge: take this file and make a temporary local copy which will
+            # have the Nparameters token spaced from the number which follows
+            # it....
 
-      tmp_scales_file = os.path.join(self.get_working_directory(),
-                                     '%s.tmp' % os.path.split(scales_file)[-1])
+            tmp_scales_file = os.path.join(
+                self.get_working_directory(), "%s.tmp" % os.path.split(scales_file)[-1]
+            )
 
-      open(tmp_scales_file, 'w').write(open(os.path.join(
-        self.get_working_directory(), scales_file)).read().replace(
-        'Nparameters', 'Nparameters '))
+            open(tmp_scales_file, "w").write(
+                open(os.path.join(self.get_working_directory(), scales_file))
+                .read()
+                .replace("Nparameters", "Nparameters ")
+            )
 
-      self._scales_file = tmp_scales_file
+            self._scales_file = tmp_scales_file
 
-    def set_new_scales_file(self, new_scales_file):
-      '''Set the file to which the scales will be written. This
-      will allow reusing through the above interface.'''
+        def set_new_scales_file(self, new_scales_file):
+            """Set the file to which the scales will be written. This
+      will allow reusing through the above interface."""
 
-      self._new_scales_file = new_scales_file
+            self._new_scales_file = new_scales_file
 
-    def get_new_scales_file(self):
-      '''Get the file to which the scales have been written.'''
-      if self._new_scales_file:
-        if not os.path.isfile(os.path.join(self.get_working_directory(), self._new_scales_file)):
-          Chatter.write(
-            "Aimless did not scale the data, see log file for more details:\n  %s" %self.get_log_file())
-          raise RuntimeError('data not scaled')
-      return os.path.join(self.get_working_directory(), self._new_scales_file)
+        def get_new_scales_file(self):
+            """Get the file to which the scales have been written."""
+            if self._new_scales_file:
+                if not os.path.isfile(
+                    os.path.join(self.get_working_directory(), self._new_scales_file)
+                ):
+                    Chatter.write(
+                        "Aimless did not scale the data, see log file for more details:\n  %s"
+                        % self.get_log_file()
+                    )
+                    raise RuntimeError("data not scaled")
+            return os.path.join(self.get_working_directory(), self._new_scales_file)
 
-    def set_onlymerge(self, onlymerge = True):
-      '''Switch on merging only - this will presume that the
-      input reflections are scaled already.'''
+        def set_onlymerge(self, onlymerge=True):
+            """Switch on merging only - this will presume that the
+      input reflections are scaled already."""
 
-      self._onlymerge = onlymerge
+            self._onlymerge = onlymerge
 
-    def set_bfactor(self, bfactor = True, brotation = None):
-      '''Switch on/off bfactor refinement, optionally with the
-      spacing for the bfactor refinement (in degrees.)'''
+        def set_bfactor(self, bfactor=True, brotation=None):
+            """Switch on/off bfactor refinement, optionally with the
+      spacing for the bfactor refinement (in degrees.)"""
 
-      self._bfactor = bfactor
+            self._bfactor = bfactor
 
-      if brotation:
-        self._brotation = brotation
+            if brotation:
+                self._brotation = brotation
 
-    def set_surface_tie(self, surface_tie):
-      self._surface_tie = surface_tie
+        def set_surface_tie(self, surface_tie):
+            self._surface_tie = surface_tie
 
-    def set_surface_link(self, surface_link):
-      self._surface_link = surface_link
+        def set_surface_link(self, surface_link):
+            self._surface_link = surface_link
 
-    def set_anomalous(self, anomalous = True):
-      '''Switch on/off separating of anomalous pairs.'''
+        def set_anomalous(self, anomalous=True):
+            """Switch on/off separating of anomalous pairs."""
 
-      self._anomalous = anomalous
+            self._anomalous = anomalous
 
-    def set_secondary(self, mode, lmax):
-      assert mode in ('secondary', 'absorption')
-      self._secondary = mode
-      self._secondary_lmax = lmax
+        def set_secondary(self, mode, lmax):
+            assert mode in ("secondary", "absorption")
+            self._secondary = mode
+            self._secondary_lmax = lmax
 
-    def set_mode(self, mode):
-      if not mode in ['rotation', 'batch']:
-        raise RuntimeError('unknown scaling mode "%s"' % mode)
-      self._mode = mode
+        def set_mode(self, mode):
+            if not mode in ["rotation", "batch"]:
+                raise RuntimeError('unknown scaling mode "%s"' % mode)
+            self._mode = mode
 
-    def set_spacing(self, spacing):
-      self._spacing = spacing
+        def set_spacing(self, spacing):
+            self._spacing = spacing
 
-    def set_cycles(self, cycles):
-      '''Set the maximum number of cycles allowed for the scaling -
-      this assumes the default convergence parameters.'''
+        def set_cycles(self, cycles):
+            """Set the maximum number of cycles allowed for the scaling -
+      this assumes the default convergence parameters."""
 
-      self._cycles = cycles
+            self._cycles = cycles
 
-    def set_intensities(self, intensities):
-      intensities = intensities.lower()
-      assert intensities in ("summation", "profile", "combine")
-      self._intensities = intensities
+        def set_intensities(self, intensities):
+            intensities = intensities.lower()
+            assert intensities in ("summation", "profile", "combine")
+            self._intensities = intensities
 
-    def identify_negative_scale_run(self):
-      '''Given the presence of a negative scale factor, try to
+        def identify_negative_scale_run(self):
+            """Given the presence of a negative scale factor, try to
       identify it - this is going to be called after a negative scales
-      error has been raised.'''
+      error has been raised."""
 
-      bad_run = 0
+            bad_run = 0
 
-      runs_to_batches = { }
-      run = 0
+            runs_to_batches = {}
+            run = 0
 
-      for record in self.get_all_output():
+            for record in self.get_all_output():
 
-        if 'Run number' and 'consists of batches' in record:
-          run = int(record.split()[2])
-          runs_to_batches[run] = []
-          continue
+                if "Run number" and "consists of batches" in record:
+                    run = int(record.split()[2])
+                    runs_to_batches[run] = []
+                    continue
 
-        if run and not record.strip():
-          run = 0
-          continue
+                if run and not record.strip():
+                    run = 0
+                    continue
 
-        if run:
-          runs_to_batches[run].extend(map(int, record.split()))
+                if run:
+                    runs_to_batches[run].extend(map(int, record.split()))
 
-        if 'shifted scale factor' in record and 'negative' in record:
-          tokens = record.split()
-          scale = tokens[tokens.index('factor') + 1]
-          bad_run = int(scale.split('.')[0][1:])
+                if "shifted scale factor" in record and "negative" in record:
+                    tokens = record.split()
+                    scale = tokens[tokens.index("factor") + 1]
+                    bad_run = int(scale.split(".")[0][1:])
 
-      return bad_run, (min(runs_to_batches[bad_run]),
-                       max(runs_to_batches[bad_run]))
+            return (
+                bad_run,
+                (min(runs_to_batches[bad_run]), max(runs_to_batches[bad_run])),
+            )
 
-    def identify_no_observations_run(self):
-      '''Identify the run which was causing problems with "no
-      observations" reported.'''
+        def identify_no_observations_run(self):
+            """Identify the run which was causing problems with "no
+      observations" reported."""
 
-      bad_run = 0
+            bad_run = 0
 
-      runs_to_batches = { }
-      run = 0
+            runs_to_batches = {}
+            run = 0
 
-      for record in self.get_all_output():
+            for record in self.get_all_output():
 
-        if 'Run number' and 'consists of batches' in record:
-          run = int(record.split()[2])
-          runs_to_batches[run] = []
-          continue
+                if "Run number" and "consists of batches" in record:
+                    run = int(record.split()[2])
+                    runs_to_batches[run] = []
+                    continue
 
-        if run and not record.strip():
-          run = 0
-          continue
+                if run and not record.strip():
+                    run = 0
+                    continue
 
-        if run:
-          runs_to_batches[run].extend(map(int, record.split()))
+                if run:
+                    runs_to_batches[run].extend(map(int, record.split()))
 
-        if 'No observations for parameter' in record:
-          bad_run = int(record.split()[-1])
+                if "No observations for parameter" in record:
+                    bad_run = int(record.split()[-1])
 
-      return bad_run, (min(runs_to_batches[bad_run]),
-                       max(runs_to_batches[bad_run]))
+            return (
+                bad_run,
+                (min(runs_to_batches[bad_run]), max(runs_to_batches[bad_run])),
+            )
 
-    def check_aimless_error_negative_scale_run(self):
-      '''Check for a bad run giving a negative scale in Aimless - this
-      is particularly for the multi-crystal analysis.'''
+        def check_aimless_error_negative_scale_run(self):
+            """Check for a bad run giving a negative scale in Aimless - this
+      is particularly for the multi-crystal analysis."""
 
-      for record in self.get_all_output():
-        if ' **** Negative scale factor' in record:
-          raise RuntimeError('bad batch %d' % \
-                int(record.split()[-3]))
+            for record in self.get_all_output():
+                if " **** Negative scale factor" in record:
+                    raise RuntimeError("bad batch %d" % int(record.split()[-3]))
 
-    def check_aimless_errors(self):
-      '''Check for Aimless specific errors. Raise RuntimeError if
-      error is found.'''
+        def check_aimless_errors(self):
+            """Check for Aimless specific errors. Raise RuntimeError if
+      error is found."""
 
-      # FIXME in here I need to add a test for convergence
+            # FIXME in here I need to add a test for convergence
 
-      output = self.get_all_output()
+            output = self.get_all_output()
 
-      for n, line in enumerate(output):
-        if 'File must be sorted' in line:
-          raise RuntimeError('hklin not sorted')
-        if 'Negative scales' in line:
-          run, batches = self.identify_negative_scale_run()
-          raise RuntimeError('negative scales run %d: %d to %d' % \
-                (run, batches[0], batches[1]))
-        if 'Scaling has failed to converge' in line:
-          raise RuntimeError('scaling not converged')
-        if '*** No observations ***' in line:
-          run, batches = self.identify_no_observations_run()
-          raise RuntimeError('no observations run %d: %d to %d' % \
-                (run, batches[0], batches[1]))
-        if 'FATAL ERROR message:' in line:
-          raise RuntimeError(output[n+1].strip())
+            for n, line in enumerate(output):
+                if "File must be sorted" in line:
+                    raise RuntimeError("hklin not sorted")
+                if "Negative scales" in line:
+                    run, batches = self.identify_negative_scale_run()
+                    raise RuntimeError(
+                        "negative scales run %d: %d to %d"
+                        % (run, batches[0], batches[1])
+                    )
+                if "Scaling has failed to converge" in line:
+                    raise RuntimeError("scaling not converged")
+                if "*** No observations ***" in line:
+                    run, batches = self.identify_no_observations_run()
+                    raise RuntimeError(
+                        "no observations run %d: %d to %d"
+                        % (run, batches[0], batches[1])
+                    )
+                if "FATAL ERROR message:" in line:
+                    raise RuntimeError(output[n + 1].strip())
 
-    def sum(self):
-      '''Sum a set of reflections in a sorted mtz file - this will
+        def sum(self):
+            """Sum a set of reflections in a sorted mtz file - this will
       just sum partials to make whole reflections, initially for
-      resolution analysis.'''
+      resolution analysis."""
+
+            self.check_hklin()
+            self.check_hklout()
+
+            self.start()
+
+            self.input("run 1 all")
+            self.input("scales constant")
+            self.input("output unmerged")
+            self.input("sdcorrection noadjust 1.0 0.0 0.0")
+
+            self.close_wait()
+
+            # check for errors
+
+            if True:
+                # try:
+                self.check_for_errors()
+                self.check_ccp4_errors()
+                self.check_aimless_error_negative_scale_run()
+                self.check_aimless_errors()
+
+            else:
+                # except RuntimeError as e:
+                try:
+                    os.remove(self.get_hklout())
+                except Exception:
+                    pass
+
+                raise e
+
+            return self.get_ccp4_status()
+
+        def const(self):
+            """Const scaling; for cleaner input to pointless"""
 
-      self.check_hklin()
-      self.check_hklout()
+            self.check_hklin()
+            self.check_hklout()
+            self.start()
+            self.input("scales constant")
+            self.input("output unmerged")
+            self.input("sdcorrection norefine 1 0 0")
+            self.close_wait()
+
+            # check for errors
+
+            self.check_for_errors()
+            self.check_ccp4_errors()
+            self.check_aimless_errors()
+
+            return "OK"
+
+        def merge(self):
+            """Actually merge the already scaled reflections."""
+
+            self.check_hklin()
+            self.check_hklout()
+
+            if not self._onlymerge:
+                raise RuntimeError("for scaling use scale()")
+
+            if not self._scalepack:
+                self.set_task(
+                    "Merging scaled reflections from %s => %s"
+                    % (
+                        os.path.split(self.get_hklin())[-1],
+                        os.path.split(self.get_hklout())[-1],
+                    )
+                )
+            else:
+                self.set_task(
+                    "Merging reflections from %s => scalepack %s"
+                    % (
+                        os.path.split(self.get_hklin())[-1],
+                        os.path.split(self.get_hklout())[-1],
+                    )
+                )
+
+            self._xmlout = os.path.join(
+                self.get_working_directory(), "%d_aimless.xml" % self.get_xpid()
+            )
+
+            self.start()
+            self.input("xmlout %d_aimless.xml" % self.get_xpid())
+            if PhilIndex.params.xia2.settings.small_molecule == False:
+                self.input("bins 20")
+            self.input("run 1 all")
+            self.input("scales constant")
+            self.input("initial unity")
+            self.input("sdcorrection both noadjust 1.0 0.0 0.0")
+
+            if self._anomalous:
+                self.input("anomalous on")
+            else:
+                self.input("anomalous off")
+
+            if self._scalepack:
+                self.input("output polish unmerged")
+            self.input("output unmerged")
+
+            self.close_wait()
+
+            # check for errors
+
+            try:
+                self.check_for_errors()
+                self.check_ccp4_errors()
+                self.check_aimless_errors()
+
+                status = self.get_ccp4_status()
+                if "Error" in status:
+                    raise RuntimeError("[AIMLESS] %s" % status)
+
+            except RuntimeError as e:
+                try:
+                    os.remove(self.get_hklout())
+                except Exception:
+                    pass
+
+                raise e
+
+            return self.get_ccp4_status()
+
+        def scale(self):
+            """Actually perform the scaling."""
+
+            self.check_hklin()
+            self.check_hklout()
+
+            if self._chef_unmerged and self._scalepack:
+                raise RuntimeError("CHEF and scalepack incompatible")
 
-      self.start()
+            if self._onlymerge:
+                raise RuntimeError("use merge() method")
 
-      self.input('run 1 all')
-      self.input('scales constant')
-      self.input('output unmerged')
-      self.input('sdcorrection noadjust 1.0 0.0 0.0')
+            if not self._scalepack:
+                self.set_task(
+                    "Scaling reflections from %s => %s"
+                    % (
+                        os.path.split(self.get_hklin())[-1],
+                        os.path.split(self.get_hklout())[-1],
+                    )
+                )
+            else:
+                self.set_task(
+                    "Scaling reflections from %s => scalepack %s"
+                    % (
+                        os.path.split(self.get_hklin())[-1],
+                        os.path.split(self.get_hklout())[-1],
+                    )
+                )
 
-      self.close_wait()
+            self._xmlout = os.path.join(
+                self.get_working_directory(), "%d_aimless.xml" % self.get_xpid()
+            )
 
-      # check for errors
+            self.start()
 
-      if True:
-        # try:
-        self.check_for_errors()
-        self.check_ccp4_errors()
-        self.check_aimless_error_negative_scale_run()
-        self.check_aimless_errors()
+            nproc = PhilIndex.params.xia2.settings.multiprocessing.nproc
+            if isinstance(nproc, int) and nproc > 1:
+                self.set_working_environment("OMP_NUM_THREADS", "%d" % nproc)
+                self.input("refine parallel")
+            self.input("xmlout %d_aimless.xml" % self.get_xpid())
+            if PhilIndex.params.xia2.settings.small_molecule == False:
+                self.input("bins 20")
+            self.input("intensities %s" % self._intensities)
 
-      else:
-        # except RuntimeError as e:
-        try:
-          os.remove(self.get_hklout())
-        except Exception:
-          pass
+            if self._new_scales_file:
+                self.input("dump %s" % self._new_scales_file)
 
-        raise e
+            run_number = 0
+            for run in self._runs:
+                run_number += 1
 
-      return self.get_ccp4_status()
+                if not run[5]:
+                    self.input("run %d batch %d to %d" % (run_number, run[0], run[1]))
 
-    def const(self):
-      '''Const scaling; for cleaner input to pointless'''
+                if run[6] != 0.0 and not run[5]:
+                    self.input("resolution run %d high %g" % (run_number, run[6]))
 
-      self.check_hklin()
-      self.check_hklout()
-      self.start()
-      self.input('scales constant')
-      self.input('output unmerged')
-      self.input('sdcorrection norefine 1 0 0')
-      self.close_wait()
+            run_number = 0
+            for run in self._runs:
+                run_number += 1
 
-      # check for errors
+                if run[7]:
+                    Debug.write("Run %d corresponds to sweep %s" % (run_number, run[7]))
 
-      self.check_for_errors()
-      self.check_ccp4_errors()
-      self.check_aimless_errors()
+                if run[5]:
+                    continue
 
-      return 'OK'
+            self.input("sdcorrection same")
 
-    def merge(self):
-      '''Actually merge the already scaled reflections.'''
+            # FIXME this is a bit of a hack - should be better determined
+            # than this...
+            if PhilIndex.params.xia2.settings.small_molecule == True:
+                # self.input('sdcorrection tie sdfac 0.707 0.3 tie sdadd 0.01 0.05')
+                # self.input('reject all 30')
+                self.input("sdcorrection fixsdb")
 
-      self.check_hklin()
-      self.check_hklout()
+            if self._secondary_lmax and self._surface_tie:
+                self.input("tie surface %.4f" % self._surface_tie)
+                if not self._surface_link:
+                    self.input("unlink all")
 
-      if not self._onlymerge:
-        raise RuntimeError('for scaling use scale()')
+            # assemble the scales command
+            if self._mode == "rotation":
+                scale_command = "scales rotation spacing %g" % self._spacing
 
-      if not self._scalepack:
-        self.set_task('Merging scaled reflections from %s => %s' % \
-                     (os.path.split(self.get_hklin())[-1],
-                      os.path.split(self.get_hklout())[-1]))
-      else:
-        self.set_task('Merging reflections from %s => scalepack %s' % \
-                     (os.path.split(self.get_hklin())[-1],
-                      os.path.split(self.get_hklout())[-1]))
+                if self._secondary_lmax is not None:
+                    scale_command += " %s %d" % (
+                        self._secondary,
+                        int(self._secondary_lmax),
+                    )
+                else:
+                    scale_command += " %s" % self._secondary
 
-      self._xmlout = os.path.join(self.get_working_directory(),
-                                  '%d_aimless.xml' % self.get_xpid())
+                if self._bfactor:
+                    scale_command += " bfactor on"
 
-      self.start()
-      self.input('xmlout %d_aimless.xml' % self.get_xpid())
-      if PhilIndex.params.xia2.settings.small_molecule == False:
-        self.input('bins 20')
-      self.input('run 1 all')
-      self.input('scales constant')
-      self.input('initial unity')
-      self.input('sdcorrection both noadjust 1.0 0.0 0.0')
+                    if self._brotation:
+                        scale_command += " brotation %g" % self._brotation
 
-      if self._anomalous:
-        self.input('anomalous on')
-      else:
-        self.input('anomalous off')
+                else:
+                    scale_command += " bfactor off"
 
-      if self._scalepack:
-        self.input('output polish unmerged')
-      self.input('output unmerged')
+                self.input(scale_command)
 
-      self.close_wait()
-
-      # check for errors
+            else:
 
-      try:
-        self.check_for_errors()
-        self.check_ccp4_errors()
-        self.check_aimless_errors()
+                scale_command = "scales batch"
 
-        status = self.get_ccp4_status()
-        if 'Error' in status:
-          raise RuntimeError('[AIMLESS] %s' % status)
+                if self._bfactor:
+                    scale_command += " bfactor on"
 
-      except RuntimeError as e:
-        try:
-          os.remove(self.get_hklout())
-        except Exception:
-          pass
+                    if self._brotation:
+                        scale_command += " brotation %g" % self._brotation
+                    else:
+                        scale_command += " brotation %g" % self._spacing
 
-        raise e
+                else:
+                    scale_command += " bfactor off"
 
-      return self.get_ccp4_status()
+                self.input(scale_command)
 
-    def scale(self):
-      '''Actually perform the scaling.'''
+            # Debug.write('Scaling command: "%s"' % scale_command)
 
-      self.check_hklin()
-      self.check_hklout()
+            # next any 'generic' parameters
 
-      if self._chef_unmerged and self._scalepack:
-        raise RuntimeError('CHEF and scalepack incompatible')
+            if self._resolution:
+                self.input("resolution %g" % self._resolution)
 
-      if self._onlymerge:
-        raise RuntimeError('use merge() method')
+            self.input("cycles %d" % self._cycles)
 
-      if not self._scalepack:
-        self.set_task('Scaling reflections from %s => %s' % \
-                     (os.path.split(self.get_hklin())[-1],
-                      os.path.split(self.get_hklout())[-1]))
-      else:
-        self.set_task('Scaling reflections from %s => scalepack %s' % \
-                     (os.path.split(self.get_hklin())[-1],
-                      os.path.split(self.get_hklout())[-1]))
+            if self._anomalous:
+                self.input("anomalous on")
+            else:
+                self.input("anomalous off")
 
-      self._xmlout = os.path.join(self.get_working_directory(),
-                                  '%d_aimless.xml' % self.get_xpid())
+            if self._scalepack:
+                self.input("output polish unmerged")
+            elif self._chef_unmerged:
+                self.input("output unmerged together")
+            else:
+                self.input("output unmerged")
 
-      self.start()
+            # run using previously determined scales
 
-      nproc = PhilIndex.params.xia2.settings.multiprocessing.nproc
-      if isinstance(nproc, int) and nproc > 1:
-        self.set_working_environment('OMP_NUM_THREADS', '%d' %nproc)
-        self.input('refine parallel')
-      self.input('xmlout %d_aimless.xml' % self.get_xpid())
-      if PhilIndex.params.xia2.settings.small_molecule == False:
-        self.input('bins 20')
-      self.input('intensities %s' % self._intensities)
+            if self._scales_file:
+                self.input("onlymerge")
+                self.input("restore %s" % self._scales_file)
 
-      if self._new_scales_file:
-        self.input('dump %s' % self._new_scales_file)
+            self.close_wait()
 
-      run_number = 0
-      for run in self._runs:
-        run_number += 1
+            # check for errors
 
-        if not run[5]:
-          self.input('run %d batch %d to %d' % (run_number,
-                                                run[0], run[1]))
+            if True:
+                # try:
+                try:
+                    self.check_for_errors()
+                    self.check_ccp4_errors()
+                    self.check_aimless_error_negative_scale_run()
+                    self.check_aimless_errors()
+                except Exception:
+                    Chatter.write(
+                        "Aimless failed, see log file for more details:\n  %s"
+                        % self.get_log_file()
+                    )
+                    raise
 
-        if run[6] != 0.0 and not run[5]:
-          self.input('resolution run %d high %g' % \
-                     (run_number, run[6]))
+                Debug.write("Aimless status: OK")
 
-      run_number = 0
-      for run in self._runs:
-        run_number += 1
+            else:
+                # except RuntimeError as e:
+                try:
+                    os.remove(self.get_hklout())
+                except Exception:
+                    pass
 
-        if run[7]:
-          Debug.write('Run %d corresponds to sweep %s' % \
-                      (run_number, run[7]))
+                raise e
 
-        if run[5]:
-          continue
+            # here get a list of all output files...
+            output = self.get_all_output()
 
-      self.input('sdcorrection same')
+            hklout_files = []
+            hklout_dict = {}
 
-      # FIXME this is a bit of a hack - should be better determined
-      # than this...
-      if PhilIndex.params.xia2.settings.small_molecule == True:
-        #self.input('sdcorrection tie sdfac 0.707 0.3 tie sdadd 0.01 0.05')
-        #self.input('reject all 30')
-        self.input('sdcorrection fixsdb')
+            for i in range(len(output)):
+                record = output[i]
 
-      if self._secondary_lmax and self._surface_tie:
-        self.input('tie surface %.4f' % self._surface_tie)
-        if not self._surface_link:
-          self.input('unlink all')
+                # this is a potential source of problems - if the
+                # wavelength name has a _ in it then we are here stuffed!
 
-      # assemble the scales command
-      if self._mode == 'rotation':
-        scale_command = 'scales rotation spacing %g' % self._spacing
+                if "Writing merged data for dataset" in record:
 
-        if self._secondary_lmax is not None:
-          scale_command += ' %s %d' % \
-            (self._secondary, int(self._secondary_lmax))
-        else:
-          scale_command += ' %s' % self._secondary
+                    if len(record.split()) == 9:
+                        hklout = output[i + 1].strip()
+                    else:
+                        hklout = record.split()[9]
 
-        if self._bfactor:
-          scale_command += ' bfactor on'
+                    dname = record.split()[6].split("/")[-1]
+                    hklout_dict[dname] = hklout
 
-          if self._brotation:
-            scale_command += ' brotation %g' % \
-                             self._brotation
+                    hklout_files.append(hklout)
 
-        else:
-          scale_command += ' bfactor off'
+                elif "Writing unmerged data for all datasets" in record:
+                    if len(record.split()) == 9:
+                        hklout = output[i + 1].strip()
+                    else:
+                        hklout = record.split()[9]
 
-        self.input(scale_command)
+                    self._unmerged_reflections = hklout
 
-      else:
+            self._scalr_scaled_reflection_files = hklout_dict
 
-        scale_command = 'scales batch'
+            return "OK"
 
-        if self._bfactor:
-          scale_command += ' bfactor on'
+        def multi_merge(self):
+            """Merge data from multiple runs - this is very similar to
+      the scaling subroutine..."""
 
-          if self._brotation:
-            scale_command += ' brotation %g' % \
-                             self._brotation
-          else:
-            scale_command += ' brotation %g' % \
-                             self._spacing
+            self.check_hklin()
+            self.check_hklout()
 
-        else:
-          scale_command += ' bfactor off'
+            if not self._scalepack:
+                self.set_task(
+                    "Scaling reflections from %s => %s"
+                    % (
+                        os.path.split(self.get_hklin())[-1],
+                        os.path.split(self.get_hklout())[-1],
+                    )
+                )
+            else:
+                self.set_task(
+                    "Scaling reflections from %s => scalepack %s"
+                    % (
+                        os.path.split(self.get_hklin())[-1],
+                        os.path.split(self.get_hklout())[-1],
+                    )
+                )
 
-        self.input(scale_command)
+            self.start()
 
-      # Debug.write('Scaling command: "%s"' % scale_command)
+            self._xmlout = os.path.join(
+                self.get_working_directory(), "%d_aimless.xml" % self.get_xpid()
+            )
 
-      # next any 'generic' parameters
+            self.input("xmlout %d_aimless.xml" % self.get_xpid())
+            if PhilIndex.params.xia2.settings.small_molecule == False:
+                self.input("bins 20")
 
-      if self._resolution:
-        self.input('resolution %g' % self._resolution)
+            if self._new_scales_file:
+                self.input("dump %s" % self._new_scales_file)
 
-      self.input('cycles %d' % self._cycles)
+            if self._resolution:
+                self.input("resolution %g" % self._resolution)
 
-      if self._anomalous:
-        self.input('anomalous on')
-      else:
-        self.input('anomalous off')
+            run_number = 0
+            for run in self._runs:
+                run_number += 1
 
-      if self._scalepack:
-        self.input('output polish unmerged')
-      elif self._chef_unmerged:
-        self.input('output unmerged together')
-      else:
-        self.input('output unmerged')
+                if not run[5]:
+                    self.input("run %d batch %d to %d" % (run_number, run[0], run[1]))
 
-      # run using previously determined scales
+                if run[6] != 0.0 and not run[5]:
+                    self.input("resolution run %d high %g" % (run_number, run[6]))
 
-      if self._scales_file:
-        self.input('onlymerge')
-        self.input('restore %s' % self._scales_file)
+            # put in the pname, xname, dname stuff
+            run_number = 0
+            for run in self._runs:
+                run_number += 1
 
-      self.close_wait()
+                if run[7]:
+                    Debug.write("Run %d corresponds to sweep %s" % (run_number, run[7]))
 
-      # check for errors
+                if run[5]:
+                    continue
 
-      if True:
-        # try:
-        try:
-          self.check_for_errors()
-          self.check_ccp4_errors()
-          self.check_aimless_error_negative_scale_run()
-          self.check_aimless_errors()
-        except Exception:
-          Chatter.write(
-            "Aimless failed, see log file for more details:\n  %s" %self.get_log_file())
-          raise
+            # we are only merging here so the scales command is
+            # dead simple...
 
-        Debug.write('Aimless status: OK')
+            self.input("scales constant")
 
-      else:
-        # except RuntimeError as e:
-        try:
-          os.remove(self.get_hklout())
-        except Exception:
-          pass
+            if self._anomalous:
+                self.input("anomalous on")
+            else:
+                self.input("anomalous off")
 
-        raise e
+            # FIXME this is probably not ready to be used yet...
+            if self._scalepack:
+                self.input("output polish unmerged")
+            self.input("output unmerged")
 
-      # here get a list of all output files...
-      output = self.get_all_output()
+            if self._scales_file:
+                self.input("onlymerge")
+                self.input("restore %s" % self._scales_file)
 
-      hklout_files = []
-      hklout_dict = { }
+            self.close_wait()
 
-      for i in range(len(output)):
-        record = output[i]
+            # check for errors
 
-        # this is a potential source of problems - if the
-        # wavelength name has a _ in it then we are here stuffed!
+            try:
+                self.check_for_errors()
+                self.check_ccp4_errors()
+                self.check_aimless_errors()
 
-        if 'Writing merged data for dataset' in record:
+                Debug.write("Aimless status: ok")
 
-          if len(record.split()) == 9:
-            hklout = output[i + 1].strip()
-          else:
-            hklout = record.split()[9]
+            except RuntimeError as e:
+                try:
+                    os.remove(self.get_hklout())
+                except Exception:
+                    pass
 
-          dname = record.split()[6].split('/')[-1]
-          hklout_dict[dname] = hklout
+                raise e
 
-          hklout_files.append(hklout)
+            # here get a list of all output files...
+            output = self.get_all_output()
 
-        elif 'Writing unmerged data for all datasets' in record:
-          if len(record.split()) == 9:
-            hklout = output[i + 1].strip()
-          else:
-            hklout = record.split()[9]
+            # want to put these into a dictionary at some stage, keyed
+            # by the data set id. how this is implemented will depend
+            # on the number of datasets...
 
-          self._unmerged_reflections = hklout
+            # FIXME file names on windows separate out path from
+            # drive with ":"... fixed! split on "Filename:"
 
-      self._scalr_scaled_reflection_files = hklout_dict
+            # get a list of dataset names...
 
-      return 'OK'
+            datasets = []
+            for run in self._runs:
+                # cope with case where two runs make one dataset...
+                if not run[4] in datasets:
+                    if run[5]:
+                        pass
+                    else:
+                        datasets.append(run[4])
 
-    def multi_merge(self):
-      '''Merge data from multiple runs - this is very similar to
-      the scaling subroutine...'''
+            hklout_files = []
+            hklout_dict = {}
 
-      self.check_hklin()
-      self.check_hklout()
+            for i in range(len(output)):
+                record = output[i]
 
-      if not self._scalepack:
-        self.set_task('Scaling reflections from %s => %s' % \
-                     (os.path.split(self.get_hklin())[-1],
-                      os.path.split(self.get_hklout())[-1]))
-      else:
-        self.set_task('Scaling reflections from %s => scalepack %s' % \
-                     (os.path.split(self.get_hklin())[-1],
-                      os.path.split(self.get_hklout())[-1]))
+                # this is a potential source of problems - if the
+                # wavelength name has a _ in it then we are here stuffed!
 
-      self.start()
+                if "Writing merged data for dataset" in record:
 
-      self._xmlout = os.path.join(self.get_working_directory(),
-                                  '%d_aimless.xml' % self.get_xpid())
+                    if len(record.split()) == 9:
+                        hklout = output[i + 1].strip()
+                    else:
+                        hklout = record.split()[9]
 
-      self.input('xmlout %d_aimless.xml' % self.get_xpid())
-      if PhilIndex.params.xia2.settings.small_molecule == False:
-        self.input('bins 20')
+                    dname = record.split()[6].split("/")[-1]
+                    hklout_dict[dname] = hklout
 
-      if self._new_scales_file:
-        self.input('dump %s' % self._new_scales_file)
+                    hklout_files.append(hklout)
 
-      if self._resolution:
-        self.input('resolution %g' % self._resolution)
+                elif "Writing unmerged data for all datasets" in record:
+                    if len(record.split()) == 9:
+                        hklout = output[i + 1].strip()
+                    else:
+                        hklout = record.split()[9]
 
-      run_number = 0
-      for run in self._runs:
-        run_number += 1
+                    self._unmerged_reflections = hklout
 
-        if not run[5]:
-          self.input('run %d batch %d to %d' % (run_number,
-                                                run[0], run[1]))
+            self._scalr_scaled_reflection_files = hklout_dict
 
-        if run[6] != 0.0 and not run[5]:
-          self.input('resolution run %d high %g' % \
-                     (run_number, run[6]))
+            return "OK"
 
-      # put in the pname, xname, dname stuff
-      run_number = 0
-      for run in self._runs:
-        run_number += 1
-
-        if run[7]:
-          Debug.write('Run %d corresponds to sweep %s' % \
-                      (run_number, run[7]))
-
-        if run[5]:
-          continue
-
-      # we are only merging here so the scales command is
-      # dead simple...
-
-      self.input('scales constant')
-
-      if self._anomalous:
-        self.input('anomalous on')
-      else:
-        self.input('anomalous off')
-
-      # FIXME this is probably not ready to be used yet...
-      if self._scalepack:
-        self.input('output polish unmerged')
-      self.input('output unmerged')
-
-      if self._scales_file:
-        self.input('onlymerge')
-        self.input('restore %s' % self._scales_file)
-
-      self.close_wait()
-
-      # check for errors
-
-      try:
-        self.check_for_errors()
-        self.check_ccp4_errors()
-        self.check_aimless_errors()
-
-        Debug.write('Aimless status: ok')
-
-      except RuntimeError as e:
-        try:
-          os.remove(self.get_hklout())
-        except Exception:
-          pass
-
-        raise e
-
-      # here get a list of all output files...
-      output = self.get_all_output()
-
-      # want to put these into a dictionary at some stage, keyed
-      # by the data set id. how this is implemented will depend
-      # on the number of datasets...
-
-      # FIXME file names on windows separate out path from
-      # drive with ":"... fixed! split on "Filename:"
-
-      # get a list of dataset names...
-
-      datasets = []
-      for run in self._runs:
-        # cope with case where two runs make one dataset...
-        if not run[4] in datasets:
-          if run[5]:
-            pass
-          else:
-            datasets.append(run[4])
-
-      hklout_files = []
-      hklout_dict = { }
-
-      for i in range(len(output)):
-        record = output[i]
-
-        # this is a potential source of problems - if the
-        # wavelength name has a _ in it then we are here stuffed!
-
-        if 'Writing merged data for dataset' in record:
-
-          if len(record.split()) == 9:
-            hklout = output[i + 1].strip()
-          else:
-            hklout = record.split()[9]
-
-          dname = record.split()[6].split('/')[-1]
-          hklout_dict[dname] = hklout
-
-          hklout_files.append(hklout)
-
-        elif 'Writing unmerged data for all datasets' in record:
-          if len(record.split()) == 9:
-            hklout = output[i + 1].strip()
-          else:
-            hklout = record.split()[9]
-
-          self._unmerged_reflections = hklout
-
-      self._scalr_scaled_reflection_files = hklout_dict
-
-      return 'OK'
-
-    def get_scaled_reflection_files(self):
-      '''Get the names of the actual scaled reflection files - note
+        def get_scaled_reflection_files(self):
+            """Get the names of the actual scaled reflection files - note
       that this is not the same as HKLOUT because Aimless splits them
-      up...'''
-      return self._scalr_scaled_reflection_files
+      up..."""
+            return self._scalr_scaled_reflection_files
 
-    def get_unmerged_reflection_file(self):
-      return self._unmerged_reflections
+        def get_unmerged_reflection_file(self):
+            return self._unmerged_reflections
 
-    def get_summary(self):
-      '''Get a summary of the data.'''
+        def get_summary(self):
+            """Get a summary of the data."""
 
-      xml_file = self.get_xmlout()
-      assert os.path.isfile(xml_file)
+            xml_file = self.get_xmlout()
+            assert os.path.isfile(xml_file)
 
-      from xia2.Wrappers.CCP4.AimlessHelpers import parse_aimless_xml
-      return parse_aimless_xml(xml_file)
+            from xia2.Wrappers.CCP4.AimlessHelpers import parse_aimless_xml
 
-  return AimlessWrapper()
+            return parse_aimless_xml(xml_file)
 
-if __name__ == '__output_main__':
-  # test parsing the output
-
-  logfile = os.path.join(os.environ['XIA2_ROOT'],
-                         'Doc', 'Logfiles', 'aimless.log')
-
-  s = Aimless()
-  s.load_all_output(logfile)
-
-  results = s.parse_ccp4_loggraph()
-
-  print('The following loggraphs were found')
-  for k in results.keys():
-    print(k)
+    return AimlessWrapper()
 
 
-  summary = s.get_summary()
+if __name__ == "__output_main__":
+    # test parsing the output
 
-  for k in summary.keys():
-    dataset = summary[k]
-    for property in dataset.keys():
-      print(k, property, dataset[property])
+    logfile = os.path.join(os.environ["XIA2_ROOT"], "Doc", "Logfiles", "aimless.log")
+
+    s = Aimless()
+    s.load_all_output(logfile)
+
+    results = s.parse_ccp4_loggraph()
+
+    print("The following loggraphs were found")
+    for k in results.keys():
+        print(k)
+
+    summary = s.get_summary()
+
+    for k in summary.keys():
+        dataset = summary[k]
+        for property in dataset.keys():
+            print(k, property, dataset[property])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
-  s = Aimless()
+    s = Aimless()
 
-  hklin = 'TS00_13185_sorted_INFL.mtz'
-  hklout = 'TS00_13185_merged_INFL.mtz'
+    hklin = "TS00_13185_sorted_INFL.mtz"
+    hklout = "TS00_13185_merged_INFL.mtz"
 
-  s.set_hklin(hklin)
-  s.set_hklout(hklout)
+    s.set_hklin(hklin)
+    s.set_hklout(hklout)
 
-  s.set_anomalous()
-  s.set_onlymerge()
-  s.merge()
+    s.set_anomalous()
+    s.set_onlymerge()
+    s.merge()
 
-  s.write_log_file('merge.log')
+    s.write_log_file("merge.log")
 
-  results = s.parse_ccp4_loggraph()
+    results = s.parse_ccp4_loggraph()
 
-  print('The following loggraphs were found')
-  for k in results.keys():
-    print(k)
+    print("The following loggraphs were found")
+    for k in results.keys():
+        print(k)
 
-  summary = s.get_summary()
+    summary = s.get_summary()
 
-  for k in summary.keys():
-    print(k, summary[k])
+    for k in summary.keys():
+        print(k, summary[k])

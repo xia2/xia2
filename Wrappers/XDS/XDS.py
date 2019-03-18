@@ -34,544 +34,621 @@ import math
 from scitbx import matrix
 from xia2.Handlers.Streams import Debug
 
+
 class XDSException(Exception):
-  def __init__(self, value):
-    self.value = value
-  def __str__(self):
-    return str(self.value)
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return str(self.value)
+
 
 class XDSIndexException(XDSException):
-  def __init__(self, value):
-    XDSException.__init__(self, value)
+    def __init__(self, value):
+        XDSException.__init__(self, value)
+
 
 _xds_version_cache = None
 
+
 def get_xds_version():
-  global _xds_version_cache
-  if _xds_version_cache is None:
-    import subprocess
-    xds_version_str = subprocess.check_output('xds')
-    assert 'VERSION' in xds_version_str
-    first_line = xds_version_str.split('\n')[1].strip()
+    global _xds_version_cache
+    if _xds_version_cache is None:
+        import subprocess
 
-    _xds_version_cache = first_line.split('(')[1].split(')')[0]
-    assert 'VERSION' in _xds_version_cache, _xds_version_cache
+        xds_version_str = subprocess.check_output("xds")
+        assert "VERSION" in xds_version_str
+        first_line = xds_version_str.split("\n")[1].strip()
 
-  return _xds_version_cache
+        _xds_version_cache = first_line.split("(")[1].split(")")[0]
+        assert "VERSION" in _xds_version_cache, _xds_version_cache
+
+    return _xds_version_cache
+
 
 _running_xds_version_stamp = None
 
+
 def _running_xds_version():
-  global _running_xds_version_stamp
-  if _running_xds_version_stamp is None:
-    import subprocess
-    xds_version_str = subprocess.check_output('xds')
-    assert('VERSION' in xds_version_str)
-    first_line = xds_version_str.split('\n')[1].strip()
-    if not 'BUILT=' in xds_version_str:
-      import datetime
-      format_str = '***** XDS *****  (VERSION  %B %d, %Y)'
-      date = datetime.datetime.strptime(first_line, format_str)
+    global _running_xds_version_stamp
+    if _running_xds_version_stamp is None:
+        import subprocess
 
-      _running_xds_version_stamp = (date.year * 10000 + date.month * 100 +
-                                    date.day)
-    else:
-      first_line = xds_version_str.split('\n')[1].strip()
-      s = first_line.index('BUILT=') + 6
-      _running_xds_version_stamp = int(first_line[s:s+8])
+        xds_version_str = subprocess.check_output("xds")
+        assert "VERSION" in xds_version_str
+        first_line = xds_version_str.split("\n")[1].strip()
+        if not "BUILT=" in xds_version_str:
+            import datetime
 
-  return _running_xds_version_stamp
+            format_str = "***** XDS *****  (VERSION  %B %d, %Y)"
+            date = datetime.datetime.strptime(first_line, format_str)
+
+            _running_xds_version_stamp = date.year * 10000 + date.month * 100 + date.day
+        else:
+            first_line = xds_version_str.split("\n")[1].strip()
+            s = first_line.index("BUILT=") + 6
+            _running_xds_version_stamp = int(first_line[s : s + 8])
+
+    return _running_xds_version_stamp
+
 
 def _xds_version(xds_output_list):
-  '''Return the version of XDS which has been run.'''
+    """Return the version of XDS which has been run."""
 
-  for line in xds_output_list:
-    if 'XDS VERSION' in line:
-      return line.split('XDS VERSION')[1].split(')')[0].strip()
-    if 'XDS' in line and 'VERSION' in line:
-      return line.split('(VERSION')[1].split(')')[0].strip()
+    for line in xds_output_list:
+        if "XDS VERSION" in line:
+            return line.split("XDS VERSION")[1].split(")")[0].strip()
+        if "XDS" in line and "VERSION" in line:
+            return line.split("(VERSION")[1].split(")")[0].strip()
 
-  raise RuntimeError('XDS version not found')
+    raise RuntimeError("XDS version not found")
 
 
 def add_xds_version_to_mtz_history(mtz_file):
-  import time
-  from iotbx.reflection_file_reader import any_reflection_file
-  from xia2.Wrappers.XDS import XDS
-  reader = any_reflection_file(mtz_file)
-  assert reader.file_type() == 'ccp4_mtz'
-  mtz_object = reader.file_content()
-  date_str = time.strftime('%d/%m/%Y at %H:%M:%S', time.gmtime())
-  mtz_object.add_history(
-    'From XDS %s, run on %s' %(XDS.get_xds_version(), date_str))
-  mtz_object.write(mtz_file)
+    import time
+    from iotbx.reflection_file_reader import any_reflection_file
+    from xia2.Wrappers.XDS import XDS
+
+    reader = any_reflection_file(mtz_file)
+    assert reader.file_type() == "ccp4_mtz"
+    mtz_object = reader.file_content()
+    date_str = time.strftime("%d/%m/%Y at %H:%M:%S", time.gmtime())
+    mtz_object.add_history("From XDS %s, run on %s" % (XDS.get_xds_version(), date_str))
+    mtz_object.write(mtz_file)
 
 
 def xds_check_version_supported(xds_output_list):
-  '''No longer check that the XDS version is supported.'''
+    """No longer check that the XDS version is supported."""
 
-  for record in xds_output_list:
-    if 'Sorry, license expired' in record:
-      raise RuntimeError('installed XDS expired on %s' % \
-            record.split()[-1])
+    for record in xds_output_list:
+        if "Sorry, license expired" in record:
+            raise RuntimeError("installed XDS expired on %s" % record.split()[-1])
+
 
 xds_error_database = {
-  'cannot open or read file lp_01.tmp':'Error running forkintegrate'
-  }
+    "cannot open or read file lp_01.tmp": "Error running forkintegrate"
+}
+
 
 def xds_check_error(xds_output_list):
-  '''Check for errors in XDS output and raise an exception if one is
-  found.'''
+    """Check for errors in XDS output and raise an exception if one is
+  found."""
 
-  for line in xds_output_list:
-    if '!!!' in line and 'ERROR' in line:
-      message = line.split('!!!')[2].strip().lower()
-      if message in xds_error_database:
-        message = xds_error_database[message]
-      error = '[XDS] %s' % message
-      raise XDSException(error)
+    for line in xds_output_list:
+        if "!!!" in line and "ERROR" in line:
+            message = line.split("!!!")[2].strip().lower()
+            if message in xds_error_database:
+                message = xds_error_database[message]
+            error = "[XDS] %s" % message
+            raise XDSException(error)
 
-def rotate_cbf_to_xds_convention(fast, slow, axis = (1, 0, 0)):
-  '''Rotate fast and slow directions about rotation axis to give XDS
+
+def rotate_cbf_to_xds_convention(fast, slow, axis=(1, 0, 0)):
+    """Rotate fast and slow directions about rotation axis to give XDS
   conventional directions for fast and slow. This should be a rotation
-  of 180 degrees about principle axis, defined to be 1,0,0.'''
+  of 180 degrees about principle axis, defined to be 1,0,0."""
 
-  R = matrix.col(axis).axis_and_angle_as_r3_rotation_matrix(
-      180.0, deg = True)
+    R = matrix.col(axis).axis_and_angle_as_r3_rotation_matrix(180.0, deg=True)
 
-  return (R * fast).elems, (R * slow).elems
+    return (R * fast).elems, (R * slow).elems
+
 
 def detector_axis_apply_two_theta_rotation(axis_string, header):
-  '''Apply a rotation in degrees to this detector axis given as a string
+    """Apply a rotation in degrees to this detector axis given as a string
   containing a list of three floating point values. Return as same.
   Header given as this definition may depend on the detector / instrument
-  type.'''
+  type."""
 
-  # is theta the wrong sign, as I record from diffdump? I think so.
+    # is theta the wrong sign, as I record from diffdump? I think so.
 
-  two_theta = -1 * header['two_theta'] * math.pi / 180.
+    two_theta = -1 * header["two_theta"] * math.pi / 180.0
 
-  axis = map(float, axis_string.split())
+    axis = map(float, axis_string.split())
 
-  assert(len(axis) == 3)
+    assert len(axis) == 3
 
-  # assertion - this is a rotation about X (first coordinate) ergo will not
-  # change this. Nope. Looks like it is a rotation about Y. Which makes
-  # sense for a laboratory source...
+    # assertion - this is a rotation about X (first coordinate) ergo will not
+    # change this. Nope. Looks like it is a rotation about Y. Which makes
+    # sense for a laboratory source...
 
-  ct = math.cos(two_theta)
-  st = math.sin(two_theta)
+    ct = math.cos(two_theta)
+    st = math.sin(two_theta)
 
-  new_axis = (axis[0] * ct + axis[2] * st,
-              axis[1],
-              - axis[0] * st + axis[2] * ct)
+    new_axis = (axis[0] * ct + axis[2] * st, axis[1], -axis[0] * st + axis[2] * ct)
 
-  return '%.3f %.3f %.3f' % new_axis
+    return "%.3f %.3f %.3f" % new_axis
 
-def imageset_to_xds(imageset, synchrotron = None, refined_beam_vector = None,
-                    refined_rotation_axis = None, refined_distance = None):
-  '''A function to take an input header dictionary from Diffdump
-  and generate a list of records to start XDS - see Doc/INP.txt.'''
 
-  # decide if we are at a synchrotron if we don't know already...
-  # that is, the wavelength is around either the Copper or Chromium
-  # K-alpha edge and this is an image plate.
+def imageset_to_xds(
+    imageset,
+    synchrotron=None,
+    refined_beam_vector=None,
+    refined_rotation_axis=None,
+    refined_distance=None,
+):
+    """A function to take an input header dictionary from Diffdump
+  and generate a list of records to start XDS - see Doc/INP.txt."""
 
-  beam = imageset.get_beam()
+    # decide if we are at a synchrotron if we don't know already...
+    # that is, the wavelength is around either the Copper or Chromium
+    # K-alpha edge and this is an image plate.
 
-  from dxtbx.serialize.xds import to_xds, xds_detector_name
-  converter = to_xds(imageset)
+    beam = imageset.get_beam()
 
-  h5_names = ['h5', 'nxs']
-  if imageset.get_template().split('.')[-1] in h5_names:
-    if not check_xds_ok_with_h5():
-      raise RuntimeError('HDF5 input with no converter for XDS')
+    from dxtbx.serialize.xds import to_xds, xds_detector_name
 
-  detector_class_is_square = {
-      'adsc q4':True,
-      'adsc q4 2x2 binned':True,
-      'adsc q210':True,
-      'adsc q210 2x2 binned':True,
-      'adsc q270':True,
-      'adsc q270 2x2 binned':True,
-      'adsc q315':True,
-      'adsc q315 2x2 binned':True,
-      'adsc HF4M':True,
-      'holton fake 01':True,
-      'unknown electron 57':True,
-      'mar 345':False,
-      'mar 180':False,
-      'mar 240':False,
-      'mar 300 ccd':True,
-      'mar 325 ccd':True,
-      'mar 225 ccd':True,
-      'mar ccd 225 hs':True,
-      'rayonix ccd 165':False,
-      'rayonix ccd 135':False,
-      'rayonix ccd 300':True,
-      'rayonix ccd 325':True,
-      'rayonix ccd 225':True,
-      'rayonix ccd 225 hs':True,
-      'rayonix ccd 300 hs':True,
-      'mar 165 ccd':False,
-      'mar 135 ccd':False,
-      'pilatus 12M':True,
-      'pilatus 6M':True,
-      'pilatus 2M':True,
-      'pilatus 1M':True,
-      'pilatus 200K':True,
-      'pilatus 300K':True,
-      'eiger 4M':True,
-      'eiger 9M':True,
-      'eiger 16M':True,
-      'rigaku saturn 92 2x2 binned':True,
-      'rigaku saturn 944 2x2 binned':True,
-      'rigaku saturn 724 2x2 binned':True,
-      'rigaku saturn 92':True,
-      'rigaku saturn 944':True,
-      'rigaku saturn 724':True,
-      'rigaku saturn a200':True,
-      'raxis IV':True,
-      'NOIR1':True}
+    converter = to_xds(imageset)
 
-  sensor = converter.get_detector()[0].get_type()
-  fast, slow = converter.detector_size
-  f, s = converter.pixel_size
-  df = int(1000 * f)
-  ds = int(1000 * s)
+    h5_names = ["h5", "nxs"]
+    if imageset.get_template().split(".")[-1] in h5_names:
+        if not check_xds_ok_with_h5():
+            raise RuntimeError("HDF5 input with no converter for XDS")
 
-  # FIXME probably need to rotate by pi about the X axis
+    detector_class_is_square = {
+        "adsc q4": True,
+        "adsc q4 2x2 binned": True,
+        "adsc q210": True,
+        "adsc q210 2x2 binned": True,
+        "adsc q270": True,
+        "adsc q270 2x2 binned": True,
+        "adsc q315": True,
+        "adsc q315 2x2 binned": True,
+        "adsc HF4M": True,
+        "holton fake 01": True,
+        "unknown electron 57": True,
+        "mar 345": False,
+        "mar 180": False,
+        "mar 240": False,
+        "mar 300 ccd": True,
+        "mar 325 ccd": True,
+        "mar 225 ccd": True,
+        "mar ccd 225 hs": True,
+        "rayonix ccd 165": False,
+        "rayonix ccd 135": False,
+        "rayonix ccd 300": True,
+        "rayonix ccd 325": True,
+        "rayonix ccd 225": True,
+        "rayonix ccd 225 hs": True,
+        "rayonix ccd 300 hs": True,
+        "mar 165 ccd": False,
+        "mar 135 ccd": False,
+        "pilatus 12M": True,
+        "pilatus 6M": True,
+        "pilatus 2M": True,
+        "pilatus 1M": True,
+        "pilatus 200K": True,
+        "pilatus 300K": True,
+        "eiger 4M": True,
+        "eiger 9M": True,
+        "eiger 16M": True,
+        "rigaku saturn 92 2x2 binned": True,
+        "rigaku saturn 944 2x2 binned": True,
+        "rigaku saturn 724 2x2 binned": True,
+        "rigaku saturn 92": True,
+        "rigaku saturn 944": True,
+        "rigaku saturn 724": True,
+        "rigaku saturn a200": True,
+        "raxis IV": True,
+        "NOIR1": True,
+    }
 
-  result = []
+    sensor = converter.get_detector()[0].get_type()
+    fast, slow = converter.detector_size
+    f, s = converter.pixel_size
+    df = int(1000 * f)
+    ds = int(1000 * s)
 
-  from dxtbx.model.detector_helpers_types import detector_helpers_types
-  detector = xds_detector_name(
-      detector_helpers_types.get(sensor, fast, slow, df, ds))
-  trusted = converter.get_detector()[0].get_trusted_range()
+    # FIXME probably need to rotate by pi about the X axis
 
-  # if CCD; undo dxtbx pedestal offset, hard code minimum 1; else use trusted
-  # range verbatim (i.e. for PAD) (later in pipeline sensor is SENSOR_UNKNOWN
-  # so additional test)
+    result = []
 
-  if sensor == 'SENSOR_CCD' or detector == 'CCDCHESS':
-    trusted = 1, trusted[1] - trusted[0]
+    from dxtbx.model.detector_helpers_types import detector_helpers_types
 
-  # XDS upset if we trust < 0 see #193
-  if trusted[0] < 0:
-    trusted = 0, trusted[1]
+    detector = xds_detector_name(detector_helpers_types.get(sensor, fast, slow, df, ds))
+    trusted = converter.get_detector()[0].get_trusted_range()
 
-  result.append('DETECTOR=%s MINIMUM_VALID_PIXEL_VALUE=%d OVERLOAD=%d' %
-                (detector, trusted[0], trusted[1]))
+    # if CCD; undo dxtbx pedestal offset, hard code minimum 1; else use trusted
+    # range verbatim (i.e. for PAD) (later in pipeline sensor is SENSOR_UNKNOWN
+    # so additional test)
 
-  result.append('DIRECTION_OF_DETECTOR_X-AXIS=%f %f %f' %
-                converter.detector_x_axis)
+    if sensor == "SENSOR_CCD" or detector == "CCDCHESS":
+        trusted = 1, trusted[1] - trusted[0]
 
-  result.append('DIRECTION_OF_DETECTOR_Y-AXIS=%f %f %f' %
-                converter.detector_y_axis)
+    # XDS upset if we trust < 0 see #193
+    if trusted[0] < 0:
+        trusted = 0, trusted[1]
 
-  from xia2.Handlers.Phil import PhilIndex
-  params = PhilIndex.get_python_object()
-  if params.xds.trusted_region:
     result.append(
-      'TRUSTED_REGION= %.2f %.2f' % tuple(params.xds.trusted_region))
-  elif detector_class_is_square[
-    detector_helpers_types.get(sensor, fast, slow, df, ds).replace('-', ' ')]:
-    result.append('TRUSTED_REGION=0.0 1.41')
-  else:
-    result.append('TRUSTED_REGION=0.0 0.99')
+        "DETECTOR=%s MINIMUM_VALID_PIXEL_VALUE=%d OVERLOAD=%d"
+        % (detector, trusted[0], trusted[1])
+    )
 
-  result.append('NX=%d NY=%d QX=%.4f QY=%.4f' % (fast, slow, f, s))
+    result.append("DIRECTION_OF_DETECTOR_X-AXIS=%f %f %f" % converter.detector_x_axis)
 
-  # RAXIS detectors have the distance written negative - why????
-  # this is ONLY for XDS - SATURN are the same - probably left handed
-  # goniometer rotation on rigaku X-ray sets.
+    result.append("DIRECTION_OF_DETECTOR_Y-AXIS=%f %f %f" % converter.detector_y_axis)
 
-  if refined_distance:
-    result.append('DETECTOR_DISTANCE=%7.3f' % refined_distance)
-  else:
-    result.append('DETECTOR_DISTANCE=%7.3f' % converter.detector_distance)
+    from xia2.Handlers.Phil import PhilIndex
 
-  result.append('OSCILLATION_RANGE=%4.2f' % converter.oscillation_range)
-  result.append('X-RAY_WAVELENGTH=%8.6f' % converter.wavelength)
+    params = PhilIndex.get_python_object()
+    if params.xds.trusted_region:
+        result.append("TRUSTED_REGION= %.2f %.2f" % tuple(params.xds.trusted_region))
+    elif detector_class_is_square[
+        detector_helpers_types.get(sensor, fast, slow, df, ds).replace("-", " ")
+    ]:
+        result.append("TRUSTED_REGION=0.0 1.41")
+    else:
+        result.append("TRUSTED_REGION=0.0 0.99")
 
-  # if user specified reversephi and this was not picked up in the
-  # format class reverse phi: n.b. double-negative warning!
+    result.append("NX=%d NY=%d QX=%.4f QY=%.4f" % (fast, slow, f, s))
 
-  if refined_rotation_axis:
-    result.append('ROTATION_AXIS= %f %f %f' % \
-                  refined_rotation_axis)
-  else:
-    result.append('ROTATION_AXIS= %.3f %.3f %.3f' % \
-                  converter.rotation_axis)
+    # RAXIS detectors have the distance written negative - why????
+    # this is ONLY for XDS - SATURN are the same - probably left handed
+    # goniometer rotation on rigaku X-ray sets.
 
-  if refined_beam_vector:
-    result.append('INCIDENT_BEAM_DIRECTION=%f %f %f' % \
-                  refined_beam_vector)
-  else:
-    result.append(
-      'INCIDENT_BEAM_DIRECTION= %.3f %.3f %.3f' % converter.beam_vector)
+    if refined_distance:
+        result.append("DETECTOR_DISTANCE=%7.3f" % refined_distance)
+    else:
+        result.append("DETECTOR_DISTANCE=%7.3f" % converter.detector_distance)
 
-  if hasattr(beam, "get_polarization_fraction"):
-    R = converter.imagecif_to_xds_transformation_matrix
-    result.append('FRACTION_OF_POLARIZATION= %.3f' %
-                  beam.get_polarization_fraction())
-    result.append('POLARIZATION_PLANE_NORMAL= %.3f %.3f %.3f' %
-                  (R * matrix.col(beam.get_polarization_normal())).elems)
+    result.append("OSCILLATION_RANGE=%4.2f" % converter.oscillation_range)
+    result.append("X-RAY_WAVELENGTH=%8.6f" % converter.wavelength)
 
-  # 24/NOV/14 XDS determines the air absorption automatically
-  # based on wavelength. May be useful to override this for in vacuo exps
-  # result.append('AIR=0.001')
+    # if user specified reversephi and this was not picked up in the
+    # format class reverse phi: n.b. double-negative warning!
 
-  if detector == 'PILATUS':
-    try:
-      thickness = converter.get_detector()[0].get_thickness()
-      if not thickness:
-        thickness = 0.32
-        Debug.write('Could not determine sensor thickness. Assuming default PILATUS 0.32mm')
-    except e:
-      thickness = 0.32
-      Debug.write('Error occured during sensor thickness determination. Assuming default PILATUS 0.32mm')
-    result.append('SENSOR_THICKNESS=%f' % thickness)
+    if refined_rotation_axis:
+        result.append("ROTATION_AXIS= %f %f %f" % refined_rotation_axis)
+    else:
+        result.append("ROTATION_AXIS= %.3f %.3f %.3f" % converter.rotation_axis)
 
-  #  FIXME: Sensor absorption coefficient calculation probably requires a more general solution
-  #  if converter.get_detector()[0].get_material() == 'CdTe':
-  #    print "CdTe detector detected. Beam wavelength is %8.6f Angstrom" % converter.wavelength
+    if refined_beam_vector:
+        result.append("INCIDENT_BEAM_DIRECTION=%f %f %f" % refined_beam_vector)
+    else:
+        result.append("INCIDENT_BEAM_DIRECTION= %.3f %.3f %.3f" % converter.beam_vector)
 
-  if len(converter.panel_x_axis) > 1:
-    for panel_id in range(len(converter.panel_x_axis)):
+    if hasattr(beam, "get_polarization_fraction"):
+        R = converter.imagecif_to_xds_transformation_matrix
+        result.append(
+            "FRACTION_OF_POLARIZATION= %.3f" % beam.get_polarization_fraction()
+        )
+        result.append(
+            "POLARIZATION_PLANE_NORMAL= %.3f %.3f %.3f"
+            % (R * matrix.col(beam.get_polarization_normal())).elems
+        )
 
-      result.append('')
-      result.append('!')
-      result.append('! SEGMENT %d' %(panel_id+1))
-      result.append('!')
-      result.append('SEGMENT= %d %d %d %d' % converter.panel_limits[panel_id])
-      result.append('DIRECTION_OF_SEGMENT_X-AXIS= %.3f %.3f %.3f' % \
-            converter.panel_x_axis[panel_id])
-      result.append('DIRECTION_OF_SEGMENT_Y-AXIS= %.3f %.3f %.3f' % \
-            converter.panel_y_axis[panel_id])
-      result.append('SEGMENT_DISTANCE= %.3f' % converter.panel_distance[panel_id])
-      result.append(
-        'SEGMENT_ORGX= %.1f SEGMENT_ORGY= %.1f' % converter.panel_origin[panel_id])
-      result.append('')
+    # 24/NOV/14 XDS determines the air absorption automatically
+    # based on wavelength. May be useful to override this for in vacuo exps
+    # result.append('AIR=0.001')
 
-  for f0, s0, f1, s1 in converter.get_detector()[0].get_mask():
-    result.append('UNTRUSTED_RECTANGLE= %d %d %d %d' %
-                  (f0 - 1, f1 + 1, s0 - 1, s1 + 1))
+    if detector == "PILATUS":
+        try:
+            thickness = converter.get_detector()[0].get_thickness()
+            if not thickness:
+                thickness = 0.32
+                Debug.write(
+                    "Could not determine sensor thickness. Assuming default PILATUS 0.32mm"
+                )
+        except e:
+            thickness = 0.32
+            Debug.write(
+                "Error occured during sensor thickness determination. Assuming default PILATUS 0.32mm"
+            )
+        result.append("SENSOR_THICKNESS=%f" % thickness)
 
-  if params.xds.untrusted_ellipse:
-    for untrusted_ellipse in params.xds.untrusted_ellipse:
-      result.append(
-        'UNTRUSTED_ELLIPSE= %d %d %d %d' % tuple(untrusted_ellipse))
-    Debug.write(result[-1])
+    #  FIXME: Sensor absorption coefficient calculation probably requires a more general solution
+    #  if converter.get_detector()[0].get_material() == 'CdTe':
+    #    print "CdTe detector detected. Beam wavelength is %8.6f Angstrom" % converter.wavelength
 
-  if params.xds.untrusted_rectangle:
-    for untrusted_rectangle in params.xds.untrusted_rectangle:
-      result.append(
-        'UNTRUSTED_RECTANGLE= %d %d %d %d' % tuple(untrusted_rectangle))
-    Debug.write(result[-1])
+    if len(converter.panel_x_axis) > 1:
+        for panel_id in range(len(converter.panel_x_axis)):
 
-  return result
+            result.append("")
+            result.append("!")
+            result.append("! SEGMENT %d" % (panel_id + 1))
+            result.append("!")
+            result.append("SEGMENT= %d %d %d %d" % converter.panel_limits[panel_id])
+            result.append(
+                "DIRECTION_OF_SEGMENT_X-AXIS= %.3f %.3f %.3f"
+                % converter.panel_x_axis[panel_id]
+            )
+            result.append(
+                "DIRECTION_OF_SEGMENT_Y-AXIS= %.3f %.3f %.3f"
+                % converter.panel_y_axis[panel_id]
+            )
+            result.append("SEGMENT_DISTANCE= %.3f" % converter.panel_distance[panel_id])
+            result.append(
+                "SEGMENT_ORGX= %.1f SEGMENT_ORGY= %.1f"
+                % converter.panel_origin[panel_id]
+            )
+            result.append("")
+
+    for f0, s0, f1, s1 in converter.get_detector()[0].get_mask():
+        result.append(
+            "UNTRUSTED_RECTANGLE= %d %d %d %d" % (f0 - 1, f1 + 1, s0 - 1, s1 + 1)
+        )
+
+    if params.xds.untrusted_ellipse:
+        for untrusted_ellipse in params.xds.untrusted_ellipse:
+            result.append("UNTRUSTED_ELLIPSE= %d %d %d %d" % tuple(untrusted_ellipse))
+        Debug.write(result[-1])
+
+    if params.xds.untrusted_rectangle:
+        for untrusted_rectangle in params.xds.untrusted_rectangle:
+            result.append(
+                "UNTRUSTED_RECTANGLE= %d %d %d %d" % tuple(untrusted_rectangle)
+            )
+        Debug.write(result[-1])
+
+    return result
 
 
 def beam_centre_mosflm_to_xds(x, y, header):
-  '''Convert a beam centre for image with header information in
+    """Convert a beam centre for image with header information in
   header from mm x, y in the Mosflm cordinate frame to pixels
-  x, y in the XDS frame.'''
+  x, y in the XDS frame."""
 
-  # first gather up some useful information from the header
+    # first gather up some useful information from the header
 
-  width, height = tuple(map(int, header['size']))
-  qx, qy = tuple(header['pixel'])
-  detector = header['detector']
+    width, height = tuple(map(int, header["size"]))
+    qx, qy = tuple(header["pixel"])
+    detector = header["detector"]
 
-  # convert input to pixels
+    # convert input to pixels
 
-  px = x / qx
-  py = y / qy
+    px = x / qx
+    py = y / qy
 
-  # next ensure that the beam centre is on the detector
+    # next ensure that the beam centre is on the detector
 
-  if px < 0 or px > width:
-    raise RuntimeError('beam x coordinate outside detector')
+    if px < 0 or px > width:
+        raise RuntimeError("beam x coordinate outside detector")
 
-  if py < 0 or py > width:
-    raise RuntimeError('beam y coordinate outside detector')
+    if py < 0 or py > width:
+        raise RuntimeError("beam y coordinate outside detector")
 
-  # next perform some detector specific transformation to put
-  # the centre in the right place... from looking at the papers
-  # by Kabsch and Rossmann it turns out that the coordinate
-  # frames are the same in the case where the experimental geometry
-  # is the same... you just have to swap x & y. I have checked this
-  # and it is correct - the Mosflm frame has the x, y axes mirrored to
-  # the traditional Cartesian frame.
+    # next perform some detector specific transformation to put
+    # the centre in the right place... from looking at the papers
+    # by Kabsch and Rossmann it turns out that the coordinate
+    # frames are the same in the case where the experimental geometry
+    # is the same... you just have to swap x & y. I have checked this
+    # and it is correct - the Mosflm frame has the x, y axes mirrored to
+    # the traditional Cartesian frame.
 
-  # though if we have a two-theta offset we need to put the origin
-  # in as where the detector normal meets the crystal.
+    # though if we have a two-theta offset we need to put the origin
+    # in as where the detector normal meets the crystal.
 
-  if 'detector_origin_mm' in header:
-    return header['detector_origin_mm'][0] / qx, \
-           header['detector_origin_mm'][1] / qy
+    if "detector_origin_mm" in header:
+        return (
+            header["detector_origin_mm"][0] / qx,
+            header["detector_origin_mm"][1] / qy,
+        )
 
-  return py, px
+    return py, px
+
 
 def beam_centre_xds_to_mosflm(px, py, header):
-  '''Convert back...'''
+    """Convert back..."""
 
-  # first gather up some useful information from the header
+    # first gather up some useful information from the header
 
-  width, height = tuple(map(int, header['size']))
-  qx, qy = tuple(header['pixel'])
-  detector = header['detector']
+    width, height = tuple(map(int, header["size"]))
+    qx, qy = tuple(header["pixel"])
+    detector = header["detector"]
 
-  # convert input to pixels
+    # convert input to pixels
 
-  x = px * qx
-  y = py * qy
+    x = px * qx
+    y = py * qy
 
-  return y, x
+    return y, x
+
 
 def xds_read_xparm(xparm_file):
-  '''Parse the new-style or old-style XPARM file.'''
+    """Parse the new-style or old-style XPARM file."""
 
-  if 'XPARM' in open(xparm_file, 'r').readline():
-    return xds_read_xparm_new_style(xparm_file)
-  else:
-    return xds_read_xparm_old_style(xparm_file)
+    if "XPARM" in open(xparm_file, "r").readline():
+        return xds_read_xparm_new_style(xparm_file)
+    else:
+        return xds_read_xparm_old_style(xparm_file)
+
 
 def xds_read_xparm_old_style(xparm_file):
-  '''Parse the XPARM file to a dictionary.'''
+    """Parse the XPARM file to a dictionary."""
 
-  data = map(float, open(xparm_file, 'r').read().split())
+    data = map(float, open(xparm_file, "r").read().split())
 
-  assert(len(data) == 42)
+    assert len(data) == 42
 
-  starting_frame = int(data[0])
-  phi_start, phi_width = data[1:3]
-  axis = data[3:6]
+    starting_frame = int(data[0])
+    phi_start, phi_width = data[1:3]
+    axis = data[3:6]
 
-  wavelength = data[6]
-  beam = data[7:10]
+    wavelength = data[6]
+    beam = data[7:10]
 
-  nx, ny = map(int, data[10:12])
-  px, py = data[12:14]
+    nx, ny = map(int, data[10:12])
+    px, py = data[12:14]
 
-  distance = data[14]
-  ox, oy = data[15:17]
+    distance = data[14]
+    ox, oy = data[15:17]
 
-  x, y = data[17:20], data[20:23]
-  normal = data[23:26]
+    x, y = data[17:20], data[20:23]
+    normal = data[23:26]
 
-  spacegroup = int(data[26])
-  cell = data[27:33]
+    spacegroup = int(data[26])
+    cell = data[27:33]
 
-  a, b, c = data[33:36], data[36:39], data[39:42]
+    a, b, c = data[33:36], data[36:39], data[39:42]
 
-  results = {
-      'starting_frame':starting_frame,
-      'phi_start':phi_start, 'phi_width':phi_width,
-      'axis':axis, 'wavelength':wavelength, 'beam':beam,
-      'nx':nx, 'ny':ny, 'px':px, 'py':py, 'distance':distance,
-      'ox':ox, 'oy':oy, 'x':x, 'y':y, 'normal':normal,
-      'spacegroup':spacegroup, 'cell':cell, 'a':a, 'b':b, 'c':c
-      }
+    results = {
+        "starting_frame": starting_frame,
+        "phi_start": phi_start,
+        "phi_width": phi_width,
+        "axis": axis,
+        "wavelength": wavelength,
+        "beam": beam,
+        "nx": nx,
+        "ny": ny,
+        "px": px,
+        "py": py,
+        "distance": distance,
+        "ox": ox,
+        "oy": oy,
+        "x": x,
+        "y": y,
+        "normal": normal,
+        "spacegroup": spacegroup,
+        "cell": cell,
+        "a": a,
+        "b": b,
+        "c": c,
+    }
 
-  return results
+    return results
+
 
 def xds_read_xparm_new_style(xparm_file):
-  '''Parse the XPARM file to a dictionary.'''
+    """Parse the XPARM file to a dictionary."""
 
-  data = map(float, ' '.join(open(xparm_file, 'r').readlines()[1:]).split())
+    data = map(float, " ".join(open(xparm_file, "r").readlines()[1:]).split())
 
-  starting_frame = int(data[0])
-  phi_start, phi_width = data[1:3]
-  axis = data[3:6]
+    starting_frame = int(data[0])
+    phi_start, phi_width = data[1:3]
+    axis = data[3:6]
 
-  wavelength = data[6]
-  beam = data[7:10]
+    wavelength = data[6]
+    beam = data[7:10]
 
-  spacegroup = int(data[10])
-  cell = data[11:17]
-  a, b, c = data[17:20], data[20:23], data[23:26]
-  assert(int(data[26]) == 1)
-  nx, ny = map(int, data[27:29])
-  px, py = data[29:31]
-  ox, oy = data[31:33]
-  distance = data[33]
-  x, y = data[34:37], data[37:40]
-  normal = data[40:43]
+    spacegroup = int(data[10])
+    cell = data[11:17]
+    a, b, c = data[17:20], data[20:23], data[23:26]
+    assert int(data[26]) == 1
+    nx, ny = map(int, data[27:29])
+    px, py = data[29:31]
+    ox, oy = data[31:33]
+    distance = data[33]
+    x, y = data[34:37], data[37:40]
+    normal = data[40:43]
 
-  results = {
-      'starting_frame':starting_frame,
-      'phi_start':phi_start, 'phi_width':phi_width,
-      'axis':axis, 'wavelength':wavelength, 'beam':beam,
-      'nx':nx, 'ny':ny, 'px':px, 'py':py, 'distance':distance,
-      'ox':ox, 'oy':oy, 'x':x, 'y':y, 'normal':normal,
-      'spacegroup':spacegroup, 'cell':cell, 'a':a, 'b':b, 'c':c
-      }
+    results = {
+        "starting_frame": starting_frame,
+        "phi_start": phi_start,
+        "phi_width": phi_width,
+        "axis": axis,
+        "wavelength": wavelength,
+        "beam": beam,
+        "nx": nx,
+        "ny": ny,
+        "px": px,
+        "py": py,
+        "distance": distance,
+        "ox": ox,
+        "oy": oy,
+        "x": x,
+        "y": y,
+        "normal": normal,
+        "spacegroup": spacegroup,
+        "cell": cell,
+        "a": a,
+        "b": b,
+        "c": c,
+    }
 
-  return results
+    return results
+
 
 def template_to_xds(template):
-  from xia2.Applications.xia2setup import is_hd5f_name
-  if is_hd5f_name(template):
-    # Given (e.g.) XYZ_master.h5 and data files XYZ_data_00000[0-9].h5
-    # XDS expects the template XYZ_??????.h5
-    assert template.endswith('master.h5'), template
-    master_file = template
-    import glob
-    g = glob.glob(master_file.split('master.h5')[0]+'data_*[0-9].h5')
-    g.extend(glob.glob(master_file.split('master.h5')[0]+'*[0-9].h5'))
-    assert len(g), 'No associated data files found for %s' % master_file
-    from xia2.Experts.FindImages import image2template
-    template = image2template(g[0])
-    if 'data_' in template:
-      template = master_file.split('master.h5')[0] + template.split('data_')[-1]
+    from xia2.Applications.xia2setup import is_hd5f_name
 
-  return template.replace('#', '?')
+    if is_hd5f_name(template):
+        # Given (e.g.) XYZ_master.h5 and data files XYZ_data_00000[0-9].h5
+        # XDS expects the template XYZ_??????.h5
+        assert template.endswith("master.h5"), template
+        master_file = template
+        import glob
 
-__hdf5_lib = ''
+        g = glob.glob(master_file.split("master.h5")[0] + "data_*[0-9].h5")
+        g.extend(glob.glob(master_file.split("master.h5")[0] + "*[0-9].h5"))
+        assert len(g), "No associated data files found for %s" % master_file
+        from xia2.Experts.FindImages import image2template
+
+        template = image2template(g[0])
+        if "data_" in template:
+            template = master_file.split("master.h5")[0] + template.split("data_")[-1]
+
+    return template.replace("#", "?")
+
+
+__hdf5_lib = ""
+
+
 def find_hdf5_lib(template=None):
-  global __hdf5_lib
-  from xia2.Applications.xia2setup import is_hd5f_name
+    global __hdf5_lib
+    from xia2.Applications.xia2setup import is_hd5f_name
 
-  if template and not is_hd5f_name(template):
-    return ''
+    if template and not is_hd5f_name(template):
+        return ""
 
-  if __hdf5_lib:
-    return __hdf5_lib
+    if __hdf5_lib:
+        return __hdf5_lib
 
-  import os
-  from xia2.Handlers.Phil import PhilIndex
-  from dials.util import Sorry
+    import os
+    from xia2.Handlers.Phil import PhilIndex
+    from dials.util import Sorry
 
-  plugin_name = PhilIndex.get_python_object().xds.hdf5_plugin
+    plugin_name = PhilIndex.get_python_object().xds.hdf5_plugin
 
-  if os.path.isabs(plugin_name):
-    if not os.path.exists(plugin_name):
-      raise Sorry('Cannot find plugin %s' % plugin_name)
-    __hdf5_lib = 'LIB=%s\n' % plugin_name
-    return __hdf5_lib
+    if os.path.isabs(plugin_name):
+        if not os.path.exists(plugin_name):
+            raise Sorry("Cannot find plugin %s" % plugin_name)
+        __hdf5_lib = "LIB=%s\n" % plugin_name
+        return __hdf5_lib
 
-  for d in os.environ['PATH'].split(os.pathsep):
-    if os.path.exists(os.path.join(d, plugin_name)):
-      __hdf5_lib = 'LIB=%s\n' % os.path.join(d, plugin_name)
-      return __hdf5_lib
-  return ''
+    for d in os.environ["PATH"].split(os.pathsep):
+        if os.path.exists(os.path.join(d, plugin_name)):
+            __hdf5_lib = "LIB=%s\n" % os.path.join(d, plugin_name)
+            return __hdf5_lib
+    return ""
 
-__h5toxds = ''
+
+__h5toxds = ""
+
+
 def find_h5toxds():
-  global __h5toxds
-  if __h5toxds:
+    global __h5toxds
+    if __h5toxds:
+        return __h5toxds
+    import os
+
+    for d in os.environ["PATH"].split(os.pathsep):
+        if os.path.exists(os.path.join(d, "H5ToXds")):
+            __h5toxds = os.path.join(d, "H5ToXds")
     return __h5toxds
-  import os
-  for d in os.environ['PATH'].split(os.pathsep):
-    if os.path.exists(os.path.join(d, 'H5ToXds')):
-      __h5toxds = os.path.join(d, 'H5ToXds')
-  return __h5toxds
+
 
 def check_xds_ok_with_h5():
-  if find_hdf5_lib():
-    return True
-  if find_h5toxds():
-    return True
-  return False
+    if find_hdf5_lib():
+        return True
+    if find_h5toxds():
+        return True
+    return False

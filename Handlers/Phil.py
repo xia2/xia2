@@ -14,7 +14,8 @@ from __future__ import absolute_import, division, print_function
 from iotbx.phil import parse
 from libtbx.phil import interface
 
-master_phil = parse("""
+master_phil = parse(
+    """
 general
   .short_caption = "General settings"
 {
@@ -927,9 +928,11 @@ xia2.settings
       .type = choice
   }
 }
-""", process_includes=True)
+""",
+    process_includes=True,
+)
 
 PhilIndex = interface.index(master_phil=master_phil)
 
-if __name__ == '__main__':
-  PhilIndex.working_phil.show()
+if __name__ == "__main__":
+    PhilIndex.working_phil.show()
