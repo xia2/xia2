@@ -14,7 +14,6 @@ from dials.util.options import OptionParser
 from dials.util import log
 from dials.util.options import flatten_experiments, flatten_reflections
 from dials.util.multi_dataset_handling import parse_multiple_datasets
-from xia2.lib.bits import auto_logfiler
 
 logger = logging.getLogger("xia2.multi_crystal_analysis")
 
@@ -107,7 +106,6 @@ class multi_crystal_analysis(xia2_report_base):
         sp_json_files = {}
         for hkl in ((1, 0, 0), (0, 1, 0), (0, 0, 1)):
             sp = StereographicProjection()
-            # auto_logfiler(sp)
             sp.add_experiments(experiments_filename)
             sp.set_hkl(hkl)
             sp.run()
@@ -116,7 +114,7 @@ class multi_crystal_analysis(xia2_report_base):
 
     @staticmethod
     def unit_cell_clustering(experiments, threshold, log=True, plot_name=None):
-        from xia2.Modules.MultiCrystalAnalysis import UnitCellCluster
+        from dials.algorithms.clustering.unit_cell import UnitCellCluster
 
         crystal_symmetries = []
         for expt in experiments:
@@ -206,7 +204,6 @@ class multi_crystal_analysis(xia2_report_base):
         from dials.command_line.unit_cell_histogram import (
             uc_params_from_experiments,
             panel_distances_from_experiments,
-            outlier_selection,
         )
 
         experiments = self._data_manager.experiments

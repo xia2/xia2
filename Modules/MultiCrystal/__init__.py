@@ -6,7 +6,6 @@ from collections import OrderedDict
 import iotbx.phil
 from scitbx.array_family import flex
 from dials.util import log
-from dials.algorithms.symmetry.cosym import plot_dendrogram, plot_matrix
 
 logger = logging.getLogger(__name__)
 debug_handle = log.debug_handle(logger)
@@ -16,7 +15,7 @@ info_handle = log.info_handle(logger)
 def get_scipy():
     # make sure we can get scipy, if not try failing over to version in CCP4
     try:
-        import scipy.cluster
+        import scipy.cluster  # noqa: F401
 
         found = True
     except ImportError:
@@ -27,7 +26,7 @@ def get_scipy():
             os.path.join(os.environ["CCP4"], "lib", "python2.7", "site-packages")
         )
         try:
-            import scipy.cluster
+            import scipy.cluster  # noqa: F401
 
             found = True
         except ImportError:
@@ -177,38 +176,12 @@ class multi_crystal_analysis(object):
 
         cos_angle_matrix, ca_linkage_matrix = self.compute_cos_angle_matrix()
 
-        plot_matrix(
-            correlation_matrix.as_numpy_array(),
-            linkage_matrix,
-            file_name="%scc_matrix.png" % self._prefix,
-            labels=labels,
-        )
-
-        plot_dendrogram(
-            linkage_matrix,
-            file_name="%scc_dendrogram.png" % self._prefix,
-            labels=labels,
-        )
-
         d = self.to_plotly_json(correlation_matrix, linkage_matrix, labels=labels)
 
         import json
 
         with open("%sintensity_clusters.json" % self._prefix, "wb") as f:
             json.dump(d, f, indent=2)
-
-        plot_matrix(
-            cos_angle_matrix.as_numpy_array(),
-            ca_linkage_matrix,
-            file_name="%scos_angle_matrix.png" % self._prefix,
-            labels=labels,
-        )
-
-        plot_dendrogram(
-            ca_linkage_matrix,
-            file_name="%scos_angle_dendrogram.png" % self._prefix,
-            labels=labels,
-        )
 
         d = self.to_plotly_json(cos_angle_matrix, ca_linkage_matrix, labels=labels)
 
@@ -338,7 +311,7 @@ class multi_crystal_analysis(object):
         from dials.algorithms.symmetry.cosym import phil_scope
 
         params = phil_scope.extract()
-        from dials.algorithms.symmetry.cosym import analyse_datasets
+        from dials.algorithms.symmetry.cosym import CosymAnalysis
 
         datasets = self.individual_merged_intensities
         datasets = [
@@ -347,10 +320,9 @@ class multi_crystal_analysis(object):
         ]
         params.lattice_group = datasets[0].space_group_info()
         params.cluster.method = "dbscan"
-        params.plot_prefix = self._prefix
 
-        results = analyse_datasets(datasets, params)
-        self.cosym = results
+        self.cosym = CosymAnalysis(datasets, params)
+        self.cosym.run()
 
     def compute_correlation_coefficient_matrix(self):
         from scipy.cluster import hierarchy
