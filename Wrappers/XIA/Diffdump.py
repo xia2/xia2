@@ -310,10 +310,10 @@ def failover_full_cbf(cbf_file):
     # centre etc.
 
     detector.__swig_destroy__(detector)
-    del (detector)
+    del detector
 
     gonio.__swig_destroy__(gonio)
-    del (gonio)
+    del gonio
 
     return header
 

@@ -189,7 +189,7 @@ def copy_r_file(hklin, hklout):
                 print(column.label())
                 values = column.extract_values(not_a_number_substitute=-999999)
                 for r in remove:
-                    del (values[r])
+                    del values[r]
                 mtz_out.get_column(column.label()).set_values(
                     values=values, selection_valid=valid
                 )

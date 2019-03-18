@@ -506,7 +506,7 @@ def XDSIdxref(DriverType=None, params=None):
                         to_remove.append(lattice)
                 for lattice in to_remove:
                     Debug.write("Ignoring solution with lattice %s" % lattice)
-                    del (self._indexing_solutions[lattice])
+                    del self._indexing_solutions[lattice]
 
             # get the highest symmetry "acceptable" solution
 

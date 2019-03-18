@@ -81,7 +81,7 @@ class _CIFHandler(object):
         block = self.get_block(blockname)
         if isinstance(wavelength, dict):
             if self._keyname["wavelength"] in block:
-                del (block[self._keyname["wavelength"]])
+                del block[self._keyname["wavelength"]]
             loop = iotbx.cif.model.loop(
                 header=[self._keyname["wavelength.id"], self._keyname["wavelength"]],
                 data=[s for item in wavelength.iteritems() for s in item],

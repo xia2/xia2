@@ -512,7 +512,7 @@ class merger(object):
                 delete.append(hkl)
 
         for hkl in delete:
-            del (self._merged_reflections[hkl])
+            del self._merged_reflections[hkl]
 
         delete = []
         for hkl in self._merged_reflections_anomalous:
@@ -520,7 +520,7 @@ class merger(object):
                 delete.append(hkl)
 
         for hkl in delete:
-            del (self._merged_reflections_anomalous[hkl])
+            del self._merged_reflections_anomalous[hkl]
 
         delete = []
         for hkl in self._unmerged_reflections:
@@ -528,7 +528,7 @@ class merger(object):
                 delete.append(hkl)
 
         for hkl in delete:
-            del (self._unmerged_reflections[hkl])
+            del self._unmerged_reflections[hkl]
 
         return
 

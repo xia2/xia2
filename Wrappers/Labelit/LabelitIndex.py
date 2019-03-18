@@ -355,7 +355,7 @@ def LabelitIndex(DriverType=None, indxr_print=True):
 
             for s in sorted(self._solutions):
                 if self._solutions[s]["rmsd"] > 4.0 * self._solutions[1]["rmsd"]:
-                    del (self._solutions[s])
+                    del self._solutions[s]
 
             return "ok"
 

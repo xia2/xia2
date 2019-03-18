@@ -813,9 +813,9 @@ class DialsIndexer(Indexer):
                         ):
                             return copy.deepcopy(self._solutions[s])
                         else:
-                            del (self._solutions[s])
+                            del self._solutions[s]
                     else:
-                        del (self._solutions[s])
+                        del self._solutions[s]
 
                 raise RuntimeError(
                     "no solution for lattice %s with given cell"
@@ -827,7 +827,7 @@ class DialsIndexer(Indexer):
                     if self._solutions[s]["lattice"] == self._indxr_input_lattice:
                         return copy.deepcopy(self._solutions[s])
                     else:
-                        del (self._solutions[s])
+                        del self._solutions[s]
 
                 raise RuntimeError(
                     "no solution for lattice %s" % self._indxr_input_lattice
