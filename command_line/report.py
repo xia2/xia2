@@ -213,10 +213,7 @@ class xia2_report_base(object):
         mult_json_files = {}
         mult_img_files = {}
 
-        rd = self.report_dir
-
-        if rd is None:
-            rd = "."
+        rd = self.report_dir or "."
 
         for settings.slice_axis in ("h", "k", "l"):
             settings.plot.filename = os.path.join(
