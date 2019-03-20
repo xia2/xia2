@@ -215,6 +215,9 @@ class xia2_report_base(object):
 
         rd = self.report_dir
 
+        if rd is None:
+            rd = "."
+
         for settings.slice_axis in ("h", "k", "l"):
             settings.plot.filename = os.path.join(
                 rd,
