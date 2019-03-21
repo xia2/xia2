@@ -545,7 +545,7 @@ class MultiCrystalScale(object):
         if self._params.symmetry.space_group is not None:
             # reindex to correct bravais setting
             cb_op = sgtbx.change_of_basis_op()
-            space_group = self._params.symmetry.space_group.primitive_setting().group()
+            space_group = self._params.symmetry.space_group.group()
             self._data_manager.reindex(cb_op=cb_op, space_group=space_group)
             crystal_symmetry = self._data_manager.experiments[
                 0
