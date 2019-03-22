@@ -1,4 +1,4 @@
-#/usr/bin/env python
+# /usr/bin/env python
 # Flags.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
@@ -16,90 +16,91 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
+
 class _Flags(object):
-  '''A singleton to manage boolean flags.'''
+    """A singleton to manage boolean flags."""
 
-  def __init__(self):
-    # XDS specific things - to help with handling tricky data sets
+    def __init__(self):
+        # XDS specific things - to help with handling tricky data sets
 
-    self._xparm = None
-    self._xparm_beam_vector = None
-    self._xparm_rotation_axis = None
-    self._xparm_origin = None
+        self._xparm = None
+        self._xparm_beam_vector = None
+        self._xparm_rotation_axis = None
+        self._xparm_origin = None
 
-    self._xparm_a = None
-    self._xparm_b = None
-    self._xparm_c = None
+        self._xparm_a = None
+        self._xparm_b = None
+        self._xparm_c = None
 
-    # starting directory (to allow setting working directory && relative
-    # paths on input)
-    self._starting_directory = os.getcwd()
+        # starting directory (to allow setting working directory && relative
+        # paths on input)
+        self._starting_directory = os.getcwd()
 
-  def get_starting_directory(self):
-    return self._starting_directory
+    def get_starting_directory(self):
+        return self._starting_directory
 
-  def set_xparm(self, xparm):
+    def set_xparm(self, xparm):
 
-    self._xparm = xparm
+        self._xparm = xparm
 
-    from xia2.Wrappers.XDS.XDS import xds_read_xparm
+        from xia2.Wrappers.XDS.XDS import xds_read_xparm
 
-    xparm_info = xds_read_xparm(xparm)
+        xparm_info = xds_read_xparm(xparm)
 
-    self._xparm_origin = xparm_info['ox'], xparm_info['oy']
-    self._xparm_beam_vector = tuple(xparm_info['beam'])
-    self._xparm_rotation_axis = tuple(xparm_info['axis'])
-    self._xparm_distance = xparm_info['distance']
+        self._xparm_origin = xparm_info["ox"], xparm_info["oy"]
+        self._xparm_beam_vector = tuple(xparm_info["beam"])
+        self._xparm_rotation_axis = tuple(xparm_info["axis"])
+        self._xparm_distance = xparm_info["distance"]
 
-  def get_xparm(self):
-    return self._xparm
+    def get_xparm(self):
+        return self._xparm
 
-  def get_xparm_origin(self):
-    return self._xparm_origin
+    def get_xparm_origin(self):
+        return self._xparm_origin
 
-  def get_xparm_rotation_axis(self):
-    return self._xparm_rotation_axis
+    def get_xparm_rotation_axis(self):
+        return self._xparm_rotation_axis
 
-  def get_xparm_beam_vector(self):
-    return self._xparm_beam_vector
+    def get_xparm_beam_vector(self):
+        return self._xparm_beam_vector
 
-  def get_xparm_distance(self):
-    return self._xparm_distance
+    def get_xparm_distance(self):
+        return self._xparm_distance
 
-  def set_xparm_ub(self, xparm):
+    def set_xparm_ub(self, xparm):
 
-    self._xparm_ub = xparm
+        self._xparm_ub = xparm
 
-    tokens = map(float, open(xparm, 'r').read().split())
+        tokens = map(float, open(xparm, "r").read().split())
 
-    self._xparm_a = tokens[-9:-6]
-    self._xparm_b = tokens[-6:-3]
-    self._xparm_c = tokens[-3:]
+        self._xparm_a = tokens[-9:-6]
+        self._xparm_b = tokens[-6:-3]
+        self._xparm_c = tokens[-3:]
 
-  def get_xparm_a(self):
-    return self._xparm_a
+    def get_xparm_a(self):
+        return self._xparm_a
 
-  def get_xparm_b(self):
-    return self._xparm_b
+    def get_xparm_b(self):
+        return self._xparm_b
 
-  def get_xparm_c(self):
-    return self._xparm_c
+    def get_xparm_c(self):
+        return self._xparm_c
 
-  def set_freer_file(self, freer_file):
+    def set_freer_file(self, freer_file):
 
-    freer_file = os.path.abspath(freer_file)
+        freer_file = os.path.abspath(freer_file)
 
-    if not os.path.exists(freer_file):
-      raise RuntimeError('%s does not exist' % freer_file)
+        if not os.path.exists(freer_file):
+            raise RuntimeError("%s does not exist" % freer_file)
 
-    from xia2.Modules.FindFreeFlag import FindFreeFlag
-    from xia2.Handlers.Streams import Debug
+        from xia2.Modules.FindFreeFlag import FindFreeFlag
+        from xia2.Handlers.Streams import Debug
 
-    column = FindFreeFlag(freer_file)
+        column = FindFreeFlag(freer_file)
 
-    Debug.write('FreeR_flag column in %s found: %s' % \
-                (freer_file, column))
+        Debug.write("FreeR_flag column in %s found: %s" % (freer_file, column))
 
-    self._freer_file = freer_file
+        self._freer_file = freer_file
+
 
 Flags = _Flags()

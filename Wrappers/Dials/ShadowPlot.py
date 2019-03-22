@@ -13,51 +13,53 @@ import os
 
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 
-def ShadowPlot(DriverType = None):
-  '''A factory for ShadowPlotWrapper classes.'''
 
-  from xia2.Driver.DriverFactory import DriverFactory
-  DriverInstance = DriverFactory.Driver(DriverType)
+def ShadowPlot(DriverType=None):
+    """A factory for ShadowPlotWrapper classes."""
 
-  class ShadowPlotWrapper(DriverInstance.__class__, FrameProcessor):
+    from xia2.Driver.DriverFactory import DriverFactory
 
-    def __init__(self):
-      super(ShadowPlotWrapper, self).__init__()
+    DriverInstance = DriverFactory.Driver(DriverType)
 
-      self.set_executable('dials.shadow_plot')
+    class ShadowPlotWrapper(DriverInstance.__class__, FrameProcessor):
+        def __init__(self):
+            super(ShadowPlotWrapper, self).__init__()
 
-      self._sweep_filename = None
-      self._json_filename = None
+            self.set_executable("dials.shadow_plot")
 
-    def set_sweep_filename(self, sweep_filename):
-      self._sweep_filename = sweep_filename
+            self._sweep_filename = None
+            self._json_filename = None
 
-    def set_json_filename(self, json_filename):
-      self._json_filename = json_filename
+        def set_sweep_filename(self, sweep_filename):
+            self._sweep_filename = sweep_filename
 
-    def get_json_filename(self):
-      return self._json_filename
+        def set_json_filename(self, json_filename):
+            self._json_filename = json_filename
 
-    def get_results(self):
-      assert (self._json_filename is not None and
-              os.path.isfile(self._json_filename))
-      import json
-      with open(self._json_filename, 'rb') as f:
-        results = json.load(f)
-      return results
+        def get_json_filename(self):
+            return self._json_filename
 
-    def run(self):
+        def get_results(self):
+            assert self._json_filename is not None and os.path.isfile(
+                self._json_filename
+            )
+            import json
 
-      self.clear_command_line()
+            with open(self._json_filename, "rb") as f:
+                results = json.load(f)
+            return results
 
-      assert self._sweep_filename is not None
-      self.add_command_line('%s' %self._sweep_filename)
-      if self._json_filename is not None:
-        self.add_command_line('json=%s' %self._json_filename)
-      self.add_command_line('mode=1d')
-      self.start()
-      self.close_wait()
-      self.check_for_errors()
+        def run(self):
 
+            self.clear_command_line()
 
-  return ShadowPlotWrapper()
+            assert self._sweep_filename is not None
+            self.add_command_line("%s" % self._sweep_filename)
+            if self._json_filename is not None:
+                self.add_command_line("json=%s" % self._json_filename)
+            self.add_command_line("mode=1d")
+            self.start()
+            self.close_wait()
+            self.check_for_errors()
+
+    return ShadowPlotWrapper()

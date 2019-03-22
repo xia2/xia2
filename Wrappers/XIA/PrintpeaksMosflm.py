@@ -15,178 +15,176 @@ import os
 import sys
 
 from xia2.Driver.DriverFactory import DriverFactory
-from xia2.Experts.FindImages import (image2image, image2template_directory,
-                                     template_number2image)
+from xia2.Experts.FindImages import (
+    image2image,
+    image2template_directory,
+    template_number2image,
+)
 from xia2.Wrappers.XIA.Diffdump import Diffdump
 
-def PrintpeaksMosflm(DriverType = None):
-  '''A factory for wrappers for the printpeaks/mosflm.'''
 
-  DriverInstance = DriverFactory.Driver(DriverType)
+def PrintpeaksMosflm(DriverType=None):
+    """A factory for wrappers for the printpeaks/mosflm."""
 
-  class PrintpeaksMosflmWrapper(DriverInstance.__class__):
-    '''Provide access to the spot finding functionality in Mosflm.'''
+    DriverInstance = DriverFactory.Driver(DriverType)
 
-    def __init__(self):
-      DriverInstance.__class__.__init__(self)
+    class PrintpeaksMosflmWrapper(DriverInstance.__class__):
+        """Provide access to the spot finding functionality in Mosflm."""
 
-      self.set_executable('ipmosflm')
+        def __init__(self):
+            DriverInstance.__class__.__init__(self)
 
-      if 'CCP4_SCR' in os.environ:
-        self.set_working_directory(os.environ['CCP4_SCR'])
+            self.set_executable("ipmosflm")
 
-      self._image = None
-      self._peaks = { }
+            if "CCP4_SCR" in os.environ:
+                self.set_working_directory(os.environ["CCP4_SCR"])
 
-    def set_image(self, image):
-      '''Set an image to read the header of.'''
-      self._image = image
-      self._peaks = { }
+            self._image = None
+            self._peaks = {}
 
-    def get_maxima(self, threshold = 5.0):
-      '''Run diffdump, printpeaks to get a list of diffraction maxima
-      at their image positions, to allow for further analysis.'''
+        def set_image(self, image):
+            """Set an image to read the header of."""
+            self._image = image
+            self._peaks = {}
 
-      if not self._image:
-        raise RuntimeError('image not set')
+        def get_maxima(self, threshold=5.0):
+            """Run diffdump, printpeaks to get a list of diffraction maxima
+      at their image positions, to allow for further analysis."""
 
-      if not os.path.exists(self._image):
-        raise RuntimeError('image %s does not exist' % \
-              self._image)
+            if not self._image:
+                raise RuntimeError("image not set")
 
-      dd = Diffdump()
-      dd.set_image(self._image)
-      header = dd.readheader()
+            if not os.path.exists(self._image):
+                raise RuntimeError("image %s does not exist" % self._image)
 
-      beam = header['raw_beam']
-      pixel = header['pixel']
+            dd = Diffdump()
+            dd.set_image(self._image)
+            header = dd.readheader()
 
-      template, directory = image2template_directory(self._image)
-      image_number = image2image(os.path.split(self._image)[-1])
+            beam = header["raw_beam"]
+            pixel = header["pixel"]
 
-      spot_file = '%s.spt' % template_number2image(
-          template, image_number)
+            template, directory = image2template_directory(self._image)
+            image_number = image2image(os.path.split(self._image)[-1])
 
-      self.start()
+            spot_file = "%s.spt" % template_number2image(template, image_number)
 
-      self.input('template "%s"' % template)
-      self.input('directory "%s"' % directory)
-      self.input('findspots local find %d file %s' % \
-                 (image_number, spot_file))
-      self.input('go')
+            self.start()
 
-      self.close_wait()
+            self.input('template "%s"' % template)
+            self.input('directory "%s"' % directory)
+            self.input("findspots local find %d file %s" % (image_number, spot_file))
+            self.input("go")
 
-      self.check_for_errors()
+            self.close_wait()
 
-      output = open(os.path.join(self.get_working_directory(),
-                                 spot_file)).readlines()
+            self.check_for_errors()
 
-      os.remove(os.path.join(self.get_working_directory(),
-                             spot_file))
+            output = open(
+                os.path.join(self.get_working_directory(), spot_file)
+            ).readlines()
 
-      peaks = []
+            os.remove(os.path.join(self.get_working_directory(), spot_file))
 
-      for record in output[3:-2]:
-        lst = record.split()
-        x = float(lst[0])
-        y = float(lst[1])
-        i = float(lst[4]) / float(lst[5])
-        x /= pixel[0]
-        y /= pixel[1]
+            peaks = []
 
-        if i < threshold:
-          continue
+            for record in output[3:-2]:
+                lst = record.split()
+                x = float(lst[0])
+                y = float(lst[1])
+                i = float(lst[4]) / float(lst[5])
+                x /= pixel[0]
+                y /= pixel[1]
 
-        # this is Mosflm right? Swap X & Y!!
+                if i < threshold:
+                    continue
 
-        peaks.append((y, x, i))
+                # this is Mosflm right? Swap X & Y!!
 
-      return peaks
+                peaks.append((y, x, i))
 
-    def printpeaks(self):
-      '''Run printpeaks and get the list of peaks out, then decompose
-      this to a histogram.'''
+            return peaks
 
-      if not self._image:
-        raise RuntimeError('image not set')
+        def printpeaks(self):
+            """Run printpeaks and get the list of peaks out, then decompose
+      this to a histogram."""
 
-      if not os.path.exists(self._image):
-        raise RuntimeError('image %s does not exist' % \
-              self._image)
+            if not self._image:
+                raise RuntimeError("image not set")
 
-      _peaks = self.get_maxima()
-      peaks = []
+            if not os.path.exists(self._image):
+                raise RuntimeError("image %s does not exist" % self._image)
 
-      for peak in _peaks:
-        intensity = peak[2]
-        peaks.append(intensity)
+            _peaks = self.get_maxima()
+            peaks = []
 
-      # now construct the histogram
+            for peak in _peaks:
+                intensity = peak[2]
+                peaks.append(intensity)
 
-      log_max = int(math.log10(peaks[0])) + 1
-      max_limit = int(math.pow(10.0, log_max))
+            # now construct the histogram
 
-      if False:
+            log_max = int(math.log10(peaks[0])) + 1
+            max_limit = int(math.pow(10.0, log_max))
 
-        limit = math.pow(10.0, log_max)
+            if False:
 
-        while limit > 2.0:
-          self._peaks[limit] = len([j for j in peaks if j > limit])
-          limit *= 0.5
+                limit = math.pow(10.0, log_max)
 
-      else:
+                while limit > 2.0:
+                    self._peaks[limit] = len([j for j in peaks if j > limit])
+                    limit *= 0.5
 
-        for limit in [5, 10, 20, 50, 100, 200, 500, 1000]:
-          if limit > max_limit:
-            continue
-          self._peaks[float(limit)] = len(
-              [j for j in peaks if j > limit])
+            else:
+
+                for limit in [5, 10, 20, 50, 100, 200, 500, 1000]:
+                    if limit > max_limit:
+                        continue
+                    self._peaks[float(limit)] = len([j for j in peaks if j > limit])
+
+            return self._peaks
+
+        def threshold(self, nspots):
+            if not self._peaks:
+                peaks = self.printpeaks()
+            else:
+                peaks = self._peaks
+            keys = sorted(peaks.keys())
+            keys.reverse()
+            for thresh in keys:
+                if peaks[thresh] > nspots:
+                    return thresh
+            return min(keys)
+
+        def screen(self):
+            if not self._image:
+                raise RuntimeError("image not set")
+
+            if not os.path.exists(self._image):
+                raise RuntimeError("image %s does not exist" % self._image)
+
+            _peaks = self.get_maxima()
+
+            peaks = []
+
+            for peak in _peaks:
+                if peak[2] > 10:
+                    peaks.append(peak)
+
+            if len(peaks) < 10:
+                return "blank"
+
+            return "ok"
+
+    return PrintpeaksMosflmWrapper()
 
 
-      return self._peaks
+if __name__ == "__main__":
+    # run a test of some of the new code...
 
-    def threshold(self, nspots):
-      if not self._peaks:
-        peaks = self.printpeaks()
-      else:
-        peaks = self._peaks
-      keys = sorted(peaks.keys())
-      keys.reverse()
-      for thresh in keys:
-        if peaks[thresh] > nspots:
-          return thresh
-      return min(keys)
+    p = Printpeaks()
+    p.set_image(sys.argv[1])
+    peaks = p.get_maxima()
 
-    def screen(self):
-      if not self._image:
-        raise RuntimeError('image not set')
-
-      if not os.path.exists(self._image):
-        raise RuntimeError('image %s does not exist' % \
-              self._image)
-
-      _peaks = self.get_maxima()
-
-      peaks = []
-
-      for peak in _peaks:
-        if peak[2] > 10:
-          peaks.append(peak)
-
-      if len(peaks) < 10:
-        return 'blank'
-
-      return 'ok'
-
-  return PrintpeaksMosflmWrapper()
-
-if __name__ == '__main__':
-  # run a test of some of the new code...
-
-  p = Printpeaks()
-  p.set_image(sys.argv[1])
-  peaks = p.get_maxima()
-
-  for m in peaks:
-    print('%6.1f %6.1f %6.1f' % m)
+    for m in peaks:
+        print("%6.1f %6.1f %6.1f" % m)

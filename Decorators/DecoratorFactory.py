@@ -17,26 +17,28 @@ from __future__ import absolute_import, division, print_function
 
 from xia2.Decorators.CCP4Decorator import CCP4DecoratorFactory
 
+
 class _DecoratorFactory(object):
-  '''A factory singleton to dress Driver instances with decoration
-  for specific program suites, for instance CCP4.'''
+    """A factory singleton to dress Driver instances with decoration
+  for specific program suites, for instance CCP4."""
 
-  def __init__(self):
-    self._type = 'ccp4'
+    def __init__(self):
+        self._type = "ccp4"
 
-  def Decorate(self, DriverInstance, type=None):
-    '''Decorate DriverInstance as type or self._type if not specified.'''
+    def Decorate(self, DriverInstance, type=None):
+        """Decorate DriverInstance as type or self._type if not specified."""
 
-    if type is None:
-      type = self._type
+        if type is None:
+            type = self._type
 
-    if type == 'ccp4':
-      return CCP4DecoratorFactory(DriverInstance)
+        if type == "ccp4":
+            return CCP4DecoratorFactory(DriverInstance)
 
-    raise RuntimeError('unknown decorator class "%s"' % type)
+        raise RuntimeError('unknown decorator class "%s"' % type)
+
 
 DecoratorFactory = _DecoratorFactory()
 
-if __name__ == '__main__':
-  # run some kind of test here
-  raise RuntimeError('no test available')
+if __name__ == "__main__":
+    # run some kind of test here
+    raise RuntimeError("no test available")

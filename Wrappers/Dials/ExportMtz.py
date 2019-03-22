@@ -10,67 +10,71 @@
 
 from __future__ import absolute_import, division, print_function
 
-def ExportMtz(DriverType = None):
-  '''A factory for ExportMtzWrapper classes.'''
 
-  from xia2.Driver.DriverFactory import DriverFactory
-  DriverInstance = DriverFactory.Driver(DriverType)
+def ExportMtz(DriverType=None):
+    """A factory for ExportMtzWrapper classes."""
 
-  class ExportMtzWrapper(DriverInstance.__class__):
+    from xia2.Driver.DriverFactory import DriverFactory
 
-    def __init__(self):
-      DriverInstance.__class__.__init__(self)
-      self.set_executable('dials.export')
+    DriverInstance = DriverFactory.Driver(DriverType)
 
-      self._experiments_filename = None
-      self._reflections_filename = None
-      self._mtz_filename = "hklout.mtz"
-      self._partiality_threshold = 0.99
-      self._combine_partials = True
-      self._intensity_choice = 'profile+sum'
+    class ExportMtzWrapper(DriverInstance.__class__):
+        def __init__(self):
+            DriverInstance.__class__.__init__(self)
+            self.set_executable("dials.export")
 
-    def set_intensity_choice(self, choice):
-      self._intensity_choice = choice
+            self._experiments_filename = None
+            self._reflections_filename = None
+            self._mtz_filename = "hklout.mtz"
+            self._partiality_threshold = 0.99
+            self._combine_partials = True
+            self._intensity_choice = "profile+sum"
 
-    def set_partiality_threshold(self, partiality_threshold):
-      self._partiality_threshold = partiality_threshold
+        def set_intensity_choice(self, choice):
+            self._intensity_choice = choice
 
-    def set_combine_partials(self, combine_partials):
-      self._combine_partials = combine_partials
+        def set_partiality_threshold(self, partiality_threshold):
+            self._partiality_threshold = partiality_threshold
 
-    def set_experiments_filename(self, experiments_filename):
-      self._experiments_filename = experiments_filename
+        def set_combine_partials(self, combine_partials):
+            self._combine_partials = combine_partials
 
-    def get_experiments_filename(self):
-      return self._experiments_filename
+        def set_experiments_filename(self, experiments_filename):
+            self._experiments_filename = experiments_filename
 
-    def set_reflections_filename(self, reflections_filename):
-      self._reflections_filename = reflections_filename
+        def get_experiments_filename(self):
+            return self._experiments_filename
 
-    def get_reflections_filename(self):
-      return self._reflections_filename
+        def set_reflections_filename(self, reflections_filename):
+            self._reflections_filename = reflections_filename
 
-    def set_mtz_filename(self, mtz_filename):
-      self._mtz_filename = mtz_filename
+        def get_reflections_filename(self):
+            return self._reflections_filename
 
-    def get_mtz_filename(self):
-      return self._mtz_filename
+        def set_mtz_filename(self, mtz_filename):
+            self._mtz_filename = mtz_filename
 
-    def run(self):
-      from xia2.Handlers.Streams import Debug
-      Debug.write('Running dials.export')
+        def get_mtz_filename(self):
+            return self._mtz_filename
 
-      self.clear_command_line()
-      self.add_command_line('experiments=%s' % self._experiments_filename)
-      self.add_command_line('reflections=%s' % self._reflections_filename)
-      self.add_command_line('mtz.hklout=%s' % self._mtz_filename)
-      if self._combine_partials:
-        self.add_command_line('combine_partials=true')
-      self.add_command_line('partiality_threshold=%s' % self._partiality_threshold)
-      self.add_command_line('ignore_panels=true')
-      self.add_command_line('intensity=%s' % self._intensity_choice)
-      self.start()
-      self.close_wait()
-      self.check_for_errors()
+        def run(self):
+            from xia2.Handlers.Streams import Debug
 
-  return ExportMtzWrapper()
+            Debug.write("Running dials.export")
+
+            self.clear_command_line()
+            self.add_command_line("experiments=%s" % self._experiments_filename)
+            self.add_command_line("reflections=%s" % self._reflections_filename)
+            self.add_command_line("mtz.hklout=%s" % self._mtz_filename)
+            if self._combine_partials:
+                self.add_command_line("combine_partials=true")
+            self.add_command_line(
+                "partiality_threshold=%s" % self._partiality_threshold
+            )
+            self.add_command_line("ignore_panels=true")
+            self.add_command_line("intensity=%s" % self._intensity_choice)
+            self.start()
+            self.close_wait()
+            self.check_for_errors()
+
+    return ExportMtzWrapper()

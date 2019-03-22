@@ -15,134 +15,140 @@ import shutil
 
 from xia2.Driver.DriverFactory import DriverFactory
 
-def XDSConv(DriverType = None):
 
-  DriverInstance = DriverFactory.Driver(DriverType)
+def XDSConv(DriverType=None):
 
-  class XDSConvWrapper(DriverInstance.__class__):
-    '''A wrapper for wrapping XDSCONV.'''
+    DriverInstance = DriverFactory.Driver(DriverType)
 
-    def __init__(self):
-      DriverInstance.__class__.__init__(self)
-      self.set_executable('xdsconv')
+    class XDSConvWrapper(DriverInstance.__class__):
+        """A wrapper for wrapping XDSCONV."""
 
-      self._input_file = None
-      self._cell = None
-      self._symmetry = None
-      self._output_file = None
+        def __init__(self):
+            DriverInstance.__class__.__init__(self)
+            self.set_executable("xdsconv")
 
-    def set_input_file(self, input_file):
-      self._input_file = input_file
+            self._input_file = None
+            self._cell = None
+            self._symmetry = None
+            self._output_file = None
 
-    def set_cell(self, cell):
-      self._cell = cell
+        def set_input_file(self, input_file):
+            self._input_file = input_file
 
-    def get_cell(self):
-      return self._cell
+        def set_cell(self, cell):
+            self._cell = cell
 
-    def get_symmetry(self):
-      return self._symmetry
+        def get_cell(self):
+            return self._cell
 
-    def set_symmetry(self, symmetry):
-      self._symmetry = symmetry
+        def get_symmetry(self):
+            return self._symmetry
 
-    def set_output_file(self, output_file):
-      self._output_file = output_file
+        def set_symmetry(self, symmetry):
+            self._symmetry = symmetry
 
-    def parse_xds_ascii(self, file):
-      '''Parse the XDS ascii file for interesting things.'''
+        def set_output_file(self, output_file):
+            self._output_file = output_file
 
-      results = { }
+        def parse_xds_ascii(self, file):
+            """Parse the XDS ascii file for interesting things."""
 
-      for line in open(file, 'r').readlines():
-        if not line[0] == '!':
-          break
+            results = {}
 
-        if '!FORMAT' in line:
-          tokens = line.split()
-          for t in tokens:
-            if 'MERGED' in t:
-              if t.split('=')[-1].lower() == 'false':
-                raise RuntimeError('input unmerged')
-            if 'FRIEDEL' in t:
-              results['friedel'] = t.split('=')[-1].lower()
+            for line in open(file, "r").readlines():
+                if not line[0] == "!":
+                    break
 
-        if '!UNIT_CELL_CONSTANTS' in line:
-          results['cell'] = tuple(map(float,
-                                      line.split()[1:]))
+                if "!FORMAT" in line:
+                    tokens = line.split()
+                    for t in tokens:
+                        if "MERGED" in t:
+                            if t.split("=")[-1].lower() == "false":
+                                raise RuntimeError("input unmerged")
+                        if "FRIEDEL" in t:
+                            results["friedel"] = t.split("=")[-1].lower()
 
-        if '!INCLUDE_RESOLUTION' in line:
-          results['resolution_range'] = map(float,
-                                            line.split()[1:])
+                if "!UNIT_CELL_CONSTANTS" in line:
+                    results["cell"] = tuple(map(float, line.split()[1:]))
 
-        if '!SPACE_GROUP' in line:
-          results['spacegroup'] = int(line.split()[-1])
+                if "!INCLUDE_RESOLUTION" in line:
+                    results["resolution_range"] = map(float, line.split()[1:])
 
-      return results
+                if "!SPACE_GROUP" in line:
+                    results["spacegroup"] = int(line.split()[-1])
 
-    def convert(self):
-      if not self._input_file:
-        raise RuntimeError('no input file specified')
+            return results
 
-      if not self._output_file:
-        raise RuntimeError('no output file specified')
+        def convert(self):
+            if not self._input_file:
+                raise RuntimeError("no input file specified")
 
-      # make the output file link a relative rather than
-      # absolute path... FIXME this is unix specific!
-      if self.get_working_directory() in self._output_file:
-        self._output_file = self._output_file.replace(
-            self.get_working_directory(), './')
+            if not self._output_file:
+                raise RuntimeError("no output file specified")
 
-      # perhaps move input file to CWD
+            # make the output file link a relative rather than
+            # absolute path... FIXME this is unix specific!
+            if self.get_working_directory() in self._output_file:
+                self._output_file = self._output_file.replace(
+                    self.get_working_directory(), "./"
+                )
 
-      if len(self._input_file) > 49:
-        if len(os.path.split(self._input_file)[-1]) > 49:
-          raise RuntimeError('input file name too long')
+            # perhaps move input file to CWD
 
-        shutil.copyfile(
-            self._input_file,
-            os.path.join(self.get_working_directory(),
-                         os.path.split(self._input_file)[-1]))
+            if len(self._input_file) > 49:
+                if len(os.path.split(self._input_file)[-1]) > 49:
+                    raise RuntimeError("input file name too long")
 
-        self._input_file = os.path.split(self._input_file)[-1]
+                shutil.copyfile(
+                    self._input_file,
+                    os.path.join(
+                        self.get_working_directory(),
+                        os.path.split(self._input_file)[-1],
+                    ),
+                )
 
-      header = self.parse_xds_ascii(self._input_file)
+                self._input_file = os.path.split(self._input_file)[-1]
 
-      if not self._cell:
-        self._cell = header['cell']
+            header = self.parse_xds_ascii(self._input_file)
 
-      if not self._symmetry:
-        self._symmetry = header['spacegroup']
+            if not self._cell:
+                self._cell = header["cell"]
 
-      self._resolution = header.get('resolution_range', [100.0, 0.1])
-      self._resolution.sort()
-      self._resolution.reverse()
+            if not self._symmetry:
+                self._symmetry = header["spacegroup"]
 
-      inp = open(os.path.join(
-          self.get_working_directory(), 'XDSCONV.INP'), 'w')
+            self._resolution = header.get("resolution_range", [100.0, 0.1])
+            self._resolution.sort()
+            self._resolution.reverse()
 
-      inp.write('SPACE_GROUP_NUMBER=%d\n' % self._symmetry)
+            inp = open(os.path.join(self.get_working_directory(), "XDSCONV.INP"), "w")
 
-      inp.write(
-          'UNIT_CELL_CONSTANTS= %.2f %.2f %.2f %.2f %.2f %.2f\n' % \
-          self._cell)
+            inp.write("SPACE_GROUP_NUMBER=%d\n" % self._symmetry)
 
-      inp.write('INPUT_FILE=%s XDS_ASCII %.2f %.2f\n' % \
-                (self._input_file, self._resolution[0],
-                 self._resolution[1]))
+            inp.write(
+                "UNIT_CELL_CONSTANTS= %.2f %.2f %.2f %.2f %.2f %.2f\n" % self._cell
+            )
 
-      inp.write('OUTPUT_FILE=%s IALL FRIEDEL\'S_LAW=%s\n' % \
-                (self._output_file, header['friedel'].upper()))
+            inp.write(
+                "INPUT_FILE=%s XDS_ASCII %.2f %.2f\n"
+                % (self._input_file, self._resolution[0], self._resolution[1])
+            )
 
-      inp.close()
+            inp.write(
+                "OUTPUT_FILE=%s IALL FRIEDEL'S_LAW=%s\n"
+                % (self._output_file, header["friedel"].upper())
+            )
 
-      self.start()
-      self.close_wait()
+            inp.close()
 
-      # should really parse the output
+            self.start()
+            self.close_wait()
 
-      return
+            # should really parse the output
 
-  return XDSConvWrapper()
+            return
+
+    return XDSConvWrapper()
+
 
 # need to add a test here...

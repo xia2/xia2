@@ -9,6 +9,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+
 class NotAvailableError(Exception):
-  '''An exception to be raised when a program is not available'''
-  pass
+    """An exception to be raised when a program is not available"""
+
+    pass

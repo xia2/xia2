@@ -14,52 +14,55 @@ import sys
 
 from xia2.Wrappers.CCP4.Mtzdump import Mtzdump
 
+
 def FindFreeFlag(hklin):
-  '''Try to find the FREE column in hklin. Raise exception if no column is
-  found or if more than one candidate is found.'''
+    """Try to find the FREE column in hklin. Raise exception if no column is
+  found or if more than one candidate is found."""
 
-  # get the information we need here...
+    # get the information we need here...
 
-  mtzdump = Mtzdump()
-  mtzdump.set_hklin(hklin)
-  mtzdump.dump()
-  columns = mtzdump.get_columns()
+    mtzdump = Mtzdump()
+    mtzdump.set_hklin(hklin)
+    mtzdump.dump()
+    columns = mtzdump.get_columns()
 
-  ctypes = {}
+    ctypes = {}
 
-  for c in columns:
-    ctypes[c[0]] = c[1]
+    for c in columns:
+        ctypes[c[0]] = c[1]
 
-  if 'FreeR_flag' in ctypes.keys():
-    if ctypes['FreeR_flag'] != 'I':
-      raise RuntimeError('FreeR_flag column found: type not I')
+    if "FreeR_flag" in ctypes.keys():
+        if ctypes["FreeR_flag"] != "I":
+            raise RuntimeError("FreeR_flag column found: type not I")
 
-    return 'FreeR_flag'
+        return "FreeR_flag"
 
-  # ok, so the usual one wasn't there, look for anything with "free"
-  # in it...
+    # ok, so the usual one wasn't there, look for anything with "free"
+    # in it...
 
-  possibilities = []
+    possibilities = []
 
-  for c in ctypes.keys():
-    if 'free' in c.lower():
-      possibilities.append(c)
+    for c in ctypes.keys():
+        if "free" in c.lower():
+            possibilities.append(c)
 
-  if len(possibilities) == 0:
-    raise RuntimeError('no candidate FreeR_flag columns found')
+    if len(possibilities) == 0:
+        raise RuntimeError("no candidate FreeR_flag columns found")
 
-  if len(possibilities) == 1:
-    if ctypes[possibilities[0]] != 'I':
-      raise RuntimeError('FreeR_flag column found (%s): type not I' % \
-            possibilities[0])
+    if len(possibilities) == 1:
+        if ctypes[possibilities[0]] != "I":
+            raise RuntimeError(
+                "FreeR_flag column found (%s): type not I" % possibilities[0]
+            )
 
-    return possibilities[0]
+        return possibilities[0]
 
-  raise RuntimeError('Multiple candidate FreeR_flag columns found')
+    raise RuntimeError("Multiple candidate FreeR_flag columns found")
 
-if __name__ == '__main__':
 
-  if len(sys.argv) < 2:
-    raise RuntimeError('%s hklin' % sys.argv[0])
+if __name__ == "__main__":
 
-  print(FindFreeFlag(sys.argv[1]))
+    if len(sys.argv) < 2:
+        raise RuntimeError("%s hklin" % sys.argv[0])
+
+    print(FindFreeFlag(sys.argv[1]))

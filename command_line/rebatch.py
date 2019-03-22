@@ -24,22 +24,29 @@ dataset_name = None
 
 """
 
+
 def run(args):
-  import iotbx.phil
-  from xia2.Modules.Scaler.rebatch import rebatch
-  processed = iotbx.phil.process_command_line(args, master_phil)
-  params = processed.work.extract()
-  args = processed.remaining_args
-  if params.hklin is None and len(args):
-    params.hklin = args[0]
-  assert params.hklin is not None
+    import iotbx.phil
+    from xia2.Modules.Scaler.rebatch import rebatch
 
-  rebatch(params.hklin, params.hklout,
-          first_batch=params.first_batch,
-          add_batch=params.add_batch,
-          include_range=params.include_range,
-          exclude_range=params.exclude_range)
+    processed = iotbx.phil.process_command_line(args, master_phil)
+    params = processed.work.extract()
+    args = processed.remaining_args
+    if params.hklin is None and len(args):
+        params.hklin = args[0]
+    assert params.hklin is not None
 
-if __name__ == '__main__':
-  import sys
-  run(sys.argv[1:])
+    rebatch(
+        params.hklin,
+        params.hklout,
+        first_batch=params.first_batch,
+        add_batch=params.add_batch,
+        include_range=params.include_range,
+        exclude_range=params.exclude_range,
+    )
+
+
+if __name__ == "__main__":
+    import sys
+
+    run(sys.argv[1:])

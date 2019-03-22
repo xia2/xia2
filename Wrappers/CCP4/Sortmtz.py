@@ -17,100 +17,108 @@ from xia2.Decorators.DecoratorFactory import DecoratorFactory
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Streams import Chatter
 
-def Sortmtz(DriverType = None):
-  '''A factory for SortmtzWrapper classes.'''
 
-  DriverInstance = DriverFactory.Driver(DriverType)
-  CCP4DriverInstance = DecoratorFactory.Decorate(DriverInstance, 'ccp4')
+def Sortmtz(DriverType=None):
+    """A factory for SortmtzWrapper classes."""
 
-  class SortmtzWrapper(CCP4DriverInstance.__class__):
-    '''A wrapper for Sortmtz, using the CCP4-ified Driver.'''
+    DriverInstance = DriverFactory.Driver(DriverType)
+    CCP4DriverInstance = DecoratorFactory.Decorate(DriverInstance, "ccp4")
 
-    def __init__(self):
-      # generic things
-      CCP4DriverInstance.__class__.__init__(self)
+    class SortmtzWrapper(CCP4DriverInstance.__class__):
+        """A wrapper for Sortmtz, using the CCP4-ified Driver."""
 
-      self.set_executable(os.path.join(
-          os.environ.get('CBIN', ''), 'sortmtz'))
+        def __init__(self):
+            # generic things
+            CCP4DriverInstance.__class__.__init__(self)
 
-      self._sort_order = 'H K L M/ISYM BATCH'
+            self.set_executable(os.path.join(os.environ.get("CBIN", ""), "sortmtz"))
 
-      self._hklin_files = []
+            self._sort_order = "H K L M/ISYM BATCH"
 
-    def add_hklin(self, hklin):
-      '''Add a reflection file to the list to be sorted together.'''
-      self._hklin_files.append(hklin)
+            self._hklin_files = []
 
-    def check_sortmtz_errors(self):
-      '''Check the output for "standard" errors.'''
+        def add_hklin(self, hklin):
+            """Add a reflection file to the list to be sorted together."""
+            self._hklin_files.append(hklin)
 
-      lwbat_warning = ''
+        def check_sortmtz_errors(self):
+            """Check the output for "standard" errors."""
 
-      for l in self.get_all_output():
+            lwbat_warning = ""
 
-        if 'From ccp4_lwbat: warning:' in l:
-          lwbat_warning = l.split('warning:')[1].strip()
+            for l in self.get_all_output():
 
-        if 'error in ccp4_lwbat' in l:
-          raise RuntimeError(lwbat_warning)
+                if "From ccp4_lwbat: warning:" in l:
+                    lwbat_warning = l.split("warning:")[1].strip()
 
-        if 'Sorting failed' in l:
-          raise RuntimeError('sorting failed')
+                if "error in ccp4_lwbat" in l:
+                    raise RuntimeError(lwbat_warning)
 
-        if 'Inconsistent operator orders in input file' in l:
-          raise RuntimeError('different sort orders')
+                if "Sorting failed" in l:
+                    raise RuntimeError("sorting failed")
 
-    def sort(self, vrset = None):
-      '''Actually sort the reflections.'''
+                if "Inconsistent operator orders in input file" in l:
+                    raise RuntimeError("different sort orders")
 
-      if len(self._hklin_files) == 1:
-        self.set_hklin(self._hklin_files[0])
-        self._hklin_files = []
+        def sort(self, vrset=None):
+            """Actually sort the reflections."""
 
-      if not self._hklin_files:
-        self.check_hklin()
+            if len(self._hklin_files) == 1:
+                self.set_hklin(self._hklin_files[0])
+                self._hklin_files = []
 
-      self.check_hklout()
+            if not self._hklin_files:
+                self.check_hklin()
 
-      if self._hklin_files:
-        self.set_task('Sorting reflections %s => %s' % \
-                     (' '.join(self._hklin_files),
-                      os.path.split(self.get_hklout())[-1]))
-      else:
-        self.set_task('Sorting reflections %s => %s' % \
-                     (os.path.split(self.get_hklin())[-1],
-                      os.path.split(self.get_hklout())[-1]))
+            self.check_hklout()
 
-      self.start()
+            if self._hklin_files:
+                self.set_task(
+                    "Sorting reflections %s => %s"
+                    % (
+                        " ".join(self._hklin_files),
+                        os.path.split(self.get_hklout())[-1],
+                    )
+                )
+            else:
+                self.set_task(
+                    "Sorting reflections %s => %s"
+                    % (
+                        os.path.split(self.get_hklin())[-1],
+                        os.path.split(self.get_hklout())[-1],
+                    )
+                )
 
-      # allow for the fact that large negative reflections may
-      # result from XDS output...
+            self.start()
 
-      if vrset:
-        self.input('VRSET_MAGIC %f' % vrset)
+            # allow for the fact that large negative reflections may
+            # result from XDS output...
 
-      self.input(self._sort_order)
+            if vrset:
+                self.input("VRSET_MAGIC %f" % vrset)
 
-      if self._hklin_files:
-        for m in self._hklin_files:
-          self.input('"%s"' % m)
+            self.input(self._sort_order)
 
-      self.close_wait()
+            if self._hklin_files:
+                for m in self._hklin_files:
+                    self.input('"%s"' % m)
 
-      try:
-        self.check_for_errors()
-        self.check_ccp4_errors()
-        if 'Error' in self.get_ccp4_status():
-          raise RuntimeError('[SORTMTZ] %s' % status)
-        self.check_sortmtz_errors()
+            self.close_wait()
 
-      except RuntimeError as e:
-        try:
-          os.remove(self.get_hklout())
-        except Exception:
-          pass
-        raise e
+            try:
+                self.check_for_errors()
+                self.check_ccp4_errors()
+                if "Error" in self.get_ccp4_status():
+                    raise RuntimeError("[SORTMTZ] %s" % status)
+                self.check_sortmtz_errors()
 
-      return self.get_ccp4_status()
+            except RuntimeError as e:
+                try:
+                    os.remove(self.get_hklout())
+                except Exception:
+                    pass
+                raise e
 
-  return SortmtzWrapper()
+            return self.get_ccp4_status()
+
+    return SortmtzWrapper()

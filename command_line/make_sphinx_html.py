@@ -9,16 +9,18 @@ from procrunner import run_process
 import xia2
 
 if __name__ == "__main__":
-  xia2_dir = os.path.dirname(xia2.__file__)
-  dest_dir = os.path.join(xia2_dir, "html")
-  if os.path.exists(dest_dir):
-    shutil.rmtree(dest_dir)
-  os.chdir(os.path.join(xia2_dir, "doc", "sphinx"))
-  result = run_process(["make", "clean"])
-  assert result['exitcode'] == 0, \
-      'make clean failed with exit code %d' % result['exitcode']
-  result = run_process(["make", "html"])
-  assert result['exitcode'] == 0, \
-      'make html failed with exit code %d' % result['exitcode']
-  print("Moving HTML pages to", dest_dir)
-  shutil.move("build/html", dest_dir)
+    xia2_dir = os.path.dirname(xia2.__file__)
+    dest_dir = os.path.join(xia2_dir, "html")
+    if os.path.exists(dest_dir):
+        shutil.rmtree(dest_dir)
+    os.chdir(os.path.join(xia2_dir, "doc", "sphinx"))
+    result = run_process(["make", "clean"])
+    assert result["exitcode"] == 0, (
+        "make clean failed with exit code %d" % result["exitcode"]
+    )
+    result = run_process(["make", "html"])
+    assert result["exitcode"] == 0, (
+        "make html failed with exit code %d" % result["exitcode"]
+    )
+    print("Moving HTML pages to", dest_dir)
+    shutil.move("build/html", dest_dir)

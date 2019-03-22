@@ -18,98 +18,99 @@ import os
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
 
-def Cellparm(DriverType = None):
 
-  DriverInstance = DriverFactory.Driver(DriverType)
+def Cellparm(DriverType=None):
 
-  class CellparmWrapper(DriverInstance.__class__):
-    '''A wrapper for wrapping CELLPARM.'''
+    DriverInstance = DriverFactory.Driver(DriverType)
 
-    def __init__(self):
+    class CellparmWrapper(DriverInstance.__class__):
+        """A wrapper for wrapping CELLPARM."""
 
-      # set up the object ancestors...
+        def __init__(self):
 
-      DriverInstance.__class__.__init__(self)
+            # set up the object ancestors...
 
-      self.set_executable('cellparm')
+            DriverInstance.__class__.__init__(self)
 
-      # input parameters
-      self._cells = []
-      self._n_refs = []
+            self.set_executable("cellparm")
 
-    def add_cell(self, cell, n_ref):
-      '''Add a unit cell which belongs to n_ref reflections.'''
+            # input parameters
+            self._cells = []
+            self._n_refs = []
 
-      self._cells.append(cell)
-      self._n_refs.append(n_ref)
+        def add_cell(self, cell, n_ref):
+            """Add a unit cell which belongs to n_ref reflections."""
 
-    def get_cell(self):
-      '''Compute an average cell.'''
+            self._cells.append(cell)
+            self._n_refs.append(n_ref)
 
-      if not self._cells:
-        raise RuntimeError('no input unit cell parameters')
+        def get_cell(self):
+            """Compute an average cell."""
 
-      # check that the input cells are reasonably uniform -
-      # be really relaxed and allow 5% variation!
+            if not self._cells:
+                raise RuntimeError("no input unit cell parameters")
 
-      average_cell = [self._cells[0][j] for j in range(6)]
-      number_cells = 1
+            # check that the input cells are reasonably uniform -
+            # be really relaxed and allow 5% variation!
 
-      for j in range(1, len(self._cells)):
-        cell = self._cells[j]
-        for k in range(6):
-          # FIXME should use xds_cell_deviation
-          average = average_cell[k] / number_cells
-          check = PhilIndex.params.xia2.settings.xds_check_cell_deviation
-          if math.fabs((cell[k] - average) / average) > 0.05 and check:
-            raise RuntimeError('incompatible unit cells')
-          average = average_cell[k] / number_cells
-          if math.fabs((cell[k] - average) / average) > 0.2:
-            raise RuntimeError('very incompatible unit cells')
+            average_cell = [self._cells[0][j] for j in range(6)]
+            number_cells = 1
 
-        # it was ok to remember for later on..
-        for k in range(6):
-          average_cell[k] += cell[k]
-        number_cells += 1
+            for j in range(1, len(self._cells)):
+                cell = self._cells[j]
+                for k in range(6):
+                    # FIXME should use xds_cell_deviation
+                    average = average_cell[k] / number_cells
+                    check = PhilIndex.params.xia2.settings.xds_check_cell_deviation
+                    if math.fabs((cell[k] - average) / average) > 0.05 and check:
+                        raise RuntimeError("incompatible unit cells")
+                    average = average_cell[k] / number_cells
+                    if math.fabs((cell[k] - average) / average) > 0.2:
+                        raise RuntimeError("very incompatible unit cells")
 
-      cellparm_inp = open(os.path.join(
-          self.get_working_directory(), 'CELLPARM.INP'), 'w')
+                # it was ok to remember for later on..
+                for k in range(6):
+                    average_cell[k] += cell[k]
+                number_cells += 1
 
-      for j in range(len(self._cells)):
-        cell = self._cells[j]
-        n_ref = self._n_refs[j]
-        cellparm_inp.write('UNIT_CELL_CONSTANTS=')
-        cellparm_inp.write(
-            '%.3f %.3f %.3f %.3f %.3f %.3f WEIGHT=%d\n' % \
-            (cell[0], cell[1], cell[2], cell[3], cell[4], cell[5],
-             n_ref))
+            cellparm_inp = open(
+                os.path.join(self.get_working_directory(), "CELLPARM.INP"), "w"
+            )
 
-      cellparm_inp.close()
+            for j in range(len(self._cells)):
+                cell = self._cells[j]
+                n_ref = self._n_refs[j]
+                cellparm_inp.write("UNIT_CELL_CONSTANTS=")
+                cellparm_inp.write(
+                    "%.3f %.3f %.3f %.3f %.3f %.3f WEIGHT=%d\n"
+                    % (cell[0], cell[1], cell[2], cell[3], cell[4], cell[5], n_ref)
+                )
 
-      self.start()
+            cellparm_inp.close()
 
-      self.close_wait()
+            self.start()
 
-      # FIXME need to look for errors in here
+            self.close_wait()
 
-      cellparm_lp = open(os.path.join(
-          self.get_working_directory(), 'CELLPARM.LP'), 'r')
-      data = cellparm_lp.readlines()
+            # FIXME need to look for errors in here
 
-      return map(float, data[-1].split()[:6])
+            cellparm_lp = open(
+                os.path.join(self.get_working_directory(), "CELLPARM.LP"), "r"
+            )
+            data = cellparm_lp.readlines()
 
-  return CellparmWrapper()
+            return map(float, data[-1].split()[:6])
 
-if __name__ == '__main__':
-  cellparm = Cellparm()
+    return CellparmWrapper()
 
-  cellparm.add_cell(
-      (64.585, 30.911, 34.886, 90.000, 105.822, 90.000), 284516)
 
-  cellparm.add_cell(
-      (64.584, 30.932, 34.879, 90.000, 105.832, 90.000), 32106)
+if __name__ == "__main__":
+    cellparm = Cellparm()
 
-  cellparm.add_cell(
-      (64.658, 30.972, 34.918, 90.000, 105.823, 90.000), 1966)
+    cellparm.add_cell((64.585, 30.911, 34.886, 90.000, 105.822, 90.000), 284516)
 
-  print(cellparm.get_cell())
+    cellparm.add_cell((64.584, 30.932, 34.879, 90.000, 105.832, 90.000), 32106)
+
+    cellparm.add_cell((64.658, 30.972, 34.918, 90.000, 105.823, 90.000), 1966)
+
+    print(cellparm.get_cell())

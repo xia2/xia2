@@ -19,101 +19,108 @@ import sys
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
 from xia2.Driver.DriverFactory import DriverFactory
 
-def Mtz2various(DriverType = None):
-  '''A factory for Mtz2variousWrapper classes.'''
 
-  DriverInstance = DriverFactory.Driver(DriverType)
-  CCP4DriverInstance = DecoratorFactory.Decorate(DriverInstance, 'ccp4')
+def Mtz2various(DriverType=None):
+    """A factory for Mtz2variousWrapper classes."""
 
-  class Mtz2variousWrapper(CCP4DriverInstance.__class__):
-    '''A wrapper for Mtz2various, using the CCP4-ified Driver.'''
+    DriverInstance = DriverFactory.Driver(DriverType)
+    CCP4DriverInstance = DecoratorFactory.Decorate(DriverInstance, "ccp4")
 
-    def __init__(self):
-      # generic things
-      CCP4DriverInstance.__class__.__init__(self)
+    class Mtz2variousWrapper(CCP4DriverInstance.__class__):
+        """A wrapper for Mtz2various, using the CCP4-ified Driver."""
 
-      self.set_executable(os.path.join(
-          os.environ.get('CBIN', ''), 'mtz2various'))
+        def __init__(self):
+            # generic things
+            CCP4DriverInstance.__class__.__init__(self)
 
-      # this will allow extraction of specific intensities
-      # from a multi-set reflection file
-      self._dataset_suffix = ''
+            self.set_executable(os.path.join(os.environ.get("CBIN", ""), "mtz2various"))
 
-    def set_suffix(self, suffix):
-      if suffix:
-        self._dataset_suffix = '_%s' % suffix
-      else:
-        self._dataset_suffix = suffix
+            # this will allow extraction of specific intensities
+            # from a multi-set reflection file
+            self._dataset_suffix = ""
 
-    def convert(self):
-      '''Convert the input reflection file to .sca format.'''
+        def set_suffix(self, suffix):
+            if suffix:
+                self._dataset_suffix = "_%s" % suffix
+            else:
+                self._dataset_suffix = suffix
 
-      self.check_hklin()
-      self.check_hklout()
+        def convert(self):
+            """Convert the input reflection file to .sca format."""
 
-      self.start()
+            self.check_hklin()
+            self.check_hklout()
 
-      labin = 'I(+)=I(+)%s SIGI(+)=SIGI(+)%s ' % \
-              (self._dataset_suffix, self._dataset_suffix)
-      labin += 'I(-)=I(-)%s SIGI(-)=SIGI(-)%s' % \
-               (self._dataset_suffix, self._dataset_suffix)
+            self.start()
 
-      self.input('output scal')
-      self.input('labin %s' % labin)
+            labin = "I(+)=I(+)%s SIGI(+)=SIGI(+)%s " % (
+                self._dataset_suffix,
+                self._dataset_suffix,
+            )
+            labin += "I(-)=I(-)%s SIGI(-)=SIGI(-)%s" % (
+                self._dataset_suffix,
+                self._dataset_suffix,
+            )
 
-      self.close_wait()
+            self.input("output scal")
+            self.input("labin %s" % labin)
 
-      output = self.get_all_output()
+            self.close_wait()
 
-      try:
-        self.check_for_errors()
-        self.check_ccp4_errors()
+            output = self.get_all_output()
 
-      except RuntimeError:
-        try:
-          os.remove(self.get_hklout())
-        except Exception:
-          pass
+            try:
+                self.check_for_errors()
+                self.check_ccp4_errors()
 
-    def convert_shelx(self, unmerged = False):
-      '''Convert the input reflection file to SHELX hklf4 format.'''
+            except RuntimeError:
+                try:
+                    os.remove(self.get_hklout())
+                except Exception:
+                    pass
 
-      self.check_hklin()
-      self.check_hklout()
+        def convert_shelx(self, unmerged=False):
+            """Convert the input reflection file to SHELX hklf4 format."""
 
-      self.start()
+            self.check_hklin()
+            self.check_hklout()
 
-      if self._dataset_suffix or unmerged:
-        labin = 'I=I%s SIGI=SIGI%s' % \
-                (self._dataset_suffix, self._dataset_suffix)
+            self.start()
 
-      else:
-        labin = 'I=IMEAN SIGI=SIGIMEAN'
+            if self._dataset_suffix or unmerged:
+                labin = "I=I%s SIGI=SIGI%s" % (
+                    self._dataset_suffix,
+                    self._dataset_suffix,
+                )
 
-      self.input('output shelx')
-      self.input('labin %s' % labin)
+            else:
+                labin = "I=IMEAN SIGI=SIGIMEAN"
 
-      self.close_wait()
+            self.input("output shelx")
+            self.input("labin %s" % labin)
 
-      output = self.get_all_output()
+            self.close_wait()
 
-      try:
-        self.check_for_errors()
-        self.check_ccp4_errors()
+            output = self.get_all_output()
 
-      except RuntimeError:
-        try:
-          os.remove(self.get_hklout())
-        except Exception:
-          pass
+            try:
+                self.check_for_errors()
+                self.check_ccp4_errors()
 
-  return Mtz2variousWrapper()
+            except RuntimeError:
+                try:
+                    os.remove(self.get_hklout())
+                except Exception:
+                    pass
 
-if __name__ == '__main__':
-  # then run a test...
+    return Mtz2variousWrapper()
 
-  for hklin in sys.argv[1:]:
-    m2v = Mtz2various()
-    m2v.set_hklin(hklin)
-    m2v.set_hklout('%s.sca' % hklin[:-4])
-    m2v.convert()
+
+if __name__ == "__main__":
+    # then run a test...
+
+    for hklin in sys.argv[1:]:
+        m2v = Mtz2various()
+        m2v.set_hklin(hklin)
+        m2v.set_hklout("%s.sca" % hklin[:-4])
+        m2v.convert()

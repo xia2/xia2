@@ -37,398 +37,424 @@ from xia2.Handlers.Streams import Debug
 
 # N.B. these are reversed patterns...
 
-patterns = [r'([0-9]{2,12})\.(.*)',
-            r'(.*)\.([0-9]{2,12})_(.*)',
-            r'(.*)\.([0-9]{2,12})(.*)']
+patterns = [
+    r"([0-9]{2,12})\.(.*)",
+    r"(.*)\.([0-9]{2,12})_(.*)",
+    r"(.*)\.([0-9]{2,12})(.*)",
+]
 
-joiners = ['.', '_', '']
+joiners = [".", "_", ""]
 
 compiled_patterns = [re.compile(pattern) for pattern in patterns]
 
+
 def template_regex(filename):
-  '''Try a bunch of templates to work out the most sensible. N.B. assumes
-  that the image index will be the last digits found in the file name.'''
+    """Try a bunch of templates to work out the most sensible. N.B. assumes
+  that the image index will be the last digits found in the file name."""
 
-  rfilename = filename[::-1]
+    rfilename = filename[::-1]
 
-  global patterns, compiled_patterns
+    global patterns, compiled_patterns
 
-  template = None
-  digits = None
+    template = None
+    digits = None
 
-  for j, cp in enumerate(compiled_patterns):
-    match = cp.match(rfilename)
-    if not match:
-      continue
-    groups = match.groups()
+    for j, cp in enumerate(compiled_patterns):
+        match = cp.match(rfilename)
+        if not match:
+            continue
+        groups = match.groups()
 
-    if len(groups) == 3:
-      exten = '.' + groups[0][::-1]
-      digits = groups[1][::-1]
-      prefix = groups[2][::-1] + joiners[j]
-    else:
-      exten = ''
-      digits = groups[0][::-1]
-      prefix = groups[1][::-1] + joiners[j]
+        if len(groups) == 3:
+            exten = "." + groups[0][::-1]
+            digits = groups[1][::-1]
+            prefix = groups[2][::-1] + joiners[j]
+        else:
+            exten = ""
+            digits = groups[0][::-1]
+            prefix = groups[1][::-1] + joiners[j]
 
-    template = prefix + ''.join(['#' for d in digits]) + exten
-    break
+        template = prefix + "".join(["#" for d in digits]) + exten
+        break
 
-  if not template:
-    raise RuntimeError('template not recognised for %s' %filename)
+    if not template:
+        raise RuntimeError("template not recognised for %s" % filename)
 
-  return template, int(digits)
+    return template, int(digits)
+
 
 def work_template_regex():
-  questions_answers = {
-      'foo_bar_001.img':'foo_bar_###.img',
-      'foo_bar001.img':'foo_bar###.img',
-      'foo_bar_1.8A_001.img':'foo_bar_1.8A_###.img',
-      'foo_bar.001':'foo_bar.###',
-      'foo_bar_001.img1000':'foo_bar_###.img1000',
-      'foo_bar_00001.img':'foo_bar_#####.img'
-      }
+    questions_answers = {
+        "foo_bar_001.img": "foo_bar_###.img",
+        "foo_bar001.img": "foo_bar###.img",
+        "foo_bar_1.8A_001.img": "foo_bar_1.8A_###.img",
+        "foo_bar.001": "foo_bar.###",
+        "foo_bar_001.img1000": "foo_bar_###.img1000",
+        "foo_bar_00001.img": "foo_bar_#####.img",
+    }
 
-  for filename in questions_answers:
-    answer = template_regex(filename)
-    assert answer[0] == questions_answers[filename]
+    for filename in questions_answers:
+        answer = template_regex(filename)
+        assert answer[0] == questions_answers[filename]
+
 
 def image2template(filename):
-  return template_regex(filename)[0]
+    return template_regex(filename)[0]
+
 
 def image2template_old(filename):
-  '''Return a template to match this filename.'''
+    """Return a template to match this filename."""
 
-  # check that the file name doesn't contain anything mysterious
-  if filename.count('#'):
-    raise RuntimeError('# characters in filename')
+    # check that the file name doesn't contain anything mysterious
+    if filename.count("#"):
+        raise RuntimeError("# characters in filename")
 
-  # the patterns in the order I want to test them
+    # the patterns in the order I want to test them
 
-  pattern_keys = [r'([^\.]*)\.([0-9]{2,12})\Z',
-                  r'([^\.]*)\.([0-9]{2,12})(.*)',
-                  r'(.*)_([0-9]{2,12})\.(.*)',
-                  r'(.*?)([0-9]{2,12})\.(.*)']
+    pattern_keys = [
+        r"([^\.]*)\.([0-9]{2,12})\Z",
+        r"([^\.]*)\.([0-9]{2,12})(.*)",
+        r"(.*)_([0-9]{2,12})\.(.*)",
+        r"(.*?)([0-9]{2,12})\.(.*)",
+    ]
 
-  # patterns is a dictionary of possible regular expressions with
-  # the format strings to put the file name back together
+    # patterns is a dictionary of possible regular expressions with
+    # the format strings to put the file name back together
 
-  patterns = {r'([^\.]*)\.([0-9]{2,12})\Z':'%s.%s%s',
-              r'([^\.]*)\.([0-9]{2,12})(.*)':'%s.%s%s',
-              r'(.*)_([0-9]{2,12})\.(.*)':'%s_%s.%s',
-              r'(.*?)([0-9]{2,12})\.(.*)':'%s%s.%s'}
+    patterns = {
+        r"([^\.]*)\.([0-9]{2,12})\Z": "%s.%s%s",
+        r"([^\.]*)\.([0-9]{2,12})(.*)": "%s.%s%s",
+        r"(.*)_([0-9]{2,12})\.(.*)": "%s_%s.%s",
+        r"(.*?)([0-9]{2,12})\.(.*)": "%s%s.%s",
+    }
 
-  for pattern in pattern_keys:
-    match = re.compile(pattern).match(filename)
+    for pattern in pattern_keys:
+        match = re.compile(pattern).match(filename)
 
-    if match:
-      prefix = match.group(1)
-      number = match.group(2)
-      try:
-        exten = match.group(3)
-      except Exception:
-        exten = ''
+        if match:
+            prefix = match.group(1)
+            number = match.group(2)
+            try:
+                exten = match.group(3)
+            except Exception:
+                exten = ""
 
-      for digit in string.digits:
-        number = number.replace(digit, '#')
+            for digit in string.digits:
+                number = number.replace(digit, "#")
 
-      return patterns[pattern] % (prefix, number, exten)
+            return patterns[pattern] % (prefix, number, exten)
 
-  raise RuntimeError('filename %s not understood as a template' % filename)
+    raise RuntimeError("filename %s not understood as a template" % filename)
+
 
 def image2image(filename):
-  return template_regex(filename)[1]
+    return template_regex(filename)[1]
+
 
 def image2image_old(filename):
-  '''Return an integer for the template to match this filename.'''
+    """Return an integer for the template to match this filename."""
 
-  # check that the file name doesn't contain anything mysterious
-  if filename.count('#'):
-    raise RuntimeError('# characters in filename')
+    # check that the file name doesn't contain anything mysterious
+    if filename.count("#"):
+        raise RuntimeError("# characters in filename")
 
-  # the patterns in the order I want to test them
+    # the patterns in the order I want to test them
 
-  pattern_keys = [r'([^\.]*)\.([0-9]+)\Z',
-                  r'([^\.]*)\.([0-9]+)(.*)',
-                  r'(.*)_([0-9]*)\.(.*)',
-                  r'(.*?)([0-9]*)\.(.*)']
+    pattern_keys = [
+        r"([^\.]*)\.([0-9]+)\Z",
+        r"([^\.]*)\.([0-9]+)(.*)",
+        r"(.*)_([0-9]*)\.(.*)",
+        r"(.*?)([0-9]*)\.(.*)",
+    ]
 
-  for pattern in pattern_keys:
-    match = re.compile(pattern).match(filename)
+    for pattern in pattern_keys:
+        match = re.compile(pattern).match(filename)
 
-    if match:
-      prefix = match.group(1)
-      number = match.group(2)
-      try:
-        exten = match.group(3)
-      except Exception:
-        exten = ''
+        if match:
+            prefix = match.group(1)
+            number = match.group(2)
+            try:
+                exten = match.group(3)
+            except Exception:
+                exten = ""
 
-      return int(number)
+            return int(number)
 
-  raise RuntimeError('filename %s not understood as a template' % filename)
+    raise RuntimeError("filename %s not understood as a template" % filename)
+
 
 def image2template_directory(filename):
-  '''Separate out the template and directory from an image name.'''
+    """Separate out the template and directory from an image name."""
 
-  directory = os.path.dirname(filename)
+    directory = os.path.dirname(filename)
 
-  if not directory:
+    if not directory:
 
-    # then it should be the current working directory
-    directory = os.getcwd()
+        # then it should be the current working directory
+        directory = os.getcwd()
 
-  image = os.path.split(filename)[-1]
+    image = os.path.split(filename)[-1]
 
-  from xia2.Applications.xia2setup import is_hd5f_name
-  if is_hd5f_name(filename):
-    return image, directory
+    from xia2.Applications.xia2setup import is_hd5f_name
 
-  template = image2template(image)
+    if is_hd5f_name(filename):
+        return image, directory
 
-  return template, directory
+    template = image2template(image)
+
+    return template, directory
+
 
 def find_matching_images(template, directory):
-  '''Find images which match the input template in the directory
-  provided.'''
+    """Find images which match the input template in the directory
+  provided."""
 
-  files = os.listdir(directory)
+    files = os.listdir(directory)
 
-  # to turn the template to a regular expression want to replace
-  # however many #'s with EXACTLY the same number of [0-9] tokens,
-  # e.g. ### -> ([0-9]{3})
+    # to turn the template to a regular expression want to replace
+    # however many #'s with EXACTLY the same number of [0-9] tokens,
+    # e.g. ### -> ([0-9]{3})
 
-  # change 30/may/2008 - now escape the template in this search to cope with
-  # file templates with special characters in them, such as "+" -
-  # fix to a problem reported by Joel B.
+    # change 30/may/2008 - now escape the template in this search to cope with
+    # file templates with special characters in them, such as "+" -
+    # fix to a problem reported by Joel B.
 
-  length = template.count('#')
-  regexp_text = re.escape(template).replace(
-      '\\#' * length, '([0-9]{%d})' % length)
-  regexp = re.compile(regexp_text)
+    length = template.count("#")
+    regexp_text = re.escape(template).replace("\\#" * length, "([0-9]{%d})" % length)
+    regexp = re.compile(regexp_text)
 
-  # FIXME there are faster ways of determining this - by generating the lists
-  # of possible images. That said, the code for this is now in dxtbx...
+    # FIXME there are faster ways of determining this - by generating the lists
+    # of possible images. That said, the code for this is now in dxtbx...
 
-  images = []
+    images = []
 
-  for f in files:
-    match = regexp.match(f)
+    for f in files:
+        match = regexp.match(f)
 
-    if match:
-      images.append(int(match.group(1)))
+        if match:
+            images.append(int(match.group(1)))
 
-  images.sort()
+    images.sort()
 
-  return images
+    return images
+
 
 def template_directory_number2image(template, directory, number):
-  '''Construct the full path to an image from the template, directory
-  and image number.'''
+    """Construct the full path to an image from the template, directory
+  and image number."""
 
-  # FIXME why does this duplicate code shown below??
+    # FIXME why does this duplicate code shown below??
 
-  length = template.count('#')
+    length = template.count("#")
 
-  # check that the number will fit in the template
+    # check that the number will fit in the template
 
-  if (math.pow(10, length) - 1) < number:
-    raise RuntimeError('number too big for template')
+    if (math.pow(10, length) - 1) < number:
+        raise RuntimeError("number too big for template")
 
-  # construct a format statement to give the number part of the
-  # template
-  format = '%%0%dd' % length
+    # construct a format statement to give the number part of the
+    # template
+    format = "%%0%dd" % length
 
-  # construct the full image name
-  image = os.path.join(directory,
-                       template.replace('#' * length,
-                                        format % number))
+    # construct the full image name
+    image = os.path.join(directory, template.replace("#" * length, format % number))
 
-  return image
+    return image
+
 
 def template_number2image(template, number):
-  '''Construct the an image from the template and image number.'''
+    """Construct the an image from the template and image number."""
 
-  length = template.count('#')
+    length = template.count("#")
 
-  # check that the number will fit in the template
+    # check that the number will fit in the template
 
-  if (math.pow(10, length) - 1) < number:
-    raise RuntimeError('number too big for template')
+    if (math.pow(10, length) - 1) < number:
+        raise RuntimeError("number too big for template")
 
-  format = '%%0%dd' % length
+    format = "%%0%dd" % length
 
-  image = template.replace('#' * length, format % number)
+    image = template.replace("#" * length, format % number)
 
-  return image
+    return image
+
 
 def headers2sweep_ids(header_dict):
-  '''Get a list of sweep ids (first images) from the header list.'''
+    """Get a list of sweep ids (first images) from the header list."""
 
-  sweeps = headers2sweeps(header_dict)
+    sweeps = headers2sweeps(header_dict)
 
-  ids = []
+    ids = []
 
-  for s in sweeps:
-    ids.append(min(s['images']))
+    for s in sweeps:
+        ids.append(min(s["images"]))
 
-  return ids
+    return ids
+
 
 def headers2sweeps(header_dict):
-  '''Parse a dictionary of headers to produce a list of summaries.'''
+    """Parse a dictionary of headers to produce a list of summaries."""
 
-  # SCI-545 - remove still images from sweeps
+    # SCI-545 - remove still images from sweeps
 
-  zap = []
+    zap = []
 
-  for i in header_dict:
-    header = header_dict[i]
-    delta_phi = math.fabs(header['phi_end'] - header['phi_start'])
-    if delta_phi == 0:
-      zap.append(i)
+    for i in header_dict:
+        header = header_dict[i]
+        delta_phi = math.fabs(header["phi_end"] - header["phi_start"])
+        if delta_phi == 0:
+            zap.append(i)
 
-  Debug.write('Removing %d apparently still images' % len(zap))
+    Debug.write("Removing %d apparently still images" % len(zap))
 
-  for z in zap:
-    del header_dict[z]
+    for z in zap:
+        del header_dict[z]
 
-  images = sorted(header_dict)
+    images = sorted(header_dict)
 
-  if not images:
-    return []
+    if not images:
+        return []
 
-  sweeps = []
+    sweeps = []
 
-  current_sweep = copy.deepcopy(header_dict[images[0]])
+    current_sweep = copy.deepcopy(header_dict[images[0]])
 
-  current_sweep['images'] = [images[0]]
+    current_sweep["images"] = [images[0]]
 
-  # observation: in RIGAKU SATURN data sets the epoch is the same for
-  # all images => add the IMAGE NUMBER to this as a workaround if
-  # that format. See also RIGAKU_SATURN below.
+    # observation: in RIGAKU SATURN data sets the epoch is the same for
+    # all images => add the IMAGE NUMBER to this as a workaround if
+    # that format. See also RIGAKU_SATURN below.
 
-  if 'rigaku saturn' in current_sweep['detector_class']:
-    current_sweep['epoch'] += images[0]
+    if "rigaku saturn" in current_sweep["detector_class"]:
+        current_sweep["epoch"] += images[0]
 
-  current_sweep['collect_start'] = current_sweep['epoch']
-  current_sweep['collect_end'] = current_sweep['epoch']
+    current_sweep["collect_start"] = current_sweep["epoch"]
+    current_sweep["collect_end"] = current_sweep["epoch"]
 
-  for i in images[1:]:
-    header = header_dict[i]
+    for i in images[1:]:
+        header = header_dict[i]
 
-    # RIGAKU_SATURN see above
+        # RIGAKU_SATURN see above
 
-    if 'rigaku saturn' in header['detector_class']:
-      header['epoch'] += i
+        if "rigaku saturn" in header["detector_class"]:
+            header["epoch"] += i
 
-    # if wavelength the same and distance the same and this image
-    # follows in phi from the previous chappie then this is the
-    # next frame in the sweep. otherwise it is the first frame in
-    # a new sweep.
+        # if wavelength the same and distance the same and this image
+        # follows in phi from the previous chappie then this is the
+        # next frame in the sweep. otherwise it is the first frame in
+        # a new sweep.
 
-    delta_lambda = math.fabs(header['wavelength'] - current_sweep['wavelength'])
-    delta_distance = math.fabs(header['distance'] - current_sweep['distance'])
-    delta_phi = math.fabs(header['phi_start'] - current_sweep['phi_end']) % 360.0
+        delta_lambda = math.fabs(header["wavelength"] - current_sweep["wavelength"])
+        delta_distance = math.fabs(header["distance"] - current_sweep["distance"])
+        delta_phi = math.fabs(header["phi_start"] - current_sweep["phi_end"]) % 360.0
 
-    # Debug.write('Image %d %f %f %f' % \
-    # (i, delta_lambda, delta_distance,
-    # min(delta_phi, 360.0 - delta_phi)))
+        # Debug.write('Image %d %f %f %f' % \
+        # (i, delta_lambda, delta_distance,
+        # min(delta_phi, 360.0 - delta_phi)))
 
-    if delta_lambda < 0.0001 and \
-           delta_distance < 0.01 and \
-           min(delta_phi, 360.0 - delta_phi) < 0.01 and \
-           i == current_sweep['images'][-1] + 1:
-      # this is another image in the sweep
-      # Debug.write('Image %d belongs to the sweep' % i)
-      current_sweep['images'].append(i)
-      current_sweep['phi_end'] = header['phi_end']
-      current_sweep['collect_end'] = header['epoch']
-    else:
-      Debug.write('Image %d starts a new sweep' % i)
-      sweeps.append(current_sweep)
-      current_sweep = header_dict[i]
-      current_sweep['images'] = [i]
-      current_sweep['collect_start'] = current_sweep['epoch']
-      current_sweep['collect_end'] = current_sweep['epoch']
+        if (
+            delta_lambda < 0.0001
+            and delta_distance < 0.01
+            and min(delta_phi, 360.0 - delta_phi) < 0.01
+            and i == current_sweep["images"][-1] + 1
+        ):
+            # this is another image in the sweep
+            # Debug.write('Image %d belongs to the sweep' % i)
+            current_sweep["images"].append(i)
+            current_sweep["phi_end"] = header["phi_end"]
+            current_sweep["collect_end"] = header["epoch"]
+        else:
+            Debug.write("Image %d starts a new sweep" % i)
+            sweeps.append(current_sweep)
+            current_sweep = header_dict[i]
+            current_sweep["images"] = [i]
+            current_sweep["collect_start"] = current_sweep["epoch"]
+            current_sweep["collect_end"] = current_sweep["epoch"]
 
-  sweeps.append(current_sweep)
+    sweeps.append(current_sweep)
 
-  return sweeps
+    return sweeps
+
 
 def common_prefix(strings):
-  '''Find a common prefix among the list of strings. May return an empty
-  string. This is O(n^2).'''
+    """Find a common prefix among the list of strings. May return an empty
+  string. This is O(n^2)."""
 
-  common = strings[0]
-  finished = False
+    common = strings[0]
+    finished = False
 
-  while not finished:
+    while not finished:
 
-    finished = True
-    for s in strings:
-      if not common == s[:len(common)]:
-        common = common[:-1]
-        finished = False
-        continue
+        finished = True
+        for s in strings:
+            if not common == s[: len(common)]:
+                common = common[:-1]
+                finished = False
+                continue
 
-  return common
+    return common
+
 
 def ensure_no_batches_numbered_zero(template, images, offset):
-  '''Working in collaboration with digest_template, ensure that none of
+    """Working in collaboration with digest_template, ensure that none of
   the images end up being numbered 0, and if they do try to add last digit of
   template section. Finally, if this extra character is not a digit raise
-  an exception.'''
+  an exception."""
 
-  if min(images) > 0:
+    if min(images) > 0:
+        return template, images, offset
+
+    prefix = template.split("#")[0]
+    suffix = template.split("#")[-1]
+    hashes = template.count("#")
+
+    while min(images) == 0:
+        if not prefix[-1] in string.digits:
+            raise RuntimeError("image 0 found matching %s" % template)
+
+        add = int(prefix[-1]) * int(math.pow(10, hashes))
+        offset -= add
+        hashes += 1
+        prefix = prefix[:-1]
+        images = [add + i for i in images]
+
+    template = "%s%s%s" % (prefix, "#" * hashes, suffix)
+
     return template, images, offset
 
-  prefix = template.split('#')[0]
-  suffix = template.split('#')[-1]
-  hashes = template.count('#')
-
-  while min(images) == 0:
-    if not prefix[-1] in string.digits:
-      raise RuntimeError('image 0 found matching %s' % template)
-
-    add = int(prefix[-1]) * int(math.pow(10, hashes))
-    offset -= add
-    hashes += 1
-    prefix = prefix[:-1]
-    images = [add + i for i in images]
-
-  template = '%s%s%s' % (prefix, '#' * hashes, suffix)
-
-  return template, images, offset
 
 def digest_template(template, images):
-  '''Digest the template and image numbers to copy as much of the
+    """Digest the template and image numbers to copy as much of the
   common characters in the numbers as possible to the template to
-  give smaller image numbers.'''
+  give smaller image numbers."""
 
-  length = template.count('#')
+    length = template.count("#")
 
-  format = '%%0%dd' % length
+    format = "%%0%dd" % length
 
-  strings = [format % i for i in images]
+    strings = [format % i for i in images]
 
-  offset = 0
-  if len(strings) > 1:
-    prefix = common_prefix(strings)
-    if prefix:
-      offset = int(prefix + '0' * (length - len(prefix)))
-      template = template.replace(len(prefix) * '#', prefix, 1)
-      images = [int(s.replace(prefix, '', 1)) for s in strings]
+    offset = 0
+    if len(strings) > 1:
+        prefix = common_prefix(strings)
+        if prefix:
+            offset = int(prefix + "0" * (length - len(prefix)))
+            template = template.replace(len(prefix) * "#", prefix, 1)
+            images = [int(s.replace(prefix, "", 1)) for s in strings]
 
-  try:
-    template, images, offset = ensure_no_batches_numbered_zero(
-        template, images, offset)
-  except RuntimeError:
-    Debug.write('Throwing away image 0 from template %s' % template)
-    template, images, offset = ensure_no_batches_numbered_zero(
-        template, images[1:], offset)
+    try:
+        template, images, offset = ensure_no_batches_numbered_zero(
+            template, images, offset
+        )
+    except RuntimeError:
+        Debug.write("Throwing away image 0 from template %s" % template)
+        template, images, offset = ensure_no_batches_numbered_zero(
+            template, images[1:], offset
+        )
 
-  return template, images, offset
+    return template, images, offset
 
-if __name__ == '__main__':
 
-  work_template_regex()
+if __name__ == "__main__":
+
+    work_template_regex()

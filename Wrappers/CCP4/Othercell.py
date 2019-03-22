@@ -16,132 +16,132 @@ import os
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.lib.SymmetryLib import lauegroup_to_lattice
 
-def Othercell(DriverType = None):
-  '''Factory for Othercell wrapper classes, with the specified
-  Driver type.'''
 
-  DriverInstance = DriverFactory.Driver(DriverType)
+def Othercell(DriverType=None):
+    """Factory for Othercell wrapper classes, with the specified
+  Driver type."""
 
-  class OthercellWrapper(DriverInstance.__class__):
-    '''A wrapper for the program othercell - which will provide
-    functionality for presenting other indexing possibilities...'''
+    DriverInstance = DriverFactory.Driver(DriverType)
 
-    def __init__(self):
-      DriverInstance.__class__.__init__(self)
+    class OthercellWrapper(DriverInstance.__class__):
+        """A wrapper for the program othercell - which will provide
+    functionality for presenting other indexing possibilities..."""
 
-      self.set_executable(os.path.join(
-          os.environ.get('CBIN', ''), 'othercell'))
+        def __init__(self):
+            DriverInstance.__class__.__init__(self)
 
-      self._initial_cell = []
-      self._initial_lattice_type = None
+            self.set_executable(os.path.join(os.environ.get("CBIN", ""), "othercell"))
 
-      # results storage
+            self._initial_cell = []
+            self._initial_lattice_type = None
 
-      self._lattices = []
-      self._distortions = { }
-      self._cells = { }
-      self._reindex_ops = { }
+            # results storage
 
-    def set_cell(self, cell):
-      self._initial_cell = cell
+            self._lattices = []
+            self._distortions = {}
+            self._cells = {}
+            self._reindex_ops = {}
 
-    def set_lattice(self, lattice):
-      '''Set the full lattice - not just the centering operator!.'''
+        def set_cell(self, cell):
+            self._initial_cell = cell
 
-      self._initial_lattice_type = lattice[1].lower()
+        def set_lattice(self, lattice):
+            """Set the full lattice - not just the centering operator!."""
 
-    def generate(self):
-      if not self._initial_cell:
-        raise RuntimeError('must set the cell')
-      if not self._initial_lattice_type:
-        raise RuntimeError('must set the lattice')
+            self._initial_lattice_type = lattice[1].lower()
 
-      self.start()
+        def generate(self):
+            if not self._initial_cell:
+                raise RuntimeError("must set the cell")
+            if not self._initial_lattice_type:
+                raise RuntimeError("must set the lattice")
 
-      self.input('%f %f %f %f %f %f' % tuple(self._initial_cell))
-      self.input('%s' % self._initial_lattice_type)
-      self.input('')
+            self.start()
 
-      self.close_wait()
+            self.input("%f %f %f %f %f %f" % tuple(self._initial_cell))
+            self.input("%s" % self._initial_lattice_type)
+            self.input("")
 
-      # parse the output of the program...
+            self.close_wait()
 
-      for o in self.get_all_output():
+            # parse the output of the program...
 
-        if not '[' in o:
-          continue
-        if 'Reindex op' in o:
-          continue
-        if 'Same cell' in o:
-          continue
-        if 'Other cell' in o:
-          continue
-        if 'within angular tolerance' in o:
-          continue
+            for o in self.get_all_output():
 
-        lauegroup = o[:11].strip()
-        if not lauegroup:
-          continue
+                if not "[" in o:
+                    continue
+                if "Reindex op" in o:
+                    continue
+                if "Same cell" in o:
+                    continue
+                if "Other cell" in o:
+                    continue
+                if "within angular tolerance" in o:
+                    continue
 
-        if lauegroup[0] == '[':
-          continue
+                lauegroup = o[:11].strip()
+                if not lauegroup:
+                    continue
 
-        modded_lauegroup = ''
-        for token in lauegroup.split():
-          if token == '1':
-            continue
-          modded_lauegroup += token
+                if lauegroup[0] == "[":
+                    continue
 
-        try:
-          lattice = lauegroup_to_lattice(modded_lauegroup)
-        except KeyError:
-          # there was some kind of mess made of the othercell
-          # output - this happens!
-          continue
+                modded_lauegroup = ""
+                for token in lauegroup.split():
+                    if token == "1":
+                        continue
+                    modded_lauegroup += token
 
-        cell = tuple(map(float, o[11:45].split()))
-        distortion = float(o.split()[-2])
-        operator = o.split()[-1][1:-1]
+                try:
+                    lattice = lauegroup_to_lattice(modded_lauegroup)
+                except KeyError:
+                    # there was some kind of mess made of the othercell
+                    # output - this happens!
+                    continue
 
-        if not lattice in self._lattices:
-          self._lattices.append(lattice)
-          self._distortions[lattice] = distortion
-          self._cells[lattice] = cell
-          self._reindex_ops[lattice] = operator
-        else:
-          if distortion > self._distortions[lattice]:
-            continue
-          self._distortions[lattice] = distortion
-          self._cells[lattice] = cell
-          self._reindex_ops[lattice] = operator
+                cell = tuple(map(float, o[11:45].split()))
+                distortion = float(o.split()[-2])
+                operator = o.split()[-1][1:-1]
 
-    def get_lattices(self):
-      return self._lattices
+                if not lattice in self._lattices:
+                    self._lattices.append(lattice)
+                    self._distortions[lattice] = distortion
+                    self._cells[lattice] = cell
+                    self._reindex_ops[lattice] = operator
+                else:
+                    if distortion > self._distortions[lattice]:
+                        continue
+                    self._distortions[lattice] = distortion
+                    self._cells[lattice] = cell
+                    self._reindex_ops[lattice] = operator
 
-    def get_cell(self, lattice):
-      return self._cells[lattice]
+        def get_lattices(self):
+            return self._lattices
 
-    def get_reindex_op(self, lattice):
-      return self._reindex_ops[lattice]
+        def get_cell(self, lattice):
+            return self._cells[lattice]
+
+        def get_reindex_op(self, lattice):
+            return self._reindex_ops[lattice]
+
+    return OthercellWrapper()
 
 
-  return OthercellWrapper()
+if __name__ == "__main__":
 
-if __name__ == '__main__':
+    o = Othercell()
 
-  o = Othercell()
+    # o.set_cell([43.62, 52.27, 116.4, 103, 100.7, 90.03])
+    # o.set_lattice('p')
 
-  # o.set_cell([43.62, 52.27, 116.4, 103, 100.7, 90.03])
-  # o.set_lattice('p')
+    o.set_cell([198.61, 198.61, 243.45, 90.00, 90.00, 120.00])
+    o.set_lattice("r")
 
-  o.set_cell([198.61, 198.61, 243.45, 90.00, 90.00, 120.00])
-  o.set_lattice('r')
+    o.generate()
 
-  o.generate()
+    # need to add some checks in here that everything went fine...
+    # for line in o.get_all_output():
+    # print line[:-1]
 
-  # need to add some checks in here that everything went fine...
-  # for line in o.get_all_output():
-  # print line[:-1]
-
-  o.get_cell('aP')
-  o.get_reindex_op('aP')
+    o.get_cell("aP")
+    o.get_reindex_op("aP")

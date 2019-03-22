@@ -28,151 +28,172 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-symop = os.path.abspath(os.path.join(
-          os.path.dirname(__file__), '..', 'Data', 'ccp4-symop.lib'))
+symop = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "Data", "ccp4-symop.lib")
+)
 
-syminfo = os.path.join(os.environ['CCP4'],
-                       'lib', 'data', 'syminfo.lib')
+syminfo = os.path.join(os.environ["CCP4"], "lib", "data", "syminfo.lib")
+
 
 def lattice_to_spacegroup(lattice):
-  '''Convert a lattice e.g. tP into the minimal spacegroup number
-  to represent this.'''
+    """Convert a lattice e.g. tP into the minimal spacegroup number
+  to represent this."""
 
-  _lattice_to_spacegroup = {'aP':1,
-                            'mP':3,
-                            'mC':5,
-                            'mI':5,
-                            'oP':16,
-                            'oC':20,
-                            'oF':22,
-                            'oI':23,
-                            'tP':75,
-                            'tI':79,
-                            'hP':143,
-                            'hR':146,
-                            'cP':195,
-                            'cF':196,
-                            'cI':197}
+    _lattice_to_spacegroup = {
+        "aP": 1,
+        "mP": 3,
+        "mC": 5,
+        "mI": 5,
+        "oP": 16,
+        "oC": 20,
+        "oF": 22,
+        "oI": 23,
+        "tP": 75,
+        "tI": 79,
+        "hP": 143,
+        "hR": 146,
+        "cP": 195,
+        "cF": 196,
+        "cI": 197,
+    }
 
-  if not lattice in _lattice_to_spacegroup.keys():
-    raise RuntimeError('lattice "%s" unknown' % lattice)
+    if not lattice in _lattice_to_spacegroup.keys():
+        raise RuntimeError('lattice "%s" unknown' % lattice)
 
-  return _lattice_to_spacegroup[lattice]
+    return _lattice_to_spacegroup[lattice]
+
 
 def spacegroup_name_xHM_to_old(xHM):
-  '''Convert to an old name.'''
+    """Convert to an old name."""
 
-  # generate mapping table
+    # generate mapping table
 
-  mapping = { }
-  current_old = ''
-  current_xHM = ''
+    mapping = {}
+    current_old = ""
+    current_xHM = ""
 
-  old_names = []
+    old_names = []
 
-  for line in open(syminfo, 'r').readlines():
-    if line[0] == '#':
-      continue
+    for line in open(syminfo, "r").readlines():
+        if line[0] == "#":
+            continue
 
-    if 'symbol old' in line:
-      current_old = line.split('\'')[1]
+        if "symbol old" in line:
+            current_old = line.split("'")[1]
 
-    if 'symbol xHM' in line:
-      current_xHM = line.split('\'')[1]
+        if "symbol xHM" in line:
+            current_xHM = line.split("'")[1]
 
-    if 'end_spacegroup' in line:
-      mapping[current_xHM] = current_old
-      old_names.append(current_old)
+        if "end_spacegroup" in line:
+            mapping[current_xHM] = current_old
+            old_names.append(current_old)
 
-  xHM = xHM.upper()
+    xHM = xHM.upper()
 
-  if not xHM in mapping.keys():
-    if xHM in old_names:
-      return xHM
-    raise RuntimeError('spacegroup %s unknown' % xHM)
+    if not xHM in mapping.keys():
+        if xHM in old_names:
+            return xHM
+        raise RuntimeError("spacegroup %s unknown" % xHM)
 
-  return mapping[xHM]
+    return mapping[xHM]
+
 
 def clean_reindex_operator(symop):
-  return str(symop).replace('[', '').replace(']', '')
+    return str(symop).replace("[", "").replace("]", "")
+
 
 def lattices_in_order():
-  '''Return a list of possible crystal lattices (e.g. tP) in order of
-  increasing symmetry...'''
+    """Return a list of possible crystal lattices (e.g. tP) in order of
+  increasing symmetry..."""
 
-  # eliminated this entry ... 'oA': 38,
+    # eliminated this entry ... 'oA': 38,
 
-  lattices = ['aP', 'mP', 'mC', 'oP',
-              'oC', 'oF', 'oI', 'tP',
-              'tI', 'hP', 'hR', 'cP',
-              'cF', 'cI']
+    lattices = [
+        "aP",
+        "mP",
+        "mC",
+        "oP",
+        "oC",
+        "oF",
+        "oI",
+        "tP",
+        "tI",
+        "hP",
+        "hR",
+        "cP",
+        "cF",
+        "cI",
+    ]
 
-  spacegroup_to_lattice = { }
+    spacegroup_to_lattice = {}
 
-  # FIXME this should = lattice!
+    # FIXME this should = lattice!
 
-  for lattice in lattices:
-    spacegroup_to_lattice[lattice_to_spacegroup(lattice)
-                          ] = lattice
-  # lattice_to_spacegroup(lattice)
+    for lattice in lattices:
+        spacegroup_to_lattice[lattice_to_spacegroup(lattice)] = lattice
+    # lattice_to_spacegroup(lattice)
 
-  spacegroups = sorted(spacegroup_to_lattice.keys())
+    spacegroups = sorted(spacegroup_to_lattice.keys())
 
-  return [spacegroup_to_lattice[s] for s in spacegroups]
+    return [spacegroup_to_lattice[s] for s in spacegroups]
+
 
 def sort_lattices(lattices):
-  ordered_lattices = []
+    ordered_lattices = []
 
-  for l in lattices_in_order():
-    if l in lattices:
-      ordered_lattices.append(l)
+    for l in lattices_in_order():
+        if l in lattices:
+            ordered_lattices.append(l)
 
-  return ordered_lattices
+    return ordered_lattices
+
 
 def lauegroup_to_lattice(lauegroup):
-  '''Convert a Laue group representation (from pointless, e.g. I m m m)
+    """Convert a Laue group representation (from pointless, e.g. I m m m)
   to something useful, like the implied crystal lattice (in this
-  case, oI.)'''
+  case, oI.)"""
 
-  # this has been calculated from the results of Ralf GK's sginfo and a
-  # little fiddling...
-  #
-  # 19/feb/08 added mI record as pointless has started producing this -
-  # why??? this is not a "real" spacegroup... may be able to switch this
-  # off...
-  #                             'I2/m': 'mI',
+    # this has been calculated from the results of Ralf GK's sginfo and a
+    # little fiddling...
+    #
+    # 19/feb/08 added mI record as pointless has started producing this -
+    # why??? this is not a "real" spacegroup... may be able to switch this
+    # off...
+    #                             'I2/m': 'mI',
 
-  lauegroup_to_lattice = {'Ammm': 'oA',
-                          'C2/m': 'mC',
-                          'Cmmm': 'oC',
-                          'Fm-3': 'cF',
-                          'Fm-3m': 'cF',
-                          'Fmmm': 'oF',
-                          'H-3': 'hR',
-                          'H-3m': 'hR',
-                          'R-3:H': 'hR',
-                          'R-3m:H': 'hR',
-                          'I4/m': 'tI',
-                          'I4/mmm': 'tI',
-                          'Im-3': 'cI',
-                          'Im-3m': 'cI',
-                          'Immm': 'oI',
-                          'P-1': 'aP',
-                          'P-3': 'hP',
-                          'P-3m': 'hP',
-                          'P2/m': 'mP',
-                          'P4/m': 'tP',
-                          'P4/mmm': 'tP',
-                          'P6/m': 'hP',
-                          'P6/mmm': 'hP',
-                          'Pm-3': 'cP',
-                          'Pm-3m': 'cP',
-                          'Pmmm': 'oP'}
+    lauegroup_to_lattice = {
+        "Ammm": "oA",
+        "C2/m": "mC",
+        "Cmmm": "oC",
+        "Fm-3": "cF",
+        "Fm-3m": "cF",
+        "Fmmm": "oF",
+        "H-3": "hR",
+        "H-3m": "hR",
+        "R-3:H": "hR",
+        "R-3m:H": "hR",
+        "I4/m": "tI",
+        "I4/mmm": "tI",
+        "Im-3": "cI",
+        "Im-3m": "cI",
+        "Immm": "oI",
+        "P-1": "aP",
+        "P-3": "hP",
+        "P-3m": "hP",
+        "P2/m": "mP",
+        "P4/m": "tP",
+        "P4/mmm": "tP",
+        "P6/m": "hP",
+        "P6/mmm": "hP",
+        "Pm-3": "cP",
+        "Pm-3m": "cP",
+        "Pmmm": "oP",
+    }
 
-  updated_laue = ''
+    updated_laue = ""
 
-  for l in lauegroup.split():
-    if not l == '1':
-      updated_laue += l
+    for l in lauegroup.split():
+        if not l == "1":
+            updated_laue += l
 
-  return lauegroup_to_lattice[updated_laue]
+    return lauegroup_to_lattice[updated_laue]

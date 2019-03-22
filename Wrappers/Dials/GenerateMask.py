@@ -12,71 +12,85 @@ from __future__ import absolute_import, division, print_function
 
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 
-def GenerateMask(DriverType = None):
-  '''A factory for GenerateMaskWrapper classes.'''
 
-  from xia2.Driver.DriverFactory import DriverFactory
-  DriverInstance = DriverFactory.Driver(DriverType)
+def GenerateMask(DriverType=None):
+    """A factory for GenerateMaskWrapper classes."""
 
-  class GenerateMaskWrapper(DriverInstance.__class__,
-                            FrameProcessor):
+    from xia2.Driver.DriverFactory import DriverFactory
 
-    def __init__(self):
-      super(GenerateMaskWrapper, self).__init__()
+    DriverInstance = DriverFactory.Driver(DriverType)
 
-      self.set_executable('dials.generate_mask')
+    class GenerateMaskWrapper(DriverInstance.__class__, FrameProcessor):
+        def __init__(self):
+            super(GenerateMaskWrapper, self).__init__()
 
-      self._input_datablock_filename = None
-      self._output_datablock_filename = None
-      self._output_mask_filename = None
-      self._params = None
+            self.set_executable("dials.generate_mask")
 
-    def set_input_datablock(self, datablock_filename):
-      self._input_datablock_filename = datablock_filename
+            self._input_datablock_filename = None
+            self._output_datablock_filename = None
+            self._output_mask_filename = None
+            self._params = None
 
-    def set_output_datablock(self, datablock_filename):
-      self._output_datablock_filename = datablock_filename
+        def set_input_datablock(self, datablock_filename):
+            self._input_datablock_filename = datablock_filename
 
-    def set_output_mask_filename(self, mask_filename):
-      self._output_mask_filename = mask_filename
+        def set_output_datablock(self, datablock_filename):
+            self._output_datablock_filename = datablock_filename
 
-    def set_params(self, params):
-      self._params = params
+        def set_output_mask_filename(self, mask_filename):
+            self._output_mask_filename = mask_filename
 
-    def run(self):
-      import os
-      from xia2.Handlers.Streams import Debug
-      Debug.write('Running dials.generate_mask')
+        def set_params(self, params):
+            self._params = params
 
-      self.clear_command_line()
+        def run(self):
+            import os
+            from xia2.Handlers.Streams import Debug
 
-      assert self._params is not None
-      from dials.util.masking import phil_scope
-      working_phil = phil_scope.format(self._params)
-      diff_phil = phil_scope.fetch_diff(source=working_phil)
-      phil_filename = os.path.join(
-        self.get_working_directory(), '%s_mask.phil' %self.get_xpid())
-      with open(phil_filename, 'wb') as f:
-        f.write(diff_phil.as_str())
-        f.write(os.linesep) # temporarily required for https://github.com/dials/dials/issues/522
+            Debug.write("Running dials.generate_mask")
 
-      self.add_command_line('input.datablock="%s"' % self._input_datablock_filename)
-      if self._output_mask_filename is None:
-        self._output_mask_filename = os.path.join(
-          self.get_working_directory(), '%s_mask.pickle' %self.get_xpid())
-      if self._output_datablock_filename is None:
-        self._output_datablock_filename = os.path.join(
-          self.get_working_directory(), '%s_datablock.pickle' %self.get_xpid())
-      self.add_command_line(
-        'output.mask="%s"' % self._output_mask_filename)
-      self.add_command_line(
-        'output.datablock="%s"' % self._output_datablock_filename)
-      self.add_command_line(phil_filename)
-      self.start()
-      self.close_wait()
-      self.check_for_errors()
-      assert os.path.exists(self._output_mask_filename), self._output_mask_filename
-      assert os.path.exists(self._output_datablock_filename), self._output_datablock_filename
-      return self._output_datablock_filename, self._output_mask_filename
+            self.clear_command_line()
 
-  return GenerateMaskWrapper()
+            assert self._params is not None
+            from dials.util.masking import phil_scope
+
+            working_phil = phil_scope.format(self._params)
+            diff_phil = phil_scope.fetch_diff(source=working_phil)
+            phil_filename = os.path.join(
+                self.get_working_directory(), "%s_mask.phil" % self.get_xpid()
+            )
+            with open(phil_filename, "wb") as f:
+                f.write(diff_phil.as_str())
+                f.write(
+                    os.linesep
+                )  # temporarily required for https://github.com/dials/dials/issues/522
+
+            self.add_command_line(
+                'input.datablock="%s"' % self._input_datablock_filename
+            )
+            if self._output_mask_filename is None:
+                self._output_mask_filename = os.path.join(
+                    self.get_working_directory(), "%s_mask.pickle" % self.get_xpid()
+                )
+            if self._output_datablock_filename is None:
+                self._output_datablock_filename = os.path.join(
+                    self.get_working_directory(),
+                    "%s_datablock.pickle" % self.get_xpid(),
+                )
+            self.add_command_line('output.mask="%s"' % self._output_mask_filename)
+            self.add_command_line(
+                'output.datablock="%s"' % self._output_datablock_filename
+            )
+            self.add_command_line(phil_filename)
+            self.start()
+            self.close_wait()
+            self.check_for_errors()
+            assert os.path.exists(
+                self._output_mask_filename
+            ), self._output_mask_filename
+            assert os.path.exists(
+                self._output_datablock_filename
+            ), self._output_datablock_filename
+            return self._output_datablock_filename, self._output_mask_filename
+
+    return GenerateMaskWrapper()

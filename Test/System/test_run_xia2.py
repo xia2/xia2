@@ -2,8 +2,9 @@
 
 from __future__ import absolute_import, division, print_function
 
-def test_start_xia2():
-  import procrunner
 
-  result = procrunner.run(['xia2'])
-  assert result['exitcode'] == 0
+def test_start_xia2():
+    import procrunner
+
+    result = procrunner.run(["xia2"])
+    assert result["exitcode"] == 0

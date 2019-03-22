@@ -22,251 +22,251 @@ from xia2.Wrappers.CCP4.Mtzdump import Mtzdump
 # locally required wrappers
 
 
-def Scaleit(DriverType = None):
-  '''A factory for ScaleitWrapper classes.'''
+def Scaleit(DriverType=None):
+    """A factory for ScaleitWrapper classes."""
 
-  DriverInstance = DriverFactory.Driver(DriverType)
-  CCP4DriverInstance = DecoratorFactory.Decorate(DriverInstance, 'ccp4')
+    DriverInstance = DriverFactory.Driver(DriverType)
+    CCP4DriverInstance = DecoratorFactory.Decorate(DriverInstance, "ccp4")
 
-  class ScaleitWrapper(CCP4DriverInstance.__class__):
-    '''A wrapper for Scaleit, using the CCP4-ified Driver.'''
+    class ScaleitWrapper(CCP4DriverInstance.__class__):
+        """A wrapper for Scaleit, using the CCP4-ified Driver."""
 
-    def __init__(self):
-      # generic things
-      CCP4DriverInstance.__class__.__init__(self)
+        def __init__(self):
+            # generic things
+            CCP4DriverInstance.__class__.__init__(self)
 
-      self.set_executable(os.path.join(
-          os.environ.get('CBIN', ''), 'scaleit'))
+            self.set_executable(os.path.join(os.environ.get("CBIN", ""), "scaleit"))
 
-      self._columns = []
+            self._columns = []
 
-      self._statistics = { }
+            self._statistics = {}
 
-      self._anomalous = False
+            self._anomalous = False
 
-    def set_anomalous(self, anomalous):
-      self._anomalous = anomalous
+        def set_anomalous(self, anomalous):
+            self._anomalous = anomalous
 
-    def find_columns(self):
-      '''Identify columns to use with scaleit.'''
+        def find_columns(self):
+            """Identify columns to use with scaleit."""
 
-      # run mtzdump to get a list of columns out and also check that
-      # this is a valid merged mtz file....
+            # run mtzdump to get a list of columns out and also check that
+            # this is a valid merged mtz file....
 
-      self.check_hklin()
+            self.check_hklin()
 
-      md = Mtzdump()
-      md.set_hklin(self.get_hklin())
-      md.dump()
+            md = Mtzdump()
+            md.set_hklin(self.get_hklin())
+            md.dump()
 
-      # get information to check that this is merged
+            # get information to check that this is merged
 
-      # next get the column information - check that F columns are
-      # present
+            # next get the column information - check that F columns are
+            # present
 
-      column_info = md.get_columns()
+            column_info = md.get_columns()
 
-      columns = []
+            columns = []
 
-      j = 0
-      groups = 0
+            j = 0
+            groups = 0
 
-      # assert that the columns for F, SIGF, DANO, SIGDANO for a
-      # particular group will appear in that order if anomalous,
-      # F, SIGF if not anomalous
+            # assert that the columns for F, SIGF, DANO, SIGDANO for a
+            # particular group will appear in that order if anomalous,
+            # F, SIGF if not anomalous
 
-      while j < len(column_info):
-        c = column_info[j]
-        name = c[0]
-        type = c[1]
+            while j < len(column_info):
+                c = column_info[j]
+                name = c[0]
+                type = c[1]
 
-        if type == 'F' and name.split('_')[0] == 'F' and \
-               self._anomalous:
-          groups += 1
-          for i in range(4):
-            columns.append(column_info[i + j][0])
+                if type == "F" and name.split("_")[0] == "F" and self._anomalous:
+                    groups += 1
+                    for i in range(4):
+                        columns.append(column_info[i + j][0])
 
-          j += 4
+                    j += 4
 
-        elif type == 'F' and name.split('_')[0] == 'F' and \
-               not self._anomalous:
-          groups += 1
-          for i in range(2):
-            columns.append(column_info[i + j][0])
+                elif type == "F" and name.split("_")[0] == "F" and not self._anomalous:
+                    groups += 1
+                    for i in range(2):
+                        columns.append(column_info[i + j][0])
 
-          j += 2
-        else:
-          j += 1
+                    j += 2
+                else:
+                    j += 1
 
+            # ok that should be all of the groups identified
 
-      # ok that should be all of the groups identified
+            self._columns = columns
 
-      self._columns = columns
+            return columns
 
-      return columns
+        def check_scaleit_errors(self):
+            for record in self.get_all_output():
+                if "SCALEIT:  ** No reflections **" in record:
+                    raise RuntimeError("no reflections")
 
-    def check_scaleit_errors(self):
-      for record in self.get_all_output():
-        if 'SCALEIT:  ** No reflections **' in record:
-          raise RuntimeError('no reflections')
+        def scaleit(self):
+            """Run scaleit and get some interesting facts out."""
 
-    def scaleit(self):
-      '''Run scaleit and get some interesting facts out.'''
+            self.check_hklin()
 
-      self.check_hklin()
+            # need to have a HKLOUT even if we do not want the
+            # reflections...
 
-      # need to have a HKLOUT even if we do not want the
-      # reflections...
+            self.check_hklout()
 
-      self.check_hklout()
+            if not self._columns:
+                self.find_columns()
 
-      if not self._columns:
-        self.find_columns()
+            self.start()
+            self.input("nowt")
+            self.input("converge ncyc 4")
+            self.input("converge abs 0.001")
+            self.input("converge tolr -7")
+            self.input("refine anisotropic wilson")
+            self.input("auto")
 
+            labin = "labin FP=%s SIGFP=%s" % (self._columns[0], self._columns[1])
 
-      self.start()
-      self.input('nowt')
-      self.input('converge ncyc 4')
-      self.input('converge abs 0.001')
-      self.input('converge tolr -7')
-      self.input('refine anisotropic wilson')
-      self.input('auto')
+            if self._anomalous:
+                groups = len(self._columns) // 4
+            else:
+                groups = len(self._columns) // 2
 
-      labin = 'labin FP=%s SIGFP=%s' % \
-              (self._columns[0], self._columns[1])
+            for j in range(groups):
 
-      if self._anomalous:
-        groups = len(self._columns) // 4
-      else:
-        groups = len(self._columns) // 2
+                if self._anomalous:
+                    labin += " FPH%d=%s" % (j + 1, self._columns[4 * j])
+                    labin += " SIGFPH%d=%s" % (j + 1, self._columns[4 * j + 1])
+                    labin += " DPH%d=%s" % (j + 1, self._columns[4 * j + 2])
+                    labin += " SIGDPH%d=%s" % (j + 1, self._columns[4 * j + 3])
+                else:
+                    labin += " FPH%d=%s" % (j + 1, self._columns[2 * j])
+                    labin += " SIGFPH%d=%s" % (j + 1, self._columns[2 * j + 1])
 
-      for j in range(groups):
+            self.input(labin)
 
-        if self._anomalous:
-          labin += ' FPH%d=%s' % (j + 1, self._columns[4 * j])
-          labin += ' SIGFPH%d=%s' % (j + 1, self._columns[4 * j + 1])
-          labin += ' DPH%d=%s' % (j + 1, self._columns[4 * j + 2])
-          labin += ' SIGDPH%d=%s' % (j + 1, self._columns[4 * j + 3])
-        else:
-          labin += ' FPH%d=%s' % (j + 1, self._columns[2 * j])
-          labin += ' SIGFPH%d=%s' % (j + 1, self._columns[2 * j + 1])
+            self.close_wait()
 
-      self.input(labin)
+            # check for errors
 
-      self.close_wait()
+            try:
+                self.check_for_errors()
+                self.check_ccp4_errors()
+                self.check_scaleit_errors()
 
-      # check for errors
+            except RuntimeError as e:
+                try:
+                    os.remove(self.get_hklout())
+                except Exception:
+                    pass
 
-      try:
-        self.check_for_errors()
-        self.check_ccp4_errors()
-        self.check_scaleit_errors()
+                raise e
 
-      except RuntimeError as e:
-        try:
-          os.remove(self.get_hklout())
-        except Exception:
-          pass
+            output = self.get_all_output()
 
-        raise e
+            # generate mapping from derivative number to data set
 
-      output = self.get_all_output()
+            self._statistics["mapping"] = {}
 
-      # generate mapping from derivative number to data set
+            for j in range(groups):
+                if self._anomalous:
+                    self._statistics["mapping"][j + 1] = self._columns[4 * j].replace(
+                        "F_", ""
+                    )
+                else:
+                    self._statistics["mapping"][j + 1] = self._columns[2 * j].replace(
+                        "F_", ""
+                    )
 
-      self._statistics['mapping'] = { }
+            # now get some interesting information out...
 
-      for j in range(groups):
-        if self._anomalous:
-          self._statistics['mapping'][
-              j + 1] = self._columns[4 * j].replace('F_', '')
-        else:
-          self._statistics['mapping'][
-              j + 1] = self._columns[2 * j].replace('F_', '')
+            j = 0
 
-      # now get some interesting information out...
+            r_values = []
 
-      j = 0
+            while j < len(output):
+                line = output[j]
 
-      r_values = []
+                if "APPLICATION OF SCALES AND ANALYSIS OF DIFFERENCES" in line:
+                    current_derivative = -1
 
-      while j < len(output):
-        line = output[j]
+                    while not "SUMMARY_END" in line:
+                        list = line.split()
+                        if "Derivative" in list:
+                            if "b_factor" not in self._statistics:
+                                self._statistics["b_factor"] = {}
+                            self._statistics["b_factor"][int(list[1])] = {
+                                "scale": float(list[2]),
+                                "b": float(list[3]),
+                                "dname": self._statistics["mapping"][int(list[1])],
+                            }
+                            current_derivative = int(list[1])
 
-        if 'APPLICATION OF SCALES AND ANALYSIS OF DIFFERENCES' in line:
-          current_derivative = -1
+                        if "The equivalent isotropic" in line:
+                            self._statistics["b_factor"][current_derivative][
+                                "b"
+                            ] = float(list[-1])
 
-          while not 'SUMMARY_END' in line:
-            list = line.split()
-            if 'Derivative' in list:
-              if 'b_factor' not in self._statistics:
-                self._statistics['b_factor'] = { }
-              self._statistics['b_factor'][int(list[1])] = {
-                  'scale':float(list[2]),
-                  'b':float(list[3]),
-                  'dname':self._statistics[
-                  'mapping'][int(list[1])]}
-              current_derivative = int(list[1])
+                        j += 1
+                        line = output[j]
 
-            if 'The equivalent isotropic' in line:
-              self._statistics['b_factor'][
-                  current_derivative]['b'] = float(list[-1])
+                if "acceptable differences are less than" in line and groups == 1:
+                    max_difference = float(line.split()[-1])
+                    if max_difference > 0.01:
+                        self._statistics["max_difference"] = max_difference
 
-            j += 1
-            line = output[j]
+                if "THE TOTALS" in line:
+                    r_values.append(float(line.split()[6]))
 
-        if 'acceptable differences are less than' in line and \
-               groups == 1:
-          max_difference = float(line.split()[-1])
-          if max_difference > 0.01:
-            self._statistics['max_difference'] = max_difference
+                j += 1
 
-        if 'THE TOTALS' in line:
-          r_values.append(float(line.split()[6]))
+            # transform back the r values to the statistics
 
-        j += 1
+            for j in range(len(r_values)):
+                d = j + 1
+                self._statistics["b_factor"][d]["r"] = r_values[j]
 
-      # transform back the r values to the statistics
+            return
 
-      for j in range(len(r_values)):
-        d = j + 1
-        self._statistics['b_factor'][d]['r'] = r_values[j]
+        def get_statistics(self):
+            """Get the statistics from the Scaleit run."""
 
+            return self._statistics
 
-      return
+    return ScaleitWrapper()
 
-    def get_statistics(self):
-      '''Get the statistics from the Scaleit run.'''
 
-      return self._statistics
+if __name__ == "__main__":
+    s = Scaleit()
 
-  return ScaleitWrapper()
+    if len(sys.argv) == 1:
 
-if __name__ == '__main__':
-  s = Scaleit()
+        hklin = os.path.join(
+            os.environ["X2TD_ROOT"],
+            "Test",
+            "UnitTest",
+            "Wrappers",
+            "Scaleit",
+            "TS03_INTER_RD.mtz",
+        )
 
-  if len(sys.argv) == 1:
+    else:
 
-    hklin = os.path.join(
-        os.environ['X2TD_ROOT'],
-        'Test', 'UnitTest', 'Wrappers', 'Scaleit',
-        'TS03_INTER_RD.mtz')
+        hklin = sys.argv[1]
 
-  else:
+    s.set_hklin(hklin)
+    s.set_hklout("junk.mtz")
+    s.set_anomalous(True)
 
-    hklin = sys.argv[1]
+    print(s.find_columns())
 
-  s.set_hklin(hklin)
-  s.set_hklout('junk.mtz')
-  s.set_anomalous(True)
+    s.scaleit()
 
-  print(s.find_columns())
+    stats = s.get_statistics()
 
-  s.scaleit()
+    print(stats["b_factor"])
 
-  stats = s.get_statistics()
-
-  print(stats['b_factor'])
-
-  if 'max_difference' in stats:
-    print(stats['max_difference'])
+    if "max_difference" in stats:
+        print(stats["max_difference"])

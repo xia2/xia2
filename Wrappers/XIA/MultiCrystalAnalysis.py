@@ -12,57 +12,62 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-def MultiCrystalAnalysis(DriverType = None):
-  '''A factory for MultiCrystalAnalysisWrapper classes.'''
 
-  from xia2.Driver.DriverFactory import DriverFactory
-  DriverInstance = DriverFactory.Driver(DriverType)
+def MultiCrystalAnalysis(DriverType=None):
+    """A factory for MultiCrystalAnalysisWrapper classes."""
 
-  class MultiCrystalAnalysisWrapper(DriverInstance.__class__):
+    from xia2.Driver.DriverFactory import DriverFactory
 
-    def __init__(self):
-      DriverInstance.__class__.__init__(self)
-      self.set_executable('cctbx.python')
-      self._argv = []
-      self._nproc = None
-      self._njob = None
-      self._mp_mode = None
-      self._phil_file = None
-      self._clusters = None
-      return
+    DriverInstance = DriverFactory.Driver(DriverType)
 
-    def add_command_line_args(self, args):
-      self._argv.extend(args)
+    class MultiCrystalAnalysisWrapper(DriverInstance.__class__):
+        def __init__(self):
+            DriverInstance.__class__.__init__(self)
+            self.set_executable("cctbx.python")
+            self._argv = []
+            self._nproc = None
+            self._njob = None
+            self._mp_mode = None
+            self._phil_file = None
+            self._clusters = None
+            return
 
-    def run(self):
-      from xia2.Handlers.Streams import Debug
-      Debug.write('Running MultiCrystalAnalysis.py')
+        def add_command_line_args(self, args):
+            self._argv.extend(args)
 
-      self.clear_command_line()
+        def run(self):
+            from xia2.Handlers.Streams import Debug
 
-      from xia2.Modules import MultiCrystalAnalysis as mca_module
-      self.add_command_line(mca_module.__file__)
+            Debug.write("Running MultiCrystalAnalysis.py")
 
-      for arg in self._argv:
-        self.add_command_line(arg)
-      self.start()
-      self.close_wait()
-      self.check_for_errors()
+            self.clear_command_line()
 
-      self._clusters_json = os.path.join(
-        self.get_working_directory(), 'intensity_clusters.json')
-      assert os.path.exists(self._clusters_json)
-      import json
-      with open(self._clusters_json, 'rb') as f:
-        self._dict = json.load(f)
-      self._clusters = self._dict['clusters']
+            from xia2.Modules import MultiCrystalAnalysis as mca_module
 
-      return
+            self.add_command_line(mca_module.__file__)
 
-    def get_clusters(self):
-      return self._clusters
+            for arg in self._argv:
+                self.add_command_line(arg)
+            self.start()
+            self.close_wait()
+            self.check_for_errors()
 
-    def get_dict(self):
-      return self._dict
+            self._clusters_json = os.path.join(
+                self.get_working_directory(), "intensity_clusters.json"
+            )
+            assert os.path.exists(self._clusters_json)
+            import json
 
-  return MultiCrystalAnalysisWrapper()
+            with open(self._clusters_json, "rb") as f:
+                self._dict = json.load(f)
+            self._clusters = self._dict["clusters"]
+
+            return
+
+        def get_clusters(self):
+            return self._clusters
+
+        def get_dict(self):
+            return self._dict
+
+    return MultiCrystalAnalysisWrapper()

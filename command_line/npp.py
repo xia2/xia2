@@ -1,60 +1,73 @@
 from __future__ import absolute_import, division, print_function
 
+
 def npp(hklin):
-  from iotbx.reflection_file_reader import any_reflection_file
-  from xia2.Toolkit.NPP import npp_ify
-  from scitbx.array_family import flex
-  import math
-  import sys
-  reader = any_reflection_file(hklin)
-  mtz_object = reader.file_content()
-  intensities = [ma for ma in reader.as_miller_arrays(merge_equivalents=False)
-                 if ma.info().labels == ['I', 'SIGI']][0]
-  indices = intensities.indices()
+    from iotbx.reflection_file_reader import any_reflection_file
+    from xia2.Toolkit.NPP import npp_ify
+    from scitbx.array_family import flex
+    import math
+    import sys
 
-  # merging: use external variance i.e. variances derived from SIGI column
-  merger = intensities.merge_equivalents(use_internal_variance=False)
-  mult = merger.redundancies().data()
-  imean = merger.array()
-  unique = imean.indices()
-  iobs = imean.data()
-  # scale up variance to account for sqrt(multiplicity) effective scaling
-  variobs = (imean.sigmas() ** 2) * mult.as_double()
+    reader = any_reflection_file(hklin)
+    mtz_object = reader.file_content()
+    intensities = [
+        ma
+        for ma in reader.as_miller_arrays(merge_equivalents=False)
+        if ma.info().labels == ["I", "SIGI"]
+    ][0]
+    indices = intensities.indices()
 
-  all = flex.double()
-  cen = flex.double()
+    # merging: use external variance i.e. variances derived from SIGI column
+    merger = intensities.merge_equivalents(use_internal_variance=False)
+    mult = merger.redundancies().data()
+    imean = merger.array()
+    unique = imean.indices()
+    iobs = imean.data()
+    # scale up variance to account for sqrt(multiplicity) effective scaling
+    variobs = (imean.sigmas() ** 2) * mult.as_double()
 
-  for hkl, i, v, m in zip(unique, iobs, variobs, mult):
+    all = flex.double()
+    cen = flex.double()
 
-    # only consider if meaningful number of observations
-    if m < 3:
-      continue
+    for hkl, i, v, m in zip(unique, iobs, variobs, mult):
 
-    sel = indices == hkl
-    data = intensities.select(sel).data()
+        # only consider if meaningful number of observations
+        if m < 3:
+            continue
 
-    assert(m == len(data))
+        sel = indices == hkl
+        data = intensities.select(sel).data()
 
-    _x, _y = npp_ify(data, input_mean_variance=(i,v))
+        assert m == len(data)
 
-    # perform linreg on (i) all data and (ii) subset between +/- 2 sigma
+        _x, _y = npp_ify(data, input_mean_variance=(i, v))
 
-    sel = (flex.abs(_x) < 2)
-    _x_ = _x.select(sel)
-    _y_ = _y.select(sel)
+        # perform linreg on (i) all data and (ii) subset between +/- 2 sigma
 
-    fit_all = flex.linear_regression(_x, _y)
-    fit_cen = flex.linear_regression(_x_, _y_)
+        sel = flex.abs(_x) < 2
+        _x_ = _x.select(sel)
+        _y_ = _y.select(sel)
 
-    all.append(fit_all.slope())
-    cen.append(fit_cen.slope())
+        fit_all = flex.linear_regression(_x, _y)
+        fit_cen = flex.linear_regression(_x_, _y_)
 
-    print('%3d %3d %3d' % hkl, '%.2f %.2f %.2f' % (i, v, i/math.sqrt(v)), \
-      '%.2f %.2f' % (fit_all.slope(), fit_cen.slope()), '%d' % m)
+        all.append(fit_all.slope())
+        cen.append(fit_cen.slope())
 
-  sys.stderr.write('Mean gradients: %.2f %.2f\n' % (flex.sum(all) / all.size(),
-                                                    flex.sum(cen) / cen.size()))
+        print(
+            "%3d %3d %3d" % hkl,
+            "%.2f %.2f %.2f" % (i, v, i / math.sqrt(v)),
+            "%.2f %.2f" % (fit_all.slope(), fit_cen.slope()),
+            "%d" % m,
+        )
 
-if __name__ == '__main__':
-  import sys
-  npp(sys.argv[1])
+    sys.stderr.write(
+        "Mean gradients: %.2f %.2f\n"
+        % (flex.sum(all) / all.size(), flex.sum(cen) / cen.size())
+    )
+
+
+if __name__ == "__main__":
+    import sys
+
+    npp(sys.argv[1])

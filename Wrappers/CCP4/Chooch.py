@@ -24,194 +24,198 @@ from xia2.Driver.DriverFactory import DriverFactory
 
 # helper functions
 
-def energy_to_wavelength(energy):
-  h = 6.6260693e-34
-  c = 2.9979246e8
-  e = 1.6021765e-19
 
-  return 1.0e10 * (h * c) / (e * energy)
+def energy_to_wavelength(energy):
+    h = 6.6260693e-34
+    c = 2.9979246e8
+    e = 1.6021765e-19
+
+    return 1.0e10 * (h * c) / (e * energy)
+
 
 def preprocess_scan(scan_file):
-  '''Preprocess the scan file to a form that chooch will accept.'''
+    """Preprocess the scan file to a form that chooch will accept."""
 
-  try:
-    with open(scan_file, 'r') as fh:
-      i = int(fh.readlines()[1])
-    return scan_file
-  except Exception:
-    # assume that this is not in the friendly format...
-    data = open(scan_file, 'r').readlines()
-    more_data = []
-    for d in data:
-      if not '#' in d and d.strip():
-        more_data.append(d)
-    data = more_data
-    count = len(data)
-    out = open('xia2-chooch.raw', 'w')
-    out.write('Chooch Scan File from xia2\n%d\n' % count)
-    for d in data:
-      out.write('%f %f\n' % tuple(map(float, d.split(',')[:2])))
-    out.close()
-    return 'xia2-chooch.raw'
+    try:
+        with open(scan_file, "r") as fh:
+            i = int(fh.readlines()[1])
+        return scan_file
+    except Exception:
+        # assume that this is not in the friendly format...
+        data = open(scan_file, "r").readlines()
+        more_data = []
+        for d in data:
+            if not "#" in d and d.strip():
+                more_data.append(d)
+        data = more_data
+        count = len(data)
+        out = open("xia2-chooch.raw", "w")
+        out.write("Chooch Scan File from xia2\n%d\n" % count)
+        for d in data:
+            out.write("%f %f\n" % tuple(map(float, d.split(",")[:2])))
+        out.close()
+        return "xia2-chooch.raw"
 
-def Chooch(DriverType = None):
-  '''Factory for Chooch wrapper classes, with the specified
-  Driver type.'''
 
-  DriverInstance = DriverFactory.Driver(DriverType)
+def Chooch(DriverType=None):
+    """Factory for Chooch wrapper classes, with the specified
+  Driver type."""
 
-  class ChoochWrapper(DriverInstance.__class__):
-    def __init__(self):
+    DriverInstance = DriverFactory.Driver(DriverType)
 
-      DriverInstance.__class__.__init__(self)
+    class ChoochWrapper(DriverInstance.__class__):
+        def __init__(self):
 
-      self.set_executable('chooch')
-      self._scan = None
-      self._edge_table = { }
+            DriverInstance.__class__.__init__(self)
 
-      self._atom = 'se'
+            self.set_executable("chooch")
+            self._scan = None
+            self._edge_table = {}
 
-      self._data = []
+            self._atom = "se"
 
-    def set_scan(self, scan):
-      '''Set a scan file for chooch to parse.'''
+            self._data = []
 
-      self._scan = preprocess_scan(scan)
-      return
+        def set_scan(self, scan):
+            """Set a scan file for chooch to parse."""
 
-    def set_atom(self, atom):
-      '''Set the atom which should be in the scan.'''
+            self._scan = preprocess_scan(scan)
+            return
 
-      self._atom = atom
-      return
+        def set_atom(self, atom):
+            """Set the atom which should be in the scan."""
 
-    def scan(self):
-      '''Run chooch.'''
+            self._atom = atom
+            return
 
-      self.add_command_line('-e')
-      self.add_command_line(self._atom)
-      self.add_command_line(self._scan)
+        def scan(self):
+            """Run chooch."""
 
-      self.start()
-      self.close_wait()
+            self.add_command_line("-e")
+            self.add_command_line(self._atom)
+            self.add_command_line(self._scan)
 
-      self.check_for_errors()
+            self.start()
+            self.close_wait()
 
-      self._data = []
-      for o in open(os.path.join(self.get_working_directory(),
-                                 'output.efs'), 'r').readlines():
-        self._data.append(map(float, o.split()))
+            self.check_for_errors()
 
-      output = self.get_all_output()
-      collect = False
+            self._data = []
+            for o in open(
+                os.path.join(self.get_working_directory(), "output.efs"), "r"
+            ).readlines():
+                self._data.append(map(float, o.split()))
 
-      for o in output:
-        if collect:
-
-          if '-------' in o:
+            output = self.get_all_output()
             collect = False
-            continue
 
-          name, energy, fp, fpp = tuple(map(string.strip,
-                                            o.split('|')[1:5]))
-          self._edge_table[name] = {
-              'energy':float(energy),
-              'fp':float(fp),
-              'fpp':float(fpp),
-              'wave':energy_to_wavelength(float(energy))}
+            for o in output:
+                if collect:
 
-        if 'energy' in o and 'f\'' in o and 'f\'\'' in o:
-          collect = True
+                    if "-------" in o:
+                        collect = False
+                        continue
 
-    def get_edges(self):
-      return self._edge_table
+                    name, energy, fp, fpp = tuple(map(string.strip, o.split("|")[1:5]))
+                    self._edge_table[name] = {
+                        "energy": float(energy),
+                        "fp": float(fp),
+                        "fpp": float(fpp),
+                        "wave": energy_to_wavelength(float(energy)),
+                    }
 
-    def get_fp_fpp(self, wave):
-      '''Get the fp, fpp for a wavelength.'''
+                if "energy" in o and "f'" in o and "f''" in o:
+                    collect = True
 
-      if not self._data:
-        raise RuntimeError('data array empty')
+        def get_edges(self):
+            return self._edge_table
 
-      fp = 0.0
-      fpp = 0.0
-      closest = 1.0e100
+        def get_fp_fpp(self, wave):
+            """Get the fp, fpp for a wavelength."""
 
-      for d in self._data:
-        w = energy_to_wavelength(d[0])
-        if math.fabs(w - wave) < closest:
-          fp = d[2]
-          fpp = d[1]
-          closest = math.fabs(w - wave)
+            if not self._data:
+                raise RuntimeError("data array empty")
 
-      return fp, fpp
+            fp = 0.0
+            fpp = 0.0
+            closest = 1.0e100
 
-    def id_wavelength(self, wave):
-      '''Try to identify a wavelength.'''
+            for d in self._data:
+                w = energy_to_wavelength(d[0])
+                if math.fabs(w - wave) < closest:
+                    fp = d[2]
+                    fpp = d[1]
+                    closest = math.fabs(w - wave)
 
-      min_wave_diff = 1.0e100
-      name = None
+            return fp, fpp
 
-      waves = []
+        def id_wavelength(self, wave):
+            """Try to identify a wavelength."""
 
-      for edge in self._edge_table.keys():
-        waves.append(self._edge_table[edge]['wave'])
-        if math.fabs(self._edge_table[edge]['wave'] - wave) < \
-           min_wave_diff:
-          min_wave_diff = math.fabs(self._edge_table[edge]['wave'] -
-                                    wave)
-          name = edge
+            min_wave_diff = 1.0e100
+            name = None
 
-      if min_wave_diff > 0.01:
-        # assume that this is a remote...
-        if wave > max(waves):
-          return 'LREM'
-        else:
-          return 'HREM'
+            waves = []
 
-      return name.upper()
+            for edge in self._edge_table.keys():
+                waves.append(self._edge_table[edge]["wave"])
+                if math.fabs(self._edge_table[edge]["wave"] - wave) < min_wave_diff:
+                    min_wave_diff = math.fabs(self._edge_table[edge]["wave"] - wave)
+                    name = edge
 
-  return ChoochWrapper()
+            if min_wave_diff > 0.01:
+                # assume that this is a remote...
+                if wave > max(waves):
+                    return "LREM"
+                else:
+                    return "HREM"
 
-if __name__ == '__main__':
+            return name.upper()
 
-  if len(sys.argv) < 2:
+    return ChoochWrapper()
 
-    c = Chooch()
-    c.set_scan(os.path.join(os.environ['XIA2_ROOT'], 'Data',
-                            'Test', 'Scans',
-                            'TM0486-9172-Se.raw'))
-    c.set_atom('se')
-    c.scan()
 
-    edges = c.get_edges()
+if __name__ == "__main__":
 
-    for key in edges.keys():
-      print('%s %6.2f %6.2f %8.6f' % (key,
-                                      edges[key]['fp'],
-                                      edges[key]['fpp'],
-                                      edges[key]['wave']))
-
-  else:
-    for scan in sys.argv[1:]:
-
-      print(os.path.split(scan)[-1])
-
-      try:
+    if len(sys.argv) < 2:
 
         c = Chooch()
-        c.set_scan(scan)
-        c.set_atom('se')
+        c.set_scan(
+            os.path.join(
+                os.environ["XIA2_ROOT"], "Data", "Test", "Scans", "TM0486-9172-Se.raw"
+            )
+        )
+        c.set_atom("se")
         c.scan()
 
         edges = c.get_edges()
 
         for key in edges.keys():
-          print('%s %6.2f %6.2f %8.6f' % (key,
-                                          edges[key]['fp'],
-                                          edges[key]['fpp'],
-                                          edges[key]['wave']))
-      except Exception as e:
-        print('failed (%s)' % str(e))
+            print(
+                "%s %6.2f %6.2f %8.6f"
+                % (key, edges[key]["fp"], edges[key]["fpp"], edges[key]["wave"])
+            )
 
+    else:
+        for scan in sys.argv[1:]:
 
-      print('')
+            print(os.path.split(scan)[-1])
+
+            try:
+
+                c = Chooch()
+                c.set_scan(scan)
+                c.set_atom("se")
+                c.scan()
+
+                edges = c.get_edges()
+
+                for key in edges.keys():
+                    print(
+                        "%s %6.2f %6.2f %8.6f"
+                        % (key, edges[key]["fp"], edges[key]["fpp"], edges[key]["wave"])
+                    )
+            except Exception as e:
+                print("failed (%s)" % str(e))
+
+            print("")

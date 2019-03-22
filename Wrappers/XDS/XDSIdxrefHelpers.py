@@ -15,152 +15,166 @@ import sys
 
 from xia2.Experts.LatticeExpert import ApplyLattice
 
+
 def _parse_idxref_lp_distance_etc(lp_file_lines):
-  '''Parse the LP file for refined distance, beam centre and so on...'''
+    """Parse the LP file for refined distance, beam centre and so on..."""
 
-  beam = None
-  diatance = None
+    beam = None
+    diatance = None
 
-  i = 0
-  while i < len(lp_file_lines):
-    line = lp_file_lines[i]
-    i += 1
-
-    if 'DETECTOR COORDINATES' in line and 'DIRECT BEAM' in line:
-      beam = tuple(map(float, line.split()[-2:]))
-    if 'CRYSTAL TO DETECTOR' in line:
-      distance = float(line.split()[-1])
-      if distance < 0:
-        distance *= -1
-
-  return beam, distance
-
-def _parse_idxref_index_origin(lp_file_lines):
-  '''Parse the LP file for the possible index origin etc.'''
-
-  origins = { }
-
-  i = 0
-  while i < len(lp_file_lines):
-    line = lp_file_lines[i]
-    i += 1
-    if 'INDEX_' in line and 'QUALITY' in line and 'DELTA' in line:
-      while not 'SELECTED' in line:
+    i = 0
+    while i < len(lp_file_lines):
         line = lp_file_lines[i]
         i += 1
-        try:
-          hkl = tuple(map(int, line.split()[:3]))
-          quality, delta, xd, yd = tuple(
-              map(float, line.split()[3:7]))
-          origins[hkl] = quality, delta, xd, yd
-        except Exception:
-          pass
 
-      return origins
+        if "DETECTOR COORDINATES" in line and "DIRECT BEAM" in line:
+            beam = tuple(map(float, line.split()[-2:]))
+        if "CRYSTAL TO DETECTOR" in line:
+            distance = float(line.split()[-1])
+            if distance < 0:
+                distance *= -1
 
-  raise RuntimeError('should never reach this point')
+    return beam, distance
+
+
+def _parse_idxref_index_origin(lp_file_lines):
+    """Parse the LP file for the possible index origin etc."""
+
+    origins = {}
+
+    i = 0
+    while i < len(lp_file_lines):
+        line = lp_file_lines[i]
+        i += 1
+        if "INDEX_" in line and "QUALITY" in line and "DELTA" in line:
+            while not "SELECTED" in line:
+                line = lp_file_lines[i]
+                i += 1
+                try:
+                    hkl = tuple(map(int, line.split()[:3]))
+                    quality, delta, xd, yd = tuple(map(float, line.split()[3:7]))
+                    origins[hkl] = quality, delta, xd, yd
+                except Exception:
+                    pass
+
+            return origins
+
+    raise RuntimeError("should never reach this point")
+
 
 def _parse_idxref_lp(lp_file_lines):
-  '''Parse the list of lines from idxref.lp.'''
+    """Parse the list of lines from idxref.lp."""
 
-  lattice_character_info = {}
+    lattice_character_info = {}
 
-  i = 0
+    i = 0
 
-  mosaic = 0.0
+    mosaic = 0.0
 
-  while i < len(lp_file_lines):
-    line = lp_file_lines[i]
-    i += 1
+    while i < len(lp_file_lines):
+        line = lp_file_lines[i]
+        i += 1
 
-    # get the mosaic information
+        # get the mosaic information
 
-    if 'CRYSTAL MOSAICITY' in line:
-      mosaic = float(line.split()[-1])
+        if "CRYSTAL MOSAICITY" in line:
+            mosaic = float(line.split()[-1])
 
-    # get the lattice character information - coding around the
-    # non-standard possibility of mI, by simply ignoring it!
-    # bug # 2355
-
-    if 'CHARACTER  LATTICE     OF FIT      a      b      c' in line:
-      # example line (note potential lack of white space between b and c cell parameters):
-      #     9        hR        999.0    3966.3 5324.610528.6  85.6  64.6 132.0
-      j = i + 1
-      while lp_file_lines[j].strip() != "":
-        l = lp_file_lines[j].replace('*', ' ')
-        character = int(l[:12].strip())
-        lattice = l[12:23].strip()
-        fit = float(l[23:32].strip())
-        cell = tuple(float(c) for c in
-          (l[32:39], l[39:46], l[46:53], l[53:59], l[59:65], l[65:71]))
-
-        # FIXME need to do something properly about this...
+        # get the lattice character information - coding around the
+        # non-standard possibility of mI, by simply ignoring it!
         # bug # 2355
 
-        if lattice == 'mI':
-          j += 1
-          continue
+        if "CHARACTER  LATTICE     OF FIT      a      b      c" in line:
+            # example line (note potential lack of white space between b and c cell parameters):
+            #     9        hR        999.0    3966.3 5324.610528.6  85.6  64.6 132.0
+            j = i + 1
+            while lp_file_lines[j].strip() != "":
+                l = lp_file_lines[j].replace("*", " ")
+                character = int(l[:12].strip())
+                lattice = l[12:23].strip()
+                fit = float(l[23:32].strip())
+                cell = tuple(
+                    float(c)
+                    for c in (
+                        l[32:39],
+                        l[39:46],
+                        l[46:53],
+                        l[53:59],
+                        l[59:65],
+                        l[65:71],
+                    )
+                )
 
-        #reindex_card = tuple(map(int, record[9:]))
-        reindex_card = () # XXX need example where this is present in the IDXREF.LP
-        constrained_cell = ApplyLattice(lattice, cell)[0]
+                # FIXME need to do something properly about this...
+                # bug # 2355
 
-        lattice_character_info[character] = {
-            'lattice':lattice,
-            'fit':fit,
-            'cell':constrained_cell,
-            'mosaic':mosaic,
-            'reidx':reindex_card}
+                if lattice == "mI":
+                    j += 1
+                    continue
 
-        j += 1
+                # reindex_card = tuple(map(int, record[9:]))
+                reindex_card = ()  # XXX need example where this is present in the IDXREF.LP
+                constrained_cell = ApplyLattice(lattice, cell)[0]
 
+                lattice_character_info[character] = {
+                    "lattice": lattice,
+                    "fit": fit,
+                    "cell": constrained_cell,
+                    "mosaic": mosaic,
+                    "reidx": reindex_card,
+                }
 
-  return lattice_character_info
+                j += 1
+
+    return lattice_character_info
+
 
 def _parse_idxref_lp_subtree(lp_file_lines):
 
-  subtrees = { }
+    subtrees = {}
 
-  i = 0
+    i = 0
 
-  while i < len(lp_file_lines):
-    line = lp_file_lines[i]
-    i += 1
+    while i < len(lp_file_lines):
+        line = lp_file_lines[i]
+        i += 1
 
-    if line.split() == ['SUBTREE', 'POPULATION']:
-      j = i + 1
-      line = lp_file_lines[j]
-      while line.strip():
-        subtree, population = tuple(map(int, line.split()))
-        subtrees[subtree] = population
-        j += 1
-        line = lp_file_lines[j]
+        if line.split() == ["SUBTREE", "POPULATION"]:
+            j = i + 1
+            line = lp_file_lines[j]
+            while line.strip():
+                subtree, population = tuple(map(int, line.split()))
+                subtrees[subtree] = population
+                j += 1
+                line = lp_file_lines[j]
 
-  return subtrees
+    return subtrees
+
 
 def _parse_idxref_lp_quality(lp_file_lines):
-  fraction = None
-  rmsd = None
-  rmsphi = None
+    fraction = None
+    rmsd = None
+    rmsphi = None
 
-  for record in lp_file_lines:
-    if 'OUT OF' in record and 'SPOTS INDEXED' in record:
-      fraction = float(record.split()[0]) / float(record.split()[3])
-    if 'STANDARD DEVIATION OF SPOT    POSITION' in record:
-      rmsd = float(record.split()[-1])
-    if 'STANDARD DEVIATION OF SPINDLE POSITION' in record:
-      rmsphi = float(record.split()[-1])
+    for record in lp_file_lines:
+        if "OUT OF" in record and "SPOTS INDEXED" in record:
+            fraction = float(record.split()[0]) / float(record.split()[3])
+        if "STANDARD DEVIATION OF SPOT    POSITION" in record:
+            rmsd = float(record.split()[-1])
+        if "STANDARD DEVIATION OF SPINDLE POSITION" in record:
+            rmsphi = float(record.split()[-1])
 
-  return fraction, rmsd, rmsphi
+    return fraction, rmsd, rmsphi
 
-if __name__ == '__main__':
 
-  lines = open(sys.argv[1], 'r').readlines()
+if __name__ == "__main__":
 
-  d = _parse_idxref_lp(lines)
-  for k, v in d.iteritems():
-    print(k, v)
+    lines = open(sys.argv[1], "r").readlines()
 
-  fraction, rmsd, rmsphi = _parse_idxref_lp_quality(lines)
+    d = _parse_idxref_lp(lines)
+    for k, v in d.iteritems():
+        print(k, v)
 
-  print('%.2f %.2f %.2f' % (fraction, rmsd, rmsphi))
+    fraction, rmsd, rmsphi = _parse_idxref_lp_quality(lines)
+
+    print("%.2f %.2f %.2f" % (fraction, rmsd, rmsphi))
