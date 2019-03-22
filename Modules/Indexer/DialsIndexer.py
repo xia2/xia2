@@ -16,7 +16,6 @@ import libtbx
 
 # wrappers for programs that this needs: DIALS
 
-from xia2.Wrappers.Dials.Import import Import as _Import
 from xia2.Wrappers.Dials.GenerateMask import GenerateMask as _GenerateMask
 from xia2.Wrappers.Dials.EstimateGain import EstimateGain as _EstimateGain
 from xia2.Wrappers.Dials.Spotfinder import Spotfinder as _Spotfinder
@@ -68,20 +67,6 @@ class DialsIndexer(Indexer):
         return self.get_indexer_payload("indexed_filename")
 
     # factory functions
-
-    def Import(self):
-        importer = _Import()
-        importer.set_working_directory(self.get_working_directory())
-        importer.setup_from_imageset(self.get_imageset())
-        auto_logfiler(importer)
-        importer.set_mosflm_beam_centre(self.get_beam_centre())
-        importer.set_sweep_filename(
-            os.path.join(
-                self.get_working_directory(),
-                "%s_experiments_import.json" % importer.get_xpid(),
-            )
-        )
-        return importer
 
     def GenerateMask(self):
         genmask = _GenerateMask()
