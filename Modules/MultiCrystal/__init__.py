@@ -340,10 +340,11 @@ class multi_crystal_analysis(object):
 
         dist_mat = diffraction_dissimilarity.as_numpy_array()
 
+        assert ssd.is_valid_dm(dist_mat, tol=1e-12)
         # convert the redundant n*n square matrix form into a condensed nC2 array
         dist_mat = ssd.squareform(
-            dist_mat
-        )  # distArray[{n choose 2}-{n-i choose 2} + (j-i-1)] is the distance between points i and j
+            dist_mat, checks=False
+        )
 
         linkage_matrix = hierarchy.linkage(dist_mat, method="average")
 
