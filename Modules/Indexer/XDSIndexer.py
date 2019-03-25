@@ -39,7 +39,7 @@ from xia2.Schema.Interfaces.Indexer import IndexerSingleSweep
 # odds and sods that are needed
 
 from xia2.lib.bits import auto_logfiler
-from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.Handlers.Streams import Debug, Journal
 from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Files import FileHandler
@@ -365,7 +365,7 @@ class XDSIndexer(IndexerSingleSweep):
                 self.get_working_directory(), "%s_experiments.json" % xsweep.get_name()
             )
             dump.experiment_list(
-                ExperimentsListFactory.from_imageset_and_crystal(imageset, None),
+                ExperimentListFactory.from_imageset_and_crystal(imageset, None),
                 sweep_filename,
             )
 
