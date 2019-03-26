@@ -53,9 +53,6 @@ from xia2.Experts.LatticeExpert import SortLattices
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import Chatter, Debug
 
-# interfaces that this inherits from ...
-from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
-
 
 class _IndexerHelper(object):
     """A class to manage autoindexing results in a useful way, to ensure
@@ -125,6 +122,15 @@ def beam_centre(detector, beam):
                 break
 
     return panel_id, (x, y)
+
+
+def beam_centre_raw_image(detector, beam):
+    s0 = beam.get_s0()
+    panel_id, (x, y) = beam_centre(detector, beam)
+    panel = detector[panel_id]
+    x_px, y_px = panel.millimeter_to_pixel((x, y))
+    offset = panel.get_raw_image_offset()
+    return panel.pixel_to_millimeter((x_px + offset[0], y_px + offset[1]))
 
 
 class Indexer(object):
@@ -668,6 +674,15 @@ class Indexer(object):
         # FIXME need to consider interaction of xia2 with multi-panel detectors
         return tuple(reversed(beam_centre(experiment.detector, experiment.beam)[1]))
 
+    def get_indexer_beam_centre_raw_image(self):
+        """Get the refined beam in raw image coordinates."""
+
+        self.index()
+        experiment = self.get_indexer_experiment_list()[0]
+        return tuple(
+            reversed(beam_centre_raw_image(experiment.detector, experiment.beam))
+        )
+
     def get_indexer_payload(self, this):
         """Attempt to get something from the indexer payload."""
 
@@ -750,8 +765,6 @@ class IndexerSingleSweep(Indexer):
     def __init__(self):
         super(IndexerSingleSweep, self).__init__()
         self._indxr_images = []
-
-    # functionality that was previously provided by FrameProcessor
 
     def get_imageset(self):
         return self._indxr_imagesets[0]
