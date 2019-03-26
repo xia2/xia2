@@ -87,7 +87,7 @@ def xia2_to_json_object(xcrystals):
 
                 integration["refined_detector_dist"] = indxr.get_indexer_distance()
 
-                beam = indxr.get_indexer_beam_centre()
+                beam = indxr.get_indexer_beam_centre_raw_image()
                 integration["refined_xbeam"] = beam[0]
                 integration["refined_ybeam"] = beam[1]
 
