@@ -342,9 +342,7 @@ class multi_crystal_analysis(object):
 
         assert ssd.is_valid_dm(dist_mat, tol=1e-12)
         # convert the redundant n*n square matrix form into a condensed nC2 array
-        dist_mat = ssd.squareform(
-            dist_mat, checks=False
-        )
+        dist_mat = ssd.squareform(dist_mat, checks=False)
 
         linkage_matrix = hierarchy.linkage(dist_mat, method="average")
 
