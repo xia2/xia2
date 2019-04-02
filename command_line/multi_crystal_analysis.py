@@ -326,21 +326,13 @@ class multi_crystal_analysis(xia2_report_base):
         self.radiation_damage_analysis()
         self._cluster_analysis = self.cluster_analysis()
 
-        overall_stats_table = self.overall_statistics_table()
-        merging_stats_table = self.merging_statistics_table()
+        overall_stats_table, merging_stats_table, stats_plots = self.merging_stats_data()
 
         json_data = {}
-        json_data.update(self.multiplicity_vs_resolution_plot())
         json_data.update(self.multiplicity_histogram())
-        json_data.update(self.completeness_plot())
-        json_data.update(self.scale_rmerge_vs_batch_plot())
-        json_data.update(self.cc_one_half_plot())
-        json_data.update(self.i_over_sig_i_plot())
-        json_data.update(self.i_over_sig_i_vs_batch_plot())
-        json_data.update(self.second_moments_plot())
-        json_data.update(self.cumulative_intensity_distribution_plot())
-        json_data.update(self.l_test_plot())
-        json_data.update(self.wilson_plot())
+        json_data.update(self.intensity_stats_plots())
+        json_data.update(self.batch_dependent_plots())
+        json_data.update(stats_plots)
         json_data.update(self._chef_stats.to_dict())
         json_data.update(unit_cell_graphs)
 
