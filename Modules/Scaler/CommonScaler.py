@@ -9,6 +9,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import math
 import os
 
 from iotbx import mtz
@@ -690,6 +691,8 @@ class CommonScaler(Scaler):
             )
 
             b_factor = truncate.get_b_factor()
+            if math.isnan(b_factor):
+                b_factor = None
 
             # record the b factor somewhere (hopefully) useful...
 
