@@ -584,17 +584,18 @@ def template_to_xds(template):
         # Given (e.g.) XYZ_master.h5 and data files XYZ_data_00000[0-9].h5
         # XDS expects the template XYZ_??????.h5
         assert template.endswith("master.h5"), template
+
         master_file = template
         import glob
 
         g = glob.glob(master_file.split("master.h5")[0] + "data_*[0-9].h5")
         g.extend(glob.glob(master_file.split("master.h5")[0] + "*[0-9].h5"))
         assert len(g), "No associated data files found for %s" % master_file
-        from xia2.Experts.FindImages import image2template
 
-        template = image2template(g[0])
-        if "data_" in template:
-            template = master_file.split("master.h5")[0] + template.split("data_")[-1]
+        # we don't know what is in the master file but we know at this point
+        # that the word master is in there, so... otherwise can get complicated
+        # side-effects when people have a folder named e.g. data_200.
+        return template.replace("master.h5", "??????.h5")
 
     return template.replace("#", "?")
 
