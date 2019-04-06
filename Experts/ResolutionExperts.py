@@ -499,15 +499,17 @@ def mosflm_mtz_to_list(mtz):
     """Run pointless to convert mtz to list of h k l ... and give the
     unit cell, then convert this to a list as necessary before returning."""
 
-    hklout = tempfile.mktemp(".hkl", "", os.environ["CCP4_SCR"])
+    try:
+        hklout = tempfile.mkstemp(".hkl", "", os.environ["CCP4_SCR"])
 
-    p = Pointless()
-    p.set_hklin(mtz)
-    cell = p.sum_mtz(hklout)
+        p = Pointless()
+        p.set_hklin(mtz)
+        cell = p.sum_mtz(hklout)
 
-    hkl = pointless_summedlist_to_list(hklout, cell)
+        hkl = pointless_summedlist_to_list(hklout, cell)
 
-    os.remove(hklout)
+    finally:
+        os.remove(hklout)
 
     return hkl
 
@@ -523,53 +525,58 @@ def pointless_summedlist_to_list(summedlist, cell):
 
     result = []
 
-    for record in open(summedlist, "r").readlines():
-        lst = record.split()
+    with open(summedlist, "r") as fh:
+        for record in fh.readlines():
+            lst = record.split()
 
-        if not lst:
-            continue
+            if not lst:
+                continue
 
-        h, k, l = tuple(map(int, lst[:3]))
+            h, k, l = tuple(map(int, lst[:3]))
 
-        i, sigma = tuple(map(float, lst[4:6]))
+            i, sigma = tuple(map(float, lst[4:6]))
 
-        s, r = rc.resolution(h, k, l)
+            s, r = rc.resolution(h, k, l)
 
-        result.append((s, i, sigma))
+            result.append((s, i, sigma))
 
     return result
 
 
 def find_blank(hklin):
+    try:
+        # first dump to temp. file
+        hklout = tempfile.mkstemp(".hkl", "", os.environ["CCP4_SCR"])
 
-    # first dump to temp. file
-    hklout = tempfile.mktemp(".hkl", "", os.environ["CCP4_SCR"])
+        p = Pointless()
+        p.set_hklin(hklin)
+        cell = p.sum_mtz(hklout)
 
-    p = Pointless()
-    p.set_hklin(hklin)
-    cell = p.sum_mtz(hklout)
+        if os.path.getsize(hklout) == 0:
+            Debug.write("Pointless failed:")
+            Debug.write("".join(p.get_all_output()))
+            raise RuntimeError("Pointless failed: no output file written")
 
-    if not os.path.isfile(hklout):
-        Debug.write("Pointless failed:")
-        Debug.write("".join(p.get_all_output()))
-        raise RuntimeError("Pointless failed: %s does not exist" % hklout)
+        isig = {}
 
-    isig = {}
+        with open(hklout, "r") as fh:
+            for record in fh:
+                lst = record.split()
+                if not lst:
+                    continue
+                batch = int(lst[3])
+                i, sig = float(lst[4]), float(lst[5])
 
-    for record in open(hklout, "r"):
-        lst = record.split()
-        if not lst:
-            continue
-        batch = int(lst[3])
-        i, sig = float(lst[4]), float(lst[5])
+                if not sig:
+                    continue
 
-        if not sig:
-            continue
+                if not batch in isig:
+                    isig[batch] = []
 
-        if not batch in isig:
-            isig[batch] = []
+                isig[batch].append(i / sig)
 
-        isig[batch].append(i / sig)
+    finally:
+        os.remove(hklout)
 
     # look at the mean and sd
 
@@ -582,9 +589,6 @@ def find_blank(hklin):
             blank.append(batch)
         else:
             good.append(batch)
-
-    # finally delete temp file
-    os.remove(hklout)
 
     return blank, good
 
