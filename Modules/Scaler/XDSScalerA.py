@@ -86,8 +86,6 @@ class XDSScalerA(Scaler):
             if a[0].startswith("_xds_"):
                 obj[a[0]] = a[1]
             elif a[0] == "_sweep_information":
-                import copy
-
                 d = copy.deepcopy(a[1])
                 for i in d.keys():
                     d[i]["integrater"] = d[i]["integrater"].to_dict()
@@ -313,7 +311,6 @@ class XDSScalerA(Scaler):
             sname = self._sweep_information[epoch]["sname"]
             if self._scalr_pname != pname:
                 raise RuntimeError("all data must have a common project name")
-            xname = self._sweep_information[epoch]["xname"]
             if self._scalr_xname != xname:
                 raise RuntimeError("all data for scaling must come from one crystal")
 
@@ -542,7 +539,6 @@ class XDSScalerA(Scaler):
             # 1 or 3? 1 seems to work better?
             brehm_diederichs.set_asymmetric(1)
             brehm_diederichs.run()
-            reindexing_dict = brehm_diederichs.get_reindexing_dict()
 
             for epoch in self._sweep_information.keys():
 
@@ -550,10 +546,6 @@ class XDSScalerA(Scaler):
 
                 dname = self._sweep_information[epoch]["dname"]
                 sname = intgr.get_integrater_sweep_name()
-                hklin = self._sweep_information[epoch]["corrected_intensities"]
-                hklout = os.path.join(
-                    self.get_working_directory(), "%s_%s.mtz" % (dname, sname)
-                )
 
                 # apply the reindexing operator
                 intgr.set_integrater_reindex_operator(reindex_op)
@@ -596,8 +588,6 @@ class XDSScalerA(Scaler):
                 )
 
                 Debug.write("X1698: %s: %s" % (pointgroup, reindex_op))
-
-            reference_reindex_op = intgr.get_integrater_reindex_operator()
 
             if ntr:
 
@@ -642,8 +632,8 @@ class XDSScalerA(Scaler):
 
             def run_one_sweep(args):
                 sweep_information = args[0]
-                pointless_indexer_jiffy = args[1]
-                factory = args[2]
+                #  pointless_indexer_jiffy = args[1]
+                #  factory = args[2]
                 job_type = args[3]
 
                 if job_type:
@@ -1112,9 +1102,6 @@ class XDSScalerA(Scaler):
         self._scalr_scaled_refl_files = {}
 
         self._scalr_statistics = {}
-
-        max_batches = 0
-        mtz_dict = {}
 
         project_info = {}
         for epoch in self._sweep_information.keys():
