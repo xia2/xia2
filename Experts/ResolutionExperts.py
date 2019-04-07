@@ -500,7 +500,10 @@ def mosflm_mtz_to_list(mtz):
     unit cell, then convert this to a list as necessary before returning."""
 
     try:
-        hklout = tempfile.mkstemp(".hkl", "", os.environ["CCP4_SCR"])
+        with tempfile.NamedTemporaryFile(
+            suffix=".hkl", dir=os.environ["CCP4_SCR"], delete=False
+        ) as fh:
+            hklout = fh.name
 
         p = Pointless()
         p.set_hklin(mtz)
@@ -546,7 +549,10 @@ def pointless_summedlist_to_list(summedlist, cell):
 def find_blank(hklin):
     try:
         # first dump to temp. file
-        hklout = tempfile.mkstemp(".hkl", "", os.environ["CCP4_SCR"])
+        with tempfile.NamedTemporaryFile(
+            suffix=".hkl", dir=os.environ["CCP4_SCR"], delete=False
+        ) as fh:
+            hklout = fh.name
 
         p = Pointless()
         p.set_hklin(hklin)
