@@ -11,14 +11,12 @@
 #
 # This will also be responsible for migrating the data - that is, when
 # the .xinfo file is parsed the directories referred to therein may be
-# migrated to a local disk. This will use a directory created by
-# tempfile.mkdtemp().
+# migrated to a local disk.
 
 from __future__ import absolute_import, division, print_function
 
 import os
 import shutil
-import tempfile
 
 from xia2.Handlers.Environment import Environment
 
@@ -133,12 +131,10 @@ class _FileHandler(object):
             shutil.copyfile(self._xml_files[f], filename)
             out.write("Copied xml file %s to %s\n" % (self._xml_files[f], filename))
 
-            for f in self._html_file_keys:
-                filename = os.path.join(log_directory, "%s.html" % f.replace(" ", "_"))
-                shutil.copyfile(self._html_files[f], filename)
-                out.write(
-                    "Copied html file %s to %s\n" % (self._html_files[f], filename)
-                )
+        for f in self._html_file_keys:
+            filename = os.path.join(log_directory, "%s.html" % f.replace(" ", "_"))
+            shutil.copyfile(self._html_files[f], filename)
+            out.write("Copied html file %s to %s\n" % (self._html_files[f], filename))
 
         # copy the data files
         data_directory = Environment.generate_directory("DataFiles")
