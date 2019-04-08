@@ -1,6 +1,8 @@
 # xia2
 
 ![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)
+[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/xia2/xia2.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/xia2/xia2/context:python)
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/xia2/xia2.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/xia2/xia2/alerts/)
 
 xia2 is an expert system to perform X-ray diffraction data processing
 on your behalf, using your software with little or no input from you.
