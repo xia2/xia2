@@ -68,11 +68,9 @@ def df(path=os.getcwd()):
         except Exception as e:
             Debug.write("Error getting disk space: %s" % str(e))
             return 0
-    else:
-        s = os.statvfs(path)
-        return s.f_frsize * s.f_bavail
 
-    return 0
+    s = os.statvfs(path)
+    return s.f_frsize * s.f_bavail
 
 
 def ulimit_n():

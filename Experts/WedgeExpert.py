@@ -25,9 +25,6 @@ def digest_wedges(wedges):
     # first digest to logical sweeps, keyed by the last image in the set
     # and the wavelength name, and containing the start and end dose.
 
-    if False:
-        return
-
     doses = {}
 
     belonging_wedges = {}

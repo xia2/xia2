@@ -17,13 +17,11 @@ import sys
 
 from cctbx import crystal, sgtbx, uctbx
 from scitbx import matrix
-from xia2.Experts.LatticeExpert import l2s, s2l
-from xia2.Experts.ReferenceFrame import mosflm_to_xia2, xia2_to_mosflm
+from xia2.Experts.LatticeExpert import l2s
+from xia2.Experts.ReferenceFrame import mosflm_to_xia2
 from xia2.Experts.SymmetryExpert import mat_to_symop, symop_to_mat
 from xia2.Handlers.Streams import Debug
-from xia2.Handlers.Syminfo import Syminfo
 from xia2.lib.bits import auto_logfiler
-from xia2.lib.SymmetryLib import lattice_to_spacegroup
 from xia2.Wrappers.CCP4.Othercell import Othercell
 from xia2.Wrappers.Phenix.LatticeSymmetry import LatticeSymmetry
 
@@ -316,10 +314,8 @@ def _Othercell():
 
     try:
         return LatticeSymmetry()
-        Debug.write("Using iotbx.lattice_symmetry")
     except Exception:
         return Othercell()
-        Debug.write("Using othercell")
 
 
 def get_real_space_primitive_matrix(lattice, matrix, wd=None):
@@ -345,7 +341,6 @@ def get_real_space_primitive_matrix(lattice, matrix, wd=None):
 
     # transform the possibly centred cell to the primitive setting
 
-    new_cell = o.get_cell("aP")
     op = symop_to_mat(o.get_reindex_op("aP"))
 
     primitive_a = matmul(invert(op), a)
@@ -378,7 +373,6 @@ def get_reciprocal_space_primitive_matrix(lattice, matrix, wd=None):
 
     # transform the possibly centred cell to the primitive setting
 
-    new_cell = o.get_cell("aP")
     op = symop_to_mat(o.get_reindex_op("aP"))
 
     primitive_a = matmul(invert(op), a)
@@ -424,10 +418,6 @@ def mosflm_a_matrix_to_real_space(wavelength, lattice, matrix):
     of the CCTBX program lattice_symmetry) return the real space primative
     crystal lattice vectors in the xia2 reference frame. This reference frame
     corresponds to that defined for imgCIF."""
-
-    # convert the lattice to a spacegroup - not needed, see below
-    # spacegroup_number = lattice_to_spacegroup(lattice)
-    # spacegroup = Syminfo.spacegroup_name_to_number(spacegroup_number)
 
     # get the a, u, matrices and the unit cell
     cell, a, u = parse_matrix(matrix)
@@ -532,23 +522,21 @@ def mosflm_matrix_centred_to_primitive(lattice, mosflm_a_matrix):
     b = math.sqrt(B.dot())
     c = math.sqrt(C.dot())
 
-    alpha = rtod * B.angle(C)
-    beta = rtod * C.angle(A)
-    gamma = rtod * A.angle(B)
+    # alpha = rtod * B.angle(C)
+    # beta = rtod * C.angle(A)
+    # gamma = rtod * A.angle(B)
 
     wavelength = ((cell[0] / a) + (cell[1] / b) + (cell[2] / c)) / 3.0
 
     # then use this to rescale the A matrix
 
     mi = matrix.sqr([a / wavelength for a in amat])
-    m = mi.inverse()
 
     sgp = sg.build_derived_group(True, False)
-    lattice_p = s2l(sgp.type().number())
     symm = crystal.symmetry(unit_cell=cell, space_group=sgp)
 
     rdx = symm.change_of_basis_op_to_best_cell()
-    symm_new = symm.change_basis(rdx)
+    # symm_new = symm.change_basis(rdx)
 
     # now apply this to the reciprocal-space orientation matrix mi
 

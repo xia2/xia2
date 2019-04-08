@@ -488,7 +488,8 @@ class _CommandLine(object):
     def get_hdf5_master_files(self):
         return self._hdf5_master_files
 
-    def _read_pipeline(settings):
+    @staticmethod
+    def _read_pipeline():
         settings = PhilIndex.get_python_object().xia2.settings
         indexer, refiner, integrater, scaler = None, None, None, None
         if settings.pipeline == "2d":
