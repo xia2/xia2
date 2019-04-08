@@ -228,7 +228,7 @@ class _ISPyBXmlHandler(object):
                         % indxr.get_indexer_distance()
                     )
 
-                    beam = indxr.get_indexer_beam_centre()
+                    beam = indxr.get_indexer_beam_centre_raw_image()
 
                     fout.write("<refinedXBeam>%f</refinedXBeam>" % beam[0])
                     fout.write("<refinedYBeam>%f</refinedYBeam>" % beam[1])
@@ -419,7 +419,7 @@ class _ISPyBXmlHandler(object):
 
                     intgr_tmp["refinedDetectorDistance"] = indxr.get_indexer_distance()
 
-                    beam = indxr.get_indexer_beam_centre()
+                    beam = indxr.get_indexer_beam_centre_raw_image()
 
                     intgr_tmp["refinedXBeam"] = beam[0]
                     intgr_tmp["refinedYBeam"] = beam[1]
