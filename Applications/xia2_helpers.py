@@ -1,7 +1,9 @@
 from __future__ import absolute_import, division, print_function
 
+import glob
 import os
 import shutil
+import uuid
 
 from xia2.lib.bits import auto_logfiler
 from xia2.Handlers.Streams import Chatter, Debug
@@ -38,7 +40,6 @@ def process_one_sweep(args):
 
     # import tempfile
     # tmpdir = tempfile.mkdtemp(dir=curdir)
-    import uuid
 
     tmpdir = os.path.join(curdir, str(uuid.uuid4()))
     os.makedirs(tmpdir)
@@ -63,14 +64,11 @@ def process_one_sweep(args):
         output = get_sweep_output_only(xia2_integrate.get_all_output())
         success = True
     except Exception as e:
-        if failover:
-            Chatter.write("Processing sweep %s failed: %s" % (sweep_id, str(e)))
-        else:
-            # print e
+        Chatter.write("Processing sweep %s failed: %s" % (sweep_id, str(e)))
+        if not failover:
             raise
     finally:
         from xia2.Schema.XProject import XProject
-        import glob
 
         xia2_json = os.path.join(tmpdir, "xia2.json")
         json_files = glob.glob(os.path.join(sweep_tmp_dir, "*", "*.json"))
