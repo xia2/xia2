@@ -3,15 +3,15 @@
 from __future__ import absolute_import, division, print_function
 
 from collections import OrderedDict
+import json
 import logging
-
 
 from dials.util import Sorry
 import iotbx.phil
 
 from dials.array_family import flex
-from dials.util.options import OptionParser
 from dials.util import log
+from dials.util.options import OptionParser
 from dials.util.options import flatten_experiments, flatten_reflections
 from dials.util.multi_dataset_handling import parse_multiple_datasets
 
@@ -53,7 +53,6 @@ title = 'xia2 multi-crystal report'
 
 phil_scope = phil_scope.fetch(sources=[phil_overrides])
 
-import json
 from xia2.XIA2Version import Version
 from xia2.command_line.report import xia2_report_base
 from xia2.Modules.MultiCrystalAnalysis import batch_phil_scope
@@ -174,8 +173,6 @@ class multi_crystal_analysis(xia2_report_base):
         logger.debug(stats.rd_vs_dose_str())
 
         with open("chef.json", "wb") as f:
-            import json
-
             json.dump(stats.to_dict(), f)
 
         self._chef_stats = stats
@@ -201,14 +198,13 @@ class multi_crystal_analysis(xia2_report_base):
         return mca
 
     def unit_cell_analysis(self):
-        from dials.command_line.unit_cell_histogram import (
-            uc_params_from_experiments,
-            panel_distances_from_experiments,
-        )
+        from dials.command_line.unit_cell_histogram import uc_params_from_experiments
+
+        # from dials.command_line.unit_cell_histogram import panel_distances_from_experiments
 
         experiments = self._data_manager.experiments
         uc_params = uc_params_from_experiments(experiments)
-        panel_distances = panel_distances_from_experiments(experiments)
+        # panel_distances = panel_distances_from_experiments(experiments)
 
         d = OrderedDict()
         d.update(self._plot_uc_histograms(uc_params))
@@ -332,7 +328,6 @@ class multi_crystal_analysis(xia2_report_base):
 
         overall_stats_table = self.overall_statistics_table()
         merging_stats_table = self.merging_statistics_table()
-        symmetry_table_html = self.symmetry_table_html()
 
         json_data = {}
         json_data.update(self.multiplicity_vs_resolution_plot())
@@ -446,7 +441,6 @@ class multi_crystal_analysis(xia2_report_base):
 
 
 def run():
-
     # The script usage
     usage = (
         "usage: xia2.multi_crystal_analysis [options] [param.phil] "
@@ -496,9 +490,6 @@ def run():
             "The number of input reflections files does not match the "
             "number of input experiments"
         )
-
-    expt_filenames = OrderedDict((e.filename, e.data) for e in params.input.experiments)
-    refl_filenames = OrderedDict((r.filename, r.data) for r in params.input.reflections)
 
     experiments = flatten_experiments(params.input.experiments)
     reflections = flatten_reflections(params.input.reflections)

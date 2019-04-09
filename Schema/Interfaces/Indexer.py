@@ -1,10 +1,3 @@
-#!/usr/bin/env python
-# Indexer.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
 # An interface for programs which perform indexing - this will handle
 # all of the aspects of the interface which are common between indexing
 # progtrams, and which must be presented in order to satisfy the contract
@@ -46,6 +39,7 @@
 from __future__ import absolute_import, division, print_function
 
 import inspect
+import json
 import os
 from functools import reduce
 
@@ -125,7 +119,6 @@ def beam_centre(detector, beam):
 
 
 def beam_centre_raw_image(detector, beam):
-    s0 = beam.get_s0()
     panel_id, (x, y) = beam_centre(detector, beam)
     panel = detector[panel_id]
     x_px, y_px = panel.millimeter_to_pixel((x, y))
@@ -225,7 +218,6 @@ class Indexer(object):
         obj["__id__"] = "Indexer"
         obj["__module__"] = self.__class__.__module__
         obj["__name__"] = self.__class__.__name__
-        import inspect
 
         attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
         for a in attributes:
@@ -272,8 +264,6 @@ class Indexer(object):
         return return_obj
 
     def as_json(self, filename=None, compact=False):
-        import json
-
         obj = self.to_dict()
         if compact:
             text = json.dumps(
@@ -291,7 +281,6 @@ class Indexer(object):
 
     @classmethod
     def from_json(cls, filename=None, string=None):
-        import json
         from dxtbx.serialize.load import _decode_dict
 
         assert [filename, string].count(None) == 1

@@ -44,6 +44,7 @@ import os
 import random
 import signal
 import stat
+import string
 
 
 def script_writer(
@@ -280,9 +281,6 @@ def error_abrt(record):
 
 
 def error_python_traceback(records):
-    import string
-
-    buf_mode = False
     traceback_mode = False
     error_message_mode = False
     buf = []
@@ -400,13 +398,4 @@ def executable_exists(executable):
 def generate_random_name():
     """Generate a random name to use as a handle for a job."""
 
-    import string
-    import random
-
-    return "".join([string.lowercase[random.randrange(0, 26)] for j in range(8)])
-
-
-if __name__ == "__main__":
-
-    for i in range(10):
-        print('"%s"' % generate_random_name())
+    return "".join(string.lowercase[random.randrange(0, 26)] for j in range(8))
