@@ -1,0 +1,12 @@
+# GIT change notifications sent out by DLS Jenkins
+
+link=https://github.com/xia2/xia2
+commit_link=https://github.com/xia2/xia2/commit/%s
+
+sender=xia2 commit
+
+recipient=xia2.support
+recipient_domain=gmail.com
+
+replyto=xia2.support
+replyto_domain=gmail.com
