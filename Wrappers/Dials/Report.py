@@ -37,7 +37,7 @@ def Report(DriverType=None):
         def set_html_filename(self, html_filename):
             self._html_filename = html_filename
 
-        def run(self):
+        def run(self, wait_for_completion=False):
             from xia2.Handlers.Streams import Debug
 
             Debug.write("Running dials.report")
@@ -54,7 +54,10 @@ def Report(DriverType=None):
             if self._html_filename is not None:
                 self.add_command_line("output.html=%s" % self._html_filename)
             self.start()
-            self.close()
+            if wait_for_completion:
+                self.close_wait()
+            else:
+                self.close()
             self.check_for_errors()
 
     return ReportWrapper()

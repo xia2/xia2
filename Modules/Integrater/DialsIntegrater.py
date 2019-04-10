@@ -11,7 +11,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import copy
 import math
 import os
 import sys
@@ -23,7 +22,6 @@ from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import Chatter, Debug, Journal
 from xia2.lib.bits import auto_logfiler
 from xia2.lib.SymmetryLib import lattice_to_spacegroup
-from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
 from xia2.Schema.Interfaces.Integrater import Integrater
 
 from xia2.Wrappers.Dials.ExportMtz import ExportMtz as _ExportMtz
@@ -397,7 +395,7 @@ class DialsIntegrater(Integrater):
             "%i_dials.integrate.report.html" % report.get_xpid(),
         )
         report.set_html_filename(html_filename)
-        report.run()
+        report.run(wait_for_completion=True)
         FileHandler.record_html_file(
             "%s %s %s %s INTEGRATE" % (pname, xname, dname, sweep), html_filename
         )

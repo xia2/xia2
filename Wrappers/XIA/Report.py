@@ -11,6 +11,7 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+import shutil
 
 
 def Report(DriverType=None):
@@ -27,7 +28,6 @@ def Report(DriverType=None):
             self._mtz_filename = None
             self._html_filename = None
             self._chef_min_completeness = None
-            return
 
         def set_mtz_filename(self, mtz_filename):
             self._mtz_filename = mtz_filename
@@ -65,10 +65,6 @@ def Report(DriverType=None):
             if self._html_filename is None:
                 self._html_filename = html_filename
             else:
-                import shutil
-
                 shutil.move(html_filename, self._html_filename)
-
-            return
 
     return ReportWrapper()
