@@ -9,8 +9,7 @@
 
 from __future__ import absolute_import, division, print_function
 
-from random import *
-from string import *
+import random
 
 EMPTY = " "
 PL_1 = "X"
@@ -21,8 +20,6 @@ B = "B"
 C = "C"
 
 board = [[EMPTY, EMPTY, EMPTY], [EMPTY, EMPTY, EMPTY], [EMPTY, EMPTY, EMPTY]]
-
-current_player = randint(1, 2)
 
 
 def square(row, col):
@@ -122,7 +119,7 @@ def draw_board_straight():
     lines.append("+---+---+---+")
     lines.append("")
 
-    return join(lines, "\n")
+    return "\n".join(lines)
 
 
 def draw_board():
@@ -137,11 +134,8 @@ def reset_board():
 
 
 def ttt():
-
-    global current_player
-
     reset_board()
-    current_player = randint(1, 2)
+    current_player = random.randint(1, 2)
 
     player1_name = "Foo"
     player2_name = "Bar"
@@ -160,14 +154,10 @@ def ttt():
 
         choices = ["A1", "A2", "A3", "B1", "B2", "B3", "C1", "C2", "C3"]
 
-        choice = choices[randint(0, 8)]
+        choice = choices[random.randint(0, 8)]
 
-        if choice[0] in ["1", "2", "3"]:
-            row = int(choice[0])
-            col = upper(choice[1])
-        else:
-            row = int(choice[1])
-            col = upper(choice[0])
+        col = choice[0]
+        row = int(choice[1])
 
         choice = square(row, col)
 
