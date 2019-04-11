@@ -1,9 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 import json
-import math
 import os
-import shutil
 import sys
 
 from cctbx import sgtbx, crystal, uctbx
@@ -11,18 +9,6 @@ from cctbx.sgtbx import bravais_types
 
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter, Debug
-from xia2.Handlers.Syminfo import Syminfo
-
-# this was rather complicated - now simpler!
-from xia2.lib.SymmetryLib import (
-    clean_reindex_operator,
-    lauegroup_to_lattice,
-    spacegroup_name_xHM_to_old,
-)
-
-# XDS_ASCII meddling things
-from xia2.Modules.XDS_ASCII import remove_misfits
 
 
 def DialsSymmetry(DriverType=None):
@@ -223,16 +209,11 @@ def DialsSymmetry(DriverType=None):
             # check for errors
             self.check_for_errors()
 
-            output = self.get_all_output()
-
-            assert os.path.exists(self._json)
             with open(self._json, "rb") as f:
                 d = json.load(f)
             best_solution = d["subgroup_scores"][0]
 
             self.set_best_solution(d, best_solution)
-
-            return
 
         def set_best_solution(self, d, best_solution):
             patterson_group = sgtbx.space_group(str(best_solution["patterson_group"]))
@@ -352,5 +333,3 @@ if __name__ == "__main__":
     p.set_hklin(hklin)
 
     p.decide_pointgroup()
-
-    pass
