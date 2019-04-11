@@ -16,7 +16,6 @@ from __future__ import absolute_import, division, print_function
 
 import math
 import os
-import shutil
 import sys
 import xml.dom.minidom
 
@@ -24,7 +23,6 @@ from xia2.Decorators.DecoratorFactory import DecoratorFactory
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import Chatter, Debug
-from xia2.Handlers.Syminfo import Syminfo
 
 # this was rather complicated - now simpler!
 from xia2.lib.SymmetryLib import (
@@ -32,9 +30,6 @@ from xia2.lib.SymmetryLib import (
     lauegroup_to_lattice,
     spacegroup_name_xHM_to_old,
 )
-
-# XDS_ASCII meddling things
-from xia2.Modules.XDS_ASCII import remove_misfits
 
 
 def mend_pointless_xml(xml_file):
@@ -318,7 +313,6 @@ def Pointless(DriverType=None):
                     fatal_error = True
 
             hklin_spacegroup = ""
-            hklin_lattice = ""
 
             # split loop - first seek hklin symmetry then later look for everything
             # else
@@ -328,12 +322,10 @@ def Pointless(DriverType=None):
                     hklin_spacegroup = spacegroup_name_xHM_to_old(
                         o.replace("Spacegroup from HKLIN file :", "").strip()
                     )
-                    hklin_lattice = Syminfo.get_lattice(hklin_spacegroup)
                 if "Space group from HKLREF file" in o:
                     hklref_spacegroup = spacegroup_name_xHM_to_old(
                         o.replace("Space group from HKLREF file :", "").strip()
                     )
-                    hklref_lattice = Syminfo.get_lattice(hklref_spacegroup)
 
             # https://github.com/xia2/xia2/issues/115
             if fatal_error:
@@ -559,8 +551,6 @@ def Pointless(DriverType=None):
 
             # check for errors
             self.check_for_errors()
-
-            hklin_spacegroup = ""
 
             xml_file = os.path.join(
                 self.get_working_directory(), "%d_pointless.xml" % self.get_xpid()

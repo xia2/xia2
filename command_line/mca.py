@@ -2,6 +2,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import json
 import os
 import sys
 import tabulate
@@ -9,10 +10,8 @@ import traceback
 
 from scitbx.array_family import flex
 from xia2.Applications.xia2_main import check_environment, help, write_citations
-from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Environment import Environment
-from xia2.Handlers.Files import cleanup
-from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Streams import Chatter
 from xia2.lib.bits import auto_logfiler
 
 # try to get scipy set up right...
@@ -31,7 +30,6 @@ def multi_crystal_analysis(stop_after=None):
 
     crystals = xinfo.get_crystals()
     for crystal_id, crystal in crystals.iteritems():
-        cwd = os.path.abspath(os.curdir)
         working_directory = Environment.generate_directory(
             [crystal.get_name(), "analysis"]
         )
@@ -46,7 +44,6 @@ def multi_crystal_analysis(stop_after=None):
         epoch_to_experiments_filename = {}
         epoch_to_experiments = {}
         sweep_name_to_epoch = {}
-        epoch_to_first_image = {}
 
         from dxtbx.serialize import load
 
@@ -216,8 +213,6 @@ def multi_crystal_analysis(stop_after=None):
         .replace("<td>", '<td style="text-align: right;">')
     )
 
-    import json
-
     json_data = {}
     json_data["blend_dendrogram"] = {"data": [], "layout": {}}
 
@@ -369,8 +364,6 @@ body {
     write_citations()
 
     Environment.cleanup()
-
-    return
 
 
 def run():

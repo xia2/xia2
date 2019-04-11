@@ -16,7 +16,6 @@ from __future__ import absolute_import, division, print_function
 import collections
 import os
 import sys
-import time
 import traceback
 
 from xia2.Experts.FindImages import image2template_directory
@@ -108,7 +107,6 @@ def is_image_name(filename):
 
         end = filename.split(".")[-1]
         try:
-            j = int(end)
             if not ".log." in filename and len(end) > 1:
                 return True
         except Exception:
@@ -665,7 +663,6 @@ def run():
     crystal = settings.crystal
 
     with open(os.path.join(os.getcwd(), "automatic.xinfo"), "w") as fout:
-        start = os.path.abspath(os.getcwd())
         directory = os.path.join(os.getcwd(), crystal, "setup")
         try:
             os.makedirs(directory)

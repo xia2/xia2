@@ -29,7 +29,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import copy
 import itertools
 import math
 import os
@@ -39,7 +38,6 @@ from cctbx.array_family import flex
 from cctbx.crystal import symmetry as crystal_symmetry
 from cctbx.miller import build_set, map_to_asu
 from cctbx.sgtbx import rt_mx
-from iotbx import mtz
 from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Streams import streams_off
 from xia2.Toolkit.MtzFactory import mtz_file
@@ -306,8 +304,6 @@ class merger(object):
         self._merge_reflections()
         self._merge_reflections_anomalous()
 
-        return
-
     def _read_unmerged_reflections(self):
         """Actually read the reflections in to memory."""
 
@@ -323,15 +319,11 @@ class merger(object):
                 self._unmerged_reflections[hkl] = unmerged_intensity()
             self._unmerged_reflections[hkl].add(m_isym[j], i[j], sigi[j], b[j])
 
-        return
-
     def _merge_reflections(self):
         """Merge the currently recorded unmerged reflections."""
 
         for hkl in self._unmerged_reflections:
             self._merged_reflections[hkl] = self._unmerged_reflections[hkl].merge()
-
-        return
 
     def _merge_reflections_anomalous(self):
         """Merge the currently recorded unmerged reflections."""
@@ -341,8 +333,6 @@ class merger(object):
                 hkl
             ].merge_anomalous()
 
-        return
-
     def _calculate_unmerged_di(self):
         """Calculate a set of unmerged intensity differences."""
 
@@ -350,8 +340,6 @@ class merger(object):
             self._unmerged_di[hkl] = self._unmerged_reflections[
                 hkl
             ].calculate_unmerged_di()
-
-        return
 
     def apply_kb(self, k, b):
         """Apply kB scale factors to the recorded measurements, for all
@@ -378,8 +366,6 @@ class merger(object):
             d = self.resolution(hkl)
             scale = k * math.exp(-1 * b / (d * d))
             self._unmerged_reflections[hkl].apply_scale(scale)
-
-        return
 
     def reindex(self, reindex_operation):
         """Reindex the reflections by the given reindexing operation."""
@@ -442,8 +428,6 @@ class merger(object):
 
         self._unmerged_reflections = unmerged_reflections
 
-        return
-
     def get_merged_reflections(self):
         return self._merged_reflections
 
@@ -494,8 +478,6 @@ class merger(object):
             resolution_ranges[-1][1],
         )
 
-        return
-
     def get_resolution_bins(self):
         """Return the reversed resolution limits - N.B. this is most
         important when considering resolution calculations, see
@@ -529,8 +511,6 @@ class merger(object):
 
         for hkl in delete:
             del self._unmerged_reflections[hkl]
-
-        return
 
     def calculate_completeness(self, resolution_bin=None):
         """Calculate the completeness of observations in a named
@@ -715,22 +695,18 @@ class merger(object):
 
         s_s = [1.0 / (r[0] * r[0]) for r in ranges][: len(rmerge_s)]
 
-        if limit == 0.0:
-            return 1.0 / math.sqrt(max(s_s))
-
         if limit > max(rmerge_s):
             return 1.0 / math.sqrt(max(s_s))
 
         rmerge_f = log_inv_fit(s_s, rmerge_s, 6)
 
         if log:
-            fout = open(log, "w")
-            for j, s in enumerate(s_s):
-                d = 1.0 / math.sqrt(s)
-                o = rmerge_s[j]
-                m = rmerge_f[j]
-                fout.write("%f %f %f %f\n" % (s, d, o, m))
-            fout.close()
+            with open(log, "w") as fout:
+                for j, s in enumerate(s_s):
+                    d = 1.0 / math.sqrt(s)
+                    o = rmerge_s[j]
+                    m = rmerge_f[j]
+                    fout.write("%f %f %f %f\n" % (s, d, o, m))
 
         try:
             r_rmerge = 1.0 / math.sqrt(interpolate_value(s_s, rmerge_f, limit))
@@ -983,6 +959,3 @@ if __name__ == "__main__":
     print("Rmerge:     %.2f" % m.resolution_rmerge(limit=1.0, log=l_rmerge))
     print("I/sig:      %.2f" % m.resolution_unmerged_isigma(log=l_isigma))
     print("Mn(I/sig):  %.2f" % m.resolution_merged_isigma(log=l_misigma))
-
-    if False:
-        print("Comp:       %.2f" % m.resolution_completeness(limit=0.5, log=l_comp))

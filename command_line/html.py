@@ -4,19 +4,17 @@
 from __future__ import absolute_import, division, print_function
 
 import cgi
-import docutils
 from collections import OrderedDict
 import glob
 import os
-import tabulate
 import traceback
 import json
 
 
 from libtbx import phil
+from xia2.command_line.report import xia2_report
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Streams import Chatter, Debug
-from xia2.XIA2Version import Version
 
 
 def run(args):
@@ -38,10 +36,6 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
             args, custom_processor="collect_remaining"
         )
         params = params.extract()
-
-    from xia2.command_line.report import xia2_report
-
-    crystal = xinfo.get_crystals().values()[0]
 
     xia2_txt = os.path.join(os.path.abspath(os.path.curdir), "xia2.txt")
     assert os.path.isfile(xia2_txt), xia2_txt
@@ -267,7 +261,6 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
 
     table = [[c[i] for c in columns] for i in range(len(columns[0]))]
 
-    cell = xcryst.get_cell()
     from cctbx import sgtbx
 
     space_groups = xcryst.get_likely_spacegroups()

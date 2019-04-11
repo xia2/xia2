@@ -12,7 +12,6 @@
 #
 from __future__ import absolute_import, division, print_function
 
-import copy
 import math
 import os
 import sys
@@ -128,20 +127,10 @@ def Printpeaks(DriverType=None):
             log_max = int(math.log10(peaks[0])) + 1
             max_limit = int(math.pow(10.0, log_max))
 
-            if False:
-
-                limit = math.pow(10.0, log_max)
-
-                while limit > 2.0:
-                    self._peaks[limit] = len([j for j in peaks if j > limit])
-                    limit *= 0.5
-
-            else:
-
-                for limit in [5, 10, 20, 50, 100, 200, 500, 1000]:
-                    if limit > max_limit:
-                        continue
-                    self._peaks[float(limit)] = len([j for j in peaks if j > limit])
+            for limit in [5, 10, 20, 50, 100, 200, 500, 1000]:
+                if limit > max_limit:
+                    continue
+                self._peaks[float(limit)] = len([j for j in peaks if j > limit])
 
             return self._peaks
 
@@ -231,52 +220,6 @@ def Printpeaks(DriverType=None):
 
     return PrintpeaksWrapper()
 
-
-if __name__ == "__main-old__":
-
-    import time
-
-    def printer(peaks):
-        keys = sorted(peaks.keys())
-        for k in keys:
-            print("%.5f %d" % (k, peaks[k]))
-
-    directory = os.path.join(os.environ["XIA2_ROOT"], "Data", "Test", "Images")
-
-    if len(sys.argv) == 1:
-        p = Printpeaks()
-        image = os.path.join(directory, "12287_1_E1_001.img")
-        p.set_image(image)
-        peaks = p.printpeaks()
-        printer(peaks)
-
-    else:
-
-        # for image in sys.argv[1:]:
-        if 1 == 0:
-
-            print(image)
-            p = Printpeaks()
-            p.set_image(image)
-
-            peaks = p.printpeaks()
-            printer(peaks)
-
-            thresh = p.threshold(200)
-            print("200 peak threshold: %f" % thresh)
-
-        t0 = time.time()
-        count = 0
-        for image in sys.argv[1:]:
-            count += 1
-            p = Printpeaks()
-            p.set_image(image)
-            status = p.screen()
-            print(os.path.split(image)[-1], status)
-        t1 = time.time()
-
-        print("Total time: %.1f" % (t1 - t0))
-        print("Per image: %.3f" % ((t1 - t0) / count))
 
 if __name__ == "__main__":
     # run a test of some of the new code...

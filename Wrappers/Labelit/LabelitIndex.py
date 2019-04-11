@@ -15,7 +15,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import copy
 import math
 import os
 import shutil
@@ -272,7 +271,6 @@ def LabelitIndex(DriverType=None, indxr_print=True):
                     # if it looks like wrong solution may have been picked
 
                     best_beam_score = (0.0, 0.0, 0)
-                    best_beam_rms = (0.0, 0.0, 1.0e8)
 
                     for n in range(num_solutions):
                         beam = centres[n]

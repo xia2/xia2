@@ -145,7 +145,6 @@ class LabelitIndexerII(LabelitIndexer):
         general use the 20 frames. N.B. only if they have good
         spots on them!"""
 
-        phi_width = self.get_phi_width()
         images = self.get_matching_images()
 
         # N.B. now bodging this to use up to 20 frames which have decent
@@ -242,11 +241,6 @@ class LabelitIndexerII(LabelitIndexer):
             index.add_image(self.get_image_name(i))
             Debug.write("%s" % self.get_image_name(i))
 
-        if self._indxr_input_lattice and False:
-            index.set_space_group_number(
-                lattice_to_spacegroup(self._indxr_input_lattice)
-            )
-
         if self._primitive_unit_cell:
             index.set_primitive_unit_cell(self._primitive_unit_cell)
 
@@ -314,11 +308,6 @@ class LabelitIndexerII(LabelitIndexer):
                     Debug.write("Ignoring solution: %s" % solution["lattice"])
                     del self._solutions[i]
 
-        # check the RMSD from the triclinic unit cell
-        if self._solutions[1]["rmsd"] > 1.0 and False:
-            # don't know when this is useful - but I know when it is not!
-            raise RuntimeError("high RMSD for triclinic solution")
-
         # configure the "right" solution
         self._solution = self.get_solution()
 
@@ -357,8 +346,6 @@ class LabelitIndexerII(LabelitIndexer):
 
         if mosflm_beam_centre:
             self._indxr_payload["mosflm_beam_centre"] = tuple(mosflm_beam_centre)
-
-        import copy
 
         detector = copy.deepcopy(self.get_detector())
         beam = copy.deepcopy(self.get_beam())
