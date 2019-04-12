@@ -72,14 +72,15 @@ def _parse_integrate_lp(filename):
         if "IMAGE IER  SCALE" in content:
             j = i + 1
             while file_contents[j].strip():
-                lst = file_contents[j].split()
-                image = int(lst[0])
-                status = int(lst[1])
-                scale = float(lst[2])
-                overloads = int(lst[4])
-                all = int(lst[5])
-                strong = int(lst[6])
-                rejected = int(lst[7])
+                line = file_contents[j]
+                assert len(line) == 71, len(line)
+                image = int(line[0:6])
+                status = int(line[6:10])
+                scale = float(line[10:17])
+                overloads = int(line[26:31])
+                all = int(line[31:38])
+                strong = int(line[38:46])
+                rejected = int(line[46:52])
 
                 if status == 0:
 
