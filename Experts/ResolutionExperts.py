@@ -556,7 +556,7 @@ def find_blank(hklin):
 
         p = Pointless()
         p.set_hklin(hklin)
-        cell = p.sum_mtz(hklout)
+        _ = p.sum_mtz(hklout)
 
         if os.path.getsize(hklout) == 0:
             Debug.write("Pointless failed:")
