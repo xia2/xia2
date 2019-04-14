@@ -1,21 +1,44 @@
-
 from xia2.Wrappers.XDS.XDSIntegrateHelpers import _parse_integrate_lp
 
+
 def test_parse_integrate_lp(tmpdir):
-    integrate_lp = tmpdir.join('INTEGRATE.LP')
-    with integrate_lp.open('wb') as f:
+    integrate_lp = tmpdir.join("INTEGRATE.LP")
+    with integrate_lp.open("wb") as f:
         f.write(integrate_lp_example_1)
     per_image_stats = _parse_integrate_lp(integrate_lp.strpath)
     assert per_image_stats.keys() == list(range(1, 22))
-    assert per_image_stats[1] == {'distance': 213.68, 'all': 2486, 'scale': 0.01, 'overloads': 0, 'rmsd_phi': 0.2, 'rejected': 1, 'beam': [2217.03, 2306.1], 'fraction_weak': 0.9605792437650845, 'rmsd_pixel': 0.5, 'strong': 98, 'unit_cell': (57.687, 57.687, 149.879, 90.0, 90.0, 90.0), 'mosaic': 0.042}
+    assert per_image_stats[1] == {
+        "distance": 213.68,
+        "all": 2486,
+        "scale": 0.01,
+        "overloads": 0,
+        "rmsd_phi": 0.2,
+        "rejected": 1,
+        "beam": [2217.03, 2306.1],
+        "fraction_weak": 0.9605792437650845,
+        "rmsd_pixel": 0.5,
+        "strong": 98,
+        "unit_cell": (57.687, 57.687, 149.879, 90.0, 90.0, 90.0),
+        "mosaic": 0.042,
+    }
 
-    integrate_lp = tmpdir.join('INTEGRATE.LP')
-    with integrate_lp.open('wb') as f:
+    integrate_lp = tmpdir.join("INTEGRATE.LP")
+    with integrate_lp.open("wb") as f:
         f.write(integrate_lp_big_n_refl)
     per_image_stats = _parse_integrate_lp(integrate_lp.strpath)
     assert per_image_stats.keys() == list(range(2601, 2611))
     print(per_image_stats[2601])
-    assert per_image_stats[2601] == {'all': 1092650, 'scale': 0.975, 'overloads': 0, 'rmsd_phi': 15.4, 'rejected': 8, 'fraction_weak': 0.9997409966594976, 'rmsd_pixel': 1.86, 'strong': 283}
+    assert per_image_stats[2601] == {
+        "all": 1092650,
+        "scale": 0.975,
+        "overloads": 0,
+        "rmsd_phi": 15.4,
+        "rejected": 8,
+        "fraction_weak": 0.9997409966594976,
+        "rmsd_pixel": 1.86,
+        "strong": 283,
+    }
+
 
 integrate_lp_example_1 = """\
  OSCILLATION_RANGE=  0.250000 DEGREES
