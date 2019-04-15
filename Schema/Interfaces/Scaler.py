@@ -149,6 +149,7 @@
 from __future__ import absolute_import, division, print_function
 
 import inspect
+import json
 import os
 
 from xia2.Handlers.Streams import Chatter, Debug
@@ -250,13 +251,10 @@ class Scaler(object):
     # serialization functions
 
     def to_dict(self):
-        import json
-
         obj = {}
         obj["__id__"] = "Scaler"
         obj["__module__"] = self.__class__.__module__
         obj["__name__"] = self.__class__.__name__
-        import inspect
 
         attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
         for a in attributes:
@@ -288,8 +286,6 @@ class Scaler(object):
 
     @classmethod
     def from_dict(cls, obj):
-        import json
-
         assert obj["__id__"] == "Scaler"
         return_obj = cls()
         for k, v in obj.iteritems():
@@ -320,8 +316,6 @@ class Scaler(object):
         return return_obj
 
     def as_json(self, filename=None, compact=False):
-        import json
-
         obj = self.to_dict()
         if compact:
             text = json.dumps(
@@ -339,7 +333,6 @@ class Scaler(object):
 
     @classmethod
     def from_json(cls, filename=None, string=None):
-        import json
         from dxtbx.serialize.load import _decode_dict
 
         assert [filename, string].count(None) == 1

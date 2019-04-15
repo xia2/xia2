@@ -20,7 +20,6 @@ import math
 import os
 
 from xia2.Handlers.Citations import Citations
-from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import Chatter, Debug, Journal
 from xia2.lib.bits import auto_logfiler
@@ -287,8 +286,6 @@ class LabelitIndexer(IndexerSingleSweep):
 
         if mosflm_beam_centre:
             self._indxr_payload["mosflm_beam_centre"] = tuple(mosflm_beam_centre)
-
-        import copy
 
         detector = copy.deepcopy(self.get_detector())
         beam = copy.deepcopy(self.get_beam())
