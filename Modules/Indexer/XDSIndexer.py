@@ -13,8 +13,7 @@
 #                   which are needed for integration should be placed in the
 #                   indexer "payload".
 
-from __future__ import absolute_import, division
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function
 
 import os
 import math
@@ -54,15 +53,13 @@ class XDSIndexer(IndexerSingleSweep):
         # check that the programs exist - this will raise an exception if
         # they do not...
 
-        idxref = _Idxref()
+        _ = _Idxref()
 
         self._background_images = None
         self._index_select_images = "i"
 
         # place to store working data
         self._data_files = {}
-
-        return
 
     # factory functions
 
@@ -83,8 +80,6 @@ class XDSIndexer(IndexerSingleSweep):
         return xycorr
 
     def Init(self):
-        from xia2.Handlers.Phil import PhilIndex
-
         init = _Init(params=PhilIndex.params.xds.init)
         init.set_working_directory(self.get_working_directory())
 
@@ -101,8 +96,6 @@ class XDSIndexer(IndexerSingleSweep):
         return init
 
     def Colspot(self):
-        from xia2.Handlers.Phil import PhilIndex
-
         colspot = _Colspot(params=PhilIndex.params.xds.colspot)
         colspot.set_working_directory(self.get_working_directory())
 
@@ -137,8 +130,6 @@ class XDSIndexer(IndexerSingleSweep):
         return export
 
     def Idxref(self):
-        from xia2.Handlers.Phil import PhilIndex
-
         idxref = _Idxref(params=PhilIndex.params.xds.index)
         idxref.set_working_directory(self.get_working_directory())
 
@@ -179,7 +170,6 @@ class XDSIndexer(IndexerSingleSweep):
         untrusted_rectangle_indexing = (
             PhilIndex.params.xia2.settings.untrusted_rectangle_indexing
         )
-        limits = untrusted_rectangle_indexing
         spot_xds = []
         removed = 0
         lines = open(self._indxr_payload["SPOT.XDS"], "rb").readlines()
@@ -204,7 +194,6 @@ class XDSIndexer(IndexerSingleSweep):
         with open(masked_spot_xds, "wb") as f:
             f.writelines(spot_xds)
         self._indxr_payload["SPOT.XDS"] = masked_spot_xds
-        return
 
     def _index_select_images_i(self):
         """Select correct images based on image headers."""
@@ -391,9 +380,7 @@ class XDSIndexer(IndexerSingleSweep):
             else:
                 scan_points = flex.double(results["scan_points"])
 
-                phi_width = self.get_phi_width()
                 scan = imageset.get_scan()
-                oscillation_range = scan.get_oscillation_range()
                 oscillation = scan.get_oscillation()
 
                 if self._background_images is not None:
@@ -521,8 +508,6 @@ class XDSIndexer(IndexerSingleSweep):
         # that should be everything prepared... all of the important
         # files should be loaded into memory to be able to cope with
         # integration happening somewhere else
-
-        return
 
     def _index(self):
         """Actually do the autoindexing using the data prepared by the
@@ -754,10 +739,6 @@ class XDSIndexer(IndexerSingleSweep):
         spot_file = os.path.join(self.get_working_directory(), "SPOT.XDS")
 
         experiment = self.get_indexer_experiment_list()[0]
-        detector = experiment.detector
-        beam = experiment.beam
-        goniometer = experiment.goniometer
-        scan = experiment.scan
         crystal_model = experiment.crystal
 
         from iotbx.xds import spot_xds
@@ -767,11 +748,9 @@ class XDSIndexer(IndexerSingleSweep):
 
         from cctbx.array_family import flex
 
-        centroids_px = flex.vec3_double(spot_xds_handle.centroid)
         miller_indices = flex.miller_index(spot_xds_handle.miller_index)
 
         # only those reflections that were actually indexed
-        centroids_px = centroids_px.select(miller_indices != (0, 0, 0))
         miller_indices = miller_indices.select(miller_indices != (0, 0, 0))
 
         from scitbx import matrix
@@ -782,28 +761,6 @@ class XDSIndexer(IndexerSingleSweep):
         Debug.write("Low resolution limit assigned as: %.2f" % dmax)
         self._indxr_low_resolution = dmax
 
-        return
-
-
-if __name__ == "__main_old__":
-
-    # run a demo test
-
-    xi = XDSIndexer()
-
-    directory = os.path.join(os.environ["XIA2_ROOT"], "Data", "Test", "Images")
-
-    # directory = '/data/graeme/12287'
-    xi.setup_from_image(os.path.join(directory, "12287_1_E1_001.img"))
-    xi.set_beam_centre((108.9, 105.0))
-
-    xi.index()
-
-    print("Refined beam is: %6.2f %6.2f" % xi.get_indexer_beam_centre())
-    print("Distance:        %6.2f" % xi.get_indexer_distance())
-    print("Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f" % xi.get_indexer_cell())
-    print("Lattice: %s" % xi.get_indexer_lattice())
-    print("Mosaic: %6.2f" % xi.get_indexer_mosaic())
 
 if __name__ == "__main__":
 

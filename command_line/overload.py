@@ -7,12 +7,12 @@ import timeit
 
 try:
     import bz2
-except:  # intentional
+except ImportError:
     bz2 = None
 
 try:
     import gzip
-except:  # intentional
+except ImportError:
     gzip = None
 
 

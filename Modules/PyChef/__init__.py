@@ -2,9 +2,6 @@ from __future__ import absolute_import, division, print_function
 
 from xia2_pychef_ext import *
 
-import math
-from collections import Mapping
-
 from cctbx.array_family import flex
 from iotbx.data_plots import table_data
 from libtbx import phil
@@ -213,7 +210,6 @@ class Statistics(object):
         return table_completeness.format_loggraph()
 
     def rcp_vs_dose_str(self):
-
         title = "Cumulative radiation damage analysis:"
         column_labels = (
             ["Dose"]
@@ -245,7 +241,6 @@ class Statistics(object):
         return table_rcp.format_loggraph()
 
     def scp_vs_dose_str(self):
-
         title = "Normalised radiation damage analysis:"
         column_labels = (
             ["Dose"]
@@ -462,7 +457,6 @@ def run(args):
         args, custom_processor="collect_remaining"
     )
     params = params.extract()
-    n_bins = params.resolution_bins
 
     args = unhandled
 
@@ -490,10 +484,6 @@ def run(args):
     indices = mtz_object.extract_original_index_miller_indices()
     intensities = intensities.customized_copy(indices=indices)
     batches = batches.customized_copy(indices=indices)
-
-    range_min = params.range.min
-    range_max = params.range.max
-    range_width = params.range.width
 
     if params.anomalous:
         intensities = intensities.as_anomalous_array()
