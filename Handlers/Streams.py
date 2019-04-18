@@ -128,10 +128,14 @@ class _Stream(object):
         for r in record.split("\n"):
             if self._prefix:
                 result = self.get_file().write(
-                    "[%s]  %s\n" % (self._prefix, r.strip() if strip else r)
+                    ("[%s]  %s\n" % (self._prefix, r.strip() if strip else r)).encode(
+                        "utf-8"
+                    )
                 )
             else:
-                result = self.get_file().write("%s\n" % (r.strip() if strip else r))
+                result = self.get_file().write(
+                    ("%s\n" % (r.strip() if strip else r)).encode("utf-8")
+                )
 
             self.get_file().flush()
 
