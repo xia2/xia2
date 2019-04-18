@@ -1,5 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
+import contextlib
+import time
+
 _timing_db = []
 
 
@@ -13,6 +16,27 @@ def record(timing_information):
         "time_end": unix epoch timestamp}
     """
     _timing_db.append(timing_information)
+
+
+@contextlib.contextmanager
+def record_step(name):
+    """
+    Record time spent in this context handler as running $name.
+
+    Usage:
+
+    with record_step("my_program argument argument"):
+        do_stuff()
+
+    :param name: section name for timing purposes, will usually be
+                 shortened to the first word.
+    """
+    timing = {"command": name, "time_start": time.time()}
+    try:
+        yield
+    finally:
+        timing["time_end"] = time.time()
+        record(timing)
 
 
 def report():

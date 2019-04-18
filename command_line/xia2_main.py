@@ -12,6 +12,8 @@ import traceback
 
 from dials.util import Sorry
 from dials.util.version import dials_version
+import xia2.Driver.timing
+import xia2.XIA2Version
 from xia2.Applications.xia2_helpers import process_one_sweep
 from xia2.Applications.xia2_main import (
     check_environment,
@@ -284,13 +286,6 @@ def xia2_main(stop_after=None):
     # save final xia2.json file in case report generation fails
     xinfo.as_json(filename="xia2.json")
 
-    duration = time.time() - start_time
-
-    # write out the time taken in a human readable way
-    Chatter.write(
-        "Processing took %s" % time.strftime("%Hh %Mm %Ss", time.gmtime(duration))
-    )
-
     if stop_after not in ("index", "integrate"):
         # and the summary file
         with open("xia2-summary.dat", "w") as fh:
@@ -305,9 +300,17 @@ def xia2_main(stop_after=None):
             params.xia2.settings.report.xtriage_analysis = False
             params.xia2.settings.report.include_radiation_damage = False
 
-        generate_xia2_html(
-            xinfo, filename="xia2.html", params=params.xia2.settings.report
-        )
+        with xia2.Driver.timing.record_step("xia2.report"):
+            generate_xia2_html(
+                xinfo, filename="xia2.html", params=params.xia2.settings.report
+            )
+
+    duration = time.time() - start_time
+
+    # write out the time taken in a human readable way
+    Chatter.write(
+        "Processing took %s" % time.strftime("%Hh %Mm %Ss", time.gmtime(duration))
+    )
 
     write_citations()
 
@@ -322,8 +325,6 @@ def run():
         sys.exit()
 
     if "-version" in sys.argv or "--version" in sys.argv:
-        import xia2.XIA2Version
-
         print(xia2.XIA2Version.Version)
         print(dials_version())
         ccp4_version = get_ccp4_version()
@@ -368,8 +369,6 @@ def run():
 
     try:
         xinfo = xia2_main()
-        import xia2.Driver.timing
-
         Debug.write("\nTiming report:")
         for line in xia2.Driver.timing.report():
             Debug.write(line, strip=False)
