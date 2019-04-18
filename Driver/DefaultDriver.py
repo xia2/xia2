@@ -47,6 +47,7 @@ from __future__ import absolute_import, division, print_function
 import os
 import time
 
+import xia2.Driver.timing
 from xia2.Driver.DriverHelper import (
     check_return_code,
     error_abrt,
@@ -64,8 +65,6 @@ from xia2.DriverExceptions.NotAvailableError import NotAvailableError
 from xia2.Handlers.Streams import Debug
 
 # out of context stuff
-
-timing_db = []
 
 
 class DefaultDriver(object):
@@ -437,6 +436,7 @@ class DefaultDriver(object):
             if not line:
                 break
 
+        endtime = time.time()
         if self._log_file:
             # close the existing log file: also add a comment at the end containing the
             # command-line (replacing working directory & executable path for brevity)
@@ -449,21 +449,12 @@ class DefaultDriver(object):
             self._log_file.write("# %s\n" % command_line)
             if hasattr(self, "_runtime_log") and self._runtime_log:
                 self._log_file.write("#\n# timing information:\n")
-                endtime = time.time()
                 for k in self._runtime_log:
                     self._log_file.write(
                         "#   time since {name}: {time:.1f} seconds\n".format(
                             name=k, time=endtime - self._runtime_log[k]
                         )
                     )
-                timing_db.append(
-                    {
-                        "command": command_line,
-                        "timing": {
-                            k: endtime - self._runtime_log[k] for k in self._runtime_log
-                        },
-                    }
-                )
             self._log_file.close()
             self._log_file = None
             with open(self._log_file_name, "rb") as f:
@@ -472,6 +463,24 @@ class DefaultDriver(object):
                 Debug.write("Last %i lines of %s:" % (n, self._log_file_name))
                 for line in lines[-n:]:
                     Debug.write(line.rstrip("\n"), strip=False)
+        elif hasattr(self, "_runtime_log") and self._runtime_log:
+            if self._executable:
+                command_line = "%s " % os.path.split(self._executable)[-1]
+                for c in self._command_line:
+                    command_line += " '%s'" % c.replace(
+                        self._working_directory + os.sep, ""
+                    )
+            else:
+                command_line = "(unknown)"
+        if self._runtime_log:
+            xia2.Driver.timing.record(
+                {
+                    "command": command_line.strip(),
+                    "time_end": endtime,
+                    "time_start": min(self._runtime_log.values()),
+                    "details": self._runtime_log,
+                }
+            )
 
         self.cleanup()
 
@@ -503,21 +512,6 @@ class DefaultDriver(object):
 
         for line in open(filename, "r").readlines():
             self._standard_output_records.append(line)
-
-
-def output_timing_information():
-    timing_in_order = [
-        (t["timing"]["process start"], t["command"].split(" ")[0])
-        for t in timing_db
-        if "process start" in t["timing"]
-    ]
-    for t in timing_in_order:
-        Debug.write("{0:5.1f} sec: {1}".format(*t))
-    Debug.write("\nLongest times:")
-    timing_by_time = sorted(timing_in_order)
-    timing_by_time.reverse()
-    for t in timing_by_time[0:10]:
-        Debug.write("{0:5.1f} sec: {1}".format(*t))
 
 
 if __name__ == "__main__":

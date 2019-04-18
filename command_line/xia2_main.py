@@ -10,6 +10,7 @@ import sys
 import time
 import traceback
 
+from dials.util import Sorry
 from dials.util.version import dials_version
 from xia2.Applications.xia2_helpers import process_one_sweep
 from xia2.Applications.xia2_main import (
@@ -316,8 +317,6 @@ def xia2_main(stop_after=None):
 
 
 def run():
-    from dials.util import Sorry
-
     if len(sys.argv) < 2 or "-help" in sys.argv or "--help" in sys.argv:
         help()
         sys.exit()
@@ -347,11 +346,11 @@ def run():
     wd = os.getcwd()
 
     # Temporarily patch os.chdir() to help identify source of #214
-    pid = os.getpid()
+    origpid = os.getpid()
     origchdir = os.chdir
 
     def chdir_override(arg):
-        if os.getpid() != pid:
+        if os.getpid() != origpid:
             return origchdir(arg)
         # Try to determine the name of the calling module.
         # Use exception trick to pick up the current frame.
@@ -369,12 +368,13 @@ def run():
 
     try:
         xinfo = xia2_main()
+        import xia2.Driver.timing
+
+        Debug.write("\nTiming report:")
+        for line in xia2.Driver.timing.report():
+            Debug.write(line, strip=False)
+
         Chatter.write("Status: normal termination")
-
-        Debug.write("\n------\nTiming summary:")
-        import xia2.Driver.DefaultDriver
-
-        xia2.Driver.DefaultDriver.output_timing_information()
         return xinfo
     except Sorry as s:
         Chatter.write("Error: %s" % str(s))
