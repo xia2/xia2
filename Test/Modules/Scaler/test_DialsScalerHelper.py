@@ -1,11 +1,12 @@
+from __future__ import absolute_import, division, print_function
+
 import pytest
 
-from cctbx import miller, crystal
 from cctbx import sgtbx
 from dials.algorithms.symmetry.cosym._generate_test_data import generate_intensities
 from dials.array_family import flex
 from dxtbx.model.experiment_list import ExperimentList
-from dxtbx.model import Crystal, Scan, Beam, Goniometer, Detector, Experiment
+from dxtbx.model import Crystal, Scan, Beam, Experiment
 from dxtbx.serialize import dump, load
 
 
@@ -162,7 +163,7 @@ def test_assign_identifiers(helper):
     assert assigned_exp[0].identifier == "0"
     assert assigned_exp[1].identifier == "1"
     assert assigned_exp[2].identifier == "2"
-    assigned_refl = flex.reflection_table.from_pickle(
+    assigned_refl = flex.reflection_table.from_file(
         assigner.get_output_reflections_filename()
     )
     assert assigned_refl.experiment_identifiers()[0] == "0"
@@ -238,7 +239,7 @@ def check_data_in_sweep_handler(sweephandler):
     """Check that data in sweep handler has ids set correctly"""
     for i, epoch in enumerate(sweephandler.get_epochs()):
         si = sweephandler.get_sweep_information(epoch)
-        r = flex.reflection_table.from_pickle(si.get_reflections())
+        r = flex.reflection_table.from_file(si.get_reflections())
         assert list(set(r["id"])) == [0]
         assert list(r.experiment_identifiers().keys()) == [0]
         assert list(r.experiment_identifiers().values()) == [str(i)]
