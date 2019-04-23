@@ -58,7 +58,7 @@ def DialsAssignIdentifiers(DriverType=None):
             if not self._output_reflections_filename:
                 self._output_reflections_filename = os.path.join(
                     self.get_working_directory(),
-                    "%d_assigned_reflections.pickle" % self.get_xpid(),
+                    "%d_assigned_reflections.mpack" % self.get_xpid(),
                 )
 
             self.add_command_line(

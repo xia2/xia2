@@ -131,10 +131,10 @@ def test_dials_symmetry_decide_pointgroup(
     dump.experiment_list(
         generated_exp(space_group=experiments_spacegroup), "test_exp.json"
     )
-    generate_reflections_in_sg(reflection_spacegroup).as_pickle("test_refl.pickle")
+    generate_reflections_in_sg(reflection_spacegroup).as_msgpack_file("test_refl.mpack")
 
     symmetry_analyser = helper.dials_symmetry_decide_pointgroup(
-        ["test_exp.json"], ["test_refl.pickle"]
+        ["test_exp.json"], ["test_refl.mpack"]
     )
 
     # Note : instabilities have been observed in the order of the end of the
@@ -153,8 +153,8 @@ def test_assign_identifiers(helper):
     experiments = []
     reflections = []
     for i in range(0, 3):
-        refl_path, exp_path = ("test_refl_%s.pickle" % i, "test_exp_%s.json" % i)
-        generate_test_refl().as_pickle(refl_path)
+        refl_path, exp_path = ("test_refl_%s.mpack" % i, "test_exp_%s.json" % i)
+        generate_test_refl().as_msgpack_file(refl_path)
         dump.experiment_list(generated_exp(), exp_path)
         experiments.append(exp_path)
         reflections.append(refl_path)
@@ -222,14 +222,14 @@ def test_split_experiments(number_of_experiments, helper):
     id, giving single datasets with unique ids from 0..n-1"""
     sweephandler = simple_sweep_handler(number_of_experiments)
     exp_path = "test_experiments.json"
-    refl_path = "test_reflections.pickle"
+    refl_path = "test_reflections.mpack"
     dump.experiment_list(
         generated_exp(number_of_experiments, assign_ids=True), exp_path
     )
     reflections = flex.reflection_table()
     for i in range(number_of_experiments):
         reflections.extend(generate_test_refl(id_=i, assign_id=True))
-    reflections.as_pickle(refl_path)
+    reflections.as_msgpack_file(refl_path)
     # Now call split_experiments and inspect handler to check result
     sweephandler = helper.split_experiments(exp_path, refl_path, sweephandler)
     check_data_in_sweep_handler(sweephandler)
@@ -254,8 +254,8 @@ def test_assign_and_return_datasets(helper):
     sweephandler = simple_sweep_handler(n)
     for i in range(0, n):
         si = sweephandler.get_sweep_information(i)
-        refl_path, exp_path = ("test_refl_%s.pickle" % i, "test_exp_%s.json" % i)
-        generate_test_refl().as_pickle(refl_path)
+        refl_path, exp_path = ("test_refl_%s.mpack" % i, "test_exp_%s.json" % i)
+        generate_test_refl().as_msgpack_file(refl_path)
         dump.experiment_list(generated_exp(), exp_path)
         si.set_experiments(exp_path)
         si.set_reflections(refl_path)
@@ -374,8 +374,8 @@ def test_dials_symmetry_indexer_jiffy(helper, refiner_lattices, expected_output)
     reflections = []
     refiners = []
     for i in range(0, n):
-        refl_path, exp_path = ("test_refl_%s.pickle" % i, "test_exp_%s.json" % i)
-        generate_reflections_in_sg("P 2", id_=i, assign_id=True).as_pickle(refl_path)
+        refl_path, exp_path = ("test_refl_%s.mpack" % i, "test_exp_%s.json" % i)
+        generate_reflections_in_sg("P 2", id_=i, assign_id=True).as_msgpack_file(refl_path)
         dump.experiment_list(generated_exp(space_group="P 2", id_=i), exp_path)
         experiments.append(exp_path)
         reflections.append(refl_path)

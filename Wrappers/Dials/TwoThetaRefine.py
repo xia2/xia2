@@ -33,7 +33,7 @@ def TwoThetaRefine(DriverType=None):
             self._reindexed_reflections = None
 
             self._experiments = []
-            self._pickles = []
+            self._reflection_files = []
             self._phil_file = None
             self._combine_crystal_models = True
 
@@ -52,11 +52,11 @@ def TwoThetaRefine(DriverType=None):
         def get_experiments(self):
             return self._experiments
 
-        def set_pickles(self, pickles):
-            self._pickles = pickles
+        def set_reflection_files(self, reflection_files):
+            self._reflection_files = reflection_files
 
-        def get_pickles(self):
-            return self._pickles
+        def get_reflection_files(self):
+            return self._reflection_files
 
         def set_phil_file(self, phil_file):
             self._phil_file = phil_file
@@ -108,7 +108,7 @@ def TwoThetaRefine(DriverType=None):
 
                 self._reindexed_experiments, self._reindexed_reflections = [], []
                 for e, p, op in zip(
-                    self._experiments, self._pickles, self._reindexing_operators
+                    self._experiments, self._reflection_files, self._reindexing_operators
                 ):
                     reindexer = Reindex()
                     reindexer.set_cb_op(op)
@@ -152,13 +152,13 @@ def TwoThetaRefine(DriverType=None):
             if self._reindexing_operators:
                 for experiment in self._reindexed_experiments:
                     self.add_command_line(experiment)
-                for pickle in self._reindexed_reflections:
-                    self.add_command_line(pickle)
+                for reflection_file in self._reindexed_reflections:
+                    self.add_command_line(reflection_file)
             else:
                 for experiment in self._experiments:
                     self.add_command_line(experiment)
-                for pickle in self._pickles:
-                    self.add_command_line(pickle)
+                for reflection_file in self._reflection_files:
+                    self.add_command_line(reflection_file)
             self.add_command_line(
                 "combine_crystal_models=%s" % self._combine_crystal_models
             )

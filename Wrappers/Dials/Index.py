@@ -219,7 +219,7 @@ def Index(DriverType=None):
                 self.get_working_directory(), "%d_experiments.json" % self.get_xpid()
             )
             self._indexed_filename = os.path.join(
-                self.get_working_directory(), "%d_indexed.pickle" % self.get_xpid()
+                self.get_working_directory(), "%d_indexed.mpack" % self.get_xpid()
             )
             self.add_command_line("output.experiments=%s" % self._experiment_filename)
             self.add_command_line("output.reflections=%s" % self._indexed_filename)
@@ -259,7 +259,7 @@ def Index(DriverType=None):
             from dxtbx.serialize import load
 
             self._experiment_list = load.experiment_list(self._experiment_filename)
-            self._reflections = flex.reflection_table.from_pickle(
+            self._reflections = flex.reflection_table.from_file(
                 self._indexed_filename
             )
 

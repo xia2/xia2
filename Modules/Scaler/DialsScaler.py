@@ -476,7 +476,7 @@ class DialsScaler(Scaler):
             integrater.set_integrater_reindex_operator(
                 reindex_ops[epoch], reason="setting point group"
             )
-            integrater.set_output_format("pickle")
+            integrater.set_output_format("mpack")
             _ = integrater.get_integrater_intensities()
             # ^ This will give us the reflections in the correct point group
             si.set_reflections(integrater.get_integrated_reflections())
@@ -629,7 +629,7 @@ class DialsScaler(Scaler):
                     )
                     reindexed_refl_fpath = os.path.join(
                         self.get_working_directory(),
-                        str(counter) + "_reindexed_reflections.pickle",
+                        str(counter) + "_reindexed_reflections.mpack",
                     )
 
                     # if we are working with unified UB matrix then this should not
@@ -748,14 +748,14 @@ class DialsScaler(Scaler):
         if self._scaled_experiments and self._scaled_reflections:
             # going to continue-where-left-off
             self._scaler.add_experiments_json(self._scaled_experiments)
-            self._scaler.add_reflections_pickle(self._scaled_reflections)
+            self._scaler.add_reflections_file(self._scaled_reflections)
         else:
             for epoch in self._sweep_handler.get_epochs():
                 si = self._sweep_handler.get_sweep_information(epoch)
                 experiment = si.get_experiments()
                 reflections = si.get_reflections()
                 self._scaler.add_experiments_json(experiment)
-                self._scaler.add_reflections_pickle(reflections)
+                self._scaler.add_reflections_file(reflections)
 
         self._scaler.set_scaled_unmerged_mtz(scaled_unmerged_mtz_path)
         self._scaler.set_scaled_mtz(scaled_mtz_path)
@@ -804,7 +804,7 @@ class DialsScaler(Scaler):
         FileHandler.record_data_file(scaled_unmerged_mtz_path)
         FileHandler.record_data_file(scaled_mtz_path)
 
-        # make it so that only scaled.pickle and scaled_experiments.json are
+        # make it so that only scaled.mpack and scaled_experiments.json are
         # the files that dials.scale knows about, so that if scale is called again,
         # scaling resumes from where it left off.
         self._scaler.clear_datafiles()
@@ -1116,7 +1116,7 @@ class DialsScalerHelper(object):
         for i, epoch in enumerate(sweep_handler.get_epochs()):
             si = sweep_handler.get_sweep_information(epoch)
             nums = fmt % i
-            r = flex.reflection_table.from_pickle(si.get_reflections())
+            r = flex.reflection_table.from_file(si.get_reflections())
             if len(set(r["id"]).difference(set([-1]))) > 1:
                 raise ValueError("Only single-experiment tables expected")
             old_id = list(r.experiment_identifiers().keys())[0]
@@ -1127,7 +1127,7 @@ class DialsScalerHelper(object):
             fname = os.path.join(
                 self.get_working_directory(), "split_reflections_%s.mpack" % nums
             )
-            r.as_pickle(fname)
+            r.as_msgpack_file(fname)
             si.set_reflections(fname)
         return sweep_handler
 
@@ -1246,7 +1246,7 @@ Passing multple datasets to indexer_jiffy but not set multisweep=True"""
         integrater.set_integrater_reindex_operator(
             reindex_op, reason="eliminated lattice"
         )
-        integrater.set_output_format("pickle")
+        integrater.set_output_format("mpack")
         _ = integrater.get_integrater_intensities()
         # ^ This will give us the reflections in the correct point group
         si.set_reflections(integrater.get_integrated_reflections())
