@@ -809,6 +809,10 @@ xia2.settings
   developmental
     .expert_level = 2
   {
+    continue_from_previous_job = False
+      .type = bool
+      .help = "If xia2.json file is present from a previous xia2 job then "
+              "continue scaling from the previous integration results."
     use_dials_spotfinder = False
       .type = bool
       .help = "This feature requires the dials project to be installed, and " \
