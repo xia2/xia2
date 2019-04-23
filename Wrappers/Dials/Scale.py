@@ -105,7 +105,7 @@ def DialsScale(DriverType=None, decay_correction=None):
             self._experiments_json.append(experiments_json)
 
         def add_reflections_file(self, reflections_file):
-            self._reflections_file.append(reflections_file)
+            self._reflection_files.append(reflections_file)
 
         def clear_datafiles(self):
             self._experiments_json = []

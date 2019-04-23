@@ -295,7 +295,7 @@ class DataManager(object):
             intensities = miller.array(miller_set, data=data, sigmas=sigmas)
             intensities.set_observation_type_xray_intensity()
             intensities.set_info(
-                miller.array_info(source="DIALS", source_type="pickle")
+                miller.array_info(source="DIALS", source_type="mpack")
             )
             if return_batches:
                 batches = miller.array(miller_set, data=batches).set_info(
@@ -319,7 +319,7 @@ class DataManager(object):
             expt.crystal.update(cryst_reindexed)
 
     def export_reflections(self, filename):
-        self._reflections.as_pickle(filename)
+        self._reflections.as_msgpack_file(filename)
         return filename
 
     def export_experiments(self, filename):
@@ -399,7 +399,7 @@ class MultiCrystalScale(object):
         self._scaled = Scale(self._data_manager, self._params)
 
         self._data_manager.export_experiments("experiments_final.json")
-        self._data_manager.export_reflections("reflections_final.pickle")
+        self._data_manager.export_reflections("reflections_final.mpack")
 
         scaled_unmerged_mtz = py.path.local(self._scaled.scaled_unmerged_mtz)
         scaled_unmerged_mtz.copy(py.path.local("scaled_unmerged.mtz"))
@@ -512,10 +512,10 @@ class MultiCrystalScale(object):
             "tmp_experiments.json"
         )
         reflections_filename = self._data_manager.export_reflections(
-            "tmp_reflections.pickle"
+            "tmp_reflections.mpack"
         )
         cosym.add_experiments_json(experiments_filename)
-        cosym.add_reflections_pickle(reflections_filename)
+        cosym.add_reflections_file(reflections_filename)
         if self._params.symmetry.space_group is not None:
             cosym.set_space_group(self._params.symmetry.space_group.group())
         cosym.run()
@@ -525,7 +525,7 @@ class MultiCrystalScale(object):
         self._data_manager.experiments = load.experiment_list(
             self._experiments_filename, check_format=False
         )
-        self._data_manager.reflections = flex.reflection_table.from_pickle(
+        self._data_manager.reflections = flex.reflection_table.from_file(
             self._reflections_filename
         )
 
@@ -553,7 +553,7 @@ class MultiCrystalScale(object):
             cb_op_to_ref = crystal_symmetry.change_of_basis_op_to_reference_setting()
             self._data_manager.reindex(cb_op=cb_op_to_ref)
             self._experiments_filename = "experiments.json"
-            self._reflections_filename = "reflections.pickle"
+            self._reflections_filename = "reflections.mpack"
             self._data_manager.export_experiments(self._experiments_filename)
             self._data_manager.export_reflections(self._reflections_filename)
             return
@@ -566,11 +566,11 @@ class MultiCrystalScale(object):
             "%i_experiments_reindexed.json" % symmetry.get_xpid()
         )
         self._reflections_filename = (
-            "%i_reflections_reindexed.pickle" % symmetry.get_xpid()
+            "%i_reflections_reindexed.mpack" % symmetry.get_xpid()
         )
 
         experiments_filename = "tmp_experiments.json"
-        reflections_filename = "tmp_reflections.pickle"
+        reflections_filename = "tmp_reflections.mpack"
         self._data_manager.export_experiments(experiments_filename)
         self._data_manager.export_reflections(reflections_filename)
 
@@ -589,7 +589,7 @@ class MultiCrystalScale(object):
         self._data_manager.experiments = load.experiment_list(
             self._experiments_filename, check_format=False
         )
-        self._data_manager.reflections = flex.reflection_table.from_pickle(
+        self._data_manager.reflections = flex.reflection_table.from_file(
             self._reflections_filename
         )
 
@@ -611,7 +611,7 @@ class Scale(object):
         self._params = params
 
         self._experiments_filename = "experiments.json"
-        self._reflections_filename = "reflections.pickle"
+        self._reflections_filename = "reflections.mpack"
         self._data_manager.export_experiments(self._experiments_filename)
         self._data_manager.export_reflections(self._reflections_filename)
         self.best_unit_cell = None
@@ -639,7 +639,7 @@ class Scale(object):
         self._data_manager.experiments = load.experiment_list(
             self._experiments_filename, check_format=False
         )
-        self._data_manager.reflections = flex.reflection_table.from_pickle(
+        self._data_manager.reflections = flex.reflection_table.from_file(
             self._reflections_filename
         )
 
@@ -682,7 +682,7 @@ class Scale(object):
         tt_refiner = TwoThetaRefine()
         auto_logfiler(tt_refiner)
         tt_refiner.set_experiments([experiments_filename])
-        tt_refiner.set_pickles([reflections_filename])
+        tt_refiner.set_reflection_files([reflections_filename])
         tt_refiner.set_combine_crystal_models(combine_crystal_models)
         tt_refiner.run()
         unit_cell = tt_refiner.get_unit_cell()
@@ -695,7 +695,7 @@ class Scale(object):
         auto_logfiler(scaler)
         # scaler.set_surface_link(False) # multi-crystal
         scaler.add_experiments_json(self._experiments_filename)
-        scaler.add_reflections_pickle(self._reflections_filename)
+        scaler.add_reflections_file(self._reflections_filename)
         # scaler.set_surface_tie(self._params.scaling.surface_tie)
         lmax = self._params.scaling.secondary.lmax
         if lmax:
@@ -729,7 +729,7 @@ class Scale(object):
         self._data_manager.experiments = load.experiment_list(
             self._experiments_filename, check_format=False
         )
-        self._data_manager.reflections = flex.reflection_table.from_pickle(
+        self._data_manager.reflections = flex.reflection_table.from_file(
             self._reflections_filename
         )
         self._params.resolution.labels = "IPR,SIGIPR"
