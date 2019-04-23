@@ -56,7 +56,7 @@ def ImportXDS(DriverType=None):
 
             if self._spot_xds is not None:
                 self._reflection_filename = os.path.join(
-                    self.get_working_directory(), "%s_spot_xds.pickle" % self.get_xpid()
+                    self.get_working_directory(), "%s_spot_xds.mpack" % self.get_xpid()
                 )
                 self.add_command_line("%s" % self._spot_xds)
                 self.add_command_line("output.filename=%s" % self._reflection_filename)
@@ -65,7 +65,7 @@ def ImportXDS(DriverType=None):
             elif self._integrate_hkl is not None:
                 self._reflection_filename = os.path.join(
                     self.get_working_directory(),
-                    "%s_integrate_hkl.pickle" % self.get_xpid(),
+                    "%s_integrate_hkl.mpack" % self.get_xpid(),
                 )
                 assert self._experiments_json is not None
                 self.add_command_line("%s" % self._integrate_hkl)

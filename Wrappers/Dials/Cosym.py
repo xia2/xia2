@@ -27,7 +27,7 @@ def DialsCosym(DriverType=None, decay_correction=None):
 
             # input and output files
             self._experiments_json = []
-            self._reflections_pickle = []
+            self._reflection_files = []
 
             self._space_group = None
             self._json = None
@@ -37,8 +37,8 @@ def DialsCosym(DriverType=None, decay_correction=None):
         def add_experiments_json(self, experiments_json):
             self._experiments_json.append(experiments_json)
 
-        def add_reflections_pickle(self, reflections_pickle):
-            self._reflections_pickle.append(reflections_pickle)
+        def add_reflections_file(self, reflections_file):
+            self._reflection_files.append(reflections_file)
 
         def get_reindexed_experiments(self):
             return self._reindexed_experiments
@@ -54,10 +54,10 @@ def DialsCosym(DriverType=None, decay_correction=None):
 
         def run(self):
             assert len(self._experiments_json)
-            assert len(self._reflections_pickle)
-            assert len(self._experiments_json) == len(self._reflections_pickle)
+            assert len(self._reflection_files)
+            assert len(self._experiments_json) == len(self._reflection_files)
 
-            for f in self._experiments_json + self._reflections_pickle:
+            for f in self._experiments_json + self._reflection_files:
                 assert os.path.isfile(f)
                 self.add_command_line(f)
 
@@ -71,7 +71,7 @@ def DialsCosym(DriverType=None, decay_correction=None):
             )
             self._reindexed_reflections = os.path.join(
                 self.get_working_directory(),
-                "%i_reindexed_reflections.pickle" % self.get_xpid(),
+                "%i_reindexed_reflections.mpack" % self.get_xpid(),
             )
 
             self.add_command_line(

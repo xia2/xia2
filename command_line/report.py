@@ -1160,14 +1160,13 @@ higher resolution. A typical resolution cutoff based on CC1/2 is around 0.3-0.5.
 class xia2_report(xia2_report_base):
     def __init__(self, unmerged_mtz, params, base_dir=None):
 
-        from iotbx.reflection_file_reader import any_reflection_file
+        import iotbx.mtz
 
         self.unmerged_mtz = unmerged_mtz
         self.params = params
 
-        reader = any_reflection_file(unmerged_mtz)
-        assert reader.file_type() == "ccp4_mtz"
-        arrays = reader.as_miller_arrays(merge_equivalents=False)
+        self.mtz_object = iotbx.mtz.object(unmerged_mtz)
+        arrays = self.mtz_object.as_miller_arrays(merge_equivalents=False, auto_anomalous=True)
 
         self.intensities = None
         self.batches = None
@@ -1189,7 +1188,6 @@ class xia2_report(xia2_report_base):
 
         assert self.intensities is not None
         assert self.batches is not None
-        self.mtz_object = reader.file_content()
 
         crystal_name = (
             filter(
@@ -1229,9 +1227,9 @@ class xia2_report(xia2_report_base):
 
         self._compute_merging_stats()
 
-        if params.anomalous:
-            self.intensities = self.intensities.as_anomalous_array()
-            self.batches = self.batches.as_anomalous_array()
+        if not params.anomalous:
+            self.intensities = self.intensities.as_non_anomalous_array()
+            self.batches = self.batches.as_non_anomalous_array()
 
         self.intensities.setup_binner(n_bins=self.params.resolution_bins)
         self.merged_intensities = self.intensities.merge_equivalents().array()

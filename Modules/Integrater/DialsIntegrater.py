@@ -47,7 +47,7 @@ class DialsIntegrater(Integrater):
         self._integrate_parameters = {}
         self._intgr_integrated_filename = None
 
-        self._intgr_integrated_pickle = None
+        self._intgr_integrated_filename = None
         self._intgr_experiments_filename = None
 
     # overload these methods as we don't want the resolution range
@@ -74,7 +74,7 @@ class DialsIntegrater(Integrater):
         return self._intgr_integrated_filename
 
     def get_integrated_reflections(self):
-        return self._intgr_integrated_pickle
+        return self._intgr_integrated_filename
 
     def set_integrated_experiments(self, filename):
         Integrater.set_integrated_experiments = filename
@@ -114,7 +114,7 @@ class DialsIntegrater(Integrater):
         report = _Report()
         report.set_working_directory(self.get_working_directory())
         report.set_experiments_filename(self._intgr_experiments_filename)
-        report.set_reflections_filename(self._intgr_integrated_pickle)
+        report.set_reflections_filename(self._intgr_integrated_filename)
         auto_logfiler(report, "REPORT")
         return report
 
@@ -236,7 +236,7 @@ class DialsIntegrater(Integrater):
         )
         experiments = load.experiment_list(self._intgr_experiments_filename)
         experiment = experiments[0]
-        self._intgr_indexed_filename = refiner.get_refiner_payload("reflections.pickle")
+        self._intgr_indexed_filename = refiner.get_refiner_payload("reflections.mpack")
 
         # this is the result of the cell refinement
         self._intgr_cell = experiment.crystal.get_unit_cell().parameters()
@@ -346,7 +346,7 @@ class DialsIntegrater(Integrater):
                 integrate.set_reflections_per_degree(1000)
                 integrate.run()
 
-                integrated_pickle = integrate.get_integrated_filename()
+                integrated_filename = integrate.get_integrated_filename()
 
                 from xia2.Wrappers.Dials.EstimateResolutionLimit import (
                     EstimateResolutionLimit,
@@ -358,7 +358,7 @@ class DialsIntegrater(Integrater):
                 d_min_estimater.set_experiments_filename(
                     self._intgr_experiments_filename
                 )
-                d_min_estimater.set_reflections_filename(integrated_pickle)
+                d_min_estimater.set_reflections_filename(integrated_filename)
                 d_min = d_min_estimater.run()
 
                 Debug.write("Estimate for d_min: %.2f" % d_min)
@@ -380,10 +380,10 @@ class DialsIntegrater(Integrater):
         # integration log on the quality of the data and (iii) the mosaic spread
         # range observed and R.M.S. deviations.
 
-        self._intgr_integrated_pickle = integrate.get_integrated_reflections()
-        if not os.path.isfile(self._intgr_integrated_pickle):
+        self._intgr_integrated_filename = integrate.get_integrated_reflections()
+        if not os.path.isfile(self._intgr_integrated_filename):
             raise RuntimeError(
-                "Integration failed: %s does not exist." % self._intgr_integrated_pickle
+                "Integration failed: %s does not exist." % self._intgr_integrated_filename
             )
 
         self._intgr_per_image_statistics = integrate.get_per_image_statistics()
@@ -413,7 +413,7 @@ class DialsIntegrater(Integrater):
             % self.get_integrater_mosaic_min_mean_max()
         )
 
-        return self._intgr_integrated_pickle
+        return self._intgr_integrated_filename
 
     def _integrate_finish(self):
         """Finish off the integration by running dials.export."""
@@ -426,7 +426,7 @@ class DialsIntegrater(Integrater):
 
         if self._output_format == "hkl":
             exporter = self.ExportMtz()
-            exporter.set_reflections_filename(self._intgr_integrated_pickle)
+            exporter.set_reflections_filename(self._intgr_integrated_filename)
             mtz_filename = os.path.join(
                 self.get_working_directory(), "%s_integrated.mtz" % "dials"
             )
@@ -531,7 +531,7 @@ class DialsIntegrater(Integrater):
 
             return hklout
 
-        elif self._output_format == "pickle":
+        elif self._output_format == "mpack":
 
             if (
                 self._intgr_reindex_operator is None
@@ -544,7 +544,7 @@ class DialsIntegrater(Integrater):
                     "Not reindexing to spacegroup %d (%s)"
                     % (self._intgr_spacegroup_number, self._intgr_reindex_operator)
                 )
-                return self._intgr_integrated_pickle
+                return self._intgr_integrated_filename
 
             if (
                 self._intgr_reindex_operator is None
@@ -554,7 +554,7 @@ class DialsIntegrater(Integrater):
                     "Not reindexing to spacegroup %d (%s)"
                     % (self._intgr_spacegroup_number, self._intgr_reindex_operator)
                 )
-                return self._intgr_integrated_pickle
+                return self._intgr_integrated_filename
 
             Debug.write(
                 "Reindexing to spacegroup %d (%s)"
@@ -581,7 +581,7 @@ class DialsIntegrater(Integrater):
             reindex.set_indexed_filename(self.get_integrated_reflections())
 
             reindex.run()
-            self._intgr_integrated_pickle = reindex.get_reindexed_reflections_filename()
+            self._intgr_integrated_filename = reindex.get_reindexed_reflections_filename()
             self._intgr_integrated_filename = (
                 reindex.get_reindexed_reflections_filename()
             )

@@ -1257,7 +1257,7 @@ class CommonScaler(Scaler):
             groups = {}
             self._scalr_cell_dict = {}
             tt_refine_experiments = []
-            tt_refine_pickles = []
+            tt_refine_reflections = []
             tt_refine_reindex_ops = []
             for epoch in self._sweep_handler.get_epochs():
                 si = self._sweep_handler.get_sweep_information(epoch)
@@ -1282,10 +1282,10 @@ class CommonScaler(Scaler):
                 auto_logfiler(tt_grouprefiner)
                 args = zip(*groups[pi])
                 tt_grouprefiner.set_experiments(args[0])
-                tt_grouprefiner.set_pickles(args[1])
+                tt_grouprefiner.set_reflection_files(args[1])
                 tt_grouprefiner.set_output_p4p(p4p_file)
                 tt_refine_experiments.extend(args[0])
-                tt_refine_pickles.extend(args[1])
+                tt_refine_reflections.extend(args[1])
                 tt_refine_reindex_ops.extend(args[2])
                 reindex_ops = args[2]
                 from cctbx.sgtbx import change_of_basis_op as cb_op
@@ -1332,7 +1332,7 @@ class CommonScaler(Scaler):
                 tt_refiner.set_output_p4p(p4p_file)
                 auto_logfiler(tt_refiner)
                 tt_refiner.set_experiments(tt_refine_experiments)
-                tt_refiner.set_pickles(tt_refine_pickles)
+                tt_refiner.set_reflection_files(tt_refine_reflections)
                 if self._spacegroup_reindex_operator is not None:
                     reindex_ops = [
                         (

@@ -16,6 +16,8 @@ import libtbx
 
 # wrappers for programs that this needs: DIALS
 
+from dials.array_family import flex
+
 from xia2.Wrappers.Dials.GenerateMask import GenerateMask as _GenerateMask
 from xia2.Wrappers.Dials.EstimateGain import EstimateGain as _EstimateGain
 from xia2.Wrappers.Dials.Spotfinder import Spotfinder as _Spotfinder
@@ -305,7 +307,7 @@ class DialsIndexer(Indexer):
                 "%s_%s_experiments.json" % (spotfinder.get_xpid(), xsweep.get_name())
             )
             spotfinder.set_input_spot_filename(
-                "%s_%s_strong.pickle" % (spotfinder.get_xpid(), xsweep.get_name())
+                "%s_%s_strong.mpack" % (spotfinder.get_xpid(), xsweep.get_name())
             )
             if PhilIndex.params.dials.fast_mode:
                 wedges = self._index_select_images_i(imageset)
@@ -352,10 +354,9 @@ class DialsIndexer(Indexer):
             spot_lists.append(spot_filename)
             experiments_filenames.append(spotfinder.get_output_sweep_filename())
 
-            from libtbx import easy_pickle
             from dials.util.ascii_art import spot_counts_per_image_plot
 
-            refl = easy_pickle.load(spot_filename)
+            refl = flex.reflection_table.from_file(spot_filename)
             if not len(refl):
                 raise RuntimeError("No spots found in sweep %s" % xsweep.get_name())
             Chatter.write(spot_counts_per_image_plot(refl), strip=False)
@@ -822,14 +823,13 @@ class DialsIndexer(Indexer):
         # get estimate of low resolution limit from lowest resolution indexed
         # reflection
 
-        from libtbx import easy_pickle
         from cctbx import crystal, miller, uctbx
 
-        reflections = easy_pickle.load(self._indxr_payload["indexed_filename"])
+        reflections = flex.reflection_table.from_file(self._indxr_payload["indexed_filename"])
         miller_indices = reflections["miller_index"]
         miller_indices = miller_indices.select(miller_indices != (0, 0, 0))
         # it isn't necessarily the 'p1_cell', but it should be the cell that
-        # corresponds to the miller indices in the indexed.pickle
+        # corresponds to the miller indices in the indexed.mpack
         symmetry = crystal.symmetry(unit_cell=uctbx.unit_cell(self._p1_cell))
         miller_set = miller.set(symmetry, miller_indices)
         d_max, d_min = miller_set.d_max_min()

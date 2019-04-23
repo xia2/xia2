@@ -542,7 +542,6 @@ class XDSIntegrater(Integrater):
         integrate_hkl = os.path.join(self.get_working_directory(), "INTEGRATE.HKL")
 
         if PhilIndex.params.xia2.settings.input.format.dynamic_shadowing:
-            from libtbx import easy_pickle
             from dxtbx.serialize import load
             from dials.algorithms.shadowing.filter import filter_shadowed_reflections
 
@@ -557,10 +556,10 @@ class XDSIntegrater(Integrater):
                 .get_goniometer_shadow_masker()
             )
             if masker is not None:
-                integrate_pickle = integrate_hkl_to_reflection_pickle(
+                integrate_filename = integrate_hkl_to_reflection_file(
                     integrate_hkl, experiments_json, self.get_working_directory()
                 )
-                reflections = easy_pickle.load(integrate_pickle)
+                reflections = flex.reflection_table.from_file(integrate_filename)
 
                 import time
 
@@ -956,7 +955,7 @@ class XDSIntegrater(Integrater):
         return self._intgr_experiments_filename
 
 
-def integrate_hkl_to_reflection_pickle(
+def integrate_hkl_to_reflection_file(
     integrate_hkl, experiments_json, working_directory
 ):
     from xia2.Wrappers.Dials.ImportXDS import ImportXDS

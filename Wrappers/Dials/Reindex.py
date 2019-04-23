@@ -90,7 +90,7 @@ def Reindex(DriverType=None):
                 self.add_command_line(self._indexed_filename)
                 if not self._reindexed_reflections_filename:
                     self._reindexed_reflections_filename = os.path.join(
-                        wd, "%d_reflections_reindexed.pickle" % self.get_xpid()
+                        wd, "%d_reflections_reindexed.mpack" % self.get_xpid()
                     )
                 self.add_command_line(
                     "output.reflections=%s" % self._reindexed_reflections_filename

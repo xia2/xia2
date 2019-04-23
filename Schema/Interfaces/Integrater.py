@@ -108,7 +108,7 @@ class Integrater(FrameProcessor):
         self._intgr_hklout = None
         self._output_format = (
             "hkl"
-        )  #'hkl' or 'pickle', if pickle then self._intgr_hklout
+        )  #'hkl' or 'mpack', if mpack then self._intgr_hklout
         # returns a refl table.
 
         # a place to store the project, crystal, wavelength, sweep information
@@ -606,7 +606,7 @@ class Integrater(FrameProcessor):
 
     def set_output_format(self, output_format="hkl"):
         Debug.write("setting integrator output format to %s" % output_format)
-        assert output_format in ["hkl", "pickle"]
+        assert output_format in ["hkl", "mpack"]
         self._output_format = output_format
 
     def get_integrater_indexer(self):

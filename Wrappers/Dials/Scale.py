@@ -53,7 +53,7 @@ def DialsScale(DriverType=None, decay_correction=None):
             self._unmerged_reflections = None
 
             self._experiments_json = []
-            self._reflections_pickle = []
+            self._reflection_files = []
 
             # this flag indicates that the input reflections are already
             # scaled and just need merging e.g. from XDS/XSCALE.
@@ -104,12 +104,12 @@ def DialsScale(DriverType=None, decay_correction=None):
         def add_experiments_json(self, experiments_json):
             self._experiments_json.append(experiments_json)
 
-        def add_reflections_pickle(self, reflections_pickle):
-            self._reflections_pickle.append(reflections_pickle)
+        def add_reflections_file(self, reflections_file):
+            self._reflections_file.append(reflections_file)
 
         def clear_datafiles(self):
             self._experiments_json = []
-            self._reflections_pickle = []
+            self._reflection_files = []
             self._scaled_experiments = []
             self._scaled_reflections = []
 
@@ -223,10 +223,10 @@ def DialsScale(DriverType=None, decay_correction=None):
             # been run previously
 
             assert len(self._experiments_json)
-            assert len(self._reflections_pickle)
-            assert len(self._experiments_json) == len(self._reflections_pickle)
+            assert len(self._reflection_files)
+            assert len(self._experiments_json) == len(self._reflection_files)
 
-            for f in self._experiments_json + self._reflections_pickle:
+            for f in self._experiments_json + self._reflection_files:
                 assert os.path.isfile(f)
                 self.add_command_line(f)
 
@@ -299,7 +299,7 @@ def DialsScale(DriverType=None, decay_correction=None):
             if not self._scaled_reflections:
                 self._scaled_reflections = os.path.join(
                     self.get_working_directory(),
-                    "%i_scaled_reflections.pickle" % self.get_xpid(),
+                    "%i_scaled_reflections.mpack" % self.get_xpid(),
                 )
             if not self._unmerged_reflections:
                 self._unmerged_reflections = os.path.join(
@@ -363,7 +363,7 @@ if __name__ == "__main__":
     auto_logfiler(s)
 
     s.add_experiments_json(args[0])
-    s.add_reflections_pickle(args[1])
+    s.add_reflections_file(args[1])
     s.set_full_matrix(False)
     s.set_model("kb")
 

@@ -27,6 +27,7 @@ def compact_batches(batches):
         for k, g in groupby(enumerate(batches), lambda i_x: i_x[0] - i_x[1])
     ]
 
+import time
 
 def rebatch(
     hklin,
@@ -42,6 +43,7 @@ def rebatch(
 ):
     """Need to implement: include batch range, exclude batches, add N to
     batches, start batches at N."""
+    t0 = time.time()
     if include_range is None:
         include_range = []
     if exclude_range is None:
@@ -58,6 +60,8 @@ def rebatch(
     if exclude_batches:
         exclude_range = [(b[0], b[-1]) for b in compact_batches(exclude_batches)]
 
+    t1 = time.time()
+
     mtz_obj = mtz.object(file_name=hklin)
 
     batch_column = None
@@ -73,19 +77,30 @@ def rebatch(
     if not batch_column:
         raise RuntimeError("no BATCH column found in %s" % hklin)
 
+    t2 = time.time()
+
     batches = [b.num() for b in mtz_obj.batches()]
     batch_column_values = batch_column.extract_values(not_a_number_substitute=-1)
 
     valid = flex.bool()
     offset = 0
 
+    t3 = time.time()
+    t4 = time.time()
+    t5 = time.time()
+
     if exclude_range:
+        print(exclude_range)
         exclude_sel = flex.bool(batch_column_values.size(), False)
         for (start, end) in exclude_range:
             exclude_sel.set_selected(
                 (batch_column_values >= start) & (batch_column_values <= end), True
             )
+        print(exclude_sel.size(), exclude_sel.iselection().size())
         mtz_obj.delete_reflections(exclude_sel.iselection())
+
+        t4 = time.time()
+        print("***", t4 - t3)
 
     elif include_range:
         exclude_sel = flex.bool(batch_column_values.size(), True)
@@ -94,6 +109,8 @@ def rebatch(
                 (batch_column_values >= start) & (batch_column_values <= end), False
             )
         mtz_obj.delete_reflections(exclude_sel.iselection())
+
+        t5 = time.time()
 
     # modify batch columns, and also the batch headers
 
@@ -112,6 +129,8 @@ def rebatch(
 
         batch_column.set_values(values=batch_column_values, selection_valid=valid)
 
+    t6 = time.time()
+
     if pname and xname and dname:
 
         for c in mtz_obj.crystals():
@@ -122,11 +141,27 @@ def rebatch(
             c.set_project_name(pname)
             c.set_name(xname)
 
+    t7 = time.time()
+
     # and write this lot out as hklout
 
     mtz_obj.write(file_name=hklout)
 
+    t8 = time.time()
+
     new_batches = (min(batches) + offset, max(batches) + offset)
+
+    t9 = time.time()
+
+    print(t1 - t0)
+    print(t2 - t1)
+    print(t3 - t2)
+    print(t4 - t3)
+    print(t5 - t4)
+    print(t6 - t5)
+    print(t7 - t6)
+    print(t8 - t7)
+    print(t9 - t8)
 
     return new_batches
 
