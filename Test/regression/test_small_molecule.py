@@ -44,7 +44,7 @@ def test_dials_full(regression_test, dials_data, tmpdir, ccp4):
     ]
     result = procrunner.run(command_line, working_directory=tmpdir.strpath)
     success, issues = xia2.Test.regression.check_result(
-        "small_molecule.dials_full",
+        "small_molecule.dials-full",
         result,
         tmpdir,
         ccp4,
