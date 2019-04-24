@@ -67,7 +67,7 @@ def check_result(
     expected_result_file, expected_result_file_version = None, None
     cv_search = re.compile("\.([0-9]+)\.([0-9]+)\.([0-9]+)(\.([0-9]+)(\.([^.]+))?)?$")
     for f in os.listdir(expected_result_dir):
-        if f.startswith("result.%s" % test_name) and os.path.isfile(
+        if f.startswith("result.%s." % test_name) and os.path.isfile(
             os.path.join(expected_result_dir, f)
         ):
             candidate_version = cv_search.search(f)
