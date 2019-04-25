@@ -260,51 +260,6 @@ class xia2_report_base(object):
         d.update(plotter.generate_miscellanous_plots())
         return d
 
-    def multiplicity_histogram(self):
-
-        merging = self.intensities.merge_equivalents()
-        multiplicities = merging.redundancies().complete_array(new_data_value=0)
-        mult_acentric = multiplicities.select_acentric().data()
-        mult_centric = multiplicities.select_centric().data()
-
-        multiplicities_acentric = {}
-        multiplicities_centric = {}
-
-        for x in sorted(set(mult_acentric)):
-            multiplicities_acentric[x] = mult_acentric.count(x)
-        for x in sorted(set(mult_centric)):
-            multiplicities_centric[x] = mult_centric.count(x)
-
-        return {
-            "multiplicities": {
-                "data": [
-                    {
-                        "x": multiplicities_acentric.keys(),
-                        "y": multiplicities_acentric.values(),
-                        "type": "bar",
-                        "name": "Acentric",
-                        "opacity": 0.75,
-                    },
-                    {
-                        "x": multiplicities_centric.keys(),
-                        "y": multiplicities_centric.values(),
-                        "type": "bar",
-                        "name": "Centric",
-                        "opacity": 0.75,
-                    },
-                ],
-                "layout": {
-                    "title": "Distribution of multiplicities",
-                    "xaxis": {"title": "Multiplicity"},
-                    "yaxis": {
-                        "title": "Frequency",
-                        #'rangemode': 'tozero'
-                    },
-                    "bargap": 0,
-                    "barmode": "overlay",
-                },
-            }
-        }
 
     def pychef_plots(self, n_bins=8):
 
@@ -671,7 +626,6 @@ def run(args):
 
     overall_stats_table, merging_stats_table, stats_plots = report.merging_stats_data()
 
-    json_data.update(report.multiplicity_histogram())
     json_data.update(stats_plots)
     json_data.update(report.batch_dependent_plots())
     json_data.update(report.intensity_stats_plots())
