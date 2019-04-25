@@ -329,7 +329,6 @@ class multi_crystal_analysis(xia2_report_base):
         overall_stats_table, merging_stats_table, stats_plots = self.merging_stats_data()
 
         json_data = {}
-        json_data.update(self.multiplicity_histogram())
         json_data.update(self.intensity_stats_plots())
         json_data.update(self.batch_dependent_plots())
         json_data.update(stats_plots)
