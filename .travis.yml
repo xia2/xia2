@@ -1,0 +1,21 @@
+language: python
+python:
+  - "2.7"
+
+jobs:
+  include:
+    - name: "Syntax validation - Python 2.7"
+      addons: false
+      cache: false
+      script:
+         - python -m compileall -q *
+         - .travis/run-flake8
+
+    - name: "Syntax validation - Python 3.7"
+      addons: false
+      cache: false
+      dist: xenial
+      python: 3.7
+      script:
+         - python3 -m compileall -q *
+         - .travis/run-flake8
