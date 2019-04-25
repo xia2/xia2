@@ -137,9 +137,11 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
                     else:
                         raise
 
+            overall_stats_table, merging_stats_table, stats_plots = report.merging_stats_data()
+
             d = {}
-            d["merging_statistics_table"] = report.merging_statistics_table()
-            d["overall_statistics_table"] = report.overall_statistics_table()
+            d["merging_statistics_table"] = merging_stats_table
+            d["overall_statistics_table"] = overall_stats_table
 
             individual_dataset_reports[wname] = d
 
@@ -150,17 +152,10 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
                     xtriage_success + xtriage_warnings + xtriage_danger
                 )
 
-            json_data.update(report.multiplicity_vs_resolution_plot())
-            json_data.update(report.multiplicity_histogram())
-            json_data.update(report.completeness_plot())
-            json_data.update(report.scale_rmerge_vs_batch_plot())
-            json_data.update(report.cc_one_half_plot())
-            json_data.update(report.i_over_sig_i_plot())
-            json_data.update(report.i_over_sig_i_vs_batch_plot())
-            json_data.update(report.second_moments_plot())
-            json_data.update(report.cumulative_intensity_distribution_plot())
-            json_data.update(report.l_test_plot())
-            json_data.update(report.wilson_plot())
+            json_data.update(stats_plots)
+            json_data.update(report.batch_dependent_plots())
+            json_data.update(report.intensity_stats_plots())
+            json_data.update(report.pychef_plots())
             json_data.update(report.pychef_plots(n_bins=1))
             if params.include_probability_plots:
                 json_data.update(report.z_score_hist())
