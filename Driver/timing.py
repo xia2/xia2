@@ -88,6 +88,10 @@ def visualise_db(timing_db):
         t["index"] = start_order.index(n) + 1
         t["runtime"] = t["time_end"] - t["time_start"]
         t["short_command"] = t["command"].split(" ")[0]
+        if t["runtime"] <= 90:
+            t["runtime_readable"] = "%.1fs" % t["runtime"]
+        else:
+            t["runtime_readable"] = "%.1fm" % (t["runtime"] / 60)
 
     while ordered_by_start:
         timestamp, n = ordered_by_start.pop(0)
@@ -104,7 +108,7 @@ def visualise_db(timing_db):
             running_tasks.append(n)
         t = timing_db[n]
         output.append(
-            u"{timestamp:{time_width}.1f}s  {t[index]:>{index_width}}. {tree_view:<5} {t[short_command]} ({t[runtime]:.1f}s)".format(
+            u"{timestamp:{time_width}.1f}s  {t[index]:>{index_width}}. {tree_view:<5} {t[short_command]} ({t[runtime_readable]})".format(
                 t=t,
                 tree_view=" ".join(tree_view),
                 index_width=index_width,
