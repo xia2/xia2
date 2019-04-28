@@ -326,7 +326,9 @@ class multi_crystal_analysis(xia2_report_base):
         self.radiation_damage_analysis()
         self._cluster_analysis = self.cluster_analysis()
 
-        overall_stats_table, merging_stats_table, stats_plots = self.merging_stats_data()
+        overall_stats_table, merging_stats_table, stats_plots = (
+            self.merging_stats_data()
+        )
 
         json_data = {}
         json_data.update(self.intensity_stats_plots())

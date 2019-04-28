@@ -186,9 +186,7 @@ class DialsRefiner(Refiner):
             self.set_refiner_payload(
                 "experiments.json", self._refinr_experiments_filename
             )
-            self.set_refiner_payload(
-                "reflections.mpack", self._refinr_indexed_filename
-            )
+            self.set_refiner_payload("reflections.mpack", self._refinr_indexed_filename)
 
             # this is the result of the cell refinement
             self._refinr_cell = experiments.crystals()[0].get_unit_cell().parameters()

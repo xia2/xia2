@@ -259,9 +259,7 @@ def Index(DriverType=None):
             from dxtbx.serialize import load
 
             self._experiment_list = load.experiment_list(self._experiment_filename)
-            self._reflections = flex.reflection_table.from_file(
-                self._indexed_filename
-            )
+            self._reflections = flex.reflection_table.from_file(self._indexed_filename)
 
             crystal = self._experiment_list.crystals()[0]
             self._p1_cell = crystal.get_unit_cell().parameters()

@@ -82,7 +82,10 @@ def xia2_main(stop_after=None):
 
     xinfo = CommandLine.get_xinfo()
 
-    if params.xia2.settings.developmental.continue_from_previous_job and os.path.exists("xia2.json"):
+    if (
+        params.xia2.settings.developmental.continue_from_previous_job
+        and os.path.exists("xia2.json")
+    ):
         Debug.write("==== Starting from existing xia2.json ====")
         from xia2.Schema.XProject import XProject
 

@@ -137,7 +137,9 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
                     else:
                         raise
 
-            overall_stats_table, merging_stats_table, stats_plots = report.merging_stats_data()
+            overall_stats_table, merging_stats_table, stats_plots = (
+                report.merging_stats_data()
+            )
 
             d = {}
             d["merging_statistics_table"] = merging_stats_table

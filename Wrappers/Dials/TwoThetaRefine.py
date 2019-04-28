@@ -108,7 +108,9 @@ def TwoThetaRefine(DriverType=None):
 
                 self._reindexed_experiments, self._reindexed_reflections = [], []
                 for e, p, op in zip(
-                    self._experiments, self._reflection_files, self._reindexing_operators
+                    self._experiments,
+                    self._reflection_files,
+                    self._reindexing_operators,
                 ):
                     reindexer = Reindex()
                     reindexer.set_cb_op(op)

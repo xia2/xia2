@@ -260,7 +260,6 @@ class xia2_report_base(object):
         d.update(plotter.generate_miscellanous_plots())
         return d
 
-
     def pychef_plots(self, n_bins=8):
 
         from xia2.Modules import PyChef

@@ -375,7 +375,9 @@ def test_dials_symmetry_indexer_jiffy(helper, refiner_lattices, expected_output)
     refiners = []
     for i in range(0, n):
         refl_path, exp_path = ("test_refl_%s.mpack" % i, "test_exp_%s.json" % i)
-        generate_reflections_in_sg("P 2", id_=i, assign_id=True).as_msgpack_file(refl_path)
+        generate_reflections_in_sg("P 2", id_=i, assign_id=True).as_msgpack_file(
+            refl_path
+        )
         dump.experiment_list(generated_exp(space_group="P 2", id_=i), exp_path)
         experiments.append(exp_path)
         reflections.append(refl_path)

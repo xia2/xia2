@@ -383,7 +383,8 @@ class DialsIntegrater(Integrater):
         self._intgr_integrated_reflections = integrate.get_integrated_reflections()
         if not os.path.isfile(self._intgr_integrated_reflections):
             raise RuntimeError(
-                "Integration failed: %s does not exist." % self._intgr_integrated_reflections
+                "Integration failed: %s does not exist."
+                % self._intgr_integrated_reflections
             )
 
         self._intgr_per_image_statistics = integrate.get_per_image_statistics()
@@ -580,7 +581,9 @@ class DialsIntegrater(Integrater):
             reindex.set_indexed_filename(self.get_integrated_reflections())
 
             reindex.run()
-            self._intgr_integrated_reflections = reindex.get_reindexed_reflections_filename()
+            self._intgr_integrated_reflections = (
+                reindex.get_reindexed_reflections_filename()
+            )
             self._intgr_integrated_filename = (
                 reindex.get_reindexed_reflections_filename()
             )

@@ -825,7 +825,9 @@ class DialsIndexer(Indexer):
 
         from cctbx import crystal, miller, uctbx
 
-        reflections = flex.reflection_table.from_file(self._indxr_payload["indexed_filename"])
+        reflections = flex.reflection_table.from_file(
+            self._indxr_payload["indexed_filename"]
+        )
         miller_indices = reflections["miller_index"]
         miller_indices = miller_indices.select(miller_indices != (0, 0, 0))
         # it isn't necessarily the 'p1_cell', but it should be the cell that
