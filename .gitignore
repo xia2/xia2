@@ -10,6 +10,9 @@ __pycache__/
 # Regression test outputs
 /Test/regression/output
 
+# VS code
+.vscode
+
 # Ignored Mathematica files shall be prefixed by _
 _*.nb
 *.fdb_latexmk
