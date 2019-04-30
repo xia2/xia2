@@ -10,6 +10,8 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
+from dials.array_family import flex
+
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.lib.bits import auto_logfiler
@@ -99,9 +101,7 @@ class DialsRefiner(Refiner):
 
                 dump.experiment_list(experiments, indexed_experiments)
 
-                from scitbx.array_family import flex
-
-                reflections = flex.from_file(
+                reflections = flex.reflection_table.from_file(
                     idxr.get_indexer_payload("indexed_filename")
                 )
                 sel = reflections["id"] == i
