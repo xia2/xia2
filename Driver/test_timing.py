@@ -241,7 +241,7 @@ def test_timing_visualisation():
 
     output = xia2.Driver.timing.visualise_db(example)
     print()
-    print("\n".join(output))
+    print("\n".join(output).encode("utf-8"))
     lt = output.index("Longest times:")
     assert lt
 
