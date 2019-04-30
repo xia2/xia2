@@ -1098,7 +1098,7 @@ class DialsScalerHelper(object):
             nums = fmt % i
             si.set_reflections(
                 os.path.join(
-                    self.get_working_directory(), "split_reflections_%s.mpack" % nums
+                    self.get_working_directory(), "split_reflections_%s.pickle" % nums
                 )
             )
             si.set_experiments(
@@ -1125,7 +1125,7 @@ class DialsScalerHelper(object):
             r["id"].set_selected(r["id"] == old_id, i)
             r.experiment_identifiers()[i] = exp_id
             fname = os.path.join(
-                self.get_working_directory(), "split_reflections_%s.mpack" % nums
+                self.get_working_directory(), "split_reflections_%s.pickle" % nums
             )
             r.as_pickle(fname)
             si.set_reflections(fname)
