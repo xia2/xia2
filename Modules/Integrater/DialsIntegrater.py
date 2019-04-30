@@ -236,7 +236,7 @@ class DialsIntegrater(Integrater):
         )
         experiments = load.experiment_list(self._intgr_experiments_filename)
         experiment = experiments[0]
-        self._intgr_indexed_filename = refiner.get_refiner_payload("reflections.mpack")
+        self._intgr_indexed_filename = refiner.get_refiner_payload("reflections.pickle")
 
         # this is the result of the cell refinement
         self._intgr_cell = experiment.crystal.get_unit_cell().parameters()
@@ -531,7 +531,7 @@ class DialsIntegrater(Integrater):
 
             return hklout
 
-        elif self._output_format == "mpack":
+        elif self._output_format == "pickle":
 
             if (
                 self._intgr_reindex_operator is None

@@ -470,8 +470,8 @@ class XDSIndexer(IndexerSingleSweep):
             spotfinder.run()
             export = self.DialsExportSpotXDS()
             export.set_input_data_file(
-                "reflections.mpack",
-                spotfinder.get_output_data_file("reflections.mpack"),
+                "reflections.pickle",
+                spotfinder.get_output_data_file("reflections.pickle"),
             )
             export.run()
 

@@ -307,7 +307,7 @@ class DialsIndexer(Indexer):
                 "%s_%s_experiments.json" % (spotfinder.get_xpid(), xsweep.get_name())
             )
             spotfinder.set_input_spot_filename(
-                "%s_%s_strong.mpack" % (spotfinder.get_xpid(), xsweep.get_name())
+                "%s_%s_strong.pickle" % (spotfinder.get_xpid(), xsweep.get_name())
             )
             if PhilIndex.params.dials.fast_mode:
                 wedges = self._index_select_images_i(imageset)
@@ -831,7 +831,7 @@ class DialsIndexer(Indexer):
         miller_indices = reflections["miller_index"]
         miller_indices = miller_indices.select(miller_indices != (0, 0, 0))
         # it isn't necessarily the 'p1_cell', but it should be the cell that
-        # corresponds to the miller indices in the indexed.mpack
+        # corresponds to the miller indices in the indexed.pickle
         symmetry = crystal.symmetry(unit_cell=uctbx.unit_cell(self._p1_cell))
         miller_set = miller.set(symmetry, miller_indices)
         d_max, d_min = miller_set.d_max_min()

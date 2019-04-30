@@ -175,7 +175,7 @@ def DialsSymmetry(DriverType=None):
                 if not self._output_reflections_filename:
                     self._output_reflections_filename = os.path.join(
                         self.get_working_directory(),
-                        "%d_reindexed_reflections.mpack" % self.get_xpid(),
+                        "%d_reindexed_reflections.pickle" % self.get_xpid(),
                     )
 
                 self.add_command_line(

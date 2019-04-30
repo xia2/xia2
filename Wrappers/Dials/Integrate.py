@@ -134,7 +134,7 @@ def Integrate(DriverType=None):
                 self.add_command_line("mp.njobs=%i" % njob)
             self.add_command_line(("input.reflections=%s" % self._reflections_filename))
             self._integrated_reflections = os.path.join(
-                self.get_working_directory(), "%d_integrated.mpack" % self.get_xpid()
+                self.get_working_directory(), "%d_integrated.pickle" % self.get_xpid()
             )
             self._integrated_experiments = os.path.join(
                 self.get_working_directory(),

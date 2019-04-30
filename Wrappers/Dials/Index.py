@@ -219,7 +219,7 @@ def Index(DriverType=None):
                 self.get_working_directory(), "%d_experiments.json" % self.get_xpid()
             )
             self._indexed_filename = os.path.join(
-                self.get_working_directory(), "%d_indexed.mpack" % self.get_xpid()
+                self.get_working_directory(), "%d_indexed.pickle" % self.get_xpid()
             )
             self.add_command_line("output.experiments=%s" % self._experiment_filename)
             self.add_command_line("output.reflections=%s" % self._indexed_filename)

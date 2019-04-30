@@ -437,7 +437,7 @@ def run():
     # The script usage
     usage = (
         "usage: xia2.multi_crystal_analysis [options] [param.phil] "
-        "experiments.json reflections.mpack"
+        "experiments.json reflections.pickle"
     )
 
     # Create the parser
