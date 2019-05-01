@@ -71,7 +71,7 @@ def DialsCosym(DriverType=None, decay_correction=None):
             )
             self._reindexed_reflections = os.path.join(
                 self.get_working_directory(),
-                "%i_reindexed_reflections.mpack" % self.get_xpid(),
+                "%i_reindexed_reflections.pickle" % self.get_xpid(),
             )
 
             self.add_command_line(

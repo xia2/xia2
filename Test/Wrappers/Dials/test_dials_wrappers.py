@@ -116,7 +116,7 @@ def exercise_dials_wrappers(template, nproc=None):
     import shutil
 
     shutil.copy(indexer.get_experiments_filename(), "copy.json")
-    shutil.copy(indexer.get_indexed_filename(), "copy.mpack")
+    shutil.copy(indexer.get_indexed_filename(), "copy.pickle")
     print("Begin combining")
     from xia2.Wrappers.Dials.CombineExperiments import CombineExperiments
 
@@ -124,7 +124,7 @@ def exercise_dials_wrappers(template, nproc=None):
     exporter.add_experiments(indexer.get_experiments_filename())
     exporter.add_experiments("copy.json")
     exporter.add_reflections(indexer.get_indexed_filename())
-    exporter.add_reflections("copy.mpack")
+    exporter.add_reflections("copy.pickle")
     exporter.run()
     print("".join(exporter.get_all_output()))
     print("Done combining")

@@ -75,7 +75,7 @@ def GenerateMask(DriverType=None):
             if self._output_experiments_filename is None:
                 self._output_experiments_filename = os.path.join(
                     self.get_working_directory(),
-                    "%s_experiments.mpack" % self.get_xpid(),
+                    "%s_experiments.pickle" % self.get_xpid(),
                 )
             self.add_command_line('output.mask="%s"' % self._output_mask_filename)
             self.add_command_line(

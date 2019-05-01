@@ -476,7 +476,7 @@ class DialsScaler(Scaler):
             integrater.set_integrater_reindex_operator(
                 reindex_ops[epoch], reason="setting point group"
             )
-            integrater.set_output_format("mpack")
+            integrater.set_output_format("pickle")
             _ = integrater.get_integrater_intensities()
             # ^ This will give us the reflections in the correct point group
             si.set_reflections(integrater.get_integrated_reflections())
@@ -629,7 +629,7 @@ class DialsScaler(Scaler):
                     )
                     reindexed_refl_fpath = os.path.join(
                         self.get_working_directory(),
-                        str(counter) + "_reindexed_reflections.mpack",
+                        str(counter) + "_reindexed_reflections.pickle",
                     )
 
                     # if we are working with unified UB matrix then this should not
@@ -804,7 +804,7 @@ class DialsScaler(Scaler):
         FileHandler.record_data_file(scaled_unmerged_mtz_path)
         FileHandler.record_data_file(scaled_mtz_path)
 
-        # make it so that only scaled.mpack and scaled_experiments.json are
+        # make it so that only scaled.pickle and scaled_experiments.json are
         # the files that dials.scale knows about, so that if scale is called again,
         # scaling resumes from where it left off.
         self._scaler.clear_datafiles()
@@ -1098,7 +1098,7 @@ class DialsScalerHelper(object):
             nums = fmt % i
             si.set_reflections(
                 os.path.join(
-                    self.get_working_directory(), "split_reflections_%s.mpack" % nums
+                    self.get_working_directory(), "split_reflections_%s.pickle" % nums
                 )
             )
             si.set_experiments(
@@ -1125,9 +1125,9 @@ class DialsScalerHelper(object):
             r["id"].set_selected(r["id"] == old_id, i)
             r.experiment_identifiers()[i] = exp_id
             fname = os.path.join(
-                self.get_working_directory(), "split_reflections_%s.mpack" % nums
+                self.get_working_directory(), "split_reflections_%s.pickle" % nums
             )
-            r.as_msgpack_file(fname)
+            r.as_pickle(fname)
             si.set_reflections(fname)
         return sweep_handler
 
@@ -1246,7 +1246,7 @@ Passing multple datasets to indexer_jiffy but not set multisweep=True"""
         integrater.set_integrater_reindex_operator(
             reindex_op, reason="eliminated lattice"
         )
-        integrater.set_output_format("mpack")
+        integrater.set_output_format("pickle")
         _ = integrater.get_integrater_intensities()
         # ^ This will give us the reflections in the correct point group
         si.set_reflections(integrater.get_integrated_reflections())

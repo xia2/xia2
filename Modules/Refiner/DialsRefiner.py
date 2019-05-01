@@ -94,7 +94,7 @@ class DialsRefiner(Refiner):
                 )
                 indexed_reflections = os.path.join(
                     self.get_working_directory(),
-                    "%s_indexed_reflections.mpack" % xsweep.get_name(),
+                    "%s_indexed_reflections.pickle" % xsweep.get_name(),
                 )
 
                 from dxtbx.serialize import dump
@@ -113,7 +113,7 @@ class DialsRefiner(Refiner):
                 # set indexed reflections to id == 0 and imageset_id == 0
                 reflections["id"].set_selected(reflections["id"] == i, 0)
                 reflections["imageset_id"] = flex.int(len(reflections), 0)
-                reflections.as_msgpack_file(indexed_reflections)
+                easy_pickle.dump(indexed_reflections, reflections)
 
             assert (
                 len(experiments.crystals()) == 1
@@ -186,7 +186,9 @@ class DialsRefiner(Refiner):
             self.set_refiner_payload(
                 "experiments.json", self._refinr_experiments_filename
             )
-            self.set_refiner_payload("reflections.mpack", self._refinr_indexed_filename)
+            self.set_refiner_payload(
+                "reflections.pickle", self._refinr_indexed_filename
+            )
 
             # this is the result of the cell refinement
             self._refinr_cell = experiments.crystals()[0].get_unit_cell().parameters()
