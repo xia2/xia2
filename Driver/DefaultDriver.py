@@ -165,12 +165,12 @@ class DefaultDriver(object):
 
         self._working_environment[name] = [value]
 
-        if not name in self._working_environment_exclusive:
+        if name not in self._working_environment_exclusive:
             self._working_environment_exclusive.append(name)
 
     def add_working_environment(self, name, value):
         """Add an extra token to the environment for processing."""
-        if not name in self._working_environment:
+        if name not in self._working_environment:
             self._working_environment[name] = []
         self._working_environment[name].append(value)
 
@@ -181,7 +181,7 @@ class DefaultDriver(object):
     def add_scratch_directory(self, directory):
         """Add a scratch directory."""
 
-        if not directory in self._scratch_directories:
+        if directory not in self._scratch_directories:
             self._scratch_directories.append(directory)
 
     def set_task(self, task):
