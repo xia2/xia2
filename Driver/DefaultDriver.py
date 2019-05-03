@@ -340,7 +340,7 @@ class DefaultDriver(object):
             log_file_extra = ": see %s for more details" % self.get_log_file()
         else:
             log_file_extra = ""
-        executable = "%s" % os.path.split(self._executable)[-1]
+        executable = "%s" % os.path.basename(self._executable)
 
         if os.name == "nt":
             if code == 3:
@@ -491,7 +491,7 @@ class DefaultDriver(object):
         if self._log_file:
             # close the existing log file: also add a comment at the end containing the
             # command-line (replacing working directory & executable path for brevity)
-            command_line = "%s " % os.path.split(self._executable)[-1]
+            command_line = "%s " % os.path.basename(self._executable)
             for c in self._command_line:
                 command_line += " '%s'" % c.replace(
                     self._working_directory + os.sep, ""
@@ -516,7 +516,7 @@ class DefaultDriver(object):
                     Debug.write(line.rstrip("\n"), strip=False)
         elif hasattr(self, "_runtime_log") and self._runtime_log:
             if self._executable:
-                command_line = "%s " % os.path.split(self._executable)[-1]
+                command_line = "%s " % os.path.basename(self._executable)
                 for c in self._command_line:
                     command_line += " '%s'" % c.replace(
                         self._working_directory + os.sep, ""
