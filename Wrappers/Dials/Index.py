@@ -226,7 +226,6 @@ def Index(DriverType=None):
 
             self.start()
             self.close_wait()
-            self.check_for_errors()
 
             if not os.path.isfile(self._experiment_filename) or not os.path.isfile(
                 self._indexed_filename
@@ -250,6 +249,8 @@ def Index(DriverType=None):
                             "dials.index failed, see log file for more details: %s"
                             % self.get_log_file()
                         )
+
+            self.check_for_errors()
 
             for record in self.get_all_output():
                 if "Too few reflections to parameterise" in record:
