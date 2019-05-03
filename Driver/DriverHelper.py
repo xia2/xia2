@@ -312,36 +312,6 @@ def error_python_traceback(records):
         raise Sorry(error_messages[0])
 
 
-def check_return_code(code):
-    """Check the return code for indications of errors."""
-
-    if not code:
-        return
-
-    if os.name == "nt":
-        if code == 3:
-            raise RuntimeError("child error")
-
-    else:
-
-        # return codes in POSIX are -ve
-
-        segv = signal.SIGSEGV * -1
-        kill = signal.SIGKILL * -1
-        abrt = signal.SIGABRT * -1
-
-        if code == segv:
-            raise RuntimeError("child segmentation fault")
-
-        if code == kill:
-            raise RuntimeError("subprocess killed")
-
-        if code == abrt:
-            raise RuntimeError("process failed")
-
-    raise RuntimeError("subprocess failed with exitcode {code}".format(code=code))
-
-
 executable_exists_cache = {}
 
 

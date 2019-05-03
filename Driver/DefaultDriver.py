@@ -46,10 +46,10 @@ from __future__ import absolute_import, division, print_function
 
 import os
 import time
+import signal
 
 import xia2.Driver.timing
 from xia2.Driver.DriverHelper import (
-    check_return_code,
     error_abrt,
     error_fp,
     error_kill,
@@ -165,12 +165,12 @@ class DefaultDriver(object):
 
         self._working_environment[name] = [value]
 
-        if not name in self._working_environment_exclusive:
+        if name not in self._working_environment_exclusive:
             self._working_environment_exclusive.append(name)
 
     def add_working_environment(self, name, value):
         """Add an extra token to the environment for processing."""
-        if not name in self._working_environment:
+        if name not in self._working_environment:
             self._working_environment[name] = []
         self._working_environment[name].append(value)
 
@@ -181,7 +181,7 @@ class DefaultDriver(object):
     def add_scratch_directory(self, directory):
         """Add a scratch directory."""
 
-        if not directory in self._scratch_directories:
+        if directory not in self._scratch_directories:
             self._scratch_directories.append(directory)
 
     def set_task(self, task):
@@ -327,7 +327,58 @@ class DefaultDriver(object):
         self.check_for_error_text(self._standard_output_records[-30:])
         # next check the status
 
-        check_return_code(self.status())
+        self.check_return_code()
+
+    def check_return_code(self):
+        """Check the return code for indications of errors."""
+
+        code = self.status()
+        if not code:
+            return
+
+        if self.get_log_file():
+            log_file_extra = ": see %s for more details" % self.get_log_file()
+        else:
+            log_file_extra = ""
+        executable = "%s" % os.path.basename(self._executable)
+
+        if os.name == "nt":
+            if code == 3:
+                raise RuntimeError("child error")
+
+        else:
+            # return codes in POSIX are -ve
+
+            segv = signal.SIGSEGV * -1
+            kill = signal.SIGKILL * -1
+            abrt = signal.SIGABRT * -1
+
+            if code == segv:
+                raise RuntimeError(
+                    "{executable}: child segmentation fault{log_file_extra}".format(
+                        executable=executable, log_file_extra=log_file_extra
+                    )
+                )
+
+            if code == kill:
+                raise RuntimeError(
+                    "{executable} killed{log_file_extra}".format(
+                        executable=executable, log_file_extra=log_file_extra
+                    )
+                )
+
+            if code == abrt:
+                raise RuntimeError(
+                    "{executable} failed{log_file_extra}".format(
+                        executable=executable, log_file_extra=log_file_extra
+                    )
+                )
+
+        raise RuntimeError(
+            "{executable} subprocess failed with exitcode {code}{log_file_extra}".format(
+                executable=executable, code=code, log_file_extra=log_file_extra
+            )
+        )
 
     def _input(self, record):
         """Pass record into the child programs standard input."""
@@ -440,7 +491,7 @@ class DefaultDriver(object):
         if self._log_file:
             # close the existing log file: also add a comment at the end containing the
             # command-line (replacing working directory & executable path for brevity)
-            command_line = "%s " % os.path.split(self._executable)[-1]
+            command_line = "%s " % os.path.basename(self._executable)
             for c in self._command_line:
                 command_line += " '%s'" % c.replace(
                     self._working_directory + os.sep, ""
@@ -465,7 +516,7 @@ class DefaultDriver(object):
                     Debug.write(line.rstrip("\n"), strip=False)
         elif hasattr(self, "_runtime_log") and self._runtime_log:
             if self._executable:
-                command_line = "%s " % os.path.split(self._executable)[-1]
+                command_line = "%s " % os.path.basename(self._executable)
                 for c in self._command_line:
                     command_line += " '%s'" % c.replace(
                         self._working_directory + os.sep, ""
