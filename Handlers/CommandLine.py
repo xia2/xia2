@@ -52,6 +52,26 @@ def load_datablock(filename):
             ] = imageset
 
 
+def unroll_parameters(hdf5_master):
+    """Determine auto-unroll parameters for Eiger data sets with multiple
+    triggers - will mean several assumptions are made i.e. all are the
+    same size and so on."""
+
+    assert hdf5_master.endswith(".h5")
+
+    import h5py
+
+    try:
+        with h5py.File(hdf5_master, "r") as master:
+            root = master["/entry/instrument/detector"]
+            ntrigger = root["detectorSpecific/ntrigger"][()]
+            nimages = root["detectorSpecific/nimages"][()]
+        if ntrigger > 1:
+            return ntrigger, nimages
+    except Exception as e:
+        return None
+
+
 def unroll_datasets(datasets):
     """Unroll datasets i.e. if input img:1:900:450 make this into 1:450;
   451:900"""
@@ -63,6 +83,16 @@ def unroll_datasets(datasets):
         if len(tokens[0]) == 1:
             # because windows
             tokens = ["%s:%s" % (tokens[0], tokens[1])] + tokens[2:]
+        if tokens[0].endswith(".h5") and len(tokens) != 4:
+            # check if we need to auto-discover the unrolling parameters
+            # for multiple trigger data sets
+            unroll_params = unroll_parameters(tokens[0])
+            if unroll_params:
+                ntrigger, nimages = unroll_params
+                if len(tokens) == 1:
+                    tokens = [tokens[0], "1", ntrigger * nimages, nimages]
+                elif len(tokens) == 3:
+                    tokens.append(nimages)
         if len(tokens) in (1, 3):
             unrolled.append(dataset)
             continue

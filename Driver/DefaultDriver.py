@@ -46,10 +46,10 @@ from __future__ import absolute_import, division, print_function
 
 import os
 import time
+import signal
 
 import xia2.Driver.timing
 from xia2.Driver.DriverHelper import (
-    check_return_code,
     error_abrt,
     error_fp,
     error_kill,
@@ -327,7 +327,58 @@ class DefaultDriver(object):
         self.check_for_error_text(self._standard_output_records[-30:])
         # next check the status
 
-        check_return_code(self.status())
+        self.check_return_code()
+
+    def check_return_code(self):
+        """Check the return code for indications of errors."""
+
+        code = self.status()
+        if not code:
+            return
+
+        if self.get_log_file():
+            log_file_extra = ": see %s for more details" % self.get_log_file()
+        else:
+            log_file_extra = ""
+        executable = "%s" % os.path.basename(self._executable)
+
+        if os.name == "nt":
+            if code == 3:
+                raise RuntimeError("child error")
+
+        else:
+            # return codes in POSIX are -ve
+
+            segv = signal.SIGSEGV * -1
+            kill = signal.SIGKILL * -1
+            abrt = signal.SIGABRT * -1
+
+            if code == segv:
+                raise RuntimeError(
+                    "{executable}: child segmentation fault{log_file_extra}".format(
+                        executable=executable, log_file_extra=log_file_extra
+                    )
+                )
+
+            if code == kill:
+                raise RuntimeError(
+                    "{executable} killed{log_file_extra}".format(
+                        executable=executable, log_file_extra=log_file_extra
+                    )
+                )
+
+            if code == abrt:
+                raise RuntimeError(
+                    "{executable} failed{log_file_extra}".format(
+                        executable=executable, log_file_extra=log_file_extra
+                    )
+                )
+
+        raise RuntimeError(
+            "{executable} subprocess failed with exitcode {code}{log_file_extra}".format(
+                executable=executable, code=code, log_file_extra=log_file_extra
+            )
+        )
 
     def _input(self, record):
         """Pass record into the child programs standard input."""
