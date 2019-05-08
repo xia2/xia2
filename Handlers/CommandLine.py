@@ -65,7 +65,7 @@ def unroll_parameters(hdf5_master):
             nimages = root["detectorSpecific/nimages"][()]
         if ntrigger > 1:
             return ntrigger, nimages
-    except Exception as e:
+    except Exception:
         return None
 
 
@@ -216,14 +216,14 @@ class _CommandLine(object):
             if params.xia2.settings.input.anomalous is Auto:
                 PhilIndex.update("xia2.settings.input.anomalous=false")
         else:
-            if params.xia2.settings.input.anomalous == False:
+            if params.xia2.settings.input.anomalous is False:
                 raise Sorry("Setting anomalous=false and atom type inconsistent")
             params.xia2.settings.input.anomalous = True
             PhilIndex.update("xia2.settings.input.anomalous=true")
 
         if params.xia2.settings.resolution.keep_all_reflections is Auto:
             if (
-                params.xia2.settings.small_molecule == True
+                params.xia2.settings.small_molecule is True
                 and params.xia2.settings.resolution.d_min is None
                 and params.xia2.settings.resolution.d_max is None
             ):
@@ -231,7 +231,7 @@ class _CommandLine(object):
             else:
                 PhilIndex.update("xia2.settings.resolution.keep_all_reflections=false")
 
-        if params.xia2.settings.small_molecule == True:
+        if params.xia2.settings.small_molecule is True:
             Debug.write("Small molecule selected")
             if params.xia2.settings.symmetry.chirality is None:
                 PhilIndex.update("xia2.settings.symmetry.chirality=nonchiral")
@@ -286,14 +286,14 @@ class _CommandLine(object):
 
         if params.xia2.settings.multi_sweep_indexing is Auto:
             if (
-                params.xia2.settings.small_molecule == True
+                params.xia2.settings.small_molecule is True
                 and "dials" == params.xia2.settings.indexer
             ):
                 PhilIndex.update("xia2.settings.multi_sweep_indexing=True")
             else:
                 PhilIndex.update("xia2.settings.multi_sweep_indexing=False")
         if (
-            params.xia2.settings.multi_sweep_indexing == True
+            params.xia2.settings.multi_sweep_indexing is True
             and params.xia2.settings.multiprocessing.mode == "parallel"
         ):
             Chatter.write(
@@ -429,7 +429,7 @@ class _CommandLine(object):
                 self._hdf5_master_files.append(dataset)
                 if start_end:
                     Debug.write("Image range: %d %d" % start_end)
-                    if not dataset in self._default_start_end:
+                    if dataset not in self._default_start_end:
                         self._default_start_end[dataset] = []
                     self._default_start_end[dataset].append(start_end)
                 else:
@@ -448,7 +448,7 @@ class _CommandLine(object):
                 if start_end:
                     Debug.write("Image range: %d %d" % start_end)
                     key = os.path.join(directory, template)
-                    if not key in self._default_start_end:
+                    if key not in self._default_start_end:
                         self._default_start_end[key] = []
                     self._default_start_end[key].append(start_end)
                 else:
@@ -482,7 +482,7 @@ class _CommandLine(object):
                 continue
             if argv[0] != "-" and "=" not in argv:
                 continue
-            if not j in self._understood:
+            if j not in self._understood:
                 nonsense += " %s" % argv
                 was_nonsense = True
 
