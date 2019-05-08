@@ -154,7 +154,7 @@ Command-line options to xia2:
   3d    XDS, XSCALE, LABELIT
   3dii  XDS, XSCALE, using all images for autoindexing
   dials DIALS, scaling with DIALS
-  dials-legacy DIALS, scaling with AIMLESS
+  dials-aimless DIALS, scaling with AIMLESS
 """
     )
     sys.stdout.write("[xinfo=foo.xinfo] or [/path/to/images]\n\n")

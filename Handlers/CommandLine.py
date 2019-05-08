@@ -568,7 +568,7 @@ class _CommandLine(object):
                 % settings.pipeline
             )
             indexer, refiner, integrater, scaler = "dials", "dials", "dials", "dials"
-        elif settings.pipeline == "dials-legacy":
+        elif settings.pipeline == "dials-aimless":
             Debug.write("DIALS-LEGACY pipeline selected (DIALS, scaling with AIMLESS)")
             indexer, refiner, integrater, scaler = "dials", "dials", "dials", "ccp4a"
 
