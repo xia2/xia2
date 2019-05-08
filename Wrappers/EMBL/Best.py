@@ -113,12 +113,6 @@ def BestStrategy(DriverType=None):
         def get_phi_width(self):
             return self._phi_width
 
-        def get_completeness(self):
-            return self._completeness
-
-        def get_multiplicity(self):
-            return self._multiplicity
-
         def strategy(self):
 
             assert self._detector is not None

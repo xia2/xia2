@@ -609,9 +609,6 @@ class XSweep(object):
 
         return summary
 
-    def get_directory(self):
-        return self._directory
-
     def get_image(self):
         return self._image
 

@@ -12,12 +12,11 @@
 
 from __future__ import absolute_import, division, print_function
 
-import copy
 import os
 
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
 from xia2.Driver.DriverFactory import DriverFactory
-from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Streams import Debug
 from xia2.Schema.Exceptions.BadLatticeError import BadLatticeError
 from xia2.Schema.Exceptions.NegativeMosaicError import NegativeMosaicError
 
@@ -243,7 +242,6 @@ def MosflmRefineCell(DriverType=None, indxr_print=True):
                 if not self._ignore_cell_refinement_failure:
                     return [0.0], [0.0]
 
-            rms_values_last = None
             rms_values = None
 
             new_cycle_number = 0
@@ -251,7 +249,6 @@ def MosflmRefineCell(DriverType=None, indxr_print=True):
             new_image_counter = None
             new_ignore_update = False
 
-            parse_cycle = 1
             parse_image = 0
 
             background_residual = {}
@@ -327,13 +324,8 @@ def MosflmRefineCell(DriverType=None, indxr_print=True):
                     for cycle in new_rms_values.keys():
                         images = sorted(new_rms_values[cycle].keys())
                         rms_values[cycle] = []
-                        for i in images:
-                            rms_values[cycle].append(new_rms_values[cycle][i])
-
-                    if cycles:
-                        rms_values_last = rms_values[max(cycles)]
-                    else:
-                        rms_values_last = None
+                        for ii in images:
+                            rms_values[cycle].append(new_rms_values[cycle][ii])
 
                 # look for "error" type problems
 

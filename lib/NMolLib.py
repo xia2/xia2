@@ -63,13 +63,9 @@ def spacegroup_number_operators(spacegroup):
     compute the number of symmetry operators. This will use the CCP4 symmetry
     library in "counting" mode."""
 
-    # note slight (!) abuse of exception handling - however this works
-    # well as a way of seeing if the input is something which can
-    # be interpreted as a number
-
-    try:
+    if spacegroup.isdigit():
         spacegroup_number = int(spacegroup)
-    except:  # intentional
+    else:
         # spacegroup was passed in as a name
         spacegroup_number = Syminfo.spacegroup_name_to_number(spacegroup.upper())
 
