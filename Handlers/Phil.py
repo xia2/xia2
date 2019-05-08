@@ -561,7 +561,7 @@ strategy
 xia2.settings
   .short_caption = "xia2 settings"
 {
-  pipeline = 2d 2di 3d 3dd 3di 3dii *dials dials-full
+  pipeline = 2d 2di 3d 3dd 3di 3dii *dials dials-full dials-legacy
     .short_caption = "main processing pipeline"
     .help = "Select the xia2 main processing pipeline\n" \
             "   2d: MOSFLM, LABELIT (if installed), AIMLESS\n" \
@@ -570,8 +570,9 @@ xia2.settings
             "  3di: as 3d, but use 3 wedges for indexing\n" \
             " 3dii: XDS, XSCALE, using all images for autoindexing\n" \
             "  3dd: as 3d, but use DIALS for indexing\n" \
-            "dials: DIALS, AIMLESS\n" \
-            "dials-full: DIALS, including scaling"
+            "dials: DIALS, including scaling"
+            "dials-legacy: DIALS, AIMLESS\n" \
+            "dials-full:   DIALS, including scaling"
     .type = choice
   small_molecule = False
     .type = bool
