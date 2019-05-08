@@ -153,7 +153,8 @@ Command-line options to xia2:
   2d    MOSFLM, LABELIT (if installed), AIMLESS
   3d    XDS, XSCALE, LABELIT
   3dii  XDS, XSCALE, using all images for autoindexing
-  dials DIALS, AIMLESS
+  dials DIALS, scaling with DIALS
+  dials-aimless DIALS, scaling with AIMLESS
 """
     )
     sys.stdout.write("[xinfo=foo.xinfo] or [/path/to/images]\n\n")
