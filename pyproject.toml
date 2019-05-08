@@ -1,0 +1,4 @@
+[tool.towncrier]
+    package = "xia2"
+    package_dir = ".."
+    filename = "CHANGELOG.rst"
