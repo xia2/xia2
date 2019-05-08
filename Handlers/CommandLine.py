@@ -425,7 +425,7 @@ class _CommandLine(object):
                         break
                 if not found:
                     raise Sorry(
-                        "Cound not find %s in %s" % (dataset, " ".join(directories))
+                        "Could not find %s in %s" % (dataset, " ".join(directories))
                     )
 
             if is_hd5f_name(dataset):
