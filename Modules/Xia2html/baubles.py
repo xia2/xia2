@@ -1185,7 +1185,7 @@ def plainTextMarkup(text):
                     nnum += 1  # count trailing numbers or placeholders
                     if word != "-" and word != "*":
                         try:
-                            f = float(word)
+                            float(word)
                         except Exception:
                             nnum = 0
                 nnums.append(nnum)
@@ -1234,7 +1234,7 @@ def plainTextMarkup(text):
                 row += "</th>"
                 for w in range(heads, len(words)):
                     try:
-                        f = float(words[w])
+                        float(words[w])
                         row += "<td>" + words[w] + "</td>"
                     except Exception:
                         row += "<th>" + words[w] + "</th>"

@@ -139,8 +139,6 @@ def check_result(
             print(" " + actual)
             continue
 
-        actual_s = actual.split()
-        expected_s = expected.split()
         actual_s = re.split(r"(\s+)", actual)
         expected_s = re.split(r"(\s+)", expected)
 

@@ -95,7 +95,6 @@ class ProcessingFrame(wx.Frame):
         self.nb.AdvanceSelection(forward=True)
         thread = xia2Thread(self, output_dir, args)
         thread.start()
-        return
 
     def launch_viewer_frame(self):
         if self.viewer is None:

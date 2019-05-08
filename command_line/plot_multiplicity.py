@@ -3,6 +3,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+import json
+
 import iotbx.phil
 import libtbx.load_env
 from cctbx.miller.display import render_2d, scene
@@ -129,14 +131,13 @@ class MultiplicityViewJson(render_2d):
         self._text = []
         self._lines = []
         json_d = self.render(None)
-        import json
 
         if self.settings.json.compact:
             indent = None
         else:
             indent = 2
         with open(self.settings.json.filename, "wb") as fh:
-            json_str = json.dump(json_d, fh, indent=indent)
+            json.dump(json_d, fh, indent=indent)
 
     def GetSize(self):
         return 1600, 1600  # size in pixels

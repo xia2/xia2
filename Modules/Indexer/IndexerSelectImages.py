@@ -66,10 +66,6 @@ def index_select_images_user(phi_width, images, out_stream):
         except ValueError:
             pass
 
-    # should not reach here but...
-
-    return images
-
 
 def index_select_image_wedges_user(sweep_id, phi_width, images, out_stream):
     images = [(min(images), max(images))]
@@ -95,10 +91,6 @@ def index_select_image_wedges_user(sweep_id, phi_width, images, out_stream):
 
         except ValueError:
             pass
-
-    # should not reach here but...
-
-    return images
 
 
 if __name__ == "__main__":

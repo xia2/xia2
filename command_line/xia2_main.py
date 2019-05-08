@@ -371,13 +371,13 @@ def run():
     os.chdir = chdir_override
 
     try:
-        xinfo = xia2_main()
+        xia2_main()
         Debug.write("\nTiming report:")
         for line in xia2.Driver.timing.report():
             Debug.write(line, strip=False)
 
         Chatter.write("Status: normal termination")
-        return xinfo
+        return
     except Sorry as s:
         Chatter.write("Error: %s" % str(s))
         sys.exit(1)
