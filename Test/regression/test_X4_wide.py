@@ -39,6 +39,23 @@ END PROJECT AUTOMATIC
     return xinfo_file.strpath
 
 
+def test_dials_aimless(regression_test, dials_data, tmpdir, ccp4):
+    command_line = [
+        "xia2",
+        "pipeline=dials-aimless",
+        "nproc=1",
+        "trust_beam_centre=True",
+        "read_all_image_headers=False",
+        "truncate=cctbx",
+        dials_data("x4wide").strpath,
+    ]
+    result = procrunner.run(command_line, working_directory=tmpdir.strpath)
+    success, issues = xia2.Test.regression.check_result(
+        "X4_wide.dials-aimless", result, tmpdir, ccp4
+    )
+    assert success, issues
+
+
 def test_dials(regression_test, dials_data, tmpdir, ccp4):
     command_line = [
         "xia2",
@@ -50,26 +67,9 @@ def test_dials(regression_test, dials_data, tmpdir, ccp4):
         dials_data("x4wide").strpath,
     ]
     result = procrunner.run(command_line, working_directory=tmpdir.strpath)
-    success, issues = xia2.Test.regression.check_result(
-        "X4_wide.dials", result, tmpdir, ccp4
-    )
-    assert success, issues
-
-
-def test_dials_full(regression_test, dials_data, tmpdir, ccp4):
-    command_line = [
-        "xia2",
-        "pipeline=dials-full",
-        "nproc=1",
-        "trust_beam_centre=True",
-        "read_all_image_headers=False",
-        "truncate=cctbx",
-        dials_data("x4wide").strpath,
-    ]
-    result = procrunner.run(command_line, working_directory=tmpdir.strpath)
     print(result)
     success, issues = xia2.Test.regression.check_result(
-        "X4_wide.dials-full",
+        "X4_wide.dials",
         result,
         tmpdir,
         ccp4,
@@ -77,6 +77,23 @@ def test_dials_full(regression_test, dials_data, tmpdir, ccp4):
             "AUTOMATIC_DEFAULT_scaled.mtz",
             "AUTOMATIC_DEFAULT_scaled_unmerged.mtz",
         ],
+    )
+    assert success, issues
+
+
+def test_dials_aimless_split(regression_test, dials_data, tmpdir, ccp4):
+    command_line = [
+        "xia2",
+        "pipeline=dials-aimless",
+        "nproc=1",
+        "njob=2",
+        "mode=parallel",
+        "trust_beam_centre=True",
+        "xinfo=%s" % split_xinfo(dials_data("x4wide"), tmpdir),
+    ]
+    result = procrunner.run(command_line, working_directory=tmpdir.strpath)
+    success, issues = xia2.Test.regression.check_result(
+        "X4_wide_split.dials-aimless", result, tmpdir, ccp4
     )
     assert success, issues
 

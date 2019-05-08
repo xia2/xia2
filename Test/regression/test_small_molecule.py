@@ -11,6 +11,27 @@ expected_data_files = [
 ]
 
 
+def test_dials_aimless(regression_test, dials_data, tmpdir, ccp4):
+    command_line = [
+        "xia2",
+        "pipeline=dials-aimless",
+        "nproc=2",
+        "small_molecule=True",
+        "read_all_image_headers=False",
+        "trust_beam_centre=True",
+        dials_data("small_molecule_example").strpath,
+    ]
+    result = procrunner.run(command_line, working_directory=tmpdir.strpath)
+    success, issues = xia2.Test.regression.check_result(
+        "small_molecule.dials-aimless",
+        result,
+        tmpdir,
+        ccp4,
+        expected_data_files=expected_data_files,
+    )
+    assert success, issues
+
+
 def test_dials(regression_test, dials_data, tmpdir, ccp4):
     command_line = [
         "xia2",
@@ -24,27 +45,6 @@ def test_dials(regression_test, dials_data, tmpdir, ccp4):
     result = procrunner.run(command_line, working_directory=tmpdir.strpath)
     success, issues = xia2.Test.regression.check_result(
         "small_molecule.dials",
-        result,
-        tmpdir,
-        ccp4,
-        expected_data_files=expected_data_files,
-    )
-    assert success, issues
-
-
-def test_dials_full(regression_test, dials_data, tmpdir, ccp4):
-    command_line = [
-        "xia2",
-        "pipeline=dials-full",
-        "nproc=2",
-        "small_molecule=True",
-        "read_all_image_headers=False",
-        "trust_beam_centre=True",
-        dials_data("small_molecule_example").strpath,
-    ]
-    result = procrunner.run(command_line, working_directory=tmpdir.strpath)
-    success, issues = xia2.Test.regression.check_result(
-        "small_molecule.dials-full",
         result,
         tmpdir,
         ccp4,
