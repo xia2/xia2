@@ -570,9 +570,8 @@ xia2.settings
             "  3di: as 3d, but use 3 wedges for indexing\n" \
             " 3dii: XDS, XSCALE, using all images for autoindexing\n" \
             "  3dd: as 3d, but use DIALS for indexing\n" \
-            "dials: DIALS, including scaling"
-            "dials-legacy: DIALS, AIMLESS\n" \
-            "dials-full:   DIALS, including scaling"
+            "dials: DIALS, including scaling\n" \
+            "dials-legacy: DIALS, scaling with AIMLESS\n"
     .type = choice
   small_molecule = False
     .type = bool
