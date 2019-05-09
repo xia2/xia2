@@ -110,7 +110,14 @@ def test_dials_split(regression_test, dials_data, tmpdir, ccp4):
     ]
     result = procrunner.run(command_line, working_directory=tmpdir.strpath)
     success, issues = xia2.Test.regression.check_result(
-        "X4_wide_split.dials", result, tmpdir, ccp4
+        "X4_wide_split.dials",
+        result,
+        tmpdir,
+        ccp4,
+        expected_data_files=[
+            "AUTOMATIC_DEFAULT_scaled.mtz",
+            "AUTOMATIC_DEFAULT_scaled_unmerged.mtz",
+        ],
     )
     assert success, issues
 
