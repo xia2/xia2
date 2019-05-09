@@ -18,7 +18,8 @@ def test_recording_of_timing_events():
     report = xia2.Driver.timing.report()
     assert report
     assert task1 in report[0]
-    assert task2 in report[1]
+    assert "thinking" in report[1]
+    assert task2 in report[2]
 
     xia2.Driver.timing.reset()
     assert xia2.Driver.timing.report() == []
