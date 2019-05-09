@@ -16,7 +16,8 @@ import os
 import sys
 
 from xia2.Driver.DriverFactory import DriverFactory
-from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Citations import Citations
+from xia2.Handlers.Streams import Debug
 from xia2.lib.bits import transpose_loggraph
 
 
@@ -31,6 +32,7 @@ def Ctruncate(DriverType=None):
         def __init__(self):
             # generic things
             DriverInstance.__class__.__init__(self)
+            Citations.cite("ccp4")
 
             self.set_executable(os.path.join(os.environ.get("CBIN", ""), "ctruncate"))
 

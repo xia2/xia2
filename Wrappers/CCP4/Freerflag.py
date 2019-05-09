@@ -14,6 +14,7 @@ import os
 
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
 from xia2.Driver.DriverFactory import DriverFactory
+from xia2.Handlers.Citations import Citations
 from xia2.Modules.FindFreeFlag import FindFreeFlag
 
 
@@ -29,6 +30,7 @@ def Freerflag(DriverType=None):
         def __init__(self):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
+            Citations.cite("ccp4")
 
             self.set_executable(os.path.join(os.environ.get("CBIN", ""), "freerflag"))
 
