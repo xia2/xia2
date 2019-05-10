@@ -735,16 +735,6 @@ class DialsScaler(Scaler):
         self._scaler = DialsScale()
         self._scaler = self._updated_dials_scaler()
 
-        # Set paths
-        scaled_mtz_path = os.path.join(
-            self.get_working_directory(),
-            "%s_%s_scaled.mtz" % (self._scalr_pname, self._scalr_xname),
-        )
-        scaled_unmerged_mtz_path = os.path.join(
-            self.get_working_directory(),
-            "%s_%s_scaled_unmerged.mtz" % (self._scalr_pname, self._scalr_xname),
-        )
-
         if self._scaled_experiments and self._scaled_reflections:
             # going to continue-where-left-off
             self._scaler.add_experiments_json(self._scaled_experiments)
@@ -757,17 +747,67 @@ class DialsScaler(Scaler):
                 self._scaler.add_experiments_json(experiment)
                 self._scaler.add_reflections_file(reflections)
 
-        self._scaler.set_scaled_unmerged_mtz(scaled_unmerged_mtz_path)
-        self._scaler.set_scaled_mtz(scaled_mtz_path)
-        self._scaler.set_crystal_name(self._scalr_xname)
+        # if more than one wave- need multiple mtz
         self._scalr_scaled_reflection_files = {}
+        # self._scalr_scaled_reflection_files["sca"] = {}
+        # self._scalr_scaled_reflection_files["sca_unmerged"] = {}
+        self._scalr_scaled_reflection_files["mtz_unmerged"] = {}
+
+        self._scaler.set_crystal_name(self._scalr_xname)
+
+        dnames_list = []
         for epoch in self._sweep_handler.get_epochs():
             si = self._sweep_handler.get_sweep_information(epoch)
-            pname, xname, dname = si.get_project_info()
-        self._scalr_scaled_reflection_files["mtz_unmerged"] = {
-            dname: scaled_unmerged_mtz_path
-        }
-        self._scalr_scaled_reflection_files["mtz"] = {dname: scaled_mtz_path}
+            _, __, dname = si.get_project_info()
+            dnames_list.append(dname)
+        dnames_list = list(set(dnames_list))
+        if len(dnames_list) == 1:
+            # Set paths
+            scaled_mtz_path = os.path.join(
+                self.get_working_directory(),
+                "%s_%s_scaled.mtz" % (self._scalr_pname, self._scalr_xname),
+            )
+            scaled_unmerged_mtz_path = os.path.join(
+                self.get_working_directory(),
+                "%s_%s_scaled_unmerged.mtz" % (self._scalr_pname, self._scalr_xname),
+            )
+            self._scaler.set_scaled_unmerged_mtz([scaled_unmerged_mtz_path])
+            self._scaler.set_scaled_mtz([scaled_mtz_path])
+            self._scalr_scaled_reflection_files["mtz"] = {
+                dnames_list[0]: scaled_mtz_path
+            }
+            self._scalr_scaled_reflection_files["mtz_unmerged"] = {
+                dnames_list[0]: scaled_unmerged_mtz_path
+            }
+        else:
+            merged_mtz_files = []
+            # unmerged_mtz_files = []
+            self._scalr_scaled_reflection_files["mtz"] = {}
+            for epoch in self._sweep_handler.get_epochs():
+                si = self._sweep_handler.get_sweep_information(epoch)
+                pname, xname, dname = si.get_project_info()
+                scaled_mtz_path = os.path.join(
+                    self.get_working_directory(),
+                    "%s_%s_scaled_%s.mtz" % (pname, xname, dname),
+                )
+                # scaled_unmerged_mtz_path = os.path.join(
+                #    self.get_working_directory(),
+                #    "%s_%s_scaled_unmerged_%s.mtz" % (pname, xname, dname),
+                # )
+                merged_mtz_files.append(scaled_mtz_path)
+                # unmerged_mtz_files.append(scaled_unmerged_mtz_path)
+                # self._scalr_scaled_reflection_files["mtz_unmerged"][
+                #    dname
+                # ] = scaled_unmerged_mtz_path
+                self._scalr_scaled_reflection_files["mtz"][dname] = scaled_mtz_path
+            scaled_unmerged_mtz_path = os.path.join(
+                self.get_working_directory(),
+                "%s_%s_scaled_unmerged.mtz" % (self._scalr_pname, self._scalr_xname),
+            )
+            # Don't add to unmerged here, need to do as separate step.
+            self._scaler.set_scaled_unmerged_mtz([scaled_unmerged_mtz_path])
+            # self._scaler.set_scaled_unmerged_mtz(unmerged_mtz_files)
+            self._scaler.set_scaled_mtz(merged_mtz_files)
 
         user_resolution_limits = {}
 
@@ -809,20 +849,16 @@ class DialsScaler(Scaler):
         # scaling resumes from where it left off.
         self._scaler.clear_datafiles()
 
-        '''if not self._scalr_input_spacegroup:
-      self._determine_scaled_pointgroup()
-
-    if self._scalr_done is False:
-      if self._scaler_symmetry_check_count > 3:
-        Chatter.write("""Scaling symmetry check and rescale appears unstable,
-No further scaling will be performed.""")
-        self.set_scaler_done(True)
-      else:
-        return'''
-
-        hklout = copy.deepcopy(self._scaler.get_scaled_mtz())
-        self._scalr_scaled_refl_files = {dname: hklout}
-        FileHandler.record_data_file(hklout)
+        if len(dnames_list) == 1:
+            hklout = copy.deepcopy(self._scaler.get_scaled_mtz()[0])
+            self._scalr_scaled_refl_files = {dnames_list[0]: hklout}
+            FileHandler.record_data_file(hklout)
+        else:
+            self._scalr_scaled_refl_files = {}
+            for i, dname in enumerate(dnames_list):
+                hklout = copy.deepcopy(self._scaler.get_scaled_mtz()[i])
+                self._scalr_scaled_refl_files[dname] = hklout
+                FileHandler.record_data_file(hklout)
 
         highest_suggested_resolution = None
         highest_resolution = 100.0
@@ -915,6 +951,28 @@ No further scaling will be performed.""")
             )
         else:
             Debug.write("Scaler highest resolution set to %5.2f" % highest_resolution)
+
+        # Need each in individual unmerged mtz for stats.
+        unmerged_mtz_files = []
+        if len(dnames_list) > 1:
+            scaler = DialsScale()
+            scaler.set_export_mtz_only()
+            scaler.add_experiments_json(self._scaled_experiments)
+            scaler.add_reflections_file(self._scaled_reflections)
+            for epoch in self._sweep_handler.get_epochs():
+                si = self._sweep_handler.get_sweep_information(epoch)
+                pname, xname, dname = si.get_project_info()
+                scaled_unmerged_mtz_path = os.path.join(
+                    self.get_working_directory(),
+                    "%s_%s_scaled_unmerged_%s.mtz" % (pname, xname, dname),
+                )
+                unmerged_mtz_files.append(scaled_unmerged_mtz_path)
+                self._scalr_scaled_reflection_files["mtz_unmerged"][
+                    dname
+                ] = scaled_unmerged_mtz_path
+            scaler.set_scaled_unmerged_mtz(unmerged_mtz_files)
+            scaler.scale()
+            # set refls, exps & unmerged mtz names"
 
         if PhilIndex.params.xia2.settings.merging_statistics.source == "cctbx":
             for key in self._scalr_scaled_refl_files:

@@ -95,9 +95,10 @@ def DialsScale(DriverType=None, decay_correction=None):
 
             self._scaled_experiments = None
             self._scaled_reflections = None
-            self._unmerged_reflections = None
-            self._merged_reflections = None
+            self._unmerged_reflections = []
+            self._merged_reflections = []
             self._best_unit_cell = None
+            self._export_mtz_only = False
 
         # getter and setter methods
 
@@ -189,11 +190,11 @@ def DialsScale(DriverType=None, decay_correction=None):
         def get_scaled_mtz(self):
             return self._merged_reflections
 
+        def get_unscaled_mtz(self):
+            return self._unmerged_reflections
+
         def set_crystal_name(self, name):
             self._crystal_name = name
-
-        def get_scaled_unmerged_mtz(self):
-            return self._unmerged_reflections
 
         def get_scaled_reflections(self):
             return self._scaled_reflections
@@ -207,14 +208,19 @@ def DialsScale(DriverType=None, decay_correction=None):
         def set_scaled_reflections(self, filepath):
             self._scaled_reflections = filepath
 
-        def set_scaled_mtz(self, filepath):
-            self._merged_reflections = filepath
+        def set_scaled_mtz(self, filepaths):
+            assert isinstance(filepaths, list)
+            self._merged_reflections = filepaths
 
-        def set_scaled_unmerged_mtz(self, filepath):
-            self._unmerged_reflections = filepath
+        def set_scaled_unmerged_mtz(self, filepaths):
+            assert isinstance(filepaths, list)
+            self._unmerged_reflections = filepaths
 
         def set_best_unit_cell(self, unit_cell):
             self._best_unit_cell = unit_cell
+
+        def set_export_mtz_only(self):
+            self._export_mtz_only = True
 
         def scale(self):
             """Actually perform the scaling."""
@@ -262,6 +268,9 @@ def DialsScale(DriverType=None, decay_correction=None):
             if self._bfactor and self._brotation is not None:
                 self.add_command_line("decay_interval=%g" % self._brotation)
 
+            if self._export_mtz_only:
+                self.add_command_line("export_mtz_only=True")
+
             # next any 'generic' parameters
 
             if self._isigma_selection is not None:
@@ -302,24 +311,29 @@ def DialsScale(DriverType=None, decay_correction=None):
                     "%i_scaled_reflections.pickle" % self.get_xpid(),
                 )
             if not self._unmerged_reflections:
-                self._unmerged_reflections = os.path.join(
-                    self.get_working_directory(),
-                    "%i_scaled_unmerged.mtz" % self.get_xpid(),
-                )
+                self._unmerged_reflections = [
+                    os.path.join(
+                        self.get_working_directory(),
+                        "%i_scaled_unmerged.mtz" % self.get_xpid(),
+                    )
+                ]
+            self.add_command_line(
+                "output.unmerged_mtz=%s" % " ".join(self._unmerged_reflections)
+            )
             if not self._merged_reflections:
-                self._merged_reflections = os.path.join(
-                    self.get_working_directory(), "%i_scaled.mtz" % self.get_xpid()
-                )
+                self._merged_reflections = [
+                    os.path.join(
+                        self.get_working_directory(), "%i_scaled.mtz" % self.get_xpid()
+                    )
+                ]
+            self.add_command_line(
+                "output.merged_mtz=%s" % " ".join(self._merged_reflections)
+            )
             if self._crystal_name:
                 self.add_command_line("output.crystal_name=%s" % self._crystal_name)
 
             self.add_command_line("output.experiments='%s'" % self._scaled_experiments)
             self.add_command_line("output.reflections='%s'" % self._scaled_reflections)
-
-            self.add_command_line(
-                "output.unmerged_mtz='%s'" % self._unmerged_reflections
-            )
-            self.add_command_line("output.merged_mtz='%s'" % self._merged_reflections)
 
             # run using previously determined scales
             self.start()
@@ -340,15 +354,16 @@ def DialsScale(DriverType=None, decay_correction=None):
 
             # here get a list of all output files...
             output = self.get_all_output()
-
-            Chatter.write("Completed a round of scaling using dials.scale")
+            if not self._export_mtz_only:
+                Chatter.write("Completed a round of scaling using dials.scale")
             return "OK"
 
         def get_scaled_reflection_files(self):
             return self._scalr_scaled_reflection_files
 
         def get_unmerged_reflection_file(self):
-            return self._unmerged_reflections
+            """Return a single unmerged mtz, for resolution cutoff analysis."""
+            return self._unmerged_reflections[0]
 
     return DialsScaleWrapper()
 
