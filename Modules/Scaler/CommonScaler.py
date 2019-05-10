@@ -1343,6 +1343,8 @@ class CommonScaler(Scaler):
                         else self._spacegroup_reindex_operator
                         for op in tt_refine_reindex_ops
                     ]
+                else:
+                    reindex_ops = tt_refine_reindex_ops
                 tt_refiner.set_reindex_operators(reindex_ops)
                 tt_refiner.run()
                 self._scalr_cell = tt_refiner.get_unit_cell()
