@@ -346,14 +346,7 @@ def executable_exists(executable):
 
     # then search the path if it is not an absolute path
 
-    path_env = os.environ["PATH"]
-
-    if os.name == "nt":
-        pathsplit_token = ";"
-    else:
-        pathsplit_token = ":"
-
-    path = path_env.split(pathsplit_token)
+    path = os.environ["PATH"].split(os.pathsep)
 
     for directory in path:
         for file in executable_files:
