@@ -275,6 +275,9 @@ class _CommandLine(object):
         params = PhilIndex.get_python_object()
         mp_params = params.xia2.settings.multiprocessing
 
+        if mp_params.nproc > 1 and os.name == "nt":
+            raise Sorry("nproc > 1 is not supported on Windows.")  # #191
+
         if params.xia2.settings.indexer is not None:
             add_preference("indexer", params.xia2.settings.indexer)
         if params.xia2.settings.refiner is not None:
