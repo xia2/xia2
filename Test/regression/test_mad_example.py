@@ -13,6 +13,12 @@ expected_data_files = [
     "AUTOMATIC_DEFAULT_scaled_unmerged_WAVE2.mtz",
 ]
 
+expected_data_files_nosca = [
+    "AUTOMATIC_DEFAULT_free.mtz",
+    "AUTOMATIC_DEFAULT_scaled_unmerged_WAVE1.mtz",
+    "AUTOMATIC_DEFAULT_scaled_unmerged_WAVE2.mtz",
+]
+
 
 def test_dials(regression_test, dials_data, tmpdir, ccp4):
     command_line = [
@@ -30,7 +36,7 @@ def test_dials(regression_test, dials_data, tmpdir, ccp4):
         result,
         tmpdir,
         ccp4,
-        expected_data_files=expected_data_files,
+        expected_data_files=expected_data_files_nosca,
     )
     assert success, issues
 
