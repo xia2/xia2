@@ -841,7 +841,6 @@ class DialsScaler(Scaler):
         self._scaled_experiments = self._scaler.get_scaled_experiments()
         self._scaled_reflections = self._scaler.get_scaled_reflections()
 
-        FileHandler.record_data_file(scaled_unmerged_mtz_path)
         FileHandler.record_data_file(scaled_mtz_path)
 
         # make it so that only scaled.pickle and scaled_experiments.json are
@@ -972,6 +971,8 @@ class DialsScaler(Scaler):
                 ] = scaled_unmerged_mtz_path
             scaler.set_scaled_unmerged_mtz(unmerged_mtz_files)
             scaler.scale()
+            for f in scaler.get_scaled_unmerged_mtz():  # a list
+                FileHandler.record_data_file(f)
             # set refls, exps & unmerged mtz names"
 
         if PhilIndex.params.xia2.settings.merging_statistics.source == "cctbx":

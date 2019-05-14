@@ -212,6 +212,9 @@ def DialsScale(DriverType=None, decay_correction=None):
             assert isinstance(filepaths, list)
             self._merged_reflections = filepaths
 
+        def get_scaled_unmerged_mtz(self):
+            return self._unmerged_reflections
+
         def set_scaled_unmerged_mtz(self, filepaths):
             assert isinstance(filepaths, list)
             self._unmerged_reflections = filepaths
