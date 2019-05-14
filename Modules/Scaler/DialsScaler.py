@@ -841,6 +841,7 @@ class DialsScaler(Scaler):
         self._scaled_experiments = self._scaler.get_scaled_experiments()
         self._scaled_reflections = self._scaler.get_scaled_reflections()
 
+        FileHandler.record_data_file(scaled_unmerged_mtz_path)
         FileHandler.record_data_file(scaled_mtz_path)
 
         # make it so that only scaled.pickle and scaled_experiments.json are
