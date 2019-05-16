@@ -16,7 +16,7 @@ def DialsAssignIdentifiers(DriverType=None):
             # generic things
             super(DialsAssignIdentifiersWrapper, self).__init__()
 
-            self.set_executable("dev.dials.assign_experiment_identifiers")
+            self.set_executable("dials.assign_experiment_identifiers")
             self._experiments_filenames = []
             self._reflections_filenames = []
             self._output_experiments_filename = None
