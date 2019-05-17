@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+import re
+
 import xia2.Driver.timing
 
 
@@ -226,8 +228,8 @@ def test_timing_visualisation():
                 "process start": 1555579148.291029,
             },
             # "time_end": 1555579148.367611,
-            "time_end": 1555579158.367611,
-            "time_start": 1555579148.288115,
+            "time_end": 1555579168.367611,
+            "time_start": 1555579158.288115,
         },
         {
             "command": "freerflag  'hklin' 'AUTOMATIC_DEFAULT_free_temp.mtz' 'hklout' 'AUTOMATIC_DEFAULT_free.mtz'",
@@ -235,8 +237,8 @@ def test_timing_visualisation():
                 "object initialization": 1555579148.370701,
                 "process start": 1555579148.381674,
             },
-            "time_end": 1555579148.454594,
-            "time_start": 1555579148.370701,
+            "time_end": 1555579158.454594,
+            "time_start": 1555579158.370701,
         },
     ]
 
@@ -260,3 +262,6 @@ def test_timing_visualisation():
     # may be more due to name overlaps
     assert seen_in_top10 >= min(10, len(example))
     assert len(top10) == min(10, len(example))
+
+    # thinking time should appear in the tree
+    assert re.search("^13.* T[0-9] .*xia2 thinking time.*$", tree, re.MULTILINE)

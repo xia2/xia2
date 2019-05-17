@@ -156,6 +156,7 @@ def visualise_db(timing_db):
             # This is a xia2 thinking time break.
             next_task_start = ordered_by_start[0][0]
             thinking_time = next_task_start - end_time
+            timestamp = end_time
 
             # Highlight thinking time if it is significant.
             if thinking_time >= significant_thinking_break:
