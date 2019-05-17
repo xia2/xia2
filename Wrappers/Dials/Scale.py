@@ -69,7 +69,7 @@ def DialsScale(DriverType=None, decay_correction=None):
             self._anomalous = False
 
             # these are only relevant for 'rotation' mode scaling
-            self._spacing = 5
+            self._spacing = None
             self._cycles = None
             self._brotation = None
             self._bfactor_tie = None
@@ -253,7 +253,8 @@ def DialsScale(DriverType=None, decay_correction=None):
             if self._model is not None:
                 self.add_command_line("model=%s" % self._model)
             self.add_command_line("full_matrix=%s" % self._full_matrix)
-            self.add_command_line("scale_interval=%g" % self._spacing)
+            if self._spacing:
+                self.add_command_line("scale_interval=%g" % self._spacing)
             self.add_command_line("optimise_errors=%s" % self._optimise_errors)
             self.add_command_line("outlier_rejection=%s" % self._outlier_rejection)
 

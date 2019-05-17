@@ -956,6 +956,7 @@ class DialsScaler(Scaler):
         unmerged_mtz_files = []
         if len(dnames_list) > 1:
             scaler = DialsScale()
+            scaler.set_working_directory(self.get_working_directory())
             scaler.set_export_mtz_only()
             scaler.add_experiments_json(self._scaled_experiments)
             scaler.add_reflections_file(self._scaled_reflections)
