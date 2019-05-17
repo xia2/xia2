@@ -191,9 +191,7 @@ def xia2_main(stop_after=None):
         else:
             method = "multiprocessing"
         nproc = mp_params.nproc
-        qsub_command = mp_params.qsub_command
-        if not qsub_command:
-            qsub_command = "qsub"
+        qsub_command = mp_params.qsub_command or "qsub"
         qsub_command = "%s -V -cwd -pe smp %d" % (qsub_command, nproc)
 
         from libtbx import easy_mp
