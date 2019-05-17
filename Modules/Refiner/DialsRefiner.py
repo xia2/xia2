@@ -113,7 +113,7 @@ class DialsRefiner(Refiner):
                 # set indexed reflections to id == 0 and imageset_id == 0
                 reflections["id"].set_selected(reflections["id"] == i, 0)
                 reflections["imageset_id"] = flex.int(len(reflections), 0)
-                easy_pickle.dump(indexed_reflections, reflections)
+                reflections.as_pickle(indexed_reflections)
 
             assert (
                 len(experiments.crystals()) == 1
