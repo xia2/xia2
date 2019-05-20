@@ -171,6 +171,10 @@ Environment = _Environment()
 def get_number_cpus():
     """Portably get the number of processor cores available."""
 
+    if os.name == "nt":
+        # Windows only has once CPU because easy_mp does not support more. #191
+        return 1
+
     # if environmental variable NSLOTS is set to a number then use that
     try:
         return int(os.environ.get("NSLOTS"))

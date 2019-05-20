@@ -92,7 +92,7 @@ def Index(DriverType=None):
         def set_indexing_method(self, method):
             self._indexing_method = method
 
-        def set_indexing_method(self):
+        def get_indexing_method(self):
             return self._indexing_method
 
         def set_reflections_per_degree(self, reflections_per_degree):
