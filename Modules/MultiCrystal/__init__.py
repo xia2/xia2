@@ -319,6 +319,7 @@ class multi_crystal_analysis(object):
             for d in datasets
         ]
         params.lattice_group = datasets[0].space_group_info()
+        params.space_group = datasets[0].space_group_info()
         params.cluster.method = "dbscan"
 
         self.cosym = CosymAnalysis(datasets, params)
