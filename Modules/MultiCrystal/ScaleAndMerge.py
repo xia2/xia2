@@ -529,14 +529,15 @@ class MultiCrystalScale(object):
             self._reflections_filename
         )
 
-        best_solution = cosym.get_best_solution()
-        best_space_group = sgtbx.space_group(
-            str(best_solution["patterson_group"])
-        ).build_derived_acentric_group()
-        self._params.symmetry.space_group = best_space_group.info()
-        logger.info(
-            "Space group determined by dials.cosym: %s" % best_space_group.info()
-        )
+        if self._params.symmetry.space_group is None:
+            best_solution = cosym.get_best_solution()
+            best_space_group = sgtbx.space_group(
+                str(best_solution["patterson_group"])
+            ).build_derived_acentric_group()
+            self._params.symmetry.space_group = best_space_group.info()
+            logger.info(
+                "Space group determined by dials.cosym: %s" % best_space_group.info()
+            )
 
         return
 

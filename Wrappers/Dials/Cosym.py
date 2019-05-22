@@ -112,7 +112,10 @@ def DialsCosym(DriverType=None, decay_correction=None):
             assert os.path.exists(self._json)
             with open(self._json, "rb") as f:
                 d = json.load(f)
-            self._best_solution = d["subgroup_scores"][0]
+            if self._space_group is None:
+                self._best_solution = d["subgroup_scores"][0]
+            else:
+                self._best_solution = None
 
             return "OK"
 
