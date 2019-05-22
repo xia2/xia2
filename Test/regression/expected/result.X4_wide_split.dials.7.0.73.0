@@ -18,11 +18,11 @@ For AUTOMATIC/DEFAULT/NATIVE:
 High resolution limit                           1.21(5%)    3.28(10%)    1.21(**)
 Low resolution limit                           29.98(5%)   29.99(**)    1.23(**)
 Completeness                                   99.6(5%)    98.1(5%)    97.3(10)
-Multiplicity                                    5.5(0.2)     5.2(0.2)     5.4(0.2)
-I/sigma                                         5.6(15%)    13.7(**)     0.7(0.3)
-Rmerge(I+/-)                                  0.098(10%)   0.040(10%)   0.928(15%)
-CC half                                       0.995(2%)   0.996(0.2)   0.547(0.2)
-Anomalous completeness                         98.7(2%)    99.8(5%)    96.4(10)
-Anomalous multiplicity                          3.0(0.5)     3.3(0.5)     2.9(0.5)
+Multiplicity                                    5.5(0.2)     5.1(0.2)     5.4(0.2)
+I/sigma                                         9.0(15%)    31.5(**)     0.7(0.3)
+Rmerge(I+/-)                                  0.083(10%)   0.030(10%)   0.906(15%)
+CC half                                       0.998(2%)   0.998(0.2)   0.593(0.2)
+Anomalous completeness                         98.6(2%)    99.0(5%)    96.4(10)
+Anomalous multiplicity                          3.0(0.5)     3.2(0.5)     2.9(0.5)
 Cell:  42.473(0.5%)  42.473(0.5%)  39.732(0.5%)  90.000  90.000  90.000
 Spacegroup: P 4 2 2
