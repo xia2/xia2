@@ -510,7 +510,7 @@ def XDSIdxref(DriverType=None, params=None):
 
             # get the highest symmetry "acceptable" solution
 
-            list = [
+            lst = [
                 (k, self._indexing_solutions[k]["cell"])
                 for k in self._indexing_solutions.keys()
             ]
@@ -529,7 +529,7 @@ def XDSIdxref(DriverType=None, params=None):
                     "Target unit cell: %.2f %.2f %.2f %.2f %.2f %.2f" % self._cell
                 )
 
-                for l in list:
+                for l in lst:
                     if lattice_to_spacegroup_number(l[0]) == self._symm:
                         # this should be the correct solution...
                         # check the unit cell...
@@ -554,7 +554,7 @@ def XDSIdxref(DriverType=None, params=None):
                 # select the top solution as the input cell and reset the
                 # "indexing done" flag
 
-                sorted_list = SortLattices(list)
+                sorted_list = SortLattices(lst)
                 #       print sorted_list
 
                 self._symm = lattice_to_spacegroup_number(sorted_list[0][0])

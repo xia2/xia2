@@ -48,39 +48,39 @@ class _DriverFactory(object):
         if "XIA2CORE_DRIVERTYPE" in os.environ:
             self.set_driver_type(os.environ["XIA2CORE_DRIVERTYPE"])
 
-    def set_driver_type(self, type):
+    def set_driver_type(self, typ):
         """Set the kind of driver this factory should produce."""
-        if not type in self._implemented_types:
-            raise RuntimeError("unimplemented driver class: %s" % type)
+        if not typ in self._implemented_types:
+            raise RuntimeError("unimplemented driver class: %s" % typ)
 
-        self._driver_type = type
+        self._driver_type = typ
 
     def get_driver_type(self):
         return self._driver_type
 
-    def Driver(self, type=None):
+    def Driver(self, typ=None):
         """Create a new Driver instance, optionally providing the
         type of Driver we want."""
 
-        if not type:
-            type = self._driver_type
+        if not typ:
+            typ = self._driver_type
 
-        if "cluster" in type:
-            return ClusterDriverFactory.Driver(type)
+        if "cluster" in typ:
+            return ClusterDriverFactory.Driver(typ)
 
-        if type == "simple":
+        if typ == "simple":
             return SimpleDriver()
 
-        if type == "script":
+        if typ == "script":
             return ScriptDriver()
 
-        if type == "interactive":
+        if typ == "interactive":
             return InteractiveDriver()
 
-        if type == "qsub":
+        if typ == "qsub":
             return QSubDriver()
 
-        raise RuntimeError('Driver class "%s" unknown' % type)
+        raise RuntimeError('Driver class "%s" unknown' % typ)
 
 
 DriverFactory = _DriverFactory()

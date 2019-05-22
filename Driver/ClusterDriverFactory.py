@@ -38,30 +38,30 @@ class _ClusterDriverFactory(object):
 
         return
 
-    def set_driver_type(self, type):
-        return self.setDriver_type(type)
+    def set_driver_type(self, typ):
+        return self.setDriver_type(typ)
 
-    def setDriver_type(self, type):
+    def setDriver_type(self, typ):
         """Set the kind of driver this factory should produce."""
 
-        if not type in self._implemented_types:
-            raise RuntimeError("unimplemented driver class: %s" % type)
+        if not typ in self._implemented_types:
+            raise RuntimeError("unimplemented driver class: %s" % typ)
 
-        self._driver_type = type
+        self._driver_type = typ
 
         return
 
-    def Driver(self, type=None):
+    def Driver(self, typ=None):
         """Create a new Driver instance, optionally providing the
         type of Driver we want."""
 
-        if not type:
-            type = self._driver_type
+        if not typ:
+            typ = self._driver_type
 
-        if type == "cluster.sge":
+        if typ == "cluster.sge":
             return SunGridEngineClusterDriver()
 
-        raise RuntimeError('Driver class "%s" unknown' % type)
+        raise RuntimeError('Driver class "%s" unknown' % typ)
 
 
 ClusterDriverFactory = _ClusterDriverFactory()

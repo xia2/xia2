@@ -65,11 +65,11 @@ class _Syminfo(object):
 
         for line in open(os.path.join(os.environ["CLIBD"], "symop.lib")).readlines():
             if line[0] != " ":
-                list = line.split()
-                index = int(list[0])
-                shortname = list[3]
+                lst = line.split()
+                index = int(lst[0])
+                shortname = lst[3]
 
-                lattice_type = list[5].lower()
+                lattice_type = lst[5].lower()
                 longname = line.split("'")[1]
 
                 lattice = self._generate_lattice(lattice_type, shortname)

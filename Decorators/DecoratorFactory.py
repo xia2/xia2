@@ -25,16 +25,16 @@ class _DecoratorFactory(object):
     def __init__(self):
         self._type = "ccp4"
 
-    def Decorate(self, DriverInstance, type=None):
+    def Decorate(self, DriverInstance, typ=None):
         """Decorate DriverInstance as type or self._type if not specified."""
 
-        if type is None:
-            type = self._type
+        if typ is None:
+            typ = self._type
 
-        if type == "ccp4":
+        if typ == "ccp4":
             return CCP4DecoratorFactory(DriverInstance)
 
-        raise RuntimeError('unknown decorator class "%s"' % type)
+        raise RuntimeError('unknown decorator class "%s"' % typ)
 
 
 DecoratorFactory = _DecoratorFactory()
