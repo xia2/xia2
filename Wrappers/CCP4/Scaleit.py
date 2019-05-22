@@ -77,16 +77,16 @@ def Scaleit(DriverType=None):
             while j < len(column_info):
                 c = column_info[j]
                 name = c[0]
-                type = c[1]
+                typ = c[1]
 
-                if type == "F" and name.split("_")[0] == "F" and self._anomalous:
+                if typ == "F" and name.split("_")[0] == "F" and self._anomalous:
                     groups += 1
                     for i in range(4):
                         columns.append(column_info[i + j][0])
 
                     j += 4
 
-                elif type == "F" and name.split("_")[0] == "F" and not self._anomalous:
+                elif typ == "F" and name.split("_")[0] == "F" and not self._anomalous:
                     groups += 1
                     for i in range(2):
                         columns.append(column_info[i + j][0])
@@ -193,21 +193,21 @@ def Scaleit(DriverType=None):
                     current_derivative = -1
 
                     while not "SUMMARY_END" in line:
-                        list = line.split()
-                        if "Derivative" in list:
+                        lst = line.split()
+                        if "Derivative" in lst:
                             if "b_factor" not in self._statistics:
                                 self._statistics["b_factor"] = {}
-                            self._statistics["b_factor"][int(list[1])] = {
-                                "scale": float(list[2]),
-                                "b": float(list[3]),
-                                "dname": self._statistics["mapping"][int(list[1])],
+                            self._statistics["b_factor"][int(lst[1])] = {
+                                "scale": float(lst[2]),
+                                "b": float(lst[3]),
+                                "dname": self._statistics["mapping"][int(lst[1])],
                             }
-                            current_derivative = int(list[1])
+                            current_derivative = int(lst[1])
 
                         if "The equivalent isotropic" in line:
                             self._statistics["b_factor"][current_derivative][
                                 "b"
-                            ] = float(list[-1])
+                            ] = float(lst[-1])
 
                         j += 1
                         line = output[j]
