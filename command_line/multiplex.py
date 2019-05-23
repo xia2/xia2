@@ -17,6 +17,11 @@ from dials.util.multi_dataset_handling import (
     parse_multiple_datasets,
 )
 
+from xia2.Handlers import Streams
+
+Streams.streams_off()
+
+
 from xia2.Modules.MultiCrystal import ScaleAndMerge
 
 logger = logging.getLogger("xia2.multiplex")
