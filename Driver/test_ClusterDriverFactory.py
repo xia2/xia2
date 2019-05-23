@@ -9,6 +9,6 @@ def test_instantiate_cluster_driver():
     assert CDF.ClusterDriverFactory.Driver()
 
 
-def test_instantiate_nonexistant_clusterdriver_fails():
+def test_instantiate_nonexistent_clusterdriver_fails():
     with pytest.raises(RuntimeError):
         CDF.ClusterDriverFactory.Driver("nosuchtype")
