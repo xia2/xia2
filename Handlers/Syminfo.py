@@ -65,11 +65,10 @@ class _Syminfo(object):
 
         for line in open(os.path.join(os.environ["CLIBD"], "symop.lib")).readlines():
             if line[0] != " ":
-                lst = line.split()
-                index = int(lst[0])
-                shortname = lst[3]
+                index, _, _, shortname, _, lattice_type = line.split()[0:6]
+                index = int(index)
+                lattice_type = lattice_type.lower()
 
-                lattice_type = lst[5].lower()
                 longname = line.split("'")[1]
 
                 lattice = self._generate_lattice(lattice_type, shortname)
@@ -179,7 +178,7 @@ class _Syminfo(object):
         try:
             number = int(spacegroup)
             return number
-        except Exception:
+        except ValueError:
             pass
 
         return sgtbx.space_group_info(str(spacegroup)).type().number()
@@ -210,15 +209,11 @@ class _Syminfo(object):
 
         symops = self._symop[number]["operations"]
 
-        subgroups = []
-
-        for j in range(230):
-            sub = True
-            for s in self._symop[j + 1]["operations"]:
-                if not s in symops:
-                    sub = False
-            if sub:
-                subgroups.append(self.spacegroup_number_to_name(j + 1))
+        subgroups = [
+            self.spacegroup_number_to_name(j)
+            for j in range(1, 231)
+            if all(operation in symops for operation in self._symop[j]["operations"])
+        ]
 
         return subgroups
 
