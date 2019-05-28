@@ -44,27 +44,15 @@ unit_cell_clustering {
 
 scaling
 {
-  #intensities = summation profile *combine
-    #.type = choice
-  surface_tie = 0.001
-    .type = float
-    .short_caption = "Surface tie"
-  surface_link = True
-    .type = bool
-    .short_caption = "Surface link"
-  rotation.spacing = 2
+  rotation.spacing = None
     .type = int
     .expert_level = 2
     .short_caption = "Interval (in degrees) between scale factors on rotation axis"
   brotation.spacing = None
     .type = int
-    .expert_level = 2
+    .expert_level = None
     .short_caption = "Interval (in degrees) between B-factors on rotation axis"
   secondary {
-    frame = camera *crystal
-      .type = choice
-      .help = "Whether to do the secondary beam correction in the camera spindle"
-              "frame or the crystal frame"
     lmax = 0
       .type = int
       .expert_level = 2
@@ -694,17 +682,16 @@ class Scale(object):
         logger.debug("Scaling with dials.scale")
         scaler = DialsScale()
         auto_logfiler(scaler)
-        # scaler.set_surface_link(False) # multi-crystal
         scaler.add_experiments_json(self._experiments_filename)
         scaler.add_reflections_file(self._reflections_filename)
-        # scaler.set_surface_tie(self._params.scaling.surface_tie)
         lmax = self._params.scaling.secondary.lmax
         if lmax:
             scaler.set_absorption_correction(True)
             scaler.set_lmax(lmax)
         else:
             scaler.set_absorption_correction(False)
-        scaler.set_spacing(self._params.scaling.rotation.spacing)
+        if self._params.scaling.rotation.spacing is not None:
+            scaler.set_spacing(self._params.scaling.rotation.spacing)
         if self._params.scaling.brotation.spacing is not None:
             scaler.set_bfactor(brotation=self._params.scaling.brotation.spacing)
         scaler.set_resolution(d_min=d_min, d_max=d_max)
