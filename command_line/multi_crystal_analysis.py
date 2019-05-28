@@ -59,6 +59,15 @@ from xia2.Modules.MultiCrystalAnalysis import batch_phil_scope
 from xia2.Modules.MultiCrystal.ScaleAndMerge import DataManager
 from libtbx import phil
 
+try:
+    import matplotlib
+
+    # http://matplotlib.org/faq/howto_faq.html#generate-images-without-having-a-window-appear
+    matplotlib.use("Agg")  # use a non-interactive backend
+    from matplotlib import pyplot  # noqa: F401
+except ImportError:
+    raise Sorry("matplotlib must be installed to generate a plot.")
+
 
 def flex_double_as_string(flex_array, n_digits=None):
     if n_digits is not None:
@@ -216,7 +225,7 @@ class multi_crystal_analysis(xia2_report_base):
             threshold=self.params.unit_cell_clustering.threshold,
             log=self.params.unit_cell_clustering.log,
         )
-        from xia2.Modules.MultiCrystalAnalysis import scipy_dendrogram_to_plotly_json
+        from dials.algorithms.clustering.plots import scipy_dendrogram_to_plotly_json
 
         d["uc_clustering"] = scipy_dendrogram_to_plotly_json(
             dendrogram,
