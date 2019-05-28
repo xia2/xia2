@@ -1,9 +1,0 @@
-
-Import('env')
-
-sources = [
-    'ext.cc']
-
-env.SharedLibrary(target='#/lib/xia2_pychef_ext',
-    source=sources,
-    LIBS=env["LIBS"])
