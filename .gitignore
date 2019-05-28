@@ -13,6 +13,10 @@ __pycache__/
 # VS code
 .vscode
 
+# Python packaging
+/dist
+/xia2.egg-info
+
 # Ignored Mathematica files shall be prefixed by _
 _*.nb
 *.fdb_latexmk
