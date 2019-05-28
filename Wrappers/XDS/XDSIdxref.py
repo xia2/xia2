@@ -444,7 +444,6 @@ def XDSIdxref(DriverType=None, params=None):
                 fit = data["fit"]
                 cell = data["cell"]
                 mosaic = data["mosaic"]
-                reidx = data["reidx"]
 
                 if self._symm and self._cell and self._indxr_user_input_lattice:
 
@@ -488,16 +487,13 @@ def XDSIdxref(DriverType=None, params=None):
             # one, if self._symm is set...
 
             if self._symm:
-                assert len(self._indexing_solutions) > 0, (
+                assert self._indexing_solutions, (
                     "No remaining indexing solutions (%s, %s)"
                     % (s2l(self._symm), self._symm)
                 )
             else:
-                assert (
-                    len(self._indexing_solutions) > 0
-                ), "No remaining indexing solutions"
+                assert self._indexing_solutions, "No remaining indexing solutions"
 
-            #     print self._indexing_solutions
             if self._symm:
                 max_p = 2.0 * self._indexing_solutions[s2l(self._symm)]["goodness"]
                 to_remove = []
@@ -510,9 +506,9 @@ def XDSIdxref(DriverType=None, params=None):
 
             # get the highest symmetry "acceptable" solution
 
-            list = [
+            items = [
                 (k, self._indexing_solutions[k]["cell"])
-                for k in self._indexing_solutions.keys()
+                for k in self._indexing_solutions
             ]
 
             # if there was a preassigned cell and symmetry return now
@@ -529,32 +525,25 @@ def XDSIdxref(DriverType=None, params=None):
                     "Target unit cell: %.2f %.2f %.2f %.2f %.2f %.2f" % self._cell
                 )
 
-                for l in list:
+                for l in items:
                     if lattice_to_spacegroup_number(l[0]) == self._symm:
                         # this should be the correct solution...
                         # check the unit cell...
                         cell = l[1]
 
-                        if self._compare_cell(self._cell, cell) or True:
+                        cell_str = "%.2f %.2f %.2f %.2f %.2f %.2f" % cell
+                        Debug.write("Chosen unit cell: %s" % cell_str)
 
-                            cell_str = "%.2f %.2f %.2f %.2f %.2f %.2f" % cell
-                            Debug.write("Chosen unit cell: %s" % cell_str)
-
-                            self._indxr_lattice = l[0]
-                            self._indxr_cell = l[1]
-                            self._indxr_mosaic = mosaic
-
-                        else:
-
-                            cell_str = "%.2f %.2f %.2f %.2f %.2f %.2f" % cell
-                            Debug.write("Ignoring unit cell: %s" % cell_str)
+                        self._indxr_lattice = l[0]
+                        self._indxr_cell = l[1]
+                        self._indxr_mosaic = mosaic
 
             else:
 
                 # select the top solution as the input cell and reset the
                 # "indexing done" flag
 
-                sorted_list = SortLattices(list)
+                sorted_list = SortLattices(items)
                 #       print sorted_list
 
                 self._symm = lattice_to_spacegroup_number(sorted_list[0][0])

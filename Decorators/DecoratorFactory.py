@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# DecoratorFactory.py
-#
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is
@@ -25,20 +22,16 @@ class _DecoratorFactory(object):
     def __init__(self):
         self._type = "ccp4"
 
-    def Decorate(self, DriverInstance, type=None):
+    def Decorate(self, DriverInstance, decorator_type=None):
         """Decorate DriverInstance as type or self._type if not specified."""
 
-        if type is None:
-            type = self._type
+        if not decorator_type:
+            decorator_type = self._type
 
-        if type == "ccp4":
+        if decorator_type == "ccp4":
             return CCP4DecoratorFactory(DriverInstance)
 
-        raise RuntimeError('unknown decorator class "%s"' % type)
+        raise RuntimeError('unknown decorator class "%s"' % decorator_type)
 
 
 DecoratorFactory = _DecoratorFactory()
-
-if __name__ == "__main__":
-    # run some kind of test here
-    raise RuntimeError("no test available")

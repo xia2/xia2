@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # DriverFactory.py
 #
 #   Copyright (C) 2006 CCLRC, Graeme Winter
@@ -31,7 +30,6 @@ from xia2.Driver.SimpleDriver import SimpleDriver
 
 class _DriverFactory(object):
     def __init__(self):
-
         self._driver_type = "simple"
 
         self._implemented_types = [
@@ -48,46 +46,36 @@ class _DriverFactory(object):
         if "XIA2CORE_DRIVERTYPE" in os.environ:
             self.set_driver_type(os.environ["XIA2CORE_DRIVERTYPE"])
 
-    def set_driver_type(self, type):
+    def set_driver_type(self, driver_type):
         """Set the kind of driver this factory should produce."""
-        if not type in self._implemented_types:
-            raise RuntimeError("unimplemented driver class: %s" % type)
+        if driver_type not in self._implemented_types:
+            raise RuntimeError("unimplemented driver class: %s" % driver_type)
 
-        self._driver_type = type
+        self._driver_type = driver_type
 
     def get_driver_type(self):
         return self._driver_type
 
-    def Driver(self, type=None):
+    def Driver(self, driver_type=None):
         """Create a new Driver instance, optionally providing the
         type of Driver we want."""
 
-        if not type:
-            type = self._driver_type
+        if not driver_type:
+            driver_type = self._driver_type
 
-        if "cluster" in type:
-            return ClusterDriverFactory.Driver(type)
+        if "cluster" in driver_type:
+            return ClusterDriverFactory.Driver(driver_type)
 
-        if type == "simple":
-            return SimpleDriver()
+        driver_class = {
+            "simple": SimpleDriver,
+            "script": ScriptDriver,
+            "interactive": InteractiveDriver,
+            "qsub": QSubDriver,
+        }.get(driver_type)
+        if driver_class:
+            return driver_class()
 
-        if type == "script":
-            return ScriptDriver()
-
-        if type == "interactive":
-            return InteractiveDriver()
-
-        if type == "qsub":
-            return QSubDriver()
-
-        raise RuntimeError('Driver class "%s" unknown' % type)
+        raise RuntimeError('Driver class "%s" unknown' % driver_type)
 
 
 DriverFactory = _DriverFactory()
-
-if __name__ == "__main__":
-    # then run a test
-
-    d = DriverFactory.Driver()
-
-    d = DriverFactory.Driver("nosuchtype")

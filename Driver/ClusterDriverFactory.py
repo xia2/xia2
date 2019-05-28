@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# ClusterDriverFactory.py
-#
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is
@@ -24,7 +21,6 @@ from xia2.Driver.SunGridEngineClusterDriver import SunGridEngineClusterDriver
 
 class _ClusterDriverFactory(object):
     def __init__(self):
-
         self._driver_type = "cluster.sge"
 
         self._implemented_types = ["cluster.sge"]
@@ -36,39 +32,28 @@ class _ClusterDriverFactory(object):
             if "cluster" in os.environ["XIA2CORE_DRIVERTYPE"]:
                 self.setDriver_type(os.environ["XIA2CORE_DRIVERTYPE"])
 
-        return
+    def set_driver_type(self, driver_type):
+        return self.setDriver_type(driver_type)
 
-    def set_driver_type(self, type):
-        return self.setDriver_type(type)
-
-    def setDriver_type(self, type):
+    def setDriver_type(self, driver_type):
         """Set the kind of driver this factory should produce."""
 
-        if not type in self._implemented_types:
-            raise RuntimeError("unimplemented driver class: %s" % type)
+        if driver_type not in self._implemented_types:
+            raise RuntimeError("unimplemented driver class: %s" % driver_type)
 
-        self._driver_type = type
+        self._driver_type = driver_type
 
-        return
-
-    def Driver(self, type=None):
+    def Driver(self, driver_type=None):
         """Create a new Driver instance, optionally providing the
         type of Driver we want."""
 
-        if not type:
-            type = self._driver_type
+        if not driver_type:
+            driver_type = self._driver_type
 
-        if type == "cluster.sge":
+        if driver_type == "cluster.sge":
             return SunGridEngineClusterDriver()
 
-        raise RuntimeError('Driver class "%s" unknown' % type)
+        raise RuntimeError('Driver class "%s" unknown' % driver_type)
 
 
 ClusterDriverFactory = _ClusterDriverFactory()
-
-if __name__ == "__main__":
-    # then run a test
-
-    d = ClusterDriverFactory.Driver()
-
-    d = ClusterDriverFactory.Driver("nosuchtype")
