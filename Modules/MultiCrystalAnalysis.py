@@ -106,7 +106,7 @@ class multi_crystal_analysis(xia2_report_base):
         return clusters, dendrogram
 
     def radiation_damage_analysis(self):
-        from xia2.Modules.PyChef import Statistics
+        from dials.pychef import Statistics
 
         miller_arrays = self._data_manager.reflections_as_miller_arrays(
             return_batches=True

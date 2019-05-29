@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 from collections import OrderedDict
 
 from libtbx import phil
-from xia2.Modules.PyChef import dose_phil_str
+from dials.pychef import dose_phil_str
 
 batch_phil_scope = """\
 batch
