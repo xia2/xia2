@@ -25,3 +25,4 @@ jobs:
       python: 3.7
       script:
          - .travis/run-flake8
+      if: type = pull_request
