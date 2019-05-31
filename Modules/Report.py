@@ -259,14 +259,14 @@ class xia2_report_base(object):
 
     def pychef_plots(self, n_bins=8):
 
-        from xia2.Modules import PyChef
+        import dials.pychef
 
         intensities = self.intensities
         batches = self.batches
         dose = self.dose
 
         if self.params.chef_min_completeness:
-            d_min = PyChef.resolution_limit(
+            d_min = dials.pychef.resolution_limit(
                 mtz_file=self.unmerged_mtz,
                 min_completeness=self.params.chef_min_completeness,
                 n_bins=n_bins,
@@ -281,10 +281,10 @@ class xia2_report_base(object):
                 dose = dose.select(sel)
 
         if dose is None:
-            dose = PyChef.batches_to_dose(batches.data(), self.params.dose)
+            dose = dials.pychef.batches_to_dose(batches.data(), self.params.dose)
         else:
             dose = dose.data()
-        pychef_stats = PyChef.Statistics(intensities, dose, n_bins=n_bins)
+        pychef_stats = dials.pychef.Statistics(intensities, dose, n_bins=n_bins)
 
         return pychef_stats.to_dict()
 
