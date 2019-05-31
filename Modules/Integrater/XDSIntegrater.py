@@ -27,7 +27,6 @@ from xia2.Experts.SymmetryExpert import (
     mat_to_symop,
     r_to_rt,
     rt_to_r,
-    symop_to_mat,
 )
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
@@ -544,9 +543,11 @@ class XDSIntegrater(Integrater):
         if PhilIndex.params.xia2.settings.input.format.dynamic_shadowing:
             from dxtbx.serialize import load
             from dials.algorithms.shadowing.filter import filter_shadowed_reflections
+            from dials.array_family import flex
 
             experiments_json = xparm_xds_to_experiments_json(
-                self._xds_data_files["XPARM.XDS"], self.get_working_directory()
+                os.path.join(self.get_working_directory(), "XPARM.XDS"),
+                self.get_working_directory(),
             )
             experiments = load.experiment_list(experiments_json, check_format=True)
             imageset = experiments[0].imageset
