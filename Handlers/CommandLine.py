@@ -112,6 +112,18 @@ def unroll_datasets(datasets):
     return unrolled
 
 
+def validate_project_crystal_name(parameter, value):
+    import re
+
+    pattern = re.compile(r"[a-zA-Z_]\w*$")
+    if not re.match(pattern, value):
+        raise Sorry(
+            "%s name must consist only of alphanumeric characters and underscores. "
+            "The first character must be a non-digit character." % parameter
+        )
+    return True
+
+
 class _CommandLine(object):
     """A class to represent the command line input."""
 
@@ -242,6 +254,12 @@ class _CommandLine(object):
 
         # pipeline options
         self._read_pipeline()
+
+        for (parameter, value) in (
+            ("project", params.xia2.settings.project),
+            ("crystal", params.xia2.settings.crystal),
+        ):
+            validate_project_crystal_name(parameter, value)
 
         Debug.write("Project: %s" % params.xia2.settings.project)
         Debug.write("Crystal: %s" % params.xia2.settings.crystal)
