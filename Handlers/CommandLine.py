@@ -19,6 +19,7 @@ from __future__ import absolute_import, division, print_function
 import collections
 import copy
 import os
+import re
 import sys
 
 from dials.util import Sorry
@@ -29,6 +30,8 @@ from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.PipelineSelection import add_preference
 from xia2.Handlers.Streams import Chatter, Debug
 from xia2.Schema.XProject import XProject
+
+PATTERN_VALID_CRYSTAL_PROJECT_NAME = re.compile(r"[a-zA-Z_]\w*$")
 
 
 def load_experiments(filename):
@@ -110,15 +113,11 @@ def unroll_datasets(datasets):
 
 
 def validate_project_crystal_name(parameter, value):
-    import re
-
-    pattern = re.compile(r"[a-zA-Z_]\w*$")
-    if not re.match(pattern, value):
+    if not PATTERN_VALID_CRYSTAL_PROJECT_NAME.match(value):
         raise Sorry(
             "%s name must consist only of alphanumeric characters and underscores. "
             "The first character must be a non-digit character." % parameter
         )
-    return True
 
 
 class _CommandLine(object):
