@@ -6,7 +6,7 @@ from xia2.Handlers.CommandLine import validate_project_crystal_name
 from dials.util import Sorry
 
 
-def test_validate_project_crystal_name():
+def test_validate_project_crystal_name(ccp4):
     for value in ("foo_001", "_foo_001", "foo", "_foo_", "_1foo"):
         assert validate_project_crystal_name("crystal", value)
     for value in ("foo.001", "1foo", "foo&", "*foo"):
