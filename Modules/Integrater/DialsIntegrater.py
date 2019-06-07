@@ -406,7 +406,11 @@ class DialsIntegrater(Integrater):
         experiments = load.experiment_list(self._intgr_experiments_filename)
         profile = experiments.profiles()[0]
         mosaic = profile.sigma_m()
-        self.set_integrater_mosaic_min_mean_max(mosaic, mosaic, mosaic)
+        try:
+            mos_min, mos_max, mos_mean = mosaic.min_max_mean().as_tuple()
+            self.set_integrater_mosaic_min_mean_max(mos_min, mos_mean, mos_max)
+        except AttributeError:
+            self.set_integrater_mosaic_min_mean_max(mosaic, mosaic, mosaic)
 
         Chatter.write(
             "Mosaic spread: %.3f < %.3f < %.3f"
