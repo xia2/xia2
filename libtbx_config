@@ -3,7 +3,7 @@
   "modules_required_for_use": ["cctbx", "iotbx", "dxtbx", "mmtbx"],
   "optional_modules": ["dials"],
   "python_required": [
-    "dials-data>=1.0",
+    "dials-data>=2.0",
     "Jinja2",
     "mock>=2.0",
     "procrunner",

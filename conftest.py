@@ -13,25 +13,12 @@ import procrunner
 import pytest
 from dials.conftest import run_in_tmpdir  # noqa: F401
 
-try:
-    import dials_data as pkg_dials_data
-
-    dials_data = pkg_dials_data.dials_data
-except ImportError:
-    pkg_dials_data = None
-
-    @pytest.fixture(scope="session")
-    def dials_data():
-        pytest.skip("Test requires python package dials_data")
-
 
 def pytest_addoption(parser):
     """
     Option '--regression-full' needs to be used to run all regression tests,
     including the full-length xia2 runs.
     """
-    if pkg_dials_data:
-        pkg_dials_data.pytest_addoption(parser)
 
     class RFAction(argparse.Action):
         def __call__(self, parser, namespace, values, option_string):
