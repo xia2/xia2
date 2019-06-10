@@ -2,3 +2,6 @@
     package = "xia2"
     package_dir = ".."
     filename = "CHANGELOG.rst"
+
+[tool.black]
+include='\.pyi?$|/libtbx_config$'
