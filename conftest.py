@@ -11,6 +11,7 @@ import re
 
 import procrunner
 import pytest
+import six
 from dials.conftest import run_in_tmpdir  # noqa: F401
 
 
@@ -31,6 +32,14 @@ def pytest_addoption(parser):
         action=RFAction,
         help="run all regression tests, this will take a while. Implies --regression",
     )
+
+
+def pytest_configure(config):
+    if six.PY3:
+        import dxtbx.tests.python3_test_filter as ptf
+
+        exp = ptf.Python3TestFailureExpectationPlugin(config)
+        config.pluginmanager.register(exp)
 
 
 @pytest.fixture(scope="session")

@@ -19,6 +19,10 @@ __pycache__/
 
 # Ignored Mathematica files shall be prefixed by _
 _*.nb
+
+# Python3 migration testing
+.python3-test-failures.new
+
 *.fdb_latexmk
 *.gz
 *.pdf
