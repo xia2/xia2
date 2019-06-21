@@ -93,7 +93,7 @@ def build_hist(nproc=1):
     if len(sys.argv) >= 2 and sys.argv[1].startswith("nproc="):
         nproc = int(sys.argv[1][6:])
         sys.argv = sys.argv[1:]
-    if len(sys.argv) == 2 and sys.argv[1][-5:] in (".expt", ".json"):
+    if len(sys.argv) == 2 and sys.argv[1].endswith((".expt", ".json")):
         from dxtbx.model.experiment_list import ExperimentListFactory
 
         experiments = ExperimentListFactory.from_json_file(sys.argv[1])
