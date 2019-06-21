@@ -13,7 +13,7 @@ repos:
   hooks:
   - id: check-ast
   - id: flake8
-    args: ['--max-line-length=88', '--select=W291,W292,W293,F401']
+    args: ['--max-line-length=88', '--select=E711,E714,E721,E722,E901,F401,F822,F901,W191,W602,W603,W604,W606']
   - id: check-merge-conflict
   - id: check-added-large-files
     args: ['--maxkb=200']
