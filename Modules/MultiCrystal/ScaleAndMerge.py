@@ -386,8 +386,8 @@ class MultiCrystalScale(object):
 
         self._scaled = Scale(self._data_manager, self._params)
 
-        self._data_manager.export_experiments("experiments_final.json")
-        self._data_manager.export_reflections("reflections_final.pickle")
+        self._data_manager.export_experiments("final.expt")
+        self._data_manager.export_reflections("final.refl")
 
         scaled_unmerged_mtz = py.path.local(self._scaled.scaled_unmerged_mtz)
         scaled_unmerged_mtz.copy(py.path.local("scaled_unmerged.mtz"))
@@ -496,12 +496,8 @@ class MultiCrystalScale(object):
         cosym = DialsCosym()
         auto_logfiler(cosym)
 
-        experiments_filename = self._data_manager.export_experiments(
-            "tmp_experiments.json"
-        )
-        reflections_filename = self._data_manager.export_reflections(
-            "tmp_reflections.pickle"
-        )
+        experiments_filename = self._data_manager.export_experiments("tmp.expt")
+        reflections_filename = self._data_manager.export_reflections("tmp.refl")
         cosym.add_experiments_json(experiments_filename)
         cosym.add_reflections_file(reflections_filename)
         if self._params.symmetry.space_group is not None:
@@ -541,8 +537,8 @@ class MultiCrystalScale(object):
             ].crystal.get_crystal_symmetry()
             cb_op_to_ref = crystal_symmetry.change_of_basis_op_to_reference_setting()
             self._data_manager.reindex(cb_op=cb_op_to_ref)
-            self._experiments_filename = "experiments.json"
-            self._reflections_filename = "reflections.pickle"
+            self._experiments_filename = "models.expt"
+            self._reflections_filename = "observations.refl"
             self._data_manager.export_experiments(self._experiments_filename)
             self._data_manager.export_reflections(self._reflections_filename)
             return
@@ -551,15 +547,11 @@ class MultiCrystalScale(object):
         symmetry = DialsSymmetry()
         auto_logfiler(symmetry)
 
-        self._experiments_filename = (
-            "%i_experiments_reindexed.json" % symmetry.get_xpid()
-        )
-        self._reflections_filename = (
-            "%i_reflections_reindexed.pickle" % symmetry.get_xpid()
-        )
+        self._experiments_filename = "%i_reindexed.expt" % symmetry.get_xpid()
+        self._reflections_filename = "%i_reindexed.refl" % symmetry.get_xpid()
 
-        experiments_filename = "tmp_experiments.json"
-        reflections_filename = "tmp_reflections.pickle"
+        experiments_filename = "tmp.expt"
+        reflections_filename = "tmp.refl"
         self._data_manager.export_experiments(experiments_filename)
         self._data_manager.export_reflections(reflections_filename)
 
@@ -599,8 +591,8 @@ class Scale(object):
         self._data_manager = data_manager
         self._params = params
 
-        self._experiments_filename = "experiments.json"
-        self._reflections_filename = "reflections.pickle"
+        self._experiments_filename = "models.expt"
+        self._reflections_filename = "observations.refl"
         self._data_manager.export_experiments(self._experiments_filename)
         self._data_manager.export_reflections(self._reflections_filename)
         self.best_unit_cell = None

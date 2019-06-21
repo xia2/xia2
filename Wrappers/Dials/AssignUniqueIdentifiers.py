@@ -52,13 +52,11 @@ def DialsAssignIdentifiers(DriverType=None):
 
             if not self._output_experiments_filename:
                 self._output_experiments_filename = os.path.join(
-                    self.get_working_directory(),
-                    "%d_assigned_experiments.json" % self.get_xpid(),
+                    self.get_working_directory(), "%d_assigned.expt" % self.get_xpid()
                 )
             if not self._output_reflections_filename:
                 self._output_reflections_filename = os.path.join(
-                    self.get_working_directory(),
-                    "%d_assigned_reflections.pickle" % self.get_xpid(),
+                    self.get_working_directory(), "%d_assigned.refl" % self.get_xpid()
                 )
 
             self.add_command_line(

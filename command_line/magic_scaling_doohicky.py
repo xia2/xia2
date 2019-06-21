@@ -43,7 +43,7 @@ def find_pickle_and_json():
             for k in s:
                 p = s[k]["_intgr_integrated_pickle"]
                 integrate_pickles.append(p)
-                integrate_jsons.append(p.replace(".pickle", "_experiments.json"))
+                integrate_jsons.append(p.replace(".refl", ".expt"))
 
     for p, j in zip(integrate_pickles, integrate_jsons):
         assert os.path.exists(p)
@@ -59,10 +59,8 @@ def find_pickle_and_json():
     from dxtbx.serialize import load as load_experiment
     from dials.array_family import flex
 
-    experiments = load_experiment.experiment_list(
-        "reindexed_experiments.json", check_format=False
-    )
-    reflections = flex.reflection_table.from_pickle("reindexed_reflections.pickle")
+    experiments = load_experiment.experiment_list("reindexed.expt", check_format=False)
+    reflections = flex.reflection_table.from_pickle("reindexed.refl")
 
     spells = [
         "unmerged_mtz=dials_unmerged.mtz",

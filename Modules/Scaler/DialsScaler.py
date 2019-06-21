@@ -537,7 +537,7 @@ class DialsScaler(Scaler):
         if PhilIndex.params.xia2.settings.scale.reference_reflection_file:
             if not PhilIndex.params.xia2.settings.scale.reference_experiment_file:
                 Chatter.write(
-                    "No reference experiments.json provided, reference reflection file will not be used"
+                    "No reference models.expt provided, reference reflection file will not be used"
                 )
             else:
                 self._reference_reflections = (
@@ -624,12 +624,10 @@ class DialsScaler(Scaler):
             for epoch in self._sweep_handler.get_epochs():
                 if epoch != first:
                     reindexed_exp_fpath = os.path.join(
-                        self.get_working_directory(),
-                        str(counter) + "_reindexed_experiments.json",
+                        self.get_working_directory(), str(counter) + "_reindexed.expt"
                     )
                     reindexed_refl_fpath = os.path.join(
-                        self.get_working_directory(),
-                        str(counter) + "_reindexed_reflections.pickle",
+                        self.get_working_directory(), str(counter) + "_reindexed.refl"
                     )
 
                     # if we are working with unified UB matrix then this should not
@@ -844,7 +842,7 @@ class DialsScaler(Scaler):
         FileHandler.record_data_file(scaled_unmerged_mtz_path)
         FileHandler.record_data_file(scaled_mtz_path)
 
-        # make it so that only scaled.pickle and scaled_experiments.json are
+        # make it so that only scaled.expt and scaled.refl are
         # the files that dials.scale knows about, so that if scale is called again,
         # scaling resumes from where it left off.
         self._scaler.clear_datafiles()
@@ -1158,14 +1156,10 @@ class DialsScalerHelper(object):
             si = sweep_handler.get_sweep_information(epoch)
             nums = fmt % i
             si.set_reflections(
-                os.path.join(
-                    self.get_working_directory(), "split_reflections_%s.pickle" % nums
-                )
+                os.path.join(self.get_working_directory(), "split_%s.refl" % nums)
             )
             si.set_experiments(
-                os.path.join(
-                    self.get_working_directory(), "split_experiments_%s.json" % nums
-                )
+                os.path.join(self.get_working_directory(), "split_%s.expt" % nums)
             )
         return sweep_handler
 
@@ -1185,9 +1179,7 @@ class DialsScalerHelper(object):
             del r.experiment_identifiers()[old_id]
             r["id"].set_selected(r["id"] == old_id, i)
             r.experiment_identifiers()[i] = exp_id
-            fname = os.path.join(
-                self.get_working_directory(), "split_reflections_%s.pickle" % nums
-            )
+            fname = os.path.join(self.get_working_directory(), "split_%s.refl" % nums)
             r.as_pickle(fname)
             si.set_reflections(fname)
         return sweep_handler

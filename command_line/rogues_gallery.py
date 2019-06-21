@@ -116,7 +116,7 @@ def reconstruct_rogues(params):
             reflections.extract_shoeboxes(images, verbose=False)
 
         if len(reflections_run) > 1:
-            output = params.output.reflections.replace(".pickle", "-%s.pickle" % name)
+            output = params.output.reflections.replace(".refl", "-%s.refl" % name)
             print(
                 "Extracted %d rogue reflections for %s to %s"
                 % (len(reflections), name, output)
@@ -139,7 +139,7 @@ rogues {
     .help = "Extract shoebox pixels"
 
   output {
-    reflections = 'xia2-rogues.pickle'
+    reflections = 'xia2-rogues.refl'
       .type = str
       .help = "The integrated output filename"
   }

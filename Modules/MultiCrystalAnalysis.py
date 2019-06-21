@@ -201,9 +201,9 @@ class multi_crystal_analysis(xia2_report_base):
 
         # return
 
-        self._data_manager.export_experiments("tmp_experiments.json")
+        self._data_manager.export_experiments("tmp.expt")
         self._stereographic_projection_files = self.stereographic_projections(
-            "tmp_experiments.json"
+            "tmp.expt"
         )
 
         styles = {}

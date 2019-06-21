@@ -192,7 +192,7 @@ def to_shelx(hklin, prefix, compound="", options=None):
     unit_cell_esds = None
     cell_data = None
     if options and options.cell:
-        if options.cell.endswith(".json"):
+        if options.cell[-5:] in (".expt", ".json"):
             with open(options.cell, "r") as fh:
                 cell_data = json.load(fh)
             if "solution_constrained" in cell_data:

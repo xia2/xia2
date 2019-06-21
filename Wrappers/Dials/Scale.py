@@ -306,13 +306,11 @@ def DialsScale(DriverType=None, decay_correction=None):
 
             if not self._scaled_experiments:
                 self._scaled_experiments = os.path.join(
-                    self.get_working_directory(),
-                    "%i_scaled_experiments.json" % self.get_xpid(),
+                    self.get_working_directory(), "%i_scaled.expt" % self.get_xpid()
                 )
             if not self._scaled_reflections:
                 self._scaled_reflections = os.path.join(
-                    self.get_working_directory(),
-                    "%i_scaled_reflections.pickle" % self.get_xpid(),
+                    self.get_working_directory(), "%i_scaled.refl" % self.get_xpid()
                 )
             if not self._unmerged_reflections:
                 self._unmerged_reflections = [

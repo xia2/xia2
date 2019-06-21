@@ -146,7 +146,7 @@ def TwoThetaRefine(DriverType=None):
                 "%s_dials.two_theta_refine.png" % self.get_xpid(),
             )
             self._output_experiments = os.path.join(
-                self.get_working_directory(), "%s_refined_cell.json" % self.get_xpid()
+                self.get_working_directory(), "%s_refined_cell.expt" % self.get_xpid()
             )
 
             self.clear_command_line()

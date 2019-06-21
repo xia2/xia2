@@ -99,8 +99,7 @@ def CombineExperiments(DriverType=None):
 
             if not self._combined_experiments_filename:
                 self._combined_experiments_filename = os.path.join(
-                    self.get_working_directory(),
-                    "%s_combined_experiments.json" % self.get_xpid(),
+                    self.get_working_directory(), "%s_combined.expt" % self.get_xpid()
                 )
             self.add_command_line(
                 "output.experiments_filename=%s" % self._combined_experiments_filename
@@ -108,8 +107,7 @@ def CombineExperiments(DriverType=None):
 
             if not self._combined_reflections_filename:
                 self._combined_reflections_filename = os.path.join(
-                    self.get_working_directory(),
-                    "%s_combined_reflections.pickle" % self.get_xpid(),
+                    self.get_working_directory(), "%s_combined.refl" % self.get_xpid()
                 )
             self.add_command_line(
                 "output.reflections_filename=%s" % self._combined_reflections_filename

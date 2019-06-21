@@ -31,7 +31,7 @@ def Import(DriverType=None):
             self._images = []
             self._image_range = []
 
-            self._sweep_filename = "experiments_import.json"
+            self._sweep_filename = "imported.expt"
             self._image_to_epoch = None
             self._reference_geometry = None
             self._mosflm_beam_centre = None

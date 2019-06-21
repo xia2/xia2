@@ -81,7 +81,7 @@ def Reindex(DriverType=None):
                 self.add_command_line(self._experiments_filename)
                 if not self._reindexed_experiments_filename:
                     self._reindexed_experiments_filename = os.path.join(
-                        wd, "%d_experiments_reindexed.json" % self.get_xpid()
+                        wd, "%d_reindexed.expt" % self.get_xpid()
                     )
                 self.add_command_line(
                     "output.experiments=%s" % self._reindexed_experiments_filename
@@ -90,7 +90,7 @@ def Reindex(DriverType=None):
                 self.add_command_line(self._indexed_filename)
                 if not self._reindexed_reflections_filename:
                     self._reindexed_reflections_filename = os.path.join(
-                        wd, "%d_reflections_reindexed.pickle" % self.get_xpid()
+                        wd, "%d_reindexed.refl" % self.get_xpid()
                     )
                 self.add_command_line(
                     "output.reflections=%s" % self._reindexed_reflections_filename
