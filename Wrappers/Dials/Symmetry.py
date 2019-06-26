@@ -219,11 +219,8 @@ def DialsSymmetry(DriverType=None):
             patterson_group = sgtbx.space_group(str(best_solution["patterson_group"]))
             if PhilIndex.params.xia2.settings.symmetry.chirality in (None, "chiral"):
                 patterson_group = patterson_group.build_derived_acentric_group()
-            cb_op_inp_min = sgtbx.change_of_basis_op(str(d["cb_op_inp_min"]))
-            cb_op_min_best = sgtbx.change_of_basis_op(str(best_solution["cb_op"]))
-
+            cb_op_inp_best = sgtbx.change_of_basis_op(str(best_solution["cb_op"]))
             input_cell = uctbx.unit_cell(d["input_symmetry"]["unit_cell"])
-            cb_op_inp_best = cb_op_min_best * cb_op_inp_min
             best_cell = input_cell.change_basis(
                 cb_op=sgtbx.change_of_basis_op(str(cb_op_inp_best))
             )
@@ -253,8 +250,7 @@ def DialsSymmetry(DriverType=None):
                     ):
                         patterson_group = patterson_group.build_derived_acentric_group()
 
-                    cb_op_min_this = sgtbx.change_of_basis_op(str(score["cb_op"]))
-                    cb_op_inp_this = cb_op_min_this * cb_op_inp_min
+                    cb_op_inp_this = sgtbx.change_of_basis_op(str(score["cb_op"]))
                     unit_cell = input_cell.change_basis(
                         cb_op=sgtbx.change_of_basis_op(str(cb_op_inp_this))
                     )
