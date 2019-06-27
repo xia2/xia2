@@ -142,9 +142,6 @@ class CCP4ScalerA(Scaler):
     def _pointless_indexer_jiffy(self, hklin, refiner):
         return self._helper.pointless_indexer_jiffy(hklin, refiner)
 
-    def _pointless_indexer_multisweep(self, hklin, refiners):
-        return self._helper.pointless_indexer_multisweep(hklin, refiners)
-
     def _do_multisweep_symmetry_analysis(self):
         """Sort the data and run pointless indexer multisweep.
 
@@ -239,10 +236,147 @@ class CCP4ScalerA(Scaler):
         # FIXME xia2-51 in here need to pass all refiners to ensure that the
         # information is passed back to all of them not just the last one...
         Debug.write("Running multisweep pointless for %d sweeps" % len(refiners))
-        pointgroup, reindex_op, ntr, pt = self._pointless_indexer_multisweep(
+        pointgroup, reindex_op, ntr, pt = self._helper.pointless_indexer_multisweep(
             pointless_hklin, refiners
         )
         return pointgroup, reindex_op, ntr, pt
+
+    def _multi_sweep_scale_prepare(self):
+        """Implement the internal and overall consistency checks for multisweep.
+
+        Do the multisweep symmetry analysis. For the internal consistency
+        (lattice) check, set the reindex operator if necessary and return.
+        Else, use the pointgroup and reindex op and set in the integrater and
+        transfer the data to the sweep information.
+        """
+        need_to_return = False
+        pointgroup, reindex_op, ntr, _ = self._do_multisweep_symmetry_analysis()
+        if ntr:
+            for epoch in self._sweep_handler.get_epochs():
+                si = self._sweep_handler.get_sweep_information(epoch)
+                si.get_integrater().integrater_reset_reindex_operator()
+            self.set_scaler_done(False)
+            self.set_scaler_prepare_done(False)
+            need_to_return = True
+            return need_to_return
+        # ---------- REINDEX ALL DATA TO CORRECT POINTGROUP ----------
+        for epoch in self._sweep_handler.get_epochs():
+            si = self._sweep_handler.get_sweep_information(epoch)
+            integrator_reindex_and_update_si(si, pointgroup, reindex_op)
+        return need_to_return
+
+    def _input_pointgroup_scale_prepare(self):
+        """Implement the internal and overall consistency check for specified pg.
+
+        If an input pointgroup is provided, all is needed is to set
+        this in the integrater. This may not trigger anything except
+        transferring the data from the integrater to the sweep information.
+        """
+        # ---------- REINDEX ALL DATA TO CORRECT POINTGROUP ----------
+        pointgroup = self._scalr_input_pointgroup
+        Debug.write("Using input pointgroup: %s" % pointgroup)
+        for epoch in self._sweep_handler.get_epochs():
+            si = self._sweep_handler.get_sweep_information(epoch)
+            integrator_reindex_and_update_si(si, pointgroup, "h,k,l")
+
+    def _standard_scale_prepare(self):
+        """Implement the internal and overall consistency check for standard case.
+
+        For the internal consistency, check that the lattices are consistent.
+        If so, continue and check pointgroups and twinning. Reindex to correct
+        point group before returning (even if issues with twinning)."""
+
+        pointgroups = {}
+        reindex_ops = {}
+        probably_twinned = False
+        need_to_return = False
+
+        lattices = []
+        # First check for the existence of multiple lattices. If only one
+        # epoch, then this gives the necessary data for proceeding straight
+        # to the point group check.
+        for epoch in self._sweep_handler.get_epochs():
+            si = self._sweep_handler.get_sweep_information(epoch)
+            pointless_hklin = self._prepare_pointless_hklin(
+                hklin=si.get_reflections(),
+                phi_width=si.get_integrater().get_phi_width(),
+            )
+            pointgroup, reindex_op, ntr, pt = self._pointless_indexer_jiffy(
+                hklin=pointless_hklin,
+                refiner=si.get_integrater().get_integrater_refiner(),
+            )
+            lattice = Syminfo.get_lattice(pointgroup)
+            if lattice not in lattices:
+                lattices.append(lattice)
+            if ntr:
+                si.get_integrater().integrater_reset_reindex_operator()
+                need_to_return = True
+            if pt:
+                probably_twinned = True
+            pointgroups[epoch] = pointgroup
+            reindex_ops[epoch] = reindex_op
+            Debug.write("Pointgroup: %s (%s)" % (pointgroup, reindex_op))
+
+        if len(lattices) > 1:
+            # Check consistency of lattices if more than one. If not, then
+            # can proceed to straight to checking point group consistency
+            # using the cached results.
+            correct_lattice = sort_lattices(lattices)[0]
+            Chatter.write("Correct lattice asserted to be %s" % correct_lattice)
+
+            # transfer this information back to the indexers
+            for epoch in self._sweep_handler.get_epochs():
+                si = self._sweep_handler.get_sweep_information(epoch)
+                refiner = si.get_integrater().get_integrater_refiner()
+                _tup = (correct_lattice, si.get_sweep_name())
+
+                state = refiner.set_refiner_asserted_lattice(correct_lattice)
+
+                if state == refiner.LATTICE_CORRECT:
+                    Chatter.write("Lattice %s ok for sweep %s" % _tup)
+                elif state == refiner.LATTICE_IMPOSSIBLE:
+                    raise RuntimeError("Lattice %s impossible for %s" % _tup)
+                elif state == refiner.LATTICE_POSSIBLE:
+                    Chatter.write("Lattice %s assigned for sweep %s" % _tup)
+                    need_to_return = True
+
+        if need_to_return:
+            return need_to_return
+
+        # ---------- REINDEX ALL DATA TO CORRECT POINTGROUP ----------
+
+        # all should share the same pointgroup, unless twinned... in which
+        # case force them to be...
+
+        need_to_return = False
+
+        pointgroup_set = {pointgroups[e] for e in pointgroups}
+
+        if len(pointgroup_set) > 1 and not probably_twinned:
+            raise RuntimeError(
+                "non uniform pointgroups: %s" % str(list(pointgroup_set))
+            )
+
+        if len(pointgroup_set) > 1:
+            Debug.write(
+                "Probably twinned, pointgroups: %s"
+                % " ".join([p.replace(" ", "") for p in list(pointgroup_set)])
+            )
+            numbers = [Syminfo.spacegroup_name_to_number(s) for s in pointgroup_set]
+            overall_pointgroup = Syminfo.spacegroup_number_to_name(min(numbers))
+            self._scalr_input_pointgroup = overall_pointgroup
+
+            Chatter.write(
+                "Twinning detected, assume pointgroup %s" % overall_pointgroup
+            )
+            need_to_return = True
+        else:
+            overall_pointgroup = pointgroup_set.pop()
+
+        for epoch in self._sweep_handler.get_epochs():
+            si = self._sweep_handler.get_sweep_information(epoch)
+            integrator_reindex_and_update_si(si, overall_pointgroup, reindex_ops[epoch])
+        return need_to_return
 
     def _scale_prepare(self):
         """Perform all of the preparation required to deliver the scaled
@@ -294,168 +428,22 @@ class CCP4ScalerA(Scaler):
             si = self._sweep_handler.get_sweep_information(e)
             assert is_mtz_file(si.get_reflections())
 
-        p, x = self._sweep_handler.get_project_info()
-        self._scalr_pname = p
-        self._scalr_xname = x
+        self._scalr_pname, self._scalr_xname = self._sweep_handler.get_project_info()
 
         # verify that the lattices are consistent, calling eliminate if
         # they are not N.B. there could be corner cases here
 
         need_to_return = False
 
-        # START OF if more than one epoch
-        # If scalr_input_pointgroup, don't actually need to do anything here!
-        if (
-            len(self._sweep_handler.get_epochs()) > 1
-            and not self._scalr_input_pointgroup
-        ):
-
-            # if we have multi-sweep-indexing going on then logic says all should
-            # share common lattice & UB definition => this is not used here?
-
-            if PhilIndex.params.xia2.settings.multi_sweep_indexing:
-                pointgroup, _, ntr, _ = self._do_multisweep_symmetry_analysis()
-                lattices = [Syminfo.get_lattice(pointgroup)]
-                if ntr:
-                    for epoch in self._sweep_handler.get_epochs():
-                        si = self._sweep_handler.get_sweep_information(epoch)
-                        si.get_integrater().integrater_reset_reindex_operator()
-                    need_to_return = True
-
-            # START OF if not multi_sweep and no input pointgroup given
-            else:
-                lattices = []
-                for epoch in self._sweep_handler.get_epochs():
-                    si = self._sweep_handler.get_sweep_information(epoch)
-                    pointless_hklin = self._prepare_pointless_hklin(
-                        hklin=si.get_reflections(),
-                        phi_width=si.get_integrater().get_phi_width(),
-                    )
-                    pointgroup, _, ntr, _ = self._pointless_indexer_jiffy(
-                        hklin=pointless_hklin,
-                        refiner=si.get_integrater().get_integrater_refiner(),
-                    )
-                    lattice = Syminfo.get_lattice(pointgroup)
-                    if lattice not in lattices:
-                        lattices.append(lattice)
-                    if ntr:
-                        si.get_integrater().integrater_reset_reindex_operator()
-                        need_to_return = True
-
-                # SUMMARY do pointless_indexer on each sweep, get lattices and make a list
-                # of unique lattices, potentially reset reindex op.
-            # END OF if not multi_sweep, or input pg given
-
-            # SUMMARY - still within if more than one epoch, now have a list of number
-            # of lattices
-
-            if len(lattices) > 1:
-                correct_lattice = sort_lattices(lattices)[0]
-                Chatter.write("Correct lattice asserted to be %s" % correct_lattice)
-
-                # transfer this information back to the indexers
-                for epoch in self._sweep_handler.get_epochs():
-                    si = self._sweep_handler.get_sweep_information(epoch)
-                    refiner = si.get_integrater().get_integrater_refiner()
-                    _tup = (correct_lattice, si.get_sweep_name())
-
-                    state = refiner.set_refiner_asserted_lattice(correct_lattice)
-
-                    if state == refiner.LATTICE_CORRECT:
-                        Chatter.write("Lattice %s ok for sweep %s" % _tup)
-                    elif state == refiner.LATTICE_IMPOSSIBLE:
-                        raise RuntimeError("Lattice %s impossible for %s" % _tup)
-                    elif state == refiner.LATTICE_POSSIBLE:
-                        Chatter.write("Lattice %s assigned for sweep %s" % _tup)
-                        need_to_return = True
-            # SUMMARY - forced all lattices to be same and hope its okay.
-        # END OF if more than one epoch
-
-        # if one or more of them was not in the lowest lattice,
-        # need to return here to allow reprocessing
-
-        if need_to_return:
-            self.set_scaler_done(False)
-            self.set_scaler_prepare_done(False)
-            return
-
-        # ---------- REINDEX ALL DATA TO CORRECT POINTGROUP ----------
-
-        # all should share the same pointgroup, unless twinned... in which
-        # case force them to be...
-
-        pointgroups = {}
-        reindex_ops = {}
-        probably_twinned = False
-        need_to_return = False
-
         if self._scalr_input_pointgroup:
-            Debug.write("Using input pointgroup: %s" % self._scalr_input_pointgroup)
-            for epoch in self._sweep_handler.get_epochs():
-                pointgroups[epoch] = self._scalr_input_pointgroup
-                reindex_ops[epoch] = "h,k,l"
-
-        elif PhilIndex.params.xia2.settings.multi_sweep_indexing:
-            pointgroup, reindex_op, ntr, pt = self._do_multisweep_symmetry_analysis()
-            for epoch in self._sweep_handler.get_epochs():
-                pointgroups[epoch] = pointgroup
-                reindex_ops[epoch] = reindex_op
-
+            self._input_pointgroup_scale_prepare()
+        elif (
+            len(self._sweep_handler.get_epochs()) > 1
+            and PhilIndex.params.xia2.settings.multi_sweep_indexing
+        ):
+            need_to_return = self._multi_sweep_scale_prepare()
         else:
-            for epoch in self._sweep_handler.get_epochs():
-                si = self._sweep_handler.get_sweep_information(epoch)
-                pointless_hklin = self._prepare_pointless_hklin(
-                    si.get_reflections(), si.get_integrater().get_phi_width()
-                )
-                pointgroup, reindex_op, ntr, pt = self._pointless_indexer_jiffy(
-                    pointless_hklin, si.get_integrater().get_integrater_refiner()
-                )
-                if ntr:
-                    si.get_integrater().integrater_reset_reindex_operator()
-                    need_to_return = True
-                if pt:
-                    probably_twinned = True
-                Debug.write("Pointgroup: %s (%s)" % (pointgroup, reindex_op))
-                pointgroups[epoch] = pointgroup
-                reindex_ops[epoch] = reindex_op
-
-        overall_pointgroup = None
-
-        pointgroup_set = {pointgroups[e] for e in pointgroups}
-
-        if len(pointgroup_set) > 1 and not probably_twinned:
-            raise RuntimeError(
-                "non uniform pointgroups: %s" % str(list(pointgroup_set))
-            )
-
-        if len(pointgroup_set) > 1:
-            Debug.write(
-                "Probably twinned, pointgroups: %s"
-                % " ".join([p.replace(" ", "") for p in list(pointgroup_set)])
-            )
-            numbers = [Syminfo.spacegroup_name_to_number(s) for s in pointgroup_set]
-            overall_pointgroup = Syminfo.spacegroup_number_to_name(min(numbers))
-            self._scalr_input_pointgroup = overall_pointgroup
-
-            Chatter.write(
-                "Twinning detected, assume pointgroup %s" % overall_pointgroup
-            )
-            need_to_return = True
-        else:
-            overall_pointgroup = pointgroup_set.pop()
-
-        # Now go through sweeps and do reindexing
-        for epoch in self._sweep_handler.get_epochs():
-            si = self._sweep_handler.get_sweep_information(epoch)
-            integrater = si.get_integrater()
-            integrater.set_integrater_spacegroup_number(
-                Syminfo.spacegroup_name_to_number(overall_pointgroup)
-            )
-            integrater.set_integrater_reindex_operator(
-                reindex_ops[epoch], reason="setting point group"
-            )
-            # This will give us the reflections in the correct point group
-            si.set_reflections(integrater.get_integrater_intensities())
+            need_to_return = self._standard_scale_prepare()
 
         if need_to_return:
             self.set_scaler_done(False)
@@ -1252,3 +1240,13 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
                     # backwards compatibility 2015-12-11
                     batch_to_dose[b] = b
         return batch_to_dose
+
+
+def integrator_reindex_and_update_si(si, pointgroup, reindex_op):
+    integrater = si.get_integrater()
+    integrater.set_integrater_spacegroup_number(
+        Syminfo.spacegroup_name_to_number(pointgroup)
+    )
+    integrater.set_integrater_reindex_operator(reindex_op, reason="setting point group")
+    # This will give us the reflections in the correct point group
+    si.set_reflections(integrater.get_integrater_intensities())
