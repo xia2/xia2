@@ -24,10 +24,9 @@ from xia2.Handlers.Streams import Chatter, Debug, Journal
 from xia2.Handlers.Syminfo import Syminfo
 
 # jiffys
-from xia2.lib.bits import is_mtz_file, transpose_loggraph
+from xia2.lib.bits import is_mtz_file, transpose_loggraph, nifty_power_of_ten
 from xia2.lib.SymmetryLib import sort_lattices
 from xia2.Modules import MtzUtils
-from xia2.Modules.AnalyseMyIntensities import AnalyseMyIntensities
 from xia2.Modules.Scaler.CCP4ScalerHelpers import (
     CCP4ScalerHelper,
     SweepInformationHandler,
@@ -35,6 +34,7 @@ from xia2.Modules.Scaler.CCP4ScalerHelpers import (
     ersatz_resolution,
     get_umat_bmat_lattice_symmetry_from_mtz,
 )
+from xia2.Modules.Scaler.rebatch import rebatch
 from xia2.Modules.Scaler.CommonScaler import CommonScaler as Scaler
 from xia2.Wrappers.CCP4.CCP4Factory import CCP4Factory
 
@@ -145,6 +145,105 @@ class CCP4ScalerA(Scaler):
     def _pointless_indexer_multisweep(self, hklin, refiners):
         return self._helper.pointless_indexer_multisweep(hklin, refiners)
 
+    def _do_multisweep_symmetry_analysis(self):
+        """Sort the data and run pointless indexer multisweep.
+
+        Using integrater reflections and experiments, call
+        prepare_pointless_hklin, rebatch data and add to a list. Run Sortmtz
+        on these, do constant scaling to put on same scale before running
+        pointless. Return the pointgroup and need_to_return value.
+        """
+        pointless_hklins = []
+
+        max_batches = 0
+        for epoch in self._sweep_handler.get_epochs():
+            si = self._sweep_handler.get_sweep_information(epoch)
+            batches = MtzUtils.batches_from_mtz(si.get_reflections())
+            if 1 + max(batches) - min(batches) > max_batches:
+                max_batches = max(batches) - min(batches) + 1
+        Debug.write("Biggest sweep has %d batches" % max_batches)
+        max_batches = nifty_power_of_ten(max_batches)
+
+        counter = 0
+        refiners = []
+
+        for epoch in self._sweep_handler.get_epochs():
+            si = self._sweep_handler.get_sweep_information(epoch)
+            pname, xname, dname = si.get_project_info()
+            refiners.append(si.get_integrater().get_integrater_refiner())
+            hklin = self._prepare_pointless_hklin(
+                hklin=si.get_reflections(),
+                phi_width=si.get_integrater().get_phi_width(),
+            )
+            hklout = os.path.join(
+                self.get_working_directory(),
+                "%s_%s_%s_%s_prepointless.mtz"
+                % (pname, xname, dname, si.get_sweep_name()),
+            )
+            # we will want to delete this one exit
+            FileHandler.record_temporary_file(hklout)
+
+            first_batch = min(si.get_batches())
+            si.set_batch_offset(counter * max_batches - first_batch + 1)
+
+            rebatch(
+                hklin,
+                hklout,
+                first_batch=counter * max_batches + 1,
+                pname=pname,
+                xname=xname,
+                dname=dname,
+            )
+
+            pointless_hklins.append(hklout)
+
+            # update the counter & recycle
+            counter += 1
+
+        s = self._factory.Sortmtz()
+
+        pointless_hklin = os.path.join(
+            self.get_working_directory(),
+            "%s_%s_prepointless_sorted.mtz" % (self._scalr_pname, self._scalr_xname),
+        )
+
+        s.set_hklout(pointless_hklin)
+
+        for hklin in pointless_hklins:
+            s.add_hklin(hklin)
+
+        s.sort()
+
+        # FIXME xia2-51 in here look at running constant scaling on the
+        # pointless hklin to put the runs on the same scale. Ref=[A]
+
+        pointless_const = os.path.join(
+            self.get_working_directory(),
+            "%s_%s_prepointless_const.mtz" % (self._scalr_pname, self._scalr_xname),
+        )
+        FileHandler.record_temporary_file(pointless_const)
+
+        aimless_const = self._factory.Aimless()
+        aimless_const.set_hklin(pointless_hklin)
+        aimless_const.set_hklout(pointless_const)
+        aimless_const.const()
+
+        pointless_const = os.path.join(
+            self.get_working_directory(),
+            "%s_%s_prepointless_const_unmerged.mtz"
+            % (self._scalr_pname, self._scalr_xname),
+        )
+        FileHandler.record_temporary_file(pointless_const)
+        pointless_hklin = pointless_const
+
+        # FIXME xia2-51 in here need to pass all refiners to ensure that the
+        # information is passed back to all of them not just the last one...
+        Debug.write("Running multisweep pointless for %d sweeps" % len(refiners))
+        pointgroup, reindex_op, ntr, pt = self._pointless_indexer_multisweep(
+            pointless_hklin, refiners
+        )
+        return pointgroup, reindex_op, ntr, pt
+
     def _scale_prepare(self):
         """Perform all of the preparation required to deliver the scaled
         data. This should sort together the reflection files, ensure that
@@ -204,181 +303,45 @@ class CCP4ScalerA(Scaler):
 
         need_to_return = False
 
-        multi_sweep_indexing = (
-            PhilIndex.params.xia2.settings.multi_sweep_indexing == True
-        )
-
         # START OF if more than one epoch
-        if len(self._sweep_handler.get_epochs()) > 1:
+        # If scalr_input_pointgroup, don't actually need to do anything here!
+        if (
+            len(self._sweep_handler.get_epochs()) > 1
+            and not self._scalr_input_pointgroup
+        ):
 
             # if we have multi-sweep-indexing going on then logic says all should
             # share common lattice & UB definition => this is not used here?
 
-            # START OF if multi_sweep indexing and not input pg
-            if multi_sweep_indexing and not self._scalr_input_pointgroup:
-                pointless_hklins = []
-
-                max_batches = 0
-                for epoch in self._sweep_handler.get_epochs():
-                    si = self._sweep_handler.get_sweep_information(epoch)
-                    hklin = si.get_reflections()
-
-                    batches = MtzUtils.batches_from_mtz(hklin)
-                    if 1 + max(batches) - min(batches) > max_batches:
-                        max_batches = max(batches) - min(batches) + 1
-
-                from xia2.lib.bits import nifty_power_of_ten
-
-                Debug.write("Biggest sweep has %d batches" % max_batches)
-                max_batches = nifty_power_of_ten(max_batches)
-
-                counter = 0
-
-                refiners = []
-
-                for epoch in self._sweep_handler.get_epochs():
-                    si = self._sweep_handler.get_sweep_information(epoch)
-                    hklin = si.get_reflections()
-                    integrater = si.get_integrater()
-                    refiner = integrater.get_integrater_refiner()
-                    refiners.append(refiner)
-
-                    hklin = self._prepare_pointless_hklin(
-                        hklin, si.get_integrater().get_phi_width()
-                    )
-
-                    hklout = os.path.join(
-                        self.get_working_directory(),
-                        "%s_%s_%s_%s_prepointless.mtz"
-                        % (pname, xname, dname, si.get_sweep_name()),
-                    )
-
-                    # we will want to delete this one exit
-                    FileHandler.record_temporary_file(hklout)
-
-                    first_batch = min(si.get_batches())
-                    si.set_batch_offset(counter * max_batches - first_batch + 1)
-
-                    from xia2.Modules.Scaler.rebatch import rebatch
-
-                    new_batches = rebatch(
-                        hklin,
-                        hklout,
-                        first_batch=counter * max_batches + 1,
-                        pname=pname,
-                        xname=xname,
-                        dname=dname,
-                    )
-
-                    pointless_hklins.append(hklout)
-
-                    # update the counter & recycle
-                    counter += 1
-
-                    # SUMMARY - have added all sweeps to pointless_hklins
-
-                s = self._factory.Sortmtz()
-
-                pointless_hklin = os.path.join(
-                    self.get_working_directory(),
-                    "%s_%s_prepointless_sorted.mtz"
-                    % (self._scalr_pname, self._scalr_xname),
-                )
-
-                s.set_hklout(pointless_hklin)
-
-                for hklin in pointless_hklins:
-                    s.add_hklin(hklin)
-
-                s.sort()
-
-                # FIXME xia2-51 in here look at running constant scaling on the
-                # pointless hklin to put the runs on the same scale. Ref=[A]
-
-                pointless_const = os.path.join(
-                    self.get_working_directory(),
-                    "%s_%s_prepointless_const.mtz"
-                    % (self._scalr_pname, self._scalr_xname),
-                )
-                FileHandler.record_temporary_file(pointless_const)
-
-                aimless_const = self._factory.Aimless()
-                aimless_const.set_hklin(pointless_hklin)
-                aimless_const.set_hklout(pointless_const)
-                aimless_const.const()
-
-                pointless_const = os.path.join(
-                    self.get_working_directory(),
-                    "%s_%s_prepointless_const_unmerged.mtz"
-                    % (self._scalr_pname, self._scalr_xname),
-                )
-                FileHandler.record_temporary_file(pointless_const)
-                pointless_hklin = pointless_const
-
-                # FIXME xia2-51 in here need to pass all refiners to ensure that the
-                # information is passed back to all of them not just the last one...
-                Debug.write(
-                    "Running multisweep pointless for %d sweeps" % len(refiners)
-                )
-                pointgroup, reindex_op, ntr, pt = self._pointless_indexer_multisweep(
-                    pointless_hklin, refiners
-                )
-
-                Debug.write("X1698: %s: %s" % (pointgroup, reindex_op))
-
+            if PhilIndex.params.xia2.settings.multi_sweep_indexing:
+                pointgroup, _, ntr, _ = self._do_multisweep_symmetry_analysis()
                 lattices = [Syminfo.get_lattice(pointgroup)]
+                if ntr:
+                    for epoch in self._sweep_handler.get_epochs():
+                        si = self._sweep_handler.get_sweep_information(epoch)
+                        si.get_integrater().integrater_reset_reindex_operator()
+                    need_to_return = True
 
-                for epoch in self._sweep_handler.get_epochs():
-                    si = self._sweep_handler.get_sweep_information(epoch)
-                    intgr = si.get_integrater()
-                    hklin = si.get_reflections()
-                    refiner = intgr.get_integrater_refiner()
-
-                    if ntr:
-                        intgr.integrater_reset_reindex_operator()
-                        need_to_return = True
-
-                # SUMMARY - added all sweeps together into an mtz, ran
-                # _pointless_indexer_multisweep on this, made a list of one lattice
-                # and potentially reset reindex op?
-            # END OF if multi_sweep indexing and not input pg
-
-            # START OF if not multi_sweep, or input pg given
+            # START OF if not multi_sweep and no input pointgroup given
             else:
                 lattices = []
-
                 for epoch in self._sweep_handler.get_epochs():
-
                     si = self._sweep_handler.get_sweep_information(epoch)
-                    intgr = si.get_integrater()
-                    hklin = si.get_reflections()
-                    refiner = intgr.get_integrater_refiner()
-
-                    if self._scalr_input_pointgroup:
-                        pointgroup = self._scalr_input_pointgroup
-                        reindex_op = "h,k,l"
-                        ntr = False
-
-                    else:
-                        pointless_hklin = self._prepare_pointless_hklin(
-                            hklin, si.get_integrater().get_phi_width()
-                        )
-
-                        pointgroup, reindex_op, ntr, pt = self._pointless_indexer_jiffy(
-                            pointless_hklin, refiner
-                        )
-
-                        Debug.write("X1698: %s: %s" % (pointgroup, reindex_op))
-
+                    pointless_hklin = self._prepare_pointless_hklin(
+                        hklin=si.get_reflections(),
+                        phi_width=si.get_integrater().get_phi_width(),
+                    )
+                    pointgroup, _, ntr, _ = self._pointless_indexer_jiffy(
+                        hklin=pointless_hklin,
+                        refiner=si.get_integrater().get_integrater_refiner(),
+                    )
                     lattice = Syminfo.get_lattice(pointgroup)
-
-                    if not lattice in lattices:
+                    if lattice not in lattices:
                         lattices.append(lattice)
-
                     if ntr:
-
-                        intgr.integrater_reset_reindex_operator()
+                        si.get_integrater().integrater_reset_reindex_operator()
                         need_to_return = True
+
                 # SUMMARY do pointless_indexer on each sweep, get lattices and make a list
                 # of unique lattices, potentially reset reindex op.
             # END OF if not multi_sweep, or input pg given
@@ -386,39 +349,25 @@ class CCP4ScalerA(Scaler):
             # SUMMARY - still within if more than one epoch, now have a list of number
             # of lattices
 
-            # START OF if multiple-lattices
             if len(lattices) > 1:
-
-                # why not using pointless indexer jiffy??!
-
                 correct_lattice = sort_lattices(lattices)[0]
-
                 Chatter.write("Correct lattice asserted to be %s" % correct_lattice)
 
                 # transfer this information back to the indexers
                 for epoch in self._sweep_handler.get_epochs():
-
                     si = self._sweep_handler.get_sweep_information(epoch)
                     refiner = si.get_integrater().get_integrater_refiner()
-                    sname = si.get_sweep_name()
+                    _tup = (correct_lattice, si.get_sweep_name())
 
                     state = refiner.set_refiner_asserted_lattice(correct_lattice)
 
                     if state == refiner.LATTICE_CORRECT:
-                        Chatter.write(
-                            "Lattice %s ok for sweep %s" % (correct_lattice, sname)
-                        )
+                        Chatter.write("Lattice %s ok for sweep %s" % _tup)
                     elif state == refiner.LATTICE_IMPOSSIBLE:
-                        raise RuntimeError(
-                            "Lattice %s impossible for %s" % (correct_lattice, sname)
-                        )
+                        raise RuntimeError("Lattice %s impossible for %s" % _tup)
                     elif state == refiner.LATTICE_POSSIBLE:
-                        Chatter.write(
-                            "Lattice %s assigned for sweep %s"
-                            % (correct_lattice, sname)
-                        )
+                        Chatter.write("Lattice %s assigned for sweep %s" % _tup)
                         need_to_return = True
-            # END OF if multiple-lattices
             # SUMMARY - forced all lattices to be same and hope its okay.
         # END OF if more than one epoch
 
@@ -438,167 +387,37 @@ class CCP4ScalerA(Scaler):
         pointgroups = {}
         reindex_ops = {}
         probably_twinned = False
-
         need_to_return = False
 
-        multi_sweep_indexing = (
-            PhilIndex.params.xia2.settings.multi_sweep_indexing == True
-        )
-
-        # START OF if multi-sweep and not input pg
-        if multi_sweep_indexing and not self._scalr_input_pointgroup:
-            pointless_hklins = []
-
-            max_batches = 0
+        if self._scalr_input_pointgroup:
+            Debug.write("Using input pointgroup: %s" % self._scalr_input_pointgroup)
             for epoch in self._sweep_handler.get_epochs():
-                si = self._sweep_handler.get_sweep_information(epoch)
-                hklin = si.get_reflections()
+                pointgroups[epoch] = self._scalr_input_pointgroup
+                reindex_ops[epoch] = "h,k,l"
 
-                batches = MtzUtils.batches_from_mtz(hklin)
-                if 1 + max(batches) - min(batches) > max_batches:
-                    max_batches = max(batches) - min(batches) + 1
-
-            from xia2.lib.bits import nifty_power_of_ten
-
-            Debug.write("Biggest sweep has %d batches" % max_batches)
-            max_batches = nifty_power_of_ten(max_batches)
-
-            counter = 0
-
-            refiners = []
-
-            for epoch in self._sweep_handler.get_epochs():
-                si = self._sweep_handler.get_sweep_information(epoch)
-                hklin = si.get_reflections()
-                integrater = si.get_integrater()
-                refiner = integrater.get_integrater_refiner()
-                refiners.append(refiner)
-
-                hklin = self._prepare_pointless_hklin(
-                    hklin, si.get_integrater().get_phi_width()
-                )
-
-                hklout = os.path.join(
-                    self.get_working_directory(),
-                    "%s_%s_%s_%s_prepointless.mtz"
-                    % (pname, xname, dname, si.get_sweep_name()),
-                )
-
-                # we will want to delete this one exit
-                FileHandler.record_temporary_file(hklout)
-
-                first_batch = min(si.get_batches())
-                si.set_batch_offset(counter * max_batches - first_batch + 1)
-
-                from xia2.Modules.Scaler.rebatch import rebatch
-
-                new_batches = rebatch(
-                    hklin,
-                    hklout,
-                    first_batch=counter * max_batches + 1,
-                    pname=pname,
-                    xname=xname,
-                    dname=dname,
-                )
-
-                pointless_hklins.append(hklout)
-
-                # update the counter & recycle
-                counter += 1
-
-            # FIXME related to xia2-51 - this looks very very similar to the logic
-            # in [A] above - is this duplicated logic?
-            s = self._factory.Sortmtz()
-
-            pointless_hklin = os.path.join(
-                self.get_working_directory(),
-                "%s_%s_prepointless_sorted.mtz"
-                % (self._scalr_pname, self._scalr_xname),
-            )
-
-            s.set_hklout(pointless_hklin)
-
-            for hklin in pointless_hklins:
-                s.add_hklin(hklin)
-
-            s.sort()
-
-            pointless_const = os.path.join(
-                self.get_working_directory(),
-                "%s_%s_prepointless_const.mtz" % (self._scalr_pname, self._scalr_xname),
-            )
-            FileHandler.record_temporary_file(pointless_const)
-
-            aimless_const = self._factory.Aimless()
-            aimless_const.set_hklin(pointless_hklin)
-            aimless_const.set_hklout(pointless_const)
-            aimless_const.const()
-
-            pointless_const = os.path.join(
-                self.get_working_directory(),
-                "%s_%s_prepointless_const_unmerged.mtz"
-                % (self._scalr_pname, self._scalr_xname),
-            )
-            FileHandler.record_temporary_file(pointless_const)
-            pointless_hklin = pointless_const
-
-            pointgroup, reindex_op, ntr, pt = self._pointless_indexer_multisweep(
-                pointless_hklin, refiners
-            )
-
+        elif PhilIndex.params.xia2.settings.multi_sweep_indexing:
+            pointgroup, reindex_op, ntr, pt = self._do_multisweep_symmetry_analysis()
             for epoch in self._sweep_handler.get_epochs():
                 pointgroups[epoch] = pointgroup
                 reindex_ops[epoch] = reindex_op
-            # SUMMARY ran pointless multisweep on combined mtz and made a dict
-            # of  pointgroups and reindex_ops (all same)
-        # END OF if multi-sweep and not input pg
 
-        # START OF if not mulit-sweep or pg given
         else:
             for epoch in self._sweep_handler.get_epochs():
                 si = self._sweep_handler.get_sweep_information(epoch)
-
-                hklin = si.get_reflections()
-
-                integrater = si.get_integrater()
-                refiner = integrater.get_integrater_refiner()
-
-                if self._scalr_input_pointgroup:
-                    Debug.write(
-                        "Using input pointgroup: %s" % self._scalr_input_pointgroup
-                    )
-                    pointgroup = self._scalr_input_pointgroup
-                    reindex_op = "h,k,l"
-                    pt = False
-
-                else:
-
-                    pointless_hklin = self._prepare_pointless_hklin(
-                        hklin, si.get_integrater().get_phi_width()
-                    )
-
-                    pointgroup, reindex_op, ntr, pt = self._pointless_indexer_jiffy(
-                        pointless_hklin, refiner
-                    )
-
-                    Debug.write("X1698: %s: %s" % (pointgroup, reindex_op))
-
-                    if ntr:
-
-                        integrater.integrater_reset_reindex_operator()
-                        need_to_return = True
-
-                if pt and not probably_twinned:
+                pointless_hklin = self._prepare_pointless_hklin(
+                    si.get_reflections(), si.get_integrater().get_phi_width()
+                )
+                pointgroup, reindex_op, ntr, pt = self._pointless_indexer_jiffy(
+                    pointless_hklin, si.get_integrater().get_integrater_refiner()
+                )
+                if ntr:
+                    si.get_integrater().integrater_reset_reindex_operator()
+                    need_to_return = True
+                if pt:
                     probably_twinned = True
-
                 Debug.write("Pointgroup: %s (%s)" % (pointgroup, reindex_op))
-
                 pointgroups[epoch] = pointgroup
                 reindex_ops[epoch] = reindex_op
-            # SUMMARY - for each sweep, run indexer jiffy and get reindex operators
-            # and pointgroups dictionaries (could be different between sweeps)
-
-        # END OF if not mulit-sweep or pg given
 
         overall_pointgroup = None
 
@@ -621,20 +440,14 @@ class CCP4ScalerA(Scaler):
             Chatter.write(
                 "Twinning detected, assume pointgroup %s" % overall_pointgroup
             )
-
             need_to_return = True
-
         else:
             overall_pointgroup = pointgroup_set.pop()
-        # SUMMARY - Have handled if different pointgroups & chosen an overall_pointgroup
-        # which is the lowest symmetry
 
         # Now go through sweeps and do reindexing
         for epoch in self._sweep_handler.get_epochs():
             si = self._sweep_handler.get_sweep_information(epoch)
-
             integrater = si.get_integrater()
-
             integrater.set_integrater_spacegroup_number(
                 Syminfo.spacegroup_name_to_number(overall_pointgroup)
             )

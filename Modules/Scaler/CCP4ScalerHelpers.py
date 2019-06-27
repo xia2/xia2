@@ -337,7 +337,7 @@ class CCP4ScalerHelper(object):
         probably_twinned = symmetry.get_probably_twinned()
 
         Debug.write("Pointgroup: %s (%s)" % (pointgroup, reindex_op))
-
+        Debug.write("X1698: %s: %s" % (pointgroup, reindex_op))
         return pointgroup, reindex_op, need_to_return, probably_twinned
 
     def pointless_indexer_multisweep(self, hklin, refiners):
@@ -410,6 +410,7 @@ class CCP4ScalerHelper(object):
         probably_twinned = pointless.get_probably_twinned()
 
         Debug.write("Pointgroup: %s (%s)" % (pointgroup, reindex_op))
+        Debug.write("X1698: %s: %s" % (pointgroup, reindex_op))
 
         return pointgroup, reindex_op, need_to_return, probably_twinned
 
