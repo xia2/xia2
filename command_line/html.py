@@ -12,7 +12,7 @@ import json
 
 
 from libtbx import phil
-from xia2.command_line.report import xia2_report
+from xia2.Modules.Report import Report
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Streams import Chatter, Debug
 
@@ -89,7 +89,7 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
                     batch_params.range = si.get_batch_range()
                     params.batch.append(batch_params)
 
-            report = xia2_report(unmerged_mtz, params)
+            report = Report.from_unmerged_mtz(unmerged_mtz, params)
             reports.append(report)
 
             merging_stats = report.merging_stats
@@ -138,7 +138,7 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
                         raise
 
             overall_stats_table, merging_stats_table, stats_plots = (
-                report.merging_stats_data()
+                report.resolution_plots_and_stats()
             )
 
             d = {}

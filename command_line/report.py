@@ -7,7 +7,7 @@ import os
 from collections import OrderedDict
 
 import iotbx.phil
-from xia2.Modules.Report import xia2_report
+from xia2.Modules.Report import Report
 from dials.util.options import OptionParser
 
 
@@ -50,7 +50,7 @@ def run(args):
 
     unmerged_mtz = args[0]
 
-    report = xia2_report(unmerged_mtz, params, base_dir=".")
+    report = Report.from_unmerged_mtz(unmerged_mtz, params, report_dir=".")
 
     symmetry_table_html = report.symmetry_table_html()
 
@@ -64,7 +64,9 @@ def run(args):
     if params.xtriage_analysis:
         json_data["xtriage"] = xtriage_success + xtriage_warnings + xtriage_danger
 
-    overall_stats_table, merging_stats_table, stats_plots = report.merging_stats_data()
+    overall_stats_table, merging_stats_table, stats_plots = (
+        report.resolution_plots_and_stats()
+    )
 
     json_data.update(stats_plots)
     json_data.update(report.batch_dependent_plots())

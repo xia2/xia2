@@ -7,7 +7,7 @@ import logging
 import sys
 from collections import OrderedDict
 
-from xia2.Modules.Report import xia2_report_base
+from xia2.Modules.Report import Report
 from xia2.XIA2Version import Version
 from xia2.Modules.MultiCrystal.ScaleAndMerge import DataManager
 from xia2.Modules.Analysis import batch_phil_scope
@@ -18,7 +18,7 @@ from libtbx import phil
 logger = logging.getLogger(__name__)
 
 
-class multi_crystal_analysis(xia2_report_base):
+class multi_crystal_analysis(Report):
     def __init__(self, params, experiments=None, reflections=None, data_manager=None):
         super(multi_crystal_analysis, self).__init__(params)
         if data_manager is not None:
@@ -189,7 +189,7 @@ class multi_crystal_analysis(xia2_report_base):
         self._cluster_analysis = self.cluster_analysis()
 
         overall_stats_table, merging_stats_table, stats_plots = (
-            self.merging_stats_data()
+            self.resolution_plots_and_stats()
         )
 
         json_data = {}
