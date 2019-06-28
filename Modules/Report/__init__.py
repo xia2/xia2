@@ -185,7 +185,6 @@ class Report(object):
         return xtriage_success, xtriage_warnings, xtriage_danger
 
     def batch_dependent_plots(self):
-
         binned_batches, rmerge, isigi, scalesvsbatch = batch_dependent_properties(
             self.batches, self.intensities, self.scales
         )

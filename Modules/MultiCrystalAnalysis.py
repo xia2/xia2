@@ -18,9 +18,9 @@ from libtbx import phil
 logger = logging.getLogger(__name__)
 
 
-class multi_crystal_analysis(Report):
+class multi_crystal_analysis(object):
     def __init__(self, params, experiments=None, reflections=None, data_manager=None):
-        super(multi_crystal_analysis, self).__init__(params)
+        self.params = params
         if data_manager is not None:
             self._data_manager = data_manager
         else:
@@ -182,22 +182,22 @@ class multi_crystal_analysis(Report):
         return d
 
     def report(self):
-        super(multi_crystal_analysis, self).report()
-
+        report = Report(self.intensities, self.params, self.batches)
         unit_cell_graphs = self.unit_cell_analysis()
         self.radiation_damage_analysis()
         self._cluster_analysis = self.cluster_analysis()
 
         overall_stats_table, merging_stats_table, stats_plots = (
-            self.resolution_plots_and_stats()
+            report.resolution_plots_and_stats()
         )
 
         json_data = {}
-        json_data.update(self.intensity_stats_plots())
-        json_data.update(self.batch_dependent_plots())
+        json_data.update(report.intensity_stats_plots())
+        json_data.update(report.batch_dependent_plots())
         json_data.update(stats_plots)
         json_data.update(self._chef_stats.to_dict())
         json_data.update(unit_cell_graphs)
+        multiplicity_plots = report.multiplicity_plots()
 
         # return
 
@@ -246,7 +246,7 @@ class multi_crystal_analysis(Report):
             if k in json_data
         )
 
-        for k, v in self.multiplicity_plots().iteritems():
+        for k, v in multiplicity_plots.iteritems():
             misc_graphs[k] = {"img": v}
 
         for k in (
