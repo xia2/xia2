@@ -288,10 +288,10 @@ class multi_crystal_analysis(object):
             xia2_version=Version,
         )
 
-        with open("%s-report.json" % self.params.prefix, "wb") as f:
+        with open("%s.json" % self.params.prefix, "wb") as f:
             json.dump(json_data, f)
 
-        with open("%s-report.html" % self.params.prefix, "wb") as f:
+        with open("%s.html" % self.params.prefix, "wb") as f:
             f.write(html.encode("ascii", "xmlcharrefreplace"))
 
 

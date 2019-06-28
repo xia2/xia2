@@ -42,10 +42,9 @@ output {
     process_includes=True,
 )
 
-# local overrides for refiner.phil_scope
 phil_overrides = iotbx.phil.parse(
     """
-prefix = xia2-multi-crystal
+prefix = xia2-multi-crystal-report
 title = 'xia2 multi-crystal report'
 """
 )

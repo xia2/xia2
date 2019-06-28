@@ -581,6 +581,8 @@ class MultiCrystalScale(object):
         from xia2.command_line.multi_crystal_analysis import phil_scope as mca_phil
 
         params = mca_phil.extract()
+        params.prefix = "xia2.multiplex"
+        params.title = "xia2.multiplex report"
         mca = multi_crystal_analysis(params=params, data_manager=self._data_manager)
         mca.report()
         self._cos_angle_clusters = mca._cluster_analysis.cos_angle_clusters
