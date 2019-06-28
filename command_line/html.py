@@ -92,37 +92,6 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
             report = Report.from_unmerged_mtz(unmerged_mtz, params)
             reports.append(report)
 
-            merging_stats = report.merging_stats
-            merging_stats_anom = report.merging_stats_anom
-
-            overall = merging_stats.overall
-            overall_anom = merging_stats_anom.overall
-            outer_shell = merging_stats.bins[-1]
-            outer_shell_anom = merging_stats_anom.bins[-1]
-
-            column = [
-                wname,
-                str(xwav.get_wavelength()),
-                "%.2f - %.2f (%.2f - %.2f)"
-                % (overall.d_max, overall.d_min, outer_shell.d_max, outer_shell.d_min),
-                "%.2f (%.2f)"
-                % (overall.completeness * 100, outer_shell.completeness * 100),
-                "%.2f (%.2f)" % (overall.mean_redundancy, outer_shell.mean_redundancy),
-                "%.4f (%.4f)" % (overall.cc_one_half, outer_shell.cc_one_half),
-                "%.2f (%.2f)"
-                % (overall.i_over_sigma_mean, outer_shell.i_over_sigma_mean),
-                "%.4f (%.4f)" % (overall.r_merge, outer_shell.r_merge),
-                # anomalous statistics
-                "%.2f (%.2f)"
-                % (
-                    overall_anom.anom_completeness * 100,
-                    outer_shell_anom.anom_completeness * 100,
-                ),
-                "%.2f (%.2f)"
-                % (overall_anom.mean_redundancy, outer_shell_anom.mean_redundancy),
-            ]
-            columns.append(column)
-
             xtriage_success, xtriage_warnings, xtriage_danger = None, None, None
             if params.xtriage_analysis:
                 try:
@@ -255,6 +224,37 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
                 "warnings": xtriage_warnings,
                 "danger": xtriage_danger,
             }
+
+            merging_stats = report.merging_stats
+            merging_stats_anom = report.merging_stats_anom
+
+            overall = merging_stats.overall
+            overall_anom = merging_stats_anom.overall
+            outer_shell = merging_stats.bins[-1]
+            outer_shell_anom = merging_stats_anom.bins[-1]
+
+            column = [
+                wname,
+                str(xwav.get_wavelength()),
+                "%.2f - %.2f (%.2f - %.2f)"
+                % (overall.d_max, overall.d_min, outer_shell.d_max, outer_shell.d_min),
+                "%.2f (%.2f)"
+                % (overall.completeness * 100, outer_shell.completeness * 100),
+                "%.2f (%.2f)" % (overall.mean_redundancy, outer_shell.mean_redundancy),
+                "%.4f (%.4f)" % (overall.cc_one_half, outer_shell.cc_one_half),
+                "%.2f (%.2f)"
+                % (overall.i_over_sigma_mean, outer_shell.i_over_sigma_mean),
+                "%.4f (%.4f)" % (overall.r_merge, outer_shell.r_merge),
+                # anomalous statistics
+                "%.2f (%.2f)"
+                % (
+                    overall_anom.anom_completeness * 100,
+                    outer_shell_anom.anom_completeness * 100,
+                ),
+                "%.2f (%.2f)"
+                % (overall_anom.mean_redundancy, outer_shell_anom.mean_redundancy),
+            ]
+            columns.append(column)
 
     table = [[c[i] for c in columns] for i in range(len(columns[0]))]
 

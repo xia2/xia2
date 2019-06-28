@@ -56,13 +56,15 @@ class xtriage_output(printed_output):
 
 
 class Report(object):
-    def __init__(self, intensities, params, batches=None, dose=None, report_dir=None):
+    def __init__(
+        self, intensities, params, batches=None, scales=None, dose=None, report_dir=None
+    ):
 
         self.params = params
 
         self.intensities = intensities
         self.batches = batches
-        self.scales = None
+        self.scales = scales
         self.dose = dose
         self.report_dir = report_dir
         self._xanalysis = None
@@ -318,6 +320,8 @@ class Report(object):
             indices=indices, info=intensities.info()
         )
         batches = batches.customized_copy(indices=indices, info=batches.info())
-        report = cls(intensities, params, batches=batches, report_dir=report_dir)
+        report = cls(
+            intensities, params, batches=batches, scales=scales, report_dir=report_dir
+        )
         report.mtz_object = mtz_object  # nasty but xia2.report relys on this attribute
         return report
