@@ -245,12 +245,13 @@ class xia2_report_base(object):
         merging_stats = plotter.merging_statistics_table(self.params.cc_half_method)
         return overall_stats, merging_stats, d
 
-    def intensity_stats_plots(self):
+    def intensity_stats_plots(self, run_xtriage=True):
         plotter = IntensityStatisticsPlots(
             self.intensities,
             anomalous=self.params.anomalous,
             n_resolution_bins=self.params.resolution_bins,
             xtriage_analyses=self._xanalysis,
+            run_xtriage_analysis=run_xtriage,
         )
         d = {}
         d.update(plotter.generate_resolution_dependent_plots())
