@@ -16,7 +16,6 @@ import math
 import os
 
 from xia2.Handlers.Citations import Citations
-from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
 
 # output streams &c.
@@ -68,13 +67,13 @@ class MosflmIndexer(IndexerSingleSweep):
     def _index_select_images(self):
         """Select correct images based on image headers."""
 
-        if PhilIndex.params.xia2.settings.small_molecule == True:
+        if PhilIndex.params.xia2.settings.small_molecule:
             return self._index_select_images_small_molecule()
 
         phi_width = self.get_phi_width()
         images = self.get_matching_images()
 
-        if PhilIndex.params.xia2.settings.interactive == True:
+        if PhilIndex.params.xia2.settings.interactive:
             selected_images = index_select_images_user(phi_width, images, Chatter)
         else:
             selected_images = index_select_images_lone(phi_width, images)

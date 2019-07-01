@@ -242,8 +242,6 @@ def DialsScale(DriverType=None, decay_correction=None):
             nproc = PhilIndex.params.xia2.settings.multiprocessing.nproc
             if isinstance(nproc, int) and nproc > 1:
                 self.add_command_line("nproc=%i" % nproc)
-            # if PhilIndex.params.xia2.settings.small_molecule == False:
-            # self.input('bins 20')
 
             if self._intensities == "summation":
                 self.add_command_line("intensity_choice=sum")

@@ -189,7 +189,7 @@ def _prepare_pointless_hklin(working_directory, hklin, phi_width):
 
     # also remove blank images?
 
-    if PhilIndex.params.xia2.settings.small_molecule == False:
+    if not PhilIndex.params.xia2.settings.small_molecule:
         Debug.write("Excluding blank images")
 
         hklout = os.path.join(
@@ -209,7 +209,7 @@ def _prepare_pointless_hklin(working_directory, hklin, phi_width):
 
     if (
         n_batches * phi_width < phi_limit
-        or PhilIndex.params.xia2.settings.small_molecule == True
+        or PhilIndex.params.xia2.settings.small_molecule
     ):
         return hklin
 

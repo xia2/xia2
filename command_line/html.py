@@ -132,7 +132,7 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
                 except Exception as e:
                     from xia2.Handlers.Phil import PhilIndex
 
-                    if PhilIndex.params.xia2.settings.small_molecule == True:
+                    if PhilIndex.params.xia2.settings.small_molecule:
                         print("Xtriage output not available: %s" % str(e))
                     else:
                         raise

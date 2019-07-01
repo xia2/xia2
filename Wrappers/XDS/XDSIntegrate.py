@@ -16,7 +16,7 @@ import shutil
 
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Streams import Debug
 
 # interfaces that this inherits from ...
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
@@ -211,7 +211,7 @@ def XDSIntegrate(DriverType=None, params=None):
 
             if self._params.delphi:
                 xds_inp.write("DELPHI=%.1f\n" % self._params.delphi)
-            elif PhilIndex.params.xia2.settings.small_molecule == True:
+            elif PhilIndex.params.xia2.settings.small_molecule:
                 xds_inp.write("DELPHI=%.1f\n" % xds_params.delphi_small)
             else:
                 xds_inp.write("DELPHI=%.1f\n" % xds_params.delphi)

@@ -727,7 +727,7 @@ class DialsScaler(Scaler):
                 hklin, batch_range=None, use_misigma=False
             )
 
-            if PhilIndex.params.xia2.settings.resolution.keep_all_reflections == True:
+            if PhilIndex.params.xia2.settings.resolution.keep_all_reflections:
                 suggested = limit
                 if (
                     highest_suggested_resolution is None

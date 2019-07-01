@@ -1170,10 +1170,7 @@ class XDSScalerA(Scaler):
                 reasoning = "user provided"
 
             else:
-                if (
-                    PhilIndex.params.xia2.settings.resolution.keep_all_reflections
-                    == True
-                ):
+                if PhilIndex.params.xia2.settings.resolution.keep_all_reflections:
                     try:
                         resolution = intgr.get_detector().get_max_resolution(
                             intgr.get_beam_obj().get_s0()
@@ -1382,7 +1379,7 @@ class XDSScalerA(Scaler):
             self._scalr_scaled_reflection_files["sca"][key] = scaout
             FileHandler.record_data_file(scaout)
 
-            if PhilIndex.params.xia2.settings.small_molecule == True:
+            if PhilIndex.params.xia2.settings.small_molecule:
                 hklout = "%s.hkl" % f[:-4]
 
                 m2v = self._factory.Mtz2various()

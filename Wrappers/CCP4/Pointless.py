@@ -22,7 +22,7 @@ import xml.dom.minidom
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Streams import Debug
 
 # this was rather complicated - now simpler!
 from xia2.lib.SymmetryLib import (
@@ -269,7 +269,7 @@ def Pointless(DriverType=None):
                     self.input("tolerance %f" % dev.pointless_tolerance)
 
             # may expect more %age variation for small molecule data
-            if PhilIndex.params.xia2.settings.small_molecule == True:
+            if PhilIndex.params.xia2.settings.small_molecule:
                 if self._hklref:
                     self.input("tolerance 5.0")
             if PhilIndex.params.xia2.settings.symmetry.chirality is not None:

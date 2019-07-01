@@ -29,7 +29,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import copy
 import os
 
 from xia2.DriverExceptions.NotAvailableError import NotAvailableError
@@ -65,7 +64,7 @@ def IndexerForXSweep(xsweep, json_file=None):
     crystal_lattice = xsweep.get_crystal_lattice()
 
     params = PhilIndex.params
-    multi_sweep_indexing = params.xia2.settings.multi_sweep_indexing == True
+    multi_sweep_indexing = params.xia2.settings.multi_sweep_indexing
 
     # FIXME SCI-599 decide from the width of the sweep and the preference
     # which indexer to return...
@@ -176,7 +175,7 @@ def Indexer(preselection=None):
         (XDSIndexer, "xds", "XDS Indexer"),
     ]
 
-    if PhilIndex.params.xia2.settings.interactive == True:
+    if PhilIndex.params.xia2.settings.interactive:
         indexerlist.append((XDSIndexerInteractive, "xdsii", "XDS Interactive Indexer"))
     else:
         indexerlist.append((XDSIndexerII, "xdsii", "XDS II Indexer"))

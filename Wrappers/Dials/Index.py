@@ -159,7 +159,7 @@ def Index(DriverType=None):
             nproc = PhilIndex.params.xia2.settings.multiprocessing.nproc
             self.set_cpu_threads(nproc)
             self.add_command_line("indexing.nproc=%i" % nproc)
-            if PhilIndex.params.xia2.settings.small_molecule == True:
+            if PhilIndex.params.xia2.settings.small_molecule:
                 self.add_command_line("filter_ice=false")
             if self._reflections_per_degree is not None:
                 self.add_command_line(

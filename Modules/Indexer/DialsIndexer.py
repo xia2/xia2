@@ -509,9 +509,7 @@ class DialsIndexer(Indexer):
 
         fast_mode = PhilIndex.params.dials.fast_mode
         trust_beam_centre = PhilIndex.params.xia2.settings.trust_beam_centre
-        multi_sweep_indexing = (
-            PhilIndex.params.xia2.settings.multi_sweep_indexing == True
-        )
+        multi_sweep_indexing = PhilIndex.params.xia2.settings.multi_sweep_indexing
         check_indexing_symmetry = PhilIndex.params.dials.check_indexing_symmetry
 
         if check_indexing_symmetry and not (
@@ -709,7 +707,7 @@ class DialsIndexer(Indexer):
             max_cell=PhilIndex.params.dials.index.max_cell,
             max_height_fraction=PhilIndex.params.dials.index.max_cell_estimation.max_height_fraction,
         )
-        if PhilIndex.params.xia2.settings.small_molecule == True:
+        if PhilIndex.params.xia2.settings.small_molecule:
             indexer.set_min_cell(3)
         if PhilIndex.params.dials.fix_geometry:
             indexer.set_detector_fix("all")

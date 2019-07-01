@@ -548,12 +548,12 @@ class CommonScaler(Scaler):
         # run xia2.report on each unmerged mtz file
         # self._scale_finish_chunk_2_report()
 
-        if PhilIndex.params.xia2.settings.small_molecule == False:
+        if not PhilIndex.params.xia2.settings.small_molecule:
             self._scale_finish_chunk_3_truncate()
 
         self._scale_finish_chunk_4_mad_mangling()
 
-        if PhilIndex.params.xia2.settings.small_molecule == True:
+        if PhilIndex.params.xia2.settings.small_molecule:
             self._scale_finish_chunk_5_finish_small_molecule()
             self._scale_finish_export_shelxt()
 
@@ -1001,7 +1001,7 @@ class CommonScaler(Scaler):
             m.set_limit_isigma(params.isigma)
         if use_misigma:
             m.set_limit_misigma(params.misigma)
-        if PhilIndex.params.xia2.settings.small_molecule == True:
+        if PhilIndex.params.xia2.settings.small_molecule:
             m.set_nbins(20)
         if batch_range is not None:
             start, end = batch_range
@@ -1359,7 +1359,7 @@ class CommonScaler(Scaler):
                 self._scalr_cell, self._scalr_cell_esd, cif_in, mmcif_in = self._scalr_cell_dict.values()[
                     0
                 ]
-            if params.xia2.settings.small_molecule == True:
+            if params.xia2.settings.small_molecule:
                 FileHandler.record_data_file(p4p_file)
 
             import dials.util.version

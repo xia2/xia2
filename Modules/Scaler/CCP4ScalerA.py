@@ -27,7 +27,6 @@ from xia2.Handlers.Syminfo import Syminfo
 from xia2.lib.bits import is_mtz_file, transpose_loggraph
 from xia2.lib.SymmetryLib import sort_lattices
 from xia2.Modules import MtzUtils
-from xia2.Modules.AnalyseMyIntensities import AnalyseMyIntensities
 from xia2.Modules.Scaler.CCP4ScalerHelpers import (
     CCP4ScalerHelper,
     SweepInformationHandler,
@@ -113,7 +112,7 @@ class CCP4ScalerA(Scaler):
         aimless.set_spacing(params.rotation.spacing)
         aimless.set_bfactor(brotation=params.brotation.spacing)
 
-        if PhilIndex.params.xia2.settings.small_molecule == True:
+        if PhilIndex.params.xia2.settings.small_molecule:
             aimless.set_spacing(15.0)
             aimless.set_bfactor(
                 bfactor=PhilIndex.params.xia2.settings.small_molecule_bfactor
@@ -128,7 +127,7 @@ class CCP4ScalerA(Scaler):
         lmax = params.secondary.lmax
         aimless.set_secondary(secondary, lmax)
 
-        if PhilIndex.params.xia2.settings.multi_crystal == True:
+        if PhilIndex.params.xia2.settings.multi_crystal:
             aimless.set_surface_link(False)
 
         # if profile fitting off use summation intensities
@@ -204,9 +203,7 @@ class CCP4ScalerA(Scaler):
 
         need_to_return = False
 
-        multi_sweep_indexing = (
-            PhilIndex.params.xia2.settings.multi_sweep_indexing == True
-        )
+        multi_sweep_indexing = PhilIndex.params.xia2.settings.multi_sweep_indexing
 
         # START OF if more than one epoch
         if len(self._sweep_handler.get_epochs()) > 1:
@@ -441,9 +438,7 @@ class CCP4ScalerA(Scaler):
 
         need_to_return = False
 
-        multi_sweep_indexing = (
-            PhilIndex.params.xia2.settings.multi_sweep_indexing == True
-        )
+        multi_sweep_indexing = PhilIndex.params.xia2.settings.multi_sweep_indexing
 
         # START OF if multi-sweep and not input pg
         if multi_sweep_indexing and not self._scalr_input_pointgroup:
@@ -1067,7 +1062,7 @@ class CCP4ScalerA(Scaler):
                 hklin, batch_range=(start, end)
             )
 
-            if PhilIndex.params.xia2.settings.resolution.keep_all_reflections == True:
+            if PhilIndex.params.xia2.settings.resolution.keep_all_reflections:
                 suggested = limit
                 if (
                     highest_suggested_resolution is None
