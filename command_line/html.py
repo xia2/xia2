@@ -46,7 +46,6 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
     xia2_output = cgi.escape(xia2_output)
 
     styles = {}
-    reports = []
 
     columns = []
     columns.append(
@@ -90,7 +89,6 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
                     params.batch.append(batch_params)
 
             report = Report.from_unmerged_mtz(unmerged_mtz, params)
-            reports.append(report)
 
             xtriage_success, xtriage_warnings, xtriage_danger = None, None, None
             if params.xtriage_analysis:
@@ -128,13 +126,6 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
             json_data.update(report.intensity_stats_plots(run_xtriage=False))
             json_data.update(report.pychef_plots())
             json_data.update(report.pychef_plots(n_bins=1))
-            if params.include_probability_plots:
-                json_data.update(report.z_score_hist())
-                json_data.update(report.normal_probability_plot())
-                json_data.update(report.z_vs_multiplicity())
-                json_data.update(report.z_time_series())
-                json_data.update(report.z_vs_I())
-                json_data.update(report.z_vs_I_over_sigma())
 
             from scitbx.array_family import flex
 
@@ -186,32 +177,15 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
                     for k in ("scale_rmerge_vs_batch", "i_over_sig_i_vs_batch")
                 )
 
-            if params.include_probability_plots:
-                misc_graphs = OrderedDict(
-                    (k, json_data[k])
-                    for k in (
-                        "cumulative_intensity_distribution",
-                        "l_test",
-                        "multiplicities",
-                        "z_score_histogram",
-                        "normal_probability_plot",
-                        "z_score_vs_multiplicity",
-                        "z_score_time_series",
-                        "z_score_vs_I",
-                        "z_score_vs_I_over_sigma",
-                    )
-                    if k in json_data
+            misc_graphs = OrderedDict(
+                (k, json_data[k])
+                for k in (
+                    "cumulative_intensity_distribution",
+                    "l_test",
+                    "multiplicities",
                 )
-            else:
-                misc_graphs = OrderedDict(
-                    (k, json_data[k])
-                    for k in (
-                        "cumulative_intensity_distribution",
-                        "l_test",
-                        "multiplicities",
-                    )
-                    if k in json_data
-                )
+                if k in json_data
+            )
 
             for k, v in report.multiplicity_plots().iteritems():
                 misc_graphs[k + "_" + wname] = {"img": v}
@@ -268,20 +242,9 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
     alternative_space_groups = [sg.symbol_and_number() for sg in space_groups[1:]]
     unit_cell = str(report.intensities.unit_cell())
 
-    # twinning_score = xcryst._get_scaler()._scalr_twinning_score
-    # twinning_conclusion = xcryst._get_scaler()._scalr_twinning_conclusion
-    # if twinning_score is not None:
-    # table.append(['','',''])
-    # table.append(['Twinning score', '%.2f' %twinning_score, ''])
-    # if twinning_conclusion is not None:
-    # table.append(['', twinning_conclusion, ''])
-
     for row in table:
         for i in range(len(row)):
             row[i] = row[i].encode("ascii", "xmlcharrefreplace")
-
-    # from libtbx import table_utils
-    # print table_utils.format(rows=table, has_header=True)
 
     # reflection files
 
@@ -419,9 +382,6 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
         space_group=space_group,
         alternative_space_groups=alternative_space_groups,
         unit_cell=unit_cell,
-        xtriage_success=xtriage_success,
-        xtriage_warnings=xtriage_warnings,
-        xtriage_danger=xtriage_danger,
         overall_stats_table=table,
         cc_half_significance_level=params.cc_half_significance_level,
         mtz_files=mtz_files,
