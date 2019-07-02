@@ -23,6 +23,9 @@ phil_scope = iotbx.phil.parse(
     """
 include scope xia2.command_line.report.phil_scope
 
+seed = 42
+  .type = int(value_min=0)
+
 unit_cell_clustering {
   threshold = 5000
     .type = float(value_min=0)
@@ -112,6 +115,12 @@ def run():
             "The number of input reflections files does not match the "
             "number of input experiments"
         )
+
+    if params.seed is not None:
+        import random
+
+        flex.set_random_seed(params.seed)
+        random.seed(params.seed)
 
     experiments = flatten_experiments(params.input.experiments)
     reflections = flatten_reflections(params.input.reflections)
