@@ -215,7 +215,7 @@ class MultiCrystalReport(MultiCrystalAnalysis):
             cos_angle_cluster_table=self._cos_angle_cluster_table,
             cos_angle_cluster_json=self._cos_angle_cluster_json,
             individual_dataset_reports=individual_dataset_reports,
-            styles=styles,
+            styles={},
             xia2_version=Version,
         )
 
