@@ -6,10 +6,11 @@ import logging
 import math
 import os
 import py
+from collections import OrderedDict
 
 from libtbx import Auto
 import iotbx.phil
-from cctbx import crystal, miller
+from cctbx import miller
 from cctbx import sgtbx
 from dxtbx.serialize import dump, load
 from dxtbx.model import ExperimentList
@@ -224,75 +225,55 @@ class DataManager(object):
             % (self._reflections.size(), n_refl_before)
         )
 
-    def reflections_as_miller_arrays(
-        self, intensity_key="intensity.sum.value", return_batches=False
-    ):
-        variance_key = intensity_key.replace(".value", ".variance")
-        assert intensity_key in self._reflections, intensity_key
-        assert variance_key in self._reflections, variance_key
+    def reflections_as_miller_arrays(self, combined=False):
+        from dials.util.batch_handling import (
+            # calculate_batch_offsets,
+            # get_batch_ranges,
+            assign_batches_to_reflections,
+        )
+        from dials.report.analysis import scaled_data_as_miller_array
 
-        miller_arrays = []
-        for expt in self._experiments:
-            crystal_symmetry = crystal.symmetry(
-                unit_cell=expt.crystal.get_unit_cell(),
-                space_group=expt.crystal.get_space_group(),
+        # offsets = calculate_batch_offsets(experiments)
+        reflection_tables = []
+        for id_ in set(self._reflections["id"]).difference(set([-1])):
+            reflection_tables.append(
+                self._reflections.select(self._reflections["id"] == id_)
             )
-            refl = self._reflections.select(
-                self._reflections.get_flags(self._reflections.flags.integrated_sum)
+
+        offsets = [expt.scan.get_batch_offset() for expt in self._experiments]
+        reflection_tables = assign_batches_to_reflections(reflection_tables, offsets)
+
+        if combined:
+            # filter bad refls and negative scales
+            batches = flex.int()
+            scales = flex.double()
+
+            for r in reflection_tables:
+                sel = ~r.get_flags(r.flags.bad_for_scaling, all=False)
+                sel &= r["inverse_scale_factor"] > 0
+                batches.extend(r["batch"].select(sel))
+                scales.extend(r["inverse_scale_factor"].select(sel))
+            scaled_array = scaled_data_as_miller_array(
+                reflection_tables, self._experiments
             )
-            refl = refl.select_on_experiment_identifiers([expt.identifier])
-            assert refl.size() > 0, expt.identifier
+            ms = scaled_array.customized_copy()
+            batch_array = miller.array(scaled_array, data=batches)
+            scale_array = miller.array(scaled_array, data=scales)
+            return scaled_array, batch_array, scale_array
 
-            from dials.util.filter_reflections import filter_reflection_table
-
-            if intensity_key == "intensity.scale.value":
-                intensity_choice = ["scale"]
-                intensity_to_use = "scale"
-            elif intensity_key == "intensity.prf.value":
-                intensity_choice.append("profile")
-                intensity_to_use = "prf"
-            else:
-                intensity_choice = ["sum"]
-                intensity_to_use = "sum"
-
-            partiality_threshold = 0.99
-            refl = filter_reflection_table(
-                refl,
-                intensity_choice,
-                min_isigi=-5,
-                filter_ice_rings=False,
-                combine_partials=True,
-                partiality_threshold=partiality_threshold,
-            )
-            assert refl.size() > 0
-            data = refl["intensity." + intensity_to_use + ".value"]
-            variances = refl["intensity." + intensity_to_use + ".variance"]
-
-            if return_batches:
-                batch_offset = expt.scan.get_batch_offset()
-                zdet = refl["xyzobs.px.value"].parts()[2]
-                batches = flex.floor(zdet).iround() + 1 + batch_offset
-
-            miller_indices = refl["miller_index"]
-            assert variances.all_gt(0)
-            sigmas = flex.sqrt(variances)
-
-            miller_set = miller.set(
-                crystal_symmetry, miller_indices, anomalous_flag=False
-            )
-            intensities = miller.array(miller_set, data=data, sigmas=sigmas)
-            intensities.set_observation_type_xray_intensity()
-            intensities.set_info(
-                miller.array_info(source="DIALS", source_type="pickle")
-            )
-            if return_batches:
-                batches = miller.array(miller_set, data=batches).set_info(
-                    intensities.info()
-                )
-                miller_arrays.append([intensities, batches])
-            else:
-                miller_arrays.append(intensities)
-        return miller_arrays
+        else:
+            scaled_arrays = []
+            batch_arrays = []
+            scale_arrays = []
+            for expt, r in zip(self._experiments, reflection_tables):
+                sel = ~r.get_flags(r.flags.bad_for_scaling, all=False)
+                sel &= r["inverse_scale_factor"] > 0
+                batches = r["batch"].select(sel)
+                scales = r["inverse_scale_factor"].select(sel)
+                scaled_arrays.append(scaled_data_as_miller_array([r], [expt]))
+                batch_arrays.append(miller.array(scaled_arrays[-1], data=batches))
+                scale_arrays.append(miller.array(scaled_arrays[-1], data=scales))
+            return scaled_arrays, batch_arrays, scale_arrays
 
     def reindex(self, cb_op, space_group=None):
         logger.info("Reindexing: %s" % cb_op)
@@ -384,6 +365,8 @@ class MultiCrystalScale(object):
 
         self.decide_space_group()
 
+        self._individual_report_dicts = {}
+
         self._scaled = Scale(self._data_manager, self._params)
 
         self._data_manager.export_experiments("final.expt")
@@ -394,7 +377,10 @@ class MultiCrystalScale(object):
         scaled_mtz = py.path.local(self._scaled.scaled_mtz)
         scaled_mtz.copy(py.path.local("scaled.mtz"))
 
-        self.report()
+        self._mca = self.multi_crystal_analysis()
+        self.cluster_analysis()
+        # cluster_name = "cos_angle_cluster_%i" % self._cos_angle_clusters[-1].cluster_id
+        # self._individual_report_dicts[cluster_name] = self._dict_from_report(self._scaled.report(), cluster_name)
 
         min_completeness = self._params.min_completeness
         min_multiplicity = self._params.min_multiplicity
@@ -427,18 +413,104 @@ class MultiCrystalScale(object):
                 logger.info("Scaling cos angle cluster %i:" % cluster.cluster_id)
                 logger.info(cluster)
                 cluster_dir = "cos_angle_cluster_%i" % cluster.cluster_id
-                os.mkdir(cluster_dir)
+                if not os.path.exists(cluster_dir):
+                    os.mkdir(cluster_dir)
                 os.chdir(cluster_dir)
                 data_manager = copy.deepcopy(self._data_manager_original)
                 data_manager.select(cluster.labels)
                 scaled = Scale(data_manager, self._params)
+                self._individual_report_dicts[cluster_dir] = self._dict_from_report(
+                    scaled.report(), cluster_dir
+                )
                 os.chdir(cwd)
 
+        self.report()
+
+    @staticmethod
+    def _dict_from_report(report, cluster_name):
+        d = {}
+
+        overall_stats_table, merging_stats_table, stats_plots = (
+            report.resolution_plots_and_stats()
+        )
+
+        d["merging_statistics_table"] = merging_stats_table
+        d["overall_statistics_table"] = overall_stats_table
+
+        json_data = {}
+
+        # if params.xtriage_analysis:
+        # json_data["xtriage"] = (
+        # xtriage_success + xtriage_warnings + xtriage_danger
+        # )
+
+        json_data.update(stats_plots)
+        json_data.update(report.batch_dependent_plots())
+        json_data.update(report.intensity_stats_plots())
+        json_data.update(report.pychef_plots())
+        json_data.update(report.pychef_plots(n_bins=1))
+
+        max_points = 500
+        for g in (
+            "scale_rmerge_vs_batch",
+            "completeness_vs_dose",
+            "rcp_vs_dose",
+            "scp_vs_dose",
+            "rd_vs_batch_difference",
+        ):
+            for i, data in enumerate(json_data[g]["data"]):
+                x = data["x"]
+                n = len(x)
+                if n > max_points:
+                    step = n // max_points
+                    sel = (flex.int_range(n) % step) == 0
+                    data["x"] = list(flex.int(data["x"]).select(sel))
+                    data["y"] = list(flex.double(data["y"]).select(sel))
+
+        resolution_graphs = OrderedDict(
+            (k + "_" + cluster_name, json_data[k])
+            for k in (
+                "cc_one_half",
+                "i_over_sig_i",
+                "second_moments",
+                "wilson_intensity_plot",
+                "completeness",
+                "multiplicity_vs_resolution",
+            )
+            if k in json_data
+        )
+
+        batch_graphs = OrderedDict(
+            (k + "_" + cluster_name, json_data[k])
+            for k in (
+                "scale_rmerge_vs_batch",
+                "i_over_sig_i_vs_batch",
+                "completeness_vs_dose",
+                "rcp_vs_dose",
+                "scp_vs_dose",
+                "rd_vs_batch_difference",
+            )
+        )
+
+        misc_graphs = OrderedDict(
+            (k + "_" + cluster_name, json_data[k])
+            for k in ("cumulative_intensity_distribution", "l_test", "multiplicities")
+            if k in json_data
+        )
+
+        for k, v in report.multiplicity_plots().iteritems():
+            misc_graphs[k + "_" + cluster_name] = {"img": v}
+
+        d["resolution_graphs"] = resolution_graphs
+        d["batch_graphs"] = batch_graphs
+        d["misc_graphs"] = misc_graphs
+        return d
+
     def unit_cell_clustering(self, plot_name=None):
-        from xia2.command_line.multi_crystal_analysis import multi_crystal_analysis
+        from xia2.Modules.MultiCrystalAnalysis import MultiCrystalAnalysis
         from xfel.clustering.cluster_groups import unit_cell_info
 
-        clusters, dendrogram = multi_crystal_analysis.unit_cell_clustering(
+        clusters, dendrogram = MultiCrystalAnalysis.unit_cell_clustering(
             self._data_manager.experiments,
             threshold=self._params.unit_cell_clustering.threshold,
             log=self._params.unit_cell_clustering.log,
@@ -576,16 +648,21 @@ class MultiCrystalScale(object):
 
         logger.info("Space group determined by dials.symmetry: %s" % space_group.info())
 
-    def report(self):
-        from xia2.command_line.multi_crystal_analysis import multi_crystal_analysis
+    def multi_crystal_analysis(self):
+        from xia2.Modules.MultiCrystalAnalysis import MultiCrystalReport
         from xia2.command_line.multi_crystal_analysis import phil_scope as mca_phil
 
         params = mca_phil.extract()
         params.prefix = "xia2.multiplex"
         params.title = "xia2.multiplex report"
-        mca = multi_crystal_analysis(params=params, data_manager=self._data_manager)
-        mca.report()
-        self._cos_angle_clusters = mca._cluster_analysis.cos_angle_clusters
+        mca = MultiCrystalReport(params=params, data_manager=self._data_manager)
+        return mca
+
+    def report(self):
+        self._mca.report(self._individual_report_dicts)
+
+    def cluster_analysis(self):
+        self._cos_angle_clusters = self._mca.cluster_analysis().cos_angle_clusters
 
 
 class Scale(object):
@@ -779,3 +856,8 @@ class Scale(object):
             reasoning = None
 
         return resolution, reasoning
+
+    def report(self):
+        from xia2.Modules.Report import Report
+
+        return Report.from_data_manager(self._data_manager)

@@ -12,7 +12,7 @@ from dials.util import log
 from dials.util.options import OptionParser
 from dials.util.options import flatten_experiments, flatten_reflections
 from dials.util.multi_dataset_handling import parse_multiple_datasets
-from xia2.Modules.MultiCrystalAnalysis import multi_crystal_analysis
+from xia2.Modules.MultiCrystalAnalysis import MultiCrystalReport
 
 logger = logging.getLogger("xia2.multi_crystal_analysis")
 
@@ -131,7 +131,7 @@ def run():
         joint_table.extend(reflections[i])
     reflections = joint_table
 
-    multi_crystal_analysis(
+    MultiCrystalReport(
         params, experiments=experiments, reflections=reflections
     ).report()
 

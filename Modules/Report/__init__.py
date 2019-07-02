@@ -23,7 +23,7 @@ from dials.report.plots import (
     IntensityStatisticsPlots,
 )
 
-from xia2.Modules.Analysis import batch_phil_scope, separate_unmerged
+from xia2.Modules.Analysis import batch_phil_scope, phil_scope, separate_unmerged
 
 
 class xtriage_output(printed_output):
@@ -324,3 +324,23 @@ class Report(object):
         )
         report.mtz_object = mtz_object  # nasty but xia2.report relys on this attribute
         return report
+
+    @classmethod
+    def from_data_manager(cls, data_manager, params=None):
+        if params is None:
+            params = phil_scope.extract()
+            params.dose.batch = []
+        intensities, batches, scales = data_manager.reflections_as_miller_arrays(
+            combined=True
+        )
+
+        params.batch = []
+        scope = libtbx.phil.parse(batch_phil_scope)
+        for expt in data_manager.experiments:
+            batch_params = scope.extract().batch[0]
+            batch_params.id = expt.identifier
+            batch_params.range = expt.scan.get_batch_range()
+            params.batch.append(batch_params)
+
+        intensities.set_observation_type_xray_intensity()
+        return cls(intensities, params, batches=batches, scales=scales)

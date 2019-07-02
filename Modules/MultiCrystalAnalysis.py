@@ -7,7 +7,6 @@ import logging
 import sys
 from collections import OrderedDict
 
-from xia2.Modules.Report import Report
 from xia2.XIA2Version import Version
 from xia2.Modules.MultiCrystal.ScaleAndMerge import DataManager
 from xia2.Modules.Analysis import batch_phil_scope
@@ -18,28 +17,21 @@ from libtbx import phil
 logger = logging.getLogger(__name__)
 
 
-class multi_crystal_analysis(object):
+class MultiCrystalAnalysis(object):
     def __init__(self, params, experiments=None, reflections=None, data_manager=None):
         self.params = params
+        self._cluster_analysis = None
         if data_manager is not None:
             self._data_manager = data_manager
         else:
             assert experiments is not None and reflections is not None
             self._data_manager = DataManager(experiments, reflections)
 
-        self._intensities_separate = self._data_manager.reflections_as_miller_arrays(
-            intensity_key="intensity.scale.value", return_batches=True
-        )
-        self.intensities = self._intensities_separate[0][0].deep_copy()
-        self.batches = self._intensities_separate[0][1].deep_copy()
-        for intensities, batches in self._intensities_separate[1:]:
-            self.intensities = self.intensities.concatenate(
-                intensities, assert_is_similar_symmetry=False
-            )
-            self.batches = self.batches.concatenate(
-                batches, assert_is_similar_symmetry=False
-            )
+        self._intensities_separate = self._data_manager.reflections_as_miller_arrays()
 
+        self.intensities, self.batches, self.scales = self._data_manager.reflections_as_miller_arrays(
+            combined=True
+        )
         self.params.batch = []
         scope = phil.parse(batch_phil_scope)
         for expt in self._data_manager.experiments:
@@ -78,6 +70,9 @@ class multi_crystal_analysis(object):
             crystal_symmetries, lattice_ids=lattice_ids
         )
         if plot_name is not None:
+            import matplotlib
+
+            matplotlib.use("Agg")
             from matplotlib import pyplot as plt
 
             plt.figure("Andrews-Bernstein distance dendogram", figsize=(12, 8))
@@ -103,19 +98,29 @@ class multi_crystal_analysis(object):
         from dials.pychef import Statistics
 
         miller_arrays = self._data_manager.reflections_as_miller_arrays(
-            return_batches=True
+            # return_batches=True
         )
-        for i, (intensities, batches) in enumerate(miller_arrays):
-            # convert batches to dose
-            data = (
+        intensities_all, batches_all, _ = self._data_manager.reflections_as_miller_arrays(
+            combined=False
+        )
+
+        intensities_combined = None
+        dose_combined = None
+        for i, (intensities, batches) in enumerate(zip(intensities_all, batches_all)):
+            dose = batches.array(
                 batches.data()
                 - self._data_manager.experiments[i].scan.get_batch_offset()
-            )
-            miller_arrays[i][1] = batches.array(data=data).set_info(batches.info())
-        intensities, dose = miller_arrays[0]
-        for (i, d) in miller_arrays[1:]:
-            intensities = intensities.concatenate(i, assert_is_similar_symmetry=False)
-            dose = dose.concatenate(d, assert_is_similar_symmetry=False)
+            ).set_info(batches.info())
+            if intensities_combined is None:
+                intensities_combined = intensities
+                dose_combined = dose
+            else:
+                intensities_combined = intensities_combined.concatenate(
+                    intensities, assert_is_similar_symmetry=False
+                )
+                dose_combined = dose_combined.concatenate(
+                    dose, assert_is_similar_symmetry=False
+                )
 
         stats = Statistics(intensities, dose.data())
 
@@ -134,8 +139,9 @@ class multi_crystal_analysis(object):
         from xia2.Modules.MultiCrystal import multi_crystal_analysis
 
         labels = self._data_manager.experiments.identifiers()
-        intensities = [i[0] for i in self._intensities_separate]
-        mca = multi_crystal_analysis(intensities, labels=labels, prefix=None)
+        mca = multi_crystal_analysis(
+            self._intensities_separate[0], labels=labels, prefix=None
+        )
 
         self._cc_cluster_json = mca.to_plotly_json(
             mca.cc_matrix, mca.cc_linkage_matrix, labels=labels
@@ -146,8 +152,8 @@ class multi_crystal_analysis(object):
             mca.cos_angle_matrix, mca.cos_angle_linkage_matrix, labels=labels
         )
         self._cos_angle_cluster_table = mca.as_table(mca.cos_angle_clusters)
-
-        return mca
+        self._cluster_analysis = mca
+        return self._cluster_analysis
 
     def unit_cell_analysis(self):
         from dials.command_line.unit_cell_histogram import uc_params_from_experiments
@@ -181,83 +187,14 @@ class multi_crystal_analysis(object):
 
         return d
 
-    def report(self):
-        report = Report(self.intensities, self.params, self.batches)
+
+class MultiCrystalReport(MultiCrystalAnalysis):
+    def report(self, individual_dataset_reports):
         unit_cell_graphs = self.unit_cell_analysis()
-        self.radiation_damage_analysis()
-        self._cluster_analysis = self.cluster_analysis()
+        if self._cluster_analysis is None:
+            self._cluster_analysis = self.cluster_analysis()
 
-        overall_stats_table, merging_stats_table, stats_plots = (
-            report.resolution_plots_and_stats()
-        )
-
-        json_data = {}
-        json_data.update(report.intensity_stats_plots())
-        json_data.update(report.batch_dependent_plots())
-        json_data.update(stats_plots)
-        json_data.update(self._chef_stats.to_dict())
-        json_data.update(unit_cell_graphs)
-        multiplicity_plots = report.multiplicity_plots()
-
-        # return
-
-        self._data_manager.export_experiments("tmp.expt")
-        self._stereographic_projection_files = self.stereographic_projections(
-            "tmp.expt"
-        )
-
-        styles = {}
-        for hkl in ((1, 0, 0), (0, 1, 0), (0, 0, 1)):
-            with open(self._stereographic_projection_files[hkl], "rb") as f:
-                d = json.load(f)
-                d["layout"]["title"] = "Stereographic projection (hkl=%i%i%i)" % hkl
-                key = "stereographic_projection_%s%s%s" % hkl
-                json_data[key] = d
-                styles[key] = "square-plot"
-
-        resolution_graphs = OrderedDict(
-            (k, json_data[k])
-            for k in (
-                "cc_one_half",
-                "i_over_sig_i",
-                "second_moments",
-                "wilson_intensity_plot",
-                "completeness",
-                "multiplicity_vs_resolution",
-            )
-            if k in json_data
-        )
-
-        batch_graphs = OrderedDict(
-            (k, json_data[k])
-            for k in (
-                "scale_rmerge_vs_batch",
-                "i_over_sig_i_vs_batch",
-                "completeness_vs_dose",
-                "rcp_vs_dose",
-                "scp_vs_dose",
-                "rd_vs_batch_difference",
-            )
-        )
-
-        misc_graphs = OrderedDict(
-            (k, json_data[k])
-            for k in ("cumulative_intensity_distribution", "l_test", "multiplicities")
-            if k in json_data
-        )
-
-        for k, v in multiplicity_plots.iteritems():
-            misc_graphs[k] = {"img": v}
-
-        for k in (
-            "stereographic_projection_100",
-            "stereographic_projection_010",
-            "stereographic_projection_001",
-        ):
-            misc_graphs[k] = json_data[k]
-
-        for axis in ("h", "k", "l"):
-            styles["multiplicity_%s" % axis] = "square-plot"
+        self._data_manager.export_experiments("tmp_experiments.expt")
 
         from jinja2 import Environment, ChoiceLoader, PackageLoader
 
@@ -266,30 +203,24 @@ class multi_crystal_analysis(object):
         )
         env = Environment(loader=loader)
 
-        template = env.get_template("multi_crystal.html")
+        template = env.get_template("multiplex.html")
         html = template.render(
             page_title=self.params.title,
-            # filename=os.path.abspath(unmerged_mtz),
             space_group=self.intensities.space_group_info().symbol_and_number(),
             unit_cell=str(self.intensities.unit_cell()),
-            # mtz_history=[h.strip() for h in report.mtz_object.history()],
-            overall_stats_table=overall_stats_table,
-            merging_stats_table=merging_stats_table,
             cc_half_significance_level=self.params.cc_half_significance_level,
-            resolution_graphs=resolution_graphs,
-            batch_graphs=batch_graphs,
-            misc_graphs=misc_graphs,
             unit_cell_graphs=unit_cell_graphs,
             cc_cluster_table=self._cc_cluster_table,
             cc_cluster_json=self._cc_cluster_json,
             cos_angle_cluster_table=self._cos_angle_cluster_table,
             cos_angle_cluster_json=self._cos_angle_cluster_json,
+            individual_dataset_reports=individual_dataset_reports,
             styles=styles,
             xia2_version=Version,
         )
 
-        with open("%s.json" % self.params.prefix, "wb") as f:
-            json.dump(json_data, f)
+        # with open("%s.json" % self.params.prefix, "wb") as f:
+        # json.dump(json_data, f)
 
         with open("%s.html" % self.params.prefix, "wb") as f:
             f.write(html.encode("ascii", "xmlcharrefreplace"))
