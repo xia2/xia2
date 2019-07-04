@@ -44,8 +44,6 @@ class DialsScaler(Scaler):
         self._scaler = None
         self._scaled_experiments = None
         self._scaled_reflections = None
-        self._reference_reflections = None
-        self._reference_experiments = None
         self._no_times_scaled = 0
         self._scaler_symmetry_check_count = 0
 
@@ -335,76 +333,61 @@ class DialsScaler(Scaler):
             return
 
         ### After this point, point group is good and only need to
-        ### reindex to consistent setting. So don't call back to the
-        ### integator, just use the data in the si.
+        ### reindex to consistent setting. Don't need to call back to the
+        ### integator, just use the data in the sweep info.
 
-        if PhilIndex.params.xia2.settings.unify_setting:
-            self.unify_setting()
-
-        # FIXME use a reference reflection file as set by xcrystal?
-        # if self.get_scaler_reference_reflection_file():
-        #  Debug.write('Using HKLREF %s' % self._reference)
-        #  self._reference = self.get_scaler_reference_reflection_file()
-
-        if PhilIndex.params.xia2.settings.scale.reference_reflection_file:
-            if not PhilIndex.params.xia2.settings.scale.reference_experiment_file:
+        # First work out if we're going to reindex against external reference
+        param = PhilIndex.params.xia2.settings.scale
+        using_external_references = False
+        reference_refl = None
+        reference_expt = None
+        if param.reference_reflection_file:
+            if not param.reference_experiment_file:
                 Chatter.write(
-                    "No reference experiments.json provided, reference reflection file will not be used"
+                    """
+No DIALS reference experiments file provided, reference reflection file will
+not be used. Reference mtz files for reindexing not currently supported for
+pipeline=dials (supported for pipeline=dials-aimless).
+"""
                 )
             else:
-                self._reference_reflections = (
-                    PhilIndex.params.xia2.settings.scale.reference_reflection_file
-                )
-                self._reference_experiments = (
-                    PhilIndex.params.xia2.settings.scale.reference_experiment_file
-                )
-                Debug.write(
-                    "Using reference reflections %s" % self._reference_reflections
-                )
-                Debug.write(
-                    "Using reference experiments %s" % self._reference_experiments
-                )
+                reference_refl = param.reference_reflection_file
+                reference_expt = param.reference_experiment_file
+                using_external_references = True
+                Debug.write("Using reference reflections %s" % reference_refl)
+                Debug.write("Using reference experiments %s" % reference_expt)
 
-        use_brehm_diederichs = PhilIndex.params.xia2.settings.use_brehm_diederichs
-        if len(self._sweep_handler.get_epochs()) > 1 and use_brehm_diederichs:
-            self.brehm_diederichs_reindexing()
-        # If not Brehm-deidrichs, set reference as first sweep
-        elif (
-            len(self._sweep_handler.get_epochs()) > 1
-            and not self._reference_reflections
-        ):
+        if len(self._sweep_handler.get_epochs()) > 1:
+            if PhilIndex.params.xia2.settings.unify_setting:
+                self.unify_setting()
 
-            Debug.write("First sweep will be used as reference for reindexing")
-            first = self._sweep_handler.get_epochs()[0]
-            si = self._sweep_handler.get_sweep_information(first)
-            self._reference_experiments = si.get_experiments()
-            self._reference_reflections = si.get_reflections()
+            if PhilIndex.params.xia2.settings.use_brehm_diederichs:
+                self.brehm_diederichs_reindexing()
+            # If not using Brehm-deidrichs reindexing, set reference as first
+            # sweep, unless using external reference.
+            elif not using_external_references:
+                Debug.write("First sweep will be used as reference for reindexing")
+                first = self._sweep_handler.get_epochs()[0]
+                si = self._sweep_handler.get_sweep_information(first)
+                reference_expt = si.get_experiments()
+                reference_refl = si.get_reflections()
 
         # Now reindex to be consistent with first dataset - run reindex on each
-        # dataset with reference
+        # dataset with reference (unless did brehm diederichs and didn't supply
+        # a reference file)
 
-        if self._reference_reflections:
-            assert self._reference_experiments
-
-            exp = load.experiment_list(self._reference_experiments)
+        if reference_refl and reference_expt:
+            exp = load.experiment_list(reference_expt)
             reference_cell = exp[0].crystal.get_unit_cell().parameters()
-
-            # then compute the pointgroup from this...
 
             # ---------- REINDEX TO CORRECT (REFERENCE) SETTING ----------
             Chatter.write("Reindexing all datasets to common reference")
-            # counter = 1
-            for counter, epoch in enumerate(self._sweep_handler.get_epochs()[1:]):
 
-                reindexed_exp_fpath = os.path.join(
-                    self.get_working_directory(),
-                    str(counter + 1) + "_reindexed_experiments.json",
-                )
-                reindexed_refl_fpath = os.path.join(
-                    self.get_working_directory(),
-                    str(counter + 1) + "_reindexed_reflections.pickle",
-                )
-
+            if using_external_references:
+                epochs = self._sweep_handler.get_epochs()
+            else:
+                epochs = self._sweep_handler.get_epochs()[1:]
+            for epoch in epochs:
                 # if we are working with unified UB matrix then this should not
                 # be a problem here (note, *if*; *should*)
 
@@ -418,33 +401,24 @@ class DialsScaler(Scaler):
                 auto_logfiler(reindexer)
 
                 si = self._sweep_handler.get_sweep_information(epoch)
-                exp = si.get_experiments()
-                refl = si.get_reflections()
-
-                reindexer.set_reference_filename(self._reference_experiments)
-                reindexer.set_reference_reflections(self._reference_reflections)
-                reindexer.set_indexed_filename(refl)
-                reindexer.set_experiments_filename(exp)
-                reindexer.set_reindexed_experiments_filename(reindexed_exp_fpath)
-                reindexer.set_reindexed_reflections_filename(reindexed_refl_fpath)
-
+                reindexer.set_reference_filename(reference_expt)
+                reindexer.set_reference_reflections(reference_refl)
+                reindexer.set_indexed_filename(si.get_reflections())
+                reindexer.set_experiments_filename(si.get_experiments())
                 reindexer.run()
 
                 # At this point, CCP4ScalerA would reset in integrator so that
                 # the integrater calls reindex, no need to do that here as
                 # have access to the files and will never need to reintegrate.
 
-                si.set_reflections(reindexed_refl_fpath)
-                si.set_experiments(reindexed_exp_fpath)
-
-                FileHandler.record_temporary_file(reindexed_exp_fpath)
-                FileHandler.record_temporary_file(reindexed_refl_fpath)
-
-                Debug.write("Completed reindexing of %s" % " ".join([exp, refl]))
+                si.set_reflections(reindexer.get_reindexed_reflections_filename())
+                si.set_experiments(reindexer.get_reindexed_experiments_filename())
 
                 # FIXME how to get some indication of the reindexing used?
 
-                exp = load.experiment_list(reindexed_exp_fpath)
+                exp = load.experiment_list(
+                    reindexer.get_reindexed_experiments_filename()
+                )
                 cell = exp[0].crystal.get_unit_cell().parameters()
 
                 # Note - no lattice check as this will already be caught by reindex
