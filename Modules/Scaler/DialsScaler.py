@@ -432,10 +432,14 @@ pipeline=dials (supported for pipeline=dials-aimless).
                     ):
                         raise RuntimeError(
                             "unit cell parameters differ in %s and %s"
-                            % (self._reference, si.get_reflections())
+                            % (reference_expt, si.get_reflections())
                         )
 
         # Now make sure all batches ok before finish preparing
+        # This should be made safer, currently after dials.scale there is no
+        # concept of 'batch', dials.export uses the calculate_batch_offsets
+        # to assign batches, giving the same result as below.
+
         experiments_to_rebatch = []
         for epoch in self._sweep_handler.get_epochs():
             si = self._sweep_handler.get_sweep_information(epoch)
@@ -541,6 +545,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
 
         user_resolution_limits = {}
 
+        highest_resolution = 100.0
         for epoch in epochs:
 
             si = self._sweep_handler.get_sweep_information(epoch)
@@ -558,8 +563,11 @@ pipeline=dials (supported for pipeline=dials-aimless).
                     user_resolution_limits[(dname, sname)] = dmin
 
             if (dname, sname) in self._scalr_resolution_limits:
-                d_min, d_max = self._scalr_resolution_limits[(dname, sname)]
-                self._scaler.set_resolution(d_min=d_min, d_max=d_max)
+                d_min, _ = self._scalr_resolution_limits[(dname, sname)]
+                if d_min < highest_resolution:
+                    highest_resolution = d_min
+        if highest_resolution < 99.9:
+            self._scaler.set_resolution(d_min=highest_resolution)
 
         self._scaler.set_working_directory(self.get_working_directory())
         auto_logfiler(self._scaler)
@@ -590,97 +598,16 @@ pipeline=dials (supported for pipeline=dials-aimless).
                 self._scalr_scaled_refl_files[dname] = hklout
                 FileHandler.record_data_file(hklout)
 
-        highest_suggested_resolution = None
-        highest_resolution = 100.0
+        highest_suggested_resolution = self.assess_resolution_limits(
+            self._scaler.get_unmerged_reflection_file(),
+            user_resolution_limits,
+            use_misigma=False,
+        )
 
-        # copypasta from CCP4ScalerA - could be grouped into common method? -
-        # no, different in future for how get individual mtz files from combined dataset
-        for epoch in epochs:
-
-            si = self._sweep_handler.get_sweep_information(epoch)
-            pname, xname, dname = si.get_project_info()
-            sname = si.get_sweep_name()
-            intgr = si.get_integrater()
-            start, end = si.get_batch_range()
-
-            if (dname, sname) in self._scalr_resolution_limits:
-                continue
-
-            elif (dname, sname) in user_resolution_limits:
-                limit = user_resolution_limits[(dname, sname)]
-                self._scalr_resolution_limits[(dname, sname)] = (limit, None)
-                if limit < highest_resolution:
-                    highest_resolution = limit
-                Chatter.write(
-                    "Resolution limit for %s: %5.2f (user provided)" % (dname, limit)
-                )
-                continue
-
-            # FIXME need to separate out data into different sweeps based on experiment
-            # id in order to calculate a res limit for each dataset.
-            # However dials.scale does not yet allow different resolutions per dataset
-
-            hklin = (
-                self._scaler.get_unmerged_reflection_file()
-            )  # combined for all datasets
-            # Need to get an individual mtz for each dataset
-            limit, reasoning = self._estimate_resolution_limit(
-                hklin, batch_range=None, use_misigma=False
-            )
-
-            if PhilIndex.params.xia2.settings.resolution.keep_all_reflections:
-                suggested = limit
-                if (
-                    highest_suggested_resolution is None
-                    or limit < highest_suggested_resolution
-                ):
-                    highest_suggested_resolution = limit
-                limit = intgr.get_detector().get_max_resolution(
-                    intgr.get_beam_obj().get_s0()
-                )
-                self._scalr_resolution_limits[(dname, sname)] = (limit, suggested)
-                Debug.write("keep_all_reflections set, using detector limits")
-            Debug.write("Resolution for sweep %s: %.2f" % (sname, limit))
-
-            if not (dname, sname) in self._scalr_resolution_limits:
-                self._scalr_resolution_limits[(dname, sname)] = (limit, None)
-                self.set_scaler_done(False)
-
-            if limit < highest_resolution:
-                highest_resolution = limit
-
-            limit, suggested = self._scalr_resolution_limits[(dname, sname)]
-            if suggested is None or limit == suggested:
-                reasoning_str = ""
-                if reasoning:
-                    reasoning_str = " (%s)" % reasoning
-                Chatter.write(
-                    "Resolution for sweep %s/%s: %.2f%s"
-                    % (dname, sname, limit, reasoning_str)
-                )
-            else:
-                Chatter.write(
-                    "Resolution limit for %s/%s: %5.2f (%5.2f suggested)"
-                    % (dname, sname, limit, suggested)
-                )
-
-        if highest_suggested_resolution is not None and highest_resolution >= (
-            highest_suggested_resolution - 0.004
-        ):
-            Debug.write(
-                "Dropping resolution cut-off suggestion since it is"
-                " essentially identical to the actual resolution limit."
-            )
-            highest_suggested_resolution = None
-        self._scalr_highest_resolution = highest_resolution
-        self._scalr_highest_suggested_resolution = highest_suggested_resolution
-        if highest_suggested_resolution is not None:
-            Debug.write(
-                "Suggested highest resolution is %5.2f (%5.2f suggested)"
-                % (highest_resolution, highest_suggested_resolution)
-            )
-        else:
-            Debug.write("Scaler highest resolution set to %5.2f" % highest_resolution)
+        if not self.get_scaler_done():
+            # reset for when resolution limit applied
+            Debug.write("Returning as scaling not finished...")
+            return
 
         # Need each in individual unmerged mtz for stats.
         unmerged_mtz_files = []
@@ -716,52 +643,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
                 )
                 self._scalr_statistics[
                     (self._scalr_pname, self._scalr_xname, key)
-                ] = stats  # adds here
-                Chatter.write(
-                    """Short summary of current overall merging statistics:
-Resolution limits: %.2f, %.2f
-Total observations/unique: %s, %s"""
-                    % (
-                        stats["High resolution limit"][0],
-                        stats["Low resolution limit"][0],
-                        stats["Total observations"][0],
-                        stats["Total unique"][0],
-                    )
-                )
-                if PhilIndex.params.xia2.settings.small_molecule:
-                    try:
-                        Chatter.write(
-                            "Rmerge: %.4f, Rmeas: %.4f, Rpim: %.4f, CC1/2: %.4f)"
-                            % (
-                                stats["Rmerge(I)"][0],
-                                stats["Rmeas(I)"][0],
-                                stats["Rpim(I)"][0],
-                                stats["CC half"][0],
-                            )
-                        )
-                    except (KeyError, IndexError):
-                        pass
-                else:
-                    try:
-                        Chatter.write(
-                            """Rmerge (I+/-): %.4f, Rmeas (I+/-): %.4f, Rpim (I+/-): %.4f
-CC1/2: %.4f, Anomalous correlation %.4f"""
-                            % (
-                                stats["Rmerge(I+/-)"][0],
-                                stats["Rmeas(I+/-)"][0],
-                                stats["Rpim(I+/-)"][0],
-                                stats["CC half"][0],
-                                stats["Anomalous correlation"][0],
-                            )
-                        )
-                    except (KeyError, IndexError):
-                        pass
-
-        if self._scalr_done is False:
-            self._scaler_symmetry_check_count = (
-                0
-            )  # reset for when resolution limit applied
-            return
+                ] = stats
 
         # Run twotheta refine
         self._update_scaled_unit_cell()

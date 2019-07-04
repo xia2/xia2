@@ -952,93 +952,14 @@ class CCP4ScalerA(Scaler):
                 dataset = key.split(",")[-1].strip()
                 resolution_info[dataset] = transpose_loggraph(loggraph[key])
 
-        highest_resolution = 100.0
-        highest_suggested_resolution = None
-
         # check in here that there is actually some data to scale..!
 
-        if len(resolution_info) == 0:
+        if not resolution_info:
             raise RuntimeError("no resolution info")
 
-        for epoch in epochs:
-
-            si = self._sweep_handler.get_sweep_information(epoch)
-            pname, xname, dname = si.get_project_info()
-            sname = si.get_sweep_name()
-            intgr = si.get_integrater()
-            start, end = si.get_batch_range()
-
-            if (dname, sname) in self._scalr_resolution_limits:
-                continue
-
-            elif (dname, sname) in user_resolution_limits:
-                limit = user_resolution_limits[(dname, sname)]
-                self._scalr_resolution_limits[(dname, sname)] = (limit, None)
-                if limit < highest_resolution:
-                    highest_resolution = limit
-                Chatter.write(
-                    "Resolution limit for %s: %5.2f (user provided)" % (dname, limit)
-                )
-                continue
-
-            hklin = sc.get_unmerged_reflection_file()
-            limit, reasoning = self._estimate_resolution_limit(
-                hklin, batch_range=(start, end)
-            )
-
-            if PhilIndex.params.xia2.settings.resolution.keep_all_reflections:
-                suggested = limit
-                if (
-                    highest_suggested_resolution is None
-                    or limit < highest_suggested_resolution
-                ):
-                    highest_suggested_resolution = limit
-                limit = intgr.get_detector().get_max_resolution(
-                    intgr.get_beam_obj().get_s0()
-                )
-                self._scalr_resolution_limits[(dname, sname)] = (limit, suggested)
-                Debug.write("keep_all_reflections set, using detector limits")
-            Debug.write("Resolution for sweep %s: %.2f" % (sname, limit))
-
-            if not (dname, sname) in self._scalr_resolution_limits:
-                self._scalr_resolution_limits[(dname, sname)] = (limit, None)
-                self.set_scaler_done(False)
-
-            if limit < highest_resolution:
-                highest_resolution = limit
-
-            limit, suggested = self._scalr_resolution_limits[(dname, sname)]
-            if suggested is None or limit == suggested:
-                reasoning_str = ""
-                if reasoning:
-                    reasoning_str = " (%s)" % reasoning
-                Chatter.write(
-                    "Resolution for sweep %s/%s: %.2f%s"
-                    % (dname, sname, limit, reasoning_str)
-                )
-            else:
-                Chatter.write(
-                    "Resolution limit for %s/%s: %5.2f (%5.2f suggested)"
-                    % (dname, sname, limit, suggested)
-                )
-
-        if highest_suggested_resolution is not None and highest_resolution >= (
-            highest_suggested_resolution - 0.004
-        ):
-            Debug.write(
-                "Dropping resolution cut-off suggestion since it is"
-                " essentially identical to the actual resolution limit."
-            )
-            highest_suggested_resolution = None
-        self._scalr_highest_resolution = highest_resolution
-        self._scalr_highest_suggested_resolution = highest_suggested_resolution
-        if highest_suggested_resolution is not None:
-            Debug.write(
-                "Suggested highest resolution is %5.2f (%5.2f suggested)"
-                % (highest_resolution, highest_suggested_resolution)
-            )
-        else:
-            Debug.write("Scaler highest resolution set to %5.2f" % highest_resolution)
+        highest_suggested_resolution = self.assess_resolution_limits(
+            sc.get_unmerged_reflection_file(), user_resolution_limits
+        )
 
         if not self.get_scaler_done():
             Debug.write("Returning as scaling not finished...")
