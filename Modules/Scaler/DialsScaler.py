@@ -15,16 +15,17 @@ from xia2.Wrappers.Dials.Scale import DialsScale
 from xia2.Wrappers.CCP4.CCP4Factory import CCP4Factory
 from xia2.Modules.Scaler.CCP4ScalerHelpers import (
     SweepInformationHandler,
-    get_umat_bmat_lattice_symmetry_from_mtz,
+    mosflm_B_matrix,
 )
 from xia2.Wrappers.Dials.Symmetry import DialsSymmetry
 from xia2.Wrappers.Dials.Reindex import Reindex as DialsReindex
 from xia2.Wrappers.Dials.AssignUniqueIdentifiers import DialsAssignIdentifiers
 from xia2.Wrappers.Dials.SplitExperiments import SplitExperiments
+from xia2.Wrappers.Dials.ExportMtz import ExportMtz
 from xia2.Handlers.Syminfo import Syminfo
 from dxtbx.serialize import load
 from dials.util.batch_handling import calculate_batch_offsets
-from cctbx import sgtbx
+from cctbx.sgtbx import lattice_symmetry_group, space_group_info
 from dials.array_family import flex
 
 
@@ -333,47 +334,12 @@ class DialsScaler(Scaler):
             self.set_scaler_prepare_done(False)
             return
 
+        ### After this point, point group is good and only need to
+        ### reindex to consistent setting. So don't call back to the
+        ### integator, just use the data in the si.
+
         if PhilIndex.params.xia2.settings.unify_setting:
-            from scitbx.matrix import sqr
-
-            reference_U = None
-            i3 = sqr((1, 0, 0, 0, 1, 0, 0, 0, 1))
-
-            for epoch in self._sweep_handler.get_epochs():
-                si = self._sweep_handler.get_sweep_information(epoch)
-                intgr = si.get_integrater()
-                fixed = sqr(intgr.get_goniometer().get_fixed_rotation())
-                u, b, s = get_umat_bmat_lattice_symmetry_from_mtz(si.get_reflections())
-                U = fixed.inverse() * sqr(u).transpose()
-                B = sqr(b)
-
-                if reference_U is None:
-                    reference_U = U
-                    continue
-
-                results = []
-                for op in s.all_ops():
-                    R = B * sqr(op.r().as_double()).transpose() * B.inverse()
-                    nearly_i3 = (U * R).inverse() * reference_U
-                    score = sum([abs(_n - _i) for (_n, _i) in zip(nearly_i3, i3)])
-                    results.append((score, op.r().as_hkl(), op))
-
-                results.sort()
-                best = results[0]
-                Debug.write("Best reindex: %s %.3f" % (best[1], best[0]))
-                intgr.set_integrater_reindex_operator(
-                    best[2].r().inverse().as_hkl(), reason="unifying [U] setting"
-                )
-                si.set_reflections(intgr.get_integrater_intensities())
-
-                # recalculate to verify
-                u, b, s = get_umat_bmat_lattice_symmetry_from_mtz(si.get_reflections())
-                U = fixed.inverse() * sqr(u).transpose()
-                Debug.write("New reindex: %s" % (U.inverse() * reference_U))
-            # need to set identifiers again
-            # self._sweep_handler = self._helper.assign_and_return_datasets(
-            #    self._sweep_handler
-            # )
+            self.unify_setting()
 
         # FIXME use a reference reflection file as set by xcrystal?
         # if self.get_scaler_reference_reflection_file():
@@ -399,48 +365,9 @@ class DialsScaler(Scaler):
                     "Using reference experiments %s" % self._reference_experiments
                 )
 
-        params = PhilIndex.params
-        use_brehm_diederichs = params.xia2.settings.use_brehm_diederichs
+        use_brehm_diederichs = PhilIndex.params.xia2.settings.use_brehm_diederichs
         if len(self._sweep_handler.get_epochs()) > 1 and use_brehm_diederichs:
-
-            brehm_diederichs_files_in = []
-            for epoch in self._sweep_handler.get_epochs():
-
-                si = self._sweep_handler.get_sweep_information(epoch)
-                hklin = (
-                    si.get_reflections()
-                )  # FIXME this currently gets a pickle, needs mtz
-                brehm_diederichs_files_in.append(hklin)
-
-            # now run cctbx.brehm_diederichs to figure out the indexing hand for
-            # each sweep
-            from xia2.Wrappers.Cctbx.BrehmDiederichs import BrehmDiederichs
-
-            brehm_diederichs = BrehmDiederichs()
-            brehm_diederichs.set_working_directory(self.get_working_directory())
-            auto_logfiler(brehm_diederichs)
-            brehm_diederichs.set_input_filenames(brehm_diederichs_files_in)
-            # 1 or 3? 1 seems to work better?
-            brehm_diederichs.set_asymmetric(1)
-            brehm_diederichs.run()
-            reindexing_dict = brehm_diederichs.get_reindexing_dict()
-
-            for epoch in self._sweep_handler.get_epochs():
-
-                si = self._sweep_handler.get_sweep_information(epoch)
-                intgr = si.get_integrater()
-                hklin = si.get_reflections()
-
-                reindex_op = reindexing_dict.get(os.path.abspath(hklin))
-                assert reindex_op is not None
-
-                if 1 or reindex_op != "h,k,l":
-                    # apply the reindexing operator
-                    intgr.set_integrater_reindex_operator(
-                        reindex_op, reason="match reference"
-                    )
-                    si.set_reflections(intgr.get_integrater_intensities())
-
+            self.brehm_diederichs_reindexing()
         # If not Brehm-deidrichs, set reference as first sweep
         elif (
             len(self._sweep_handler.get_epochs()) > 1
@@ -865,6 +792,29 @@ CC1/2: %.4f, Anomalous correlation %.4f"""
         # Run twotheta refine
         self._update_scaled_unit_cell()
 
+    def apply_reindex_operator_to_sweep_info(self, si, reindex_operator, reason):
+        """Use a reindex operator to reindex the data.
+
+        Take the data from the sweep info, reindex using
+        dials.reindex, and set the new data into the si.
+        """
+        reindexer = DialsReindex()
+        reindexer.set_working_directory(self.get_working_directory())
+        auto_logfiler(reindexer)
+
+        reindexer.set_indexed_filename(si.get_reflections())
+        reindexer.set_experiments_filename(si.get_experiments())
+        reindexer.set_cb_op(reindex_operator)
+
+        reindexer.run()
+
+        si.set_reflections(reindexer.get_reindexed_reflections_filename())
+        si.set_experiments(reindexer.get_reindexed_experiments_filename())
+
+        Debug.write(
+            "Reindexed with operator %s, reason is %s" % (reindex_operator, reason)
+        )
+
     def _determine_scaled_pointgroup(self):
         """Rerun symmetry after scaling to check for consistent space group. If not,
         then new space group should be used and data rescaled."""
@@ -898,7 +848,7 @@ CC1/2: %.4f, Anomalous correlation %.4f"""
             "Point group determined by dials.symmetry on scaled dataset: %s"
             % point_group
         )
-        sginfo = sgtbx.space_group_info(symbol=point_group)
+        sginfo = space_group_info(symbol=point_group)
         patt_group = (
             sginfo.group().build_derived_patterson_group().type().lookup_symbol()
         )
@@ -939,6 +889,48 @@ Data will be rescaled in new point group"""
         return self._helper.dials_symmetry_indexer_jiffy(
             experiments, reflections, refiners, multisweep
         )
+
+    def get_UBlattsymm_from_sweep_info(self, sweep_info):
+        """Calculate U, B and lattice symmetry from experiment."""
+        expt = load.experiment_list(sweep_info.get_experiments())[0]
+        uc = expt.crystal.get_unit_cell()
+        umatrix = expt.crystal.get_U()
+        lattice_symm = lattice_symmetry_group(uc, max_delta=0.0)
+        return tuple(umatrix), mosflm_B_matrix(uc), lattice_symm
+
+    def get_mtz_data_from_sweep_info(self, sweep_info):
+        """Get the data in mtz form.
+
+        Need to run dials.export to convert the data from experiment list
+        and reflection table to mtz form."""
+        return self.export_to_mtz(sweep_info)
+
+    def export_to_mtz(self, sweep_info):
+        """Export to mtz, using dials.integrate phil params"""
+        params = PhilIndex.params.dials.integrate
+        export = ExportMtz()
+        export.set_working_directory(self.get_working_directory())
+        export.set_experiments_filename(sweep_info.get_experiments())
+        export.set_reflections_filename(sweep_info.get_reflections())
+        export.set_combine_partials(params.combine_partials)
+        export.set_partiality_threshold(params.partiality_threshold)
+        if len(sweep_info.get_batches()) == 1:
+            export.set_partiality_threshold(0.1)
+        if (
+            len(sweep_info.get_batches()) == 1
+            or PhilIndex.params.dials.fast_mode
+            or not PhilIndex.params.xia2.settings.integration.profile_fitting
+        ):
+            # With no profiles available have to rely on summation alone
+            export.set_intensity_choice("sum")
+
+        auto_logfiler(export, "EXPORTMTZ")
+        mtz_filename = os.path.join(
+            self.get_working_directory(), "%s.mtz" % sweep_info.get_sweep_name()
+        )
+        export.set_mtz_filename(mtz_filename)
+        export.run()
+        return mtz_filename
 
 
 class DialsScalerHelper(object):

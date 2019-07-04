@@ -17,7 +17,7 @@ from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import Chatter, Debug
 from xia2.Handlers.CIF import CIF, mmCIF
-from xia2.lib.bits import nifty_power_of_ten
+from xia2.lib.bits import nifty_power_of_ten, auto_logfiler
 from xia2.Modules.AnalyseMyIntensities import AnalyseMyIntensities
 from xia2.Modules import MtzUtils
 from xia2.Modules.CCP4InterRadiationDamageDetector import (
@@ -1408,6 +1408,82 @@ class CommonScaler(Scaler):
                 cif_out["_cell_%s" % cifname] = cell
 
         Debug.write("%7.3f %7.3f %7.3f %7.3f %7.3f %7.3f" % self._scalr_cell)
+
+    def unify_setting(self):
+        """Unify the setting for the sweeps."""
+        # Currently implemented for CCP4ScalerA and DialsScaler
+        from scitbx.matrix import sqr
+
+        reference_U = None
+        i3 = sqr((1, 0, 0, 0, 1, 0, 0, 0, 1))
+
+        for epoch in self._sweep_handler.get_epochs():
+            si = self._sweep_handler.get_sweep_information(epoch)
+            intgr = si.get_integrater()
+            fixed = sqr(intgr.get_goniometer().get_fixed_rotation())
+            # delegate UB lattice symmetry calculation to individual Scalers.
+            u, b, s = self.get_UBlattsymm_from_sweep_info(si)
+            U = fixed.inverse() * sqr(u).transpose()
+            B = sqr(b)
+
+            if reference_U is None:
+                reference_U = U
+                continue
+
+            results = []
+            for op in s.all_ops():
+                R = B * sqr(op.r().as_double()).transpose() * B.inverse()
+                nearly_i3 = (U * R).inverse() * reference_U
+                score = sum([abs(_n - _i) for (_n, _i) in zip(nearly_i3, i3)])
+                results.append((score, op.r().as_hkl(), op))
+
+            results.sort()
+            best = results[0]
+            Debug.write("Best reindex: %s %.3f" % (best[1], best[0]))
+            reindex_op = best[2].r().inverse().as_hkl()
+            # delegate reindexing to individual Scalers.
+            self.apply_reindex_operator_to_sweep_info(
+                si, reindex_op, reason="unifying [U] setting"
+            )
+            # recalculate to verify
+            u, _, __ = self.get_UBlattsymm_from_sweep_info(si)
+            U = fixed.inverse() * sqr(u).transpose()
+            Debug.write("New reindex: %s" % (U.inverse() * reference_U))
+
+            # FIXME I should probably raise an exception at this stage if this
+            # is not about I3...
+
+    def brehm_diederichs_reindexing(self):
+        """Run brehm diederichs reindexing algorithm."""
+        # Currently implemented for CCP4ScalerA and DialsScaler
+        brehm_diederichs_files_in = []
+
+        for epoch in self._sweep_handler.get_epochs():
+            si = self._sweep_handler.get_sweep_information(epoch)
+            brehm_diederichs_files_in.append(self.get_mtz_data_from_sweep_info(si))
+
+        # now run cctbx.brehm_diederichs to figure out the indexing hand for
+        # each sweep
+        from xia2.Wrappers.Cctbx.BrehmDiederichs import BrehmDiederichs
+
+        brehm_diederichs = BrehmDiederichs()
+        brehm_diederichs.set_working_directory(self.get_working_directory())
+        auto_logfiler(brehm_diederichs)
+        brehm_diederichs.set_input_filenames(brehm_diederichs_files_in)
+        # 1 or 3? 1 seems to work better?
+        brehm_diederichs.set_asymmetric(1)
+        brehm_diederichs.run()
+        reindexing_dict = brehm_diederichs.get_reindexing_dict()
+
+        for i, epoch in enumerate(self._sweep_handler.get_epochs()):
+            si = self._sweep_handler.get_sweep_information(epoch)
+            hklin = brehm_diederichs_files_in[i]
+            reindex_op = reindexing_dict.get(os.path.abspath(hklin))
+            assert reindex_op is not None
+            if reindex_op != "h,k,l":
+                self.apply_reindex_operator_to_sweep_info(
+                    si, reindex_op, reason="match reference"
+                )
 
 
 def anomalous_probability_plot(intensities, expected_delta=None):
