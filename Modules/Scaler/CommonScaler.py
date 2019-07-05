@@ -1534,7 +1534,7 @@ class CommonScaler(Scaler):
                 Debug.write("keep_all_reflections set, using detector limits")
             Debug.write("Resolution for sweep %s: %.2f" % (sname, limit))
 
-            if not (dname, sname) in self._scalr_resolution_limits:
+            if (dname, sname) not in self._scalr_resolution_limits:
                 self._scalr_resolution_limits[(dname, sname)] = (limit, None)
                 self.set_scaler_done(False)
 

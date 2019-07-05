@@ -5,6 +5,7 @@ import os
 import math
 import copy as copy
 
+from orderedset import OrderedSet
 from xia2.Handlers.Files import FileHandler
 from xia2.lib.bits import auto_logfiler
 from xia2.Handlers.Phil import PhilIndex
@@ -456,7 +457,10 @@ pipeline=dials (supported for pipeline=dials-aimless).
     def _scale(self):
         """Perform all of the operations required to deliver the scaled
         data."""
-        epochs = self._sweep_handler.get_epochs()
+        sweep_infos = [
+            self._sweep_handler.get_sweep_information(e)
+            for e in self._sweep_handler.get_epochs()
+        ]
 
         if self._scalr_corrections:
             Journal.block(
@@ -478,6 +482,8 @@ pipeline=dials (supported for pipeline=dials-aimless).
                 {"scaling model": "default"},
             )
 
+        ### Set the parameters and datafiles for dials.scale
+
         self._scaler = DialsScale()
         self._scaler = self._updated_dials_scaler()
 
@@ -486,70 +492,61 @@ pipeline=dials (supported for pipeline=dials-aimless).
             self._scaler.add_experiments_json(self._scaled_experiments)
             self._scaler.add_reflections_file(self._scaled_reflections)
         else:
-            for epoch in self._sweep_handler.get_epochs():
-                si = self._sweep_handler.get_sweep_information(epoch)
-                experiment = si.get_experiments()
-                reflections = si.get_reflections()
-                self._scaler.add_experiments_json(experiment)
-                self._scaler.add_reflections_file(reflections)
+            for si in sweep_infos:
+                self._scaler.add_experiments_json(si.get_experiments())
+                self._scaler.add_reflections_file(si.get_reflections())
 
-        # if more than one wave- need multiple mtz
+        ### Set the unmerged mtz filepath
+
         self._scalr_scaled_reflection_files = {}
         self._scalr_scaled_reflection_files["mtz_unmerged"] = {}
 
-        self._scaler.set_crystal_name(self._scalr_xname)
+        # First set the unmerged mtz output filename. Note that this is the
+        # same for MAD datasets too, as need a single unmerged for merging
+        # stats calc. For the merged mtz this is different.
+        scaled_unmerged_mtz_path = os.path.join(
+            self.get_working_directory(),
+            "%s_%s_scaled_unmerged.mtz" % (self._scalr_pname, self._scalr_xname),
+        )
+        self._scaler.set_scaled_unmerged_mtz([scaled_unmerged_mtz_path])
+        self._scaler.set_crystal_name(self._scalr_xname)  # Name goes in mtz
 
-        dnames_list = []
-        for epoch in self._sweep_handler.get_epochs():
-            si = self._sweep_handler.get_sweep_information(epoch)
-            _, __, dname = si.get_project_info()
-            dnames_list.append(dname)
-        dnames_list = list(set(dnames_list))
-        if len(dnames_list) == 1:
-            # Set paths
-            scaled_mtz_path = os.path.join(
-                self.get_working_directory(),
-                "%s_%s_scaled.mtz" % (self._scalr_pname, self._scalr_xname),
-            )
-            scaled_unmerged_mtz_path = os.path.join(
-                self.get_working_directory(),
-                "%s_%s_scaled_unmerged.mtz" % (self._scalr_pname, self._scalr_xname),
-            )
-            self._scaler.set_scaled_unmerged_mtz([scaled_unmerged_mtz_path])
+        ### Set the merged mtz filepath(s), making into account MAD case.
+
+        # Find number of dnames (i.e. number of wavelengths)
+        dnames_set = OrderedSet()
+        for si in sweep_infos:
+            dnames_set.add(si.get_project_info()[2])
+
+        scaled_mtz_path = os.path.join(
+            self.get_working_directory(),
+            "%s_%s_scaled.mtz" % (self._scalr_pname, self._scalr_xname),
+        )
+        if len(dnames_set) == 1:
             self._scaler.set_scaled_mtz([scaled_mtz_path])
             self._scalr_scaled_reflection_files["mtz"] = {
-                dnames_list[0]: scaled_mtz_path
+                dnames_set[0]: scaled_mtz_path
             }
             self._scalr_scaled_reflection_files["mtz_unmerged"] = {
-                dnames_list[0]: scaled_unmerged_mtz_path
+                dnames_set[0]: scaled_unmerged_mtz_path
             }
         else:
             merged_mtz_files = []
             self._scalr_scaled_reflection_files["mtz"] = {}
-            for epoch in self._sweep_handler.get_epochs():
-                si = self._sweep_handler.get_sweep_information(epoch)
-                pname, xname, dname = si.get_project_info()
-                scaled_mtz_path = os.path.join(
-                    self.get_working_directory(),
-                    "%s_%s_scaled_%s.mtz" % (pname, xname, dname),
-                )
-                merged_mtz_files.append(scaled_mtz_path)
+            for dname in dnames_set:
+                this_mtz_path = scaled_mtz_path.rstrip(".mtz") + ("_%s.mtz" % dname)
+                merged_mtz_files.append(this_mtz_path)
                 self._scalr_scaled_reflection_files["mtz"][dname] = scaled_mtz_path
-            scaled_unmerged_mtz_path = os.path.join(
-                self.get_working_directory(),
-                "%s_%s_scaled_unmerged.mtz" % (self._scalr_pname, self._scalr_xname),
-            )
-            # Don't add to unmerged here, need to do as separate step.
-            self._scaler.set_scaled_unmerged_mtz([scaled_unmerged_mtz_path])
+                # Note - we aren't logging individual unmerged here as not
+                # generating until later.
             self._scaler.set_scaled_mtz(merged_mtz_files)
 
+        ### Set the resolution limit if applicable
+
         user_resolution_limits = {}
-
         highest_resolution = 100.0
-        for epoch in epochs:
-
-            si = self._sweep_handler.get_sweep_information(epoch)
-            pname, xname, dname = si.get_project_info()
+        for si in sweep_infos:
+            dname = si.get_project_info()[2]
             sname = si.get_sweep_name()
             intgr = si.get_integrater()
 
@@ -569,6 +566,8 @@ pipeline=dials (supported for pipeline=dials-aimless).
         if highest_resolution < 99.9:
             self._scaler.set_resolution(d_min=highest_resolution)
 
+        ### Setup final job details and run scale
+
         self._scaler.set_working_directory(self.get_working_directory())
         auto_logfiler(self._scaler)
         FileHandler.record_log_file(
@@ -580,23 +579,25 @@ pipeline=dials (supported for pipeline=dials-aimless).
         self._scaled_reflections = self._scaler.get_scaled_reflections()
 
         FileHandler.record_data_file(scaled_unmerged_mtz_path)
-        FileHandler.record_data_file(scaled_mtz_path)
 
         # make it so that only scaled.expt and scaled.refl are
         # the files that dials.scale knows about, so that if scale is called again,
         # scaling resumes from where it left off.
         self._scaler.clear_datafiles()
 
-        if len(dnames_list) == 1:
+        # log datafiles here, picked up from here in commonscaler methods.
+        if len(dnames_set) == 1:
             hklout = copy.deepcopy(self._scaler.get_scaled_mtz()[0])
-            self._scalr_scaled_refl_files = {dnames_list[0]: hklout}
+            self._scalr_scaled_refl_files = {dnames_set[0]: hklout}
             FileHandler.record_data_file(hklout)
         else:
             self._scalr_scaled_refl_files = {}
-            for i, dname in enumerate(dnames_list):
+            for i, dname in enumerate(dnames_set):
                 hklout = copy.deepcopy(self._scaler.get_scaled_mtz()[i])
                 self._scalr_scaled_refl_files[dname] = hklout
                 FileHandler.record_data_file(hklout)
+
+        ### Calculate the resolution limit and set done False if applicable
 
         highest_suggested_resolution = self.assess_resolution_limits(
             self._scaler.get_unmerged_reflection_file(),
@@ -609,25 +610,23 @@ pipeline=dials (supported for pipeline=dials-aimless).
             Debug.write("Returning as scaling not finished...")
             return
 
-        # Need each in individual unmerged mtz for stats.
-        unmerged_mtz_files = []
-        if len(dnames_list) > 1:
+        ### For MAD case, generate individual unmerged mtz for stats.
+
+        if len(dnames_set) > 1:
+            unmerged_mtz_files = []
             scaler = DialsScale()
             scaler.set_working_directory(self.get_working_directory())
             scaler.set_export_mtz_only()
             scaler.add_experiments_json(self._scaled_experiments)
             scaler.add_reflections_file(self._scaled_reflections)
-            for epoch in self._sweep_handler.get_epochs():
-                si = self._sweep_handler.get_sweep_information(epoch)
-                pname, xname, dname = si.get_project_info()
-                scaled_unmerged_mtz_path = os.path.join(
-                    self.get_working_directory(),
-                    "%s_%s_scaled_unmerged_%s.mtz" % (pname, xname, dname),
+            for dname in dnames_set:
+                this_mtz_path = scaled_unmerged_mtz_path.rstrip(".mtz") + (
+                    "_%s.mtz" % dname
                 )
-                unmerged_mtz_files.append(scaled_unmerged_mtz_path)
+                unmerged_mtz_files.append(this_mtz_path)
                 self._scalr_scaled_reflection_files["mtz_unmerged"][
                     dname
-                ] = scaled_unmerged_mtz_path
+                ] = this_mtz_path
             scaler.set_scaled_unmerged_mtz(unmerged_mtz_files)
             scaler.scale()
             for f in scaler.get_scaled_unmerged_mtz():  # a list
