@@ -351,7 +351,7 @@ class XDSIndexer(IndexerSingleSweep):
             imageset = self._indxr_imagesets[0]
             xsweep = self._indxr_sweeps[0]
             sweep_filename = os.path.join(
-                self.get_working_directory(), "%s_experiments.json" % xsweep.get_name()
+                self.get_working_directory(), "%s_indexed.expt" % xsweep.get_name()
             )
             dump.experiment_list(
                 ExperimentListFactory.from_imageset_and_crystal(imageset, None),
@@ -470,8 +470,8 @@ class XDSIndexer(IndexerSingleSweep):
             spotfinder.run()
             export = self.DialsExportSpotXDS()
             export.set_input_data_file(
-                "reflections.pickle",
-                spotfinder.get_output_data_file("reflections.pickle"),
+                "observations.refl",
+                spotfinder.get_output_data_file("observations.refl"),
             )
             export.run()
 

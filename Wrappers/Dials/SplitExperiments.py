@@ -52,13 +52,13 @@ def SplitExperiments(DriverType=None):
             self.add_command_line(self._reflections_filename)
 
             if not self._experiments_prefix:
-                self._experiments_prefix = "split_experiments"
+                self._experiments_prefix = "split"
             self.add_command_line(
                 "output.experiments_prefix=%s" % self._experiments_prefix
             )
 
             if not self._reflections_prefix:
-                self._reflections_prefix = "split_reflections"
+                self._reflections_prefix = "split"
             self.add_command_line(
                 "output.reflections_prefix=%s" % self._reflections_prefix
             )

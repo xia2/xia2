@@ -231,12 +231,10 @@ class DialsIntegrater(Integrater):
         from dxtbx.serialize import load
 
         refiner = self.get_integrater_refiner()
-        self._intgr_experiments_filename = refiner.get_refiner_payload(
-            "experiments.json"
-        )
+        self._intgr_experiments_filename = refiner.get_refiner_payload("models.expt")
         experiments = load.experiment_list(self._intgr_experiments_filename)
         experiment = experiments[0]
-        self._intgr_indexed_filename = refiner.get_refiner_payload("reflections.pickle")
+        self._intgr_indexed_filename = refiner.get_refiner_payload("observations.refl")
 
         # this is the result of the cell refinement
         self._intgr_cell = experiment.crystal.get_unit_cell().parameters()

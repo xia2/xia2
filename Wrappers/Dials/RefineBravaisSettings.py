@@ -53,7 +53,7 @@ def RefineBravaisSettings(DriverType=None):
             for k in self._bravais_summary:
                 bravais_summary[int(k)] = copy.deepcopy(self._bravais_summary[k])
                 bravais_summary[int(k)]["experiments_file"] = os.path.join(
-                    self.get_working_directory(), "bravais_setting_%d.json" % int(k)
+                    self.get_working_directory(), "bravais_setting_%d.expt" % int(k)
                 )
             return bravais_summary
 

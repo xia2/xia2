@@ -627,7 +627,7 @@ xia2.settings
     json = None
       .type = path
       .multiple = True
-      .help = "dxtbx-format experiments.json file which can be provided as an " \
+      .help = "dxtbx-format models.expt file which can be provided as an " \
               "alternative source of images header information to avoid the " \
               "need to read all the image headers on start-up."
       .short_caption = "Take headers from json file"
@@ -635,7 +635,7 @@ xia2.settings
     reference_geometry = None
       .type = path
       .multiple = True
-      .help = "Experimental geometry from this experiments.json will " \
+      .help = "Experimental geometry from this models.expt will " \
               "override the geometry from the image headers."
       .short_caption = "Take experimental geometry from json file"
       .expert_level = 1
@@ -703,7 +703,7 @@ xia2.settings
       .help = "Reference file for testing of alternative indexing schemes"
     reference_experiment_file = None
       .type = path
-      .help = "Reference experiments.json for testing of alternative indexing schemes"
+      .help = "Reference models.expt for testing of alternative indexing schemes"
     model = *decay *modulation *absorption partiality
       .type = choice(multi=True)
       .short_caption = "Scaling models to apply"

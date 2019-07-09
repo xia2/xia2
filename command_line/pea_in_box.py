@@ -127,7 +127,7 @@ peabox {
     .help = "Extract shoebox pixels"
 
   output {
-    reflections = 'xia2-peabox.pickle'
+    reflections = 'xia2-peabox.refl'
       .type = str
       .help = "The integrated output filename"
   }

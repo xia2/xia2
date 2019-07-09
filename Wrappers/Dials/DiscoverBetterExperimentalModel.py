@@ -72,8 +72,7 @@ def DiscoverBetterExperimentalModel(DriverType=None):
                 self.add_command_line("%s" % self._phil_file)
 
             self._optimized_filename = os.path.join(
-                self.get_working_directory(),
-                "%d_optimized_experiments.json" % self.get_xpid(),
+                self.get_working_directory(), "%d_optimised.expt" % self.get_xpid()
             )
             self.add_command_line("output.experiments=%s" % self._optimized_filename)
 

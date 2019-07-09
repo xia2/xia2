@@ -100,14 +100,13 @@ def Refine(DriverType=None):
             if self._outlier_algorithm:
                 self.add_command_line("outlier.algorithm=%s" % self._outlier_algorithm)
             self._refined_experiments_filename = os.path.join(
-                self.get_working_directory(),
-                "%s_refined_experiments.json" % self.get_xpid(),
+                self.get_working_directory(), "%s_refined.expt" % self.get_xpid()
             )
             self.add_command_line(
                 "output.experiments=%s" % self._refined_experiments_filename
             )
             self._refined_filename = os.path.join(
-                self.get_working_directory(), "%s_refined.pickle" % self.get_xpid()
+                self.get_working_directory(), "%s_refined.refl" % self.get_xpid()
             )
             self.add_command_line("output.reflections=%s" % self._refined_filename)
             if self._reflections_per_degree is not None:

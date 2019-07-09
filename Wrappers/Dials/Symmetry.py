@@ -170,12 +170,12 @@ def DialsSymmetry(DriverType=None):
                 if not self._output_experiments_filename:
                     self._output_experiments_filename = os.path.join(
                         self.get_working_directory(),
-                        "%d_reindexed_experiments.json" % self.get_xpid(),
+                        "%d_symmetrized.expt" % self.get_xpid(),
                     )
                 if not self._output_reflections_filename:
                     self._output_reflections_filename = os.path.join(
                         self.get_working_directory(),
-                        "%d_reindexed_reflections.pickle" % self.get_xpid(),
+                        "%d_symmetrized.refl" % self.get_xpid(),
                     )
 
                 self.add_command_line(

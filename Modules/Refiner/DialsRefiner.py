@@ -89,12 +89,10 @@ class DialsRefiner(Refiner):
 
                 # Extract and output experiment and reflections for current sweep
                 indexed_experiments = os.path.join(
-                    self.get_working_directory(),
-                    "%s_indexed_experiments.json" % xsweep.get_name(),
+                    self.get_working_directory(), "%s_indexed.expt" % xsweep.get_name()
                 )
                 indexed_reflections = os.path.join(
-                    self.get_working_directory(),
-                    "%s_indexed_reflections.pickle" % xsweep.get_name(),
+                    self.get_working_directory(), "%s_indexed.refl" % xsweep.get_name()
                 )
 
                 from dxtbx.serialize import dump
@@ -183,12 +181,8 @@ class DialsRefiner(Refiner):
                 )
 
             experiments = load.experiment_list(self._refinr_experiments_filename)
-            self.set_refiner_payload(
-                "experiments.json", self._refinr_experiments_filename
-            )
-            self.set_refiner_payload(
-                "reflections.pickle", self._refinr_indexed_filename
-            )
+            self.set_refiner_payload("models.expt", self._refinr_experiments_filename)
+            self.set_refiner_payload("observations.refl", self._refinr_indexed_filename)
 
             # this is the result of the cell refinement
             self._refinr_cell = experiments.crystals()[0].get_unit_cell().parameters()

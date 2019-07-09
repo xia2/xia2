@@ -574,7 +574,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
         FileHandler.record_data_file(scaled_unmerged_mtz_path)
         FileHandler.record_data_file(scaled_mtz_path)
 
-        # make it so that only scaled.pickle and scaled_experiments.json are
+        # make it so that only scaled.expt and scaled.refl are
         # the files that dials.scale knows about, so that if scale is called again,
         # scaling resumes from where it left off.
         self._scaler.clear_datafiles()
@@ -953,14 +953,10 @@ class DialsScalerHelper(object):
             si = sweep_handler.get_sweep_information(epoch)
             nums = fmt % i
             si.set_reflections(
-                os.path.join(
-                    self.get_working_directory(), "split_reflections_%s.pickle" % nums
-                )
+                os.path.join(self.get_working_directory(), "split_%s.refl" % nums)
             )
             si.set_experiments(
-                os.path.join(
-                    self.get_working_directory(), "split_experiments_%s.json" % nums
-                )
+                os.path.join(self.get_working_directory(), "split_%s.expt" % nums)
             )
         return sweep_handler
 
@@ -980,9 +976,7 @@ class DialsScalerHelper(object):
             del r.experiment_identifiers()[old_id]
             r["id"].set_selected(r["id"] == old_id, i)
             r.experiment_identifiers()[i] = exp_id
-            fname = os.path.join(
-                self.get_working_directory(), "split_reflections_%s.pickle" % nums
-            )
+            fname = os.path.join(self.get_working_directory(), "split_%s.refl" % nums)
             r.as_pickle(fname)
             si.set_reflections(fname)
         return sweep_handler

@@ -66,12 +66,10 @@ def DialsCosym(DriverType=None, decay_correction=None):
                 self.add_command_line("nproc=%i" % nproc)
 
             self._reindexed_experiments = os.path.join(
-                self.get_working_directory(),
-                "%i_reindexed_experiments.json" % self.get_xpid(),
+                self.get_working_directory(), "%i_reindexed.expt" % self.get_xpid()
             )
             self._reindexed_reflections = os.path.join(
-                self.get_working_directory(),
-                "%i_reindexed_reflections.pickle" % self.get_xpid(),
+                self.get_working_directory(), "%i_reindexed.refl" % self.get_xpid()
             )
 
             self.add_command_line(

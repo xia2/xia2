@@ -30,7 +30,7 @@ def Spotfinder(DriverType=None):
 
             self._input_sweep_filename = None
             self._output_sweep_filename = None
-            self._input_spot_filename = "strong.pickle"
+            self._input_spot_filename = "strong.refl"
             self._scan_ranges = []
             self._nspots = 0
             self._min_spot_size = None

@@ -52,8 +52,8 @@ def run():
     # The script usage
     usage = (
         "usage: xia2.multiplex [options] [param.phil] "
-        "experiments1.json experiments2.json reflections1.pickle "
-        "reflections2.pickle..."
+        "models1.expt models2.expt observations1.refl "
+        "observations2.refl..."
     )
 
     # Create the parser
