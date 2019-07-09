@@ -20,7 +20,7 @@ def table1_tex(crystal_params, merging_stats):
 
     name_str = [""]
     for cp in crystal_params:
-        name_str.append(cp["name"].replace("_", "\_"))
+        name_str.append(cp["name"].replace("_", r"\_"))
 
     print(" & ".join(name_str) + " \\\\")
     print("Crystal parameters" + " & " * ncols + "\\\\")

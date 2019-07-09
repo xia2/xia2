@@ -635,7 +635,7 @@ def bin_o_tron0(sisigma):
         qs = nint(0.5 * _number_bins * s)
 
         if qs in bins:
-            bins[qs].append((i / sigma))
+            bins[qs].append(i / sigma)
 
     result = {}
 
@@ -672,7 +672,7 @@ def outlier(sisigma):
         qs = nint(0.5 * 500 * s)
 
         if qs in bins:
-            bins[qs].append((i / sigma))
+            bins[qs].append(i / sigma)
 
     # then look for outliers... first calculate the mean in each bin...
 

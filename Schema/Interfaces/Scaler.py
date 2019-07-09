@@ -594,7 +594,7 @@ class Scaler(object):
 
         # then decide on the consensus pointgroup
 
-        pointgroups = set([])
+        pointgroups = set()
 
         for integrater in integraters:
             pointgroups = self._scale_list_likely_pointgroups(integrater)

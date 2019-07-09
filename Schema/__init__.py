@@ -158,7 +158,7 @@ def load_imagesets(
             for imageset in imagesets:
                 goniometer = imageset.get_goniometer()
                 goniometer.set_rotation_axis(
-                    tuple((-g for g in goniometer.get_rotation_axis()))
+                    tuple(-g for g in goniometer.get_rotation_axis())
                 )
 
         reference_geometry = PhilIndex.params.xia2.settings.input.reference_geometry

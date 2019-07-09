@@ -973,7 +973,7 @@ class DialsScalerHelper(object):
             si = sweep_handler.get_sweep_information(epoch)
             nums = fmt % i
             r = flex.reflection_table.from_file(si.get_reflections())
-            if len(set(r["id"]).difference(set([-1]))) > 1:
+            if len(set(r["id"]).difference({-1})) > 1:
                 raise ValueError("Only single-experiment tables expected")
             old_id = list(r.experiment_identifiers().keys())[0]
             exp_id = list(r.experiment_identifiers().values())[0]

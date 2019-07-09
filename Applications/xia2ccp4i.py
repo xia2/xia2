@@ -96,7 +96,7 @@ MG_CURRENT_PROJECT        _default_project          $PROJ_NAME
             return False
 
         # Is the project_name valid?
-        if not re.match("[_\-a-zA-Z0-9]+$", proj_name):
+        if not re.match(r"[_\-a-zA-Z0-9]+$", proj_name):
             self._reason_for_failure = (
                 "ERROR: " + proj_name + " is not a valid CCP4 Project name"
             )

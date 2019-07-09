@@ -13,7 +13,7 @@ import os
 from dxtbx.model.experiment_list import ExperimentList
 from xia2.Experts.MatrixExpert import transmogrify_matrix
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.Handlers.Streams import Debug, Journal
 from xia2.lib.bits import auto_logfiler
 from xia2.lib.SymmetryLib import lattice_to_spacegroup
 from xia2.Schema.Exceptions.NegativeMosaicError import NegativeMosaicError
@@ -219,7 +219,7 @@ class MosflmRefiner(Refiner):
                         )
 
                         ratio += rms_deviations[c][j] / rms_deviations_p1[c][j]
-                        ratios.append((rms_deviations[c][j] / rms_deviations_p1[c][j]))
+                        ratios.append(rms_deviations[c][j] / rms_deviations_p1[c][j])
 
                 Debug.write("Average ratio: %.2f" % (ratio / len(ratios)))
 

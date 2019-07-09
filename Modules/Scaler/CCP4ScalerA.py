@@ -1253,7 +1253,7 @@ class CCP4ScalerA(Scaler):
         pattern = re.compile(" +#+ *CCP4.*#+")
         for line in output:
             if pattern.search(line):
-                aimless = re.sub("\s\s+", ", ", line.strip("\t\n #"))
+                aimless = re.sub(r"\s\s+", ", ", line.strip("\t\n #"))
                 break
 
         from xia2.Toolkit.AimlessSurface import (
