@@ -402,7 +402,7 @@ dials
     .expert_level = 1
     .short_caption = "Scaling"
   {
-    model = *physical array kb
+    model = *auto physical array kb
       .type = choice
       .help = "Choice of scaling model parameterisation to apply"
     rotation_spacing = 15.0

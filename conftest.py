@@ -67,7 +67,7 @@ def ccp4():
         pytest.skip(
             "CCP4 installation required for this test - Could not run CCP4 executable"
         )
-    version = re.search(b"patch level *([0-9]+)\.([0-9]+)\.([0-9]+)", result["stdout"])
+    version = re.search(br"patch level *([0-9]+)\.([0-9]+)\.([0-9]+)", result["stdout"])
     if not version:
         pytest.skip(
             "CCP4 installation required for this test - Could not determine CCP4 version"
@@ -89,7 +89,7 @@ def xds():
         pytest.skip("XDS installation required for this test - Could not run XDS")
     if "license expired" in result["stdout"]:
         pytest.skip("XDS installation required for this test - XDS license is expired")
-    version = re.search(b"BUILT=([0-9]+)\)", result["stdout"])
+    version = re.search(br"BUILT=([0-9]+)\)", result["stdout"])
     if not version:
         pytest.skip(
             "XDS installation required for this test - Could not determine XDS version"

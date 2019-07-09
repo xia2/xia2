@@ -65,7 +65,7 @@ def check_result(
         return False, "Reference result directory (%s) not found" % expected_result_dir
 
     expected_result_file, expected_result_file_version = None, None
-    cv_search = re.compile("\.([0-9]+)\.([0-9]+)\.([0-9]+)(\.([0-9]+)(\.([^.]+))?)?$")
+    cv_search = re.compile(r"\.([0-9]+)\.([0-9]+)\.([0-9]+)(\.([0-9]+)(\.([^.]+))?)?$")
     for f in os.listdir(expected_result_dir):
         if f.startswith("result.%s." % test_name) and os.path.isfile(
             os.path.join(expected_result_dir, f)
@@ -129,9 +129,9 @@ def check_result(
     print("Comparing against %s" % expected_result_file)
     print("-" * 80)
 
-    number = re.compile("(-?\d*\.\d+|-?\d+\.?)")
+    number = re.compile(r"(-?\d*\.\d+|-?\d+\.?)")
     number_with_tolerance = re.compile(
-        "(-?\d*\.\d+|-?\d+\.?)\((ignore|\*\*|\d*\.\d+%?|\d+\.?%?)\)"
+        r"(-?\d*\.\d+|-?\d+\.?)\((ignore|\*\*|\d*\.\d+%?|\d+\.?%?)\)"
     )
     output_identical = True
     for actual, expected in zip(summary_text_lines, expected_summary_lines):
@@ -237,7 +237,7 @@ def generate_tolerant_template(lines):
             lambda x: "0.5%" if x != "90.000" and x != "120.000" else "",
         ],
     }
-    number = re.compile("(\d*\.\d+|\d+\.?)")
+    number = re.compile(r"(\d*\.\d+|\d+\.?)")
     f = []
     for l in lines:
         if l.startswith("Files "):

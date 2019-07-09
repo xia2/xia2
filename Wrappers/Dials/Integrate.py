@@ -132,7 +132,7 @@ def Integrate(DriverType=None):
             if mp_mode == "serial" and mp_type == "qsub" and njob > 1:
                 self.add_command_line("mp.method=drmaa")
                 self.add_command_line("mp.njobs=%i" % njob)
-            self.add_command_line(("input.reflections=%s" % self._reflections_filename))
+            self.add_command_line("input.reflections=%s" % self._reflections_filename)
             self._integrated_reflections = os.path.join(
                 self.get_working_directory(), "%d_integrated.refl" % self.get_xpid()
             )

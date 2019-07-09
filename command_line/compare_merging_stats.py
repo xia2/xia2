@@ -139,7 +139,7 @@ def plot_merging_stats(
     if plots is None:
         plots = plots_
     else:
-        plots = dict((k, plots_[k]) for k in plots)
+        plots = {k: plots_[k] for k in plots}
     if prefix is None:
         prefix = ""
     if labels is not None:

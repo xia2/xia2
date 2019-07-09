@@ -68,7 +68,7 @@ def run(args):
 
     json_data.update(stats_plots)
     json_data.update(report.batch_dependent_plots())
-    json_data.update(report.intensity_stats_plots())
+    json_data.update(report.intensity_stats_plots(run_xtriage=False))
     json_data.update(report.pychef_plots())
     if params.include_probability_plots:
         json_data.update(report.z_score_hist())

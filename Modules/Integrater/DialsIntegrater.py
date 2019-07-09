@@ -131,7 +131,7 @@ class DialsIntegrater(Integrater):
         if (
             len(self.get_matching_images()) == 1
             or PhilIndex.params.dials.fast_mode
-            or PhilIndex.params.xia2.settings.integration.profile_fitting == False
+            or not PhilIndex.params.xia2.settings.integration.profile_fitting
         ):
             # With no profiles available have to rely on summation alone
             export.set_intensity_choice("sum")

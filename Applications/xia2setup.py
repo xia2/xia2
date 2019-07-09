@@ -505,7 +505,7 @@ def print_sweeps(out=sys.stdout):
                 # out.write('EPOCH %d\n' % int(s.get_collect()[0]))
                 if not settings.trust_beam_centre:
                     interactive = False
-                    if PhilIndex.params.xia2.settings.interactive == True:
+                    if PhilIndex.params.xia2.settings.interactive:
                         interactive = True
                         PhilIndex.params.xia2.settings.interactive = False
                         PhilIndex.get_python_object()

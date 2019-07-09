@@ -27,7 +27,6 @@ from xia2.Handlers.Syminfo import Syminfo
 from xia2.lib.bits import is_mtz_file, transpose_loggraph
 from xia2.lib.SymmetryLib import sort_lattices
 from xia2.Modules import MtzUtils
-from xia2.Modules.AnalyseMyIntensities import AnalyseMyIntensities
 from xia2.Modules.Scaler.CCP4ScalerHelpers import (
     CCP4ScalerHelper,
     SweepInformationHandler,
@@ -113,7 +112,7 @@ class CCP4ScalerA(Scaler):
         aimless.set_spacing(params.rotation.spacing)
         aimless.set_bfactor(brotation=params.brotation.spacing)
 
-        if PhilIndex.params.xia2.settings.small_molecule == True:
+        if PhilIndex.params.xia2.settings.small_molecule:
             aimless.set_spacing(15.0)
             aimless.set_bfactor(
                 bfactor=PhilIndex.params.xia2.settings.small_molecule_bfactor
@@ -128,7 +127,7 @@ class CCP4ScalerA(Scaler):
         lmax = params.secondary.lmax
         aimless.set_secondary(secondary, lmax)
 
-        if PhilIndex.params.xia2.settings.multi_crystal == True:
+        if PhilIndex.params.xia2.settings.multi_crystal:
             aimless.set_surface_link(False)
 
         # if profile fitting off use summation intensities
@@ -204,9 +203,7 @@ class CCP4ScalerA(Scaler):
 
         need_to_return = False
 
-        multi_sweep_indexing = (
-            PhilIndex.params.xia2.settings.multi_sweep_indexing == True
-        )
+        multi_sweep_indexing = PhilIndex.params.xia2.settings.multi_sweep_indexing
 
         # START OF if more than one epoch
         if len(self._sweep_handler.get_epochs()) > 1:
@@ -441,9 +438,7 @@ class CCP4ScalerA(Scaler):
 
         need_to_return = False
 
-        multi_sweep_indexing = (
-            PhilIndex.params.xia2.settings.multi_sweep_indexing == True
-        )
+        multi_sweep_indexing = PhilIndex.params.xia2.settings.multi_sweep_indexing
 
         # START OF if multi-sweep and not input pg
         if multi_sweep_indexing and not self._scalr_input_pointgroup:
@@ -655,46 +650,7 @@ class CCP4ScalerA(Scaler):
         # consistent definition of U matrix modulo fixed rotations
 
         if PhilIndex.params.xia2.settings.unify_setting:
-
-            from scitbx.matrix import sqr
-
-            reference_U = None
-            i3 = sqr((1, 0, 0, 0, 1, 0, 0, 0, 1))
-
-            for epoch in self._sweep_handler.get_epochs():
-                si = self._sweep_handler.get_sweep_information(epoch)
-                intgr = si.get_integrater()
-                fixed = sqr(intgr.get_goniometer().get_fixed_rotation())
-                u, b, s = get_umat_bmat_lattice_symmetry_from_mtz(si.get_reflections())
-                U = fixed.inverse() * sqr(u).transpose()
-                B = sqr(b)
-
-                if reference_U is None:
-                    reference_U = U
-                    continue
-
-                results = []
-                for op in s.all_ops():
-                    R = B * sqr(op.r().as_double()).transpose() * B.inverse()
-                    nearly_i3 = (U * R).inverse() * reference_U
-                    score = sum([abs(_n - _i) for (_n, _i) in zip(nearly_i3, i3)])
-                    results.append((score, op.r().as_hkl(), op))
-
-                results.sort()
-                best = results[0]
-                Debug.write("Best reindex: %s %.3f" % (best[1], best[0]))
-                intgr.set_integrater_reindex_operator(
-                    best[2].r().inverse().as_hkl(), reason="unifying [U] setting"
-                )
-                si.set_reflections(intgr.get_integrater_intensities())
-
-                # recalculate to verify
-                u, b, s = get_umat_bmat_lattice_symmetry_from_mtz(si.get_reflections())
-                U = fixed.inverse() * sqr(u).transpose()
-                Debug.write("New reindex: %s" % (U.inverse() * reference_U))
-
-                # FIXME I should probably raise an exception at this stage if this
-                # is not about I3...
+            self.unify_setting()
 
         if self.get_scaler_reference_reflection_file():
             self._reference = self.get_scaler_reference_reflection_file()
@@ -709,44 +665,7 @@ class CCP4ScalerA(Scaler):
         params = PhilIndex.params
         use_brehm_diederichs = params.xia2.settings.use_brehm_diederichs
         if len(self._sweep_handler.get_epochs()) > 1 and use_brehm_diederichs:
-
-            brehm_diederichs_files_in = []
-            for epoch in self._sweep_handler.get_epochs():
-
-                si = self._sweep_handler.get_sweep_information(epoch)
-                hklin = si.get_reflections()
-                brehm_diederichs_files_in.append(hklin)
-
-            # now run cctbx.brehm_diederichs to figure out the indexing hand for
-            # each sweep
-            from xia2.Wrappers.Cctbx.BrehmDiederichs import BrehmDiederichs
-            from xia2.lib.bits import auto_logfiler
-
-            brehm_diederichs = BrehmDiederichs()
-            brehm_diederichs.set_working_directory(self.get_working_directory())
-            auto_logfiler(brehm_diederichs)
-            brehm_diederichs.set_input_filenames(brehm_diederichs_files_in)
-            # 1 or 3? 1 seems to work better?
-            brehm_diederichs.set_asymmetric(1)
-            brehm_diederichs.run()
-            reindexing_dict = brehm_diederichs.get_reindexing_dict()
-
-            for epoch in self._sweep_handler.get_epochs():
-
-                si = self._sweep_handler.get_sweep_information(epoch)
-                intgr = si.get_integrater()
-                hklin = si.get_reflections()
-
-                reindex_op = reindexing_dict.get(os.path.abspath(hklin))
-                assert reindex_op is not None
-
-                if 1 or reindex_op != "h,k,l":
-                    # apply the reindexing operator
-                    intgr.set_integrater_reindex_operator(
-                        reindex_op, reason="match reference"
-                    )
-                    si.set_reflections(intgr.get_integrater_intensities())
-
+            self.brehm_diederichs_reindexing()
         # If not Brehm-deidrichs, set reference as first sweep
         elif len(self._sweep_handler.get_epochs()) > 1 and not self._reference:
 
@@ -1067,7 +986,7 @@ class CCP4ScalerA(Scaler):
                 hklin, batch_range=(start, end)
             )
 
-            if PhilIndex.params.xia2.settings.resolution.keep_all_reflections == True:
+            if PhilIndex.params.xia2.settings.resolution.keep_all_reflections:
                 suggested = limit
                 if (
                     highest_suggested_resolution is None
@@ -1334,7 +1253,7 @@ class CCP4ScalerA(Scaler):
         pattern = re.compile(" +#+ *CCP4.*#+")
         for line in output:
             if pattern.search(line):
-                aimless = re.sub("\s\s+", ", ", line.strip("\t\n #"))
+                aimless = re.sub(r"\s\s+", ", ", line.strip("\t\n #"))
                 break
 
         from xia2.Toolkit.AimlessSurface import (
@@ -1439,3 +1358,22 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
                     # backwards compatibility 2015-12-11
                     batch_to_dose[b] = b
         return batch_to_dose
+
+    def get_UBlattsymm_from_sweep_info(self, sweep_info):
+        """Return U, B, lattice symmetry from the data (i.e. mtz file)."""
+        return get_umat_bmat_lattice_symmetry_from_mtz(sweep_info.get_reflections())
+
+    def apply_reindex_operator_to_sweep_info(self, sweep_info, reindex_op, reason):
+        """Apply the reindex operator to the data.
+
+        Delegate to the integrater reindex operator method."""
+        intgr = sweep_info.get_integrater()
+        intgr.set_integrater_reindex_operator(reindex_op, reason=reason)
+        sweep_info.set_reflections(intgr.get_integrater_intensities())
+
+    def get_mtz_data_from_sweep_info(self, sweep_info):
+        """Get the data in mtz form.
+
+        Trivial for CCP4ScalerA, as always use the integrator to
+        generate a new mtz when reindexing, so just return this."""
+        return sweep_info.get_reflections()

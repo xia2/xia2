@@ -83,7 +83,7 @@ class LabelitIndexer(IndexerSingleSweep):
         phi_width = self.get_phi_width()
         images = self.get_matching_images()
 
-        if PhilIndex.params.xia2.settings.interactive == True:
+        if PhilIndex.params.xia2.settings.interactive:
             selected_images = index_select_images_user(phi_width, images, Chatter)
         else:
             selected_images = index_select_images_lone(phi_width, images)

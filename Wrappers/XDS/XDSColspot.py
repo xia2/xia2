@@ -159,7 +159,7 @@ def XDSColspot(DriverType=None, params=None):
                 xds_inp.write("SPOT_RANGE=%d %d\n" % spot_range)
             xds_inp.write("BACKGROUND_RANGE=%d %d\n" % self._background_range)
 
-            if PhilIndex.params.xia2.settings.small_molecule == True:
+            if PhilIndex.params.xia2.settings.small_molecule:
                 xds_inp.write("STRONG_PIXEL=5\n")
                 # FIXME should probably be moved to a phil parameter
 
