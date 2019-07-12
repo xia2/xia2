@@ -552,9 +552,9 @@ class XDSIntegrater(Integrater):
             experiments = load.experiment_list(experiments_json, check_format=True)
             imageset = experiments[0].imageset
             masker = (
-                imageset.masker()
-                .format_class(imageset.paths()[0])
-                .get_goniometer_shadow_masker()
+                imageset.get_format_class()
+                .get_instance(imageset.paths()[0])
+                .get_masker()
             )
             if masker is not None:
                 integrate_filename = integrate_hkl_to_reflection_file(

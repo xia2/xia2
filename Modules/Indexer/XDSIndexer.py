@@ -334,9 +334,9 @@ class XDSIndexer(IndexerSingleSweep):
         if PhilIndex.params.xia2.settings.input.format.dynamic_shadowing:
             imageset = self._indxr_imagesets[0]
             masker = (
-                imageset.masker()
-                .format_class(imageset.paths()[0])
-                .get_goniometer_shadow_masker()
+                imageset.get_format_class()
+                .get_instance(imageset.paths()[0])
+                .get_masker()
             )
             if masker is None:
                 # disable dynamic_shadowing
