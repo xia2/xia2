@@ -6,7 +6,7 @@ import shutil
 import uuid
 
 from xia2.lib.bits import auto_logfiler
-from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Streams import Chatter
 from xia2.Wrappers.XIA.Integrate import Integrate as XIA2Integrate
 
 
@@ -72,6 +72,7 @@ def process_one_sweep(args):
 
         xia2_json = os.path.join(tmpdir, "xia2.json")
         json_files = glob.glob(os.path.join(sweep_tmp_dir, "*", "*.json"))
+        json_files.extend(glob.glob(os.path.join(sweep_tmp_dir, "*", "*.expt")))
         if os.path.exists(xia2_json):
             json_files.append(xia2_json)
 
