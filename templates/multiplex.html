@@ -14,7 +14,7 @@
         <li class="active"><a data-toggle="tab" data-target="#home">Summary</a></li>
 
         {% for cluster_name, item in individual_dataset_reports.items() %}
-            <li><a data-toggle="tab" data-target="#dataset_{{ cluster_name }}">Dataset {{ cluster_name }}</a></li>
+            <li><a data-toggle="tab" data-target="#dataset_{{ cluster_name }}">{{ cluster_name }}</a></li>
         {% endfor %}
 
         <li><a data-toggle="tab" data-target="#output_files">Output files</a></li>

@@ -369,6 +369,7 @@ class MultiCrystalScale(object):
         self._comparison_graphs = OrderedDict()
 
         self._scaled = Scale(self._data_manager, self._params)
+        self._record_individual_report(self._scaled.report(), "All data")
 
         self._data_manager.export_experiments("final.expt")
         self._data_manager.export_reflections("final.refl")
@@ -420,29 +421,33 @@ class MultiCrystalScale(object):
                 data_manager = copy.deepcopy(self._data_manager_original)
                 data_manager.select(cluster.labels)
                 scaled = Scale(data_manager, self._params)
-                d = self._report_as_dict(scaled.report())
-
-                self._individual_report_dicts[
-                    cluster_dir
-                ] = self._individual_report_dict(d, cluster_dir)
-
-                for graph in (
-                    "cc_one_half",
-                    "i_over_sig_i",
-                    "completeness",
-                    "multiplicity_vs_resolution",
-                ):
-                    self._comparison_graphs.setdefault(
-                        graph, {"layout": d[graph]["layout"], "data": []}
-                    )
-                    data = copy.deepcopy(d[graph]["data"][0])
-                    data["name"] = cluster_dir
-                    data.pop("line", None)  # remove default color override
-                    self._comparison_graphs[graph]["data"].append(data)
-
+                self._record_individual_report(
+                    scaled.report(), cluster_dir.replace("_", " ")
+                )
                 os.chdir(cwd)
 
         self.report()
+
+    def _record_individual_report(self, report, cluster_name):
+        d = self._report_as_dict(report)
+
+        self._individual_report_dicts[cluster_name] = self._individual_report_dict(
+            d, cluster_name
+        )
+
+        for graph in (
+            "cc_one_half",
+            "i_over_sig_i",
+            "completeness",
+            "multiplicity_vs_resolution",
+        ):
+            self._comparison_graphs.setdefault(
+                graph, {"layout": d[graph]["layout"], "data": []}
+            )
+            data = copy.deepcopy(d[graph]["data"][0])
+            data["name"] = cluster_name
+            data.pop("line", None)  # remove default color override
+            self._comparison_graphs[graph]["data"].append(data)
 
     @staticmethod
     def _report_as_dict(report):
@@ -483,7 +488,7 @@ class MultiCrystalScale(object):
 
     @staticmethod
     def _individual_report_dict(report_d, cluster_name):
-
+        cluster_name = cluster_name.replace(" ", "_")
         d = {}
 
         d["merging_statistics_table"] = report_d["merging_statistics_table"]
