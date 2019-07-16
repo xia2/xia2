@@ -14,7 +14,7 @@
         <li class="active"><a data-toggle="tab" data-target="#home">Summary</a></li>
 
         {% for cluster_name, item in individual_dataset_reports.items() %}
-            <li><a data-toggle="tab" data-target="#dataset_{{ cluster_name }}">{{ cluster_name }}</a></li>
+            <li><a data-toggle="tab" data-target="#dataset_{{ cluster_name | replace(" ", "_") }}">{{ cluster_name }}</a></li>
         {% endfor %}
 
         <li><a data-toggle="tab" data-target="#output_files">Output files</a></li>
@@ -88,7 +88,7 @@
 
         {% for cluster_name, item in individual_dataset_reports.items() %}
 
-            <div id="dataset_{{ cluster_name }}" class="tab-pane">
+            <div id="dataset_{{ cluster_name | replace(" ", "_") }}" class="tab-pane">
 
                 <div>
                     <h2>Detailed statistics for dataset {{ cluster_name }}</h2>
@@ -101,7 +101,7 @@
                                     <a>Overall</a>
                                 </h4>
                             </div>
-                            <div id="collapse_overall_{{ cluster_name }}" class="panel-collapse collapse in">
+                            <div id="collapse_overall_{{ cluster_name | replace(" ", "_") }}" class="panel-collapse collapse in">
                                 <div class="panel-body">
                                     <div style="width: 800px">
                                         {{ macros.table(item['overall_statistics_table'],
@@ -113,12 +113,12 @@
                         </div>
 
                         <div class="panel panel-default">
-                            <div class="panel-heading" data-toggle="collapse" data-target="#collapse_merging_stats_{{ cluster_name }}">
+                            <div class="panel-heading" data-toggle="collapse" data-target="#collapse_merging_stats_{{ cluster_name | replace(" ", "_") }}">
                                 <h4 class="panel-title">
                                     <a>Resolution shells</a>
                                 </h4>
                             </div>
-                            <div id="collapse_merging_stats_{{ cluster_name }}" class="panel-collapse collapse">
+                            <div id="collapse_merging_stats_{{ cluster_name | replace(" ", "_") }}" class="panel-collapse collapse">
                                 <div class="panel-body">
                                     {{ macros.table(item['merging_statistics_table'],
                                                     has_column_header=true) }}
@@ -135,9 +135,9 @@
                     <h2>Analysis plots</h2>
 
                     <div class="panel-group">
-                        {{ macros.panel('Analysis by resolution', 'resolution_' + cluster_name, item['resolution_graphs']) }}
-                        {{ macros.panel('Analysis by batch', 'batch_' + cluster_name, item['batch_graphs']) }}
-                        {{ macros.panel('Miscellaneous', 'misc_' + cluster_name, item['misc_graphs'], styles=styles) }}
+                        {{ macros.panel('Analysis by resolution', 'resolution_' + cluster_name | replace(" ", "_"), item['resolution_graphs']) }}
+                        {{ macros.panel('Analysis by batch', 'batch_' + cluster_name | replace(" ", "_"), item['batch_graphs']) }}
+                        {{ macros.panel('Miscellaneous', 'misc_' + cluster_name | replace(" ", "_"), item['misc_graphs'], styles=styles) }}
                     </div>
 
                 </div>
