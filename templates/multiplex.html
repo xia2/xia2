@@ -16,8 +16,6 @@
         {% for cluster_name, item in individual_dataset_reports.items() %}
             <li><a data-toggle="tab" data-target="#dataset_{{ cluster_name | replace(" ", "_") }}">{{ cluster_name }}</a></li>
         {% endfor %}
-
-        <li><a data-toggle="tab" data-target="#output_files">Output files</a></li>
     </ul>
 
     <div class="tab-content">
