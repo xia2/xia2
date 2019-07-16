@@ -365,7 +365,8 @@ class MultiCrystalScale(object):
 
         self.decide_space_group()
 
-        self._individual_report_dicts = {}
+        self._individual_report_dicts = OrderedDict()
+        self._comparison_graphs = OrderedDict()
 
         self._scaled = Scale(self._data_manager, self._params)
 
@@ -419,15 +420,32 @@ class MultiCrystalScale(object):
                 data_manager = copy.deepcopy(self._data_manager_original)
                 data_manager.select(cluster.labels)
                 scaled = Scale(data_manager, self._params)
-                self._individual_report_dicts[cluster_dir] = self._dict_from_report(
-                    scaled.report(), cluster_dir
-                )
+                d = self._report_as_dict(scaled.report())
+
+                self._individual_report_dicts[
+                    cluster_dir
+                ] = self._individual_report_dict(d, cluster_dir)
+
+                for graph in (
+                    "cc_one_half",
+                    "i_over_sig_i",
+                    "completeness",
+                    "multiplicity_vs_resolution",
+                ):
+                    self._comparison_graphs.setdefault(
+                        graph, {"layout": d[graph]["layout"], "data": []}
+                    )
+                    data = copy.deepcopy(d[graph]["data"][0])
+                    data["name"] = cluster_dir
+                    data.pop("line", None)  # remove default color override
+                    self._comparison_graphs[graph]["data"].append(data)
+
                 os.chdir(cwd)
 
         self.report()
 
     @staticmethod
-    def _dict_from_report(report, cluster_name):
+    def _report_as_dict(report):
         d = {}
 
         overall_stats_table, merging_stats_table, stats_plots = (
@@ -437,18 +455,11 @@ class MultiCrystalScale(object):
         d["merging_statistics_table"] = merging_stats_table
         d["overall_statistics_table"] = overall_stats_table
 
-        json_data = {}
-
-        # if params.xtriage_analysis:
-        # json_data["xtriage"] = (
-        # xtriage_success + xtriage_warnings + xtriage_danger
-        # )
-
-        json_data.update(stats_plots)
-        json_data.update(report.batch_dependent_plots())
-        json_data.update(report.intensity_stats_plots())
-        json_data.update(report.pychef_plots())
-        json_data.update(report.pychef_plots(n_bins=1))
+        d.update(stats_plots)
+        d.update(report.batch_dependent_plots())
+        d.update(report.intensity_stats_plots())
+        d.update(report.pychef_plots())
+        d.update(report.pychef_plots(n_bins=1))
 
         max_points = 500
         for g in (
@@ -458,7 +469,7 @@ class MultiCrystalScale(object):
             "scp_vs_dose",
             "rd_vs_batch_difference",
         ):
-            for i, data in enumerate(json_data[g]["data"]):
+            for i, data in enumerate(d[g]["data"]):
                 x = data["x"]
                 n = len(x)
                 if n > max_points:
@@ -467,8 +478,19 @@ class MultiCrystalScale(object):
                     data["x"] = list(flex.int(data["x"]).select(sel))
                     data["y"] = list(flex.double(data["y"]).select(sel))
 
+        d.update(report.multiplicity_plots())
+        return d
+
+    @staticmethod
+    def _individual_report_dict(report_d, cluster_name):
+
+        d = {}
+
+        d["merging_statistics_table"] = report_d["merging_statistics_table"]
+        d["overall_statistics_table"] = report_d["overall_statistics_table"]
+
         resolution_graphs = OrderedDict(
-            (k + "_" + cluster_name, json_data[k])
+            (k + "_" + cluster_name, report_d[k])
             for k in (
                 "cc_one_half",
                 "i_over_sig_i",
@@ -477,11 +499,11 @@ class MultiCrystalScale(object):
                 "completeness",
                 "multiplicity_vs_resolution",
             )
-            if k in json_data
+            if k in report_d
         )
 
         batch_graphs = OrderedDict(
-            (k + "_" + cluster_name, json_data[k])
+            (k + "_" + cluster_name, report_d[k])
             for k in (
                 "scale_rmerge_vs_batch",
                 "i_over_sig_i_vs_batch",
@@ -493,13 +515,15 @@ class MultiCrystalScale(object):
         )
 
         misc_graphs = OrderedDict(
-            (k + "_" + cluster_name, json_data[k])
+            (k + "_" + cluster_name, report_d[k])
             for k in ("cumulative_intensity_distribution", "l_test", "multiplicities")
-            if k in json_data
+            if k in d
         )
 
-        for k, v in report.multiplicity_plots().iteritems():
-            misc_graphs[k + "_" + cluster_name] = {"img": v}
+        for hkl in "hkl":
+            misc_graphs["multiplicity_" + hkl + "_" + cluster_name] = {
+                "img": report_d["multiplicity_" + hkl]
+            }
 
         d["resolution_graphs"] = resolution_graphs
         d["batch_graphs"] = batch_graphs
@@ -659,7 +683,7 @@ class MultiCrystalScale(object):
         return mca
 
     def report(self):
-        self._mca.report(self._individual_report_dicts)
+        self._mca.report(self._individual_report_dicts, self._comparison_graphs)
 
     def cluster_analysis(self):
         self._cos_angle_clusters = self._mca.cluster_analysis().cos_angle_clusters

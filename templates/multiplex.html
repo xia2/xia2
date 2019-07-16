@@ -26,6 +26,9 @@
             <h2>Analysis plots</h2>
 
             <div class="panel-group">
+
+                {{ macros.panel('Cluster comparison', 'comparison_graphs', comparison_graphs) }}
+
                 {{ macros.panel('Unit cell analysis', 'unit_cell', unit_cell_graphs, styles=styles) }}
 
                 <div class="panel panel-default">

@@ -3,10 +3,10 @@ from __future__ import absolute_import, division, print_function
 import sys
 
 import iotbx.phil
-from cctbx import crystal, miller, sgtbx, uctbx
+from cctbx import crystal
 from cctbx.array_family import flex
 from libtbx.phil import command_line
-from xia2.Modules.MultiCrystalAnalysis import separate_unmerged
+from xia2.Modules.Analysis import separate_unmerged
 
 master_phil_scope = iotbx.phil.parse(
     """\
