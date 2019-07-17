@@ -9,10 +9,11 @@ import glob
 import os
 import traceback
 import json
+import six
 
 
 from libtbx import phil
-from xia2.command_line.report import xia2_report
+from xia2.Modules.Report import Report
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Streams import Chatter, Debug
 
@@ -46,7 +47,6 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
     xia2_output = cgi.escape(xia2_output)
 
     styles = {}
-    reports = []
 
     columns = []
     columns.append(
@@ -77,51 +77,19 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
             scope = phil.parse(batch_phil_scope)
             scaler = xcryst._scaler
             try:
-                for e, si in scaler._sweep_information.iteritems():
+                for si in scaler._sweep_information.values():
                     batch_params = scope.extract().batch[0]
                     batch_params.id = si["sname"]
                     batch_params.range = si["batches"]
                     params.batch.append(batch_params)
             except AttributeError:
-                for e, si in scaler._sweep_handler._sweep_information.iteritems():
+                for si in scaler._sweep_handler._sweep_information.values():
                     batch_params = scope.extract().batch[0]
                     batch_params.id = si.get_sweep_name()
                     batch_params.range = si.get_batch_range()
                     params.batch.append(batch_params)
 
-            report = xia2_report(unmerged_mtz, params)
-            reports.append(report)
-
-            merging_stats = report.merging_stats
-            merging_stats_anom = report.merging_stats_anom
-
-            overall = merging_stats.overall
-            overall_anom = merging_stats_anom.overall
-            outer_shell = merging_stats.bins[-1]
-            outer_shell_anom = merging_stats_anom.bins[-1]
-
-            column = [
-                wname,
-                str(xwav.get_wavelength()),
-                "%.2f - %.2f (%.2f - %.2f)"
-                % (overall.d_max, overall.d_min, outer_shell.d_max, outer_shell.d_min),
-                "%.2f (%.2f)"
-                % (overall.completeness * 100, outer_shell.completeness * 100),
-                "%.2f (%.2f)" % (overall.mean_redundancy, outer_shell.mean_redundancy),
-                "%.4f (%.4f)" % (overall.cc_one_half, outer_shell.cc_one_half),
-                "%.2f (%.2f)"
-                % (overall.i_over_sigma_mean, outer_shell.i_over_sigma_mean),
-                "%.4f (%.4f)" % (overall.r_merge, outer_shell.r_merge),
-                # anomalous statistics
-                "%.2f (%.2f)"
-                % (
-                    overall_anom.anom_completeness * 100,
-                    outer_shell_anom.anom_completeness * 100,
-                ),
-                "%.2f (%.2f)"
-                % (overall_anom.mean_redundancy, outer_shell_anom.mean_redundancy),
-            ]
-            columns.append(column)
+            report = Report.from_unmerged_mtz(unmerged_mtz, params)
 
             xtriage_success, xtriage_warnings, xtriage_danger = None, None, None
             if params.xtriage_analysis:
@@ -138,7 +106,7 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
                         raise
 
             overall_stats_table, merging_stats_table, stats_plots = (
-                report.merging_stats_data()
+                report.resolution_plots_and_stats()
             )
 
             d = {}
@@ -159,13 +127,6 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
             json_data.update(report.intensity_stats_plots(run_xtriage=False))
             json_data.update(report.pychef_plots())
             json_data.update(report.pychef_plots(n_bins=1))
-            if params.include_probability_plots:
-                json_data.update(report.z_score_hist())
-                json_data.update(report.normal_probability_plot())
-                json_data.update(report.z_vs_multiplicity())
-                json_data.update(report.z_time_series())
-                json_data.update(report.z_vs_I())
-                json_data.update(report.z_vs_I_over_sigma())
 
             from scitbx.array_family import flex
 
@@ -217,32 +178,15 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
                     for k in ("scale_rmerge_vs_batch", "i_over_sig_i_vs_batch")
                 )
 
-            if params.include_probability_plots:
-                misc_graphs = OrderedDict(
-                    (k, json_data[k])
-                    for k in (
-                        "cumulative_intensity_distribution",
-                        "l_test",
-                        "multiplicities",
-                        "z_score_histogram",
-                        "normal_probability_plot",
-                        "z_score_vs_multiplicity",
-                        "z_score_time_series",
-                        "z_score_vs_I",
-                        "z_score_vs_I_over_sigma",
-                    )
-                    if k in json_data
+            misc_graphs = OrderedDict(
+                (k, json_data[k])
+                for k in (
+                    "cumulative_intensity_distribution",
+                    "l_test",
+                    "multiplicities",
                 )
-            else:
-                misc_graphs = OrderedDict(
-                    (k, json_data[k])
-                    for k in (
-                        "cumulative_intensity_distribution",
-                        "l_test",
-                        "multiplicities",
-                    )
-                    if k in json_data
-                )
+                if k in json_data
+            )
 
             for k, v in report.multiplicity_plots().iteritems():
                 misc_graphs[k + "_" + wname] = {"img": v}
@@ -256,6 +200,37 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
                 "danger": xtriage_danger,
             }
 
+            merging_stats = report.merging_stats
+            merging_stats_anom = report.merging_stats_anom
+
+            overall = merging_stats.overall
+            overall_anom = merging_stats_anom.overall
+            outer_shell = merging_stats.bins[-1]
+            outer_shell_anom = merging_stats_anom.bins[-1]
+
+            column = [
+                wname,
+                str(xwav.get_wavelength()),
+                "%.2f - %.2f (%.2f - %.2f)"
+                % (overall.d_max, overall.d_min, outer_shell.d_max, outer_shell.d_min),
+                "%.2f (%.2f)"
+                % (overall.completeness * 100, outer_shell.completeness * 100),
+                "%.2f (%.2f)" % (overall.mean_redundancy, outer_shell.mean_redundancy),
+                "%.4f (%.4f)" % (overall.cc_one_half, outer_shell.cc_one_half),
+                "%.2f (%.2f)"
+                % (overall.i_over_sigma_mean, outer_shell.i_over_sigma_mean),
+                "%.4f (%.4f)" % (overall.r_merge, outer_shell.r_merge),
+                # anomalous statistics
+                "%.2f (%.2f)"
+                % (
+                    overall_anom.anom_completeness * 100,
+                    outer_shell_anom.anom_completeness * 100,
+                ),
+                "%.2f (%.2f)"
+                % (overall_anom.mean_redundancy, outer_shell_anom.mean_redundancy),
+            ]
+            columns.append(column)
+
     table = [[c[i] for c in columns] for i in range(len(columns[0]))]
 
     from cctbx import sgtbx
@@ -268,20 +243,9 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
     alternative_space_groups = [sg.symbol_and_number() for sg in space_groups[1:]]
     unit_cell = str(report.intensities.unit_cell())
 
-    # twinning_score = xcryst._get_scaler()._scalr_twinning_score
-    # twinning_conclusion = xcryst._get_scaler()._scalr_twinning_conclusion
-    # if twinning_score is not None:
-    # table.append(['','',''])
-    # table.append(['Twinning score', '%.2f' %twinning_score, ''])
-    # if twinning_conclusion is not None:
-    # table.append(['', twinning_conclusion, ''])
-
     for row in table:
         for i in range(len(row)):
             row[i] = row[i].encode("ascii", "xmlcharrefreplace")
-
-    # from libtbx import table_utils
-    # print table_utils.format(rows=table, has_header=True)
 
     # reflection files
 
@@ -292,7 +256,7 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
         g = glob.glob(os.path.join(data_dir, "*"))
         reflection_files = xcryst.get_scaled_merged_reflections()
         for k, rfile in reflection_files.iteritems():
-            if isinstance(rfile, basestring):
+            if isinstance(rfile, six.string_types):
                 for datafile in g:
                     if os.path.basename(datafile) == os.path.basename(rfile):
                         reflection_files[k] = datafile
@@ -419,9 +383,6 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
         space_group=space_group,
         alternative_space_groups=alternative_space_groups,
         unit_cell=unit_cell,
-        xtriage_success=xtriage_success,
-        xtriage_warnings=xtriage_warnings,
-        xtriage_danger=xtriage_danger,
         overall_stats_table=table,
         cc_half_significance_level=params.cc_half_significance_level,
         mtz_files=mtz_files,

@@ -9,9 +9,11 @@ from six.moves import cStringIO as StringIO
 import xia2.Handlers.Environment
 import xia2.Handlers.Files
 from cctbx.array_family import flex
+import libtbx.phil
+from iotbx import merging_statistics
+from iotbx.reflection_file_reader import any_reflection_file
 from mmtbx.scaling import printed_output
-from xia2.Modules.Analysis import *
-from dials.util.intensity_explorer import data_from_unmerged_mtz, IntensityDist
+
 from dials.util.batch_handling import batch_manager
 from dials.report.analysis import batch_dependent_properties
 from dials.report.plots import (
@@ -21,7 +23,7 @@ from dials.report.plots import (
     IntensityStatisticsPlots,
 )
 
-from xia2.Modules.Analysis import batch_phil_scope, separate_unmerged
+from xia2.Modules.Analysis import batch_phil_scope, phil_scope, separate_unmerged
 
 
 class xtriage_output(printed_output):
@@ -53,25 +55,26 @@ class xtriage_output(printed_output):
         self._out_orig.flush()
 
 
-class xia2_report_base(object):
-    def __init__(self, params, base_dir=None):
+class Report(object):
+    def __init__(
+        self, intensities, params, batches=None, scales=None, dose=None, report_dir=None
+    ):
 
         self.params = params
 
-        self.intensities = None
-        self.batches = None
-        self.scales = None
-        self.dose = None
+        self.intensities = intensities
+        self.batches = batches
+        self.scales = scales
+        self.dose = dose
+        self.report_dir = report_dir
         self._xanalysis = None
-        self.report_dir = None
 
-    def report(self):
         assert self.intensities is not None
         # assert self.batches is not None
 
         if self.batches is not None and len(self.params.batch) == 0:
             separate = separate_unmerged(self.intensities, self.batches)
-            scope = phil.parse(batch_phil_scope)
+            scope = libtbx.phil.parse(batch_phil_scope)
             for i, batches in separate.batches.iteritems():
                 batch_params = scope.extract().batch[0]
                 batch_params.id = i
@@ -81,8 +84,6 @@ class xia2_report_base(object):
                 )
                 self.params.batch.append(batch_params)
 
-        self._compute_merging_stats()
-
         if self.params.anomalous:
             self.intensities = self.intensities.as_anomalous_array()
             if self.batches is not None:
@@ -90,37 +91,6 @@ class xia2_report_base(object):
 
         self.intensities.setup_binner(n_bins=self.params.resolution_bins)
         self.merged_intensities = self.intensities.merge_equivalents().array()
-
-        # if params.include_probability_plots:
-        #  rtable, elist = data_from_unmerged_mtz(unmerged_mtz)
-        #  self.z_score_data = IntensityDist(rtable, elist).rtable
-
-    def _compute_merging_stats(self):
-
-        from iotbx import merging_statistics
-
-        self.merging_stats = merging_statistics.dataset_statistics(
-            self.intensities,
-            n_bins=self.params.resolution_bins,
-            cc_one_half_significance_level=self.params.cc_half_significance_level,
-            eliminate_sys_absent=self.params.eliminate_sys_absent,
-            use_internal_variance=self.params.use_internal_variance,
-            assert_is_not_unique_set_under_symmetry=False,
-        )
-
-        intensities_anom = self.intensities.as_anomalous_array()
-        intensities_anom = intensities_anom.map_to_asu().customized_copy(
-            info=self.intensities.info()
-        )
-        self.merging_stats_anom = merging_statistics.dataset_statistics(
-            intensities_anom,
-            n_bins=self.params.resolution_bins,
-            anomalous=True,
-            cc_one_half_significance_level=self.params.cc_half_significance_level,
-            eliminate_sys_absent=self.params.eliminate_sys_absent,
-            use_internal_variance=self.params.use_internal_variance,
-            assert_is_not_unique_set_under_symmetry=False,
-        )
 
     def multiplicity_plots(self):
         from xia2.command_line.plot_multiplicity import plot_multiplicity, master_phil
@@ -159,7 +129,6 @@ class xia2_report_base(object):
         )
 
     def symmetry_table_html(self):
-
         symmetry_table_html = """
   <p>
     <b>Unit cell:</b> %s
@@ -189,11 +158,12 @@ class xia2_report_base(object):
             text_out=pout,
             params=xtriage_params,
         )
-        with open(os.path.join(self.report_dir, "xtriage.log"), "wb") as f:
-            f.write(s.getvalue())
-        xia2.Handlers.Files.FileHandler.record_log_file(
-            "Xtriage", os.path.join(self.report_dir, "xtriage.log")
-        )
+        if self.report_dir is not None:
+            with open(os.path.join(self.report_dir, "xtriage.log"), "wb") as f:
+                f.write(s.getvalue())
+            xia2.Handlers.Files.FileHandler.record_log_file(
+                "Xtriage", os.path.join(self.report_dir, "xtriage.log")
+            )
         xs = StringIO()
         xout = xtriage_output(xs)
         xanalysis.show(out=xout)
@@ -215,7 +185,6 @@ class xia2_report_base(object):
         return xtriage_success, xtriage_warnings, xtriage_danger
 
     def batch_dependent_plots(self):
-
         binned_batches, rmerge, isigi, scalesvsbatch = batch_dependent_properties(
             self.batches, self.intensities, self.scales
         )
@@ -228,16 +197,36 @@ class xia2_report_base(object):
 
         return d
 
-    def merging_stats_data(self):
+    def resolution_plots_and_stats(self):
+        self.merging_stats = merging_statistics.dataset_statistics(
+            self.intensities,
+            n_bins=self.params.resolution_bins,
+            cc_one_half_significance_level=self.params.cc_half_significance_level,
+            eliminate_sys_absent=self.params.eliminate_sys_absent,
+            use_internal_variance=self.params.use_internal_variance,
+            assert_is_not_unique_set_under_symmetry=False,
+        )
+
+        intensities_anom = self.intensities.as_anomalous_array()
+        intensities_anom = intensities_anom.map_to_asu().customized_copy(
+            info=self.intensities.info()
+        )
+        self.merging_stats_anom = merging_statistics.dataset_statistics(
+            intensities_anom,
+            n_bins=self.params.resolution_bins,
+            anomalous=True,
+            cc_one_half_significance_level=self.params.cc_half_significance_level,
+            eliminate_sys_absent=self.params.eliminate_sys_absent,
+            use_internal_variance=self.params.use_internal_variance,
+            assert_is_not_unique_set_under_symmetry=False,
+        )
+
         is_centric = self.intensities.space_group().is_centric()
         plotter = ResolutionPlotsAndStats(
             self.merging_stats, self.merging_stats_anom, is_centric
         )
         d = OrderedDict()
-        if self.params.cc_half_method == "sigma_tau":
-            d.update(plotter.cc_one_half_plot(method="sigma_tau"))
-        else:
-            d.update(plotter.cc_one_half_plot())
+        d.update(plotter.cc_one_half_plot(method=self.params.cc_half_method))
         d.update(plotter.i_over_sig_i_plot())
         d.update(plotter.completeness_plot())
         d.update(plotter.multiplicity_vs_resolution_plot())
@@ -289,84 +278,67 @@ class xia2_report_base(object):
 
         return pychef_stats.to_dict()
 
-
-class xia2_report(xia2_report_base):
-    def __init__(self, unmerged_mtz, params, base_dir=None):
-
-        from iotbx.reflection_file_reader import any_reflection_file
-
-        self.unmerged_mtz = unmerged_mtz
-        self.params = params
-
+    @classmethod
+    def from_unmerged_mtz(cls, unmerged_mtz, params, report_dir=None):
         reader = any_reflection_file(unmerged_mtz)
         assert reader.file_type() == "ccp4_mtz"
         arrays = reader.as_miller_arrays(merge_equivalents=False)
 
-        self.intensities = None
-        self.batches = None
-        self.scales = None
-        self.dose = None
-        self._xanalysis = None
-
         for ma in arrays:
             if ma.info().labels == ["BATCH"]:
-                self.batches = ma
-            elif ma.info().labels == ["DOSE"]:
-                self.dose = ma
+                batches = ma
             elif ma.info().labels == ["I", "SIGI"]:
-                self.intensities = ma
+                intensities = ma
             elif ma.info().labels == ["I(+)", "SIGI(+)", "I(-)", "SIGI(-)"]:
-                self.intensities = ma
+                intensities = ma
             elif ma.info().labels == ["SCALEUSED"]:
-                self.scales = ma
+                scales = ma
 
-        assert self.intensities is not None
-        assert self.batches is not None
-        self.mtz_object = reader.file_content()
+        assert intensities is not None
+        assert batches is not None
+        mtz_object = reader.file_content()
 
         crystal_name = (
             filter(
                 lambda c: c != "HKL_base",
-                map(lambda c: c.name(), self.mtz_object.crystals()),
+                map(lambda c: c.name(), mtz_object.crystals()),
             )
             or ["DEFAULT"]
         )[0]
-        self.report_dir = (
-            base_dir
+        report_dir = (
+            report_dir
             or xia2.Handlers.Environment.Environment.generate_directory(
                 [crystal_name, "report"]
             )
         )
 
-        self.indices = self.mtz_object.extract_original_index_miller_indices()
-        self.intensities = self.intensities.customized_copy(
-            indices=self.indices, info=self.intensities.info()
+        indices = mtz_object.extract_original_index_miller_indices()
+        intensities = intensities.customized_copy(
+            indices=indices, info=intensities.info()
         )
-        self.batches = self.batches.customized_copy(
-            indices=self.indices, info=self.batches.info()
+        batches = batches.customized_copy(indices=indices, info=batches.info())
+        report = cls(
+            intensities, params, batches=batches, scales=scales, report_dir=report_dir
+        )
+        report.mtz_object = mtz_object  # nasty but xia2.report relys on this attribute
+        return report
+
+    @classmethod
+    def from_data_manager(cls, data_manager, params=None):
+        if params is None:
+            params = phil_scope.extract()
+            params.dose.batch = []
+        intensities, batches, scales = data_manager.reflections_as_miller_arrays(
+            combined=True
         )
 
-        if len(self.params.batch) == 0:
-            separate = separate_unmerged(self.intensities, self.batches)
-            scope = phil.parse(batch_phil_scope)
-            for i, batches in separate.batches.iteritems():
-                batch_params = scope.extract().batch[0]
-                batch_params.id = i
-                batch_params.range = (
-                    flex.min(batches.data()),
-                    flex.max(batches.data()),
-                )
-                self.params.batch.append(batch_params)
+        params.batch = []
+        scope = libtbx.phil.parse(batch_phil_scope)
+        for expt in data_manager.experiments:
+            batch_params = scope.extract().batch[0]
+            batch_params.id = expt.identifier
+            batch_params.range = expt.scan.get_batch_range()
+            params.batch.append(batch_params)
 
-        self._compute_merging_stats()
-
-        if params.anomalous:
-            self.intensities = self.intensities.as_anomalous_array()
-            self.batches = self.batches.as_anomalous_array()
-
-        self.intensities.setup_binner(n_bins=self.params.resolution_bins)
-        self.merged_intensities = self.intensities.merge_equivalents().array()
-
-        if params.include_probability_plots:
-            rtable, elist = data_from_unmerged_mtz(unmerged_mtz)
-            self.z_score_data = IntensityDist(rtable, elist).rtable
+        intensities.set_observation_type_xray_intensity()
+        return cls(intensities, params, batches=batches, scales=scales)

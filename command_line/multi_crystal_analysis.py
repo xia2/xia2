@@ -12,7 +12,7 @@ from dials.util import log
 from dials.util.options import OptionParser
 from dials.util.options import flatten_experiments, flatten_reflections
 from dials.util.multi_dataset_handling import parse_multiple_datasets
-from xia2.Modules.MultiCrystalAnalysis import multi_crystal_analysis
+from xia2.Modules.MultiCrystalAnalysis import MultiCrystalReport
 
 logger = logging.getLogger("xia2.multi_crystal_analysis")
 
@@ -22,6 +22,9 @@ help_message = """
 phil_scope = iotbx.phil.parse(
     """
 include scope xia2.command_line.report.phil_scope
+
+seed = 42
+  .type = int(value_min=0)
 
 unit_cell_clustering {
   threshold = 5000
@@ -42,10 +45,9 @@ output {
     process_includes=True,
 )
 
-# local overrides for refiner.phil_scope
 phil_overrides = iotbx.phil.parse(
     """
-prefix = xia2-multi-crystal
+prefix = xia2-multi-crystal-report
 title = 'xia2 multi-crystal report'
 """
 )
@@ -114,6 +116,12 @@ def run():
             "number of input experiments"
         )
 
+    if params.seed is not None:
+        import random
+
+        flex.set_random_seed(params.seed)
+        random.seed(params.seed)
+
     experiments = flatten_experiments(params.input.experiments)
     reflections = flatten_reflections(params.input.reflections)
     reflections = parse_multiple_datasets(reflections)
@@ -123,7 +131,7 @@ def run():
         joint_table.extend(reflections[i])
     reflections = joint_table
 
-    multi_crystal_analysis(
+    MultiCrystalReport(
         params, experiments=experiments, reflections=reflections
     ).report()
 
