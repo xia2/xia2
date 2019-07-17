@@ -464,7 +464,7 @@ def failover_dxtbx(image_file):
         N = F.cross(S)
         origin = matrix.col(d.get_origin())
 
-    beam = matrix.col(b.get_direction())
+    beam = matrix.col(b.get_sample_to_source_direction())
 
     # FIXME detector has methods to compute the beam centre now...
 
