@@ -146,7 +146,7 @@ class delta_cc_half(object):
         from matplotlib import pyplot
 
         normalised_score = self._normalised_delta_cc_i()
-        f = pyplot.figure()
+        pyplot.figure()
         # bins = range(
         # int(math.floor(flex.min(normalised_score))), int(math.ceil(flex.max(normalised_score)))+1)
         from libtbx.utils import frange
@@ -231,6 +231,4 @@ def run(args):
 
 
 if __name__ == "__main__":
-    import sys
-
     run(sys.argv[1:])

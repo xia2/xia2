@@ -256,7 +256,6 @@ class DataManager(object):
             scaled_array = scaled_data_as_miller_array(
                 reflection_tables, self._experiments
             )
-            ms = scaled_array.customized_copy()
             batch_array = miller.array(scaled_array, data=batches)
             scale_array = miller.array(scaled_array, data=scales)
             return scaled_array, batch_array, scale_array
@@ -546,7 +545,6 @@ class MultiCrystalScale(object):
             plot_name=plot_name,
         )
         logger.info(unit_cell_info(clusters))
-        largest_cluster = None
         largest_cluster_lattice_ids = None
         for cluster in clusters:
             cluster_lattice_ids = [m.lattice_id for m in cluster.members]

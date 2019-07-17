@@ -4,7 +4,6 @@ from __future__ import absolute_import, division, print_function
 
 import json
 import logging
-import sys
 from collections import OrderedDict
 
 from xia2.XIA2Version import Version
@@ -97,9 +96,6 @@ class MultiCrystalAnalysis(object):
     def radiation_damage_analysis(self):
         from dials.pychef import Statistics
 
-        miller_arrays = self._data_manager.reflections_as_miller_arrays(
-            # return_batches=True
-        )
         intensities_all, batches_all, _ = self._data_manager.reflections_as_miller_arrays(
             combined=False
         )
@@ -225,9 +221,3 @@ class MultiCrystalReport(MultiCrystalAnalysis):
 
         with open("%s.html" % self.params.prefix, "wb") as f:
             f.write(html.encode("ascii", "xmlcharrefreplace"))
-
-
-if __name__ == "__main__":
-    import sys
-
-    run(sys.argv[1:])

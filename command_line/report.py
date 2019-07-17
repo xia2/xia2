@@ -52,8 +52,6 @@ def run(args):
 
     report = Report.from_unmerged_mtz(unmerged_mtz, params, report_dir=".")
 
-    symmetry_table_html = report.symmetry_table_html()
-
     # xtriage
     xtriage_success, xtriage_warnings, xtriage_danger = None, None, None
     if params.xtriage_analysis:
