@@ -2,8 +2,6 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
-from iotbx.reflection_file_reader import any_reflection_file
-
 from xia2.Modules.Analysis import phil_scope
 from xia2.Modules.Report import Report
 
@@ -16,10 +14,6 @@ def report(dials_data):
     params.batch = []
     params.dose.batch = []
     return Report.from_unmerged_mtz(mtz, params)
-    reader = any_reflection_file(mtz)
-    miller_arrays = reader.as_miller_arrays(merge_equivalents=False)
-    intensities = [ma for ma in miller_arrays if ma.info().labels == ["I", "SIGI"]][0]
-    return Report(intensities, params)
 
 
 def test_multiplicity_plots(report):

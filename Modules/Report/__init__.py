@@ -287,8 +287,6 @@ class Report(object):
         for ma in arrays:
             if ma.info().labels == ["BATCH"]:
                 batches = ma
-            elif ma.info().labels == ["DOSE"]:
-                dose = ma
             elif ma.info().labels == ["I", "SIGI"]:
                 intensities = ma
             elif ma.info().labels == ["I(+)", "SIGI(+)", "I(-)", "SIGI(-)"]:
