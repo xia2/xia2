@@ -3,11 +3,7 @@ from __future__ import absolute_import, division, print_function
 import procrunner
 import pytest
 
-expected_data_files = [
-    "scaled.mtz",
-    "scaled_unmerged.mtz",
-    "xia2-multi-crystal-report.html",
-]
+expected_data_files = ["scaled.mtz", "scaled_unmerged.mtz", "xia2.multiplex.html"]
 
 
 def test_proteinase_k(regression_test, ccp4, dials_data, run_in_tmpdir):
