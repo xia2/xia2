@@ -9,6 +9,7 @@ import glob
 import os
 import traceback
 import json
+import six
 
 
 from libtbx import phil
@@ -76,13 +77,13 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
             scope = phil.parse(batch_phil_scope)
             scaler = xcryst._scaler
             try:
-                for e, si in scaler._sweep_information.iteritems():
+                for si in scaler._sweep_information.values():
                     batch_params = scope.extract().batch[0]
                     batch_params.id = si["sname"]
                     batch_params.range = si["batches"]
                     params.batch.append(batch_params)
             except AttributeError:
-                for e, si in scaler._sweep_handler._sweep_information.iteritems():
+                for si in scaler._sweep_handler._sweep_information.values():
                     batch_params = scope.extract().batch[0]
                     batch_params.id = si.get_sweep_name()
                     batch_params.range = si.get_batch_range()
@@ -255,7 +256,7 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
         g = glob.glob(os.path.join(data_dir, "*"))
         reflection_files = xcryst.get_scaled_merged_reflections()
         for k, rfile in reflection_files.iteritems():
-            if isinstance(rfile, basestring):
+            if isinstance(rfile, six.string_types):
                 for datafile in g:
                     if os.path.basename(datafile) == os.path.basename(rfile):
                         reflection_files[k] = datafile
