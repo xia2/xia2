@@ -70,13 +70,6 @@ def run(args):
     json_data.update(report.batch_dependent_plots())
     json_data.update(report.intensity_stats_plots(run_xtriage=False))
     json_data.update(report.pychef_plots())
-    if params.include_probability_plots:
-        json_data.update(report.z_score_hist())
-        json_data.update(report.normal_probability_plot())
-        json_data.update(report.z_vs_multiplicity())
-        json_data.update(report.z_time_series())
-        json_data.update(report.z_vs_I())
-        json_data.update(report.z_vs_I_over_sigma())
 
     resolution_graphs = OrderedDict(
         (k, json_data[k])
@@ -109,28 +102,11 @@ def run(args):
             for k in ("scale_rmerge_vs_batch", "i_over_sig_i_vs_batch")
         )
 
-    if params.include_probability_plots:
-        misc_graphs = OrderedDict(
-            (k, json_data[k])
-            for k in (
-                "cumulative_intensity_distribution",
-                "l_test",
-                "multiplicities",
-                "z_score_histogram",
-                "normal_probability_plot",
-                "z_score_vs_multiplicity",
-                "z_score_time_series",
-                "z_score_vs_I",
-                "z_score_vs_I_over_sigma",
-            )
-            if k in json_data
-        )
-    else:
-        misc_graphs = OrderedDict(
-            (k, json_data[k])
-            for k in ("cumulative_intensity_distribution", "l_test", "multiplicities")
-            if k in json_data
-        )
+    misc_graphs = OrderedDict(
+        (k, json_data[k])
+        for k in ("cumulative_intensity_distribution", "l_test", "multiplicities")
+        if k in json_data
+    )
 
     for k, v in report.multiplicity_plots().iteritems():
         misc_graphs[k] = {"img": v}
