@@ -1,7 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-import os
-
 
 def SplitExperiments(DriverType=None):
     """A factory for CombineExperimentsWrapper classes."""
@@ -20,6 +18,7 @@ def SplitExperiments(DriverType=None):
             self._reflections_filename = []
             self._experiments_prefix = None
             self._reflections_prefix = None
+            self._by_wavelength = False
 
         def add_experiments(self, experiments_filename):
             self._experiments_filename.append(experiments_filename)
@@ -38,6 +37,9 @@ def SplitExperiments(DriverType=None):
 
         def set_reflections_prefix(self, prefix):
             self._reflections_prefix = prefix
+
+        def set_by_wavelength(self, boolean):
+            self._by_wavelength = boolean
 
         def run(self):
             from xia2.Handlers.Streams import Debug
@@ -62,6 +64,8 @@ def SplitExperiments(DriverType=None):
             self.add_command_line(
                 "output.reflections_prefix=%s" % self._reflections_prefix
             )
+            if self._by_wavelength:
+                self.add_command_line("by_wavelength=True")
 
             self.start()
             self.close_wait()
