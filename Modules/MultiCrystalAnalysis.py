@@ -190,6 +190,20 @@ class MultiCrystalReport(MultiCrystalAnalysis):
         if self._cluster_analysis is None:
             self._cluster_analysis = self.cluster_analysis()
 
+        self._stereographic_projection_files = self.stereographic_projections(
+            "tmp.expt"
+        )
+
+        styles = {}
+        orientation_graphs = OrderedDict()
+        for hkl in ((1, 0, 0), (0, 1, 0), (0, 0, 1)):
+            with open(self._stereographic_projection_files[hkl], "rb") as f:
+                d = json.load(f)
+                d["layout"]["title"] = "Stereographic projection (hkl=%i%i%i)" % hkl
+                key = "stereographic_projection_%s%s%s" % hkl
+                orientation_graphs[key] = d
+                styles[key] = "square-plot"
+
         self._data_manager.export_experiments("tmp_experiments.expt")
 
         from jinja2 import Environment, ChoiceLoader, PackageLoader
@@ -206,13 +220,14 @@ class MultiCrystalReport(MultiCrystalAnalysis):
             unit_cell=str(self.intensities.unit_cell()),
             cc_half_significance_level=self.params.cc_half_significance_level,
             unit_cell_graphs=unit_cell_graphs,
+            orientation_graphs=orientation_graphs,
             cc_cluster_table=self._cc_cluster_table,
             cc_cluster_json=self._cc_cluster_json,
             cos_angle_cluster_table=self._cos_angle_cluster_table,
             cos_angle_cluster_json=self._cos_angle_cluster_json,
             individual_dataset_reports=individual_dataset_reports,
             comparison_graphs=comparison_graphs,
-            styles={},
+            styles=styles,
             xia2_version=Version,
         )
 
