@@ -119,6 +119,8 @@ def run():
     if len(reflections) > 1:
         for i, (expt, refl) in enumerate(zip(experiments, reflections)):
             reflections_all.extend(refl)
+    else:
+        reflections_all = reflections
     reflections_all.assert_experiment_identifiers_are_consistent(experiments)
 
     if params.identifiers is not None:
