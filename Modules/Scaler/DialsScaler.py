@@ -285,7 +285,6 @@ class DialsScaler(Scaler):
         # in either this pipeline or the standard dials pipeline
         for epoch in self._sweep_handler.get_epochs():
             si = self._sweep_handler.get_sweep_information(epoch)
-            intgr = si.get_integrater()
             _, xname, dname = si.get_project_info()
             sname = si.get_sweep_name()
 
