@@ -266,10 +266,10 @@ def DialsScale(DriverType=None, decay_correction=None):
                 self.add_command_line("lmax=%i" % self._lmax)
 
             if self._min_partiality is not None:
-                min_partiality = self._min_partiality
+                self.add_command_line("min_partiality=%s" % self._min_partiality)
 
             if self._partiality_cutoff is not None:
-                partiality_cutoff = self._partiality_cutoff
+                self.add_command_line("partiality_cutoff=%s" % self._partiality_cutoff)
 
             self.add_command_line("decay_term=%s" % self._bfactor)
             if self._bfactor and self._brotation is not None:
