@@ -5,11 +5,8 @@ from collections import OrderedDict
 
 import iotbx.phil
 from scitbx.array_family import flex
-from dials.util import log
 
 logger = logging.getLogger(__name__)
-debug_handle = log.debug_handle(logger)
-info_handle = log.info_handle(logger)
 
 
 def get_scipy():
