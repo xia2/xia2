@@ -70,7 +70,7 @@ def generate_reflections_in_sg(space_group, id_=0, assign_id=False):
     # needed to give vaguely sensible E_cc_true values
     reflections = flex.reflection_table()
     reflections["intensity.sum.value"] = intensities.data()
-    reflections["intensity.sum.variance"] = reflections["intensity.sum.value"] / 50.0
+    reflections["intensity.sum.variance"] = flex.pow2(intensities.sigmas())
     reflections["miller_index"] = intensities.indices()
     reflections["id"] = flex.int(reflections.size(), id_)
     if assign_id:
