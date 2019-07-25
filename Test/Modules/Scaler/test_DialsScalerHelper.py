@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 import pytest
+import random
 
 from cctbx import sgtbx
 from dials.algorithms.symmetry.cosym._generate_test_data import generate_intensities
@@ -8,6 +9,10 @@ from dials.array_family import flex
 from dxtbx.model.experiment_list import ExperimentList
 from dxtbx.model import Crystal, Scan, Beam, Experiment
 from dxtbx.serialize import dump, load
+
+
+flex.set_random_seed(42)
+random.seed(42)
 
 
 @pytest.fixture
