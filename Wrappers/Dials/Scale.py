@@ -95,6 +95,7 @@ def DialsScale(DriverType=None, decay_correction=None):
 
             self._scaled_experiments = None
             self._scaled_reflections = None
+            self._html = None
             self._unmerged_reflections = []
             self._merged_reflections = []
             self._best_unit_cell = None
@@ -211,6 +212,12 @@ def DialsScale(DriverType=None, decay_correction=None):
         def set_scaled_mtz(self, filepaths):
             assert isinstance(filepaths, list)
             self._merged_reflections = filepaths
+
+        def set_html(self, filepath):
+            self._html = filepath
+
+        def get_html(self):
+            return self._html
 
         def get_scaled_unmerged_mtz(self):
             return self._unmerged_reflections
@@ -329,6 +336,11 @@ def DialsScale(DriverType=None, decay_correction=None):
             self.add_command_line(
                 "output.merged_mtz=%s" % " ".join(self._merged_reflections)
             )
+            if not self._html:
+                self._html = os.path.join(
+                    self.get_working_directory(), "%i_scaling.html" % self.get_xpid()
+                )
+            self.add_command_line("output.html=%s" % self._html)
             if self._crystal_name:
                 self.add_command_line("output.crystal_name=%s" % self._crystal_name)
 

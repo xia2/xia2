@@ -31,6 +31,7 @@ def DialsCosym(DriverType=None, decay_correction=None):
 
             self._space_group = None
             self._json = None
+            self._html = None
 
         # getter and setter methods
 
@@ -51,6 +52,15 @@ def DialsCosym(DriverType=None, decay_correction=None):
 
         def set_json(self, json):
             self._json = json
+
+        def set_html(self, html):
+            self._html = html
+
+        def get_json(self):
+            return self._json
+
+        def get_html(self):
+            self._html
 
         def run(self):
             assert len(self._experiments_json)
@@ -87,9 +97,16 @@ def DialsCosym(DriverType=None, decay_correction=None):
             if not self._json:
                 self._json = os.path.join(
                     self.get_working_directory(),
-                    "%d_dials_cosym.json" % self.get_xpid(),
+                    "%d_dials.cosym.json" % self.get_xpid(),
                 )
             self.add_command_line("output.json='%s'" % self._json)
+
+            if not self._html:
+                self._html = os.path.join(
+                    self.get_working_directory(),
+                    "%d_dials.cosym.html" % self.get_xpid(),
+                )
+            self.add_command_line("output.html='%s'" % self._html)
 
             self.start()
             self.close_wait()
