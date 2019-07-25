@@ -39,8 +39,6 @@ seed = 42
 output {
   log = xia2.multiplex.log
     .type = str
-  debug_log = xia2.multiplex.debug.log
-    .type = str
 }
 """,
     process_includes=True,
@@ -72,7 +70,7 @@ def run():
     # Configure the logging
 
     for name in ("xia2", "dials"):
-        log.config(info=params.output.log, debug=params.output.debug_log, name=name)
+        log.config(verbosity=options.verbose, logfile=params.output.log, name=name)
     from dials.util.version import dials_version
 
     logger.info(dials_version())
