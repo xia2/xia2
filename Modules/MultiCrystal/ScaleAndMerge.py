@@ -370,8 +370,8 @@ class MultiCrystalScale(object):
         self._scaled = Scale(self._data_manager, self._params)
         self._record_individual_report(self._scaled.report(), "All data")
 
-        self._data_manager.export_experiments("final.expt")
-        self._data_manager.export_reflections("final.refl")
+        self._data_manager.export_experiments("multiplex.expt")
+        self._data_manager.export_reflections("multiplex.refl")
 
         scaled_unmerged_mtz = py.path.local(self._scaled.scaled_unmerged_mtz)
         scaled_unmerged_mtz.copy(py.path.local("scaled_unmerged.mtz"))
