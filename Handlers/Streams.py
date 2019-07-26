@@ -276,5 +276,39 @@ def setup_logging(logfile=None, debugfile=None, verbose=False):
             logger.setLevel(logging.DEBUG)
 
 
+def reconfigure_streams_to_logging():
+    "Modify xia2 Chatter/Debug objects to use python logging"
+
+    def logger_file(loggername, level=logging.INFO):
+        "Returns a file-like object that writes to a logger"
+        log_function = logging.getLogger(loggername).log
+
+        class _(object):
+            @staticmethod
+            def flush():
+                pass
+
+            @staticmethod
+            def write(logobject):
+                if logobject.endswith("\n"):
+                    # the Stream.write() function adds a trailing newline.
+                    # remove that again
+                    logobject = logobject[:-1]
+                log_function(level, logobject)
+
+        return _()
+
+    Debug.set_file(logger_file("xia2.stream.debug", level=logging.DEBUG))
+    Debug.join(None)
+    Chatter.set_file(logger_file("xia2.stream.chatter"))
+    Chatter.join(None)
+    Stdout.set_file(logger_file("xia2.stream.stdout"))
+    Stdout.join(None)
+
+
 if __name__ == "__main__":
+    setup_logging(logfile="logfile", debugfile="debugfile")
+    reconfigure_streams_to_logging()
     Chatter.write("nothing much, really")
+    Debug.write("this is a debug-level message")
+    Stdout.write("I write to stdout")

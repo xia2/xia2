@@ -13,6 +13,7 @@ import traceback
 from dials.util import Sorry
 from dials.util.version import dials_version
 import xia2.Driver.timing
+import xia2.Handlers.Streams
 import xia2.XIA2Version
 from xia2.Applications.xia2_helpers import process_one_sweep
 from xia2.Applications.xia2_main import (
@@ -332,6 +333,9 @@ def run():
         if ccp4_version is not None:
             print("CCP4 %s" % ccp4_version)
         sys.exit()
+
+    xia2.Handlers.Streams.setup_logging(logfile="xia2.txt", debugfile="xia2-debug.txt")
+    xia2.Handlers.Streams.reconfigure_streams_to_logging()
 
     try:
         check_environment()
