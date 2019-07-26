@@ -6,6 +6,8 @@ import json
 import logging
 from collections import OrderedDict
 
+from dials.algorithms.symmetry.cosym import SymmetryAnalysis
+
 from xia2.XIA2Version import Version
 from xia2.Modules.MultiCrystal.ScaleAndMerge import DataManager
 from xia2.Modules.Analysis import batch_phil_scope
@@ -185,7 +187,7 @@ class MultiCrystalAnalysis(object):
 
 
 class MultiCrystalReport(MultiCrystalAnalysis):
-    def report(self, individual_dataset_reports, comparison_graphs, symmetry_analysis):
+    def report(self, individual_dataset_reports, comparison_graphs, cosym_analysis):
         unit_cell_graphs = self.unit_cell_analysis()
         if self._cluster_analysis is None:
             self._cluster_analysis = self.cluster_analysis()
@@ -193,6 +195,18 @@ class MultiCrystalReport(MultiCrystalAnalysis):
         self._stereographic_projection_files = self.stereographic_projections(
             "tmp.expt"
         )
+
+        symmetry_analysis = {}
+        if "sym_op_scores" in cosym_analysis:
+            symmetry_analysis["sym_ops_table"] = SymmetryAnalysis.sym_ops_table(
+                cosym_analysis
+            )
+            symmetry_analysis["subgroups_table"] = SymmetryAnalysis.subgroups_table(
+                cosym_analysis
+            )
+            symmetry_analysis["summary_table"] = SymmetryAnalysis.summary_table(
+                cosym_analysis
+            )
 
         styles = {}
         orientation_graphs = OrderedDict()
@@ -220,6 +234,7 @@ class MultiCrystalReport(MultiCrystalAnalysis):
             unit_cell=str(self.intensities.unit_cell()),
             cc_half_significance_level=self.params.cc_half_significance_level,
             unit_cell_graphs=unit_cell_graphs,
+            cosym_graphs=cosym_analysis["cosym_graphs"],
             orientation_graphs=orientation_graphs,
             cc_cluster_table=self._cc_cluster_table,
             cc_cluster_json=self._cc_cluster_json,

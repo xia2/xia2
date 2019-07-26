@@ -17,7 +17,6 @@ from dxtbx.serialize import dump, load
 from dxtbx.model import ExperimentList
 
 from dials.array_family import flex
-from dials.algorithms.symmetry.cosym import SymmetryAnalysis
 from dials.command_line.unit_cell_histogram import plot_uc_histograms
 
 from xia2.lib.bits import auto_logfiler
@@ -605,7 +604,7 @@ class MultiCrystalScale(object):
             cosym.set_space_group(self._params.symmetry.space_group.group())
         cosym.run()
         with open(cosym.get_json(), "r") as f:
-            self._cosym_symmetry_analysis = json.load(f)
+            self._cosym_analysis = json.load(f)
         self._experiments_filename = cosym.get_reindexed_experiments()
         self._reflections_filename = cosym.get_reindexed_reflections()
         self._data_manager.experiments = load.experiment_list(
@@ -689,20 +688,8 @@ class MultiCrystalScale(object):
         return mca
 
     def report(self):
-        symmetry_analysis = {}
-        if "sym_op_scores" in self._cosym_symmetry_analysis:
-            symmetry_analysis["sym_ops_table"] = SymmetryAnalysis.sym_ops_table(
-                self._cosym_symmetry_analysis
-            )
-            symmetry_analysis["subgroups_table"] = SymmetryAnalysis.subgroups_table(
-                self._cosym_symmetry_analysis
-            )
-            symmetry_analysis["summary_table"] = SymmetryAnalysis.summary_table(
-                self._cosym_symmetry_analysis
-            )
-
         self._mca.report(
-            self._individual_report_dicts, self._comparison_graphs, symmetry_analysis
+            self._individual_report_dicts, self._comparison_graphs, self._cosym_analysis
         )
 
     def cluster_analysis(self):

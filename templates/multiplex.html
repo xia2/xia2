@@ -51,6 +51,8 @@
                 </div>
                 {% endif %}
 
+                {{ macros.panel('Cosym plots', 'cosym_plots', cosym_graphs) }}
+
                 {{ macros.panel('Cluster comparison', 'comparison_graphs', comparison_graphs) }}
 
                 {{ macros.panel('Unit cell analysis', 'unit_cell', unit_cell_graphs, styles=styles) }}
