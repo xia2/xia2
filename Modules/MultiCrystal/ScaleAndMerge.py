@@ -2,7 +2,6 @@
 from __future__ import absolute_import, division, print_function
 
 import copy
-import json
 import logging
 import math
 import os
@@ -603,8 +602,7 @@ class MultiCrystalScale(object):
         if self._params.symmetry.space_group is not None:
             cosym.set_space_group(self._params.symmetry.space_group.group())
         cosym.run()
-        with open(cosym.get_json(), "r") as f:
-            self._cosym_analysis = json.load(f)
+        self._cosym_analysis = cosym.get_cosym_analysis()
         self._experiments_filename = cosym.get_reindexed_experiments()
         self._reflections_filename = cosym.get_reindexed_reflections()
         self._data_manager.experiments = load.experiment_list(

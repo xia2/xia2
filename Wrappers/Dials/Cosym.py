@@ -126,9 +126,9 @@ def DialsCosym(DriverType=None, decay_correction=None):
 
             assert os.path.exists(self._json)
             with open(self._json, "rb") as f:
-                d = json.load(f)
+                self._cosym_analysis = json.load(f)
             if self._space_group is None:
-                self._best_solution = d["subgroup_scores"][0]
+                self._best_solution = self._cosym_analysis["subgroup_scores"][0]
             else:
                 self._best_solution = None
 
@@ -139,5 +139,8 @@ def DialsCosym(DriverType=None, decay_correction=None):
 
         def get_best_solution(self):
             return self._best_solution
+
+        def get_cosym_analysis(self):
+            return self._cosym_analysis
 
     return DialsCosymWrapper()
