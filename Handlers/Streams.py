@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# Streams.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is
@@ -20,11 +18,17 @@
 from __future__ import absolute_import, division, print_function
 
 import inspect
+import logging
 import os
 import sys
 from datetime import date
 
 import libtbx.load_env
+
+try:
+    from dlstbx.util.colorstreamhandler import ColorStreamHandler
+except ImportError:
+    ColorStreamHandler = None
 
 april = {
     "CC half   ": "Cromulence",
@@ -226,6 +230,50 @@ def streams_off():
     Chatter.off()
     Journal.off()
     Debug.off()
+
+
+def setup_logging(logfile=None, debugfile=None, verbose=False):
+    """
+    Initialise logging for xia2
+
+    :param logfile: Filename for info/info+debug log output.
+    :type logfile: str
+    :param debugfile: Filename for debug log output.
+    :type debugfile: str
+    :param verbose: Enable debug output for logfile and console.
+    :type verbose: bool
+    """
+    if verbose:
+        loglevel = logging.DEBUG
+    else:
+        loglevel = logging.INFO
+
+    if os.getenv("COLOURLOG") and ColorStreamHandler:
+        console = ColorStreamHandler(sys.stdout)
+    else:
+        console = logging.StreamHandler(sys.stdout)
+    console.setLevel(loglevel)
+
+    xia2_logger = logging.getLogger("xia2")
+    xia2_logger.addHandler(console)
+    xia2_logger.setLevel(loglevel)
+
+    other_loggers = [logging.getLogger(package) for package in ("dials", "dxtbx")]
+
+    if logfile:
+        fh = logging.FileHandler(filename=logfile, mode="w")
+        fh.setLevel(loglevel)
+        xia2_logger.addHandler(fh)
+        for logger in other_loggers:
+            logger.addHandler(fh)
+            logger.setLevel(loglevel)
+
+    if debugfile:
+        fh = logging.FileHandler(filename=debugfile, mode="w")
+        fh.setLevel(logging.DEBUG)
+        for logger in [xia2_logger] + other_loggers:
+            logger.addHandler(fh)
+            logger.setLevel(logging.DEBUG)
 
 
 if __name__ == "__main__":

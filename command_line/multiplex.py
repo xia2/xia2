@@ -1,27 +1,22 @@
 #!/usr/bin/env dials.python
 from __future__ import absolute_import, division, print_function
 
-from collections import OrderedDict
 import logging
+import random
+from collections import OrderedDict
 
-
-from dials.util import Sorry
 import iotbx.phil
+from dials.util import Sorry
 
+import xia2.Handlers.Streams
 from dials.array_family import flex
-from dials.util.options import OptionParser
-from dials.util import log
-from dials.util.options import flatten_experiments, flatten_reflections
 from dials.util.multi_dataset_handling import (
     assign_unique_identifiers,
     parse_multiple_datasets,
 )
-
-from xia2.Handlers import Streams
-
-Streams.streams_off()
-
-
+from dials.util.options import OptionParser
+from dials.util.options import flatten_experiments, flatten_reflections
+from dials.util.version import dials_version
 from xia2.Modules.MultiCrystal import ScaleAndMerge
 
 logger = logging.getLogger("xia2.multiplex")
@@ -46,10 +41,8 @@ output {
 
 
 def run():
-
-    # The script usage
     usage = (
-        "usage: xia2.multiplex [options] [param.phil] "
+        "xia2.multiplex [options] [param.phil] "
         "models1.expt models2.expt observations1.refl "
         "observations2.refl..."
     )
@@ -68,10 +61,10 @@ def run():
     params, options = parser.parse_args(show_diff_phil=False)
 
     # Configure the logging
-
-    for name in ("xia2", "dials"):
-        log.config(verbosity=options.verbose, logfile=params.output.log, name=name)
-    from dials.util.version import dials_version
+    xia2.Handlers.Streams.streams_off()
+    xia2.Handlers.Streams.setup_logging(
+        logfile=params.output.log, verbose=options.verbose
+    )
 
     logger.info(dials_version())
 
@@ -99,8 +92,6 @@ def run():
         )
 
     if params.seed is not None:
-        import random
-
         flex.set_random_seed(params.seed)
         random.seed(params.seed)
 
