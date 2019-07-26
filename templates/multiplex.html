@@ -19,11 +19,37 @@
     </ul>
 
     <div class="tab-content">
+
         <div id="home" class="tab-pane in active">
 
-            <h2>Analysis plots</h2>
+            <h2>Cosym Analysis</h2>
 
             <div class="panel-group">
+
+                {% if symmetry_analysis.summary_table is defined %}
+                <div class="panel panel-default">
+                    <div class="panel-heading" data-toggle="collapse" data-target="#collapse_symmetry">
+                        <h4 class="panel-title">
+                            <a>Symmetry analysis</a>
+                        </h4>
+                    </div>
+                    <div id="collapse_symmetry" class="panel-collapse collapse in">
+                        <div class="panel-body">
+                            <p><b>Scoring individual symmetry operations</b></p>
+                            <div style="width: 800px">
+                                {{ macros.table(symmetry_analysis.sym_ops_table, has_column_header=True) }}
+                            </div>
+                            <p><b>Scoring all possible subgroups</b></p>
+                            <div style="width: 800px">
+                                {{ macros.table(symmetry_analysis.subgroups_table, has_column_header=True) }}
+                            </div>
+                            <div style="width: 600px">
+                                {{ macros.table(symmetry_analysis.summary_table, has_row_header=True) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
 
                 {{ macros.panel('Cluster comparison', 'comparison_graphs', comparison_graphs) }}
 

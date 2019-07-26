@@ -185,7 +185,7 @@ class MultiCrystalAnalysis(object):
 
 
 class MultiCrystalReport(MultiCrystalAnalysis):
-    def report(self, individual_dataset_reports, comparison_graphs):
+    def report(self, individual_dataset_reports, comparison_graphs, symmetry_analysis):
         unit_cell_graphs = self.unit_cell_analysis()
         if self._cluster_analysis is None:
             self._cluster_analysis = self.cluster_analysis()
@@ -227,6 +227,7 @@ class MultiCrystalReport(MultiCrystalAnalysis):
             cos_angle_cluster_json=self._cos_angle_cluster_json,
             individual_dataset_reports=individual_dataset_reports,
             comparison_graphs=comparison_graphs,
+            symmetry_analysis=symmetry_analysis,
             styles=styles,
             xia2_version=Version,
         )
