@@ -102,6 +102,15 @@
                                                             has_row_header=true) }}
                                             {{ macros.plotly_graph("cos_angle_cluster", cos_angle_cluster_json, style="dendrogram-plot") }}
                                         </div>
+
+                                        {% for div_id, json_data in cos_angle_cosym_graphs.items() %}
+                                            {% if styles != None %}
+                                                {{ macros.plotly_graph(div_id, json_data, style=styles.get(div_id)) }}
+                                            {% else %}
+                                                {{ macros.plotly_graph(div_id, json_data) }}
+                                            {% endif %}
+                                        {% endfor %}
+
                                     </div>
                                 </div>
                             </div>

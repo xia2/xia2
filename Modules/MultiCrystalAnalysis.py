@@ -7,6 +7,7 @@ import logging
 from collections import OrderedDict
 
 from dials.algorithms.symmetry.cosym import SymmetryAnalysis
+from dials.algorithms.symmetry.cosym.plots import plot_coords, plot_rij_histogram
 
 from xia2.XIA2Version import Version
 from xia2.Modules.MultiCrystal.ScaleAndMerge import DataManager
@@ -150,6 +151,19 @@ class MultiCrystalAnalysis(object):
             mca.cos_angle_matrix, mca.cos_angle_linkage_matrix, labels=labels
         )
         self._cos_angle_cluster_table = mca.as_table(mca.cos_angle_clusters)
+
+        self._cosym_graphs = OrderedDict()
+        self._cosym_graphs.update(
+            plot_rij_histogram(
+                mca.cosym.target.rij_matrix, key="cosym_rij_histogram_sg"
+            )
+        )
+        self._cosym_graphs.update(
+            plot_coords(
+                mca.cosym.coords, mca.cosym.cluster_labels, key="cosym_coordinates_sg"
+            )
+        )
+
         self._cluster_analysis = mca
         return self._cluster_analysis
 
@@ -240,6 +254,7 @@ class MultiCrystalReport(MultiCrystalAnalysis):
             cc_cluster_json=self._cc_cluster_json,
             cos_angle_cluster_table=self._cos_angle_cluster_table,
             cos_angle_cluster_json=self._cos_angle_cluster_json,
+            cos_angle_cosym_graphs=self._cosym_graphs,
             individual_dataset_reports=individual_dataset_reports,
             comparison_graphs=comparison_graphs,
             symmetry_analysis=symmetry_analysis,
