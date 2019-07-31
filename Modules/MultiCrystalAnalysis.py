@@ -148,7 +148,10 @@ class MultiCrystalAnalysis(object):
         self._cc_cluster_table = mca.as_table(mca.cc_clusters)
 
         self._cos_angle_cluster_json = mca.to_plotly_json(
-            mca.cos_angle_matrix, mca.cos_angle_linkage_matrix, labels=labels
+            mca.cos_angle_matrix,
+            mca.cos_angle_linkage_matrix,
+            labels=labels,
+            matrix_type="cos_angle",
         )
         self._cos_angle_cluster_table = mca.as_table(mca.cos_angle_clusters)
 

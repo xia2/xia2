@@ -1,10 +1,12 @@
 from __future__ import absolute_import, division, print_function
 
+import json
 import logging
 from collections import OrderedDict
 
 import iotbx.phil
 from scitbx.array_family import flex
+from dials.util import Sorry
 
 logger = logging.getLogger(__name__)
 
@@ -30,8 +32,6 @@ def get_scipy():
             found = False
 
     if not found:
-        from dials.util import Sorry
-
         raise Sorry("%s depends on scipy.cluster, not available" % sys.argv[0])
 
 
@@ -175,14 +175,12 @@ class multi_crystal_analysis(object):
 
         d = self.to_plotly_json(correlation_matrix, linkage_matrix, labels=labels)
 
-        import json
-
         with open("%sintensity_clusters.json" % self._prefix, "wb") as f:
             json.dump(d, f, indent=2)
 
-        d = self.to_plotly_json(cos_angle_matrix, ca_linkage_matrix, labels=labels)
-
-        import json
+        d = self.to_plotly_json(
+            cos_angle_matrix, ca_linkage_matrix, labels=labels, matrix_type="cos_angle"
+        )
 
         with open("%scos_angle_clusters.json" % self._prefix, "wb") as f:
             json.dump(d, f, indent=2)
@@ -356,7 +354,10 @@ class multi_crystal_analysis(object):
         return flex.double(cos_angle), linkage_matrix
 
     @staticmethod
-    def to_plotly_json(correlation_matrix, linkage_matrix, labels=None):
+    def to_plotly_json(
+        correlation_matrix, linkage_matrix, labels=None, matrix_type="correlation"
+    ):
+        assert matrix_type in ("correlation", "cos_angle")
 
         from scipy.cluster import hierarchy
 
@@ -387,13 +388,17 @@ class multi_crystal_analysis(object):
         ccdict = {
             "data": [
                 {
-                    "name": "correlation_matrix",
+                    "name": "%s_matrix" % matrix_type,
                     "x": list(range(D.shape[0])),
                     "y": list(range(D.shape[1])),
                     "z": D.tolist(),
                     "type": "heatmap",
                     "colorbar": {
-                        "title": "Correlation coefficient",
+                        "title": (
+                            "Correlation coefficient"
+                            if matrix_type == "correlation"
+                            else "cos(angle)"
+                        ),
                         "titleside": "right",
                         "xpad": 0,
                     },
