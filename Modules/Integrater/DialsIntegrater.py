@@ -519,11 +519,11 @@ class DialsIntegrater(Integrater):
             pname, xname, dname = self.get_integrater_project_info()
             sweep = self.get_integrater_sweep_name()
             FileHandler.record_more_data_file(
-                "%s %s %s %s experiments" % (pname, xname, dname, sweep),
+                "%s %s %s %s" % (pname, xname, dname, sweep),
                 self.get_integrated_experiments(),
             )
             FileHandler.record_more_data_file(
-                "%s %s %s %s reflections" % (pname, xname, dname, sweep),
+                "%s %s %s %s" % (pname, xname, dname, sweep),
                 self.get_integrated_reflections(),
             )
 
@@ -592,11 +592,11 @@ class DialsIntegrater(Integrater):
             pname, xname, dname = self.get_integrater_project_info()
             sweep = self.get_integrater_sweep_name()
             FileHandler.record_more_data_file(
-                "%s %s %s %s experiments" % (pname, xname, dname, sweep),
+                "%s %s %s %s" % (pname, xname, dname, sweep),
                 self.get_integrated_experiments(),
             )
             FileHandler.record_more_data_file(
-                "%s %s %s %s reflections" % (pname, xname, dname, sweep),
+                "%s %s %s %s" % (pname, xname, dname, sweep),
                 self.get_integrated_reflections(),
             )
             return None  # this will be set to intgr_hklout - better to cause failure

@@ -232,7 +232,7 @@ class MultiCrystalReport(MultiCrystalAnalysis):
                 orientation_graphs[key] = d
                 styles[key] = "square-plot"
 
-        self._data_manager.export_experiments("tmp_experiments.expt")
+        self._data_manager.export_experiments("tmp.expt")
 
         from jinja2 import Environment, ChoiceLoader, PackageLoader
 

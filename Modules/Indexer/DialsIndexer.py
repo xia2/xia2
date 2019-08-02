@@ -269,7 +269,7 @@ class DialsIndexer(Indexer):
             from dxtbx.model.experiment_list import ExperimentListFactory
 
             sweep_filename = os.path.join(
-                self.get_working_directory(), "%s_indexed.expt" % xsweep.get_name()
+                self.get_working_directory(), "%s_import.expt" % xsweep.get_name()
             )
             dump.experiment_list(
                 ExperimentListFactory.from_imageset_and_crystal(imageset, None),
@@ -281,7 +281,7 @@ class DialsIndexer(Indexer):
             genmask.set_output_experiments(
                 os.path.join(
                     self.get_working_directory(),
-                    "%s_%s_indexed.expt" % (genmask.get_xpid(), xsweep.get_name()),
+                    "%s_%s_masked.expt" % (genmask.get_xpid(), xsweep.get_name()),
                 )
             )
             genmask.set_params(PhilIndex.params.dials.masking)
@@ -304,7 +304,7 @@ class DialsIndexer(Indexer):
                 spotfinder.set_write_hot_mask(True)
             spotfinder.set_input_sweep_filename(sweep_filename)
             spotfinder.set_output_sweep_filename(
-                "%s_%s_indexed.expt" % (spotfinder.get_xpid(), xsweep.get_name())
+                "%s_%s_strong.expt" % (spotfinder.get_xpid(), xsweep.get_name())
             )
             spotfinder.set_input_spot_filename(
                 "%s_%s_strong.refl" % (spotfinder.get_xpid(), xsweep.get_name())
