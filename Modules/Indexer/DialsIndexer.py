@@ -299,6 +299,7 @@ class DialsIndexer(Indexer):
 
             # FIXME this should really use the assigned spot finding regions
             # offset = self.get_frame_offset()
+            dfs_params = PhilIndex.params.dials.find_spots
             spotfinder = self.Spotfinder()
             if last - first > 10:
                 spotfinder.set_write_hot_mask(True)
@@ -314,34 +315,30 @@ class DialsIndexer(Indexer):
                 spotfinder.set_scan_ranges(wedges)
             else:
                 spotfinder.set_scan_ranges([(first, last)])
-            if PhilIndex.params.dials.find_spots.phil_file is not None:
-                spotfinder.set_phil_file(PhilIndex.params.dials.find_spots.phil_file)
-            min_spot_size = PhilIndex.params.dials.find_spots.min_spot_size
-            if min_spot_size is libtbx.Auto:
+            if dfs_params.phil_file is not None:
+                spotfinder.set_phil_file(dfs_params.phil_file)
+            if dfs_params.min_spot_size is libtbx.Auto:
                 if imageset.get_detector()[0].get_type() == "SENSOR_PAD":
-                    min_spot_size = 3
+                    dfs_params.min_spot_size = 3
                 else:
-                    min_spot_size = None
-            if min_spot_size is not None:
-                spotfinder.set_min_spot_size(min_spot_size)
-            min_local = PhilIndex.params.dials.find_spots.min_local
-            if min_local is not None:
-                spotfinder.set_min_local(min_local)
-            sigma_strong = PhilIndex.params.dials.find_spots.sigma_strong
-            if sigma_strong:
-                spotfinder.set_sigma_strong(sigma_strong)
+                    dfs_params.min_spot_size = None
+            if dfs_params.min_spot_size is not None:
+                spotfinder.set_min_spot_size(dfs_params.min_spot_size)
+            if dfs_params.min_local is not None:
+                spotfinder.set_min_local(dfs_params.min_local)
+            if dfs_params.sigma_strong:
+                spotfinder.set_sigma_strong(dfs_params.sigma_strong)
             gain = PhilIndex.params.xia2.settings.input.gain
             if gain:
                 spotfinder.set_gain(gain)
-            filter_ice_rings = PhilIndex.params.dials.find_spots.filter_ice_rings
-            if filter_ice_rings:
-                spotfinder.set_filter_ice_rings(filter_ice_rings)
-            kernel_size = PhilIndex.params.dials.find_spots.kernel_size
-            if kernel_size:
-                spotfinder.set_kernel_size(kernel_size)
-            global_threshold = PhilIndex.params.dials.find_spots.global_threshold
-            if global_threshold is not None:
-                spotfinder.set_global_threshold(global_threshold)
+            if dfs_params.filter_ice_rings:
+                spotfinder.set_filter_ice_rings(dfs_params.filter_ice_rings)
+            if dfs_params.kernel_size:
+                spotfinder.set_kernel_size(dfs_params.kernel_size)
+            if dfs_params.global_threshold is not None:
+                spotfinder.set_global_threshold(dfs_params.global_threshold)
+            if dfs_params.threshold.algorithm is not None:
+                spotfinder.set_threshold_algorithm(dfs_params.threshold.algorithm)
             spotfinder.run()
 
             spot_filename = spotfinder.get_spot_filename()

@@ -266,6 +266,9 @@ dials
       .type = path
       .short_caption = "phil file to pass to dials.find_spots"
       .expert_level = 1
+    threshold.algorithm = dispersion dispersion_extended
+      .type = choice
+      .expert_level = 2
     min_spot_size = Auto
       .type = int
       .help = "The minimum number of contiguous pixels for a spot to be " \

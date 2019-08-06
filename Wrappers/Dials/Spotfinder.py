@@ -37,6 +37,7 @@ def Spotfinder(DriverType=None):
             self._min_local = None
             self._kernel_size = None
             self._global_threshold = None
+            self._threshold_algorithm = None
             self._sigma_strong = None
             self._filter_ice_rings = False
             self._phil_file = None
@@ -89,6 +90,9 @@ def Spotfinder(DriverType=None):
         def set_global_threshold(self, global_threshold):
             self._global_threshold = global_threshold
 
+        def set_threshold_algorithm(self, threshold_algorithm):
+            self._threshold_algorithm = threshold_algorithm
+
         def set_sigma_strong(self, sigma_strong):
             self._sigma_strong = sigma_strong
 
@@ -133,6 +137,10 @@ def Spotfinder(DriverType=None):
             if self._global_threshold is not None:
                 self.add_command_line(
                     "dispersion.global_threshold=%s" % self._global_threshold
+                )
+            if self._threshold_algorithm is not None:
+                self.add_command_line(
+                    "threshold.algorithm=%s" % self._threshold_algorithm
                 )
             if self._sigma_strong is not None:
                 self.add_command_line("dispersion.sigma_strong=%i" % self._sigma_strong)
