@@ -49,8 +49,12 @@ from xia2.Handlers.Streams import Chatter, Debug
 
 
 class _IndexerHelper(object):
-    """A class to manage autoindexing results in a useful way, to ensure
-    that the indexing solutions are properly managed, c/f TS01:1VR9."""
+    """
+    Manage autoindexing results in a useful way.
+
+    Ensure that the indexing solutions are properly managed, including in the case
+    of pseudo-symmetry.
+    """
 
     def __init__(self, lattice_cell_dict):
         """Initialise myself from a dictionary keyed by crystal lattice
@@ -137,8 +141,6 @@ class Indexer(object):
     LATTICE_CORRECT = "LATTICE_CORRECT"
 
     def __init__(self):
-
-        super(Indexer, self).__init__()
 
         self._indxr_working_directory = os.getcwd()
 
