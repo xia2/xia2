@@ -4,7 +4,6 @@ import os
 import sys
 
 import mock
-import pytest
 from libtbx.test_utils import approx_equal
 
 
@@ -61,7 +60,7 @@ def exercise_dials_integrater(dials_data, tmp_dir, nproc=None):
     reader = any_reflection_file(integrater_intensities)
     assert reader.file_type() == "ccp4_mtz"
     mtz_object = reader.file_content()
-    expected_reflections = 48456
+    expected_reflections = 47623
     assert (
         abs(mtz_object.n_reflections() - expected_reflections) < 300
     ), mtz_object.n_reflections()
