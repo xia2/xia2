@@ -352,9 +352,8 @@ class XDSIndexer(IndexerSingleSweep):
             sweep_filename = os.path.join(
                 self.get_working_directory(), "%s_indexed.expt" % xsweep.get_name()
             )
-            dump.experiment_list(
-                ExperimentListFactory.from_imageset_and_crystal(imageset, None),
-                sweep_filename,
+            ExperimentListFactory.from_imageset_and_crystal(imageset, None).as_file(
+                sweep_filename
             )
 
             from xia2.Wrappers.Dials.ShadowPlot import ShadowPlot
