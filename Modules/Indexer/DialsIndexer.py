@@ -461,15 +461,17 @@ class DialsIndexer(Indexer):
                 try:
                     indexer_fft3d = self._do_indexing(method="fft3d")
                     nref_3d, rmsd_3d = indexer_fft3d.get_nref_rmsds()
-                except Exception as e:  # noqa F841.  Flake8 misses use of `e` below.
+                except Exception as e:
                     nref_3d = None
                     rmsd_3d = None
+                    indexing_failure = e
                 try:
                     indexer_fft1d = self._do_indexing(method="fft1d")
                     nref_1d, rmsd_1d = indexer_fft1d.get_nref_rmsds()
-                except Exception as e:  # noqa F841.  Flake8 misses use of `e` below.
+                except Exception as e:
                     nref_1d = None
                     rmsd_1d = None
+                    indexing_failure = e
 
                 if (
                     nref_1d is not None
@@ -485,8 +487,7 @@ class DialsIndexer(Indexer):
                 elif nref_3d is not None:
                     indexer = indexer_fft3d
                 else:
-                    # Flake8 doesn't recognise this as `e` from above.
-                    raise RuntimeError(e)  # noqa F821.
+                    raise RuntimeError(indexing_failure)
 
         else:
             indexer = self._do_indexing(method=PhilIndex.params.dials.index.method)
