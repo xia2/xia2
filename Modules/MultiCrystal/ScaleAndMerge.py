@@ -12,7 +12,7 @@ from libtbx import Auto
 import iotbx.phil
 from cctbx import miller
 from cctbx import sgtbx
-from dxtbx.serialize import dump, load
+from dxtbx.serialize import load
 from dxtbx.model import ExperimentList
 
 from dials.array_family import flex
@@ -291,7 +291,7 @@ class DataManager(object):
         return filename
 
     def export_experiments(self, filename):
-        dump.experiment_list(self._experiments, filename)
+        self._experiments.as_file(filename)
         return filename
 
 

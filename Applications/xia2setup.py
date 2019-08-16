@@ -187,22 +187,6 @@ def get_template(f):
     return template
 
 
-def save_experiments(filename):
-    from xia2.Schema import imageset_cache
-    from dxtbx.model.experiment_list import ExperimentList
-    from dxtbx.model.experiment_list import ExperimentListFactory
-    from dxtbx.serialize import dump
-
-    experiments = ExperimentList([])
-    for imagesets in imageset_cache.values():
-        for imageset in imagesets.values():
-            experiments.extend(
-                ExperimentListFactory.from_imageset_and_crystal(imageset, None)
-            )
-
-    dump.experiment_list(experiments, filename, compact=True)
-
-
 def parse_sequence(sequence_file):
     sequence = ""
 

@@ -345,7 +345,6 @@ class XDSIndexer(IndexerSingleSweep):
         if PhilIndex.params.xia2.settings.input.format.dynamic_shadowing:
             # find the region of the scan with the least predicted shadow
             # to use for background determination in XDS INIT step
-            from dxtbx.serialize import dump
             from dxtbx.model.experiment_list import ExperimentListFactory
 
             imageset = self._indxr_imagesets[0]

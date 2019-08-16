@@ -265,15 +265,13 @@ class DialsIndexer(Indexer):
 
             # FIXME need to adjust this to allow (say) three chunks of images
 
-            from dxtbx.serialize import dump
             from dxtbx.model.experiment_list import ExperimentListFactory
 
             sweep_filename = os.path.join(
                 self.get_working_directory(), "%s_import.expt" % xsweep.get_name()
             )
-            dump.experiment_list(
-                ExperimentListFactory.from_imageset_and_crystal(imageset, None),
-                sweep_filename,
+            ExperimentListFactory.from_imageset_and_crystal(imageset, None).as_file(
+                sweep_filename
             )
 
             genmask = self.GenerateMask()
