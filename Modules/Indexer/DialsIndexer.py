@@ -135,14 +135,12 @@ class DialsIndexer(Indexer):
 
     def Refine(self):
         refine = _Refine()
-        params = PhilIndex.params.dials.refine
+        params = PhilIndex.params.dials
         refine.set_working_directory(self.get_working_directory())
         refine.set_scan_varying(False)
-        refine.set_outlier_algorithm(PhilIndex.params.dials.outlier.algorithm)
-        refine.set_close_to_spindle_cutoff(
-            PhilIndex.params.dials.close_to_spindle_cutoff
-        )
-        if PhilIndex.params.dials.fix_geometry:
+        refine.set_outlier_algorithm(params.outlier.algorithm)
+        refine.set_close_to_spindle_cutoff(params.close_to_spindle_cutoff)
+        if params.fix_geometry:
             refine.set_detector_fix("all")
             refine.set_beam_fix("all")
         auto_logfiler(refine)
@@ -362,7 +360,7 @@ class DialsIndexer(Indexer):
                 detectblanks.set_reflections_filename(spot_filename)
                 detectblanks.run()
                 json = detectblanks.get_results()
-                offset = imageset.get_scan().get_image_range()[0]
+                # offset = imageset.get_scan().get_image_range()[0]
                 blank_regions = json["strong"]["blank_regions"]
                 if len(blank_regions):
                     blank_regions = [(int(s), int(e)) for s, e in blank_regions]
@@ -463,13 +461,13 @@ class DialsIndexer(Indexer):
                 try:
                     indexer_fft3d = self._do_indexing(method="fft3d")
                     nref_3d, rmsd_3d = indexer_fft3d.get_nref_rmsds()
-                except Exception as e:
+                except Exception as e:  # noqa F841.  Flake8 misses use of `e` below.
                     nref_3d = None
                     rmsd_3d = None
                 try:
                     indexer_fft1d = self._do_indexing(method="fft1d")
                     nref_1d, rmsd_1d = indexer_fft1d.get_nref_rmsds()
-                except Exception as e:
+                except Exception as e:  # noqa F841.  Flake8 misses use of `e` below.
                     nref_1d = None
                     rmsd_1d = None
 
@@ -487,7 +485,8 @@ class DialsIndexer(Indexer):
                 elif nref_3d is not None:
                     indexer = indexer_fft3d
                 else:
-                    raise RuntimeError(e)
+                    # Flake8 doesn't recognise this as `e` from above.
+                    raise RuntimeError(e)  # noqa F821.
 
         else:
             indexer = self._do_indexing(method=PhilIndex.params.dials.index.method)
@@ -718,7 +717,6 @@ class DialsIndexer(Indexer):
         if self._indxr_input_cell:
             indexer.set_indexer_input_cell(self._indxr_input_cell)
             Debug.write("Set cell: %f %f %f %f %f %f" % self._indxr_input_cell)
-            original_cell = self._indxr_input_cell
 
         if method is None:
             if PhilIndex.params.dials.index.method is None:
