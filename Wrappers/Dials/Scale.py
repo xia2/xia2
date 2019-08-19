@@ -326,9 +326,7 @@ def DialsScale(DriverType=None, decay_correction=None):
                 self._merged_reflections = os.path.join(
                     self.get_working_directory(), "%i_scaled.mtz" % self.get_xpid()
                 )
-            self.add_command_line(
-                "output.merged_mtz=%s" % " ".join(self._merged_reflections)
-            )
+            self.add_command_line("output.merged_mtz=%s" % self._merged_reflections)
 
             if not self._html:
                 self._html = os.path.join(

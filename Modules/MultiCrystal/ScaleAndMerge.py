@@ -810,8 +810,8 @@ class Scale(object):
         scaler.set_outlier_rejection(self._params.scaling.dials.outlier_rejection)
 
         scaler.scale()
-        self._scaled_mtz = scaler.get_scaled_mtz()[0]
-        self._scaled_unmerged_mtz = scaler.get_scaled_unmerged_mtz()[0]
+        self._scaled_mtz = scaler.get_scaled_mtz()
+        self._scaled_unmerged_mtz = scaler.get_scaled_unmerged_mtz()
         self._experiments_filename = scaler.get_scaled_experiments()
         self._reflections_filename = scaler.get_scaled_reflections()
         self._data_manager.experiments = load.experiment_list(
