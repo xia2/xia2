@@ -357,8 +357,6 @@ def DialsScale(DriverType=None, decay_correction=None):
 
             Debug.write("dials.scale status: OK")
 
-            # here get a list of all output files...
-            output = self.get_all_output()
             if not self._export_mtz_only:
                 Chatter.write("Completed a round of scaling using dials.scale")
             return "OK"
