@@ -616,11 +616,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
             fmt = "%%0%dd" % (math.log10(nn) + 1)
 
             wl_sort = flex.sort_permutation(wavelengths)
-            sorted_wl = flex.select(wavelengths, wl_sort)
             sorted_dnames_by_wl = [dnames_set[i] for i in wl_sort]
-
-            Chatter.write("wavelengths %s" % list(sorted_wl))
-            Chatter.write("dnames sorted %s" % sorted_dnames_by_wl)
 
             for i, dname in enumerate(sorted_dnames_by_wl):
                 # need to sort by wavelength from low to high
