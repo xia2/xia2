@@ -25,6 +25,22 @@ def DialsMerge(DriverType=None):
             self._reflections_filename = None
             self._mtz_filename = None
             self._truncate = False
+            self._project_name = None
+            self._crystal_names = None
+            self._dataset_names = None
+            self._partiality_threshold = None
+
+        def set_partiality_threshold(self, v):
+            self._partiality_threshold = v
+
+        def set_project_name(self, name):
+            self._project_name = name
+
+        def set_crystal_names(self, names):
+            self._crystal_names = names
+
+        def set_dataset_names(self, names):
+            self._dataset_names = names
 
         def set_truncate(self, boolean):
             self._truncate = boolean
@@ -60,6 +76,17 @@ def DialsMerge(DriverType=None):
 
             if self._mtz_filename:
                 self.add_command_line("output.mtz=%s" % self._mtz_filename)
+
+            if self._project_name:
+                self.add_command_line("output.project_name=%s" % self._project_name)
+            if self._crystal_names:
+                self.add_command_line("output.crystal_names=%s" % self._crystal_names)
+            if self._dataset_names:
+                self.add_command_line("output.dataset_names=%s" % self._dataset_names)
+            if self._partiality_threshold:
+                self.add_command_line(
+                    "partiality_threshold=%s" % self._partiality_threshold
+                )
 
             self.start()
             self.close_wait()

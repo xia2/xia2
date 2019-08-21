@@ -456,6 +456,10 @@ dials
       .type = float(value_min=3.0)
       .help = "Cutoff z-score value for identifying outliers based on their " \
               "normalised deviation within the group of equivalent reflections"
+    partiality_threshold = 0.4
+      .type = float
+      .help = "Minimum partiality to use for scaling and for post-scaling " \
+              "exported output."
   }
 }
 ccp4

@@ -30,8 +30,9 @@ from xia2.Wrappers.Dials.TwoThetaRefine import TwoThetaRefine
 from xia2.Handlers.Syminfo import Syminfo
 from dxtbx.serialize import load
 from dials.util.batch_handling import calculate_batch_offsets
-from cctbx.sgtbx import lattice_symmetry_group, space_group_info
 from dials.array_family import flex
+import dials.util.version
+from cctbx.sgtbx import lattice_symmetry_group, space_group_info
 
 
 def clean_reindex_operator(reindex_operator):
@@ -80,6 +81,9 @@ class DialsScaler(Scaler):
         )
         self._scaler.set_outlier_zmax(PhilIndex.params.dials.scale.outlier_zmax)
         self._scaler.set_optimise_errors(PhilIndex.params.dials.scale.optimise_errors)
+        self._scaler.set_partiality_cutoff(
+            PhilIndex.params.dials.scale.partiality_threshold
+        )
 
         if PhilIndex.params.dials.scale.model == "physical":
             self._scaler.set_spacing(PhilIndex.params.dials.scale.rotation_spacing)
@@ -499,45 +503,17 @@ pipeline=dials (supported for pipeline=dials-aimless).
                 self._scaler.add_experiments_json(si.get_experiments())
                 self._scaler.add_reflections_file(si.get_reflections())
 
-        ### Set the unmerged mtz filepath
-
         self._scalr_scaled_reflection_files = {}
         self._scalr_scaled_reflection_files["mtz_unmerged"] = {}
         self._scalr_scaled_reflection_files["mtz"] = {}
 
-        # First set the unmerged mtz output filename. Note that this is the
-        # same for MAD datasets too, as need a single unmerged for merging
-        # stats calc. For the merged mtz this is different.
+        # Set the unmerged mtz output filename - need for merging stats calc.
         scaled_unmerged_mtz_path = os.path.join(
             self.get_working_directory(),
             "%s_%s_scaled_unmerged.mtz" % (self._scalr_pname, self._scalr_xname),
         )
         self._scaler.set_scaled_unmerged_mtz(scaled_unmerged_mtz_path)
         self._scaler.set_crystal_name(self._scalr_xname)  # Name goes in mtz
-
-        ### Set the merged mtz filepath(s), making into account MAD case.
-
-        # Find number of dnames (i.e. number of wavelengths)
-        dnames_set = OrderedSet()
-        wavelengths = flex.double()
-        for si in sweep_infos:
-            dnames_set.add(si.get_project_info()[2])
-            wavelength = si.get_integrater().get_wavelength()
-            if wavelength not in wavelengths:
-                wavelengths.append(wavelength)
-
-        """scaled_mtz_path = os.path.join(
-            self.get_working_directory(),
-            "%s_%s_scaled.mtz" % (self._scalr_pname, self._scalr_xname),
-        )
-        if len(dnames_set) == 1:
-            self._scaler.set_scaled_mtz(scaled_mtz_path)
-            self._scalr_scaled_reflection_files["mtz"] = {
-                dnames_set[0]: scaled_mtz_path
-            }
-            self._scalr_scaled_reflection_files["mtz_unmerged"] = {
-                dnames_set[0]: scaled_unmerged_mtz_path
-            }"""
 
         ### Set the resolution limit if applicable
 
@@ -577,10 +553,6 @@ pipeline=dials (supported for pipeline=dials-aimless).
         self._scaled_reflections = self._scaler.get_scaled_reflections()
 
         FileHandler.record_data_file(scaled_unmerged_mtz_path)
-        """if len(dnames_set) == 1:
-            hklout = copy.deepcopy(self._scaler.get_scaled_mtz())
-            self._scalr_scaled_refl_files = {dnames_set[0]: hklout}
-            FileHandler.record_data_file(hklout)"""
 
         # make it so that only scaled.expt and scaled.refl are
         # the files that dials.scale knows about, so that if scale is called again,
@@ -625,6 +597,16 @@ pipeline=dials (supported for pipeline=dials-aimless).
         ### For MAD case, need to generate individual merged and unmerged mtz
         ### files. First split experiments on wavelength, then run dials.export
         ### and dials.merge on each
+
+        # Find number of dnames (i.e. number of wavelengths)
+        dnames_set = OrderedSet()
+        wavelengths = flex.double()
+        for si in sweep_infos:
+            dnames_set.add(si.get_project_info()[2])
+            wavelength = si.get_integrater().get_wavelength()
+            if wavelength not in wavelengths:
+                wavelengths.append(wavelength)
+
         if len(dnames_set) > 1:
             self._scalr_scaled_refl_files = {}
             Debug.write("Splitting experiments by wavelength")
@@ -657,6 +639,9 @@ pipeline=dials (supported for pipeline=dials-aimless).
                 exporter.set_experiments_filename(expt_name)
                 exporter.set_reflections_filename(refl_name)
                 exporter.set_intensity_choice("scale")
+                exporter.set_partiality_threshold(
+                    PhilIndex.params.dials.scale.partiality_threshold
+                )  # 0.4 default
                 auto_logfiler(exporter)
                 mtz_filename = os.path.join(
                     self.get_working_directory(),
@@ -675,9 +660,17 @@ pipeline=dials (supported for pipeline=dials-aimless).
                 merger.set_working_directory(self.get_working_directory())
                 merger.set_experiments_filename(expt_name)
                 merger.set_reflections_filename(refl_name)
+                merger.set_project_name(self._scalr_pname)
+                merger.set_crystal_names(self._scalr_xname)
+                merger.set_dataset_names(dname)
+                merger.set_partiality_threshold(
+                    PhilIndex.params.dials.scale.partiality_threshold
+                )
                 auto_logfiler(merger)
                 mtz_filename = os.path.join(
-                    self.get_working_directory(), "scaled_merged_%s.mtz" % dname
+                    self.get_working_directory(),
+                    "%s_%s_scaled_%s.mtz"
+                    % (self._scalr_pname, self._scalr_xname, dname),
                 )
                 self._scalr_scaled_refl_files[dname] = mtz_filename
                 self._scalr_scaled_reflection_files["mtz"][dname] = mtz_filename
@@ -694,6 +687,9 @@ pipeline=dials (supported for pipeline=dials-aimless).
             exporter.set_experiments_filename(self._scaled_experiments)
             exporter.set_reflections_filename(self._scaled_reflections)
             exporter.set_intensity_choice("scale")
+            exporter.set_partiality_threshold(
+                PhilIndex.params.dials.scale.partiality_threshold
+            )  # 0.4 default
             auto_logfiler(exporter)
             exporter.set_mtz_filename(scaled_unmerged_mtz_path)
 
@@ -710,9 +706,16 @@ pipeline=dials (supported for pipeline=dials-aimless).
             merger.set_working_directory(self.get_working_directory())
             merger.set_experiments_filename(self._scaled_experiments)
             merger.set_reflections_filename(self._scaled_reflections)
+            merger.set_project_name(self._scalr_pname)
+            merger.set_crystal_names(self._scalr_xname)
+            merger.set_dataset_names(dnames_set[0])
+            merger.set_partiality_threshold(
+                PhilIndex.params.dials.scale.partiality_threshold
+            )
             auto_logfiler(merger)
             mtz_filename = os.path.join(
-                self.get_working_directory(), "scaled_merged.mtz"
+                self.get_working_directory(),
+                "%s_%s_scaled.mtz" % (self._scalr_pname, self._scalr_xname),
             )
             self._scalr_scaled_refl_files[dnames_set[0]] = mtz_filename
             self._scalr_scaled_reflection_files["mtz"][dnames_set[0]] = mtz_filename
@@ -813,6 +816,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
             auto_logfiler(tt_refiner)
             tt_refiner.set_experiments([self._scaled_experiments])
             tt_refiner.set_reflection_files([self._scaled_reflections])  # needs a list
+            tt_refiner.set_output_p4p(p4p_file)
             tt_refiner.run()
             pi = groups_list[0]
 
@@ -827,8 +831,6 @@ pipeline=dials (supported for pipeline=dials-aimless).
 
             if params.xia2.settings.small_molecule:
                 FileHandler.record_data_file(p4p_file)
-
-            import dials.util.version
 
             cif_out = CIF.get_block("xia2")
             mmcif_out = mmCIF.get_block("xia2")
@@ -859,9 +861,9 @@ pipeline=dials (supported for pipeline=dials-aimless).
 
             # Write average unit cell to .cif
             cif_out = CIF.get_block("xia2")
-            cif_out[
+            cif_out[  # pylint: disable=E1137
                 "_computing_cell_refinement"
-            ] = "AIMLESS averaged unit cell"  # pylint: disable=E1137
+            ] = "AIMLESS averaged unit cell"
             for cell, cifname in zip(
                 self._scalr_cell,
                 [
