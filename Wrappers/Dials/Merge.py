@@ -24,6 +24,10 @@ def DialsMerge(DriverType=None):
             self._experiments_filename = None
             self._reflections_filename = None
             self._mtz_filename = None
+            self._truncate = False
+
+        def set_truncate(self, boolean):
+            self._truncate = boolean
 
         def set_experiments_filename(self, experiments_filename):
             self._experiments_filename = experiments_filename
@@ -51,6 +55,8 @@ def DialsMerge(DriverType=None):
             assert self._reflections_filename
             self.add_command_line(self._reflections_filename)
             self.add_command_line(self._experiments_filename)
+
+            self.add_command_line("truncate=%s" % self._truncate)
 
             if self._mtz_filename:
                 self.add_command_line("output.mtz=%s" % self._mtz_filename)
