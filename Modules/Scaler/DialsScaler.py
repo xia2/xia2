@@ -3,7 +3,6 @@
 from __future__ import absolute_import, division, print_function
 import os
 import math
-import copy as copy
 
 from orderedset import OrderedSet
 from xia2.Handlers.Files import FileHandler
@@ -11,10 +10,13 @@ from xia2.lib.bits import auto_logfiler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.lib.SymmetryLib import sort_lattices
 from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.Handlers.CIF import CIF, mmCIF
 from xia2.Modules.Scaler.CommonScaler import CommonScaler as Scaler
 from xia2.Wrappers.Dials.Scale import DialsScale
 from xia2.Wrappers.Dials.Merge import DialsMerge
+from xia2.Wrappers.Dials.SpaceGroup import DialsSpaceGroup
 from xia2.Wrappers.CCP4.CCP4Factory import CCP4Factory
+from xia2.Modules.AnalyseMyIntensities import AnalyseMyIntensities
 from xia2.Modules.Scaler.CCP4ScalerHelpers import (
     SweepInformationHandler,
     mosflm_B_matrix,
@@ -24,6 +26,7 @@ from xia2.Wrappers.Dials.Reindex import Reindex as DialsReindex
 from xia2.Wrappers.Dials.AssignUniqueIdentifiers import DialsAssignIdentifiers
 from xia2.Wrappers.Dials.SplitExperiments import SplitExperiments
 from xia2.Wrappers.Dials.ExportMtz import ExportMtz
+from xia2.Wrappers.Dials.TwoThetaRefine import TwoThetaRefine
 from xia2.Handlers.Syminfo import Syminfo
 from dxtbx.serialize import load
 from dials.util.batch_handling import calculate_batch_offsets
@@ -500,6 +503,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
 
         self._scalr_scaled_reflection_files = {}
         self._scalr_scaled_reflection_files["mtz_unmerged"] = {}
+        self._scalr_scaled_reflection_files["mtz"] = {}
 
         # First set the unmerged mtz output filename. Note that this is the
         # same for MAD datasets too, as need a single unmerged for merging
@@ -522,7 +526,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
             if wavelength not in wavelengths:
                 wavelengths.append(wavelength)
 
-        scaled_mtz_path = os.path.join(
+        """scaled_mtz_path = os.path.join(
             self.get_working_directory(),
             "%s_%s_scaled.mtz" % (self._scalr_pname, self._scalr_xname),
         )
@@ -533,7 +537,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
             }
             self._scalr_scaled_reflection_files["mtz_unmerged"] = {
                 dnames_set[0]: scaled_unmerged_mtz_path
-            }
+            }"""
 
         ### Set the resolution limit if applicable
 
@@ -573,10 +577,10 @@ pipeline=dials (supported for pipeline=dials-aimless).
         self._scaled_reflections = self._scaler.get_scaled_reflections()
 
         FileHandler.record_data_file(scaled_unmerged_mtz_path)
-        if len(dnames_set) == 1:
+        """if len(dnames_set) == 1:
             hklout = copy.deepcopy(self._scaler.get_scaled_mtz())
             self._scalr_scaled_refl_files = {dnames_set[0]: hklout}
-            FileHandler.record_data_file(hklout)
+            FileHandler.record_data_file(hklout)"""
 
         # make it so that only scaled.expt and scaled.refl are
         # the files that dials.scale knows about, so that if scale is called again,
@@ -596,13 +600,34 @@ pipeline=dials (supported for pipeline=dials-aimless).
             Debug.write("Returning as scaling not finished...")
             return
 
-        ### Now for MAD case, need to generate individual merged and unmerged mtz files
+        ### Want to do space group check after scaling. So run dials.space_group
+        ### (could be changed in future to symmetry) before exporting merged and
+        ### unmerged files again in correct s.g.
+        if not PhilIndex.params.xia2.settings.small_molecule:
+            Chatter.banner("Systematic absences check")
+            space_group_checker = DialsSpaceGroup()
+            space_group_checker.set_experiments_filename(self._scaled_experiments)
+            space_group_checker.set_reflections_filename(self._scaled_reflections)
+            space_group_checker.set_working_directory(self.get_working_directory())
+            auto_logfiler(space_group_checker)
+            space_group_checker.run()
 
-        # first split experiments on wavelength, then run dials.export and dials.merge on each
+            self._scaled_experiments = space_group_checker.get_symmetrized_experiments()
+
+            sg = load.experiment_list(self._scaled_experiments)[
+                0
+            ].crystal.get_space_group()
+            Chatter.write("Most likely space group: %s" % sg.info())
+            self._scalr_likely_spacegroups = [sg.type().lookup_symbol()]
+
+        ### Now export and merge so that mtz files in correct space group.
+
+        ### For MAD case, need to generate individual merged and unmerged mtz
+        ### files. First split experiments on wavelength, then run dials.export
+        ### and dials.merge on each
         if len(dnames_set) > 1:
             self._scalr_scaled_refl_files = {}
-            self._scalr_scaled_reflection_files["mtz"] = {}
-            Chatter.write("Splitting experiments by wavelength")
+            Debug.write("Splitting experiments by wavelength")
             # first split by wavelength
             splitter = SplitExperiments()
             splitter.add_experiments(self._scaled_experiments)
@@ -642,11 +667,11 @@ pipeline=dials (supported for pipeline=dials-aimless).
                     dname
                 ] = mtz_filename
 
-                Chatter.write("Exporting %s" % mtz_filename)
+                Debug.write("Exporting %s" % mtz_filename)
                 exporter.run()
                 FileHandler.record_data_file(mtz_filename)
 
-                merger = DialsMerge()
+                merger = DialsMerge()  # merge but don't truncate
                 merger.set_working_directory(self.get_working_directory())
                 merger.set_experiments_filename(expt_name)
                 merger.set_reflections_filename(refl_name)
@@ -658,9 +683,44 @@ pipeline=dials (supported for pipeline=dials-aimless).
                 self._scalr_scaled_reflection_files["mtz"][dname] = mtz_filename
                 merger.set_mtz_filename(mtz_filename)
 
-                Chatter.write("Merging %s" % mtz_filename)
+                Debug.write("Merging %s" % mtz_filename)
                 merger.run()
                 FileHandler.record_data_file(mtz_filename)
+
+        ### For non-MAD case, run dials.export and dials.merge on scaled data.
+        else:
+            exporter = ExportMtz()
+            exporter.set_working_directory(self.get_working_directory())
+            exporter.set_experiments_filename(self._scaled_experiments)
+            exporter.set_reflections_filename(self._scaled_reflections)
+            exporter.set_intensity_choice("scale")
+            auto_logfiler(exporter)
+            exporter.set_mtz_filename(scaled_unmerged_mtz_path)
+
+            Debug.write("Exporting %s" % scaled_unmerged_mtz_path)
+            exporter.run()
+
+            self._scalr_scaled_reflection_files["mtz_unmerged"] = {
+                dnames_set[0]: scaled_unmerged_mtz_path
+            }
+
+            FileHandler.record_data_file(scaled_unmerged_mtz_path)
+
+            merger = DialsMerge()
+            merger.set_working_directory(self.get_working_directory())
+            merger.set_experiments_filename(self._scaled_experiments)
+            merger.set_reflections_filename(self._scaled_reflections)
+            auto_logfiler(merger)
+            mtz_filename = os.path.join(
+                self.get_working_directory(), "scaled_merged.mtz"
+            )
+            self._scalr_scaled_refl_files[dnames_set[0]] = mtz_filename
+            self._scalr_scaled_reflection_files["mtz"][dnames_set[0]] = mtz_filename
+            merger.set_mtz_filename(mtz_filename)
+
+            Debug.write("Merging %s" % mtz_filename)
+            merger.run()
+            FileHandler.record_data_file(mtz_filename)
 
         if PhilIndex.params.xia2.settings.merging_statistics.source == "cctbx":
             for key in self._scalr_scaled_refl_files:
@@ -674,7 +734,148 @@ pipeline=dials (supported for pipeline=dials-aimless).
                 ] = stats
 
         # Run twotheta refine
-        self._update_scaled_unit_cell()
+        self._update_scaled_unit_cell_from_scaled_data()
+
+    def _update_scaled_unit_cell_from_scaled_data(self):
+
+        params = PhilIndex.params
+        fast_mode = params.dials.fast_mode
+        if (
+            params.xia2.settings.integrater == "dials"
+            and not fast_mode
+            and params.xia2.settings.scale.two_theta_refine
+        ):
+
+            Chatter.banner("Unit cell refinement")
+
+            # Collect a list of all sweeps, grouped by project, crystal, wavelength
+            groups_list = []
+            groups = {}
+            self._scalr_cell_dict = {}
+            for epoch in self._sweep_handler.get_epochs():
+                si = self._sweep_handler.get_sweep_information(epoch)
+                pi = "_".join(si.get_project_info())  # pname, xname, dname
+                groups_list.append(pi)
+
+            p4p_file = os.path.join(
+                self.get_working_directory(),
+                "%s_%s.p4p" % (self._scalr_pname, self._scalr_xname),
+            )
+            if len(set(groups_list)) > 1:
+                # need to split up experiments and reflections
+                self._sweep_handler = self._helper.split_experiments(
+                    self._scaled_experiments,
+                    self._scaled_reflections,
+                    self._sweep_handler,
+                )
+                for epoch in self._sweep_handler.get_epochs():
+                    si = self._sweep_handler.get_sweep_information(epoch)
+                    pi = "_".join(si.get_project_info())  # pname, xname, dname
+                    groups[pi] = groups.get(pi, []) + [
+                        (si.get_experiments(), si.get_reflections())
+                    ]  # if key exists, add another 2-tuple to the list.
+                for pi in groups.keys():
+                    # Run twothetarefine on each group
+                    tt_grouprefiner = TwoThetaRefine()
+                    tt_grouprefiner.set_working_directory(self.get_working_directory())
+                    auto_logfiler(tt_grouprefiner)
+                    args = zip(*groups[pi])
+                    tt_grouprefiner.set_experiments(args[0])
+                    tt_grouprefiner.set_reflection_files(args[1])
+                    tt_grouprefiner.set_output_p4p(p4p_file)
+                    tt_grouprefiner.run()
+                    Chatter.write(
+                        "%s: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"
+                        % tuple(
+                            ["".join(pi.split("_")[2:])]
+                            + list(tt_grouprefiner.get_unit_cell())
+                        )
+                    )
+                    self._scalr_cell_dict[pi] = (
+                        tt_grouprefiner.get_unit_cell(),
+                        tt_grouprefiner.get_unit_cell_esd(),
+                        tt_grouprefiner.import_cif(),
+                        tt_grouprefiner.import_mmcif(),
+                    )
+
+                    cif_in = tt_grouprefiner.import_cif()
+                    cif_out = CIF.get_block(pi)
+                    for key in sorted(cif_in.keys()):
+                        cif_out[key] = cif_in[key]
+                    mmcif_in = tt_grouprefiner.import_mmcif()
+                    mmcif_out = mmCIF.get_block(pi)
+                    for key in sorted(mmcif_in.keys()):
+                        mmcif_out[key] = mmcif_in[key]
+
+            # now do two theta refine on combined scaled data.
+            tt_refiner = TwoThetaRefine()
+            tt_refiner.set_working_directory(self.get_working_directory())
+            auto_logfiler(tt_refiner)
+            tt_refiner.set_experiments([self._scaled_experiments])
+            tt_refiner.set_reflection_files([self._scaled_reflections])  # needs a list
+            tt_refiner.run()
+            pi = groups_list[0]
+
+            self._scalr_cell = tt_refiner.get_unit_cell()
+            Chatter.write(
+                "Overall: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"
+                % tt_refiner.get_unit_cell()
+            )
+            self._scalr_cell_esd = tt_refiner.get_unit_cell_esd()
+            cif_in = tt_refiner.import_cif()
+            mmcif_in = tt_refiner.import_mmcif()
+
+            if params.xia2.settings.small_molecule:
+                FileHandler.record_data_file(p4p_file)
+
+            import dials.util.version
+
+            cif_out = CIF.get_block("xia2")
+            mmcif_out = mmCIF.get_block("xia2")
+            cif_out["_computing_cell_refinement"] = mmcif_out[  # pylint: disable=E1137
+                "_computing.cell_refinement"
+            ] = ("DIALS 2theta refinement, %s" % dials.util.version.dials_version())
+            for key in sorted(cif_in.keys()):
+                cif_out[key] = cif_in[key]
+            for key in sorted(mmcif_in.keys()):
+                mmcif_out[key] = mmcif_in[key]
+
+            Debug.write("Unit cell obtained by two-theta refinement")
+
+        else:
+            ami = AnalyseMyIntensities()
+            ami.set_working_directory(self.get_working_directory())
+
+            average_unit_cell, _ = ami.compute_average_cell(
+                [
+                    self._scalr_scaled_refl_files[key]
+                    for key in self._scalr_scaled_refl_files
+                ]
+            )
+
+            Debug.write("Computed average unit cell (will use in all files)")
+            self._scalr_cell = average_unit_cell
+            self._scalr_cell_esd = None
+
+            # Write average unit cell to .cif
+            cif_out = CIF.get_block("xia2")
+            cif_out[
+                "_computing_cell_refinement"
+            ] = "AIMLESS averaged unit cell"  # pylint: disable=E1137
+            for cell, cifname in zip(
+                self._scalr_cell,
+                [
+                    "length_a",
+                    "length_b",
+                    "length_c",
+                    "angle_alpha",
+                    "angle_beta",
+                    "angle_gamma",
+                ],
+            ):
+                cif_out["_cell_%s" % cifname] = cell  # pylint: disable=E1137
+
+        Debug.write("%7.3f %7.3f %7.3f %7.3f %7.3f %7.3f" % self._scalr_cell)
 
     def apply_reindex_operator_to_sweep_info(self, si, reindex_operator, reason):
         """Use a reindex operator to reindex the data.
