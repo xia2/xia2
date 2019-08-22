@@ -549,6 +549,10 @@ pipeline=dials (supported for pipeline=dials-aimless).
             self._scaler.get_log_file(),
         )
         self._scaler.scale()
+        FileHandler.record_html_file(
+            "%s %s SCALE" % (self._scalr_pname, self._scalr_xname),
+            self._scaler.get_html(),
+        )
         self._scaled_experiments = self._scaler.get_scaled_experiments()
         self._scaled_reflections = self._scaler.get_scaled_reflections()
 
@@ -591,6 +595,15 @@ pipeline=dials (supported for pipeline=dials-aimless).
             ].crystal.get_space_group()
             Chatter.write("Most likely space group: %s" % sg.info())
             self._scalr_likely_spacegroups = [sg.type().lookup_symbol()]
+
+        FileHandler.record_more_data_file(
+            "%s %s scaled" % (self._scalr_pname, self._scalr_xname),
+            self._scaled_experiments,
+        )
+        FileHandler.record_more_data_file(
+            "%s %s scaled" % (self._scalr_pname, self._scalr_xname),
+            self._scaled_reflections,
+        )
 
         ### Now export and merge so that mtz files in correct space group.
 
