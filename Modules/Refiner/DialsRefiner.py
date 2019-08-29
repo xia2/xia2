@@ -95,9 +95,7 @@ class DialsRefiner(Refiner):
                     self.get_working_directory(), "%s_indexed.refl" % xsweep.get_name()
                 )
 
-                from dxtbx.serialize import dump
-
-                dump.experiment_list(experiments, indexed_experiments)
+                experiments.as_file(indexed_experiments)
 
                 reflections = flex.reflection_table.from_file(
                     idxr.get_indexer_payload("indexed_filename")
@@ -116,8 +114,6 @@ class DialsRefiner(Refiner):
             assert (
                 len(experiments.crystals()) == 1
             )  # currently only handle one lattice/sweep
-            crystal_model = experiments.crystals()[0]
-            lattice = idxr.get_indexer_lattice()
 
             from dxtbx.serialize import load
 

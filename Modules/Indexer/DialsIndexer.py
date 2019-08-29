@@ -135,14 +135,12 @@ class DialsIndexer(Indexer):
 
     def Refine(self):
         refine = _Refine()
-        params = PhilIndex.params.dials.refine
+        params = PhilIndex.params.dials
         refine.set_working_directory(self.get_working_directory())
         refine.set_scan_varying(False)
-        refine.set_outlier_algorithm(PhilIndex.params.dials.outlier.algorithm)
-        refine.set_close_to_spindle_cutoff(
-            PhilIndex.params.dials.close_to_spindle_cutoff
-        )
-        if PhilIndex.params.dials.fix_geometry:
+        refine.set_outlier_algorithm(params.outlier.algorithm)
+        refine.set_close_to_spindle_cutoff(params.close_to_spindle_cutoff)
+        if params.fix_geometry:
             refine.set_detector_fix("all")
             refine.set_beam_fix("all")
         auto_logfiler(refine)
@@ -265,15 +263,13 @@ class DialsIndexer(Indexer):
 
             # FIXME need to adjust this to allow (say) three chunks of images
 
-            from dxtbx.serialize import dump
             from dxtbx.model.experiment_list import ExperimentListFactory
 
             sweep_filename = os.path.join(
                 self.get_working_directory(), "%s_import.expt" % xsweep.get_name()
             )
-            dump.experiment_list(
-                ExperimentListFactory.from_imageset_and_crystal(imageset, None),
-                sweep_filename,
+            ExperimentListFactory.from_imageset_and_crystal(imageset, None).as_file(
+                sweep_filename
             )
 
             genmask = self.GenerateMask()
@@ -364,7 +360,7 @@ class DialsIndexer(Indexer):
                 detectblanks.set_reflections_filename(spot_filename)
                 detectblanks.run()
                 json = detectblanks.get_results()
-                offset = imageset.get_scan().get_image_range()[0]
+                # offset = imageset.get_scan().get_image_range()[0]
                 blank_regions = json["strong"]["blank_regions"]
                 if len(blank_regions):
                     blank_regions = [(int(s), int(e)) for s, e in blank_regions]
@@ -468,12 +464,14 @@ class DialsIndexer(Indexer):
                 except Exception as e:
                     nref_3d = None
                     rmsd_3d = None
+                    indexing_failure = e
                 try:
                     indexer_fft1d = self._do_indexing(method="fft1d")
                     nref_1d, rmsd_1d = indexer_fft1d.get_nref_rmsds()
                 except Exception as e:
                     nref_1d = None
                     rmsd_1d = None
+                    indexing_failure = e
 
                 if (
                     nref_1d is not None
@@ -489,7 +487,7 @@ class DialsIndexer(Indexer):
                 elif nref_3d is not None:
                     indexer = indexer_fft3d
                 else:
-                    raise RuntimeError(e)
+                    raise RuntimeError(indexing_failure)
 
         else:
             indexer = self._do_indexing(method=PhilIndex.params.dials.index.method)
@@ -720,7 +718,6 @@ class DialsIndexer(Indexer):
         if self._indxr_input_cell:
             indexer.set_indexer_input_cell(self._indxr_input_cell)
             Debug.write("Set cell: %f %f %f %f %f %f" % self._indxr_input_cell)
-            original_cell = self._indxr_input_cell
 
         if method is None:
             if PhilIndex.params.dials.index.method is None:

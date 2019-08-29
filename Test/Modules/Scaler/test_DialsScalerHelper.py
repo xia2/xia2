@@ -8,7 +8,7 @@ from dials.algorithms.symmetry.cosym._generate_test_data import generate_intensi
 from dials.array_family import flex
 from dxtbx.model.experiment_list import ExperimentList
 from dxtbx.model import Crystal, Scan, Beam, Experiment
-from dxtbx.serialize import dump, load
+from dxtbx.serialize import load
 
 
 flex.set_random_seed(42)
@@ -133,7 +133,7 @@ def test_dials_symmetry_decide_pointgroup(
 ):
     """Test for the dials_symmetry_decide_pointgroup helper function """
 
-    dump.experiment_list(generated_exp(space_group=experiments_spacegroup), "test.expt")
+    generated_exp(space_group=experiments_spacegroup).as_file("test.expt")
     generate_reflections_in_sg(reflection_spacegroup).as_pickle("test.refl")
 
     symmetry_analyser = helper.dials_symmetry_decide_pointgroup(
@@ -158,7 +158,7 @@ def test_assign_identifiers(helper):
     for i in range(0, 3):
         refl_path, exp_path = ("test_%s.refl" % i, "test_%s.expt" % i)
         generate_test_refl().as_pickle(refl_path)
-        dump.experiment_list(generated_exp(), exp_path)
+        generated_exp().as_file(exp_path)
         experiments.append(exp_path)
         reflections.append(refl_path)
     assigner = helper.assign_dataset_identifiers(experiments, reflections)
@@ -226,9 +226,7 @@ def test_split_experiments(number_of_experiments, helper):
     sweephandler = simple_sweep_handler(number_of_experiments)
     exp_path = "test.expt"
     refl_path = "test.refl"
-    dump.experiment_list(
-        generated_exp(number_of_experiments, assign_ids=True), exp_path
-    )
+    generated_exp(number_of_experiments, assign_ids=True).as_file(exp_path)
     reflections = flex.reflection_table()
     for i in range(number_of_experiments):
         reflections.extend(generate_test_refl(id_=i, assign_id=True))
@@ -259,7 +257,7 @@ def test_assign_and_return_datasets(helper):
         si = sweephandler.get_sweep_information(i)
         refl_path, exp_path = ("test_%s.refl" % i, "test_%s.expt" % i)
         generate_test_refl().as_pickle(refl_path)
-        dump.experiment_list(generated_exp(), exp_path)
+        generated_exp().as_file(exp_path)
         si.set_experiments(exp_path)
         si.set_reflections(refl_path)
     sweephandler = helper.assign_and_return_datasets(sweephandler)
@@ -379,7 +377,7 @@ def test_dials_symmetry_indexer_jiffy(helper, refiner_lattices, expected_output)
     for i in range(0, n):
         refl_path, exp_path = ("test_%s.refl" % i, "test_%s.expt" % i)
         generate_reflections_in_sg("P 2", id_=i, assign_id=True).as_pickle(refl_path)
-        dump.experiment_list(generated_exp(space_group="P 2", id_=i), exp_path)
+        generated_exp(space_group="P 2", id_=i).as_file(exp_path)
         experiments.append(exp_path)
         reflections.append(refl_path)
         refiners.append(simple_refiner(refiner_lattices))

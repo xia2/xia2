@@ -107,7 +107,7 @@ def is_image_name(filename):
 
         end = filename.split(".")[-1]
         try:
-            if not ".log." in filename and len(end) > 1:
+            if ".log." not in filename and len(end) > 1:
                 return True
         except Exception:
             pass
@@ -185,22 +185,6 @@ def get_template(f):
         raise RuntimeError("template not recognised for %s" % f)
 
     return template
-
-
-def save_experiments(filename):
-    from xia2.Schema import imageset_cache
-    from dxtbx.model.experiment_list import ExperimentList
-    from dxtbx.model.experiment_list import ExperimentListFactory
-    from dxtbx.serialize import dump
-
-    experiments = ExperimentList([])
-    for imagesets in imageset_cache.values():
-        for imageset in imagesets.values():
-            experiments.extend(
-                ExperimentListFactory.from_imageset_and_crystal(imageset, None)
-            )
-
-    dump.experiment_list(experiments, filename, compact=True)
 
 
 def parse_sequence(sequence_file):
@@ -331,7 +315,7 @@ def print_sweeps(out=sys.stdout):
 
             wavelength = s.get_wavelength()
 
-            if not wavelength in wavelengths:
+            if wavelength not in wavelengths:
                 have_wavelength = False
                 for w in wavelengths:
                     if abs(w - wavelength) < wavelength_tolerance:
@@ -606,7 +590,7 @@ def write_xinfo(filename, directories, template=None, hdf5_master_files=None):
     try:
         os.makedirs(directory)
     except OSError as e:
-        if not "File exists" in str(e):
+        if "File exists" not in str(e):
             raise
 
     # FIXME should I have some exception handling in here...?
@@ -667,7 +651,7 @@ def run():
         try:
             os.makedirs(directory)
         except OSError as e:
-            if not "File exists" in str(e):
+            if "File exists" not in str(e):
                 raise e
         os.chdir(directory)
 
