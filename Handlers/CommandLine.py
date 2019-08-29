@@ -101,7 +101,7 @@ def unroll_datasets(datasets):
                 "Dataset ranges must be passed as /path/to/image_0001.cbf:start:end[:chunk]"
             )
         start, end, incr = map(int, tokens[1:])
-        if start + incr > end:
+        if start + incr - 1 > end:
             raise RuntimeError("chunk size greater than total")
         for s in range(start, end, incr):
             e = s + incr - 1
