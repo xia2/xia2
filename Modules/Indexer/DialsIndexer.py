@@ -1,14 +1,8 @@
-#!/usr/bin/env python
-# DialsIndexer.py
-#   Copyright (C) 2014 Diamond Light Source, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
 # An indexer using the DIALS methods.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
+import copy
 import math
 import os
 
@@ -360,7 +354,6 @@ class DialsIndexer(Indexer):
                 detectblanks.set_reflections_filename(spot_filename)
                 detectblanks.run()
                 json = detectblanks.get_results()
-                # offset = imageset.get_scan().get_image_range()[0]
                 blank_regions = json["strong"]["blank_regions"]
                 if len(blank_regions):
                     blank_regions = [(int(s), int(e)) for s, e in blank_regions]
@@ -435,9 +428,6 @@ class DialsIndexer(Indexer):
                 discovery = self.DiscoverBetterExperimentalModel()
                 discovery.set_sweep_filename(experiments_filenames[-1])
                 discovery.set_spot_filename(spot_filename)
-                # wedges = self._index_select_images_i(imageset)
-                # discovery.set_scan_ranges(wedges)
-                # discovery.set_scan_ranges([(first + offset, last + offset)])
                 try:
                     discovery.run()
                 except Exception as e:
@@ -450,8 +440,6 @@ class DialsIndexer(Indexer):
 
         self.set_indexer_payload("spot_lists", spot_lists)
         self.set_indexer_payload("experiments", experiments_filenames)
-
-        return
 
     def _index(self):
         if PhilIndex.params.dials.index.method in (libtbx.Auto, None):
@@ -688,8 +676,6 @@ class DialsIndexer(Indexer):
                 "cell": self._solutions[0]["cell"],
             }
 
-        return
-
     def _do_indexing(self, method=None):
         indexer = self.Index()
         for spot_list in self._indxr_payload["spot_lists"]:
@@ -774,8 +760,6 @@ class DialsIndexer(Indexer):
         return self._solutions
 
     def get_solution(self):
-        import copy
-
         # FIXME I really need to clean up the code in here...
 
         if self._indxr_input_lattice is None:
