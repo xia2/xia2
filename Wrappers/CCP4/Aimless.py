@@ -319,8 +319,6 @@ def Aimless(DriverType=None, absorption_correction=None, decay_correction=None):
             """Check for Aimless specific errors. Raise RuntimeError if
             error is found."""
 
-            # FIXME in here I need to add a test for convergence
-
             output = self.get_all_output()
 
             for n, line in enumerate(output):

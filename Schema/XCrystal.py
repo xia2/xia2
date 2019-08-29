@@ -781,10 +781,6 @@ class XCrystal(object):
         return self._ha_info
 
     def set_ha_info(self, ha_info_dict):
-        # FIXED I need to decide how to implement this...
-        # do so from the dictionary...
-
-        # bug # 2326 - need to decide when we're anomalous
         self._anomalous = True
 
         atom = ha_info_dict["atom"]

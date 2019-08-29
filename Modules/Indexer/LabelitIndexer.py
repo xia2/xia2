@@ -402,15 +402,9 @@ class LabelitIndexer(IndexerSingleSweep):
     def get_solution(self):
         """Get the best solution from autoindexing."""
         if self._indxr_input_lattice is None:
-            # FIXME in here I need to check that there is a
-            # "good" smiley
             return copy.deepcopy(self._solutions[max(self._solutions.keys())])
         else:
             # look through for a solution for this lattice -
-            # FIXME should it delete all other solutions?
-            # c/f eliminate.
-
-            # FIXME should also include a check for the indxr_input_cell
 
             if self._indxr_input_cell:
                 for s in self._solutions.keys():

@@ -92,16 +92,6 @@ def ApplyLattice(lattice, cell):
 def ComputeBDistortion(cell1, cell2):
     """Compute the distortion required to get from cell1 to cell2."""
 
-    # FIXME this should be done via a B matrix calculation...
-    #
-    # B = \
-    # (a*,    b* cos(al*),          c* cos(be*)      )
-    # (0,     b* sin(al*),   - c* sin(be*) cos(alpha))
-    # (0,     0,             - c* sin(be*) sin(alpha))
-    #
-    # so I need to invert the unit cell and check this
-    # (Busing & Levy, 1967)
-
     d = 0.0
 
     for j in range(6):

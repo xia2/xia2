@@ -162,8 +162,6 @@ def to_shelx(hklin, prefix, compound="", options=None):
 
     intensities = [c for c in ma if c.info().labels == ["I", "SIGI"]][0]
 
-    # FIXME do I need to reindex to a conventional setting here
-
     indices = reader.file_content().extract_original_index_miller_indices()
     intensities = intensities.customized_copy(indices=indices, info=intensities.info())
 

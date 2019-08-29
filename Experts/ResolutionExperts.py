@@ -390,8 +390,6 @@ def xds_integrate_header_read(xds_hkl):
     information, namely the detector origin, cell constants, wavelength
     and pixel size."""
 
-    # fixme do I need to calculate the beam centre? probably
-
     cell = None
     pixel = None
     distance = None

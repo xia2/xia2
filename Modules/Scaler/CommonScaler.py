@@ -781,8 +781,6 @@ class CommonScaler(Scaler):
                 if ma.info().labels == ["I", "SIGI"]
             ][0]
 
-            # FIXME do I need to reindex to a conventional setting here
-
             indices = reader.file_content().extract_original_index_miller_indices()
             intensities = intensities.customized_copy(
                 indices=indices, info=intensities.info()

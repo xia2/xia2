@@ -261,14 +261,6 @@ class XSweep(object):
                 if error:
                     raise RuntimeError("problem with sweep %s" % self._name)
 
-            # + read the image header information into here?
-            #   or don't I need it? it would be useful for checking
-            #   against wavelength.getWavelength() I guess to make
-            #   sure that the plumbing is all sound.
-
-            # check that they match by closer than 0.0001A, if wavelength
-            # is not None
-
             beam_ = self._imageset.get_beam()
             scan = self._imageset.get_scan()
             if wavelength is not None:
