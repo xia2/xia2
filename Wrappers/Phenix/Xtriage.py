@@ -1,9 +1,5 @@
 #!/usr/bin/env python
-# Xtriage.py
-#   Copyright (C) 2017 Diamond Light Source, Richard Gildea
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
+
 
 from __future__ import absolute_import, division, print_function
 
@@ -44,13 +40,3 @@ def Xtriage(DriverType=None):
             self.check_for_errors()
 
     return XtriageWrapper()
-
-
-if __name__ == "__main__":
-    import sys
-
-    assert len(sys.argv[1:]) == 1
-    xtriage = Xtriage()
-    xtriage.set_mtz(sys.argv[1])
-    xtriage.run()
-    print("".join(xtriage.get_all_output()))
