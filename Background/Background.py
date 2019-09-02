@@ -1,16 +1,7 @@
 #!/usr/bin/env python
-# Background.py
-#
-#   Copyright (C) 2009 Diamond Light Source, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# Code to allow background (i.e. threaded) running of tasks.
 
 from __future__ import absolute_import, division, print_function
 
-import sys
 import threading
 import traceback
 
@@ -59,44 +50,3 @@ class Background(threading.Thread):
             raise self._exception
 
         return self._result
-
-
-if __name__ == "__main__":
-    from xia2.Driver.DriverFactory import DriverFactory
-
-    drivers = []
-    backgrounds = []
-
-    for j in range(4):
-
-        driver = DriverFactory.Driver()
-        driver.set_executable("/tmp/920/cpu.py")
-        driver.start()
-        drivers.append(driver)
-        backgrounds.append(Background(driver, "close_wait"))
-        backgrounds[-1].start()
-
-    for j in range(4):
-        backgrounds[j].stop()
-
-if __name__ == "__cpu.py__":
-    # this be a script! #!/usr/bin/env python
-
-    import math
-
-    for record in sys.stdin:
-        pass
-
-    def factor(v):
-        m = int(math.sqrt(v)) + 1
-
-        for j in range(2, m):
-            if v % j == 0:
-                f = [j]
-                f.extend(factor(v / j))
-                return f
-
-        return [v]
-
-    for j in range(10000000000, 10000000100):
-        print(factor(j))
