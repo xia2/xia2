@@ -1,17 +1,6 @@
 #!/usr/bin/env python
-# XDSIdxrefHelpers.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# Routines which help with working with XDS IDXREF - e.g. parsing the
-# output IDXREF.LP.
-#
 
 from __future__ import absolute_import, division, print_function
-
-import sys
 
 from xia2.Experts.LatticeExpert import ApplyLattice
 
@@ -165,16 +154,3 @@ def _parse_idxref_lp_quality(lp_file_lines):
             rmsphi = float(record.split()[-1])
 
     return fraction, rmsd, rmsphi
-
-
-if __name__ == "__main__":
-
-    lines = open(sys.argv[1], "r").readlines()
-
-    d = _parse_idxref_lp(lines)
-    for k, v in d.iteritems():
-        print(k, v)
-
-    fraction, rmsd, rmsphi = _parse_idxref_lp_quality(lines)
-
-    print("%.2f %.2f %.2f" % (fraction, rmsd, rmsphi))

@@ -1,15 +1,4 @@
 #!/usr/bin/env python
-# XDSGenerateIgnoreFiles.py
-#   Copyright (C) 2014 Diamond Light Source, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# XDS generates files which look like diffraction images but have well defined
-# names. This code fetches the documentation for these files and scrapes out
-# a list of the file names, and saves these in XDSFiles.py for future ignoring.
-#
-# This is not used as part of xia2, it is a developer thing.
 
 from __future__ import absolute_import, division, print_function
 
@@ -39,7 +28,3 @@ def XDSGenerateIgnoreFiles():
 
     with open("XDSFiles.py", "w") as fout:
         fout.write("XDSFiles = %s\n" % str(xds_files))
-
-
-if __name__ == "__main__":
-    XDSGenerateIgnoreFiles()

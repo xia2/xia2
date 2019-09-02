@@ -1,14 +1,4 @@
 #!/usr/bin/env python
-# Cellparm.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# A wrapper for the XDS jiffy program CELLPARM for computing average unit
-# cell parameters, from the results of multiple CORRECT runs for input into
-# a single XSCALE run.
-#
 
 from __future__ import absolute_import, division, print_function
 
@@ -102,15 +92,3 @@ def Cellparm(DriverType=None):
             return map(float, data[-1].split()[:6])
 
     return CellparmWrapper()
-
-
-if __name__ == "__main__":
-    cellparm = Cellparm()
-
-    cellparm.add_cell((64.585, 30.911, 34.886, 90.000, 105.822, 90.000), 284516)
-
-    cellparm.add_cell((64.584, 30.932, 34.879, 90.000, 105.832, 90.000), 32106)
-
-    cellparm.add_cell((64.658, 30.972, 34.918, 90.000, 105.823, 90.000), 1966)
-
-    print(cellparm.get_cell())

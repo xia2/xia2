@@ -1,12 +1,4 @@
 #!/usr/bin/env python
-# XDSIntegrate.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# A wrapper to handle the JOB=INTEGRATE module in XDS.
-#
 
 from __future__ import absolute_import, division, print_function
 
@@ -374,25 +366,3 @@ def XDSIntegrate(DriverType=None, params=None):
             return
 
     return XDSIntegrateWrapper(params)
-
-
-if __name__ == "__main__":
-
-    integrate = XDSIntegrate()
-    directory = os.path.join(os.environ["XIA2_ROOT"], "Data", "Test", "Images")
-
-    integrate.setup_from_image(os.path.join(directory, "12287_1_E1_001.img"))
-
-    for file in [
-        "X-CORRECTIONS.cbf",
-        "Y-CORRECTIONS.cbf",
-        "BLANK.cbf",
-        "BKGPIX.cbf",
-        "GAIN.cbf",
-        "XPARM.XDS",
-    ]:
-        integrate.set_input_data_file(file, open(file, "rb").read())
-
-    integrate.set_data_range(1, 1)
-
-    integrate.run()

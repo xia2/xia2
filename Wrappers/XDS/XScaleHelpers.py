@@ -1,17 +1,8 @@
 #!/usr/bin/env python
-# XScaleHelpers.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# Helpers for the wrapper for XSCALE, the XDS Scaling program.
-#
 
 from __future__ import absolute_import, division, print_function
 
 import math
-import sys
 
 
 def _generate_resolution_shells(low, high):
@@ -123,7 +114,3 @@ def get_correlation_coefficients_and_group(xscale_lp):
                 used.append(file_names[k + 1])
 
     return groups
-
-
-if __name__ == "__main__":
-    get_correlation_coefficients_and_group(sys.argv[1])

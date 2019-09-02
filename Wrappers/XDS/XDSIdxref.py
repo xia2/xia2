@@ -1,12 +1,4 @@
 #!/usr/bin/env python
-# XDSIdxref.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# A wrapper to handle the JOB=IDXREF module in XDS.
-#
 
 from __future__ import absolute_import, division, print_function
 
@@ -568,27 +560,3 @@ def XDSIdxref(DriverType=None, params=None):
             return True
 
     return XDSIdxrefWrapper(params)
-
-
-if __name__ == "__main__":
-
-    idxref = XDSIdxref()
-    directory = os.path.join(os.environ["XIA2_ROOT"], "Data", "Test", "Images")
-
-    idxref.setup_from_image(os.path.join(directory, "12287_1_E1_001.img"))
-
-    # FIXED 12/DEC/06 need to work out how this is related to the beam centre
-    # from labelit...
-
-    for file in ["SPOT.XDS"]:
-        with open(file, "rb") as fh:
-            idxref.set_input_data_file(file, fh.read())
-
-    idxref.set_beam_centre(1030, 1066)
-
-    idxref.set_data_range(1, 1)
-    idxref.set_background_range(1, 1)
-    idxref.add_spot_range(1, 1)
-    idxref.add_spot_range(90, 90)
-
-    idxref.run()

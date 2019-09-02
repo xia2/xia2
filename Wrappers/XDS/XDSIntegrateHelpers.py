@@ -1,18 +1,8 @@
 #!/usr/bin/env python
-# XDSIntegrateHelpers.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# Routines which help with working with XDS INTEGRATE - e.g. parsing the
-# output INTEGRATE.LP.
-#
 
 from __future__ import absolute_import, division, print_function
 
 import os
-import sys
 
 
 def _parse_integrate_lp_updates(filename):
@@ -172,32 +162,3 @@ def _print_integrate_lp(integrate_lp_stats):
                 data["distance"],
             )
         )
-
-
-if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        integrate_lp = sys.argv[1]
-    else:
-        integrate_lp = os.path.join(
-            os.environ["XIA2_ROOT"], "Wrappers", "XDS", "Doc", "INTEGRATE.LP"
-        )
-
-    stats = _parse_integrate_lp(integrate_lp)
-
-    images = sorted(stats.keys())
-
-    # these may not be present if only a couple of the
-    # images were integrated...
-
-    for i in images:
-        print(stats[i]["rmsd_pixel"])
-
-    stddev_pixel = [stats[i]["rmsd_pixel"] for i in images]
-
-    # fix to bug # 2501 - remove the extreme values from this
-    # list...
-
-    stddev_pixel = sorted(set(stddev_pixel))
-    stddev_pixel = stddev_pixel[1:-1]
-
-    print(stddev_pixel)

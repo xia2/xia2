@@ -1,12 +1,4 @@
 #!/usr/bin/env python
-# XDSDefpix.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# A wrapper to handle the JOB=DEFPIX module in XDS.
-#
 
 from __future__ import absolute_import, division, print_function
 
@@ -14,7 +6,7 @@ import os
 import shutil
 
 from xia2.Driver.DriverFactory import DriverFactory
-from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Streams import Chatter
 
 # interfaces that this inherits from ...
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
@@ -195,18 +187,3 @@ def XDSDefpix(DriverType=None):
             return
 
     return XDSDefpixWrapper()
-
-
-if __name__ == "__main__":
-
-    defpix = XDSDefpix()
-    directory = os.path.join(os.environ["XIA2_ROOT"], "Data", "Test", "Images")
-
-    defpix.setup_from_image(os.path.join(directory, "12287_1_E1_001.img"))
-
-    for file in ["X-CORRECTIONS.cbf", "Y-CORRECTIONS.cbf", "BKGINIT.cbf", "XPARM.XDS"]:
-        defpix.set_input_data_file(file, open(file, "rb").read())
-
-    defpix.set_data_range(1, 1)
-
-    defpix.run()

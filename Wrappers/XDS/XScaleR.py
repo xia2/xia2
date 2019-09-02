@@ -1,19 +1,10 @@
 #!/usr/bin/env python
-# XScale.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# A wrapper for XSCALE, the XDS Scaling program.
-#
 
 from __future__ import absolute_import, division, print_function
 
 import copy
 import os
 import shutil
-import time
 
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex

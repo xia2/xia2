@@ -1,12 +1,4 @@
 #!/usr/bin/env python
-# XDSXycorr.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# A wrapper to handle the JOB=XYCORR module in XDS.
-#
 
 from __future__ import absolute_import, division, print_function
 
@@ -178,17 +170,3 @@ def XDSXycorr(DriverType=None):
             return
 
     return XDSXycorrWrapper()
-
-
-if __name__ == "__main__":
-
-    xycorr = XDSXycorr()
-    directory = os.path.join(os.environ["XIA2_ROOT"], "Data", "Test", "Images")
-
-    xycorr.setup_from_image(os.path.join(directory, "12287_1_E1_001.img"))
-
-    xycorr.set_data_range(1, 1)
-    xycorr.set_background_range(1, 1)
-    xycorr.add_spot_range(1, 1)
-
-    xycorr.run()

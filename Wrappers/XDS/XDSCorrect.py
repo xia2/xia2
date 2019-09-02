@@ -1,14 +1,4 @@
 #!/usr/bin/env python
-# XDSCorrect.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# A wrapper to handle the JOB=CORRECT module in XDS.
-#
-# 04/JAN/07 FIXME - need to know if we want anomalous pairs separating
-#                   in this module...
 
 from __future__ import absolute_import, division, print_function
 
@@ -391,17 +381,3 @@ def XDSCorrect(DriverType=None, params=None):
             return
 
     return XDSCorrectWrapper()
-
-
-if __name__ == "__main__":
-
-    correct = XDSCorrect()
-    directory = os.path.join(os.environ["XIA2_ROOT"], "Data", "Test", "Images")
-
-    correct.setup_from_image(os.path.join(directory, "12287_1_E1_001.img"))
-
-    correct.set_data_range(1, 1)
-    correct.set_background_range(1, 1)
-    correct.add_spot_range(1, 1)
-
-    correct.run()

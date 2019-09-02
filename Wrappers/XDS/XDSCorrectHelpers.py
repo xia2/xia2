@@ -1,25 +1,9 @@
 #!/usr/bin/env python
-# XDSCorrectHelpers.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 18th October 2006
-#
-# Helpers for XDS when running the correct step - this will -
-#
-#  - check that all input files are present and correct
-#  - run xds to do integration, with help from the input parameters
-#    and a generic xds writer
-#  - parse the output from CORRECT.LP
 
 from __future__ import absolute_import, division, print_function
 
-import copy
 import os
 import re
-import sys
 
 # helper methods/functions - these can be used externally for the purposes
 # of testing...
@@ -151,10 +135,3 @@ def _parse_correct_lp(filename):
                 j += 1
 
     return postrefinement_stats
-
-
-if __name__ == "__main__":
-    # correct_lp = os.path.join(os.environ['XIA2_ROOT'], 'Wrappers', 'XDS',
-    #'Doc', 'CORRECT.LP')
-    correct_lp = sys.argv[1]
-    print(_parse_correct_lp(correct_lp))

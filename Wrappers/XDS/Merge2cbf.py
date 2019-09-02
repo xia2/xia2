@@ -1,18 +1,8 @@
 #!/usr/bin/env python
-# Merge2cbf.py
-#   Copyright (C) 2013 Diamond Light Source, Richard Gildea
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# A wrapper to handle the merge2cbf program that is distributed as part of
-# the XDS package.
-#
 
 from __future__ import absolute_import, division, print_function
 
 import os
-import sys
 
 from xia2.Driver.DriverFactory import DriverFactory
 
@@ -214,21 +204,3 @@ def Merge2cbf(DriverType=None, params=None):
             return "\n".join(header_contents)
 
     return Merge2cbfWrapper(params=params)
-
-
-if __name__ == "__main__":
-    import sys
-    from libtbx.phil import command_line
-
-    args = sys.argv[1:]
-    cmd_line = command_line.argument_interpreter(master_params=master_params)
-    working_phil, image_files = cmd_line.process_and_fetch(
-        args=args, custom_processor="collect_remaining"
-    )
-    working_phil.show()
-    assert len(image_files) > 0
-    first_image = image_files[0]
-    params = working_phil.extract()
-    m2c = Merge2cbf(params=params)
-    m2c.setup_from_image(first_image)
-    m2c.run()
