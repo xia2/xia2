@@ -1,15 +1,4 @@
 #!/usr/bin/env python
-# GenerateRaster.py
-#
-#   Copyright (C) 2013 Diamond Light Source, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# Generate the raster parameters from spot finding to help Mosflm cell
-# refinement if other programs used for indexing (e.g. Labelit or DIALS) -
-# N.B. this is subtly different to Findspots as it takes as input an Indexer
-# implementation not FrameProcessor.
 
 from __future__ import absolute_import, division, print_function
 

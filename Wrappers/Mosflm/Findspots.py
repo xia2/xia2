@@ -1,13 +1,4 @@
 #!/usr/bin/env python
-# Findspots.py
-#
-#   Copyright (C) 2013 Diamond Light Source, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# Find spots for autoindexing - now separating this out into two steps; finding
-# spots in index prepare and doing indexing in index proper.
 
 from __future__ import absolute_import, division, print_function
 

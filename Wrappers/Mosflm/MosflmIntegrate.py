@@ -1,18 +1,7 @@
 #!/usr/bin/env python
-# MosflmIntegrate.py
-#   Copyright (C) 2014 Diamond Light Source, Graeme Winter & Richard Gildea
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# A wrapper for Mosflm indexing - this will provide functionality to:
-#
-# Index the lattce.
-#
 
 from __future__ import absolute_import, division, print_function
 
-import copy
 import math
 import os
 

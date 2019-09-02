@@ -1,19 +1,4 @@
 #!/usr/bin/env python
-# Autoindex.py
-#
-#   Copyright (C) 2013 Diamond Light Source, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# Autoindex from a prepared spot list, from a previous run of Findspots. This
-# needs to handle the cases where:
-#
-# - unit cell / symmetry are unknown
-# - unit cell / symmetry are known (or at least asserted)
-#
-# third case (symmetry known but unit cell not) will be handled at the higher
-# level.
 
 from __future__ import absolute_import, division, print_function
 
@@ -52,7 +37,6 @@ def Autoindex(DriverType=None):
             return
 
         def select_images(self, fp):
-            from xia2.Handlers.Streams import Debug
             from xia2.Modules.Indexer.IndexerSelectImages import (
                 index_select_images_lone,
             )
