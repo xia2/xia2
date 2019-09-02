@@ -1,33 +1,8 @@
 #!/usr/bin/env python
-# LabelitDistl.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 2nd June 2006
-#
-# A wrapper for labelit.distl - this will provide functionality to:
-#
-# Looking for ice rings.
-# Screening the images.
-#
-# The output looks like:
-#
-#                     File : 12287_1_E1_001.img
-#               Spot Total :   1568
-#      In-Resolution Total :   1421
-#    Good Bragg Candidates :   1135
-#                Ice Rings :      2
-#      Method 1 Resolution :   1.78
-#      Method 2 Resolution :   1.90
-#        Maximum unit cell :  242.8
-#%Saturation, Top 50 Peaks :  14.35
 
 from __future__ import absolute_import, division, print_function
 
 import os
-import sys
 
 from xia2.Driver.DriverFactory import DriverFactory
 
@@ -125,19 +100,3 @@ def LabelitDistl(DriverType=None):
             return self._statistics[os.path.split(image)[-1]]
 
     return LabelitDistlWrapper()
-
-
-if __name__ == "__main__":
-
-    # run a demo test
-
-    l = LabelitDistl()
-    for image in sys.argv[1:]:
-        l.add_image(image)
-
-    l.distl()
-
-    for image in sys.argv[1:]:
-        stats = l.get_statistics(image)
-
-        print(image, stats["spots_good"], stats["spots"])

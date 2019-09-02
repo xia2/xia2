@@ -1,33 +1,4 @@
 #!/usr/bin/env python
-# LabelitStats_distl.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 2nd June 2006
-#
-# A wrapper for labelit.stats_distl - this will provide functionality to:
-#
-# Looking for ice rings.
-# Screening the images.
-#
-# The output looks like:
-#
-#                     File : 12287_1_E1_001.img
-#               Spot Total :   1568
-#      In-Resolution Total :   1421
-#    Good Bragg Candidates :   1135
-#                Ice Rings :      2
-#      Method 1 Resolution :   1.78
-#      Method 2 Resolution :   1.90
-#        Maximum unit cell :  242.8
-#%Saturation, Top 50 Peaks :  14.35
-#
-# Based on the output of the last Distl run.
-#
-# The output should be identical to the last labelit.distl run.
-# Note that this does not take any image as input
 
 from __future__ import absolute_import, division, print_function
 
@@ -110,20 +81,3 @@ def LabelitStats_distl(DriverType=None):
             return self._statistics[os.path.split(image)[-1]]
 
     return LabelitStats_distlWrapper()
-
-
-if __name__ == "__main__":
-
-    # run a demo test
-
-    l = LabelitStats_distl()
-    l.stats_distl()
-
-    stats = l.get_statistics("12287_1_E1_001.img")
-
-    print(
-        "Fraction of good spots: %4.2f"
-        % (float(stats["spots_good"]) / float(stats["spots"]))
-    )
-    print("Ice rings:              %d" % stats["ice_rings"])
-    print("Resolutions:            %f  %f" % (stats["resol_one"], stats["resol_two"]))

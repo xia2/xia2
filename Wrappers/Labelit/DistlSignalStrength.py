@@ -1,21 +1,7 @@
 #!/usr/bin/env python
-# DistlSignalStrength.py
-#   Copyright (C) 2010 Diamond Light Source, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 11th May 2010
-#
-# A wrapper for the replacement for labelit.distl - distl.signal_strength.
-# This includes the added ability to get a list of the spot positions on
-# the image. This can in turn replace printpeaks.
-#
-# N.B. this is only included in more recent versions of Labelit.
 
 from __future__ import absolute_import, division, print_function
 
-import sys
 
 from xia2.Driver.DriverFactory import DriverFactory
 
@@ -129,16 +115,3 @@ def DistlSignalStrength(DriverType=None):
             return self._peaks
 
     return DistlSignalStrengthWrapper()
-
-
-if __name__ == "__main__":
-
-    if len(sys.argv) < 2:
-        raise RuntimeError("%s image" % sys.argv[0])
-
-    d = DistlSignalStrength()
-    d.set_image(sys.argv[1])
-    peaks = d.find_peaks()
-
-    for m in peaks:
-        print("%6.1f %6.1f %6.1f" % m)

@@ -1,18 +1,7 @@
 #!/usr/bin/env python
-# DistlSweepStrength.py
-#   Copyright (C) 2013 Diamond Light Source, Richard Gildea
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 11th June 2013
-#
-# A wrapper for the replacement for distl.sweep_strength.
+
 
 from __future__ import absolute_import, division, print_function
-
-import os
-import sys
 
 import libtbx.phil
 from spotfinder.command_line import sweep_strength
@@ -107,19 +96,3 @@ def DistlSweepStrength(DriverType=None, params=None):
             print("".join(output))
 
     return DistlSweepStrengthWrapper()
-
-
-if __name__ == "__main__":
-
-    if len(sys.argv) < 2:
-        raise RuntimeError("%s image" % sys.argv[0])
-
-    print("%s ... %s" % (sys.argv[1], sys.argv[-1]))
-
-    d = DistlSweepStrength()
-    for arg in sys.argv[1:]:
-        if os.path.isfile(arg):
-            d.set_image(arg)
-        else:
-            d.add_command_line(arg)
-    d.run()

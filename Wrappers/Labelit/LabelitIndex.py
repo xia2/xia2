@@ -1,24 +1,10 @@
 #!/usr/bin/env python
-# LabelitIndex.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 2nd June 2006
-#
-# A wrapper for labelit.index - this will provide functionality to:
-#
-# Decide the beam centre.
-# Index the lattce.
-#
 
 from __future__ import absolute_import, division, print_function
 
 import math
 import os
 import shutil
-import sys
 
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Streams import Chatter
@@ -367,12 +353,3 @@ def LabelitIndex(DriverType=None, indxr_print=True):
             return self._mosflm_detector_distance
 
     return LabelitIndexWrapper()
-
-
-if __name__ == "__main__":
-
-    indexer = LabelitIndex()
-    for filename in sys.argv[1:]:
-        indexer.add_image(filename)
-    indexer.run()
-    print("".join(indexer.get_all_output()))
