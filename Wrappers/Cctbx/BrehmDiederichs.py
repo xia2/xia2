@@ -1,12 +1,4 @@
 #!/usr/bin/env python
-# BrehmDiederichs.py
-#
-#   Copyright (C) 2014 Diamond Light Source, Richard Gildea
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# Wrapper for cctbx.brehm_diederichs command.
 
 from __future__ import absolute_import, division, print_function
 
@@ -72,14 +64,3 @@ def BrehmDiederichs(DriverType=None):
             return
 
     return BrehmDiederichsWrapper()
-
-
-if __name__ == "__main__":
-    import sys
-
-    bd = BrehmDiederichs()
-    bd.set_input_filenames(sys.argv[1:])
-    bd.run()
-    reindexing_dict = bd.get_reindexing_dict()
-    for f, cb_op in reindexing_dict.iteritems():
-        print(f, cb_op)
