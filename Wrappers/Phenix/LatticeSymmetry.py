@@ -1,24 +1,6 @@
 #!/usr/bin/env python
-# LatticeSymmetry.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# A wrapper for the CCTBX jiffy program iotbx.lattice_symmetry which is
-# used like:
-#
-# iotbx.lattice_symmetry --unit-cell=a,b,c,alpha,beta,gamma --space-group=sg
-#
-# And gives a list of possible spacegroup / unit cell / reindex operators
-# for other likely lattices. Last is always P1 (P-1 strictly).
-#
-# 19 November 2007
-#
 
 from __future__ import absolute_import, division, print_function
-
-import sys
 
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Syminfo import Syminfo
@@ -232,18 +214,3 @@ def LatticeSymmetry(DriverType=None):
             return cell, reindex.replace("*", "")
 
     return LatticeSymmetryWrapper()
-
-
-if __name__ == "__main__":
-
-    ls = LatticeSymmetry()
-    ls.set_lattice("aP")
-    ls.set_cell(tuple(map(float, sys.argv[1:7])))
-    ls.generate()
-
-    lattices = ls.get_lattices()
-
-    for lattice in lattices:
-        print(
-            "%s %.3f %.3f %.3f %.3f %.3f %.3f" % tuple([lattice] + ls.get_cell(lattice))
-        )
