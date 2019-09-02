@@ -1,19 +1,8 @@
 #!/usr/bin/env python
-# Scaleit.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 27th October 2006
-#
-# A wrapper for the CCP4 program scaleit, for use when scaling together
-# multiple data sets from a single crystal.
 
 from __future__ import absolute_import, division, print_function
 
 import os
-import sys
 
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
 from xia2.Driver.DriverFactory import DriverFactory
@@ -236,37 +225,3 @@ def Scaleit(DriverType=None):
             return self._statistics
 
     return ScaleitWrapper()
-
-
-if __name__ == "__main__":
-    s = Scaleit()
-
-    if len(sys.argv) == 1:
-
-        hklin = os.path.join(
-            os.environ["X2TD_ROOT"],
-            "Test",
-            "UnitTest",
-            "Wrappers",
-            "Scaleit",
-            "TS03_INTER_RD.mtz",
-        )
-
-    else:
-
-        hklin = sys.argv[1]
-
-    s.set_hklin(hklin)
-    s.set_hklout("junk.mtz")
-    s.set_anomalous(True)
-
-    print(s.find_columns())
-
-    s.scaleit()
-
-    stats = s.get_statistics()
-
-    print(stats["b_factor"])
-
-    if "max_difference" in stats:
-        print(stats["max_difference"])

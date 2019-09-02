@@ -1,19 +1,8 @@
 #!/usr/bin/env python
-# Ctruncate.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 26th October 2006
-#
-# A wrapper for the CCP4 program Ctruncate, which calculates F's from
-# I's and gives a few useful statistics about the data set.
 
 from __future__ import absolute_import, division, print_function
 
 import os
-import sys
 
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Citations import Citations
@@ -206,13 +195,3 @@ def Ctruncate(DriverType=None):
             return self._loggraph
 
     return CtruncateWrapper()
-
-
-if __name__ == "__main__":
-
-    ctruncate = Ctruncate()
-    ctruncate.set_hklin(sys.argv[1])
-    ctruncate.set_hklout(sys.argv[2])
-    ctruncate.truncate()
-
-    print(ctruncate.get_nref_in(), ctruncate.get_nref_out(), ctruncate.get_nabsent())

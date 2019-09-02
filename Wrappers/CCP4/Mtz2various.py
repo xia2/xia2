@@ -1,20 +1,8 @@
 #!/usr/bin/env python
-# Mtz2various.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 27th October 2006
-#
-# A wrapper for the CCP4 program mtz2various, for converting mtz files
-# to .sca format.
-#
 
 from __future__ import absolute_import, division, print_function
 
 import os
-import sys
 
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
 from xia2.Driver.DriverFactory import DriverFactory
@@ -114,13 +102,3 @@ def Mtz2various(DriverType=None):
                     pass
 
     return Mtz2variousWrapper()
-
-
-if __name__ == "__main__":
-    # then run a test...
-
-    for hklin in sys.argv[1:]:
-        m2v = Mtz2various()
-        m2v.set_hklin(hklin)
-        m2v.set_hklout("%s.sca" % hklin[:-4])
-        m2v.convert()

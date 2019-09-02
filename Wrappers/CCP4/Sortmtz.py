@@ -1,13 +1,4 @@
 #!/usr/bin/env python
-# Sortmtz.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 5th June 2006
-#
-# A wrapper for the CCP4 program sortmtz.
 
 from __future__ import absolute_import, division, print_function
 
@@ -15,7 +6,6 @@ import os
 
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
 from xia2.Driver.DriverFactory import DriverFactory
-from xia2.Handlers.Streams import Chatter
 
 
 def Sortmtz(DriverType=None):

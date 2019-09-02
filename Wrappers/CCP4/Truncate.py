@@ -1,24 +1,13 @@
 #!/usr/bin/env python
-# Truncate.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 26th October 2006
-#
-# A wrapper for the CCP4 program Truncate, which calculates F's from
-# I's and gives a few useful statistics about the data set.
 
 from __future__ import absolute_import, division, print_function
 
 import os
-import sys
 
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Streams import Debug
 from xia2.lib.bits import transpose_loggraph
 from xia2.Wrappers.CCP4.Ctruncate import Ctruncate
 
@@ -213,13 +202,3 @@ def Truncate(DriverType=None):
             return nref_in, nref_out
 
     return TruncateWrapper()
-
-
-if __name__ == "__main__":
-
-    truncate = Truncate()
-    truncate.set_hklin(sys.argv[1])
-    truncate.set_hklout(sys.argv[2])
-    truncate.truncate()
-
-    print(truncate.get_nref_in(), truncate.get_nref_out(), truncate.get_nabsent())

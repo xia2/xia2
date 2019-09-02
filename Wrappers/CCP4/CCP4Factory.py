@@ -1,14 +1,4 @@
 #!/usr/bin/env python
-# CCP4Factory.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 12/APR/07
-#
-# A factory for CCP4 program wrappers.
-#
 
 from __future__ import absolute_import, division, print_function
 
@@ -25,7 +15,6 @@ from xia2.Wrappers.CCP4.Mtz2various import Mtz2various as _Mtz2various
 from xia2.Wrappers.CCP4.Mtzdump import Mtzdump as _Mtzdump
 from xia2.Wrappers.CCP4.Pointless import Pointless as _Pointless
 from xia2.Wrappers.CCP4.Reindex import Reindex as _Reindex
-from xia2.Wrappers.CCP4.Scaleit import Scaleit as _Scaleit
 from xia2.Wrappers.CCP4.Sortmtz import Sortmtz as _Sortmtz
 from xia2.Wrappers.CCP4.Truncate import Truncate as _Truncate
 from xia2.Wrappers.Dials.Symmetry import DialsSymmetry as _DialsSymmetry

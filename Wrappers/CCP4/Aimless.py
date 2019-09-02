@@ -1,15 +1,4 @@
 #!/usr/bin/env python
-# Aimless.py
-#   Copyright (C) 2011 Diamond Light Source, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 31st August 2011
-#
-# A wrapper for the CCP4 program Aimless, for scaling & merging reflections.
-# This is a replacement for the more venerable program Scala, and shares the
-# same interface as the Scala wrapper. Mostly.
 
 from __future__ import absolute_import, division, print_function
 
@@ -876,31 +865,3 @@ if __name__ == "__output_main__":
         dataset = summary[k]
         for property in dataset.keys():
             print(k, property, dataset[property])
-
-
-if __name__ == "__main__":
-
-    s = Aimless()
-
-    hklin = "TS00_13185_sorted_INFL.mtz"
-    hklout = "TS00_13185_merged_INFL.mtz"
-
-    s.set_hklin(hklin)
-    s.set_hklout(hklout)
-
-    s.set_anomalous()
-    s.set_onlymerge()
-    s.merge()
-
-    s.write_log_file("merge.log")
-
-    results = s.parse_ccp4_loggraph()
-
-    print("The following loggraphs were found")
-    for k in results.keys():
-        print(k)
-
-    summary = s.get_summary()
-
-    for k in summary.keys():
-        print(k, summary[k])

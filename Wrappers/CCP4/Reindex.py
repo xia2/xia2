@@ -1,18 +1,4 @@
 #!/usr/bin/env python
-# Reindex.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 5th June 2006
-#
-# A wrapper for the CCP4 program reindex.
-#
-# Provides:
-#
-# Reindexing functionality for MTZ formatted reflection files.
-#
 
 from __future__ import absolute_import, division, print_function
 
@@ -189,20 +175,3 @@ def Reindex(DriverType=None):
             return "OK"
 
     return ReindexWrapper()
-
-
-if __name__ == "__main__":
-    # run some tests
-
-    hklin = os.path.join(
-        os.environ["XIA2_ROOT"], "Data", "Test", "Mtz", "12287_1_E1_1_10.mtz"
-    )
-
-    r = Reindex()
-    r.set_hklin(hklin)
-    r.set_hklout("null.mtz")
-
-    r.set_operator("h,k,l")
-    r.set_spacegroup("P 4 2 2")
-
-    print(r.reindex())

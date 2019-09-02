@@ -1,22 +1,9 @@
 #!/usr/bin/env python
-# Pointless.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 2nd June 2006
-#
-# A wrapper for the latest version of Phil Evans' program pointless - a
-# program for deciding the correct pointgroup for diffraction data and also
-# for computing reindexing operations to map one (merged or unmerged) data
-# set onto a merged reference set.
 
 from __future__ import absolute_import, division, print_function
 
 import math
 import os
-import sys
 import xml.dom.minidom
 
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
@@ -704,15 +691,3 @@ def Pointless(DriverType=None):
             return self._possible_lattices
 
     return PointlessWrapper()
-
-
-if __name__ == "__main__":
-    p = Pointless()
-
-    hklin = sys.argv[1]
-
-    p.set_hklin(hklin)
-
-    cell = p.sum_mtz("foo.hkl")
-
-    print(cell)

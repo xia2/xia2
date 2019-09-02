@@ -1,27 +1,8 @@
 #!/usr/bin/env python
-# MosflmHelpers.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 23rd June 2006
-#
-# Helper functions which will make working with Mosflm in detail a little
-# easier... for instance parsing the rather extensive output file to
-# decide if the integration went well or no.
-#
-# FIXME 19/OCT/06 need to be able to parse the integration log to be able to
-#                 decide if it went ok for all images.
-#
-# FIXME 19/OCT/06 would also be useful to be able to get an estimate of
-#                 the "useful" integration limit (e.g. where the individual
-#                 reflections have an I/sigma ~ 1)
 
 from __future__ import absolute_import, division, print_function
 
 import math
-import sys
 
 
 def detector_class_to_mosflm(detector_class):
@@ -572,22 +553,3 @@ def _parse_summary_file(filename):
         result[image].update(d)
 
     return result
-
-
-if __name__ == "__main__":
-
-    result = {}
-
-    for argv in sys.argv[1:]:
-        result.update(_parse_summary_file(argv))
-
-    for image in sorted(result):
-        print(
-            "%3d %.2f %.2f %.2f"
-            % (
-                image,
-                result[image].get("phix", 0),
-                result[image].get("phiy", 0),
-                result[image].get("phiz", 0),
-            )
-        )

@@ -1,16 +1,8 @@
 #!/usr/bin/env python
-# Sortmtz.py
-#   Copyright (C) 2014 Diamond Light Source, Richard Gildea
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# A wrapper for the CCP4 program Blend.
 
 from __future__ import absolute_import, division, print_function
 
 import os
-import sys
 
 from xia2.Driver.DriverFactory import DriverFactory
 
@@ -319,14 +311,3 @@ def clusters_as_scipy_linkage_matrix(clusters):
         datasets_to_cluster_id[dataset_ids] = cluster_id
 
     return linkage_matrix
-
-
-if __name__ == "__main__":
-    b = Blend()
-    for arg in sys.argv[1:]:
-        b.add_hklin(arg)
-    b.analysis()
-    print("".join(b.get_all_output()))
-    print(b.get_analysis())
-    print(b.get_summary())
-    print(b.get_clusters())

@@ -1,27 +1,4 @@
 #!/usr/bin/env python
-# Cad.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 26th October 2006
-#
-# A wrapper for the CCP4 program Cad, for merging multiple reflection files
-# into a single reflection file, e.g. in preparation for phasing.
-#
-# This will take a single HKLOUT file and a list of HKLIN files, c/f the
-# Sortmtz wrapper implementation.
-#
-# Ok, this Cad wrapper will handle two cases. The first is relabeling all
-# columns by e.g. appending a new suffix to the name (this should default
-# to the dname I guess) and setting the unit cell to some sanctioned value.
-#
-# The second aspect to this is the merging of the reflection files into
-# on big one.
-#
-# This should almost be implemented as two wrappers - oh well! Aha - implement
-# two methods - merge & update - this can handle the two distinct use cases.
 
 from __future__ import absolute_import, division, print_function
 
@@ -32,11 +9,6 @@ from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Streams import Debug
 from xia2.Modules.FindFreeFlag import FindFreeFlag
 from xia2.Wrappers.CCP4.Mtzdump import Mtzdump
-
-# locally required wrappers
-
-
-# external functionality
 
 
 def Cad(DriverType=None):
@@ -339,24 +311,3 @@ def Cad(DriverType=None):
             return self.get_ccp4_status()
 
     return CadWrapper()
-
-
-if __name__ == "__main__":
-    # the run a test!
-
-    c = Cad()
-    c.add_hklin(
-        os.path.join(
-            os.environ["X2TD_ROOT"],
-            "Test",
-            "UnitTest",
-            "Wrappers",
-            "Cad",
-            "TS01_12847_truncated.mtz",
-        )
-    )
-    c.set_new_suffix("NATIVE")
-    average_unit_cell = (228.21, 52.61, 44.11, 90.00, 100.64, 90.00)
-    c.set_new_cell(average_unit_cell)
-    c.set_hklout("bar.mtz")
-    c.update()

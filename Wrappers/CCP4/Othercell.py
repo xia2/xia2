@@ -1,13 +1,4 @@
 #!/usr/bin/env python
-# Othercell.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# A program wrapper for Phil Evan's program othercell (a part of
-# pointless) for providing other reasonable lattice solutions
-# given a unit cell and lattice type (pcif)
 
 from __future__ import absolute_import, division, print_function
 
@@ -125,23 +116,3 @@ def Othercell(DriverType=None):
             return self._reindex_ops[lattice]
 
     return OthercellWrapper()
-
-
-if __name__ == "__main__":
-
-    o = Othercell()
-
-    # o.set_cell([43.62, 52.27, 116.4, 103, 100.7, 90.03])
-    # o.set_lattice('p')
-
-    o.set_cell([198.61, 198.61, 243.45, 90.00, 90.00, 120.00])
-    o.set_lattice("r")
-
-    o.generate()
-
-    # need to add some checks in here that everything went fine...
-    # for line in o.get_all_output():
-    # print line[:-1]
-
-    o.get_cell("aP")
-    o.get_reindex_op("aP")

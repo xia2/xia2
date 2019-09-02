@@ -1,24 +1,10 @@
 #!/usr/bin/env python
-# Chooch.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# A wrapper for Chooch, for use in deciding what has happened during
-# collection of experimental phasing data, and also for helping with
-# MAD experiments.
-#
-# 18th December 2006
-#
-#
 
 from __future__ import absolute_import, division, print_function
 
 import math
 import os
 import string
-import sys
 
 from xia2.Driver.DriverFactory import DriverFactory
 
@@ -173,49 +159,3 @@ def Chooch(DriverType=None):
             return name.upper()
 
     return ChoochWrapper()
-
-
-if __name__ == "__main__":
-
-    if len(sys.argv) < 2:
-
-        c = Chooch()
-        c.set_scan(
-            os.path.join(
-                os.environ["XIA2_ROOT"], "Data", "Test", "Scans", "TM0486-9172-Se.raw"
-            )
-        )
-        c.set_atom("se")
-        c.scan()
-
-        edges = c.get_edges()
-
-        for key in edges.keys():
-            print(
-                "%s %6.2f %6.2f %8.6f"
-                % (key, edges[key]["fp"], edges[key]["fpp"], edges[key]["wave"])
-            )
-
-    else:
-        for scan in sys.argv[1:]:
-
-            print(os.path.split(scan)[-1])
-
-            try:
-
-                c = Chooch()
-                c.set_scan(scan)
-                c.set_atom("se")
-                c.scan()
-
-                edges = c.get_edges()
-
-                for key in edges.keys():
-                    print(
-                        "%s %6.2f %6.2f %8.6f"
-                        % (key, edges[key]["fp"], edges[key]["fpp"], edges[key]["wave"])
-                    )
-            except Exception as e:
-                print("failed (%s)" % str(e))
-
-            print("")

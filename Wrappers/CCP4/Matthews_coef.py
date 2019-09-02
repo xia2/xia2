@@ -1,19 +1,4 @@
 #!/usr/bin/env python
-# Matthews_coef.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 5th June 2006
-#
-# An example of an matthews_coef CCP4 program wrapper, which can be used
-# as the base for other wrappers.
-#
-# Provides:
-#
-# Solvent contents given a number of molecules, a sequence length and a unit
-# cell and symmetry.
 
 from __future__ import absolute_import, division, print_function
 
@@ -98,19 +83,3 @@ def Matthews_coef(DriverType=None):
             return self._solvent
 
     return Matthews_coefWrapper()
-
-
-if __name__ == "__main__":
-
-    # then run a test!
-
-    m = Matthews_coef()
-
-    m.set_spacegroup("P43212")
-    m.set_cell((96.0, 96.0, 36.75, 90.0, 90.0, 90.0))
-    m.set_nmol(2)
-    m.set_nres(82)
-
-    m.compute_solvent()
-
-    print(m.get_solvent())
