@@ -452,15 +452,3 @@ class XInfo(object):
                 self._crystals[crystal]["user_cell"] = tuple(
                     map(float, record.split()[1:])
                 )
-
-
-if __name__ == "__main__":
-    import os
-
-    xi = XInfo(
-        os.path.join(
-            os.environ["XIA2_ROOT"], "Data", "Test", "Xinfo", "1vrm-post-scale.xinfo"
-        )
-    )
-
-    print(xi)
