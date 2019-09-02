@@ -1,17 +1,6 @@
 #!/usr/bin/env cctbx.python
-# Merger.py
-#
-#   Copyright (C) 2013 Diamond Light Source, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# A wrapper for the new Resolutionizer module, using the PythonDriver to get a
-# nice subprocess...
 
 from __future__ import absolute_import, division, print_function
-
-import sys
 
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Streams import Debug
@@ -131,13 +120,3 @@ def Merger(DriverType=None):
                     self._resolution_misigma = float(record.split()[-1])
 
     return MergerWrapper()
-
-
-if __name__ == "__main__":
-
-    m = Merger()
-    m.set_hklin(sys.argv[1])
-    m.run()
-    print("Resolutions:")
-    print("I/sig:      %.2f" % m.get_resolution_isigma())
-    print("Mn(I/sig):  %.2f" % m.get_resolution_misigma())

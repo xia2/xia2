@@ -1,39 +1,4 @@
 #!/usr/bin/env python
-# Diffdump.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 14th June 2006
-#
-# A wrapper for the program "diffdump" derived from the DiffractionImage
-# code in XIA1 by Francois Remacle.
-#
-# The output looks like...
-#
-# > diffdump 12287_1_E1_001.img
-# Image type : adsc
-# Exposure epoch : Sun Sep 26 14:01:35 2004
-# Exposure time : 5.000000
-# Detector S/N : 445
-# Wavelength : 0.979660
-# Beam center : (105.099998,101.050003)
-# Distance to detector : 170.000000 mm
-# Image Size : (2048 px, 2048 px)
-# Pixel Size : (0.102400 mm, 0.102400 mm)
-# Angle range : 290.000000 -> 291.000000
-# Two Theta value: N/A
-#
-# FIXME this should probably be replaced with a module which uses the
-# swig-python bindings of the DiffractionImage library directly.
-#
-# FIXED 24/NOV/06 before running should check that the file actually
-#                 exists!
-#
-# FIXME 24/NOV/06 if beam centre is 0.0, 0.0 then perhaps reset it to
-#                 the centre of the image.
-#
 
 from __future__ import absolute_import, division, print_function
 
@@ -992,15 +957,3 @@ def Diffdump(DriverType=None):
             return gain
 
     return DiffdumpWrapper()
-
-
-if __name__ == "__main__":
-
-    for image in sys.argv[1:]:
-        p = Diffdump()
-        p.set_image(image)
-
-        header = p.readheader()
-
-        for token in sorted(header):
-            print(token, header[token])

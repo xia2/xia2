@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 # FrenchWilson.py
-#   Copyright (C) 2015 Diamond Light Source, Richard Gildea
 from __future__ import absolute_import, division, print_function
 
 import os
-import sys
 
 from xia2.Driver.DriverFactory import DriverFactory
 
@@ -132,13 +130,3 @@ def FrenchWilson(DriverType=None):
             return self._nabsent
 
     return FrenchWilsonWrapper()
-
-
-if __name__ == "__main__":
-
-    fw = FrenchWilson()
-    fw.set_hklin(sys.argv[1])
-    fw.set_hklout(sys.argv[2])
-    fw.truncate()
-
-    print(fw.get_nref_in(), fw.get_nref_out(), fw.get_nabsent())

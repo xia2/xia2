@@ -1,12 +1,4 @@
 #!/usr/bin/env python
-# Report.py
-#
-#   Copyright (C) 2015 Diamond Light Source, Richard Gildea
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# wrapper for xia2.report
 
 from __future__ import absolute_import, division, print_function
 

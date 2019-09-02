@@ -1,18 +1,8 @@
 #!/usr/bin/env python
-# PrintpeaksMosflm.py
-#   Copyright (C) 2011 Diamond Light Source, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# A replacement for the printpeaks tool and wrapper, using Mosflm.
-#
 from __future__ import absolute_import, division, print_function
 
-import copy
 import math
 import os
-import sys
 
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Experts.FindImages import (
@@ -177,14 +167,3 @@ def PrintpeaksMosflm(DriverType=None):
             return "ok"
 
     return PrintpeaksMosflmWrapper()
-
-
-if __name__ == "__main__":
-    # run a test of some of the new code...
-
-    p = Printpeaks()
-    p.set_image(sys.argv[1])
-    peaks = p.get_maxima()
-
-    for m in peaks:
-        print("%6.1f %6.1f %6.1f" % m)

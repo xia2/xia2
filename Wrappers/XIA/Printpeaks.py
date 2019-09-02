@@ -1,20 +1,8 @@
 #!/usr/bin/env python
-# Printpeaks.py
-#   Copyright (C) 2007 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 29th November 2007
-#
-# A wrapper for the program "printpeaks" derived from the DiffractionImage
-# code in XIA1 by Francois Remacle.
-#
 from __future__ import absolute_import, division, print_function
 
 import math
 import os
-import sys
 
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Wrappers.XIA.Diffdump import Diffdump
@@ -219,14 +207,3 @@ def Printpeaks(DriverType=None):
             return peaks
 
     return PrintpeaksWrapper()
-
-
-if __name__ == "__main__":
-    # run a test of some of the new code...
-
-    p = Printpeaks()
-    p.set_image(sys.argv[1])
-    peaks = p.get_maxima()
-
-    for m in peaks:
-        print("%6.1f %6.1f %6.1f" % m)
