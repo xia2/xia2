@@ -1,12 +1,4 @@
 #!/usr/bin/env python
-# Refine.py
-#
-#   Copyright (C) 2013 Diamond Light Source, Richard Gildea
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# Assign indices to reflection centroids given a crystal model
 
 from __future__ import absolute_import, division, print_function
 

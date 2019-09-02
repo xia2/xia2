@@ -1,12 +1,4 @@
 #!/usr/bin/env python
-# ExportBest.py
-#
-#   Copyright (C) 2016 Diamond Light Source, Richard Gildea
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# Export DIALS integration output in MTZ format.
 
 from __future__ import absolute_import, division, print_function
 

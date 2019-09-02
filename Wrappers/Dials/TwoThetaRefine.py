@@ -1,12 +1,4 @@
 #!/usr/bin/env python
-# TwoThetaRefine.py
-#
-#   Copyright (C) 2013 Diamond Light Source, Richard Gildea
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# Obtain refined unit cell with estimated standard deviations
 
 from __future__ import absolute_import, division, print_function
 

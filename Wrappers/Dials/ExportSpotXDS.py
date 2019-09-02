@@ -1,17 +1,8 @@
 #!/usr/bin/env python
-# ExportSpotXDS.py
-#   Copyright (C) 2013 Diamond Light Source, Richard Gildea
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# A wrapper to handle the dials.spotfinder program.
-#
 
 from __future__ import absolute_import, division, print_function
 
 import os
-import sys
 
 from libtbx import phil
 from xia2.Driver.DriverFactory import DriverFactory
@@ -79,21 +70,3 @@ def ExportSpotXDS(DriverType=None, params=None):
             print("".join(output))
 
     return ExportSpotXDSWrapper(params=params)
-
-
-if __name__ == "__main__":
-    import sys
-    from libtbx.phil import command_line
-
-    args = sys.argv[1:]
-    cmd_line = command_line.argument_interpreter(master_params=master_params)
-    working_phil, files = cmd_line.process_and_fetch(
-        args=args, custom_processor="collect_remaining"
-    )
-    working_phil.show()
-    assert len(files) > 0
-    params = working_phil.extract()
-    export = ExportSpotXDS(params=params)
-    for f in files:
-        export.set_input_data_file(f, open(f, "rb"))
-    export.run()

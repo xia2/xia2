@@ -1,12 +1,4 @@
 #!/usr/bin/env python
-# GenerateMask.py
-#
-#   Copyright (C) 2017 Diamond Light Source, Richard Gildea
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# Generate an image mask for DIALS
 
 from __future__ import absolute_import, division, print_function
 

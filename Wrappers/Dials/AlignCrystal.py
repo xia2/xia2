@@ -1,12 +1,4 @@
 #!/usr/bin/env python
-# AlignCrystal.py
-#
-#   Copyright (C) 2016 Diamond Light Source, Richard Gildea
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# Wrapper for dials.align_crystal.
 
 from __future__ import absolute_import, division, print_function
 

@@ -1,12 +1,4 @@
 #!/usr/bin/env python
-# CheckIndexingSymmetry.py
-#
-#   Copyright (C) 2015 Diamond Light Source, Richard Gildea
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# Wrapper for dials.check_indexing_symmetry
 
 from __future__ import absolute_import, division, print_function
 

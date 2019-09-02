@@ -1,15 +1,4 @@
 #!/usr/bin/env python
-# Aimless.py
-#   Copyright (C) 2011 Diamond Light Source, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 31st August 2011
-#
-# A wrapper for the CCP4 program Aimless, for scaling & merging reflections.
-# This is a replacement for the more venerable program Scala, and shares the
-# same interface as the Scala wrapper. Mostly.
 
 from __future__ import absolute_import, division, print_function
 
@@ -369,22 +358,3 @@ def DialsScale(DriverType=None, decay_correction=None):
             return self._unmerged_reflections
 
     return DialsScaleWrapper()
-
-
-if __name__ == "__main__":
-    import sys
-    from xia2.lib.bits import auto_logfiler
-
-    args = sys.argv[1:]
-    assert len(args) == 2
-    s = DialsScale()
-    auto_logfiler(s)
-
-    s.add_experiments_json(args[0])
-    s.add_reflections_file(args[1])
-    s.set_full_matrix(False)
-    s.set_model("kb")
-
-    s.scale()
-
-    s.write_log_file("scale.log")

@@ -1,13 +1,4 @@
 #!/usr/bin/env python
-# Spotfinder.py
-#
-#   Copyright (C) 2013 Diamond Light Source, Richard Gildea, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# Find spots for autoindexing using the DIALS code; this will probably be
-# renamed to Spotfinder at some point.
 
 from __future__ import absolute_import, division, print_function
 

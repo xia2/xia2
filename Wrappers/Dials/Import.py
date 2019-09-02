@@ -1,12 +1,4 @@
 #!/usr/bin/env python
-# Import.py
-#
-#   Copyright (C) 2013 Diamond Light Source, Richard Gildea, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# Import data into the DIALS models for subsequent analysis
 
 from __future__ import absolute_import, division, print_function
 
@@ -150,19 +142,3 @@ def Import(DriverType=None):
             )
 
     return ImportWrapper()
-
-
-if __name__ == "__main__":
-    import sys
-
-    image_files = sys.argv[1:]
-    assert len(image_files) > 0
-    first_image = image_files[0]
-    importer = Import()
-    importer.setup_from_image(first_image)
-    importer.run()
-    sweep = importer.load_sweep_model()
-    print(sweep.get_detector())
-    print(sweep.get_beam())
-    print(sweep.get_goniometer())
-    print(sweep.get_scan())

@@ -1,12 +1,4 @@
 #!/usr/bin/env python
-# Integrate.py
-#
-#   Copyright (C) 2014 Diamond Light Source, Richard Gildea, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# Integration using DIALS.
 
 from __future__ import absolute_import, division, print_function
 

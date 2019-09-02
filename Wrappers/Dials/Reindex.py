@@ -1,12 +1,4 @@
 #!/usr/bin/env python
-# Reindex.py
-#
-#   Copyright (C) 2014 Diamond Light Source, Richard Gildea, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# Reindex indexing results from DIALS
 
 from __future__ import absolute_import, division, print_function
 

@@ -1,12 +1,4 @@
 #!/usr/bin/env python
-# DetectBlanks.py
-#
-#   Copyright (C) 2016 Diamond Light Source, Richard Gildea
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# Analyse DIALS reflections for blank images
 
 from __future__ import absolute_import, division, print_function
 
@@ -97,19 +89,3 @@ def DetectBlanks(DriverType=None):
                 self._results = json.load(f)
 
     return DetectBlanksWrapper()
-
-
-if __name__ == "__main__":
-    import sys
-
-    image_files = sys.argv[1:]
-    assert len(image_files) > 0
-    first_image = image_files[0]
-    importer = Import()
-    importer.setup_from_image(first_image)
-    importer.run()
-    sweep = importer.load_sweep_model()
-    print(sweep.get_detector())
-    print(sweep.get_beam())
-    print(sweep.get_goniometer())
-    print(sweep.get_scan())

@@ -1,12 +1,4 @@
 #!/usr/bin/env python
-# RefineBravaisSettings.py
-#
-#   Copyright (C) 2014 Diamond Light Source, Richard Gildea, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# Refine result of P1 DIALS indexing in all possible settings; publish results.
 
 from __future__ import absolute_import, division, print_function
 
