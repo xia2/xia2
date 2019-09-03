@@ -31,6 +31,7 @@ def Integrate(DriverType=None):
             self._integrated_reflections = None
             self._integrated_experiments = None
             self._profile_fitting = True
+            self._scan_varying_profile = False
             self._outlier_algorithm = None
             self._background_algorithm = None
             self._phil_file = None
@@ -64,6 +65,12 @@ def Integrate(DriverType=None):
 
         def get_profile_fitting(self):
             return self._profile_fitting
+
+        def set_scan_varying_profile(self, scan_varying_profile):
+            self._scan_varying_profile = scan_varying_profile
+
+        def get_scan_varying_profile(self):
+            return self._scan_varying_profile
 
         def set_background_outlier_algorithm(self, algorithm):
             self._outlier_algorithm = algorithm
@@ -147,6 +154,9 @@ def Integrate(DriverType=None):
             self.add_command_line("output.include_bad_reference=True")
             self.add_command_line("debug.reference.output=True")
             self.add_command_line("profile.fitting=%s" % self._profile_fitting)
+            self.add_command_line(
+                "gaussian_rs.scan_varying=%s" % self._scan_varying_profile
+            )
             if self._new_mosaic:
                 self.add_command_line("sigma_m_algorithm=extended")
             if self._outlier_algorithm is not None:

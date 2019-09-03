@@ -98,6 +98,8 @@ class DialsIntegrater(Integrater):
             profile_fitting = PhilIndex.params.xia2.settings.integration.profile_fitting
             integrate.set_profile_fitting(profile_fitting)
 
+        integrate.set_scan_varying_profile(params.scan_varying_profile)
+
         integrate.set_background_outlier_algorithm(params.background_outlier_algorithm)
         integrate.set_background_algorithm(params.background_algorithm)
         integrate.set_working_directory(self.get_working_directory())
@@ -404,7 +406,11 @@ class DialsIntegrater(Integrater):
         experiments = load.experiment_list(self._intgr_experiments_filename)
         profile = experiments.profiles()[0]
         mosaic = profile.sigma_m()
-        self.set_integrater_mosaic_min_mean_max(mosaic, mosaic, mosaic)
+        try:
+            m_min, m_max, m_mean = mosaic.min_max_mean().as_tuple()
+            self.set_integrater_mosaic_min_mean_max(m_min, m_mean, m_max)
+        except AttributeError as e:
+            self.set_integrater_mosaic_min_mean_max(mosaic, mosaic, mosaic)
 
         Chatter.write(
             "Mosaic spread: %.3f < %.3f < %.3f"

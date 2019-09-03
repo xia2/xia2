@@ -392,6 +392,10 @@ dials
       .type = choice
       .help = "Mosaicity determination method to use"
       .expert_level = 2
+    scan_varying_profile = False
+      .type = bool
+      .help = "Use scan varying profile model in integration"
+      .expert_level = 2
     d_min = None
       .type = float(value_min=0.0)
       .short_caption = "High resolution cutoff for integration"
