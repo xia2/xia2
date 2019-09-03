@@ -25,7 +25,6 @@ from xia2.Applications.xia2_main import (
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Environment import Environment
 from xia2.Handlers.Files import cleanup
-from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Streams import Chatter, Debug
 
 
@@ -53,12 +52,9 @@ def xia2_main(stop_after=None):
     start_time = time.time()
 
     CommandLine = get_command_line()
-    start_dir = Flags.get_starting_directory()
 
     # check that something useful has been assigned for processing...
     xtals = CommandLine.get_xinfo().get_crystals()
-
-    no_images = True
 
     for name in xtals.keys():
         xtal = xtals[name]
@@ -68,8 +64,6 @@ def xia2_main(stop_after=None):
             Chatter.write("-----------------------------------" + "-" * len(name))
             Chatter.write("| No images assigned for crystal %s |" % name)
             Chatter.write("-----------------------------------" + "-" * len(name))
-        else:
-            no_images = False
 
     args = []
 
@@ -187,10 +181,6 @@ def xia2_main(stop_after=None):
             if (i_job % njob) == 0:
                 arg[0].driver_type = default_driver_type
 
-        if mp_params.type == "qsub":
-            method = "sge"
-        else:
-            method = "multiprocessing"
         nproc = mp_params.nproc
         qsub_command = mp_params.qsub_command or "qsub"
         qsub_command = "%s -V -cwd -pe smp %d" % (qsub_command, nproc)
@@ -201,7 +191,6 @@ def xia2_main(stop_after=None):
             process_one_sweep,
             args,
             processes=njob,
-            # method=method,
             method="multiprocessing",
             qsub_command=qsub_command,
             preserve_order=True,
