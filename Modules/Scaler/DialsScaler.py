@@ -615,7 +615,9 @@ pipeline=dials (supported for pipeline=dials-aimless).
         # Find number of dnames (i.e. number of wavelengths)
         dnames_set = OrderedSet()
         experiments = load.experiment_list(self._scaled_experiments)
-        wavelengths = match_wavelengths(experiments).keys()  # in experiments order
+        wavelengths = flex.double(
+            match_wavelengths(experiments).keys()
+        )  # in experiments order
         for si in sweep_infos:
             dnames_set.add(
                 si.get_project_info()[2]
