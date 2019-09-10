@@ -30,6 +30,7 @@ from xia2.Wrappers.Dials.TwoThetaRefine import TwoThetaRefine
 from xia2.Handlers.Syminfo import Syminfo
 from dxtbx.serialize import load
 from dials.util.batch_handling import calculate_batch_offsets
+from dials.util.export_mtz import match_wavelengths
 from dials.array_family import flex
 import dials.util.version
 from cctbx.sgtbx import lattice_symmetry_group, space_group_info
@@ -613,12 +614,13 @@ pipeline=dials (supported for pipeline=dials-aimless).
 
         # Find number of dnames (i.e. number of wavelengths)
         dnames_set = OrderedSet()
-        wavelengths = flex.double()
+        experiments = load.experiment_list(self._scaled_experiments)
+        wavelengths = match_wavelengths(experiments).keys()  # in experiments order
         for si in sweep_infos:
-            dnames_set.add(si.get_project_info()[2])
-            wavelength = si.get_integrater().get_wavelength()
-            if wavelength not in wavelengths:
-                wavelengths.append(wavelength)
+            dnames_set.add(
+                si.get_project_info()[2]
+            )  # sweep info in same order as experiments
+        assert len(wavelengths) == len(dnames_set)
 
         if len(dnames_set) > 1:
             self._scalr_scaled_refl_files = {}
