@@ -13,7 +13,7 @@ def ExportBest(DriverType=None):
     class ExportBestWrapper(DriverInstance.__class__):
         def __init__(self):
             DriverInstance.__class__.__init__(self)
-            self.set_executable("dials.export")
+            self.set_executable("dials.export_best")
 
             self._experiments_filename = None
             self._reflections_filename = None
@@ -40,12 +40,11 @@ def ExportBest(DriverType=None):
         def run(self):
             from xia2.Handlers.Streams import Debug
 
-            Debug.write("Running dials.export")
+            Debug.write("Running dials.export_best")
 
             self.clear_command_line()
             self.add_command_line("experiments=%s" % self._experiments_filename)
             self.add_command_line("reflections=%s" % self._reflections_filename)
-            self.add_command_line("format=best")
             self.add_command_line("best.prefix=%s" % self._prefix)
             self.start()
             self.close_wait()
