@@ -7,6 +7,7 @@ import os
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import Chatter, Debug
+from libtbx import Auto
 
 
 def DialsScale(DriverType=None, decay_correction=None):
@@ -244,13 +245,23 @@ def DialsScale(DriverType=None, decay_correction=None):
 
             if self._model is not None:
                 self.add_command_line("model=%s" % self._model)
+            if self._absorption_correction:
+                if self._model in (None, Auto, "physical"):
+                    self.add_command_line("physical.absorption_correction=True")
+                elif self._model == "array":
+                    self.add_command_line("array.absorption_correction=True")
+            if self._bfactor:
+                if self._model in (None, Auto, "physical"):
+                    self.add_command_line("physical.decay_correction=True")
+                elif self._model == "array":
+                    self.add_command_line("array.decay_correction=True")
+
             self.add_command_line("full_matrix=%s" % self._full_matrix)
             if self._spacing:
                 self.add_command_line("scale_interval=%g" % self._spacing)
             self.add_command_line("optimise_errors=%s" % self._optimise_errors)
             self.add_command_line("outlier_rejection=%s" % self._outlier_rejection)
 
-            self.add_command_line("absorption_term=%s" % self._absorption_correction)
             if self._absorption_correction and self._lmax is not None:
                 self.add_command_line("lmax=%i" % self._lmax)
 
@@ -260,7 +271,6 @@ def DialsScale(DriverType=None, decay_correction=None):
             if self._partiality_cutoff is not None:
                 self.add_command_line("partiality_cutoff=%s" % self._partiality_cutoff)
 
-            self.add_command_line("decay_term=%s" % self._bfactor)
             if self._bfactor and self._brotation is not None:
                 self.add_command_line("decay_interval=%g" % self._brotation)
 
