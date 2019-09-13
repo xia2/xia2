@@ -89,7 +89,6 @@ def DialsScale(DriverType=None, decay_correction=None):
             self._unmerged_reflections = None
             self._merged_reflections = None
             self._best_unit_cell = None
-            self._export_mtz_only = False
 
         # getter and setter methods
 
@@ -217,9 +216,6 @@ def DialsScale(DriverType=None, decay_correction=None):
         def set_best_unit_cell(self, unit_cell):
             self._best_unit_cell = unit_cell
 
-        def set_export_mtz_only(self):
-            self._export_mtz_only = True
-
         def scale(self):
             """Actually perform the scaling."""
 
@@ -273,9 +269,6 @@ def DialsScale(DriverType=None, decay_correction=None):
 
             if self._bfactor and self._brotation is not None:
                 self.add_command_line("decay_interval=%g" % self._brotation)
-
-            if self._export_mtz_only:
-                self.add_command_line("export_mtz_only=True")
 
             # next any 'generic' parameters
 
@@ -356,8 +349,7 @@ def DialsScale(DriverType=None, decay_correction=None):
 
             Debug.write("dials.scale status: OK")
 
-            if not self._export_mtz_only:
-                Chatter.write("Completed a round of scaling using dials.scale")
+            Chatter.write("Completed a round of scaling using dials.scale")
             return "OK"
 
         def get_scaled_reflection_files(self):
