@@ -50,6 +50,9 @@ class DialsIntegrater(Integrater):
         self._intgr_integrated_reflections = None
         self._intgr_experiments_filename = None
 
+        if PhilIndex.params.xia2.settings.pipeline in ["dials", "dials-full"]:
+            self.set_output_format("pickle")
+
     # overload these methods as we don't want the resolution range
     # feeding back... aha - but we may want to assign them
     # from outside!
