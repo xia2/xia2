@@ -880,7 +880,9 @@ class CommonScaler(Scaler):
                 ntot = scale_params.free_total
 
                 # need to get a fraction, so...
-                nref = MtzUtils.nref_from_mtz(hklin)
+                nref = MtzUtils.nref_from_mtz(
+                    self._scalr_scaled_reflection_files["mtz_merged"]
+                )
                 free_fraction = float(ntot) / float(nref)
             else:
                 free_fraction = scale_params.free_fraction
