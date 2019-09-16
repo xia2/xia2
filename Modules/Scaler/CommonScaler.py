@@ -981,7 +981,13 @@ class CommonScaler(Scaler):
             Debug.write("Local scaling failed")
 
     def _estimate_resolution_limit(
-        self, hklin, batch_range=None, use_isigma=True, use_misigma=True
+        self,
+        hklin,
+        batch_range=None,
+        use_isigma=True,
+        use_misigma=True,
+        reflections=None,
+        experiments=None,
     ):
         params = PhilIndex.params.xia2.settings.resolution
         m = Merger()
@@ -989,7 +995,12 @@ class CommonScaler(Scaler):
         from xia2.lib.bits import auto_logfiler
 
         auto_logfiler(m)
-        m.set_hklin(hklin)
+        if hklin:
+            m.set_hklin(hklin)
+        else:
+            assert reflections and experiments
+            m.set_reflections(reflections)
+            m.set_experiments(experiments)
         m.set_limit_rmerge(params.rmerge)
         m.set_limit_completeness(params.completeness)
         m.set_limit_cc_half(params.cc_half)
@@ -1484,7 +1495,13 @@ class CommonScaler(Scaler):
                 )
 
     def assess_resolution_limits(
-        self, hklin, user_resolution_limits, use_isigma=True, use_misigma=True
+        self,
+        hklin,
+        user_resolution_limits,
+        use_isigma=True,
+        use_misigma=True,
+        experiments=None,
+        reflections=None,
     ):
         """Assess resolution limits from hklin and sweep batch info"""
         # Implemented for DialsScaler and CCP4ScalerA
@@ -1511,12 +1528,22 @@ class CommonScaler(Scaler):
                 )
                 continue
 
-            limit, reasoning = self._estimate_resolution_limit(
-                hklin,
-                batch_range=(start, end),
-                use_isigma=use_isigma,
-                use_misigma=use_misigma,
-            )
+            if hklin:
+                limit, reasoning = self._estimate_resolution_limit(
+                    hklin,
+                    batch_range=(start, end),
+                    use_isigma=use_isigma,
+                    use_misigma=use_misigma,
+                )
+            else:
+                limit, reasoning = self._estimate_resolution_limit(
+                    hklin=None,
+                    batch_range=(start, end),
+                    use_isigma=use_isigma,
+                    use_misigma=use_misigma,
+                    reflections=reflections,
+                    experiments=experiments,
+                )
 
             if PhilIndex.params.xia2.settings.resolution.keep_all_reflections:
                 suggested = limit

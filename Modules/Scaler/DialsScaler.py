@@ -567,9 +567,11 @@ pipeline=dials (supported for pipeline=dials-aimless).
         ### Calculate the resolution limit and set done False if applicable
 
         highest_suggested_resolution = self.assess_resolution_limits(
-            self._scaler.get_unmerged_reflection_file(),
-            user_resolution_limits,
+            hklin=None,  # self._scaler.get_unmerged_reflection_file(),
+            user_resolution_limits=user_resolution_limits,
             use_misigma=False,
+            reflections=self._scaled_reflections,
+            experiments=self._scaled_experiments,
         )
 
         if not self.get_scaler_done():
