@@ -14,10 +14,12 @@ def Merger(DriverType=None):
     class MergerWrapper(DriverInstance.__class__):
         def __init__(self):
             DriverInstance.__class__.__init__(self)
-            self.set_executable("xia2.resolutionizer")
+            self.set_executable("dials.resolutionizer")
 
             # inputs
             self._hklin = None
+            self._reflections = None
+            self._experiments = None
             self._limit_rmerge = None
             self._limit_completeness = None
             self._limit_cc_half = None
@@ -35,6 +37,12 @@ def Merger(DriverType=None):
             self._resolution_cc_half = None
             self._resolution_isigma = None
             self._resolution_misigma = None
+
+        def set_reflections(self, filename):
+            self._reflections = filename
+
+        def set_experiments(self, filename):
+            self._experiments = filename
 
         def set_hklin(self, hklin):
             self._hklin = hklin
@@ -85,8 +93,11 @@ def Merger(DriverType=None):
             return self._resolution_misigma
 
         def run(self):
-            assert self._hklin
-            cl = [self._hklin]
+            assert self._hklin or (self._experiments and self._reflections)
+            if self._hklin:
+                cl = [self._hklin]
+            else:
+                cl = [self._experiments, self._reflections]
             cl.append("nbins=%s" % self._nbins)
             cl.append("rmerge=%s" % self._limit_rmerge)
             cl.append("completeness=%s" % self._limit_completeness)

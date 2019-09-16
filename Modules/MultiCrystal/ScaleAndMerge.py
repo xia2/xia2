@@ -96,7 +96,7 @@ resolution
     .type = float(value_min=0.0)
     .help = "High resolution cutoff."
     .short_caption = "High resolution cutoff"
-  include scope dials.util.Resolutionizer.phil_str
+  include scope dials.util.resolutionizer.phil_str
 }
 
 multi_crystal_analysis {
@@ -784,6 +784,17 @@ class Scale(object):
         auto_logfiler(scaler)
         scaler.add_experiments_json(self._experiments_filename)
         scaler.add_reflections_file(self._reflections_filename)
+
+        # need to set unmerged_mtz, merged_mtz in Scale wrapper
+        unmerged_mtz = os.path.join(
+            scaler.get_working_directory(), "%i_scaled_unmerged.mtz" % scaler.get_xpid()
+        )
+        merged_mtz = os.path.join(
+            scaler.get_working_directory(), "%i_scaled.mtz" % scaler.get_xpid()
+        )
+        scaler.set_scaled_unmerged_mtz(unmerged_mtz)
+        scaler.set_scaled_mtz(merged_mtz)
+
         lmax = self._params.scaling.secondary.lmax
         if lmax:
             scaler.set_absorption_correction(True)
@@ -830,7 +841,12 @@ class Scale(object):
         params = self._params.resolution
         m = Merger()
         auto_logfiler(m)
-        m.set_hklin(self._scaled_unmerged_mtz)
+        # use the scaled .refl and .expt file
+        if self._experiments_filename and self._reflections_filename:
+            m.set_reflections(self._reflections_filename)
+            m.set_experiments(self._experiments_filename)
+        else:
+            m.set_hklin(self._scaled_unmerged_mtz)
         m.set_limit_rmerge(params.rmerge)
         m.set_limit_completeness(params.completeness)
         m.set_limit_cc_half(params.cc_half)
