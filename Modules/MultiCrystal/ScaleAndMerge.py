@@ -841,7 +841,12 @@ class Scale(object):
         params = self._params.resolution
         m = Merger()
         auto_logfiler(m)
-        m.set_hklin(self._scaled_unmerged_mtz)
+        # use the scaled .refl and .expt file
+        if self._experiments_filename and self._reflections_filename:
+            m.set_reflections(self._reflections_filename)
+            m.set_experiments(self._experiments_filename)
+        else:
+            m.set_hklin(self._scaled_unmerged_mtz)
         m.set_limit_rmerge(params.rmerge)
         m.set_limit_completeness(params.completeness)
         m.set_limit_cc_half(params.cc_half)
