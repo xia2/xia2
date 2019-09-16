@@ -38,7 +38,7 @@ class DialsIntegrater(Integrater):
         # check that the programs exist - this will raise an exception if
         # they do not...
 
-        integrate = xia2.Wrappers.Dials.Integrate.Integrate()
+        _ = xia2.Wrappers.Dials.Integrate.Integrate()
 
         # place to store working data
         self._data_files = {}
@@ -412,7 +412,7 @@ class DialsIntegrater(Integrater):
         try:
             m_min, m_max, m_mean = mosaic.min_max_mean().as_tuple()
             self.set_integrater_mosaic_min_mean_max(m_min, m_mean, m_max)
-        except AttributeError as e:
+        except AttributeError:
             self.set_integrater_mosaic_min_mean_max(mosaic, mosaic, mosaic)
 
         Chatter.write(

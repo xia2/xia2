@@ -303,8 +303,6 @@ class CommonScaler(Scaler):
             xname = self._sweep_information[epoch]["xname"]
             dname = self._sweep_information[epoch]["dname"]
 
-            sname = self._sweep_information[epoch]["sname"]
-
             hklout = os.path.join(
                 self.get_working_directory(),
                 "%s_%s_%s_%d.mtz" % (pname, xname, dname, counter),
@@ -1624,7 +1622,6 @@ def anomalous_probability_plot(intensities, expected_delta=None):
         y = y.select(sel)
 
     fit = flex.linear_regression(x, y)
-    correlation = flex.linear_correlation(x, y)
     assert fit.is_well_defined()
 
     if 0:
