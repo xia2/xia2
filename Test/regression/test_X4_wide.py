@@ -64,6 +64,7 @@ def test_dials(regression_test, dials_data, tmpdir, ccp4):
         "trust_beam_centre=True",
         "read_all_image_headers=False",
         "truncate=cctbx",
+        "free_total=1000",
         dials_data("x4wide").strpath,
     ]
     result = procrunner.run(command_line, working_directory=tmpdir.strpath)
