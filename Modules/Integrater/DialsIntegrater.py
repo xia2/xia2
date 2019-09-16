@@ -38,7 +38,7 @@ class DialsIntegrater(Integrater):
         # check that the programs exist - this will raise an exception if
         # they do not...
 
-        _ = xia2.Wrappers.Dials.Integrate.Integrate()
+        xia2.Wrappers.Dials.Integrate.Integrate()
 
         # place to store working data
         self._data_files = {}
