@@ -784,6 +784,17 @@ class Scale(object):
         auto_logfiler(scaler)
         scaler.add_experiments_json(self._experiments_filename)
         scaler.add_reflections_file(self._reflections_filename)
+
+        # need to set unmerged_mtz, merged_mtz in Scale wrapper
+        unmerged_mtz = os.path.join(
+            scaler.get_working_directory(), "%i_scaled_unmerged.mtz" % scaler.get_xpid()
+        )
+        merged_mtz = os.path.join(
+            scaler.get_working_directory(), "%i_scaled.mtz" % scaler.get_xpid()
+        )
+        scaler.set_scaled_unmerged_mtz(unmerged_mtz)
+        scaler.set_scaled_mtz(merged_mtz)
+
         lmax = self._params.scaling.secondary.lmax
         if lmax:
             scaler.set_absorption_correction(True)

@@ -508,14 +508,6 @@ pipeline=dials (supported for pipeline=dials-aimless).
         self._scalr_scaled_reflection_files["mtz_unmerged"] = {}
         self._scalr_scaled_reflection_files["mtz"] = {}
 
-        # Set the unmerged mtz output filename - need for merging stats calc.
-        scaled_unmerged_mtz_path = os.path.join(
-            self.get_working_directory(),
-            "%s_%s_scaled_unmerged.mtz" % (self._scalr_pname, self._scalr_xname),
-        )
-        self._scaler.set_scaled_unmerged_mtz(scaled_unmerged_mtz_path)
-        self._scaler.set_crystal_name(self._scalr_xname)  # Name goes in mtz
-
         ### Set the resolution limit if applicable
 
         user_resolution_limits = {}
@@ -556,8 +548,6 @@ pipeline=dials (supported for pipeline=dials-aimless).
         )
         self._scaled_experiments = self._scaler.get_scaled_experiments()
         self._scaled_reflections = self._scaler.get_scaled_reflections()
-
-        FileHandler.record_data_file(scaled_unmerged_mtz_path)
 
         # make it so that only scaled.expt and scaled.refl are
         # the files that dials.scale knows about, so that if scale is called again,
@@ -625,6 +615,11 @@ pipeline=dials (supported for pipeline=dials-aimless).
                 si.get_project_info()[2]
             )  # sweep info in same order as experiments
         assert len(wavelengths) == len(dnames_set)
+
+        scaled_unmerged_mtz_path = os.path.join(
+            self.get_working_directory(),
+            "%s_%s_scaled_unmerged.mtz" % (self._scalr_pname, self._scalr_xname),
+        )
 
         if len(dnames_set) > 1:
             self._scalr_scaled_refl_files = {}
