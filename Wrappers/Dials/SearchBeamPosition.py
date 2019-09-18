@@ -23,7 +23,7 @@ def SearchBeamPosition(DriverType=None):
             self._spot_filename = None
             self._optimized_filename = None
             self._phil_file = None
-            self._scan_ranges = []
+            self._image_range = None
 
         def set_sweep_filename(self, sweep_filename):
             self._sweep_filename = sweep_filename
@@ -37,11 +37,8 @@ def SearchBeamPosition(DriverType=None):
         def set_phil_file(self, phil_file):
             self._phil_file = phil_file
 
-        def set_scan_ranges(self, scan_ranges):
-            self._scan_ranges = scan_ranges
-
-        def add_scan_range(self, scan_range):
-            self._scan_ranges.append(scan_range)
+        def set_image_range(self, image_range):
+            self._image_range = image_range
 
         def get_optimized_experiments_filename(self):
             return self._optimized_filename
@@ -57,8 +54,8 @@ def SearchBeamPosition(DriverType=None):
             nproc = PhilIndex.params.xia2.settings.multiprocessing.nproc
             self.set_cpu_threads(nproc)
             self.add_command_line("nproc=%i" % nproc)
-            for scan_range in self._scan_ranges:
-                self.add_command_line("scan_range=%d,%d" % scan_range)
+            if self._image_range:
+                self.add_command_line("image_range=%d,%d" % self._image_range)
 
             if self._phil_file is not None:
                 self.add_command_line("%s" % self._phil_file)
