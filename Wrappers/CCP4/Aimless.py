@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
 import os
@@ -349,21 +347,10 @@ def Aimless(DriverType=None, absorption_correction=None, decay_correction=None):
 
             # check for errors
 
-            if True:
-                # try:
-                self.check_for_errors()
-                self.check_ccp4_errors()
-                self.check_aimless_error_negative_scale_run()
-                self.check_aimless_errors()
-
-            else:
-                # except RuntimeError as e:
-                try:
-                    os.remove(self.get_hklout())
-                except Exception:
-                    pass
-
-                raise e
+            self.check_for_errors()
+            self.check_ccp4_errors()
+            self.check_aimless_error_negative_scale_run()
+            self.check_aimless_errors()
 
             return self.get_ccp4_status()
 
@@ -609,30 +596,19 @@ def Aimless(DriverType=None, absorption_correction=None, decay_correction=None):
 
             # check for errors
 
-            if True:
-                # try:
-                try:
-                    self.check_for_errors()
-                    self.check_ccp4_errors()
-                    self.check_aimless_error_negative_scale_run()
-                    self.check_aimless_errors()
-                except Exception:
-                    Chatter.write(
-                        "Aimless failed, see log file for more details:\n  %s"
-                        % self.get_log_file()
-                    )
-                    raise
+            try:
+                self.check_for_errors()
+                self.check_ccp4_errors()
+                self.check_aimless_error_negative_scale_run()
+                self.check_aimless_errors()
+            except Exception:
+                Chatter.write(
+                    "Aimless failed, see log file for more details:\n  %s"
+                    % self.get_log_file()
+                )
+                raise
 
-                Debug.write("Aimless status: OK")
-
-            else:
-                # except RuntimeError as e:
-                try:
-                    os.remove(self.get_hklout())
-                except Exception:
-                    pass
-
-                raise e
+            Debug.write("Aimless status: OK")
 
             # here get a list of all output files...
             output = self.get_all_output()
@@ -843,25 +819,3 @@ def Aimless(DriverType=None, absorption_correction=None, decay_correction=None):
             return parse_aimless_xml(xml_file)
 
     return AimlessWrapper()
-
-
-if __name__ == "__output_main__":
-    # test parsing the output
-
-    logfile = os.path.join(os.environ["XIA2_ROOT"], "Doc", "Logfiles", "aimless.log")
-
-    s = Aimless()
-    s.load_all_output(logfile)
-
-    results = s.parse_ccp4_loggraph()
-
-    print("The following loggraphs were found")
-    for k in results.keys():
-        print(k)
-
-    summary = s.get_summary()
-
-    for k in summary.keys():
-        dataset = summary[k]
-        for property in dataset.keys():
-            print(k, property, dataset[property])
