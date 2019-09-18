@@ -45,10 +45,7 @@ class Refiner(object):
 
         attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
         for a in attributes:
-            if 0 and a[0] == "_scalr_xcrystal":
-                # XXX I guess we probably want this?
-                continue
-            elif a[0] == "_refinr_indexers":
+            if a[0] == "_refinr_indexers":
                 d = {}
                 for k, v in a[1].iteritems():
                     d[k] = v.to_dict()
