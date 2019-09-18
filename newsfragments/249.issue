@@ -1,0 +1,5 @@
+Reduce the total sweep range for searching for the correct beam centre.
+
+Afrer 180 degrees no new information is provided so restrict the range if
+the total number of reflections is > 20,000 (only 10,000 randomly selected
+refections are used for this calculation anyway). 
