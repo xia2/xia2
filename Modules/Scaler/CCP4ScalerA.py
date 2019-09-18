@@ -681,15 +681,7 @@ class CCP4ScalerA(Scaler):
             md.set_hklin(self._reference)
             md.dump()
 
-            if md.get_batches() and False:
-                raise RuntimeError(
-                    "reference reflection file %s unmerged" % self._reference
-                )
-
             datasets = md.get_datasets()
-
-            if len(datasets) > 1 and False:
-                raise RuntimeError("more than one dataset in %s" % self._reference)
 
             # then get the unit cell, lattice etc.
 

@@ -1626,13 +1626,4 @@ def anomalous_probability_plot(intensities, expected_delta=None):
     fit = flex.linear_regression(x, y)
     assert fit.is_well_defined()
 
-    if 0:
-        from matplotlib import pyplot
-
-        pyplot.scatter(x, y)
-        m = fit.slope()
-        c = fit.y_intercept()
-        pyplot.plot(pyplot.xlim(), [m * x_ + c for x_ in pyplot.xlim()])
-        pyplot.show()
-
     return fit.slope(), fit.y_intercept(), x.size()

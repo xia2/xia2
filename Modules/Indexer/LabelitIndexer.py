@@ -28,9 +28,6 @@ from xia2.Modules.Indexer.IndexerSelectImages import (
     index_select_images_lone,
     index_select_images_user,
 )
-from xia2.Modules.Indexer.MosflmCheckIndexerSolution import (
-    mosflm_check_indexer_solution,
-)
 
 # interfaces that this inherits from ...
 from xia2.Schema.Interfaces.Indexer import IndexerSingleSweep
@@ -363,38 +360,7 @@ class LabelitIndexer(IndexerSingleSweep):
             if self.get_indexer_sweep().get_user_lattice():
                 return
 
-        if False:
-            status, lattice, matrix, cell = mosflm_check_indexer_solution(self)
-        else:
-            status = None
-
-        if status is None:
-
-            # basis is primitive
-
-            return
-
-        if status is False:
-
-            # basis is centred, and passes test
-
-            return
-
-        # ok need to update internals...
-
-        self._indxr_lattice = lattice
-        self._indxr_cell = cell
-
-        Debug.write(
-            "Inserting solution: %s " % lattice
-            + "%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f" % cell
-        )
-
-        self._indxr_replace(lattice, cell, indxr_print=self._indxr_print)
-
-        self._indxr_payload["mosflm_orientation_matrix"] = matrix
-
-    # things to get results from the indexing
+        return
 
     def get_solutions(self):
         return self._solutions

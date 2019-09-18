@@ -117,20 +117,10 @@ def PrintpeaksMosflm(DriverType=None):
             log_max = int(math.log10(peaks[0])) + 1
             max_limit = int(math.pow(10.0, log_max))
 
-            if False:
-
-                limit = math.pow(10.0, log_max)
-
-                while limit > 2.0:
-                    self._peaks[limit] = len([j for j in peaks if j > limit])
-                    limit *= 0.5
-
-            else:
-
-                for limit in [5, 10, 20, 50, 100, 200, 500, 1000]:
-                    if limit > max_limit:
-                        continue
-                    self._peaks[float(limit)] = len([j for j in peaks if j > limit])
+            for limit in [5, 10, 20, 50, 100, 200, 500, 1000]:
+                if limit > max_limit:
+                    continue
+                self._peaks[float(limit)] = len([j for j in peaks if j > limit])
 
             return self._peaks
 

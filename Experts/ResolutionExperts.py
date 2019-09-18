@@ -640,13 +640,6 @@ def bin_o_tron0(sisigma):
     for j in range(_number_bins):
         result[_scale_bins * (j + 1)] = meansd(bins[j + 1])
 
-        if False:
-            print(
-                result[_scale_bins * (j + 1)][0],
-                result[_scale_bins * (j + 1)][1],
-                len(bins[j + 1]),
-            )
-
     return result
 
 
@@ -764,13 +757,6 @@ def bin_o_tron(sisigma):
         msd = meansd(bins_i[j + 1])
         result[_scale_bins * (j + 1)] = (msd[0], msd[1], meansd(bins_s[j + 1])[0])
 
-        if False:
-            print(
-                result[_scale_bins * (j + 1)][0],
-                result[_scale_bins * (j + 1)][1],
-                len(bins[j + 1]),
-            )
-
     return result
 
 
@@ -826,9 +812,6 @@ def digest(bins, isigma_limit=1.0):
     for j in range(_number_bins):
         s = ss[j]
         mean, sdm, sd = bins[s]
-
-        if False:
-            print(s, 1.0 / math.sqrt(s), mean, sd)
 
     # ok, really the first thing I need to do is see if the reflections
     # fall off the edge of the detector - i.e. this is a close-in low
@@ -918,11 +901,6 @@ def digest(bins, isigma_limit=1.0):
     m, c = linear(x, y)
 
     L = math.log10(isigma_limit)
-
-    if False:
-        for isigma in 1.0, 2.0, 3.0, 4.0, 5.0:
-            s = (math.log10(isigma) - c) / m
-            print("Debugging again... %.1f %.2f" % (isigma, 1.0 / math.sqrt(s)))
 
     s = (L - c) / m
 
