@@ -428,6 +428,14 @@ class DialsIndexer(Indexer):
                 discovery = self.SearchBeamPosition()
                 discovery.set_sweep_filename(experiments_filenames[-1])
                 discovery.set_spot_filename(spot_filename)
+
+                # set scan_range to correspond to not more than 180 degrees
+                width = imageset.get_scan().get_oscillation()[1]
+                if (last - first) * width > 180.0:
+                    end = first + int(round(180.0 / width)) - 1
+                    Debug.write("Using %d to %d for beam search" % (first, end))
+                    discovery.set_image_range((first, end))
+
                 try:
                     discovery.run()
                 except Exception as e:
