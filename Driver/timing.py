@@ -95,10 +95,10 @@ def visualise_db(timing_db):
             t["runtime_readable"] = "%.1fm" % (t["runtime"] / 60)
 
     # highlight any significant unaccounted periods which either take more
-    # than 1% of the total runtime or would be featured in the top 10
+    # than 0.5% of the total runtime or would be featured in the top 10
     thinking_breaks = []
     top_10_runtime = sorted((t["runtime"] for t in timing_db), reverse=True)[0:10][-1]
-    significant_thinking_break = min(total_runtime * 0.01, top_10_runtime)
+    significant_thinking_break = min(total_runtime * 0.005, top_10_runtime)
 
     while ordered_by_start:
         timestamp, n = ordered_by_start.pop(0)
