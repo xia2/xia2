@@ -430,21 +430,20 @@ class DialsIndexer(Indexer):
                 discovery.set_spot_filename(spot_filename)
 
                 # set scan_range to correspond to not more than 180 degrees
+                # if we have > 20000 reflections
                 width = imageset.get_scan().get_oscillation()[1]
-                if (last - first) * width > 180.0:
+                if (last - first) * width > 180.0 and len(refl) > 20000:
                     end = first + int(round(180.0 / width)) - 1
                     Debug.write("Using %d to %d for beam search" % (first, end))
                     discovery.set_image_range((first, end))
 
                 try:
                     discovery.run()
+                    result = discovery.get_optimized_experiments_filename()
+                    # overwrite indexed.expt in experiments list
+                    experiments_filenames[-1] = result
                 except Exception as e:
                     Debug.write("DIALS beam centre search failed: %s" % str(e))
-                else:
-                    # overwrite indexed.expt in experiments list
-                    experiments_filenames[
-                        -1
-                    ] = discovery.get_optimized_experiments_filename()
 
         self.set_indexer_payload("spot_lists", spot_lists)
         self.set_indexer_payload("experiments", experiments_filenames)
