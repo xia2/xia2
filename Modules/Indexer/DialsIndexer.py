@@ -16,8 +16,8 @@ from xia2.Wrappers.Dials.GenerateMask import GenerateMask as _GenerateMask
 from xia2.Wrappers.Dials.EstimateGain import EstimateGain as _EstimateGain
 from xia2.Wrappers.Dials.Spotfinder import Spotfinder as _Spotfinder
 from xia2.Wrappers.Dials.DetectBlanks import DetectBlanks as _DetectBlanks
-from xia2.Wrappers.Dials.DiscoverBetterExperimentalModel import (
-    DiscoverBetterExperimentalModel as _DiscoverBetterExperimentalModel,
+from xia2.Wrappers.Dials.SearchBeamPosition import (
+    SearchBeamPosition as _SearchBeamPosition,
 )
 from xia2.Wrappers.Dials.Index import Index as _Index
 from xia2.Wrappers.Dials.CheckIndexingSymmetry import (
@@ -93,8 +93,8 @@ class DialsIndexer(Indexer):
         auto_logfiler(detectblanks)
         return detectblanks
 
-    def DiscoverBetterExperimentalModel(self):
-        discovery = _DiscoverBetterExperimentalModel()
+    def SearchBeamPosition(self):
+        discovery = _SearchBeamPosition()
         discovery.set_working_directory(self.get_working_directory())
         # params = PhilIndex.params.dials.index
         auto_logfiler(discovery)
@@ -425,7 +425,7 @@ class DialsIndexer(Indexer):
                         return
 
             if not PhilIndex.params.xia2.settings.trust_beam_centre:
-                discovery = self.DiscoverBetterExperimentalModel()
+                discovery = self.SearchBeamPosition()
                 discovery.set_sweep_filename(experiments_filenames[-1])
                 discovery.set_spot_filename(spot_filename)
                 try:

@@ -7,14 +7,14 @@ import os
 from xia2.Handlers.Phil import PhilIndex
 
 
-def DiscoverBetterExperimentalModel(DriverType=None):
-    """A factory for DiscoverBetterExperimentalModel classes."""
+def SearchBeamPosition(DriverType=None):
+    """A factory for SearchBeamPosition classes."""
 
     from xia2.Driver.DriverFactory import DriverFactory
 
     DriverInstance = DriverFactory.Driver(DriverType)
 
-    class DiscoverBetterExperimentalModelWrapper(DriverInstance.__class__):
+    class SearchBeamPositionWrapper(DriverInstance.__class__):
         def __init__(self):
             DriverInstance.__class__.__init__(self)
             self.set_executable("dials.search_beam_position")
@@ -76,4 +76,4 @@ def DiscoverBetterExperimentalModel(DriverType=None):
 
             assert os.path.exists(self._optimized_filename), self._optimized_filename
 
-    return DiscoverBetterExperimentalModelWrapper()
+    return SearchBeamPositionWrapper()
