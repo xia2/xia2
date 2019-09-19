@@ -2,18 +2,21 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
-from xia2.Modules.Analysis import phil_scope
-from xia2.Modules.Report import Report
 
-
-@pytest.fixture
-def report(dials_data):
+@pytest.fixture(scope="session")
+def report(dials_data, tmpdir_factory):
     data_dir = dials_data("pychef")
     mtz = data_dir.join("insulin_dials_scaled_unmerged.mtz").strpath
-    params = phil_scope.extract()
-    params.batch = []
-    params.dose.batch = []
-    return Report.from_unmerged_mtz(mtz, params)
+    with tmpdir_factory.mktemp("test_report").as_cwd():
+        from xia2.Modules.Analysis import (
+            phil_scope,
+        )  # import creates /xia2-debug.txt dropping
+        from xia2.Modules.Report import Report  # import creates /DEFAULT/ dropping
+
+        params = phil_scope.extract()
+        params.batch = []
+        params.dose.batch = []
+        return Report.from_unmerged_mtz(mtz, params)
 
 
 def test_multiplicity_plots(report):
