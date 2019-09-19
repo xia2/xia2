@@ -6,23 +6,23 @@ Sweep: SWEEP1
 Files ***
 Images: 1 to 40
 Beam 220.00 212.48 => 219.89 212.60
-Distance 190.18 => 192.23(0.1)
+Distance 190.18 => 192.32(0.1)
 Date: Fri Feb  8 13:23:40 2013
 Sweep: SWEEP2
 Files ***
 Images: 45 to 90
-Beam 220.00 212.48 => 219.88 212.62
-Distance 190.18 => 192.60(0.1)
+Beam 220.00 212.48 => 219.87 212.63
+Distance 190.18 => 192.69(0.1)
 Date: Fri Feb  8 13:24:24 2013
 For AUTOMATIC/DEFAULT/NATIVE:
 High resolution limit                           1.28(5%)    3.47(10%)    1.28(**)
-Low resolution limit                           30.03(5%)   30.04(**)    1.30(**)
-Completeness                                   98.7(5%)    99.6(5%)    82.2(10)
+Low resolution limit                           30.02(5%)   30.03(**)    1.30(**)
+Completeness                                   98.8(5%)    99.6(5%)    82.9(10)
 Multiplicity                                    4.8(0.2)     4.6(0.2)     2.4(0.2)
-I/sigma                                         8.9(15%)    28.5(**)     1.1(0.3)
-Rmerge(I+/-)                                  0.068(10%)   0.022(10%)   0.406(15%)
-CC half                                       0.998(2%)   0.999(0.2)   0.838(0.2)
-Anomalous completeness                         94.1(2%)    98.5(5%)    48.9(10)
+I/sigma                                         9.1(15%)    30.5(**)     1.1(0.3)
+Rmerge(I+/-)                                  0.068(10%)   0.022(10%)   0.408(15%)
+CC half                                       0.998(2%)   0.999(0.2)   0.827(0.2)
+Anomalous completeness                         94.2(2%)    98.5(5%)    50.3(10)
 Anomalous multiplicity                          2.7(0.5)     2.9(0.5)     1.6(0.5)
-Cell:  42.466(0.5%)  42.466(0.5%)  39.738(0.5%)  90.000  90.000  90.000
+Cell:  42.461(0.5%)  42.461(0.5%)  39.738(0.5%)  90.000  90.000  90.000
 Spacegroup: P 41 21 2
