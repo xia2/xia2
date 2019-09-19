@@ -192,7 +192,7 @@ class CCP4ScalerA(Scaler):
 
         for e in self._sweep_handler.get_epochs():
             si = self._sweep_handler.get_sweep_information(e)
-            assert is_mtz_file(si.get_reflections())
+            assert is_mtz_file(si.get_reflections()), repr(si.get_reflections())
 
         p, x = self._sweep_handler.get_project_info()
         self._scalr_pname = p

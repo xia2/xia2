@@ -58,7 +58,7 @@ def exercise_dials_integrater(dials_data, tmp_dir, nproc=None):
     from iotbx.reflection_file_reader import any_reflection_file
 
     reader = any_reflection_file(integrater_intensities)
-    assert reader.file_type() == "ccp4_mtz"
+    assert reader.file_type() == "ccp4_mtz", repr(integrater_intensities)
     mtz_object = reader.file_content()
     expected_reflections = 47623
     assert (
