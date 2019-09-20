@@ -46,6 +46,7 @@ def exercise_dials_integrater(dials_data, tmp_dir, nproc=None):
     # refiner.refine()
 
     integrater = DialsIntegrater()
+    integrater.set_output_format("hkl")
     integrater.set_working_directory(tmp_dir)
     integrater.setup_from_image(imageset.get_path(1))
     integrater.set_integrater_refiner(refiner)

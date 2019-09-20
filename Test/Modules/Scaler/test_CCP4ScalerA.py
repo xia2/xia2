@@ -50,6 +50,7 @@ def test_ccp4_scalerA(regression_test, ccp4, dials_data, run_in_tmpdir, nproc):
     refiner.add_refiner_indexer(sweep.get_epoch(1), indexer)
 
     integrater = DialsIntegrater()
+    integrater.set_output_format("hkl")
     integrater.set_working_directory(tmpdir)
     integrater.setup_from_image(imageset.get_path(1))
     integrater.set_integrater_refiner(refiner)

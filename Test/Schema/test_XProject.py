@@ -4,7 +4,6 @@ import os
 import sys
 
 import mock
-import pytest
 
 
 def exercise_serialization(dials_data, tmp_dir):
@@ -54,6 +53,7 @@ def exercise_serialization(dials_data, tmp_dir):
     sweep._refiner = refiner
 
     integrater = DialsIntegrater()
+    integrater.set_output_format("hkl")
     integrater.set_working_directory(tmp_dir)
     integrater.setup_from_image(imageset.get_path(1))
     integrater.set_integrater_refiner(refiner)
