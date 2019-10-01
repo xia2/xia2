@@ -35,7 +35,7 @@ from xia2.DriverExceptions.NotAvailableError import NotAvailableError
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.PipelineSelection import get_preferences
 from xia2.Handlers.Streams import Debug
-from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
+from xia2.Modules.Indexer.DialsIndexer import DialsIndexer, PersistentDialsIndexer
 from xia2.Modules.Indexer.LabelitIndexer import LabelitIndexer
 from xia2.Modules.Indexer.LabelitIndexerII import LabelitIndexerII
 from xia2.Modules.Indexer.MosflmIndexer import MosflmIndexer
@@ -174,6 +174,13 @@ def Indexer(preselection=None):
         (MosflmIndexer, "mosflm", "Mosflm Indexer"),
         (XDSIndexer, "xds", "XDS Indexer"),
     ]
+
+    # Only use the persistent DIALS indexer in small molecule mode,
+    # where it should be the default.
+    if PhilIndex.params.xia2.settings.small_molecule:
+        indexerlist.insert(
+            0, (PersistentDialsIndexer, "dials", "PersistentDialsIndexer")
+        )
 
     if PhilIndex.params.xia2.settings.interactive:
         indexerlist.append((XDSIndexerInteractive, "xdsii", "XDS Interactive Indexer"))

@@ -1,3 +1,5 @@
+# coding: utf-8
+
 # An indexer using the DIALS methods.
 
 from __future__ import absolute_import, division, print_function
@@ -821,3 +823,86 @@ class DialsIndexer(Indexer):
         d_max *= 1.05  # include an upper margin to avoid rounding errors
         Debug.write("Low resolution limit assigned as: %.2f" % d_max)
         self._indxr_low_resolution = d_max
+
+
+class PersistentDialsIndexer(DialsIndexer):
+    u"""
+    Use `dials.index`, but be a little more persistent than usual.
+
+    With certain types of data, especially synchrotron data from small molecule
+    samples, sharp reflections can reveal tricky details like split crystals or
+    satellites that confuse the indexer.  This version of the DIALS indexer does
+    three things to improve the chance of getting a successful indexing solution.
+      • It sets the parameter `dials.index.method=auto`, meaning that if no
+        suggested indexing solution is provided, the data will be indexed with both
+        a 3-d and a 1-d fast Fourier transform, with the best solution retained.
+      • If the data don't index on the first pass, the parameter
+        `dials.index.max_cell=20` is used to eliminate potentially spurious
+        super-cells and the indexing is attempted again.
+        This step is skipped if the user has already specified a maximum lattice
+        parameter equal to or less than 20 Å.
+      • If the data still don't index, spot finding is repeated, this time using the
+        parameter `dials.find_spots.sigma_strong=15`.  The above two strategies are
+        then repeated.
+        This step is skipped if the user has already used a σ_strong value equal to
+        or greater than 15σ.
+    """
+
+    def _index(self):  # type: () -> None
+        """
+        Perform the indexing step.
+
+        This differs from the `_index` method of the standard `DialsIndexer` in that
+        it uses `PhilIndex.params.dials.index.method=auto` by default and,
+        if necessary, constrains the unit cell parameters to be ≤ 20 Å.  If no
+        solution is found, spot finding is repeated with
+        `dials.find_spots.sigma_strong=15` and the indexing routine is repeated.
+        """
+        Debug.write(
+            "Setting DIALS indexing method to 'auto' for more persistent indexing."
+        )
+        PhilIndex.params.dials.index.method = libtbx.Auto
+
+        # Attempt to perform indexing with the conventional DIALS indexer.
+        try:
+            return super(PersistentDialsIndexer, self)._index()
+        except RuntimeError as e:
+            # Catch indexing failures and carry on.
+            Chatter.write("No indexing solution found.")
+            indexing_failure = e
+
+        # Skip the next step if we've already specified a smaller `max_cell`.
+        max_cell = PhilIndex.params.dials.index.max_cell
+        if not max_cell or (max_cell > 20):
+            try:
+                Chatter.write(
+                    "Retrying indexing, now with a maximum unit cell basis vector "
+                    u"length of 20 Å."
+                )
+                PhilIndex.params.dials.index.max_cell = 20
+                return super(PersistentDialsIndexer, self)._index()
+            except RuntimeError as e:
+                # Catch indexing failures and carry on.
+                Chatter.write("No indexing solution found.")
+                indexing_failure = e
+
+        # Skip the next step if we've already specified a higher `sigma_strong`.
+        sigma_strong = PhilIndex.params.dials.find_spots.sigma_strong
+        if not sigma_strong or (sigma_strong < 15):
+            Chatter.write(
+                "Retrying spotfinding, now only recognising pixels as belonging to "
+                "reflections if their intensity is greater than the local mean "
+                u"by more than more than 15× the standard deviation."
+            )
+            # Reset the max_cell parameter to its original value.
+            PhilIndex.params.dials.index.max_cell = max_cell
+            # Set the value of sigma_strong higher.
+            PhilIndex.params.dials.find_spots.sigma_strong = 15
+            # Mark `_indexer_prepare` as not having been done, to automatically
+            # retrigger spotfinding.
+            self.set_indexer_prepare_done(False)
+            return
+        else:
+            # We've tried everything.  Give up.
+            Chatter.write("No indexing solution found.")
+            raise RuntimeError(indexing_failure)
