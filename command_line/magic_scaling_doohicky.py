@@ -64,7 +64,7 @@ def find_pickle_and_json():
 
     spells = [
         "unmerged_mtz=dials_unmerged.mtz",
-        "optimise_errors=true",
+        "error_model=basic",
         "d_min=%f" % d_min,
         "d_max=%f" % d_max,
     ]

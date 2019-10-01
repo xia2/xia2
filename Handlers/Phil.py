@@ -443,10 +443,10 @@ dials
       .type = choice
       .help = "Choose from profile fitted or summation intensities, or " \
               "an optimised combination of profile/sum."
-    optimise_errors = True
-      .type = bool
-      .help = "Option to allow optimisation of weights for scaling. Performs " \
-              "and additional scale factor minimisation after adjusting weights."
+    error_model = *basic None
+      .type = choice
+      .help = "Choice of whether to refine an error model to adjust the" \
+              "intensity sigmas using a two-parameter model."
     full_matrix = True
       .type = bool
       .help = "Option to turn off GN/LM refinement round used to determine " \
