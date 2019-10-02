@@ -11,7 +11,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import copy
 import os
 
 from xia2.DriverExceptions.NotAvailableError import NotAvailableError
@@ -119,6 +118,8 @@ def Integrater():
         try:
             integrater = DialsIntegrater()
             Debug.write("Using Dials Integrater")
+            if PhilIndex.params.xia2.settings.pipeline in ["dials", "dials-full"]:
+                integrater.set_output_format("pickle")
         except NotAvailableError:
             if preselection == "dials":
                 raise RuntimeError(
