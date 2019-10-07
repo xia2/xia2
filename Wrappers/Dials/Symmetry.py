@@ -48,6 +48,7 @@ def DialsSymmetry(DriverType=None):
 
             self._relative_length_tolerance = 0.05
             self._absolute_angle_tolerance = 2
+            self._mode = "laue_plus_absences"
 
             # space to store all possible solutions, to allow discussion of
             # the correct lattice with the indexer... this should be a
@@ -67,6 +68,15 @@ def DialsSymmetry(DriverType=None):
 
         # def set_hklref(self, hklref):
         # self._hklref = hklref
+
+        def set_mode_absences_only(self):
+            self._mode = "absences_only"
+
+        def set_mode_laue_only(self):
+            self._mode = "laue_only"
+
+        def set_mode_laue_plus_absences(self):
+            self._mode = "laue_plus_absences"
 
         def set_hklin(self, hklin):
             self._hklin = hklin
@@ -148,7 +158,7 @@ def DialsSymmetry(DriverType=None):
             # okay so now set pg and lattices, but need to update output file by reindexing
 
         def decide_pointgroup(self, ignore_errors=False, batches=None):
-            """Decide on the correct pointgroup for hklin."""
+            """Decide on the correct pointgroup/spacegroup for hklin."""
 
             self.clear_command_line()
 
@@ -185,6 +195,7 @@ def DialsSymmetry(DriverType=None):
                     "output.reflections='%s'" % self._output_reflections_filename
                 )
 
+            self.add_command_line("mode=%s" % self._mode)
             self.add_command_line(
                 "relative_length_tolerance=%s" % self._relative_length_tolerance
             )

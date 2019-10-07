@@ -14,7 +14,6 @@ from xia2.Handlers.CIF import CIF, mmCIF
 from xia2.Modules.Scaler.CommonScaler import CommonScaler as Scaler
 from xia2.Wrappers.Dials.Scale import DialsScale
 from xia2.Wrappers.Dials.Merge import DialsMerge
-from xia2.Wrappers.Dials.SpaceGroup import DialsSpaceGroup
 from xia2.Wrappers.CCP4.CCP4Factory import CCP4Factory
 from xia2.Modules.AnalyseMyIntensities import AnalyseMyIntensities
 from xia2.Modules.Scaler.CCP4ScalerHelpers import (
@@ -569,19 +568,20 @@ pipeline=dials (supported for pipeline=dials-aimless).
             Debug.write("Returning as scaling not finished...")
             return
 
-        ### Want to do space group check after scaling. So run dials.space_group
-        ### (could be changed in future to symmetry) before exporting merged and
-        ### unmerged files again in correct s.g.
+        ### Want to do space group check after scaling. So run dials.symmetry
+        ### with absences only before exporting merged and unmerged files
+        ### again in correct s.g.
         if not PhilIndex.params.xia2.settings.small_molecule:
             Chatter.banner("Systematic absences check")
-            space_group_checker = DialsSpaceGroup()
-            space_group_checker.set_experiments_filename(self._scaled_experiments)
-            space_group_checker.set_reflections_filename(self._scaled_reflections)
-            space_group_checker.set_working_directory(self.get_working_directory())
-            auto_logfiler(space_group_checker)
-            space_group_checker.run()
+            symmetry = DialsSymmetry()
+            symmetry.set_experiments_filename(self._scaled_experiments)
+            symmetry.set_reflections_filename(self._scaled_reflections)
+            symmetry.set_working_directory(self.get_working_directory())
+            symmetry.set_mode_absences_only()
+            auto_logfiler(symmetry)
+            symmetry.decide_pointgroup()  # bad name - actually running absences here
 
-            self._scaled_experiments = space_group_checker.get_symmetrized_experiments()
+            self._scaled_experiments = symmetry.get_output_experiments_filename()
 
             sg = load.experiment_list(self._scaled_experiments)[
                 0
