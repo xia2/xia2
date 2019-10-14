@@ -39,7 +39,7 @@ def load_imagesets(
     global imageset_cache
     from dxtbx.model.experiment_list import ExperimentListFactory
     from xia2.Applications.xia2setup import known_hdf5_extensions
-    from dxtbx.imageset import ImageSweep
+    from dxtbx.imageset import ImageSequence as ImageSweep
 
     full_template_path = os.path.join(directory, template)
 
