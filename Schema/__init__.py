@@ -116,7 +116,7 @@ def load_imagesets(
 
         else:
 
-            from dxtbx.sweep_filenames import locate_files_matching_template_string
+            from dxtbx.sequence_filenames import locate_files_matching_template_string
 
             params = PhilIndex.get_python_object()
             read_all_image_headers = params.xia2.settings.read_all_image_headers
