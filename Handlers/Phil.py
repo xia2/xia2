@@ -439,7 +439,7 @@ dials
                 "binning the detector position for the absorption term of the " \
                 "array model."
     }
-    intensity_choice = profile sum *combine
+    intensity_choice = profile summation *combine
       .type = choice
       .help = "Choose from profile fitted or summation intensities, or " \
               "an optimised combination of profile/sum."
