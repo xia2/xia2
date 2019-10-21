@@ -48,7 +48,7 @@ def index_select_images_user(phi_width, images, out_stream):
 
     while True:
 
-        record = raw_input(">")
+        record = input(">")
 
         if not record.strip():
             return images
@@ -75,7 +75,7 @@ def index_select_image_wedges_user(sweep_id, phi_width, images, out_stream):
 
     while True:
 
-        record = raw_input(">")
+        record = input(">")
 
         if not record.strip():
             return images
