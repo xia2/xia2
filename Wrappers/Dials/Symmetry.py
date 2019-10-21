@@ -48,6 +48,8 @@ def DialsSymmetry(DriverType=None):
 
             self._relative_length_tolerance = 0.05
             self._absolute_angle_tolerance = 2
+            self._laue_group = "auto"
+            self._sys_abs_check = True
 
             # space to store all possible solutions, to allow discussion of
             # the correct lattice with the indexer... this should be a
@@ -67,6 +69,18 @@ def DialsSymmetry(DriverType=None):
 
         # def set_hklref(self, hklref):
         # self._hklref = hklref
+
+        def set_mode_absences_only(self):
+            self._laue_group = None
+            self._sys_abs_check = True
+
+        def set_mode_laue_only(self):
+            self._laue_group = "auto"
+            self._sys_abs_check = False
+
+        def set_mode_laue_plus_absences(self):
+            self._laue_group = "auto"
+            self._sys_abs_check = True
 
         def set_hklin(self, hklin):
             self._hklin = hklin
@@ -148,7 +162,7 @@ def DialsSymmetry(DriverType=None):
             # okay so now set pg and lattices, but need to update output file by reindexing
 
         def decide_pointgroup(self, ignore_errors=False, batches=None):
-            """Decide on the correct pointgroup for hklin."""
+            """Decide on the correct pointgroup/spacegroup for hklin."""
 
             self.clear_command_line()
 
@@ -184,7 +198,10 @@ def DialsSymmetry(DriverType=None):
                 self.add_command_line(
                     "output.reflections='%s'" % self._output_reflections_filename
                 )
-
+            if self._laue_group is None:
+                self.add_command_line("laue_group=None")
+            if not self._sys_abs_check:
+                self.add_command_line("systematic_absences.check=False")
             self.add_command_line(
                 "relative_length_tolerance=%s" % self._relative_length_tolerance
             )
@@ -209,11 +226,12 @@ def DialsSymmetry(DriverType=None):
             # check for errors
             self.check_for_errors()
 
-            with open(self._json, "rb") as f:
-                d = json.load(f)
-            best_solution = d["subgroup_scores"][0]
+            if self._laue_group is not None:
+                with open(self._json, "rb") as f:
+                    d = json.load(f)
+                best_solution = d["subgroup_scores"][0]
 
-            self.set_best_solution(d, best_solution)
+                self.set_best_solution(d, best_solution)
 
         def set_best_solution(self, d, best_solution):
             patterson_group = sgtbx.space_group(str(best_solution["patterson_group"]))
