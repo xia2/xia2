@@ -877,7 +877,7 @@ class PersistentDialsIndexer(DialsIndexer):
             try:
                 Chatter.write(
                     "Retrying indexing, now with a maximum unit cell basis vector "
-                    u"length of 20 Å."
+                    "length of 20 Angstrom."
                 )
                 PhilIndex.params.dials.index.max_cell = 20
                 return super(PersistentDialsIndexer, self)._index()
@@ -892,7 +892,7 @@ class PersistentDialsIndexer(DialsIndexer):
             Chatter.write(
                 "Retrying spotfinding, now only recognising pixels as belonging to "
                 "reflections if their intensity is greater than the local mean "
-                u"by more than more than 15× the standard deviation."
+                "by more than more than 15 times the standard deviation."
             )
             # Reset the max_cell parameter to its original value.
             PhilIndex.params.dials.index.max_cell = max_cell
