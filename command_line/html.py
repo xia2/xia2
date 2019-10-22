@@ -42,7 +42,7 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
     assert os.path.isfile(xia2_txt), xia2_txt
 
     with open(xia2_txt, "rb") as f:
-        xia2_output = f.read().encode("utf-8", "xmlcharrefreplace")
+        xia2_output = unicode(f.read().encode("utf-8", "xmlcharrefreplace"))
 
     xia2_output = cgi.escape(xia2_output)
 
@@ -245,7 +245,7 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
 
     for row in table:
         for i in range(len(row)):
-            row[i] = row[i].encode("utf-8", "xmlcharrefreplace")
+            row[i] = unicode(row[i].encode("utf-8", "xmlcharrefreplace"))
 
     # reflection files
 
