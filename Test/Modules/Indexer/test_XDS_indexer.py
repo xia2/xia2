@@ -6,6 +6,7 @@ import sys
 import mock
 import pytest
 from libtbx.test_utils import approx_equal
+from xia2.DriverExceptions import NotAvailableError
 
 
 def exercise_xds_indexer(dials_data, tmp_dir, nproc=None):
@@ -18,8 +19,13 @@ def exercise_xds_indexer(dials_data, tmp_dir, nproc=None):
 
     from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
 
-    indexer = XDSIndexer()
+    try:
+        indexer = XDSIndexer()
+    except NotAvailableError:
+        pytest.skip("XDS not found")
+
     indexer.set_working_directory(tmp_dir)
+
     from dxtbx.model.experiment_list import ExperimentListTemplateImporter
 
     importer = ExperimentListTemplateImporter([template])
