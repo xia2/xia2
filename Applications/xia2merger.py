@@ -16,6 +16,7 @@ from __future__ import absolute_import, division, print_function
 from xia2.Toolkit.Merger import merger
 
 if __name__ == "__main__":
+    print("This command is deprecated and will be removed in the next release")
     import argparse
 
     parser = argparse.ArgumentParser()

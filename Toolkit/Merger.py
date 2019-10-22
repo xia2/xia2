@@ -151,7 +151,7 @@ class unmerged_intensity(object):
     def rmerge_contribution(self, i_mean):
         """Calculate the contribution of this reflection to Rmerge."""
 
-        return sum([math.fabs(o[1] - i_mean) for o in self._observations])
+        return sum(math.fabs(o[1] - i_mean) for o in self._observations)
 
     def rmerge_contribution_anomalous(self, i_mean_p, i_mean_m):
         """Calculate the contribution of this reflection to Rmerge,
@@ -536,7 +536,7 @@ class merger(object):
 
         # remove systematically absent reflections
 
-        hkl_list = [hkl for hkl in itertools.filterfalse(sg.is_sys_absent, hkl_list)]
+        hkl_list = list(itertools.filterfalse(sg.is_sys_absent, hkl_list))
 
         return float(len(hkl_list)) / float(len(hkl_calc))
 
@@ -610,7 +610,7 @@ class merger(object):
                 deltas.append(d)
 
         mean = sum(deltas) / len(deltas)
-        var = sum([(d - mean) * (d - mean) for d in deltas]) / len(deltas)
+        var = sum((d - mean) * (d - mean) for d in deltas) / len(deltas)
 
         return mean, math.sqrt(var)
 
@@ -646,8 +646,8 @@ class merger(object):
             hkl_list = list(self._unmerged_reflections)
 
         return sum(
-            [self._unmerged_reflections[hkl].isigma_contribution() for hkl in hkl_list]
-        ) / sum([self._unmerged_reflections[hkl].multiplicity() for hkl in hkl_list])
+            self._unmerged_reflections[hkl].isigma_contribution() for hkl in hkl_list
+        ) / sum(self._unmerged_reflections[hkl].multiplicity() for hkl in hkl_list)
 
     def calculate_z2(self, hkl_list=None):
         """Calculate average Z^2 values, where Z = I/<I> in the bin,
@@ -661,20 +661,20 @@ class merger(object):
 
         sg = self._mf.get_space_group()
 
-        hkl_centric = [hkl for hkl in filter(sg.is_centric, hkl_list)]
-        hkl_acentric = [hkl for hkl in itertools.filterfalse(sg.is_centric, hkl_list)]
+        hkl_centric = filter(sg.is_centric, hkl_list)
+        hkl_acentric = itertools.filterfalse(sg.is_centric, hkl_list)
 
         i_s = [self._merged_reflections[hkl][0] for hkl in hkl_centric]
         mean_i = sum(i_s) / len(i_s)
 
         z_s = [i / mean_i for i in i_s]
-        z_centric = sum([z * z for z in z_s]) / len(z_s)
+        z_centric = sum(z * z for z in z_s) / len(z_s)
 
         i_s = [self._merged_reflections[hkl][0] for hkl in hkl_acentric]
         mean_i = sum(i_s) / len(i_s)
 
         z_s = [i / mean_i for i in i_s]
-        z_acentric = sum([z * z for z in z_s]) / len(z_s)
+        z_acentric = sum(z * z for z in z_s) / len(z_s)
 
         return z_centric, z_acentric
 
