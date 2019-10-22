@@ -269,4 +269,4 @@ class MultiCrystalReport(MultiCrystalAnalysis):
         # json.dump(json_data, f)
 
         with open("%s.html" % self.params.prefix, "wb") as f:
-            f.write(html.encode("ascii", "xmlcharrefreplace"))
+            f.write(html.encode("utf-8", "xmlcharrefreplace"))

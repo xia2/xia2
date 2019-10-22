@@ -123,7 +123,8 @@ def run(args):
     env = Environment(loader=loader)
 
     if params.log_include:
-        log_text = open(params.log_include).read()
+        with open(params.log_include, "rb") as f:
+            log_text = f.read().decode("utf-8")
     else:
         log_text = ""
 
@@ -152,7 +153,7 @@ def run(args):
         json.dump(json_data, f, indent=params.json.indent)
 
     with open("%s-report.html" % params.prefix, "wb") as f:
-        f.write(html.encode("ascii", "xmlcharrefreplace"))
+        f.write(html.encode("utf-8", "xmlcharrefreplace"))
 
 
 if __name__ == "__main__":
