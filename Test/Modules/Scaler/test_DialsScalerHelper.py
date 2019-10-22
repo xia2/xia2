@@ -2,7 +2,6 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 import random
-import os
 
 from cctbx import sgtbx
 from dials.algorithms.symmetry.cosym._generate_test_data import generate_intensities
@@ -11,15 +10,17 @@ from dxtbx.model.experiment_list import ExperimentList
 from dxtbx.model import Crystal, Scan, Beam, Experiment
 from dxtbx.serialize import load
 from xia2.Modules.Scaler.DialsScaler import DialsScalerHelper
+import xia2.Handlers.Streams
 
 flex.set_random_seed(42)
 random.seed(42)
 
 
 def make_helper(tmpdir):
-    """Initialise a DialsScalerHelper, ensure CCP4 is available for test"""
+    """Initialise a DialsScalerHelper"""
 
     helper = DialsScalerHelper()
+    xia2.Handlers.Streams.reconfigure_streams_to_logging()
     helper.set_pname_xname("AUTOMATIC", "DEFAULT")
     helper.set_working_directory(tmpdir.strpath)
     return helper
@@ -132,14 +133,13 @@ def test_dials_symmetry_decide_pointgroup(
     tmpdir,
 ):
     """Test for the dials_symmetry_decide_pointgroup helper function """
-    os.chdir(tmpdir.strpath)
     helper = make_helper(tmpdir)
-    generated_exp(space_group=experiments_spacegroup).as_file("test.expt")
-    generate_reflections_in_sg(reflection_spacegroup).as_pickle("test.refl")
+    refl_path = (tmpdir / "test.refl").strpath
+    exp_path = (tmpdir / "test.expt").strpath
+    generated_exp(space_group=experiments_spacegroup).as_file(exp_path)
+    generate_reflections_in_sg(reflection_spacegroup).as_pickle(refl_path)
 
-    symmetry_analyser = helper.dials_symmetry_decide_pointgroup(
-        ["test.expt"], ["test.refl"]
-    )
+    symmetry_analyser = helper.dials_symmetry_decide_pointgroup([exp_path], [refl_path])
 
     # Note : instabilities have been observed in the order of the end of the
     # spacegroup list - this is likely due to the use of unseeded random number
@@ -154,12 +154,12 @@ def test_dials_symmetry_decide_pointgroup(
 
 def test_assign_identifiers(tmpdir):
     """Test the call to the assign identifiers wrapper"""
-    os.chdir(tmpdir.strpath)
     helper = make_helper(tmpdir)
     experiments = []
     reflections = []
     for i in range(0, 3):
-        refl_path, exp_path = ("test_%s.refl" % i, "test_%s.expt" % i)
+        refl_path = tmpdir.join("test_%s.refl" % i).strpath
+        exp_path = tmpdir.join("test_%s.expt" % i).strpath
         generate_test_refl().as_pickle(refl_path)
         generated_exp().as_file(exp_path)
         experiments.append(exp_path)
@@ -226,11 +226,10 @@ class simple_sweep_handler(object):
 def test_split_experiments(number_of_experiments, tmpdir):
     """Test the call to split experiments: should split the dataset on experiment
     id, giving single datasets with unique ids from 0..n-1"""
-    os.chdir(tmpdir.strpath)
     helper = make_helper(tmpdir)
     sweephandler = simple_sweep_handler(number_of_experiments)
-    exp_path = "test.expt"
-    refl_path = "test.refl"
+    exp_path = tmpdir.join("test.expt").strpath
+    refl_path = tmpdir.join("test.refl").strpath
     generated_exp(number_of_experiments, assign_ids=True).as_file(exp_path)
     reflections = flex.reflection_table()
     for i in range(number_of_experiments):
@@ -257,12 +256,12 @@ def check_data_in_sweep_handler(sweephandler):
 def test_assign_and_return_datasets(tmpdir):
     """Test the combined method of assigning ids and setting in the sweep handler"""
     n = 3
-    os.chdir(tmpdir.strpath)
     helper = make_helper(tmpdir)
     sweephandler = simple_sweep_handler(n)
     for i in range(0, n):
         si = sweephandler.get_sweep_information(i)
-        refl_path, exp_path = ("test_%s.refl" % i, "test_%s.expt" % i)
+        refl_path = tmpdir.join("test_%s.refl" % i).strpath
+        exp_path = tmpdir.join("test_%s.expt" % i).strpath
         generate_test_refl().as_pickle(refl_path)
         generated_exp().as_file(exp_path)
         si.set_experiments(exp_path)
@@ -374,7 +373,6 @@ test_lattices = [
 @pytest.mark.parametrize("refiner_lattices, expected_output", test_lattices)
 def test_dials_symmetry_indexer_jiffy(tmpdir, refiner_lattices, expected_output):
     """Test the jiffy"""
-    os.chdir(tmpdir.strpath)
     helper = make_helper(tmpdir)
     n = 1
     multisweep = False
@@ -383,7 +381,8 @@ def test_dials_symmetry_indexer_jiffy(tmpdir, refiner_lattices, expected_output)
     reflections = []
     refiners = []
     for i in range(0, n):
-        refl_path, exp_path = ("test_%s.refl" % i, "test_%s.expt" % i)
+        refl_path = tmpdir.join("test_%s.refl" % i).strpath
+        exp_path = tmpdir.join("test_%s.expt" % i).strpath
         generate_reflections_in_sg("P 2", id_=i, assign_id=True).as_pickle(refl_path)
         generated_exp(space_group="P 2", id_=i).as_file(exp_path)
         experiments.append(exp_path)
