@@ -211,6 +211,7 @@ def imageset_to_xds(
         "pilatus 1M": True,
         "pilatus 200K": True,
         "pilatus 300K": True,
+        "eiger 1M": True,
         "eiger 4M": True,
         "eiger 9M": True,
         "eiger 16M": True,

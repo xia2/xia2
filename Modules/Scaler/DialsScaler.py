@@ -81,7 +81,7 @@ class DialsScaler(Scaler):
             PhilIndex.params.dials.scale.outlier_rejection
         )
         self._scaler.set_outlier_zmax(PhilIndex.params.dials.scale.outlier_zmax)
-        self._scaler.set_optimise_errors(PhilIndex.params.dials.scale.optimise_errors)
+        self._scaler.set_error_model(PhilIndex.params.dials.scale.error_model)
         self._scaler.set_partiality_cutoff(
             PhilIndex.params.dials.scale.partiality_threshold
         )

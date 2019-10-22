@@ -30,7 +30,7 @@ def DialsScale(DriverType=None, decay_correction=None):
             self._model = None
             self._full_matrix = True
             self._absorption_correction = True
-            self._optimise_errors = True
+            self._error_model = "basic"
             self._outlier_rejection = "standard"
             self._outlier_zmax = None
             self._min_partiality = None
@@ -168,8 +168,8 @@ def DialsScale(DriverType=None, decay_correction=None):
             assert len(isigma_selection) == 2
             self._isigma_selection = isigma_selection
 
-        def set_optimise_errors(self, optimise_errors=True):
-            self._optimise_errors = optimise_errors
+        def set_error_model(self, error_model="basic"):
+            self._error_model = error_model
 
         def set_outlier_rejection(self, outlier_rejection):
             self._outlier_rejection = outlier_rejection
@@ -255,7 +255,7 @@ def DialsScale(DriverType=None, decay_correction=None):
             self.add_command_line("full_matrix=%s" % self._full_matrix)
             if self._spacing:
                 self.add_command_line("scale_interval=%g" % self._spacing)
-            self.add_command_line("optimise_errors=%s" % self._optimise_errors)
+            self.add_command_line("error_model=%s" % self._error_model)
             self.add_command_line("outlier_rejection=%s" % self._outlier_rejection)
 
             if self._absorption_correction and self._lmax is not None:

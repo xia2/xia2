@@ -39,7 +39,7 @@ def load_imagesets(
     global imageset_cache
     from dxtbx.model.experiment_list import ExperimentListFactory
     from xia2.Applications.xia2setup import known_hdf5_extensions
-    from dxtbx.imageset import ImageSweep
+    from dxtbx.imageset import ImageSequence as ImageSweep
 
     full_template_path = os.path.join(directory, template)
 
@@ -116,7 +116,7 @@ def load_imagesets(
 
         else:
 
-            from dxtbx.sweep_filenames import locate_files_matching_template_string
+            from dxtbx.sequence_filenames import locate_files_matching_template_string
 
             params = PhilIndex.get_python_object()
             read_all_image_headers = params.xia2.settings.read_all_image_headers
