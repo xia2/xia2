@@ -152,7 +152,7 @@ def run(args):
         json.dump(json_data, f, indent=params.json.indent)
 
     with open("%s-report.html" % params.prefix, "wb") as f:
-        f.write(html.encode("ascii", "xmlcharrefreplace"))
+        f.write(html.encode("utf-8", "xmlcharrefreplace"))
 
 
 if __name__ == "__main__":

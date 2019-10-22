@@ -42,7 +42,7 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
     assert os.path.isfile(xia2_txt), xia2_txt
 
     with open(xia2_txt, "rb") as f:
-        xia2_output = f.read().encode("ascii", "xmlcharrefreplace")
+        xia2_output = f.read().encode("utf-8", "xmlcharrefreplace")
 
     xia2_output = cgi.escape(xia2_output)
 
@@ -245,7 +245,7 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
 
     for row in table:
         for i in range(len(row)):
-            row[i] = row[i].encode("ascii", "xmlcharrefreplace")
+            row[i] = row[i].encode("utf-8", "xmlcharrefreplace")
 
     # reflection files
 
@@ -399,7 +399,7 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
         json.dump(json_data, f, indent=2)
 
     with open(filename, "wb") as f:
-        f.write(html.encode("ascii", "xmlcharrefreplace"))
+        f.write(html.encode("utf-8", "xmlcharrefreplace"))
 
 
 def make_logfile_html(logfile):
