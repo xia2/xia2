@@ -8,7 +8,7 @@ import pytest
 
 
 @pytest.mark.parametrize("nproc", [1])
-def test_xds_scalerA(regression_test, ccp4, dials_data, run_in_tmpdir, nproc):
+def test_xds_scalerA(regression_test, ccp4, xds, dials_data, run_in_tmpdir, nproc):
     if nproc is not None:
         from xia2.Handlers.Phil import PhilIndex
 
