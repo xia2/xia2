@@ -206,7 +206,10 @@ class DataManager(object):
         self.reflections.assert_experiment_identifiers_are_consistent(self.experiments)
 
     def filter_dose(self, dose_min, dose_max):
-        from dials.command_line.slice_sweep import slice_experiments, slice_reflections
+        from dials.command_line.slice_sequence import (
+            slice_experiments,
+            slice_reflections,
+        )
 
         image_range = [
             (

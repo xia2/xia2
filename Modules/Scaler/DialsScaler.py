@@ -14,7 +14,6 @@ from xia2.Handlers.CIF import CIF, mmCIF
 from xia2.Modules.Scaler.CommonScaler import CommonScaler as Scaler
 from xia2.Wrappers.Dials.Scale import DialsScale
 from xia2.Wrappers.Dials.Merge import DialsMerge
-from xia2.Wrappers.Dials.SpaceGroup import DialsSpaceGroup
 from xia2.Wrappers.CCP4.CCP4Factory import CCP4Factory
 from xia2.Modules.AnalyseMyIntensities import AnalyseMyIntensities
 from xia2.Modules.Scaler.CCP4ScalerHelpers import (
@@ -33,7 +32,7 @@ from dials.util.batch_handling import calculate_batch_offsets
 from dials.util.export_mtz import match_wavelengths
 from dials.array_family import flex
 import dials.util.version
-from cctbx.sgtbx import lattice_symmetry_group, space_group_info
+from cctbx.sgtbx import lattice_symmetry_group
 
 
 def clean_reindex_operator(reindex_operator):
@@ -569,19 +568,20 @@ pipeline=dials (supported for pipeline=dials-aimless).
             Debug.write("Returning as scaling not finished...")
             return
 
-        ### Want to do space group check after scaling. So run dials.space_group
-        ### (could be changed in future to symmetry) before exporting merged and
-        ### unmerged files again in correct s.g.
+        ### Want to do space group check after scaling. So run dials.symmetry
+        ### with absences only before exporting merged and unmerged files
+        ### again in correct s.g.
         if not PhilIndex.params.xia2.settings.small_molecule:
             Chatter.banner("Systematic absences check")
-            space_group_checker = DialsSpaceGroup()
-            space_group_checker.set_experiments_filename(self._scaled_experiments)
-            space_group_checker.set_reflections_filename(self._scaled_reflections)
-            space_group_checker.set_working_directory(self.get_working_directory())
-            auto_logfiler(space_group_checker)
-            space_group_checker.run()
+            symmetry = DialsSymmetry()
+            symmetry.set_experiments_filename(self._scaled_experiments)
+            symmetry.set_reflections_filename(self._scaled_reflections)
+            symmetry.set_working_directory(self.get_working_directory())
+            symmetry.set_mode_absences_only()
+            auto_logfiler(symmetry)
+            symmetry.decide_pointgroup()  # bad name - actually running absences here
 
-            self._scaled_experiments = space_group_checker.get_symmetrized_experiments()
+            self._scaled_experiments = symmetry.get_output_experiments_filename()
 
             sg = load.experiment_list(self._scaled_experiments)[
                 0
@@ -915,74 +915,6 @@ pipeline=dials (supported for pipeline=dials-aimless).
         Debug.write(
             "Reindexed with operator %s, reason is %s" % (reindex_operator, reason)
         )
-
-    def _determine_scaled_pointgroup(self):
-        """Rerun symmetry after scaling to check for consistent space group. If not,
-        then new space group should be used and data rescaled."""
-        from cctbx import crystal
-
-        exp_crystal = load.experiment_list(self._scaler.get_scaled_experiments())[
-            0
-        ].crystal
-        cs = crystal.symmetry(
-            space_group=exp_crystal.get_space_group(),
-            unit_cell=exp_crystal.get_unit_cell(),
-        )
-        cs_ref = cs.as_reference_setting()
-        current_pointgroup = cs_ref.space_group()
-        current_patt_group = (
-            current_pointgroup.build_derived_patterson_group().type().lookup_symbol()
-        )
-        Debug.write(
-            "Space group used in scaling: %s"
-            % current_pointgroup.type().lookup_symbol()
-        )
-        first = self._sweep_handler.get_epochs()[0]
-        si = self._sweep_handler.get_sweep_information(first)
-        refiner = si.get_integrater().get_integrater_refiner()
-        point_group, reindex_op, _, _, reind_refl, reind_exp, reindex_initial = self._dials_symmetry_indexer_jiffy(
-            [self._scaler.get_scaled_experiments()],
-            [self._scaler.get_scaled_reflections()],
-            [refiner],
-        )
-        Debug.write(
-            "Point group determined by dials.symmetry on scaled dataset: %s"
-            % point_group
-        )
-        sginfo = space_group_info(symbol=point_group)
-        patt_group = (
-            sginfo.group().build_derived_patterson_group().type().lookup_symbol()
-        )
-        self._scaler_symmetry_check_count += 1
-        if patt_group != current_patt_group:
-            if reindex_initial:
-                reindexer = DialsReindex()
-                reindexer.set_working_directory(self.get_working_directory())
-                auto_logfiler(reindexer)
-                reindexer.set_experiments_filename(
-                    self._scaler.get_scaled_experiments()
-                )
-                reindexer.set_indexed_filename(self._scaler.get_scaled_reflections())
-                reindexer.set_cb_op(reindex_op)
-                reindexer.run()
-                self._scaler.set_scaled_experiments(
-                    reindexer.get_reindexed_experiments_filename()
-                )
-                self._scaler.set_scaled_reflections(
-                    reindexer.get_reindexed_reflections_filename()
-                )
-            else:
-                self._scaler.set_scaled_experiments(reind_exp)
-                self._scaler.set_scaled_reflections(reind_refl)
-            self.set_scaler_done(False)
-            Chatter.write(
-                """Inconsistent space groups determined before and after scaling: %s, %s \n
-Data will be rescaled in new point group"""
-                % (current_patt_group, patt_group)
-            )
-            return
-        else:
-            Chatter.write("Consistent space group determined before and after scaling")
 
     def _dials_symmetry_indexer_jiffy(
         self, experiments, reflections, refiners, multisweep=False

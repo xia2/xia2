@@ -536,7 +536,7 @@ class merger(object):
 
         # remove systematically absent reflections
 
-        hkl_list = [hkl for hkl in itertools.ifilterfalse(sg.is_sys_absent, hkl_list)]
+        hkl_list = [hkl for hkl in itertools.filterfalse(sg.is_sys_absent, hkl_list)]
 
         return float(len(hkl_list)) / float(len(hkl_calc))
 
@@ -661,8 +661,8 @@ class merger(object):
 
         sg = self._mf.get_space_group()
 
-        hkl_centric = [hkl for hkl in itertools.ifilter(sg.is_centric, hkl_list)]
-        hkl_acentric = [hkl for hkl in itertools.ifilterfalse(sg.is_centric, hkl_list)]
+        hkl_centric = [hkl for hkl in filter(sg.is_centric, hkl_list)]
+        hkl_acentric = [hkl for hkl in itertools.filterfalse(sg.is_centric, hkl_list)]
 
         i_s = [self._merged_reflections[hkl][0] for hkl in hkl_centric]
         mean_i = sum(i_s) / len(i_s)
