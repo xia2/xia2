@@ -9,21 +9,24 @@ from dials.array_family import flex
 from dxtbx.model.experiment_list import ExperimentList
 from dxtbx.model import Crystal, Scan, Beam, Experiment
 from dxtbx.serialize import load
-from xia2.Modules.Scaler.DialsScaler import DialsScalerHelper
 import xia2.Handlers.Streams
 
 flex.set_random_seed(42)
 random.seed(42)
 
 
-def make_helper(tmpdir):
+@pytest.fixture
+def helper_directory(ccp4, tmpdir):
     """Initialise a DialsScalerHelper"""
+
+    # import kept here as the import depends on CCP4 being present
+    from xia2.Modules.Scaler.DialsScaler import DialsScalerHelper
 
     helper = DialsScalerHelper()
     xia2.Handlers.Streams.reconfigure_streams_to_logging()
     helper.set_pname_xname("AUTOMATIC", "DEFAULT")
     helper.set_working_directory(tmpdir.strpath)
-    return helper
+    return (helper, tmpdir)
 
 
 def generated_exp(n=1, space_group="P 2", assign_ids=False, id_=None):
@@ -130,10 +133,10 @@ def test_dials_symmetry_decide_pointgroup(
     expected_lattices,
     required_spacegroup_order,
     other_spacegroups,
-    tmpdir,
+    helper_directory,
 ):
     """Test for the dials_symmetry_decide_pointgroup helper function """
-    helper = make_helper(tmpdir)
+    helper, tmpdir = helper_directory
     refl_path = (tmpdir / "test.refl").strpath
     exp_path = (tmpdir / "test.expt").strpath
     generated_exp(space_group=experiments_spacegroup).as_file(exp_path)
@@ -152,9 +155,9 @@ def test_dials_symmetry_decide_pointgroup(
     assert set(spacegroups[len(required_spacegroup_order) :]) == set(other_spacegroups)
 
 
-def test_assign_identifiers(tmpdir):
+def test_assign_identifiers(helper_directory):
     """Test the call to the assign identifiers wrapper"""
-    helper = make_helper(tmpdir)
+    helper, tmpdir = helper_directory
     experiments = []
     reflections = []
     for i in range(0, 3):
@@ -223,10 +226,10 @@ class simple_sweep_handler(object):
 
 
 @pytest.mark.parametrize("number_of_experiments", [2, 10])
-def test_split_experiments(number_of_experiments, tmpdir):
+def test_split_experiments(number_of_experiments, helper_directory):
     """Test the call to split experiments: should split the dataset on experiment
     id, giving single datasets with unique ids from 0..n-1"""
-    helper = make_helper(tmpdir)
+    helper, tmpdir = helper_directory
     sweephandler = simple_sweep_handler(number_of_experiments)
     exp_path = tmpdir.join("test.expt").strpath
     refl_path = tmpdir.join("test.refl").strpath
@@ -253,10 +256,10 @@ def check_data_in_sweep_handler(sweephandler):
         assert experiment[0].identifier == str(i)
 
 
-def test_assign_and_return_datasets(tmpdir):
+def test_assign_and_return_datasets(helper_directory):
     """Test the combined method of assigning ids and setting in the sweep handler"""
     n = 3
-    helper = make_helper(tmpdir)
+    helper, tmpdir = helper_directory
     sweephandler = simple_sweep_handler(n)
     for i in range(0, n):
         si = sweephandler.get_sweep_information(i)
@@ -371,9 +374,11 @@ test_lattices = [
 
 
 @pytest.mark.parametrize("refiner_lattices, expected_output", test_lattices)
-def test_dials_symmetry_indexer_jiffy(tmpdir, refiner_lattices, expected_output):
+def test_dials_symmetry_indexer_jiffy(
+    refiner_lattices, expected_output, helper_directory
+):
     """Test the jiffy"""
-    helper = make_helper(tmpdir)
+    helper, tmpdir = helper_directory
     n = 1
     multisweep = False
     # Create list of experiments, reflections and refiners
