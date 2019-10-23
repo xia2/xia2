@@ -1,7 +1,7 @@
 xia2 with DIALS is now more persistent in searching for an indexing
 solution when using xia2 in small molecule mode (i.e. when calling
 ``xia2.small_molecule`` or when calling ``xia2`` with the option
-``small_molecule=True``).  Previously, it would perform a 3-d fast
+``small_molecule=True``).  Previously, it would perform a 3D fast
 Fourier transform, falling back on a 1-d FFT strategy.  It now performs
 the following indexing strategies in turn until a result is found:
   1. Try the standard 3-d/1-d FFT indexing routine;
