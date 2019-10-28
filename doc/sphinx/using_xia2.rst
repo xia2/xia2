@@ -13,15 +13,15 @@ or::
 The program is used from the command-line; there is no GUI. The
 most important command-line options are as follows:
 
-  =============== =====
-  Option          Usage
-  =============== =====
-  atom= X         tell xia2 to separate anomalous pairs i.e. I(+) :math:`\neq` I(−) in scaling
-  pipeline=dials  tell xia2 to use DIALS_ and Aimless_
-  pipeline=2d     tell xia2 to use MOSFLM_ and Aimless_
-  pipeline=3d     tell xia2 to use XDS_ and XSCALE_
-  pipeline=3dii   tell xia2 to use XDS_ and XSCALE_, indexing with peaks found from all images
-  =============== =====
+  ======================= =====
+  Option                  Usage
+  ======================= =====
+  atom= X                 tell xia2 to separate anomalous pairs i.e. I(+) :math:`\neq` I(−) in scaling
+  pipeline=dials          tell xia2 to use DIALS_ with DIALS scaling
+  pipeline=dials-aimless  tell xia2 to use DIALS_ and Aimless_
+  pipeline=3d             tell xia2 to use XDS_ and XSCALE_
+  pipeline=3dii           tell xia2 to use XDS_ and XSCALE_, indexing with peaks found from all images
+  ======================= =====
 
 These specify in the broadest possible terms to the program the manner
 in which you would like the processing performed. The program will then
@@ -63,7 +63,6 @@ The input file to the program, which is generated automatically,
 shows how the input data are understood. This may be adjusted and the
 program rerun, which will be covered in more detail later in the manual.
 
-.. _MOSFLM: http://www.mrc-lmb.cam.ac.uk/harry/mosflm/
 .. _DIALS: http://dials.github.io/
 .. _XDS: http://xds.mpimf-heidelberg.mpg.de/
 .. _XSCALE: http://xds.mpimf-heidelberg.mpg.de/html_doc/xscale_program.html

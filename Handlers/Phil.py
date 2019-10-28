@@ -23,14 +23,6 @@ general
     .type = bool
     .expert_level = 2
 }
-mosflm
-  .short_caption = "Mosflm settings"
-{
-  backstop_mask = None
-    .type = path
-    .short_caption = "Backstop mask"
-    .expert_level = 1
-}
 xds
   .short_caption = "XDS settings"
 {
@@ -375,7 +367,7 @@ dials
     phil_file = None
       .type = path
       .short_caption = "phil file to pass to dials.integrate"
-    background_outlier_algorithm = *null nsigma truncated normal tukey mosflm
+    background_outlier_algorithm = *null nsigma truncated normal plane tukey
       .type = choice
       .help = "Outlier rejection performed prior to background fit"
       .short_caption = "Outlier rejection method"
@@ -572,11 +564,9 @@ strategy
 xia2.settings
   .short_caption = "xia2 settings"
 {
-  pipeline = 2d 2di 3d 3dd 3di 3dii *dials dials-full dials-aimless
+  pipeline = 3d 3dd 3di 3dii *dials dials-full dials-aimless
     .short_caption = "main processing pipeline"
     .help = "Select the xia2 main processing pipeline\n" \
-            "   2d: MOSFLM, LABELIT (if installed), AIMLESS\n" \
-            "  2di: as 2d, but use 3 wedges for indexing\n" \
             "   3d: XDS, XSCALE, LABELIT\n" \
             "  3di: as 3d, but use 3 wedges for indexing\n" \
             " 3dii: XDS, XSCALE, using all images for autoindexing\n" \
@@ -868,13 +858,13 @@ xia2.settings
     geometry_y = None
       .type = path
   }
-  indexer = mosflm labelit labelitii xds xdsii xdssum dials
+  indexer = labelit labelitii xds xdsii xdssum dials
     .type = choice
     .expert_level = 2
-  refiner = mosflm xds dials
+  refiner = xds dials
     .type = choice
     .expert_level = 2
-  integrater = mosflmr xdsr mosflm xds dials
+  integrater = xdsr xds dials
     .type = choice
     .expert_level = 2
   scaler = ccp4a xdsa dials

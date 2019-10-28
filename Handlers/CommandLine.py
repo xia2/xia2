@@ -177,8 +177,6 @@ class _CommandLine(object):
         self._argv = copy.deepcopy(sys.argv)
 
         replacements = {
-            "-2d": "pipeline=2d",
-            "-2di": "pipeline=2di",
             "-3d": "pipeline=3d",
             "-3di": "pipeline=3di",
             "-3dii": "pipeline=3dii",
@@ -542,31 +540,7 @@ class _CommandLine(object):
     def _read_pipeline():
         settings = PhilIndex.get_python_object().xia2.settings
         indexer, refiner, integrater, scaler = None, None, None, None
-        if settings.pipeline == "2d":
-            Debug.write("2DA pipeline selected")
-            print(
-                "***\n\nWarning: Pipeline '%s' is no longer supported and will be removed in a future release.\n\n***"
-                % settings.pipeline
-            )
-            indexer, refiner, integrater, scaler = (
-                "mosflm",
-                "mosflm",
-                "mosflmr",
-                "ccp4a",
-            )
-        elif settings.pipeline == "2di":
-            Debug.write("2DA pipeline; mosflm indexing selected")
-            print(
-                "***\n\nWarning: Pipeline '%s' is no longer supported and will be removed in a future release.\n\n***"
-                % settings.pipeline
-            )
-            indexer, refiner, integrater, scaler = (
-                "mosflm",
-                "mosflm",
-                "mosflmr",
-                "ccp4a",
-            )
-        elif settings.pipeline == "3d":
+        if settings.pipeline == "3d":
             Debug.write("3DR pipeline selected")
             indexer, refiner, integrater, scaler = "xds", "xds", "xdsr", "xdsa"
         elif settings.pipeline == "3di":

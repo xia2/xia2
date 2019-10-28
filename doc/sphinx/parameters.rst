@@ -10,10 +10,10 @@ are:
 
   =========================================  ==============
   ``atom=X``                                 Tell xia2 to separate anomalous pairs i.e. I(+) :math:`\neq` I(−) in scaling.
-  ``pipeline=2d``                            Tell xia2 to use MOSFLM_ and Aimless_.
   ``pipeline=3d``                            Tell xia2 to use XDS_ and XSCALE_.
   ``pipeline=3dii``                          Tell xia2 to use XDS_ and XSCALE_, indexing with peaks found from all images.
-  ``pipeline=dials``                         Tell xia2 to use DIALS_ and Aimless_.
+  ``pipeline=dials``                         Tell xia2 to use DIALS_.
+  ``pipeline=dials-aimless``                 Tell xia2 to use DIALS_ but scale with Aimless_.
   ``xinfo=some.xinfo``                       Use specific modified .xinfo input file.
   ``image=/path/to/an/image.img``            Process a specific scan.  Pass multiple ``image=`` parameters to include multiple scans.
   ``image=/path/to/an/image.img:start:end``  Process a specific image range within a scan.  ``start`` and ``end`` are numbers denoting the image range, e.g. ``image=/path/to/an/image.img:1:100`` processes images 1–100 inclusive.  As above, one can pass multiple ``image=`` parameters.
@@ -64,7 +64,6 @@ Here is a comprehensive list of PHIL parameters used by xia2:
 
 
 .. _PHIL (Python-based Hierarchial Interchange Language): http://cctbx.sourceforge.net/libtbx_phil.html
-.. _MOSFLM: http://www.mrc-lmb.cam.ac.uk/harry/mosflm/
 .. _DIALS: http://dials.github.io/
 .. _XDS: http://xds.mpimf-heidelberg.mpg.de/
 .. _XSCALE: http://xds.mpimf-heidelberg.mpg.de/html_doc/xscale_program.html

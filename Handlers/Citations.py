@@ -1,10 +1,3 @@
-#!/usr/bin/env python
-# Citations.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
 # A handler for management of program citations. This should initialise
 # from a citations.xml file which can be found in a number of places...
 # in particular $HOME or $USERDIR (I think, on Windows) .xia2,
@@ -151,20 +144,3 @@ class _Citations(object):
 
 
 Citations = _Citations()
-
-if __name__ == "__main__":
-    print(Citations.find_citations(program="xia2"))
-    print(
-        Citations.find_citations(acta="Winter, G. (2010) J. Appl. Cryst. 43, 186-190.")
-    )
-
-    Citations.cite("labelit")
-    Citations.cite("denzo")
-    Citations.cite("mosflm")
-    Citations.cite("xds")
-    Citations.cite("xia2")
-
-    for citation in Citations.get_citations_acta():
-        print(citation)
-
-    print(Citations.get_programs())

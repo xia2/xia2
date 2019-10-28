@@ -20,17 +20,9 @@ def check(key, value):
 
     # this should be current!
 
-    allowed_indexers = [
-        "mosflm",
-        "labelit",
-        "labelitii",
-        "xds",
-        "xdsii",
-        "xdssum",
-        "dials",
-    ]
-    allowed_integraters = ["mosflmr", "xdsr", "mosflm", "xds", "dials"]
-    allowed_refiners = ["mosflm", "xds", "dials"]
+    allowed_indexers = ["labelit", "xds", "xdsii", "xdssum", "dials"]
+    allowed_integraters = ["xdsr", "xds", "dials"]
+    allowed_refiners = ["xds", "dials"]
     allowed_scalers = ["ccp4a", "xdsa", "dials"]
 
     if key == "indexer":
@@ -46,8 +38,6 @@ def check(key, value):
     if key == "integrater":
         if not value in allowed_integraters:
             raise RuntimeError("integrater %s unknown" % value)
-        if value == "mosflm":
-            return "mosflmr"
         if value == "xds":
             return "xdsr"
         return value

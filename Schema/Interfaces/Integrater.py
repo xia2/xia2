@@ -648,9 +648,6 @@ class Integrater(FrameProcessor):
     def get_integrater_excluded_regions(self):
         return self._intgr_excluded_regions
 
-    # these methods which follow should probably be respected by
-    # the Mosflm implementation of integrater
-
     def set_integrater_spacegroup_number(self, spacegroup_number):
         # FIXME check that this is appropriate with what the
         # indexer things is currently correct. Also - should this

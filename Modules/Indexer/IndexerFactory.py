@@ -1,31 +1,5 @@
-#!/usr/bin/env python
-# IndexerFactory.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 13th June 2006
-#
 # A factory for Indexer class instances. This will return an indexer
 # suitable for using in the context defined in the input.
-#
-# 04/SEP/06 FIXME this needs to handle Mosflm, LabelitIndex as
-#           implementations of indexer, since the constructors will
-#           now raise an exception if the program is not available
-#           can encode the expertise on which to provide in here.
-#           This module should also check that the class in question
-#           at some stage inherits from Schema/Interfaces/Indexer.py
-#           since that is the core definition.
-#
-# This supports the following Indexer implementations:
-#
-# Mosflm/Indexer
-# LabelitIndex/Indexer
-# XDS/Indexer
-#
-# And will make a decision based on the screen information if available.
-# Integral unit test was also out of date, because the interface has changed.
 
 from __future__ import absolute_import, division, print_function
 
@@ -38,7 +12,6 @@ from xia2.Handlers.Streams import Debug
 from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
 from xia2.Modules.Indexer.LabelitIndexer import LabelitIndexer
 from xia2.Modules.Indexer.LabelitIndexerII import LabelitIndexerII
-from xia2.Modules.Indexer.MosflmIndexer import MosflmIndexer
 from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
 from xia2.Modules.Indexer.XDSIndexerII import XDSIndexerII
 from xia2.Modules.Indexer.XDSIndexerInteractive import XDSIndexerInteractive
@@ -55,11 +28,6 @@ def IndexerForXSweep(xsweep, json_file=None):
 
     if not xsweep.__class__.__name__ == "XSweep":
         raise RuntimeError("XSweep instance needed")
-
-    # if the xsweep has a crystal lattice defined, use mosflm which
-    # FIXME needs to be modified to take a crystal cell as input.
-    # Ignore this - both mosflm and labelit can take this as
-    # input and it is implemented for both via the Indexer interface.
 
     crystal_lattice = xsweep.get_crystal_lattice()
 
@@ -171,7 +139,6 @@ def Indexer(preselection=None):
     indexerlist = [
         (DialsIndexer, "dials", "DialsIndexer"),
         (LabelitIndexer, "labelit", "Labelit Indexer"),
-        (MosflmIndexer, "mosflm", "Mosflm Indexer"),
         (XDSIndexer, "xds", "XDS Indexer"),
     ]
 
@@ -200,18 +167,3 @@ def Indexer(preselection=None):
         raise RuntimeError("no indexer implementations found")
 
     return indexer
-
-
-if __name__ == "__main__":
-
-    directory = os.path.join(os.environ["X2TD_ROOT"], "DL", "insulin", "images")
-
-    i = Indexer()
-
-    i.setup_from_image(os.path.join(directory, "insulin_1_001.img"))
-
-    print("Refined beam is: %6.2f %6.2f" % i.get_indexer_beam_centre())
-    print("Distance:        %6.2f" % i.get_indexer_distance())
-    print("Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f" % i.get_indexer_cell())
-    print("Lattice: %s" % i.get_indexer_lattice())
-    print("Mosaic: %6.2f" % i.get_indexer_mosaic())
