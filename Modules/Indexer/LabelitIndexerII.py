@@ -89,13 +89,10 @@ import copy
 import math
 
 from xia2.Handlers.Citations import Citations
-from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.Handlers.Streams import Debug, Journal
 from xia2.lib.bits import auto_logfiler
 from xia2.lib.SymmetryLib import lattice_to_spacegroup
 from xia2.Modules.Indexer.LabelitIndexer import LabelitIndexer
-from xia2.Modules.Indexer.MosflmCheckIndexerSolution import (
-    mosflm_check_indexer_solution,
-)
 from xia2.Wrappers.Labelit.LabelitDistl import LabelitDistl
 
 # other labelit things that this uses
@@ -416,32 +413,4 @@ class LabelitIndexerII(LabelitIndexer):
         # strictly speaking, given the right input there should be
         # no need to test...
 
-        if self._indxr_input_lattice:
-            return
-
-        if self.get_indexer_sweep().get_user_lattice():
-            return
-
-        status, lattice, matrix, cell = mosflm_check_indexer_solution(self)
-
-        if status is None:
-            # basis is primitive
-            return
-
-        if status is False:
-            # basis is centred, and passes test
-            return
-
-        # ok need to update internals...
-
-        self._indxr_lattice = lattice
-        self._indxr_cell = cell
-
-        Debug.write(
-            "Inserting solution: %s " % lattice
-            + "%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f" % cell
-        )
-
-        self._indxr_replace(lattice, cell)
-
-        self._indxr_payload["mosflm_orientation_matrix"] = matrix
+        return  # we no longer support mosflm

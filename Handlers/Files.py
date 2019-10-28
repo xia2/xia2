@@ -1,10 +1,3 @@
-#!/usr/bin/env python
-# Files.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
 # A manager for files - this will record temporary and output files from
 # xia2, which can be used for composing a dump of "useful" files at the end
 # if processing.
@@ -19,20 +12,6 @@ import os
 import shutil
 
 from xia2.Handlers.Environment import Environment
-
-
-def get_mosflm_commands(lines_of_input):
-    """Get the commands which were sent to Mosflm."""
-
-    result = []
-
-    for line in lines_of_input:
-        if "===>" in line:
-            result.append(line.replace("===>", "").strip())
-        if "MOSFLM =>" in line:
-            result.append(line.replace("MOSFLM =>", "").strip())
-
-    return result
 
 
 def get_xds_commands(lines_of_input):
@@ -208,9 +187,3 @@ FileHandler = _FileHandler()
 
 def cleanup():
     FileHandler.cleanup()
-
-
-if __name__ == "__main__":
-    FileHandler.record_temporary_file("noexist.txt")
-    open("junk.txt", "w").write("junk!")
-    FileHandler.record_temporary_file("junk.txt")
