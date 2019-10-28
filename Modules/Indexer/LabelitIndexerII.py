@@ -180,7 +180,7 @@ class LabelitIndexerII(LabelitIndexer):
         _images = []
         for i in self._indxr_images:
             for j in i:
-                if not j in _images:
+                if j not in _images:
                     _images.append(j)
 
         _images.sort()

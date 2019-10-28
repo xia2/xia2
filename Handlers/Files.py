@@ -138,24 +138,24 @@ class _FileHandler(object):
     def record_log_file(self, tag, filename):
         """Record a log file."""
         self._log_files[tag] = filename
-        if not tag in self._log_file_keys:
+        if tag not in self._log_file_keys:
             self._log_file_keys.append(tag)
 
     def record_xml_file(self, tag, filename):
         """Record an xml file."""
         self._xml_files[tag] = filename
-        if not tag in self._xml_file_keys:
+        if tag not in self._xml_file_keys:
             self._xml_file_keys.append(tag)
 
     def record_html_file(self, tag, filename):
         """Record an html file."""
         self._html_files[tag] = filename
-        if not tag in self._html_file_keys:
+        if tag not in self._html_file_keys:
             self._html_file_keys.append(tag)
 
     def record_data_file(self, filename):
         """Record a data file."""
-        if not filename in self._data_files:
+        if filename not in self._data_files:
             assert os.path.isfile(filename), "Required file %s not found" % filename
             self._data_files.append(filename)
 
@@ -164,13 +164,13 @@ class _FileHandler(object):
         ext = os.path.splitext(filename)[1][1:]
         key = (tag, ext)
         self._more_data_files[key] = filename
-        if not tag in self._more_data_file_keys:
+        if tag not in self._more_data_file_keys:
             self._more_data_file_keys.append(key)
 
     def get_data_file(self, filename):
         """Return the point where this data file will end up!"""
 
-        if not filename in self._data_files:
+        if filename not in self._data_files:
             return filename
 
         data_directory = Environment.generate_directory("DataFiles")
@@ -178,7 +178,7 @@ class _FileHandler(object):
 
     def record_temporary_file(self, filename):
         # allow for file overwrites etc.
-        if not filename in self._temporary_files:
+        if filename not in self._temporary_files:
             self._temporary_files.append(filename)
 
 
