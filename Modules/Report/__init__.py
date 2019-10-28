@@ -6,12 +6,12 @@ import os
 from collections import OrderedDict
 from six.moves import cStringIO as StringIO
 
+from dials.util import mtz
 import xia2.Handlers.Environment
 import xia2.Handlers.Files
 from cctbx.array_family import flex
 import libtbx.phil
 from iotbx import merging_statistics
-from iotbx.reflection_file_reader import any_reflection_file
 from mmtbx.scaling import printed_output
 
 from dials.util.batch_handling import batch_manager
@@ -280,9 +280,8 @@ class Report(object):
 
     @classmethod
     def from_unmerged_mtz(cls, unmerged_mtz, params, report_dir=None):
-        reader = any_reflection_file(unmerged_mtz)
-        assert reader.file_type() == "ccp4_mtz"
-        arrays = reader.as_miller_arrays(merge_equivalents=False)
+        mtz_object = mtz.object(unmerged_mtz)
+        arrays = mtz_object.as_miller_arrays(merge_equivalents=False)
 
         for ma in arrays:
             if ma.info().labels == ["BATCH"]:
@@ -296,7 +295,6 @@ class Report(object):
 
         assert intensities is not None
         assert batches is not None
-        mtz_object = reader.file_content()
 
         crystal_name = (
             filter(
