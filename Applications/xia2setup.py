@@ -14,6 +14,7 @@
 from __future__ import absolute_import, division, print_function
 
 import collections
+import operator
 import os
 import sys
 import traceback
@@ -237,16 +238,12 @@ def visit(root, directory, files):
 
 
 def print_sweeps(out=sys.stdout):
-
     global known_sweeps, latest_sequence
 
-    sweeplists = known_sweeps.keys()
-    assert len(sweeplists) > 0, "no sweeps found"
-    sweeplists.sort()
+    sweeplists = sorted(known_sweeps)
+    assert sweeplists, "no sweeps found"
 
     # sort sweeplist based on epoch of first image of each sweep
-    import operator
-
     epochs = [
         known_sweeps[sweep][0].get_imageset().get_scan().get_epochs()[0]
         for sweep in sweeplists

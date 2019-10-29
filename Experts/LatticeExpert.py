@@ -152,19 +152,13 @@ def SortLattices(lattice_list):
         "cI": 197,
     }
 
-    spacegroup_to_lattice = {}
-    for k in lattice_to_spacegroup.keys():
-        spacegroup_to_lattice[lattice_to_spacegroup[k]] = k
+    spacegroup_to_lattice = {v: k for k, v in lattice_to_spacegroup.items()}
 
     spacegroups = sorted(lattice_to_spacegroup[l] for l in lattices)
-
     spacegroups.reverse()
     lattices = [spacegroup_to_lattice[s] for s in spacegroups]
 
-    result = []
-
-    for l in lattices:
-        result.append((l, ConstrainLattice(l[0], cells[l])))
+    result = [(l, ConstrainLattice(l[0], cells[l])) for l in lattices]
 
     return result
 
@@ -207,9 +201,8 @@ def s2l(spacegroup):
         "cI": 197,
     }
 
-    spacegroup_to_lattice = {}
-    for k in lattice_to_spacegroup.keys():
-        spacegroup_to_lattice[lattice_to_spacegroup[k]] = k
+    spacegroup_to_lattice = {v: k for k, v in lattice_to_spacegroup.items()}
+
     return spacegroup_to_lattice[spacegroup]
 
 

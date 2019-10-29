@@ -5,8 +5,8 @@ import os
 import shutil
 import uuid
 
-from xia2.lib.bits import auto_logfiler
 from xia2.Handlers.Streams import Chatter
+from xia2.lib.bits import auto_logfiler
 from xia2.Wrappers.XIA.Integrate import Integrate as XIA2Integrate
 
 
@@ -91,7 +91,7 @@ def process_one_sweep(args):
 
         if success:
             xinfo = XProject.from_json(new_json)
-            xcryst = xinfo.get_crystals().values()[0]
+            xcryst = list(xinfo.get_crystals().values())[0]
             xsweep = xcryst.get_xwavelength(wavelength_id).get_sweeps()[0]
             xsweep_dict = xsweep.to_dict()
 

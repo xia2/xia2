@@ -1,12 +1,3 @@
-#!/usr/bin/env python
-# CommandLine.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 12th June 2006
-#
 # A handler for all of the information which may be passed in on the command
 # line. This singleton object should be able to handle the input, structure
 # it and make it available in a useful fashion.
@@ -186,7 +177,7 @@ class _CommandLine(object):
             "-failover": "failover=true",
             "-small_molecule": "small_molecule=true",
         }
-        for k, v in replacements.iteritems():
+        for k, v in replacements.items():
             if k in self._argv:
                 print(
                     "***\nCommand line option %s is deprecated.\nPlease use %s instead\n***"
@@ -578,7 +569,3 @@ class _CommandLine(object):
 
 CommandLine = _CommandLine()
 CommandLine.setup()
-
-if __name__ == "__main__":
-    print(CommandLine.get_beam())
-    print(CommandLine.get_xinfo())

@@ -1,11 +1,20 @@
 repos:
 
+# Automatically sort imports
+#- repo: https://github.com/timothycrosley/isort.git
+#  rev: 4.3.21
+#  hooks:
+#  - id: isort
+#    additional_dependencies: [toml]
+
 # Automatic source code formatting
-- repo: https://github.com/ambv/black
+- repo: https://github.com/psf/black
   rev: stable
   hooks:
   - id: black
     args: [--safe, --quiet]
+    files: \.pyi?$|^libtbx_config$
+    types: [file]
 
 # Syntax check and some basic flake8
 - repo: https://github.com/pre-commit/pre-commit-hooks
