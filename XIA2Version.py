@@ -1,15 +1,8 @@
-# XIA2Version.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 6th June 2006
-#
 # A file containing the version number of the current xia2. Generally useful.
-#
 
 from __future__ import absolute_import, division, print_function
+
+import os
 
 
 def get_git_revision(fallback="not set"):
@@ -17,8 +10,6 @@ def get_git_revision(fallback="not set"):
     and store a copy in .gitversion"""
     version = None
     try:
-        import os
-
         xia2_path = os.path.split(os.path.realpath(__file__))[0]
         version_file = os.path.join(xia2_path, ".gitversion")
 
@@ -37,7 +28,7 @@ def get_git_revision(fallback="not set"):
                         )
                         output = process.communicate()[0]
                         assert not process.poll()
-                        return output.rstrip()
+                        return output.rstrip().decode("latin-1")
 
                 version = get_stdout(["git", "describe", "--long"], cwd=xia2_path)
                 if version[0] == "v":
@@ -71,7 +62,7 @@ def get_git_revision(fallback="not set"):
     if version is None:
         version = fallback
 
-    return version
+    return str(version)
 
 
 VersionNumber = get_git_revision("0.6.0")
