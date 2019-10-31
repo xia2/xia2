@@ -1,28 +1,18 @@
-#!/usr/bin/env python
-# XProject.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
 # This represents the "top level" of the .xinfo hierarchy, and should
 # exactly correspond to the contents of the .xinfo file.
 
 from __future__ import absolute_import, division, print_function
 
-from xia2.Handlers.Phil import PhilIndex
+import inspect
+import json
 
-# output stream
+from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import Debug
 from xia2.Handlers.Syminfo import Syminfo
 from xia2.Handlers.XInfo import XInfo
 from xia2.Schema.XCrystal import XCrystal
 from xia2.Schema.XSample import XSample
 from xia2.Schema.XWavelength import XWavelength
-
-# hooks to all of the child objects
-
-# .xinfo parser
 
 
 class XProject(object):
@@ -42,14 +32,11 @@ class XProject(object):
     def to_dict(self):
         obj = {}
         obj["__id__"] = "XProject"
-        import inspect
 
-        attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
+        attributes = inspect.getmembers(self, lambda m: not inspect.isroutine(m))
         for a in attributes:
             if a[0] == "_crystals":
-                crystals = {}
-                for cname, cryst in a[1].items():
-                    crystals[cname] = cryst.to_dict()
+                crystals = {cname: cryst.to_dict() for cname, cryst in a[1].items()}
                 obj[a[0]] = crystals
             elif a[0].startswith("__"):
                 continue
@@ -73,8 +60,6 @@ class XProject(object):
         return return_obj
 
     def as_json(self, filename=None, compact=True):
-        import json
-
         obj = self.to_dict()
         if compact:
             text = json.dumps(
@@ -92,8 +77,6 @@ class XProject(object):
 
     @classmethod
     def from_json(cls, filename=None, string=None):
-        import json
-
         def _decode_dict(data):
             """ Decode a dict to str from unicode. """
             from dxtbx.serialize.load import _decode_list
@@ -127,7 +110,7 @@ class XProject(object):
     def get_output(self):
         result = "Project: %s\n" % self._name
 
-        for crystal in list(self._crystals.keys()):
+        for crystal in self._crystals:
             result += self._crystals[crystal].get_output()
         return result[:-1]
 
@@ -135,7 +118,7 @@ class XProject(object):
         """Produce summary information."""
 
         summary = ["Project: %s" % self._name]
-        for crystal in list(self._crystals.keys()):
+        for crystal in self._crystals:
             for record in self._crystals[crystal].summarise():
                 summary.append(record)
 
@@ -150,7 +133,7 @@ class XProject(object):
         if not xcrystal.__class__.__name__ == "XCrystal":
             raise RuntimeError("crystal must be class XCrystal.")
 
-        if xcrystal.get_name() in list(self._crystals.keys()):
+        if xcrystal.get_name() in self._crystals:
             raise RuntimeError(
                 "XCrystal with name %s already exists" % xcrystal.get_name()
             )
@@ -178,7 +161,7 @@ class XProject(object):
         self._name = xinfo.get_project()
         crystals = xinfo.get_crystals()
 
-        for crystal in list(crystals.keys()):
+        for crystal in crystals:
             xc = XCrystal(crystal, self)
             if "sequence" in crystals[crystal]:
                 xc.set_aa_sequence(crystals[crystal]["sequence"])
@@ -209,24 +192,20 @@ class XProject(object):
             if not crystals[crystal]["samples"]:
                 crystals[crystal]["samples"]["X1"] = {}
 
-            for sample in list(crystals[crystal]["samples"].keys()):
-                sample_info = crystals[crystal]["samples"][sample]
-
+            for sample in crystals[crystal]["samples"]:
                 xsample = XSample(sample, xc)
                 xc.add_sample(xsample)
 
             if not crystals[crystal]["wavelengths"]:
                 raise RuntimeError("No wavelengths specified in xinfo file")
 
-            for wavelength in list(crystals[crystal]["wavelengths"].keys()):
+            for wavelength, wave_info in crystals[crystal]["wavelengths"].items():
                 # FIXME 29/NOV/06 in here need to be able to cope with
                 # no wavelength information - this should default to the
                 # information in the image header (John Cowan pointed
                 # out that this was untidy - requiring that it agrees
                 # with the value in the header makes this almost
                 # useless.)
-
-                wave_info = crystals[crystal]["wavelengths"][wavelength]
 
                 if "wavelength" not in wave_info:
                     Debug.write(
@@ -240,7 +219,7 @@ class XProject(object):
 
                 # handle case where user writes f" in place of f''
 
-                if 'f"' in wave_info and not "f''" in wave_info:
+                if 'f"' in wave_info and "f''" not in wave_info:
                     wave_info["f''"] = wave_info['f"']
 
                 xw = XWavelength(
@@ -290,13 +269,11 @@ class XProject(object):
                 # for this sweep while leaving the rest for the data set
                 # intact...
 
-                for sweep_name in list(crystals[crystal]["sweeps"].keys()):
-                    sweep_info = crystals[crystal]["sweeps"][sweep_name]
-
+                for sweep_name, sweep_info in crystals[crystal]["sweeps"].items():
                     sample_name = sweep_info.get("sample")
                     if sample_name is None:
                         if len(crystals[crystal]["samples"]) == 1:
-                            sample_name = list(crystals[crystal]["samples"].keys())[0]
+                            sample_name = list(crystals[crystal]["samples"])[0]
                         else:
                             raise RuntimeError(
                                 "No sample given for sweep %s" % sweep_name
@@ -307,10 +284,8 @@ class XProject(object):
 
                     dmin_old = dmin
                     dmax_old = dmax
-                    replace = False
 
                     if "RESOLUTION" in sweep_info:
-
                         values = map(float, sweep_info["RESOLUTION"].split())
                         if len(values) == 1:
                             dmin = values[0]
@@ -322,10 +297,7 @@ class XProject(object):
                                 "bad resolution for sweep %s" % sweep_name
                             )
 
-                        replace = True
-
                     if sweep_info["wavelength"] == wavelength:
-
                         frames_to_process = sweep_info.get("start_end")
 
                         xsweep = xw.add_sweep(
@@ -356,10 +328,3 @@ class XProject(object):
                 xc.add_wavelength(xw)
 
             self.add_crystal(xc)
-
-    def write_xifo(self):
-        """Write an updated .xinfo file which takes into account the input
-        provided by the user on the command line and any input xinfo
-        file: this is what xia2 understood to be the problem."""
-
-        raise NotImplementedError("FIXME this method must be implemented")

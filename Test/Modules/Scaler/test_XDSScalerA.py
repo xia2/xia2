@@ -93,6 +93,6 @@ def check_scaler_files_exist(scaler):
         if isinstance(merged[filetype], basestring):
             files = [merged[filetype]]
         else:
-            files = list(merged[filetype].values())
+            files = merged[filetype].values()
         for f in files:
             assert os.path.isfile(f)

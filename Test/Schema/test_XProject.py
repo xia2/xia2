@@ -77,6 +77,7 @@ def exercise_serialization(dials_data, tmp_dir):
     s_str = json.dumps(s_dict, ensure_ascii=True)
     s_dict = json.loads(s_str, object_hook=_decode_dict)
     xsweep = XSweep.from_dict(s_dict)
+    assert xsweep
 
     w_dict = wav.to_dict()
     w_str = json.dumps(w_dict, ensure_ascii=True)
@@ -105,8 +106,8 @@ def exercise_serialization(dials_data, tmp_dir):
     print("\n".join(xproj.summarise()))
     json_str = xproj.as_json()
     xproj = XProject.from_json(string=json_str)
-    assert list(xproj.get_crystals().values())[0].get_project() is xproj
     xcryst = list(xproj.get_crystals().values())[0]
+    assert xcryst.get_project() is xproj
     intgr = xcryst._get_integraters()[0]
     assert intgr.get_integrater_finish_done()
     assert (

@@ -1,9 +1,9 @@
 from __future__ import absolute_import, division, print_function
 
+import xml.dom.minidom
+
 
 def parse_aimless_xml(xml_file):
-    import xml.dom.minidom
-
     aimless_xml_names_to_standard = {
         "AnomalousCompleteness": "Anomalous completeness",
         "AnomalousMultiplicity": "Anomalous multiplicity",

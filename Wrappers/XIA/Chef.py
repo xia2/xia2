@@ -1,12 +1,3 @@
-#!/usr/bin/env python
-# Chef.py
-#   Copyright (C) 2008 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 5th February 2008
-#
 # A wrapper for the new program "chef". This has been developed for xia2
 # to analyse the bulk properties of intensity measurements, particularly
 # looking at how well they agree. The idea is that reflection files with
@@ -22,14 +13,12 @@
 from __future__ import absolute_import, division, print_function
 
 import math
-import sys
 
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Experts.WedgeExpert import digest_wedges
-from xia2.Handlers.Streams import Chatter, Stdout
+from xia2.Handlers.Streams import Chatter
 from xia2.lib.bits import mean_sd, transpose_loggraph
-from xia2.Wrappers.CCP4.Mtzdump import Mtzdump
 
 
 def Chef(DriverType=None, stream=Chatter):
@@ -42,7 +31,6 @@ def Chef(DriverType=None, stream=Chatter):
         """Provide access to the functionality in chef."""
 
         def __init__(self):
-
             CCP4DriverInstance.__class__.__init__(self)
 
             self.set_executable("pychef")
@@ -67,41 +55,32 @@ def Chef(DriverType=None, stream=Chatter):
 
             self._stream = stream
 
-            return
-
         def add_hklin(self, hklin):
             self._hklin_list.append(hklin)
-            return
 
         def set_anomalous(self, anomalous):
             self._anomalous = anomalous
-            return
 
         def set_resolution(self, resolution):
             self._resolution = resolution
-            return
 
         def set_width(self, width):
             self._b_width = width
-            return
 
         def set_max(self, max):
             self._b_max = max
-            return
 
         def set_labin(self, labin):
             self._b_labin = labin
-            return
 
         def set_title(self, title):
             self._title = title
-            return
 
         def get_completeness(self, wavelength):
             return self._completeness[wavelength]
 
         def get_completeness_datasets(self):
-            return list(self._completeness.keys())
+            return list(self._completeness)
 
         def run(self):
             """Actually run chef..."""
@@ -151,13 +130,13 @@ def Chef(DriverType=None, stream=Chatter):
                     completeness = []
                     k = j + 2
                     record = output[k]
-                    while not "Expected" in record and not "$TABLE" in record:
+                    while "Expected" not in record and "$TABLE" not in record:
                         completeness.append(
                             (float(record.split()[0]), float(record.split()[-1]))
                         )
                         dose = float(record.split()[0])
 
-                        if not dose in all_doses:
+                        if dose not in all_doses:
                             all_doses.append(dose)
 
                         k += 1
@@ -167,7 +146,7 @@ def Chef(DriverType=None, stream=Chatter):
 
             # now jimmy these..
 
-            for dataset in list(self._completeness.keys()):
+            for dataset in self._completeness:
                 completeness = self._completeness[dataset]
                 cmax = completeness[-1][1]
                 cnew = []
@@ -189,8 +168,6 @@ def Chef(DriverType=None, stream=Chatter):
                 # results...
 
             self.parse()
-
-            return
 
         def digest_rd(self, values):
             """Digest the results of an Rd calculation, working on the
@@ -265,10 +242,6 @@ def Chef(DriverType=None, stream=Chatter):
                     continue
 
                 var += (v - my) * (v - my)
-
-            sigma = math.sqrt(var / (n - 1))
-
-            # return sigma / sd
 
             return (var / (sd * sd)) / n
 
@@ -459,8 +432,6 @@ def Chef(DriverType=None, stream=Chatter):
                     % (dose_col.replace("1_", ""), stop_dose)
                 )
 
-            return
-
         def digest_dose_profile(self):
             """Digest the dose profile to list a range of points where
             we could consider stopping the data collection."""
@@ -473,7 +444,6 @@ def Chef(DriverType=None, stream=Chatter):
             batch_dataset = {}
 
             for j, b in enumerate(self._dose_profile["1_BATCH"]):
-
                 b = int(b)
                 d = float(self._dose_profile["2_DOSE"][j])
                 ds = self._dose_profile["3_DATASET"][j]
@@ -484,8 +454,6 @@ def Chef(DriverType=None, stream=Chatter):
 
             doses = sorted(dose_batch)
 
-            is_monotonic = True
-
             first_batch = dose_batch[doses[0]]
 
             start_batches = [first_batch]
@@ -494,7 +462,6 @@ def Chef(DriverType=None, stream=Chatter):
             wedge_datasets = {first_batch: batch_dataset[first_batch]}
 
             for d in doses[1:]:
-
                 b = dose_batch[d]
 
                 if b < first_batch:
@@ -502,10 +469,8 @@ def Chef(DriverType=None, stream=Chatter):
                     start_batches.append(current)
                     wedge_sizes[current] = 0
                     wedge_datasets[current] = batch_dataset[current]
-                    is_monotonic = False
 
                 if b > first_batch + 1:
-
                     current = b
                     start_batches.append(current)
                     wedge_sizes[current] = 0
@@ -519,8 +484,7 @@ def Chef(DriverType=None, stream=Chatter):
             start_batches.sort()
 
             for batch in start_batches:
-
-                if not (batch + 1) in batch_dose:
+                if (batch + 1) not in batch_dose:
                     continue
 
                 exposure = batch_dose[batch + 1] - batch_dose[batch]
@@ -537,59 +501,3 @@ def Chef(DriverType=None, stream=Chatter):
             return result
 
     return ChefWrapper()
-
-
-if __name__ == "__main__":
-
-    # ok, in here (which will be "autoCHEF") this will inspect the MTZ
-    # file and run with DOSE if such a column exists, else will run with
-    # BATCH. N.B. this will require a fix above.
-
-    chef = Chef(stream=Stdout)
-
-    dose_column = None
-
-    overall_dmin = None
-
-    for argv in sys.argv[1:]:
-
-        md = Mtzdump()
-        md.set_hklin(argv)
-        md.dump()
-
-        columns = [c[0] for c in md.get_columns()]
-
-        if dose_column:
-            assert dose_column in columns
-            continue
-
-        if "DOSE" in columns:
-
-            dose_range = md.get_column_range("DOSE")[:2]
-            if dose_range[0] != dose_range[1]:
-                dose_column = "DOSE"
-
-        if "BATCH" in columns and not dose_column:
-            dose_column = "BATCH"
-
-        if not dose_column:
-            raise RuntimeError("no DOSE/BATCH column found")
-
-        dmin = min(md.get_resolution_range())
-
-        if overall_dmin is None:
-            overall_dmin = dmin
-        if dmin > overall_dmin:
-            overall_dmin = dmin
-
-    Stdout.write("Selected column: %s" % dose_column)
-
-    for argv in sys.argv[1:]:
-
-        chef.add_hklin(argv)
-        chef.set_labin(dose_column)
-
-    chef.set_resolution(overall_dmin)
-    chef.write_log_file("chef.log")
-    chef.set_anomalous(True)
-    chef.run()

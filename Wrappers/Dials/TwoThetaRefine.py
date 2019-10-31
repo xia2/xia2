@@ -1,17 +1,17 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
 import os
 
+import iotbx.cif
+import iotbx.cif.model
+from xia2.Driver.DriverFactory import DriverFactory
+from xia2.Handlers.Citations import Citations
+from xia2.Handlers.Streams import Chatter, Debug
+
 
 def TwoThetaRefine(DriverType=None):
     """A factory for RefineWrapper classes."""
-    from xia2.Handlers.Citations import Citations
-
     Citations.cite("dials")
-
-    from xia2.Driver.DriverFactory import DriverFactory
 
     DriverInstance = DriverFactory.Driver(DriverType)
 
@@ -91,8 +91,6 @@ def TwoThetaRefine(DriverType=None):
             self._reindexing_operators = operators
 
         def run(self):
-            from xia2.Handlers.Streams import Chatter, Debug
-
             if self._reindexing_operators:
                 Debug.write("Reindexing sweeps for dials.two_theta_refine")
                 from xia2.lib.bits import auto_logfiler
@@ -192,28 +190,22 @@ def TwoThetaRefine(DriverType=None):
 
         def import_cif(self):
             """Import relevant lines from .cif output"""
-            import iotbx.cif
-
             cif = iotbx.cif.reader(file_path=self.get_output_cif()).model()
             block = cif["two_theta_refine"]
             subset = {
-                k: block[k] for k in list(block.keys()) if k.startswith(("_cell", "_diffrn"))
+                k: block[k] for k in block.keys() if k.startswith(("_cell", "_diffrn"))
             }
             return subset
 
         def import_mmcif(self):
             """Import relevant lines from .mmcif output"""
             if os.path.isfile(self.get_output_mmcif()):
-                import iotbx.cif
-
                 cif = iotbx.cif.reader(file_path=self.get_output_mmcif()).model()
                 block = cif["two_theta_refine"]
             else:
-                import iotbx.cif.model
-
                 block = iotbx.cif.model.block()
             subset = {
-                k: block[k] for k in list(block.keys()) if k.startswith(("_cell", "_diffrn"))
+                k: block[k] for k in block.keys() if k.startswith(("_cell", "_diffrn"))
             }
             return subset
 

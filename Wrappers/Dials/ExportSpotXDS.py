@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
 import os
@@ -7,7 +5,6 @@ import os
 from libtbx import phil
 from xia2.Driver.DriverFactory import DriverFactory
 
-# interfaces that this inherits from ...
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 
 master_params = phil.parse(
@@ -17,14 +14,12 @@ master_params = phil.parse(
 
 
 def ExportSpotXDS(DriverType=None, params=None):
-
     DriverInstance = DriverFactory.Driver(DriverType)
 
     class ExportSpotXDSWrapper(DriverInstance.__class__, FrameProcessor):
         """A wrapper for wrapping dials.export_spot_xds."""
 
         def __init__(self, params=None):
-
             super(ExportSpotXDSWrapper, self).__init__()
 
             # phil parameters
@@ -54,7 +49,7 @@ def ExportSpotXDS(DriverType=None, params=None):
         def run(self):
             """Run dials.spotfinder."""
 
-            self.add_command_line(list(self._input_data_files.keys()))
+            self.add_command_line(list(self._input_data_files))
             self.start()
             self.close_wait()
             self.check_for_errors()

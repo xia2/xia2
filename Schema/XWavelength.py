@@ -1,10 +1,3 @@
-#!/usr/bin/env python
-# XWavelength.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
 # A versioning object representing the wavelength level in the .xinfo
 # hierarchy. This will include all of the methods for performing operations
 # on a wavelength as well as stuff for integration with the rest of the
@@ -44,11 +37,6 @@ class XWavelength(object):
     ):
         """Create a new wavelength named name, belonging to XCrystal object
         crystal, with wavelength and optionally f_pr, f_prpr assigned."""
-
-        # check that the crystal is an XCrystal
-
-        if not crystal.__class__.__name__ == "XCrystal":
-            pass
 
         # set up this object
 
@@ -168,7 +156,6 @@ class XWavelength(object):
         return result[:-1]
 
     def summarise(self):
-
         summary = ["Wavelength: %s (%7.5f)" % (self._name, self._wavelength)]
 
         for s in self._sweeps:
@@ -176,9 +163,6 @@ class XWavelength(object):
                 summary.append(record)
 
         return summary
-
-    # def __str__(self):
-    # return self.__repr__()
 
     def get_wavelength(self):
         return self._wavelength
@@ -282,15 +266,7 @@ class XWavelength(object):
             pass
 
     def _get_integraters(self):
-        integraters = []
-        for s in self._sweeps:
-            integraters.append(s._get_integrater())
-
-        return integraters
+        return [s._get_integrater() for s in self._sweeps]
 
     def _get_indexers(self):
-        indexers = []
-        for s in self._sweeps:
-            indexers.append(s._get_indexer())
-
-        return indexers
+        return [s._get_indexer() for s in self._sweeps]
