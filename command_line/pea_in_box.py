@@ -57,7 +57,7 @@ def reconstruct_peabox(params):
         for r in reflections:
             flags = r["flags"]
             r["flags"] = []
-            for v, f in reflections.flags.values.iteritems():
+            for v, f in reflections.flags.values.items():
                 if flags & f:
                     r["flags"].append(str(f))
             r["flags"] = ", ".join(r["flags"])
@@ -90,7 +90,7 @@ def reconstruct_peabox(params):
 
         print(len(sizes), "shoebox sizes extracted")
 
-        for s, c in sizes.iteritems():
+        for s, c in sizes.items():
             print("%dx %s" % (c["count"], str(s)))
             sdat = iter(c["sum"])
             wdat = iter(c["weights"])

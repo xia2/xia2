@@ -79,10 +79,10 @@ class XDSScalerHelper(object):
 
                 Debug.write("Set %d wavelength %f" % (set, wavelength))
 
-        if len(wavelength_dict.keys()) > 1:
+        if len(list(wavelength_dict.keys())) > 1:
             raise RuntimeError("more than one wavelength found")
 
-        return wavelength_dict[wavelength_dict.keys()[0]]
+        return wavelength_dict[list(wavelength_dict.keys())[0]]
 
     def split_xscale_ascii_file(self, xds_ascii_file, prefix):
         """Split the output of XSCALE to separate reflection files for
@@ -93,7 +93,7 @@ class XDSScalerHelper(object):
         files = {}
         return_map = {}
 
-        keys = file_map.keys()
+        keys = list(file_map.keys())
 
         for k in keys:
             files[k] = open(
@@ -147,7 +147,7 @@ class XDSScalerHelper(object):
 
         data_map = self.split_xscale_ascii_file(input_file, prefix)
 
-        for token in data_map.keys():
+        for token in list(data_map.keys()):
 
             if token not in project_info:
                 raise RuntimeError("project info for %s not available" % token)

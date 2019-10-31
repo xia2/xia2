@@ -238,7 +238,7 @@ def decide_integration_resolution_limit(mosflm_integration_output):
 
     resolutions = []
 
-    for k in stats.keys():
+    for k in list(stats.keys()):
         resol = stats[k].get("resolution", -1.0)
         if resol > 0.0:
             resolutions.append(resol)
@@ -355,12 +355,12 @@ def _parse_mosflm_index_output(index_output_list):
         "cI": 197,
     }
 
-    for k in solutions_by_lattice.keys():
+    for k in list(solutions_by_lattice.keys()):
         if solutions_by_lattice[k]["rms"] < acceptable_rms:
             cell = solutions_by_lattice[k]["cell"]
 
             # record this only if it is a standard setting!
-            if k in lattice_to_spacegroup.keys():
+            if k in list(lattice_to_spacegroup.keys()):
                 results[k] = {"cell": cell, "goodness": solutions_by_lattice[k]["rms"]}
 
     return results
@@ -425,7 +425,7 @@ def _get_indexing_solution_number(index_output_list, target_cell, target_lattice
     best = 0
     difference = 60.0
 
-    for k in all_autoindex_results.keys():
+    for k in list(all_autoindex_results.keys()):
         if all_autoindex_results[k]["lattice"] == target_lattice:
             cell = all_autoindex_results[k]["cell"]
             diff = 0.0

@@ -297,7 +297,7 @@ class LabelitIndexerII(LabelitIndexer):
         # (euugh!) have to "ignore" solutions with higher symmetry
         # otherwise the rest of xia will override us. Bummer.
 
-        for i, solution in self._solutions.iteritems():
+        for i, solution in self._solutions.items():
             if self._indxr_user_input_lattice:
                 if lattice_to_spacegroup(solution["lattice"]) > lattice_to_spacegroup(
                     self._indxr_input_lattice
@@ -312,7 +312,7 @@ class LabelitIndexerII(LabelitIndexer):
         # lattice - however these should only be added if they
         # have a smiley in the appropriate record, perhaps?
 
-        for solution in self._solutions.keys():
+        for solution in list(self._solutions.keys()):
             lattice = self._solutions[solution]["lattice"]
             if lattice in self._indxr_other_lattice_cell:
                 if (

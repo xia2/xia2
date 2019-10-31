@@ -101,7 +101,7 @@ def Chef(DriverType=None, stream=Chatter):
             return self._completeness[wavelength]
 
         def get_completeness_datasets(self):
-            return self._completeness.keys()
+            return list(self._completeness.keys())
 
         def run(self):
             """Actually run chef..."""
@@ -167,7 +167,7 @@ def Chef(DriverType=None, stream=Chatter):
 
             # now jimmy these..
 
-            for dataset in self._completeness.keys():
+            for dataset in list(self._completeness.keys()):
                 completeness = self._completeness[dataset]
                 cmax = completeness[-1][1]
                 cnew = []

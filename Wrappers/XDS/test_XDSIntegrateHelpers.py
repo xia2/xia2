@@ -7,7 +7,7 @@ def test_parse_integrate_lp(tmpdir):
     with integrate_lp.open("wb") as f:
         f.write(integrate_lp_example_1)
     per_image_stats = _parse_integrate_lp(integrate_lp.strpath)
-    assert per_image_stats.keys() == list(range(1, 22))
+    assert list(per_image_stats.keys()) == list(range(1, 22))
     assert per_image_stats[1] == {
         "distance": 213.68,
         "all": 2486,
@@ -27,7 +27,7 @@ def test_parse_integrate_lp(tmpdir):
     with integrate_lp.open("wb") as f:
         f.write(integrate_lp_big_n_refl)
     per_image_stats = _parse_integrate_lp(integrate_lp.strpath)
-    assert per_image_stats.keys() == list(range(2601, 2611))
+    assert list(per_image_stats.keys()) == list(range(2601, 2611))
     print(per_image_stats[2601])
     assert per_image_stats[2601] == {
         "all": 1092650,

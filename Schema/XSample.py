@@ -79,7 +79,7 @@ class XSample(object):
     def from_dict(cls, obj):
         assert obj["__id__"] == "XSample"
         return_obj = cls(name=None, crystal=None)
-        for k, v in obj.iteritems():
+        for k, v in obj.items():
             if k == "_sweeps":
                 v = [s_dict["_name"] for s_dict in v]
             elif k == "_multi_indexer" and v is not None:

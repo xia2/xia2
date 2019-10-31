@@ -63,7 +63,7 @@ class _IndexerHelper(object):
         # transform them into a list, then sort the solutions and
         # store the sorted version
 
-        lattices = [(k, lattice_cell_dict[k]) for k in lattice_cell_dict.keys()]
+        lattices = [(k, lattice_cell_dict[k]) for k in list(lattice_cell_dict.keys())]
 
         self._sorted_list = SortLattices(lattices)
 
@@ -247,7 +247,7 @@ class Indexer(object):
         assert obj["__id__"] == "Indexer"
         assert obj["__name__"] == cls.__name__
         return_obj = cls()
-        for k, v in obj.iteritems():
+        for k, v in obj.items():
             if k == "_indxr_helper" and v is not None:
                 from xia2.Schema.Interfaces.Indexer import _IndexerHelper
 
@@ -506,7 +506,7 @@ class Indexer(object):
                         continue
 
                     solutions = {}
-                    for k in self._indxr_other_lattice_cell.keys():
+                    for k in list(self._indxr_other_lattice_cell.keys()):
                         solutions[k] = self._indxr_other_lattice_cell[k]["cell"]
 
                     # create a helper for the indexer to manage solutions

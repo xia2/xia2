@@ -21,7 +21,7 @@ def report(dials_data, tmpdir_factory):
 
 def test_multiplicity_plots(report):
     multiplicity_plots = report.multiplicity_plots()
-    assert multiplicity_plots.keys() == [
+    assert list(multiplicity_plots.keys()) == [
         "multiplicity_h",
         "multiplicity_k",
         "multiplicity_l",
@@ -44,12 +44,12 @@ def test_symmetry_table_html(report):
 def test_xtriage(report):
     xtriage_report = report.xtriage_report()
     assert len(xtriage_report) == 3
-    assert xtriage_report[0][0].keys() == ["text", "summary", "header", "level"]
+    assert list(xtriage_report[0][0].keys()) == ["text", "summary", "header", "level"]
 
 
 def test_batch_dependent_plots(report):
     plots = report.batch_dependent_plots()
-    assert plots.keys() == ["i_over_sig_i_vs_batch", "scale_rmerge_vs_batch"]
+    assert list(plots.keys()) == ["i_over_sig_i_vs_batch", "scale_rmerge_vs_batch"]
     assert plots["scale_rmerge_vs_batch"]["data"][0]["x"] == range(1, 46)
     assert plots["i_over_sig_i_vs_batch"]["data"][0]["x"] == range(1, 46)
 
@@ -94,7 +94,7 @@ def test_resolution_plots_and_stats(report):
         "0.998*",
         "0.598*",
     ]
-    assert stats_plots.keys() == [
+    assert list(stats_plots.keys()) == [
         "cc_one_half",
         "i_over_sig_i",
         "completeness",
@@ -104,7 +104,7 @@ def test_resolution_plots_and_stats(report):
 
 def test_intensity_stats_plots(report):
     plots = report.intensity_stats_plots()
-    assert plots.keys() == [
+    assert list(plots.keys()) == [
         "wilson_intensity_plot",
         "multiplicities",
         "second_moments",
@@ -115,7 +115,7 @@ def test_intensity_stats_plots(report):
 
 def test_pychef(report):
     plots = report.pychef_plots()
-    assert plots.keys() == [
+    assert list(plots.keys()) == [
         "rcp_vs_dose",
         "scp_vs_dose",
         "completeness_vs_dose",

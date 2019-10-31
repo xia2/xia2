@@ -197,7 +197,7 @@ def TwoThetaRefine(DriverType=None):
             cif = iotbx.cif.reader(file_path=self.get_output_cif()).model()
             block = cif["two_theta_refine"]
             subset = {
-                k: block[k] for k in block.keys() if k.startswith(("_cell", "_diffrn"))
+                k: block[k] for k in list(block.keys()) if k.startswith(("_cell", "_diffrn"))
             }
             return subset
 
@@ -213,7 +213,7 @@ def TwoThetaRefine(DriverType=None):
 
                 block = iotbx.cif.model.block()
             subset = {
-                k: block[k] for k in block.keys() if k.startswith(("_cell", "_diffrn"))
+                k: block[k] for k in list(block.keys()) if k.startswith(("_cell", "_diffrn"))
             }
             return subset
 

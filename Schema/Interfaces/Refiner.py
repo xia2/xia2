@@ -47,7 +47,7 @@ class Refiner(object):
         for a in attributes:
             if a[0] == "_refinr_indexers":
                 d = {}
-                for k, v in a[1].iteritems():
+                for k, v in a[1].items():
                     d[k] = v.to_dict()
                 obj[a[0]] = d
             elif a[0] == "_refinr_refined_experiment_list":
@@ -64,10 +64,10 @@ class Refiner(object):
     def from_dict(cls, obj):
         assert obj["__id__"] == "Refiner"
         return_obj = cls()
-        for k, v in obj.iteritems():
+        for k, v in obj.items():
             if k == "_refinr_indexers":
                 v_new = {}
-                for k_, v_ in v.iteritems():
+                for k_, v_ in v.items():
                     from libtbx.utils import import_python_object
 
                     integrater_cls = import_python_object(
@@ -80,7 +80,7 @@ class Refiner(object):
                 v = v_new
             elif k == "_refinr_payload":
                 v_new = {}
-                for k_, v_ in v.iteritems():
+                for k_, v_ in v.items():
                     try:
                         v_new[float(k_)] = v_
                     except ValueError:
@@ -239,7 +239,7 @@ class Refiner(object):
         return self._refinr_payload.get(this)
 
     def eliminate(self, indxr_print=True):
-        for idxr in self._refinr_indexers.values():
+        for idxr in list(self._refinr_indexers.values()):
             idxr.eliminate(indxr_print=indxr_print)
         self.refiner_reset()
 
@@ -256,11 +256,11 @@ class Refiner(object):
 
     def get_refiner_lattice(self):
         # for now assume all indexer have the same lattice
-        return self._refinr_indexers.values()[0].get_indexer_lattice()
+        return list(self._refinr_indexers.values())[0].get_indexer_lattice()
 
     def set_refiner_asserted_lattice(self, asserted_lattice):
         state = self.LATTICE_POSSIBLE
-        for idxr in self._refinr_indexers.values():
+        for idxr in list(self._refinr_indexers.values()):
             state = idxr.set_indexer_asserted_lattice(asserted_lattice)
             if not idxr.get_indexer_done():
                 self.refiner_reset()

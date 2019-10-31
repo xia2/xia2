@@ -296,7 +296,7 @@ def clusters_as_scipy_linkage_matrix(clusters):
             ]
         else:
             new = None
-            for cid, dids in cluster_id_to_datasets.iteritems():
+            for cid, dids in cluster_id_to_datasets.items():
                 diff = tuple(sorted(set(dataset_ids) - set(dids)))
                 if len(diff) == 1:
                     new = diff[0] - 1

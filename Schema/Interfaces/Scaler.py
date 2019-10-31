@@ -263,20 +263,20 @@ class Scaler(object):
                 continue
             elif a[0] == "_scalr_integraters":
                 d = {}
-                for k, v in a[1].iteritems():
+                for k, v in a[1].items():
                     d[k] = v.to_dict()
                 obj[a[0]] = d
             elif a[0] == "_scalr_statistics" and a[1] is not None:
                 # dictionary has tuples as keys - json can't handle this so serialize
                 # keys in place
                 d = {}
-                for k, v in a[1].iteritems():
+                for k, v in a[1].items():
                     k = json.dumps(k)
                     d[k] = v
                 obj[a[0]] = d
             elif a[0] in ("_scalr_resolution_limits"):
                 d = {}
-                for k, v in a[1].iteritems():
+                for k, v in a[1].items():
                     k = json.dumps(k)
                     d[k] = v
                 obj[a[0]] = d
@@ -288,9 +288,9 @@ class Scaler(object):
     def from_dict(cls, obj):
         assert obj["__id__"] == "Scaler"
         return_obj = cls()
-        for k, v in obj.iteritems():
+        for k, v in obj.items():
             if k == "_scalr_integraters":
-                for k_, v_ in v.iteritems():
+                for k_, v_ in v.items():
                     from libtbx.utils import import_python_object
 
                     integrater_cls = import_python_object(
@@ -302,13 +302,13 @@ class Scaler(object):
                     v[k_] = integrater_cls.from_dict(v_)
             elif k == "_scalr_statistics" and v is not None:
                 d = {}
-                for k_, v_ in v.iteritems():
+                for k_, v_ in v.items():
                     k_ = tuple(str(s) for s in json.loads(k_))
                     d[k_] = v_
                 v = d
             elif k in ("_scalr_resolution_limits"):
                 d = {}
-                for k_, v_ in v.iteritems():
+                for k_, v_ in v.items():
                     k_ = tuple(str(s) for s in json.loads(k_))
                     d[k_] = v_
                 v = d
@@ -499,7 +499,7 @@ class Scaler(object):
         # if a collision is detected, all epoch values are replaced by an
         # integer series, starting with 0
 
-        if 0 in self._scalr_integraters.keys():
+        if 0 in list(self._scalr_integraters.keys()):
             epoch = len(self._scalr_integraters)
 
         else:
@@ -509,7 +509,7 @@ class Scaler(object):
             if epoch == 0 and self._scalr_integraters:
                 raise RuntimeError("multi-sweep integrater has epoch 0")
 
-            if epoch in self._scalr_integraters.keys():
+            if epoch in list(self._scalr_integraters.keys()):
                 Debug.write(
                     "integrater with epoch %d already exists. will not trust epoch values"
                     % epoch
@@ -519,7 +519,7 @@ class Scaler(object):
                 self._scalr_integraters = dict(
                     zip(
                         range(0, len(self._scalr_integraters)),
-                        self._scalr_integraters.values(),
+                        list(self._scalr_integraters.values()),
                     )
                 )
                 epoch = len(self._scalr_integraters)
@@ -657,7 +657,7 @@ class Scaler(object):
 
         self.scale()
 
-        if format in self._scalr_scaled_reflection_files.keys():
+        if format in list(self._scalr_scaled_reflection_files.keys()):
             return self._scalr_scaled_reflection_files[format]
 
         raise RuntimeError("unknown format %s" % format)

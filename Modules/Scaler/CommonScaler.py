@@ -273,7 +273,7 @@ class CommonScaler(Scaler):
 
         max_batches = 0
 
-        for epoch in self._sweep_information.keys():
+        for epoch in list(self._sweep_information.keys()):
 
             hklin = self._sweep_information[epoch]["scaled_reflections"]
 
@@ -435,7 +435,7 @@ class CommonScaler(Scaler):
 
         assert len(self._sweep_information) == 1
 
-        epoch = self._sweep_information.keys()[0]
+        epoch = list(self._sweep_information.keys())[0]
         hklin = self._sweep_information[epoch]["scaled_reflections"]
 
         if self.get_scaler_reference_reflection_file():
@@ -566,7 +566,7 @@ class CommonScaler(Scaler):
 
         # next have a look for radiation damage... if more than one wavelength
 
-        if len(self._scalr_scaled_refl_files.keys()) > 1:
+        if len(list(self._scalr_scaled_refl_files.keys())) > 1:
             self._scale_finish_chunk_8_raddam()
 
         # finally add xia2 version to mtz history
@@ -575,7 +575,7 @@ class CommonScaler(Scaler):
         import time
 
         mtz_files = [self._scalr_scaled_reflection_files["mtz"]]
-        mtz_files.extend(self._scalr_scaled_reflection_files["mtz_unmerged"].values())
+        mtz_files.extend(list(self._scalr_scaled_reflection_files["mtz_unmerged"].values()))
         for mtz_file in mtz_files:
             reader = any_reflection_file(mtz_file)
             mtz_object = reader.file_content()
@@ -606,7 +606,7 @@ class CommonScaler(Scaler):
         from xia2.lib.bits import auto_logfiler
         from xia2.Wrappers.XIA.Report import Report
 
-        for wavelength in self._scalr_scaled_refl_files.keys():
+        for wavelength in list(self._scalr_scaled_refl_files.keys()):
             mtz_unmerged = self._scalr_scaled_reflection_files["mtz_unmerged"][
                 wavelength
             ]
@@ -650,7 +650,7 @@ class CommonScaler(Scaler):
                 Debug.write(str(e))
 
     def _scale_finish_chunk_3_truncate(self):
-        for wavelength in self._scalr_scaled_refl_files.keys():
+        for wavelength in list(self._scalr_scaled_refl_files.keys()):
 
             hklin = self._scalr_scaled_refl_files[wavelength]
 
@@ -702,11 +702,11 @@ class CommonScaler(Scaler):
             self._scalr_scaled_refl_files[wavelength] = hklout
 
     def _scale_finish_chunk_4_mad_mangling(self):
-        if len(self._scalr_scaled_refl_files.keys()) > 1:
+        if len(list(self._scalr_scaled_refl_files.keys())) > 1:
 
             reflection_files = {}
 
-            for wavelength in self._scalr_scaled_refl_files.keys():
+            for wavelength in list(self._scalr_scaled_refl_files.keys()):
                 cad = self._factory.Cad()
                 cad.add_hklin(self._scalr_scaled_refl_files[wavelength])
                 cad.set_hklout(
@@ -730,7 +730,7 @@ class CommonScaler(Scaler):
             Debug.write("Merging all data sets to %s" % hklout)
 
             cad = self._factory.Cad()
-            for wavelength in reflection_files.keys():
+            for wavelength in list(reflection_files.keys()):
                 cad.add_hklin(reflection_files[wavelength])
             cad.set_hklout(hklout)
             cad.merge()
@@ -741,7 +741,7 @@ class CommonScaler(Scaler):
 
             self._scalr_scaled_reflection_files[
                 "mtz_merged"
-            ] = self._scalr_scaled_refl_files[self._scalr_scaled_refl_files.keys()[0]]
+            ] = self._scalr_scaled_refl_files[list(self._scalr_scaled_refl_files.keys())[0]]
 
     def _scale_finish_chunk_5_finish_small_molecule(self):
         # keep 'mtz' and remove 'mtz_merged' from the dictionary for
@@ -763,9 +763,9 @@ class CommonScaler(Scaler):
         from cctbx.xray.structure import structure
         from cctbx.xray import scatterer
 
-        for wavelength_name in self._scalr_scaled_refl_files.keys():
+        for wavelength_name in list(self._scalr_scaled_refl_files.keys()):
             prefix = wavelength_name
-            if len(self._scalr_scaled_refl_files.keys()) == 1:
+            if len(list(self._scalr_scaled_refl_files.keys())) == 1:
                 prefix = "shelxt"
             prefixpath = os.path.join(self.get_working_directory(), prefix)
 
@@ -938,7 +938,7 @@ class CommonScaler(Scaler):
             from xia2.Toolkit.E4 import E4_mtz
 
             E4s = E4_mtz(hklout, native=True)
-            self._scalr_twinning_score = E4s.items()[0][1]
+            self._scalr_twinning_score = list(E4s.items())[0][1]
 
             if self._scalr_twinning_score > 1.9:
                 self._scalr_twinning_conclusion = "Your data do not appear twinned"
@@ -1177,7 +1177,7 @@ class CommonScaler(Scaler):
             (key_to_var, result, select_result),
             (anom_key_to_var, anom_result, select_anom_result),
         ):
-            for k, v in d.iteritems():
+            for k, v in d.items():
                 if four_column_output:
                     values = (
                         getattr(s.overall, v),
@@ -1285,7 +1285,7 @@ class CommonScaler(Scaler):
                 self.get_working_directory(),
                 "%s_%s.p4p" % (self._scalr_pname, self._scalr_xname),
             )
-            for pi in groups.keys():
+            for pi in list(groups.keys()):
                 tt_grouprefiner = TwoThetaRefine()
                 tt_grouprefiner.set_working_directory(self.get_working_directory())
                 auto_logfiler(tt_grouprefiner)
@@ -1365,7 +1365,7 @@ class CommonScaler(Scaler):
                 cif_in = tt_refiner.import_cif()
                 mmcif_in = tt_refiner.import_mmcif()
             else:
-                self._scalr_cell, self._scalr_cell_esd, cif_in, mmcif_in = self._scalr_cell_dict.values()[
+                self._scalr_cell, self._scalr_cell_esd, cif_in, mmcif_in = list(self._scalr_cell_dict.values())[
                     0
                 ]
             if params.xia2.settings.small_molecule:

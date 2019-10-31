@@ -48,7 +48,7 @@ class XProject(object):
         for a in attributes:
             if a[0] == "_crystals":
                 crystals = {}
-                for cname, cryst in a[1].iteritems():
+                for cname, cryst in a[1].items():
                     crystals[cname] = cryst.to_dict()
                 obj[a[0]] = crystals
             elif a[0].startswith("__"):
@@ -61,10 +61,10 @@ class XProject(object):
     def from_dict(cls, obj):
         assert obj["__id__"] == "XProject"
         return_obj = cls()
-        for k, v in obj.iteritems():
+        for k, v in obj.items():
             if k == "_crystals":
                 v_ = {}
-                for cname, cdict in v.iteritems():
+                for cname, cdict in v.items():
                     cryst = XCrystal.from_dict(cdict)
                     cryst._project = return_obj
                     v_[cname] = cryst
@@ -99,7 +99,7 @@ class XProject(object):
             from dxtbx.serialize.load import _decode_list
 
             rv = {}
-            for key, value in data.iteritems():
+            for key, value in data.items():
                 if isinstance(key, unicode):
                     key = key.encode("utf-8")
                 if isinstance(value, unicode):
@@ -127,7 +127,7 @@ class XProject(object):
     def get_output(self):
         result = "Project: %s\n" % self._name
 
-        for crystal in self._crystals.keys():
+        for crystal in list(self._crystals.keys()):
             result += self._crystals[crystal].get_output()
         return result[:-1]
 
@@ -135,7 +135,7 @@ class XProject(object):
         """Produce summary information."""
 
         summary = ["Project: %s" % self._name]
-        for crystal in self._crystals.keys():
+        for crystal in list(self._crystals.keys()):
             for record in self._crystals[crystal].summarise():
                 summary.append(record)
 
@@ -150,7 +150,7 @@ class XProject(object):
         if not xcrystal.__class__.__name__ == "XCrystal":
             raise RuntimeError("crystal must be class XCrystal.")
 
-        if xcrystal.get_name() in self._crystals.keys():
+        if xcrystal.get_name() in list(self._crystals.keys()):
             raise RuntimeError(
                 "XCrystal with name %s already exists" % xcrystal.get_name()
             )
@@ -178,7 +178,7 @@ class XProject(object):
         self._name = xinfo.get_project()
         crystals = xinfo.get_crystals()
 
-        for crystal in crystals.keys():
+        for crystal in list(crystals.keys()):
             xc = XCrystal(crystal, self)
             if "sequence" in crystals[crystal]:
                 xc.set_aa_sequence(crystals[crystal]["sequence"])
@@ -209,7 +209,7 @@ class XProject(object):
             if not crystals[crystal]["samples"]:
                 crystals[crystal]["samples"]["X1"] = {}
 
-            for sample in crystals[crystal]["samples"].keys():
+            for sample in list(crystals[crystal]["samples"].keys()):
                 sample_info = crystals[crystal]["samples"][sample]
 
                 xsample = XSample(sample, xc)
@@ -218,7 +218,7 @@ class XProject(object):
             if not crystals[crystal]["wavelengths"]:
                 raise RuntimeError("No wavelengths specified in xinfo file")
 
-            for wavelength in crystals[crystal]["wavelengths"].keys():
+            for wavelength in list(crystals[crystal]["wavelengths"].keys()):
                 # FIXME 29/NOV/06 in here need to be able to cope with
                 # no wavelength information - this should default to the
                 # information in the image header (John Cowan pointed
@@ -290,13 +290,13 @@ class XProject(object):
                 # for this sweep while leaving the rest for the data set
                 # intact...
 
-                for sweep_name in crystals[crystal]["sweeps"].keys():
+                for sweep_name in list(crystals[crystal]["sweeps"].keys()):
                     sweep_info = crystals[crystal]["sweeps"][sweep_name]
 
                     sample_name = sweep_info.get("sample")
                     if sample_name is None:
                         if len(crystals[crystal]["samples"]) == 1:
-                            sample_name = crystals[crystal]["samples"].keys()[0]
+                            sample_name = list(crystals[crystal]["samples"].keys())[0]
                         else:
                             raise RuntimeError(
                                 "No sample given for sweep %s" % sweep_name

@@ -35,7 +35,7 @@ def parse_aimless_xml(xml_file):
         summary = {}
         pname, xname, dname = map(str, dataset.getAttribute("name").split("/"))
 
-        for xml_name, standard in aimless_xml_names_to_standard.iteritems():
+        for xml_name, standard in aimless_xml_names_to_standard.items():
             row = result.getElementsByTagName(xml_name)[j]
             if len(row.childNodes) == 3:
                 summary[standard] = tuple(

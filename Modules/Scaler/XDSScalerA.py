@@ -87,7 +87,7 @@ class XDSScalerA(Scaler):
                 obj[a[0]] = a[1]
             elif a[0] == "_sweep_information":
                 d = copy.deepcopy(a[1])
-                for i in d.keys():
+                for i in list(d.keys()):
                     d[i]["integrater"] = d[i]["integrater"].to_dict()
                 obj[a[0]] = d
         return obj
@@ -95,7 +95,7 @@ class XDSScalerA(Scaler):
     @classmethod
     def from_dict(cls, obj):
         return_obj = super(XDSScalerA, cls).from_dict(obj)
-        for i in return_obj._sweep_information.keys():
+        for i in list(return_obj._sweep_information.keys()):
             d = return_obj._sweep_information[i]["integrater"]
             from libtbx.utils import import_python_object
 
@@ -263,7 +263,7 @@ class XDSScalerA(Scaler):
             {"working directory": self.get_working_directory()},
         )
 
-        for epoch in self._scalr_integraters.keys():
+        for epoch in list(self._scalr_integraters.keys()):
             intgr = self._scalr_integraters[epoch]
             pname, xname, dname = intgr.get_integrater_project_info()
             sname = intgr.get_integrater_sweep_name()
@@ -343,13 +343,13 @@ class XDSScalerA(Scaler):
 
         need_to_return = False
 
-        if len(self._sweep_information.keys()) > 1:
+        if len(list(self._sweep_information.keys())) > 1:
 
             lattices = []
 
             # FIXME run this stuff in parallel as well...
 
-            for epoch in self._sweep_information.keys():
+            for epoch in list(self._sweep_information.keys()):
 
                 intgr = self._sweep_information[epoch]["integrater"]
                 hklin = self._sweep_information[epoch]["corrected_intensities"]
@@ -402,7 +402,7 @@ class XDSScalerA(Scaler):
                 Debug.write("Correct lattice asserted to be %s" % correct_lattice)
 
                 # transfer this information back to the indexers
-                for epoch in self._sweep_information.keys():
+                for epoch in list(self._sweep_information.keys()):
                     integrater = self._sweep_information[epoch]["integrater"]
                     refiner = integrater.get_integrater_refiner()
                     sname = integrater.get_integrater_sweep_name()
@@ -464,9 +464,9 @@ class XDSScalerA(Scaler):
 
         params = PhilIndex.params
         use_brehm_diederichs = params.xia2.settings.use_brehm_diederichs
-        if len(self._sweep_information.keys()) > 1 and use_brehm_diederichs:
+        if len(list(self._sweep_information.keys())) > 1 and use_brehm_diederichs:
             brehm_diederichs_files_in = []
-            for epoch in self._sweep_information.keys():
+            for epoch in list(self._sweep_information.keys()):
 
                 intgr = self._sweep_information[epoch]["integrater"]
                 hklin = self._sweep_information[epoch]["corrected_intensities"]
@@ -540,7 +540,7 @@ class XDSScalerA(Scaler):
             brehm_diederichs.set_asymmetric(1)
             brehm_diederichs.run()
 
-            for epoch in self._sweep_information.keys():
+            for epoch in list(self._sweep_information.keys()):
 
                 intgr = self._sweep_information[epoch]["integrater"]
 
@@ -564,7 +564,7 @@ class XDSScalerA(Scaler):
                     hklout
                 )[-1]
 
-        elif len(self._sweep_information.keys()) > 1 and not self._reference:
+        elif len(list(self._sweep_information.keys())) > 1 and not self._reference:
             # need to generate a reference reflection file - generate this
             # from the reflections in self._first_epoch
             #
@@ -763,7 +763,7 @@ class XDSScalerA(Scaler):
                         self._factory,
                         mp_params.type,
                     )
-                    for epoch in self._sweep_information.keys()
+                    for epoch in list(self._sweep_information.keys())
                 ]
                 results_list = easy_mp.parallel_map(
                     run_one_sweep,
@@ -785,7 +785,7 @@ class XDSScalerA(Scaler):
                     self._sweep_information[epoch] = results_list[i]
 
             else:
-                for epoch in self._sweep_information.keys():
+                for epoch in list(self._sweep_information.keys()):
                     self._sweep_information[epoch] = run_one_sweep(
                         (
                             self._sweep_information[epoch],
@@ -878,7 +878,7 @@ class XDSScalerA(Scaler):
 
         unit_cell_list = []
 
-        for epoch in self._sweep_information.keys():
+        for epoch in list(self._sweep_information.keys()):
             integrater = self._sweep_information[epoch]["integrater"]
             cell = integrater.get_integrater_cell()
             n_ref = integrater.get_integrater_n_ref()
@@ -1076,12 +1076,12 @@ class XDSScalerA(Scaler):
         # now get the reflection files out and merge them with aimless
 
         output_files = xscale.get_output_reflection_files()
-        wavelength_names = output_files.keys()
+        wavelength_names = list(output_files.keys())
 
         # these are per wavelength - also allow for user defined resolution
         # limits a la bug # 3183. No longer...
 
-        for epoch in self._sweep_information.keys():
+        for epoch in list(self._sweep_information.keys()):
 
             input = self._sweep_information[epoch]
 
@@ -1104,7 +1104,7 @@ class XDSScalerA(Scaler):
         self._scalr_statistics = {}
 
         project_info = {}
-        for epoch in self._sweep_information.keys():
+        for epoch in list(self._sweep_information.keys()):
             pname = self._scalr_pname
             xname = self._scalr_xname
             dname = self._sweep_information[epoch]["dname"]
@@ -1113,7 +1113,7 @@ class XDSScalerA(Scaler):
             )[-1]
             project_info[reflections] = (pname, xname, dname)
 
-        for epoch in self._sweep_information.keys():
+        for epoch in list(self._sweep_information.keys()):
             self._sweep_information[epoch]["scaled_reflections"] = None
 
         debug_memory_usage()
@@ -1128,8 +1128,8 @@ class XDSScalerA(Scaler):
                 hklin, "SCALED_", project_info, 1.0 / scale_factor
             )
 
-            for hklout in ref.keys():
-                for epoch in self._sweep_information.keys():
+            for hklout in list(ref.keys()):
+                for epoch in list(self._sweep_information.keys()):
                     if (
                         os.path.split(
                             self._sweep_information[epoch]["prepared_reflections"]
@@ -1149,7 +1149,7 @@ class XDSScalerA(Scaler):
 
         debug_memory_usage()
 
-        for epoch in self._sweep_information.keys():
+        for epoch in list(self._sweep_information.keys()):
             hklin = self._sweep_information[epoch]["scaled_reflections"]
             dname = self._sweep_information[epoch]["dname"]
             sname = self._sweep_information[epoch]["sname"]
@@ -1207,7 +1207,7 @@ class XDSScalerA(Scaler):
         self._sort_together_data_xds()
 
         highest_resolution = min(
-            limit for limit, _ in self._scalr_resolution_limits.values()
+            limit for limit, _ in list(self._scalr_resolution_limits.values())
         )
 
         self._scalr_highest_resolution = highest_resolution
@@ -1274,14 +1274,14 @@ class XDSScalerA(Scaler):
 
         standard_deviation_info = {}
 
-        for key in loggraph.keys():
+        for key in list(loggraph.keys()):
             if "standard deviation v. Intensity" in key:
                 dataset = key.split(",")[-1].strip()
                 standard_deviation_info[dataset] = transpose_loggraph(loggraph[key])
 
         resolution_info = {}
 
-        for key in loggraph.keys():
+        for key in list(loggraph.keys()):
             if "Analysis against resolution" in key:
                 dataset = key.split(",")[-1].strip()
                 resolution_info[dataset] = transpose_loggraph(loggraph[key])
@@ -1290,7 +1290,7 @@ class XDSScalerA(Scaler):
 
         batch_info = {}
 
-        for key in loggraph.keys():
+        for key in list(loggraph.keys()):
             if "Analysis against Batch" in key:
                 dataset = key.split(",")[-1].strip()
                 batch_info[dataset] = transpose_loggraph(loggraph[key])
@@ -1340,7 +1340,7 @@ class XDSScalerA(Scaler):
         self._scalr_scaled_reflection_files["sca_unmerged"] = {}
         self._scalr_scaled_reflection_files["mtz_unmerged"] = {}
 
-        for dataset in sc.get_scaled_reflection_files().keys():
+        for dataset in list(sc.get_scaled_reflection_files().keys()):
             hklout = sc.get_scaled_reflection_files()[dataset]
 
             # then mark the scalepack files for copying...
@@ -1393,9 +1393,9 @@ class XDSScalerA(Scaler):
     def get_batch_to_dose(self):
         batch_to_dose = {}
         epoch_to_dose = {}
-        for xsample in self.get_scaler_xcrystal()._samples.values():
+        for xsample in list(self.get_scaler_xcrystal()._samples.values()):
             epoch_to_dose.update(xsample.get_epoch_to_dose())
-        for e0 in self._sweep_information.keys():
+        for e0 in list(self._sweep_information.keys()):
             si = self._sweep_information[e0]
             batch_offset = si["batch_offset"]
             frame_offset = si["integrater"].get_frame_offset()

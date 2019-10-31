@@ -56,7 +56,7 @@ def xia2_main(stop_after=None):
     # check that something useful has been assigned for processing...
     xtals = CommandLine.get_xinfo().get_crystals()
 
-    for name in xtals.keys():
+    for name in list(xtals.keys()):
         xtal = xtals[name]
 
         if not xtal.get_all_image_names():
@@ -89,7 +89,7 @@ def xia2_main(stop_after=None):
 
         crystals = xinfo.get_crystals()
         crystals_new = xinfo_new.get_crystals()
-        for crystal_id in crystals_new.keys():
+        for crystal_id in list(crystals_new.keys()):
             if crystal_id not in crystals:
                 crystals[crystal_id] = crystals_new[crystal_id]
                 continue
@@ -149,7 +149,7 @@ def xia2_main(stop_after=None):
     if mp_params.mode == "parallel" and njob > 1:
         driver_type = mp_params.type
         command_line_args = CommandLine.get_argv()[1:]
-        for crystal_id in crystals.keys():
+        for crystal_id in list(crystals.keys()):
             for wavelength_id in crystals[crystal_id].get_wavelength_names():
                 wavelength = crystals[crystal_id].get_xwavelength(wavelength_id)
                 sweeps = wavelength.get_sweeps()
@@ -199,7 +199,7 @@ def xia2_main(stop_after=None):
 
         # Hack to update sweep with the serialized indexers/refiners/integraters
         i_sweep = 0
-        for crystal_id in crystals.keys():
+        for crystal_id in list(crystals.keys()):
             for wavelength_id in crystals[crystal_id].get_wavelength_names():
                 wavelength = crystals[crystal_id].get_xwavelength(wavelength_id)
                 remove_sweeps = []
@@ -227,7 +227,7 @@ def xia2_main(stop_after=None):
                     sample.remove_sweep(sweep)
 
     else:
-        for crystal_id in crystals.keys():
+        for crystal_id in list(crystals.keys()):
             for wavelength_id in crystals[crystal_id].get_wavelength_names():
                 wavelength = crystals[crystal_id].get_xwavelength(wavelength_id)
                 remove_sweeps = []
@@ -271,7 +271,7 @@ def xia2_main(stop_after=None):
     if stop_after not in ("index", "integrate"):
         Chatter.write(xinfo.get_output(), strip=False)
 
-    for crystal in crystals.values():
+    for crystal in list(crystals.values()):
         crystal.serialize()
 
     # save final xia2.json file in case report generation fails

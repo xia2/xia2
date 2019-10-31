@@ -41,7 +41,7 @@ def run():
         crystals = xinfo.get_crystals()
 
         assert len(crystals) == 1
-        crystal = crystals.values()[0]
+        crystal = list(crystals.values())[0]
         assert len(crystal.get_wavelength_names()) == 1
         wavelength = crystal.get_xwavelength(crystal.get_wavelength_names()[0])
         sweeps = wavelength.get_sweeps()

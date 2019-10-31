@@ -93,7 +93,7 @@ class XWavelength(object):
     def from_dict(cls, obj):
         assert obj["__id__"] == "XWavelength"
         return_obj = cls(name=None, crystal=None, wavelength=None)
-        for k, v in obj.iteritems():
+        for k, v in obj.items():
             if k == "_sweeps":
                 v = [XSweep.from_dict(s_dict) for s_dict in v]
                 for sweep in v:

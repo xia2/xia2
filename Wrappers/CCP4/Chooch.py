@@ -143,7 +143,7 @@ def Chooch(DriverType=None):
 
             waves = []
 
-            for edge in self._edge_table.keys():
+            for edge in list(self._edge_table.keys()):
                 waves.append(self._edge_table[edge]["wave"])
                 if math.fabs(self._edge_table[edge]["wave"] - wave) < min_wave_diff:
                     min_wave_diff = math.fabs(self._edge_table[edge]["wave"] - wave)

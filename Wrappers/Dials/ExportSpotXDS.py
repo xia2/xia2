@@ -54,7 +54,7 @@ def ExportSpotXDS(DriverType=None, params=None):
         def run(self):
             """Run dials.spotfinder."""
 
-            self.add_command_line(self._input_data_files.keys())
+            self.add_command_line(list(self._input_data_files.keys()))
             self.start()
             self.close_wait()
             self.check_for_errors()

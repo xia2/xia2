@@ -96,17 +96,17 @@ def exercise_serialization(dials_data, tmp_dir):
     p_str = json.dumps(p_dict, ensure_ascii=True)
     p_dict = json.loads(p_str, object_hook=_decode_dict)
     xproj = XProject.from_dict(p_dict)
-    assert xproj.get_crystals().values()[0].get_project() is xproj
+    assert list(xproj.get_crystals().values())[0].get_project() is xproj
 
     json_str = proj.as_json()
     xproj = XProject.from_json(string=json_str)
-    assert xproj.get_crystals().values()[0].get_project() is xproj
+    assert list(xproj.get_crystals().values())[0].get_project() is xproj
     print(xproj.get_output())
     print("\n".join(xproj.summarise()))
     json_str = xproj.as_json()
     xproj = XProject.from_json(string=json_str)
-    assert xproj.get_crystals().values()[0].get_project() is xproj
-    xcryst = xproj.get_crystals().values()[0]
+    assert list(xproj.get_crystals().values())[0].get_project() is xproj
+    xcryst = list(xproj.get_crystals().values())[0]
     intgr = xcryst._get_integraters()[0]
     assert intgr.get_integrater_finish_done()
     assert (

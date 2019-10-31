@@ -168,7 +168,7 @@ class Integrater(FrameProcessor):
     def from_dict(cls, obj):
         assert obj["__id__"] == "Integrater"
         return_obj = cls()
-        for k, v in obj.iteritems():
+        for k, v in obj.items():
             if k in ("_intgr_indexer", "_intgr_refiner") and v is not None:
                 from libtbx.utils import import_python_object
 
@@ -778,14 +778,14 @@ class Integrater(FrameProcessor):
 
             # print a one-spot-per-image rendition of this...
             stddev_pixel = [stats[i]["rmsd_pixel"] for i in images]
-            if "overloads" in stats.values()[0]:
+            if "overloads" in list(stats.values())[0]:
                 overloads = [stats[i]["overloads"] for i in images]
             strong = [stats[i]["strong"] for i in images]
-            if "fraction_weak" in stats.values()[0]:
+            if "fraction_weak" in list(stats.values())[0]:
                 fraction_weak = [stats[i]["fraction_weak"] for i in images]
-            if "isigi" in stats.values()[0]:
+            if "isigi" in list(stats.values())[0]:
                 isigi = [stats[i]["isigi"] for i in images]
-            if "isig_tot" in stats.values()[0]:
+            if "isig_tot" in list(stats.values())[0]:
                 isig_tot = [stats[i]["isig_tot"] for i in images]
 
             # FIXME need to allow for blank images in here etc.
@@ -821,7 +821,7 @@ class Integrater(FrameProcessor):
             lines.append('"@" => abandoned')
 
             # next look for variations in the unit cell parameters
-            if "unit_cell" in stats.values()[0]:
+            if "unit_cell" in list(stats.values())[0]:
                 unit_cells = [stats[i]["unit_cell"] for i in images]
 
                 # compute average

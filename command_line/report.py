@@ -108,7 +108,7 @@ def run(args):
         if k in json_data
     )
 
-    for k, v in report.multiplicity_plots().iteritems():
+    for k, v in report.multiplicity_plots().items():
         misc_graphs[k] = {"img": v}
 
     styles = {}

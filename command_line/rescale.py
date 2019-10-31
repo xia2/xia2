@@ -37,7 +37,7 @@ def run():
     xinfo = XProject.from_json(filename="xia2.json")
 
     crystals = xinfo.get_crystals()
-    for crystal_id, crystal in crystals.iteritems():
+    for crystal_id, crystal in crystals.items():
         # cwd = os.path.abspath(os.curdir)
         from libtbx import Auto
 
