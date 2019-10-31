@@ -69,7 +69,7 @@ class XDSScalerA(Scaler):
             elif a[0] == "_sweep_information":
                 d = copy.deepcopy(a[1])
                 for i in d.values():
-                    d["integrater"] = d["integrater"].to_dict()
+                    i["integrater"] = i["integrater"].to_dict()
                 obj[a[0]] = d
         return obj
 
@@ -1073,7 +1073,7 @@ class XDSScalerA(Scaler):
                 hklin, "SCALED_", project_info, 1.0 / scale_factor
             )
 
-            for hklout in keys:
+            for hklout in ref:
                 for epoch in self._sweep_information:
                     if (
                         os.path.split(
