@@ -143,7 +143,6 @@ class Refiner(object):
         return self._working_directory
 
     def set_refiner_prepare_done(self, done=True):
-
         frm = inspect.stack()[1]
         mod = inspect.getmodule(frm[0])
         Debug.write(
@@ -154,7 +153,6 @@ class Refiner(object):
         self._refinr_prepare_done = done
 
     def set_refiner_done(self, done=True):
-
         frm = inspect.stack()[1]
         mod = inspect.getmodule(frm[0])
         Debug.write(
@@ -165,7 +163,6 @@ class Refiner(object):
         self._refinr_done = done
 
     def set_refiner_finish_done(self, done=True):
-
         frm = inspect.stack()[1]
         mod = inspect.getmodule(frm[0])
         Debug.write(
@@ -176,7 +173,6 @@ class Refiner(object):
         self._refinr_finish_done = done
 
     def refiner_reset(self):
-
         Debug.write("Refiner reset")
 
         self._refinr_done = False
@@ -239,7 +235,7 @@ class Refiner(object):
         return self._refinr_payload.get(this)
 
     def eliminate(self, indxr_print=True):
-        for idxr in list(self._refinr_indexers.values()):
+        for idxr in self._refinr_indexers.values():
             idxr.eliminate(indxr_print=indxr_print)
         self.refiner_reset()
 
@@ -260,7 +256,7 @@ class Refiner(object):
 
     def set_refiner_asserted_lattice(self, asserted_lattice):
         state = self.LATTICE_POSSIBLE
-        for idxr in list(self._refinr_indexers.values()):
+        for idxr in self._refinr_indexers.values():
             state = idxr.set_indexer_asserted_lattice(asserted_lattice)
             if not idxr.get_indexer_done():
                 self.refiner_reset()

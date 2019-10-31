@@ -1,10 +1,3 @@
-#!/usr/bin/env python
-# Integrater.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
 # An interface for programs which do integration - this will handle
 # all of the input and output, delegating the actual processing to an
 # implementation of this interfacing.
@@ -37,6 +30,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+import inspect
+import json
 import math
 import os
 
@@ -147,9 +142,8 @@ class Integrater(FrameProcessor):
         obj["__id__"] = "Integrater"
         obj["__module__"] = self.__class__.__module__
         obj["__name__"] = self.__class__.__name__
-        import inspect
 
-        attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
+        attributes = inspect.getmembers(self, lambda m: not inspect.isroutine(m))
         for a in attributes:
             if a[0] in ("_intgr_indexer", "_intgr_refiner") and a[1] is not None:
                 obj[a[0]] = a[1].to_dict()
@@ -192,8 +186,6 @@ class Integrater(FrameProcessor):
         return return_obj
 
     def as_json(self, filename=None, compact=False):
-        import json
-
         obj = self.to_dict()
         if compact:
             text = json.dumps(
@@ -211,7 +203,6 @@ class Integrater(FrameProcessor):
 
     @classmethod
     def from_json(cls, filename=None, string=None):
-        import json
         from dxtbx.serialize.load import _decode_dict
 
         assert [filename, string].count(None) == 1
@@ -744,13 +735,12 @@ class Integrater(FrameProcessor):
         # are unhappy with something, so that the indexing solution
         # can be eliminated in the integrater.
 
-        images = sorted(stats.keys())
+        images = sorted(stats)
 
         # these may not be present if only a couple of the
         # images were integrated...
 
         try:
-
             stddev_pixel = [stats[i]["rmsd_pixel"] for i in images]
 
             # fix to bug # 2501 - remove the extreme values from this
@@ -774,7 +764,6 @@ class Integrater(FrameProcessor):
             overloads = None
             fraction_weak = None
             isigi = None
-            isig_tot = None
 
             # print a one-spot-per-image rendition of this...
             stddev_pixel = [stats[i]["rmsd_pixel"] for i in images]
@@ -785,16 +774,12 @@ class Integrater(FrameProcessor):
                 fraction_weak = [stats[i]["fraction_weak"] for i in images]
             if "isigi" in list(stats.values())[0]:
                 isigi = [stats[i]["isigi"] for i in images]
-            if "isig_tot" in list(stats.values())[0]:
-                isig_tot = [stats[i]["isig_tot"] for i in images]
 
             # FIXME need to allow for blank images in here etc.
 
             status_record = ""
             for i, stddev in enumerate(stddev_pixel):
-                if False and isig_tot is not None and isig_tot[i] < 1.0:
-                    status_record += "?"
-                elif fraction_weak is not None and fraction_weak[i] > 0.99:
+                if fraction_weak is not None and fraction_weak[i] > 0.99:
                     status_record += "."
                 elif isigi is not None and isigi[i] < 1.0:
                     status_record += "."
