@@ -1,20 +1,11 @@
-#!/usr/bin/env python
-# CCP4ScalerA.py
-#   Copyright (C) 2011 Diamond Light Source, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 07/OCT/2011
-#
 # An implementation of the Scaler interface using CCP4 programs and Aimless.
-#
 
 from __future__ import absolute_import, division, print_function
 
 import copy
 import math
 import os
+import re
 
 from xia2.Handlers.CIF import CIF, mmCIF
 from xia2.Handlers.Citations import Citations
@@ -22,8 +13,8 @@ from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import Chatter, Debug, Journal
 from xia2.Handlers.Syminfo import Syminfo
+from xia2.Modules.Scaler.rebatch import rebatch
 
-# jiffys
 from xia2.lib.bits import is_mtz_file, transpose_loggraph
 from xia2.lib.SymmetryLib import sort_lattices
 from xia2.Modules import MtzUtils
@@ -256,9 +247,7 @@ class CCP4ScalerA(Scaler):
                     first_batch = min(si.get_batches())
                     si.set_batch_offset(counter * max_batches - first_batch + 1)
 
-                    from xia2.Modules.Scaler.rebatch import rebatch
-
-                    new_batches = rebatch(
+                    rebatch(
                         hklin,
                         hklout,
                         first_batch=counter * max_batches + 1,
@@ -369,11 +358,10 @@ class CCP4ScalerA(Scaler):
 
                     lattice = Syminfo.get_lattice(pointgroup)
 
-                    if not lattice in lattices:
+                    if lattice not in lattices:
                         lattices.append(lattice)
 
                     if ntr:
-
                         intgr.integrater_reset_reindex_operator()
                         need_to_return = True
                 # SUMMARY do pointless_indexer on each sweep, get lattices and make a list
@@ -485,9 +473,7 @@ class CCP4ScalerA(Scaler):
                 first_batch = min(si.get_batches())
                 si.set_batch_offset(counter * max_batches - first_batch + 1)
 
-                from xia2.Modules.Scaler.rebatch import rebatch
-
-                new_batches = rebatch(
+                rebatch(
                     hklin,
                     hklout,
                     first_batch=counter * max_batches + 1,
@@ -805,8 +791,7 @@ class CCP4ScalerA(Scaler):
         )
 
     def _scale(self):
-        """Perform all of the operations required to deliver the scaled
-        data."""
+        "Perform all of the operations required to deliver the scaled data."
 
         epochs = self._sweep_handler.get_epochs()
 
@@ -1051,7 +1036,7 @@ class CCP4ScalerA(Scaler):
                 start, end, exclude=False, resolution=resolution_limit, name=sname
             )
 
-            if not dname in self._wavelengths_in_order:
+            if dname not in self._wavelengths_in_order:
                 self._wavelengths_in_order.append(dname)
 
         sc.set_hklout(
@@ -1135,7 +1120,7 @@ class CCP4ScalerA(Scaler):
                 start, end, exclude=False, resolution=resolution_limit, name=sname
             )
 
-            if not dname in self._wavelengths_in_order:
+            if dname not in self._wavelengths_in_order:
                 self._wavelengths_in_order.append(dname)
 
         sc.set_hklout(
@@ -1161,7 +1146,6 @@ class CCP4ScalerA(Scaler):
         output = scaler.get_all_output()
 
         aimless = "AIMLESS, CCP4"
-        import re
 
         pattern = re.compile(" +#+ *CCP4.*#+")
         for line in output:
@@ -1244,7 +1228,7 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
         epoch_to_dose = {}
         for xsample in self.get_scaler_xcrystal()._samples.values():
             epoch_to_dose.update(xsample.get_epoch_to_dose())
-        for e0 in self._sweep_handler._sweep_information.keys():
+        for e0 in self._sweep_handler._sweep_information:
             si = self._sweep_handler._sweep_information[e0]
             batch_offset = si.get_batch_offset()
             printed = False

@@ -26,9 +26,9 @@ from dials.report.plots import (
 from xia2.Modules.Analysis import batch_phil_scope, phil_scope, separate_unmerged
 
 
-class xtriage_output(printed_output):
+class _xtriage_output(printed_output):
     def __init__(self, out):
-        super(xtriage_output, self).__init__(out)
+        super(_xtriage_output, self).__init__(out)
         self.gui_output = True
         self._out_orig = self.out
         self.out = StringIO()
@@ -40,7 +40,7 @@ class xtriage_output(printed_output):
     def show_header(self, text):
         self._out_orig.write(self.out.getvalue())
         self.out = StringIO()
-        super(xtriage_output, self).show_header(text)
+        super(_xtriage_output, self).show_header(text)
 
     def show_sub_header(self, title):
         self._out_orig.write(self.out.getvalue())
@@ -75,7 +75,7 @@ class Report(object):
         if self.batches is not None and len(self.params.batch) == 0:
             separate = separate_unmerged(self.intensities, self.batches)
             scope = libtbx.phil.parse(batch_phil_scope)
-            for i, batches in separate.batches.iteritems():
+            for i, batches in separate.batches.items():
                 batch_params = scope.extract().batch[0]
                 batch_params.id = i
                 batch_params.range = (
@@ -165,7 +165,7 @@ class Report(object):
                 "Xtriage", os.path.join(self.report_dir, "xtriage.log")
             )
         xs = StringIO()
-        xout = xtriage_output(xs)
+        xout = _xtriage_output(xs)
         xanalysis.show(out=xout)
         xout.flush()
         sub_header_to_out = xout._sub_header_to_out

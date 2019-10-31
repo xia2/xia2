@@ -1,19 +1,10 @@
-#!/usr/bin/env python
-# DialsIntegrater.py
-#   Copyright (C) 2014 Diamond Light Source, Richard Gildea & Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
 # An implementation of the Integrater interface using Dials. This depends on the
 # Dials wrappers to actually implement the functionality.
-#
 
 from __future__ import absolute_import, division, print_function
 
 import math
 import os
-import sys
 
 import xia2.Wrappers.Dials.Integrate
 from dials.util import Sorry
@@ -169,55 +160,6 @@ class DialsIntegrater(Integrater):
         Debug.write("Wavelength: %.6f" % self.get_wavelength())
         Debug.write("Distance: %.2f" % self.get_distance())
 
-        # if not self._intgr_indexer:
-        # self.set_integrater_indexer(DialsIndexer())
-        # self.get_integrater_indexer().set_indexer_sweep(
-        # self.get_integrater_sweep())
-
-        # self._intgr_indexer.set_working_directory(
-        # self.get_working_directory())
-
-        # self._intgr_indexer.setup_from_imageset(self.get_imageset())
-
-        # if self.get_frame_wedge():
-        # wedge = self.get_frame_wedge()
-        # Debug.write('Propogating wedge limit: %d %d' % wedge)
-        # self._intgr_indexer.set_frame_wedge(wedge[0], wedge[1],
-        # apply_offset = False)
-
-        ## this needs to be set up from the contents of the
-        ## Integrater frame processer - wavelength &c.
-
-        # if self.get_beam_centre():
-        # self._intgr_indexer.set_beam_centre(self.get_beam_centre())
-
-        # if self.get_distance():
-        # self._intgr_indexer.set_distance(self.get_distance())
-
-        # if self.get_wavelength():
-        # self._intgr_indexer.set_wavelength(
-        # self.get_wavelength())
-
-        ## get the unit cell from this indexer to initiate processing
-        ## if it is new... and also copy out all of the information for
-        ## the Dials indexer if not...
-
-        # experiments = self._intgr_indexer.get_indexer_experiment_list()
-        # assert len(experiments) == 1 # currently only handle one lattice/sweep
-        # experiment = experiments[0]
-        # crystal_model = experiment.crystal
-        # lattice = self._intgr_indexer.get_indexer_lattice()
-
-        ## check if the lattice was user assigned...
-        # user_assigned = self._intgr_indexer.get_indexer_user_input_lattice()
-
-        # XXX check that the indexer is an Dials indexer - if not then
-        # create one...
-
-        # set a low resolution limit (which isn't really used...)
-        # this should perhaps be done more intelligently from an
-        # analysis of the spot list or something...?
-
         if not self.get_integrater_low_resolution():
 
             dmax = self._intgr_refiner.get_indexer_low_resolution(
@@ -242,7 +184,7 @@ class DialsIntegrater(Integrater):
         self._intgr_cell = experiment.crystal.get_unit_cell().parameters()
 
         Debug.write("Files available at the end of DIALS integrate prepare:")
-        for f in self._data_files.keys():
+        for f in self._data_files:
             Debug.write("%s" % f)
 
         self.set_detector(experiment.detector)
@@ -700,21 +642,3 @@ class DialsIntegrater(Integrater):
         exporter.run()
         assert os.path.exists(self._intgr_corrected_hklout)
         return self._intgr_corrected_hklout
-
-
-if __name__ == "__main__":
-
-    # run a demo test
-
-    di = DialsIntegrater()
-    di.setup_from_image(sys.argv[1])
-    from xia2.Schema.XCrystal import XCrystal
-    from xia2.Schema.XWavelength import XWavelength
-    from xia2.Schema.XSweep import XSweep
-
-    cryst = XCrystal("CRYST1", None)
-    wav = XWavelength("WAVE1", cryst, di.get_wavelength())
-    directory, image = os.path.split(sys.argv[1])
-    sweep = XSweep("SWEEP1", wav, directory=directory, image=image)
-    di.set_integrater_sweep(sweep)
-    di.integrate()

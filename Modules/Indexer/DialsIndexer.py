@@ -5,6 +5,7 @@ from __future__ import absolute_import, division, print_function
 import copy
 import math
 import os
+import string
 
 import libtbx
 
@@ -380,7 +381,6 @@ class DialsIndexer(Indexer):
                         xsample = xsweep.get_xsample()
 
                         sweep_name = xsweep.get_name()
-                        import string
 
                         for i, (nb_start, nb_end) in enumerate(non_blanks):
                             assert i < 26
@@ -602,7 +602,7 @@ class DialsIndexer(Indexer):
             self._solution = self.get_solution()
             self._indxr_lattice = self._solution["lattice"]
 
-            for solution in self._solutions.keys():
+            for solution in self._solutions:
                 lattice = self._solutions[solution]["lattice"]
                 if (
                     self._indxr_input_lattice is not None
@@ -775,7 +775,7 @@ class DialsIndexer(Indexer):
             return copy.deepcopy(self._solutions[max(self._solutions.keys())])
         else:
             if self._indxr_input_cell:
-                for s in self._solutions.keys():
+                for s in list(self._solutions):
                     if self._solutions[s]["lattice"] == self._indxr_input_lattice:
                         if self._compare_cell(
                             self._indxr_input_cell, self._solutions[s]["cell"]
@@ -792,7 +792,7 @@ class DialsIndexer(Indexer):
                 )
 
             else:
-                for s in self._solutions.keys():
+                for s in list(self._solutions):
                     if self._solutions[s]["lattice"] == self._indxr_input_lattice:
                         return copy.deepcopy(self._solutions[s])
                     else:

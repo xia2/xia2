@@ -1,17 +1,9 @@
-#!/usr/bin/env python
-# rebatch.py
-#
-#   Copyright (C) 2011 Diamond Light Source, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
 # Replacement for CCP4 program rebatch, using cctbx Python.
-#
 
 from __future__ import absolute_import, division, print_function
 
-import sys
+import itertools
+import operator
 
 from cctbx.array_family import flex
 from iotbx import mtz
@@ -19,12 +11,10 @@ from iotbx import mtz
 
 def compact_batches(batches):
     """Pack down batches to lists of continuous batches."""
-    from operator import itemgetter
-    from itertools import groupby
 
     return [
-        map(itemgetter(1), g)
-        for k, g in groupby(enumerate(batches), lambda i_x: i_x[0] - i_x[1])
+        map(operator.itemgetter(1), g)
+        for k, g in itertools.groupby(enumerate(batches), lambda i_x: i_x[0] - i_x[1])
     ]
 
 
@@ -61,14 +51,12 @@ def rebatch(
     mtz_obj = mtz.object(file_name=hklin)
 
     batch_column = None
-    batch_dataset = None
 
     for crystal in mtz_obj.crystals():
         for dataset in crystal.datasets():
             for column in dataset.columns():
                 if column.label() == "BATCH":
                     batch_column = column
-                    batch_dataset = dataset
 
     if not batch_column:
         raise RuntimeError("no BATCH column found in %s" % hklin)
@@ -195,15 +183,3 @@ def copy_r_file(hklin, hklout):
                 )
 
     mtz_out.write(file_name=hklout)
-
-    return
-
-
-if __name__ == "__main__":
-    import sys
-
-    hklin = sys.argv[1]
-    hklout = sys.argv[2]
-
-    # should be a no-op essentially...
-    rebatch(hklin, hklout, first_batch=42, pname="pname", xname="xname", dname="dname")

@@ -1,16 +1,9 @@
-#!/usr/bin/env python
-# XDSRefiner.py
-#   Copyright (C) 2015 Diamond Light Source, Richard Gildea
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-
 from __future__ import absolute_import, division, print_function
 
+import copy
 import os
 
-from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Streams import Debug
 from xia2.lib.bits import auto_logfiler
 from xia2.Schema.Interfaces.Refiner import Refiner
 
@@ -29,7 +22,7 @@ class XDSRefiner(Refiner):
         return export_xds
 
     def _refine_prepare(self):
-        for epoch, idxr in self._refinr_indexers.iteritems():
+        for epoch, idxr in self._refinr_indexers.items():
 
             experiments = idxr.get_indexer_experiment_list()
             assert len(experiments) == 1  # currently only handle one lattice/sweep
@@ -74,14 +67,14 @@ class XDSRefiner(Refiner):
                 xycorr.run()
 
                 xds_data_files = {}
-                for file in ["X-CORRECTIONS.cbf", "Y-CORRECTIONS.cbf"]:
+                for file in ("X-CORRECTIONS.cbf", "Y-CORRECTIONS.cbf"):
                     xds_data_files[file] = xycorr.get_output_data_file(file)
 
                 # next start to process these - then init
 
                 init = xds_idxr.Init()
 
-                for file in ["X-CORRECTIONS.cbf", "Y-CORRECTIONS.cbf"]:
+                for file in ("X-CORRECTIONS.cbf", "Y-CORRECTIONS.cbf"):
                     init.set_input_data_file(file, xds_data_files[file])
 
                 init.set_data_range(first, last)
@@ -89,7 +82,7 @@ class XDSRefiner(Refiner):
                 init.set_working_directory(self.get_working_directory())
                 init.run()
 
-                for file in ["BLANK.cbf", "BKGINIT.cbf", "GAIN.cbf"]:
+                for file in ("BLANK.cbf", "BKGINIT.cbf", "GAIN.cbf"):
                     xds_data_files[file] = init.get_output_data_file(file)
 
                 exporter = self.ExportXDS()
@@ -152,7 +145,6 @@ class XDSRefiner(Refiner):
                         "Inputting target cell: %.2f %.2f %.2f %.2f %.2f %.2f" % cell
                     )
                     idxr.set_indexer_input_cell(cell)
-                input_cell = cell
 
                 from cctbx.sgtbx import bravais_types
 
@@ -188,11 +180,10 @@ class XDSRefiner(Refiner):
                 # FIXME comparison needed
 
     def _refine(self):
-        import copy
         from dxtbx.model import ExperimentList
 
         self._refinr_refined_experiment_list = ExperimentList()
-        for epoch, idxr in self._refinr_indexers.iteritems():
+        for epoch, idxr in self._refinr_indexers.items():
             self._refinr_payload[epoch] = copy.deepcopy(idxr._indxr_payload)
             self._refinr_refined_experiment_list.extend(
                 idxr.get_indexer_experiment_list()
