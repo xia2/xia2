@@ -9,9 +9,6 @@ from xia2.Schema.Interfaces.Refiner import Refiner
 
 
 class XDSRefiner(Refiner):
-    def __init__(self):
-        super(XDSRefiner, self).__init__()
-
     # factory functions
     def ExportXDS(self):
         from xia2.Wrappers.Dials.ExportXDS import ExportXDS as _ExportXDS
