@@ -3,16 +3,17 @@
 from __future__ import absolute_import, division, print_function
 
 import cgi
-from collections import OrderedDict
 import glob
-import os
-import traceback
 import json
+import os
 import re
 import six
 import sys
+import traceback
+from collections import OrderedDict
 
 from libtbx import phil
+import xia2
 from xia2.Modules.Report import Report
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Streams import Chatter, Debug

@@ -169,6 +169,11 @@ def run():
             if name is None:
                 name = "Strategy%i" % (istrategy + 1)
             results_all[name] = result
+            multiplicity = result["redundancy"]
+            try:
+                multiplicity = "%.2f" % multiplicity
+            except TypeError:
+                pass
             Chatter.write("Strategy %i" % istrategy)
             if description is not None:
                 Chatter.write(description)
