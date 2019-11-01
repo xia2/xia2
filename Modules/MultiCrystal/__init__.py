@@ -6,35 +6,8 @@ import logging
 
 import iotbx.phil
 from scitbx.array_family import flex
-from dials.util import Sorry
 
 logger = logging.getLogger(__name__)
-
-
-def get_scipy():
-    # make sure we can get scipy, if not try failing over to version in CCP4
-    try:
-        import scipy.cluster as _try1  # noqa: F401
-
-        return
-    except ImportError:
-        pass
-
-    if "CCP4" in os.environ:
-        sys.path.append(
-            os.path.join(os.environ["CCP4"], "lib", "python2.7", "site-packages")
-        )
-        try:
-            import scipy.cluster as _try2  # noqa: F401
-
-            return
-        except ImportError:
-            pass
-
-    raise Sorry("%s depends on scipy.cluster, not available" % sys.argv[0])
-
-
-get_scipy()
 
 batch_phil_scope = """\
 batch
