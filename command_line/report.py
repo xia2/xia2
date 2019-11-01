@@ -4,12 +4,13 @@ from __future__ import absolute_import, division, print_function
 
 import json
 import os
+import sys
 from collections import OrderedDict
 
 import iotbx.phil
-from xia2.Modules.Report import Report
 from dials.util.options import OptionParser
-
+from jinja2 import Environment, ChoiceLoader, PackageLoader
+from xia2.Modules.Report import Report
 
 phil_scope = iotbx.phil.parse(
     """\
@@ -115,15 +116,14 @@ def run(args):
     for axis in ("h", "k", "l"):
         styles["multiplicity_%s" % axis] = "square-plot"
 
-    from jinja2 import Environment, ChoiceLoader, PackageLoader
-
     loader = ChoiceLoader(
         [PackageLoader("xia2", "templates"), PackageLoader("dials", "templates")]
     )
     env = Environment(loader=loader)
 
     if params.log_include:
-        log_text = open(params.log_include).read()
+        with open(params.log_include) as fh:
+            log_text = fh.read()
     else:
         log_text = ""
 
@@ -148,14 +148,12 @@ def run(args):
         log_text=log_text,
     )
 
-    with open("%s-report.json" % params.prefix, "wb") as f:
-        json.dump(json_data, f, indent=params.json.indent)
+    with open("%s-report.json" % params.prefix, "w") as fh:
+        json.dump(json_data, fh, indent=params.json.indent)
 
-    with open("%s-report.html" % params.prefix, "wb") as f:
-        f.write(html.encode("ascii", "xmlcharrefreplace"))
+    with open("%s-report.html" % params.prefix, "wb") as fh:
+        fh.write(html.encode("ascii", "xmlcharrefreplace"))
 
 
 if __name__ == "__main__":
-    import sys
-
     run(sys.argv[1:])

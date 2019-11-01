@@ -1,11 +1,3 @@
-# SymmetryLib.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 16th November 2006
-#
 # A library of things to help with simple symmetry operation stuff.
 #
 # FIXED 17/NOV/06 add a method in here to give a list of likely, and then
@@ -22,7 +14,6 @@
 #
 # FIXME 06/DEC/06 need a mapping table from "old" spacegroup names to e.g. xHM
 #                 for use with phenix.hyss.
-#
 
 from __future__ import absolute_import, division, print_function
 
@@ -57,7 +48,7 @@ def lattice_to_spacegroup(lattice):
         "cI": 197,
     }
 
-    if not lattice in list(_lattice_to_spacegroup.keys()):
+    if lattice not in _lattice_to_spacegroup:
         raise RuntimeError('lattice "%s" unknown' % lattice)
 
     return _lattice_to_spacegroup[lattice]
@@ -90,7 +81,7 @@ def spacegroup_name_xHM_to_old(xHM):
 
     xHM = xHM.upper()
 
-    if not xHM in list(mapping.keys()):
+    if xHM not in mapping:
         if xHM in old_names:
             return xHM
         raise RuntimeError("spacegroup %s unknown" % xHM)
@@ -125,15 +116,13 @@ def lattices_in_order():
         "cI",
     ]
 
-    spacegroup_to_lattice = {}
-
     # FIXME this should = lattice!
-
-    for lattice in lattices:
-        spacegroup_to_lattice[lattice_to_spacegroup(lattice)] = lattice
+    spacegroup_to_lattice = {
+        lattice_to_spacegroup(lattice): lattice for lattice in lattices
+    }
     # lattice_to_spacegroup(lattice)
 
-    spacegroups = sorted(spacegroup_to_lattice.keys())
+    spacegroups = sorted(spacegroup_to_lattice)
 
     return [spacegroup_to_lattice[s] for s in spacegroups]
 

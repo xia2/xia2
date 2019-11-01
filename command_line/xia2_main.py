@@ -26,6 +26,8 @@ from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Environment import Environment
 from xia2.Handlers.Files import cleanup
 from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Schema.XProject import XProject
+from xia2.Schema.XSweep import XSweep
 
 
 def get_ccp4_version():
@@ -56,11 +58,8 @@ def xia2_main(stop_after=None):
     # check that something useful has been assigned for processing...
     xtals = CommandLine.get_xinfo().get_crystals()
 
-    for name in list(xtals.keys()):
-        xtal = xtals[name]
-
+    for name, xtal in xtals.items():
         if not xtal.get_all_image_names():
-
             Chatter.write("-----------------------------------" + "-" * len(name))
             Chatter.write("| No images assigned for crystal %s |" % name)
             Chatter.write("-----------------------------------" + "-" * len(name))
@@ -82,14 +81,12 @@ def xia2_main(stop_after=None):
         and os.path.exists("xia2.json")
     ):
         Debug.write("==== Starting from existing xia2.json ====")
-        from xia2.Schema.XProject import XProject
-
         xinfo_new = xinfo
         xinfo = XProject.from_json(filename="xia2.json")
 
         crystals = xinfo.get_crystals()
         crystals_new = xinfo_new.get_crystals()
-        for crystal_id in list(crystals_new.keys()):
+        for crystal_id in crystals_new:
             if crystal_id not in crystals:
                 crystals[crystal_id] = crystals_new[crystal_id]
                 continue
@@ -104,11 +101,11 @@ def xia2_main(stop_after=None):
                 wavelength = crystals[crystal_id].get_xwavelength(wavelength_id)
                 sweeps_new = wavelength_new.get_sweeps()
                 sweeps = wavelength.get_sweeps()
-                sweep_names = [s.get_name() for s in sweeps]
-                sweep_keys = [
+                sweep_names = {s.get_name() for s in sweeps}
+                sweep_keys = {
                     (s.get_directory(), s.get_template(), s.get_image_range())
                     for s in sweeps
-                ]
+                }
                 for sweep in sweeps_new:
                     if (
                         sweep.get_directory(),
@@ -140,7 +137,7 @@ def xia2_main(stop_after=None):
                             ice=sweep._ice,
                             excluded_regions=sweep._excluded_regions,
                         )
-                        sweep_names.append(sweep.get_name())
+                        sweep_names.add(sweep.get_name())
 
     crystals = xinfo.get_crystals()
 
@@ -149,7 +146,7 @@ def xia2_main(stop_after=None):
     if mp_params.mode == "parallel" and njob > 1:
         driver_type = mp_params.type
         command_line_args = CommandLine.get_argv()[1:]
-        for crystal_id in list(crystals.keys()):
+        for crystal_id in crystals:
             for wavelength_id in crystals[crystal_id].get_wavelength_names():
                 wavelength = crystals[crystal_id].get_xwavelength(wavelength_id)
                 sweeps = wavelength.get_sweeps()
@@ -199,7 +196,7 @@ def xia2_main(stop_after=None):
 
         # Hack to update sweep with the serialized indexers/refiners/integraters
         i_sweep = 0
-        for crystal_id in list(crystals.keys()):
+        for crystal_id in crystals:
             for wavelength_id in crystals[crystal_id].get_wavelength_names():
                 wavelength = crystals[crystal_id].get_xwavelength(wavelength_id)
                 remove_sweeps = []
@@ -214,8 +211,6 @@ def xia2_main(stop_after=None):
                     else:
                         assert xsweep_dict is not None
                         Chatter.write("Loading sweep: %s" % sweep.get_name())
-                        from xia2.Schema.XSweep import XSweep
-
                         new_sweep = XSweep.from_dict(xsweep_dict)
                         sweep._indexer = new_sweep._indexer
                         sweep._refiner = new_sweep._refiner
@@ -319,7 +314,7 @@ def run():
         print(xia2.XIA2Version.Version)
         print(dials_version())
         ccp4_version = get_ccp4_version()
-        if ccp4_version is not None:
+        if ccp4_version:
             print("CCP4 %s" % ccp4_version)
         sys.exit()
 
@@ -373,7 +368,8 @@ def run():
         Chatter.write("Error: %s" % str(s))
         sys.exit(1)
     except Exception as e:
-        traceback.print_exc(file=open(os.path.join(wd, "xia2.error"), "w"))
+        with open(os.path.join(wd, "xia2.error"), "w") as fh:
+            traceback.print_exc(file=fh)
         Debug.write(traceback.format_exc(), strip=False)
         Chatter.write("Error: %s" % str(e))
         Chatter.write(
