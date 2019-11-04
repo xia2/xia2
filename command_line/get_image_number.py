@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 
+from builtins import range
 def image_path_obtainer(summary_file):
     """Read a xia2-summary.dat file and return a function capable of
     translating image numbers to file paths"""
@@ -52,7 +53,7 @@ if __name__ == "__main__":
             for parameter in sys.argv[1:]:
                 if "-" in parameter:
                     img_range = parameter.split("-")
-                    images = range(int(img_range[0]), int(img_range[1]) + 1)
+                    images = list(range(int(img_range[0]), int(img_range[1]) + 1))
                 else:
                     images = [int(parameter)]
                 if 0 in images:

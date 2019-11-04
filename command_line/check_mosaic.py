@@ -1,6 +1,7 @@
 # LIBTBX_SET_DISPATCHER_NAME dev.xia2.check_mosaic
 from __future__ import absolute_import, division, print_function
 
+from builtins import range
 import six.moves.cPickle as pickle
 
 from dials.array_family import flex

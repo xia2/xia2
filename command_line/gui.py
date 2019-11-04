@@ -3,6 +3,7 @@
 # LIBTBX_SET_DISPATCHER_NAME dev.xia2.gui
 from __future__ import absolute_import, division, print_function
 
+from builtins import range
 import os
 import random
 import sys

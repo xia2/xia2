@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+from builtins import range
 import datetime
 import json
 import optparse
@@ -122,7 +123,7 @@ Winter, G. (2010) Journal of Applied Crystallography 43
 
         loop = iotbx.cif.model.loop()
         symm_ops = []
-        for i in xrange(space_group.n_smx()):
+        for i in range(space_group.n_smx()):
             rt_mx = space_group(0, 0, i)
             if rt_mx.is_unit_mx():
                 continue

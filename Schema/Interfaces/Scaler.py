@@ -141,6 +141,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+from builtins import range
 import inspect
 import json
 import os
@@ -505,7 +506,7 @@ class Scaler(object):
                 # collision. Throw away all epoch keys, and replace with integer series
                 self._scalr_integraters = dict(
                     zip(
-                        range(0, len(self._scalr_integraters)),
+                        list(range(0, len(self._scalr_integraters))),
                         self._scalr_integraters.values(),
                     )
                 )

@@ -2,6 +2,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+from builtins import range
 import os
 
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor

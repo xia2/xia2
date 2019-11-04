@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+from builtins import range
 import wx
 from dials.util import Sorry
 from wxtbx import app, icons, phil_controls

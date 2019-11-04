@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+from builtins import range
 import binascii
 import json
 import sys
@@ -159,7 +160,7 @@ def build_hist(nproc=1):
 
     results = easy_mp.parallel_map(
         func=process_image,
-        iterable=range(nproc),
+        iterable=list(range(nproc)),
         processes=nproc,
         preserve_exception_message=True,
     )
