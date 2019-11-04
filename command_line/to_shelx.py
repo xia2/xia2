@@ -1,9 +1,9 @@
 from __future__ import absolute_import, division, print_function
 
-from builtins import range
 import datetime
 import json
 import optparse
+import string
 import sys
 
 import iotbx.cif.model
@@ -11,8 +11,6 @@ import xia2.XIA2Version
 
 
 def parse_compound(compound):
-    import string
-
     result = {}
     element = ""
     number = ""
@@ -26,7 +24,7 @@ def parse_compound(compound):
                 count = 1
             else:
                 count = int(number)
-            if not element in result:
+            if element not in result:
                 result[element] = 0
             result[element] += count
             element = "" + c

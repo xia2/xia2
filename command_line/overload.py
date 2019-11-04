@@ -1,10 +1,10 @@
 from __future__ import absolute_import, division, print_function
 
-from builtins import range
 import binascii
 import json
 import sys
 import timeit
+from collections import Counter
 
 try:
     import bz2
@@ -18,15 +18,17 @@ except ImportError:
 
 
 def is_bz2(filename):
-    if not ".bz2" in filename[-4:]:
+    if ".bz2" not in filename[-4:]:
         return False
-    return "BZh" in open(filename, "rb").read(3)
+    with open(filename, "rb") as fh:
+        return b"BZh" == fh.read(3)
 
 
 def is_gzip(filename):
-    if not ".gz" in filename[-3:]:
+    if ".gz" not in filename[-3:]:
         return False
-    magic = open(filename, "rb").read(2)
+    with open(filename, "rb") as fh:
+        magic = fh.read(2)
     return ord(magic[0]) == 0x1F and ord(magic[1]) == 0x8B
 
 
@@ -88,7 +90,6 @@ def get_overload(cbf_file):
 def build_hist(nproc=1):
     from scitbx.array_family import flex
     from libtbx import easy_mp
-    from collections import Counter
 
     # FIXME use proper optionparser here. This works for now
     if len(sys.argv) >= 2 and sys.argv[1].startswith("nproc="):
@@ -160,7 +161,7 @@ def build_hist(nproc=1):
 
     results = easy_mp.parallel_map(
         func=process_image,
-        iterable=list(range(nproc)),
+        iterable=range(nproc),
         processes=nproc,
         preserve_exception_message=True,
     )
