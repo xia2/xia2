@@ -1,8 +1,5 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
-from builtins import range
 import math
 import os
 import xml.dom.minidom
@@ -23,10 +20,11 @@ from xia2.lib.SymmetryLib import (
 def mend_pointless_xml(xml_file):
     """Repair XML document"""
 
-    text = open(xml_file, "r").read().split("\n")
+    with open(xml_file, "r") as fh:
+        text = fh.read().split("\n")
     result = []
     for record in text:
-        if not "CenProb" in record:
+        if "CenProb" not in record:
             result.append(record)
             continue
         if "/CenProb" in record:
@@ -35,7 +33,8 @@ def mend_pointless_xml(xml_file):
         tokens = record.split("CenProb")
         assert len(tokens) == 3
         result.append("%sCenProb%s/CenProb%s" % tuple(tokens))
-    open(xml_file, "w").write("\n".join(result))
+    with open(xml_file, "w") as fh:
+        fh.write("\n".join(result))
 
 
 def Pointless(DriverType=None):
@@ -153,9 +152,7 @@ def Pointless(DriverType=None):
 
             cell = None
 
-            for j in range(len(output)):
-                line = output[j]
-
+            for j, line in enumerate(output):
                 if "Space group from HKLIN file" in line:
                     cell = tuple(map(float, output[j + 1].split()[1:]))
 
@@ -413,6 +410,7 @@ def Pointless(DriverType=None):
                     for record in self.get_all_output():
                         if "No possible alternative indexing" in record:
                             found = True
+                            break
 
                     if not found:
                         raise RuntimeError("error finding solution")
@@ -483,7 +481,7 @@ def Pointless(DriverType=None):
                     # record this as a possible lattice if its Z score is positive
 
                     lattice = lauegroup_to_lattice(lauegroup)
-                    if not lattice in self._possible_lattices:
+                    if lattice not in self._possible_lattices:
                         if netzc > 0.0:
                             self._possible_lattices.append(lattice)
 
@@ -599,7 +597,6 @@ def Pointless(DriverType=None):
             # this should look familiar from mtzdump
 
             output = self.get_all_output()
-            length = len(output)
 
             a = 0.0
             b = 0.0
@@ -611,12 +608,10 @@ def Pointless(DriverType=None):
             self._cell_info["datasets"] = []
             self._cell_info["dataset_info"] = {}
 
-            for i in range(length):
-
-                line = output[i][:-1]
+            for i, line in enumerate(output):
+                line = line[:-1]
 
                 if "Dataset ID, " in line:
-
                     block = 0
                     while output[block * 5 + i + 2].strip():
                         dataset_number = int(output[5 * block + i + 2].split()[0])

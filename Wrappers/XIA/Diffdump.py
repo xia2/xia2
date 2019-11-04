@@ -1,10 +1,8 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
-from builtins import range
 import copy
 import datetime
+import json
 import math
 import os
 import sys
@@ -38,15 +36,10 @@ class _HeaderCache(object):
         return image in self._headers
 
     def write(self, filename):
-        import json
-
         json.dump(self._headers, open(filename, "w"))
-        return
 
     def read(self, filename):
         assert self._headers == {}
-        import json
-
         self._headers = json.load(open(filename, "r"))
         return len(self._headers)
 
@@ -133,9 +126,6 @@ def find_detector_id(cbf_handle):
         if not cbf_handle.category_name() == "diffrn_detector":
             continue
 
-        nrows = cbf_handle.count_rows()
-        ncols = cbf_handle.count_columns()
-
         cbf_handle.rewind_column()
 
         while True:
@@ -203,11 +193,9 @@ def failover_full_cbf(cbf_file):
     # FIXME need to check that this is doing something sensible...!
 
     header["beam"] = tuple(map(math.fabs, detector.get_beam_center()[2:]))
-    detector_normal = tuple(detector.get_detector_normal())
 
     gonio = cbf_handle.construct_goniometer()
 
-    axis = tuple(gonio.get_rotation_axis())
     angles = tuple(gonio.get_rotation_range())
 
     header["distance"] = detector.get_detector_distance()
@@ -292,123 +280,125 @@ def failover_cbf(cbf_file):
 
     header["two_theta"] = 0.0
 
-    for record in open(cbf_file):
+    with open(cbf_file) as fh:
+        for record in fh:
 
-        if "_array_data.data" in record:
-            break
+            if "_array_data.data" in record:
+                break
 
-        if "PILATUS 2M" in record:
-            header["detector_class"] = "pilatus 2M"
-            header["detector"] = "dectris"
-            header["size"] = (1679, 1475)
-            continue
+            if "PILATUS 2M" in record:
+                header["detector_class"] = "pilatus 2M"
+                header["detector"] = "dectris"
+                header["size"] = (1679, 1475)
+                continue
 
-        if "PILATUS3 2M" in record:
-            header["detector_class"] = "pilatus 2M"
-            header["detector"] = "dectris"
-            header["size"] = (1679, 1475)
-            continue
+            if "PILATUS3 2M" in record:
+                header["detector_class"] = "pilatus 2M"
+                header["detector"] = "dectris"
+                header["size"] = (1679, 1475)
+                continue
 
-        if "PILATUS 6M" in record:
-            header["detector_class"] = "pilatus 6M"
-            header["detector"] = "dectris"
-            header["size"] = (2527, 2463)
-            continue
+            if "PILATUS 6M" in record:
+                header["detector_class"] = "pilatus 6M"
+                header["detector"] = "dectris"
+                header["size"] = (2527, 2463)
+                continue
 
-        if "PILATUS3 6M" in record:
-            header["detector_class"] = "pilatus 6M"
-            header["detector"] = "dectris"
-            header["size"] = (2527, 2463)
-            continue
+            if "PILATUS3 6M" in record:
+                header["detector_class"] = "pilatus 6M"
+                header["detector"] = "dectris"
+                header["size"] = (2527, 2463)
+                continue
 
-        if "Start_angle" in record:
-            header["phi_start"] = float(record.split()[-2])
-            continue
+            if "Start_angle" in record:
+                header["phi_start"] = float(record.split()[-2])
+                continue
 
-        if "Angle_increment" in record:
-            header["phi_width"] = float(record.split()[-2])
-            continue
+            if "Angle_increment" in record:
+                header["phi_width"] = float(record.split()[-2])
+                continue
 
-        if "Exposure_period" in record:
-            header["exposure_time"] = float(record.split()[-2])
-            continue
+            if "Exposure_period" in record:
+                header["exposure_time"] = float(record.split()[-2])
+                continue
 
-        if "Silicon sensor" in record:
-            header["sensor"] = 1000 * float(record.split()[4])
-            continue
+            if "Silicon sensor" in record:
+                header["sensor"] = 1000 * float(record.split()[4])
+                continue
 
-        if "Count_cutoff" in record:
-            header["saturation"] = int(record.split()[2])
-            continue
+            if "Count_cutoff" in record:
+                header["saturation"] = int(record.split()[2])
+                continue
 
-        if "Detector_distance" in record:
-            header["distance"] = 1000 * float(record.split()[2])
-            continue
+            if "Detector_distance" in record:
+                header["distance"] = 1000 * float(record.split()[2])
+                continue
 
-        if "Wavelength" in record:
-            header["wavelength"] = float(record.split()[-2])
-            continue
+            if "Wavelength" in record:
+                header["wavelength"] = float(record.split()[-2])
+                continue
 
-        if "Pixel_size" in record:
-            header["pixel"] = (
-                1000 * float(record.split()[2]),
-                1000 * float(record.split()[5]),
-            )
-            continue
+            if "Pixel_size" in record:
+                header["pixel"] = (
+                    1000 * float(record.split()[2]),
+                    1000 * float(record.split()[5]),
+                )
+                continue
 
-        if "Beam_xy" in record:
+            if "Beam_xy" in record:
 
-            # N.B. this is swapped again for historical reasons
+                # N.B. this is swapped again for historical reasons
 
-            beam_pixels = map(
-                float,
-                record.replace("(", "").replace(")", "").replace(",", "").split()[2:4],
-            )
-            header["beam"] = (
-                beam_pixels[1] * header["pixel"][1],
-                beam_pixels[0] * header["pixel"][0],
-            )
-            header["raw_beam"] = (
-                beam_pixels[1] * header["pixel"][1],
-                beam_pixels[0] * header["pixel"][0],
-            )
-            continue
+                beam_pixels = map(
+                    float,
+                    record.replace("(", "")
+                    .replace(")", "")
+                    .replace(",", "")
+                    .split()[2:4],
+                )
+                header["beam"] = (
+                    beam_pixels[1] * header["pixel"][1],
+                    beam_pixels[0] * header["pixel"][0],
+                )
+                header["raw_beam"] = (
+                    beam_pixels[1] * header["pixel"][1],
+                    beam_pixels[0] * header["pixel"][0],
+                )
+                continue
 
-        # try to get the date etc. literally.
+            # try to get the date etc. literally.
 
-        try:
-            datestring = record.split()[-1].split(".")[0]
-            format = "%Y-%b-%dT%H:%M:%S"
-            struct_time = time.strptime(datestring, format)
-            header["date"] = time.asctime(struct_time)
-            header["epoch"] = time.mktime(struct_time)
-
-        except Exception:
-            pass
-
-        try:
-
-            if not "date" in header:
+            try:
                 datestring = record.split()[-1].split(".")[0]
-                format = "%Y-%m-%dT%H:%M:%S"
+                format = "%Y-%b-%dT%H:%M:%S"
                 struct_time = time.strptime(datestring, format)
                 header["date"] = time.asctime(struct_time)
                 header["epoch"] = time.mktime(struct_time)
 
-        except Exception:
-            pass
+            except Exception:
+                pass
 
-        try:
+            try:
+                if "date" not in header:
+                    datestring = record.split()[-1].split(".")[0]
+                    format = "%Y-%m-%dT%H:%M:%S"
+                    struct_time = time.strptime(datestring, format)
+                    header["date"] = time.asctime(struct_time)
+                    header["epoch"] = time.mktime(struct_time)
 
-            if not "date" in header:
-                datestring = record.replace("#", "").strip().split(".")[0]
-                format = "%Y/%b/%d %H:%M:%S"
-                struct_time = time.strptime(datestring, format)
-                header["date"] = time.asctime(struct_time)
-                header["epoch"] = time.mktime(struct_time)
+            except Exception:
+                pass
 
-        except Exception:
-            pass
+            try:
+                if "date" not in header:
+                    datestring = record.replace("#", "").strip().split(".")[0]
+                    format = "%Y/%b/%d %H:%M:%S"
+                    struct_time = time.strptime(datestring, format)
+                    header["date"] = time.asctime(struct_time)
+                    header["epoch"] = time.mktime(struct_time)
+
+            except Exception:
+                pass
 
     header["phi_end"] = header["phi_start"] + header["phi_width"]
 
@@ -599,7 +589,7 @@ def Diffdump(DriverType=None):
                 # or it could also be the format from
                 # saturn images like:
                 # 23-Oct-2006 13:42:36
-                if not "-" in datestring:
+                if "-" not in datestring:
                     month = int(datestring[:2])
                     day = int(datestring[2:4])
                     hour = int(datestring[4:6])

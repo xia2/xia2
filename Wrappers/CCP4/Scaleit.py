@@ -1,15 +1,10 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
-from builtins import range
 import os
 
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Wrappers.CCP4.Mtzdump import Mtzdump
-
-# locally required wrappers
 
 
 def Scaleit(DriverType=None):
@@ -182,7 +177,7 @@ def Scaleit(DriverType=None):
                 if "APPLICATION OF SCALES AND ANALYSIS OF DIFFERENCES" in line:
                     current_derivative = -1
 
-                    while not "SUMMARY_END" in line:
+                    while "SUMMARY_END" not in line:
                         lst = line.split()
                         if "Derivative" in lst:
                             if "b_factor" not in self._statistics:
@@ -214,11 +209,9 @@ def Scaleit(DriverType=None):
 
             # transform back the r values to the statistics
 
-            for j in range(len(r_values)):
+            for j, value in enumerate(r_values):
                 d = j + 1
-                self._statistics["b_factor"][d]["r"] = r_values[j]
-
-            return
+                self._statistics["b_factor"][d]["r"] = value
 
         def get_statistics(self):
             """Get the statistics from the Scaleit run."""

@@ -12,7 +12,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-from builtins import range
 import math
 
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
@@ -89,14 +88,11 @@ def Chef(DriverType=None, stream=Chatter):
             if not self._hklin_list:
                 raise RuntimeError("HKLIN not defined")
 
-            for j in range(len(self._hklin_list)):
+            for j, hklin in enumerate(self._hklin_list):
                 self.add_command_line("HKLIN%d" % (j + 1))
-                self.add_command_line(self._hklin_list[j])
+                self.add_command_line(hklin)
 
             self.start()
-
-            # this is not needed for pychef
-            # self.input('print scp comp')
 
             if self._anomalous:
                 self.input("anomalous on")
@@ -124,8 +120,7 @@ def Chef(DriverType=None, stream=Chatter):
 
             all_doses = []
 
-            for j in range(len(output)):
-                record = output[j]
+            for j, record in enumerate(output):
                 if "Completeness vs. BASELINE" in record:
                     dataset = record.split()[-1]
                     completeness = []
@@ -189,7 +184,6 @@ def Chef(DriverType=None, stream=Chatter):
             n = 0
 
             for j, v in enumerate(values):
-
                 if not v:
                     continue
 
@@ -205,7 +199,6 @@ def Chef(DriverType=None, stream=Chatter):
             sxy = 0.0
 
             for j, v in enumerate(values):
-
                 if not v:
                     continue
 
@@ -223,7 +216,6 @@ def Chef(DriverType=None, stream=Chatter):
             ss = 0.0
 
             for j, v in enumerate(values):
-
                 if not v:
                     continue
 
@@ -238,7 +230,6 @@ def Chef(DriverType=None, stream=Chatter):
             var = 0.0
 
             for j, v in enumerate(values):
-
                 if not v:
                     continue
 

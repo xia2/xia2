@@ -1,9 +1,8 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
-from builtins import range
+import fileinput
 import os
+import time
 
 from xia2.Driver.DriverFactory import DriverFactory
 
@@ -22,7 +21,6 @@ def Merge2cbf(DriverType=None, params=None):
         """A wrapper for wrapping merge2cbf."""
 
         def __init__(self, params=None):
-
             super(Merge2cbfWrapper, self).__init__()
 
             # phil parameters
@@ -73,11 +71,6 @@ def Merge2cbf(DriverType=None, params=None):
             """Actually run merge2cbf itself."""
 
             # merge2cbf only requires mimimal information in the input file
-            image_header = self.get_header()
-
-            xds_inp = open(
-                os.path.join(self.get_working_directory(), "MERGE2CBF.INP"), "w"
-            )
 
             name_template = os.path.join(
                 self.get_directory(), self.get_template().replace("#", "?")
@@ -85,18 +78,19 @@ def Merge2cbf(DriverType=None, params=None):
 
             self._output_template = os.path.join("merge2cbf_averaged_????.cbf")
 
-            xds_inp.write("NAME_TEMPLATE_OF_DATA_FRAMES=%s\n" % name_template)
+            with open(
+                os.path.join(self.get_working_directory(), "MERGE2CBF.INP"), "w"
+            ) as fh:
+                fh.write("NAME_TEMPLATE_OF_DATA_FRAMES=%s\n" % name_template)
 
-            xds_inp.write("NAME_TEMPLATE_OF_OUTPUT_FRAMES=%s\n" % self._output_template)
+                fh.write("NAME_TEMPLATE_OF_OUTPUT_FRAMES=%s\n" % self._output_template)
 
-            xds_inp.write(
-                "NUMBER_OF_DATA_FRAMES_COVERED_BY_EACH_OUTPUT_FRAME=%s\n"
-                % self.merge_n_images
-            )
+                fh.write(
+                    "NUMBER_OF_DATA_FRAMES_COVERED_BY_EACH_OUTPUT_FRAME=%s\n"
+                    % self.merge_n_images
+                )
 
-            xds_inp.write("DATA_RANGE=%d %d\n" % tuple(data_range))
-
-            xds_inp.close()
+                fh.write("DATA_RANGE=%d %d\n" % tuple(data_range))
 
             self.start()
             self.close_wait()
@@ -124,8 +118,6 @@ def Merge2cbf(DriverType=None, params=None):
                 n_output_images = (i_last - i_first) - self.merge_n_images + 1
             else:
                 n_output_images = (i_last - i_first + 1) // self.merge_n_images
-
-            import fileinput
 
             for i in range(n_output_images):
                 minicbf_header_content = self.get_minicbf_header_contents(
@@ -161,7 +153,6 @@ def Merge2cbf(DriverType=None, params=None):
             header_contents.append(
                 "# Detector: %s" % image_header["detector_class"].upper()
             )
-            import time
 
             timestamp = time.strftime(
                 "%Y-%m-%dT%H:%M:%S.000", time.gmtime(image_header["epoch"])

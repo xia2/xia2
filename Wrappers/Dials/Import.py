@@ -1,10 +1,9 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
-from builtins import range
+import json
 import os
 
+from xia2.Handlers.Streams import Debug
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 
 
@@ -55,8 +54,6 @@ def Import(DriverType=None):
             self._mosflm_beam_centre = mosflm_beam_centre
 
         def fix_experiments_import(self):
-            import json
-
             experiments_json = self.get_sweep_filename()
 
             experiments = json.load(open(experiments_json))
@@ -76,14 +73,13 @@ def Import(DriverType=None):
                 scan[u"exposure_time"].append(exposure_time)
                 scan[u"epochs"].append(self._image_to_epoch[image + offset])
             experiments["scan"] = [scan]
-            json.dump(experiments, open(experiments_json, "w"))
+            with open(experiments_json, "w") as fh:
+                json.dump(experiments, fh)
 
         def run(self, fast_mode=False):
 
             # fast_mode: read first two image headers then extrapolate the rest
             # from what xia2 read from the image headers...
-
-            from xia2.Handlers.Streams import Debug
 
             if fast_mode:
                 if not self._image_to_epoch:
@@ -135,11 +131,9 @@ def Import(DriverType=None):
         def load_sweep_model(self):
             from dxtbx.serialize import load
 
-            return load.imageset_from_string(
-                open(
-                    os.path.join(self.get_working_directory(), self._sweep_filename),
-                    "r",
-                ).read()
-            )
+            with open(
+                os.path.join(self.get_working_directory(), self._sweep_filename), "r"
+            ) as fh:
+                return load.imageset_from_string(fh.read())
 
     return ImportWrapper()
