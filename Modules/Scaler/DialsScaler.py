@@ -126,7 +126,15 @@ class DialsScaler(Scaler):
             refiners.append(integrater.get_integrater_refiner())
 
         Debug.write("Running multisweep dials.symmetry for %d sweeps" % len(refiners))
-        pointgroup, reindex_op, ntr, pt, reind_refl, reind_exp, reindex_initial = self._dials_symmetry_indexer_jiffy(
+        (
+            pointgroup,
+            reindex_op,
+            ntr,
+            pt,
+            reind_refl,
+            reind_exp,
+            reindex_initial,
+        ) = self._dials_symmetry_indexer_jiffy(
             experiments, reflections, refiners, multisweep=True
         )
 
@@ -137,9 +145,15 @@ class DialsScaler(Scaler):
     def _multi_sweep_scale_prepare(self):
         need_to_return = False
 
-        pointgroup, reindex_op, ntr, _, reind_refl, reind_exp, reindex_initial = (
-            self._do_multisweep_symmetry_analysis()
-        )
+        (
+            pointgroup,
+            reindex_op,
+            ntr,
+            _,
+            reind_refl,
+            reind_exp,
+            reindex_initial,
+        ) = self._do_multisweep_symmetry_analysis()
         if ntr:
             for epoch in self._sweep_handler.get_epochs():
                 si = self._sweep_handler.get_sweep_information(epoch)
@@ -187,7 +201,15 @@ class DialsScaler(Scaler):
             reflections = intgr.get_integrated_reflections()
             refiner = intgr.get_integrater_refiner()
 
-            pointgroup, reindex_op, ntr, pt, _, __, ___ = self._dials_symmetry_indexer_jiffy(
+            (
+                pointgroup,
+                reindex_op,
+                ntr,
+                pt,
+                _,
+                __,
+                ___,
+            ) = self._dials_symmetry_indexer_jiffy(
                 [experiment], [reflections], [refiner]
             )
 
@@ -1086,9 +1108,11 @@ Passing multple datasets to indexer_jiffy but not set multisweep=True"""
         Debug.write(" ".join(possible))
 
         # all refiners contain the same indexer link, so any good here.
-        correct_lattice, rerun_symmetry, need_to_return = decide_correct_lattice_using_refiner(
-            possible, refiners[0]
-        )
+        (
+            correct_lattice,
+            rerun_symmetry,
+            need_to_return,
+        ) = decide_correct_lattice_using_refiner(possible, refiners[0])
 
         if need_to_return and multisweep:
             if (

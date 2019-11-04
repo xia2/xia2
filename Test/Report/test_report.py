@@ -55,9 +55,11 @@ def test_batch_dependent_plots(report):
 
 
 def test_resolution_plots_and_stats(report):
-    overall_stats_table, merging_stats_table, stats_plots = (
-        report.resolution_plots_and_stats()
-    )
+    (
+        overall_stats_table,
+        merging_stats_table,
+        stats_plots,
+    ) = report.resolution_plots_and_stats()
     assert len(overall_stats_table) == 11
     assert overall_stats_table[0] == [
         "",

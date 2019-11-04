@@ -89,9 +89,10 @@ class multi_crystal_analysis(object):
             self._labels_all.extend(flex.size_t(unmerged.size(), i))
 
         self.run_cosym()
-        correlation_matrix, linkage_matrix = (
-            self.compute_correlation_coefficient_matrix()
-        )
+        (
+            correlation_matrix,
+            linkage_matrix,
+        ) = self.compute_correlation_coefficient_matrix()
 
         cos_angle_matrix, ca_linkage_matrix = self.compute_cos_angle_matrix()
 
