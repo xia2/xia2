@@ -1,23 +1,11 @@
-#!/usr/bin/env python
-# Syminfo.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 13th June 2006
-#
 # A handler singleton for the information in the CCP4 symmetry library
 # syminfo.lib.
-#
 
 from __future__ import absolute_import, division, print_function
 
-from builtins import range
 import copy
 import os
 import re
-import sys
 
 from cctbx import sgtbx
 
@@ -64,55 +52,56 @@ class _Syminfo(object):
 
         current = 0
 
-        for line in open(os.path.join(os.environ["CLIBD"], "symop.lib")).readlines():
-            if line[0] != " ":
-                index, _, _, shortname, _, lattice_type = line.split()[0:6]
-                index = int(index)
-                lattice_type = lattice_type.lower()
+        with open(os.path.join(os.environ["CLIBD"], "symop.lib")) as fh:
+            for line in fh.readlines():
+                if line[0] != " ":
+                    index, _, _, shortname, _, lattice_type = line.split()[0:6]
+                    index = int(index)
+                    lattice_type = lattice_type.lower()
 
-                longname = line.split("'")[1]
+                    longname = line.split("'")[1]
 
-                lattice = self._generate_lattice(lattice_type, shortname)
+                    lattice = self._generate_lattice(lattice_type, shortname)
 
-                pointgroup = ""
-                for token in longname.split():
-                    if len(longname.split()) <= 2:
-                        pointgroup += token[0]
-                    elif token[0] != "1":
-                        pointgroup += token[0]
+                    pointgroup = ""
+                    for token in longname.split():
+                        if len(longname.split()) <= 2:
+                            pointgroup += token[0]
+                        elif token[0] != "1":
+                            pointgroup += token[0]
 
-                self._symop[index] = {
-                    "index": index,
-                    "lattice_type": lattice_type,
-                    "lattice": lattice,
-                    "name": shortname,
-                    "longname": longname,
-                    "pointgroup": pointgroup,
-                    "symops": 0,
-                    "operations": [],
-                }
+                    self._symop[index] = {
+                        "index": index,
+                        "lattice_type": lattice_type,
+                        "lattice": lattice,
+                        "name": shortname,
+                        "longname": longname,
+                        "pointgroup": pointgroup,
+                        "symops": 0,
+                        "operations": [],
+                    }
 
-                if shortname not in self._spacegroup_name_to_lattice:
-                    self._spacegroup_name_to_lattice[shortname] = lattice
+                    if shortname not in self._spacegroup_name_to_lattice:
+                        self._spacegroup_name_to_lattice[shortname] = lattice
 
-                if shortname not in self._spacegroup_name_to_number:
-                    self._spacegroup_name_to_number[shortname] = index
+                    if shortname not in self._spacegroup_name_to_number:
+                        self._spacegroup_name_to_number[shortname] = index
 
-                if longname not in self._spacegroup_long_to_short:
-                    self._spacegroup_long_to_short[longname] = shortname
+                    if longname not in self._spacegroup_long_to_short:
+                        self._spacegroup_long_to_short[longname] = shortname
 
-                if shortname not in self._spacegroup_short_to_long:
-                    self._spacegroup_short_to_long[shortname] = longname
+                    if shortname not in self._spacegroup_short_to_long:
+                        self._spacegroup_short_to_long[shortname] = longname
 
-                if shortname not in self._spacegroup_name_to_pointgroup:
-                    self._spacegroup_name_to_pointgroup[shortname] = pointgroup
+                    if shortname not in self._spacegroup_name_to_pointgroup:
+                        self._spacegroup_name_to_pointgroup[shortname] = pointgroup
 
-                current = index
+                    current = index
 
-            else:
+                else:
 
-                self._symop[current]["symops"] += 1
-                self._symop[current]["operations"].append(line.strip())
+                    self._symop[current]["symops"] += 1
+                    self._symop[current]["operations"].append(line.strip())
 
     def get_syminfo(self, spacegroup_number):
         """Return the syminfo for spacegroup number."""
@@ -220,8 +209,3 @@ class _Syminfo(object):
 
 
 Syminfo = _Syminfo()
-
-if __name__ == "__main__":
-    for arg in sys.argv[1:]:
-        print(Syminfo.get_pointgroup(arg))
-        print(Syminfo.get_lattice(arg))

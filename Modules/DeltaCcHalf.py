@@ -1,8 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-from builtins import range
 import math
-import sys
 
 import iotbx.phil
 from cctbx import crystal
@@ -148,8 +146,6 @@ class delta_cc_half(object):
 
         normalised_score = self._normalised_delta_cc_i()
         pyplot.figure()
-        # bins = range(
-        # int(math.floor(flex.min(normalised_score))), int(math.ceil(flex.max(normalised_score)))+1)
         from libtbx.utils import frange
 
         bins = frange(
@@ -166,7 +162,6 @@ class delta_cc_half(object):
 
 
 def run(args):
-
     cmd_line = command_line.argument_interpreter(master_params=master_phil_scope)
     working_phil, args = cmd_line.process_and_fetch(
         args=args, custom_processor="collect_remaining"
@@ -229,7 +224,3 @@ def run(args):
     Citations.cite("delta_cc_half")
     for citation in Citations.get_citations_acta():
         print(citation)
-
-
-if __name__ == "__main__":
-    run(sys.argv[1:])

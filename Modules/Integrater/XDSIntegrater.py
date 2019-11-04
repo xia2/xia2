@@ -6,7 +6,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-from builtins import range
 import copy
 import inspect
 import math
@@ -34,6 +33,7 @@ from xia2.Wrappers.CCP4.Reindex import Reindex
 from xia2.Wrappers.XDS.XDSCorrect import XDSCorrect as _Correct
 from xia2.Wrappers.XDS.XDSDefpix import XDSDefpix as _Defpix
 from xia2.Wrappers.XDS.XDSIntegrate import XDSIntegrate as _Integrate
+from xia2.Wrappers.Dials.ImportXDS import ImportXDS
 
 
 class XDSIntegrater(Integrater):
@@ -80,16 +80,13 @@ class XDSIntegrater(Integrater):
     def set_integrater_resolution(self, dmin, dmax, user=False):
         if user:
             Integrater.set_integrater_resolution(self, dmin, dmax, user)
-        return
 
     def set_integrater_high_resolution(self, dmin, user=False):
         if user:
             Integrater.set_integrater_high_resolution(self, dmin, user)
-        return
 
     def set_integrater_low_resolution(self, dmax, user=False):
         self._intgr_reso_low = dmax
-        return
 
     def get_integrater_corrected_intensities(self):
         self.integrate()
@@ -103,7 +100,6 @@ class XDSIntegrater(Integrater):
         if os.path.exists(os.path.join(self.get_working_directory(), "REMOVE.HKL")):
             os.remove(os.path.join(self.get_working_directory(), "REMOVE.HKL"))
             Debug.write("Deleting REMOVE.HKL as reindex op set.")
-        return
 
     # factory functions
 
@@ -357,7 +353,7 @@ class XDSIntegrater(Integrater):
         defpix.run()
 
         # and gather the result files
-        for file in ["BKGPIX.cbf", "ABS.cbf"]:
+        for file in ("BKGPIX.cbf", "ABS.cbf"):
             self._xds_data_files[file] = defpix.get_output_data_file(file)
 
         integrate = self.Integrate()
@@ -750,9 +746,9 @@ class XDSIntegrater(Integrater):
         rotn = handle.rotation_axis
         beam = handle.beam_vector
 
-        dot = sum([rotn[j] * beam[j] for j in range(3)])
-        r = math.sqrt(sum([rotn[j] * rotn[j] for j in range(3)]))
-        b = math.sqrt(sum([beam[j] * beam[j] for j in range(3)]))
+        dot = sum(rotn[j] * beam[j] for j in range(3))
+        r = math.sqrt(sum(rotn[j] * rotn[j] for j in range(3)))
+        b = math.sqrt(sum(beam[j] * beam[j] for j in range(3)))
 
         rtod = 180.0 / math.pi
 
@@ -799,14 +795,15 @@ class XDSIntegrater(Integrater):
                 if os.path.exists(
                     os.path.join(self.get_working_directory(), "REMOVE.HKL")
                 ):
-                    for line in open(
+                    with open(
                         os.path.join(self.get_working_directory(), "REMOVE.HKL"), "r"
-                    ).readlines():
-                        h, k, l = map(int, line.split()[:3])
-                        z = float(line.split()[3])
+                    ) as fh:
+                        for line in fh.readlines():
+                            h, k, l = map(int, line.split()[:3])
+                            z = float(line.split()[3])
 
-                        if not (h, k, l, z) in current_remove:
-                            current_remove.append((h, k, l, z))
+                            if not (h, k, l, z) in current_remove:
+                                current_remove.append((h, k, l, z))
 
                     for c in correct_remove:
                         if c in current_remove:
@@ -931,8 +928,6 @@ class XDSIntegrater(Integrater):
 def integrate_hkl_to_reflection_file(
     integrate_hkl, experiments_json, working_directory
 ):
-    from xia2.Wrappers.Dials.ImportXDS import ImportXDS
-
     importer = ImportXDS()
     importer.set_working_directory(working_directory)
     auto_logfiler(importer)
@@ -943,8 +938,6 @@ def integrate_hkl_to_reflection_file(
 
 
 def xparm_xds_to_experiments_json(xparm_xds, working_directory):
-    from xia2.Wrappers.Dials.ImportXDS import ImportXDS
-
     importer = ImportXDS()
     importer.set_working_directory(working_directory)
     auto_logfiler(importer)
