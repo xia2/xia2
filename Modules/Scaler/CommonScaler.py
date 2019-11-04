@@ -1,17 +1,12 @@
-#!/usr/bin/env python
-# CommonScaler.py
-#   Copyright (C) 2011 Diamond Light Source, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
 # Bits the scalers have in common - inherit from me!
 
 from __future__ import absolute_import, division, print_function
 
 import math
 import os
+import time
 
+import iotbx.merging_statistics
 from iotbx import mtz
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
@@ -24,6 +19,7 @@ from xia2.Modules.CCP4InterRadiationDamageDetector import (
     CCP4InterRadiationDamageDetector,
 )
 from xia2.Modules.Scaler.CCP4ScalerHelpers import anomalous_signals
+from xia2.Modules.Scaler.rebatch import rebatch
 from xia2.Schema.Interfaces.Scaler import Scaler
 
 # new resolution limit code
@@ -273,8 +269,7 @@ class CommonScaler(Scaler):
 
         max_batches = 0
 
-        for epoch in self._sweep_information.keys():
-
+        for epoch in self._sweep_information:
             hklin = self._sweep_information[epoch]["scaled_reflections"]
 
             if self._sweep_information[epoch]["batches"] == [0, 0]:
@@ -296,9 +291,7 @@ class CommonScaler(Scaler):
         counter = 0
 
         for epoch in epochs:
-
             hklin = self._sweep_information[epoch]["scaled_reflections"]
-
             pname = self._sweep_information[epoch]["pname"]
             xname = self._sweep_information[epoch]["xname"]
             dname = self._sweep_information[epoch]["dname"]
@@ -321,8 +314,6 @@ class CommonScaler(Scaler):
             first_batch = min(self._sweep_information[epoch]["batches"])
             offset = counter * max_batches - first_batch + 1
             self._sweep_information[epoch]["batch_offset"] = offset
-
-            from xia2.Modules.Scaler.rebatch import rebatch
 
             new_batches = rebatch(
                 hklin, hklout, add_batch=offset, pname=pname, xname=xname, dname=dname
@@ -429,13 +420,11 @@ class CommonScaler(Scaler):
         )
         self._scalr_cell = tuple(ri.get_cell())
 
-        return
-
     def _sort_together_data_xds_one_sweep(self):
 
         assert len(self._sweep_information) == 1
 
-        epoch = self._sweep_information.keys()[0]
+        epoch = list(self._sweep_information)[0]
         hklin = self._sweep_information[epoch]["scaled_reflections"]
 
         if self.get_scaler_reference_reflection_file():
@@ -566,13 +555,12 @@ class CommonScaler(Scaler):
 
         # next have a look for radiation damage... if more than one wavelength
 
-        if len(self._scalr_scaled_refl_files.keys()) > 1:
+        if len(list(self._scalr_scaled_refl_files)) > 1:
             self._scale_finish_chunk_8_raddam()
 
         # finally add xia2 version to mtz history
         from iotbx.reflection_file_reader import any_reflection_file
         from xia2.XIA2Version import Version
-        import time
 
         mtz_files = [self._scalr_scaled_reflection_files["mtz"]]
         mtz_files.extend(self._scalr_scaled_reflection_files["mtz_unmerged"].values())
@@ -606,7 +594,7 @@ class CommonScaler(Scaler):
         from xia2.lib.bits import auto_logfiler
         from xia2.Wrappers.XIA.Report import Report
 
-        for wavelength in self._scalr_scaled_refl_files.keys():
+        for wavelength in self._scalr_scaled_refl_files:
             mtz_unmerged = self._scalr_scaled_reflection_files["mtz_unmerged"][
                 wavelength
             ]
@@ -650,8 +638,7 @@ class CommonScaler(Scaler):
                 Debug.write(str(e))
 
     def _scale_finish_chunk_3_truncate(self):
-        for wavelength in self._scalr_scaled_refl_files.keys():
-
+        for wavelength in self._scalr_scaled_refl_files:
             hklin = self._scalr_scaled_refl_files[wavelength]
 
             truncate = self._factory.Truncate()
@@ -702,11 +689,10 @@ class CommonScaler(Scaler):
             self._scalr_scaled_refl_files[wavelength] = hklout
 
     def _scale_finish_chunk_4_mad_mangling(self):
-        if len(self._scalr_scaled_refl_files.keys()) > 1:
-
+        if len(self._scalr_scaled_refl_files) > 1:
             reflection_files = {}
 
-            for wavelength in self._scalr_scaled_refl_files.keys():
+            for wavelength in self._scalr_scaled_refl_files:
                 cad = self._factory.Cad()
                 cad.add_hklin(self._scalr_scaled_refl_files[wavelength])
                 cad.set_hklout(
@@ -730,8 +716,8 @@ class CommonScaler(Scaler):
             Debug.write("Merging all data sets to %s" % hklout)
 
             cad = self._factory.Cad()
-            for wavelength in reflection_files.keys():
-                cad.add_hklin(reflection_files[wavelength])
+            for rf in reflection_files.values():
+                cad.add_hklin(rf)
             cad.set_hklout(hklout)
             cad.merge()
 
@@ -741,7 +727,7 @@ class CommonScaler(Scaler):
 
             self._scalr_scaled_reflection_files[
                 "mtz_merged"
-            ] = self._scalr_scaled_refl_files[self._scalr_scaled_refl_files.keys()[0]]
+            ] = self._scalr_scaled_refl_files[list(self._scalr_scaled_refl_files)[0]]
 
     def _scale_finish_chunk_5_finish_small_molecule(self):
         # keep 'mtz' and remove 'mtz_merged' from the dictionary for
@@ -763,9 +749,9 @@ class CommonScaler(Scaler):
         from cctbx.xray.structure import structure
         from cctbx.xray import scatterer
 
-        for wavelength_name in self._scalr_scaled_refl_files.keys():
+        for wavelength_name in self._scalr_scaled_refl_files:
             prefix = wavelength_name
-            if len(self._scalr_scaled_refl_files.keys()) == 1:
+            if len(list(self._scalr_scaled_refl_files)) == 1:
                 prefix = "shelxt"
             prefixpath = os.path.join(self.get_working_directory(), prefix)
 
@@ -938,7 +924,7 @@ class CommonScaler(Scaler):
             from xia2.Toolkit.E4 import E4_mtz
 
             E4s = E4_mtz(hklout, native=True)
-            self._scalr_twinning_score = E4s.items()[0][1]
+            self._scalr_twinning_score = list(E4s.items())[0][1]
 
             if self._scalr_twinning_score > 1.9:
                 self._scalr_twinning_conclusion = "Your data do not appear twinned"
@@ -1120,7 +1106,6 @@ class CommonScaler(Scaler):
 
         result, select_result, anom_result, select_anom_result = None, None, None, None
         n_bins = PhilIndex.params.xia2.settings.merging_statistics.n_bins
-        import iotbx.merging_statistics
 
         while result is None:
             try:
@@ -1168,16 +1153,11 @@ class CommonScaler(Scaler):
                 else:
                     raise
 
-        from six.moves import cStringIO as StringIO
-
-        result_cache = StringIO()
-        result.show(out=result_cache)
-
         for d, r, s in (
             (key_to_var, result, select_result),
             (anom_key_to_var, anom_result, select_anom_result),
         ):
-            for k, v in d.iteritems():
+            for k, v in d.items():
                 if four_column_output:
                     values = (
                         getattr(s.overall, v),
@@ -1201,8 +1181,6 @@ class CommonScaler(Scaler):
     def _iotbx_merging_statistics(
         self, scaled_unmerged_mtz, anomalous=False, d_min=None, d_max=None, n_bins=None
     ):
-        import iotbx.merging_statistics
-
         params = PhilIndex.params.xia2.settings.merging_statistics
 
         i_obs = iotbx.merging_statistics.select_data(
@@ -1249,7 +1227,6 @@ class CommonScaler(Scaler):
         return result
 
     def _update_scaled_unit_cell(self):
-
         params = PhilIndex.params
         fast_mode = params.dials.fast_mode
         if (
@@ -1285,7 +1262,7 @@ class CommonScaler(Scaler):
                 self.get_working_directory(),
                 "%s_%s.p4p" % (self._scalr_pname, self._scalr_xname),
             )
-            for pi in groups.keys():
+            for pi in groups:
                 tt_grouprefiner = TwoThetaRefine()
                 tt_grouprefiner.set_working_directory(self.get_working_directory())
                 auto_logfiler(tt_grouprefiner)
@@ -1365,9 +1342,9 @@ class CommonScaler(Scaler):
                 cif_in = tt_refiner.import_cif()
                 mmcif_in = tt_refiner.import_mmcif()
             else:
-                self._scalr_cell, self._scalr_cell_esd, cif_in, mmcif_in = self._scalr_cell_dict.values()[
-                    0
-                ]
+                self._scalr_cell, self._scalr_cell_esd, cif_in, mmcif_in = list(
+                    self._scalr_cell_dict.values()
+                )[0]
             if params.xia2.settings.small_molecule:
                 FileHandler.record_data_file(p4p_file)
 
@@ -1390,10 +1367,7 @@ class CommonScaler(Scaler):
             ami.set_working_directory(self.get_working_directory())
 
             average_unit_cell, ignore_sg = ami.compute_average_cell(
-                [
-                    self._scalr_scaled_refl_files[key]
-                    for key in self._scalr_scaled_refl_files
-                ]
+                list(self._scalr_scaled_refl_files.values())
             )
 
             Debug.write("Computed average unit cell (will use in all files)")

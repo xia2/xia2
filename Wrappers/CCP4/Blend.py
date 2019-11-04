@@ -4,6 +4,8 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
+import numpy
+
 from xia2.Driver.DriverFactory import DriverFactory
 
 
@@ -275,9 +277,6 @@ def parse_final_list_of_files_dat(filename):
 
 
 def clusters_as_scipy_linkage_matrix(clusters):
-
-    import numpy
-
     n = len(clusters) + 1
     linkage_matrix = numpy.ndarray(shape=(n - 1, 4))
     cluster_id_to_datasets = {}
@@ -296,7 +295,7 @@ def clusters_as_scipy_linkage_matrix(clusters):
             ]
         else:
             new = None
-            for cid, dids in cluster_id_to_datasets.iteritems():
+            for cid, dids in cluster_id_to_datasets.items():
                 diff = tuple(sorted(set(dataset_ids) - set(dids)))
                 if len(diff) == 1:
                     new = diff[0] - 1

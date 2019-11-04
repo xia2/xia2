@@ -1,10 +1,6 @@
-#!/usr/bin/env python
-# XSample.py
-#   Copyright (C) 2015 Diamond Light Source, Richard Gildea
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-
 from __future__ import absolute_import, division, print_function
+
+import inspect
 
 
 class XSample(object):
@@ -13,27 +9,17 @@ class XSample(object):
     def __init__(self, name, crystal):
         """Create a new sample named name, belonging to XCrystal object crystal."""
 
-        # check that the crystal is an XCrystal
-
-        if not crystal.__class__.__name__ == "XCrystal":
-            pass
-
         # set up this object
-
         self._name = name
         self._crystal = crystal
 
         # then create space to store things which are contained
         # in here - the sweeps
-
         self._sweeps = []
 
         self._multi_indexer = None
 
-        return
-
     def get_epoch_to_dose(self):
-
         from xia2.Modules.DoseAccumulate import accumulate_dose
 
         epoch_to_dose = accumulate_dose(
@@ -54,7 +40,6 @@ class XSample(object):
     def to_dict(self):
         obj = {}
         obj["__id__"] = "XSample"
-        import inspect
 
         attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
         for a in attributes:
@@ -79,7 +64,7 @@ class XSample(object):
     def from_dict(cls, obj):
         assert obj["__id__"] == "XSample"
         return_obj = cls(name=None, crystal=None)
-        for k, v in obj.iteritems():
+        for k, v in obj.items():
             if k == "_sweeps":
                 v = [s_dict["_name"] for s_dict in v]
             elif k == "_multi_indexer" and v is not None:
@@ -125,5 +110,3 @@ class XSample(object):
             self._sweeps.remove(sweep)
         except ValueError:
             pass
-
-        return

@@ -139,12 +139,6 @@ class XSweep(object):
         if excluded_regions is None:
             excluded_regions = []
 
-        # + check the wavelength is an XWavelength object
-        #   raise an exception if not... or not...
-
-        if not wavelength.__class__.__name__ == "XWavelength":
-            pass
-
         # FIXME bug 2221 if DIRECTORY starts with ~/ or ~graeme (say) need to
         # interpret this properly - e.g. map it to a full PATH.
 
@@ -289,7 +283,7 @@ class XSweep(object):
                 self._epoch_to_image[epoch] = j
                 self._image_to_epoch[j] = epoch
 
-            epochs = self._epoch_to_image.keys()
+            epochs = self._epoch_to_image
 
             Debug.write(
                 "Exposure epoch for sweep %s: %d %d"
@@ -384,7 +378,7 @@ class XSweep(object):
     def from_dict(cls, obj):
         assert obj["__id__"] == "XSweep"
         return_obj = cls(name=None, sample=None, wavelength=None)
-        for k, v in obj.iteritems():
+        for k, v in obj.items():
             if k in ("_indexer", "_refiner", "_integrater") and v is not None:
                 from libtbx.utils import import_python_object
 
@@ -887,7 +881,7 @@ class XSweep(object):
                 )
                 Debug.write("Stored integration parameters for crystal %s" % crystal_id)
 
-        except Exception as e:
+        except Exception:
             # Chatter.write('Error storing parameters for crystal %s' % \
             # crystal_id)
             # Chatter.write('%s' % str(e))

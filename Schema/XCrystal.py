@@ -103,7 +103,7 @@ class _aa_sequence(object):
     def from_dict(cls, obj):
         assert obj["__id__"] == "aa_sequence"
         return_obj = cls(obj["_sequence"])
-        for k, v in obj.iteritems():
+        for k, v in obj.items():
             setattr(return_obj, k, v)
         return return_obj
 
@@ -153,7 +153,7 @@ class _ha_info(object):
     def from_dict(cls, obj):
         assert obj["__id__"] == "ha_info"
         return_obj = cls(obj["_atom"])
-        for k, v in obj.iteritems():
+        for k, v in obj.items():
             setattr(return_obj, k, v)
         return return_obj
 
@@ -195,7 +195,7 @@ def format_statistics(statistics, caption=None):
     """Format for printing statistics from data processing, removing from
     the main XCrystal __repr__ method. See DLS #1291"""
 
-    available = statistics.keys()
+    available = list(statistics.keys())
 
     result = ""
     columns = len(statistics.get("Completeness", [1, 2, 3]))
@@ -207,7 +207,7 @@ def format_statistics(statistics, caption=None):
             result += "Suggested   Low    High  Overall"
         result += "\n"
 
-    for k, format_str in formats.iteritems():
+    for k, format_str in formats.items():
         if k in available:
             try:
                 row_data = statistics[k]
@@ -279,12 +279,12 @@ class XCrystal(object):
                 obj[a[0]] = a[1].to_dict()
             elif a[0] == "_wavelengths":
                 wavs = {}
-                for wname, wav in a[1].iteritems():
+                for wname, wav in a[1].items():
                     wavs[wname] = wav.to_dict()
                 obj[a[0]] = wavs
             elif a[0] == "_samples":
                 samples = {}
-                for sname, sample in a[1].iteritems():
+                for sname, sample in a[1].items():
                     samples[sname] = sample.to_dict()
                 obj[a[0]] = samples
             elif a[0] == "_project":
@@ -295,7 +295,7 @@ class XCrystal(object):
                 obj[a[0]] = a[1].to_dict()
             elif a[0] == "_ha_info" and a[1] is not None:
                 d = {}
-                for k, v in a[1].iteritems():
+                for k, v in a[1].items():
                     d[k] = v.to_dict()
                 obj[a[0]] = d
             elif a[0].startswith("__"):
@@ -311,7 +311,7 @@ class XCrystal(object):
 
         assert obj["__id__"] == "XCrystal"
         return_obj = cls(name=None, project=None)
-        for k, v in obj.iteritems():
+        for k, v in obj.items():
             if k == "_scaler" and v is not None:
                 from libtbx.utils import import_python_object
 
@@ -325,14 +325,14 @@ class XCrystal(object):
                 v._scalr_xcrystal = return_obj
             elif k == "_wavelengths":
                 v_ = {}
-                for wname, wdict in v.iteritems():
+                for wname, wdict in v.items():
                     wav = XWavelength.from_dict(wdict)
                     wav._crystal = return_obj
                     v_[wname] = wav
                 v = v_
             elif k == "_samples":
                 v_ = {}
-                for sname, sdict in v.iteritems():
+                for sname, sdict in v.items():
                     sample = XSample.from_dict(sdict)
                     sample._crystal = return_obj
                     v_[sname] = sample
@@ -340,13 +340,13 @@ class XCrystal(object):
             elif k == "_aa_sequence" and v is not None:
                 v = _aa_sequence.from_dict(v)
             elif k == "_ha_info" and v is not None:
-                for k_, v_ in v.iteritems():
+                for k_, v_ in v.items():
                     v[k_] = _ha_info.from_dict(v_)
             setattr(return_obj, k, v)
         for sample in return_obj._samples.values():
             for i, sname in enumerate(sample._sweeps):
                 found_sweep = False
-                for wav in return_obj._wavelengths.values():
+                for wav in list(return_obj._wavelengths.values()):
                     if found_sweep:
                         break
                     for sweep in wav._sweeps:
@@ -381,12 +381,12 @@ class XCrystal(object):
 
         if self._aa_sequence:
             result += "Sequence: %s\n" % self._aa_sequence.get_sequence()
-        for wavelength in self._wavelengths.keys():
+        for wavelength in list(self._wavelengths.keys()):
             result += self._wavelengths[wavelength].get_output()
 
         scaler = self._get_scaler()
         if scaler.get_scaler_finish_done():
-            for wname, xwav in self._wavelengths.iteritems():
+            for wname, xwav in self._wavelengths.items():
                 for xsweep in xwav.get_sweeps():
                     idxr = xsweep._get_indexer()
                     if PhilIndex.params.xia2.settings.show_template:
@@ -417,7 +417,7 @@ class XCrystal(object):
             for (
                 (dname, sname),
                 (limit, suggested),
-            ) in scaler.get_scaler_resolution_limits().iteritems():
+            ) in scaler.get_scaler_resolution_limits().items():
                 if suggested is None or limit == suggested:
                     result += "Resolution limit for %s/%s: %5.2f\n" % (
                         dname,
@@ -437,7 +437,7 @@ class XCrystal(object):
 
         # print some of these statistics, perhaps?
 
-        for key in statistics_all.keys():
+        for key in list(statistics_all.keys()):
             result += format_statistics(
                 statistics_all[key], caption="For %s/%s/%s" % key
             )
@@ -462,13 +462,13 @@ class XCrystal(object):
 
         if len(self._wavelengths) == 1:
             CIF.set_wavelengths(
-                [w.get_wavelength() for w in self._wavelengths.itervalues()]
+                [w.get_wavelength() for w in self._wavelengths.values()]
             )
             mmCIF.set_wavelengths(
-                [w.get_wavelength() for w in self._wavelengths.itervalues()]
+                [w.get_wavelength() for w in self._wavelengths.values()]
             )
         else:
-            for wavelength in self._wavelengths.keys():
+            for wavelength in list(self._wavelengths.keys()):
                 full_wave_name = "%s_%s_%s" % (
                     self._project._name,
                     self._name,
@@ -483,13 +483,13 @@ class XCrystal(object):
             CIF.set_wavelengths(
                 {
                     name: wave.get_wavelength()
-                    for name, wave in self._wavelengths.iteritems()
+                    for name, wave in self._wavelengths.items()
                 }
             )
             mmCIF.set_wavelengths(
                 {
                     name: wave.get_wavelength()
-                    for name, wave in self._wavelengths.iteritems()
+                    for name, wave in self._wavelengths.items()
                 }
             )
 
@@ -574,12 +574,12 @@ class XCrystal(object):
                 self._nmol = nmol
 
         if isinstance(reflections_all, type({})):
-            for format in reflections_all.keys():
+            for format in list(reflections_all.keys()):
                 result += "%s format:\n" % format
                 reflections = reflections_all[format]
 
                 if isinstance(reflections, type({})):
-                    for wavelength in reflections.keys():
+                    for wavelength in list(reflections.keys()):
                         target = FileHandler.get_data_file(reflections[wavelength])
                         result += "Scaled reflections (%s): %s\n" % (wavelength, target)
 
@@ -602,7 +602,7 @@ class XCrystal(object):
                 "Sequence length: %d" % len(self._aa_sequence.get_sequence())
             )
 
-        for wavelength in self._wavelengths.keys():
+        for wavelength in list(self._wavelengths.keys()):
             for record in self._wavelengths[wavelength].summarise():
                 summary.append(record)
 
@@ -612,7 +612,7 @@ class XCrystal(object):
             pname, xname, dname = key
 
             summary.append("For %s/%s/%s:" % key)
-            available = statistics_all[key].keys()
+            available = list(statistics_all[key].keys())
 
             stats = []
             keys = [
@@ -744,7 +744,7 @@ class XCrystal(object):
         if xwavelength.__class__.__name__ != "XWavelength":
             raise RuntimeError("input should be an XWavelength object")
 
-        if xwavelength.get_name() in self._wavelengths.keys():
+        if xwavelength.get_name() in list(self._wavelengths.keys()):
             raise RuntimeError(
                 "XWavelength with name %s already exists" % xwavelength.get_name()
             )
@@ -752,7 +752,7 @@ class XCrystal(object):
         self._wavelengths[xwavelength.get_name()] = xwavelength
 
         # bug # 2326 - need to decide when we're anomalous
-        if len(self._wavelengths.keys()) > 1:
+        if len(list(self._wavelengths.keys())) > 1:
             self._anomalous = True
 
         if xwavelength.get_f_pr() != 0.0 or xwavelength.get_f_prpr() != 0.0:
@@ -767,7 +767,7 @@ class XCrystal(object):
         if xsample.__class__.__name__ != "XSample":
             raise RuntimeError("input should be an XSample object")
 
-        if xsample.get_name() in self._samples.keys():
+        if xsample.get_name() in list(self._samples.keys()):
             raise RuntimeError(
                 "XSample with name %s already exists" % xsample.get_name()
             )
@@ -777,13 +777,13 @@ class XCrystal(object):
     def remove_sweep(self, s):
         """Find and remove the sweep s from this crystal."""
 
-        for wave in self._wavelengths.keys():
+        for wave in list(self._wavelengths.keys()):
             self._wavelengths[wave].remove_sweep(s)
 
     def _get_integraters(self):
         integraters = []
 
-        for wave in self._wavelengths.keys():
+        for wave in list(self._wavelengths.keys()):
             for i in self._wavelengths[wave]._get_integraters():
                 integraters.append(i)
 
@@ -792,7 +792,7 @@ class XCrystal(object):
     def _get_indexers(self):
         indexers = []
 
-        for wave in self._wavelengths.keys():
+        for wave in list(self._wavelengths.keys()):
             for i in self._wavelengths[wave]._get_indexers():
                 indexers.append(i)
 
@@ -804,7 +804,7 @@ class XCrystal(object):
         # for RD analysis ...
 
         result = []
-        for wavelength in self._wavelengths.keys():
+        for wavelength in list(self._wavelengths.keys()):
             result.extend(self._wavelengths[wavelength].get_all_image_names())
         return result
 

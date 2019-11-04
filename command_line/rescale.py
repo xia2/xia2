@@ -1,5 +1,3 @@
-# LIBTBX_SET_DISPATCHER_NAME xia2.rescale
-
 from __future__ import absolute_import, division, print_function
 
 import os
@@ -7,12 +5,14 @@ import sys
 import time
 import traceback
 
+from libtbx import Auto
+
 from xia2.Applications.xia2_main import check_environment, write_citations
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Environment import Environment
 from xia2.Handlers.Files import cleanup
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Streams import Chatter
 from xia2.XIA2Version import Version
 
 
@@ -22,7 +22,8 @@ def run():
     try:
         check_environment()
     except Exception as e:
-        traceback.print_exc(file=open("xia2.error", "w"))
+        with open("xia2.error", "w") as fh:
+            traceback.print_exc(file=fh)
         Chatter.write('Status: error "%s"' % str(e))
 
     # print the version
@@ -37,10 +38,7 @@ def run():
     xinfo = XProject.from_json(filename="xia2.json")
 
     crystals = xinfo.get_crystals()
-    for crystal_id, crystal in crystals.iteritems():
-        # cwd = os.path.abspath(os.curdir)
-        from libtbx import Auto
-
+    for crystal_id, crystal in crystals.items():
         scale_dir = PhilIndex.params.xia2.settings.scale.directory
         if scale_dir is Auto:
             scale_dir = "scale"
@@ -49,14 +47,11 @@ def run():
                 i += 1
                 scale_dir = "scale%i" % i
             PhilIndex.params.xia2.settings.scale.directory = scale_dir
-        working_directory = Environment.generate_directory(
-            [crystal.get_name(), scale_dir]
-        )
-        # os.chdir(working_directory)
 
-        crystals[crystal_id]._scaler = None  # reset scaler
+        # reset scaler
+        crystals[crystal_id]._scaler = None
+        crystal._get_scaler()
 
-        scaler = crystal._get_scaler()
         Chatter.write(xinfo.get_output())
         crystal.serialize()
 

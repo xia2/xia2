@@ -1,41 +1,13 @@
 from __future__ import absolute_import, division, print_function
 
+import copy
 import json
 import logging
-from collections import OrderedDict
 
 import iotbx.phil
 from scitbx.array_family import flex
-from dials.util import Sorry
 
 logger = logging.getLogger(__name__)
-
-
-def get_scipy():
-    # make sure we can get scipy, if not try failing over to version in CCP4
-    try:
-        import scipy.cluster  # noqa: F401
-
-        found = True
-    except ImportError:
-        found = False
-
-    if not found and "CCP4" in os.environ:
-        sys.path.append(
-            os.path.join(os.environ["CCP4"], "lib", "python2.7", "site-packages")
-        )
-        try:
-            import scipy.cluster  # noqa: F401
-
-            found = True
-        except ImportError:
-            found = False
-
-    if not found:
-        raise Sorry("%s depends on scipy.cluster, not available" % sys.argv[0])
-
-
-get_scipy()
 
 batch_phil_scope = """\
 batch
@@ -60,57 +32,6 @@ d_min = None
 """
     % batch_phil_scope
 )
-
-
-class separate_unmerged(object):
-    def __init__(self, unmerged_intensities, batches_all, id_to_batches=None):
-
-        intensities = OrderedDict()
-        batches = OrderedDict()
-
-        if id_to_batches is None:
-            run_id_to_batch_id = None
-            run_id = 0
-            unique_batches = sorted(set(batches_all.data()))
-            last_batch = None
-            run_start = unique_batches[0]
-            for i, batch in enumerate(unique_batches):
-                if (
-                    last_batch is not None
-                    and batch > (last_batch + 1)
-                    or (i + 1) == len(unique_batches)
-                ):
-                    batch_sel = (batches_all.data() >= run_start) & (
-                        batches_all.data() <= last_batch
-                    )
-                    batches[run_id] = batches_all.select(batch_sel)
-                    intensities[run_id] = unmerged_intensities.select(batch_sel)
-                    logger.debug(
-                        "run %i batch %i to %i" % (run_id + 1, run_start, last_batch)
-                    )
-                    run_id += 1
-                    run_start = batch
-                last_batch = batch
-
-        else:
-            run_id_to_batch_id = OrderedDict()
-            run_id = 0
-            for batch_id, batch_range in id_to_batches.iteritems():
-                run_id_to_batch_id[run_id] = batch_id
-                run_start, last_batch = batch_range
-                batch_sel = (batches_all.data() >= run_start) & (
-                    batches_all.data() <= last_batch
-                )
-                batches[run_id] = batches_all.select(batch_sel)
-                intensities[run_id] = unmerged_intensities.select(batch_sel)
-                logger.debug(
-                    "run %i batch %i to %i" % (run_id + 1, run_start, last_batch)
-                )
-                run_id += 1
-
-        self.run_id_to_batch_id = run_id_to_batch_id
-        self.intensities = intensities
-        self.batches = batches
 
 
 class ClusterInfo(object):
@@ -175,14 +96,14 @@ class multi_crystal_analysis(object):
 
         d = self.to_plotly_json(correlation_matrix, linkage_matrix, labels=labels)
 
-        with open("%sintensity_clusters.json" % self._prefix, "wb") as f:
+        with open("%sintensity_clusters.json" % self._prefix, "w") as f:
             json.dump(d, f, indent=2)
 
         d = self.to_plotly_json(
             cos_angle_matrix, ca_linkage_matrix, labels=labels, matrix_type="cos_angle"
         )
 
-        with open("%scos_angle_clusters.json" % self._prefix, "wb") as f:
+        with open("%scos_angle_clusters.json" % self._prefix, "w") as f:
             json.dump(d, f, indent=2)
 
         self.cos_angle_linkage_matrix = ca_linkage_matrix
@@ -215,7 +136,7 @@ class multi_crystal_analysis(object):
 
     def cluster_info(self, cluster_dict):
         info = []
-        for cluster_id, cluster in cluster_dict.iteritems():
+        for cluster_id, cluster in cluster_dict.items():
             sel_cluster = flex.bool(self._labels_all.size(), False)
             uc_params = [flex.double() for i in range(6)]
             for j in cluster["datasets"]:
@@ -275,7 +196,6 @@ class multi_crystal_analysis(object):
         from scipy.cluster import hierarchy
 
         tree = hierarchy.to_tree(linkage_matrix, rd=False)
-        leaves_list = hierarchy.leaves_list(linkage_matrix)
 
         d = {}
 
@@ -364,8 +284,6 @@ class multi_crystal_analysis(object):
         ddict = hierarchy.dendrogram(
             linkage_matrix, color_threshold=0.05, labels=labels, show_leaf_counts=False
         )
-
-        import copy
 
         y2_dict = scipy_dendrogram_to_plotly_json(ddict)  # above heatmap
         x2_dict = copy.deepcopy(y2_dict)  # left of heatmap, rotated
@@ -505,7 +423,6 @@ def scipy_dendrogram_to_plotly_json(ddict):
     icoord = ddict["icoord"]
     color_list = ddict["color_list"]
     ivl = ddict["ivl"]
-    leaves = ddict["leaves"]
 
     data = []
     xticktext = []

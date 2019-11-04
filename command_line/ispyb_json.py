@@ -20,7 +20,7 @@ def ispyb_object():
     xinfo = XProject.from_json(filename="xia2.json")
     crystals = xinfo.get_crystals()
     assert len(crystals) == 1
-    crystal = next(crystals.itervalues())
+    crystal = next(iter(crystals.values()))
     ISPyBXmlHandler.add_xcrystal(crystal)
     return ISPyBXmlHandler.json_object(command_line=command_line)
 
@@ -30,7 +30,7 @@ def zocalo_object():
     xinfo = XProject.from_json(filename="xia2.json")
     crystals = xinfo.get_crystals()
     assert len(crystals) == 1
-    return xia2.Interfaces.ISPyB.xia2_to_json_object(crystals.values())
+    return xia2.Interfaces.ISPyB.xia2_to_json_object(list(crystals.values()))
 
 
 def ispyb_json(json_out):

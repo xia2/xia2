@@ -1,17 +1,9 @@
-#!/usr/bin/env python
-# ISPyBXmlHandler.py
-#   Copyright (C) 2009 Diamond Light Source, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
 # A handler to manage the data which needs to end up in the ISPyB xml out
 # file.
-#
-# 11th November 2009
 
 from __future__ import absolute_import, division, print_function
 
+import glob
 import os
 import time
 
@@ -61,10 +53,11 @@ class _ISPyBXmlHandler(object):
         # resolution and overall...
 
     def add_crystal_log_file(self, crystal, log_file):
-        if not log_file in self._per_crystal_data[crystal]["log_files"]:
+        if log_file not in self._per_crystal_data[crystal]["log_files"]:
             self._per_crystal_data[crystal]["log_files"].append(log_file)
 
-    def write_date(self, fout):
+    @staticmethod
+    def write_date(fout):
         """Write the current date and time out as XML."""
 
         fout.write(
@@ -72,7 +65,8 @@ class _ISPyBXmlHandler(object):
             % time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
         )
 
-    def write_cell(self, fout, cell):
+    @staticmethod
+    def write_cell(fout, cell):
         """Write out a UNIT CELL as XML..."""
 
         fout.write("<cell_a>%f</cell_a>" % cell[0])
@@ -82,7 +76,8 @@ class _ISPyBXmlHandler(object):
         fout.write("<cell_beta>%f</cell_beta>" % cell[4])
         fout.write("<cell_gamma>%f</cell_gamma>" % cell[5])
 
-    def write_refined_cell(self, fout, cell):
+    @staticmethod
+    def write_refined_cell(fout, cell):
         """Write out a REFINED UNIT CELL as XML..."""
 
         fout.write("<refinedCell_a>%f</refinedCell_a>" % cell[0])
@@ -102,7 +97,7 @@ class _ISPyBXmlHandler(object):
         )
 
         for name in stats_dict:
-            if not name in self._name_map:
+            if name not in self._name_map:
                 continue
 
             out_name = self._name_map[name]
@@ -142,17 +137,12 @@ class _ISPyBXmlHandler(object):
             statistics_all = xcrystal.get_statistics()
             reflection_files = xcrystal.get_scaled_merged_reflections()
 
-            wavelength_names = xcrystal.get_wavelength_names()
-
-            for key in statistics_all.keys():
+            for key in statistics_all:
                 pname, xname, dname = key
 
                 # FIXME should assert that the dname is a
                 # valid wavelength name
 
-                available = statistics_all[key].keys()
-
-                stats = []
                 keys = [
                     "High resolution limit",
                     "Low resolution limit",
@@ -173,9 +163,7 @@ class _ISPyBXmlHandler(object):
                     "Partial Bias",
                 ]
 
-                for k in keys:
-                    if k in available:
-                        stats.append(k)
+                stats = [k for k in keys if k in statistics_all[key]]
 
                 xwavelength = xcrystal.get_xwavelength(dname)
                 sweeps = xwavelength.get_sweeps()
@@ -284,8 +272,6 @@ class _ISPyBXmlHandler(object):
                 )
                 fout.write("</AutoProcProgramAttachment>\n")
 
-            import glob
-
             g = glob.glob(os.path.join(log_directory, "*merging-statistics.json"))
             for merging_stats_json in g:
                 fout.write("<AutoProcProgramAttachment><fileType>Graph")
@@ -334,17 +320,12 @@ class _ISPyBXmlHandler(object):
             statistics_all = xcrystal.get_statistics()
             reflection_files = xcrystal.get_scaled_merged_reflections()
 
-            wavelength_names = xcrystal.get_wavelength_names()
-
-            for key in statistics_all.keys():
+            for key in list(statistics_all.keys()):
                 pname, xname, dname = key
 
                 # FIXME should assert that the dname is a
                 # valid wavelength name
 
-                available = statistics_all[key].keys()
-
-                stats = []
                 keys = [
                     "High resolution limit",
                     "Low resolution limit",
@@ -364,10 +345,7 @@ class _ISPyBXmlHandler(object):
                     "Rpim(I+/-)",
                     "Partial Bias",
                 ]
-
-                for k in keys:
-                    if k in available:
-                        stats.append(k)
+                stats = [k for k in keys if k in statistics_all[key]]
 
                 xwavelength = xcrystal.get_xwavelength(dname)
                 sweeps = xwavelength.get_sweeps()
@@ -488,7 +466,3 @@ class _ISPyBXmlHandler(object):
 
 
 ISPyBXmlHandler = _ISPyBXmlHandler()
-
-if __name__ == "__main__":
-    ISPyBXmlHandler.set_project("test")
-    ISPyBXmlHandler.write_xml("test.xml")

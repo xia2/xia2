@@ -1,20 +1,11 @@
-#!/usr/bin/env python
-# XDSScalerA.py
-#   Copyright (C) 2007 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 2nd January 2007
-#
-# This will provide the Scaler interface using XDS, pointless & CCP4 programs.
-# This will run XSCALE, and feed back to the XDSIntegrater and also run a
+# This provides the Scaler interface using XDS, pointless & CCP4 programs.
+# This runs XSCALE, and feed sback to the XDSIntegrater and also runs a
 # few other jiffys. Then Aimless for the merging...
-#
 
 from __future__ import absolute_import, division, print_function
 
 import copy
+import inspect
 import os
 import shutil
 
@@ -23,23 +14,15 @@ from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import Chatter, Debug, Journal
 from xia2.Handlers.Syminfo import Syminfo
-
-# random odds and sods - the resolution estimate should be somewhere better
 from xia2.lib.bits import auto_logfiler, is_mtz_file, transpose_loggraph
 from xia2.lib.SymmetryLib import lattices_in_order
 from xia2.Modules import MtzUtils
 from xia2.Modules.Scaler.CommonScaler import CommonScaler as Scaler
-
-# newly implemented CCTBX powered functions to replace xia2 binaries
 from xia2.Modules.Scaler.tools import compute_average_unit_cell
-
-# other tools that this will need
 from xia2.Modules.Scaler.XDSScalerHelpers import XDSScalerHelper
 from xia2.Wrappers.CCP4.CCP4Factory import CCP4Factory
 from xia2.Wrappers.XDS.Cellparm import Cellparm as _Cellparm
 from xia2.Wrappers.XDS.XScaleR import XScaleR as _XScale
-
-# program wrappers that we will need
 
 
 class XDSScalerA(Scaler):
@@ -79,23 +62,21 @@ class XDSScalerA(Scaler):
 
     def to_dict(self):
         obj = super(XDSScalerA, self).to_dict()
-        import inspect
-
         attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
         for a in attributes:
             if a[0].startswith("_xds_"):
                 obj[a[0]] = a[1]
             elif a[0] == "_sweep_information":
                 d = copy.deepcopy(a[1])
-                for i in d.keys():
-                    d[i]["integrater"] = d[i]["integrater"].to_dict()
+                for i in d.values():
+                    i["integrater"] = i["integrater"].to_dict()
                 obj[a[0]] = d
         return obj
 
     @classmethod
     def from_dict(cls, obj):
         return_obj = super(XDSScalerA, cls).from_dict(obj)
-        for i in return_obj._sweep_information.keys():
+        for i in list(return_obj._sweep_information):
             d = return_obj._sweep_information[i]["integrater"]
             from libtbx.utils import import_python_object
 
@@ -194,17 +175,14 @@ class XDSScalerA(Scaler):
         for lattice in possible:
             state = refiner.set_refiner_asserted_lattice(lattice)
             if state == refiner.LATTICE_CORRECT:
-
                 Debug.write("Agreed lattice %s" % lattice)
                 correct_lattice = lattice
-
                 break
 
             elif state == refiner.LATTICE_IMPOSSIBLE:
                 Debug.write("Rejected lattice %s" % lattice)
 
                 rerun_pointless = True
-
                 continue
 
             elif state == refiner.LATTICE_POSSIBLE:
@@ -214,7 +192,6 @@ class XDSScalerA(Scaler):
                 need_to_return = True
 
                 correct_lattice = lattice
-
                 break
 
         if correct_lattice is None:
@@ -263,7 +240,7 @@ class XDSScalerA(Scaler):
             {"working directory": self.get_working_directory()},
         )
 
-        for epoch in self._scalr_integraters.keys():
+        for epoch in self._scalr_integraters:
             intgr = self._scalr_integraters[epoch]
             pname, xname, dname = intgr.get_integrater_project_info()
             sname = intgr.get_integrater_sweep_name()
@@ -296,7 +273,7 @@ class XDSScalerA(Scaler):
         # next work through all of the reflection files and make sure that
         # they are XDS_ASCII format...
 
-        epochs = sorted(self._sweep_information.keys())
+        epochs = sorted(self._sweep_information)
 
         self._first_epoch = min(epochs)
 
@@ -343,14 +320,12 @@ class XDSScalerA(Scaler):
 
         need_to_return = False
 
-        if len(self._sweep_information.keys()) > 1:
-
-            lattices = []
+        if len(self._sweep_information) > 1:
+            lattices = set()
 
             # FIXME run this stuff in parallel as well...
 
-            for epoch in self._sweep_information.keys():
-
+            for epoch in self._sweep_information:
                 intgr = self._sweep_information[epoch]["integrater"]
                 hklin = self._sweep_information[epoch]["corrected_intensities"]
                 refiner = intgr.get_integrater_refiner()
@@ -361,7 +336,6 @@ class XDSScalerA(Scaler):
                     ntr = False
 
                 else:
-
                     pointgroup, reindex_op, ntr = self._pointless_indexer_jiffy(
                         hklin, refiner
                     )
@@ -369,12 +343,9 @@ class XDSScalerA(Scaler):
                     Debug.write("X1698: %s: %s" % (pointgroup, reindex_op))
 
                 lattice = Syminfo.get_lattice(pointgroup)
-
-                if not lattice in lattices:
-                    lattices.append(lattice)
+                lattices.add(lattice)
 
                 if ntr:
-
                     # if we need to return, we should logically reset
                     # any reindexing operator right? right here all
                     # we are talking about is the correctness of
@@ -402,7 +373,7 @@ class XDSScalerA(Scaler):
                 Debug.write("Correct lattice asserted to be %s" % correct_lattice)
 
                 # transfer this information back to the indexers
-                for epoch in self._sweep_information.keys():
+                for epoch in self._sweep_information:
                     integrater = self._sweep_information[epoch]["integrater"]
                     refiner = integrater.get_integrater_refiner()
                     sname = integrater.get_integrater_sweep_name()
@@ -464,12 +435,11 @@ class XDSScalerA(Scaler):
 
         params = PhilIndex.params
         use_brehm_diederichs = params.xia2.settings.use_brehm_diederichs
-        if len(self._sweep_information.keys()) > 1 and use_brehm_diederichs:
+        if len(self._sweep_information) > 1 and use_brehm_diederichs:
             brehm_diederichs_files_in = []
-            for epoch in self._sweep_information.keys():
-
-                intgr = self._sweep_information[epoch]["integrater"]
-                hklin = self._sweep_information[epoch]["corrected_intensities"]
+            for sweep_information in self._sweep_information.values():
+                intgr = sweep_information["integrater"]
+                hklin = sweep_information["corrected_intensities"]
                 refiner = intgr.get_integrater_refiner()
 
                 # in here need to consider what to do if the user has
@@ -481,7 +451,6 @@ class XDSScalerA(Scaler):
                     )
 
                     if ntr:
-
                         # Bug # 3373
 
                         Debug.write("Reindex to standard (PIJ): %s" % reindex_op)
@@ -491,7 +460,6 @@ class XDSScalerA(Scaler):
                         need_to_return = True
 
                 else:
-
                     # 27/FEB/08 to support user assignment of pointgroups
 
                     Debug.write(
@@ -504,16 +472,16 @@ class XDSScalerA(Scaler):
                 intgr.set_integrater_spacegroup_number(
                     Syminfo.spacegroup_name_to_number(pointgroup)
                 )
-                self._sweep_information[epoch][
+                sweep_information[
                     "corrected_intensities"
                 ] = intgr.get_integrater_corrected_intensities()
 
                 # convert the XDS_ASCII for this sweep to mtz - on the next
                 # get this should be in the correct setting...
 
-                dname = self._sweep_information[epoch]["dname"]
+                dname = sweep_information["dname"]
                 sname = intgr.get_integrater_sweep_name()
-                hklin = self._sweep_information[epoch]["corrected_intensities"]
+                hklin = sweep_information["corrected_intensities"]
                 hklout = os.path.join(
                     self.get_working_directory(), "%s_%s.mtz" % (dname, sname)
                 )
@@ -540,18 +508,17 @@ class XDSScalerA(Scaler):
             brehm_diederichs.set_asymmetric(1)
             brehm_diederichs.run()
 
-            for epoch in self._sweep_information.keys():
+            for sweep_information in self._sweep_information.values():
+                intgr = sweep_information["integrater"]
 
-                intgr = self._sweep_information[epoch]["integrater"]
-
-                dname = self._sweep_information[epoch]["dname"]
+                dname = sweep_information["dname"]
                 sname = intgr.get_integrater_sweep_name()
 
                 # apply the reindexing operator
                 intgr.set_integrater_reindex_operator(reindex_op)
 
                 # and copy the reflection file to the local directory
-                hklin = self._sweep_information[epoch]["corrected_intensities"]
+                hklin = sweep_information["corrected_intensities"]
                 hklout = os.path.join(
                     self.get_working_directory(), "%s_%s.HKL" % (dname, sname)
                 )
@@ -560,11 +527,9 @@ class XDSScalerA(Scaler):
                 shutil.copyfile(hklin, hklout)
 
                 # record just the local file name...
-                self._sweep_information[epoch]["prepared_reflections"] = os.path.split(
-                    hklout
-                )[-1]
+                sweep_information["prepared_reflections"] = os.path.split(hklout)[-1]
 
-        elif len(self._sweep_information.keys()) > 1 and not self._reference:
+        elif len(self._sweep_information) > 1 and not self._reference:
             # need to generate a reference reflection file - generate this
             # from the reflections in self._first_epoch
             #
@@ -590,7 +555,6 @@ class XDSScalerA(Scaler):
                 Debug.write("X1698: %s: %s" % (pointgroup, reindex_op))
 
             if ntr:
-
                 # Bug # 3373
 
                 intgr.set_integrater_reindex_operator(reindex_op, compose=False)
@@ -652,17 +616,15 @@ class XDSScalerA(Scaler):
                     )
 
                     if ntr:
-
                         # Bug # 3373
 
                         Debug.write("Reindex to standard (PIJ): %s" % reindex_op)
 
                         intgr.set_integrater_reindex_operator(reindex_op, compose=False)
                         reindex_op = "h,k,l"
-                        need_to_return = True
+                        # need_to_return = True ## we are in a local function so this has no effect
 
                 else:
-
                     # 27/FEB/08 to support user assignment of pointgroups
 
                     Debug.write(
@@ -758,12 +720,12 @@ class XDSScalerA(Scaler):
 
                 args = [
                     (
-                        self._sweep_information[epoch],
+                        sweep_information,
                         self._pointless_indexer_jiffy,
                         self._factory,
                         mp_params.type,
                     )
-                    for epoch in self._sweep_information.keys()
+                    for sweep_information in self._sweep_information.values()
                 ]
                 results_list = easy_mp.parallel_map(
                     run_one_sweep,
@@ -781,11 +743,11 @@ class XDSScalerA(Scaler):
                 DriverFactory.set_driver_type(drivertype)
 
                 # results should be given back in the same order
-                for i, epoch in enumerate(self._sweep_information.keys()):
+                for i, epoch in enumerate(self._sweep_information):
                     self._sweep_information[epoch] = results_list[i]
 
             else:
-                for epoch in self._sweep_information.keys():
+                for epoch in self._sweep_information:
                     self._sweep_information[epoch] = run_one_sweep(
                         (
                             self._sweep_information[epoch],
@@ -830,7 +792,6 @@ class XDSScalerA(Scaler):
                 )
 
             if ntr:
-
                 # if we need to return, we should logically reset
                 # any reindexing operator right? right here all
                 # we are talking about is the correctness of
@@ -878,8 +839,8 @@ class XDSScalerA(Scaler):
 
         unit_cell_list = []
 
-        for epoch in self._sweep_information.keys():
-            integrater = self._sweep_information[epoch]["integrater"]
+        for sweep_information in self._sweep_information.values():
+            integrater = sweep_information["integrater"]
             cell = integrater.get_integrater_cell()
             n_ref = integrater.get_integrater_n_ref()
 
@@ -940,7 +901,6 @@ class XDSScalerA(Scaler):
         Debug.write("Gathering measurements for scaling")
 
         for epoch in epochs:
-
             # get the prepared reflections
             reflections = self._sweep_information[epoch]["prepared_reflections"]
 
@@ -992,7 +952,7 @@ class XDSScalerA(Scaler):
         ):
             xscale_remove = xscale.get_remove()
             if xscale_remove:
-                current_remove = []
+                current_remove = set()
                 final_remove = []
 
                 # first ensure that there are no duplicate entries...
@@ -1004,9 +964,7 @@ class XDSScalerA(Scaler):
                     ).readlines():
                         h, k, l = map(int, line.split()[:3])
                         z = float(line.split()[3])
-
-                        if not (h, k, l, z) in current_remove:
-                            current_remove.append((h, k, l, z))
+                        current_remove.add((h, k, l, z))
 
                     for c in xscale_remove:
                         if c in current_remove:
@@ -1076,17 +1034,9 @@ class XDSScalerA(Scaler):
         # now get the reflection files out and merge them with aimless
 
         output_files = xscale.get_output_reflection_files()
-        wavelength_names = output_files.keys()
 
-        # these are per wavelength - also allow for user defined resolution
-        # limits a la bug # 3183. No longer...
-
-        for epoch in self._sweep_information.keys():
-
-            input = self._sweep_information[epoch]
-
+        for epoch, input in self._sweep_information.items():
             intgr = input["integrater"]
-
             rkey = input["dname"], input["sname"]
 
             if intgr.get_integrater_user_resolution():
@@ -1100,11 +1050,10 @@ class XDSScalerA(Scaler):
                     self._user_resolution_limits[rkey] = dmin
 
         self._scalr_scaled_refl_files = {}
-
         self._scalr_statistics = {}
 
         project_info = {}
-        for epoch in self._sweep_information.keys():
+        for epoch in self._sweep_information:
             pname = self._scalr_pname
             xname = self._scalr_xname
             dname = self._sweep_information[epoch]["dname"]
@@ -1112,15 +1061,11 @@ class XDSScalerA(Scaler):
                 self._sweep_information[epoch]["prepared_reflections"]
             )[-1]
             project_info[reflections] = (pname, xname, dname)
-
-        for epoch in self._sweep_information.keys():
             self._sweep_information[epoch]["scaled_reflections"] = None
 
         debug_memory_usage()
 
-        for wavelength in wavelength_names:
-            hklin = output_files[wavelength]
-
+        for wavelength, hklin in output_files.items():
             xsh = XDSScalerHelper()
             xsh.set_working_directory(self.get_working_directory())
 
@@ -1128,8 +1073,8 @@ class XDSScalerA(Scaler):
                 hklin, "SCALED_", project_info, 1.0 / scale_factor
             )
 
-            for hklout in ref.keys():
-                for epoch in self._sweep_information.keys():
+            for hklout in ref:
+                for epoch in self._sweep_information:
                     if (
                         os.path.split(
                             self._sweep_information[epoch]["prepared_reflections"]
@@ -1149,7 +1094,7 @@ class XDSScalerA(Scaler):
 
         debug_memory_usage()
 
-        for epoch in self._sweep_information.keys():
+        for epoch in self._sweep_information:
             hklin = self._sweep_information[epoch]["scaled_reflections"]
             dname = self._sweep_information[epoch]["dname"]
             sname = self._sweep_information[epoch]["sname"]
@@ -1271,26 +1216,19 @@ class XDSScalerA(Scaler):
         data = sc.get_summary()
 
         loggraph = sc.parse_ccp4_loggraph()
-
         standard_deviation_info = {}
+        resolution_info = {}
+        batch_info = {}
 
-        for key in loggraph.keys():
+        for key in loggraph:
             if "standard deviation v. Intensity" in key:
                 dataset = key.split(",")[-1].strip()
                 standard_deviation_info[dataset] = transpose_loggraph(loggraph[key])
 
-        resolution_info = {}
-
-        for key in loggraph.keys():
             if "Analysis against resolution" in key:
                 dataset = key.split(",")[-1].strip()
                 resolution_info[dataset] = transpose_loggraph(loggraph[key])
 
-        # and also radiation damage stuff...
-
-        batch_info = {}
-
-        for key in loggraph.keys():
             if "Analysis against Batch" in key:
                 dataset = key.split(",")[-1].strip()
                 batch_info[dataset] = transpose_loggraph(loggraph[key])
@@ -1340,9 +1278,7 @@ class XDSScalerA(Scaler):
         self._scalr_scaled_reflection_files["sca_unmerged"] = {}
         self._scalr_scaled_reflection_files["mtz_unmerged"] = {}
 
-        for dataset in sc.get_scaled_reflection_files().keys():
-            hklout = sc.get_scaled_reflection_files()[dataset]
-
+        for dataset, hklout in sc.get_scaled_reflection_files().items():
             # then mark the scalepack files for copying...
 
             scalepack = os.path.join(
@@ -1371,9 +1307,7 @@ class XDSScalerA(Scaler):
         self._scalr_scaled_reflection_files["sca"] = {}
         self._scalr_scaled_reflection_files["hkl"] = {}
 
-        for key in self._scalr_scaled_refl_files:
-
-            f = self._scalr_scaled_refl_files[key]
+        for key, f in self._scalr_scaled_refl_files.items():
             scaout = "%s.sca" % f[:-4]
 
             self._scalr_scaled_reflection_files["sca"][key] = scaout
@@ -1395,8 +1329,7 @@ class XDSScalerA(Scaler):
         epoch_to_dose = {}
         for xsample in self.get_scaler_xcrystal()._samples.values():
             epoch_to_dose.update(xsample.get_epoch_to_dose())
-        for e0 in self._sweep_information.keys():
-            si = self._sweep_information[e0]
+        for e0, si in self._sweep_information.items():
             batch_offset = si["batch_offset"]
             frame_offset = si["integrater"].get_frame_offset()
             printed = False

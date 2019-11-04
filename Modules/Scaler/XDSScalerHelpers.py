@@ -1,20 +1,9 @@
-#!/usr/bin/env python
-# XDSScalerHelpers.py
-#   Copyright (C) 2007 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 5th July 2007
-#
 # Code to help the scaler along - this will basically be a bunch of jiffy
 # functions...
-#
 
 from __future__ import absolute_import, division, print_function
 
 import os
-import sys
 
 from xia2.Handlers.Streams import Debug
 from xia2.lib.bits import auto_logfiler
@@ -43,46 +32,49 @@ class XDSScalerHelper(object):
     def get_working_directory(self):
         return self._working_directory
 
-    def parse_xscale_ascii_header(self, xds_ascii_file):
+    @staticmethod
+    def parse_xscale_ascii_header(xds_ascii_file):
         """Parse out the input reflection files which contributed to this
         reflection file."""
 
         file_map = {}
 
-        for line in open(xds_ascii_file, "r").readlines():
-            if not line[0] == "!":
-                break
+        with open(xds_ascii_file, "r") as fh:
+            for line in fh.readlines():
+                if not line[0] == "!":
+                    break
 
-            if "ISET" in line and "INPUT_FILE" in line:
-                set = int(line.split()[2].strip())
-                input_file = line.split("=")[2].strip()
+                if "ISET" in line and "INPUT_FILE" in line:
+                    set = int(line.split()[2].strip())
+                    input_file = line.split("=")[2].strip()
 
-                file_map[set] = input_file
+                    file_map[set] = input_file
 
-                Debug.write("Set %d is from data %s" % (set, input_file))
+                    Debug.write("Set %d is from data %s" % (set, input_file))
 
         return file_map
 
-    def parse_xscale_ascii_wavelength(self, xds_ascii_file):
-
+    @staticmethod
+    def parse_xscale_ascii_wavelength(xds_ascii_file):
         wavelength_dict = {}
 
-        for line in open(xds_ascii_file, "r").readlines():
-            if not line[0] == "!":
-                break
+        with open(xds_ascii_file, "r") as fh:
+            for line in fh.readlines():
+                if not line[0] == "!":
+                    break
 
-            if "ISET" in line and "X-RAY_WAVELENGTH" in line:
-                set = int(line.split()[2].strip())
-                wavelength = float(line.split("=")[2].split()[0])
+                if "ISET" in line and "X-RAY_WAVELENGTH" in line:
+                    set = int(line.split()[2].strip())
+                    wavelength = float(line.split("=")[2].split()[0])
 
-                wavelength_dict[set] = wavelength
+                    wavelength_dict[set] = wavelength
 
-                Debug.write("Set %d wavelength %f" % (set, wavelength))
+                    Debug.write("Set %d wavelength %f" % (set, wavelength))
 
-        if len(wavelength_dict.keys()) > 1:
+        if len(wavelength_dict) > 1:
             raise RuntimeError("more than one wavelength found")
 
-        return wavelength_dict[wavelength_dict.keys()[0]]
+        return wavelength_dict[list(wavelength_dict)[0]]
 
     def split_xscale_ascii_file(self, xds_ascii_file, prefix):
         """Split the output of XSCALE to separate reflection files for
@@ -93,9 +85,7 @@ class XDSScalerHelper(object):
         files = {}
         return_map = {}
 
-        keys = file_map.keys()
-
-        for k in keys:
+        for k in file_map:
             files[k] = open(
                 os.path.join(
                     self.get_working_directory(), "%s%s" % (prefix, file_map[k])
@@ -107,32 +97,33 @@ class XDSScalerHelper(object):
 
         # copy the header to all of the files
 
-        for line in open(xds_ascii_file, "r").readlines():
-            if not line[0] == "!":
-                break
+        with open(xds_ascii_file, "r") as fh:
+            for line in fh.readlines():
+                if not line[0] == "!":
+                    break
 
-            for k in keys:
+                for k in file_map:
+                    if "ISET" in line and int(line.split("ISET=")[1].split()[0]) != k:
+                        continue
 
-                if "ISET" in line and int(line.split("ISET=")[1].split()[0]) != k:
-                    continue
-
-                files[k].write(line)
+                    files[k].write(line)
 
         # next copy the appropriate reflections to each file
 
-        for line in open(xds_ascii_file, "r").readlines():
-            if line[0] == "!":
-                continue
+        with open(xds_ascii_file, "r") as fh:
+            for line in fh.readlines():
+                if line[0] == "!":
+                    continue
 
-            # FIXME this will not be correct if zero-dose correction
-            # has been used as this applies an additional record at
-            # the end... though it should always be #9
-            k = int(line.split()[9])
-            files[k].write(line)
+                # FIXME this will not be correct if zero-dose correction
+                # has been used as this applies an additional record at
+                # the end... though it should always be #9
+                k = int(line.split()[9])
+                files[k].write(line)
 
         # then write the tailer
 
-        for k in keys:
+        for k in file_map:
             files[k].write("!END_OF_DATA\n")
             files[k].close()
 
@@ -147,15 +138,12 @@ class XDSScalerHelper(object):
 
         data_map = self.split_xscale_ascii_file(input_file, prefix)
 
-        for token in data_map.keys():
-
+        for token in data_map:
             if token not in project_info:
                 raise RuntimeError("project info for %s not available" % token)
 
             hklin = os.path.join(self.get_working_directory(), data_map[token])
             hklout = os.path.join(self.get_working_directory(), "%s.mtz" % hklin[:-4])
-
-            wavelength = self.parse_xscale_ascii_wavelength(hklin)
 
             pname, xname, dname = project_info[token]
 
@@ -181,25 +169,3 @@ class XDSScalerHelper(object):
                     z = float(tokens[7])
                     if z >= start and z < end:
                         outfile.write(line)
-
-
-if __name__ == "__main__":
-
-    xsh = XDSScalerHelper()
-
-    # input_file = os.path.join(
-    # os.environ['X2TD_ROOT'], 'Test', 'UnitTest',
-    #'Modules', 'XDSScalerHelpers', '1VR9_NAT.HKL')
-    # project_info = {'NATIVE_NATIVE_HR.HKL':('JCSG', '1VR9', 'NATIVE'),
-    #'NATIVE_NATIVE_LR.HKL':('JCSG', '1VR9', 'NATIVE')}
-    # print xsh.split_and_convert_xscale_output(input_file, 'SCALED_',
-    # project_info)
-
-    args = sys.argv[1:]
-    assert len(args) == 4
-    input_file = args[0]
-    output_file = args[1]
-    start = int(args[2])
-    end = int(args[3])
-
-    xsh.limit_batches(input_file, output_file, start, end)

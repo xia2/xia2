@@ -47,6 +47,8 @@ from xia2.Experts.LatticeExpert import SortLattices
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import Chatter, Debug
 
+from cctbx.sgtbx import bravais_types
+
 
 class _IndexerHelper(object):
     """
@@ -60,12 +62,7 @@ class _IndexerHelper(object):
         """Initialise myself from a dictionary keyed by crystal lattice
         classes (e.g. tP) containing unit cells for these lattices."""
 
-        # transform them into a list, then sort the solutions and
-        # store the sorted version
-
-        lattices = [(k, lattice_cell_dict[k]) for k in lattice_cell_dict.keys()]
-
-        self._sorted_list = SortLattices(lattices)
+        self._sorted_list = SortLattices(lattice_cell_dict.items())
 
     def get(self):
         """Get the highest currently allowed lattice."""
@@ -247,10 +244,8 @@ class Indexer(object):
         assert obj["__id__"] == "Indexer"
         assert obj["__name__"] == cls.__name__
         return_obj = cls()
-        for k, v in obj.iteritems():
+        for k, v in obj.items():
             if k == "_indxr_helper" and v is not None:
-                from xia2.Schema.Interfaces.Indexer import _IndexerHelper
-
                 v = _IndexerHelper(v)
             if k == "_indxr_imagesets" and len(v):
                 assert v[0].get("__id__") == "imageset"
@@ -498,16 +493,16 @@ class Indexer(object):
                         Chatter.banner("Autoindexing %s" % sweep_names)
 
                 if not self._indxr_helper:
-
-                    result = self._index()
+                    self._index()
 
                     if not self._indxr_done:
                         Debug.write("Looks like indexing failed - try again!")
                         continue
 
-                    solutions = {}
-                    for k in self._indxr_other_lattice_cell.keys():
-                        solutions[k] = self._indxr_other_lattice_cell[k]["cell"]
+                    solutions = {
+                        k: self._indxr_other_lattice_cell[k]["cell"]
+                        for k in self._indxr_other_lattice_cell
+                    }
 
                     # create a helper for the indexer to manage solutions
                     self._indxr_helper = _IndexerHelper(solutions)
@@ -538,7 +533,7 @@ class Indexer(object):
                     solution = self._indxr_helper.get()
                     self._indxr_input_lattice = solution[0]
                     self._indxr_input_cell = solution[1]
-                    result = self._index()
+                    self._index()
 
             # next finish up...
 
@@ -553,8 +548,6 @@ class Indexer(object):
         lines.append("All possible indexing solutions:")
         for l in self._indxr_helper.repr():
             lines.append(l)
-
-        from cctbx.sgtbx import bravais_types
 
         crystal_model = self._indxr_experiment_list[0].crystal
         lattice = str(
@@ -624,7 +617,6 @@ class Indexer(object):
         """Get the selected lattice as tP form."""
 
         self.index()
-        from cctbx.sgtbx import bravais_types
 
         crystal_model = self._indxr_experiment_list[0].crystal
         return str(bravais_types.bravais_lattice(group=crystal_model.get_space_group()))
@@ -710,7 +702,7 @@ class Indexer(object):
 
         all_lattices = self._indxr_helper.get_all()
 
-        if not asserted_lattice in [l[0] for l in all_lattices]:
+        if asserted_lattice not in [l[0] for l in all_lattices]:
             return self.LATTICE_IMPOSSIBLE
 
         # check if this is the top one - if so we don't need to
@@ -823,7 +815,6 @@ class IndexerSingleSweep(Indexer):
         self._indxr_images = []
 
         for image in indexer_image_wedges:
-
             if isinstance(image, type(())):
                 self._indxr_images.append(image)
             if isinstance(image, type(1)):

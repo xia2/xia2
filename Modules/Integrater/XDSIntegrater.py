@@ -1,26 +1,19 @@
-#!/usr/bin/env python
-# XDSIntegrater.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 14th December 2006
-#
 # An implementation of the Integrater interface using XDS. This depends on the
 # XDS wrappers to actually implement the functionality.
 #
 # This will "wrap" the XDS programs DEFPIX and INTEGRATE - CORRECT is
 # considered to be a part of the scaling - see XDSScaler.py.
-#
-# 02/JAN/07 FIXME need to ensure that the indexing is repeated if necessary.
 
 from __future__ import absolute_import, division, print_function
 
 import copy
+import inspect
 import math
 import os
 import shutil
+import time
+
+import scitbx.matrix
 
 from xia2.Experts.SymmetryExpert import (
     lattice_to_spacegroup_number,
@@ -41,17 +34,6 @@ from xia2.Wrappers.XDS.XDSCorrect import XDSCorrect as _Correct
 from xia2.Wrappers.XDS.XDSDefpix import XDSDefpix as _Defpix
 from xia2.Wrappers.XDS.XDSIntegrate import XDSIntegrate as _Integrate
 
-# wrappers for programs that this needs
-
-# helper functions
-
-# interfaces that this must implement to be an integrater
-
-# indexing functionality if not already provided - even if it is
-# we still need to reindex with XDS.
-
-# odds and sods that are needed
-
 
 class XDSIntegrater(Integrater):
     """A class to implement the Integrater interface using *only* XDS
@@ -63,7 +45,7 @@ class XDSIntegrater(Integrater):
         # check that the programs exist - this will raise an exception if
         # they do not...
 
-        integrate = _Integrate()
+        _Integrate()
 
         # place to store working data
         self._xds_data_files = {}
@@ -75,11 +57,8 @@ class XDSIntegrater(Integrater):
         # factory for pointless -used for converting INTEGRATE.HKL to .mtz
         self._factory = CCP4Factory()
 
-        return
-
     def to_dict(self):
         obj = Integrater.to_dict(self)
-        import inspect
 
         attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
         for a in attributes:
@@ -207,7 +186,6 @@ class XDSIntegrater(Integrater):
         Debug.write("Deleting all stored results.")
         self._xds_data_files = {}
         self._xds_integrate_parameters = {}
-        return
 
     def _integrate_prepare(self):
         """Prepare for integration - in XDS terms this may mean rerunning
@@ -273,7 +251,7 @@ class XDSIntegrater(Integrater):
             self._xds_data_files = {}
 
         Debug.write("Files available at the end of XDS integrate prepare:")
-        for f in self._xds_data_files.keys():
+        for f in self._xds_data_files:
             Debug.write("%s" % f)
 
         experiment = self._intgr_refiner.get_refined_experiment_list(
@@ -306,8 +284,6 @@ class XDSIntegrater(Integrater):
         # CORRECT - c/f bug # 2695
         self._intgr_cell = None
         self._intgr_spacegroup_number = None
-
-        return
 
     def _integrate(self):
         """Actually do the integration - in XDS terms this will mean running
@@ -562,8 +538,6 @@ class XDSIntegrater(Integrater):
                 )
                 reflections = flex.reflection_table.from_file(integrate_filename)
 
-                import time
-
                 t0 = time.time()
                 sel = filter_shadowed_reflections(experiments, reflections)
                 shadowed = reflections.select(sel)
@@ -638,8 +612,6 @@ class XDSIntegrater(Integrater):
 
             lattice = self._intgr_refiner.get_refiner_lattice()
 
-            import scitbx.matrix
-
             matrix = self.get_integrater_reindex_matrix()
             matrix = scitbx.matrix.sqr(matrix).transpose().elems
             matrix = r_to_rt(matrix)
@@ -692,7 +664,6 @@ class XDSIntegrater(Integrater):
             # will involve dividing through by the lattice centring multiplier
 
             matrix = rt_to_r(correct.get_reindex_used())
-            import scitbx.matrix
 
             matrix = scitbx.matrix.sqr(matrix).transpose().elems
 
@@ -979,16 +950,3 @@ def xparm_xds_to_experiments_json(xparm_xds, working_directory):
     importer.set_xparm_xds(xparm_xds)
     importer.run()
     return importer.get_experiments_json()
-
-
-if __name__ == "__main__":
-
-    # run a demo test
-
-    xi = XDSIntegrater()
-
-    directory = os.path.join("/data", "graeme", "insulin", "demo")
-
-    xi.setup_from_image(os.path.join(directory, "insulin_1_001.img"))
-
-    xi.integrate()

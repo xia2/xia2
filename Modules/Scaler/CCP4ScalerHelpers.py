@@ -1,22 +1,12 @@
-#!/usr/bin/env python
-# CCP4ScalerHelpers.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 3rd November 2006
-#
 # Helpers for the "CCP4" Scaler implementation - this contains little
 # functions which wrap the wrappers which are needed. It will also contain
 # small functions for computing e.g. resolution limits.
-#
 
 from __future__ import absolute_import, division, print_function
 
+import inspect
 import math
 import os
-import sys
 
 import xia2.Wrappers.CCP4.Pointless
 import xia2.Wrappers.Dials.Symmetry
@@ -27,8 +17,6 @@ from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import Debug
 from xia2.lib.bits import auto_logfiler
 from xia2.Modules import MtzUtils
-
-############ JIFFY FUNCTIONS #################
 
 
 def nint(a):
@@ -132,7 +120,7 @@ def ersatz_resolution(reflection_file, batch_ranges):
 
 def meansd(values):
     mean = sum(values) / len(values)
-    var = sum([(v - mean) * (v - mean) for v in values]) / len(values)
+    var = sum((v - mean) * (v - mean) for v in values) / len(values)
     return mean, math.sqrt(var)
 
 
@@ -149,9 +137,7 @@ def compute_resolution(dmax, dmin, d, isig):
     for j in range(len(d)):
         s = 1.0 / (d[j] * d[j])
         n = nint(100.0 * (s - smax) / (smin - smax))
-        if not n in bins:
-            bins[n] = []
-        bins[n].append(isig[j])
+        bins.setdefault(n, []).append(isig[j])
 
     # compute starting point i.e. maximum point on the curve, to cope with
     # cases where low resolution has low I / sigma - see #1690.
@@ -168,7 +154,6 @@ def compute_resolution(dmax, dmin, d, isig):
             max_bin = b
 
     for b in sorted(bins):
-
         if b < max_bin:
             continue
 
@@ -436,7 +421,6 @@ class SweepInformation(object):
     def to_dict(self):
         obj = {}
         obj["__id__"] = "SweepInformation"
-        import inspect
 
         attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
         for a in attributes:
@@ -452,7 +436,7 @@ class SweepInformation(object):
     def from_dict(cls, obj):
         assert obj["__id__"] == "SweepInformation"
         return_obj = cls.__new__(cls)
-        for k, v in obj.iteritems():
+        for k, v in obj.items():
             if k == "_integrater":
                 from libtbx.utils import import_python_object
 
@@ -561,20 +545,19 @@ class SweepInformationHandler(object):
     def to_dict(self):
         obj = {}
         obj["__id__"] = "SweepInformationHandler"
-        d = {}
-        for k, v in self._sweep_information.iteritems():
-            d[k] = v.to_dict()
-        obj["_sweep_information"] = d
+        obj["_sweep_information"] = {
+            k: v.to_dict() for k, v in self._sweep_information.items()
+        }
         return obj
 
     @classmethod
     def from_dict(cls, obj):
         assert obj["__id__"] == "SweepInformationHandler"
         return_obj = cls.__new__(cls)
-        d = {}
-        for k, v in obj["_sweep_information"].iteritems():
-            d[k] = SweepInformation.from_dict(v)
-        return_obj._sweep_information = d
+        return_obj._sweep_information = {
+            k: SweepInformation.from_dict(v)
+            for k, v in obj["_sweep_information"].items()
+        }
         return_obj._first = sorted(return_obj._sweep_information)[0]
         return return_obj
 
@@ -631,24 +614,23 @@ def anomalous_signals(hklin):
 
 def mosflm_B_matrix(uc):
     from scitbx.matrix import sqr
-    from math import sin, cos, pi
 
     parameters = uc.parameters()
     r_parameters = uc.reciprocal_parameters()
 
     a = parameters[:3]
-    al = [pi * p / 180.0 for p in parameters[3:]]
+    al = [math.pi * p / 180.0 for p in parameters[3:]]
     b = r_parameters[:3]
-    be = [pi * p / 180.0 for p in r_parameters[3:]]
+    be = [math.pi * p / 180.0 for p in r_parameters[3:]]
 
     mosflm_B = sqr(
         (
             b[0],
-            b[1] * cos(be[2]),
-            b[2] * cos(be[1]),
+            b[1] * math.cos(be[2]),
+            b[2] * math.cos(be[1]),
             0,
-            b[1] * sin(be[2]),
-            -b[2] * sin(be[1]) * cos(al[0]),
+            b[1] * math.sin(be[2]),
+            -b[2] * math.sin(be[1]) * math.cos(al[0]),
             0,
             0,
             1.0 / a[2],
@@ -670,10 +652,3 @@ def get_umat_bmat_lattice_symmetry_from_mtz(mtz_file):
 
     lattice_symm = lattice_symmetry_group(uc, max_delta=0.0)
     return tuple(m.batches()[0].umat()), mosflm_B_matrix(uc), lattice_symm
-
-
-if __name__ == "__main__":
-
-    for arg in sys.argv[1:]:
-        df_f, di_sigdi = anomalous_signals(arg)
-        print("%s: %.3f %.3f" % (os.path.split(arg)[-1], df_f, di_sigdi))

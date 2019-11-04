@@ -1,10 +1,11 @@
 # An implementation of the scaler interface for dials.scale
 
 from __future__ import absolute_import, division, print_function
-import os
-import math
 
+import math
+import os
 from orderedset import OrderedSet
+
 from xia2.Handlers.Files import FileHandler
 from xia2.lib.bits import auto_logfiler
 from xia2.Handlers.Phil import PhilIndex
@@ -608,7 +609,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
         dnames_set = OrderedSet()
         experiments = load.experiment_list(self._scaled_experiments)
         wavelengths = flex.double(
-            match_wavelengths(experiments).keys()
+            match_wavelengths(experiments)
         )  # in experiments order
         for si in sweep_infos:
             dnames_set.add(
@@ -791,7 +792,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
                     groups[pi] = groups.get(pi, []) + [
                         (si.get_experiments(), si.get_reflections())
                     ]  # if key exists, add another 2-tuple to the list.
-                for pi in groups.keys():
+                for pi in groups:
                     # Run twothetarefine on each group
                     tt_grouprefiner = TwoThetaRefine()
                     tt_grouprefiner.set_working_directory(self.get_working_directory())
