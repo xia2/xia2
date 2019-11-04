@@ -455,9 +455,11 @@ class MultiCrystalScale(object):
     def _report_as_dict(report):
         d = {}
 
-        overall_stats_table, merging_stats_table, stats_plots = (
-            report.resolution_plots_and_stats()
-        )
+        (
+            overall_stats_table,
+            merging_stats_table,
+            stats_plots,
+        ) = report.resolution_plots_and_stats()
 
         d["merging_statistics_table"] = merging_stats_table
         d["overall_statistics_table"] = overall_stats_table
@@ -737,7 +739,11 @@ class Scale(object):
 
     def two_theta_refine(self):
         # two-theta refinement to get best estimate of unit cell
-        self.best_unit_cell, self.best_unit_cell_esd, experiments_filename = self._dials_two_theta_refine(
+        (
+            self.best_unit_cell,
+            self.best_unit_cell_esd,
+            experiments_filename,
+        ) = self._dials_two_theta_refine(
             self._experiments_filename,
             self._reflections_filename,
             combine_crystal_models=self._params.two_theta_refine.combine_crystal_models,

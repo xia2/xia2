@@ -94,9 +94,11 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
             xtriage_success, xtriage_warnings, xtriage_danger = None, None, None
             if params.xtriage_analysis:
                 try:
-                    xtriage_success, xtriage_warnings, xtriage_danger = (
-                        report.xtriage_report()
-                    )
+                    (
+                        xtriage_success,
+                        xtriage_warnings,
+                        xtriage_danger,
+                    ) = report.xtriage_report()
                 except Exception as e:
                     from xia2.Handlers.Phil import PhilIndex
 
@@ -105,9 +107,11 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
                     else:
                         raise
 
-            overall_stats_table, merging_stats_table, stats_plots = (
-                report.resolution_plots_and_stats()
-            )
+            (
+                overall_stats_table,
+                merging_stats_table,
+                stats_plots,
+            ) = report.resolution_plots_and_stats()
 
             d = {}
             d["merging_statistics_table"] = merging_stats_table

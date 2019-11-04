@@ -63,9 +63,11 @@ def run(args):
     if params.xtriage_analysis:
         json_data["xtriage"] = xtriage_success + xtriage_warnings + xtriage_danger
 
-    overall_stats_table, merging_stats_table, stats_plots = (
-        report.resolution_plots_and_stats()
-    )
+    (
+        overall_stats_table,
+        merging_stats_table,
+        stats_plots,
+    ) = report.resolution_plots_and_stats()
 
     json_data.update(stats_plots)
     json_data.update(report.batch_dependent_plots())

@@ -281,8 +281,8 @@ class simple_refiner(object):
 
     def __init__(self, refiner_lattices):
         self.refiner_lattices = (
-            refiner_lattices
-        )  # first one should be 'best' one used in refinement
+            refiner_lattices  # first one should be 'best' one used in refinement
+        )
         self.indexer_done = True
         self._refiner_reset = False
 
