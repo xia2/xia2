@@ -2,7 +2,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-from builtins import range
 import math
 
 # jiffies to convert matrix format (messy)
@@ -120,7 +119,7 @@ def b_matrix(a, b, c, alpha, beta, gamma):
 
 
 def dot(a, b):
-    return sum([a[j] * b[j] for j in range(3)])
+    return sum(a[j] * b[j] for j in range(3))
 
 
 def cross(a, b):
@@ -132,11 +131,7 @@ def cross(a, b):
 
 
 def vecscl(vector, scale):
-    return [vector[j] * scale for j in range(len(vector))]
-
-
-def matscl(matrix, scale):
-    return [matrix[j] * scale for j in range(len(matrix))]
+    return [v * scale for v in vector]
 
 
 def invert(matrix):

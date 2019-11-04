@@ -2,16 +2,15 @@
 
 from __future__ import absolute_import, division, print_function
 
-from builtins import range
 from cctbx import sgtbx
 from scitbx import matrix
+
+from xia2.Experts.MatrixExpert import rot_x, rot_y, rot_z
 
 
 def gen_rot_mat_euler(alpha, beta, gamma):
     """Compute a rotation matrix (stored as e11 e12 e13 e22 e23...)
     as product R(x, gamma).R(y, beta).R(z, alpha)."""
-
-    from xia2.Experts.MatrixExpert import rot_x, rot_y, rot_z
 
     rz = rot_z(alpha)
     ry = rot_y(beta)

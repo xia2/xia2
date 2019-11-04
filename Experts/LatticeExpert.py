@@ -1,12 +1,3 @@
-#!/usr/bin/env python
-# LatticeExpert.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 24th August 2006
-#
 # An expert who knows all about lattices. This will handle the elimination
 # of possible lattices as a result of:
 #
@@ -20,7 +11,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-from builtins import range
 import math
 
 # Hard coded "expertise" - this is encoded by hand, because it is
@@ -93,12 +83,7 @@ def ApplyLattice(lattice, cell):
 def ComputeBDistortion(cell1, cell2):
     """Compute the distortion required to get from cell1 to cell2."""
 
-    d = 0.0
-
-    for j in range(6):
-        d += math.fabs(cell2[j] - cell1[j])
-
-    return d
+    return sum(math.fabs(cell2[j] - cell1[j]) for j in range(6))
 
 
 def ConstrainLattice(lattice_class, cell):
@@ -205,9 +190,3 @@ def s2l(spacegroup):
     spacegroup_to_lattice = {v: k for k, v in lattice_to_spacegroup.items()}
 
     return spacegroup_to_lattice[spacegroup]
-
-
-if __name__ == "__main__":
-    cell, dist = ApplyLattice("oP", (23.0, 24.0, 25.0, 88.9, 90.0, 90.1))
-
-    print(cell, dist)

@@ -1,18 +1,8 @@
-# ExampleProgram.py
-#
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 27/MAR/06
-#
 # An example program to test input, output, job control etc. in the new
 # XIA.
 
 from __future__ import absolute_import, division, print_function
 
-from builtins import range
 import sys
 import time
 
