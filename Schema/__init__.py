@@ -1,10 +1,11 @@
 from __future__ import absolute_import, division, print_function
 
-from builtins import range
 import collections
 import glob
 import itertools
 import os
+
+from scitbx.array_family import flex
 
 from xia2.Handlers.Phil import PhilIndex
 
@@ -185,8 +186,6 @@ def load_imagesets(
                 imageset = updater(imageset)
             imageset_list.append(imageset)
         imagesets = imageset_list
-
-        from scitbx.array_family import flex
 
         for imageset in imagesets:
             scan = imageset.get_scan()

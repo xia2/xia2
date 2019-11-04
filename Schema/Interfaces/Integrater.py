@@ -30,7 +30,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-from builtins import range
 import inspect
 import json
 import math
@@ -798,9 +797,9 @@ class Integrater(FrameProcessor):
             else:
                 lines.append("Integration status per image:")
 
-            for chunk in [
+            for chunk in (
                 status_record[i : i + 60] for i in range(0, len(status_record), 60)
-            ]:
+            ):
                 lines.append(chunk)
             lines.append('"o" => good        "%" => ok        "!" => bad rmsd')
             lines.append('"O" => overloaded  "#" => many bad  "." => weak')

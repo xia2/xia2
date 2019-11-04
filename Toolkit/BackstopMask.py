@@ -1,11 +1,3 @@
-#!/usr/bin/env cctbx.python
-# BackstopMask.py
-#
-#   Copyright (C) 2010 Diamond Light Source, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
 # The kernel of code to start to calculate backstop masks for Mosflm and
 # XDS from a list of coordinates read off from ADXV of the corners of the
 # backstop. Initially this will be coded for the backstop on Diamond Light
@@ -24,11 +16,10 @@ and Mosflm."""
 
 from __future__ import absolute_import, division, print_function
 
-from builtins import range
 import binascii
 import math
-import sys
 
+from xia2.Handlers.Streams import Debug
 from xia2.Modules.UnpackByteOffset import pack_values, unpack_values
 
 
@@ -171,28 +162,6 @@ def equation_of_line(p1, p2):
     return -(a + b), -(c + d), 1
 
 
-def work_equation_of_line():
-    import random
-
-    assert equation_of_line((1.0, 0.0), (2.0, 0.0)) == (0.0, 1.0, 0.0)
-    assert equation_of_line((1.0, 2.0), (2.0, 2.0)) == (0.0, 1.0, -2.0)
-
-    assert equation_of_line((0.0, 0.0), (0.0, 2.0)) == (1.0, 0.0, 0.0)
-    assert equation_of_line((2.0, 1.0), (2.0, 2.0)) == (1.0, 0.0, -2.0)
-
-    for j in range(1000):
-        p1 = (2.0 * random.random(), 2.0 * random.random())
-        p2 = (2.0 * random.random(), 2.0 * random.random())
-
-        a, b, c = equation_of_line(p1, p2)
-
-        d1 = a * p1[0] + b * p1[1] + c
-        d2 = a * p2[0] + b * p2[1] + c
-
-        assert math.fabs(d1) < 0.001
-        assert math.fabs(d2) < 0.001
-
-
 class BackstopMask(object):
     """A class to handle the calculation of back stop masks, from a
     set of masks as a function of distance derived from inspection
@@ -218,9 +187,9 @@ class BackstopMask(object):
                 continue
             distances.append(values[0])
             for j in range(4):
-                if not j in coordinates:
-                    coordinates[j] = []
-                coordinates[j].append((values[2 * j + 1], values[2 * j + 2]))
+                coordinates.setdefault(j, []).append(
+                    (values[2 * j + 1], values[2 * j + 2])
+                )
 
         # now compute directions and so on for 2, 3 first
         # then directions for 2 -> 1, 3 -> 4, then fit and store
@@ -319,15 +288,14 @@ class BackstopMask(object):
 
         result = cbf_header + start_tag + pack_values(values)
 
-        open(cbf_out, "w").write(result)
+        with open(cbf_out, "w") as fh:
+            fh.write(result)
 
     def rectangle(self, header):
         """Return a configured rectangle object to test whether pixels are
         within the backstop region."""
 
         p1, p2, p3, p4 = self.calculate_mask(header)
-
-        from xia2.Handlers.Streams import Debug
 
         Debug.write(
             "Vertices of mask: (%d, %d), (%d, %d), (%d, %d), (%d, %d)"
@@ -389,52 +357,3 @@ class rectangle(object):
         if self._in41 * self._evaluate(self._l41, p) < 0.0:
             return False
         return True
-
-
-def work_line_intersect_angle():
-
-    import random
-
-    for j in range(1000):
-        o = (2.0 * random.random(), 2.0 * random.random())
-        t = 2.0 * math.pi * random.random()
-        d = (math.cos(t), math.sin(t))
-
-        i = line_intersect_rectangle(o, d, 2, 2)
-
-        x = (i[0] - o[0], i[1] - o[1])
-
-        assert 0.0 <= i[0] <= 2.0
-        assert 0.0 <= i[1] <= 2.0
-
-        assert math.fabs((dot(x, d) / math.sqrt(dot(x, x) * dot(d, d))) - 1) < 0.001
-
-
-if __name__ == "__main_work__":
-    work_equation_of_line()
-
-if __name__ == "__main__":
-    from xia2.Wrappers.XIA.Diffdump import Diffdump
-
-    bm = BackstopMask(sys.argv[1])
-
-    dd = Diffdump()
-    dd.set_image(sys.argv[2])
-    header = dd.readheader()
-
-    def format_limits(limits):
-        assert len(limits) == 4
-
-        result = "limits quad"
-
-        for l in limits:
-            result += " %.1f %.1f" % l
-
-        return result
-
-    print(format_limits(bm.calculate_mask_mosflm(header)))
-
-    if len(sys.argv) == 5:
-        cbf_in = sys.argv[3]
-        cbf_out = sys.argv[4]
-        bm.apply_mask_xds(header, cbf_in, cbf_out)
