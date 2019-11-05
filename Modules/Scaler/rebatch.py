@@ -3,7 +3,6 @@
 from __future__ import absolute_import, division, print_function
 
 import itertools
-import operator
 
 from cctbx.array_family import flex
 from iotbx import mtz
@@ -13,7 +12,7 @@ def compact_batches(batches):
     """Pack down batches to lists of continuous batches."""
 
     return [
-        list(map(operator.itemgetter(1), g))
+        [x[1] for x in g]
         for k, g in itertools.groupby(enumerate(batches), lambda i_x: i_x[0] - i_x[1])
     ]
 
@@ -101,7 +100,6 @@ def rebatch(
         batch_column.set_values(values=batch_column_values, selection_valid=valid)
 
     if pname and xname and dname:
-
         for c in mtz_obj.crystals():
             for d in c.datasets():
                 d.set_name(dname)
@@ -120,11 +118,8 @@ def rebatch(
 
 
 def copy_r_file(hklin, hklout):
-
     mtz_obj = mtz.object(file_name=hklin)
-
     mtz_out = mtz.object()
-
     mtz_out.set_space_group(mtz_obj.space_group())
 
     for batch in mtz_obj.batches():
@@ -140,17 +135,14 @@ def copy_r_file(hklin, hklout):
     batch_column = None
 
     for crystal in mtz_obj.crystals():
-
         crystal_out = mtz_out.add_crystal(
             crystal.name(), crystal.project_name(), crystal.unit_cell()
         )
 
         for dataset in crystal.datasets():
-
             dataset_out = crystal_out.add_dataset(dataset.name(), dataset.wavelength())
 
             for column in dataset.columns():
-
                 dataset_out.add_column(column.label(), column.type())
 
                 if column.label() == "BATCH":
@@ -163,12 +155,7 @@ def copy_r_file(hklin, hklout):
 
     valid = flex.bool()
 
-    remove = []
-
-    for j, b in enumerate(batch_column_values):
-        if b % 2 != 0:
-            remove.append(j)
-
+    remove = [j for j, b in enumerate(batch_column_values) if b % 2 != 0]
     remove.reverse()
 
     for crystal in mtz_obj.crystals():

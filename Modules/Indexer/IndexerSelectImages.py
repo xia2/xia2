@@ -31,11 +31,7 @@ def index_select_images_user(phi_width, images, out_stream):
     this the user can tweak the settings..."""
 
     images = index_select_images_lone(phi_width, images)
-
-    images_list = "%d" % images[0]
-    for image in images[1:]:
-        images_list += ", %d" % image
-
+    images_list = ", ".join("%d" % image for image in images)
     out_stream.write("Existing images for indexing: %s" % images_list)
 
     while True:
@@ -46,11 +42,8 @@ def index_select_images_user(phi_width, images, out_stream):
             return images
 
         try:
-            images = list(map(int, record.replace(",", " ").split()))
-            images_list = "%d" % images[0]
-            for image in images[1:]:
-                images_list += ", %d" % image
-
+            images = [int(x) for x in record.replace(",", " ").split()]
+            images_list = ", ".join("%d" % image for image in images)
             out_stream.write("New images for indexing: %s" % images_list)
 
             return images
@@ -61,7 +54,7 @@ def index_select_images_user(phi_width, images, out_stream):
 
 def index_select_image_wedges_user(sweep_id, phi_width, images, out_stream):
     images = [(min(images), max(images))]
-    images_list = ", ".join(["%d-%d" % i for i in images])
+    images_list = ", ".join("%d-%d" % i for i in images)
 
     out_stream.write("Existing images for indexing %s: %s" % (sweep_id, images_list))
 

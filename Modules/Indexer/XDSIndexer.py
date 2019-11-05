@@ -1,23 +1,14 @@
-#!/usr/bin/env python
-# XDSIndexer.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-# 13th December 2006
-#
 # An implementation of the Indexer interface using XDS. This depends on the
 # XDS wrappers to actually implement the functionality.
-#
-# 03/JAN/07 FIXME - once the indexing step is complete, all of the files
-#                   which are needed for integration should be placed in the
-#                   indexer "payload".
 
 from __future__ import absolute_import, division, print_function
 
 import os
 import math
 import shutil
+
+from cctbx.array_family import flex
+from scitbx import matrix
 
 # wrappers for programs that this needs
 
@@ -53,7 +44,7 @@ class XDSIndexer(IndexerSingleSweep):
         # check that the programs exist - this will raise an exception if
         # they do not...
 
-        _ = _Idxref()
+        _Idxref()
 
         self._background_images = None
         self._index_select_images = "i"
@@ -191,7 +182,7 @@ class XDSIndexer(IndexerSingleSweep):
         masked_spot_xds = (
             os.path.splitext(self._indxr_payload["SPOT.XDS"])[0] + "_masked.XDS"
         )
-        with open(masked_spot_xds, "wb") as f:
+        with open(masked_spot_xds, "w") as f:
             f.writelines(spot_xds)
         self._indxr_payload["SPOT.XDS"] = masked_spot_xds
 
@@ -370,7 +361,6 @@ class XDSIndexer(IndexerSingleSweep):
             )
             shadow_plot.run()
             results = shadow_plot.get_results()
-            from scitbx.array_family import flex
 
             fraction_shadowed = flex.double(results["fraction_shadowed"])
             if flex.max(fraction_shadowed) == 0:
@@ -482,13 +472,13 @@ class XDSIndexer(IndexerSingleSweep):
 
             colspot = self.Colspot()
 
-            for file in [
+            for file in (
                 "X-CORRECTIONS.cbf",
                 "Y-CORRECTIONS.cbf",
                 "BLANK.cbf",
                 "BKGINIT.cbf",
                 "GAIN.cbf",
-            ]:
+            ):
                 colspot.set_input_data_file(file, self._indxr_payload[file])
 
             colspot.set_data_range(first, last)
@@ -682,8 +672,6 @@ class XDSIndexer(IndexerSingleSweep):
         # I will want this later on to check that the lattice was ok
         self._idxref_subtree_problem = idxref.get_index_tree_problem()
 
-        return
-
     def _index_finish(self):
         """Perform the indexer post-processing as required."""
 
@@ -746,34 +734,13 @@ class XDSIndexer(IndexerSingleSweep):
         spot_xds_handle = spot_xds.reader()
         spot_xds_handle.read_file(spot_file)
 
-        from cctbx.array_family import flex
-
         miller_indices = flex.miller_index(spot_xds_handle.miller_index)
 
         # only those reflections that were actually indexed
         miller_indices = miller_indices.select(miller_indices != (0, 0, 0))
-
-        from scitbx import matrix
 
         ub = matrix.sqr(crystal_model.get_A())
         dmax = 1.05 * flex.max(1 / (ub.elems * miller_indices.as_vec3_double()).norms())
 
         Debug.write("Low resolution limit assigned as: %.2f" % dmax)
         self._indxr_low_resolution = dmax
-
-
-if __name__ == "__main__":
-
-    xi = XDSIndexer()
-
-    directory = os.path.join("/data", "graeme", "insulin", "demo")
-
-    xi.setup_from_image(os.path.join(directory, "insulin_1_001.img"))
-
-    xi.index()
-
-    print("Refined beam is: %6.2f %6.2f" % xi.get_indexer_beam_centre())
-    print("Distance:        %6.2f" % xi.get_indexer_distance())
-    print("Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f" % xi.get_indexer_cell())
-    print("Lattice: %s" % xi.get_indexer_lattice())
-    print("Mosaic: %6.2f" % xi.get_indexer_mosaic())
