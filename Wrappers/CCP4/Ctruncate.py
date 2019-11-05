@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
 import os
@@ -187,8 +185,8 @@ def Ctruncate(DriverType=None):
 
                     columns = len(self._loggraph[current]["columns"])
 
-                    for j in range(len(data)):
-                        record = data[j].split()
+                    for record in data:
+                        record = record.split()
                         if len(record) == columns:
                             self._loggraph[current]["data"].append(record)
 

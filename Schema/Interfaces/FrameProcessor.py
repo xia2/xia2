@@ -1,10 +1,3 @@
-#!/usr/bin/env python
-# FrameProcessor.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
 # An interface for programs which process X-Ray diffraction images.
 # This adds the code for handling the templates, directories etc.
 # but not the use of them e.g. the keyworded input.
@@ -20,8 +13,10 @@
 
 from __future__ import absolute_import, division, print_function
 
+import math
 import os
-import sys
+
+from scitbx import matrix
 
 from xia2.Experts.FindImages import (
     digest_template,
@@ -346,13 +341,8 @@ class FrameProcessor(object):
         self._fp_matching_images = images
         self._fp_offset = offset
 
-    # end of class
-
 
 def get_beam_centre(detector, beam):
-    from scitbx import matrix
-    import math
-
     if len(detector) > 1:
         panel_id = detector.get_panel_intersection(beam.get_s0())
     else:
@@ -383,22 +373,7 @@ def get_beam_centre(detector, beam):
     R = r.axis_and_angle_as_r3_rotation_matrix(a)
     # compute beam centre at two-theta=0
     Ro = R * o
-    Rn = R * n
     b = -Ro + Ro.dot(s0) * s0
     beam_x = b.dot(R * f)
     beam_y = b.dot(R * s)
     return beam_y, beam_x
-
-
-if __name__ == "__main__":
-    # run a quick test
-
-    import sys
-
-    fp = FrameProcessor(sys.argv[1])
-
-    print(fp.get_beam_centre())
-    print(fp.get_wavelength())
-    print(fp.get_header())
-    print(fp.get_matching_images())
-    print(fp.get_two_theta())

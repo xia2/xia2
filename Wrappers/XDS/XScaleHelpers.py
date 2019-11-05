@@ -1,37 +1,4 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
-
-import math
-
-
-def _generate_resolution_shells(low, high):
-    """Generate 9 evenly spaced in reciprocal space resolution
-    shells from low to high resolution, e.g. in 1/d^2."""
-
-    dmin = (1.0 / high) * (1.0 / high)
-    dmax = (1.0 / low) * (1.0 / low)
-    diff = (dmin - dmax) / 8.0
-
-    shells = [1.0 / math.sqrt(dmax)]
-
-    for j in range(8):
-        shells.append(1.0 / math.sqrt(dmax + diff * (j + 1)))
-
-    return shells
-
-
-def generate_resolution_shells_str(low, high):
-    """Generate a string of 8 evenly spaced in reciprocal space resolution
-    shells from low to high resolution, e.g. in 1/d^2."""
-
-    result = ""
-    shells = _generate_resolution_shells(low, high)
-
-    for s in shells:
-        result += " %.2f" % s
-
-    return result
 
 
 def get_correlation_coefficients_and_group(xscale_lp):
@@ -45,7 +12,8 @@ def get_correlation_coefficients_and_group(xscale_lp):
 
     xmax = 0
 
-    records = open(xscale_lp).readlines()
+    with open(xscale_lp) as fh:
+        records = fh.readlines()
 
     # first scan through to get the file names...
 

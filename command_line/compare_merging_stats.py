@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+import sys
 
 import iotbx.phil
 from cctbx import uctbx
@@ -37,9 +38,7 @@ style = *ggplot
 
 
 def run(args):
-    import libtbx.load_env
-
-    usage = "%s [options]" % libtbx.env.dispatcher_name
+    usage = "xia2.compare_merging_stats [options]"
 
     parser = OptionParser(
         usage=usage, phil=phil_scope, check_format=False, epilog=help_message
@@ -195,7 +194,6 @@ def plot_merging_stats(
 
 
 if __name__ == "__main__":
-    import sys
     from libtbx.utils import show_times_at_exit
 
     show_times_at_exit()

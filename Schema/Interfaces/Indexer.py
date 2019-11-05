@@ -218,7 +218,7 @@ class Indexer(object):
         obj["__module__"] = self.__class__.__module__
         obj["__name__"] = self.__class__.__name__
 
-        attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
+        attributes = inspect.getmembers(self, lambda m: not inspect.isroutine(m))
         for a in attributes:
             if a[0] == "_indxr_helper" and a[1] is not None:
                 lattice_cell_dict = {}
@@ -544,8 +544,7 @@ class Indexer(object):
                 Chatter.write(self.show_indexer_solutions())
 
     def show_indexer_solutions(self):
-        lines = []
-        lines.append("All possible indexing solutions:")
+        lines = ["All possible indexing solutions:"]
         for l in self._indxr_helper.repr():
             lines.append(l)
 

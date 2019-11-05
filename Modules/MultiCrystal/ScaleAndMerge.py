@@ -1,4 +1,3 @@
-#!/usr/bin/env dials.python
 from __future__ import absolute_import, division, print_function
 
 import copy
@@ -17,6 +16,8 @@ from dxtbx.model import ExperimentList
 
 from dials.array_family import flex
 from dials.command_line.unit_cell_histogram import plot_uc_histograms
+
+from scitbx.math import five_number_summary
 
 from xia2.lib.bits import auto_logfiler
 from xia2.Handlers.Phil import PhilIndex
@@ -453,16 +454,16 @@ class MultiCrystalScale(object):
 
     @staticmethod
     def _report_as_dict(report):
-        d = {}
-
         (
             overall_stats_table,
             merging_stats_table,
             stats_plots,
         ) = report.resolution_plots_and_stats()
 
-        d["merging_statistics_table"] = merging_stats_table
-        d["overall_statistics_table"] = overall_stats_table
+        d = {
+            "merging_statistics_table": merging_stats_table,
+            "overall_statistics_table": overall_stats_table,
+        }
 
         d.update(stats_plots)
         d.update(report.batch_dependent_plots())
@@ -493,10 +494,10 @@ class MultiCrystalScale(object):
     @staticmethod
     def _individual_report_dict(report_d, cluster_name):
         cluster_name = cluster_name.replace(" ", "_")
-        d = {}
-
-        d["merging_statistics_table"] = report_d["merging_statistics_table"]
-        d["overall_statistics_table"] = report_d["overall_statistics_table"]
+        d = {
+            "merging_statistics_table": report_d["merging_statistics_table"],
+            "overall_statistics_table": report_d["overall_statistics_table"],
+        }
 
         resolution_graphs = OrderedDict(
             (k + "_" + cluster_name, report_d[k])
@@ -578,8 +579,6 @@ class MultiCrystalScale(object):
         iqr_ratio = 1.5
         outliers = flex.bool(uc_params[0].size(), False)
         for p in uc_params:
-            from scitbx.math import five_number_summary
-
             min_x, q1_x, med_x, q3_x, max_x = five_number_summary(p)
             logger.info(
                 "Five number summary: min %.2f, q1 %.2f, med %.2f, q3 %.2f, max %.2f"
@@ -626,8 +625,6 @@ class MultiCrystalScale(object):
             logger.info(
                 "Space group determined by dials.cosym: %s" % best_space_group.info()
             )
-
-        return
 
     def decide_space_group(self):
 

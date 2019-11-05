@@ -1,11 +1,3 @@
-#!/usr/bin/env python
-# WedgeExpert.py
-#
-#   Copyright (C) 2009 Diamond Light Source, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
 # Some code to help figure out how the experiment was performed and tell
 # Chef where we could consider cutting the data at... N.B. this will now
 # take the digested wedges from the Chef wrapper.
@@ -52,10 +44,7 @@ def digest_wedges(wedges):
 
     # now invert
 
-    sweeps = {}
-
-    for k in doses:
-        sweeps[doses[k]] = k
+    sweeps = {doses[k]: k for k in doses}
 
     # now try to figure the sweeps which are overlapping - these will be
     # added to a list named "groups"
@@ -94,7 +83,7 @@ def digest_wedges(wedges):
 
         size = 0
 
-        datasets = list({k[0] for k in group_wedges})
+        datasets = {k[0] for k in group_wedges}
 
         if len(g) == 1:
             assert len(belonging_wedges[sweeps[g[0]]]) == 1
@@ -112,7 +101,6 @@ def digest_wedges(wedges):
             assert size == len(group_wedges[(dataset, last_image)])
 
         for j in range(size):
-
             d_local = []
 
             for s in g:
@@ -122,16 +110,3 @@ def digest_wedges(wedges):
             dmaxes.append(max(d_local))
 
     return dmaxes, group_report
-
-
-if __name__ == "__main__":
-
-    import six.moves.cPickle as pickle
-
-    with open("test.pkl", "rb") as fh:
-        wedges = pickle.loads(fh.read())
-
-    dmaxes, group_report = digest_wedges(wedges)
-
-    for gr in group_report:
-        print(gr)

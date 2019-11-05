@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
 import os
@@ -34,7 +32,6 @@ def Blend(DriverType=None):
             self._hklin_files.append(hklin)
             if label is not None:
                 self._labels.append(label)
-            return
 
         def analysis(self):
             """Run blend in analysis mode."""

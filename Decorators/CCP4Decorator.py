@@ -1,13 +1,3 @@
-#!/usr/bin/env python
-# CCP4Decorator.py
-#
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 25th May 2006
-#
 # A decorator to add hklin and hklout methods to a Driver instance.
 # This will probably include some other interesting things like
 # xyzin etc at some point in the future, once such things become
@@ -445,23 +435,11 @@ def CCP4DecoratorFactory(DriverInstance):
 
                     # code around cases where columns merge together...
 
-                    for j in range(len(data)):
-                        record = data[j].split()
+                    for j in data:
+                        record = j.split()
                         if len(record) == columns:
                             self._loggraph[current]["data"].append(record)
 
             return self._loggraph
 
     return CCP4Decorator()
-
-
-if __name__ == "__main__":
-    from xia2.Driver.DriverFactory import DriverFactory
-
-    d = DriverFactory.Driver("script")
-
-    d = CCP4DecoratorFactory(d)
-
-    from pydoc import help
-
-    print(help(d.__class__))

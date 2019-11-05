@@ -1,10 +1,13 @@
 from __future__ import absolute_import, division, print_function
 
+import os
+import re
+import sys
+
 
 def image_path_obtainer(summary_file):
     """Read a xia2-summary.dat file and return a function capable of
     translating image numbers to file paths"""
-    import re
 
     with open(summary_file, "r") as f:
         summary = f.read()
@@ -42,9 +45,6 @@ def image_path_obtainer(summary_file):
 
 
 if __name__ == "__main__":
-    import os
-    import sys
-
     if len(sys.argv) > 1:
         summary_file = "xia2-summary.dat"
         if os.path.isfile(summary_file):
@@ -52,12 +52,13 @@ if __name__ == "__main__":
             for parameter in sys.argv[1:]:
                 if "-" in parameter:
                     img_range = parameter.split("-")
-                    images = range(int(img_range[0]), int(img_range[1]) + 1)
+                    images = list(range(int(img_range[0]), int(img_range[1]) + 1))
                 else:
                     images = [int(parameter)]
                 if 0 in images:
-                    print("The first image number is 1. Image number 0 is disallowed")
-                    sys.exit(1)
+                    sys.exit(
+                        "The first image number is 1. Image number 0 is disallowed"
+                    )
                 for i in images:
                     print(obtainer(i))
         else:

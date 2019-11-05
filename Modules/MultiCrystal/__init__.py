@@ -5,6 +5,7 @@ import json
 import logging
 
 import iotbx.phil
+from scipy.cluster import hierarchy
 from scitbx.array_family import flex
 
 logger = logging.getLogger(__name__)
@@ -193,9 +194,6 @@ class multi_crystal_analysis(object):
 
     @staticmethod
     def linkage_matrix_to_dict(linkage_matrix):
-
-        from scipy.cluster import hierarchy
-
         tree = hierarchy.to_tree(linkage_matrix, rd=False)
 
         d = {}
@@ -242,7 +240,6 @@ class multi_crystal_analysis(object):
         self.cosym.run()
 
     def compute_correlation_coefficient_matrix(self):
-        from scipy.cluster import hierarchy
         import scipy.spatial.distance as ssd
 
         correlation_matrix = self.cosym.target.rij_matrix
@@ -266,7 +263,6 @@ class multi_crystal_analysis(object):
         return correlation_matrix, linkage_matrix
 
     def compute_cos_angle_matrix(self):
-        from scipy.cluster import hierarchy
         import scipy.spatial.distance as ssd
 
         dist_mat = ssd.pdist(self.cosym.coords.as_numpy_array(), metric="cosine")
@@ -279,8 +275,6 @@ class multi_crystal_analysis(object):
         correlation_matrix, linkage_matrix, labels=None, matrix_type="correlation"
     ):
         assert matrix_type in ("correlation", "cos_angle")
-
-        from scipy.cluster import hierarchy
 
         ddict = hierarchy.dendrogram(
             linkage_matrix, color_threshold=0.05, labels=labels, show_leaf_counts=False
@@ -429,9 +423,8 @@ def scipy_dendrogram_to_plotly_json(ddict):
     xticktext = []
     xtickvals = []
 
-    for k in range(len(dcoord)):
+    for k, y in enumerate(dcoord):
         x = icoord[k]
-        y = dcoord[k]
 
         if y[0] == 0:
             xtickvals.append(x[0])

@@ -1,15 +1,6 @@
-#!/usr/bin/env python
-# ResolutionExperts.py
-#
-#   Copyright (C) 2008 STFC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
 # A couple of classes to assist with resolution calculations - these
 # are for calculating resolution (d, s) for either distance / beam /
 # wavelength / position or h, k, l, / unit cell.
-#
 
 from __future__ import absolute_import, division, print_function
 
@@ -18,7 +9,6 @@ import os
 import random
 import sys
 import tempfile
-import time
 
 from xia2.Handlers.Streams import Debug
 from xia2.Wrappers.CCP4.Pointless import Pointless
@@ -109,7 +99,6 @@ def B(a, b, c, alpha, beta, gamma):
     cb = math.cos(beta)
     cg = math.cos(gamma)
 
-    sa = math.sin(alpha)
     sb = math.sin(beta)
     sg = math.sin(gamma)
 
@@ -143,12 +132,7 @@ def B(a, b, c, alpha, beta, gamma):
 def dot(a, b):
     """Compute a.b."""
 
-    d = 0.0
-
-    for j in range(3):
-        d += a[j] * b[j]
-
-    return d
+    return sum(a[j] * b[j] for j in range(3))
 
 
 def mult_vs(v_, s):
@@ -156,9 +140,7 @@ def mult_vs(v_, s):
 
 
 def sum_vv(a_, b_):
-    r_ = []
-    for j in range(3):
-        r_.append(a_[j] + b_[j])
+    r_ = [a_[j] + b_[j] for j in range(3)]
     return r_
 
 
@@ -198,9 +180,7 @@ def generate(number, isigma):
     with the specified I/sigma. For this purpose, I == 1.0 while sigma is
     1.0 / required I/sigma."""
 
-    result = []
-    for j in range(number):
-        result.append(random.gauss(1.0, 1.0 / isigma))
+    result = [random.gauss(1.0, 1.0 / isigma) for j in range(number)]
 
     return result
 
@@ -225,9 +205,7 @@ def cc(a_, b_):
     a2_ = [a * a for a in a_]
     b2_ = [b * b for b in b_]
 
-    ab_ = []
-    for j in range(len(a_)):
-        ab_.append(a_[j] * b_[j])
+    ab_ = [a_[j] * b_[j] for j in range(len(a_))]
 
     ab = sum(ab_) / len(ab_)
     a = sum(a_) / len(a_)
@@ -259,14 +237,14 @@ def main(mtzdump):
 
     j = 0
 
-    while not "LIST OF REFLECTIONS" in mtzdump[j]:
+    while "LIST OF REFLECTIONS" not in mtzdump[j]:
         j += 1
 
     j += 2
 
     reflections = []
 
-    while not "FONT" in mtzdump[j]:
+    while "FONT" not in mtzdump[j]:
         lst = mtzdump[j].split()
         if not lst:
             j += 1
@@ -351,8 +329,6 @@ class ResolutionCell(object):
 
         self._A, self._B, self._C = B(_a, _b, _c, _alpha, _beta, _gamma)
 
-        return
-
     def resolution(self, h, k, l):
         s = resolution(h, k, l, self._A, self._B, self._C)
         return s, 1.0 / math.sqrt(s)
@@ -367,7 +343,6 @@ class ResolutionGeometry(object):
         self._wavelength = wavelength
         self._beam_x = beam_x
         self._beam_y = beam_y
-        return
 
     def resolution(self, x, y):
 
@@ -397,38 +372,39 @@ def xds_integrate_header_read(xds_hkl):
     origin = None
     beam = None
 
-    for record in open(xds_hkl, "r").readlines():
-        if not record[0] == "!":
-            break
+    with open(xds_hkl, "r") as fh:
+        for record in fh.readlines():
+            if not record[0] == "!":
+                break
 
-        lst = record[1:].split()
+            lst = record[1:].split()
 
-        if lst[0] == "UNIT_CELL_CONSTANTS=":
-            cell = tuple(map(float, lst[1:]))
-            continue
+            if lst[0] == "UNIT_CELL_CONSTANTS=":
+                cell = tuple(map(float, lst[1:]))
+                continue
 
-        if lst[0] == "DETECTOR_DISTANCE=":
-            distance = float(lst[-1])
-            continue
+            if lst[0] == "DETECTOR_DISTANCE=":
+                distance = float(lst[-1])
+                continue
 
-        if lst[0] == "X-RAY_WAVELENGTH=":
-            wavelength = float(lst[-1])
-            continue
+            if lst[0] == "X-RAY_WAVELENGTH=":
+                wavelength = float(lst[-1])
+                continue
 
-        if lst[0] == "NX=":
-            pixel_x = float(lst[5])
-            pixel_y = float(lst[7])
-            pixel = pixel_x, pixel_y
-            continue
+            if lst[0] == "NX=":
+                pixel_x = float(lst[5])
+                pixel_y = float(lst[7])
+                pixel = pixel_x, pixel_y
+                continue
 
-        if lst[0] == "ORGX=":
-            origin_x = float(lst[1])
-            origin_y = float(lst[3])
-            origin = origin_x, origin_y
-            continue
+            if lst[0] == "ORGX=":
+                origin_x = float(lst[1])
+                origin_y = float(lst[3])
+                origin = origin_x, origin_y
+                continue
 
-        if lst[0] == "INCIDENT_BEAM_DIRECTION=":
-            beam = tuple(map(float, lst[1:]))
+            if lst[0] == "INCIDENT_BEAM_DIRECTION=":
+                beam = tuple(map(float, lst[1:]))
 
     if not pixel:
         raise RuntimeError("pixel size not found")
@@ -473,22 +449,23 @@ def xds_integrate_hkl_to_list(xds_hkl):
 
     result = []
 
-    for record in open(xds_hkl, "r").readlines():
-        if record[:1] == "!":
-            continue
+    with open(xds_hkl, "r") as fh:
+        for record in fh.readlines():
+            if record[:1] == "!":
+                continue
 
-        lst = record.split()
+            lst = record.split()
 
-        if not lst:
-            continue
+            if not lst:
+                continue
 
-        h, k, l = tuple(map(int, lst[:3]))
+            h, k, l = tuple(map(int, lst[:3]))
 
-        i, sigma, x, y = tuple(map(float, lst[3:7]))
+            i, sigma, x, y = tuple(map(float, lst[3:7]))
 
-        s, r = rc.resolution(h, k, l)
+            s, r = rc.resolution(h, k, l)
 
-        result.append((s, i, sigma))
+            result.append((s, i, sigma))
 
     return result
 
@@ -574,7 +551,7 @@ def find_blank(hklin):
                 if not sig:
                     continue
 
-                if not batch in isig:
+                if batch not in isig:
                     isig[batch] = []
 
                 isig[batch].append(i / sig)
@@ -649,13 +626,7 @@ def outlier(sisigma):
     the list, then return the edited list."""
 
     # first bin the measurements
-
-    t0 = time.time()
-
-    bins = {}
-
-    for j in range(500):
-        bins[j + 1] = []
+    bins = {j + 1: [] for j in range(500)}
 
     for sis in sisigma:
         s, i, sigma = sis
@@ -685,25 +656,20 @@ def outlier(sisigma):
 
     # then look to see which bins don't fit
 
-    outliers = []
+    outliers = set()
 
     for j in range(4, 500 - 4):
-        k_m2 = keys[j - 2]
         k_m1 = keys[j - 1]
         k_p1 = keys[j + 1]
-        k_p2 = keys[j + 2]
 
         k = keys[j]
 
-        m_m2 = result[k_m2][0]
         m_m1 = result[k_m1][0]
         m_p1 = result[k_p1][0]
-        m_p2 = result[k_p2][0]
 
         if result[k][0] > 5 * (0.5 * (m_m1 + m_p1)):
-            # if result[k][0] > 5 * min([m_m2, m_m1, m_p1, m_p2]):
-            if not k in outliers:
-                outliers.append(k)
+            if k not in outliers:
+                outliers.add(k)
 
     # now remove these from the list - brutal - just excise completely!
 

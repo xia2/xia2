@@ -1,24 +1,12 @@
-#!/usr/bin/env python
-# Sweep.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 15th June 2006
-#
 # A class to represent a sweep of frames collected under the same conditions.
 # This pertains to the dataset object in the early phases of processing.
 
 from __future__ import absolute_import, division, print_function
 
-import copy
 import os
-import sys
 
 from xia2.Experts.FindImages import (
     find_matching_images,
-    image2template_directory,
     template_directory_number2image,
 )
 from xia2.Handlers.Phil import PhilIndex
@@ -166,31 +154,3 @@ class Sweep(object):
                     best_sweep = imageset
 
             self._imageset = best_sweep
-
-        return
-
-
-if __name__ == "__main__":
-
-    if len(sys.argv) < 2:
-        image = os.path.join(
-            os.environ["XIA2_ROOT"], "Data", "Test", "Images", "12287_1_E1_001.img"
-        )
-    else:
-        image = sys.argv[1]
-
-    template, directory = image2template_directory(image)
-
-    sl = SweepFactory(template, directory)
-
-    for s in sl:
-
-        t = s.get_collect()
-        print("Data collection took %s seconds" % (t[1] - t[0]))
-        print(
-            "For a total of %s seconds of exposure"
-            % (s.get_exposure_time() * len(s.get_images()))
-        )
-        print("Images: %d to %d" % (min(s.get_images()), max(s.get_images())))
-        print("Template: %s" % s.get_template())
-        print("")

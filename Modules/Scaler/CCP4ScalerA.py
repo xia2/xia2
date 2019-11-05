@@ -16,6 +16,7 @@ from xia2.Handlers.Syminfo import Syminfo
 from xia2.Modules.Scaler.rebatch import rebatch
 
 from xia2.lib.bits import is_mtz_file, transpose_loggraph
+from xia2.lib.bits import nifty_power_of_ten
 from xia2.lib.SymmetryLib import sort_lattices
 from xia2.Modules import MtzUtils
 from xia2.Modules.Scaler.CCP4ScalerHelpers import (
@@ -214,8 +215,6 @@ class CCP4ScalerA(Scaler):
                     batches = MtzUtils.batches_from_mtz(hklin)
                     if 1 + max(batches) - min(batches) > max_batches:
                         max_batches = max(batches) - min(batches) + 1
-
-                from xia2.lib.bits import nifty_power_of_ten
 
                 Debug.write("Biggest sweep has %d batches" % max_batches)
                 max_batches = nifty_power_of_ten(max_batches)
@@ -440,8 +439,6 @@ class CCP4ScalerA(Scaler):
                 batches = MtzUtils.batches_from_mtz(hklin)
                 if 1 + max(batches) - min(batches) > max_batches:
                     max_batches = max(batches) - min(batches) + 1
-
-            from xia2.lib.bits import nifty_power_of_ten
 
             Debug.write("Biggest sweep has %d batches" % max_batches)
             max_batches = nifty_power_of_ten(max_batches)
@@ -1233,7 +1230,7 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
             batch_offset = si.get_batch_offset()
             printed = False
             for b in range(si.get_batches()[0], si.get_batches()[1] + 1):
-                if len(epoch_to_dose):
+                if epoch_to_dose:
                     # when handling Eiger data this table appears to be somewhat broken
                     # see https://github.com/xia2/xia2/issues/90 - proper fix should be
                     # to work out why the epochs are not set correctly in first place...

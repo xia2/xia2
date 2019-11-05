@@ -50,8 +50,8 @@ def test_xtriage(report):
 def test_batch_dependent_plots(report):
     plots = report.batch_dependent_plots()
     assert set(plots) == {"i_over_sig_i_vs_batch", "scale_rmerge_vs_batch"}
-    assert plots["scale_rmerge_vs_batch"]["data"][0]["x"] == range(1, 46)
-    assert plots["i_over_sig_i_vs_batch"]["data"][0]["x"] == range(1, 46)
+    assert plots["scale_rmerge_vs_batch"]["data"][0]["x"] == list(range(1, 46))
+    assert plots["i_over_sig_i_vs_batch"]["data"][0]["x"] == list(range(1, 46))
 
 
 def test_resolution_plots_and_stats(report):

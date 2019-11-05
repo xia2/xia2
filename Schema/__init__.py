@@ -5,6 +5,8 @@ import glob
 import itertools
 import os
 
+from scitbx.array_family import flex
+
 from xia2.Handlers.Phil import PhilIndex
 
 
@@ -16,10 +18,10 @@ imageset_cache = _ImagesetCache()
 
 
 def longest_common_substring(s1, s2):
-    m = [[0] * (1 + len(s2)) for i in xrange(1 + len(s1))]
+    m = [[0] * (1 + len(s2)) for i in range(1 + len(s1))]
     longest, x_longest = 0, 0
-    for x in xrange(1, 1 + len(s1)):
-        for y in xrange(1, 1 + len(s2)):
+    for x in range(1, 1 + len(s1)):
+        for y in range(1, 1 + len(s2)):
             if s1[x - 1] == s2[y - 1]:
                 m[x][y] = m[x - 1][y - 1] + 1
                 if m[x][y] > longest:
@@ -184,8 +186,6 @@ def load_imagesets(
                 imageset = updater(imageset)
             imageset_list.append(imageset)
         imagesets = imageset_list
-
-        from scitbx.array_family import flex
 
         for imageset in imagesets:
             scan = imageset.get_scan()

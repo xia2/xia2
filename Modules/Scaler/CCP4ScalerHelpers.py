@@ -134,8 +134,8 @@ def compute_resolution(dmax, dmin, d, isig):
     smax = 1.0 / (dmax * dmax)
     smin = 1.0 / (dmin * dmin)
 
-    for j in range(len(d)):
-        s = 1.0 / (d[j] * d[j])
+    for j, dj in enumerate(d):
+        s = 1.0 / (dj * dj)
         n = nint(100.0 * (s - smax) / (smin - smax))
         bins.setdefault(n, []).append(isig[j])
 

@@ -1,13 +1,3 @@
-#!/usr/bin/env python
-# DriverHelper.py
-#
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 24th may 2006
-#
 # Helper functions (mostly abstraction layer) for the Driver implementations.
 #
 # Implemented functions:
@@ -65,97 +55,96 @@ def script_writer(
     if os.name == "nt":
         # write out a windows batch file
 
-        script = open("%s.bat" % os.path.join(working_directory, script_name), "w")
+        with open(
+            "%s.bat" % os.path.join(working_directory, script_name), "w"
+        ) as script:
 
-        # try to delete the .xstatus file - if it exists
-        script.write(
-            "@if exist %s.xstatus del %s.xstatus\n" % (script_name, script_name)
-        )
+            # try to delete the .xstatus file - if it exists
+            script.write(
+                "@if exist %s.xstatus del %s.xstatus\n" % (script_name, script_name)
+            )
 
-        # FIXME might this add redundant elements to the path? is there
-        # a limit to the length? I.e. pulling initial environment from
-        # os.environ then also adding %ENV%
+            # FIXME might this add redundant elements to the path? is there
+            # a limit to the length? I.e. pulling initial environment from
+            # os.environ then also adding %ENV%
 
-        for name in environment:
-            added = environment[name][0]
-            for value in environment[name][1:]:
-                added += "%s%s" % (os.pathsep, value)
-            script.write("@set %s=%s%s%%%s%%\n" % (name, added, os.pathsep, name))
-        # make the directories we've been asked to
-        for dir in mkdirs:
-            script.write("@mkdir %s\n" % dir)
+            for name in environment:
+                added = environment[name][0]
+                for value in environment[name][1:]:
+                    added += "%s%s" % (os.pathsep, value)
+                script.write("@set %s=%s%s%%%s%%\n" % (name, added, os.pathsep, name))
+            # make the directories we've been asked to
+            for dir in mkdirs:
+                script.write("@mkdir %s\n" % dir)
 
-        # FIXME 1/SEP/06 - if the "executable" is a batch file on
-        # windows then this should be called. We know in here that
-        # we're on win32, so...
+            # FIXME 1/SEP/06 - if the "executable" is a batch file on
+            # windows then this should be called. We know in here that
+            # we're on win32, so...
 
-        if executable.split(".")[-1] == "bat":
-            script.write("@call %s " % executable)
-        else:
-            script.write("@%s " % executable)
+            if executable.split(".")[-1] == "bat":
+                script.write("@call %s " % executable)
+            else:
+                script.write("@%s " % executable)
 
-        for c in command_line_tokens:
-            script.write('"%s" ' % c)
+            for c in command_line_tokens:
+                script.write('"%s" ' % c)
 
-        script.write("< %s.xin > %s.xout\n" % (script_name, script_name))
+            script.write("< %s.xin > %s.xout\n" % (script_name, script_name))
 
-        # add the status stuff - for NT this will be NULL.
-        script.write("@echo 0 > %s.xstatus\n" % script_name)
+            # add the status stuff - for NT this will be NULL.
+            script.write("@echo 0 > %s.xstatus\n" % script_name)
 
-        script.close()
-
-        input = open("%s.xin" % os.path.join(working_directory, script_name), "w")
-        for i in input_records:
-            input.write("%s" % i)
-        input.close()
+        with open(
+            "%s.xin" % os.path.join(working_directory, script_name), "w"
+        ) as input:
+            for i in input_records:
+                input.write("%s" % i)
 
     if os.name == "posix":
         # write out a bash script
 
-        script = open("%s.sh" % os.path.join(working_directory, script_name), "w")
+        with open(
+            "%s.sh" % os.path.join(working_directory, script_name), "w"
+        ) as script:
 
-        script.write("#!/bin/bash\n\n")
+            script.write("#!/bin/bash\n\n")
 
-        # FIXME might this add redundant elements to the path? is there
-        # a limit to the length? I.e. pulling initial environment from
-        # os.environ then also adding $ENV
+            # FIXME might this add redundant elements to the path? is there
+            # a limit to the length? I.e. pulling initial environment from
+            # os.environ then also adding $ENV
 
-        for name in environment:
-            added = environment[name][0]
-            for value in environment[name][1:]:
-                added += "%s%s" % (os.pathsep, value)
-            script.write("export %s=%s%s$%s\n" % (name, added, os.pathsep, name))
+            for name in environment:
+                added = environment[name][0]
+                for value in environment[name][1:]:
+                    added += "%s%s" % (os.pathsep, value)
+                script.write("export %s=%s%s$%s\n" % (name, added, os.pathsep, name))
 
-        # delete the xatstus file if it exists
-        script.write("rm -f %s.xstatus\n" % script_name)
+            # delete the xatstus file if it exists
+            script.write("rm -f %s.xstatus\n" % script_name)
 
-        # make the directories we have been asked to
-        for dir in mkdirs:
-            script.write("mkdir -p %s\n" % dir)
+            # make the directories we have been asked to
+            for dir in mkdirs:
+                script.write("mkdir -p %s\n" % dir)
 
-        script.write("%s " % executable)
+            script.write("%s " % executable)
 
-        for c in command_line_tokens:
-            script.write("'%s' " % c)
+            for c in command_line_tokens:
+                script.write("'%s' " % c)
 
-        script.write("<< eof > %s.xout\n" % script_name)
+            script.write("<< eof > %s.xout\n" % script_name)
 
-        for i in input_records:
-            script.write("%s" % i)
+            for i in input_records:
+                script.write("%s" % i)
 
-        script.write("eof\n")
+            script.write("eof\n")
 
-        # record the status from this script
-        script.write('echo "$?" > %s.xstatus\n' % script_name)
-
-        script.close()
+            # record the status from this script
+            script.write('echo "$?" > %s.xstatus\n' % script_name)
 
         os.chmod(
             os.path.join(working_directory, "%s.sh" % script_name),
             stat.S_IEXEC | stat.S_IREAD | stat.S_IWRITE,
         )
-
-    return
 
 
 # implementatin of the kill_process method - which takes a subprocess.Popen
@@ -361,4 +350,4 @@ def executable_exists(executable):
 def generate_random_name():
     """Generate a random name to use as a handle for a job."""
 
-    return "".join(string.lowercase[random.randrange(0, 26)] for j in range(8))
+    return "".join(random.choice(string.lowercase) for j in range(8))

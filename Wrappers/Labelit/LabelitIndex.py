@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
 import math
@@ -8,8 +6,6 @@ import shutil
 
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Streams import Chatter
-
-# from xia2.Handlers.Files import FileHandler
 
 
 def LabelitIndex(DriverType=None, indxr_print=True):
@@ -53,8 +49,6 @@ def LabelitIndex(DriverType=None, indxr_print=True):
 
             self._solutions = {}
 
-            return
-
         def add_image(self, filename):
             self._images.append(filename)
 
@@ -72,7 +66,6 @@ def LabelitIndex(DriverType=None, indxr_print=True):
 
         def set_refine_beam(self, refine_beam):
             self._refine_beam = refine_beam
-            return
 
         def set_wavelength(self, wavelength):
             self._wavelength = wavelength
@@ -90,51 +83,49 @@ def LabelitIndex(DriverType=None, indxr_print=True):
             """Write the dataset_preferences.py file in the working
             directory - this will include the beam centres etc."""
 
-            out = open(
+            with open(
                 os.path.join(self.get_working_directory(), "dataset_preferences.py"),
                 "w",
-            )
+            ) as out:
 
-            # only write things out if they have been overridden
-            # from what is in the header...
+                # only write things out if they have been overridden
+                # from what is in the header...
 
-            if self._max_cell:
-                out.write("distl_minimum_number_spots_for_indexing = 1\n")
+                if self._max_cell:
+                    out.write("distl_minimum_number_spots_for_indexing = 1\n")
 
-            if self._distance is not None:
-                out.write("autoindex_override_distance = %f\n" % self._distance)
-            if self._wavelength is not None:
-                out.write("autoindex_override_wavelength = %f\n" % self._wavelength)
-            if self._beam_centre is not None:
-                out.write("autoindex_override_beam = (%f, %f)\n" % self._beam_centre)
+                if self._distance is not None:
+                    out.write("autoindex_override_distance = %f\n" % self._distance)
+                if self._wavelength is not None:
+                    out.write("autoindex_override_wavelength = %f\n" % self._wavelength)
+                if self._beam_centre is not None:
+                    out.write(
+                        "autoindex_override_beam = (%f, %f)\n" % self._beam_centre
+                    )
 
-            if self._refine_beam is False:
-                out.write("beam_search_scope = 0.0\n")
-            else:
-                out.write("beam_search_scope = %f\n" % self._beam_search_scope)
+                if self._refine_beam is False:
+                    out.write("beam_search_scope = 0.0\n")
+                else:
+                    out.write("beam_search_scope = %f\n" % self._beam_search_scope)
 
-            # check to see if this is an image plate *or* the
-            # wavelength corresponds to Cu KA (1.54A) or Cr KA (2.29 A).
-            # numbers from rigaku americas web page.
+                # check to see if this is an image plate *or* the
+                # wavelength corresponds to Cu KA (1.54A) or Cr KA (2.29 A).
+                # numbers from rigaku americas web page.
 
-            if self._Cu_KA_or_Cr_KA:
-                out.write("distl_force_binning = True\n")
-                out.write("distl_profile_bumpiness = 10\n")
-                out.write("distl_binned_image_spot_size = 10\n")
+                if self._Cu_KA_or_Cr_KA:
+                    out.write("distl_force_binning = True\n")
+                    out.write("distl_profile_bumpiness = 10\n")
+                    out.write("distl_binned_image_spot_size = 10\n")
 
-            out.write("wedgelimit = %d\n" % n_images)
+                out.write("wedgelimit = %d\n" % n_images)
 
-            # new feature - index on the spot centre of mass, not the
-            # highest pixel (should improve the RMS deviation reports.)
+                # new feature - index on the spot centre of mass, not the
+                # highest pixel (should improve the RMS deviation reports.)
 
-            out.write('distl_spotfinder_algorithm = "maximum_pixel"\n')
+                out.write('distl_spotfinder_algorithm = "maximum_pixel"\n')
 
-            if self._primitive_unit_cell is not None:
-                out.write("lepage_max_delta = 5.0")
-
-            out.close()
-
-            return
+                if self._primitive_unit_cell is not None:
+                    out.write("lepage_max_delta = 5.0")
 
         def check_labelit_errors(self):
             """Check through the standard output for error reports."""
@@ -227,8 +218,7 @@ def LabelitIndex(DriverType=None, indxr_print=True):
 
             # do this first!
 
-            for j in range(len(output)):
-                o = output[j]
+            for j, o in enumerate(output):
                 if "Beam centre is not immediately clear" in o:
                     # read the solutions that it has found and parse the
                     # information

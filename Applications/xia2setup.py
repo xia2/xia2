@@ -1,15 +1,6 @@
-#!/usr/bin/env python
-# xia2setup.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# xia2setup.py - an application to generate the .xinfo file for data
+# an application to generate the .xinfo file for data
 # reduction from a directory full of images, optionally with scan and
 # sequence files which will be used to add matadata.
-#
-# 18th December 2006
 
 from __future__ import absolute_import, division, print_function
 
@@ -22,7 +13,7 @@ import traceback
 from xia2.Experts.FindImages import image2template_directory
 from xia2.Handlers.CommandLine import CommandLine
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Debug, streams_off
+from xia2.Handlers.Streams import Debug
 from xia2.Modules.LabelitBeamCentre import compute_beam_centre
 
 image_extensions = [
@@ -89,7 +80,6 @@ def is_sequence_name(file):
 
 
 def is_image_name(filename):
-
     global known_image_extensions
     from xia2.Wrappers.XDS.XDSFiles import XDSFiles
 
@@ -374,7 +364,7 @@ def print_sweeps(out=sys.stdout):
         out.write("END HA_INFO\n")
         out.write("\n")
 
-    for j in range(len(wavelengths)):
+    for j, wavelength in enumerate(wavelengths):
         anomalous = settings.input.anomalous
         if settings.input.atom is not None:
             anomalous = True
@@ -385,7 +375,7 @@ def print_sweeps(out=sys.stdout):
         else:
             name = "WAVE%d" % (j + 1)
 
-        wavelength_map[wavelengths[j]] = name
+        wavelength_map[wavelength] = name
 
         out.write("BEGIN WAVELENGTH %s\n" % name)
 
@@ -613,48 +603,3 @@ def write_xinfo(filename, directories, template=None, hdf5_master_files=None):
 
     # change back directory c/f bug # 2693 - important for error files...
     os.chdir(start)
-
-
-def run():
-    streams_off()
-
-    # test to see if sys.argv[-2] + path is a valid path - to work around
-    # spaced command lines
-
-    argv = CommandLine.get_argv()
-
-    if not CommandLine.get_directory():
-
-        directories = []
-
-        for arg in argv:
-            if os.path.isdir(arg):
-                directories.append(os.path.abspath(arg))
-
-        if not directories:
-            raise RuntimeError("directory not found in arguments")
-
-    else:
-        directories = [CommandLine.get_directory()]
-
-    directories = [os.path.abspath(d) for d in directories]
-
-    # perhaps move to a new directory...
-    settings = PhilIndex.get_python_object().xia2.settings
-    crystal = settings.crystal
-
-    with open(os.path.join(os.getcwd(), "automatic.xinfo"), "w") as fout:
-        directory = os.path.join(os.getcwd(), crystal, "setup")
-        try:
-            os.makedirs(directory)
-        except OSError as e:
-            if "File exists" not in str(e):
-                raise e
-        os.chdir(directory)
-
-        rummage(directories)
-        print_sweeps(fout)
-
-
-if __name__ == "__main__":
-    run()

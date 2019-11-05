@@ -14,21 +14,20 @@ import re
 import sys
 
 from dials.util import Sorry
+from dxtbx.serialize import load
 from xia2.Experts.FindImages import image2template_directory
 from xia2.Handlers.Environment import which
 from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.PipelineSelection import add_preference
 from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Schema import imageset_cache, update_with_reference_geometry
 from xia2.Schema.XProject import XProject
 
 PATTERN_VALID_CRYSTAL_PROJECT_NAME = re.compile(r"[a-zA-Z_]\w*$")
 
 
 def load_experiments(filename):
-    from xia2.Schema import imageset_cache, update_with_reference_geometry
-    from dxtbx.serialize import load
-
     experiments = load.experiment_list(filename, check_format=False)
 
     imagesets = experiments.imagesets()

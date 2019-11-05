@@ -56,7 +56,7 @@ class _CIFHandler(object):
 
         loop = iotbx.cif.model.loop()
         symm_ops = []
-        for i in xrange(sg.n_smx()):
+        for i in range(sg.n_smx()):
             rt_mx = sg(0, 0, i)
             if rt_mx.is_unit_mx():
                 continue

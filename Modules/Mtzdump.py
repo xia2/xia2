@@ -1,10 +1,3 @@
-#!/usr/bin/env python
-# Mtzdump.py
-#   Copyright (C) 2013 Diamond Light Source, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
 # A replacement for the wrapper for the CCP4 program MTZDUMP using CCTBX
 # to access the file directly.
 
@@ -12,7 +5,6 @@ from __future__ import absolute_import, division, print_function
 
 import copy
 import os
-import sys
 
 from iotbx import mtz
 
@@ -22,9 +14,7 @@ class Mtzdump(object):
     MTZDUMP program."""
 
     def __init__(self):
-        self._header = {}
-        self._header["datasets"] = []
-        self._header["dataset_info"] = {}
+        self._header = {"datasets": [], "dataset_info": {}}
 
         self._batch_header = {}
 
@@ -105,12 +95,10 @@ class Mtzdump(object):
         """Get a list of the columns and their types as tuples
         (label, type) in a list."""
 
-        results = []
-        for i in range(len(self._header["column_labels"])):
-            results.append(
-                (self._header["column_labels"][i], self._header["column_types"][i])
-            )
-        return results
+        return [
+            (cl, self._header["column_types"][i])
+            for i, cl in enumerate(self._header["column_labels"])
+        ]
 
     def get_resolution_range(self):
         return self._resolution_range
@@ -153,15 +141,3 @@ class Mtzdump(object):
         file."""
 
         return self._reflections
-
-
-if __name__ == "__main__":
-    m = Mtzdump()
-
-    if len(sys.argv) > 1:
-        m.set_hklin(sys.argv[1])
-    else:
-        raise RuntimeError("%s hklin.mtz" % sys.argv[0])
-
-    m.dump()
-    print(m.get_spacegroup())

@@ -26,11 +26,6 @@ ExampleProgramStandardInput
 An example program which reads commands from the standard input until a
 "quit" is reached. Or EOF.
 
-ExampleProgramTightLoop
------------------------
-
-An example program which gets stuck in a tight loop.
-
 ExampleProgramCommandLine
 -------------------------
 

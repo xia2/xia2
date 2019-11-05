@@ -34,7 +34,7 @@ def test_blend_wrapper(regression_test, ccp4, dials_data, run_in_tmpdir):
     clusters = b.get_clusters()
     linkage_matrix = b.get_linkage_matrix()
 
-    assert list(analysis) == range(1, 29)
+    assert list(analysis) == list(range(1, 29))
     assert analysis[1] == {
         "start_image": 1,
         "radiation_damage_cutoff": 50,
@@ -43,7 +43,7 @@ def test_blend_wrapper(regression_test, ccp4, dials_data, run_in_tmpdir):
         "input_file": dials_data("blend_tutorial").join("dataset_001.mtz").strpath,
     }, analysis[1]
 
-    assert list(summary) == range(1, 29)
+    assert list(summary) == list(range(1, 29))
     assert summary[1] == {
         "volume": 238834.27,
         "distance": 308.73,
@@ -54,7 +54,7 @@ def test_blend_wrapper(regression_test, ccp4, dials_data, run_in_tmpdir):
         "wavelength": 0.9173,
     }
 
-    assert list(clusters) == range(1, 28)
+    assert list(clusters) == list(range(1, 28))
     if "furthest_datasets" in clusters[1]:
         del clusters[1]["furthest_datasets"]
         del clusters[27]["furthest_datasets"]

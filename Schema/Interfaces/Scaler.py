@@ -247,7 +247,7 @@ class Scaler(object):
         obj["__module__"] = self.__class__.__module__
         obj["__name__"] = self.__class__.__name__
 
-        attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
+        attributes = inspect.getmembers(self, lambda m: not inspect.isroutine(m))
         for a in attributes:
             if a[0] == "_scalr_xcrystal":
                 # XXX I guess we probably want this?
@@ -566,12 +566,12 @@ class Scaler(object):
         pointgroups = [self._scale_setup_integrater(i) for i in integraters]
         lattices = [lauegroup_to_lattice(p) for p in pointgroups]
 
-        unique_lattices = list(set(lattices))
+        unique_lattices = set(lattices)
 
         # consider the situation that they arrived at more than one conclusion
 
         if len(unique_lattices) > 1:
-            consensus_lattice = sort_lattices(unique_lattices)[0]
+            consensus_lattice = sort_lattices(list(unique_lattices))[0]
 
             for integrater in integraters:
                 refiner = integrater.get_integrater_refiner()
@@ -659,7 +659,6 @@ class Scaler(object):
         """Return the overall scaling statistics."""
 
         self.scale()
-
         return self._scalr_statistics
 
     def get_scaler_cell(self):
