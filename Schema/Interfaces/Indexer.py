@@ -450,12 +450,10 @@ class Indexer(object):
                     xsweeps = [s.get_name() for s in self.get_indexer_sweeps()]
                     if len(xsweeps) > 1:
                         # find "SWEEPn, SWEEP(n+1), (..), SWEEPm" and aggregate to "SWEEPS n-m"
-                        xsweeps = list(map(
-                            lambda x: (int(x[5:]), int(x[5:]))
-                            if x.startswith("SWEEP")
-                            else x,
-                            xsweeps,
-                        ))
+                        xsweeps = [
+                            (int(x[5:]), int(x[5:])) if x.startswith("SWEEP") else x
+                            for x in xsweeps
+                        ]
                         xsweeps[0] = [xsweeps[0]]
 
                         def compress(seen, nxt):
@@ -470,16 +468,16 @@ class Indexer(object):
                             return seen
 
                         xsweeps = reduce(compress, xsweeps)
-                        xsweeps = list(map(
-                            lambda x: (
+                        xsweeps = [
+                            (
                                 "SWEEP%d" % x[0]
                                 if x[0] == x[1]
                                 else "SWEEPS %d to %d" % (x[0], x[1])
                             )
                             if isinstance(x, tuple)
-                            else x,
-                            xsweeps,
-                        ))
+                            else x
+                            for x in xsweeps
+                        ]
                     if len(xsweeps) > 1:
                         sweep_names = ", ".join(xsweeps[:-1])
                         sweep_names += " & " + xsweeps[-1]
@@ -500,8 +498,7 @@ class Indexer(object):
                         continue
 
                     solutions = {
-                        k: self._indxr_other_lattice_cell[k]["cell"]
-                        for k in self._indxr_other_lattice_cell
+                        k: c["cell"] for k, c in self._indxr_other_lattice_cell.items()
                     }
 
                     # create a helper for the indexer to manage solutions
