@@ -258,8 +258,8 @@ class XInfo(object):
                             ] = dmin
 
                         else:
-                            dmin = min(map(float, lst[1:]))
-                            dmax = max(map(float, lst[1:]))
+                            dmin = min(list(map(float, lst[1:])))
+                            dmax = max(list(map(float, lst[1:])))
 
                             self._crystals[crystal]["wavelengths"][wavelength][
                                 "dmin"

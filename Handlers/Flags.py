@@ -71,7 +71,7 @@ class _Flags(object):
 
         self._xparm_ub = xparm
 
-        tokens = map(float, open(xparm, "r").read().split())
+        tokens = list(map(float, open(xparm, "r").read().split()))
 
         self._xparm_a = tokens[-9:-6]
         self._xparm_b = tokens[-6:-3]

@@ -36,7 +36,7 @@ def remove_misfits(xdsin, xdsout):
             if record[0] == "!":
                 fout.write(record)
                 continue
-            values = map(float, record.split())
+            values = list(map(float, record.split()))
             if values[4] > 0.0:
                 fout.write(record)
                 continue

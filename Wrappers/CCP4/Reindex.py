@@ -96,7 +96,7 @@ def Reindex(DriverType=None):
 
             for j, o in enumerate(output):
                 if "Cell Dimensions : (obsolete" in o:
-                    self._cell = map(float, output[j + 2].split())
+                    self._cell = list(map(float, output[j + 2].split()))
 
             return "OK"
 
@@ -168,7 +168,7 @@ def Reindex(DriverType=None):
 
             for j, o in enumerate(output):
                 if "Cell Dimensions : (obsolete" in o:
-                    self._cell = map(float, output[j + 2].split())
+                    self._cell = list(map(float, output[j + 2].split()))
                 elif "ReindexOp: syntax error in operator" in o:
                     raise RuntimeError(o)
 

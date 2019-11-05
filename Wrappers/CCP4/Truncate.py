@@ -136,7 +136,7 @@ def Truncate(DriverType=None):
                 if "Uncertainty in Intercept" in line:
                     self._wilson_fit_m_sd = float(line.split()[-1])
                 if "Resolution range" in line:
-                    self._wilson_fit_range = map(float, line.split()[-2:])
+                    self._wilson_fit_range = list(map(float, line.split()[-2:]))
 
             results = self.parse_ccp4_loggraph()
             moments = transpose_loggraph(

@@ -177,7 +177,7 @@ class XDSIndexer(IndexerSingleSweep):
             if not record.strip():
                 continue
             remove = False
-            x, y, phi, i = map(float, record.split()[:4])
+            x, y, phi, i = list(map(float, record.split()[:4]))
             for limits in untrusted_rectangle_indexing:
                 if x > limits[0] and x < limits[1] and y > limits[2] and y < limits[3]:
                     removed += 1

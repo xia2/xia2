@@ -83,6 +83,6 @@ def Cellparm(DriverType=None):
             ) as fh:
                 data = fh.readlines()
 
-            return map(float, data[-1].split()[:6])
+            return list(map(float, data[-1].split()[:6]))
 
     return CellparmWrapper()

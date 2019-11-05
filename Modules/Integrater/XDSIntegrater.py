@@ -799,7 +799,7 @@ class XDSIntegrater(Integrater):
                         os.path.join(self.get_working_directory(), "REMOVE.HKL"), "r"
                     ) as fh:
                         for line in fh.readlines():
-                            h, k, l = map(int, line.split()[:3])
+                            h, k, l = list(map(int, line.split()[:3]))
                             z = float(line.split()[3])
 
                             if not (h, k, l, z) in current_remove:

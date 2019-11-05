@@ -131,7 +131,7 @@ class XDSScalerA(Scaler):
             if not record.startswith("!"):
                 break
             if record.startswith("!DATA_RANGE"):
-                return map(int, record.split()[-2:])
+                return list(map(int, record.split()[-2:]))
         raise RuntimeError("BATCH range not found in %s" % xdsin)
 
     def _hklin_to_batch_range(self, hklin):
@@ -962,7 +962,7 @@ class XDSScalerA(Scaler):
                     for line in open(
                         os.path.join(self.get_working_directory(), "REMOVE.HKL"), "r"
                     ).readlines():
-                        h, k, l = map(int, line.split()[:3])
+                        h, k, l = list(map(int, line.split()[:3]))
                         z = float(line.split()[3])
                         current_remove.add((h, k, l, z))
 

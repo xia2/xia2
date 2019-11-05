@@ -108,14 +108,14 @@ def LatticeSymmetry(DriverType=None):
                     # 'Symmetry-adapted cell'].replace(
                     # '(', ' ').replace(')', ' ').replace(',', ' ').split())
 
-                    cell = map(
+                    cell = list(map(
                         float,
                         state["Unit cell"]
                         .replace("(", " ")
                         .replace(")", " ")
                         .replace(",", " ")
                         .split(),
-                    )
+                    ))
 
                     lauegroup = ""
 

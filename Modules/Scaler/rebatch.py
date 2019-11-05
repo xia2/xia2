@@ -13,7 +13,7 @@ def compact_batches(batches):
     """Pack down batches to lists of continuous batches."""
 
     return [
-        map(operator.itemgetter(1), g)
+        list(map(operator.itemgetter(1), g))
         for k, g in itertools.groupby(enumerate(batches), lambda i_x: i_x[0] - i_x[1])
     ]
 

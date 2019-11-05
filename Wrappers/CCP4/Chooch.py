@@ -84,7 +84,7 @@ def Chooch(DriverType=None):
                 os.path.join(self.get_working_directory(), "output.efs"), "r"
             ) as fh:
                 for o in fh.readlines():
-                    self._data.append(map(float, o.split()))
+                    self._data.append(list(map(float, o.split())))
 
             output = self.get_all_output()
             collect = False

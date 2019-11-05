@@ -64,7 +64,7 @@ def XDSConv(DriverType=None):
                     results["cell"] = tuple(map(float, line.split()[1:]))
 
                 if "!INCLUDE_RESOLUTION" in line:
-                    results["resolution_range"] = map(float, line.split()[1:])
+                    results["resolution_range"] = list(map(float, line.split()[1:]))
 
                 if "!SPACE_GROUP" in line:
                     results["spacegroup"] = int(line.split()[-1])

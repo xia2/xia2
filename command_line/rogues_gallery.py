@@ -15,9 +15,9 @@ def munch_rogues(rogues):
         tokens = record.split()
         if not tokens[-1] == "*":
             continue
-        x, y, z = map(float, tokens[15:18])
+        x, y, z = list(map(float, tokens[15:18]))
         b = int(tokens[6])
-        h, k, l = map(int, tokens[3:6])  # don't forget these are probably reindexed
+        h, k, l = list(map(int, tokens[3:6]))  # don't forget these are probably reindexed
         rogue_reflections.append((b, x, y, z, h, k, l))
 
     return rogue_reflections

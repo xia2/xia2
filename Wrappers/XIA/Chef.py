@@ -261,7 +261,7 @@ def Chef(DriverType=None, stream=Chatter):
                     wavelength = key.split()[-1]
                     rd_data[wavelength] = transpose_loggraph(results[key])
 
-                    values = map(float, rd_data[wavelength]["2_Rd"])
+                    values = list(map(float, rd_data[wavelength]["2_Rd"]))
                     digest = self.digest_rd(values)
 
                     # stream.write('Rd score (%s): %.2f' % \
@@ -300,7 +300,7 @@ def Chef(DriverType=None, stream=Chatter):
                 local_50 = None
                 local_90 = None
 
-                max_comp = max(map(float, completeness))
+                max_comp = max(list(map(float, completeness)))
 
                 for j, dose in enumerate(comp_data[dataset][dose_col]):
 

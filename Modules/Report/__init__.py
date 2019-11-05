@@ -301,7 +301,7 @@ class Report(object):
         crystal_name = (
             filter(
                 lambda c: c != "HKL_base",
-                map(lambda c: c.name(), mtz_object.crystals()),
+                [c.name() for c in mtz_object.crystals()],
             )
             or ["DEFAULT"]
         )[0]

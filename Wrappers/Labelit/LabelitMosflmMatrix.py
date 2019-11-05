@@ -54,7 +54,7 @@ def LabelitMosflmMatrix(DriverType=None):
 
             for o in output:
                 if "BEAM" in o[:4]:
-                    self._mosflm_beam = map(float, o.split()[-2:])
+                    self._mosflm_beam = list(map(float, o.split()[-2:]))
 
             return matrix
 

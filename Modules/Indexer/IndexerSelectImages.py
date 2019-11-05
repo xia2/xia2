@@ -46,7 +46,7 @@ def index_select_images_user(phi_width, images, out_stream):
             return images
 
         try:
-            images = map(int, record.replace(",", " ").split())
+            images = list(map(int, record.replace(",", " ").split()))
             images_list = "%d" % images[0]
             for image in images[1:]:
                 images_list += ", %d" % image

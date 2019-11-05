@@ -116,7 +116,7 @@ def _parse_integrate_lp(filename):
 
         # want to convert this to mm in some standard setting!
         if "DETECTOR COORDINATES (PIXELS) OF DIRECT BEAM" in content:
-            beam = map(float, content.split()[-2:])
+            beam = list(map(float, content.split()[-2:]))
             for image in block_images:
                 per_image_stats[image]["beam"] = beam
 

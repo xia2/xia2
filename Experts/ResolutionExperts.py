@@ -224,7 +224,7 @@ def main(mtzdump):
 
     for j in range(len(mtzdump)):
         if "project/crystal/dataset names" in mtzdump[j]:
-            cell = map(float, mtzdump[j + 5].split())
+            cell = list(map(float, mtzdump[j + 5].split()))
             break
 
     a, b, c, alpha, beta, gamma = cell
@@ -249,9 +249,9 @@ def main(mtzdump):
         if not lst:
             j += 1
             continue
-        h, k, l = map(int, lst[:3])
+        h, k, l = list(map(int, lst[:3]))
         s = resolution(h, k, l, a_, b_, c_)
-        f, sf = map(float, lst[3:5])
+        f, sf = list(map(float, lst[3:5]))
 
         reflections.append((s, f, sf))
 

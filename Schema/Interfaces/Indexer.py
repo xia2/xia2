@@ -450,12 +450,12 @@ class Indexer(object):
                     xsweeps = [s.get_name() for s in self.get_indexer_sweeps()]
                     if len(xsweeps) > 1:
                         # find "SWEEPn, SWEEP(n+1), (..), SWEEPm" and aggregate to "SWEEPS n-m"
-                        xsweeps = map(
+                        xsweeps = list(map(
                             lambda x: (int(x[5:]), int(x[5:]))
                             if x.startswith("SWEEP")
                             else x,
                             xsweeps,
-                        )
+                        ))
                         xsweeps[0] = [xsweeps[0]]
 
                         def compress(seen, nxt):
@@ -470,7 +470,7 @@ class Indexer(object):
                             return seen
 
                         xsweeps = reduce(compress, xsweeps)
-                        xsweeps = map(
+                        xsweeps = list(map(
                             lambda x: (
                                 "SWEEP%d" % x[0]
                                 if x[0] == x[1]
@@ -479,7 +479,7 @@ class Indexer(object):
                             if isinstance(x, tuple)
                             else x,
                             xsweeps,
-                        )
+                        ))
                     if len(xsweeps) > 1:
                         sweep_names = ", ".join(xsweeps[:-1])
                         sweep_names += " & " + xsweeps[-1]

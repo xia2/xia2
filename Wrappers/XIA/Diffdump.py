@@ -349,13 +349,13 @@ def failover_cbf(cbf_file):
 
                 # N.B. this is swapped again for historical reasons
 
-                beam_pixels = map(
+                beam_pixels = list(map(
                     float,
                     record.replace("(", "")
                     .replace(")", "")
                     .replace(",", "")
                     .split()[2:4],
-                )
+                ))
                 header["beam"] = (
                     beam_pixels[1] * header["pixel"][1],
                     beam_pixels[0] * header["pixel"][0],
@@ -441,14 +441,14 @@ def failover_dxtbx(image_file):
 
     if not hasattr(d, "get_image_size"):
         # cope with new detector as array of panels dxtbx api
-        fast, slow = map(int, d[0].get_image_size())
+        fast, slow = list(map(int, d[0].get_image_size()))
         _f, _s = d[0].get_pixel_size()
         F = matrix.col(d[0].get_fast_axis())
         S = matrix.col(d[0].get_slow_axis())
         N = F.cross(S)
         origin = matrix.col(d[0].get_origin())
     else:
-        fast, slow = map(int, d.get_image_size())
+        fast, slow = list(map(int, d.get_image_size()))
         _f, _s = d.get_pixel_size()
         F = matrix.col(d.get_fast_axis())
         S = matrix.col(d.get_slow_axis())
@@ -789,13 +789,13 @@ def Diffdump(DriverType=None):
                         .replace("mm", " ")
                         .split(",")
                     )
-                    self._header["beam"] = map(float, beam)
-                    self._header["raw_beam"] = map(float, beam)
+                    self._header["beam"] = list(map(float, beam))
+                    self._header["raw_beam"] = list(map(float, beam))
 
                 if "Image Size" in o:
                     image = l[1].replace("px", "")
                     image = image.replace("(", "").replace(")", "").split(",")
-                    self._header["size"] = map(float, image)
+                    self._header["size"] = list(map(float, image))
 
                 if "Pixel Size" in o:
                     image = l[1].replace("mm", "")
@@ -809,19 +809,19 @@ def Diffdump(DriverType=None):
                         )
 
                 if "Angle range" in o:
-                    phi = map(float, l[1].split("->"))
+                    phi = list(map(float, l[1].split("->")))
                     self._header["phi_start"] = phi[0]
                     self._header["phi_end"] = phi[1]
                     self._header["phi_width"] = phi[1] - phi[0]
 
                 if "Oscillation" in o:
-                    phi = map(float, l[1].replace("deg", "").split("->"))
+                    phi = list(map(float, l[1].replace("deg", "").split("->")))
                     self._header["phi_start"] = phi[0]
                     self._header["phi_end"] = phi[1]
                     self._header["phi_width"] = phi[1] - phi[0]
 
                 if "Oscillation range" in o:
-                    phi = map(float, l[1].replace("deg", "").split("->"))
+                    phi = list(map(float, l[1].replace("deg", "").split("->")))
                     self._header["phi_start"] = phi[0]
                     self._header["phi_end"] = phi[1]
                     self._header["phi_width"] = phi[1] - phi[0]
