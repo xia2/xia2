@@ -42,7 +42,7 @@ def check_environment():
     Chatter.write("Python => %s" % executable)
     Chatter.write("CCTBX => %s" % cctbx_dir)
 
-    ccp4_keys = ["CCP4", "CLIBD", "CCP4_SCR"]
+    ccp4_keys = ["CCP4", "CCP4_SCR"]
     for k in ccp4_keys:
         v = Environment.getenv(k)
         if not v:
