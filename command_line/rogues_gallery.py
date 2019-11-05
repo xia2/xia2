@@ -1,10 +1,10 @@
 from __future__ import absolute_import, division, print_function
 
-import json
 import os
 import sys
 
-# LIBTBX_SET_DISPATCHER_NAME xia2.rogues_gallery
+import six.moves.cPickle as pickle
+from dials.array_family import flex
 
 
 def munch_rogues(rogues):
@@ -17,7 +17,9 @@ def munch_rogues(rogues):
             continue
         x, y, z = list(map(float, tokens[15:18]))
         b = int(tokens[6])
-        h, k, l = list(map(int, tokens[3:6]))  # don't forget these are probably reindexed
+        h, k, l = list(
+            map(int, tokens[3:6])
+        )  # don't forget these are probably reindexed
         rogue_reflections.append((b, x, y, z, h, k, l))
 
     return rogue_reflections
@@ -30,8 +32,6 @@ def reconstruct_rogues(params):
     xinfo = XProject.from_json(filename="xia2.json")
 
     from dxtbx.model.experiment_list import ExperimentListFactory
-    import six.moves.cPickle as pickle
-    import dials  # because WARNING:root:No profile class gaussian_rs registered
 
     crystals = xinfo.get_crystals()
     assert len(crystals) == 1
@@ -66,7 +66,6 @@ def reconstruct_rogues(params):
     # - look up reflection in reflection list, get bounding box
     # - pull pixels given from image set, flatten these, write out
 
-    from dials.array_family import flex
     from annlib_ext import AnnAdaptor as ann_adaptor
 
     reflections_run = {}
@@ -107,7 +106,7 @@ def reconstruct_rogues(params):
         for j, rogue in enumerate(rogues):
             keep[ann.nn[j]] = True
 
-        reflections = reflections.select(keep == True)
+        reflections = reflections.select(keep)
 
         if params.extract:
             reflections["shoebox"] = flex.shoebox(
