@@ -14,10 +14,7 @@ from scitbx import matrix
 from scitbx.math import r3_rotation_axis_and_angle_from_matrix
 from xia2.Driver.DriverFactory import DriverFactory
 
-if __name__ == "__main__":
-    debug = False
-else:
-    debug = False
+debug = False
 
 
 class _HeaderCache(object):
@@ -349,13 +346,15 @@ def failover_cbf(cbf_file):
 
                 # N.B. this is swapped again for historical reasons
 
-                beam_pixels = list(map(
-                    float,
-                    record.replace("(", "")
-                    .replace(")", "")
-                    .replace(",", "")
-                    .split()[2:4],
-                ))
+                beam_pixels = list(
+                    map(
+                        float,
+                        record.replace("(", "")
+                        .replace(")", "")
+                        .replace(",", "")
+                        .split()[2:4],
+                    )
+                )
                 header["beam"] = (
                     beam_pixels[1] * header["pixel"][1],
                     beam_pixels[0] * header["pixel"][0],

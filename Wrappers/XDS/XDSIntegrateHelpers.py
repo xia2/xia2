@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 import os
 
 
-def _parse_integrate_lp_updates(filename):
+def parse_integrate_lp_updates(filename):
     """Parse the integrate.lp file to get the values for any updated
     parameters."""
 
@@ -27,7 +27,7 @@ def _parse_integrate_lp_updates(filename):
     return updates
 
 
-def _parse_integrate_lp(filename):
+def parse_integrate_lp(filename):
     """Parse the contents of the INTEGRATE.LP file pointed to by filename."""
 
     if not os.path.split(filename)[-1] == "INTEGRATE.LP":

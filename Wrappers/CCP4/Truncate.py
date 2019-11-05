@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
 import os
@@ -10,6 +8,7 @@ from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import Debug
 from xia2.lib.bits import transpose_loggraph
 from xia2.Wrappers.CCP4.Ctruncate import Ctruncate
+from xia2.Wrappers.XIA.FrenchWilson import FrenchWilson
 
 
 def Truncate(DriverType=None):
@@ -21,8 +20,6 @@ def Truncate(DriverType=None):
     if PhilIndex.params.ccp4.truncate.program == "ctruncate":
         return Ctruncate(DriverType)
     elif PhilIndex.params.ccp4.truncate.program == "cctbx":
-        from xia2.Wrappers.XIA.FrenchWilson import FrenchWilson
-
         return FrenchWilson(DriverType)
 
     class TruncateWrapper(CCP4DriverInstance.__class__):
@@ -116,16 +113,13 @@ def Truncate(DriverType=None):
             for line in self.get_all_output():
                 if "Least squares straight line gives" in line:
                     list = line.replace("=", " ").split()
-                    if not "***" in list[6]:
+                    if "***" not in list[6]:
                         self._b_factor = float(list[6])
                     else:
                         Debug.write("no B factor available")
 
                 if "LSQ Line Gradient" in line:
                     self._wilson_fit_grad = float(line.split()[-1])
-                    resol_width = max(self._wilson_fit_range) - min(
-                        self._wilson_fit_range
-                    )
                     if self._wilson_fit_grad > 0:
                         Debug.write("Positive gradient but not much wilson plot")
 

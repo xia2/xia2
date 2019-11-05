@@ -251,7 +251,7 @@ def Aimless(DriverType=None, absorption_correction=None, decay_correction=None):
                     continue
 
                 if run:
-                    runs_to_batches[run].extend(list(map(int, record.split())))
+                    runs_to_batches[run].extend(map(int, record.split()))
 
                 if "shifted scale factor" in record and "negative" in record:
                     tokens = record.split()
@@ -284,7 +284,7 @@ def Aimless(DriverType=None, absorption_correction=None, decay_correction=None):
                     continue
 
                 if run:
-                    runs_to_batches[run].extend(list(map(int, record.split())))
+                    runs_to_batches[run].extend(map(int, record.split()))
 
                 if "No observations for parameter" in record:
                     bad_run = int(record.split()[-1])
