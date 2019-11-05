@@ -31,7 +31,7 @@ def parse_compound(compound):
             number = ""
             if c == "X":
                 break
-        elif c in string.lowercase:
+        elif c in string.ascii_lowercase:
             element += c
         elif c in string.digits:
             number += c

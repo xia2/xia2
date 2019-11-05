@@ -350,4 +350,4 @@ def executable_exists(executable):
 def generate_random_name():
     """Generate a random name to use as a handle for a job."""
 
-    return "".join(random.choice(string.lowercase) for j in range(8))
+    return "".join(random.choice(string.ascii_lowercase) for j in range(8))

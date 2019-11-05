@@ -1,3 +1,5 @@
+lib/test_nmollib.py::test_compute_solvent
+lib/test_nmollib.py::test_compute_nmol
 Driver/test_ClusterDriverFactory.py::test_instantiate_cluster_driver
 Driver/test_DriverFactory.py::test_instantiate_driver
 Handlers/test_CommandLine.py::test_fail_on_invalid_project_crystal_name[*foo]
