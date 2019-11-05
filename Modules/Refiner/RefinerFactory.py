@@ -1,11 +1,3 @@
-#!/usr/bin/env python
-# RefinerFactory.py
-#   Copyright (C) 2015 Diamond Light Source, Richard Gildea
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-
 from __future__ import absolute_import, division, print_function
 
 import os
@@ -17,9 +9,8 @@ from xia2.DriverExceptions.NotAvailableError import NotAvailableError
 from xia2.Handlers.PipelineSelection import get_preferences
 from xia2.Handlers.Streams import Debug
 
-# scaler implementations
+# refiner implementations
 from xia2.Modules.Refiner.DialsRefiner import DialsRefiner
-from xia2.Modules.Refiner.MosflmRefiner import MosflmRefiner
 from xia2.Modules.Refiner.XDSRefiner import XDSRefiner
 
 
@@ -59,14 +50,6 @@ def Refiner():
         except NotAvailableError:
             if preselection == "dials":
                 raise RuntimeError("preselected refiner dials not available")
-
-    if not refiner and (not preselection or preselection == "mosflm"):
-        try:
-            refiner = MosflmRefiner()
-            Debug.write("Using Mosflm Refiner")
-        except NotAvailableError:
-            if preselection == "mosflm":
-                raise RuntimeError("preselected refiner mosflm not available")
 
     if not refiner and (not preselection or preselection == "xds"):
         try:

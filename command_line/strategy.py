@@ -3,12 +3,13 @@
 
 from __future__ import absolute_import, division, print_function
 
+import json
 import os
 import sys
 import traceback
 
 from xia2.Applications.xia2_main import check_environment, get_command_line, help
-from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Streams import Chatter
 from xia2.lib.bits import auto_logfiler
 
 
@@ -16,7 +17,8 @@ def run():
     try:
         check_environment()
     except Exception as e:
-        traceback.print_exc(file=open("xia2.error", "w"))
+        with open("xia2.error", "w") as fh:
+            traceback.print_exc(file=fh)
         Chatter.write('Status: error "%s"' % str(e))
 
     if len(sys.argv) < 2 or "-help" in sys.argv:
@@ -41,7 +43,7 @@ def run():
         crystals = xinfo.get_crystals()
 
         assert len(crystals) == 1
-        crystal = crystals.values()[0]
+        crystal = list(crystals.values())[0]
         assert len(crystal.get_wavelength_names()) == 1
         wavelength = crystal.get_xwavelength(crystal.get_wavelength_names()[0])
         sweeps = wavelength.get_sweeps()
@@ -84,7 +86,6 @@ def run():
 
             best = Best.BestStrategy()
             for isweep, (expt, refl) in enumerate(zip(experiments, reflections)):
-                integrater = sweep._get_integrater()
                 from xia2.Wrappers.Dials.ExportBest import ExportBest
 
                 export = ExportBest()
@@ -96,8 +97,6 @@ def run():
                 export.set_prefix(prefix)
                 export.run()
                 if isweep == 0:
-                    imageset = sweep.get_imageset()
-                    scan = imageset.get_scan()
                     best.set_t_ref(t_ref)
                     best.set_mos_dat("%s.dat" % prefix)
                     best.set_mos_par("%s.par" % prefix)
@@ -118,7 +117,9 @@ def run():
             best.set_detector("pilatus6m")
             best.set_working_directory(wd)
             auto_logfiler(best)
-            xmlout = "%s/%i_best.xml" % (best.get_working_directory(), best.get_xpid())
+            xmlout = os.path.join(
+                best.get_working_directory(), "%i_best.xml" % best.get_xpid()
+            )
             best.set_xmlout(xmlout)
             best.strategy()
 
@@ -170,7 +171,7 @@ def run():
             results_all[name] = result
             multiplicity = result["redundancy"]
             try:
-                mutiplicity = "%.2f" % multiplicity
+                multiplicity = "%.2f" % multiplicity
             except TypeError:
                 pass
             Chatter.write("Strategy %i" % istrategy)
@@ -197,13 +198,12 @@ def run():
                 % (float(result["transmission"]), float(result["exposure_time"]))
             )
 
-        import json
-
         with open("strategies.json", "wb") as f:
             json.dump(results_all, f, indent=2)
 
     except Exception as e:
-        traceback.print_exc(file=open(os.path.join(cwd, "xia2.error"), "w"))
+        with open(os.path.join(cwd, "xia2.error"), "w") as fh:
+            traceback.print_exc(file=fh)
         Chatter.write('Status: error "%s"' % str(e))
     os.chdir(cwd)
 

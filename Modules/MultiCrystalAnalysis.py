@@ -31,9 +31,11 @@ class MultiCrystalAnalysis(object):
 
         self._intensities_separate = self._data_manager.reflections_as_miller_arrays()
 
-        self.intensities, self.batches, self.scales = self._data_manager.reflections_as_miller_arrays(
-            combined=True
-        )
+        (
+            self.intensities,
+            self.batches,
+            self.scales,
+        ) = self._data_manager.reflections_as_miller_arrays(combined=True)
         self.params.batch = []
         scope = phil.parse(batch_phil_scope)
         for expt in self._data_manager.experiments:
@@ -99,9 +101,11 @@ class MultiCrystalAnalysis(object):
     def radiation_damage_analysis(self):
         from dials.pychef import Statistics
 
-        intensities_all, batches_all, _ = self._data_manager.reflections_as_miller_arrays(
-            combined=False
-        )
+        (
+            intensities_all,
+            batches_all,
+            _,
+        ) = self._data_manager.reflections_as_miller_arrays(combined=False)
 
         intensities_combined = None
         dose_combined = None

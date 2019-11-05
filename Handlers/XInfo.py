@@ -1,12 +1,3 @@
-#!/usr/bin/env python
-# XInfo.py
-#
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#   Copyright (C) 2009 Diamond Light Source, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
 # xia2 information / input file reader
 
 from __future__ import absolute_import, division, print_function
@@ -46,7 +37,7 @@ class XInfo(object):
         """Generate a string representation of the project."""
 
         text = "Project %s\n" % self._project
-        for crystal in self._crystals.keys():
+        for crystal in self._crystals:
             text += "Crystal %s\n" % crystal
             text += "%s\n" % self._crystals[crystal].get_output()
 
@@ -160,7 +151,7 @@ class XInfo(object):
                 i += 1
                 record = crystal_records[i]
                 while record != "END AA_SEQUENCE":
-                    if not "#" in record or "!" in record:
+                    if "#" not in record or "!" in record:
                         sequence += record.strip()
 
                     i += 1
@@ -190,7 +181,7 @@ class XInfo(object):
                 sample = record.replace("BEGIN SAMPLE ", "").strip()
                 i += 1
                 record = crystal_records[i]
-                while not "END SAMPLE" in record:
+                while "END SAMPLE" not in record:
                     i += 1
                     record = crystal_records[i]
                 self._crystals[crystal]["samples"][sample] = {}
@@ -205,7 +196,7 @@ class XInfo(object):
             if "BEGIN CRYSTAL_DATA" in record:
                 i += 1
                 record = crystal_records[i]
-                while not "END CRYSTAL_DATA" in record:
+                while "END CRYSTAL_DATA" not in record:
                     key = record.split()[0].lower()
                     value = record.replace(record.split()[0], "").strip()
                     self._crystals[crystal]["crystal_data"][key] = value
@@ -230,7 +221,7 @@ class XInfo(object):
                 record = crystal_records[i]
 
                 # populate this with interesting things
-                while not "END WAVELENGTH" in record:
+                while "END WAVELENGTH" not in record:
 
                     # deal with a nested WAVELENGTH_STATISTICS block
 
@@ -240,7 +231,7 @@ class XInfo(object):
                         ] = {}
                         i += 1
                         record = crystal_records[i]
-                        while not "END WAVELENGTH_STATISTICS" in record:
+                        while "END WAVELENGTH_STATISTICS" not in record:
                             key, value = tuple(record.split())
                             self._crystals[crystal]["wavelengths"][wavelength][
                                 "statistics"
@@ -332,17 +323,14 @@ class XInfo(object):
                 record = crystal_records[i]
 
                 # populate this with interesting things
-                while not "END SWEEP" in record:
+                while "END SWEEP" not in record:
                     # allow for WAVELENGTH_ID (bug # 2358)
                     if "WAVELENGTH_ID" == record.split()[0]:
                         record = record.replace("WAVELENGTH_ID", "WAVELENGTH")
 
                     if "WAVELENGTH" == record.split()[0]:
                         wavelength = record.replace("WAVELENGTH", "").strip()
-                        if (
-                            not wavelength
-                            in self._crystals[crystal]["wavelengths"].keys()
-                        ):
+                        if wavelength not in self._crystals[crystal]["wavelengths"]:
                             raise RuntimeError(
                                 "wavelength %s unknown for crystal %s"
                                 % (wavelength, crystal)
@@ -353,7 +341,7 @@ class XInfo(object):
 
                     elif "SAMPLE" == record.split()[0]:
                         sample = record.replace("SAMPLE ", "").strip()
-                        if not sample in list(
+                        if sample not in list(
                             self._crystals[crystal]["samples"].keys()
                         ):
                             raise RuntimeError(

@@ -652,9 +652,11 @@ class XDSIndexer(IndexerSingleSweep):
 
         self._indxr_other_lattice_cell = idxref.get_indexing_solutions()
 
-        self._indxr_lattice, self._indxr_cell, self._indxr_mosaic = (
-            idxref.get_indexing_solution()
-        )
+        (
+            self._indxr_lattice,
+            self._indxr_cell,
+            self._indxr_mosaic,
+        ) = idxref.get_indexing_solution()
 
         import dxtbx
         from dxtbx.serialize.xds import to_crystal

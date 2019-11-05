@@ -1,8 +1,9 @@
 from __future__ import absolute_import, division, print_function
 
-import pytest
 import random
 
+import pytest
+import xia2.Handlers.Streams
 from cctbx import sgtbx
 from dials.algorithms.symmetry.cosym._generate_test_data import generate_intensities
 from dials.array_family import flex
@@ -10,20 +11,22 @@ from dxtbx.model.experiment_list import ExperimentList
 from dxtbx.model import Crystal, Scan, Beam, Experiment
 from dxtbx.serialize import load
 
-
 flex.set_random_seed(42)
 random.seed(42)
 
 
 @pytest.fixture
-def helper(ccp4, run_in_tmpdir):
-    """Initialise a DialsScalerHelper, ensure CCP4 is available for test"""
+def helper_directory(ccp4, tmpdir):
+    """Initialise a DialsScalerHelper"""
+
+    # import kept here as the import depends on CCP4 being present
     from xia2.Modules.Scaler.DialsScaler import DialsScalerHelper
 
     helper = DialsScalerHelper()
+    xia2.Handlers.Streams.reconfigure_streams_to_logging()
     helper.set_pname_xname("AUTOMATIC", "DEFAULT")
-    helper.set_working_directory(run_in_tmpdir.strpath)
-    return helper
+    helper.set_working_directory(tmpdir.strpath)
+    return (helper, tmpdir)
 
 
 def generated_exp(n=1, space_group="P 2", assign_ids=False, id_=None):
@@ -77,6 +80,7 @@ def generate_reflections_in_sg(space_group, id_=0, assign_id=False):
     reflections["intensity.sum.value"] = intensities.data()
     reflections["intensity.sum.variance"] = flex.pow2(intensities.sigmas())
     reflections["miller_index"] = intensities.indices()
+    reflections["d"] = intensities.d_spacings().data()
     reflections["id"] = flex.int(reflections.size(), id_)
     if assign_id:
         reflections.experiment_identifiers()[id_] = str(id_)
@@ -129,16 +133,16 @@ def test_dials_symmetry_decide_pointgroup(
     expected_lattices,
     required_spacegroup_order,
     other_spacegroups,
-    helper,
+    helper_directory,
 ):
     """Test for the dials_symmetry_decide_pointgroup helper function """
+    helper, tmpdir = helper_directory
+    refl_path = (tmpdir / "test.refl").strpath
+    exp_path = (tmpdir / "test.expt").strpath
+    generated_exp(space_group=experiments_spacegroup).as_file(exp_path)
+    generate_reflections_in_sg(reflection_spacegroup).as_pickle(refl_path)
 
-    generated_exp(space_group=experiments_spacegroup).as_file("test.expt")
-    generate_reflections_in_sg(reflection_spacegroup).as_pickle("test.refl")
-
-    symmetry_analyser = helper.dials_symmetry_decide_pointgroup(
-        ["test.expt"], ["test.refl"]
-    )
+    symmetry_analyser = helper.dials_symmetry_decide_pointgroup([exp_path], [refl_path])
 
     # Note : instabilities have been observed in the order of the end of the
     # spacegroup list - this is likely due to the use of unseeded random number
@@ -151,12 +155,14 @@ def test_dials_symmetry_decide_pointgroup(
     assert set(spacegroups[len(required_spacegroup_order) :]) == set(other_spacegroups)
 
 
-def test_assign_identifiers(helper):
+def test_assign_identifiers(helper_directory):
     """Test the call to the assign identifiers wrapper"""
+    helper, tmpdir = helper_directory
     experiments = []
     reflections = []
     for i in range(0, 3):
-        refl_path, exp_path = ("test_%s.refl" % i, "test_%s.expt" % i)
+        refl_path = tmpdir.join("test_%s.refl" % i).strpath
+        exp_path = tmpdir.join("test_%s.expt" % i).strpath
         generate_test_refl().as_pickle(refl_path)
         generated_exp().as_file(exp_path)
         experiments.append(exp_path)
@@ -220,12 +226,13 @@ class simple_sweep_handler(object):
 
 
 @pytest.mark.parametrize("number_of_experiments", [2, 10])
-def test_split_experiments(number_of_experiments, helper):
+def test_split_experiments(number_of_experiments, helper_directory):
     """Test the call to split experiments: should split the dataset on experiment
     id, giving single datasets with unique ids from 0..n-1"""
+    helper, tmpdir = helper_directory
     sweephandler = simple_sweep_handler(number_of_experiments)
-    exp_path = "test.expt"
-    refl_path = "test.refl"
+    exp_path = tmpdir.join("test.expt").strpath
+    refl_path = tmpdir.join("test.refl").strpath
     generated_exp(number_of_experiments, assign_ids=True).as_file(exp_path)
     reflections = flex.reflection_table()
     for i in range(number_of_experiments):
@@ -249,13 +256,15 @@ def check_data_in_sweep_handler(sweephandler):
         assert experiment[0].identifier == str(i)
 
 
-def test_assign_and_return_datasets(helper):
+def test_assign_and_return_datasets(helper_directory):
     """Test the combined method of assigning ids and setting in the sweep handler"""
     n = 3
+    helper, tmpdir = helper_directory
     sweephandler = simple_sweep_handler(n)
     for i in range(0, n):
         si = sweephandler.get_sweep_information(i)
-        refl_path, exp_path = ("test_%s.refl" % i, "test_%s.expt" % i)
+        refl_path = tmpdir.join("test_%s.refl" % i).strpath
+        exp_path = tmpdir.join("test_%s.expt" % i).strpath
         generate_test_refl().as_pickle(refl_path)
         generated_exp().as_file(exp_path)
         si.set_experiments(exp_path)
@@ -272,8 +281,8 @@ class simple_refiner(object):
 
     def __init__(self, refiner_lattices):
         self.refiner_lattices = (
-            refiner_lattices
-        )  # first one should be 'best' one used in refinement
+            refiner_lattices  # first one should be 'best' one used in refinement
+        )
         self.indexer_done = True
         self._refiner_reset = False
 
@@ -352,7 +361,7 @@ def test_decide_correct_lattice_using_refiner(
     assert result == expected_output
 
 
-# refienr lattices, (pg, ntr, pt, refiner_reset, reindex_init)
+# refiner lattices, (pg, ntr, pt, refiner_reset, reindex_init)
 test_lattices = [
     (["mP", "aP", "oP"], ("P 1 2 1", False, False, False, False)),
     # symmetry finds consistent lattice, all good
@@ -360,22 +369,25 @@ test_lattices = [
     # symmetry finds lower than refiner lattice, so need to return to rerefine
     (["aP"], ("P 1", False, False, False, True)),
 ]  # symmetry finds higher than refiner - can occur
-# is pseudosymmetry, so just drop to lower symmetry of lattice and don't need to rerefine
+# if pseudosymmetry, so just drop to lower symmetry of lattice and don't need to rerefine
 # as already done in this space group.
 
 
 @pytest.mark.parametrize("refiner_lattices, expected_output", test_lattices)
-def test_dials_symmetry_indexer_jiffy(helper, refiner_lattices, expected_output):
+def test_dials_symmetry_indexer_jiffy(
+    refiner_lattices, expected_output, helper_directory
+):
     """Test the jiffy"""
-    n = 2
-    if n > 1:
-        multisweep = True
+    helper, tmpdir = helper_directory
+    n = 1
+    multisweep = False
     # Create list of experiments, reflections and refiners
     experiments = []
     reflections = []
     refiners = []
     for i in range(0, n):
-        refl_path, exp_path = ("test_%s.refl" % i, "test_%s.expt" % i)
+        refl_path = tmpdir.join("test_%s.refl" % i).strpath
+        exp_path = tmpdir.join("test_%s.expt" % i).strpath
         generate_reflections_in_sg("P 2", id_=i, assign_id=True).as_pickle(refl_path)
         generated_exp(space_group="P 2", id_=i).as_file(exp_path)
         experiments.append(exp_path)

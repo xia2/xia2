@@ -1,7 +1,11 @@
 from __future__ import absolute_import, division, print_function
 
 import collections
+import glob
+import itertools
 import os
+
+from scitbx.array_family import flex
 
 from xia2.Handlers.Phil import PhilIndex
 
@@ -14,10 +18,10 @@ imageset_cache = _ImagesetCache()
 
 
 def longest_common_substring(s1, s2):
-    m = [[0] * (1 + len(s2)) for i in xrange(1 + len(s1))]
+    m = [[0] * (1 + len(s2)) for i in range(1 + len(s1))]
     longest, x_longest = 0, 0
-    for x in xrange(1, 1 + len(s1)):
-        for y in xrange(1, 1 + len(s2)):
+    for x in range(1, 1 + len(s1)):
+        for y in range(1, 1 + len(s2)):
             if s1[x - 1] == s2[y - 1]:
                 m[x][y] = m[x - 1][y - 1] + 1
                 if m[x][y] > longest:
@@ -39,7 +43,7 @@ def load_imagesets(
     global imageset_cache
     from dxtbx.model.experiment_list import ExperimentListFactory
     from xia2.Applications.xia2setup import known_hdf5_extensions
-    from dxtbx.imageset import ImageSequence as ImageSweep
+    from dxtbx.imageset import ImageSequence
 
     full_template_path = os.path.join(directory, template)
 
@@ -82,8 +86,6 @@ def load_imagesets(
             ):
                 master_file = full_template_path
             else:
-                import glob
-
                 g = glob.glob(os.path.join(directory, "*_master.h5"))
                 master_file = None
                 for p in g:
@@ -149,7 +151,7 @@ def load_imagesets(
                 experiments = importer.experiments
 
         imagesets = [
-            iset for iset in experiments.imagesets() if isinstance(iset, ImageSweep)
+            iset for iset in experiments.imagesets() if isinstance(iset, ImageSequence)
         ]
         assert len(imagesets) > 0, "no imageset found"
 
@@ -184,8 +186,6 @@ def load_imagesets(
                 imageset = updater(imageset)
             imageset_list.append(imageset)
         imagesets = imageset_list
-
-        from scitbx.array_family import flex
 
         for imageset in imagesets:
             scan = imageset.get_scan()
@@ -228,7 +228,7 @@ def load_imagesets(
                     imagesets[0]
                 )
                 return imagesets
-    return imageset_cache[full_template_path].values()
+    return list(imageset_cache[full_template_path].values())
 
 
 def update_with_reference_geometry(imagesets, reference_geometry_list):
@@ -264,8 +264,6 @@ def load_reference_geometries(geometry_file_list):
         reference_components.append(
             {"detector": reference_detector, "beam": reference_beam, "file": file}
         )
-
-    import itertools
 
     for combination in itertools.combinations(reference_components, 2):
         if compare_geometries(combination[0]["detector"], combination[1]["detector"]):

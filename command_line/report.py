@@ -4,12 +4,13 @@ from __future__ import absolute_import, division, print_function
 
 import json
 import os
+import sys
 from collections import OrderedDict
 
 import iotbx.phil
-from xia2.Modules.Report import Report
 from dials.util.options import OptionParser
-
+from jinja2 import Environment, ChoiceLoader, PackageLoader
+from xia2.Modules.Report import Report
 
 phil_scope = iotbx.phil.parse(
     """\
@@ -62,9 +63,11 @@ def run(args):
     if params.xtriage_analysis:
         json_data["xtriage"] = xtriage_success + xtriage_warnings + xtriage_danger
 
-    overall_stats_table, merging_stats_table, stats_plots = (
-        report.resolution_plots_and_stats()
-    )
+    (
+        overall_stats_table,
+        merging_stats_table,
+        stats_plots,
+    ) = report.resolution_plots_and_stats()
 
     json_data.update(stats_plots)
     json_data.update(report.batch_dependent_plots())
@@ -108,14 +111,12 @@ def run(args):
         if k in json_data
     )
 
-    for k, v in report.multiplicity_plots().iteritems():
+    for k, v in report.multiplicity_plots().items():
         misc_graphs[k] = {"img": v}
 
     styles = {}
     for axis in ("h", "k", "l"):
         styles["multiplicity_%s" % axis] = "square-plot"
-
-    from jinja2 import Environment, ChoiceLoader, PackageLoader
 
     loader = ChoiceLoader(
         [PackageLoader("xia2", "templates"), PackageLoader("dials", "templates")]
@@ -123,8 +124,8 @@ def run(args):
     env = Environment(loader=loader)
 
     if params.log_include:
-        with open(params.log_include, "rb") as f:
-            log_text = f.read().decode("utf-8")
+        with open(params.log_include, "rb") as fh:
+            log_text = fh.read().decode("utf-8")
     else:
         log_text = ""
 
@@ -149,14 +150,12 @@ def run(args):
         log_text=log_text,
     )
 
-    with open("%s-report.json" % params.prefix, "wb") as f:
-        json.dump(json_data, f, indent=params.json.indent)
+    with open("%s-report.json" % params.prefix, "w") as fh:
+        json.dump(json_data, fh, indent=params.json.indent)
 
-    with open("%s-report.html" % params.prefix, "wb") as f:
-        f.write(html.encode("utf-8", "xmlcharrefreplace"))
+    with open("%s-report.html" % params.prefix, "wb") as fh:
+        fh.write(html.encode("utf-8", "xmlcharrefreplace"))
 
 
 if __name__ == "__main__":
-    import sys
-
     run(sys.argv[1:])

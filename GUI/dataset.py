@@ -2,7 +2,8 @@ from __future__ import absolute_import, division, print_function
 
 import wx
 from dials.util import Sorry
-from wxtbx import app, icons, phil_controls
+from dxtbx.model.experiment_list import ExperimentListFactory
+from wxtbx import icons, phil_controls
 from wxtbx.phil_controls import ints, path
 
 RSTBX_SELECT_IMAGE_IDS = 0
@@ -73,8 +74,6 @@ class SelectDatasetPanelMixin(object):
     def OnChooseDirectory(self, event):
         dir_name = self.dir_ctrl.GetPhilValue()
         if dir_name is not None:
-            from dxtbx.model.experiment_list import ExperimentListFactory
-
             experiments = ExperimentListFactory.from_filenames([dir_name])
             imagesets = experiments.imagesets()
 
@@ -123,11 +122,3 @@ def select_imageset(parent=None, title="Select a dataset", pick_frames=False):
         imagesets = dlg.GetImagesets()
     wx.CallAfter(dlg.Destroy)
     return imagesets
-
-
-# regression testing
-if __name__ == "__main__":
-    app = app.CCTBXApp(0)
-    imagesets = select_imageset(pick_frames=True)
-    for imageset in imagesets:
-        print(imageset)

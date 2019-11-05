@@ -211,7 +211,7 @@ def Aimless(DriverType=None, absorption_correction=None, decay_correction=None):
             self._secondary_lmax = lmax
 
         def set_mode(self, mode):
-            if not mode in ["rotation", "batch"]:
+            if mode not in ("rotation", "batch"):
                 raise RuntimeError('unknown scaling mode "%s"' % mode)
             self._mode = mode
 
@@ -616,9 +616,7 @@ def Aimless(DriverType=None, absorption_correction=None, decay_correction=None):
             hklout_files = []
             hklout_dict = {}
 
-            for i in range(len(output)):
-                record = output[i]
-
+            for i, record in enumerate(output):
                 # this is a potential source of problems - if the
                 # wavelength name has a _ in it then we are here stuffed!
 
@@ -769,7 +767,7 @@ def Aimless(DriverType=None, absorption_correction=None, decay_correction=None):
             hklout_files = []
             hklout_dict = {}
 
-            for i in range(len(output)):
+            for i, record in enumerate(output):
                 record = output[i]
 
                 # this is a potential source of problems - if the

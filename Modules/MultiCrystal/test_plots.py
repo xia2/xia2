@@ -11,6 +11,6 @@ def test_plot_uc_histograms():
     n = 20
     uc_params = [p + g(n) for p in params]
     d = plots.plot_uc_histograms(uc_params)
-    assert d.keys() == ["uc_scatter", "uc_hist"]
+    assert set(d.keys()) == {"uc_scatter", "uc_hist"}
     for v in d.values():
-        assert v.keys() == ["layout", "data"]
+        assert set(v.keys()) == {"layout", "data"}

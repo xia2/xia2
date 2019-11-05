@@ -1,11 +1,3 @@
-#!/usr/bin/env python
-# DialsRefiner.py
-#   Copyright (C) 2015 Diamond Light Source, Richard Gildea
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-
 from __future__ import absolute_import, division, print_function
 
 import os
@@ -71,7 +63,7 @@ class DialsRefiner(Refiner):
         pass
 
     def _refine(self):
-        for epoch, idxr in self._refinr_indexers.iteritems():
+        for epoch, idxr in self._refinr_indexers.items():
             experiments = idxr.get_indexer_experiment_list()
 
             indexed_experiments = idxr.get_indexer_payload("experiments_filename")

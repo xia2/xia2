@@ -1,12 +1,3 @@
-#!/usr/bin/env python
-# CommandLine.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 12th June 2006
-#
 # A handler for all of the information which may be passed in on the command
 # line. This singleton object should be able to handle the input, structure
 # it and make it available in a useful fashion.
@@ -23,21 +14,20 @@ import re
 import sys
 
 from dials.util import Sorry
+from dxtbx.serialize import load
 from xia2.Experts.FindImages import image2template_directory
 from xia2.Handlers.Environment import which
 from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.PipelineSelection import add_preference
 from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Schema import imageset_cache, update_with_reference_geometry
 from xia2.Schema.XProject import XProject
 
 PATTERN_VALID_CRYSTAL_PROJECT_NAME = re.compile(r"[a-zA-Z_]\w*$")
 
 
 def load_experiments(filename):
-    from xia2.Schema import imageset_cache, update_with_reference_geometry
-    from dxtbx.serialize import load
-
     experiments = load.experiment_list(filename, check_format=False)
 
     imagesets = experiments.imagesets()
@@ -177,8 +167,6 @@ class _CommandLine(object):
         self._argv = copy.deepcopy(sys.argv)
 
         replacements = {
-            "-2d": "pipeline=2d",
-            "-2di": "pipeline=2di",
             "-3d": "pipeline=3d",
             "-3di": "pipeline=3di",
             "-3dii": "pipeline=3dii",
@@ -188,7 +176,7 @@ class _CommandLine(object):
             "-failover": "failover=true",
             "-small_molecule": "small_molecule=true",
         }
-        for k, v in replacements.iteritems():
+        for k, v in replacements.items():
             if k in self._argv:
                 print(
                     "***\nCommand line option %s is deprecated.\nPlease use %s instead\n***"
@@ -542,31 +530,7 @@ class _CommandLine(object):
     def _read_pipeline():
         settings = PhilIndex.get_python_object().xia2.settings
         indexer, refiner, integrater, scaler = None, None, None, None
-        if settings.pipeline == "2d":
-            Debug.write("2DA pipeline selected")
-            print(
-                "***\n\nWarning: Pipeline '%s' is no longer supported and will be removed in a future release.\n\n***"
-                % settings.pipeline
-            )
-            indexer, refiner, integrater, scaler = (
-                "mosflm",
-                "mosflm",
-                "mosflmr",
-                "ccp4a",
-            )
-        elif settings.pipeline == "2di":
-            Debug.write("2DA pipeline; mosflm indexing selected")
-            print(
-                "***\n\nWarning: Pipeline '%s' is no longer supported and will be removed in a future release.\n\n***"
-                % settings.pipeline
-            )
-            indexer, refiner, integrater, scaler = (
-                "mosflm",
-                "mosflm",
-                "mosflmr",
-                "ccp4a",
-            )
-        elif settings.pipeline == "3d":
+        if settings.pipeline == "3d":
             Debug.write("3DR pipeline selected")
             indexer, refiner, integrater, scaler = "xds", "xds", "xdsr", "xdsa"
         elif settings.pipeline == "3di":
@@ -604,7 +568,3 @@ class _CommandLine(object):
 
 CommandLine = _CommandLine()
 CommandLine.setup()
-
-if __name__ == "__main__":
-    print(CommandLine.get_beam())
-    print(CommandLine.get_xinfo())

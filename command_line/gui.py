@@ -1,8 +1,8 @@
 # LIBTBX_PRE_DISPATCHER_INCLUDE_SH export PHENIX_GUI_ENVIRONMENT=1
-# LIBTBX_PRE_DISPATCHER_INCLUDE_SH export BOOST_ADAPTBX_FPE_DEFAULT=1
 # LIBTBX_SET_DISPATCHER_NAME dev.xia2.gui
 from __future__ import absolute_import, division, print_function
 
+import glob
 import os
 import random
 import sys
@@ -78,9 +78,7 @@ class ProcessingFrame(wx.Frame):
         # return
 
         output_dir = self.start_panel.GetOutputDir()
-        result = self.run_xia2(
-            imagesets=self.start_panel.GetImagesets(), output_dir=output_dir
-        )
+        self.run_xia2(imagesets=self.start_panel.GetImagesets(), output_dir=output_dir)
 
     def run_xia2(self, **kwds):
         output_dir = kwds["output_dir"]
@@ -136,8 +134,6 @@ class ProcessingFrame(wx.Frame):
         if self.was_aborted:  # XXX hack for jobs killed with 'qdel'
             self.callback_abort()
             return
-        import glob
-
         html_files = glob.glob(
             os.path.join(result.output_dir, "LogFiles/*_report.html")
         )
@@ -258,7 +254,6 @@ class xia2Thread(threading.Thread):
         self.timeToQuit.set()
 
     def run(self):
-
         redir = RedirectText(self.window.output_panel)
         sys.stdout = redir
 

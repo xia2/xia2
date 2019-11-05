@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
 import math
@@ -7,8 +5,6 @@ import os
 import string
 
 from xia2.Driver.DriverFactory import DriverFactory
-
-# helper functions
 
 
 def energy_to_wavelength(energy):
@@ -24,14 +20,14 @@ def preprocess_scan(scan_file):
 
     try:
         with open(scan_file, "r") as fh:
-            i = int(fh.readlines()[1])
+            int(fh.readlines()[1])
         return scan_file
     except Exception:
         # assume that this is not in the friendly format...
         data = open(scan_file, "r").readlines()
         more_data = []
         for d in data:
-            if not "#" in d and d.strip():
+            if "#" not in d and d.strip():
                 more_data.append(d)
         data = more_data
         count = len(data)
@@ -51,7 +47,6 @@ def Chooch(DriverType=None):
 
     class ChoochWrapper(DriverInstance.__class__):
         def __init__(self):
-
             DriverInstance.__class__.__init__(self)
 
             self.set_executable("chooch")
@@ -66,13 +61,11 @@ def Chooch(DriverType=None):
             """Set a scan file for chooch to parse."""
 
             self._scan = preprocess_scan(scan)
-            return
 
         def set_atom(self, atom):
             """Set the atom which should be in the scan."""
 
             self._atom = atom
-            return
 
         def scan(self):
             """Run chooch."""
@@ -87,10 +80,11 @@ def Chooch(DriverType=None):
             self.check_for_errors()
 
             self._data = []
-            for o in open(
+            with open(
                 os.path.join(self.get_working_directory(), "output.efs"), "r"
-            ).readlines():
-                self._data.append(map(float, o.split()))
+            ) as fh:
+                for o in fh.readlines():
+                    self._data.append(map(float, o.split()))
 
             output = self.get_all_output()
             collect = False
@@ -143,10 +137,10 @@ def Chooch(DriverType=None):
 
             waves = []
 
-            for edge in self._edge_table.keys():
-                waves.append(self._edge_table[edge]["wave"])
-                if math.fabs(self._edge_table[edge]["wave"] - wave) < min_wave_diff:
-                    min_wave_diff = math.fabs(self._edge_table[edge]["wave"] - wave)
+            for edge, value in self._edge_table.items():
+                waves.append(value["wave"])
+                if math.fabs(value["wave"] - wave) < min_wave_diff:
+                    min_wave_diff = math.fabs(value["wave"] - wave)
                     name = edge
 
             if min_wave_diff > 0.01:

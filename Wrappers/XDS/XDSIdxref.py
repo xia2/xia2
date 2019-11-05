@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
 import math
@@ -368,9 +366,10 @@ def XDSIdxref(DriverType=None, params=None):
             )
 
             # parse the output
-            lp = open(
+            with open(
                 os.path.join(self.get_working_directory(), "IDXREF.LP"), "r"
-            ).readlines()
+            ) as fh:
+                lp = fh.readlines()
 
             self._fraction_rmsd_rmsphi = _parse_idxref_lp_quality(lp)
 
@@ -382,7 +381,6 @@ def XDSIdxref(DriverType=None, params=None):
             st = _parse_idxref_lp_subtree(lp)
 
             if 2 in st:
-
                 if st[2] > st[1] / 10.0:
                     Debug.write("Look closely at autoindexing solution!")
                     self._index_tree_problem = True

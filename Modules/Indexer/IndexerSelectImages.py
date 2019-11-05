@@ -1,11 +1,3 @@
-#!/usr/bin/env python
-# IndexSelectImages.py
-#
-#   Copyright (C) 2011 Diamond Light Source, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
 # Code for the selection of images for autoindexing - selecting lone images
 # from a list or wedges from a list, for Mosflm / Labelit and XDS respectively.
 
@@ -48,7 +40,7 @@ def index_select_images_user(phi_width, images, out_stream):
 
     while True:
 
-        record = raw_input(">")
+        record = input(">")
 
         if not record.strip():
             return images
@@ -75,7 +67,7 @@ def index_select_image_wedges_user(sweep_id, phi_width, images, out_stream):
 
     while True:
 
-        record = raw_input(">")
+        record = input(">")
 
         if not record.strip():
             return images
@@ -95,13 +87,13 @@ def index_select_image_wedges_user(sweep_id, phi_width, images, out_stream):
 
 if __name__ == "__main__":
 
-    images = range(1, 91)
+    images = list(range(1, 91))
 
     assert index_select_images_lone(0.5, images) == [1, 45, 90]
     assert index_select_images_lone(1.0, images) == [1, 45, 90]
     assert index_select_images_lone(2.0, images) == [1, 22, 45]
 
-    images = range(1, 361)
+    images = list(range(1, 361))
 
     assert index_select_images_lone(0.5, images) == [1, 90, 180]
     assert index_select_images_lone(1.0, images) == [1, 45, 90]

@@ -1,10 +1,3 @@
-#!/usr/bin/env python
-# Citations.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
 # A handler for management of program citations. This should initialise
 # from a citations.xml file which can be found in a number of places...
 # in particular $HOME or $USERDIR (I think, on Windows) .xia2,
@@ -54,9 +47,7 @@ class _Citations(object):
                 elif "doi" in bibtex_data:
                     citation_data["url"] = "https://doi.org/" + bibtex_data["doi"]
 
-            if program not in self._citations:
-                self._citations[program] = []
-            self._citations[program].append(citation_data)
+            self._citations.setdefault(program, []).append(citation_data)
 
     def cite(self, program):
         """Cite a given program."""
@@ -88,7 +79,7 @@ class _Citations(object):
         """Return a list of strings of Acta style references."""
 
         # want them in alphabetical order
-        return sorted([cit["acta"] for cit in self.get_citations_dicts()])
+        return sorted(cit["acta"] for cit in self.get_citations_dicts())
 
     def find_citations(self, program=None, acta=None):
         """Return a list of citations for a program name or an Acta style reference."""
@@ -101,7 +92,7 @@ class _Citations(object):
         if acta:
             results.extend(
                 citation
-                for citations in self._citations.itervalues()
+                for citations in self._citations.values()
                 for citation in citations
                 if citation.get("acta") == acta
             )
@@ -111,10 +102,7 @@ class _Citations(object):
     def _parse_bibtex(self, bibtex):
         """A jiffy to parse a bibtex entry."""
 
-        contents = {}
-
-        # default values
-        contents["volume"] = ""
+        contents = {"volume": ""}
 
         for token in bibtex.split("\n"):
             if "=" in token:
@@ -151,20 +139,3 @@ class _Citations(object):
 
 
 Citations = _Citations()
-
-if __name__ == "__main__":
-    print(Citations.find_citations(program="xia2"))
-    print(
-        Citations.find_citations(acta="Winter, G. (2010) J. Appl. Cryst. 43, 186-190.")
-    )
-
-    Citations.cite("labelit")
-    Citations.cite("denzo")
-    Citations.cite("mosflm")
-    Citations.cite("xds")
-    Citations.cite("xia2")
-
-    for citation in Citations.get_citations_acta():
-        print(citation)
-
-    print(Citations.get_programs())

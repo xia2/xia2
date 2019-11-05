@@ -89,13 +89,10 @@ import copy
 import math
 
 from xia2.Handlers.Citations import Citations
-from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.Handlers.Streams import Debug, Journal
 from xia2.lib.bits import auto_logfiler
 from xia2.lib.SymmetryLib import lattice_to_spacegroup
 from xia2.Modules.Indexer.LabelitIndexer import LabelitIndexer
-from xia2.Modules.Indexer.MosflmCheckIndexerSolution import (
-    mosflm_check_indexer_solution,
-)
 from xia2.Wrappers.Labelit.LabelitDistl import LabelitDistl
 
 # other labelit things that this uses
@@ -183,7 +180,7 @@ class LabelitIndexerII(LabelitIndexer):
         _images = []
         for i in self._indxr_images:
             for j in i:
-                if not j in _images:
+                if j not in _images:
                     _images.append(j)
 
         _images.sort()
@@ -300,7 +297,7 @@ class LabelitIndexerII(LabelitIndexer):
         # (euugh!) have to "ignore" solutions with higher symmetry
         # otherwise the rest of xia will override us. Bummer.
 
-        for i, solution in self._solutions.iteritems():
+        for i, solution in self._solutions.items():
             if self._indxr_user_input_lattice:
                 if lattice_to_spacegroup(solution["lattice"]) > lattice_to_spacegroup(
                     self._indxr_input_lattice
@@ -315,7 +312,7 @@ class LabelitIndexerII(LabelitIndexer):
         # lattice - however these should only be added if they
         # have a smiley in the appropriate record, perhaps?
 
-        for solution in self._solutions.keys():
+        for solution in list(self._solutions.keys()):
             lattice = self._solutions[solution]["lattice"]
             if lattice in self._indxr_other_lattice_cell:
                 if (
@@ -416,32 +413,4 @@ class LabelitIndexerII(LabelitIndexer):
         # strictly speaking, given the right input there should be
         # no need to test...
 
-        if self._indxr_input_lattice:
-            return
-
-        if self.get_indexer_sweep().get_user_lattice():
-            return
-
-        status, lattice, matrix, cell = mosflm_check_indexer_solution(self)
-
-        if status is None:
-            # basis is primitive
-            return
-
-        if status is False:
-            # basis is centred, and passes test
-            return
-
-        # ok need to update internals...
-
-        self._indxr_lattice = lattice
-        self._indxr_cell = cell
-
-        Debug.write(
-            "Inserting solution: %s " % lattice
-            + "%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f" % cell
-        )
-
-        self._indxr_replace(lattice, cell)
-
-        self._indxr_payload["mosflm_orientation_matrix"] = matrix
+        return  # we no longer support mosflm

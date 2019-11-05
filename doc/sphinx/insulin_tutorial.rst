@@ -26,10 +26,10 @@ Other options are (type just xia2 to get this list)::
 
   Command-line options to xia2:
   [pipeline=XXX] select processing pipeline, with XXX one of:
-    2d    MOSFLM, LABELIT (if installed), AIMLESS
     3d    XDS, XSCALE, LABELIT
     3dii  XDS, XSCALE, using all images for autoindexing
-    dials DIALS, AIMLESS
+    dials DIALS
+    dials-aimless DIALS but scale with AIMLESS
   [xinfo=foo.xinfo] or [/path/to/images]
 
   [d_min=2.8] (say, applies to all sweeps)
@@ -44,8 +44,8 @@ Other options are (type just xia2 to get this list)::
   [crystal=bar] (say) - this is for xia2setup
 
   Sensible command lines:
-  xia2 (pipeline=2d|3d|..) -xinfo foo.xinfo
-  xia2 project=foo crystal=bar (pipeline=2d|3d|..) /data/path
+  xia2 (pipeline=dials|3d|..) -xinfo foo.xinfo
+  xia2 project=foo crystal=bar (pipeline=dials|3d|..) /data/path
 
 Running ths way some assumptions are made:
 

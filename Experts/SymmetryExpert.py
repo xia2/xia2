@@ -1,26 +1,16 @@
-#!/usr/bin/env python
-# SymmetryExpert.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 21st May 2007
-#
 # A small expert to handle symmetry calculations.
-#
 
 from __future__ import absolute_import, division, print_function
 
 from cctbx import sgtbx
 from scitbx import matrix
 
+from xia2.Experts.MatrixExpert import rot_x, rot_y, rot_z
+
 
 def gen_rot_mat_euler(alpha, beta, gamma):
     """Compute a rotation matrix (stored as e11 e12 e13 e22 e23...)
     as product R(x, gamma).R(y, beta).R(z, alpha)."""
-
-    from xia2.Experts.MatrixExpert import rot_x, rot_y, rot_z
 
     rz = rot_z(alpha)
     ry = rot_y(beta)
@@ -119,22 +109,7 @@ def lattice_to_spacegroup_number(lattice):
         "cI": 197,
     }
 
-    if not lattice in _lattice_to_spacegroup_number.keys():
+    if lattice not in _lattice_to_spacegroup_number:
         raise RuntimeError("lattice %s unknown" % lattice)
 
     return _lattice_to_spacegroup_number[lattice]
-
-
-if __name__ == "__main__":
-
-    s = compose_symops("-y,x+y,z", "h,k,l")
-    m = symop_to_mat(s)
-
-    assert s == mat_to_symop(m)
-
-    s = "-h,-k,h+l"
-
-    m = symop_to_mat(s)
-
-    for i in map(int, m):
-        print(i, end=" ")

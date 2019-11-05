@@ -4,7 +4,6 @@ import os
 import sys
 
 import mock
-import pytest
 from libtbx.test_utils import approx_equal
 
 
@@ -126,6 +125,6 @@ def exercise_xds_integrater(dials_data, tmp_dir, nproc=None):
     assert approx_equal(mtz_object.n_reflections(), 50100, eps=400)
 
 
-def test_xds_integrater_serial(regression_test, ccp4, dials_data, run_in_tmpdir):
+def test_xds_integrater_serial(regression_test, ccp4, xds, dials_data, run_in_tmpdir):
     with mock.patch.object(sys, "argv", []):
         exercise_xds_integrater(dials_data, run_in_tmpdir.strpath, nproc=1)

@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 import datetime
 import json
 import optparse
+import string
 import sys
 
 import iotbx.cif.model
@@ -10,8 +11,6 @@ import xia2.XIA2Version
 
 
 def parse_compound(compound):
-    import string
-
     result = {}
     element = ""
     number = ""
@@ -25,14 +24,14 @@ def parse_compound(compound):
                 count = 1
             else:
                 count = int(number)
-            if not element in result:
+            if element not in result:
                 result[element] = 0
             result[element] += count
             element = "" + c
             number = ""
             if c == "X":
                 break
-        elif c in string.lowercase:
+        elif c in string.ascii_lowercase:
             element += c
         elif c in string.digits:
             number += c
@@ -122,7 +121,7 @@ Winter, G. (2010) Journal of Applied Crystallography 43
 
         loop = iotbx.cif.model.loop()
         symm_ops = []
-        for i in xrange(space_group.n_smx()):
+        for i in range(space_group.n_smx()):
             rt_mx = space_group(0, 0, i)
             if rt_mx.is_unit_mx():
                 continue

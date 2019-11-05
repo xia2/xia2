@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
 import math
@@ -10,7 +8,6 @@ from xia2.Handlers.Phil import PhilIndex
 
 
 def Cellparm(DriverType=None):
-
     DriverInstance = DriverFactory.Driver(DriverType)
 
     class CellparmWrapper(DriverInstance.__class__):
@@ -63,20 +60,17 @@ def Cellparm(DriverType=None):
                     average_cell[k] += cell[k]
                 number_cells += 1
 
-            cellparm_inp = open(
+            with open(
                 os.path.join(self.get_working_directory(), "CELLPARM.INP"), "w"
-            )
+            ) as fh:
 
-            for j in range(len(self._cells)):
-                cell = self._cells[j]
-                n_ref = self._n_refs[j]
-                cellparm_inp.write("UNIT_CELL_CONSTANTS=")
-                cellparm_inp.write(
-                    "%.3f %.3f %.3f %.3f %.3f %.3f WEIGHT=%d\n"
-                    % (cell[0], cell[1], cell[2], cell[3], cell[4], cell[5], n_ref)
-                )
-
-            cellparm_inp.close()
+                for j, cell in enumerate(self._cells):
+                    n_ref = self._n_refs[j]
+                    fh.write("UNIT_CELL_CONSTANTS=")
+                    fh.write(
+                        "%.3f %.3f %.3f %.3f %.3f %.3f WEIGHT=%d\n"
+                        % (cell[0], cell[1], cell[2], cell[3], cell[4], cell[5], n_ref)
+                    )
 
             self.start()
 
@@ -84,10 +78,10 @@ def Cellparm(DriverType=None):
 
             # FIXME need to look for errors in here
 
-            cellparm_lp = open(
+            with open(
                 os.path.join(self.get_working_directory(), "CELLPARM.LP"), "r"
-            )
-            data = cellparm_lp.readlines()
+            ) as fh:
+                data = fh.readlines()
 
             return map(float, data[-1].split()[:6])
 

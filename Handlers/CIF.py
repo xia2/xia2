@@ -1,10 +1,3 @@
-#!/usr/bin/env python
-# CIFHandler.py
-#   Copyright (C) 2016 Diamond Light Source, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
 # A handler to manage the data ending up in CIF output file
 
 from __future__ import absolute_import, division, print_function
@@ -63,7 +56,7 @@ class _CIFHandler(object):
 
         loop = iotbx.cif.model.loop()
         symm_ops = []
-        for i in xrange(sg.n_smx()):
+        for i in range(sg.n_smx()):
             rt_mx = sg(0, 0, i)
             if rt_mx.is_unit_mx():
                 continue
@@ -84,7 +77,7 @@ class _CIFHandler(object):
                 del block[self._keyname["wavelength"]]
             loop = iotbx.cif.model.loop(
                 header=[self._keyname["wavelength.id"], self._keyname["wavelength"]],
-                data=[s for item in wavelength.iteritems() for s in item],
+                data=[s for item in wavelength.items() for s in item],
             )
             block.add_loop(loop)
         else:
@@ -160,6 +153,3 @@ class _CIFHandler(object):
 
 CIF = _CIFHandler()
 mmCIF = _CIFHandler(mmCIFsemantics=True)
-
-if __name__ == "__main__":
-    CIF.write_cif()

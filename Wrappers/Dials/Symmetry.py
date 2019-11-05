@@ -48,6 +48,8 @@ def DialsSymmetry(DriverType=None):
 
             self._relative_length_tolerance = 0.05
             self._absolute_angle_tolerance = 2
+            self._laue_group = "auto"
+            self._sys_abs_check = True
 
             # space to store all possible solutions, to allow discussion of
             # the correct lattice with the indexer... this should be a
@@ -65,8 +67,17 @@ def DialsSymmetry(DriverType=None):
 
             self._json = None
 
-        # def set_hklref(self, hklref):
-        # self._hklref = hklref
+        def set_mode_absences_only(self):
+            self._laue_group = None
+            self._sys_abs_check = True
+
+        def set_mode_laue_only(self):
+            self._laue_group = "auto"
+            self._sys_abs_check = False
+
+        def set_mode_laue_plus_absences(self):
+            self._laue_group = "auto"
+            self._sys_abs_check = True
 
         def set_hklin(self, hklin):
             self._hklin = hklin
@@ -110,15 +121,6 @@ def DialsSymmetry(DriverType=None):
             self._relative_length_tolerance = relative_length_tolerance
             self._absolute_angle_tolerance = absolute_angle_tolerance
 
-        # def get_hklref(self):
-        # return self._hklref
-
-        # def check_hklref(self):
-        # if self._hklref is None:
-        # raise RuntimeError('hklref not defined')
-        # if not os.path.exists(self._hklref):
-        # raise RuntimeError('hklref %s does not exist' % self._hklref)
-
         def set_correct_lattice(self, lattice):
             """In a rerunning situation, set the correct lattice, which will
             assert a correct lauegroup based on the previous run of the
@@ -148,7 +150,7 @@ def DialsSymmetry(DriverType=None):
             # okay so now set pg and lattices, but need to update output file by reindexing
 
         def decide_pointgroup(self, ignore_errors=False, batches=None):
-            """Decide on the correct pointgroup for hklin."""
+            """Decide on the correct pointgroup/spacegroup for hklin."""
 
             self.clear_command_line()
 
@@ -184,7 +186,10 @@ def DialsSymmetry(DriverType=None):
                 self.add_command_line(
                     "output.reflections='%s'" % self._output_reflections_filename
                 )
-
+            if self._laue_group is None:
+                self.add_command_line("laue_group=None")
+            if not self._sys_abs_check:
+                self.add_command_line("systematic_absences.check=False")
             self.add_command_line(
                 "relative_length_tolerance=%s" % self._relative_length_tolerance
             )
@@ -209,21 +214,23 @@ def DialsSymmetry(DriverType=None):
             # check for errors
             self.check_for_errors()
 
-            with open(self._json, "rb") as f:
-                d = json.load(f)
-            best_solution = d["subgroup_scores"][0]
+            if self._laue_group is not None:
+                with open(self._json, "rb") as f:
+                    d = json.load(f)
+                best_solution = d["subgroup_scores"][0]
 
-            self.set_best_solution(d, best_solution)
+                self.set_best_solution(d, best_solution)
 
         def set_best_solution(self, d, best_solution):
             patterson_group = sgtbx.space_group(str(best_solution["patterson_group"]))
             if PhilIndex.params.xia2.settings.symmetry.chirality in (None, "chiral"):
                 patterson_group = patterson_group.build_derived_acentric_group()
-            cb_op_inp_best = sgtbx.change_of_basis_op(str(best_solution["cb_op"]))
-            input_cell = uctbx.unit_cell(d["input_symmetry"]["unit_cell"])
-            best_cell = input_cell.change_basis(
-                cb_op=sgtbx.change_of_basis_op(str(cb_op_inp_best))
-            )
+            cb_op_min_best = sgtbx.change_of_basis_op(str(best_solution["cb_op"]))
+            assert len(d["cb_op_inp_min"]) == 1
+            cb_op_inp_min = sgtbx.change_of_basis_op(str(d["cb_op_inp_min"][0]))
+
+            min_cell = uctbx.unit_cell(d["min_cell_symmetry"]["unit_cell"])
+            best_cell = min_cell.change_basis(cb_op=cb_op_min_best)
             # ^^ not necessarily in reference setting e.g I2/m not C2/m
 
             cs = crystal.symmetry(
@@ -237,7 +244,7 @@ def DialsSymmetry(DriverType=None):
 
             self._confidence = best_solution["confidence"]
             self._totalprob = best_solution["likelihood"]
-            cb_op_inp_best = cb_op_inp_best * cb_op_best_to_ref
+            cb_op_inp_best = cb_op_best_to_ref * cb_op_min_best * cb_op_inp_min
             self._reindex_operator = cb_op_inp_best.as_xyz()
             self._reindex_matrix = cb_op_inp_best.c().r().as_double()
 
@@ -250,9 +257,9 @@ def DialsSymmetry(DriverType=None):
                     ):
                         patterson_group = patterson_group.build_derived_acentric_group()
 
-                    cb_op_inp_this = sgtbx.change_of_basis_op(str(score["cb_op"]))
-                    unit_cell = input_cell.change_basis(
-                        cb_op=sgtbx.change_of_basis_op(str(cb_op_inp_this))
+                    cb_op_min_this = sgtbx.change_of_basis_op(str(score["cb_op"]))
+                    unit_cell = min_cell.change_basis(
+                        cb_op=sgtbx.change_of_basis_op(str(cb_op_min_this))
                     )
                     cs = crystal.symmetry(
                         unit_cell=unit_cell,
@@ -265,7 +272,7 @@ def DialsSymmetry(DriverType=None):
                     netzc = score["z_cc_net"]
                     # record this as a possible lattice if its Z score is positive
                     lattice = str(bravais_types.bravais_lattice(group=patterson_group))
-                    if not lattice in self._possible_lattices:
+                    if lattice not in self._possible_lattices:
                         if netzc > 0.0:
                             self._possible_lattices.append(lattice)
                         self._lattice_to_laue[lattice] = patterson_group
@@ -293,15 +300,6 @@ def DialsSymmetry(DriverType=None):
 
         def get_probably_twinned(self):
             return self._probably_twinned
-
-        # def get_spacegroup(self):
-        # return self._spacegroup
-
-        # def get_spacegroup_reindex_operator(self):
-        # return self._spacegroup_reindex_operator
-
-        # def get_spacegroup_reindex_matrix(self):
-        # return self._spacegroup_reindex_matrix
 
         # FIXME spacegroup != pointgroup
         decide_spacegroup = decide_pointgroup

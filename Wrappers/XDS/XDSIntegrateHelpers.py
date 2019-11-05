@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
 import os
@@ -12,7 +10,8 @@ def _parse_integrate_lp_updates(filename):
     if not os.path.split(filename)[-1] == "INTEGRATE.LP":
         raise RuntimeError("input filename not INTEGRATE.LP")
 
-    file_contents = open(filename, "r").readlines()
+    with open(filename, "r") as fh:
+        file_contents = fh.readlines()
 
     updates = {}
 
@@ -34,11 +33,10 @@ def _parse_integrate_lp(filename):
     if not os.path.split(filename)[-1] == "INTEGRATE.LP":
         raise RuntimeError("input filename not INTEGRATE.LP")
 
-    file_contents = open(filename, "r").readlines()
+    with open(filename, "r") as fh:
+        file_contents = fh.readlines()
 
     per_image_stats = {}
-
-    block_start_finish = (0, 0)
 
     oscillation_range = 0.0
 
@@ -54,9 +52,7 @@ def _parse_integrate_lp(filename):
 
         if "PROCESSING OF IMAGES" in content:
             lst = content.split()
-            block_start_finish = (int(lst[3]), int(lst[5]))
-
-            block_images = [j for j in range(int(lst[3]), int(lst[5]) + 1)]
+            block_images = list(range(int(lst[3]), int(lst[5]) + 1))
 
         # look for explicitly per-image information
         if "IMAGE IER  SCALE" in content:
@@ -96,20 +92,15 @@ def _parse_integrate_lp(filename):
 
                 j += 1
 
-        # then look for per-block information - this will be mapped onto
-        # individual images using the block_start_finish information
+        # then look for per-block information
 
         if "CRYSTAL MOSAICITY (DEGREES)" in content:
             mosaic = float(content.split()[3])
-            # for image in range(block_start_finish[0],
-            # block_start_finish[1] + 1):
             for image in block_images:
                 per_image_stats[image]["mosaic"] = mosaic
 
         if "OF SPOT    POSITION (PIXELS)" in content:
             rmsd_pixel = float(content.split()[-1])
-            # for image in range(block_start_finish[0],
-            # block_start_finish[1] + 1):
             for image in block_images:
                 per_image_stats[image]["rmsd_pixel"] = rmsd_pixel
 
@@ -120,45 +111,18 @@ def _parse_integrate_lp(filename):
 
         if "OF SPINDLE POSITION (DEGREES)" in content:
             rmsd_phi = float(content.split()[-1])
-            # for image in range(block_start_finish[0],
-            # block_start_finish[1] + 1):
             for image in block_images:
                 per_image_stats[image]["rmsd_phi"] = rmsd_phi / oscillation_range
 
         # want to convert this to mm in some standard setting!
         if "DETECTOR COORDINATES (PIXELS) OF DIRECT BEAM" in content:
             beam = map(float, content.split()[-2:])
-            # for image in range(block_start_finish[0],
-            # block_start_finish[1] + 1):
             for image in block_images:
                 per_image_stats[image]["beam"] = beam
 
         if "CRYSTAL TO DETECTOR DISTANCE (mm)" in content:
             distance = float(content.split()[-1])
-            # for image in range(block_start_finish[0],
-            # block_start_finish[1] + 1):
             for image in block_images:
                 per_image_stats[image]["distance"] = distance
 
     return per_image_stats
-
-
-def _print_integrate_lp(integrate_lp_stats):
-    """Print the contents of the integrate.lp dictionary."""
-
-    images = sorted(integrate_lp_stats.keys())
-
-    for i in images:
-        data = integrate_lp_stats[i]
-        print(
-            "%4d %5.3f %5d %5d %5d %4.2f %6.2f"
-            % (
-                i,
-                data["scale"],
-                data["strong"],
-                data["overloads"],
-                data["rejected"],
-                data["mosaic"],
-                data["distance"],
-            )
-        )

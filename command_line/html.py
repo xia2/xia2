@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
-# LIBTBX_SET_DISPATCHER_NAME xia2.html
 
 from __future__ import absolute_import, division, print_function
 
 import cgi
-from collections import OrderedDict
 import glob
-import os
-import traceback
 import json
+import os
+import re
 import six
-
+import sys
+import traceback
+from collections import OrderedDict
 
 from libtbx import phil
+import xia2
 from xia2.Modules.Report import Report
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Streams import Chatter, Debug
@@ -27,7 +28,6 @@ def run(args):
 
 
 def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
-
     assert params is None or len(args) == 0
     if params is None:
         from xia2.Modules.Analysis import phil_scope
@@ -67,9 +67,9 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
 
     individual_dataset_reports = {}
 
-    for cname, xcryst in xinfo.get_crystals().iteritems():
+    for cname, xcryst in xinfo.get_crystals().items():
         reflection_files = xcryst.get_scaled_merged_reflections()
-        for wname, unmerged_mtz in reflection_files["mtz_unmerged"].iteritems():
+        for wname, unmerged_mtz in reflection_files["mtz_unmerged"].items():
             xwav = xcryst.get_xwavelength(wname)
 
             from xia2.Modules.MultiCrystalAnalysis import batch_phil_scope
@@ -94,9 +94,11 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
             xtriage_success, xtriage_warnings, xtriage_danger = None, None, None
             if params.xtriage_analysis:
                 try:
-                    xtriage_success, xtriage_warnings, xtriage_danger = (
-                        report.xtriage_report()
-                    )
+                    (
+                        xtriage_success,
+                        xtriage_warnings,
+                        xtriage_danger,
+                    ) = report.xtriage_report()
                 except Exception as e:
                     from xia2.Handlers.Phil import PhilIndex
 
@@ -105,9 +107,11 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
                     else:
                         raise
 
-            overall_stats_table, merging_stats_table, stats_plots = (
-                report.resolution_plots_and_stats()
-            )
+            (
+                overall_stats_table,
+                merging_stats_table,
+                stats_plots,
+            ) = report.resolution_plots_and_stats()
 
             d = {}
             d["merging_statistics_table"] = merging_stats_table
@@ -188,7 +192,7 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
                 if k in json_data
             )
 
-            for k, v in report.multiplicity_plots().iteritems():
+            for k, v in report.multiplicity_plots().items():
                 misc_graphs[k + "_" + wname] = {"img": v}
 
             d["resolution_graphs"] = resolution_graphs
@@ -245,20 +249,19 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
 
     # reflection files
 
-    for cname, xcryst in xinfo.get_crystals().iteritems():
-
+    for cname, xcryst in xinfo.get_crystals().items():
         # hack to replace path to reflection files with DataFiles directory
         data_dir = os.path.join(os.path.abspath(os.path.curdir), "DataFiles")
         g = glob.glob(os.path.join(data_dir, "*"))
         reflection_files = xcryst.get_scaled_merged_reflections()
-        for k, rfile in reflection_files.iteritems():
+        for k, rfile in reflection_files.items():
             if isinstance(rfile, six.string_types):
                 for datafile in g:
                     if os.path.basename(datafile) == os.path.basename(rfile):
                         reflection_files[k] = datafile
                         break
             else:
-                for kk in rfile.keys():
+                for kk in rfile:
                     for datafile in g:
                         if os.path.basename(datafile) == os.path.basename(rfile[kk]):
                             reflection_files[k][kk] = datafile
@@ -275,7 +278,7 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
             ],
         ]
 
-        for wname, unmerged_mtz in reflection_files["mtz_unmerged"].iteritems():
+        for wname, unmerged_mtz in reflection_files["mtz_unmerged"].items():
             mtz_files.append(
                 [
                     wname,
@@ -286,7 +289,7 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
 
         sca_files = [headers]
         if "sca" in reflection_files:
-            for wname, merged_sca in reflection_files["sca"].iteritems():
+            for wname, merged_sca in reflection_files["sca"].items():
                 sca_files.append(
                     [
                         wname,
@@ -297,7 +300,7 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
 
         unmerged_sca_files = [headers]
         if "sca_unmerged" in reflection_files:
-            for wname, unmerged_sca in reflection_files["sca_unmerged"].iteritems():
+            for wname, unmerged_sca in reflection_files["sca_unmerged"].items():
                 unmerged_sca_files.append(
                     [
                         wname,
@@ -359,11 +362,9 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
                 ]
             )
 
-    # references
-
-    references = {}
-    for cdict in Citations.get_citations_dicts():
-        references[cdict["acta"]] = cdict.get("url")
+    references = {
+        cdict["acta"]: cdict.get("url") for cdict in Citations.get_citations_dicts()
+    }
 
     from jinja2 import Environment, ChoiceLoader, PackageLoader
 
@@ -431,7 +432,7 @@ def make_logfile_html(logfile):
 
     for table in tables:
         try:
-            for graph_name, html in table_to_c3js_charts(table).iteritems():
+            for graph_name, html in table_to_c3js_charts(table).items():
                 rst.append(".. raw:: html")
                 rst.append("\n    ".join(html.split("\n")))
         except Exception as e:
@@ -471,8 +472,6 @@ def rst2html(rst):
         def write_colspecs(self):
             self.colspecs = []
 
-    import xia2
-
     xia2_root_dir = os.path.dirname(xia2.__file__)
 
     args = {"stylesheet_path": os.path.join(xia2_root_dir, "css", "voidspace.css")}
@@ -501,9 +500,6 @@ var chart_%(name)s = c3.generate({
     },
 });
 """
-
-    import re
-
     divs = []
 
     for i_graph, graph_name in enumerate(table.graph_names):
@@ -588,7 +584,5 @@ tick: {
 
 
 if __name__ == "__main__":
-    import sys
-
     args = sys.argv[1:]
     run(args)

@@ -1,10 +1,3 @@
-#!/usr/bin/env python
-# NMolLib.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
 # NMol per ASU Calculations based on the Kantardjieff & Rupp method.
 #
 # Implementing the cell volume calculations of Kantardjieff and Rupp,
@@ -15,6 +8,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+from builtins import range
 import math
 import os
 
@@ -181,23 +175,13 @@ def compute_nmol(
 
     nmols, pdfs = compute_nmol_from_volume(volume, mass, resolution)
 
-    ptot = 0
-
-    # sum the pdfs to give the total probability (= 1.0)
-
-    for i in range(len(nmols)):
-        p = pdfs[i]
-        ptot += p
-
     mbest = 0
     pbest = 0.0
 
-    # then pick the most likely probability and return the associated nmol
+    # pick the most likely probability and return the associated nmol
     # value
 
-    for i in range(len(nmols)):
-        m = nmols[i]
-        p = pdfs[i] / ptot
+    for m, p in zip(nmols, pdfs):
         if p > pbest:
             pbest = p
             mbest = m
@@ -229,18 +213,3 @@ def compute_solvent(
     m.compute_solvent()
 
     return m.get_solvent()
-
-
-if __name__ == "__main__":
-
-    nmol = compute_nmol(96.0, 96.0, 36.75, 90.0, 90.0, 90.0, "P 43 21 2", 1.8, 82)
-
-    if nmol != 2:
-        raise RuntimeError("error in nmol per asu")
-
-    solvent = compute_solvent(
-        96.0, 96.0, 36.75, 90.0, 90.0, 90.0, "P 43 21 2", nmol, 82
-    )
-
-    if math.fabs(solvent - 0.46) > 0.1:
-        raise RuntimeError("error in solvent content")

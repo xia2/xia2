@@ -1,10 +1,3 @@
-#!/usr/bin/env python
-# Integrater.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
 # An interface for programs which do integration - this will handle
 # all of the input and output, delegating the actual processing to an
 # implementation of this interfacing.
@@ -37,6 +30,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+import inspect
+import json
 import math
 import os
 
@@ -107,8 +102,8 @@ class Integrater(FrameProcessor):
         self._intgr_hklout_raw = None
         self._intgr_hklout = None
         self._output_format = (
-            "hkl"
-        )  #'hkl' or 'pickle', if pickle then self._intgr_hklout
+            "hkl"  #'hkl' or 'pickle', if pickle then self._intgr_hklout
+        )
         # returns a refl table.
 
         # a place to store the project, crystal, wavelength, sweep information
@@ -147,9 +142,8 @@ class Integrater(FrameProcessor):
         obj["__id__"] = "Integrater"
         obj["__module__"] = self.__class__.__module__
         obj["__name__"] = self.__class__.__name__
-        import inspect
 
-        attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
+        attributes = inspect.getmembers(self, lambda m: not inspect.isroutine(m))
         for a in attributes:
             if a[0] in ("_intgr_indexer", "_intgr_refiner") and a[1] is not None:
                 obj[a[0]] = a[1].to_dict()
@@ -168,7 +162,7 @@ class Integrater(FrameProcessor):
     def from_dict(cls, obj):
         assert obj["__id__"] == "Integrater"
         return_obj = cls()
-        for k, v in obj.iteritems():
+        for k, v in obj.items():
             if k in ("_intgr_indexer", "_intgr_refiner") and v is not None:
                 from libtbx.utils import import_python_object
 
@@ -192,8 +186,6 @@ class Integrater(FrameProcessor):
         return return_obj
 
     def as_json(self, filename=None, compact=False):
-        import json
-
         obj = self.to_dict()
         if compact:
             text = json.dumps(
@@ -211,7 +203,6 @@ class Integrater(FrameProcessor):
 
     @classmethod
     def from_json(cls, filename=None, string=None):
-        import json
         from dxtbx.serialize.load import _decode_dict
 
         assert [filename, string].count(None) == 1
@@ -648,9 +639,6 @@ class Integrater(FrameProcessor):
     def get_integrater_excluded_regions(self):
         return self._intgr_excluded_regions
 
-    # these methods which follow should probably be respected by
-    # the Mosflm implementation of integrater
-
     def set_integrater_spacegroup_number(self, spacegroup_number):
         # FIXME check that this is appropriate with what the
         # indexer things is currently correct. Also - should this
@@ -747,13 +735,12 @@ class Integrater(FrameProcessor):
         # are unhappy with something, so that the indexing solution
         # can be eliminated in the integrater.
 
-        images = sorted(stats.keys())
+        images = sorted(stats)
 
         # these may not be present if only a couple of the
         # images were integrated...
 
         try:
-
             stddev_pixel = [stats[i]["rmsd_pixel"] for i in images]
 
             # fix to bug # 2501 - remove the extreme values from this
@@ -777,27 +764,22 @@ class Integrater(FrameProcessor):
             overloads = None
             fraction_weak = None
             isigi = None
-            isig_tot = None
 
             # print a one-spot-per-image rendition of this...
             stddev_pixel = [stats[i]["rmsd_pixel"] for i in images]
-            if "overloads" in stats.values()[0]:
+            if "overloads" in list(stats.values())[0]:
                 overloads = [stats[i]["overloads"] for i in images]
             strong = [stats[i]["strong"] for i in images]
-            if "fraction_weak" in stats.values()[0]:
+            if "fraction_weak" in list(stats.values())[0]:
                 fraction_weak = [stats[i]["fraction_weak"] for i in images]
-            if "isigi" in stats.values()[0]:
+            if "isigi" in list(stats.values())[0]:
                 isigi = [stats[i]["isigi"] for i in images]
-            if "isig_tot" in stats.values()[0]:
-                isig_tot = [stats[i]["isig_tot"] for i in images]
 
             # FIXME need to allow for blank images in here etc.
 
             status_record = ""
             for i, stddev in enumerate(stddev_pixel):
-                if False and isig_tot is not None and isig_tot[i] < 1.0:
-                    status_record += "?"
-                elif fraction_weak is not None and fraction_weak[i] > 0.99:
+                if fraction_weak is not None and fraction_weak[i] > 0.99:
                     status_record += "."
                 elif isigi is not None and isigi[i] < 1.0:
                     status_record += "."
@@ -815,16 +797,16 @@ class Integrater(FrameProcessor):
             else:
                 lines.append("Integration status per image:")
 
-            for chunk in [
+            for chunk in (
                 status_record[i : i + 60] for i in range(0, len(status_record), 60)
-            ]:
+            ):
                 lines.append(chunk)
             lines.append('"o" => good        "%" => ok        "!" => bad rmsd')
             lines.append('"O" => overloaded  "#" => many bad  "." => weak')
             lines.append('"@" => abandoned')
 
             # next look for variations in the unit cell parameters
-            if "unit_cell" in stats.values()[0]:
+            if "unit_cell" in list(stats.values())[0]:
                 unit_cells = [stats[i]["unit_cell"] for i in images]
 
                 # compute average

@@ -1,53 +1,15 @@
-#!/usr/bin/env cctbx.python
-# XDSCheckIndexerSolution.py
-#
-#   Copyright (C) 2009 Diamond Light Source, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 11th May 2009
-#
 # Code to check the XDS solution from IDXREF for being pseudo-centred (i.e.
 # comes out as centered when it should not be)
-#
 
 from __future__ import absolute_import, division, print_function
 
 import math
-import os
-import sys
 
 from cctbx import crystal, sgtbx
+import dxtbx.serialize.xds
+from scitbx import matrix
+from xia2.Experts.LatticeExpert import s2l
 from xia2.Handlers.Streams import Debug
-
-# xia2 stuff...
-
-# cctbx stuff
-
-
-def s2l(spacegroup):
-    lattice_to_spacegroup = {
-        "aP": 1,
-        "mP": 3,
-        "mC": 5,
-        "oP": 16,
-        "oC": 20,
-        "oF": 22,
-        "oI": 23,
-        "tP": 75,
-        "tI": 79,
-        "hP": 143,
-        "hR": 146,
-        "cP": 195,
-        "cF": 196,
-        "cI": 197,
-    }
-
-    spacegroup_to_lattice = {}
-    for k in lattice_to_spacegroup.keys():
-        spacegroup_to_lattice[lattice_to_spacegroup[k]] = k
-    return spacegroup_to_lattice[spacegroup]
 
 
 def xds_check_indexer_solution(xparm_file, spot_file):
@@ -57,17 +19,11 @@ def xds_check_indexer_solution(xparm_file, spot_file):
     an estimate of it) and try this if it is centred. Returns tuple
     (space_group_number, cell)."""
 
-    from scitbx import matrix
-    from dxtbx.serialize.xds import to_crystal as xparm_to_crystal
-
-    cm = xparm_to_crystal(xparm_file)
+    cm = dxtbx.serialize.xds.to_crystal(xparm_file)
     sg = cm.get_space_group()
-    spacegroup = sg.type().hall_symbol()
     space_group_number = sg.type().number()
     A_inv = matrix.sqr(cm.get_A()).inverse()
     cell = cm.get_unit_cell().parameters()
-
-    import dxtbx
 
     models = dxtbx.load(xparm_file)
     detector = models.get_detector()
@@ -83,13 +39,11 @@ def xds_check_indexer_solution(xparm_file, spot_file):
     from cctbx.array_family import flex
 
     centroids_px = flex.vec3_double(spot_xds_handle.centroid)
-    miller_indices = flex.miller_index(spot_xds_handle.miller_index)
 
     # Convert Pixel coordinate into mm/rad
     x, y, z = centroids_px.parts()
     x_mm, y_mm = detector[0].pixel_to_millimeter(flex.vec2_double(x, y)).parts()
     z_rad = scan.get_angle_from_array_index(z, deg=False)
-    centroids_mm = flex.vec3_double(x_mm, y_mm, z_rad)
 
     # then convert detector position to reciprocal space position
 
@@ -162,16 +116,3 @@ def is_centred(space_group_number):
         return True
 
     return False
-
-
-if __name__ == "__main__":
-
-    source = os.getcwd()
-
-    if len(sys.argv) > 1:
-        source = sys.argv[1]
-
-    xparm = os.path.join(source, "XPARM.XDS")
-    spot = os.path.join(source, "SPOT.XDS")
-
-    xds_check_indexer_solution(xparm, spot)

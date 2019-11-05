@@ -42,7 +42,7 @@ def check_environment():
     Chatter.write("Python => %s" % executable)
     Chatter.write("CCTBX => %s" % cctbx_dir)
 
-    ccp4_keys = ["CCP4", "CLIBD", "CCP4_SCR"]
+    ccp4_keys = ["CCP4", "CCP4_SCR"]
     for k in ccp4_keys:
         v = Environment.getenv(k)
         if not v:
@@ -150,7 +150,6 @@ def help():
         """
 Command-line options to xia2:
 [pipeline=XXX] select processing pipeline, with XXX one of:
-  2d    MOSFLM, LABELIT (if installed), AIMLESS
   3d    XDS, XSCALE, LABELIT
   3dii  XDS, XSCALE, using all images for autoindexing
   dials DIALS, scaling with DIALS
@@ -173,6 +172,6 @@ Command-line options to xia2:
     sys.stdout.write("[crystal=bar] (say) - this is for xia2setup\n\n")
 
     sys.stdout.write("Sensible command lines:\n")
-    sys.stdout.write("xia2 (pipeline=2d|3d|..) xinfo=foo.xinfo\n")
-    sys.stdout.write("xia2 project=foo crystal=bar (pipeline=2d|3d|..) /data/path\n")
+    sys.stdout.write("xia2 (pipeline=dials|3d|..) xinfo=foo.xinfo\n")
+    sys.stdout.write("xia2 project=foo crystal=bar (pipeline=dials|3d|..) /data/path\n")
     sys.stdout.write("xia2 image=/data/path/segment_1_0001.cbf:1:900\n")

@@ -1,13 +1,5 @@
-#!/usr/bin/env python
-# IntegraterFactory.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
 # A factory for Integrater implementations. At the moment this will
-# support only Mosflm, XDS and the null integrater implementation.
-#
+# support only XDS and the null integrater implementation.
 
 from __future__ import absolute_import, division, print_function
 
@@ -15,18 +7,10 @@ import os
 
 from xia2.DriverExceptions.NotAvailableError import NotAvailableError
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.PipelineSelection import add_preference, get_preferences
+from xia2.Handlers.PipelineSelection import get_preferences
 from xia2.Handlers.Streams import Debug
 from xia2.Modules.Integrater.DialsIntegrater import DialsIntegrater
-from xia2.Modules.Integrater.MosflmIntegrater import MosflmIntegrater
 from xia2.Modules.Integrater.XDSIntegrater import XDSIntegrater
-
-# FIXME 06/SEP/06 this should take an implementation of indexer to
-#                 help with the decision about which integrater to
-#                 use, and also to enable invisible configuration.
-#
-# FIXME 06/SEP/06 also need interface which will work with xsweep
-#                 objects.
 
 
 def IntegraterForXSweep(xsweep, json_file=None):
@@ -127,16 +111,6 @@ def Integrater():
                     + "dials not installed?"
                 )
 
-    if not integrater and (not preselection or preselection == "mosflmr"):
-        try:
-            integrater = MosflmIntegrater()
-            Debug.write("Using MosflmR Integrater")
-            if not get_preferences().get("scaler"):
-                add_preference("scaler", "ccp4a")
-        except NotAvailableError:
-            if preselection == "mosflmr":
-                raise RuntimeError("preselected integrater mosflmr not available")
-
     if not integrater and (not preselection or preselection == "xdsr"):
         try:
             integrater = XDSIntegrater()
@@ -170,7 +144,3 @@ def Integrater():
             integrater.set_integrater_high_resolution(dmin, user=True)
 
     return integrater
-
-
-if __name__ == "__main__":
-    integrater = Integrater()

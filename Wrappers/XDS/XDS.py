@@ -1,8 +1,11 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
+import datetime
+import glob
 import math
+import os
+import subprocess
+import time
 
 from scitbx import matrix
 from xia2.Handlers.Streams import Debug
@@ -27,8 +30,6 @@ _xds_version_cache = None
 def get_xds_version():
     global _xds_version_cache
     if _xds_version_cache is None:
-        import subprocess
-
         xds_version_str = subprocess.check_output("xds")
         assert "VERSION" in xds_version_str
         first_line = xds_version_str.split("\n")[1].strip()
@@ -45,14 +46,10 @@ _running_xds_version_stamp = None
 def _running_xds_version():
     global _running_xds_version_stamp
     if _running_xds_version_stamp is None:
-        import subprocess
-
         xds_version_str = subprocess.check_output("xds")
         assert "VERSION" in xds_version_str
         first_line = xds_version_str.split("\n")[1].strip()
-        if not "BUILT=" in xds_version_str:
-            import datetime
-
+        if "BUILT=" not in xds_version_str:
             format_str = "***** XDS *****  (VERSION  %B %d, %Y)"
             date = datetime.datetime.strptime(first_line, format_str)
 
@@ -78,7 +75,6 @@ def _xds_version(xds_output_list):
 
 
 def add_xds_version_to_mtz_history(mtz_file):
-    import time
     from iotbx.reflection_file_reader import any_reflection_file
     from xia2.Wrappers.XDS import XDS
 
@@ -322,7 +318,7 @@ def imageset_to_xds(
                 Debug.write(
                     "Could not determine sensor thickness. Assuming default PILATUS 0.32mm"
                 )
-        except e:
+        except Exception:
             thickness = 0.32
             Debug.write(
                 "Error occured during sensor thickness determination. Assuming default PILATUS 0.32mm"
@@ -385,7 +381,6 @@ def beam_centre_mosflm_to_xds(x, y, header):
 
     width, height = tuple(map(int, header["size"]))
     qx, qy = tuple(header["pixel"])
-    detector = header["detector"]
 
     # convert input to pixels
 
@@ -427,7 +422,6 @@ def beam_centre_xds_to_mosflm(px, py, header):
 
     width, height = tuple(map(int, header["size"]))
     qx, qy = tuple(header["pixel"])
-    detector = header["detector"]
 
     # convert input to pixels
 
@@ -560,7 +554,6 @@ def template_to_xds(template):
         assert template.endswith("master.h5"), template
 
         master_file = template
-        import glob
 
         g = glob.glob(master_file.split("master.h5")[0] + "data_*[0-9].h5")
         g.extend(glob.glob(master_file.split("master.h5")[0] + "*[0-9].h5"))
@@ -587,7 +580,6 @@ def find_hdf5_lib(template=None):
     if __hdf5_lib:
         return __hdf5_lib
 
-    import os
     from xia2.Handlers.Phil import PhilIndex
     from dials.util import Sorry
 
@@ -613,7 +605,6 @@ def find_h5toxds():
     global __h5toxds
     if __h5toxds:
         return __h5toxds
-    import os
 
     for d in os.environ["PATH"].split(os.pathsep):
         if os.path.exists(os.path.join(d, "H5ToXds")):

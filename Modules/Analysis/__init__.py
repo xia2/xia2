@@ -93,7 +93,7 @@ class separate_unmerged(object):
         else:
             run_id_to_batch_id = OrderedDict()
             run_id = 0
-            for batch_id, batch_range in id_to_batches.iteritems():
+            for batch_id, batch_range in id_to_batches.items():
                 run_id_to_batch_id[run_id] = batch_id
                 run_start, last_batch = batch_range
                 batch_sel = (batches_all.data() >= run_start) & (

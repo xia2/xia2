@@ -1,7 +1,6 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
+from builtins import range
 import copy
 import os
 import shutil
@@ -180,28 +179,19 @@ def XScaleR(
                 if self._version == "new":
                     xscale_inp.write("\n")
 
-                for j in range(len(self._transposed_input[wave]["hkl"])):
+                for j, hkl in enumerate(self._transposed_input[wave]["hkl"]):
 
                     # FIXME note to self, this should now be a local
                     # file which has been placed in here by XDSScaler -
                     # should check that the files exists though...
 
                     resolution = self._transposed_input[wave]["resol"][j]
+                    xscale_inp.write("INPUT_FILE=%s XDS_ASCII\n" % hkl)
 
                     if resolution[0]:
                         xscale_inp.write(
-                            "INPUT_FILE=%s XDS_ASCII\n"
-                            % self._transposed_input[wave]["hkl"][j]
-                        )
-                        xscale_inp.write(
                             "INCLUDE_RESOLUTION_RANGE= %.2f %.2f\n"
                             % (resolution[1], resolution[0])
-                        )
-
-                    else:
-                        xscale_inp.write(
-                            "INPUT_FILE=%s XDS_ASCII\n"
-                            % self._transposed_input[wave]["hkl"][j]
                         )
 
                     # FIXME this needs to be removed before being used again
@@ -254,9 +244,11 @@ def XScaleR(
             dname = None
 
             # get the outlier reflections... and the overall scale factor
-            for line in open(
+            with open(
                 os.path.join(self.get_working_directory(), "XSCALE.LP"), "r"
-            ).readlines():
+            ) as fh:
+                lines = fh.readlines()
+            for line in lines:
                 if '"alien"' in line:
                     h, k, l = tuple(map(int, line.split()[:3]))
                     z = float(line.split()[4])
@@ -269,7 +261,7 @@ def XScaleR(
                 if "STATISTICS OF SCALED OUTPUT DATA SET" in line:
                     dname = line.split()[-1].replace(".HKL", "")
 
-                if "total" in line and not dname in self._rmerges:
+                if "total" in line and dname not in self._rmerges:
                     if len(line.split()) > 5:
                         self._rmerges[dname] = float(line.replace("%", "").split()[5])
 

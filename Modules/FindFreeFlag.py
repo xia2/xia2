@@ -1,16 +1,9 @@
-# FindFreeFlag.py
-# Maintained by G.Winter
-# 11th July 2008
-#
 # A jiffy to try and identify the FreeR column in an MTZ file - will look for
 # FreeR_flag, then *free*, will check that the column type is 'I' and so
 # will be useful when an external reflection file is passed in for copying
 # of the FreeR column.
-#
 
 from __future__ import absolute_import, division, print_function
-
-import sys
 
 from xia2.Wrappers.CCP4.Mtzdump import Mtzdump
 
@@ -26,12 +19,9 @@ def FindFreeFlag(hklin):
     mtzdump.dump()
     columns = mtzdump.get_columns()
 
-    ctypes = {}
+    ctypes = {c[0]: c[1] for c in columns}
 
-    for c in columns:
-        ctypes[c[0]] = c[1]
-
-    if "FreeR_flag" in ctypes.keys():
+    if "FreeR_flag" in ctypes:
         if ctypes["FreeR_flag"] != "I":
             raise RuntimeError("FreeR_flag column found: type not I")
 
@@ -40,13 +30,9 @@ def FindFreeFlag(hklin):
     # ok, so the usual one wasn't there, look for anything with "free"
     # in it...
 
-    possibilities = []
+    possibilities = [c for c in ctypes if "free" in c.lower()]
 
-    for c in ctypes.keys():
-        if "free" in c.lower():
-            possibilities.append(c)
-
-    if len(possibilities) == 0:
+    if not possibilities:
         raise RuntimeError("no candidate FreeR_flag columns found")
 
     if len(possibilities) == 1:
@@ -56,13 +42,3 @@ def FindFreeFlag(hklin):
             )
 
         return possibilities[0]
-
-    raise RuntimeError("Multiple candidate FreeR_flag columns found")
-
-
-if __name__ == "__main__":
-
-    if len(sys.argv) < 2:
-        raise RuntimeError("%s hklin" % sys.argv[0])
-
-    print(FindFreeFlag(sys.argv[1]))

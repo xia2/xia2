@@ -1,6 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-import sys
+import math
 
 import iotbx.phil
 from cctbx import crystal
@@ -79,12 +79,12 @@ class delta_cc_half(object):
         self.merging_statistics.show()
 
         self.delta_cc = flex.double()
-        for test_k in self.intensities.keys():
+        for test_k in self.intensities:
             # print test_k
             indices_i = flex.miller_index()
             data_i = flex.double()
             sigmas_i = flex.double()
-            for k, unmerged in self.intensities.iteritems():
+            for k, unmerged in self.intensities.items():
                 if k == test_k:
                     continue
                 indices_i.extend(unmerged.indices())
@@ -112,7 +112,7 @@ class delta_cc_half(object):
 
     def _labels(self):
         if self.run_id_to_batch_id is not None:
-            labels = self.run_id_to_batch_id.values()
+            labels = list(self.run_id_to_batch_id.values())
         else:
             labels = ["%i" % (j + 1) for j in range(len(self.delta_cc))]
         return labels
@@ -142,13 +142,10 @@ class delta_cc_half(object):
         return table_utils.format(rows, has_header=True, prefix="|", postfix="|")
 
     def plot_histogram(self, filename):
-        import math
         from matplotlib import pyplot
 
         normalised_score = self._normalised_delta_cc_i()
         pyplot.figure()
-        # bins = range(
-        # int(math.floor(flex.min(normalised_score))), int(math.ceil(flex.max(normalised_score)))+1)
         from libtbx.utils import frange
 
         bins = frange(
@@ -165,7 +162,6 @@ class delta_cc_half(object):
 
 
 def run(args):
-
     cmd_line = command_line.argument_interpreter(master_params=master_phil_scope)
     working_phil, args = cmd_line.process_and_fetch(
         args=args, custom_processor="collect_remaining"
@@ -228,7 +224,3 @@ def run(args):
     Citations.cite("delta_cc_half")
     for citation in Citations.get_citations_acta():
         print(citation)
-
-
-if __name__ == "__main__":
-    run(sys.argv[1:])
