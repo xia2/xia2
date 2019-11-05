@@ -15,7 +15,6 @@ from xia2.Modules.Indexer.LabelitIndexerII import LabelitIndexerII
 from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
 from xia2.Modules.Indexer.XDSIndexerII import XDSIndexerII
 from xia2.Modules.Indexer.XDSIndexerInteractive import XDSIndexerInteractive
-from xia2.Modules.Indexer.XDSIndexerSum import XDSIndexerSum
 
 
 def IndexerForXSweep(xsweep, json_file=None):
@@ -147,12 +146,7 @@ def Indexer(preselection=None):
     else:
         indexerlist.append((XDSIndexerII, "xdsii", "XDS II Indexer"))
 
-    indexerlist.extend(
-        [
-            (XDSIndexerSum, "xdssum", "XDS Indexer on summed images"),
-            (LabelitIndexerII, "labelitii", "LabelitIndexerII"),
-        ]
-    )
+    indexerlist.append((LabelitIndexerII, "labelitii", "LabelitIndexerII"))
 
     for (idxfactory, idxname, idxdisplayname) in indexerlist:
         if not indexer and (not preselection or preselection == idxname):
