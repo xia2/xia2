@@ -855,7 +855,6 @@ pipeline=dials (supported for pipeline=dials-aimless).
             tt_refiner.set_reflection_files([self._scaled_reflections])  # needs a list
             tt_refiner.set_output_p4p(p4p_file)
             tt_refiner.run()
-            pi = groups_list[0]
 
             self._scalr_cell = tt_refiner.get_unit_cell()
             Chatter.write(

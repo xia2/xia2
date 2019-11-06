@@ -609,8 +609,6 @@ class XCrystal(object):
         statistics_all = self._get_scaler().get_scaler_statistics()
 
         for key in statistics_all:
-            pname, xname, dname = key
-
             summary.append("For %s/%s/%s:" % key)
             available = list(statistics_all[key].keys())
 

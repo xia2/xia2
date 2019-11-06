@@ -910,8 +910,6 @@ class CCP4ScalerA(Scaler):
         # then gather up all of the resulting reflection files
         # and convert them into the required formats (.sca, .mtz.)
 
-        data = sc.get_summary()
-
         loggraph = sc.parse_ccp4_loggraph()
 
         resolution_info = {}

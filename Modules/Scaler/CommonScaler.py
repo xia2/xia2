@@ -1075,7 +1075,6 @@ class CommonScaler(Scaler):
         }
 
         stats = {}
-        select_result, select_anom_result = None, None
 
         # don't call self.get_scaler_likely_spacegroups() since that calls
         # self.scale() which introduced a subtle bug

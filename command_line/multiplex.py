@@ -3,7 +3,6 @@ from __future__ import absolute_import, division, print_function
 
 import logging
 import random
-from collections import OrderedDict
 
 import iotbx.phil
 from dials.util import Sorry
@@ -95,9 +94,6 @@ def run():
         flex.set_random_seed(params.seed)
         random.seed(params.seed)
 
-    expt_filenames = OrderedDict((e.filename, e.data) for e in params.input.experiments)
-    refl_filenames = OrderedDict((r.filename, r.data) for r in params.input.reflections)
-
     experiments = flatten_experiments(params.input.experiments)
     reflections = flatten_reflections(params.input.reflections)
     reflections = parse_multiple_datasets(reflections)
@@ -117,7 +113,7 @@ def run():
         for identifier in params.identifiers:
             identifiers.extend(identifier.split(","))
         params.identifiers = identifiers
-    scaled = ScaleAndMerge.MultiCrystalScale(experiments, reflections_all, params)
+    ScaleAndMerge.MultiCrystalScale(experiments, reflections_all, params)
 
 
 if __name__ == "__main__":

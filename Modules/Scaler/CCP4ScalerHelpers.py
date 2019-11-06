@@ -146,7 +146,6 @@ def compute_resolution(dmax, dmin, d, isig):
     max_bin = 0
 
     for b in sorted(bins):
-        s = smax + b * (smin - smax) / 100.0
         misig = meansd(bins[b])[0]
 
         if misig > max_misig:
