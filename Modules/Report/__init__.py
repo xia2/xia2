@@ -2,8 +2,10 @@
 
 from __future__ import absolute_import, division, print_function
 
+import codecs
 import os
 from collections import OrderedDict
+import six
 from six.moves import cStringIO as StringIO
 
 import xia2.Handlers.Environment
@@ -120,9 +122,11 @@ class Report(object):
             plot_multiplicity(self.intensities, settings)
             mult_json_files[settings.slice_axis] = settings.json.filename
             with open(settings.plot.filename, "rb") as fh:
-                mult_img_files[settings.slice_axis] = (
-                    fh.read().encode("base64").replace("\n", "")
-                )
+                if six.PY3:
+                    data = codecs.encode(fh.read(), encoding="base64")
+                else:
+                    data = codecs.encode(fh.read(), "base64")
+                mult_img_files[settings.slice_axis] = data.replace(b"\n", b"")
 
         return OrderedDict(
             ("multiplicity_%s" % axis, mult_img_files[axis]) for axis in ("h", "k", "l")
@@ -159,7 +163,7 @@ class Report(object):
             params=xtriage_params,
         )
         if self.report_dir is not None:
-            with open(os.path.join(self.report_dir, "xtriage.log"), "wb") as f:
+            with open(os.path.join(self.report_dir, "xtriage.log"), "w") as f:
                 f.write(s.getvalue())
             xia2.Handlers.Files.FileHandler.record_log_file(
                 "Xtriage", os.path.join(self.report_dir, "xtriage.log")
@@ -194,7 +198,6 @@ class Report(object):
         d = {}
         d.update(i_over_sig_i_vs_batch_plot(bm, isigi))
         d.update(scale_rmerge_vs_batch_plot(bm, rmerge, scalesvsbatch))
-
         return d
 
     def resolution_plots_and_stats(self):
@@ -299,10 +302,7 @@ class Report(object):
         mtz_object = reader.file_content()
 
         crystal_name = (
-            filter(
-                lambda c: c != "HKL_base",
-                [c.name() for c in mtz_object.crystals()],
-            )
+            [c.name() for c in mtz_object.crystals() if c.name() != "HKL_base"]
             or ["DEFAULT"]
         )[0]
         report_dir = (

@@ -103,7 +103,7 @@ class _Stream(object):
         if not self._file_name:
             self._file = sys.stdout
         else:
-            self._file = open(self._file_name, "w")
+            self._file = open(self._file_name, "wb")
         return self._file
 
     def set_file(self, file):
