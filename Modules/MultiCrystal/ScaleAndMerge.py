@@ -245,7 +245,7 @@ class DataManager(object):
 
         # offsets = calculate_batch_offsets(experiments)
         reflection_tables = []
-        for id_ in set(self._reflections["id"]).difference(set([-1])):
+        for id_ in set(self._reflections["id"]).difference({-1}):
             reflection_tables.append(
                 self._reflections.select(self._reflections["id"] == id_)
             )

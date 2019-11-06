@@ -1416,7 +1416,7 @@ class CommonScaler(Scaler):
             for op in s.all_ops():
                 R = B * sqr(op.r().as_double()).transpose() * B.inverse()
                 nearly_i3 = (U * R).inverse() * reference_U
-                score = sum([abs(_n - _i) for (_n, _i) in zip(nearly_i3, i3)])
+                score = sum(abs(_n - _i) for (_n, _i) in zip(nearly_i3, i3))
                 results.append((score, op.r().as_hkl(), op))
 
             results.sort()
