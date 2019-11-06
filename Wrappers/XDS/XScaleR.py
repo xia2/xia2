@@ -8,7 +8,7 @@ import shutil
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import Debug
-from xia2.Wrappers.XDS.XDS import xds_check_error
+from xia2.Wrappers.XDS.XDS import xds_check_error, get_xds_version
 from xia2.Wrappers.XDS.XScaleHelpers import get_correlation_coefficients_and_group
 
 
@@ -37,6 +37,8 @@ def XScaleR(
                 self.set_executable("xscale_par")
 
             self._version = "new"
+
+            self._built = int(get_xds_version().split("=")[-1])
 
             # overall information
             self._resolution_shells = ""
@@ -151,9 +153,12 @@ def XScaleR(
             xscale_inp.write(
                 "%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f\n" % tuple(self._cell)
             )
-            xscale_inp.write(
-                "MINIMUM_I/SIGMA=%.1f\n" % PhilIndex.params.xds.xscale.min_isigma
-            )
+            if self._built >= 20191015:
+                xscale_inp.write("SNRC=%.1f\n" % PhilIndex.params.xds.xscale.min_isigma)
+            else:
+                xscale_inp.write(
+                    "MINIMUM_I/SIGMA=%.1f\n" % PhilIndex.params.xds.xscale.min_isigma
+                )
 
             if self._reindex_matrix:
                 xscale_inp.write(
