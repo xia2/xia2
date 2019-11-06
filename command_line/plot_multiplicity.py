@@ -1,12 +1,12 @@
 # LIBTBX_PRE_DISPATCHER_INCLUDE_SH export PHENIX_GUI_ENVIRONMENT=1
-# LIBTBX_PRE_DISPATCHER_INCLUDE_SH export BOOST_ADAPTBX_FPE_DEFAULT=1
 
 from __future__ import absolute_import, division, print_function
 
 import json
+import sys
 
 import iotbx.phil
-import libtbx.load_env
+import six
 from cctbx.miller.display import render_2d, scene
 from scitbx.array_family import flex
 
@@ -86,7 +86,7 @@ class MultiplicityViewPng(render_2d):
                 ),
             }
             cm = cmap_d.get(self.settings.color_scheme, self.settings.color_scheme)
-            if isinstance(cm, basestring):
+            if isinstance(cm, six.string_types):
                 cm = pyplot.cm.get_cmap(cm)
             im = ax.scatter(
                 x.as_numpy_array(),
@@ -136,7 +136,7 @@ class MultiplicityViewJson(render_2d):
             indent = None
         else:
             indent = 2
-        with open(self.settings.json.filename, "wb") as fh:
+        with open(self.settings.json.filename, "w") as fh:
             json.dump(json_d, fh, indent=indent)
 
     def GetSize(self):
@@ -336,7 +336,7 @@ def run(args):
         master_phil=master_phil,
         reflection_file_def="data",
         pdb_file_def="symmetry_file",
-        usage_string="%s scaled_unmerged.mtz [options]" % libtbx.env.dispatcher_name,
+        usage_string="xia2.plot_multiplicity scaled_unmerged.mtz [options]",
     )
     settings = pcl.work.extract()
     file_name = settings.data
@@ -365,7 +365,6 @@ def run(args):
 
 
 def plot_multiplicity(miller_array, settings):
-
     settings.scale_colors_multiplicity = True
     settings.scale_radii_multiplicity = True
     settings.expand_to_p1 = True
@@ -373,17 +372,15 @@ def plot_multiplicity(miller_array, settings):
     settings.slice_mode = True
 
     if settings.plot.filename is not None:
-        view = MultiplicityViewPng(
+        MultiplicityViewPng(
             scene(miller_array, settings, merge=True), settings=settings
         )
 
     if settings.json.filename is not None:
-        view = MultiplicityViewJson(
+        MultiplicityViewJson(
             scene(miller_array, settings, merge=True), settings=settings
         )
 
 
 if __name__ == "__main__":
-    import sys
-
     run(sys.argv[1:])
