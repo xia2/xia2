@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
 from xia2.Driver.DriverFactory import DriverFactory
@@ -68,8 +66,6 @@ def LatticeSymmetry(DriverType=None):
             if self._spacegroup == "H3":
                 self._spacegroup = "R3:H"
 
-            return
-
         def generate(self):
             if not self._cell:
                 raise RuntimeError("no unit cell specified")
@@ -90,7 +86,6 @@ def LatticeSymmetry(DriverType=None):
             state = {}
 
             for o in self.get_all_output():
-                # print o[:-1]
                 if ":" in o:
                     count = o.find(":")
                     left = o[:count]
@@ -108,13 +103,15 @@ def LatticeSymmetry(DriverType=None):
                     # 'Symmetry-adapted cell'].replace(
                     # '(', ' ').replace(')', ' ').replace(',', ' ').split())
 
-                    cell = map(
-                        float,
-                        state["Unit cell"]
-                        .replace("(", " ")
-                        .replace(")", " ")
-                        .replace(",", " ")
-                        .split(),
+                    cell = list(
+                        map(
+                            float,
+                            state["Unit cell"]
+                            .replace("(", " ")
+                            .replace(")", " ")
+                            .replace(",", " ")
+                            .split(),
+                        )
                     )
 
                     lauegroup = ""
@@ -147,7 +144,7 @@ def LatticeSymmetry(DriverType=None):
                     reindex_basis = state["Change of basis"]
                     reindex = state["Inverse"]
 
-                    if not lattice in self._lattices:
+                    if lattice not in self._lattices:
                         self._lattices.append(lattice)
                         self._distortions[lattice] = distortion
                         self._cells[lattice] = cell
@@ -160,8 +157,6 @@ def LatticeSymmetry(DriverType=None):
                         self._reindex_ops_basis[lattice] = reindex_basis
 
                     state = {}
-
-            return
 
         def get_lattices(self):
             return self._lattices

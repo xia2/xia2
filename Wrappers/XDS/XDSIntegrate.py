@@ -1,10 +1,10 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
 import copy
 import os
 import shutil
+
+from libtbx import Auto
 
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
@@ -25,8 +25,8 @@ from xia2.Wrappers.XDS.XDS import (
 
 # specific helper stuff
 from xia2.Wrappers.XDS.XDSIntegrateHelpers import (
-    _parse_integrate_lp,
-    _parse_integrate_lp_updates,
+    parse_integrate_lp,
+    parse_integrate_lp_updates,
 )
 
 # For details on reflecting_range, it's E.S.D., and beam divergence etc.
@@ -98,13 +98,10 @@ def XDSIntegrate(DriverType=None, params=None):
             self._min_mosaic = None
             self._max_mosaic = None
 
-            return
-
         # getter and setter for input / output data
 
         def set_input_data_file(self, name, data):
             self._input_data_files[name] = data
-            return
 
         def get_output_data_file(self, name):
             return self._output_data_files[name]
@@ -172,8 +169,6 @@ def XDSIntegrate(DriverType=None, params=None):
                     "NUMBER_OF_PROFILE_GRID_POINTS_ALONG_ALPHA/BETA= %d\n" % ab
                 )
                 xds_inp.write("NUMBER_OF_PROFILE_GRID_POINTS_ALONG_GAMMA= %d\n" % c)
-
-            from libtbx import Auto
 
             mp_params = PhilIndex.params.xia2.settings.multiprocessing
             if mp_params.mode == "serial" and mp_params.njob > 1:
@@ -328,15 +323,11 @@ def XDSIntegrate(DriverType=None, params=None):
             # look through integrate.lp for some useful information
             # to help with the analysis
 
-            space_group_number = 0
-
             mosaics = []
 
             for o in open(
                 os.path.join(self.get_working_directory(), "INTEGRATE.LP")
             ).readlines():
-                if "SPACE_GROUP_NUMBER" in o:
-                    space_group_number = int(o.split()[-1])
                 if "CRYSTAL MOSAICITY (DEGREES)" in o:
                     mosaic = float(o.split()[-1])
                     mosaics.append(mosaic)
@@ -353,16 +344,14 @@ def XDSIntegrate(DriverType=None, params=None):
                 % (self._min_mosaic, self._mean_mosaic, self._max_mosaic)
             )
 
-            stats = _parse_integrate_lp(
+            stats = parse_integrate_lp(
                 os.path.join(self.get_working_directory(), "INTEGRATE.LP")
             )
 
             self._per_image_statistics = stats
 
-            self._updates = _parse_integrate_lp_updates(
+            self._updates = parse_integrate_lp_updates(
                 os.path.join(self.get_working_directory(), "INTEGRATE.LP")
             )
-
-            return
 
     return XDSIntegrateWrapper(params)

@@ -14,6 +14,7 @@ import shutil
 import time
 
 import scitbx.matrix
+from dials.array_family import flex
 
 from xia2.Experts.SymmetryExpert import (
     lattice_to_spacegroup_number,
@@ -318,12 +319,12 @@ class XDSIntegrater(Integrater):
 
         # pass in the correct data
 
-        for file in [
+        for file in (
             "X-CORRECTIONS.cbf",
             "Y-CORRECTIONS.cbf",
             "BKGINIT.cbf",
             "XPARM.XDS",
-        ]:
+        ):
             defpix.set_input_data_file(file, self._xds_data_files[file])
 
         defpix.set_data_range(
@@ -373,13 +374,13 @@ class XDSIntegrater(Integrater):
             self._intgr_wedge[1] + self.get_frame_offset(),
         )
 
-        for file in [
+        for file in (
             "X-CORRECTIONS.cbf",
             "Y-CORRECTIONS.cbf",
             "BLANK.cbf",
             "BKGPIX.cbf",
             "GAIN.cbf",
-        ]:
+        ):
             integrate.set_input_data_file(file, self._xds_data_files[file])
 
         if "GXPARM.XDS" in self._xds_data_files:
@@ -516,7 +517,6 @@ class XDSIntegrater(Integrater):
         if PhilIndex.params.xia2.settings.input.format.dynamic_shadowing:
             from dxtbx.serialize import load
             from dials.algorithms.shadowing.filter import filter_shadowed_reflections
-            from dials.array_family import flex
 
             experiments_json = xparm_xds_to_experiments_json(
                 os.path.join(self.get_working_directory(), "XPARM.XDS"),
@@ -788,7 +788,7 @@ class XDSIntegrater(Integrater):
             # check for alien reflections and perhaps recycle - removing them
             correct_remove = correct.get_remove()
             if correct_remove:
-                current_remove = []
+                current_remove = set()
                 final_remove = []
 
                 # first ensure that there are no duplicate entries...
@@ -799,11 +799,11 @@ class XDSIntegrater(Integrater):
                         os.path.join(self.get_working_directory(), "REMOVE.HKL"), "r"
                     ) as fh:
                         for line in fh.readlines():
-                            h, k, l = map(int, line.split()[:3])
+                            h, k, l = list(map(int, line.split()[:3]))
                             z = float(line.split()[3])
 
-                            if not (h, k, l, z) in current_remove:
-                                current_remove.append((h, k, l, z))
+                            if (h, k, l, z) not in current_remove:
+                                current_remove.add((h, k, l, z))
 
                     for c in correct_remove:
                         if c in current_remove:
@@ -818,43 +818,41 @@ class XDSIntegrater(Integrater):
                     # we want to remove all of the new dodgy reflections
                     final_remove = correct_remove
 
-                remove_hkl = open(
-                    os.path.join(self.get_working_directory(), "REMOVE.HKL"), "w"
-                )
-
                 z_min = PhilIndex.params.xds.z_min
                 rejected = 0
 
-                # write in the old reflections
-                for remove in current_remove:
-                    z = remove[3]
-                    if z >= z_min:
-                        remove_hkl.write("%d %d %d %f\n" % remove)
-                    else:
-                        rejected += 1
-                Debug.write(
-                    "Wrote %d old reflections to REMOVE.HKL"
-                    % (len(current_remove) - rejected)
-                )
-                Debug.write("Rejected %d as z < %f" % (rejected, z_min))
+                with open(
+                    os.path.join(self.get_working_directory(), "REMOVE.HKL"), "w"
+                ) as remove_hkl:
 
-                # and the new reflections
-                rejected = 0
-                used = 0
-                for remove in final_remove:
-                    z = remove[3]
-                    if z >= z_min:
-                        used += 1
-                        remove_hkl.write("%d %d %d %f\n" % remove)
-                    else:
-                        rejected += 1
-                Debug.write(
-                    "Wrote %d new reflections to REMOVE.HKL"
-                    % (len(final_remove) - rejected)
-                )
-                Debug.write("Rejected %d as z < %f" % (rejected, z_min))
+                    # write in the old reflections
+                    for remove in current_remove:
+                        z = remove[3]
+                        if z >= z_min:
+                            remove_hkl.write("%d %d %d %f\n" % remove)
+                        else:
+                            rejected += 1
+                    Debug.write(
+                        "Wrote %d old reflections to REMOVE.HKL"
+                        % (len(current_remove) - rejected)
+                    )
+                    Debug.write("Rejected %d as z < %f" % (rejected, z_min))
 
-                remove_hkl.close()
+                    # and the new reflections
+                    rejected = 0
+                    used = 0
+                    for remove in final_remove:
+                        z = remove[3]
+                        if z >= z_min:
+                            used += 1
+                            remove_hkl.write("%d %d %d %f\n" % remove)
+                        else:
+                            rejected += 1
+                    Debug.write(
+                        "Wrote %d new reflections to REMOVE.HKL"
+                        % (len(final_remove) - rejected)
+                    )
+                    Debug.write("Rejected %d as z < %f" % (rejected, z_min))
 
                 # we want to rerun the finishing step so...
                 # unless we have added no new reflections... or unless we

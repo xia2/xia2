@@ -33,20 +33,20 @@ def mmcc(ds, xs, ys):
     assert len(ds) == len(xs)
     assert len(ds) == len(ys)
 
-    ds = map(float, ds)
-    xs = map(float, xs)
-    ys = map(float, ys)
+    ds = [float(i) for i in ds]
+    xs = [float(i) for i in xs]
+    ys = [float(i) for i in ys]
 
     _d = sum(ds) / len(ds)
     _x = sum(xs) / len(xs)
     _y = sum(ys) / len(ys)
 
-    mx = sum([(d - _d) * (x - _x) for d, x in zip(ds, xs)]) / sum(
-        [(d - _d) * (d - _d) for d in ds]
+    mx = sum((d - _d) * (x - _x) for d, x in zip(ds, xs)) / sum(
+        (d - _d) * (d - _d) for d in ds
     )
 
-    my = sum([(d - _d) * (y - _y) for d, y in zip(ds, ys)]) / sum(
-        [(d - _d) * (d - _d) for d in ds]
+    my = sum((d - _d) * (y - _y) for d, y in zip(ds, ys)) / sum(
+        (d - _d) * (d - _d) for d in ds
     )
 
     cx = _x - mx * _d
@@ -182,7 +182,7 @@ class BackstopMask(object):
         coordinates = {}
 
         for record in open(site_file):
-            values = map(float, record.split()[:9])
+            values = list(map(float, record.split()[:9]))
             if not values:
                 continue
             distances.append(values[0])

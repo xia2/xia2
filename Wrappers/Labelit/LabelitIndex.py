@@ -319,7 +319,7 @@ def LabelitIndex(DriverType=None, indxr_print=True):
                         "rmsd": float(l[3]),
                         "nspots": int(l[4]),
                         "lattice": l[6],
-                        "cell": map(float, l[7:13]),
+                        "cell": list(map(float, l[7:13])),
                         "volume": int(l[-1]),
                         "smiley": smiley,
                     }

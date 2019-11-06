@@ -33,7 +33,7 @@ def parse_aimless_xml(xml_file):
     datasets = result.getElementsByTagName("Dataset")
     for j, dataset in enumerate(datasets):
         summary = {}
-        pname, xname, dname = map(str, dataset.getAttribute("name").split("/"))
+        pname, xname, dname = list(map(str, dataset.getAttribute("name").split("/")))
 
         for xml_name, standard in aimless_xml_names_to_standard.items():
             row = result.getElementsByTagName(xml_name)[j]

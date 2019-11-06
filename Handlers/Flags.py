@@ -1,12 +1,3 @@
-# /usr/bin/env python
-# Flags.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 4th May 2007
-#
 # A singleton to handle flags, which can be imported more easily
 # as it will not suffer the problems with circular references that
 # the CommandLine singleton suffers from.
@@ -40,7 +31,6 @@ class _Flags(object):
         return self._starting_directory
 
     def set_xparm(self, xparm):
-
         self._xparm = xparm
 
         from xia2.Wrappers.XDS.XDS import xds_read_xparm
@@ -68,10 +58,10 @@ class _Flags(object):
         return self._xparm_distance
 
     def set_xparm_ub(self, xparm):
-
         self._xparm_ub = xparm
 
-        tokens = map(float, open(xparm, "r").read().split())
+        with open(xparm, "r") as fh:
+            tokens = list(map(float, fh.read().split()))
 
         self._xparm_a = tokens[-9:-6]
         self._xparm_b = tokens[-6:-3]
@@ -85,22 +75,6 @@ class _Flags(object):
 
     def get_xparm_c(self):
         return self._xparm_c
-
-    def set_freer_file(self, freer_file):
-
-        freer_file = os.path.abspath(freer_file)
-
-        if not os.path.exists(freer_file):
-            raise RuntimeError("%s does not exist" % freer_file)
-
-        from xia2.Modules.FindFreeFlag import FindFreeFlag
-        from xia2.Handlers.Streams import Debug
-
-        column = FindFreeFlag(freer_file)
-
-        Debug.write("FreeR_flag column in %s found: %s" % (freer_file, column))
-
-        self._freer_file = freer_file
 
 
 Flags = _Flags()

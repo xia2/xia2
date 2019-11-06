@@ -261,7 +261,7 @@ def Chef(DriverType=None, stream=Chatter):
                     wavelength = key.split()[-1]
                     rd_data[wavelength] = transpose_loggraph(results[key])
 
-                    values = map(float, rd_data[wavelength]["2_Rd"])
+                    values = [float(x) for x in rd_data[wavelength]["2_Rd"]]
                     digest = self.digest_rd(values)
 
                     # stream.write('Rd score (%s): %.2f' % \

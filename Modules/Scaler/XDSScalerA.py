@@ -21,7 +21,6 @@ from xia2.Modules.Scaler.CommonScaler import CommonScaler as Scaler
 from xia2.Modules.Scaler.tools import compute_average_unit_cell
 from xia2.Modules.Scaler.XDSScalerHelpers import XDSScalerHelper
 from xia2.Wrappers.CCP4.CCP4Factory import CCP4Factory
-from xia2.Wrappers.XDS.Cellparm import Cellparm as _Cellparm
 from xia2.Wrappers.XDS.XScaleR import XScaleR as _XScale
 
 
@@ -118,20 +117,12 @@ class XDSScalerA(Scaler):
         auto_logfiler(xscale)
         return xscale
 
-    def Cellparm(self):
-        """Create a Cellparm wrapper from _Cellparm - set the working directory
-        and log file stuff as a part of this..."""
-        cellparm = _Cellparm()
-        cellparm.set_working_directory(self.get_working_directory())
-        auto_logfiler(cellparm)
-        return cellparm
-
     def _xdsin_to_batch_range(self, xdsin):
         for record in open(xdsin):
             if not record.startswith("!"):
                 break
             if record.startswith("!DATA_RANGE"):
-                return map(int, record.split()[-2:])
+                return list(map(int, record.split()[-2:]))
         raise RuntimeError("BATCH range not found in %s" % xdsin)
 
     def _hklin_to_batch_range(self, hklin):
@@ -962,7 +953,7 @@ class XDSScalerA(Scaler):
                     for line in open(
                         os.path.join(self.get_working_directory(), "REMOVE.HKL"), "r"
                     ).readlines():
-                        h, k, l = map(int, line.split()[:3])
+                        h, k, l = list(map(int, line.split()[:3]))
                         z = float(line.split()[3])
                         current_remove.add((h, k, l, z))
 
