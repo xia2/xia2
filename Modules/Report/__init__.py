@@ -194,7 +194,6 @@ class Report(object):
         d = {}
         d.update(i_over_sig_i_vs_batch_plot(bm, isigi))
         d.update(scale_rmerge_vs_batch_plot(bm, rmerge, scalesvsbatch))
-
         return d
 
     def resolution_plots_and_stats(self):
@@ -299,10 +298,7 @@ class Report(object):
         mtz_object = reader.file_content()
 
         crystal_name = (
-            list(filter(
-                lambda c: c != "HKL_base",
-                [c.name() for c in mtz_object.crystals()],
-            ))
+            [c.name() for c in mtz_object.crystals() if c.name() != "HKL_base"]
             or ["DEFAULT"]
         )[0]
         report_dir = (
