@@ -299,10 +299,10 @@ class Report(object):
         mtz_object = reader.file_content()
 
         crystal_name = (
-            filter(
+            list(filter(
                 lambda c: c != "HKL_base",
                 [c.name() for c in mtz_object.crystals()],
-            )
+            ))
             or ["DEFAULT"]
         )[0]
         report_dir = (
