@@ -23,8 +23,6 @@ symop = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "Data", "ccp4-symop.lib")
 )
 
-syminfo = os.path.join(os.environ["CCP4"], "lib", "data", "syminfo.lib")
-
 
 def lattice_to_spacegroup(lattice):
     """Convert a lattice e.g. tP into the minimal spacegroup number
@@ -63,8 +61,9 @@ def spacegroup_name_xHM_to_old(xHM):
     current_old = ""
     current_xHM = ""
 
-    old_names = []
+    old_names = set()
 
+    syminfo = os.path.join(os.environ["CCP4"], "lib", "data", "syminfo.lib")
     for line in open(syminfo, "r").readlines():
         if line[0] == "#":
             continue
@@ -77,7 +76,7 @@ def spacegroup_name_xHM_to_old(xHM):
 
         if "end_spacegroup" in line:
             mapping[current_xHM] = current_old
-            old_names.append(current_old)
+            old_names.add(current_old)
 
     xHM = xHM.upper()
 

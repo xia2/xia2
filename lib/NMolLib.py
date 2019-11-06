@@ -8,7 +8,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-from builtins import range
 import math
 import os
 
@@ -81,21 +80,19 @@ def sequence_mass(sequence):
 
 
 def compute_nmol_from_volume(volume, mass, resolution):
+    with open(nmolparams, "r") as fh:
 
-    file = open(nmolparams, "r")
+        while True:
+            line = fh.readline()
+            if not line[0] == "#":
+                break
 
-    while True:
-        line = file.readline()
-        if not line[0] == "#":
-            break
-
-    resolutions = map(float, line.split(","))[:13]
-    P0_list = map(float, file.readline().split(","))[:13]
-    Vm_bar_list = map(float, file.readline().split(","))[:13]
-    w_list = map(float, file.readline().split(","))[:13]
-    A_list = map(float, file.readline().split(","))[:13]
-    s_list = map(float, file.readline().split(","))[:13]
-    file.close()
+        resolutions = [float(x) for x in line.split(",")[:13]]
+        P0_list = [float(x) for x in fh.readline().split(",")[:13]]
+        Vm_bar_list = [float(x) for x in fh.readline().split(",")[:13]]
+        w_list = [float(x) for x in fh.readline().split(",")[:13]]
+        A_list = [float(x) for x in fh.readline().split(",")[:13]]
+        s_list = [float(x) for x in fh.readline().split(",")[:13]]
 
     if resolution > resolutions[-1]:
         Chatter.write(
@@ -108,8 +105,6 @@ def compute_nmol_from_volume(volume, mass, resolution):
             "Resolution higher than peak %f -> %f" % (resolution, resolutions[0])
         )
         resolution = resolutions[0]
-
-    start = 0
 
     for start in range(12):
         if resolution > resolutions[start] and resolution < resolutions[start + 1]:
