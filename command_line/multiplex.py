@@ -119,10 +119,10 @@ def run(args):
         params.identifiers = identifiers
 
     try:
-        scaled = ScaleAndMerge.MultiCrystalScale(experiments, reflections_all, params)
+        ScaleAndMerge.MultiCrystalScale(experiments, reflections_all, params)
     except ValueError as e:
         sys.exit(str(e))
 
 
 if __name__ == "__main__":
-    run()
+    run(sys.argv[1:])
