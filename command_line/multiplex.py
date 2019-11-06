@@ -3,9 +3,9 @@ from __future__ import absolute_import, division, print_function
 
 import logging
 import random
+import sys
 
 import iotbx.phil
-from dials.util import Sorry
 
 import xia2.Handlers.Streams
 from dials.array_family import flex
@@ -39,7 +39,7 @@ output {
 )
 
 
-def run():
+def run(args):
     usage = (
         "xia2.multiplex [options] [param.phil] "
         "models1.expt models2.expt observations1.refl "
@@ -57,7 +57,7 @@ def run():
     )
 
     # Parse the command line
-    params, options = parser.parse_args(show_diff_phil=False)
+    params, options = parser.parse_args(args=args, show_diff_phil=False)
 
     # Configure the logging
     xia2.Handlers.Streams.streams_off()
@@ -85,7 +85,7 @@ def run():
     try:
         assert len(params.input.reflections) == len(params.input.experiments)
     except AssertionError:
-        raise Sorry(
+        raise sys.exit(
             "The number of input reflections files does not match the "
             "number of input experiments"
         )
@@ -113,7 +113,11 @@ def run():
         for identifier in params.identifiers:
             identifiers.extend(identifier.split(","))
         params.identifiers = identifiers
-    ScaleAndMerge.MultiCrystalScale(experiments, reflections_all, params)
+
+    try:
+        scaled = ScaleAndMerge.MultiCrystalScale(experiments, reflections_all, params)
+    except ValueError as e:
+        sys.exit(str(e))
 
 
 if __name__ == "__main__":
