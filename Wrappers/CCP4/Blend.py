@@ -43,7 +43,7 @@ def Blend(DriverType=None):
             input_files_dat = os.path.join(
                 self.get_working_directory(), "input_files.dat"
             )
-            with open(input_files_dat, "wb") as f:
+            with open(input_files_dat, "w") as f:
                 for hklin in self._hklin_files:
                     print(hklin, file=f)
 
@@ -160,7 +160,7 @@ def Blend(DriverType=None):
 
 
 def parse_summary_file(summary_file):
-    with open(summary_file, "rb") as f:
+    with open(summary_file, "r") as f:
         lines = f.readlines()
 
     summary = {}
@@ -197,7 +197,7 @@ def parse_summary_file(summary_file):
 
 
 def parse_clusters_file(clusters_file):
-    with open(clusters_file, "rb") as f:
+    with open(clusters_file, "r") as f:
         lines = f.readlines()
 
     contains_furthest_datasets = False
@@ -246,7 +246,7 @@ def parse_final_list_of_files_dat(filename):
     # which data are discarded because weakened by radiation damage, the sixth
     # is resolution cutoff.
 
-    with open(filename, "rb") as f:
+    with open(filename, "r") as f:
         lines = f.readlines()
 
     result = {}
