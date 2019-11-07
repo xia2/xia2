@@ -1,14 +1,13 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
+import json
 import os
+
+from xia2.Driver.DriverFactory import DriverFactory
 
 
 def DetectBlanks(DriverType=None):
     """A factory for DetectBlanksWrapper classes."""
-
-    from xia2.Driver.DriverFactory import DriverFactory
 
     DriverInstance = DriverFactory.Driver(DriverType)
 
@@ -83,9 +82,7 @@ def DetectBlanks(DriverType=None):
             self.check_for_errors()
 
             assert os.path.exists(self._json_filename), self._json_filename
-            import json
-
-            with open(self._json_filename, "rb") as f:
-                self._results = json.load(f)
+            with open(self._json_filename, "r") as fh:
+                self._results = json.load(fh)
 
     return DetectBlanksWrapper()

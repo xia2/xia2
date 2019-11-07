@@ -1,12 +1,12 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
 import json
 import math
 import os
 
+from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
+from xia2.Handlers.Streams import Debug
 
 
 class DIALSIntegrateError(RuntimeError):
@@ -15,8 +15,6 @@ class DIALSIntegrateError(RuntimeError):
 
 def Integrate(DriverType=None):
     """A factory for IntegrateWrapper classes."""
-
-    from xia2.Driver.DriverFactory import DriverFactory
 
     DriverInstance = DriverFactory.Driver(DriverType)
 
@@ -115,8 +113,6 @@ def Integrate(DriverType=None):
             return self._integration_report
 
         def run(self):
-            from xia2.Handlers.Streams import Debug
-
             Debug.write("Running dials.integrate")
 
             self.clear_command_line()
@@ -201,13 +197,11 @@ Try using a machine with more memory or using fewer processors."""
             # save some of the output for future reference - the per-image
             # results
 
-            self._integration_report = json.load(
-                open(self._integration_report_filename, "rb")
-            )
+            with open(self._integration_report_filename, "r") as fh:
+                self._integration_report = json.load(fh)
 
             self._per_image_statistics = {}
             table = self._integration_report["tables"]["integration.image.summary"]
-            rows = table["rows"]
             for row in table["rows"]:
                 n_ref = float(row["n_prf"])
                 if n_ref > 0:

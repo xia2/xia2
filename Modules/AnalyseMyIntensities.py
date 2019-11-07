@@ -1,12 +1,3 @@
-#!/usr/bin/env python
-# AnalyseMyIntensities.py
-#   Copyright (C) 2007 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 16th June 2007
-#
 # A tool to use for the analysis and gathering of scaled intensity data
 # from a single macromolecular crystal. This will be both a module (for
 # use in xia2) and an application in it's own right, AMI.
@@ -28,7 +19,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import copy
 import math
 import os
 
@@ -39,25 +29,20 @@ class AnalyseMyIntensities(object):
     # FIXME retire this entire class...
 
     def __init__(self):
-
         self._working_directory = os.getcwd()
         self._factory = CCP4Factory()
         self._resolution = 0.0
-
-        return
 
     # admin functions
 
     def set_working_directory(self, working_directory):
         self._working_directory = working_directory
         self._factory.set_working_directory(working_directory)
-        return
 
     def get_working_directory(self):
         return self._working_directory
 
     def compute_average_cell(self, hklin_list):
-
         if len(hklin_list) == 0:
             raise RuntimeError("no input reflection files to compute cell from")
 

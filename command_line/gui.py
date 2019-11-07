@@ -88,7 +88,6 @@ class ProcessingFrame(wx.Frame):
             scan = imageset.get_scan()
             first, last = scan.get_image_range()
             args.append("image=%s:%i:%i" % (imageset.paths()[0], first, last))
-        kwds = {}
 
         self.nb.AdvanceSelection(forward=True)
         thread = xia2Thread(self, output_dir, args)

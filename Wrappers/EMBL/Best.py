@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+import xml.etree.ElementTree as ET
 
 from xia2.Driver.DriverFactory import DriverFactory
 
@@ -210,7 +211,7 @@ def BestStrategy(DriverType=None):
     return BestStrategyWrapper()
 
 
-xml_names = (
+xml_names = {
     "resolution",
     "distance",
     "i_sigma",
@@ -233,20 +234,18 @@ xml_names = (
     "exposure_time",
     "overlaps",
     "dmin",
-)
+}
 
 
 def xml_to_dict(best_xml):
-    xml_string = open(best_xml, "rb").read()
+    with open(best_xml, "rb") as fh:
+        xml_string = fh.read()
     if "</edna_tables>" not in xml_string:
         xml_string = "\n".join((xml_string, "</edna_tables>"))
-    import xml.etree.ElementTree as ET
 
     tree = ET.ElementTree(ET.fromstring(xml_string))
     root = tree.getroot()
     assert root.tag == "edna_tables", root.tag
-    program = root.attrib.get("program")
-    version = root.attrib.get("version")
 
     summary_values = {}
 
@@ -273,7 +272,6 @@ def xml_to_dict(best_xml):
 
 
 if __name__ == "__main__":
-
     best = BestStrategy()
     best.set_detector("pilatus6m")
     best.set_t_ref(0.5)

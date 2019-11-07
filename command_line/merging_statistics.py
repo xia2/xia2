@@ -4,6 +4,7 @@ import os
 import sys
 
 import iotbx.phil
+from cctbx import sgtbx
 from iotbx.command_line import merging_statistics
 
 
@@ -53,8 +54,6 @@ def table1_tex(merging_stats):
     )
 
     # witchcraft to work out how to write out the unit cell
-    from cctbx import sgtbx
-
     cell_str = ["Unit-cell parameters (\\AA)"]
     for ms in merging_stats:
         sg = ms.crystal_symmetry.space_group()
@@ -122,7 +121,6 @@ def table1_tex(merging_stats):
 
         for ms in merging_stats:
             ms_d = ms.as_dict()
-            data = ms_d[p]
             magic_str.append(
                 ("%s (%s)" % (fmt, fmt)) % (ms_d["overall"][p] * m, ms_d[p][-1] * m)
             )
