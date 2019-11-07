@@ -616,7 +616,7 @@ class XCrystal(object):
             available = statistics_all[key].keys()
 
             for s in keys:
-                if k not in available:
+                if s not in available:
                     continue
 
                 format_str = formats[s]
