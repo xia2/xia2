@@ -276,7 +276,7 @@ def print_sweeps(out=sys.stdout):
 
         # sort on exposure epoch
         epochs = [s.get_imageset().get_scan().get_epochs()[0] for s in sweeps]
-        sweeps = [s for _, s in sorted(zip(sweeps, epochs))]
+        sweeps = [s for _, s in sorted(zip(epochs, sweeps))]
         for s in sweeps:
             if len(s.get_images()) < min_images:
                 Debug.write("Rejecting sweep %s:" % s.get_template())
