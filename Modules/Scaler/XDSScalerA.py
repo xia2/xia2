@@ -4,6 +4,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+from past.builtins import basestring
 import copy
 import inspect
 import os
