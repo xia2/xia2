@@ -36,6 +36,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import io
 import os
 import time
 import signal
@@ -501,7 +502,7 @@ class DefaultDriver(object):
                     )
             self._log_file.close()
             self._log_file = None
-            with open(self._log_file_name, "rb") as f:
+            with io.open(self._log_file_name, "r", encoding="latin-1") as f:
                 lines = f.readlines()
                 n = min(50, len(lines))
                 Debug.write("Last %i lines of %s:" % (n, self._log_file_name))
