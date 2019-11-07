@@ -4,12 +4,12 @@
 
 from __future__ import absolute_import, division, print_function
 
-from past.builtins import basestring
 import copy
 import inspect
 import os
 import shutil
 
+import six
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
@@ -88,7 +88,7 @@ class XDSScalerA(Scaler):
             ).object
             return_obj._sweep_information[i]["integrater"] = integrater_cls.from_dict(d)
             # expects epoch as number (or int?)
-            if isinstance(i, basestring):
+            if isinstance(i, six.string_types):
                 return_obj._sweep_information[float(i)] = return_obj._sweep_information[
                     i
                 ]

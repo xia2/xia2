@@ -30,9 +30,9 @@
 
 from __future__ import absolute_import, division, print_function
 
-from past.builtins import basestring
 import os
 
+import six
 import xia2.Driver.DefaultDriver
 
 
@@ -107,7 +107,7 @@ def CCP4DecoratorFactory(DriverInstance):
         def checkHklin(self):
             if self._hklin is None:
                 raise RuntimeError("hklin not defined")
-            elif isinstance(self._hklin, basestring):
+            elif isinstance(self._hklin, six.string_types):
                 if not os.path.exists(self._hklin):
                     raise RuntimeError("hklin %s does not exist" % self._hklin)
             else:
@@ -268,7 +268,7 @@ def CCP4DecoratorFactory(DriverInstance):
 
             if self._hklin is not None:
                 self.add_command_line("hklin")
-                if isinstance(self._hklin, basestring):
+                if isinstance(self._hklin, six.string_types):
                     self.add_command_line(self._hklin)
                 else:
                     for hklin in self._hklin:

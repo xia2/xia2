@@ -1,10 +1,3 @@
-#!/usr/bin/env python
-# XCrystal.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
 # A versioning object representation of the toplevel crystal object,
 # which presents much of the overall interface of xia2dpa to the
 # outside world.
@@ -58,9 +51,11 @@
 
 from __future__ import absolute_import, division, print_function
 
-from past.builtins import basestring
 import collections
+import inspect
 import os
+
+import six
 
 # Generation of Crystallographic Information Files (CIF/mmCIF)
 from xia2.Handlers.CIF import CIF, mmCIF
@@ -90,9 +85,8 @@ class _aa_sequence(object):
     def to_dict(self):
         obj = {}
         obj["__id__"] = "aa_sequence"
-        import inspect
 
-        attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
+        attributes = inspect.getmembers(self, lambda m: not inspect.isroutine(m))
         for a in attributes:
             if a[0].startswith("__"):
                 continue
@@ -140,7 +134,6 @@ class _ha_info(object):
     def to_dict(self):
         obj = {}
         obj["__id__"] = "ha_info"
-        import inspect
 
         attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
         for a in attributes:
@@ -272,7 +265,6 @@ class XCrystal(object):
     def to_dict(self):
         obj = {}
         obj["__id__"] = "XCrystal"
-        import inspect
 
         attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
         for a in attributes:
@@ -357,7 +349,7 @@ class XCrystal(object):
                             found_sweep = True
                             break
             for s in sample._sweeps:
-                assert not isinstance(s, basestring)
+                assert not isinstance(s, six.string_types)
         if return_obj._scaler is not None:
             for intgr in return_obj._get_integraters():
                 return_obj._scaler._scalr_integraters[
@@ -377,7 +369,6 @@ class XCrystal(object):
         return return_obj
 
     def get_output(self):
-
         result = "Crystal: %s\n" % self._name
 
         if self._aa_sequence:
@@ -609,28 +600,25 @@ class XCrystal(object):
 
         statistics_all = self._get_scaler().get_scaler_statistics()
 
+        keys = (
+            "High resolution limit",
+            "Low resolution limit",
+            "Completeness",
+            "Multiplicity",
+            "I/sigma",
+            "Rmerge(I+/-)",
+            "CC half",
+            "Anomalous completeness",
+            "Anomalous multiplicity",
+        )
         for key in statistics_all:
             summary.append("For %s/%s/%s:" % key)
-            available = list(statistics_all[key].keys())
+            available = statistics_all[key].keys()
 
-            stats = []
-            keys = [
-                "High resolution limit",
-                "Low resolution limit",
-                "Completeness",
-                "Multiplicity",
-                "I/sigma",
-                "Rmerge(I+/-)",
-                "CC half",
-                "Anomalous completeness",
-                "Anomalous multiplicity",
-            ]
+            for s in keys:
+                if k not in available:
+                    continue
 
-            for k in keys:
-                if k in available:
-                    stats.append(k)
-
-            for s in stats:
                 format_str = formats[s]
                 if isinstance(statistics_all[key][s], float):
                     expanded_format_str = " ".join(
@@ -641,7 +629,7 @@ class XCrystal(object):
                         "%s: " % (s.ljust(40))
                         + expanded_format_str % (statistics_all[key][s])
                     )
-                elif isinstance(statistics_all[key][s], basestring):
+                elif isinstance(statistics_all[key][s], six.string_types):
                     summary.append("%s: %s" % (s.ljust(40), statistics_all[key][s]))
                 else:
                     expanded_format_str = " ".join(
@@ -751,7 +739,7 @@ class XCrystal(object):
         self._wavelengths[xwavelength.get_name()] = xwavelength
 
         # bug # 2326 - need to decide when we're anomalous
-        if len(list(self._wavelengths.keys())) > 1:
+        if len(self._wavelengths.keys()) > 1:
             self._anomalous = True
 
         if xwavelength.get_f_pr() != 0.0 or xwavelength.get_f_prpr() != 0.0:
@@ -762,7 +750,6 @@ class XCrystal(object):
         return self._samples[sample_name]
 
     def add_sample(self, xsample):
-
         if xsample.__class__.__name__ != "XSample":
             raise RuntimeError("input should be an XSample object")
 
