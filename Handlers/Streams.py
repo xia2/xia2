@@ -1,11 +1,3 @@
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# Maintained by Graeme Winter
-# 15th August 2006
-#
 # "Standard" output streams for the output of xia2 - these will allow
 # filtering of the output to files, the standard output, a GUI, none of
 # the above, all of the above.
@@ -18,6 +10,7 @@
 from __future__ import absolute_import, division, print_function
 
 import inspect
+import io
 import logging
 import os
 import sys
@@ -103,7 +96,7 @@ class _Stream(object):
         if not self._file_name:
             self._file = sys.stdout
         else:
-            self._file = open(self._file_name, "wb")
+            self._file = io.open(self._file_name, "w", encoding="utf-8")
         return self._file
 
     def set_file(self, file):
@@ -132,14 +125,10 @@ class _Stream(object):
         for r in record.split("\n"):
             if self._prefix:
                 result = self.get_file().write(
-                    ("[%s]  %s\n" % (self._prefix, r.strip() if strip else r)).encode(
-                        "utf-8"
-                    )
+                    u"[%s]  %s\n" % (self._prefix, r.strip() if strip else r)
                 )
             else:
-                result = self.get_file().write(
-                    ("%s\n" % (r.strip() if strip else r)).encode("utf-8")
-                )
+                result = self.get_file().write(u"%s\n" % (r.strip() if strip else r))
 
             self.get_file().flush()
 

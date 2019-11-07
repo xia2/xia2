@@ -1,11 +1,3 @@
-#!/usr/bin/env python
-# DefaultDriver.py
-#
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-# 27th March 2006
-#
 # A new "Driver" class for XIA 0.2.x and others.
 #
 # This should be instantiated by a DriverFactory from DriverFactory.py
@@ -44,10 +36,12 @@
 
 from __future__ import absolute_import, division, print_function
 
+import io
 import os
 import time
 import signal
 
+import six
 import xia2.Driver.timing
 from xia2.Driver.DriverHelper import (
     error_abrt,
@@ -85,7 +79,7 @@ class DefaultDriver(object):
         self._command_line = []
         self._working_directory = os.getcwd()
         self._working_environment = {}
-        self._working_environment_exclusive = []
+        self._working_environment_exclusive = set()
 
         # presuming here that the number of input commands is
         # usually small
@@ -166,7 +160,7 @@ class DefaultDriver(object):
         self._working_environment[name] = [value]
 
         if name not in self._working_environment_exclusive:
-            self._working_environment_exclusive.append(name)
+            self._working_environment_exclusive.add(name)
 
     def add_working_environment(self, name, value):
         """Add an extra token to the environment for processing."""
@@ -233,7 +227,7 @@ class DefaultDriver(object):
             for token in command_line_token:
                 self._command_line.append(token)
         else:
-            assert isinstance(command_line_token, basestring)
+            assert isinstance(command_line_token, six.string_types)
             self._command_line.append(command_line_token)
 
     def set_command_line(self, command_line):
@@ -508,7 +502,7 @@ class DefaultDriver(object):
                     )
             self._log_file.close()
             self._log_file = None
-            with open(self._log_file_name, "rb") as f:
+            with io.open(self._log_file_name, "r", encoding="latin-1") as f:
                 lines = f.readlines()
                 n = min(50, len(lines))
                 Debug.write("Last %i lines of %s:" % (n, self._log_file_name))
@@ -563,15 +557,3 @@ class DefaultDriver(object):
 
         for line in open(filename, "r").readlines():
             self._standard_output_records.append(line)
-
-
-if __name__ == "__main__":
-
-    # then run a simple test.
-
-    try:
-        d = DefaultDriver()
-        d.start()
-        print("You should never see this message")
-    except RuntimeError:
-        print("All is well")
