@@ -3,7 +3,6 @@ from __future__ import absolute_import, division, print_function
 import pytest
 
 from dxtbx.serialize import load
-from xia2.command_line.multiplex import run
 
 expected_data_files = [
     "multiplex.expt",
@@ -19,6 +18,8 @@ def test_proteinase_k(regression_test, ccp4, dials_data, tmpdir):
     expts = sorted(f.strpath for f in data_dir.listdir("experiments*.json"))
     refls = sorted(f.strpath for f in data_dir.listdir("reflections*.pickle"))
     with tmpdir.as_cwd():
+        from xia2.command_line.multiplex import run
+
         run(expts + refls)
     for f in expected_data_files:
         assert tmpdir.join(f).check(file=1), "expected file %s missing" % f
@@ -48,6 +49,8 @@ def test_proteinase_k_dose(
         + refls
     )
     with tmpdir.as_cwd():
+        from xia2.command_line.multiplex import run
+
         run(command_line_args)
     for f in expected_data_files:
         assert tmpdir.join(f).check(file=1), "expected file %s missing" % f
@@ -74,5 +77,7 @@ def test_proteinase_k_laue_group_space_group_raises_error(
         ["symmetry.laue_group=P422", "symmetry.space_group=P41212"] + expts + refls
     )
     with tmpdir.as_cwd():
+        from xia2.command_line.multiplex import run
+
         with pytest.raises(SystemExit):
             run(command_line_args)
