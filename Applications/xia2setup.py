@@ -5,7 +5,6 @@
 from __future__ import absolute_import, division, print_function
 
 import collections
-import operator
 import os
 import sys
 import traceback
@@ -230,19 +229,19 @@ def visit(root, directory, files):
 def print_sweeps(out=sys.stdout):
     global known_sweeps, latest_sequence
 
-    sweeplists = sorted(known_sweeps)
-    assert sweeplists, "no sweeps found"
+    sweeplist = sorted(known_sweeps)
+    assert sweeplist, "no sweeps found"
 
     # sort sweeplist based on epoch of first image of each sweep
     epochs = [
         known_sweeps[sweep][0].get_imageset().get_scan().get_epochs()[0]
-        for sweep in sweeplists
+        for sweep in sweeplist
     ]
 
     if len(epochs) != len(set(epochs)):
         Debug.write("Duplicate epochs found. Trying to correct epoch information.")
         cumulativedelta = 0.0
-        for sweep in sweeplists:
+        for sweep in sweeplist:
             known_sweeps[sweep][0].get_imageset().get_scan().set_epochs(
                 known_sweeps[sweep][0].get_imageset().get_scan().get_epochs()
                 + cumulativedelta
@@ -254,16 +253,14 @@ def print_sweeps(out=sys.stdout):
             )
         epochs = [
             known_sweeps[sweep][0].get_imageset().get_scan().get_epochs()[0]
-            for sweep in sweeplists
+            for sweep in sweeplist
         ]
 
         if len(epochs) != len(set(epochs)):
             Debug.write("Duplicate epoch information remains.")
         # This should only happen with incorrect exposure time information.
 
-    sweeplists, epochs = list(zip(
-        *sorted(zip(sweeplists, epochs), key=operator.itemgetter(1))
-    ))
+    sweeplist = [s for _, s in sorted(zip(epochs, sweeplist))]
 
     # analysis pass
 
@@ -274,14 +271,13 @@ def print_sweeps(out=sys.stdout):
     min_images = settings.input.min_images
     min_oscillation_range = settings.input.min_oscillation_range
 
-    for sweep in sweeplists:
+    for sweep in sweeplist:
         sweeps = known_sweeps[sweep]
 
         # sort on exposure epoch
         epochs = [s.get_imageset().get_scan().get_epochs()[0] for s in sweeps]
-        sweeps, epochs = list(zip(*sorted(zip(sweeps, epochs), key=operator.itemgetter(1))))
+        sweeps = [s for _, s in sorted(zip(sweeps, epochs))]
         for s in sweeps:
-
             if len(s.get_images()) < min_images:
                 Debug.write("Rejecting sweep %s:" % s.get_template())
                 Debug.write(
@@ -311,7 +307,7 @@ def print_sweeps(out=sys.stdout):
                 if not have_wavelength:
                     wavelengths.append(wavelength)
 
-    assert len(wavelengths), "No sweeps found matching criteria"
+    assert wavelengths, "No sweeps found matching criteria"
 
     wavelength_map = {}
 
@@ -393,13 +389,14 @@ def print_sweeps(out=sys.stdout):
         out.write("\n")
 
     j = 0
-    for sweep in sweeplists:
+    for sweep in sweeplist:
         sweeps = known_sweeps[sweep]
+
         # sort on exposure epoch
         epochs = [s.get_imageset().get_scan().get_epochs()[0] for s in sweeps]
-        sweeps, epochs = list(zip(*sorted(zip(sweeps, epochs), key=operator.itemgetter(1))))
-        for s in sweeps:
+        sweeps = [s for _, s in sorted(zip(epochs, sweeps))]
 
+        for s in sweeps:
             # require at least n images to represent a sweep...
             if len(s.get_images()) < min_images:
                 Debug.write("Rejecting sweep %s:" % s.get_template())
