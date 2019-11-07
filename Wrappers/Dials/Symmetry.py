@@ -269,7 +269,7 @@ def DialsSymmetry(DriverType=None):
                     cs_reference = cs.as_reference_setting()
                     patterson_group = cs_reference.space_group()
 
-                    netzc = float(score["z_cc_net"])
+                    netzc = score["z_cc_net"]
                     # record this as a possible lattice if its Z score is positive
                     lattice = str(bravais_types.bravais_lattice(group=patterson_group))
                     if lattice not in self._possible_lattices:
