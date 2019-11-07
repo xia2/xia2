@@ -465,12 +465,12 @@ class _CommandLine(object):
         # finally, check that all arguments were read and raise an exception
         # if any of them were nonsense.
 
-        with open("xia2-working.phil", "wb") as f:
+        with open("xia2-working.phil", "w") as f:
             f.write(PhilIndex.working_phil.as_str())
             f.write(
                 os.linesep
             )  # temporarily required for https://github.com/dials/dials/issues/522
-        with open("xia2-diff.phil", "wb") as f:
+        with open("xia2-diff.phil", "w") as f:
             f.write(PhilIndex.get_diff().as_str())
             f.write(
                 os.linesep

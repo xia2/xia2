@@ -290,7 +290,7 @@ def reconfigure_streams_to_logging():
 
             @staticmethod
             def write(logobject):
-                if logobject.endswith("\n"):
+                if logobject.endswith(b"\n"):
                     # the Stream.write() function adds a trailing newline.
                     # remove that again
                     logobject = logobject[:-1]
