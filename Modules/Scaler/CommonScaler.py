@@ -1265,7 +1265,7 @@ class CommonScaler(Scaler):
                 tt_grouprefiner = TwoThetaRefine()
                 tt_grouprefiner.set_working_directory(self.get_working_directory())
                 auto_logfiler(tt_grouprefiner)
-                args = zip(*groups[pi])
+                args = list(zip(*groups[pi]))
                 tt_grouprefiner.set_experiments(args[0])
                 tt_grouprefiner.set_reflection_files(args[1])
                 tt_grouprefiner.set_output_p4p(p4p_file)

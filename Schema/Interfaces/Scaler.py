@@ -504,10 +504,10 @@ class Scaler(object):
 
                 # collision. Throw away all epoch keys, and replace with integer series
                 self._scalr_integraters = dict(
-                    zip(
+                    list(zip(
                         range(0, len(self._scalr_integraters)),
                         self._scalr_integraters.values(),
-                    )
+                    ))
                 )
                 epoch = len(self._scalr_integraters)
 

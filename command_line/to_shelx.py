@@ -246,7 +246,7 @@ def to_shelx(hklin, prefix, compound="", options=None):
                     esd = esd / (10 ** len(p[0].split(".")[1]))
                 return dim, esd
 
-            unit_cell_dims, unit_cell_esds = zip(*(dim_esd(p) for p in unit_cell))
+            unit_cell_dims, unit_cell_esds = list(zip(*(dim_esd(p) for p in unit_cell)))
 
     cb_op = crystal_symm.change_of_basis_op_to_reference_setting()
 
