@@ -124,8 +124,8 @@ def run(args):
     env = Environment(loader=loader)
 
     if params.log_include:
-        with open(params.log_include) as fh:
-            log_text = fh.read()
+        with open(params.log_include, "rb") as fh:
+            log_text = fh.read().decode("utf-8")
     else:
         log_text = ""
 
@@ -154,7 +154,7 @@ def run(args):
         json.dump(json_data, fh, indent=params.json.indent)
 
     with open("%s-report.html" % params.prefix, "wb") as fh:
-        fh.write(html.encode("ascii", "xmlcharrefreplace"))
+        fh.write(html.encode("utf-8", "xmlcharrefreplace"))
 
 
 if __name__ == "__main__":

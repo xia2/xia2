@@ -1,0 +1,5 @@
+Allow unicode output in HTML report
+
+Previously, unicode characters in the output from xia2 would cause an error.  This fixes that, so now xia2 can write all the unicode it wants.
+
+Μπορῶ νὰ φάω σπασμένα γυαλιὰ χωρὶς νὰ πάθω τίποτα.
