@@ -4,6 +4,7 @@ import os
 import platform
 import re
 
+import six
 import xia2.Test.regression
 
 default_data_files = [
@@ -168,7 +169,9 @@ def check_result(
                     equal.append(False)
                     valid.append(True)
                     continue
-                if isinstance(tolerance, basestring) and "%" in tolerance:  # percentage
+                if (
+                    isinstance(tolerance, six.string_types) and "%" in tolerance
+                ):  # percentage
                     tolerance = expected_value * float(tolerance[:-1]) / 100
                 else:
                     tolerance = float(tolerance)

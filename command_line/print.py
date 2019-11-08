@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 import os
 
 from xia2.Applications.xia2_main import write_citations
-from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Streams import Chatter
 
 
 def run():

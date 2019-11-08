@@ -3,8 +3,9 @@ from __future__ import absolute_import, division, print_function
 import sys
 
 import iotbx.phil
+from iotbx.reflection_file_reader import any_reflection_file
 from libtbx.phil import command_line
-from scitbx.array_family import flex
+from mmtbx.scaling import data_statistics
 
 master_phil_scope = iotbx.phil.parse(
     """\
@@ -20,9 +21,7 @@ include scope cctbx.french_wilson.master_phil
 
 class french_wilson(object):
     def __init__(self, mtz_file, params=None):
-
         print("Reading reflections from %s" % mtz_file)
-        from iotbx.reflection_file_reader import any_reflection_file
 
         result = any_reflection_file(mtz_file)
         assert result.file_type() == "ccp4_mtz"
@@ -50,8 +49,6 @@ class french_wilson(object):
         amplitudes = intensities.french_wilson(params=params)
         assert amplitudes.is_xray_amplitude_array()
 
-        from mmtbx.scaling import data_statistics
-
         if not intensities.space_group().is_centric():
             merged_intensities = intensities.merge_equivalents().array()
             wilson_scaling = data_statistics.wilson_scaling(
@@ -69,7 +66,6 @@ class french_wilson(object):
 
 
 def run(args):
-
     cmd_line = command_line.argument_interpreter(master_params=master_phil_scope)
     working_phil, args = cmd_line.process_and_fetch(
         args=args, custom_processor="collect_remaining"
@@ -82,6 +78,4 @@ def run(args):
 
 
 if __name__ == "__main__":
-    import sys
-
     run(sys.argv[1:])

@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
 import os
@@ -18,7 +16,6 @@ def LabelitMosflmMatrix(DriverType=None):
         calculate the matrix for mosflm integration."""
 
         def __init__(self):
-
             DriverInstance.__class__.__init__(self)
             self.set_executable("labelit.mosflm_matrix")
 
@@ -33,8 +30,6 @@ def LabelitMosflmMatrix(DriverType=None):
 
             if self._solution is None:
                 raise RuntimeError("solution not selected")
-
-            task = "Compute matrix for solution %02d" % self._solution
 
             self.add_command_line("%d" % self._solution)
 
@@ -54,7 +49,7 @@ def LabelitMosflmMatrix(DriverType=None):
 
             for o in output:
                 if "BEAM" in o[:4]:
-                    self._mosflm_beam = map(float, o.split()[-2:])
+                    self._mosflm_beam = list(map(float, o.split()[-2:]))
 
             return matrix
 

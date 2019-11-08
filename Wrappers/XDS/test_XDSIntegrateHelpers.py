@@ -1,13 +1,13 @@
 from __future__ import absolute_import, division, print_function
 
-from xia2.Wrappers.XDS.XDSIntegrateHelpers import _parse_integrate_lp
+from xia2.Wrappers.XDS.XDSIntegrateHelpers import parse_integrate_lp
 
 
 def test_parse_integrate_lp(tmpdir):
     integrate_lp = tmpdir.join("INTEGRATE.LP")
-    with integrate_lp.open("wb") as f:
-        f.write(integrate_lp_example_1)
-    per_image_stats = _parse_integrate_lp(integrate_lp.strpath)
+    with integrate_lp.open("w") as fh:
+        fh.write(integrate_lp_example_1)
+    per_image_stats = parse_integrate_lp(integrate_lp.strpath)
     assert list(per_image_stats) == list(range(1, 22))
     assert per_image_stats[1] == {
         "distance": 213.68,
@@ -25,9 +25,9 @@ def test_parse_integrate_lp(tmpdir):
     }
 
     integrate_lp = tmpdir.join("INTEGRATE.LP")
-    with integrate_lp.open("wb") as f:
-        f.write(integrate_lp_big_n_refl)
-    per_image_stats = _parse_integrate_lp(integrate_lp.strpath)
+    with integrate_lp.open("w") as fh:
+        fh.write(integrate_lp_big_n_refl)
+    per_image_stats = parse_integrate_lp(integrate_lp.strpath)
     assert list(per_image_stats) == list(range(2601, 2611))
     print(per_image_stats[2601])
     assert per_image_stats[2601] == {

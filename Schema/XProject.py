@@ -286,7 +286,7 @@ class XProject(object):
                     dmax_old = dmax
 
                     if "RESOLUTION" in sweep_info:
-                        values = map(float, sweep_info["RESOLUTION"].split())
+                        values = [float(x) for x in sweep_info["RESOLUTION"].split()]
                         if len(values) == 1:
                             dmin = values[0]
                         elif len(values) == 2:

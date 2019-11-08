@@ -215,8 +215,8 @@ def DialsSymmetry(DriverType=None):
             self.check_for_errors()
 
             if self._laue_group is not None:
-                with open(self._json, "rb") as f:
-                    d = json.load(f)
+                with open(self._json, "r") as fh:
+                    d = json.load(fh)
                 best_solution = d["subgroup_scores"][0]
 
                 self.set_best_solution(d, best_solution)

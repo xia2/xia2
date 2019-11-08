@@ -258,8 +258,8 @@ class XInfo(object):
                             ] = dmin
 
                         else:
-                            dmin = min(map(float, lst[1:]))
-                            dmax = max(map(float, lst[1:]))
+                            dmin = min(float(x) for x in lst[1:])
+                            dmax = max(float(x) for x in lst[1:])
 
                             self._crystals[crystal]["wavelengths"][wavelength][
                                 "dmin"
@@ -350,7 +350,7 @@ class XInfo(object):
                         self._crystals[crystal]["sweeps"][sweep]["sample"] = sample
 
                     elif "BEAM" == record.split()[0]:
-                        beam = list(map(float, record.split()[1:]))
+                        beam = [float(x) for x in record.split()[1:]]
                         self._crystals[crystal]["sweeps"][sweep]["beam"] = beam
 
                     elif "DISTANCE" == record.split()[0]:
@@ -366,7 +366,7 @@ class XInfo(object):
 
                     elif "START_END" == record.split()[0]:
                         if "start_end" not in self._crystals[crystal]["sweeps"][sweep]:
-                            start_end = list(map(int, record.split()[1:]))
+                            start_end = [int(x) for x in record.split()[1:]]
                             if len(start_end) != 2:
                                 raise RuntimeError(
                                     'START_END requires two parameters (start and end), not "%s"'
@@ -380,7 +380,7 @@ class XInfo(object):
                         if record.split()[1].upper() == "ICE":
                             self._crystals[crystal]["sweeps"][sweep]["ice"] = True
                         else:
-                            excluded_region = list(map(float, record.split()[1:]))
+                            excluded_region = [float(x) for x in record.split()[1:]]
                             if len(excluded_region) != 2:
                                 raise RuntimeError(
                                     'EXCLUDE upper lower, not "%s". \
@@ -438,5 +438,5 @@ class XInfo(object):
 
             if "USER_CELL" in record:
                 self._crystals[crystal]["user_cell"] = tuple(
-                    map(float, record.split()[1:])
+                    float(x) for x in record.split()[1:]
                 )

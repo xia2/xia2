@@ -1,9 +1,13 @@
 from __future__ import absolute_import, division, print_function
 
+import sys
+import random
+
+from iotbx import mtz
+from scitbx.array_family import flex
+
 
 def random_selection(fraction, list):
-    import random
-
     selected = set()
 
     while len(selected) < fraction * len(list):
@@ -13,9 +17,6 @@ def random_selection(fraction, list):
 
 
 def add_free_set(hklin, fraction, hklout_work, hklout_free):
-    from iotbx import mtz
-    from scitbx.array_family import flex
-
     # open up the reflection file
 
     mtz_obj = mtz.object(hklin)
@@ -31,13 +32,6 @@ def add_free_set(hklin, fraction, hklout_work, hklout_free):
     flag_column = None
 
     for crystal in mtz_obj.crystals():
-        for dataset in crystal.datasets():
-            if dataset.name() != "HKL_base":
-                dataset_name = dataset.name()
-
-        if crystal.name() != "HKL_base":
-            crystal_name = crystal.name()
-
         for dataset in crystal.datasets():
             for column in dataset.columns():
                 if column.label() == "FLAG":
@@ -77,10 +71,6 @@ def add_free_set(hklin, fraction, hklout_work, hklout_free):
 
     mtz_obj.write(hklout_free)
 
-    return
-
 
 if __name__ == "__main__":
-    import sys
-
     add_free_set(sys.argv[1], float(sys.argv[2]), sys.argv[3], sys.argv[4])

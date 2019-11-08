@@ -26,7 +26,7 @@ def table1_tex(crystal_params, merging_stats):
     print("Crystal parameters" + " & " * ncols + "\\\\")
     print(
         "Space group & "
-        + " & ".join([cp["space_group"] for cp in crystal_params])
+        + " & ".join(cp["space_group"] for cp in crystal_params)
         + " \\\\"
     )
 

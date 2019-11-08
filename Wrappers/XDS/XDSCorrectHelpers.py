@@ -68,7 +68,7 @@ def _parse_correct_lp(filename):
 
         # want to convert this to mm in some standard setting!
         if "DETECTOR COORDINATES (PIXELS) OF DIRECT BEAM" in line:
-            beam = map(float, line.split()[-2:])
+            beam = list(map(float, line.split()[-2:]))
             postrefinement_stats["beam"] = beam
 
         if "CRYSTAL TO DETECTOR DISTANCE (mm)" in line:
@@ -76,7 +76,7 @@ def _parse_correct_lp(filename):
             postrefinement_stats["distance"] = distance
 
         if "UNIT CELL PARAMETERS" in line:
-            cell = map(float, line.split()[-6:])
+            cell = list(map(float, line.split()[-6:]))
             postrefinement_stats["cell"] = cell
 
         if "E.S.D. OF CELL PARAMETERS" in line:
@@ -88,7 +88,7 @@ def _parse_correct_lp(filename):
             if "-1.0E+00-1.0E+00-1.0E+00" in line:
                 cell_esd = [-1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
             else:
-                cell_esd = map(float, line.split()[-6:])
+                cell_esd = list(map(float, line.split()[-6:]))
             postrefinement_stats["cell_esd"] = cell_esd
 
         if "REFLECTIONS ACCEPTED" in line:
@@ -120,7 +120,7 @@ def _parse_correct_lp(filename):
             )
 
         if "a          b              INPUT DATA SET" in line:
-            sdcorrection = map(float, file_contents[i + 1].split()[:2])
+            sdcorrection = list(map(float, file_contents[i + 1].split()[:2]))
 
             postrefinement_stats["sdcorrection"] = tuple(sdcorrection)
 
@@ -128,9 +128,9 @@ def _parse_correct_lp(filename):
             j = i + 2
             while file_contents[j].strip():
                 if "*" in file_contents[j]:
-                    postrefinement_stats["reindex_op"] = map(
+                    postrefinement_stats["reindex_op"] = list(map(
                         int, file_contents[j].split()[-12:]
-                    )
+                    ))
                 j += 1
 
     return postrefinement_stats

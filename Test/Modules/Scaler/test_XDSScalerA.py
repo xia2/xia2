@@ -5,6 +5,7 @@ import sys
 
 import mock
 import pytest
+import six
 
 
 @pytest.mark.parametrize("nproc", [1])
@@ -90,7 +91,7 @@ def check_scaler_files_exist(scaler):
     merged = scaler.get_scaled_merged_reflections()
     for filetype in ("mtz", "sca", "sca_unmerged"):
         assert filetype in merged
-        if isinstance(merged[filetype], basestring):
+        if isinstance(merged[filetype], six.string_types):
             files = [merged[filetype]]
         else:
             files = merged[filetype].values()

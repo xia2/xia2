@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
 import os
@@ -57,23 +55,18 @@ def Cad(DriverType=None):
             self._freein = freein
             self._freein_column = cname
 
-            return
-
         def set_project_info(self, pname, xname, dname):
             self._pname = pname
             self._xname = xname
             self._dname = dname
-            return
 
         def set_new_suffix(self, suffix):
             """Set a column suffix for this dataset."""
             self._new_column_suffix = suffix
-            return
 
         def set_new_cell(self, cell):
             """Set a new unit cell for this dataset."""
             self._new_cell_parameters = cell
-            return
 
         def merge(self):
             """Merge multiple reflection files into one file."""
@@ -218,12 +211,7 @@ def Cad(DriverType=None):
             # FIXME perhaps - ASSERT that we want only the information from
             # the first dataset here...
 
-            pname, xname, dname = dataset_names_by_file[hklin][0].split("/")
             dataset_id = dataset_ids[0]
-
-            # FIXME 03/NOV/06 this needs to id the dataset by it's number
-            # not by pname/xname/dname, as the latter get's confused if the
-            # xname is a number...
 
             if self._new_cell_parameters:
                 a, b, c, alpha, beta, gamma = self._new_cell_parameters

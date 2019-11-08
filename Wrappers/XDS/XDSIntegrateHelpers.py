@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 import os
 
 
-def _parse_integrate_lp_updates(filename):
+def parse_integrate_lp_updates(filename):
     """Parse the integrate.lp file to get the values for any updated
     parameters."""
 
@@ -27,7 +27,7 @@ def _parse_integrate_lp_updates(filename):
     return updates
 
 
-def _parse_integrate_lp(filename):
+def parse_integrate_lp(filename):
     """Parse the contents of the INTEGRATE.LP file pointed to by filename."""
 
     if not os.path.split(filename)[-1] == "INTEGRATE.LP":
@@ -116,7 +116,7 @@ def _parse_integrate_lp(filename):
 
         # want to convert this to mm in some standard setting!
         if "DETECTOR COORDINATES (PIXELS) OF DIRECT BEAM" in content:
-            beam = map(float, content.split()[-2:])
+            beam = list(map(float, content.split()[-2:]))
             for image in block_images:
                 per_image_stats[image]["beam"] = beam
 

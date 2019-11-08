@@ -263,7 +263,7 @@ class DialsScaler(Scaler):
         if len(pointgroup_set) > 1:
             Debug.write(
                 "Probably twinned, pointgroups: %s"
-                % " ".join([p.replace(" ", "") for p in list(pointgroup_set)])
+                % " ".join(p.replace(" ", "") for p in list(pointgroup_set))
             )
             numbers = [Syminfo.spacegroup_name_to_number(s) for s in pointgroup_set]
             overall_pointgroup = Syminfo.spacegroup_number_to_name(min(numbers))
@@ -855,7 +855,6 @@ pipeline=dials (supported for pipeline=dials-aimless).
             tt_refiner.set_reflection_files([self._scaled_reflections])  # needs a list
             tt_refiner.set_output_p4p(p4p_file)
             tt_refiner.run()
-            pi = groups_list[0]
 
             self._scalr_cell = tt_refiner.get_unit_cell()
             Chatter.write(

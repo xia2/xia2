@@ -74,7 +74,7 @@ def template_regex(filename):
             digits = groups[0][::-1]
             prefix = groups[1][::-1] + joiners[j]
 
-        template = prefix + "".join(["#" for d in digits]) + exten
+        template = prefix + ("#" * len(digits)) + exten
         break
 
     if not template:
@@ -102,85 +102,8 @@ def image2template(filename):
     return template_regex(filename)[0]
 
 
-def image2template_old(filename):
-    """Return a template to match this filename."""
-
-    # check that the file name doesn't contain anything mysterious
-    if filename.count("#"):
-        raise RuntimeError("# characters in filename")
-
-    # the patterns in the order I want to test them
-
-    pattern_keys = [
-        r"([^\.]*)\.([0-9]{2,12})\Z",
-        r"([^\.]*)\.([0-9]{2,12})(.*)",
-        r"(.*)_([0-9]{2,12})\.(.*)",
-        r"(.*?)([0-9]{2,12})\.(.*)",
-    ]
-
-    # patterns is a dictionary of possible regular expressions with
-    # the format strings to put the file name back together
-
-    patterns = {
-        r"([^\.]*)\.([0-9]{2,12})\Z": "%s.%s%s",
-        r"([^\.]*)\.([0-9]{2,12})(.*)": "%s.%s%s",
-        r"(.*)_([0-9]{2,12})\.(.*)": "%s_%s.%s",
-        r"(.*?)([0-9]{2,12})\.(.*)": "%s%s.%s",
-    }
-
-    for pattern in pattern_keys:
-        match = re.compile(pattern).match(filename)
-
-        if match:
-            prefix = match.group(1)
-            number = match.group(2)
-            try:
-                exten = match.group(3)
-            except Exception:
-                exten = ""
-
-            for digit in string.digits:
-                number = number.replace(digit, "#")
-
-            return patterns[pattern] % (prefix, number, exten)
-
-    raise RuntimeError("filename %s not understood as a template" % filename)
-
-
 def image2image(filename):
     return template_regex(filename)[1]
-
-
-def image2image_old(filename):
-    """Return an integer for the template to match this filename."""
-
-    # check that the file name doesn't contain anything mysterious
-    if filename.count("#"):
-        raise RuntimeError("# characters in filename")
-
-    # the patterns in the order I want to test them
-
-    pattern_keys = [
-        r"([^\.]*)\.([0-9]+)\Z",
-        r"([^\.]*)\.([0-9]+)(.*)",
-        r"(.*)_([0-9]*)\.(.*)",
-        r"(.*?)([0-9]*)\.(.*)",
-    ]
-
-    for pattern in pattern_keys:
-        match = re.compile(pattern).match(filename)
-
-        if match:
-            prefix = match.group(1)
-            number = match.group(2)
-            try:
-                exten = match.group(3)
-            except Exception:
-                exten = ""
-
-            return int(number)
-
-    raise RuntimeError("filename %s not understood as a template" % filename)
 
 
 def image2template_directory(filename):

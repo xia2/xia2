@@ -6,6 +6,7 @@ from xia2.Decorators.DecoratorFactory import DecoratorFactory
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Wrappers.CCP4.AimlessHelpers import parse_aimless_xml
 
 
 def Aimless(DriverType=None, absorption_correction=None, decay_correction=None):
@@ -811,8 +812,6 @@ def Aimless(DriverType=None, absorption_correction=None, decay_correction=None):
 
             xml_file = self.get_xmlout()
             assert os.path.isfile(xml_file)
-
-            from xia2.Wrappers.CCP4.AimlessHelpers import parse_aimless_xml
 
             return parse_aimless_xml(xml_file)
 

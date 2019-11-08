@@ -159,7 +159,7 @@ def Merge2cbf(DriverType=None, params=None):
             )
             header_contents.append("# %s" % timestamp)
             pixel_size_mm = image_header["pixel"]
-            pixel_size_microns = tuple([mm * 1000 for mm in pixel_size_mm])
+            pixel_size_microns = tuple(mm * 1000 for mm in pixel_size_mm)
             header_contents.append(
                 "# Pixel_size %.0fe-6 m x %.0fe-6 m" % pixel_size_microns
             )

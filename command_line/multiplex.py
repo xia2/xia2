@@ -3,10 +3,9 @@ from __future__ import absolute_import, division, print_function
 
 import logging
 import random
-from collections import OrderedDict
+import sys
 
 import iotbx.phil
-from dials.util import Sorry
 
 import xia2.Handlers.Streams
 from dials.array_family import flex
@@ -40,7 +39,7 @@ output {
 )
 
 
-def run():
+def run(args):
     usage = (
         "xia2.multiplex [options] [param.phil] "
         "models1.expt models2.expt observations1.refl "
@@ -58,7 +57,7 @@ def run():
     )
 
     # Parse the command line
-    params, options = parser.parse_args(show_diff_phil=False)
+    params, options = parser.parse_args(args=args, show_diff_phil=False)
 
     # Configure the logging
     xia2.Handlers.Streams.streams_off()
@@ -86,7 +85,7 @@ def run():
     try:
         assert len(params.input.reflections) == len(params.input.experiments)
     except AssertionError:
-        raise Sorry(
+        raise sys.exit(
             "The number of input reflections files does not match the "
             "number of input experiments"
         )
@@ -94,9 +93,6 @@ def run():
     if params.seed is not None:
         flex.set_random_seed(params.seed)
         random.seed(params.seed)
-
-    expt_filenames = OrderedDict((e.filename, e.data) for e in params.input.experiments)
-    refl_filenames = OrderedDict((r.filename, r.data) for r in params.input.reflections)
 
     experiments = flatten_experiments(params.input.experiments)
     reflections = flatten_reflections(params.input.reflections)
@@ -117,8 +113,12 @@ def run():
         for identifier in params.identifiers:
             identifiers.extend(identifier.split(","))
         params.identifiers = identifiers
-    scaled = ScaleAndMerge.MultiCrystalScale(experiments, reflections_all, params)
+
+    try:
+        ScaleAndMerge.MultiCrystalScale(experiments, reflections_all, params)
+    except ValueError as e:
+        sys.exit(str(e))
 
 
 if __name__ == "__main__":
-    run()
+    run(sys.argv[1:])

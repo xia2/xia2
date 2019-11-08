@@ -24,6 +24,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+import inspect
+
 from xia2.Handlers.Streams import Chatter
 from xia2.Schema.XSweep import XSweep
 
@@ -58,8 +60,6 @@ class XWavelength(object):
     def to_dict(self):
         obj = {}
         obj["__id__"] = "XWavelength"
-        import inspect
-
         attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
         for a in attributes:
             if a[0] == "_sweeps":
@@ -97,36 +97,6 @@ class XWavelength(object):
 
         result += "Sweeps:\n"
 
-        from xia2.Driver.DriverFactory import DriverFactory
-
-        def run_one_sweep(args):
-
-            from xia2.Handlers.Streams import Debug
-
-            assert len(args) == 3
-            s, failover, job_type = args
-
-            if job_type:
-                DriverFactory.set_driver_type(job_type)
-
-            Chatter.cache()
-            Debug.cache()
-
-            try:
-                s.get_integrater_intensities()
-            except Exception as e:
-                if failover:
-                    Chatter.write(
-                        "Processing sweep %s failed: %s" % (s.get_name(), str(e))
-                    )
-                    s = None
-                else:
-                    raise
-            finally:
-                Chatter.uncache()
-                Debug.uncache()
-                return s
-
         remove = []
 
         from xia2.Handlers.Phil import PhilIndex
@@ -135,10 +105,8 @@ class XWavelength(object):
         failover = params.xia2.settings.failover
 
         for s in self._sweeps:
-
             # would be nice to put this somewhere else in the hierarchy - not
             # sure how to do that though (should be handled in Interfaces?)
-
             try:
                 result += "%s\n" % s.get_output()
             except Exception as e:

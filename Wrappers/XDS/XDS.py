@@ -132,7 +132,7 @@ def detector_axis_apply_two_theta_rotation(axis_string, header):
 
     two_theta = -1 * header["two_theta"] * math.pi / 180.0
 
-    axis = map(float, axis_string.split())
+    axis = [float(x) for x in axis_string.split()]
 
     assert len(axis) == 3
 
@@ -379,7 +379,7 @@ def beam_centre_mosflm_to_xds(x, y, header):
 
     # first gather up some useful information from the header
 
-    width, height = tuple(map(int, header["size"]))
+    width, height = tuple(int(s) for s in header["size"])
     qx, qy = tuple(header["pixel"])
 
     # convert input to pixels
@@ -420,7 +420,7 @@ def beam_centre_xds_to_mosflm(px, py, header):
 
     # first gather up some useful information from the header
 
-    width, height = tuple(map(int, header["size"]))
+    width, height = tuple(int(s) for s in header["size"])
     qx, qy = tuple(header["pixel"])
 
     # convert input to pixels
@@ -434,7 +434,9 @@ def beam_centre_xds_to_mosflm(px, py, header):
 def xds_read_xparm(xparm_file):
     """Parse the new-style or old-style XPARM file."""
 
-    if "XPARM" in open(xparm_file, "r").readline():
+    with open(xparm_file, "r") as fh:
+        line = fh.readline()
+    if "XPARM" in line:
         return xds_read_xparm_new_style(xparm_file)
     else:
         return xds_read_xparm_old_style(xparm_file)
@@ -443,7 +445,8 @@ def xds_read_xparm(xparm_file):
 def xds_read_xparm_old_style(xparm_file):
     """Parse the XPARM file to a dictionary."""
 
-    data = map(float, open(xparm_file, "r").read().split())
+    with open(xparm_file, "r") as fh:
+        data = [float(x) for x in fh.read().split()]
 
     assert len(data) == 42
 
@@ -454,7 +457,7 @@ def xds_read_xparm_old_style(xparm_file):
     wavelength = data[6]
     beam = data[7:10]
 
-    nx, ny = map(int, data[10:12])
+    nx, ny = list(map(int, data[10:12]))
     px, py = data[12:14]
 
     distance = data[14]
@@ -498,7 +501,8 @@ def xds_read_xparm_old_style(xparm_file):
 def xds_read_xparm_new_style(xparm_file):
     """Parse the XPARM file to a dictionary."""
 
-    data = map(float, " ".join(open(xparm_file, "r").readlines()[1:]).split())
+    with open(xparm_file, "r") as fh:
+        data = [float(x) for x in " ".join(fh.readlines()[1:]).split()]
 
     starting_frame = int(data[0])
     phi_start, phi_width = data[1:3]
@@ -511,7 +515,7 @@ def xds_read_xparm_new_style(xparm_file):
     cell = data[11:17]
     a, b, c = data[17:20], data[20:23], data[23:26]
     assert int(data[26]) == 1
-    nx, ny = map(int, data[27:29])
+    nx, ny = list(map(int, data[27:29]))
     px, py = data[29:31]
     ox, oy = data[31:33]
     distance = data[33]

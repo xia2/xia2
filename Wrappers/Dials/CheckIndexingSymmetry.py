@@ -1,12 +1,11 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
+
+from xia2.Driver.DriverFactory import DriverFactory
+from xia2.Handlers.Streams import Debug
 
 
 def CheckIndexingSymmetry(DriverType=None):
     """A factory for CheckIndexingSymmetryWrapper classes."""
-
-    from xia2.Driver.DriverFactory import DriverFactory
 
     DriverInstance = DriverFactory.Driver(DriverType)
 
@@ -29,11 +28,7 @@ def CheckIndexingSymmetry(DriverType=None):
             self._grid_search_scope = abs(int(grid_search_scope))
 
         def run(self):
-            from xia2.Handlers.Streams import Debug
-
             Debug.write("Running dials.check_indexing_symmetry")
-
-            wd = self.get_working_directory()
 
             self.clear_command_line()
             assert self._experiments_filename is not None
@@ -68,7 +63,6 @@ def CheckIndexingSymmetry(DriverType=None):
             Debug.write("hkl_offset scores: %s" % str(hkl_offsets))
             Debug.write("hkl_nref scores: %s" % str(hkl_nref))
             if len(hkl_offsets) > 1:
-                max_offset = max(hkl_offsets.values())
                 max_nref = max(hkl_nref.values())
 
                 # select "best" solution - needs nref > 0.5 max nref && highest CC

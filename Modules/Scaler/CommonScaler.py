@@ -1075,7 +1075,6 @@ class CommonScaler(Scaler):
         }
 
         stats = {}
-        select_result, select_anom_result = None, None
 
         # don't call self.get_scaler_likely_spacegroups() since that calls
         # self.scale() which introduced a subtle bug
@@ -1417,7 +1416,7 @@ class CommonScaler(Scaler):
             for op in s.all_ops():
                 R = B * sqr(op.r().as_double()).transpose() * B.inverse()
                 nearly_i3 = (U * R).inverse() * reference_U
-                score = sum([abs(_n - _i) for (_n, _i) in zip(nearly_i3, i3)])
+                score = sum(abs(_n - _i) for (_n, _i) in zip(nearly_i3, i3))
                 results.append((score, op.r().as_hkl(), op))
 
             results.sort()
@@ -1598,6 +1597,6 @@ def anomalous_probability_plot(intensities, expected_delta=None):
         y = y.select(sel)
 
     fit = flex.linear_regression(x, y)
-    assert fit.is_well_defined()
-
-    return fit.slope(), fit.y_intercept(), x.size()
+    if fit.is_well_defined():
+        return fit.slope(), fit.y_intercept(), x.size()
+    return None, None, None

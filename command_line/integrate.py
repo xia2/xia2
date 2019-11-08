@@ -1,5 +1,3 @@
-# LIBTBX_SET_DISPATCHER_NAME xia2.integrate
-
 from __future__ import absolute_import, division, print_function
 
 import os
@@ -7,7 +5,7 @@ import sys
 import traceback
 
 from xia2.Applications.xia2_main import check_environment, help
-from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Streams import Chatter
 
 
 def run():
