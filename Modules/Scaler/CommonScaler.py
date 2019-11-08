@@ -112,8 +112,6 @@ class CommonScaler(Scaler):
             first_batch = min(si.get_batches())
             si.set_batch_offset(counter * max_batches - first_batch + 1)
 
-            from xia2.Modules.Scaler.rebatch import rebatch
-
             new_batches = rebatch(
                 hklin,
                 hklout,
