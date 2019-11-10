@@ -375,12 +375,14 @@ def Pointless(DriverType=None):
                 self._totalprob = float(
                     best.getElementsByTagName("TotalProb")[0].childNodes[0].data
                 )
-                self._reindex_matrix = list(map(
-                    float,
-                    best.getElementsByTagName("ReindexMatrix")[0]
-                    .childNodes[0]
-                    .data.split(),
-                ))
+                self._reindex_matrix = list(
+                    map(
+                        float,
+                        best.getElementsByTagName("ReindexMatrix")[0]
+                        .childNodes[0]
+                        .data.split(),
+                    )
+                )
                 self._reindex_operator = clean_reindex_operator(
                     best.getElementsByTagName("ReindexOperator")[0]
                     .childNodes[0]
@@ -445,12 +447,14 @@ def Pointless(DriverType=None):
 
                     index = best.getElementsByTagName("Index")[0]
 
-                    self._reindex_matrix = list(map(
-                        float,
-                        index.getElementsByTagName("ReindexMatrix")[0]
-                        .childNodes[0]
-                        .data.split(),
-                    ))
+                    self._reindex_matrix = list(
+                        map(
+                            float,
+                            index.getElementsByTagName("ReindexMatrix")[0]
+                            .childNodes[0]
+                            .data.split(),
+                        )
+                    )
                     self._reindex_operator = clean_reindex_operator(
                         index.getElementsByTagName("ReindexOperator")[0]
                         .childNodes[0]
@@ -618,7 +622,9 @@ def Pointless(DriverType=None):
                         project = output[5 * block + i + 2][10:].strip()
                         crystal = output[5 * block + i + 3][10:].strip()
                         dataset = output[5 * block + i + 4][10:].strip()
-                        cell = list(map(float, output[5 * block + i + 5].strip().split()))
+                        cell = list(
+                            map(float, output[5 * block + i + 5].strip().split())
+                        )
                         wavelength = float(output[5 * block + i + 6].strip())
 
                         dataset_id = "%s/%s/%s" % (project, crystal, dataset)

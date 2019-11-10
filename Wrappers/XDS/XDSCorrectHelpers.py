@@ -128,9 +128,9 @@ def _parse_correct_lp(filename):
             j = i + 2
             while file_contents[j].strip():
                 if "*" in file_contents[j]:
-                    postrefinement_stats["reindex_op"] = list(map(
-                        int, file_contents[j].split()[-12:]
-                    ))
+                    postrefinement_stats["reindex_op"] = list(
+                        map(int, file_contents[j].split()[-12:])
+                    )
                 j += 1
 
     return postrefinement_stats
