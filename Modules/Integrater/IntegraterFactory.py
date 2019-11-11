@@ -118,7 +118,7 @@ def Integrater():
         try:
             integrater = DialsIntegrater()
             Debug.write("Using Dials Integrater")
-            if PhilIndex.params.xia2.settings.pipeline in ["dials", "dials-full"]:
+            if PhilIndex.params.xia2.settings.scaler == "dials":
                 integrater.set_output_format("pickle")
         except NotAvailableError:
             if preselection == "dials":
