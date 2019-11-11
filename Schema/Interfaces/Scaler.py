@@ -146,7 +146,6 @@ import json
 import os
 
 from xia2.Handlers.Streams import Chatter, Debug
-from xia2.lib.SymmetryLib import lauegroup_to_lattice, sort_lattices
 
 
 class Scaler(object):
@@ -328,7 +327,7 @@ class Scaler(object):
 
         assert [filename, string].count(None) == 1
         if filename is not None:
-            with open(filename, "rb") as f:
+            with open(filename, "r") as f:
                 string = f.read()
         obj = json.loads(string, object_hook=_decode_dict)
         return cls.from_dict(obj)
@@ -504,108 +503,13 @@ class Scaler(object):
 
                 # collision. Throw away all epoch keys, and replace with integer series
                 self._scalr_integraters = dict(
-                    zip(
-                        range(0, len(self._scalr_integraters)),
-                        self._scalr_integraters.values(),
-                    )
+                    enumerate(self._scalr_integraters.values())
                 )
                 epoch = len(self._scalr_integraters)
 
         self._scalr_integraters[epoch] = integrater
 
         self.scaler_reset()
-
-    # FIXME x1698 these not currently used yet
-
-    def _scale_setup_integrater(self, integrater):
-        """Check that the pointgroup for a data set is consistent with
-        the lattice used for integration, then determine the pointgroup for
-        the data."""
-
-        # FIXME will have to handle gracefully user provided pointgroup
-
-        pointgroups = self._scale_list_likely_pointgroups(integrater)
-        refiner = integrater.get_integrater_refiner()
-        lattices = [lauegroup_to_lattice(p) for p in pointgroups]
-
-        correct_lattice = None
-
-        for lattice in lattices:
-            state = refiner.set_refiner_asserted_lattice(lattice)
-
-            if state == refiner.LATTICE_CORRECT:
-                correct_lattice = lattice
-                break
-
-            elif state == refiner.LATTICE_IMPOSSIBLE:
-                continue
-
-            elif state == refiner.LATTICE_POSSIBLE:
-                correct_lattice = lattice
-                break
-
-        assert correct_lattice
-
-        # run this analysis again, which may respond in different conclusions
-        # if it triggers the reprocessing of the data with a new lattice
-
-        pointgroups = self._scale_list_likely_pointgroups(integrater)
-        lattices = [lauegroup_to_lattice(p) for p in pointgroups]
-
-        return pointgroups[lattices.index(correct_lattice)]
-
-    def _scale_setup(self):
-        """Set things up for scaling, in particular mediate pointgroup /
-        lattice with the indexers."""
-
-        assert self._scalr_integraters
-
-        epochs = sorted(self._scalr_integraters)
-        integraters = [self._scalr_integraters[e] for e in epochs]
-
-        pointgroups = [self._scale_setup_integrater(i) for i in integraters]
-        lattices = [lauegroup_to_lattice(p) for p in pointgroups]
-
-        unique_lattices = set(lattices)
-
-        # consider the situation that they arrived at more than one conclusion
-
-        if len(unique_lattices) > 1:
-            consensus_lattice = sort_lattices(list(unique_lattices))[0]
-
-            for integrater in integraters:
-                refiner = integrater.get_integrater_refiner()
-                state = refiner.set_refiner_asserted_lattice(consensus_lattice)
-
-                assert state != refiner.LATTICE_IMPOSSIBLE
-
-        # then decide on the consensus pointgroup
-
-        pointgroups = set()
-
-        for integrater in integraters:
-            pointgroups = self._scale_list_likely_pointgroups(integrater)
-            lattices = [lauegroup_to_lattice(p) for p in pointgroups]
-            poingroups.add(pointgroups[lattices.index(consensus_lattice)])
-
-        # FIXME will need to handle twinned cases more gracefully sometime
-        # FIXME also need to "mend" the integrater set spacegroup API
-
-        assert len(pointgroups) == 1
-
-        for integrater in integraters:
-            integrater.set_integrater_spacegroup_number(pointgroup)
-
-        # now reindex to the correct setting
-
-        reference = integraters[0]
-
-        for integrater in integraters[1:]:
-            self._scale_reindex_to_reference(reference, integrater)
-
-        return pointgroups[0]
-
-    # FIXME to here
 
     def scale(self):
         """Actually perform the scaling - this is delegated to the

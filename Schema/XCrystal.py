@@ -512,8 +512,8 @@ class XCrystal(object):
                 for v, sd in zip(cell, cell_esd)
             )
             formatted_rows = (formatted_cell_esds[0:3], formatted_cell_esds[3:6])
-            formatted_rows = zip(
-                *(match_formatting(l, a) for l, a in zip(*formatted_rows))
+            formatted_rows = list(
+                zip(*(match_formatting(l, a) for l, a in zip(*formatted_rows)))
             )
             result += "Unit cell (with estimated std devs):\n"
             result += "%s %s %s\n%s %s %s\n" % (formatted_rows[0] + formatted_rows[1])
