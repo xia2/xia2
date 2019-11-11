@@ -565,6 +565,19 @@ class _CommandLine(object):
         if scaler is not None and settings.scaler is None:
             PhilIndex.update("xia2.settings.scaler=%s" % scaler)
 
+        if settings.scaler is not None:
+            if settings.pipeline.startswith("2d"):
+                allowed_scalers = ("ccp4a",)
+            elif settings.pipeline.startswith("3d"):
+                allowed_scalers = ("xdsa", "ccp4a")
+            elif settings.pipeline.startswith("dials"):
+                allowed_scalers = ("dials", "ccp4a")
+            if settings.scaler not in allowed_scalers:
+                raise ValueError(
+                    "scaler=%s not compatible with pipeline=%s (compatible scalers are %s)"
+                    % (settings.scaler, settings.pipeline, " or ".join(allowed_scalers))
+                )
+
 
 CommandLine = _CommandLine()
 CommandLine.setup()

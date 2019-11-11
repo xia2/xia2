@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 import procrunner
+import pytest
 import xia2.Test.regression
 
 
@@ -37,6 +38,25 @@ END PROJECT AUTOMATIC
         split_xinfo_template.format(data_dir.strpath.replace("\\", "\\\\"))
     )
     return xinfo_file.strpath
+
+
+@pytest.mark.parametrize("pipeline,scaler", (("dials", "xdsa"), ("3dii", "dials")))
+def test_incompatible_pipeline_scaler(
+    pipeline, scaler, regression_test, dials_data, tmpdir, ccp4
+):
+    command_line = [
+        "xia2",
+        "pipeline=%s" % pipeline,
+        "nproc=1",
+        "scaler=%s" % scaler,
+        dials_data("x4wide").strpath,
+    ]
+    result = procrunner.run(command_line, working_directory=tmpdir.strpath)
+    assert result.returncode
+    assert (
+        "Error: scaler=%s not compatible with pipeline=%s" % (scaler, pipeline)
+        in result.stdout
+    )
 
 
 def test_dials_aimless(regression_test, dials_data, tmpdir, ccp4):
