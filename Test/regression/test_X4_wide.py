@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import procrunner
 import pytest
+import random
 import xia2.Test.regression
 
 
@@ -60,9 +61,12 @@ def test_incompatible_pipeline_scaler(
 
 
 def test_dials_aimless(regression_test, dials_data, tmpdir, ccp4):
+    # These should be functionally equivalent
+    pipeline, scaler = random.choice([("dials-aimless", None), ("dials", "ccp4a")])
     command_line = [
         "xia2",
-        "pipeline=dials-aimless",
+        "pipeline=%s" % pipeline,
+        "scaler=%s" % scaler,
         "nproc=1",
         "trust_beam_centre=True",
         "read_all_image_headers=False",
