@@ -1,5 +1,5 @@
 # Code for the selection of images for autoindexing - selecting lone images
-# from a list or wedges from a list, for Mosflm / Labelit and XDS respectively.
+# from a list or wedges from a list, for XDS.
 
 from __future__ import absolute_import, division, print_function
 

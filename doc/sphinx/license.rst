@@ -7,7 +7,7 @@ uses this software is invited to join the xia2bb mailing list. Finally, if you
 use this software in solving a structure which is published, please
 acknowledge it! Thanks!
 
-This software depends upon CCP4 and will also make use of Labelit and XDS -
+This software depends upon CCP4 and will also make use of XDS -
 users are reminded that it is their responsibility to have properly obtained
 licenses for this software.
 

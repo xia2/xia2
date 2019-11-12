@@ -1,12 +1,3 @@
-#!/usr/bin/env python
-# LabelitIndex.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 2nd June 2006
-#
 # A wrapper for labelit.index - this will provide functionality to:
 #
 # Decide the beam centre.
@@ -35,6 +26,7 @@ from xia2.Schema.Interfaces.Indexer import IndexerSingleSweep
 # other labelit things that this uses
 from xia2.Wrappers.Labelit.LabelitMosflmScript import LabelitMosflmScript
 from xia2.Wrappers.Labelit.LabelitStats_distl import LabelitStats_distl
+from xia2.Wrappers.Labelit.LabelitIndex import LabelitIndex
 
 
 class LabelitIndexer(IndexerSingleSweep):
@@ -47,9 +39,7 @@ class LabelitIndexer(IndexerSingleSweep):
 
         # this will check that Labelit is available in the PATH
 
-        from xia2.Wrappers.Labelit.LabelitIndex import LabelitIndex
-
-        index = LabelitIndex()
+        LabelitIndex()
 
         # control over the behaviour
 
@@ -117,7 +107,7 @@ class LabelitIndexer(IndexerSingleSweep):
         _images = []
         for i in self._indxr_images:
             for j in i:
-                if not j in _images:
+                if j not in _images:
                     _images.append(j)
 
         _images.sort()
@@ -156,8 +146,6 @@ class LabelitIndexer(IndexerSingleSweep):
 
         if len(_images) > 4:
             raise RuntimeError("cannot use more than 4 images")
-
-        from xia2.Wrappers.Labelit.LabelitIndex import LabelitIndex
 
         index = LabelitIndex()
         index.set_working_directory(self.get_working_directory())

@@ -858,7 +858,7 @@ xia2.settings
     geometry_y = None
       .type = path
   }
-  indexer = labelit labelitii xds xdsii dials
+  indexer = xds xdsii dials
     .type = choice
     .expert_level = 2
   refiner = xds dials
