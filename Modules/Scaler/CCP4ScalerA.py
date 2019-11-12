@@ -592,7 +592,7 @@ class CCP4ScalerA(Scaler):
                 "Probably twinned, pointgroups: %s"
                 % " ".join(p.replace(" ", "") for p in list(pointgroup_set))
             )
-            numbers = [Syminfo.spacegroup_name_to_number(s) for s in pointgroup_set]
+            numbers = (Syminfo.spacegroup_name_to_number(ps) for ps in pointgroup_set)
             overall_pointgroup = Syminfo.spacegroup_number_to_name(min(numbers))
             self._scalr_input_pointgroup = overall_pointgroup
 
