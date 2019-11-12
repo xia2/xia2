@@ -127,14 +127,11 @@ def Blend(DriverType=None):
                 labels = ["%i" % (i + 1) for i in range(len(self._hklin_files))]
 
             if not no_plot:
-                try:
-                    import matplotlib
+                import matplotlib
 
-                    # http://matplotlib.org/faq/howto_faq.html#generate-images-without-having-a-window-appear
-                    matplotlib.use("Agg")  # use a non-interactive backend
-                    from matplotlib import pyplot
-                except ImportError:
-                    raise Sorry("matplotlib must be installed to generate a plot.")
+                # http://matplotlib.org/faq/howto_faq.html#generate-images-without-having-a-window-appear
+                matplotlib.use("Agg")  # use a non-interactive backend
+                from matplotlib import pyplot
 
                 fig = pyplot.figure(dpi=1200, figsize=(16, 12))
 
