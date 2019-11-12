@@ -128,7 +128,7 @@ class MultiplicityViewJson(render_2d):
         self._filled_circle_points = flex.vec2_double()
         self._filled_circle_radii = []
         self._filled_circle_colors = []
-        self._text = {"x": [], "y": [], "z": []}
+        self._text = {"x": [], "y": [], "text": []}
         self._lines = []
         json_d = self.render(None)
 
