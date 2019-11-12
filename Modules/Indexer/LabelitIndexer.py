@@ -228,11 +228,6 @@ class LabelitIndexer(IndexerSingleSweep):
                     Debug.write("Ignoring solution: %s" % solution["lattice"])
                     del self._solutions[i]
 
-        # check the RMSD from the triclinic unit cell
-        if self._solutions[1]["rmsd"] > 1.0 and False:
-            # don't know when this is useful - but I know when it is not!
-            raise RuntimeError("high RMSD for triclinic solution")
-
         # configure the "right" solution
         self._solution = self.get_solution()
 
