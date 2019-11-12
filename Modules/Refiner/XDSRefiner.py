@@ -3,6 +3,8 @@ from __future__ import absolute_import, division, print_function
 import copy
 import os
 
+import xia2.Wrappers.Dials.ExportXDS
+from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import Debug
 from xia2.lib.bits import auto_logfiler
 from xia2.Schema.Interfaces.Refiner import Refiner
@@ -11,9 +13,7 @@ from xia2.Schema.Interfaces.Refiner import Refiner
 class XDSRefiner(Refiner):
     # factory functions
     def ExportXDS(self):
-        from xia2.Wrappers.Dials.ExportXDS import ExportXDS as _ExportXDS
-
-        export_xds = _ExportXDS()
+        export_xds = xia2.Wrappers.Dials.ExportXDS.ExportXDS()
         export_xds.set_working_directory(self.get_working_directory())
         auto_logfiler(export_xds)
         return export_xds

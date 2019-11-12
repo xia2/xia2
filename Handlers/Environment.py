@@ -105,7 +105,7 @@ class _Environment(object):
 
         # Make sure USER env var is defined (historical reasons)
 
-        if not "USER" in os.environ:
+        if "USER" not in os.environ:
             if "USERNAME" in os.environ:
                 os.environ["USER"] = os.environ["USERNAME"]
             else:

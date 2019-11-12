@@ -1,13 +1,3 @@
-#!/usr/bin/env python
-# QSubDriver.py
-#
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 16th June 2006
-#
 # A Driver implementation to work with sun grid engine clusters via the
 # "qsub" shell command. This is based on ScriptDriver. This works like...
 #
@@ -31,7 +21,6 @@
 # The rest of the Driver stuff can then follow.
 #
 # This class has been deprecated. See SunGridEngineClusterDriver.
-#
 
 from __future__ import absolute_import, division, print_function
 
@@ -123,7 +112,7 @@ class QSubDriver(DefaultDriver):
         # copy in LD_LIBRARY_PATH - SGE squashes this
         if (
             "LD_LIBRARY_PATH" in os.environ
-            and not "LD_LIBRARY_PATH" in self._working_environment
+            and "LD_LIBRARY_PATH" not in self._working_environment
         ):
             self._working_environment["LD_LIBRARY_PATH"] = os.environ[
                 "LD_LIBRARY_PATH"
@@ -268,21 +257,3 @@ class QSubDriver(DefaultDriver):
         """This is meaningless..."""
 
         pass
-
-
-if __name__ == "__main__":
-    # Then run a simple test
-
-    d = QSubDriver()
-
-    d.set_executable("ExampleProgram")
-    d.start()
-    d.close()
-
-    while True:
-        line = d.output()
-
-        if not line:
-            break
-
-        print(line.strip())
