@@ -3,14 +3,16 @@
 from __future__ import absolute_import, division, print_function
 
 import logging
+import random
 
-from dials.util import Sorry
 import iotbx.phil
-
+import matplotlib
 from dials.array_family import flex
 from dials.util import log
+from dials.util import Sorry
 from dials.util.options import OptionParser
 from dials.util.options import flatten_experiments, flatten_reflections
+from dials.util.version import dials_version
 from dials.util.multi_dataset_handling import parse_multiple_datasets
 from xia2.Modules.MultiCrystalAnalysis import MultiCrystalReport
 
@@ -52,15 +54,8 @@ title = 'xia2 multi-crystal report'
 
 phil_scope = phil_scope.fetch(sources=[phil_overrides])
 
-
-try:
-    import matplotlib
-
-    # http://matplotlib.org/faq/howto_faq.html#generate-images-without-having-a-window-appear
-    matplotlib.use("Agg")  # use a non-interactive backend
-    from matplotlib import pyplot  # noqa: F401
-except ImportError:
-    raise Sorry("matplotlib must be installed to generate a plot.")
+# http://matplotlib.org/faq/howto_faq.html#generate-images-without-having-a-window-appear
+matplotlib.use("Agg")  # use a non-interactive backend
 
 
 def run():
@@ -87,8 +82,6 @@ def run():
 
     for name in ("xia2", "dials"):
         log.config(verbosity=options.verbose, logfile=params.output.log, name=name)
-    from dials.util.version import dials_version
-
     logger.info(dials_version())
 
     # Log the diff phil
@@ -115,8 +108,6 @@ def run():
         )
 
     if params.seed is not None:
-        import random
-
         flex.set_random_seed(params.seed)
         random.seed(params.seed)
 

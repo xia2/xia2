@@ -12,7 +12,7 @@ import re
 import procrunner
 import pytest
 import six
-from dials.conftest import run_in_tmpdir  # noqa: F401, lgtm
+from dials.conftest import run_in_tmpdir  # noqa; lgtm; exported symbol
 
 
 def pytest_addoption(parser):
