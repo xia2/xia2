@@ -34,7 +34,7 @@ def get_xds_version():
         assert b"VERSION" in xds_version_str
         first_line = xds_version_str.split(b"\n")[1].strip().decode("latin-1")
 
-        _xds_version_cache = first_line.split("(")[1].split(")")[0]
+        _xds_version_cache = str(first_line.split("(")[1].split(")")[0])
         assert "VERSION" in _xds_version_cache, _xds_version_cache
 
     return _xds_version_cache
