@@ -91,7 +91,7 @@ MG_CURRENT_PROJECT        _default_project          $PROJ_NAME
         # Does CCP4_PROJECT already exist here?
         if os.path.exists(db_dir):
             self._reason_for_failure = (
-                "ERROR: Directory '%s' already " "contains CCP4_DATABASE"
+                "ERROR: Directory '%s' already contains CCP4_DATABASE"
             ) % directory
             return False
 
@@ -126,9 +126,9 @@ MG_CURRENT_PROJECT        _default_project          $PROJ_NAME
         # Now create files in the project directory
         try:
             database = open(os.path.join(db_dir, "database.def"), "w")
-        except OSError as err:
+        except OSError:
             self._reason_for_failure = (
-                "ERROR: Problem encountered while " "writing database.def"
+                "ERROR: Problem encountered while writing database.def"
             )
             return False
 
@@ -137,9 +137,9 @@ MG_CURRENT_PROJECT        _default_project          $PROJ_NAME
 
         try:
             directories = open(os.path.join(db_dir, "directories.def"), "w")
-        except OSError as err:
+        except OSError:
             self._reason_for_failure = (
-                "ERROR: Problem encountered while " "writing directories.def"
+                "ERROR: Problem encountered while writing directories.def"
             )
             return False
 
@@ -148,9 +148,9 @@ MG_CURRENT_PROJECT        _default_project          $PROJ_NAME
 
         try:
             status = open(os.path.join(db_dir, "status.def"), "w")
-        except OSError as err:
+        except OSError:
             self._reason_for_failure = (
-                "ERROR: Problem encountered while " "writing status.def"
+                "ERROR: Problem encountered while writing status.def"
             )
             return False
 
@@ -181,13 +181,10 @@ class Xia2Info(object):
 
         # check we can read the xia2-summary.dat file
         try:
-            f = open(os.path.join(xia2dir, "xia2-summary.dat"))
-            summary = f.readlines()
-            f.close()
-        except IOError as err:
-            self._problems.append(
-                "Unable to read xia2-summary.dat " "inside %s" % xia2dir
-            )
+            with open(os.path.join(xia2dir, "xia2-summary.dat")) as fh:
+                summary = fh.readlines()
+        except IOError:
+            self._problems.append("Unable to read xia2-summary.dat inside %s" % xia2dir)
             return
 
         # attempt to extract the project name
@@ -196,9 +193,7 @@ class Xia2Info(object):
                 self._proj_name = (line.partition("Project:")[2]).strip()
 
         if not self._proj_name:
-            self._problems.append(
-                "Unable to find a project name in " "xia2-summary.dat"
-            )
+            self._problems.append("Unable to find a project name in xia2-summary.dat")
         else:
             # check the project name is sensible
             if self._proj_name.lower() in ["automatic", "default"]:
@@ -294,13 +289,13 @@ if __name__ == "__main__":
     proj_dir = os.path.join(xia2dir, "CCP4Project")
     try:
         os.mkdir(proj_dir)
-    except OSError as err:
+    except OSError:
         msg = "Unable to create a CCP4Project directory. Does it already exist?"
         sys.exit(msg)
     try:
         for f in process_info.get_data_files():
             shutil.copy2(f, proj_dir)
-    except IOError as err:
+    except IOError:
         msg = "Unable to copy data files to " + proj_dir
         sys.exit(msg)
 
@@ -314,7 +309,7 @@ if __name__ == "__main__":
     try:
         val = subprocess.call("ccp4i", cwd=db_dir)
         sys.exit(val)
-    except OSError as err:
+    except OSError:
         print(
             (
                 "It seems that ccp4i is not currently available. To start ccp4i "
