@@ -2,13 +2,13 @@
 from __future__ import absolute_import, division, print_function
 
 import sys
+import six.moves.cPickle as pickle
+from dials.array_family import flex  # noqa: F401; Required for pickle loading
 
 
 def main(filename):
     """Show a mask from create_mask."""
 
-    from dials.array_family import flex  # noqa: F401; Required for pickle loading
-    import six.moves.cPickle as pickle
     from matplotlib import pylab
 
     with open(filename, "rb") as fh:

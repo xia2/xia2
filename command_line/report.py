@@ -10,6 +10,7 @@ from collections import OrderedDict
 import iotbx.phil
 from dials.util.options import OptionParser
 from jinja2 import Environment, ChoiceLoader, PackageLoader
+import xia2.Handlers.Streams
 from xia2.Modules.Report import Report
 
 phil_scope = iotbx.phil.parse(
@@ -158,4 +159,8 @@ def run(args):
 
 
 if __name__ == "__main__":
+    xia2.Handlers.Streams.setup_logging(
+        logfile="xia2.report.txt", debugfile="xia2.report-debug.txt"
+    )
+    xia2.Handlers.Streams.reconfigure_streams_to_logging()
     run(sys.argv[1:])

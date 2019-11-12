@@ -4,6 +4,7 @@ import os
 import sys
 
 import six.moves.cPickle as pickle
+import xia2.Handlers.Streams
 from dials.array_family import flex
 
 
@@ -128,6 +129,10 @@ def reconstruct_rogues(params):
 
 
 if __name__ == "__main__":
+    xia2.Handlers.Streams.setup_logging(
+        logfile="xia2.rogues_gallery.txt", debugfile="xia2.rogues_gallery-debug.txt"
+    )
+    xia2.Handlers.Streams.reconfigure_streams_to_logging()
     from libtbx.phil import parse
 
     phil_scope = parse(

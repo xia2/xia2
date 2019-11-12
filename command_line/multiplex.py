@@ -1,4 +1,3 @@
-#!/usr/bin/env dials.python
 from __future__ import absolute_import, division, print_function
 
 import logging
@@ -60,10 +59,10 @@ def run(args):
     params, options = parser.parse_args(args=args, show_diff_phil=False)
 
     # Configure the logging
-    xia2.Handlers.Streams.streams_off()
     xia2.Handlers.Streams.setup_logging(
         logfile=params.output.log, verbose=options.verbose
     )
+    xia2.Handlers.Streams.reconfigure_streams_to_logging()
 
     logger.info(dials_version())
 

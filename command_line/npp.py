@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 import math
 import sys
 
+import xia2.Handlers.Streams
 from iotbx.reflection_file_reader import any_reflection_file
 from scitbx.array_family import flex
 
@@ -69,4 +70,8 @@ def npp(hklin):
 
 
 if __name__ == "__main__":
+    xia2.Handlers.Streams.setup_logging(
+        logfile="xia2.npp.txt", debugfile="xia2.npp-debug.txt"
+    )
+    xia2.Handlers.Streams.reconfigure_streams_to_logging()
     npp(sys.argv[1])

@@ -5,6 +5,7 @@ import sys
 import traceback
 
 from xia2.Applications.xia2_main import check_environment, help
+import xia2.Handlers.Streams
 from xia2.Handlers.Streams import Chatter
 
 
@@ -37,4 +38,8 @@ def run():
 
 
 if __name__ == "__main__":
+    xia2.Handlers.Streams.setup_logging(
+        logfile="xia2.integrate.txt", debugfile="xia2.integrate-debug.txt"
+    )
+    xia2.Handlers.Streams.reconfigure_streams_to_logging()
     run()

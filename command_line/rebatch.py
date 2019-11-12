@@ -1,5 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
+import sys
+import xia2.Handlers.Streams
+
 master_phil = """\
 hklin = None
   .type = path
@@ -47,6 +50,8 @@ def run(args):
 
 
 if __name__ == "__main__":
-    import sys
-
+    xia2.Handlers.Streams.setup_logging(
+        logfile="xia2.rebatch.txt", debugfile="xia2.rebatch-debug.txt"
+    )
+    xia2.Handlers.Streams.reconfigure_streams_to_logging()
     run(sys.argv[1:])
