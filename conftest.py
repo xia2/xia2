@@ -87,7 +87,7 @@ def xds():
         pytest.skip("XDS installation required for this test")
     if result["exitcode"] or result["timeout"]:
         pytest.skip("XDS installation required for this test - Could not run XDS")
-    if "license expired" in result["stdout"]:
+    if b"license expired" in result["stdout"]:
         pytest.skip("XDS installation required for this test - XDS license is expired")
     version = re.search(br"BUILT=([0-9]+)\)", result["stdout"])
     if not version:

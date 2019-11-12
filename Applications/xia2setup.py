@@ -288,7 +288,7 @@ def print_sweeps(out=sys.stdout):
 
             oscillation_range = s.get_imageset().get_scan().get_oscillation_range()
             width = oscillation_range[1] - oscillation_range[0]
-            if width < min_oscillation_range:
+            if min_oscillation_range is not None and width < min_oscillation_range:
                 Debug.write("Rejecting sweep %s:" % s.get_template())
                 Debug.write(
                     "  Too narrow oscillation range (found %i, require at least %i)"
@@ -408,7 +408,7 @@ def print_sweeps(out=sys.stdout):
 
             oscillation_range = s.get_imageset().get_scan().get_oscillation_range()
             width = oscillation_range[1] - oscillation_range[0]
-            if width < min_oscillation_range:
+            if min_oscillation_range is not None and width < min_oscillation_range:
                 Debug.write("Rejecting sweep %s:" % s.get_template())
                 Debug.write(
                     "  Too narrow oscillation range (found %i, require at least %i)"
