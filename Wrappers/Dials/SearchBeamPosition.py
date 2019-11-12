@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
 import os
@@ -69,7 +67,7 @@ def SearchBeamPosition(DriverType=None):
             self.close_wait()
             self.check_for_errors()
 
-            records = self.get_all_output()
+            self.get_all_output()
 
             assert os.path.exists(self._optimized_filename), self._optimized_filename
 

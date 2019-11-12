@@ -1,19 +1,5 @@
-#!/usr/bin/env python
-# SimpleDriver.py
-#
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 24th May 2006
-#
 # An initial implementation of the simplest Driver type - the one which
-# just wraps the subprocess.Popen class. Note well: this will require
-# Python 2.4.
-#
-# Applicability: Windows/OS X/UNIX
-#
+# just wraps the subprocess.Popen class.
 
 from __future__ import absolute_import, division, print_function
 
@@ -59,7 +45,7 @@ class SimpleDriver(DefaultDriver):
             for value in self._working_environment[name][1:]:
                 added += "%s%s" % (os.pathsep, value)
 
-            if name in environment and not name in self._working_environment_exclusive:
+            if name in environment and name not in self._working_environment_exclusive:
                 environment[name] = "%s%s%s" % (added, os.pathsep, environment[name])
             else:
                 environment[name] = added
@@ -79,7 +65,6 @@ class SimpleDriver(DefaultDriver):
         self._popen_status = None
 
     def _input(self, record):
-
         if not self.check():
             raise RuntimeError("child process has termimated")
 
@@ -110,7 +95,6 @@ class SimpleDriver(DefaultDriver):
         return 0
 
     def close(self):
-
         if not self.check():
             raise RuntimeError("child process has termimated")
 
@@ -122,19 +106,3 @@ class SimpleDriver(DefaultDriver):
 
     def kill(self):
         kill_process(self._popen)
-
-
-if __name__ == "__main__":
-    # run a test for segmentation fault
-
-    d = SimpleDriver()
-
-    d.set_executable("EPSegv")
-    d.start()
-    d.close()
-    while True:
-        line = d.output()
-        if not line:
-            break
-
-    d.check_for_errors()
