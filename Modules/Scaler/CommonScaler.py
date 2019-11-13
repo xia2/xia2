@@ -768,7 +768,7 @@ class CommonScaler(Scaler):
                 indices=indices, info=intensities.info()
             )
 
-            with open("%s.hkl" % prefixpath, "wb") as hkl_file_handle:
+            with open("%s.hkl" % prefixpath, "w") as hkl_file_handle:
                 # limit values to 4 digits (before decimal point), as this is what shelxt
                 # writes in its output files, and shelxl seems to read. ShelXL apparently
                 # does not read values >9999 properly
