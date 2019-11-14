@@ -6,11 +6,9 @@ The recommended way of obtaining the latest xia2 is to install the latest
 xia2/DIALS bundle which can be obtained
 `here <https://dials.github.io/installation.html>`_.
 
-xia2 depends critically on having CCP4 available. The ``dials``
-pipeline will work with only xia2 and CCP4 installed. In order to use the
-``3d``, ``3di`` and ``3dii`` pipelines you will also need XDS. Optionally
-xia2 can make use of `LABELIT`_ which requires installation of LABELIT or
-`PHENIX`_ (the latter includes the former).
+xia2 depends critically on having CCP4 available. The ``dials`` and ``dials-aimless``
+pipelines will work with only xia2 and CCP4 installed. In order to use the
+``3d``, ``3di`` and ``3dii`` pipelines you will also need XDS.
 
 The standard recommended procedure for installing xia2 is therefore:
 
@@ -22,8 +20,6 @@ The standard recommended procedure for installing xia2 is therefore:
   terminal. Make sure to source the dials_env.sh script after the CCP4 setup
   script
 * Optionally download XDS from http://xds.mpimf-heidelberg.mpg.de/ and add this to your path [1]_
-* Optionally download PHENIX from http://www.phenix-online.org or LABELIT from
-  http://cci.lbl.gov/labelit/ and source the relevant setup script
 
 By and large, if these instruction are followed you should end up with a
 happy xia2 installation. If you find any problems it’s always worth checking
@@ -34,6 +30,4 @@ the `blog`_ or sending an email to xia2.support@gmail.com.
 
 
 .. _`DIALS`: https://dials.github.io/
-.. _`LABELIT`: http://cci.lbl.gov/labelit/
-.. _`PHENIX`: http://www.phenix-online.org/
 .. _`blog`: http://xia2.blogspot.com/

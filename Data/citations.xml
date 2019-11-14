@@ -125,24 +125,6 @@ url = {https://doi.org/10.1107/S0907444910045749},
 </bibtex>
 </citation>
 
-<citation program="labelit">
-<acta>Sauter, N. K., Grosse-Kunstleve, R. W. and Adams, P. D. (2004) J. Appl. Cryst. 37, 399-409.</acta>
-<bibtex>
-@article{Sauter:dd5008,
-author = "Sauter, Nicholas K. and Grosse-Kunstleve, Ralf W. and Adams, Paul D.",
-title = "{Robust indexing for automatic data collection}",
-journal = "Journal of Applied Crystallography",
-year = "2004",
-volume = "37",
-number = "3",
-pages = "399--409",
-month = "Jun",
-doi = {10.1107/S0021889804005874},
-url = {https://doi.org/10.1107/S0021889804005874},
-}
-</bibtex>
-</citation>
-
 <citation program="d*TREK">
 <bibtex>
 @article{Pflugrath:ba0030,

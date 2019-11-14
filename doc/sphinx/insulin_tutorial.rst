@@ -26,7 +26,7 @@ Other options are (type just xia2 to get this list)::
 
   Command-line options to xia2:
   [pipeline=XXX] select processing pipeline, with XXX one of:
-    3d    XDS, XSCALE, LABELIT
+    3d    XDS, XSCALE
     3dii  XDS, XSCALE, using all images for autoindexing
     dials DIALS
     dials-aimless DIALS but scale with AIMLESS
