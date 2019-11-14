@@ -741,6 +741,14 @@ xia2.settings
       .type = float(value_min=0.0)
       .help = "High resolution cutoff."
       .short_caption = "High resolution cutoff"
+    use_isigma = False
+      .type = bool
+      .help = "Use an isigma resolution cutoff (value specified by resolution.isigma)"
+      .short_caption = "Use an isigma cutoff for resolution"
+    use_misigma = False
+      .type = bool
+      .help = "Use a mean isigma resolution cutoff (value specified by resolution.misigma)"
+      .short_caption = "Use a mean isigma cutoff for resolution"
     include scope dials.util.resolutionizer.phil_str
   }
   unify_setting = False

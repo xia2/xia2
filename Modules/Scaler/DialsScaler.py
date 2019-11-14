@@ -577,12 +577,13 @@ pipeline=dials (supported for pipeline=dials-aimless).
         self._scaler.clear_datafiles()
 
         ### Calculate the resolution limit and set done False if applicable
+        PhilIndex.params.xia2.settings.resolution.use_isigma
 
         highest_suggested_resolution = self.assess_resolution_limits(
             hklin=None,
             user_resolution_limits=user_resolution_limits,
-            use_isigma=False,
-            use_misigma=False,
+            use_isigma=PhilIndex.params.xia2.settings.resolution.use_isigma,
+            use_misigma=PhilIndex.params.xia2.settings.resolution.use_misigma,
             reflections=self._scaled_reflections,
             experiments=self._scaled_experiments,
         )
