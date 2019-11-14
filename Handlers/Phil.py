@@ -567,7 +567,7 @@ xia2.settings
   pipeline = 3d 3dd 3di 3dii *dials dials-full dials-aimless
     .short_caption = "main processing pipeline"
     .help = "Select the xia2 main processing pipeline\n" \
-            "   3d: XDS, XSCALE, LABELIT\n" \
+            "   3d: XDS, XSCALE\n" \
             "  3di: as 3d, but use 3 wedges for indexing\n" \
             " 3dii: XDS, XSCALE, using all images for autoindexing\n" \
             "  3dd: as 3d, but use DIALS for indexing\n" \
@@ -751,8 +751,8 @@ xia2.settings
   trust_beam_centre = False
     .type = bool
     .help = "Whether or not to trust the beam centre in the image header. " \
-            "If false, then labelit.index is used to determine a better beam " \
-            "centre during xia2 setup phase."
+            "If false, then the DIALS indexer will attempt to find a better beam " \
+            "centre during indexing."
     .short_caption = "Trust beam centre"
     .expert_level = 1
   wavelength_tolerance = 0.00005
@@ -858,7 +858,7 @@ xia2.settings
     geometry_y = None
       .type = path
   }
-  indexer = labelit labelitii xds xdsii dials
+  indexer = xds xdsii dials
     .type = choice
     .expert_level = 2
   refiner = xds dials

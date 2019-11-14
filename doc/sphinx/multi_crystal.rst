@@ -64,8 +64,8 @@ a couple of reasons:
    first image header for each set of files with a matching template, and
    infer the rest of the sweep from the first image header.
 
-#. If available, xia2 will run a beam centre search on each sweep using
-   labelit.index. This step can be disabled using the parameter
+#. When using DIALS for indexing xia2 will run a beam centre search on each
+   sweep. This step can be disabled using the parameter
    :samp:`trust_beam_centre=True`
 
 Furthermore, xia2 may not make the same conclusion as to the symmetry for each
@@ -82,7 +82,7 @@ command line can help in both these situations.
 |                                  | ignore and just use those sweeps that |
 |                                  | processed successfully                |
 +----------------------------------+---------------------------------------+
-| ``trust_beam_centre=True``       | Don't run labelit beam centre search  |
+| ``trust_beam_centre=True``       | Don't run DIALS beam centre search    |
 +----------------------------------+---------------------------------------+
 | ``read_all_image_headers=False`` | Skip reading all image headers - just |
 |                                  | read the first one for each sweep     |

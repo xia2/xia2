@@ -26,7 +26,7 @@ Other options are (type just xia2 to get this list)::
 
   Command-line options to xia2:
   [pipeline=XXX] select processing pipeline, with XXX one of:
-    3d    XDS, XSCALE, LABELIT
+    3d    XDS, XSCALE
     3dii  XDS, XSCALE, using all images for autoindexing
     dials DIALS
     dials-aimless DIALS but scale with AIMLESS
@@ -74,10 +74,6 @@ the sequence looks correct and that the names are sensible as well as checking
 that the epoch numbers are set correctly and also that the wavelengths and
 beam centres are correct. If you provided a heavy atom there is a place to
 say how many to look for.
-
-Finally, if you have labelit installed xia2 will run this to update the beam
-positions. If this happens, you will see a comment to this effect above the
-BEAM records in the sweeps.
 
 The other mechanism for running xia2 is via a xinfo file, which explains the
 layout of the data set to xia2 explicitly. This is helpful if you wish to only

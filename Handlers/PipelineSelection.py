@@ -20,7 +20,7 @@ def check(key, value):
 
     # this should be current!
 
-    allowed_indexers = ["labelit", "xds", "xdsii", "dials"]
+    allowed_indexers = ["xds", "xdsii", "dials"]
     allowed_integraters = ["xdsr", "xds", "dials"]
     allowed_refiners = ["xds", "dials"]
     allowed_scalers = ["ccp4a", "xdsa", "dials"]

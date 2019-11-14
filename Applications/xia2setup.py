@@ -13,7 +13,6 @@ from xia2.Experts.FindImages import image2template_directory
 from xia2.Handlers.CommandLine import CommandLine
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import Debug
-from xia2.Modules.LabelitBeamCentre import compute_beam_centre
 
 image_extensions = [
     "img",
@@ -472,15 +471,7 @@ def print_sweeps(out=sys.stdout):
                 # really don't need to store the epoch in the xinfo file
                 # out.write('EPOCH %d\n' % int(s.get_collect()[0]))
                 if not settings.trust_beam_centre:
-                    interactive = False
-                    if PhilIndex.params.xia2.settings.interactive:
-                        interactive = True
-                        PhilIndex.params.xia2.settings.interactive = False
-                        PhilIndex.get_python_object()
-                    beam_centre = compute_beam_centre(s)
-                    if beam_centre:
-                        out.write("BEAM %6.2f %6.2f\n" % tuple(beam_centre))
-                    PhilIndex.params.xia2.settings.interactive = interactive
+                    PhilIndex.params.xia2.settings.interactive = False
                     PhilIndex.get_python_object()
 
                 if settings.detector_distance is not None:
