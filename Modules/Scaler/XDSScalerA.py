@@ -1115,9 +1115,17 @@ class XDSScalerA(Scaler):
                         reasoning = "detector limits"
                         Debug.write("keep_all_reflections set, using detector limits")
                     except Exception:
-                        resolution, reasoning = self._estimate_resolution_limit(hklin)
+                        resolution, reasoning = self._estimate_resolution_limit(
+                            hklin,
+                            use_isigma=PhilIndex.params.xia2.settings.resolution.use_isigma,
+                            use_misigma=PhilIndex.params.xia2.settings.resolution.use_misigma,
+                        )
                 else:
-                    resolution, reasoning = self._estimate_resolution_limit(hklin)
+                    resolution, reasoning = self._estimate_resolution_limit(
+                        hklin,
+                        use_isigma=PhilIndex.params.xia2.settings.resolution.use_isigma,
+                        use_misigma=PhilIndex.params.xia2.settings.resolution.use_misigma,
+                    )
 
             reasoning_str = ""
             if reasoning:
