@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 
 import sys
 import six.moves.cPickle as pickle
-from dials.array_family import flex  # noqa # lgtm # Required for pickle loading
+from dials.array_family import flex  # lgtm # noqa # Required for pickle loading
 
 
 def main(filename):
