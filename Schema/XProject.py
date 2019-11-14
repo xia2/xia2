@@ -6,6 +6,7 @@ from __future__ import absolute_import, division, print_function
 import inspect
 import json
 
+import six
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import Debug
 from xia2.Handlers.Syminfo import Syminfo
@@ -83,9 +84,9 @@ class XProject(object):
 
             rv = {}
             for key, value in data.items():
-                if isinstance(key, unicode):
+                if six.PY2 and isinstance(key, six.text_type):
                     key = key.encode("utf-8")
-                if isinstance(value, unicode):
+                if six.PY2 and isinstance(value, six.text_type):
                     value = value.encode("utf-8")
                 elif isinstance(value, list):
                     value = _decode_list(value)

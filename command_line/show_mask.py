@@ -1,12 +1,13 @@
 # LIBTBX_SET_DISPATCHER_NAME dev.xia2.show_mask
-# LIBTBX_PRE_DISPATCHER_INCLUDE_SH export BOOST_ADAPTBX_FPE_DEFAULT=1
 from __future__ import absolute_import, division, print_function
+
+import sys
 
 
 def main(filename):
     """Show a mask from create_mask."""
 
-    from dials.array_family import flex
+    from dials.array_family import flex  # noqa: F401; Required for pickle loading
     import six.moves.cPickle as pickle
     from matplotlib import pylab
 
@@ -18,6 +19,4 @@ def main(filename):
 
 
 if __name__ == "__main__":
-    import sys
-
     main(sys.argv[1])

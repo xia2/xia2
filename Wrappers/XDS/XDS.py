@@ -31,10 +31,10 @@ def get_xds_version():
     global _xds_version_cache
     if _xds_version_cache is None:
         xds_version_str = subprocess.check_output("xds")
-        assert "VERSION" in xds_version_str
-        first_line = xds_version_str.split("\n")[1].strip()
+        assert b"VERSION" in xds_version_str
+        first_line = xds_version_str.split(b"\n")[1].strip().decode("latin-1")
 
-        _xds_version_cache = first_line.split("(")[1].split(")")[0]
+        _xds_version_cache = str(first_line.split("(")[1].split(")")[0])
         assert "VERSION" in _xds_version_cache, _xds_version_cache
 
     return _xds_version_cache
@@ -47,31 +47,17 @@ def _running_xds_version():
     global _running_xds_version_stamp
     if _running_xds_version_stamp is None:
         xds_version_str = subprocess.check_output("xds")
-        assert "VERSION" in xds_version_str
-        first_line = xds_version_str.split("\n")[1].strip()
-        if "BUILT=" not in xds_version_str:
+        assert b"VERSION" in xds_version_str
+        first_line = xds_version_str.split("\n")[1].strip().decode("latin-1")
+        if b"BUILT=" not in xds_version_str:
             format_str = "***** XDS *****  (VERSION  %B %d, %Y)"
             date = datetime.datetime.strptime(first_line, format_str)
-
             _running_xds_version_stamp = date.year * 10000 + date.month * 100 + date.day
         else:
-            first_line = xds_version_str.split("\n")[1].strip()
             s = first_line.index("BUILT=") + 6
             _running_xds_version_stamp = int(first_line[s : s + 8])
 
     return _running_xds_version_stamp
-
-
-def _xds_version(xds_output_list):
-    """Return the version of XDS which has been run."""
-
-    for line in xds_output_list:
-        if "XDS VERSION" in line:
-            return line.split("XDS VERSION")[1].split(")")[0].strip()
-        if "XDS" in line and "VERSION" in line:
-            return line.split("(VERSION")[1].split(")")[0].strip()
-
-    raise RuntimeError("XDS version not found")
 
 
 def add_xds_version_to_mtz_history(mtz_file):

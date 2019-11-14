@@ -128,7 +128,7 @@ class MultiplicityViewJson(render_2d):
         self._filled_circle_points = flex.vec2_double()
         self._filled_circle_radii = []
         self._filled_circle_colors = []
-        self._text = []
+        self._text = {"x": [], "y": [], "text": []}
         self._lines = []
         json_d = self.render(None)
 
@@ -146,7 +146,9 @@ class MultiplicityViewJson(render_2d):
         self._lines.append((x1, y1, x2, y2))
 
     def draw_text(self, ax, text, x, y):
-        self._text.append((x, y, text))
+        self._text["x"].append(x)
+        self._text["y"].append(y)
+        self._text["text"].append(text)
 
     def draw_open_circle(self, ax, x, y, radius, color=None):
         self._open_circle_points.append((x, y))
@@ -245,14 +247,8 @@ class MultiplicityViewJson(render_2d):
                 }
             )
 
-        text = {
-            "x": [x for x, y, text in self._text],
-            "y": [y for x, y, text in self._text],
-            "text": [text for x, y, text in self._text],
-            "mode": "text",
-            "showlegend": False,
-            "textposition": "top right",
-        }
+        text = {"mode": "text", "showlegend": False, "textposition": "top right"}
+        text.update(self._text)
         data.append(text)
 
         shapes = []

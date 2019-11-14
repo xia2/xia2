@@ -392,8 +392,8 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
         styles=styles,
     )
 
-    with open("%s-report.json" % os.path.splitext(filename)[0], "wb") as f:
-        json.dump(json_data, f, indent=2)
+    with open("%s-report.json" % os.path.splitext(filename)[0], "w") as fh:
+        json.dump(json_data, fh, indent=2)
 
     with open(filename, "wb") as f:
         f.write(html.encode("utf-8", "xmlcharrefreplace"))

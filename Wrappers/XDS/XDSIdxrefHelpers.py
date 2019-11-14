@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
 from xia2.Experts.LatticeExpert import ApplyLattice
@@ -9,13 +7,9 @@ def _parse_idxref_lp_distance_etc(lp_file_lines):
     """Parse the LP file for refined distance, beam centre and so on..."""
 
     beam = None
-    diatance = None
+    distance = None
 
-    i = 0
-    while i < len(lp_file_lines):
-        line = lp_file_lines[i]
-        i += 1
-
+    for line in lp_file_lines:
         if "DETECTOR COORDINATES" in line and "DIRECT BEAM" in line:
             beam = tuple(map(float, line.split()[-2:]))
         if "CRYSTAL TO DETECTOR" in line:
@@ -36,7 +30,7 @@ def _parse_idxref_index_origin(lp_file_lines):
         line = lp_file_lines[i]
         i += 1
         if "INDEX_" in line and "QUALITY" in line and "DELTA" in line:
-            while not "SELECTED" in line:
+            while "SELECTED" not in line:
                 line = lp_file_lines[i]
                 i += 1
                 try:

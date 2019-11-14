@@ -768,7 +768,7 @@ class CommonScaler(Scaler):
                 indices=indices, info=intensities.info()
             )
 
-            with open("%s.hkl" % prefixpath, "wb") as hkl_file_handle:
+            with open("%s.hkl" % prefixpath, "w") as hkl_file_handle:
                 # limit values to 4 digits (before decimal point), as this is what shelxt
                 # writes in its output files, and shelxl seems to read. ShelXL apparently
                 # does not read values >9999 properly
@@ -1030,11 +1030,11 @@ class CommonScaler(Scaler):
             reasoning.append("merged <I/sigI> > %s" % params.misigma)
 
         if any(resolution_limits):
-            resolution = max(resolution_limits)
+            resolution = max(r for r in resolution_limits if r is not None)
             reasoning = [
                 reason
                 for limit, reason in zip(resolution_limits, reasoning)
-                if limit >= resolution
+                if limit is not None and limit >= resolution
             ]
             reasoning = ", ".join(reasoning)
         else:

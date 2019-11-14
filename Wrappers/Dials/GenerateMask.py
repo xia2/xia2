@@ -1,6 +1,6 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
+
+import os
 
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 
@@ -36,7 +36,6 @@ def GenerateMask(DriverType=None):
             self._params = params
 
         def run(self):
-            import os
             from xia2.Handlers.Streams import Debug
 
             Debug.write("Running dials.generate_mask")
@@ -51,7 +50,7 @@ def GenerateMask(DriverType=None):
             phil_filename = os.path.join(
                 self.get_working_directory(), "%s_mask.phil" % self.get_xpid()
             )
-            with open(phil_filename, "wb") as f:
+            with open(phil_filename, "w") as f:
                 f.write(diff_phil.as_str())
                 f.write(
                     os.linesep

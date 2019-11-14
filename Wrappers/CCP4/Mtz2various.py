@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
 import os
@@ -55,7 +53,7 @@ def Mtz2various(DriverType=None):
 
             self.close_wait()
 
-            output = self.get_all_output()
+            self.get_all_output()
 
             try:
                 self.check_for_errors()
@@ -89,7 +87,7 @@ def Mtz2various(DriverType=None):
 
             self.close_wait()
 
-            output = self.get_all_output()
+            self.get_all_output()
 
             try:
                 self.check_for_errors()

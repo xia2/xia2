@@ -75,7 +75,7 @@
                     <div id="collapse_references" class="panel-collapse collapse in">
                         <div class="panel-body">
 
-                            {% for citation, curl in references.iteritems() %}
+                            {% for citation, curl in references.items() %}
                                 <a href="{{curl}}">{{citation}}</a>
                                 <br>
                             {% endfor %}

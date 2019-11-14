@@ -1,15 +1,16 @@
 from __future__ import absolute_import, division, print_function
 
+import math
+import sys
+
+from iotbx.reflection_file_reader import any_reflection_file
+from scitbx.array_family import flex
+
 
 def npp(hklin):
-    from iotbx.reflection_file_reader import any_reflection_file
     from xia2.Toolkit.NPP import npp_ify
-    from scitbx.array_family import flex
-    import math
-    import sys
 
     reader = any_reflection_file(hklin)
-    mtz_object = reader.file_content()
     intensities = [
         ma
         for ma in reader.as_miller_arrays(merge_equivalents=False)
@@ -68,6 +69,4 @@ def npp(hklin):
 
 
 if __name__ == "__main__":
-    import sys
-
     npp(sys.argv[1])

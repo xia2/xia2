@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
 import os
@@ -99,7 +97,7 @@ def Sortmtz(DriverType=None):
                 self.check_for_errors()
                 self.check_ccp4_errors()
                 if "Error" in self.get_ccp4_status():
-                    raise RuntimeError("[SORTMTZ] %s" % status)
+                    raise RuntimeError("[SORTMTZ] %s" % self.get_ccp4_status())
                 self.check_sortmtz_errors()
 
             except RuntimeError as e:
