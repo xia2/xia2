@@ -9,11 +9,10 @@
 
 from __future__ import absolute_import, division, print_function
 
-import inspect
-import io
 import logging
 import os
 import sys
+import warnings
 from datetime import date
 
 import libtbx.load_env
@@ -34,6 +33,26 @@ april = {
 }
 
 
+def _logger_file(loggername, level=logging.INFO):
+    "Returns a file-like object that writes to a logger"
+    log_function = logging.getLogger(loggername).log
+
+    class _(object):
+        @staticmethod
+        def flush():
+            pass
+
+        @staticmethod
+        def write(logobject):
+            if logobject.endswith("\n"):
+                # the Stream.write() function adds a trailing newline.
+                # remove that again
+                logobject = logobject[:-1]
+            log_function(level, logobject)
+
+    return _()
+
+
 def banner(comment, forward=True, size=60):
 
     if not comment:
@@ -49,91 +68,33 @@ class _Stream(object):
     """A class to represent an output stream. This will be used as a number
     of static instances - Debug and Chatter in particular."""
 
-    def __init__(self, streamname, prefix):
+    def __init__(self, streamname, prefix, file=None):
         """Create a new stream."""
 
         # FIXME would rather this goes to a file...
         # unless this is impossible
 
-        if streamname:
-            self._file_name = "%s.txt" % streamname
-        else:
-            self._file_name = None
-
-        self._file = None
-
-        self._streamname = streamname
-        self._prefix = prefix
-
-        self._otherstream = None
-        self._off = False
-
-        self._cache = False
-        self._cachelines = []
-
-        self._additional = False
-
+        self._file = file
         self._filter = None
-
-    def cache(self):
-        self._cache = True
-        self._cachelines = []
+        self._prefix = prefix
 
     def filter(self, filter):
         self._filter = filter
-
-    def uncache(self):
-        if not self._cache:
-            return
-        self._cache = False
-        for record, forward in self._cachelines:
-            self.write(record, forward)
-        return self._cachelines
-
-    def get_file(self):
-        if self._file:
-            return self._file
-        if not self._file_name:
-            self._file = sys.stdout
-        else:
-            self._file = io.open(self._file_name, "w", encoding="utf-8")
-        return self._file
-
-    def set_file(self, file):
-        self._file = file
-
-    def set_additional(self):
-        self._additional = True
 
     def write(self, record, forward=True, strip=True):
         if self._filter:
             for replace in self._filter:
                 record = record.replace(replace, self._filter[replace])
-        if self._off:
-            return None
-
-        if self._cache:
-            self._cachelines.append((record, forward))
-            return
-
-        if self._additional:
-            f = inspect.currentframe().f_back
-            m = f.f_code.co_filename
-            l = f.f_lineno
-            record = "Called from %s / %d\n%s" % (m, l, record)
 
         for r in record.split("\n"):
             if self._prefix:
-                result = self.get_file().write(
+                result = self._file.write(
                     u"[%s]  %s\n" % (self._prefix, r.strip() if strip else r)
                 )
             else:
-                result = self.get_file().write(u"%s\n" % (r.strip() if strip else r))
+                result = self._file.write(u"%s\n" % (r.strip() if strip else r))
 
-            self.get_file().flush()
-
-        if self._otherstream and forward:
-            self._otherstream.write(record, strip=strip)
+            self._file.flush()
 
         return result
 
@@ -179,13 +140,15 @@ class _Stream(object):
     def join(self, otherstream):
         """Join another stream so that all output from this stream goes also
         to that one."""
-
-        self._otherstream = otherstream
+        warnings.warn(
+            "stream join() function is deprecated", DeprecationWarning, stacklevel=2
+        )
 
     def off(self):
         """Switch the stream writing off..."""
-
-        self._off = True
+        warnings.warn(
+            "stream off() function is deprecated", DeprecationWarning, stacklevel=2
+        )
 
 
 # FIXME 23/NOV/06 now write a xia2.txt from chatter and rename that
@@ -202,23 +165,28 @@ if cl.endswith(".bat"):
     # windows adds .bat extension to dispatcher
     cl = cl[:-4]
 
-Chatter = _Stream("%s" % cl, None)
-Journal = _Stream("%s-journal" % cl, None)
-Stdout = _Stream(None, None)
+Chatter = _Stream("%s" % cl, None, file=_logger_file("xia2.stream.chatter"))
+Journal = _Stream(
+    "%s-journal" % cl,
+    None,
+    file=_logger_file("xia2.stream.journal", level=logging.DEBUG),
+)
+Stdout = _Stream(None, None, file=_logger_file("xia2.stream.stdout"))
 day = date.today().timetuple()
 if (day.tm_mday == 1 and day.tm_mon == 4) or "XIA2_APRIL" in os.environ:
     # turning log fonts to GREEN
     Stdout.filter(april)
-Debug = _Stream("%s-debug" % cl, None)
+Debug = _Stream(
+    "%s-debug" % cl, None, file=_logger_file("xia2.stream.debug", level=logging.DEBUG)
+)
 
-Chatter.join(Stdout)
 
-
-def streams_off():
-    """Switch off the chatter output - designed for unit tests..."""
-    Chatter.off()
-    Journal.off()
-    Debug.off()
+def reconfigure_streams_to_logging():
+    warnings.warn(
+        "reconfigure_streams_to_logging() function is deprecated",
+        DeprecationWarning,
+        stacklevel=2,
+    )
 
 
 def setup_logging(logfile=None, debugfile=None, verbose=False):
@@ -265,39 +233,8 @@ def setup_logging(logfile=None, debugfile=None, verbose=False):
             logger.setLevel(logging.DEBUG)
 
 
-def reconfigure_streams_to_logging():
-    "Modify xia2 Chatter/Debug objects to use python logging"
-
-    def logger_file(loggername, level=logging.INFO):
-        "Returns a file-like object that writes to a logger"
-        log_function = logging.getLogger(loggername).log
-
-        class _(object):
-            @staticmethod
-            def flush():
-                pass
-
-            @staticmethod
-            def write(logobject):
-                if logobject.endswith("\n"):
-                    # the Stream.write() function adds a trailing newline.
-                    # remove that again
-                    logobject = logobject[:-1]
-                log_function(level, logobject)
-
-        return _()
-
-    Debug.set_file(logger_file("xia2.stream.debug", level=logging.DEBUG))
-    Debug.join(None)
-    Chatter.set_file(logger_file("xia2.stream.chatter"))
-    Chatter.join(None)
-    Stdout.set_file(logger_file("xia2.stream.stdout"))
-    Stdout.join(None)
-
-
 if __name__ == "__main__":
     setup_logging(logfile="logfile", debugfile="debugfile")
-    reconfigure_streams_to_logging()
     Chatter.write("nothing much, really")
     Debug.write("this is a debug-level message")
     Stdout.write("I write to stdout")
