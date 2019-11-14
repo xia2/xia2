@@ -4,8 +4,7 @@ from __future__ import absolute_import, division, print_function
 import sys
 import six.moves.cPickle as pickle
 
-# import required for pickle loading
-from dials.array_family import flex  # noqa
+from dials.array_family import flex  # noqa; lgtm; required for pickle loading
 
 
 def main(filename):
