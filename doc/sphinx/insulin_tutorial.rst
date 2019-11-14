@@ -75,10 +75,6 @@ that the epoch numbers are set correctly and also that the wavelengths and
 beam centres are correct. If you provided a heavy atom there is a place to
 say how many to look for.
 
-Finally, if you have labelit installed xia2 will run this to update the beam
-positions. If this happens, you will see a comment to this effect above the
-BEAM records in the sweeps.
-
 The other mechanism for running xia2 is via a xinfo file, which explains the
 layout of the data set to xia2 explicitly. This is helpful if you wish to only
 process a subset of the measurements, or want to process data for an RIP
