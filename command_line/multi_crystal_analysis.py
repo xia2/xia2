@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-#!/usr/bin/env xia2.python
 from __future__ import absolute_import, division, print_function
 
 import logging
@@ -14,6 +13,7 @@ from dials.util.options import OptionParser
 from dials.util.options import flatten_experiments, flatten_reflections
 from dials.util.version import dials_version
 from dials.util.multi_dataset_handling import parse_multiple_datasets
+import xia2.Handlers.Streams
 from xia2.Modules.MultiCrystalAnalysis import MultiCrystalReport
 
 logger = logging.getLogger("xia2.multi_crystal_analysis")
@@ -126,4 +126,9 @@ def run():
 
 
 if __name__ == "__main__":
+    xia2.Handlers.Streams.setup_logging(
+        logfile="xia2.multi_crystal_analysis.txt",
+        debugfile="xia2.multi_crystal_analysis-debug.txt",
+    )
+    xia2.Handlers.Streams.reconfigure_streams_to_logging()
     run()

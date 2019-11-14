@@ -1,7 +1,10 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+import sys
+
 import iotbx.phil
+import xia2.Handlers.Streams
 from xia2.Interfaces.ISPyB.ISPyBXmlHandler import ISPyBXmlHandler
 from xia2.Schema.XProject import XProject
 
@@ -25,8 +28,8 @@ def ispyb_xml(xml_out):
 
 
 if __name__ == "__main__":
-    import sys
-
+    xia2.Handlers.Streams.setup_logging()
+    xia2.Handlers.Streams.reconfigure_streams_to_logging()
     if len(sys.argv) >= 2:
         ispyb_xml(sys.argv[1])
     else:

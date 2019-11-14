@@ -3,14 +3,14 @@ from __future__ import absolute_import, division, print_function
 
 import sys
 
+import six.moves.cPickle as pickle
+from dxtbx import load
+
 
 def main(filename, threshold, images):
     """Read and sum all images, define those pixels which are POSITIVE but which
     come out below threshold as mask, write this mask in a format useful for
     DIALS."""
-
-    from dxtbx import load
-    import six.moves.cPickle as pickle
 
     image_data = None
 

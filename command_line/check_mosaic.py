@@ -1,6 +1,7 @@
 # LIBTBX_SET_DISPATCHER_NAME dev.xia2.check_mosaic
 from __future__ import absolute_import, division, print_function
 
+import sys
 import six.moves.cPickle as pickle
 
 from dials.array_family import flex
@@ -52,6 +53,4 @@ def go(filename):
 
 
 if __name__ == "__main__":
-    import sys
-
     go(sys.argv[1])

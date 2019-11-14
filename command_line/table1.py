@@ -1,4 +1,9 @@
-from __future__ import division, print_function
+from __future__ import absolute_import, division, print_function
+
+import json
+import os
+import sys
+from cctbx import sgtbx
 
 
 def table1_tex(crystal_params, merging_stats):
@@ -31,8 +36,6 @@ def table1_tex(crystal_params, merging_stats):
     )
 
     # witchcraft to work out how to write out the unit cell
-    from cctbx import sgtbx
-
     cell_str = ["Unit-cell parameters (\\AA)"]
     for cp in crystal_params:
         sgi = sgtbx.space_group_info(str(cp["space_group"]))
@@ -111,10 +114,6 @@ def table1_tex(crystal_params, merging_stats):
 
 
 def table1():
-    import sys
-    import os
-    import json
-
     jsons = []
     for xia2 in sys.argv[1:]:
         assert os.path.exists(os.path.join(xia2, "xia2.json")), xia2

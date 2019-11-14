@@ -17,6 +17,7 @@ import xia2
 from xia2.Modules.Report import Report
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Streams import Chatter, Debug
+import xia2.Handlers.Streams
 
 
 def run(args):
@@ -585,4 +586,6 @@ tick: {
 
 if __name__ == "__main__":
     args = sys.argv[1:]
+    xia2.Handlers.Streams.setup_logging(logfile="xia2.html.log")
+    xia2.Handlers.Streams.reconfigure_streams_to_logging()
     run(args)
