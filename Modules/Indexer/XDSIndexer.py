@@ -657,6 +657,13 @@ class XDSIndexer(IndexerSingleSweep):
 
         from dxtbx.model import Experiment, ExperimentList
 
+        # this information gets lost when re-creating the models from the
+        # XDS results - however is not refined so can simply copy from the
+        # input - https://github.com/xia2/xia2/issues/372
+        models.get_detector()[0].set_thickness(
+            converter.get_detector()[0].get_thickness()
+        )
+
         experiment = Experiment(
             beam=models.get_beam(),
             detector=models.get_detector(),
