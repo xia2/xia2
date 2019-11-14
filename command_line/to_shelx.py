@@ -288,7 +288,7 @@ def to_shelx(hklin, prefix, compound="", options=None):
 
 
 if __name__ == "__main__":
-    parser = optparse.OptionParser("usage: %prog .mtz-file output-file [atoms]")
+    parser = optparse.OptionParser("xia2.to_shelx .mtz-file output-file [atoms]")
     parser.add_option("-?", action="help", help=optparse.SUPPRESS_HELP)
     parser.add_option(
         "-w",
