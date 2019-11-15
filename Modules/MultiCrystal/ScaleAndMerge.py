@@ -474,7 +474,6 @@ class MultiCrystalScale(object):
         d.update(report.batch_dependent_plots())
         d.update(report.intensity_stats_plots())
         d.update(report.pychef_plots())
-        d.update(report.pychef_plots(n_bins=1))
 
         max_points = 500
         for g in (
