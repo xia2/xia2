@@ -502,7 +502,7 @@ ccp4
   truncate
     .short_caption = "truncate"
   {
-    program = *ctruncate cctbx
+    program = ctruncate *cctbx
       .type = choice
   }
 }
