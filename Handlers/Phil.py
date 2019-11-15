@@ -939,6 +939,20 @@ xia2.settings
     process_includes=True,
 )
 
+# override default resolutionizer parameters
+master_phil = master_phil.fetch(
+    source=parse(
+        """\
+xia2.settings {
+  resolution {
+    isigma = None
+    misigma = None
+  }
+}
+"""
+    )
+)
+
 PhilIndex = interface.index(master_phil=master_phil)
 
 if __name__ == "__main__":
