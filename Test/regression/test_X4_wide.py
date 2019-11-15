@@ -52,13 +52,37 @@ def test_incompatible_pipeline_scaler(pipeline, scaler, tmpdir, ccp4):
     ) in result.stdout.decode("latin-1")
 
 
+_run_dials_aimless_directly = random.choice((True, False))
+
+
 def test_dials_aimless(regression_test, dials_data, tmpdir, ccp4):
-    # These should be functionally equivalent
-    pipeline, scaler = random.choice([("dials-aimless", None), ("dials", "ccp4a")])
+    if not _run_dials_aimless_directly:
+        pytest.skip(
+            "Skipping test this time, running test_dials_aimless_with_dials_pipeline instead"
+        )
     command_line = [
         "xia2",
-        "pipeline=%s" % pipeline,
-        "scaler=%s" % scaler,
+        "nproc=1",
+        "trust_beam_centre=True",
+        "read_all_image_headers=False",
+        "truncate=cctbx",
+        dials_data("x4wide").strpath,
+    ]
+    result = procrunner.run(command_line, working_directory=tmpdir)
+    success, issues = xia2.Test.regression.check_result(
+        "X4_wide.dials-aimless", result, tmpdir, ccp4
+    )
+    assert success, issues
+
+
+def test_dials_aimless_with_dials_pipeline(regression_test, dials_data, tmpdir, ccp4):
+    # This should be functionally equivalent to 'test_dials_aimless' above
+    if _run_dials_aimless_directly:
+        pytest.skip("Skipping test this time, running test_dials_aimless instead")
+    command_line = [
+        "xia2",
+        "pipeline=dials",
+        "scaler=ccp4a",
         "nproc=1",
         "trust_beam_centre=True",
         "read_all_image_headers=False",
