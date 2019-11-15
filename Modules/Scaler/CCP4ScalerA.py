@@ -930,10 +930,7 @@ class CCP4ScalerA(Scaler):
             raise RuntimeError("no resolution info")
 
         highest_suggested_resolution = self.assess_resolution_limits(
-            sc.get_unmerged_reflection_file(),
-            user_resolution_limits,
-            use_isigma=PhilIndex.params.xia2.settings.resolution.use_isigma,
-            use_misigma=PhilIndex.params.xia2.settings.resolution.use_misigma,
+            sc.get_unmerged_reflection_file(), user_resolution_limits
         )
 
         if not self.get_scaler_done():

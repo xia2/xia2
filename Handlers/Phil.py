@@ -14,7 +14,7 @@ from __future__ import absolute_import, division, print_function
 from iotbx.phil import parse
 from libtbx.phil import interface
 
-master_phil = parse(
+phil_scope = parse(
     """
 general
   .short_caption = "General settings"
@@ -741,14 +741,6 @@ xia2.settings
       .type = float(value_min=0.0)
       .help = "High resolution cutoff."
       .short_caption = "High resolution cutoff"
-    use_isigma = False
-      .type = bool
-      .help = "Use an isigma resolution cutoff (value specified by resolution.isigma)"
-      .short_caption = "Use an isigma cutoff for resolution"
-    use_misigma = False
-      .type = bool
-      .help = "Use a mean isigma resolution cutoff (value specified by resolution.misigma)"
-      .short_caption = "Use a mean isigma cutoff for resolution"
     include scope dials.util.resolutionizer.phil_str
   }
   unify_setting = False
@@ -946,6 +938,22 @@ xia2.settings
 """,
     process_includes=True,
 )
+
+# override default resolutionizer parameters
+phil_overrides = phil_scope.fetch(
+    source=parse(
+        """\
+xia2.settings {
+  resolution {
+    isigma = None
+    misigma = None
+  }
+}
+"""
+    )
+)
+
+master_phil = phil_scope.fetch(sources=[phil_overrides])
 
 PhilIndex = interface.index(master_phil=master_phil)
 
