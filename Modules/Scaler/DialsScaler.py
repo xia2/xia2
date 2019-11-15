@@ -581,7 +581,6 @@ pipeline=dials (supported for pipeline=dials-aimless).
         highest_suggested_resolution = self.assess_resolution_limits(
             hklin=None,
             user_resolution_limits=user_resolution_limits,
-            use_misigma=False,
             reflections=self._scaled_reflections,
             experiments=self._scaled_experiments,
         )

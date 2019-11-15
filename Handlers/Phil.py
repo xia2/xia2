@@ -11,10 +11,10 @@
 
 from __future__ import absolute_import, division, print_function
 
-from iotbx.phil import parse
+import iotbx.phil
 from libtbx.phil import interface
 
-master_phil = parse(
+master_phil = iotbx.phil.parse(
     """
 general
   .short_caption = "General settings"
@@ -938,6 +938,19 @@ xia2.settings
 """,
     process_includes=True,
 )
+
+# override default refinement parameters
+master_phil = master_phil.fetch(
+    source=iotbx.phil.parse(
+        """\
+xia2.settings.resolution {
+  isigma = None
+  misigma = None
+}
+"""
+    )
+)
+
 
 PhilIndex = interface.index(master_phil=master_phil)
 
