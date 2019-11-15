@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 import pytest
 
 from dxtbx.serialize import load
+from xia2.Modules.Report import Report
 
 expected_data_files = [
     "multiplex.expt",
@@ -13,14 +14,23 @@ expected_data_files = [
 ]
 
 
-def test_proteinase_k(regression_test, ccp4, dials_data, tmpdir):
+def test_proteinase_k(mocker, regression_test, ccp4, dials_data, tmpdir):
     data_dir = dials_data("multi_crystal_proteinase_k")
     expts = sorted(f.strpath for f in data_dir.listdir("experiments*.json"))
     refls = sorted(f.strpath for f in data_dir.listdir("reflections*.pickle"))
+    mocker.spy(Report, "pychef_plots")
     with tmpdir.as_cwd():
         from xia2.command_line.multiplex import run
 
         run(expts + refls)
+    # Verify that the *_vs_dose plots have been correctly plotted
+    for k in (
+        "rcp_vs_dose",
+        "scp_vs_dose",
+        "completeness_vs_dose",
+        "rd_vs_batch_difference",
+    ):
+        assert Report.pychef_plots.return_value[k]["data"][0]["x"] == list(range(26))
     for f in expected_data_files:
         assert tmpdir.join(f).check(file=1), "expected file %s missing" % f
     multiplex_expts = load.experiment_list(
