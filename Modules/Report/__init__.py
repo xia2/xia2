@@ -14,7 +14,7 @@ from iotbx import merging_statistics
 from iotbx.reflection_file_reader import any_reflection_file
 from mmtbx.scaling import printed_output
 
-from dials.util.batch_handling import batch_manager
+from dials.pychef import dose_phil_str
 from dials.report.analysis import batch_dependent_properties
 from dials.report.plots import (
     i_over_sig_i_vs_batch_plot,
@@ -22,6 +22,7 @@ from dials.report.plots import (
     ResolutionPlotsAndStats,
     IntensityStatisticsPlots,
 )
+from dials.util.batch_handling import batch_manager
 
 from xia2.Modules.Analysis import batch_phil_scope, phil_scope, separate_unmerged
 
@@ -334,11 +335,17 @@ class Report(object):
 
         params.batch = []
         scope = libtbx.phil.parse(batch_phil_scope)
+        dose_phil = libtbx.phil.parse(dose_phil_str).extract()
         for expt in data_manager.experiments:
             batch_params = scope.extract().batch[0]
             batch_params.id = expt.identifier
             batch_params.range = expt.scan.get_batch_range()
             params.batch.append(batch_params)
+            dose_batch = copy.deepcopy(dose_phil.dose.batch[0])
+            dose_batch.range = expt.scan.get_batch_range()
+            dose_batch.dose_start = 1
+            dose_batch.dose_step = 1
+            params.dose.batch.append(dose_batch)
 
         intensities.set_observation_type_xray_intensity()
         return cls(intensities, params, batches=batches, scales=scales)
