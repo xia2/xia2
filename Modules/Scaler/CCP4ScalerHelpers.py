@@ -23,43 +23,7 @@ def nint(a):
     return int(round(a) - 0.5) + (a > 0)
 
 
-def _resolution_estimate(ordered_pair_list, cutoff):
-    """Come up with a linearly interpolated estimate of resolution at
-    cutoff cutoff from input data [(resolution, i_sigma)]."""
-
-    x = []
-    y = []
-
-    for o in ordered_pair_list:
-        x.append(o[0])
-        y.append(o[1])
-
-    if max(y) < cutoff:
-        # there is no resolution where this exceeds the I/sigma
-        # cutoff
-        return -1.0
-
-    # this means that there is a place where the resolution cutof
-    # can be reached - get there by working backwards
-
-    x.reverse()
-    y.reverse()
-
-    if y[0] >= cutoff:
-        # this exceeds the resolution limit requested
-        return x[0]
-
-    j = 0
-    while y[j] < cutoff:
-        j += 1
-
-    resolution = x[j] + (cutoff - y[j]) * (x[j - 1] - x[j]) / (y[j - 1] - y[j])
-
-    return resolution
-
-
 def ersatz_resolution(reflection_file, batch_ranges):
-
     mtz_obj = mtz.object(reflection_file)
 
     miller = mtz_obj.extract_miller_indices()
