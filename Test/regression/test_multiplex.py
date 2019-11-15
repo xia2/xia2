@@ -24,6 +24,7 @@ def test_proteinase_k(mocker, regression_test, ccp4, dials_data, tmpdir):
 
         run(expts + refls)
     # Verify that the *_vs_dose plots have been correctly plotted
+    assert Report.pychef_plots.call_count == 1
     for k in (
         "rcp_vs_dose",
         "scp_vs_dose",
