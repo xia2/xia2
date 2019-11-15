@@ -14,7 +14,7 @@ from __future__ import absolute_import, division, print_function
 from iotbx.phil import parse
 from libtbx.phil import interface
 
-phil_scope = parse(
+master_phil = parse(
     """
 general
   .short_caption = "General settings"
@@ -940,7 +940,7 @@ xia2.settings
 )
 
 # override default resolutionizer parameters
-phil_overrides = phil_scope.fetch(
+master_phil = master_phil.fetch(
     source=parse(
         """\
 xia2.settings {
@@ -952,8 +952,6 @@ xia2.settings {
 """
     )
 )
-
-master_phil = phil_scope.fetch(sources=[phil_overrides])
 
 PhilIndex = interface.index(master_phil=master_phil)
 

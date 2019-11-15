@@ -984,10 +984,8 @@ class CommonScaler(Scaler):
         m.set_limit_cc_half(params.cc_half)
         m.set_cc_half_fit(params.cc_half_fit)
         m.set_cc_half_significance_level(params.cc_half_significance_level)
-        if params.isigma:
-            m.set_limit_isigma(params.isigma)
-        if params.misigma:
-            m.set_limit_misigma(params.misigma)
+        m.set_limit_isigma(params.isigma)
+        m.set_limit_misigma(params.misigma)
         if PhilIndex.params.xia2.settings.small_molecule:
             m.set_nbins(20)
         if batch_range is not None:
