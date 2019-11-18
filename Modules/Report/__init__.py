@@ -2,6 +2,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import copy
 import os
 from collections import OrderedDict
 from six.moves import cStringIO as StringIO
