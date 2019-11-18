@@ -16,11 +16,11 @@ def report(dials_data, tmpdir_factory):
         params = phil_scope.extract()
         params.batch = []
         params.dose.batch = []
-        return Report.from_unmerged_mtz(mtz, params)
+        yield Report.from_unmerged_mtz(mtz, params)
 
 
 def test_multiplicity_plots(report):
-    multiplicity_plots = report.multiplicity_plots()
+    multiplicity_plots = report.multiplicity_plots(dest_path=".")
     assert set(multiplicity_plots) == {
         "multiplicity_h",
         "multiplicity_k",

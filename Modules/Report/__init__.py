@@ -96,7 +96,7 @@ class Report(object):
         self.intensities.setup_binner(n_bins=self.params.resolution_bins)
         self.merged_intensities = self.intensities.merge_equivalents().array()
 
-    def multiplicity_plots(self):
+    def multiplicity_plots(self, dest_path=None):
         from xia2.command_line.plot_multiplicity import plot_multiplicity, master_phil
 
         settings = master_phil.extract()
@@ -107,7 +107,7 @@ class Report(object):
         mult_json_files = {}
         mult_img_files = {}
 
-        rd = self.report_dir or "."
+        rd = dest_path or self.report_dir or "."
 
         for settings.slice_axis in ("h", "k", "l"):
             settings.plot.filename = os.path.join(

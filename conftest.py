@@ -88,12 +88,15 @@ def xds():
     return {"version": int(version.groups()[0])}
 
 
+_repository = os.getcwd()
+
+
 @pytest.fixture(autouse=True)
 def ensure_repository_is_clean():
     yield
     if not os.getenv("CHECK_CLEAN_WORKDIR"):
         return
-    print("Working directory:", os.getcwd())
-    status = procrunner.run(("git", "status", "-s"))
+    print("Working directory:", _repository)
+    status = procrunner.run(("git", "status", "-s"), working_directory=_repository)
     if status.stdout:
         assert False, "Working directory is not clean"
