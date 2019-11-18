@@ -81,8 +81,14 @@ symmetry {
   }
   le_page_max_delta = 5
     .type = float(value_min=0)
+  laue_group = None
+    .type = space_group
+    .help = "Specify the Laue group. If None, then the Laue group will be determined "
+            "by dials.cosym."
   space_group = None
     .type = space_group
+    .help = "Specify the space group. If None, then the dials.symmetry will perform "
+            "analysis of systematically absent reflections to determine the space group."
 }
 
 resolution
@@ -304,6 +310,8 @@ class MultiCrystalScale(object):
         self._data_manager = DataManager(experiments, reflections)
 
         self._params = params
+        if all([params.symmetry.laue_group, params.symmetry.space_group]):
+            raise ValueError("Can not specify both laue_group and space_group")
 
         if self._params.nproc is Auto:
             self._params.nproc = get_number_cpus()
@@ -365,13 +373,13 @@ class MultiCrystalScale(object):
         if self._params.symmetry.resolve_indexing_ambiguity:
             self.cosym()
 
-        self.decide_space_group()
-
         self._individual_report_dicts = OrderedDict()
         self._comparison_graphs = OrderedDict()
 
         self._scaled = Scale(self._data_manager, self._params)
         self._record_individual_report(self._scaled.report(), "All data")
+
+        self.decide_space_group()
 
         self._data_manager.export_experiments("multiplex.expt")
         self._data_manager.export_reflections("multiplex.refl")
@@ -466,7 +474,6 @@ class MultiCrystalScale(object):
         d.update(report.batch_dependent_plots())
         d.update(report.intensity_stats_plots())
         d.update(report.pychef_plots())
-        d.update(report.pychef_plots(n_bins=1))
 
         max_points = 500
         for g in (
@@ -604,6 +611,8 @@ class MultiCrystalScale(object):
         cosym.add_reflections_file(reflections_filename)
         if self._params.symmetry.space_group is not None:
             cosym.set_space_group(self._params.symmetry.space_group.group())
+        if self._params.symmetry.laue_group is not None:
+            cosym.set_space_group(self._params.symmetry.laue_group.group())
         cosym.run()
         self._cosym_analysis = cosym.get_cosym_analysis()
         self._experiments_filename = cosym.get_reindexed_experiments()
@@ -615,14 +624,16 @@ class MultiCrystalScale(object):
             self._reflections_filename
         )
 
-        if self._params.symmetry.space_group is None:
+        if not any(
+            [self._params.symmetry.space_group, self._params.symmetry.laue_group]
+        ):
             best_solution = cosym.get_best_solution()
             best_space_group = sgtbx.space_group(
                 str(best_solution["patterson_group"])
             ).build_derived_acentric_group()
-            self._params.symmetry.space_group = best_space_group.info()
+            self._params.symmetry.laue_group = best_space_group.info()
             logger.info(
-                "Space group determined by dials.cosym: %s" % best_space_group.info()
+                "Laue group determined by dials.cosym: %s" % best_space_group.info()
             )
 
         return
@@ -664,10 +675,8 @@ class MultiCrystalScale(object):
         symmetry.set_tolerance(
             relative_length_tolerance=None, absolute_angle_tolerance=None
         )
+        symmetry.set_mode_absences_only()
         symmetry.decide_pointgroup()
-        space_group = sgtbx.space_group_info(
-            symbol=str(symmetry.get_pointgroup())
-        ).group()
 
         self._data_manager.experiments = load.experiment_list(
             self._experiments_filename, check_format=False
@@ -675,6 +684,7 @@ class MultiCrystalScale(object):
         self._data_manager.reflections = flex.reflection_table.from_file(
             self._reflections_filename
         )
+        space_group = self._data_manager.experiments[0].crystal.get_space_group()
 
         logger.info("Space group determined by dials.symmetry: %s" % space_group.info())
 
