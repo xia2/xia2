@@ -28,7 +28,7 @@ class french_wilson(object):
         mtz_object = result.file_content()
         mtz_object.show_summary()
 
-        intensities = None
+        mtz_dataset = mtz_object.crystals()[1].datasets()[0]
 
         for ma in result.as_miller_arrays(merge_equivalents=False):
             if params.anomalous and ma.info().labels == [
@@ -41,24 +41,27 @@ class french_wilson(object):
                 intensities = (
                     ma.merge_equivalents().array()
                 )  # XXX why is this necessary?
-            elif not params.anomalous and ma.info().labels == ["IMEAN", "SIGIMEAN"]:
+            elif ma.info().labels == ["IMEAN", "SIGIMEAN"]:
                 assert not ma.anomalous_flag()
                 intensities = ma
+            else:
+                intensities = None
 
-        assert intensities.is_xray_intensity_array()
-        amplitudes = intensities.french_wilson(params=params)
-        assert amplitudes.is_xray_amplitude_array()
+            if intensities:
+                assert intensities.is_xray_intensity_array()
+                amplitudes = intensities.french_wilson(params=params)
+                assert amplitudes.is_xray_amplitude_array()
 
-        if not intensities.space_group().is_centric():
-            merged_intensities = intensities.merge_equivalents().array()
-            wilson_scaling = data_statistics.wilson_scaling(
-                miller_array=merged_intensities, n_residues=200
-            )  # XXX default n_residues?
-            wilson_scaling.show()
-            print()
+                if not intensities.space_group().is_centric():
+                    merged_intensities = intensities.merge_equivalents().array()
+                    wilson_scaling = data_statistics.wilson_scaling(
+                        miller_array=merged_intensities, n_residues=200
+                    )  # XXX default n_residues?
+                    wilson_scaling.show()
+                    print()
 
-        mtz_dataset = mtz_object.crystals()[1].datasets()[0]
-        mtz_dataset.add_miller_array(amplitudes, column_root_label="F")
+                mtz_dataset = mtz_object.crystals()[1].datasets()[0]
+                mtz_dataset.add_miller_array(amplitudes, column_root_label="F")
         mtz_object.add_history("cctbx.french_wilson analysis")
         print("Writing reflections to %s" % (params.hklout))
         mtz_object.show_summary()
