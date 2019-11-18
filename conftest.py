@@ -86,3 +86,14 @@ def xds():
             "XDS installation required for this test - Could not determine XDS version"
         )
     return {"version": int(version.groups()[0])}
+
+
+@pytest.fixture(autouse=True)
+def ensure_repository_is_clean():
+    yield
+    if not os.getenv("CHECK_CLEAN_WORKDIR"):
+        return
+    print("Working directory:", os.getcwd())
+    status = procrunner.run(("git", "status", "-s"))
+    if status.stdout:
+        assert False, "Working directory is not clean"
