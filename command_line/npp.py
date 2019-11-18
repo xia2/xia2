@@ -73,5 +73,4 @@ if __name__ == "__main__":
     xia2.Handlers.Streams.setup_logging(
         logfile="xia2.npp.txt", debugfile="xia2.npp-debug.txt"
     )
-    xia2.Handlers.Streams.reconfigure_streams_to_logging()
     npp(sys.argv[1])

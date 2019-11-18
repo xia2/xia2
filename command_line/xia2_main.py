@@ -318,7 +318,6 @@ def run():
         sys.exit()
 
     xia2.Handlers.Streams.setup_logging(logfile="xia2.txt", debugfile="xia2-debug.txt")
-    xia2.Handlers.Streams.reconfigure_streams_to_logging()
 
     try:
         check_environment()

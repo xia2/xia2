@@ -3,7 +3,6 @@ from __future__ import absolute_import, division, print_function
 import random
 
 import pytest
-import xia2.Handlers.Streams
 from cctbx import sgtbx
 from dials.algorithms.symmetry.cosym._generate_test_data import generate_intensities
 from dials.array_family import flex
@@ -23,7 +22,6 @@ def helper_directory(ccp4, tmpdir):
     from xia2.Modules.Scaler.DialsScaler import DialsScalerHelper
 
     helper = DialsScalerHelper()
-    xia2.Handlers.Streams.reconfigure_streams_to_logging()
     helper.set_pname_xname("AUTOMATIC", "DEFAULT")
     helper.set_working_directory(tmpdir.strpath)
     return (helper, tmpdir)

@@ -162,5 +162,4 @@ if __name__ == "__main__":
     xia2.Handlers.Streams.setup_logging(
         logfile="xia2.report.txt", debugfile="xia2.report-debug.txt"
     )
-    xia2.Handlers.Streams.reconfigure_streams_to_logging()
     run(sys.argv[1:])

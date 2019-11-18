@@ -20,5 +20,4 @@ if __name__ == "__main__":
     xia2.Handlers.Streams.setup_logging(
         logfile="xia2.print.txt", debugfile="xia2.print-debug.txt"
     )
-    xia2.Handlers.Streams.reconfigure_streams_to_logging()
     run()

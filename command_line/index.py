@@ -40,5 +40,4 @@ if __name__ == "__main__":
     xia2.Handlers.Streams.setup_logging(
         logfile="xia2.index.txt", debugfile="xia2.index-debug.txt"
     )
-    xia2.Handlers.Streams.reconfigure_streams_to_logging()
     run()

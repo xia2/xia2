@@ -62,7 +62,6 @@ def run(args):
     xia2.Handlers.Streams.setup_logging(
         logfile=params.output.log, verbose=options.verbose
     )
-    xia2.Handlers.Streams.reconfigure_streams_to_logging()
 
     logger.info(dials_version())
 

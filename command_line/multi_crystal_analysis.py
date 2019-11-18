@@ -130,5 +130,4 @@ if __name__ == "__main__":
         logfile="xia2.multi_crystal_analysis.txt",
         debugfile="xia2.multi_crystal_analysis-debug.txt",
     )
-    xia2.Handlers.Streams.reconfigure_streams_to_logging()
     run()

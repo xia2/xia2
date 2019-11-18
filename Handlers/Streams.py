@@ -181,14 +181,6 @@ Debug = _Stream(
 )
 
 
-def reconfigure_streams_to_logging():
-    warnings.warn(
-        "reconfigure_streams_to_logging() function is deprecated",
-        DeprecationWarning,
-        stacklevel=2,
-    )
-
-
 def setup_logging(logfile=None, debugfile=None, verbose=False):
     """
     Initialise logging for xia2
