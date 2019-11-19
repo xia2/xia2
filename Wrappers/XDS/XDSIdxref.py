@@ -151,9 +151,6 @@ def XDSIdxref(DriverType=None, params=None):
         def get_refined_beam(self):
             return self._refined_beam
 
-        def get_refined_distance(self):
-            return self._refined_distance
-
         def get_indexing_solutions(self):
             return self._indexing_solutions
 
@@ -203,20 +200,11 @@ def XDSIdxref(DriverType=None, params=None):
         def set_refined_origin(self, refined_origin):
             self._refined_origin = refined_origin
 
-        def get_refined_origin(self):
-            return self._refined_origin
-
         def set_refined_beam_vector(self, refined_beam_vector):
             self._refined_beam_vector = refined_beam_vector
 
-        def get_refined_beam_vector(self):
-            return self._refined_beam_vector
-
         def set_refined_rotation_axis(self, refined_rotation_axis):
             self._refined_rotation_axis = refined_rotation_axis
-
-        def get_refined_rotation_axis(self):
-            return self._refined_rotation_axis
 
         def set_data_range(self, start, end):
             offset = self.get_frame_offset()

@@ -106,9 +106,6 @@ def XDSIntegrate(DriverType=None, params=None):
         def get_output_data_file(self, name):
             return self._output_data_files[name]
 
-        def get_integrate_hkl(self):
-            return self._integrate_hkl
-
         # this needs setting up from setup_from_image in FrameProcessor
 
         def set_refined_xparm(self):

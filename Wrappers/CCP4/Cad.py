@@ -64,10 +64,6 @@ def Cad(DriverType=None):
             """Set a column suffix for this dataset."""
             self._new_column_suffix = suffix
 
-        def set_new_cell(self, cell):
-            """Set a new unit cell for this dataset."""
-            self._new_cell_parameters = cell
-
         def merge(self):
             """Merge multiple reflection files into one file."""
 

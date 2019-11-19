@@ -1,6 +1,6 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
+
+import os
 
 
 def BrehmDiederichs(DriverType=None):
@@ -19,17 +19,12 @@ def BrehmDiederichs(DriverType=None):
             self._asymmetric = None
             self._output_filenames = []
             self._reindexing_dict = {}
-            return
 
         def set_input_filenames(self, filenames):
             self._input_filenames = filenames
-            return
 
         def set_asymmetric(self, asymmetric):
             self._asymmetric = asymmetric
-
-        def get_output_filenames(self):
-            return self._output_filenames
 
         def get_reindexing_dict(self):
             return self._reindexing_dict
@@ -52,15 +47,11 @@ def BrehmDiederichs(DriverType=None):
             self.close_wait()
             self.check_for_errors()
 
-            import os
-
             results_filename = os.path.join(self.get_working_directory(), "reindex.txt")
             assert os.path.exists(results_filename)
             with open(results_filename, "rb") as f:
                 for line in f.readlines():
                     filename, reindex_op = line.strip().rsplit(" ", 1)
                     self._reindexing_dict[os.path.abspath(filename)] = reindex_op
-
-            return
 
     return BrehmDiederichsWrapper()

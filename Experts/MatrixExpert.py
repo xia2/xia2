@@ -68,56 +68,6 @@ def rot_z(theta):
     return [c, -s, 0.0, s, c, 0.0, 0.0, 0.0, 1.0]
 
 
-def b_matrix(a, b, c, alpha, beta, gamma):
-    """Generate a B matric from a unit cell. Cite: Pflugrath in Methods
-    Enzymology 276."""
-
-    dtor = 180.0 / (4.0 * math.atan(1.0))
-
-    ca = math.cos(alpha / dtor)
-    sa = math.sin(alpha / dtor)
-    cb = math.cos(beta / dtor)
-    sb = math.sin(beta / dtor)
-    cg = math.cos(gamma / dtor)
-    sg = math.sin(gamma / dtor)
-
-    # invert the cell parameters
-    # CITE: International Tables C Section 1.1
-
-    V = a * b * c * math.sqrt(1 - ca * ca - cb * cb - cg * cg + 2 * ca * cb * cg)
-
-    a_ = b * c * sa / V
-    b_ = a * c * sb / V
-    c_ = a * b * sg / V
-
-    # NOTE well - these angles are in radians
-
-    alpha_ = math.acos((cb * cg - ca) / (sb * sg))
-    beta_ = math.acos((ca * cg - cb) / (sa * sg))
-    gamma_ = math.acos((ca * cb - cg) / (sa * sb))
-
-    ca_ = math.cos(alpha_)
-    sa_ = math.sin(alpha_)
-    cb_ = math.cos(beta_)
-    sb_ = math.sin(beta_)
-    cg_ = math.cos(gamma_)
-    sg_ = math.sin(gamma_)
-
-    # NEXT construct the B matrix - CITE Pflugrath in Methods E 276
-
-    return [
-        a_,
-        b_ * cg_,
-        c_ * cb_,
-        0.0,
-        b_ * sg_,
-        -c_ * sb_ * ca_,
-        0.0,
-        0.0,
-        c_ * sb_ * sa_,
-    ]
-
-
 def dot(a, b):
     return sum(a[j] * b[j] for j in range(3))
 
@@ -166,25 +116,3 @@ def transpose(matrix):
 def det(matrix):
     vecs = mat2vec(matrix)
     return dot(vecs[0], cross(vecs[1], vecs[2]))
-
-
-def matmul(b, a):
-    avec = mat2vec(transpose(a))
-    bvec = mat2vec(b)
-
-    result = []
-    for i in range(3):
-        for j in range(3):
-            result.append(dot(avec[i], bvec[j]))
-
-    return result
-
-
-def matvecmul(M, v):
-    """Multiply a vector v by a matrix M -> return M v."""
-
-    Mvec = mat2vec(transpose(M))
-    result = []
-    for i in range(3):
-        result.append(dot(Mvec[i], v))
-    return result

@@ -147,14 +147,8 @@ def XDSCorrect(DriverType=None, params=None):
         def set_integrate_hkl(self, integrate_hkl):
             self._integrate_hkl = integrate_hkl
 
-        def set_remove_hkl(self, remove_hkl):
-            self._remove_hkl = remove_hkl
-
         def get_remove(self):
             return self._remove
-
-        def get_xds_ascii_hkl(self):
-            return self._xds_ascii_hkl
 
         # this needs setting up from setup_from_image in FrameProcessor
 

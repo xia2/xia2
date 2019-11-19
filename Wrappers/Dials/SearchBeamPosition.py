@@ -29,9 +29,6 @@ def SearchBeamPosition(DriverType=None):
         def set_spot_filename(self, spot_filename):
             self._spot_filename = spot_filename
 
-        def set_optimized_experiments_filename(self, optimized_filename):
-            self._optimized_filename = optimized_filename
-
         def set_phil_file(self, phil_file):
             self._phil_file = phil_file
 

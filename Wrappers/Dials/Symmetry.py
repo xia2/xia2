@@ -71,14 +71,6 @@ def DialsSymmetry(DriverType=None):
             self._laue_group = None
             self._sys_abs_check = True
 
-        def set_mode_laue_only(self):
-            self._laue_group = "auto"
-            self._sys_abs_check = False
-
-        def set_mode_laue_plus_absences(self):
-            self._laue_group = "auto"
-            self._sys_abs_check = True
-
         def set_hklin(self, hklin):
             self._hklin = hklin
 

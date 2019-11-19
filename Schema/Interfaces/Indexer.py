@@ -584,9 +584,6 @@ class Indexer(object):
         self._indxr_input_lattice = lattice
         self.set_indexer_done(False)
 
-    def get_indexer_input_lattice(self):
-        return self._indxr_input_lattice
-
     def set_indexer_input_cell(self, cell):
         """Set the input unit cell (optional.)"""
 
@@ -623,27 +620,12 @@ class Indexer(object):
         self.index()
         return self._indxr_mosaic
 
-    def get_indexer_spot_list(self):
-        """Get the list of spots from autoindexing in the standard reference
-        frame."""
-
-        self.index()
-        return self._indxr_spot_list
-
     def get_indexer_distance(self):
         """Get the refined distance."""
 
         self.index()
         experiment = self.get_indexer_experiment_list()[0]
         return experiment.detector[0].get_directed_distance()
-
-    def set_indexer_distance(self, distance):
-        """Set the refined distance."""
-        self._indxr_refined_distance = distance
-
-    def set_indexer_beam_centre(self, beam_centre):
-        """Set the beam centre."""
-        self._indxr_refined_beam_centre = beam_centre
 
     def get_indexer_beam_centre(self):
         """Get the refined beam."""
@@ -667,12 +649,6 @@ class Indexer(object):
 
         self.index()
         return self._indxr_payload.get(this)
-
-    def get_indexer_resolution(self):
-        """Get an estimate of the diffracting resolution."""
-
-        self.index()
-        return self._indxr_resolution_estimate
 
     def get_indexer_low_resolution(self):
         """Get an estimate of the low resolution limit of the data."""
@@ -800,21 +776,6 @@ class IndexerSingleSweep(Indexer):
             self._indxr_images.append(image)
         if isinstance(image, type(1)):
             self._indxr_images.append((image, image))
-
-        if reset:
-            self.set_indexer_prepare_done(False)
-
-    def set_indexer_image_wedges(self, indexer_image_wedges, reset=True):
-        """Assign images to use for autoindexing, will clobber existing
-        values. Use with interactive indexing..."""
-
-        self._indxr_images = []
-
-        for image in indexer_image_wedges:
-            if isinstance(image, type(())):
-                self._indxr_images.append(image)
-            if isinstance(image, type(1)):
-                self._indxr_images.append((image, image))
 
         if reset:
             self.set_indexer_prepare_done(False)

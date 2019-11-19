@@ -180,12 +180,6 @@ def Aimless(DriverType=None, absorption_correction=None, decay_correction=None):
                     raise RuntimeError("data not scaled")
             return os.path.join(self.get_working_directory(), self._new_scales_file)
 
-        def set_onlymerge(self, onlymerge=True):
-            """Switch on merging only - this will presume that the
-            input reflections are scaled already."""
-
-            self._onlymerge = onlymerge
-
         def set_bfactor(self, bfactor=True, brotation=None):
             """Switch on/off bfactor refinement, optionally with the
             spacing for the bfactor refinement (in degrees.)"""

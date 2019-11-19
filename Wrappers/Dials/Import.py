@@ -35,20 +35,11 @@ def Import(DriverType=None):
         def set_sweep_filename(self, sweep_filename):
             self._sweep_filename = sweep_filename
 
-        def set_wavelength_tolerance(self, tolerance):
-            self._wavelength_tolerance = tolerance
-
         def get_sweep_filename(self):
             if os.path.abspath(self._sweep_filename):
                 return self._sweep_filename
             else:
                 return os.path.join(self.get_working_directory(), self._sweep_filename)
-
-        def set_image_to_epoch(self, image_to_epoch):
-            self._image_to_epoch = image_to_epoch
-
-        def set_reference_geometry(self, reference_geometry):
-            self._reference_geometry = reference_geometry
 
         def set_mosflm_beam_centre(self, mosflm_beam_centre):
             self._mosflm_beam_centre = mosflm_beam_centre
@@ -77,7 +68,6 @@ def Import(DriverType=None):
                 json.dump(experiments, fh)
 
         def run(self, fast_mode=False):
-
             # fast_mode: read first two image headers then extrapolate the rest
             # from what xia2 read from the image headers...
 
@@ -127,13 +117,5 @@ def Import(DriverType=None):
             assert os.path.exists(
                 os.path.join(self.get_working_directory(), self._sweep_filename)
             )
-
-        def load_sweep_model(self):
-            from dxtbx.serialize import load
-
-            with open(
-                os.path.join(self.get_working_directory(), self._sweep_filename), "r"
-            ) as fh:
-                return load.imageset_from_string(fh.read())
 
     return ImportWrapper()

@@ -74,23 +74,6 @@ class Mtzdump(object):
                 self._header["dataset_info"][dataset_id]["cell"] = cell
                 self._header["dataset_info"][dataset_id]["id"] = dataset_number
 
-    def dump_batch_headers(self):
-        """Actually print the contents of the mtz file batch headers."""
-
-        assert self._hklin, self._hklin
-        assert os.path.exists(self._hklin), self._hklin
-
-        mtz_obj = mtz.object(self._hklin)
-
-        for batch in mtz_obj.batches():
-            current_batch = batch.num()
-            umat = batch.umat()
-
-            self._batch_header[current_batch] = {"umat": umat}
-
-    def get_batch_header(self, batch):
-        return copy.deepcopy(self._batch_header[batch])
-
     def get_columns(self):
         """Get a list of the columns and their types as tuples
         (label, type) in a list."""
@@ -122,19 +105,6 @@ class Mtzdump(object):
     def get_batches(self):
         """Get a list of batches found in this reflection file."""
         return self._batches
-
-    def get_column_range(self, column):
-        """Get the value ranges for this column. This now works by reading
-        the file rather than using cached values => could be slow."""
-
-        assert self._hklin, self._hklin
-        assert os.path.exists(self._hklin), self._hklin
-
-        mtz_obj = mtz.object(self._hklin)
-        col = mtz_obj.get_column(column)
-        valid = col.extract_valid_values()
-
-        return min(valid), max(valid)
 
     def get_reflections(self):
         """Return the number of reflections found in the reflection

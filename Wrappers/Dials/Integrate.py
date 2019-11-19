@@ -67,20 +67,11 @@ def Integrate(DriverType=None):
         def set_scan_varying_profile(self, scan_varying_profile):
             self._scan_varying_profile = scan_varying_profile
 
-        def get_scan_varying_profile(self):
-            return self._scan_varying_profile
-
         def set_background_outlier_algorithm(self, algorithm):
             self._outlier_algorithm = algorithm
 
-        def get_background_outlier_algorithm(self):
-            return self._outlier_algorithm
-
         def set_background_algorithm(self, algorithm):
             self._background_algorithm = algorithm
-
-        def get_background_algorithm(self):
-            return self._background_algorithm
 
         def set_reflections_per_degree(self, reflections_per_degree):
             self._reflections_per_degree = reflections_per_degree
@@ -108,9 +99,6 @@ def Integrate(DriverType=None):
 
         def set_integrated_reflections(self, refl):
             self._integrated_reflections = refl
-
-        def get_integration_report(self):
-            return self._integration_report
 
         def run(self):
             Debug.write("Running dials.integrate")

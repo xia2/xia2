@@ -5,7 +5,7 @@ from __future__ import absolute_import, division, print_function
 
 import math
 
-from cctbx import crystal, sgtbx
+from cctbx import crystal
 import dxtbx.serialize.xds
 from scitbx import matrix
 from xia2.Experts.LatticeExpert import s2l
@@ -104,15 +104,3 @@ def xds_check_indexer_solution(xparm_file, spot_file):
     cell_new = symm_new.unit_cell().parameters()
 
     return s2l(space_group_number_primitive), tuple(cell_new)
-
-
-def is_centred(space_group_number):
-    """Test if space group # corresponds to a centred space group."""
-
-    sg_hall = sgtbx.space_group_symbols(space_group_number).hall()
-    sg = sgtbx.space_group(sg_hall)
-
-    if sg.n_ltr() - 1:
-        return True
-
-    return False

@@ -25,33 +25,6 @@ def index_select_images_lone(phi_width, images):
     return selected_images
 
 
-def index_select_images_user(phi_width, images, out_stream):
-    """Select images close to 0, 45 and 90 degrees from the list of available
-    frames. N.B. we assume all frames have the same oscillation width. From
-    this the user can tweak the settings..."""
-
-    images = index_select_images_lone(phi_width, images)
-    images_list = ", ".join("%d" % image for image in images)
-    out_stream.write("Existing images for indexing: %s" % images_list)
-
-    while True:
-
-        record = input(">")
-
-        if not record.strip():
-            return images
-
-        try:
-            images = [int(x) for x in record.replace(",", " ").split()]
-            images_list = ", ".join("%d" % image for image in images)
-            out_stream.write("New images for indexing: %s" % images_list)
-
-            return images
-
-        except ValueError:
-            pass
-
-
 def index_select_image_wedges_user(sweep_id, phi_width, images, out_stream):
     images = [(min(images), max(images))]
     images_list = ", ".join("%d-%d" % i for i in images)

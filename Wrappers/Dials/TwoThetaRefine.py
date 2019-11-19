@@ -47,9 +47,6 @@ def TwoThetaRefine(DriverType=None):
         def set_reflection_files(self, reflection_files):
             self._reflection_files = reflection_files
 
-        def get_reflection_files(self):
-            return self._reflection_files
-
         def set_phil_file(self, phil_file):
             self._phil_file = phil_file
 
@@ -64,12 +61,6 @@ def TwoThetaRefine(DriverType=None):
 
         def set_output_p4p(self, filename):
             self._output_p4p = filename
-
-        def get_output_p4p(self):
-            return self._output_p4p
-
-        def get_output_correlation_plot(self):
-            return self._output_correlation_plot
 
         def get_output_experiments(self):
             return self._output_experiments

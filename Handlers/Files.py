@@ -14,53 +14,6 @@ import shutil
 from xia2.Handlers.Environment import Environment
 
 
-def get_xds_commands(lines_of_input):
-    """Get the command input to XDS - that is, all of the text between
-    the line which goes ***** STEP ***** and **********. Love FORTRAN."""
-
-    collecting = False
-
-    result = []
-
-    for l in lines_of_input:
-        if "*****" in l and not collecting:
-            collecting = True
-            continue
-
-        if "*****" in l:
-            break
-
-        if collecting:
-            if l.strip():
-                result.append(l.strip())
-
-    return result
-
-
-def get_ccp4_commands(lines_of_input):
-    """Get the commands which were sent to a CCP4 program."""
-
-    # first look through for hklin / hklout
-
-    logicals = {}
-
-    for line in lines_of_input:
-        if "Logical Name:" in line:
-            token = line.split(":")[1].split()[0]
-            value = line.split(":")[-1].strip()
-            logicals[token] = value
-
-    # then look for standard input commands
-
-    script = []
-
-    for line in lines_of_input:
-        if "Data line---" in line:
-            script.append(line.replace("Data line---", "").strip())
-
-    return script, logicals
-
-
 class _FileHandler(object):
     """A singleton class to manage files."""
 
@@ -131,9 +84,6 @@ class _FileHandler(object):
             out.write("Copied extra data file %s to %s\n" % (filename_in, filename_out))
 
         out.close()
-
-    def record_output_file(self, filename, type):
-        self._output_files.append((type, filename))
 
     def record_log_file(self, tag, filename):
         """Record a log file."""

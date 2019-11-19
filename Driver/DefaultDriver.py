@@ -132,9 +132,6 @@ class DefaultDriver(object):
     def set_cpu_threads(self, cpu_threads):
         self._cpu_threads = cpu_threads
 
-    def get_cpu_threads(self):
-        return self._cpu_threads
-
     def _check_executable(self, executable):
         """Pass this on to executable_exists."""
 
@@ -168,10 +165,6 @@ class DefaultDriver(object):
             self._working_environment[name] = []
         self._working_environment[name].append(value)
 
-    def get_working_environment(self):
-        """Return the additional elements for the working environment."""
-        return self._working_environment
-
     def add_scratch_directory(self, directory):
         """Add a scratch directory."""
 
@@ -182,20 +175,6 @@ class DefaultDriver(object):
         """Set a helpful record about what the task is doing."""
 
         self._task = task
-
-    def get_task(self):
-        """Return a helpful record about what the task is doing."""
-
-        return self._task
-
-    def _add_input_file(self, input_file):
-        """Add an input file to the job. This may be overloaded by versions
-        which check for the file or move it somewhere."""
-
-        self._input_files.append(input_file)
-
-    def add_input_file(self, input_file):
-        return self.add_input_file(input_file)
 
     def _add_output_file(self, output_file):
         """Add an output file to the job. This may be overloaded by versions
@@ -263,7 +242,6 @@ class DefaultDriver(object):
 
         # optional - possibly useful if using a batch submission
         # system or wanting to describe better what the job is doing
-
         self._input_files = []
         self._output_files = []
         self._scratch_directories = []
@@ -453,11 +431,6 @@ class DefaultDriver(object):
 
         return ""
 
-    def get_all_input(self):
-        """Return all of the input of the job."""
-
-        return self._standard_input_records
-
     def get_all_output(self):
         """Return all of the output of the job."""
 
@@ -548,12 +521,3 @@ class DefaultDriver(object):
         very least return 0."""
 
         raise NotImplementedError("Do not use the DefaultDriver class directly")
-
-    # debugging methods
-
-    def load_all_output(self, filename):
-        """Load output from a file into the storage for standard output
-        - this will allow debugging against known log files."""
-
-        for line in open(filename, "r").readlines():
-            self._standard_output_records.append(line)

@@ -64,23 +64,14 @@ def Chef(DriverType=None, stream=Chatter):
         def set_resolution(self, resolution):
             self._resolution = resolution
 
-        def set_width(self, width):
-            self._b_width = width
-
         def set_max(self, max):
             self._b_max = max
-
-        def set_labin(self, labin):
-            self._b_labin = labin
 
         def set_title(self, title):
             self._title = title
 
         def get_completeness(self, wavelength):
             return self._completeness[wavelength]
-
-        def get_completeness_datasets(self):
-            return list(self._completeness)
 
         def run(self):
             """Actually run chef..."""

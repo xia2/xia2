@@ -67,9 +67,6 @@ class FrameProcessor(object):
         if image:
             self._setup_from_image(image)
 
-    def set_template(self, template):
-        self._fp_template = template
-
     def set_frame_wedge(self, start, end, apply_offset=True):
         """Set the allowed range of images for processing."""
 
@@ -124,9 +121,6 @@ class FrameProcessor(object):
     def get_frame_offset(self):
         return self._fp_offset
 
-    def set_directory(self, directory):
-        self._fp_directory = directory
-
     def get_directory(self):
         return self._fp_directory
 
@@ -139,9 +133,6 @@ class FrameProcessor(object):
 
     def get_wavelength(self):
         return self.get_beam_obj().get_wavelength()
-
-    def get_wavelength_prov(self):
-        return self._fp_wavelength_prov
 
     def set_distance(self, distance):
         if distance is None:
@@ -166,9 +157,6 @@ class FrameProcessor(object):
     def get_polarization(self):
         return self._fp_polarization
 
-    def get_distance_prov(self):
-        return self._fp_distance_prov
-
     def set_beam_centre(self, beam_centre):
         from dxtbx.model.detector_helpers import set_mosflm_beam_centre
 
@@ -185,18 +173,8 @@ class FrameProcessor(object):
         beam = self.get_beam_obj()
         return get_beam_centre(detector, beam)
 
-    def get_beam_prov(self):
-        return self._fp_beam_prov
-
-    def set_two_theta(self, two_theta):
-        self._fp_two_theta = two_theta
-        self._fp_two_theta_prov = "user"
-
     def get_two_theta(self):
         return self._fp_two_theta
-
-    def get_two_theta_prov(self):
-        return self._fp_two_theta_prov
 
     def get_phi_width(self):
         return self.get_scan().get_oscillation()[1]
@@ -206,9 +184,6 @@ class FrameProcessor(object):
 
     def get_header(self):
         return self._fp_header
-
-    def get_header_item(self, item):
-        return self._fp_header[item]
 
     # utility functions
     def get_image_name(self, number):

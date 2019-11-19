@@ -97,31 +97,16 @@ def Pointless(DriverType=None):
         def set_allow_out_of_sequence_files(self, allow=True):
             self._allow_out_of_sequence_files = allow
 
-        def get_hklref(self):
-            return self._hklref
-
         def set_project_info(self, pname, xname, dname):
             self._pname = pname
             self._xname = xname
             self._dname = dname
-
-        def check_hklref(self):
-            if self._hklref is None:
-                raise RuntimeError("hklref not defined")
-            if not os.path.exists(self._hklref):
-                raise RuntimeError("hklref %s does not exist" % self._hklref)
 
         def set_xdsin(self, xdsin):
             self._xdsin = xdsin
 
         def get_xdsin(self):
             return self._xdsin
-
-        def check_xdsin(self):
-            if self._xdsin is None:
-                raise RuntimeError("xdsin not defined")
-            if not os.path.exists(self._xdsin):
-                raise RuntimeError("xdsin %s does not exist" % self._xdsin)
 
         def set_correct_lattice(self, lattice):
             """In a rerunning situation, set the correct lattice, which will

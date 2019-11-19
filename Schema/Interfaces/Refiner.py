@@ -279,17 +279,3 @@ class Refiner(object):
             return self._refinr_program_parameters[program][parameter]
         except Exception:
             return None
-
-    def get_refiner_parameters(self, program):
-        """Get all parameters and values."""
-
-        try:
-            return self._refinr_program_parameters[program]
-        except Exception:
-            return {}
-
-    def set_refiner_parameters(self, parameters):
-        """Set all parameters and values."""
-
-        self._refinr_program_parameters = parameters
-        self.set_refiner_done(False)

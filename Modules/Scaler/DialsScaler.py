@@ -1040,27 +1040,6 @@ class DialsScalerHelper(object):
             )
         return sweep_handler
 
-    def _renumber_ids_in_tables(self, sweep_handler):
-        """Renumber all dataset ids in tables to be unique, as this is not
-        done in the current version of split_experiments, for backwards compability."""
-        nn = len(sweep_handler.get_epochs())
-        fmt = "%%0%dd" % (math.log10(nn) + 1)
-        for i, epoch in enumerate(sweep_handler.get_epochs()):
-            si = sweep_handler.get_sweep_information(epoch)
-            nums = fmt % i
-            r = flex.reflection_table.from_file(si.get_reflections())
-            if len(set(r["id"]).difference({-1})) > 1:
-                raise ValueError("Only single-experiment tables expected")
-            old_id = list(r.experiment_identifiers().keys())[0]
-            exp_id = list(r.experiment_identifiers().values())[0]
-            del r.experiment_identifiers()[old_id]
-            r["id"].set_selected(r["id"] == old_id, i)
-            r.experiment_identifiers()[i] = exp_id
-            fname = os.path.join(self.get_working_directory(), "split_%s.refl" % nums)
-            r.as_pickle(fname)
-            si.set_reflections(fname)
-        return sweep_handler
-
     def assign_and_return_datasets(self, sweep_handler):
         """Assign unique identifiers to all integrated experiments & reflections,
         and set these in the sweep_information for each epoch."""

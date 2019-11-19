@@ -141,15 +141,6 @@ def CCP4DecoratorFactory(DriverInstance):
                     "hklout and hklin are the same file (%s)" % str(self._hklin)
                 )
 
-        def set_xyzin(self, xyzin):
-            return self.setXyzin(xyzin)
-
-        def get_xyzin(self):
-            return self.getXyzin()
-
-        def check_xyzin(self):
-            return self.checkXyzin()
-
         def setXyzin(self, xyzin):
             self._xyzin = xyzin
 
@@ -162,15 +153,6 @@ def CCP4DecoratorFactory(DriverInstance):
             if not os.path.exists(self._xyzin):
                 raise RuntimeError("xyzin %s does not exist" % self._xyzin)
 
-        def set_xyzout(self, xyzout):
-            return self.setXyzout(xyzout)
-
-        def get_xyzout(self):
-            return self.getXyzout()
-
-        def check_xyzout(self):
-            return self.checkXyzout()
-
         def setXyzout(self, xyzout):
             self._xyzout = xyzout
 
@@ -180,15 +162,6 @@ def CCP4DecoratorFactory(DriverInstance):
         def checkXyzout(self):
             if self._xyzout is None:
                 raise RuntimeError("xyzout not defined")
-
-        def set_mapin(self, mapin):
-            return self.setMapin(mapin)
-
-        def get_mapin(self):
-            return self.getMapin()
-
-        def check_mapin(self):
-            return self.checkMapin()
 
         def setMapin(self, mapin):
             self._mapin = mapin
@@ -201,15 +174,6 @@ def CCP4DecoratorFactory(DriverInstance):
                 raise RuntimeError("mapin not defined")
             if not os.path.exists(self._mapin):
                 raise RuntimeError("mapin %s does not exist" % self._mapin)
-
-        def set_mapout(self, mapout):
-            return self.setMapout(mapout)
-
-        def get_mapout(self):
-            return self.getMapout()
-
-        def check_mapout(self):
-            return self.checkMapout()
 
         def setMapout(self, mapout):
             self._mapout = mapout

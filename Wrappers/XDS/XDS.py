@@ -2,7 +2,6 @@ from __future__ import absolute_import, division, print_function
 
 import datetime
 import glob
-import math
 import os
 import subprocess
 import time
@@ -91,42 +90,6 @@ def xds_check_error(xds_output_list):
                 message = xds_error_database[message]
             error = "[XDS] %s" % message
             raise XDSException(error)
-
-
-def rotate_cbf_to_xds_convention(fast, slow, axis=(1, 0, 0)):
-    """Rotate fast and slow directions about rotation axis to give XDS
-    conventional directions for fast and slow. This should be a rotation
-    of 180 degrees about principle axis, defined to be 1,0,0."""
-
-    R = matrix.col(axis).axis_and_angle_as_r3_rotation_matrix(180.0, deg=True)
-
-    return (R * fast).elems, (R * slow).elems
-
-
-def detector_axis_apply_two_theta_rotation(axis_string, header):
-    """Apply a rotation in degrees to this detector axis given as a string
-    containing a list of three floating point values. Return as same.
-    Header given as this definition may depend on the detector / instrument
-    type."""
-
-    # is theta the wrong sign, as I record from diffdump? I think so.
-
-    two_theta = -1 * header["two_theta"] * math.pi / 180.0
-
-    axis = [float(x) for x in axis_string.split()]
-
-    assert len(axis) == 3
-
-    # assertion - this is a rotation about X (first coordinate) ergo will not
-    # change this. Nope. Looks like it is a rotation about Y. Which makes
-    # sense for a laboratory source...
-
-    ct = math.cos(two_theta)
-    st = math.sin(two_theta)
-
-    new_axis = (axis[0] * ct + axis[2] * st, axis[1], -axis[0] * st + axis[2] * ct)
-
-    return "%.3f %.3f %.3f" % new_axis
 
 
 def imageset_to_xds(
@@ -351,49 +314,6 @@ def imageset_to_xds(
         Debug.write(result[-1])
 
     return result
-
-
-def beam_centre_mosflm_to_xds(x, y, header):
-    """Convert a beam centre for image with header information in
-    header from mm x, y in the Mosflm cordinate frame to pixels
-    x, y in the XDS frame."""
-
-    # first gather up some useful information from the header
-
-    width, height = tuple(int(s) for s in header["size"])
-    qx, qy = tuple(header["pixel"])
-
-    # convert input to pixels
-
-    px = x / qx
-    py = y / qy
-
-    # next ensure that the beam centre is on the detector
-
-    if px < 0 or px > width:
-        raise RuntimeError("beam x coordinate outside detector")
-
-    if py < 0 or py > width:
-        raise RuntimeError("beam y coordinate outside detector")
-
-    # next perform some detector specific transformation to put
-    # the centre in the right place... from looking at the papers
-    # by Kabsch and Rossmann it turns out that the coordinate
-    # frames are the same in the case where the experimental geometry
-    # is the same... you just have to swap x & y. I have checked this
-    # and it is correct - the Mosflm frame has the x, y axes mirrored to
-    # the traditional Cartesian frame.
-
-    # though if we have a two-theta offset we need to put the origin
-    # in as where the detector normal meets the crystal.
-
-    if "detector_origin_mm" in header:
-        return (
-            header["detector_origin_mm"][0] / qx,
-            header["detector_origin_mm"][1] / qy,
-        )
-
-    return py, px
 
 
 def xds_read_xparm(xparm_file):

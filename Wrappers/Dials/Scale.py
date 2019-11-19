@@ -123,9 +123,6 @@ def DialsScale(DriverType=None, decay_correction=None):
         def set_decay_bins(self, n_bins):
             self._n_resolution_bins = n_bins
 
-        def set_absorption_bins(self, n_bins):
-            self._n_absorption_bins = n_bins
-
         def set_min_partiality(self, min_partiality):
             self._min_partiality = min_partiality
 
@@ -180,9 +177,6 @@ def DialsScale(DriverType=None, decay_correction=None):
         def get_scaled_mtz(self):
             return self._merged_reflections
 
-        def get_unscaled_mtz(self):
-            return self._unmerged_reflections
-
         def set_crystal_name(self, name):
             self._crystal_name = name
 
@@ -191,12 +185,6 @@ def DialsScale(DriverType=None, decay_correction=None):
 
         def get_scaled_experiments(self):
             return self._scaled_experiments
-
-        def set_scaled_experiments(self, filepath):
-            self._scaled_experiments = filepath
-
-        def set_scaled_reflections(self, filepath):
-            self._scaled_reflections = filepath
 
         def set_scaled_mtz(self, filepath):
             self._merged_reflections = filepath

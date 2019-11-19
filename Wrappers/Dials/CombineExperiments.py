@@ -37,15 +37,6 @@ def CombineExperiments(DriverType=None):
         def add_reflections(self, indexed_filename):
             self._reflections_filenames.append(indexed_filename)
 
-        def get_experiments_filenames(self):
-            return self._experiments_filenames
-
-        def set_combined_experiments_filename(self, filename):
-            self._combined_experiments_filename = filename
-
-        def set_combined_reflections_filename(self, filename):
-            self._combined_reflections_filename = filename
-
         def get_combined_experiments_filename(self):
             return self._combined_experiments_filename
 

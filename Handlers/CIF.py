@@ -48,9 +48,6 @@ class _CIFHandler(object):
         # prepopulate audit fields, so they end up at the top of the file
         self.collate_audit_information()
 
-    def get_cif_model(self):
-        return self._cif
-
     def set_spacegroup(self, spacegroup, blockname=None):
         sg = spacegroup.group()
 

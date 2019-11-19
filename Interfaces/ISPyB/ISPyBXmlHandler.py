@@ -52,10 +52,6 @@ class _ISPyBXmlHandler(object):
         # each sweep and the scaling statistics for low resolution, high
         # resolution and overall...
 
-    def add_crystal_log_file(self, crystal, log_file):
-        if log_file not in self._per_crystal_data[crystal]["log_files"]:
-            self._per_crystal_data[crystal]["log_files"].append(log_file)
-
     @staticmethod
     def write_date(fout):
         """Write the current date and time out as XML."""
