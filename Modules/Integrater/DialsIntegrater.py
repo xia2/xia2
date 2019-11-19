@@ -59,12 +59,15 @@ class DialsIntegrater(Integrater):
     # admin functions
 
     def get_integrated_experiments(self):
+        self.integrate()
         return self._intgr_experiments_filename
 
     def get_integrated_filename(self):
+        self.integrate()
         return self._intgr_integrated_filename
 
     def get_integrated_reflections(self):
+        self.integrate()
         return self._intgr_integrated_reflections
 
     def set_integrated_experiments(self, filename):
