@@ -36,14 +36,6 @@ def rt_to_r(rt):
     return result
 
 
-def compose_matrices_r(mat_a, mat_b):
-    """Compose symmetry matrix applying b then a."""
-
-    mat_c = _multiply_symmetry_matrix(mat_a, mat_b)
-
-    return mat_c
-
-
 def compose_symops(a, b):
     """Compose operation c, which is applying b then a."""
 

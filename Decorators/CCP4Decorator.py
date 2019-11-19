@@ -141,50 +141,6 @@ def CCP4DecoratorFactory(DriverInstance):
                     "hklout and hklin are the same file (%s)" % str(self._hklin)
                 )
 
-        def setXyzin(self, xyzin):
-            self._xyzin = xyzin
-
-        def getXyzin(self):
-            return self._xyzin
-
-        def checkXyzin(self):
-            if self._xyzin is None:
-                raise RuntimeError("xyzin not defined")
-            if not os.path.exists(self._xyzin):
-                raise RuntimeError("xyzin %s does not exist" % self._xyzin)
-
-        def setXyzout(self, xyzout):
-            self._xyzout = xyzout
-
-        def getXyzout(self):
-            return self._xyzout
-
-        def checkXyzout(self):
-            if self._xyzout is None:
-                raise RuntimeError("xyzout not defined")
-
-        def setMapin(self, mapin):
-            self._mapin = mapin
-
-        def getMapin(self):
-            return self._mapin
-
-        def checkMapin(self):
-            if self._mapin is None:
-                raise RuntimeError("mapin not defined")
-            if not os.path.exists(self._mapin):
-                raise RuntimeError("mapin %s does not exist" % self._mapin)
-
-        def setMapout(self, mapout):
-            self._mapout = mapout
-
-        def getMapout(self):
-            return self._mapout
-
-        def checkMapout(self):
-            if self._mapout is None:
-                raise RuntimeError("mapout not defined")
-
         def describe(self):
             """An overloading of the Driver describe() method."""
 

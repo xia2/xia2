@@ -460,14 +460,6 @@ class Integrater(FrameProcessor):
 
         self._intgr_program_parameters[program][parameter] = value
 
-    def get_integrater_parameter(self, program, parameter):
-        """Get a parameter value."""
-
-        try:
-            return self._intgr_program_parameters[program][parameter]
-        except Exception:
-            return None
-
     def set_integrater_parameters(self, parameters):
         """Set all parameters and values."""
 
@@ -582,9 +574,6 @@ class Integrater(FrameProcessor):
         Debug.write("setting integrator output format to %s" % output_format)
         assert output_format in ["hkl", "pickle"]
         self._output_format = output_format
-
-    def get_integrater_indexer(self):
-        return self._intgr_indexer
 
     def get_integrater_refiner(self):
         return self._intgr_refiner

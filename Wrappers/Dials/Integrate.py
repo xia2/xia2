@@ -61,9 +61,6 @@ def Integrate(DriverType=None):
         def set_profile_fitting(self, profile_fitting):
             self._profile_fitting = profile_fitting
 
-        def get_profile_fitting(self):
-            return self._profile_fitting
-
         def set_scan_varying_profile(self, scan_varying_profile):
             self._scan_varying_profile = scan_varying_profile
 

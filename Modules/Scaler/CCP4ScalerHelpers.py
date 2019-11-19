@@ -438,12 +438,6 @@ class SweepInformation(object):
     def get_template(self):
         return self._integrater.get_template()
 
-    def set_dose_information(self, epoch_to_dose):
-        for i in self._image_to_epoch:
-            e = self._image_to_epoch[i]
-            d = epoch_to_dose[e]
-            self._image_to_dose[i] = d
-
     def get_integrater_resolution(self):
         return self._integrater.get_integrater_high_resolution()
 

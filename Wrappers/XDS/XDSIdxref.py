@@ -148,9 +148,6 @@ def XDSIdxref(DriverType=None, params=None):
         def get_output_data_file(self, name):
             return self._output_data_files[name]
 
-        def get_refined_beam(self):
-            return self._refined_beam
-
         def get_indexing_solutions(self):
             return self._indexing_solutions
 

@@ -651,9 +651,6 @@ class XCrystal(object):
         """Set a user assigned spacegroup - which needs to be propogated."""
         self._user_spacegroup = user_spacegroup
 
-    def get_reference_reflection_file(self):
-        return self._reference_reflection_file
-
     def set_scaled_merged_reflections(self, scaled_merged_reflections):
         self._scaled_merged_reflections = scaled_merged_reflections
 

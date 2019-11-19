@@ -228,13 +228,6 @@ class BackstopMask(object):
 
         return p1, p2, p3, p4
 
-    def to_mosflm_frame(self, header, p):
-        """Convert pixel position p into Mosflm coordinates."""
-
-        dx, dy = header["pixel"]
-
-        return (p[1] * dy, p[0] * dx)
-
     def apply_mask_xds(self, header, cbf_in, cbf_out):
         """Apply the calculated backstop mask to a BKGINIT.cbf - do this
         immediately after the INIT step."""

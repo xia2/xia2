@@ -262,20 +262,3 @@ class Refiner(object):
                 self.refiner_reset()
         # XXX for multiple indexers need to get some kind of consensus?
         return state
-
-    def set_refiner_parameter(self, program, parameter, value):
-        """Set an arbitrary parameter for the program specified to
-        use in refinement, e.g. the YSCALE or GAIN values in Mosflm."""
-
-        if program not in self._refinr_program_parameters:
-            self._refinr_program_parameters[program] = {}
-
-        self._refinr_program_parameters[program][parameter] = value
-
-    def get_refiner_parameter(self, program, parameter):
-        """Get a parameter value."""
-
-        try:
-            return self._refinr_program_parameters[program][parameter]
-        except Exception:
-            return None

@@ -28,9 +28,6 @@ def StereographicProjection(DriverType=None):
             assert len(hkl) == 3
             self._hkl = hkl
 
-        def get_plot_filename(self):
-            return self._plot_filename
-
         def get_json_filename(self):
             return self._json_filename
 

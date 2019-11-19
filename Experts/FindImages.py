@@ -1,12 +1,3 @@
-#!/usr/bin/env python
-# FindImages.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 9th June 2006
-#
 # A set of routines for finding images and the like based on file names.
 # This includes all of the appropriate handling for templates, directories
 # and the like.
@@ -27,7 +18,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import copy
 import math
 import os
 import re
@@ -183,90 +173,6 @@ def template_directory_number2image(template, directory, number):
     image = os.path.join(directory, template.replace("#" * length, format % number))
 
     return image
-
-
-def headers2sweeps(header_dict):
-    """Parse a dictionary of headers to produce a list of summaries."""
-
-    # SCI-545 - remove still images from sweeps
-
-    zap = []
-
-    for i in header_dict:
-        header = header_dict[i]
-        delta_phi = math.fabs(header["phi_end"] - header["phi_start"])
-        if delta_phi == 0:
-            zap.append(i)
-
-    Debug.write("Removing %d apparently still images" % len(zap))
-
-    for z in zap:
-        del header_dict[z]
-
-    images = sorted(header_dict)
-
-    if not images:
-        return []
-
-    sweeps = []
-
-    current_sweep = copy.deepcopy(header_dict[images[0]])
-
-    current_sweep["images"] = [images[0]]
-
-    # observation: in RIGAKU SATURN data sets the epoch is the same for
-    # all images => add the IMAGE NUMBER to this as a workaround if
-    # that format. See also RIGAKU_SATURN below.
-
-    if "rigaku saturn" in current_sweep["detector_class"]:
-        current_sweep["epoch"] += images[0]
-
-    current_sweep["collect_start"] = current_sweep["epoch"]
-    current_sweep["collect_end"] = current_sweep["epoch"]
-
-    for i in images[1:]:
-        header = header_dict[i]
-
-        # RIGAKU_SATURN see above
-
-        if "rigaku saturn" in header["detector_class"]:
-            header["epoch"] += i
-
-        # if wavelength the same and distance the same and this image
-        # follows in phi from the previous chappie then this is the
-        # next frame in the sweep. otherwise it is the first frame in
-        # a new sweep.
-
-        delta_lambda = math.fabs(header["wavelength"] - current_sweep["wavelength"])
-        delta_distance = math.fabs(header["distance"] - current_sweep["distance"])
-        delta_phi = math.fabs(header["phi_start"] - current_sweep["phi_end"]) % 360.0
-
-        # Debug.write('Image %d %f %f %f' % \
-        # (i, delta_lambda, delta_distance,
-        # min(delta_phi, 360.0 - delta_phi)))
-
-        if (
-            delta_lambda < 0.0001
-            and delta_distance < 0.01
-            and min(delta_phi, 360.0 - delta_phi) < 0.01
-            and i == current_sweep["images"][-1] + 1
-        ):
-            # this is another image in the sweep
-            # Debug.write('Image %d belongs to the sweep' % i)
-            current_sweep["images"].append(i)
-            current_sweep["phi_end"] = header["phi_end"]
-            current_sweep["collect_end"] = header["epoch"]
-        else:
-            Debug.write("Image %d starts a new sweep" % i)
-            sweeps.append(current_sweep)
-            current_sweep = header_dict[i]
-            current_sweep["images"] = [i]
-            current_sweep["collect_start"] = current_sweep["epoch"]
-            current_sweep["collect_end"] = current_sweep["epoch"]
-
-    sweeps.append(current_sweep)
-
-    return sweeps
 
 
 def common_prefix(strings):

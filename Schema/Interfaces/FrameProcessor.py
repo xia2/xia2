@@ -179,9 +179,6 @@ class FrameProcessor(object):
     def get_phi_width(self):
         return self.get_scan().get_oscillation()[1]
 
-    def set_header(self, header):
-        self._fp_header = header
-
     def get_header(self):
         return self._fp_header
 

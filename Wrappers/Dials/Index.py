@@ -96,9 +96,6 @@ def Index(DriverType=None):
         def get_indexed_filename(self):
             return self._indexed_filename
 
-        def get_p1_cell(self):
-            return self._p1_cell
-
         def set_phil_file(self, phil_file):
             self._phil_file = phil_file
 

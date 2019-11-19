@@ -67,9 +67,6 @@ def Chef(DriverType=None, stream=Chatter):
         def set_max(self, max):
             self._b_max = max
 
-        def set_title(self, title):
-            self._title = title
-
         def get_completeness(self, wavelength):
             return self._completeness[wavelength]
 
