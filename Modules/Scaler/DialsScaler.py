@@ -6,6 +6,8 @@ import math
 import os
 from orderedset import OrderedSet
 
+import libtbx
+
 from xia2.Handlers.Files import FileHandler
 from xia2.lib.bits import auto_logfiler
 from xia2.Handlers.Phil import PhilIndex
@@ -72,6 +74,10 @@ class DialsScaler(Scaler):
 
         resolution = PhilIndex.params.xia2.settings.resolution
         self._scaler.set_resolution(d_min=resolution.d_min, d_max=resolution.d_max)
+
+        # Set default scaling model
+        if PhilIndex.params.dials.scale.model in (None, "auto", libtbx.Auto):
+            PhilIndex.params.dials.scale.model = "physical"
 
         self._scaler.set_model(PhilIndex.params.dials.scale.model)
         self._scaler.set_intensities(PhilIndex.params.dials.scale.intensity_choice)
