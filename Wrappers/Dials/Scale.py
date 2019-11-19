@@ -7,7 +7,6 @@ import os
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import Chatter, Debug
-from libtbx import Auto
 
 
 def DialsScale(DriverType=None, decay_correction=None):
@@ -227,18 +226,16 @@ def DialsScale(DriverType=None, decay_correction=None):
             elif self._intensities == "profile":
                 self.add_command_line("intensity_choice=profile")
 
-            if self._model is not None:
-                self.add_command_line("model=%s" % self._model)
+            assert self._model is not None
+            self.add_command_line("model=%s" % self._model)
             if self._absorption_correction:
-                if self._model in (None, Auto, "physical"):
-                    self.add_command_line("physical.absorption_correction=True")
-                elif self._model == "array":
-                    self.add_command_line("array.absorption_correction=True")
+                self.add_command_line("%s.absorption_correction=True" % self._model)
             if self._bfactor:
-                if self._model in (None, Auto, "physical"):
-                    self.add_command_line("physical.decay_correction=True")
-                elif self._model == "array":
-                    self.add_command_line("array.decay_correction=True")
+                self.add_command_line("%s.decay_correction=True" % self._model)
+                if self._brotation is not None:
+                    self.add_command_line(
+                        "%s.decay_interval=%g" % (self._model, self._brotation)
+                    )
 
             self.add_command_line("full_matrix=%s" % self._full_matrix)
             if self._spacing:
@@ -254,9 +251,6 @@ def DialsScale(DriverType=None, decay_correction=None):
 
             if self._partiality_cutoff is not None:
                 self.add_command_line("partiality_cutoff=%s" % self._partiality_cutoff)
-
-            if self._bfactor and self._brotation is not None:
-                self.add_command_line("decay_interval=%g" % self._brotation)
 
             # next any 'generic' parameters
 
