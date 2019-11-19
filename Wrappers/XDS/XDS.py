@@ -19,11 +19,6 @@ class XDSException(Exception):
         return str(self.value)
 
 
-class XDSIndexException(XDSException):
-    def __init__(self, value):
-        XDSException.__init__(self, value)
-
-
 _xds_version_cache = None
 
 
@@ -399,22 +394,6 @@ def beam_centre_mosflm_to_xds(x, y, header):
         )
 
     return py, px
-
-
-def beam_centre_xds_to_mosflm(px, py, header):
-    """Convert back..."""
-
-    # first gather up some useful information from the header
-
-    width, height = tuple(int(s) for s in header["size"])
-    qx, qy = tuple(header["pixel"])
-
-    # convert input to pixels
-
-    x = px * qx
-    y = py * qy
-
-    return y, x
 
 
 def xds_read_xparm(xparm_file):

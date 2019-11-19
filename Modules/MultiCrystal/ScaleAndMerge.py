@@ -366,9 +366,6 @@ class MultiCrystalScale(object):
             )
             self._data_manager.select(keep_expts)
 
-        experiments = self._data_manager.experiments
-        reflections = self._data_manager.reflections
-
         self.unit_cell_clustering(plot_name="cluster_unit_cell_p1.png")
 
         if self._params.symmetry.resolve_indexing_ambiguity:
@@ -746,11 +743,7 @@ class Scale(object):
 
     def two_theta_refine(self):
         # two-theta refinement to get best estimate of unit cell
-        (
-            self.best_unit_cell,
-            self.best_unit_cell_esd,
-            experiments_filename,
-        ) = self._dials_two_theta_refine(
+        self.best_unit_cell, self.best_unit_cell_esd = self._dials_two_theta_refine(
             self._experiments_filename,
             self._reflections_filename,
             combine_crystal_models=self._params.two_theta_refine.combine_crystal_models,
@@ -792,7 +785,7 @@ class Scale(object):
         tt_refiner.run()
         unit_cell = tt_refiner.get_unit_cell()
         unit_cell_esd = tt_refiner.get_unit_cell_esd()
-        return unit_cell, unit_cell_esd, tt_refiner.get_output_experiments()
+        return unit_cell, unit_cell_esd
 
     def scale(self, d_min=None, d_max=None):
         logger.debug("Scaling with dials.scale")
