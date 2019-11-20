@@ -20,7 +20,7 @@ from dials.util.version import dials_version
 import xia2.Handlers.Streams
 from xia2.Handlers.Citations import Citations
 from xia2.Modules.Analysis import separate_unmerged
-from xia2.Modules.DeltaCcHalf import DeltaCcHalf
+from xia2.Modules.DeltaCcHalf import DeltaCcHalf, DeltaCcHalfImageGroups
 
 
 logger = logging.getLogger("xia2.delta_cc_half")
@@ -28,7 +28,8 @@ logger = logging.getLogger("xia2.delta_cc_half")
 phil_scope = libtbx.phil.parse(
     """
 include scope xia2.Modules.DeltaCcHalf.phil_scope
-
+group_size = None
+  .type = int(value_min=1)
 batch
   .multiple = True
 {
@@ -152,17 +153,30 @@ def run(args):
         batches = separate.batches.values()
         intensities = separate.intensities.values()
 
-    result = DeltaCcHalf(
-        intensities,
-        batches,
-        n_bins=params.n_bins,
-        d_min=params.d_min,
-        cc_one_half_method=params.cc_one_half_method,
-    )
+    if params.group_size:
+        result = DeltaCcHalfImageGroups(
+            intensities,
+            batches,
+            n_bins=params.n_bins,
+            d_min=params.d_min,
+            cc_one_half_method=params.cc_one_half_method,
+            group_size=params.group_size,
+        )
+    else:
+        result = DeltaCcHalf(
+            intensities,
+            batches,
+            n_bins=params.n_bins,
+            d_min=params.d_min,
+            cc_one_half_method=params.cc_one_half_method,
+        )
+    logger.info(result.get_table())
     hist_filename = "delta_cc_hist.png"
     logger.info("Saving histogram to %s" % hist_filename)
     result.plot_histogram(hist_filename)
-    logger.info(result.get_table())
+    normalised_scores_filename = "normalised_scores.png"
+    logger.info("Saving normalised scores to %s" % normalised_scores_filename)
+    result.plot_normalised_scores(normalised_scores_filename)
 
     Citations.cite("delta_cc_half")
     for citation in Citations.get_citations_acta():
