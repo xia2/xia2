@@ -19,7 +19,9 @@ from dials.util.version import dials_version
 
 import xia2.Handlers.Streams
 from xia2.Handlers.Citations import Citations
+from xia2.Modules.Analysis import separate_unmerged
 from xia2.Modules.DeltaCcHalf import DeltaCcHalf
+
 
 logger = logging.getLogger("xia2.delta_cc_half")
 
@@ -91,25 +93,13 @@ def run(args):
         experiments, reflections = assign_unique_identifiers(experiments, reflections)
 
         # transform models into miller arrays
-        datasets, batches = filtered_arrays_from_experiments_reflections(
+        intensities, batches = filtered_arrays_from_experiments_reflections(
             experiments,
             reflections,
             outlier_rejection_after_filter=False,
             partiality_threshold=0.99,
             return_batches=True,
         )
-
-        unmerged_intensities = None
-        batches_all = None
-        for intensities, batches_ in zip(datasets, batches):
-            if unmerged_intensities is None:
-                unmerged_intensities = intensities
-                batches_all = batches_
-            else:
-                unmerged_intensities = unmerged_intensities.concatenate(
-                    intensities
-                ).set_observation_type(intensities.observation_type())
-                batches_all = batches_all.concatenate(batches_)
 
     if len(args) and os.path.isfile(args[0]):
         result = any_reflection_file(args[0])
@@ -131,23 +121,33 @@ def run(args):
         assert batches_all is not None
         assert unmerged_intensities is not None
 
-    id_to_batches = None
+        sel = unmerged_intensities.sigmas() > 0
+        unmerged_intensities = unmerged_intensities.select(sel).set_info(
+            unmerged_intensities.info()
+        )
+        batches_all = batches_all.select(sel)
 
-    if len(params.batch) > 0:
-        id_to_batches = {}
-        for b in params.batch:
-            assert b.id is not None
-            assert b.range is not None
-            assert b.id not in id_to_batches, "Duplicate batch id: %s" % b.id
-            id_to_batches[b.id] = b.range
+        id_to_batches = None
+        if len(params.batch) > 0:
+            id_to_batches = {}
+            for b in params.batch:
+                assert b.id is not None
+                assert b.range is not None
+                assert b.id not in id_to_batches, "Duplicate batch id: %s" % b.id
+                id_to_batches[b.id] = b.range
+
+        separate = separate_unmerged(
+            unmerged_intensities, batches_all, id_to_batches=id_to_batches
+        )
+        batches = separate.batches.values()
+        intensities = separate.intensities.values()
 
     result = DeltaCcHalf(
-        unmerged_intensities,
-        batches_all,
+        intensities,
+        batches,
         n_bins=params.n_bins,
         d_min=params.d_min,
         cc_one_half_method=params.cc_one_half_method,
-        id_to_batches=id_to_batches,
     )
     hist_filename = "delta_cc_hist.png"
     logger.info("Saving histogram to %s" % hist_filename)
@@ -160,5 +160,4 @@ def run(args):
 
 
 if __name__ == "__main__":
-    xia2.Handlers.Streams.setup_logging()
     run(sys.argv[1:])
