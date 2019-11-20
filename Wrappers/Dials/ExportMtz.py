@@ -63,7 +63,6 @@ def ExportMtz(DriverType=None):
             self.add_command_line(
                 "partiality_threshold=%s" % self._partiality_threshold
             )
-            self.add_command_line("ignore_panels=true")
             self.add_command_line("intensity=%s" % self._intensity_choice)
             self.start()
             self.close_wait()
