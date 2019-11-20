@@ -19,7 +19,7 @@ from dials.util.version import dials_version
 
 import xia2.Handlers.Streams
 from xia2.Handlers.Citations import Citations
-from xia2.Modules.DeltaCcHalf import delta_cc_half
+from xia2.Modules.DeltaCcHalf import DeltaCcHalf
 
 logger = logging.getLogger("xia2.delta_cc_half")
 
@@ -119,7 +119,6 @@ def run(args):
         for ma in result.as_miller_arrays(
             merge_equivalents=False, crystal_symmetry=crystal_symmetry
         ):
-            # print ma.info().labels
             if ma.info().labels == ["I(+)", "SIGI(+)", "I(-)", "SIGI(-)"]:
                 assert ma.anomalous_flag()
                 unmerged_intensities = ma
@@ -142,7 +141,7 @@ def run(args):
             assert b.id not in id_to_batches, "Duplicate batch id: %s" % b.id
             id_to_batches[b.id] = b.range
 
-    result = delta_cc_half(
+    result = DeltaCcHalf(
         unmerged_intensities,
         batches_all,
         n_bins=params.n_bins,
@@ -151,13 +150,13 @@ def run(args):
         id_to_batches=id_to_batches,
     )
     hist_filename = "delta_cc_hist.png"
-    print("Saving histogram to %s" % hist_filename)
+    logger.info("Saving histogram to %s" % hist_filename)
     result.plot_histogram(hist_filename)
-    print(result.get_table())
+    logger.info(result.get_table())
 
     Citations.cite("delta_cc_half")
     for citation in Citations.get_citations_acta():
-        print(citation)
+        logger.info(citation)
 
 
 if __name__ == "__main__":

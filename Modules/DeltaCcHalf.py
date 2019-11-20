@@ -33,7 +33,7 @@ include scope xia2.Modules.MultiCrystalAnalysis.batch_phil_scope
 )
 
 
-class delta_cc_half(object):
+class DeltaCcHalf(object):
     def __init__(
         self,
         unmerged_intensities,
@@ -79,7 +79,6 @@ class delta_cc_half(object):
 
         self.delta_cc = flex.double()
         for test_k in self.intensities:
-            # print test_k
             indices_i = flex.miller_index()
             data_i = flex.double()
             sigmas_i = flex.double()
