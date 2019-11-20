@@ -829,8 +829,11 @@ class Scale(object):
             scaler.set_best_unit_cell(self.best_unit_cell)
 
         scaler.set_full_matrix(False)
-        if self._params.scaling.dials.model is not None:
-            scaler.set_model(self._params.scaling.dials.model)
+
+        # Set default scaling model
+        if self._params.scaling.dials.model in (None, "auto", Auto):
+            self._params.scaling.dials.model = "physical"
+        scaler.set_model(self._params.scaling.dials.model)
         scaler.set_outlier_rejection(self._params.scaling.dials.outlier_rejection)
 
         scaler.scale()
