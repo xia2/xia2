@@ -3,12 +3,13 @@ from __future__ import absolute_import, division, print_function
 import math
 
 import iotbx.phil
-from cctbx import crystal
 from cctbx.array_family import flex
-from libtbx.phil import command_line
+from iotbx.merging_statistics import dataset_statistics
+from libtbx.utils import frange
+
 from xia2.Modules.Analysis import separate_unmerged
 
-master_phil_scope = iotbx.phil.parse(
+phil_scope = iotbx.phil.parse(
     """\
 cc_one_half_method = half_dataset *sigma_tau
   .type = choice
@@ -59,8 +60,6 @@ class delta_cc_half(object):
         self.intensities = separate.intensities
         self.batches = separate.batches
         self.run_id_to_batch_id = separate.run_id_to_batch_id
-
-        from iotbx.merging_statistics import dataset_statistics
 
         self.merging_statistics = dataset_statistics(
             unmerged_intensities,
@@ -142,85 +141,18 @@ class delta_cc_half(object):
         return table_utils.format(rows, has_header=True, prefix="|", postfix="|")
 
     def plot_histogram(self, filename):
-        from matplotlib import pyplot
+        from matplotlib import pyplot as plt
 
         normalised_score = self._normalised_delta_cc_i()
-        pyplot.figure()
-        from libtbx.utils import frange
-
+        plt.figure()
         bins = frange(
             math.floor(flex.min(normalised_score)),
             math.ceil(flex.max(normalised_score)) + 1,
             step=0.1,
         )
-        n, bins, patches = pyplot.hist(
+        n, bins, patches = plt.hist(
             normalised_score.as_numpy_array(), bins=bins, fill=False
         )
-        pyplot.xlabel(r"$\sigma$")
-        pyplot.ylabel("Frequency")
-        pyplot.savefig(filename)
-
-
-def run(args):
-    cmd_line = command_line.argument_interpreter(master_params=master_phil_scope)
-    working_phil, args = cmd_line.process_and_fetch(
-        args=args, custom_processor="collect_remaining"
-    )
-    working_phil.show()
-    params = working_phil.extract()
-
-    if params.unit_cell is not None:
-        unit_cell = params.unit_cell
-        crystal_symmetry = crystal.symmetry(unit_cell=unit_cell)
-    else:
-        crystal_symmetry = None
-
-    from iotbx.reflection_file_reader import any_reflection_file
-
-    result = any_reflection_file(args[0])
-    unmerged_intensities = None
-    batches_all = None
-
-    for ma in result.as_miller_arrays(
-        merge_equivalents=False, crystal_symmetry=crystal_symmetry
-    ):
-        # print ma.info().labels
-        if ma.info().labels == ["I(+)", "SIGI(+)", "I(-)", "SIGI(-)"]:
-            assert ma.anomalous_flag()
-            unmerged_intensities = ma
-        elif ma.info().labels == ["I", "SIGI"]:
-            assert not ma.anomalous_flag()
-            unmerged_intensities = ma
-        elif ma.info().labels == ["BATCH"]:
-            batches_all = ma
-
-    assert batches_all is not None
-    assert unmerged_intensities is not None
-
-    id_to_batches = None
-
-    if len(params.batch) > 0:
-        id_to_batches = {}
-        for b in params.batch:
-            assert b.id is not None
-            assert b.range is not None
-            assert b.id not in id_to_batches, "Duplicate batch id: %s" % b.id
-            id_to_batches[b.id] = b.range
-
-    result = delta_cc_half(
-        unmerged_intensities,
-        batches_all,
-        n_bins=params.n_bins,
-        d_min=params.d_min,
-        cc_one_half_method=params.cc_one_half_method,
-        id_to_batches=id_to_batches,
-    )
-    hist_filename = "delta_cc_hist.png"
-    print("Saving histogram to %s" % hist_filename)
-    result.plot_histogram(hist_filename)
-    print(result.get_table())
-    from xia2.Handlers.Citations import Citations
-
-    Citations.cite("delta_cc_half")
-    for citation in Citations.get_citations_acta():
-        print(citation)
+        plt.xlabel(r"$\sigma$")
+        plt.ylabel("Frequency")
+        plt.savefig(filename)
