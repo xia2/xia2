@@ -29,6 +29,16 @@ phil_scope = libtbx.phil.parse(
     """
 include scope xia2.Modules.DeltaCcHalf.phil_scope
 
+batch
+  .multiple = True
+{
+  id = None
+    .type = str
+  range = None
+    .type = ints(size=2, value_min=0)
+}
+include scope xia2.Modules.MultiCrystalAnalysis.batch_phil_scope
+
 output {
   log = xia2.delta_cc_half.log
     .type = path

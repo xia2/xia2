@@ -19,15 +19,6 @@ n_bins = 20
   .type = int(value_min=1)
 d_min = None
   .type = float(value_min=0)
-batch
-  .multiple = True
-{
-  id = None
-    .type = str
-  range = None
-    .type = ints(size=2, value_min=0)
-}
-include scope xia2.Modules.MultiCrystalAnalysis.batch_phil_scope
 """,
     process_includes=True,
 )
@@ -68,7 +59,6 @@ class DeltaCcHalf(object):
             cc_overall = self.merging_statistics.cc_one_half_sigma_tau_overall
         else:
             cc_overall = self.merging_statistics.cc_one_half_overall
-        self.merging_statistics.show()
 
         self.delta_cc = flex.double()
         for test_k in range(len(self.intensities)):
