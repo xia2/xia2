@@ -2,7 +2,6 @@ from __future__ import absolute_import, division, print_function
 
 import procrunner
 import pytest
-import random
 import xia2.Test.regression
 
 
@@ -52,14 +51,7 @@ def test_incompatible_pipeline_scaler(pipeline, scaler, tmpdir, ccp4):
     ) in result.stdout.decode("latin-1")
 
 
-_run_dials_aimless_directly = random.choice((True, False))
-
-
 def test_dials_aimless(regression_test, dials_data, tmpdir, ccp4):
-    if not _run_dials_aimless_directly:
-        pytest.skip(
-            "Skipping test this time, running test_dials_aimless_with_dials_pipeline instead"
-        )
     command_line = [
         "xia2",
         "nproc=1",
@@ -77,8 +69,6 @@ def test_dials_aimless(regression_test, dials_data, tmpdir, ccp4):
 
 def test_dials_aimless_with_dials_pipeline(regression_test, dials_data, tmpdir, ccp4):
     # This should be functionally equivalent to 'test_dials_aimless' above
-    if _run_dials_aimless_directly:
-        pytest.skip("Skipping test this time, running test_dials_aimless instead")
     command_line = [
         "xia2",
         "pipeline=dials",
