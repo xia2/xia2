@@ -54,6 +54,7 @@ def test_incompatible_pipeline_scaler(pipeline, scaler, tmpdir, ccp4):
 def test_dials_aimless(regression_test, dials_data, tmpdir, ccp4):
     command_line = [
         "xia2",
+        "pipeline=dials-aimless",
         "nproc=1",
         "trust_beam_centre=True",
         "read_all_image_headers=False",
