@@ -98,25 +98,8 @@ class _Stream(object):
 
         return result
 
-    def bigbanner(self, comment, forward=True, size=60):
-        """Write a big banner for something."""
-
-        hashes = "#" * size
-
-        self.write(hashes, forward)
-        self.write("# %s" % comment, forward)
-        self.write(hashes, forward)
-
     def banner(self, comment, forward=True, size=60):
         self.write(banner(comment, forward=forward, size=size))
-
-    def smallbanner(self, comment, forward):
-        """Write a small batter for something, like this:
-        ----- comment ------."""
-
-        dashes = "-" * 10
-
-        self.write("%s %s %s" % (dashes, comment, dashes), forward)
 
     def block(self, task, data, program, options):
         """Print out a description of the task being performed with

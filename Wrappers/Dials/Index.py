@@ -72,20 +72,11 @@ def Index(DriverType=None):
 
             self._indxr_input_cell = tuple(map(float, cell))
 
-        def set_maximum_spot_error(self, maximum_spot_error):
-            self._maximum_spot_error = maximum_spot_error
-
         def set_detector_fix(self, detector_fix):
             self._detector_fix = detector_fix
 
         def set_beam_fix(self, beam_fix):
             self._beam_fix = beam_fix
-
-        def set_indexing_method(self, method):
-            self._indexing_method = method
-
-        def get_indexing_method(self):
-            return self._indexing_method
 
         def set_reflections_per_degree(self, reflections_per_degree):
             self._reflections_per_degree = int(reflections_per_degree)
@@ -99,17 +90,11 @@ def Index(DriverType=None):
         def set_nearest_neighbor_percentile(self, nearest_neighbor_percentile):
             self._nearest_neighbor_percentile = nearest_neighbor_percentile
 
-        def get_sweep_filenames(self):
-            return self._sweep_filenames
-
         def get_experiments_filename(self):
             return self._experiment_filename
 
         def get_indexed_filename(self):
             return self._indexed_filename
-
-        def get_p1_cell(self):
-            return self._p1_cell
 
         def set_phil_file(self, phil_file):
             self._phil_file = phil_file
@@ -128,9 +113,6 @@ def Index(DriverType=None):
 
         def set_min_cell(self, min_cell):
             self._min_cell = min_cell
-
-        def set_d_min_start(self, d_min_start):
-            self._d_min_start = d_min_start
 
         def set_close_to_spindle_cutoff(self, close_to_spindle_cutoff):
             self._close_to_spindle_cutoff = close_to_spindle_cutoff

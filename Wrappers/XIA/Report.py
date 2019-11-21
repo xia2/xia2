@@ -27,9 +27,6 @@ def Report(DriverType=None):
         def set_html_filename(self, html_filename):
             self._html_filename = html_filename
 
-        def get_html_filename(self, html_filename):
-            return self._html_filename
-
         def set_chef_min_completeness(self, min_completeness):
             self._chef_min_completeness = min_completeness
 

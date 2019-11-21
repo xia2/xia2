@@ -63,9 +63,6 @@ def Spotfinder(DriverType=None):
         def add_scan_range(self, scan_range):
             self._scan_ranges.append(scan_range)
 
-        def get_nspots(self):
-            return self._nspots
-
         def set_phil_file(self, phil_file):
             self._phil_file = phil_file
 

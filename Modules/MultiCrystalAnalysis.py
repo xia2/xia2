@@ -98,46 +98,6 @@ class MultiCrystalAnalysis(object):
             plt.clf()
         return clusters, dendrogram
 
-    def radiation_damage_analysis(self):
-        from dials.pychef import Statistics
-
-        (
-            intensities_all,
-            batches_all,
-            _,
-        ) = self._data_manager.reflections_as_miller_arrays(combined=False)
-
-        intensities_combined = None
-        dose_combined = None
-        for i, (intensities, batches) in enumerate(zip(intensities_all, batches_all)):
-            dose = batches.array(
-                batches.data()
-                - self._data_manager.experiments[i].scan.get_batch_offset()
-            ).set_info(batches.info())
-            if intensities_combined is None:
-                intensities_combined = intensities
-                dose_combined = dose
-            else:
-                intensities_combined = intensities_combined.concatenate(
-                    intensities, assert_is_similar_symmetry=False
-                )
-                dose_combined = dose_combined.concatenate(
-                    dose, assert_is_similar_symmetry=False
-                )
-
-        stats = Statistics(intensities, dose.data())
-
-        logger.debug(stats.completeness_vs_dose_str())
-        logger.debug(stats.rcp_vs_dose_str())
-        logger.debug(stats.scp_vs_dose_str())
-        logger.debug(stats.rd_vs_dose_str())
-
-        with open("chef.json", "wb") as f:
-            json.dump(stats.to_dict(), f)
-
-        self._chef_stats = stats
-        return stats
-
     def cluster_analysis(self):
         from xia2.Modules.MultiCrystal import multi_crystal_analysis
 

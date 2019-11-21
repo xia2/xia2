@@ -32,12 +32,6 @@ def SplitExperiments(DriverType=None):
         def get_reflections_filename(self):
             return self._experiments_filename
 
-        def set_experiments_prefix(self, prefix):
-            self._experiments_prefix = prefix
-
-        def set_reflections_prefix(self, prefix):
-            self._reflections_prefix = prefix
-
         def set_by_wavelength(self, boolean):
             self._by_wavelength = boolean
 

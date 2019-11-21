@@ -363,12 +363,6 @@ class Scaler(object):
     def set_scaler_input_pointgroup(self, pointgroup):
         self._scalr_input_pointgroup = pointgroup
 
-    def get_scaler_input_spacegroup(self):
-        return self._scaler_input_spacegroup
-
-    def get_scaler_input_pointgroup(self):
-        return self._scaler_input_pointgroup
-
     def set_scaler_xcrystal(self, xcrystal):
         self._scalr_xcrystal = xcrystal
 
@@ -380,11 +374,6 @@ class Scaler(object):
 
         self._scalr_pname = pname
         self._scalr_xname = xname
-
-    def get_scaler_project_info(self):
-        """Get the scaler project and crystal."""
-
-        return self._scalr_pname, self._scalr_xname
 
     def set_scaler_reference_reflection_file(self, reference_reflection_file):
         self._scalr_reference_reflection_file = reference_reflection_file
@@ -447,18 +436,6 @@ class Scaler(object):
     # getters for the scaling model which was used - first see that the
     # corrections were applied, then the individual getters for the
     # separate corrections
-
-    def get_scaler_corrections(self):
-        return self._scalr_corrections
-
-    def get_scaler_correct_decay(self):
-        return self._scalr_correct_decay
-
-    def get_scaler_correct_modulation(self):
-        return self._scalr_correct_modulation
-
-    def get_scaler_correct_absorption(self):
-        return self._scalr_correct_absorption
 
     # getters of the status - note how the gets cascade to ensure that
     # everything is up-to-date...
@@ -583,14 +560,6 @@ class Scaler(object):
 
         self.scale()
         return self._scalr_likely_spacegroups
-
-    def get_scaler_unlikely_spacegroups(self):
-        """Return a list of unlikely spacegroups - you should try using
-        the likely ones first. These are spacegroups in the correct
-        pointgroup but with systematic absences which dont match up."""
-
-        self.scale()
-        return self._scalr_unlikely_spacegroups
 
     def get_scaler_highest_resolution(self):
         """Get the highest resolution achieved by the crystal."""

@@ -5,10 +5,7 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-from xia2.Experts.FindImages import (
-    find_matching_images,
-    template_directory_number2image,
-)
+from xia2.Experts.FindImages import find_matching_images
 from xia2.Handlers.Phil import PhilIndex
 
 
@@ -113,11 +110,6 @@ class Sweep(object):
         detector = self._imageset.get_detector()
         beam = self._imageset.get_beam()
         return get_beam_centre(detector, beam)
-
-    def imagename(self, number):
-        """Compute an image name from an image number."""
-
-        return template_directory_number2image(self._template, self._directory, number)
 
     def update(self):
         """Check to see if any more frames have appeared - if they

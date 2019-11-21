@@ -161,51 +161,10 @@ def LatticeSymmetry(DriverType=None):
         def get_lattices(self):
             return self._lattices
 
-        def get_distortion(self, lattice):
-            return self._distortions[lattice]
-
         def get_cell(self, lattice):
             return self._cells[lattice]
 
         def get_reindex_op(self, lattice):
             return self._reindex_ops[lattice]
-
-        def get_reindex_op_basis(self, lattice):
-            return self._reindex_ops_basis[lattice]
-
-        def generate_primative_reindex(self):
-            if not self._cell:
-                raise RuntimeError("no unit cell specified")
-
-            if not self._spacegroup:
-                raise RuntimeError("no spacegroup specified")
-
-            self.add_command_line("--unit_cell=%f,%f,%f,%f,%f,%f" % tuple(self._cell))
-            self.add_command_line("--space-group=%s" % self._spacegroup)
-
-            self.start()
-            self.close_wait()
-
-            # triclinic solution will always come last so use this...
-
-            cell = None
-            reindex = None
-
-            for line in self.get_all_output():
-                # print line[:-1]
-                if "Unit cell:" in line:
-                    cell_text = (
-                        line.replace("Unit cell: (", "")
-                        .replace(")", "")
-                        .strip()
-                        .replace(",", " ")
-                    )
-                    cell = tuple(map(float, cell_text.split()))
-                # if 'Change of basis:' in line:
-                # reindex = line.replace('Change of basis:', '').strip()
-                if "Inverse:" in line:
-                    reindex = line.replace("Inverse:", "").strip()
-
-            return cell, reindex.replace("*", "")
 
     return LatticeSymmetryWrapper()

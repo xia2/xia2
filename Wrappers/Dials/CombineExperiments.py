@@ -37,36 +37,11 @@ def CombineExperiments(DriverType=None):
         def add_reflections(self, indexed_filename):
             self._reflections_filenames.append(indexed_filename)
 
-        def get_experiments_filenames(self):
-            return self._experiments_filenames
-
-        def set_combined_experiments_filename(self, filename):
-            self._combined_experiments_filename = filename
-
-        def set_combined_reflections_filename(self, filename):
-            self._combined_reflections_filename = filename
-
         def get_combined_experiments_filename(self):
             return self._combined_experiments_filename
 
         def get_combined_reflections_filename(self):
             return self._combined_reflections_filename
-
-        def set_experimental_model(
-            self,
-            same_beam=None,
-            same_crystal=None,
-            same_detector=None,
-            same_goniometer=None,
-        ):
-            if same_beam is not None:
-                self._same_beam = same_beam
-            if same_crystal is not None:
-                self._same_crystal = same_crystal
-            if same_detector is not None:
-                self._same_detector = same_detector
-            if same_goniometer is not None:
-                self._same_goniometer = same_goniometer
 
         def run(self):
             from xia2.Handlers.Streams import Debug

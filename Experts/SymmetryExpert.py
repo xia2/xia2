@@ -5,21 +5,6 @@ from __future__ import absolute_import, division, print_function
 from cctbx import sgtbx
 from scitbx import matrix
 
-from xia2.Experts.MatrixExpert import rot_x, rot_y, rot_z
-
-
-def gen_rot_mat_euler(alpha, beta, gamma):
-    """Compute a rotation matrix (stored as e11 e12 e13 e22 e23...)
-    as product R(x, gamma).R(y, beta).R(z, alpha)."""
-
-    rz = rot_z(alpha)
-    ry = rot_y(beta)
-    rx = rot_x(gamma)
-
-    r = _multiply_symmetry_matrix(ry, rz)
-
-    return _multiply_symmetry_matrix(rx, r)
-
 
 def _multiply_symmetry_matrix(a, b):
     """compute a * b, for e.g. h_ = a * b * h, e.g. apply b before a."""
@@ -49,23 +34,6 @@ def rt_to_r(rt):
             result.append(rt[4 * i + j])
 
     return result
-
-
-def compose_matrices_rt(mat_a, mat_b):
-    """Compose symmetry matrix files for XDS. These are 12 element
-    matrices..."""
-
-    mat_c = _multiply_symmetry_matrix(rt_to_r(mat_a), rt_to_r(mat_b))
-
-    return r_to_rt(mat_c)
-
-
-def compose_matrices_r(mat_a, mat_b):
-    """Compose symmetry matrix applying b then a."""
-
-    mat_c = _multiply_symmetry_matrix(mat_a, mat_b)
-
-    return mat_c
 
 
 def compose_symops(a, b):

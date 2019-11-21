@@ -185,15 +185,6 @@ def _prepare_pointless_hklin(working_directory, hklin, phi_width):
     return hklout
 
 
-def _fraction_difference(value, reference):
-    """How much (what %age) does value differ to reference?"""
-
-    if reference == 0.0:
-        return value
-
-    return math.fabs((value - reference) / reference)
-
-
 ############### HELPER CLASS #########################
 
 
@@ -446,33 +437,6 @@ class SweepInformation(object):
 
     def get_template(self):
         return self._integrater.get_template()
-
-    def set_dose_information(self, epoch_to_dose):
-        for i in self._image_to_epoch:
-            e = self._image_to_epoch[i]
-            d = epoch_to_dose[e]
-            self._image_to_dose[i] = d
-
-    def get_circle_resolution(self):
-        """Get the resolution of the inscribed circle used for this sweep."""
-
-        header = self._integrater.get_header()
-        wavelength = self._integrater.get_wavelength()
-
-        detector_width = header["size"][0] * header["pixel"][0]
-        detector_height = header["size"][1] * header["pixel"][1]
-
-        distance = self._integrater.get_integrater_indexer().get_indexer_distance()
-
-        beam = self._integrater.get_integrater_indexer().get_indexer_beam_centre()
-
-        radius = min(
-            [beam[0], detector_width - beam[0], beam[1], detector_height - beam[1]]
-        )
-
-        theta = 0.5 * math.atan(radius / distance)
-
-        return wavelength / (2 * math.sin(theta))
 
     def get_integrater_resolution(self):
         return self._integrater.get_integrater_high_resolution()

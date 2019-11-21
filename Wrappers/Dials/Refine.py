@@ -52,9 +52,6 @@ def Refine(DriverType=None):
         def set_scan_varying(self, scan_varying):
             self._scan_varying = scan_varying
 
-        def get_scan_varying(self):
-            return self._scan_varying
-
         def set_detector_fix(self, detector_fix):
             self._detector_fix = detector_fix
 

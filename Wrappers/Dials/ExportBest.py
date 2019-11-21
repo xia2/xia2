@@ -34,9 +34,6 @@ def ExportBest(DriverType=None):
         def set_prefix(self, prefix):
             self._prefix = prefix
 
-        def get_prefix(self):
-            return self._prefix
-
         def run(self):
             from xia2.Handlers.Streams import Debug
 

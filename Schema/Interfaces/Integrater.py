@@ -460,36 +460,11 @@ class Integrater(FrameProcessor):
 
         self._intgr_program_parameters[program][parameter] = value
 
-    def get_integrater_parameter(self, program, parameter):
-        """Get a parameter value."""
-
-        try:
-            return self._intgr_program_parameters[program][parameter]
-        except Exception:
-            return None
-
-    def get_integrater_parameters(self, program):
-        """Get all parameters and values."""
-
-        try:
-            return self._intgr_program_parameters[program]
-        except Exception:
-            return {}
-
     def set_integrater_parameters(self, parameters):
         """Set all parameters and values."""
 
         self._intgr_program_parameters = parameters
         self.set_integrater_done(False)
-
-    def set_integrater_export_parameter(self, program, parameter, value):
-        """Set an arbitrary parameter for the program specified to
-        use in integration, e.g. the YSCALE or GAIN values in Mosflm."""
-
-        if program not in self._intgr_export_program_parameters:
-            self._intgr_export_program_parameters[program] = {}
-
-        self._intgr_export_program_parameters[program][parameter] = value
 
     def get_integrater_export_parameter(self, program, parameter):
         """Get a parameter value."""
@@ -599,9 +574,6 @@ class Integrater(FrameProcessor):
         Debug.write("setting integrator output format to %s" % output_format)
         assert output_format in ["hkl", "pickle"]
         self._output_format = output_format
-
-    def get_integrater_indexer(self):
-        return self._intgr_indexer
 
     def get_integrater_refiner(self):
         return self._intgr_refiner

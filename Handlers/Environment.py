@@ -1,12 +1,3 @@
-#!/usr/bin/env python
-# Environment.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 18th September 2006
-#
 # A handler for matters of the operating environment, which will impact
 # on data harvesting, working directories, a couple of other odds & sods.
 
@@ -146,12 +137,6 @@ class _Environment(object):
 
         return path
 
-    def setenv(self, name, value):
-        """A wrapper for os.environ."""
-
-        self._setup()
-        os.environ[name] = value
-
     def getenv(self, name):
         """A wrapper for os.environ."""
         self._setup()
@@ -182,9 +167,3 @@ def get_number_cpus():
     from libtbx.introspection import number_of_processors
 
     return number_of_processors(return_value_if_unknown=-1)
-
-
-if __name__ == "__main__":
-
-    print(get_number_cpus())
-    print(df(os.getcwd()))

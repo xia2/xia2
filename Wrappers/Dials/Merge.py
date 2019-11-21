@@ -42,9 +42,6 @@ def DialsMerge(DriverType=None):
         def set_dataset_names(self, names):
             self._dataset_names = names
 
-        def set_truncate(self, boolean):
-            self._truncate = boolean
-
         def set_experiments_filename(self, experiments_filename):
             self._experiments_filename = experiments_filename
 

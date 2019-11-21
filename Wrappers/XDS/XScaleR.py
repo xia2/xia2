@@ -297,7 +297,4 @@ def XScaleR(
         def get_scale_factor(self):
             return self._scale_factor
 
-        def get_rmerges(self):
-            return self._rmerges
-
     return XScaleWrapper()

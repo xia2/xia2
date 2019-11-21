@@ -122,15 +122,6 @@ class _ha_info(object):
     def set_number_total(self, number_total):
         self._number_total = number_total
 
-    def get_atom(self):
-        return self._atom
-
-    def get_number_per_monomer(self):
-        return self._number_per_monomer
-
-    def get_number_total(self):
-        return self._number_total
-
     def to_dict(self):
         obj = {}
         obj["__id__"] = "ha_info"
@@ -150,11 +141,6 @@ class _ha_info(object):
         for k, v in obj.items():
             setattr(return_obj, k, v)
         return return_obj
-
-
-def _print_lattice(lattice):
-    print("Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f" % lattice["cell"])
-    print("Number: %s     Lattice: %s" % (lattice["number"], lattice["lattice"]))
 
 
 formats = collections.OrderedDict(
@@ -665,15 +651,6 @@ class XCrystal(object):
         """Set a user assigned spacegroup - which needs to be propogated."""
         self._user_spacegroup = user_spacegroup
 
-    def get_user_spacegroup(self):
-        return self._user_spacegroup
-
-    def get_reference_reflection_file(self):
-        return self._reference_reflection_file
-
-    def get_freer_file(self):
-        return self._freer_file
-
     def set_scaled_merged_reflections(self, scaled_merged_reflections):
         self._scaled_merged_reflections = scaled_merged_reflections
 
@@ -683,17 +660,11 @@ class XCrystal(object):
     def get_name(self):
         return self._name
 
-    def get_aa_sequence(self):
-        return self._aa_sequence
-
     def set_aa_sequence(self, aa_sequence):
         if not self._aa_sequence:
             self._aa_sequence = _aa_sequence(aa_sequence)
         else:
             self._aa_sequence.set_sequence(aa_sequence)
-
-    def get_ha_info(self):
-        return self._ha_info
 
     def set_ha_info(self, ha_info_dict):
         self._anomalous = True

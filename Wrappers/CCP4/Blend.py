@@ -85,15 +85,6 @@ def Blend(DriverType=None):
                 self.get_working_directory(), "tree.png"
             )
 
-        def get_clusters_file(self):
-            return self._clusters_file
-
-        def get_summary_file(self):
-            return self._summary_file
-
-        def get_analysis_file(self):
-            return self._analysis_file
-
         def get_dendrogram_file(self):
             return self._dendrogram_file
 
@@ -108,50 +99,6 @@ def Blend(DriverType=None):
 
         def get_analysis(self):
             return self._analysis
-
-        def get_label(self, dataset_id):
-            if self._labels:
-                assert dataset_id <= len(self._labels)
-                return self._labels[dataset_id - 1]
-            return None
-
-        def plot_dendrogram(self, filename="blend_dendrogram.png", no_plot=False):
-            from scipy.cluster import hierarchy
-
-            linkage_matrix = self.get_linkage_matrix()
-
-            labels = self._labels
-            if labels:
-                assert len(labels) == len(self._hklin_files)
-            else:
-                labels = ["%i" % (i + 1) for i in range(len(self._hklin_files))]
-
-            if not no_plot:
-                import matplotlib
-
-                # http://matplotlib.org/faq/howto_faq.html#generate-images-without-having-a-window-appear
-                matplotlib.use("Agg")  # use a non-interactive backend
-                from matplotlib import pyplot
-
-                fig = pyplot.figure(dpi=1200, figsize=(16, 12))
-
-            d = hierarchy.dendrogram(
-                linkage_matrix,
-                # truncate_mode='lastp',
-                color_threshold=0.05,
-                labels=labels,
-                # leaf_rotation=90,
-                show_leaf_counts=False,
-                no_plot=no_plot,
-            )
-
-            if not no_plot:
-                locs, labels = pyplot.xticks()
-                pyplot.setp(labels, rotation=70)
-                pyplot.ylabel("Ward distance")
-                fig.savefig(filename)
-
-            return d
 
     return BlendWrapper()
 

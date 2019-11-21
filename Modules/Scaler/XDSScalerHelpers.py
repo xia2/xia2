@@ -54,28 +54,6 @@ class XDSScalerHelper(object):
 
         return file_map
 
-    @staticmethod
-    def parse_xscale_ascii_wavelength(xds_ascii_file):
-        wavelength_dict = {}
-
-        with open(xds_ascii_file, "r") as fh:
-            for line in fh.readlines():
-                if not line[0] == "!":
-                    break
-
-                if "ISET" in line and "X-RAY_WAVELENGTH" in line:
-                    set = int(line.split()[2].strip())
-                    wavelength = float(line.split("=")[2].split()[0])
-
-                    wavelength_dict[set] = wavelength
-
-                    Debug.write("Set %d wavelength %f" % (set, wavelength))
-
-        if len(wavelength_dict) > 1:
-            raise RuntimeError("more than one wavelength found")
-
-        return wavelength_dict[list(wavelength_dict)[0]]
-
     def split_xscale_ascii_file(self, xds_ascii_file, prefix):
         """Split the output of XSCALE to separate reflection files for
         each run. The output files will be called ${prefix}${input_file}."""

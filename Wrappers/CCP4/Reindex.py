@@ -50,11 +50,6 @@ def Reindex(DriverType=None):
         def get_cell(self):
             return self._cell
 
-        def check_reindex_errors(self):
-            """Check the standard output for standard reindex errors."""
-
-            pass
-
         def reindex_old(self):
             self.set_executable(os.path.join(os.environ.get("CBIN", ""), "reindex"))
             self.check_hklin()

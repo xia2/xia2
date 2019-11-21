@@ -25,9 +25,6 @@ def EstimateResolutionLimit(DriverType=None):
         def set_reflections_filename(self, reflections_filename):
             self._reflections_filename = reflections_filename
 
-        def get_estimated_d_min(self):
-            return self._estimated_d_min
-
         def run(self):
             from xia2.Handlers.Streams import Debug
 

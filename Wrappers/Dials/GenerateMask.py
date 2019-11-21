@@ -29,9 +29,6 @@ def GenerateMask(DriverType=None):
         def set_output_experiments(self, experiments_filename):
             self._output_experiments_filename = experiments_filename
 
-        def set_output_mask_filename(self, mask_filename):
-            self._output_mask_filename = mask_filename
-
         def set_params(self, params):
             self._params = params
 

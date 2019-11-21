@@ -55,12 +55,6 @@ def Reindex(DriverType=None):
         def get_reindexed_reflections_filename(self):
             return self._reindexed_reflections_filename
 
-        def set_reindexed_experiments_filename(self, filepath):
-            self._reindexed_experiments_filename = filepath
-
-        def set_reindexed_reflections_filename(self, filepath):
-            self._reindexed_reflections_filename = filepath
-
         def run(self):
             from xia2.Handlers.Streams import Debug
 
