@@ -121,11 +121,11 @@ def reconstruct_rogues(params):
                 "Extracted %d rogue reflections for %s to %s"
                 % (len(reflections), name, output)
             )
-            reflections.as_pickle(output)
+            reflections.as_file(output)
         else:
             output = params.output.reflections
             print("Extracted %d rogue reflections to %s" % (len(reflections), output))
-            reflections.as_pickle(output)
+            reflections.as_file(output)
 
 
 if __name__ == "__main__":

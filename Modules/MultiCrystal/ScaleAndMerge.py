@@ -297,7 +297,7 @@ class DataManager(object):
             expt.crystal.update(cryst_reindexed)
 
     def export_reflections(self, filename):
-        self._reflections.as_pickle(filename)
+        self._reflections.as_file(filename)
         return filename
 
     def export_experiments(self, filename):

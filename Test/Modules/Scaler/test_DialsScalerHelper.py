@@ -138,7 +138,7 @@ def test_dials_symmetry_decide_pointgroup(
     refl_path = (tmpdir / "test.refl").strpath
     exp_path = (tmpdir / "test.expt").strpath
     generated_exp(space_group=experiments_spacegroup).as_file(exp_path)
-    generate_reflections_in_sg(reflection_spacegroup).as_pickle(refl_path)
+    generate_reflections_in_sg(reflection_spacegroup).as_file(refl_path)
 
     symmetry_analyser = helper.dials_symmetry_decide_pointgroup([exp_path], [refl_path])
 
@@ -161,7 +161,7 @@ def test_assign_identifiers(helper_directory):
     for i in range(0, 3):
         refl_path = tmpdir.join("test_%s.refl" % i).strpath
         exp_path = tmpdir.join("test_%s.expt" % i).strpath
-        generate_test_refl().as_pickle(refl_path)
+        generate_test_refl().as_file(refl_path)
         generated_exp().as_file(exp_path)
         experiments.append(exp_path)
         reflections.append(refl_path)
@@ -235,7 +235,7 @@ def test_split_experiments(number_of_experiments, helper_directory):
     reflections = flex.reflection_table()
     for i in range(number_of_experiments):
         reflections.extend(generate_test_refl(id_=i, assign_id=True))
-    reflections.as_pickle(refl_path)
+    reflections.as_file(refl_path)
     # Now call split_experiments and inspect handler to check result
     sweephandler = helper.split_experiments(exp_path, refl_path, sweephandler)
     check_data_in_sweep_handler(sweephandler)
@@ -263,7 +263,7 @@ def test_assign_and_return_datasets(helper_directory):
         si = sweephandler.get_sweep_information(i)
         refl_path = tmpdir.join("test_%s.refl" % i).strpath
         exp_path = tmpdir.join("test_%s.expt" % i).strpath
-        generate_test_refl().as_pickle(refl_path)
+        generate_test_refl().as_file(refl_path)
         generated_exp().as_file(exp_path)
         si.set_experiments(exp_path)
         si.set_reflections(refl_path)
@@ -386,7 +386,7 @@ def test_dials_symmetry_indexer_jiffy(
     for i in range(0, n):
         refl_path = tmpdir.join("test_%s.refl" % i).strpath
         exp_path = tmpdir.join("test_%s.expt" % i).strpath
-        generate_reflections_in_sg("P 2", id_=i, assign_id=True).as_pickle(refl_path)
+        generate_reflections_in_sg("P 2", id_=i, assign_id=True).as_file(refl_path)
         generated_exp(space_group="P 2", id_=i).as_file(exp_path)
         experiments.append(exp_path)
         reflections.append(refl_path)
