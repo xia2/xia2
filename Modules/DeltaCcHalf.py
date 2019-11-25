@@ -50,6 +50,9 @@ class DeltaCcHalf(object):
                     ma
                 ).set_observation_type(unmerged_intensities.observation_type())
 
+        self.binner = unmerged_intensities.eliminate_sys_absent().setup_binner_counting_sorted(
+            n_bins=self._n_bins
+        )
         self.merging_statistics = dataset_statistics(
             unmerged_intensities,
             n_bins=n_bins,
@@ -59,6 +62,7 @@ class DeltaCcHalf(object):
             use_internal_variance=False,
             eliminate_sys_absent=False,
             cc_one_half_method=self._cc_one_half_method,
+            assert_is_not_unique_set_under_symmetry=False,
         )
         if self._cc_one_half_method == "sigma_tau":
             self.cc_overall = self.merging_statistics.cc_one_half_sigma_tau_overall
@@ -88,7 +92,7 @@ class DeltaCcHalf(object):
         return delta_cc
 
     def _compute_delta_cc_for_dataset(self, intensities):
-        intensities.setup_binner_counting_sorted(n_bins=self._n_bins)
+        intensities.use_binning(self.binner)
         if self._cc_one_half_method == "sigma_tau":
             cc_bins = intensities.cc_one_half_sigma_tau(
                 use_binning=True, return_n_refl=True
