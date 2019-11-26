@@ -85,12 +85,6 @@ def run(args):
     else:
         crystal_symmetry = None
 
-    if params.unit_cell is not None:
-        unit_cell = params.unit_cell
-        crystal_symmetry = crystal.symmetry(unit_cell=unit_cell)
-    else:
-        crystal_symmetry = None
-
     if len(params.input.experiments):
 
         experiments = flatten_experiments(params.input.experiments)
