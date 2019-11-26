@@ -1,3 +1,5 @@
+# coding: utf-8
+
 from __future__ import absolute_import, division, print_function
 
 import logging
@@ -126,7 +128,32 @@ class DeltaCcHalf(object):
             )
         return tabulate(rows, headers="firstrow")
 
+    def histogram(self):
+        normalised_score = self._normalised_delta_cc_i()
+        return {
+            "delta_cc_half_histogram": {
+                "data": [
+                    {
+                        "x": list(normalised_score),
+                        "xbins": {
+                            "start": math.floor(flex.min(normalised_score)),
+                            "end": math.ceil(flex.max(normalised_score)) + 1,
+                            "size": 0.1,
+                        },
+                        "type": "histogram",
+                        "name": u"Delta CC<sub>½</sub>",
+                    }
+                ],
+                "layout": {
+                    "title": u"Histogram of Delta CC<sub>½</sub>",
+                    "xaxis": {"title": u"σ"},
+                    "yaxis": {"title": "Frequency"},
+                },
+            }
+        }
+
     def plot_histogram(self, filename):
+
         from matplotlib import pyplot as plt
 
         normalised_score = self._normalised_delta_cc_i()
@@ -142,6 +169,25 @@ class DeltaCcHalf(object):
         plt.xlabel(r"$\sigma$")
         plt.ylabel("Frequency")
         plt.savefig(filename)
+
+    def normalised_scores(self):
+        return {
+            "delta_cc_half_normalised_score": {
+                "data": [
+                    {
+                        "y": list(self._normalised_delta_cc_i()),
+                        "type": "scatter",
+                        "mode": "lines",
+                        "name": "delta_cc_half_normalised_score",
+                    }
+                ],
+                "layout": {
+                    "title": u"Normalised Delta CC<sub>½</sub>",
+                    "xaxis": {"title": "Group"},
+                    "yaxis": {"title": u"σ"},
+                },
+            }
+        }
 
     def plot_normalised_scores(self, filename):
         from matplotlib import pyplot as plt
