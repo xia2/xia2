@@ -13,7 +13,7 @@ import six
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.Handlers.Streams import Chatter, Debug
 from xia2.Handlers.Syminfo import Syminfo
 from xia2.lib.bits import auto_logfiler, is_mtz_file, transpose_loggraph
 from xia2.lib.SymmetryLib import lattices_in_order
@@ -225,13 +225,6 @@ class XDSScalerA(Scaler):
         # FIXME in here I want to record the batch number to
         # epoch mapping as per the CCP4 Scaler implementation.
 
-        Journal.block(
-            "gathering",
-            self.get_scaler_xcrystal().get_name(),
-            "XDS",
-            {"working directory": self.get_working_directory()},
-        )
-
         for epoch in self._scalr_integraters:
             intgr = self._scalr_integraters[epoch]
             pname, xname, dname = intgr.get_integrater_project_info()
@@ -251,8 +244,6 @@ class XDSScalerA(Scaler):
                 "batch_offset": 0,
                 "sname": sname,
             }
-
-            Journal.entry({"adding data from": "%s/%s/%s" % (xname, dname, sname)})
 
             # what are these used for?
             # pname / xname / dname - dataset identifiers
@@ -872,13 +863,6 @@ class XDSScalerA(Scaler):
         from xia2.Handlers.Environment import debug_memory_usage
 
         debug_memory_usage()
-
-        Journal.block(
-            "scaling",
-            self.get_scaler_xcrystal().get_name(),
-            "XSCALE",
-            {"scaling model": "default (all)"},
-        )
 
         epochs = sorted(self._sweep_information.keys())
 

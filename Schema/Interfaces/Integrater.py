@@ -41,7 +41,7 @@ import xia2.Schema.Interfaces.Refiner
 # symmetry operator management functionality
 from xia2.Experts.SymmetryExpert import compose_symops, symop_to_mat
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.Handlers.Streams import Chatter, Debug
 from xia2.Schema.Exceptions.BadLatticeError import BadLatticeError
 
 # interfaces that this inherits from ...
@@ -521,9 +521,6 @@ class Integrater(FrameProcessor):
                         self._integrate_prepare()
 
                     except BadLatticeError as e:
-
-                        Journal.banner("eliminated this lattice", size=80)
-
                         Chatter.write("Rejecting bad lattice %s" % str(e))
                         self._intgr_refiner.eliminate()
                         self._integrater_reset()
@@ -552,8 +549,6 @@ class Integrater(FrameProcessor):
 
                 except BadLatticeError as e:
                     Chatter.write("Rejecting bad lattice %s" % str(e))
-
-                    Journal.banner("eliminated this lattice", size=80)
 
                     self._intgr_refiner.eliminate()
                     self._integrater_reset()

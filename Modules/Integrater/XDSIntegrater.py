@@ -24,7 +24,7 @@ from xia2.Experts.SymmetryExpert import (
 )
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.Handlers.Streams import Chatter, Debug
 from xia2.lib.bits import auto_logfiler
 from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
 from xia2.Schema.Exceptions.BadLatticeError import BadLatticeError
@@ -292,28 +292,6 @@ class XDSIntegrater(Integrater):
         )[0]
         crystal_model = experiment.crystal
         self._intgr_refiner_cell = crystal_model.get_unit_cell().parameters()
-
-        images_str = "%d to %d" % tuple(self._intgr_wedge)
-        cell_str = "%.2f %.2f %.2f %.2f %.2f %.2f" % tuple(self._intgr_refiner_cell)
-
-        if len(self._fp_directory) <= 50:
-            dirname = self._fp_directory
-        else:
-            dirname = "...%s" % self._fp_directory[-46:]
-
-        Journal.block(
-            "integrating",
-            self._intgr_sweep_name,
-            "XDS",
-            {
-                "images": images_str,
-                "cell": cell_str,
-                "lattice": self._intgr_refiner.get_refiner_lattice(),
-                "template": self._fp_template,
-                "directory": dirname,
-                "resolution": "%.2f" % self._intgr_reso_high,
-            },
-        )
 
         defpix = self.Defpix()
 

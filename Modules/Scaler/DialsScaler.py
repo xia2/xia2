@@ -12,7 +12,7 @@ from xia2.Handlers.Files import FileHandler
 from xia2.lib.bits import auto_logfiler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.lib.SymmetryLib import sort_lattices
-from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.Handlers.Streams import Chatter, Debug
 from xia2.Handlers.CIF import CIF, mmCIF
 from xia2.Modules.Scaler.CommonScaler import CommonScaler as Scaler
 from xia2.Wrappers.Dials.Scale import DialsScale
@@ -299,8 +299,6 @@ class DialsScaler(Scaler):
         self._helper.set_working_directory(self.get_working_directory())
         self._factory.set_working_directory(self.get_working_directory())
 
-        need_to_return = False
-
         self._sweep_handler = SweepInformationHandler(self._scalr_integraters)
 
         p, x = self._sweep_handler.get_project_info()
@@ -308,13 +306,6 @@ class DialsScaler(Scaler):
         self._scalr_xname = x
 
         self._helper.set_pname_xname(p, x)
-
-        Journal.block(
-            "gathering",
-            self.get_scaler_xcrystal().get_name(),
-            "Dials",
-            {"working directory": self.get_working_directory()},
-        )
 
         # First do stuff to work out if excluding any data
         # Note - does this actually work? I couldn't seem to get it to work
@@ -334,8 +325,6 @@ class DialsScaler(Scaler):
             if exclude_sweep:
                 self._sweep_handler.remove_epoch(epoch)
                 Debug.write("Excluding sweep %s" % sname)
-            else:
-                Journal.entry({"adding data from": "%s/%s/%s" % (xname, dname, sname)})
 
         # If multiple files, want to run symmetry to check for consistent indexing
         # also
@@ -497,26 +486,6 @@ pipeline=dials (supported for pipeline=dials-aimless).
             self._sweep_handler.get_sweep_information(e)
             for e in self._sweep_handler.get_epochs()
         ]
-
-        if self._scalr_corrections:
-            Journal.block(
-                "scaling",
-                self.get_scaler_xcrystal().get_name(),
-                "Dials",
-                {
-                    "scaling model": "automatic",
-                    "absorption": self._scalr_correct_absorption,
-                    "decay": self._scalr_correct_decay,
-                },
-            )
-
-        else:
-            Journal.block(
-                "scaling",
-                self.get_scaler_xcrystal().get_name(),
-                "Dials",
-                {"scaling model": "default"},
-            )
 
         ### Set the parameters and datafiles for dials.scale
 

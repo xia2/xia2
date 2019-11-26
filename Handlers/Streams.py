@@ -149,11 +149,6 @@ if cl.endswith(".bat"):
     cl = cl[:-4]
 
 Chatter = _Stream("%s" % cl, None, file=_logger_file("xia2.stream.chatter"))
-Journal = _Stream(
-    "%s-journal" % cl,
-    None,
-    file=_logger_file("xia2.stream.journal", level=logging.DEBUG),
-)
 Stdout = _Stream(None, None, file=_logger_file("xia2.stream.stdout"))
 day = date.today().timetuple()
 if (day.tm_mday == 1 and day.tm_mon == 4) or "XIA2_APRIL" in os.environ:
