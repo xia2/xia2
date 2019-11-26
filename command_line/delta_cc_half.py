@@ -8,6 +8,7 @@ from cctbx import crystal
 from iotbx.reflection_file_reader import any_reflection_file
 import libtbx.phil
 
+from dials.util import tabulate
 from dials.util.filter_reflections import filtered_arrays_from_experiments_reflections
 from dials.util.multi_dataset_handling import (
     assign_unique_identifiers,
@@ -170,7 +171,7 @@ def run(args):
             d_min=params.d_min,
             cc_one_half_method=params.cc_one_half_method,
         )
-    logger.info(result.get_table())
+    logger.info(tabulate(result.get_table(), headers="firstrow"))
     hist_filename = "delta_cc_hist.png"
     logger.info("Saving histogram to %s" % hist_filename)
     result.plot_histogram(hist_filename)

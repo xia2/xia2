@@ -182,7 +182,7 @@ class MultiCrystalAnalysis(object):
         d = {}
         d.update(result.histogram())
         d.update(result.normalised_scores())
-        return d
+        return d, result.get_table(html=True)
 
 
 class MultiCrystalReport(MultiCrystalAnalysis):
@@ -195,7 +195,7 @@ class MultiCrystalReport(MultiCrystalAnalysis):
             "tmp.expt"
         )
 
-        delta_cc_half_graphs = self.delta_cc_half_analysis()
+        delta_cc_half_graphs, delta_cc_half_table = self.delta_cc_half_analysis()
 
         symmetry_analysis = {}
         if "sym_op_scores" in cosym_analysis:
@@ -243,6 +243,7 @@ class MultiCrystalReport(MultiCrystalAnalysis):
             cos_angle_cluster_json=self._cos_angle_cluster_json,
             cos_angle_cosym_graphs=self._cosym_graphs,
             delta_cc_half_graphs=delta_cc_half_graphs,
+            delta_cc_half_table=delta_cc_half_table,
             individual_dataset_reports=individual_dataset_reports,
             comparison_graphs=comparison_graphs,
             symmetry_analysis=symmetry_analysis,

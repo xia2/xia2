@@ -10,8 +10,6 @@ from cctbx.array_family import flex
 from iotbx.merging_statistics import dataset_statistics
 from libtbx.utils import frange
 
-from dials.util import tabulate
-
 logger = logging.getLogger(__name__)
 
 phil_scope = iotbx.phil.parse(
@@ -89,8 +87,8 @@ class DeltaCcHalf(object):
             unmerged_i = self.intensities[0].customized_copy(
                 indices=indices_i, data=data_i, sigmas=sigmas_i
             )
-
             delta_cc.append(self._compute_delta_cc_for_dataset(unmerged_i))
+            logger.debug(u"Delta CC½ excluding dataset %i: %.3f", test_k, delta_cc[-1])
         return delta_cc
 
     def _compute_delta_cc_for_dataset(self, intensities):
@@ -111,8 +109,12 @@ class DeltaCcHalf(object):
         mav = flex.mean_and_variance(self.delta_cc)
         return (self.delta_cc - mav.mean()) / mav.unweighted_sample_standard_deviation()
 
-    def get_table(self):
-        rows = [["dataset", "batches", "delta_cc_i", "sigma"]]
+    def get_table(self, html=False):
+        if html:
+            delta_cc_half_header = u"Delta CC<sub>½</sub>"
+        else:
+            delta_cc_half_header = u"Delta CC½"
+        rows = [["Dataset", "Batches", delta_cc_half_header, u"σ"]]
         normalised_score = self._normalised_delta_cc_i()
         perm = flex.sort_permutation(self.delta_cc)
         for i in perm:
@@ -126,7 +128,7 @@ class DeltaCcHalf(object):
                     "% .2f" % normalised_score[i],
                 ]
             )
-        return tabulate(rows, headers="firstrow")
+        return rows
 
     def histogram(self):
         normalised_score = self._normalised_delta_cc_i()
@@ -250,16 +252,20 @@ class DeltaCcHalfImageGroups(DeltaCcHalf):
                 )
 
                 delta_cc.append(self._compute_delta_cc_for_dataset(unmerged_i))
-                logger.info(
-                    "Delta CC1/2 excluding batches %i-%i: %.3f",
+                logger.debug(
+                    u"Delta CC½ excluding batches %i-%i: %.3f",
                     group_start,
                     group_end,
                     delta_cc[-1],
                 )
         return delta_cc
 
-    def get_table(self):
-        rows = [["dataset", "batches", "delta_cc_i", "sigma"]]
+    def get_table(self, html=False):
+        if html:
+            delta_cc_half_header = u"Delta CC<sub>½</sub>"
+        else:
+            delta_cc_half_header = u"Delta CC½"
+        rows = [["Dataset", "Batches", delta_cc_half_header, u"σ"]]
         normalised_score = self._normalised_delta_cc_i()
         perm = flex.sort_permutation(self.delta_cc)
         for i in perm:
@@ -272,4 +278,4 @@ class DeltaCcHalfImageGroups(DeltaCcHalf):
                     "% .2f" % normalised_score[i],
                 ]
             )
-        return tabulate(rows, headers="firstrow")
+        return rows
