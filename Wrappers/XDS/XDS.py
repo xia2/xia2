@@ -306,8 +306,17 @@ def imageset_to_xds(
             result.append("UNTRUSTED_ELLIPSE= %d %d %d %d" % tuple(untrusted_ellipse))
         Debug.write(result[-1])
 
-    if params.xds.untrusted_rectangle:
-        for untrusted_rectangle in params.xds.untrusted_rectangle:
+    untrusted_rectangles = params.xds.untrusted_rectangle
+    format_instance = imageset.get_format_class().get_instance(imageset.paths()[0])
+    if format_instance.get_untrusted_regions():
+        untrusted_rectangles = untrusted_rectangles + [
+            region.rectangle
+            for region in format_instance.get_untrusted_regions()
+            if region.rectangle is not None
+        ]
+
+    if untrusted_rectangles:
+        for untrusted_rectangle in untrusted_rectangles:
             result.append(
                 "UNTRUSTED_RECTANGLE= %d %d %d %d" % tuple(untrusted_rectangle)
             )
