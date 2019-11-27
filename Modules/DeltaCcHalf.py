@@ -155,7 +155,6 @@ class DeltaCcHalf(object):
         }
 
     def plot_histogram(self, filename):
-
         from matplotlib import pyplot as plt
 
         normalised_score = self._normalised_delta_cc_i()

@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 import logging
+import matplotlib
 import os
 import sys
 
@@ -23,6 +24,7 @@ from xia2.Handlers.Citations import Citations
 from xia2.Modules.Analysis import separate_unmerged
 from xia2.Modules.DeltaCcHalf import DeltaCcHalf, DeltaCcHalfImageGroups
 
+matplotlib.use("Agg")
 
 logger = logging.getLogger("xia2.delta_cc_half")
 
