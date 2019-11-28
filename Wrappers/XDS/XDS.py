@@ -356,10 +356,12 @@ def imageset_to_xds(
             )
             result.append("")
 
-    for f0, s0, f1, s1 in converter.get_detector()[0].get_mask():
-        result.append(
-            "UNTRUSTED_RECTANGLE= %d %d %d %d" % (f0 - 1, f1 + 1, s0 - 1, s1 + 1)
-        )
+    for panel, (x0, _, y0, _) in zip(converter.get_detector(), converter.panel_limits):
+        for f0, s0, f1, s1 in panel.get_mask():
+            result.append(
+                "UNTRUSTED_RECTANGLE= %d %d %d %d"
+                % (f0 + x0 - 1, f1 + x0, s0 + y0 - 1, s1 + y0)
+            )
 
     if params.xds.untrusted_ellipse:
         for untrusted_ellipse in params.xds.untrusted_ellipse:
