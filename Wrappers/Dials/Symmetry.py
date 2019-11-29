@@ -218,7 +218,10 @@ def DialsSymmetry(DriverType=None):
             if PhilIndex.params.xia2.settings.symmetry.chirality in (None, "chiral"):
                 patterson_group = patterson_group.build_derived_acentric_group()
             cb_op_min_best = sgtbx.change_of_basis_op(str(best_solution["cb_op"]))
-            assert len(d["cb_op_inp_min"]) == 1
+            # This should only be called with multiple sweeps if they're already
+            # consistently indexed, so assert that they all have the same
+            # cb_op_inp_min
+            assert len(set(d["cb_op_inp_min"])) == 1
             cb_op_inp_min = sgtbx.change_of_basis_op(str(d["cb_op_inp_min"][0]))
 
             min_cell = uctbx.unit_cell(d["min_cell_symmetry"]["unit_cell"])
