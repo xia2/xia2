@@ -3,8 +3,9 @@ from __future__ import absolute_import, division, print_function
 import os
 import platform
 import re
-
 import six
+import warnings
+
 import xia2.Test.regression
 
 default_data_files = [
@@ -13,6 +14,10 @@ default_data_files = [
     "AUTOMATIC_DEFAULT_scaled_unmerged.mtz",
     "AUTOMATIC_DEFAULT_scaled_unmerged.sca",
 ]
+
+
+class Xia2RegressionToleranceWarning(UserWarning):
+    pass
 
 
 def check_result(
@@ -215,7 +220,9 @@ def check_result(
         return False, "xia2.html not present after execution"
 
     if not output_identical:
-        return False, "xia2 output failing tolerance checks"
+        warnings.warn(
+            "xia2 output failing tolerance checks", Xia2RegressionToleranceWarning
+        )
     return True, "All OK"
 
 
