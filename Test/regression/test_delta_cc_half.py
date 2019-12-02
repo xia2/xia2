@@ -1,7 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 from xia2.command_line.delta_cc_half import run
-from xia2.Modules.DeltaCcHalf import DeltaCcHalf, DeltaCcHalfImageGroups
+from xia2.Modules.DeltaCcHalf import DeltaCcHalf
 
 
 def test_from_experiments_reflections(dials_data, tmpdir, capsys, mocker):
@@ -24,7 +24,7 @@ def test_from_experiments_reflections(dials_data, tmpdir, capsys, mocker):
 
 def test_image_groups_from_unmerged_mtz(dials_data, tmpdir, capsys, mocker):
     data_dir = dials_data("x4wide_processed")
-    mocker.spy(DeltaCcHalfImageGroups, "get_table")
+    mocker.spy(DeltaCcHalf, "get_table")
     with tmpdir.as_cwd():
         run(
             [
@@ -32,17 +32,17 @@ def test_image_groups_from_unmerged_mtz(dials_data, tmpdir, capsys, mocker):
                 "group_size=10",
             ]
         )
-        assert DeltaCcHalfImageGroups.get_table.return_value == [
+        assert DeltaCcHalf.get_table.return_value == [
             ["Dataset", "Batches", u"Delta CC\xbd", u"\u03c3"],
-            ["0", "51 to 61", " 0.004", "-1.74"],
-            ["0", "61 to 71", " 0.005", "-1.38"],
-            ["0", "31 to 41", " 0.006", "-0.27"],
-            ["0", "1 to 11", " 0.006", " 0.24"],
-            ["0", "21 to 31", " 0.006", " 0.29"],
-            ["0", "41 to 51", " 0.006", " 0.32"],
-            ["0", "11 to 21", " 0.006", " 0.37"],
-            ["0", "81 to 90", " 0.006", " 0.71"],
-            ["0", "71 to 81", " 0.007", " 1.46"],
+            ["0", "51 to 60", " 0.004", "-1.73"],
+            ["0", "61 to 70", " 0.005", "-1.38"],
+            ["0", "31 to 40", " 0.006", "-0.28"],
+            ["0", "1 to 10", " 0.006", " 0.22"],
+            ["0", "21 to 30", " 0.006", " 0.28"],
+            ["0", "41 to 50", " 0.006", " 0.31"],
+            ["0", "11 to 20", " 0.006", " 0.36"],
+            ["0", "81 to 90", " 0.007", " 0.78"],
+            ["0", "71 to 80", " 0.007", " 1.44"],
         ]
         assert tmpdir.join("delta_cc_hist.png").check()
         assert tmpdir.join("normalised_scores.png").check()

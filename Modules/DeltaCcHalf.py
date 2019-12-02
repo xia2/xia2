@@ -35,6 +35,7 @@ class DeltaCcHalf(object):
         n_bins=20,
         d_min=None,
         cc_one_half_method="sigma_tau",
+        group_size=None,
     ):
         self.intensities = intensities
         self.batches = batches
@@ -69,17 +70,43 @@ class DeltaCcHalf(object):
         else:
             self.cc_overall = self.merging_statistics.cc_one_half_overall
 
+        self._group_size = group_size
+        self._setup_processing_groups()
         self.delta_cc = self._compute_delta_ccs()
+
+    def _setup_processing_groups(self):
+        self._group_to_batches = []
+        self._group_to_dataset_id = flex.int()
+        for test_k in range(len(self.intensities)):
+            batches = self.batches[test_k].data()
+            b_min = flex.min(batches)
+            b_max = flex.max(batches)
+            n_batches = b_max - b_min + 1
+            if self._group_size is not None:
+                n_groups = int(math.ceil(n_batches / self._group_size))
+                for k_group in range(n_groups):
+                    group_start = b_min + k_group * self._group_size
+                    group_end = min(b_max, group_start + self._group_size - 1)
+                    self._group_to_batches.append((group_start, group_end))
+                    self._group_to_dataset_id.append(test_k)
+            else:
+                n_groups = 1
+                self._group_to_batches.append((b_min, b_max))
+                self._group_to_dataset_id.append(test_k)
 
     def _compute_delta_ccs(self):
         delta_cc = flex.double()
-        for test_k in range(len(self.intensities)):
+        for (group_start, group_end), test_k in zip(
+            self._group_to_batches, self._group_to_dataset_id
+        ):
+            batches = self.batches[test_k].data()
+            group_sel = (batches >= group_start) & (batches <= group_end)
             indices_i = flex.miller_index()
             data_i = flex.double()
             sigmas_i = flex.double()
             for k, unmerged in enumerate(self.intensities):
                 if k == test_k:
-                    continue
+                    unmerged = unmerged.select(~group_sel)
                 indices_i.extend(unmerged.indices())
                 data_i.extend(unmerged.data())
                 sigmas_i.extend(unmerged.sigmas())
@@ -87,8 +114,14 @@ class DeltaCcHalf(object):
             unmerged_i = self.intensities[0].customized_copy(
                 indices=indices_i, data=data_i, sigmas=sigmas_i
             )
+
             delta_cc.append(self._compute_delta_cc_for_dataset(unmerged_i))
-            logger.debug(u"Delta CC½ excluding dataset %i: %.3f", test_k, delta_cc[-1])
+            logger.debug(
+                u"Delta CC½ excluding batches %i-%i: %.3f",
+                group_start,
+                group_end,
+                delta_cc[-1],
+            )
         return delta_cc
 
     def _compute_delta_cc_for_dataset(self, intensities):
@@ -118,11 +151,10 @@ class DeltaCcHalf(object):
         normalised_score = self._normalised_delta_cc_i()
         perm = flex.sort_permutation(self.delta_cc)
         for i in perm:
-            bmin = flex.min(self.batches[i].data())
-            bmax = flex.max(self.batches[i].data())
+            bmin, bmax = self._group_to_batches[i]
             rows.append(
                 [
-                    str(i),
+                    str(self._group_to_dataset_id[i]),
                     "%i to %i" % (bmin, bmax),
                     "% .3f" % self.delta_cc[i],
                     "% .2f" % normalised_score[i],
@@ -199,82 +231,3 @@ class DeltaCcHalf(object):
         plt.xlabel("Group")
         plt.ylabel(r"$\sigma$")
         plt.savefig(filename)
-
-
-class DeltaCcHalfImageGroups(DeltaCcHalf):
-    def __init__(
-        self,
-        intensities,
-        batches,
-        n_bins=20,
-        d_min=None,
-        cc_one_half_method="sigma_tau",
-        group_size=10,
-    ):
-        self._group_size = group_size
-        super(DeltaCcHalfImageGroups, self).__init__(
-            intensities,
-            batches,
-            n_bins,
-            d_min=d_min,
-            cc_one_half_method=cc_one_half_method,
-        )
-
-    def _compute_delta_ccs(self):
-        self._group_to_batches = []
-        self._group_to_dataset_id = flex.int()
-        delta_cc = flex.double()
-        for test_k in range(len(self.intensities)):
-            batches = self.batches[test_k].data()
-            b_min = flex.min(batches)
-            b_max = flex.max(batches)
-            n_batches = b_max - b_min + 1
-            n_groups = int(math.ceil(n_batches / self._group_size))
-            for k_group in range(n_groups):
-                group_start = b_min + k_group * self._group_size
-                group_end = min(b_max, group_start + self._group_size)
-                group_sel = (batches >= group_start) & (batches < group_end)
-                self._group_to_batches.append((group_start, group_end))
-                self._group_to_dataset_id.append(test_k)
-                indices_i = flex.miller_index()
-                data_i = flex.double()
-                sigmas_i = flex.double()
-                for k, unmerged in enumerate(self.intensities):
-                    if k == test_k:
-                        unmerged = unmerged.select(~group_sel)
-                    indices_i.extend(unmerged.indices())
-                    data_i.extend(unmerged.data())
-                    sigmas_i.extend(unmerged.sigmas())
-
-                unmerged_i = self.intensities[0].customized_copy(
-                    indices=indices_i, data=data_i, sigmas=sigmas_i
-                )
-
-                delta_cc.append(self._compute_delta_cc_for_dataset(unmerged_i))
-                logger.debug(
-                    u"Delta CC½ excluding batches %i-%i: %.3f",
-                    group_start,
-                    group_end,
-                    delta_cc[-1],
-                )
-        return delta_cc
-
-    def get_table(self, html=False):
-        if html:
-            delta_cc_half_header = u"Delta CC<sub>½</sub>"
-        else:
-            delta_cc_half_header = u"Delta CC½"
-        rows = [["Dataset", "Batches", delta_cc_half_header, u"σ"]]
-        normalised_score = self._normalised_delta_cc_i()
-        perm = flex.sort_permutation(self.delta_cc)
-        for i in perm:
-            bmin, bmax = self._group_to_batches[i]
-            rows.append(
-                [
-                    str(self._group_to_dataset_id[i]),
-                    "%i to %i" % (bmin, bmax),
-                    "% .3f" % self.delta_cc[i],
-                    "% .2f" % normalised_score[i],
-                ]
-            )
-        return rows

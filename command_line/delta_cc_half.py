@@ -22,7 +22,7 @@ from dials.util.version import dials_version
 import xia2.Handlers.Streams
 from xia2.Handlers.Citations import Citations
 from xia2.Modules.Analysis import separate_unmerged
-from xia2.Modules.DeltaCcHalf import DeltaCcHalf, DeltaCcHalfImageGroups
+from xia2.Modules.DeltaCcHalf import DeltaCcHalf
 
 matplotlib.use("Agg")
 
@@ -150,23 +150,14 @@ def run(args):
         batches = separate.batches.values()
         intensities = separate.intensities.values()
 
-    if params.group_size:
-        result = DeltaCcHalfImageGroups(
-            intensities,
-            batches,
-            n_bins=params.n_bins,
-            d_min=params.d_min,
-            cc_one_half_method=params.cc_one_half_method,
-            group_size=params.group_size,
-        )
-    else:
-        result = DeltaCcHalf(
-            intensities,
-            batches,
-            n_bins=params.n_bins,
-            d_min=params.d_min,
-            cc_one_half_method=params.cc_one_half_method,
-        )
+    result = DeltaCcHalf(
+        intensities,
+        batches,
+        n_bins=params.n_bins,
+        d_min=params.d_min,
+        cc_one_half_method=params.cc_one_half_method,
+        group_size=params.group_size,
+    )
     logger.info(tabulate(result.get_table(), headers="firstrow"))
     hist_filename = "delta_cc_hist.png"
     logger.info("Saving histogram to %s" % hist_filename)
