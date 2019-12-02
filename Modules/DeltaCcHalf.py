@@ -90,7 +90,6 @@ class DeltaCcHalf(object):
                     self._group_to_batches.append((group_start, group_end))
                     self._group_to_dataset_id.append(test_k)
             else:
-                n_groups = 1
                 self._group_to_batches.append((b_min, b_max))
                 self._group_to_dataset_id.append(test_k)
 
