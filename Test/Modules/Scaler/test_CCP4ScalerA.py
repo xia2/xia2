@@ -75,9 +75,6 @@ def test_ccp4_scalerA(regression_test, ccp4, dials_data, run_in_tmpdir, nproc):
 
     check_scaler_files_exist(scaler2)
 
-    scaler2.set_scaler_finish_done(False)
-    check_scaler_files_exist(scaler2)
-
     scaler2.set_scaler_done(False)
     check_scaler_files_exist(scaler2)
 

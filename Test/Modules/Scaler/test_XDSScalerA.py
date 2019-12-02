@@ -75,9 +75,6 @@ def test_xds_scalerA(regression_test, ccp4, xds, dials_data, run_in_tmpdir, npro
 
     check_scaler_files_exist(scaler2)
 
-    scaler2.set_scaler_finish_done(False)
-    check_scaler_files_exist(scaler2)
-
     scaler2.set_scaler_done(False)
     check_scaler_files_exist(scaler2)
 
