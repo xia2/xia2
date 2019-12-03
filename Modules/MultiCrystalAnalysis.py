@@ -8,10 +8,13 @@ from collections import OrderedDict
 
 from dials.algorithms.symmetry.cosym import SymmetryAnalysis
 from dials.algorithms.symmetry.cosym.plots import plot_coords, plot_rij_histogram
+from dials.util.filter_reflections import filtered_arrays_from_experiments_reflections
+from dials.util.multi_dataset_handling import parse_multiple_datasets
 
-from xia2.XIA2Version import Version
 from xia2.Modules.MultiCrystal.ScaleAndMerge import DataManager
 from xia2.Modules.Analysis import batch_phil_scope
+from xia2.Modules.DeltaCcHalf import DeltaCcHalf
+from xia2.XIA2Version import Version
 
 from libtbx import phil
 
@@ -166,6 +169,21 @@ class MultiCrystalAnalysis(object):
 
         return d
 
+    def delta_cc_half_analysis(self):
+        # transform models into miller arrays
+        intensities, batches = filtered_arrays_from_experiments_reflections(
+            self._data_manager.experiments,
+            parse_multiple_datasets([self._data_manager.reflections]),
+            outlier_rejection_after_filter=False,
+            partiality_threshold=0.99,
+            return_batches=True,
+        )
+        result = DeltaCcHalf(intensities, batches)
+        d = {}
+        d.update(result.histogram())
+        d.update(result.normalised_scores())
+        return d, result.get_table(html=True)
+
 
 class MultiCrystalReport(MultiCrystalAnalysis):
     def report(self, individual_dataset_reports, comparison_graphs, cosym_analysis):
@@ -176,6 +194,8 @@ class MultiCrystalReport(MultiCrystalAnalysis):
         self._stereographic_projection_files = self.stereographic_projections(
             "tmp.expt"
         )
+
+        delta_cc_half_graphs, delta_cc_half_table = self.delta_cc_half_analysis()
 
         symmetry_analysis = {}
         if "sym_op_scores" in cosym_analysis:
@@ -222,6 +242,8 @@ class MultiCrystalReport(MultiCrystalAnalysis):
             cos_angle_cluster_table=self._cos_angle_cluster_table,
             cos_angle_cluster_json=self._cos_angle_cluster_json,
             cos_angle_cosym_graphs=self._cosym_graphs,
+            delta_cc_half_graphs=delta_cc_half_graphs,
+            delta_cc_half_table=delta_cc_half_table,
             individual_dataset_reports=individual_dataset_reports,
             comparison_graphs=comparison_graphs,
             symmetry_analysis=symmetry_analysis,

@@ -60,6 +60,25 @@
                 {{ macros.panel('Orientation analysis', 'orientation', orientation_graphs, styles=styles) }}
 
                 <div class="panel panel-default">
+                    <div class="panel-heading" data-toggle="collapse" data-target="#collapse_delta_cc_half">
+                        <h4 class="panel-title">
+                            <a>Delta CC<sub>½</sub>  analysis</a>
+                        </h4>
+                    </div>
+                    <div id="collapse_delta_cc_half" class="panel-collapse collapse">
+                        <div class="panel-body">
+
+                            <div class="container-fluid">
+                                {{ macros.table(delta_cc_half_table,
+                                                has_column_header=true,
+                                                has_row_header=false) }}
+                                {{ macros.plotly_graphs(delta_cc_half_graphs) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel panel-default">
                     <div class="panel-heading" data-toggle="collapse" data-target="#collapse_intensity_cluster">
                         <h4 class="panel-title">
                             <a>Intensity clustering</a>
