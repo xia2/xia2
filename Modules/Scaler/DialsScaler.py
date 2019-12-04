@@ -767,6 +767,22 @@ pipeline=dials (supported for pipeline=dials-aimless).
             merger.run()
             FileHandler.record_data_file(mtz_filename)
 
+        # Also export just integrated data.
+        for si in sweep_infos:
+            exporter = ExportMtz()
+            exporter.set_reflections_filename(si.get_reflections())
+            exporter.set_experiments_filename(si.get_experiments())
+            exporter.set_intensity_choice("profile+sum")
+            pname, xname, dname = si.get_project_info()
+            sweep = si.get_integrater().get_integrater_sweep_name()
+            tag = "%s %s %s %s INTEGRATE" % (pname, xname, dname, sweep)
+            mtz_filename = os.path.join(
+                self.get_working_directory(), "%s_integrated.mtz" % sweep
+            )
+            exporter.set_mtz_filename(mtz_filename)
+            exporter.run()
+            FileHandler.record_more_data_file(tag, mtz_filename)
+
         if PhilIndex.params.xia2.settings.merging_statistics.source == "cctbx":
             for key in self._scalr_scaled_refl_files:
                 stats = self._compute_scaler_statistics(
