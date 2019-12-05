@@ -148,7 +148,7 @@ def run(args):
             unmerged_intensities, batches_all, id_to_batches=id_to_batches
         )
         batches = list(separate.batches.values())
-        intensities = separate.intensities.values()
+        intensities = list(separate.intensities.values())
 
     result = DeltaCcHalf(
         intensities,
