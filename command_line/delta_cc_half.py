@@ -109,7 +109,7 @@ def run(args):
             return_batches=True,
         )
 
-    if len(args) and os.path.isfile(args[0]):
+    if args and os.path.isfile(args[0]):
         result = any_reflection_file(args[0])
         unmerged_intensities = None
         batches_all = None
@@ -147,7 +147,7 @@ def run(args):
         separate = separate_unmerged(
             unmerged_intensities, batches_all, id_to_batches=id_to_batches
         )
-        batches = separate.batches.values()
+        batches = list(separate.batches.values())
         intensities = separate.intensities.values()
 
     result = DeltaCcHalf(
