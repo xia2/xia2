@@ -339,7 +339,7 @@ class Report(object):
         dose_phil = libtbx.phil.parse(dose_phil_str).extract()
         for expt in data_manager.experiments:
             batch_params = scope.extract().batch[0]
-            batch_params.id = expt.identifier
+            batch_params.id = data_manager.identifiers_to_ids_map[expt.identifier]
             batch_params.range = expt.scan.get_batch_range()
             params.batch.append(batch_params)
             dose_batch = copy.deepcopy(dose_phil.dose.batch[0])

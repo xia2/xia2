@@ -169,6 +169,10 @@ class DataManager(object):
 
         self._experiments = copy.deepcopy(experiments)
         self._reflections = copy.deepcopy(reflections)
+        self.ids_to_identifiers_map = dict(self._reflections.experiment_identifiers())
+        self.identifiers_to_ids_map = {
+            value: key for key, value in self.ids_to_identifiers_map.items()
+        }
 
         self._set_batches()
 
@@ -554,8 +558,14 @@ class MultiCrystalScale(object):
         from xia2.Modules.MultiCrystalAnalysis import MultiCrystalAnalysis
         from xfel.clustering.cluster_groups import unit_cell_info
 
+        lattice_ids = [
+            self._data_manager.identifiers_to_ids_map[i]
+            for i in self._data_manager.experiments.identifiers()
+        ]
+
         clusters, dendrogram = MultiCrystalAnalysis.unit_cell_clustering(
             self._data_manager.experiments,
+            lattice_ids=lattice_ids,
             threshold=self._params.unit_cell_clustering.threshold,
             log=self._params.unit_cell_clustering.log,
             plot_name=plot_name,

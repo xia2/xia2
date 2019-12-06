@@ -43,7 +43,7 @@ class MultiCrystalAnalysis(object):
         scope = phil.parse(batch_phil_scope)
         for expt in self._data_manager.experiments:
             batch_params = scope.extract().batch[0]
-            batch_params.id = expt.identifier
+            batch_params.id = self._data_manager.identifiers_to_ids_map[expt.identifier]
             batch_params.range = expt.scan.get_batch_range()
             self.params.batch.append(batch_params)
 
@@ -63,7 +63,9 @@ class MultiCrystalAnalysis(object):
         return sp_json_files
 
     @staticmethod
-    def unit_cell_clustering(experiments, threshold, log=True, plot_name=None):
+    def unit_cell_clustering(
+        experiments, lattice_ids, threshold, log=True, plot_name=None
+    ):
         from dials.algorithms.clustering.unit_cell import UnitCellCluster
 
         crystal_symmetries = []
@@ -72,7 +74,6 @@ class MultiCrystalAnalysis(object):
                 assert_is_compatible_unit_cell=False
             )
             crystal_symmetries.append(crystal_symmetry.niggli_cell())
-        lattice_ids = [expt.identifier for expt in experiments]
         ucs = UnitCellCluster.from_crystal_symmetries(
             crystal_symmetries, lattice_ids=lattice_ids
         )
@@ -104,7 +105,10 @@ class MultiCrystalAnalysis(object):
     def cluster_analysis(self):
         from xia2.Modules.MultiCrystal import multi_crystal_analysis
 
-        labels = self._data_manager.experiments.identifiers()
+        labels = [
+            self._data_manager.identifiers_to_ids_map[i]
+            for i in self._data_manager.experiments.identifiers()
+        ]
         mca = multi_crystal_analysis(
             self._intensities_separate[0], labels=labels, prefix=None
         )
@@ -143,6 +147,10 @@ class MultiCrystalAnalysis(object):
         # from dials.command_line.unit_cell_histogram import panel_distances_from_experiments
 
         experiments = self._data_manager.experiments
+        lattice_ids = [
+            self._data_manager.identifiers_to_ids_map[i]
+            for i in experiments.identifiers()
+        ]
         uc_params = uc_params_from_experiments(experiments)
         # panel_distances = panel_distances_from_experiments(experiments)
 
@@ -155,6 +163,7 @@ class MultiCrystalAnalysis(object):
 
         clustering, dendrogram = self.unit_cell_clustering(
             experiments,
+            lattice_ids,
             threshold=self.params.unit_cell_clustering.threshold,
             log=self.params.unit_cell_clustering.log,
         )
