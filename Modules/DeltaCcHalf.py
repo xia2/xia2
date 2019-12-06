@@ -48,7 +48,7 @@ class DeltaCcHalf(object):
                 unmerged_intensities = ma
             else:
                 unmerged_intensities = unmerged_intensities.concatenate(
-                    ma
+                    ma, assert_is_similar_symmetry=False
                 ).set_observation_type(unmerged_intensities.observation_type())
 
         self.binner = unmerged_intensities.eliminate_sys_absent().setup_binner_counting_sorted(
