@@ -2,9 +2,15 @@ from __future__ import absolute_import, division, print_function
 
 import binascii
 import json
+import numpy as np
 import sys
 import timeit
 from collections import Counter
+
+try:
+    from typing import BinaryIO, Union
+except TypeError:
+    pass
 
 try:
     import bz2
@@ -17,22 +23,29 @@ except ImportError:
     gzip = None
 
 
-def is_bz2(filename):
+def is_bz2(filename):  # type: (str) -> bool
+    """Check whether a file is bzip2 compressed."""
+    # Check that the filename ends ".bz2".
     if ".bz2" not in filename[-4:]:
         return False
+    # Check that the first three bytes are the bzip2 magic number "BZh".
     with open(filename, "rb") as fh:
         return b"BZh" == fh.read(3)
 
 
-def is_gzip(filename):
+def is_gzip(filename):  # type: (str) -> bool
+    """Check whether a file is gzip compressed."""
+    # Check that the filename ends ".gz".
     if ".gz" not in filename[-3:]:
         return False
+    # Check that the first two bytes are the gzip magic number 0x1F8B.
     with open(filename, "rb") as fh:
         magic = fh.read(2)
     return ord(magic[0]) == 0x1F and ord(magic[1]) == 0x8B
 
 
-def open_file(filename, mode="rb"):
+def open_cbf(filename, mode="rb"):  # type: (str, str) -> Union[BinaryIO, bz2.BZ2File]
+    """Open a CBF file, regardless of its whole-file compression or lack thereof."""
     if is_bz2(filename):
         if bz2 is None:
             raise RuntimeError("bz2 file provided without bz2 module")
@@ -46,12 +59,31 @@ def open_file(filename, mode="rb"):
     return open(filename, mode)
 
 
-def read_cbf_image(cbf_image):
+def read_cbf_image(cbf_image):  # type: (str) -> np.array
+    """
+    Get pixel intensities from a CBF file.
+
+    Extract the binary data block of the CBF file and uncompress it.  It is assumed that
+    the binary block is compressed with the lossless CBF byte offset (x-CBF_BYTE_OFFSET)
+    compression algorithm detailed in the CBFlib documentation:
+    http://cbflib.sourceforge.net/doc/CBFlib.html#3.3.3
+    In practice, all Dectris PILATUS detectors produce data in this format.
+    Conversations with those in the know (especially Graeme Winter) suggest that most
+    data reduction software will handle only this compression strategy anyway.
+
+    Args:
+        cbf_image:  Name of a CBF image file.  In addition to the compression of the
+                    binary data block, the file itself may be compressed with gzip or
+                    bzip2, or be uncompressed.
+
+    Returns:
+        A 2-d array of photon counts per pixel.
+    """
     from cbflib_adaptbx import uncompress
 
     start_tag = binascii.unhexlify("0c1a04d5")
 
-    with open_file(cbf_image, "rb") as fh:
+    with open_cbf(cbf_image, "rb") as fh:
         data = fh.read()
 
     data_offset = data.find(start_tag) + 4
@@ -81,7 +113,8 @@ def read_cbf_image(cbf_image):
 
 
 def get_overload(cbf_file):
-    with open_file(cbf_file, "rb") as fh:
+    """Get the upper limit of the trusted range of the detector."""
+    with open_cbf(cbf_file, "rb") as fh:
         for record in fh:
             if "Count_cutoff" in record:
                 return float(record.split()[-2])
