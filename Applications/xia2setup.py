@@ -56,8 +56,6 @@ xds_file_names = [
     "GAIN",
 ]
 
-known_sweeps = {}
-
 known_sequence_extensions = ["seq"]
 
 known_hdf5_extensions = [".h5", ".nxs"]
@@ -68,8 +66,6 @@ target_template = None
 
 
 def is_sequence_name(file):
-    global known_sequence_extensions
-
     if os.path.isfile(file):
         if file.split(".")[-1] in known_sequence_extensions:
             return True
@@ -78,7 +74,6 @@ def is_sequence_name(file):
 
 
 def is_image_name(filename):
-    global known_image_extensions
     from xia2.Wrappers.XDS.XDSFiles import XDSFiles
 
     if os.path.isfile(filename):
@@ -108,7 +103,6 @@ def is_image_name(filename):
 
 
 def is_hd5f_name(filename):
-
     if os.path.isfile(filename):
         if os.path.splitext(filename)[-1] in known_hdf5_extensions:
             return True
@@ -187,13 +181,12 @@ def parse_sequence(sequence_file):
     latest_sequence = sequence
 
 
-def visit(root, directory, files):
+def visit(directory, files):
     files.sort()
 
     templates = set()
 
     for f in files:
-
         full_path = os.path.join(directory, f)
 
         if is_hd5f_name(full_path):
@@ -225,15 +218,16 @@ def visit(root, directory, files):
     return templates
 
 
-def print_sweeps(out=sys.stdout):
-    global known_sweeps, latest_sequence
+def _write_sweeps(sweeps, out):
+    global latest_sequence
+    _known_sweeps = sweeps
 
-    sweeplist = sorted(known_sweeps)
+    sweeplist = sorted(_known_sweeps)
     assert sweeplist, "no sweeps found"
 
     # sort sweeplist based on epoch of first image of each sweep
     epochs = [
-        known_sweeps[sweep][0].get_imageset().get_scan().get_epochs()[0]
+        _known_sweeps[sweep][0].get_imageset().get_scan().get_epochs()[0]
         for sweep in sweeplist
     ]
 
@@ -241,17 +235,17 @@ def print_sweeps(out=sys.stdout):
         Debug.write("Duplicate epochs found. Trying to correct epoch information.")
         cumulativedelta = 0.0
         for sweep in sweeplist:
-            known_sweeps[sweep][0].get_imageset().get_scan().set_epochs(
-                known_sweeps[sweep][0].get_imageset().get_scan().get_epochs()
+            _known_sweeps[sweep][0].get_imageset().get_scan().set_epochs(
+                _known_sweeps[sweep][0].get_imageset().get_scan().get_epochs()
                 + cumulativedelta
             )
             # could change the image epoch information individually, but only
             # the information from the first image is used at this time.
             cumulativedelta += sum(
-                known_sweeps[sweep][0].get_imageset().get_scan().get_exposure_times()
+                _known_sweeps[sweep][0].get_imageset().get_scan().get_exposure_times()
             )
         epochs = [
-            known_sweeps[sweep][0].get_imageset().get_scan().get_epochs()[0]
+            _known_sweeps[sweep][0].get_imageset().get_scan().get_epochs()[0]
             for sweep in sweeplist
         ]
 
@@ -271,7 +265,7 @@ def print_sweeps(out=sys.stdout):
     min_oscillation_range = settings.input.min_oscillation_range
 
     for sweep in sweeplist:
-        sweeps = known_sweeps[sweep]
+        sweeps = _known_sweeps[sweep]
 
         # sort on exposure epoch
         epochs = [s.get_imageset().get_scan().get_epochs()[0] for s in sweeps]
@@ -389,7 +383,7 @@ def print_sweeps(out=sys.stdout):
 
     j = 0
     for sweep in sweeplist:
-        sweeps = known_sweeps[sweep]
+        sweeps = _known_sweeps[sweep]
 
         # sort on exposure epoch
         epochs = [s.get_imageset().get_scan().get_epochs()[0] for s in sweeps]
@@ -485,9 +479,7 @@ def print_sweeps(out=sys.stdout):
     out.write("END PROJECT %s\n" % project)
 
 
-def get_sweeps(templates):
-    global known_sweeps
-
+def _get_sweeps(templates):
     from libtbx import easy_mp
     from xia2.Applications.xia2setup_helpers import get_sweep
 
@@ -521,6 +513,7 @@ def get_sweeps(templates):
 
     from xia2.Schema import imageset_cache
 
+    known_sweeps = {}
     for template, sweeplist in zip(templates, results_list):
         if sweeplist is not None:
             known_sweeps[template] = sweeplist
@@ -531,9 +524,10 @@ def get_sweeps(templates):
                 imageset_cache[template][
                     imageset.get_scan().get_image_range()[0]
                 ] = imageset
+    return known_sweeps
 
 
-def rummage(directories):
+def _rummage(directories):
     """Walk through the directories looking for sweeps."""
     templates = set()
     visited = set()
@@ -544,9 +538,9 @@ def rummage(directories):
                 # safety-check to avoid recursively symbolic links
                 continue
             visited.add(realpath)
-            templates.update(visit(os.getcwd(), root, files))
+            templates.update(visit(root, files))
 
-    get_sweeps(templates)
+    return _get_sweeps(templates)
 
 
 def write_xinfo(filename, directories, template=None, hdf5_master_files=None):
@@ -568,26 +562,21 @@ def write_xinfo(filename, directories, template=None, hdf5_master_files=None):
         if "File exists" not in str(e):
             raise
 
-    # FIXME should I have some exception handling in here...?
-
-    start = os.getcwd()
-    os.chdir(directory)
-
     # if we have given a template and directory on the command line, just
     # look there (i.e. not in the subdirectories)
 
     if CommandLine.get_template() and CommandLine.get_directory():
+        # xia2 image=$(dials.data get -q x4wide)/X4_wide_M1S4_2_0001.cbf
         templates = set()
         for directory in CommandLine.get_directory():
-            templates.update(visit(None, directory, os.listdir(directory)))
-        get_sweeps(templates)
+            templates.update(visit(directory, os.listdir(directory)))
+        sweeps = _get_sweeps(templates)
     elif hdf5_master_files is not None:
-        get_sweeps(hdf5_master_files)
+        # xia2 image=$(dials.data get -q vmxi_thaumatin)/image_15799_master.h5
+        sweeps = _get_sweeps(hdf5_master_files)
     else:
-        rummage(directories)
+        # xia2 $(dials.data get -q x4wide)
+        sweeps = _rummage(directories)
 
     with open(filename, "w") as fout:
-        print_sweeps(fout)
-
-    # change back directory c/f bug # 2693 - important for error files...
-    os.chdir(start)
+        _write_sweeps(sweeps, fout)
