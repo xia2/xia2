@@ -126,6 +126,8 @@ min_multiplicity = None
   .type = float(value_min=0)
 max_clusters = None
   .type = int(value_min=1)
+cluster_method = *cos_angle correlation unit_cell
+  .type = choice
 
 identifiers = None
   .type = strings
@@ -389,12 +391,16 @@ class MultiCrystalScale(object):
 
         self._mca = self.multi_crystal_analysis()
         self.cluster_analysis()
-        # cluster_name = "cos_angle_cluster_%i" % self._cos_angle_clusters[-1].cluster_id
-        # self._individual_report_dicts[cluster_name] = self._dict_from_report(self._scaled.report(), cluster_name)
 
         min_completeness = self._params.min_completeness
         min_multiplicity = self._params.min_multiplicity
         max_clusters = self._params.max_clusters
+        if self._params.cluster_method == "cos_angle":
+            clusters = self._cos_angle_clusters
+        elif self._params.cluster_method == "correlation":
+            clusters = self._cc_clusters
+        else:
+            raise ValueError("Invalid cluster method: %s" % self._params.cluster_method)
         if (
             (max_clusters is not None and max_clusters > 1)
             or min_completeness is not None
@@ -403,7 +409,7 @@ class MultiCrystalScale(object):
             self._data_manager_original = self._data_manager
             cwd = os.path.abspath(os.getcwd())
             n_processed = 0
-            for cluster in reversed(self._cos_angle_clusters):
+            for cluster in reversed(clusters):
                 if max_clusters is not None and n_processed == max_clusters:
                     break
                 if (
@@ -420,9 +426,9 @@ class MultiCrystalScale(object):
                     continue
                 n_processed += 1
 
-                logger.info("Scaling cos angle cluster %i:" % cluster.cluster_id)
+                logger.info("Scaling cluster %i:" % cluster.cluster_id)
                 logger.info(cluster)
-                cluster_dir = "cos_angle_cluster_%i" % cluster.cluster_id
+                cluster_dir = "cluster_%i" % cluster.cluster_id
                 if not os.path.exists(cluster_dir):
                     os.mkdir(cluster_dir)
                 os.chdir(cluster_dir)
@@ -700,7 +706,9 @@ class MultiCrystalScale(object):
         )
 
     def cluster_analysis(self):
-        self._cos_angle_clusters = self._mca.cluster_analysis().cos_angle_clusters
+        mca = self._mca.cluster_analysis()
+        self._cos_angle_clusters = mca.cos_angle_clusters
+        self._cc_clusters = mca.cc_clusters
 
 
 class Scale(object):
