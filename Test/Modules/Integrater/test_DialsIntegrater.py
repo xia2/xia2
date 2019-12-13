@@ -1,23 +1,28 @@
 from __future__ import absolute_import, division, print_function
 
+import mock
 import os
+import pytest
 import sys
 
-import mock
-from libtbx.test_utils import approx_equal
+from iotbx.reflection_file_reader import any_reflection_file
+from dxtbx.model.experiment_list import ExperimentListTemplateImporter
+
+from xia2.Handlers.Phil import PhilIndex
+from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
+from xia2.Modules.Integrater.DialsIntegrater import DialsIntegrater
+from xia2.Modules.Refiner.DialsRefiner import DialsRefiner
+from xia2.Schema.XCrystal import XCrystal
+from xia2.Schema.XWavelength import XWavelength
+from xia2.Schema.XSweep import XSweep
+from xia2.Schema.XSample import XSample
 
 
 def exercise_dials_integrater(dials_data, tmp_dir, nproc=None):
     if nproc:
-        from xia2.Handlers.Phil import PhilIndex
-
         PhilIndex.params.xia2.settings.multiprocessing.nproc = nproc
 
     template = dials_data("insulin").join("insulin_1_###.img").strpath
-
-    from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
-    from xia2.Modules.Integrater.DialsIntegrater import DialsIntegrater
-    from dxtbx.model.experiment_list import ExperimentListTemplateImporter
 
     indexer = DialsIndexer()
     indexer.set_working_directory(tmp_dir)
@@ -26,19 +31,12 @@ def exercise_dials_integrater(dials_data, tmp_dir, nproc=None):
     imageset = experiments.imagesets()[0]
     indexer.add_indexer_imageset(imageset)
 
-    from xia2.Schema.XCrystal import XCrystal
-    from xia2.Schema.XWavelength import XWavelength
-    from xia2.Schema.XSweep import XSweep
-    from xia2.Schema.XSample import XSample
-
     cryst = XCrystal("CRYST1", None)
     wav = XWavelength("WAVE1", cryst, imageset.get_beam().get_wavelength())
     samp = XSample("X1", cryst)
     directory, image = os.path.split(imageset.get_path(1))
     sweep = XSweep("SWEEP1", wav, samp, directory=directory, image=image)
     indexer.set_indexer_sweep(sweep)
-
-    from xia2.Modules.Refiner.DialsRefiner import DialsRefiner
 
     refiner = DialsRefiner()
     refiner.set_working_directory(tmp_dir)
@@ -56,7 +54,6 @@ def exercise_dials_integrater(dials_data, tmp_dir, nproc=None):
 
     integrater_intensities = integrater.get_integrater_intensities()
     assert os.path.exists(integrater_intensities)
-    from iotbx.reflection_file_reader import any_reflection_file
 
     reader = any_reflection_file(integrater_intensities)
     assert reader.file_type() == "ccp4_mtz", repr(integrater_intensities)
@@ -87,8 +84,8 @@ def exercise_dials_integrater(dials_data, tmp_dir, nproc=None):
     ]
 
     assert integrater.get_integrater_wedge() == (1, 45)
-    assert approx_equal(
-        integrater.get_integrater_cell(), (78.14, 78.14, 78.14, 90, 90, 90), eps=1e-1
+    assert integrater.get_integrater_cell() == pytest.approx(
+        (78.14, 78.14, 78.14, 90, 90, 90), abs=1e-1
     )
 
     # test serialization of integrater

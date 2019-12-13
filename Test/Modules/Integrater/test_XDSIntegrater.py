@@ -1,36 +1,36 @@
 from __future__ import absolute_import, division, print_function
 
+import mock
 import os
+import pytest
 import sys
 
-import mock
-from libtbx.test_utils import approx_equal
+from iotbx.reflection_file_reader import any_reflection_file
+from dxtbx.model.experiment_list import ExperimentListTemplateImporter
+
+from xia2.Handlers.Phil import PhilIndex
+from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
+from xia2.Modules.Integrater.XDSIntegrater import XDSIntegrater
+from xia2.Modules.Refiner.XDSRefiner import XDSRefiner
+from xia2.Schema.XCrystal import XCrystal
+from xia2.Schema.XWavelength import XWavelength
+from xia2.Schema.XSweep import XSweep
+from xia2.Schema.XSample import XSample
 
 
 def exercise_xds_integrater(dials_data, tmp_dir, nproc=None):
     if nproc:
-        from xia2.Handlers.Phil import PhilIndex
-
         PhilIndex.params.xia2.settings.multiprocessing.nproc = nproc
 
     template = dials_data("insulin").join("insulin_1_###.img").strpath
 
-    from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
-    from xia2.Modules.Integrater.XDSIntegrater import XDSIntegrater
-
     indexer = XDSIndexer()
     indexer.set_working_directory(tmp_dir)
-    from dxtbx.model.experiment_list import ExperimentListTemplateImporter
 
     importer = ExperimentListTemplateImporter([template])
     experiments = importer.experiments
     imageset = experiments.imagesets()[0]
     indexer.add_indexer_imageset(imageset)
-
-    from xia2.Schema.XCrystal import XCrystal
-    from xia2.Schema.XWavelength import XWavelength
-    from xia2.Schema.XSweep import XSweep
-    from xia2.Schema.XSample import XSample
 
     cryst = XCrystal("CRYST1", None)
     wav = XWavelength("WAVE1", cryst, indexer.get_wavelength())
@@ -38,8 +38,6 @@ def exercise_xds_integrater(dials_data, tmp_dir, nproc=None):
     directory, image = os.path.split(imageset.get_path(1))
     sweep = XSweep("SWEEP1", wav, samp, directory=directory, image=image)
     indexer.set_indexer_sweep(sweep)
-
-    from xia2.Modules.Refiner.XDSRefiner import XDSRefiner
 
     refiner = XDSRefiner()
     refiner.set_working_directory(tmp_dir)
@@ -53,14 +51,12 @@ def exercise_xds_integrater(dials_data, tmp_dir, nproc=None):
     integrater.set_integrater_sweep(sweep)
     integrater.integrate()
 
-    from iotbx.reflection_file_reader import any_reflection_file
-
     integrater_intensities = integrater.get_integrater_intensities()
     assert os.path.exists(integrater_intensities)
     reader = any_reflection_file(integrater_intensities)
     assert reader.file_type() == "ccp4_mtz"
     mtz_object = reader.file_content()
-    assert approx_equal(mtz_object.n_reflections(), 50000, eps=400)
+    assert mtz_object.n_reflections() == pytest.approx(50000, abs=400)
     assert mtz_object.column_labels() == [
         "H",
         "K",
@@ -82,14 +78,14 @@ def exercise_xds_integrater(dials_data, tmp_dir, nproc=None):
     reader = any_reflection_file(corrected_intensities)
     assert reader.file_type() == "xds_ascii"
     ma = reader.as_miller_arrays(merge_equivalents=False)[0]
-    assert approx_equal(ma.size(), 50000, eps=400)
+    assert ma.size() == pytest.approx(50000, abs=400)
 
     assert integrater.get_integrater_wedge() == (1, 45)
-    assert approx_equal(
-        integrater.get_integrater_cell(), [78.066, 78.066, 78.066, 90, 90, 90], eps=1
+    assert integrater.get_integrater_cell() == pytest.approx(
+        (78.066, 78.066, 78.066, 90, 90, 90), abs=1
     )
-    assert approx_equal(
-        integrater.get_integrater_mosaic_min_mean_max(), (0.180, 0.180, 0.180), eps=1e-1
+    assert integrater.get_integrater_mosaic_min_mean_max() == pytest.approx(
+        (0.180, 0.180, 0.180), abs=1e-1
     )
 
     # test serialization of integrater
@@ -106,7 +102,7 @@ def exercise_xds_integrater(dials_data, tmp_dir, nproc=None):
     reader = any_reflection_file(integrater2_intensities)
     assert reader.file_type() == "ccp4_mtz"
     mtz_object = reader.file_content()
-    assert approx_equal(mtz_object.n_reflections(), 50000, eps=400)
+    assert mtz_object.n_reflections() == pytest.approx(50000, abs=400)
 
     integrater2.set_integrater_done(False)
     integrater2_intensities = integrater2.get_integrater_intensities()
@@ -114,7 +110,7 @@ def exercise_xds_integrater(dials_data, tmp_dir, nproc=None):
     reader = any_reflection_file(integrater2_intensities)
     assert reader.file_type() == "ccp4_mtz"
     mtz_object = reader.file_content()
-    assert approx_equal(mtz_object.n_reflections(), 50000, eps=450)
+    assert mtz_object.n_reflections() == pytest.approx(50000, abs=450)
 
     integrater2.set_integrater_prepare_done(False)
     integrater2_intensities = integrater2.get_integrater_intensities()
@@ -122,7 +118,7 @@ def exercise_xds_integrater(dials_data, tmp_dir, nproc=None):
     reader = any_reflection_file(integrater2_intensities)
     assert reader.file_type() == "ccp4_mtz"
     mtz_object = reader.file_content()
-    assert approx_equal(mtz_object.n_reflections(), 50100, eps=400)
+    assert mtz_object.n_reflections() == pytest.approx(50100, abs=400)
 
 
 def test_xds_integrater_serial(regression_test, ccp4, xds, dials_data, run_in_tmpdir):

@@ -1,35 +1,33 @@
 from __future__ import absolute_import, division, print_function
 
+import mock
 import os
+import pytest
 import sys
 
-import mock
-from libtbx.test_utils import approx_equal
+from dxtbx.model.experiment_list import ExperimentListTemplateImporter
+
+from xia2.Handlers.Phil import PhilIndex
+from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
+from xia2.Schema.XCrystal import XCrystal
+from xia2.Schema.XWavelength import XWavelength
+from xia2.Schema.XSweep import XSweep
+from xia2.Schema.XSample import XSample
 
 
 def exercise_xds_indexer(dials_data, tmp_dir, nproc=None):
     if nproc is not None:
-        from xia2.Handlers.Phil import PhilIndex
-
         PhilIndex.params.xia2.settings.multiprocessing.nproc = nproc
 
     template = dials_data("insulin").join("insulin_1_###.img").strpath
 
-    from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
-
     indexer = XDSIndexer()
     indexer.set_working_directory(tmp_dir)
-    from dxtbx.model.experiment_list import ExperimentListTemplateImporter
 
     importer = ExperimentListTemplateImporter([template])
     experiments = importer.experiments
     imageset = experiments.imagesets()[0]
     indexer.add_indexer_imageset(imageset)
-
-    from xia2.Schema.XCrystal import XCrystal
-    from xia2.Schema.XWavelength import XWavelength
-    from xia2.Schema.XSweep import XSweep
-    from xia2.Schema.XSample import XSample
 
     cryst = XCrystal("CRYST1", None)
     wav = XWavelength("WAVE1", cryst, indexer.get_wavelength())
@@ -40,15 +38,15 @@ def exercise_xds_indexer(dials_data, tmp_dir, nproc=None):
 
     indexer.index()
 
-    assert approx_equal(
-        indexer.get_indexer_cell(), (78.076, 78.076, 78.076, 90, 90, 90), eps=1
+    assert indexer.get_indexer_cell() == pytest.approx(
+        (78.076, 78.076, 78.076, 90, 90, 90), abs=1
     ), indexer.get_indexer_cell()
     experiment = indexer.get_indexer_experiment_list()[0]
     sgi = experiment.crystal.get_space_group().info()
     assert sgi.type().number() == 197
 
     beam_centre = indexer.get_indexer_beam_centre()
-    assert approx_equal(beam_centre, (94.4221, 94.5096), eps=1e-1)
+    assert beam_centre == pytest.approx((94.4221, 94.5096), abs=1e-1)
     assert indexer.get_indexer_images() == [(1, 5), (20, 24), (41, 45)]
     print(indexer.get_indexer_experiment_list()[0].crystal)
     print(indexer.get_indexer_experiment_list()[0].detector)
@@ -59,16 +57,16 @@ def exercise_xds_indexer(dials_data, tmp_dir, nproc=None):
     indexer2 = XDSIndexer.from_json(string=json_str)
     indexer2.index()
 
-    assert approx_equal(indexer.get_indexer_cell(), indexer2.get_indexer_cell())
-    assert approx_equal(
-        indexer.get_indexer_beam_centre(), indexer2.get_indexer_beam_centre()
+    assert indexer.get_indexer_cell() == pytest.approx(indexer2.get_indexer_cell())
+    assert indexer.get_indexer_beam_centre() == pytest.approx(
+        indexer2.get_indexer_beam_centre()
     )
-    assert approx_equal(indexer.get_indexer_images(), indexer2.get_indexer_images())
+    assert indexer.get_indexer_images() == pytest.approx(indexer2.get_indexer_images())
 
     indexer.eliminate()
     indexer2.eliminate()
 
-    assert approx_equal(indexer.get_indexer_cell(), indexer2.get_indexer_cell())
+    assert indexer.get_indexer_cell() == pytest.approx(indexer2.get_indexer_cell())
     assert indexer.get_indexer_lattice() == "hR"
     assert indexer2.get_indexer_lattice() == "hR"
 

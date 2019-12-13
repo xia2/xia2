@@ -1,27 +1,28 @@
 from __future__ import absolute_import, division, print_function
 
+import mock
 import os
+import pytest
+import shutil
 import sys
 
-import mock
-from libtbx.test_utils import approx_equal
+
+from xia2.Handlers.Phil import PhilIndex
+from xia2.Wrappers.Dials.Import import Import
+from xia2.Wrappers.Dials.Spotfinder import Spotfinder
+from xia2.Wrappers.Dials.Index import Index
+from xia2.Wrappers.Dials.Integrate import Integrate
+from xia2.Wrappers.Dials.RefineBravaisSettings import RefineBravaisSettings
+from xia2.Wrappers.Dials.Refine import Refine
+from xia2.Wrappers.Dials.Reindex import Reindex
+from xia2.Wrappers.Dials.ExportMtz import ExportMtz
+from xia2.Wrappers.Dials.ExportXDSASCII import ExportXDSASCII
+from xia2.Wrappers.Dials.CombineExperiments import CombineExperiments
 
 
 def exercise_dials_wrappers(template, nproc=None):
     if nproc is not None:
-        from xia2.Handlers.Phil import PhilIndex
-
         PhilIndex.params.xia2.settings.multiprocessing.nproc = nproc
-
-    from xia2.Wrappers.Dials.Import import Import
-    from xia2.Wrappers.Dials.Spotfinder import Spotfinder
-    from xia2.Wrappers.Dials.Index import Index
-    from xia2.Wrappers.Dials.Integrate import Integrate
-    from xia2.Wrappers.Dials.RefineBravaisSettings import RefineBravaisSettings
-    from xia2.Wrappers.Dials.Refine import Refine
-    from xia2.Wrappers.Dials.Reindex import Reindex
-    from xia2.Wrappers.Dials.ExportMtz import ExportMtz
-    from xia2.Wrappers.Dials.ExportXDSASCII import ExportXDSASCII
 
     scan_ranges = [(1, 45)]
     image_range = (1, 45)
@@ -60,8 +61,8 @@ def exercise_dials_wrappers(template, nproc=None):
     bravais_setting_22 = rbs.get_bravais_summary()[22]
     assert bravais_setting_22["bravais"] == "cI"
     assert bravais_setting_22["cb_op"] == "b+c,a+c,a+b"
-    assert approx_equal(
-        bravais_setting_22["unit_cell"], (78.14, 78.14, 78.14, 90, 90, 90), eps=1e-1
+    assert bravais_setting_22["unit_cell"] == pytest.approx(
+        (78.14, 78.14, 78.14, 90, 90, 90), abs=1e-1
     )
     bravais_setting_22_json = bravais_setting_22["experiments_file"]
     assert os.path.exists(bravais_setting_22_json)
@@ -113,12 +114,9 @@ def exercise_dials_wrappers(template, nproc=None):
     print("Done exporting")
     assert os.path.exists(exporter.get_hkl_filename())
 
-    import shutil
-
     shutil.copy(indexer.get_experiments_filename(), "copy.expt")
     shutil.copy(indexer.get_indexed_filename(), "copy.refl")
     print("Begin combining")
-    from xia2.Wrappers.Dials.CombineExperiments import CombineExperiments
 
     exporter = CombineExperiments()
     exporter.add_experiments(indexer.get_experiments_filename())
