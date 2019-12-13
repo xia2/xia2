@@ -377,7 +377,7 @@ class DialsIntegrater(Integrater):
         # If running in high-pressure mode, run dials.rescale_diamond_anvil_cell to
         # correct for the attenuation of the incident and diffracted beams by the
         # diamond anvils.
-        if PhilIndex.params.dials.high_pressure:
+        if PhilIndex.params.dials.high_pressure.correct:
             params = PhilIndex.params.dials.high_pressure
             rescale_dac = _rescale_dac()
 

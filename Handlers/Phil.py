@@ -398,11 +398,14 @@ dials
       .short_caption = "Low resolution cutoff for integration"
       .expert_level = 1
   }
-  high_pressure = False
-    .type = bool
+  high_pressure
     .expert_level = 1
     .short_caption = "Handle diamond anvil pressure cell data"
   {
+    correct = False
+      .type = bool
+      .short_caption = "Whether to correct for attenuation by a diamond anvil cell"
+
     include scope dials.command_line.rescale_diamond_anvil_cell.phil_scope
   }
   scale
