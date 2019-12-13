@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# coding: utf-8
 # Phil.py
 #   Copyright (C) 2012 Diamond Light Source, Graeme Winter
 #
@@ -15,7 +16,7 @@ from iotbx.phil import parse
 from libtbx.phil import interface
 
 master_phil = parse(
-    """
+    u"""
 general
   .short_caption = "General settings"
 {
@@ -396,6 +397,13 @@ dials
       .type = float(value_min=0.0)
       .short_caption = "Low resolution cutoff for integration"
       .expert_level = 1
+  }
+  high_pressure = False
+    .type = bool
+    .expert_level = 1
+    .short_caption = "Handle diamond anvil pressure cell data"
+  {
+    include scope dials.command_line.rescale_diamond_anvil_cell.phil_scope
   }
   scale
     .expert_level = 1

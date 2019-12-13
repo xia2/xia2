@@ -17,6 +17,7 @@ from xia2.Schema.Interfaces.Integrater import Integrater
 
 from xia2.Wrappers.Dials.ExportMtz import ExportMtz as _ExportMtz
 from xia2.Wrappers.Dials.Report import Report as _Report
+from xia2.Wrappers.Dials.rescale_diamond_anvil_cell import rescale_dac as _rescale_dac
 
 
 class DialsIntegrater(Integrater):
@@ -372,6 +373,32 @@ class DialsIntegrater(Integrater):
         # we want a different exported MTZ file every time (I do not think
         # that we do; these can be very large) - was exporter.get_xpid() ->
         # now dials
+
+        # If running in high-pressure mode, run dials.rescale_diamond_anvil_cell to
+        # correct for the attenuation of the incident and diffracted beams by the
+        # diamond anvils.
+        if PhilIndex.params.dials.high_pressure:
+            params = PhilIndex.params.dials.high_pressure
+            rescale_dac = _rescale_dac()
+
+            # Take the filenames of the last integration step as input.
+            rescale_dac.experiments_filename = self._intgr_experiments_filename
+            rescale_dac.reflections_filename = self._intgr_integrated_filename
+
+            # The output reflections have a filename appended with '_corrected'.
+            output_reflections = self._intgr_integrated_filename.replace(
+                ".refl", "_corrected.refl"
+            )
+            rescale_dac.output_reflections_filename = output_reflections
+
+            # Set the user-specified parameters from the PHIL scope.
+            rescale_dac.density = params.anvil.density
+            rescale_dac.thickness = params.anvil.thickness
+            rescale_dac.normal = params.anvil.normal
+
+            # Run dials.rescale_diamond_anvil_cell with the parameters as set above.
+            auto_logfiler(rescale_dac)
+            rescale_dac()
 
         if self._output_format == "hkl":
             exporter = self.ExportMtz()
