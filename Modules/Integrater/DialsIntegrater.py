@@ -382,8 +382,8 @@ class DialsIntegrater(Integrater):
             rescale_dac = _rescale_dac()
 
             # Take the filenames of the last integration step as input.
-            rescale_dac.experiments_filename = self.get_integrated_experiments()
-            rescale_dac.reflections_filename = self.get_integrated_reflections()
+            rescale_dac.experiments_filename = self._intgr_experiments_filename
+            rescale_dac.reflections_filename = self._intgr_integrated_reflections
 
             # The output reflections have a filename appended with '_corrected'.
             output_reflections = rescale_dac.reflections_filename.replace(
