@@ -57,7 +57,7 @@ def rescale_dac(driver_type=None):
         @reflections_filename.setter
         def reflections_filename(self, filename):
             self.add_command_line("%s" % filename)
-            self._experiments_filename = filename
+            self._reflections_filename = filename
 
         @property
         def output_experiments_filename(self):
@@ -92,7 +92,7 @@ def rescale_dac(driver_type=None):
 
         @thickness.setter
         def thickness(self, thickness):
-            self.add_command_line("anvil.thickness=" % thickness)
+            self.add_command_line("anvil.thickness=%s" % thickness)
             self._thickness = thickness
 
         @property
@@ -101,13 +101,11 @@ def rescale_dac(driver_type=None):
 
         @normal.setter
         def normal(self, normal):
-            self.add_command_line("anvil.normal=%s" % normal)
+            self.add_command_line("anvil.normal=%s,%s,%s" % tuple(normal))
             self._normal = normal
 
         def __call__(self):
             """Run dials.rescale_diamond_anvil_cell if the parameters are valid."""
-            self.clear_command_line()
-
             # We should only start if the properties have been set.
             assert self.experiments_filename
             assert self.reflections_filename

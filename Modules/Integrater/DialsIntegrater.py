@@ -378,8 +378,14 @@ class DialsIntegrater(Integrater):
         # correct for the attenuation of the incident and diffracted beams by the
         # diamond anvils.
         if PhilIndex.params.dials.high_pressure.correct:
+            Chatter.write(
+                "Rescaling integrated reflections for attenuation in the "
+                "diamond anvil cell."
+            )
+
             params = PhilIndex.params.dials.high_pressure
             rescale_dac = _rescale_dac()
+            rescale_dac.clear_command_line()
 
             # Take the filenames of the last integration step as input.
             rescale_dac.experiments_filename = self._intgr_experiments_filename
