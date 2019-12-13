@@ -2,13 +2,12 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
+from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 
 
 def GenerateMask(DriverType=None):
     """A factory for GenerateMaskWrapper classes."""
-
-    from xia2.Driver.DriverFactory import DriverFactory
 
     DriverInstance = DriverFactory.Driver(DriverType)
 
@@ -54,7 +53,7 @@ def GenerateMask(DriverType=None):
                 )  # temporarily required for https://github.com/dials/dials/issues/522
 
             self.add_command_line(
-                'input.experiments="%s"' % self._input_experiments_filename
+                "input.experiments=%s" % self._input_experiments_filename
             )
             if self._output_mask_filename is None:
                 self._output_mask_filename = os.path.join(
@@ -64,9 +63,9 @@ def GenerateMask(DriverType=None):
                 self._output_experiments_filename = os.path.join(
                     self.get_working_directory(), "%s_masked.expt" % self.get_xpid()
                 )
-            self.add_command_line('output.mask="%s"' % self._output_mask_filename)
+            self.add_command_line("output.mask=%s" % self._output_mask_filename)
             self.add_command_line(
-                'output.experiments="%s"' % self._output_experiments_filename
+                "output.experiments=%s" % self._output_experiments_filename
             )
             self.add_command_line(phil_filename)
             self.start()

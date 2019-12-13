@@ -306,8 +306,8 @@ def DialsScale(DriverType=None, decay_correction=None):
             if self._crystal_name:
                 self.add_command_line("output.crystal_name=%s" % self._crystal_name)
 
-            self.add_command_line("output.experiments='%s'" % self._scaled_experiments)
-            self.add_command_line("output.reflections='%s'" % self._scaled_reflections)
+            self.add_command_line("output.experiments=%s" % self._scaled_experiments)
+            self.add_command_line("output.reflections=%s" % self._scaled_reflections)
 
             # run using previously determined scales
             self.start()

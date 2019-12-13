@@ -1,14 +1,12 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
 import os
 
+from xia2.Driver.DriverFactory import DriverFactory
+
 
 def ImportXDS(DriverType=None):
     """A factory for ImportXDSWrapper classes."""
-
-    from xia2.Driver.DriverFactory import DriverFactory
 
     DriverInstance = DriverFactory.Driver(DriverType)
 
@@ -50,7 +48,7 @@ def ImportXDS(DriverType=None):
                 self._reflection_filename = os.path.join(
                     self.get_working_directory(), "%s_spot_xds.refl" % self.get_xpid()
                 )
-                self.add_command_line("%s" % self._spot_xds)
+                self.add_command_line(self._spot_xds)
                 self.add_command_line("output.filename=%s" % self._reflection_filename)
                 self.add_command_line("method=reflections")
 
@@ -60,8 +58,8 @@ def ImportXDS(DriverType=None):
                     "%s_integrate_hkl.refl" % self.get_xpid(),
                 )
                 assert self._experiments_json is not None
-                self.add_command_line("%s" % self._integrate_hkl)
-                self.add_command_line("%s" % self._experiments_json)
+                self.add_command_line(self._integrate_hkl)
+                self.add_command_line(self._experiments_json)
                 self.add_command_line("output.filename=%s" % self._reflection_filename)
                 self.add_command_line("method=reflections")
 
@@ -72,7 +70,7 @@ def ImportXDS(DriverType=None):
                         "%s_xparm_xds.expt" % self.get_xpid(),
                     )
                 directory, xparm = os.path.split(self._xparm_xds)
-                self.add_command_line("%s" % directory)
+                self.add_command_line(directory)
                 self.add_command_line("xds_file=%s" % xparm)
                 self.add_command_line("output.filename=%s" % self._experiments_json)
 

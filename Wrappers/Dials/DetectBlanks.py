@@ -57,11 +57,11 @@ def DetectBlanks(DriverType=None):
             self.clear_command_line()
 
             if self._sweep_filename is not None:
-                self.add_command_line("%s" % self._sweep_filename)
+                self.add_command_line(self._sweep_filename)
             if self._experiments_filename is not None:
-                self.add_command_line("%s" % self._experiments_filename)
+                self.add_command_line(self._experiments_filename)
             assert self._reflections_filename is not None
-            self.add_command_line("%s" % self._reflections_filename)
+            self.add_command_line(self._reflections_filename)
             if self._json_filename is None:
                 self._json_filename = os.path.join(
                     self.get_working_directory(), "%s_blanks.json" % self.get_xpid()

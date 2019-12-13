@@ -46,9 +46,9 @@ def DialsAssignIdentifiers(DriverType=None):
             assert self._experiments_filenames
             assert self._reflections_filenames
             for exp in self._experiments_filenames:
-                self.add_command_line("'%s'" % exp)
+                self.add_command_line(exp)
             for refl in self._reflections_filenames:
-                self.add_command_line("'%s'" % refl)
+                self.add_command_line(refl)
 
             if not self._output_experiments_filename:
                 self._output_experiments_filename = os.path.join(
@@ -60,10 +60,10 @@ def DialsAssignIdentifiers(DriverType=None):
                 )
 
             self.add_command_line(
-                "output.experiments='%s'" % self._output_experiments_filename
+                "output.experiments=%s" % self._output_experiments_filename
             )
             self.add_command_line(
-                "output.reflections='%s'" % self._output_reflections_filename
+                "output.reflections=%s" % self._output_reflections_filename
             )
 
             self.start()

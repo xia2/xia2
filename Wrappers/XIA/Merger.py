@@ -112,7 +112,7 @@ def Merger(DriverType=None):
             if self._batch_range is not None:
                 cl.append("batch_range=%i,%i" % self._batch_range)
             if self._labels is not None:
-                cl.append('labels="%s"' % self._labels)
+                cl.append("labels=%s" % self._labels)
             for c in cl:
                 self.add_command_line(c)
             Debug.write("Resolution analysis: %s" % (" ".join(cl)))

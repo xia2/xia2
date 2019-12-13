@@ -158,7 +158,7 @@ def TwoThetaRefine(DriverType=None):
                     "output.experiments=%s" % self._output_experiments
                 )
             if self._phil_file is not None:
-                self.add_command_line("%s" % self._phil_file)
+                self.add_command_line(self._phil_file)
 
             self.start()
             self.close_wait()

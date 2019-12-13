@@ -1,17 +1,15 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
+import math
 import os
 
 import libtbx.utils
+from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
 
 
 def Index(DriverType=None):
     """A factory for IndexWrapper classes."""
-
-    from xia2.Driver.DriverFactory import DriverFactory
 
     DriverInstance = DriverFactory.Driver(DriverType)
 
@@ -187,7 +185,7 @@ def Index(DriverType=None):
             if self._beam_fix:
                 self.add_command_line("beam.fix=%s" % self._beam_fix)
             if self._phil_file is not None:
-                self.add_command_line("%s" % self._phil_file)
+                self.add_command_line(self._phil_file)
 
             self._experiment_filename = os.path.join(
                 self.get_working_directory(), "%d_indexed.expt" % self.get_xpid()
@@ -245,7 +243,6 @@ def Index(DriverType=None):
             refl = self._reflections.select(refined_sel)
             xc, yc, zc = refl["xyzcal.px"].parts()
             xo, yo, zo = refl["xyzobs.px.value"].parts()
-            import math
 
             self._nref = refl.size()
             self._rmsd_x = math.sqrt(flex.mean(flex.pow2(xc - xo)))

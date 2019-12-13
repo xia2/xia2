@@ -147,7 +147,7 @@ def Integrate(DriverType=None):
                     "background.algorithm=%s" % self._background_algorithm
                 )
             if self._phil_file is not None:
-                self.add_command_line("%s" % self._phil_file)
+                self.add_command_line(self._phil_file)
             if self._d_max is not None:
                 self.add_command_line("prediction.d_max=%f" % self._d_max)
             if self._d_min is not None and self._d_min > 0.0:

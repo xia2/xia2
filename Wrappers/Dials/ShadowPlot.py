@@ -2,6 +2,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import json
 import os
 
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
@@ -36,18 +37,15 @@ def ShadowPlot(DriverType=None):
             assert self._json_filename is not None and os.path.isfile(
                 self._json_filename
             )
-            import json
-
-            with open(self._json_filename, "rb") as f:
+            with open(self._json_filename, "r") as f:
                 results = json.load(f)
             return results
 
         def run(self):
-
             self.clear_command_line()
 
             assert self._sweep_filename is not None
-            self.add_command_line("%s" % self._sweep_filename)
+            self.add_command_line(self._sweep_filename)
             if self._json_filename is not None:
                 self.add_command_line("json=%s" % self._json_filename)
             self.add_command_line("mode=1d")
