@@ -4,23 +4,11 @@
 #
 #   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-#
-# 24th May 2006
-#
-# A factory for Driver implementations.
-#
-# At the moment this will instantiate
-#
-# SimpleDriver, ScriptDriver, QSubDriver, InteractiveDriver
-#
-# instances only.
-#
 
 from __future__ import absolute_import, division, print_function
 
 import os
 
-# another factory to delegate to
 from xia2.Driver.ClusterDriverFactory import ClusterDriverFactory
 from xia2.Driver.InteractiveDriver import InteractiveDriver
 from xia2.Driver.QSubDriver import QSubDriver

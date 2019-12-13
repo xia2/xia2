@@ -1,39 +1,3 @@
-# A new "Driver" class for XIA 0.2.x and others.
-#
-# This should be instantiated by a DriverFactory from DriverFactory.py
-#
-# Change 24/MAY/06. This implementation is now the default Driver but
-# without the start method being implemented. This means that this has
-# all of the getter and setter methods but nothing which depends on the
-# environment.
-#
-# This class should only be inherited from, with the start method
-# overridden. The other methods should also be overridden - this class
-# just defines the API.
-#
-# Change 22/JUN/06 - need to add environment handling stuff, in particular
-# to allow "GFORTRAN_UNBUFFERED_ALL=1" to be set.
-#
-# Change 1/SEP/06 - add method to test if this executable exists. This can
-# be used in the constructor of classes derived from this, which will
-# then allow dynamic decisions about which programs to use for different
-# tasks. Note well - when running on a cluster this means that you need
-# to have the same environment set up on the head node where the constructor
-# is called as on the compute nodes where the calculation will be performed.
-# This code is not portable (windows programs end in .exe or .bat, path
-# separated by ; not : &c.) so will have to be coded in the same way as
-# the script writer, with choices based on the operating environment.
-# Don't know how this will cope with aliases. This is implemented in
-# DriverHelper/executable_exists.
-#
-# Change 28/JAN/10 - need to be able to exert some control over the environment
-# of the underlying program, specifically so that the LD_LIBRARY_PATH may
-# be manipulated in cases where it may be nudged in the wrong direction
-# e.g. by the PHENIX dispatcher script. This is probably a long time overdue.
-# Implementation approach will be to allow a dictionary to be defined which
-# will have tokens PREPENDED to the environment by the IMPLEMENTATION of the
-# Driver interface.
-
 from __future__ import absolute_import, division, print_function
 
 import io
@@ -57,8 +21,6 @@ from xia2.Driver.DriverHelper import (
 )
 from xia2.DriverExceptions.NotAvailableError import NotAvailableError
 from xia2.Handlers.Streams import Debug
-
-# out of context stuff
 
 
 class DefaultDriver(object):

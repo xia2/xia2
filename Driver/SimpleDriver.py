@@ -1,6 +1,3 @@
-# An initial implementation of the simplest Driver type - the one which
-# just wraps the subprocess.Popen class.
-
 from __future__ import absolute_import, division, print_function
 
 import copy
