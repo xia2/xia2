@@ -8,6 +8,8 @@ import iotbx.phil
 from scipy.cluster import hierarchy
 from scitbx.array_family import flex
 
+from dials.util import tabulate
+
 logger = logging.getLogger(__name__)
 
 batch_phil_scope = """\
@@ -118,8 +120,6 @@ class multi_crystal_analysis(object):
         self.cc_clusters = self.cluster_info(
             self.linkage_matrix_to_dict(self.cc_linkage_matrix)
         )
-
-        from tabulate import tabulate
 
         logger.info("\nIntensity correlation clustering summary:")
         logger.info(
