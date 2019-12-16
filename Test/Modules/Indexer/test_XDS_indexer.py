@@ -61,7 +61,9 @@ def exercise_xds_indexer(dials_data, tmp_dir, nproc=None):
     assert indexer.get_indexer_beam_centre() == pytest.approx(
         indexer2.get_indexer_beam_centre()
     )
-    assert indexer.get_indexer_images() == pytest.approx(indexer2.get_indexer_images())
+    assert indexer.get_indexer_images() == [
+        tuple(i) for i in indexer2.get_indexer_images()
+    ]
 
     indexer.eliminate()
     indexer2.eliminate()
