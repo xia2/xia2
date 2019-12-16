@@ -220,6 +220,7 @@ def check_result(
         return False, "xia2.html not present after execution"
 
     if not output_identical:
+        print("xia2 output failing tolerance checks")
         warnings.warn(
             "xia2 output failing tolerance checks", Xia2RegressionToleranceWarning
         )
