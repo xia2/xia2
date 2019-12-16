@@ -1,2 +1,0 @@
-*-journal.txt output files are no longer created.
-Any output goes into the debug logfile instead.
