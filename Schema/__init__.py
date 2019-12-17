@@ -72,8 +72,10 @@ def load_imagesets(
         )
         scan_tolerance = params.input.tolerance.scan.oscillation
 
+        # If diamond anvil cell data, always use dynamic shadowing
+        high_pressure = PhilIndex.params.dials.high_pressure.correction
         format_kwargs = {
-            "dynamic_shadowing": params.input.format.dynamic_shadowing,
+            "dynamic_shadowing": params.input.format.dynamic_shadowing or high_pressure,
             "multi_panel": params.input.format.multi_panel,
         }
 
