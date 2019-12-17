@@ -8,6 +8,11 @@ from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import Debug
 
+try:
+    from typing import Optional
+except ImportError:
+    pass
+
 
 class DIALSIntegrateError(RuntimeError):
     """Custom error class for problems encountered by dials.integrate"""
@@ -38,6 +43,12 @@ def Integrate(DriverType=None):
             self._d_min = None
             self._scan_range = []
             self._reflections_per_degree = None
+
+            # The minimum number of spots required for profile modelling, per degree
+            # and overall.
+            self._min_spots_per_degree = None  # type: Optional[int]
+            self._min_spots_overall = None  # type: Optional[int]
+
             self._integration_report = {}
 
         def get_per_image_statistics(self):
@@ -72,6 +83,26 @@ def Integrate(DriverType=None):
 
         def set_reflections_per_degree(self, reflections_per_degree):
             self._reflections_per_degree = reflections_per_degree
+
+        def set_profile_params(
+            self,
+            min_spots_per_degree=None,  # type: Optional[int]
+            min_spots_overall=None,  # type: Optional[int]
+            high_pressure=False,  # type: bool
+        ):  # type: (...) -> None
+            """Options to override Gaussian profile parameters for integration."""
+            # If using a diamond anvil cell, and unless the user specifies otherwise,
+            if high_pressure:
+                # don't impose a minimum number of reflections per degree,
+                self._min_spots_per_degree = min_spots_per_degree or 0
+                # and use a reduced minimum number of reflections overall.
+                self._min_spots_overall = (
+                    min_spots_overall if min_spots_overall is not None else 10
+                )
+            # Otherwise use user-specified values or defaults.
+            else:
+                self._min_spots_per_degree = min_spots_per_degree
+                self._min_spots_overall = min_spots_overall
 
         def set_phil_file(self, phil_file):
             self._phil_file = phil_file
@@ -159,6 +190,14 @@ def Integrate(DriverType=None):
                     "reflections_per_degree=%d" % self._reflections_per_degree
                 )
                 self.add_command_line("integrate_all_reflections=False")
+            if self._min_spots_per_degree is not None:
+                self.add_command_line(
+                    "gaussian_rs.min_spots.per_degree=%d" % self._min_spots_per_degree
+                )
+            if self._min_spots_overall is not None:
+                self.add_command_line(
+                    "gaussian_rs.min_spots.overall=%d" % self._min_spots_overall
+                )
 
             self.start()
             self.close_wait()

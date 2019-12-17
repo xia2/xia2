@@ -397,17 +397,34 @@ dials
       .type = float(value_min=0.0)
       .short_caption = "Low resolution cutoff for integration"
       .expert_level = 1
+    min_spots
+      .short_caption = "Override default profile parameters of dials.integrate"
+    {
+      overall = None
+        .type = int(value_min=0)
+        .optional = True
+        .help = "The minimum number of reflections needed to do the profile "
+                "modelling."
+
+      per_degree = None
+        .type = int(value_min=0)
+        .optional = True
+        .help = "The minimum number of reflections per degree of sweep needed to do "
+                "the profile modelling."
+    }
   }
+
   high_pressure
     .expert_level = 1
     .short_caption = "Handle diamond anvil pressure cell data"
   {
-    correct = False
+    correction = False
       .type = bool
       .short_caption = "Whether to correct for attenuation by a diamond anvil cell"
 
     include scope dials.command_line.rescale_diamond_anvil_cell.phil_scope
   }
+
   scale
     .expert_level = 1
     .short_caption = "Scaling"
