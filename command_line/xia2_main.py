@@ -333,27 +333,6 @@ def run():
 
     wd = os.getcwd()
 
-    # Temporarily patch os.chdir() to help identify source of #214
-    origpid = os.getpid()
-    origchdir = os.chdir
-
-    def chdir_override(arg):
-        if os.getpid() != origpid:
-            return origchdir(arg)
-        # Try to determine the name of the calling module.
-        # Use exception trick to pick up the current frame.
-        try:
-            raise Exception()
-        except Exception:
-            f = sys.exc_info()[2].tb_frame.f_back
-
-        Debug.write(
-            "Directory change to %r in %s:%d" % (arg, f.f_code.co_filename, f.f_lineno)
-        )
-        return origchdir(arg)
-
-    os.chdir = chdir_override
-
     try:
         xia2_main()
         Debug.write("\nTiming report:")
