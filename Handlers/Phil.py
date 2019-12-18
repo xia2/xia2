@@ -401,7 +401,7 @@ dials
       .short_caption = "Override default profile parameters of dials.integrate"
     {
       overall = None
-        .type = int(value_min=0)
+        .type = int(value_min=1)
         .optional = True
         .help = "The minimum number of reflections needed to do the profile "
                 "modelling."

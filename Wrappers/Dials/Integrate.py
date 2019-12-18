@@ -96,9 +96,7 @@ def Integrate(DriverType=None):
                 # don't impose a minimum number of reflections per degree,
                 self._min_spots_per_degree = min_spots_per_degree or 0
                 # and use a reduced minimum number of reflections overall.
-                self._min_spots_overall = (
-                    min_spots_overall if min_spots_overall is not None else 10
-                )
+                self._min_spots_overall = min_spots_overall or 10
             # Otherwise use user-specified values or defaults.
             else:
                 self._min_spots_per_degree = min_spots_per_degree
