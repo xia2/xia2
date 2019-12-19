@@ -79,7 +79,7 @@ class DialsIntegrater(Integrater):
 
     # factory functions
 
-    def Integrate(self, indexed_filename=None):
+    def Integrate(self):
         params = PhilIndex.params.dials.integrate
         integrate = xia2.Wrappers.Dials.Integrate.Integrate()
         integrate.set_phil_file(params.phil_file)
@@ -93,7 +93,13 @@ class DialsIntegrater(Integrater):
             profile_fitting = PhilIndex.params.xia2.settings.integration.profile_fitting
             integrate.set_profile_fitting(profile_fitting)
 
+        # Options for profile modelling.
         integrate.set_scan_varying_profile(params.scan_varying_profile)
+
+        high_pressure = PhilIndex.params.dials.high_pressure.correction
+        integrate.set_profile_params(
+            params.min_spots.per_degree, params.min_spots.overall, high_pressure
+        )
 
         integrate.set_background_outlier_algorithm(params.background_outlier_algorithm)
         integrate.set_background_algorithm(params.background_algorithm)
@@ -256,14 +262,6 @@ class DialsIntegrater(Integrater):
         else:
             integrate.set_d_min(self._intgr_reso_high)
 
-        # Options for profile modelling.
-        high_pressure = PhilIndex.params.dials.high_pressure.correction
-        min_spots_per_degree = PhilIndex.params.dials.integrate.min_spots.per_degree
-        min_spots_overall = PhilIndex.params.dials.integrate.min_spots.overall
-        integrate.set_profile_params(
-            min_spots_per_degree, min_spots_overall, high_pressure
-        )
-
         pname, xname, dname = self.get_integrater_project_info()
         sweep = self.get_integrater_sweep_name()
         FileHandler.record_log_file(
@@ -298,11 +296,6 @@ class DialsIntegrater(Integrater):
                         start - self.get_matching_images()[0],
                         stop - self.get_matching_images()[0],
                     )
-
-                # Options for profile modelling.
-                integrate.set_profile_params(
-                    min_spots_per_degree, min_spots_overall, high_pressure
-                )
 
                 integrate.set_reflections_per_degree(1000)
                 integrate.run()
