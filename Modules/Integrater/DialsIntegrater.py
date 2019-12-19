@@ -374,7 +374,13 @@ class DialsIntegrater(Integrater):
         return self._intgr_integrated_reflections
 
     def _integrate_finish(self):
-        """Finish off the integration by running dials.export."""
+        """
+        Finish off the integration.
+
+        If in high-pressure mode run dials.rescale_diamond_anvil_cell.
+
+        Run dials.export.
+        """
 
         # FIXME - do we want to export every time we call this method
         # (the file will not have changed) and also (more important) do
@@ -411,6 +417,7 @@ class DialsIntegrater(Integrater):
             rescale_dac.normal = params.anvil.normal
 
             # Run dials.rescale_diamond_anvil_cell with the parameters as set above.
+            rescale_dac.set_working_directory(self.get_working_directory())
             auto_logfiler(rescale_dac)
             rescale_dac()
 
