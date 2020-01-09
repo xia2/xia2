@@ -166,16 +166,12 @@ def test_assign_identifiers(helper_directory):
         experiments.append(exp_path)
         reflections.append(refl_path)
     assigner = helper.assign_dataset_identifiers(experiments, reflections)
-    assigned_exp = load.experiment_list(assigner.get_output_experiments_filename())
-    assert assigned_exp[0].identifier == "0"
-    assert assigned_exp[1].identifier == "1"
-    assert assigned_exp[2].identifier == "2"
-    assigned_refl = flex.reflection_table.from_file(
-        assigner.get_output_reflections_filename()
-    )
-    assert assigned_refl.experiment_identifiers()[0] == "0"
-    assert assigned_refl.experiment_identifiers()[1] == "1"
-    assert assigned_refl.experiment_identifiers()[2] == "2"
+    expts = load.experiment_list(assigner.get_output_experiments_filename())
+    assert len(set(expts.identifiers())) == 3
+    refls = flex.reflection_table.from_file(assigner.get_output_reflections_filename())
+    assert refls.experiment_identifiers()[0] == expts[0].identifier
+    assert refls.experiment_identifiers()[1] == expts[1].identifier
+    assert refls.experiment_identifiers()[2] == expts[2].identifier
 
 
 class simple_sweep_info(object):
@@ -248,10 +244,11 @@ def check_data_in_sweep_handler(sweephandler):
         r = flex.reflection_table.from_file(si.get_reflections())
         assert list(set(r["id"])) == [0]
         assert list(r.experiment_identifiers().keys()) == [0]
-        assert list(r.experiment_identifiers().values()) == [str(i)]
+        identifiers = r.experiment_identifiers().values()
+        assert len(identifiers) == 1
         experiment = load.experiment_list(si.get_experiments())
         assert len(experiment) == 1
-        assert experiment[0].identifier == str(i)
+        assert experiment[0].identifier == identifiers[0]
 
 
 def test_assign_and_return_datasets(helper_directory):
