@@ -197,7 +197,9 @@ class DialsScaler(Scaler):
         else:
             self._scalr_likely_spacegroups = [pointgroup]
             if reindex_initial:
-                self._helper.reindex_jiffy(si, pointgroup, reindex_op=reindex_op)
+                for epoch in self._sweep_handler.get_epochs():
+                    si = self._sweep_handler.get_sweep_information(epoch)
+                    self._helper.reindex_jiffy(si, pointgroup, reindex_op=reindex_op)
                 # integrater reset reindex op and update in si.
             else:
                 self._sweep_handler = self._helper.split_experiments(
