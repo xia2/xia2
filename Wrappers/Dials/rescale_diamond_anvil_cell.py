@@ -16,6 +16,11 @@ from xia2.Driver.DriverFactory import DriverFactory
 
 import os
 
+try:
+    from typing import List, Optional, SupportsFloat, Tuple
+except ImportError:
+    pass
+
 
 def rescale_dac(driver_type=None):
     """A factory for RescaleDACWrapper classes."""
@@ -30,95 +35,46 @@ def rescale_dac(driver_type=None):
 
             self.set_executable("dials.rescale_diamond_anvil_cell")
 
-            # Input and output files.  None is a valid value for the output experiments.
-            self._experiments_filename = None
-            self._reflections_filename = None
-            self._output_experiments_filename = None
-            self._output_reflections_filename = None
+            # Input and output files.
+            # None is a valid value only for the output experiment list filename.
+            self.experiments_filenames = []  # type: List[str, ...]
+            self.reflections_filenames = []  # type: List[str, ...]
+            self.output_experiments_filename = None  # type: Optional[str]
+            self.output_reflections_filename = None  # type: Optional[str]
 
             # Parameters to pass to dials.rescale_diamond_anvil_cell
-            self._density = None
-            self._thickness = None
-            self._normal = None
-
-        @property
-        def experiments_filename(self):
-            return self._experiments_filename
-
-        @experiments_filename.setter
-        def experiments_filename(self, filename):
-            self.add_command_line("%s" % filename)
-            self._experiments_filename = filename
-
-        @property
-        def reflections_filename(self):
-            return self._reflections_filename
-
-        @reflections_filename.setter
-        def reflections_filename(self, filename):
-            self.add_command_line("%s" % filename)
-            self._reflections_filename = filename
-
-        @property
-        def output_experiments_filename(self):
-            return self._output_experiments_filename
-
-        @output_experiments_filename.setter
-        def output_experiments_filename(self, filename):
-            self.add_command_line("output.experiments=%s" % filename)
-            self._output_experiments_filename = filename
-
-        @property
-        def output_reflections_filename(self):
-            return self._output_reflections_filename
-
-        @output_reflections_filename.setter
-        def output_reflections_filename(self, filename):
-            self.add_command_line("output.reflections=%s" % filename)
-            self._output_reflections_filename = filename
-
-        @property
-        def density(self):
-            return self._density
-
-        @density.setter
-        def density(self, density):
-            self.add_command_line("anvil.density=%s" % density)
-            self._density = density
-
-        @property
-        def thickness(self):
-            return self._thickness
-
-        @thickness.setter
-        def thickness(self, thickness):
-            self.add_command_line("anvil.thickness=%s" % thickness)
-            self._thickness = thickness
-
-        @property
-        def normal(self):
-            return self._normal
-
-        @normal.setter
-        def normal(self, normal):
-            self.add_command_line("anvil.normal=%s,%s,%s" % tuple(normal))
-            self._normal = normal
+            self.density = None  # type: Optional[SupportsFloat]
+            self.thickness = None  # type: Optional[SupportsFloat]
+            self.normal = None  # type: Optional[Tuple[3 * (SupportsFloat,)]]
 
         def __call__(self):
             """Run dials.rescale_diamond_anvil_cell if the parameters are valid."""
             # We should only start if the properties have been set.
-            assert self.experiments_filename
-            assert self.reflections_filename
+            assert self.experiments_filenames
+            assert self.reflections_filenames
             # None is a valid value for the output experiment list filename.
             assert self.output_reflections_filename
             assert self.density
             assert self.thickness
             assert self.normal
 
+            self.add_command_line(self.experiments_filenames)
+            self.add_command_line(self.reflections_filenames)
+            if self.output_experiments_filename:
+                self.add_command_line(
+                    "output.experiments=%s" % self.output_experiments_filename
+                )
+            self.add_command_line(
+                "output.reflections=%s" % self.output_reflections_filename
+            )
+            self.add_command_line("anvil.density=%s" % self.density)
+            self.add_command_line("anvil.thickness=%s" % self.thickness)
+            self.add_command_line("anvil.normal=%s,%s,%s" % tuple(self.normal))
+
             self.start()
             self.close_wait()
             self.check_for_errors()
 
-            assert os.path.exists(self._output_reflections_filename)
+            assert os.path.exists(self.output_reflections_filename)
 
     return RescaleDACWrapper()
