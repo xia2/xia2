@@ -37,6 +37,7 @@ def DialsScale(DriverType=None, decay_correction=None):
             self._d_min = None
             self._d_max = None
             self._crystal_name = None
+            self._overwrite_existing_models = None
 
             # input and output files
             self._unmerged_reflections = None
@@ -203,6 +204,9 @@ def DialsScale(DriverType=None, decay_correction=None):
         def set_best_unit_cell(self, unit_cell):
             self._best_unit_cell = unit_cell
 
+        def set_overwrite_existing_models(self, overwrite):
+            self._overwrite_existing_models = overwrite
+
         def scale(self):
             """Actually perform the scaling."""
 
@@ -228,11 +232,14 @@ def DialsScale(DriverType=None, decay_correction=None):
 
             assert self._model is not None
             self.add_command_line("model=%s" % self._model)
-            if self._absorption_correction:
-                self.add_command_line("%s.absorption_correction=True" % self._model)
+
             if self._bfactor:
                 self.add_command_line("%s.decay_correction=True" % self._model)
-                if self._brotation is not None:
+
+            if self._model != "KB":
+                if self._absorption_correction:
+                    self.add_command_line("%s.absorption_correction=True" % self._model)
+                if self._bfactor and self._brotation is not None:
                     self.add_command_line(
                         "%s.decay_interval=%g" % (self._model, self._brotation)
                     )
@@ -280,6 +287,8 @@ def DialsScale(DriverType=None, decay_correction=None):
                 self.add_command_line(
                     "best_unit_cell=%s,%s,%s,%s,%s,%s" % self._best_unit_cell
                 )
+            if self._overwrite_existing_models is not None:
+                self.add_command_line("overwrite_existing_models=True")
 
             if not self._scaled_experiments:
                 self._scaled_experiments = os.path.join(
