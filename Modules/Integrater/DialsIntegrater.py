@@ -403,10 +403,10 @@ class DialsIntegrater(Integrater):
 
             # Take the filenames of the last integration step as input.
             rescale_dac.experiments_filenames.append(self._intgr_experiments_filename)
-            rescale_dac.reflections_filename.append(self._intgr_integrated_reflections)
+            rescale_dac.reflections_filenames.append(self._intgr_integrated_reflections)
 
             # The output reflections have a filename appended with '_corrected'.
-            output_reflections = rescale_dac.reflections_filename.replace(
+            output_reflections = self._intgr_integrated_reflections.replace(
                 ".refl", "_corrected.refl"
             )
             rescale_dac.output_reflections_filename = output_reflections
