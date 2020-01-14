@@ -53,7 +53,7 @@ def SearchBeamPosition(DriverType=None):
                 self.add_command_line("image_range=%d,%d" % self._image_range)
 
             if self._phil_file is not None:
-                self.add_command_line("%s" % self._phil_file)
+                self.add_command_line(self._phil_file)
 
             self._optimized_filename = os.path.join(
                 self.get_working_directory(), "%d_optimised.expt" % self.get_xpid()

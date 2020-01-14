@@ -1,10 +1,10 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+import pytest
 import subprocess
 
-import pytest
-from libtbx.test_utils import approx_equal
+from xia2.Wrappers.CCP4.Blend import Blend
 
 
 def cmd_exists(cmd):
@@ -19,8 +19,6 @@ def cmd_exists(cmd):
 def test_blend_wrapper(regression_test, ccp4, dials_data, run_in_tmpdir):
     if not cmd_exists("blend"):
         pytest.skip("blend not available")
-
-    from xia2.Wrappers.CCP4.Blend import Blend
 
     b = Blend()
     for f in dials_data("blend_tutorial").listdir(sort=True):
@@ -104,8 +102,7 @@ def test_blend_wrapper(regression_test, ccp4, dials_data, run_in_tmpdir):
 
     import numpy
 
-    assert approx_equal(
-        list(linkage_matrix.flat),
+    assert list(linkage_matrix.flat) == pytest.approx(
         list(
             numpy.array(
                 [
@@ -138,7 +135,7 @@ def test_blend_wrapper(regression_test, ccp4, dials_data, run_in_tmpdir):
                     [5.2000e01, 5.3000e01, 1.7335e01, 2.8000e01],
                 ]
             ).flat
-        ),
+        )
     )
 
     assert os.path.exists(b.get_dendrogram_file())

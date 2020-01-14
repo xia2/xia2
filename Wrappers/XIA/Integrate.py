@@ -1,12 +1,10 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
+
+from xia2.Driver.DriverFactory import DriverFactory
 
 
 def Integrate(DriverType=None):
     """A factory for IntegrateWrapper classes."""
-
-    from xia2.Driver.DriverFactory import DriverFactory
 
     DriverInstance = DriverFactory.Driver(DriverType)
 
@@ -44,7 +42,7 @@ def Integrate(DriverType=None):
             self.clear_command_line()
 
             if self._phil_file is not None:
-                self.add_command_line("%s" % self._phil_file)
+                self.add_command_line(self._phil_file)
 
             for arg in self._argv:
                 self.add_command_line(arg)

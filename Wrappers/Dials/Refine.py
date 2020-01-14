@@ -116,7 +116,7 @@ def Refine(DriverType=None):
             if self._beam_fix:
                 self.add_command_line("beam.fix=%s" % self._beam_fix)
             if self._phil_file is not None:
-                self.add_command_line("%s" % self._phil_file)
+                self.add_command_line(self._phil_file)
 
             self.start()
             self.close_wait()

@@ -152,14 +152,14 @@ def DialsSymmetry(DriverType=None):
 
             if self._hklin is not None:
                 assert os.path.isfile(self._hklin)
-                self.add_command_line("'%s'" % self._hklin)
+                self.add_command_line(self._hklin)
             else:
                 assert self._experiments_filenames  # is not None
                 assert self._reflections_filenames  # is not None
                 for exp in self._experiments_filenames:
-                    self.add_command_line("'%s'" % exp)
+                    self.add_command_line(exp)
                 for refl in self._reflections_filenames:
-                    self.add_command_line("'%s'" % refl)
+                    self.add_command_line(refl)
 
                 if not self._output_experiments_filename:
                     self._output_experiments_filename = os.path.join(
@@ -173,10 +173,10 @@ def DialsSymmetry(DriverType=None):
                     )
 
                 self.add_command_line(
-                    "output.experiments='%s'" % self._output_experiments_filename
+                    "output.experiments=%s" % self._output_experiments_filename
                 )
                 self.add_command_line(
-                    "output.reflections='%s'" % self._output_reflections_filename
+                    "output.reflections=%s" % self._output_reflections_filename
                 )
             if self._laue_group is None:
                 self.add_command_line("laue_group=None")
@@ -194,10 +194,10 @@ def DialsSymmetry(DriverType=None):
                     "%d_dials_symmetry.json" % self.get_xpid(),
                 )
 
-            self.add_command_line("output.json='%s'" % self._json)
+            self.add_command_line("output.json=%s" % self._json)
 
             if self._input_laue_group:
-                self.add_command_line("lattice_group='%s'" % self._input_laue_group)
+                self.add_command_line("lattice_group=%s" % self._input_laue_group)
 
             self.start()
 

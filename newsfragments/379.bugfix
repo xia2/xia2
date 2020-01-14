@@ -1,2 +1,0 @@
-Ensure that integration results are copied to DataFiles. In some circumstances,
-when re-indexing/integrating the data, they were inadvertently missed (#379)

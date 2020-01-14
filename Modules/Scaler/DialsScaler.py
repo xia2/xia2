@@ -119,6 +119,28 @@ class DialsScaler(Scaler):
 
         return self._scaler
 
+    def _do_prescale_kb(self, experiments, reflections):
+        # Pre-scale the data with KB scaling to ensure all experiments are on
+        # the same scale prior to running dials.symmetry
+        self._scaler = DialsScale()
+        self._scaler = self._updated_dials_scaler()
+        self._scaler.set_model("KB")
+        self._scaler.set_full_matrix(False)
+        self._scaler.set_error_model(None)
+        self._scaler.set_intensities("profile")
+
+        for expts, refl in zip(experiments, reflections):
+            self._scaler.add_experiments_json(expts)
+            self._scaler.add_reflections_file(refl)
+
+        self._scaler.set_working_directory(self.get_working_directory())
+        auto_logfiler(self._scaler)
+        self._scaler.scale()
+        prescaled_experiments = self._scaler.get_scaled_experiments()
+        prescaled_reflections = self._scaler.get_scaled_reflections()
+        self._scaler = None
+        return prescaled_experiments, prescaled_reflections
+
     def _do_multisweep_symmetry_analysis(self):
         refiners = []
         experiments = []
@@ -131,6 +153,10 @@ class DialsScaler(Scaler):
             reflections.append(integrater.get_integrated_reflections())
             refiners.append(integrater.get_integrater_refiner())
 
+        prescaled_experiments, prescaled_reflections = self._do_prescale_kb(
+            experiments, reflections
+        )
+
         Debug.write("Running multisweep dials.symmetry for %d sweeps" % len(refiners))
         (
             pointgroup,
@@ -141,7 +167,7 @@ class DialsScaler(Scaler):
             reind_exp,
             reindex_initial,
         ) = self._dials_symmetry_indexer_jiffy(
-            experiments, reflections, refiners, multisweep=True
+            [prescaled_experiments], [prescaled_reflections], refiners, multisweep=True
         )
 
         FileHandler.record_temporary_file(reind_refl)
@@ -171,7 +197,9 @@ class DialsScaler(Scaler):
         else:
             self._scalr_likely_spacegroups = [pointgroup]
             if reindex_initial:
-                self._helper.reindex_jiffy(si, pointgroup, reindex_op=reindex_op)
+                for epoch in self._sweep_handler.get_epochs():
+                    si = self._sweep_handler.get_sweep_information(epoch)
+                    self._helper.reindex_jiffy(si, pointgroup, reindex_op=reindex_op)
                 # integrater reset reindex op and update in si.
             else:
                 self._sweep_handler = self._helper.split_experiments(
@@ -531,6 +559,9 @@ pipeline=dials (supported for pipeline=dials-aimless).
             for si in sweep_infos:
                 self._scaler.add_experiments_json(si.get_experiments())
                 self._scaler.add_reflections_file(si.get_reflections())
+            # ensure we start with a clean slate in case we pre-scaled the data
+            # before running dials.symmetry
+            self._scaler.set_overwrite_existing_models(True)
 
         self._scalr_scaled_reflection_files = {}
         self._scalr_scaled_reflection_files["mtz_unmerged"] = {}

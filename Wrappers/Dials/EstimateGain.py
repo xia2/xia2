@@ -35,7 +35,7 @@ def EstimateGain(DriverType=None):
             self.clear_command_line()
 
             assert self._sweep_filename is not None
-            self.add_command_line("%s" % self._sweep_filename)
+            self.add_command_line(self._sweep_filename)
             if self._kernel_size is not None:
                 self.add_command_line("kernel_size=%i,%i" % self._kernel_size)
             self.start()
