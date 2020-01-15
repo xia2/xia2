@@ -212,7 +212,8 @@ class DialsScaler(Scaler):
         # is this function completely pointless?
         # ---------- REINDEX ALL DATA TO CORRECT POINTGROUP ----------
         ####Redoing batches only seems to be in multi_sweep_idxing for CCP4A
-        self._scalr_likely_spacegroups = [self._scalr_input_pointgroup]
+        if self._scalr_input_spacegroup:
+            self._scalr_likely_spacegroups = [self._scalr_input_spacegroup]
         Debug.write("Using input pointgroup: %s" % self._scalr_input_pointgroup)
         for epoch in self._sweep_handler.get_epochs():
             si = self._sweep_handler.get_sweep_information(epoch)
@@ -630,7 +631,10 @@ pipeline=dials (supported for pipeline=dials-aimless).
         ### Want to do space group check after scaling. So run dials.symmetry
         ### with absences only before exporting merged and unmerged files
         ### again in correct s.g.
-        if not PhilIndex.params.xia2.settings.small_molecule:
+        if (
+            not PhilIndex.params.xia2.settings.small_molecule
+            and not self._scalr_input_spacegroup
+        ):
             Chatter.banner("Systematic absences check")
             symmetry = DialsSymmetry()
             symmetry.set_experiments_filename(self._scaled_experiments)
