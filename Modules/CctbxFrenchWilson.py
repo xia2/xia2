@@ -52,6 +52,10 @@ class french_wilson(object):
                 amplitudes = intensities.french_wilson(params=params)
                 assert amplitudes.is_xray_amplitude_array()
 
+                dano = None
+                if amplitudes.anomalous_flag():
+                    dano = amplitudes.anomalous_differences()
+
                 if not intensities.space_group().is_centric():
                     merged_intensities = intensities.merge_equivalents().array()
                     wilson_scaling = data_statistics.wilson_scaling(
@@ -62,6 +66,10 @@ class french_wilson(object):
 
                 mtz_dataset = mtz_object.crystals()[1].datasets()[0]
                 mtz_dataset.add_miller_array(amplitudes, column_root_label="F")
+                if dano is not None:
+                    mtz_dataset.add_miller_array(
+                        dano, column_root_label="DANO", column_types="DQ"
+                    )
         mtz_object.add_history("cctbx.french_wilson analysis")
         print("Writing reflections to %s" % (params.hklout))
         mtz_object.show_summary()
