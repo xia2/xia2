@@ -446,9 +446,13 @@ def template_to_xds(template):
 
         master_file = template
 
-        g = glob.glob(master_file.split("master.h5")[0] + "data_*[0-9].h5")
-        g.extend(glob.glob(master_file.split("master.h5")[0] + "*[0-9].h5"))
-        assert len(g), "No associated data files found for %s" % master_file
+        # FIXME for #401 - should look into the master file for references
+        # either explicitly to child data sets or via the VDS - meantimes,
+        # remove the check
+
+        # g = glob.glob(master_file.split("master.h5")[0] + "data_*[0-9].h5")
+        # g.extend(glob.glob(master_file.split("master.h5")[0] + "*[0-9].h5"))
+        # assert len(g), "No associated data files found for %s" % master_file
 
         # we don't know what is in the master file but we know at this point
         # that the word master is in there, so... otherwise can get complicated
