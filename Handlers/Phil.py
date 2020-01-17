@@ -26,7 +26,7 @@ general
 xds
   .short_caption = "XDS settings"
 {
-  hdf5_plugin = "dectris-neggia.so"
+  hdf5_plugin = "durin-plugin.so"
     .type = path
     .help = "HDF5 plugin file reader name, either filename or full path"
     .short_caption = "LIB=/path/to/(this)"
