@@ -55,6 +55,7 @@ def test_proteinase_k_dose(
             "dose=1,20",
             "symmetry.laue_group=%s" % laue_group,
             "symmetry.space_group=%s" % space_group,
+            "max_clusters=2",
         ]
         + expts
         + refls
