@@ -111,14 +111,13 @@ class DialsRefiner(Refiner):
 
             scan_static = PhilIndex.params.dials.refine.scan_static
 
-            # XXX Temporary workaround for dials.refine error for scan_varying
-            # refinement with smaller wedges
+            # Avoid doing scan-varying refinement on narrow wedges.
             start, end = experiments[0].scan.get_oscillation_range()
-            total_phi_range = end - start
+            total_oscillation_range = end - start
 
             if (
                 PhilIndex.params.dials.refine.scan_varying
-                and total_phi_range > 5
+                and total_oscillation_range > 5
                 and not PhilIndex.params.dials.fast_mode
             ):
                 scan_varying = PhilIndex.params.dials.refine.scan_varying
@@ -143,8 +142,8 @@ class DialsRefiner(Refiner):
                 refiner = self.Refine()
                 refiner.set_experiments_filename(self._refinr_experiments_filename)
                 refiner.set_indexed_filename(self._refinr_indexed_filename)
-                if total_phi_range < 36:
-                    refiner.set_interval_width_degrees(total_phi_range / 2)
+                if total_oscillation_range < 36:
+                    refiner.set_interval_width_degrees(total_oscillation_range / 2)
                 refiner.run()
                 self._refinr_experiments_filename = (
                     refiner.get_refined_experiments_filename()
