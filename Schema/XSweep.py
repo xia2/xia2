@@ -662,58 +662,18 @@ class XSweep(object):
         return self._indexer
 
     def _get_refiner(self):
-
         if self._refiner is None:
-            # set the working directory for this, based on the hierarchy
-            # defined herein...
-
-            # that would be CRYSTAL_ID/WAVELENGTH/SWEEP/index &c.
-
             if not self.get_wavelength():
                 wavelength_id = "default"
                 crystal_id = "default"
-
             else:
                 wavelength_id = self.get_wavelength().get_name()
                 crystal_id = self.get_wavelength().get_crystal().get_name()
-
             working_directory = Environment.generate_directory(
                 [crystal_id, wavelength_id, self.get_name(), "refine"]
             )
-
-            # FIXME the indexer factory should probably be able to
-            # take self [this object] as input, to help with deciding
-            # the most appropriate indexer to use... this will certainly
-            # be the case for the integrater. Maintaining this link
-            # will also help the system cope with updates (which
-            # was going to be one of the big problems...)
-            # 06/SEP/06 no keep these interfaces separate - want to
-            # keep "pure" interfaces to the programs for reuse, then
-            # wrap in XStyle.
             self._refiner = RefinerFactory.RefinerForXSweep(self)
-
-            ## set the user supplied lattice if there is one
-            # if self._user_lattice:
-            # self._indexer.set_indexer_input_lattice(self._user_lattice)
-            # self._indexer.set_indexer_user_input_lattice(True)
-
-            ## and also the cell constants - but only if lattice is
-            ## assigned
-
-            # if self._user_cell:
-            # self._indexer.set_indexer_input_cell(self._user_cell)
-
-            # else:
-            # if self._user_cell:
-            # raise RuntimeError('cannot assign cell without lattice')
-
             self._refiner.set_working_directory(working_directory)
-
-            # if self._frames_to_process:
-            # frames = self._frames_to_process
-            # self._refiner.set_frame_wedge(frames[0], frames[1])
-
-            # self._refiner.set_indexer_sweep_name(self._name)
 
         self._refiner.add_refiner_indexer(
             self.get_epoch(self._frames_to_process[0]), self._get_indexer()
