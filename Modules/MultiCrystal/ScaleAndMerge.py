@@ -1,3 +1,4 @@
+# coding: utf-8
 from __future__ import absolute_import, division, print_function
 
 import copy
@@ -11,6 +12,7 @@ from libtbx import Auto
 import iotbx.phil
 from cctbx import miller
 from cctbx import sgtbx
+from cctbx import uctbx
 from dxtbx.serialize import load
 from dxtbx.model import ExperimentList
 
@@ -456,6 +458,48 @@ class MultiCrystalScale(object):
             d, cluster_name
         )
 
+        self._comparison_graphs.setdefault(
+            "radar",
+            {
+                "data": [],
+                "layout": {
+                    "polar": {
+                        "radialaxis": {
+                            "visible": True,
+                            "showticklabels": False,
+                            "range": [0, 1],
+                        }
+                    }
+                },
+            },
+        )
+
+        self._comparison_graphs["radar"]["data"].append(
+            {
+                "type": "scatterpolar",
+                "r": [],
+                "theta": [],
+                "fill": "toself",
+                "name": cluster_name,
+            }
+        )
+
+        for k, text in (
+            ("cc_one_half", "CC½"),
+            ("mean_redundancy", "Multiplicity"),
+            ("completeness", "Completeness"),
+            ("i_over_sigma_mean", "I/σ(I)"),
+        ):
+            self._comparison_graphs["radar"]["data"][-1]["r"].append(
+                getattr(report.merging_stats.overall, k)
+            )
+            self._comparison_graphs["radar"]["data"][-1]["theta"].append(text)
+
+        self._comparison_graphs["radar"]["data"][-1]["r"].append(
+            uctbx.d_as_d_star_sq(report.merging_stats.overall.d_min)
+        )
+        self._comparison_graphs["radar"]["data"][-1]["theta"].append("Resolution")
+
         for graph in (
             "cc_one_half",
             "i_over_sig_i",
@@ -714,6 +758,13 @@ class MultiCrystalScale(object):
         return mca
 
     def report(self):
+        # Scale so that all the data are in the range 0->1
+        radar_data = self._comparison_graphs["radar"]["data"]
+        for i in range(len(radar_data[0]["r"])):
+            max_r = max(data["r"][i] for data in radar_data)
+            for data in radar_data:
+                data["r"][i] /= max_r
+
         self._mca.report(
             self._individual_report_dicts, self._comparison_graphs, self._cosym_analysis
         )
