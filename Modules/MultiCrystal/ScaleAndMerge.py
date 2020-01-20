@@ -437,7 +437,10 @@ class MultiCrystalScale(object):
                     os.mkdir(cluster_dir)
                 os.chdir(cluster_dir)
                 data_manager = copy.deepcopy(self._data_manager_original)
-                data_manager.select(cluster.labels)
+                cluster_identifiers = [
+                    self._data_manager.ids_to_identifiers_map[l] for l in cluster.labels
+                ]
+                data_manager.select(cluster_identifiers)
                 scaled = Scale(data_manager, self._params)
                 self._record_individual_report(
                     scaled.report(), cluster_dir.replace("_", " ")
