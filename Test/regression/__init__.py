@@ -26,10 +26,10 @@ def check_result(
     ccp4 = ccp4["version"]
     xds = xds["version"] if xds else 0
 
-    error_file = tmpdir / "xia2.error"
+    error_file = tmpdir / "xia2-error.txt"
     if error_file.check():
         print(error_file.read())
-        return False, "xia2.error present after execution"
+        return False, "xia2-error.txt present after execution"
 
     if result["stderr"]:
         return False, "xia2 terminated with output to STDERR:\n" + result["stderr"]

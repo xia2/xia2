@@ -22,7 +22,7 @@ def run():
     try:
         check_environment()
     except Exception as e:
-        with open("xia2.error", "w") as fh:
+        with open("xia2-error.txt", "w") as fh:
             traceback.print_exc(file=fh)
         Chatter.write('Status: error "%s"' % str(e))
 
