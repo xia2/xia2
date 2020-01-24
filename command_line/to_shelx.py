@@ -16,7 +16,7 @@ def parse_compound(compound):
     number = ""
     compound += "X"
     for c in compound:
-        if c in string.uppercase:
+        if c in string.ascii_uppercase:
             if not element:
                 element += c
                 continue
@@ -164,7 +164,7 @@ def to_shelx(hklin, prefix, compound="", options=None):
     indices = reader.file_content().extract_original_index_miller_indices()
     intensities = intensities.customized_copy(indices=indices, info=intensities.info())
 
-    with open("%s.hkl" % prefix, "wb") as hkl_file_handle:
+    with open("%s.hkl" % prefix, "w") as hkl_file_handle:
         # limit values to 4 digits (before decimal point), as this is what shelxt
         # writes in its output files, and shelxl seems to read. ShelXL apparently
         # does not read values >9999 properly
