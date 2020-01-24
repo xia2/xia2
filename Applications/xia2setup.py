@@ -190,9 +190,9 @@ def visit(directory, files):
         full_path = os.path.join(directory, f)
 
         if is_hd5f_name(full_path):
-            from dxtbx.format.Registry import Registry
+            from dxtbx.format import Registry
 
-            format_class = Registry.find(full_path)
+            format_class = Registry.get_format_class_for_file(full_path)
             if format_class is None:
                 Debug.write(
                     "Ignoring %s (Registry can not find format class)" % full_path
