@@ -437,9 +437,9 @@ def xds_read_xparm_new_style(xparm_file):
 
 
 def template_to_xds(template):
-    from xia2.Applications.xia2setup import is_hd5f_name
+    from xia2.Applications.xia2setup import is_hdf5_name
 
-    if is_hd5f_name(template):
+    if is_hdf5_name(template):
         # Given (e.g.) XYZ_master.h5 and data files XYZ_data_00000[0-9].h5
         # XDS expects the template XYZ_??????.h5
         assert template.endswith("master.h5"), template
@@ -467,9 +467,9 @@ __hdf5_lib = ""
 
 def find_hdf5_lib(template=None):
     global __hdf5_lib
-    from xia2.Applications.xia2setup import is_hd5f_name
+    from xia2.Applications.xia2setup import is_hdf5_name
 
-    if template and not is_hd5f_name(template):
+    if template and not is_hdf5_name(template):
         return ""
 
     if __hdf5_lib:

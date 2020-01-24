@@ -416,7 +416,7 @@ class _CommandLine(object):
                 dataset = tokens[0]
                 start_end = int(tokens[1]), int(tokens[2])
 
-            from xia2.Applications.xia2setup import is_hd5f_name
+            from xia2.Applications.xia2setup import is_hdf5_name
 
             if os.path.exists(os.path.abspath(dataset)):
                 dataset = os.path.abspath(dataset)
@@ -433,7 +433,7 @@ class _CommandLine(object):
                         "Could not find %s in %s" % (dataset, " ".join(directories))
                     )
 
-            if is_hd5f_name(dataset):
+            if is_hdf5_name(dataset):
                 self._hdf5_master_files.append(dataset)
                 if start_end:
                     Debug.write("Image range: %d %d" % start_end)

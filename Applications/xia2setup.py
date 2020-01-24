@@ -96,13 +96,13 @@ def is_image_name(filename):
         except Exception:
             pass
 
-        if is_hd5f_name(filename):
+        if is_hdf5_name(filename):
             return True
 
     return False
 
 
-def is_hd5f_name(filename):
+def is_hdf5_name(filename):
     if os.path.isfile(filename):
         if os.path.splitext(filename)[-1] in known_hdf5_extensions:
             return True
@@ -189,7 +189,7 @@ def visit(directory, files):
     for f in files:
         full_path = os.path.join(directory, f)
 
-        if is_hd5f_name(full_path):
+        if is_hdf5_name(full_path):
             from dxtbx.format import Registry
 
             format_class = Registry.get_format_class_for_file(full_path)

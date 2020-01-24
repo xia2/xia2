@@ -108,9 +108,9 @@ def image2template_directory(filename):
 
     image = os.path.split(filename)[-1]
 
-    from xia2.Applications.xia2setup import is_hd5f_name
+    from xia2.Applications.xia2setup import is_hdf5_name
 
-    if is_hd5f_name(filename):
+    if is_hdf5_name(filename):
         return image, directory
 
     template = image2template(image)
