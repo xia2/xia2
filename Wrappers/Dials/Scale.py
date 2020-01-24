@@ -335,7 +335,6 @@ def DialsScale(DriverType=None, decay_correction=None):
 
             Debug.write("dials.scale status: OK")
 
-            Chatter.write("Completed a round of scaling using dials.scale")
             return "OK"
 
         def get_scaled_reflection_files(self):
