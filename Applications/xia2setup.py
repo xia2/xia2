@@ -218,11 +218,48 @@ def visit(directory, files):
     return templates
 
 
+def _list_hdf5_data_files(h5_file):
+    import h5py
+
+    f = h5py.File(h5_file, "r")
+    filenames = [
+        f["/entry/data"][k].file.filename
+        for k in f["/entry/data"]
+        if k.startswith("data_")
+    ]
+    f.close()
+    return filenames
+
+
+def _filter_aliased_hdf5_sweeps(sweeps):
+    h5_data_to_sweep = {}
+    rest = []
+
+    for s in sweeps:
+        if not is_hdf5_name(s):
+            if s not in rest:
+                rest.append(s)
+            continue
+        filenames = tuple(_list_hdf5_data_files(s))
+        if filenames in h5_data_to_sweep:
+            # impose slight bias in favour of using _master.h5 in place of .nxs
+            # because XDS
+            if h5_data_to_sweep[filenames].endswith(".nxs") and s.endswith(
+                "_master.h5"
+            ):
+                h5_data_to_sweep[filenames] = s
+        else:
+            h5_data_to_sweep[filenames] = s
+
+    return rest + [h5_data_to_sweep[k] for k in sorted(h5_data_to_sweep)]
+
+
 def _write_sweeps(sweeps, out):
     global latest_sequence
     _known_sweeps = sweeps
 
     sweeplist = sorted(_known_sweeps)
+    sweeplist = _filter_aliased_hdf5_sweeps(sweeplist)
     assert sweeplist, "no sweeps found"
 
     # sort sweeplist based on epoch of first image of each sweep
