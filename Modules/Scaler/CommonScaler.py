@@ -523,9 +523,6 @@ class CommonScaler(Scaler):
         if not self._scalr_scaled_refl_files:
             raise RuntimeError("no reflection files stored")
 
-        # run xia2.report on each unmerged mtz file
-        # self._scale_finish_chunk_2_report()
-
         if not PhilIndex.params.xia2.settings.small_molecule:
             self._scale_finish_chunk_3_truncate()
 
@@ -561,55 +558,6 @@ class CommonScaler(Scaler):
             date_str = time.strftime("%d/%m/%Y at %H:%M:%S", time.gmtime())
             mtz_object.add_history("From %s, run on %s" % (Version, date_str))
             mtz_object.write(mtz_file)
-
-    def _scale_finish_chunk_2_report(self):
-        from cctbx.array_family import flex
-        from iotbx.reflection_file_reader import any_reflection_file
-        from xia2.lib.bits import auto_logfiler
-        from xia2.Wrappers.XIA.Report import Report
-
-        for wavelength in self._scalr_scaled_refl_files:
-            mtz_unmerged = self._scalr_scaled_reflection_files["mtz_unmerged"][
-                wavelength
-            ]
-            reader = any_reflection_file(mtz_unmerged)
-            mtz_object = reader.file_content()
-            batches = mtz_object.as_miller_arrays_dict()[
-                "HKL_base", "HKL_base", "BATCH"
-            ]
-            dose = flex.double(batches.size(), -1)
-            batch_to_dose = self.get_batch_to_dose()
-            for i, b in enumerate(batches.data()):
-                dose[i] = batch_to_dose[b]
-            c = mtz_object.crystals()[0]
-            d = c.datasets()[0]
-            d.add_column("DOSE", "R").set_values(dose.as_float())
-            tmp_mtz = os.path.join(self.get_working_directory(), "dose_tmp.mtz")
-            mtz_object.write(tmp_mtz)
-            hklin = tmp_mtz
-            FileHandler.record_temporary_file(hklin)
-
-            report = Report()
-            report.set_working_directory(self.get_working_directory())
-            report.set_mtz_filename(hklin)
-            htmlout = os.path.join(
-                self.get_working_directory(),
-                "%s_%s_%s_report.html"
-                % (self._scalr_pname, self._scalr_xname, wavelength),
-            )
-            report.set_html_filename(htmlout)
-            report.set_chef_min_completeness(0.95)  # sensible?
-            auto_logfiler(report)
-            try:
-                report.run()
-                FileHandler.record_html_file(
-                    "%s %s %s report"
-                    % (self._scalr_pname, self._scalr_xname, wavelength),
-                    htmlout,
-                )
-            except Exception as e:
-                Debug.write("xia2.report failed:")
-                Debug.write(str(e))
 
     def _scale_finish_chunk_3_truncate(self):
         for wavelength in self._scalr_scaled_refl_files:
