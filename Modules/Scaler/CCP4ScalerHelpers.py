@@ -511,34 +511,6 @@ class SweepInformationHandler(object):
         return pname, xname
 
 
-def anomalous_signals(hklin):
-    """
-    Compute some measures of anomalous signal: df / f and di / sig(di).
-    """
-
-    m = mtz.object(hklin)
-    mas = m.as_miller_arrays()
-
-    data = None
-
-    for ma in mas:
-        if not ma.anomalous_flag():
-            continue
-        if str(ma.observation_type()) != "xray.intensity":
-            continue
-        data = ma
-
-    if not data:
-        Debug.write("no anomalous data found")
-        return
-
-    df_f = data.anomalous_signal()
-    differences = data.anomalous_differences()
-    di_sigdi = sum(abs(differences.data())) / sum(differences.sigmas())
-
-    return df_f, di_sigdi
-
-
 def mosflm_B_matrix(uc):
     from scitbx.matrix import sqr
 

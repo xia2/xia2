@@ -18,7 +18,6 @@ from xia2.Modules import MtzUtils
 from xia2.Modules.CCP4InterRadiationDamageDetector import (
     CCP4InterRadiationDamageDetector,
 )
-from xia2.Modules.Scaler.CCP4ScalerHelpers import anomalous_signals
 from xia2.Modules.Scaler.rebatch import rebatch
 from xia2.Schema.Interfaces.Scaler import Scaler
 
@@ -521,12 +520,6 @@ class CommonScaler(Scaler):
 
     def _scale_finish(self):
 
-        # compute anomalous signals if anomalous
-        if self.get_scaler_anomalous():
-            self._scale_finish_chunk_1_compute_anomalous()
-
-        # next transform to F's from I's etc.
-
         if not self._scalr_scaled_refl_files:
             raise RuntimeError("no reflection files stored")
 
@@ -568,23 +561,6 @@ class CommonScaler(Scaler):
             date_str = time.strftime("%d/%m/%Y at %H:%M:%S", time.gmtime())
             mtz_object.add_history("From %s, run on %s" % (Version, date_str))
             mtz_object.write(mtz_file)
-
-    def _scale_finish_chunk_1_compute_anomalous(self):
-        for key in self._scalr_scaled_refl_files:
-            f = self._scalr_scaled_refl_files[key]
-            m = mtz.object(f)
-            if m.space_group().is_centric():
-                Debug.write("Spacegroup is centric: %s" % f)
-                continue
-            Debug.write("Running anomalous signal analysis on %s" % f)
-            a_s = anomalous_signals(f)
-            if a_s is not None:
-                self._scalr_statistics[(self._scalr_pname, self._scalr_xname, key)][
-                    "dF/F"
-                ] = [a_s[0]]
-                self._scalr_statistics[(self._scalr_pname, self._scalr_xname, key)][
-                    "dI/s(dI)"
-                ] = [a_s[1]]
 
     def _scale_finish_chunk_2_report(self):
         from cctbx.array_family import flex
@@ -1124,6 +1100,10 @@ class CommonScaler(Scaler):
                         scaled_unmerged_mtz, anomalous=True, n_bins=n_bins
                     )
                     stats["Anomalous slope"] = [anom_result.anomalous_np_slope]
+                    stats["dF/F"] = [anom_result.overall.anom_signal]
+                    stats["dI/s(dI)"] = [
+                        anom_result.overall.delta_i_mean_over_sig_delta_i_mean
+                    ]
                     if four_column_output:
                         select_anom_result = self._iotbx_merging_statistics(
                             scaled_unmerged_mtz,
