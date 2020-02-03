@@ -1,11 +1,10 @@
 """
-Provide a wrapper for dials.rescale_diamond_anvil_cell.
+Provide a wrapper for dials.anvil_correction.
 
 When performing a high-pressure data collection using a diamond anvil pressure cell,
 the incident and diffracted beams are attenuated in passing through the anvils,
-adversely affecting the scaling statistics.  dials.rescale_diamond_anvil_cell
-provides a correction to the integrated intensities before symmetry determination and
-scaling.
+adversely affecting the scaling statistics.  dials.anvil_correction provides a
+correction to the integrated intensities before symmetry determination and scaling.
 
 This wrapper is intended for use in the _integrate_finish step of the DialsIntegrater.
 """
@@ -28,12 +27,12 @@ def rescale_dac(driver_type=None):
     driver_instance = DriverFactory.Driver(driver_type)
 
     class RescaleDACWrapper(driver_instance.__class__):
-        """Wrap dials.rescale_diamond_anvil_cell."""
+        """Wrap dials.anvil_correction."""
 
         def __init__(self):
             super(RescaleDACWrapper, self).__init__()
 
-            self.set_executable("dials.rescale_diamond_anvil_cell")
+            self.set_executable("dials.anvil_correction")
 
             # Input and output files.
             # None is a valid value only for the output experiment list filename.
@@ -42,13 +41,13 @@ def rescale_dac(driver_type=None):
             self.output_experiments_filename = None  # type: Optional[str]
             self.output_reflections_filename = None  # type: Optional[str]
 
-            # Parameters to pass to dials.rescale_diamond_anvil_cell
+            # Parameters to pass to dials.anvil_correction
             self.density = None  # type: Optional[SupportsFloat]
             self.thickness = None  # type: Optional[SupportsFloat]
             self.normal = None  # type: Optional[Tuple[3 * (SupportsFloat,)]]
 
         def __call__(self):
-            """Run dials.rescale_diamond_anvil_cell if the parameters are valid."""
+            """Run dials.anvil_correction if the parameters are valid."""
             # We should only start if the properties have been set.
             assert self.experiments_filenames
             assert self.reflections_filenames

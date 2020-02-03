@@ -17,7 +17,7 @@ from xia2.Schema.Interfaces.Integrater import Integrater
 
 from xia2.Wrappers.Dials.ExportMtz import ExportMtz as _ExportMtz
 from xia2.Wrappers.Dials.Report import Report as _Report
-from xia2.Wrappers.Dials.rescale_diamond_anvil_cell import rescale_dac as _rescale_dac
+from xia2.Wrappers.Dials.anvil_correction import rescale_dac as _rescale_dac
 
 
 class DialsIntegrater(Integrater):
@@ -377,7 +377,7 @@ class DialsIntegrater(Integrater):
         """
         Finish off the integration.
 
-        If in high-pressure mode run dials.rescale_diamond_anvil_cell.
+        If in high-pressure mode run dials.anvil_correction.
 
         Run dials.export.
         """
@@ -388,7 +388,7 @@ class DialsIntegrater(Integrater):
         # that we do; these can be very large) - was exporter.get_xpid() ->
         # now dials
 
-        # If running in high-pressure mode, run dials.rescale_diamond_anvil_cell to
+        # If running in high-pressure mode, run dials.anvil_correction to
         # correct for the attenuation of the incident and diffracted beams by the
         # diamond anvils.
         if PhilIndex.params.dials.high_pressure.correction:
@@ -416,7 +416,7 @@ class DialsIntegrater(Integrater):
             rescale_dac.thickness = params.anvil.thickness
             rescale_dac.normal = params.anvil.normal
 
-            # Run dials.rescale_diamond_anvil_cell with the parameters as set above.
+            # Run dials.anvil_correction with the parameters as set above.
             rescale_dac.set_working_directory(self.get_working_directory())
             auto_logfiler(rescale_dac)
             rescale_dac()

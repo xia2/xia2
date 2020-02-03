@@ -422,7 +422,7 @@ dials
       .type = bool
       .short_caption = "Whether to correct for attenuation by a diamond anvil cell"
 
-    include scope dials.command_line.rescale_diamond_anvil_cell.phil_scope
+    include scope dials.command_line.anvil_correction.phil_scope
   }
 
   scale
