@@ -1047,7 +1047,11 @@ class CommonScaler(Scaler):
                     anom_result = self._iotbx_merging_statistics(
                         scaled_unmerged_mtz, anomalous=True, n_bins=n_bins
                     )
-                    stats["Anomalous slope"] = [anom_result.anomalous_np_slope]
+                    anom_probability_plot = (
+                        anom_result.overall.anom_probability_plot_expected_delta
+                    )
+                    if anom_probability_plot is not None:
+                        stats["Anomalous slope"] = [anom_probability_plot.slope]
                     stats["dF/F"] = [anom_result.overall.anom_signal]
                     stats["dI/s(dI)"] = [
                         anom_result.overall.delta_i_mean_over_sig_delta_i_mean
@@ -1099,13 +1103,11 @@ class CommonScaler(Scaler):
         self, scaled_unmerged_mtz, anomalous=False, d_min=None, d_max=None, n_bins=None
     ):
         params = PhilIndex.params.xia2.settings.merging_statistics
-
         i_obs = iotbx.merging_statistics.select_data(
             scaled_unmerged_mtz, data_labels=None
         )
         i_obs = i_obs.customized_copy(anomalous_flag=True, info=i_obs.info())
-
-        result = iotbx.merging_statistics.dataset_statistics(
+        return iotbx.merging_statistics.dataset_statistics(
             i_obs=i_obs,
             d_min=d_min,
             d_max=d_max,
@@ -1115,33 +1117,6 @@ class CommonScaler(Scaler):
             eliminate_sys_absent=params.eliminate_sys_absent,
             assert_is_not_unique_set_under_symmetry=False,
         )
-
-        result.anomalous_np_slope = None
-        if anomalous:
-            merged_intensities = i_obs.merge_equivalents(
-                use_internal_variance=params.use_internal_variance
-            ).array()
-
-            slope, intercept, n_pairs = anomalous_probability_plot(merged_intensities)
-            if slope is not None:
-                Debug.write("Anomalous difference normal probability plot:")
-                Debug.write("Slope: %.2f" % slope)
-                Debug.write("Intercept: %.2f" % intercept)
-                Debug.write("Number of pairs: %i" % n_pairs)
-
-            slope, intercept, n_pairs = anomalous_probability_plot(
-                merged_intensities, expected_delta=0.9
-            )
-            if slope is not None:
-                result.anomalous_np_slope = slope
-                Debug.write(
-                    "Anomalous difference normal probability plot (within expected delta 0.9):"
-                )
-                Debug.write("Slope: %.2f" % slope)
-                Debug.write("Intercept: %.2f" % intercept)
-                Debug.write("Number of pairs: %i" % n_pairs)
-
-        return result
 
     def _update_scaled_unit_cell(self):
         params = PhilIndex.params
@@ -1479,31 +1454,3 @@ class CommonScaler(Scaler):
             Debug.write("Scaler highest resolution set to %5.2f" % highest_resolution)
 
         return highest_suggested_resolution
-
-
-def anomalous_probability_plot(intensities, expected_delta=None):
-    from scitbx.math import distributions
-    from scitbx.array_family import flex
-
-    assert intensities.is_unique_set_under_symmetry()
-    assert intensities.anomalous_flag()
-
-    dI = intensities.anomalous_differences()
-    if not dI.size():
-        return None, None, None
-
-    y = dI.data() / dI.sigmas()
-    perm = flex.sort_permutation(y)
-    y = y.select(perm)
-    distribution = distributions.normal_distribution()
-
-    x = distribution.quantiles(y.size())
-    if expected_delta is not None:
-        sel = flex.abs(x) < expected_delta
-        x = x.select(sel)
-        y = y.select(sel)
-
-    fit = flex.linear_regression(x, y)
-    if fit.is_well_defined():
-        return fit.slope(), fit.y_intercept(), x.size()
-    return None, None, None
