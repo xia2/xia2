@@ -25,7 +25,6 @@ class XDSRefiner(Refiner):
             assert len(experiments) == 1  # currently only handle one lattice/sweep
             experiment = experiments[0]
             crystal_model = experiment.crystal
-            lattice = idxr.get_indexer_lattice()
 
             # check if the lattice was user assigned...
             user_assigned = idxr.get_indexer_user_input_lattice()

@@ -47,16 +47,13 @@ class CommonScaler(Scaler):
         max_batches = 0
 
         for epoch in self._sweep_handler.get_epochs():
-
             si = self._sweep_handler.get_sweep_information(epoch)
-            pname, xname, dname = si.get_project_info()
             sname = si.get_sweep_name()
             hklin = si.get_reflections()
 
             # limit the reflections - e.g. if we are re-running the scaling step
             # on just a subset of the integrated data
 
-            hklin = si.get_reflections()
             limit_batch_range = None
             for sweep in PhilIndex.params.xia2.settings.sweep:
                 if sweep.id == sname and sweep.range is not None:
@@ -95,7 +92,6 @@ class CommonScaler(Scaler):
         counter = 0
 
         for epoch in self._sweep_handler.get_epochs():
-
             si = self._sweep_handler.get_sweep_information(epoch)
 
             hklin = si.get_reflections()

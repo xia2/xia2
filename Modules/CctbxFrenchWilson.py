@@ -28,8 +28,6 @@ class french_wilson(object):
         mtz_object = result.file_content()
         mtz_object.show_summary()
 
-        mtz_dataset = mtz_object.crystals()[1].datasets()[0]
-
         for ma in result.as_miller_arrays(merge_equivalents=False):
             if params.anomalous and ma.info().labels == [
                 "I(+)",

@@ -1,7 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
 import datetime
-import glob
 import os
 import subprocess
 import time
@@ -444,12 +443,11 @@ def template_to_xds(template):
         # XDS expects the template XYZ_??????.h5
         assert template.endswith("master.h5"), template
 
-        master_file = template
-
         # FIXME for #401 - should look into the master file for references
         # either explicitly to child data sets or via the VDS - meantimes,
         # remove the check
 
+        # master_file = template
         # g = glob.glob(master_file.split("master.h5")[0] + "data_*[0-9].h5")
         # g.extend(glob.glob(master_file.split("master.h5")[0] + "*[0-9].h5"))
         # assert len(g), "No associated data files found for %s" % master_file
