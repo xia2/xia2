@@ -364,7 +364,7 @@ class XSweep(object):
                 # don't serialize this since the parent xwavelength *should* contain
                 # the reference to the child xsweep
                 continue
-            elif a[0] == "_sample":
+            elif a[0] == "sample":
                 # don't serialize this since the parent xsample *should* contain
                 # the reference to the child xsweep
                 continue
