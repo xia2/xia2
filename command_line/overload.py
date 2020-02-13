@@ -61,14 +61,14 @@ def read_cbf_image(cbf_image):
     slow = 0
     length = 0
 
-    for record in cbf_header.split("\n"):
-        if "X-Binary-Size-Fastest-Dimension" in record:
+    for record in cbf_header.split(b"\n"):
+        if b"X-Binary-Size-Fastest-Dimension" in record:
             fast = int(record.split()[-1])
-        elif "X-Binary-Size-Second-Dimension" in record:
+        elif b"X-Binary-Size-Second-Dimension" in record:
             slow = int(record.split()[-1])
-        elif "X-Binary-Number-of-Elements" in record:
+        elif b"X-Binary-Number-of-Elements" in record:
             length = int(record.split()[-1])
-        elif "X-Binary-Size:" in record:
+        elif b"X-Binary-Size:" in record:
             size = int(record.split()[-1])
 
     assert length == fast * slow
@@ -83,7 +83,7 @@ def read_cbf_image(cbf_image):
 def get_overload(cbf_file):
     with open_file(cbf_file, "rb") as fh:
         for record in fh:
-            if "Count_cutoff" in record:
+            if b"Count_cutoff" in record:
                 return float(record.split()[-2])
 
 
