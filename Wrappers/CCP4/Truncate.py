@@ -14,13 +14,13 @@ from xia2.Wrappers.XIA.FrenchWilson import FrenchWilson
 def Truncate(DriverType=None):
     """A factory for TruncateWrapper classes."""
 
-    DriverInstance = DriverFactory.Driver(DriverType)
-    CCP4DriverInstance = DecoratorFactory.Decorate(DriverInstance, "ccp4")
-
     if PhilIndex.params.ccp4.truncate.program == "ctruncate":
         return Ctruncate(DriverType)
     elif PhilIndex.params.ccp4.truncate.program == "cctbx":
         return FrenchWilson(DriverType)
+
+    DriverInstance = DriverFactory.Driver(DriverType)
+    CCP4DriverInstance = DecoratorFactory.Decorate(DriverInstance, "ccp4")
 
     class TruncateWrapper(CCP4DriverInstance.__class__):
         """A wrapper for Truncate, using the CCP4-ified Driver."""

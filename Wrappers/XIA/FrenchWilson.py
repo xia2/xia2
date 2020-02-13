@@ -1,24 +1,20 @@
-#!/usr/bin/env python
-# FrenchWilson.py
 from __future__ import absolute_import, division, print_function
 
-import os
-
-from xia2.Driver.DriverFactory import DriverFactory
+import xia2.Modules.CctbxFrenchWilson
+from xia2.Driver.DefaultDriver import DefaultDriver
 
 
 def FrenchWilson(DriverType=None):
     """A factory for FrenchWilsonWrapper classes."""
 
-    DriverInstance = DriverFactory.Driver(DriverType)
-
-    class FrenchWilsonWrapper(DriverInstance.__class__):
+    class FrenchWilsonWrapper(DefaultDriver):
         """A wrapper for cctbx French and Wilson analysis."""
 
         def __init__(self):
-            DriverInstance.__class__.__init__(self)
+            super(FrenchWilsonWrapper, self).__init__()
 
-            self.set_executable("cctbx.python")
+            self._executable = "cctbx_FrenchWilson"
+            self._outbuffer = []
 
             self._anomalous = False
             self._nres = 0
@@ -72,31 +68,19 @@ def FrenchWilson(DriverType=None):
         def truncate(self):
             """Actually perform the truncation procedure."""
 
-            from xia2.Modules import CctbxFrenchWilson as fw_module
-
-            self.add_command_line(fw_module.__file__)
-
             self.add_command_line(self._hklin)
             self.add_command_line("hklout=%s" % self._hklout)
-
             if self._anomalous:
                 self.add_command_line("anomalous=true")
             else:
                 self.add_command_line("anomalous=false")
 
-            self.start()
+            output = xia2.Modules.CctbxFrenchWilson.do_french_wilson(
+                self._hklin, self._hklout, self._anomalous
+            )
+            self._outbuffer = output.splitlines(True)
+
             self.close_wait()
-
-            try:
-                self.check_for_errors()
-
-            except RuntimeError:
-                try:
-                    os.remove(self.get_hklout())
-                except Exception:
-                    pass
-
-                raise RuntimeError("truncate failure")
 
             lines = self.get_all_output()
             for i, line in enumerate(lines):
@@ -128,5 +112,17 @@ def FrenchWilson(DriverType=None):
 
         def get_nabsent(self):
             return self._nabsent
+
+        def start(self):
+            pass
+
+        def close(self):
+            pass
+
+        def _output(self):
+            try:
+                return self._outbuffer.pop(0)
+            except IndexError:
+                return ""
 
     return FrenchWilsonWrapper()
