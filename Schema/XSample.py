@@ -17,7 +17,7 @@ class XSample(object):
         # in here - the sweeps
         self._sweeps = []
 
-        self._multi_indexer = None
+        self.multi_indexer = None
 
     def get_epoch_to_dose(self):
         from xia2.Modules.DoseAccumulate import accumulate_dose
@@ -96,12 +96,6 @@ class XSample(object):
 
     def get_sweeps(self):
         return self._sweeps
-
-    def set_multi_indexer(self, multi_indexer):
-        self._multi_indexer = multi_indexer
-
-    def get_multi_indexer(self):
-        return self._multi_indexer
 
     def remove_sweep(self, sweep):
         """Remove a sweep object from this wavelength."""
