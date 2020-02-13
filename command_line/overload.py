@@ -1,102 +1,20 @@
 from __future__ import absolute_import, division, print_function
 
-import binascii
 import json
 import sys
 import timeit
 from collections import Counter
 
-try:
-    import bz2
-except ImportError:
-    bz2 = None
-
-try:
-    import gzip
-except ImportError:
-    gzip = None
-
-
-def is_bz2(filename):
-    if ".bz2" not in filename[-4:]:
-        return False
-    with open(filename, "rb") as fh:
-        return b"BZh" == fh.read(3)
-
-
-def is_gzip(filename):
-    if ".gz" not in filename[-3:]:
-        return False
-    with open(filename, "rb") as fh:
-        magic = fh.read(2)
-    return ord(magic[0]) == 0x1F and ord(magic[1]) == 0x8B
-
-
-def open_file(filename, mode="rb"):
-    if is_bz2(filename):
-        if bz2 is None:
-            raise RuntimeError("bz2 file provided without bz2 module")
-        return bz2.BZ2File(filename, mode)
-
-    if is_gzip(filename):
-        if gzip is None:
-            raise RuntimeError("gz file provided without gzip module")
-        return gzip.GzipFile(filename, mode)
-
-    return open(filename, mode)
-
-
-def read_cbf_image(cbf_image):
-    from cbflib_adaptbx import uncompress
-
-    start_tag = binascii.unhexlify("0c1a04d5")
-
-    with open_file(cbf_image, "rb") as fh:
-        data = fh.read()
-
-    data_offset = data.find(start_tag) + 4
-    cbf_header = data[: data_offset - 4]
-
-    fast = 0
-    slow = 0
-    length = 0
-
-    for record in cbf_header.split(b"\n"):
-        if b"X-Binary-Size-Fastest-Dimension" in record:
-            fast = int(record.split()[-1])
-        elif b"X-Binary-Size-Second-Dimension" in record:
-            slow = int(record.split()[-1])
-        elif b"X-Binary-Number-of-Elements" in record:
-            length = int(record.split()[-1])
-        elif b"X-Binary-Size:" in record:
-            size = int(record.split()[-1])
-
-    assert length == fast * slow
-
-    pixel_values = uncompress(
-        packed=data[data_offset : data_offset + size], fast=fast, slow=slow
-    )
-
-    return pixel_values
-
-
-def get_overload(cbf_file):
-    with open_file(cbf_file, "rb") as fh:
-        for record in fh:
-            if b"Count_cutoff" in record:
-                return float(record.split()[-2])
+from dxtbx.model.experiment_list import ExperimentListFactory
+from libtbx import easy_mp
+from scitbx.array_family import flex
 
 
 def build_hist(nproc=1):
-    from scitbx.array_family import flex
-    from libtbx import easy_mp
-
     # FIXME use proper optionparser here. This works for now
     if len(sys.argv) >= 2 and sys.argv[1].startswith("nproc="):
         nproc = int(sys.argv[1][6:])
         sys.argv = sys.argv[1:]
-
-    from dxtbx.model.experiment_list import ExperimentListFactory
 
     experiments = ExperimentListFactory.from_args(sys.argv[1:])
     if len(experiments) == 0:
