@@ -42,11 +42,9 @@ def IndexerForXSweep(xsweep, json_file=None):
 
     # hack now - if XDS integration switch to XDS indexer if (i) labelit and
     # (ii) sweep < 10 degrees
-    if multi_sweep_indexing and len(xsweep.get_xsample().get_sweeps()) > 1:
-        xsample = xsweep.get_xsample()
-
-        if not xsample.multi_indexer:
-            xsample.multi_indexer = Indexer()
+    if multi_sweep_indexing and len(xsweep.sample.get_sweeps()) > 1:
+        if not xsweep.sample.multi_indexer:
+            xsweep.sample.multi_indexer = Indexer()
 
     elif (
         sweep_width < 10.0
@@ -105,13 +103,15 @@ def IndexerForXSweep(xsweep, json_file=None):
 
     indexer.set_indexer_sweep(xsweep)
 
-    xsample = xsweep.get_xsample()
-    if xsample.multi_indexer:
-        assert xsample.multi_indexer is indexer, (xsample.multi_indexer, indexer)
+    if xsweep.sample.multi_indexer:
+        assert xsweep.sample.multi_indexer is indexer, (
+            xsweep.sample.multi_indexer,
+            indexer,
+        )
 
         if len(indexer._indxr_imagesets) == 1:
 
-            for xsweep_other in xsample.get_sweeps()[1:]:
+            for xsweep_other in xsweep.sample.get_sweeps()[1:]:
                 xsweep_other._get_indexer()
 
     return indexer
