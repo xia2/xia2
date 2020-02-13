@@ -146,7 +146,7 @@ class XSweep(object):
 
         self._name = name
         self._wavelength = wavelength
-        self._sample = sample
+        self.sample = sample
         self._directory = directory
         self._image = image
         self._reversephi = reversephi
@@ -812,9 +812,6 @@ class XSweep(object):
 
     def get_indexer_beam_centre(self):
         return self._get_indexer().get_indexer_beam_centre()
-
-    def get_xsample(self):
-        return self._sample
 
     def get_wavelength(self):
         return self._wavelength
