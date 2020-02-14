@@ -43,9 +43,10 @@ def IndexerForXSweep(xsweep, json_file=None):
     # hack now - if XDS integration switch to XDS indexer if (i) labelit and
     # (ii) sweep < 10 degrees
     if multi_sweep_indexing and len(xsweep.sample.get_sweeps()) > 1:
-        if not xsweep.sample.multi_indexer:
-            xsweep.sample.multi_indexer = Indexer()
-
+        indexer = xsweep.sample.multi_indexer
+        if not indexer:
+            indexer = Indexer()
+            xsweep.sample.multi_indexer = indexer
     elif (
         sweep_width < 10.0
         and not get_preferences().get("indexer")
