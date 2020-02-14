@@ -114,9 +114,6 @@ class _Environment(object):
 
         self._is_setup = True
 
-    def set_working_directory(self, working_directory):
-        self._working_directory = working_directory
-
     def generate_directory(self, path_tuple):
         """Used for generating working directories."""
         self._setup()
@@ -141,9 +138,6 @@ class _Environment(object):
         """A wrapper for os.environ."""
         self._setup()
         return os.environ.get(name)
-
-    def cleanup(self):
-        return
 
 
 Environment = _Environment()

@@ -9,7 +9,6 @@ from libtbx import Auto
 import xia2.Handlers.Streams
 from xia2.Applications.xia2_main import check_environment, write_citations
 from xia2.Handlers.Citations import Citations
-from xia2.Handlers.Environment import Environment
 from xia2.Handlers.Files import cleanup
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import Chatter
@@ -68,8 +67,6 @@ def run():
     write_citations()
 
     xinfo.as_json(filename="xia2.json")
-
-    Environment.cleanup()
 
 
 if __name__ == "__main__":

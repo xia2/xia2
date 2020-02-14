@@ -23,7 +23,6 @@ from xia2.Applications.xia2_main import (
     write_citations,
 )
 from xia2.Handlers.Citations import Citations
-from xia2.Handlers.Environment import Environment
 from xia2.Handlers.Files import cleanup
 from xia2.Handlers.Streams import Chatter, Debug
 from xia2.Schema.XProject import XProject
@@ -301,7 +300,6 @@ def xia2_main(stop_after=None):
 
     # delete all of the temporary mtz files...
     cleanup()
-    Environment.cleanup()
 
 
 def run():
