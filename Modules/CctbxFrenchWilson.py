@@ -10,7 +10,7 @@ fwlog = logging.getLogger("xia2.Modules.CctbxFrenchWilson")
 
 
 def do_french_wilson(mtz_file, hklout, anomalous=False):
-    fwlog.info("Reading reflections from %s", mtz_file)
+    fwlog.debug("Reading reflections from %s", mtz_file)
 
     result = any_reflection_file(mtz_file)
     assert result.file_type() == "ccp4_mtz"
@@ -58,6 +58,6 @@ def do_french_wilson(mtz_file, hklout, anomalous=False):
                 )
     mtz_object.add_history("cctbx.french_wilson analysis")
     mtz_object.show_summary(out=output)
-    fwlog.info("Writing reflections to %s", hklout)
+    fwlog.debug("Writing reflections to %s", hklout)
     mtz_object.write(hklout)
     return output.getvalue()
