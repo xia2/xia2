@@ -1,26 +1,67 @@
 from __future__ import absolute_import, division, print_function
 
 import json
-import sys
 import timeit
 from collections import Counter
 
-from dxtbx.model.experiment_list import ExperimentListFactory
+from dials.util.options import OptionParser
+from dials.util.options import flatten_experiments
+import iotbx.phil
 from libtbx import easy_mp
 from scitbx.array_family import flex
 
+help_message = """
 
-def build_hist(nproc=1):
-    # FIXME use proper optionparser here. This works for now
-    if len(sys.argv) >= 2 and sys.argv[1].startswith("nproc="):
-        nproc = int(sys.argv[1][6:])
-        sys.argv = sys.argv[1:]
+Examples::
 
-    experiments = ExperimentListFactory.from_args(sys.argv[1:])
-    if len(experiments) == 0:
-        experiments = ExperimentListFactory.from_filenames(sys.argv[1:])
+  xia2.overload (data_master.h5|integrated.expt) [nproc=8]
 
-    for experiment in experiments:
+"""
+
+phil_scope = iotbx.phil.parse(
+    """
+nproc = 1
+  .type = int(value_min=1)
+    .help = "The number of processes to use."
+
+output {
+    filename = overload.json
+        .type = path
+        .help = "Histogram output file name"
+}
+"""
+)
+
+
+def run(args):
+    usage = "xia2.overload (data_master.h5|integrated.expt) [nproc=8]"
+
+    parser = OptionParser(
+        usage=usage,
+        phil=phil_scope,
+        read_experiments=True,
+        read_experiments_from_images=True,
+        epilog=help_message,
+    )
+
+    params, options = parser.parse_args(show_diff_phil=True)
+
+    experiments = flatten_experiments(params.input.experiments)
+    if len(experiments) != 1:
+        parser.print_help()
+        sys.exit("Please pass an experiment list\n")
+        return
+
+    build_hist(experiments, params)
+
+
+def build_hist(experiment_list, params):
+    """Iterate through the images in experiment_list and generate a pixel
+    histogram, which is written to params.output.filename."""
+
+    nproc = params.nproc
+
+    for experiment in experiment_list:
         imageset = experiment.imageset
         limit = experiment.detector[0].get_trusted_range()[1]
         n0, n1 = experiment.scan.get_image_range()
@@ -111,4 +152,6 @@ def build_hist(nproc=1):
 
 
 if __name__ == "__main__":
-    build_hist()
+    import sys
+
+    run(sys.argv[1:])
