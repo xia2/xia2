@@ -2,12 +2,13 @@
 
 from __future__ import absolute_import, division, print_function
 
+import logging
 import math
 import os
 
 from multiprocessing import Lock, Value
 
-from xia2.Handlers.Streams import Debug
+logger = logging.getLogger("xia2.lib.bits")
 
 
 def is_mtz_file(filename):
@@ -97,7 +98,7 @@ def auto_logfiler(DriverInstance, extra=None):
 
     DriverInstance.set_xpid(number)
 
-    Debug.write("Logfile: %s -> %s" % (executable, logfile))
+    logger.debug("Logfile: %s -> %s", executable, logfile)
 
     DriverInstance.write_log_file(logfile)
 

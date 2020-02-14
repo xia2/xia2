@@ -1,12 +1,3 @@
-#!/usr/bin/env python
-# XDSIndexerII.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 4th June 2008
-#
 # An reimplementation of the XDS indexer to work for harder cases, for example
 # cases where the whole sweep needs to be read into memory in IDXREF to get
 # a decent indexing solution (these do happen) and also cases where the
@@ -16,21 +7,18 @@
 
 from __future__ import absolute_import, division, print_function
 
+import logging
 import math
 import os
 
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.Handlers.Streams import Chatter, Journal
 from xia2.lib.bits import auto_logfiler
 from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
 from xia2.Wrappers.XDS.XDS import XDSException
 
-# the class that we are extending
-
-# helper functions
-
-# odds and sods that are needed
+logger = logging.getLogger("xia2.Modules.Indexer.XDSIndexerII")
 
 
 class XDSIndexerII(XDSIndexer):
@@ -82,7 +70,7 @@ class XDSIndexerII(XDSIndexer):
         end = max(images)
         if (end - start) > turn:
             end = start + turn
-        Debug.write("Adding images for indexer: %d -> %d" % (start, end))
+        logger.debug("Adding images for indexer: %d -> %d", start, end)
 
         wedges.append((start, end))
 
@@ -147,7 +135,7 @@ class XDSIndexerII(XDSIndexer):
 
         if self._i_or_ii is None:
             self._i_or_ii = self.decide_i_or_ii()
-            Debug.write("Selecting I or II, chose %s" % self._i_or_ii)
+            logger.debug("Selecting I or II, chose %s", self._i_or_ii)
 
         idxref = self.Idxref()
 
@@ -200,8 +188,8 @@ class XDSIndexerII(XDSIndexer):
             idxref.set_indexer_input_lattice(self._indxr_input_lattice)
             idxref.set_indexer_input_cell(self._indxr_input_cell)
 
-            Debug.write("Set lattice: %s" % self._indxr_input_lattice)
-            Debug.write("Set cell: %f %f %f %f %f %f" % self._indxr_input_cell)
+            logger.debug("Set lattice: %s", self._indxr_input_lattice)
+            logger.debug("Set cell: %f %f %f %f %f %f" % self._indxr_input_cell)
 
             original_cell = self._indxr_input_cell
         elif self._indxr_input_lattice:
@@ -240,7 +228,7 @@ class XDSIndexerII(XDSIndexer):
                 # unit cell, and they are the same, well ignore it
 
                 if "solution is inaccurate" in str(e):
-                    Debug.write("XDS complains solution inaccurate - ignoring")
+                    logger.debug("XDS complains solution inaccurate - ignoring")
                     done = idxref.continue_from_error()
                 elif (
                     "insufficient percentage (< 70%)" in str(e)
@@ -257,20 +245,20 @@ class XDSIndexerII(XDSIndexer):
                             > 0.02
                             and check
                         ):
-                            Debug.write("XDS unhappy and solution wrong")
+                            logger.debug("XDS unhappy and solution wrong")
                             raise e
                         # and two degree difference in angle
                         if (
                             math.fabs(cell[j + 3] - original_cell[j + 3]) > 2.0
                             and check
                         ):
-                            Debug.write("XDS unhappy and solution wrong")
+                            logger.debug("XDS unhappy and solution wrong")
                             raise e
-                    Debug.write("XDS unhappy but solution ok")
+                    logger.debug("XDS unhappy but solution ok")
                 elif "insufficient percentage (< 70%)" in str(
                     e
                 ) or "insufficient percentage (< 50%)" in str(e):
-                    Debug.write("XDS unhappy but solution probably ok")
+                    logger.debug("XDS unhappy but solution probably ok")
                     done = idxref.continue_from_error()
                 else:
                     raise e
@@ -327,7 +315,7 @@ class XDSIndexerII(XDSIndexer):
         return
 
     def decide_i_or_ii(self):
-        Debug.write("Testing II or I indexing")
+        logger.debug("Testing II or I indexing")
 
         try:
             fraction_etc_i = self.test_i()
@@ -338,8 +326,8 @@ class XDSIndexerII(XDSIndexer):
             if fraction_etc_i and not fraction_etc_ii:
                 return "i"
 
-            Debug.write("I:  %.2f %.2f %.2f" % fraction_etc_i)
-            Debug.write("II: %.2f %.2f %.2f" % fraction_etc_ii)
+            logger.debug("I:  %.2f %.2f %.2f" % fraction_etc_i)
+            logger.debug("II: %.2f %.2f %.2f" % fraction_etc_ii)
 
             if (
                 fraction_etc_i[0] > fraction_etc_ii[0]
@@ -351,7 +339,7 @@ class XDSIndexerII(XDSIndexer):
             return "ii"
 
         except Exception as e:
-            Debug.write(str(e))
+            logger.debug(str(e), exc_info=True)
             return "ii"
 
     def test_i(self):

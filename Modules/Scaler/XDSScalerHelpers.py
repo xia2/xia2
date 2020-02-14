@@ -3,11 +3,13 @@
 
 from __future__ import absolute_import, division, print_function
 
+import logging
 import os
 
-from xia2.Handlers.Streams import Debug
 from xia2.lib.bits import auto_logfiler
 from xia2.Wrappers.CCP4.Pointless import Pointless as _Pointless
+
+logger = logging.getLogger("xia2.Modules.Scaler.XDSScalerHelpers")
 
 
 class XDSScalerHelper(object):
@@ -50,7 +52,7 @@ class XDSScalerHelper(object):
 
                     file_map[set] = input_file
 
-                    Debug.write("Set %d is from data %s" % (set, input_file))
+                    logger.debug("Set %d is from data %s", set, input_file)
 
         return file_map
 

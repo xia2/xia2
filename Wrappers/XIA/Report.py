@@ -1,9 +1,10 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
+import logging
 import os
 import shutil
+
+logger = logging.getLogger("xia2.Wrappers.XIA.Report")
 
 
 def Report(DriverType=None):
@@ -31,9 +32,7 @@ def Report(DriverType=None):
             self._chef_min_completeness = min_completeness
 
         def run(self):
-            from xia2.Handlers.Streams import Debug
-
-            Debug.write("Running xia2.report")
+            logger.debug("Running xia2.report")
             assert self._mtz_filename is not None
 
             self.clear_command_line()

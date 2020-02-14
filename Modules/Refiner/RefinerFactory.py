@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+import logging
 import os
 
 # other odds and ends
@@ -7,11 +8,12 @@ from xia2.DriverExceptions.NotAvailableError import NotAvailableError
 
 # selection stuff
 from xia2.Handlers.PipelineSelection import get_preferences
-from xia2.Handlers.Streams import Debug
 
 # refiner implementations
 from xia2.Modules.Refiner.DialsRefiner import DialsRefiner
 from xia2.Modules.Refiner.XDSRefiner import XDSRefiner
+
+logger = logging.getLogger("xia2.Modules.Refiner.RefinerFactory")
 
 
 def RefinerForXSweep(xsweep, json_file=None):
@@ -29,7 +31,7 @@ def RefinerForXSweep(xsweep, json_file=None):
 
     if json_file is not None:
         assert os.path.isfile(json_file)
-        Debug.write("Loading refiner from json: %s" % json_file)
+        logger.debug("Loading refiner from json: %s", json_file)
         refiner = refiner.__class__.from_json(filename=json_file)
 
     refiner.add_refiner_sweep(xsweep)
@@ -46,7 +48,7 @@ def Refiner():
     if not refiner and (not preselection or preselection == "dials"):
         try:
             refiner = DialsRefiner()
-            Debug.write("Using Dials Refiner")
+            logger.debug("Using Dials Refiner")
         except NotAvailableError:
             if preselection == "dials":
                 raise RuntimeError("preselected refiner dials not available")
@@ -54,7 +56,7 @@ def Refiner():
     if not refiner and (not preselection or preselection == "xds"):
         try:
             refiner = XDSRefiner()
-            Debug.write("Using XDS Refiner")
+            logger.debug("Using XDS Refiner")
         except NotAvailableError:
             if preselection == "xds":
                 raise RuntimeError("preselected refiner xds not available")

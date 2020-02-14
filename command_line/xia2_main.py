@@ -5,6 +5,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import logging
 import os
 import sys
 import time
@@ -24,9 +25,11 @@ from xia2.Applications.xia2_main import (
 )
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Files import cleanup
-from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Streams import Chatter
 from xia2.Schema.XProject import XProject
 from xia2.Schema.XSweep import XSweep
+
+logger = logging.getLogger("xia2.command_line.xia2_main")
 
 
 def get_ccp4_version():
@@ -78,7 +81,7 @@ def xia2_main(stop_after=None):
         params.xia2.settings.developmental.continue_from_previous_job
         and os.path.exists("xia2.json")
     ):
-        Debug.write("==== Starting from existing xia2.json ====")
+        logger.debug("==== Starting from existing xia2.json ====")
         xinfo_new = xinfo
         xinfo = XProject.from_json(filename="xia2.json")
 
@@ -229,8 +232,8 @@ def xia2_main(stop_after=None):
                     from dials.command_line.show import show_experiments
                     from dxtbx.model.experiment_list import ExperimentListFactory
 
-                    Debug.write(sweep.get_name())
-                    Debug.write(
+                    logger.debug(sweep.get_name())
+                    logger.debug(
                         show_experiments(
                             ExperimentListFactory.from_imageset_and_crystal(
                                 sweep.get_imageset(), None
@@ -321,7 +324,7 @@ def run():
         check_environment()
     except Exception as e:
         traceback.print_exc(file=open("xia2-error.txt", "w"))
-        Debug.write(traceback.format_exc(), strip=False)
+        logger.debug(traceback.format_exc())
         Chatter.write("Error setting up xia2 environment: %s" % str(e))
         Chatter.write(
             "Please send the contents of xia2.txt, xia2-error.txt and xia2-debug.txt to:"
@@ -333,10 +336,8 @@ def run():
 
     try:
         xia2_main()
-        Debug.write("\nTiming report:")
-        for line in xia2.Driver.timing.report():
-            Debug.write(line, strip=False)
-
+        logger.debug("\nTiming report:")
+        logger.debug("\n".join(xia2.Driver.timing.report()))
         Chatter.write("Status: normal termination")
         return
     except Sorry as s:
@@ -345,7 +346,7 @@ def run():
     except Exception as e:
         with open(os.path.join(wd, "xia2-error.txt"), "w") as fh:
             traceback.print_exc(file=fh)
-        Debug.write(traceback.format_exc(), strip=False)
+        logger.debug(traceback.format_exc())
         Chatter.write("Error: %s" % str(e))
         Chatter.write(
             "Please send the contents of xia2.txt, xia2-error.txt and xia2-debug.txt to:"

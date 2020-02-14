@@ -1,11 +1,14 @@
 from __future__ import absolute_import, division, print_function
 
 import json
+import logging
 import os
 
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Streams import Chatter
+
+logger = logging.getLogger("xia2.Wrappers.Dials.Cosym")
 
 
 def DialsCosym(DriverType=None, decay_correction=None):
@@ -118,7 +121,7 @@ def DialsCosym(DriverType=None, decay_correction=None):
                 )
                 raise
 
-            Debug.write("dials.cosym status: OK")
+            logger.debug("dials.cosym status: OK")
 
             assert os.path.exists(self._json)
             with open(self._json, "rb") as f:

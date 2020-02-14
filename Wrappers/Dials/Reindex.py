@@ -1,8 +1,9 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
+import logging
 import os
+
+logger = logging.getLogger("xia2.Wrappers.Dials.Reindex")
 
 
 def Reindex(DriverType=None):
@@ -56,9 +57,7 @@ def Reindex(DriverType=None):
             return self._reindexed_reflections_filename
 
         def run(self):
-            from xia2.Handlers.Streams import Debug
-
-            Debug.write("Running dials.reindex")
+            logger.debug("Running dials.reindex")
 
             wd = self.get_working_directory()
 

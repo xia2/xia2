@@ -1,16 +1,9 @@
 #!/usr/bin/env python
-# xia2.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 21/SEP/06
-#
 # A top-level interface to the whole of xia2, for data processing & analysis.
 
 from __future__ import absolute_import, division, print_function
 
+import logging
 import math
 import os
 import platform
@@ -19,8 +12,10 @@ import sys
 from dials.util import Sorry
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Environment import Environment, df
-from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Streams import Chatter
 from xia2.XIA2Version import Version
+
+logger = logging.getLogger("xia2.Applications.xia2_main")
 
 
 def check_environment():
@@ -36,7 +31,7 @@ def check_environment():
 
     # to help wrapper code - print process id...
 
-    Debug.write("Process ID: %d" % os.getpid())
+    logger.debug("Process ID: %d", os.getpid())
 
     Chatter.write("Environment configuration...")
     Chatter.write("Python => %s" % executable)

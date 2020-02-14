@@ -6,6 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 import copy
 import inspect
+import logging
 import os
 import shutil
 
@@ -13,7 +14,7 @@ import six
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.Handlers.Streams import Chatter, Journal
 from xia2.Handlers.Syminfo import Syminfo
 from xia2.lib.bits import auto_logfiler, is_mtz_file, transpose_loggraph
 from xia2.lib.SymmetryLib import lattices_in_order
@@ -23,6 +24,8 @@ from xia2.Modules.Scaler.tools import compute_average_unit_cell
 from xia2.Modules.Scaler.XDSScalerHelpers import XDSScalerHelper
 from xia2.Wrappers.CCP4.CCP4Factory import CCP4Factory
 from xia2.Wrappers.XDS.XScaleR import XScaleR as _XScale
+
+logger = logging.getLogger("xia2.Modules.Scaler.XDSScalerA")
 
 
 class XDSScalerA(Scaler):
@@ -161,25 +164,25 @@ class XDSScalerA(Scaler):
 
         correct_lattice = None
 
-        Debug.write("Possible lattices (pointless):")
-        Debug.write(" ".join(possible))
+        logger.debug("Possible lattices (pointless):")
+        logger.debug(" ".join(possible))
 
         for lattice in possible:
             state = refiner.set_refiner_asserted_lattice(lattice)
             if state == refiner.LATTICE_CORRECT:
-                Debug.write("Agreed lattice %s" % lattice)
+                logger.debug("Agreed lattice %s", lattice)
                 correct_lattice = lattice
                 break
 
             elif state == refiner.LATTICE_IMPOSSIBLE:
-                Debug.write("Rejected lattice %s" % lattice)
+                logger.debug("Rejected lattice %s", lattice)
 
                 rerun_pointless = True
                 continue
 
             elif state == refiner.LATTICE_POSSIBLE:
-                Debug.write("Accepted lattice %s ..." % lattice)
-                Debug.write("... will reprocess accordingly")
+                logger.debug("Accepted lattice %s ...", lattice)
+                logger.debug("... will reprocess accordingly")
 
                 need_to_return = True
 
@@ -190,18 +193,18 @@ class XDSScalerA(Scaler):
             correct_lattice = refiner.get_refiner_lattice()
             rerun_pointless = True
 
-            Debug.write("No solution found: assuming lattice from refiner")
+            logger.debug("No solution found: assuming lattice from refiner")
 
         if rerun_pointless:
             pointless.set_correct_lattice(correct_lattice)
             pointless.decide_pointgroup()
 
-        Debug.write("Pointless analysis of %s" % pointless.get_hklin())
+        logger.debug("Pointless analysis of %s", pointless.get_hklin())
 
         pointgroup = pointless.get_pointgroup()
         reindex_op = pointless.get_reindex_operator()
 
-        Debug.write("Pointgroup: %s (%s)" % (pointgroup, reindex_op))
+        logger.debug("Pointgroup: %s (%s)", pointgroup, reindex_op)
 
         return pointgroup, reindex_op, need_to_return
 
@@ -258,9 +261,9 @@ class XDSScalerA(Scaler):
             # pname / xname / dname - dataset identifiers
             # image to epoch / batch offset / batches - for RD analysis
 
-            Debug.write("For EPOCH %s have:" % str(epoch))
-            Debug.write("ID = %s/%s/%s" % (pname, xname, dname))
-            Debug.write("SWEEP = %s" % intgr.get_integrater_sweep_name())
+            logger.debug("For EPOCH %s have:", str(epoch))
+            logger.debug("ID = %s/%s/%s", pname, xname, dname)
+            logger.debug("SWEEP = %s", intgr.get_integrater_sweep_name())
 
         # next work through all of the reflection files and make sure that
         # they are XDS_ASCII format...
@@ -332,7 +335,7 @@ class XDSScalerA(Scaler):
                         hklin, refiner
                     )
 
-                    Debug.write("X1698: %s: %s" % (pointgroup, reindex_op))
+                    logger.debug("X1698: %s: %s", pointgroup, reindex_op)
 
                 lattice = Syminfo.get_lattice(pointgroup)
                 lattices.add(lattice)
@@ -362,7 +365,7 @@ class XDSScalerA(Scaler):
                         ordered_lattices.append(l)
 
                 correct_lattice = ordered_lattices[0]
-                Debug.write("Correct lattice asserted to be %s" % correct_lattice)
+                logger.debug("Correct lattice asserted to be %s", correct_lattice)
 
                 # transfer this information back to the indexers
                 for epoch in self._sweep_information:
@@ -375,17 +378,16 @@ class XDSScalerA(Scaler):
 
                     state = refiner.set_refiner_asserted_lattice(correct_lattice)
                     if state == refiner.LATTICE_CORRECT:
-                        Debug.write(
-                            "Lattice %s ok for sweep %s" % (correct_lattice, sname)
+                        logger.debug(
+                            "Lattice %s ok for sweep %s", correct_lattice, sname
                         )
                     elif state == refiner.LATTICE_IMPOSSIBLE:
                         raise RuntimeError(
                             "Lattice %s impossible for %s" % (correct_lattice, sname)
                         )
                     elif state == refiner.LATTICE_POSSIBLE:
-                        Debug.write(
-                            "Lattice %s assigned for sweep %s"
-                            % (correct_lattice, sname)
+                        logger.debug(
+                            "Lattice %s assigned for sweep %s", correct_lattice, sname
                         )
                         need_to_return = True
 
@@ -410,20 +412,20 @@ class XDSScalerA(Scaler):
 
         if self.get_scaler_reference_reflection_file():
             self._reference = self.get_scaler_reference_reflection_file()
-            Debug.write("Using HKLREF %s" % self._reference)
+            logger.debug("Using HKLREF %s", self._reference)
 
             self._xds_spacegroup = MtzUtils.space_group_number_from_mtz(self._reference)
-            Debug.write("Spacegroup %d" % self._xds_spacegroup)
+            logger.debug("Spacegroup %d", self._xds_spacegroup)
 
         elif PhilIndex.params.xia2.settings.scale.reference_reflection_file:
             self._reference = (
                 PhilIndex.params.xia2.settings.scale.reference_reflection_file
             )
 
-            Debug.write("Using HKLREF %s" % self._reference)
+            logger.debug("Using HKLREF %s", self._reference)
 
             self._xds_spacegroup = MtzUtils.space_group_number_from_mtz(self._reference)
-            Debug.write("Spacegroup %d" % self._xds_spacegroup)
+            logger.debug("Spacegroup %d", self._xds_spacegroup)
 
         params = PhilIndex.params
         use_brehm_diederichs = params.xia2.settings.use_brehm_diederichs
@@ -445,7 +447,7 @@ class XDSScalerA(Scaler):
                     if ntr:
                         # Bug # 3373
 
-                        Debug.write("Reindex to standard (PIJ): %s" % reindex_op)
+                        logger.debug("Reindex to standard (PIJ): %s", reindex_op)
 
                         intgr.set_integrater_reindex_operator(reindex_op, compose=False)
                         reindex_op = "h,k,l"
@@ -454,8 +456,8 @@ class XDSScalerA(Scaler):
                 else:
                     # 27/FEB/08 to support user assignment of pointgroups
 
-                    Debug.write(
-                        "Using input pointgroup: %s" % self._scalr_input_pointgroup
+                    logger.debug(
+                        "Using input pointgroup: %s", self._scalr_input_pointgroup
                     )
                     pointgroup = self._scalr_input_pointgroup
                     reindex_op = "h,k,l"
@@ -515,7 +517,7 @@ class XDSScalerA(Scaler):
                     self.get_working_directory(), "%s_%s.HKL" % (dname, sname)
                 )
 
-                Debug.write("Copying %s to %s" % (hklin, hklout))
+                logger.debug("Copying %s to %s", hklin, hklout)
                 shutil.copyfile(hklin, hklout)
 
                 # record just the local file name...
@@ -534,7 +536,7 @@ class XDSScalerA(Scaler):
             refiner = intgr.get_integrater_refiner()
 
             if self._scalr_input_pointgroup:
-                Debug.write("Using input pointgroup: %s" % self._scalr_input_pointgroup)
+                logger.debug("Using input pointgroup: %s", self._scalr_input_pointgroup)
                 pointgroup = self._scalr_input_pointgroup
                 ntr = False
                 reindex_op = "h,k,l"
@@ -544,7 +546,7 @@ class XDSScalerA(Scaler):
                     hklin, refiner
                 )
 
-                Debug.write("X1698: %s: %s" % (pointgroup, reindex_op))
+                logger.debug("X1698: %s: %s", pointgroup, reindex_op)
 
             if ntr:
                 # Bug # 3373
@@ -610,7 +612,7 @@ class XDSScalerA(Scaler):
                     if ntr:
                         # Bug # 3373
 
-                        Debug.write("Reindex to standard (PIJ): %s" % reindex_op)
+                        logger.debug("Reindex to standard (PIJ): %s", reindex_op)
 
                         intgr.set_integrater_reindex_operator(reindex_op, compose=False)
                         reindex_op = "h,k,l"
@@ -619,8 +621,8 @@ class XDSScalerA(Scaler):
                 else:
                     # 27/FEB/08 to support user assignment of pointgroups
 
-                    Debug.write(
-                        "Using input pointgroup: %s" % self._scalr_input_pointgroup
+                    logger.debug(
+                        "Using input pointgroup: %s", self._scalr_input_pointgroup
                     )
                     pointgroup = self._scalr_input_pointgroup
                     reindex_op = "h,k,l"
@@ -664,7 +666,7 @@ class XDSScalerA(Scaler):
                 # for debugging print out the reindexing operations and
                 # what have you...
 
-                Debug.write("Reindex to standard: %s" % reindex_op)
+                logger.debug("Reindex to standard: %s", reindex_op)
 
                 # this should send back enough information that this
                 # is in the correct pointgroup (from the call above) and
@@ -693,7 +695,7 @@ class XDSScalerA(Scaler):
                     self.get_working_directory(), "%s_%s.HKL" % (dname, sname)
                 )
 
-                Debug.write("Copying %s to %s" % (hklin, hklout))
+                logger.debug("Copying %s to %s", hklin, hklout)
                 shutil.copyfile(hklin, hklout)
 
                 # record just the local file name...
@@ -773,7 +775,7 @@ class XDSScalerA(Scaler):
             hklin = hklout
 
             if self._scalr_input_pointgroup:
-                Debug.write("Using input pointgroup: %s" % self._scalr_input_pointgroup)
+                logger.debug("Using input pointgroup: %s", self._scalr_input_pointgroup)
                 pointgroup = self._scalr_input_pointgroup
                 ntr = False
                 reindex_op = "h,k,l"
@@ -816,7 +818,7 @@ class XDSScalerA(Scaler):
             # and copy the reflection file to the local
             # directory
 
-            Debug.write("Copying %s to %s" % (hklin, hklout))
+            logger.debug("Copying %s to %s", hklin, hklout)
             shutil.copyfile(hklin, hklout)
 
             # record just the local file name...
@@ -836,19 +838,17 @@ class XDSScalerA(Scaler):
             cell = integrater.get_integrater_cell()
             n_ref = integrater.get_integrater_n_ref()
 
-            Debug.write(
-                "Cell for %s: %.2f %.2f %.2f %.2f %.2f %.2f"
-                % (
-                    integrater.get_integrater_sweep_name(),
-                    cell[0],
-                    cell[1],
-                    cell[2],
-                    cell[3],
-                    cell[4],
-                    cell[5],
-                )
+            logger.debug(
+                "Cell for %s: %.2f %.2f %.2f %.2f %.2f %.2f",
+                integrater.get_integrater_sweep_name(),
+                cell[0],
+                cell[1],
+                cell[2],
+                cell[3],
+                cell[4],
+                cell[5],
             )
-            Debug.write("=> %d reflections" % n_ref)
+            logger.debug("=> %d reflections", n_ref)
 
             unit_cell_list.append((cell, n_ref))
 
@@ -856,7 +856,7 @@ class XDSScalerA(Scaler):
 
         self._scalr_resolution_limits = {}
 
-        Debug.write(
+        logger.debug(
             "Determined unit cell: %.2f %.2f %.2f %.2f %.2f %.2f"
             % tuple(self._scalr_cell)
         )
@@ -864,7 +864,7 @@ class XDSScalerA(Scaler):
         if os.path.exists(os.path.join(self.get_working_directory(), "REMOVE.HKL")):
             os.remove(os.path.join(self.get_working_directory(), "REMOVE.HKL"))
 
-            Debug.write("Deleting REMOVE.HKL at end of scale prepare.")
+            logger.debug("Deleting REMOVE.HKL at end of scale prepare.")
 
     def _scale(self):
         """Actually scale all of the data together."""
@@ -887,10 +887,12 @@ class XDSScalerA(Scaler):
         xscale.set_spacegroup_number(self._xds_spacegroup)
         xscale.set_cell(self._scalr_cell)
 
-        Debug.write("Set CELL: %.2f %.2f %.2f %.2f %.2f %.2f" % tuple(self._scalr_cell))
-        Debug.write("Set SPACEGROUP_NUMBER: %d" % self._xds_spacegroup)
+        logger.debug(
+            "Set CELL: %.2f %.2f %.2f %.2f %.2f %.2f" % tuple(self._scalr_cell)
+        )
+        logger.debug("Set SPACEGROUP_NUMBER: %d", self._xds_spacegroup)
 
-        Debug.write("Gathering measurements for scaling")
+        logger.debug("Gathering measurements for scaling")
 
         for epoch in epochs:
             # get the prepared reflections
@@ -902,8 +904,8 @@ class XDSScalerA(Scaler):
 
             # and the resolution range for the reflections
             intgr = self._sweep_information[epoch]["integrater"]
-            Debug.write("Epoch: %d" % epoch)
-            Debug.write("HKL: %s (%s/%s)" % (reflections, dname, sname))
+            logger.debug("Epoch: %d", epoch)
+            logger.debug("HKL: %s (%s/%s)", reflections, dname, sname)
 
             resolution_low = intgr.get_integrater_low_resolution()
             resolution_high, _ = self._scalr_resolution_limits.get(
@@ -923,7 +925,7 @@ class XDSScalerA(Scaler):
 
         scale_factor = xscale.get_scale_factor()
 
-        Debug.write("XSCALE scale factor found to be: %e" % scale_factor)
+        logger.debug("XSCALE scale factor found to be: %e", scale_factor)
 
         # record the log file
 
@@ -963,9 +965,9 @@ class XDSScalerA(Scaler):
                             continue
                         final_remove.append(c)
 
-                    Debug.write(
-                        "%d alien reflections are already removed"
-                        % (len(xscale_remove) - len(final_remove))
+                    logger.debug(
+                        "%d alien reflections are already removed",
+                        len(xscale_remove) - len(final_remove),
                     )
 
                 else:
@@ -986,11 +988,11 @@ class XDSScalerA(Scaler):
                         remove_hkl.write("%d %d %d %f\n" % remove)
                     else:
                         rejected += 1
-                Debug.write(
-                    "Wrote %d old reflections to REMOVE.HKL"
-                    % (len(current_remove) - rejected)
+                logger.debug(
+                    "Wrote %d old reflections to REMOVE.HKL",
+                    len(current_remove) - rejected,
                 )
-                Debug.write("Rejected %d as z < %f" % (rejected, z_min))
+                logger.debug("Rejected %d as z < %f", rejected, z_min)
 
                 # and the new reflections
                 rejected = 0
@@ -1002,11 +1004,11 @@ class XDSScalerA(Scaler):
                         remove_hkl.write("%d %d %d %f\n" % remove)
                     else:
                         rejected += 1
-                Debug.write(
-                    "Wrote %d new reflections to REMOVE.HKL"
-                    % (len(final_remove) - rejected)
+                logger.debug(
+                    "Wrote %d new reflections to REMOVE.HKL",
+                    len(final_remove) - rejected,
                 )
-                Debug.write("Rejected %d as z < %f" % (rejected, z_min))
+                logger.debug("Rejected %d as z < %f", rejected, z_min)
 
                 remove_hkl.close()
 
@@ -1113,7 +1115,7 @@ class XDSScalerA(Scaler):
                             intgr.get_beam_obj().get_s0()
                         )
                         reasoning = "detector limits"
-                        Debug.write("keep_all_reflections set, using detector limits")
+                        logger.debug("keep_all_reflections set, using detector limits")
                     except Exception:
                         resolution, reasoning = self._estimate_resolution_limit(hklin)
                 else:
@@ -1138,7 +1140,7 @@ class XDSScalerA(Scaler):
         debug_memory_usage()
 
         if not self.get_scaler_done():
-            Debug.write("Returning as scaling not finished...")
+            logger.debug("Returning as scaling not finished...")
             return
 
         self._sort_together_data_xds()
@@ -1149,10 +1151,10 @@ class XDSScalerA(Scaler):
 
         self._scalr_highest_resolution = highest_resolution
 
-        Debug.write("Scaler highest resolution set to %5.2f" % highest_resolution)
+        logger.debug("Scaler highest resolution set to %5.2f", highest_resolution)
 
         if not self.get_scaler_done():
-            Debug.write("Returning as scaling not finished...")
+            logger.debug("Returning as scaling not finished...")
             return
 
         sdadd_full = 0.0
@@ -1333,14 +1335,14 @@ class XDSScalerA(Scaler):
                         in epoch_to_dose
                     ):
                         if not printed:
-                            Debug.write("Epoch found; all good")
+                            logger.debug("Epoch found; all good")
                             printed = True
                         batch_to_dose[b] = epoch_to_dose[
                             si["image_to_epoch"][b + frame_offset - batch_offset]
                         ]
                     else:
                         if not printed:
-                            Debug.write("Epoch not found; using offset %f" % e0)
+                            logger.debug("Epoch not found; using offset %f", e0)
                             printed = True
                         batch_to_dose[b] = epoch_to_dose[
                             si["image_to_epoch"][b + frame_offset - batch_offset] - e0

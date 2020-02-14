@@ -66,7 +66,7 @@ def banner(comment, forward=True, size=60):
 
 class _Stream(object):
     """A class to represent an output stream. This will be used as a number
-    of static instances - Debug and Chatter in particular."""
+    of static instances - Chatter in particular."""
 
     def __init__(self, streamname, file=None):
         """Create a new stream."""
@@ -157,9 +157,6 @@ day = date.today().timetuple()
 if (day.tm_mday == 1 and day.tm_mon == 4) or "XIA2_APRIL" in os.environ:
     # turning log fonts to GREEN
     Stdout.filter(april)
-Debug = _Stream(
-    "%s-debug" % cl, file=_logger_file("xia2.stream.debug", level=logging.DEBUG)
-)
 
 
 def setup_logging(logfile=None, debugfile=None, verbose=False):
@@ -209,5 +206,5 @@ def setup_logging(logfile=None, debugfile=None, verbose=False):
 if __name__ == "__main__":
     setup_logging(logfile="logfile", debugfile="debugfile")
     Chatter.write("nothing much, really")
-    Debug.write("this is a debug-level message")
+    logging.getLogger("xia2.Handlers.Streams").debug("this is a debug-level message")
     Stdout.write("I write to stdout")

@@ -1,6 +1,8 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
+
+import logging
+
+logger = logging.getLogger("xia2.Wrappers.Dials.AlignCrystal")
 
 
 def AlignCrystal(DriverType=None):
@@ -31,9 +33,7 @@ def AlignCrystal(DriverType=None):
             return self._json_filename
 
         def run(self):
-            from xia2.Handlers.Streams import Debug
-
-            Debug.write("Running dials.align_crystal")
+            logger.debug("Running dials.align_crystal")
 
             self.clear_command_line()
             self.add_command_line("experiments=%s" % self._experiments_filename)

@@ -5,6 +5,7 @@ from __future__ import absolute_import, division, print_function
 import cgi
 import glob
 import json
+import logging
 import os
 import re
 import six
@@ -16,8 +17,10 @@ from libtbx import phil
 import xia2
 from xia2.Modules.Report import Report
 from xia2.Handlers.Citations import Citations
-from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Streams import Chatter
 import xia2.Handlers.Streams
+
+logger = logging.getLogger("xia2.command_line.html")
 
 
 def run(args):
@@ -442,11 +445,12 @@ def make_logfile_html(logfile):
             Chatter.write("  '%s'" % table.title)
             Chatter.write("in %s" % logfile)
             Chatter.write("=" * 80)
-            Debug.write(
-                "Exception raised while processing log file %s, table %s"
-                % (logfile, table.title)
+            logger.debug(
+                "Exception raised while processing log file %s, table %s",
+                logfile,
+                table.title,
             )
-            Debug.write(traceback.format_exc())
+            logger.debug(traceback.format_exc())
 
     rst = "\n".join(rst)
 

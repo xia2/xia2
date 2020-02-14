@@ -1,7 +1,11 @@
 from __future__ import absolute_import, division, print_function
 
+import logging
+
 from xia2.Driver.DriverFactory import DriverFactory
-from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Streams import Chatter
+
+logger = logging.getLogger("xia2.Wrappers.Dials.Merge")
 
 
 def DialsMerge(DriverType=None):
@@ -99,6 +103,6 @@ def DialsMerge(DriverType=None):
                 )
                 raise
 
-            Debug.write("dials.merge status: OK")
+            logger.debug("dials.merge status: OK")
 
     return DialsMergeWrapper()

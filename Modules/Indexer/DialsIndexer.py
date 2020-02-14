@@ -3,6 +3,7 @@
 from __future__ import absolute_import, division, print_function
 
 import copy
+import logging
 import math
 import os
 import string
@@ -38,10 +39,13 @@ from xia2.Schema.Interfaces.Indexer import Indexer
 # odds and sods that are needed
 
 from xia2.lib.bits import auto_logfiler
-from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Streams import Chatter
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Files import FileHandler
 from xia2.Experts.SymmetryExpert import lattice_to_spacegroup_number
+
+
+logger = logging.getLogger("xia2.Modules.Indexer.DialsIndexer")
 
 
 class DialsIndexer(Indexer):
@@ -179,9 +183,8 @@ class DialsIndexer(Indexer):
         else:
             block_size = min(len(images), 5)
 
-            Debug.write(
-                "Adding images for indexer: %d -> %d"
-                % (images[0], images[block_size - 1])
+            logger.debug(
+                "Adding images for indexer: %d -> %d", images[0], images[block_size - 1]
             )
 
             wedges.append((images[0], images[block_size - 1]))
@@ -189,19 +192,15 @@ class DialsIndexer(Indexer):
             phi_width = imageset.get_scan().get_oscillation()[1]
             if int(90.0 / phi_width) + block_size in images:
                 # assume we can add a wedge around 45 degrees as well...
-                Debug.write(
-                    "Adding images for indexer: %d -> %d"
-                    % (
-                        int(45.0 / phi_width) + images[0],
-                        int(45.0 / phi_width) + images[0] + block_size - 1,
-                    )
+                logger.debug(
+                    "Adding images for indexer: %d -> %d",
+                    int(45.0 / phi_width) + images[0],
+                    int(45.0 / phi_width) + images[0] + block_size - 1,
                 )
-                Debug.write(
-                    "Adding images for indexer: %d -> %d"
-                    % (
-                        int(90.0 / phi_width) + images[0],
-                        int(90.0 / phi_width) + images[0] + block_size - 1,
-                    )
+                logger.debug(
+                    "Adding images for indexer: %d -> %d",
+                    int(90.0 / phi_width) + images[0],
+                    int(90.0 / phi_width) + images[0] + block_size - 1,
                 )
                 wedges.append(
                     (
@@ -222,12 +221,13 @@ class DialsIndexer(Indexer):
                 first = (len(images) // 2) - (block_size // 2) + images[0] - 1
                 if first > wedges[0][1]:
                     last = first + block_size - 1
-                    Debug.write("Adding images for indexer: %d -> %d" % (first, last))
+                    logger.debug("Adding images for indexer: %d -> %d", first, last)
                     wedges.append((first, last))
                 if len(images) > block_size:
-                    Debug.write(
-                        "Adding images for indexer: %d -> %d"
-                        % (images[-block_size], images[-1])
+                    logger.debug(
+                        "Adding images for indexer: %d -> %d",
+                        images[-block_size],
+                        images[-1],
                     )
                     wedges.append((images[-block_size], images[-1]))
 
@@ -277,7 +277,7 @@ class DialsIndexer(Indexer):
             )
             genmask.set_params(PhilIndex.params.dials.masking)
             sweep_filename, mask_pickle = genmask.run()
-            Debug.write("Generated mask for %s: %s" % (xsweep.get_name(), mask_pickle))
+            logger.debug("Generated mask for %s: %s", xsweep.get_name(), mask_pickle)
 
             gain = PhilIndex.params.xia2.settings.input.gain
             if gain is libtbx.Auto:
@@ -434,7 +434,7 @@ class DialsIndexer(Indexer):
                 width = imageset.get_scan().get_oscillation()[1]
                 if (last - first) * width > 180.0 and len(refl) > 20000:
                     end = first + int(round(180.0 / width)) - 1
-                    Debug.write("Using %d to %d for beam search" % (first, end))
+                    logger.debug("Using %d to %d for beam search", first, end)
                     discovery.set_image_range((first, end))
 
                 try:
@@ -443,7 +443,9 @@ class DialsIndexer(Indexer):
                     # overwrite indexed.expt in experiments list
                     experiments_filenames[-1] = result
                 except Exception as e:
-                    Debug.write("DIALS beam centre search failed: %s" % str(e))
+                    logger.debug(
+                        "DIALS beam centre search failed: %s", str(e), exc_info=True
+                    )
 
         self.set_indexer_payload("spot_lists", spot_lists)
         self.set_indexer_payload("experiments", experiments_filenames)
@@ -511,7 +513,7 @@ class DialsIndexer(Indexer):
             checksym.set_grid_search_scope(1)
             checksym.run()
             hkl_offset = checksym.get_hkl_offset()
-            Debug.write("hkl_offset: %s" % str(hkl_offset))
+            logger.debug("hkl_offset: %s", str(hkl_offset))
             if hkl_offset is not None and hkl_offset != (0, 0, 0):
                 reindex = self.Reindex()
                 reindex.set_hkl_offset(hkl_offset)
@@ -706,16 +708,16 @@ class DialsIndexer(Indexer):
 
         if self._indxr_input_lattice:
             indexer.set_indexer_input_lattice(self._indxr_input_lattice)
-            Debug.write("Set lattice: %s" % self._indxr_input_lattice)
+            logger.debug("Set lattice: %s", self._indxr_input_lattice)
 
         if self._indxr_input_cell:
             indexer.set_indexer_input_cell(self._indxr_input_cell)
-            Debug.write("Set cell: %f %f %f %f %f %f" % self._indxr_input_cell)
+            logger.debug("Set cell: %f %f %f %f %f %f" % self._indxr_input_cell)
 
         if method is None:
             if PhilIndex.params.dials.index.method is None:
                 method = "fft3d"
-                Debug.write("Choosing indexing method: %s" % method)
+                logger.debug("Choosing indexing method: %s", method)
             else:
                 method = PhilIndex.params.dials.index.method
 
@@ -816,5 +818,5 @@ class DialsIndexer(Indexer):
         miller_set = miller.set(symmetry, miller_indices)
         d_max, d_min = miller_set.d_max_min()
         d_max *= 1.05  # include an upper margin to avoid rounding errors
-        Debug.write("Low resolution limit assigned as: %.2f" % d_max)
+        logger.debug("Low resolution limit assigned as: %.2f", d_max)
         self._indxr_low_resolution = d_max

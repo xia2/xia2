@@ -1,9 +1,10 @@
-#!/usr/bin/env cctbx.python
-
 from __future__ import absolute_import, division, print_function
 
+import logging
+
 from xia2.Driver.DriverFactory import DriverFactory
-from xia2.Handlers.Streams import Debug
+
+logger = logging.getLogger("xia2.Wrappers.XIA.Merger")
 
 
 def Merger(DriverType=None):
@@ -115,7 +116,7 @@ def Merger(DriverType=None):
                 cl.append("labels=%s" % self._labels)
             for c in cl:
                 self.add_command_line(c)
-            Debug.write("Resolution analysis: %s" % (" ".join(cl)))
+            logger.debug("Resolution analysis: %s", " ".join(cl))
             self.start()
             self.close_wait()
             for record in self.get_all_output():

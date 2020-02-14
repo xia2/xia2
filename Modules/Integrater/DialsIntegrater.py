@@ -3,6 +3,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import logging
 import math
 import os
 
@@ -10,13 +11,15 @@ import xia2.Wrappers.Dials.Integrate
 from dials.util import Sorry
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.Handlers.Streams import Chatter, Journal
 from xia2.lib.bits import auto_logfiler
 from xia2.lib.SymmetryLib import lattice_to_spacegroup
 from xia2.Schema.Interfaces.Integrater import Integrater
 
 from xia2.Wrappers.Dials.ExportMtz import ExportMtz as _ExportMtz
 from xia2.Wrappers.Dials.Report import Report as _Report
+
+logger = logging.getLogger("xia2.Modules.Integrater.DialsIntegrater")
 
 
 class DialsIntegrater(Integrater):
@@ -140,7 +143,7 @@ class DialsIntegrater(Integrater):
 
     def _integrater_reset_callback(self):
         """Delete all results on a reset."""
-        Debug.write("Deleting all stored results.")
+        logger.debug("Deleting all stored results.")
         self._data_files = {}
         self._integrate_parameters = {}
 
@@ -159,9 +162,9 @@ class DialsIntegrater(Integrater):
             images = self.get_matching_images()
             self.set_integrater_wedge(min(images), max(images))
 
-        Debug.write("DIALS INTEGRATE PREPARE:")
-        Debug.write("Wavelength: %.6f" % self.get_wavelength())
-        Debug.write("Distance: %.2f" % self.get_distance())
+        logger.debug("DIALS INTEGRATE PREPARE:")
+        logger.debug("Wavelength: %.6f" % self.get_wavelength())
+        logger.debug("Distance: %.2f" % self.get_distance())
 
         if not self.get_integrater_low_resolution():
 
@@ -170,7 +173,7 @@ class DialsIntegrater(Integrater):
             )
             self.set_integrater_low_resolution(dmax)
 
-            Debug.write(
+            logger.debug(
                 "Low resolution set to: %s" % self.get_integrater_low_resolution()
             )
 
@@ -186,9 +189,9 @@ class DialsIntegrater(Integrater):
         # this is the result of the cell refinement
         self._intgr_cell = experiment.crystal.get_unit_cell().parameters()
 
-        Debug.write("Files available at the end of DIALS integrate prepare:")
+        logger.debug("Files available at the end of DIALS integrate prepare:")
         for f in self._data_files:
-            Debug.write("%s" % f)
+            logger.debug("%s" % f)
 
         self.set_detector(experiment.detector)
         self.set_beam_obj(experiment.beam)
@@ -238,7 +241,7 @@ class DialsIntegrater(Integrater):
             d_min_limit > self._intgr_reso_high
             or PhilIndex.params.xia2.settings.resolution.keep_all_reflections
         ):
-            Debug.write(
+            logger.debug(
                 "Overriding high resolution limit: %f => %f"
                 % (self._intgr_reso_high, d_min_limit)
             )
@@ -273,7 +276,7 @@ class DialsIntegrater(Integrater):
                 # in case we were just integrating noise to the edge of the detector
                 images = self._integrate_select_images_wedges()
 
-                Debug.write(
+                logger.debug(
                     "Integrating subset of images to estimate resolution limit.\n"
                     "Integrating images %s" % images
                 )
@@ -306,8 +309,8 @@ class DialsIntegrater(Integrater):
                 d_min_estimater.set_reflections_filename(integrated_reflections)
                 d_min = d_min_estimater.run()
 
-                Debug.write("Estimate for d_min: %.2f" % d_min)
-                Debug.write("Re-running integration to this resolution limit")
+                logger.debug("Estimate for d_min: %.2f" % d_min)
+                logger.debug("Re-running integration to this resolution limit")
 
                 self._intgr_reso_high = d_min
                 self.set_integrater_done(False)
@@ -421,7 +424,7 @@ class DialsIntegrater(Integrater):
                     self.get_integrater_refiner().get_refiner_lattice()
                 )
             ):
-                Debug.write(
+                logger.debug(
                     "Not reindexing to spacegroup %d (%s)"
                     % (self._intgr_spacegroup_number, self._intgr_reindex_operator)
                 )
@@ -431,13 +434,13 @@ class DialsIntegrater(Integrater):
                 self._intgr_reindex_operator is None
                 and self._intgr_spacegroup_number == 0
             ):
-                Debug.write(
+                logger.debug(
                     "Not reindexing to spacegroup %d (%s)"
                     % (self._intgr_spacegroup_number, self._intgr_reindex_operator)
                 )
                 return mtz_filename
 
-            Debug.write(
+            logger.debug(
                 "Reindexing to spacegroup %d (%s)"
                 % (self._intgr_spacegroup_number, self._intgr_reindex_operator)
             )
@@ -489,7 +492,7 @@ class DialsIntegrater(Integrater):
                     self.get_integrater_refiner().get_refiner_lattice()
                 )
             ):
-                Debug.write(
+                logger.debug(
                     "Not reindexing to spacegroup %d (%s)"
                     % (self._intgr_spacegroup_number, self._intgr_reindex_operator)
                 )
@@ -499,13 +502,13 @@ class DialsIntegrater(Integrater):
                 self._intgr_reindex_operator is None
                 and self._intgr_spacegroup_number == 0
             ):
-                Debug.write(
+                logger.debug(
                     "Not reindexing to spacegroup %d (%s)"
                     % (self._intgr_spacegroup_number, self._intgr_reindex_operator)
                 )
                 return self._intgr_integrated_reflections
 
-            Debug.write(
+            logger.debug(
                 "Reindexing to spacegroup %d (%s)"
                 % (self._intgr_spacegroup_number, self._intgr_reindex_operator)
             )
@@ -576,7 +579,7 @@ class DialsIntegrater(Integrater):
         else:
             block_size = min(len(images), int(math.ceil(5 / phi_width)))
 
-            Debug.write(
+            logger.debug(
                 "Adding images for indexer: %d -> %d"
                 % (images[0], images[block_size - 1])
             )
@@ -585,14 +588,14 @@ class DialsIntegrater(Integrater):
 
             if int(90.0 / phi_width) + block_size in images:
                 # assume we can add a wedge around 45 degrees as well...
-                Debug.write(
+                logger.debug(
                     "Adding images for indexer: %d -> %d"
                     % (
                         int(45.0 / phi_width) + images[0],
                         int(45.0 / phi_width) + images[0] + block_size - 1,
                     )
                 )
-                Debug.write(
+                logger.debug(
                     "Adding images for indexer: %d -> %d"
                     % (
                         int(90.0 / phi_width) + images[0],
@@ -618,10 +621,10 @@ class DialsIntegrater(Integrater):
                 first = (len(images) // 2) - (block_size // 2) + images[0] - 1
                 if first > wedges[0][1]:
                     last = first + block_size - 1
-                    Debug.write("Adding images for indexer: %d -> %d" % (first, last))
+                    logger.debug("Adding images for indexer: %d -> %d" % (first, last))
                     wedges.append((first, last))
                 if len(images) > block_size:
-                    Debug.write(
+                    logger.debug(
                         "Adding images for indexer: %d -> %d"
                         % (images[-block_size], images[-1])
                     )

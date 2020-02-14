@@ -2,6 +2,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import logging
 import math
 import os
 import time
@@ -10,7 +11,7 @@ import iotbx.merging_statistics
 from iotbx import mtz
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Streams import Chatter
 from xia2.Handlers.CIF import CIF, mmCIF
 from xia2.lib.bits import nifty_power_of_ten, auto_logfiler
 from xia2.Modules.AnalyseMyIntensities import AnalyseMyIntensities
@@ -23,6 +24,8 @@ from xia2.Schema.Interfaces.Scaler import Scaler
 
 # new resolution limit code
 from xia2.Wrappers.XIA.Merger import Merger
+
+logger = logging.getLogger("xia2.Modules.Scaler.CommonScaler")
 
 
 def clean_reindex_operator(reindex_operator):
@@ -61,8 +64,8 @@ class CommonScaler(Scaler):
                     break
 
             if limit_batch_range is not None:
-                Debug.write(
-                    "Limiting batch range for %s: %s" % (sname, limit_batch_range)
+                logger.debug(
+                    "Limiting batch range for %s: %s", sname, limit_batch_range
                 )
                 start, end = limit_batch_range
                 hklout = os.path.splitext(hklin)[0] + "_tmp.mtz"
@@ -83,7 +86,7 @@ class CommonScaler(Scaler):
             if 1 + max(batches) - min(batches) > max_batches:
                 max_batches = max(batches) - min(batches) + 1
 
-        Debug.write("Biggest sweep has %d batches" % max_batches)
+        logger.debug("Biggest sweep has %d batches", max_batches)
         max_batches = nifty_power_of_ten(max_batches)
 
         # then rebatch the files, to make sure that the batch numbers are
@@ -174,17 +177,16 @@ class CommonScaler(Scaler):
                 )
 
             if self._scalr_input_spacegroup:
-                Debug.write(
-                    "Assigning user input spacegroup: %s" % self._scalr_input_spacegroup
+                logger.debug(
+                    "Assigning user input spacegroup: %s", self._scalr_input_spacegroup
                 )
 
                 p.decide_spacegroup()
                 spacegroup = p.get_spacegroup()
                 reindex_operator = p.get_spacegroup_reindex_operator()
 
-                Debug.write(
-                    "Pointless thought %s (reindex as %s)"
-                    % (spacegroup, reindex_operator)
+                logger.debug(
+                    "Pointless thought %s (reindex as %s)", spacegroup, reindex_operator
                 )
 
                 spacegroup = self._scalr_input_spacegroup
@@ -198,9 +200,8 @@ class CommonScaler(Scaler):
                 self._spacegroup_reindex_operator = clean_reindex_operator(
                     reindex_operator
                 )
-                Debug.write(
-                    "Pointless thought %s (reindex as %s)"
-                    % (spacegroup, reindex_operator)
+                logger.debug(
+                    "Pointless thought %s (reindex as %s)", spacegroup, reindex_operator
                 )
 
             if self._scalr_input_spacegroup:
@@ -225,7 +226,7 @@ class CommonScaler(Scaler):
 
             self._scalr_likely_spacegroups = [spacegroup]
 
-            Debug.write("Assigning spacegroup %s from reference" % spacegroup)
+            logger.debug("Assigning spacegroup %s from reference", spacegroup)
 
         # then run reindex to set the correct spacegroup
 
@@ -276,7 +277,7 @@ class CommonScaler(Scaler):
             if 1 + max(batches) - min(batches) > max_batches:
                 max_batches = max(batches) - min(batches) + 1
 
-        Debug.write("Biggest sweep has %d batches" % max_batches)
+        logger.debug("Biggest sweep has %d batches", max_batches)
         max_batches = nifty_power_of_ten(max_batches)
 
         epochs = sorted(self._sweep_information.keys())
@@ -359,8 +360,8 @@ class CommonScaler(Scaler):
             reindex_operator = pointless.get_spacegroup_reindex_operator()
 
             if self._scalr_input_spacegroup:
-                Debug.write(
-                    "Assigning user input spacegroup: %s" % self._scalr_input_spacegroup
+                logger.debug(
+                    "Assigning user input spacegroup: %s", self._scalr_input_spacegroup
                 )
                 spacegroups = [self._scalr_input_spacegroup]
                 reindex_operator = "h,k,l"
@@ -408,7 +409,7 @@ class CommonScaler(Scaler):
 
         self._prepared_reflections = hklout
 
-        Debug.write(
+        logger.debug(
             "Updating unit cell to %.2f %.2f %.2f %.2f %.2f %.2f" % tuple(ri.get_cell())
         )
         self._scalr_cell = tuple(ri.get_cell())
@@ -429,8 +430,8 @@ class CommonScaler(Scaler):
             reindex_operator = "h,k,l"
 
         elif self._scalr_input_spacegroup:
-            Debug.write(
-                "Assigning user input spacegroup: %s" % self._scalr_input_spacegroup
+            logger.debug(
+                "Assigning user input spacegroup: %s", self._scalr_input_spacegroup
             )
             spacegroups = [self._scalr_input_spacegroup]
             reindex_operator = "h,k,l"
@@ -479,7 +480,7 @@ class CommonScaler(Scaler):
             m = mtz.object(hklin)
             m.set_space_group(s).write(hklout)
             self._scalr_cell = m.crystals()[-1].unit_cell().parameters()
-            Debug.write(
+            logger.debug(
                 "Updating unit cell to %.2f %.2f %.2f %.2f %.2f %.2f"
                 % tuple(self._scalr_cell)
             )
@@ -494,7 +495,7 @@ class CommonScaler(Scaler):
             ri.set_operator(reindex_operator)
             ri.reindex()
 
-            Debug.write(
+            logger.debug(
                 "Updating unit cell to %.2f %.2f %.2f %.2f %.2f %.2f"
                 % tuple(ri.get_cell())
             )
@@ -588,9 +589,10 @@ class CommonScaler(Scaler):
                     xmlout,
                 )
 
-            Debug.write(
-                "%d absent reflections in %s removed"
-                % (truncate.get_nabsent(), wavelength)
+            logger.debug(
+                "%d absent reflections in %s removed",
+                truncate.get_nabsent(),
+                wavelength,
             )
 
             b_factor = truncate.get_b_factor()
@@ -631,7 +633,7 @@ class CommonScaler(Scaler):
             )
             FileHandler.record_temporary_file(hklout)
 
-            Debug.write("Merging all data sets to %s" % hklout)
+            logger.debug("Merging all data sets to %s", hklout)
 
             cad = self._factory.Cad()
             for rf in reflection_files.values():
@@ -755,7 +757,7 @@ class CommonScaler(Scaler):
 
             freein = self.get_scaler_freer_file()
 
-            Debug.write("Copying FreeR_flag from %s" % freein)
+            logger.debug("Copying FreeR_flag from %s", freein)
 
             c = self._factory.Cad()
             c.set_freein(freein)
@@ -768,7 +770,7 @@ class CommonScaler(Scaler):
 
             freein = scale_params.freer_file
 
-            Debug.write("Copying FreeR_flag from %s" % freein)
+            logger.debug("Copying FreeR_flag from %s", freein)
 
             c = self._factory.Cad()
             c.set_freein(freein)
@@ -882,7 +884,7 @@ class CommonScaler(Scaler):
                 Chatter.write("%s %s" % s)
             Chatter.banner("")
         else:
-            Debug.write("Local scaling failed")
+            logger.debug("Local scaling failed")
 
     def _estimate_resolution_limit(
         self, hklin, batch_range=None, reflections=None, experiments=None
@@ -1248,7 +1250,7 @@ class CommonScaler(Scaler):
             for key in sorted(mmcif_in.keys()):
                 mmcif_out[key] = mmcif_in[key]
 
-            Debug.write("Unit cell obtained by two-theta refinement")
+            logger.debug("Unit cell obtained by two-theta refinement")
 
         else:
             ami = AnalyseMyIntensities()
@@ -1258,7 +1260,7 @@ class CommonScaler(Scaler):
                 list(self._scalr_scaled_refl_files.values())
             )
 
-            Debug.write("Computed average unit cell (will use in all files)")
+            logger.debug("Computed average unit cell (will use in all files)")
             self._scalr_cell = average_unit_cell
             self._scalr_cell_esd = None
 
@@ -1278,7 +1280,7 @@ class CommonScaler(Scaler):
             ):
                 cif_out["_cell_%s" % cifname] = cell
 
-        Debug.write("%7.3f %7.3f %7.3f %7.3f %7.3f %7.3f" % self._scalr_cell)
+        logger.debug("%7.3f %7.3f %7.3f %7.3f %7.3f %7.3f" % self._scalr_cell)
 
     def unify_setting(self):
         """Unify the setting for the sweeps."""
@@ -1310,7 +1312,7 @@ class CommonScaler(Scaler):
 
             results.sort()
             best = results[0]
-            Debug.write("Best reindex: %s %.3f" % (best[1], best[0]))
+            logger.debug("Best reindex: %s %.3f", best[1], best[0])
             reindex_op = best[2].r().inverse().as_hkl()
             # delegate reindexing to individual Scalers.
             self.apply_reindex_operator_to_sweep_info(
@@ -1319,7 +1321,7 @@ class CommonScaler(Scaler):
             # recalculate to verify
             u, _, __ = self.get_UBlattsymm_from_sweep_info(si)
             U = fixed.inverse() * sqr(u).transpose()
-            Debug.write("New reindex: %s" % (U.inverse() * reference_U))
+            logger.debug("New reindex: %s", U.inverse() * reference_U)
 
             # FIXME I should probably raise an exception at this stage if this
             # is not about I3...
@@ -1407,8 +1409,8 @@ class CommonScaler(Scaler):
                     intgr.get_beam_obj().get_s0()
                 )
                 self._scalr_resolution_limits[(dname, sname)] = (limit, suggested)
-                Debug.write("keep_all_reflections set, using detector limits")
-            Debug.write("Resolution for sweep %s: %.2f" % (sname, limit))
+                logger.debug("keep_all_reflections set, using detector limits")
+            logger.debug("Resolution for sweep %s: %.2f", sname, limit)
 
             if (dname, sname) not in self._scalr_resolution_limits:
                 self._scalr_resolution_limits[(dname, sname)] = (limit, None)
@@ -1435,18 +1437,19 @@ class CommonScaler(Scaler):
         if highest_suggested_resolution is not None and highest_resolution >= (
             highest_suggested_resolution - 0.004
         ):
-            Debug.write(
+            logger.debug(
                 "Dropping resolution cut-off suggestion since it is"
                 " essentially identical to the actual resolution limit."
             )
             highest_suggested_resolution = None
         self._scalr_highest_resolution = highest_resolution
         if highest_suggested_resolution is not None:
-            Debug.write(
-                "Suggested highest resolution is %5.2f (%5.2f suggested)"
-                % (highest_resolution, highest_suggested_resolution)
+            logger.debug(
+                "Suggested highest resolution is %5.2f (%5.2f suggested)",
+                highest_resolution,
+                highest_suggested_resolution,
             )
         else:
-            Debug.write("Scaler highest resolution set to %5.2f" % highest_resolution)
+            logger.debug("Scaler highest resolution set to %5.2f", highest_resolution)
 
         return highest_suggested_resolution

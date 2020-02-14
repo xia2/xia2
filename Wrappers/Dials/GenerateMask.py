@@ -1,9 +1,12 @@
 from __future__ import absolute_import, division, print_function
 
+import logging
 import os
 
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
+
+logger = logging.getLogger("xia2.Wrappers.Dials.GenerateMask")
 
 
 def GenerateMask(DriverType=None):
@@ -32,9 +35,7 @@ def GenerateMask(DriverType=None):
             self._params = params
 
         def run(self):
-            from xia2.Handlers.Streams import Debug
-
-            Debug.write("Running dials.generate_mask")
+            logger.debug("Running dials.generate_mask")
 
             self.clear_command_line()
 

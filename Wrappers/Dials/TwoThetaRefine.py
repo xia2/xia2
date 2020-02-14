@@ -1,12 +1,15 @@
 from __future__ import absolute_import, division, print_function
 
+import logging
 import os
 
 import iotbx.cif
 import iotbx.cif.model
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Citations import Citations
-from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Streams import Chatter
+
+logger = logging.getLogger("xia2.Wrappers.Dials.TwoThetaRefine")
 
 
 def TwoThetaRefine(DriverType=None):
@@ -83,7 +86,7 @@ def TwoThetaRefine(DriverType=None):
 
         def run(self):
             if self._reindexing_operators:
-                Debug.write("Reindexing sweeps for dials.two_theta_refine")
+                logger.debug("Reindexing sweeps for dials.two_theta_refine")
                 from xia2.lib.bits import auto_logfiler
                 from xia2.Wrappers.Dials.Reindex import Reindex
 
@@ -107,7 +110,7 @@ def TwoThetaRefine(DriverType=None):
                         reindexer.get_reindexed_reflections_filename()
                     )
 
-            Debug.write("Running dials.two_theta_refine")
+            logger.debug("Running dials.two_theta_refine")
 
             self._output_cif = os.path.join(
                 self.get_working_directory(),

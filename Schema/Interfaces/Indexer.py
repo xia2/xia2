@@ -40,14 +40,17 @@ from __future__ import absolute_import, division, print_function
 
 import inspect
 import json
+import logging
 import os
 from functools import reduce
 
 from xia2.Experts.LatticeExpert import SortLattices
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Streams import Chatter
 
 from cctbx.sgtbx import bravais_types
+
+logger = logging.getLogger("xia2.Schema.Interfaces.Indexer")
 
 
 class _IndexerHelper(object):
@@ -367,7 +370,7 @@ class Indexer(object):
     def get_indexer_done(self):
 
         if not self.get_indexer_prepare_done():
-            Debug.write("Resetting indexer done as prepare not done")
+            logger.debug("Resetting indexer done as prepare not done")
             self.set_indexer_done(False)
 
         return self._indxr_done
@@ -378,8 +381,8 @@ class Indexer(object):
             f = inspect.currentframe().f_back
             m = f.f_code.co_filename
             l = f.f_lineno
-            Debug.write(
-                "Resetting indexer finish done as index not done, from %s/%d" % (m, l)
+            logger.debug(
+                "Resetting indexer finish done as index not done, from %s/%d", m, l
             )
             self.set_indexer_finish_done(False)
 
@@ -423,7 +426,7 @@ class Indexer(object):
             m = f.f_code.co_filename
             l = f.f_lineno
 
-            Debug.write(
+            logger.debug(
                 "Index in %s called from %s %d" % (self.__class__.__name__, m, l)
             )
 
@@ -494,7 +497,7 @@ class Indexer(object):
                     self._index()
 
                     if not self._indxr_done:
-                        Debug.write("Looks like indexing failed - try again!")
+                        logger.debug("Looks like indexing failed - try again!")
                         continue
 
                     solutions = {
@@ -519,8 +522,8 @@ class Indexer(object):
                             "Rerunning indexing lattice %s to %s"
                             % (self._indxr_lattice, solution[0])
                         )
-                        Debug.write(
-                            "Rerunning indexing with target lattice %s" % solution[0]
+                        logger.debug(
+                            "Rerunning indexing with target lattice %s", solution[0]
                         )
                         self.set_indexer_done(False)
 

@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 import inspect
+import logging
 import math
 import os
 
@@ -14,9 +15,10 @@ from iotbx import mtz
 from xia2.Experts.ResolutionExperts import remove_blank
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Debug
 from xia2.lib.bits import auto_logfiler
 from xia2.Modules import MtzUtils
+
+logger = logging.getLogger("xia2.Modules.Scaler.CCP4ScalerHelpers")
 
 
 def nint(a):
@@ -136,7 +138,7 @@ def _prepare_pointless_hklin(working_directory, hklin, phi_width):
     # also remove blank images?
 
     if not PhilIndex.params.xia2.settings.small_molecule:
-        Debug.write("Excluding blank images")
+        logger.debug("Excluding blank images")
 
         hklout = os.path.join(
             working_directory, "%s_noblank.mtz" % (os.path.split(hklin)[-1][:-4])
@@ -172,7 +174,7 @@ def _prepare_pointless_hklin(working_directory, hklin, phi_width):
     first = min(batches)
     last = first + int(phi_limit / phi_width)
 
-    Debug.write(
+    logger.debug(
         "Preparing data for pointless - %d batches (%d degrees)"
         % ((last - first), phi_limit)
     )
@@ -235,24 +237,24 @@ class CCP4ScalerHelper(object):
 
         correct_lattice = None
 
-        Debug.write("Possible lattices (pointless):")
+        logger.debug("Possible lattices (pointless):")
 
-        Debug.write(" ".join(possible))
+        logger.debug(" ".join(possible))
 
         for lattice in possible:
             state = refiner.set_refiner_asserted_lattice(lattice)
             if state == refiner.LATTICE_CORRECT:
-                Debug.write("Agreed lattice %s" % lattice)
+                logger.debug("Agreed lattice %s" % lattice)
                 correct_lattice = lattice
                 break
 
             elif state == refiner.LATTICE_IMPOSSIBLE:
-                Debug.write("Rejected lattice %s" % lattice)
+                logger.debug("Rejected lattice %s" % lattice)
                 rerun_pointless = True
                 continue
 
             elif state == refiner.LATTICE_POSSIBLE:
-                Debug.write("Accepted lattice %s, will reprocess" % lattice)
+                logger.debug("Accepted lattice %s, will reprocess" % lattice)
                 need_to_return = True
                 correct_lattice = lattice
                 break
@@ -261,19 +263,19 @@ class CCP4ScalerHelper(object):
             correct_lattice = refiner.get_refiner_lattice()
             rerun_pointless = True
 
-            Debug.write("No solution found: assuming lattice from refiner")
+            logger.debug("No solution found: assuming lattice from refiner")
 
         if rerun_pointless:
             symmetry.set_correct_lattice(correct_lattice)
             symmetry.decide_pointgroup()
 
-        Debug.write("Pointless analysis of %s" % symmetry.get_hklin())
+        logger.debug("Pointless analysis of %s" % symmetry.get_hklin())
 
         pointgroup = symmetry.get_pointgroup()
         reindex_op = symmetry.get_reindex_operator()
         probably_twinned = symmetry.get_probably_twinned()
 
-        Debug.write("Pointgroup: %s (%s)" % (pointgroup, reindex_op))
+        logger.debug("Pointgroup: %s (%s)" % (pointgroup, reindex_op))
 
         return pointgroup, reindex_op, need_to_return, probably_twinned
 
@@ -294,9 +296,9 @@ class CCP4ScalerHelper(object):
 
         correct_lattice = None
 
-        Debug.write("Possible lattices (pointless):")
+        logger.debug("Possible lattices (pointless):")
 
-        Debug.write(" ".join(possible))
+        logger.debug(" ".join(possible))
 
         # any of them contain the same indexer link, so all good here.
         refiner = refiners[0]
@@ -304,17 +306,17 @@ class CCP4ScalerHelper(object):
         for lattice in possible:
             state = refiner.set_refiner_asserted_lattice(lattice)
             if state == refiner.LATTICE_CORRECT:
-                Debug.write("Agreed lattice %s" % lattice)
+                logger.debug("Agreed lattice %s" % lattice)
                 correct_lattice = lattice
                 break
 
             elif state == refiner.LATTICE_IMPOSSIBLE:
-                Debug.write("Rejected lattice %s" % lattice)
+                logger.debug("Rejected lattice %s" % lattice)
                 rerun_pointless = True
                 continue
 
             elif state == refiner.LATTICE_POSSIBLE:
-                Debug.write("Accepted lattice %s, will reprocess" % lattice)
+                logger.debug("Accepted lattice %s, will reprocess" % lattice)
                 need_to_return = True
                 correct_lattice = lattice
                 break
@@ -323,7 +325,7 @@ class CCP4ScalerHelper(object):
             correct_lattice = refiner.get_refiner_lattice()
             rerun_pointless = True
 
-            Debug.write("No solution found: assuming lattice from refiner")
+            logger.debug("No solution found: assuming lattice from refiner")
 
         if need_to_return:
             if (
@@ -340,13 +342,13 @@ class CCP4ScalerHelper(object):
             pointless.set_correct_lattice(correct_lattice)
             pointless.decide_pointgroup()
 
-        Debug.write("Pointless analysis of %s" % pointless.get_hklin())
+        logger.debug("Pointless analysis of %s" % pointless.get_hklin())
 
         pointgroup = pointless.get_pointgroup()
         reindex_op = pointless.get_reindex_operator()
         probably_twinned = pointless.get_probably_twinned()
 
-        Debug.write("Pointgroup: %s (%s)" % (pointgroup, reindex_op))
+        logger.debug("Pointgroup: %s (%s)" % (pointgroup, reindex_op))
 
         return pointgroup, reindex_op, need_to_return, probably_twinned
 
@@ -417,7 +419,7 @@ class SweepInformation(object):
         return self._batches
 
     def set_batches(self, batches):
-        Debug.write(
+        logger.debug(
             "Setting batches for sweep %s: %i to %i"
             % (self.get_sweep_name(), batches[0], batches[1])
         )

@@ -3,6 +3,7 @@
 from __future__ import absolute_import, division, print_function
 
 import copy
+import logging
 import math
 import os
 import re
@@ -11,7 +12,7 @@ from xia2.Handlers.CIF import CIF, mmCIF
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.Handlers.Streams import Chatter, Journal
 from xia2.Handlers.Syminfo import Syminfo
 from xia2.Modules.Scaler.rebatch import rebatch
 
@@ -28,6 +29,8 @@ from xia2.Modules.Scaler.CCP4ScalerHelpers import (
 )
 from xia2.Modules.Scaler.CommonScaler import CommonScaler as Scaler
 from xia2.Wrappers.CCP4.CCP4Factory import CCP4Factory
+
+logger = logging.getLogger("xia2.Modules.Scaler.CCP4ScalerA")
 
 
 class CCP4ScalerA(Scaler):
@@ -173,7 +176,7 @@ class CCP4ScalerA(Scaler):
 
             if exclude_sweep:
                 self._sweep_handler.remove_epoch(epoch)
-                Debug.write("Excluding sweep %s" % sname)
+                logger.debug("Excluding sweep %s", sname)
             else:
                 Journal.entry({"adding data from": "%s/%s/%s" % (xname, dname, sname)})
 
@@ -216,7 +219,7 @@ class CCP4ScalerA(Scaler):
                     if 1 + max(batches) - min(batches) > max_batches:
                         max_batches = max(batches) - min(batches) + 1
 
-                Debug.write("Biggest sweep has %d batches" % max_batches)
+                logger.debug("Biggest sweep has %d batches", max_batches)
                 max_batches = nifty_power_of_ten(max_batches)
 
                 counter = 0
@@ -302,14 +305,14 @@ class CCP4ScalerA(Scaler):
 
                 # FIXME xia2-51 in here need to pass all refiners to ensure that the
                 # information is passed back to all of them not just the last one...
-                Debug.write(
-                    "Running multisweep pointless for %d sweeps" % len(refiners)
+                logger.debug(
+                    "Running multisweep pointless for %d sweeps", len(refiners)
                 )
                 pointgroup, reindex_op, ntr, pt = self._pointless_indexer_multisweep(
                     pointless_hklin, refiners
                 )
 
-                Debug.write("X1698: %s: %s" % (pointgroup, reindex_op))
+                logger.debug("X1698: %s: %s", pointgroup, reindex_op)
 
                 lattices = [Syminfo.get_lattice(pointgroup)]
 
@@ -353,7 +356,7 @@ class CCP4ScalerA(Scaler):
                             pointless_hklin, refiner
                         )
 
-                        Debug.write("X1698: %s: %s" % (pointgroup, reindex_op))
+                        logger.debug("X1698: %s: %s", pointgroup, reindex_op)
 
                     lattice = Syminfo.get_lattice(pointgroup)
 
@@ -440,7 +443,7 @@ class CCP4ScalerA(Scaler):
                 if 1 + max(batches) - min(batches) > max_batches:
                     max_batches = max(batches) - min(batches) + 1
 
-            Debug.write("Biggest sweep has %d batches" % max_batches)
+            logger.debug("Biggest sweep has %d batches", max_batches)
             max_batches = nifty_power_of_ten(max_batches)
 
             counter = 0
@@ -542,8 +545,8 @@ class CCP4ScalerA(Scaler):
                 refiner = integrater.get_integrater_refiner()
 
                 if self._scalr_input_pointgroup:
-                    Debug.write(
-                        "Using input pointgroup: %s" % self._scalr_input_pointgroup
+                    logger.debug(
+                        "Using input pointgroup: %s", self._scalr_input_pointgroup
                     )
                     pointgroup = self._scalr_input_pointgroup
                     reindex_op = "h,k,l"
@@ -559,7 +562,7 @@ class CCP4ScalerA(Scaler):
                         pointless_hklin, refiner
                     )
 
-                    Debug.write("X1698: %s: %s" % (pointgroup, reindex_op))
+                    logger.debug("X1698: %s: %s", pointgroup, reindex_op)
 
                     if ntr:
 
@@ -569,7 +572,7 @@ class CCP4ScalerA(Scaler):
                 if pt and not probably_twinned:
                     probably_twinned = True
 
-                Debug.write("Pointgroup: %s (%s)" % (pointgroup, reindex_op))
+                logger.debug("Pointgroup: %s (%s)", pointgroup, reindex_op)
 
                 pointgroups[epoch] = pointgroup
                 reindex_ops[epoch] = reindex_op
@@ -588,9 +591,9 @@ class CCP4ScalerA(Scaler):
             )
 
         if len(pointgroup_set) > 1:
-            Debug.write(
-                "Probably twinned, pointgroups: %s"
-                % " ".join(p.replace(" ", "") for p in list(pointgroup_set))
+            logger.debug(
+                "Probably twinned, pointgroups: %s",
+                " ".join(p.replace(" ", "") for p in pointgroup_set),
             )
             numbers = (Syminfo.spacegroup_name_to_number(ps) for ps in pointgroup_set)
             overall_pointgroup = Syminfo.spacegroup_number_to_name(min(numbers))
@@ -637,13 +640,13 @@ class CCP4ScalerA(Scaler):
 
         if self.get_scaler_reference_reflection_file():
             self._reference = self.get_scaler_reference_reflection_file()
-            Debug.write("Using HKLREF %s" % self._reference)
+            logger.debug("Using HKLREF %s", self._reference)
 
         elif PhilIndex.params.xia2.settings.scale.reference_reflection_file:
             self._reference = (
                 PhilIndex.params.xia2.settings.scale.reference_reflection_file
             )
-            Debug.write("Using HKLREF %s" % self._reference)
+            logger.debug("Using HKLREF %s", self._reference)
 
         params = PhilIndex.params
         use_brehm_diederichs = params.xia2.settings.use_brehm_diederichs
@@ -716,12 +719,12 @@ class CCP4ScalerA(Scaler):
                     ignore_errors=PhilIndex.params.xia2.settings.small_molecule
                 )
 
-                Debug.write("Reindexing analysis of %s" % pl.get_hklin())
+                logger.debug("Reindexing analysis of %s", pl.get_hklin())
 
                 pointgroup = pl.get_pointgroup()
                 reindex_op = pl.get_reindex_operator()
 
-                Debug.write("Operator: %s" % reindex_op)
+                logger.debug("Operator: %s", reindex_op)
 
                 # apply this...
 
@@ -757,8 +760,8 @@ class CCP4ScalerA(Scaler):
                         % (self._reference, si.get_reflections())
                     )
 
-                Debug.write("Cell: %.2f %.2f %.2f %.2f %.2f %.2f" % cell)
-                Debug.write("Ref:  %.2f %.2f %.2f %.2f %.2f %.2f" % reference_cell)
+                logger.debug("Cell: %.2f %.2f %.2f %.2f %.2f %.2f" % cell)
+                logger.debug("Ref:  %.2f %.2f %.2f %.2f %.2f %.2f" % reference_cell)
 
                 for j in range(6):
                     if (
@@ -934,7 +937,7 @@ class CCP4ScalerA(Scaler):
         )
 
         if not self.get_scaler_done():
-            Debug.write("Returning as scaling not finished...")
+            logger.debug("Returning as scaling not finished...")
             return
 
         batch_info = {}
@@ -1135,7 +1138,7 @@ class CCP4ScalerA(Scaler):
                 self._generate_absorption_map(sc)
             except Exception as e:
                 # Map generation may fail for number of reasons, eg. matplotlib borken
-                Debug.write("Could not generate absorption map (%s)" % e)
+                logger.debug("Could not generate absorption map (%s)", e)
 
     def _generate_absorption_map(self, scaler):
         output = scaler.get_all_output()
@@ -1193,9 +1196,10 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
             mapfile = os.path.join(log_directory, "absorption_surface.png")
             generate_map(absmap, mapfile)
         else:
-            Debug.write(
-                "Cannot create absorption surface: map is too flat (min: %f, max: %f)"
-                % (absmin, absmax)
+            logger.debug(
+                "Cannot create absorption surface: map is too flat (min: %f, max: %f)",
+                absmin,
+                absmax,
             )
 
     def _identify_sweep_epoch(self, batch):
@@ -1234,14 +1238,14 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
                     # to work out why the epochs are not set correctly in first place...
                     if si._image_to_epoch[b - batch_offset] in epoch_to_dose:
                         if not printed:
-                            Debug.write("Epoch found; all good")
+                            logger.debug("Epoch found; all good")
                             printed = True
                         batch_to_dose[b] = epoch_to_dose[
                             si._image_to_epoch[b - batch_offset]
                         ]
                     else:
                         if not printed:
-                            Debug.write("Epoch not found; using offset %f" % e0)
+                            logger.debug("Epoch not found; using offset %f", e0)
                             printed = True
                         batch_to_dose[b] = epoch_to_dose[
                             si._image_to_epoch[b - batch_offset] - e0
