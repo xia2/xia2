@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 import json
 import timeit
 from collections import Counter
+import sys
 
 from dials.util.options import OptionParser
 from dials.util.options import flatten_experiments
@@ -33,7 +34,7 @@ output {
 )
 
 
-def run(args):
+def run(args=None):
     usage = "xia2.overload (data_master.h5|integrated.expt) [nproc=8]"
 
     parser = OptionParser(
@@ -44,7 +45,7 @@ def run(args):
         epilog=help_message,
     )
 
-    params, options = parser.parse_args(show_diff_phil=True)
+    params, options = parser.parse_args(args=args, show_diff_phil=True)
 
     experiments = flatten_experiments(params.input.experiments)
     if len(experiments) != 1:
@@ -152,6 +153,4 @@ def build_hist(experiment_list, params):
 
 
 if __name__ == "__main__":
-    import sys
-
-    run(sys.argv[1:])
+    run()
