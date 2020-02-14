@@ -12,7 +12,6 @@ from __future__ import absolute_import, division, print_function
 import logging
 import os
 import sys
-import warnings
 from datetime import date
 
 import libtbx.load_env
@@ -53,8 +52,7 @@ def _logger_file(loggername, level=logging.INFO):
     return _()
 
 
-def banner(comment, forward=True, size=60):
-
+def banner(comment, size=60):
     if not comment:
         return "-" * size
 
@@ -81,7 +79,7 @@ class _Stream(object):
     def filter(self, filter):
         self._filter = filter
 
-    def write(self, record, forward=True, strip=True):
+    def write(self, record, strip=True):
         if self._filter:
             for replace in self._filter:
                 record = record.replace(replace, self._filter[replace])
@@ -98,8 +96,8 @@ class _Stream(object):
 
         return result
 
-    def banner(self, comment, forward=True, size=60):
-        self.write(banner(comment, forward=forward, size=size))
+    def banner(self, comment, size=60):
+        self.write(banner(comment, size=size))
 
     def block(self, task, data, program, options):
         """Print out a description of the task being performed with
@@ -111,27 +109,6 @@ class _Stream(object):
             if options[o]:
                 oname = "%s:" % o
                 self.write("%s %s" % (oname.ljust(30), options[o]))
-
-    def entry(self, options):
-        """Print subsequent entries to the above block."""
-
-        for o in sorted(options):
-            if options[o]:
-                oname = "%s:" % o
-                self.write("%s %s" % (oname.ljust(30), options[o]))
-
-    def join(self, otherstream):
-        """Join another stream so that all output from this stream goes also
-        to that one."""
-        warnings.warn(
-            "stream join() function is deprecated", DeprecationWarning, stacklevel=2
-        )
-
-    def off(self):
-        """Switch the stream writing off..."""
-        warnings.warn(
-            "stream off() function is deprecated", DeprecationWarning, stacklevel=2
-        )
 
 
 # FIXME 23/NOV/06 now write a xia2.txt from chatter and rename that
@@ -175,7 +152,7 @@ def setup_logging(logfile=None, debugfile=None, verbose=False):
     else:
         loglevel = logging.INFO
 
-    if os.getenv("COLOURLOG") and ColorStreamHandler:
+    if os.getenv("COLOURLOG") and ColorStreamHandler and not os.getenv("NO_COLOR"):
         console = ColorStreamHandler(sys.stdout)
     else:
         console = logging.StreamHandler(sys.stdout)

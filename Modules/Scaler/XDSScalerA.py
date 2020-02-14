@@ -255,8 +255,6 @@ class XDSScalerA(Scaler):
                 "sname": sname,
             }
 
-            Journal.entry({"adding data from": "%s/%s/%s" % (xname, dname, sname)})
-
             # what are these used for?
             # pname / xname / dname - dataset identifiers
             # image to epoch / batch offset / batches - for RD analysis

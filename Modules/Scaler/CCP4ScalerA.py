@@ -178,7 +178,7 @@ class CCP4ScalerA(Scaler):
                 self._sweep_handler.remove_epoch(epoch)
                 logger.debug("Excluding sweep %s", sname)
             else:
-                Journal.entry({"adding data from": "%s/%s/%s" % (xname, dname, sname)})
+                logger.debug("%-30s %s/%s/%s", "adding data from:", xname, dname, sname)
 
         # gather data for all images which belonged to the parent
         # crystal - allowing for the fact that things could go wrong

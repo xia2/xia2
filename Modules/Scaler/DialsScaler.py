@@ -369,7 +369,7 @@ class DialsScaler(Scaler):
                 self._sweep_handler.remove_epoch(epoch)
                 logger.debug("Excluding sweep %s", sname)
             else:
-                Journal.entry({"adding data from": "%s/%s/%s" % (xname, dname, sname)})
+                logger.debug("%-30s %s/%s/%s", "adding data from:", xname, dname, sname)
 
         # If multiple files, want to run symmetry to check for consistent indexing
         # also
