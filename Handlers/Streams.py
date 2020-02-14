@@ -68,7 +68,7 @@ class _Stream(object):
     """A class to represent an output stream. This will be used as a number
     of static instances - Debug and Chatter in particular."""
 
-    def __init__(self, streamname, prefix, file=None):
+    def __init__(self, streamname, file=None):
         """Create a new stream."""
 
         # FIXME would rather this goes to a file...
@@ -76,7 +76,7 @@ class _Stream(object):
 
         self._file = file
         self._filter = None
-        self._prefix = prefix
+        self._prefix = None
 
     def filter(self, filter):
         self._filter = filter
@@ -148,19 +148,17 @@ if cl.endswith(".bat"):
     # windows adds .bat extension to dispatcher
     cl = cl[:-4]
 
-Chatter = _Stream("%s" % cl, None, file=_logger_file("xia2.stream.chatter"))
+Chatter = _Stream("%s" % cl, file=_logger_file("xia2.stream.chatter"))
 Journal = _Stream(
-    "%s-journal" % cl,
-    None,
-    file=_logger_file("xia2.stream.journal", level=logging.DEBUG),
+    "%s-journal" % cl, file=_logger_file("xia2.stream.journal", level=logging.DEBUG),
 )
-Stdout = _Stream(None, None, file=_logger_file("xia2.stream.stdout"))
+Stdout = _Stream(None, file=_logger_file("xia2.stream.stdout"))
 day = date.today().timetuple()
 if (day.tm_mday == 1 and day.tm_mon == 4) or "XIA2_APRIL" in os.environ:
     # turning log fonts to GREEN
     Stdout.filter(april)
 Debug = _Stream(
-    "%s-debug" % cl, None, file=_logger_file("xia2.stream.debug", level=logging.DEBUG)
+    "%s-debug" % cl, file=_logger_file("xia2.stream.debug", level=logging.DEBUG)
 )
 
 
