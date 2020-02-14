@@ -46,8 +46,9 @@ def debug_memory_usage():
         Debug.write("Error getting RAM usage: %s" % str(e))
 
 
-def df(path=os.getcwd()):
+def df(path=None):
     """Return disk space in bytes in path."""
+    path = path or os.getcwd()
 
     if platform.system() == "Windows":
         try:

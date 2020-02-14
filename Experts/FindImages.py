@@ -99,14 +99,7 @@ def image2image(filename):
 def image2template_directory(filename):
     """Separate out the template and directory from an image name."""
 
-    directory = os.path.dirname(filename)
-
-    if not directory:
-
-        # then it should be the current working directory
-        directory = os.getcwd()
-
-    image = os.path.split(filename)[-1]
+    directory, image = os.path.split(os.path.abspath(filename))
 
     from xia2.Applications.xia2setup import is_hdf5_name
 
