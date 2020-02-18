@@ -151,7 +151,7 @@ def Refine(DriverType=None):
             for group in self.tie_to_group:
                 if group.target or group.sigmas or group.id:
                     self.add_command_line(
-                        "refinement.parameterisation.restraints.tie_to_group.values=%s"
+                        "refinement.parameterisation.restraints.tie_to_group.target=%s"
                         % group.target
                     )
                     self.add_command_line(
