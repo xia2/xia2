@@ -911,7 +911,7 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
                     tt_grouprefiner.run()
                     logger.info(
                         "%s: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"
-                        % (
+                        % tuple(
                             ["".join(pi.split("_")[2:])]
                             + list(tt_grouprefiner.get_unit_cell())
                         )
