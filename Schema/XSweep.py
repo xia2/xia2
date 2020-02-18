@@ -836,9 +836,8 @@ class XSweep(object):
                 )
 
         except Exception:
-            # Chatter.write('Error storing parameters for crystal %s' % \
-            # crystal_id)
-            # Chatter.write('%s' % str(e))
+            # logger.error('Error storing parameters for crystal %s', crystal_id)
+            # logger.error(str(e))
             pass
 
         return reflections

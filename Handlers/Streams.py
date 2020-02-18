@@ -14,8 +14,6 @@ import platform
 import sys
 from datetime import date
 
-import libtbx.load_env
-
 if not hasattr(logging, "NOTICE"):
     # Create a NOTICE log level and associated command
     logging.NOTICE = 25
@@ -24,26 +22,6 @@ if not hasattr(logging, "NOTICE"):
         return self.log(logging.NOTICE, *args, **kwargs)
 
     logging.getLoggerClass().notice = _notice
-
-
-def _logger_file(loggername, level=logging.INFO):
-    "Returns a file-like object that writes to a logger"
-    log_function = logging.getLogger(loggername).log
-
-    class _(object):
-        @staticmethod
-        def flush():
-            pass
-
-        @staticmethod
-        def write(logobject):
-            if logobject.endswith("\n"):
-                # the Stream.write() function adds a trailing newline.
-                # remove that again
-                logobject = logobject[:-1]
-            log_function(level, logobject)
-
-    return _()
 
 
 def banner(comment, size=60):
@@ -56,53 +34,6 @@ def banner(comment, size=60):
     return "%s %s %s" % ("-" * m, comment, "-" * n)
 
 
-class _Stream(object):
-    """A class to represent an output stream. This will be used as a number
-    of static instances - Chatter in particular."""
-
-    def __init__(self, streamname, file=None):
-        """Create a new stream."""
-
-        # FIXME would rather this goes to a file...
-        # unless this is impossible
-
-        self._file = file
-        self._filter = None
-        self._prefix = None
-
-    def filter(self, filter):
-        self._filter = filter
-
-    def write(self, record, strip=True):
-        if self._filter:
-            for replace in self._filter:
-                record = record.replace(replace, self._filter[replace])
-
-        for r in record.split("\n"):
-            if self._prefix:
-                result = self._file.write(
-                    u"[%s]  %s\n" % (self._prefix, r.strip() if strip else r)
-                )
-            else:
-                result = self._file.write(u"%s\n" % (r.strip() if strip else r))
-
-            self._file.flush()
-
-        return result
-
-
-cl = libtbx.env.dispatcher_name
-if cl:
-    if "xia2" not in cl or "python" in cl or cl == "xia2.new":
-        cl = "xia2"
-else:
-    cl = "xia2"
-
-if cl.endswith(".bat"):
-    # windows adds .bat extension to dispatcher
-    cl = cl[:-4]
-
-Chatter = _Stream("%s" % cl, file=_logger_file("xia2.stream.chatter"))
 today = date.today()
 sanitize = (today.day == 1 and today.month == 4) or "XIA2_APRIL" in os.environ
 
@@ -153,9 +84,12 @@ def setup_logging(logfile=None, debugfile=None, verbose=False):
 
 if __name__ == "__main__":
     setup_logging(logfile="logfile", debugfile="debugfile")
-    Chatter.write("nothing much, really")
-    logging.getLogger("xia2.Handlers.Streams").debug("this is a debug-level message")
-
+    ll = logging.getLogger("xia2.Handlers.Streams")
+    ll.debug("this is a debug-level message")
+    ll.info("this is an info-level message")
+    ll.notice("this is a notice-level message")
+    ll.warning("this is a warning-level message")
+    ll.error("this is an error-level message")
 
 # -------------------------------------------------------------------------------
 # colored stream handler for python logging framework based on:

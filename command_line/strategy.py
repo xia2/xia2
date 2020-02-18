@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+import logging
 import json
 import os
 import sys
@@ -7,8 +8,9 @@ import traceback
 
 from xia2.Applications.xia2_main import check_environment, get_command_line, help
 import xia2.Handlers.Streams
-from xia2.Handlers.Streams import Chatter
 from xia2.lib.bits import auto_logfiler
+
+logger = logging.getLogger("xia2.command_line.strategy")
 
 
 def run():
@@ -17,7 +19,7 @@ def run():
     except Exception as e:
         with open("xia2-error.txt", "w") as fh:
             traceback.print_exc(file=fh)
-        Chatter.write('Status: error "%s"' % str(e))
+        logger.error('Status: error "%s"', str(e))
 
     if len(sys.argv) < 2 or "-help" in sys.argv:
         help()
@@ -29,7 +31,7 @@ def run():
         from xia2.command_line.xia2_main import xia2_main
 
         xia2_main(stop_after="integrate")
-        Chatter.write("Status: normal termination")
+        logger.info("Status: normal termination")
 
         wd = os.path.join(cwd, "strategy")
         if not os.path.exists(wd):
@@ -73,7 +75,7 @@ def run():
                 "%i_align_crystal.json" % align_crystal.get_xpid()
             )
             align_crystal.run()
-            Chatter.write("".join(align_crystal.get_all_output()))
+            logger.info("".join(align_crystal.get_all_output()))
 
         results_all = {}
 
@@ -172,28 +174,25 @@ def run():
                 multiplicity = "%.2f" % multiplicity
             except TypeError:
                 pass
-            Chatter.write("Strategy %i" % istrategy)
+            logger.info("Strategy %i", istrategy)
             if description is not None:
-                Chatter.write(description)
-            Chatter.write(
-                "Start / end / width: %.2f/%.2f/%.2f"
-                % (
-                    float(result["phi_start"]),
-                    float(result["phi_end"]),
-                    float(result["phi_width"]),
-                )
+                logger.info(description)
+            logger.info(
+                "Start / end / width: %.2f/%.2f/%.2f",
+                float(result["phi_start"]),
+                float(result["phi_end"]),
+                float(result["phi_width"]),
             )
-            Chatter.write(
-                "Completeness / multiplicity / resolution: %.2f/%s/%.2f"
-                % (
-                    float(result["completeness"]),
-                    multiplicity,
-                    float(result["resolution"]),
-                )
+            logger.info(
+                "Completeness / multiplicity / resolution: %.2f/%s/%.2f",
+                float(result["completeness"]),
+                multiplicity,
+                float(result["resolution"]),
             )
-            Chatter.write(
-                "Transmission / exposure %.3f/%.3f"
-                % (float(result["transmission"]), float(result["exposure_time"]))
+            logger.info(
+                "Transmission / exposure %.3f/%.3f",
+                float(result["transmission"]),
+                float(result["exposure_time"]),
             )
 
         with open("strategies.json", "wb") as f:
@@ -202,7 +201,7 @@ def run():
     except Exception as e:
         with open(os.path.join(cwd, "xia2-error.txt"), "w") as fh:
             traceback.print_exc(file=fh)
-        Chatter.write('Status: error "%s"' % str(e))
+        logger.error('Status: error "%s"', str(e))
     os.chdir(cwd)
 
 
