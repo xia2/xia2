@@ -378,7 +378,7 @@ class DialsIndexer(Indexer):
 
                         xsweep = self.get_indexer_sweep()
                         xwav = xsweep.get_wavelength()
-                        xsample = xsweep.get_xsample()
+                        xsample = xsweep.sample
 
                         sweep_name = xsweep.get_name()
 
