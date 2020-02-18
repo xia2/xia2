@@ -127,7 +127,7 @@ def Refine(DriverType=None):
                     self.add_command_line(
                         "refinement.parameterisation.restraints.tie_to_target.values=%s"
                         % (
-                            ",".join([value for value in target.values])
+                            ",".join(map(str, [value for value in target.values]))
                             if target.values
                             else target.values
                         )
@@ -135,14 +135,18 @@ def Refine(DriverType=None):
                     self.add_command_line(
                         "refinement.parameterisation.restraints.tie_to_target.sigmas=%s"
                         % (
-                            ",".join([sigma for sigma in target.sigmas])
+                            ",".join(map(str, [sigma for sigma in target.sigmas]))
                             if target.sigmas
                             else target.sigmas
                         )
                     )
                     self.add_command_line(
                         "refinement.parameterisation.restraints.tie_to_target.id=%s"
-                        % (",".join([i for i in target.id]) if target.id else target.id)
+                        % (
+                            ",".join(map(str, [i for i in target.id]))
+                            if target.id
+                            else target.id
+                        )
                     )
             for group in self.tie_to_group:
                 if group.target or group.sigmas or group.id:
@@ -153,14 +157,18 @@ def Refine(DriverType=None):
                     self.add_command_line(
                         "refinement.parameterisation.restraints.tie_to_group.sigmas=%s"
                         % (
-                            ",".join([sigma for sigma in group.sigmas])
+                            ",".join(map(str, [sigma for sigma in group.sigmas]))
                             if group.sigmas
                             else group.sigmas
                         )
                     )
                     self.add_command_line(
                         "refinement.parameterisation.restraints.tie_to_group.id=%s"
-                        % (",".join([i for i in group.id]) if group.id else group.id)
+                        % (
+                            ",".join(map(str, [i for i in group.id]))
+                            if group.id
+                            else group.id
+                        )
                     )
 
             if self._phil_file is not None:
