@@ -146,7 +146,7 @@ import json
 import logging
 import os
 
-from xia2.Handlers.Streams import Chatter
+from xia2.Handlers.Streams import Chatter, banner
 
 logger = logging.getLogger("xia2.Schema.Interfaces.Scaler")
 
@@ -504,12 +504,12 @@ class Scaler(object):
             while not self.get_scaler_done():
                 while not self.get_scaler_prepare_done():
 
-                    Chatter.banner("Preparing %s" % xname)
+                    Chatter.write(banner("Preparing %s" % xname))
 
                     self._scalr_prepare_done = True
                     self._scale_prepare()
 
-                Chatter.banner("Scaling %s" % xname)
+                Chatter.write(banner("Scaling %s" % xname))
 
                 self._scalr_done = True
                 self._scalr_result = self._scale()

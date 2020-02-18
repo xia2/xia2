@@ -39,7 +39,7 @@ from xia2.Schema.Interfaces.Indexer import Indexer
 # odds and sods that are needed
 
 from xia2.lib.bits import auto_logfiler
-from xia2.Handlers.Streams import Chatter
+from xia2.Handlers.Streams import Chatter, banner
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Files import FileHandler
 from xia2.Experts.SymmetryExpert import lattice_to_spacegroup_number
@@ -248,7 +248,7 @@ class DialsIndexer(Indexer):
 
         for imageset, xsweep in zip(self._indxr_imagesets, self._indxr_sweeps):
 
-            Chatter.banner("Spotfinding %s" % xsweep.get_name())
+            Chatter.write(banner("Spotfinding %s" % xsweep.get_name()))
 
             first, last = imageset.get_scan().get_image_range()
 

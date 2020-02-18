@@ -46,7 +46,7 @@ from functools import reduce
 
 from xia2.Experts.LatticeExpert import SortLattices
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter
+from xia2.Handlers.Streams import Chatter, banner
 
 from cctbx.sgtbx import bravais_types
 
@@ -489,9 +489,11 @@ class Indexer(object):
 
                     if PhilIndex.params.xia2.settings.show_template:
                         template = self.get_indexer_sweep().get_template()
-                        Chatter.banner("Autoindexing %s (%s)" % (sweep_names, template))
+                        Chatter.write(
+                            banner("Autoindexing %s (%s)" % (sweep_names, template))
+                        )
                     else:
-                        Chatter.banner("Autoindexing %s" % sweep_names)
+                        Chatter.write(banner("Autoindexing %s" % sweep_names))
 
                 if not self._indxr_helper:
                     self._index()

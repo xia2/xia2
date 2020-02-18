@@ -96,20 +96,6 @@ class _Stream(object):
 
         return result
 
-    def banner(self, comment, size=60):
-        self.write(banner(comment, size=size))
-
-    def block(self, task, data, program, options):
-        """Print out a description of the task being performed with
-        the program and a dictionary of options which will be printed
-        in alphabetical order."""
-
-        self.banner("%s %s with %s" % (task, data, program), size=80)
-        for o in sorted(options):
-            if options[o]:
-                oname = "%s:" % o
-                self.write("%s %s" % (oname.ljust(30), options[o]))
-
 
 # FIXME 23/NOV/06 now write a xia2.txt from chatter and rename that
 # output stream Stdout... then copy everything there!

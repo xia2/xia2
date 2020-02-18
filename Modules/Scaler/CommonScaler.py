@@ -11,7 +11,7 @@ import iotbx.merging_statistics
 from iotbx import mtz
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter
+from xia2.Handlers.Streams import Chatter, banner
 from xia2.Handlers.CIF import CIF, mmCIF
 from xia2.lib.bits import nifty_power_of_ten, auto_logfiler
 from xia2.Modules.AnalyseMyIntensities import AnalyseMyIntensities
@@ -879,10 +879,10 @@ class CommonScaler(Scaler):
 
         if status:
             Chatter.write("")
-            Chatter.banner("Local Scaling %s" % self._scalr_xname)
+            Chatter.write(banner("Local Scaling %s" % self._scalr_xname))
             for s in status:
                 Chatter.write("%s %s" % s)
-            Chatter.banner("")
+            Chatter.write(banner(""))
         else:
             logger.debug("Local scaling failed")
 
@@ -1127,7 +1127,7 @@ class CommonScaler(Scaler):
             from xia2.Wrappers.Dials.TwoThetaRefine import TwoThetaRefine
             from xia2.lib.bits import auto_logfiler
 
-            Chatter.banner("Unit cell refinement")
+            Chatter.write(banner("Unit cell refinement"))
 
             # Collect a list of all sweeps, grouped by project, crystal, wavelength
             groups = {}

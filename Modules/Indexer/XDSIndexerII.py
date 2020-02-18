@@ -13,7 +13,7 @@ import os
 
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter
+from xia2.Handlers.Streams import Chatter, banner
 from xia2.lib.bits import auto_logfiler
 from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
 from xia2.Wrappers.XDS.XDS import XDSException
@@ -84,7 +84,7 @@ class XDSIndexerII(XDSIndexer):
         return wedges
 
     def _index_prepare(self):
-        Chatter.banner("Spotfinding %s" % self.get_indexer_sweep_name())
+        Chatter.write(banner("Spotfinding %s" % self.get_indexer_sweep_name()))
         super(XDSIndexerII, self)._index_prepare()
 
         from dials.array_family import flex

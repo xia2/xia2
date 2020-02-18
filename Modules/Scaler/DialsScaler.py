@@ -14,7 +14,7 @@ from xia2.Handlers.Files import FileHandler
 from xia2.lib.bits import auto_logfiler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.lib.SymmetryLib import sort_lattices
-from xia2.Handlers.Streams import Chatter
+from xia2.Handlers.Streams import Chatter, banner
 from xia2.Handlers.CIF import CIF, mmCIF
 from xia2.Modules.Scaler.CommonScaler import CommonScaler as Scaler
 from xia2.Wrappers.Dials.Scale import DialsScale
@@ -613,7 +613,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
             not PhilIndex.params.xia2.settings.small_molecule
             and not self._scalr_input_spacegroup
         ):
-            Chatter.banner("Systematic absences check")
+            Chatter.write(banner("Systematic absences check"))
             symmetry = DialsSymmetry()
             symmetry.set_experiments_filename(self._scaled_experiments)
             symmetry.set_reflections_filename(self._scaled_reflections)
@@ -858,7 +858,7 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
             and params.xia2.settings.scale.two_theta_refine
         ):
 
-            Chatter.banner("Unit cell refinement")
+            Chatter.write(banner("Unit cell refinement"))
 
             # Collect a list of all sweeps, grouped by project, crystal, wavelength
             groups_list = []

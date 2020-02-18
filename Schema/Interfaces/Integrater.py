@@ -42,7 +42,7 @@ import xia2.Schema.Interfaces.Refiner
 # symmetry operator management functionality
 from xia2.Experts.SymmetryExpert import compose_symops, symop_to_mat
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter
+from xia2.Handlers.Streams import Chatter, banner
 from xia2.Schema.Exceptions.BadLatticeError import BadLatticeError
 
 # interfaces that this inherits from ...
@@ -540,11 +540,14 @@ class Integrater(FrameProcessor):
 
                 if self._intgr_sweep_name:
                     if PhilIndex.params.xia2.settings.show_template:
-                        Chatter.banner(
-                            "Integrating %s (%s)" % (self._intgr_sweep_name, template)
+                        Chatter.write(
+                            banner(
+                                "Integrating %s (%s)"
+                                % (self._intgr_sweep_name, template)
+                            )
                         )
                     else:
-                        Chatter.banner("Integrating %s" % (self._intgr_sweep_name))
+                        Chatter.write(banner("Integrating %s" % self._intgr_sweep_name))
                 try:
 
                     # 1698
