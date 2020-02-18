@@ -39,6 +39,9 @@ from dials.algorithms.scaling.plots import plot_absorption_surface
 from dials.array_family import flex
 import dials.util.version
 from cctbx.sgtbx import lattice_symmetry_group
+from iotbx import mtz
+from iotbx.scalepack import no_merge_original_index
+from iotbx.scalepack.merge import write as merge_scalepack_write
 
 logger = logging.getLogger("xia2.Modules.Scaler.DialsScaler")
 
@@ -711,6 +714,9 @@ pipeline=dials (supported for pipeline=dials-aimless).
                 exporter.run()
                 FileHandler.record_data_file(mtz_filename)
 
+                # now convert to .sca format
+                convert_mtz_to_sca(mtz_filename, merged=False)
+
                 merger = DialsMerge()  # merge but don't truncate
                 merger.set_working_directory(self.get_working_directory())
                 merger.set_experiments_filename(expt_name)
@@ -735,6 +741,9 @@ pipeline=dials (supported for pipeline=dials-aimless).
                 merger.run()
                 FileHandler.record_data_file(mtz_filename)
 
+                # now convert to .sca format
+                convert_mtz_to_sca(mtz_filename, merged=True)
+
         ### For non-MAD case, run dials.export and dials.merge on scaled data.
         else:
             exporter = ExportMtz()
@@ -756,6 +765,9 @@ pipeline=dials (supported for pipeline=dials-aimless).
             }
 
             FileHandler.record_data_file(scaled_unmerged_mtz_path)
+
+            # now convert to .sca format
+            convert_mtz_to_sca(scaled_unmerged_mtz_path, merged=False)
 
             merger = DialsMerge()
             merger.set_working_directory(self.get_working_directory())
@@ -779,6 +791,9 @@ pipeline=dials (supported for pipeline=dials-aimless).
             logger.debug("Merging %s", mtz_filename)
             merger.run()
             FileHandler.record_data_file(mtz_filename)
+
+            # now export to sca format
+            convert_mtz_to_sca(mtz_filename, merged=True)
 
         # Also export just integrated data.
         for si in sweep_infos:
@@ -1269,3 +1284,20 @@ def decide_correct_lattice_using_refiner(possible_lattices, refiner):
         logger.debug("No solution found: assuming lattice from refiner")
 
     return correct_lattice, rerun_symmetry, need_to_return
+
+
+def convert_mtz_to_sca(mtz_filename, merged=False):
+    """Convert an mtz files to .sca format and write."""
+    sca_filename = mtz_filename.replace("mtz", "sca")
+    m = mtz.object(mtz_filename)
+    cols = m.as_miller_arrays(merge_equivalents=False, anomalous=False)
+    i_obs = None
+    for ma in cols:
+        if ma.info().labels == ["I", "SIGI"] and not merged:
+            i_obs = ma
+        elif ma.info().labels == ["IMEAN", "SIGIMEAN"] and merged:
+            i_obs = ma
+    if merged:
+        merge_scalepack_write(miller_array=i_obs, file_name=sca_filename)
+    else:
+        no_merge_original_index.writer(i_obs, file_name=sca_filename)
