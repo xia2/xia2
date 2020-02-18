@@ -125,7 +125,8 @@ def Refine(DriverType=None):
             for target in self.tie_to_target:
                 if target.values or target.sigmas or target.id:
                     self.add_command_line(
-                        "refinement.parameterisation.restraints.tie_to_target.values=%s"
+                        "refinement.parameterisation.crystal.unit_cell.restraints"
+                        ".tie_to_target.values=%s"
                         % (
                             ",".join(map(str, [value for value in target.values]))
                             if target.values
@@ -133,7 +134,8 @@ def Refine(DriverType=None):
                         )
                     )
                     self.add_command_line(
-                        "refinement.parameterisation.restraints.tie_to_target.sigmas=%s"
+                        "refinement.parameterisation.crystal.unit_cell.restraints"
+                        ".tie_to_target.sigmas=%s"
                         % (
                             ",".join(map(str, [sigma for sigma in target.sigmas]))
                             if target.sigmas
@@ -141,7 +143,8 @@ def Refine(DriverType=None):
                         )
                     )
                     self.add_command_line(
-                        "refinement.parameterisation.restraints.tie_to_target.id=%s"
+                        "refinement.parameterisation.crystal.unit_cell.restraints"
+                        ".tie_to_target.id=%s"
                         % (
                             ",".join(map(str, [i for i in target.id]))
                             if target.id
@@ -151,11 +154,12 @@ def Refine(DriverType=None):
             for group in self.tie_to_group:
                 if group.target or group.sigmas or group.id:
                     self.add_command_line(
-                        "refinement.parameterisation.restraints.tie_to_group.target=%s"
-                        % group.target
+                        "refinement.parameterisation.crystal.unit_cell.restraints"
+                        ".tie_to_group.target=%s" % group.target
                     )
                     self.add_command_line(
-                        "refinement.parameterisation.restraints.tie_to_group.sigmas=%s"
+                        "refinement.parameterisation.crystal.unit_cell.restraints"
+                        ".tie_to_group.sigmas=%s"
                         % (
                             ",".join(map(str, [sigma for sigma in group.sigmas]))
                             if group.sigmas
@@ -163,7 +167,8 @@ def Refine(DriverType=None):
                         )
                     )
                     self.add_command_line(
-                        "refinement.parameterisation.restraints.tie_to_group.id=%s"
+                        "refinement.parameterisation.crystal.unit_cell.restraints"
+                        ".tie_to_group.id=%s"
                         % (
                             ",".join(map(str, [i for i in group.id]))
                             if group.id
