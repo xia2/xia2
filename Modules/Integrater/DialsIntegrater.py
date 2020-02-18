@@ -11,7 +11,7 @@ import xia2.Wrappers.Dials.Integrate
 from dials.util import Sorry
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter, Journal
+from xia2.Handlers.Streams import Chatter
 from xia2.lib.bits import auto_logfiler
 from xia2.lib.SymmetryLib import lattice_to_spacegroup
 from xia2.Schema.Interfaces.Integrater import Integrater
@@ -200,28 +200,6 @@ class DialsIntegrater(Integrater):
     def _integrate(self):
         """Actually do the integration - in XDS terms this will mean running
         DEFPIX and INTEGRATE to measure all the reflections."""
-
-        images_str = "%d to %d" % tuple(self._intgr_wedge)
-        cell_str = "%.2f %.2f %.2f %.2f %.2f %.2f" % tuple(self._intgr_cell)
-
-        if len(self._fp_directory) <= 50:
-            dirname = self._fp_directory
-        else:
-            dirname = "...%s" % self._fp_directory[-46:]
-
-        Journal.block(
-            "integrating",
-            self._intgr_sweep_name,
-            "DIALS",
-            {
-                "images": images_str,
-                "cell": cell_str,
-                "lattice": self.get_integrater_refiner().get_refiner_lattice(),
-                "template": self._fp_template,
-                "directory": dirname,
-                "resolution": "%.2f" % self._intgr_reso_high,
-            },
-        )
 
         integrate = self.Integrate()
 

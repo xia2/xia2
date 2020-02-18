@@ -12,7 +12,7 @@ from xia2.Handlers.CIF import CIF, mmCIF
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter, Journal
+from xia2.Handlers.Streams import Chatter
 from xia2.Handlers.Syminfo import Syminfo
 from xia2.Modules.Scaler.rebatch import rebatch
 
@@ -154,13 +154,6 @@ class CCP4ScalerA(Scaler):
         # ---------- GATHER ----------
 
         self._sweep_handler = SweepInformationHandler(self._scalr_integraters)
-
-        Journal.block(
-            "gathering",
-            self.get_scaler_xcrystal().get_name(),
-            "CCP4",
-            {"working directory": self.get_working_directory()},
-        )
 
         for epoch in self._sweep_handler.get_epochs():
             si = self._sweep_handler.get_sweep_information(epoch)
@@ -795,26 +788,6 @@ class CCP4ScalerA(Scaler):
 
         epochs = self._sweep_handler.get_epochs()
 
-        if self._scalr_corrections:
-            Journal.block(
-                "scaling",
-                self.get_scaler_xcrystal().get_name(),
-                "CCP4",
-                {
-                    "scaling model": "automatic",
-                    "absorption": self._scalr_correct_absorption,
-                    "decay": self._scalr_correct_decay,
-                },
-            )
-
-        else:
-            Journal.block(
-                "scaling",
-                self.get_scaler_xcrystal().get_name(),
-                "CCP4",
-                {"scaling model": "default"},
-            )
-
         sc = self._updated_aimless()
         sc.set_hklin(self._prepared_reflections)
         sc.set_chef_unmerged(True)
@@ -823,7 +796,6 @@ class CCP4ScalerA(Scaler):
         user_resolution_limits = {}
 
         for epoch in epochs:
-
             si = self._sweep_handler.get_sweep_information(epoch)
             pname, xname, dname = si.get_project_info()
             sname = si.get_sweep_name()
