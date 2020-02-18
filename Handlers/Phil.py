@@ -359,6 +359,7 @@ dials
     reflections_per_degree = 100
       .type = int
       .short_caption = "Number of reflections per degree for random subset"
+    include scope dials.algorithms.refinement.restraints.restraints_parameterisation.uc_phil_scope
   }
   integrate
     .expert_level = 1

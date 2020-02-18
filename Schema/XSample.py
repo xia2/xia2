@@ -18,6 +18,7 @@ class XSample(object):
         self._sweeps = []
 
         self.multi_indexer = None
+        self.multi_refiner = None
 
     def get_epoch_to_dose(self):
         from xia2.Modules.DoseAccumulate import accumulate_dose

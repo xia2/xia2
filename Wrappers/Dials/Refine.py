@@ -34,6 +34,10 @@ def Refine(DriverType=None):
             self._outlier_algorithm = None
             self._close_to_spindle_cutoff = None
 
+            # Attributes of restrained joint refinement of unit cell parameters
+            self.tie_to_target = []
+            self.tie_to_group = []
+
         def set_experiments_filename(self, experiments_filename):
             self._experiments_filename = experiments_filename
 
@@ -115,6 +119,50 @@ def Refine(DriverType=None):
                 self.add_command_line("detector.fix=%s" % self._detector_fix)
             if self._beam_fix:
                 self.add_command_line("beam.fix=%s" % self._beam_fix)
+
+            # Arguments for restrained multiple-sweep joint refinement
+            # of unit cell parameters
+            for target in self.tie_to_target:
+                if target.values or target.sigmas or target.id:
+                    self.add_command_line(
+                        "refinement.parameterisation.restraints.tie_to_target.values=%s"
+                        % (
+                            ",".join([value for value in target.values])
+                            if target.values
+                            else target.values
+                        )
+                    )
+                    self.add_command_line(
+                        "refinement.parameterisation.restraints.tie_to_target.sigmas=%s"
+                        % (
+                            ",".join([sigma for sigma in target.sigmas])
+                            if target.sigmas
+                            else target.sigmas
+                        )
+                    )
+                    self.add_command_line(
+                        "refinement.parameterisation.restraints.tie_to_target.id=%s"
+                        % (",".join([i for i in target.id]) if target.id else target.id)
+                    )
+            for group in self.tie_to_group:
+                if group.target or group.sigmas or group.id:
+                    self.add_command_line(
+                        "refinement.parameterisation.restraints.tie_to_group.values=%s"
+                        % group.target
+                    )
+                    self.add_command_line(
+                        "refinement.parameterisation.restraints.tie_to_group.sigmas=%s"
+                        % (
+                            ",".join([sigma for sigma in group.sigmas])
+                            if group.sigmas
+                            else group.sigmas
+                        )
+                    )
+                    self.add_command_line(
+                        "refinement.parameterisation.restraints.tie_to_group.id=%s"
+                        % (",".join([i for i in group.id]) if group.id else group.id)
+                    )
+
             if self._phil_file is not None:
                 self.add_command_line(self._phil_file)
 

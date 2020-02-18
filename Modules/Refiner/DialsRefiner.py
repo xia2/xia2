@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-from dials.array_family import flex
+from collections import namedtuple
 
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
@@ -49,6 +49,20 @@ class DialsRefiner(Refiner):
         refine.set_close_to_spindle_cutoff(
             PhilIndex.params.dials.close_to_spindle_cutoff
         )
+        # Do joint refinement of unit cell parameters if jointly indexing multi sweeps.
+        if (
+            PhilIndex.params.xia2.settings.multi_sweep_indexing
+            and not params.restraints.tie_to_target
+            and not params.restraints.tie_to_group
+        ):
+            # Unless the user has specified otherwise, use default sigmas of 0.01 and
+            # target the mean of each unit cell parameter.
+            TieToGroup = namedtuple("TieToGroup", ["target", "sigmas", "id"])
+            joint_uc_restraint = TieToGroup("mean", 6 * (0.01,), None)
+            params.restraints.tie_to_group.append(joint_uc_restraint)
+        refine.tie_to_target = params.restraints.tie_to_target
+        refine.tie_to_group = params.restraints.tie_to_group
+
         auto_logfiler(refine, "REFINE")
 
         return refine
@@ -69,43 +83,7 @@ class DialsRefiner(Refiner):
             indexed_experiments = idxr.get_indexer_payload("experiments_filename")
             indexed_reflections = idxr.get_indexer_payload("indexed_filename")
 
-            if len(experiments) > 1:
-                xsweeps = idxr._indxr_sweeps
-                assert len(xsweeps) == len(experiments)
-                assert (
-                    len(self._refinr_sweeps) == 1
-                )  # don't currently support joint refinement
-                xsweep = self._refinr_sweeps[0]
-                i = xsweeps.index(xsweep)
-                experiments = experiments[i : i + 1]
-
-                # Extract and output experiment and reflections for current sweep
-                indexed_experiments = os.path.join(
-                    self.get_working_directory(), "%s_indexed.expt" % xsweep.get_name()
-                )
-                indexed_reflections = os.path.join(
-                    self.get_working_directory(), "%s_indexed.refl" % xsweep.get_name()
-                )
-
-                experiments.as_file(indexed_experiments)
-
-                reflections = flex.reflection_table.from_file(
-                    idxr.get_indexer_payload("indexed_filename")
-                )
-                sel = reflections["id"] == i
-                assert sel.count(True) > 0
-                imageset_id = reflections["imageset_id"].select(sel)
-                assert imageset_id.all_eq(imageset_id[0])
-                sel = reflections["imageset_id"] == imageset_id[0]
-                reflections = reflections.select(sel)
-                # set indexed reflections to id == 0 and imageset_id == 0
-                reflections["id"].set_selected(reflections["id"] == i, 0)
-                reflections["imageset_id"] = flex.int(len(reflections), 0)
-                reflections.as_file(indexed_reflections)
-
-            assert (
-                len(experiments.crystals()) == 1
-            )  # currently only handle one lattice/sweep
+            assert len(experiments.crystals()) == 1  # currently only handle one lattice
 
             from dxtbx.serialize import load
 
