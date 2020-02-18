@@ -489,11 +489,11 @@ class Indexer(object):
 
                     if PhilIndex.params.xia2.settings.show_template:
                         template = self.get_indexer_sweep().get_template()
-                        logger.info(
+                        logger.notice(
                             banner("Autoindexing %s (%s)", sweep_names, template)
                         )
                     else:
-                        logger.info(banner("Autoindexing %s" % sweep_names))
+                        logger.notice(banner("Autoindexing %s" % sweep_names))
 
                 if not self._indxr_helper:
                     self._index()

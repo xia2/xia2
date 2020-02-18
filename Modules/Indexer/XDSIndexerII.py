@@ -86,7 +86,7 @@ class XDSIndexerII(XDSIndexer):
         return wedges
 
     def _index_prepare(self):
-        logger.info(banner("Spotfinding %s" % self.get_indexer_sweep_name()))
+        logger.notice(banner("Spotfinding %s" % self.get_indexer_sweep_name()))
         super(XDSIndexerII, self)._index_prepare()
 
         reflections_file = spot_xds_to_reflection_file(

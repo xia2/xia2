@@ -540,14 +540,14 @@ class Integrater(FrameProcessor):
 
                 if self._intgr_sweep_name:
                     if PhilIndex.params.xia2.settings.show_template:
-                        logger.info(
+                        logger.notice(
                             banner(
                                 "Integrating %s (%s)"
                                 % (self._intgr_sweep_name, template)
                             )
                         )
                     else:
-                        logger.info(banner("Integrating %s" % self._intgr_sweep_name))
+                        logger.notice(banner("Integrating %s" % self._intgr_sweep_name))
                 try:
 
                     # 1698

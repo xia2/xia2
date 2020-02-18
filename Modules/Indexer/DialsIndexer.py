@@ -248,7 +248,7 @@ class DialsIndexer(Indexer):
 
         for imageset, xsweep in zip(self._indxr_imagesets, self._indxr_sweeps):
 
-            logger.info(banner("Spotfinding %s" % xsweep.get_name()))
+            logger.notice(banner("Spotfinding %s" % xsweep.get_name()))
 
             first, last = imageset.get_scan().get_image_range()
 

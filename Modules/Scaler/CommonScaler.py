@@ -882,7 +882,7 @@ class CommonScaler(Scaler):
 
         if status:
             logger.info("")
-            logger.info(banner("Local Scaling %s" % self._scalr_xname))
+            logger.notice(banner("Local Scaling %s" % self._scalr_xname))
             for s in status:
                 logger.info("%s %s" % s)
             logger.info(banner(""))
@@ -1130,7 +1130,7 @@ class CommonScaler(Scaler):
             from xia2.Wrappers.Dials.TwoThetaRefine import TwoThetaRefine
             from xia2.lib.bits import auto_logfiler
 
-            logger.info(banner("Unit cell refinement"))
+            logger.notice(banner("Unit cell refinement"))
 
             # Collect a list of all sweeps, grouped by project, crystal, wavelength
             groups = {}

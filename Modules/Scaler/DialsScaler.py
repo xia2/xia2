@@ -614,7 +614,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
             not PhilIndex.params.xia2.settings.small_molecule
             and not self._scalr_input_spacegroup
         ):
-            logger.info(banner("Systematic absences check"))
+            logger.notice(banner("Systematic absences check"))
             symmetry = DialsSymmetry()
             symmetry.set_experiments_filename(self._scaled_experiments)
             symmetry.set_reflections_filename(self._scaled_reflections)
@@ -871,7 +871,7 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
             and params.xia2.settings.scale.two_theta_refine
         ):
 
-            logger.info(banner("Unit cell refinement"))
+            logger.notice(banner("Unit cell refinement"))
 
             # Collect a list of all sweeps, grouped by project, crystal, wavelength
             groups_list = []

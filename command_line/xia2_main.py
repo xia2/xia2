@@ -326,10 +326,10 @@ def run():
         traceback.print_exc(file=open("xia2-error.txt", "w"))
         logger.debug(traceback.format_exc())
         logger.error("Error setting up xia2 environment: %s" % str(e))
-        logger.info(
+        logger.warning(
             "Please send the contents of xia2.txt, xia2-error.txt and xia2-debug.txt to:"
         )
-        logger.info("xia2.support@gmail.com")
+        logger.warning("xia2.support@gmail.com")
         sys.exit(1)
 
     wd = os.getcwd()
@@ -348,10 +348,10 @@ def run():
             traceback.print_exc(file=fh)
         logger.debug(traceback.format_exc())
         logger.error("Error: %s", str(e))
-        logger.info(
+        logger.warning(
             "Please send the contents of xia2.txt, xia2-error.txt and xia2-debug.txt to:"
         )
-        logger.info("xia2.support@gmail.com")
+        logger.warning("xia2.support@gmail.com")
         sys.exit(1)
 
 

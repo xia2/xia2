@@ -504,12 +504,12 @@ class Scaler(object):
             while not self.get_scaler_done():
                 while not self.get_scaler_prepare_done():
 
-                    logger.info(banner("Preparing %s" % xname))
+                    logger.notice(banner("Preparing %s" % xname))
 
                     self._scalr_prepare_done = True
                     self._scale_prepare()
 
-                logger.info(banner("Scaling %s" % xname))
+                logger.notice(banner("Scaling %s" % xname))
 
                 self._scalr_done = True
                 self._scalr_result = self._scale()
