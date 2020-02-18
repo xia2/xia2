@@ -2,8 +2,9 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-from collections import namedtuple
-
+from dials.algorithms.refinement.restraints.restraints_parameterisation import (
+    uc_phil_scope as restraints_scope,
+)
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.lib.bits import auto_logfiler
@@ -50,16 +51,19 @@ class DialsRefiner(Refiner):
             PhilIndex.params.dials.close_to_spindle_cutoff
         )
         # Do joint refinement of unit cell parameters if jointly indexing multi sweeps.
-        if (
-            PhilIndex.params.xia2.settings.multi_sweep_indexing
-            and not params.restraints.tie_to_target
-            and not params.restraints.tie_to_group
-        ):
-            # Unless the user has specified otherwise, use default sigmas of 0.01 and
-            # target the mean of each unit cell parameter.
-            TieToGroup = namedtuple("TieToGroup", ["target", "sigmas", "id"])
-            joint_uc_restraint = TieToGroup("mean", 6 * (0.01,), None)
-            params.restraints.tie_to_group.append(joint_uc_restraint)
+        # If the user hasn't specified any options, use the defaults from dials.refine.
+        if not params.restraints.tie_to_target:
+            params.restraints.tie_to_target = (
+                restraints_scope.extract().restraints.tie_to_target
+            )
+        # If the user hasn't specified any options, use the defaults from dials.refine.
+        if not params.restraints.tie_to_group:
+            params.restraints.tie_to_group = (
+                restraints_scope.extract().restraints.tie_to_group
+            )
+            if PhilIndex.params.xia2.settings.multi_sweep_indexing:
+                # If the user hasn't specified otherwise, use default sigmas of 0.01.
+                params.restraints.tie_to_group[0].sigmas = 6 * (0.01,)
         refine.tie_to_target = params.restraints.tie_to_target
         refine.tie_to_group = params.restraints.tie_to_group
 
