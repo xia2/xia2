@@ -715,7 +715,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
                 FileHandler.record_data_file(mtz_filename)
 
                 # now convert to .sca format
-                convert_mtz_to_sca(mtz_filename, merged=False)
+                convert_mtz_to_sca(mtz_filename)
 
                 merger = DialsMerge()  # merge but don't truncate
                 merger.set_working_directory(self.get_working_directory())
@@ -742,7 +742,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
                 FileHandler.record_data_file(mtz_filename)
 
                 # now convert to .sca format
-                convert_mtz_to_sca(mtz_filename, merged=True)
+                convert_mtz_to_sca(mtz_filename)
 
         ### For non-MAD case, run dials.export and dials.merge on scaled data.
         else:
@@ -767,7 +767,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
             FileHandler.record_data_file(scaled_unmerged_mtz_path)
 
             # now convert to .sca format
-            convert_mtz_to_sca(scaled_unmerged_mtz_path, merged=False)
+            convert_mtz_to_sca(scaled_unmerged_mtz_path)
 
             merger = DialsMerge()
             merger.set_working_directory(self.get_working_directory())
@@ -793,7 +793,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
             FileHandler.record_data_file(mtz_filename)
 
             # now export to sca format
-            convert_mtz_to_sca(mtz_filename, merged=True)
+            convert_mtz_to_sca(mtz_filename)
 
         # Also export just integrated data.
         for si in sweep_infos:
@@ -1286,18 +1286,18 @@ def decide_correct_lattice_using_refiner(possible_lattices, refiner):
     return correct_lattice, rerun_symmetry, need_to_return
 
 
-def convert_mtz_to_sca(mtz_filename, merged=False):
+def convert_mtz_to_sca(mtz_filename):
     """Convert an mtz files to .sca format and write."""
     sca_filename = mtz_filename.replace("mtz", "sca")
     m = mtz.object(mtz_filename)
-    cols = m.as_miller_arrays(merge_equivalents=False, anomalous=False)
-    i_obs = None
-    for ma in cols:
-        if ma.info().labels == ["I", "SIGI"] and not merged:
-            i_obs = ma
-        elif ma.info().labels == ["IMEAN", "SIGIMEAN"] and merged:
-            i_obs = ma
-    if merged:
-        merge_scalepack_write(miller_array=i_obs, file_name=sca_filename)
+    for ma in m.as_miller_arrays(merge_equivalents=False, anomalous=False):
+        if ma.info().labels == ["I", "SIGI"]:
+            no_merge_original_index.writer(ma, file_name=sca_filename)
+            FileHandler.record_data_file(sca_filename)
+            break
+        elif ma.info().labels == ["IMEAN", "SIGIMEAN"]:
+            merge_scalepack_write(miller_array=ma, file_name=sca_filename)
+            FileHandler.record_data_file(sca_filename)
+            break
     else:
-        no_merge_original_index.writer(i_obs, file_name=sca_filename)
+        raise KeyError("Intensity column labels not found in MTZ file")
