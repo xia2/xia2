@@ -14,7 +14,6 @@ import six
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter
 from xia2.Handlers.Syminfo import Syminfo
 from xia2.lib.bits import auto_logfiler, is_mtz_file, transpose_loggraph
 from xia2.lib.SymmetryLib import lattices_in_order
@@ -1002,8 +1001,8 @@ class XDSScalerA(Scaler):
                     self.set_scaler_done(False)
 
         if not self.get_scaler_done():
-            Chatter.write(
-                "Excluding outlier reflections Z > %.2f" % PhilIndex.params.xds.z_min
+            logger.info(
+                "Excluding outlier reflections Z > %.2f", PhilIndex.params.xds.z_min
             )
             return
 
@@ -1108,9 +1107,12 @@ class XDSScalerA(Scaler):
             reasoning_str = ""
             if reasoning:
                 reasoning_str = " (%s)" % reasoning
-            Chatter.write(
-                "Resolution for sweep %s/%s: %.2f%s"
-                % (dname, sname, resolution, reasoning_str)
+            logger.info(
+                "Resolution for sweep %s/%s: %.2f%s",
+                dname,
+                sname,
+                resolution,
+                reasoning_str,
             )
 
             if (dname, sname) not in self._scalr_resolution_limits:

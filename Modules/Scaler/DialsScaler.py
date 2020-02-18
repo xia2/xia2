@@ -14,7 +14,7 @@ from xia2.Handlers.Files import FileHandler
 from xia2.lib.bits import auto_logfiler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.lib.SymmetryLib import sort_lattices
-from xia2.Handlers.Streams import Chatter, banner
+from xia2.Handlers.Streams import banner
 from xia2.Handlers.CIF import CIF, mmCIF
 from xia2.Modules.Scaler.CommonScaler import CommonScaler as Scaler
 from xia2.Wrappers.Dials.Scale import DialsScale
@@ -273,7 +273,7 @@ class DialsScaler(Scaler):
             # can proceed to straight to checking point group consistency
             # using the cached results.
             correct_lattice = sort_lattices(lattices)[0]
-            Chatter.write("Correct lattice asserted to be %s" % correct_lattice)
+            logger.info("Correct lattice asserted to be %s", correct_lattice)
 
             # transfer this information back to the indexers
             for epoch in self._sweep_handler.get_epochs():
@@ -284,11 +284,11 @@ class DialsScaler(Scaler):
                 state = refiner.set_refiner_asserted_lattice(correct_lattice)
 
                 if state == refiner.LATTICE_CORRECT:
-                    Chatter.write("Lattice %s ok for sweep %s" % _tup)
+                    logger.info("Lattice %s ok for sweep %s" % _tup)
                 elif state == refiner.LATTICE_IMPOSSIBLE:
                     raise RuntimeError("Lattice %s impossible for %s" % _tup)
                 elif state == refiner.LATTICE_POSSIBLE:
-                    Chatter.write("Lattice %s assigned for sweep %s" % _tup)
+                    logger.info("Lattice %s assigned for sweep %s" % _tup)
                     need_to_return = True
 
         if need_to_return:
@@ -312,9 +312,7 @@ class DialsScaler(Scaler):
             overall_pointgroup = Syminfo.spacegroup_number_to_name(min(numbers))
             self._scalr_input_pointgroup = overall_pointgroup
 
-            Chatter.write(
-                "Twinning detected, assume pointgroup %s" % overall_pointgroup
-            )
+            logger.info("Twinning detected, assume pointgroup %s", overall_pointgroup)
             need_to_return = True
         else:
             overall_pointgroup = pointgroup_set.pop()
@@ -410,7 +408,7 @@ class DialsScaler(Scaler):
         reference_expt = None
         if param.reference_reflection_file:
             if not param.reference_experiment_file:
-                Chatter.write(
+                logger.info(
                     """
 No DIALS reference experiments file provided, reference reflection file will
 not be used. Reference mtz files for reindexing not currently supported for
@@ -448,7 +446,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
             reference_cell = exp[0].crystal.get_unit_cell().parameters()
 
             # ---------- REINDEX TO CORRECT (REFERENCE) SETTING ----------
-            Chatter.write("Reindexing all datasets to common reference")
+            logger.info("Reindexing all datasets to common reference")
 
             if using_external_references:
                 epochs = self._sweep_handler.get_epochs()
@@ -616,7 +614,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
             not PhilIndex.params.xia2.settings.small_molecule
             and not self._scalr_input_spacegroup
         ):
-            Chatter.write(banner("Systematic absences check"))
+            logger.info(banner("Systematic absences check"))
             symmetry = DialsSymmetry()
             symmetry.set_experiments_filename(self._scaled_experiments)
             symmetry.set_reflections_filename(self._scaled_reflections)
@@ -630,7 +628,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
             sg = load.experiment_list(self._scaled_experiments)[
                 0
             ].crystal.get_space_group()
-            Chatter.write("Most likely space group: %s" % sg.info())
+            logger.info("Most likely space group: %s", sg.info())
             self._scalr_likely_spacegroups = [sg.type().lookup_symbol()]
 
         FileHandler.record_more_data_file(
@@ -873,7 +871,7 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
             and params.xia2.settings.scale.two_theta_refine
         ):
 
-            Chatter.write(banner("Unit cell refinement"))
+            logger.info(banner("Unit cell refinement"))
 
             # Collect a list of all sweeps, grouped by project, crystal, wavelength
             groups_list = []
@@ -911,9 +909,9 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
                     tt_grouprefiner.set_reflection_files(args[1])
                     tt_grouprefiner.set_output_p4p(p4p_file)
                     tt_grouprefiner.run()
-                    Chatter.write(
+                    logger.info(
                         "%s: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"
-                        % tuple(
+                        % (
                             ["".join(pi.split("_")[2:])]
                             + list(tt_grouprefiner.get_unit_cell())
                         )
@@ -944,7 +942,7 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
             tt_refiner.run()
 
             self._scalr_cell = tt_refiner.get_unit_cell()
-            Chatter.write(
+            logger.info(
                 "Overall: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"
                 % tt_refiner.get_unit_cell()
             )

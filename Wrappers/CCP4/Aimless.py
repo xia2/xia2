@@ -6,7 +6,6 @@ import os
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter
 from xia2.Wrappers.CCP4.AimlessHelpers import parse_aimless_xml
 
 logger = logging.getLogger("xia2.Wrappers.CCP4.Aimless")
@@ -176,9 +175,9 @@ def Aimless(DriverType=None, absorption_correction=None, decay_correction=None):
                 if not os.path.isfile(
                     os.path.join(self.get_working_directory(), self._new_scales_file)
                 ):
-                    Chatter.write(
-                        "Aimless did not scale the data, see log file for more details:\n  %s"
-                        % self.get_log_file()
+                    logger.info(
+                        "Aimless did not scale the data, see log file for more details:\n  %s",
+                        self.get_log_file(),
                     )
                     raise RuntimeError("data not scaled")
             return os.path.join(self.get_working_directory(), self._new_scales_file)
@@ -602,9 +601,9 @@ def Aimless(DriverType=None, absorption_correction=None, decay_correction=None):
                 self.check_aimless_error_negative_scale_run()
                 self.check_aimless_errors()
             except Exception:
-                Chatter.write(
-                    "Aimless failed, see log file for more details:\n  %s"
-                    % self.get_log_file()
+                logger.warning(
+                    "Aimless failed, see log file for more details:\n  %s",
+                    self.get_log_file(),
                 )
                 raise
 

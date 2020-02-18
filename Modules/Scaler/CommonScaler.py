@@ -11,7 +11,7 @@ import iotbx.merging_statistics
 from iotbx import mtz
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter, banner
+from xia2.Handlers.Streams import banner
 from xia2.Handlers.CIF import CIF, mmCIF
 from xia2.lib.bits import nifty_power_of_ten, auto_logfiler
 from xia2.Modules.AnalyseMyIntensities import AnalyseMyIntensities
@@ -209,13 +209,14 @@ class CommonScaler(Scaler):
             else:
                 self._scalr_likely_spacegroups = p.get_likely_spacegroups()
 
-            Chatter.write("Likely spacegroups:")
+            logger.info("Likely spacegroups:")
             for spag in self._scalr_likely_spacegroups:
-                Chatter.write("%s" % spag)
+                logger.info(str(spag))
 
-            Chatter.write(
-                "Reindexing to first spacegroup setting: %s (%s)"
-                % (spacegroup, clean_reindex_operator(reindex_operator))
+            logger.info(
+                "Reindexing to first spacegroup setting: %s (%s)",
+                spacegroup,
+                clean_reindex_operator(reindex_operator),
             )
 
         else:
@@ -268,10 +269,10 @@ class CommonScaler(Scaler):
 
             if self._sweep_information[epoch]["batches"] == [0, 0]:
 
-                Chatter.write("Getting batches from %s" % hklin)
+                logger.info("Getting batches from %s", hklin)
                 batches = MtzUtils.batches_from_mtz(hklin)
                 self._sweep_information[epoch]["batches"] = [min(batches), max(batches)]
-                Chatter.write("=> %d to %d" % (min(batches), max(batches)))
+                logger.info("=> %d to %d", min(batches), max(batches))
 
             batches = self._sweep_information[epoch]["batches"]
             if 1 + max(batches) - min(batches) > max_batches:
@@ -371,13 +372,14 @@ class CommonScaler(Scaler):
 
         self._scalr_reindex_operator = reindex_operator
 
-        Chatter.write("Likely spacegroups:")
+        logger.info("Likely spacegroups:")
         for spag in self._scalr_likely_spacegroups:
-            Chatter.write("%s" % spag)
+            logger.info(str(spag))
 
-        Chatter.write(
-            "Reindexing to first spacegroup setting: %s (%s)"
-            % (spacegroup, clean_reindex_operator(reindex_operator))
+        logger.info(
+            "Reindexing to first spacegroup setting: %s (%s)",
+            spacegroup,
+            clean_reindex_operator(reindex_operator),
         )
 
         hklin = self._prepared_reflections
@@ -454,13 +456,14 @@ class CommonScaler(Scaler):
 
         self._scalr_reindex_operator = clean_reindex_operator(reindex_operator)
 
-        Chatter.write("Likely spacegroups:")
+        logger.info("Likely spacegroups:")
         for spag in self._scalr_likely_spacegroups:
-            Chatter.write("%s" % spag)
+            logger.info(str(spag))
 
-        Chatter.write(
-            "Reindexing to first spacegroup setting: %s (%s)"
-            % (spacegroup, clean_reindex_operator(reindex_operator))
+        logger.info(
+            "Reindexing to first spacegroup setting: %s (%s)",
+            spacegroup,
+            clean_reindex_operator(reindex_operator),
         )
 
         hklout = os.path.join(
@@ -857,8 +860,8 @@ class CommonScaler(Scaler):
             self._scalr_twinning_conclusion = "Data are centric"
             self._scalr_twinning_score = 0
 
-        Chatter.write("Overall twinning score: %4.2f" % self._scalr_twinning_score)
-        Chatter.write(self._scalr_twinning_conclusion)
+        logger.info("Overall twinning score: %4.2f", self._scalr_twinning_score)
+        logger.info(self._scalr_twinning_conclusion)
 
     def _scale_finish_chunk_8_raddam(self):
         crd = CCP4InterRadiationDamageDetector()
@@ -878,11 +881,11 @@ class CommonScaler(Scaler):
         status = crd.detect()
 
         if status:
-            Chatter.write("")
-            Chatter.write(banner("Local Scaling %s" % self._scalr_xname))
+            logger.info("")
+            logger.info(banner("Local Scaling %s" % self._scalr_xname))
             for s in status:
-                Chatter.write("%s %s" % s)
-            Chatter.write(banner(""))
+                logger.info("%s %s" % s)
+            logger.info(banner(""))
         else:
             logger.debug("Local scaling failed")
 
@@ -1127,7 +1130,7 @@ class CommonScaler(Scaler):
             from xia2.Wrappers.Dials.TwoThetaRefine import TwoThetaRefine
             from xia2.lib.bits import auto_logfiler
 
-            Chatter.write(banner("Unit cell refinement"))
+            logger.info(banner("Unit cell refinement"))
 
             # Collect a list of all sweeps, grouped by project, crystal, wavelength
             groups = {}
@@ -1178,7 +1181,7 @@ class CommonScaler(Scaler):
                     ]
                 tt_grouprefiner.set_reindex_operators(reindex_ops)
                 tt_grouprefiner.run()
-                Chatter.write(
+                logger.info(
                     "%s: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"
                     % tuple(
                         ["".join(pi.split("_")[2:])]
@@ -1224,7 +1227,7 @@ class CommonScaler(Scaler):
                 tt_refiner.set_reindex_operators(reindex_ops)
                 tt_refiner.run()
                 self._scalr_cell = tt_refiner.get_unit_cell()
-                Chatter.write(
+                logger.info(
                     "Overall: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"
                     % tt_refiner.get_unit_cell()
                 )
@@ -1381,8 +1384,8 @@ class CommonScaler(Scaler):
                 self._scalr_resolution_limits[(dname, sname)] = (limit, None)
                 if limit < highest_resolution:
                     highest_resolution = limit
-                Chatter.write(
-                    "Resolution limit for %s: %5.2f (user provided)" % (dname, limit)
+                logger.info(
+                    "Resolution limit for %s: %5.2f (user provided)", dname, limit
                 )
                 continue
 
@@ -1424,14 +1427,20 @@ class CommonScaler(Scaler):
                 reasoning_str = ""
                 if reasoning:
                     reasoning_str = " (%s)" % reasoning
-                Chatter.write(
-                    "Resolution for sweep %s/%s: %.2f%s"
-                    % (dname, sname, limit, reasoning_str)
+                logger.info(
+                    "Resolution for sweep %s/%s: %.2f%s",
+                    dname,
+                    sname,
+                    limit,
+                    reasoning_str,
                 )
             else:
-                Chatter.write(
-                    "Resolution limit for %s/%s: %5.2f (%5.2f suggested)"
-                    % (dname, sname, limit, suggested)
+                logger.info(
+                    "Resolution limit for %s/%s: %5.2f (%5.2f suggested)",
+                    dname,
+                    sname,
+                    limit,
+                    suggested,
                 )
 
         if highest_suggested_resolution is not None and highest_resolution >= (

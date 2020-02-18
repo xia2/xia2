@@ -9,9 +9,9 @@ import os
 
 import xia2.Wrappers.Dials.Integrate
 from dials.util import Sorry
+from dxtbx.serialize import load
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter
 from xia2.lib.bits import auto_logfiler
 from xia2.lib.SymmetryLib import lattice_to_spacegroup
 from xia2.Schema.Interfaces.Integrater import Integrater
@@ -178,8 +178,6 @@ class DialsIntegrater(Integrater):
             )
 
         ## copy the data across
-        from dxtbx.serialize import load
-
         refiner = self.get_integrater_refiner()
         self._intgr_experiments_filename = refiner.get_refiner_payload("models.expt")
         experiments = load.experiment_list(self._intgr_experiments_filename)
@@ -314,7 +312,7 @@ class DialsIntegrater(Integrater):
             )
 
         self._intgr_per_image_statistics = integrate.get_per_image_statistics()
-        Chatter.write(self.show_per_image_statistics())
+        logger.info(self.show_per_image_statistics())
 
         report = self.Report()
         html_filename = os.path.join(
@@ -327,8 +325,6 @@ class DialsIntegrater(Integrater):
             "%s %s %s %s INTEGRATE" % (pname, xname, dname, sweep), html_filename
         )
 
-        from dxtbx.serialize import load
-
         experiments = load.experiment_list(self._intgr_experiments_filename)
         profile = experiments.profiles()[0]
         mosaic = profile.sigma_m()
@@ -338,7 +334,7 @@ class DialsIntegrater(Integrater):
         except AttributeError:
             self.set_integrater_mosaic_min_mean_max(mosaic, mosaic, mosaic)
 
-        Chatter.write(
+        logger.info(
             "Mosaic spread: %.3f < %.3f < %.3f"
             % self.get_integrater_mosaic_min_mean_max()
         )

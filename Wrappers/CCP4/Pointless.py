@@ -419,8 +419,6 @@ def Pointless(DriverType=None):
                             .childNodes[0]
                             .data.strip()
                         )
-                        # Chatter.write('HKLREF pointgroup is %s' % \
-                        # hklref_pointgroup)
 
                 if hklref_pointgroup == "":
                     raise RuntimeError("error finding HKLREF pointgroup")

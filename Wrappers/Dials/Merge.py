@@ -3,7 +3,6 @@ from __future__ import absolute_import, division, print_function
 import logging
 
 from xia2.Driver.DriverFactory import DriverFactory
-from xia2.Handlers.Streams import Chatter
 
 logger = logging.getLogger("xia2.Wrappers.Dials.Merge")
 
@@ -97,9 +96,9 @@ def DialsMerge(DriverType=None):
             try:
                 self.check_for_errors()
             except Exception:
-                Chatter.write(
-                    "dials.merge failed, see log file for more details:\n  %s"
-                    % self.get_log_file()
+                logger.warning(
+                    "dials.merge failed, see log file for more details:\n  %s",
+                    self.get_log_file(),
                 )
                 raise
 

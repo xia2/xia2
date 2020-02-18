@@ -39,7 +39,7 @@ from xia2.Schema.Interfaces.Indexer import Indexer
 # odds and sods that are needed
 
 from xia2.lib.bits import auto_logfiler
-from xia2.Handlers.Streams import Chatter, banner
+from xia2.Handlers.Streams import banner
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Files import FileHandler
 from xia2.Experts.SymmetryExpert import lattice_to_spacegroup_number
@@ -248,7 +248,7 @@ class DialsIndexer(Indexer):
 
         for imageset, xsweep in zip(self._indxr_imagesets, self._indxr_sweeps):
 
-            Chatter.write(banner("Spotfinding %s" % xsweep.get_name()))
+            logger.info(banner("Spotfinding %s" % xsweep.get_name()))
 
             first, last = imageset.get_scan().get_image_range()
 
@@ -285,7 +285,7 @@ class DialsIndexer(Indexer):
                 gain_estimater.set_sweep_filename(sweep_filename)
                 gain_estimater.run()
                 gain = gain_estimater.get_gain()
-                Chatter.write("Estimated gain: %.2f" % gain)
+                logger.info("Estimated gain: %.2f", gain)
                 PhilIndex.params.xia2.settings.input.gain = gain
 
             # FIXME this should really use the assigned spot finding regions
@@ -347,7 +347,7 @@ class DialsIndexer(Indexer):
             refl = flex.reflection_table.from_file(spot_filename)
             if not len(refl):
                 raise RuntimeError("No spots found in sweep %s" % xsweep.get_name())
-            Chatter.write(spot_counts_per_image_plot(refl), strip=False)
+            logger.info(spot_counts_per_image_plot(refl))
 
             if not PhilIndex.params.dials.fast_mode:
                 detectblanks = self.DetectBlanks()
@@ -359,9 +359,10 @@ class DialsIndexer(Indexer):
                 if len(blank_regions):
                     blank_regions = [(int(s), int(e)) for s, e in blank_regions]
                     for blank_start, blank_end in blank_regions:
-                        Chatter.write(
-                            "WARNING: Potential blank images: %i -> %i"
-                            % (blank_start + 1, blank_end)
+                        logger.info(
+                            "WARNING: Potential blank images: %i -> %i",
+                            blank_start + 1,
+                            blank_end,
                         )
 
                     if PhilIndex.params.xia2.settings.remove_blanks:
@@ -413,14 +414,12 @@ class DialsIndexer(Indexer):
                                     image=imageset.get_path(nb_start - start),
                                     frames_to_process=(nb_start + 1, nb_end),
                                 )
-                                Chatter.write(
-                                    "Generating new sweep: %s (%s:%i:%i)"
-                                    % (
-                                        new_sweep.get_name(),
-                                        new_sweep.get_image(),
-                                        new_sweep.get_frames_to_process()[0],
-                                        new_sweep.get_frames_to_process()[1],
-                                    )
+                                logger.info(
+                                    "Generating new sweep: %s (%s:%i:%i)",
+                                    new_sweep.get_name(),
+                                    new_sweep.get_image(),
+                                    new_sweep.get_frames_to_process()[0],
+                                    new_sweep.get_frames_to_process()[1],
                                 )
                         return
 

@@ -7,7 +7,6 @@ import iotbx.cif
 import iotbx.cif.model
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Citations import Citations
-from xia2.Handlers.Streams import Chatter
 
 logger = logging.getLogger("xia2.Wrappers.Dials.TwoThetaRefine")
 
@@ -167,9 +166,9 @@ def TwoThetaRefine(DriverType=None):
             self.close_wait()
 
             if not os.path.isfile(self._output_cif):
-                Chatter.write(
-                    "TwoTheta refinement failed, see log file for more details:\n  %s"
-                    % self.get_log_file()
+                logger.warning(
+                    "TwoTheta refinement failed, see log file for more details:\n  %s",
+                    self.get_log_file(),
                 )
                 raise RuntimeError("unit cell not refined")
 

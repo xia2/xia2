@@ -9,17 +9,13 @@ import os
 import platform
 import tempfile
 
-from xia2.Handlers.Streams import Chatter
-
 logger = logging.getLogger("xia2.Handlers.Environment")
 
 
-def which(pgm, debug=False):
+def which(pgm):
     path = os.getenv("PATH")
     for p in path.split(os.path.pathsep):
         p = os.path.join(p, pgm)
-        if debug:
-            Chatter.write("Seeking %s" % p)
         if os.path.exists(p) and os.access(p, os.X_OK):
             return p
 

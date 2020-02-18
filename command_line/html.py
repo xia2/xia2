@@ -17,7 +17,6 @@ from libtbx import phil
 import xia2
 from xia2.Modules.Report import Report
 from xia2.Handlers.Citations import Citations
-from xia2.Handlers.Streams import Chatter
 import xia2.Handlers.Streams
 
 logger = logging.getLogger("xia2.command_line.html")
@@ -440,11 +439,11 @@ def make_logfile_html(logfile):
                 rst.append(".. raw:: html")
                 rst.append("\n    ".join(html.split("\n")))
         except Exception as e:
-            Chatter.write("=" * 80)
-            Chatter.write("Error (%s) while processing table" % str(e))
-            Chatter.write("  '%s'" % table.title)
-            Chatter.write("in %s" % logfile)
-            Chatter.write("=" * 80)
+            logger.info("=" * 80)
+            logger.info("Error (%s) while processing table", str(e))
+            logger.info("  '%s'", table.title)
+            logger.info("in %s", logfile)
+            logger.info("=" * 80)
             logger.debug(
                 "Exception raised while processing log file %s, table %s",
                 logfile,

@@ -11,9 +11,11 @@ import logging
 import math
 import os
 
+from dials.array_family import flex
+from dials.util.ascii_art import spot_counts_per_image_plot
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter, banner
+from xia2.Handlers.Streams import banner
 from xia2.lib.bits import auto_logfiler
 from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
 from xia2.Wrappers.XDS.XDS import XDSException
@@ -84,18 +86,15 @@ class XDSIndexerII(XDSIndexer):
         return wedges
 
     def _index_prepare(self):
-        Chatter.write(banner("Spotfinding %s" % self.get_indexer_sweep_name()))
+        logger.info(banner("Spotfinding %s" % self.get_indexer_sweep_name()))
         super(XDSIndexerII, self)._index_prepare()
-
-        from dials.array_family import flex
-        from dials.util.ascii_art import spot_counts_per_image_plot
 
         reflections_file = spot_xds_to_reflection_file(
             self._indxr_payload["SPOT.XDS"],
             working_directory=self.get_working_directory(),
         )
         refl = flex.reflection_table.from_file(reflections_file)
-        Chatter.write(spot_counts_per_image_plot(refl), strip=False)
+        logger.info(spot_counts_per_image_plot(refl))
 
     def _index(self):
         """Actually do the autoindexing using the data prepared by the
@@ -281,8 +280,6 @@ class XDSIndexerII(XDSIndexer):
 
         # I will want this later on to check that the lattice was ok
         self._idxref_subtree_problem = idxref.get_index_tree_problem()
-
-        return
 
     def decide_i_or_ii(self):
         logger.debug("Testing II or I indexing")

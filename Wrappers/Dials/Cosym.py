@@ -6,7 +6,6 @@ import os
 
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter
 
 logger = logging.getLogger("xia2.Wrappers.Dials.Cosym")
 
@@ -115,9 +114,9 @@ def DialsCosym(DriverType=None, decay_correction=None):
             try:
                 self.check_for_errors()
             except Exception:
-                Chatter.write(
-                    "dials.cosym failed, see log file for more details:\n  %s"
-                    % self.get_log_file()
+                logger.warning(
+                    "dials.cosym failed, see log file for more details:\n  %s",
+                    self.get_log_file(),
                 )
                 raise
 

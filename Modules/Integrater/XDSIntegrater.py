@@ -25,7 +25,6 @@ from xia2.Experts.SymmetryExpert import (
 )
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter
 from xia2.lib.bits import auto_logfiler
 from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
 from xia2.Schema.Exceptions.BadLatticeError import BadLatticeError
@@ -378,7 +377,7 @@ class XDSIntegrater(Integrater):
         integrate.run()
 
         self._intgr_per_image_statistics = integrate.get_per_image_statistics()
-        Chatter.write(self.show_per_image_statistics())
+        logger.info(self.show_per_image_statistics())
 
         # record the log file -
 
@@ -419,7 +418,7 @@ class XDSIntegrater(Integrater):
         m_min, m_mean, m_max = integrate.get_mosaic()
         self.set_integrater_mosaic_min_mean_max(m_min, m_mean, m_max)
 
-        Chatter.write(
+        logger.info(
             "Mosaic spread: %.3f < %.3f < %.3f"
             % self.get_integrater_mosaic_min_mean_max()
         )
@@ -758,8 +757,8 @@ class XDSIntegrater(Integrater):
                 and correct_deviations[1] / phi > threshold
             ):
 
-                Chatter.write("Eliminating this indexing solution as postrefinement")
-                Chatter.write("deviations rather high relative to triclinic")
+                logger.info("Eliminating this indexing solution as postrefinement")
+                logger.info("deviations rather high relative to triclinic")
                 raise BadLatticeError("high relative deviations in postrefinement")
 
         if (

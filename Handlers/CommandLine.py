@@ -21,7 +21,6 @@ from xia2.Handlers.Environment import which
 from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.PipelineSelection import add_preference
-from xia2.Handlers.Streams import Chatter
 from xia2.Schema import imageset_cache, update_with_reference_geometry
 from xia2.Schema.XProject import XProject
 
@@ -134,8 +133,7 @@ class _CommandLine(object):
         return self._argv
 
     def print_command_line(self):
-        cl = self.get_command_line()
-        Chatter.write("Command line: %s" % cl)
+        logger.info("Command line: %s", self.get_command_line())
 
     def get_command_line(self):
         import libtbx.load_env
@@ -307,7 +305,7 @@ class _CommandLine(object):
             params.xia2.settings.multi_sweep_indexing is True
             and params.xia2.settings.multiprocessing.mode == "parallel"
         ):
-            Chatter.write(
+            logger.info(
                 "Multi sweep indexing disabled:\nMSI is not available for parallel processing."
             )
             PhilIndex.update("xia2.settings.multi_sweep_indexing=False")

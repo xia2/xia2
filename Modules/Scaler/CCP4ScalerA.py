@@ -12,7 +12,6 @@ from xia2.Handlers.CIF import CIF, mmCIF
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter
 from xia2.Handlers.Syminfo import Syminfo
 from xia2.Modules.Scaler.rebatch import rebatch
 
@@ -373,7 +372,7 @@ class CCP4ScalerA(Scaler):
 
                 correct_lattice = sort_lattices(lattices)[0]
 
-                Chatter.write("Correct lattice asserted to be %s" % correct_lattice)
+                logger.info("Correct lattice asserted to be %s", correct_lattice)
 
                 # transfer this information back to the indexers
                 for epoch in self._sweep_handler.get_epochs():
@@ -385,17 +384,16 @@ class CCP4ScalerA(Scaler):
                     state = refiner.set_refiner_asserted_lattice(correct_lattice)
 
                     if state == refiner.LATTICE_CORRECT:
-                        Chatter.write(
-                            "Lattice %s ok for sweep %s" % (correct_lattice, sname)
+                        logger.info(
+                            "Lattice %s ok for sweep %s", correct_lattice, sname
                         )
                     elif state == refiner.LATTICE_IMPOSSIBLE:
                         raise RuntimeError(
                             "Lattice %s impossible for %s" % (correct_lattice, sname)
                         )
                     elif state == refiner.LATTICE_POSSIBLE:
-                        Chatter.write(
-                            "Lattice %s assigned for sweep %s"
-                            % (correct_lattice, sname)
+                        logger.info(
+                            "Lattice %s assigned for sweep %s", correct_lattice, sname
                         )
                         need_to_return = True
             # END OF if multiple-lattices
@@ -592,9 +590,7 @@ class CCP4ScalerA(Scaler):
             overall_pointgroup = Syminfo.spacegroup_number_to_name(min(numbers))
             self._scalr_input_pointgroup = overall_pointgroup
 
-            Chatter.write(
-                "Twinning detected, assume pointgroup %s" % overall_pointgroup
-            )
+            logger.info("Twinning detected, assume pointgroup %s", overall_pointgroup)
 
             need_to_return = True
 
@@ -861,8 +857,8 @@ class CCP4ScalerA(Scaler):
 
                     # then tell the user what is happening
 
-                    Chatter.write(
-                        "Sweep %s gave negative scales - removing" % sweep.get_name()
+                    logger.info(
+                        "Sweep %s gave negative scales - removing", sweep.get_name()
                     )
 
                     # then reset the prepare, do, finish flags
@@ -872,7 +868,6 @@ class CCP4ScalerA(Scaler):
                     self.set_scaler_finish_done(False)
 
                     # and return
-
                     return
 
                 else:

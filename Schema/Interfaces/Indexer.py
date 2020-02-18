@@ -46,7 +46,7 @@ from functools import reduce
 
 from xia2.Experts.LatticeExpert import SortLattices
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter, banner
+from xia2.Handlers.Streams import banner
 
 from cctbx.sgtbx import bravais_types
 
@@ -101,8 +101,8 @@ class _IndexerHelper(object):
             raise RuntimeError("cannot eliminate only solution")
 
         if indxr_print:
-            Chatter.write("Eliminating indexing solution:")
-            Chatter.write(self.repr()[0])
+            logger.info("Eliminating indexing solution:")
+            logger.info(self.repr()[0])
 
         self._sorted_list = self._sorted_list[1:]
 
@@ -489,11 +489,11 @@ class Indexer(object):
 
                     if PhilIndex.params.xia2.settings.show_template:
                         template = self.get_indexer_sweep().get_template()
-                        Chatter.write(
-                            banner("Autoindexing %s (%s)" % (sweep_names, template))
+                        logger.info(
+                            banner("Autoindexing %s (%s)", sweep_names, template)
                         )
                     else:
-                        Chatter.write(banner("Autoindexing %s" % sweep_names))
+                        logger.info(banner("Autoindexing %s" % sweep_names))
 
                 if not self._indxr_helper:
                     self._index()
@@ -520,12 +520,10 @@ class Indexer(object):
                         and not self._indxr_input_cell
                         and not PhilIndex.params.xia2.settings.integrate_p1
                     ):
-                        Chatter.write(
-                            "Rerunning indexing lattice %s to %s"
-                            % (self._indxr_lattice, solution[0])
-                        )
-                        logger.debug(
-                            "Rerunning indexing with target lattice %s", solution[0]
+                        logger.info(
+                            "Rerunning indexing lattice %s to %s",
+                            self._indxr_lattice,
+                            solution[0],
                         )
                         self.set_indexer_done(False)
 
@@ -543,7 +541,7 @@ class Indexer(object):
             self._index_finish()
 
             if self._indxr_print:
-                Chatter.write(self.show_indexer_solutions())
+                logger.info(self.show_indexer_solutions())
 
     def show_indexer_solutions(self):
         lines = ["All possible indexing solutions:"]

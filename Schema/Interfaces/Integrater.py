@@ -42,7 +42,7 @@ import xia2.Schema.Interfaces.Refiner
 # symmetry operator management functionality
 from xia2.Experts.SymmetryExpert import compose_symops, symop_to_mat
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter, banner
+from xia2.Handlers.Streams import banner
 from xia2.Schema.Exceptions.BadLatticeError import BadLatticeError
 
 # interfaces that this inherits from ...
@@ -524,7 +524,7 @@ class Integrater(FrameProcessor):
                         self._integrate_prepare()
 
                     except BadLatticeError as e:
-                        Chatter.write("Rejecting bad lattice %s" % str(e))
+                        logger.info("Rejecting bad lattice %s", str(e))
                         self._intgr_refiner.eliminate()
                         self._integrater_reset()
 
@@ -540,21 +540,21 @@ class Integrater(FrameProcessor):
 
                 if self._intgr_sweep_name:
                     if PhilIndex.params.xia2.settings.show_template:
-                        Chatter.write(
+                        logger.info(
                             banner(
                                 "Integrating %s (%s)"
                                 % (self._intgr_sweep_name, template)
                             )
                         )
                     else:
-                        Chatter.write(banner("Integrating %s" % self._intgr_sweep_name))
+                        logger.info(banner("Integrating %s" % self._intgr_sweep_name))
                 try:
 
                     # 1698
                     self._intgr_hklout_raw = self._integrate()
 
                 except BadLatticeError as e:
-                    Chatter.write("Rejecting bad lattice %s" % str(e))
+                    logger.info("Rejecting bad lattice %s", str(e))
                     self._intgr_refiner.eliminate()
                     self._integrater_reset()
 
@@ -565,7 +565,7 @@ class Integrater(FrameProcessor):
                 self._intgr_hklout = self._integrate_finish()
 
             except BadLatticeError as e:
-                Chatter.write("Bad Lattice Error: %s" % str(e))
+                logger.info("Bad Lattice Error: %s", str(e))
                 self._intgr_refiner.eliminate()
                 self._integrater_reset()
         return self._intgr_hklout

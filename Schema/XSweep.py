@@ -66,7 +66,6 @@ from xia2.Experts.FindImages import (
 )
 from xia2.Handlers.Environment import Environment
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter
 
 from xia2.Modules.Indexer import IndexerFactory
 from xia2.Modules.Integrater import IntegraterFactory
@@ -249,19 +248,12 @@ class XSweep(object):
                     math.fabs(beam_.get_wavelength() - wavelength.get_wavelength())
                     > 0.0001
                 ):
-                    # format = 'wavelength for sweep %s does not ' + \
-                    # 'match wavelength %s'
-                    # raise RuntimeError(format  % \
-                    # (name, wavelength.get_name()))
-
-                    format = (
+                    logger.info(
                         "Header wavelength for sweep %s different"
-                        + " to assigned value (%4.2f vs. %4.2f)"
-                    )
-
-                    Chatter.write(
-                        format
-                        % (name, beam_.get_wavelength(), wavelength.get_wavelength())
+                        " to assigned value (%4.2f vs. %4.2f)",
+                        name,
+                        beam_.get_wavelength(),
+                        wavelength.get_wavelength(),
                     )
 
             # also in here look at the image headers to see if we can
