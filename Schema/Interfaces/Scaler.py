@@ -143,9 +143,12 @@ from __future__ import absolute_import, division, print_function
 
 import inspect
 import json
+import logging
 import os
 
-from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Streams import banner
+
+logger = logging.getLogger("xia2.Schema.Interfaces.Scaler")
 
 
 class Scaler(object):
@@ -393,7 +396,7 @@ class Scaler(object):
     def set_scaler_prepare_done(self, done=True):
         frm = inspect.stack()[1]
         mod = inspect.getmodule(frm[0])
-        Debug.write(
+        logger.debug(
             "Called scaler prepare done from %s %d (%s)"
             % (mod.__name__, frm[0].f_lineno, done)
         )
@@ -403,7 +406,7 @@ class Scaler(object):
     def set_scaler_done(self, done=True):
         frm = inspect.stack()[1]
         mod = inspect.getmodule(frm[0])
-        Debug.write(
+        logger.debug(
             "Called scaler done from %s %d (%s)" % (mod.__name__, frm[0].f_lineno, done)
         )
 
@@ -412,7 +415,7 @@ class Scaler(object):
     def set_scaler_finish_done(self, done=True):
         frm = inspect.stack()[1]
         mod = inspect.getmodule(frm[0])
-        Debug.write(
+        logger.debug(
             "Called scaler finish done from %s %d (%s)"
             % (mod.__name__, frm[0].f_lineno, done)
         )
@@ -426,7 +429,7 @@ class Scaler(object):
         return self._scalr_anomalous
 
     def scaler_reset(self):
-        Debug.write("Scaler reset")
+        logger.debug("Scaler reset")
 
         self._scalr_done = False
         self._scalr_prepare_done = False
@@ -445,13 +448,13 @@ class Scaler(object):
 
     def get_scaler_done(self):
         if not self.get_scaler_prepare_done():
-            Debug.write("Resetting Scaler done as prepare not done")
+            logger.debug("Resetting Scaler done as prepare not done")
             self.set_scaler_done(False)
         return self._scalr_done
 
     def get_scaler_finish_done(self):
         if not self.get_scaler_done():
-            Debug.write("Resetting scaler finish done as scaling not done")
+            logger.debug("Resetting scaler finish done as scaling not done")
             self.set_scaler_finish_done(False)
         return self._scalr_finish_done
 
@@ -473,7 +476,7 @@ class Scaler(object):
                 raise RuntimeError("multi-sweep integrater has epoch 0")
 
             if epoch in self._scalr_integraters:
-                Debug.write(
+                logger.debug(
                     "integrater with epoch %d already exists. will not trust epoch values"
                     % epoch
                 )
@@ -501,12 +504,12 @@ class Scaler(object):
             while not self.get_scaler_done():
                 while not self.get_scaler_prepare_done():
 
-                    Chatter.banner("Preparing %s" % xname)
+                    logger.notice(banner("Preparing %s" % xname))
 
                     self._scalr_prepare_done = True
                     self._scale_prepare()
 
-                Chatter.banner("Scaling %s" % xname)
+                logger.notice(banner("Scaling %s" % xname))
 
                 self._scalr_done = True
                 self._scalr_result = self._scale()

@@ -1,12 +1,12 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
+import logging
 import os
 
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter, Debug
+
+logger = logging.getLogger("xia2.Wrappers.Dials.Scale")
 
 
 def DialsScale(DriverType=None, decay_correction=None):
@@ -327,13 +327,13 @@ def DialsScale(DriverType=None, decay_correction=None):
             try:
                 self.check_for_errors()
             except Exception:
-                Chatter.write(
-                    "dials.scale failed, see log file for more details:\n  %s"
-                    % self.get_log_file()
+                logger.warning(
+                    "dials.scale failed, see log file for more details:\n  %s",
+                    self.get_log_file(),
                 )
                 raise
 
-            Debug.write("dials.scale status: OK")
+            logger.debug("dials.scale status: OK")
 
             return "OK"
 

@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 import copy
+import logging
 import os
 import shutil
 
@@ -8,7 +9,6 @@ from libtbx import Auto
 
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Debug
 
 # interfaces that this inherits from ...
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
@@ -28,6 +28,8 @@ from xia2.Wrappers.XDS.XDSIntegrateHelpers import (
     parse_integrate_lp,
     parse_integrate_lp_updates,
 )
+
+logger = logging.getLogger("xia2.Wrappers.XDS.XDSIntegrate")
 
 # For details on reflecting_range, it's E.S.D., and beam divergence etc.
 # see:
@@ -180,7 +182,7 @@ def XDSIntegrate(DriverType=None, params=None):
                     / chunk_width
                 )
 
-                Debug.write("Xparallel: -1 using %d chunks" % nchunks)
+                logger.debug("Xparallel: -1 using %d chunks", nchunks)
 
                 xds_inp.write("MAXIMUM_NUMBER_OF_JOBS=%d\n" % nchunks)
             else:
@@ -336,9 +338,11 @@ def XDSIntegrate(DriverType=None, params=None):
             self._max_mosaic = max(mosaics)
             self._mean_mosaic = sum(mosaics) / len(mosaics)
 
-            Debug.write(
-                "Mosaic spread range: %.3f %.3f %.3f"
-                % (self._min_mosaic, self._mean_mosaic, self._max_mosaic)
+            logger.debug(
+                "Mosaic spread range: %.3f %.3f %.3f",
+                self._min_mosaic,
+                self._mean_mosaic,
+                self._max_mosaic,
             )
 
             stats = parse_integrate_lp(

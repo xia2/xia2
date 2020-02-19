@@ -1,8 +1,9 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
+import logging
 import os
+
+logger = logging.getLogger("xia2.Wrappers.Dials.Refine")
 
 
 def Refine(DriverType=None):
@@ -78,9 +79,7 @@ def Refine(DriverType=None):
             self._close_to_spindle_cutoff = close_to_spindle_cutoff
 
         def run(self):
-            from xia2.Handlers.Streams import Debug
-
-            Debug.write("Running dials.refine")
+            logger.debug("Running dials.refine")
 
             self.clear_command_line()
             self.add_command_line(self._experiments_filename)

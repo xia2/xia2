@@ -1,6 +1,8 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
+
+import logging
+
+logger = logging.getLogger("xia2.Wrappers.Dials.StereographicProjection")
 
 
 def StereographicProjection(DriverType=None):
@@ -32,9 +34,7 @@ def StereographicProjection(DriverType=None):
             return self._json_filename
 
         def run(self):
-            from xia2.Handlers.Streams import Debug
-
-            Debug.write("Running dials.stereographic_projection")
+            logger.debug("Running dials.stereographic_projection")
 
             assert len(self._experiments_filenames) > 0
             assert self._hkl is not None

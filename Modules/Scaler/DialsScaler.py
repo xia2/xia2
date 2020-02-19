@@ -2,6 +2,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import logging
 import math
 import os
 from orderedset import OrderedSet
@@ -13,7 +14,7 @@ from xia2.Handlers.Files import FileHandler
 from xia2.lib.bits import auto_logfiler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.lib.SymmetryLib import sort_lattices
-from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.Handlers.Streams import banner
 from xia2.Handlers.CIF import CIF, mmCIF
 from xia2.Modules.Scaler.CommonScaler import CommonScaler as Scaler
 from xia2.Wrappers.Dials.Scale import DialsScale
@@ -38,6 +39,11 @@ from dials.algorithms.scaling.plots import plot_absorption_surface
 from dials.array_family import flex
 import dials.util.version
 from cctbx.sgtbx import lattice_symmetry_group
+from iotbx import mtz
+from iotbx.scalepack import no_merge_original_index
+from iotbx.scalepack.merge import write as merge_scalepack_write
+
+logger = logging.getLogger("xia2.Modules.Scaler.DialsScaler")
 
 
 def clean_reindex_operator(reindex_operator):
@@ -159,7 +165,7 @@ class DialsScaler(Scaler):
             experiments, reflections
         )
 
-        Debug.write("Running multisweep dials.symmetry for %d sweeps" % len(refiners))
+        logger.debug("Running multisweep dials.symmetry for %d sweeps", len(refiners))
         (
             pointgroup,
             reindex_op,
@@ -216,7 +222,7 @@ class DialsScaler(Scaler):
         ####Redoing batches only seems to be in multi_sweep_idxing for CCP4A
         if self._scalr_input_spacegroup:
             self._scalr_likely_spacegroups = [self._scalr_input_spacegroup]
-        Debug.write("Using input pointgroup: %s" % self._scalr_input_pointgroup)
+        logger.debug("Using input pointgroup: %s", self._scalr_input_pointgroup)
         for epoch in self._sweep_handler.get_epochs():
             si = self._sweep_handler.get_sweep_information(epoch)
             self._helper.reindex_jiffy(si, self._scalr_input_pointgroup, "h,k,l")
@@ -260,14 +266,14 @@ class DialsScaler(Scaler):
                 probably_twinned = True
             pointgroups[epoch] = pointgroup
             reindex_ops[epoch] = reindex_op
-            Debug.write("Pointgroup: %s (%s)" % (pointgroup, reindex_op))
+            logger.debug("Pointgroup: %s (%s)", pointgroup, reindex_op)
 
         if len(lattices) > 1:
             # Check consistency of lattices if more than one. If not, then
             # can proceed to straight to checking point group consistency
             # using the cached results.
             correct_lattice = sort_lattices(lattices)[0]
-            Chatter.write("Correct lattice asserted to be %s" % correct_lattice)
+            logger.info("Correct lattice asserted to be %s", correct_lattice)
 
             # transfer this information back to the indexers
             for epoch in self._sweep_handler.get_epochs():
@@ -278,11 +284,11 @@ class DialsScaler(Scaler):
                 state = refiner.set_refiner_asserted_lattice(correct_lattice)
 
                 if state == refiner.LATTICE_CORRECT:
-                    Chatter.write("Lattice %s ok for sweep %s" % _tup)
+                    logger.info("Lattice %s ok for sweep %s" % _tup)
                 elif state == refiner.LATTICE_IMPOSSIBLE:
                     raise RuntimeError("Lattice %s impossible for %s" % _tup)
                 elif state == refiner.LATTICE_POSSIBLE:
-                    Chatter.write("Lattice %s assigned for sweep %s" % _tup)
+                    logger.info("Lattice %s assigned for sweep %s" % _tup)
                     need_to_return = True
 
         if need_to_return:
@@ -298,17 +304,15 @@ class DialsScaler(Scaler):
             )
 
         if len(pointgroup_set) > 1:
-            Debug.write(
-                "Probably twinned, pointgroups: %s"
-                % " ".join(p.replace(" ", "") for p in list(pointgroup_set))
+            logger.debug(
+                "Probably twinned, pointgroups: %s",
+                " ".join(p.replace(" ", "") for p in pointgroup_set),
             )
             numbers = [Syminfo.spacegroup_name_to_number(s) for s in pointgroup_set]
             overall_pointgroup = Syminfo.spacegroup_number_to_name(min(numbers))
             self._scalr_input_pointgroup = overall_pointgroup
 
-            Chatter.write(
-                "Twinning detected, assume pointgroup %s" % overall_pointgroup
-            )
+            logger.info("Twinning detected, assume pointgroup %s", overall_pointgroup)
             need_to_return = True
         else:
             overall_pointgroup = pointgroup_set.pop()
@@ -340,13 +344,6 @@ class DialsScaler(Scaler):
 
         self._helper.set_pname_xname(p, x)
 
-        Journal.block(
-            "gathering",
-            self.get_scaler_xcrystal().get_name(),
-            "Dials",
-            {"working directory": self.get_working_directory()},
-        )
-
         # First do stuff to work out if excluding any data
         # Note - does this actually work? I couldn't seem to get it to work
         # in either this pipeline or the standard dials pipeline
@@ -364,9 +361,9 @@ class DialsScaler(Scaler):
 
             if exclude_sweep:
                 self._sweep_handler.remove_epoch(epoch)
-                Debug.write("Excluding sweep %s" % sname)
+                logger.debug("Excluding sweep %s", sname)
             else:
-                Journal.entry({"adding data from": "%s/%s/%s" % (xname, dname, sname)})
+                logger.debug("%-30s %s/%s/%s", "adding data from:", xname, dname, sname)
 
         # If multiple files, want to run symmetry to check for consistent indexing
         # also
@@ -411,7 +408,7 @@ class DialsScaler(Scaler):
         reference_expt = None
         if param.reference_reflection_file:
             if not param.reference_experiment_file:
-                Chatter.write(
+                logger.info(
                     """
 No DIALS reference experiments file provided, reference reflection file will
 not be used. Reference mtz files for reindexing not currently supported for
@@ -422,8 +419,8 @@ pipeline=dials (supported for pipeline=dials-aimless).
                 reference_refl = param.reference_reflection_file
                 reference_expt = param.reference_experiment_file
                 using_external_references = True
-                Debug.write("Using reference reflections %s" % reference_refl)
-                Debug.write("Using reference experiments %s" % reference_expt)
+                logger.debug("Using reference reflections %s", reference_refl)
+                logger.debug("Using reference experiments %s", reference_expt)
 
         if len(self._sweep_handler.get_epochs()) > 1:
             if PhilIndex.params.xia2.settings.unify_setting:
@@ -434,7 +431,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
             # If not using Brehm-deidrichs reindexing, set reference as first
             # sweep, unless using external reference.
             elif not using_external_references:
-                Debug.write("First sweep will be used as reference for reindexing")
+                logger.debug("First sweep will be used as reference for reindexing")
                 first = self._sweep_handler.get_epochs()[0]
                 si = self._sweep_handler.get_sweep_information(first)
                 reference_expt = si.get_experiments()
@@ -449,7 +446,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
             reference_cell = exp[0].crystal.get_unit_cell().parameters()
 
             # ---------- REINDEX TO CORRECT (REFERENCE) SETTING ----------
-            Chatter.write("Reindexing all datasets to common reference")
+            logger.info("Reindexing all datasets to common reference")
 
             if using_external_references:
                 epochs = self._sweep_handler.get_epochs()
@@ -490,8 +487,8 @@ pipeline=dials (supported for pipeline=dials-aimless).
                 cell = exp[0].crystal.get_unit_cell().parameters()
 
                 # Note - no lattice check as this will already be caught by reindex
-                Debug.write("Cell: %.2f %.2f %.2f %.2f %.2f %.2f" % cell)
-                Debug.write("Ref:  %.2f %.2f %.2f %.2f %.2f %.2f" % reference_cell)
+                logger.debug("Cell: %.2f %.2f %.2f %.2f %.2f %.2f" % cell)
+                logger.debug("Ref:  %.2f %.2f %.2f %.2f %.2f %.2f" % reference_cell)
 
                 for j in range(6):
                     if (
@@ -528,26 +525,6 @@ pipeline=dials (supported for pipeline=dials-aimless).
             self._sweep_handler.get_sweep_information(e)
             for e in self._sweep_handler.get_epochs()
         ]
-
-        if self._scalr_corrections:
-            Journal.block(
-                "scaling",
-                self.get_scaler_xcrystal().get_name(),
-                "Dials",
-                {
-                    "scaling model": "automatic",
-                    "absorption": self._scalr_correct_absorption,
-                    "decay": self._scalr_correct_decay,
-                },
-            )
-
-        else:
-            Journal.block(
-                "scaling",
-                self.get_scaler_xcrystal().get_name(),
-                "Dials",
-                {"scaling model": "default"},
-            )
 
         ### Set the parameters and datafiles for dials.scale
 
@@ -627,7 +604,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
 
         if not self.get_scaler_done():
             # reset for when resolution limit applied
-            Debug.write("Returning as scaling not finished...")
+            logger.debug("Returning as scaling not finished...")
             return
 
         ### Want to do space group check after scaling. So run dials.symmetry
@@ -637,7 +614,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
             not PhilIndex.params.xia2.settings.small_molecule
             and not self._scalr_input_spacegroup
         ):
-            Chatter.banner("Systematic absences check")
+            logger.notice(banner("Systematic absences check"))
             symmetry = DialsSymmetry()
             symmetry.set_experiments_filename(self._scaled_experiments)
             symmetry.set_reflections_filename(self._scaled_reflections)
@@ -651,7 +628,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
             sg = load.experiment_list(self._scaled_experiments)[
                 0
             ].crystal.get_space_group()
-            Chatter.write("Most likely space group: %s" % sg.info())
+            logger.info("Most likely space group: %s", sg.info())
             self._scalr_likely_spacegroups = [sg.type().lookup_symbol()]
 
         FileHandler.record_more_data_file(
@@ -688,7 +665,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
 
         if len(dnames_set) > 1:
             self._scalr_scaled_refl_files = {}
-            Debug.write("Splitting experiments by wavelength")
+            logger.debug("Splitting experiments by wavelength")
             # first split by wavelength
             splitter = SplitExperiments()
             splitter.add_experiments(self._scaled_experiments)
@@ -731,9 +708,12 @@ pipeline=dials (supported for pipeline=dials-aimless).
                     dname
                 ] = mtz_filename
 
-                Debug.write("Exporting %s" % mtz_filename)
+                logger.debug("Exporting %s", mtz_filename)
                 exporter.run()
                 FileHandler.record_data_file(mtz_filename)
+
+                # now convert to .sca format
+                convert_mtz_to_sca(mtz_filename)
 
                 merger = DialsMerge()  # merge but don't truncate
                 merger.set_working_directory(self.get_working_directory())
@@ -755,9 +735,12 @@ pipeline=dials (supported for pipeline=dials-aimless).
                 self._scalr_scaled_reflection_files["mtz"][dname] = mtz_filename
                 merger.set_mtz_filename(mtz_filename)
 
-                Debug.write("Merging %s" % mtz_filename)
+                logger.debug("Merging %s", mtz_filename)
                 merger.run()
                 FileHandler.record_data_file(mtz_filename)
+
+                # now convert to .sca format
+                convert_mtz_to_sca(mtz_filename)
 
         ### For non-MAD case, run dials.export and dials.merge on scaled data.
         else:
@@ -772,7 +755,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
             auto_logfiler(exporter)
             exporter.set_mtz_filename(scaled_unmerged_mtz_path)
 
-            Debug.write("Exporting %s" % scaled_unmerged_mtz_path)
+            logger.debug("Exporting %s", scaled_unmerged_mtz_path)
             exporter.run()
 
             self._scalr_scaled_reflection_files["mtz_unmerged"] = {
@@ -780,6 +763,9 @@ pipeline=dials (supported for pipeline=dials-aimless).
             }
 
             FileHandler.record_data_file(scaled_unmerged_mtz_path)
+
+            # now convert to .sca format
+            convert_mtz_to_sca(scaled_unmerged_mtz_path)
 
             merger = DialsMerge()
             merger.set_working_directory(self.get_working_directory())
@@ -800,9 +786,12 @@ pipeline=dials (supported for pipeline=dials-aimless).
             self._scalr_scaled_reflection_files["mtz"][dnames_set[0]] = mtz_filename
             merger.set_mtz_filename(mtz_filename)
 
-            Debug.write("Merging %s" % mtz_filename)
+            logger.debug("Merging %s", mtz_filename)
             merger.run()
             FileHandler.record_data_file(mtz_filename)
+
+            # now export to sca format
+            convert_mtz_to_sca(mtz_filename)
 
         # Also export just integrated data.
         for si in sweep_infos:
@@ -882,7 +871,7 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
             and params.xia2.settings.scale.two_theta_refine
         ):
 
-            Chatter.banner("Unit cell refinement")
+            logger.notice(banner("Unit cell refinement"))
 
             # Collect a list of all sweeps, grouped by project, crystal, wavelength
             groups_list = []
@@ -920,7 +909,7 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
                     tt_grouprefiner.set_reflection_files(args[1])
                     tt_grouprefiner.set_output_p4p(p4p_file)
                     tt_grouprefiner.run()
-                    Chatter.write(
+                    logger.info(
                         "%s: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"
                         % tuple(
                             ["".join(pi.split("_")[2:])]
@@ -953,7 +942,7 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
             tt_refiner.run()
 
             self._scalr_cell = tt_refiner.get_unit_cell()
-            Chatter.write(
+            logger.info(
                 "Overall: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"
                 % tt_refiner.get_unit_cell()
             )
@@ -974,7 +963,7 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
             for key in sorted(mmcif_in.keys()):
                 mmcif_out[key] = mmcif_in[key]
 
-            Debug.write("Unit cell obtained by two-theta refinement")
+            logger.debug("Unit cell obtained by two-theta refinement")
 
         else:
             ami = AnalyseMyIntensities()
@@ -987,7 +976,7 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
                 ]
             )
 
-            Debug.write("Computed average unit cell (will use in all files)")
+            logger.debug("Computed average unit cell (will use in all files)")
             self._scalr_cell = average_unit_cell
             self._scalr_cell_esd = None
 
@@ -1009,7 +998,7 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
             ):
                 cif_out["_cell_%s" % cifname] = cell  # pylint: disable=E1137
 
-        Debug.write("%7.3f %7.3f %7.3f %7.3f %7.3f %7.3f" % self._scalr_cell)
+        logger.debug("%7.3f %7.3f %7.3f %7.3f %7.3f %7.3f" % self._scalr_cell)
 
     def apply_reindex_operator_to_sweep_info(self, si, reindex_operator, reason):
         """Use a reindex operator to reindex the data.
@@ -1030,8 +1019,8 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
         si.set_reflections(reindexer.get_reindexed_reflections_filename())
         si.set_experiments(reindexer.get_reindexed_experiments_filename())
 
-        Debug.write(
-            "Reindexed with operator %s, reason is %s" % (reindex_operator, reason)
+        logger.debug(
+            "Reindexed with operator %s, reason is %s", reindex_operator, reason
         )
 
     def _dials_symmetry_indexer_jiffy(
@@ -1178,8 +1167,8 @@ Passing multple datasets to indexer_jiffy but not set multisweep=True"""
 
         possible = symmetry_analyser.get_possible_lattices()
 
-        Debug.write("Possible lattices (dials.symmetry):")
-        Debug.write(" ".join(possible))
+        logger.debug("Possible lattices (dials.symmetry):")
+        logger.debug(" ".join(possible))
 
         # all refiners contain the same indexer link, so any good here.
         (
@@ -1207,8 +1196,8 @@ Passing multple datasets to indexer_jiffy but not set multisweep=True"""
             # rather than reindexing here, just set the reindex_inital and let the
             # scaler manage this as necessary
 
-        Debug.write(
-            "Symmetry analysis of %s" % " ".join(experiments) + " ".join(reflections)
+        logger.debug(
+            "Symmetry analysis of %s", " ".join(experiments) + " ".join(reflections)
         )
 
         pointgroup = symmetry_analyser.get_pointgroup()
@@ -1218,7 +1207,7 @@ Passing multple datasets to indexer_jiffy but not set multisweep=True"""
         reindexed_reflections = symmetry_analyser.get_output_reflections_filename()
         reindexed_experiments = symmetry_analyser.get_output_experiments_filename()
 
-        Debug.write("Pointgroup: %s (%s)" % (pointgroup, reindex_op))
+        logger.debug("Pointgroup: %s (%s)", pointgroup, reindex_op)
 
         return (
             pointgroup,
@@ -1271,17 +1260,17 @@ def decide_correct_lattice_using_refiner(possible_lattices, refiner):
     for lattice in possible_lattices:
         state = refiner.set_refiner_asserted_lattice(lattice)
         if state == refiner.LATTICE_CORRECT:
-            Debug.write("Agreed lattice %s" % lattice)
+            logger.debug("Agreed lattice %s", lattice)
             correct_lattice = lattice
             break
 
         elif state == refiner.LATTICE_IMPOSSIBLE:
-            Debug.write("Rejected lattice %s" % lattice)
+            logger.debug("Rejected lattice %s", lattice)
             rerun_symmetry = True
             continue
 
         elif state == refiner.LATTICE_POSSIBLE:
-            Debug.write("Accepted lattice %s, will reprocess" % lattice)
+            logger.debug("Accepted lattice %s, will reprocess", lattice)
             need_to_return = True
             correct_lattice = lattice
             break
@@ -1290,6 +1279,23 @@ def decide_correct_lattice_using_refiner(possible_lattices, refiner):
         correct_lattice = refiner.get_refiner_lattice()
         rerun_symmetry = True
 
-        Debug.write("No solution found: assuming lattice from refiner")
+        logger.debug("No solution found: assuming lattice from refiner")
 
     return correct_lattice, rerun_symmetry, need_to_return
+
+
+def convert_mtz_to_sca(mtz_filename):
+    """Convert an mtz files to .sca format and write."""
+    sca_filename = mtz_filename.replace("mtz", "sca")
+    m = mtz.object(mtz_filename)
+    for ma in m.as_miller_arrays(merge_equivalents=False, anomalous=False):
+        if ma.info().labels == ["I", "SIGI"]:
+            no_merge_original_index.writer(ma, file_name=sca_filename)
+            FileHandler.record_data_file(sca_filename)
+            break
+        elif ma.info().labels == ["IMEAN", "SIGIMEAN"]:
+            merge_scalepack_write(miller_array=ma, file_name=sca_filename)
+            FileHandler.record_data_file(sca_filename)
+            break
+    else:
+        raise KeyError("Intensity column labels not found in MTZ file")

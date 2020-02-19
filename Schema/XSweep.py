@@ -54,6 +54,7 @@ from __future__ import absolute_import, division, print_function
 
 import copy
 import inspect
+import logging
 import math
 import os
 import time
@@ -65,11 +66,12 @@ from xia2.Experts.FindImages import (
 )
 from xia2.Handlers.Environment import Environment
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter, Debug
 
 from xia2.Modules.Indexer import IndexerFactory
 from xia2.Modules.Integrater import IntegraterFactory
 from xia2.Modules.Refiner import RefinerFactory
+
+logger = logging.getLogger("xia2.Schema.XSweep")
 
 
 class _global_integration_parameters(object):
@@ -210,7 +212,7 @@ class XSweep(object):
             if params.general.check_image_files_readable:
                 for j in range(start, end + 1):
                     if j not in self._images:
-                        Debug.write(
+                        logger.debug(
                             "image %i missing for %s"
                             % (j, self.get_imageset().get_template())
                         )
@@ -218,7 +220,7 @@ class XSweep(object):
                         continue
                     image_name = self.get_imageset().get_path(j - start)
                     if not os.access(image_name, os.R_OK):
-                        Debug.write("image %s unreadable" % image_name)
+                        logger.debug("image %s unreadable" % image_name)
                         error = True
                         continue
 
@@ -246,19 +248,12 @@ class XSweep(object):
                     math.fabs(beam_.get_wavelength() - wavelength.get_wavelength())
                     > 0.0001
                 ):
-                    # format = 'wavelength for sweep %s does not ' + \
-                    # 'match wavelength %s'
-                    # raise RuntimeError(format  % \
-                    # (name, wavelength.get_name()))
-
-                    format = (
+                    logger.info(
                         "Header wavelength for sweep %s different"
-                        + " to assigned value (%4.2f vs. %4.2f)"
-                    )
-
-                    Chatter.write(
-                        format
-                        % (name, beam_.get_wavelength(), wavelength.get_wavelength())
+                        " to assigned value (%4.2f vs. %4.2f)",
+                        name,
+                        beam_.get_wavelength(),
+                        wavelength.get_wavelength(),
                     )
 
             # also in here look at the image headers to see if we can
@@ -285,7 +280,7 @@ class XSweep(object):
 
             epochs = self._epoch_to_image
 
-            Debug.write(
+            logger.debug(
                 "Exposure epoch for sweep %s: %d %d"
                 % (self._template, min(epochs), max(epochs))
             )
@@ -328,7 +323,7 @@ class XSweep(object):
                     beam,
                 )
             except AssertionError as e:
-                Debug.write("Error setting mosflm beam centre: %s" % e)
+                logger.debug("Error setting mosflm beam centre: %s" % e)
 
         if distance is not None:
             from xia2.Wrappers.Mosflm.AutoindexHelpers import set_distance
@@ -717,7 +712,7 @@ class XSweep(object):
 
             self._integrater.set_integrater_refiner(self._get_refiner())
 
-            Debug.write(
+            logger.debug(
                 "Integrater / refiner / indexer for sweep %s: %s/%s/%s"
                 % (
                     self._name,
@@ -732,7 +727,7 @@ class XSweep(object):
             # rings we want removing, #1317.
 
             if PhilIndex.params.xia2.settings.integration.exclude_ice_regions:
-                Debug.write("Ice ring region exclusion ON")
+                logger.debug("Ice ring region exclusion ON")
                 self._integrater.set_integrater_ice(True)
 
             # or if we were told about ice or specific excluded resolution
@@ -767,7 +762,7 @@ class XSweep(object):
             # we can set...
 
             if global_integration_parameters.get_parameters(crystal_id):
-                Debug.write("Using integration parameters for crystal %s" % crystal_id)
+                logger.debug("Using integration parameters for crystal %s" % crystal_id)
                 self._integrater.set_integrater_parameters(
                     global_integration_parameters.get_parameters(crystal_id)
                 )
@@ -836,12 +831,13 @@ class XSweep(object):
                 global_integration_parameters.set_parameters(
                     crystal_id, self._integrater.get_integrater_export_parameters()
                 )
-                Debug.write("Stored integration parameters for crystal %s" % crystal_id)
+                logger.debug(
+                    "Stored integration parameters for crystal %s" % crystal_id
+                )
 
         except Exception:
-            # Chatter.write('Error storing parameters for crystal %s' % \
-            # crystal_id)
-            # Chatter.write('%s' % str(e))
+            # logger.error('Error storing parameters for crystal %s', crystal_id)
+            # logger.error(str(e))
             pass
 
         return reflections
@@ -876,10 +872,10 @@ class XSweep(object):
         if not detector_id and self.get_imageset():
             detector_id = self.get_imageset().get_detector()[0].get_identifier()
         if detector_id:
-            Debug.write("Detector identified as %s" % detector_id)
+            logger.debug("Detector identified as %s" % detector_id)
             return detector_id
         else:
-            Debug.write("Detector could not be identified")
+            logger.debug("Detector could not be identified")
             return None
 
     def _add_detector_identification_to_cif(self):
@@ -888,7 +884,7 @@ class XSweep(object):
             import dxtbx.data.beamline_defs as ddb
 
             bl_info = ddb.get_beamline_definition(detector_id)
-            Debug.write(
+            logger.debug(
                 "Beamline information available for %s: %s"
                 % (detector_id, str(bl_info))
             )

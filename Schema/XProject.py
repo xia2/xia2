@@ -4,16 +4,18 @@
 from __future__ import absolute_import, division, print_function
 
 import inspect
+import logging
 import json
 
 import six
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Debug
 from xia2.Handlers.Syminfo import Syminfo
 from xia2.Handlers.XInfo import XInfo
 from xia2.Schema.XCrystal import XCrystal
 from xia2.Schema.XSample import XSample
 from xia2.Schema.XWavelength import XWavelength
+
+logger = logging.getLogger("xia2.Schema.XProject")
 
 
 class XProject(object):
@@ -209,13 +211,14 @@ class XProject(object):
                 # useless.)
 
                 if "wavelength" not in wave_info:
-                    Debug.write(
-                        "No wavelength value given for wavelength %s" % wavelength
+                    logger.debug(
+                        "No wavelength value given for wavelength %s", wavelength
                     )
                 else:
-                    Debug.write(
-                        "Overriding value for wavelength %s to %8.6f"
-                        % (wavelength, float(wave_info["wavelength"]))
+                    logger.debug(
+                        "Overriding value for wavelength %s to %8.6f",
+                        wavelength,
+                        float(wave_info["wavelength"]),
                     )
 
                 # handle case where user writes f" in place of f''

@@ -1,12 +1,14 @@
 from __future__ import absolute_import, division, print_function
 
 import datetime
+import logging
 import os
 import subprocess
 import time
 
 from scitbx import matrix
-from xia2.Handlers.Streams import Debug
+
+logger = logging.getLogger("xia2.Wrappers.XDS.XDS")
 
 
 class XDSException(Exception):
@@ -258,12 +260,12 @@ def imageset_to_xds(
             thickness = converter.get_detector()[0].get_thickness()
             if not thickness:
                 thickness = 0.32
-                Debug.write(
+                logger.debug(
                     "Could not determine sensor thickness. Assuming default PILATUS 0.32mm"
                 )
         except Exception:
             thickness = 0.32
-            Debug.write(
+            logger.debug(
                 "Error occured during sensor thickness determination. Assuming default PILATUS 0.32mm"
             )
         result.append("SENSOR_THICKNESS=%f" % thickness)
@@ -305,14 +307,14 @@ def imageset_to_xds(
     if params.xds.untrusted_ellipse:
         for untrusted_ellipse in params.xds.untrusted_ellipse:
             result.append("UNTRUSTED_ELLIPSE= %d %d %d %d" % tuple(untrusted_ellipse))
-        Debug.write(result[-1])
+        logger.debug(result[-1])
 
     if params.xds.untrusted_rectangle:
         for untrusted_rectangle in params.xds.untrusted_rectangle:
             result.append(
                 "UNTRUSTED_RECTANGLE= %d %d %d %d" % tuple(untrusted_rectangle)
             )
-        Debug.write(result[-1])
+        logger.debug(result[-1])
 
     return result
 

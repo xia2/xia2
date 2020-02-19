@@ -2,28 +2,18 @@
 # This includes all of the appropriate handling for templates, directories
 # and the like.
 #
-# 15/JUN/06
-#
 # Also routines for grouping sets of images together into sweeps based on
 # the file names and the information in image headers.
-#
-# FIXME 24/AUG/06 this needs to renamed to something a little more obvious
-#                 than FindImages - perhaps ImageExpert?
-# FIXME 04/OCT/06 when the image name is all numbers like 999_1_001 need to
-#                 assume that the extension is the number, BEFORE testing any
-#                 of the other possibilities...
-# FIXME 04/OCT/10 when we have images 200-299 (say) don't merge th2 2 with
-#                 the template - you end up with batch 0.
-#
 
 from __future__ import absolute_import, division, print_function
 
+import logging
 import math
 import os
 import re
 import string
 
-from xia2.Handlers.Streams import Debug
+logger = logging.getLogger("xia2.Experts.FindImages")
 
 # N.B. these are reversed patterns...
 
@@ -239,7 +229,7 @@ def digest_template(template, images):
             template, images, offset
         )
     except RuntimeError:
-        Debug.write("Throwing away image 0 from template %s" % template)
+        logger.debug("Throwing away image 0 from template %s", template)
         template, images, offset = ensure_no_batches_numbered_zero(
             template, images[1:], offset
         )
@@ -248,5 +238,4 @@ def digest_template(template, images):
 
 
 if __name__ == "__main__":
-
     work_template_regex()

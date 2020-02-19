@@ -3,16 +3,19 @@
 
 from __future__ import absolute_import, division, print_function
 
+import logging
 import os
+import time
 
 from xia2.DriverExceptions.NotAvailableError import NotAvailableError
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.PipelineSelection import get_preferences
-from xia2.Handlers.Streams import Debug
 from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
 from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
 from xia2.Modules.Indexer.XDSIndexerII import XDSIndexerII
 from xia2.Modules.Indexer.XDSIndexerInteractive import XDSIndexerInteractive
+
+logger = logging.getLogger("xia2.Modules.Indexer.IndexerFactory")
 
 
 def IndexerForXSweep(xsweep, json_file=None):
@@ -50,20 +53,19 @@ def IndexerForXSweep(xsweep, json_file=None):
         and get_preferences().get("integrater")
         and "xds" in get_preferences().get("integrater")
     ):
-        Debug.write("Overriding indexer as XDSII")
+        logger.debug("Overriding indexer as XDSII")
         indexer = Indexer(preselection="xdsii")
     else:
         indexer = Indexer()
 
     if json_file is not None:
         assert os.path.isfile(json_file)
-        Debug.write("Loading indexer from json: %s" % json_file)
-        import time
+        logger.debug("Loading indexer from json: %s", json_file)
 
         t0 = time.time()
         indexer = indexer.__class__.from_json(filename=json_file)
         t1 = time.time()
-        Debug.write("Loaded indexer in %.2f seconds" % (t1 - t0))
+        logger.debug("Loaded indexer in %.2f seconds", t1 - t0)
     else:
         # configure the indexer
         indexer.add_indexer_imageset(xsweep.get_imageset())
@@ -84,7 +86,7 @@ def IndexerForXSweep(xsweep, json_file=None):
     ## that gets it's numbers from the indexer it uses.
 
     # if xsweep.get_distance():
-    # Debug.write('Indexer factory: Setting distance: %.2f' % \
+    # logger.debug('Indexer factory: Setting distance: %.2f' % \
     # xsweep.get_distance())
     # indexer.set_distance(xsweep.get_distance())
 
@@ -95,7 +97,7 @@ def IndexerForXSweep(xsweep, json_file=None):
     # the image header...
 
     # if xsweep.get_wavelength_value():
-    # Debug.write('Indexer factory: Setting wavelength: %.6f' % \
+    # logger.debug('Indexer factory: Setting wavelength: %.6f' % \
     # xsweep.get_wavelength_value())
     # indexer.set_wavelength(xsweep.get_wavelength_value())
 
@@ -142,7 +144,7 @@ def Indexer(preselection=None):
         if not indexer and (not preselection or preselection == idxname):
             try:
                 indexer = idxfactory()
-                Debug.write("Using %s" % idxdisplayname)
+                logger.debug("Using %s", idxdisplayname)
             except NotAvailableError:
                 if preselection:
                     raise RuntimeError("preselected indexer %s not available" % idxname)

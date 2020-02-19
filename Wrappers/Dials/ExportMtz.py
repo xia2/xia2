@@ -1,6 +1,8 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
+
+import logging
+
+logger = logging.getLogger("xia2.Wrappers.Dials.ExportMtz")
 
 
 def ExportMtz(DriverType=None):
@@ -50,9 +52,7 @@ def ExportMtz(DriverType=None):
             return self._mtz_filename
 
         def run(self):
-            from xia2.Handlers.Streams import Debug
-
-            Debug.write("Running dials.export")
+            logger.debug("Running dials.export")
 
             self.clear_command_line()
             self.add_command_line("experiments=%s" % self._experiments_filename)

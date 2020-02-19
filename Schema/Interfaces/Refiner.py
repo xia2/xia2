@@ -2,9 +2,10 @@ from __future__ import absolute_import, division, print_function
 
 import inspect
 import json
+import logging
 import os
 
-from xia2.Handlers.Streams import Debug
+logger = logging.getLogger("xia2.Schema.Interfaces.Refiner")
 
 
 class Refiner(object):
@@ -145,7 +146,7 @@ class Refiner(object):
     def set_refiner_prepare_done(self, done=True):
         frm = inspect.stack()[1]
         mod = inspect.getmodule(frm[0])
-        Debug.write(
+        logger.debug(
             "Called refiner prepare done from %s %d (%s)"
             % (mod.__name__, frm[0].f_lineno, done)
         )
@@ -155,7 +156,7 @@ class Refiner(object):
     def set_refiner_done(self, done=True):
         frm = inspect.stack()[1]
         mod = inspect.getmodule(frm[0])
-        Debug.write(
+        logger.debug(
             "Called refiner done from %s %d (%s)"
             % (mod.__name__, frm[0].f_lineno, done)
         )
@@ -165,7 +166,7 @@ class Refiner(object):
     def set_refiner_finish_done(self, done=True):
         frm = inspect.stack()[1]
         mod = inspect.getmodule(frm[0])
-        Debug.write(
+        logger.debug(
             "Called refiner finish done from %s %d (%s)"
             % (mod.__name__, frm[0].f_lineno, done)
         )
@@ -173,7 +174,7 @@ class Refiner(object):
         self._refinr_finish_done = done
 
     def refiner_reset(self):
-        Debug.write("Refiner reset")
+        logger.debug("Refiner reset")
 
         self._refinr_done = False
         self._refinr_prepare_done = False
@@ -188,13 +189,13 @@ class Refiner(object):
 
     def get_refiner_done(self):
         if not self.get_refiner_prepare_done():
-            Debug.write("Resetting refiner done as prepare not done")
+            logger.debug("Resetting refiner done as prepare not done")
             self.set_refiner_done(False)
         return self._refinr_done
 
     def get_refiner_finish_done(self):
         if not self.get_refiner_done():
-            Debug.write("Resetting refiner finish done as refinement not done")
+            logger.debug("Resetting refiner finish done as refinement not done")
             self.set_refiner_finish_done(False)
         return self._refinr_finish_done
 

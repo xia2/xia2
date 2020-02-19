@@ -1,10 +1,11 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
+import logging
 import os
 
 from xia2.Handlers.Phil import PhilIndex
+
+logger = logging.getLogger("xia2.Wrappers.Dials.Spotfinder")
 
 
 def Spotfinder(DriverType=None):
@@ -91,9 +92,7 @@ def Spotfinder(DriverType=None):
             self._gain = gain
 
         def run(self):
-            from xia2.Handlers.Streams import Debug
-
-            Debug.write("Running dials.find_spots")
+            logger.debug("Running dials.find_spots")
 
             self.clear_command_line()
             self.add_command_line("input.experiments=%s" % self._input_sweep_filename)

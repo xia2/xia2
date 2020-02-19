@@ -1,6 +1,8 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
+
+import logging
+
+logger = logging.getLogger("xia2.Wrappers.Dials.Report")
 
 
 def Report(DriverType=None):
@@ -30,9 +32,7 @@ def Report(DriverType=None):
             self._html_filename = html_filename
 
         def run(self, wait_for_completion=False):
-            from xia2.Handlers.Streams import Debug
-
-            Debug.write("Running dials.report")
+            logger.debug("Running dials.report")
 
             self.clear_command_line()
             assert (

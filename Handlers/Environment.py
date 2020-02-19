@@ -4,19 +4,18 @@
 from __future__ import absolute_import, division, print_function
 
 import ctypes
+import logging
 import os
 import platform
 import tempfile
 
-from xia2.Handlers.Streams import Chatter, Debug
+logger = logging.getLogger("xia2.Handlers.Environment")
 
 
-def which(pgm, debug=False):
+def which(pgm):
     path = os.getenv("PATH")
     for p in path.split(os.path.pathsep):
         p = os.path.join(p, pgm)
-        if debug:
-            Chatter.write("Seeking %s" % p)
         if os.path.exists(p) and os.access(p, os.X_OK):
             return p
 
@@ -27,7 +26,7 @@ def memory_usage():
 
         return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
     except Exception as e:
-        Debug.write("Error getting RAM usage: %s" % str(e))
+        logger.debug("Error getting RAM usage: %s" % str(e))
         return 0
 
 
@@ -38,12 +37,12 @@ def debug_memory_usage():
         import inspect
 
         frameinfo = inspect.getframeinfo(inspect.stack()[1][0])
-        Debug.write(
+        logger.debug(
             "RAM usage at %s %d: %d"
             % (os.path.split(frameinfo.filename)[-1], frameinfo.lineno, memory_usage())
         )
     except Exception as e:
-        Debug.write("Error getting RAM usage: %s" % str(e))
+        logger.debug("Error getting RAM usage: %s" % str(e))
 
 
 def df(path=None):
@@ -58,7 +57,7 @@ def df(path=None):
             )
             return bytes.value
         except Exception as e:
-            Debug.write("Error getting disk space: %s" % str(e))
+            logger.debug("Error getting disk space: %s" % str(e))
             return 0
 
     s = os.statvfs(path)
@@ -98,11 +97,11 @@ class _Environment(object):
         # define a local CCP4_SCR
         ccp4_scr = tempfile.mkdtemp()
         os.environ["CCP4_SCR"] = ccp4_scr
-        Debug.write("Created CCP4_SCR: %s" % ccp4_scr)
+        logger.debug("Created CCP4_SCR: %s" % ccp4_scr)
 
         ulimit = ulimit_n()
         if ulimit:
-            Debug.write("File handle limits: %d/%d/%d" % ulimit)
+            logger.debug("File handle limits: %d/%d/%d" % ulimit)
 
         self._is_setup = True
 
@@ -119,10 +118,10 @@ class _Environment(object):
             path = os.path.join(path, p)
 
         if not os.path.exists(path):
-            Debug.write("Making directory: %s" % path)
+            logger.debug("Making directory: %s" % path)
             os.makedirs(path)
         else:
-            Debug.write("Directory exists: %s" % path)
+            logger.debug("Directory exists: %s" % path)
 
         return path
 

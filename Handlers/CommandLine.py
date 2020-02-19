@@ -9,6 +9,7 @@ from __future__ import absolute_import, division, print_function
 
 import collections
 import copy
+import logging
 import os
 import re
 import sys
@@ -20,9 +21,10 @@ from xia2.Handlers.Environment import which
 from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.PipelineSelection import add_preference
-from xia2.Handlers.Streams import Chatter, Debug
 from xia2.Schema import imageset_cache, update_with_reference_geometry
 from xia2.Schema.XProject import XProject
+
+logger = logging.getLogger("xia2.Handlers.CommandLine")
 
 PATTERN_VALID_CRYSTAL_PROJECT_NAME = re.compile(r"[a-zA-Z_]\w*$")
 
@@ -131,8 +133,7 @@ class _CommandLine(object):
         return self._argv
 
     def print_command_line(self):
-        cl = self.get_command_line()
-        Chatter.write("Command line: %s" % cl)
+        logger.info("Command line: %s", self.get_command_line())
 
     def get_command_line(self):
         import libtbx.load_env
@@ -156,7 +157,7 @@ class _CommandLine(object):
 
         # check arguments are all ascii
 
-        Debug.write("Start parsing command line: " + str(sys.argv))
+        logger.debug("Start parsing command line: " + str(sys.argv))
 
         for token in sys.argv:
             try:
@@ -231,7 +232,7 @@ class _CommandLine(object):
                 PhilIndex.update("xia2.settings.resolution.keep_all_reflections=false")
 
         if params.xia2.settings.small_molecule is True:
-            Debug.write("Small molecule selected")
+            logger.debug("Small molecule selected")
             if params.xia2.settings.symmetry.chirality is None:
                 PhilIndex.update("xia2.settings.symmetry.chirality=nonchiral")
             params = PhilIndex.get_python_object()
@@ -245,8 +246,8 @@ class _CommandLine(object):
         ):
             validate_project_crystal_name(parameter, value)
 
-        Debug.write("Project: %s" % params.xia2.settings.project)
-        Debug.write("Crystal: %s" % params.xia2.settings.crystal)
+        logger.debug("Project: %s" % params.xia2.settings.project)
+        logger.debug("Crystal: %s" % params.xia2.settings.crystal)
 
         # FIXME add some consistency checks in here e.g. that there are
         # images assigned, there is a lattice assigned if cell constants
@@ -304,7 +305,7 @@ class _CommandLine(object):
             params.xia2.settings.multi_sweep_indexing is True
             and params.xia2.settings.multiprocessing.mode == "parallel"
         ):
-            Chatter.write(
+            logger.info(
                 "Multi sweep indexing disabled:\nMSI is not available for parallel processing."
             )
             PhilIndex.update("xia2.settings.multi_sweep_indexing=False")
@@ -323,9 +324,9 @@ class _CommandLine(object):
                     for g in params.xia2.settings.input.reference_geometry
                 ]
             )
-            Debug.write(reference_geometries)
+            logger.debug(reference_geometries)
             PhilIndex.update(reference_geometries)
-            Debug.write("xia2.settings.trust_beam_centre=true")
+            logger.debug("xia2.settings.trust_beam_centre=true")
             PhilIndex.update("xia2.settings.trust_beam_centre=true")
             params = PhilIndex.get_python_object()
 
@@ -343,7 +344,7 @@ class _CommandLine(object):
                 crystals = self._xinfo.get_crystals()
                 for xname in crystals:
                     xtal = crystals[xname]
-                    Debug.write("Setting anomalous for crystal %s" % xname)
+                    logger.debug("Setting anomalous for crystal %s" % xname)
                     xtal.set_anomalous(True)
         else:
             xinfo_file = "%s/automatic.xinfo" % os.path.abspath(os.curdir)
@@ -382,7 +383,7 @@ class _CommandLine(object):
             from xia2.Modules.FindFreeFlag import FindFreeFlag
 
             column = FindFreeFlag(freer_file)
-            Debug.write("FreeR_flag column in %s found: %s" % (freer_file, column))
+            logger.debug("FreeR_flag column in %s found: %s" % (freer_file, column))
             PhilIndex.update("xia2.settings.scale.freer_file=%s" % freer_file)
 
         if params.xia2.settings.scale.reference_reflection_file is not None:
@@ -436,12 +437,12 @@ class _CommandLine(object):
             if is_hdf5_name(dataset):
                 self._hdf5_master_files.append(dataset)
                 if start_end:
-                    Debug.write("Image range: %d %d" % start_end)
+                    logger.debug("Image range: %d %d" % start_end)
                     if dataset not in self._default_start_end:
                         self._default_start_end[dataset] = []
                     self._default_start_end[dataset].append(start_end)
                 else:
-                    Debug.write("No image range specified")
+                    logger.debug("No image range specified")
 
             else:
                 template, directory = image2template_directory(os.path.abspath(dataset))
@@ -449,18 +450,18 @@ class _CommandLine(object):
                 self._default_template.append(os.path.join(directory, template))
                 self._default_directory.append(directory)
 
-                Debug.write("Interpreted from image %s:" % dataset)
-                Debug.write("Template %s" % template)
-                Debug.write("Directory %s" % directory)
+                logger.debug("Interpreted from image %s:" % dataset)
+                logger.debug("Template %s" % template)
+                logger.debug("Directory %s" % directory)
 
                 if start_end:
-                    Debug.write("Image range: %d %d" % start_end)
+                    logger.debug("Image range: %d %d" % start_end)
                     key = os.path.join(directory, template)
                     if key not in self._default_start_end:
                         self._default_start_end[key] = []
                     self._default_start_end[key].append(start_end)
                 else:
-                    Debug.write("No image range specified")
+                    logger.debug("No image range specified")
 
         # finally, check that all arguments were read and raise an exception
         # if any of them were nonsense.
@@ -476,11 +477,11 @@ class _CommandLine(object):
                 os.linesep
             )  # temporarily required for https://github.com/dials/dials/issues/522
 
-        Debug.write("\nDifference PHIL:")
-        Debug.write(PhilIndex.get_diff().as_str(), strip=False)
+        logger.debug("\nDifference PHIL:")
+        logger.debug(PhilIndex.get_diff().as_str())
 
-        Debug.write("Working PHIL:")
-        Debug.write(PhilIndex.working_phil.as_str(), strip=False)
+        logger.debug("Working PHIL:")
+        logger.debug(PhilIndex.working_phil.as_str())
 
         nonsense = "Unknown command-line options:"
         was_nonsense = False
@@ -503,11 +504,11 @@ class _CommandLine(object):
         return self._beam
 
     def set_xinfo(self, xinfo):
-        Debug.write(60 * "-")
-        Debug.write("XINFO file: %s" % xinfo)
+        logger.debug(60 * "-")
+        logger.debug("XINFO file: %s" % xinfo)
         with open(xinfo, "rU") as fh:
-            Debug.write(fh.read().strip())
-        Debug.write(60 * "-")
+            logger.debug(fh.read().strip())
+        logger.debug(60 * "-")
         self._xinfo = XProject(xinfo)
 
     def get_xinfo(self):
@@ -531,29 +532,29 @@ class _CommandLine(object):
         settings = PhilIndex.get_python_object().xia2.settings
         indexer, refiner, integrater, scaler = None, None, None, None
         if settings.pipeline == "3d":
-            Debug.write("3DR pipeline selected")
+            logger.debug("3DR pipeline selected")
             indexer, refiner, integrater, scaler = "xds", "xds", "xdsr", "xdsa"
         elif settings.pipeline == "3di":
-            Debug.write("3DR pipeline; XDS indexing selected")
+            logger.debug("3DR pipeline; XDS indexing selected")
             indexer, refiner, integrater, scaler = "xds", "xds", "xdsr", "xdsa"
         elif settings.pipeline == "3dii":
-            Debug.write("3D II R pipeline (XDS IDXREF all images) selected")
+            logger.debug("3D II R pipeline (XDS IDXREF all images) selected")
             indexer, refiner, integrater, scaler = "xdsii", "xds", "xdsr", "xdsa"
         elif settings.pipeline == "3dd":
-            Debug.write("3DD pipeline (DIALS indexing) selected")
+            logger.debug("3DD pipeline (DIALS indexing) selected")
             indexer, refiner, integrater, scaler = "dials", "xds", "xdsr", "xdsa"
         elif settings.pipeline == "dials":
-            Debug.write("DIALS pipeline selected")
+            logger.debug("DIALS pipeline selected")
             indexer, refiner, integrater, scaler = "dials", "dials", "dials", "dials"
         elif settings.pipeline == "dials-full":
-            Debug.write("DIALS pipeline selected")
+            logger.debug("DIALS pipeline selected")
             print(
                 "***\n\nWarning: Pipeline '%s' has been renamed to 'dials' and will be removed in a future release.\n\n***"
                 % settings.pipeline
             )
             indexer, refiner, integrater, scaler = "dials", "dials", "dials", "dials"
         elif settings.pipeline == "dials-aimless":
-            Debug.write("DIALS-LEGACY pipeline selected (DIALS, scaling with AIMLESS)")
+            logger.debug("DIALS-LEGACY pipeline selected (DIALS, scaling with AIMLESS)")
             indexer, refiner, integrater, scaler = "dials", "dials", "dials", "ccp4a"
 
         if indexer is not None and settings.indexer is None:

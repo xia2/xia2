@@ -3,11 +3,15 @@ from __future__ import absolute_import, division, print_function
 import collections
 import glob
 import itertools
+import logging
 import os
 
 from scitbx.array_family import flex
 
 from xia2.Handlers.Phil import PhilIndex
+
+
+logger = logging.getLogger("xia2.Schema")
 
 
 class _ImagesetCache(dict):
@@ -267,11 +271,10 @@ def load_reference_geometries(geometry_file_list):
 
     for combination in itertools.combinations(reference_components, 2):
         if compare_geometries(combination[0]["detector"], combination[1]["detector"]):
-            from xia2.Handlers.Streams import Chatter
-
-            Chatter.write(
+            logger.error(
                 "Reference geometries given in %s and %s are too similar"
-                % (combination[0]["file"], combination[1]["file"])
+                % combination[0]["file"],
+                combination[1]["file"],
             )
             raise Exception("Reference geometries too similar")
     return reference_components
