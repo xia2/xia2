@@ -120,7 +120,7 @@ def xia2_main(stop_after=None):
                             break
                         wavelength.add_sweep(
                             name=sweep.get_name(),
-                            sample=sweep.get_xsample(),
+                            sample=sweep.sample,
                             directory=sweep.get_directory(),
                             image=sweep.get_image(),
                             beam=sweep.get_beam_centre(),
@@ -218,7 +218,7 @@ def xia2_main(stop_after=None):
                     i_sweep += 1
                 for sweep in remove_sweeps:
                     wavelength.remove_sweep(sweep)
-                    sample = sweep.get_xsample()
+                    sample = sweep.sample
                     sample.remove_sweep(sweep)
 
     else:
@@ -258,7 +258,7 @@ def xia2_main(stop_after=None):
                             raise
                 for sweep in remove_sweeps:
                     wavelength.remove_sweep(sweep)
-                    sample = sweep.get_xsample()
+                    sample = sweep.sample
                     sample.remove_sweep(sweep)
 
     # save intermediate xia2.json file in case scaling step fails
