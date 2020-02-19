@@ -43,6 +43,7 @@ def RefinerForXSweep(xsweep, json_file=None):
             refiner._refinr_sweeps = xsweep.sample.get_sweeps()
             for sweep in refiner._refinr_sweeps:
                 sweep._get_refiner()
+    else:
         refiner.add_refiner_sweep(xsweep)
 
     return refiner
