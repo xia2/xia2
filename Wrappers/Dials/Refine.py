@@ -128,15 +128,18 @@ def Refine(DriverType=None):
                 if target.values or target.sigmas or target.id:
                     self.add_command_line(
                         "refinement.parameterisation.crystal.unit_cell.restraints"
-                        ".tie_to_target.values='%s'" % target.values
+                        ".tie_to_target.values=%s"
+                        % (",".join(map(str, target.values)) if target.values else None)
                     )
                     self.add_command_line(
                         "refinement.parameterisation.crystal.unit_cell.restraints"
-                        ".tie_to_target.sigmas='%s'" % target.sigmas
+                        ".tie_to_target.sigmas=%s"
+                        % (",".join(map(str, target.sigmas)) if target.sigmas else None)
                     )
                     self.add_command_line(
                         "refinement.parameterisation.crystal.unit_cell.restraints"
-                        ".tie_to_target.id='%s'" % target.id
+                        ".tie_to_target.id=%s"
+                        % (",".join(map(str, target.id)) if target.id else None)
                     )
             for group in self.tie_to_group:
                 if group.target or group.sigmas or group.id:
@@ -146,11 +149,13 @@ def Refine(DriverType=None):
                     )
                     self.add_command_line(
                         "refinement.parameterisation.crystal.unit_cell.restraints"
-                        ".tie_to_group.sigmas='%s'" % group.sigmas
+                        ".tie_to_group.sigmas=%s"
+                        % (",".join(map(str, group.sigmas)) if group.sigmas else None)
                     )
                     self.add_command_line(
                         "refinement.parameterisation.crystal.unit_cell.restraints"
-                        ".tie_to_group.id='%s'" % group.id
+                        ".tie_to_group.id=%s"
+                        % (",".join(map(str, group.id)) if group.id else None)
                     )
 
             if self._phil_file is not None:
