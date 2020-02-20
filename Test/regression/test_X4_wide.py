@@ -51,7 +51,8 @@ def test_incompatible_pipeline_scaler(pipeline, scaler, tmpdir, ccp4):
     ) in result.stdout.decode("latin-1")
 
 
-def test_dials_aimless(regression_test, dials_data, tmpdir, ccp4):
+@pytest.mark.parametrize("space_group", [None, "P41212", "P422"])
+def test_dials_aimless(space_group, regression_test, dials_data, tmpdir, ccp4):
     command_line = [
         "xia2",
         "pipeline=dials-aimless",
@@ -61,9 +62,18 @@ def test_dials_aimless(regression_test, dials_data, tmpdir, ccp4):
         "truncate=cctbx",
         dials_data("x4wide").strpath,
     ]
+    if space_group:
+        command_line.append("space_group='%s'" % space_group)
+        expected_space_group = space_group
+    else:
+        expected_space_group = "P41212"
     result = procrunner.run(command_line, working_directory=tmpdir)
     success, issues = xia2.Test.regression.check_result(
-        "X4_wide.dials-aimless", result, tmpdir, ccp4
+        "X4_wide.dials-aimless",
+        result,
+        tmpdir,
+        ccp4,
+        expected_space_group=expected_space_group,
     )
     assert success, issues
 
@@ -87,7 +97,8 @@ def test_dials_aimless_with_dials_pipeline(regression_test, dials_data, tmpdir, 
     assert success, issues
 
 
-def test_dials(regression_test, dials_data, tmpdir, ccp4):
+@pytest.mark.parametrize("space_group", [None, "P41212", "P422"])
+def test_dials(space_group, regression_test, dials_data, tmpdir, ccp4):
     command_line = [
         "xia2",
         "pipeline=dials",
@@ -98,6 +109,11 @@ def test_dials(regression_test, dials_data, tmpdir, ccp4):
         "free_total=1000",
         dials_data("x4wide").strpath,
     ]
+    if space_group:
+        command_line.append("space_group='%s'" % space_group)
+        expected_space_group = space_group
+    else:
+        expected_space_group = "P41212"
     result = procrunner.run(command_line, working_directory=tmpdir)
     print(result)
     success, issues = xia2.Test.regression.check_result(
@@ -109,6 +125,7 @@ def test_dials(regression_test, dials_data, tmpdir, ccp4):
             "AUTOMATIC_DEFAULT_scaled.mtz",
             "AUTOMATIC_DEFAULT_scaled_unmerged.mtz",
         ],
+        expected_space_group=expected_space_group,
     )
     assert success, issues
 
@@ -157,7 +174,8 @@ def test_dials_split(multi_sweep_indexing, regression_test, dials_data, tmpdir, 
     assert success, issues
 
 
-def test_xds(regression_test, dials_data, tmpdir, ccp4, xds):
+@pytest.mark.parametrize("space_group", [None, "P41212", "P422"])
+def test_xds(space_group, regression_test, dials_data, tmpdir, ccp4, xds):
     command_line = [
         "xia2",
         "pipeline=3di",
@@ -166,9 +184,19 @@ def test_xds(regression_test, dials_data, tmpdir, ccp4, xds):
         "read_all_image_headers=False",
         dials_data("x4wide").strpath,
     ]
+    if space_group:
+        command_line.append("space_group='%s'" % space_group)
+        expected_space_group = space_group
+    else:
+        expected_space_group = "P41212"
     result = procrunner.run(command_line, working_directory=tmpdir)
     success, issues = xia2.Test.regression.check_result(
-        "X4_wide.xds", result, tmpdir, ccp4, xds
+        "X4_wide.xds",
+        result,
+        tmpdir,
+        ccp4,
+        xds,
+        expected_space_group=expected_space_group,
     )
     assert success, issues
 
