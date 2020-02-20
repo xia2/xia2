@@ -331,7 +331,7 @@ class XCrystal(object):
                     for sweep in wav._sweeps:
                         if sweep.get_name() == sname:
                             sample._sweeps[i] = sweep
-                            sweep._sample = sample
+                            sweep.sample = sample
                             found_sweep = True
                             break
             for s in sample._sweeps:

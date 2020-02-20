@@ -34,11 +34,17 @@ def exercise_serialization(dials_data, tmp_dir):
     samp = XSample("X1", cryst)
     cryst.add_wavelength(wav)
     cryst.set_ha_info({"atom": "S"})
+    cryst.add_sample(samp)
     directory, image = os.path.split(imageset.get_path(1))
-    wav.add_sweep(name="SWEEP1", sample=samp, directory=directory, image=image)
+    sweep = wav.add_sweep(name="SWEEP1", sample=samp, directory=directory, image=image)
+    samp.add_sweep(sweep)
 
     import json
     from dxtbx.serialize.load import _decode_dict
+
+    # Test that we can serialize to/from json and back to json again
+    proj = XProject.from_json(string=proj.as_json())
+    proj = XProject.from_json(string=proj.as_json())
 
     sweep = wav.get_sweeps()[0]
     indexer = DialsIndexer()
