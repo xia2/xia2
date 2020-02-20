@@ -4,10 +4,13 @@
 from __future__ import absolute_import, division, print_function
 
 import ctypes
+import errno
 import logging
 import os
 import platform
 import tempfile
+
+import six
 
 logger = logging.getLogger("xia2.Handlers.Environment")
 
@@ -111,17 +114,18 @@ class _Environment(object):
 
         path = self._working_directory
 
-        if isinstance(path_tuple, type("string")):
-            path_tuple = (path_tuple,)
-
-        for p in path_tuple:
-            path = os.path.join(path, p)
-
-        if not os.path.exists(path):
-            logger.debug("Making directory: %s" % path)
-            os.makedirs(path)
+        if isinstance(path_tuple, six.string_types):
+            path = os.path.join(path, path_tuple)
         else:
-            logger.debug("Directory exists: %s" % path)
+            path = os.path.join(path, *path_tuple)
+
+        try:
+            os.makedirs(path)
+            logger.debug("Created directory: %s", path)
+        except OSError as err:
+            if err.errno != errno.EEXIST:
+                raise
+            logger.debug("Directory exists: %s", path)
 
         return path
 
