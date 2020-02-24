@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+import itertools
+
 import procrunner
 import pytest
 import xia2.Test.regression
@@ -228,16 +230,13 @@ def test_xds_ccp4a_split(regression_test, dials_data, tmpdir, ccp4, xds):
 
 @pytest.mark.parametrize(
     "pipeline,space_group",
-    (
-        (pipeline, space_group)
-        for pipeline in ("dials", "dials-aimless", "3dii")
-        for space_group in ("P41212", "P422")
-    ),
+    itertools.product(("dials", "dials-aimless", "3dii"), ("P41212", "P422")),
 )
 def test_space_group(pipeline, space_group, regression_test, dials_data, tmpdir, ccp4):
     command_line = [
         "xia2",
         "pipeline=%s" % pipeline,
+        "space_group=%s" % space_group,
         "nproc=1",
         "trust_beam_centre=True",
         "read_all_image_headers=False",
@@ -245,15 +244,12 @@ def test_space_group(pipeline, space_group, regression_test, dials_data, tmpdir,
         "free_total=1000",
         "image=%s" % dials_data("x4wide").join("X4_wide_M1S4_2_0001.cbf:20:30"),
     ]
-    command_line.append("space_group='%s'" % space_group)
-    expected_space_group = space_group
     result = procrunner.run(command_line, working_directory=tmpdir)
-    print(result)
     success, issues = xia2.Test.regression.check_result(
         "X4_wide.space_group.%s" % pipeline,
         result,
         tmpdir,
         ccp4,
-        expected_space_group=expected_space_group,
+        expected_space_group=space_group,
     )
     assert success, issues
