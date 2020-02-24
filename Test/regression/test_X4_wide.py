@@ -250,6 +250,7 @@ def test_space_group(pipeline, space_group, regression_test, dials_data, tmpdir,
         result,
         tmpdir,
         ccp4,
+        expected_data_files=[],
         expected_space_group=space_group,
     )
     assert success, issues
