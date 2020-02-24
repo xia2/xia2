@@ -1,0 +1,2 @@
+Fix bug for space_group= option in combination with the dials pipeline where
+output mtz files would be in the Laue group, rather than the space group.
