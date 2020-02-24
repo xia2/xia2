@@ -29,7 +29,6 @@ def exercise_serialization(dials_data, tmp_dir):
     proj = XProject()
     proj._name = "PROJ1"
     cryst = XCrystal("CRYST1", proj)
-    proj.add_crystal(cryst)
     wav = XWavelength("WAVE1", cryst, wavelength=0.98)
     samp = XSample("X1", cryst)
     cryst.add_wavelength(wav)
@@ -42,11 +41,6 @@ def exercise_serialization(dials_data, tmp_dir):
     import json
     from dxtbx.serialize.load import _decode_dict
 
-    # Test that we can serialize to/from json and back to json again
-    proj = XProject.from_json(string=proj.as_json())
-    proj = XProject.from_json(string=proj.as_json())
-
-    sweep = wav.get_sweeps()[0]
     indexer = DialsIndexer()
     indexer.set_working_directory(tmp_dir)
     indexer.add_indexer_imageset(imageset)
@@ -56,6 +50,7 @@ def exercise_serialization(dials_data, tmp_dir):
     refiner = DialsRefiner()
     refiner.set_working_directory(tmp_dir)
     refiner.add_refiner_indexer(sweep.get_epoch(1), indexer)
+    refiner.add_refiner_sweep(sweep)
     sweep._refiner = refiner
 
     integrater = DialsIntegrater()
@@ -78,6 +73,8 @@ def exercise_serialization(dials_data, tmp_dir):
     scaler.set_scaler_project_info(cryst.get_name(), wav.get_name())
     scaler._scalr_xcrystal = cryst
     cryst._scaler = scaler
+
+    proj.add_crystal(cryst)
 
     s_dict = sweep.to_dict()
     s_str = json.dumps(s_dict, ensure_ascii=True)
@@ -112,6 +109,8 @@ def exercise_serialization(dials_data, tmp_dir):
     print("\n".join(xproj.summarise()))
     json_str = xproj.as_json()
     xproj = XProject.from_json(string=json_str)
+    # Test that we can serialize to json and back again
+    xproj = XProject.from_json(string=xproj.as_json())
     xcryst = list(xproj.get_crystals().values())[0]
     assert xcryst.get_project() is xproj
     intgr = xcryst._get_integraters()[0]
