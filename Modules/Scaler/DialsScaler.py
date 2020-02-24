@@ -7,6 +7,7 @@ import os
 from orderedset import OrderedSet
 
 import libtbx
+import numpy as np
 
 from xia2.Handlers.Files import FileHandler
 from xia2.lib.bits import auto_logfiler
@@ -33,6 +34,7 @@ from xia2.Handlers.Syminfo import Syminfo
 from dxtbx.serialize import load
 from dials.util.batch_handling import calculate_batch_offsets
 from dials.util.export_mtz import match_wavelengths
+from dials.algorithms.scaling.plots import plot_absorption_surface
 from dials.array_family import flex
 import dials.util.version
 from cctbx.sgtbx import lattice_symmetry_group
@@ -209,15 +211,14 @@ class DialsScaler(Scaler):
         return need_to_return
 
     def _input_pointgroup_scale_prepare(self):
-        # is this function completely pointless?
-        # ---------- REINDEX ALL DATA TO CORRECT POINTGROUP ----------
-        ####Redoing batches only seems to be in multi_sweep_idxing for CCP4A
+        pointgroup = self._scalr_input_pointgroup
         if self._scalr_input_spacegroup:
             self._scalr_likely_spacegroups = [self._scalr_input_spacegroup]
-        Debug.write("Using input pointgroup: %s" % self._scalr_input_pointgroup)
+            pointgroup = self._scalr_input_spacegroup
+        Debug.write("Using input pointgroup: %s" % pointgroup)
         for epoch in self._sweep_handler.get_epochs():
             si = self._sweep_handler.get_sweep_information(epoch)
-            self._helper.reindex_jiffy(si, self._scalr_input_pointgroup, "h,k,l")
+            self._helper.reindex_jiffy(si, pointgroup, "h,k,l")
 
     def _standard_scale_prepare(self):
         pointgroups = {}
@@ -831,6 +832,44 @@ pipeline=dials (supported for pipeline=dials-aimless).
 
         # Run twotheta refine
         self._update_scaled_unit_cell_from_scaled_data()
+
+        # add CIF data
+        expts = load.experiment_list(self._scaled_experiments)
+        overall_absmin = 1.0
+        for expt in expts:
+            if (expt.scaling_model.id_ == "physical") and (
+                "absorption" in expt.scaling_model.components
+            ):
+                surface_plot = plot_absorption_surface(expt.scaling_model)
+                correction = np.array(
+                    surface_plot["absorption_surface"]["data"][0]["z"]
+                )
+                # correction is a 2D numpy array
+                absmin = np.min(correction) / np.max(correction)
+                if absmin > 0:  # hope should always happen!
+                    overall_absmin = min(absmin, overall_absmin)
+
+        DIALS = dials.util.version.dials_version()
+        block = CIF.get_block("xia2")
+        mmblock = mmCIF.get_block("xia2")
+        block["_exptl_absorpt_correction_T_min"] = mmblock[
+            "_exptl.absorpt_correction_T_min"
+        ] = overall_absmin  # = scaled relative to 1
+        block["_exptl_absorpt_correction_T_max"] = mmblock[
+            "_exptl.absorpt_correction_T_max"
+        ] = 1.0  #
+        block["_exptl_absorpt_correction_type"] = mmblock[
+            "_exptl.absorpt_correction_type"
+        ] = "empirical"
+        block["_exptl_absorpt_process_details"] = mmblock[
+            "_exptl.absorpt_process_details"
+        ] = (
+            """
+%s
+Scaling & analysis of unmerged intensities, absorption correction using spherical harmonics
+"""
+            % DIALS
+        )
 
     def _update_scaled_unit_cell_from_scaled_data(self):
 

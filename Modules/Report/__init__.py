@@ -262,7 +262,7 @@ class Report(object):
 
         if self.params.chef_min_completeness:
             d_min = dials.pychef.resolution_limit(
-                mtz_file=self.unmerged_mtz,
+                self.intensities,
                 min_completeness=self.params.chef_min_completeness,
                 n_bins=n_bins,
             )
