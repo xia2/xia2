@@ -217,15 +217,14 @@ class DialsScaler(Scaler):
         return need_to_return
 
     def _input_pointgroup_scale_prepare(self):
-        # is this function completely pointless?
-        # ---------- REINDEX ALL DATA TO CORRECT POINTGROUP ----------
-        ####Redoing batches only seems to be in multi_sweep_idxing for CCP4A
+        pointgroup = self._scalr_input_pointgroup
         if self._scalr_input_spacegroup:
             self._scalr_likely_spacegroups = [self._scalr_input_spacegroup]
-        logger.debug("Using input pointgroup: %s", self._scalr_input_pointgroup)
+            pointgroup = self._scalr_input_spacegroup
+        logger.debug("Using input pointgroup: %s", pointgroup)
         for epoch in self._sweep_handler.get_epochs():
             si = self._sweep_handler.get_sweep_information(epoch)
-            self._helper.reindex_jiffy(si, self._scalr_input_pointgroup, "h,k,l")
+            self._helper.reindex_jiffy(si, pointgroup, "h,k,l")
 
     def _standard_scale_prepare(self):
         pointgroups = {}
