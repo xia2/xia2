@@ -42,10 +42,11 @@ def test_proteinase_k(mocker, regression_test, ccp4, dials_data, tmpdir):
 
 
 @pytest.mark.parametrize(
-    "laue_group,space_group", [("P422", None), (None, "P422"), (None, "P43212")]
+    "laue_group,space_group,threshold",
+    [("P422", None, None), (None, "P422", 3.5), (None, "P43212", None)],
 )
 def test_proteinase_k_dose(
-    laue_group, space_group, regression_test, ccp4, dials_data, tmpdir
+    laue_group, space_group, threshold, regression_test, ccp4, dials_data, tmpdir
 ):
     data_dir = dials_data("multi_crystal_proteinase_k")
     expts = sorted(f.strpath for f in data_dir.listdir("experiments*.json"))
@@ -60,6 +61,8 @@ def test_proteinase_k_dose(
         + expts
         + refls
     )
+    if threshold is not None:
+        command_line_args.append("unit_cell_clustering.threshold=%s" % threshold)
     with tmpdir.as_cwd():
         from xia2.command_line.multiplex import run
 
@@ -69,6 +72,11 @@ def test_proteinase_k_dose(
     multiplex_expts = load.experiment_list(
         tmpdir.join("multiplex.expt").strpath, check_format=False
     )
+    if threshold is not None:
+        # one experiment should have been rejected after unit cell clustering
+        assert len(multiplex_expts) == 7
+    else:
+        assert len(multiplex_expts) == 8
     for expt in multiplex_expts:
         if space_group is None:
             assert expt.crystal.get_space_group().type().lookup_symbol() == "P 41 21 2"

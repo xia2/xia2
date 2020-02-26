@@ -587,7 +587,11 @@ class MultiCrystalScale(object):
                 "Selecting subset of data sets for subsequent analysis: %s"
                 % str(largest_cluster_lattice_ids)
             )
-            self._data_manager.select(largest_cluster_lattice_ids)
+            cluster_identifiers = [
+                self._data_manager.ids_to_identifiers_map[l]
+                for l in largest_cluster_lattice_ids
+            ]
+            self._data_manager.select(cluster_identifiers)
         else:
             logger.info("Using all data sets for subsequent analysis")
 
