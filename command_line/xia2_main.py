@@ -72,6 +72,7 @@ def xia2_main(stop_after=None):
     njob = mp_params.njob
 
     xinfo = CommandLine.get_xinfo()
+    logger.info("Project directory: %s", xinfo.path)
 
     if (
         params.xia2.settings.developmental.continue_from_previous_job
