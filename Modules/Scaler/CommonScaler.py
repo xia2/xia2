@@ -35,8 +35,8 @@ def clean_reindex_operator(reindex_operator):
 class CommonScaler(Scaler):
     """Unified bits which the scalers have in common over the interface."""
 
-    def __init__(self):
-        super(CommonScaler, self).__init__()
+    def __init__(self, *args, **kwargs):
+        super(CommonScaler, self).__init__(*args, **kwargs)
 
         self._sweep_handler = None
         self._scalr_twinning_score = None

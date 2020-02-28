@@ -155,7 +155,7 @@ class Scaler(object):
     """An interface to present scaling functionality in a similar way to the
     integrater interface."""
 
-    def __init__(self):
+    def __init__(self, base_path=None):
         # set up a framework for storing all of the input information...
         # this should really only consist of integraters...
 
@@ -232,6 +232,7 @@ class Scaler(object):
         self._scalr_anomalous = False
 
         # admin junk
+        self._base_path = base_path
         self._working_directory = os.getcwd()
         self._scalr_pname = None
         self._scalr_xname = None

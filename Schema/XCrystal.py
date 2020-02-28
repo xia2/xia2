@@ -815,7 +815,7 @@ class XCrystal(object):
             working_path = self._project.path.joinpath(self._name, scale_dir)
             working_path.mkdir(parents=True, exist_ok=True)
 
-            self._scaler = Scaler()
+            self._scaler = Scaler(base_path=self._project.path)
 
             # put an inverse link in place... to support RD analysis
             # involved change to Scaler interface definition

@@ -16,15 +16,14 @@ from xia2.Modules.Scaler.DialsScaler import DialsScaler
 logger = logging.getLogger("xia2.Modules.Scaler.ScalerFactory")
 
 
-def Scaler():
+def Scaler(*args, **kwargs):
     """Create a Scaler implementation."""
-
     scaler = None
     preselection = get_preferences().get("scaler")
 
     if not scaler and (not preselection or preselection == "ccp4a"):
         try:
-            scaler = CCP4ScalerA()
+            scaler = CCP4ScalerA(*args, **kwargs)
             logger.debug("Using CCP4A Scaler")
         except NotAvailableError:
             if preselection == "ccp4a":
@@ -32,7 +31,7 @@ def Scaler():
 
     if not scaler and (not preselection or preselection == "xdsa"):
         try:
-            scaler = XDSScalerA()
+            scaler = XDSScalerA(*args, **kwargs)
             logger.debug("Using XDSA Scaler")
         except NotAvailableError:
             if preselection == "xdsa":
@@ -40,7 +39,7 @@ def Scaler():
 
     if not scaler and (not preselection or preselection == "dials"):
         try:
-            scaler = DialsScaler()
+            scaler = DialsScaler(*args, **kwargs)
             logger.debug("Using DIALS Scaler")
         except NotAvailableError:
             if preselection == "dials":
