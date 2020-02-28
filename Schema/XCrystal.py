@@ -563,8 +563,8 @@ class XCrystal(object):
                     target = FileHandler.get_data_file(reflections)
                     result += "Scaled reflections: %s\n" % target
 
-        CIF.write_cif()
-        mmCIF.write_cif()
+        CIF.write_cif(self._project.path / "DataFiles")
+        mmCIF.write_cif(self._project.path / "DataFiles")
 
         return result
 
