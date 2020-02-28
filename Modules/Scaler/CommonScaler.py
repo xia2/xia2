@@ -1026,7 +1026,7 @@ class CommonScaler(Scaler):
                     scaled_unmerged_mtz, anomalous=False, n_bins=n_bins
                 )
                 result.as_json(file_name=str(merging_stats_json))
-                with merging_stats_file.open("w") as fh:
+                with open(str(merging_stats_file), "w") as fh:
                     result.show(out=fh)
 
                 four_column_output = selected_band and any(selected_band)

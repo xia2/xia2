@@ -94,7 +94,7 @@ class _CIFHandler(object):
         self.collate_audit_information()
 
         path.mkdir(parents=True, exist_ok=True)
-        with path.joinpath(self._outfile).open("w") as fh:
+        with open(str(path.joinpath(self._outfile)), "w") as fh:
             self._cif.show(out=fh)
 
     def get_block(self, blockname=None):
