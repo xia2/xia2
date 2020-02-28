@@ -22,8 +22,9 @@ def ispyb_object():
     crystals = xinfo.get_crystals()
     assert len(crystals) == 1
     crystal = next(iter(crystals.values()))
-    ISPyBXmlHandler.add_xcrystal(crystal)
-    return ISPyBXmlHandler.json_object(command_line=command_line)
+    ispyb_hdl = ISPyBXmlHandler()
+    ispyb_hdl.add_xcrystal(crystal)
+    return ispyb_hdl.json_object(command_line=command_line)
 
 
 def zocalo_object():
