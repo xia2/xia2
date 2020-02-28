@@ -70,7 +70,7 @@ class XWavelength(object):
                 obj[a[0]] = sweeps
             elif a[0] == "_crystal":
                 # don't serialize this since the parent xwavelength *should* contain
-                # the reference to the child xsweeo
+                # the reference to the child xsweep
                 continue
             elif a[0].startswith("__"):
                 continue
