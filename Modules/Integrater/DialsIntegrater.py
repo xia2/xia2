@@ -120,6 +120,8 @@ class DialsIntegrater(Integrater):
     def ExportMtz(self):
         params = PhilIndex.params.dials.integrate
         export = _ExportMtz()
+        _, xname, _ = self.get_integrater_project_info()
+        export.crystal_name = xname
         export.set_working_directory(self.get_working_directory())
 
         export.set_experiments_filename(self._intgr_experiments_filename)

@@ -691,6 +691,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
                 refl_name = os.path.join(
                     self.get_working_directory(), "split_%s.refl" % nums
                 )
+                exporter.crystal_name = self._scalr_xname
                 exporter.set_experiments_filename(expt_name)
                 exporter.set_reflections_filename(refl_name)
                 exporter.set_intensity_choice("scale")
@@ -744,6 +745,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
         ### For non-MAD case, run dials.export and dials.merge on scaled data.
         else:
             exporter = ExportMtz()
+            exporter.crystal_name = self._scalr_xname
             exporter.set_working_directory(self.get_working_directory())
             exporter.set_experiments_filename(self._scaled_experiments)
             exporter.set_reflections_filename(self._scaled_reflections)
@@ -795,6 +797,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
         # Also export just integrated data.
         for si in sweep_infos:
             exporter = ExportMtz()
+            exporter.crystal_name = self._scalr_xname
             exporter.set_reflections_filename(si.get_reflections())
             exporter.set_experiments_filename(si.get_experiments())
             exporter.set_intensity_choice("profile+sum")
@@ -1048,6 +1051,7 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
         """Export to mtz, using dials.integrate phil params"""
         params = PhilIndex.params.dials.integrate
         export = ExportMtz()
+        export.crystal_name = self._scalr_xname
         export.set_working_directory(self.get_working_directory())
         export.set_experiments_filename(sweep_info.get_experiments())
         export.set_reflections_filename(sweep_info.get_reflections())
