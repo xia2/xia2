@@ -556,11 +556,13 @@ class XCrystal(object):
 
                 if isinstance(reflections, type({})):
                     for wavelength in list(reflections.keys()):
-                        target = FileHandler.get_data_file(reflections[wavelength])
+                        target = FileHandler.get_data_file(
+                            self._project.path, reflections[wavelength]
+                        )
                         result += "Scaled reflections (%s): %s\n" % (wavelength, target)
 
                 else:
-                    target = FileHandler.get_data_file(reflections)
+                    target = FileHandler.get_data_file(self._project.path, reflections)
                     result += "Scaled reflections: %s\n" % target
 
         CIF.write_cif(self._project.path / "DataFiles")

@@ -246,7 +246,9 @@ class ISPyBXmlHandler(object):
                 if not isinstance(reflection_file, type("")):
                     continue
 
-                reflection_file = FileHandler.get_data_file(reflection_file)
+                reflection_file = FileHandler.get_data_file(
+                    self._project.path, reflection_file
+                )
 
                 basename = os.path.basename(reflection_file)
                 if data_directory.joinpath(basename).exists():
@@ -429,7 +431,9 @@ class ISPyBXmlHandler(object):
                 if not isinstance(reflection_file, type("")):
                     continue
 
-                reflection_file = FileHandler.get_data_file(reflection_file)
+                reflection_file = FileHandler.get_data_file(
+                    self._project.path, reflection_file
+                )
                 basename = os.path.basename(reflection_file)
 
                 if data_directory.joinpath(basename).exists():

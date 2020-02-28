@@ -301,7 +301,7 @@ def xia2_main(stop_after=None):
     write_citations()
 
     # delete all of the temporary mtz files...
-    cleanup()
+    cleanup(xinfo.path)
 
 
 def run():
