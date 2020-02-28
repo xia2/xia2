@@ -92,7 +92,11 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
                     batch_params.range = si.get_batch_range()
                     params.batch.append(batch_params)
 
-            report = Report.from_unmerged_mtz(unmerged_mtz, params)
+            report_path = xinfo.path.joinpath(cname, "report")
+            report_path.mkdir(parents=True, exist_ok=True)
+            report = Report.from_unmerged_mtz(
+                unmerged_mtz, params, report_dir=str(report_path)
+            )
 
             xtriage_success, xtriage_warnings, xtriage_danger = None, None, None
             if params.xtriage_analysis:
