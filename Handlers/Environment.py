@@ -5,13 +5,10 @@ from __future__ import absolute_import, division, print_function
 
 import atexit
 import ctypes
-import errno
 import logging
 import os
 import platform
 import tempfile
-
-import six
 
 logger = logging.getLogger("xia2.Handlers.Environment")
 
@@ -99,46 +96,6 @@ def set_up_ccp4_tmpdir():
     atexit.register(drop_ccp4_scr_tmpdir_if_possible)
 
 
-set_up_ccp4_tmpdir()
-ulimit_n()
-
-
-class _Environment(object):
-    """A class to store environmental considerations."""
-
-    def __init__(self, working_directory=None):
-        if working_directory is None:
-            self._working_directory = os.getcwd()
-        else:
-            self._working_directory = working_directory
-
-    def generate_directory(self, path_tuple):
-        """Used for generating working directories."""
-        path = self._working_directory
-
-        if isinstance(path_tuple, six.string_types):
-            path = os.path.join(path, path_tuple)
-        else:
-            path = os.path.join(path, *path_tuple)
-
-        try:
-            os.makedirs(path)
-            logger.debug("Created directory: %s", path)
-        except OSError as err:
-            if err.errno != errno.EEXIST:
-                raise
-            logger.debug("Directory exists: %s", path)
-
-        return path
-
-    def getenv(self, name):
-        """A wrapper for os.environ."""
-        return os.environ.get(name)
-
-
-Environment = _Environment()
-
-
 def get_number_cpus():
     """Portably get the number of processor cores available."""
 
@@ -155,3 +112,7 @@ def get_number_cpus():
     from libtbx.introspection import number_of_processors
 
     return number_of_processors(return_value_if_unknown=-1)
+
+
+set_up_ccp4_tmpdir()
+ulimit_n()
