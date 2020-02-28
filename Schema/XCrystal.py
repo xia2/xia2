@@ -59,7 +59,6 @@ import six
 
 # Generation of Crystallographic Information Files (CIF/mmCIF)
 from xia2.Handlers.CIF import CIF, mmCIF
-from xia2.Handlers.Environment import Environment
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import banner
@@ -249,8 +248,7 @@ class XCrystal(object):
     # serialization functions
 
     def to_dict(self):
-        obj = {}
-        obj["__id__"] = "XCrystal"
+        obj = {"__id__": "XCrystal"}
 
         attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
         for a in attributes:
@@ -814,7 +812,7 @@ class XCrystal(object):
             scale_dir = PhilIndex.params.xia2.settings.scale.directory
             if scale_dir is Auto:
                 scale_dir = "scale"
-            working_directory = Environment.generate_directory([self._name, scale_dir])
+            working_path = self._project.path.joinpath(self._name, scale_dir)
 
             self._scaler = Scaler()
 
@@ -827,7 +825,7 @@ class XCrystal(object):
                 self._scaler.set_scaler_anomalous(True)
 
             # set up a sensible working directory
-            self._scaler.set_working_directory(working_directory)
+            self._scaler.set_working_directory(str(working_path))
 
             # set the reference reflection file, if we have one...
             if self._reference_reflection_file:
