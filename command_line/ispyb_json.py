@@ -22,7 +22,7 @@ def ispyb_object():
     crystals = xinfo.get_crystals()
     assert len(crystals) == 1
     crystal = next(iter(crystals.values()))
-    ispyb_hdl = ISPyBXmlHandler()
+    ispyb_hdl = ISPyBXmlHandler(xinfo)
     ispyb_hdl.add_xcrystal(crystal)
     return ispyb_hdl.json_object(command_line=command_line)
 
