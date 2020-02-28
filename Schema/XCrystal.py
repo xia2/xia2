@@ -813,6 +813,7 @@ class XCrystal(object):
             if scale_dir is Auto:
                 scale_dir = "scale"
             working_path = self._project.path.joinpath(self._name, scale_dir)
+            working_path.mkdir(parents=True, exist_ok=True)
 
             self._scaler = Scaler()
 
