@@ -996,26 +996,24 @@ class CommonScaler(Scaler):
         from cctbx import sgtbx
 
         sg = sgtbx.space_group_info(str(self._scalr_likely_spacegroups[0])).group()
-        from xia2.Handlers.Environment import Environment
 
-        log_directory = Environment.generate_directory("LogFiles")
-        merging_stats_file = os.path.join(
-            log_directory,
+        log_directory = self._base_path / "LogFiles"
+        log_directory.mkdir(parents=True, exist_ok=True)
+        merging_stats_file = log_directory.joinpath(
             "%s_%s%s_merging-statistics.txt"
             % (
                 self._scalr_pname,
                 self._scalr_xname,
                 "" if wave is None else "_%s" % wave,
-            ),
+            )
         )
-        merging_stats_json = os.path.join(
-            log_directory,
+        merging_stats_json = log_directory.joinpath(
             "%s_%s%s_merging-statistics.json"
             % (
                 self._scalr_pname,
                 self._scalr_xname,
                 "" if wave is None else "_%s" % wave,
-            ),
+            )
         )
 
         result, select_result, anom_result, select_anom_result = None, None, None, None
@@ -1027,8 +1025,8 @@ class CommonScaler(Scaler):
                 result = self._iotbx_merging_statistics(
                     scaled_unmerged_mtz, anomalous=False, n_bins=n_bins
                 )
-                result.as_json(file_name=merging_stats_json)
-                with open(merging_stats_file, "w") as fh:
+                result.as_json(file_name=str(merging_stats_json))
+                with merging_stats_file.open("w") as fh:
                     result.show(out=fh)
 
                 four_column_output = selected_band and any(selected_band)
