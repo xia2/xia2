@@ -13,6 +13,7 @@ import traceback
 
 from dials.util import Sorry
 from dials.util.version import dials_version
+from libtbx import group_args
 import xia2.Driver.timing
 import xia2.Handlers.Streams
 import xia2.XIA2Version
@@ -64,15 +65,11 @@ def xia2_main(stop_after=None):
             logger.info("| No images assigned for crystal %s |", name)
             logger.info("-----------------------------------" + "-" * len(name))
 
-    args = []
-
     from xia2.Handlers.Phil import PhilIndex
 
     params = PhilIndex.get_python_object()
     mp_params = params.xia2.settings.multiprocessing
     njob = mp_params.njob
-
-    from libtbx import group_args
 
     xinfo = CommandLine.get_xinfo()
 
@@ -146,6 +143,7 @@ def xia2_main(stop_after=None):
     if mp_params.mode == "parallel" and njob > 1:
         driver_type = mp_params.type
         command_line_args = CommandLine.get_argv()[1:]
+        jobs = []
         for crystal_id in crystals:
             for wavelength_id in crystals[crystal_id].get_wavelength_names():
                 wavelength = crystals[crystal_id].get_xwavelength(wavelength_id)
@@ -154,7 +152,7 @@ def xia2_main(stop_after=None):
                     sweep._get_indexer()
                     sweep._get_refiner()
                     sweep._get_integrater()
-                    args.append(
+                    jobs.append(
                         (
                             group_args(
                                 driver_type=driver_type,
@@ -174,7 +172,7 @@ def xia2_main(stop_after=None):
         default_driver_type = DriverFactory.get_driver_type()
 
         # run every nth job on the current computer (no need to submit to qsub)
-        for i_job, arg in enumerate(args):
+        for i_job, arg in enumerate(jobs):
             if (i_job % njob) == 0:
                 arg[0].driver_type = default_driver_type
 
@@ -186,7 +184,7 @@ def xia2_main(stop_after=None):
 
         results = easy_mp.parallel_map(
             process_one_sweep,
-            args,
+            jobs,
             processes=njob,
             method="multiprocessing",
             qsub_command=qsub_command,
