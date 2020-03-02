@@ -1,12 +1,15 @@
 from __future__ import absolute_import, division, print_function
 
+import json
 import os
 import sys
 
 import mock
+import pathlib2
 
 
 def exercise_serialization(dials_data, tmp_dir):
+    base_path = pathlib2.Path(tmp_dir)
     template = dials_data("insulin").join("insulin_1_###.img").strpath
 
     from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
@@ -26,7 +29,7 @@ def exercise_serialization(dials_data, tmp_dir):
     from xia2.Schema.XSweep import XSweep
     from xia2.Schema.XSample import XSample
 
-    proj = XProject()
+    proj = XProject(base_path=base_path)
     proj._name = "PROJ1"
     cryst = XCrystal("CRYST1", proj)
     wav = XWavelength("WAVE1", cryst, wavelength=0.98)
@@ -38,7 +41,6 @@ def exercise_serialization(dials_data, tmp_dir):
     sweep = wav.add_sweep(name="SWEEP1", sample=samp, directory=directory, image=image)
     samp.add_sweep(sweep)
 
-    import json
     from dxtbx.serialize.load import _decode_dict
 
     indexer = DialsIndexer()
@@ -67,7 +69,7 @@ def exercise_serialization(dials_data, tmp_dir):
     )
     sweep._integrater = integrater
 
-    scaler = CCP4ScalerA()
+    scaler = CCP4ScalerA(base_path=base_path)
     scaler.add_scaler_integrater(integrater)
     scaler.set_scaler_xcrystal(cryst)
     scaler.set_scaler_project_info(cryst.get_name(), wav.get_name())
@@ -100,17 +102,22 @@ def exercise_serialization(dials_data, tmp_dir):
     p_str = json.dumps(p_dict, ensure_ascii=True)
     p_dict = json.loads(p_str, object_hook=_decode_dict)
     xproj = XProject.from_dict(p_dict)
+    assert xproj.path == base_path
     assert list(xproj.get_crystals().values())[0].get_project() is xproj
+    assert list(xproj.get_crystals().values())[0]._scaler._base_path == base_path
 
     json_str = proj.as_json()
     xproj = XProject.from_json(string=json_str)
+    assert xproj.path == base_path
     assert list(xproj.get_crystals().values())[0].get_project() is xproj
     print(xproj.get_output())
     print("\n".join(xproj.summarise()))
     json_str = xproj.as_json()
     xproj = XProject.from_json(string=json_str)
+    assert xproj.path == base_path
     # Test that we can serialize to json and back again
     xproj = XProject.from_json(string=xproj.as_json())
+    assert xproj.path == base_path
     xcryst = list(xproj.get_crystals().values())[0]
     assert xcryst.get_project() is xproj
     intgr = xcryst._get_integraters()[0]

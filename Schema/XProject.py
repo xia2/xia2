@@ -111,11 +111,14 @@ class XProject(object):
             return rv
 
         assert [filename, string].count(None) == 1
-        if filename is not None:
+        if filename:
             with open(filename, "rb") as f:
                 string = f.read()
+            base_path = os.path.dirname(filename)
+        else:
+            base_path = None
         obj = json.loads(string, object_hook=_decode_dict)
-        return cls.from_dict(obj, base_path=os.path.dirname(filename))
+        return cls.from_dict(obj, base_path=base_path)
 
     def get_output(self):
         result = "Project: %s\n" % self._name

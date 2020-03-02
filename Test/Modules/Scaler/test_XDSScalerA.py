@@ -4,6 +4,7 @@ import os
 import sys
 
 import mock
+import pathlib2
 import pytest
 import six
 
@@ -60,7 +61,7 @@ def test_xds_scalerA(regression_test, ccp4, xds, dials_data, run_in_tmpdir, npro
     integrater.set_integrater_sweep_name("SWEEP1")
     integrater.set_integrater_project_info("CRYST1", "WAVE1", "SWEEP1")
 
-    scaler = XDSScalerA()
+    scaler = XDSScalerA(base_path=pathlib2.Path(tmpdir))
     scaler.add_scaler_integrater(integrater)
     scaler.set_scaler_xcrystal(cryst)
     scaler.set_scaler_project_info("CRYST1", "WAVE1")

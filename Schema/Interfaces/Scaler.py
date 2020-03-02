@@ -146,6 +146,7 @@ import json
 import logging
 import os
 
+import pathlib2
 from xia2.Handlers.Streams import banner
 
 logger = logging.getLogger("xia2.Schema.Interfaces.Scaler")
@@ -249,6 +250,8 @@ class Scaler(object):
         obj["__id__"] = "Scaler"
         obj["__module__"] = self.__class__.__module__
         obj["__name__"] = self.__class__.__name__
+        if self._base_path:
+            obj["_base_path"] = self._base_path.__fspath__()
 
         attributes = inspect.getmembers(self, lambda m: not inspect.isroutine(m))
         for a in attributes:
@@ -281,7 +284,12 @@ class Scaler(object):
     @classmethod
     def from_dict(cls, obj):
         assert obj["__id__"] == "Scaler"
-        return_obj = cls()
+        base_path = obj.get("_base_path")
+        if base_path:
+            base_path = pathlib2.Path(base_path)
+        else:
+            base_path = None
+        return_obj = cls(base_path=base_path)
         for k, v in obj.items():
             if k == "_scalr_integraters":
                 for k_, v_ in v.items():
@@ -306,6 +314,8 @@ class Scaler(object):
                     k_ = tuple(str(s) for s in json.loads(k_))
                     d[k_] = v_
                 v = d
+            elif k == "_base_path":
+                continue
             setattr(return_obj, k, v)
         return return_obj
 
