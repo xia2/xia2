@@ -284,7 +284,7 @@ class Report(object):
         return pychef_stats.to_dict()
 
     @classmethod
-    def from_unmerged_mtz(cls, unmerged_mtz, params, report_dir=None):
+    def from_unmerged_mtz(cls, unmerged_mtz, params, report_dir):
         reader = any_reflection_file(unmerged_mtz)
         assert reader.file_type() == "ccp4_mtz"
         arrays = reader.as_miller_arrays(merge_equivalents=False)
@@ -302,17 +302,6 @@ class Report(object):
         assert intensities is not None
         assert batches is not None
         mtz_object = reader.file_content()
-
-        crystal_name = (
-            [c.name() for c in mtz_object.crystals() if c.name() != "HKL_base"]
-            or ["DEFAULT"]
-        )[0]
-        report_dir = (
-            report_dir
-            or xia2.Handlers.Environment.Environment.generate_directory(
-                [crystal_name, "report"]
-            )
-        )
 
         indices = mtz_object.extract_original_index_miller_indices()
         intensities = intensities.customized_copy(

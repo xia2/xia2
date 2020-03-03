@@ -59,12 +59,12 @@ import math
 import os
 import time
 
+import pathlib2
 from xia2.Experts.Filenames import expand_path
 from xia2.Experts.FindImages import (
     image2template_directory,
     template_directory_number2image,
 )
-from xia2.Handlers.Environment import Environment
 from xia2.Handlers.Phil import PhilIndex
 
 from xia2.Modules.Indexer import IndexerFactory
@@ -585,6 +585,19 @@ class XSweep(object):
     def get_name(self):
         return self._name
 
+    def _create_path(self, *args):
+        """Create a directory in the project space and return a path object"""
+
+        if not self.get_wavelength():
+            base_path = pathlib2.Path(".")
+        else:
+            base_path = self.get_wavelength().get_crystal().get_project().path
+
+        path = base_path.joinpath(*args)
+        path.mkdir(parents=True, exist_ok=True)
+        logger.debug("Set up path %s", path)
+        return path
+
     # Real "action" methods - note though that these should never be
     # run directly, only implicitly...
 
@@ -608,16 +621,14 @@ class XSweep(object):
                 wavelength_id = "default"
                 crystal_id = "default"
                 project_id = "default"
-
             else:
                 wavelength_id = self.get_wavelength().get_name()
                 crystal_id = self.get_wavelength().get_crystal().get_name()
                 project_id = (
                     self.get_wavelength().get_crystal().get_project().get_name()
                 )
-
-            working_directory = Environment.generate_directory(
-                [crystal_id, wavelength_id, self.get_name(), "index"]
+            working_path = self._create_path(
+                crystal_id, wavelength_id, self.get_name(), "index"
             )
 
             # FIXME the indexer factory should probably be able to
@@ -646,7 +657,7 @@ class XSweep(object):
                 if self._user_cell:
                     raise RuntimeError("cannot assign cell without lattice")
 
-            self._indexer.set_working_directory(working_directory)
+            self._indexer.set_working_directory(str(working_path))
 
             self._indexer.set_indexer_project_info(
                 project_id, crystal_id, wavelength_id
@@ -664,11 +675,11 @@ class XSweep(object):
             else:
                 wavelength_id = self.get_wavelength().get_name()
                 crystal_id = self.get_wavelength().get_crystal().get_name()
-            working_directory = Environment.generate_directory(
-                [crystal_id, wavelength_id, self.get_name(), "refine"]
+            working_path = self._create_path(
+                crystal_id, wavelength_id, self.get_name(), "refine"
             )
             self._refiner = RefinerFactory.RefinerForXSweep(self)
-            self._refiner.set_working_directory(working_directory)
+            self._refiner.set_working_directory(str(working_path))
 
         self._refiner.add_refiner_indexer(
             self.get_epoch(self._frames_to_process[0]), self._get_indexer()
@@ -693,16 +704,14 @@ class XSweep(object):
                 wavelength_id = "default"
                 crystal_id = "default"
                 project_id = "default"
-
             else:
                 wavelength_id = self.get_wavelength().get_name()
                 crystal_id = self.get_wavelength().get_crystal().get_name()
                 project_id = (
                     self.get_wavelength().get_crystal().get_project().get_name()
                 )
-
-            working_directory = Environment.generate_directory(
-                [crystal_id, wavelength_id, self.get_name(), "integrate"]
+            working_path = self._create_path(
+                crystal_id, wavelength_id, self.get_name(), "integrate"
             )
 
             self._integrater = IntegraterFactory.IntegraterForXSweep(self)
@@ -780,7 +789,7 @@ class XSweep(object):
                     self.get_epoch(self._frames_to_process[0])
                 )
 
-            self._integrater.set_working_directory(working_directory)
+            self._integrater.set_working_directory(str(working_path))
 
         return self._integrater
 

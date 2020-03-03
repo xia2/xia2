@@ -51,8 +51,8 @@ def clean_reindex_operator(reindex_operator):
 
 
 class DialsScaler(Scaler):
-    def __init__(self):
-        super(DialsScaler, self).__init__()
+    def __init__(self, *args, **kwargs):
+        super(DialsScaler, self).__init__(*args, **kwargs)
 
         self._scalr_scaled_refl_files = {}
         self._scalr_statistics = {}

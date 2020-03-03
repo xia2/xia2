@@ -32,8 +32,8 @@ class XDSScalerA(Scaler):
     xds and xscale, possibly with some help from a couple of CCP4
     programs like pointless."""
 
-    def __init__(self):
-        super(XDSScalerA, self).__init__()
+    def __init__(self, *args, **kwargs):
+        super(XDSScalerA, self).__init__(*args, **kwargs)
 
         self._sweep_information = {}
 

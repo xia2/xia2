@@ -35,8 +35,8 @@ logger = logging.getLogger("xia2.Modules.Scaler.CCP4ScalerA")
 class CCP4ScalerA(Scaler):
     """An implementation of the Scaler interface using CCP4 programs."""
 
-    def __init__(self):
-        super(CCP4ScalerA, self).__init__()
+    def __init__(self, *args, **kwargs):
+        super(CCP4ScalerA, self).__init__(*args, **kwargs)
 
         self._sweep_handler = None
 
@@ -1156,12 +1156,11 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
             % aimless
         )
 
+        log_directory = self._base_path / "LogFiles"
         if absmax - absmin > 0.000001:
-            from xia2.Handlers.Environment import Environment
-
-            log_directory = Environment.generate_directory("LogFiles")
-            mapfile = os.path.join(log_directory, "absorption_surface.png")
-            generate_map(absmap, mapfile)
+            log_directory.mkdir(parents=True, exist_ok=True)
+            mapfile = log_directory / "absorption_surface.png"
+            generate_map(absmap, str(mapfile))
         else:
             logger.debug(
                 "Cannot create absorption surface: map is too flat (min: %f, max: %f)",

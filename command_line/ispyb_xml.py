@@ -23,8 +23,9 @@ def ispyb_xml(xml_out):
     crystals = xinfo.get_crystals()
     assert len(crystals) == 1
     crystal = next(iter(crystals.values()))
-    ISPyBXmlHandler.add_xcrystal(crystal)
-    ISPyBXmlHandler.write_xml(xml_out, command_line, working_phil=working_phil)
+    ispyb_hdl = ISPyBXmlHandler(xinfo)
+    ispyb_hdl.add_xcrystal(crystal)
+    ispyb_hdl.write_xml(xml_out, command_line, working_phil=working_phil)
 
 
 if __name__ == "__main__":

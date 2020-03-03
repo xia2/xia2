@@ -11,8 +11,6 @@ from __future__ import absolute_import, division, print_function
 import os
 import shutil
 
-from xia2.Handlers.Environment import Environment
-
 
 class _FileHandler(object):
     """A singleton class to manage files."""
@@ -38,7 +36,7 @@ class _FileHandler(object):
         self._more_data_files = {}
         self._more_data_file_keys = []
 
-    def cleanup(self):
+    def cleanup(self, base_path):
         out = open("xia2-files.txt", "w")
         for f in self._temporary_files:
             try:
@@ -51,7 +49,9 @@ class _FileHandler(object):
             out.write("Output file (%s): %s\n" % f)
 
         # copy the log files
-        log_directory = Environment.generate_directory("LogFiles")
+        log_directory = base_path.joinpath("LogFiles")
+        log_directory.mkdir(parents=True, exist_ok=True)
+        log_directory = str(log_directory)
 
         for f in self._log_file_keys:
             filename = os.path.join(log_directory, "%s.log" % f.replace(" ", "_"))
@@ -69,7 +69,9 @@ class _FileHandler(object):
             out.write("Copied html file %s to %s\n" % (self._html_files[f], filename))
 
         # copy the data files
-        data_directory = Environment.generate_directory("DataFiles")
+        data_directory = base_path.joinpath("DataFiles")
+        data_directory.mkdir(parents=True, exist_ok=True)
+        data_directory = str(data_directory)
         for f in self._data_files:
             filename = os.path.join(data_directory, os.path.split(f)[-1])
             shutil.copyfile(f, filename)
@@ -117,14 +119,15 @@ class _FileHandler(object):
         if tag not in self._more_data_file_keys:
             self._more_data_file_keys.append(key)
 
-    def get_data_file(self, filename):
+    def get_data_file(self, base_path, filename):
         """Return the point where this data file will end up!"""
 
         if filename not in self._data_files:
             return filename
 
-        data_directory = Environment.generate_directory("DataFiles")
-        return os.path.join(data_directory, os.path.split(filename)[-1])
+        data_directory = base_path.joinpath("DataFiles")
+        data_directory.mkdir(parents=True, exist_ok=True)
+        return str(data_directory.joinpath(os.path.split(filename)[-1]))
 
     def record_temporary_file(self, filename):
         # allow for file overwrites etc.
@@ -135,5 +138,5 @@ class _FileHandler(object):
 FileHandler = _FileHandler()
 
 
-def cleanup():
-    FileHandler.cleanup()
+def cleanup(base_path):
+    FileHandler.cleanup(base_path)
