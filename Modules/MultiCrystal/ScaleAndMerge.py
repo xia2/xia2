@@ -27,6 +27,7 @@ from xia2.Wrappers.Dials.Refine import Refine
 from xia2.Wrappers.Dials.Scale import DialsScale
 from xia2.Wrappers.Dials.Symmetry import DialsSymmetry
 from xia2.Wrappers.Dials.TwoThetaRefine import TwoThetaRefine
+from xia2.Modules.Scaler.DialsScaler import scaling_model_auto_rules
 
 
 logger = logging.getLogger(__name__)
@@ -829,16 +830,29 @@ class Scale(object):
         scaler.set_scaled_unmerged_mtz(unmerged_mtz)
         scaler.set_scaled_mtz(merged_mtz)
 
+        # Set default scaling model
+        if self._params.scaling.dials.model in (None, "auto", Auto):
+            self._params.scaling.dials.model = "physical"
+        scaler.set_model(self._params.scaling.dials.model)
+
         lmax = self._params.scaling.secondary.lmax
         if lmax:
             scaler.set_absorption_correction(True)
             scaler.set_lmax(lmax)
         else:
             scaler.set_absorption_correction(False)
+
+        exp = self._data_manager.experiments[0]
+        scale_interval, decay_interval = scaling_model_auto_rules(exp)
         if self._params.scaling.rotation.spacing is not None:
             scaler.set_spacing(self._params.scaling.rotation.spacing)
+        else:
+            scaler.set_spacing(scale_interval)
         if self._params.scaling.brotation.spacing is not None:
             scaler.set_bfactor(brotation=self._params.scaling.brotation.spacing)
+        else:
+            scaler.set_bfactor(brotation=decay_interval)
+
         scaler.set_resolution(d_min=d_min, d_max=d_max)
         if self._params.scaling.dials.Isigma_range is not None:
             scaler.set_isigma_selection(self._params.scaling.dials.Isigma_range)
@@ -851,10 +865,6 @@ class Scale(object):
 
         scaler.set_full_matrix(False)
 
-        # Set default scaling model
-        if self._params.scaling.dials.model in (None, "auto", Auto):
-            self._params.scaling.dials.model = "physical"
-        scaler.set_model(self._params.scaling.dials.model)
         scaler.set_outlier_rejection(self._params.scaling.dials.outlier_rejection)
 
         scaler.scale()

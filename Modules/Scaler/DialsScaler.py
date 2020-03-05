@@ -63,6 +63,7 @@ class DialsScaler(Scaler):
         self._scaled_reflections = None
         self._no_times_scaled = 0
         self._scaler_symmetry_check_count = 0
+        self.sweep_infos = []
 
     # Schema/Sweep.py wants these two methods need to be implemented by subclasses,
     # but are not actually used at the moment?
@@ -83,11 +84,6 @@ class DialsScaler(Scaler):
         resolution = PhilIndex.params.xia2.settings.resolution
         self._scaler.set_resolution(d_min=resolution.d_min, d_max=resolution.d_max)
 
-        # Set default scaling model
-        if PhilIndex.params.dials.scale.model in (None, "auto", libtbx.Auto):
-            PhilIndex.params.dials.scale.model = "physical"
-
-        self._scaler.set_model(PhilIndex.params.dials.scale.model)
         self._scaler.set_intensities(PhilIndex.params.dials.scale.intensity_choice)
 
         self._scaler.set_full_matrix(PhilIndex.params.dials.scale.full_matrix)
@@ -100,30 +96,47 @@ class DialsScaler(Scaler):
             PhilIndex.params.dials.scale.partiality_threshold
         )
 
+        exp = load.experiment_list(self.sweep_infos[0].get_experiments())[0]
+        scale_interval, decay_interval = scaling_model_auto_rules(exp)
+        if PhilIndex.params.dials.scale.rotation_spacing:
+            scale_interval = PhilIndex.params.dials.scale.rotation_spacing
+        if PhilIndex.params.dials.scale.physical_model.Bfactor_spacing:
+            decay_interval = PhilIndex.params.dials.scale.physical_model.Bfactor_spacing
+
+        # Model handling
+        if PhilIndex.params.dials.scale.model in (None, "auto", libtbx.Auto):
+            PhilIndex.params.dials.scale.model = "physical"
+        self._scaler.set_model(PhilIndex.params.dials.scale.model)
+
         if PhilIndex.params.dials.scale.model == "physical":
-            self._scaler.set_spacing(PhilIndex.params.dials.scale.rotation_spacing)
+            self._scaler.set_spacing(scale_interval)
             if PhilIndex.params.dials.scale.Bfactor:
-                self._scaler.set_bfactor(
-                    True, PhilIndex.params.dials.scale.physical_model.Bfactor_spacing
-                )
+                self._scaler.set_bfactor(True, decay_interval)
+            else:
+                self._scaler.set_bfactor(False)
             if PhilIndex.params.dials.scale.absorption:
                 self._scaler.set_absorption_correction(True)
                 self._scaler.set_lmax(PhilIndex.params.dials.scale.physical_model.lmax)
-        elif PhilIndex.params.dials.scale.model == "kb":
+            else:
+                self._scaler.set_absorption_correction(False)
+        elif PhilIndex.params.dials.scale.model == "KB":
             # For KB model, want both Bfactor and scale terms
             self._scaler.set_bfactor(True)
         elif PhilIndex.params.dials.scale.model == "array":
-            self._scaler.set_spacing(PhilIndex.params.dials.scale.rotation_spacing)
             if PhilIndex.params.dials.scale.Bfactor:
-                self._scaler.set_bfactor(True)
+                self._scaler.set_bfactor(True, scale_interval)
                 self._scaler.set_decay_bins(
                     PhilIndex.params.dials.scale.array_model.resolution_bins
                 )
+            else:
+                self._scaler.set_bfactor(False)
             if PhilIndex.params.dials.scale.absorption:
                 self._scaler.set_absorption_correction(True)
-                self._scaler.set_lmax(
+                self._scaler.set_array_absorption_bins(
                     PhilIndex.params.dials.scale.array_model.absorption_bins
                 )
+            else:
+                self._scaler.set_absorption_correction(False)
 
         return self._scaler
 
@@ -131,7 +144,6 @@ class DialsScaler(Scaler):
         # Pre-scale the data with KB scaling to ensure all experiments are on
         # the same scale prior to running dials.symmetry
         self._scaler = DialsScale()
-        self._scaler = self._updated_dials_scaler()
         self._scaler.set_model("KB")
         self._scaler.set_full_matrix(False)
         self._scaler.set_error_model(None)
@@ -520,7 +532,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
     def _scale(self):
         """Perform all of the operations required to deliver the scaled
         data."""
-        sweep_infos = [
+        self.sweep_infos = [
             self._sweep_handler.get_sweep_information(e)
             for e in self._sweep_handler.get_epochs()
         ]
@@ -535,7 +547,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
             self._scaler.add_experiments_json(self._scaled_experiments)
             self._scaler.add_reflections_file(self._scaled_reflections)
         else:
-            for si in sweep_infos:
+            for si in self.sweep_infos:
                 self._scaler.add_experiments_json(si.get_experiments())
                 self._scaler.add_reflections_file(si.get_reflections())
             # ensure we start with a clean slate in case we pre-scaled the data
@@ -550,7 +562,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
 
         user_resolution_limits = {}
         highest_resolution = 100.0
-        for si in sweep_infos:
+        for si in self.sweep_infos:
             dname = si.get_project_info()[2]
             sname = si.get_sweep_name()
             intgr = si.get_integrater()
@@ -651,7 +663,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
         wavelengths = flex.double(
             match_wavelengths(experiments)
         )  # in experiments order
-        for si in sweep_infos:
+        for si in self.sweep_infos:
             dnames_set.add(
                 si.get_project_info()[2]
             )  # sweep info in same order as experiments
@@ -795,7 +807,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
             convert_mtz_to_sca(mtz_filename)
 
         # Also export just integrated data.
-        for si in sweep_infos:
+        for si in self.sweep_infos:
             exporter = ExportMtz()
             exporter.crystal_name = self._scalr_xname
             exporter.set_reflections_filename(si.get_reflections())
@@ -1302,3 +1314,21 @@ def convert_mtz_to_sca(mtz_filename):
             break
     else:
         raise KeyError("Intensity column labels not found in MTZ file")
+
+
+def scaling_model_auto_rules(experiment):
+    """Use dials.scale rules for determining suitable parameters."""
+    osc_range = experiment.scan.get_oscillation_range()
+    scan_width = osc_range[1] - osc_range[0]
+
+    if scan_width < 5.0:
+        scale_interval, decay_interval = (1.0, 1.5)
+    elif scan_width < 10.0:
+        scale_interval, decay_interval = (2.0, 3.0)
+    elif scan_width < 25.0:
+        scale_interval, decay_interval = (4.0, 5.0)
+    elif scan_width < 90.0:
+        scale_interval, decay_interval = (8.0, 10.0)
+    else:
+        scale_interval, decay_interval = (15.0, 20.0)
+    return scale_interval, decay_interval
