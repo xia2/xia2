@@ -142,6 +142,8 @@ class DialsIndexer(Indexer):
         if params.fix_geometry:
             refine.set_detector_fix("all")
             refine.set_beam_fix("all")
+        elif params.fix_distance:
+            refine.set_detector_fix("distance")
         auto_logfiler(refine)
         return refine
 
@@ -554,6 +556,8 @@ class DialsIndexer(Indexer):
             if PhilIndex.params.dials.fix_geometry:
                 rbs.set_detector_fix("all")
                 rbs.set_beam_fix("all")
+            elif PhilIndex.params.dials.fix_distance:
+                rbs.set_detector_fix("distance")
 
             FileHandler.record_log_file(
                 "%s LATTICE" % self.get_indexer_full_name(), rbs.get_log_file()
@@ -701,6 +705,8 @@ class DialsIndexer(Indexer):
         if PhilIndex.params.dials.fix_geometry:
             indexer.set_detector_fix("all")
             indexer.set_beam_fix("all")
+        elif PhilIndex.params.dials.fix_distance:
+            indexer.set_detector_fix("distance")
         indexer.set_close_to_spindle_cutoff(
             PhilIndex.params.dials.close_to_spindle_cutoff
         )

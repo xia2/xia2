@@ -207,6 +207,11 @@ dials
             "Most useful when also providing a reference geometry to xia2."
     .short_caption = "Fix geometry"
     .expert_level = 1
+  fix_distance = False
+    .type = bool
+    .help = "Whether or not to refine the detector distance in dials.index and dials.refine. " \
+    .short_caption = "Fix distance"
+    .expert_level = 1
   outlier
     .short_caption = "Centroid outlier rejection"
   {
