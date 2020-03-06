@@ -8,6 +8,7 @@ import iotbx.phil
 
 import xia2.Handlers.Streams
 from dials.array_family import flex
+from dials.util.exclude_images import exclude_image_ranges_for_scaling
 from dials.util.multi_dataset_handling import (
     assign_unique_identifiers,
     parse_multiple_datasets,
@@ -25,6 +26,8 @@ help_message = """
 phil_scope = iotbx.phil.parse(
     """
 include scope xia2.Modules.MultiCrystal.ScaleAndMerge.phil_scope
+
+include scope dials.util.exclude_images.phil_scope
 
 seed = 42
   .type = int(value_min=0)
@@ -96,6 +99,10 @@ def run(args):
     reflections = flatten_reflections(params.input.reflections)
     reflections = parse_multiple_datasets(reflections)
     experiments, reflections = assign_unique_identifiers(experiments, reflections)
+
+    reflections, experiments = exclude_image_ranges_for_scaling(
+        reflections, experiments, params.exclude_images
+    )
 
     reflections_all = flex.reflection_table()
     assert len(reflections) == 1 or len(reflections) == len(experiments)

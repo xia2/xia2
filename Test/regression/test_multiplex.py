@@ -22,7 +22,7 @@ def test_proteinase_k(mocker, regression_test, ccp4, dials_data, tmpdir):
     with tmpdir.as_cwd():
         from xia2.command_line.multiplex import run
 
-        run(expts + refls)
+        run(expts + refls + ["exclude_images=0:1:10"])
     # Verify that the *_vs_dose plots have been correctly plotted
     assert Report.pychef_plots.call_count == 1
     for k in (
@@ -37,7 +37,12 @@ def test_proteinase_k(mocker, regression_test, ccp4, dials_data, tmpdir):
     multiplex_expts = load.experiment_list(
         tmpdir.join("multiplex.expt").strpath, check_format=False
     )
-    for expt in multiplex_expts:
+    for i, expt in enumerate(multiplex_expts):
+        valid_image_ranges = expt.scan.get_valid_image_ranges(expt.identifier)
+        if i == 0:
+            assert valid_image_ranges == [(11, 25)]
+        else:
+            assert valid_image_ranges == [(1, 25)]
         assert expt.crystal.get_space_group().type().lookup_symbol() == "P 41 21 2"
 
 
