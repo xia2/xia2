@@ -441,8 +441,8 @@ dials
               "intensity sigmas using a two-parameter model."
     full_matrix = auto
       .type = bool
-      .help = "Option to turn on/off Levenberg-Marquardt refinement round used" \
-              "to determine error estimates on scale factors. auto will set" \
+      .help = "Option to turn on/off Levenberg-Marquardt refinement round used " \
+              "to determine error estimates on scale factors. auto will set " \
               "full_matrix=True if 4 sweeps or less."
     outlier_rejection = *standard simple
       .type = choice
