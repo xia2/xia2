@@ -200,6 +200,7 @@ class Report(object):
         d = {}
         d.update(i_over_sig_i_vs_batch_plot(bm, isigi))
         d.update(scale_rmerge_vs_batch_plot(bm, rmerge, scalesvsbatch))
+        d["bm"] = bm
         return d
 
     def resolution_plots_and_stats(self):

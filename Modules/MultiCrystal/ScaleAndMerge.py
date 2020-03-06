@@ -16,6 +16,7 @@ from dxtbx.model import ExperimentList
 
 from dials.array_family import flex
 from dials.command_line.unit_cell_histogram import plot_uc_histograms
+from dials.report.plots import make_image_range_table
 
 from scitbx.math import five_number_summary
 
@@ -382,7 +383,9 @@ class MultiCrystalScale(object):
         self._comparison_graphs = OrderedDict()
 
         self._scaled = Scale(self._data_manager, self._params)
-        self._record_individual_report(self._scaled.report(), "All data")
+        self._record_individual_report(
+            self._data_manager, self._scaled.report(), "All data"
+        )
 
         self.decide_space_group()
 
@@ -444,14 +447,17 @@ class MultiCrystalScale(object):
                 data_manager.select(cluster_identifiers)
                 scaled = Scale(data_manager, self._params)
                 self._record_individual_report(
-                    scaled.report(), cluster_dir.replace("_", " ")
+                    data_manager, scaled.report(), cluster_dir.replace("_", " ")
                 )
                 os.chdir(cwd)
 
         self.report()
 
-    def _record_individual_report(self, report, cluster_name):
+    def _record_individual_report(self, data_manager, report, cluster_name):
         d = self._report_as_dict(report)
+        d["image_range_table"] = make_image_range_table(
+            data_manager.experiments, d["bm"]
+        )
 
         self._individual_report_dicts[cluster_name] = self._individual_report_dict(
             d, cluster_name
@@ -515,6 +521,7 @@ class MultiCrystalScale(object):
         d = {
             "merging_statistics_table": report_d["merging_statistics_table"],
             "overall_statistics_table": report_d["overall_statistics_table"],
+            "image_range_table": report_d["image_range_table"],
         }
 
         resolution_graphs = OrderedDict(
@@ -720,7 +727,12 @@ class MultiCrystalScale(object):
 
     def report(self):
         self._mca.report(
-            self._individual_report_dicts, self._comparison_graphs, self._cosym_analysis
+            self._individual_report_dicts,
+            self._comparison_graphs,
+            self._cosym_analysis,
+            image_range_table=self._individual_report_dicts["All data"][
+                "image_range_table"
+            ],
         )
 
     def cluster_analysis(self):
@@ -952,4 +964,5 @@ class Scale(object):
     def report(self):
         from xia2.Modules.Report import Report
 
-        return Report.from_data_manager(self._data_manager)
+        report = Report.from_data_manager(self._data_manager)
+        return report

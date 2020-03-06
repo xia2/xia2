@@ -195,7 +195,13 @@ class MultiCrystalAnalysis(object):
 
 
 class MultiCrystalReport(MultiCrystalAnalysis):
-    def report(self, individual_dataset_reports, comparison_graphs, cosym_analysis):
+    def report(
+        self,
+        individual_dataset_reports,
+        comparison_graphs,
+        cosym_analysis,
+        image_range_table,
+    ):
         unit_cell_graphs = self.unit_cell_analysis()
         if self._cluster_analysis is None:
             self._cluster_analysis = self.cluster_analysis()
@@ -253,6 +259,7 @@ class MultiCrystalReport(MultiCrystalAnalysis):
             cos_angle_cosym_graphs=self._cosym_graphs,
             delta_cc_half_graphs=delta_cc_half_graphs,
             delta_cc_half_table=delta_cc_half_table,
+            image_range_tables=[image_range_table],
             individual_dataset_reports=individual_dataset_reports,
             comparison_graphs=comparison_graphs,
             symmetry_analysis=symmetry_analysis,
