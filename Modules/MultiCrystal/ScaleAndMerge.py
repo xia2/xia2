@@ -5,6 +5,7 @@ import logging
 import math
 import os
 import py
+import six
 from collections import OrderedDict
 
 from libtbx import Auto
@@ -17,6 +18,7 @@ from dxtbx.model import ExperimentList
 from dials.array_family import flex
 from dials.command_line.unit_cell_histogram import plot_uc_histograms
 from dials.report.plots import make_image_range_table
+from dials.util import tabulate
 
 from scitbx.math import five_number_summary
 
@@ -476,6 +478,33 @@ class MultiCrystalScale(object):
             data["name"] = cluster_name
             data.pop("line", None)  # remove default color override
             self._comparison_graphs[graph]["data"].append(data)
+
+        def remove_html_tags(table):
+            return [
+                [
+                    s.replace("<strong>", "")
+                    .replace("</strong>", "")
+                    .replace("<sub>", "")
+                    .replace("</sub>", "")
+                    if isinstance(s, six.string_types)
+                    else s
+                    for s in row
+                ]
+                for row in table
+            ]
+
+        logger.info(
+            "\nOverall merging statistics:\n%s",
+            tabulate(
+                remove_html_tags(d["overall_statistics_table"]), headers="firstrow"
+            ),
+        )
+        logger.info(
+            "\nResolution shells:\n%s",
+            tabulate(
+                remove_html_tags(d["merging_statistics_table"]), headers="firstrow"
+            ),
+        )
 
     @staticmethod
     def _report_as_dict(report):
