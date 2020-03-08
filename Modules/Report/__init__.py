@@ -26,6 +26,7 @@ from dials.report.plots import (
     IntensityStatisticsPlots,
 )
 from dials.util.batch_handling import batch_manager
+from dials.report.plots import make_image_range_table
 
 from xia2.Modules.Analysis import batch_phil_scope, phil_scope, separate_unmerged
 
@@ -61,12 +62,20 @@ class _xtriage_output(printed_output):
 
 class Report(object):
     def __init__(
-        self, intensities, params, batches=None, scales=None, dose=None, report_dir=None
+        self,
+        intensities,
+        params,
+        batches=None,
+        scales=None,
+        dose=None,
+        report_dir=None,
+        experiments=None,
     ):
 
         self.params = params
 
         self.intensities = intensities
+        self.experiments = experiments
         self.batches = batches
         self.scales = scales
         self.dose = dose
@@ -197,10 +206,12 @@ class Report(object):
 
         batches = [{"id": b.id, "range": b.range} for b in self.params.batch]
         bm = batch_manager(binned_batches, batches)
+
         d = {}
         d.update(i_over_sig_i_vs_batch_plot(bm, isigi))
         d.update(scale_rmerge_vs_batch_plot(bm, rmerge, scalesvsbatch))
-        d["bm"] = bm
+        if self.experiments is not None:
+            d["image_range_table"] = make_image_range_table(self.experiments, bm)
         return d
 
     def resolution_plots_and_stats(self):
@@ -339,4 +350,10 @@ class Report(object):
             params.dose.batch.append(dose_batch)
 
         intensities.set_observation_type_xray_intensity()
-        return cls(intensities, params, batches=batches, scales=scales)
+        return cls(
+            intensities,
+            params,
+            batches=batches,
+            scales=scales,
+            experiments=data_manager.experiments,
+        )

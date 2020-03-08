@@ -17,7 +17,6 @@ from dxtbx.model import ExperimentList
 
 from dials.array_family import flex
 from dials.command_line.unit_cell_histogram import plot_uc_histograms
-from dials.report.plots import make_image_range_table
 from dials.util import tabulate
 
 from scitbx.math import five_number_summary
@@ -457,9 +456,6 @@ class MultiCrystalScale(object):
 
     def _record_individual_report(self, data_manager, report, cluster_name):
         d = self._report_as_dict(report)
-        d["image_range_table"] = make_image_range_table(
-            data_manager.experiments, d["bm"]
-        )
 
         self._individual_report_dicts[cluster_name] = self._individual_report_dict(
             d, cluster_name

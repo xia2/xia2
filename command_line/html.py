@@ -135,7 +135,6 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
 
             json_data.update(stats_plots)
             json_data.update(report.batch_dependent_plots())
-            json_data.pop("bm", None)  # this object isn't serializable
             json_data.update(report.intensity_stats_plots(run_xtriage=False))
             json_data.update(report.pychef_plots())
             json_data.update(report.pychef_plots(n_bins=1))
