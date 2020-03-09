@@ -525,13 +525,14 @@ class MultiCrystalScale(object):
             "rd_vs_batch_difference",
         ):
             for i, data in enumerate(d[g]["data"]):
-                x = data["x"]
-                n = len(x)
+                n = len(data["x"])
                 if n > max_points:
                     step = n // max_points
                     sel = (flex.int_range(n) % step) == 0
                     data["x"] = list(flex.int(data["x"]).select(sel))
                     data["y"] = list(flex.double(data["y"]).select(sel))
+                    if "text" in data:
+                        data["text"] = list(flex.std_string(data["text"]).select(sel))
 
         d.update(report.multiplicity_plots())
         return d
