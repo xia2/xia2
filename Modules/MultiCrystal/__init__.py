@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 import copy
 import json
 import logging
+from collections import OrderedDict
 
 import iotbx.phil
 from scipy.cluster import hierarchy
@@ -219,7 +220,7 @@ class multi_crystal_analysis(object):
 
         add_node(tree)
 
-        return d
+        return OrderedDict(sorted(d.items()))
 
     def run_cosym(self):
         from dials.algorithms.symmetry.cosym import phil_scope

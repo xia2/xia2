@@ -14,7 +14,7 @@ expected_data_files = [
 ]
 
 
-def test_proteinase_k(mocker, regression_test, ccp4, dials_data, tmpdir):
+def test_proteinase_k(mocker, regression_test, dials_data, tmpdir):
     data_dir = dials_data("multi_crystal_proteinase_k")
     expts = sorted(f.strpath for f in data_dir.listdir("experiments*.json"))
     refls = sorted(f.strpath for f in data_dir.listdir("reflections*.pickle"))
@@ -51,7 +51,7 @@ def test_proteinase_k(mocker, regression_test, ccp4, dials_data, tmpdir):
     [("P422", None, None), (None, "P422", 3.5), (None, "P43212", None)],
 )
 def test_proteinase_k_dose(
-    laue_group, space_group, threshold, regression_test, ccp4, dials_data, tmpdir
+    laue_group, space_group, threshold, regression_test, dials_data, tmpdir
 ):
     data_dir = dials_data("multi_crystal_proteinase_k")
     expts = sorted(f.strpath for f in data_dir.listdir("experiments*.json"))
@@ -90,10 +90,13 @@ def test_proteinase_k_dose(
                 expt.crystal.get_space_group().type().lookup_symbol().replace(" ", "")
                 == space_group
             )
+    # Check that clusters 5 and 6 have been scaled
+    assert tmpdir.join("cluster_5").check(dir=1)
+    assert tmpdir.join("cluster_6").check(dir=1)
 
 
 def test_proteinase_k_laue_group_space_group_raises_error(
-    regression_test, ccp4, dials_data, tmpdir
+    regression_test, dials_data, tmpdir
 ):
     data_dir = dials_data("multi_crystal_proteinase_k")
     expts = sorted(f.strpath for f in data_dir.listdir("experiments*.json"))
