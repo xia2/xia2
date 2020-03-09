@@ -243,10 +243,7 @@ class Report(object):
             self.merging_stats, self.merging_stats_anom, is_centric
         )
         d = OrderedDict()
-        d.update(plotter.cc_one_half_plot(method=self.params.cc_half_method))
-        d.update(plotter.i_over_sig_i_plot())
-        d.update(plotter.completeness_plot())
-        d.update(plotter.multiplicity_vs_resolution_plot())
+        d.update(plotter.make_all_plots(cc_one_half_method=self.params.cc_half_method))
         overall_stats = plotter.overall_statistics_table(self.params.cc_half_method)
         merging_stats = plotter.merging_statistics_table(self.params.cc_half_method)
         return overall_stats, merging_stats, d

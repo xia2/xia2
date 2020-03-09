@@ -461,6 +461,7 @@ class MultiCrystalScale(object):
             "i_over_sig_i",
             "completeness",
             "multiplicity_vs_resolution",
+            "r_pim",
         ):
             self._comparison_graphs.setdefault(
                 graph, {"layout": d[graph]["layout"], "data": []}
