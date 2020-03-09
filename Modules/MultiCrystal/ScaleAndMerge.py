@@ -393,11 +393,6 @@ class MultiCrystalScale(object):
         self._data_manager.export_experiments("multiplex.expt")
         self._data_manager.export_reflections("multiplex.refl")
 
-        scaled_unmerged_mtz = py.path.local(self._scaled.scaled_unmerged_mtz)
-        scaled_unmerged_mtz.copy(py.path.local("scaled_unmerged.mtz"))
-        scaled_mtz = py.path.local(self._scaled.scaled_mtz)
-        scaled_mtz.copy(py.path.local("scaled.mtz"))
-
         self._mca = self.multi_crystal_analysis()
         self.cluster_analysis()
 
@@ -791,6 +786,11 @@ class Scale(object):
         d_max = self._params.resolution.d_max
 
         self.scale(d_min=d_min, d_max=d_max)
+
+        py.path.local(self.scaled_unmerged_mtz).copy(
+            py.path.local("scaled_unmerged.mtz")
+        )
+        py.path.local(self.scaled_mtz).copy(py.path.local("scaled.mtz"))
 
     def refine(self):
         # refine in correct bravais setting

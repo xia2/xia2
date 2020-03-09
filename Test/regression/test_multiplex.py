@@ -72,8 +72,16 @@ def test_proteinase_k_dose(
         from xia2.command_line.multiplex import run
 
         run(command_line_args)
+
     for f in expected_data_files:
         assert tmpdir.join(f).check(file=1), "expected file %s missing" % f
+
+    # Check that clusters 5 and 6 have been scaled
+    for cluster in ("cluster_5", "cluster_6"):
+        assert tmpdir.join(cluster).check(dir=1)
+        assert tmpdir.join(cluster, "scaled.mtz").check(file=1)
+        assert tmpdir.join(cluster, "scaled_unmerged.mtz").check(file=1)
+
     multiplex_expts = load.experiment_list(
         tmpdir.join("multiplex.expt").strpath, check_format=False
     )
@@ -90,9 +98,6 @@ def test_proteinase_k_dose(
                 expt.crystal.get_space_group().type().lookup_symbol().replace(" ", "")
                 == space_group
             )
-    # Check that clusters 5 and 6 have been scaled
-    assert tmpdir.join("cluster_5").check(dir=1)
-    assert tmpdir.join("cluster_6").check(dir=1)
 
 
 def test_proteinase_k_laue_group_space_group_raises_error(
