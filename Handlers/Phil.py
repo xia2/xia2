@@ -209,7 +209,7 @@ dials
     .expert_level = 1
   fix_distance = False
     .type = bool
-    .help = "Whether or not to refine the detector distance in dials.index and dials.refine. " \
+    .help = "Do not refine the detector distance in dials.index and dials.refine."
     .short_caption = "Fix distance"
     .expert_level = 1
   outlier
