@@ -76,20 +76,23 @@ def test_proteinase_k_dose(
     for f in expected_data_files:
         assert tmpdir.join(f).check(file=1), "expected file %s missing" % f
 
-    # Check that clusters 5 and 6 have been scaled
-    for cluster in ("cluster_5", "cluster_6"):
-        assert tmpdir.join(cluster).check(dir=1)
-        assert tmpdir.join(cluster, "scaled.mtz").check(file=1)
-        assert tmpdir.join(cluster, "scaled_unmerged.mtz").check(file=1)
-
     multiplex_expts = load.experiment_list(
         tmpdir.join("multiplex.expt").strpath, check_format=False
     )
     if threshold is not None:
         # one experiment should have been rejected after unit cell clustering
         assert len(multiplex_expts) == 7
+        expected_clusters = ("cluster_4", "cluster_5")
     else:
         assert len(multiplex_expts) == 8
+        expected_clusters = ("cluster_5", "cluster_6")
+
+    # Check that clusters 5 and 6 have been scaled
+    for cluster in expected_clusters:
+        assert tmpdir.join(cluster).check(dir=1)
+        assert tmpdir.join(cluster, "scaled.mtz").check(file=1)
+        assert tmpdir.join(cluster, "scaled_unmerged.mtz").check(file=1)
+
     for expt in multiplex_expts:
         if space_group is None:
             assert expt.crystal.get_space_group().type().lookup_symbol() == "P 41 21 2"
