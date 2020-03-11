@@ -98,10 +98,11 @@ def test_resolution_plots_and_stats(report):
         "0.598*",
     ]
     assert set(stats_plots) == {
-        "cc_one_half",
-        "i_over_sig_i",
-        "completeness",
         "multiplicity_vs_resolution",
+        "completeness",
+        "r_pim",
+        "i_over_sig_i",
+        "cc_one_half",
     }
 
 
