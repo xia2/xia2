@@ -13,6 +13,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import logging
 import math
 import os
 
@@ -25,7 +26,8 @@ from xia2.Experts.FindImages import (
     image2template_directory,
     template_directory_number2image,
 )
-from xia2.Handlers.Streams import Debug
+
+logger = logging.getLogger("xia2.Schema.Interfaces.FrameProcessor")
 
 
 class FrameProcessor(object):
@@ -95,11 +97,11 @@ class FrameProcessor(object):
             imageset = ImageSetFactory.new(self.get_image_name(start))[0]
 
             # print this to the debug channel
-            Debug.write("Latest header information for image %d:" % start)
-            Debug.write(imageset.get_detector())
-            Debug.write(imageset.get_scan())
-            Debug.write(imageset.get_beam())
-            Debug.write(imageset.get_goniometer())
+            logger.debug("Latest header information for image %d:" % start)
+            logger.debug(imageset.get_detector())
+            logger.debug(imageset.get_scan())
+            logger.debug(imageset.get_beam())
+            logger.debug(imageset.get_goniometer())
 
             # populate wavelength, beam etc from this
 
@@ -166,7 +168,7 @@ class FrameProcessor(object):
             )
             self._fp_beam_prov = "user"
         except AssertionError as e:
-            Debug.write("Error setting mosflm beam centre: %s" % e)
+            logger.debug("Error setting mosflm beam centre: %s" % e)
 
     def get_beam_centre(self):
         detector = self.get_detector()

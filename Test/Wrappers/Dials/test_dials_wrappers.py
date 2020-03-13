@@ -6,6 +6,8 @@ import pytest
 import shutil
 import sys
 
+from dxtbx.serialize import load
+from dials.array_family import flex
 
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Wrappers.Dials.Import import Import
@@ -114,9 +116,17 @@ def exercise_dials_wrappers(template, nproc=None):
     print("Done exporting")
     assert os.path.exists(exporter.get_hkl_filename())
 
+    # Test combine experiments wrapper. Duplicate the file and adjust the
+    # identifier to allow combination.
     shutil.copy(indexer.get_experiments_filename(), "copy.expt")
     shutil.copy(indexer.get_indexed_filename(), "copy.refl")
-    print("Begin combining")
+
+    expts = load.experiment_list("copy.expt")
+    expts[0].identifier = "0"
+    expts.as_file("copy.expt")
+    refls = flex.reflection_table.from_file("copy.refl")
+    refls.experiment_identifiers()[0] = "0"
+    refls.as_file("copy.refl")
 
     exporter = CombineExperiments()
     exporter.add_experiments(indexer.get_experiments_filename())

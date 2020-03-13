@@ -1,26 +1,28 @@
 from __future__ import absolute_import, division, print_function
 
+import logging
 import os
 
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Debug
 from xia2.lib.bits import transpose_loggraph
 from xia2.Wrappers.CCP4.Ctruncate import Ctruncate
 from xia2.Wrappers.XIA.FrenchWilson import FrenchWilson
+
+logger = logging.getLogger("xia2.Wrappers.CCP4.Truncate")
 
 
 def Truncate(DriverType=None):
     """A factory for TruncateWrapper classes."""
 
-    DriverInstance = DriverFactory.Driver(DriverType)
-    CCP4DriverInstance = DecoratorFactory.Decorate(DriverInstance, "ccp4")
-
     if PhilIndex.params.ccp4.truncate.program == "ctruncate":
         return Ctruncate(DriverType)
     elif PhilIndex.params.ccp4.truncate.program == "cctbx":
         return FrenchWilson(DriverType)
+
+    DriverInstance = DriverFactory.Driver(DriverType)
+    CCP4DriverInstance = DecoratorFactory.Decorate(DriverInstance, "ccp4")
 
     class TruncateWrapper(CCP4DriverInstance.__class__):
         """A wrapper for Truncate, using the CCP4-ified Driver."""
@@ -116,12 +118,12 @@ def Truncate(DriverType=None):
                     if "***" not in list[6]:
                         self._b_factor = float(list[6])
                     else:
-                        Debug.write("no B factor available")
+                        logger.debug("no B factor available")
 
                 if "LSQ Line Gradient" in line:
                     self._wilson_fit_grad = float(line.split()[-1])
                     if self._wilson_fit_grad > 0:
-                        Debug.write("Positive gradient but not much wilson plot")
+                        logger.debug("Positive gradient but not much wilson plot")
 
                 if "Uncertainty in Gradient" in line:
                     self._wilson_fit_grad_sd = float(line.split()[-1])

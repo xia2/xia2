@@ -8,6 +8,7 @@ from __future__ import absolute_import, division, print_function
 
 import copy
 import inspect
+import logging
 import math
 import os
 import shutil
@@ -24,7 +25,6 @@ from xia2.Experts.SymmetryExpert import (
 )
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter, Debug, Journal
 from xia2.lib.bits import auto_logfiler
 from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
 from xia2.Schema.Exceptions.BadLatticeError import BadLatticeError
@@ -35,6 +35,8 @@ from xia2.Wrappers.XDS.XDSCorrect import XDSCorrect as _Correct
 from xia2.Wrappers.XDS.XDSDefpix import XDSDefpix as _Defpix
 from xia2.Wrappers.XDS.XDSIntegrate import XDSIntegrate as _Integrate
 from xia2.Wrappers.Dials.ImportXDS import ImportXDS
+
+logger = logging.getLogger("xia2.Modules.Integrater.XDSIntegrater")
 
 
 class XDSIntegrater(Integrater):
@@ -100,7 +102,7 @@ class XDSIntegrater(Integrater):
         directory, remove it..."""
         if os.path.exists(os.path.join(self.get_working_directory(), "REMOVE.HKL")):
             os.remove(os.path.join(self.get_working_directory(), "REMOVE.HKL"))
-            Debug.write("Deleting REMOVE.HKL as reindex op set.")
+            logger.debug("Deleting REMOVE.HKL as reindex op set.")
 
     # factory functions
 
@@ -166,7 +168,7 @@ class XDSIntegrater(Integrater):
             correct.set_anomalous(True)
 
         if self.get_integrater_low_resolution() > 0.0:
-            Debug.write(
+            logger.debug(
                 "Using low resolution limit: %.2f"
                 % self.get_integrater_low_resolution()
             )
@@ -181,7 +183,7 @@ class XDSIntegrater(Integrater):
 
     def _integrater_reset_callback(self):
         """Delete all results on a reset."""
-        Debug.write("Deleting all stored results.")
+        logger.debug("Deleting all stored results.")
         self._xds_data_files = {}
         self._xds_integrate_parameters = {}
 
@@ -203,9 +205,9 @@ class XDSIntegrater(Integrater):
                 max(images) + self.get_frame_offset(),
             )
 
-        Debug.write("XDS INTEGRATE PREPARE:")
-        Debug.write("Wavelength: %.6f" % self.get_wavelength())
-        Debug.write("Distance: %.2f" % self.get_distance())
+        logger.debug("XDS INTEGRATE PREPARE:")
+        logger.debug("Wavelength: %.6f" % self.get_wavelength())
+        logger.debug("Distance: %.2f" % self.get_distance())
 
         idxr = self._intgr_refiner.get_refiner_indexer(self.get_integrater_epoch())
 
@@ -222,7 +224,7 @@ class XDSIntegrater(Integrater):
 
             if self.get_frame_wedge():
                 wedge = self.get_frame_wedge()
-                Debug.write("Propogating wedge limit: %d %d" % wedge)
+                logger.debug("Propogating wedge limit: %d %d" % wedge)
                 idxr.set_frame_wedge(wedge[0], wedge[1], apply_offset=False)
 
             # this needs to be set up from the contents of the
@@ -248,9 +250,9 @@ class XDSIntegrater(Integrater):
         if self._xds_data_files is None:
             self._xds_data_files = {}
 
-        Debug.write("Files available at the end of XDS integrate prepare:")
+        logger.debug("Files available at the end of XDS integrate prepare:")
         for f in self._xds_data_files:
-            Debug.write("%s" % f)
+            logger.debug("%s" % f)
 
         experiment = self._intgr_refiner.get_refined_experiment_list(
             self.get_integrater_epoch()
@@ -274,7 +276,7 @@ class XDSIntegrater(Integrater):
             )
             self.set_integrater_low_resolution(dmax)
 
-            Debug.write(
+            logger.debug(
                 "Low resolution set to: %s" % self.get_integrater_low_resolution()
             )
 
@@ -292,28 +294,6 @@ class XDSIntegrater(Integrater):
         )[0]
         crystal_model = experiment.crystal
         self._intgr_refiner_cell = crystal_model.get_unit_cell().parameters()
-
-        images_str = "%d to %d" % tuple(self._intgr_wedge)
-        cell_str = "%.2f %.2f %.2f %.2f %.2f %.2f" % tuple(self._intgr_refiner_cell)
-
-        if len(self._fp_directory) <= 50:
-            dirname = self._fp_directory
-        else:
-            dirname = "...%s" % self._fp_directory[-46:]
-
-        Journal.block(
-            "integrating",
-            self._intgr_sweep_name,
-            "XDS",
-            {
-                "images": images_str,
-                "cell": cell_str,
-                "lattice": self._intgr_refiner.get_refiner_lattice(),
-                "template": self._fp_template,
-                "directory": dirname,
-                "resolution": "%.2f" % self._intgr_reso_high,
-            },
-        )
 
         defpix = self.Defpix()
 
@@ -336,7 +316,7 @@ class XDSIntegrater(Integrater):
             self.get_integrater_high_resolution() > 0.0
             and self.get_integrater_user_resolution()
         ):
-            Debug.write(
+            logger.debug(
                 "Setting resolution limit in DEFPIX to %.2f"
                 % self.get_integrater_high_resolution()
             )
@@ -344,7 +324,7 @@ class XDSIntegrater(Integrater):
             defpix.set_resolution_low(self.get_integrater_low_resolution())
 
         elif self.get_integrater_low_resolution():
-            Debug.write(
+            logger.debug(
                 "Setting low resolution limit in DEFPIX to %.2f"
                 % self.get_integrater_low_resolution()
             )
@@ -384,7 +364,7 @@ class XDSIntegrater(Integrater):
             integrate.set_input_data_file(file, self._xds_data_files[file])
 
         if "GXPARM.XDS" in self._xds_data_files:
-            Debug.write("Using globally refined parameters")
+            logger.debug("Using globally refined parameters")
             integrate.set_input_data_file(
                 "XPARM.XDS", self._xds_data_files["GXPARM.XDS"]
             )
@@ -397,7 +377,7 @@ class XDSIntegrater(Integrater):
         integrate.run()
 
         self._intgr_per_image_statistics = integrate.get_per_image_statistics()
-        Chatter.write(self.show_per_image_statistics())
+        logger.info(self.show_per_image_statistics())
 
         # record the log file -
 
@@ -438,7 +418,7 @@ class XDSIntegrater(Integrater):
         m_min, m_mean, m_max = integrate.get_mosaic()
         self.set_integrater_mosaic_min_mean_max(m_min, m_mean, m_max)
 
-        Chatter.write(
+        logger.info(
             "Mosaic spread: %.3f < %.3f < %.3f"
             % self.get_integrater_mosaic_min_mean_max()
         )
@@ -466,7 +446,7 @@ class XDSIntegrater(Integrater):
             "GXPARM.XDS" not in self._xds_data_files
             and PhilIndex.params.xds.integrate.reintegrate
         ):
-            Debug.write("Resetting integrater, to ensure refined orientation is used")
+            logger.debug("Resetting integrater, to ensure refined orientation is used")
             self.set_integrater_done(False)
 
         if (
@@ -496,10 +476,10 @@ class XDSIntegrater(Integrater):
             cell = correct.get_result("cell")
             cell_esd = correct.get_result("cell_esd")
 
-            Debug.write("Postrefinement in P1 results:")
-            Debug.write("%7.3f %7.3f %7.3f %7.3f %7.3f %7.3f" % tuple(cell))
-            Debug.write("%7.3f %7.3f %7.3f %7.3f %7.3f %7.3f" % tuple(cell_esd))
-            Debug.write(
+            logger.debug("Postrefinement in P1 results:")
+            logger.debug("%7.3f %7.3f %7.3f %7.3f %7.3f %7.3f" % tuple(cell))
+            logger.debug("%7.3f %7.3f %7.3f %7.3f %7.3f %7.3f" % tuple(cell_esd))
+            logger.debug(
                 "Deviations: %.2f pixels %.2f degrees"
                 % (correct.get_result("rmsd_pixel"), correct.get_result("rmsd_phi"))
             )
@@ -539,7 +519,7 @@ class XDSIntegrater(Integrater):
                 sel = filter_shadowed_reflections(experiments, reflections)
                 shadowed = reflections.select(sel)
                 t1 = time.time()
-                Debug.write(
+                logger.debug(
                     "Filtered %i reflections in %.1f seconds"
                     % (sel.count(True), t1 - t0)
                 )
@@ -559,7 +539,7 @@ class XDSIntegrater(Integrater):
                             file=f,
                         )
                 t2 = time.time()
-                Debug.write("Written FILTER.HKL in %.1f seconds" % (t2 - t1))
+                logger.debug("Written FILTER.HKL in %.1f seconds" % (t2 - t1))
 
         correct = self.Correct()
 
@@ -598,8 +578,8 @@ class XDSIntegrater(Integrater):
             correct.set_spacegroup_number(spacegroup_number)
             correct.set_cell(cell)
 
-            Debug.write("Setting spacegroup to: %d" % spacegroup_number)
-            Debug.write("Setting cell to: %.2f %.2f %.2f %.2f %.2f %.2f" % tuple(cell))
+            logger.debug("Setting spacegroup to: %d" % spacegroup_number)
+            logger.debug("Setting cell to: %.2f %.2f %.2f %.2f %.2f %.2f" % tuple(cell))
 
         if self.get_integrater_reindex_matrix():
 
@@ -624,11 +604,11 @@ class XDSIntegrater(Integrater):
             else:
                 raise RuntimeError("unknown multiplier for lattice %s" % lattice)
 
-            Debug.write("REIDX multiplier for lattice %s: %d" % (lattice, mult))
+            logger.debug("REIDX multiplier for lattice %s: %d" % (lattice, mult))
 
             mult_matrix = [mult * m for m in matrix]
 
-            Debug.write(
+            logger.debug(
                 "REIDX set to %d %d %d %d %d %d %d %d %d %d %d %d" % tuple(mult_matrix)
             )
             correct.set_reindex_matrix(mult_matrix)
@@ -716,20 +696,20 @@ class XDSIntegrater(Integrater):
         self._intgr_cell = correct.get_result("cell")
         self._intgr_n_ref = correct.get_result("n_ref")
 
-        Debug.write('Postrefinement in "correct" spacegroup results:')
-        Debug.write(
+        logger.debug('Postrefinement in "correct" spacegroup results:')
+        logger.debug(
             "%7.3f %7.3f %7.3f %7.3f %7.3f %7.3f" % tuple(correct.get_result("cell"))
         )
-        Debug.write(
+        logger.debug(
             "%7.3f %7.3f %7.3f %7.3f %7.3f %7.3f"
             % tuple(correct.get_result("cell_esd"))
         )
-        Debug.write(
+        logger.debug(
             "Deviations: %.2f pixels %.2f degrees"
             % (correct.get_result("rmsd_pixel"), correct.get_result("rmsd_phi"))
         )
 
-        Debug.write(
+        logger.debug(
             "Error correction parameters: A=%.3f B=%.3f"
             % correct.get_result("sdcorrection")
         )
@@ -754,7 +734,7 @@ class XDSIntegrater(Integrater):
 
         angle = rtod * math.fabs(0.5 * math.pi - math.acos(dot / (r * b)))
 
-        Debug.write("Axis misalignment %.2f degrees" % angle)
+        logger.debug("Axis misalignment %.2f degrees" % angle)
 
         correct_deviations = (
             correct.get_result("rmsd_pixel"),
@@ -769,16 +749,16 @@ class XDSIntegrater(Integrater):
             phi = math.sqrt(0.05 * 0.05 + p1_deviations[1] * p1_deviations[1])
 
             threshold = PhilIndex.params.xia2.settings.lattice_rejection_threshold
-            Debug.write("RMSD ratio: %.2f" % (correct_deviations[0] / pixel))
-            Debug.write("RMSPhi ratio: %.2f" % (correct_deviations[1] / phi))
+            logger.debug("RMSD ratio: %.2f" % (correct_deviations[0] / pixel))
+            logger.debug("RMSPhi ratio: %.2f" % (correct_deviations[1] / phi))
 
             if (
                 correct_deviations[0] / pixel > threshold
                 and correct_deviations[1] / phi > threshold
             ):
 
-                Chatter.write("Eliminating this indexing solution as postrefinement")
-                Chatter.write("deviations rather high relative to triclinic")
+                logger.info("Eliminating this indexing solution as postrefinement")
+                logger.info("deviations rather high relative to triclinic")
                 raise BadLatticeError("high relative deviations in postrefinement")
 
         if (
@@ -810,7 +790,7 @@ class XDSIntegrater(Integrater):
                             continue
                         final_remove.append(c)
 
-                    Debug.write(
+                    logger.debug(
                         "%d alien reflections are already removed"
                         % (len(correct_remove) - len(final_remove))
                     )
@@ -832,11 +812,11 @@ class XDSIntegrater(Integrater):
                             remove_hkl.write("%d %d %d %f\n" % remove)
                         else:
                             rejected += 1
-                    Debug.write(
+                    logger.debug(
                         "Wrote %d old reflections to REMOVE.HKL"
                         % (len(current_remove) - rejected)
                     )
-                    Debug.write("Rejected %d as z < %f" % (rejected, z_min))
+                    logger.debug("Rejected %d as z < %f" % (rejected, z_min))
 
                     # and the new reflections
                     rejected = 0
@@ -848,11 +828,11 @@ class XDSIntegrater(Integrater):
                             remove_hkl.write("%d %d %d %f\n" % remove)
                         else:
                             rejected += 1
-                    Debug.write(
+                    logger.debug(
                         "Wrote %d new reflections to REMOVE.HKL"
                         % (len(final_remove) - rejected)
                     )
-                    Debug.write("Rejected %d as z < %f" % (rejected, z_min))
+                    logger.debug("Rejected %d as z < %f" % (rejected, z_min))
 
                 # we want to rerun the finishing step so...
                 # unless we have added no new reflections... or unless we
@@ -862,7 +842,7 @@ class XDSIntegrater(Integrater):
                     self.set_integrater_finish_done(False)
 
         else:
-            Debug.write(
+            logger.debug(
                 "Going quickly so not removing %d outlier reflections..."
                 % len(correct.get_remove())
             )
@@ -884,7 +864,7 @@ class XDSIntegrater(Integrater):
             or self.get_integrater_spacegroup_number()
         ):
 
-            Debug.write("Reindexing things to MTZ")
+            logger.debug("Reindexing things to MTZ")
 
             reindex = Reindex()
             reindex.set_working_directory(self.get_working_directory())

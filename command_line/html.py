@@ -5,6 +5,7 @@ from __future__ import absolute_import, division, print_function
 import cgi
 import glob
 import json
+import logging
 import os
 import re
 import six
@@ -16,8 +17,9 @@ from libtbx import phil
 import xia2
 from xia2.Modules.Report import Report
 from xia2.Handlers.Citations import Citations
-from xia2.Handlers.Streams import Chatter, Debug
 import xia2.Handlers.Streams
+
+logger = logging.getLogger("xia2.command_line.html")
 
 
 def run(args):
@@ -90,7 +92,11 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
                     batch_params.range = si.get_batch_range()
                     params.batch.append(batch_params)
 
-            report = Report.from_unmerged_mtz(unmerged_mtz, params)
+            report_path = xinfo.path.joinpath(cname, "report")
+            report_path.mkdir(parents=True, exist_ok=True)
+            report = Report.from_unmerged_mtz(
+                unmerged_mtz, params, report_dir=str(report_path)
+            )
 
             xtriage_success, xtriage_warnings, xtriage_danger = None, None, None
             if params.xtriage_analysis:
@@ -437,16 +443,17 @@ def make_logfile_html(logfile):
                 rst.append(".. raw:: html")
                 rst.append("\n    ".join(html.split("\n")))
         except Exception as e:
-            Chatter.write("=" * 80)
-            Chatter.write("Error (%s) while processing table" % str(e))
-            Chatter.write("  '%s'" % table.title)
-            Chatter.write("in %s" % logfile)
-            Chatter.write("=" * 80)
-            Debug.write(
-                "Exception raised while processing log file %s, table %s"
-                % (logfile, table.title)
+            logger.info("=" * 80)
+            logger.info("Error (%s) while processing table", str(e))
+            logger.info("  '%s'", table.title)
+            logger.info("in %s", logfile)
+            logger.info("=" * 80)
+            logger.debug(
+                "Exception raised while processing log file %s, table %s",
+                logfile,
+                table.title,
             )
-            Debug.write(traceback.format_exc())
+            logger.debug(traceback.format_exc())
 
     rst = "\n".join(rst)
 

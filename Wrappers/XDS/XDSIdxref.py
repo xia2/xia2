@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+import logging
 import math
 import os
 import shutil
@@ -10,7 +11,6 @@ from xia2.Experts.LatticeExpert import SortLattices, s2l
 # helpful expertise from elsewhere
 from xia2.Experts.SymmetryExpert import lattice_to_spacegroup_number
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Debug
 
 # interfaces that this inherits from ...
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
@@ -31,6 +31,8 @@ from xia2.Wrappers.XDS.XDSIdxrefHelpers import (
     _parse_idxref_lp_quality,
     _parse_idxref_lp_subtree,
 )
+
+logger = logging.getLogger("xia2.Wrappers.XDS.XDSIdxref")
 
 
 def XDSIdxref(DriverType=None, params=None):
@@ -367,10 +369,10 @@ def XDSIdxref(DriverType=None, params=None):
 
             if 2 in st:
                 if st[2] > st[1] / 10.0:
-                    Debug.write("Look closely at autoindexing solution!")
+                    logger.debug("Look closely at autoindexing solution!")
                     self._index_tree_problem = True
                     for j in sorted(st):
-                        Debug.write("%2d: %5d" % (j, st[j]))
+                        logger.debug("%2d: %5d" % (j, st[j]))
 
             # print out some (perhaps dire) warnings about the beam centre
             # if there is really any ambiguity...
@@ -393,9 +395,9 @@ def XDSIdxref(DriverType=None, params=None):
                     )
 
             if alternatives:
-                Debug.write("Alternative indexing possible:")
+                logger.debug("Alternative indexing possible:")
                 for alternative in alternatives:
-                    Debug.write("... %3d %3d %3d %4.1f %6.1f %6.1f" % alternative)
+                    logger.debug("... %3d %3d %3d %4.1f %6.1f %6.1f" % alternative)
 
             # New algorithm in here - now use iotbx.lattice_symmetry with the
             # P1 indexing solution (solution #1) to determine the list of
@@ -443,7 +445,7 @@ def XDSIdxref(DriverType=None, params=None):
 
                         if self._symm:
                             if lattice_to_spacegroup_number(lattice) > self._symm:
-                                Debug.write(
+                                logger.debug(
                                     "Ignoring solution with lattice %s" % lattice
                                 )
                                 continue
@@ -476,7 +478,7 @@ def XDSIdxref(DriverType=None, params=None):
                     if self._indexing_solutions[lattice]["goodness"] > max_p:
                         to_remove.append(lattice)
                 for lattice in to_remove:
-                    Debug.write("Ignoring solution with lattice %s" % lattice)
+                    logger.debug("Ignoring solution with lattice %s" % lattice)
                     del self._indexing_solutions[lattice]
 
             # get the highest symmetry "acceptable" solution
@@ -496,7 +498,7 @@ def XDSIdxref(DriverType=None, params=None):
                 # actually after the changes above this should now be the
                 # only solution in the table..
 
-                Debug.write(
+                logger.debug(
                     "Target unit cell: %.2f %.2f %.2f %.2f %.2f %.2f" % self._cell
                 )
 
@@ -507,7 +509,7 @@ def XDSIdxref(DriverType=None, params=None):
                         cell = l[1]
 
                         cell_str = "%.2f %.2f %.2f %.2f %.2f %.2f" % cell
-                        Debug.write("Chosen unit cell: %s" % cell_str)
+                        logger.debug("Chosen unit cell: %s" % cell_str)
 
                         self._indxr_lattice = l[0]
                         self._indxr_cell = l[1]

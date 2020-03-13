@@ -1,7 +1,10 @@
 from __future__ import absolute_import, division, print_function
 
+import logging
+
 from xia2.Driver.DriverFactory import DriverFactory
-from xia2.Handlers.Streams import Debug
+
+logger = logging.getLogger("xia2.Wrappers.Dials.CheckIndexingSymmetry")
 
 
 def CheckIndexingSymmetry(DriverType=None):
@@ -28,7 +31,7 @@ def CheckIndexingSymmetry(DriverType=None):
             self._grid_search_scope = abs(int(grid_search_scope))
 
         def run(self):
-            Debug.write("Running dials.check_indexing_symmetry")
+            logger.debug("Running dials.check_indexing_symmetry")
 
             self.clear_command_line()
             assert self._experiments_filename is not None
@@ -60,8 +63,8 @@ def CheckIndexingSymmetry(DriverType=None):
                         hkl_offsets[(h, k, l)] = cc
                         hkl_nref[(h, k, l)] = nref
 
-            Debug.write("hkl_offset scores: %s" % str(hkl_offsets))
-            Debug.write("hkl_nref scores: %s" % str(hkl_nref))
+            logger.debug("hkl_offset scores: %s" % str(hkl_offsets))
+            logger.debug("hkl_nref scores: %s" % str(hkl_nref))
             if len(hkl_offsets) > 1:
                 max_nref = max(hkl_nref.values())
 

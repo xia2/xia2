@@ -1,6 +1,8 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
+
+import logging
+
+logger = logging.getLogger("xia2.Wrappers.Dials.ExportMtz")
 
 
 def ExportMtz(DriverType=None):
@@ -15,6 +17,7 @@ def ExportMtz(DriverType=None):
             DriverInstance.__class__.__init__(self)
             self.set_executable("dials.export")
 
+            self.crystal_name = None
             self._experiments_filename = None
             self._reflections_filename = None
             self._mtz_filename = "hklout.mtz"
@@ -50,14 +53,14 @@ def ExportMtz(DriverType=None):
             return self._mtz_filename
 
         def run(self):
-            from xia2.Handlers.Streams import Debug
-
-            Debug.write("Running dials.export")
+            logger.debug("Running dials.export")
 
             self.clear_command_line()
             self.add_command_line("experiments=%s" % self._experiments_filename)
             self.add_command_line("reflections=%s" % self._reflections_filename)
             self.add_command_line("mtz.hklout=%s" % self._mtz_filename)
+            if self.crystal_name:
+                self.add_command_line("mtz.crystal_name=%s" % self.crystal_name)
             if self._combine_partials:
                 self.add_command_line("combine_partials=true")
             self.add_command_line(

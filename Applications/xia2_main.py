@@ -1,16 +1,8 @@
-#!/usr/bin/env python
-# xia2.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 21/SEP/06
-#
 # A top-level interface to the whole of xia2, for data processing & analysis.
 
 from __future__ import absolute_import, division, print_function
 
+import logging
 import math
 import os
 import platform
@@ -18,9 +10,10 @@ import sys
 
 from dials.util import Sorry
 from xia2.Handlers.Citations import Citations
-from xia2.Handlers.Environment import Environment, df
-from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Environment import df
 from xia2.XIA2Version import Version
+
+logger = logging.getLogger("xia2.Applications.xia2_main")
 
 
 def check_environment():
@@ -36,33 +29,33 @@ def check_environment():
 
     # to help wrapper code - print process id...
 
-    Debug.write("Process ID: %d" % os.getpid())
+    logger.debug("Process ID: %d", os.getpid())
 
-    Chatter.write("Environment configuration...")
-    Chatter.write("Python => %s" % executable)
-    Chatter.write("CCTBX => %s" % cctbx_dir)
+    logger.info("Environment configuration...")
+    logger.info("Python => %s", executable)
+    logger.info("CCTBX => %s", cctbx_dir)
 
     ccp4_keys = ["CCP4", "CCP4_SCR"]
     for k in ccp4_keys:
-        v = Environment.getenv(k)
+        v = os.getenv(k)
         if not v:
             raise RuntimeError("%s not defined - is CCP4 set up?" % k)
         if not v == v.strip():
             raise RuntimeError('spaces around "%s"' % v)
-        Chatter.write("%s => %s" % (k, v))
+        logger.info("%s => %s" % (k, v))
 
     from xia2.Handlers.Flags import Flags
 
-    Chatter.write("Starting directory: %s" % Flags.get_starting_directory())
-    Chatter.write("Working directory: %s" % os.getcwd())
-    Chatter.write("Free space:        %.2f GB" % (df() / math.pow(2, 30)))
+    logger.info("Starting directory: %s", Flags.get_starting_directory())
+    logger.info("Working directory: %s", os.getcwd())
+    logger.info("Free space:        %.2f GB", df() / math.pow(2, 30))
 
     hostname = platform.node().split(".")[0]
-    Chatter.write("Host: %s" % hostname)
+    logger.info("Host: %s", hostname)
 
-    Chatter.write("Contact: xia2.support@gmail.com")
+    logger.info("Contact: xia2.support@gmail.com")
 
-    Chatter.write(Version)
+    logger.info(Version)
 
     # temporary workaround to bug in pointless...
     if " " in os.getcwd():
@@ -119,11 +112,11 @@ def get_command_line():
 
 def write_citations():
     # tell the user which programs were used...
-    Chatter.write("XIA2 used... %s" % ", ".join(Citations.get_programs()))
-    Chatter.write("Here are the appropriate citations (BIBTeX in xia2-citations.bib.)")
+    logger.info("XIA2 used... %s" % ", ".join(Citations.get_programs()))
+    logger.info("Here are the appropriate citations (BIBTeX in xia2-citations.bib.)")
 
     for citation in Citations.get_citations_acta():
-        Chatter.write(citation)
+        logger.info(citation)
 
     # and write the bibtex versions
     out = open("xia2-citations.bib", "w")

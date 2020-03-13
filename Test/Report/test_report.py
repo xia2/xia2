@@ -7,7 +7,8 @@ import pytest
 def report(dials_data, tmpdir_factory):
     data_dir = dials_data("pychef")
     mtz = data_dir.join("insulin_dials_scaled_unmerged.mtz").strpath
-    with tmpdir_factory.mktemp("test_report").as_cwd():
+    temp_path = tmpdir_factory.mktemp("test_report")
+    with temp_path.as_cwd():
         from xia2.Modules.Analysis import (
             phil_scope,
         )  # import creates /xia2-debug.txt dropping
@@ -16,7 +17,7 @@ def report(dials_data, tmpdir_factory):
         params = phil_scope.extract()
         params.batch = []
         params.dose.batch = []
-        yield Report.from_unmerged_mtz(mtz, params)
+        yield Report.from_unmerged_mtz(mtz, params, report_dir=temp_path.strpath)
 
 
 def test_multiplicity_plots(report):
@@ -97,10 +98,11 @@ def test_resolution_plots_and_stats(report):
         "0.598*",
     ]
     assert set(stats_plots) == {
-        "cc_one_half",
-        "i_over_sig_i",
-        "completeness",
         "multiplicity_vs_resolution",
+        "completeness",
+        "r_pim",
+        "i_over_sig_i",
+        "cc_one_half",
     }
 
 

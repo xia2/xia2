@@ -5,6 +5,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import logging
 import os
 import sys
 import time
@@ -12,6 +13,7 @@ import traceback
 
 from dials.util import Sorry
 from dials.util.version import dials_version
+from libtbx import group_args
 import xia2.Driver.timing
 import xia2.Handlers.Streams
 import xia2.XIA2Version
@@ -23,11 +25,11 @@ from xia2.Applications.xia2_main import (
     write_citations,
 )
 from xia2.Handlers.Citations import Citations
-from xia2.Handlers.Environment import Environment
 from xia2.Handlers.Files import cleanup
-from xia2.Handlers.Streams import Chatter, Debug
 from xia2.Schema.XProject import XProject
 from xia2.Schema.XSweep import XSweep
+
+logger = logging.getLogger("xia2.command_line.xia2_main")
 
 
 def get_ccp4_version():
@@ -44,11 +46,11 @@ def xia2_main(stop_after=None):
     Citations.cite("xia2")
 
     # print versions of related software
-    Chatter.write(dials_version())
+    logger.info(dials_version())
 
     ccp4_version = get_ccp4_version()
-    if ccp4_version is not None:
-        Chatter.write("CCP4 %s" % ccp4_version)
+    if ccp4_version:
+        logger.info("CCP4 %s", ccp4_version)
 
     start_time = time.time()
 
@@ -59,11 +61,9 @@ def xia2_main(stop_after=None):
 
     for name, xtal in xtals.items():
         if not xtal.get_all_image_names():
-            Chatter.write("-----------------------------------" + "-" * len(name))
-            Chatter.write("| No images assigned for crystal %s |" % name)
-            Chatter.write("-----------------------------------" + "-" * len(name))
-
-    args = []
+            logger.info("-----------------------------------" + "-" * len(name))
+            logger.info("| No images assigned for crystal %s |", name)
+            logger.info("-----------------------------------" + "-" * len(name))
 
     from xia2.Handlers.Phil import PhilIndex
 
@@ -71,15 +71,14 @@ def xia2_main(stop_after=None):
     mp_params = params.xia2.settings.multiprocessing
     njob = mp_params.njob
 
-    from libtbx import group_args
-
     xinfo = CommandLine.get_xinfo()
+    logger.info("Project directory: %s", xinfo.path)
 
     if (
         params.xia2.settings.developmental.continue_from_previous_job
         and os.path.exists("xia2.json")
     ):
-        Debug.write("==== Starting from existing xia2.json ====")
+        logger.debug("==== Starting from existing xia2.json ====")
         xinfo_new = xinfo
         xinfo = XProject.from_json(filename="xia2.json")
 
@@ -119,7 +118,7 @@ def xia2_main(stop_after=None):
                             break
                         wavelength.add_sweep(
                             name=sweep.get_name(),
-                            sample=sweep.get_xsample(),
+                            sample=sweep.sample,
                             directory=sweep.get_directory(),
                             image=sweep.get_image(),
                             beam=sweep.get_beam_centre(),
@@ -145,6 +144,7 @@ def xia2_main(stop_after=None):
     if mp_params.mode == "parallel" and njob > 1:
         driver_type = mp_params.type
         command_line_args = CommandLine.get_argv()[1:]
+        jobs = []
         for crystal_id in crystals:
             for wavelength_id in crystals[crystal_id].get_wavelength_names():
                 wavelength = crystals[crystal_id].get_xwavelength(wavelength_id)
@@ -153,7 +153,7 @@ def xia2_main(stop_after=None):
                     sweep._get_indexer()
                     sweep._get_refiner()
                     sweep._get_integrater()
-                    args.append(
+                    jobs.append(
                         (
                             group_args(
                                 driver_type=driver_type,
@@ -173,7 +173,7 @@ def xia2_main(stop_after=None):
         default_driver_type = DriverFactory.get_driver_type()
 
         # run every nth job on the current computer (no need to submit to qsub)
-        for i_job, arg in enumerate(args):
+        for i_job, arg in enumerate(jobs):
             if (i_job % njob) == 0:
                 arg[0].driver_type = default_driver_type
 
@@ -185,7 +185,7 @@ def xia2_main(stop_after=None):
 
         results = easy_mp.parallel_map(
             process_one_sweep,
-            args,
+            jobs,
             processes=njob,
             method="multiprocessing",
             qsub_command=qsub_command,
@@ -203,13 +203,13 @@ def xia2_main(stop_after=None):
                 for sweep in sweeps:
                     success, output, xsweep_dict = results[i_sweep]
                     if output is not None:
-                        Chatter.write(output)
+                        logger.info(output)
                     if not success:
-                        Chatter.write("Sweep failed: removing %s" % sweep.get_name())
+                        logger.info("Sweep failed: removing %s", sweep.get_name())
                         remove_sweeps.append(sweep)
                     else:
                         assert xsweep_dict is not None
-                        Chatter.write("Loading sweep: %s" % sweep.get_name())
+                        logger.info("Loading sweep: %s", sweep.get_name())
                         new_sweep = XSweep.from_dict(xsweep_dict)
                         sweep._indexer = new_sweep._indexer
                         sweep._refiner = new_sweep._refiner
@@ -217,7 +217,7 @@ def xia2_main(stop_after=None):
                     i_sweep += 1
                 for sweep in remove_sweeps:
                     wavelength.remove_sweep(sweep)
-                    sample = sweep.get_xsample()
+                    sample = sweep.sample
                     sample.remove_sweep(sweep)
 
     else:
@@ -230,8 +230,8 @@ def xia2_main(stop_after=None):
                     from dials.command_line.show import show_experiments
                     from dxtbx.model.experiment_list import ExperimentListFactory
 
-                    Debug.write(sweep.get_name())
-                    Debug.write(
+                    logger.debug(sweep.get_name())
+                    logger.debug(
                         show_experiments(
                             ExperimentListFactory.from_imageset_and_crystal(
                                 sweep.get_imageset(), None
@@ -247,23 +247,24 @@ def xia2_main(stop_after=None):
                         sweep.serialize()
                     except Exception as e:
                         if failover:
-                            Chatter.write(
-                                "Processing sweep %s failed: %s"
-                                % (sweep.get_name(), str(e))
+                            logger.info(
+                                "Processing sweep %s failed: %s",
+                                sweep.get_name(),
+                                str(e),
                             )
                             remove_sweeps.append(sweep)
                         else:
                             raise
                 for sweep in remove_sweeps:
                     wavelength.remove_sweep(sweep)
-                    sample = sweep.get_xsample()
+                    sample = sweep.sample
                     sample.remove_sweep(sweep)
 
     # save intermediate xia2.json file in case scaling step fails
     xinfo.as_json(filename="xia2.json")
 
     if stop_after not in ("index", "integrate"):
-        Chatter.write(xinfo.get_output(), strip=False)
+        logger.info(xinfo.get_output())
 
     for crystal in list(crystals.values()):
         crystal.serialize()
@@ -293,15 +294,14 @@ def xia2_main(stop_after=None):
     duration = time.time() - start_time
 
     # write out the time taken in a human readable way
-    Chatter.write(
-        "Processing took %s" % time.strftime("%Hh %Mm %Ss", time.gmtime(duration))
+    logger.info(
+        "Processing took %s", time.strftime("%Hh %Mm %Ss", time.gmtime(duration))
     )
 
     write_citations()
 
     # delete all of the temporary mtz files...
-    cleanup()
-    Environment.cleanup()
+    cleanup(xinfo.path)
 
 
 def run():
@@ -322,37 +322,35 @@ def run():
     try:
         check_environment()
     except Exception as e:
-        traceback.print_exc(file=open("xia2.error", "w"))
-        Debug.write(traceback.format_exc(), strip=False)
-        Chatter.write("Error setting up xia2 environment: %s" % str(e))
-        Chatter.write(
-            "Please send the contents of xia2.txt, xia2.error and xia2-debug.txt to:"
+        traceback.print_exc(file=open("xia2-error.txt", "w"))
+        logger.debug(traceback.format_exc())
+        logger.error("Error setting up xia2 environment: %s" % str(e))
+        logger.warning(
+            "Please send the contents of xia2.txt, xia2-error.txt and xia2-debug.txt to:"
         )
-        Chatter.write("xia2.support@gmail.com")
+        logger.warning("xia2.support@gmail.com")
         sys.exit(1)
 
     wd = os.getcwd()
 
     try:
         xia2_main()
-        Debug.write("\nTiming report:")
-        for line in xia2.Driver.timing.report():
-            Debug.write(line, strip=False)
-
-        Chatter.write("Status: normal termination")
+        logger.debug("\nTiming report:")
+        logger.debug("\n".join(xia2.Driver.timing.report()))
+        logger.info("Status: normal termination")
         return
     except Sorry as s:
-        Chatter.write("Error: %s" % str(s))
+        logger.error("Error: %s", str(s))
         sys.exit(1)
     except Exception as e:
-        with open(os.path.join(wd, "xia2.error"), "w") as fh:
+        with open(os.path.join(wd, "xia2-error.txt"), "w") as fh:
             traceback.print_exc(file=fh)
-        Debug.write(traceback.format_exc(), strip=False)
-        Chatter.write("Error: %s" % str(e))
-        Chatter.write(
-            "Please send the contents of xia2.txt, xia2.error and xia2-debug.txt to:"
+        logger.debug(traceback.format_exc())
+        logger.error("Error: %s", str(e))
+        logger.warning(
+            "Please send the contents of xia2.txt, xia2-error.txt and xia2-debug.txt to:"
         )
-        Chatter.write("xia2.support@gmail.com")
+        logger.warning("xia2.support@gmail.com")
         sys.exit(1)
 
 

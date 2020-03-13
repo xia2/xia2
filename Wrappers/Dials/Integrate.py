@@ -1,12 +1,14 @@
 from __future__ import absolute_import, division, print_function
 
 import json
+import logging
 import math
 import os
 
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Debug
+
+logger = logging.getLogger("xia2.Wrappers.Dials.Integrate")
 
 try:
     from typing import Optional
@@ -127,7 +129,7 @@ def Integrate(DriverType=None):
             self._integrated_reflections = refl
 
         def run(self):
-            Debug.write("Running dials.integrate")
+            logger.debug("Running dials.integrate")
 
             self.clear_command_line()
             self.add_command_line("input.experiments=%s" % self._experiments_filename)

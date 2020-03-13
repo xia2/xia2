@@ -17,7 +17,7 @@ class XSample(object):
         # in here - the sweeps
         self._sweeps = []
 
-        self._multi_indexer = None
+        self.multi_indexer = None
 
     def get_epoch_to_dose(self):
         from xia2.Modules.DoseAccumulate import accumulate_dose
@@ -52,7 +52,7 @@ class XSample(object):
                 # don't serialize this since the parent xsample *should* contain
                 # the reference to the child xsweep
                 continue
-            elif a[0] == "_multi_indexer" and a[1] is not None:
+            elif a[0] == "multi_indexer" and a[1] is not None:
                 obj[a[0]] = a[1].to_dict()
             elif a[0].startswith("__"):
                 continue
@@ -67,7 +67,7 @@ class XSample(object):
         for k, v in obj.items():
             if k == "_sweeps":
                 v = [s_dict["_name"] for s_dict in v]
-            elif k == "_multi_indexer" and v is not None:
+            elif k == "multi_indexer" and v is not None:
                 from libtbx.utils import import_python_object
 
                 cls = import_python_object(
@@ -96,12 +96,6 @@ class XSample(object):
 
     def get_sweeps(self):
         return self._sweeps
-
-    def set_multi_indexer(self, multi_indexer):
-        self._multi_indexer = multi_indexer
-
-    def get_multi_indexer(self):
-        return self._multi_indexer
 
     def remove_sweep(self, sweep):
         """Remove a sweep object from this wavelength."""

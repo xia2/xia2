@@ -14,7 +14,7 @@ expected_data_files = [
 ]
 
 
-def test_proteinase_k(mocker, regression_test, ccp4, dials_data, tmpdir):
+def test_proteinase_k(mocker, regression_test, dials_data, tmpdir):
     data_dir = dials_data("multi_crystal_proteinase_k")
     expts = sorted(f.strpath for f in data_dir.listdir("experiments*.json"))
     refls = sorted(f.strpath for f in data_dir.listdir("reflections*.pickle"))
@@ -22,7 +22,7 @@ def test_proteinase_k(mocker, regression_test, ccp4, dials_data, tmpdir):
     with tmpdir.as_cwd():
         from xia2.command_line.multiplex import run
 
-        run(expts + refls)
+        run(expts + refls + ["exclude_images=0:1:10"])
     # Verify that the *_vs_dose plots have been correctly plotted
     assert Report.pychef_plots.call_count == 1
     for k in (
@@ -37,15 +37,21 @@ def test_proteinase_k(mocker, regression_test, ccp4, dials_data, tmpdir):
     multiplex_expts = load.experiment_list(
         tmpdir.join("multiplex.expt").strpath, check_format=False
     )
-    for expt in multiplex_expts:
+    for i, expt in enumerate(multiplex_expts):
+        valid_image_ranges = expt.scan.get_valid_image_ranges(expt.identifier)
+        if i == 0:
+            assert valid_image_ranges == [(11, 25)]
+        else:
+            assert valid_image_ranges == [(1, 25)]
         assert expt.crystal.get_space_group().type().lookup_symbol() == "P 41 21 2"
 
 
 @pytest.mark.parametrize(
-    "laue_group,space_group", [("P422", None), (None, "P422"), (None, "P43212")]
+    "laue_group,space_group,threshold",
+    [("P422", None, None), (None, "P422", 3.5), (None, "P43212", None)],
 )
 def test_proteinase_k_dose(
-    laue_group, space_group, regression_test, ccp4, dials_data, tmpdir
+    laue_group, space_group, threshold, regression_test, dials_data, tmpdir
 ):
     data_dir = dials_data("multi_crystal_proteinase_k")
     expts = sorted(f.strpath for f in data_dir.listdir("experiments*.json"))
@@ -55,19 +61,38 @@ def test_proteinase_k_dose(
             "dose=1,20",
             "symmetry.laue_group=%s" % laue_group,
             "symmetry.space_group=%s" % space_group,
+            "max_clusters=2",
         ]
         + expts
         + refls
     )
+    if threshold is not None:
+        command_line_args.append("unit_cell_clustering.threshold=%s" % threshold)
     with tmpdir.as_cwd():
         from xia2.command_line.multiplex import run
 
         run(command_line_args)
+
     for f in expected_data_files:
         assert tmpdir.join(f).check(file=1), "expected file %s missing" % f
+
     multiplex_expts = load.experiment_list(
         tmpdir.join("multiplex.expt").strpath, check_format=False
     )
+    if threshold is not None:
+        # one experiment should have been rejected after unit cell clustering
+        assert len(multiplex_expts) == 7
+        expected_clusters = ("cluster_4", "cluster_5")
+    else:
+        assert len(multiplex_expts) == 8
+        expected_clusters = ("cluster_5", "cluster_6")
+
+    # Check that clusters 5 and 6 have been scaled
+    for cluster in expected_clusters:
+        assert tmpdir.join(cluster).check(dir=1)
+        assert tmpdir.join(cluster, "scaled.mtz").check(file=1)
+        assert tmpdir.join(cluster, "scaled_unmerged.mtz").check(file=1)
+
     for expt in multiplex_expts:
         if space_group is None:
             assert expt.crystal.get_space_group().type().lookup_symbol() == "P 41 21 2"
@@ -79,7 +104,7 @@ def test_proteinase_k_dose(
 
 
 def test_proteinase_k_laue_group_space_group_raises_error(
-    regression_test, ccp4, dials_data, tmpdir
+    regression_test, dials_data, tmpdir
 ):
     data_dir = dials_data("multi_crystal_proteinase_k")
     expts = sorted(f.strpath for f in data_dir.listdir("experiments*.json"))

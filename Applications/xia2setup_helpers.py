@@ -1,11 +1,13 @@
 from __future__ import absolute_import, division, print_function
 
+import logging
+import os
+import traceback
+
 # this must be defined in a separate file from xia2setup.py to be
 # compatible with easy_mp.parallel_map with method="sge" when
 # xia2setup.py is run as the __main__ program.
 def get_sweep(args):
-    import os
-    import traceback
     from xia2.Schema.Sweep import SweepFactory
 
     assert len(args) == 1
@@ -15,10 +17,9 @@ def get_sweep(args):
         sweeplist = SweepFactory(template, directory)
 
     except Exception as e:
-        from xia2.Handlers.Streams import Debug
-
-        Debug.write("Exception C: %s (%s)" % (str(e), args[0]))
-        Debug.write(traceback.format_exc())
+        logger = logging.getLogger("xia2.Applications.xia2setup_helpers")
+        logger.debug("Exception C: %s (%s)" % (str(e), args[0]))
+        logger.debug(traceback.format_exc())
         return None
 
     return sweeplist

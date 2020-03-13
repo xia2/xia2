@@ -26,6 +26,7 @@ from dials.report.plots import (
     IntensityStatisticsPlots,
 )
 from dials.util.batch_handling import batch_manager
+from dials.report.plots import make_image_range_table
 
 from xia2.Modules.Analysis import batch_phil_scope, phil_scope, separate_unmerged
 
@@ -61,12 +62,20 @@ class _xtriage_output(printed_output):
 
 class Report(object):
     def __init__(
-        self, intensities, params, batches=None, scales=None, dose=None, report_dir=None
+        self,
+        intensities,
+        params,
+        batches=None,
+        scales=None,
+        dose=None,
+        report_dir=None,
+        experiments=None,
     ):
 
         self.params = params
 
         self.intensities = intensities
+        self.experiments = experiments
         self.batches = batches
         self.scales = scales
         self.dose = dose
@@ -197,9 +206,12 @@ class Report(object):
 
         batches = [{"id": b.id, "range": b.range} for b in self.params.batch]
         bm = batch_manager(binned_batches, batches)
+
         d = {}
         d.update(i_over_sig_i_vs_batch_plot(bm, isigi))
         d.update(scale_rmerge_vs_batch_plot(bm, rmerge, scalesvsbatch))
+        if self.experiments is not None:
+            d["image_range_table"] = make_image_range_table(self.experiments, bm)
         return d
 
     def resolution_plots_and_stats(self):
@@ -231,10 +243,7 @@ class Report(object):
             self.merging_stats, self.merging_stats_anom, is_centric
         )
         d = OrderedDict()
-        d.update(plotter.cc_one_half_plot(method=self.params.cc_half_method))
-        d.update(plotter.i_over_sig_i_plot())
-        d.update(plotter.completeness_plot())
-        d.update(plotter.multiplicity_vs_resolution_plot())
+        d.update(plotter.make_all_plots(cc_one_half_method=self.params.cc_half_method))
         overall_stats = plotter.overall_statistics_table(self.params.cc_half_method)
         merging_stats = plotter.merging_statistics_table(self.params.cc_half_method)
         return overall_stats, merging_stats, d
@@ -262,7 +271,7 @@ class Report(object):
 
         if self.params.chef_min_completeness:
             d_min = dials.pychef.resolution_limit(
-                mtz_file=self.unmerged_mtz,
+                self.intensities,
                 min_completeness=self.params.chef_min_completeness,
                 n_bins=n_bins,
             )
@@ -284,7 +293,7 @@ class Report(object):
         return pychef_stats.to_dict()
 
     @classmethod
-    def from_unmerged_mtz(cls, unmerged_mtz, params, report_dir=None):
+    def from_unmerged_mtz(cls, unmerged_mtz, params, report_dir):
         reader = any_reflection_file(unmerged_mtz)
         assert reader.file_type() == "ccp4_mtz"
         arrays = reader.as_miller_arrays(merge_equivalents=False)
@@ -302,17 +311,6 @@ class Report(object):
         assert intensities is not None
         assert batches is not None
         mtz_object = reader.file_content()
-
-        crystal_name = (
-            [c.name() for c in mtz_object.crystals() if c.name() != "HKL_base"]
-            or ["DEFAULT"]
-        )[0]
-        report_dir = (
-            report_dir
-            or xia2.Handlers.Environment.Environment.generate_directory(
-                [crystal_name, "report"]
-            )
-        )
 
         indices = mtz_object.extract_original_index_miller_indices()
         intensities = intensities.customized_copy(
@@ -349,4 +347,10 @@ class Report(object):
             params.dose.batch.append(dose_batch)
 
         intensities.set_observation_type_xray_intensity()
-        return cls(intensities, params, batches=batches, scales=scales)
+        return cls(
+            intensities,
+            params,
+            batches=batches,
+            scales=scales,
+            experiments=data_manager.experiments,
+        )

@@ -1,12 +1,14 @@
 from __future__ import absolute_import, division, print_function
 
+import logging
 import os
 
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
 from xia2.Driver.DriverFactory import DriverFactory
-from xia2.Handlers.Streams import Debug
 from xia2.Modules.FindFreeFlag import FindFreeFlag
 from xia2.Wrappers.CCP4.Mtzdump import Mtzdump
+
+logger = logging.getLogger("xia2.Wrappers.CCP4.Cad")
 
 
 def Cad(DriverType=None):
@@ -50,7 +52,7 @@ def Cad(DriverType=None):
 
             cname = FindFreeFlag(freein)
 
-            Debug.write("FreeR_flag column identified as %s" % cname)
+            logger.debug("FreeR_flag column identified as %s", cname)
 
             self._freein = freein
             self._freein_column = cname

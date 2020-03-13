@@ -3,6 +3,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import logging
 import os
 import math
 import shutil
@@ -29,10 +30,11 @@ from xia2.Schema.Interfaces.Indexer import IndexerSingleSweep
 # odds and sods that are needed
 
 from xia2.lib.bits import auto_logfiler
-from xia2.Handlers.Streams import Debug, Journal
 from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Files import FileHandler
+
+logger = logging.getLogger("xia2.Modules.Indexer.XDSIndexer")
 
 
 class XDSIndexer(IndexerSingleSweep):
@@ -178,7 +180,7 @@ class XDSIndexer(IndexerSingleSweep):
             if not remove:
                 spot_xds.append("%s" % record)
 
-        Debug.write("Removed %d peaks from SPOT.XDS" % removed)
+        logger.debug("Removed %d peaks from SPOT.XDS", removed)
         masked_spot_xds = (
             os.path.splitext(self._indxr_payload["SPOT.XDS"])[0] + "_masked.XDS"
         )
@@ -216,32 +218,27 @@ class XDSIndexer(IndexerSingleSweep):
                 else:
                     max_wedge_size = n
 
-            Debug.write("Using max_wedge_size: %d" % max_wedge_size)
+            logger.debug("Using max_wedge_size: %d", max_wedge_size)
 
             block_size = min(len(images), max_wedge_size)
 
-            Debug.write(
-                "Adding images for indexer: %d -> %d"
-                % (images[0], images[block_size - 1])
+            logger.debug(
+                "Adding images for indexer: %d -> %d", images[0], images[block_size - 1]
             )
 
             wedges.append((images[0], images[block_size - 1]))
 
             if int(90.0 / phi_width) + block_size in images:
                 # assume we can add a wedge around 45 degrees as well...
-                Debug.write(
-                    "Adding images for indexer: %d -> %d"
-                    % (
-                        int(45.0 / phi_width) + images[0],
-                        int(45.0 / phi_width) + images[0] + block_size - 1,
-                    )
+                logger.debug(
+                    "Adding images for indexer: %d -> %d",
+                    int(45.0 / phi_width) + images[0],
+                    int(45.0 / phi_width) + images[0] + block_size - 1,
                 )
-                Debug.write(
-                    "Adding images for indexer: %d -> %d"
-                    % (
-                        int(90.0 / phi_width) + images[0],
-                        int(90.0 / phi_width) + images[0] + block_size - 1,
-                    )
+                logger.debug(
+                    "Adding images for indexer: %d -> %d",
+                    int(90.0 / phi_width) + images[0],
+                    int(90.0 / phi_width) + images[0] + block_size - 1,
                 )
                 wedges.append(
                     (
@@ -262,12 +259,13 @@ class XDSIndexer(IndexerSingleSweep):
                 first = (len(images) // 2) - (block_size // 2) + images[0] - 1
                 if first > wedges[0][1]:
                     last = first + block_size - 1
-                    Debug.write("Adding images for indexer: %d -> %d" % (first, last))
+                    logger.debug("Adding images for indexer: %d -> %d", first, last)
                     wedges.append((first, last))
                 if len(images) > block_size:
-                    Debug.write(
-                        "Adding images for indexer: %d -> %d"
-                        % (images[-block_size], images[-1])
+                    logger.debug(
+                        "Adding images for indexer: %d -> %d",
+                        images[-block_size],
+                        images[-1],
                     )
                     wedges.append((images[-block_size], images[-1]))
 
@@ -281,13 +279,13 @@ class XDSIndexer(IndexerSingleSweep):
 
         # decide on images to work with
 
-        Debug.write("XDS INDEX PREPARE:")
-        Debug.write("Wavelength: %.6f" % self.get_wavelength())
-        Debug.write("Distance: %.2f" % self.get_distance())
+        logger.debug("XDS INDEX PREPARE:")
+        logger.debug("Wavelength: %.6f", self.get_wavelength())
+        logger.debug("Distance: %.2f", self.get_distance())
 
         if self._indxr_images == []:
             _select_images_function = getattr(
-                self, "_index_select_images_%s" % (self._index_select_images)
+                self, "_index_select_images_%s" % self._index_select_images
             )
             wedges = _select_images_function()
             for wedge in wedges:
@@ -401,7 +399,7 @@ class XDSIndexer(IndexerSingleSweep):
                         scan.get_image_index_from_angle(best_bg_range[0]),
                         scan.get_image_index_from_angle(best_bg_range[1]),
                     )
-                    Debug.write(
+                    logger.debug(
                         "Setting background images: %s -> %s" % self._background_images
                     )
 
@@ -430,7 +428,7 @@ class XDSIndexer(IndexerSingleSweep):
         # to mark out the back stop
 
         if PhilIndex.params.xds.backstop_mask:
-            Debug.write("Applying mask to BKGINIT.pck")
+            logger.debug("Applying mask to BKGINIT.pck")
 
             # copy the original file
             cbf_old = os.path.join(init.get_working_directory(), "BKGINIT.cbf")
@@ -501,32 +499,6 @@ class XDSIndexer(IndexerSingleSweep):
         """Actually do the autoindexing using the data prepared by the
         previous method."""
 
-        images_str = "%d to %d" % tuple(self._indxr_images[0])
-        for i in self._indxr_images[1:]:
-            images_str += ", %d to %d" % tuple(i)
-
-        cell_str = None
-        if self._indxr_input_cell:
-            cell_str = "%.2f %.2f %.2f %.2f %.2f %.2f" % self._indxr_input_cell
-
-        # then this is a proper autoindexing run - describe this
-        # to the journal entry
-
-        dirname = self.get_directory()
-
-        Journal.block(
-            "autoindexing",
-            self._indxr_sweep_name,
-            "XDS",
-            {
-                "images": images_str,
-                "target cell": cell_str,
-                "target lattice": self._indxr_input_lattice,
-                "template": self.get_template(),
-                "directory": dirname,
-            },
-        )
-
         idxref = self.Idxref()
 
         self._index_remove_masked_regions()
@@ -559,8 +531,8 @@ class XDSIndexer(IndexerSingleSweep):
             idxref.set_indexer_input_lattice(self._indxr_input_lattice)
             idxref.set_indexer_input_cell(self._indxr_input_cell)
 
-            Debug.write("Set lattice: %s" % self._indxr_input_lattice)
-            Debug.write("Set cell: %f %f %f %f %f %f" % self._indxr_input_cell)
+            logger.debug("Set lattice: %s", self._indxr_input_lattice)
+            logger.debug("Set cell: %f %f %f %f %f %f" % self._indxr_input_cell)
 
             original_cell = self._indxr_input_cell
         elif self._indxr_input_lattice:
@@ -595,7 +567,7 @@ class XDSIndexer(IndexerSingleSweep):
                 # unit cell, and they are the same, well ignore it
 
                 if "solution is inaccurate" in str(e):
-                    Debug.write("XDS complains solution inaccurate - ignoring")
+                    logger.debug("XDS complains solution inaccurate - ignoring")
                     done = idxref.continue_from_error()
                 elif (
                     "insufficient percentage (< 70%)" in str(e)
@@ -612,20 +584,20 @@ class XDSIndexer(IndexerSingleSweep):
                             > 0.02
                             and check
                         ):
-                            Debug.write("XDS unhappy and solution wrong")
+                            logger.debug("XDS unhappy and solution wrong")
                             raise e
                         # and two degree difference in angle
                         if (
                             math.fabs(cell[j + 3] - original_cell[j + 3]) > 2.0
                             and check
                         ):
-                            Debug.write("XDS unhappy and solution wrong")
+                            logger.debug("XDS unhappy and solution wrong")
                             raise e
-                    Debug.write("XDS unhappy but solution ok")
+                    logger.debug("XDS unhappy but solution ok")
                 elif "insufficient percentage (< 70%)" in str(
                     e
                 ) or "insufficient percentage (< 50%)" in str(e):
-                    Debug.write("XDS unhappy but solution probably ok")
+                    logger.debug("XDS unhappy but solution probably ok")
                     done = idxref.continue_from_error()
                 else:
                     raise e
@@ -694,14 +666,14 @@ class XDSIndexer(IndexerSingleSweep):
                 os.path.join(self.get_working_directory(), "SPOT.XDS"),
             )
 
-            Debug.write("Centring analysis: %s => %s" % (lattice, lattice2))
+            logger.debug("Centring analysis: %s => %s", lattice, lattice2)
 
             doubled_lattice = False
             for j in range(3):
                 if int(round(cell2[j] / cell[j])) == 2:
                     doubled_lattice = True
                     axes = "A", "B", "C"
-                    Debug.write("Lattice axis doubled: %s" % axes[j])
+                    logger.debug("Lattice axis doubled: %s", axes[j])
 
             if (
                 self._idxref_subtree_problem and (lattice2 != lattice)
@@ -710,16 +682,16 @@ class XDSIndexer(IndexerSingleSweep):
                 # hmm.... looks like we don't agree on the correct result...
                 # update the putative correct result as input
 
-                Debug.write("Detected pseudocentred lattice")
-                Debug.write(
+                logger.debug("Detected pseudocentred lattice")
+                logger.debug(
                     "Inserting solution: %s " % lattice2
                     + "%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f" % cell2
                 )
 
                 self._indxr_replace(lattice2, cell2)
 
-                Debug.write("Set lattice: %s" % lattice2)
-                Debug.write("Set cell: %f %f %f %f %f %f" % cell2)
+                logger.debug("Set lattice: %s", lattice2)
+                logger.debug("Set cell: %f %f %f %f %f %f" % cell2)
 
                 # then rerun
 
@@ -749,5 +721,5 @@ class XDSIndexer(IndexerSingleSweep):
         ub = matrix.sqr(crystal_model.get_A())
         dmax = 1.05 * flex.max(1 / (ub.elems * miller_indices.as_vec3_double()).norms())
 
-        Debug.write("Low resolution limit assigned as: %.2f" % dmax)
+        logger.debug("Low resolution limit assigned as: %.2f", dmax)
         self._indxr_low_resolution = dmax

@@ -143,16 +143,20 @@ from __future__ import absolute_import, division, print_function
 
 import inspect
 import json
+import logging
 import os
 
-from xia2.Handlers.Streams import Chatter, Debug
+import pathlib2
+from xia2.Handlers.Streams import banner
+
+logger = logging.getLogger("xia2.Schema.Interfaces.Scaler")
 
 
 class Scaler(object):
     """An interface to present scaling functionality in a similar way to the
     integrater interface."""
 
-    def __init__(self):
+    def __init__(self, base_path=None):
         # set up a framework for storing all of the input information...
         # this should really only consist of integraters...
 
@@ -229,6 +233,7 @@ class Scaler(object):
         self._scalr_anomalous = False
 
         # admin junk
+        self._base_path = base_path
         self._working_directory = os.getcwd()
         self._scalr_pname = None
         self._scalr_xname = None
@@ -245,6 +250,8 @@ class Scaler(object):
         obj["__id__"] = "Scaler"
         obj["__module__"] = self.__class__.__module__
         obj["__name__"] = self.__class__.__name__
+        if self._base_path:
+            obj["_base_path"] = self._base_path.__fspath__()
 
         attributes = inspect.getmembers(self, lambda m: not inspect.isroutine(m))
         for a in attributes:
@@ -277,7 +284,12 @@ class Scaler(object):
     @classmethod
     def from_dict(cls, obj):
         assert obj["__id__"] == "Scaler"
-        return_obj = cls()
+        base_path = obj.get("_base_path")
+        if base_path:
+            base_path = pathlib2.Path(base_path)
+        else:
+            base_path = None
+        return_obj = cls(base_path=base_path)
         for k, v in obj.items():
             if k == "_scalr_integraters":
                 for k_, v_ in v.items():
@@ -302,6 +314,8 @@ class Scaler(object):
                     k_ = tuple(str(s) for s in json.loads(k_))
                     d[k_] = v_
                 v = d
+            elif k == "_base_path":
+                continue
             setattr(return_obj, k, v)
         return return_obj
 
@@ -393,7 +407,7 @@ class Scaler(object):
     def set_scaler_prepare_done(self, done=True):
         frm = inspect.stack()[1]
         mod = inspect.getmodule(frm[0])
-        Debug.write(
+        logger.debug(
             "Called scaler prepare done from %s %d (%s)"
             % (mod.__name__, frm[0].f_lineno, done)
         )
@@ -403,7 +417,7 @@ class Scaler(object):
     def set_scaler_done(self, done=True):
         frm = inspect.stack()[1]
         mod = inspect.getmodule(frm[0])
-        Debug.write(
+        logger.debug(
             "Called scaler done from %s %d (%s)" % (mod.__name__, frm[0].f_lineno, done)
         )
 
@@ -412,7 +426,7 @@ class Scaler(object):
     def set_scaler_finish_done(self, done=True):
         frm = inspect.stack()[1]
         mod = inspect.getmodule(frm[0])
-        Debug.write(
+        logger.debug(
             "Called scaler finish done from %s %d (%s)"
             % (mod.__name__, frm[0].f_lineno, done)
         )
@@ -426,7 +440,7 @@ class Scaler(object):
         return self._scalr_anomalous
 
     def scaler_reset(self):
-        Debug.write("Scaler reset")
+        logger.debug("Scaler reset")
 
         self._scalr_done = False
         self._scalr_prepare_done = False
@@ -445,13 +459,13 @@ class Scaler(object):
 
     def get_scaler_done(self):
         if not self.get_scaler_prepare_done():
-            Debug.write("Resetting Scaler done as prepare not done")
+            logger.debug("Resetting Scaler done as prepare not done")
             self.set_scaler_done(False)
         return self._scalr_done
 
     def get_scaler_finish_done(self):
         if not self.get_scaler_done():
-            Debug.write("Resetting scaler finish done as scaling not done")
+            logger.debug("Resetting scaler finish done as scaling not done")
             self.set_scaler_finish_done(False)
         return self._scalr_finish_done
 
@@ -473,7 +487,7 @@ class Scaler(object):
                 raise RuntimeError("multi-sweep integrater has epoch 0")
 
             if epoch in self._scalr_integraters:
-                Debug.write(
+                logger.debug(
                     "integrater with epoch %d already exists. will not trust epoch values"
                     % epoch
                 )
@@ -501,12 +515,12 @@ class Scaler(object):
             while not self.get_scaler_done():
                 while not self.get_scaler_prepare_done():
 
-                    Chatter.banner("Preparing %s" % xname)
+                    logger.notice(banner("Preparing %s" % xname))
 
                     self._scalr_prepare_done = True
                     self._scale_prepare()
 
-                Chatter.banner("Scaling %s" % xname)
+                logger.notice(banner("Scaling %s" % xname))
 
                 self._scalr_done = True
                 self._scalr_result = self._scale()

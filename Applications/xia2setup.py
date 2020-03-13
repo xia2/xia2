@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 import collections
+import logging
 import os
 import sys
 import traceback
@@ -12,7 +13,8 @@ import traceback
 from xia2.Experts.FindImages import image2template_directory
 from xia2.Handlers.CommandLine import CommandLine
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Debug
+
+logger = logging.getLogger("xia2.Applications.xia2setup")
 
 image_extensions = [
     "img",
@@ -96,13 +98,13 @@ def is_image_name(filename):
         except Exception:
             pass
 
-        if is_hd5f_name(filename):
+        if is_hdf5_name(filename):
             return True
 
     return False
 
 
-def is_hd5f_name(filename):
+def is_hdf5_name(filename):
     if os.path.isfile(filename):
         if os.path.splitext(filename)[-1] in known_hdf5_extensions:
             return True
@@ -150,7 +152,7 @@ def get_template(f):
     directory = None
 
     if not os.access(f, os.R_OK):
-        Debug.write("No read permission for %s" % f)
+        logger.debug("No read permission for %s" % f)
 
     try:
         template, directory = image2template_directory(f)
@@ -161,8 +163,8 @@ def get_template(f):
                 return
 
     except Exception as e:
-        Debug.write("Exception A: %s (%s)" % (str(e), f))
-        Debug.write(traceback.format_exc())
+        logger.debug("Exception A: %s (%s)" % (str(e), f))
+        logger.debug(traceback.format_exc())
 
     if template is None or directory is None:
         raise RuntimeError("template not recognised for %s" % f)
@@ -189,12 +191,12 @@ def visit(directory, files):
     for f in files:
         full_path = os.path.join(directory, f)
 
-        if is_hd5f_name(full_path):
-            from dxtbx.format.Registry import Registry
+        if is_hdf5_name(full_path):
+            from dxtbx.format import Registry
 
-            format_class = Registry.find(full_path)
+            format_class = Registry.get_format_class_for_file(full_path)
             if format_class is None:
-                Debug.write(
+                logger.debug(
                     "Ignoring %s (Registry can not find format class)" % full_path
                 )
                 continue
@@ -206,8 +208,8 @@ def visit(directory, files):
             try:
                 template = get_template(full_path)
             except Exception as e:
-                Debug.write("Exception B: %s" % str(e))
-                Debug.write(traceback.format_exc())
+                logger.debug("Exception B: %s" % str(e))
+                logger.debug(traceback.format_exc())
                 continue
             if template is not None:
                 templates.add(template)
@@ -218,11 +220,48 @@ def visit(directory, files):
     return templates
 
 
+def _list_hdf5_data_files(h5_file):
+    import h5py
+
+    f = h5py.File(h5_file, "r")
+    filenames = [
+        f["/entry/data"][k].file.filename
+        for k in f["/entry/data"]
+        if k.startswith("data_")
+    ]
+    f.close()
+    return filenames
+
+
+def _filter_aliased_hdf5_sweeps(sweeps):
+    h5_data_to_sweep = {}
+    rest = []
+
+    for s in sweeps:
+        if not is_hdf5_name(s):
+            if s not in rest:
+                rest.append(s)
+            continue
+        filenames = tuple(_list_hdf5_data_files(s))
+        if filenames in h5_data_to_sweep:
+            # impose slight bias in favour of using _master.h5 in place of .nxs
+            # because XDS
+            if h5_data_to_sweep[filenames].endswith(".nxs") and s.endswith(
+                "_master.h5"
+            ):
+                h5_data_to_sweep[filenames] = s
+        else:
+            h5_data_to_sweep[filenames] = s
+
+    return rest + [h5_data_to_sweep[k] for k in sorted(h5_data_to_sweep)]
+
+
 def _write_sweeps(sweeps, out):
     global latest_sequence
     _known_sweeps = sweeps
 
     sweeplist = sorted(_known_sweeps)
+    sweeplist = _filter_aliased_hdf5_sweeps(sweeplist)
     assert sweeplist, "no sweeps found"
 
     # sort sweeplist based on epoch of first image of each sweep
@@ -232,7 +271,7 @@ def _write_sweeps(sweeps, out):
     ]
 
     if len(epochs) != len(set(epochs)):
-        Debug.write("Duplicate epochs found. Trying to correct epoch information.")
+        logger.debug("Duplicate epochs found. Trying to correct epoch information.")
         cumulativedelta = 0.0
         for sweep in sweeplist:
             _known_sweeps[sweep][0].get_imageset().get_scan().set_epochs(
@@ -250,7 +289,7 @@ def _write_sweeps(sweeps, out):
         ]
 
         if len(epochs) != len(set(epochs)):
-            Debug.write("Duplicate epoch information remains.")
+            logger.debug("Duplicate epoch information remains.")
         # This should only happen with incorrect exposure time information.
 
     sweeplist = [s for _, s in sorted(zip(epochs, sweeplist))]
@@ -272,8 +311,8 @@ def _write_sweeps(sweeps, out):
         sweeps = [s for _, s in sorted(zip(epochs, sweeps))]
         for s in sweeps:
             if len(s.get_images()) < min_images:
-                Debug.write("Rejecting sweep %s:" % s.get_template())
-                Debug.write(
+                logger.debug("Rejecting sweep %s:" % s.get_template())
+                logger.debug(
                     "  Not enough images (found %i, require at least %i)"
                     % (len(s.get_images()), min_images)
                 )
@@ -282,8 +321,8 @@ def _write_sweeps(sweeps, out):
             oscillation_range = s.get_imageset().get_scan().get_oscillation_range()
             width = oscillation_range[1] - oscillation_range[0]
             if min_oscillation_range is not None and width < min_oscillation_range:
-                Debug.write("Rejecting sweep %s:" % s.get_template())
-                Debug.write(
+                logger.debug("Rejecting sweep %s:" % s.get_template())
+                logger.debug(
                     "  Too narrow oscillation range (found %i, require at least %i)"
                     % (width, min_oscillation_range)
                 )
@@ -392,8 +431,8 @@ def _write_sweeps(sweeps, out):
         for s in sweeps:
             # require at least n images to represent a sweep...
             if len(s.get_images()) < min_images:
-                Debug.write("Rejecting sweep %s:" % s.get_template())
-                Debug.write(
+                logger.debug("Rejecting sweep %s:" % s.get_template())
+                logger.debug(
                     "  Not enough images (found %i, require at least %i)"
                     % (len(s.get_images()), min_images)
                 )
@@ -402,8 +441,8 @@ def _write_sweeps(sweeps, out):
             oscillation_range = s.get_imageset().get_scan().get_oscillation_range()
             width = oscillation_range[1] - oscillation_range[0]
             if min_oscillation_range is not None and width < min_oscillation_range:
-                Debug.write("Rejecting sweep %s:" % s.get_template())
-                Debug.write(
+                logger.debug("Rejecting sweep %s:" % s.get_template())
+                logger.debug(
                     "  Too narrow oscillation range (found %i, require at least %i)"
                     % (width, min_oscillation_range)
                 )
@@ -419,24 +458,24 @@ def _write_sweeps(sweeps, out):
                     min(s.get_images()) <= start_ends[0][1] <= max(s.get_images())
                 )
                 if not all((start_good, end_good)):
-                    Debug.write("Rejecting sweep %s:" % s.get_template())
+                    logger.debug("Rejecting sweep %s:" % s.get_template())
                     if not start_good:
-                        Debug.write(
+                        logger.debug(
                             "  Your specified start-point image lies outside the bounds of this sweep."
                         )
                     if not end_good:
-                        Debug.write(
+                        logger.debug(
                             "  Your specified end-point image lies outside the bounds of this sweep."
                         )
-                    Debug.write(
+                    logger.debug(
                         "  Your specified start and end points were %d & %d,"
                         % start_ends[0]
                     )
-                    Debug.write(
+                    logger.debug(
                         "  this sweep consists of images from %d to %d."
                         % (min(s.get_images()), max(s.get_images()))
                     )
-                    Debug.write(
+                    logger.debug(
                         """  If there are missing images in your sweep, but you have selected valid
   start and end points within a contiguous range of images, you will see this
   message, even though all is well with your selection, because xia2 treats

@@ -1,10 +1,12 @@
 from __future__ import absolute_import, division, print_function
 
 import json
+import logging
 import os
 
-from xia2.Handlers.Streams import Debug
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
+
+logger = logging.getLogger("xia2.Wrappers.Dials.Import")
 
 
 def Import(DriverType=None):
@@ -74,9 +76,9 @@ def Import(DriverType=None):
             if fast_mode:
                 if not self._image_to_epoch:
                     raise RuntimeError("fast mode needs image_to_epoch map")
-                Debug.write("Running dials.import in fast mode")
+                logger.debug("Running dials.import in fast mode")
             else:
-                Debug.write("Running dials.import in slow mode")
+                logger.debug("Running dials.import in slow mode")
 
             self.clear_command_line()
 

@@ -1,12 +1,12 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
+import logging
 import os
 
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter, Debug
+
+logger = logging.getLogger("xia2.Wrappers.Dials.Scale")
 
 
 def DialsScale(DriverType=None, decay_correction=None):
@@ -123,6 +123,9 @@ def DialsScale(DriverType=None, decay_correction=None):
         def set_decay_bins(self, n_bins):
             self._n_resolution_bins = n_bins
 
+        def set_array_absorption_bins(self, n_bins):
+            self._n_absorption_bins = n_bins
+
         def set_min_partiality(self, min_partiality):
             self._min_partiality = min_partiality
 
@@ -230,28 +233,46 @@ def DialsScale(DriverType=None, decay_correction=None):
             elif self._intensities == "profile":
                 self.add_command_line("intensity_choice=profile")
 
-            assert self._model is not None
-            self.add_command_line("model=%s" % self._model)
+            # Handle all model options. Model can be none - would trigger auto
+            # models in dials.scale.
+            if self._model is not None:
+                self.add_command_line("model=%s" % self._model)
+                # Decay correction can refer to any model (physical, array, KB)
+                if self._bfactor:
+                    self.add_command_line("%s.decay_correction=True" % self._model)
+                else:
+                    self.add_command_line("%s.decay_correction=False" % self._model)
 
-            if self._bfactor:
-                self.add_command_line("%s.decay_correction=True" % self._model)
-
-            if self._model != "KB":
+            if self._model == "physical" or self._model == "array":
+                # These options can refer to array or physical model
                 if self._absorption_correction:
                     self.add_command_line("%s.absorption_correction=True" % self._model)
+                else:
+                    self.add_command_line(
+                        "%s.absorption_correction=False" % self._model
+                    )
                 if self._bfactor and self._brotation is not None:
                     self.add_command_line(
                         "%s.decay_interval=%g" % (self._model, self._brotation)
                     )
 
+            # Option only relevant for spherical harmonic absorption in physical model.
+            if (
+                self._model == "physical"
+                and self._absorption_correction
+                and self._lmax is not None
+            ):
+                self.add_command_line("%s.lmax=%i" % (self._model, self._lmax))
+
+            # 'Spacing' i.e. scale interval only relevant to physical model.
+            if self._model == "physical" and self._spacing:
+                self.add_command_line(
+                    "%s.scale_interval=%g" % (self._model, self._spacing)
+                )
+
             self.add_command_line("full_matrix=%s" % self._full_matrix)
-            if self._spacing:
-                self.add_command_line("scale_interval=%g" % self._spacing)
             self.add_command_line("error_model=%s" % self._error_model)
             self.add_command_line("outlier_rejection=%s" % self._outlier_rejection)
-
-            if self._absorption_correction and self._lmax is not None:
-                self.add_command_line("lmax=%i" % self._lmax)
 
             if self._min_partiality is not None:
                 self.add_command_line("min_partiality=%s" % self._min_partiality)
@@ -327,15 +348,14 @@ def DialsScale(DriverType=None, decay_correction=None):
             try:
                 self.check_for_errors()
             except Exception:
-                Chatter.write(
-                    "dials.scale failed, see log file for more details:\n  %s"
-                    % self.get_log_file()
+                logger.warning(
+                    "dials.scale failed, see log file for more details:\n  %s",
+                    self.get_log_file(),
                 )
                 raise
 
-            Debug.write("dials.scale status: OK")
+            logger.debug("dials.scale status: OK")
 
-            Chatter.write("Completed a round of scaling using dials.scale")
             return "OK"
 
         def get_scaled_reflection_files(self):

@@ -1,6 +1,8 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
+
+import logging
+
+logger = logging.getLogger("xia2.Wrappers.Dials.ExportXDSASCII")
 
 
 def ExportXDSASCII(DriverType=None):
@@ -32,9 +34,7 @@ def ExportXDSASCII(DriverType=None):
             return self._hkl_filename
 
         def run(self):
-            from xia2.Handlers.Streams import Debug
-
-            Debug.write("Running dials.export")
+            logger.debug("Running dials.export")
 
             assert self._experiments_filename is not None
             assert self._reflections_filename is not None

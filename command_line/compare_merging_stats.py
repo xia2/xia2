@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 import os
 import sys
 
+import iotbx.merging_statistics
 import iotbx.phil
 from cctbx import uctbx
 from dials.util.options import OptionParser
@@ -32,6 +33,8 @@ format = *png pdf
   .type = choice
 style = *ggplot
   .type = choice
+space_group = None
+  .type = space_group
 """,
     process_includes=True,
 )
@@ -60,6 +63,7 @@ def run(args):
                 use_internal_variance=params.use_internal_variance,
                 eliminate_sys_absent=params.eliminate_sys_absent,
                 data_labels=params.data_labels,
+                space_group_info=params.space_group,
             )
         )
     plot_merging_stats(
@@ -79,13 +83,16 @@ def get_merging_stats(
     use_internal_variance=False,
     eliminate_sys_absent=False,
     data_labels=None,
+    space_group_info=None,
 ):
-    import iotbx.merging_statistics
-
     i_obs = iotbx.merging_statistics.select_data(
         scaled_unmerged_mtz, data_labels=data_labels
     )
     i_obs = i_obs.customized_copy(anomalous_flag=False, info=i_obs.info())
+    if space_group_info is not None:
+        i_obs = i_obs.customized_copy(
+            space_group_info=space_group_info, info=i_obs.info()
+        )
     result = iotbx.merging_statistics.dataset_statistics(
         i_obs=i_obs,
         n_bins=n_bins,

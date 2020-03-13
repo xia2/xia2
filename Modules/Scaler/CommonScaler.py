@@ -2,6 +2,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import logging
 import math
 import os
 import time
@@ -10,7 +11,7 @@ import iotbx.merging_statistics
 from iotbx import mtz
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Streams import banner
 from xia2.Handlers.CIF import CIF, mmCIF
 from xia2.lib.bits import nifty_power_of_ten, auto_logfiler
 from xia2.Modules.AnalyseMyIntensities import AnalyseMyIntensities
@@ -18,12 +19,13 @@ from xia2.Modules import MtzUtils
 from xia2.Modules.CCP4InterRadiationDamageDetector import (
     CCP4InterRadiationDamageDetector,
 )
-from xia2.Modules.Scaler.CCP4ScalerHelpers import anomalous_signals
 from xia2.Modules.Scaler.rebatch import rebatch
 from xia2.Schema.Interfaces.Scaler import Scaler
 
 # new resolution limit code
 from xia2.Wrappers.XIA.Merger import Merger
+
+logger = logging.getLogger("xia2.Modules.Scaler.CommonScaler")
 
 
 def clean_reindex_operator(reindex_operator):
@@ -33,8 +35,8 @@ def clean_reindex_operator(reindex_operator):
 class CommonScaler(Scaler):
     """Unified bits which the scalers have in common over the interface."""
 
-    def __init__(self):
-        super(CommonScaler, self).__init__()
+    def __init__(self, *args, **kwargs):
+        super(CommonScaler, self).__init__(*args, **kwargs)
 
         self._sweep_handler = None
         self._scalr_twinning_score = None
@@ -48,16 +50,13 @@ class CommonScaler(Scaler):
         max_batches = 0
 
         for epoch in self._sweep_handler.get_epochs():
-
             si = self._sweep_handler.get_sweep_information(epoch)
-            pname, xname, dname = si.get_project_info()
             sname = si.get_sweep_name()
             hklin = si.get_reflections()
 
             # limit the reflections - e.g. if we are re-running the scaling step
             # on just a subset of the integrated data
 
-            hklin = si.get_reflections()
             limit_batch_range = None
             for sweep in PhilIndex.params.xia2.settings.sweep:
                 if sweep.id == sname and sweep.range is not None:
@@ -65,8 +64,8 @@ class CommonScaler(Scaler):
                     break
 
             if limit_batch_range is not None:
-                Debug.write(
-                    "Limiting batch range for %s: %s" % (sname, limit_batch_range)
+                logger.debug(
+                    "Limiting batch range for %s: %s", sname, limit_batch_range
                 )
                 start, end = limit_batch_range
                 hklout = os.path.splitext(hklin)[0] + "_tmp.mtz"
@@ -87,7 +86,7 @@ class CommonScaler(Scaler):
             if 1 + max(batches) - min(batches) > max_batches:
                 max_batches = max(batches) - min(batches) + 1
 
-        Debug.write("Biggest sweep has %d batches" % max_batches)
+        logger.debug("Biggest sweep has %d batches", max_batches)
         max_batches = nifty_power_of_ten(max_batches)
 
         # then rebatch the files, to make sure that the batch numbers are
@@ -96,7 +95,6 @@ class CommonScaler(Scaler):
         counter = 0
 
         for epoch in self._sweep_handler.get_epochs():
-
             si = self._sweep_handler.get_sweep_information(epoch)
 
             hklin = si.get_reflections()
@@ -179,17 +177,16 @@ class CommonScaler(Scaler):
                 )
 
             if self._scalr_input_spacegroup:
-                Debug.write(
-                    "Assigning user input spacegroup: %s" % self._scalr_input_spacegroup
+                logger.debug(
+                    "Assigning user input spacegroup: %s", self._scalr_input_spacegroup
                 )
 
                 p.decide_spacegroup()
                 spacegroup = p.get_spacegroup()
                 reindex_operator = p.get_spacegroup_reindex_operator()
 
-                Debug.write(
-                    "Pointless thought %s (reindex as %s)"
-                    % (spacegroup, reindex_operator)
+                logger.debug(
+                    "Pointless thought %s (reindex as %s)", spacegroup, reindex_operator
                 )
 
                 spacegroup = self._scalr_input_spacegroup
@@ -203,9 +200,8 @@ class CommonScaler(Scaler):
                 self._spacegroup_reindex_operator = clean_reindex_operator(
                     reindex_operator
                 )
-                Debug.write(
-                    "Pointless thought %s (reindex as %s)"
-                    % (spacegroup, reindex_operator)
+                logger.debug(
+                    "Pointless thought %s (reindex as %s)", spacegroup, reindex_operator
                 )
 
             if self._scalr_input_spacegroup:
@@ -213,13 +209,14 @@ class CommonScaler(Scaler):
             else:
                 self._scalr_likely_spacegroups = p.get_likely_spacegroups()
 
-            Chatter.write("Likely spacegroups:")
+            logger.info("Likely spacegroups:")
             for spag in self._scalr_likely_spacegroups:
-                Chatter.write("%s" % spag)
+                logger.info(str(spag))
 
-            Chatter.write(
-                "Reindexing to first spacegroup setting: %s (%s)"
-                % (spacegroup, clean_reindex_operator(reindex_operator))
+            logger.info(
+                "Reindexing to first spacegroup setting: %s (%s)",
+                spacegroup,
+                clean_reindex_operator(reindex_operator),
             )
 
         else:
@@ -230,7 +227,7 @@ class CommonScaler(Scaler):
 
             self._scalr_likely_spacegroups = [spacegroup]
 
-            Debug.write("Assigning spacegroup %s from reference" % spacegroup)
+            logger.debug("Assigning spacegroup %s from reference", spacegroup)
 
         # then run reindex to set the correct spacegroup
 
@@ -272,16 +269,16 @@ class CommonScaler(Scaler):
 
             if self._sweep_information[epoch]["batches"] == [0, 0]:
 
-                Chatter.write("Getting batches from %s" % hklin)
+                logger.info("Getting batches from %s", hklin)
                 batches = MtzUtils.batches_from_mtz(hklin)
                 self._sweep_information[epoch]["batches"] = [min(batches), max(batches)]
-                Chatter.write("=> %d to %d" % (min(batches), max(batches)))
+                logger.info("=> %d to %d", min(batches), max(batches))
 
             batches = self._sweep_information[epoch]["batches"]
             if 1 + max(batches) - min(batches) > max_batches:
                 max_batches = max(batches) - min(batches) + 1
 
-        Debug.write("Biggest sweep has %d batches" % max_batches)
+        logger.debug("Biggest sweep has %d batches", max_batches)
         max_batches = nifty_power_of_ten(max_batches)
 
         epochs = sorted(self._sweep_information.keys())
@@ -364,8 +361,8 @@ class CommonScaler(Scaler):
             reindex_operator = pointless.get_spacegroup_reindex_operator()
 
             if self._scalr_input_spacegroup:
-                Debug.write(
-                    "Assigning user input spacegroup: %s" % self._scalr_input_spacegroup
+                logger.debug(
+                    "Assigning user input spacegroup: %s", self._scalr_input_spacegroup
                 )
                 spacegroups = [self._scalr_input_spacegroup]
                 reindex_operator = "h,k,l"
@@ -375,13 +372,14 @@ class CommonScaler(Scaler):
 
         self._scalr_reindex_operator = reindex_operator
 
-        Chatter.write("Likely spacegroups:")
+        logger.info("Likely spacegroups:")
         for spag in self._scalr_likely_spacegroups:
-            Chatter.write("%s" % spag)
+            logger.info(str(spag))
 
-        Chatter.write(
-            "Reindexing to first spacegroup setting: %s (%s)"
-            % (spacegroup, clean_reindex_operator(reindex_operator))
+        logger.info(
+            "Reindexing to first spacegroup setting: %s (%s)",
+            spacegroup,
+            clean_reindex_operator(reindex_operator),
         )
 
         hklin = self._prepared_reflections
@@ -413,7 +411,7 @@ class CommonScaler(Scaler):
 
         self._prepared_reflections = hklout
 
-        Debug.write(
+        logger.debug(
             "Updating unit cell to %.2f %.2f %.2f %.2f %.2f %.2f" % tuple(ri.get_cell())
         )
         self._scalr_cell = tuple(ri.get_cell())
@@ -434,8 +432,8 @@ class CommonScaler(Scaler):
             reindex_operator = "h,k,l"
 
         elif self._scalr_input_spacegroup:
-            Debug.write(
-                "Assigning user input spacegroup: %s" % self._scalr_input_spacegroup
+            logger.debug(
+                "Assigning user input spacegroup: %s", self._scalr_input_spacegroup
             )
             spacegroups = [self._scalr_input_spacegroup]
             reindex_operator = "h,k,l"
@@ -458,13 +456,14 @@ class CommonScaler(Scaler):
 
         self._scalr_reindex_operator = clean_reindex_operator(reindex_operator)
 
-        Chatter.write("Likely spacegroups:")
+        logger.info("Likely spacegroups:")
         for spag in self._scalr_likely_spacegroups:
-            Chatter.write("%s" % spag)
+            logger.info(str(spag))
 
-        Chatter.write(
-            "Reindexing to first spacegroup setting: %s (%s)"
-            % (spacegroup, clean_reindex_operator(reindex_operator))
+        logger.info(
+            "Reindexing to first spacegroup setting: %s (%s)",
+            spacegroup,
+            clean_reindex_operator(reindex_operator),
         )
 
         hklout = os.path.join(
@@ -484,7 +483,7 @@ class CommonScaler(Scaler):
             m = mtz.object(hklin)
             m.set_space_group(s).write(hklout)
             self._scalr_cell = m.crystals()[-1].unit_cell().parameters()
-            Debug.write(
+            logger.debug(
                 "Updating unit cell to %.2f %.2f %.2f %.2f %.2f %.2f"
                 % tuple(self._scalr_cell)
             )
@@ -499,7 +498,7 @@ class CommonScaler(Scaler):
             ri.set_operator(reindex_operator)
             ri.reindex()
 
-            Debug.write(
+            logger.debug(
                 "Updating unit cell to %.2f %.2f %.2f %.2f %.2f %.2f"
                 % tuple(ri.get_cell())
             )
@@ -521,17 +520,8 @@ class CommonScaler(Scaler):
 
     def _scale_finish(self):
 
-        # compute anomalous signals if anomalous
-        if self.get_scaler_anomalous():
-            self._scale_finish_chunk_1_compute_anomalous()
-
-        # next transform to F's from I's etc.
-
         if not self._scalr_scaled_refl_files:
             raise RuntimeError("no reflection files stored")
-
-        # run xia2.report on each unmerged mtz file
-        # self._scale_finish_chunk_2_report()
 
         if not PhilIndex.params.xia2.settings.small_molecule:
             self._scale_finish_chunk_3_truncate()
@@ -569,72 +559,6 @@ class CommonScaler(Scaler):
             mtz_object.add_history("From %s, run on %s" % (Version, date_str))
             mtz_object.write(mtz_file)
 
-    def _scale_finish_chunk_1_compute_anomalous(self):
-        for key in self._scalr_scaled_refl_files:
-            f = self._scalr_scaled_refl_files[key]
-            m = mtz.object(f)
-            if m.space_group().is_centric():
-                Debug.write("Spacegroup is centric: %s" % f)
-                continue
-            Debug.write("Running anomalous signal analysis on %s" % f)
-            a_s = anomalous_signals(f)
-            if a_s is not None:
-                self._scalr_statistics[(self._scalr_pname, self._scalr_xname, key)][
-                    "dF/F"
-                ] = [a_s[0]]
-                self._scalr_statistics[(self._scalr_pname, self._scalr_xname, key)][
-                    "dI/s(dI)"
-                ] = [a_s[1]]
-
-    def _scale_finish_chunk_2_report(self):
-        from cctbx.array_family import flex
-        from iotbx.reflection_file_reader import any_reflection_file
-        from xia2.lib.bits import auto_logfiler
-        from xia2.Wrappers.XIA.Report import Report
-
-        for wavelength in self._scalr_scaled_refl_files:
-            mtz_unmerged = self._scalr_scaled_reflection_files["mtz_unmerged"][
-                wavelength
-            ]
-            reader = any_reflection_file(mtz_unmerged)
-            mtz_object = reader.file_content()
-            batches = mtz_object.as_miller_arrays_dict()[
-                "HKL_base", "HKL_base", "BATCH"
-            ]
-            dose = flex.double(batches.size(), -1)
-            batch_to_dose = self.get_batch_to_dose()
-            for i, b in enumerate(batches.data()):
-                dose[i] = batch_to_dose[b]
-            c = mtz_object.crystals()[0]
-            d = c.datasets()[0]
-            d.add_column("DOSE", "R").set_values(dose.as_float())
-            tmp_mtz = os.path.join(self.get_working_directory(), "dose_tmp.mtz")
-            mtz_object.write(tmp_mtz)
-            hklin = tmp_mtz
-            FileHandler.record_temporary_file(hklin)
-
-            report = Report()
-            report.set_working_directory(self.get_working_directory())
-            report.set_mtz_filename(hklin)
-            htmlout = os.path.join(
-                self.get_working_directory(),
-                "%s_%s_%s_report.html"
-                % (self._scalr_pname, self._scalr_xname, wavelength),
-            )
-            report.set_html_filename(htmlout)
-            report.set_chef_min_completeness(0.95)  # sensible?
-            auto_logfiler(report)
-            try:
-                report.run()
-                FileHandler.record_html_file(
-                    "%s %s %s report"
-                    % (self._scalr_pname, self._scalr_xname, wavelength),
-                    htmlout,
-                )
-            except Exception as e:
-                Debug.write("xia2.report failed:")
-                Debug.write(str(e))
-
     def _scale_finish_chunk_3_truncate(self):
         for wavelength in self._scalr_scaled_refl_files:
             hklin = self._scalr_scaled_refl_files[wavelength]
@@ -668,9 +592,10 @@ class CommonScaler(Scaler):
                     xmlout,
                 )
 
-            Debug.write(
-                "%d absent reflections in %s removed"
-                % (truncate.get_nabsent(), wavelength)
+            logger.debug(
+                "%d absent reflections in %s removed",
+                truncate.get_nabsent(),
+                wavelength,
             )
 
             b_factor = truncate.get_b_factor()
@@ -711,7 +636,7 @@ class CommonScaler(Scaler):
             )
             FileHandler.record_temporary_file(hklout)
 
-            Debug.write("Merging all data sets to %s" % hklout)
+            logger.debug("Merging all data sets to %s", hklout)
 
             cad = self._factory.Cad()
             for rf in reflection_files.values():
@@ -835,7 +760,7 @@ class CommonScaler(Scaler):
 
             freein = self.get_scaler_freer_file()
 
-            Debug.write("Copying FreeR_flag from %s" % freein)
+            logger.debug("Copying FreeR_flag from %s", freein)
 
             c = self._factory.Cad()
             c.set_freein(freein)
@@ -848,7 +773,7 @@ class CommonScaler(Scaler):
 
             freein = scale_params.freer_file
 
-            Debug.write("Copying FreeR_flag from %s" % freein)
+            logger.debug("Copying FreeR_flag from %s", freein)
 
             c = self._factory.Cad()
             c.set_freein(freein)
@@ -935,8 +860,8 @@ class CommonScaler(Scaler):
             self._scalr_twinning_conclusion = "Data are centric"
             self._scalr_twinning_score = 0
 
-        Chatter.write("Overall twinning score: %4.2f" % self._scalr_twinning_score)
-        Chatter.write(self._scalr_twinning_conclusion)
+        logger.info("Overall twinning score: %4.2f", self._scalr_twinning_score)
+        logger.info(self._scalr_twinning_conclusion)
 
     def _scale_finish_chunk_8_raddam(self):
         crd = CCP4InterRadiationDamageDetector()
@@ -956,13 +881,13 @@ class CommonScaler(Scaler):
         status = crd.detect()
 
         if status:
-            Chatter.write("")
-            Chatter.banner("Local Scaling %s" % self._scalr_xname)
+            logger.info("")
+            logger.notice(banner("Local Scaling %s" % self._scalr_xname))
             for s in status:
-                Chatter.write("%s %s" % s)
-            Chatter.banner("")
+                logger.info("%s %s" % s)
+            logger.info(banner(""))
         else:
-            Debug.write("Local scaling failed")
+            logger.debug("Local scaling failed")
 
     def _estimate_resolution_limit(
         self, hklin, batch_range=None, reflections=None, experiments=None
@@ -1071,26 +996,24 @@ class CommonScaler(Scaler):
         from cctbx import sgtbx
 
         sg = sgtbx.space_group_info(str(self._scalr_likely_spacegroups[0])).group()
-        from xia2.Handlers.Environment import Environment
 
-        log_directory = Environment.generate_directory("LogFiles")
-        merging_stats_file = os.path.join(
-            log_directory,
+        log_directory = self._base_path / "LogFiles"
+        log_directory.mkdir(parents=True, exist_ok=True)
+        merging_stats_file = log_directory.joinpath(
             "%s_%s%s_merging-statistics.txt"
             % (
                 self._scalr_pname,
                 self._scalr_xname,
                 "" if wave is None else "_%s" % wave,
-            ),
+            )
         )
-        merging_stats_json = os.path.join(
-            log_directory,
+        merging_stats_json = log_directory.joinpath(
             "%s_%s%s_merging-statistics.json"
             % (
                 self._scalr_pname,
                 self._scalr_xname,
                 "" if wave is None else "_%s" % wave,
-            ),
+            )
         )
 
         result, select_result, anom_result, select_anom_result = None, None, None, None
@@ -1102,8 +1025,8 @@ class CommonScaler(Scaler):
                 result = self._iotbx_merging_statistics(
                     scaled_unmerged_mtz, anomalous=False, n_bins=n_bins
                 )
-                result.as_json(file_name=merging_stats_json)
-                with open(merging_stats_file, "w") as fh:
+                result.as_json(file_name=str(merging_stats_json))
+                with open(str(merging_stats_file), "w") as fh:
                     result.show(out=fh)
 
                 four_column_output = selected_band and any(selected_band)
@@ -1123,7 +1046,15 @@ class CommonScaler(Scaler):
                     anom_result = self._iotbx_merging_statistics(
                         scaled_unmerged_mtz, anomalous=True, n_bins=n_bins
                     )
-                    stats["Anomalous slope"] = [anom_result.anomalous_np_slope]
+                    anom_probability_plot = (
+                        anom_result.overall.anom_probability_plot_expected_delta
+                    )
+                    if anom_probability_plot is not None:
+                        stats["Anomalous slope"] = [anom_probability_plot.slope]
+                    stats["dF/F"] = [anom_result.overall.anom_signal]
+                    stats["dI/s(dI)"] = [
+                        anom_result.overall.delta_i_mean_over_sig_delta_i_mean
+                    ]
                     if four_column_output:
                         select_anom_result = self._iotbx_merging_statistics(
                             scaled_unmerged_mtz,
@@ -1171,13 +1102,11 @@ class CommonScaler(Scaler):
         self, scaled_unmerged_mtz, anomalous=False, d_min=None, d_max=None, n_bins=None
     ):
         params = PhilIndex.params.xia2.settings.merging_statistics
-
         i_obs = iotbx.merging_statistics.select_data(
             scaled_unmerged_mtz, data_labels=None
         )
         i_obs = i_obs.customized_copy(anomalous_flag=True, info=i_obs.info())
-
-        result = iotbx.merging_statistics.dataset_statistics(
+        return iotbx.merging_statistics.dataset_statistics(
             i_obs=i_obs,
             d_min=d_min,
             d_max=d_max,
@@ -1187,33 +1116,6 @@ class CommonScaler(Scaler):
             eliminate_sys_absent=params.eliminate_sys_absent,
             assert_is_not_unique_set_under_symmetry=False,
         )
-
-        result.anomalous_np_slope = None
-        if anomalous:
-            merged_intensities = i_obs.merge_equivalents(
-                use_internal_variance=params.use_internal_variance
-            ).array()
-
-            slope, intercept, n_pairs = anomalous_probability_plot(merged_intensities)
-            if slope is not None:
-                Debug.write("Anomalous difference normal probability plot:")
-                Debug.write("Slope: %.2f" % slope)
-                Debug.write("Intercept: %.2f" % intercept)
-                Debug.write("Number of pairs: %i" % n_pairs)
-
-            slope, intercept, n_pairs = anomalous_probability_plot(
-                merged_intensities, expected_delta=0.9
-            )
-            if slope is not None:
-                result.anomalous_np_slope = slope
-                Debug.write(
-                    "Anomalous difference normal probability plot (within expected delta 0.9):"
-                )
-                Debug.write("Slope: %.2f" % slope)
-                Debug.write("Intercept: %.2f" % intercept)
-                Debug.write("Number of pairs: %i" % n_pairs)
-
-        return result
 
     def _update_scaled_unit_cell(self):
         params = PhilIndex.params
@@ -1226,7 +1128,7 @@ class CommonScaler(Scaler):
             from xia2.Wrappers.Dials.TwoThetaRefine import TwoThetaRefine
             from xia2.lib.bits import auto_logfiler
 
-            Chatter.banner("Unit cell refinement")
+            logger.notice(banner("Unit cell refinement"))
 
             # Collect a list of all sweeps, grouped by project, crystal, wavelength
             groups = {}
@@ -1277,7 +1179,7 @@ class CommonScaler(Scaler):
                     ]
                 tt_grouprefiner.set_reindex_operators(reindex_ops)
                 tt_grouprefiner.run()
-                Chatter.write(
+                logger.info(
                     "%s: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"
                     % tuple(
                         ["".join(pi.split("_")[2:])]
@@ -1323,7 +1225,7 @@ class CommonScaler(Scaler):
                 tt_refiner.set_reindex_operators(reindex_ops)
                 tt_refiner.run()
                 self._scalr_cell = tt_refiner.get_unit_cell()
-                Chatter.write(
+                logger.info(
                     "Overall: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"
                     % tt_refiner.get_unit_cell()
                 )
@@ -1349,7 +1251,7 @@ class CommonScaler(Scaler):
             for key in sorted(mmcif_in.keys()):
                 mmcif_out[key] = mmcif_in[key]
 
-            Debug.write("Unit cell obtained by two-theta refinement")
+            logger.debug("Unit cell obtained by two-theta refinement")
 
         else:
             ami = AnalyseMyIntensities()
@@ -1359,7 +1261,7 @@ class CommonScaler(Scaler):
                 list(self._scalr_scaled_refl_files.values())
             )
 
-            Debug.write("Computed average unit cell (will use in all files)")
+            logger.debug("Computed average unit cell (will use in all files)")
             self._scalr_cell = average_unit_cell
             self._scalr_cell_esd = None
 
@@ -1379,7 +1281,7 @@ class CommonScaler(Scaler):
             ):
                 cif_out["_cell_%s" % cifname] = cell
 
-        Debug.write("%7.3f %7.3f %7.3f %7.3f %7.3f %7.3f" % self._scalr_cell)
+        logger.debug("%7.3f %7.3f %7.3f %7.3f %7.3f %7.3f" % self._scalr_cell)
 
     def unify_setting(self):
         """Unify the setting for the sweeps."""
@@ -1411,7 +1313,7 @@ class CommonScaler(Scaler):
 
             results.sort()
             best = results[0]
-            Debug.write("Best reindex: %s %.3f" % (best[1], best[0]))
+            logger.debug("Best reindex: %s %.3f", best[1], best[0])
             reindex_op = best[2].r().inverse().as_hkl()
             # delegate reindexing to individual Scalers.
             self.apply_reindex_operator_to_sweep_info(
@@ -1420,7 +1322,7 @@ class CommonScaler(Scaler):
             # recalculate to verify
             u, _, __ = self.get_UBlattsymm_from_sweep_info(si)
             U = fixed.inverse() * sqr(u).transpose()
-            Debug.write("New reindex: %s" % (U.inverse() * reference_U))
+            logger.debug("New reindex: %s", U.inverse() * reference_U)
 
             # FIXME I should probably raise an exception at this stage if this
             # is not about I3...
@@ -1480,8 +1382,8 @@ class CommonScaler(Scaler):
                 self._scalr_resolution_limits[(dname, sname)] = (limit, None)
                 if limit < highest_resolution:
                     highest_resolution = limit
-                Chatter.write(
-                    "Resolution limit for %s: %5.2f (user provided)" % (dname, limit)
+                logger.info(
+                    "Resolution limit for %s: %5.2f (user provided)", dname, limit
                 )
                 continue
 
@@ -1508,8 +1410,8 @@ class CommonScaler(Scaler):
                     intgr.get_beam_obj().get_s0()
                 )
                 self._scalr_resolution_limits[(dname, sname)] = (limit, suggested)
-                Debug.write("keep_all_reflections set, using detector limits")
-            Debug.write("Resolution for sweep %s: %.2f" % (sname, limit))
+                logger.debug("keep_all_reflections set, using detector limits")
+            logger.debug("Resolution for sweep %s: %.2f", sname, limit)
 
             if (dname, sname) not in self._scalr_resolution_limits:
                 self._scalr_resolution_limits[(dname, sname)] = (limit, None)
@@ -1523,59 +1425,38 @@ class CommonScaler(Scaler):
                 reasoning_str = ""
                 if reasoning:
                     reasoning_str = " (%s)" % reasoning
-                Chatter.write(
-                    "Resolution for sweep %s/%s: %.2f%s"
-                    % (dname, sname, limit, reasoning_str)
+                logger.info(
+                    "Resolution for sweep %s/%s: %.2f%s",
+                    dname,
+                    sname,
+                    limit,
+                    reasoning_str,
                 )
             else:
-                Chatter.write(
-                    "Resolution limit for %s/%s: %5.2f (%5.2f suggested)"
-                    % (dname, sname, limit, suggested)
+                logger.info(
+                    "Resolution limit for %s/%s: %5.2f (%5.2f suggested)",
+                    dname,
+                    sname,
+                    limit,
+                    suggested,
                 )
 
         if highest_suggested_resolution is not None and highest_resolution >= (
             highest_suggested_resolution - 0.004
         ):
-            Debug.write(
+            logger.debug(
                 "Dropping resolution cut-off suggestion since it is"
                 " essentially identical to the actual resolution limit."
             )
             highest_suggested_resolution = None
         self._scalr_highest_resolution = highest_resolution
         if highest_suggested_resolution is not None:
-            Debug.write(
-                "Suggested highest resolution is %5.2f (%5.2f suggested)"
-                % (highest_resolution, highest_suggested_resolution)
+            logger.debug(
+                "Suggested highest resolution is %5.2f (%5.2f suggested)",
+                highest_resolution,
+                highest_suggested_resolution,
             )
         else:
-            Debug.write("Scaler highest resolution set to %5.2f" % highest_resolution)
+            logger.debug("Scaler highest resolution set to %5.2f", highest_resolution)
 
         return highest_suggested_resolution
-
-
-def anomalous_probability_plot(intensities, expected_delta=None):
-    from scitbx.math import distributions
-    from scitbx.array_family import flex
-
-    assert intensities.is_unique_set_under_symmetry()
-    assert intensities.anomalous_flag()
-
-    dI = intensities.anomalous_differences()
-    if not dI.size():
-        return None, None, None
-
-    y = dI.data() / dI.sigmas()
-    perm = flex.sort_permutation(y)
-    y = y.select(perm)
-    distribution = distributions.normal_distribution()
-
-    x = distribution.quantiles(y.size())
-    if expected_delta is not None:
-        sel = flex.abs(x) < expected_delta
-        x = x.select(sel)
-        y = y.select(sel)
-
-    fit = flex.linear_regression(x, y)
-    if fit.is_well_defined():
-        return fit.slope(), fit.y_intercept(), x.size()
-    return None, None, None
