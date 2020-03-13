@@ -45,6 +45,9 @@ class DialsIntegrater(Integrater):
         self._intgr_integrated_reflections = None
         self._intgr_experiments_filename = None
 
+        # Check whether to do diamond anvil cell attenuation correction.
+        self.high_pressure = PhilIndex.params.dials.high_pressure.correction
+
     # overload these methods as we don't want the resolution range
     # feeding back... aha - but we may want to assign them
     # from outside!
@@ -370,7 +373,7 @@ class DialsIntegrater(Integrater):
         # If running in high-pressure mode, run dials.anvil_correction to
         # correct for the attenuation of the incident and diffracted beams by the
         # diamond anvils.
-        if PhilIndex.params.dials.high_pressure.correction:
+        if self.high_pressure:
             logger.info(
                 "Rescaling integrated reflections for attenuation in the "
                 "diamond anvil cell."

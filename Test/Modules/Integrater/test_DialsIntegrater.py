@@ -6,6 +6,7 @@ import pytest
 import sys
 
 from iotbx.reflection_file_reader import any_reflection_file
+from dials.array_family import flex
 from dxtbx.model.experiment_list import ExperimentListTemplateImporter
 
 from xia2.Handlers.Phil import PhilIndex
@@ -125,6 +126,30 @@ def exercise_dials_integrater(dials_data, tmp_dir, nproc=None):
     assert (
         abs(mtz_object.n_reflections() - expected_reflections) < 300
     ), mtz_object.n_reflections()
+
+    # Test that diamond anvil cell attenuation correction does something.
+    # That it does the right thing is left as a matter for the DIALS tests.
+    integrater3 = DialsIntegrater.from_json(string=json_str)
+    integrater3.set_integrater_finish_done(False)
+    integrater3.high_pressure = True
+    # Don't get .hkl output because we're applying the attenuation correction to data
+    # that weren't actually collected with a diamond anvil cell and some integrated
+    # intensities will be rather nonsensical, which causes an error
+    # 'cctbx Error: Inconsistent observation/sigma pair in columns: IPR, SIGIPR',
+    # when some internal .hkl consistency checks are run, which is not meaningful here.
+    integrater3.set_output_format("pickle")
+    PhilIndex.params.dials.high_pressure.correction = True
+    # Compare the first ten reflections with and without the attenuation correction.
+    control_reflections = flex.reflection_table.from_file(
+        integrater2.get_integrated_reflections()
+    )
+    valid = control_reflections.get_flags(control_reflections.flags.integrated_prf)
+    valid = valid.iselection()[:10]
+    control_intensities = control_reflections.select(valid)["intensity.prf.value"]
+    corrected_intensities = flex.reflection_table.from_file(
+        integrater3.get_integrated_reflections()
+    ).select(valid)["intensity.prf.value"]
+    assert pytest.approx(control_intensities) != corrected_intensities
 
 
 def test_dials_integrater_serial(regression_test, ccp4, dials_data, run_in_tmpdir):
