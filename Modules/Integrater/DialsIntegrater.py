@@ -371,7 +371,7 @@ class DialsIntegrater(Integrater):
         # correct for the attenuation of the incident and diffracted beams by the
         # diamond anvils.
         if PhilIndex.params.dials.high_pressure.correction:
-            Chatter.write(
+            logger.info(
                 "Rescaling integrated reflections for attenuation in the "
                 "diamond anvil cell."
             )
