@@ -399,6 +399,7 @@ class DialsIntegrater(Integrater):
             rescale_dac.set_working_directory(self.get_working_directory())
             auto_logfiler(rescale_dac)
             rescale_dac()
+            self._intgr_integrated_reflections = output_reflections
 
         if self._output_format == "hkl":
             exporter = self.ExportMtz()
