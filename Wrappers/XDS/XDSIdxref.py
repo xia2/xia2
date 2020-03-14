@@ -58,7 +58,7 @@ def XDSIdxref(DriverType=None, params=None):
             self._parallel = PhilIndex.params.xia2.settings.multiprocessing.nproc
             self.set_cpu_threads(self._parallel)
 
-            if self._parallel <= 1:
+            if isinstance(self._parallel, int) and self._parallel <= 1:
                 self.set_executable("xds")
             else:
                 self.set_executable("xds_par")

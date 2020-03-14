@@ -33,7 +33,7 @@ def XScaleR(
 
             # now set myself up...
             self._parallel = PhilIndex.params.xia2.settings.multiprocessing.nproc
-            if self._parallel <= 1:
+            if isinstance(self._parallel, int) and self._parallel <= 1:
                 self.set_executable("xscale")
             else:
                 self.set_executable("xscale_par")
