@@ -4,7 +4,6 @@ from __future__ import absolute_import, division, print_function
 
 import json
 import sys
-import warnings
 
 import iotbx.phil
 import six
@@ -29,10 +28,7 @@ class MultiplicityViewPng(render_2d):
         self._filled_circle_colors = []
 
         self.fig, self.ax = pyplot.subplots(figsize=self.settings.size_inches)
-
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            self.render(self.ax)
+        self.render(self.ax)
         pyplot.close()
 
     def GetSize(self):
