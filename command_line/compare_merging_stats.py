@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+import math
 import os
 import sys
 
@@ -39,6 +40,8 @@ d_min = None
   .type = float
 d_max = None
   .type = float
+small_multiples = False
+  .type = bool
 """,
     process_includes=True,
 )
@@ -79,6 +82,7 @@ def run(args):
         image_dir=params.image_dir,
         format=params.format,
         style=params.style,
+        small_multiples=params.small_multiples,
     )
 
 
@@ -121,23 +125,24 @@ def plot_merging_stats(
     image_dir=None,
     format="png",
     style="ggplot",
+    small_multiples=False,
 ):
     import matplotlib
 
     matplotlib.use("Agg")
-    from matplotlib import pyplot
+    from matplotlib import pyplot as plt
 
     if style is not None:
-        pyplot.style.use(style)
+        plt.style.use(style)
 
     from cycler import cycler
 
-    colors = pyplot.rcParams["axes.prop_cycle"].by_key()["color"]
+    colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
     linestyles = []
     for style in ("-", "--", ":", "-."):
         linestyles.extend([style] * len(colors))
     colors = colors * len(set(linestyles))
-    pyplot.rc("axes", prop_cycle=(cycler("c", colors) + cycler("ls", linestyles)))
+    plt.rc("axes", prop_cycle=(cycler("c", colors) + cycler("ls", linestyles)))
 
     plots_ = {
         "r_merge": "$R_{merge}$",
@@ -163,48 +168,78 @@ def plot_merging_stats(
         os.makedirs(image_dir)
     for k in plots:
 
-        def plot_data(results, k, labels, linestyle=None):
-            for i, result in enumerate(results):
-                if labels is not None:
-                    label = labels[i].replace("\\$", "$")
-                else:
-                    label = None
-                bins = result.bins
-                x = [bins[i].d_min for i in range(len(bins))]
-                x = [uctbx.d_as_d_star_sq(d) for d in x]
-                y = [getattr(bins[i], k) for i in range(len(bins))]
-                pyplot.plot(x, y, label=label, linestyle=linestyle)
+        n_rows = 1
+        n_cols = 1
+        if small_multiples:
+            n_rows = int(math.floor(math.sqrt(len(results))))
+            n_cols = n_rows
+            while n_cols * n_rows < len(results):
+                n_cols += 1
+            assert n_cols * n_rows >= len(results), (n_cols, n_rows, len(results))
 
-        plot_data(results, k, labels)
-        pyplot.xlabel(r"Resolution ($\AA$)")
-        pyplot.ylabel(plots.get(k, k))
-        if k in ("cc_one_half", "cc_one_half_sigma_tau", "completeness"):
-            pyplot.ylim(0, 1.05)
-        elif k in ("cc_anom",):
-            pyplot.ylim(min(0, pyplot.ylim()[0]), 1.05)
+        plot_data(results, k, plots.get(k, k), labels, n_rows=n_rows, n_cols=n_cols)
+
+        if size_inches is not None:
+            fig = plt.gcf()
+            fig.set_size_inches(size_inches)
+        if n_cols == 1 and labels is not None:
+            if k.startswith("cc"):
+                plt.legend(loc="lower left")
+            elif k.startswith("r_"):
+                plt.legend(loc="upper left")
+            elif k.startswith("i_"):
+                plt.legend(loc="upper right")
+            else:
+                plt.legend(loc="best")
+        plt.tight_layout()
+        plt.savefig(os.path.join(image_dir, k + ".%s" % format))
+        plt.clf()
+
+
+def plot_data(results, k, ylabel, labels, linestyle=None, n_rows=None, n_cols=None):
+    from matplotlib import pyplot as plt
+
+    ref_ax = None
+    for i, result in enumerate(results):
+        if labels is not None:
+            label = labels[i].replace("\\$", "$")
         else:
-            pyplot.ylim(0, pyplot.ylim()[1])
-        ax = pyplot.gca()
+            label = None
+        if n_cols > 1:
+            ax = plt.subplot(n_rows, n_cols, i + 1, sharex=ref_ax, sharey=ref_ax)
+            if label:
+                ax.set_title(label)
+            if ref_ax is None:
+                ref_ax = ax
+            for other in results:
+                bins = other.bins
+                x = [bins[j].d_min for j in range(len(bins))]
+                x = [uctbx.d_as_d_star_sq(d) for d in x]
+                y = [getattr(bins[j], k) for j in range(len(bins))]
+                ax.plot(x, y, linestyle="-", color="grey", linewidth=1, alpha=0.3)
+        else:
+            ax = plt.gca()
+
+        bins = result.bins
+        x = [bins[j].d_min for j in range(len(bins))]
+        x = [uctbx.d_as_d_star_sq(d) for d in x]
+        y = [getattr(bins[j], k) for j in range(len(bins))]
+        ax.plot(x, y, label=label, linestyle=linestyle)
+
+        ax.set_xlabel(r"Resolution ($\AA$)")
+        ax.set_ylabel(ylabel)
+        ax.label_outer()
+        if k in ("cc_one_half", "cc_one_half_sigma_tau", "completeness"):
+            ax.set_ylim(0, 1.05)
+        elif k in ("cc_anom",):
+            ax.set_ylim(min(0, ax.get_ylim()[0]), 1.05)
+        else:
+            ax.set_ylim(0, ax.get_ylim()[1])
         xticks = ax.get_xticks()
         xticks_d = [
             "%.2f" % uctbx.d_star_sq_as_d(ds2) if ds2 > 0 else 0 for ds2 in xticks
         ]
         ax.set_xticklabels(xticks_d)
-        if size_inches is not None:
-            fig = pyplot.gcf()
-            fig.set_size_inches(size_inches)
-        if labels is not None:
-            if k.startswith("cc"):
-                pyplot.legend(loc="lower left")
-            elif k.startswith("r_"):
-                pyplot.legend(loc="upper left")
-            elif k.startswith("i_"):
-                pyplot.legend(loc="upper right")
-            else:
-                pyplot.legend(loc="best")
-        pyplot.tight_layout()
-        pyplot.savefig(os.path.join(image_dir, k + ".%s" % format))
-        pyplot.clf()
 
 
 if __name__ == "__main__":
