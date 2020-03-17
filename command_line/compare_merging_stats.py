@@ -35,6 +35,10 @@ style = *ggplot
   .type = choice
 space_group = None
   .type = space_group
+d_min = None
+  .type = float
+d_max = None
+  .type = float
 """,
     process_includes=True,
 )
@@ -48,7 +52,7 @@ def run(args):
     )
 
     params, options, args = parser.parse_args(
-        show_diff_phil=True, return_unhandled=True
+        args, show_diff_phil=True, return_unhandled=True
     )
 
     results = []
@@ -64,6 +68,8 @@ def run(args):
                 eliminate_sys_absent=params.eliminate_sys_absent,
                 data_labels=params.data_labels,
                 space_group_info=params.space_group,
+                d_min=params.d_min,
+                d_max=params.d_max,
             )
         )
     plot_merging_stats(
@@ -84,6 +90,8 @@ def get_merging_stats(
     eliminate_sys_absent=False,
     data_labels=None,
     space_group_info=None,
+    d_min=None,
+    d_max=None,
 ):
     i_obs = iotbx.merging_statistics.select_data(
         scaled_unmerged_mtz, data_labels=data_labels
@@ -99,6 +107,8 @@ def get_merging_stats(
         anomalous=anomalous,
         use_internal_variance=use_internal_variance,
         eliminate_sys_absent=eliminate_sys_absent,
+        d_min=d_min,
+        d_max=d_max,
     )
     return result
 
@@ -107,7 +117,6 @@ def plot_merging_stats(
     results,
     labels=None,
     plots=None,
-    prefix=None,
     size_inches=None,
     image_dir=None,
     format="png",
@@ -146,8 +155,6 @@ def plot_merging_stats(
         plots = plots_
     else:
         plots = {k: plots_[k] for k in plots}
-    if prefix is None:
-        prefix = ""
     if labels is not None:
         assert len(results) == len(labels)
     if image_dir is None:
@@ -196,12 +203,9 @@ def plot_merging_stats(
             else:
                 pyplot.legend(loc="best")
         pyplot.tight_layout()
-        pyplot.savefig(os.path.join(image_dir, prefix + k + ".%s" % format))
+        pyplot.savefig(os.path.join(image_dir, k + ".%s" % format))
         pyplot.clf()
 
 
 if __name__ == "__main__":
-    from libtbx.utils import show_times_at_exit
-
-    show_times_at_exit()
     run(sys.argv[1:])
