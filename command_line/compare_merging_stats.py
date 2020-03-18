@@ -41,7 +41,7 @@ space_group = None
 
 
 def run(args):
-    usage = "xia2.compare_merging_stats [options]"
+    usage = "xia2.compare_merging_stats [options] unmerged1.mtz unmerged2.mtz (..)"
 
     parser = OptionParser(
         usage=usage, phil=phil_scope, check_format=False, epilog=help_message
