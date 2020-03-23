@@ -97,6 +97,8 @@ def run(args):
 
     experiments = flatten_experiments(params.input.experiments)
     reflections = flatten_reflections(params.input.reflections)
+    if len(experiments) < 2:
+        sys.exit("xia2.multiplex requires a minimum of two experiments")
     reflections = parse_multiple_datasets(reflections)
     experiments, reflections = assign_unique_identifiers(experiments, reflections)
 
@@ -106,11 +108,8 @@ def run(args):
 
     reflections_all = flex.reflection_table()
     assert len(reflections) == 1 or len(reflections) == len(experiments)
-    if len(reflections) > 1:
-        for i, (expt, refl) in enumerate(zip(experiments, reflections)):
-            reflections_all.extend(refl)
-    else:
-        reflections_all = reflections
+    for i, (expt, refl) in enumerate(zip(experiments, reflections)):
+        reflections_all.extend(refl)
     reflections_all.assert_experiment_identifiers_are_consistent(experiments)
 
     if params.identifiers is not None:
