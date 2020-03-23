@@ -18,7 +18,7 @@ def to_shelxcde(hklin, prefix, sites=0):
     ][0]
     indices = reader.file_content().extract_original_index_miller_indices()
     intensities = intensities.customized_copy(indices=indices, info=intensities.info())
-    with open("%s.hkl" % prefix, "wb") as hkl_file_handle:
+    with open("%s.hkl" % prefix, "w") as hkl_file_handle:
         miller_array_export_as_shelx_hklf(intensities, hkl_file_handle)
     uc = intensities.unit_cell().parameters()
     sg = intensities.space_group().type().lookup_symbol().replace(" ", "")
