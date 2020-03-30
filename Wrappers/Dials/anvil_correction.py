@@ -3,7 +3,7 @@ Provide a wrapper for dials.anvil_correction.
 
 When performing a high-pressure data collection using a diamond anvil pressure cell,
 the incident and diffracted beams are attenuated in passing through the anvils,
-adversely affecting the scaling statistics.  dials.anvil_correction provides a
+adversely affecting the scaling statistics. dials.anvil_correction provides a
 correction to the integrated intensities before symmetry determination and scaling.
 
 This wrapper is intended for use in the _integrate_finish step of the DialsIntegrater.
