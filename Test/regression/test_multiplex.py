@@ -103,6 +103,18 @@ def test_proteinase_k_dose(
             )
 
 
+def test_proteinase_k_single_dataset_raises_error(regression_test, dials_data, tmpdir):
+    data_dir = dials_data("multi_crystal_proteinase_k")
+    expts = data_dir.join("experiments_1.json")
+    refls = data_dir.join("reflections_1.pickle")
+    with tmpdir.as_cwd():
+        from xia2.command_line.multiplex import run
+
+        with pytest.raises(SystemExit) as e:
+            run([expts.strpath, refls.strpath])
+        assert str(e.value) == "xia2.multiplex requires a minimum of two experiments"
+
+
 def test_proteinase_k_laue_group_space_group_raises_error(
     regression_test, dials_data, tmpdir
 ):
