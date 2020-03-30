@@ -409,8 +409,8 @@ dials
       per_degree = None
         .type = int(value_min=0)
         .optional = True
-        .help = "The minimum number of reflections per degree of sweep needed to do "
-                "the profile modelling."
+        .help = "Minimum number of reflections per degree of sweep required to perform "
+                "profile modelling."
     }
   }
 
