@@ -403,7 +403,7 @@ dials
       overall = None
         .type = int(value_min=1)
         .optional = True
-        .help = "The minimum number of reflections needed to do the profile "
+        .help = "Minimum number of reflections required to perform profile "
                 "modelling."
 
       per_degree = None
