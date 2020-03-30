@@ -420,7 +420,7 @@ dials
   {
     correction = False
       .type = bool
-      .short_caption = "Whether to correct for attenuation by a diamond anvil cell"
+      .help = "Correct for attenuation by a diamond anvil cell"
 
     include scope dials.command_line.anvil_correction.phil_scope
   }
