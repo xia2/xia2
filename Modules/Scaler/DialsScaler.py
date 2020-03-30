@@ -651,6 +651,9 @@ pipeline=dials (supported for pipeline=dials-aimless).
             self._scaled_reflections,
         )
 
+        # Run twotheta refine
+        self._update_scaled_unit_cell_from_scaled_data()
+
         ### Now export and merge so that mtz files in correct space group.
 
         ### For MAD case, need to generate individual merged and unmerged mtz
@@ -834,9 +837,6 @@ pipeline=dials (supported for pipeline=dials-aimless).
                     (self._scalr_pname, self._scalr_xname, key)
                 ] = stats
 
-        # Run twotheta refine
-        self._update_scaled_unit_cell_from_scaled_data()
-
         # add CIF data
         expts = load.experiment_list(self._scaled_experiments)
         overall_absmin = 1.0
@@ -954,6 +954,12 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
             tt_refiner.set_reflection_files([self._scaled_reflections])  # needs a list
             tt_refiner.set_output_p4p(p4p_file)
             tt_refiner.run()
+
+            self._scaled_experiments = tt_refiner.get_output_experiments()
+            FileHandler.record_more_data_file(
+                "%s %s scaled" % (self._scalr_pname, self._scalr_xname),
+                self._scaled_experiments,
+            )
 
             self._scalr_cell = tt_refiner.get_unit_cell()
             logger.info(
