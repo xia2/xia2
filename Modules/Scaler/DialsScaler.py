@@ -10,6 +10,7 @@ from orderedset import OrderedSet
 import libtbx
 import numpy as np
 
+from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Files import FileHandler
 from xia2.lib.bits import auto_logfiler
 from xia2.Handlers.Phil import PhilIndex
@@ -339,6 +340,7 @@ class DialsScaler(Scaler):
         they are correctly indexed (via dials.symmetry) and generally tidy
         things up."""
 
+        Citations.cite("dials.scale")
         # AIM discover symmetry and reindex with dials.symmetry, and set the correct
         # reflections in si.reflections, si.experiments
 
