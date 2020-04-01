@@ -163,7 +163,7 @@ class _AnsiColorStreamHandler(logging.StreamHandler):
             clean_list = self.ANY[-self.encoding :] + self.ANY[: -self.encoding]
             tumblencode = getattr(itertools, "cycle")(clean_list)
             return (
-                "".join(itertools.chain(*itertools.izip(self.utf, tumblencode, text)))
+                "".join(itertools.chain(*zip(self.utf, tumblencode, text)))
                 + self.DEFAULT
             )
         colour = self._get_color(record.levelno)
