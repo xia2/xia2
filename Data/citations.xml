@@ -1,5 +1,28 @@
 <citations>
 
+
+<citation program="dials.scale">
+
+<acta>Beilsten-Edmands, J. et al. (2020) Acta Cryst. D76.</acta>
+<url>https://doi.org/10.1107/S2059798320003198</url>
+<bibtex>
+@article{Beilsten-Edmands:di5035,
+author = "Beilsten-Edmands, James and Winter, Graeme and Gildea, Richard and Parkhurst, James and Waterman, David and Evans, Gwyndaf",
+title = "{Scaling diffraction data in the {\it DIALS} software package: algorithms and new approaches for multi-crystal scaling}",
+journal = "Acta Crystallographica Section D",
+year = "2020",
+volume = "76",
+number = "4",
+pages = "",
+month = "Apr",
+doi = {10.1107/S2059798320003198},
+url = {https://doi.org/10.1107/S2059798320003198},
+abstract = {In processing X-ray diffraction data, the intensities obtained from integration of the diffraction images must be corrected for experimental effects in order to place all intensities on a common scale both within and between data collections. Scaling corrects for effects such as changes in sample illumination, absorption and, to some extent, global radiation damage that cause the measured intensities of symmetry-equivalent observations to differ throughout a data set. This necessarily requires a prior evaluation of the point-group symmetry of the crystal. This paper describes and evaluates the scaling algorithms implemented within the {\it DIALS} data-processing package and demonstrates the effectiveness and key features of the implementation on example macromolecular crystallographic rotation data. In particular, the scaling algorithms enable new workflows for the scaling of multi-crystal or multi-sweep data sets, providing the analysis required to support current trends towards collecting data from ever-smaller samples. In addition, the implementation of a free-set validation method is discussed, which allows the quantification of the suitability of scaling-model and algorithm choices.},
+keywords = {diffraction, crystallography, multi-crystal, data analysis, scaling},
+}
+</bibtex>
+</citation>
+
 <citation program="dials">
 <acta>Winter, G. et al. (2018) Acta Cryst. D74, 85-97.</acta>
 <url>https://doi.org/10.1107/S2059798317017235</url>

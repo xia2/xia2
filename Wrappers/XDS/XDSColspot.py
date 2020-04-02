@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
 import os
@@ -43,7 +41,7 @@ def XDSColspot(DriverType=None, params=None):
             self._parallel = PhilIndex.params.xia2.settings.multiprocessing.nproc
             self.set_cpu_threads(self._parallel)
 
-            if self._parallel <= 1:
+            if isinstance(self._parallel, int) and self._parallel <= 1:
                 self.set_executable("xds")
             else:
                 self.set_executable("xds_par")
@@ -68,13 +66,10 @@ def XDSColspot(DriverType=None, params=None):
 
             self._output_data_files_list = ["SPOT.XDS"]
 
-            return
-
         # getter and setter for input / output data
 
         def set_input_data_file(self, name, data):
             self._input_data_files[name] = data
-            return
 
         def get_output_data_file(self, name):
             return self._output_data_files[name]
@@ -192,7 +187,5 @@ def XDSColspot(DriverType=None, params=None):
                 self._output_data_files[file] = os.path.join(
                     self.get_working_directory(), file
                 )
-
-            return
 
     return XDSColspotWrapper(params)
