@@ -381,15 +381,14 @@ class DialsIntegrater(Integrater):
 
             params = PhilIndex.params.dials.high_pressure
             rescale_dac = _rescale_dac()
-            rescale_dac.clear_command_line()
 
             # Take the filenames of the last integration step as input.
             rescale_dac.experiments_filenames.append(self._intgr_experiments_filename)
             rescale_dac.reflections_filenames.append(self._intgr_integrated_reflections)
 
             # The output reflections have a filename appended with '_corrected'.
-            output_reflections = self._intgr_integrated_reflections.replace(
-                ".refl", "_corrected.refl"
+            output_reflections = "_corrected".join(
+                os.path.splitext(self._intgr_integrated_reflections)
             )
             rescale_dac.output_reflections_filename = output_reflections
 
@@ -401,7 +400,7 @@ class DialsIntegrater(Integrater):
             # Run dials.anvil_correction with the parameters as set above.
             rescale_dac.set_working_directory(self.get_working_directory())
             auto_logfiler(rescale_dac)
-            rescale_dac()
+            rescale_dac.run()
             self._intgr_integrated_reflections = output_reflections
 
         if self._output_format == "hkl":

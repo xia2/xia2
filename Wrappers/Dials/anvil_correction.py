@@ -46,7 +46,7 @@ def rescale_dac(driver_type=None):
             self.thickness = None  # type: Optional[SupportsFloat]
             self.normal = None  # type: Optional[Tuple[3 * (SupportsFloat,)]]
 
-        def __call__(self):
+        def run(self):
             """Run dials.anvil_correction if the parameters are valid."""
             # We should only start if the properties have been set.
             assert self.experiments_filenames
@@ -56,6 +56,8 @@ def rescale_dac(driver_type=None):
             assert self.density
             assert self.thickness
             assert self.normal
+
+            self.clear_command_line()
 
             self.add_command_line(self.experiments_filenames)
             self.add_command_line(self.reflections_filenames)

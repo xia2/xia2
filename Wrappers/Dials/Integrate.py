@@ -96,9 +96,15 @@ def Integrate(DriverType=None):
             # If using a diamond anvil cell, and unless the user specifies otherwise,
             if high_pressure:
                 # don't impose a minimum number of reflections per degree,
-                self._min_spots_per_degree = min_spots_per_degree or 0
+                if min_spots_per_degree:
+                    self._min_spots_per_degree = min_spots_per_degree
+                else:
+                    self._min_spots_per_degree = 0
                 # and use a reduced minimum number of reflections overall.
-                self._min_spots_overall = min_spots_overall or 10
+                if min_spots_overall:
+                    self._min_spots_overall = min_spots_overall
+                else:
+                    self._min_spots_overall = 10
             # Otherwise use user-specified values or defaults.
             else:
                 self._min_spots_per_degree = min_spots_per_degree
