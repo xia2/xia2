@@ -4,9 +4,11 @@
 from __future__ import absolute_import, division, print_function
 
 import inspect
-import logging
 import json
+import logging
+import os
 
+import pathlib2
 import six
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Syminfo import Syminfo
@@ -22,19 +24,18 @@ class XProject(object):
     """A representation of a complete project. This will contain a dictionary
     of crystals."""
 
-    def __init__(self, xinfo_file=None, name=None):
-
+    def __init__(self, xinfo_file=None, name=None, base_path=None):
+        self.path = pathlib2.Path(base_path or os.getcwd()).absolute()
         self._crystals = {}
         if xinfo_file:
-            self.setup_from_xinfo_file(xinfo_file)
+            self._setup_from_xinfo_file(xinfo_file)
         else:
             self._name = name
 
     # serialization functions
 
     def to_dict(self):
-        obj = {}
-        obj["__id__"] = "XProject"
+        obj = {"__id__": "XProject"}
 
         attributes = inspect.getmembers(self, lambda m: not inspect.isroutine(m))
         for a in attributes:
@@ -43,12 +44,14 @@ class XProject(object):
                 obj[a[0]] = crystals
             elif a[0].startswith("__"):
                 continue
+            elif hasattr(a[1], "__fspath__"):
+                obj[a[0]] = a[1].__fspath__()
             else:
                 obj[a[0]] = a[1]
         return obj
 
     @classmethod
-    def from_dict(cls, obj):
+    def from_dict(cls, obj, base_path=None):
         assert obj["__id__"] == "XProject"
         return_obj = cls()
         for k, v in obj.items():
@@ -60,6 +63,10 @@ class XProject(object):
                     v_[cname] = cryst
                 v = v_
             setattr(return_obj, k, v)
+        if hasattr(return_obj, "path"):
+            return_obj.path = pathlib2.Path(return_obj.path).absolute()
+        else:
+            return_obj.path = pathlib2.Path(base_path or os.getcwd()).absolute()
         return return_obj
 
     def as_json(self, filename=None, compact=True):
@@ -104,11 +111,14 @@ class XProject(object):
             return rv
 
         assert [filename, string].count(None) == 1
-        if filename is not None:
+        if filename:
             with open(filename, "rb") as f:
                 string = f.read()
+            base_path = os.path.dirname(filename)
+        else:
+            base_path = None
         obj = json.loads(string, object_hook=_decode_dict)
-        return cls.from_dict(obj)
+        return cls.from_dict(obj, base_path=base_path)
 
     def get_output(self):
         result = "Project: %s\n" % self._name
@@ -146,7 +156,7 @@ class XProject(object):
     def get_crystals(self):
         return self._crystals
 
-    def setup_from_xinfo_file(self, xinfo_file):
+    def _setup_from_xinfo_file(self, xinfo_file):
         """Set up this object & all subobjects based on the .xinfo
         file contents."""
 

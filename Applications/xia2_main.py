@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # A top-level interface to the whole of xia2, for data processing & analysis.
 
 from __future__ import absolute_import, division, print_function
@@ -11,7 +10,7 @@ import sys
 
 from dials.util import Sorry
 from xia2.Handlers.Citations import Citations
-from xia2.Handlers.Environment import Environment, df
+from xia2.Handlers.Environment import df
 from xia2.XIA2Version import Version
 
 logger = logging.getLogger("xia2.Applications.xia2_main")
@@ -38,7 +37,7 @@ def check_environment():
 
     ccp4_keys = ["CCP4", "CCP4_SCR"]
     for k in ccp4_keys:
-        v = Environment.getenv(k)
+        v = os.getenv(k)
         if not v:
             raise RuntimeError("%s not defined - is CCP4 set up?" % k)
         if not v == v.strip():

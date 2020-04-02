@@ -402,10 +402,10 @@ dials
     .expert_level = 1
     .short_caption = "Scaling"
   {
-    model = *auto physical array kb
+    model = *auto physical array KB
       .type = choice
       .help = "Choice of scaling model parameterisation to apply"
-    rotation_spacing = 15.0
+    rotation_spacing = None
       .type = float
       .help = "Parameter spacing for scale (rotation) term"
     Bfactor = True
@@ -415,7 +415,7 @@ dials
       .type = bool
       .help = "Include an absorption correction in scaling"
     physical_model {
-      Bfactor_spacing = 20.0
+      Bfactor_spacing = None
         .type = float
         .help = "Parameter spacing for B-factor correction"
       lmax = 4
@@ -426,7 +426,7 @@ dials
       resolution_bins = 10
         .type = int(value_min=1)
         .help = "Number of bins to parameterise decay component"
-      absorption_bins = 3
+      absorption_bins = 5
         .type = int(value_min=1)
         .help = "Number of bins in each dimension (applied to both x and y) for " \
                 "binning the detector position for the absorption term of the " \

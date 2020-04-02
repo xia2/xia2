@@ -5,6 +5,7 @@ import logging
 import math
 import os
 import py
+import six
 from collections import OrderedDict
 
 from libtbx import Auto
@@ -16,6 +17,7 @@ from dxtbx.model import ExperimentList
 
 from dials.array_family import flex
 from dials.command_line.unit_cell_histogram import plot_uc_histograms
+from dials.util import tabulate
 
 from scitbx.math import five_number_summary
 
@@ -27,6 +29,7 @@ from xia2.Wrappers.Dials.Refine import Refine
 from xia2.Wrappers.Dials.Scale import DialsScale
 from xia2.Wrappers.Dials.Symmetry import DialsSymmetry
 from xia2.Wrappers.Dials.TwoThetaRefine import TwoThetaRefine
+from xia2.Modules.Scaler.DialsScaler import scaling_model_auto_rules
 
 
 logger = logging.getLogger(__name__)
@@ -381,17 +384,14 @@ class MultiCrystalScale(object):
         self._comparison_graphs = OrderedDict()
 
         self._scaled = Scale(self._data_manager, self._params)
-        self._record_individual_report(self._scaled.report(), "All data")
+        self._record_individual_report(
+            self._data_manager, self._scaled.report(), "All data"
+        )
 
         self.decide_space_group()
 
         self._data_manager.export_experiments("multiplex.expt")
         self._data_manager.export_reflections("multiplex.refl")
-
-        scaled_unmerged_mtz = py.path.local(self._scaled.scaled_unmerged_mtz)
-        scaled_unmerged_mtz.copy(py.path.local("scaled_unmerged.mtz"))
-        scaled_mtz = py.path.local(self._scaled.scaled_mtz)
-        scaled_mtz.copy(py.path.local("scaled.mtz"))
 
         self._mca = self.multi_crystal_analysis()
         self.cluster_analysis()
@@ -443,13 +443,13 @@ class MultiCrystalScale(object):
                 data_manager.select(cluster_identifiers)
                 scaled = Scale(data_manager, self._params)
                 self._record_individual_report(
-                    scaled.report(), cluster_dir.replace("_", " ")
+                    data_manager, scaled.report(), cluster_dir.replace("_", " ")
                 )
                 os.chdir(cwd)
 
         self.report()
 
-    def _record_individual_report(self, report, cluster_name):
+    def _record_individual_report(self, data_manager, report, cluster_name):
         d = self._report_as_dict(report)
 
         self._individual_report_dicts[cluster_name] = self._individual_report_dict(
@@ -461,6 +461,7 @@ class MultiCrystalScale(object):
             "i_over_sig_i",
             "completeness",
             "multiplicity_vs_resolution",
+            "r_pim",
         ):
             self._comparison_graphs.setdefault(
                 graph, {"layout": d[graph]["layout"], "data": []}
@@ -469,6 +470,33 @@ class MultiCrystalScale(object):
             data["name"] = cluster_name
             data.pop("line", None)  # remove default color override
             self._comparison_graphs[graph]["data"].append(data)
+
+        def remove_html_tags(table):
+            return [
+                [
+                    s.replace("<strong>", "")
+                    .replace("</strong>", "")
+                    .replace("<sub>", "")
+                    .replace("</sub>", "")
+                    if isinstance(s, six.string_types)
+                    else s
+                    for s in row
+                ]
+                for row in table
+            ]
+
+        logger.info(
+            "\nOverall merging statistics:\n%s",
+            tabulate(
+                remove_html_tags(d["overall_statistics_table"]), headers="firstrow"
+            ),
+        )
+        logger.info(
+            "\nResolution shells:\n%s",
+            tabulate(
+                remove_html_tags(d["merging_statistics_table"]), headers="firstrow"
+            ),
+        )
 
     @staticmethod
     def _report_as_dict(report):
@@ -497,13 +525,14 @@ class MultiCrystalScale(object):
             "rd_vs_batch_difference",
         ):
             for i, data in enumerate(d[g]["data"]):
-                x = data["x"]
-                n = len(x)
+                n = len(data["x"])
                 if n > max_points:
                     step = n // max_points
                     sel = (flex.int_range(n) % step) == 0
                     data["x"] = list(flex.int(data["x"]).select(sel))
                     data["y"] = list(flex.double(data["y"]).select(sel))
+                    if "text" in data:
+                        data["text"] = list(flex.std_string(data["text"]).select(sel))
 
         d.update(report.multiplicity_plots())
         return d
@@ -514,6 +543,7 @@ class MultiCrystalScale(object):
         d = {
             "merging_statistics_table": report_d["merging_statistics_table"],
             "overall_statistics_table": report_d["overall_statistics_table"],
+            "image_range_table": report_d["image_range_table"],
         }
 
         resolution_graphs = OrderedDict(
@@ -587,7 +617,11 @@ class MultiCrystalScale(object):
                 "Selecting subset of data sets for subsequent analysis: %s"
                 % str(largest_cluster_lattice_ids)
             )
-            self._data_manager.select(largest_cluster_lattice_ids)
+            cluster_identifiers = [
+                self._data_manager.ids_to_identifiers_map[l]
+                for l in largest_cluster_lattice_ids
+            ]
+            self._data_manager.select(cluster_identifiers)
         else:
             logger.info("Using all data sets for subsequent analysis")
 
@@ -715,7 +749,12 @@ class MultiCrystalScale(object):
 
     def report(self):
         self._mca.report(
-            self._individual_report_dicts, self._comparison_graphs, self._cosym_analysis
+            self._individual_report_dicts,
+            self._comparison_graphs,
+            self._cosym_analysis,
+            image_range_table=self._individual_report_dicts["All data"][
+                "image_range_table"
+            ],
         )
 
     def cluster_analysis(self):
@@ -749,6 +788,11 @@ class Scale(object):
         d_max = self._params.resolution.d_max
 
         self.scale(d_min=d_min, d_max=d_max)
+
+        py.path.local(self.scaled_unmerged_mtz).copy(
+            py.path.local("scaled_unmerged.mtz")
+        )
+        py.path.local(self.scaled_mtz).copy(py.path.local("scaled.mtz"))
 
     def refine(self):
         # refine in correct bravais setting
@@ -825,16 +869,29 @@ class Scale(object):
         scaler.set_scaled_unmerged_mtz(unmerged_mtz)
         scaler.set_scaled_mtz(merged_mtz)
 
+        # Set default scaling model
+        if self._params.scaling.dials.model in (None, "auto", Auto):
+            self._params.scaling.dials.model = "physical"
+        scaler.set_model(self._params.scaling.dials.model)
+
         lmax = self._params.scaling.secondary.lmax
         if lmax:
             scaler.set_absorption_correction(True)
             scaler.set_lmax(lmax)
         else:
             scaler.set_absorption_correction(False)
+
+        exp = self._data_manager.experiments[0]
+        scale_interval, decay_interval = scaling_model_auto_rules(exp)
         if self._params.scaling.rotation.spacing is not None:
             scaler.set_spacing(self._params.scaling.rotation.spacing)
+        else:
+            scaler.set_spacing(scale_interval)
         if self._params.scaling.brotation.spacing is not None:
             scaler.set_bfactor(brotation=self._params.scaling.brotation.spacing)
+        else:
+            scaler.set_bfactor(brotation=decay_interval)
+
         scaler.set_resolution(d_min=d_min, d_max=d_max)
         if self._params.scaling.dials.Isigma_range is not None:
             scaler.set_isigma_selection(self._params.scaling.dials.Isigma_range)
@@ -847,10 +904,6 @@ class Scale(object):
 
         scaler.set_full_matrix(False)
 
-        # Set default scaling model
-        if self._params.scaling.dials.model in (None, "auto", Auto):
-            self._params.scaling.dials.model = "physical"
-        scaler.set_model(self._params.scaling.dials.model)
         scaler.set_outlier_rejection(self._params.scaling.dials.outlier_rejection)
 
         scaler.scale()
@@ -938,4 +991,5 @@ class Scale(object):
     def report(self):
         from xia2.Modules.Report import Report
 
-        return Report.from_data_manager(self._data_manager)
+        report = Report.from_data_manager(self._data_manager)
+        return report

@@ -64,7 +64,7 @@ def run():
     )
 
     # delete all of the temporary mtz files...
-    cleanup()
+    cleanup(xinfo.path)
 
     write_citations()
 

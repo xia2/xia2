@@ -3,6 +3,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import atexit
 import ctypes
 import logging
 import os
@@ -77,63 +78,22 @@ def ulimit_n():
     demand = min(4096, hard)
     resource.setrlimit(resource.RLIMIT_NOFILE, (demand, demand))
     current, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
-    return current, demand, hard
+    logger.debug("File handle limits: %d/%d/%d" % (current, demand, hard))
 
 
-class _Environment(object):
-    """A class to store environmental considerations."""
+def set_up_ccp4_tmpdir():
+    """define a local CCP4_SCR"""
+    ccp4_scr = tempfile.mkdtemp()
+    os.environ["CCP4_SCR"] = ccp4_scr
+    logger.debug("Created CCP4_SCR: %s" % ccp4_scr)
 
-    def __init__(self, working_directory=None):
-        if working_directory is None:
-            self._working_directory = os.getcwd()
-        else:
-            self._working_directory = working_directory
-        self._is_setup = False
+    def drop_ccp4_scr_tmpdir_if_possible():
+        try:
+            os.rmdir(ccp4_scr)
+        except Exception:
+            pass
 
-    def _setup(self):
-        if self._is_setup:
-            return
-
-        # define a local CCP4_SCR
-        ccp4_scr = tempfile.mkdtemp()
-        os.environ["CCP4_SCR"] = ccp4_scr
-        logger.debug("Created CCP4_SCR: %s" % ccp4_scr)
-
-        ulimit = ulimit_n()
-        if ulimit:
-            logger.debug("File handle limits: %d/%d/%d" % ulimit)
-
-        self._is_setup = True
-
-    def generate_directory(self, path_tuple):
-        """Used for generating working directories."""
-        self._setup()
-
-        path = self._working_directory
-
-        if isinstance(path_tuple, type("string")):
-            path_tuple = (path_tuple,)
-
-        for p in path_tuple:
-            path = os.path.join(path, p)
-
-        if not os.path.exists(path):
-            logger.debug("Making directory: %s" % path)
-            os.makedirs(path)
-        else:
-            logger.debug("Directory exists: %s" % path)
-
-        return path
-
-    def getenv(self, name):
-        """A wrapper for os.environ."""
-        self._setup()
-        return os.environ.get(name)
-
-
-Environment = _Environment()
-
-# jiffy functions
+    atexit.register(drop_ccp4_scr_tmpdir_if_possible)
 
 
 def get_number_cpus():
@@ -152,3 +112,7 @@ def get_number_cpus():
     from libtbx.introspection import number_of_processors
 
     return number_of_processors(return_value_if_unknown=-1)
+
+
+set_up_ccp4_tmpdir()
+ulimit_n()

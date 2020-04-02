@@ -8,6 +8,7 @@ import iotbx.phil
 
 import xia2.Handlers.Streams
 from dials.array_family import flex
+from dials.util.exclude_images import exclude_image_ranges_for_scaling
 from dials.util.multi_dataset_handling import (
     assign_unique_identifiers,
     parse_multiple_datasets,
@@ -25,6 +26,8 @@ help_message = """
 phil_scope = iotbx.phil.parse(
     """
 include scope xia2.Modules.MultiCrystal.ScaleAndMerge.phil_scope
+
+include scope dials.util.exclude_images.phil_scope
 
 seed = 42
   .type = int(value_min=0)
@@ -94,16 +97,19 @@ def run(args):
 
     experiments = flatten_experiments(params.input.experiments)
     reflections = flatten_reflections(params.input.reflections)
+    if len(experiments) < 2:
+        sys.exit("xia2.multiplex requires a minimum of two experiments")
     reflections = parse_multiple_datasets(reflections)
     experiments, reflections = assign_unique_identifiers(experiments, reflections)
 
+    reflections, experiments = exclude_image_ranges_for_scaling(
+        reflections, experiments, params.exclude_images
+    )
+
     reflections_all = flex.reflection_table()
     assert len(reflections) == 1 or len(reflections) == len(experiments)
-    if len(reflections) > 1:
-        for i, (expt, refl) in enumerate(zip(experiments, reflections)):
-            reflections_all.extend(refl)
-    else:
-        reflections_all = reflections
+    for i, (expt, refl) in enumerate(zip(experiments, reflections)):
+        reflections_all.extend(refl)
     reflections_all.assert_experiment_identifiers_are_consistent(experiments)
 
     if params.identifiers is not None:
