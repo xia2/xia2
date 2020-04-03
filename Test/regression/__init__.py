@@ -11,12 +11,12 @@ from iotbx.reflection_file_reader import any_reflection_file
 
 import xia2.Test.regression
 
-default_data_files = [
+default_data_files = (
     "AUTOMATIC_DEFAULT_free.mtz",
     "AUTOMATIC_DEFAULT_scaled.sca",
     "AUTOMATIC_DEFAULT_scaled_unmerged.mtz",
     "AUTOMATIC_DEFAULT_scaled_unmerged.sca",
-]
+)
 
 
 class Xia2RegressionToleranceWarning(UserWarning):
