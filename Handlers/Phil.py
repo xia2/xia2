@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# coding: utf-8
 # Phil.py
 #   Copyright (C) 2012 Diamond Light Source, Graeme Winter
 #
@@ -15,7 +16,7 @@ from iotbx.phil import parse
 from libtbx.phil import interface
 
 master_phil = parse(
-    """
+    u"""
 general
   .short_caption = "General settings"
 {
@@ -396,7 +397,34 @@ dials
       .type = float(value_min=0.0)
       .short_caption = "Low resolution cutoff for integration"
       .expert_level = 1
+    min_spots
+      .short_caption = "Override default profile parameters of dials.integrate"
+    {
+      overall = None
+        .type = int(value_min=1)
+        .optional = True
+        .help = "Minimum number of reflections required to perform profile "
+                "modelling."
+
+      per_degree = None
+        .type = int(value_min=0)
+        .optional = True
+        .help = "Minimum number of reflections per degree of sweep required to perform "
+                "profile modelling."
+    }
   }
+
+  high_pressure
+    .expert_level = 1
+    .short_caption = "Handle diamond anvil pressure cell data"
+  {
+    correction = False
+      .type = bool
+      .help = "Correct for attenuation by a diamond anvil cell"
+
+    include scope dials.command_line.anvil_correction.phil_scope
+  }
+
   scale
     .expert_level = 1
     .short_caption = "Scaling"
