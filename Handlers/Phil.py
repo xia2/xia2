@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 # Phil.py
 #   Copyright (C) 2012 Diamond Light Source, Graeme Winter
 #
@@ -16,7 +15,7 @@ from iotbx.phil import parse
 from libtbx.phil import interface
 
 master_phil = parse(
-    u"""
+    """
 general
   .short_caption = "General settings"
 {
