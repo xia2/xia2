@@ -19,7 +19,7 @@ from xia2.Schema.XSweep import XSweep
 from xia2.Schema.XSample import XSample
 
 
-def exercise_dials_integrater(dials_data, tmp_dir, nproc=None):
+def exercise_dials_integrater(dials_data, tmp_dir, monkeypatch, nproc=None):
     if nproc:
         PhilIndex.params.xia2.settings.multiprocessing.nproc = nproc
 
@@ -138,7 +138,7 @@ def exercise_dials_integrater(dials_data, tmp_dir, nproc=None):
     # 'cctbx Error: Inconsistent observation/sigma pair in columns: IPR, SIGIPR',
     # when some internal .hkl consistency checks are run, which is not meaningful here.
     integrater3.set_output_format("pickle")
-    PhilIndex.params.dials.high_pressure.correction = True
+    monkeypatch.setattr(PhilIndex.params.dials.high_pressure, "correction", True)
     # Compare the first ten reflections with and without the attenuation correction.
     control_reflections = flex.reflection_table.from_file(
         integrater2.get_integrated_reflections()
@@ -152,6 +152,10 @@ def exercise_dials_integrater(dials_data, tmp_dir, nproc=None):
     assert pytest.approx(control_intensities) != corrected_intensities
 
 
-def test_dials_integrater_serial(regression_test, ccp4, dials_data, run_in_tmpdir):
+def test_dials_integrater_serial(
+    regression_test, ccp4, dials_data, run_in_tmpdir, monkeypatch
+):
     with mock.patch.object(sys, "argv", []):
-        exercise_dials_integrater(dials_data, run_in_tmpdir.strpath, nproc=1)
+        exercise_dials_integrater(
+            dials_data, run_in_tmpdir.strpath, monkeypatch, nproc=1
+        )
