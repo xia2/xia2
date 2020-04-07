@@ -1,17 +1,20 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+import sys
 
+import mock
 import pathlib2
+import pytest
 import six
 
-from xia2.Handlers.Phil import PhilIndex
 
+@pytest.mark.parametrize("nproc", [1])
+def test_xds_scalerA(regression_test, ccp4, xds, dials_data, run_in_tmpdir, nproc):
+    if nproc is not None:
+        from xia2.Handlers.Phil import PhilIndex
 
-def test_xds_scalerA(
-    regression_test, ccp4, xds, dials_data, run_in_tmpdir, monkeypatch
-):
-    monkeypatch.setattr(PhilIndex.params.xia2.settings.multiprocessing, "nproc", 1)
+        PhilIndex.params.xia2.settings.multiprocessing.nproc = nproc
 
     template = dials_data("insulin").join("insulin_1_###.img").strpath
 
@@ -39,7 +42,8 @@ def test_xds_scalerA(
     wav = XWavelength("WAVE1", cryst, imageset.get_beam().get_wavelength())
     samp = XSample("X1", cryst)
     directory, image = os.path.split(imageset.get_path(1))
-    sweep = XSweep("SWEEP1", wav, samp, directory=directory, image=image)
+    with mock.patch.object(sys, "argv", []):
+        sweep = XSweep("SWEEP1", wav, samp, directory=directory, image=image)
     indexer.set_indexer_sweep(sweep)
 
     from xia2.Modules.Refiner.XDSRefiner import XDSRefiner

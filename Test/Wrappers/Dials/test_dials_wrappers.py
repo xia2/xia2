@@ -1,8 +1,10 @@
 from __future__ import absolute_import, division, print_function
 
+import mock
 import os
 import pytest
 import shutil
+import sys
 
 from dxtbx.serialize import load
 from dials.array_family import flex
@@ -20,11 +22,9 @@ from xia2.Wrappers.Dials.ExportXDSASCII import ExportXDSASCII
 from xia2.Wrappers.Dials.CombineExperiments import CombineExperiments
 
 
-def test_dials_wrappers_serial(
-    regression_test, ccp4, dials_data, run_in_tmpdir, monkeypatch
-):
-    template = (dials_data("insulin") / "insulin_1_%03i.img").strpath
-    monkeypatch.setattr(PhilIndex.params.xia2.settings.multiprocessing, "nproc", 1)
+def exercise_dials_wrappers(template, nproc=None):
+    if nproc is not None:
+        PhilIndex.params.xia2.settings.multiprocessing.nproc = nproc
 
     scan_ranges = [(1, 45)]
     image_range = (1, 45)
@@ -138,3 +138,9 @@ def test_dials_wrappers_serial(
     print("Done combining")
     assert os.path.exists(exporter.get_combined_experiments_filename())
     assert os.path.exists(exporter.get_combined_reflections_filename())
+
+
+def test_dials_wrappers_serial(regression_test, ccp4, dials_data, run_in_tmpdir):
+    template = (dials_data("insulin") / "insulin_1_%03i.img").strpath
+    with mock.patch.object(sys, "argv", []):
+        exercise_dials_wrappers(template, nproc=1)
