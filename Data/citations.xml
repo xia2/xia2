@@ -220,23 +220,6 @@ pages = "41--51",
 </bibtex>
 </citation>
 
-<citation program="blend">
-<bibtex>
-@article{Foadi:dz5278,
-author = "Foadi, James and Aller, Pierre and Alguel, Yilmaz and Cameron, Alex and Axford, Danny and Owen, Robin L. and Armour, Wes and Waterman, David G. and Iwata, So and Evans, Gwyndaf",
-title = "{Clustering procedures for the optimal selection of data sets from multiple crystals in macromolecular crystallography}",
-journal = "Acta Crystallographica Section D",
-year = "2013",
-volume = "69",
-number = "8",
-pages = "1617--1632",
-month = "Aug",
-doi = {10.1107/S0907444913012274},
-url = {https://doi.org/10.1107/S0907444913012274},
-}
-</bibtex>
-</citation>
-
 <citation program="delta_cc_half">
 <acta>Assmann, G., Brehm, W. and Diederichs, K. (2016). J. Appl. Cryst. 49, 1021-1028.</acta>
 <bibtex>
