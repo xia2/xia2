@@ -35,8 +35,6 @@ class FrameProcessor(object):
     diffraction frames."""
 
     def __init__(self, image=None):
-        super(FrameProcessor, self).__init__()
-
         self._fp_template = None
         self._fp_directory = None
 
