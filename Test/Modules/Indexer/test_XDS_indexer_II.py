@@ -1,9 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
-import mock
 import os
 import pytest
-import sys
 
 from dxtbx.model.experiment_list import ExperimentListTemplateImporter
 from xia2.Handlers.Phil import PhilIndex
@@ -14,15 +12,15 @@ from xia2.Schema.XSweep import XSweep
 from xia2.Schema.XSample import XSample
 
 
-def exercise_xds_indexer(dials_data, tmp_dir, nproc=None):
-    if nproc is not None:
-
-        PhilIndex.params.xia2.settings.multiprocessing.nproc = nproc
+def test_xds_indexer_serial(
+    regression_test, ccp4, xds, dials_data, run_in_tmpdir, monkeypatch
+):
+    monkeypatch.setattr(PhilIndex.params.xia2.settings.multiprocessing, "nproc", 1)
 
     template = dials_data("insulin").join("insulin_1_###.img").strpath
 
     indexer = XDSIndexerII()
-    indexer.set_working_directory(tmp_dir)
+    indexer.set_working_directory(run_in_tmpdir.strpath)
 
     importer = ExperimentListTemplateImporter([template])
     experiments = importer.experiments
@@ -71,8 +69,3 @@ def exercise_xds_indexer(dials_data, tmp_dir, nproc=None):
     assert indexer.get_indexer_cell() == pytest.approx(indexer2.get_indexer_cell())
     assert indexer.get_indexer_lattice() == "hR"
     assert indexer2.get_indexer_lattice() == "hR"
-
-
-def test_xds_indexer_serial(regression_test, ccp4, xds, dials_data, run_in_tmpdir):
-    with mock.patch.object(sys, "argv", []):
-        exercise_xds_indexer(dials_data, run_in_tmpdir.strpath, nproc=1)

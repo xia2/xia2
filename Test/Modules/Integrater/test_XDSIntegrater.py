@@ -1,9 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
-import mock
 import os
 import pytest
-import sys
 
 from iotbx.reflection_file_reader import any_reflection_file
 from dxtbx.model.experiment_list import ExperimentListTemplateImporter
@@ -18,14 +16,15 @@ from xia2.Schema.XSweep import XSweep
 from xia2.Schema.XSample import XSample
 
 
-def exercise_xds_integrater(dials_data, tmp_dir, nproc=None):
-    if nproc:
-        PhilIndex.params.xia2.settings.multiprocessing.nproc = nproc
+def test_xds_integrater_serial(
+    regression_test, ccp4, xds, dials_data, run_in_tmpdir, monkeypatch
+):
+    monkeypatch.setattr(PhilIndex.params.xia2.settings.multiprocessing, "nproc", 1)
 
     template = dials_data("insulin").join("insulin_1_###.img").strpath
 
     indexer = XDSIndexer()
-    indexer.set_working_directory(tmp_dir)
+    indexer.set_working_directory(run_in_tmpdir.strpath)
 
     importer = ExperimentListTemplateImporter([template])
     experiments = importer.experiments
@@ -40,12 +39,12 @@ def exercise_xds_integrater(dials_data, tmp_dir, nproc=None):
     indexer.set_indexer_sweep(sweep)
 
     refiner = XDSRefiner()
-    refiner.set_working_directory(tmp_dir)
+    refiner.set_working_directory(run_in_tmpdir.strpath)
     refiner.add_refiner_indexer(sweep.get_epoch(1), indexer)
     # refiner.refine()
 
     integrater = XDSIntegrater()
-    integrater.set_working_directory(tmp_dir)
+    integrater.set_working_directory(run_in_tmpdir.strpath)
     integrater.setup_from_image(imageset.get_path(1))
     integrater.set_integrater_refiner(refiner)
     integrater.set_integrater_sweep(sweep)
@@ -119,8 +118,3 @@ def exercise_xds_integrater(dials_data, tmp_dir, nproc=None):
     assert reader.file_type() == "ccp4_mtz"
     mtz_object = reader.file_content()
     assert mtz_object.n_reflections() == pytest.approx(50100, abs=400)
-
-
-def test_xds_integrater_serial(regression_test, ccp4, xds, dials_data, run_in_tmpdir):
-    with mock.patch.object(sys, "argv", []):
-        exercise_xds_integrater(dials_data, run_in_tmpdir.strpath, nproc=1)

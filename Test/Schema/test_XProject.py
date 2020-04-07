@@ -2,14 +2,11 @@ from __future__ import absolute_import, division, print_function
 
 import json
 import os
-import sys
-
-import mock
 import pathlib2
 
 
-def exercise_serialization(dials_data, tmp_dir):
-    base_path = pathlib2.Path(tmp_dir)
+def test_serialization(regression_test, ccp4, dials_data, run_in_tmpdir):
+    base_path = pathlib2.Path(run_in_tmpdir)
     template = dials_data("insulin").join("insulin_1_###.img").strpath
 
     from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
@@ -44,20 +41,20 @@ def exercise_serialization(dials_data, tmp_dir):
     from dxtbx.serialize.load import _decode_dict
 
     indexer = DialsIndexer()
-    indexer.set_working_directory(tmp_dir)
+    indexer.set_working_directory(run_in_tmpdir.strpath)
     indexer.add_indexer_imageset(imageset)
     indexer.set_indexer_sweep(sweep)
     sweep._indexer = indexer
 
     refiner = DialsRefiner()
-    refiner.set_working_directory(tmp_dir)
+    refiner.set_working_directory(run_in_tmpdir.strpath)
     refiner.add_refiner_indexer(sweep.get_epoch(1), indexer)
     refiner.add_refiner_sweep(sweep)
     sweep._refiner = refiner
 
     integrater = DialsIntegrater()
     integrater.set_output_format("hkl")
-    integrater.set_working_directory(tmp_dir)
+    integrater.set_working_directory(run_in_tmpdir.strpath)
     integrater.setup_from_image(imageset.get_path(1))
     integrater.set_integrater_refiner(refiner)
     # integrater.set_integrater_indexer(indexer)
@@ -131,8 +128,3 @@ def exercise_serialization(dials_data, tmp_dir):
 
     print(xproj.get_output())
     print("\n".join(xproj.summarise()))
-
-
-def test_serialization(regression_test, ccp4, dials_data, run_in_tmpdir):
-    with mock.patch.object(sys, "argv", []):
-        exercise_serialization(dials_data, run_in_tmpdir.strpath)
