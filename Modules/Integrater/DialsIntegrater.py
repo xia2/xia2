@@ -413,8 +413,7 @@ class DialsIntegrater(Integrater):
             exporter.run()
             self._intgr_integrated_filename = mtz_filename
 
-            # record integrated MTZ file for e.g. BLEND.
-
+            # record integrated MTZ file
             pname, xname, dname = self.get_integrater_project_info()
             sweep = self.get_integrater_sweep_name()
             FileHandler.record_more_data_file(
