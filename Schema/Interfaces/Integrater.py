@@ -104,10 +104,8 @@ class Integrater(FrameProcessor):
         # the output reflections
         self._intgr_hklout_raw = None
         self._intgr_hklout = None
-        self._output_format = (
-            "hkl"  #'hkl' or 'pickle', if pickle then self._intgr_hklout
-        )
-        # returns a refl table.
+        # 'hkl' or 'pickle', if pickle then self._intgr_hklout returns a refl table.
+        self._output_format = "hkl"
 
         # a place to store the project, crystal, wavelength, sweep information
         # to interface with the scaling...
