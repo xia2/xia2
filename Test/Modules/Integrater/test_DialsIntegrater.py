@@ -19,7 +19,7 @@ from xia2.Schema.XSweep import XSweep
 from xia2.Schema.XSample import XSample
 
 
-def exercise_dials_integrater(dials_data, tmp_dir, monkeypatch, nproc=None):
+def exercise_dials_integrater(dials_data, tmp_dir, nproc=None):
     if nproc:
         PhilIndex.params.xia2.settings.multiprocessing.nproc = nproc
 
@@ -138,24 +138,39 @@ def exercise_dials_integrater(dials_data, tmp_dir, monkeypatch, nproc=None):
     # 'cctbx Error: Inconsistent observation/sigma pair in columns: IPR, SIGIPR',
     # when some internal .hkl consistency checks are run, which is not meaningful here.
     integrater3.set_output_format("pickle")
-    monkeypatch.setattr(PhilIndex.params.dials.high_pressure, "correction", True)
-    # Compare the first ten reflections with and without the attenuation correction.
+    # Compare the first ten profile-fitted integrated intensities without correction.
     control_reflections = flex.reflection_table.from_file(
         integrater2.get_integrated_reflections()
     )
     valid = control_reflections.get_flags(control_reflections.flags.integrated_prf)
     valid = valid.iselection()[:10]
-    control_intensities = control_reflections.select(valid)["intensity.prf.value"]
-    corrected_intensities = flex.reflection_table.from_file(
+    control_reflections = control_reflections.select(valid)
+    # Get the first ten profile-fitted integrated intensities with DAC correction.
+    corrected_reflections = flex.reflection_table.from_file(
         integrater3.get_integrated_reflections()
-    ).select(valid)["intensity.prf.value"]
+    )
+    valid = corrected_reflections.get_flags(corrected_reflections.flags.integrated_prf)
+    valid = valid.iselection()[:10]
+    corrected_reflections = corrected_reflections.select(valid)
+    # Check that we're comparing equivalent reflections.
+    assert control_reflections["miller_index"] == corrected_reflections["miller_index"]
+    control_intensities = control_reflections["intensity.prf.value"]
+    corrected_intensities = corrected_reflections["intensity.prf.value"]
+    # Check that the reflection intensities are not the same.
     assert pytest.approx(control_intensities) != corrected_intensities
 
 
-def test_dials_integrater_serial(
-    regression_test, ccp4, dials_data, run_in_tmpdir, monkeypatch
-):
+def test_dials_integrater_serial(regression_test, ccp4, dials_data, run_in_tmpdir):
     with mock.patch.object(sys, "argv", []):
-        exercise_dials_integrater(
-            dials_data, run_in_tmpdir.strpath, monkeypatch, nproc=1
-        )
+        exercise_dials_integrater(dials_data, run_in_tmpdir.strpath, nproc=1)
+
+
+def test_dials_integrater_high_pressure_set(monkeypatch):
+    """Check that the appropriate PHIL parameter triggers high-pressure mode."""
+    # Without the relevant PHIL parameter set, check everything is normal.
+    integrater = DialsIntegrater()
+    assert not integrater.high_pressure
+    # Check we can trigger high-pressure mode with the relevant PHIL parameter.
+    monkeypatch.setattr(PhilIndex.params.dials.high_pressure, "correction", True)
+    integrater = DialsIntegrater()
+    assert integrater.high_pressure
