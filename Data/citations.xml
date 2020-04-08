@@ -1,8 +1,6 @@
 <citations>
 
-
 <citation program="dials.scale">
-
 <acta>Beilsten-Edmands, J. et al. (2020) Acta Cryst. D76.</acta>
 <url>https://doi.org/10.1107/S2059798320003198</url>
 <bibtex>
@@ -13,7 +11,7 @@ journal = "Acta Crystallographica Section D",
 year = "2020",
 volume = "76",
 number = "4",
-pages = "",
+pages = "385--399",
 month = "Apr",
 doi = {10.1107/S2059798320003198},
 url = {https://doi.org/10.1107/S2059798320003198},
