@@ -413,6 +413,18 @@ class DialsIndexer(Indexer):
                                     ),
                                     image=imageset.get_path(nb_start - start),
                                     frames_to_process=(nb_start + 1, nb_end),
+                                    beam=xsweep.get_beam_centre(),
+                                    reversephi=xsweep.get_reversephi(),
+                                    distance=xsweep.get_distance(),
+                                    gain=xsweep.get_gain(),
+                                    dmin=xsweep.get_resolution_high(),
+                                    dmax=xsweep.get_resolution_low(),
+                                    polarization=xsweep.get_polarization(),
+                                    user_lattice=xsweep.get_user_lattice(),
+                                    user_cell=xsweep.get_user_cell(),
+                                    epoch=xsweep._epoch,
+                                    ice=xsweep._ice,
+                                    excluded_regions=xsweep._excluded_regions,
                                 )
                                 logger.info(
                                     "Generating new sweep: %s (%s:%i:%i)",
