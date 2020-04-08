@@ -103,7 +103,7 @@ def test_dials(regression_test, dials_data, tmpdir, ccp4):
         dials_data("x4wide").strpath,
     ]
     result = procrunner.run(command_line, working_directory=tmpdir)
-    scaled_expt_file = tmpdir.join("DataFiles/AUTOMATIC_DEFAULT_scaled.expt")
+    scaled_expt_file = tmpdir / "DataFiles" / "AUTOMATIC_DEFAULT_scaled.expt"
     assert scaled_expt_file.check(file=1)
     scaled_expt = load.experiment_list(scaled_expt_file.strpath)
     for crystal in scaled_expt.crystals():
