@@ -2,6 +2,8 @@ from __future__ import absolute_import, division, print_function
 
 import procrunner
 import pytest
+from dxtbx.serialize import load
+import iotbx.mtz
 import xia2.Test.regression
 
 
@@ -99,7 +101,24 @@ def test_dials(regression_test, dials_data, tmpdir, ccp4):
         dials_data("x4wide").strpath,
     ]
     result = procrunner.run(command_line, working_directory=tmpdir)
-    print(result)
+    scaled_expt_file = tmpdir / "DataFiles" / "AUTOMATIC_DEFAULT_scaled.expt"
+    assert scaled_expt_file.check(file=1)
+    scaled_expt = load.experiment_list(scaled_expt_file.strpath)
+    for crystal in scaled_expt.crystals():
+        assert crystal.get_recalculated_unit_cell() is not None
+        assert len(crystal.get_recalculated_cell_parameter_sd()) == 6
+        assert crystal.get_recalculated_cell_volume_sd() > 0
+    for mtz_file in (
+        "AUTOMATIC_DEFAULT_scaled.mtz",
+        "AUTOMATIC_DEFAULT_free.mtz",
+        "AUTOMATIC_DEFAULT_scaled_unmerged.mtz",
+    ):
+        for ma in iotbx.mtz.object(
+            tmpdir.join("DataFiles").join(mtz_file).strpath
+        ).as_miller_arrays():
+            assert ma.unit_cell().parameters() == pytest.approx(
+                scaled_expt[0].crystal.get_recalculated_unit_cell().parameters()
+            )
     success, issues = xia2.Test.regression.check_result(
         "X4_wide.dials",
         result,

@@ -772,7 +772,6 @@ class Scale(object):
         self._reflections_filename = "observations.refl"
         self._data_manager.export_experiments(self._experiments_filename)
         self._data_manager.export_reflections(self._reflections_filename)
-        self.best_unit_cell = None
 
         if "two_theta" in self._params.unit_cell.refine:
             self.two_theta_refine()
@@ -808,10 +807,13 @@ class Scale(object):
 
     def two_theta_refine(self):
         # two-theta refinement to get best estimate of unit cell
-        self.best_unit_cell, self.best_unit_cell_esd = self._dials_two_theta_refine(
+        self._experiments_filename = self._dials_two_theta_refine(
             self._experiments_filename,
             self._reflections_filename,
             combine_crystal_models=self._params.two_theta_refine.combine_crystal_models,
+        )
+        self._data_manager.experiments = load.experiment_list(
+            self._experiments_filename, check_format=False
         )
 
     @property
@@ -848,9 +850,7 @@ class Scale(object):
         tt_refiner.set_reflection_files([reflections_filename])
         tt_refiner.set_combine_crystal_models(combine_crystal_models)
         tt_refiner.run()
-        unit_cell = tt_refiner.get_unit_cell()
-        unit_cell_esd = tt_refiner.get_unit_cell_esd()
-        return unit_cell, unit_cell_esd
+        return tt_refiner.get_output_experiments()
 
     def scale(self, d_min=None, d_max=None):
         logger.debug("Scaling with dials.scale")
@@ -899,8 +899,6 @@ class Scale(object):
             scaler.set_min_partiality(self._params.scaling.dials.min_partiality)
         if self._params.scaling.dials.partiality_cutoff is not None:
             scaler.set_partiality_cutoff(self._params.scaling.dials.partiality_cutoff)
-        if self.best_unit_cell is not None:
-            scaler.set_best_unit_cell(self.best_unit_cell)
 
         scaler.set_full_matrix(False)
 
