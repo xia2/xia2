@@ -9,6 +9,7 @@ import os
 import string
 
 import libtbx
+from cctbx import crystal, sgtbx
 
 # wrappers for programs that this needs: DIALS
 
@@ -413,6 +414,18 @@ class DialsIndexer(Indexer):
                                     ),
                                     image=imageset.get_path(nb_start - start),
                                     frames_to_process=(nb_start + 1, nb_end),
+                                    beam=xsweep.get_beam_centre(),
+                                    reversephi=xsweep.get_reversephi(),
+                                    distance=xsweep.get_distance(),
+                                    gain=xsweep.get_gain(),
+                                    dmin=xsweep.get_resolution_high(),
+                                    dmax=xsweep.get_resolution_low(),
+                                    polarization=xsweep.get_polarization(),
+                                    user_lattice=xsweep.get_user_lattice(),
+                                    user_cell=xsweep.get_user_cell(),
+                                    epoch=xsweep._epoch,
+                                    ice=xsweep._ice,
+                                    excluded_regions=xsweep._excluded_regions,
                                 )
                                 logger.info(
                                     "Generating new sweep: %s (%s:%i:%i)",
@@ -560,8 +573,6 @@ class DialsIndexer(Indexer):
             )
             rbs.run()
 
-            from cctbx import crystal, sgtbx
-
             for k in sorted(rbs.get_bravais_summary()):
                 summary = rbs.get_bravais_summary()[k]
 
@@ -579,14 +590,8 @@ class DialsIndexer(Indexer):
                 cs = crystal.symmetry(
                     unit_cell=cryst.get_unit_cell(), space_group=cryst.get_space_group()
                 )
-                cb_op_best_to_ref = cs.change_of_basis_op_to_reference_setting()
-                cs_reference = cs.change_basis(cb_op_best_to_ref)
-                lattice = str(
-                    bravais_types.bravais_lattice(group=cs_reference.space_group())
-                )
-                cb_op = cb_op_best_to_ref * sgtbx.change_of_basis_op(
-                    str(summary["cb_op"])
-                )
+                lattice = str(bravais_types.bravais_lattice(group=cs.space_group()))
+                cb_op = sgtbx.change_of_basis_op(str(summary["cb_op"]))
 
                 self._solutions[k] = {
                     "number": k,
@@ -595,7 +600,7 @@ class DialsIndexer(Indexer):
                     "rmsd": summary["rmsd"],
                     "nspots": summary["nspots"],
                     "lattice": lattice,
-                    "cell": cs_reference.unit_cell().parameters(),
+                    "cell": cs.unit_cell().parameters(),
                     "experiments_file": summary["experiments_file"],
                     "cb_op": str(cb_op),
                 }
@@ -624,27 +629,10 @@ class DialsIndexer(Indexer):
 
             self._indxr_mosaic = self._solution["mosaic"]
 
-            experiment_list = load.experiment_list(self._solution["experiments_file"])
-            self.set_indexer_experiment_list(experiment_list)
-
-            # reindex the output experiments list to the reference setting
-            # (from the best cell/conventional setting)
-            cb_op_to_ref = (
-                experiment_list.crystals()[0]
-                .get_space_group()
-                .info()
-                .change_of_basis_op_to_reference_setting()
-            )
-            reindex = self.Reindex()
-            reindex.set_experiments_filename(self._solution["experiments_file"])
-            reindex.set_cb_op(cb_op_to_ref)
-            reindex.set_space_group(
-                str(lattice_to_spacegroup_number(self._solution["lattice"]))
-            )
-            reindex.run()
-            experiments_file = reindex.get_reindexed_experiments_filename()
+            experiments_file = self._solution["experiments_file"]
             experiment_list = load.experiment_list(experiments_file)
             self.set_indexer_experiment_list(experiment_list)
+
             self.set_indexer_payload("experiments_filename", experiments_file)
 
             # reindex the output reflection list to this solution
