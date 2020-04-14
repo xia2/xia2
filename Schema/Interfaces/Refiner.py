@@ -36,6 +36,12 @@ class Refiner(object):
         # say 'mosflm':{'yscale':0.9999} etc.
         self._refinr_program_parameters = {}
 
+        # Record refiner status
+        self._refinr_done = False
+        self._refinr_prepare_done = False
+        self._refinr_finish_done = False
+        self._refinr_result = None
+
     # serialization functions
 
     def to_dict(self):

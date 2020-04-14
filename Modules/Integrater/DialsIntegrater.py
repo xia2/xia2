@@ -181,10 +181,24 @@ class DialsIntegrater(Integrater):
 
         ## copy the data across
         refiner = self.get_integrater_refiner()
-        self._intgr_experiments_filename = refiner.get_refiner_payload("models.expt")
+        # For multi-sweep indexing, get the split experiments from after refinement.
+        if PhilIndex.params.xia2.settings.multi_sweep_indexing:
+            self._intgr_experiments_filename = refiner.get_refiner_payload(
+                "{}_models.expt".format(self._intgr_sweep._name)
+            )
+            self._intgr_indexed_filename = refiner.get_refiner_payload(
+                "{}_observations.refl".format(self._intgr_sweep._name)
+            )
+        # Otherwise, there should only be a single experiment list and reflection table.
+        else:
+            self._intgr_experiments_filename = refiner.get_refiner_payload(
+                "models.expt"
+            )
+            self._intgr_indexed_filename = refiner.get_refiner_payload(
+                "observations.refl"
+            )
         experiments = load.experiment_list(self._intgr_experiments_filename)
         experiment = experiments[0]
-        self._intgr_indexed_filename = refiner.get_refiner_payload("observations.refl")
 
         # this is the result of the cell refinement
         self._intgr_cell = experiment.crystal.get_unit_cell().parameters()

@@ -681,9 +681,13 @@ class XSweep(object):
             self._refiner = RefinerFactory.RefinerForXSweep(self)
             self._refiner.set_working_directory(str(working_path))
 
-        self._refiner.add_refiner_indexer(
-            self.get_epoch(self._frames_to_process[0]), self._get_indexer()
-        )
+        epoch = self.get_epoch(self._frames_to_process[0])
+        indexer = self._get_indexer()
+        if PhilIndex.params.xia2.settings.multi_sweep_indexing:
+            # Bypass the self._refiner.refiner_reset() call for multi-sweep indexing.
+            self._refiner._refinr_indexers[epoch] = indexer
+        else:
+            self._refiner.add_refiner_indexer(epoch, indexer)
 
         return self._refiner
 

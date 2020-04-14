@@ -14,6 +14,7 @@ from xia2.Wrappers.Dials.CombineExperiments import (
 )
 from xia2.Wrappers.Dials.Refine import Refine as _Refine
 from xia2.Wrappers.Dials.Report import Report as _Report
+from xia2.Wrappers.Dials.SplitExperiments import SplitExperiments
 
 
 class DialsRefiner(Refiner):
@@ -71,6 +72,34 @@ class DialsRefiner(Refiner):
 
         return refine
 
+    def split_after_refinement(self):
+        """
+        Split the refined experiments.
+
+        Add all the resulting experiment list/reflection table pairs to the payload.
+        """
+        split_experiments = SplitExperiments()
+        auto_logfiler(split_experiments, "SPLIT_EXPERIMENTS")
+        cwd = self.get_working_directory()
+        split_experiments.set_working_directory(cwd)
+        split_experiments.add_experiments(self._refinr_experiments_filename)
+        split_experiments.add_reflections(self._refinr_indexed_filename)
+        prefix = "{}_refined_split".format(split_experiments.get_xpid())
+        split_experiments._experiments_prefix = prefix
+        split_experiments._reflections_prefix = prefix
+        split_experiments.run()
+
+        num_sweeps = len(self._refinr_sweeps)
+        for i, sweep in enumerate(self._refinr_sweeps):
+            name = sweep._name
+            root = "{pre}_{ind:0{n_dig:d}d}".format(
+                pre=prefix, ind=i, n_dig=len(str(num_sweeps))
+            )
+            expts = os.path.join(cwd, root + ".expt")
+            refls = os.path.join(cwd, root + ".refl")
+            self.set_refiner_payload("{}_models.expt".format(name), expts)
+            self.set_refiner_payload("{}_observations.refl".format(name), refls)
+
     def Report(self):
         report = _Report()
         report.set_working_directory(self.get_working_directory())
@@ -81,7 +110,7 @@ class DialsRefiner(Refiner):
         pass
 
     def _refine(self):
-        for epoch, idxr in self._refinr_indexers.items():
+        for idxr in set(self._refinr_indexers.values()):
             experiments = idxr.get_indexer_experiment_list()
 
             indexed_experiments = idxr.get_indexer_payload("experiments_filename")
@@ -157,4 +186,8 @@ class DialsRefiner(Refiner):
             self._refinr_cell = experiments.crystals()[0].get_unit_cell().parameters()
 
     def _refine_finish(self):
-        pass
+        # For multiple-sweep joint indexing and refinement, because indexers are fairly
+        # rigidly one-sweep-only, we must split the refined experiments and add the
+        # individual experiment list/reflection table pairs to the payload.
+        if PhilIndex.params.xia2.settings.multi_sweep_indexing:
+            self.split_after_refinement()
