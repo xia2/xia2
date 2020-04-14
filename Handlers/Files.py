@@ -8,6 +8,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import contextlib
 import os
 import shutil
 
@@ -138,5 +139,9 @@ class _FileHandler(object):
 FileHandler = _FileHandler()
 
 
+@contextlib.contextmanager
 def cleanup(base_path):
-    FileHandler.cleanup(base_path)
+    try:
+        yield
+    finally:
+        FileHandler.cleanup(base_path)

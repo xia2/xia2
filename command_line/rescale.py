@@ -38,37 +38,35 @@ def run():
 
     xinfo = XProject.from_json(filename="xia2.json")
 
-    crystals = xinfo.get_crystals()
-    for crystal_id, crystal in crystals.items():
-        scale_dir = PhilIndex.params.xia2.settings.scale.directory
-        if scale_dir is Auto:
-            scale_dir = "scale"
-            i = 0
-            while os.path.exists(os.path.join(crystal.get_name(), scale_dir)):
-                i += 1
-                scale_dir = "scale%i" % i
-            PhilIndex.params.xia2.settings.scale.directory = scale_dir
+    with cleanup(xinfo.path):
+        crystals = xinfo.get_crystals()
+        for crystal_id, crystal in crystals.items():
+            scale_dir = PhilIndex.params.xia2.settings.scale.directory
+            if scale_dir is Auto:
+                scale_dir = "scale"
+                i = 0
+                while os.path.exists(os.path.join(crystal.get_name(), scale_dir)):
+                    i += 1
+                    scale_dir = "scale%i" % i
+                PhilIndex.params.xia2.settings.scale.directory = scale_dir
 
-        # reset scaler
-        crystals[crystal_id]._scaler = None
-        crystal._get_scaler()
+            # reset scaler
+            crystals[crystal_id]._scaler = None
+            crystal._get_scaler()
 
-        logger.info(xinfo.get_output())
-        crystal.serialize()
+            logger.info(xinfo.get_output())
+            crystal.serialize()
 
-    duration = time.time() - start_time
+        duration = time.time() - start_time
 
-    # write out the time taken in a human readable way
-    logger.info(
-        "Processing took %s", time.strftime("%Hh %Mm %Ss", time.gmtime(duration))
-    )
+        # write out the time taken in a human readable way
+        logger.info(
+            "Processing took %s", time.strftime("%Hh %Mm %Ss", time.gmtime(duration))
+        )
 
-    # delete all of the temporary mtz files...
-    cleanup(xinfo.path)
+        write_citations()
 
-    write_citations()
-
-    xinfo.as_json(filename="xia2.json")
+        xinfo.as_json(filename="xia2.json")
 
 
 if __name__ == "__main__":
