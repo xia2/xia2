@@ -160,6 +160,7 @@ resolution {
   isigma = None
   misigma = None
 }
+symmetry.cosym.best_monoclinic_beta = False
 """
     )
 )
@@ -664,6 +665,7 @@ class MultiCrystalScale(object):
             cosym.set_space_group(self._params.symmetry.space_group.group())
         if self._params.symmetry.laue_group is not None:
             cosym.set_space_group(self._params.symmetry.laue_group.group())
+        cosym.set_best_monoclinic_beta(self._params.symmetry.cosym.best_monoclinic_beta)
         cosym.run()
         self._cosym_analysis = cosym.get_cosym_analysis()
         self._experiments_filename = cosym.get_reindexed_experiments()
