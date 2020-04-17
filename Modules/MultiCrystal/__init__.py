@@ -450,7 +450,7 @@ def scipy_dendrogram_to_plotly_json(ddict):
             "legend": {"x": 100, "y": 0.5, "bordercolor": "transparent"},
             "margin": {"r": 10},
             "showlegend": False,
-            "title": "BLEND dendrogram",
+            "title": "dendrogram",
             "xaxis": {
                 "showline": False,
                 "showgrid": False,

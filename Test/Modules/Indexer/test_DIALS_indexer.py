@@ -43,7 +43,7 @@ def exercise_dials_indexer(dials_data, tmp_dir, nproc=None):
     )
     solution = indexer.get_solution()
     assert solution["rmsd"] == pytest.approx(0.03545, abs=1e-3)
-    assert solution["metric"] == pytest.approx(0.02517, abs=1e-3)
+    assert solution["metric"] == pytest.approx(0.02517, abs=5e-3)
     assert solution["number"] == 22
     assert solution["lattice"] == "cI"
 

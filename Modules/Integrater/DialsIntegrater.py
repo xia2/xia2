@@ -18,6 +18,7 @@ from xia2.Schema.Interfaces.Integrater import Integrater
 
 from xia2.Wrappers.Dials.ExportMtz import ExportMtz as _ExportMtz
 from xia2.Wrappers.Dials.Report import Report as _Report
+from xia2.Wrappers.Dials.anvil_correction import rescale_dac as _rescale_dac
 
 logger = logging.getLogger("xia2.Modules.Integrater.DialsIntegrater")
 
@@ -43,6 +44,9 @@ class DialsIntegrater(Integrater):
 
         self._intgr_integrated_reflections = None
         self._intgr_experiments_filename = None
+
+        # Check whether to do diamond anvil cell attenuation correction.
+        self.high_pressure = PhilIndex.params.dials.high_pressure.correction
 
     # overload these methods as we don't want the resolution range
     # feeding back... aha - but we may want to assign them
@@ -81,7 +85,7 @@ class DialsIntegrater(Integrater):
 
     # factory functions
 
-    def Integrate(self, indexed_filename=None):
+    def Integrate(self):
         params = PhilIndex.params.dials.integrate
         integrate = xia2.Wrappers.Dials.Integrate.Integrate()
         integrate.set_phil_file(params.phil_file)
@@ -95,7 +99,13 @@ class DialsIntegrater(Integrater):
             profile_fitting = PhilIndex.params.xia2.settings.integration.profile_fitting
             integrate.set_profile_fitting(profile_fitting)
 
+        # Options for profile modelling.
         integrate.set_scan_varying_profile(params.scan_varying_profile)
+
+        high_pressure = PhilIndex.params.dials.high_pressure.correction
+        integrate.set_profile_params(
+            params.min_spots.per_degree, params.min_spots.overall, high_pressure
+        )
 
         integrate.set_background_outlier_algorithm(params.background_outlier_algorithm)
         integrate.set_background_algorithm(params.background_algorithm)
@@ -249,6 +259,7 @@ class DialsIntegrater(Integrater):
             integrate.set_d_min(PhilIndex.params.dials.integrate.d_min)
         else:
             integrate.set_d_min(self._intgr_reso_high)
+
         pname, xname, dname = self.get_integrater_project_info()
         sweep = self.get_integrater_sweep_name()
         FileHandler.record_log_file(
@@ -283,6 +294,7 @@ class DialsIntegrater(Integrater):
                         start - self.get_matching_images()[0],
                         stop - self.get_matching_images()[0],
                     )
+
                 integrate.set_reflections_per_degree(1000)
                 integrate.run()
 
@@ -358,13 +370,52 @@ class DialsIntegrater(Integrater):
         return self._intgr_integrated_reflections
 
     def _integrate_finish(self):
-        """Finish off the integration by running dials.export."""
+        """
+        Finish off the integration.
+
+        If in high-pressure mode run dials.anvil_correction.
+
+        Run dials.export.
+        """
 
         # FIXME - do we want to export every time we call this method
         # (the file will not have changed) and also (more important) do
         # we want a different exported MTZ file every time (I do not think
         # that we do; these can be very large) - was exporter.get_xpid() ->
         # now dials
+
+        # If running in high-pressure mode, run dials.anvil_correction to
+        # correct for the attenuation of the incident and diffracted beams by the
+        # diamond anvils.
+        if self.high_pressure:
+            logger.info(
+                "Rescaling integrated reflections for attenuation in the "
+                "diamond anvil cell."
+            )
+
+            params = PhilIndex.params.dials.high_pressure
+            rescale_dac = _rescale_dac()
+
+            # Take the filenames of the last integration step as input.
+            rescale_dac.experiments_filenames.append(self._intgr_experiments_filename)
+            rescale_dac.reflections_filenames.append(self._intgr_integrated_reflections)
+
+            # The output reflections have a filename appended with '_corrected'.
+            output_reflections = "_corrected".join(
+                os.path.splitext(self._intgr_integrated_reflections)
+            )
+            rescale_dac.output_reflections_filename = output_reflections
+
+            # Set the user-specified parameters from the PHIL scope.
+            rescale_dac.density = params.anvil.density
+            rescale_dac.thickness = params.anvil.thickness
+            rescale_dac.normal = params.anvil.normal
+
+            # Run dials.anvil_correction with the parameters as set above.
+            rescale_dac.set_working_directory(self.get_working_directory())
+            auto_logfiler(rescale_dac)
+            rescale_dac.run()
+            self._intgr_integrated_reflections = output_reflections
 
         if self._output_format == "hkl":
             exporter = self.ExportMtz()
@@ -376,8 +427,7 @@ class DialsIntegrater(Integrater):
             exporter.run()
             self._intgr_integrated_filename = mtz_filename
 
-            # record integrated MTZ file for e.g. BLEND.
-
+            # record integrated MTZ file
             pname, xname, dname = self.get_integrater_project_info()
             sweep = self.get_integrater_sweep_name()
             FileHandler.record_more_data_file(

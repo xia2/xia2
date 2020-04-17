@@ -1,8 +1,6 @@
 <citations>
 
-
 <citation program="dials.scale">
-
 <acta>Beilsten-Edmands, J. et al. (2020) Acta Cryst. D76.</acta>
 <url>https://doi.org/10.1107/S2059798320003198</url>
 <bibtex>
@@ -13,7 +11,7 @@ journal = "Acta Crystallographica Section D",
 year = "2020",
 volume = "76",
 number = "4",
-pages = "",
+pages = "385--399",
 month = "Apr",
 doi = {10.1107/S2059798320003198},
 url = {https://doi.org/10.1107/S2059798320003198},
@@ -216,23 +214,6 @@ pages = "41--51",
   author={Evans, P.R.},
   journal={Proceedings of CCP4 Study Weekend},
   year={1997}
-}
-</bibtex>
-</citation>
-
-<citation program="blend">
-<bibtex>
-@article{Foadi:dz5278,
-author = "Foadi, James and Aller, Pierre and Alguel, Yilmaz and Cameron, Alex and Axford, Danny and Owen, Robin L. and Armour, Wes and Waterman, David G. and Iwata, So and Evans, Gwyndaf",
-title = "{Clustering procedures for the optimal selection of data sets from multiple crystals in macromolecular crystallography}",
-journal = "Acta Crystallographica Section D",
-year = "2013",
-volume = "69",
-number = "8",
-pages = "1617--1632",
-month = "Aug",
-doi = {10.1107/S0907444913012274},
-url = {https://doi.org/10.1107/S0907444913012274},
 }
 </bibtex>
 </citation>

@@ -400,8 +400,7 @@ class XDSIntegrater(Integrater):
                 os.path.join(here, "INTEGRATE-%s.HKL" % lattice),
             )
 
-        # record INTEGRATE.HKL for e.g. BLEND.
-
+        # record INTEGRATE.HKL
         FileHandler.record_more_data_file(
             "%s %s %s %s INTEGRATE" % (pname, xname, dname, sweep),
             os.path.join(self.get_working_directory(), "INTEGRATE.HKL"),

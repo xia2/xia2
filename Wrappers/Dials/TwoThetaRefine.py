@@ -74,10 +74,10 @@ def TwoThetaRefine(DriverType=None):
             return self._reindexed_reflections
 
         def get_unit_cell(self):
-            return self._crystal.get_unit_cell().parameters()
+            return self._crystal.get_recalculated_unit_cell().parameters()
 
         def get_unit_cell_esd(self):
-            return self._crystal.get_cell_parameter_sd()
+            return self._crystal.get_recalculated_cell_parameter_sd()
 
         def set_reindex_operators(self, operators):
             assert len(operators) == len(self._experiments)

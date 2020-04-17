@@ -207,6 +207,11 @@ dials
             "Most useful when also providing a reference geometry to xia2."
     .short_caption = "Fix geometry"
     .expert_level = 1
+  fix_distance = False
+    .type = bool
+    .help = "Do not refine the detector distance in dials.index and dials.refine."
+    .short_caption = "Fix distance"
+    .expert_level = 1
   outlier
     .short_caption = "Centroid outlier rejection"
   {
@@ -397,7 +402,34 @@ dials
       .type = float(value_min=0.0)
       .short_caption = "Low resolution cutoff for integration"
       .expert_level = 1
+    min_spots
+      .short_caption = "Override default profile parameters of dials.integrate"
+    {
+      overall = None
+        .type = int(value_min=1)
+        .optional = True
+        .help = "Minimum number of reflections required to perform profile "
+                "modelling."
+
+      per_degree = None
+        .type = int(value_min=0)
+        .optional = True
+        .help = "Minimum number of reflections per degree of sweep required to perform "
+                "profile modelling."
+    }
   }
+
+  high_pressure
+    .expert_level = 1
+    .short_caption = "Handle diamond anvil pressure cell data"
+  {
+    correction = False
+      .type = bool
+      .help = "Correct for attenuation by a diamond anvil cell"
+
+    include scope dials.command_line.anvil_correction.phil_scope
+  }
+
   scale
     .expert_level = 1
     .short_caption = "Scaling"

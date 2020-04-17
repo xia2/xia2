@@ -126,6 +126,7 @@ def plot_merging_stats(
     format="png",
     style="ggplot",
     small_multiples=False,
+    global_labels=None,
 ):
     import matplotlib
 
@@ -138,6 +139,7 @@ def plot_merging_stats(
     from cycler import cycler
 
     colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
+    plt.rcParams["axes.titlesize"] = "medium"
     linestyles = []
     for style in ("-", "--", ":", "-."):
         linestyles.extend([style] * len(colors))
@@ -177,7 +179,15 @@ def plot_merging_stats(
                 n_cols += 1
             assert n_cols * n_rows >= len(results), (n_cols, n_rows, len(results))
 
-        plot_data(results, k, plots.get(k, k), labels, n_rows=n_rows, n_cols=n_cols)
+        plot_data(
+            results,
+            k,
+            plots.get(k, k),
+            labels,
+            n_rows=n_rows,
+            n_cols=n_cols,
+            global_labels=global_labels,
+        )
 
         if size_inches is not None:
             fig = plt.gcf()
@@ -191,16 +201,34 @@ def plot_merging_stats(
                 plt.legend(loc="upper right")
             else:
                 plt.legend(loc="best")
+        if global_labels is not None:
+            ax = plt.gca()
+            handles, lab = ax.get_legend_handles_labels()
+            plt.figlegend(handles, lab, loc="lower right")
+
         plt.tight_layout()
         plt.savefig(os.path.join(image_dir, k + ".%s" % format))
         plt.clf()
 
 
-def plot_data(results, k, ylabel, labels, linestyle=None, n_rows=None, n_cols=None):
+def plot_data(
+    results,
+    k,
+    ylabel,
+    labels,
+    linestyle=None,
+    n_rows=None,
+    n_cols=None,
+    global_labels=None,
+):
     from matplotlib import pyplot as plt
+
+    colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
 
     ref_ax = None
     for i, result in enumerate(results):
+        if not isinstance(result, (list, tuple)):
+            result = (result,)
         if labels is not None:
             label = labels[i].replace("\\$", "$")
         else:
@@ -208,23 +236,35 @@ def plot_data(results, k, ylabel, labels, linestyle=None, n_rows=None, n_cols=No
         if n_cols > 1:
             ax = plt.subplot(n_rows, n_cols, i + 1, sharex=ref_ax, sharey=ref_ax)
             if label:
-                ax.set_title(label)
+                ax.set_title(label, loc="left")
             if ref_ax is None:
                 ref_ax = ax
             for other in results:
-                bins = other.bins
-                x = [bins[j].d_min for j in range(len(bins))]
-                x = [uctbx.d_as_d_star_sq(d) for d in x]
-                y = [getattr(bins[j], k) for j in range(len(bins))]
-                ax.plot(x, y, linestyle="-", color="grey", linewidth=1, alpha=0.3)
+                if isinstance(other, iotbx.merging_statistics.dataset_statistics):
+                    other = (other,)
+                for res in other:
+                    if res is not None:
+                        bins = res.bins
+                        x = [bins[j].d_min for j in range(len(bins))]
+                        x = [uctbx.d_as_d_star_sq(d) for d in x]
+                        y = [getattr(bins[j], k) for j in range(len(bins))]
+                        ax.plot(
+                            x, y, linestyle="-", color="grey", linewidth=1, alpha=0.15
+                        )
         else:
             ax = plt.gca()
 
-        bins = result.bins
-        x = [bins[j].d_min for j in range(len(bins))]
-        x = [uctbx.d_as_d_star_sq(d) for d in x]
-        y = [getattr(bins[j], k) for j in range(len(bins))]
-        ax.plot(x, y, label=label, linestyle=linestyle)
+        for i_res, res in enumerate(result):
+            if res is not None:
+                if global_labels is not None:
+                    l = global_labels[i_res]
+                else:
+                    l = label
+                bins = res.bins
+                x = [bins[j].d_min for j in range(len(bins))]
+                x = [uctbx.d_as_d_star_sq(d) for d in x]
+                y = [getattr(bins[j], k) for j in range(len(bins))]
+                ax.plot(x, y, label=l, linestyle=linestyle, color=colors[i_res])
 
         ax.set_xlabel(r"Resolution ($\AA$)")
         ax.set_ylabel(ylabel)
@@ -233,6 +273,10 @@ def plot_data(results, k, ylabel, labels, linestyle=None, n_rows=None, n_cols=No
             ax.set_ylim(0, 1.05)
         elif k in ("cc_anom",):
             ax.set_ylim(min(0, ax.get_ylim()[0]), 1.05)
+        elif k in ("r_merge",):
+            ax.set_ylim(0, min(4, ax.get_ylim()[1]))
+        elif k in ("r_meas", "r_pim"):
+            ax.set_ylim(0, min(2, ax.get_ylim()[1]))
         else:
             ax.set_ylim(0, ax.get_ylim()[1])
         xticks = ax.get_xticks()
