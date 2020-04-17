@@ -32,55 +32,57 @@ class _FileHandler(object):
         self._more_data_files = {}
 
     def cleanup(self, base_path):
-        out = open("xia2-files.txt", "w")
-        for f in self._temporary_files:
-            try:
-                os.remove(f)
-                out.write("Deleted: %s\n" % f)
-            except Exception as e:
-                out.write("Failed to delete: %s (%s)\n" % (f, str(e)))
+        with open("xia2-files.txt", "w") as out:
+            for f in self._temporary_files:
+                try:
+                    os.remove(f)
+                    out.write("Deleted: %s\n" % f)
+                except Exception as e:
+                    out.write("Failed to delete: %s (%s)\n" % (f, str(e)))
 
-        for f in self._output_files:
-            out.write("Output file (%s): %s\n" % f)
+            for f in self._output_files:
+                out.write("Output file (%s): %s\n" % f)
 
-        # copy the log files
-        log_directory = base_path.joinpath("LogFiles")
-        log_directory.mkdir(parents=True, exist_ok=True)
-        log_directory = str(log_directory)
+            # copy the log files
+            log_directory = base_path.joinpath("LogFiles")
+            log_directory.mkdir(parents=True, exist_ok=True)
+            log_directory = str(log_directory)
 
-        for tag, source in self._log_files.items():
-            filename = os.path.join(log_directory, "%s.log" % tag.replace(" ", "_"))
-            shutil.copyfile(source, filename)
-            out.write("Copied log file %s to %s\n" % (source, filename))
+            for tag, source in self._log_files.items():
+                filename = os.path.join(log_directory, "%s.log" % tag.replace(" ", "_"))
+                shutil.copyfile(source, filename)
+                out.write("Copied log file %s to %s\n" % (source, filename))
 
-        for tag, source in self._xml_files.items():
-            filename = os.path.join(log_directory, "%s.xml" % tag.replace(" ", "_"))
-            shutil.copyfile(source, filename)
-            out.write("Copied xml file %s to %s\n" % (source, filename))
+            for tag, source in self._xml_files.items():
+                filename = os.path.join(log_directory, "%s.xml" % tag.replace(" ", "_"))
+                shutil.copyfile(source, filename)
+                out.write("Copied xml file %s to %s\n" % (source, filename))
 
-        for tag, source in self._html_files.items():
-            filename = os.path.join(log_directory, "%s.html" % tag.replace(" ", "_"))
-            shutil.copyfile(source, filename)
-            out.write("Copied html file %s to %s\n" % (source, filename))
+            for tag, source in self._html_files.items():
+                filename = os.path.join(
+                    log_directory, "%s.html" % tag.replace(" ", "_")
+                )
+                shutil.copyfile(source, filename)
+                out.write("Copied html file %s to %s\n" % (source, filename))
 
-        # copy the data files
-        data_directory = base_path.joinpath("DataFiles")
-        data_directory.mkdir(parents=True, exist_ok=True)
-        data_directory = str(data_directory)
-        for f in self._data_files:
-            filename = os.path.join(data_directory, os.path.split(f)[-1])
-            shutil.copyfile(f, filename)
-            out.write("Copied data file %s to %s\n" % (f, filename))
+            # copy the data files
+            data_directory = base_path.joinpath("DataFiles")
+            data_directory.mkdir(parents=True, exist_ok=True)
+            data_directory = str(data_directory)
+            for f in self._data_files:
+                filename = os.path.join(data_directory, os.path.split(f)[-1])
+                shutil.copyfile(f, filename)
+                out.write("Copied data file %s to %s\n" % (f, filename))
 
-        for tag, ext in self._more_data_files:
-            filename_out = os.path.join(
-                data_directory, "%s.%s" % (tag.replace(" ", "_"), ext)
-            )
-            filename_in = self._more_data_files[(tag, ext)]
-            shutil.copyfile(filename_in, filename_out)
-            out.write("Copied extra data file %s to %s\n" % (filename_in, filename_out))
-
-        out.close()
+            for tag, ext in self._more_data_files:
+                filename_out = os.path.join(
+                    data_directory, "%s.%s" % (tag.replace(" ", "_"), ext)
+                )
+                filename_in = self._more_data_files[(tag, ext)]
+                shutil.copyfile(filename_in, filename_out)
+                out.write(
+                    "Copied extra data file %s to %s\n" % (filename_in, filename_out)
+                )
 
     def record_log_file(self, tag, filename):
         """Record a log file."""
