@@ -346,16 +346,6 @@ class Scaler(object):
         obj = json.loads(string, object_hook=_decode_dict)
         return cls.from_dict(obj)
 
-    # FIXME x1698 these not currently used yet
-
-    def _scale_list_likely_pointgroups(self, integrater):
-        raise NotImplementedError("overload me")
-
-    def _scale_reindex_to_reference(self, reference, integrater):
-        raise NotImplementedError("overload me")
-
-    # FIXME to here
-
     def _scale_prepare(self):
         raise NotImplementedError("overload me")
 
