@@ -66,14 +66,6 @@ class DialsScaler(Scaler):
         self._scaler_symmetry_check_count = 0
         self.sweep_infos = []
 
-    # Schema/Sweep.py wants these two methods need to be implemented by subclasses,
-    # but are not actually used at the moment?
-    def _scale_list_likely_pointgroups(self):
-        pass
-
-    def _scale_reindex_to_reference(self):
-        pass
-
     def set_working_directory(self, working_directory):
         self._working_directory = working_directory
         self._factory.set_working_directory(working_directory)
@@ -347,8 +339,6 @@ class DialsScaler(Scaler):
         self._helper.set_working_directory(self.get_working_directory())
         self._factory.set_working_directory(self.get_working_directory())
 
-        need_to_return = False
-
         self._sweep_handler = SweepInformationHandler(self._scalr_integraters)
 
         p, x = self._sweep_handler.get_project_info()
@@ -556,9 +546,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
             # before running dials.symmetry
             self._scaler.set_overwrite_existing_models(True)
 
-        self._scalr_scaled_reflection_files = {}
-        self._scalr_scaled_reflection_files["mtz_unmerged"] = {}
-        self._scalr_scaled_reflection_files["mtz"] = {}
+        self._scalr_scaled_reflection_files = {"mtz_unmerged": {}, "mtz": {}}
 
         ### Set the resolution limit if applicable
 
@@ -855,7 +843,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
                 if absmin > 0:  # hope should always happen!
                     overall_absmin = min(absmin, overall_absmin)
 
-        DIALS = dials.util.version.dials_version()
+        dials_version = dials.util.version.dials_version()
         block = CIF.get_block("xia2")
         mmblock = mmCIF.get_block("xia2")
         block["_exptl_absorpt_correction_T_min"] = mmblock[
@@ -874,7 +862,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
 %s
 Scaling & analysis of unmerged intensities, absorption correction using spherical harmonics
 """
-            % DIALS
+            % dials_version
         )
 
     def _update_scaled_unit_cell_from_scaled_data(self):
@@ -1181,7 +1169,6 @@ Unequal number of experiments/reflections passed to dials_symmetry_indexer_jiffy
             assert multisweep, """
 Passing multple datasets to indexer_jiffy but not set multisweep=True"""
 
-        probably_twinned = False
         reindex_initial = False
 
         symmetry_analyser = self.dials_symmetry_decide_pointgroup(
@@ -1260,7 +1247,8 @@ Passing multple datasets to indexer_jiffy but not set multisweep=True"""
 
         return symmetry_analyser
 
-    def reindex_jiffy(self, si, pointgroup, reindex_op):
+    @staticmethod
+    def reindex_jiffy(si, pointgroup, reindex_op):
         """Add data from si and reindex, setting back in si"""
         integrater = si.get_integrater()
         integrater.set_integrater_spacegroup_number(
@@ -1270,7 +1258,7 @@ Passing multple datasets to indexer_jiffy but not set multisweep=True"""
             reindex_op, reason="setting point group"
         )
         integrater.set_output_format("pickle")
-        _ = integrater.get_integrater_intensities()
+        integrater.get_integrater_intensities()
         # ^ This will give us the reflections in the correct point group
         si.set_reflections(integrater.get_integrated_reflections())
         si.set_experiments(integrater.get_integrated_experiments())

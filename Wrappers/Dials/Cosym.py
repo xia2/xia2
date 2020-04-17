@@ -34,6 +34,7 @@ def DialsCosym(DriverType=None, decay_correction=None):
             self._space_group = None
             self._json = None
             self._html = None
+            self._best_monoclinic_beta = False
 
         # getter and setter methods
 
@@ -57,6 +58,9 @@ def DialsCosym(DriverType=None, decay_correction=None):
 
         def set_html(self, html):
             self._html = html
+
+        def set_best_monoclinic_beta(self, best_monoclinic_beta):
+            self._best_monoclinic_beta = best_monoclinic_beta
 
         def get_json(self):
             return self._json
@@ -105,6 +109,9 @@ def DialsCosym(DriverType=None, decay_correction=None):
                     "%d_dials.cosym.html" % self.get_xpid(),
                 )
             self.add_command_line("output.html=%s" % self._html)
+            self.add_command_line(
+                "best_monoclinic_beta=%s" % self._best_monoclinic_beta
+            )
 
             self.start()
             self.close_wait()

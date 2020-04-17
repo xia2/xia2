@@ -228,13 +228,12 @@ class multi_crystal_analysis(object):
         params = phil_scope.extract()
         from dials.algorithms.symmetry.cosym import CosymAnalysis
 
-        datasets = self.individual_merged_intensities
         datasets = [
             d.eliminate_sys_absent(integral_only=True).primitive_setting()
-            for d in datasets
+            for d in self.individual_merged_intensities
         ]
-        params.lattice_group = datasets[0].space_group_info()
-        params.space_group = datasets[0].space_group_info()
+        params.lattice_group = self.individual_merged_intensities[0].space_group_info()
+        params.space_group = self.individual_merged_intensities[0].space_group_info()
         params.cluster.method = "dbscan"
 
         self.cosym = CosymAnalysis(datasets, params)

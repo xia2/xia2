@@ -22,8 +22,8 @@ setup(
         "License :: OSI Approved :: BSD License",
         "Natural Language :: English",
         "Operating System :: OS Independent",
-        "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: Implementation :: CPython",
     ],
     description="An expert system for automated reduction of X-Ray diffraction data from macromolecular crystals",
@@ -35,12 +35,12 @@ setup(
     packages=find_packages(),
     package_dir={"xia2": "../xia2"},
     data_files=[
-        ("xia2", ["Xia2Version.py", "__init__.py", "libtbx_refresh.py", "conftest.py"])
+        ("xia2", ["XIA2Version.py", "__init__.py", "libtbx_refresh.py", "conftest.py"])
     ],
     setup_requires=setup_requirements,
     test_suite="tests",
     tests_require=test_requirements,
     url="https://github.com/xia2/xia2",
-    version="0.6.0",
+    version="0.6.476",
     zip_safe=False,
 )
