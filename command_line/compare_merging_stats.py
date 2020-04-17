@@ -42,6 +42,10 @@ d_max = None
   .type = float
 small_multiples = False
   .type = bool
+alpha = 0.3
+  .type = float(value_min=0, value_max=1)
+  .help = "The alpha value for the background line plots in conjunction with"
+          "small_multiples=True."
 """,
     process_includes=True,
 )
@@ -83,6 +87,7 @@ def run(args):
         format=params.format,
         style=params.style,
         small_multiples=params.small_multiples,
+        alpha=params.alpha,
     )
 
 
@@ -127,6 +132,7 @@ def plot_merging_stats(
     style="ggplot",
     small_multiples=False,
     global_labels=None,
+    alpha=0.3,
 ):
     import matplotlib
 
@@ -187,6 +193,7 @@ def plot_merging_stats(
             n_rows=n_rows,
             n_cols=n_cols,
             global_labels=global_labels,
+            alpha=alpha,
         )
 
         if size_inches is not None:
@@ -220,6 +227,7 @@ def plot_data(
     n_rows=None,
     n_cols=None,
     global_labels=None,
+    alpha=0.3,
 ):
     from matplotlib import pyplot as plt
 
@@ -249,7 +257,7 @@ def plot_data(
                         x = [uctbx.d_as_d_star_sq(d) for d in x]
                         y = [getattr(bins[j], k) for j in range(len(bins))]
                         ax.plot(
-                            x, y, linestyle="-", color="grey", linewidth=1, alpha=0.15
+                            x, y, linestyle="-", color="grey", linewidth=1, alpha=alpha,
                         )
         else:
             ax = plt.gca()
