@@ -63,18 +63,16 @@ scaling
       .expert_level = 2
       .short_caption = "Number of spherical harmonics for absorption correction"
   }
-  dials {
-    model = physical array KB auto
-      .type = choice
-    outlier_rejection = simple *standard
-      .type = choice
-    Isigma_range = 2.0,100000
-      .type = floats(size=2)
-    min_partiality = None
-      .type = float(value_min=0, value_max=1)
-    partiality_cutoff = None
-      .type = float(value_min=0, value_max=1)
-  }
+  model = physical array KB auto
+    .type = choice
+  outlier_rejection = simple *standard
+    .type = choice
+  Isigma_range = 2.0,100000
+    .type = floats(size=2)
+  min_partiality = None
+    .type = float(value_min=0, value_max=1)
+  partiality_cutoff = None
+    .type = float(value_min=0, value_max=1)
 }
 
 symmetry {
@@ -872,9 +870,9 @@ class Scale(object):
         scaler.set_scaled_mtz(merged_mtz)
 
         # Set default scaling model
-        if self._params.scaling.dials.model in (None, "auto", Auto):
-            self._params.scaling.dials.model = "physical"
-        scaler.set_model(self._params.scaling.dials.model)
+        if self._params.scaling.model in (None, "auto", Auto):
+            self._params.scaling.model = "physical"
+        scaler.set_model(self._params.scaling.model)
 
         lmax = self._params.scaling.secondary.lmax
         if lmax:
@@ -895,16 +893,16 @@ class Scale(object):
             scaler.set_bfactor(brotation=decay_interval)
 
         scaler.set_resolution(d_min=d_min, d_max=d_max)
-        if self._params.scaling.dials.Isigma_range is not None:
-            scaler.set_isigma_selection(self._params.scaling.dials.Isigma_range)
-        if self._params.scaling.dials.min_partiality is not None:
-            scaler.set_min_partiality(self._params.scaling.dials.min_partiality)
-        if self._params.scaling.dials.partiality_cutoff is not None:
-            scaler.set_partiality_cutoff(self._params.scaling.dials.partiality_cutoff)
+        if self._params.scaling.Isigma_range is not None:
+            scaler.set_isigma_selection(self._params.scaling.Isigma_range)
+        if self._params.scaling.min_partiality is not None:
+            scaler.set_min_partiality(self._params.scaling.min_partiality)
+        if self._params.scaling.partiality_cutoff is not None:
+            scaler.set_partiality_cutoff(self._params.scaling.partiality_cutoff)
 
         scaler.set_full_matrix(False)
 
-        scaler.set_outlier_rejection(self._params.scaling.dials.outlier_rejection)
+        scaler.set_outlier_rejection(self._params.scaling.outlier_rejection)
 
         scaler.scale()
         self._scaled_mtz = scaler.get_scaled_mtz()
