@@ -107,6 +107,22 @@ resolution
   include scope dials.util.resolutionizer.phil_str
 }
 
+filtering {
+  method = None deltacchalf
+    .type = choice
+    .help = "Choice of whether to do any filtering cycles, default None."
+  deltacchalf {
+    max_cycles = 6
+      .type = int(value_min=1)
+    min_completeness = None
+      .type = float(value_min=0, value_max=100)
+      .help = "Desired minimum completeness, as a percentage (0 - 100)."
+    stdcutoff = 4.0
+      .type = float
+      .help = "Datasets with a delta cc half below (mean - stdcutoff*std) are removed"
+  }
+}
+
 multi_crystal_analysis {
   include scope xia2.Modules.MultiCrystal.master_phil_scope
 }
@@ -383,11 +399,25 @@ class MultiCrystalScale(object):
         self._comparison_graphs = OrderedDict()
 
         self._scaled = Scale(self._data_manager, self._params)
+
+        self.decide_space_group()
+
         self._record_individual_report(
             self._data_manager, self._scaled.report(), "All data"
         )
 
-        self.decide_space_group()
+        if self._params.filtering.method:
+            # Final round of scaling, this time filtering out any bad datasets
+            self._params.unit_cell.refine = []
+            self._params.resolution.d_min = self._scaled.d_min
+            scaled = Scale(self._data_manager, self._params, filtering=True)
+            self.scale_and_filter_results = scaled.scale_and_filter_results
+            logger.info("Scale and filtering:\n%s", self.scale_and_filter_results)
+            self._record_individual_report(
+                self._data_manager, self._scaled.report(), "Filtered"
+            )
+        else:
+            self.scale_and_filter_results = None
 
         self._data_manager.export_experiments("multiplex.expt")
         self._data_manager.export_reflections("multiplex.refl")
@@ -755,6 +785,7 @@ class MultiCrystalScale(object):
             image_range_table=self._individual_report_dicts["All data"][
                 "image_range_table"
             ],
+            scale_and_filter_results=self.scale_and_filter_results,
         )
 
     def cluster_analysis(self):
@@ -764,9 +795,10 @@ class MultiCrystalScale(object):
 
 
 class Scale(object):
-    def __init__(self, data_manager, params):
+    def __init__(self, data_manager, params, filtering=False):
         self._data_manager = data_manager
         self._params = params
+        self._filtering = filtering
 
         self._experiments_filename = "models.expt"
         self._reflections_filename = "observations.refl"
@@ -780,13 +812,13 @@ class Scale(object):
 
         if self._params.resolution.d_min is None:
             self.scale()
-            d_min, reason = self.estimate_resolution_limit()
-            logger.info("Resolution limit: %.2f (%s)" % (d_min, reason))
+            self.d_min, reason = self.estimate_resolution_limit()
+            logger.info("Resolution limit: %.2f (%s)" % (self.d_min, reason))
         else:
-            d_min = self._params.resolution.d_min
+            self.d_min = self._params.resolution.d_min
         d_max = self._params.resolution.d_max
 
-        self.scale(d_min=d_min, d_max=d_max)
+        self.scale(d_min=self.d_min, d_max=d_max)
 
         py.path.local(self.scaled_unmerged_mtz).copy(
             py.path.local("scaled_unmerged.mtz")
@@ -904,6 +936,18 @@ class Scale(object):
 
         scaler.set_outlier_rejection(self._params.scaling.outlier_rejection)
 
+        if self._filtering:
+            scaler.set_filtering_method(self._params.filtering.method)
+            scaler.set_deltacchalf_max_cycles(
+                self._params.filtering.deltacchalf.max_cycles
+            )
+            scaler.set_deltacchalf_min_completeness(
+                self._params.filtering.deltacchalf.min_completeness
+            )
+            scaler.set_deltacchalf_stdcutoff(
+                self._params.filtering.deltacchalf.stdcutoff
+            )
+
         scaler.scale()
         self._scaled_mtz = scaler.get_scaled_mtz()
         self._scaled_unmerged_mtz = scaler.get_scaled_unmerged_mtz()
@@ -916,6 +960,8 @@ class Scale(object):
             self._reflections_filename
         )
         self._params.resolution.labels = "IPR,SIGIPR"
+        if self._filtering:
+            self.scale_and_filter_results = scaler.get_scale_and_filter_results()
         return scaler
 
     def estimate_resolution_limit(self):

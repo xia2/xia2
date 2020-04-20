@@ -61,10 +61,14 @@
 
                 {{ macros.panel('Orientation analysis', 'orientation', orientation_graphs, styles=styles) }}
 
+                {% if filter_plots is not none and filter_plots|length %}
+                    {{ macros.panel('Scaling and filtering plots', 'filter_plots', filter_plots) }}
+                {% endif %}
+
                 <div class="panel panel-default">
                     <div class="panel-heading" data-toggle="collapse" data-target="#collapse_delta_cc_half">
                         <h4 class="panel-title">
-                            <a>Delta CC<sub>½</sub>  analysis</a>
+                            <a>Delta CC<sub>½</sub> analysis</a>
                         </h4>
                     </div>
                     <div id="collapse_delta_cc_half" class="panel-collapse collapse">

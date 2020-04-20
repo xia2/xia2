@@ -39,6 +39,13 @@ def DialsScale(DriverType=None, decay_correction=None):
             self._crystal_name = None
             self._overwrite_existing_models = None
 
+            # scale and filter parameters
+            self._filtering_method = None
+            self._deltacchalf_max_cycles = None
+            self._deltacchalf_min_completeness = None
+            self._deltacchalf_stdcutoff = None
+            self._scale_and_filter_results = None
+
             # input and output files
             self._unmerged_reflections = None
 
@@ -210,6 +217,21 @@ def DialsScale(DriverType=None, decay_correction=None):
         def set_overwrite_existing_models(self, overwrite):
             self._overwrite_existing_models = overwrite
 
+        def set_filtering_method(self, filtering_method):
+            self._filtering_method = filtering_method
+
+        def set_deltacchalf_max_cycles(self, max_cycles):
+            self._deltacchalf_max_cycles = max_cycles
+
+        def set_deltacchalf_min_completeness(self, min_completeness):
+            self._deltacchalf_min_completeness = min_completeness
+
+        def set_deltacchalf_stdcutoff(self, stdcutoff):
+            self._deltacchalf_stdcutoff = stdcutoff
+
+        def get_scale_and_filter_results(self):
+            return self._scale_and_filter_results
+
         def scale(self):
             """Actually perform the scaling."""
 
@@ -336,6 +358,30 @@ def DialsScale(DriverType=None, decay_correction=None):
             if self._crystal_name:
                 self.add_command_line("output.crystal_name=%s" % self._crystal_name)
 
+            if self._filtering_method:
+                self.add_command_line("filtering.method=%s" % self._filtering_method)
+                scale_and_filter_filename = (
+                    "%s_scale_and_filter_results.json" % self.get_xpid()
+                )
+                self.add_command_line(
+                    "output.scale_and_filter_results=%s" % scale_and_filter_filename
+                )
+                if self._deltacchalf_max_cycles:
+                    self.add_command_line(
+                        "filtering.deltacchalf.max_cycles=%i"
+                        % self._deltacchalf_max_cycles
+                    )
+                if self._deltacchalf_min_completeness:
+                    self.add_command_line(
+                        "filtering.deltacchalf.min_completeness=%i"
+                        % self._deltacchalf_min_completeness
+                    )
+                if self._deltacchalf_stdcutoff:
+                    self.add_command_line(
+                        "filtering.deltacchalf.stdcutoff=%i"
+                        % self._deltacchalf_stdcutoff
+                    )
+
             self.add_command_line("output.experiments=%s" % self._scaled_experiments)
             self.add_command_line("output.reflections=%s" % self._scaled_reflections)
 
@@ -356,10 +402,16 @@ def DialsScale(DriverType=None, decay_correction=None):
 
             logger.debug("dials.scale status: OK")
 
-            return "OK"
+            if self._filtering_method and os.path.isfile(scale_and_filter_filename):
+                with open(scale_and_filter_filename, "r") as f:
+                    import json
+                    from dials.algorithms.scaling import scale_and_filter
 
-        def get_scaled_reflection_files(self):
-            return self._scalr_scaled_reflection_files
+                    self._scale_and_filter_results = scale_and_filter.AnalysisResults.from_dict(
+                        json.load(f)
+                    )
+
+            return "OK"
 
         def get_unmerged_reflection_file(self):
             """Return a single unmerged mtz, for resolution cutoff analysis."""
