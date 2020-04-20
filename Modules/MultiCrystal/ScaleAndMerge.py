@@ -406,6 +406,9 @@ class MultiCrystalScale(object):
             self._data_manager, self._scaled.report(), "All data"
         )
 
+        self._mca = self.multi_crystal_analysis()
+        self.cluster_analysis()
+
         if self._params.filtering.method:
             # Final round of scaling, this time filtering out any bad datasets
             self._params.unit_cell.refine = []
@@ -421,9 +424,6 @@ class MultiCrystalScale(object):
 
         self._data_manager.export_experiments("multiplex.expt")
         self._data_manager.export_reflections("multiplex.refl")
-
-        self._mca = self.multi_crystal_analysis()
-        self.cluster_analysis()
 
         min_completeness = self._params.min_completeness
         min_multiplicity = self._params.min_multiplicity
