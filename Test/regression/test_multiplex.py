@@ -54,7 +54,11 @@ def test_proteinase_k_filter_deltacchalf(regression_test, dials_data, tmpdir):
         command_line_args = (
             expts
             + refls
-            + ["filtering.method=deltacchalf", "filtering.deltacchalf.stdcutoff=1",]
+            + [
+                "filtering.method=deltacchalf",
+                "filtering.deltacchalf.stdcutoff=1",
+                "max_clusters=2",
+            ]
         )
         run_multiplex(command_line_args)
     for f in expected_data_files:
@@ -63,6 +67,12 @@ def test_proteinase_k_filter_deltacchalf(regression_test, dials_data, tmpdir):
         tmpdir.join("multiplex.expt").strpath, check_format=False
     )
     assert len(multiplex_expts) == 7
+
+    # Check that clusters 5 and 6 have been scaled
+    for cluster in ("cluster_5", "cluster_6"):
+        assert tmpdir.join(cluster).check(dir=1)
+        assert tmpdir.join(cluster, "scaled.mtz").check(file=1)
+        assert tmpdir.join(cluster, "scaled_unmerged.mtz").check(file=1)
 
 
 @pytest.mark.parametrize(
@@ -104,7 +114,7 @@ def test_proteinase_k_dose(
         assert len(multiplex_expts) == 8
         expected_clusters = ("cluster_5", "cluster_6")
 
-    # Check that clusters 5 and 6 have been scaled
+    # Check that expected clusters have been scaled
     for cluster in expected_clusters:
         assert tmpdir.join(cluster).check(dir=1)
         assert tmpdir.join(cluster, "scaled.mtz").check(file=1)

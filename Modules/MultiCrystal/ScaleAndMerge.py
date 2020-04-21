@@ -409,22 +409,6 @@ class MultiCrystalScale(object):
         self._mca = self.multi_crystal_analysis()
         self.cluster_analysis()
 
-        if self._params.filtering.method:
-            # Final round of scaling, this time filtering out any bad datasets
-            self._params.unit_cell.refine = []
-            self._params.resolution.d_min = self._scaled.d_min
-            scaled = Scale(self._data_manager, self._params, filtering=True)
-            self.scale_and_filter_results = scaled.scale_and_filter_results
-            logger.info("Scale and filtering:\n%s", self.scale_and_filter_results)
-            self._record_individual_report(
-                self._data_manager, self._scaled.report(), "Filtered"
-            )
-        else:
-            self.scale_and_filter_results = None
-
-        self._data_manager.export_experiments("multiplex.expt")
-        self._data_manager.export_reflections("multiplex.refl")
-
         min_completeness = self._params.min_completeness
         min_multiplicity = self._params.min_multiplicity
         max_clusters = self._params.max_clusters
@@ -475,6 +459,22 @@ class MultiCrystalScale(object):
                     data_manager, scaled.report(), cluster_dir.replace("_", " ")
                 )
                 os.chdir(cwd)
+
+        if self._params.filtering.method:
+            # Final round of scaling, this time filtering out any bad datasets
+            self._params.unit_cell.refine = []
+            self._params.resolution.d_min = self._scaled.d_min
+            scaled = Scale(self._data_manager, self._params, filtering=True)
+            self.scale_and_filter_results = scaled.scale_and_filter_results
+            logger.info("Scale and filtering:\n%s", self.scale_and_filter_results)
+            self._record_individual_report(
+                self._data_manager, self._scaled.report(), "Filtered"
+            )
+        else:
+            self.scale_and_filter_results = None
+
+        self._data_manager.export_experiments("multiplex.expt")
+        self._data_manager.export_reflections("multiplex.refl")
 
         self.report()
 
