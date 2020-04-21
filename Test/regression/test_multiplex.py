@@ -8,8 +8,8 @@ from xia2.command_line.multiplex import run as run_multiplex
 
 
 expected_data_files = [
-    "multiplex.expt",
-    "multiplex.refl",
+    "scaled.expt",
+    "scaled.refl",
     "scaled.mtz",
     "scaled_unmerged.mtz",
     "xia2.multiplex.html",
@@ -35,7 +35,7 @@ def test_proteinase_k(mocker, regression_test, dials_data, tmpdir):
     for f in expected_data_files:
         assert tmpdir.join(f).check(file=1), "expected file %s missing" % f
     multiplex_expts = load.experiment_list(
-        tmpdir.join("multiplex.expt").strpath, check_format=False
+        tmpdir.join("scaled.expt").strpath, check_format=False
     )
     for i, expt in enumerate(multiplex_expts):
         valid_image_ranges = expt.scan.get_valid_image_ranges(expt.identifier)
@@ -61,12 +61,16 @@ def test_proteinase_k_filter_deltacchalf(regression_test, dials_data, tmpdir):
             ]
         )
         run_multiplex(command_line_args)
-    for f in expected_data_files:
+    for f in expected_data_files + [
+        "filtered.expt",
+        "filtered.refl",
+        "filtered.mtz",
+        "filtered_unmerged.mtz",
+    ]:
         assert tmpdir.join(f).check(file=1), "expected file %s missing" % f
-    multiplex_expts = load.experiment_list(
-        tmpdir.join("multiplex.expt").strpath, check_format=False
-    )
-    assert len(multiplex_expts) == 7
+    for expt_file, n_expected in (("scaled.expt", 8), ("filtered.expt", 7)):
+        expts = load.experiment_list(tmpdir.join(expt_file).strpath, check_format=False)
+        assert len(expts) == n_expected
 
     # Check that clusters 5 and 6 have been scaled
     for cluster in ("cluster_5", "cluster_6"):
@@ -104,7 +108,7 @@ def test_proteinase_k_dose(
         assert tmpdir.join(f).check(file=1), "expected file %s missing" % f
 
     multiplex_expts = load.experiment_list(
-        tmpdir.join("multiplex.expt").strpath, check_format=False
+        tmpdir.join("scaled.expt").strpath, check_format=False
     )
     if threshold is not None:
         # one experiment should have been rejected after unit cell clustering

@@ -406,6 +406,13 @@ class MultiCrystalScale(object):
             self._data_manager, self._scaled.report(), "All data"
         )
 
+        py.path.local(self._scaled.scaled_unmerged_mtz).copy(
+            py.path.local("scaled_unmerged.mtz")
+        )
+        py.path.local(self._scaled.scaled_mtz).copy(py.path.local("scaled.mtz"))
+        self._data_manager.export_experiments("scaled.expt")
+        self._data_manager.export_reflections("scaled.refl")
+
         self._mca = self.multi_crystal_analysis()
         self.cluster_analysis()
 
@@ -455,6 +462,10 @@ class MultiCrystalScale(object):
                 ]
                 data_manager.select(cluster_identifiers)
                 scaled = Scale(data_manager, self._params)
+                py.path.local(scaled.scaled_unmerged_mtz).copy(
+                    py.path.local("scaled_unmerged.mtz")
+                )
+                py.path.local(scaled.scaled_mtz).copy(py.path.local("scaled.mtz"))
                 self._record_individual_report(
                     data_manager, scaled.report(), cluster_dir.replace("_", " ")
                 )
@@ -470,11 +481,14 @@ class MultiCrystalScale(object):
             self._record_individual_report(
                 self._data_manager, self._scaled.report(), "Filtered"
             )
+            py.path.local(self._scaled.scaled_unmerged_mtz).copy(
+                py.path.local("filtered_unmerged.mtz")
+            )
+            py.path.local(self._scaled.scaled_mtz).copy(py.path.local("filtered.mtz"))
+            self._data_manager.export_experiments("filtered.expt")
+            self._data_manager.export_reflections("filtered.refl")
         else:
             self.scale_and_filter_results = None
-
-        self._data_manager.export_experiments("multiplex.expt")
-        self._data_manager.export_reflections("multiplex.refl")
 
         self.report()
 
@@ -819,11 +833,6 @@ class Scale(object):
         d_max = self._params.resolution.d_max
 
         self.scale(d_min=self.d_min, d_max=d_max)
-
-        py.path.local(self.scaled_unmerged_mtz).copy(
-            py.path.local("scaled_unmerged.mtz")
-        )
-        py.path.local(self.scaled_mtz).copy(py.path.local("scaled.mtz"))
 
     def refine(self):
         # refine in correct bravais setting
