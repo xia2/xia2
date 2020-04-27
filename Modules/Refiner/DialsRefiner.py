@@ -81,9 +81,9 @@ class DialsRefiner(Refiner):
         Add all the resulting experiment list/reflection table pairs to the payload.
         """
         split_experiments = SplitExperiments()
-        auto_logfiler(split_experiments, "SPLIT_EXPERIMENTS")
         cwd = self.get_working_directory()
         split_experiments.set_working_directory(cwd)
+        auto_logfiler(split_experiments, "SPLIT_EXPERIMENTS")
         split_experiments.add_experiments(self._refinr_experiments_filename)
         split_experiments.add_reflections(self._refinr_indexed_filename)
         prefix = "{}_refined_split".format(split_experiments.get_xpid())
