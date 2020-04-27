@@ -4,10 +4,12 @@ import pytest
 
 from dxtbx.serialize import load
 from xia2.Modules.Report import Report
+from xia2.command_line.multiplex import run as run_multiplex
+
 
 expected_data_files = [
-    "multiplex.expt",
-    "multiplex.refl",
+    "scaled.expt",
+    "scaled.refl",
     "scaled.mtz",
     "scaled_unmerged.mtz",
     "xia2.multiplex.html",
@@ -20,9 +22,7 @@ def test_proteinase_k(mocker, regression_test, dials_data, tmpdir):
     refls = sorted(f.strpath for f in data_dir.listdir("reflections*.pickle"))
     mocker.spy(Report, "pychef_plots")
     with tmpdir.as_cwd():
-        from xia2.command_line.multiplex import run
-
-        run(expts + refls + ["exclude_images=0:1:10"])
+        run_multiplex(expts + refls + ["exclude_images=0:1:10"])
     # Verify that the *_vs_dose plots have been correctly plotted
     assert Report.pychef_plots.call_count == 1
     for k in (
@@ -35,7 +35,7 @@ def test_proteinase_k(mocker, regression_test, dials_data, tmpdir):
     for f in expected_data_files:
         assert tmpdir.join(f).check(file=1), "expected file %s missing" % f
     multiplex_expts = load.experiment_list(
-        tmpdir.join("multiplex.expt").strpath, check_format=False
+        tmpdir.join("scaled.expt").strpath, check_format=False
     )
     for i, expt in enumerate(multiplex_expts):
         valid_image_ranges = expt.scan.get_valid_image_ranges(expt.identifier)
@@ -44,6 +44,39 @@ def test_proteinase_k(mocker, regression_test, dials_data, tmpdir):
         else:
             assert valid_image_ranges == [(1, 25)]
         assert expt.crystal.get_space_group().type().lookup_symbol() == "P 41 21 2"
+
+
+def test_proteinase_k_filter_deltacchalf(regression_test, dials_data, tmpdir):
+    data_dir = dials_data("multi_crystal_proteinase_k")
+    expts = sorted(f.strpath for f in data_dir.listdir("experiments*.json"))
+    refls = sorted(f.strpath for f in data_dir.listdir("reflections*.pickle"))
+    with tmpdir.as_cwd():
+        command_line_args = (
+            expts
+            + refls
+            + [
+                "filtering.method=deltacchalf",
+                "filtering.deltacchalf.stdcutoff=1",
+                "max_clusters=2",
+            ]
+        )
+        run_multiplex(command_line_args)
+    for f in expected_data_files + [
+        "filtered.expt",
+        "filtered.refl",
+        "filtered.mtz",
+        "filtered_unmerged.mtz",
+    ]:
+        assert tmpdir.join(f).check(file=1), "expected file %s missing" % f
+    for expt_file, n_expected in (("scaled.expt", 8), ("filtered.expt", 7)):
+        expts = load.experiment_list(tmpdir.join(expt_file).strpath, check_format=False)
+        assert len(expts) == n_expected
+
+    # Check that clusters 5 and 6 have been scaled
+    for cluster in ("cluster_5", "cluster_6"):
+        assert tmpdir.join(cluster).check(dir=1)
+        assert tmpdir.join(cluster, "scaled.mtz").check(file=1)
+        assert tmpdir.join(cluster, "scaled_unmerged.mtz").check(file=1)
 
 
 @pytest.mark.parametrize(
@@ -69,15 +102,13 @@ def test_proteinase_k_dose(
     if threshold is not None:
         command_line_args.append("unit_cell_clustering.threshold=%s" % threshold)
     with tmpdir.as_cwd():
-        from xia2.command_line.multiplex import run
-
-        run(command_line_args)
+        run_multiplex(command_line_args)
 
     for f in expected_data_files:
         assert tmpdir.join(f).check(file=1), "expected file %s missing" % f
 
     multiplex_expts = load.experiment_list(
-        tmpdir.join("multiplex.expt").strpath, check_format=False
+        tmpdir.join("scaled.expt").strpath, check_format=False
     )
     if threshold is not None:
         # one experiment should have been rejected after unit cell clustering
@@ -87,7 +118,7 @@ def test_proteinase_k_dose(
         assert len(multiplex_expts) == 8
         expected_clusters = ("cluster_5", "cluster_6")
 
-    # Check that clusters 5 and 6 have been scaled
+    # Check that expected clusters have been scaled
     for cluster in expected_clusters:
         assert tmpdir.join(cluster).check(dir=1)
         assert tmpdir.join(cluster, "scaled.mtz").check(file=1)
@@ -108,10 +139,8 @@ def test_proteinase_k_single_dataset_raises_error(regression_test, dials_data, t
     expts = data_dir.join("experiments_1.json")
     refls = data_dir.join("reflections_1.pickle")
     with tmpdir.as_cwd():
-        from xia2.command_line.multiplex import run
-
         with pytest.raises(SystemExit) as e:
-            run([expts.strpath, refls.strpath])
+            run_multiplex([expts.strpath, refls.strpath])
         assert str(e.value) == "xia2.multiplex requires a minimum of two experiments"
 
 
@@ -125,7 +154,5 @@ def test_proteinase_k_laue_group_space_group_raises_error(
         ["symmetry.laue_group=P422", "symmetry.space_group=P41212"] + expts + refls
     )
     with tmpdir.as_cwd():
-        from xia2.command_line.multiplex import run
-
         with pytest.raises(SystemExit):
-            run(command_line_args)
+            run_multiplex(command_line_args)

@@ -6,6 +6,7 @@ import json
 import logging
 from collections import OrderedDict
 
+from dials.algorithms.scaling.scale_and_filter import make_scaling_filtering_plots
 from dials.algorithms.symmetry.cosym import SymmetryAnalysis
 from dials.algorithms.symmetry.cosym.plots import plot_coords, plot_rij_histogram
 from dials.util.filter_reflections import filtered_arrays_from_experiments_reflections
@@ -201,6 +202,7 @@ class MultiCrystalReport(MultiCrystalAnalysis):
         comparison_graphs,
         cosym_analysis,
         image_range_table,
+        scale_and_filter_results=None,
     ):
         unit_cell_graphs = self.unit_cell_analysis()
         if self._cluster_analysis is None:
@@ -211,6 +213,13 @@ class MultiCrystalReport(MultiCrystalAnalysis):
         )
 
         delta_cc_half_graphs, delta_cc_half_table = self.delta_cc_half_analysis()
+
+        if scale_and_filter_results:
+            filter_plots = self.make_scale_and_filter_plots(scale_and_filter_results)[
+                "filter_plots"
+            ]
+        else:
+            filter_plots = None
 
         symmetry_analysis = {}
         if "sym_op_scores" in cosym_analysis:
@@ -259,6 +268,7 @@ class MultiCrystalReport(MultiCrystalAnalysis):
             cos_angle_cosym_graphs=self._cosym_graphs,
             delta_cc_half_graphs=delta_cc_half_graphs,
             delta_cc_half_table=delta_cc_half_table,
+            filter_plots=filter_plots,
             image_range_tables=[image_range_table],
             individual_dataset_reports=individual_dataset_reports,
             comparison_graphs=comparison_graphs,
@@ -272,3 +282,13 @@ class MultiCrystalReport(MultiCrystalAnalysis):
 
         with open("%s.html" % self.params.prefix, "wb") as f:
             f.write(html.encode("utf-8", "xmlcharrefreplace"))
+
+    def make_scale_and_filter_plots(self, filtering_results):
+        data = {
+            "merging_stats": filtering_results.get_merging_stats(),
+            "initial_expids_and_image_ranges": filtering_results.initial_expids_and_image_ranges,
+            "cycle_results": filtering_results.get_cycle_results(),
+            "expids_and_image_ranges": filtering_results.expids_and_image_ranges,
+            "mode": "dataset",
+        }
+        return {"filter_plots": make_scaling_filtering_plots(data)}
