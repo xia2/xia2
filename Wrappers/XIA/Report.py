@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 import logging
 import os
 import shutil
+
 from xia2.Driver.DriverFactory import DriverFactory
 
 logger = logging.getLogger("xia2.Wrappers.XIA.Report")

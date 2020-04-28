@@ -147,8 +147,8 @@ import logging
 import os
 
 import pathlib2
-from xia2.Handlers.Streams import banner
 from dxtbx.serialize.load import _decode_dict
+from xia2.Handlers.Streams import banner
 
 logger = logging.getLogger("xia2.Schema.Interfaces.Scaler")
 

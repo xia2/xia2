@@ -10,9 +10,11 @@
 #
 
 from __future__ import absolute_import, division, print_function
-from iotbx import mtz
-from cctbx.array_family import flex
+
 import sys
+
+from cctbx.array_family import flex
+from iotbx import mtz
 
 
 def patch_mtz_unit_cell(mtzfile, unit_cell_parameters):

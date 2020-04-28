@@ -3,9 +3,9 @@ from __future__ import absolute_import, division, print_function
 import logging
 import os
 
+from dials.util.masking import phil_scope
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
-from dials.util.masking import phil_scope
 
 logger = logging.getLogger("xia2.Wrappers.Dials.GenerateMask")
 

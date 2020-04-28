@@ -25,13 +25,13 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+import shlex
 import subprocess
 import time
 
 from xia2.Driver.DefaultDriver import DefaultDriver
 from xia2.Driver.DriverHelper import script_writer
 from xia2.Handlers.Phil import PhilIndex
-import shlex
 
 # Now depend on Phil scope from xia2...
 

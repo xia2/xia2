@@ -6,9 +6,9 @@ import os
 import shutil
 import uuid
 
+from xia2.Driver.DriverFactory import DriverFactory
 from xia2.lib.bits import auto_logfiler
 from xia2.Wrappers.XIA.Integrate import Integrate as XIA2Integrate
-from xia2.Driver.DriverFactory import DriverFactory
 
 logger = logging.getLogger("xia2.Applications.xia2_helpers")
 

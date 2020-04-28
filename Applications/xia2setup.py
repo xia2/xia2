@@ -10,14 +10,14 @@ import os
 import sys
 import traceback
 
+import h5py
+from libtbx import easy_mp
+from xia2.Applications.xia2setup_helpers import get_sweep
 from xia2.Experts.FindImages import image2template_directory
 from xia2.Handlers.CommandLine import CommandLine
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Wrappers.XDS.XDSFiles import XDSFiles
-import h5py
-from libtbx import easy_mp
 from xia2.Schema import imageset_cache
-from xia2.Applications.xia2setup_helpers import get_sweep
+from xia2.Wrappers.XDS.XDSFiles import XDSFiles
 
 logger = logging.getLogger("xia2.Applications.xia2setup")
 

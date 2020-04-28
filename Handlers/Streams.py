@@ -7,14 +7,14 @@
 
 from __future__ import absolute_import, division, print_function
 
+import ctypes
+import ctypes.util
 import itertools
 import logging
 import os
 import platform
 import sys
 from datetime import date
-import ctypes
-import ctypes.util
 
 if not hasattr(logging, "NOTICE"):
     # Create a NOTICE log level and associated command

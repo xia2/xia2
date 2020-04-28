@@ -5,10 +5,10 @@ import math
 import os
 
 import libtbx.utils
-from xia2.Driver.DriverFactory import DriverFactory
-from xia2.Handlers.Phil import PhilIndex
 from dials.array_family import flex
 from dxtbx.serialize import load
+from xia2.Driver.DriverFactory import DriverFactory
+from xia2.Handlers.Phil import PhilIndex
 
 logger = logging.getLogger("xia2.Wrappers.Dials.Index")
 

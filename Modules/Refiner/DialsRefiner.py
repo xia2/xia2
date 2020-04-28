@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 import os
 
 from dials.array_family import flex
-
+from dxtbx.serialize import load
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.lib.bits import auto_logfiler
@@ -13,7 +13,6 @@ from xia2.Wrappers.Dials.CombineExperiments import (
 )
 from xia2.Wrappers.Dials.Refine import Refine as _Refine
 from xia2.Wrappers.Dials.Report import Report as _Report
-from dxtbx.serialize import load
 
 
 class DialsRefiner(Refiner):

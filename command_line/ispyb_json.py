@@ -6,8 +6,8 @@ import sys
 
 import xia2.Handlers.Streams
 import xia2.Interfaces.ISPyB
-from xia2.Schema.XProject import XProject
 from xia2.Interfaces.ISPyB.ISPyBXmlHandler import ISPyBXmlHandler
+from xia2.Schema.XProject import XProject
 
 
 def ispyb_object():

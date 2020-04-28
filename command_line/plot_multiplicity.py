@@ -8,10 +8,10 @@ import sys
 import iotbx.phil
 import six
 from cctbx.miller.display import render_2d, scene
-from scitbx.array_family import flex
 from dials.util import Sorry
 from iotbx.gui_tools.reflections import get_array_description
 from iotbx.reflection_file_reader import any_reflection_file
+from scitbx.array_family import flex
 
 
 class MultiplicityViewPng(render_2d):

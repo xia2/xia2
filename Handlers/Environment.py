@@ -9,6 +9,7 @@ import logging
 import os
 import platform
 import tempfile
+
 from libtbx.introspection import number_of_processors
 
 logger = logging.getLogger("xia2.Handlers.Environment")

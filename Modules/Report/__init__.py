@@ -6,33 +6,31 @@ import codecs
 import copy
 import os
 from collections import OrderedDict
-import six
-from six.moves import cStringIO as StringIO
 
+import dials.pychef
+import libtbx.phil
+import six
 import xia2.Handlers.Environment
 import xia2.Handlers.Files
 from cctbx.array_family import flex
-import libtbx.phil
-from iotbx import merging_statistics
-from iotbx.reflection_file_reader import any_reflection_file
-from mmtbx.scaling import printed_output
-
 from dials.pychef import dose_phil_str
 from dials.report.analysis import batch_dependent_properties
 from dials.report.plots import (
-    i_over_sig_i_vs_batch_plot,
-    scale_rmerge_vs_batch_plot,
-    ResolutionPlotsAndStats,
     IntensityStatisticsPlots,
+    ResolutionPlotsAndStats,
+    i_over_sig_i_vs_batch_plot,
+    make_image_range_table,
+    scale_rmerge_vs_batch_plot,
 )
 from dials.util.batch_handling import batch_manager
-from dials.report.plots import make_image_range_table
-
-from xia2.Modules.Analysis import batch_phil_scope, phil_scope, separate_unmerged
-from xia2.command_line.plot_multiplicity import plot_multiplicity, master_phil
-from mmtbx.scaling.xtriage import xtriage_analyses
-import dials.pychef
+from iotbx import merging_statistics
+from iotbx.reflection_file_reader import any_reflection_file
+from mmtbx.scaling import printed_output
 from mmtbx.scaling.xtriage import master_params as xtriage_master_params
+from mmtbx.scaling.xtriage import xtriage_analyses
+from six.moves import cStringIO as StringIO
+from xia2.command_line.plot_multiplicity import master_phil, plot_multiplicity
+from xia2.Modules.Analysis import batch_phil_scope, phil_scope, separate_unmerged
 
 
 class _xtriage_output(printed_output):

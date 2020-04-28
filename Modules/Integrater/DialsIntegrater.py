@@ -10,17 +10,16 @@ import os
 import xia2.Wrappers.Dials.Integrate
 from dials.util import Sorry
 from dxtbx.serialize import load
+from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.lib.bits import auto_logfiler
 from xia2.lib.SymmetryLib import lattice_to_spacegroup
 from xia2.Schema.Interfaces.Integrater import Integrater
-
-from xia2.Wrappers.Dials.ExportMtz import ExportMtz as _ExportMtz
-from xia2.Wrappers.Dials.Report import Report as _Report
 from xia2.Wrappers.Dials.anvil_correction import rescale_dac as _rescale_dac
-from xia2.Handlers.Citations import Citations
+from xia2.Wrappers.Dials.ExportMtz import ExportMtz as _ExportMtz
 from xia2.Wrappers.Dials.ExportXDSASCII import ExportXDSASCII
+from xia2.Wrappers.Dials.Report import Report as _Report
 
 logger = logging.getLogger("xia2.Modules.Integrater.DialsIntegrater")
 

@@ -44,12 +44,11 @@ import logging
 import os
 from functools import reduce
 
+from cctbx.sgtbx import bravais_types
+from dxtbx.serialize.load import _decode_dict
 from xia2.Experts.LatticeExpert import SortLattices
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import banner
-
-from cctbx.sgtbx import bravais_types
-from dxtbx.serialize.load import _decode_dict
 
 logger = logging.getLogger("xia2.Schema.Interfaces.Indexer")
 

@@ -1,8 +1,9 @@
 from __future__ import absolute_import, division, print_function
 
 import os
-from xia2.Handlers.XInfo import XInfo
+
 import xia2
+from xia2.Handlers.XInfo import XInfo
 
 
 def test_insulin_xinfo():

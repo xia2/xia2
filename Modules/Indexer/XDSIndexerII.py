@@ -11,19 +11,18 @@ import logging
 import math
 import os
 
+import dxtbx
 from dials.array_family import flex
 from dials.util.ascii_art import spot_counts_per_image_plot
+from dxtbx.model import Experiment, ExperimentList
+from dxtbx.serialize.xds import to_crystal, to_xds
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import banner
 from xia2.lib.bits import auto_logfiler
 from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
-from xia2.Wrappers.XDS.XDS import XDSException
-import dxtbx
-from dxtbx.model import Experiment, ExperimentList
-from dxtbx.serialize.xds import to_xds
-from dxtbx.serialize.xds import to_crystal
 from xia2.Wrappers.Dials.ImportXDS import ImportXDS
+from xia2.Wrappers.XDS.XDS import XDSException
 
 logger = logging.getLogger("xia2.Modules.Indexer.XDSIndexerII")
 

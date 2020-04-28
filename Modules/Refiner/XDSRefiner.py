@@ -5,10 +5,10 @@ import logging
 import os
 
 import xia2.Wrappers.Dials.ExportXDS
+from dxtbx.model import ExperimentList
 from xia2.Handlers.Phil import PhilIndex
 from xia2.lib.bits import auto_logfiler
 from xia2.Schema.Interfaces.Refiner import Refiner
-from dxtbx.model import ExperimentList
 
 logger = logging.getLogger("xia2.Modules.Refiner.XDSRefiner")
 

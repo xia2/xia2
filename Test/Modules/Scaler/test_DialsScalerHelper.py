@@ -6,8 +6,8 @@ import pytest
 from cctbx import sgtbx
 from dials.algorithms.symmetry.cosym._generate_test_data import generate_intensities
 from dials.array_family import flex
+from dxtbx.model import Beam, Crystal, Experiment, Scan
 from dxtbx.model.experiment_list import ExperimentList
-from dxtbx.model import Crystal, Scan, Beam, Experiment
 from dxtbx.serialize import load
 from xia2.Modules.Scaler.DialsScaler import decide_correct_lattice_using_refiner
 
