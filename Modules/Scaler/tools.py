@@ -10,12 +10,13 @@
 #
 
 from __future__ import absolute_import, division, print_function
+from iotbx import mtz
+from cctbx.array_family import flex
+import sys
 
 
 def patch_mtz_unit_cell(mtzfile, unit_cell_parameters):
     """Overwrite unit cell stored in mtz file"""
-
-    from iotbx import mtz
 
     f = mtz.object(file_name=mtzfile)
     assert f.n_crystals() == 2, "Can only patch .mtz files with 2 crystals"
@@ -82,7 +83,6 @@ def add_dose_time_to_mtz(hklin, hklout, doses, times=None):
     # instantiate the MTZ object representation
 
     from iotbx import mtz
-    from cctbx.array_family import flex
 
     mtz_obj = mtz.object(file_name=hklin)
 
@@ -148,8 +148,6 @@ if __name__ == "__main__":
 
         doses[batch] = dose
         times[batch] = time
-
-    import sys
 
     add_dose_time_to_mtz(
         hklin=sys.argv[1], hklout=sys.argv[2], doses=doses, times=times

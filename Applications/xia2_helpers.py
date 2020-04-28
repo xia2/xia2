@@ -8,6 +8,7 @@ import uuid
 
 from xia2.lib.bits import auto_logfiler
 from xia2.Wrappers.XIA.Integrate import Integrate as XIA2Integrate
+from xia2.Driver.DriverFactory import DriverFactory
 
 logger = logging.getLogger("xia2.Applications.xia2_helpers")
 
@@ -24,8 +25,6 @@ def process_one_sweep(args):
     sweep_id = args.sweep_id
     failover = args.failover
     driver_type = args.driver_type
-
-    from xia2.Driver.DriverFactory import DriverFactory
 
     default_driver_type = DriverFactory.get_driver_type()
     DriverFactory.set_driver_type(driver_type)

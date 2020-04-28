@@ -1,12 +1,11 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+from xia2.Handlers.XInfo import XInfo
+import xia2
 
 
 def test_insulin_xinfo():
-    from xia2.Handlers.XInfo import XInfo
-    import xia2
-
     xinfo_dir = os.path.join(xia2.__path__[0], "Test", "Handlers")
 
     xinfo = XInfo(os.path.join(xinfo_dir, "insulin.xinfo"))
@@ -27,9 +26,6 @@ def test_insulin_xinfo():
 
 
 def test_multi_xinfo():
-    from xia2.Handlers.XInfo import XInfo
-    import xia2
-
     xinfo_dir = os.path.join(xia2.__path__[0], "Test", "Handlers")
 
     xinfo = XInfo(os.path.join(xinfo_dir, "multi.xinfo"))
@@ -70,9 +66,6 @@ def test_multi_xinfo():
 
 
 def test_load_specific_sweeps_from_multi_xinfo():
-    from xia2.Handlers.XInfo import XInfo
-    import xia2
-
     xinfo_dir = os.path.join(xia2.__path__[0], "Test", "Handlers")
 
     xinfo = XInfo(

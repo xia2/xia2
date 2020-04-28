@@ -49,6 +49,7 @@ from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import banner
 
 from cctbx.sgtbx import bravais_types
+from dxtbx.serialize.load import _decode_dict
 
 logger = logging.getLogger("xia2.Schema.Interfaces.Indexer")
 
@@ -281,8 +282,6 @@ class Indexer(object):
 
     @classmethod
     def from_json(cls, filename=None, string=None):
-        from dxtbx.serialize.load import _decode_dict
-
         assert [filename, string].count(None) == 1
         if filename is not None:
             with open(filename, "rb") as f:

@@ -1,8 +1,7 @@
 from __future__ import absolute_import, division, print_function
+import sys
 
 if __name__ == "__main__":
-    import sys
-
     if "small_molecule=true" not in sys.argv and len(sys.argv) > 1:
         sys.argv.insert(1, "small_molecule=true")
     # clean up command-line so we know what was happening i.e. xia2.small_molecule

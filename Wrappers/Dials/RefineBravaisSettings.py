@@ -5,14 +5,13 @@ import json
 import logging
 import os
 from xia2.Handlers.Phil import PhilIndex
+from xia2.Driver.DriverFactory import DriverFactory
 
 logger = logging.getLogger("xia2.Wrappers.Dials.RefineBravaisSettings")
 
 
 def RefineBravaisSettings(DriverType=None):
     """A factory for RefineBravaisSettingsWrapper classes."""
-
-    from xia2.Driver.DriverFactory import DriverFactory
 
     DriverInstance = DriverFactory.Driver(DriverType)
 

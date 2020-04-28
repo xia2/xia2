@@ -13,6 +13,7 @@ from xia2.Wrappers.Dials.CombineExperiments import (
 )
 from xia2.Wrappers.Dials.Refine import Refine as _Refine
 from xia2.Wrappers.Dials.Report import Report as _Report
+from dxtbx.serialize import load
 
 
 class DialsRefiner(Refiner):
@@ -108,8 +109,6 @@ class DialsRefiner(Refiner):
             assert (
                 len(experiments.crystals()) == 1
             )  # currently only handle one lattice/sweep
-
-            from dxtbx.serialize import load
 
             scan_static = PhilIndex.params.dials.refine.scan_static
 

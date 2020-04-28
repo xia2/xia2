@@ -12,6 +12,7 @@ from dials.util.options import OptionParser
 from jinja2 import Environment, ChoiceLoader, PackageLoader
 import xia2.Handlers.Streams
 from xia2.Modules.Report import Report
+from xia2.XIA2Version import Version
 
 phil_scope = iotbx.phil.parse(
     """\
@@ -35,8 +36,6 @@ help_message = """
 
 
 def run(args):
-    from xia2.XIA2Version import Version
-
     usage = "xia2.report [options] scaled_unmerged.mtz"
 
     parser = OptionParser(

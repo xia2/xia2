@@ -28,6 +28,11 @@ from xia2.Modules.Scaler.CCP4ScalerHelpers import (
 )
 from xia2.Modules.Scaler.CommonScaler import CommonScaler as Scaler
 from xia2.Wrappers.CCP4.CCP4Factory import CCP4Factory
+from xia2.Toolkit.AimlessSurface import (
+    evaluate_1degree,
+    scrape_coefficients,
+    generate_map,
+)
 
 logger = logging.getLogger("xia2.Modules.Scaler.CCP4ScalerA")
 
@@ -1117,12 +1122,6 @@ class CCP4ScalerA(Scaler):
             if pattern.search(line):
                 aimless = re.sub(r"\s\s+", ", ", line.strip("\t\n #"))
                 break
-
-        from xia2.Toolkit.AimlessSurface import (
-            evaluate_1degree,
-            scrape_coefficients,
-            generate_map,
-        )
 
         coefficients = scrape_coefficients(log=output)
         if coefficients:

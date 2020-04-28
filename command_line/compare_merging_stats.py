@@ -8,6 +8,7 @@ import iotbx.merging_statistics
 import iotbx.phil
 from cctbx import uctbx
 from dials.util.options import OptionParser
+from cycler import cycler
 
 help_message = """
 """
@@ -141,8 +142,6 @@ def plot_merging_stats(
 
     if style is not None:
         plt.style.use(style)
-
-    from cycler import cycler
 
     colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
     plt.rcParams["axes.titlesize"] = "medium"

@@ -4,14 +4,13 @@ import logging
 import os
 
 from xia2.Handlers.Phil import PhilIndex
+from xia2.Driver.DriverFactory import DriverFactory
 
 logger = logging.getLogger("xia2.Wrappers.Dials.SearchBeamPosition")
 
 
 def SearchBeamPosition(DriverType=None):
     """A factory for SearchBeamPosition classes."""
-
-    from xia2.Driver.DriverFactory import DriverFactory
 
     DriverInstance = DriverFactory.Driver(DriverType)
 

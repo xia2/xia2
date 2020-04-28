@@ -6,12 +6,11 @@ import json
 import os
 
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
+from xia2.Driver.DriverFactory import DriverFactory
 
 
 def ShadowPlot(DriverType=None):
     """A factory for ShadowPlotWrapper classes."""
-
-    from xia2.Driver.DriverFactory import DriverFactory
 
     DriverInstance = DriverFactory.Driver(DriverType)
 

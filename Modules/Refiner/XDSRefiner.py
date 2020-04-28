@@ -8,6 +8,7 @@ import xia2.Wrappers.Dials.ExportXDS
 from xia2.Handlers.Phil import PhilIndex
 from xia2.lib.bits import auto_logfiler
 from xia2.Schema.Interfaces.Refiner import Refiner
+from dxtbx.model import ExperimentList
 
 logger = logging.getLogger("xia2.Modules.Refiner.XDSRefiner")
 
@@ -178,8 +179,6 @@ class XDSRefiner(Refiner):
                 # FIXME comparison needed
 
     def _refine(self):
-        from dxtbx.model import ExperimentList
-
         self._refinr_refined_experiment_list = ExperimentList()
         for epoch, idxr in self._refinr_indexers.items():
             self._refinr_payload[epoch] = copy.deepcopy(idxr._indxr_payload)
