@@ -8,7 +8,6 @@
 from __future__ import absolute_import, division, print_function
 
 import ctypes
-import ctypes.util
 import itertools
 import logging
 import os
@@ -231,8 +230,6 @@ class _WinColorStreamHandler(logging.StreamHandler):
     def __init__(self, stream=None):
         logging.StreamHandler.__init__(self, stream)
         # get file handle for the stream
-        import ctypes
-
         # for some reason find_msvcrt() sometimes doesn't find msvcrt.dll on my system?
         crtname = ctypes.util.find_msvcrt()
         if not crtname:
