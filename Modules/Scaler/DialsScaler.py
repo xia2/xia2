@@ -47,10 +47,6 @@ from iotbx.scalepack.merge import write as merge_scalepack_write
 logger = logging.getLogger("xia2.Modules.Scaler.DialsScaler")
 
 
-def clean_reindex_operator(reindex_operator):
-    return reindex_operator.replace("[", "").replace("]", "")
-
-
 class DialsScaler(Scaler):
     def __init__(self, *args, **kwargs):
         super(DialsScaler, self).__init__(*args, **kwargs)
