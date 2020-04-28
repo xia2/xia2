@@ -14,6 +14,7 @@ from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import banner
 from xia2.Handlers.CIF import CIF, mmCIF
 from xia2.lib.bits import nifty_power_of_ten, auto_logfiler
+from xia2.lib.SymmetryLib import clean_reindex_operator
 from xia2.Modules.AnalyseMyIntensities import AnalyseMyIntensities
 from xia2.Modules import MtzUtils
 from xia2.Modules.CCP4InterRadiationDamageDetector import (
@@ -26,10 +27,6 @@ from xia2.Schema.Interfaces.Scaler import Scaler
 from xia2.Wrappers.XIA.Merger import Merger
 
 logger = logging.getLogger("xia2.Modules.Scaler.CommonScaler")
-
-
-def clean_reindex_operator(reindex_operator):
-    return reindex_operator.replace("[", "").replace("]", "")
 
 
 class CommonScaler(Scaler):
