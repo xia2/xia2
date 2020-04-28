@@ -21,16 +21,16 @@ except ImportError:
     pass
 
 
-def rescale_dac(driver_type=None):
-    """A factory for RescaleDACWrapper classes."""
+def anvil_correction(driver_type=None):
+    """A factory for AnvilCorrectionWrapper classes."""
 
     driver_instance = DriverFactory.Driver(driver_type)
 
-    class RescaleDACWrapper(driver_instance.__class__):
+    class AnvilCorrectionWrapper(driver_instance.__class__):
         """Wrap dials.anvil_correction."""
 
         def __init__(self):
-            super(RescaleDACWrapper, self).__init__()
+            super(AnvilCorrectionWrapper, self).__init__()
 
             self.set_executable("dials.anvil_correction")
 
@@ -78,4 +78,4 @@ def rescale_dac(driver_type=None):
 
             assert os.path.exists(self.output_reflections_filename)
 
-    return RescaleDACWrapper()
+    return AnvilCorrectionWrapper()
