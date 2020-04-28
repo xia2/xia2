@@ -10,6 +10,7 @@ import os
 
 import pathlib2
 import six
+from dxtbx.serialize.load import _decode_list
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Syminfo import Syminfo
 from xia2.Handlers.XInfo import XInfo
@@ -89,8 +90,6 @@ class XProject(object):
     def from_json(cls, filename=None, string=None):
         def _decode_dict(data):
             """ Decode a dict to str from unicode. """
-            from dxtbx.serialize.load import _decode_list
-
             rv = {}
             for key, value in data.items():
                 if six.PY2 and isinstance(key, six.text_type):

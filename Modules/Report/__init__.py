@@ -6,28 +6,30 @@ import codecs
 import copy
 import os
 from collections import OrderedDict
-import six
-from six.moves import cStringIO as StringIO
 
+import dials.pychef
+import libtbx.phil
+import six
 import xia2.Handlers.Environment
 import xia2.Handlers.Files
 from cctbx.array_family import flex
-import libtbx.phil
-from iotbx import merging_statistics
-from iotbx.reflection_file_reader import any_reflection_file
-from mmtbx.scaling import printed_output
-
 from dials.pychef import dose_phil_str
 from dials.report.analysis import batch_dependent_properties
 from dials.report.plots import (
-    i_over_sig_i_vs_batch_plot,
-    scale_rmerge_vs_batch_plot,
-    ResolutionPlotsAndStats,
     IntensityStatisticsPlots,
+    ResolutionPlotsAndStats,
+    i_over_sig_i_vs_batch_plot,
+    make_image_range_table,
+    scale_rmerge_vs_batch_plot,
 )
 from dials.util.batch_handling import batch_manager
-from dials.report.plots import make_image_range_table
-
+from iotbx import merging_statistics
+from iotbx.reflection_file_reader import any_reflection_file
+from mmtbx.scaling import printed_output
+from mmtbx.scaling.xtriage import master_params as xtriage_master_params
+from mmtbx.scaling.xtriage import xtriage_analyses
+from six.moves import cStringIO as StringIO
+from xia2.command_line.plot_multiplicity import master_phil, plot_multiplicity
 from xia2.Modules.Analysis import batch_phil_scope, phil_scope, separate_unmerged
 
 
@@ -106,8 +108,6 @@ class Report(object):
         self.merged_intensities = self.intensities.merge_equivalents().array()
 
     def multiplicity_plots(self, dest_path=None):
-        from xia2.command_line.plot_multiplicity import plot_multiplicity, master_phil
-
         settings = master_phil.extract()
         settings.size_inches = (5, 5)
         settings.show_missing = True
@@ -162,8 +162,6 @@ class Report(object):
         xtriage_danger = []
         s = StringIO()
         pout = printed_output(out=s)
-        from mmtbx.scaling.xtriage import xtriage_analyses
-        from mmtbx.scaling.xtriage import master_params as xtriage_master_params
 
         xtriage_params = xtriage_master_params.fetch(sources=[]).extract()
         xtriage_params.scaling.input.xray_data.skip_sanity_checks = True
@@ -262,8 +260,6 @@ class Report(object):
         return d
 
     def pychef_plots(self, n_bins=8):
-
-        import dials.pychef
 
         intensities = self.intensities
         batches = self.batches

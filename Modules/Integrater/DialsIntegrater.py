@@ -10,15 +10,16 @@ import os
 import xia2.Wrappers.Dials.Integrate
 from dials.util import Sorry
 from dxtbx.serialize import load
+from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.lib.bits import auto_logfiler
 from xia2.lib.SymmetryLib import lattice_to_spacegroup
 from xia2.Schema.Interfaces.Integrater import Integrater
-
+from xia2.Wrappers.Dials.anvil_correction import anvil_correction as _anvil_correction
 from xia2.Wrappers.Dials.ExportMtz import ExportMtz as _ExportMtz
+from xia2.Wrappers.Dials.ExportXDSASCII import ExportXDSASCII
 from xia2.Wrappers.Dials.Report import Report as _Report
-from xia2.Wrappers.Dials.anvil_correction import rescale_dac as _rescale_dac
 
 logger = logging.getLogger("xia2.Modules.Integrater.DialsIntegrater")
 
@@ -163,8 +164,6 @@ class DialsIntegrater(Integrater):
         """Prepare for integration - in XDS terms this may mean rerunning
         IDXREF to get the XPARM etc. DEFPIX is considered part of the full
         integration as it is resolution dependent."""
-
-        from xia2.Handlers.Citations import Citations
 
         Citations.cite("dials")
 
@@ -367,6 +366,12 @@ class DialsIntegrater(Integrater):
             % self.get_integrater_mosaic_min_mean_max()
         )
 
+        # If running in high-pressure mode, run dials.anvil_correction to
+        # correct for the attenuation of the incident and diffracted beams by the
+        # diamond anvils.
+        if self.high_pressure:
+            self._anvil_correction()
+
         return self._intgr_integrated_reflections
 
     def _integrate_finish(self):
@@ -383,39 +388,6 @@ class DialsIntegrater(Integrater):
         # we want a different exported MTZ file every time (I do not think
         # that we do; these can be very large) - was exporter.get_xpid() ->
         # now dials
-
-        # If running in high-pressure mode, run dials.anvil_correction to
-        # correct for the attenuation of the incident and diffracted beams by the
-        # diamond anvils.
-        if self.high_pressure:
-            logger.info(
-                "Rescaling integrated reflections for attenuation in the "
-                "diamond anvil cell."
-            )
-
-            params = PhilIndex.params.dials.high_pressure
-            rescale_dac = _rescale_dac()
-
-            # Take the filenames of the last integration step as input.
-            rescale_dac.experiments_filenames.append(self._intgr_experiments_filename)
-            rescale_dac.reflections_filenames.append(self._intgr_integrated_reflections)
-
-            # The output reflections have a filename appended with '_corrected'.
-            output_reflections = "_corrected".join(
-                os.path.splitext(self._intgr_integrated_reflections)
-            )
-            rescale_dac.output_reflections_filename = output_reflections
-
-            # Set the user-specified parameters from the PHIL scope.
-            rescale_dac.density = params.anvil.density
-            rescale_dac.thickness = params.anvil.thickness
-            rescale_dac.normal = params.anvil.normal
-
-            # Run dials.anvil_correction with the parameters as set above.
-            rescale_dac.set_working_directory(self.get_working_directory())
-            auto_logfiler(rescale_dac)
-            rescale_dac.run()
-            self._intgr_integrated_reflections = output_reflections
 
         if self._output_format == "hkl":
             exporter = self.ExportMtz()
@@ -674,7 +646,6 @@ class DialsIntegrater(Integrater):
 
     def get_integrater_corrected_intensities(self):
         self.integrate()
-        from xia2.Wrappers.Dials.ExportXDSASCII import ExportXDSASCII
 
         exporter = ExportXDSASCII()
         exporter.set_experiments_filename(self.get_integrated_experiments())
@@ -688,3 +659,35 @@ class DialsIntegrater(Integrater):
         exporter.run()
         assert os.path.exists(self._intgr_corrected_hklout)
         return self._intgr_corrected_hklout
+
+    def _anvil_correction(self):
+        """Correct for attenuation in a diamond anvil pressure cell."""
+
+        logger.info(
+            "Rescaling integrated reflections for attenuation in the diamond anvil "
+            "cell."
+        )
+
+        params = PhilIndex.params.dials.high_pressure
+        anvil_correct = _anvil_correction()
+
+        # Take the filenames of the last integration step as input.
+        anvil_correct.experiments_filenames.append(self._intgr_experiments_filename)
+        anvil_correct.reflections_filenames.append(self._intgr_integrated_reflections)
+
+        # The output reflections have a filename appended with '_corrected'.
+        output_reflections = "_corrected".join(
+            os.path.splitext(self._intgr_integrated_reflections)
+        )
+        anvil_correct.output_reflections_filename = output_reflections
+
+        # Set the user-specified parameters from the PHIL scope.
+        anvil_correct.density = params.anvil.density
+        anvil_correct.thickness = params.anvil.thickness
+        anvil_correct.normal = params.anvil.normal
+
+        # Run dials.anvil_correction with the parameters as set above.
+        anvil_correct.set_working_directory(self.get_working_directory())
+        auto_logfiler(anvil_correct)
+        anvil_correct.run()
+        self._intgr_integrated_reflections = output_reflections

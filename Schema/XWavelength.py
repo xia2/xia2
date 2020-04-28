@@ -24,9 +24,10 @@
 
 from __future__ import absolute_import, division, print_function
 
-import logging
 import inspect
+import logging
 
+from xia2.Handlers.Phil import PhilIndex
 from xia2.Schema.XSweep import XSweep
 
 logger = logging.getLogger("xia2.Schema.XWavelength")
@@ -99,8 +100,6 @@ class XWavelength(object):
         result += "Sweeps:\n"
 
         remove = []
-
-        from xia2.Handlers.Phil import PhilIndex
 
         params = PhilIndex.get_python_object()
         failover = params.xia2.settings.failover

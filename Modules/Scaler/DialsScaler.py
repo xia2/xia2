@@ -47,10 +47,6 @@ from iotbx.scalepack.merge import write as merge_scalepack_write
 logger = logging.getLogger("xia2.Modules.Scaler.DialsScaler")
 
 
-def clean_reindex_operator(reindex_operator):
-    return reindex_operator.replace("[", "").replace("]", "")
-
-
 class DialsScaler(Scaler):
     def __init__(self, *args, **kwargs):
         super(DialsScaler, self).__init__(*args, **kwargs)
@@ -179,7 +175,7 @@ class DialsScaler(Scaler):
             reind_refl,
             reind_exp,
             reindex_initial,
-        ) = self._dials_symmetry_indexer_jiffy(
+        ) = self._helper.dials_symmetry_indexer_jiffy(
             [prescaled_experiments], [prescaled_reflections], refiners, multisweep=True
         )
 
@@ -256,7 +252,7 @@ class DialsScaler(Scaler):
                 _,
                 __,
                 ___,
-            ) = self._dials_symmetry_indexer_jiffy(
+            ) = self._helper.dials_symmetry_indexer_jiffy(
                 [experiment], [reflections], [refiner]
             )
 
@@ -1031,13 +1027,6 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
 
         logger.debug(
             "Reindexed with operator %s, reason is %s", reindex_operator, reason
-        )
-
-    def _dials_symmetry_indexer_jiffy(
-        self, experiments, reflections, refiners, multisweep=False
-    ):
-        return self._helper.dials_symmetry_indexer_jiffy(
-            experiments, reflections, refiners, multisweep
         )
 
     def get_UBlattsymm_from_sweep_info(self, sweep_info):

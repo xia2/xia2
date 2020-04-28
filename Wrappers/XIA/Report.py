@@ -4,13 +4,13 @@ import logging
 import os
 import shutil
 
+from xia2.Driver.DriverFactory import DriverFactory
+
 logger = logging.getLogger("xia2.Wrappers.XIA.Report")
 
 
 def Report(DriverType=None):
     """A factory for ReportWrapper classes."""
-
-    from xia2.Driver.DriverFactory import DriverFactory
 
     DriverInstance = DriverFactory.Driver(DriverType)
 

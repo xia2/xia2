@@ -10,6 +10,8 @@ import os
 import platform
 import tempfile
 
+from libtbx.introspection import number_of_processors
+
 logger = logging.getLogger("xia2.Handlers.Environment")
 
 
@@ -108,8 +110,6 @@ def get_number_cpus():
         return int(os.environ.get("NSLOTS"))
     except (ValueError, TypeError):
         pass
-
-    from libtbx.introspection import number_of_processors
 
     return number_of_processors(return_value_if_unknown=-1)
 

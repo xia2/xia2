@@ -13,10 +13,7 @@ from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Syminfo import Syminfo
-from xia2.Modules.Scaler.rebatch import rebatch
-
-from xia2.lib.bits import is_mtz_file, transpose_loggraph
-from xia2.lib.bits import nifty_power_of_ten
+from xia2.lib.bits import is_mtz_file, nifty_power_of_ten, transpose_loggraph
 from xia2.lib.SymmetryLib import sort_lattices
 from xia2.Modules import MtzUtils
 from xia2.Modules.Scaler.CCP4ScalerHelpers import (
@@ -27,6 +24,12 @@ from xia2.Modules.Scaler.CCP4ScalerHelpers import (
     get_umat_bmat_lattice_symmetry_from_mtz,
 )
 from xia2.Modules.Scaler.CommonScaler import CommonScaler as Scaler
+from xia2.Modules.Scaler.rebatch import rebatch
+from xia2.Toolkit.AimlessSurface import (
+    evaluate_1degree,
+    generate_map,
+    scrape_coefficients,
+)
 from xia2.Wrappers.CCP4.CCP4Factory import CCP4Factory
 
 logger = logging.getLogger("xia2.Modules.Scaler.CCP4ScalerA")
@@ -1117,12 +1120,6 @@ class CCP4ScalerA(Scaler):
             if pattern.search(line):
                 aimless = re.sub(r"\s\s+", ", ", line.strip("\t\n #"))
                 break
-
-        from xia2.Toolkit.AimlessSurface import (
-            evaluate_1degree,
-            scrape_coefficients,
-            generate_map,
-        )
 
         coefficients = scrape_coefficients(log=output)
         if coefficients:

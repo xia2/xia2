@@ -44,6 +44,10 @@ from xia2.Handlers.Streams import banner
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Files import FileHandler
 from xia2.Experts.SymmetryExpert import lattice_to_spacegroup_number
+from xia2.Handlers.Citations import Citations
+from dials.util.ascii_art import spot_counts_per_image_plot
+from cctbx.sgtbx import bravais_types
+from dxtbx.serialize import load
 
 
 logger = logging.getLogger("xia2.Modules.Indexer.DialsIndexer")
@@ -238,8 +242,6 @@ class DialsIndexer(Indexer):
 
     def _index_prepare(self):
 
-        from xia2.Handlers.Citations import Citations
-
         Citations.cite("dials")
 
         # all_images = self.get_matching_images()
@@ -344,8 +346,6 @@ class DialsIndexer(Indexer):
 
             spot_lists.append(spot_filename)
             experiments_filenames.append(spotfinder.get_output_sweep_filename())
-
-            from dials.util.ascii_art import spot_counts_per_image_plot
 
             refl = flex.reflection_table.from_file(spot_filename)
             if not len(refl):
@@ -506,9 +506,6 @@ class DialsIndexer(Indexer):
         # not strictly the P1 cell, rather the cell that was used in indexing
         self._p1_cell = indexer._p1_cell
         self.set_indexer_payload("indexed_filename", indexer.get_indexed_filename())
-
-        from cctbx.sgtbx import bravais_types
-        from dxtbx.serialize import load
 
         indexed_file = indexer.get_indexed_filename()
         indexed_experiments = indexer.get_experiments_filename()

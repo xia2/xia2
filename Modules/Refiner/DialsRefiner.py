@@ -5,6 +5,7 @@ import os
 from dials.algorithms.refinement.restraints.restraints_parameterisation import (
     uc_phil_scope as restraints_scope,
 )
+from dxtbx.serialize import load
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.lib.bits import auto_logfiler
@@ -119,8 +120,6 @@ class DialsRefiner(Refiner):
             indexed_reflections = idxr.get_indexer_payload("indexed_filename")
 
             assert len(experiments.crystals()) == 1  # currently only handle one lattice
-
-            from dxtbx.serialize import load
 
             scan_static = PhilIndex.params.dials.refine.scan_static
 

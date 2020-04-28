@@ -5,6 +5,7 @@ import os
 
 import iotbx.cif
 import iotbx.cif.model
+from dxtbx.model.experiment_list import ExperimentListFactory
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Citations import Citations
 
@@ -173,8 +174,6 @@ def TwoThetaRefine(DriverType=None):
                 raise RuntimeError("unit cell not refined")
 
             self.check_for_errors()
-
-            from dxtbx.model.experiment_list import ExperimentListFactory
 
             experiments = ExperimentListFactory.from_json_file(
                 self.get_output_experiments(), check_format=False

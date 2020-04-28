@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 import logging
 import os
 
+from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
 
 logger = logging.getLogger("xia2.Wrappers.Dials.Spotfinder")
@@ -10,8 +11,6 @@ logger = logging.getLogger("xia2.Wrappers.Dials.Spotfinder")
 
 def Spotfinder(DriverType=None):
     """A factory for SpotfinderWrapper classes."""
-
-    from xia2.Driver.DriverFactory import DriverFactory
 
     DriverInstance = DriverFactory.Driver(DriverType)
 

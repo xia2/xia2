@@ -11,7 +11,9 @@ import os
 
 import xia2.Wrappers.CCP4.Pointless
 import xia2.Wrappers.Dials.Symmetry
+from cctbx.sgtbx import lattice_symmetry_group
 from iotbx import mtz
+from scitbx.matrix import sqr
 from xia2.Experts.ResolutionExperts import remove_blank
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
@@ -514,8 +516,6 @@ class SweepInformationHandler(object):
 
 
 def mosflm_B_matrix(uc):
-    from scitbx.matrix import sqr
-
     parameters = uc.parameters()
     r_parameters = uc.reciprocal_parameters()
 
@@ -544,12 +544,9 @@ def mosflm_B_matrix(uc):
 def get_umat_bmat_lattice_symmetry_from_mtz(mtz_file):
     """Get the U matrix and lattice symmetry derived from the unit cell
     constants from an MTZ file."""
-    from iotbx import mtz
-
     m = mtz.object(mtz_file)
     # assert first U matrix from batches is OK
     uc = m.crystals()[0].unit_cell()
-    from cctbx.sgtbx import lattice_symmetry_group
 
     lattice_symm = lattice_symmetry_group(uc, max_delta=0.0)
     return tuple(m.batches()[0].umat()), mosflm_B_matrix(uc), lattice_symm

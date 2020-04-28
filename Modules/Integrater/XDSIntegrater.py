@@ -16,13 +16,14 @@ import time
 
 import scitbx.matrix
 from dials.array_family import flex
-
+from iotbx.xds import xparm
 from xia2.Experts.SymmetryExpert import (
     lattice_to_spacegroup_number,
     mat_to_symop,
     r_to_rt,
     rt_to_r,
 )
+from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.lib.bits import auto_logfiler
@@ -31,10 +32,10 @@ from xia2.Schema.Exceptions.BadLatticeError import BadLatticeError
 from xia2.Schema.Interfaces.Integrater import Integrater
 from xia2.Wrappers.CCP4.CCP4Factory import CCP4Factory
 from xia2.Wrappers.CCP4.Reindex import Reindex
+from xia2.Wrappers.Dials.ImportXDS import ImportXDS
 from xia2.Wrappers.XDS.XDSCorrect import XDSCorrect as _Correct
 from xia2.Wrappers.XDS.XDSDefpix import XDSDefpix as _Defpix
 from xia2.Wrappers.XDS.XDSIntegrate import XDSIntegrate as _Integrate
-from xia2.Wrappers.Dials.ImportXDS import ImportXDS
 
 logger = logging.getLogger("xia2.Modules.Integrater.XDSIntegrater")
 
@@ -191,8 +192,6 @@ class XDSIntegrater(Integrater):
         """Prepare for integration - in XDS terms this may mean rerunning
         IDXREF to get the XPARM etc. DEFPIX is considered part of the full
         integration as it is resolution dependent."""
-
-        from xia2.Handlers.Citations import Citations
 
         Citations.cite("xds")
 
@@ -716,8 +715,6 @@ class XDSIntegrater(Integrater):
         # compute misorientation of axes
 
         xparm_file = os.path.join(self.get_working_directory(), "GXPARM.XDS")
-
-        from iotbx.xds import xparm
 
         handle = xparm.reader()
         handle.read_file(xparm_file)

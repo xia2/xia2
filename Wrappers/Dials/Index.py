@@ -5,6 +5,8 @@ import math
 import os
 
 import libtbx.utils
+from dials.array_family import flex
+from dxtbx.serialize import load
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
 
@@ -228,9 +230,6 @@ def Index(DriverType=None):
             for record in self.get_all_output():
                 if "Too few reflections to parameterise" in record:
                     logger.debug(record.strip())
-
-            from dials.array_family import flex
-            from dxtbx.serialize import load
 
             self._experiment_list = load.experiment_list(self._experiment_filename)
             self._reflections = flex.reflection_table.from_file(self._indexed_filename)

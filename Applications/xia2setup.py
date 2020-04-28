@@ -10,9 +10,14 @@ import os
 import sys
 import traceback
 
+import h5py
+from libtbx import easy_mp
+from xia2.Applications.xia2setup_helpers import get_sweep
 from xia2.Experts.FindImages import image2template_directory
 from xia2.Handlers.CommandLine import CommandLine
 from xia2.Handlers.Phil import PhilIndex
+from xia2.Schema import imageset_cache
+from xia2.Wrappers.XDS.XDSFiles import XDSFiles
 
 logger = logging.getLogger("xia2.Applications.xia2setup")
 
@@ -76,8 +81,6 @@ def is_sequence_name(file):
 
 
 def is_image_name(filename):
-    from xia2.Wrappers.XDS.XDSFiles import XDSFiles
-
     if os.path.isfile(filename):
 
         if os.path.split(filename)[-1] in XDSFiles:
@@ -221,8 +224,6 @@ def visit(directory, files):
 
 
 def _list_hdf5_data_files(h5_file):
-    import h5py
-
     f = h5py.File(h5_file, "r")
     filenames = [
         f["/entry/data"][k].file.filename
@@ -519,9 +520,6 @@ def _write_sweeps(sweeps, out):
 
 
 def _get_sweeps(templates):
-    from libtbx import easy_mp
-    from xia2.Applications.xia2setup_helpers import get_sweep
-
     params = PhilIndex.get_python_object()
     mp_params = params.xia2.settings.multiprocessing
     nproc = mp_params.nproc
@@ -549,8 +547,6 @@ def _get_sweeps(templates):
 
     else:
         results_list = [get_sweep((template,)) for template in templates]
-
-    from xia2.Schema import imageset_cache
 
     known_sweeps = {}
     for template, sweeplist in zip(templates, results_list):

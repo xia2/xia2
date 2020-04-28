@@ -147,6 +147,7 @@ import logging
 import os
 
 import pathlib2
+from dxtbx.serialize.load import _decode_dict
 from xia2.Handlers.Streams import banner
 
 logger = logging.getLogger("xia2.Schema.Interfaces.Scaler")
@@ -337,8 +338,6 @@ class Scaler(object):
 
     @classmethod
     def from_json(cls, filename=None, string=None):
-        from dxtbx.serialize.load import _decode_dict
-
         assert [filename, string].count(None) == 1
         if filename is not None:
             with open(filename, "r") as f:

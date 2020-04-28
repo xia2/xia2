@@ -2,13 +2,12 @@
 
 from __future__ import absolute_import, division, print_function
 
+from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 
 
 def EstimateGain(DriverType=None):
     """A factory for EstimateGainWrapper classes."""
-
-    from xia2.Driver.DriverFactory import DriverFactory
 
     DriverInstance = DriverFactory.Driver(DriverType)
 

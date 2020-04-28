@@ -5,6 +5,8 @@ import json
 import logging
 import os
 
+from dxtbx.serialize.load import _decode_dict
+
 logger = logging.getLogger("xia2.Schema.Interfaces.Refiner")
 
 
@@ -119,8 +121,6 @@ class Refiner(object):
 
     @classmethod
     def from_json(cls, filename=None, string=None):
-        from dxtbx.serialize.load import _decode_dict
-
         assert [filename, string].count(None) == 1
         if filename is not None:
             with open(filename, "rb") as f:
