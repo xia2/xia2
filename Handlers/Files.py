@@ -8,6 +8,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import contextlib
 import os
 import shutil
 
@@ -19,14 +20,9 @@ class _FileHandler(object):
         self._temporary_files = []
         self._output_files = []
 
-        self._log_files = {}
-        self._log_file_keys = []
-
-        self._xml_files = {}
-        self._xml_file_keys = []
-
         self._html_files = {}
-        self._html_file_keys = []
+        self._log_files = {}
+        self._xml_files = {}
 
         # for putting the reflection files somewhere nice...
         self._data_files = []
@@ -34,76 +30,71 @@ class _FileHandler(object):
         # same mechanism as log files - I want to rename files copied to the
         # DataFiles directory
         self._more_data_files = {}
-        self._more_data_file_keys = []
 
     def cleanup(self, base_path):
-        out = open("xia2-files.txt", "w")
-        for f in self._temporary_files:
-            try:
-                os.remove(f)
-                out.write("Deleted: %s\n" % f)
-            except Exception as e:
-                out.write("Failed to delete: %s (%s)\n" % (f, str(e)))
+        with open("xia2-files.txt", "w") as out:
+            for f in self._temporary_files:
+                try:
+                    os.remove(f)
+                    out.write("Deleted: %s\n" % f)
+                except Exception as e:
+                    out.write("Failed to delete: %s (%s)\n" % (f, str(e)))
 
-        for f in self._output_files:
-            out.write("Output file (%s): %s\n" % f)
+            for f in self._output_files:
+                out.write("Output file (%s): %s\n" % f)
 
-        # copy the log files
-        log_directory = base_path.joinpath("LogFiles")
-        log_directory.mkdir(parents=True, exist_ok=True)
-        log_directory = str(log_directory)
+            # copy the log files
+            log_directory = base_path.joinpath("LogFiles")
+            log_directory.mkdir(parents=True, exist_ok=True)
+            log_directory = str(log_directory)
 
-        for f in self._log_file_keys:
-            filename = os.path.join(log_directory, "%s.log" % f.replace(" ", "_"))
-            shutil.copyfile(self._log_files[f], filename)
-            out.write("Copied log file %s to %s\n" % (self._log_files[f], filename))
+            for tag, source in self._log_files.items():
+                filename = os.path.join(log_directory, "%s.log" % tag.replace(" ", "_"))
+                shutil.copyfile(source, filename)
+                out.write("Copied log file %s to %s\n" % (source, filename))
 
-        for f in self._xml_file_keys:
-            filename = os.path.join(log_directory, "%s.xml" % f.replace(" ", "_"))
-            shutil.copyfile(self._xml_files[f], filename)
-            out.write("Copied xml file %s to %s\n" % (self._xml_files[f], filename))
+            for tag, source in self._xml_files.items():
+                filename = os.path.join(log_directory, "%s.xml" % tag.replace(" ", "_"))
+                shutil.copyfile(source, filename)
+                out.write("Copied xml file %s to %s\n" % (source, filename))
 
-        for f in self._html_file_keys:
-            filename = os.path.join(log_directory, "%s.html" % f.replace(" ", "_"))
-            shutil.copyfile(self._html_files[f], filename)
-            out.write("Copied html file %s to %s\n" % (self._html_files[f], filename))
+            for tag, source in self._html_files.items():
+                filename = os.path.join(
+                    log_directory, "%s.html" % tag.replace(" ", "_")
+                )
+                shutil.copyfile(source, filename)
+                out.write("Copied html file %s to %s\n" % (source, filename))
 
-        # copy the data files
-        data_directory = base_path.joinpath("DataFiles")
-        data_directory.mkdir(parents=True, exist_ok=True)
-        data_directory = str(data_directory)
-        for f in self._data_files:
-            filename = os.path.join(data_directory, os.path.split(f)[-1])
-            shutil.copyfile(f, filename)
-            out.write("Copied data file %s to %s\n" % (f, filename))
+            # copy the data files
+            data_directory = base_path.joinpath("DataFiles")
+            data_directory.mkdir(parents=True, exist_ok=True)
+            data_directory = str(data_directory)
+            for f in self._data_files:
+                filename = os.path.join(data_directory, os.path.split(f)[-1])
+                shutil.copyfile(f, filename)
+                out.write("Copied data file %s to %s\n" % (f, filename))
 
-        for tag, ext in self._more_data_file_keys:
-            filename_out = os.path.join(
-                data_directory, "%s.%s" % (tag.replace(" ", "_"), ext)
-            )
-            filename_in = self._more_data_files[(tag, ext)]
-            shutil.copyfile(filename_in, filename_out)
-            out.write("Copied extra data file %s to %s\n" % (filename_in, filename_out))
-
-        out.close()
+            for tag, ext in self._more_data_files:
+                filename_out = os.path.join(
+                    data_directory, "%s.%s" % (tag.replace(" ", "_"), ext)
+                )
+                filename_in = self._more_data_files[(tag, ext)]
+                shutil.copyfile(filename_in, filename_out)
+                out.write(
+                    "Copied extra data file %s to %s\n" % (filename_in, filename_out)
+                )
 
     def record_log_file(self, tag, filename):
         """Record a log file."""
         self._log_files[tag] = filename
-        if tag not in self._log_file_keys:
-            self._log_file_keys.append(tag)
 
     def record_xml_file(self, tag, filename):
         """Record an xml file."""
         self._xml_files[tag] = filename
-        if tag not in self._xml_file_keys:
-            self._xml_file_keys.append(tag)
 
     def record_html_file(self, tag, filename):
         """Record an html file."""
         self._html_files[tag] = filename
-        if tag not in self._html_file_keys:
-            self._html_file_keys.append(tag)
 
     def record_data_file(self, filename):
         """Record a data file."""
@@ -116,8 +107,6 @@ class _FileHandler(object):
         ext = os.path.splitext(filename)[1][1:]
         key = (tag, ext)
         self._more_data_files[key] = filename
-        if tag not in self._more_data_file_keys:
-            self._more_data_file_keys.append(key)
 
     def get_data_file(self, base_path, filename):
         """Return the point where this data file will end up!"""
@@ -138,5 +127,9 @@ class _FileHandler(object):
 FileHandler = _FileHandler()
 
 
+@contextlib.contextmanager
 def cleanup(base_path):
-    FileHandler.cleanup(base_path)
+    try:
+        yield
+    finally:
+        FileHandler.cleanup(base_path)

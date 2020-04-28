@@ -141,167 +141,165 @@ def xia2_main(stop_after=None):
 
     failover = params.xia2.settings.failover
 
-    if mp_params.mode == "parallel" and njob > 1:
-        driver_type = mp_params.type
-        command_line_args = CommandLine.get_argv()[1:]
-        jobs = []
-        for crystal_id in crystals:
-            for wavelength_id in crystals[crystal_id].get_wavelength_names():
-                wavelength = crystals[crystal_id].get_xwavelength(wavelength_id)
-                sweeps = wavelength.get_sweeps()
-                for sweep in sweeps:
-                    sweep._get_indexer()
-                    sweep._get_refiner()
-                    sweep._get_integrater()
-                    jobs.append(
-                        (
-                            group_args(
-                                driver_type=driver_type,
-                                stop_after=stop_after,
-                                failover=failover,
-                                command_line_args=command_line_args,
-                                nproc=mp_params.nproc,
-                                crystal_id=crystal_id,
-                                wavelength_id=wavelength_id,
-                                sweep_id=sweep.get_name(),
-                            ),
-                        )
-                    )
-
-        from xia2.Driver.DriverFactory import DriverFactory
-
-        default_driver_type = DriverFactory.get_driver_type()
-
-        # run every nth job on the current computer (no need to submit to qsub)
-        for i_job, arg in enumerate(jobs):
-            if (i_job % njob) == 0:
-                arg[0].driver_type = default_driver_type
-
-        nproc = mp_params.nproc
-        qsub_command = mp_params.qsub_command or "qsub"
-        qsub_command = "%s -V -cwd -pe smp %d" % (qsub_command, nproc)
-
-        from libtbx import easy_mp
-
-        results = easy_mp.parallel_map(
-            process_one_sweep,
-            jobs,
-            processes=njob,
-            method="multiprocessing",
-            qsub_command=qsub_command,
-            preserve_order=True,
-            preserve_exception_message=True,
-        )
-
-        # Hack to update sweep with the serialized indexers/refiners/integraters
-        i_sweep = 0
-        for crystal_id in crystals:
-            for wavelength_id in crystals[crystal_id].get_wavelength_names():
-                wavelength = crystals[crystal_id].get_xwavelength(wavelength_id)
-                remove_sweeps = []
-                sweeps = wavelength.get_sweeps()
-                for sweep in sweeps:
-                    success, output, xsweep_dict = results[i_sweep]
-                    if output is not None:
-                        logger.info(output)
-                    if not success:
-                        logger.info("Sweep failed: removing %s", sweep.get_name())
-                        remove_sweeps.append(sweep)
-                    else:
-                        assert xsweep_dict is not None
-                        logger.info("Loading sweep: %s", sweep.get_name())
-                        new_sweep = XSweep.from_dict(xsweep_dict)
-                        sweep._indexer = new_sweep._indexer
-                        sweep._refiner = new_sweep._refiner
-                        sweep._integrater = new_sweep._integrater
-                    i_sweep += 1
-                for sweep in remove_sweeps:
-                    wavelength.remove_sweep(sweep)
-                    sample = sweep.sample
-                    sample.remove_sweep(sweep)
-
-    else:
-        for crystal_id in list(crystals.keys()):
-            for wavelength_id in crystals[crystal_id].get_wavelength_names():
-                wavelength = crystals[crystal_id].get_xwavelength(wavelength_id)
-                remove_sweeps = []
-                sweeps = wavelength.get_sweeps()
-                for sweep in sweeps:
-                    from dials.command_line.show import show_experiments
-                    from dxtbx.model.experiment_list import ExperimentListFactory
-
-                    logger.debug(sweep.get_name())
-                    logger.debug(
-                        show_experiments(
-                            ExperimentListFactory.from_imageset_and_crystal(
-                                sweep.get_imageset(), None
+    with cleanup(xinfo.path):
+        if mp_params.mode == "parallel" and njob > 1:
+            driver_type = mp_params.type
+            command_line_args = CommandLine.get_argv()[1:]
+            jobs = []
+            for crystal_id in crystals:
+                for wavelength_id in crystals[crystal_id].get_wavelength_names():
+                    wavelength = crystals[crystal_id].get_xwavelength(wavelength_id)
+                    sweeps = wavelength.get_sweeps()
+                    for sweep in sweeps:
+                        sweep._get_indexer()
+                        sweep._get_refiner()
+                        sweep._get_integrater()
+                        jobs.append(
+                            (
+                                group_args(
+                                    driver_type=driver_type,
+                                    stop_after=stop_after,
+                                    failover=failover,
+                                    command_line_args=command_line_args,
+                                    nproc=mp_params.nproc,
+                                    crystal_id=crystal_id,
+                                    wavelength_id=wavelength_id,
+                                    sweep_id=sweep.get_name(),
+                                ),
                             )
                         )
-                    )
-                    Citations.cite("dials")
-                    try:
-                        if stop_after == "index":
-                            sweep.get_indexer_cell()
-                        else:
-                            sweep.get_integrater_intensities()
-                        sweep.serialize()
-                    except Exception as e:
-                        if failover:
-                            logger.info(
-                                "Processing sweep %s failed: %s",
-                                sweep.get_name(),
-                                str(e),
-                            )
-                            remove_sweeps.append(sweep)
-                        else:
-                            raise
-                for sweep in remove_sweeps:
-                    wavelength.remove_sweep(sweep)
-                    sample = sweep.sample
-                    sample.remove_sweep(sweep)
 
-    # save intermediate xia2.json file in case scaling step fails
-    xinfo.as_json(filename="xia2.json")
+            from xia2.Driver.DriverFactory import DriverFactory
 
-    if stop_after not in ("index", "integrate"):
-        logger.info(xinfo.get_output())
+            default_driver_type = DriverFactory.get_driver_type()
 
-    for crystal in list(crystals.values()):
-        crystal.serialize()
+            # run every nth job on the current computer (no need to submit to qsub)
+            for i_job, arg in enumerate(jobs):
+                if (i_job % njob) == 0:
+                    arg[0].driver_type = default_driver_type
 
-    # save final xia2.json file in case report generation fails
-    xinfo.as_json(filename="xia2.json")
+            nproc = mp_params.nproc
+            qsub_command = mp_params.qsub_command or "qsub"
+            qsub_command = "%s -V -cwd -pe smp %d" % (qsub_command, nproc)
 
-    if stop_after not in ("index", "integrate"):
-        # and the summary file
-        with open("xia2-summary.dat", "w") as fh:
-            for record in xinfo.summarise():
-                fh.write("%s\n" % record)
+            from libtbx import easy_mp
 
-        # looks like this import overwrites the initial command line
-        # Phil overrides so... for https://github.com/xia2/xia2/issues/150
-        from xia2.command_line.html import generate_xia2_html
-
-        if params.xia2.settings.small_molecule:
-            params.xia2.settings.report.xtriage_analysis = False
-            params.xia2.settings.report.include_radiation_damage = False
-
-        with xia2.Driver.timing.record_step("xia2.report"):
-            generate_xia2_html(
-                xinfo, filename="xia2.html", params=params.xia2.settings.report
+            results = easy_mp.parallel_map(
+                process_one_sweep,
+                jobs,
+                processes=njob,
+                method="multiprocessing",
+                qsub_command=qsub_command,
+                preserve_order=True,
+                preserve_exception_message=True,
             )
 
-    duration = time.time() - start_time
+            # Hack to update sweep with the serialized indexers/refiners/integraters
+            i_sweep = 0
+            for crystal_id in crystals:
+                for wavelength_id in crystals[crystal_id].get_wavelength_names():
+                    wavelength = crystals[crystal_id].get_xwavelength(wavelength_id)
+                    remove_sweeps = []
+                    sweeps = wavelength.get_sweeps()
+                    for sweep in sweeps:
+                        success, output, xsweep_dict = results[i_sweep]
+                        if output is not None:
+                            logger.info(output)
+                        if not success:
+                            logger.info("Sweep failed: removing %s", sweep.get_name())
+                            remove_sweeps.append(sweep)
+                        else:
+                            assert xsweep_dict is not None
+                            logger.info("Loading sweep: %s", sweep.get_name())
+                            new_sweep = XSweep.from_dict(xsweep_dict)
+                            sweep._indexer = new_sweep._indexer
+                            sweep._refiner = new_sweep._refiner
+                            sweep._integrater = new_sweep._integrater
+                        i_sweep += 1
+                    for sweep in remove_sweeps:
+                        wavelength.remove_sweep(sweep)
+                        sample = sweep.sample
+                        sample.remove_sweep(sweep)
 
-    # write out the time taken in a human readable way
-    logger.info(
-        "Processing took %s", time.strftime("%Hh %Mm %Ss", time.gmtime(duration))
-    )
+        else:
+            for crystal_id in list(crystals.keys()):
+                for wavelength_id in crystals[crystal_id].get_wavelength_names():
+                    wavelength = crystals[crystal_id].get_xwavelength(wavelength_id)
+                    remove_sweeps = []
+                    sweeps = wavelength.get_sweeps()
+                    for sweep in sweeps:
+                        from dials.command_line.show import show_experiments
+                        from dxtbx.model.experiment_list import ExperimentListFactory
 
-    write_citations()
+                        logger.debug(sweep.get_name())
+                        logger.debug(
+                            show_experiments(
+                                ExperimentListFactory.from_imageset_and_crystal(
+                                    sweep.get_imageset(), None
+                                )
+                            )
+                        )
+                        Citations.cite("dials")
+                        try:
+                            if stop_after == "index":
+                                sweep.get_indexer_cell()
+                            else:
+                                sweep.get_integrater_intensities()
+                            sweep.serialize()
+                        except Exception as e:
+                            if failover:
+                                logger.info(
+                                    "Processing sweep %s failed: %s",
+                                    sweep.get_name(),
+                                    str(e),
+                                )
+                                remove_sweeps.append(sweep)
+                            else:
+                                raise
+                    for sweep in remove_sweeps:
+                        wavelength.remove_sweep(sweep)
+                        sample = sweep.sample
+                        sample.remove_sweep(sweep)
 
-    # delete all of the temporary mtz files...
-    cleanup(xinfo.path)
+        # save intermediate xia2.json file in case scaling step fails
+        xinfo.as_json(filename="xia2.json")
+
+        if stop_after not in ("index", "integrate"):
+            logger.info(xinfo.get_output())
+
+        for crystal in list(crystals.values()):
+            crystal.serialize()
+
+        # save final xia2.json file in case report generation fails
+        xinfo.as_json(filename="xia2.json")
+
+        if stop_after not in ("index", "integrate"):
+            # and the summary file
+            with open("xia2-summary.dat", "w") as fh:
+                for record in xinfo.summarise():
+                    fh.write("%s\n" % record)
+
+            # looks like this import overwrites the initial command line
+            # Phil overrides so... for https://github.com/xia2/xia2/issues/150
+            from xia2.command_line.html import generate_xia2_html
+
+            if params.xia2.settings.small_molecule:
+                params.xia2.settings.report.xtriage_analysis = False
+                params.xia2.settings.report.include_radiation_damage = False
+
+            with xia2.Driver.timing.record_step("xia2.report"):
+                generate_xia2_html(
+                    xinfo, filename="xia2.html", params=params.xia2.settings.report
+                )
+
+        duration = time.time() - start_time
+
+        # write out the time taken in a human readable way
+        logger.info(
+            "Processing took %s", time.strftime("%Hh %Mm %Ss", time.gmtime(duration))
+        )
+
+        write_citations()
 
 
 def run():
