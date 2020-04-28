@@ -19,6 +19,11 @@ from xia2.Handlers.Streams import banner
 from xia2.lib.bits import auto_logfiler
 from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
 from xia2.Wrappers.XDS.XDS import XDSException
+import dxtbx
+from dxtbx.model import Experiment, ExperimentList
+from dxtbx.serialize.xds import to_xds
+from dxtbx.serialize.xds import to_crystal
+from xia2.Wrappers.Dials.ImportXDS import ImportXDS
 
 logger = logging.getLogger("xia2.Modules.Indexer.XDSIndexerII")
 
@@ -250,14 +255,9 @@ class XDSIndexerII(XDSIndexer):
             self._indxr_mosaic,
         ) = idxref.get_indexing_solution()
 
-        import dxtbx
-        from dxtbx.serialize.xds import to_crystal
-
         xparm_file = os.path.join(self.get_working_directory(), "XPARM.XDS")
         models = dxtbx.load(xparm_file)
         crystal_model = to_crystal(xparm_file)
-
-        from dxtbx.model import Experiment, ExperimentList
 
         # this information gets lost when re-creating the models from the
         # XDS results - however is not refined so can simply copy from the
@@ -335,8 +335,6 @@ class XDSIndexerII(XDSIndexer):
         for block in blocks[1:]:
             idxref.add_spot_range(block[0], block[1])
 
-        from dxtbx.serialize.xds import to_xds
-
         converter = to_xds(self.get_imageset())
         xds_beam_centre = converter.detector_origin
 
@@ -365,8 +363,6 @@ class XDSIndexerII(XDSIndexer):
 
             idxref.add_spot_range(block[0], block[1])
 
-        from dxtbx.serialize.xds import to_xds
-
         converter = to_xds(self.get_imageset())
         xds_beam_centre = converter.detector_origin
 
@@ -378,8 +374,6 @@ class XDSIndexerII(XDSIndexer):
 
 
 def spot_xds_to_reflection_file(spot_xds, working_directory):
-    from xia2.Wrappers.Dials.ImportXDS import ImportXDS
-
     importer = ImportXDS()
     importer.set_working_directory(working_directory)
     auto_logfiler(importer)

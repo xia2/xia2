@@ -8,6 +8,11 @@ import sys
 
 import iotbx.cif.model
 import xia2.XIA2Version
+from iotbx.reflection_file_reader import any_reflection_file
+from iotbx.shelx.hklf import miller_array_export_as_shelx_hklf
+from cctbx.xray import scatterer
+from iotbx.shelx import writer
+from cctbx.xray.structure import structure
 
 
 def parse_compound(compound):
@@ -141,12 +146,6 @@ Winter, G. (2010) Journal of Applied Crystallography 43
 def to_shelx(hklin, prefix, compound="", options=None):
     """Read hklin (unmerged reflection file) and generate SHELXT input file
     and HKL file"""
-
-    from iotbx.reflection_file_reader import any_reflection_file
-    from iotbx.shelx import writer
-    from iotbx.shelx.hklf import miller_array_export_as_shelx_hklf
-    from cctbx.xray.structure import structure
-    from cctbx.xray import scatterer
 
     reader = any_reflection_file(hklin)
     mtz_object = reader.file_content()

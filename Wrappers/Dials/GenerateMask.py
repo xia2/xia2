@@ -5,6 +5,7 @@ import os
 
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
+from dials.util.masking import phil_scope
 
 logger = logging.getLogger("xia2.Wrappers.Dials.GenerateMask")
 
@@ -40,7 +41,6 @@ def GenerateMask(DriverType=None):
             self.clear_command_line()
 
             assert self._params is not None
-            from dials.util.masking import phil_scope
 
             working_phil = phil_scope.format(self._params)
             diff_phil = phil_scope.fetch_diff(source=working_phil)

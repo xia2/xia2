@@ -26,6 +26,9 @@ from xia2.Experts.FindImages import (
     image2template_directory,
     template_directory_number2image,
 )
+from xia2.Wrappers.Mosflm.AutoindexHelpers import set_distance
+from dxtbx.model.detector_helpers import set_mosflm_beam_centre
+from xia2.Schema import load_imagesets
 
 logger = logging.getLogger("xia2.Schema.Interfaces.FrameProcessor")
 
@@ -139,7 +142,6 @@ class FrameProcessor(object):
     def set_distance(self, distance):
         if distance is None:
             return
-        from xia2.Wrappers.Mosflm.AutoindexHelpers import set_distance
 
         set_distance(self.get_detector(), distance)
         self._fp_distance_prov = "user"
@@ -160,8 +162,6 @@ class FrameProcessor(object):
         return self._fp_polarization
 
     def set_beam_centre(self, beam_centre):
-        from dxtbx.model.detector_helpers import set_mosflm_beam_centre
-
         try:
             set_mosflm_beam_centre(
                 self.get_detector(), self.get_beam_obj(), beam_centre
@@ -253,8 +253,6 @@ class FrameProcessor(object):
                     continue
                 images.append(j)
             self._fp_matching_images = images
-
-        from xia2.Schema import load_imagesets
 
         imagesets = load_imagesets(
             template,

@@ -5,14 +5,13 @@ import logging
 import os
 
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
+from xia2.Driver.DriverFactory import DriverFactory
 
 logger = logging.getLogger("xia2.Wrappers.Dials.Import")
 
 
 def Import(DriverType=None):
     """A factory for ImportWrapper classes."""
-
-    from xia2.Driver.DriverFactory import DriverFactory
 
     DriverInstance = DriverFactory.Driver(DriverType)
 

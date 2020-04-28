@@ -33,6 +33,13 @@ from xia2.lib.bits import auto_logfiler
 from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Files import FileHandler
+from xia2.Wrappers.Dials.Spotfinder import Spotfinder
+from xia2.Wrappers.Dials.ExportSpotXDS import ExportSpotXDS
+from dxtbx.serialize.xds import to_xds
+import dxtbx
+from dxtbx.model import Experiment, ExperimentList
+from iotbx.xds import spot_xds
+from dxtbx.serialize.xds import to_crystal
 
 logger = logging.getLogger("xia2.Modules.Indexer.XDSIndexer")
 
@@ -105,8 +112,6 @@ class XDSIndexer(IndexerSingleSweep):
         return colspot
 
     def DialsSpotfinder(self):
-        from xia2.Wrappers.Dials.Spotfinder import Spotfinder
-
         spotfinder = Spotfinder(params=PhilIndex.params.dials.find_spots)
         spotfinder.set_working_directory(self.get_working_directory())
         spotfinder.setup_from_imageset(self.get_imageset())
@@ -116,8 +121,6 @@ class XDSIndexer(IndexerSingleSweep):
         return spotfinder
 
     def DialsExportSpotXDS(self):
-        from xia2.Wrappers.Dials.ExportSpotXDS import ExportSpotXDS
-
         export = ExportSpotXDS()
         export.set_working_directory(self.get_working_directory())
         return export
@@ -303,7 +306,6 @@ class XDSIndexer(IndexerSingleSweep):
 
         xycorr.set_data_range(first, last)
         xycorr.set_background_range(self._indxr_images[0][0], self._indxr_images[0][1])
-        from dxtbx.serialize.xds import to_xds
 
         converter = to_xds(self.get_imageset())
         xds_beam_centre = converter.detector_origin
@@ -541,8 +543,6 @@ class XDSIndexer(IndexerSingleSweep):
         else:
             original_cell = None
 
-        from dxtbx.serialize.xds import to_xds
-
         converter = to_xds(self.get_imageset())
         xds_beam_centre = converter.detector_origin
 
@@ -620,14 +620,9 @@ class XDSIndexer(IndexerSingleSweep):
             self._indxr_mosaic,
         ) = idxref.get_indexing_solution()
 
-        import dxtbx
-        from dxtbx.serialize.xds import to_crystal
-
         xparm_file = os.path.join(self.get_working_directory(), "XPARM.XDS")
         models = dxtbx.load(xparm_file)
         crystal_model = to_crystal(xparm_file)
-
-        from dxtbx.model import Experiment, ExperimentList
 
         # this information gets lost when re-creating the models from the
         # XDS results - however is not refined so can simply copy from the
@@ -707,8 +702,6 @@ class XDSIndexer(IndexerSingleSweep):
 
         experiment = self.get_indexer_experiment_list()[0]
         crystal_model = experiment.crystal
-
-        from iotbx.xds import spot_xds
 
         spot_xds_handle = spot_xds.reader()
         spot_xds_handle.read_file(spot_file)

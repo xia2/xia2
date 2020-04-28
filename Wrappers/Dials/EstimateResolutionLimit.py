@@ -1,13 +1,12 @@
 from __future__ import absolute_import, division, print_function
 import logging
+from xia2.Driver.DriverFactory import DriverFactory
 
 logger = logging.getLogger("xia2.Wrappers.Dials.EstimateResolutionLimit")
 
 
 def EstimateResolutionLimit(DriverType=None):
     """A factory for EstimateResolutionLimitWrapper classes."""
-
-    from xia2.Driver.DriverFactory import DriverFactory
 
     DriverInstance = DriverFactory.Driver(DriverType)
 

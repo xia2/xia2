@@ -16,6 +16,7 @@ from xia2.Handlers.XInfo import XInfo
 from xia2.Schema.XCrystal import XCrystal
 from xia2.Schema.XSample import XSample
 from xia2.Schema.XWavelength import XWavelength
+from dxtbx.serialize.load import _decode_list
 
 logger = logging.getLogger("xia2.Schema.XProject")
 
@@ -89,8 +90,6 @@ class XProject(object):
     def from_json(cls, filename=None, string=None):
         def _decode_dict(data):
             """ Decode a dict to str from unicode. """
-            from dxtbx.serialize.load import _decode_list
-
             rv = {}
             for key, value in data.items():
                 if six.PY2 and isinstance(key, six.text_type):

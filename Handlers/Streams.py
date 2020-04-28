@@ -13,6 +13,8 @@ import os
 import platform
 import sys
 from datetime import date
+import ctypes
+import ctypes.util
 
 if not hasattr(logging, "NOTICE"):
     # Create a NOTICE log level and associated command
@@ -224,15 +226,12 @@ class _WinColorStreamHandler(logging.StreamHandler):
             return cls.DEFAULT
 
     def _set_color(self, code):
-        import ctypes
-
         ctypes.windll.kernel32.SetConsoleTextAttribute(self._outhdl, code)
 
     def __init__(self, stream=None):
         logging.StreamHandler.__init__(self, stream)
         # get file handle for the stream
         import ctypes
-        import ctypes.util
 
         # for some reason find_msvcrt() sometimes doesn't find msvcrt.dll on my system?
         crtname = ctypes.util.find_msvcrt()

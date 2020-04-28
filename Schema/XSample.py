@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 import inspect
+from xia2.Modules.DoseAccumulate import accumulate_dose
 
 
 class XSample(object):
@@ -20,8 +21,6 @@ class XSample(object):
         self.multi_indexer = None
 
     def get_epoch_to_dose(self):
-        from xia2.Modules.DoseAccumulate import accumulate_dose
-
         epoch_to_dose = accumulate_dose(
             [sweep.get_imageset() for sweep in self._sweeps]
         )

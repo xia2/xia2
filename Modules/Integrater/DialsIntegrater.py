@@ -19,6 +19,8 @@ from xia2.Schema.Interfaces.Integrater import Integrater
 from xia2.Wrappers.Dials.ExportMtz import ExportMtz as _ExportMtz
 from xia2.Wrappers.Dials.Report import Report as _Report
 from xia2.Wrappers.Dials.anvil_correction import rescale_dac as _rescale_dac
+from xia2.Handlers.Citations import Citations
+from xia2.Wrappers.Dials.ExportXDSASCII import ExportXDSASCII
 
 logger = logging.getLogger("xia2.Modules.Integrater.DialsIntegrater")
 
@@ -163,8 +165,6 @@ class DialsIntegrater(Integrater):
         """Prepare for integration - in XDS terms this may mean rerunning
         IDXREF to get the XPARM etc. DEFPIX is considered part of the full
         integration as it is resolution dependent."""
-
-        from xia2.Handlers.Citations import Citations
 
         Citations.cite("dials")
 
@@ -660,7 +660,6 @@ class DialsIntegrater(Integrater):
 
     def get_integrater_corrected_intensities(self):
         self.integrate()
-        from xia2.Wrappers.Dials.ExportXDSASCII import ExportXDSASCII
 
         exporter = ExportXDSASCII()
         exporter.set_experiments_filename(self.get_integrated_experiments())

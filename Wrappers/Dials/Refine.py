@@ -2,14 +2,13 @@ from __future__ import absolute_import, division, print_function
 
 import logging
 import os
+from xia2.Driver.DriverFactory import DriverFactory
 
 logger = logging.getLogger("xia2.Wrappers.Dials.Refine")
 
 
 def Refine(DriverType=None):
     """A factory for RefineWrapper classes."""
-
-    from xia2.Driver.DriverFactory import DriverFactory
 
     DriverInstance = DriverFactory.Driver(DriverType)
 

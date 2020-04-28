@@ -29,6 +29,10 @@ from dials.util.batch_handling import batch_manager
 from dials.report.plots import make_image_range_table
 
 from xia2.Modules.Analysis import batch_phil_scope, phil_scope, separate_unmerged
+from xia2.command_line.plot_multiplicity import plot_multiplicity, master_phil
+from mmtbx.scaling.xtriage import xtriage_analyses
+import dials.pychef
+from mmtbx.scaling.xtriage import master_params as xtriage_master_params
 
 
 class _xtriage_output(printed_output):
@@ -106,8 +110,6 @@ class Report(object):
         self.merged_intensities = self.intensities.merge_equivalents().array()
 
     def multiplicity_plots(self, dest_path=None):
-        from xia2.command_line.plot_multiplicity import plot_multiplicity, master_phil
-
         settings = master_phil.extract()
         settings.size_inches = (5, 5)
         settings.show_missing = True
@@ -162,8 +164,6 @@ class Report(object):
         xtriage_danger = []
         s = StringIO()
         pout = printed_output(out=s)
-        from mmtbx.scaling.xtriage import xtriage_analyses
-        from mmtbx.scaling.xtriage import master_params as xtriage_master_params
 
         xtriage_params = xtriage_master_params.fetch(sources=[]).extract()
         xtriage_params.scaling.input.xray_data.skip_sanity_checks = True
@@ -262,8 +262,6 @@ class Report(object):
         return d
 
     def pychef_plots(self, n_bins=8):
-
-        import dials.pychef
 
         intensities = self.intensities
         batches = self.batches

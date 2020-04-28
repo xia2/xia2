@@ -35,6 +35,8 @@ from xia2.Wrappers.XDS.XDSCorrect import XDSCorrect as _Correct
 from xia2.Wrappers.XDS.XDSDefpix import XDSDefpix as _Defpix
 from xia2.Wrappers.XDS.XDSIntegrate import XDSIntegrate as _Integrate
 from xia2.Wrappers.Dials.ImportXDS import ImportXDS
+from xia2.Handlers.Citations import Citations
+from iotbx.xds import xparm
 
 logger = logging.getLogger("xia2.Modules.Integrater.XDSIntegrater")
 
@@ -191,8 +193,6 @@ class XDSIntegrater(Integrater):
         """Prepare for integration - in XDS terms this may mean rerunning
         IDXREF to get the XPARM etc. DEFPIX is considered part of the full
         integration as it is resolution dependent."""
-
-        from xia2.Handlers.Citations import Citations
 
         Citations.cite("xds")
 
@@ -716,8 +716,6 @@ class XDSIntegrater(Integrater):
         # compute misorientation of axes
 
         xparm_file = os.path.join(self.get_working_directory(), "GXPARM.XDS")
-
-        from iotbx.xds import xparm
 
         handle = xparm.reader()
         handle.read_file(xparm_file)

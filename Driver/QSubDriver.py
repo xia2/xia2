@@ -30,13 +30,13 @@ import time
 
 from xia2.Driver.DefaultDriver import DefaultDriver
 from xia2.Driver.DriverHelper import script_writer
+from xia2.Handlers.Phil import PhilIndex
+import shlex
 
 # Now depend on Phil scope from xia2...
 
 
 def get_qsub_command():
-    from xia2.Handlers.Phil import PhilIndex
-
     params = PhilIndex.get_python_object()
     mp_params = params.xia2.settings.multiprocessing
     if mp_params.qsub_command:
@@ -133,8 +133,6 @@ class QSubDriver(DefaultDriver):
         qsub_command = get_qsub_command()
         if not qsub_command:
             qsub_command = "qsub"
-
-        import shlex
 
         qsub_command = shlex.split(qsub_command)
         if self._cpu_threads > 1:

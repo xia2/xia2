@@ -25,6 +25,12 @@ from xia2.Schema.Interfaces.Scaler import Scaler
 
 # new resolution limit code
 from xia2.Wrappers.XIA.Merger import Merger
+from xia2.XIA2Version import Version
+from iotbx.reflection_file_reader import any_reflection_file
+from iotbx.shelx.hklf import miller_array_export_as_shelx_hklf
+from cctbx.xray import scatterer
+from iotbx.shelx import writer
+from cctbx.xray.structure import structure
 
 logger = logging.getLogger("xia2.Modules.Scaler.CommonScaler")
 
@@ -545,7 +551,6 @@ class CommonScaler(Scaler):
 
         # finally add xia2 version to mtz history
         from iotbx.reflection_file_reader import any_reflection_file
-        from xia2.XIA2Version import Version
 
         mtz_files = [self._scalr_scaled_reflection_files["mtz"]]
         mtz_files.extend(self._scalr_scaled_reflection_files["mtz_unmerged"].values())
@@ -662,12 +667,6 @@ class CommonScaler(Scaler):
     def _scale_finish_export_shelxt(self):
         """Read hklin (unmerged reflection file) and generate SHELXT input file
         and HKL file"""
-
-        from iotbx.reflection_file_reader import any_reflection_file
-        from iotbx.shelx import writer
-        from iotbx.shelx.hklf import miller_array_export_as_shelx_hklf
-        from cctbx.xray.structure import structure
-        from cctbx.xray import scatterer
 
         for wavelength_name in self._scalr_scaled_refl_files:
             prefix = wavelength_name
@@ -892,7 +891,6 @@ class CommonScaler(Scaler):
         params = PhilIndex.params.xia2.settings.resolution
         m = Merger()
         m.set_working_directory(self.get_working_directory())
-        from xia2.lib.bits import auto_logfiler
 
         auto_logfiler(m)
         if hklin:

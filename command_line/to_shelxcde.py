@@ -1,14 +1,13 @@
 from __future__ import absolute_import, division, print_function
 
 import sys
+from iotbx.reflection_file_reader import any_reflection_file
+from iotbx.shelx.hklf import miller_array_export_as_shelx_hklf
 
 
 def to_shelxcde(hklin, prefix, sites=0):
     """Read hklin (unmerged reflection file) and generate SHELXC input file
     and HKL file"""
-
-    from iotbx.reflection_file_reader import any_reflection_file
-    from iotbx.shelx.hklf import miller_array_export_as_shelx_hklf
 
     reader = any_reflection_file(hklin)
     intensities = [

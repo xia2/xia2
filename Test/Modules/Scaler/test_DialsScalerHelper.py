@@ -9,6 +9,7 @@ from dials.array_family import flex
 from dxtbx.model.experiment_list import ExperimentList
 from dxtbx.model import Crystal, Scan, Beam, Experiment
 from dxtbx.serialize import load
+from xia2.Modules.Scaler.DialsScaler import decide_correct_lattice_using_refiner
 
 flex.set_random_seed(42)
 random.seed(42)
@@ -350,7 +351,6 @@ def test_decide_correct_lattice_using_refiner(
 ):
 
     refiner = simple_refiner(refiner_lattices)
-    from xia2.Modules.Scaler.DialsScaler import decide_correct_lattice_using_refiner
 
     result = decide_correct_lattice_using_refiner(possible_lattices, refiner)
     assert result == expected_output
