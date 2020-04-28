@@ -11,14 +11,14 @@ import os
 
 import xia2.Wrappers.CCP4.Pointless
 import xia2.Wrappers.Dials.Symmetry
+from cctbx.sgtbx import lattice_symmetry_group
 from iotbx import mtz
+from scitbx.matrix import sqr
 from xia2.Experts.ResolutionExperts import remove_blank
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.lib.bits import auto_logfiler
 from xia2.Modules import MtzUtils
-from scitbx.matrix import sqr
-from cctbx.sgtbx import lattice_symmetry_group
 
 logger = logging.getLogger("xia2.Modules.Scaler.CCP4ScalerHelpers")
 

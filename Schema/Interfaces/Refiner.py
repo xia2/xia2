@@ -4,6 +4,7 @@ import inspect
 import json
 import logging
 import os
+
 from dxtbx.serialize.load import _decode_dict
 
 logger = logging.getLogger("xia2.Schema.Interfaces.Refiner")

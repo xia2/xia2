@@ -17,8 +17,8 @@ import logging
 import math
 import os
 
+from dxtbx.model.detector_helpers import set_mosflm_beam_centre
 from scitbx import matrix
-
 from xia2.Experts.FindImages import (
     digest_template,
     find_matching_images,
@@ -26,9 +26,8 @@ from xia2.Experts.FindImages import (
     image2template_directory,
     template_directory_number2image,
 )
-from xia2.Wrappers.Mosflm.AutoindexHelpers import set_distance
-from dxtbx.model.detector_helpers import set_mosflm_beam_centre
 from xia2.Schema import load_imagesets
+from xia2.Wrappers.Mosflm.AutoindexHelpers import set_distance
 
 logger = logging.getLogger("xia2.Schema.Interfaces.FrameProcessor")
 

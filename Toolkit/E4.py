@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
+
 import sys
+
 from iotbx import reflection_file_reader
 from mmtbx.scaling.twin_analyses import twin_analyses
 from six.moves import cStringIO as StringIO

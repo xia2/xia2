@@ -7,8 +7,8 @@ import sys
 import iotbx.merging_statistics
 import iotbx.phil
 from cctbx import uctbx
-from dials.util.options import OptionParser
 from cycler import cycler
+from dials.util.options import OptionParser
 
 help_message = """
 """

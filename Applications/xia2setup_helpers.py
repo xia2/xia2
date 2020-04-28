@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 import logging
 import os
 import traceback
+
 from xia2.Schema.Sweep import SweepFactory
 
 # this must be defined in a separate file from xia2setup.py to be

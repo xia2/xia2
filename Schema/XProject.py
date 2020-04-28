@@ -10,13 +10,13 @@ import os
 
 import pathlib2
 import six
+from dxtbx.serialize.load import _decode_list
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Syminfo import Syminfo
 from xia2.Handlers.XInfo import XInfo
 from xia2.Schema.XCrystal import XCrystal
 from xia2.Schema.XSample import XSample
 from xia2.Schema.XWavelength import XWavelength
-from dxtbx.serialize.load import _decode_list
 
 logger = logging.getLogger("xia2.Schema.XProject")
 

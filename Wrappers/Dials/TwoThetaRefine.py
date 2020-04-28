@@ -5,9 +5,9 @@ import os
 
 import iotbx.cif
 import iotbx.cif.model
+from dxtbx.model.experiment_list import ExperimentListFactory
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Citations import Citations
-from dxtbx.model.experiment_list import ExperimentListFactory
 
 logger = logging.getLogger("xia2.Wrappers.Dials.TwoThetaRefine")
 

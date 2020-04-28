@@ -4,8 +4,8 @@ import json
 import logging
 import os
 
-from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 from xia2.Driver.DriverFactory import DriverFactory
+from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 
 logger = logging.getLogger("xia2.Wrappers.Dials.Import")
 
