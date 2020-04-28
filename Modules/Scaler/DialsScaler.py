@@ -179,7 +179,7 @@ class DialsScaler(Scaler):
             reind_refl,
             reind_exp,
             reindex_initial,
-        ) = self._dials_symmetry_indexer_jiffy(
+        ) = self._helper.dials_symmetry_indexer_jiffy(
             [prescaled_experiments], [prescaled_reflections], refiners, multisweep=True
         )
 
@@ -256,7 +256,7 @@ class DialsScaler(Scaler):
                 _,
                 __,
                 ___,
-            ) = self._dials_symmetry_indexer_jiffy(
+            ) = self._helper.dials_symmetry_indexer_jiffy(
                 [experiment], [reflections], [refiner]
             )
 
@@ -1031,13 +1031,6 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
 
         logger.debug(
             "Reindexed with operator %s, reason is %s", reindex_operator, reason
-        )
-
-    def _dials_symmetry_indexer_jiffy(
-        self, experiments, reflections, refiners, multisweep=False
-    ):
-        return self._helper.dials_symmetry_indexer_jiffy(
-            experiments, reflections, refiners, multisweep
         )
 
     def get_UBlattsymm_from_sweep_info(self, sweep_info):
