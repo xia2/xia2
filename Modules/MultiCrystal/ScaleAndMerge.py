@@ -565,6 +565,8 @@ class MultiCrystalScale(object):
             "warnings": xtriage_warnings,
             "danger": xtriage_danger,
         }
+        d["merging_stats"] = report.merging_stats.as_dict()
+        d["merging_stats_anom"] = report.merging_stats.as_dict()
 
         max_points = 500
         for g in (
@@ -636,6 +638,8 @@ class MultiCrystalScale(object):
         d["batch_graphs"] = batch_graphs
         d["misc_graphs"] = misc_graphs
         d["xtriage"] = report_d["xtriage"]
+        d["merging_stats"] = report_d["merging_stats"]
+        d["merging_stats_anom"] = report_d["merging_stats_anom"]
         return d
 
     def unit_cell_clustering(self, plot_name=None):
