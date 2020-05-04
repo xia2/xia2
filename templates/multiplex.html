@@ -188,6 +188,9 @@
                                 </div>
                             </div>
                         </div>
+                        {% if "xtriage" in item %}
+                            {{ xia2_macros.xtriage_results(item["xtriage"]["success"], item["xtriage"]["warnings"], item["xtriage"]["danger"]) }}
+                        {% endif %}
 
                     </div>
 
