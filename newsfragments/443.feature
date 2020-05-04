@@ -1,0 +1,2 @@
+- Include xtriage analysis in xia2.multiplex output
+- xia2.multiplex now exports json file including xtriage results
