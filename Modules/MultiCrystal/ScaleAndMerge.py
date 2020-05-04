@@ -559,6 +559,13 @@ class MultiCrystalScale(object):
         d.update(report.intensity_stats_plots())
         d.update(report.pychef_plots())
 
+        xtriage_success, xtriage_warnings, xtriage_danger = report.xtriage_report()
+        d["xtriage"] = {
+            "success": xtriage_success,
+            "warnings": xtriage_warnings,
+            "danger": xtriage_danger,
+        }
+
         max_points = 500
         for g in (
             "scale_rmerge_vs_batch",
@@ -628,6 +635,7 @@ class MultiCrystalScale(object):
         d["resolution_graphs"] = resolution_graphs
         d["batch_graphs"] = batch_graphs
         d["misc_graphs"] = misc_graphs
+        d["xtriage"] = report_d["xtriage"]
         return d
 
     def unit_cell_clustering(self, plot_name=None):
