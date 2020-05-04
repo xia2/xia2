@@ -130,7 +130,8 @@ def exercise_dials_integrater(dials_data, tmp_dir, nproc=None):
     # Test that diamond anvil cell attenuation correction does something.
     # That it does the right thing is left as a matter for the DIALS tests.
     integrater3 = DialsIntegrater.from_json(string=json_str)
-    integrater3.set_integrater_finish_done(False)
+    integrater3.set_integrater_sweep(sweep, reset=False)
+    integrater3.set_integrater_done(False)
     integrater3.high_pressure = True
     # Don't get .hkl output because we're applying the attenuation correction to data
     # that weren't actually collected with a diamond anvil cell and some integrated
