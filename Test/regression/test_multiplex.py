@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+import json
 import pytest
 
 from dxtbx.serialize import load
@@ -13,6 +14,7 @@ expected_data_files = [
     "scaled.mtz",
     "scaled_unmerged.mtz",
     "xia2.multiplex.html",
+    "xia2.multiplex.json",
 ]
 
 
@@ -43,7 +45,14 @@ def test_proteinase_k(mocker, regression_test, dials_data, tmpdir):
             assert valid_image_ranges == [(11, 25)]
         else:
             assert valid_image_ranges == [(1, 25)]
-        assert expt.crystal.get_space_group().type().lookup_symbol() == "P 41 21 2"
+    with tmpdir.join("xia2.multiplex.json").open("r") as fh:
+        d = json.load(fh)
+        assert "xtriage" in d["datasets"]["All data"]
+        assert list(d["datasets"]["All data"]["xtriage"].keys()) == [
+            "success",
+            "warnings",
+            "danger",
+        ]
 
 
 def test_proteinase_k_filter_deltacchalf(regression_test, dials_data, tmpdir):

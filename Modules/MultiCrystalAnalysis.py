@@ -277,8 +277,24 @@ class MultiCrystalReport(MultiCrystalAnalysis):
             xia2_version=Version,
         )
 
-        # with open("%s.json" % self.params.prefix, "wb") as f:
-        # json.dump(json_data, f)
+        json_data = {}
+        json_data.update(unit_cell_graphs)
+        json_data.update(cosym_analysis["cosym_graphs"])
+        json_data["cc_clustering"] = self._cc_cluster_json
+        json_data["cos_angle_clustering"] = self._cos_angle_cluster_json
+        json_data.update(self._cosym_graphs)
+        json_data.update(delta_cc_half_graphs)
+        if filter_plots:
+            json_data.update(filter_plots)
+        json_data["datasets"] = {}
+        for report_name, report in individual_dataset_reports.items():
+            json_data["datasets"][report_name] = dict(
+                (k, report[k]) for k in ("resolution_graphs", "batch_graphs", "xtriage")
+            )
+        json_data["comparison"] = comparison_graphs
+
+        with open("%s.json" % self.params.prefix, "w") as f:
+            json.dump(json_data, f)
 
         with open("%s.html" % self.params.prefix, "wb") as f:
             f.write(html.encode("utf-8", "xmlcharrefreplace"))
