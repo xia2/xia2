@@ -190,8 +190,8 @@ class DialsIntegrater(Integrater):
 
         ## copy the data across
         refiner = self.get_integrater_refiner()
-        # For multi-sweep indexing, get the split experiments from after refinement.
-        if PhilIndex.params.xia2.settings.multi_sweep_indexing:
+        # For multi-sweep refinement, get the split experiments from after refinement.
+        if PhilIndex.params.xia2.settings.multi_sweep_refinement:
             self._intgr_experiments_filename = refiner.get_refiner_payload(
                 "{}_models.expt".format(self._intgr_sweep._name)
             )

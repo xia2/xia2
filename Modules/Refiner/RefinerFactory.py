@@ -31,8 +31,8 @@ def RefinerForXSweep(xsweep, json_file=None):
 
     refiner = xsweep.sample.multi_refiner or Refiner()
 
-    multi_sweep_indexing = PhilIndex.params.xia2.settings.multi_sweep_indexing
-    if multi_sweep_indexing and len(xsweep.sample.get_sweeps()) > 1:
+    multi_sweep_refinement = PhilIndex.params.xia2.settings.multi_sweep_refinement
+    if multi_sweep_refinement and len(xsweep.sample.get_sweeps()) > 1:
         xsweep.sample.multi_refiner = refiner
 
     if json_file is not None:

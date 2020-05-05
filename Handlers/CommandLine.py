@@ -90,7 +90,8 @@ def unroll_datasets(datasets):
             continue
         if len(tokens) != 4:
             raise RuntimeError(
-                "Dataset ranges must be passed as /path/to/image_0001.cbf:start:end[:chunk]"
+                "Dataset ranges must be passed as "
+                "/path/to/image_0001.cbf:start:end[:chunk]"
             )
         start, end, incr = list(map(int, tokens[1:]))
         if start + incr - 1 > end:
@@ -180,8 +181,8 @@ class _CommandLine(object):
         for k, v in replacements.items():
             if k in self._argv:
                 print(
-                    "***\nCommand line option %s is deprecated.\nPlease use %s instead\n***"
-                    % (k, v)
+                    "***\nCommand line option %s is deprecated.\n"
+                    "Please use %s instead\n***" % (k, v)
                 )
                 self._argv[self._argv.index(k)] = v
         if "-atom" in self._argv:
@@ -189,8 +190,8 @@ class _CommandLine(object):
             element = self._argv[idx + 1]
             self._argv[idx : idx + 2] = ["atom=%s" % element]
             print(
-                "***\nCommand line option -atom %s is deprecated.\nPlease use atom=%s instead\n***"
-                % (element, element)
+                "***\nCommand line option -atom %s is deprecated.\n"
+                "Please use atom=%s instead\n***" % (element, element)
             )
 
         # first of all try to interpret arguments as phil parameters/files
@@ -293,22 +294,50 @@ class _CommandLine(object):
         if params.xia2.settings.scaler is not None:
             add_preference("scaler", params.xia2.settings.scaler)
 
+        # If no multi-sweep refinement options have been set, adopt the default — True
+        # for small-molecule mode, False otherwise.
+        if params.xia2.settings.multi_sweep_refinement is Auto:
+            if (
+                params.xia2.settings.small_molecule is True
+                and params.xia2.settings.indexer == "dials"
+            ):
+                PhilIndex.update("xia2.settings.multi_sweep_refinement=True")
+            else:
+                PhilIndex.update("xia2.settings.multi_sweep_refinement=False")
+            params = PhilIndex.get_python_object()
+
+        # Multi-sweep refinement requires multi-sweep indexing.
+        if params.xia2.settings.multi_sweep_refinement is True:
+            PhilIndex.update("xia2.settings.multi_sweep_indexing=True")
+            params = PhilIndex.get_python_object()
+
+        # If no multi-sweep indexing settings have yet been set (either because
+        # small_molecule is False or because it is True but the user has specified that
+        # multi_sweep_refinement is False), then adopt the default settings — True
+        # for small-molecule mode, False otherwise.
         if params.xia2.settings.multi_sweep_indexing is Auto:
             if (
                 params.xia2.settings.small_molecule is True
-                and "dials" == params.xia2.settings.indexer
+                and params.xia2.settings.indexer == "dials"
             ):
                 PhilIndex.update("xia2.settings.multi_sweep_indexing=True")
             else:
                 PhilIndex.update("xia2.settings.multi_sweep_indexing=False")
+            params = PhilIndex.get_python_object()
+
+        # Multi-sweep indexing is incompatible with parallel processing.
+        # Consequently, multi-sweep refinement cannot be used either.
         if (
             params.xia2.settings.multi_sweep_indexing is True
             and params.xia2.settings.multiprocessing.mode == "parallel"
         ):
             logger.info(
-                "Multi sweep indexing disabled:\nMSI is not available for parallel processing."
+                "Multi sweep indexing disabled:\n"
+                "MSI is not available for parallel processing."
             )
             PhilIndex.update("xia2.settings.multi_sweep_indexing=False")
+            PhilIndex.update("xia2.settings.multi_sweep_refinement=False")
+            params = PhilIndex.get_python_object()
 
         input_json = params.xia2.settings.input.json
         if input_json is not None and len(input_json):
@@ -549,8 +578,8 @@ class _CommandLine(object):
         elif settings.pipeline == "dials-full":
             logger.debug("DIALS pipeline selected")
             print(
-                "***\n\nWarning: Pipeline '%s' has been renamed to 'dials' and will be removed in a future release.\n\n***"
-                % settings.pipeline
+                "***\n\nWarning: Pipeline '%s' has been renamed to 'dials' "
+                "and will be removed in a future release.\n\n***" % settings.pipeline
             )
             indexer, refiner, integrater, scaler = "dials", "dials", "dials", "dials"
         elif settings.pipeline == "dials-aimless":
@@ -575,7 +604,8 @@ class _CommandLine(object):
                 allowed_scalers = ("dials", "ccp4a")
             if settings.scaler not in allowed_scalers:
                 raise ValueError(
-                    "scaler=%s not compatible with pipeline=%s (compatible scalers are %s)"
+                    "scaler=%s not compatible with pipeline=%s "
+                    "(compatible scalers are %s)"
                     % (settings.scaler, settings.pipeline, " or ".join(allowed_scalers))
                 )
 
