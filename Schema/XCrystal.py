@@ -65,6 +65,7 @@ from xia2.Handlers.Streams import banner
 from xia2.Handlers.Syminfo import Syminfo
 from xia2.lib.NMolLib import compute_nmol, compute_solvent
 from xia2.Modules.Scaler.ScalerFactory import Scaler
+from dxtbx.util import format_float_with_standard_uncertainty
 
 
 class _aa_sequence(object):
@@ -476,7 +477,6 @@ class XCrystal(object):
                 result += "%s\n" % sg
 
         if cell_esd:
-            from libtbx.utils import format_float_with_standard_uncertainty
 
             def match_formatting(dimA, dimB):
                 def conditional_split(s):
