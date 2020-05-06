@@ -626,7 +626,7 @@ class MultiCrystalScale(object):
         misc_graphs = OrderedDict(
             (k + "_" + cluster_name, report_d[k])
             for k in ("cumulative_intensity_distribution", "l_test", "multiplicities")
-            if k in d
+            if k in report_d
         )
 
         for hkl in "hkl":
