@@ -134,10 +134,10 @@ class Report(object):
             mult_json_files[settings.slice_axis] = settings.json.filename
             with open(settings.plot.filename, "rb") as fh:
                 if six.PY3:
-                    data = codecs.encode(fh.read(), encoding="base64")
+                    data = codecs.encode(fh.read(), encoding="base64").decode("ascii")
                 else:
                     data = codecs.encode(fh.read(), "base64")
-                mult_img_files[settings.slice_axis] = data.replace(b"\n", b"")
+                mult_img_files[settings.slice_axis] = data.replace("\n", "")
 
         return OrderedDict(
             ("multiplicity_%s" % axis, mult_img_files[axis]) for axis in ("h", "k", "l")
