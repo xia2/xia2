@@ -54,6 +54,9 @@ def test_proteinase_k(mocker, regression_test, dials_data, tmpdir):
             "warnings",
             "danger",
         ]
+    # Delete large temporary files to conserve disk space
+    for f in tmpdir.listdir("*.refl"):
+        f.remove()
 
 
 def test_proteinase_k_filter_deltacchalf(regression_test, dials_data, tmpdir):
@@ -87,6 +90,13 @@ def test_proteinase_k_filter_deltacchalf(regression_test, dials_data, tmpdir):
         assert tmpdir.join(cluster).check(dir=1)
         assert tmpdir.join(cluster, "scaled.mtz").check(file=1)
         assert tmpdir.join(cluster, "scaled_unmerged.mtz").check(file=1)
+
+    # Delete large temporary files to conserve disk space
+    for f in tmpdir.listdir("*.refl"):
+        f.remove()
+    for cluster in ("cluster_5", "cluster_6"):
+        for f in tmpdir.join(cluster).listdir("*.refl"):
+            f.remove()
 
 
 @pytest.mark.parametrize(
@@ -142,6 +152,9 @@ def test_proteinase_k_dose(
                 expt.crystal.get_space_group().type().lookup_symbol().replace(" ", "")
                 == space_group
             )
+    # Delete large temporary files to conserve disk space
+    for f in tmpdir.listdir("*.refl"):
+        f.remove()
 
 
 def test_proteinase_k_single_dataset_raises_error(regression_test, dials_data, tmpdir):
