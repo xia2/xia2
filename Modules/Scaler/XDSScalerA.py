@@ -926,6 +926,7 @@ class XDSScalerA(Scaler):
         if (
             not PhilIndex.params.dials.fast_mode
             and not PhilIndex.params.xds.keep_outliers
+            and self.get_scaler_resolution_limits()
         ):
             xscale_remove = xscale.get_remove()
             if xscale_remove:

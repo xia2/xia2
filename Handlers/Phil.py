@@ -67,7 +67,7 @@ xds
             "and NUMBER_OF_PROFILE_GRID_POINTS_ALONG_GAMMA."
     .type = ints(size = 2)
     .expert_level = 1
-  keep_outliers = False
+  keep_outliers = True
     .type = bool
     .short_caption = "Keep outliers"
     .help = "Do not remove outliers in integration and scaling"
