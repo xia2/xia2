@@ -1,54 +1,3 @@
-# A versioning object representation of the toplevel crystal object,
-# which presents much of the overall interface of xia2dpa to the
-# outside world.
-#
-# This will contain some information about the sequence, some information
-# about heavy atoms, some stuff about wavelengths. This will also, most
-# substantially, contain some really important stuff to do with
-# managing the crystal lattice, for instance computing the correct
-# "average" value and also handling lattice changes during the data
-# reduction.
-#
-# FIXME 05/SEP/06 question - do I want to maintain a link to the unit cells
-#                 of am I better off just handling the possible lattices and
-#                 treating the unit cells as a separate problem? Maintaining
-#                 the actual unit cell during processing may be complex -
-#                 perhaps I am better off doing this after the event?
-#
-# FIXME 11/SEP/06 This needs to represent:
-#
-#  BEGIN CRYSTAL 12847
-#
-#  BEGIN AA_SEQUENCE
-#
-#  MKVKKWVTQDFPMVEESATVRECLHRMRQYQTNECIVKDREGHFRGVVNKEDLLDLDLDSSVFNKVSLPD
-#  FFVHEEDNITHALLLFLEHQEPYLPVVDEEMRLKGAVSLHDFLEALIEALAMDVPGIRFSVLLEDKPGEL
-#  RKVVDALALSNINILSVITTRSGDGKREVLIKVDAVDEGTLIKLFESLGIKIESIEKEEGF
-#
-#  END AA_SEQUENCE
-#
-#  BEGIN WAVELENGTH NATIVE
-#  WAVELENGTH 0.99187
-#  END WAVELENGTH NATIVE
-#
-#  BEGIN SWEEP NATIVE_HR
-#  WAVELENGTH NATIVE
-#
-#  ... &c. ...
-#
-# FIXME 20/NOV/06 want to be able to use this to calculate the likely number
-#                 of molecules per ASU and also the solvent content, to
-#                 help with the links to the experimental phasing. Should
-#                 also pass back the spacegroup generated in data reduction
-#                 to this. Finally, should provide a user input to allow the
-#                 spacegroup to be assigned (and perhaps number of molecules
-#                 in the ASU?) from the .xinfo file...
-#
-# FIXME 28/JUN/07 need to be able to pass in a reference reflection file
-#                 for determining the correct setting and also to provide
-#                 the FreeR column. This should probably be enforced as an
-#                 MTZ file.
-
 from __future__ import absolute_import, division, print_function
 
 import collections
@@ -57,7 +6,6 @@ import os
 
 import six
 
-# Generation of Crystallographic Information Files (CIF/mmCIF)
 from xia2.Handlers.CIF import CIF, mmCIF
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
@@ -65,6 +13,7 @@ from xia2.Handlers.Streams import banner
 from xia2.Handlers.Syminfo import Syminfo
 from xia2.lib.NMolLib import compute_nmol, compute_solvent
 from xia2.Modules.Scaler.ScalerFactory import Scaler
+from dxtbx.util import format_float_with_standard_uncertainty
 
 
 class _aa_sequence(object):
@@ -476,7 +425,6 @@ class XCrystal(object):
                 result += "%s\n" % sg
 
         if cell_esd:
-            from libtbx.utils import format_float_with_standard_uncertainty
 
             def match_formatting(dimA, dimB):
                 def conditional_split(s):

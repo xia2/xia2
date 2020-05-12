@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+import json
 import pytest
 
 from dxtbx.serialize import load
@@ -13,6 +14,7 @@ expected_data_files = [
     "scaled.mtz",
     "scaled_unmerged.mtz",
     "xia2.multiplex.html",
+    "xia2.multiplex.json",
 ]
 
 
@@ -43,7 +45,18 @@ def test_proteinase_k(mocker, regression_test, dials_data, tmpdir):
             assert valid_image_ranges == [(11, 25)]
         else:
             assert valid_image_ranges == [(1, 25)]
-        assert expt.crystal.get_space_group().type().lookup_symbol() == "P 41 21 2"
+    with tmpdir.join("xia2.multiplex.json").open("r") as fh:
+        d = json.load(fh)
+        for k in ("xtriage", "merging_stats", "merging_stats_anom"):
+            assert k in d["datasets"]["All data"]
+        assert list(d["datasets"]["All data"]["xtriage"].keys()) == [
+            "success",
+            "warnings",
+            "danger",
+        ]
+    # Delete large temporary files to conserve disk space
+    for f in tmpdir.listdir("*.refl"):
+        f.remove()
 
 
 def test_proteinase_k_filter_deltacchalf(regression_test, dials_data, tmpdir):
@@ -77,6 +90,13 @@ def test_proteinase_k_filter_deltacchalf(regression_test, dials_data, tmpdir):
         assert tmpdir.join(cluster).check(dir=1)
         assert tmpdir.join(cluster, "scaled.mtz").check(file=1)
         assert tmpdir.join(cluster, "scaled_unmerged.mtz").check(file=1)
+
+    # Delete large temporary files to conserve disk space
+    for f in tmpdir.listdir("*.refl"):
+        f.remove()
+    for cluster in ("cluster_5", "cluster_6"):
+        for f in tmpdir.join(cluster).listdir("*.refl"):
+            f.remove()
 
 
 @pytest.mark.parametrize(
@@ -132,6 +152,9 @@ def test_proteinase_k_dose(
                 expt.crystal.get_space_group().type().lookup_symbol().replace(" ", "")
                 == space_group
             )
+    # Delete large temporary files to conserve disk space
+    for f in tmpdir.listdir("*.refl"):
+        f.remove()
 
 
 def test_proteinase_k_single_dataset_raises_error(regression_test, dials_data, tmpdir):

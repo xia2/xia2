@@ -271,7 +271,8 @@ def plot_data(
                 x = [bins[j].d_min for j in range(len(bins))]
                 x = [uctbx.d_as_d_star_sq(d) for d in x]
                 y = [getattr(bins[j], k) for j in range(len(bins))]
-                ax.plot(x, y, label=l, linestyle=linestyle, color=colors[i_res])
+                color = colors[i_res] if n_cols > 1 else colors[i]
+                ax.plot(x, y, label=l, linestyle=linestyle, color=color)
 
         ax.set_xlabel(r"Resolution ($\AA$)")
         ax.set_ylabel(ylabel)
