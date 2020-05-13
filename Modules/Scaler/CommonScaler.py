@@ -542,8 +542,6 @@ class CommonScaler(Scaler):
 
         self._scale_finish_chunk_6_add_free_r()
 
-        self._scale_finish_chunk_7_twinning()
-
         # next have a look for radiation damage... if more than one wavelength
 
         if len(list(self._scalr_scaled_refl_files)) > 1:
@@ -831,33 +829,6 @@ class CommonScaler(Scaler):
 
         # record this for future reference
         FileHandler.record_data_file(hklout)
-
-    def _scale_finish_chunk_7_twinning(self):
-        hklout = self._scalr_scaled_reflection_files["mtz"]
-
-        m = mtz.object(hklout)
-        # FIXME in here should be able to just drop down to the lowest symmetry
-        # space group with the rotational elements for this calculation? I.e.
-        # P422 for P4/mmm?
-        if not m.space_group().is_centric():
-            from xia2.Toolkit.E4 import E4_mtz
-
-            E4s = E4_mtz(hklout, native=True)
-            self._scalr_twinning_score = list(E4s.items())[0][1]
-
-            if self._scalr_twinning_score > 1.9:
-                self._scalr_twinning_conclusion = "Your data do not appear twinned"
-            elif self._scalr_twinning_score < 1.6:
-                self._scalr_twinning_conclusion = "Your data appear to be twinned"
-            else:
-                self._scalr_twinning_conclusion = "Ambiguous score (1.6 < score < 1.9)"
-
-        else:
-            self._scalr_twinning_conclusion = "Data are centric"
-            self._scalr_twinning_score = 0
-
-        logger.info("Overall twinning score: %4.2f", self._scalr_twinning_score)
-        logger.info(self._scalr_twinning_conclusion)
 
     def _scale_finish_chunk_8_raddam(self):
         crd = CCP4InterRadiationDamageDetector()
