@@ -27,7 +27,6 @@ from xia2.Experts.FindImages import (
     template_directory_number2image,
 )
 from xia2.Schema import load_imagesets
-from xia2.Wrappers.Mosflm.AutoindexHelpers import set_distance
 
 logger = logging.getLogger("xia2.Schema.Interfaces.FrameProcessor")
 
@@ -139,11 +138,8 @@ class FrameProcessor(object):
         return self.get_beam_obj().get_wavelength()
 
     def set_distance(self, distance):
-        if distance is None:
-            return
-
-        set_distance(self.get_detector(), distance)
-        self._fp_distance_prov = "user"
+        if distance:
+            self._fp_distance_prov = "user"
 
     def get_distance(self):
         return self.get_detector()[0].get_directed_distance()
