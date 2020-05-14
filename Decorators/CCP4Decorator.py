@@ -1,33 +1,3 @@
-# A decorator to add hklin and hklout methods to a Driver instance.
-# This will probably include some other interesting things like
-# xyzin etc at some point in the future, once such things become
-# important.
-#
-# Supported Keywords:
-# HKLIN input MTZ reflection file (.mtz)
-# HLKOUT output MTZ reflection file (.mtz)
-# MAPIN input map file (.map)
-# MAPOUT output map file (.map)
-# XYZIN input coordinate file (.pdb)
-# XYZOUT output coordinate file (.pdb)
-#
-# All accessed via setHklin(hklin) getHklin() etc.
-#
-# List from:
-#
-# http://www.ccp4.ac.uk/dist/html/ccp4.html
-#
-# Done:
-# Add a mechanism for recording and parsing of loggraph output.
-#
-# FIXME 06/NOV/06 would be fun to record the HKLIN and HKLOUT files to
-#                 be able to track how the processing went and what jobs
-#                 were executed to make that happen...
-#
-# FIXME 24/NOV/06 need to be able to cope with columns in loggraph output
-#                 running together.
-#
-
 from __future__ import absolute_import, division, print_function
 
 import os
@@ -43,11 +13,6 @@ def CCP4DecoratorFactory(DriverInstance):
     leaves the original unchanged."""
 
     DriverInstanceClass = DriverInstance.__class__
-
-    # verify that the input object satisfies the Driver interface -
-    # in this case that at some point it inherited from there.
-    # note well - instances of DefaultDriver must not be used
-    # directly.
 
     assert issubclass(DriverInstanceClass, xia2.Driver.DefaultDriver.DefaultDriver), (
         "%s is not a Driver implementation" % DriverInstance

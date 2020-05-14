@@ -1,15 +1,3 @@
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 31st May 2006
-#
-# A factory to provide access to the decorator classes. So far this is
-#
-# "ccp4" -> A CCP4 Decorator
-#
-
 from __future__ import absolute_import, division, print_function
 
 from xia2.Decorators.CCP4Decorator import CCP4DecoratorFactory
