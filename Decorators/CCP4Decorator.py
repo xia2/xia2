@@ -55,21 +55,12 @@ def CCP4DecoratorFactory(DriverInstance):
                     self.add_working_environment("LD_LIBRARY_PATH", os.environ["CLIB"])
 
         def set_hklin(self, hklin):
-            return self.setHklin(hklin)
-
-        def get_hklin(self):
-            return self.getHklin()
-
-        def check_hklin(self):
-            return self.checkHklin()
-
-        def setHklin(self, hklin):
             self._hklin = hklin
 
-        def getHklin(self):
+        def get_hklin(self):
             return self._hklin
 
-        def checkHklin(self):
+        def check_hklin(self):
             if self._hklin is None:
                 raise RuntimeError("hklin not defined")
             elif isinstance(self._hklin, six.string_types):
@@ -81,21 +72,12 @@ def CCP4DecoratorFactory(DriverInstance):
                         raise RuntimeError("hklin %s does not exist" % hklin)
 
         def set_hklout(self, hklout):
-            return self.setHklout(hklout)
-
-        def get_hklout(self):
-            return self.getHklout()
-
-        def check_hklout(self):
-            return self.checkHklout()
-
-        def setHklout(self, hklout):
             self._hklout = hklout
 
-        def getHklout(self):
+        def get_hklout(self):
             return self._hklout
 
-        def checkHklout(self):
+        def check_hklout(self):
             if self._hklout is None:
                 raise RuntimeError("hklout not defined")
 
