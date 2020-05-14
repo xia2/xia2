@@ -2,24 +2,24 @@ from __future__ import absolute_import, division, print_function
 
 import math
 
-# Bravais lattices in order of increasing symmetry
+lattice_to_spacegroup = {
+    "aP": 1,
+    "mP": 3,
+    "mC": 5,
+    "oP": 16,
+    "oC": 20,
+    "oF": 22,
+    "oI": 23,
+    "tP": 75,
+    "tI": 79,
+    "hP": 143,
+    "hR": 146,
+    "cP": 195,
+    "cF": 196,
+    "cI": 197,
+}
 
-allowed_lattices = [
-    "aP",
-    "mP",
-    "mC",
-    "oP",
-    "oC",
-    "oI",
-    "oF",
-    "tP",
-    "tI",
-    "hR",
-    "hP",
-    "cP",
-    "cI",
-    "cF",
-]
+spacegroup_to_lattice = {v: k for k, v in lattice_to_spacegroup.items()}
 
 
 def ApplyLattice(lattice, cell):
@@ -78,25 +78,6 @@ def SortLattices(lattice_list):
         lattices.append(l[0])
         cells[l[0]] = l[1]
 
-    lattice_to_spacegroup = {
-        "aP": 1,
-        "mP": 3,
-        "mC": 5,
-        "oP": 16,
-        "oC": 20,
-        "oF": 22,
-        "oI": 23,
-        "tP": 75,
-        "tI": 79,
-        "hP": 143,
-        "hR": 146,
-        "cP": 195,
-        "cF": 196,
-        "cI": 197,
-    }
-
-    spacegroup_to_lattice = {v: k for k, v in lattice_to_spacegroup.items()}
-
     spacegroups = sorted(lattice_to_spacegroup[l] for l in lattices)
     spacegroups.reverse()
     lattices = [spacegroup_to_lattice[s] for s in spacegroups]
@@ -107,23 +88,4 @@ def SortLattices(lattice_list):
 
 
 def s2l(spacegroup):
-    lattice_to_spacegroup = {
-        "aP": 1,
-        "mP": 3,
-        "mC": 5,
-        "oP": 16,
-        "oC": 20,
-        "oF": 22,
-        "oI": 23,
-        "tP": 75,
-        "tI": 79,
-        "hP": 143,
-        "hR": 146,
-        "cP": 195,
-        "cF": 196,
-        "cI": 197,
-    }
-
-    spacegroup_to_lattice = {v: k for k, v in lattice_to_spacegroup.items()}
-
     return spacegroup_to_lattice[spacegroup]
