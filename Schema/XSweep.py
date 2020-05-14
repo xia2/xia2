@@ -325,11 +325,6 @@ class XSweep(object):
             except AssertionError as e:
                 logger.debug("Error setting mosflm beam centre: %s" % e)
 
-        if distance is not None:
-            from xia2.Wrappers.Mosflm.AutoindexHelpers import set_distance
-
-            set_distance(self.get_imageset().get_detector(), distance)
-
         self._beam_centre = beam
         self._distance = distance
         self._gain = gain
