@@ -520,13 +520,6 @@ class _CommandLine(object):
         elif settings.pipeline == "dials":
             logger.debug("DIALS pipeline selected")
             indexer, refiner, integrater, scaler = "dials", "dials", "dials", "dials"
-        elif settings.pipeline == "dials-full":
-            logger.debug("DIALS pipeline selected")
-            print(
-                "***\n\nWarning: Pipeline '%s' has been renamed to 'dials' and will be removed in a future release.\n\n***"
-                % settings.pipeline
-            )
-            indexer, refiner, integrater, scaler = "dials", "dials", "dials", "dials"
         elif settings.pipeline == "dials-aimless":
             logger.debug("DIALS-LEGACY pipeline selected (DIALS, scaling with AIMLESS)")
             indexer, refiner, integrater, scaler = "dials", "dials", "dials", "ccp4a"
