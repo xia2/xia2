@@ -38,8 +38,6 @@ def CCP4DecoratorFactory(DriverInstance):
             self._hklout = None
             self._xyzin = None
             self._xyzout = None
-            self._mapin = None
-            self._mapout = None
 
             # somewhere to store the loggraph output
             self._loggraph = {}
@@ -109,14 +107,6 @@ def CCP4DecoratorFactory(DriverInstance):
                 description += " %s" % ("xyzout")
                 description += " %s" % (self._xyzout)
 
-            if self._mapin is not None:
-                description += " %s" % ("mapin")
-                description += " %s" % (self._mapin)
-
-            if self._mapout is not None:
-                description += " %s" % ("mapout")
-                description += " %s" % (self._mapout)
-
             return description
 
         def start(self):
@@ -152,14 +142,6 @@ def CCP4DecoratorFactory(DriverInstance):
             if self._xyzout is not None:
                 self.add_command_line("xyzout")
                 self.add_command_line(self._xyzout)
-
-            if self._mapin is not None:
-                self.add_command_line("mapin")
-                self.add_command_line(self._mapin)
-
-            if self._mapout is not None:
-                self.add_command_line("mapout")
-                self.add_command_line(self._mapout)
 
             # delegate the actual starting to the parent class
             self._original_class.start(self)
