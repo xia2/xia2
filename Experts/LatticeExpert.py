@@ -1,28 +1,8 @@
-# An expert who knows all about lattices. This will handle the elimination
-# of possible lattices as a result of:
-#
-# - indexing
-# - failed cell refinement
-# - pointless
-# - &c.
-#
-# To give you what is left...
-#
-
 from __future__ import absolute_import, division, print_function
 
 import math
 
-# Hard coded "expertise" - this is encoded by hand, because it is
-# easier that way... or is it better to properly encode the
-# symmetry constraints and calculate the rest from this? Quite possibly.
-#
-# Hmm.. perhaps an option here is to interrogate the ccp4 symmetry
-# library in the usual way, to make these decisions based on subgroups.
-# Subgroups could be defined by symmetry operators - would that make
-# sense? This is making use of a mapping between lattice and most-simple
-# spacegroup for that lattice... need to check if this is valid & behaves
-# as expected...
+# Bravais lattices in order of increasing symmetry
 
 allowed_lattices = [
     "aP",
@@ -40,29 +20,6 @@ allowed_lattices = [
     "cI",
     "cF",
 ]
-
-# How to do this:
-#
-# (1) read all spacegroups, symmetries from symop.lib
-# (2) for each symmetry element, pass through symop2mat to get a
-#     numberical representation
-# (3) draw a tree of subgroups & supergroups
-#
-# Then see if this matches up what I would expect from the lattice
-# symmetry constraints for the simplest lattices.
-#
-# Have to think about...
-#
-# (1) making sure that only immediate subgroups are calculated, to
-#     give a proper tree structure
-# (2) representing the final tree structure in a manner which is actually
-#     useful
-#
-# Unsurprisingly this doesn't work, because the lattices have different
-# settings, and these settings affect the symmetry operators. Ho hum!
-# Probably easier to hard-code it based on the IUCR tables volume A..
-# Which I will do - see ApplyLattice(lattice, cell) below.
-#
 
 
 def ApplyLattice(lattice, cell):
