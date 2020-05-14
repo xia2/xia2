@@ -49,7 +49,6 @@ class FrameProcessor(object):
         self._fp_two_theta_prov = None
 
         self._fp_wavelength_prov = None
-        self._fp_distance_prov = None
         self._fp_beam_prov = None
 
         self._fp_gain = 0.0
@@ -109,9 +108,6 @@ class FrameProcessor(object):
             if self._fp_wavelength_prov is None or self._fp_wavelength_prov == "header":
                 self._fp_wavelength_prov = "header"
 
-            if self._fp_distance_prov is None or self._fp_distance_prov == "header":
-                self._fp_distance_prov = "header"
-
             if self._fp_beam_prov is None or self._fp_beam_prov == "header":
                 self._fp_beam_prov = "header"
 
@@ -138,8 +134,7 @@ class FrameProcessor(object):
         return self.get_beam_obj().get_wavelength()
 
     def set_distance(self, distance):
-        if distance:
-            self._fp_distance_prov = "user"
+        pass
 
     def get_distance(self):
         return self.get_detector()[0].get_directed_distance()
@@ -280,8 +275,6 @@ class FrameProcessor(object):
 
         if self._fp_wavelength_prov is None:
             self._fp_wavelength_prov = "header"
-        if self._fp_distance_prov is None:
-            self._fp_distance_prov = "header"
         if self._fp_beam_prov is None:
             beam = imageset.get_beam()
             detector = imageset.get_detector()
