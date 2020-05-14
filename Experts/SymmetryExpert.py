@@ -3,6 +3,8 @@ from __future__ import absolute_import, division, print_function
 from cctbx import sgtbx
 from scitbx import matrix
 
+from xia2.Experts.LatticeExpert import lattice_to_spacegroup
+
 
 def _multiply_symmetry_matrix(a, b):
     """compute a * b, for e.g. h_ = a * b * h, e.g. apply b before a."""
@@ -53,8 +55,6 @@ def mat_to_symop(mat):
 def lattice_to_spacegroup_number(lattice):
     """Return the spacegroup number corresponding to the lowest symmetry
     possible for a given Bravais lattice."""
-
-    from LatticeExpert import lattice_to_spacegroup
 
     if lattice not in lattice_to_spacegroup:
         raise RuntimeError("lattice %s unknown" % lattice)
