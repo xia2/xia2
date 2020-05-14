@@ -9,7 +9,6 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-from xia2.Driver.ClusterDriverFactory import ClusterDriverFactory
 from xia2.Driver.InteractiveDriver import InteractiveDriver
 from xia2.Driver.QSubDriver import QSubDriver
 from xia2.Driver.ScriptDriver import ScriptDriver
@@ -25,7 +24,6 @@ class _DriverFactory(object):
             "script",
             "interactive",
             "qsub",
-            "cluster.sge",
         ]
 
         # should probably write a message or something explaining
@@ -50,9 +48,6 @@ class _DriverFactory(object):
 
         if not driver_type:
             driver_type = self._driver_type
-
-        if "cluster" in driver_type:
-            return ClusterDriverFactory.Driver(driver_type)
 
         driver_class = {
             "simple": SimpleDriver,
