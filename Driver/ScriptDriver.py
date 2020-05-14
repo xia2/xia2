@@ -1,19 +1,3 @@
-#!/usr/bin/env python
-#
-#   Copyright (C) 2006 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
-# 24th May 2006
-#
-# An implementation of the Driver class which writes scripts, which are run
-# and the results piped to an output file. The content of this output file
-# is then returned through the output() method.
-#
-# Applicability: Windows/OS X/UNIX
-#
-
 from __future__ import absolute_import, division, print_function
 
 import os
@@ -21,28 +5,6 @@ import subprocess
 
 from xia2.Driver.DefaultDriver import DefaultDriver
 from xia2.Driver.DriverHelper import script_writer
-
-# Workings on Windows:
-#
-# Write input to a .input file
-#
-# Workings on UNIX:
-#
-# Write a script to run with here document
-#
-# in both cases these can be initiated by os.system() calls e.g.
-# os.system('bash myscript') on UNIX or os.system('myscript.bat') on Windows
-#
-# Would also be useful to be able to get the script-level status out - so
-# when the script is being written ensure that the return codes from the
-# commands are stored and the first to fail is returned.
-#
-# On UNIX these will be /bin/bash scripts - I will just assume that this works
-# since I am supporting only recent linux and OS X installations.
-#
-# Specifications:
-#
-# This will make an input .xin and output .xout file.
 
 
 class ScriptDriver(DefaultDriver):
