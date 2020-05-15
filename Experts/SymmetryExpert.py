@@ -1,8 +1,7 @@
-# A small expert to handle symmetry calculations.
-
-
 from cctbx import sgtbx
 from scitbx import matrix
+
+from xia2.Experts.LatticeExpert import lattice_to_spacegroup
 
 
 def _multiply_symmetry_matrix(a, b):
@@ -40,12 +39,8 @@ def compose_symops(a, b):
 
     return (sgtbx.change_of_basis_op(b) * sgtbx.change_of_basis_op(a)).as_hkl()
 
-    # return mat_to_symop(
-    # _multiply_symmetry_matrix(symop_to_mat(a), symop_to_mat(b))).strip()
-
 
 def symop_to_mat(symop):
-    # symop = symop.replace('h', 'x').replace('k', 'y').replace('l', 'z')
     return matrix.sqr(sgtbx.change_of_basis_op(symop).c().as_double_array()[:9]).elems
 
 
@@ -59,24 +54,7 @@ def lattice_to_spacegroup_number(lattice):
     """Return the spacegroup number corresponding to the lowest symmetry
     possible for a given Bravais lattice."""
 
-    _lattice_to_spacegroup_number = {
-        "aP": 1,
-        "mP": 3,
-        "mC": 5,
-        "oP": 16,
-        "oC": 20,
-        "oF": 22,
-        "oI": 23,
-        "tP": 75,
-        "tI": 79,
-        "hP": 143,
-        "hR": 146,
-        "cP": 195,
-        "cF": 196,
-        "cI": 197,
-    }
-
-    if lattice not in _lattice_to_spacegroup_number:
+    if lattice not in lattice_to_spacegroup:
         raise RuntimeError("lattice %s unknown" % lattice)
 
-    return _lattice_to_spacegroup_number[lattice]
+    return lattice_to_spacegroup[lattice]
