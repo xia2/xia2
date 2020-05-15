@@ -9,7 +9,6 @@
 # set for individual programs can be found. Initially this will be just a
 # couple for XDS.
 
-from __future__ import absolute_import, division, print_function
 
 from iotbx.phil import parse
 from libtbx.phil import interface

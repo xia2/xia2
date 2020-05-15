@@ -1,7 +1,6 @@
 # An implementation of the Indexer interface using XDS. This depends on the
 # XDS wrappers to actually implement the functionality.
 
-from __future__ import absolute_import, division, print_function
 
 import logging
 import os

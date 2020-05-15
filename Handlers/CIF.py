@@ -1,6 +1,5 @@
 # A handler to manage the data ending up in CIF output file
 
-from __future__ import absolute_import, division, print_function
 
 import datetime
 

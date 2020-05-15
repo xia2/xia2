@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 from xia2.command_line.delta_cc_half import run
 from xia2.Modules.DeltaCcHalf import DeltaCcHalf
 

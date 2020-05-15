@@ -2,7 +2,6 @@
 # are for calculating resolution (d, s) for either distance / beam /
 # wavelength / position or h, k, l, / unit cell.
 
-from __future__ import absolute_import, division, print_function
 
 import logging
 import math

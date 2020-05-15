@@ -2,7 +2,6 @@
 # platforms... this handles them mostly as strings, which of course they
 # are...
 
-from __future__ import absolute_import, division, print_function
 
 import os
 

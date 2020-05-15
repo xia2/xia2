@@ -11,7 +11,6 @@
 # Distance (mm), wavelength (ang), beam centre (mm, mm),
 # image header information
 
-from __future__ import absolute_import, division, print_function
 
 import logging
 import math

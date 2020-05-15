@@ -15,7 +15,6 @@
 # FIXME 06/DEC/06 need a mapping table from "old" spacegroup names to e.g. xHM
 #                 for use with phenix.hyss.
 
-from __future__ import absolute_import, division, print_function
 
 import os
 

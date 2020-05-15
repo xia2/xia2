@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-#!/usr/bin/env xia2.python
-from __future__ import absolute_import, division, print_function
-
 import json
 import logging
 from collections import OrderedDict

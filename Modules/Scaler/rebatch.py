@@ -1,6 +1,5 @@
 # Replacement for CCP4 program rebatch, using cctbx Python.
 
-from __future__ import absolute_import, division, print_function
 
 import itertools
 

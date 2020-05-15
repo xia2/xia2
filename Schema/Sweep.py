@@ -1,7 +1,6 @@
 # A class to represent a sweep of frames collected under the same conditions.
 # This pertains to the dataset object in the early phases of processing.
 
-from __future__ import absolute_import, division, print_function
 
 import os
 

@@ -1,6 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
-
 def tail(filename):
     for record in open(filename):
         print(record[:-1])

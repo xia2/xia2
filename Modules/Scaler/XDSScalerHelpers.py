@@ -1,7 +1,6 @@
 # Code to help the scaler along - this will basically be a bunch of jiffy
 # functions...
 
-from __future__ import absolute_import, division, print_function
 
 import logging
 import os

@@ -1,6 +1,5 @@
 # Bits the scalers have in common - inherit from me!
 
-from __future__ import absolute_import, division, print_function
 
 import logging
 import math

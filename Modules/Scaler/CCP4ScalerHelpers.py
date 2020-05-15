@@ -2,7 +2,6 @@
 # functions which wrap the wrappers which are needed. It will also contain
 # small functions for computing e.g. resolution limits.
 
-from __future__ import absolute_import, division, print_function
 
 import inspect
 import logging

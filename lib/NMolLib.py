@@ -6,7 +6,6 @@
 #
 # Relies on $XIA2_ROOT/Data/nmol-params.dat
 
-from __future__ import absolute_import, division, print_function
 
 import logging
 import math

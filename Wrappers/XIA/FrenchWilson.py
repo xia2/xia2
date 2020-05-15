@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 import xia2.Modules.CctbxFrenchWilson
 from xia2.Driver.DefaultDriver import DefaultDriver
 

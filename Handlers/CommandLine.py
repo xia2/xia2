@@ -5,7 +5,6 @@
 # This is a hook into a global data repository, should mostly be replaced with
 # a Phil interface.
 
-from __future__ import absolute_import, division, print_function
 
 import collections
 import copy

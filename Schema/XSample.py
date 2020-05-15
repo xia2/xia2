@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 import inspect
 
 from xia2.Modules.DoseAccumulate import accumulate_dose

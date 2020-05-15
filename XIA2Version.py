@@ -1,6 +1,5 @@
 # A file containing the version number of the current xia2. Generally useful.
 
-from __future__ import absolute_import, division, print_function
 
 import os
 

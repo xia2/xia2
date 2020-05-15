@@ -1,6 +1,5 @@
 # A handler to manage the data which needs to end up in the ISPyB database
 
-from __future__ import absolute_import, division, print_function
 
 # mapping xia2 verbose names to ISPyB API field names
 # https://github.com/DiamondLightSource/ispyb-api/blob/

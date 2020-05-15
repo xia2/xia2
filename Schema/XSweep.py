@@ -50,7 +50,6 @@
 # down the tree, to make sure that everything is kept up-to-date. This
 # should be no more difficult, just a little more complicated.
 
-from __future__ import absolute_import, division, print_function
 
 import copy
 import inspect

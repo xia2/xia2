@@ -3,7 +3,6 @@
 # will be useful when an external reflection file is passed in for copying
 # of the FreeR column.
 
-from __future__ import absolute_import, division, print_function
 
 from xia2.Wrappers.CCP4.Mtzdump import Mtzdump
 
