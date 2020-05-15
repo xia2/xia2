@@ -1,22 +1,23 @@
 # A handler for matters of the operating environment, which will impact
 # on data harvesting, working directories, a couple of other odds & sods.
 
-from __future__ import absolute_import, division, print_function
 
+import atexit
 import ctypes
+import logging
 import os
 import platform
 import tempfile
 
-from xia2.Handlers.Streams import Chatter, Debug
+from libtbx.introspection import number_of_processors
+
+logger = logging.getLogger("xia2.Handlers.Environment")
 
 
-def which(pgm, debug=False):
+def which(pgm):
     path = os.getenv("PATH")
     for p in path.split(os.path.pathsep):
         p = os.path.join(p, pgm)
-        if debug:
-            Chatter.write("Seeking %s" % p)
         if os.path.exists(p) and os.access(p, os.X_OK):
             return p
 
@@ -27,7 +28,7 @@ def memory_usage():
 
         return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
     except Exception as e:
-        Debug.write("Error getting RAM usage: %s" % str(e))
+        logger.debug("Error getting RAM usage: %s" % str(e))
         return 0
 
 
@@ -38,16 +39,17 @@ def debug_memory_usage():
         import inspect
 
         frameinfo = inspect.getframeinfo(inspect.stack()[1][0])
-        Debug.write(
+        logger.debug(
             "RAM usage at %s %d: %d"
             % (os.path.split(frameinfo.filename)[-1], frameinfo.lineno, memory_usage())
         )
     except Exception as e:
-        Debug.write("Error getting RAM usage: %s" % str(e))
+        logger.debug("Error getting RAM usage: %s" % str(e))
 
 
-def df(path=os.getcwd()):
+def df(path=None):
     """Return disk space in bytes in path."""
+    path = path or os.getcwd()
 
     if platform.system() == "Windows":
         try:
@@ -57,7 +59,7 @@ def df(path=os.getcwd()):
             )
             return bytes.value
         except Exception as e:
-            Debug.write("Error getting disk space: %s" % str(e))
+            logger.debug("Error getting disk space: %s" % str(e))
             return 0
 
     s = os.statvfs(path)
@@ -77,78 +79,22 @@ def ulimit_n():
     demand = min(4096, hard)
     resource.setrlimit(resource.RLIMIT_NOFILE, (demand, demand))
     current, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
-    return current, demand, hard
+    logger.debug("File handle limits: %d/%d/%d" % (current, demand, hard))
 
 
-class _Environment(object):
-    """A class to store environmental considerations."""
+def set_up_ccp4_tmpdir():
+    """define a local CCP4_SCR"""
+    ccp4_scr = tempfile.mkdtemp()
+    os.environ["CCP4_SCR"] = ccp4_scr
+    logger.debug("Created CCP4_SCR: %s" % ccp4_scr)
 
-    def __init__(self, working_directory=None):
-        if working_directory is None:
-            self._working_directory = os.getcwd()
-        else:
-            self._working_directory = working_directory
-        self._is_setup = False
+    def drop_ccp4_scr_tmpdir_if_possible():
+        try:
+            os.rmdir(ccp4_scr)
+        except Exception:
+            pass
 
-    def _setup(self):
-        if self._is_setup:
-            return
-
-        # Make sure USER env var is defined (historical reasons)
-
-        if "USER" not in os.environ:
-            if "USERNAME" in os.environ:
-                os.environ["USER"] = os.environ["USERNAME"]
-            else:
-                os.environ["USER"] = "xia2"
-
-        # define a local CCP4_SCR
-
-        ccp4_scr = tempfile.mkdtemp()
-        os.environ["CCP4_SCR"] = ccp4_scr
-        Debug.write("Created CCP4_SCR: %s" % ccp4_scr)
-
-        ulimit = ulimit_n()
-        if ulimit:
-            Debug.write("File handle limits: %d/%d/%d" % ulimit)
-
-        self._is_setup = True
-
-    def set_working_directory(self, working_directory):
-        self._working_directory = working_directory
-
-    def generate_directory(self, path_tuple):
-        """Used for generating working directories."""
-        self._setup()
-
-        path = self._working_directory
-
-        if isinstance(path_tuple, type("string")):
-            path_tuple = (path_tuple,)
-
-        for p in path_tuple:
-            path = os.path.join(path, p)
-
-        if not os.path.exists(path):
-            Debug.write("Making directory: %s" % path)
-            os.makedirs(path)
-        else:
-            Debug.write("Directory exists: %s" % path)
-
-        return path
-
-    def getenv(self, name):
-        """A wrapper for os.environ."""
-        self._setup()
-        return os.environ.get(name)
-
-    def cleanup(self):
-        return
-
-
-Environment = _Environment()
-
-# jiffy functions
+    atexit.register(drop_ccp4_scr_tmpdir_if_possible)
 
 
 def get_number_cpus():
@@ -164,6 +110,8 @@ def get_number_cpus():
     except (ValueError, TypeError):
         pass
 
-    from libtbx.introspection import number_of_processors
-
     return number_of_processors(return_value_if_unknown=-1)
+
+
+set_up_ccp4_tmpdir()
+ulimit_n()

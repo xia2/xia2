@@ -1,19 +1,20 @@
-from __future__ import absolute_import, division, print_function
-
 import os
 import platform
 import re
 import six
 import warnings
 
+from cctbx import sgtbx
+from iotbx.reflection_file_reader import any_reflection_file
+
 import xia2.Test.regression
 
-default_data_files = [
+default_data_files = (
     "AUTOMATIC_DEFAULT_free.mtz",
     "AUTOMATIC_DEFAULT_scaled.sca",
     "AUTOMATIC_DEFAULT_scaled_unmerged.mtz",
     "AUTOMATIC_DEFAULT_scaled_unmerged.sca",
-]
+)
 
 
 class Xia2RegressionToleranceWarning(UserWarning):
@@ -21,15 +22,21 @@ class Xia2RegressionToleranceWarning(UserWarning):
 
 
 def check_result(
-    test_name, result, tmpdir, ccp4, xds=None, expected_data_files=default_data_files
+    test_name,
+    result,
+    tmpdir,
+    ccp4,
+    xds=None,
+    expected_data_files=default_data_files,
+    expected_space_group=None,
 ):
     ccp4 = ccp4["version"]
     xds = xds["version"] if xds else 0
 
-    error_file = tmpdir / "xia2.error"
+    error_file = tmpdir / "xia2-error.txt"
     if error_file.check():
         print(error_file.read())
-        return False, "xia2.error present after execution"
+        return False, "xia2-error.txt present after execution"
 
     if result["stderr"]:
         return False, "xia2 terminated with output to STDERR:\n" + result["stderr"]
@@ -214,6 +221,24 @@ def check_result(
     for data_file in expected_data_files:
         if not (tmpdir / "DataFiles" / data_file).check():
             return False, "expected file %s is missing" % data_file
+        if expected_space_group is not None:
+            miller_arrays = any_reflection_file(
+                (tmpdir / "DataFiles" / data_file).strpath
+            ).as_miller_arrays()
+            for ma in miller_arrays:
+                if (
+                    ma.space_group()
+                    != sgtbx.space_group_info(expected_space_group).group()
+                ):
+                    return (
+                        False,
+                        "Unexpected space group %s in %s (expected %s)"
+                        % (
+                            ma.space_group().type().lookup_symbol(),
+                            data_file,
+                            expected_space_group,
+                        ),
+                    )
 
     html_file = "xia2.html"
     if not (tmpdir / html_file).check():

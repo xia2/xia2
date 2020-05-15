@@ -1,9 +1,7 @@
 # A handler to manage the data which needs to end up in the ISPyB xml out
 # file.
 
-from __future__ import absolute_import, division, print_function
 
-import glob
 import os
 import time
 
@@ -18,11 +16,11 @@ def sanitize(path):
     return path.replace(double, os.sep)
 
 
-class _ISPyBXmlHandler(object):
-    def __init__(self):
+class ISPyBXmlHandler(object):
+    def __init__(self, project):
         self._crystals = {}
         self._per_crystal_data = {}
-        self._project = None
+        self._project = project
 
         self._name_map = {
             "High resolution limit": "resolutionLimitHigh",
@@ -238,24 +236,23 @@ class _ISPyBXmlHandler(object):
             fout.write("<processingPrograms>xia2 %s</processingPrograms>" % pipeline)
             fout.write("</AutoProcProgram>")
 
-            from xia2.Handlers.Environment import Environment
-
-            data_directory = Environment.generate_directory("DataFiles")
-            log_directory = Environment.generate_directory("LogFiles")
+            data_directory = self._project.path / "DataFiles"
+            log_directory = self._project.path / "LogFiles"
 
             for k in reflection_files:
-
                 reflection_file = reflection_files[k]
 
                 if not isinstance(reflection_file, type("")):
                     continue
 
-                reflection_file = FileHandler.get_data_file(reflection_file)
+                reflection_file = FileHandler.get_data_file(
+                    self._project.path, reflection_file
+                )
 
                 basename = os.path.basename(reflection_file)
-                if os.path.isfile(os.path.join(data_directory, basename)):
+                if data_directory.joinpath(basename).exists():
                     # Use file in DataFiles directory in preference (if it exists)
-                    reflection_file = os.path.join(data_directory, basename)
+                    reflection_file = str(data_directory.joinpath(basename))
 
                 fout.write("<AutoProcProgramAttachment><fileType>Result")
                 fout.write(
@@ -268,14 +265,14 @@ class _ISPyBXmlHandler(object):
                 )
                 fout.write("</AutoProcProgramAttachment>\n")
 
-            g = glob.glob(os.path.join(log_directory, "*merging-statistics.json"))
+            g = log_directory.glob("*merging-statistics.json")
             for merging_stats_json in g:
                 fout.write("<AutoProcProgramAttachment><fileType>Graph")
                 fout.write(
                     "</fileType><fileName>%s</fileName>"
-                    % os.path.split(merging_stats_json)[-1]
+                    % os.path.split(str(merging_stats_json))[-1]
                 )
-                fout.write("<filePath>%s</filePath>" % sanitize(log_directory))
+                fout.write("<filePath>%s</filePath>" % sanitize(str(log_directory)))
                 fout.write("</AutoProcProgramAttachment>\n")
 
             # add the xia2.txt file...
@@ -425,9 +422,7 @@ class _ISPyBXmlHandler(object):
             tmp["AutoProcProgramAttachment"] = []
             tmp2 = tmp["AutoProcProgramAttachment"]
 
-            from xia2.Handlers.Environment import Environment
-
-            data_directory = Environment.generate_directory("DataFiles")
+            data_directory = self._project.path / "DataFiles"
 
             for k in reflection_files:
                 reflection_file = reflection_files[k]
@@ -435,12 +430,14 @@ class _ISPyBXmlHandler(object):
                 if not isinstance(reflection_file, type("")):
                     continue
 
-                reflection_file = FileHandler.get_data_file(reflection_file)
+                reflection_file = FileHandler.get_data_file(
+                    self._project.path, reflection_file
+                )
                 basename = os.path.basename(reflection_file)
 
-                if os.path.isfile(os.path.join(data_directory, basename)):
+                if data_directory.joinpath(basename).exists():
                     # Use file in DataFiles directory in preference (if it exists)
-                    reflection_file = os.path.join(data_directory, basename)
+                    reflection_file = str(data_directory.joinpath(basename))
 
                 tmp2.append(
                     {
@@ -459,6 +456,3 @@ class _ISPyBXmlHandler(object):
             )
 
         return result
-
-
-ISPyBXmlHandler = _ISPyBXmlHandler()

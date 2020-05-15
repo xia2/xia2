@@ -22,12 +22,14 @@
 #                 order for the data reduction, to make sure that we
 #                 reduce the least damaged data first.
 
-from __future__ import absolute_import, division, print_function
 
 import inspect
+import logging
 
-from xia2.Handlers.Streams import Chatter
+from xia2.Handlers.Phil import PhilIndex
 from xia2.Schema.XSweep import XSweep
+
+logger = logging.getLogger("xia2.Schema.XWavelength")
 
 
 class XWavelength(object):
@@ -58,8 +60,7 @@ class XWavelength(object):
     # serialization functions
 
     def to_dict(self):
-        obj = {}
-        obj["__id__"] = "XWavelength"
+        obj = {"__id__": "XWavelength"}
         attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
         for a in attributes:
             if a[0] == "_sweeps":
@@ -69,7 +70,7 @@ class XWavelength(object):
                 obj[a[0]] = sweeps
             elif a[0] == "_crystal":
                 # don't serialize this since the parent xwavelength *should* contain
-                # the reference to the child xsweeo
+                # the reference to the child xsweep
                 continue
             elif a[0].startswith("__"):
                 continue
@@ -99,8 +100,6 @@ class XWavelength(object):
 
         remove = []
 
-        from xia2.Handlers.Phil import PhilIndex
-
         params = PhilIndex.get_python_object()
         failover = params.xia2.settings.failover
 
@@ -111,8 +110,8 @@ class XWavelength(object):
                 result += "%s\n" % s.get_output()
             except Exception as e:
                 if failover:
-                    Chatter.write(
-                        "Processing sweep %s failed: %s" % (s.get_name(), str(e))
+                    logger.warning(
+                        "Processing sweep %s failed: %s", s.get_name(), str(e)
                     )
                     remove.append(s)
                 else:

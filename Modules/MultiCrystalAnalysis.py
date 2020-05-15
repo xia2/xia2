@@ -1,11 +1,8 @@
-# -*- coding: utf-8 -*-
-#!/usr/bin/env xia2.python
-from __future__ import absolute_import, division, print_function
-
 import json
 import logging
 from collections import OrderedDict
 
+from dials.algorithms.scaling.scale_and_filter import make_scaling_filtering_plots
 from dials.algorithms.symmetry.cosym import SymmetryAnalysis
 from dials.algorithms.symmetry.cosym.plots import plot_coords, plot_rij_histogram
 from dials.util.filter_reflections import filtered_arrays_from_experiments_reflections
@@ -195,7 +192,14 @@ class MultiCrystalAnalysis(object):
 
 
 class MultiCrystalReport(MultiCrystalAnalysis):
-    def report(self, individual_dataset_reports, comparison_graphs, cosym_analysis):
+    def report(
+        self,
+        individual_dataset_reports,
+        comparison_graphs,
+        cosym_analysis,
+        image_range_table,
+        scale_and_filter_results=None,
+    ):
         unit_cell_graphs = self.unit_cell_analysis()
         if self._cluster_analysis is None:
             self._cluster_analysis = self.cluster_analysis()
@@ -205,6 +209,13 @@ class MultiCrystalReport(MultiCrystalAnalysis):
         )
 
         delta_cc_half_graphs, delta_cc_half_table = self.delta_cc_half_analysis()
+
+        if scale_and_filter_results:
+            filter_plots = self.make_scale_and_filter_plots(scale_and_filter_results)[
+                "filter_plots"
+            ]
+        else:
+            filter_plots = None
 
         symmetry_analysis = {}
         if "sym_op_scores" in cosym_analysis:
@@ -253,6 +264,8 @@ class MultiCrystalReport(MultiCrystalAnalysis):
             cos_angle_cosym_graphs=self._cosym_graphs,
             delta_cc_half_graphs=delta_cc_half_graphs,
             delta_cc_half_table=delta_cc_half_table,
+            filter_plots=filter_plots,
+            image_range_tables=[image_range_table],
             individual_dataset_reports=individual_dataset_reports,
             comparison_graphs=comparison_graphs,
             symmetry_analysis=symmetry_analysis,
@@ -260,8 +273,41 @@ class MultiCrystalReport(MultiCrystalAnalysis):
             xia2_version=Version,
         )
 
-        # with open("%s.json" % self.params.prefix, "wb") as f:
-        # json.dump(json_data, f)
+        json_data = {}
+        json_data.update(unit_cell_graphs)
+        json_data.update(cosym_analysis["cosym_graphs"])
+        json_data["cc_clustering"] = self._cc_cluster_json
+        json_data["cos_angle_clustering"] = self._cos_angle_cluster_json
+        json_data.update(self._cosym_graphs)
+        json_data.update(delta_cc_half_graphs)
+        if filter_plots:
+            json_data.update(filter_plots)
+        json_data["datasets"] = {}
+        for report_name, report in individual_dataset_reports.items():
+            json_data["datasets"][report_name] = dict(
+                (k, report[k])
+                for k in (
+                    "resolution_graphs",
+                    "batch_graphs",
+                    "xtriage",
+                    "merging_stats",
+                    "merging_stats_anom",
+                )
+            )
+        json_data["comparison"] = comparison_graphs
+
+        with open("%s.json" % self.params.prefix, "w") as f:
+            json.dump(json_data, f)
 
         with open("%s.html" % self.params.prefix, "wb") as f:
             f.write(html.encode("utf-8", "xmlcharrefreplace"))
+
+    def make_scale_and_filter_plots(self, filtering_results):
+        data = {
+            "merging_stats": filtering_results.get_merging_stats(),
+            "initial_expids_and_image_ranges": filtering_results.initial_expids_and_image_ranges,
+            "cycle_results": filtering_results.get_cycle_results(),
+            "expids_and_image_ranges": filtering_results.expids_and_image_ranges,
+            "mode": "dataset",
+        }
+        return {"filter_plots": make_scaling_filtering_plots(data)}

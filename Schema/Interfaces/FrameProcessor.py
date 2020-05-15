@@ -11,13 +11,13 @@
 # Distance (mm), wavelength (ang), beam centre (mm, mm),
 # image header information
 
-from __future__ import absolute_import, division, print_function
 
+import logging
 import math
 import os
 
+from dxtbx.model.detector_helpers import set_mosflm_beam_centre
 from scitbx import matrix
-
 from xia2.Experts.FindImages import (
     digest_template,
     find_matching_images,
@@ -25,7 +25,9 @@ from xia2.Experts.FindImages import (
     image2template_directory,
     template_directory_number2image,
 )
-from xia2.Handlers.Streams import Debug
+from xia2.Schema import load_imagesets
+
+logger = logging.getLogger("xia2.Schema.Interfaces.FrameProcessor")
 
 
 class FrameProcessor(object):
@@ -43,10 +45,7 @@ class FrameProcessor(object):
         self._fp_offset = 0
 
         self._fp_two_theta = 0.0
-        self._fp_two_theta_prov = None
 
-        self._fp_wavelength_prov = None
-        self._fp_distance_prov = None
         self._fp_beam_prov = None
 
         self._fp_gain = 0.0
@@ -95,19 +94,13 @@ class FrameProcessor(object):
             imageset = ImageSetFactory.new(self.get_image_name(start))[0]
 
             # print this to the debug channel
-            Debug.write("Latest header information for image %d:" % start)
-            Debug.write(imageset.get_detector())
-            Debug.write(imageset.get_scan())
-            Debug.write(imageset.get_beam())
-            Debug.write(imageset.get_goniometer())
+            logger.debug("Latest header information for image %d:" % start)
+            logger.debug(imageset.get_detector())
+            logger.debug(imageset.get_scan())
+            logger.debug(imageset.get_beam())
+            logger.debug(imageset.get_goniometer())
 
             # populate wavelength, beam etc from this
-
-            if self._fp_wavelength_prov is None or self._fp_wavelength_prov == "header":
-                self._fp_wavelength_prov = "header"
-
-            if self._fp_distance_prov is None or self._fp_distance_prov == "header":
-                self._fp_distance_prov = "header"
 
             if self._fp_beam_prov is None or self._fp_beam_prov == "header":
                 self._fp_beam_prov = "header"
@@ -129,18 +122,12 @@ class FrameProcessor(object):
 
     def set_wavelength(self, wavelength):
         self.get_beam_obj().set_wavelength(wavelength)
-        self._fp_wavelength_prov = "user"
 
     def get_wavelength(self):
         return self.get_beam_obj().get_wavelength()
 
     def set_distance(self, distance):
-        if distance is None:
-            return
-        from xia2.Wrappers.Mosflm.AutoindexHelpers import set_distance
-
-        set_distance(self.get_detector(), distance)
-        self._fp_distance_prov = "user"
+        pass
 
     def get_distance(self):
         return self.get_detector()[0].get_directed_distance()
@@ -158,15 +145,13 @@ class FrameProcessor(object):
         return self._fp_polarization
 
     def set_beam_centre(self, beam_centre):
-        from dxtbx.model.detector_helpers import set_mosflm_beam_centre
-
         try:
             set_mosflm_beam_centre(
                 self.get_detector(), self.get_beam_obj(), beam_centre
             )
             self._fp_beam_prov = "user"
         except AssertionError as e:
-            Debug.write("Error setting mosflm beam centre: %s" % e)
+            logger.debug("Error setting mosflm beam centre: %s" % e)
 
     def get_beam_centre(self):
         detector = self.get_detector()
@@ -252,8 +237,6 @@ class FrameProcessor(object):
                 images.append(j)
             self._fp_matching_images = images
 
-        from xia2.Schema import load_imagesets
-
         imagesets = load_imagesets(
             template,
             directory,
@@ -283,10 +266,6 @@ class FrameProcessor(object):
 
         self._fp_matching_images = tuple(range(image_range[0], image_range[1] + 1))
 
-        if self._fp_wavelength_prov is None:
-            self._fp_wavelength_prov = "header"
-        if self._fp_distance_prov is None:
-            self._fp_distance_prov = "header"
         if self._fp_beam_prov is None:
             beam = imageset.get_beam()
             detector = imageset.get_detector()

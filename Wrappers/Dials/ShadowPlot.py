@@ -1,17 +1,12 @@
-#!/usr/bin/env python
-
-from __future__ import absolute_import, division, print_function
-
 import json
 import os
 
+from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 
 
 def ShadowPlot(DriverType=None):
     """A factory for ShadowPlotWrapper classes."""
-
-    from xia2.Driver.DriverFactory import DriverFactory
 
     DriverInstance = DriverFactory.Driver(DriverType)
 

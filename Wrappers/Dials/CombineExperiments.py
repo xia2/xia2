@@ -1,14 +1,13 @@
-#!/usr/bin/env python
-
-from __future__ import absolute_import, division, print_function
-
+import logging
 import os
+
+from xia2.Driver.DriverFactory import DriverFactory
+
+logger = logging.getLogger("xia2.Wrappers.Dials.CombineExperiments")
 
 
 def CombineExperiments(DriverType=None):
     """A factory for CombineExperimentsWrapper classes."""
-
-    from xia2.Driver.DriverFactory import DriverFactory
 
     DriverInstance = DriverFactory.Driver(DriverType)
 
@@ -44,9 +43,7 @@ def CombineExperiments(DriverType=None):
             return self._combined_reflections_filename
 
         def run(self):
-            from xia2.Handlers.Streams import Debug
-
-            Debug.write("Running dials.combine_experiments")
+            logger.debug("Running dials.combine_experiments")
 
             assert len(self._experiments_filenames) > 0
             assert len(self._experiments_filenames) == len(self._reflections_filenames)

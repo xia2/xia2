@@ -1,13 +1,14 @@
 # An indexer using the DIALS methods.
 
-from __future__ import absolute_import, division, print_function
 
 import copy
+import logging
 import math
 import os
 import string
 
 import libtbx
+from cctbx import crystal, sgtbx
 
 # wrappers for programs that this needs: DIALS
 
@@ -38,10 +39,17 @@ from xia2.Schema.Interfaces.Indexer import Indexer
 # odds and sods that are needed
 
 from xia2.lib.bits import auto_logfiler
-from xia2.Handlers.Streams import Chatter, Debug
+from xia2.Handlers.Streams import banner
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Files import FileHandler
 from xia2.Experts.SymmetryExpert import lattice_to_spacegroup_number
+from xia2.Handlers.Citations import Citations
+from dials.util.ascii_art import spot_counts_per_image_plot
+from cctbx.sgtbx import bravais_types
+from dxtbx.serialize import load
+
+
+logger = logging.getLogger("xia2.Modules.Indexer.DialsIndexer")
 
 
 class DialsIndexer(Indexer):
@@ -138,6 +146,8 @@ class DialsIndexer(Indexer):
         if params.fix_geometry:
             refine.set_detector_fix("all")
             refine.set_beam_fix("all")
+        elif params.fix_distance:
+            refine.set_detector_fix("distance")
         auto_logfiler(refine)
         return refine
 
@@ -179,9 +189,8 @@ class DialsIndexer(Indexer):
         else:
             block_size = min(len(images), 5)
 
-            Debug.write(
-                "Adding images for indexer: %d -> %d"
-                % (images[0], images[block_size - 1])
+            logger.debug(
+                "Adding images for indexer: %d -> %d", images[0], images[block_size - 1]
             )
 
             wedges.append((images[0], images[block_size - 1]))
@@ -189,19 +198,15 @@ class DialsIndexer(Indexer):
             phi_width = imageset.get_scan().get_oscillation()[1]
             if int(90.0 / phi_width) + block_size in images:
                 # assume we can add a wedge around 45 degrees as well...
-                Debug.write(
-                    "Adding images for indexer: %d -> %d"
-                    % (
-                        int(45.0 / phi_width) + images[0],
-                        int(45.0 / phi_width) + images[0] + block_size - 1,
-                    )
+                logger.debug(
+                    "Adding images for indexer: %d -> %d",
+                    int(45.0 / phi_width) + images[0],
+                    int(45.0 / phi_width) + images[0] + block_size - 1,
                 )
-                Debug.write(
-                    "Adding images for indexer: %d -> %d"
-                    % (
-                        int(90.0 / phi_width) + images[0],
-                        int(90.0 / phi_width) + images[0] + block_size - 1,
-                    )
+                logger.debug(
+                    "Adding images for indexer: %d -> %d",
+                    int(90.0 / phi_width) + images[0],
+                    int(90.0 / phi_width) + images[0] + block_size - 1,
                 )
                 wedges.append(
                     (
@@ -222,20 +227,19 @@ class DialsIndexer(Indexer):
                 first = (len(images) // 2) - (block_size // 2) + images[0] - 1
                 if first > wedges[0][1]:
                     last = first + block_size - 1
-                    Debug.write("Adding images for indexer: %d -> %d" % (first, last))
+                    logger.debug("Adding images for indexer: %d -> %d", first, last)
                     wedges.append((first, last))
                 if len(images) > block_size:
-                    Debug.write(
-                        "Adding images for indexer: %d -> %d"
-                        % (images[-block_size], images[-1])
+                    logger.debug(
+                        "Adding images for indexer: %d -> %d",
+                        images[-block_size],
+                        images[-1],
                     )
                     wedges.append((images[-block_size], images[-1]))
 
         return wedges
 
     def _index_prepare(self):
-
-        from xia2.Handlers.Citations import Citations
 
         Citations.cite("dials")
 
@@ -248,7 +252,7 @@ class DialsIndexer(Indexer):
 
         for imageset, xsweep in zip(self._indxr_imagesets, self._indxr_sweeps):
 
-            Chatter.banner("Spotfinding %s" % xsweep.get_name())
+            logger.notice(banner("Spotfinding %s" % xsweep.get_name()))
 
             first, last = imageset.get_scan().get_image_range()
 
@@ -277,7 +281,7 @@ class DialsIndexer(Indexer):
             )
             genmask.set_params(PhilIndex.params.dials.masking)
             sweep_filename, mask_pickle = genmask.run()
-            Debug.write("Generated mask for %s: %s" % (xsweep.get_name(), mask_pickle))
+            logger.debug("Generated mask for %s: %s", xsweep.get_name(), mask_pickle)
 
             gain = PhilIndex.params.xia2.settings.input.gain
             if gain is libtbx.Auto:
@@ -285,7 +289,7 @@ class DialsIndexer(Indexer):
                 gain_estimater.set_sweep_filename(sweep_filename)
                 gain_estimater.run()
                 gain = gain_estimater.get_gain()
-                Chatter.write("Estimated gain: %.2f" % gain)
+                logger.info("Estimated gain: %.2f", gain)
                 PhilIndex.params.xia2.settings.input.gain = gain
 
             # FIXME this should really use the assigned spot finding regions
@@ -342,12 +346,10 @@ class DialsIndexer(Indexer):
             spot_lists.append(spot_filename)
             experiments_filenames.append(spotfinder.get_output_sweep_filename())
 
-            from dials.util.ascii_art import spot_counts_per_image_plot
-
             refl = flex.reflection_table.from_file(spot_filename)
             if not len(refl):
                 raise RuntimeError("No spots found in sweep %s" % xsweep.get_name())
-            Chatter.write(spot_counts_per_image_plot(refl), strip=False)
+            logger.info(spot_counts_per_image_plot(refl))
 
             if not PhilIndex.params.dials.fast_mode:
                 detectblanks = self.DetectBlanks()
@@ -359,9 +361,10 @@ class DialsIndexer(Indexer):
                 if len(blank_regions):
                     blank_regions = [(int(s), int(e)) for s, e in blank_regions]
                     for blank_start, blank_end in blank_regions:
-                        Chatter.write(
-                            "WARNING: Potential blank images: %i -> %i"
-                            % (blank_start + 1, blank_end)
+                        logger.info(
+                            "WARNING: Potential blank images: %i -> %i",
+                            blank_start + 1,
+                            blank_end,
                         )
 
                     if PhilIndex.params.xia2.settings.remove_blanks:
@@ -378,7 +381,7 @@ class DialsIndexer(Indexer):
 
                         xsweep = self.get_indexer_sweep()
                         xwav = xsweep.get_wavelength()
-                        xsample = xsweep.get_xsample()
+                        xsample = xsweep.sample
 
                         sweep_name = xsweep.get_name()
 
@@ -412,15 +415,25 @@ class DialsIndexer(Indexer):
                                     ),
                                     image=imageset.get_path(nb_start - start),
                                     frames_to_process=(nb_start + 1, nb_end),
+                                    beam=xsweep.get_beam_centre(),
+                                    reversephi=xsweep.get_reversephi(),
+                                    distance=xsweep.get_distance(),
+                                    gain=xsweep.get_gain(),
+                                    dmin=xsweep.get_resolution_high(),
+                                    dmax=xsweep.get_resolution_low(),
+                                    polarization=xsweep.get_polarization(),
+                                    user_lattice=xsweep.get_user_lattice(),
+                                    user_cell=xsweep.get_user_cell(),
+                                    epoch=xsweep._epoch,
+                                    ice=xsweep._ice,
+                                    excluded_regions=xsweep._excluded_regions,
                                 )
-                                Chatter.write(
-                                    "Generating new sweep: %s (%s:%i:%i)"
-                                    % (
-                                        new_sweep.get_name(),
-                                        new_sweep.get_image(),
-                                        new_sweep.get_frames_to_process()[0],
-                                        new_sweep.get_frames_to_process()[1],
-                                    )
+                                logger.info(
+                                    "Generating new sweep: %s (%s:%i:%i)",
+                                    new_sweep.get_name(),
+                                    new_sweep.get_image(),
+                                    new_sweep.get_frames_to_process()[0],
+                                    new_sweep.get_frames_to_process()[1],
                                 )
                         return
 
@@ -434,7 +447,7 @@ class DialsIndexer(Indexer):
                 width = imageset.get_scan().get_oscillation()[1]
                 if (last - first) * width > 180.0 and len(refl) > 20000:
                     end = first + int(round(180.0 / width)) - 1
-                    Debug.write("Using %d to %d for beam search" % (first, end))
+                    logger.debug("Using %d to %d for beam search", first, end)
                     discovery.set_image_range((first, end))
 
                 try:
@@ -443,7 +456,9 @@ class DialsIndexer(Indexer):
                     # overwrite indexed.expt in experiments list
                     experiments_filenames[-1] = result
                 except Exception as e:
-                    Debug.write("DIALS beam centre search failed: %s" % str(e))
+                    logger.debug(
+                        "DIALS beam centre search failed: %s", str(e), exc_info=True
+                    )
 
         self.set_indexer_payload("spot_lists", spot_lists)
         self.set_indexer_payload("experiments", experiments_filenames)
@@ -491,9 +506,6 @@ class DialsIndexer(Indexer):
         self._p1_cell = indexer._p1_cell
         self.set_indexer_payload("indexed_filename", indexer.get_indexed_filename())
 
-        from cctbx.sgtbx import bravais_types
-        from dxtbx.serialize import load
-
         indexed_file = indexer.get_indexed_filename()
         indexed_experiments = indexer.get_experiments_filename()
 
@@ -511,7 +523,7 @@ class DialsIndexer(Indexer):
             checksym.set_grid_search_scope(1)
             checksym.run()
             hkl_offset = checksym.get_hkl_offset()
-            Debug.write("hkl_offset: %s" % str(hkl_offset))
+            logger.debug("hkl_offset: %s", str(hkl_offset))
             if hkl_offset is not None and hkl_offset != (0, 0, 0):
                 reindex = self.Reindex()
                 reindex.set_hkl_offset(hkl_offset)
@@ -553,13 +565,13 @@ class DialsIndexer(Indexer):
             if PhilIndex.params.dials.fix_geometry:
                 rbs.set_detector_fix("all")
                 rbs.set_beam_fix("all")
+            elif PhilIndex.params.dials.fix_distance:
+                rbs.set_detector_fix("distance")
 
             FileHandler.record_log_file(
                 "%s LATTICE" % self.get_indexer_full_name(), rbs.get_log_file()
             )
             rbs.run()
-
-            from cctbx import crystal, sgtbx
 
             for k in sorted(rbs.get_bravais_summary()):
                 summary = rbs.get_bravais_summary()[k]
@@ -578,14 +590,8 @@ class DialsIndexer(Indexer):
                 cs = crystal.symmetry(
                     unit_cell=cryst.get_unit_cell(), space_group=cryst.get_space_group()
                 )
-                cb_op_best_to_ref = cs.change_of_basis_op_to_reference_setting()
-                cs_reference = cs.change_basis(cb_op_best_to_ref)
-                lattice = str(
-                    bravais_types.bravais_lattice(group=cs_reference.space_group())
-                )
-                cb_op = cb_op_best_to_ref * sgtbx.change_of_basis_op(
-                    str(summary["cb_op"])
-                )
+                lattice = str(bravais_types.bravais_lattice(group=cs.space_group()))
+                cb_op = sgtbx.change_of_basis_op(str(summary["cb_op"]))
 
                 self._solutions[k] = {
                     "number": k,
@@ -594,7 +600,7 @@ class DialsIndexer(Indexer):
                     "rmsd": summary["rmsd"],
                     "nspots": summary["nspots"],
                     "lattice": lattice,
-                    "cell": cs_reference.unit_cell().parameters(),
+                    "cell": cs.unit_cell().parameters(),
                     "experiments_file": summary["experiments_file"],
                     "cb_op": str(cb_op),
                 }
@@ -623,27 +629,10 @@ class DialsIndexer(Indexer):
 
             self._indxr_mosaic = self._solution["mosaic"]
 
-            experiment_list = load.experiment_list(self._solution["experiments_file"])
-            self.set_indexer_experiment_list(experiment_list)
-
-            # reindex the output experiments list to the reference setting
-            # (from the best cell/conventional setting)
-            cb_op_to_ref = (
-                experiment_list.crystals()[0]
-                .get_space_group()
-                .info()
-                .change_of_basis_op_to_reference_setting()
-            )
-            reindex = self.Reindex()
-            reindex.set_experiments_filename(self._solution["experiments_file"])
-            reindex.set_cb_op(cb_op_to_ref)
-            reindex.set_space_group(
-                str(lattice_to_spacegroup_number(self._solution["lattice"]))
-            )
-            reindex.run()
-            experiments_file = reindex.get_reindexed_experiments_filename()
+            experiments_file = self._solution["experiments_file"]
             experiment_list = load.experiment_list(experiments_file)
             self.set_indexer_experiment_list(experiment_list)
+
             self.set_indexer_payload("experiments_filename", experiments_file)
 
             # reindex the output reflection list to this solution
@@ -700,22 +689,24 @@ class DialsIndexer(Indexer):
         if PhilIndex.params.dials.fix_geometry:
             indexer.set_detector_fix("all")
             indexer.set_beam_fix("all")
+        elif PhilIndex.params.dials.fix_distance:
+            indexer.set_detector_fix("distance")
         indexer.set_close_to_spindle_cutoff(
             PhilIndex.params.dials.close_to_spindle_cutoff
         )
 
         if self._indxr_input_lattice:
             indexer.set_indexer_input_lattice(self._indxr_input_lattice)
-            Debug.write("Set lattice: %s" % self._indxr_input_lattice)
+            logger.debug("Set lattice: %s", self._indxr_input_lattice)
 
         if self._indxr_input_cell:
             indexer.set_indexer_input_cell(self._indxr_input_cell)
-            Debug.write("Set cell: %f %f %f %f %f %f" % self._indxr_input_cell)
+            logger.debug("Set cell: %f %f %f %f %f %f" % self._indxr_input_cell)
 
         if method is None:
             if PhilIndex.params.dials.index.method is None:
                 method = "fft3d"
-                Debug.write("Choosing indexing method: %s" % method)
+                logger.debug("Choosing indexing method: %s", method)
             else:
                 method = PhilIndex.params.dials.index.method
 
@@ -816,5 +807,5 @@ class DialsIndexer(Indexer):
         miller_set = miller.set(symmetry, miller_indices)
         d_max, d_min = miller_set.d_max_min()
         d_max *= 1.05  # include an upper margin to avoid rounding errors
-        Debug.write("Low resolution limit assigned as: %.2f" % d_max)
+        logger.debug("Low resolution limit assigned as: %.2f", d_max)
         self._indxr_low_resolution = d_max

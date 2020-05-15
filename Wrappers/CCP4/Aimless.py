@@ -1,12 +1,12 @@
-from __future__ import absolute_import, division, print_function
-
+import logging
 import os
 
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter, Debug
 from xia2.Wrappers.CCP4.AimlessHelpers import parse_aimless_xml
+
+logger = logging.getLogger("xia2.Wrappers.CCP4.Aimless")
 
 
 def Aimless(DriverType=None, absorption_correction=None, decay_correction=None):
@@ -39,7 +39,7 @@ def Aimless(DriverType=None, absorption_correction=None, decay_correction=None):
             if not version:
                 raise RuntimeError("version not found")
 
-            Debug.write("Using version: %s" % version)
+            logger.debug("Using version: %s" % version)
 
             # clear all the header junk
             self.reset()
@@ -173,9 +173,9 @@ def Aimless(DriverType=None, absorption_correction=None, decay_correction=None):
                 if not os.path.isfile(
                     os.path.join(self.get_working_directory(), self._new_scales_file)
                 ):
-                    Chatter.write(
-                        "Aimless did not scale the data, see log file for more details:\n  %s"
-                        % self.get_log_file()
+                    logger.info(
+                        "Aimless did not scale the data, see log file for more details:\n  %s",
+                        self.get_log_file(),
                     )
                     raise RuntimeError("data not scaled")
             return os.path.join(self.get_working_directory(), self._new_scales_file)
@@ -501,7 +501,9 @@ def Aimless(DriverType=None, absorption_correction=None, decay_correction=None):
                 run_number += 1
 
                 if run[7]:
-                    Debug.write("Run %d corresponds to sweep %s" % (run_number, run[7]))
+                    logger.debug(
+                        "Run %d corresponds to sweep %s" % (run_number, run[7])
+                    )
 
                 if run[5]:
                     continue
@@ -560,7 +562,7 @@ def Aimless(DriverType=None, absorption_correction=None, decay_correction=None):
 
                 self.input(scale_command)
 
-            # Debug.write('Scaling command: "%s"' % scale_command)
+            # logger.debug('Scaling command: "%s"' % scale_command)
 
             # next any 'generic' parameters
 
@@ -597,13 +599,13 @@ def Aimless(DriverType=None, absorption_correction=None, decay_correction=None):
                 self.check_aimless_error_negative_scale_run()
                 self.check_aimless_errors()
             except Exception:
-                Chatter.write(
-                    "Aimless failed, see log file for more details:\n  %s"
-                    % self.get_log_file()
+                logger.warning(
+                    "Aimless failed, see log file for more details:\n  %s",
+                    self.get_log_file(),
                 )
                 raise
 
-            Debug.write("Aimless status: OK")
+            logger.debug("Aimless status: OK")
 
             # here get a list of all output files...
             output = self.get_all_output()
@@ -695,7 +697,9 @@ def Aimless(DriverType=None, absorption_correction=None, decay_correction=None):
                 run_number += 1
 
                 if run[7]:
-                    Debug.write("Run %d corresponds to sweep %s" % (run_number, run[7]))
+                    logger.debug(
+                        "Run %d corresponds to sweep %s" % (run_number, run[7])
+                    )
 
                 if run[5]:
                     continue
@@ -728,7 +732,7 @@ def Aimless(DriverType=None, absorption_correction=None, decay_correction=None):
                 self.check_ccp4_errors()
                 self.check_aimless_errors()
 
-                Debug.write("Aimless status: ok")
+                logger.debug("Aimless status: ok")
 
             except RuntimeError as e:
                 try:

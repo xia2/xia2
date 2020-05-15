@@ -1,12 +1,8 @@
-#!/usr/bin/env python
-
-from __future__ import absolute_import, division, print_function
-
+import logging
 import os
 import shutil
 
 from xia2.Driver.DriverFactory import DriverFactory
-from xia2.Handlers.Streams import Chatter
 
 # interfaces that this inherits from ...
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
@@ -17,6 +13,8 @@ from xia2.Wrappers.XDS.XDS import (
     template_to_xds,
     xds_check_version_supported,
 )
+
+logger = logging.getLogger("xia2.Wrappers.XDS.XDSDefpix")
 
 
 def XDSDefpix(DriverType=None):
@@ -53,8 +51,6 @@ def XDSDefpix(DriverType=None):
 
             self._output_data_files_list = ["BKGPIX.cbf", "ABS.cbf"]
 
-            return
-
         # getter and setter for input / output data
 
         def set_value_range_for_trusted_detector_pixels(
@@ -72,7 +68,6 @@ def XDSDefpix(DriverType=None):
 
         def set_input_data_file(self, name, data):
             self._input_data_files[name] = data
-            return
 
         def get_output_data_file(self, name):
             return self._output_data_files[name]
@@ -173,8 +168,8 @@ def XDSDefpix(DriverType=None):
                     real_high = float(record.split()[-1])
                     if self._resolution_high:
                         if real_high > self._resolution_high + 0.01:
-                            Chatter.write(
-                                "Warning: resolution limited to %.2f" % real_high
+                            logger.warning(
+                                "Warning: resolution limited to %.2f", real_high
                             )
 
             # gather the output files
@@ -183,7 +178,5 @@ def XDSDefpix(DriverType=None):
                 self._output_data_files[file] = os.path.join(
                     self.get_working_directory(), file
                 )
-
-            return
 
     return XDSDefpixWrapper()

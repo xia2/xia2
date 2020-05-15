@@ -2,15 +2,16 @@
 # are for calculating resolution (d, s) for either distance / beam /
 # wavelength / position or h, k, l, / unit cell.
 
-from __future__ import absolute_import, division, print_function
 
+import logging
 import math
 import os
 import tempfile
 
-from xia2.Handlers.Streams import Debug
 from xia2.Wrappers.CCP4.Pointless import Pointless
 from xia2.Modules.Scaler.rebatch import rebatch
+
+logger = logging.getLogger("xia2.Experts.ResolutionExperts")
 
 
 def meansd(values):
@@ -44,8 +45,8 @@ def find_blank(hklin):
         _ = p.sum_mtz(hklout)
 
         if os.path.getsize(hklout) == 0:
-            Debug.write("Pointless failed:")
-            Debug.write("".join(p.get_all_output()))
+            logger.debug("Pointless failed:")
+            logger.debug("".join(p.get_all_output()))
             raise RuntimeError("Pointless failed: no output file written")
 
         isig = {}
@@ -95,7 +96,7 @@ def remove_blank(hklin, hklout):
 
     # if mostly blank return hklin too...
     if len(blanks) > len(goods):
-        Debug.write("%d blank vs. %d good: ignore" % (len(blanks), len(goods)))
+        logger.debug("%d blank vs. %d good: ignore", len(blanks), len(goods))
         return hklin
 
     rebatch(hklin, hklout, exclude_batches=blanks)

@@ -1,9 +1,7 @@
 # A handler to manage the data ending up in CIF output file
 
-from __future__ import absolute_import, division, print_function
 
 import datetime
-import os.path
 
 import iotbx.cif.model
 import xia2.Handlers.Citations
@@ -89,15 +87,13 @@ class _CIFHandler(object):
         self.collate_audit_information()
         return str(self._cif)
 
-    def write_cif(self):
+    def write_cif(self, path):
         """Write CIF to file."""
         # update audit information for citations
         self.collate_audit_information()
 
-        from xia2.Handlers.Environment import Environment
-
-        data_directory = Environment.generate_directory("DataFiles")
-        with open(os.path.join(data_directory, self._outfile), "w") as fh:
+        path.mkdir(parents=True, exist_ok=True)
+        with open(str(path.joinpath(self._outfile)), "w") as fh:
             self._cif.show(out=fh)
 
     def get_block(self, blockname=None):

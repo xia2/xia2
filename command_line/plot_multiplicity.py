@@ -1,6 +1,5 @@
 # LIBTBX_PRE_DISPATCHER_INCLUDE_SH export PHENIX_GUI_ENVIRONMENT=1
 
-from __future__ import absolute_import, division, print_function
 
 import json
 import sys
@@ -8,6 +7,9 @@ import sys
 import iotbx.phil
 import six
 from cctbx.miller.display import render_2d, scene
+from dials.util import Sorry
+from iotbx.gui_tools.reflections import get_array_description
+from iotbx.reflection_file_reader import any_reflection_file
 from scitbx.array_family import flex
 
 
@@ -323,10 +325,6 @@ font_size = 20
 
 
 def run(args):
-    from dials.util import Sorry
-    from iotbx.reflection_file_reader import any_reflection_file
-    from iotbx.gui_tools.reflections import get_array_description
-
     pcl = iotbx.phil.process_command_line_with_files(
         args=args,
         master_phil=master_phil,

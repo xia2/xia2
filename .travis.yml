@@ -1,28 +1,19 @@
 language: python
+dist: xenial
 python:
-  - "2.7"
+  - 3.7
 
 jobs:
   include:
-    - name: "Syntax validation - Python 2.7"
+    - name: "Syntax validation"
       addons: false
       cache: false
-      script:
-         - python -m compileall -q *
-
-    - name: "Syntax validation - Python 3.7"
-      addons: false
-      cache: false
-      dist: xenial
-      python: 3.7
       script:
          - python3 -m compileall -q *
 
     - name: "Static code analysis - Flake8"
       addons: false
       cache: false
-      dist: xenial
-      python: 3.7
       script:
          - .travis/run-flake8
       if: type = pull_request

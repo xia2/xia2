@@ -1,6 +1,5 @@
-from __future__ import absolute_import, division, print_function
-
 import io
+import logging
 import os
 import time
 import signal
@@ -20,7 +19,8 @@ from xia2.Driver.DriverHelper import (
     generate_random_name,
 )
 from xia2.DriverExceptions.NotAvailableError import NotAvailableError
-from xia2.Handlers.Streams import Debug
+
+logger = logging.getLogger("xia2.Driver.DefaultDriver")
 
 
 class DefaultDriver(object):
@@ -440,9 +440,9 @@ class DefaultDriver(object):
             with io.open(self._log_file_name, "r", encoding="latin-1") as f:
                 lines = f.readlines()
                 n = min(50, len(lines))
-                Debug.write("Last %i lines of %s:" % (n, self._log_file_name))
+                logger.debug("Last %i lines of %s:", n, self._log_file_name)
                 for line in lines[-n:]:
-                    Debug.write(line.rstrip("\n"), strip=False)
+                    logger.debug(line.rstrip("\n"))
         elif hasattr(self, "_runtime_log") and self._runtime_log:
             if self._executable:
                 command_line = "%s " % os.path.basename(self._executable)

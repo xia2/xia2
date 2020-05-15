@@ -1,6 +1,6 @@
-from __future__ import absolute_import, division, print_function
-
 import iotbx.mtz
+from cctbx import sgtbx
+from xia2.lib.SymmetryLib import clean_reindex_operator
 
 
 def space_group_from_mtz(file_name):
@@ -27,9 +27,6 @@ def nref_from_mtz(file_name):
 
 
 def reindex(hklin, hklout, change_of_basis_op, space_group=None):
-    from cctbx import sgtbx
-    from xia2.Modules.Scaler.CommonScaler import clean_reindex_operator
-
     if not isinstance(change_of_basis_op, sgtbx.change_of_basis_op):
         change_of_basis_op = sgtbx.change_of_basis_op(
             str(clean_reindex_operator(change_of_basis_op))

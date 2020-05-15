@@ -1,8 +1,7 @@
-from __future__ import absolute_import, division, print_function
-
 import copy
 import json
 import logging
+from collections import OrderedDict
 
 import iotbx.phil
 from scipy.cluster import hierarchy
@@ -219,7 +218,7 @@ class multi_crystal_analysis(object):
 
         add_node(tree)
 
-        return d
+        return OrderedDict(sorted(d.items()))
 
     def run_cosym(self):
         from dials.algorithms.symmetry.cosym import phil_scope
@@ -227,13 +226,12 @@ class multi_crystal_analysis(object):
         params = phil_scope.extract()
         from dials.algorithms.symmetry.cosym import CosymAnalysis
 
-        datasets = self.individual_merged_intensities
         datasets = [
             d.eliminate_sys_absent(integral_only=True).primitive_setting()
-            for d in datasets
+            for d in self.individual_merged_intensities
         ]
-        params.lattice_group = datasets[0].space_group_info()
-        params.space_group = datasets[0].space_group_info()
+        params.lattice_group = self.individual_merged_intensities[0].space_group_info()
+        params.space_group = self.individual_merged_intensities[0].space_group_info()
         params.cluster.method = "dbscan"
 
         self.cosym = CosymAnalysis(datasets, params)
@@ -449,7 +447,7 @@ def scipy_dendrogram_to_plotly_json(ddict):
             "legend": {"x": 100, "y": 0.5, "bordercolor": "transparent"},
             "margin": {"r": 10},
             "showlegend": False,
-            "title": "BLEND dendrogram",
+            "title": "dendrogram",
             "xaxis": {
                 "showline": False,
                 "showgrid": False,

@@ -1,23 +1,11 @@
-#!/usr/bin/env python
-# XDSIndexerInteractive.py
-#   Copyright (C) 2013 CCLRC, Graeme Winter
-#
-#   This code is distributed under the BSD license, a copy of which is
-#   included in the root directory of this package.
-#
 # Interactive indexing with XDS: at the moment this means just selecting which
 # images you want to use for indexing though FIXME it should be possible to
 # have the indexing fully interactive i.e. user can run index, select solution,
 # change images to use etc. so it becomes fully interactive.
 
-from __future__ import absolute_import, division, print_function
 
-from xia2.Handlers.Streams import Chatter
+from xia2.Modules.Indexer.IndexerSelectImages import index_select_image_wedges_user
 from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
-
-# the class that we are extending
-
-# odds and sods that are needed
 
 
 class XDSIndexerInteractive(XDSIndexer):
@@ -26,8 +14,6 @@ class XDSIndexerInteractive(XDSIndexer):
     def __init__(self):
         super(XDSIndexerInteractive, self).__init__()
         self._index_select_images = "interactive"
-
-        return
 
     # helper functions
 
@@ -44,13 +30,7 @@ class XDSIndexerInteractive(XDSIndexer):
 
         images = self.get_matching_images()
 
-        from xia2.Modules.Indexer.IndexerSelectImages import (
-            index_select_image_wedges_user,
-        )
-
-        wedges = index_select_image_wedges_user(
-            self.get_template(), phi_width, images, Chatter
-        )
+        wedges = index_select_image_wedges_user(self.get_template(), phi_width, images)
 
         if min(images) + five_deg in images:
             self._background_images = (min(images), min(images) + five_deg)

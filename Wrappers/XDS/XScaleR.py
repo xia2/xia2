@@ -1,15 +1,15 @@
-from __future__ import absolute_import, division, print_function
-
 from builtins import range
 import copy
+import logging
 import os
 import shutil
 
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Debug
 from xia2.Wrappers.XDS.XDS import xds_check_error, get_xds_version
 from xia2.Wrappers.XDS.XScaleHelpers import get_correlation_coefficients_and_group
+
+logger = logging.getLogger("xia2.Wrappers.XDS.XScaleR")
 
 
 def XScaleR(
@@ -31,7 +31,7 @@ def XScaleR(
 
             # now set myself up...
             self._parallel = PhilIndex.params.xia2.settings.multiprocessing.nproc
-            if self._parallel <= 1:
+            if isinstance(self._parallel, int) and self._parallel <= 1:
                 self.set_executable("xscale")
             else:
                 self.set_executable("xscale_par")
@@ -71,7 +71,7 @@ def XScaleR(
             self._crystal = None
             self._zero_dose = PhilIndex.params.xds.xscale.zero_dose
             if self._zero_dose:
-                Debug.write("Switching on zero-dose extrapolation")
+                logger.debug("Switching on zero-dose extrapolation")
             self._anomalous = True
             self._merge = False
 
@@ -283,11 +283,11 @@ def XScaleR(
                     groups = get_correlation_coefficients_and_group(
                         os.path.join(self.get_working_directory(), "XSCALE.LP")
                     )
-                    Debug.write("Low correlations - check data sets")
+                    logger.debug("Low correlations - check data sets")
                     for j, name in enumerate(groups):
-                        Debug.write("Group %d" % j)
+                        logger.debug("Group %d" % j)
                         for file_name in groups[name]:
-                            Debug.write(file_name)
+                            logger.debug(file_name)
 
                     raise RuntimeError(
                         "reindexing error: %s"

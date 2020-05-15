@@ -1,14 +1,10 @@
-#!/usr/bin/env python
-
-from __future__ import absolute_import, division, print_function
-
+import logging
 import os
 import shutil
 
 from cctbx.uctbx import unit_cell
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Debug
 
 # interfaces that this inherits from ...
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
@@ -24,9 +20,10 @@ from xia2.Wrappers.XDS.XDS import (
 # specific helper stuff
 from xia2.Wrappers.XDS.XDSCorrectHelpers import _parse_correct_lp
 
+logger = logging.getLogger("xia2.Wrappers.XDS.XDSCorrect")
+
 
 def XDSCorrect(DriverType=None, params=None):
-
     DriverInstance = DriverFactory.Driver(DriverType)
 
     class XDSCorrectWrapper(DriverInstance.__class__, FrameProcessor):
@@ -48,7 +45,7 @@ def XDSCorrect(DriverType=None, params=None):
             self._parallel = PhilIndex.params.xia2.settings.multiprocessing.nproc
             self.set_cpu_threads(self._parallel)
 
-            if self._parallel <= 1:
+            if isinstance(self._parallel, int) and self._parallel <= 1:
                 self.set_executable("xds")
             else:
                 self.set_executable("xds_par")
@@ -209,7 +206,7 @@ def XDSCorrect(DriverType=None, params=None):
 
             # check to see if we are excluding ice rings
             if self._ice != 0:
-                Debug.write("Excluding ice rings")
+                logger.debug("Excluding ice rings")
 
                 for record in open(
                     os.path.abspath(
@@ -229,7 +226,7 @@ def XDSCorrect(DriverType=None, params=None):
 
             # exclude requested resolution ranges
             if self._excluded_regions:
-                Debug.write("Excluding regions: %s" % repr(self._excluded_regions))
+                logger.debug("Excluding regions: %s" % repr(self._excluded_regions))
 
                 for upper, lower in self._excluded_regions:
                     xds_inp.write(
@@ -359,7 +356,7 @@ def XDSCorrect(DriverType=None, params=None):
 
             if "reindex_op" in self._results:
                 format = "XDS applied reindex:" + 12 * " %d"
-                Debug.write(format % tuple(self._results["reindex_op"]))
+                logger.debug(format % tuple(self._results["reindex_op"]))
                 self._reindex_used = self._results["reindex_op"]
 
             # get the reflections to remove...

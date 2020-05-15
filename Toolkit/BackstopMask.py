@@ -14,13 +14,14 @@ from which a backstop mask for the input images is calculated. N.B. positions
 position. The positions may be read from ADXV and will be applied to both XDS
 and Mosflm."""
 
-from __future__ import absolute_import, division, print_function
 
 import binascii
+import logging
 import math
 
-from xia2.Handlers.Streams import Debug
 from xia2.Modules.UnpackByteOffset import pack_values, unpack_values
+
+logger = logging.getLogger("xia2.Toolkit.BackstopMask")
 
 
 def mmcc(ds, xs, ys):
@@ -283,18 +284,16 @@ class BackstopMask(object):
 
         p1, p2, p3, p4 = self.calculate_mask(header)
 
-        Debug.write(
-            "Vertices of mask: (%d, %d), (%d, %d), (%d, %d), (%d, %d)"
-            % (
-                int(p1[0]),
-                int(p1[1]),
-                int(p2[0]),
-                int(p2[1]),
-                int(p3[0]),
-                int(p3[1]),
-                int(p4[0]),
-                int(p4[1]),
-            )
+        logger.debug(
+            "Vertices of mask: (%d, %d), (%d, %d), (%d, %d), (%d, %d)",
+            int(p1[0]),
+            int(p1[1]),
+            int(p2[0]),
+            int(p2[1]),
+            int(p3[0]),
+            int(p3[1]),
+            int(p4[0]),
+            int(p4[1]),
         )
 
         return rectangle(p1, p2, p3, p4)

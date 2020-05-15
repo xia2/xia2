@@ -1,12 +1,13 @@
-from __future__ import absolute_import, division, print_function
-
+import logging
 import os
+
+from xia2.Driver.DriverFactory import DriverFactory
+
+logger = logging.getLogger("xia2.Wrappers.Cctbx.BrehmDiederichs")
 
 
 def BrehmDiederichs(DriverType=None):
     """A factory for BrehmDiederichsWrapper classes."""
-
-    from xia2.Driver.DriverFactory import DriverFactory
 
     DriverInstance = DriverFactory.Driver(DriverType)
 
@@ -30,9 +31,7 @@ def BrehmDiederichs(DriverType=None):
             return self._reindexing_dict
 
         def run(self):
-            from xia2.Handlers.Streams import Debug
-
-            Debug.write("Running cctbx.brehm_diederichs")
+            logger.debug("Running cctbx.brehm_diederichs")
 
             self.clear_command_line()
             if self._asymmetric is not None:

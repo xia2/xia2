@@ -6,14 +6,15 @@
 #
 # Relies on $XIA2_ROOT/Data/nmol-params.dat
 
-from __future__ import absolute_import, division, print_function
 
+import logging
 import math
 import os
 
-from xia2.Handlers.Streams import Chatter
 from xia2.Handlers.Syminfo import Syminfo
 from xia2.Wrappers.CCP4.Matthews_coef import Matthews_coef
+
+logger = logging.getLogger("xia2.lib.NMolLib")
 
 nmolparams = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "Data", "nmol-params.dat")
@@ -95,15 +96,12 @@ def compute_nmol_from_volume(volume, mass, resolution):
         s_list = [float(x) for x in fh.readline().split(",")[:13]]
 
     if resolution > resolutions[-1]:
-        Chatter.write(
-            "Resolution lower than %s -> computing for %f"
-            % (resolutions[-1], resolution)
+        logger.info(
+            "Resolution lower than %s -> computing for %f", resolutions[-1], resolution
         )
         resolution = resolutions[-1]
     if resolution < resolutions[0]:
-        Chatter.write(
-            "Resolution higher than peak %f -> %f" % (resolution, resolutions[0])
-        )
+        logger.info("Resolution higher than peak %f -> %f", resolution, resolutions[0])
         resolution = resolutions[0]
 
     for start in range(12):

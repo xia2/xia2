@@ -1,12 +1,12 @@
-#!/usr/bin/env python
+import logging
 
-from __future__ import absolute_import, division, print_function
+from xia2.Driver.DriverFactory import DriverFactory
+
+logger = logging.getLogger("xia2.Wrappers.Dials.AlignCrystal")
 
 
 def AlignCrystal(DriverType=None):
     """A factory for AlignCrystalWrapper classes."""
-
-    from xia2.Driver.DriverFactory import DriverFactory
 
     DriverInstance = DriverFactory.Driver(DriverType)
 
@@ -31,9 +31,7 @@ def AlignCrystal(DriverType=None):
             return self._json_filename
 
         def run(self):
-            from xia2.Handlers.Streams import Debug
-
-            Debug.write("Running dials.align_crystal")
+            logger.debug("Running dials.align_crystal")
 
             self.clear_command_line()
             self.add_command_line("experiments=%s" % self._experiments_filename)

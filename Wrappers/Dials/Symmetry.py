@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 import json
 import os
 import sys
@@ -188,6 +186,7 @@ def DialsSymmetry(DriverType=None):
             self.add_command_line(
                 "absolute_angle_tolerance=%s" % self._absolute_angle_tolerance
             )
+            self.add_command_line("best_monoclinic_beta=False")
             if not self._json:
                 self._json = os.path.join(
                     self.get_working_directory(),
@@ -226,20 +225,17 @@ def DialsSymmetry(DriverType=None):
 
             min_cell = uctbx.unit_cell(d["min_cell_symmetry"]["unit_cell"])
             best_cell = min_cell.change_basis(cb_op=cb_op_min_best)
-            # ^^ not necessarily in reference setting e.g I2/m not C2/m
 
             cs = crystal.symmetry(
                 unit_cell=best_cell,
                 space_group=patterson_group,
                 assert_is_compatible_unit_cell=False,
             )
-            cb_op_best_to_ref = cs.change_of_basis_op_to_reference_setting()
-            cs_reference = cs.as_reference_setting()
-            self._pointgroup = cs_reference.space_group().type().lookup_symbol()
+            self._pointgroup = cs.space_group().type().lookup_symbol()
 
             self._confidence = best_solution["confidence"]
             self._totalprob = best_solution["likelihood"]
-            cb_op_inp_best = cb_op_best_to_ref * cb_op_min_best * cb_op_inp_min
+            cb_op_inp_best = cb_op_min_best * cb_op_inp_min
             self._reindex_operator = cb_op_inp_best.as_xyz()
             self._reindex_matrix = cb_op_inp_best.c().r().as_double()
 
@@ -252,17 +248,16 @@ def DialsSymmetry(DriverType=None):
                     ):
                         patterson_group = patterson_group.build_derived_acentric_group()
 
-                    cb_op_min_this = sgtbx.change_of_basis_op(str(score["cb_op"]))
+                    cb_op_inp_this = sgtbx.change_of_basis_op(str(score["cb_op"]))
                     unit_cell = min_cell.change_basis(
-                        cb_op=sgtbx.change_of_basis_op(str(cb_op_min_this))
+                        cb_op=sgtbx.change_of_basis_op(str(cb_op_inp_this))
                     )
                     cs = crystal.symmetry(
                         unit_cell=unit_cell,
                         space_group=patterson_group,
                         assert_is_compatible_unit_cell=False,
                     )
-                    cs_reference = cs.as_reference_setting()
-                    patterson_group = cs_reference.space_group()
+                    patterson_group = cs.space_group()
 
                     netzc = score["z_cc_net"]
                     # record this as a possible lattice if its Z score is positive

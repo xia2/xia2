@@ -10,18 +10,19 @@
 #
 # This should give "proper" resolution limits...
 
-from __future__ import absolute_import, division, print_function
 
+import logging
 import math
 
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Experts.WedgeExpert import digest_wedges
-from xia2.Handlers.Streams import Chatter
 from xia2.lib.bits import mean_sd, transpose_loggraph
 
+logger = logging.getLogger("xia2.Wrappers.XIA2.Chef")
 
-def Chef(DriverType=None, stream=Chatter):
+
+def Chef(DriverType=None):
     """A factory for wrappers for the chef."""
 
     DriverInstance = DriverFactory.Driver(DriverType)
@@ -52,8 +53,6 @@ def Chef(DriverType=None, stream=Chatter):
             self._dose_profile = {}
 
             self._title = None
-
-            self._stream = stream
 
         def add_hklin(self, hklin):
             self._hklin_list.append(hklin)
@@ -252,7 +251,7 @@ def Chef(DriverType=None, stream=Chatter):
                     values = [float(x) for x in rd_data[wavelength]["2_Rd"]]
                     digest = self.digest_rd(values)
 
-                    # stream.write('Rd score (%s): %.2f' % \
+                    # logger.info('Rd score (%s): %.2f' , \
                     # (wavelength, digest))
 
                     if digest > 3:
@@ -334,7 +333,7 @@ def Chef(DriverType=None, stream=Chatter):
                 stop_doses, groups = digest_wedges(wedges)
 
                 for j, g in enumerate(groups):
-                    stream.write("Group %d: %s" % (j + 1, g))
+                    logger.info("Group %d: %s", (j + 1, g))
 
             if not lowest_50:
                 lowest_50 = local_50
@@ -368,7 +367,7 @@ def Chef(DriverType=None, stream=Chatter):
             scp_max = 0.0
 
             if s == 0.0:
-                stream.write("Insufficient measurements for analysis")
+                logger.info("Insufficient measurements for analysis")
                 return
 
             for j, d in enumerate(scp_data[dose_col]):
@@ -387,7 +386,7 @@ def Chef(DriverType=None, stream=Chatter):
                 scp_max = max(scp, scp_max)
 
             if not datasets_damaged:
-                stream.write("No significant radiation damage detected")
+                logger.info("No significant radiation damage detected")
                 return
 
             if not groups:
@@ -399,17 +398,18 @@ def Chef(DriverType=None, stream=Chatter):
                     if stop_dose > dose:
                         break
 
-            stream.write("Significant radiation damage detected:")
+            logger.info("Significant radiation damage detected:")
 
             for wavelength, digest in datasets_damaged:
-                stream.write("Rd analysis (%s): %.2f" % (wavelength, digest))
+                logger.info("Rd analysis (%s): %.2f", wavelength, digest)
 
             if stop_dose == float(scp_data[dose_col][-1]):
-                stream.write("Conclusion: use all data")
+                logger.info("Conclusion: use all data")
             else:
-                stream.write(
-                    "Conclusion: cut off after %s ~ %.1f"
-                    % (dose_col.replace("1_", ""), stop_dose)
+                logger.info(
+                    "Conclusion: cut off after %s ~ %.1f",
+                    dose_col.replace("1_", ""),
+                    stop_dose,
                 )
 
         def digest_dose_profile(self):

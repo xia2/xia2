@@ -1,22 +1,26 @@
 # An implementation of the Integrater interface using Dials. This depends on the
 # Dials wrappers to actually implement the functionality.
 
-from __future__ import absolute_import, division, print_function
 
+import logging
 import math
 import os
 
 import xia2.Wrappers.Dials.Integrate
 from dials.util import Sorry
+from dxtbx.serialize import load
+from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter, Debug, Journal
 from xia2.lib.bits import auto_logfiler
 from xia2.lib.SymmetryLib import lattice_to_spacegroup
 from xia2.Schema.Interfaces.Integrater import Integrater
-
+from xia2.Wrappers.Dials.anvil_correction import anvil_correction as _anvil_correction
 from xia2.Wrappers.Dials.ExportMtz import ExportMtz as _ExportMtz
+from xia2.Wrappers.Dials.ExportXDSASCII import ExportXDSASCII
 from xia2.Wrappers.Dials.Report import Report as _Report
+
+logger = logging.getLogger("xia2.Modules.Integrater.DialsIntegrater")
 
 
 class DialsIntegrater(Integrater):
@@ -40,6 +44,9 @@ class DialsIntegrater(Integrater):
 
         self._intgr_integrated_reflections = None
         self._intgr_experiments_filename = None
+
+        # Check whether to do diamond anvil cell attenuation correction.
+        self.high_pressure = PhilIndex.params.dials.high_pressure.correction
 
     # overload these methods as we don't want the resolution range
     # feeding back... aha - but we may want to assign them
@@ -78,7 +85,7 @@ class DialsIntegrater(Integrater):
 
     # factory functions
 
-    def Integrate(self, indexed_filename=None):
+    def Integrate(self):
         params = PhilIndex.params.dials.integrate
         integrate = xia2.Wrappers.Dials.Integrate.Integrate()
         integrate.set_phil_file(params.phil_file)
@@ -92,7 +99,13 @@ class DialsIntegrater(Integrater):
             profile_fitting = PhilIndex.params.xia2.settings.integration.profile_fitting
             integrate.set_profile_fitting(profile_fitting)
 
+        # Options for profile modelling.
         integrate.set_scan_varying_profile(params.scan_varying_profile)
+
+        high_pressure = PhilIndex.params.dials.high_pressure.correction
+        integrate.set_profile_params(
+            params.min_spots.per_degree, params.min_spots.overall, high_pressure
+        )
 
         integrate.set_background_outlier_algorithm(params.background_outlier_algorithm)
         integrate.set_background_algorithm(params.background_algorithm)
@@ -117,6 +130,8 @@ class DialsIntegrater(Integrater):
     def ExportMtz(self):
         params = PhilIndex.params.dials.integrate
         export = _ExportMtz()
+        _, xname, _ = self.get_integrater_project_info()
+        export.crystal_name = xname
         export.set_working_directory(self.get_working_directory())
 
         export.set_experiments_filename(self._intgr_experiments_filename)
@@ -140,7 +155,7 @@ class DialsIntegrater(Integrater):
 
     def _integrater_reset_callback(self):
         """Delete all results on a reset."""
-        Debug.write("Deleting all stored results.")
+        logger.debug("Deleting all stored results.")
         self._data_files = {}
         self._integrate_parameters = {}
 
@@ -148,8 +163,6 @@ class DialsIntegrater(Integrater):
         """Prepare for integration - in XDS terms this may mean rerunning
         IDXREF to get the XPARM etc. DEFPIX is considered part of the full
         integration as it is resolution dependent."""
-
-        from xia2.Handlers.Citations import Citations
 
         Citations.cite("dials")
 
@@ -159,9 +172,9 @@ class DialsIntegrater(Integrater):
             images = self.get_matching_images()
             self.set_integrater_wedge(min(images), max(images))
 
-        Debug.write("DIALS INTEGRATE PREPARE:")
-        Debug.write("Wavelength: %.6f" % self.get_wavelength())
-        Debug.write("Distance: %.2f" % self.get_distance())
+        logger.debug("DIALS INTEGRATE PREPARE:")
+        logger.debug("Wavelength: %.6f" % self.get_wavelength())
+        logger.debug("Distance: %.2f" % self.get_distance())
 
         if not self.get_integrater_low_resolution():
 
@@ -170,13 +183,11 @@ class DialsIntegrater(Integrater):
             )
             self.set_integrater_low_resolution(dmax)
 
-            Debug.write(
+            logger.debug(
                 "Low resolution set to: %s" % self.get_integrater_low_resolution()
             )
 
         ## copy the data across
-        from dxtbx.serialize import load
-
         refiner = self.get_integrater_refiner()
         self._intgr_experiments_filename = refiner.get_refiner_payload("models.expt")
         experiments = load.experiment_list(self._intgr_experiments_filename)
@@ -186,9 +197,9 @@ class DialsIntegrater(Integrater):
         # this is the result of the cell refinement
         self._intgr_cell = experiment.crystal.get_unit_cell().parameters()
 
-        Debug.write("Files available at the end of DIALS integrate prepare:")
+        logger.debug("Files available at the end of DIALS integrate prepare:")
         for f in self._data_files:
-            Debug.write("%s" % f)
+            logger.debug("%s" % f)
 
         self.set_detector(experiment.detector)
         self.set_beam_obj(experiment.beam)
@@ -197,28 +208,6 @@ class DialsIntegrater(Integrater):
     def _integrate(self):
         """Actually do the integration - in XDS terms this will mean running
         DEFPIX and INTEGRATE to measure all the reflections."""
-
-        images_str = "%d to %d" % tuple(self._intgr_wedge)
-        cell_str = "%.2f %.2f %.2f %.2f %.2f %.2f" % tuple(self._intgr_cell)
-
-        if len(self._fp_directory) <= 50:
-            dirname = self._fp_directory
-        else:
-            dirname = "...%s" % self._fp_directory[-46:]
-
-        Journal.block(
-            "integrating",
-            self._intgr_sweep_name,
-            "DIALS",
-            {
-                "images": images_str,
-                "cell": cell_str,
-                "lattice": self.get_integrater_refiner().get_refiner_lattice(),
-                "template": self._fp_template,
-                "directory": dirname,
-                "resolution": "%.2f" % self._intgr_reso_high,
-            },
-        )
 
         integrate = self.Integrate()
 
@@ -238,7 +227,7 @@ class DialsIntegrater(Integrater):
             d_min_limit > self._intgr_reso_high
             or PhilIndex.params.xia2.settings.resolution.keep_all_reflections
         ):
-            Debug.write(
+            logger.debug(
                 "Overriding high resolution limit: %f => %f"
                 % (self._intgr_reso_high, d_min_limit)
             )
@@ -254,6 +243,7 @@ class DialsIntegrater(Integrater):
             integrate.set_d_min(PhilIndex.params.dials.integrate.d_min)
         else:
             integrate.set_d_min(self._intgr_reso_high)
+
         pname, xname, dname = self.get_integrater_project_info()
         sweep = self.get_integrater_sweep_name()
         FileHandler.record_log_file(
@@ -273,7 +263,7 @@ class DialsIntegrater(Integrater):
                 # in case we were just integrating noise to the edge of the detector
                 images = self._integrate_select_images_wedges()
 
-                Debug.write(
+                logger.debug(
                     "Integrating subset of images to estimate resolution limit.\n"
                     "Integrating images %s" % images
                 )
@@ -288,6 +278,7 @@ class DialsIntegrater(Integrater):
                         start - self.get_matching_images()[0],
                         stop - self.get_matching_images()[0],
                     )
+
                 integrate.set_reflections_per_degree(1000)
                 integrate.run()
 
@@ -306,8 +297,8 @@ class DialsIntegrater(Integrater):
                 d_min_estimater.set_reflections_filename(integrated_reflections)
                 d_min = d_min_estimater.run()
 
-                Debug.write("Estimate for d_min: %.2f" % d_min)
-                Debug.write("Re-running integration to this resolution limit")
+                logger.debug("Estimate for d_min: %.2f" % d_min)
+                logger.debug("Re-running integration to this resolution limit")
 
                 self._intgr_reso_high = d_min
                 self.set_integrater_done(False)
@@ -333,7 +324,7 @@ class DialsIntegrater(Integrater):
             )
 
         self._intgr_per_image_statistics = integrate.get_per_image_statistics()
-        Chatter.write(self.show_per_image_statistics())
+        logger.info(self.show_per_image_statistics())
 
         report = self.Report()
         html_filename = os.path.join(
@@ -346,8 +337,6 @@ class DialsIntegrater(Integrater):
             "%s %s %s %s INTEGRATE" % (pname, xname, dname, sweep), html_filename
         )
 
-        from dxtbx.serialize import load
-
         experiments = load.experiment_list(self._intgr_experiments_filename)
         profile = experiments.profiles()[0]
         mosaic = profile.sigma_m()
@@ -357,15 +346,27 @@ class DialsIntegrater(Integrater):
         except AttributeError:
             self.set_integrater_mosaic_min_mean_max(mosaic, mosaic, mosaic)
 
-        Chatter.write(
+        logger.info(
             "Mosaic spread: %.3f < %.3f < %.3f"
             % self.get_integrater_mosaic_min_mean_max()
         )
 
+        # If running in high-pressure mode, run dials.anvil_correction to
+        # correct for the attenuation of the incident and diffracted beams by the
+        # diamond anvils.
+        if self.high_pressure:
+            self._anvil_correction()
+
         return self._intgr_integrated_reflections
 
     def _integrate_finish(self):
-        """Finish off the integration by running dials.export."""
+        """
+        Finish off the integration.
+
+        If in high-pressure mode run dials.anvil_correction.
+
+        Run dials.export.
+        """
 
         # FIXME - do we want to export every time we call this method
         # (the file will not have changed) and also (more important) do
@@ -383,8 +384,7 @@ class DialsIntegrater(Integrater):
             exporter.run()
             self._intgr_integrated_filename = mtz_filename
 
-            # record integrated MTZ file for e.g. BLEND.
-
+            # record integrated MTZ file
             pname, xname, dname = self.get_integrater_project_info()
             sweep = self.get_integrater_sweep_name()
             FileHandler.record_more_data_file(
@@ -421,7 +421,7 @@ class DialsIntegrater(Integrater):
                     self.get_integrater_refiner().get_refiner_lattice()
                 )
             ):
-                Debug.write(
+                logger.debug(
                     "Not reindexing to spacegroup %d (%s)"
                     % (self._intgr_spacegroup_number, self._intgr_reindex_operator)
                 )
@@ -431,13 +431,13 @@ class DialsIntegrater(Integrater):
                 self._intgr_reindex_operator is None
                 and self._intgr_spacegroup_number == 0
             ):
-                Debug.write(
+                logger.debug(
                     "Not reindexing to spacegroup %d (%s)"
                     % (self._intgr_spacegroup_number, self._intgr_reindex_operator)
                 )
                 return mtz_filename
 
-            Debug.write(
+            logger.debug(
                 "Reindexing to spacegroup %d (%s)"
                 % (self._intgr_spacegroup_number, self._intgr_reindex_operator)
             )
@@ -489,7 +489,7 @@ class DialsIntegrater(Integrater):
                     self.get_integrater_refiner().get_refiner_lattice()
                 )
             ):
-                Debug.write(
+                logger.debug(
                     "Not reindexing to spacegroup %d (%s)"
                     % (self._intgr_spacegroup_number, self._intgr_reindex_operator)
                 )
@@ -499,13 +499,13 @@ class DialsIntegrater(Integrater):
                 self._intgr_reindex_operator is None
                 and self._intgr_spacegroup_number == 0
             ):
-                Debug.write(
+                logger.debug(
                     "Not reindexing to spacegroup %d (%s)"
                     % (self._intgr_spacegroup_number, self._intgr_reindex_operator)
                 )
                 return self._intgr_integrated_reflections
 
-            Debug.write(
+            logger.debug(
                 "Reindexing to spacegroup %d (%s)"
                 % (self._intgr_spacegroup_number, self._intgr_reindex_operator)
             )
@@ -576,7 +576,7 @@ class DialsIntegrater(Integrater):
         else:
             block_size = min(len(images), int(math.ceil(5 / phi_width)))
 
-            Debug.write(
+            logger.debug(
                 "Adding images for indexer: %d -> %d"
                 % (images[0], images[block_size - 1])
             )
@@ -585,14 +585,14 @@ class DialsIntegrater(Integrater):
 
             if int(90.0 / phi_width) + block_size in images:
                 # assume we can add a wedge around 45 degrees as well...
-                Debug.write(
+                logger.debug(
                     "Adding images for indexer: %d -> %d"
                     % (
                         int(45.0 / phi_width) + images[0],
                         int(45.0 / phi_width) + images[0] + block_size - 1,
                     )
                 )
-                Debug.write(
+                logger.debug(
                     "Adding images for indexer: %d -> %d"
                     % (
                         int(90.0 / phi_width) + images[0],
@@ -618,10 +618,10 @@ class DialsIntegrater(Integrater):
                 first = (len(images) // 2) - (block_size // 2) + images[0] - 1
                 if first > wedges[0][1]:
                     last = first + block_size - 1
-                    Debug.write("Adding images for indexer: %d -> %d" % (first, last))
+                    logger.debug("Adding images for indexer: %d -> %d" % (first, last))
                     wedges.append((first, last))
                 if len(images) > block_size:
-                    Debug.write(
+                    logger.debug(
                         "Adding images for indexer: %d -> %d"
                         % (images[-block_size], images[-1])
                     )
@@ -631,7 +631,6 @@ class DialsIntegrater(Integrater):
 
     def get_integrater_corrected_intensities(self):
         self.integrate()
-        from xia2.Wrappers.Dials.ExportXDSASCII import ExportXDSASCII
 
         exporter = ExportXDSASCII()
         exporter.set_experiments_filename(self.get_integrated_experiments())
@@ -645,3 +644,35 @@ class DialsIntegrater(Integrater):
         exporter.run()
         assert os.path.exists(self._intgr_corrected_hklout)
         return self._intgr_corrected_hklout
+
+    def _anvil_correction(self):
+        """Correct for attenuation in a diamond anvil pressure cell."""
+
+        logger.info(
+            "Rescaling integrated reflections for attenuation in the diamond anvil "
+            "cell."
+        )
+
+        params = PhilIndex.params.dials.high_pressure
+        anvil_correct = _anvil_correction()
+
+        # Take the filenames of the last integration step as input.
+        anvil_correct.experiments_filenames.append(self._intgr_experiments_filename)
+        anvil_correct.reflections_filenames.append(self._intgr_integrated_reflections)
+
+        # The output reflections have a filename appended with '_corrected'.
+        output_reflections = "_corrected".join(
+            os.path.splitext(self._intgr_integrated_reflections)
+        )
+        anvil_correct.output_reflections_filename = output_reflections
+
+        # Set the user-specified parameters from the PHIL scope.
+        anvil_correct.density = params.anvil.density
+        anvil_correct.thickness = params.anvil.thickness
+        anvil_correct.normal = params.anvil.normal
+
+        # Run dials.anvil_correction with the parameters as set above.
+        anvil_correct.set_working_directory(self.get_working_directory())
+        auto_logfiler(anvil_correct)
+        anvil_correct.run()
+        self._intgr_integrated_reflections = output_reflections

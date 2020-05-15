@@ -1,11 +1,14 @@
-from __future__ import absolute_import, division, print_function
-
+import logging
 import math
 import os
 
 import libtbx.utils
+from dials.array_family import flex
+from dxtbx.serialize import load
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
+
+logger = logging.getLogger("xia2.Wrappers.Dials.Index")
 
 
 def Index(DriverType=None):
@@ -116,9 +119,7 @@ def Index(DriverType=None):
             self._close_to_spindle_cutoff = close_to_spindle_cutoff
 
         def run(self, method):
-            from xia2.Handlers.Streams import Debug
-
-            Debug.write("Running dials.index")
+            logger.debug("Running dials.index")
 
             self.clear_command_line()
             for f in self._sweep_filenames:
@@ -226,10 +227,7 @@ def Index(DriverType=None):
 
             for record in self.get_all_output():
                 if "Too few reflections to parameterise" in record:
-                    Debug.write(record.strip())
-
-            from dials.array_family import flex
-            from dxtbx.serialize import load
+                    logger.debug(record.strip())
 
             self._experiment_list = load.experiment_list(self._experiment_filename)
             self._reflections = flex.reflection_table.from_file(self._indexed_filename)

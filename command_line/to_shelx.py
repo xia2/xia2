@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 import datetime
 import json
 import optparse
@@ -8,6 +6,11 @@ import sys
 
 import iotbx.cif.model
 import xia2.XIA2Version
+from cctbx.xray import scatterer
+from cctbx.xray.structure import structure
+from iotbx.reflection_file_reader import any_reflection_file
+from iotbx.shelx import writer
+from iotbx.shelx.hklf import miller_array_export_as_shelx_hklf
 
 
 def parse_compound(compound):
@@ -16,7 +19,7 @@ def parse_compound(compound):
     number = ""
     compound += "X"
     for c in compound:
-        if c in string.uppercase:
+        if c in string.ascii_uppercase:
             if not element:
                 element += c
                 continue
@@ -142,12 +145,6 @@ def to_shelx(hklin, prefix, compound="", options=None):
     """Read hklin (unmerged reflection file) and generate SHELXT input file
     and HKL file"""
 
-    from iotbx.reflection_file_reader import any_reflection_file
-    from iotbx.shelx import writer
-    from iotbx.shelx.hklf import miller_array_export_as_shelx_hklf
-    from cctbx.xray.structure import structure
-    from cctbx.xray import scatterer
-
     reader = any_reflection_file(hklin)
     mtz_object = reader.file_content()
     ma = reader.as_miller_arrays(merge_equivalents=False)
@@ -164,7 +161,7 @@ def to_shelx(hklin, prefix, compound="", options=None):
     indices = reader.file_content().extract_original_index_miller_indices()
     intensities = intensities.customized_copy(indices=indices, info=intensities.info())
 
-    with open("%s.hkl" % prefix, "wb") as hkl_file_handle:
+    with open("%s.hkl" % prefix, "w") as hkl_file_handle:
         # limit values to 4 digits (before decimal point), as this is what shelxt
         # writes in its output files, and shelxl seems to read. ShelXL apparently
         # does not read values >9999 properly

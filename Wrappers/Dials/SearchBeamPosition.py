@@ -1,14 +1,14 @@
-from __future__ import absolute_import, division, print_function
-
+import logging
 import os
 
+from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
+
+logger = logging.getLogger("xia2.Wrappers.Dials.SearchBeamPosition")
 
 
 def SearchBeamPosition(DriverType=None):
     """A factory for SearchBeamPosition classes."""
-
-    from xia2.Driver.DriverFactory import DriverFactory
 
     DriverInstance = DriverFactory.Driver(DriverType)
 
@@ -39,9 +39,7 @@ def SearchBeamPosition(DriverType=None):
             return self._optimized_filename
 
         def run(self):
-            from xia2.Handlers.Streams import Debug
-
-            Debug.write("Running %s" % self.get_executable())
+            logger.debug("Running %s", self.get_executable())
 
             self.clear_command_line()
             self.add_command_line(self._sweep_filename)

@@ -9,7 +9,6 @@
 # set for individual programs can be found. Initially this will be just a
 # couple for XDS.
 
-from __future__ import absolute_import, division, print_function
 
 from iotbx.phil import parse
 from libtbx.phil import interface
@@ -67,7 +66,7 @@ xds
             "and NUMBER_OF_PROFILE_GRID_POINTS_ALONG_GAMMA."
     .type = ints(size = 2)
     .expert_level = 1
-  keep_outliers = False
+  keep_outliers = True
     .type = bool
     .short_caption = "Keep outliers"
     .help = "Do not remove outliers in integration and scaling"
@@ -206,6 +205,11 @@ dials
     .help = "Whether or not to refine geometry in dials.index and dials.refine. " \
             "Most useful when also providing a reference geometry to xia2."
     .short_caption = "Fix geometry"
+    .expert_level = 1
+  fix_distance = False
+    .type = bool
+    .help = "Do not refine the detector distance in dials.index and dials.refine."
+    .short_caption = "Fix distance"
     .expert_level = 1
   outlier
     .short_caption = "Centroid outlier rejection"
@@ -396,15 +400,42 @@ dials
       .type = float(value_min=0.0)
       .short_caption = "Low resolution cutoff for integration"
       .expert_level = 1
+    min_spots
+      .short_caption = "Override default profile parameters of dials.integrate"
+    {
+      overall = None
+        .type = int(value_min=1)
+        .optional = True
+        .help = "Minimum number of reflections required to perform profile "
+                "modelling."
+
+      per_degree = None
+        .type = int(value_min=0)
+        .optional = True
+        .help = "Minimum number of reflections per degree of sweep required to perform "
+                "profile modelling."
+    }
   }
+
+  high_pressure
+    .expert_level = 1
+    .short_caption = "Handle diamond anvil pressure cell data"
+  {
+    correction = False
+      .type = bool
+      .help = "Correct for attenuation by a diamond anvil cell"
+
+    include scope dials.command_line.anvil_correction.phil_scope
+  }
+
   scale
     .expert_level = 1
     .short_caption = "Scaling"
   {
-    model = *auto physical array kb
+    model = *auto physical array KB
       .type = choice
       .help = "Choice of scaling model parameterisation to apply"
-    rotation_spacing = 15.0
+    rotation_spacing = None
       .type = float
       .help = "Parameter spacing for scale (rotation) term"
     Bfactor = True
@@ -414,7 +445,7 @@ dials
       .type = bool
       .help = "Include an absorption correction in scaling"
     physical_model {
-      Bfactor_spacing = 20.0
+      Bfactor_spacing = None
         .type = float
         .help = "Parameter spacing for B-factor correction"
       lmax = 4
@@ -425,7 +456,7 @@ dials
       resolution_bins = 10
         .type = int(value_min=1)
         .help = "Number of bins to parameterise decay component"
-      absorption_bins = 3
+      absorption_bins = 5
         .type = int(value_min=1)
         .help = "Number of bins in each dimension (applied to both x and y) for " \
                 "binning the detector position for the absorption term of the " \
@@ -564,7 +595,7 @@ strategy
 xia2.settings
   .short_caption = "xia2 settings"
 {
-  pipeline = 3d 3dd 3di 3dii *dials dials-full dials-aimless
+  pipeline = 3d 3dd 3di 3dii *dials dials-aimless
     .short_caption = "main processing pipeline"
     .help = "Select the xia2 main processing pipeline\n" \
             "   3d: XDS, XSCALE\n" \

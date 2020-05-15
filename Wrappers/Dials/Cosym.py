@@ -1,11 +1,11 @@
-from __future__ import absolute_import, division, print_function
-
 import json
+import logging
 import os
 
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter, Debug
+
+logger = logging.getLogger("xia2.Wrappers.Dials.Cosym")
 
 
 def DialsCosym(DriverType=None, decay_correction=None):
@@ -32,6 +32,7 @@ def DialsCosym(DriverType=None, decay_correction=None):
             self._space_group = None
             self._json = None
             self._html = None
+            self._best_monoclinic_beta = False
 
         # getter and setter methods
 
@@ -55,6 +56,9 @@ def DialsCosym(DriverType=None, decay_correction=None):
 
         def set_html(self, html):
             self._html = html
+
+        def set_best_monoclinic_beta(self, best_monoclinic_beta):
+            self._best_monoclinic_beta = best_monoclinic_beta
 
         def get_json(self):
             return self._json
@@ -103,6 +107,9 @@ def DialsCosym(DriverType=None, decay_correction=None):
                     "%d_dials.cosym.html" % self.get_xpid(),
                 )
             self.add_command_line("output.html=%s" % self._html)
+            self.add_command_line(
+                "best_monoclinic_beta=%s" % self._best_monoclinic_beta
+            )
 
             self.start()
             self.close_wait()
@@ -112,13 +119,13 @@ def DialsCosym(DriverType=None, decay_correction=None):
             try:
                 self.check_for_errors()
             except Exception:
-                Chatter.write(
-                    "dials.cosym failed, see log file for more details:\n  %s"
-                    % self.get_log_file()
+                logger.warning(
+                    "dials.cosym failed, see log file for more details:\n  %s",
+                    self.get_log_file(),
                 )
                 raise
 
-            Debug.write("dials.cosym status: OK")
+            logger.debug("dials.cosym status: OK")
 
             assert os.path.exists(self._json)
             with open(self._json, "rb") as f:

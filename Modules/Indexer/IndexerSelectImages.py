@@ -1,7 +1,10 @@
 # Code for the selection of images for autoindexing - selecting lone images
 # from a list or wedges from a list, for XDS.
 
-from __future__ import absolute_import, division, print_function
+
+import logging
+
+logger = logging.getLogger("xia2.Modules.Indexer.IndexerSelectImages")
 
 
 def index_select_images_lone(phi_width, images):
@@ -25,11 +28,11 @@ def index_select_images_lone(phi_width, images):
     return selected_images
 
 
-def index_select_image_wedges_user(sweep_id, phi_width, images, out_stream):
+def index_select_image_wedges_user(sweep_id, phi_width, images):
     images = [(min(images), max(images))]
     images_list = ", ".join("%d-%d" % i for i in images)
 
-    out_stream.write("Existing images for indexing %s: %s" % (sweep_id, images_list))
+    logger.info("Existing images for indexing %s: %s", sweep_id, images_list)
 
     while True:
 
@@ -43,7 +46,7 @@ def index_select_image_wedges_user(sweep_id, phi_width, images, out_stream):
                 tuple(int(t.strip()) for t in r.split("-")) for r in record.split(",")
             ]
             images_list = ", ".join("%d-%d" % i for i in images)
-            out_stream.write("New images for indexing: %s" % images_list)
+            logger.info("New images for indexing: %s", images_list)
 
             return images
 

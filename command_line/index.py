@@ -1,21 +1,21 @@
-from __future__ import absolute_import, division, print_function
-
+import logging
 import os
 import sys
 import traceback
 
 from xia2.Applications.xia2_main import check_environment, help
 import xia2.Handlers.Streams
-from xia2.Handlers.Streams import Chatter
+
+logger = logging.getLogger("xia2.command_line.index")
 
 
 def run():
     try:
         check_environment()
     except Exception as e:
-        with open("xia2.error", "w") as fh:
+        with open("xia2-error.txt", "w") as fh:
             traceback.print_exc(file=fh)
-        Chatter.write('Status: error "%s"' % str(e))
+        logger.info('Status: error "%s"', str(e))
 
     if len(sys.argv) < 2 or "-help" in sys.argv:
         help()
@@ -28,12 +28,12 @@ def run():
         from xia2.command_line.xia2_main import xia2_main
 
         xia2_main(stop_after="index")
-        Chatter.write("Status: normal termination")
+        logger.info("Status: normal termination")
 
     except Exception as e:
-        with open(os.path.join(wd, "xia2.error"), "w") as fh:
+        with open(os.path.join(wd, "xia2-error.txt"), "w") as fh:
             traceback.print_exc(file=fh)
-        Chatter.write('Status: error "%s"' % str(e))
+        logger.error('Status: error "%s"', str(e))
 
 
 if __name__ == "__main__":

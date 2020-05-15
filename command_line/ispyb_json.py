@@ -1,17 +1,14 @@
-from __future__ import absolute_import, division, print_function
-
 import json
 import os
 import sys
 
 import xia2.Handlers.Streams
 import xia2.Interfaces.ISPyB
+from xia2.Interfaces.ISPyB.ISPyBXmlHandler import ISPyBXmlHandler
 from xia2.Schema.XProject import XProject
 
 
 def ispyb_object():
-    from xia2.Interfaces.ISPyB.ISPyBXmlHandler import ISPyBXmlHandler
-
     assert os.path.exists("xia2.json")
     assert os.path.exists("xia2.txt")
     command_line = ""
@@ -22,8 +19,9 @@ def ispyb_object():
     crystals = xinfo.get_crystals()
     assert len(crystals) == 1
     crystal = next(iter(crystals.values()))
-    ISPyBXmlHandler.add_xcrystal(crystal)
-    return ISPyBXmlHandler.json_object(command_line=command_line)
+    ispyb_hdl = ISPyBXmlHandler(xinfo)
+    ispyb_hdl.add_xcrystal(crystal)
+    return ispyb_hdl.json_object(command_line=command_line)
 
 
 def zocalo_object():

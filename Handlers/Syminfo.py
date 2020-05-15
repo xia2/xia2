@@ -1,6 +1,5 @@
 # A collection of functions relating to spacegroup symmetry information
 
-from __future__ import absolute_import, division, print_function
 
 import re
 

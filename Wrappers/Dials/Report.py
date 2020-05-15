@@ -1,12 +1,12 @@
-#!/usr/bin/env python
+import logging
 
-from __future__ import absolute_import, division, print_function
+from xia2.Driver.DriverFactory import DriverFactory
+
+logger = logging.getLogger("xia2.Wrappers.Dials.Report")
 
 
 def Report(DriverType=None):
     """A factory for ReportWrapper classes."""
-
-    from xia2.Driver.DriverFactory import DriverFactory
 
     DriverInstance = DriverFactory.Driver(DriverType)
 
@@ -30,9 +30,7 @@ def Report(DriverType=None):
             self._html_filename = html_filename
 
         def run(self, wait_for_completion=False):
-            from xia2.Handlers.Streams import Debug
-
-            Debug.write("Running dials.report")
+            logger.debug("Running dials.report")
 
             self.clear_command_line()
             assert (

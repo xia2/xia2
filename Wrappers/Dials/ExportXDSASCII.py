@@ -1,12 +1,12 @@
-#!/usr/bin/env python
+import logging
 
-from __future__ import absolute_import, division, print_function
+from xia2.Driver.DriverFactory import DriverFactory
+
+logger = logging.getLogger("xia2.Wrappers.Dials.ExportXDSASCII")
 
 
 def ExportXDSASCII(DriverType=None):
     """A factory for ExportXDSASCIISWrapper classes."""
-
-    from xia2.Driver.DriverFactory import DriverFactory
 
     DriverInstance = DriverFactory.Driver(DriverType)
 
@@ -32,9 +32,7 @@ def ExportXDSASCII(DriverType=None):
             return self._hkl_filename
 
         def run(self):
-            from xia2.Handlers.Streams import Debug
-
-            Debug.write("Running dials.export")
+            logger.debug("Running dials.export")
 
             assert self._experiments_filename is not None
             assert self._reflections_filename is not None

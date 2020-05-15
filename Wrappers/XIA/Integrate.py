@@ -1,6 +1,8 @@
-from __future__ import absolute_import, division, print_function
+import logging
 
 from xia2.Driver.DriverFactory import DriverFactory
+
+logger = logging.getLogger("xia2.Wrappers.XIA.Integrate")
 
 
 def Integrate(DriverType=None):
@@ -17,7 +19,6 @@ def Integrate(DriverType=None):
             self._njob = None
             self._mp_mode = None
             self._phil_file = None
-            return
 
         def add_command_line_args(self, args):
             self._argv.extend(args)
@@ -35,9 +36,7 @@ def Integrate(DriverType=None):
             self._phil_file = phil_file
 
         def run(self):
-            from xia2.Handlers.Streams import Debug
-
-            Debug.write("Running xia2.integrate")
+            logger.debug("Running xia2.integrate")
 
             self.clear_command_line()
 
@@ -64,7 +63,5 @@ def Integrate(DriverType=None):
             for line in self.get_all_output():
                 if "Status: error" in line:
                     raise RuntimeError(line.split("error")[-1].strip())
-
-            return
 
     return IntegrateWrapper()

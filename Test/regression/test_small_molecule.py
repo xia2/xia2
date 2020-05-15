@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 import procrunner
 import xia2.Test.regression
 
@@ -48,10 +46,7 @@ def test_dials(regression_test, dials_data, tmpdir, ccp4):
         result,
         tmpdir,
         ccp4,
-        expected_data_files=[
-            "AUTOMATIC_DEFAULT_scaled.mtz",
-            "AUTOMATIC_DEFAULT_scaled_unmerged.mtz",
-        ],
+        expected_data_files=expected_data_files,
     )
     assert success, issues
 

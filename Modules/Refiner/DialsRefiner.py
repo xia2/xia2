@@ -1,9 +1,7 @@
-from __future__ import absolute_import, division, print_function
-
 import os
 
 from dials.array_family import flex
-
+from dxtbx.serialize import load
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.lib.bits import auto_logfiler
@@ -46,6 +44,8 @@ class DialsRefiner(Refiner):
         if PhilIndex.params.dials.fix_geometry:
             refine.set_detector_fix("all")
             refine.set_beam_fix("all")
+        elif PhilIndex.params.dials.fix_distance:
+            refine.set_detector_fix("distance")
         refine.set_close_to_spindle_cutoff(
             PhilIndex.params.dials.close_to_spindle_cutoff
         )
@@ -106,8 +106,6 @@ class DialsRefiner(Refiner):
             assert (
                 len(experiments.crystals()) == 1
             )  # currently only handle one lattice/sweep
-
-            from dxtbx.serialize import load
 
             scan_static = PhilIndex.params.dials.refine.scan_static
 

@@ -1,12 +1,12 @@
-#!/usr/bin/env python
+import logging
 
-from __future__ import absolute_import, division, print_function
+from xia2.Driver.DriverFactory import DriverFactory
+
+logger = logging.getLogger("xia2.Wrappers.Dials.ExportXDS")
 
 
 def ExportXDS(DriverType=None):
     """A factory for ExportXDSWrapper classes."""
-
-    from xia2.Driver.DriverFactory import DriverFactory
 
     DriverInstance = DriverFactory.Driver(DriverType)
 
@@ -22,9 +22,7 @@ def ExportXDS(DriverType=None):
             self._experiments_filename = experiments_filename
 
         def run(self):
-            from xia2.Handlers.Streams import Debug
-
-            Debug.write("Running dials.export")
+            logger.debug("Running dials.export")
 
             self.clear_command_line()
             self.add_command_line(self._experiments_filename)

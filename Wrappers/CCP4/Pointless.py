@@ -1,5 +1,4 @@
-from __future__ import absolute_import, division, print_function
-
+import logging
 import math
 import os
 import xml.dom.minidom
@@ -7,7 +6,6 @@ import xml.dom.minidom
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Debug
 
 # this was rather complicated - now simpler!
 from xia2.lib.SymmetryLib import (
@@ -15,6 +13,8 @@ from xia2.lib.SymmetryLib import (
     lauegroup_to_lattice,
     spacegroup_name_xHM_to_old,
 )
+
+logger = logging.getLogger("xia2.Wrappers.CCP4.Pointless")
 
 
 def mend_pointless_xml(xml_file):
@@ -179,7 +179,7 @@ def Pointless(DriverType=None):
             self.input("xdsin %s" % self._xdsin)
 
             if self._scale_factor:
-                Debug.write("Scaling intensities by factor %e" % self._scale_factor)
+                logger.debug("Scaling intensities by factor %e" % self._scale_factor)
 
                 self.input("multiply %e" % self._scale_factor)
 
@@ -202,7 +202,7 @@ def Pointless(DriverType=None):
                 )
 
             else:
-                Debug.write("Pointless using XDS input file %s" % self._xdsin)
+                logger.debug("Pointless using XDS input file %s" % self._xdsin)
 
                 self.set_task(
                     "Computing the correct pointgroup for %s" % self.get_xdsin()
@@ -390,7 +390,7 @@ def Pointless(DriverType=None):
                 try:
                     best = dom.getElementsByTagName("IndexScores")[0]
                 except IndexError:
-                    Debug.write("Reindex not found in xml output")
+                    logger.debug("Reindex not found in xml output")
 
                     # check for this legend then
                     found = False
@@ -417,8 +417,6 @@ def Pointless(DriverType=None):
                             .childNodes[0]
                             .data.strip()
                         )
-                        # Chatter.write('HKLREF pointgroup is %s' % \
-                        # hklref_pointgroup)
 
                 if hklref_pointgroup == "":
                     raise RuntimeError("error finding HKLREF pointgroup")
@@ -495,7 +493,7 @@ def Pointless(DriverType=None):
                 )
 
             else:
-                Debug.write("Pointless using XDS input file %s" % self._xdsin)
+                logger.debug("Pointless using XDS input file %s" % self._xdsin)
                 self.set_task(
                     "Computing the correct spacegroup for %s" % self.get_xdsin()
                 )

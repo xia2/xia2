@@ -17,7 +17,6 @@
 #
 # should also allow for a HKLREF.
 
-from __future__ import absolute_import, division, print_function
 
 import math
 import os

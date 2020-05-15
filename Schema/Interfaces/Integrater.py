@@ -28,10 +28,10 @@
 #     e.g. XDS or Mosflm - will not necessarily select the best one.
 #     This is left to the implementation to sort out.
 
-from __future__ import absolute_import, division, print_function
 
 import inspect
 import json
+import logging
 import math
 import os
 
@@ -41,11 +41,14 @@ import xia2.Schema.Interfaces.Refiner
 # symmetry operator management functionality
 from xia2.Experts.SymmetryExpert import compose_symops, symop_to_mat
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter, Debug, Journal
+from xia2.Handlers.Streams import banner
 from xia2.Schema.Exceptions.BadLatticeError import BadLatticeError
 
 # interfaces that this inherits from ...
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
+from dxtbx.serialize.load import _decode_dict
+
+logger = logging.getLogger("xia2.Schema.Interfaces.Integrater")
 
 
 class Integrater(FrameProcessor):
@@ -101,10 +104,8 @@ class Integrater(FrameProcessor):
         # the output reflections
         self._intgr_hklout_raw = None
         self._intgr_hklout = None
-        self._output_format = (
-            "hkl"  #'hkl' or 'pickle', if pickle then self._intgr_hklout
-        )
-        # returns a refl table.
+        # 'hkl' or 'pickle', if pickle then self._intgr_hklout returns a refl table.
+        self._output_format = "hkl"
 
         # a place to store the project, crystal, wavelength, sweep information
         # to interface with the scaling...
@@ -203,8 +204,6 @@ class Integrater(FrameProcessor):
 
     @classmethod
     def from_json(cls, filename=None, string=None):
-        from dxtbx.serialize.load import _decode_dict
-
         assert [filename, string].count(None) == 1
         if filename is not None:
             with open(filename, "rb") as f:
@@ -303,7 +302,7 @@ class Integrater(FrameProcessor):
             not self.get_integrater_refiner().get_refiner_done()
             and self._intgr_prepare_done
         ):
-            Debug.write("Resetting integrater as refiner updated.")
+            logger.debug("Resetting integrater as refiner updated.")
             self._integrater_reset()
 
         return self._intgr_prepare_done
@@ -311,7 +310,7 @@ class Integrater(FrameProcessor):
     def get_integrater_done(self):
 
         if not self.get_integrater_prepare_done():
-            Debug.write("Resetting integrater done as prepare not done")
+            logger.debug("Resetting integrater done as prepare not done")
             self.set_integrater_done(False)
 
         return self._intgr_done
@@ -319,7 +318,7 @@ class Integrater(FrameProcessor):
     def get_integrater_finish_done(self):
 
         if not self.get_integrater_done():
-            Debug.write("Resetting integrater finish done as integrate not done")
+            logger.debug("Resetting integrater finish done as integrate not done")
             self.set_integrater_finish_done(False)
 
         return self._intgr_finish_done
@@ -384,7 +383,7 @@ class Integrater(FrameProcessor):
         if epoch > 0 and self._intgr_epoch == 0:
             self._intgr_epoch = epoch
 
-        Debug.write("Sweep epoch: %d" % self._intgr_epoch)
+        logger.debug("Sweep epoch: %d" % self._intgr_epoch)
 
         self.set_integrater_done(False)
 
@@ -509,7 +508,7 @@ class Integrater(FrameProcessor):
             while not self.get_integrater_done():
                 while not self.get_integrater_prepare_done():
 
-                    Debug.write("Preparing to do some integration...")
+                    logger.debug("Preparing to do some integration...")
                     self.set_integrater_prepare_done(True)
 
                     # if this raises an exception, perhaps the autoindexing
@@ -521,10 +520,7 @@ class Integrater(FrameProcessor):
                         self._integrate_prepare()
 
                     except BadLatticeError as e:
-
-                        Journal.banner("eliminated this lattice", size=80)
-
-                        Chatter.write("Rejecting bad lattice %s" % str(e))
+                        logger.info("Rejecting bad lattice %s", str(e))
                         self._intgr_refiner.eliminate()
                         self._integrater_reset()
 
@@ -532,7 +528,7 @@ class Integrater(FrameProcessor):
                 # raw intensities, _integrate_finish() returns intensities
                 # which may have been adjusted or corrected. See #1698 below.
 
-                Debug.write("Doing some integration...")
+                logger.debug("Doing some integration...")
 
                 self.set_integrater_done(True)
 
@@ -540,21 +536,21 @@ class Integrater(FrameProcessor):
 
                 if self._intgr_sweep_name:
                     if PhilIndex.params.xia2.settings.show_template:
-                        Chatter.banner(
-                            "Integrating %s (%s)" % (self._intgr_sweep_name, template)
+                        logger.notice(
+                            banner(
+                                "Integrating %s (%s)"
+                                % (self._intgr_sweep_name, template)
+                            )
                         )
                     else:
-                        Chatter.banner("Integrating %s" % (self._intgr_sweep_name))
+                        logger.notice(banner("Integrating %s" % self._intgr_sweep_name))
                 try:
 
                     # 1698
                     self._intgr_hklout_raw = self._integrate()
 
                 except BadLatticeError as e:
-                    Chatter.write("Rejecting bad lattice %s" % str(e))
-
-                    Journal.banner("eliminated this lattice", size=80)
-
+                    logger.info("Rejecting bad lattice %s", str(e))
                     self._intgr_refiner.eliminate()
                     self._integrater_reset()
 
@@ -565,13 +561,13 @@ class Integrater(FrameProcessor):
                 self._intgr_hklout = self._integrate_finish()
 
             except BadLatticeError as e:
-                Chatter.write("Bad Lattice Error: %s" % str(e))
+                logger.info("Bad Lattice Error: %s", str(e))
                 self._intgr_refiner.eliminate()
                 self._integrater_reset()
         return self._intgr_hklout
 
     def set_output_format(self, output_format="hkl"):
-        Debug.write("setting integrator output format to %s" % output_format)
+        logger.debug("setting integrator output format to %s" % output_format)
         assert output_format in ["hkl", "pickle"]
         self._output_format = output_format
 
@@ -616,7 +612,7 @@ class Integrater(FrameProcessor):
         # indexer things is currently correct. Also - should this
         # really just refer to a point group??
 
-        Debug.write("Set spacegroup as %d" % spacegroup_number)
+        logger.debug("Set spacegroup as %d" % spacegroup_number)
 
         # certainly should wipe the reindexing operation! erp! only
         # if the spacegroup number is DIFFERENT
@@ -656,7 +652,7 @@ class Integrater(FrameProcessor):
         self.set_integrater_finish_done(False)
 
         if reason:
-            Debug.write(
+            logger.debug(
                 "Reindexing to %s (compose=%s) because %s"
                 % (reindex_operator, compose, reason)
             )
@@ -670,7 +666,7 @@ class Integrater(FrameProcessor):
                 reindex_operator, old_operator
             )
 
-            Debug.write(
+            logger.debug(
                 "Composing %s and %s -> %s"
                 % (old_operator, reindex_operator, self._intgr_reindex_operator)
             )

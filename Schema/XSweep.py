@@ -50,26 +50,27 @@
 # down the tree, to make sure that everything is kept up-to-date. This
 # should be no more difficult, just a little more complicated.
 
-from __future__ import absolute_import, division, print_function
 
 import copy
 import inspect
+import logging
 import math
 import os
 import time
 
+import pathlib
 from xia2.Experts.Filenames import expand_path
 from xia2.Experts.FindImages import (
     image2template_directory,
     template_directory_number2image,
 )
-from xia2.Handlers.Environment import Environment
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter, Debug
 
 from xia2.Modules.Indexer import IndexerFactory
 from xia2.Modules.Integrater import IntegraterFactory
 from xia2.Modules.Refiner import RefinerFactory
+
+logger = logging.getLogger("xia2.Schema.XSweep")
 
 
 class _global_integration_parameters(object):
@@ -146,7 +147,7 @@ class XSweep(object):
 
         self._name = name
         self._wavelength = wavelength
-        self._sample = sample
+        self.sample = sample
         self._directory = directory
         self._image = image
         self._reversephi = reversephi
@@ -210,7 +211,7 @@ class XSweep(object):
             if params.general.check_image_files_readable:
                 for j in range(start, end + 1):
                     if j not in self._images:
-                        Debug.write(
+                        logger.debug(
                             "image %i missing for %s"
                             % (j, self.get_imageset().get_template())
                         )
@@ -218,7 +219,7 @@ class XSweep(object):
                         continue
                     image_name = self.get_imageset().get_path(j - start)
                     if not os.access(image_name, os.R_OK):
-                        Debug.write("image %s unreadable" % image_name)
+                        logger.debug("image %s unreadable" % image_name)
                         error = True
                         continue
 
@@ -246,19 +247,12 @@ class XSweep(object):
                     math.fabs(beam_.get_wavelength() - wavelength.get_wavelength())
                     > 0.0001
                 ):
-                    # format = 'wavelength for sweep %s does not ' + \
-                    # 'match wavelength %s'
-                    # raise RuntimeError(format  % \
-                    # (name, wavelength.get_name()))
-
-                    format = (
+                    logger.info(
                         "Header wavelength for sweep %s different"
-                        + " to assigned value (%4.2f vs. %4.2f)"
-                    )
-
-                    Chatter.write(
-                        format
-                        % (name, beam_.get_wavelength(), wavelength.get_wavelength())
+                        " to assigned value (%4.2f vs. %4.2f)",
+                        name,
+                        beam_.get_wavelength(),
+                        wavelength.get_wavelength(),
                     )
 
             # also in here look at the image headers to see if we can
@@ -285,7 +279,7 @@ class XSweep(object):
 
             epochs = self._epoch_to_image
 
-            Debug.write(
+            logger.debug(
                 "Exposure epoch for sweep %s: %d %d"
                 % (self._template, min(epochs), max(epochs))
             )
@@ -328,12 +322,7 @@ class XSweep(object):
                     beam,
                 )
             except AssertionError as e:
-                Debug.write("Error setting mosflm beam centre: %s" % e)
-
-        if distance is not None:
-            from xia2.Wrappers.Mosflm.AutoindexHelpers import set_distance
-
-            set_distance(self.get_imageset().get_detector(), distance)
+                logger.debug("Error setting mosflm beam centre: %s" % e)
 
         self._beam_centre = beam
         self._distance = distance
@@ -364,7 +353,7 @@ class XSweep(object):
                 # don't serialize this since the parent xwavelength *should* contain
                 # the reference to the child xsweep
                 continue
-            elif a[0] == "_sample":
+            elif a[0] == "sample":
                 # don't serialize this since the parent xsample *should* contain
                 # the reference to the child xsweep
                 continue
@@ -590,6 +579,19 @@ class XSweep(object):
     def get_name(self):
         return self._name
 
+    def _create_path(self, *args):
+        """Create a directory in the project space and return a path object"""
+
+        if not self.get_wavelength():
+            base_path = pathlib.Path(".")
+        else:
+            base_path = self.get_wavelength().get_crystal().get_project().path
+
+        path = base_path.joinpath(*args)
+        path.mkdir(parents=True, exist_ok=True)
+        logger.debug("Set up path %s", path)
+        return path
+
     # Real "action" methods - note though that these should never be
     # run directly, only implicitly...
 
@@ -613,16 +615,14 @@ class XSweep(object):
                 wavelength_id = "default"
                 crystal_id = "default"
                 project_id = "default"
-
             else:
                 wavelength_id = self.get_wavelength().get_name()
                 crystal_id = self.get_wavelength().get_crystal().get_name()
                 project_id = (
                     self.get_wavelength().get_crystal().get_project().get_name()
                 )
-
-            working_directory = Environment.generate_directory(
-                [crystal_id, wavelength_id, self.get_name(), "index"]
+            working_path = self._create_path(
+                crystal_id, wavelength_id, self.get_name(), "index"
             )
 
             # FIXME the indexer factory should probably be able to
@@ -651,7 +651,7 @@ class XSweep(object):
                 if self._user_cell:
                     raise RuntimeError("cannot assign cell without lattice")
 
-            self._indexer.set_working_directory(working_directory)
+            self._indexer.set_working_directory(str(working_path))
 
             self._indexer.set_indexer_project_info(
                 project_id, crystal_id, wavelength_id
@@ -662,58 +662,18 @@ class XSweep(object):
         return self._indexer
 
     def _get_refiner(self):
-
         if self._refiner is None:
-            # set the working directory for this, based on the hierarchy
-            # defined herein...
-
-            # that would be CRYSTAL_ID/WAVELENGTH/SWEEP/index &c.
-
             if not self.get_wavelength():
                 wavelength_id = "default"
                 crystal_id = "default"
-
             else:
                 wavelength_id = self.get_wavelength().get_name()
                 crystal_id = self.get_wavelength().get_crystal().get_name()
-
-            working_directory = Environment.generate_directory(
-                [crystal_id, wavelength_id, self.get_name(), "refine"]
+            working_path = self._create_path(
+                crystal_id, wavelength_id, self.get_name(), "refine"
             )
-
-            # FIXME the indexer factory should probably be able to
-            # take self [this object] as input, to help with deciding
-            # the most appropriate indexer to use... this will certainly
-            # be the case for the integrater. Maintaining this link
-            # will also help the system cope with updates (which
-            # was going to be one of the big problems...)
-            # 06/SEP/06 no keep these interfaces separate - want to
-            # keep "pure" interfaces to the programs for reuse, then
-            # wrap in XStyle.
             self._refiner = RefinerFactory.RefinerForXSweep(self)
-
-            ## set the user supplied lattice if there is one
-            # if self._user_lattice:
-            # self._indexer.set_indexer_input_lattice(self._user_lattice)
-            # self._indexer.set_indexer_user_input_lattice(True)
-
-            ## and also the cell constants - but only if lattice is
-            ## assigned
-
-            # if self._user_cell:
-            # self._indexer.set_indexer_input_cell(self._user_cell)
-
-            # else:
-            # if self._user_cell:
-            # raise RuntimeError('cannot assign cell without lattice')
-
-            self._refiner.set_working_directory(working_directory)
-
-            # if self._frames_to_process:
-            # frames = self._frames_to_process
-            # self._refiner.set_frame_wedge(frames[0], frames[1])
-
-            # self._refiner.set_indexer_sweep_name(self._name)
+            self._refiner.set_working_directory(str(working_path))
 
         self._refiner.add_refiner_indexer(
             self.get_epoch(self._frames_to_process[0]), self._get_indexer()
@@ -738,16 +698,14 @@ class XSweep(object):
                 wavelength_id = "default"
                 crystal_id = "default"
                 project_id = "default"
-
             else:
                 wavelength_id = self.get_wavelength().get_name()
                 crystal_id = self.get_wavelength().get_crystal().get_name()
                 project_id = (
                     self.get_wavelength().get_crystal().get_project().get_name()
                 )
-
-            working_directory = Environment.generate_directory(
-                [crystal_id, wavelength_id, self.get_name(), "integrate"]
+            working_path = self._create_path(
+                crystal_id, wavelength_id, self.get_name(), "integrate"
             )
 
             self._integrater = IntegraterFactory.IntegraterForXSweep(self)
@@ -757,7 +715,7 @@ class XSweep(object):
 
             self._integrater.set_integrater_refiner(self._get_refiner())
 
-            Debug.write(
+            logger.debug(
                 "Integrater / refiner / indexer for sweep %s: %s/%s/%s"
                 % (
                     self._name,
@@ -772,7 +730,7 @@ class XSweep(object):
             # rings we want removing, #1317.
 
             if PhilIndex.params.xia2.settings.integration.exclude_ice_regions:
-                Debug.write("Ice ring region exclusion ON")
+                logger.debug("Ice ring region exclusion ON")
                 self._integrater.set_integrater_ice(True)
 
             # or if we were told about ice or specific excluded resolution
@@ -807,7 +765,7 @@ class XSweep(object):
             # we can set...
 
             if global_integration_parameters.get_parameters(crystal_id):
-                Debug.write("Using integration parameters for crystal %s" % crystal_id)
+                logger.debug("Using integration parameters for crystal %s" % crystal_id)
                 self._integrater.set_integrater_parameters(
                     global_integration_parameters.get_parameters(crystal_id)
                 )
@@ -825,7 +783,7 @@ class XSweep(object):
                     self.get_epoch(self._frames_to_process[0])
                 )
 
-            self._integrater.set_working_directory(working_directory)
+            self._integrater.set_working_directory(str(working_path))
 
         return self._integrater
 
@@ -853,9 +811,6 @@ class XSweep(object):
     def get_indexer_beam_centre(self):
         return self._get_indexer().get_indexer_beam_centre()
 
-    def get_xsample(self):
-        return self._sample
-
     def get_wavelength(self):
         return self._wavelength
 
@@ -879,12 +834,13 @@ class XSweep(object):
                 global_integration_parameters.set_parameters(
                     crystal_id, self._integrater.get_integrater_export_parameters()
                 )
-                Debug.write("Stored integration parameters for crystal %s" % crystal_id)
+                logger.debug(
+                    "Stored integration parameters for crystal %s" % crystal_id
+                )
 
         except Exception:
-            # Chatter.write('Error storing parameters for crystal %s' % \
-            # crystal_id)
-            # Chatter.write('%s' % str(e))
+            # logger.error('Error storing parameters for crystal %s', crystal_id)
+            # logger.error(str(e))
             pass
 
         return reflections
@@ -919,10 +875,10 @@ class XSweep(object):
         if not detector_id and self.get_imageset():
             detector_id = self.get_imageset().get_detector()[0].get_identifier()
         if detector_id:
-            Debug.write("Detector identified as %s" % detector_id)
+            logger.debug("Detector identified as %s" % detector_id)
             return detector_id
         else:
-            Debug.write("Detector could not be identified")
+            logger.debug("Detector could not be identified")
             return None
 
     def _add_detector_identification_to_cif(self):
@@ -931,7 +887,7 @@ class XSweep(object):
             import dxtbx.data.beamline_defs as ddb
 
             bl_info = ddb.get_beamline_definition(detector_id)
-            Debug.write(
+            logger.debug(
                 "Beamline information available for %s: %s"
                 % (detector_id, str(bl_info))
             )

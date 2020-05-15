@@ -1,10 +1,12 @@
-from __future__ import absolute_import, division, print_function
+import logging
+
+from xia2.Driver.DriverFactory import DriverFactory
+
+logger = logging.getLogger("xia2.Wrappers.Dials.SplitExperiments")
 
 
 def SplitExperiments(DriverType=None):
     """A factory for CombineExperimentsWrapper classes."""
-
-    from xia2.Driver.DriverFactory import DriverFactory
 
     DriverInstance = DriverFactory.Driver(DriverType)
 
@@ -36,9 +38,7 @@ def SplitExperiments(DriverType=None):
             self._by_wavelength = boolean
 
         def run(self):
-            from xia2.Handlers.Streams import Debug
-
-            Debug.write("Running dials.split_experiments")
+            logger.debug("Running dials.split_experiments")
 
             self.clear_command_line()
             assert len(self._experiments_filename) == 1

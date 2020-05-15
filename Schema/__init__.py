@@ -1,13 +1,15 @@
-from __future__ import absolute_import, division, print_function
-
 import collections
 import glob
 import itertools
+import logging
 import os
 
 from scitbx.array_family import flex
 
 from xia2.Handlers.Phil import PhilIndex
+
+
+logger = logging.getLogger("xia2.Schema")
 
 
 class _ImagesetCache(dict):
@@ -72,8 +74,10 @@ def load_imagesets(
         )
         scan_tolerance = params.input.tolerance.scan.oscillation
 
+        # If diamond anvil cell data, always use dynamic shadowing
+        high_pressure = PhilIndex.params.dials.high_pressure.correction
         format_kwargs = {
-            "dynamic_shadowing": params.input.format.dynamic_shadowing,
+            "dynamic_shadowing": params.input.format.dynamic_shadowing or high_pressure,
             "multi_panel": params.input.format.multi_panel,
         }
 
@@ -267,11 +271,10 @@ def load_reference_geometries(geometry_file_list):
 
     for combination in itertools.combinations(reference_components, 2):
         if compare_geometries(combination[0]["detector"], combination[1]["detector"]):
-            from xia2.Handlers.Streams import Chatter
-
-            Chatter.write(
+            logger.error(
                 "Reference geometries given in %s and %s are too similar"
-                % (combination[0]["file"], combination[1]["file"])
+                % combination[0]["file"],
+                combination[1]["file"],
             )
             raise Exception("Reference geometries too similar")
     return reference_components

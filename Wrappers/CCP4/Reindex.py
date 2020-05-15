@@ -1,12 +1,12 @@
-from __future__ import absolute_import, division, print_function
-
+import logging
 import os
 
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Debug
 from xia2.Handlers.Syminfo import Syminfo
+
+logger = logging.getLogger("xia2.Wrappers.CCP4.Reindex")
 
 
 def Reindex(DriverType=None):
@@ -119,7 +119,7 @@ def Reindex(DriverType=None):
             if self._operator:
                 self._operator = self._operator.replace("[", "").replace("]", "")
 
-            Debug.write("Reindex... %s %s" % (self._spacegroup, self._operator))
+            logger.debug("Reindex... %s %s", self._spacegroup, self._operator)
 
             self.start()
 

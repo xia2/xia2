@@ -1,11 +1,9 @@
-# coding: utf-8
-from __future__ import absolute_import, division, print_function
-
 import copy
 import logging
 import math
 import os
 import py
+import six
 from collections import OrderedDict
 
 from libtbx import Auto
@@ -18,6 +16,7 @@ from dxtbx.model import ExperimentList
 
 from dials.array_family import flex
 from dials.command_line.unit_cell_histogram import plot_uc_histograms
+from dials.util import tabulate
 
 from scitbx.math import five_number_summary
 
@@ -29,6 +28,7 @@ from xia2.Wrappers.Dials.Refine import Refine
 from xia2.Wrappers.Dials.Scale import DialsScale
 from xia2.Wrappers.Dials.Symmetry import DialsSymmetry
 from xia2.Wrappers.Dials.TwoThetaRefine import TwoThetaRefine
+from xia2.Modules.Scaler.DialsScaler import scaling_model_auto_rules
 
 
 logger = logging.getLogger(__name__)
@@ -62,18 +62,16 @@ scaling
       .expert_level = 2
       .short_caption = "Number of spherical harmonics for absorption correction"
   }
-  dials {
-    model = physical array KB auto
-      .type = choice
-    outlier_rejection = simple *standard
-      .type = choice
-    Isigma_range = 2.0,100000
-      .type = floats(size=2)
-    min_partiality = None
-      .type = float(value_min=0, value_max=1)
-    partiality_cutoff = None
-      .type = float(value_min=0, value_max=1)
-  }
+  model = physical array KB auto
+    .type = choice
+  outlier_rejection = simple *standard
+    .type = choice
+  Isigma_range = 2.0,100000
+    .type = floats(size=2)
+  min_partiality = None
+    .type = float(value_min=0, value_max=1)
+  partiality_cutoff = None
+    .type = float(value_min=0, value_max=1)
 }
 
 symmetry {
@@ -106,6 +104,22 @@ resolution
     .help = "High resolution cutoff."
     .short_caption = "High resolution cutoff"
   include scope dials.util.resolutionizer.phil_str
+}
+
+filtering {
+  method = None deltacchalf
+    .type = choice
+    .help = "Choice of whether to do any filtering cycles, default None."
+  deltacchalf {
+    max_cycles = 6
+      .type = int(value_min=1)
+    min_completeness = None
+      .type = float(value_min=0, value_max=100)
+      .help = "Desired minimum completeness, as a percentage (0 - 100)."
+    stdcutoff = 4.0
+      .type = float
+      .help = "Datasets with a delta cc half below (mean - stdcutoff*std) are removed"
+  }
 }
 
 multi_crystal_analysis {
@@ -159,6 +173,7 @@ resolution {
   isigma = None
   misigma = None
 }
+symmetry.cosym.best_monoclinic_beta = False
 """
     )
 )
@@ -383,17 +398,19 @@ class MultiCrystalScale(object):
         self._comparison_graphs = OrderedDict()
 
         self._scaled = Scale(self._data_manager, self._params)
-        self._record_individual_report(self._scaled.report(), "All data")
 
         self.decide_space_group()
 
-        self._data_manager.export_experiments("multiplex.expt")
-        self._data_manager.export_reflections("multiplex.refl")
+        self._record_individual_report(
+            self._data_manager, self._scaled.report(), "All data"
+        )
 
-        scaled_unmerged_mtz = py.path.local(self._scaled.scaled_unmerged_mtz)
-        scaled_unmerged_mtz.copy(py.path.local("scaled_unmerged.mtz"))
-        scaled_mtz = py.path.local(self._scaled.scaled_mtz)
-        scaled_mtz.copy(py.path.local("scaled.mtz"))
+        py.path.local(self._scaled.scaled_unmerged_mtz).copy(
+            py.path.local("scaled_unmerged.mtz")
+        )
+        py.path.local(self._scaled.scaled_mtz).copy(py.path.local("scaled.mtz"))
+        self._data_manager.export_experiments("scaled.expt")
+        self._data_manager.export_reflections("scaled.refl")
 
         self._mca = self.multi_crystal_analysis()
         self.cluster_analysis()
@@ -444,14 +461,37 @@ class MultiCrystalScale(object):
                 ]
                 data_manager.select(cluster_identifiers)
                 scaled = Scale(data_manager, self._params)
+                py.path.local(scaled.scaled_unmerged_mtz).copy(
+                    py.path.local("scaled_unmerged.mtz")
+                )
+                py.path.local(scaled.scaled_mtz).copy(py.path.local("scaled.mtz"))
                 self._record_individual_report(
-                    scaled.report(), cluster_dir.replace("_", " ")
+                    data_manager, scaled.report(), cluster_dir.replace("_", " ")
                 )
                 os.chdir(cwd)
 
+        if self._params.filtering.method:
+            # Final round of scaling, this time filtering out any bad datasets
+            self._params.unit_cell.refine = []
+            self._params.resolution.d_min = self._scaled.d_min
+            scaled = Scale(self._data_manager, self._params, filtering=True)
+            self.scale_and_filter_results = scaled.scale_and_filter_results
+            logger.info("Scale and filtering:\n%s", self.scale_and_filter_results)
+            self._record_individual_report(
+                self._data_manager, self._scaled.report(), "Filtered"
+            )
+            py.path.local(self._scaled.scaled_unmerged_mtz).copy(
+                py.path.local("filtered_unmerged.mtz")
+            )
+            py.path.local(self._scaled.scaled_mtz).copy(py.path.local("filtered.mtz"))
+            self._data_manager.export_experiments("filtered.expt")
+            self._data_manager.export_reflections("filtered.refl")
+        else:
+            self.scale_and_filter_results = None
+
         self.report()
 
-    def _record_individual_report(self, report, cluster_name):
+    def _record_individual_report(self, data_manager, report, cluster_name):
         d = self._report_as_dict(report)
 
         self._individual_report_dicts[cluster_name] = self._individual_report_dict(
@@ -505,6 +545,7 @@ class MultiCrystalScale(object):
             "i_over_sig_i",
             "completeness",
             "multiplicity_vs_resolution",
+            "r_pim",
         ):
             self._comparison_graphs.setdefault(
                 graph, {"layout": d[graph]["layout"], "data": []}
@@ -513,6 +554,33 @@ class MultiCrystalScale(object):
             data["name"] = cluster_name
             data.pop("line", None)  # remove default color override
             self._comparison_graphs[graph]["data"].append(data)
+
+        def remove_html_tags(table):
+            return [
+                [
+                    s.replace("<strong>", "")
+                    .replace("</strong>", "")
+                    .replace("<sub>", "")
+                    .replace("</sub>", "")
+                    if isinstance(s, six.string_types)
+                    else s
+                    for s in row
+                ]
+                for row in table
+            ]
+
+        logger.info(
+            "\nOverall merging statistics:\n%s",
+            tabulate(
+                remove_html_tags(d["overall_statistics_table"]), headers="firstrow"
+            ),
+        )
+        logger.info(
+            "\nResolution shells:\n%s",
+            tabulate(
+                remove_html_tags(d["merging_statistics_table"]), headers="firstrow"
+            ),
+        )
 
     @staticmethod
     def _report_as_dict(report):
@@ -532,6 +600,15 @@ class MultiCrystalScale(object):
         d.update(report.intensity_stats_plots())
         d.update(report.pychef_plots())
 
+        xtriage_success, xtriage_warnings, xtriage_danger = report.xtriage_report()
+        d["xtriage"] = {
+            "success": xtriage_success,
+            "warnings": xtriage_warnings,
+            "danger": xtriage_danger,
+        }
+        d["merging_stats"] = report.merging_stats.as_dict()
+        d["merging_stats_anom"] = report.merging_stats.as_dict()
+
         max_points = 500
         for g in (
             "scale_rmerge_vs_batch",
@@ -541,13 +618,14 @@ class MultiCrystalScale(object):
             "rd_vs_batch_difference",
         ):
             for i, data in enumerate(d[g]["data"]):
-                x = data["x"]
-                n = len(x)
+                n = len(data["x"])
                 if n > max_points:
                     step = n // max_points
                     sel = (flex.int_range(n) % step) == 0
                     data["x"] = list(flex.int(data["x"]).select(sel))
                     data["y"] = list(flex.double(data["y"]).select(sel))
+                    if "text" in data:
+                        data["text"] = list(flex.std_string(data["text"]).select(sel))
 
         d.update(report.multiplicity_plots())
         return d
@@ -558,6 +636,7 @@ class MultiCrystalScale(object):
         d = {
             "merging_statistics_table": report_d["merging_statistics_table"],
             "overall_statistics_table": report_d["overall_statistics_table"],
+            "image_range_table": report_d["image_range_table"],
         }
 
         resolution_graphs = OrderedDict(
@@ -588,7 +667,7 @@ class MultiCrystalScale(object):
         misc_graphs = OrderedDict(
             (k + "_" + cluster_name, report_d[k])
             for k in ("cumulative_intensity_distribution", "l_test", "multiplicities")
-            if k in d
+            if k in report_d
         )
 
         for hkl in "hkl":
@@ -599,6 +678,9 @@ class MultiCrystalScale(object):
         d["resolution_graphs"] = resolution_graphs
         d["batch_graphs"] = batch_graphs
         d["misc_graphs"] = misc_graphs
+        d["xtriage"] = report_d["xtriage"]
+        d["merging_stats"] = report_d["merging_stats"]
+        d["merging_stats_anom"] = report_d["merging_stats_anom"]
         return d
 
     def unit_cell_clustering(self, plot_name=None):
@@ -631,7 +713,11 @@ class MultiCrystalScale(object):
                 "Selecting subset of data sets for subsequent analysis: %s"
                 % str(largest_cluster_lattice_ids)
             )
-            self._data_manager.select(largest_cluster_lattice_ids)
+            cluster_identifiers = [
+                self._data_manager.ids_to_identifiers_map[l]
+                for l in largest_cluster_lattice_ids
+            ]
+            self._data_manager.select(cluster_identifiers)
         else:
             logger.info("Using all data sets for subsequent analysis")
 
@@ -674,6 +760,7 @@ class MultiCrystalScale(object):
             cosym.set_space_group(self._params.symmetry.space_group.group())
         if self._params.symmetry.laue_group is not None:
             cosym.set_space_group(self._params.symmetry.laue_group.group())
+        cosym.set_best_monoclinic_beta(self._params.symmetry.cosym.best_monoclinic_beta)
         cosym.run()
         self._cosym_analysis = cosym.get_cosym_analysis()
         self._experiments_filename = cosym.get_reindexed_experiments()
@@ -766,7 +853,13 @@ class MultiCrystalScale(object):
                 data["r"][i] /= max_r
 
         self._mca.report(
-            self._individual_report_dicts, self._comparison_graphs, self._cosym_analysis
+            self._individual_report_dicts,
+            self._comparison_graphs,
+            self._cosym_analysis,
+            image_range_table=self._individual_report_dicts["All data"][
+                "image_range_table"
+            ],
+            scale_and_filter_results=self.scale_and_filter_results,
         )
 
     def cluster_analysis(self):
@@ -776,15 +869,15 @@ class MultiCrystalScale(object):
 
 
 class Scale(object):
-    def __init__(self, data_manager, params):
+    def __init__(self, data_manager, params, filtering=False):
         self._data_manager = data_manager
         self._params = params
+        self._filtering = filtering
 
         self._experiments_filename = "models.expt"
         self._reflections_filename = "observations.refl"
         self._data_manager.export_experiments(self._experiments_filename)
         self._data_manager.export_reflections(self._reflections_filename)
-        self.best_unit_cell = None
 
         if "two_theta" in self._params.unit_cell.refine:
             self.two_theta_refine()
@@ -793,13 +886,13 @@ class Scale(object):
 
         if self._params.resolution.d_min is None:
             self.scale()
-            d_min, reason = self.estimate_resolution_limit()
-            logger.info("Resolution limit: %.2f (%s)" % (d_min, reason))
+            self.d_min, reason = self.estimate_resolution_limit()
+            logger.info("Resolution limit: %.2f (%s)" % (self.d_min, reason))
         else:
-            d_min = self._params.resolution.d_min
+            self.d_min = self._params.resolution.d_min
         d_max = self._params.resolution.d_max
 
-        self.scale(d_min=d_min, d_max=d_max)
+        self.scale(d_min=self.d_min, d_max=d_max)
 
     def refine(self):
         # refine in correct bravais setting
@@ -815,10 +908,13 @@ class Scale(object):
 
     def two_theta_refine(self):
         # two-theta refinement to get best estimate of unit cell
-        self.best_unit_cell, self.best_unit_cell_esd = self._dials_two_theta_refine(
+        self._experiments_filename = self._dials_two_theta_refine(
             self._experiments_filename,
             self._reflections_filename,
             combine_crystal_models=self._params.two_theta_refine.combine_crystal_models,
+        )
+        self._data_manager.experiments = load.experiment_list(
+            self._experiments_filename, check_format=False
         )
 
     @property
@@ -855,9 +951,7 @@ class Scale(object):
         tt_refiner.set_reflection_files([reflections_filename])
         tt_refiner.set_combine_crystal_models(combine_crystal_models)
         tt_refiner.run()
-        unit_cell = tt_refiner.get_unit_cell()
-        unit_cell_esd = tt_refiner.get_unit_cell_esd()
-        return unit_cell, unit_cell_esd
+        return tt_refiner.get_output_experiments()
 
     def scale(self, d_min=None, d_max=None):
         logger.debug("Scaling with dials.scale")
@@ -876,33 +970,52 @@ class Scale(object):
         scaler.set_scaled_unmerged_mtz(unmerged_mtz)
         scaler.set_scaled_mtz(merged_mtz)
 
+        # Set default scaling model
+        if self._params.scaling.model in (None, "auto", Auto):
+            self._params.scaling.model = "physical"
+        scaler.set_model(self._params.scaling.model)
+
         lmax = self._params.scaling.secondary.lmax
         if lmax:
             scaler.set_absorption_correction(True)
             scaler.set_lmax(lmax)
         else:
             scaler.set_absorption_correction(False)
+
+        exp = self._data_manager.experiments[0]
+        scale_interval, decay_interval = scaling_model_auto_rules(exp)
         if self._params.scaling.rotation.spacing is not None:
             scaler.set_spacing(self._params.scaling.rotation.spacing)
+        else:
+            scaler.set_spacing(scale_interval)
         if self._params.scaling.brotation.spacing is not None:
             scaler.set_bfactor(brotation=self._params.scaling.brotation.spacing)
+        else:
+            scaler.set_bfactor(brotation=decay_interval)
+
         scaler.set_resolution(d_min=d_min, d_max=d_max)
-        if self._params.scaling.dials.Isigma_range is not None:
-            scaler.set_isigma_selection(self._params.scaling.dials.Isigma_range)
-        if self._params.scaling.dials.min_partiality is not None:
-            scaler.set_min_partiality(self._params.scaling.dials.min_partiality)
-        if self._params.scaling.dials.partiality_cutoff is not None:
-            scaler.set_partiality_cutoff(self._params.scaling.dials.partiality_cutoff)
-        if self.best_unit_cell is not None:
-            scaler.set_best_unit_cell(self.best_unit_cell)
+        if self._params.scaling.Isigma_range is not None:
+            scaler.set_isigma_selection(self._params.scaling.Isigma_range)
+        if self._params.scaling.min_partiality is not None:
+            scaler.set_min_partiality(self._params.scaling.min_partiality)
+        if self._params.scaling.partiality_cutoff is not None:
+            scaler.set_partiality_cutoff(self._params.scaling.partiality_cutoff)
 
         scaler.set_full_matrix(False)
 
-        # Set default scaling model
-        if self._params.scaling.dials.model in (None, "auto", Auto):
-            self._params.scaling.dials.model = "physical"
-        scaler.set_model(self._params.scaling.dials.model)
-        scaler.set_outlier_rejection(self._params.scaling.dials.outlier_rejection)
+        scaler.set_outlier_rejection(self._params.scaling.outlier_rejection)
+
+        if self._filtering:
+            scaler.set_filtering_method(self._params.filtering.method)
+            scaler.set_deltacchalf_max_cycles(
+                self._params.filtering.deltacchalf.max_cycles
+            )
+            scaler.set_deltacchalf_min_completeness(
+                self._params.filtering.deltacchalf.min_completeness
+            )
+            scaler.set_deltacchalf_stdcutoff(
+                self._params.filtering.deltacchalf.stdcutoff
+            )
 
         scaler.scale()
         self._scaled_mtz = scaler.get_scaled_mtz()
@@ -916,6 +1029,8 @@ class Scale(object):
             self._reflections_filename
         )
         self._params.resolution.labels = "IPR,SIGIPR"
+        if self._filtering:
+            self.scale_and_filter_results = scaler.get_scale_and_filter_results()
         return scaler
 
     def estimate_resolution_limit(self):
@@ -989,4 +1104,5 @@ class Scale(object):
     def report(self):
         from xia2.Modules.Report import Report
 
-        return Report.from_data_manager(self._data_manager)
+        report = Report.from_data_manager(self._data_manager)
+        return report

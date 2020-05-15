@@ -1,12 +1,12 @@
-#!/usr/bin/env python
+import logging
 
-from __future__ import absolute_import, division, print_function
+from xia2.Driver.DriverFactory import DriverFactory
+
+logger = logging.getLogger("xia2.Wrappers.Dials.EstimateResolutionLimit")
 
 
 def EstimateResolutionLimit(DriverType=None):
     """A factory for EstimateResolutionLimitWrapper classes."""
-
-    from xia2.Driver.DriverFactory import DriverFactory
 
     DriverInstance = DriverFactory.Driver(DriverType)
 
@@ -26,9 +26,7 @@ def EstimateResolutionLimit(DriverType=None):
             self._reflections_filename = reflections_filename
 
         def run(self):
-            from xia2.Handlers.Streams import Debug
-
-            Debug.write("Running dials.estimate_resolution_limit")
+            logger.debug("Running dials.estimate_resolution_limit")
 
             self.clear_command_line()
             self.add_command_line(self._experiments_filename)

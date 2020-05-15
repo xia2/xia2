@@ -1,16 +1,17 @@
 # A factory for Integrater implementations. At the moment this will
 # support only XDS and the null integrater implementation.
 
-from __future__ import absolute_import, division, print_function
 
+import logging
 import os
 
 from xia2.DriverExceptions.NotAvailableError import NotAvailableError
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.PipelineSelection import get_preferences
-from xia2.Handlers.Streams import Debug
 from xia2.Modules.Integrater.DialsIntegrater import DialsIntegrater
 from xia2.Modules.Integrater.XDSIntegrater import XDSIntegrater
+
+logger = logging.getLogger("xia2.Modules.Integrater.IntegraterFactory")
 
 
 def IntegraterForXSweep(xsweep, json_file=None):
@@ -28,13 +29,13 @@ def IntegraterForXSweep(xsweep, json_file=None):
 
     if json_file is not None:
         assert os.path.isfile(json_file)
-        Debug.write("Loading integrater from json: %s" % json_file)
+        logger.debug("Loading integrater from json: %s" % json_file)
         import time
 
         t0 = time.time()
         integrater = integrater.__class__.from_json(filename=json_file)
         t1 = time.time()
-        Debug.write("Loaded integrater in %.2f seconds" % (t1 - t0))
+        logger.debug("Loaded integrater in %.2f seconds" % (t1 - t0))
     else:
         integrater.setup_from_imageset(xsweep.get_imageset())
     integrater.set_integrater_sweep_name(xsweep.get_name())
@@ -53,14 +54,14 @@ def IntegraterForXSweep(xsweep, json_file=None):
 
         if d_min is not None and d_min != integrater.get_integrater_high_resolution():
 
-            Debug.write("Assigning resolution limits from XINFO input:")
-            Debug.write("d_min: %.3f" % d_min)
+            logger.debug("Assigning resolution limits from XINFO input:")
+            logger.debug("d_min: %.3f" % d_min)
             integrater.set_integrater_high_resolution(d_min, user=True)
 
         if d_max is not None and d_max != integrater.get_integrater_low_resolution():
 
-            Debug.write("Assigning resolution limits from XINFO input:")
-            Debug.write("d_max: %.3f" % d_max)
+            logger.debug("Assigning resolution limits from XINFO input:")
+            logger.debug("d_max: %.3f" % d_max)
             integrater.set_integrater_low_resolution(d_max, user=True)
 
     # check the epoch and perhaps pass this in for future reference
@@ -72,7 +73,7 @@ def IntegraterForXSweep(xsweep, json_file=None):
     # the image header...
 
     if xsweep.get_wavelength_value():
-        Debug.write(
+        logger.debug(
             "Integrater factory: Setting wavelength: %.6f"
             % xsweep.get_wavelength_value()
         )
@@ -80,7 +81,7 @@ def IntegraterForXSweep(xsweep, json_file=None):
 
     # likewise the distance...
     if xsweep.get_distance():
-        Debug.write(
+        logger.debug(
             "Integrater factory: Setting distance: %.2f" % xsweep.get_distance()
         )
         integrater.set_distance(xsweep.get_distance())
@@ -101,7 +102,7 @@ def Integrater():
     if not integrater and (not preselection or preselection == "dials"):
         try:
             integrater = DialsIntegrater()
-            Debug.write("Using Dials Integrater")
+            logger.debug("Using Dials Integrater")
             if PhilIndex.params.xia2.settings.scaler == "dials":
                 integrater.set_output_format("pickle")
         except NotAvailableError:
@@ -114,7 +115,7 @@ def Integrater():
     if not integrater and (not preselection or preselection == "xdsr"):
         try:
             integrater = XDSIntegrater()
-            Debug.write("Using XDS Integrater in new resolution mode")
+            logger.debug("Using XDS Integrater in new resolution mode")
         except NotAvailableError:
             if preselection == "xdsr":
                 raise RuntimeError(
@@ -131,16 +132,16 @@ def Integrater():
     dmax = PhilIndex.params.xia2.settings.resolution.d_max
 
     if dmin:
-        Debug.write("Adding user-assigned resolution limits:")
+        logger.debug("Adding user-assigned resolution limits:")
 
         if dmax:
 
-            Debug.write("dmin: %.3f dmax: %.2f" % (dmin, dmax))
+            logger.debug("dmin: %.3f dmax: %.2f" % (dmin, dmax))
             integrater.set_integrater_resolution(dmin, dmax, user=True)
 
         else:
 
-            Debug.write("dmin: %.3f" % dmin)
+            logger.debug("dmin: %.3f" % dmin)
             integrater.set_integrater_high_resolution(dmin, user=True)
 
     return integrater

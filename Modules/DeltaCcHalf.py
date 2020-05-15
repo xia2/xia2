@@ -1,7 +1,3 @@
-# coding: utf-8
-
-from __future__ import absolute_import, division, print_function
-
 import logging
 import math
 
@@ -195,9 +191,7 @@ class DeltaCcHalf(object):
             math.ceil(flex.max(normalised_score)) + 1,
             step=0.1,
         )
-        n, bins, patches = plt.hist(
-            normalised_score.as_numpy_array(), bins=bins, fill=False
-        )
+        plt.hist(normalised_score.as_numpy_array(), bins=bins, fill=False)
         plt.xlabel(r"$\sigma$")
         plt.ylabel("Frequency")
         plt.savefig(filename)

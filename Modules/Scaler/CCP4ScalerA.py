@@ -1,8 +1,8 @@
 # An implementation of the Scaler interface using CCP4 programs and Aimless.
 
-from __future__ import absolute_import, division, print_function
 
 import copy
+import logging
 import math
 import os
 import re
@@ -11,12 +11,8 @@ from xia2.Handlers.CIF import CIF, mmCIF
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter, Debug, Journal
 from xia2.Handlers.Syminfo import Syminfo
-from xia2.Modules.Scaler.rebatch import rebatch
-
-from xia2.lib.bits import is_mtz_file, transpose_loggraph
-from xia2.lib.bits import nifty_power_of_ten
+from xia2.lib.bits import is_mtz_file, nifty_power_of_ten, transpose_loggraph
 from xia2.lib.SymmetryLib import sort_lattices
 from xia2.Modules import MtzUtils
 from xia2.Modules.Scaler.CCP4ScalerHelpers import (
@@ -27,14 +23,22 @@ from xia2.Modules.Scaler.CCP4ScalerHelpers import (
     get_umat_bmat_lattice_symmetry_from_mtz,
 )
 from xia2.Modules.Scaler.CommonScaler import CommonScaler as Scaler
+from xia2.Modules.Scaler.rebatch import rebatch
+from xia2.Toolkit.AimlessSurface import (
+    evaluate_1degree,
+    generate_map,
+    scrape_coefficients,
+)
 from xia2.Wrappers.CCP4.CCP4Factory import CCP4Factory
+
+logger = logging.getLogger("xia2.Modules.Scaler.CCP4ScalerA")
 
 
 class CCP4ScalerA(Scaler):
     """An implementation of the Scaler interface using CCP4 programs."""
 
-    def __init__(self):
-        super(CCP4ScalerA, self).__init__()
+    def __init__(self, *args, **kwargs):
+        super(CCP4ScalerA, self).__init__(*args, **kwargs)
 
         self._sweep_handler = None
 
@@ -152,13 +156,6 @@ class CCP4ScalerA(Scaler):
 
         self._sweep_handler = SweepInformationHandler(self._scalr_integraters)
 
-        Journal.block(
-            "gathering",
-            self.get_scaler_xcrystal().get_name(),
-            "CCP4",
-            {"working directory": self.get_working_directory()},
-        )
-
         for epoch in self._sweep_handler.get_epochs():
             si = self._sweep_handler.get_sweep_information(epoch)
             pname, xname, dname = si.get_project_info()
@@ -173,9 +170,9 @@ class CCP4ScalerA(Scaler):
 
             if exclude_sweep:
                 self._sweep_handler.remove_epoch(epoch)
-                Debug.write("Excluding sweep %s" % sname)
+                logger.debug("Excluding sweep %s", sname)
             else:
-                Journal.entry({"adding data from": "%s/%s/%s" % (xname, dname, sname)})
+                logger.debug("%-30s %s/%s/%s", "adding data from:", xname, dname, sname)
 
         # gather data for all images which belonged to the parent
         # crystal - allowing for the fact that things could go wrong
@@ -216,7 +213,7 @@ class CCP4ScalerA(Scaler):
                     if 1 + max(batches) - min(batches) > max_batches:
                         max_batches = max(batches) - min(batches) + 1
 
-                Debug.write("Biggest sweep has %d batches" % max_batches)
+                logger.debug("Biggest sweep has %d batches", max_batches)
                 max_batches = nifty_power_of_ten(max_batches)
 
                 counter = 0
@@ -302,14 +299,14 @@ class CCP4ScalerA(Scaler):
 
                 # FIXME xia2-51 in here need to pass all refiners to ensure that the
                 # information is passed back to all of them not just the last one...
-                Debug.write(
-                    "Running multisweep pointless for %d sweeps" % len(refiners)
+                logger.debug(
+                    "Running multisweep pointless for %d sweeps", len(refiners)
                 )
                 pointgroup, reindex_op, ntr, pt = self._pointless_indexer_multisweep(
                     pointless_hklin, refiners
                 )
 
-                Debug.write("X1698: %s: %s" % (pointgroup, reindex_op))
+                logger.debug("X1698: %s: %s", pointgroup, reindex_op)
 
                 lattices = [Syminfo.get_lattice(pointgroup)]
 
@@ -353,7 +350,7 @@ class CCP4ScalerA(Scaler):
                             pointless_hklin, refiner
                         )
 
-                        Debug.write("X1698: %s: %s" % (pointgroup, reindex_op))
+                        logger.debug("X1698: %s: %s", pointgroup, reindex_op)
 
                     lattice = Syminfo.get_lattice(pointgroup)
 
@@ -377,7 +374,7 @@ class CCP4ScalerA(Scaler):
 
                 correct_lattice = sort_lattices(lattices)[0]
 
-                Chatter.write("Correct lattice asserted to be %s" % correct_lattice)
+                logger.info("Correct lattice asserted to be %s", correct_lattice)
 
                 # transfer this information back to the indexers
                 for epoch in self._sweep_handler.get_epochs():
@@ -389,17 +386,16 @@ class CCP4ScalerA(Scaler):
                     state = refiner.set_refiner_asserted_lattice(correct_lattice)
 
                     if state == refiner.LATTICE_CORRECT:
-                        Chatter.write(
-                            "Lattice %s ok for sweep %s" % (correct_lattice, sname)
+                        logger.info(
+                            "Lattice %s ok for sweep %s", correct_lattice, sname
                         )
                     elif state == refiner.LATTICE_IMPOSSIBLE:
                         raise RuntimeError(
                             "Lattice %s impossible for %s" % (correct_lattice, sname)
                         )
                     elif state == refiner.LATTICE_POSSIBLE:
-                        Chatter.write(
-                            "Lattice %s assigned for sweep %s"
-                            % (correct_lattice, sname)
+                        logger.info(
+                            "Lattice %s assigned for sweep %s", correct_lattice, sname
                         )
                         need_to_return = True
             # END OF if multiple-lattices
@@ -440,7 +436,7 @@ class CCP4ScalerA(Scaler):
                 if 1 + max(batches) - min(batches) > max_batches:
                     max_batches = max(batches) - min(batches) + 1
 
-            Debug.write("Biggest sweep has %d batches" % max_batches)
+            logger.debug("Biggest sweep has %d batches", max_batches)
             max_batches = nifty_power_of_ten(max_batches)
 
             counter = 0
@@ -542,8 +538,8 @@ class CCP4ScalerA(Scaler):
                 refiner = integrater.get_integrater_refiner()
 
                 if self._scalr_input_pointgroup:
-                    Debug.write(
-                        "Using input pointgroup: %s" % self._scalr_input_pointgroup
+                    logger.debug(
+                        "Using input pointgroup: %s", self._scalr_input_pointgroup
                     )
                     pointgroup = self._scalr_input_pointgroup
                     reindex_op = "h,k,l"
@@ -559,7 +555,7 @@ class CCP4ScalerA(Scaler):
                         pointless_hklin, refiner
                     )
 
-                    Debug.write("X1698: %s: %s" % (pointgroup, reindex_op))
+                    logger.debug("X1698: %s: %s", pointgroup, reindex_op)
 
                     if ntr:
 
@@ -569,7 +565,7 @@ class CCP4ScalerA(Scaler):
                 if pt and not probably_twinned:
                     probably_twinned = True
 
-                Debug.write("Pointgroup: %s (%s)" % (pointgroup, reindex_op))
+                logger.debug("Pointgroup: %s (%s)", pointgroup, reindex_op)
 
                 pointgroups[epoch] = pointgroup
                 reindex_ops[epoch] = reindex_op
@@ -588,17 +584,15 @@ class CCP4ScalerA(Scaler):
             )
 
         if len(pointgroup_set) > 1:
-            Debug.write(
-                "Probably twinned, pointgroups: %s"
-                % " ".join(p.replace(" ", "") for p in list(pointgroup_set))
+            logger.debug(
+                "Probably twinned, pointgroups: %s",
+                " ".join(p.replace(" ", "") for p in pointgroup_set),
             )
             numbers = (Syminfo.spacegroup_name_to_number(ps) for ps in pointgroup_set)
             overall_pointgroup = Syminfo.spacegroup_number_to_name(min(numbers))
             self._scalr_input_pointgroup = overall_pointgroup
 
-            Chatter.write(
-                "Twinning detected, assume pointgroup %s" % overall_pointgroup
-            )
+            logger.info("Twinning detected, assume pointgroup %s", overall_pointgroup)
 
             need_to_return = True
 
@@ -637,13 +631,13 @@ class CCP4ScalerA(Scaler):
 
         if self.get_scaler_reference_reflection_file():
             self._reference = self.get_scaler_reference_reflection_file()
-            Debug.write("Using HKLREF %s" % self._reference)
+            logger.debug("Using HKLREF %s", self._reference)
 
         elif PhilIndex.params.xia2.settings.scale.reference_reflection_file:
             self._reference = (
                 PhilIndex.params.xia2.settings.scale.reference_reflection_file
             )
-            Debug.write("Using HKLREF %s" % self._reference)
+            logger.debug("Using HKLREF %s", self._reference)
 
         params = PhilIndex.params
         use_brehm_diederichs = params.xia2.settings.use_brehm_diederichs
@@ -716,12 +710,12 @@ class CCP4ScalerA(Scaler):
                     ignore_errors=PhilIndex.params.xia2.settings.small_molecule
                 )
 
-                Debug.write("Reindexing analysis of %s" % pl.get_hklin())
+                logger.debug("Reindexing analysis of %s", pl.get_hklin())
 
                 pointgroup = pl.get_pointgroup()
                 reindex_op = pl.get_reindex_operator()
 
-                Debug.write("Operator: %s" % reindex_op)
+                logger.debug("Operator: %s", reindex_op)
 
                 # apply this...
 
@@ -757,8 +751,8 @@ class CCP4ScalerA(Scaler):
                         % (self._reference, si.get_reflections())
                     )
 
-                Debug.write("Cell: %.2f %.2f %.2f %.2f %.2f %.2f" % cell)
-                Debug.write("Ref:  %.2f %.2f %.2f %.2f %.2f %.2f" % reference_cell)
+                logger.debug("Cell: %.2f %.2f %.2f %.2f %.2f %.2f" % cell)
+                logger.debug("Ref:  %.2f %.2f %.2f %.2f %.2f %.2f" % reference_cell)
 
                 for j in range(6):
                     if (
@@ -792,26 +786,6 @@ class CCP4ScalerA(Scaler):
 
         epochs = self._sweep_handler.get_epochs()
 
-        if self._scalr_corrections:
-            Journal.block(
-                "scaling",
-                self.get_scaler_xcrystal().get_name(),
-                "CCP4",
-                {
-                    "scaling model": "automatic",
-                    "absorption": self._scalr_correct_absorption,
-                    "decay": self._scalr_correct_decay,
-                },
-            )
-
-        else:
-            Journal.block(
-                "scaling",
-                self.get_scaler_xcrystal().get_name(),
-                "CCP4",
-                {"scaling model": "default"},
-            )
-
         sc = self._updated_aimless()
         sc.set_hklin(self._prepared_reflections)
         sc.set_chef_unmerged(True)
@@ -820,7 +794,6 @@ class CCP4ScalerA(Scaler):
         user_resolution_limits = {}
 
         for epoch in epochs:
-
             si = self._sweep_handler.get_sweep_information(epoch)
             pname, xname, dname = si.get_project_info()
             sname = si.get_sweep_name()
@@ -886,8 +859,8 @@ class CCP4ScalerA(Scaler):
 
                     # then tell the user what is happening
 
-                    Chatter.write(
-                        "Sweep %s gave negative scales - removing" % sweep.get_name()
+                    logger.info(
+                        "Sweep %s gave negative scales - removing", sweep.get_name()
                     )
 
                     # then reset the prepare, do, finish flags
@@ -897,7 +870,6 @@ class CCP4ScalerA(Scaler):
                     self.set_scaler_finish_done(False)
 
                     # and return
-
                     return
 
                 else:
@@ -934,7 +906,7 @@ class CCP4ScalerA(Scaler):
         )
 
         if not self.get_scaler_done():
-            Debug.write("Returning as scaling not finished...")
+            logger.debug("Returning as scaling not finished...")
             return
 
         batch_info = {}
@@ -1135,7 +1107,7 @@ class CCP4ScalerA(Scaler):
                 self._generate_absorption_map(sc)
             except Exception as e:
                 # Map generation may fail for number of reasons, eg. matplotlib borken
-                Debug.write("Could not generate absorption map (%s)" % e)
+                logger.debug("Could not generate absorption map (%s)", e)
 
     def _generate_absorption_map(self, scaler):
         output = scaler.get_all_output()
@@ -1147,12 +1119,6 @@ class CCP4ScalerA(Scaler):
             if pattern.search(line):
                 aimless = re.sub(r"\s\s+", ", ", line.strip("\t\n #"))
                 break
-
-        from xia2.Toolkit.AimlessSurface import (
-            evaluate_1degree,
-            scrape_coefficients,
-            generate_map,
-        )
 
         coefficients = scrape_coefficients(log=output)
         if coefficients:
@@ -1186,16 +1152,16 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
             % aimless
         )
 
+        log_directory = self._base_path / "LogFiles"
         if absmax - absmin > 0.000001:
-            from xia2.Handlers.Environment import Environment
-
-            log_directory = Environment.generate_directory("LogFiles")
-            mapfile = os.path.join(log_directory, "absorption_surface.png")
-            generate_map(absmap, mapfile)
+            log_directory.mkdir(parents=True, exist_ok=True)
+            mapfile = log_directory / "absorption_surface.png"
+            generate_map(absmap, str(mapfile))
         else:
-            Debug.write(
-                "Cannot create absorption surface: map is too flat (min: %f, max: %f)"
-                % (absmin, absmax)
+            logger.debug(
+                "Cannot create absorption surface: map is too flat (min: %f, max: %f)",
+                absmin,
+                absmax,
             )
 
     def _identify_sweep_epoch(self, batch):
@@ -1234,14 +1200,14 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
                     # to work out why the epochs are not set correctly in first place...
                     if si._image_to_epoch[b - batch_offset] in epoch_to_dose:
                         if not printed:
-                            Debug.write("Epoch found; all good")
+                            logger.debug("Epoch found; all good")
                             printed = True
                         batch_to_dose[b] = epoch_to_dose[
                             si._image_to_epoch[b - batch_offset]
                         ]
                     else:
                         if not printed:
-                            Debug.write("Epoch not found; using offset %f" % e0)
+                            logger.debug("Epoch not found; using offset %f", e0)
                             printed = True
                         batch_to_dose[b] = epoch_to_dose[
                             si._image_to_epoch[b - batch_offset] - e0

@@ -1,42 +1,16 @@
-# A Driver implementation to work with sun grid engine clusters via the
-# "qsub" shell command. This is based on ScriptDriver. This works like...
-#
-# > qsub -cwd process-lrem.sh
-# Your job 1871 ("process-lrem.sh") has been submitted.
-#
-# Applicability: Linux with Sun Grid Engine
-#
-# How This Works
-# --------------
-#
-# qsub to get the job id, then repeated qstat calls to find out what's
-# happening with this job. Raise exception if it looks like something has
-# gone wrong (e.g. all of the queues are disabled or something.)
-#
-# To find out when this has finished, keep calling qstat -j job_id
-# until the following is seen:
-#
-# Following jobs do not exist: 164459
-#
-# The rest of the Driver stuff can then follow.
-#
-# This class has been deprecated. See SunGridEngineClusterDriver.
-
-from __future__ import absolute_import, division, print_function
-
 import os
+import shlex
 import subprocess
 import time
 
 from xia2.Driver.DefaultDriver import DefaultDriver
 from xia2.Driver.DriverHelper import script_writer
+from xia2.Handlers.Phil import PhilIndex
 
 # Now depend on Phil scope from xia2...
 
 
 def get_qsub_command():
-    from xia2.Handlers.Phil import PhilIndex
-
     params = PhilIndex.get_python_object()
     mp_params = params.xia2.settings.multiprocessing
     if mp_params.qsub_command:
@@ -133,8 +107,6 @@ class QSubDriver(DefaultDriver):
         qsub_command = get_qsub_command()
         if not qsub_command:
             qsub_command = "qsub"
-
-        import shlex
 
         qsub_command = shlex.split(qsub_command)
         if self._cpu_threads > 1:

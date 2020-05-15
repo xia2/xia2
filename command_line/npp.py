@@ -1,16 +1,13 @@
-from __future__ import absolute_import, division, print_function
-
 import math
 import sys
 
 import xia2.Handlers.Streams
 from iotbx.reflection_file_reader import any_reflection_file
 from scitbx.array_family import flex
+from xia2.Toolkit.NPP import npp_ify
 
 
 def npp(hklin):
-    from xia2.Toolkit.NPP import npp_ify
-
     reader = any_reflection_file(hklin)
     intensities = [
         ma

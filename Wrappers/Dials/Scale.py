@@ -1,12 +1,10 @@
-#!/usr/bin/env python
-
-from __future__ import absolute_import, division, print_function
-
+import logging
 import os
 
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Chatter, Debug
+
+logger = logging.getLogger("xia2.Wrappers.Dials.Scale")
 
 
 def DialsScale(DriverType=None, decay_correction=None):
@@ -38,6 +36,13 @@ def DialsScale(DriverType=None, decay_correction=None):
             self._d_max = None
             self._crystal_name = None
             self._overwrite_existing_models = None
+
+            # scale and filter parameters
+            self._filtering_method = None
+            self._deltacchalf_max_cycles = None
+            self._deltacchalf_min_completeness = None
+            self._deltacchalf_stdcutoff = None
+            self._scale_and_filter_results = None
 
             # input and output files
             self._unmerged_reflections = None
@@ -123,6 +128,9 @@ def DialsScale(DriverType=None, decay_correction=None):
         def set_decay_bins(self, n_bins):
             self._n_resolution_bins = n_bins
 
+        def set_array_absorption_bins(self, n_bins):
+            self._n_absorption_bins = n_bins
+
         def set_min_partiality(self, min_partiality):
             self._min_partiality = min_partiality
 
@@ -207,6 +215,21 @@ def DialsScale(DriverType=None, decay_correction=None):
         def set_overwrite_existing_models(self, overwrite):
             self._overwrite_existing_models = overwrite
 
+        def set_filtering_method(self, filtering_method):
+            self._filtering_method = filtering_method
+
+        def set_deltacchalf_max_cycles(self, max_cycles):
+            self._deltacchalf_max_cycles = max_cycles
+
+        def set_deltacchalf_min_completeness(self, min_completeness):
+            self._deltacchalf_min_completeness = min_completeness
+
+        def set_deltacchalf_stdcutoff(self, stdcutoff):
+            self._deltacchalf_stdcutoff = stdcutoff
+
+        def get_scale_and_filter_results(self):
+            return self._scale_and_filter_results
+
         def scale(self):
             """Actually perform the scaling."""
 
@@ -230,28 +253,46 @@ def DialsScale(DriverType=None, decay_correction=None):
             elif self._intensities == "profile":
                 self.add_command_line("intensity_choice=profile")
 
-            assert self._model is not None
-            self.add_command_line("model=%s" % self._model)
+            # Handle all model options. Model can be none - would trigger auto
+            # models in dials.scale.
+            if self._model is not None:
+                self.add_command_line("model=%s" % self._model)
+                # Decay correction can refer to any model (physical, array, KB)
+                if self._bfactor:
+                    self.add_command_line("%s.decay_correction=True" % self._model)
+                else:
+                    self.add_command_line("%s.decay_correction=False" % self._model)
 
-            if self._bfactor:
-                self.add_command_line("%s.decay_correction=True" % self._model)
-
-            if self._model != "KB":
+            if self._model == "physical" or self._model == "array":
+                # These options can refer to array or physical model
                 if self._absorption_correction:
                     self.add_command_line("%s.absorption_correction=True" % self._model)
+                else:
+                    self.add_command_line(
+                        "%s.absorption_correction=False" % self._model
+                    )
                 if self._bfactor and self._brotation is not None:
                     self.add_command_line(
                         "%s.decay_interval=%g" % (self._model, self._brotation)
                     )
 
+            # Option only relevant for spherical harmonic absorption in physical model.
+            if (
+                self._model == "physical"
+                and self._absorption_correction
+                and self._lmax is not None
+            ):
+                self.add_command_line("%s.lmax=%i" % (self._model, self._lmax))
+
+            # 'Spacing' i.e. scale interval only relevant to physical model.
+            if self._model == "physical" and self._spacing:
+                self.add_command_line(
+                    "%s.scale_interval=%g" % (self._model, self._spacing)
+                )
+
             self.add_command_line("full_matrix=%s" % self._full_matrix)
-            if self._spacing:
-                self.add_command_line("scale_interval=%g" % self._spacing)
             self.add_command_line("error_model=%s" % self._error_model)
             self.add_command_line("outlier_rejection=%s" % self._outlier_rejection)
-
-            if self._absorption_correction and self._lmax is not None:
-                self.add_command_line("lmax=%i" % self._lmax)
 
             if self._min_partiality is not None:
                 self.add_command_line("min_partiality=%s" % self._min_partiality)
@@ -315,6 +356,30 @@ def DialsScale(DriverType=None, decay_correction=None):
             if self._crystal_name:
                 self.add_command_line("output.crystal_name=%s" % self._crystal_name)
 
+            if self._filtering_method:
+                self.add_command_line("filtering.method=%s" % self._filtering_method)
+                scale_and_filter_filename = (
+                    "%s_scale_and_filter_results.json" % self.get_xpid()
+                )
+                self.add_command_line(
+                    "output.scale_and_filter_results=%s" % scale_and_filter_filename
+                )
+                if self._deltacchalf_max_cycles:
+                    self.add_command_line(
+                        "filtering.deltacchalf.max_cycles=%i"
+                        % self._deltacchalf_max_cycles
+                    )
+                if self._deltacchalf_min_completeness:
+                    self.add_command_line(
+                        "filtering.deltacchalf.min_completeness=%i"
+                        % self._deltacchalf_min_completeness
+                    )
+                if self._deltacchalf_stdcutoff:
+                    self.add_command_line(
+                        "filtering.deltacchalf.stdcutoff=%i"
+                        % self._deltacchalf_stdcutoff
+                    )
+
             self.add_command_line("output.experiments=%s" % self._scaled_experiments)
             self.add_command_line("output.reflections=%s" % self._scaled_reflections)
 
@@ -327,19 +392,24 @@ def DialsScale(DriverType=None, decay_correction=None):
             try:
                 self.check_for_errors()
             except Exception:
-                Chatter.write(
-                    "dials.scale failed, see log file for more details:\n  %s"
-                    % self.get_log_file()
+                logger.warning(
+                    "dials.scale failed, see log file for more details:\n  %s",
+                    self.get_log_file(),
                 )
                 raise
 
-            Debug.write("dials.scale status: OK")
+            logger.debug("dials.scale status: OK")
 
-            Chatter.write("Completed a round of scaling using dials.scale")
+            if self._filtering_method and os.path.isfile(scale_and_filter_filename):
+                with open(scale_and_filter_filename, "r") as f:
+                    import json
+                    from dials.algorithms.scaling import scale_and_filter
+
+                    self._scale_and_filter_results = scale_and_filter.AnalysisResults.from_dict(
+                        json.load(f)
+                    )
+
             return "OK"
-
-        def get_scaled_reflection_files(self):
-            return self._scalr_scaled_reflection_files
 
         def get_unmerged_reflection_file(self):
             """Return a single unmerged mtz, for resolution cutoff analysis."""

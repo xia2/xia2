@@ -1,12 +1,13 @@
-from __future__ import absolute_import, division, print_function
-
+import logging
 import os
 
 import iotbx.cif
 import iotbx.cif.model
+from dxtbx.model.experiment_list import ExperimentListFactory
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Citations import Citations
-from xia2.Handlers.Streams import Chatter, Debug
+
+logger = logging.getLogger("xia2.Wrappers.Dials.TwoThetaRefine")
 
 
 def TwoThetaRefine(DriverType=None):
@@ -72,10 +73,10 @@ def TwoThetaRefine(DriverType=None):
             return self._reindexed_reflections
 
         def get_unit_cell(self):
-            return self._crystal.get_unit_cell().parameters()
+            return self._crystal.get_recalculated_unit_cell().parameters()
 
         def get_unit_cell_esd(self):
-            return self._crystal.get_cell_parameter_sd()
+            return self._crystal.get_recalculated_cell_parameter_sd()
 
         def set_reindex_operators(self, operators):
             assert len(operators) == len(self._experiments)
@@ -83,7 +84,7 @@ def TwoThetaRefine(DriverType=None):
 
         def run(self):
             if self._reindexing_operators:
-                Debug.write("Reindexing sweeps for dials.two_theta_refine")
+                logger.debug("Reindexing sweeps for dials.two_theta_refine")
                 from xia2.lib.bits import auto_logfiler
                 from xia2.Wrappers.Dials.Reindex import Reindex
 
@@ -107,7 +108,7 @@ def TwoThetaRefine(DriverType=None):
                         reindexer.get_reindexed_reflections_filename()
                     )
 
-            Debug.write("Running dials.two_theta_refine")
+            logger.debug("Running dials.two_theta_refine")
 
             self._output_cif = os.path.join(
                 self.get_working_directory(),
@@ -164,15 +165,13 @@ def TwoThetaRefine(DriverType=None):
             self.close_wait()
 
             if not os.path.isfile(self._output_cif):
-                Chatter.write(
-                    "TwoTheta refinement failed, see log file for more details:\n  %s"
-                    % self.get_log_file()
+                logger.warning(
+                    "TwoTheta refinement failed, see log file for more details:\n  %s",
+                    self.get_log_file(),
                 )
                 raise RuntimeError("unit cell not refined")
 
             self.check_for_errors()
-
-            from dxtbx.model.experiment_list import ExperimentListFactory
 
             experiments = ExperimentListFactory.from_json_file(
                 self.get_output_experiments(), check_format=False

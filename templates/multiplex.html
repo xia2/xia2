@@ -4,7 +4,7 @@
 {% extends "report_base.html" %}
 {% block content %}
 
-<div class="container">
+<div class="container-fluid">
 
     <div class="page-header">
         <h1>{{ page_title }}</h1>
@@ -55,14 +55,20 @@
 
                 {{ macros.panel('Cluster comparison', 'comparison_graphs', comparison_graphs) }}
 
+                {{ macros.panel('Data sets', 'datasets', {}, tables=image_range_tables) }}
+
                 {{ macros.panel('Unit cell analysis', 'unit_cell', unit_cell_graphs, styles=styles) }}
 
                 {{ macros.panel('Orientation analysis', 'orientation', orientation_graphs, styles=styles) }}
 
+                {% if filter_plots is not none and filter_plots|length %}
+                    {{ macros.panel('Scaling and filtering plots', 'filter_plots', filter_plots) }}
+                {% endif %}
+
                 <div class="panel panel-default">
                     <div class="panel-heading" data-toggle="collapse" data-target="#collapse_delta_cc_half">
                         <h4 class="panel-title">
-                            <a>Delta CC<sub>½</sub>  analysis</a>
+                            <a>Delta CC<sub>½</sub> analysis</a>
                         </h4>
                     </div>
                     <div id="collapse_delta_cc_half" class="panel-collapse collapse">
@@ -182,6 +188,9 @@
                                 </div>
                             </div>
                         </div>
+                        {% if "xtriage" in item %}
+                            {{ xia2_macros.xtriage_results(item["xtriage"]["success"], item["xtriage"]["warnings"], item["xtriage"]["danger"]) }}
+                        {% endif %}
 
                     </div>
 
@@ -192,7 +201,7 @@
 
                     <div class="panel-group">
                         {{ macros.panel('Analysis by resolution', 'resolution_' + cluster_name | replace(" ", "_"), item['resolution_graphs']) }}
-                        {{ macros.panel('Analysis by batch', 'batch_' + cluster_name | replace(" ", "_"), item['batch_graphs']) }}
+                        {{ macros.panel('Analysis by image number', 'batch_' + cluster_name | replace(" ", "_"), item['batch_graphs'], tables=[item["image_range_table"]]) }}
                         {{ macros.panel('Miscellaneous', 'misc_' + cluster_name | replace(" ", "_"), item['misc_graphs'], styles=styles) }}
                     </div>
 

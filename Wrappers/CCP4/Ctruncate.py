@@ -1,11 +1,11 @@
-from __future__ import absolute_import, division, print_function
-
+import logging
 import os
 
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Citations import Citations
-from xia2.Handlers.Streams import Debug
 from xia2.lib.bits import transpose_loggraph
+
+logger = logging.getLogger("xia2.Wrappers.CCP4.Ctruncate")
 
 
 def Ctruncate(DriverType=None):
@@ -95,7 +95,7 @@ def Ctruncate(DriverType=None):
                 except Exception:
                     pass
 
-                Debug.write(str(e))
+                logger.debug(str(e))
                 raise RuntimeError("ctruncate failure")
 
             nref = 0
@@ -123,7 +123,7 @@ def Ctruncate(DriverType=None):
             elif "Acentric moments of E" in results:
                 moments = transpose_loggraph(results["Acentric moments of E"])
             else:
-                Debug.write("Acentric moments of E/I not found")
+                logger.debug("Acentric moments of E/I not found")
 
             self._moments = moments
 

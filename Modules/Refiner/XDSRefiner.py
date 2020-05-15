@@ -1,13 +1,14 @@
-from __future__ import absolute_import, division, print_function
-
 import copy
+import logging
 import os
 
 import xia2.Wrappers.Dials.ExportXDS
+from dxtbx.model import ExperimentList
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Streams import Debug
 from xia2.lib.bits import auto_logfiler
 from xia2.Schema.Interfaces.Refiner import Refiner
+
+logger = logging.getLogger("xia2.Modules.Refiner.XDSRefiner")
 
 
 class XDSRefiner(Refiner):
@@ -25,7 +26,6 @@ class XDSRefiner(Refiner):
             assert len(experiments) == 1  # currently only handle one lattice/sweep
             experiment = experiments[0]
             crystal_model = experiment.crystal
-            lattice = idxr.get_indexer_lattice()
 
             # check if the lattice was user assigned...
             user_assigned = idxr.get_indexer_user_input_lattice()
@@ -100,7 +100,7 @@ class XDSRefiner(Refiner):
             # create one...
 
             elif not idxr.get_indexer_payload("XPARM.XDS"):
-                Debug.write("Generating an XDS indexer")
+                logger.debug("Generating an XDS indexer")
 
                 idxr_old = idxr
 
@@ -138,7 +138,7 @@ class XDSRefiner(Refiner):
 
                 # FIXME this was changed in #42 but not sure logic is right
                 if not check:
-                    Debug.write(
+                    logger.debug(
                         "Inputting target cell: %.2f %.2f %.2f %.2f %.2f %.2f" % cell
                     )
                     idxr.set_indexer_input_cell(cell)
@@ -151,7 +151,7 @@ class XDSRefiner(Refiner):
                 idxr.set_indexer_input_lattice(lattice)
 
                 if user_assigned:
-                    Debug.write("Assigning the user given lattice: %s" % lattice)
+                    logger.debug("Assigning the user given lattice: %s", lattice)
                     idxr.set_indexer_user_input_lattice(True)
 
                 idxr.set_detector(experiment.detector)
@@ -161,7 +161,7 @@ class XDSRefiner(Refiner):
                 # re-get the unit cell &c. and check that the indexing
                 # worked correctly
 
-                Debug.write("Rerunning indexing with XDS")
+                logger.debug("Rerunning indexing with XDS")
 
                 experiments = idxr.get_indexer_experiment_list()
                 assert len(experiments) == 1  # currently only handle one lattice/sweep
@@ -177,8 +177,6 @@ class XDSRefiner(Refiner):
                 # FIXME comparison needed
 
     def _refine(self):
-        from dxtbx.model import ExperimentList
-
         self._refinr_refined_experiment_list = ExperimentList()
         for epoch, idxr in self._refinr_indexers.items():
             self._refinr_payload[epoch] = copy.deepcopy(idxr._indxr_payload)

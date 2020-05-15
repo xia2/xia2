@@ -1,17 +1,17 @@
-from __future__ import absolute_import, division, print_function
-
 import glob
+import logging
 import os
 import shutil
 import uuid
 
-from xia2.Handlers.Streams import Chatter
+from xia2.Driver.DriverFactory import DriverFactory
 from xia2.lib.bits import auto_logfiler
 from xia2.Wrappers.XIA.Integrate import Integrate as XIA2Integrate
 
+logger = logging.getLogger("xia2.Applications.xia2_helpers")
+
 
 def process_one_sweep(args):
-
     assert len(args) == 1
     args = args[0]
     # stop_after = args.stop_after
@@ -23,8 +23,6 @@ def process_one_sweep(args):
     sweep_id = args.sweep_id
     failover = args.failover
     driver_type = args.driver_type
-
-    from xia2.Driver.DriverFactory import DriverFactory
 
     default_driver_type = DriverFactory.get_driver_type()
     DriverFactory.set_driver_type(driver_type)
@@ -64,7 +62,7 @@ def process_one_sweep(args):
         output = get_sweep_output_only(xia2_integrate.get_all_output())
         success = True
     except Exception as e:
-        Chatter.write("Processing sweep %s failed: %s" % (sweep_id, str(e)))
+        logger.warning("Processing sweep %s failed: %s", sweep_id, str(e))
         if not failover:
             raise
     finally:

@@ -1,14 +1,16 @@
-#!/usr/bin/env python
+import copy
+import json
+import logging
+import os
 
-from __future__ import absolute_import, division, print_function
-
+from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
+
+logger = logging.getLogger("xia2.Wrappers.Dials.RefineBravaisSettings")
 
 
 def RefineBravaisSettings(DriverType=None):
     """A factory for RefineBravaisSettingsWrapper classes."""
-
-    from xia2.Driver.DriverFactory import DriverFactory
 
     DriverInstance = DriverFactory.Driver(DriverType)
 
@@ -39,8 +41,6 @@ def RefineBravaisSettings(DriverType=None):
             self._close_to_spindle_cutoff = close_to_spindle_cutoff
 
         def get_bravais_summary(self):
-            import copy, os
-
             bravais_summary = {}
             for k in self._bravais_summary:
                 bravais_summary[int(k)] = copy.deepcopy(self._bravais_summary[k])
@@ -50,9 +50,7 @@ def RefineBravaisSettings(DriverType=None):
             return bravais_summary
 
         def run(self):
-            from xia2.Handlers.Streams import Debug
-
-            Debug.write("Running dials.refine_bravais_settings")
+            logger.debug("Running dials.refine_bravais_settings")
 
             self.clear_command_line()
             self.add_command_line(self._experiments_filename)
@@ -61,6 +59,7 @@ def RefineBravaisSettings(DriverType=None):
             nproc = PhilIndex.params.xia2.settings.multiprocessing.nproc
             self.set_cpu_threads(nproc)
             self.add_command_line("nproc=%i" % nproc)
+            self.add_command_line("best_monoclinic_beta=False")
             # self.add_command_line('reflections_per_degree=10')
             if self._detector_fix:
                 self.add_command_line("detector.fix=%s" % self._detector_fix)
@@ -76,14 +75,9 @@ def RefineBravaisSettings(DriverType=None):
             self.close_wait()
             self.check_for_errors()
 
-            from json import loads
-            import os
-
-            self._bravais_summary = loads(
-                open(
-                    os.path.join(self.get_working_directory(), "bravais_summary.json"),
-                    "r",
-                ).read()
-            )
+            with open(
+                os.path.join(self.get_working_directory(), "bravais_summary.json"), "r",
+            ) as fh:
+                self._bravais_summary = json.load(fh)
 
     return RefineBravaisSettingsWrapper()

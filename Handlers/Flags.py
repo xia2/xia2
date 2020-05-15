@@ -3,9 +3,10 @@
 # the CommandLine singleton suffers from.
 # xia2#42: this is due for retirement & working into the Phil structure
 
-from __future__ import absolute_import, division, print_function
 
 import os
+
+from xia2.Wrappers.XDS.XDS import xds_read_xparm
 
 
 class _Flags(object):
@@ -32,8 +33,6 @@ class _Flags(object):
 
     def set_xparm(self, xparm):
         self._xparm = xparm
-
-        from xia2.Wrappers.XDS.XDS import xds_read_xparm
 
         xparm_info = xds_read_xparm(xparm)
 

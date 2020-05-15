@@ -1,15 +1,18 @@
 # Code to check the XDS solution from IDXREF for being pseudo-centred (i.e.
 # comes out as centered when it should not be)
 
-from __future__ import absolute_import, division, print_function
 
+import logging
 import math
 
-from cctbx import crystal
 import dxtbx.serialize.xds
+from cctbx import crystal
+from cctbx.array_family import flex
+from iotbx.xds import spot_xds
 from scitbx import matrix
 from xia2.Experts.LatticeExpert import s2l
-from xia2.Handlers.Streams import Debug
+
+logger = logging.getLogger("xia2.Modules.Indexer.XDSCheckIndexerSolution")
 
 
 def xds_check_indexer_solution(xparm_file, spot_file):
@@ -31,12 +34,8 @@ def xds_check_indexer_solution(xparm_file, spot_file):
     goniometer = models.get_goniometer()
     scan = models.get_scan()
 
-    from iotbx.xds import spot_xds
-
     spot_xds_handle = spot_xds.reader()
     spot_xds_handle.read_file(spot_file)
-
-    from cctbx.array_family import flex
 
     centroids_px = flex.vec3_double(spot_xds_handle.centroid)
 
@@ -77,7 +76,7 @@ def xds_check_indexer_solution(xparm_file, spot_file):
     # now, if the number of absences is substantial, need to consider
     # transforming this to a primitive basis
 
-    Debug.write("Absent: %d  vs.  Present: %d Total: %d" % (absent, present, total))
+    logger.debug("Absent: %d  vs.  Present: %d Total: %d", absent, present, total)
 
     # now see if this is compatible with a centred lattice or suggests
     # a primitive basis is correct

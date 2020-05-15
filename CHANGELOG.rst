@@ -1,3 +1,34 @@
+xia2 0.6.446 (DIALS 2.2.0) (2020-03-15)
+=======================================
+
+Features
+--------
+
+- xia2 now has coloured output by default.
+  You can disable this by setting the environment variable NO_COLOR. (#267)
+- The DIALS pipeline now generates .sca output files again (#384)
+- Prescale data before dials.symmetry when in multi_sweep_indexing mode
+
+  This mirrors the behaviour of the CCP4ScalerA by prescaling the data
+  with KB scaling to ensure that all experiments are on the same scale
+  before running dials.symmetry. This should lead to more reliable
+  results from the symmetry analysis in multi_sweep_indexing mode. (#395)
+- Switch the default plugin for reading HDF5 files with XDS to DURIN (#400)
+- The error output file xia2.error has been renamed xia2-error.txt (#407)
+
+
+Bugfixes
+--------
+
+- Export DANO when running cctbx French & Wilson procedure (#399)
+- If .nxs and _master.h5 files reference the same underlying data files on disk, 
+  do not process both, only process _master files. Fixes longstanding annoyance. (#408)
+- Made image reading in xia2.overload more general, means screen19 now works with 
+  Eiger detectors (#412)
+- Fix bug for space_group= option in combination with the dials pipeline where
+  output mtz files would be in the Laue group, rather than the space group. (#420)
+
+
 xia2 0.6.362 (DIALS 2.1.0) (2019-12-16)
 =======================================
 
