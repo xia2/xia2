@@ -1,7 +1,3 @@
-#!/usr/bin/env python
-
-from __future__ import absolute_import, division, print_function
-
 import os
 
 # the wrappers that this will use - these are renamed so that the internal
@@ -25,7 +21,6 @@ class CCP4Factory(object):
     """A class to provide CCP4 program wrappers."""
 
     def __init__(self):
-
         self._working_directory = os.getcwd()
 
     def set_working_directory(self, working_directory):

@@ -1,6 +1,5 @@
 # Python routines which don't really belong anywhere else.
 
-from __future__ import absolute_import, division, print_function
 
 import logging
 import math

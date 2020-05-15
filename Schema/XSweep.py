@@ -50,7 +50,6 @@
 # down the tree, to make sure that everything is kept up-to-date. This
 # should be no more difficult, just a little more complicated.
 
-from __future__ import absolute_import, division, print_function
 
 import copy
 import inspect
@@ -59,7 +58,7 @@ import math
 import os
 import time
 
-import pathlib2
+import pathlib
 from xia2.Experts.Filenames import expand_path
 from xia2.Experts.FindImages import (
     image2template_directory,
@@ -584,7 +583,7 @@ class XSweep(object):
         """Create a directory in the project space and return a path object"""
 
         if not self.get_wavelength():
-            base_path = pathlib2.Path(".")
+            base_path = pathlib.Path(".")
         else:
             base_path = self.get_wavelength().get_crystal().get_project().path
 

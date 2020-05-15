@@ -1,6 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
-
 def test_lauegroup_to_lattice_functions(ccp4):
     from xia2.lib.SymmetryLib import lauegroup_to_lattice
 

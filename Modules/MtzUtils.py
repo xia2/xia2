@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 import iotbx.mtz
 from cctbx import sgtbx
 from xia2.lib.SymmetryLib import clean_reindex_operator

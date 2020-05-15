@@ -1,6 +1,5 @@
 # An implementation of the scaler interface for dials.scale
 
-from __future__ import absolute_import, division, print_function
 
 import logging
 import math

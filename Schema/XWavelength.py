@@ -22,7 +22,6 @@
 #                 order for the data reduction, to make sure that we
 #                 reduce the least damaged data first.
 
-from __future__ import absolute_import, division, print_function
 
 import inspect
 import logging

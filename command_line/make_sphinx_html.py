@@ -1,6 +1,5 @@
 # LIBTBX_SET_DISPATCHER_NAME dev.xia2.make_sphinx_html
 
-from __future__ import absolute_import, division, print_function
 
 import os
 import shutil

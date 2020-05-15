@@ -10,7 +10,6 @@
 # This will look for a file preferences.xia in ~/.xia2 or equivalent,
 # and the current working directory.
 
-from __future__ import absolute_import, division, print_function
 
 import os
 

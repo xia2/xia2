@@ -6,7 +6,6 @@
 #
 # This is to work with fortran program "doser"
 
-from __future__ import absolute_import, division, print_function
 
 import collections
 

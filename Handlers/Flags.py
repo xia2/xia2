@@ -3,7 +3,6 @@
 # the CommandLine singleton suffers from.
 # xia2#42: this is due for retirement & working into the Phil structure
 
-from __future__ import absolute_import, division, print_function
 
 import os
 

@@ -1,7 +1,6 @@
 # A factory for Integrater implementations. At the moment this will
 # support only XDS and the null integrater implementation.
 
-from __future__ import absolute_import, division, print_function
 
 import logging
 import os

@@ -1,7 +1,6 @@
 # An implementation of the Integrater interface using Dials. This depends on the
 # Dials wrappers to actually implement the functionality.
 
-from __future__ import absolute_import, division, print_function
 
 import logging
 import math

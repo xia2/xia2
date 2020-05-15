@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Syminfo import Syminfo
 from xia2.lib.SymmetryLib import lauegroup_to_lattice

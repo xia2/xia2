@@ -5,7 +5,6 @@
 # The idea of this is to separate the "administrative", "status" and
 # "scientific" output of the program.
 
-from __future__ import absolute_import, division, print_function
 
 import ctypes
 import itertools

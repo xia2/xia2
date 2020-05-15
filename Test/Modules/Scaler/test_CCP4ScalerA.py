@@ -1,10 +1,8 @@
-from __future__ import absolute_import, division, print_function
-
 import os
 import sys
 
 import mock
-import pathlib2
+import pathlib
 import pytest
 import six
 
@@ -61,7 +59,7 @@ def test_ccp4_scalerA(regression_test, ccp4, dials_data, run_in_tmpdir, nproc):
     integrater.set_integrater_sweep_name("SWEEP1")
     integrater.set_integrater_project_info("CRYST1", "WAVE1", "SWEEP1")
 
-    scaler = CCP4ScalerA(base_path=pathlib2.Path(tmpdir))
+    scaler = CCP4ScalerA(base_path=pathlib.Path(tmpdir))
     scaler.add_scaler_integrater(integrater)
     scaler.set_scaler_xcrystal(cryst)
     scaler.set_scaler_project_info("CRYST1", "WAVE1")

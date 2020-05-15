@@ -5,7 +5,6 @@
 # This is a hook into a global data repository, should mostly be replaced with
 # a Phil interface.
 
-from __future__ import absolute_import, division, print_function
 
 import collections
 import copy
@@ -519,13 +518,6 @@ class _CommandLine(object):
             indexer, refiner, integrater, scaler = "dials", "xds", "xdsr", "xdsa"
         elif settings.pipeline == "dials":
             logger.debug("DIALS pipeline selected")
-            indexer, refiner, integrater, scaler = "dials", "dials", "dials", "dials"
-        elif settings.pipeline == "dials-full":
-            logger.debug("DIALS pipeline selected")
-            print(
-                "***\n\nWarning: Pipeline '%s' has been renamed to 'dials' and will be removed in a future release.\n\n***"
-                % settings.pipeline
-            )
             indexer, refiner, integrater, scaler = "dials", "dials", "dials", "dials"
         elif settings.pipeline == "dials-aimless":
             logger.debug("DIALS-LEGACY pipeline selected (DIALS, scaling with AIMLESS)")

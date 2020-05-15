@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 from xia2.Experts.LatticeExpert import ApplyLattice
 
 

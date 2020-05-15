@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 import subprocess
 
 from xia2.Driver.DefaultDriver import DefaultDriver

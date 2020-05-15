@@ -9,7 +9,6 @@
 # set for individual programs can be found. Initially this will be just a
 # couple for XDS.
 
-from __future__ import absolute_import, division, print_function
 
 from iotbx.phil import parse
 from libtbx.phil import interface
@@ -596,7 +595,7 @@ strategy
 xia2.settings
   .short_caption = "xia2 settings"
 {
-  pipeline = 3d 3dd 3di 3dii *dials dials-full dials-aimless
+  pipeline = 3d 3dd 3di 3dii *dials dials-aimless
     .short_caption = "main processing pipeline"
     .help = "Select the xia2 main processing pipeline\n" \
             "   3d: XDS, XSCALE\n" \

@@ -1,7 +1,6 @@
 # Code to check the XDS solution from IDXREF for being pseudo-centred (i.e.
 # comes out as centered when it should not be)
 
-from __future__ import absolute_import, division, print_function
 
 import logging
 import math

@@ -1,5 +1,4 @@
 # LIBTBX_SET_DISPATCHER_NAME dev.xia2.show_mask
-from __future__ import absolute_import, division, print_function
 
 import sys
 import six.moves.cPickle as pickle

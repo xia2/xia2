@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 import xia2.Modules.CctbxFrenchWilson
 from iotbx.reflection_file_reader import any_reflection_file
 
