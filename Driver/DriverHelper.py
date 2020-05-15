@@ -1,35 +1,3 @@
-# Helper functions (mostly abstraction layer) for the Driver implementations.
-#
-# Implemented functions:
-# kill_process(Popen process instance)
-#
-# script_writer(String name, String exec,
-#               String [] command_line, String [] input)
-#
-# executable_exists(executable) - see Change 1/SEP/06 in DefaultDriver -
-# This will search the path for something which will respond to executable.
-#
-# Functions to be implemented:
-#
-# Modification log:
-# 20/JUN/06 added getting-of-status to bash scripts -> script_name.xstatus
-#           this means that if this file exists, then the job has run...
-# 1/SEP/06  added method to search for executables in the command environment
-#           also added code to use "call" for batch files on windows -
-#           this still passes in the output and input redirection, which
-#           documentation at:
-#
-#           http://www.microsoft.com/resources/documentation/
-#           windows/xp/all/proddocs/en-us/batch.mspx?mfr=true
-#
-#           says won't work - however, testing against ExampleProgram
-#           StandardInput < input.txt > output.txt with something
-#           in input.txt appears to behave as expected. Beware - this
-#           could be a hidden gremlin, though is in general not an
-#           important problem.
-
-from __future__ import absolute_import, division, print_function
-
 import os
 import random
 import signal

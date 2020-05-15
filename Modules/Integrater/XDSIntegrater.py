@@ -4,7 +4,6 @@
 # This will "wrap" the XDS programs DEFPIX and INTEGRATE - CORRECT is
 # considered to be a part of the scaling - see XDSScaler.py.
 
-from __future__ import absolute_import, division, print_function
 
 import copy
 import inspect

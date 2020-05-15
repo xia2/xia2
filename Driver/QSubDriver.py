@@ -1,29 +1,3 @@
-# A Driver implementation to work with sun grid engine clusters via the
-# "qsub" shell command. This is based on ScriptDriver. This works like...
-#
-# > qsub -cwd process-lrem.sh
-# Your job 1871 ("process-lrem.sh") has been submitted.
-#
-# Applicability: Linux with Sun Grid Engine
-#
-# How This Works
-# --------------
-#
-# qsub to get the job id, then repeated qstat calls to find out what's
-# happening with this job. Raise exception if it looks like something has
-# gone wrong (e.g. all of the queues are disabled or something.)
-#
-# To find out when this has finished, keep calling qstat -j job_id
-# until the following is seen:
-#
-# Following jobs do not exist: 164459
-#
-# The rest of the Driver stuff can then follow.
-#
-# This class has been deprecated. See SunGridEngineClusterDriver.
-
-from __future__ import absolute_import, division, print_function
-
 import os
 import shlex
 import subprocess

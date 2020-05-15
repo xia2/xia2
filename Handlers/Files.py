@@ -6,7 +6,6 @@
 # the .xinfo file is parsed the directories referred to therein may be
 # migrated to a local disk.
 
-from __future__ import absolute_import, division, print_function
 
 import contextlib
 import os

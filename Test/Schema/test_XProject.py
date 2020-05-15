@@ -1,15 +1,13 @@
-from __future__ import absolute_import, division, print_function
-
 import json
 import os
 import sys
 
 import mock
-import pathlib2
+import pathlib
 
 
 def exercise_serialization(dials_data, tmp_dir):
-    base_path = pathlib2.Path(tmp_dir)
+    base_path = pathlib.Path(tmp_dir)
     template = dials_data("insulin").join("insulin_1_###.img").strpath
 
     from xia2.Modules.Indexer.DialsIndexer import DialsIndexer

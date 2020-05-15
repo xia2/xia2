@@ -1,7 +1,6 @@
 # A factory for Indexer class instances. This will return an indexer
 # suitable for using in the context defined in the input.
 
-from __future__ import absolute_import, division, print_function
 
 import logging
 import os

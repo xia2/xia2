@@ -2,7 +2,6 @@
 # This runs XSCALE, and feed sback to the XDSIntegrater and also runs a
 # few other jiffys. Then Aimless for the merging...
 
-from __future__ import absolute_import, division, print_function
 
 import copy
 import inspect

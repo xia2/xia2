@@ -9,7 +9,6 @@ correction to the integrated intensities before symmetry determination and scali
 This wrapper is intended for use in the _integrate_finish step of the DialsIntegrater.
 """
 
-from __future__ import absolute_import, division, print_function
 
 from xia2.Driver.DriverFactory import DriverFactory
 

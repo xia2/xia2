@@ -5,7 +5,6 @@
 # the original XDSIndexer and only the necessary method overloaded (as I
 # should have done this in the first place.)
 
-from __future__ import absolute_import, division, print_function
 
 import logging
 import math

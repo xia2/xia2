@@ -11,7 +11,6 @@
 # Distance (mm), wavelength (ang), beam centre (mm, mm),
 # image header information
 
-from __future__ import absolute_import, division, print_function
 
 import logging
 import math
@@ -27,7 +26,6 @@ from xia2.Experts.FindImages import (
     template_directory_number2image,
 )
 from xia2.Schema import load_imagesets
-from xia2.Wrappers.Mosflm.AutoindexHelpers import set_distance
 
 logger = logging.getLogger("xia2.Schema.Interfaces.FrameProcessor")
 
@@ -47,10 +45,7 @@ class FrameProcessor(object):
         self._fp_offset = 0
 
         self._fp_two_theta = 0.0
-        self._fp_two_theta_prov = None
 
-        self._fp_wavelength_prov = None
-        self._fp_distance_prov = None
         self._fp_beam_prov = None
 
         self._fp_gain = 0.0
@@ -107,12 +102,6 @@ class FrameProcessor(object):
 
             # populate wavelength, beam etc from this
 
-            if self._fp_wavelength_prov is None or self._fp_wavelength_prov == "header":
-                self._fp_wavelength_prov = "header"
-
-            if self._fp_distance_prov is None or self._fp_distance_prov == "header":
-                self._fp_distance_prov = "header"
-
             if self._fp_beam_prov is None or self._fp_beam_prov == "header":
                 self._fp_beam_prov = "header"
 
@@ -133,17 +122,12 @@ class FrameProcessor(object):
 
     def set_wavelength(self, wavelength):
         self.get_beam_obj().set_wavelength(wavelength)
-        self._fp_wavelength_prov = "user"
 
     def get_wavelength(self):
         return self.get_beam_obj().get_wavelength()
 
     def set_distance(self, distance):
-        if distance is None:
-            return
-
-        set_distance(self.get_detector(), distance)
-        self._fp_distance_prov = "user"
+        pass
 
     def get_distance(self):
         return self.get_detector()[0].get_directed_distance()
@@ -282,10 +266,6 @@ class FrameProcessor(object):
 
         self._fp_matching_images = tuple(range(image_range[0], image_range[1] + 1))
 
-        if self._fp_wavelength_prov is None:
-            self._fp_wavelength_prov = "header"
-        if self._fp_distance_prov is None:
-            self._fp_distance_prov = "header"
         if self._fp_beam_prov is None:
             beam = imageset.get_beam()
             detector = imageset.get_detector()

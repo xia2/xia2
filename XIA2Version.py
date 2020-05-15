@@ -1,6 +1,5 @@
 # A file containing the version number of the current xia2. Generally useful.
 
-from __future__ import absolute_import, division, print_function
 
 import os
 
@@ -65,6 +64,6 @@ def get_git_revision(fallback="not set"):
     return str(version)
 
 
-VersionNumber = get_git_revision("0.6.0")
+VersionNumber = get_git_revision("0.7.0")
 Version = "XIA2 %s" % VersionNumber
 Directory = "xia2-%s" % VersionNumber

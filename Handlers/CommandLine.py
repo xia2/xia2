@@ -5,7 +5,6 @@
 # This is a hook into a global data repository, should mostly be replaced with
 # a Phil interface.
 
-from __future__ import absolute_import, division, print_function
 
 import collections
 import copy
@@ -166,32 +165,6 @@ class _CommandLine(object):
                 raise RuntimeError("non-ascii characters in input")
 
         self._argv = copy.deepcopy(sys.argv)
-
-        replacements = {
-            "-3d": "pipeline=3d",
-            "-3di": "pipeline=3di",
-            "-3dii": "pipeline=3dii",
-            "-3dd": "pipeline=3dd",
-            "-dials": "pipeline=dials",
-            "-quick": "dials.fast_mode=true",
-            "-failover": "failover=true",
-            "-small_molecule": "small_molecule=true",
-        }
-        for k, v in replacements.items():
-            if k in self._argv:
-                print(
-                    "***\nCommand line option %s is deprecated.\nPlease use %s instead\n***"
-                    % (k, v)
-                )
-                self._argv[self._argv.index(k)] = v
-        if "-atom" in self._argv:
-            idx = self._argv.index("-atom")
-            element = self._argv[idx + 1]
-            self._argv[idx : idx + 2] = ["atom=%s" % element]
-            print(
-                "***\nCommand line option -atom %s is deprecated.\nPlease use atom=%s instead\n***"
-                % (element, element)
-            )
 
         # first of all try to interpret arguments as phil parameters/files
 
@@ -545,13 +518,6 @@ class _CommandLine(object):
             indexer, refiner, integrater, scaler = "dials", "xds", "xdsr", "xdsa"
         elif settings.pipeline == "dials":
             logger.debug("DIALS pipeline selected")
-            indexer, refiner, integrater, scaler = "dials", "dials", "dials", "dials"
-        elif settings.pipeline == "dials-full":
-            logger.debug("DIALS pipeline selected")
-            print(
-                "***\n\nWarning: Pipeline '%s' has been renamed to 'dials' and will be removed in a future release.\n\n***"
-                % settings.pipeline
-            )
             indexer, refiner, integrater, scaler = "dials", "dials", "dials", "dials"
         elif settings.pipeline == "dials-aimless":
             logger.debug("DIALS-LEGACY pipeline selected (DIALS, scaling with AIMLESS)")

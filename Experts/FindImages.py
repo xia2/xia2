@@ -5,7 +5,6 @@
 # Also routines for grouping sets of images together into sweeps based on
 # the file names and the information in image headers.
 
-from __future__ import absolute_import, division, print_function
 
 import logging
 import math

@@ -1,14 +1,13 @@
 # This represents the "top level" of the .xinfo hierarchy, and should
 # exactly correspond to the contents of the .xinfo file.
 
-from __future__ import absolute_import, division, print_function
 
 import inspect
 import json
 import logging
 import os
 
-import pathlib2
+import pathlib
 import six
 from dxtbx.serialize.load import _decode_list
 from xia2.Handlers.Phil import PhilIndex
@@ -26,7 +25,7 @@ class XProject(object):
     of crystals."""
 
     def __init__(self, xinfo_file=None, name=None, base_path=None):
-        self.path = pathlib2.Path(base_path or os.getcwd()).absolute()
+        self.path = pathlib.Path(base_path or os.getcwd()).absolute()
         self._crystals = {}
         if xinfo_file:
             self._setup_from_xinfo_file(xinfo_file)
@@ -65,9 +64,9 @@ class XProject(object):
                 v = v_
             setattr(return_obj, k, v)
         if hasattr(return_obj, "path"):
-            return_obj.path = pathlib2.Path(return_obj.path).absolute()
+            return_obj.path = pathlib.Path(return_obj.path).absolute()
         else:
-            return_obj.path = pathlib2.Path(base_path or os.getcwd()).absolute()
+            return_obj.path = pathlib.Path(base_path or os.getcwd()).absolute()
         return return_obj
 
     def as_json(self, filename=None, compact=True):

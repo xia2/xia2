@@ -1,7 +1,6 @@
 # A handler for matters of the operating environment, which will impact
 # on data harvesting, working directories, a couple of other odds & sods.
 
-from __future__ import absolute_import, division, print_function
 
 import atexit
 import ctypes

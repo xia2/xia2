@@ -3,7 +3,6 @@
 # have the indexing fully interactive i.e. user can run index, select solution,
 # change images to use etc. so it becomes fully interactive.
 
-from __future__ import absolute_import, division, print_function
 
 from xia2.Modules.Indexer.IndexerSelectImages import index_select_image_wedges_user
 from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
