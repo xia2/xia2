@@ -145,7 +145,7 @@ import json
 import logging
 import os
 
-import pathlib2
+import pathlib
 from dxtbx.serialize.load import _decode_dict
 from xia2.Handlers.Streams import banner
 
@@ -286,7 +286,7 @@ class Scaler(object):
         assert obj["__id__"] == "Scaler"
         base_path = obj.get("_base_path")
         if base_path:
-            base_path = pathlib2.Path(base_path)
+            base_path = pathlib.Path(base_path)
         else:
             base_path = None
         return_obj = cls(base_path=base_path)
