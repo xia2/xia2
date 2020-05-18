@@ -284,8 +284,8 @@ class MultiCrystalReport(MultiCrystalAnalysis):
             json_data.update(filter_plots)
         json_data["datasets"] = {}
         for report_name, report in individual_dataset_reports.items():
-            json_data["datasets"][report_name] = dict(
-                (k, report[k])
+            json_data["datasets"][report_name] = {
+                k: report[k]
                 for k in (
                     "resolution_graphs",
                     "batch_graphs",
@@ -293,7 +293,7 @@ class MultiCrystalReport(MultiCrystalAnalysis):
                     "merging_stats",
                     "merging_stats_anom",
                 )
-            )
+            }
         json_data["comparison"] = comparison_graphs
 
         with open("%s.json" % self.params.prefix, "w") as f:

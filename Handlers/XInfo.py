@@ -63,7 +63,7 @@ class XInfo:
 
         project_records = []
 
-        with open(xinfo_file, "rU") as fh:
+        with open(xinfo_file) as fh:
             for r in fh.readlines():
                 record = r.strip()
                 if record and record[0] not in ("!", "#"):

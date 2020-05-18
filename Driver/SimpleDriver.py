@@ -65,7 +65,7 @@ class SimpleDriver(DefaultDriver):
 
         try:
             self._popen.stdin.write(record)
-        except IOError:
+        except OSError:
             while True:
                 line = self.output()
                 if not line.strip():

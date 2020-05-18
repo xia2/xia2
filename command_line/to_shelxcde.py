@@ -181,9 +181,9 @@ def run(args):
     param_names = set(params.keys())
 
     allowed_groups = (
-        set(("peak", "infl", "hrem", "lrem", "nat", "prefix", "sites")),
-        set(("sad", "label", "nat", "prefix", "sites")),
-        set(("mad", "peak", "infl", "hrem", "lrem", "nat", "prefix", "sites")),
+        {"peak", "infl", "hrem", "lrem", "nat", "prefix", "sites"},
+        {"sad", "label", "nat", "prefix", "sites"},
+        {"mad", "peak", "infl", "hrem", "lrem", "nat", "prefix", "sites"},
     )
     if not any(param_names.issubset(grp) for grp in allowed_groups):
         parser.error("Invalid combination of the input parameters")

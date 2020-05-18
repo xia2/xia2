@@ -1,4 +1,3 @@
-import io
 import logging
 import os
 import time
@@ -436,7 +435,7 @@ class DefaultDriver:
                     )
             self._log_file.close()
             self._log_file = None
-            with io.open(self._log_file_name, "r", encoding="latin-1") as f:
+            with open(self._log_file_name, "r", encoding="latin-1") as f:
                 lines = f.readlines()
                 n = min(50, len(lines))
                 logger.debug("Last %i lines of %s:", n, self._log_file_name)

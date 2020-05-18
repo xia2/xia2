@@ -479,7 +479,7 @@ class _CommandLine:
     def set_xinfo(self, xinfo):
         logger.debug(60 * "-")
         logger.debug("XINFO file: %s" % xinfo)
-        with open(xinfo, "rU") as fh:
+        with open(xinfo) as fh:
             logger.debug(fh.read().strip())
         logger.debug(60 * "-")
         self._xinfo = XProject(xinfo)

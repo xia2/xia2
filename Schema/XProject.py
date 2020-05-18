@@ -8,7 +8,6 @@ import logging
 import os
 
 import pathlib
-import six
 from dxtbx.serialize.load import _decode_list
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Syminfo import Syminfo
@@ -91,11 +90,7 @@ class XProject:
             """ Decode a dict to str from unicode. """
             rv = {}
             for key, value in data.items():
-                if six.PY2 and isinstance(key, str):
-                    key = key.encode("utf-8")
-                if six.PY2 and isinstance(value, str):
-                    value = value.encode("utf-8")
-                elif isinstance(value, list):
+                if isinstance(value, list):
                     value = _decode_list(value)
                 elif isinstance(value, dict):
                     value = _decode_dict(value)
