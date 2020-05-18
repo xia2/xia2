@@ -30,12 +30,12 @@ from xia2.Schema import load_imagesets
 logger = logging.getLogger("xia2.Schema.Interfaces.FrameProcessor")
 
 
-class FrameProcessor(object):
+class FrameProcessor:
     """A class to handle the information needed to process X-Ray
     diffraction frames."""
 
     def __init__(self, image=None):
-        super(FrameProcessor, self).__init__()
+        super().__init__()
 
         self._fp_template = None
         self._fp_directory = None

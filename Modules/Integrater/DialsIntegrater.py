@@ -28,7 +28,7 @@ class DialsIntegrater(Integrater):
     programs."""
 
     def __init__(self):
-        super(DialsIntegrater, self).__init__()
+        super().__init__()
 
         # check that the programs exist - this will raise an exception if
         # they do not...

@@ -9,7 +9,7 @@ from xia2.Driver.DriverHelper import kill_process
 
 class SimpleDriver(DefaultDriver):
     def __init__(self):
-        super(SimpleDriver, self).__init__()
+        super().__init__()
 
         self._popen = None
         self._popen_status = None

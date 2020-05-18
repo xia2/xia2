@@ -32,7 +32,7 @@ from xia2.Schema.XSweep import XSweep
 logger = logging.getLogger("xia2.Schema.XWavelength")
 
 
-class XWavelength(object):
+class XWavelength:
     """An object representation of a wavelength, which will after data
     reduction correspond to an MTZ hierarchy dataset."""
 

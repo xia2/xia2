@@ -178,7 +178,7 @@ symmetry.cosym.best_monoclinic_beta = False
 )
 
 
-class DataManager(object):
+class DataManager:
     def __init__(self, experiments, reflections):
         self._input_experiments = experiments
         self._input_reflections = reflections
@@ -327,7 +327,7 @@ class DataManager(object):
         return filename
 
 
-class MultiCrystalScale(object):
+class MultiCrystalScale:
     def __init__(self, experiments, reflections, params):
 
         self._data_manager = DataManager(experiments, reflections)
@@ -818,7 +818,7 @@ class MultiCrystalScale(object):
         self._cc_clusters = mca.cc_clusters
 
 
-class Scale(object):
+class Scale:
     def __init__(self, data_manager, params, filtering=False):
         self._data_manager = data_manager
         self._params = params

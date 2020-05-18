@@ -36,7 +36,7 @@ def SweepFactory(template, directory, beam=None):
     return sweeps
 
 
-class Sweep(object):
+class Sweep:
     """A class to represent a single sweep of frames."""
 
     def __init__(self, template, directory, imageset=None, id_image=None, beam=None):

@@ -15,7 +15,7 @@ def DialsMerge(DriverType=None):
 
         def __init__(self):
             # generic things
-            super(DialsMergeWrapper, self).__init__()
+            super().__init__()
 
             self.set_executable("dials.merge")
 

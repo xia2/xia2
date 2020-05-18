@@ -24,7 +24,7 @@ def XDSInit(DriverType=None, params=None):
         """A wrapper for wrapping XDS in init mode."""
 
         def __init__(self, params=None):
-            super(XDSInitWrapper, self).__init__()
+            super().__init__()
 
             # phil parameters
 

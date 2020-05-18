@@ -57,7 +57,7 @@ class Integrater(FrameProcessor):
 
     def __init__(self):
 
-        super(Integrater, self).__init__()
+        super().__init__()
 
         # admin junk
         self._intgr_working_directory = os.getcwd()

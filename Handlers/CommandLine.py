@@ -111,7 +111,7 @@ def validate_project_crystal_name(parameter, value):
         )
 
 
-class _CommandLine(object):
+class _CommandLine:
     """A class to represent the command line input."""
 
     def __init__(self):

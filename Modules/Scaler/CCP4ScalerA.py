@@ -38,7 +38,7 @@ class CCP4ScalerA(Scaler):
     """An implementation of the Scaler interface using CCP4 programs."""
 
     def __init__(self, *args, **kwargs):
-        super(CCP4ScalerA, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self._sweep_handler = None
 
@@ -64,7 +64,7 @@ class CCP4ScalerA(Scaler):
     # overloaded from the Scaler interface... to plumb in the factory
 
     def to_dict(self):
-        obj = super(CCP4ScalerA, self).to_dict()
+        obj = super().to_dict()
         if self._sweep_handler is not None:
             obj["_sweep_handler"] = self._sweep_handler.to_dict()
         obj["_prepared_reflections"] = self._prepared_reflections
@@ -72,7 +72,7 @@ class CCP4ScalerA(Scaler):
 
     @classmethod
     def from_dict(cls, obj):
-        return_obj = super(CCP4ScalerA, cls).from_dict(obj)
+        return_obj = super().from_dict(obj)
         if return_obj._sweep_handler is not None:
             return_obj._sweep_handler = SweepInformationHandler.from_dict(
                 return_obj._sweep_handler

@@ -14,7 +14,7 @@ from xia2.Modules.Scaler.ScalerFactory import Scaler
 from dxtbx.util import format_float_with_standard_uncertainty
 
 
-class _aa_sequence(object):
+class _aa_sequence:
     """An object to represent the amino acid sequence."""
 
     def __init__(self, sequence):
@@ -49,7 +49,7 @@ class _aa_sequence(object):
         return return_obj
 
 
-class _ha_info(object):
+class _ha_info:
     """A versioned class to represent the heavy atom information."""
 
     # FIXME in theory we could have > 1 of these to represent e.g. different
@@ -151,7 +151,7 @@ def format_statistics(statistics, caption=None):
     return result
 
 
-class XCrystal(object):
+class XCrystal:
     """An object to maintain all of the information about a crystal. This
     will contain the experimental information in XWavelength objects,
     and also amino acid sequence, heavy atom information."""

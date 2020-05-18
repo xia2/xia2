@@ -6,7 +6,7 @@ from xia2.Driver.ScriptDriver import ScriptDriver
 from xia2.Driver.SimpleDriver import SimpleDriver
 
 
-class _DriverFactory(object):
+class _DriverFactory:
     def __init__(self):
         self._driver_type = "simple"
 

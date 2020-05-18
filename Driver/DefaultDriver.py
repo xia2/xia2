@@ -23,7 +23,7 @@ from xia2.DriverExceptions.NotAvailableError import NotAvailableError
 logger = logging.getLogger("xia2.Driver.DefaultDriver")
 
 
-class DefaultDriver(object):
+class DefaultDriver:
     """A class to run other programs, specifically from the CCP4 suite
     but also others, to achieve crystallographic processes. This will also
     provide functionality for controlling the job, limited only by the
@@ -31,7 +31,7 @@ class DefaultDriver(object):
 
     def __init__(self):
         """Initialise the Driver instance."""
-        super(DefaultDriver, self).__init__()
+        super().__init__()
 
         # settings for the job to run
         self._executable = None

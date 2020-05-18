@@ -10,7 +10,7 @@ import os
 import xml.dom.minidom
 
 
-class _Citations(object):
+class _Citations:
     """A class to track citations."""
 
     def __init__(self):

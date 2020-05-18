@@ -163,7 +163,7 @@ def equation_of_line(p1, p2):
     return -(a + b), -(c + d), 1
 
 
-class BackstopMask(object):
+class BackstopMask:
     """A class to handle the calculation of back stop masks, from a
     set of masks as a function of distance derived from inspection
     of images in ADXV."""
@@ -299,7 +299,7 @@ class BackstopMask(object):
         return rectangle(p1, p2, p3, p4)
 
 
-class rectangle(object):
+class rectangle:
     """A class to represent a rectange."""
 
     def __init__(self, p1, p2, p3, p4):

@@ -9,7 +9,7 @@ import os
 from xia2.Wrappers.XDS.XDS import xds_read_xparm
 
 
-class _Flags(object):
+class _Flags:
     """A singleton to manage boolean flags."""
 
     def __init__(self):

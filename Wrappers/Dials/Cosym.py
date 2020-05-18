@@ -18,7 +18,7 @@ def DialsCosym(DriverType=None, decay_correction=None):
 
         def __init__(self):
             # generic things
-            super(DialsCosymWrapper, self).__init__()
+            super().__init__()
 
             self.set_executable("dials.cosym")
 

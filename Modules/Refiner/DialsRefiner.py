@@ -15,7 +15,7 @@ from xia2.Wrappers.Dials.Report import Report as _Report
 
 class DialsRefiner(Refiner):
     def __init__(self):
-        super(DialsRefiner, self).__init__()
+        super().__init__()
 
     # factory functions
 

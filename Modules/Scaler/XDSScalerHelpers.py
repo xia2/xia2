@@ -11,7 +11,7 @@ from xia2.Wrappers.CCP4.Pointless import Pointless as _Pointless
 logger = logging.getLogger("xia2.Modules.Scaler.XDSScalerHelpers")
 
 
-class XDSScalerHelper(object):
+class XDSScalerHelper:
     """A class which contains functions which will help the XDS Scaler
     with its work. This is implemented as a class to allow properties
     like working directories and so on to be maintained."""

@@ -20,7 +20,7 @@ from xia2.Schema.XWavelength import XWavelength
 logger = logging.getLogger("xia2.Schema.XProject")
 
 
-class XProject(object):
+class XProject:
     """A representation of a complete project. This will contain a dictionary
     of crystals."""
 

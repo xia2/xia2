@@ -15,7 +15,7 @@ def GenerateMask(DriverType=None):
 
     class GenerateMaskWrapper(DriverInstance.__class__, FrameProcessor):
         def __init__(self):
-            super(GenerateMaskWrapper, self).__init__()
+            super().__init__()
 
             self.set_executable("dials.generate_mask")
 

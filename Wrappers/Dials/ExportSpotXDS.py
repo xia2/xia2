@@ -18,7 +18,7 @@ def ExportSpotXDS(DriverType=None, params=None):
         """A wrapper for wrapping dials.export_spot_xds."""
 
         def __init__(self, params=None):
-            super(ExportSpotXDSWrapper, self).__init__()
+            super().__init__()
 
             # phil parameters
 

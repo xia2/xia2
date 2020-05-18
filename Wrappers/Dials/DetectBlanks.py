@@ -11,7 +11,7 @@ def DetectBlanks(DriverType=None):
 
     class DetectBlanksWrapper(DriverInstance.__class__):
         def __init__(self):
-            super(DetectBlanksWrapper, self).__init__()
+            super().__init__()
 
             self.set_executable("dials.detect_blanks")
 

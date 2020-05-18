@@ -31,7 +31,7 @@ from xia2.Modules.Analysis import batch_phil_scope, phil_scope, separate_unmerge
 
 class _xtriage_output(printed_output):
     def __init__(self, out):
-        super(_xtriage_output, self).__init__(out)
+        super().__init__(out)
         self.gui_output = True
         self._out_orig = self.out
         self.out = StringIO()
@@ -43,7 +43,7 @@ class _xtriage_output(printed_output):
     def show_header(self, text):
         self._out_orig.write(self.out.getvalue())
         self.out = StringIO()
-        super(_xtriage_output, self).show_header(text)
+        super().show_header(text)
 
     def show_sub_header(self, title):
         self._out_orig.write(self.out.getvalue())
@@ -58,7 +58,7 @@ class _xtriage_output(printed_output):
         self._out_orig.flush()
 
 
-class Report(object):
+class Report:
     def __init__(
         self,
         intensities,

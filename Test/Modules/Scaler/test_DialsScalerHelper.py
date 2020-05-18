@@ -173,7 +173,7 @@ def test_assign_identifiers(helper_directory):
     assert refls.experiment_identifiers()[2] == expts[2].identifier
 
 
-class simple_sweep_info(object):
+class simple_sweep_info:
     """Simple sweep info class for testing"""
 
     def __init__(self):
@@ -202,7 +202,7 @@ class simple_sweep_info(object):
         return self.experiments
 
 
-class simple_sweep_handler(object):
+class simple_sweep_handler:
     """Simple sweep handler class for testing"""
 
     def __init__(self, number_of_experiments):
@@ -267,7 +267,7 @@ def test_assign_and_return_datasets(helper_directory):
     check_data_in_sweep_handler(sweephandler)
 
 
-class simple_refiner(object):
+class simple_refiner:
 
     LATTICE_POSSIBLE = "LATTICE_POSSIBLE"
     LATTICE_IMPOSSIBLE = "LATTICE_IMPOSSIBLE"

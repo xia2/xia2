@@ -32,7 +32,7 @@ class XDSScalerA(Scaler):
     programs like pointless."""
 
     def __init__(self, *args, **kwargs):
-        super(XDSScalerA, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self._sweep_information = {}
 
@@ -62,7 +62,7 @@ class XDSScalerA(Scaler):
         self._scalr_corrections = True
 
     def to_dict(self):
-        obj = super(XDSScalerA, self).to_dict()
+        obj = super().to_dict()
         attributes = inspect.getmembers(self, lambda m: not (inspect.isroutine(m)))
         for a in attributes:
             if a[0].startswith("_xds_"):
@@ -76,7 +76,7 @@ class XDSScalerA(Scaler):
 
     @classmethod
     def from_dict(cls, obj):
-        return_obj = super(XDSScalerA, cls).from_dict(obj)
+        return_obj = super().from_dict(obj)
         for i in list(return_obj._sweep_information):
             d = return_obj._sweep_information[i]["integrater"]
             from libtbx.utils import import_python_object

@@ -10,7 +10,7 @@ def ImportXDS(DriverType=None):
 
     class ImportXDSWrapper(DriverInstance.__class__):
         def __init__(self):
-            super(ImportXDSWrapper, self).__init__()
+            super().__init__()
 
             self.set_executable("dials.import_xds")
 

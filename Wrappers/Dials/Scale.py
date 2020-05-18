@@ -17,7 +17,7 @@ def DialsScale(DriverType=None, decay_correction=None):
 
         def __init__(self):
             # generic things
-            super(DialsScaleWrapper, self).__init__()
+            super().__init__()
 
             self.set_executable("dials.scale")
 

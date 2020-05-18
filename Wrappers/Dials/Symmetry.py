@@ -19,7 +19,7 @@ def DialsSymmetry(DriverType=None):
 
         def __init__(self):
             # generic things
-            super(DialsSymmetryWrapper, self).__init__()
+            super().__init__()
 
             self.set_executable("dials.symmetry")
 

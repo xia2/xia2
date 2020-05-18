@@ -29,7 +29,7 @@ def anvil_correction(driver_type=None):
         """Wrap dials.anvil_correction."""
 
         def __init__(self):
-            super(AnvilCorrectionWrapper, self).__init__()
+            super().__init__()
 
             self.set_executable("dials.anvil_correction")
 

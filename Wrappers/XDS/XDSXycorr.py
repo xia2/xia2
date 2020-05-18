@@ -23,7 +23,7 @@ def XDSXycorr(DriverType=None):
         """A wrapper for wrapping XDS in xycorr mode."""
 
         def __init__(self):
-            super(XDSXycorrWrapper, self).__init__()
+            super().__init__()
 
             # now set myself up...
 

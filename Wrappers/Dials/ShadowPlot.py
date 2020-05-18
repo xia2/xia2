@@ -12,7 +12,7 @@ def ShadowPlot(DriverType=None):
 
     class ShadowPlotWrapper(DriverInstance.__class__, FrameProcessor):
         def __init__(self):
-            super(ShadowPlotWrapper, self).__init__()
+            super().__init__()
 
             self.set_executable("dials.shadow_plot")
 

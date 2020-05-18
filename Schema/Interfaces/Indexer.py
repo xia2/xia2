@@ -52,7 +52,7 @@ from xia2.Handlers.Streams import banner
 logger = logging.getLogger("xia2.Schema.Interfaces.Indexer")
 
 
-class _IndexerHelper(object):
+class _IndexerHelper:
     """
     Manage autoindexing results in a useful way.
 
@@ -129,7 +129,7 @@ def beam_centre_raw_image(detector, beam):
     return panel.pixel_to_millimeter((x_px + offset[0], y_px + offset[1]))
 
 
-class Indexer(object):
+class Indexer:
     """A class interface to present autoindexing functionality in a standard
     way for all indexing programs. Note that this interface defines the
     contract - what the implementation actually does is a matter for the
@@ -718,7 +718,7 @@ class Indexer(object):
 # class for legacy Indexers that only support indexing from a single sweep
 class IndexerSingleSweep(Indexer):
     def __init__(self):
-        super(IndexerSingleSweep, self).__init__()
+        super().__init__()
         self._indxr_images = []
 
     def get_imageset(self):

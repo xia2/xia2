@@ -23,7 +23,7 @@ d_min = None
 )
 
 
-class DeltaCcHalf(object):
+class DeltaCcHalf:
     def __init__(
         self,
         intensities,

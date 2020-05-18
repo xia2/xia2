@@ -19,7 +19,7 @@ from libtbx import phil
 logger = logging.getLogger(__name__)
 
 
-class MultiCrystalAnalysis(object):
+class MultiCrystalAnalysis:
     def __init__(self, params, experiments=None, reflections=None, data_manager=None):
         self.params = params
         self._cluster_analysis = None

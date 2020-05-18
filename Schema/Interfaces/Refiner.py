@@ -8,7 +8,7 @@ from dxtbx.serialize.load import _decode_dict
 logger = logging.getLogger("xia2.Schema.Interfaces.Refiner")
 
 
-class Refiner(object):
+class Refiner:
     """An interface to present refinement functionality in a similar way to the
     scaler interface."""
 
@@ -17,7 +17,7 @@ class Refiner(object):
     LATTICE_CORRECT = "LATTICE_CORRECT"
 
     def __init__(self):
-        super(Refiner, self).__init__()
+        super().__init__()
         # set up a framework for storing all of the input information...
         # this should really only consist of integraters...
 

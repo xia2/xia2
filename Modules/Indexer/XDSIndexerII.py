@@ -30,7 +30,7 @@ class XDSIndexerII(XDSIndexer):
     """An extension of XDSIndexer using all available images."""
 
     def __init__(self):
-        super(XDSIndexerII, self).__init__()
+        super().__init__()
 
         self._index_select_images = "ii"
 
@@ -90,7 +90,7 @@ class XDSIndexerII(XDSIndexer):
 
     def _index_prepare(self):
         logger.notice(banner("Spotfinding %s" % self.get_indexer_sweep_name()))
-        super(XDSIndexerII, self)._index_prepare()
+        super()._index_prepare()
 
         reflections_file = spot_xds_to_reflection_file(
             self._indxr_payload["SPOT.XDS"],

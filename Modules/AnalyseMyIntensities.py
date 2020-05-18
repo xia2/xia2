@@ -24,7 +24,7 @@ import os
 from xia2.Wrappers.CCP4.CCP4Factory import CCP4Factory
 
 
-class AnalyseMyIntensities(object):
+class AnalyseMyIntensities:
     # FIXME retire this entire class...
 
     def __init__(self):

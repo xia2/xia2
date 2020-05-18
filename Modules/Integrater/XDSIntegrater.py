@@ -44,7 +44,7 @@ class XDSIntegrater(Integrater):
     programs."""
 
     def __init__(self):
-        super(XDSIntegrater, self).__init__()
+        super().__init__()
 
         # check that the programs exist - this will raise an exception if
         # they do not...
@@ -72,7 +72,7 @@ class XDSIntegrater(Integrater):
 
     @classmethod
     def from_dict(cls, obj):
-        return_obj = super(XDSIntegrater, cls).from_dict(obj)
+        return_obj = super().from_dict(obj)
         return_obj._factory = CCP4Factory()
         return return_obj
 

@@ -76,7 +76,7 @@ def get_num_symops(spacegroup_number):
     return len(sgtbx.space_group_info(number=spacegroup_number).group())
 
 
-class _Syminfo(object):
+class _Syminfo:
     """Legacy method of accessing functions."""
 
 

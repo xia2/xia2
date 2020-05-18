@@ -17,7 +17,7 @@ from xia2.Wrappers.Dials.Symmetry import DialsSymmetry as _DialsSymmetry
 from xia2.Wrappers.XIA.Chef import Chef as _Chef
 
 
-class CCP4Factory(object):
+class CCP4Factory:
     """A class to provide CCP4 program wrappers."""
 
     def __init__(self):

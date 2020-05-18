@@ -25,7 +25,7 @@ def XDSDefpix(DriverType=None):
         """A wrapper for wrapping XDS in defpix mode."""
 
         def __init__(self):
-            super(XDSDefpixWrapper, self).__init__()
+            super().__init__()
 
             # now set myself up...
 

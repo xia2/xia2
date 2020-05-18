@@ -9,7 +9,7 @@ def EstimateGain(DriverType=None):
 
     class EstimateGainWrapper(DriverInstance.__class__, FrameProcessor):
         def __init__(self):
-            super(EstimateGainWrapper, self).__init__()
+            super().__init__()
 
             self.set_executable("dials.estimate_gain")
 

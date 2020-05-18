@@ -12,7 +12,7 @@ import os
 import shutil
 
 
-class _FileHandler(object):
+class _FileHandler:
     """A singleton class to manage files."""
 
     def __init__(self):

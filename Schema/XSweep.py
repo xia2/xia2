@@ -73,7 +73,7 @@ from xia2.Modules.Refiner import RefinerFactory
 logger = logging.getLogger("xia2.Schema.XSweep")
 
 
-class _global_integration_parameters(object):
+class _global_integration_parameters:
     """A global class to record the integration parameters which are exported
     for each crystal. This is a dictionary keyed by the crystal id."""
 
@@ -110,7 +110,7 @@ global_integration_parameters = _global_integration_parameters()
 # single image.
 
 
-class XSweep(object):
+class XSweep:
     """An object representation of the sweep."""
 
     def __init__(

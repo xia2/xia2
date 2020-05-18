@@ -36,7 +36,7 @@ d_min = None
 )
 
 
-class ClusterInfo(object):
+class ClusterInfo:
     def __init__(
         self, cluster_id, labels, multiplicity, completeness, unit_cell, height=None
     ):
@@ -60,7 +60,7 @@ class ClusterInfo(object):
         return "\n".join(lines)
 
 
-class multi_crystal_analysis(object):
+class multi_crystal_analysis:
     def __init__(self, unmerged_intensities, labels=None, prefix=None):
 
         self.unmerged_intensities = unmerged_intensities

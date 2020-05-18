@@ -54,7 +54,7 @@ logger = logging.getLogger("xia2.Modules.Indexer.DialsIndexer")
 
 class DialsIndexer(Indexer):
     def __init__(self):
-        super(DialsIndexer, self).__init__()
+        super().__init__()
 
         self._background_images = None
 

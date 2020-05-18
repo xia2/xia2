@@ -38,7 +38,7 @@ from xia2.Wrappers.CCP4.Scaleit import Scaleit
 # which are "damaged".
 
 
-class CCP4InterRadiationDamageDetector(object):
+class CCP4InterRadiationDamageDetector:
     """A class to detect radiation damage."""
 
     def __init__(self):

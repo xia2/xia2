@@ -48,7 +48,7 @@ logger = logging.getLogger("xia2.Modules.Scaler.DialsScaler")
 
 class DialsScaler(Scaler):
     def __init__(self, *args, **kwargs):
-        super(DialsScaler, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self._scalr_scaled_refl_files = {}
         self._scalr_statistics = {}
@@ -1072,7 +1072,7 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
         return mtz_filename
 
 
-class DialsScalerHelper(object):
+class DialsScalerHelper:
     """A class to help the CCP4 Scaler along a little."""
 
     def __init__(self):

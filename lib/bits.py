@@ -45,7 +45,7 @@ def mean_sd(list_of_numbers):
 # http://eli.thegreenplace.net/2012/01/04/shared-counter-with-pythons-multiprocessing/
 
 
-class Counter(object):
+class Counter:
     def __init__(self, initval=0):
         self.val = Value("i", initval)
         self.lock = Lock()

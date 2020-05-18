@@ -8,7 +8,7 @@ import xia2.Handlers.Citations
 import xia2.XIA2Version
 
 
-class _CIFHandler(object):
+class _CIFHandler:
     def __init__(self, mmCIFsemantics=False):
         self._cif = iotbx.cif.model.cif()
         self._outfile = "xia2.cif" if not mmCIFsemantics else "xia2.mmcif"

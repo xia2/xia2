@@ -9,7 +9,7 @@ def FrenchWilson(DriverType=None):
         """A wrapper for cctbx French and Wilson analysis."""
 
         def __init__(self):
-            super(FrenchWilsonWrapper, self).__init__()
+            super().__init__()
 
             self._executable = "cctbx_FrenchWilson"
             self._outbuffer = []

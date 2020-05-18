@@ -191,7 +191,7 @@ def _prepare_pointless_hklin(working_directory, hklin, phi_width):
 ############### HELPER CLASS #########################
 
 
-class CCP4ScalerHelper(object):
+class CCP4ScalerHelper:
     """A class to help the CCP4 Scaler along a little."""
 
     def __init__(self):
@@ -357,7 +357,7 @@ class CCP4ScalerHelper(object):
 # Sweep info class to replace dictionary... #884
 
 
-class SweepInformation(object):
+class SweepInformation:
     def __init__(self, integrater):
 
         self._project_info = integrater.get_integrater_project_info()
@@ -460,7 +460,7 @@ class SweepInformation(object):
         return self._experiments
 
 
-class SweepInformationHandler(object):
+class SweepInformationHandler:
     def __init__(self, epoch_to_integrater):
 
         self._sweep_information = {}

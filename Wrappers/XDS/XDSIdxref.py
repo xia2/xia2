@@ -41,7 +41,7 @@ def XDSIdxref(DriverType=None, params=None):
         """A wrapper for wrapping XDS in idxref mode."""
 
         def __init__(self, params=None):
-            super(XDSIdxrefWrapper, self).__init__()
+            super().__init__()
 
             # phil parameters
 

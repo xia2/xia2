@@ -3,7 +3,7 @@ import inspect
 from xia2.Modules.DoseAccumulate import accumulate_dose
 
 
-class XSample(object):
+class XSample:
     """An object representation of a sample."""
 
     def __init__(self, name, crystal):

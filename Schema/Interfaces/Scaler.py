@@ -10,7 +10,7 @@ from xia2.Handlers.Streams import banner
 logger = logging.getLogger("xia2.Schema.Interfaces.Scaler")
 
 
-class Scaler(object):
+class Scaler:
     """An interface to present scaling functionality in a similar way to the
     integrater interface."""
 

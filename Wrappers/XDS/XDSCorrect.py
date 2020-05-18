@@ -30,7 +30,7 @@ def XDSCorrect(DriverType=None, params=None):
         """A wrapper for wrapping XDS in correct mode."""
 
         def __init__(self, params=None):
-            super(XDSCorrectWrapper, self).__init__()
+            super().__init__()
 
             # phil parameters
 

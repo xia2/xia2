@@ -7,7 +7,7 @@ from xia2.Driver.DriverHelper import script_writer
 
 class ScriptDriver(DefaultDriver):
     def __init__(self):
-        super(ScriptDriver, self).__init__()
+        super().__init__()
 
         self._script_command_line = []
         self._script_standard_input = []

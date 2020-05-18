@@ -24,7 +24,7 @@ def XDSColspot(DriverType=None, params=None):
         """A wrapper for wrapping XDS in colspot mode."""
 
         def __init__(self, params=None):
-            super(XDSColspotWrapper, self).__init__()
+            super().__init__()
 
             # phil parameters
 

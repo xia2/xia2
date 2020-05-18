@@ -16,7 +16,7 @@ def sanitize(path):
     return path.replace(double, os.sep)
 
 
-class ISPyBXmlHandler(object):
+class ISPyBXmlHandler:
     def __init__(self, project):
         self._crystals = {}
         self._per_crystal_data = {}
