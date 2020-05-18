@@ -34,6 +34,7 @@ def banner(comment, size=60):
     return "%s %s %s" % ("-" * m, comment, "-" * n)
 
 
+logger = logging.getLogger("xia2.Handlers.Streams")
 today = date.today()
 sanitize = (today.day == 1 and today.month == 4) or "XIA2_APRIL" in os.environ
 
@@ -49,6 +50,11 @@ def setup_logging(logfile=None, debugfile=None, verbose=False):
     :param verbose: Enable debug output for logfile and console.
     :type verbose: bool
     """
+    if hasattr(setup_logging, "initialised"):
+        logger.warning("Second call to set up logging rejected")
+        return
+    setup_logging.initialised = True
+
     if verbose:
         loglevel = logging.DEBUG
     else:
@@ -70,26 +76,25 @@ def setup_logging(logfile=None, debugfile=None, verbose=False):
         fh = logging.FileHandler(filename=logfile, mode="w")
         fh.setLevel(loglevel)
         xia2_logger.addHandler(fh)
-        for logger in other_loggers:
-            logger.addHandler(fh)
-            logger.setLevel(loglevel)
+        for logger_ in other_loggers:
+            logger_.addHandler(fh)
+            logger_.setLevel(loglevel)
 
     if debugfile:
         fh = logging.FileHandler(filename=debugfile, mode="w")
         fh.setLevel(logging.DEBUG)
-        for logger in [xia2_logger] + other_loggers:
-            logger.addHandler(fh)
-            logger.setLevel(logging.DEBUG)
+        for logger_ in [xia2_logger] + other_loggers:
+            logger_.addHandler(fh)
+            logger_.setLevel(logging.DEBUG)
 
 
 if __name__ == "__main__":
     setup_logging(logfile="logfile", debugfile="debugfile")
-    ll = logging.getLogger("xia2.Handlers.Streams")
-    ll.debug("this is a debug-level message")
-    ll.info("this is an info-level message")
-    ll.notice("this is a notice-level message")
-    ll.warning("this is a warning-level message")
-    ll.error("this is an error-level message")
+    logger.debug("this is a debug-level message")
+    logger.info("this is an info-level message")
+    logger.notice("this is a notice-level message")
+    logger.warning("this is a warning-level message")
+    logger.error("this is an error-level message")
 
 # -------------------------------------------------------------------------------
 # colored stream handler for python logging framework based on:
