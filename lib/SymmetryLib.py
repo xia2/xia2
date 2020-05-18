@@ -18,10 +18,6 @@
 
 import os
 
-symop = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "..", "Data", "ccp4-symop.lib")
-)
-
 
 def lattice_to_spacegroup(lattice):
     """Convert a lattice e.g. tP into the minimal spacegroup number
