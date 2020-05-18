@@ -61,7 +61,7 @@ def add_xds_version_to_mtz_history(mtz_file):
     assert reader.file_type() == "ccp4_mtz"
     mtz_object = reader.file_content()
     date_str = time.strftime("%d/%m/%Y at %H:%M:%S", time.gmtime())
-    mtz_object.add_history("From XDS %s, run on %s" % (XDS.get_xds_version(), date_str))
+    mtz_object.add_history(f"From XDS {XDS.get_xds_version()}, run on {date_str}")
     mtz_object.write(mtz_file)
 
 

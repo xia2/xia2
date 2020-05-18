@@ -573,13 +573,12 @@ pipeline=dials (supported for pipeline=dials-aimless).
         self._scaler.set_working_directory(self.get_working_directory())
         auto_logfiler(self._scaler)
         FileHandler.record_log_file(
-            "%s %s SCALE" % (self._scalr_pname, self._scalr_xname),
+            f"{self._scalr_pname} {self._scalr_xname} SCALE",
             self._scaler.get_log_file(),
         )
         self._scaler.scale()
         FileHandler.record_html_file(
-            "%s %s SCALE" % (self._scalr_pname, self._scalr_xname),
-            self._scaler.get_html(),
+            f"{self._scalr_pname} {self._scalr_xname} SCALE", self._scaler.get_html(),
         )
         self._scaled_experiments = self._scaler.get_scaled_experiments()
         self._scaled_reflections = self._scaler.get_scaled_reflections()
@@ -628,12 +627,10 @@ pipeline=dials (supported for pipeline=dials-aimless).
             self._scalr_likely_spacegroups = [sg.type().lookup_symbol()]
 
         FileHandler.record_more_data_file(
-            "%s %s scaled" % (self._scalr_pname, self._scalr_xname),
-            self._scaled_experiments,
+            f"{self._scalr_pname} {self._scalr_xname} scaled", self._scaled_experiments,
         )
         FileHandler.record_more_data_file(
-            "%s %s scaled" % (self._scalr_pname, self._scalr_xname),
-            self._scaled_reflections,
+            f"{self._scalr_pname} {self._scalr_xname} scaled", self._scaled_reflections,
         )
 
         # Run twotheta refine
@@ -659,7 +656,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
 
         scaled_unmerged_mtz_path = os.path.join(
             self.get_working_directory(),
-            "%s_%s_scaled_unmerged.mtz" % (self._scalr_pname, self._scalr_xname),
+            f"{self._scalr_pname}_{self._scalr_xname}_scaled_unmerged.mtz",
         )
 
         if len(dnames_set) > 1:
@@ -781,7 +778,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
             auto_logfiler(merger)
             mtz_filename = os.path.join(
                 self.get_working_directory(),
-                "%s_%s_scaled.mtz" % (self._scalr_pname, self._scalr_xname),
+                f"{self._scalr_pname}_{self._scalr_xname}_scaled.mtz",
             )
             self._scalr_scaled_refl_files[dnames_set[0]] = mtz_filename
             self._scalr_scaled_reflection_files["mtz"][dnames_set[0]] = mtz_filename
@@ -803,7 +800,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
             exporter.set_intensity_choice("profile+sum")
             pname, xname, dname = si.get_project_info()
             sweep = si.get_integrater().get_integrater_sweep_name()
-            tag = "%s %s %s %s INTEGRATE" % (pname, xname, dname, sweep)
+            tag = f"{pname} {xname} {dname} {sweep} INTEGRATE"
             mtz_filename = os.path.join(
                 self.get_working_directory(), "%s_integrated.mtz" % sweep
             )
@@ -883,7 +880,7 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
 
             p4p_file = os.path.join(
                 self.get_working_directory(),
-                "%s_%s.p4p" % (self._scalr_pname, self._scalr_xname),
+                f"{self._scalr_pname}_{self._scalr_xname}.p4p",
             )
             if len(set(groups_list)) > 1:
                 # need to split up experiments and reflections
@@ -942,7 +939,7 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
 
             self._scaled_experiments = tt_refiner.get_output_experiments()
             FileHandler.record_more_data_file(
-                "%s %s scaled" % (self._scalr_pname, self._scalr_xname),
+                f"{self._scalr_pname} {self._scalr_xname} scaled",
                 self._scaled_experiments,
             )
 
@@ -1224,7 +1221,7 @@ Passing multple datasets to indexer_jiffy but not set multisweep=True"""
         auto_logfiler(symmetry_analyser)
 
         FileHandler.record_log_file(
-            "%s %s SYMMETRY" % (self._scalr_pname, self._scalr_xname),
+            f"{self._scalr_pname} {self._scalr_xname} SYMMETRY",
             symmetry_analyser.get_log_file(),
         )
 

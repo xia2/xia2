@@ -41,7 +41,7 @@ def check_environment():
             raise RuntimeError("%s not defined - is CCP4 set up?" % k)
         if not v == v.strip():
             raise RuntimeError('spaces around "%s"' % v)
-        logger.info("%s => %s" % (k, v))
+        logger.info(f"{k} => {v}")
 
     from xia2.Handlers.Flags import Flags
 

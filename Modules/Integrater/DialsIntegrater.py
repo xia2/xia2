@@ -247,8 +247,7 @@ class DialsIntegrater(Integrater):
         pname, xname, dname = self.get_integrater_project_info()
         sweep = self.get_integrater_sweep_name()
         FileHandler.record_log_file(
-            "%s %s %s %s INTEGRATE" % (pname, xname, dname, sweep),
-            integrate.get_log_file(),
+            f"{pname} {xname} {dname} {sweep} INTEGRATE", integrate.get_log_file(),
         )
 
         try:
@@ -334,7 +333,7 @@ class DialsIntegrater(Integrater):
         report.set_html_filename(html_filename)
         report.run(wait_for_completion=True)
         FileHandler.record_html_file(
-            "%s %s %s %s INTEGRATE" % (pname, xname, dname, sweep), html_filename
+            f"{pname} {xname} {dname} {sweep} INTEGRATE", html_filename
         )
 
         experiments = load.experiment_list(self._intgr_experiments_filename)
@@ -388,7 +387,7 @@ class DialsIntegrater(Integrater):
             pname, xname, dname = self.get_integrater_project_info()
             sweep = self.get_integrater_sweep_name()
             FileHandler.record_more_data_file(
-                "%s %s %s %s INTEGRATE" % (pname, xname, dname, sweep), mtz_filename
+                f"{pname} {xname} {dname} {sweep} INTEGRATE", mtz_filename
             )
 
             from iotbx.reflection_file_reader import any_reflection_file
@@ -470,12 +469,10 @@ class DialsIntegrater(Integrater):
             pname, xname, dname = self.get_integrater_project_info()
             sweep = self.get_integrater_sweep_name()
             FileHandler.record_more_data_file(
-                "%s %s %s %s" % (pname, xname, dname, sweep),
-                self.get_integrated_experiments(),
+                f"{pname} {xname} {dname} {sweep}", self.get_integrated_experiments(),
             )
             FileHandler.record_more_data_file(
-                "%s %s %s %s" % (pname, xname, dname, sweep),
-                self.get_integrated_reflections(),
+                f"{pname} {xname} {dname} {sweep}", self.get_integrated_reflections(),
             )
 
             return hklout
@@ -543,12 +540,10 @@ class DialsIntegrater(Integrater):
             pname, xname, dname = self.get_integrater_project_info()
             sweep = self.get_integrater_sweep_name()
             FileHandler.record_more_data_file(
-                "%s %s %s %s" % (pname, xname, dname, sweep),
-                self.get_integrated_experiments(),
+                f"{pname} {xname} {dname} {sweep}", self.get_integrated_experiments(),
             )
             FileHandler.record_more_data_file(
-                "%s %s %s %s" % (pname, xname, dname, sweep),
-                self.get_integrated_reflections(),
+                f"{pname} {xname} {dname} {sweep}", self.get_integrated_reflections(),
             )
             return None  # this will be set to intgr_hklout - better to cause failure
             # due to it being none than it be set wrong and not knowing?

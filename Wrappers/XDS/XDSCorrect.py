@@ -230,7 +230,7 @@ def XDSCorrect(DriverType=None, params=None):
 
                 for upper, lower in self._excluded_regions:
                     xds_inp.write(
-                        "EXCLUDE_RESOLUTION_RANGE= %.2f %.2f\n" % (upper, lower)
+                        f"EXCLUDE_RESOLUTION_RANGE= {upper:.2f} {lower:.2f}\n"
                     )
 
             # postrefine everything to give better values to the

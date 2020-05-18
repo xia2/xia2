@@ -276,7 +276,7 @@ class CCP4ScalerHelper:
         reindex_op = symmetry.get_reindex_operator()
         probably_twinned = symmetry.get_probably_twinned()
 
-        logger.debug("Pointgroup: %s (%s)" % (pointgroup, reindex_op))
+        logger.debug(f"Pointgroup: {pointgroup} ({reindex_op})")
 
         return pointgroup, reindex_op, need_to_return, probably_twinned
 
@@ -349,7 +349,7 @@ class CCP4ScalerHelper:
         reindex_op = pointless.get_reindex_operator()
         probably_twinned = pointless.get_probably_twinned()
 
-        logger.debug("Pointgroup: %s (%s)" % (pointgroup, reindex_op))
+        logger.debug(f"Pointgroup: {pointgroup} ({reindex_op})")
 
         return pointgroup, reindex_op, need_to_return, probably_twinned
 

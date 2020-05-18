@@ -150,7 +150,7 @@ def CCP4DecoratorFactory(DriverInstance):
                         for l in self.get_all_output():
                             if ">>>>>> System signal" in l:
                                 cause = l.split(":")[1].split("(")[0]
-                                raise RuntimeError("%s:%s" % (error, cause))
+                                raise RuntimeError(f"{error}:{cause}")
 
                     # then cope with the general case
 

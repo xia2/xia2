@@ -727,7 +727,7 @@ class Integrater(FrameProcessor):
 
             lines.append("Processed batches %d to %d" % (min(images), max(images)))
 
-            lines.append("Standard Deviation in pixel range: %.2f %.2f" % (low, high))
+            lines.append(f"Standard Deviation in pixel range: {low:.2f} {high:.2f}")
 
             overloads = None
             fraction_weak = None

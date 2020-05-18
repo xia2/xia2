@@ -40,7 +40,7 @@ known_image_extensions = []
 
 for c in compression:
     for ie in image_extensions:
-        ext = "%s%s" % (ie, c)
+        ext = f"{ie}{c}"
         if ext:
             known_image_extensions.append(ext)
 
@@ -411,7 +411,7 @@ def _write_sweeps(sweeps, out):
         dmax = PhilIndex.params.xia2.settings.resolution.d_max
 
         if dmin and dmax:
-            out.write("RESOLUTION %f %f\n" % (dmin, dmax))
+            out.write(f"RESOLUTION {dmin:f} {dmax:f}\n")
         elif dmin:
             out.write("RESOLUTION %f\n" % dmin)
 

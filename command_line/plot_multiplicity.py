@@ -348,7 +348,7 @@ def run(args):
             continue
         labels = array.info().label_string()
         desc = get_array_description(array)
-        array_info.append("%s (%s)" % (labels, desc))
+        array_info.append(f"{labels} ({desc})")
         valid_arrays.append(array)
     if len(valid_arrays) == 0:
         msg = "No arrays of the supported types in this file."

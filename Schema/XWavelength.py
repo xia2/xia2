@@ -94,7 +94,7 @@ class XWavelength:
         result = "Wavelength name: %s\n" % self._name
         result += "Wavelength %7.5f\n" % self._wavelength
         if self._f_pr != 0.0 and self._f_prpr != 0.0:
-            result += "F', F'' = (%5.2f, %5.2f)\n" % (self._f_pr, self._f_prpr)
+            result += f"F', F'' = ({self._f_pr:5.2f}, {self._f_prpr:5.2f})\n"
 
         result += "Sweeps:\n"
 
@@ -123,7 +123,7 @@ class XWavelength:
         return result[:-1]
 
     def summarise(self):
-        summary = ["Wavelength: %s (%7.5f)" % (self._name, self._wavelength)]
+        summary = [f"Wavelength: {self._name} ({self._wavelength:7.5f})"]
 
         for s in self._sweeps:
             for record in s.summarise():

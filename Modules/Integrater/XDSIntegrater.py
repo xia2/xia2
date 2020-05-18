@@ -382,7 +382,7 @@ class XDSIntegrater(Integrater):
         pname, xname, dname = self.get_integrater_project_info()
         sweep = self.get_integrater_sweep_name()
         FileHandler.record_log_file(
-            "%s %s %s %s INTEGRATE" % (pname, xname, dname, sweep),
+            f"{pname} {xname} {dname} {sweep} INTEGRATE",
             os.path.join(self.get_working_directory(), "INTEGRATE.LP"),
         )
 
@@ -400,7 +400,7 @@ class XDSIntegrater(Integrater):
 
         # record INTEGRATE.HKL
         FileHandler.record_more_data_file(
-            "%s %s %s %s INTEGRATE" % (pname, xname, dname, sweep),
+            f"{pname} {xname} {dname} {sweep} INTEGRATE",
             os.path.join(self.get_working_directory(), "INTEGRATE.HKL"),
         )
 
@@ -617,12 +617,12 @@ class XDSIntegrater(Integrater):
         pname, xname, dname = self.get_integrater_project_info()
         sweep = self.get_integrater_sweep_name()
         FileHandler.record_log_file(
-            "%s %s %s %s CORRECT" % (pname, xname, dname, sweep),
+            f"{pname} {xname} {dname} {sweep} CORRECT",
             os.path.join(self.get_working_directory(), "CORRECT.LP"),
         )
 
         FileHandler.record_more_data_file(
-            "%s %s %s %s CORRECT" % (pname, xname, dname, sweep),
+            f"{pname} {xname} {dname} {sweep} CORRECT",
             os.path.join(self.get_working_directory(), "XDS_ASCII.HKL"),
         )
 
@@ -668,7 +668,7 @@ class XDSIntegrater(Integrater):
         pname, xname, dname = self.get_integrater_project_info()
         sweep = self.get_integrater_sweep_name()
         FileHandler.record_log_file(
-            "%s %s %s %s CORRECT" % (pname, xname, dname, sweep),
+            f"{pname} {xname} {dname} {sweep} CORRECT",
             os.path.join(self.get_working_directory(), "CORRECT.LP"),
         )
 
@@ -884,10 +884,10 @@ class XDSIntegrater(Integrater):
         pname, xname, dname = self.get_integrater_project_info()
         sweep = self.get_integrater_sweep_name()
         FileHandler.record_more_data_file(
-            "%s %s %s %s" % (pname, xname, dname, sweep), experiments_json
+            f"{pname} {xname} {dname} {sweep}", experiments_json
         )
         FileHandler.record_more_data_file(
-            "%s %s %s %s INTEGRATE" % (pname, xname, dname, sweep), integrate_mtz
+            f"{pname} {xname} {dname} {sweep} INTEGRATE", integrate_mtz
         )
 
         self._intgr_experiments_filename = experiments_json

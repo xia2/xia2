@@ -38,7 +38,7 @@ class SimpleDriver(DefaultDriver):
         for name in self._working_environment:
             added = self._working_environment[name][0]
             for value in self._working_environment[name][1:]:
-                added += "%s%s" % (os.pathsep, value)
+                added += f"{os.pathsep}{value}"
 
             if name in environment and name not in self._working_environment_exclusive:
                 environment[name] = "%s%s%s" % (added, os.pathsep, environment[name])

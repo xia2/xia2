@@ -503,7 +503,7 @@ class XCrystal:
                         target = FileHandler.get_data_file(
                             self._project.path, reflections[wavelength]
                         )
-                        result += "Scaled reflections (%s): %s\n" % (wavelength, target)
+                        result += f"Scaled reflections ({wavelength}): {target}\n"
 
                 else:
                     target = FileHandler.get_data_file(self._project.path, reflections)

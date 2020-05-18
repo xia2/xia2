@@ -180,19 +180,19 @@ class QSubDriver(DefaultDriver):
         # standard error output will appear below...
 
         sge_stdout = os.path.join(
-            self._working_directory, "%s.sh.o%s" % (self._script_name, job_id)
+            self._working_directory, f"{self._script_name}.sh.o{job_id}"
         )
 
         sge_stderr = os.path.join(
-            self._working_directory, "%s.sh.e%s" % (self._script_name, job_id)
+            self._working_directory, f"{self._script_name}.sh.e{job_id}"
         )
 
         sge_pstdout = os.path.join(
-            self._working_directory, "%s.sh.po%s" % (self._script_name, job_id)
+            self._working_directory, f"{self._script_name}.sh.po{job_id}"
         )
 
         sge_pstderr = os.path.join(
-            self._working_directory, "%s.sh.pe%s" % (self._script_name, job_id)
+            self._working_directory, f"{self._script_name}.sh.pe{job_id}"
         )
 
         # check the standard error file for any indications that

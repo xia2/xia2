@@ -279,7 +279,7 @@ class XDSScalerA(Scaler):
             hklin = self._sweep_information[epoch]["corrected_intensities"]
             hklout = os.path.join(
                 self.get_working_directory(),
-                "%s_%s_%s_%s_CORRECTED.HKL" % (pname, xname, dname, sname),
+                f"{pname}_{xname}_{dname}_{sname}_CORRECTED.HKL",
             )
             sweep = intgr.get_integrater_sweep()
             if sweep.get_frames_to_process() is not None:
@@ -371,7 +371,7 @@ class XDSScalerA(Scaler):
                         )
                     elif state == refiner.LATTICE_IMPOSSIBLE:
                         raise RuntimeError(
-                            "Lattice %s impossible for %s" % (correct_lattice, sname)
+                            f"Lattice {correct_lattice} impossible for {sname}"
                         )
                     elif state == refiner.LATTICE_POSSIBLE:
                         logger.debug(
@@ -465,7 +465,7 @@ class XDSScalerA(Scaler):
                 sname = intgr.get_integrater_sweep_name()
                 hklin = sweep_information["corrected_intensities"]
                 hklout = os.path.join(
-                    self.get_working_directory(), "%s_%s.mtz" % (dname, sname)
+                    self.get_working_directory(), f"{dname}_{sname}.mtz"
                 )
 
                 FileHandler.record_temporary_file(hklout)
@@ -502,7 +502,7 @@ class XDSScalerA(Scaler):
                 # and copy the reflection file to the local directory
                 hklin = sweep_information["corrected_intensities"]
                 hklout = os.path.join(
-                    self.get_working_directory(), "%s_%s.HKL" % (dname, sname)
+                    self.get_working_directory(), f"{dname}_{sname}.HKL"
                 )
 
                 logger.debug("Copying %s to %s", hklin, hklout)
@@ -680,7 +680,7 @@ class XDSScalerA(Scaler):
                 sname = intgr.get_integrater_sweep_name()
                 hklin = sweep_information["corrected_intensities"]
                 hklout = os.path.join(
-                    self.get_working_directory(), "%s_%s.HKL" % (dname, sname)
+                    self.get_working_directory(), f"{dname}_{sname}.HKL"
                 )
 
                 logger.debug("Copying %s to %s", hklin, hklout)
@@ -799,9 +799,7 @@ class XDSScalerA(Scaler):
 
             hklin = self._sweep_information[epoch]["corrected_intensities"]
             dname = self._sweep_information[epoch]["dname"]
-            hklout = os.path.join(
-                self.get_working_directory(), "%s_%s.HKL" % (dname, sname)
-            )
+            hklout = os.path.join(self.get_working_directory(), f"{dname}_{sname}.HKL")
 
             # and copy the reflection file to the local
             # directory
@@ -914,7 +912,7 @@ class XDSScalerA(Scaler):
         xname = self._scalr_xname
 
         FileHandler.record_log_file(
-            "%s %s XSCALE" % (pname, xname),
+            f"{pname} {xname} XSCALE",
             os.path.join(self.get_working_directory(), "XSCALE.LP"),
         )
 
@@ -1150,7 +1148,7 @@ class XDSScalerA(Scaler):
         sc = self._factory.Aimless()
 
         FileHandler.record_log_file(
-            "%s %s aimless" % (self._scalr_pname, self._scalr_xname), sc.get_log_file()
+            f"{self._scalr_pname} {self._scalr_xname} aimless", sc.get_log_file()
         )
 
         sc.set_resolution(highest_resolution)
@@ -1180,7 +1178,7 @@ class XDSScalerA(Scaler):
         sc.set_hklout(
             os.path.join(
                 self.get_working_directory(),
-                "%s_%s_scaled.mtz" % (self._scalr_pname, self._scalr_xname),
+                f"{self._scalr_pname}_{self._scalr_xname}_scaled.mtz",
             )
         )
 
@@ -1190,7 +1188,7 @@ class XDSScalerA(Scaler):
         sc.multi_merge()
 
         FileHandler.record_xml_file(
-            "%s %s aimless" % (self._scalr_pname, self._scalr_xname), sc.get_xmlout()
+            f"{self._scalr_pname} {self._scalr_xname} aimless", sc.get_xmlout()
         )
         data = sc.get_summary()
 
@@ -1245,7 +1243,7 @@ class XDSScalerA(Scaler):
         sc.set_hklout(
             os.path.join(
                 self.get_working_directory(),
-                "%s_%s_scaled.mtz" % (self._scalr_pname, self._scalr_xname),
+                f"{self._scalr_pname}_{self._scalr_xname}_scaled.mtz",
             )
         )
 

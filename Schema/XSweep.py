@@ -540,7 +540,7 @@ class XSweep:
             idist = indxr.get_indexer_distance()
 
             if hdist and idist:
-                summary.append("Distance %.2f => %.2f" % (hdist, idist))
+                summary.append(f"Distance {hdist:.2f} => {idist:.2f}")
 
             summary.append(
                 "Date: %s"

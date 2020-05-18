@@ -302,7 +302,7 @@ class XInfo:
 
                 if sweep in self._crystals[crystal]["sweeps"]:
                     raise RuntimeError(
-                        "sweep %s already exists for crystal %s" % (sweep, crystal)
+                        f"sweep {sweep} already exists for crystal {crystal}"
                     )
 
                 self._crystals[crystal]["sweeps"][sweep] = {}
@@ -344,7 +344,7 @@ class XInfo:
                             self._crystals[crystal]["samples"].keys()
                         ):
                             raise RuntimeError(
-                                "sample %s unknown for crystal %s" % (sample, crystal)
+                                f"sample {sample} unknown for crystal {crystal}"
                             )
                         self._crystals[crystal]["sweeps"][sweep]["sample"] = sample
 

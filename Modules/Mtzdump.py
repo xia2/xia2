@@ -62,7 +62,7 @@ class Mtzdump:
             for dataset in crystal.datasets():
                 dname = dataset.name()
                 wavelength = dataset.wavelength()
-                dataset_id = "%s/%s/%s" % (pname, xname, dname)
+                dataset_id = f"{pname}/{xname}/{dname}"
                 dataset_number = dataset.i_dataset()
 
                 assert dataset_id not in self._header["datasets"]

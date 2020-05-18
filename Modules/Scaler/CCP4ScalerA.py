@@ -391,7 +391,7 @@ class CCP4ScalerA(Scaler):
                         )
                     elif state == refiner.LATTICE_IMPOSSIBLE:
                         raise RuntimeError(
-                            "Lattice %s impossible for %s" % (correct_lattice, sname)
+                            f"Lattice {correct_lattice} impossible for {sname}"
                         )
                     elif state == refiner.LATTICE_POSSIBLE:
                         logger.info(
@@ -499,7 +499,7 @@ class CCP4ScalerA(Scaler):
 
             pointless_const = os.path.join(
                 self.get_working_directory(),
-                "%s_%s_prepointless_const.mtz" % (self._scalr_pname, self._scalr_xname),
+                f"{self._scalr_pname}_{self._scalr_xname}_prepointless_const.mtz",
             )
             FileHandler.record_temporary_file(pointless_const)
 
@@ -818,7 +818,7 @@ class CCP4ScalerA(Scaler):
         sc.set_hklout(
             os.path.join(
                 self.get_working_directory(),
-                "%s_%s_scaled_test.mtz" % (self._scalr_pname, self._scalr_xname),
+                f"{self._scalr_pname}_{self._scalr_xname}_scaled_test.mtz",
             )
         )
 
@@ -919,7 +919,7 @@ class CCP4ScalerA(Scaler):
         sc = self._updated_aimless()
 
         FileHandler.record_log_file(
-            "%s %s aimless" % (self._scalr_pname, self._scalr_xname), sc.get_log_file()
+            f"{self._scalr_pname} {self._scalr_xname} aimless", sc.get_log_file()
         )
 
         sc.set_hklin(self._prepared_reflections)
@@ -941,7 +941,7 @@ class CCP4ScalerA(Scaler):
         sc.set_hklout(
             os.path.join(
                 self.get_working_directory(),
-                "%s_%s_scaled.mtz" % (self._scalr_pname, self._scalr_xname),
+                f"{self._scalr_pname}_{self._scalr_xname}_scaled.mtz",
             )
         )
 
@@ -951,7 +951,7 @@ class CCP4ScalerA(Scaler):
         sc.scale()
 
         FileHandler.record_xml_file(
-            "%s %s aimless" % (self._scalr_pname, self._scalr_xname), sc.get_xmlout()
+            f"{self._scalr_pname} {self._scalr_xname} aimless", sc.get_xmlout()
         )
 
         data = sc.get_summary()
@@ -1009,7 +1009,7 @@ class CCP4ScalerA(Scaler):
         sc.set_hklout(
             os.path.join(
                 self.get_working_directory(),
-                "%s_%s_scaled.mtz" % (self._scalr_pname, self._scalr_xname),
+                f"{self._scalr_pname}_{self._scalr_xname}_scaled.mtz",
             )
         )
 
@@ -1049,7 +1049,7 @@ class CCP4ScalerA(Scaler):
                 import xia2.Modules.Scaler.tools as tools
 
                 override_cell = self._scalr_cell_dict.get(
-                    "%s_%s_%s" % (self._scalr_pname, self._scalr_xname, key)
+                    f"{self._scalr_pname}_{self._scalr_xname}_{key}"
                 )[0]
                 tools.patch_mtz_unit_cell(mtz_unmerged, override_cell)
                 tools.patch_mtz_unit_cell(hklout, override_cell)
@@ -1093,7 +1093,7 @@ class CCP4ScalerA(Scaler):
         sc.set_hklout(
             os.path.join(
                 self.get_working_directory(),
-                "%s_%s_chef.mtz" % (self._scalr_pname, self._scalr_xname),
+                f"{self._scalr_pname}_{self._scalr_xname}_chef.mtz",
             )
         )
 

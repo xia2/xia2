@@ -273,7 +273,7 @@ def DialsScale(DriverType=None, decay_correction=None):
                     )
                 if self._bfactor and self._brotation is not None:
                     self.add_command_line(
-                        "%s.decay_interval=%g" % (self._model, self._brotation)
+                        f"{self._model}.decay_interval={self._brotation:g}"
                     )
 
             # Option only relevant for spherical harmonic absorption in physical model.
@@ -286,9 +286,7 @@ def DialsScale(DriverType=None, decay_correction=None):
 
             # 'Spacing' i.e. scale interval only relevant to physical model.
             if self._model == "physical" and self._spacing:
-                self.add_command_line(
-                    "%s.scale_interval=%g" % (self._model, self._spacing)
-                )
+                self.add_command_line(f"{self._model}.scale_interval={self._spacing:g}")
 
             self.add_command_line("full_matrix=%s" % self._full_matrix)
             self.add_command_line("error_model=%s" % self._error_model)

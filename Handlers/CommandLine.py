@@ -356,7 +356,7 @@ class _CommandLine:
             from xia2.Modules.FindFreeFlag import FindFreeFlag
 
             column = FindFreeFlag(freer_file)
-            logger.debug("FreeR_flag column in %s found: %s" % (freer_file, column))
+            logger.debug(f"FreeR_flag column in {freer_file} found: {column}")
             PhilIndex.update("xia2.settings.scale.freer_file=%s" % freer_file)
 
         if params.xia2.settings.scale.reference_reflection_file is not None:

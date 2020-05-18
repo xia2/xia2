@@ -221,11 +221,11 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
                 % (overall.d_max, overall.d_min, outer_shell.d_max, outer_shell.d_min),
                 "%.2f (%.2f)"
                 % (overall.completeness * 100, outer_shell.completeness * 100),
-                "%.2f (%.2f)" % (overall.mean_redundancy, outer_shell.mean_redundancy),
-                "%.4f (%.4f)" % (overall.cc_one_half, outer_shell.cc_one_half),
+                f"{overall.mean_redundancy:.2f} ({outer_shell.mean_redundancy:.2f})",
+                f"{overall.cc_one_half:.4f} ({outer_shell.cc_one_half:.4f})",
                 "%.2f (%.2f)"
                 % (overall.i_over_sigma_mean, outer_shell.i_over_sigma_mean),
-                "%.4f (%.4f)" % (overall.r_merge, outer_shell.r_merge),
+                f"{overall.r_merge:.4f} ({outer_shell.r_merge:.4f})",
                 # anomalous statistics
                 "%.2f (%.2f)"
                 % (

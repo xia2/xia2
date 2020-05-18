@@ -832,7 +832,7 @@ class Scale:
         if self._params.resolution.d_min is None:
             self.scale()
             self.d_min, reason = self.estimate_resolution_limit()
-            logger.info("Resolution limit: %.2f (%s)" % (self.d_min, reason))
+            logger.info(f"Resolution limit: {self.d_min:.2f} ({reason})")
         else:
             self.d_min = self._params.resolution.d_min
         d_max = self._params.resolution.d_max

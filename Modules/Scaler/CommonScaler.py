@@ -106,7 +106,7 @@ class CommonScaler(Scaler):
 
             hklout = os.path.join(
                 self.get_working_directory(),
-                "%s_%s_%s_%s_integrated.mtz" % (pname, xname, dname, sname),
+                f"{pname}_{xname}_{dname}_{sname}_integrated.mtz",
             )
 
             first_batch = min(si.get_batches())
@@ -134,7 +134,7 @@ class CommonScaler(Scaler):
 
         hklout = os.path.join(
             self.get_working_directory(),
-            "%s_%s_sorted.mtz" % (self._scalr_pname, self._scalr_xname),
+            f"{self._scalr_pname}_{self._scalr_xname}_sorted.mtz",
         )
 
         s.set_hklout(hklout)
@@ -160,8 +160,7 @@ class CommonScaler(Scaler):
                 p = self._factory.Pointless()
 
             FileHandler.record_log_file(
-                "%s %s pointless" % (self._scalr_pname, self._scalr_xname),
-                p.get_log_file(),
+                f"{self._scalr_pname} {self._scalr_xname} pointless", p.get_log_file(),
             )
 
             if len(self._sweep_handler.get_epochs()) > 1:
@@ -329,7 +328,7 @@ class CommonScaler(Scaler):
 
         hklout = os.path.join(
             self.get_working_directory(),
-            "%s_%s_sorted.mtz" % (self._scalr_pname, self._scalr_xname),
+            f"{self._scalr_pname}_{self._scalr_xname}_sorted.mtz",
         )
 
         s.set_hklout(hklout)
@@ -355,7 +354,7 @@ class CommonScaler(Scaler):
             pointless.decide_spacegroup()
 
             FileHandler.record_log_file(
-                "%s %s pointless" % (self._scalr_pname, self._scalr_xname),
+                f"{self._scalr_pname} {self._scalr_xname} pointless",
                 pointless.get_log_file(),
             )
 
@@ -387,7 +386,7 @@ class CommonScaler(Scaler):
         hklin = self._prepared_reflections
         hklout = os.path.join(
             self.get_working_directory(),
-            "%s_%s_reindex.mtz" % (self._scalr_pname, self._scalr_xname),
+            f"{self._scalr_pname}_{self._scalr_xname}_reindex.mtz",
         )
 
         FileHandler.record_temporary_file(hklout)
@@ -402,7 +401,7 @@ class CommonScaler(Scaler):
         hklin = hklout
         hklout = os.path.join(
             self.get_working_directory(),
-            "%s_%s_sorted.mtz" % (self._scalr_pname, self._scalr_xname),
+            f"{self._scalr_pname}_{self._scalr_xname}_sorted.mtz",
         )
 
         s = self._factory.Sortmtz()
@@ -446,7 +445,7 @@ class CommonScaler(Scaler):
             pointless.decide_spacegroup()
 
             FileHandler.record_log_file(
-                "%s %s pointless" % (self._scalr_pname, self._scalr_xname),
+                f"{self._scalr_pname} {self._scalr_xname} pointless",
                 pointless.get_log_file(),
             )
 
@@ -470,7 +469,7 @@ class CommonScaler(Scaler):
 
         hklout = os.path.join(
             self.get_working_directory(),
-            "%s_%s_reindex.mtz" % (self._scalr_pname, self._scalr_xname),
+            f"{self._scalr_pname}_{self._scalr_xname}_reindex.mtz",
         )
 
         FileHandler.record_temporary_file(hklout)
@@ -509,7 +508,7 @@ class CommonScaler(Scaler):
         hklin = hklout
         hklout = os.path.join(
             self.get_working_directory(),
-            "%s_%s_sorted.mtz" % (self._scalr_pname, self._scalr_xname),
+            f"{self._scalr_pname}_{self._scalr_xname}_sorted.mtz",
         )
 
         s = self._factory.Sortmtz()
@@ -555,7 +554,7 @@ class CommonScaler(Scaler):
             reader = any_reflection_file(mtz_file)
             mtz_object = reader.file_content()
             date_str = time.strftime("%d/%m/%Y at %H:%M:%S", time.gmtime())
-            mtz_object.add_history("From %s, run on %s" % (Version, date_str))
+            mtz_object.add_history(f"From {Version}, run on {date_str}")
             mtz_object.write(mtz_file)
 
     def _scale_finish_chunk_3_truncate(self):
@@ -631,7 +630,7 @@ class CommonScaler(Scaler):
             # now merge the reflection files together...
             hklout = os.path.join(
                 self.get_working_directory(),
-                "%s_%s_merged.mtz" % (self._scalr_pname, self._scalr_xname),
+                f"{self._scalr_pname}_{self._scalr_xname}_merged.mtz",
             )
             FileHandler.record_temporary_file(hklout)
 
@@ -742,7 +741,7 @@ class CommonScaler(Scaler):
     def _scale_finish_chunk_6_add_free_r(self):
         hklout = os.path.join(
             self.get_working_directory(),
-            "%s_%s_free_temp.mtz" % (self._scalr_pname, self._scalr_xname),
+            f"{self._scalr_pname}_{self._scalr_xname}_free_temp.mtz",
         )
 
         FileHandler.record_temporary_file(hklout)
@@ -798,7 +797,7 @@ class CommonScaler(Scaler):
         hklin = hklout
         hklout = os.path.join(
             self.get_working_directory(),
-            "%s_%s_free.mtz" % (self._scalr_pname, self._scalr_xname),
+            f"{self._scalr_pname}_{self._scalr_xname}_free.mtz",
         )
 
         # default fraction of 0.05
@@ -1116,7 +1115,7 @@ class CommonScaler(Scaler):
             # Two theta refine the unit cell for each group
             p4p_file = os.path.join(
                 self.get_working_directory(),
-                "%s_%s.p4p" % (self._scalr_pname, self._scalr_xname),
+                f"{self._scalr_pname}_{self._scalr_xname}.p4p",
             )
             for pi in groups:
                 tt_grouprefiner = TwoThetaRefine()

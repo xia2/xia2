@@ -50,19 +50,19 @@ class _FileHandler:
             for tag, source in self._log_files.items():
                 filename = os.path.join(log_directory, "%s.log" % tag.replace(" ", "_"))
                 shutil.copyfile(source, filename)
-                out.write("Copied log file %s to %s\n" % (source, filename))
+                out.write(f"Copied log file {source} to {filename}\n")
 
             for tag, source in self._xml_files.items():
                 filename = os.path.join(log_directory, "%s.xml" % tag.replace(" ", "_"))
                 shutil.copyfile(source, filename)
-                out.write("Copied xml file %s to %s\n" % (source, filename))
+                out.write(f"Copied xml file {source} to {filename}\n")
 
             for tag, source in self._html_files.items():
                 filename = os.path.join(
                     log_directory, "%s.html" % tag.replace(" ", "_")
                 )
                 shutil.copyfile(source, filename)
-                out.write("Copied html file %s to %s\n" % (source, filename))
+                out.write(f"Copied html file {source} to {filename}\n")
 
             # copy the data files
             data_directory = base_path.joinpath("DataFiles")
@@ -71,17 +71,15 @@ class _FileHandler:
             for f in self._data_files:
                 filename = os.path.join(data_directory, os.path.split(f)[-1])
                 shutil.copyfile(f, filename)
-                out.write("Copied data file %s to %s\n" % (f, filename))
+                out.write(f"Copied data file {f} to {filename}\n")
 
             for tag, ext in self._more_data_files:
                 filename_out = os.path.join(
-                    data_directory, "%s.%s" % (tag.replace(" ", "_"), ext)
+                    data_directory, "{}.{}".format(tag.replace(" ", "_"), ext)
                 )
                 filename_in = self._more_data_files[(tag, ext)]
                 shutil.copyfile(filename_in, filename_out)
-                out.write(
-                    "Copied extra data file %s to %s\n" % (filename_in, filename_out)
-                )
+                out.write(f"Copied extra data file {filename_in} to {filename_out}\n")
 
     def record_log_file(self, tag, filename):
         """Record a log file."""

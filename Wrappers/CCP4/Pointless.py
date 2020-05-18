@@ -610,7 +610,7 @@ def Pointless(DriverType=None):
                         )
                         wavelength = float(output[5 * block + i + 6].strip())
 
-                        dataset_id = "%s/%s/%s" % (project, crystal, dataset)
+                        dataset_id = f"{project}/{crystal}/{dataset}"
 
                         self._cell_info["datasets"].append(dataset_id)
                         self._cell_info["dataset_info"][dataset_id] = {}

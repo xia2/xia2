@@ -136,7 +136,7 @@ def Integrater():
 
         if dmax:
 
-            logger.debug("dmin: %.3f dmax: %.2f" % (dmin, dmax))
+            logger.debug(f"dmin: {dmin:.3f} dmax: {dmax:.2f}")
             integrater.set_integrater_resolution(dmin, dmax, user=True)
 
         else:

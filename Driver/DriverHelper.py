@@ -28,9 +28,7 @@ def script_writer(
         ) as script:
 
             # try to delete the .xstatus file - if it exists
-            script.write(
-                "@if exist %s.xstatus del %s.xstatus\n" % (script_name, script_name)
-            )
+            script.write(f"@if exist {script_name}.xstatus del {script_name}.xstatus\n")
 
             # FIXME might this add redundant elements to the path? is there
             # a limit to the length? I.e. pulling initial environment from
@@ -39,8 +37,8 @@ def script_writer(
             for name in environment:
                 added = environment[name][0]
                 for value in environment[name][1:]:
-                    added += "%s%s" % (os.pathsep, value)
-                script.write("@set %s=%s%s%%%s%%\n" % (name, added, os.pathsep, name))
+                    added += f"{os.pathsep}{value}"
+                script.write(f"@set {name}={added}{os.pathsep}%{name}%\n")
             # make the directories we've been asked to
             for dir in mkdirs:
                 script.write("@mkdir %s\n" % dir)
@@ -57,7 +55,7 @@ def script_writer(
             for c in command_line_tokens:
                 script.write('"%s" ' % c)
 
-            script.write("< %s.xin > %s.xout\n" % (script_name, script_name))
+            script.write(f"< {script_name}.xin > {script_name}.xout\n")
 
             # add the status stuff - for NT this will be NULL.
             script.write("@echo 0 > %s.xstatus\n" % script_name)
@@ -84,8 +82,8 @@ def script_writer(
             for name in environment:
                 added = environment[name][0]
                 for value in environment[name][1:]:
-                    added += "%s%s" % (os.pathsep, value)
-                script.write("export %s=%s%s$%s\n" % (name, added, os.pathsep, name))
+                    added += f"{os.pathsep}{value}"
+                script.write(f"export {name}={added}{os.pathsep}${name}\n")
 
             # delete the xatstus file if it exists
             script.write("rm -f %s.xstatus\n" % script_name)
