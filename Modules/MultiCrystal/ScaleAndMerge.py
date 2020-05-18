@@ -422,11 +422,7 @@ class MultiCrystalScale:
             clusters = self._cc_clusters
         else:
             raise ValueError("Invalid cluster method: %s" % self._params.cluster_method)
-        if (
-            (max_clusters is not None and max_clusters > 1)
-            or min_completeness is not None
-            or min_multiplicity is not None
-        ):
+        if max_clusters or min_completeness is not None or min_multiplicity is not None:
             self._data_manager_original = self._data_manager
             cwd = os.path.abspath(os.getcwd())
             n_processed = 0

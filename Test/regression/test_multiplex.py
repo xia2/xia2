@@ -68,7 +68,8 @@ def test_proteinase_k_filter_deltacchalf(regression_test, dials_data, tmpdir):
             + [
                 "filtering.method=deltacchalf",
                 "filtering.deltacchalf.stdcutoff=1",
-                "max_clusters=2",
+                "max_clusters=1",
+                "nproc=1",
             ]
         )
         run_multiplex(command_line_args)
@@ -83,18 +84,16 @@ def test_proteinase_k_filter_deltacchalf(regression_test, dials_data, tmpdir):
         expts = load.experiment_list(tmpdir.join(expt_file).strpath, check_format=False)
         assert len(expts) == n_expected
 
-    # Check that clusters 5 and 6 have been scaled
-    for cluster in ("cluster_5", "cluster_6"):
-        assert tmpdir.join(cluster).check(dir=1)
-        assert tmpdir.join(cluster, "scaled.mtz").check(file=1)
-        assert tmpdir.join(cluster, "scaled_unmerged.mtz").check(file=1)
+    # Check that cluster 6 has been scaled
+    assert tmpdir.join("cluster_6").check(dir=1)
+    assert tmpdir.join("cluster_6", "scaled.mtz").check(file=1)
+    assert tmpdir.join("cluster_6", "scaled_unmerged.mtz").check(file=1)
 
     # Delete large temporary files to conserve disk space
     for f in tmpdir.listdir("*.refl"):
         f.remove()
-    for cluster in ("cluster_5", "cluster_6"):
-        for f in tmpdir.join(cluster).listdir("*.refl"):
-            f.remove()
+    for f in tmpdir.join("cluster_6").listdir("*.refl"):
+        f.remove()
 
 
 @pytest.mark.parametrize(
