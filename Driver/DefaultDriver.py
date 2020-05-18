@@ -4,7 +4,6 @@ import os
 import time
 import signal
 
-import six
 import xia2.Driver.timing
 from xia2.Driver.DriverHelper import (
     error_abrt,
@@ -168,7 +167,7 @@ class DefaultDriver:
             for token in command_line_token:
                 self._command_line.append(token)
         else:
-            assert isinstance(command_line_token, six.string_types)
+            assert isinstance(command_line_token, str)
             self._command_line.append(command_line_token)
 
     def set_command_line(self, command_line):

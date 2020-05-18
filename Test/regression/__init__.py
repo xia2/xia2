@@ -1,7 +1,6 @@
 import os
 import platform
 import re
-import six
 import warnings
 
 from cctbx import sgtbx
@@ -181,9 +180,7 @@ def check_result(
                     equal.append(False)
                     valid.append(True)
                     continue
-                if (
-                    isinstance(tolerance, six.string_types) and "%" in tolerance
-                ):  # percentage
+                if isinstance(tolerance, str) and "%" in tolerance:  # percentage
                     tolerance = expected_value * float(tolerance[:-1]) / 100
                 else:
                     tolerance = float(tolerance)

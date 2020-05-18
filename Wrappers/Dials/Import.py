@@ -54,14 +54,14 @@ def Import(DriverType=None):
             first, last = self._image_range
             offset = self.get_frame_offset()
 
-            exposure_time = scan[u"exposure_time"][0]
-            scan[u"image_range"] = [first + offset, last + offset]
-            scan[u"epochs"] = []
-            scan[u"exposure_time"] = []
-            scan[u"epochs"] = []
+            exposure_time = scan["exposure_time"][0]
+            scan["image_range"] = [first + offset, last + offset]
+            scan["epochs"] = []
+            scan["exposure_time"] = []
+            scan["epochs"] = []
             for image in range(first, last + 1):
-                scan[u"exposure_time"].append(exposure_time)
-                scan[u"epochs"].append(self._image_to_epoch[image + offset])
+                scan["exposure_time"].append(exposure_time)
+                scan["epochs"].append(self._image_to_epoch[image + offset])
             experiments["scan"] = [scan]
             with open(experiments_json, "w") as fh:
                 json.dump(experiments, fh)

@@ -3,7 +3,6 @@ import logging
 import math
 import os
 import py
-import six
 from collections import OrderedDict
 
 from libtbx import Auto
@@ -519,7 +518,7 @@ class MultiCrystalScale:
                     .replace("</strong>", "")
                     .replace("<sub>", "")
                     .replace("</sub>", "")
-                    if isinstance(s, six.string_types)
+                    if isinstance(s, str)
                     else s
                     for s in row
                 ]

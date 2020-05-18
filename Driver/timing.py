@@ -102,19 +102,19 @@ def visualise_db(timing_db):
         timestamp, n = ordered_by_start.pop(0)
         t = timing_db[n]
 
-        tree_view = [" " if task is None else u"\u2502" for task in running_tasks]
+        tree_view = [" " if task is None else "\u2502" for task in running_tasks]
 
         if ordered_by_end[0][1] == n and (
             not ordered_by_start or ordered_by_start[0][0] >= ordered_by_end[0][0]
         ):
-            tree_view.append(u"\u25EF")
+            tree_view.append("\u25EF")
             ordered_by_end.pop(0)
             end_time = t["time_end"]
         else:
-            tree_view.append(u"\u252C")
+            tree_view.append("\u252C")
             running_tasks.append(n)
         output.append(
-            u"{timestamp:{time_width}.1f}s  {t[index_readable]:>{index_width}} {tree_view:<5} {t[short_command]} ({t[runtime_readable]})".format(
+            "{timestamp:{time_width}.1f}s  {t[index_readable]:>{index_width}} {tree_view:<5} {t[short_command]} ({t[runtime_readable]})".format(
                 t=t,
                 tree_view=" ".join(tree_view),
                 index_width=index_width,
@@ -140,10 +140,10 @@ def visualise_db(timing_db):
                 if task is None:
                     output_line += "  "
                 elif task == finishing_task:
-                    output_line += u"\u2534 "
+                    output_line += "\u2534 "
                     running_tasks[n] = None
                 else:
-                    output_line += u"\u2502 "
+                    output_line += "\u2502 "
             output.append(output_line)
             while running_tasks and running_tasks[-1] is None:
                 running_tasks.pop()
@@ -169,14 +169,14 @@ def visualise_db(timing_db):
                     tbreak["runtime_readable"] = "%.1fm" % (tbreak["runtime"] / 60)
                 tbreak[
                     "command"
-                ] = u"xia2 thinking time ({tbreak[runtime_readable]})".format(
+                ] = "xia2 thinking time ({tbreak[runtime_readable]})".format(
                     tbreak=tbreak
                 )
                 thinking_breaks.append(tbreak)
                 output.append(
-                    u"{timestamp:{time_width}.1f}s  {t[index_readable]:>{index_width}} {nothing:<5} {t[command]}".format(
+                    "{timestamp:{time_width}.1f}s  {t[index_readable]:>{index_width}} {nothing:<5} {t[command]}".format(
                         timestamp=timestamp - relative_start_time,
-                        nothing=u"\U0001F914",
+                        nothing="\U0001F914",
                         time_width=time_width,
                         index_width=index_width,
                         t=tbreak,
@@ -190,7 +190,7 @@ def visualise_db(timing_db):
     )
     for t in timing_by_time[0:10]:
         output.append(
-            u"{t[runtime]:{time_width}.1f}s: {t[index_readable]:>{index_width_add}} {t[command]}".format(
+            "{t[runtime]:{time_width}.1f}s: {t[index_readable]:>{index_width_add}} {t[command]}".format(
                 t=t, index_width_add=index_width + 1, time_width=time_width
             )
         )

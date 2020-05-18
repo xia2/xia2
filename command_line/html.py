@@ -4,7 +4,6 @@ import json
 import logging
 import os
 import re
-import six
 import sys
 import traceback
 from collections import OrderedDict
@@ -51,8 +50,8 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
     columns.append(
         [
             "",
-            u"Wavelength (Å)",
-            u"Resolution range (Å)",
+            "Wavelength (Å)",
+            "Resolution range (Å)",
             "Completeness (%)",
             "Multiplicity",
             "CC-half",
@@ -258,7 +257,7 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
         g = glob.glob(os.path.join(data_dir, "*"))
         reflection_files = xcryst.get_scaled_merged_reflections()
         for k, rfile in reflection_files.items():
-            if isinstance(rfile, six.string_types):
+            if isinstance(rfile, str):
                 for datafile in g:
                     if os.path.basename(datafile) == os.path.basename(rfile):
                         reflection_files[k] = datafile
@@ -531,7 +530,7 @@ var chart_%(name)s = c3.generate({
 
         xlabel = table.column_labels[graph_columns[0]]
         if xlabel in ("1/d^2", "1/resol^2"):
-            xlabel = u"Resolution (Å)"
+            xlabel = "Resolution (Å)"
             tick = """\
 tick: {
           format: function (x) { return (1/Math.sqrt(x)).toFixed(2); }

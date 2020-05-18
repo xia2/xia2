@@ -2,8 +2,6 @@ import collections
 import inspect
 import os
 
-import six
-
 from xia2.Handlers.CIF import CIF, mmCIF
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
@@ -280,7 +278,7 @@ class XCrystal:
                             found_sweep = True
                             break
             for s in sample._sweeps:
-                assert not isinstance(s, six.string_types)
+                assert not isinstance(s, str)
         if return_obj._scaler is not None:
             for intgr in return_obj._get_integraters():
                 return_obj._scaler._scalr_integraters[
@@ -561,7 +559,7 @@ class XCrystal:
                         "%s: " % (s.ljust(40))
                         + expanded_format_str % (statistics_all[key][s])
                     )
-                elif isinstance(statistics_all[key][s], six.string_types):
+                elif isinstance(statistics_all[key][s], str):
                     summary.append("%s: %s" % (s.ljust(40), statistics_all[key][s]))
                 else:
                     expanded_format_str = " ".join(

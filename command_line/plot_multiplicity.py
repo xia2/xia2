@@ -5,7 +5,6 @@ import json
 import sys
 
 import iotbx.phil
-import six
 from cctbx.miller.display import render_2d, scene
 from dials.util import Sorry
 from iotbx.gui_tools.reflections import get_array_description
@@ -88,7 +87,7 @@ class MultiplicityViewPng(render_2d):
                 ),
             }
             cm = cmap_d.get(self.settings.color_scheme, self.settings.color_scheme)
-            if isinstance(cm, six.string_types):
+            if isinstance(cm, str):
                 cm = pyplot.cm.get_cmap(cm)
             im = ax.scatter(
                 x.as_numpy_array(),

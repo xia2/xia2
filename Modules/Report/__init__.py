@@ -5,7 +5,6 @@ from collections import OrderedDict
 
 import dials.pychef
 import libtbx.phil
-import six
 import xia2.Handlers.Environment
 import xia2.Handlers.Files
 from cctbx.array_family import flex
@@ -129,10 +128,7 @@ class Report:
             plot_multiplicity(self.intensities, settings)
             mult_json_files[settings.slice_axis] = settings.json.filename
             with open(settings.plot.filename, "rb") as fh:
-                if six.PY3:
-                    data = codecs.encode(fh.read(), encoding="base64").decode("ascii")
-                else:
-                    data = codecs.encode(fh.read(), "base64")
+                data = codecs.encode(fh.read(), encoding="base64").decode("ascii")
                 mult_img_files[settings.slice_axis] = data.replace("\n", "")
 
         return OrderedDict(

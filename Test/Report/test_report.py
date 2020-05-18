@@ -68,17 +68,17 @@ def test_resolution_plots_and_stats(report):
     ]
     assert len(merging_stats_table) == 21
     assert merging_stats_table[0] == [
-        u"Resolution (\xc5)",
+        "Resolution (\xc5)",
         "N(obs)",
         "N(unique)",
         "Multiplicity",
         "Completeness",
         "Mean I",
-        u"Mean I/\u03c3(I)",
+        "Mean I/\u03c3(I)",
         "R<sub>merge</sub>",
         "R<sub>meas</sub>",
         "R<sub>pim</sub>",
-        u"CC<sub>\xbd</sub>",
+        "CC<sub>\xbd</sub>",
         "CC<sub>ano</sub>",
     ]
     assert merging_stats_table[1] == [

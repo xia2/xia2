@@ -1,6 +1,5 @@
 import os
 
-import six
 import xia2.Driver.DefaultDriver
 
 
@@ -57,7 +56,7 @@ def CCP4DecoratorFactory(DriverInstance):
         def check_hklin(self):
             if self._hklin is None:
                 raise RuntimeError("hklin not defined")
-            elif isinstance(self._hklin, six.string_types):
+            elif isinstance(self._hklin, str):
                 if not os.path.exists(self._hklin):
                     raise RuntimeError("hklin %s does not exist" % self._hklin)
             else:
@@ -113,7 +112,7 @@ def CCP4DecoratorFactory(DriverInstance):
 
             if self._hklin is not None:
                 self.add_command_line("hklin")
-                if isinstance(self._hklin, six.string_types):
+                if isinstance(self._hklin, str):
                     self.add_command_line(self._hklin)
                 else:
                     for hklin in self._hklin:

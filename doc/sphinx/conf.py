@@ -60,8 +60,8 @@ source_suffix = ".rst"
 master_doc = "index"
 
 # General information about the project.
-project = u"xia2"
-copyright = u"2015, Diamond Light Source"
+project = "xia2"
+copyright = "2020, Diamond Light Source"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -218,7 +218,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
-latex_documents = [("index", "xia2_manual.tex", u"xia2 Manual", u"xia2", "manual")]
+latex_documents = [("index", "xia2_manual.tex", "xia2 Manual", "xia2", "manual")]
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
@@ -250,8 +250,8 @@ texinfo_documents = [
     (
         "index",
         "xia2",
-        u"xia2 Documentation",
-        u"",
+        "xia2 Documentation",
+        "",
         "xia2",
         "One line description of project.",
         "Miscellaneous",

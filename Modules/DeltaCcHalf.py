@@ -112,7 +112,7 @@ class DeltaCcHalf:
 
             delta_cc.append(self._compute_delta_cc_for_dataset(unmerged_i))
             logger.debug(
-                u"Delta CC½ excluding batches %i-%i: %.3f",
+                "Delta CC½ excluding batches %i-%i: %.3f",
                 group_start,
                 group_end,
                 delta_cc[-1],
@@ -139,10 +139,10 @@ class DeltaCcHalf:
 
     def get_table(self, html=False):
         if html:
-            delta_cc_half_header = u"Delta CC<sub>½</sub>"
+            delta_cc_half_header = "Delta CC<sub>½</sub>"
         else:
-            delta_cc_half_header = u"Delta CC½"
-        rows = [["Dataset", "Batches", delta_cc_half_header, u"σ"]]
+            delta_cc_half_header = "Delta CC½"
+        rows = [["Dataset", "Batches", delta_cc_half_header, "σ"]]
         normalised_score = self._normalised_delta_cc_i()
         perm = flex.sort_permutation(self.delta_cc)
         for i in perm:
@@ -170,12 +170,12 @@ class DeltaCcHalf:
                             "size": 0.1,
                         },
                         "type": "histogram",
-                        "name": u"Delta CC<sub>½</sub>",
+                        "name": "Delta CC<sub>½</sub>",
                     }
                 ],
                 "layout": {
-                    "title": u"Histogram of Delta CC<sub>½</sub>",
-                    "xaxis": {"title": u"σ"},
+                    "title": "Histogram of Delta CC<sub>½</sub>",
+                    "xaxis": {"title": "σ"},
                     "yaxis": {"title": "Frequency"},
                 },
             }
@@ -208,9 +208,9 @@ class DeltaCcHalf:
                     }
                 ],
                 "layout": {
-                    "title": u"Normalised Delta CC<sub>½</sub>",
+                    "title": "Normalised Delta CC<sub>½</sub>",
                     "xaxis": {"title": "Group"},
-                    "yaxis": {"title": u"σ"},
+                    "yaxis": {"title": "σ"},
                 },
             }
         }

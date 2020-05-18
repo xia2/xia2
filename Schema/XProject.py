@@ -91,9 +91,9 @@ class XProject:
             """ Decode a dict to str from unicode. """
             rv = {}
             for key, value in data.items():
-                if six.PY2 and isinstance(key, six.text_type):
+                if six.PY2 and isinstance(key, str):
                     key = key.encode("utf-8")
-                if six.PY2 and isinstance(value, six.text_type):
+                if six.PY2 and isinstance(value, str):
                     value = value.encode("utf-8")
                 elif isinstance(value, list):
                     value = _decode_list(value)
