@@ -468,18 +468,19 @@ class MultiCrystalScale:
             # Final round of scaling, this time filtering out any bad datasets
             self._params.unit_cell.refine = []
             self._params.resolution.d_min = self._scaled.d_min
-            scaled = Scale(self._data_manager, self._params, filtering=True)
+            data_manager = copy.deepcopy(self._data_manager)
+            scaled = Scale(data_manager, self._params, filtering=True)
             self.scale_and_filter_results = scaled.scale_and_filter_results
             logger.info("Scale and filtering:\n%s", self.scale_and_filter_results)
             self._record_individual_report(
-                self._data_manager, self._scaled.report(), "Filtered"
+                data_manager, self._scaled.report(), "Filtered"
             )
             py.path.local(self._scaled.scaled_unmerged_mtz).copy(
                 py.path.local("filtered_unmerged.mtz")
             )
             py.path.local(self._scaled.scaled_mtz).copy(py.path.local("filtered.mtz"))
-            self._data_manager.export_experiments("filtered.expt")
-            self._data_manager.export_reflections("filtered.refl")
+            data_manager.export_experiments("filtered.expt")
+            data_manager.export_reflections("filtered.refl")
         else:
             self.scale_and_filter_results = None
 
