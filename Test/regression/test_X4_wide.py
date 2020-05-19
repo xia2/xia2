@@ -150,19 +150,16 @@ def test_dials_aimless_split(regression_test, dials_data, tmpdir, ccp4):
     assert success, issues
 
 
-@pytest.mark.parametrize("multi_sweep_indexing", (True, False))
-def test_dials_split(multi_sweep_indexing, regression_test, dials_data, tmpdir, ccp4):
+def test_dials_split(regression_test, dials_data, tmpdir, ccp4):
     command_line = [
         "xia2",
         "pipeline=dials",
         "nproc=1",
         "njob=2",
         "trust_beam_centre=True",
-        "multi_sweep_indexing=%s" % multi_sweep_indexing,
         "xinfo=%s" % split_xinfo(dials_data("x4wide"), tmpdir),
+        "mode=parallel",
     ]
-    if not multi_sweep_indexing:
-        command_line.append("mode=parallel")
     result = procrunner.run(command_line, working_directory=tmpdir)
     success, issues = xia2.Test.regression.check_result(
         "X4_wide_split.dials",
