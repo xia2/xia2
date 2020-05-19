@@ -10,6 +10,7 @@ def test_plot_uc_histograms():
     n = 20
     uc_params = [p + g(n) for p in params]
     d = plots.plot_uc_histograms(uc_params)
-    assert set(d.keys()) == {"uc_scatter", "uc_hist"}
+    # ensure the following dictionary keys are present
+    assert set(d) >= {"uc_scatter", "uc_hist"}
     for v in d.values():
-        assert set(v.keys()) == {"layout", "data"}
+        assert set(v) >= {"layout", "data", "help"}
