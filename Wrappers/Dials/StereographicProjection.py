@@ -45,7 +45,6 @@ def StereographicProjection(DriverType=None):
             for expt in self._experiments_filenames:
                 self.add_command_line(expt)
             self.add_command_line("frame=laboratory")
-            self.add_command_line("plot.show=False")
             self.add_command_line("hkl=%i,%i,%i" % self._hkl)
             if self._labels:
                 self.add_command_line(
