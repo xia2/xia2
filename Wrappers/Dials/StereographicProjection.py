@@ -18,6 +18,7 @@ def StereographicProjection(DriverType=None):
 
             self._experiments_filenames = []
             self._hkl = None
+            self._labels = None
             self._plot_filename = None
             self._json_filename = None
 
@@ -27,6 +28,9 @@ def StereographicProjection(DriverType=None):
         def set_hkl(self, hkl):
             assert len(hkl) == 3
             self._hkl = hkl
+
+        def set_labels(self, labels):
+            self._labels = labels
 
         def get_json_filename(self):
             return self._json_filename
@@ -43,6 +47,10 @@ def StereographicProjection(DriverType=None):
             self.add_command_line("frame=laboratory")
             self.add_command_line("plot.show=False")
             self.add_command_line("hkl=%i,%i,%i" % self._hkl)
+            if self._labels:
+                self.add_command_line(
+                    "plot.labels=%s" % " ".join([str(l) for l in self._labels])
+                )
             if self.get_xpid():
                 prefix = "%i_" % self.get_xpid()
             else:

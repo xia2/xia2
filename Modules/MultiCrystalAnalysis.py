@@ -47,7 +47,7 @@ class MultiCrystalAnalysis:
         self.intensities.set_observation_type_xray_intensity()
 
     @staticmethod
-    def stereographic_projections(experiments_filename):
+    def stereographic_projections(experiments_filename, labels=None):
         from xia2.Wrappers.Dials.StereographicProjection import StereographicProjection
 
         sp_json_files = {}
@@ -55,6 +55,8 @@ class MultiCrystalAnalysis:
             sp = StereographicProjection()
             sp.add_experiments(experiments_filename)
             sp.set_hkl(hkl)
+            if labels:
+                sp.set_labels(labels)
             sp.run()
             sp_json_files[hkl] = sp.get_json_filename()
         return sp_json_files
@@ -213,8 +215,12 @@ class MultiCrystalReport(MultiCrystalAnalysis):
         if self._cluster_analysis is None:
             self._cluster_analysis = self.cluster_analysis()
 
+        labels = [
+            self._data_manager.identifiers_to_ids_map[i]
+            for i in self._data_manager.experiments.identifiers()
+        ]
         self._stereographic_projection_files = self.stereographic_projections(
-            "tmp.expt"
+            "tmp.expt", labels=labels
         )
 
         delta_cc_half_graphs, delta_cc_half_table = self.delta_cc_half_analysis()
