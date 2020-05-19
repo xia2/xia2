@@ -170,7 +170,16 @@ class MultiCrystalAnalysis:
             dendrogram,
             title="Unit cell clustering",
             xtitle="Dataset",
-            ytitle="Distance (Å^2)",
+            ytitle="Distance (Å<sup>2</sup>)",
+            help="""\
+The results of single-linkage hierarchical clustering on the unit cell parameters using
+the Andrews–Bernstein NCDist distance metric (Andrews & Bernstein, 2014). The height at
+which two clusters are merged in the dendrogram is a measure of the similarity between
+the unit cells in each cluster. A larger separation between two clusters may be
+indicative of a higher degree of non-isomorphism between the clusters. Conversely, a
+small separation between two clusters suggests that their unit cell parameters are
+relatively isomorphous.
+""",
         )
 
         return d
@@ -235,6 +244,17 @@ class MultiCrystalReport(MultiCrystalAnalysis):
             with open(self._stereographic_projection_files[hkl], "rb") as f:
                 d = json.load(f)
                 d["layout"]["title"] = "Stereographic projection (hkl=%i%i%i)" % hkl
+                d["help"] = (
+                    """\
+Stereographic projections of hkl=%i%i%i directions (and symmetry equivalents) for each
+crystal in the laboratory frame perpendicular to the beam. Directions that are close to
+the centre are close to parallel with the beam vector, whereas directions at the edge of
+the circle are perpendicular with the beam vector. A random distribution of points
+within the circle would suggest a random distribution of crystal orientations, whereas
+any systematic grouping of points may suggest a preferential crystal orientation.
+"""
+                    % hkl
+                )
                 key = "stereographic_projection_%s%s%s" % hkl
                 orientation_graphs[key] = d
                 styles[key] = "square-plot"

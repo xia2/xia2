@@ -55,6 +55,9 @@ def plot_uc_histograms(uc_params):
             "xaxis3": {"title": "c (Å)"},
             "yaxis3": {"title": "a (Å)"},
         },
+        "help": """\
+The distribution of the unit cell parameters: a vs. b, b vs. c and c vs.a respectively.
+""",
     }
 
     d["uc_hist"] = {
@@ -96,6 +99,9 @@ def plot_uc_histograms(uc_params):
             "xaxis2": {"title": "b (Å)"},
             "xaxis3": {"title": "c (Å)"},
         },
+        "help": """\
+Histograms of unit cell parameters, a, b and c.
+""",
     }
 
     return d
