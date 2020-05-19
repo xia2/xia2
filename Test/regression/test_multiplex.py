@@ -45,6 +45,19 @@ def test_proteinase_k(mocker, regression_test, dials_data, tmpdir):
             assert valid_image_ranges == [(1, 25)]
     with tmpdir.join("xia2.multiplex.json").open("r") as fh:
         d = json.load(fh)
+        for hkl in ("100", "010", "001"):
+            k = f"stereographic_projection_{hkl}"
+            assert k in d
+        assert d["stereographic_projection_001"]["data"][0]["hovertext"] == [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+        ]
         for k in ("xtriage", "merging_stats", "merging_stats_anom"):
             assert k in d["datasets"]["All data"]
         assert list(d["datasets"]["All data"]["xtriage"].keys()) == [

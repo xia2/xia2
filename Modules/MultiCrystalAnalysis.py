@@ -306,6 +306,7 @@ any systematic grouping of points may suggest a preferential crystal orientation
         json_data["cos_angle_clustering"] = self._cos_angle_cluster_json
         json_data.update(self._cosym_graphs)
         json_data.update(delta_cc_half_graphs)
+        json_data.update(orientation_graphs)
         if filter_plots:
             json_data.update(filter_plots)
         json_data["datasets"] = {}
