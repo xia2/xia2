@@ -220,15 +220,6 @@ def CCP4DecoratorFactory(DriverInstance):
 
                     loggraph_info = ""
 
-                    # FIXME 09/FEB/07 this is assumed to represent the
-                    # end of a loggraph but really it isn't
-
-                    # almost exactly one year later this has come back to
-                    # bite me - with chef! indeed... OK, in Smartie the
-                    # way this worked was to count the number of $$
-                    # following the $TABLE spell - when this was equal to
-                    # 4 this table is complete. Good idea.
-
                     # while not 'inline graphs' in line and not 'FONT' in line:
                     while n_dollar < 4:
                         n_dollar += line.count("$$")
