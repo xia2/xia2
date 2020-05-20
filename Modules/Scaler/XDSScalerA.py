@@ -44,10 +44,6 @@ class XDSScalerA(Scaler):
         self._xds_spacegroup = None
         self._factory = CCP4Factory()
 
-        self._chef_analysis_groups = {}
-        self._chef_analysis_times = {}
-        self._chef_analysis_resolutions = {}
-
         self._user_resolution_limits = {}
 
         # scaling correction choices - may be set one on the command line...
