@@ -127,7 +127,7 @@ class DeltaCcHalf:
             )
         else:
             cc_bins = intensities.cc_one_half(use_binning=True, return_n_refl=True)
-        bin_data = [b for b in cc_bins if b is not None]
+        bin_data = [b for b in cc_bins.data if b is not None]
         cc_i = flex.mean_weighted(
             flex.double(b[0] for b in bin_data), flex.double(b[1] for b in bin_data),
         )
