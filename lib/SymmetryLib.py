@@ -1,50 +1,14 @@
-# A library of things to help with simple symmetry operation stuff.
-#
-# FIXED 17/NOV/06 add a method in here to give a list of likely, and then
-#                 less likely, spacegroups based on an input spacegroup.
-#                 For instance, if the input spacegroup is P 41 21 2 then
-#                 another likely spacegroup is P 43 21 2 and less likely
-#                 spacegroups are all those in the same pointgroup with
-#                 different screw axes - e.g. P 41 2 2 (thinking of an Ed
-#                 Mitchell example.) This should also allow in the likely
-#                 case for body centred spacegroups where the screw axes
-#                 are hidden, for example I 2 2 2/I 21 21 21 and I 2 3/I 21 3.
-#                 This is now handled by Pointless in the "likely spacegroups"
-#                 section.
-#
-# FIXME 06/DEC/06 need a mapping table from "old" spacegroup names to e.g. xHM
-#                 for use with phenix.hyss.
-
-
 import os
+
+from xia2.Experts.LatticeExpert import lattice_to_spacegroup as _l2s
 
 
 def lattice_to_spacegroup(lattice):
-    """Convert a lattice e.g. tP into the minimal spacegroup number
-    to represent this."""
 
-    _lattice_to_spacegroup = {
-        "aP": 1,
-        "mP": 3,
-        "mC": 5,
-        "mI": 5,
-        "oP": 16,
-        "oC": 20,
-        "oF": 22,
-        "oI": 23,
-        "tP": 75,
-        "tI": 79,
-        "hP": 143,
-        "hR": 146,
-        "cP": 195,
-        "cF": 196,
-        "cI": 197,
-    }
-
-    if lattice not in _lattice_to_spacegroup:
+    if lattice not in _l2s:
         raise RuntimeError('lattice "%s" unknown' % lattice)
 
-    return _lattice_to_spacegroup[lattice]
+    return _l2s[lattice]
 
 
 def spacegroup_name_xHM_to_old(xHM):
@@ -91,34 +55,7 @@ def lattices_in_order():
     """Return a list of possible crystal lattices (e.g. tP) in order of
     increasing symmetry..."""
 
-    # eliminated this entry ... 'oA': 38,
-
-    lattices = [
-        "aP",
-        "mP",
-        "mC",
-        "oP",
-        "oC",
-        "oF",
-        "oI",
-        "tP",
-        "tI",
-        "hP",
-        "hR",
-        "cP",
-        "cF",
-        "cI",
-    ]
-
-    # FIXME this should = lattice!
-    spacegroup_to_lattice = {
-        lattice_to_spacegroup(lattice): lattice for lattice in lattices
-    }
-    # lattice_to_spacegroup(lattice)
-
-    spacegroups = sorted(spacegroup_to_lattice)
-
-    return [spacegroup_to_lattice[s] for s in spacegroups]
+    return [l[1] for l in sorted({v: k for k, v in _l2s.items()}.items())]
 
 
 def sort_lattices(lattices):
@@ -135,14 +72,6 @@ def lauegroup_to_lattice(lauegroup):
     """Convert a Laue group representation (from pointless, e.g. I m m m)
     to something useful, like the implied crystal lattice (in this
     case, oI.)"""
-
-    # this has been calculated from the results of Ralf GK's sginfo and a
-    # little fiddling...
-    #
-    # 19/feb/08 added mI record as pointless has started producing this -
-    # why??? this is not a "real" spacegroup... may be able to switch this
-    # off...
-    #                             'I2/m': 'mI',
 
     lauegroup_to_lattice = {
         "Ammm": "oA",
