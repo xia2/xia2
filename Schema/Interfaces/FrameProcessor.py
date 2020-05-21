@@ -1,17 +1,3 @@
-# An interface for programs which process X-Ray diffraction images.
-# This adds the code for handling the templates, directories etc.
-# but not the use of them e.g. the keyworded input.
-#
-# This is a virtual class - and should be inherited from only for the
-# purposes of using the methods.
-#
-# The following are considered critical to this class:
-#
-# Template, directory. Template in the form ### not ???
-# Distance (mm), wavelength (ang), beam centre (mm, mm),
-# image header information
-
-
 import logging
 import math
 import os

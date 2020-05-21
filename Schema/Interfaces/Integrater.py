@@ -1,34 +1,3 @@
-# An interface for programs which do integration - this will handle
-# all of the input and output, delegating the actual processing to an
-# implementation of this interfacing.
-#
-# The following are considered critical:
-#
-# Input:
-# An implementation of the indexer class.
-#
-# Output:
-# [processed reflections?]
-#
-# This is a complex problem to solve...
-#
-# Assumptions & Assertions:
-#
-# (1) Integration includes any cell and orientation refinement.
-#     This should be handled under the prepare phase.
-# (2) If there is no indexer implementation provided as input,
-#     it's ok to go make one, or raise an exception (maybe.)
-#
-# This means...
-#
-# (1) That this needs to have the posibility of specifying images for
-#     use in both cell refinement (as a list of wedges, similar to
-#     the indexer interface) and as a SINGLE WEDGE for use in integration.
-# (2) This may default to a local implementation using the same program,
-#     e.g. XDS or Mosflm - will not necessarily select the best one.
-#     This is left to the implementation to sort out.
-
-
 import inspect
 import json
 import logging

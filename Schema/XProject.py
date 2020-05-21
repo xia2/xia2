@@ -1,7 +1,3 @@
-# This represents the "top level" of the .xinfo hierarchy, and should
-# exactly correspond to the contents of the .xinfo file.
-
-
 import inspect
 import json
 import logging
