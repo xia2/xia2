@@ -472,13 +472,11 @@ class MultiCrystalScale:
             scaled = Scale(data_manager, self._params, filtering=True)
             self.scale_and_filter_results = scaled.scale_and_filter_results
             logger.info("Scale and filtering:\n%s", self.scale_and_filter_results)
-            self._record_individual_report(
-                data_manager, self._scaled.report(), "Filtered"
-            )
-            py.path.local(self._scaled.scaled_unmerged_mtz).copy(
+            self._record_individual_report(data_manager, scaled.report(), "Filtered")
+            py.path.local(scaled.scaled_unmerged_mtz).copy(
                 py.path.local("filtered_unmerged.mtz")
             )
-            py.path.local(self._scaled.scaled_mtz).copy(py.path.local("filtered.mtz"))
+            py.path.local(scaled.scaled_mtz).copy(py.path.local("filtered.mtz"))
             data_manager.export_experiments("filtered.expt")
             data_manager.export_reflections("filtered.refl")
         else:

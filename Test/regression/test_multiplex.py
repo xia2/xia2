@@ -2,6 +2,7 @@ import json
 import pytest
 
 from dxtbx.serialize import load
+import iotbx.mtz
 from xia2.Modules.Report import Report
 from xia2.command_line.multiplex import run as run_multiplex
 
@@ -96,6 +97,25 @@ def test_proteinase_k_filter_deltacchalf(regression_test, dials_data, tmpdir):
     for expt_file, n_expected in (("scaled.expt", 8), ("filtered.expt", 7)):
         expts = load.experiment_list(tmpdir.join(expt_file).strpath, check_format=False)
         assert len(expts) == n_expected
+
+    # assert that the reflection files are different - the filtered reflections
+    # should have fewer reflections as one data set has been removed
+    mtz_scaled = iotbx.mtz.object(tmpdir.join("scaled_unmerged.mtz").strpath)
+    mtz_filtered = iotbx.mtz.object(tmpdir.join("filtered_unmerged.mtz").strpath)
+    assert mtz_filtered.n_reflections() < mtz_scaled.n_reflections()
+
+    with tmpdir.join("xia2.multiplex.json").open("r") as fh:
+        d = json.load(fh)
+        assert list(d["datasets"].keys()) == ["All data", "cluster 6", "Filtered"]
+        # assert that the recorded merging statistics are different
+        assert (
+            d["datasets"]["All data"]["resolution_graphs"]["cc_one_half_All_data"][
+                "data"
+            ][0]["y"]
+            != d["datasets"]["Filtered"]["resolution_graphs"]["cc_one_half_Filtered"][
+                "data"
+            ][0]["y"]
+        )
 
     # Check that cluster 6 has been scaled
     assert tmpdir.join("cluster_6").check(dir=1)
