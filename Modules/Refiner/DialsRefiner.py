@@ -91,10 +91,12 @@ class DialsRefiner(Refiner):
         split_experiments._reflections_prefix = prefix
         split_experiments.run()
 
-        num_sweeps = len(self._refinr_sweeps)
+        # Get the number of digits necessary to represent the largest sweep number.
+        n_digits = len(str(len(self._refinr_sweeps)))
+
         for i, sweep in enumerate(self._refinr_sweeps):
             name = sweep._name
-            root = f"{prefix}_{i:0{len(str(num_sweeps)):d}d}"
+            root = f"{prefix}_{i:0{n_digits:d}d}"
             expts = os.path.join(cwd, root + ".expt")
             refls = os.path.join(cwd, root + ".refl")
             self.set_refiner_payload(f"{name}_models.expt", expts)
