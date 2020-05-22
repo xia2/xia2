@@ -44,6 +44,9 @@ def RefinerForXSweep(xsweep, json_file=None):
         if not refiner._refinr_sweeps:
             refiner._refinr_sweeps = xsweep.sample.get_sweeps()
             for sweep in refiner._refinr_sweeps:
+                # For some reason, if we don't do this, we re-run the same dials.refine
+                # call for each sweep, instead of just using the results from
+                # <crystal>/<wavelength/SWEEP1/refine
                 sweep._get_refiner()
     else:
         refiner.add_refiner_sweep(xsweep)

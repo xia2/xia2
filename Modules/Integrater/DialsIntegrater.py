@@ -193,10 +193,10 @@ class DialsIntegrater(Integrater):
         # For multi-sweep refinement, get the split experiments from after refinement.
         if PhilIndex.params.xia2.settings.multi_sweep_refinement:
             self._intgr_experiments_filename = refiner.get_refiner_payload(
-                "{}_models.expt".format(self._intgr_sweep._name)
+                f"{self._intgr_sweep._name}_models.expt"
             )
             self._intgr_indexed_filename = refiner.get_refiner_payload(
-                "{}_observations.refl".format(self._intgr_sweep._name)
+                f"{self._intgr_sweep._name}_observations.refl"
             )
         # Otherwise, there should only be a single experiment list and reflection table.
         else:

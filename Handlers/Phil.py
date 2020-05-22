@@ -866,9 +866,9 @@ xia2.settings
   multi_sweep_refinement = Auto
     .type = bool
     .help = "Refine all sweeps together, restraining unit cell parameters to their " \
-            "median, rather than refining image sequences individually (requires " \
-            "dials refiner).  If this is set to True, multi_sweep_indexing will also " \
-            "be set to True."
+            "median, rather than refining sweeps individually (requires dials " \
+            "refiner).  If this is set to True, multi_sweep_indexing will also be " \
+            "set to True."
     .expert_level = 2
   remove_blanks = False
     .expert_level = 2

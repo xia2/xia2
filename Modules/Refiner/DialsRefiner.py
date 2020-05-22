@@ -86,7 +86,7 @@ class DialsRefiner(Refiner):
         auto_logfiler(split_experiments, "SPLIT_EXPERIMENTS")
         split_experiments.add_experiments(self._refinr_experiments_filename)
         split_experiments.add_reflections(self._refinr_indexed_filename)
-        prefix = "{}_refined_split".format(split_experiments.get_xpid())
+        prefix = f"{split_experiments.get_xpid()}_refined_split"
         split_experiments._experiments_prefix = prefix
         split_experiments._reflections_prefix = prefix
         split_experiments.run()
@@ -94,13 +94,11 @@ class DialsRefiner(Refiner):
         num_sweeps = len(self._refinr_sweeps)
         for i, sweep in enumerate(self._refinr_sweeps):
             name = sweep._name
-            root = "{pre}_{ind:0{n_dig:d}d}".format(
-                pre=prefix, ind=i, n_dig=len(str(num_sweeps))
-            )
+            root = f"{prefix}_{i:0{len(str(num_sweeps)):d}d}"
             expts = os.path.join(cwd, root + ".expt")
             refls = os.path.join(cwd, root + ".refl")
-            self.set_refiner_payload("{}_models.expt".format(name), expts)
-            self.set_refiner_payload("{}_observations.refl".format(name), refls)
+            self.set_refiner_payload(f"{name}_models.expt", expts)
+            self.set_refiner_payload(f"{name}_observations.refl", refls)
 
     def Report(self):
         report = _Report()
