@@ -281,7 +281,7 @@ class _CommandLine(object):
             params = PhilIndex.get_python_object()
 
         # Multi-sweep refinement requires multi-sweep indexing.
-        if params.xia2.settings.multi_sweep_refinement is True:
+        if params.xia2.settings.multi_sweep_refinement:
             PhilIndex.update("xia2.settings.multi_sweep_indexing=True")
             params = PhilIndex.get_python_object()
 
