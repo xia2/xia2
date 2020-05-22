@@ -1,11 +1,3 @@
-# A handler for management of program citations. This should initialise
-# from a citations.xml file which can be found in a number of places...
-# in particular $HOME or $USERDIR (I think, on Windows) .xia2,
-# data etc...
-#
-# That would be %USERPROFILE%
-
-
 import os
 import xml.dom.minidom
 

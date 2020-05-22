@@ -1,12 +1,3 @@
-# A manager for files - this will record temporary and output files from
-# xia2, which can be used for composing a dump of "useful" files at the end
-# if processing.
-#
-# This will also be responsible for migrating the data - that is, when
-# the .xinfo file is parsed the directories referred to therein may be
-# migrated to a local disk.
-
-
 import contextlib
 import os
 import shutil

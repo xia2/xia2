@@ -1,9 +1,3 @@
-# A singleton to handle flags, which can be imported more easily
-# as it will not suffer the problems with circular references that
-# the CommandLine singleton suffers from.
-# xia2#42: this is due for retirement & working into the Phil structure
-
-
 import os
 
 from xia2.Wrappers.XDS.XDS import xds_read_xparm

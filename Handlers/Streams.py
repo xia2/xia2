@@ -1,11 +1,3 @@
-# "Standard" output streams for the output of xia2 - these will allow
-# filtering of the output to files, the standard output, a GUI, none of
-# the above, all of the above.
-#
-# The idea of this is to separate the "administrative", "status" and
-# "scientific" output of the program.
-
-
 import ctypes
 import itertools
 import logging

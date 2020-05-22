@@ -1,7 +1,3 @@
-# A handler for matters of the operating environment, which will impact
-# on data harvesting, working directories, a couple of other odds & sods.
-
-
 import atexit
 import ctypes
 import logging
