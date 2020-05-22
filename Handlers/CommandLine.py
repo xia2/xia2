@@ -268,8 +268,8 @@ class _CommandLine(object):
         if params.xia2.settings.scaler is not None:
             add_preference("scaler", params.xia2.settings.scaler)
 
-        # If no multi-sweep refinement options have been set, adopt the default — True
-        # for small-molecule mode, False otherwise.
+        # If no multi-sweep refinement options have been set, adopt the default:
+        #     True for small-molecule mode, False otherwise.
         if params.xia2.settings.multi_sweep_refinement is Auto:
             if (
                 params.xia2.settings.small_molecule is True
