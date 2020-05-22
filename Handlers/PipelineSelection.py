@@ -54,7 +54,7 @@ def get_preferences():
     global preferences
 
     if preferences == {}:
-        search_for_preferences()
+        _search_for_preferences()
 
     return preferences
 
@@ -75,7 +75,7 @@ def add_preference(key, value):
     preferences[key] = value
 
 
-def search_for_preferences():
+def _search_for_preferences():
     """Search for a preferences file, first in HOME then here."""
 
     global preferences
@@ -88,42 +88,43 @@ def search_for_preferences():
         xia2dir = os.path.join(homedir, ".xia2")
 
     if os.path.exists(os.path.join(xia2dir, "preferences.xia")):
-        preferences = parse_preferences(
+        preferences = _parse_preferences(
             os.path.join(xia2dir, "preferences.xia"), preferences
         )
 
     # look also in current working directory
 
     if os.path.exists(os.path.join(os.getcwd(), "preferences.xia")):
-        preferences = parse_preferences(
+        preferences = _parse_preferences(
             os.path.join(os.getcwd(), "preferences.xia"), preferences
         )
 
     return preferences
 
 
-def parse_preferences(file, preferences):
+def _parse_preferences(filename, preferences):
     """Parse preferences to the dictionary."""
 
-    for line in open(file, "r").readlines():
+    with open(filename) as fh:
+        for line in fh.readlines():
 
-        # all lower case
-        line = line.lower()
+            # all lower case
+            line = line.lower()
 
-        # ignore comment lines
-        if line[0] == "!" or line[0] == "#" or not line.split():
-            continue
+            # ignore comment lines
+            if line[0] == "!" or line[0] == "#" or not line.split():
+                continue
 
-        key = line.split(":")[0].strip()
-        value = line.split(":")[1].strip()
+            key = line.split(":")[0].strip()
+            value = line.split(":")[1].strip()
 
-        value = check(key, value)
+            value = check(key, value)
 
-        add_preference(key, value)
+            add_preference(key, value)
 
     return preferences
 
 
 if __name__ == "__main__":
 
-    print(search_for_preferences())
+    print(_search_for_preferences())

@@ -204,7 +204,7 @@ def Index(DriverType=None):
                 self._indexed_filename
             ):
                 # Indexing failed
-                with open(self.get_log_file(), "r") as fh:
+                with open(self.get_log_file()) as fh:
                     if "No suitable lattice could be found" in fh.read():
                         raise libtbx.utils.Sorry(
                             "No suitable indexing solution could be found.\n\n"

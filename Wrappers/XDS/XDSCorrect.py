@@ -361,7 +361,7 @@ def XDSCorrect(DriverType=None, params=None):
 
             # get the reflections to remove...
             for line in open(
-                os.path.join(self.get_working_directory(), "CORRECT.LP"), "r"
+                os.path.join(self.get_working_directory(), "CORRECT.LP")
             ).readlines():
                 if '"alien"' in line:
                     h, k, l = tuple(map(int, line.split()[:3]))

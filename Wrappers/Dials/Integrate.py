@@ -225,7 +225,7 @@ Try using a machine with more memory or using fewer processors."""
             # save some of the output for future reference - the per-image
             # results
 
-            with open(self._integration_report_filename, "r") as fh:
+            with open(self._integration_report_filename) as fh:
                 self._integration_report = json.load(fh)
 
             self._per_image_statistics = {}

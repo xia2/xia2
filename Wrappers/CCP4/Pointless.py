@@ -20,7 +20,7 @@ logger = logging.getLogger("xia2.Wrappers.CCP4.Pointless")
 def mend_pointless_xml(xml_file):
     """Repair XML document"""
 
-    with open(xml_file, "r") as fh:
+    with open(xml_file) as fh:
         text = fh.read().split("\n")
     result = []
     for record in text:

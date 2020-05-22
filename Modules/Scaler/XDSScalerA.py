@@ -930,7 +930,7 @@ class XDSScalerA(Scaler):
                     os.path.join(self.get_working_directory(), "REMOVE.HKL")
                 ):
                     for line in open(
-                        os.path.join(self.get_working_directory(), "REMOVE.HKL"), "r"
+                        os.path.join(self.get_working_directory(), "REMOVE.HKL")
                     ).readlines():
                         h, k, l = list(map(int, line.split()[:3]))
                         z = float(line.split()[3])

@@ -130,7 +130,7 @@ def check_result(
     assert (
         expected_result_file is not None
     ), "Could not find expected results file to compare actual results to"
-    with open(os.path.join(expected_result_dir, expected_result_file), "r") as fh:
+    with open(os.path.join(expected_result_dir, expected_result_file)) as fh:
         expected_summary_lines = fh.readlines()
 
     print()

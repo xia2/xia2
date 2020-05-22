@@ -248,9 +248,7 @@ def XScaleR(
             dname = None
 
             # get the outlier reflections... and the overall scale factor
-            with open(
-                os.path.join(self.get_working_directory(), "XSCALE.LP"), "r"
-            ) as fh:
+            with open(os.path.join(self.get_working_directory(), "XSCALE.LP")) as fh:
                 lines = fh.readlines()
             for line in lines:
                 if '"alien"' in line:

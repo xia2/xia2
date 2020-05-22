@@ -46,7 +46,7 @@ def _parse_correct_lp(filename):
     if not os.path.split(filename)[-1] == "CORRECT.LP":
         raise RuntimeError("input filename not CORRECT.LP")
 
-    with open(filename, "r") as fh:
+    with open(filename) as fh:
         file_contents = fh.readlines()
 
     postrefinement_stats = {}

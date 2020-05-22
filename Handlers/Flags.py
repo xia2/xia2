@@ -59,7 +59,7 @@ class _Flags:
     def set_xparm_ub(self, xparm):
         self._xparm_ub = xparm
 
-        with open(xparm, "r") as fh:
+        with open(xparm) as fh:
             tokens = list(map(float, fh.read().split()))
 
         self._xparm_a = tokens[-9:-6]

@@ -187,7 +187,7 @@ def to_shelx(hklin, prefix, compound="", options=None):
     cell_data = None
     if options and options.cell:
         if options.cell.endswith((".expt", ".json")):
-            with open(options.cell, "r") as fh:
+            with open(options.cell) as fh:
                 cell_data = json.load(fh)
             if "solution_constrained" in cell_data:
                 # json from xia2.get_unit_cell_errors (obsolete)

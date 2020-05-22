@@ -351,9 +351,7 @@ def XDSIdxref(DriverType=None, params=None):
             )
 
             # parse the output
-            with open(
-                os.path.join(self.get_working_directory(), "IDXREF.LP"), "r"
-            ) as fh:
+            with open(os.path.join(self.get_working_directory(), "IDXREF.LP")) as fh:
                 lp = fh.readlines()
 
             self._fraction_rmsd_rmsphi = _parse_idxref_lp_quality(lp)

@@ -51,7 +51,7 @@ def find_blank(hklin):
 
         isig = {}
 
-        with open(hklout, "r") as fh:
+        with open(hklout) as fh:
             for record in fh:
                 lst = record.split()
                 if not lst:

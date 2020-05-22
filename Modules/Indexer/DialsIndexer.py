@@ -276,7 +276,7 @@ class DialsIndexer(Indexer):
             genmask.set_output_experiments(
                 os.path.join(
                     self.get_working_directory(),
-                    "%s_%s_masked.expt" % (genmask.get_xpid(), xsweep.get_name()),
+                    f"{genmask.get_xpid()}_{xsweep.get_name()}_masked.expt",
                 )
             )
             genmask.set_params(PhilIndex.params.dials.masking)
@@ -300,10 +300,10 @@ class DialsIndexer(Indexer):
                 spotfinder.set_write_hot_mask(True)
             spotfinder.set_input_sweep_filename(sweep_filename)
             spotfinder.set_output_sweep_filename(
-                "%s_%s_strong.expt" % (spotfinder.get_xpid(), xsweep.get_name())
+                f"{spotfinder.get_xpid()}_{xsweep.get_name()}_strong.expt"
             )
             spotfinder.set_input_spot_filename(
-                "%s_%s_strong.refl" % (spotfinder.get_xpid(), xsweep.get_name())
+                f"{spotfinder.get_xpid()}_{xsweep.get_name()}_strong.refl"
             )
             if PhilIndex.params.dials.fast_mode:
                 wedges = self._index_select_images_i(imageset)

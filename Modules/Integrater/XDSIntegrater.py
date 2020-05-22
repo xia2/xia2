@@ -771,7 +771,7 @@ class XDSIntegrater(Integrater):
                     os.path.join(self.get_working_directory(), "REMOVE.HKL")
                 ):
                     with open(
-                        os.path.join(self.get_working_directory(), "REMOVE.HKL"), "r"
+                        os.path.join(self.get_working_directory(), "REMOVE.HKL")
                     ) as fh:
                         for line in fh.readlines():
                             h, k, l = list(map(int, line.split()[:3]))

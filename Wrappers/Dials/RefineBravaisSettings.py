@@ -76,7 +76,7 @@ def RefineBravaisSettings(DriverType=None):
             self.check_for_errors()
 
             with open(
-                os.path.join(self.get_working_directory(), "bravais_summary.json"), "r",
+                os.path.join(self.get_working_directory(), "bravais_summary.json"),
             ) as fh:
                 self._bravais_summary = json.load(fh)
 

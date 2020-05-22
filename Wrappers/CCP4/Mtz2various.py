@@ -37,17 +37,15 @@ def Mtz2various(DriverType=None):
 
             self.start()
 
-            labin = "I(+)=I(+)%s SIGI(+)=SIGI(+)%s " % (
-                self._dataset_suffix,
-                self._dataset_suffix,
+            labin = "I(+)=I(+){suffix} SIGI(+)=SIGI(+){suffix} ".format(
+                suffix=self._dataset_suffix,
             )
-            labin += "I(-)=I(-)%s SIGI(-)=SIGI(-)%s" % (
-                self._dataset_suffix,
-                self._dataset_suffix,
+            labin += "I(-)=I(-){suffix} SIGI(-)=SIGI(-){suffix}".format(
+                suffix=self._dataset_suffix,
             )
 
             self.input("output scal")
-            self.input("labin %s" % labin)
+            self.input("labin " + labin)
 
             self.close_wait()
 
@@ -72,16 +70,15 @@ def Mtz2various(DriverType=None):
             self.start()
 
             if self._dataset_suffix or unmerged:
-                labin = "I=I%s SIGI=SIGI%s" % (
-                    self._dataset_suffix,
-                    self._dataset_suffix,
+                labin = "I=I{suffix} SIGI=SIGI{suffix}".format(
+                    suffix=self._dataset_suffix,
                 )
 
             else:
                 labin = "I=IMEAN SIGI=SIGIMEAN"
 
             self.input("output shelx")
-            self.input("labin %s" % labin)
+            self.input("labin " + labin)
 
             self.close_wait()
 

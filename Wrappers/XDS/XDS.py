@@ -320,7 +320,7 @@ def imageset_to_xds(
 def xds_read_xparm(xparm_file):
     """Parse the new-style or old-style XPARM file."""
 
-    with open(xparm_file, "r") as fh:
+    with open(xparm_file) as fh:
         line = fh.readline()
     if "XPARM" in line:
         return xds_read_xparm_new_style(xparm_file)
@@ -331,7 +331,7 @@ def xds_read_xparm(xparm_file):
 def xds_read_xparm_old_style(xparm_file):
     """Parse the XPARM file to a dictionary."""
 
-    with open(xparm_file, "r") as fh:
+    with open(xparm_file) as fh:
         data = [float(x) for x in fh.read().split()]
 
     assert len(data) == 42
@@ -387,7 +387,7 @@ def xds_read_xparm_old_style(xparm_file):
 def xds_read_xparm_new_style(xparm_file):
     """Parse the XPARM file to a dictionary."""
 
-    with open(xparm_file, "r") as fh:
+    with open(xparm_file) as fh:
         data = [float(x) for x in " ".join(fh.readlines()[1:]).split()]
 
     starting_frame = int(data[0])

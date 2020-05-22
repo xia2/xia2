@@ -29,12 +29,9 @@ def ShadowPlot(DriverType=None):
             return self._json_filename
 
         def get_results(self):
-            assert self._json_filename is not None and os.path.isfile(
-                self._json_filename
-            )
-            with open(self._json_filename, "r") as f:
-                results = json.load(f)
-            return results
+            assert self._json_filename and os.path.isfile(self._json_filename)
+            with open(self._json_filename) as fh:
+                return json.load(fh)
 
         def run(self):
             self.clear_command_line()

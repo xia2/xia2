@@ -36,7 +36,7 @@ def get_ccp4_version():
     if CCP4 is not None:
         version_file = os.path.join(CCP4, "lib", "ccp4", "MAJOR_MINOR")
         if os.path.exists(version_file):
-            with open(version_file, "r") as fh:
+            with open(version_file) as fh:
                 return fh.read().strip()
 
 

@@ -80,7 +80,7 @@ def DetectBlanks(DriverType=None):
             self.check_for_errors()
 
             assert os.path.exists(self._json_filename), self._json_filename
-            with open(self._json_filename, "r") as fh:
+            with open(self._json_filename) as fh:
                 self._results = json.load(fh)
 
     return DetectBlanksWrapper()

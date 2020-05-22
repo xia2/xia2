@@ -8,7 +8,7 @@ def parse_integrate_lp_updates(filename):
     if not os.path.split(filename)[-1] == "INTEGRATE.LP":
         raise RuntimeError("input filename not INTEGRATE.LP")
 
-    with open(filename, "r") as fh:
+    with open(filename) as fh:
         file_contents = fh.readlines()
 
     updates = {}
@@ -31,7 +31,7 @@ def parse_integrate_lp(filename):
     if not os.path.split(filename)[-1] == "INTEGRATE.LP":
         raise RuntimeError("input filename not INTEGRATE.LP")
 
-    with open(filename, "r") as fh:
+    with open(filename) as fh:
         file_contents = fh.readlines()
 
     per_image_stats = {}

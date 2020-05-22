@@ -7,7 +7,7 @@ def image_path_obtainer(summary_file):
     """Read a xia2-summary.dat file and return a function capable of
     translating image numbers to file paths"""
 
-    with open(summary_file, "r") as f:
+    with open(summary_file) as f:
         summary = f.read()
 
     file_patterns = []

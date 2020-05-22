@@ -59,19 +59,20 @@ def spacegroup_name_xHM_to_old(xHM):
     old_names = set()
 
     syminfo = os.path.join(os.environ["CCP4"], "lib", "data", "syminfo.lib")
-    for line in open(syminfo, "r").readlines():
-        if line[0] == "#":
-            continue
+    with open(syminfo) as fh:
+        for line in fh.readlines():
+            if line[0] == "#":
+                continue
 
-        if "symbol old" in line:
-            current_old = line.split("'")[1]
+            if "symbol old" in line:
+                current_old = line.split("'")[1]
 
-        if "symbol xHM" in line:
-            current_xHM = line.split("'")[1]
+            if "symbol xHM" in line:
+                current_xHM = line.split("'")[1]
 
-        if "end_spacegroup" in line:
-            mapping[current_xHM] = current_old
-            old_names.add(current_old)
+            if "end_spacegroup" in line:
+                mapping[current_xHM] = current_old
+                old_names.add(current_old)
 
     xHM = xHM.upper()
 

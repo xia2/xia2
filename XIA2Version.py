@@ -53,7 +53,7 @@ def get_git_revision(fallback="not set"):
 
         # 2. If .git directory or git executable missing, read .gitversion
         if (version is None) and os.path.exists(version_file):
-            with open(version_file, "r") as gv:
+            with open(version_file) as gv:
                 version = gv.read().rstrip()
     except Exception:
         pass
