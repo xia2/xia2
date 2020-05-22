@@ -1,0 +1,1 @@
+Fix issue where missing images caused error: "can't convert negative value to unsigned int"
