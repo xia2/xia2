@@ -85,13 +85,6 @@ def Refine(DriverType=None):
             self.add_command_line(self._experiments_filename)
             self.add_command_line(self._indexed_filename)
             self.add_command_line("scan_varying=%s" % self._scan_varying)
-            # If we are using multi-sweep unit cell restraints, we will need to use a
-            # scan-static unit cell for scan-varying refinement, to prevent the
-            # restraints from being disabled.
-            if self._scan_varying and (self.tie_to_group or self.tie_to_target):
-                self.add_command_line(
-                    "refinement.parameterisation.crystal.unit_cell.force_static=True"
-                )
             if self._close_to_spindle_cutoff is not None:
                 self.add_command_line(
                     "close_to_spindle_cutoff=%f" % self._close_to_spindle_cutoff
