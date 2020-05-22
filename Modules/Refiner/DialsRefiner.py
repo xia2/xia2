@@ -90,7 +90,8 @@ class DialsRefiner(Refiner):
         split_experiments.run()
 
         # Get the number of digits necessary to represent the largest sweep number.
-        n_digits = len(str(len(self._refinr_sweeps)))
+        n_digits = len(str(len(self._refinr_sweeps)))  # lgtm
+        # LGTM false positive, https://github.com/github/codeql/issues/2885
 
         for i, sweep in enumerate(self._refinr_sweeps):
             name = sweep._name
