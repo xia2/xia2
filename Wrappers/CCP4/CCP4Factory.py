@@ -14,7 +14,6 @@ from xia2.Wrappers.CCP4.Reindex import Reindex as _Reindex
 from xia2.Wrappers.CCP4.Sortmtz import Sortmtz as _Sortmtz
 from xia2.Wrappers.CCP4.Truncate import Truncate as _Truncate
 from xia2.Wrappers.Dials.Symmetry import DialsSymmetry as _DialsSymmetry
-from xia2.Wrappers.XIA.Chef import Chef as _Chef
 
 
 class CCP4Factory:
@@ -119,11 +118,3 @@ class CCP4Factory:
         matthews_coef.set_working_directory(self.get_working_directory())
         auto_logfiler(matthews_coef)
         return matthews_coef
-
-    def Chef(self):
-        """Create a Chef wrapper from _Chef - set the
-        working directory and log file stuff as a part of this..."""
-        chef = _Chef()
-        chef.set_working_directory(self.get_working_directory())
-        auto_logfiler(chef)
-        return chef
