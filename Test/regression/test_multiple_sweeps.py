@@ -16,7 +16,7 @@ import procrunner
     "multi_sweep_type",
     ("multi_sweep_indexing", "multi_sweep_refinement", "small_molecule"),
 )
-def test_multiple_sweeps(multi_sweep_type, dials_data, run_in_tmpdir):
+def test_multiple_sweeps(multi_sweep_type, ccp4, dials_data, run_in_tmpdir):
     """
     Run xia2 with various different multiple-sweep options.
 
