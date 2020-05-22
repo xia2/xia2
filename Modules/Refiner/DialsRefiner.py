@@ -55,20 +55,18 @@ class DialsRefiner(Refiner):
         refine.set_close_to_spindle_cutoff(
             PhilIndex.params.dials.close_to_spindle_cutoff
         )
-        # Do joint refinement of unit cell parameters if jointly refining multi sweeps.
-        # If the user hasn't specified any options, use the defaults from dials.refine.
-        if not params.restraints.tie_to_target:
-            params.restraints.tie_to_target = (
-                restraints_scope.extract().restraints.tie_to_target
-            )
-        # If the user hasn't specified any options, use the defaults from dials.refine.
-        if not params.restraints.tie_to_group:
+        # For multiple-sweep joint refinement, use the user's preferred restraints or
+        # default to restraining using `tie_to_group` with some reasonably tight sigmas.
+        if (
+            PhilIndex.params.xia2.settings.multi_sweep_refinement
+            and not params.restraints.tie_to_group
+        ):
             params.restraints.tie_to_group = (
                 restraints_scope.extract().restraints.tie_to_group
             )
-            if PhilIndex.params.xia2.settings.multi_sweep_refinement:
-                # If the user hasn't specified otherwise, use default sigmas of 0.01.
-                params.restraints.tie_to_group[0].sigmas = 6 * (0.01,)
+            # If the user hasn't specified otherwise, use default sigmas of 0.01.
+            params.restraints.tie_to_group[0].sigmas = 6 * (0.01,)
+        # Set any specified restraints for joint refinement of multiple sweeps.
         refine.tie_to_target = params.restraints.tie_to_target
         refine.tie_to_group = params.restraints.tie_to_group
 
