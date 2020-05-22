@@ -1,8 +1,8 @@
+import io
 import logging
 
 from iotbx.reflection_file_reader import any_reflection_file
 from mmtbx.scaling import data_statistics
-from six.moves import StringIO
 
 logger = logging.getLogger("xia2.Modules.CctbxFrenchWilson")
 
@@ -14,7 +14,7 @@ def do_french_wilson(mtz_file, hklout, anomalous=False):
     assert result.file_type() == "ccp4_mtz"
 
     mtz_object = result.file_content()
-    output = StringIO()
+    output = io.StringIO()
     mtz_object.show_summary(out=output)
 
     for ma in result.as_miller_arrays(merge_equivalents=False):

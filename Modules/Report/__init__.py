@@ -1,5 +1,6 @@
 import codecs
 import copy
+import io
 import os
 from collections import OrderedDict
 
@@ -23,7 +24,6 @@ from iotbx.reflection_file_reader import any_reflection_file
 from mmtbx.scaling import printed_output
 from mmtbx.scaling.xtriage import master_params as xtriage_master_params
 from mmtbx.scaling.xtriage import xtriage_analyses
-from six.moves import cStringIO as StringIO
 from xia2.command_line.plot_multiplicity import master_phil, plot_multiplicity
 from xia2.Modules.Analysis import batch_phil_scope, phil_scope, separate_unmerged
 
@@ -33,7 +33,7 @@ class _xtriage_output(printed_output):
         super().__init__(out)
         self.gui_output = True
         self._out_orig = self.out
-        self.out = StringIO()
+        self.out = io.StringIO()
         self._sub_header_to_out = {}
 
     def show_big_header(self, text):
@@ -41,12 +41,12 @@ class _xtriage_output(printed_output):
 
     def show_header(self, text):
         self._out_orig.write(self.out.getvalue())
-        self.out = StringIO()
+        self.out = io.StringIO()
         super().show_header(text)
 
     def show_sub_header(self, title):
         self._out_orig.write(self.out.getvalue())
-        self.out = StringIO()
+        self.out = io.StringIO()
         self._current_sub_header = title
         assert title not in self._sub_header_to_out
         self._sub_header_to_out[title] = self.out
@@ -152,7 +152,7 @@ class Report:
         xtriage_success = []
         xtriage_warnings = []
         xtriage_danger = []
-        s = StringIO()
+        s = io.StringIO()
         pout = printed_output(out=s)
 
         xtriage_params = xtriage_master_params.fetch(sources=[]).extract()
@@ -169,7 +169,7 @@ class Report:
             xia2.Handlers.Files.FileHandler.record_log_file(
                 "Xtriage", os.path.join(self.report_dir, "xtriage.log")
             )
-        xs = StringIO()
+        xs = io.StringIO()
         xout = _xtriage_output(xs)
         xanalysis.show(out=xout)
         xout.flush()
@@ -178,7 +178,7 @@ class Report:
         # issues.show()
 
         for level, text, sub_header in issues._issues:
-            summary = sub_header_to_out.get(sub_header, StringIO()).getvalue()
+            summary = sub_header_to_out.get(sub_header, io.StringIO()).getvalue()
             d = {"level": level, "text": text, "summary": summary, "header": sub_header}
             if level == 0:
                 xtriage_success.append(d)

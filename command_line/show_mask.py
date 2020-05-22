@@ -1,7 +1,7 @@
 # LIBTBX_SET_DISPATCHER_NAME dev.xia2.show_mask
 
+import pickle
 import sys
-import six.moves.cPickle as pickle
 
 from dials.array_family import flex  # noqa; lgtm; required for pickle loading
 

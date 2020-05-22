@@ -1,8 +1,8 @@
 # LIBTBX_SET_DISPATCHER_NAME dev.xia2.create_mask
 
+import pickle
 import sys
 
-import six.moves.cPickle as pickle
 from dxtbx import load
 
 
@@ -25,7 +25,7 @@ def main(filename, threshold, images):
     with open(filename, "wb") as fh:
         pickle.dump((mask,), fh, pickle.HIGHEST_PROTOCOL)
 
-    print("Mask written to %s" % filename)
+    print(f"Mask written to {filename}")
 
 
 if __name__ == "__main__":
