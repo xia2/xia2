@@ -282,6 +282,12 @@ class _CommandLine(object):
 
         # Multi-sweep refinement requires multi-sweep indexing.
         if params.xia2.settings.multi_sweep_refinement:
+            # Check that the user hasn't specified multi_sweep_indexing False:
+            assert params.xia2.settings.multi_sweep_indexing, (
+                "It seems you have specified that xia2 should use multi-sweep "
+                "refinement without multi-sweep indexing.\n"
+                "This is not currently possible."
+            )
             PhilIndex.update("xia2.settings.multi_sweep_indexing=True")
             params = PhilIndex.get_python_object()
 
@@ -300,18 +306,13 @@ class _CommandLine(object):
             params = PhilIndex.get_python_object()
 
         # Multi-sweep indexing is incompatible with parallel processing.
-        # Consequently, multi-sweep refinement cannot be used either.
-        if (
+        assert not (
             params.xia2.settings.multi_sweep_indexing is True
             and params.xia2.settings.multiprocessing.mode == "parallel"
-        ):
-            logger.info(
-                "Multi sweep indexing disabled:\n"
-                "MSI is not available for parallel processing."
-            )
-            PhilIndex.update("xia2.settings.multi_sweep_indexing=False")
-            PhilIndex.update("xia2.settings.multi_sweep_refinement=False")
-            params = PhilIndex.get_python_object()
+        ), (
+            "Multi sweep indexing disabled:\n"
+            "MSI is not available for parallel processing."
+        )
 
         input_json = params.xia2.settings.input.json
         if input_json is not None and len(input_json):
