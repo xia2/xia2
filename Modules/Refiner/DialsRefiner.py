@@ -1,7 +1,10 @@
 import os
 
+from dials.algorithms.refinement.restraints.restraints_parameterisation import (
+    uc_phil_scope as restraints_scope,
+)
 from dials.array_family import flex
-from dxtbx.serialize import load
+from dxtbx.model import ExperimentList
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.lib.bits import auto_logfiler
@@ -11,6 +14,7 @@ from xia2.Wrappers.Dials.CombineExperiments import (
 )
 from xia2.Wrappers.Dials.Refine import Refine as _Refine
 from xia2.Wrappers.Dials.Report import Report as _Report
+from xia2.Wrappers.Dials.SplitExperiments import SplitExperiments
 
 
 class DialsRefiner(Refiner):
@@ -49,9 +53,52 @@ class DialsRefiner(Refiner):
         refine.set_close_to_spindle_cutoff(
             PhilIndex.params.dials.close_to_spindle_cutoff
         )
+        # For multiple-sweep joint refinement, use the user's preferred restraints or
+        # default to restraining using `tie_to_group` with some reasonably tight sigmas.
+        if (
+            PhilIndex.params.xia2.settings.multi_sweep_refinement
+            and not params.restraints.tie_to_group
+        ):
+            params.restraints.tie_to_group = (
+                restraints_scope.extract().restraints.tie_to_group
+            )
+            # If the user hasn't specified otherwise, use default sigmas of 0.01.
+            params.restraints.tie_to_group[0].sigmas = 6 * (0.01,)
+        # Set any specified restraints for joint refinement of multiple sweeps.
+        refine.tie_to_target = params.restraints.tie_to_target
+        refine.tie_to_group = params.restraints.tie_to_group
+
         auto_logfiler(refine, "REFINE")
 
         return refine
+
+    def split_after_refinement(self):
+        """
+        Split the refined experiments.
+
+        Add all the resulting experiment list/reflection table pairs to the payload.
+        """
+        split_experiments = SplitExperiments()
+        cwd = self.get_working_directory()
+        split_experiments.set_working_directory(cwd)
+        auto_logfiler(split_experiments, "SPLIT_EXPERIMENTS")
+        split_experiments.add_experiments(self._refinr_experiments_filename)
+        split_experiments.add_reflections(self._refinr_indexed_filename)
+        prefix = f"{split_experiments.get_xpid()}_refined_split"
+        split_experiments._experiments_prefix = prefix
+        split_experiments._reflections_prefix = prefix
+        split_experiments.run()
+
+        # Get the number of digits necessary to represent the largest sweep number.
+        n_digits = len(str(len(self._refinr_sweeps)))
+
+        for i, sweep in enumerate(self._refinr_sweeps):
+            name = sweep._name
+            root = f"{prefix}_{i:0{n_digits:d}d}"
+            expts = os.path.join(cwd, root + ".expt")
+            refls = os.path.join(cwd, root + ".refl")
+            self.set_refiner_payload(f"{name}_models.expt", expts)
+            self.set_refiner_payload(f"{name}_observations.refl", refls)
 
     def Report(self):
         report = _Report()
@@ -63,18 +110,20 @@ class DialsRefiner(Refiner):
         pass
 
     def _refine(self):
-        for epoch, idxr in self._refinr_indexers.items():
+        for idxr in set(self._refinr_indexers.values()):
             experiments = idxr.get_indexer_experiment_list()
 
             indexed_experiments = idxr.get_indexer_payload("experiments_filename")
             indexed_reflections = idxr.get_indexer_payload("indexed_filename")
 
-            if len(experiments) > 1:
+            # If multiple sweeps but not doing joint refinement, get only the
+            # relevant reflections.
+            multi_sweep = PhilIndex.params.xia2.settings.multi_sweep_refinement
+            if len(experiments) > 1 and not multi_sweep:
                 xsweeps = idxr._indxr_sweeps
                 assert len(xsweeps) == len(experiments)
-                assert (
-                    len(self._refinr_sweeps) == 1
-                )  # don't currently support joint refinement
+                # Don't do joint refinement
+                assert len(self._refinr_sweeps) == 1
                 xsweep = self._refinr_sweeps[0]
                 i = xsweeps.index(xsweep)
                 experiments = experiments[i : i + 1]
@@ -103,19 +152,22 @@ class DialsRefiner(Refiner):
                 reflections["imageset_id"] = flex.int(len(reflections), 0)
                 reflections.as_file(indexed_reflections)
 
-            assert (
-                len(experiments.crystals()) == 1
-            )  # currently only handle one lattice/sweep
+            # currently only handle one lattice/refiner
+            assert len(experiments.crystals()) == 1
 
             scan_static = PhilIndex.params.dials.refine.scan_static
 
             # Avoid doing scan-varying refinement on narrow wedges.
-            start, end = experiments[0].scan.get_oscillation_range()
-            total_oscillation_range = end - start
+            scan_oscillation_ranges = []
+            for experiment in experiments:
+                start, end = experiment.scan.get_oscillation_range()
+                scan_oscillation_ranges.append(end - start)
+
+            min_oscillation_range = min(scan_oscillation_ranges)
 
             if (
                 PhilIndex.params.dials.refine.scan_varying
-                and total_oscillation_range > 5
+                and min_oscillation_range > 5
                 and not PhilIndex.params.dials.fast_mode
             ):
                 scan_varying = PhilIndex.params.dials.refine.scan_varying
@@ -140,8 +192,8 @@ class DialsRefiner(Refiner):
                 refiner = self.Refine()
                 refiner.set_experiments_filename(self._refinr_experiments_filename)
                 refiner.set_indexed_filename(self._refinr_indexed_filename)
-                if total_oscillation_range < 36:
-                    refiner.set_interval_width_degrees(total_oscillation_range / 2)
+                if min_oscillation_range < 36:
+                    refiner.set_interval_width_degrees(min_oscillation_range / 2)
                 refiner.run()
                 self._refinr_experiments_filename = (
                     refiner.get_refined_experiments_filename()
@@ -165,7 +217,7 @@ class DialsRefiner(Refiner):
                     "%s REFINE" % idxr.get_indexer_full_name(), html_filename
                 )
 
-            experiments = load.experiment_list(self._refinr_experiments_filename)
+            experiments = ExperimentList.from_file(self._refinr_experiments_filename)
             self.set_refiner_payload("models.expt", self._refinr_experiments_filename)
             self.set_refiner_payload("observations.refl", self._refinr_indexed_filename)
 
@@ -173,4 +225,8 @@ class DialsRefiner(Refiner):
             self._refinr_cell = experiments.crystals()[0].get_unit_cell().parameters()
 
     def _refine_finish(self):
-        pass
+        # For multiple-sweep joint refinement, because integraters are fairly rigidly
+        # one-sweep-only, we must split the refined experiments and add the individual
+        # experiment list/reflection table pairs to the payload.
+        if PhilIndex.params.xia2.settings.multi_sweep_refinement:
+            self.split_after_refinement()

@@ -89,7 +89,8 @@ def unroll_datasets(datasets):
             continue
         if len(tokens) != 4:
             raise RuntimeError(
-                "Dataset ranges must be passed as /path/to/image_0001.cbf:start:end[:chunk]"
+                "Dataset ranges must be passed as "
+                "/path/to/image_0001.cbf:start:end[:chunk]"
             )
         start, end, incr = list(map(int, tokens[1:]))
         if start + incr - 1 > end:
@@ -266,22 +267,51 @@ class _CommandLine:
         if params.xia2.settings.scaler is not None:
             add_preference("scaler", params.xia2.settings.scaler)
 
+        # If no multi-sweep refinement options have been set, adopt the default:
+        #     True for small-molecule mode, False otherwise.
+        if params.xia2.settings.multi_sweep_refinement is Auto:
+            if (
+                params.xia2.settings.small_molecule is True
+                and params.xia2.settings.indexer == "dials"
+            ):
+                PhilIndex.update("xia2.settings.multi_sweep_refinement=True")
+            else:
+                PhilIndex.update("xia2.settings.multi_sweep_refinement=False")
+            params = PhilIndex.get_python_object()
+
+        # Multi-sweep refinement requires multi-sweep indexing.
+        if params.xia2.settings.multi_sweep_refinement:
+            # Check that the user hasn't specified multi_sweep_indexing False:
+            assert params.xia2.settings.multi_sweep_indexing, (
+                "It seems you have specified that xia2 should use multi-sweep "
+                "refinement without multi-sweep indexing.\n"
+                "This is not currently possible."
+            )
+            PhilIndex.update("xia2.settings.multi_sweep_indexing=True")
+            params = PhilIndex.get_python_object()
+
+        # If no multi-sweep indexing settings have yet been set (either because
+        # small_molecule is False or because it is True but the user has specified that
+        # multi_sweep_refinement is False), then adopt the default settings — True
+        # for small-molecule mode, False otherwise.
         if params.xia2.settings.multi_sweep_indexing is Auto:
             if (
                 params.xia2.settings.small_molecule is True
-                and "dials" == params.xia2.settings.indexer
+                and params.xia2.settings.indexer == "dials"
             ):
                 PhilIndex.update("xia2.settings.multi_sweep_indexing=True")
             else:
                 PhilIndex.update("xia2.settings.multi_sweep_indexing=False")
-        if (
+            params = PhilIndex.get_python_object()
+
+        # Multi-sweep indexing is incompatible with parallel processing.
+        assert not (
             params.xia2.settings.multi_sweep_indexing is True
             and params.xia2.settings.multiprocessing.mode == "parallel"
-        ):
-            logger.info(
-                "Multi sweep indexing disabled:\nMSI is not available for parallel processing."
-            )
-            PhilIndex.update("xia2.settings.multi_sweep_indexing=False")
+        ), (
+            "Multi sweep indexing disabled:\n"
+            "MSI is not available for parallel processing."
+        )
 
         input_json = params.xia2.settings.input.json
         if input_json is not None and len(input_json):
@@ -541,7 +571,8 @@ class _CommandLine:
                 allowed_scalers = ("dials", "ccp4a")
             if settings.scaler not in allowed_scalers:
                 raise ValueError(
-                    "scaler=%s not compatible with pipeline=%s (compatible scalers are %s)"
+                    "scaler=%s not compatible with pipeline=%s "
+                    "(compatible scalers are %s)"
                     % (settings.scaler, settings.pipeline, " or ".join(allowed_scalers))
                 )
 

@@ -363,6 +363,7 @@ dials
     reflections_per_degree = 100
       .type = int
       .short_caption = "Number of reflections per degree for random subset"
+    include scope dials.algorithms.refinement.restraints.restraints_parameterisation.uc_phil_scope
   }
   integrate
     .expert_level = 1
@@ -860,6 +861,13 @@ xia2.settings
     .type = bool
     .help = "Index all sweeps together rather than combining individual results " \
             "(requires dials indexer)"
+    .expert_level = 2
+  multi_sweep_refinement = Auto
+    .type = bool
+    .help = "Refine all sweeps together, restraining unit cell parameters to their " \
+            "median, rather than refining sweeps individually (requires dials " \
+            "refiner).  If this is set to True, multi_sweep_indexing will also be " \
+            "set to True."
     .expert_level = 2
   remove_blanks = False
     .expert_level = 2

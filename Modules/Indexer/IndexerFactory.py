@@ -30,8 +30,7 @@ def IndexerForXSweep(xsweep, json_file=None):
 
     crystal_lattice = xsweep.get_crystal_lattice()
 
-    params = PhilIndex.params
-    multi_sweep_indexing = params.xia2.settings.multi_sweep_indexing
+    multi_sweep_indexing = PhilIndex.params.xia2.settings.multi_sweep_indexing
 
     # FIXME SCI-599 decide from the width of the sweep and the preference
     # which indexer to return...
@@ -45,10 +44,8 @@ def IndexerForXSweep(xsweep, json_file=None):
     # hack now - if XDS integration switch to XDS indexer if (i) labelit and
     # (ii) sweep < 10 degrees
     if multi_sweep_indexing and len(xsweep.sample.get_sweeps()) > 1:
-        indexer = xsweep.sample.multi_indexer
-        if not indexer:
-            indexer = Indexer()
-            xsweep.sample.multi_indexer = indexer
+        indexer = xsweep.sample.multi_indexer or Indexer()
+        xsweep.sample.multi_indexer = indexer
     elif (
         sweep_width < 10.0
         and not get_preferences().get("indexer")

@@ -18,6 +18,7 @@ class XSample:
         self._sweeps = []
 
         self.multi_indexer = None
+        self.multi_refiner = None
 
     def get_epoch_to_dose(self):
         epoch_to_dose = accumulate_dose(
@@ -50,7 +51,7 @@ class XSample:
                 # don't serialize this since the parent xsample *should* contain
                 # the reference to the child xsweep
                 continue
-            elif a[0] == "multi_indexer" and a[1] is not None:
+            elif a[0] in ["multi_indexer", "multi_refiner"] and a[1] is not None:
                 obj[a[0]] = a[1].to_dict()
             elif a[0].startswith("__"):
                 continue
@@ -65,7 +66,7 @@ class XSample:
         for k, v in obj.items():
             if k == "_sweeps":
                 v = [s_dict["_name"] for s_dict in v]
-            elif k == "multi_indexer" and v is not None:
+            elif k in ["multi_indexer", "multi_refiner"] and v is not None:
                 from libtbx.utils import import_python_object
 
                 cls = import_python_object(

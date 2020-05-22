@@ -33,6 +33,10 @@ def Refine(DriverType=None):
             self._outlier_algorithm = None
             self._close_to_spindle_cutoff = None
 
+            # Attributes of restrained joint refinement of unit cell parameters
+            self.tie_to_target = []
+            self.tie_to_group = []
+
         def set_experiments_filename(self, experiments_filename):
             self._experiments_filename = experiments_filename
 
@@ -112,6 +116,45 @@ def Refine(DriverType=None):
                 self.add_command_line("detector.fix=%s" % self._detector_fix)
             if self._beam_fix:
                 self.add_command_line("beam.fix=%s" % self._beam_fix)
+
+            # Arguments for restrained multiple-sweep joint refinement
+            # of unit cell parameters.
+            for target in self.tie_to_target:
+                # In this case, it's important to retain "parameter_x=None" when
+                # parameter_y is not None.
+                if target.values or target.sigmas or target.id:
+                    self.add_command_line(
+                        "refinement.parameterisation.crystal.unit_cell.restraints"
+                        ".tie_to_target.values=%s"
+                        % (",".join(map(str, target.values)) if target.values else None)
+                    )
+                    self.add_command_line(
+                        "refinement.parameterisation.crystal.unit_cell.restraints"
+                        ".tie_to_target.sigmas=%s"
+                        % (",".join(map(str, target.sigmas)) if target.sigmas else None)
+                    )
+                    self.add_command_line(
+                        "refinement.parameterisation.crystal.unit_cell.restraints"
+                        ".tie_to_target.id=%s"
+                        % (",".join(map(str, target.id)) if target.id else None)
+                    )
+            for group in self.tie_to_group:
+                if group.target or group.sigmas or group.id:
+                    self.add_command_line(
+                        "refinement.parameterisation.crystal.unit_cell.restraints"
+                        ".tie_to_group.target=%s" % group.target
+                    )
+                    self.add_command_line(
+                        "refinement.parameterisation.crystal.unit_cell.restraints"
+                        ".tie_to_group.sigmas=%s"
+                        % (",".join(map(str, group.sigmas)) if group.sigmas else None)
+                    )
+                    self.add_command_line(
+                        "refinement.parameterisation.crystal.unit_cell.restraints"
+                        ".tie_to_group.id=%s"
+                        % (",".join(map(str, group.id)) if group.id else None)
+                    )
+
             if self._phil_file is not None:
                 self.add_command_line(self._phil_file)
 

@@ -36,6 +36,12 @@ class Refiner:
         # say 'mosflm':{'yscale':0.9999} etc.
         self._refinr_program_parameters = {}
 
+        # Record refiner status
+        self._refinr_done = False
+        self._refinr_prepare_done = False
+        self._refinr_finish_done = False
+        self._refinr_result = None
+
     # serialization functions
 
     def to_dict(self):
@@ -256,8 +262,9 @@ class Refiner:
     def set_refiner_asserted_lattice(self, asserted_lattice):
         state = self.LATTICE_POSSIBLE
         for idxr in self._refinr_indexers.values():
-            state = idxr.set_indexer_asserted_lattice(asserted_lattice)
-            if not idxr.get_indexer_done():
-                self.refiner_reset()
+            if idxr.get_indexer_done():
+                state = idxr.set_indexer_asserted_lattice(asserted_lattice)
+                if not idxr.get_indexer_done():
+                    self.refiner_reset()
         # XXX for multiple indexers need to get some kind of consensus?
         return state
