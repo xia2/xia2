@@ -21,9 +21,6 @@ from xia2.lib.bits import auto_logfiler, nifty_power_of_ten
 from xia2.lib.SymmetryLib import clean_reindex_operator
 from xia2.Modules import MtzUtils
 from xia2.Modules.AnalyseMyIntensities import AnalyseMyIntensities
-from xia2.Modules.CCP4InterRadiationDamageDetector import (
-    CCP4InterRadiationDamageDetector,
-)
 from xia2.Modules.Scaler.rebatch import rebatch
 from xia2.Schema.Interfaces.Scaler import Scaler
 
@@ -827,32 +824,6 @@ class CommonScaler(Scaler):
 
         # record this for future reference
         FileHandler.record_data_file(hklout)
-
-    def _scale_finish_chunk_8_raddam(self):
-        crd = CCP4InterRadiationDamageDetector()
-
-        crd.set_working_directory(self.get_working_directory())
-
-        crd.set_hklin(self._scalr_scaled_reflection_files["mtz"])
-
-        if self.get_scaler_anomalous():
-            crd.set_anomalous(True)
-
-        hklout = os.path.join(self.get_working_directory(), "temp.mtz")
-        FileHandler.record_temporary_file(hklout)
-
-        crd.set_hklout(hklout)
-
-        status = crd.detect()
-
-        if status:
-            logger.info("")
-            logger.notice(banner("Local Scaling %s" % self._scalr_xname))
-            for s in status:
-                logger.info("%s %s" % s)
-            logger.info(banner(""))
-        else:
-            logger.debug("Local scaling failed")
 
     def _estimate_resolution_limit(
         self, hklin, batch_range=None, reflections=None, experiments=None
