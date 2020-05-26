@@ -11,8 +11,8 @@ def test_load_imageset(dials_data, tmp_path):
         for j in range(1, 46):
             if j == 23:
                 continue
-            tmp_path.joinpath(f"insulin_1_{j:03d}.img").symlink_to(
-                dials_data("insulin").join(f"insulin_1_{j:03d}.img")
+            tmp_path.joinpath("insulin_1_%03d.img" % j).symlink_to(
+                dials_data("insulin").join("insulin_1_%03d.img" % j)
             )
 
         imagesets = load_imagesets("insulin_1_###.img", str(tmp_path))
