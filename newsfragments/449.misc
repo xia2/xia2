@@ -1,3 +1,0 @@
-Removed an old check for twinning, based on calculating the fourth moment of E.
-Since xia2 now runs xtriage, this check was redundant and it also failed rather ungracefully if the number of reflections was small.
-If you were used to checking for messages like 'Your data do not appear twinned' or 'Your data appear to be twinned', you may now wish to consult the xtriage output in the xia2 HTML report.

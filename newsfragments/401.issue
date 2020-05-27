@@ -1,2 +1,0 @@
-Remove the check that HDF5 data files are in place for master files, since this
-implicitly assumes that the data are written following DECTRIS manner. 

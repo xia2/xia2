@@ -1,3 +1,49 @@
+xia2 0.7.32 (DIALS 3.0.0) (2020-05-27)
+======================================
+
+Features
+--------
+
+- Improve handling of diamond anvil cell data.  When calling xia2 with `high_pressure.correction=True`:
+  - 'Dynamic shadowing' is enabled, to mask out the regions shadowed by the cell body.
+  - The minimum observation counts for profile modelling are relaxed — the defaults are unrealistic in the case of a small data set from a small-molecule material in a diamond anvil cell.  In such cases, there are far fewer spots than the DIALS profile modelling expects, based on the norm in MX.  This had been a frequent cause of frustration when processing small-molecule data with xia2.
+  - X-ray absorption in the diamond anvils is automatically corrected for using `dials.anvil_correction`. (#396)
+- New command-line interface for xia2.to_shelxcde utility to support SAD/MAD datasets. (#433)
+- - Include xtriage analysis in xia2.multiplex output
+  - xia2.multiplex now exports json file including xtriage results
+  - Include merging stats in multiplex json file (#443)
+- Add the option ``multi_sweep_refinement`` to the DIALS pipelines.
+  This performs the same indexing as ``multi_sweep_indexing`` and additionally refines all sweeps together, rather than refining each sweep individually.
+  When refining the sweeps together, the unit cell parameters of each sweep are restrained to the mean unit cell during the scan-static refinement.
+  This is achieved by setting the ``dials.refine`` option ``refinement.parameterisation.crystal.unit_cell.restraints.tie_to_group.sigmas=0.01,0.01,0.01,0.01,0.01,0.01``, but other values and ``tie_to_group``/``tie_to_target`` schemes of ``dials.refine`` may be invoked by passing suitable parameters.
+  See the various xia2 configuration parameters under ``dials.refine.restraints``, which are identical to the settings one can pass to ``dials.refine`` via its own parameter set ``refinement.parameterisation.crystal.unit_cell.restraints``.
+  As with the normal behaviour of xia2, the restraints do not apply to the scan-varying refinement step.
+
+  Since this is likely to be most useful for small-molecule chemical crystallography, the ``multi_sweep_refinement`` behaviour is made the default when ``small_molecule=True``. (#456)
+
+
+Bugfixes
+--------
+
+- Fixed printing of unit cells which are fixed by symmetry (89.9999999 -> 90.0) (#444)
+- Changed outlier rejection in 3dii pipeline - no longer throw out outliers by default, and if outlier rejection requested only perform this after assessing resolution limits. (#445)
+- Fix issue where missing images caused error: "can't convert negative value to unsigned int" (#463)
+
+
+Deprecations and Removals
+-------------------------
+
+- xia2 0.7 no longer supports Python 2 (#450)
+- Removed long-deprecated command line options -3dii / -dials and the like as well as the dials-full pipeline. (#452)
+- Remove xia2.chef: this is deprecated and replaced by dials.damage_analysis (#460)
+
+
+Misc
+----
+
+- #449
+
+
 xia2 0.6.446 (DIALS 2.2.0) (2020-03-15)
 =======================================
 
@@ -27,7 +73,8 @@ Bugfixes
   Eiger detectors (#412)
 - Fix bug for space_group= option in combination with the dials pipeline where
   output mtz files would be in the Laue group, rather than the space group. (#420)
-
+- Remove the check that HDF5 data files are in place for master files, since this
+  implicitly assumes that the data are written following DECTRIS manner. (#401)
 
 xia2 0.6.362 (DIALS 2.1.0) (2019-12-16)
 =======================================
@@ -86,3 +133,8 @@ Features
 
   The integrated.mtz (unscaled) no longer appears in the Logfiles but can
   be generated from the corresponding .refl and .expt files (#329)
+- Reduce the total sweep range for searching for the correct beam centre.
+
+  After 180 degrees no new information is provided so restrict the range if
+  the total number of reflections is > 20,000 (only 10,000 randomly selected
+  refections are used for this calculation anyway). (#249)

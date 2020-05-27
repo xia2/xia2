@@ -1,1 +1,0 @@
-Fixed printing of unit cells which are fixed by symmetry (89.9999999 -> 90.0)
