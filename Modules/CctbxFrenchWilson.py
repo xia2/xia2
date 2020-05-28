@@ -18,12 +18,7 @@ def do_french_wilson(mtz_file, hklout, anomalous=False):
     mtz_object.show_summary(out=output)
 
     for ma in result.as_miller_arrays(merge_equivalents=False):
-        if anomalous and ma.info().labels == [
-            "I(+)",
-            "SIGI(+)",
-            "I(-)",
-            "SIGI(-)",
-        ]:
+        if anomalous and ma.info().labels == ["I(+)", "SIGI(+)", "I(-)", "SIGI(-)"]:
             assert ma.anomalous_flag()
             intensities = ma.merge_equivalents().array()  # XXX why is this necessary?
         elif ma.info().labels == ["IMEAN", "SIGIMEAN"]:
@@ -43,10 +38,21 @@ def do_french_wilson(mtz_file, hklout, anomalous=False):
 
             if not intensities.space_group().is_centric():
                 merged_intensities = intensities.merge_equivalents().array()
-                wilson_scaling = data_statistics.wilson_scaling(
-                    miller_array=merged_intensities, n_residues=200
-                )  # XXX default n_residues?
-                wilson_scaling.show(out=output)
+                try:
+                    wilson_scaling = data_statistics.wilson_scaling(
+                        miller_array=merged_intensities, n_residues=200
+                    )  # XXX default n_residues?
+                except (IndexError, RuntimeError) as e:
+                    logger.error(
+                        "\n"
+                        "Error encountered during Wilson statistics calculation:\n"
+                        "Perhaps there are too few unique reflections.\n"
+                        "%s",
+                        e,
+                        exc_info=True,
+                    )
+                else:
+                    wilson_scaling.show(out=output)
 
             mtz_dataset = mtz_object.crystals()[1].datasets()[0]
             mtz_dataset.add_miller_array(amplitudes, column_root_label="F")
