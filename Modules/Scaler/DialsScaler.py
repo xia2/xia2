@@ -111,10 +111,6 @@ class DialsScaler(Scaler):
             else:
                 self._scaler.set_absorption_correction(False)
         elif PhilIndex.params.dials.scale.model == "dose_decay":
-            if PhilIndex.params.dials.scale.dose_decay_model.Bfactor_spacing:
-                decay_interval = (
-                    PhilIndex.params.dials.scale.dose_decay_model.Bfactor_spacing
-                )
             self._scaler.set_spacing(scale_interval)
             if PhilIndex.params.dials.scale.absorption:
                 self._scaler.set_absorption_correction(True)
