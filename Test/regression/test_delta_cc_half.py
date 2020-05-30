@@ -10,7 +10,7 @@ def test_from_experiments_reflections(dials_data, tmpdir, capsys, mocker):
     with tmpdir.as_cwd():
         run(input_files)
         assert DeltaCcHalf.get_table.return_value == [
-            ["Dataset", "Batches", "Delta CC\xbd", "\u03c3"],
+            ["Dataset", "Batches", "ΔCC\xbd", "\u03c3"],
             ["0", "8 to 1795", "-0.002", "-1.32"],
             ["3", "5 to 1694", "-0.001", "-0.15"],
             ["1", "5 to 1694", "-0.001", " 0.44"],
@@ -31,7 +31,7 @@ def test_image_groups_from_unmerged_mtz(dials_data, tmpdir, capsys, mocker):
             ]
         )
         assert DeltaCcHalf.get_table.return_value == [
-            ["Dataset", "Batches", "Delta CC\xbd", "\u03c3"],
+            ["Dataset", "Batches", "ΔCC\xbd", "\u03c3"],
             ["0", "51 to 60", " 0.005", "-1.67"],
             ["0", "61 to 70", " 0.005", "-1.32"],
             ["0", "31 to 40", " 0.006", "-0.38"],

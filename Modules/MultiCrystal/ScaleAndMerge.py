@@ -116,7 +116,7 @@ filtering {
       .help = "Desired minimum completeness, as a percentage (0 - 100)."
     stdcutoff = 4.0
       .type = float
-      .help = "Datasets with a delta cc half below (mean - stdcutoff*std) are removed"
+      .help = "Datasets with a ΔCC½ below (mean - stdcutoff*std) are removed"
   }
 }
 
