@@ -19,6 +19,46 @@ from xia2.Modules.MultiCrystal import ScaleAndMerge
 logger = logging.getLogger("xia2.multiplex")
 
 help_message = """
+xia2.multiplex performs symmetry analysis, scaling and merging of multi-crystal data
+sets, as well as analysis of various pathologies that typically affect multi-crystal
+data sets, including non-isomorphism, radiation damage and preferred orientation.
+
+It uses a number of DIALS programs internally, including dials.cosym,
+dials.two_theta_refine, dials.scale and dials.symmetry:
+
+- Preliminary filtering of datasets using hierarchical unit cell clustering
+- Laue group determination and resolution of indexing ambiguities with dials.cosym
+- Determination of "best" overall unit cell with dials.two_theta_refine
+- Initial round of scaling with dials.scale
+- Estimation of resolution limit with dials.resolutionizer
+- Final round of scaling after application of the resolution limit
+- Analysis of systematic absences with dials.symmetry
+- Optional ΔCC½ filtering to remove outlier data sets
+- Analysis of non-isomorphism, radiation damage and preferred orientation
+
+Examples use cases
+------------------
+
+Multiple integrated experiments and reflections in combined files::
+
+  xia2.multiplex integrated.expt integrated.refl
+
+Integrated experiments and reflections in separate input files::
+
+  xia2.multiplex integrated_1.expt integrated_1.refl \\
+    integrated_2.expt integrated_2.refl
+
+Override the automatic space group determination and resolution estimation::
+
+  xia2.multiplex space_group=C2 resolution.d_min=2.5 \\
+    integrated_1.expt integrated_1.refl \\
+    integrated_2.expt integrated_2.refl
+
+Filter potential outlier data sets using the ΔCC½ method::
+
+  xia2.multiplex filtering.method=deltacchalf \\
+    integrated.expt integrated.refl
+
 """
 
 phil_scope = iotbx.phil.parse(
@@ -40,11 +80,7 @@ output {
 
 
 def run(args):
-    usage = (
-        "xia2.multiplex [options] [param.phil] "
-        "models1.expt models2.expt observations1.refl "
-        "observations2.refl..."
-    )
+    usage = "xia2.multiplex [options] [param.phil] integrated.expt integrated.refl"
 
     # Create the parser
     parser = OptionParser(
