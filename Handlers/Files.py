@@ -43,35 +43,33 @@ class _FileHandler:
         # copy the log files
         log_directory = base_path.joinpath("LogFiles")
         log_directory.mkdir(parents=True, exist_ok=True)
-        log_directory = str(log_directory)
 
         for tag, source in self._log_files.items():
-            filename = os.path.join(log_directory, "%s.log" % tag.replace(" ", "_"))
+            filename = log_directory.joinpath("%s.log" % tag.replace(" ", "_"))
             shutil.copyfile(source, filename)
             logger.debug(f"Copied log file {source} to {filename}")
 
         for tag, source in self._xml_files.items():
-            filename = os.path.join(log_directory, "%s.xml" % tag.replace(" ", "_"))
+            filename = log_directory.joinpath("%s.xml" % tag.replace(" ", "_"))
             shutil.copyfile(source, filename)
             logger.debug(f"Copied xml file {source} to {filename}")
 
         for tag, source in self._html_files.items():
-            filename = os.path.join(log_directory, "%s.html" % tag.replace(" ", "_"))
+            filename = log_directory.joinpath("%s.html" % tag.replace(" ", "_"))
             shutil.copyfile(source, filename)
             logger.debug(f"Copied html file {source} to {filename}")
 
         # copy the data files
         data_directory = base_path.joinpath("DataFiles")
         data_directory.mkdir(parents=True, exist_ok=True)
-        data_directory = str(data_directory)
         for f in self._data_files:
-            filename = os.path.join(data_directory, os.path.split(f)[-1])
+            filename = data_directory.joinpath(os.path.split(f)[-1])
             shutil.copyfile(f, filename)
             logger.debug(f"Copied data file {f} to {filename}")
 
         for tag, ext in self._more_data_files:
-            filename_out = os.path.join(
-                data_directory, "{}.{}".format(tag.replace(" ", "_"), ext)
+            filename_out = data_directory.joinpath(
+                "{}.{}".format(tag.replace(" ", "_"), ext)
             )
             filename_in = self._more_data_files[(tag, ext)]
             shutil.copyfile(filename_in, filename_out)
