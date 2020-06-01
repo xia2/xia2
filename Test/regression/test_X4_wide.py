@@ -96,10 +96,12 @@ def test_dials(regression_test, dials_data, tmpdir, ccp4):
         "read_all_image_headers=False",
         "truncate=cctbx",
         "free_total=1000",
+        "project=foo",
+        "crystal=bar",
         dials_data("x4wide").strpath,
     ]
     result = procrunner.run(command_line, working_directory=tmpdir)
-    scaled_expt_file = tmpdir / "DataFiles" / "AUTOMATIC_DEFAULT_scaled.expt"
+    scaled_expt_file = tmpdir / "DataFiles" / "foo_bar_scaled.expt"
     assert scaled_expt_file.check(file=1)
     scaled_expt = load.experiment_list(scaled_expt_file.strpath)
     for crystal in scaled_expt.crystals():
@@ -107,13 +109,14 @@ def test_dials(regression_test, dials_data, tmpdir, ccp4):
         assert len(crystal.get_recalculated_cell_parameter_sd()) == 6
         assert crystal.get_recalculated_cell_volume_sd() > 0
     for mtz_file in (
-        "AUTOMATIC_DEFAULT_scaled.mtz",
-        "AUTOMATIC_DEFAULT_free.mtz",
-        "AUTOMATIC_DEFAULT_scaled_unmerged.mtz",
+        "foo_bar_scaled.mtz",
+        "foo_bar_free.mtz",
+        "foo_bar_scaled_unmerged.mtz",
     ):
-        for ma in iotbx.mtz.object(
-            tmpdir.join("DataFiles").join(mtz_file).strpath
-        ).as_miller_arrays():
+        mtz_obj = iotbx.mtz.object(tmpdir.join("DataFiles").join(mtz_file).strpath)
+        assert mtz_obj.crystals()[1].project_name() == "foo"
+        assert mtz_obj.crystals()[1].name() == "bar"
+        for ma in mtz_obj.as_miller_arrays():
             assert ma.unit_cell().parameters() == pytest.approx(
                 scaled_expt[0].crystal.get_recalculated_unit_cell().parameters()
             )
@@ -122,10 +125,7 @@ def test_dials(regression_test, dials_data, tmpdir, ccp4):
         result,
         tmpdir,
         ccp4,
-        expected_data_files=[
-            "AUTOMATIC_DEFAULT_scaled.mtz",
-            "AUTOMATIC_DEFAULT_scaled_unmerged.mtz",
-        ],
+        expected_data_files=["foo_bar_scaled.mtz", "foo_bar_scaled_unmerged.mtz",],
         expected_space_group="P41212",
     )
     assert success, issues

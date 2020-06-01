@@ -16,6 +16,7 @@ def ExportMtz(DriverType=None):
             self.set_executable("dials.export")
 
             self.crystal_name = None
+            self.project_name = None
             self._experiments_filename = None
             self._reflections_filename = None
             self._mtz_filename = "hklout.mtz"
@@ -59,6 +60,8 @@ def ExportMtz(DriverType=None):
             self.add_command_line("mtz.hklout=%s" % self._mtz_filename)
             if self.crystal_name:
                 self.add_command_line("mtz.crystal_name=%s" % self.crystal_name)
+            if self.project_name:
+                self.add_command_line("mtz.project_name=%s" % self.project_name)
             if self._combine_partials:
                 self.add_command_line("combine_partials=true")
             self.add_command_line(
