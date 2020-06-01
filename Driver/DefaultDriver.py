@@ -51,7 +51,6 @@ class DefaultDriver:
         # optional - possibly useful if using a batch submission
         # system or wanting to describe better what the job is doing
         self._input_files = []
-        self._output_files = []
 
         self._scratch_directories = []
 
@@ -136,15 +135,6 @@ class DefaultDriver:
 
         self._task = task
 
-    def _add_output_file(self, output_file):
-        """Add an output file to the job. This may be overloaded by versions
-        which check for the file or move it somewhere."""
-
-        self._output_files.append(output_file)
-
-    def add_output_file(self, output_file):
-        return self._add_output_file(output_file)
-
     def clear_command_line(self):
         """Clear the command line."""
 
@@ -203,7 +193,6 @@ class DefaultDriver:
         # optional - possibly useful if using a batch submission
         # system or wanting to describe better what the job is doing
         self._input_files = []
-        self._output_files = []
         self._scratch_directories = []
         if self._log_file is not None:
             self._log_file.flush()

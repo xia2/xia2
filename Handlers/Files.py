@@ -20,7 +20,6 @@ class _FileHandler:
 
     def __init__(self):
         self._temporary_files = []
-        self._output_files = []
 
         self._html_files = {}
         self._log_files = {}
@@ -40,9 +39,6 @@ class _FileHandler:
                 logger.debug("Deleted: %s", f)
             except Exception as e:
                 logger.debug("Failed to delete: %s (%s)", f, str(e), exc_info=True)
-
-        for f in self._output_files:
-            logger.debug("Output file (%s): %s\n" % f)
 
         # copy the log files
         log_directory = base_path.joinpath("LogFiles")
