@@ -689,6 +689,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
                     self.get_working_directory(), "split_%s.refl" % nums
                 )
                 exporter.crystal_name = self._scalr_xname
+                exporter.project_name = self._scalr_pname
                 exporter.set_experiments_filename(expt_name)
                 exporter.set_reflections_filename(refl_name)
                 exporter.set_intensity_choice("scale")
@@ -743,6 +744,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
         else:
             exporter = ExportMtz()
             exporter.crystal_name = self._scalr_xname
+            exporter.project_name = self._scalr_pname
             exporter.set_working_directory(self.get_working_directory())
             exporter.set_experiments_filename(self._scaled_experiments)
             exporter.set_reflections_filename(self._scaled_reflections)
@@ -795,6 +797,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
         for si in self.sweep_infos:
             exporter = ExportMtz()
             exporter.crystal_name = self._scalr_xname
+            exporter.project_name = self._scalr_pname
             exporter.set_reflections_filename(si.get_reflections())
             exporter.set_experiments_filename(si.get_experiments())
             exporter.set_intensity_choice("profile+sum")
@@ -1045,6 +1048,7 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
         params = PhilIndex.params.dials.integrate
         export = ExportMtz()
         export.crystal_name = self._scalr_xname
+        export.project_name = self._scalr_pname
         export.set_working_directory(self.get_working_directory())
         export.set_experiments_filename(sweep_info.get_experiments())
         export.set_reflections_filename(sweep_info.get_reflections())
