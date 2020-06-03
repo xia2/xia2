@@ -115,7 +115,7 @@ def table1():
     jsons = []
     for xia2 in sys.argv[1:]:
         assert os.path.exists(os.path.join(xia2, "xia2.json")), xia2
-        with open(os.path.join(xia2, "xia2.json"), "r") as fh:
+        with open(os.path.join(xia2, "xia2.json")) as fh:
             jsons.append(json.load(fh))
 
     # extract out the information needed - for the moment just the merging

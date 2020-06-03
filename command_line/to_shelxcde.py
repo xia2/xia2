@@ -54,7 +54,7 @@ def export_sad_hkl(params):
     if len(data) > 1:
         try:
             sel_data = next(
-                (dt for dt in data if params["label"] in "".join(dt.info().labels))
+                dt for dt in data if params["label"] in "".join(dt.info().labels)
             )
         except KeyError:
             raise ValueError(

@@ -91,14 +91,15 @@ class ScriptDriver(DefaultDriver):
             xstatus_file = os.path.join(
                 self._working_directory, "%s.xstatus" % self._script_name
             )
-            self._script_status = int(open(xstatus_file, "r").read())
+            with open(xstatus_file) as fh:
+                self._script_status = int(fh.read())
         except Exception:
             # this could happen on windows if the program in question
             # is a batch file...
             self._script_status = 0
 
         self._output_file = open(
-            os.path.join(self._working_directory, "%s.xout" % self._script_name), "r"
+            os.path.join(self._working_directory, "%s.xout" % self._script_name)
         )
 
     def kill(self):
