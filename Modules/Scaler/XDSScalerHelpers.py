@@ -40,7 +40,7 @@ class XDSScalerHelper:
 
         file_map = {}
 
-        with open(xds_ascii_file, "r") as fh:
+        with open(xds_ascii_file) as fh:
             for line in fh.readlines():
                 if not line[0] == "!":
                     break
@@ -55,28 +55,15 @@ class XDSScalerHelper:
 
         return file_map
 
-    def split_xscale_ascii_file(self, xds_ascii_file, prefix):
+    def _split_xscale_ascii_file(self, xds_ascii_file, prefix):
         """Split the output of XSCALE to separate reflection files for
         each run. The output files will be called ${prefix}${input_file}."""
 
         file_map = self.parse_xscale_ascii_header(xds_ascii_file)
-
-        files = {}
-        return_map = {}
-
-        for k in file_map:
-            files[k] = open(
-                os.path.join(
-                    self.get_working_directory(), "%s%s" % (prefix, file_map[k])
-                ),
-                "w",
-            )
-
-            return_map[file_map[k]] = "%s%s" % (prefix, file_map[k])
+        file_content = {k: [] for k in file_map}
 
         # copy the header to all of the files
-
-        with open(xds_ascii_file, "r") as fh:
+        with open(xds_ascii_file) as fh:
             for line in fh.readlines():
                 if not line[0] == "!":
                     break
@@ -85,11 +72,10 @@ class XDSScalerHelper:
                     if "ISET" in line and int(line.split("ISET=")[1].split()[0]) != k:
                         continue
 
-                    files[k].write(line)
+                    file_content[k].append(line)
 
         # next copy the appropriate reflections to each file
-
-        with open(xds_ascii_file, "r") as fh:
+        with open(xds_ascii_file) as fh:
             for line in fh.readlines():
                 if line[0] == "!":
                     continue
@@ -98,15 +84,23 @@ class XDSScalerHelper:
                 # has been used as this applies an additional record at
                 # the end... though it should always be #9
                 k = int(line.split()[9])
-                files[k].write(line)
+                file_content[k].append(line)
 
-        # then write the tailer
-
+        # then add the tailer
         for k in file_map:
-            files[k].write("!END_OF_DATA\n")
-            files[k].close()
+            file_content[k].append("!END_OF_DATA\n")
 
-        return return_map
+        # and finally actually write the files
+        for k in file_map:
+            with open(
+                os.path.join(
+                    self.get_working_directory(), "%s%s" % (prefix, file_map[k])
+                ),
+                "w",
+            ) as fh:
+                fh.write("".join(file_content[k]))
+
+        return {filename: "%s%s" % (prefix, filename) for filename in file_map.values()}
 
     def split_and_convert_xscale_output(
         self, input_file, prefix, project_info, scale_factor=1.0
@@ -115,7 +109,7 @@ class XDSScalerHelper:
         format via pointless. The latter step will add the
         pname / xname / dname things from the dictionary supplied."""
 
-        data_map = self.split_xscale_ascii_file(input_file, prefix)
+        data_map = self._split_xscale_ascii_file(input_file, prefix)
 
         for token in data_map:
             if token not in project_info:
@@ -138,7 +132,7 @@ class XDSScalerHelper:
         return data_map
 
     def limit_batches(self, input_file, output_file, start, end):
-        with open(input_file, "r") as infile, open(output_file, "w") as outfile:
+        with open(input_file) as infile, open(output_file, "w") as outfile:
             for line in infile.readlines():
                 if line.startswith("!"):
                     outfile.write(line)
