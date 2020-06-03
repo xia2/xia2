@@ -472,6 +472,12 @@ class MultiCrystalScale:
             scaled = Scale(data_manager, self._params, filtering=True)
             self.scale_and_filter_results = scaled.scale_and_filter_results
             logger.info("Scale and filtering:\n%s", self.scale_and_filter_results)
+            if len(data_manager.experiments) < len(self._data_manager.experiments):
+                # Some data sets have been removed, perform full re-scaling on
+                # on the subset of experiments, including re-estimation of
+                # resolution limit
+                self._params.resolution.d_min = None
+                scaled = Scale(data_manager, self._params)
             self._record_individual_report(data_manager, scaled.report(), "Filtered")
             py.path.local(scaled.scaled_unmerged_mtz).copy(
                 py.path.local("filtered_unmerged.mtz")
