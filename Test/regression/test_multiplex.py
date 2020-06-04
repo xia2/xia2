@@ -94,15 +94,14 @@ def test_proteinase_k_filter_deltacchalf(regression_test, dials_data, tmpdir):
         "filtered_unmerged.mtz",
     ]:
         assert tmpdir.join(f).check(file=1), "expected file %s missing" % f
-    for expt_file, n_expected in (("scaled.expt", 8), ("filtered.expt", 7)):
-        expts = load.experiment_list(tmpdir.join(expt_file).strpath, check_format=False)
-        assert len(expts) == n_expected
+    assert len(load.experiment_list(tmpdir / "scaled.expt", check_format=False)) == 8
+    assert len(load.experiment_list(tmpdir / "filtered.expt", check_format=False)) < 8
 
     # assert that the reflection files are different - the filtered reflections
     # should have fewer reflections as one data set has been removed
     mtz_scaled = iotbx.mtz.object(tmpdir.join("scaled_unmerged.mtz").strpath)
     mtz_filtered = iotbx.mtz.object(tmpdir.join("filtered_unmerged.mtz").strpath)
-    assert mtz_filtered.n_reflections() < mtz_scaled.n_reflections()
+    assert mtz_filtered.n_reflections() != mtz_scaled.n_reflections()
 
     with tmpdir.join("xia2.multiplex.json").open("r") as fh:
         d = json.load(fh)
