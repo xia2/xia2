@@ -20,17 +20,19 @@ def read_input_data(lb, params, update_params=True):
     ]
     if not data:
         raise ValueError("Intensity data not found in %s" % params[lb])
-    if is_merged:
-        intensities = data[0]
-    else:
+    try:
         indices = file_content.extract_original_index_miller_indices()
-        intensities = data[0].customized_copy(indices=indices, info=data[0].info())
+        intensities = [
+            dt.customized_copy(indices=indices, info=dt.info()) for dt in data
+        ]
+    except Exception:
+        intensities = data
     if update_params:
-        uc = intensities.unit_cell().parameters()
-        sg = intensities.space_group().type().lookup_symbol().replace(" ", "")
-        maxm = (2 * intensities.data().size() // 1000000) + 1
+        uc = intensities[0].unit_cell().parameters()
+        sg = intensities[0].space_group().type().lookup_symbol().replace(" ", "")
+        maxm = (2 * intensities[0].data().size() // 1000000) + 1
         params.update({"unit_cell": uc, "spacegroup": sg, "maxm": maxm})
-    return data
+    return intensities
 
 
 def export_native_hkl(params):
