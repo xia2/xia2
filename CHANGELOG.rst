@@ -1,3 +1,13 @@
+xia2 (DIALS 3.0.1) (2020-06-11)
+===============================
+
+Bugfixes
+--------
+
+- Fix missing anomalous info in hkl data converted for shelx
+- Compatibility with DIALS project_name changes
+
+
 xia2 0.7.32 (DIALS 3.0.0) (2020-05-27)
 ======================================
 
