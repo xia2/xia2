@@ -312,11 +312,6 @@ class DialsIndexer(Indexer):
                 spotfinder.set_scan_ranges([(first, last)])
             if dfs_params.phil_file is not None:
                 spotfinder.set_phil_file(dfs_params.phil_file)
-            if dfs_params.min_spot_size is libtbx.Auto:
-                if imageset.get_detector()[0].get_type() == "SENSOR_PAD":
-                    dfs_params.min_spot_size = 3
-                else:
-                    dfs_params.min_spot_size = None
             if dfs_params.min_spot_size is not None:
                 spotfinder.set_min_spot_size(dfs_params.min_spot_size)
             if dfs_params.min_local is not None:

@@ -265,7 +265,7 @@ dials
     threshold.algorithm = dispersion dispersion_extended
       .type = choice
       .expert_level = 2
-    min_spot_size = Auto
+    min_spot_size = None
       .type = int
       .help = "The minimum number of contiguous pixels for a spot to be " \
               "accepted by the filtering algorithm."
