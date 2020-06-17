@@ -160,7 +160,7 @@ xds
       .type = float(value_min=0)
   }
   colspot {
-    minimum_pixels_per_spot = 1
+    minimum_pixels_per_spot = 2
       .short_caption = "For PAD MINIMUM_NUMBER_OF_PIXELS_IN_A_SPOT ="
       .type = int
       .expert_level = 1
