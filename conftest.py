@@ -76,16 +76,16 @@ def xds():
         result = procrunner.run(["xds"], print_stdout=False)
     except OSError:
         pytest.skip("XDS installation required for this test")
+    version = re.search(br"BUILT=([0-9]+)\)", result["stdout"])
+    if version:
+        return {"version": int(version.groups()[0])}
     if result["exitcode"] or result["timeout"]:
         pytest.skip("XDS installation required for this test - Could not run XDS")
     if b"license expired" in result["stdout"]:
         pytest.skip("XDS installation required for this test - XDS license is expired")
-    version = re.search(br"BUILT=([0-9]+)\)", result["stdout"])
-    if not version:
-        pytest.skip(
-            "XDS installation required for this test - Could not determine XDS version"
-        )
-    return {"version": int(version.groups()[0])}
+    pytest.skip(
+        "XDS installation required for this test - Could not determine XDS version"
+    )
 
 
 _repository = os.getcwd()
