@@ -44,6 +44,7 @@ class DialsRefiner(Refiner):
             refine.set_scan_varying(params.scan_varying)
         refine.set_reflections_per_degree(params.reflections_per_degree)
         refine.set_interval_width_degrees(params.interval_width_degrees)
+        refine.num_intervals = params.absolute_num_intervals
         refine.set_outlier_algorithm(PhilIndex.params.dials.outlier.algorithm)
         if PhilIndex.params.dials.fix_geometry:
             refine.set_detector_fix("all")
@@ -158,7 +159,7 @@ class DialsRefiner(Refiner):
 
             scan_static = PhilIndex.params.dials.refine.scan_static
 
-            # Avoid doing scan-varying refinement on narrow wedges.
+            # Use better scan-varying refinement parameters for narrow wedges.
             scan_oscillation_ranges = []
             for experiment in experiments:
                 start, end = experiment.scan.get_oscillation_range()
@@ -193,8 +194,13 @@ class DialsRefiner(Refiner):
                 refiner = self.Refine()
                 refiner.set_experiments_filename(self._refinr_experiments_filename)
                 refiner.set_indexed_filename(self._refinr_indexed_filename)
-                if min_oscillation_range < 36:
-                    refiner.set_interval_width_degrees(min_oscillation_range / 2)
+
+                # The default separation between scan-varying refinement checkpoints
+                # is too big for narrow-wedge scans.  Ensure three checkpoints in
+                # such cases, unless the user has already specified otherwise.
+                if min_oscillation_range < 36 and not refiner.num_intervals:
+                    refiner.num_intervals = 2
+
                 refiner.run()
                 self._refinr_experiments_filename = (
                     refiner.get_refined_experiments_filename()

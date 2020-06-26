@@ -360,6 +360,9 @@ dials
       .type = float(value_min=0.)
       .help = "Width of scan between checkpoints in degrees"
       .short_caption = "Interval width between checkpoints (if scan-varying)"
+    absolute_num_intervals = None
+      .type = int(value_min=1)
+      .help = "Number of intervals between checkpoints (if scan-varying)"
     reflections_per_degree = 100
       .type = int
       .short_caption = "Number of reflections per degree for random subset"
@@ -406,13 +409,11 @@ dials
     {
       overall = None
         .type = int(value_min=1)
-        .optional = True
         .help = "Minimum number of reflections required to perform profile "
                 "modelling."
 
       per_degree = None
         .type = int(value_min=0)
-        .optional = True
         .help = "Minimum number of reflections per degree of sweep required to perform "
                 "profile modelling."
     }

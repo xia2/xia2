@@ -28,7 +28,11 @@ def Refine(DriverType=None):
             self._detector_fix = None
             self._beam_fix = None
             self._reflections_per_degree = None
+
+            # Parameters governing the intervals for scan-varying refinement.
             self._interval_width_degrees = None
+            self.num_intervals = None
+
             self._phil_file = None
             self._outlier_algorithm = None
             self._close_to_spindle_cutoff = None
@@ -111,6 +115,13 @@ def Refine(DriverType=None):
                 self.add_command_line(
                     "orientation.smoother.interval_width_degrees=%i"
                     % self._interval_width_degrees
+                )
+            if self.num_intervals:
+                self.add_command_line(
+                    f"unit_cell.smoother.absolute_num_intervals={self.num_intervals}"
+                )
+                self.add_command_line(
+                    f"orientation.smoother.absolute_num_intervals={self.num_intervals}"
                 )
             if self._detector_fix:
                 self.add_command_line("detector.fix=%s" % self._detector_fix)
