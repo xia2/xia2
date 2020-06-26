@@ -199,7 +199,7 @@ class DialsRefiner(Refiner):
                 # is too big for narrow-wedge scans.  Ensure three checkpoints in
                 # such cases, unless the user has already specified otherwise.
                 if min_oscillation_range < 36 and not refiner.num_intervals:
-                    refiner.num_intervals = 2
+                    refiner.num_intervals = 1
 
                 refiner.run()
                 self._refinr_experiments_filename = (
