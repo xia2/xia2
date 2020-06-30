@@ -52,7 +52,12 @@ def run(args):
     # xtriage
     xtriage_success, xtriage_warnings, xtriage_danger = None, None, None
     if params.xtriage_analysis:
-        xtriage_success, xtriage_warnings, xtriage_danger = report.xtriage_report()
+        try:
+            xtriage_success, xtriage_warnings, xtriage_danger = report.xtriage_report()
+        except Exception as e:
+            params.xtriage_analysis = False
+            print("Exception runnning xtriage:")
+            print(e)
 
     json_data = {}
 
