@@ -102,12 +102,9 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
                         xtriage_danger,
                     ) = report.xtriage_report()
                 except Exception as e:
-                    from xia2.Handlers.Phil import PhilIndex
-
-                    if PhilIndex.params.xia2.settings.small_molecule:
-                        print("Xtriage output not available: %s" % str(e))
-                    else:
-                        raise
+                    params.xtriage_analysis = False
+                    logger.debug("Exception running xtriage:")
+                    logger.debug(e, exc_info=True)
 
             (
                 overall_stats_table,
