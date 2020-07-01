@@ -463,21 +463,23 @@ class MultiCrystalScale:
                     data_manager, scaled.report(), cluster_dir.replace("_", " ")
                 )
                 os.chdir(cwd)
-
         if self._params.filtering.method:
             # Final round of scaling, this time filtering out any bad datasets
-            self._params.unit_cell.refine = []
-            self._params.resolution.d_min = self._scaled.d_min
             data_manager = copy.deepcopy(self._data_manager)
-            scaled = Scale(data_manager, self._params, filtering=True)
+            params = copy.deepcopy(self._params)
+            params.unit_cell.refine = []
+            params.resolution.d_min = self._scaled.d_min
+            scaled = Scale(data_manager, params, filtering=True)
             self.scale_and_filter_results = scaled.scale_and_filter_results
             logger.info("Scale and filtering:\n%s", self.scale_and_filter_results)
-            if len(data_manager.experiments) < len(self._data_manager.experiments):
+            if self._params.resolution.d_min is None and len(
+                data_manager.experiments
+            ) < len(self._data_manager.experiments):
                 # Some data sets have been removed, perform full re-scaling on
                 # on the subset of experiments, including re-estimation of
                 # resolution limit
-                self._params.resolution.d_min = None
-                scaled = Scale(data_manager, self._params)
+                params.resolution.d_min = None
+                scaled = Scale(data_manager, params)
             self._record_individual_report(data_manager, scaled.report(), "Filtered")
             py.path.local(scaled.scaled_unmerged_mtz).copy(
                 py.path.local("filtered_unmerged.mtz")

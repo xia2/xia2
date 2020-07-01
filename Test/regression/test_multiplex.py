@@ -71,7 +71,10 @@ def test_proteinase_k(mocker, regression_test, dials_data, tmpdir):
         f.remove()
 
 
-def test_proteinase_k_filter_deltacchalf(regression_test, dials_data, tmpdir):
+@pytest.mark.parametrize(
+    "d_min", [None, 2.0],
+)
+def test_proteinase_k_filter_deltacchalf(d_min, regression_test, dials_data, tmpdir):
     data_dir = dials_data("multi_crystal_proteinase_k")
     expts = sorted(f.strpath for f in data_dir.listdir("experiments*.json"))
     refls = sorted(f.strpath for f in data_dir.listdir("reflections*.pickle"))
@@ -84,6 +87,7 @@ def test_proteinase_k_filter_deltacchalf(regression_test, dials_data, tmpdir):
                 "filtering.deltacchalf.stdcutoff=1",
                 "max_clusters=1",
                 "nproc=1",
+                "resolution.d_min=%s" % d_min,
             ]
         )
         run_multiplex(command_line_args)
@@ -101,6 +105,17 @@ def test_proteinase_k_filter_deltacchalf(regression_test, dials_data, tmpdir):
     # should have fewer reflections as one data set has been removed
     mtz_scaled = iotbx.mtz.object(tmpdir.join("scaled_unmerged.mtz").strpath)
     mtz_filtered = iotbx.mtz.object(tmpdir.join("filtered_unmerged.mtz").strpath)
+    if d_min:
+        # assert that the input d_min has carried through to the output files
+        for mtz in (mtz_scaled, mtz_filtered):
+            assert mtz.as_miller_arrays()[0].d_min() == pytest.approx(d_min, abs=1e-4)
+    else:
+        # If we've got rid of a the worst data set then the estimated resolution should
+        # have improved
+        assert (
+            mtz_filtered.as_miller_arrays()[0].d_min()
+            < mtz_scaled.as_miller_arrays()[0].d_min()
+        )
     assert mtz_filtered.n_reflections() != mtz_scaled.n_reflections()
 
     with tmpdir.join("xia2.multiplex.json").open("r") as fh:
