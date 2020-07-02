@@ -1112,8 +1112,8 @@ class DialsScalerHelper:
         auto_logfiler(splitter)
         splitter.run()
 
-        nn = len(sweep_handler.get_epochs())
-        fmt = "%%0%dd" % (math.log10(nn) + 1)
+        nn = len(sweep_handler.get_epochs()) - 1
+        fmt = "%%0%dd" % len(str(nn))
 
         for i, epoch in enumerate(sweep_handler.get_epochs()):
             si = sweep_handler.get_sweep_information(epoch)
