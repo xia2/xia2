@@ -249,10 +249,15 @@ def plot_data(
                     other = (other,)
                 for res in other:
                     if res is not None:
-                        bins = res.bins
-                        x = [bins[j].d_min for j in range(len(bins))]
-                        x = [uctbx.d_as_d_star_sq(d) for d in x]
-                        y = [getattr(bins[j], k) for j in range(len(bins))]
+                        x = [
+                            0.5
+                            * (
+                                uctbx.d_as_d_star_sq(b.d_max)
+                                + uctbx.d_as_d_star_sq(b.d_min)
+                            )
+                            for b in res.bins
+                        ]
+                        y = [getattr(b, k) for b in res.bins]
                         ax.plot(
                             x, y, linestyle="-", color="grey", linewidth=1, alpha=alpha,
                         )
@@ -265,10 +270,12 @@ def plot_data(
                     l = global_labels[i_res]
                 else:
                     l = label
-                bins = res.bins
-                x = [bins[j].d_min for j in range(len(bins))]
-                x = [uctbx.d_as_d_star_sq(d) for d in x]
-                y = [getattr(bins[j], k) for j in range(len(bins))]
+                x = [
+                    0.5
+                    * (uctbx.d_as_d_star_sq(b.d_max) + uctbx.d_as_d_star_sq(b.d_min))
+                    for b in res.bins
+                ]
+                y = [getattr(b, k) for b in res.bins]
                 color = colors[i_res] if n_cols > 1 else colors[i]
                 ax.plot(x, y, label=l, linestyle=linestyle, color=color)
 
