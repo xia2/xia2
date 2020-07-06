@@ -1,0 +1,1 @@
+xia2.compare_merging_stats: Plot the bin centres rather than bin d_min values. This previously could lead to misleading apparent differences between data sets with significantly different resolution limits.
