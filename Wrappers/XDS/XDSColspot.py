@@ -88,24 +88,6 @@ def XDSColspot(DriverType=None, params=None):
 
         def run(self):
             """Run colspot."""
-
-            # image_header = self.get_header()
-
-            ## crank through the header dictionary and replace incorrect
-            ## information with updated values through the indexer
-            ## interface if available...
-
-            ## need to add distance, wavelength - that should be enough...
-
-            # if self.get_distance():
-            # image_header['distance'] = self.get_distance()
-
-            # if self.get_wavelength():
-            # image_header['wavelength'] = self.get_wavelength()
-
-            # if self.get_two_theta():
-            # image_header['two_theta'] = self.get_two_theta()
-
             header = imageset_to_xds(self.get_imageset())
 
             xds_inp = open(os.path.join(self.get_working_directory(), "XDS.INP"), "w")
@@ -115,7 +97,6 @@ def XDSColspot(DriverType=None, params=None):
             xds_inp.write("MAXIMUM_NUMBER_OF_PROCESSORS=%d\n" % self._parallel)
             xds_inp.write("MAXIMUM_NUMBER_OF_JOBS=1\n")
 
-            # if image_header['detector'] in ('pilatus', 'dectris'):
             if self.get_imageset().get_detector()[0].get_type() == "SENSOR_PAD":
                 xds_inp.write(
                     "MINIMUM_NUMBER_OF_PIXELS_IN_A_SPOT=%d\n"
