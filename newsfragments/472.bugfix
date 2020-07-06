@@ -1,0 +1,1 @@
+Increase XDS COLSPOT minimum_pixels_per_spot to 2. The previous value of minimum_pixels_per_spot=1 may lead to problems when spotfinding on images with many hot/warm pixels.
