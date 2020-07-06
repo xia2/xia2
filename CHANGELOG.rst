@@ -1,3 +1,17 @@
+DIALS 3.0.3 (2020-07-06)
+========================
+
+Bugfixes
+--------
+
+- Fix data from NSLS II with multiple triggers and one image per trigger (#475)
+- Gracefully handle xtriage errors when generating xia2 report. (#477)
+- xia2.compare_merging_stats: Plot the bin centres rather than bin d_min values. This previously
+could lead to misleading apparent differences between data sets with significantly different
+resolution limits. (#480)
+- Increase XDS COLSPOT minimum_pixels_per_spot from 1 to 2. The previous value may have led to
+problems when spotfinding on images with many hot/warm pixels. (#472)
+
 xia2 (DIALS 3.0.1) (2020-06-11)
 ===============================
 
