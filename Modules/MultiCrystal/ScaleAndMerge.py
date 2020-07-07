@@ -708,11 +708,11 @@ class MultiCrystalScale:
 
     def cosym(self):
         logger.debug("Running cosym analysis")
+        experiments_filename = self._data_manager.export_experiments("tmp.expt")
+        reflections_filename = self._data_manager.export_reflections("tmp.refl")
         cosym = DialsCosym()
         auto_logfiler(cosym)
 
-        experiments_filename = self._data_manager.export_experiments("tmp.expt")
-        reflections_filename = self._data_manager.export_reflections("tmp.refl")
         cosym.add_experiments_json(experiments_filename)
         cosym.add_reflections_file(reflections_filename)
         if self._params.symmetry.space_group is not None:
