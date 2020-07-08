@@ -260,14 +260,15 @@ def load_reference_geometries(geometry_file_list):
             # as per dials.show, rather than the UID string of the experiment.
             logger.debug(f"Experiment {b[3]} of {b[2]} is a duplicate.")
         else:
-            unique.update((a, b))
+            unique.add(a)
+            unique.add(b)
 
     n = len(unique)
     logger.debug(f"Found {n} unique reference geometr{'ies' if n != 1 else 'y'}.")
     for geometry in unique:
         logger.debug(f"Experiment {geometry[3]} of {geometry[2]} is unique.")
 
-    return [dict(zip(("detector", "beam"), components[:2])) for components in unique]
+    return [{"detector": components[0], "beam": components[1]} for components in unique]
 
 
 def compare_geometries(detectorA, detectorB):

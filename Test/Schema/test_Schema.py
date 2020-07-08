@@ -33,7 +33,7 @@ def test_load_reference_geometries(dials_data):
 
     # Check that there are four input instrument models, of which only two are unique.
     assert (
-        sum([len(ExperimentList.from_file(f, check_format=False)) for f in files]) == 4
+        sum(len(ExperimentList.from_file(f, check_format=False)) for f in files) == 4
     ), "Expected to find four experiments, one for each sweep."
     assert (
         len(load_reference_geometries(files)) == 2
