@@ -4,10 +4,9 @@ import itertools
 import logging
 import os
 
+from dxtbx.model import ExperimentList
 from scitbx.array_family import flex
-
 from xia2.Handlers.Phil import PhilIndex
-
 
 logger = logging.getLogger("xia2.Schema")
 
@@ -246,34 +245,30 @@ def update_with_reference_geometry(imagesets, reference_geometry_list):
 
 
 def load_reference_geometries(geometry_file_list):
-    from dxtbx.serialize import load
+    logger.debug("Collecting reference instrument models.")
+    ref_components = [
+        (expt.detector, expt.beam, f, i)
+        for f in geometry_file_list
+        for i, expt in enumerate(ExperimentList.from_file(f, check_format=False))
+    ]
 
-    reference_components = []
-    for file in geometry_file_list:
-        try:
-            experiments = load.experiment_list(file, check_format=False)
-            assert len(experiments.detectors()) == 1
-            assert len(experiments.beams()) == 1
-            reference_detector = experiments.detectors()[0]
-            reference_beam = experiments.beams()[0]
-        except Exception:
-            experiments = load.experiment_list(file)
-            imageset = experiments.imagesets()[0]
-            reference_detector = imageset.get_detector()
-            reference_beam = imageset.get_beam()
-        reference_components.append(
-            {"detector": reference_detector, "beam": reference_beam, "file": file}
-        )
+    logger.debug("Removing duplicate reference geometries.")
+    unique = set()
+    for a, b in filter(unique.isdisjoint, itertools.combinations(ref_components, 2)):
+        if compare_geometries(a[0], b[0]):
+            # Note that expt_index is the index of the experiment in the expt list file,
+            # as per dials.show, rather than the UID string of the experiment.
+            logger.debug(f"Experiment {b[3]} of {b[2]} is a duplicate.")
+        else:
+            unique.add(a)
+            unique.add(b)
 
-    for combination in itertools.combinations(reference_components, 2):
-        if compare_geometries(combination[0]["detector"], combination[1]["detector"]):
-            logger.error(
-                "Reference geometries given in %s and %s are too similar"
-                % combination[0]["file"],
-                combination[1]["file"],
-            )
-            raise Exception("Reference geometries too similar")
-    return reference_components
+    n = len(unique)
+    logger.debug(f"Found {n} unique reference geometr{'ies' if n != 1 else 'y'}.")
+    for geometry in unique:
+        logger.debug(f"Experiment {geometry[3]} of {geometry[2]} is unique.")
+
+    return [{"detector": components[0], "beam": components[1]} for components in unique]
 
 
 def compare_geometries(detectorA, detectorB):
