@@ -246,29 +246,29 @@ def update_with_reference_geometry(imagesets, reference_geometry_list):
 
 def load_reference_geometries(geometry_file_list):
     logger.debug("Collecting reference instrument models.")
-    ref_components = [
-        (expt.detector, expt.beam, f, i)
+    ref_geoms = {
+        # Note that 'index' is the index of the experiment in the expt list file,
+        # as per dials.show, rather than the UID string of the experiment.
+        (expt.detector, expt.beam, f, index)
         for f in geometry_file_list
-        for i, expt in enumerate(ExperimentList.from_file(f, check_format=False))
-    ]
+        for index, expt in enumerate(ExperimentList.from_file(f, check_format=False))
+    }
 
     logger.debug("Removing duplicate reference geometries.")
-    unique = set()
-    for a, b in filter(unique.isdisjoint, itertools.combinations(ref_components, 2)):
+    duplicates = set()
+    for a, b in filter(duplicates.isdisjoint, itertools.combinations(ref_geoms, 2)):
         if compare_geometries(a[0], b[0]):
-            # Note that expt_index is the index of the experiment in the expt list file,
-            # as per dials.show, rather than the UID string of the experiment.
             logger.debug(f"Experiment {b[3]} of {b[2]} is a duplicate.")
-        else:
-            unique.add(a)
-            unique.add(b)
+            duplicates.add(b)
 
-    n = len(unique)
+    ref_geoms -= duplicates
+
+    n = len(ref_geoms)
     logger.debug(f"Found {n} unique reference geometr{'ies' if n != 1 else 'y'}.")
-    for geometry in unique:
+    for geometry in ref_geoms:
         logger.debug(f"Experiment {geometry[3]} of {geometry[2]} is unique.")
 
-    return [{"detector": components[0], "beam": components[1]} for components in unique]
+    return [{"detector": geometry[0], "beam": geometry[1]} for geometry in ref_geoms]
 
 
 def compare_geometries(detectorA, detectorB):
