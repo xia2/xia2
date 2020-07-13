@@ -162,6 +162,8 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
                 )
                 if k in json_data
             )
+            if scaler._resolution_analysis_plots:
+                resolution_graphs.update(scaler._resolution_analysis_plots)
 
             if params.include_radiation_damage:
                 batch_graphs = OrderedDict(
