@@ -58,7 +58,7 @@ def unroll_parameters(hdf5_master):
             root = master["/entry/instrument/detector"]
             ntrigger = root["detectorSpecific/ntrigger"][()]
             nimages = root["detectorSpecific/nimages"][()]
-        if ntrigger > 1:
+        if ntrigger > 1 and nimages > 1:
             return ntrigger, nimages
     except Exception:
         return None
