@@ -30,7 +30,7 @@ dials.two_theta_refine, dials.scale and dials.symmetry:
 - Laue group determination and resolution of indexing ambiguities with dials.cosym
 - Determination of "best" overall unit cell with dials.two_theta_refine
 - Initial round of scaling with dials.scale
-- Estimation of resolution limit with dials.resolutionizer
+- Estimation of resolution limit with dials.estimate_resolution
 - Final round of scaling after application of the resolution limit
 - Analysis of systematic absences with dials.symmetry
 - Optional ΔCC½ filtering to remove outlier data sets

@@ -22,6 +22,7 @@ from xia2.lib.bits import auto_logfiler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Environment import get_number_cpus
 from xia2.Wrappers.Dials.Cosym import DialsCosym
+from xia2.Wrappers.Dials.EstimateResolution import EstimateResolution
 from xia2.Wrappers.Dials.Refine import Refine
 from xia2.Wrappers.Dials.Scale import DialsScale
 from xia2.Wrappers.Dials.Symmetry import DialsSymmetry
@@ -101,7 +102,7 @@ resolution
     .type = float(value_min=0.0)
     .help = "High resolution cutoff."
     .short_caption = "High resolution cutoff"
-  include scope dials.util.resolutionizer.phil_str
+  include scope dials.util.resolution_analysis.phil_str
 }
 
 filtering {
@@ -987,10 +988,8 @@ class Scale:
 
     def estimate_resolution_limit(self):
         # see also xia2/Modules/Scaler/CommonScaler.py: CommonScaler._estimate_resolution_limit()
-        from xia2.Wrappers.XIA.Merger import Merger
-
         params = self._params.resolution
-        m = Merger()
+        m = EstimateResolution()
         auto_logfiler(m)
         # use the scaled .refl and .expt file
         if self._experiments_filename and self._reflections_filename:

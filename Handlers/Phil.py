@@ -773,7 +773,7 @@ xia2.settings
       .type = float(value_min=0.0)
       .help = "High resolution cutoff."
       .short_caption = "High resolution cutoff"
-    include scope dials.util.resolutionizer.phil_str
+    include scope dials.util.resolution_analysis.phil_str
   }
   unify_setting = False
     .type = bool
@@ -978,7 +978,7 @@ xia2.settings
     process_includes=True,
 )
 
-# override default resolutionizer parameters
+# override default resolution parameters
 master_phil = master_phil.fetch(
     source=parse(
         """\
