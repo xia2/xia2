@@ -1,6 +1,6 @@
 import math
 
-import numpy
+import numpy as np
 import scitbx.math
 
 
@@ -20,7 +20,7 @@ def evaluate_1degree(ClmList):
             Clm[(l, m)] = ClmList[idx]
             idx += 1
 
-    abscor = numpy.empty((1 + 180 // 1, 1 + 360 // 1), float, "C")
+    abscor = np.empty((1 + 180 // 1, 1 + 360 // 1), float, "C")
     sqrt2 = math.sqrt(2)
     for t in range(0, 181, 1):
         for p in range(0, 361, 1):
