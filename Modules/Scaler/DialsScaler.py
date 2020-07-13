@@ -89,6 +89,9 @@ class DialsScaler(Scaler):
             PhilIndex.params.dials.scale.partiality_threshold
         )
 
+        if self.get_scaler_anomalous():
+            self._scaler.set_anomalous()
+
         exp = load.experiment_list(self.sweep_infos[0].get_experiments())[0]
         scale_interval, decay_interval = scaling_model_auto_rules(exp)
 
