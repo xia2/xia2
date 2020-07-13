@@ -208,11 +208,6 @@ def Integrate(DriverType=None):
 
             dials_output = self.get_all_output()
             for n, record in enumerate(dials_output):
-                if "There was a problem allocating memory for shoeboxes" in record:
-                    raise DIALSIntegrateError(
-                        """dials.integrate requires more memory than is available.
-Try using a machine with more memory or using fewer processors."""
-                    )
                 if "Too few reflections for profile modelling" in record:
                     raise DIALSIntegrateError(
                         "%s\n%s, %s\nsee %%s for more details"

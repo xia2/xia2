@@ -7,7 +7,6 @@ import math
 import os
 
 import xia2.Wrappers.Dials.Integrate
-from dials.util import Sorry
 from dxtbx.serialize import load
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Files import FileHandler
@@ -265,59 +264,7 @@ class DialsIntegrater(Integrater):
             f"{pname} {xname} {dname} {sweep} INTEGRATE", integrate.get_log_file(),
         )
 
-        try:
-            integrate.run()
-        except xia2.Wrappers.Dials.Integrate.DIALSIntegrateError as e:
-            s = str(e)
-            if (
-                "dials.integrate requires more memory than is available." in s
-                and not self._intgr_reso_high
-            ):
-                # Try to estimate a more sensible resolution limit for integration
-                # in case we were just integrating noise to the edge of the detector
-                images = self._integrate_select_images_wedges()
-
-                logger.debug(
-                    "Integrating subset of images to estimate resolution limit.\n"
-                    "Integrating images %s" % images
-                )
-
-                integrate = self.Integrate()
-                integrate.set_experiments_filename(self._intgr_experiments_filename)
-                integrate.set_reflections_filename(self._intgr_indexed_filename)
-                integrate.set_d_max(self._intgr_reso_low)
-                integrate.set_d_min(self._intgr_reso_high)
-                for (start, stop) in images:
-                    integrate.add_scan_range(
-                        start - self.get_matching_images()[0],
-                        stop - self.get_matching_images()[0],
-                    )
-
-                integrate.set_reflections_per_degree(1000)
-                integrate.run()
-
-                integrated_reflections = integrate.get_integrated_filename()
-
-                from xia2.Wrappers.Dials.EstimateResolutionLimit import (
-                    EstimateResolutionLimit,
-                )
-
-                d_min_estimater = EstimateResolutionLimit()
-                d_min_estimater.set_working_directory(self.get_working_directory())
-                auto_logfiler(d_min_estimater)
-                d_min_estimater.set_experiments_filename(
-                    self._intgr_experiments_filename
-                )
-                d_min_estimater.set_reflections_filename(integrated_reflections)
-                d_min = d_min_estimater.run()
-
-                logger.debug("Estimate for d_min: %.2f" % d_min)
-                logger.debug("Re-running integration to this resolution limit")
-
-                self._intgr_reso_high = d_min
-                self.set_integrater_done(False)
-                return
-            raise Sorry(e)
+        integrate.run()
 
         self._intgr_experiments_filename = integrate.get_integrated_experiments()
 
