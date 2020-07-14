@@ -501,18 +501,10 @@ class MultiCrystalScale:
             data_manager = copy.deepcopy(self._data_manager)
             params = copy.deepcopy(self._params)
             params.unit_cell.refine = []
-            params.resolution.d_min = self._scaled.d_min
+            params.resolution.d_min = self._params.resolution.d_min
             scaled = Scale(data_manager, params, filtering=True)
             self.scale_and_filter_results = scaled.scale_and_filter_results
             logger.info("Scale and filtering:\n%s", self.scale_and_filter_results)
-            if self._params.resolution.d_min is None and len(
-                data_manager.experiments
-            ) < len(self._data_manager.experiments):
-                # Some data sets have been removed, perform full re-scaling on
-                # on the subset of experiments, including re-estimation of
-                # resolution limit
-                params.resolution.d_min = None
-                scaled = Scale(data_manager, params)
 
             data_manager.export_unmerged_mtz(
                 "filtered_unmerged.mtz", d_min=scaled.d_min
