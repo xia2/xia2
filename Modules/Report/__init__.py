@@ -71,6 +71,19 @@ class Report:
 
         self.params = params
 
+        if params.d_min or params.d_max:
+            intensities = intensities.resolution_filter(
+                d_min=params.d_min, d_max=params.d_max
+            )
+            if batches:
+                batches = batches.resolution_filter(
+                    d_min=params.d_min, d_max=params.d_max
+                )
+            if scales:
+                scales = scales.resolution_filter(
+                    d_min=params.d_min, d_max=params.d_max
+                )
+
         self.intensities = intensities
         self.experiments = experiments
         self.batches = batches
