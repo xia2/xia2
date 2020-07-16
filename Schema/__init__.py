@@ -7,7 +7,6 @@ import os
 from dxtbx.model import ExperimentList
 from dxtbx.model.experiment_list import ExperimentListTemplateImporter
 from scitbx.array_family import flex
-from xia2.Handlers.CommandLine import CommandLine
 from xia2.Handlers.Phil import PhilIndex
 
 
@@ -149,6 +148,8 @@ def load_imagesets(
                 )
 
             else:
+                from xia2.Handlers.CommandLine import CommandLine
+
                 experiments = ExperimentList()
                 start_ends = CommandLine.get_start_ends(full_template_path)
                 if not start_ends:
