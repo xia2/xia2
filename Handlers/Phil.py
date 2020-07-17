@@ -978,7 +978,7 @@ xia2.settings
     process_includes=True,
 )
 
-# override default resolutionizer parameters
+# override default resolution parameters
 master_phil = master_phil.fetch(
     source=parse(
         """\

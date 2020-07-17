@@ -111,7 +111,7 @@ def test_timing_visualisation():
             "time_start": 1555579136.769065,
         },
         {
-            "command": "xia2.resolutionizer  'AUTOMATIC_DEFAULT_scaled_test_unmerged.mtz' 'nbins=100' 'rmerge=None' 'completeness=None' 'cc_half=0.3' 'cc_half_fit=tanh' 'cc_half_significance_level=0.1' 'isigma=0.25' 'misigma=1.0' 'batch_range=1,300'",
+            "command": "dials.estimate_resolution  'AUTOMATIC_DEFAULT_scaled_test_unmerged.mtz' 'nbins=100' 'rmerge=None' 'completeness=None' 'cc_half=0.3' 'cc_half_fit=tanh' 'cc_half_significance_level=0.1' 'isigma=0.25' 'misigma=1.0' 'batch_range=1,300'",
             "details": {
                 "object initialization": 1555579138.586713,
                 "process start": 1555579138.589566,

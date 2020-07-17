@@ -13,7 +13,7 @@ def Merger(DriverType=None):
     class MergerWrapper(DriverInstance.__class__):
         def __init__(self):
             DriverInstance.__class__.__init__(self)
-            self.set_executable("dials.resolutionizer")
+            self.set_executable("dials.estimate_resolution")
 
             # inputs
             self._hklin = None
