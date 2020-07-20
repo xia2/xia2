@@ -1,19 +1,20 @@
 import logging
+import os
 
 from xia2.Driver.DriverFactory import DriverFactory
 
-logger = logging.getLogger("xia2.Wrappers.XIA.Merger")
+logger = logging.getLogger("xia2.Wrappers.XIA.EstimateResolution")
 
 
-def Merger(DriverType=None):
-    """A factory for MergerWrapper classes."""
+def EstimateResolution(DriverType=None):
+    """A factory for EstimateResolutionWrapper classes."""
 
     DriverInstance = DriverFactory.Driver(DriverType)
 
-    class MergerWrapper(DriverInstance.__class__):
+    class EstimateResolutionWrapper(DriverInstance.__class__):
         def __init__(self):
             DriverInstance.__class__.__init__(self)
-            self.set_executable("dials.resolutionizer")
+            self.set_executable("dials.estimate_resolution")
 
             # inputs
             self._hklin = None
@@ -36,6 +37,8 @@ def Merger(DriverType=None):
             self._resolution_cc_half = None
             self._resolution_isigma = None
             self._resolution_misigma = None
+            self._html = None
+            self._json = None
 
         def set_reflections(self, filename):
             self._reflections = filename
@@ -91,6 +94,12 @@ def Merger(DriverType=None):
         def get_resolution_misigma(self):
             return self._resolution_misigma
 
+        def get_html(self):
+            return self._html
+
+        def get_json(self):
+            return self._json
+
         def run(self):
             assert self._hklin or (self._experiments and self._reflections)
             if self._hklin:
@@ -115,6 +124,19 @@ def Merger(DriverType=None):
             for c in cl:
                 self.add_command_line(c)
             logger.debug("Resolution analysis: %s", " ".join(cl))
+
+            self._html = os.path.join(
+                self.get_working_directory(),
+                "%d_dials.estimate_resolution.html" % self.get_xpid(),
+            )
+            self.add_command_line("output.html=%s" % self._html)
+
+            self._json = os.path.join(
+                self.get_working_directory(),
+                "%d_dials.estimate_resolution.json" % self.get_xpid(),
+            )
+            self.add_command_line("output.json=%s" % self._json)
+
             self.start()
             self.close_wait()
             for record in self.get_all_output():
@@ -129,4 +151,4 @@ def Merger(DriverType=None):
                 if "Resolution Mn(I/sig)" in record:
                     self._resolution_misigma = float(record.split()[-1])
 
-    return MergerWrapper()
+    return EstimateResolutionWrapper()
