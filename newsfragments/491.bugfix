@@ -1,0 +1,1 @@
+Don't fail with complaint about missing images if they lie outside the start:end specified on the command line when used in combination with read_image_headers=False.
