@@ -1,7 +1,6 @@
 # Bits the scalers have in common - inherit from me!
 
 
-import json
 import logging
 import math
 import os
@@ -45,7 +44,6 @@ class CommonScaler(Scaler):
         self._scalr_twinning_score = None
         self._scalr_twinning_conclusion = None
         self._spacegroup_reindex_operator = None
-        self._resolution_analysis_plots = None
 
     def _sort_together_data_ccp4(self):
         """Sort together in the right order (rebatching as we go) the sweeps
@@ -923,9 +921,6 @@ class CommonScaler(Scaler):
         else:
             resolution = 0.0
             reasoning = None
-
-        with open(m.get_json(), "rb") as fh:
-            self._resolution_analysis_plots = json.load(fh)
 
         return resolution, reasoning
 
