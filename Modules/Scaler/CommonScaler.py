@@ -28,7 +28,7 @@ from xia2.Modules.Scaler.rebatch import rebatch
 from xia2.Schema.Interfaces.Scaler import Scaler
 
 # new resolution limit code
-from xia2.Wrappers.XIA.Merger import Merger
+from xia2.Wrappers.Dials.EstimateResolution import EstimateResolution
 from xia2.XIA2Version import Version
 
 logger = logging.getLogger("xia2.Modules.Scaler.CommonScaler")
@@ -858,7 +858,7 @@ class CommonScaler(Scaler):
         self, hklin, batch_range=None, reflections=None, experiments=None
     ):
         params = PhilIndex.params.xia2.settings.resolution
-        m = Merger()
+        m = EstimateResolution()
         m.set_working_directory(self.get_working_directory())
 
         auto_logfiler(m)
