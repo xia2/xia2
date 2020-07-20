@@ -1,24 +1,56 @@
 import mock
+import pytest
 import sys
+from importlib import reload
 
 from dxtbx.model import ExperimentList
 from xia2.Schema import load_imagesets, load_reference_geometries, compare_geometries
 
 
-def test_load_imageset(dials_data, tmp_path):
+@pytest.fixture
+def insulin_with_missing_image(dials_data, tmp_path):
+    for j in range(1, 46):
+        if j == 23:
+            continue
+        tmp_path.joinpath(f"insulin_1_{j:03d}.img").symlink_to(
+            dials_data("insulin").join(f"insulin_1_{j:03d}.img")
+        )
+    return tmp_path.joinpath("insulin_1_###.img")
 
+
+def test_load_imageset(insulin_with_missing_image):
     with mock.patch.object(sys, "argv", []):
+        # Force reload of CommandLine singleton object to ensure it is clean
+        import xia2.Handlers.CommandLine
 
-        for j in range(1, 46):
-            if j == 23:
-                continue
-            tmp_path.joinpath(f"insulin_1_{j:03d}.img").symlink_to(
-                dials_data("insulin").join(f"insulin_1_{j:03d}.img")
-            )
-
-        imagesets = load_imagesets("insulin_1_###.img", str(tmp_path))
+        reload(xia2.Handlers.CommandLine)
+        imagesets = load_imagesets(
+            insulin_with_missing_image.name, str(insulin_with_missing_image.parent)
+        )
         assert len(imagesets) == 2
         assert tuple(map(len, imagesets)) == (22, 22)
+
+
+def test_load_imageset_template_missing_images(insulin_with_missing_image):
+    # exercise load_imageset in combination read_all_image_headers=False with a missing
+    # image which is outside the image range specified on the command line
+    template = insulin_with_missing_image.name
+    directory = insulin_with_missing_image.parent
+    with mock.patch.object(
+        sys,
+        "argv",
+        [
+            f"image={directory.joinpath('insulin_1_001.img:1:22')}",
+            "read_all_image_headers=False",
+        ],
+    ):
+        # Force reload of CommandLine singleton object with the parameters above
+        import xia2.Handlers.CommandLine
+
+        reload(xia2.Handlers.CommandLine)
+        imagesets = load_imagesets(template, str(directory))
+        assert len(imagesets) == 1
+        assert imagesets[0].get_array_range() == (0, 22)
 
 
 def test_load_reference_geometries(dials_data):

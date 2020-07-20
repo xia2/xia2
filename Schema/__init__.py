@@ -5,8 +5,10 @@ import logging
 import os
 
 from dxtbx.model import ExperimentList
+from dxtbx.model.experiment_list import ExperimentListTemplateImporter
 from scitbx.array_family import flex
 from xia2.Handlers.Phil import PhilIndex
+
 
 logger = logging.getLogger("xia2.Schema")
 
@@ -146,12 +148,19 @@ def load_imagesets(
                 )
 
             else:
-                from dxtbx.model.experiment_list import ExperimentListTemplateImporter
+                from xia2.Handlers.CommandLine import CommandLine
 
-                importer = ExperimentListTemplateImporter(
-                    [full_template_path], format_kwargs=format_kwargs
-                )
-                experiments = importer.experiments
+                experiments = ExperimentList()
+                start_ends = CommandLine.get_start_ends(full_template_path)
+                if not start_ends:
+                    start_ends.append(None)
+                for image_range in start_ends:
+                    importer = ExperimentListTemplateImporter(
+                        [full_template_path],
+                        format_kwargs=format_kwargs,
+                        image_range=image_range,
+                    )
+                    experiments.extend(importer.experiments)
 
         imagesets = [
             iset for iset in experiments.imagesets() if isinstance(iset, ImageSequence)
