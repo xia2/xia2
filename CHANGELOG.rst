@@ -1,16 +1,37 @@
-DIALS 3.0.3 (2020-07-06)
-========================
+xia2 (DIALS 3.0.4) (2020-07-20)
+===============================
+
+Bugfixes
+--------
+
+- ``ispyb_xml``: Fix error reading PHIL files (#484)
+- When using ``read_image_headers=False``, ignore missing images outside of the
+  ``start:end`` range specified on the command line (#491)
+- Improve treatment of reference instrument models when using ``reference_geometry=``.
+
+  Previously, a separate 'experiment list' (``.expt``) file was required
+  for each instrument model, but if any of the files contained multiple instrument
+  models (e.g. they had been created from multiple-sweep rotation data), xia2
+  could sometimes fail with a confusing message "no sweeps found".
+
+  Now, one can pass any number of ``.expt`` files with ``reference_geometry=``
+  arguments and each file may contain any number of instrument models. xia2
+  will sort out any duplicate models for you. (#485)
+
+
+xia2 (DIALS 3.0.3) (2020-07-06)
+===============================
 
 Bugfixes
 --------
 
 - Fix data from NSLS II with multiple triggers and one image per trigger (#475)
 - Gracefully handle xtriage errors when generating xia2 report. (#477)
-- xia2.compare_merging_stats: Plot the bin centres rather than bin d_min values. This previously
-could lead to misleading apparent differences between data sets with significantly different
-resolution limits. (#480)
-- Increase XDS COLSPOT minimum_pixels_per_spot from 1 to 2. The previous value may have led to
-problems when spotfinding on images with many hot/warm pixels. (#472)
+- xia2.compare_merging_stats: Plot the bin centres rather than bin d_min
+  values. This previously could lead to misleading apparent differences between
+  data sets with significantly different resolution limits. (#480)
+- Increase XDS COLSPOT minimum_pixels_per_spot from 1 to 2. The previous value may
+  have led to problems when spotfinding on images with many hot/warm pixels. (#472)
 
 xia2 (DIALS 3.0.1) (2020-06-11)
 ===============================
