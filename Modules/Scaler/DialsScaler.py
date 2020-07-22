@@ -688,6 +688,8 @@ pipeline=dials (supported for pipeline=dials-aimless).
                 refl_name = os.path.join(
                     self.get_working_directory(), "split_%s.refl" % nums
                 )
+                FileHandler.record_temporary_file(expt_name)
+                FileHandler.record_temporary_file(refl_name)
                 exporter.crystal_name = self._scalr_xname
                 exporter.project_name = self._scalr_pname
                 exporter.set_experiments_filename(expt_name)
@@ -1122,6 +1124,12 @@ class DialsScalerHelper:
                 os.path.join(self.get_working_directory(), "split_%s.refl" % nums)
             )
             si.set_experiments(
+                os.path.join(self.get_working_directory(), "split_%s.expt" % nums)
+            )
+            FileHandler.record_temporary_file(
+                os.path.join(self.get_working_directory(), "split_%s.refl" % nums)
+            )
+            FileHandler.record_temporary_file(
                 os.path.join(self.get_working_directory(), "split_%s.expt" % nums)
             )
         return sweep_handler
