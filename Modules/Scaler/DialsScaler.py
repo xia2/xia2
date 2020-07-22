@@ -887,6 +887,7 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
             )
             if len(set(groups_list)) > 1:
                 # need to split up experiments and reflections
+                # FIXME496 is passed by reference so no need to overwrite?
                 self._sweep_handler = self._helper.split_experiments(
                     self._scaled_experiments,
                     self._scaled_reflections,
@@ -1118,6 +1119,12 @@ class DialsScalerHelper:
         for i, epoch in enumerate(sweep_handler.get_epochs()):
             si = sweep_handler.get_sweep_information(epoch)
             nums = fmt % i
+            assert os.path.exists(
+                os.path.join(self.get_working_directory(), "split_%s.refl" % nums)
+            )
+            assert os.path.exists(
+                os.path.join(self.get_working_directory(), "split_%s.expt" % nums)
+            )
             si.set_reflections(
                 os.path.join(self.get_working_directory(), "split_%s.refl" % nums)
             )
