@@ -53,6 +53,27 @@ def test_load_imageset_template_missing_images(insulin_with_missing_image):
         assert imagesets[0].get_array_range() == (0, 22)
 
 
+def test_load_imageset_split_sweep(dials_data):
+    directory = dials_data("insulin")
+    with mock.patch.object(
+        sys,
+        "argv",
+        [
+            f"image={directory.join('insulin_1_001.img:1:22')}",
+            f"image={directory.join('insulin_1_001.img:23:45')}",
+            "read_all_image_headers=False",
+        ],
+    ):
+        # Force reload of CommandLine singleton object with the parameters above
+        import xia2.Handlers.CommandLine
+
+        reload(xia2.Handlers.CommandLine)
+        imagesets = load_imagesets(directory.join("insulin_1_###.img"), str(directory))
+        assert len(imagesets) == 2
+        assert imagesets[0].get_array_range() == (0, 22)
+        assert imagesets[1].get_array_range() == (22, 45)
+
+
 def test_load_reference_geometries(dials_data):
     """
     Test `xia2.Schema.load_reference_geometries`.
