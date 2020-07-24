@@ -6,11 +6,10 @@ from importlib import reload
 from xia2.Handlers.XInfo import XInfo
 
 
-def test_write_xinfo_split_sweep(dials_data, tmp_path, monkeypatch):
+def test_write_xinfo_split_sweep(dials_data, run_in_tmpdir):
     # This test partially exercises the fix to xia2/xia2#498
     # run in tmp dir so droppings not cluttering source area
-    monkeypatch.chdir(tmp_path)
-    xinfo = tmp_path.joinpath("test.xinfo")
+    xinfo = run_in_tmpdir.join("test.xinfo")
 
     with mock.patch.object(
         sys,
@@ -45,9 +44,9 @@ def test_write_xinfo_split_sweep(dials_data, tmp_path, monkeypatch):
         assert x.get_crystals()["DEFAULT"]["sweeps"]["SWEEP2"]["start_end"] == [23, 45]
 
 
-def test_write_xinfo_unroll(dials_data, tmp_path):
+def test_write_xinfo_unroll(dials_data, run_in_tmpdir):
     # This test partially exercises the fix to https://github.com/xia2/xia2/issues/498 with a different syntax
-    xinfo = tmp_path.joinpath("unroll.xinfo")
+    xinfo = run_in_tmpdir.join("unroll.xinfo")
 
     with mock.patch.object(
         sys,
