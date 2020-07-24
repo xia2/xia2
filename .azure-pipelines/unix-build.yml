@@ -79,9 +79,9 @@ steps:
 # Cache is not shared across operating systems and python versions
 - task: Cache@2
   inputs:
-    key: '"base" | "$(CACHE_VERSION)-$(CURRENT_WEEK)" | "$(Agent.OS)-$(Agent.Version)-$(Pipeline.Workspace)" | "$(PYTHON_VERSION)" | ${{ parameters.conda_environment }} | "$(TODAY_ISO)"'
+    key: '"base" | "$(CACHE_VERSION)-$(CURRENT_WEEK)" | "$(Agent.OS)-$(Agent.Version)-$(Pipeline.Workspace)" | "$(PYTHON_VERSION)" | ../modules/dials/${{ parameters.conda_environment }} | "$(TODAY_ISO)"'
     restoreKeys: |
-      "base" | "$(CACHE_VERSION)-$(CURRENT_WEEK)" | "$(Agent.OS)-$(Agent.Version)-$(Pipeline.Workspace)" | "$(PYTHON_VERSION)" | ${{ parameters.conda_environment }}
+      "base" | "$(CACHE_VERSION)-$(CURRENT_WEEK)" | "$(Agent.OS)-$(Agent.Version)-$(Pipeline.Workspace)" | "$(PYTHON_VERSION)" | ../modules/dials/${{ parameters.conda_environment }}
     path: $(Pipeline.Workspace)/conda_base
     cacheHitVar: BASE_CACHED
   displayName: Restore environment cache
