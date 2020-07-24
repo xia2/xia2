@@ -16,6 +16,7 @@ steps:
 # Download the current DIALS bootstrap script
 - bash: |
     wget https://raw.githubusercontent.com/dials/dials/master/installer/bootstrap.py
+  workingDirectory: $(Pipeline.Workspace)
   displayName: Download DIALS bootstrap script
 
 # Get all other source repositories from cache if available
@@ -48,7 +49,8 @@ steps:
     set -e
     mkdir -p modules
     ln -nsf ../xia2-checkout modules/xia2
-    python modules/dials/installer/bootstrap.py update
+    ls -la
+    python bootstrap.py update
   displayName: Repository checkout (initial)
   workingDirectory: $(Pipeline.Workspace)
   condition: eq(variables.REPOSITORIES_CACHED, 'false')
