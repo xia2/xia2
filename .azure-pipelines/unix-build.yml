@@ -24,9 +24,10 @@ steps:
 # Flush the cache once a week and whenever the bootstrap script is modified
 - task: Cache@2
   inputs:
-    key: '"repositories" | "$(CACHE_VERSION)-$(CURRENT_WEEK)" | bootstrap.py | "$(TODAY_ISO)"'
-    restoreKeys: |
-      "repositories" | "$(CACHE_VERSION)-$(CURRENT_WEEK)" | bootstrap.py
+    key: '"repositories" | "$(CACHE_VERSION)-$(CURRENT_WEEK)" | ../bootstrap.py | "$(TODAY_ISO)" | "x1"'
+#   key: '"repositories" | "$(CACHE_VERSION)-$(CURRENT_WEEK)" | bootstrap.py | "$(TODAY_ISO)"'
+#   restoreKeys: |
+#     "repositories" | "$(CACHE_VERSION)-$(CURRENT_WEEK)" | bootstrap.py
     path: $(Pipeline.Workspace)/modules
     cacheHitVar: REPOSITORIES_CACHED
     securityNamespace: cache
