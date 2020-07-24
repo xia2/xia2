@@ -503,9 +503,6 @@ class _CommandLine:
 
     # command line parsers, getters and help functions.
 
-    def get_beam(self):
-        return self._beam
-
     def set_xinfo(self, xinfo):
         logger.debug(60 * "-")
         logger.debug("XINFO file: %s" % xinfo)
