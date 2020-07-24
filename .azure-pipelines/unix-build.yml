@@ -73,31 +73,30 @@ steps:
   displayName: Repository update (incremental)
   condition: ne(variables.REPOSITORIES_CACHED, 'false')
 
-##  Get a ready-made DIALS conda environment from cache if available
-##  Allow day-to-day incremental cache updates
-##  Flush the cache once a week and whenever the environment specification is modified
-##  Cache is not shared across operating systems and python versions
-#-  task: Cache@2
-#   inputs:
-#     key: '"base" | "$(CACHE_VERSION)-$(CURRENT_WEEK)" | "$(Agent.OS)-$(Agent.Version)-$(Pipeline.Workspace)" | "$(PYTHON_VERSION)" | ${{ parameters.conda_environment }} | "$(TODAY_ISO)"'
-#     restoreKeys: |
-#       "base" | "$(CACHE_VERSION)-$(CURRENT_WEEK)" | "$(Agent.OS)-$(Agent.Version)-$(Pipeline.Workspace)" | "$(PYTHON_VERSION)" | ${{ parameters.conda_environment }}
-#     path: $(Pipeline.Workspace)/conda_base
-#     cacheHitVar: BASE_CACHED
-#   displayName: Restore environment cache
-#  
-##  If the conda environment could not be loaded from cache then
-##  create a new one using the bootstrap script
-#-  script: |
-#     python modules/dials/installer/bootstrap.py base --python $(PYTHON_VERSION)
-#  
-#     # Immediately recover disk space used by miniconda installation
-#     du -sh miniconda
-#     rm -r miniconda
-#   displayName: Create python $(PYTHON_VERSION) environment
-#   workingDirectory: $(Pipeline.Workspace)
-#   condition: eq(variables.BASE_CACHED, 'false')
-#  
+# Get a ready-made DIALS conda environment from cache if available
+# Allow day-to-day incremental cache updates
+# Flush the cache once a week and whenever the environment specification is modified
+# Cache is not shared across operating systems and python versions
+- task: Cache@2
+  inputs:
+    key: '"base" | "$(CACHE_VERSION)-$(CURRENT_WEEK)" | "$(Agent.OS)-$(Agent.Version)-$(Pipeline.Workspace)" | "$(PYTHON_VERSION)" | ${{ parameters.conda_environment }} | "$(TODAY_ISO)"'
+    restoreKeys: |
+      "base" | "$(CACHE_VERSION)-$(CURRENT_WEEK)" | "$(Agent.OS)-$(Agent.Version)-$(Pipeline.Workspace)" | "$(PYTHON_VERSION)" | ${{ parameters.conda_environment }}
+    path: $(Pipeline.Workspace)/conda_base
+    cacheHitVar: BASE_CACHED
+  displayName: Restore environment cache
+
+# If the conda environment could not be loaded from cache then
+# create a new one using the bootstrap script
+- script: |
+    python bootstrap.py base --python $(PYTHON_VERSION)
+    # Immediately recover disk space used by miniconda installation
+    du -sh miniconda
+    rm -r miniconda
+  displayName: Create python $(PYTHON_VERSION) environment
+  workingDirectory: $(Pipeline.Workspace)
+  condition: eq(variables.BASE_CACHED, 'false')
+
 ##  Get a ready-made DIALS build directory from cache if available
 ##  Allow day-to-day incremental cache updates
 ##  Flush the cache once a week and whenever the environment specification
