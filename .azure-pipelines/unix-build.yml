@@ -190,12 +190,12 @@ steps:
   displayName: Run tests
   workingDirectory: $(Pipeline.Workspace)
 
-#-  script: |
-#     bash <(curl -s https://codecov.io/bash) -n "Python $(PYTHON_VERSION) $(Agent.OS)"
-#   displayName: 'Publish coverage stats'
-#   continueOnError: True
-#   timeoutInMinutes: 3
-#   workingDirectory: $(Pipeline.Workspace)/modules/dials
+- script: |
+    bash <(curl -s https://codecov.io/bash) -n "Python $(PYTHON_VERSION) $(Agent.OS)"
+  displayName: 'Publish coverage stats'
+  continueOnError: True
+  timeoutInMinutes: 3
+  workingDirectory: $(Pipeline.Workspace)/modules/xia2
 
 # Recover disk space after testing
 # This is only relevant if we had cache misses, as free disk space is required to create cache archives
