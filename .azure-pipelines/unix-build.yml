@@ -28,6 +28,7 @@ steps:
       "repositories" | "$(CACHE_VERSION)-$(CURRENT_WEEK)" | bootstrap.py
     path: $(Pipeline.Workspace)/modules
     cacheHitVar: REPOSITORIES_CACHED
+    securityNamespace: cache
   displayName: Restore repository cache
 
 # Copy libGL/libGLU into a place where they can be found during the
