@@ -6,8 +6,10 @@ from importlib import reload
 from xia2.Handlers.XInfo import XInfo
 
 
-def test_write_xinfo_split_sweep(dials_data, tmp_path):
-    # This test partially exercises the fix to https://github.com/xia2/xia2/issues/498
+def test_write_xinfo_split_sweep(dials_data, tmp_path, monkeypatch):
+    # This test partially exercises the fix to xia2/xia2#498
+    # run in tmp dir so droppings not cluttering source area
+    monkeypatch.chdir(tmp_path)
     xinfo = tmp_path.joinpath("test.xinfo")
 
     with mock.patch.object(
