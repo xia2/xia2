@@ -118,7 +118,8 @@ def test_dials(regression_test, dials_data, tmpdir, ccp4):
         assert mtz_obj.crystals()[1].name() == "bar"
         for ma in mtz_obj.as_miller_arrays():
             assert ma.unit_cell().parameters() == pytest.approx(
-                scaled_expt[0].crystal.get_recalculated_unit_cell().parameters()
+                scaled_expt[0].crystal.get_recalculated_unit_cell().parameters(),
+                abs=1e-4,
             )
     success, issues = xia2.Test.regression.check_result(
         "X4_wide.dials",
