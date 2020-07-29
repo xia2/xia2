@@ -78,4 +78,4 @@ jobs:
 
   - template: azure-pipelines-linux.yml
 
-#  - template: azure-pipelines-mac.yml
+  - template: azure-pipelines-mac.yml
