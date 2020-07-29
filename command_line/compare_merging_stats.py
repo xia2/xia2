@@ -181,16 +181,17 @@ def plot_merging_stats(
         image_dir = "."
     elif not os.path.exists(image_dir):
         os.makedirs(image_dir)
-    for k in plots:
 
-        n_rows = 1
-        n_cols = 1
-        if small_multiples:
-            n_rows = int(math.floor(math.sqrt(len(results))))
-            n_cols = n_rows
-            while n_cols * n_rows < len(results):
-                n_cols += 1
-            assert n_cols * n_rows >= len(results), (n_cols, n_rows, len(results))
+    n_rows = 1
+    n_cols = 1
+    if small_multiples:
+        n_rows = int(math.floor(math.sqrt(len(results))))
+        n_cols = n_rows
+        while n_cols * n_rows < len(results):
+            n_cols += 1
+        assert n_cols * n_rows >= len(results), (n_cols, n_rows, len(results))
+
+    for k in plots:
 
         plot_data(
             results,
