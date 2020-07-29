@@ -97,6 +97,7 @@ def run(args):
         small_multiples=params.small_multiples,
         alpha=params.alpha,
     )
+    return results
 
 
 def get_merging_stats(
