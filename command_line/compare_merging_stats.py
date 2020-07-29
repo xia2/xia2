@@ -1,9 +1,13 @@
+import concurrent.futures
+import functools
 import math
 import os
 import sys
 
 import iotbx.merging_statistics
 import iotbx.phil
+import libtbx
+from libtbx.introspection import number_of_processors
 from cctbx import uctbx
 from cycler import cycler
 from dials.util.options import OptionParser
@@ -13,6 +17,8 @@ help_message = """
 
 phil_scope = iotbx.phil.parse(
     """
+nproc = Auto
+  .type = int(value_min=1)
 n_bins = 20
   .type = int(value_min=1)
 anomalous = False
@@ -61,25 +67,28 @@ def run(args):
         args, show_diff_phil=True, return_unhandled=True
     )
 
+    if params.nproc is libtbx.Auto:
+        params.nproc = number_of_processors()
+
     results = []
-    for mtz in args:
-        print(mtz)
-        assert os.path.isfile(mtz), mtz
-        results.append(
-            get_merging_stats(
-                mtz,
-                anomalous=params.anomalous,
-                n_bins=params.n_bins,
-                use_internal_variance=params.use_internal_variance,
-                eliminate_sys_absent=params.eliminate_sys_absent,
-                data_labels=params.data_labels,
-                space_group_info=params.space_group,
-                d_min=params.d_min,
-                d_max=params.d_max,
-            )
-        )
+    mtz_files = [arg for arg in args if os.path.isfile(arg)]
+
+    get_merging_stats_partial = functools.partial(
+        get_merging_stats,
+        anomalous=params.anomalous,
+        n_bins=params.n_bins,
+        use_internal_variance=params.use_internal_variance,
+        eliminate_sys_absent=params.eliminate_sys_absent,
+        data_labels=params.data_labels,
+        space_group_info=params.space_group,
+        d_min=params.d_min,
+        d_max=params.d_max,
+    )
+    with concurrent.futures.ProcessPoolExecutor(max_workers=params.nproc) as pool:
+        results = pool.map(get_merging_stats_partial, mtz_files)
+
     plot_merging_stats(
-        results,
+        list(results),
         labels=params.plot_labels,
         size_inches=params.size_inches,
         image_dir=params.image_dir,
@@ -101,6 +110,7 @@ def get_merging_stats(
     d_min=None,
     d_max=None,
 ):
+    print(scaled_unmerged_mtz)
     i_obs = iotbx.merging_statistics.select_data(
         scaled_unmerged_mtz, data_labels=data_labels
     )
