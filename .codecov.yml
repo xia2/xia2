@@ -1,0 +1,16 @@
+coverage:
+  status:
+    project:
+      default:
+        target: 0%
+        threshold: 100%
+    patch:
+      default:
+        target: 0%
+        threshold: 100%
+
+comment:
+  layout: "diff, flags"
+  branches:
+    - master
+  after_n_builds: 3
