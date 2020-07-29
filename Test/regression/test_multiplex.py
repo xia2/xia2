@@ -109,13 +109,7 @@ def test_proteinase_k_filter_deltacchalf(d_min, regression_test, dials_data, tmp
         # assert that the input d_min has carried through to the output files
         for mtz in (mtz_scaled, mtz_filtered):
             assert mtz.as_miller_arrays()[0].d_min() == pytest.approx(d_min, abs=1e-4)
-    else:
-        # If we've got rid of a the worst data set then the estimated resolution should
-        # have improved
-        assert (
-            mtz_filtered.as_miller_arrays()[0].d_min()
-            < mtz_scaled.as_miller_arrays()[0].d_min()
-        )
+
     assert mtz_filtered.n_reflections() != mtz_scaled.n_reflections()
 
     with tmpdir.join("xia2.multiplex.json").open("r") as fh:
