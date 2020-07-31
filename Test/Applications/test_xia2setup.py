@@ -12,6 +12,7 @@ def test_write_xinfo_split_sweep(dials_data, tmpdir):
             "read_all_image_headers=False",
         ],
         working_directory=tmpdir,
+        environment_override={"CCP4": tmpdir},
     )
     assert not result.returncode
     assert not result.stderr
@@ -32,6 +33,7 @@ def test_write_xinfo_unroll(dials_data, tmpdir):
             "read_all_image_headers=False",
         ],
         working_directory=tmpdir,
+        environment_override={"CCP4": tmpdir},
     )
     assert not result.returncode
     assert not result.stderr
