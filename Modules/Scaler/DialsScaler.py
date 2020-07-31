@@ -1074,7 +1074,7 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
 
 
 class DialsScalerHelper:
-    """A class to help the CCP4 Scaler along a little."""
+    """A class to help the DIALS Scaler along a little."""
 
     def __init__(self):
         self._working_directory = os.getcwd()

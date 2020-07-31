@@ -1,7 +1,0 @@
-The treatment of reference instrument models with the command-line argument ``reference_geometry=`` has been improved.
-
-Previously, one needed to pass a separate 'experiment list' (``.expt``) file for each instrument model.
-If any of the files contained multiple instrument models (if they had been created from multiple-sweep rotation data, for example), xia2 was a bit fragile and could sometimes fail with an erroneous message "no sweeps found".
-
-Now, one can pass any number of ``.expt`` files with ``reference_geometry=`` arguments and each file may contain any number of instrument models.
-xia2 will sort out any duplicate models for you.
