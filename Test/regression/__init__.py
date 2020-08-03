@@ -196,17 +196,19 @@ def check_result(
 
         expected_line = ""
         actual_line = ""
-        for expected, actual, vld, eq in zip(expected_s, actual_s, valid, equal):
-            template = "%%-%ds" % max(len(expected), len(actual))
+        for expected_string, actual_string, vld, eq in zip(
+            expected_s, actual_s, valid, equal
+        ):
+            template = "%%-%ds" % max(len(expected_string), len(actual_string))
             if eq:
-                expected_line += template % expected
+                expected_line += template % expected_string
                 actual_line += template % ""
             elif vld:
-                expected_line += template % expected
-                actual_line += template % actual
+                expected_line += template % expected_string
+                actual_line += template % actual_string
             else:
-                expected_line += " " + template % expected + " "
-                actual_line += "*" + template % actual + "*"
+                expected_line += " " + template % expected_string + " "
+                actual_line += "*" + template % actual_string + "*"
                 output_identical = False
         print("-" + expected_line)
         if not all(valid):

@@ -2,7 +2,6 @@ import copy
 import logging
 import math
 import os
-import py
 from collections import OrderedDict
 
 from libtbx import Auto
@@ -12,7 +11,10 @@ from cctbx import sgtbx
 from dxtbx.serialize import load
 from dxtbx.model import ExperimentList
 
+
 from dials.array_family import flex
+from dials.command_line import export
+from dials.command_line import merge
 from dials.command_line.unit_cell_histogram import plot_uc_histograms
 from dials.util import tabulate
 
@@ -21,12 +23,14 @@ from scitbx.math import five_number_summary
 from xia2.lib.bits import auto_logfiler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Environment import get_number_cpus
+from xia2.Modules import Report
+from xia2.Modules.Scaler.DialsScaler import scaling_model_auto_rules
 from xia2.Wrappers.Dials.Cosym import DialsCosym
+from xia2.Wrappers.Dials.EstimateResolution import EstimateResolution
 from xia2.Wrappers.Dials.Refine import Refine
 from xia2.Wrappers.Dials.Scale import DialsScale
 from xia2.Wrappers.Dials.Symmetry import DialsSymmetry
 from xia2.Wrappers.Dials.TwoThetaRefine import TwoThetaRefine
-from xia2.Modules.Scaler.DialsScaler import scaling_model_auto_rules
 
 
 logger = logging.getLogger(__name__)
@@ -101,8 +105,12 @@ resolution
     .type = float(value_min=0.0)
     .help = "High resolution cutoff."
     .short_caption = "High resolution cutoff"
-  include scope dials.util.resolutionizer.phil_str
+  include scope dials.util.resolution_analysis.phil_str
 }
+
+rescale_after_resolution_cutoff = False
+  .help = "Re-scale the data after application of a resolution cutoff"
+  .type = bool
 
 filtering {
   method = None deltacchalf
@@ -116,7 +124,7 @@ filtering {
       .help = "Desired minimum completeness, as a percentage (0 - 100)."
     stdcutoff = 4.0
       .type = float
-      .help = "Datasets with a delta cc half below (mean - stdcutoff*std) are removed"
+      .help = "Datasets with a ΔCC½ below (mean - stdcutoff*std) are removed"
   }
 }
 
@@ -317,13 +325,32 @@ class DataManager:
                 cryst_reindexed.set_space_group(space_group)
             expt.crystal.update(cryst_reindexed)
 
-    def export_reflections(self, filename):
-        self._reflections.as_file(filename)
+    def export_reflections(self, filename, d_min=None):
+        reflections = self._reflections
+        if d_min:
+            reflections = reflections.select(reflections["d"] >= d_min)
+        reflections.as_file(filename)
         return filename
 
     def export_experiments(self, filename):
         self._experiments.as_file(filename)
         return filename
+
+    def export_unmerged_mtz(self, filename, d_min=None):
+        params = export.phil_scope.extract()
+        params.mtz.d_min = d_min
+        params.mtz.hklout = filename
+        params.intensity = ["scale"]
+        export.export_mtz(params, self._experiments, [self._reflections])
+
+    def export_merged_mtz(self, filename, d_min=None):
+        params = merge.phil_scope.extract()
+        params.d_min = d_min
+        params.assess_space_group = False
+        mtz_obj = merge.merge_data_to_mtz(
+            params, self._experiments, [self._reflections]
+        )
+        mtz_obj.write(filename)
 
 
 class MultiCrystalScale:
@@ -396,19 +423,21 @@ class MultiCrystalScale:
         self._comparison_graphs = OrderedDict()
 
         self._scaled = Scale(self._data_manager, self._params)
+        self._experiments_filename = self._scaled._experiments_filename
+        self._reflections_filename = self._scaled._reflections_filename
 
         self.decide_space_group()
+
+        self._data_manager.export_unmerged_mtz(
+            "scaled_unmerged.mtz", d_min=self._scaled.d_min
+        )
+        self._data_manager.export_merged_mtz("scaled.mtz", d_min=self._scaled.d_min)
+        self._data_manager.export_experiments("scaled.expt")
+        self._data_manager.export_reflections("scaled.refl", d_min=self._scaled.d_min)
 
         self._record_individual_report(
             self._data_manager, self._scaled.report(), "All data"
         )
-
-        py.path.local(self._scaled.scaled_unmerged_mtz).copy(
-            py.path.local("scaled_unmerged.mtz")
-        )
-        py.path.local(self._scaled.scaled_mtz).copy(py.path.local("scaled.mtz"))
-        self._data_manager.export_experiments("scaled.expt")
-        self._data_manager.export_reflections("scaled.refl")
 
         self._mca = self.multi_crystal_analysis()
         self.cluster_analysis()
@@ -455,30 +484,36 @@ class MultiCrystalScale:
                 ]
                 data_manager.select(cluster_identifiers)
                 scaled = Scale(data_manager, self._params)
-                py.path.local(scaled.scaled_unmerged_mtz).copy(
-                    py.path.local("scaled_unmerged.mtz")
+
+                data_manager.export_unmerged_mtz(
+                    "scaled_unmerged.mtz", d_min=scaled.d_min
                 )
-                py.path.local(scaled.scaled_mtz).copy(py.path.local("scaled.mtz"))
+                data_manager.export_merged_mtz("scaled.mtz", d_min=scaled.d_min)
+                data_manager.export_experiments("scaled.expt")
+                data_manager.export_reflections("scaled.refl", d_min=scaled.d_min)
+
                 self._record_individual_report(
                     data_manager, scaled.report(), cluster_dir.replace("_", " ")
                 )
                 os.chdir(cwd)
-
         if self._params.filtering.method:
             # Final round of scaling, this time filtering out any bad datasets
-            self._params.unit_cell.refine = []
-            self._params.resolution.d_min = self._scaled.d_min
             data_manager = copy.deepcopy(self._data_manager)
-            scaled = Scale(data_manager, self._params, filtering=True)
+            params = copy.deepcopy(self._params)
+            params.unit_cell.refine = []
+            params.resolution.d_min = self._params.resolution.d_min
+            scaled = Scale(data_manager, params, filtering=True)
             self.scale_and_filter_results = scaled.scale_and_filter_results
             logger.info("Scale and filtering:\n%s", self.scale_and_filter_results)
-            self._record_individual_report(data_manager, scaled.report(), "Filtered")
-            py.path.local(scaled.scaled_unmerged_mtz).copy(
-                py.path.local("filtered_unmerged.mtz")
+
+            data_manager.export_unmerged_mtz(
+                "filtered_unmerged.mtz", d_min=scaled.d_min
             )
-            py.path.local(scaled.scaled_mtz).copy(py.path.local("filtered.mtz"))
+            data_manager.export_merged_mtz("filtered.mtz", d_min=scaled.d_min)
+
+            self._record_individual_report(data_manager, scaled.report(), "Filtered")
             data_manager.export_experiments("filtered.expt")
-            data_manager.export_reflections("filtered.refl")
+            data_manager.export_reflections("filtered.refl", d_min=scaled.d_min)
         else:
             self.scale_and_filter_results = None
 
@@ -700,11 +735,11 @@ class MultiCrystalScale:
 
     def cosym(self):
         logger.debug("Running cosym analysis")
+        experiments_filename = self._data_manager.export_experiments("tmp.expt")
+        reflections_filename = self._data_manager.export_reflections("tmp.refl")
         cosym = DialsCosym()
         auto_logfiler(cosym)
 
-        experiments_filename = self._data_manager.export_experiments("tmp.expt")
-        reflections_filename = self._data_manager.export_reflections("tmp.refl")
         cosym.add_experiments_json(experiments_filename)
         cosym.add_reflections_file(reflections_filename)
         if self._params.symmetry.space_group is not None:
@@ -826,17 +861,15 @@ class Scale:
         if "two_theta" in self._params.unit_cell.refine:
             self.two_theta_refine()
 
-        # self.unit_cell_clustering(plot_name='cluster_unit_cell_sg.png')
+        self.d_min = self._params.resolution.d_min
+        d_max = self._params.resolution.d_max
+        self.scale(d_min=self.d_min, d_max=d_max)
 
-        if self._params.resolution.d_min is None:
-            self.scale()
+        if self.d_min is None:
             self.d_min, reason = self.estimate_resolution_limit()
             logger.info(f"Resolution limit: {self.d_min:.2f} ({reason})")
-        else:
-            self.d_min = self._params.resolution.d_min
-        d_max = self._params.resolution.d_max
-
-        self.scale(d_min=self.d_min, d_max=d_max)
+            if self._params.rescale_after_resolution_cutoff:
+                self.scale(d_min=self.d_min, d_max=d_max)
 
     def refine(self):
         # refine in correct bravais setting
@@ -979,10 +1012,8 @@ class Scale:
 
     def estimate_resolution_limit(self):
         # see also xia2/Modules/Scaler/CommonScaler.py: CommonScaler._estimate_resolution_limit()
-        from xia2.Wrappers.XIA.Merger import Merger
-
         params = self._params.resolution
-        m = Merger()
+        m = EstimateResolution()
         auto_logfiler(m)
         # use the scaled .refl and .expt file
         if self._experiments_filename and self._reflections_filename:
@@ -1046,7 +1077,8 @@ class Scale:
         return resolution, reasoning
 
     def report(self):
-        from xia2.Modules.Report import Report
-
-        report = Report.from_data_manager(self._data_manager)
+        params = Report.phil_scope.extract()
+        params.dose.batch = []
+        params.d_min = self.d_min
+        report = Report.Report.from_data_manager(self._data_manager, params=params)
         return report

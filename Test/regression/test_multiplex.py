@@ -71,7 +71,10 @@ def test_proteinase_k(mocker, regression_test, dials_data, tmpdir):
         f.remove()
 
 
-def test_proteinase_k_filter_deltacchalf(regression_test, dials_data, tmpdir):
+@pytest.mark.parametrize(
+    "d_min", [None, 2.0],
+)
+def test_proteinase_k_filter_deltacchalf(d_min, regression_test, dials_data, tmpdir):
     data_dir = dials_data("multi_crystal_proteinase_k")
     expts = sorted(f.strpath for f in data_dir.listdir("experiments*.json"))
     refls = sorted(f.strpath for f in data_dir.listdir("reflections*.pickle"))
@@ -84,6 +87,7 @@ def test_proteinase_k_filter_deltacchalf(regression_test, dials_data, tmpdir):
                 "filtering.deltacchalf.stdcutoff=1",
                 "max_clusters=1",
                 "nproc=1",
+                "resolution.d_min=%s" % d_min,
             ]
         )
         run_multiplex(command_line_args)
@@ -94,15 +98,19 @@ def test_proteinase_k_filter_deltacchalf(regression_test, dials_data, tmpdir):
         "filtered_unmerged.mtz",
     ]:
         assert tmpdir.join(f).check(file=1), "expected file %s missing" % f
-    for expt_file, n_expected in (("scaled.expt", 8), ("filtered.expt", 7)):
-        expts = load.experiment_list(tmpdir.join(expt_file).strpath, check_format=False)
-        assert len(expts) == n_expected
+    assert len(load.experiment_list(tmpdir / "scaled.expt", check_format=False)) == 8
+    assert len(load.experiment_list(tmpdir / "filtered.expt", check_format=False)) < 8
 
     # assert that the reflection files are different - the filtered reflections
     # should have fewer reflections as one data set has been removed
     mtz_scaled = iotbx.mtz.object(tmpdir.join("scaled_unmerged.mtz").strpath)
     mtz_filtered = iotbx.mtz.object(tmpdir.join("filtered_unmerged.mtz").strpath)
-    assert mtz_filtered.n_reflections() < mtz_scaled.n_reflections()
+    if d_min:
+        # assert that the input d_min has carried through to the output files
+        for mtz in (mtz_scaled, mtz_filtered):
+            assert mtz.as_miller_arrays()[0].d_min() == pytest.approx(d_min, abs=1e-4)
+
+    assert mtz_filtered.n_reflections() != mtz_scaled.n_reflections()
 
     with tmpdir.join("xia2.multiplex.json").open("r") as fh:
         d = json.load(fh)

@@ -36,6 +36,7 @@ def DialsScale(DriverType=None, decay_correction=None):
             self._d_min = None
             self._d_max = None
             self._crystal_name = None
+            self._project_name = None
             self._overwrite_existing_models = None
 
             # scale and filter parameters
@@ -198,6 +199,9 @@ def DialsScale(DriverType=None, decay_correction=None):
 
         def set_crystal_name(self, name):
             self._crystal_name = name
+
+        def set_project_name(self, name):
+            self._project_name = name
 
         def get_scaled_reflections(self):
             return self._scaled_reflections
@@ -375,6 +379,9 @@ def DialsScale(DriverType=None, decay_correction=None):
 
             if self._crystal_name:
                 self.add_command_line("output.crystal_name=%s" % self._crystal_name)
+
+            if self._project_name:
+                self.add_command_line("output.project_name=%s" % self._project_name)
 
             if self._filtering_method:
                 self.add_command_line("filtering.method=%s" % self._filtering_method)

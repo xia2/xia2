@@ -4,8 +4,9 @@ import itertools
 import logging
 import os
 
+from dxtbx.model import ExperimentList
+from dxtbx.model.experiment_list import ExperimentListTemplateImporter
 from scitbx.array_family import flex
-
 from xia2.Handlers.Phil import PhilIndex
 
 
@@ -147,12 +148,19 @@ def load_imagesets(
                 )
 
             else:
-                from dxtbx.model.experiment_list import ExperimentListTemplateImporter
+                from xia2.Handlers.CommandLine import CommandLine
 
-                importer = ExperimentListTemplateImporter(
-                    [full_template_path], format_kwargs=format_kwargs
-                )
-                experiments = importer.experiments
+                experiments = ExperimentList()
+                start_ends = CommandLine.get_start_ends(full_template_path)
+                if not start_ends:
+                    start_ends.append(None)
+                for image_range in start_ends:
+                    importer = ExperimentListTemplateImporter(
+                        [full_template_path],
+                        format_kwargs=format_kwargs,
+                        image_range=image_range,
+                    )
+                    experiments.extend(importer.experiments)
 
         imagesets = [
             iset for iset in experiments.imagesets() if isinstance(iset, ImageSequence)
@@ -246,34 +254,30 @@ def update_with_reference_geometry(imagesets, reference_geometry_list):
 
 
 def load_reference_geometries(geometry_file_list):
-    from dxtbx.serialize import load
+    logger.debug("Collecting reference instrument models.")
+    ref_geoms = {
+        # Note that 'index' is the index of the experiment in the expt list file,
+        # as per dials.show, rather than the UID string of the experiment.
+        (expt.detector, expt.beam, f, index)
+        for f in geometry_file_list
+        for index, expt in enumerate(ExperimentList.from_file(f, check_format=False))
+    }
 
-    reference_components = []
-    for file in geometry_file_list:
-        try:
-            experiments = load.experiment_list(file, check_format=False)
-            assert len(experiments.detectors()) == 1
-            assert len(experiments.beams()) == 1
-            reference_detector = experiments.detectors()[0]
-            reference_beam = experiments.beams()[0]
-        except Exception:
-            experiments = load.experiment_list(file)
-            imageset = experiments.imagesets()[0]
-            reference_detector = imageset.get_detector()
-            reference_beam = imageset.get_beam()
-        reference_components.append(
-            {"detector": reference_detector, "beam": reference_beam, "file": file}
-        )
+    logger.debug("Removing duplicate reference geometries.")
+    duplicates = set()
+    for a, b in filter(duplicates.isdisjoint, itertools.combinations(ref_geoms, 2)):
+        if compare_geometries(a[0], b[0]):
+            logger.debug(f"Experiment {b[3]} of {b[2]} is a duplicate.")
+            duplicates.add(b)
 
-    for combination in itertools.combinations(reference_components, 2):
-        if compare_geometries(combination[0]["detector"], combination[1]["detector"]):
-            logger.error(
-                "Reference geometries given in %s and %s are too similar"
-                % combination[0]["file"],
-                combination[1]["file"],
-            )
-            raise Exception("Reference geometries too similar")
-    return reference_components
+    ref_geoms -= duplicates
+
+    n = len(ref_geoms)
+    logger.debug(f"Found {n} unique reference geometr{'ies' if n != 1 else 'y'}.")
+    for geometry in ref_geoms:
+        logger.debug(f"Experiment {geometry[3]} of {geometry[2]} is unique.")
+
+    return [{"detector": geometry[0], "beam": geometry[1]} for geometry in ref_geoms]
 
 
 def compare_geometries(detectorA, detectorB):

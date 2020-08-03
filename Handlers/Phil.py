@@ -160,7 +160,7 @@ xds
       .type = float(value_min=0)
   }
   colspot {
-    minimum_pixels_per_spot = 1
+    minimum_pixels_per_spot = 2
       .short_caption = "For PAD MINIMUM_NUMBER_OF_PIXELS_IN_A_SPOT ="
       .type = int
       .expert_level = 1
@@ -265,7 +265,7 @@ dials
     threshold.algorithm = dispersion dispersion_extended
       .type = choice
       .expert_level = 2
-    min_spot_size = Auto
+    min_spot_size = None
       .type = int
       .help = "The minimum number of contiguous pixels for a spot to be " \
               "accepted by the filtering algorithm."
@@ -786,7 +786,7 @@ xia2.settings
       .type = float(value_min=0.0)
       .help = "High resolution cutoff."
       .short_caption = "High resolution cutoff"
-    include scope dials.util.resolutionizer.phil_str
+    include scope dials.util.resolution_analysis.phil_str
   }
   unify_setting = False
     .type = bool
@@ -991,7 +991,7 @@ xia2.settings
     process_includes=True,
 )
 
-# override default resolutionizer parameters
+# override default resolution parameters
 master_phil = master_phil.fetch(
     source=parse(
         """\

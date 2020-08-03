@@ -112,7 +112,7 @@ class DeltaCcHalf:
 
             delta_cc.append(self._compute_delta_cc_for_dataset(unmerged_i))
             logger.debug(
-                "Delta CC½ excluding batches %i-%i: %.3f",
+                "ΔCC½ excluding batches %i-%i: %.3f",
                 group_start,
                 group_end,
                 delta_cc[-1],
@@ -139,9 +139,9 @@ class DeltaCcHalf:
 
     def get_table(self, html=False):
         if html:
-            delta_cc_half_header = "Delta CC<sub>½</sub>"
+            delta_cc_half_header = "ΔCC<sub>½</sub>"
         else:
-            delta_cc_half_header = "Delta CC½"
+            delta_cc_half_header = "ΔCC½"
         rows = [["Dataset", "Batches", delta_cc_half_header, "σ"]]
         normalised_score = self._normalised_delta_cc_i()
         perm = flex.sort_permutation(self.delta_cc)
@@ -170,11 +170,11 @@ class DeltaCcHalf:
                             "size": 0.1,
                         },
                         "type": "histogram",
-                        "name": "Delta CC<sub>½</sub>",
+                        "name": "ΔCC<sub>½</sub>",
                     }
                 ],
                 "layout": {
-                    "title": "Histogram of Delta CC<sub>½</sub>",
+                    "title": "Histogram of ΔCC<sub>½</sub>",
                     "xaxis": {"title": "σ"},
                     "yaxis": {"title": "Frequency"},
                 },
@@ -208,7 +208,7 @@ class DeltaCcHalf:
                     }
                 ],
                 "layout": {
-                    "title": "Normalised Delta CC<sub>½</sub>",
+                    "title": "Normalised ΔCC<sub>½</sub>",
                     "xaxis": {"title": "Group"},
                     "yaxis": {"title": "σ"},
                 },

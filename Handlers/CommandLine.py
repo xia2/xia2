@@ -57,7 +57,7 @@ def unroll_parameters(hdf5_master):
             root = master["/entry/instrument/detector"]
             ntrigger = root["detectorSpecific/ntrigger"][()]
             nimages = root["detectorSpecific/nimages"][()]
-        if ntrigger > 1:
+        if ntrigger > 1 and nimages > 1:
             return ntrigger, nimages
     except Exception:
         return None
@@ -502,9 +502,6 @@ class _CommandLine:
             raise RuntimeError(nonsense)
 
     # command line parsers, getters and help functions.
-
-    def get_beam(self):
-        return self._beam
 
     def set_xinfo(self, xinfo):
         logger.debug(60 * "-")
