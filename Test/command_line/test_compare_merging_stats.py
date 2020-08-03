@@ -1,8 +1,5 @@
-import mock
 import os
 import pytest
-
-import iotbx.merging_statistics
 
 from xia2.command_line import compare_merging_stats
 
@@ -49,23 +46,16 @@ def test_compare_merging_stats_override_space_group(blend_mtz_files, run_in_tmpd
         assert os.path.exists(expected_file)
 
 
-def test_compare_merging_stats_d_min_d_max(blend_mtz_files, run_in_tmpdir, mocker):
-    spy = mocker.spy(iotbx.merging_statistics, "dataset_statistics")
-    compare_merging_stats.run(blend_mtz_files + ["d_min=2.5", "d_max=50"])
+def test_compare_merging_stats_d_min_d_max(blend_mtz_files, run_in_tmpdir):
+    results = compare_merging_stats.run(blend_mtz_files + ["d_min=2.5", "d_max=50"])
     for expected_file in expected_files:
         assert os.path.exists(expected_file)
-    spy.assert_called_with(
-        anomalous=False,
-        d_max=50.0,
-        d_min=2.5,
-        eliminate_sys_absent=False,
-        i_obs=mock.ANY,
-        n_bins=20,
-        use_internal_variance=False,
-    )
+    for result in results:
+        assert result.overall.d_min > 2.5
+        assert result.overall.d_max < 50
 
 
-def test_compare_merging_stats_small_multiples(dials_data, run_in_tmpdir, mocker):
+def test_compare_merging_stats_small_multiples(dials_data, run_in_tmpdir):
     data_dir = dials_data("blend_tutorial")
     blend_mtz_files = [
         data_dir.join("dataset_%03i.mtz" % (i + 1)).strpath for i in range(15)
