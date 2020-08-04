@@ -8,6 +8,5 @@ Report more useful error message if given an Eiger data file rather than a maste
   do you mean one of:
     /Users/graeme/data/i04-eiger-small/Therm_6_1_master.h5
     /Users/graeme/data/i04-eiger-small/Therm_6_2_master.h5
-  or:
     /Users/graeme/data/i04-eiger-small/Therm_6_2.nxs
     /Users/graeme/data/i04-eiger-small/Therm_6_1.nxs
