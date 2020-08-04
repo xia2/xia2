@@ -78,8 +78,7 @@ def check_hdf5_master_files(master_files):
                 bad.append(filename)
 
     if bad:
-        filenames = " ".join(bad)
-        sys.exit(f"Not master files: {filenames}")
+        sys.exit("Not master files: %s" % " ".join(bad))
 
 
 def get_command_line():
