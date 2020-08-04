@@ -7,6 +7,8 @@ import os
 import platform
 import sys
 
+import h5py
+
 from dials.util import Sorry
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Environment import df
@@ -63,6 +65,23 @@ def check_environment():
         )
 
 
+def check_hdf5_master_files(master_files):
+    """Check the input HDF5 master files look a little bit like HDF5 master
+    files and not just the data files: if the latter then sys.exit() with a
+    helpful message"""
+
+    bad = []
+
+    for filename in master_files:
+        with h5py.File(filename, "r") as f:
+            if b"/data" in f and b"/entry" not in f:
+                bad.append(filename)
+
+    if bad:
+        filenames = " ".join(bad)
+        sys.exit(f"Not master files: {filenames}")
+
+
 def get_command_line():
     from xia2.Handlers.CommandLine import CommandLine
 
@@ -93,6 +112,8 @@ def get_command_line():
 
         directories = [os.path.abspath(d) for d in directories]
         from xia2.Applications.xia2setup import write_xinfo
+
+        check_hdf5_master_files(CommandLine.get_hdf5_master_files())
 
         if CommandLine.get_template() or CommandLine.get_hdf5_master_files():
             write_xinfo(
