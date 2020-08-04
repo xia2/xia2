@@ -1,4 +1,4 @@
-Report more useful error message if given Eiger data file not master file, including suggestions of possible master files in the same directory e.g.
+Report more useful error message if given an Eiger data file rather than a master file, including suggestions of possible master files in the same directory e.g.
 
 ::
 
