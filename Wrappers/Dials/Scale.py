@@ -74,6 +74,10 @@ def DialsScale(DriverType=None, decay_correction=None):
             # self._surface_link = True
             self._lmax = None
 
+            # dose_decay model parameters
+            self._share_decay = None
+            self._resolution_dependence = None
+
             # Array model terms
             self._n_resolution_bins = None
             self._n_absorption_bins = None
@@ -147,6 +151,12 @@ def DialsScale(DriverType=None, decay_correction=None):
 
         def set_lmax(self, lmax):
             self._lmax = lmax
+
+        def set_share_decay(self, share):
+            self._share_decay = share
+
+        def set_resolution_dependence(self, resolution_dependence):
+            self._resolution_dependence = resolution_dependence
 
         def set_model(self, model):
             self._model = model
@@ -268,29 +278,40 @@ def DialsScale(DriverType=None, decay_correction=None):
                 else:
                     self.add_command_line("%s.decay_correction=False" % self._model)
 
-            if self._model == "physical" or self._model == "array":
-                # These options can refer to array or physical model
+            if self._model in ("physical", "dose_decay", "array"):
+                # These options can refer to array, physical or dose_decay model
                 if self._absorption_correction:
                     self.add_command_line("%s.absorption_correction=True" % self._model)
                 else:
                     self.add_command_line(
                         "%s.absorption_correction=False" % self._model
                     )
+
+            if self._model in ("physical", "array"):
+                # These options can refer to array, physical or dose_decay model
                 if self._bfactor and self._brotation is not None:
                     self.add_command_line(
                         f"{self._model}.decay_interval={self._brotation:g}"
                     )
 
+            if self._model == "dose_decay" and self._share_decay is not None:
+                self.add_command_line(f"{self._model}.share.decay={self._share_decay}")
+
+            if self._model == "dose_decay" and self._resolution_dependence is not None:
+                self.add_command_line(
+                    f"{self._model}.resolution_dependence={self._resolution_dependence}"
+                )
+
             # Option only relevant for spherical harmonic absorption in physical model.
             if (
-                self._model == "physical"
+                self._model in ("physical", "dose_decay")
                 and self._absorption_correction
                 and self._lmax is not None
             ):
                 self.add_command_line("%s.lmax=%i" % (self._model, self._lmax))
 
             # 'Spacing' i.e. scale interval only relevant to physical model.
-            if self._model == "physical" and self._spacing:
+            if self._model in ("physical", "dose_decay") and self._spacing:
                 self.add_command_line(f"{self._model}.scale_interval={self._spacing:g}")
 
             self.add_command_line("full_matrix=%s" % self._full_matrix)

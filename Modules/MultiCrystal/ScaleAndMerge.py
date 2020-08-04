@@ -64,7 +64,7 @@ scaling
       .expert_level = 2
       .short_caption = "Number of spherical harmonics for absorption correction"
   }
-  model = physical array KB auto
+  model = physical dose_decay array KB *auto
     .type = choice
   outlier_rejection = simple *standard
     .type = choice

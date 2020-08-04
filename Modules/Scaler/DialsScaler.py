@@ -86,17 +86,20 @@ class DialsScaler(Scaler):
 
         exp = load.experiment_list(self.sweep_infos[0].get_experiments())[0]
         scale_interval, decay_interval = scaling_model_auto_rules(exp)
-        if PhilIndex.params.dials.scale.rotation_spacing:
-            scale_interval = PhilIndex.params.dials.scale.rotation_spacing
-        if PhilIndex.params.dials.scale.physical_model.Bfactor_spacing:
-            decay_interval = PhilIndex.params.dials.scale.physical_model.Bfactor_spacing
 
         # Model handling
         if PhilIndex.params.dials.scale.model in (None, "auto", libtbx.Auto):
             PhilIndex.params.dials.scale.model = "physical"
         self._scaler.set_model(PhilIndex.params.dials.scale.model)
 
+        if PhilIndex.params.dials.scale.rotation_spacing:
+            scale_interval = PhilIndex.params.dials.scale.rotation_spacing
+
         if PhilIndex.params.dials.scale.model == "physical":
+            if PhilIndex.params.dials.scale.physical_model.Bfactor_spacing:
+                decay_interval = (
+                    PhilIndex.params.dials.scale.physical_model.Bfactor_spacing
+                )
             self._scaler.set_spacing(scale_interval)
             if PhilIndex.params.dials.scale.Bfactor:
                 self._scaler.set_bfactor(True, decay_interval)
@@ -107,6 +110,21 @@ class DialsScaler(Scaler):
                 self._scaler.set_lmax(PhilIndex.params.dials.scale.physical_model.lmax)
             else:
                 self._scaler.set_absorption_correction(False)
+        elif PhilIndex.params.dials.scale.model == "dose_decay":
+            self._scaler.set_spacing(scale_interval)
+            if PhilIndex.params.dials.scale.absorption:
+                self._scaler.set_absorption_correction(True)
+                self._scaler.set_lmax(PhilIndex.params.dials.scale.decay_model.lmax)
+            else:
+                self._scaler.set_absorption_correction(False)
+            if PhilIndex.params.dials.scale.dose_decay_model.share.decay is not None:
+                self._scale.set_shared_decay(
+                    PhilIndex.params.dials.scale.dose_decay_model.share.decay
+                )
+            if PhilIndex.params.dials.scale.dose_decay_model.resolution_dependence:
+                self._scale.set_resolution_dependence(
+                    PhilIndex.dials.scale.dose_decay.resolution_dependence
+                )
         elif PhilIndex.params.dials.scale.model == "KB":
             # For KB model, want both Bfactor and scale terms
             self._scaler.set_bfactor(True)

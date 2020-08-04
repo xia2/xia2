@@ -433,7 +433,7 @@ dials
     .expert_level = 1
     .short_caption = "Scaling"
   {
-    model = *auto physical array KB
+    model = *auto physical dose_decay array KB
       .type = choice
       .help = "Choice of scaling model parameterisation to apply"
     rotation_spacing = None
@@ -449,6 +449,19 @@ dials
       Bfactor_spacing = None
         .type = float
         .help = "Parameter spacing for B-factor correction"
+      lmax = 4
+        .type = int(value_min=2)
+        .help = "Order of spherical harmonics to use for absorption surface"
+    }
+    dose_decay_model {
+      share.decay = True
+        .type = bool
+        .help = "Share the decay model between sweeps."
+        .expert_level = 1
+      resolution_dependence = *quadratic linear
+        .type = choice
+        .help = "Use a dose model that depends linearly or quadratically on 1/d"
+        .expert_level = 1
       lmax = 4
         .type = int(value_min=2)
         .help = "Order of spherical harmonics to use for absorption surface"
