@@ -1,6 +1,7 @@
 # A top-level interface to the whole of xia2, for data processing & analysis.
 
 import glob
+import itertools
 import logging
 import math
 import os
@@ -80,16 +81,18 @@ def check_hdf5_master_files(master_files):
     if bad:
 
         dirs = set([os.path.split(b)[0] for b in bad])
-        masters = sum((glob.glob(os.path.join(d, "*_master.h5")) for d in dirs), [])
-        nxss = sum((glob.glob(os.path.join(d, "*.nxs")) for d in dirs), [])
+        masters = itertools.chain.from_iterable(
+            glob.glob(os.path.join(d, "*_master.h5")) for d in dirs
+        )
+        nxss = itertools.chain.from_iterable(
+            glob.glob(os.path.join(d, "*.nxs")) for d in dirs
+        )
 
         message = (
             "Provided input files not master files:\n  "
             + "\n  ".join(bad)
             + "\ndo you mean one of:\n  "
-            + "\n  ".join(masters)
-            + "\nor:\n  "
-            + "\n  ".join(nxss)
+            + "\n  ".join(itertools.chain.from_iterable((masters, nxss)))
         )
 
         sys.exit(message)
