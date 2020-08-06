@@ -80,7 +80,7 @@ def check_hdf5_master_files(master_files):
 
     if bad:
 
-        dirs = set([os.path.split(b)[0] for b in bad])
+        dirs = set(os.path.split(b)[0] for b in bad)
         masters = itertools.chain.from_iterable(
             glob.glob(os.path.join(d, "*_master.h5")) for d in dirs
         )
