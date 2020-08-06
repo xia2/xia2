@@ -74,9 +74,12 @@ def check_hdf5_master_files(master_files):
     bad = []
 
     for filename in master_files:
-        with h5py.File(filename, "r") as f:
-            if b"/data" in f and b"/entry" not in f:
-                bad.append(filename)
+        try:
+            with h5py.File(filename, "r") as f:
+                if b"/data" in f and b"/entry" not in f:
+                    bad.append(filename)
+        except OSError:
+            bad.append(filename)
 
     if bad:
 
