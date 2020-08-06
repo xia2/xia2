@@ -1,11 +1,14 @@
 # A top-level interface to the whole of xia2, for data processing & analysis.
 
-
+import glob
+import itertools
 import logging
 import math
 import os
 import platform
 import sys
+
+import h5py
 
 from dials.util import Sorry
 from xia2.Handlers.Citations import Citations
@@ -63,6 +66,41 @@ def check_environment():
         )
 
 
+def check_hdf5_master_files(master_files):
+    """Check the input HDF5 master files look a little bit like HDF5 master
+    files and not just the data files: if the latter then sys.exit() with a
+    helpful message"""
+
+    bad = []
+
+    for filename in master_files:
+        try:
+            with h5py.File(filename, "r") as f:
+                if b"/data" in f and b"/entry" not in f:
+                    bad.append(filename)
+        except OSError:
+            bad.append(filename)
+
+    if bad:
+
+        dirs = set(os.path.split(b)[0] for b in bad)
+        masters = itertools.chain.from_iterable(
+            glob.glob(os.path.join(d, "*_master.h5")) for d in dirs
+        )
+        nxss = itertools.chain.from_iterable(
+            glob.glob(os.path.join(d, "*.nxs")) for d in dirs
+        )
+
+        message = (
+            "Provided input files not master files:\n  "
+            + "\n  ".join(bad)
+            + "\ndo you mean one of:\n  "
+            + "\n  ".join(itertools.chain.from_iterable((masters, nxss)))
+        )
+
+        sys.exit(message)
+
+
 def get_command_line():
     from xia2.Handlers.CommandLine import CommandLine
 
@@ -93,6 +131,8 @@ def get_command_line():
 
         directories = [os.path.abspath(d) for d in directories]
         from xia2.Applications.xia2setup import write_xinfo
+
+        check_hdf5_master_files(CommandLine.get_hdf5_master_files())
 
         if CommandLine.get_template() or CommandLine.get_hdf5_master_files():
             write_xinfo(
