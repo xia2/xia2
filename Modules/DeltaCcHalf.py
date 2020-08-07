@@ -3,7 +3,6 @@ import math
 
 import iotbx.phil
 from cctbx.array_family import flex
-from iotbx.merging_statistics import dataset_statistics
 from libtbx.utils import frange
 
 logger = logging.getLogger(__name__)
@@ -50,25 +49,13 @@ class DeltaCcHalf:
         self.binner = unmerged_intensities.eliminate_sys_absent().setup_binner_counting_sorted(
             n_bins=self._n_bins
         )
-        self.merging_statistics = dataset_statistics(
-            unmerged_intensities,
-            n_bins=n_bins,
-            cc_one_half_significance_level=0.01,
-            binning_method="counting_sorted",
-            anomalous=True,
-            use_internal_variance=False,
-            eliminate_sys_absent=False,
-            cc_one_half_method=self._cc_one_half_method,
-            assert_is_not_unique_set_under_symmetry=False,
-        )
-        if self._cc_one_half_method == "sigma_tau":
-            self.cc_overall = self.merging_statistics.cc_one_half_sigma_tau_overall
-        else:
-            self.cc_overall = self.merging_statistics.cc_one_half_overall
+        self.cc_half_overall = self._compute_mean_weighted_cc_half(unmerged_intensities)
 
         self._group_size = group_size
         self._setup_processing_groups()
-        self.delta_cc = self._compute_delta_ccs()
+        self.cc_half = self._compute_ccs()
+        self.delta_cc_half = self.cc_half_overall - self.cc_half
+        self.normalised_delta_cc = self._compute_normalised_delta_ccs()
 
     def _setup_processing_groups(self):
         self._group_to_batches = []
@@ -89,8 +76,8 @@ class DeltaCcHalf:
                 self._group_to_batches.append((b_min, b_max))
                 self._group_to_dataset_id.append(test_k)
 
-    def _compute_delta_ccs(self):
-        delta_cc = flex.double()
+    def _compute_ccs(self):
+        ccs = flex.double()
         for (group_start, group_end), test_k in zip(
             self._group_to_batches, self._group_to_dataset_id
         ):
@@ -110,16 +97,13 @@ class DeltaCcHalf:
                 indices=indices_i, data=data_i, sigmas=sigmas_i
             )
 
-            delta_cc.append(self._compute_delta_cc_for_dataset(unmerged_i))
+            ccs.append(self._compute_mean_weighted_cc_half(unmerged_i))
             logger.debug(
-                "ΔCC½ excluding batches %i-%i: %.3f",
-                group_start,
-                group_end,
-                delta_cc[-1],
+                "CC½ excluding batches %i-%i: %.3f", group_start, group_end, ccs[-1],
             )
-        return delta_cc
+        return ccs
 
-    def _compute_delta_cc_for_dataset(self, intensities):
+    def _compute_mean_weighted_cc_half(self, intensities):
         intensities.use_binning(self.binner)
         if self._cc_one_half_method == "sigma_tau":
             cc_bins = intensities.cc_one_half_sigma_tau(
@@ -128,37 +112,39 @@ class DeltaCcHalf:
         else:
             cc_bins = intensities.cc_one_half(use_binning=True, return_n_refl=True)
         bin_data = [b for b in cc_bins.data if b is not None]
-        cc_i = flex.mean_weighted(
+        return flex.mean_weighted(
             flex.double(b[0] for b in bin_data), flex.double(b[1] for b in bin_data),
         )
-        return self.cc_overall - cc_i
 
-    def _normalised_delta_cc_i(self):
-        mav = flex.mean_and_variance(self.delta_cc)
-        return (self.delta_cc - mav.mean()) / mav.unweighted_sample_standard_deviation()
+    def _compute_normalised_delta_ccs(self):
+        mav = flex.mean_and_variance(self.delta_cc_half)
+        return (
+            self.delta_cc_half - mav.mean()
+        ) / mav.unweighted_sample_standard_deviation()
 
     def get_table(self, html=False):
         if html:
-            delta_cc_half_header = "ΔCC<sub>½</sub>"
+            cc_half_header = "CC<sub>½</sub>"
         else:
-            delta_cc_half_header = "ΔCC½"
-        rows = [["Dataset", "Batches", delta_cc_half_header, "σ"]]
-        normalised_score = self._normalised_delta_cc_i()
-        perm = flex.sort_permutation(self.delta_cc)
+            cc_half_header = "CC½"
+        rows = [["Dataset", "Batches", cc_half_header, f"Δ{cc_half_header}", "σ"]]
+        normalised_score = self.normalised_delta_cc
+        perm = flex.sort_permutation(self.delta_cc_half)
         for i in perm:
             bmin, bmax = self._group_to_batches[i]
             rows.append(
                 [
                     str(self._group_to_dataset_id[i]),
                     "%i to %i" % (bmin, bmax),
-                    "% .3f" % self.delta_cc[i],
+                    "% .3f" % self.cc_half[i],
+                    "% .3f" % self.delta_cc_half[i],
                     "% .2f" % normalised_score[i],
                 ]
             )
         return rows
 
     def histogram(self):
-        normalised_score = self._normalised_delta_cc_i()
+        normalised_score = self.normalised_delta_cc
         return {
             "delta_cc_half_histogram": {
                 "data": [
@@ -184,7 +170,7 @@ class DeltaCcHalf:
     def plot_histogram(self, filename):
         from matplotlib import pyplot as plt
 
-        normalised_score = self._normalised_delta_cc_i()
+        normalised_score = self.normalised_delta_cc
         plt.figure()
         bins = frange(
             math.floor(flex.min(normalised_score)),
@@ -201,7 +187,7 @@ class DeltaCcHalf:
             "delta_cc_half_normalised_score": {
                 "data": [
                     {
-                        "y": list(self._normalised_delta_cc_i()),
+                        "y": list(self.normalised_delta_cc),
                         "type": "scatter",
                         "mode": "lines",
                         "name": "delta_cc_half_normalised_score",
@@ -218,7 +204,7 @@ class DeltaCcHalf:
     def plot_normalised_scores(self, filename):
         from matplotlib import pyplot as plt
 
-        normalised_score = self._normalised_delta_cc_i()
+        normalised_score = self.normalised_delta_cc
         plt.figure()
         plt.plot(normalised_score)
         plt.xlabel("Group")
