@@ -1,3 +1,5 @@
+# LIBTBX_SET_DISPATCHER_NAME xia2.html
+
 import cgi
 import glob
 import json
