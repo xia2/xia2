@@ -10,11 +10,11 @@ def test_from_experiments_reflections(dials_data, tmpdir, capsys, mocker):
     with tmpdir.as_cwd():
         run(input_files)
         assert DeltaCcHalf.get_table.return_value == [
-            ["Dataset", "Batches", "ΔCC\xbd", "\u03c3"],
-            ["0", "8 to 1795", "-0.002", "-1.32"],
-            ["3", "5 to 1694", "-0.001", "-0.15"],
-            ["1", "5 to 1694", "-0.001", " 0.44"],
-            ["2", "4 to 1696", "-0.001", " 1.02"],
+            ["Dataset", "Batches", "CC½", "ΔCC½", "σ"],
+            ["0", "8 to 1795", " 0.995", " 0.000", "-1.11"],
+            ["3", "5 to 1694", " 0.995", " 0.000", "-0.59"],
+            ["2", "4 to 1696", " 0.994", " 0.001", " 0.84"],
+            ["1", "5 to 1694", " 0.994", " 0.001", " 0.85"],
         ]
         assert tmpdir.join("delta_cc_hist.png").check()
         assert tmpdir.join("normalised_scores.png").check()
@@ -31,16 +31,16 @@ def test_image_groups_from_unmerged_mtz(dials_data, tmpdir, capsys, mocker):
             ]
         )
         assert DeltaCcHalf.get_table.return_value == [
-            ["Dataset", "Batches", "ΔCC\xbd", "\u03c3"],
-            ["0", "51 to 60", " 0.005", "-1.67"],
-            ["0", "61 to 70", " 0.005", "-1.32"],
-            ["0", "31 to 40", " 0.006", "-0.38"],
-            ["0", "21 to 30", " 0.006", "-0.04"],
-            ["0", "1 to 10", " 0.006", " 0.17"],
-            ["0", "11 to 20", " 0.006", " 0.30"],
-            ["0", "41 to 50", " 0.006", " 0.63"],
-            ["0", "81 to 90", " 0.007", " 0.85"],
-            ["0", "71 to 80", " 0.007", " 1.45"],
+            ["Dataset", "Batches", "CC½", "ΔCC½", "σ"],
+            ["0", "11 to 20", " 0.922", " 0.007", "-0.95"],
+            ["0", "31 to 40", " 0.922", " 0.007", "-0.84"],
+            ["0", "1 to 10", " 0.921", " 0.007", "-0.67"],
+            ["0", "21 to 30", " 0.921", " 0.007", "-0.59"],
+            ["0", "81 to 90", " 0.921", " 0.007", "-0.48"],
+            ["0", "61 to 70", " 0.920", " 0.008", " 0.17"],
+            ["0", "71 to 80", " 0.920", " 0.008", " 0.51"],
+            ["0", "41 to 50", " 0.920", " 0.009", " 0.72"],
+            ["0", "51 to 60", " 0.918", " 0.010", " 2.13"],
         ]
         assert tmpdir.join("delta_cc_hist.png").check()
         assert tmpdir.join("normalised_scores.png").check()
