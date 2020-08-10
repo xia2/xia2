@@ -122,9 +122,15 @@ filtering {
     min_completeness = None
       .type = float(value_min=0, value_max=100)
       .help = "Desired minimum completeness, as a percentage (0 - 100)."
+    fisher_transformation = False
+      .type = bool
+      .help = "Apply a Fisher transformation to the raw ΔCC½ values"
     stdcutoff = 4.0
       .type = float
       .help = "Datasets with a ΔCC½ below (mean - stdcutoff*std) are removed"
+    deltacchalf_cutoff = None
+      .type = float
+      .help = "Datasets with a ΔCC½ below this value are removed"
   }
 }
 
@@ -992,6 +998,12 @@ class Scale:
             )
             scaler.set_deltacchalf_stdcutoff(
                 self._params.filtering.deltacchalf.stdcutoff
+            )
+            scaler.set_deltacchalf_cutoff(
+                self._params.filtering.deltacchalf.deltacchalf_cutoff
+            )
+            scaler.set_deltacchalf_fisher_transformation(
+                self._params.filtering.deltacchalf.fisher_transformation
             )
 
         scaler.scale()

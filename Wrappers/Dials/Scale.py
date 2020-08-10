@@ -44,6 +44,8 @@ def DialsScale(DriverType=None, decay_correction=None):
             self._deltacchalf_max_cycles = None
             self._deltacchalf_min_completeness = None
             self._deltacchalf_stdcutoff = None
+            self._deltacchalf_cutoff = None
+            self._deltacchalf_fisher_transformation = None
             self._scale_and_filter_results = None
 
             # input and output files
@@ -242,6 +244,12 @@ def DialsScale(DriverType=None, decay_correction=None):
         def set_deltacchalf_stdcutoff(self, stdcutoff):
             self._deltacchalf_stdcutoff = stdcutoff
 
+        def set_deltacchalf_cutoff(self, cutoff):
+            self._deltacchalf_cutoff = cutoff
+
+        def set_deltacchalf_fisher_transformation(self, fisher_transformation):
+            self._deltacchalf_fisher_transformation = fisher_transformation
+
         def get_scale_and_filter_results(self):
             return self._scale_and_filter_results
 
@@ -401,10 +409,20 @@ def DialsScale(DriverType=None, decay_correction=None):
                         "filtering.deltacchalf.min_completeness=%i"
                         % self._deltacchalf_min_completeness
                     )
-                if self._deltacchalf_stdcutoff:
+                if self._deltacchalf_stdcutoff is not None:
                     self.add_command_line(
                         "filtering.deltacchalf.stdcutoff=%i"
                         % self._deltacchalf_stdcutoff
+                    )
+                if self._deltacchalf_cutoff is not None:
+                    self.add_command_line(
+                        "filtering.deltacchalf.deltacchalf_cutoff=%s"
+                        % self._deltacchalf_cutoff
+                    )
+                if self._deltacchalf_fisher_transformation is not None:
+                    self.add_command_line(
+                        "filtering.deltacchalf.fisher_transformation=%s"
+                        % self._deltacchalf_fisher_transformation
                     )
 
             self.add_command_line("output.experiments=%s" % self._scaled_experiments)
