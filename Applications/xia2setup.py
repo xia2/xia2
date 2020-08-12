@@ -306,9 +306,14 @@ def _write_sweeps(sweeps, out):
     for sweep in sweeplist:
         sweeps = _known_sweeps[sweep]
 
-        # sort on exposure epoch
-        epochs = [s.get_imageset().get_scan().get_epochs()[0] for s in sweeps]
-        sweeps = [s for _, s in sorted(zip(epochs, sweeps))]
+        # sort on exposure epoch followed by first image number
+        sweeps = sorted(
+            sweeps,
+            key=lambda s: (
+                s.get_imageset().get_scan().get_epochs()[0],
+                s.get_images()[0],
+            ),
+        )
         for s in sweeps:
             if len(s.get_images()) < min_images:
                 logger.debug("Rejecting sweep %s:" % s.get_template())
@@ -424,9 +429,14 @@ def _write_sweeps(sweeps, out):
     for sweep in sweeplist:
         sweeps = _known_sweeps[sweep]
 
-        # sort on exposure epoch
-        epochs = [s.get_imageset().get_scan().get_epochs()[0] for s in sweeps]
-        sweeps = [s for _, s in sorted(zip(epochs, sweeps))]
+        # sort on exposure epoch followed by first image number
+        sweeps = sorted(
+            sweeps,
+            key=lambda s: (
+                s.get_imageset().get_scan().get_epochs()[0],
+                s.get_images()[0],
+            ),
+        )
 
         for s in sweeps:
             # require at least n images to represent a sweep...

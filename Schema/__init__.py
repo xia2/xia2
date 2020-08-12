@@ -154,11 +154,11 @@ def load_imagesets(
                 start_ends = CommandLine.get_start_ends(full_template_path)
                 if not start_ends:
                     start_ends.append(None)
-                for image_range in start_ends:
+                for start_end in start_ends:
                     importer = ExperimentListTemplateImporter(
                         [full_template_path],
                         format_kwargs=format_kwargs,
-                        image_range=image_range,
+                        image_range=start_end,
                     )
                     experiments.extend(importer.experiments)
 
