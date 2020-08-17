@@ -1,3 +1,30 @@
+xia2 0.7.85 (DIALS 3.1.0) (2020-08-17)
+======================================
+
+Features
+--------
+
+- xia2 now support Python 3.8 (#510)
+- Re-estimate resolution limit after deltacchalf filtering. Previously the
+  resolution limit of the filtered dataset would always be the same as the
+  unfiltered dataset. (#466)
+- Add support for dose_decay model for dials.scale (#467)
+- Report more useful error message if given an Eiger data file rather than a
+  master file, including suggestions of possible master files in the same
+  directory (#509)
+- Speed up ``xia2.compare_merging_stats`` (#502)
+
+
+Bugfixes
+--------
+- Work around changes to filenames output from dials.split_experiments (#478)
+
+
+Deprecations and Removals
+-------------------------
+- No longer create the ``xia2-files.txt`` file. The output now goes to ``xia2-debug.txt`` (#468)
+
+
 xia2 (DIALS 3.0.4) (2020-07-20)
 ===============================
 
