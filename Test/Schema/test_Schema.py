@@ -53,7 +53,7 @@ def test_load_imageset_template_missing_images(insulin_with_missing_image):
         assert imagesets[0].get_array_range() == (0, 22)
 
 
-def test_load_imageset_split_sweep(dials_data):
+def test_load_imageset_split_sweep(dials_data, run_in_tmpdir):
     directory = dials_data("insulin")
     with mock.patch.object(
         sys,
