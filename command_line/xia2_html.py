@@ -373,7 +373,7 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
     env = Environment(loader=loader)
 
     template = env.get_template("xia2.html")
-    html = template.render(
+    html_source = template.render(
         page_title="xia2 processing report",
         xia2_output=xia2_output,
         space_group=space_group,
@@ -395,7 +395,7 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
         json.dump(json_data, fh, indent=2)
 
     with open(filename, "wb") as f:
-        f.write(html.encode("utf-8", "xmlcharrefreplace"))
+        f.write(html_source.encode("utf-8", "xmlcharrefreplace"))
 
 
 def make_logfile_html(logfile):
