@@ -1,7 +1,7 @@
 # LIBTBX_SET_DISPATCHER_NAME xia2.html
 
-import cgi
 import glob
+import html
 import json
 import logging
 import os
@@ -41,10 +41,8 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
     xia2_txt = os.path.join(os.path.abspath(os.path.curdir), "xia2.txt")
     assert os.path.isfile(xia2_txt), xia2_txt
 
-    with open(xia2_txt, "rb") as f:
-        xia2_output = f.read().decode("utf-8")
-
-    xia2_output = cgi.escape(xia2_output)
+    with open(xia2_txt, "r") as f:
+        xia2_output = html.escape(f.read())
 
     styles = {}
 
@@ -433,9 +431,9 @@ def make_logfile_html(logfile):
 
     for table in tables:
         try:
-            for graph_name, html in table_to_c3js_charts(table).items():
+            for graph_name, htmlcode in table_to_c3js_charts(table).items():
                 rst.append(".. raw:: html")
-                rst.append("\n    ".join(html.split("\n")))
+                rst.append("\n    ".join(htmlcode.split("\n")))
         except Exception as e:
             logger.info("=" * 80)
             logger.info("Error (%s) while processing table", str(e))
@@ -558,15 +556,13 @@ tick: {
             % ({"name": name, "id": name, "data": json.dumps(data_dict), "axis": axis})
         )
 
-        divs = []
-        divs.append(
-            """\
+        divs = [
+            f"""\
 <div>
-  <p>%s</p>
-  <div class="graph" id="chart_%s"></div>
+  <p>{html.escape(graph_name)}</p>
+  <div class="graph" id="chart_{name}"></div>
 </div>"""
-            % (cgi.escape(graph_name), name)
-        )
+        ]
 
         script.append("</script>")
 
