@@ -207,6 +207,8 @@ class DataManager:
 
         for i, expt in enumerate(self._experiments):
             expt.scan.set_batch_offset(i * 10 ** n)
+            # This may be a different scan instance ¯\_(ツ)_/¯
+            expt.imageset.get_scan().set_batch_offset(expt.scan.get_batch_offset())
             logger.debug(
                 f"{expt.scan.get_batch_offset()} {expt.scan.get_batch_range()}"
             )
