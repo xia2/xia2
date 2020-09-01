@@ -1,3 +1,13 @@
+xia2 (DIALS 3.1.1) (2020-09-01)
+========================
+
+Bugfixes
+--------
+
+- ``xia2.multiplex``: fix for dose parameter when scan doesn't start at 1 (#518)
+- ``xia2.html``: Fix crash on python 3.8 (#516)
+
+
 xia2 0.7.85 (DIALS 3.1.0) (2020-08-17)
 ======================================
 
