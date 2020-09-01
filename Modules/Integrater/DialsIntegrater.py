@@ -261,7 +261,8 @@ class DialsIntegrater(Integrater):
         pname, xname, dname = self.get_integrater_project_info()
         sweep = self.get_integrater_sweep_name()
         FileHandler.record_log_file(
-            f"{pname} {xname} {dname} {sweep} INTEGRATE", integrate.get_log_file(),
+            f"{pname} {xname} {dname} {sweep} INTEGRATE",
+            integrate.get_log_file(),
         )
 
         integrate.run()
@@ -431,10 +432,12 @@ class DialsIntegrater(Integrater):
             pname, xname, dname = self.get_integrater_project_info()
             sweep = self.get_integrater_sweep_name()
             FileHandler.record_more_data_file(
-                f"{pname} {xname} {dname} {sweep}", self.get_integrated_experiments(),
+                f"{pname} {xname} {dname} {sweep}",
+                self.get_integrated_experiments(),
             )
             FileHandler.record_more_data_file(
-                f"{pname} {xname} {dname} {sweep}", self.get_integrated_reflections(),
+                f"{pname} {xname} {dname} {sweep}",
+                self.get_integrated_reflections(),
             )
 
             return hklout
@@ -502,10 +505,12 @@ class DialsIntegrater(Integrater):
             pname, xname, dname = self.get_integrater_project_info()
             sweep = self.get_integrater_sweep_name()
             FileHandler.record_more_data_file(
-                f"{pname} {xname} {dname} {sweep}", self.get_integrated_experiments(),
+                f"{pname} {xname} {dname} {sweep}",
+                self.get_integrated_experiments(),
             )
             FileHandler.record_more_data_file(
-                f"{pname} {xname} {dname} {sweep}", self.get_integrated_reflections(),
+                f"{pname} {xname} {dname} {sweep}",
+                self.get_integrated_reflections(),
             )
             return None  # this will be set to intgr_hklout - better to cause failure
             # due to it being none than it be set wrong and not knowing?

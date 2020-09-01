@@ -150,7 +150,11 @@ def write_shelxc_script(hkl_files, params):
                     "spag %s" % sg,
                 ]
                 + datasets
-                + ["maxm %d" % params["maxm"], "eof", "",]
+                + [
+                    "maxm %d" % params["maxm"],
+                    "eof",
+                    "",
+                ]
             )
         )
 

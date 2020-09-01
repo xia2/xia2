@@ -160,7 +160,8 @@ class CommonScaler(Scaler):
                 p = self._factory.Pointless()
 
             FileHandler.record_log_file(
-                f"{self._scalr_pname} {self._scalr_xname} pointless", p.get_log_file(),
+                f"{self._scalr_pname} {self._scalr_xname} pointless",
+                p.get_log_file(),
             )
 
             if len(self._sweep_handler.get_epochs()) > 1:

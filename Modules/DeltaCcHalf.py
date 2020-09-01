@@ -46,8 +46,10 @@ class DeltaCcHalf:
                     ma, assert_is_similar_symmetry=False
                 ).set_observation_type(unmerged_intensities.observation_type())
 
-        self.binner = unmerged_intensities.eliminate_sys_absent().setup_binner_counting_sorted(
-            n_bins=self._n_bins
+        self.binner = (
+            unmerged_intensities.eliminate_sys_absent().setup_binner_counting_sorted(
+                n_bins=self._n_bins
+            )
         )
         self.cc_half_overall = self._compute_mean_weighted_cc_half(unmerged_intensities)
 
@@ -99,7 +101,10 @@ class DeltaCcHalf:
 
             ccs.append(self._compute_mean_weighted_cc_half(unmerged_i))
             logger.debug(
-                "CC½ excluding batches %i-%i: %.3f", group_start, group_end, ccs[-1],
+                "CC½ excluding batches %i-%i: %.3f",
+                group_start,
+                group_end,
+                ccs[-1],
             )
         return ccs
 
@@ -113,7 +118,8 @@ class DeltaCcHalf:
             cc_bins = intensities.cc_one_half(use_binning=True, return_n_refl=True)
         bin_data = [b for b in cc_bins.data if b is not None]
         return flex.mean_weighted(
-            flex.double(b[0] for b in bin_data), flex.double(b[1] for b in bin_data),
+            flex.double(b[0] for b in bin_data),
+            flex.double(b[1] for b in bin_data),
         )
 
     def _compute_normalised_delta_ccs(self):
