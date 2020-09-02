@@ -460,9 +460,11 @@ def XDSIdxref(DriverType=None, params=None):
             # one, if self._symm is set...
 
             if self._symm:
-                assert self._indexing_solutions, (
-                    "No remaining indexing solutions (%s, %s)"
-                    % (s2l(self._symm), self._symm)
+                assert (
+                    self._indexing_solutions
+                ), "No remaining indexing solutions (%s, %s)" % (
+                    s2l(self._symm),
+                    self._symm,
                 )
             else:
                 assert self._indexing_solutions, "No remaining indexing solutions"

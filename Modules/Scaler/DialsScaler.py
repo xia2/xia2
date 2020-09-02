@@ -596,7 +596,8 @@ pipeline=dials (supported for pipeline=dials-aimless).
         )
         self._scaler.scale()
         FileHandler.record_html_file(
-            f"{self._scalr_pname} {self._scalr_xname} SCALE", self._scaler.get_html(),
+            f"{self._scalr_pname} {self._scalr_xname} SCALE",
+            self._scaler.get_html(),
         )
         self._scaled_experiments = self._scaler.get_scaled_experiments()
         self._scaled_reflections = self._scaler.get_scaled_reflections()
@@ -645,10 +646,12 @@ pipeline=dials (supported for pipeline=dials-aimless).
             self._scalr_likely_spacegroups = [sg.type().lookup_symbol()]
 
         FileHandler.record_more_data_file(
-            f"{self._scalr_pname} {self._scalr_xname} scaled", self._scaled_experiments,
+            f"{self._scalr_pname} {self._scalr_xname} scaled",
+            self._scaled_experiments,
         )
         FileHandler.record_more_data_file(
-            f"{self._scalr_pname} {self._scalr_xname} scaled", self._scaled_reflections,
+            f"{self._scalr_pname} {self._scalr_xname} scaled",
+            self._scaled_reflections,
         )
 
         # Run twotheta refine

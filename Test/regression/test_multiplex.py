@@ -72,7 +72,8 @@ def test_proteinase_k(mocker, regression_test, dials_data, tmpdir):
 
 
 @pytest.mark.parametrize(
-    "d_min", [None, 2.0],
+    "d_min",
+    [None, 2.0],
 )
 def test_proteinase_k_filter_deltacchalf(d_min, regression_test, dials_data, tmpdir):
     data_dir = dials_data("multi_crystal_proteinase_k")

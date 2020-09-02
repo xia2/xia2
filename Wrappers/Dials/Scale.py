@@ -431,8 +431,8 @@ def DialsScale(DriverType=None, decay_correction=None):
                 with open(scale_and_filter_filename) as fh:
                     from dials.algorithms.scaling import scale_and_filter
 
-                    self._scale_and_filter_results = scale_and_filter.AnalysisResults.from_dict(
-                        json.load(fh)
+                    self._scale_and_filter_results = (
+                        scale_and_filter.AnalysisResults.from_dict(json.load(fh))
                     )
 
             return "OK"

@@ -130,11 +130,13 @@ def visualise_db(timing_db):
             not ordered_by_start or ordered_by_end[0][0] < ordered_by_start[0][0]
         ):
             timestamp, finishing_task = ordered_by_end.pop(0)
-            output_line = "{timestamp:{time_width}.1f}s  {nothing:{index_width}} ".format(
-                nothing="",
-                index_width=index_width,
-                time_width=time_width,
-                timestamp=timestamp - relative_start_time,
+            output_line = (
+                "{timestamp:{time_width}.1f}s  {nothing:{index_width}} ".format(
+                    nothing="",
+                    index_width=index_width,
+                    time_width=time_width,
+                    timestamp=timestamp - relative_start_time,
+                )
             )
             for n, task in enumerate(running_tasks):
                 if task is None:

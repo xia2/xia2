@@ -271,7 +271,12 @@ def plot_data(
                         ]
                         y = [getattr(b, k) for b in res.bins]
                         ax.plot(
-                            x, y, linestyle="-", color="grey", linewidth=1, alpha=alpha,
+                            x,
+                            y,
+                            linestyle="-",
+                            color="grey",
+                            linewidth=1,
+                            alpha=alpha,
                         )
         else:
             ax = plt.gca()

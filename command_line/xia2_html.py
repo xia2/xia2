@@ -488,7 +488,7 @@ def extract_loggraph_tables(logfile):
     return data_plots.import_ccp4i_logfile(file_name=logfile)
 
 
-def table_to_c3js_charts(table,):
+def table_to_c3js_charts(table):
     html_graphs = {}
     draw_chart_template = """
 var chart_%(name)s = c3.generate({
