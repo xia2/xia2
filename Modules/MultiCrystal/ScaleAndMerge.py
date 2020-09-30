@@ -399,10 +399,10 @@ class MultiCrystalScale:
         )
         keep_expts = []
         for i, expt in enumerate(self._data_manager.experiments):
+            refl_used = reflections.select(used_in_refinement_mask)
             if (
-                reflections.select(used_in_refinement_mask)
-                .select_on_experiment_identifiers([expt.identifier])
-                .size()
+                expt.identifier in refl_used.experiment_identifiers().values()
+                and refl_used.select_on_experiment_identifiers([expt.identifier]).size()
             ):
                 keep_expts.append(expt.identifier)
             else:
