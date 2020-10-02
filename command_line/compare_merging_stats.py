@@ -291,24 +291,25 @@ def plot_data(
                 color = colors[i_res] if n_cols > 1 else colors[i]
                 ax.plot(x, y, label=l, linestyle=linestyle, color=color)
 
-        ax.set_xlabel(r"Resolution ($\AA$)")
-        ax.set_ylabel(ylabel)
-        ax.label_outer()
-        if k in ("cc_one_half", "cc_one_half_sigma_tau", "completeness"):
-            ax.set_ylim(0, 1.05)
-        elif k in ("cc_anom",):
-            ax.set_ylim(min(0, ax.get_ylim()[0]), 1.05)
-        elif k in ("r_merge",):
-            ax.set_ylim(0, min(4, ax.get_ylim()[1]))
-        elif k in ("r_meas", "r_pim"):
-            ax.set_ylim(0, min(2, ax.get_ylim()[1]))
-        else:
-            ax.set_ylim(0, ax.get_ylim()[1])
-        xticks = ax.get_xticks()
-        xticks_d = [
-            "%.2f" % uctbx.d_star_sq_as_d(ds2) if ds2 > 0 else 0 for ds2 in xticks
-        ]
-        ax.set_xticklabels(xticks_d)
+        if n_cols > 1 or i == len(results) - 1:
+            ax.set_xlabel(r"Resolution ($\AA$)")
+            ax.set_ylabel(ylabel)
+            ax.label_outer()
+            if k in ("cc_one_half", "cc_one_half_sigma_tau", "completeness"):
+                ax.set_ylim(0, 1.05)
+            elif k in ("cc_anom",):
+                ax.set_ylim(min(0, ax.get_ylim()[0]), 1.05)
+            elif k in ("r_merge",):
+                ax.set_ylim(0, min(4, ax.get_ylim()[1]))
+            elif k in ("r_meas", "r_pim"):
+                ax.set_ylim(0, min(2, ax.get_ylim()[1]))
+            else:
+                ax.set_ylim(0)
+            xticks = ax.get_xticks()
+            xticks_d = [
+                "%.2f" % uctbx.d_star_sq_as_d(ds2) if ds2 > 0 else 0 for ds2 in xticks
+            ]
+            ax.set_xticklabels(xticks_d)
 
 
 if __name__ == "__main__":
