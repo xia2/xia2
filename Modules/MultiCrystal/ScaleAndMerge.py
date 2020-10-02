@@ -1081,12 +1081,12 @@ class Scale:
             resolution_limits.append(r_mis)
             reasoning.append("merged <I/sigI> > %s" % params.misigma)
 
-        if len(resolution_limits):
-            resolution = max(resolution_limits)
+        if any(resolution_limits):
+            resolution = max(r for r in resolution_limits if r is not None)
             reasoning = [
                 reason
                 for limit, reason in zip(resolution_limits, reasoning)
-                if limit >= resolution
+                if limit is not None and limit >= resolution
             ]
             reasoning = ", ".join(reasoning)
         else:
