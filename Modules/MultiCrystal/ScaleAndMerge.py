@@ -249,6 +249,21 @@ class DataManager:
             slice_reflections,
         )
 
+        keep_expts = []
+        for i, expt in enumerate(self._experiments):
+            start, end = expt.scan.get_image_range()
+            if (start <= dose_min <= end) or (start <= dose_max <= end):
+                keep_expts.append(expt.identifier)
+            else:
+                logger.info(
+                    f"Removing experiment {expt.identifier} (image range {start, end} does not overlap with dose range)"
+                )
+        if len(keep_expts):
+            logger.info(
+                f"Selecting {len(keep_expts)} experiments that overlap with dose range"
+            )
+        self.select(keep_expts)
+
         image_range = [
             (
                 max(dose_min, expt.scan.get_image_range()[0]),
@@ -380,10 +395,12 @@ class MultiCrystalScale:
             )
             keep_expts = []
             for i, expt in enumerate(self._data_manager.experiments):
+                refl_used = reflections.select(profile_fitted_mask)
                 if (
-                    reflections.select(profile_fitted_mask)
-                    .select_on_experiment_identifiers([expt.identifier])
-                    .size()
+                    expt.identifier in refl_used.experiment_identifiers().values()
+                    and refl_used.select_on_experiment_identifiers(
+                        [expt.identifier]
+                    ).size()
                 ):
                     keep_expts.append(expt.identifier)
             if len(keep_expts):

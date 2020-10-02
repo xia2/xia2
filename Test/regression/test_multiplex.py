@@ -1,10 +1,21 @@
 import json
 import pytest
 
+from dxtbx.model import ExperimentList
 from dxtbx.serialize import load
 import iotbx.mtz
+from dials.array_family import flex
+from dials.command_line.slice_sequence import (
+    slice_experiments,
+    slice_reflections,
+)
+from dials.util.multi_dataset_handling import (
+    assign_unique_identifiers,
+    parse_multiple_datasets,
+)
 from xia2.Modules.Report import Report
 from xia2.command_line.multiplex import run as run_multiplex
+from xia2.Modules.MultiCrystal import ScaleAndMerge
 
 
 expected_data_files = [
@@ -218,3 +229,65 @@ def test_proteinase_k_laue_group_space_group_raises_error(
     with tmpdir.as_cwd():
         with pytest.raises(SystemExit):
             run_multiplex(command_line_args)
+
+
+@pytest.fixture
+def protk_experiments_and_reflections(dials_data):
+    data_dir = dials_data("multi_crystal_proteinase_k")
+
+    # Load experiments
+    experiments = ExperimentList()
+    for expt_file in sorted(f.strpath for f in data_dir.listdir("experiments*.json")):
+        experiments.extend(load.experiment_list(expt_file, check_format=False))
+
+    # Load reflection tables
+    reflections = [
+        flex.reflection_table.from_file(refl_file)
+        for refl_file in sorted(
+            f.strpath for f in data_dir.listdir("reflections*.pickle")
+        )
+    ]
+
+    # Setup experiment identifiers
+    reflections = parse_multiple_datasets(reflections)
+    experiments, reflections = assign_unique_identifiers(experiments, reflections)
+
+    # Combine into single ExperimentList
+    reflections_all = flex.reflection_table()
+    for i, (expt, refl) in enumerate(zip(experiments, reflections)):
+        reflections_all.extend(refl)
+    reflections_all.assert_experiment_identifiers_are_consistent(experiments)
+    return experiments, reflections_all
+
+
+def test_data_manager_filter_dose(protk_experiments_and_reflections):
+    # Construct the DataManager
+    experiments, reflections = protk_experiments_and_reflections
+    data_manager = ScaleAndMerge.DataManager(experiments, reflections)
+
+    # Filter dose and verify the resulting filtered image ranges
+    data_manager.filter_dose(1, 20)
+    assert len(data_manager.experiments) == 8
+    for expt in data_manager.experiments:
+        assert expt.scan.get_image_range() == (1, 20)
+
+
+def test_data_manager_filter_dose_out_of_range(protk_experiments_and_reflections):
+    experiments, reflections = protk_experiments_and_reflections
+
+    # Truncate one of the experiments so that one of the expt image ranges
+    # doesn't overlap with the requested dose range
+    image_range = [expt.scan.get_image_range() for expt in experiments]
+    image_range[3] = (1, 10)
+    experiments = slice_experiments(experiments, image_range)
+    reflections = slice_reflections(reflections, image_range)
+
+    # Construct the DataManager
+    data_manager = ScaleAndMerge.DataManager(experiments, reflections)
+
+    # Filter on dose and verify that one experiment has been removed
+    data_manager.filter_dose(12, 25)
+    assert len(data_manager.experiments) == 7
+    assert len(data_manager.experiments) < len(experiments)
+    for expt in data_manager.experiments:
+        assert expt.scan.get_image_range() == (12, 25)
