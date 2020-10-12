@@ -81,7 +81,9 @@ def xds():
     if result["exitcode"] or result["timeout"]:
         pytest.skip("XDS installation required for this test - Could not run XDS")
     if b"license expired" in result["stdout"]:
-        pytest.skip("XDS installation required for this test - XDS license is expired")
+        raise RuntimeError(
+            "XDS installation required for this test - XDS license is expired"
+        )
     pytest.skip(
         "XDS installation required for this test - Could not determine XDS version"
     )
