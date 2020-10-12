@@ -1,3 +1,20 @@
+xia2 (DIALS 3.1.4) (2020-10-12)
+========================
+
+Bugfixes
+--------
+
+- ``xia2.compare_merging_stats``: Fix occasionally incorrect axis ylimits (#517)
+- ``xia2.multiplex``: Fix corner case where reflections are present but not
+  used in refinement, leading to an error when selecting reflections with
+  ``reflections.select_on_experiment_identifiers()`` (#524)
+- ``xia2.multiplex``: Fix error if one or more experiment has an image range
+  that doesn't overlap with the requested dose range. Instead, remove this
+  experiment from further analysis. (#525)
+- ``xia2.multiplex``: Gracefully handle failure of resolution estimation (#526)
+- Explicitly fail testing when the XDS licence has expired
+
+
 xia2 (DIALS 3.1.1) (2020-09-01)
 ========================
 

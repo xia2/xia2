@@ -1,1 +1,0 @@
-xia2.multiplex: bug fix for corner case where reflections are present but none were used_in_refinement, leading to an error in reflections.select_on_experiment_identifiers()
