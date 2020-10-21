@@ -159,7 +159,7 @@ def write_shelxc_script(hkl_files, params):
         )
 
 
-def run(args):
+def run(args=sys.argv[1:]):
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description="xia2.to_shelxcde - Generate script"
@@ -210,4 +210,4 @@ def run(args):
 
 
 if __name__ == "__main__":
-    run(sys.argv[1:])
+    run()

@@ -79,7 +79,7 @@ output {
 )
 
 
-def run(args):
+def run(args=sys.argv[1:]):
     usage = "xia2.multiplex [options] [param.phil] integrated.expt integrated.refl"
 
     # Create the parser
@@ -159,4 +159,4 @@ def run(args):
 
 
 if __name__ == "__main__":
-    run(sys.argv[1:])
+    run()

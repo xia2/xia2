@@ -37,8 +37,12 @@ def run():
         sys.exit(1)
 
 
-if __name__ == "__main__":
+def run_with_log():
     xia2.Handlers.Streams.setup_logging(
         logfile="xia2.integrate.txt", debugfile="xia2.integrate-debug.txt"
     )
     run()
+
+
+if __name__ == "__main__":
+    run_with_log()

@@ -1,6 +1,7 @@
 import sys
 
-if __name__ == "__main__":
+
+def run():
     if "small_molecule=true" not in sys.argv and len(sys.argv) > 1:
         sys.argv.insert(1, "small_molecule=true")
     # clean up command-line so we know what was happening i.e. xia2.small_molecule
@@ -9,6 +10,10 @@ if __name__ == "__main__":
     import libtbx.load_env
 
     libtbx.env.dispatcher_name = "xia2"
-    from xia2.command_line.xia2_main import run
+    import xia2.cli.xia2_main
 
+    xia2.cli.xia2_main.run()
+
+
+if __name__ == "__main__":
     run()

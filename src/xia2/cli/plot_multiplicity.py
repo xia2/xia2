@@ -1,6 +1,3 @@
-# LIBTBX_PRE_DISPATCHER_INCLUDE_SH export PHENIX_GUI_ENVIRONMENT=1
-
-
 import json
 import sys
 
@@ -323,7 +320,7 @@ font_size = 20
 )
 
 
-def run(args):
+def run(args=sys.argv[1:]):
     pcl = iotbx.phil.process_command_line_with_files(
         args=args,
         master_phil=master_phil,
@@ -376,4 +373,4 @@ def plot_multiplicity(miller_array, settings):
 
 
 if __name__ == "__main__":
-    run(sys.argv[1:])
+    run()

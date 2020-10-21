@@ -16,8 +16,12 @@ def run():
     write_citations()
 
 
-if __name__ == "__main__":
+def run_with_log():
     xia2.Handlers.Streams.setup_logging(
         logfile="xia2.print.txt", debugfile="xia2.print-debug.txt"
     )
     run()
+
+
+if __name__ == "__main__":
+    run_with_log()

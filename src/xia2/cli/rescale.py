@@ -67,8 +67,12 @@ def run():
         xinfo.as_json(filename="xia2.json")
 
 
-if __name__ == "__main__":
+def run_with_log():
     xia2.Handlers.Streams.setup_logging(
         logfile="xia2.rescale.txt", debugfile="xia2.rescale-debug.txt"
     )
     run()
+
+
+if __name__ == "__main__":
+    run_with_log()

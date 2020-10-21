@@ -284,7 +284,7 @@ def to_shelx(hklin, prefix, compound="", options=None):
         )
 
 
-if __name__ == "__main__":
+def run():
     parser = optparse.OptionParser("xia2.to_shelx .mtz-file output-file [atoms]")
     parser.add_option("-?", action="help", help=optparse.SUPPRESS_HELP)
     parser.add_option(
@@ -314,3 +314,7 @@ if __name__ == "__main__":
         to_shelx(args[0], args[1], options=options)
     else:
         parser.print_help()
+
+
+if __name__ == "__main__":
+    run()

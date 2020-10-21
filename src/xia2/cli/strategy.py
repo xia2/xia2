@@ -203,8 +203,12 @@ def run():
     os.chdir(cwd)
 
 
-if __name__ == "__main__":
+def run_with_log():
     xia2.Handlers.Streams.setup_logging(
         logfile="xia2.strategy.txt", debugfile="xia2.strategy-debug.txt"
     )
     run()
+
+
+if __name__ == "__main__":
+    run_with_log()

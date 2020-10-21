@@ -26,9 +26,13 @@ def ispyb_xml(xml_out):
     ispyb_hdl.write_xml(xml_out, command_line, working_phil=working_phil)
 
 
-if __name__ == "__main__":
+def run():
     xia2.Handlers.Streams.setup_logging()
     if len(sys.argv) >= 2:
         ispyb_xml(sys.argv[1])
     else:
         ispyb_xml("ispyb.xml")
+
+
+if __name__ == "__main__":
+    run()

@@ -47,8 +47,12 @@ def run(args):
     )
 
 
-if __name__ == "__main__":
+def run_with_log():
     xia2.Handlers.Streams.setup_logging(
         logfile="xia2.rebatch.txt", debugfile="xia2.rebatch-debug.txt"
     )
     run(sys.argv[1:])
+
+
+if __name__ == "__main__":
+    run_with_log()

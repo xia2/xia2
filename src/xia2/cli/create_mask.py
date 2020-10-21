@@ -1,5 +1,3 @@
-# LIBTBX_SET_DISPATCHER_NAME dev.xia2.create_mask
-
 import pickle
 import sys
 
@@ -28,8 +26,12 @@ def main(filename, threshold, images):
     print(f"Mask written to {filename}")
 
 
-if __name__ == "__main__":
-    filename = sys.argv[1]
-    threshold = int(sys.argv[2])
-    images = sys.argv[3:]
+def run(args=sys.argv):
+    filename = args[1]
+    threshold = int(args[2])
+    images = args[3:]
     main(filename, threshold, images)
+
+
+if __name__ == "__main__":
+    run()

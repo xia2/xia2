@@ -50,7 +50,7 @@ output {
 )
 
 
-def run(args):
+def run(args=sys.argv[1:]):
     # Create the parser
     parser = OptionParser(
         # usage=usage,
@@ -170,4 +170,4 @@ def run(args):
 
 
 if __name__ == "__main__":
-    run(sys.argv[1:])
+    run()

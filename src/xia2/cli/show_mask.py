@@ -1,5 +1,3 @@
-# LIBTBX_SET_DISPATCHER_NAME dev.xia2.show_mask
-
 import pickle
 import sys
 
@@ -18,5 +16,9 @@ def main(filename):
     pylab.show()
 
 
+def run(args=sys.argv):
+    main(args[1])
+
+
 if __name__ == "__main__":
-    main(sys.argv[1])
+    run()

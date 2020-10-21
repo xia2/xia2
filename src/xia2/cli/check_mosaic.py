@@ -1,5 +1,3 @@
-# LIBTBX_SET_DISPATCHER_NAME dev.xia2.check_mosaic
-
 import pickle
 import sys
 
@@ -51,5 +49,9 @@ def go(filename):
         print("Z:", fmt % tuple(data))
 
 
+def run(args=sys.argv):
+    go(args[1])
+
+
 if __name__ == "__main__":
-    go(sys.argv[1])
+    run()

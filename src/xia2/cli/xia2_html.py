@@ -1,5 +1,3 @@
-# LIBTBX_SET_DISPATCHER_NAME xia2.html
-
 import glob
 import html
 import json
@@ -581,7 +579,11 @@ tick: {
     return html_graphs
 
 
-if __name__ == "__main__":
+def run_with_log():
     args = sys.argv[1:]
     xia2.Handlers.Streams.setup_logging(logfile="xia2.html.log")
     run(args)
+
+
+if __name__ == "__main__":
+    run_with_log()

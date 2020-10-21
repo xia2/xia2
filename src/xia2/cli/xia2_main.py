@@ -1,9 +1,3 @@
-# LIBTBX_SET_DISPATCHER_NAME xia2
-#
-# see https://github.com/xia2/xia2/issues/172
-# LIBTBX_PRE_DISPATCHER_INCLUDE_SH ulimit -n `ulimit -Hn 2>&1 |sed 's/unlimited/4096/'`
-
-
 import logging
 import os
 import sys

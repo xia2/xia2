@@ -128,7 +128,7 @@ def table1_tex(merging_stats):
     print("\\end{tabular}")
 
 
-def run(args):
+def run(args=sys.argv[1:]):
     if len(args) == 0 or "-h" in args or "--help" in args:
         master_params.show()
         sys.exit()
@@ -151,4 +151,4 @@ def run(args):
 
 
 if __name__ == "__main__":
-    run(sys.argv[1:])
+    run()

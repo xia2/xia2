@@ -42,7 +42,7 @@ def image_path_obtainer(summary_file):
     return number_to_name
 
 
-if __name__ == "__main__":
+def run():
     if len(sys.argv) > 1:
         summary_file = "xia2-summary.dat"
         if os.path.isfile(summary_file):
@@ -69,3 +69,7 @@ if __name__ == "__main__":
         print()
         print("Can be run after xia2 completed processing to obtain the file")
         print("names of images and image ranges")
+
+
+if __name__ == "__main__":
+    run()

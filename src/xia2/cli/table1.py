@@ -141,5 +141,9 @@ def table1():
     table1_tex(crystal_params, merging_stats)
 
 
-if __name__ == "__main__":
+def run():
     table1()
+
+
+if __name__ == "__main__":
+    run()

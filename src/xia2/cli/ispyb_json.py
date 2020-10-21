@@ -37,9 +37,13 @@ def ispyb_json(json_out):
         json.dump(ispyb_object(), fh, indent=2)
 
 
-if __name__ == "__main__":
+def run():
     xia2.Handlers.Streams.setup_logging()
     if len(sys.argv) >= 2:
         ispyb_json(sys.argv[1])
     else:
         ispyb_json("ispyb.json")
+
+
+if __name__ == "__main__":
+    run()

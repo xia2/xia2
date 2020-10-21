@@ -56,7 +56,7 @@ alpha = 0.3
 )
 
 
-def run(args):
+def run(args=sys.argv[1:]):
     usage = "xia2.compare_merging_stats [options] unmerged1.mtz unmerged2.mtz (..)"
 
     parser = OptionParser(
@@ -318,4 +318,4 @@ def plot_data(
 
 
 if __name__ == "__main__":
-    run(sys.argv[1:])
+    run()
