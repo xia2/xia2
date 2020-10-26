@@ -143,7 +143,3 @@ def table1():
 
 def run():
     table1()
-
-
-if __name__ == "__main__":
-    run()

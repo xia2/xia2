@@ -314,7 +314,3 @@ def run():
         to_shelx(args[0], args[1], options=options)
     else:
         parser.print_help()
-
-
-if __name__ == "__main__":
-    run()

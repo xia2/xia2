@@ -11,7 +11,3 @@ def main():
             filename = record.split("->")[-1].strip()
     if filename:
         tail(filename)
-
-
-if __name__ == "__main__":
-    main()

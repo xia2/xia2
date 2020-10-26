@@ -110,7 +110,3 @@ def build_hist(nproc=1):
 
 def run():
     build_hist()
-
-
-if __name__ == "__main__":
-    run()

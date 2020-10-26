@@ -370,7 +370,3 @@ def plot_multiplicity(miller_array, settings):
         MultiplicityViewJson(
             scene(miller_array, settings, merge=True), settings=settings
         )
-
-
-if __name__ == "__main__":
-    run()

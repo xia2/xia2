@@ -18,7 +18,3 @@ def main(filename):
 
 def run(args=sys.argv):
     main(args[1])
-
-
-if __name__ == "__main__":
-    run()

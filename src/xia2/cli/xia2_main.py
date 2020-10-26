@@ -343,7 +343,3 @@ def run():
         )
         logger.warning("xia2.support@gmail.com")
         sys.exit(1)
-
-
-if __name__ == "__main__":
-    run()

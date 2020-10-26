@@ -148,7 +148,3 @@ def run(args=sys.argv[1:]):
     ]
     if params.latex:
         table1_tex(merging_stats)
-
-
-if __name__ == "__main__":
-    run()

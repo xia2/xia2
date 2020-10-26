@@ -13,7 +13,3 @@ def run():
     import xia2.cli.xia2_main
 
     xia2.cli.xia2_main.run()
-
-
-if __name__ == "__main__":
-    run()

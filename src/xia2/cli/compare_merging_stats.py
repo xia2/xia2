@@ -315,7 +315,3 @@ def plot_data(
                 "%.2f" % uctbx.d_star_sq_as_d(ds2) if ds2 > 0 else 0 for ds2 in xticks
             ]
             ax.set_xticklabels(xticks_d)
-
-
-if __name__ == "__main__":
-    run()

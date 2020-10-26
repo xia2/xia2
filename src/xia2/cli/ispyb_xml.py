@@ -32,7 +32,3 @@ def run():
         ispyb_xml(sys.argv[1])
     else:
         ispyb_xml("ispyb.xml")
-
-
-if __name__ == "__main__":
-    run()

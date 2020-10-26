@@ -207,7 +207,3 @@ def run(args=sys.argv[1:]):
         shelx_files.update(export_native_hkl(params))
 
     write_shelxc_script(shelx_files, params)
-
-
-if __name__ == "__main__":
-    run()

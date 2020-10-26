@@ -71,7 +71,3 @@ def run():
         logfile="xia2.npp.txt", debugfile="xia2.npp-debug.txt"
     )
     npp(sys.argv[1])
-
-
-if __name__ == "__main__":
-    run()

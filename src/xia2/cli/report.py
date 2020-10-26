@@ -163,7 +163,3 @@ def run_with_log():
         logfile="xia2.report.txt", debugfile="xia2.report-debug.txt"
     )
     run(sys.argv[1:])
-
-
-if __name__ == "__main__":
-    run_with_log()

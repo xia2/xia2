@@ -30,7 +30,3 @@ def run():
 
     for centre, value in zip(hist.slot_centers(), hist.slots()):
         print("%5.1f %d" % (centre, value))
-
-
-if __name__ == "__main__":
-    run()

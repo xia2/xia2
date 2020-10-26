@@ -51,7 +51,3 @@ def go(filename):
 
 def run(args=sys.argv):
     go(args[1])
-
-
-if __name__ == "__main__":
-    run()

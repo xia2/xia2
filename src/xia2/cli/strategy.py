@@ -208,7 +208,3 @@ def run_with_log():
         logfile="xia2.strategy.txt", debugfile="xia2.strategy-debug.txt"
     )
     run()
-
-
-if __name__ == "__main__":
-    run_with_log()

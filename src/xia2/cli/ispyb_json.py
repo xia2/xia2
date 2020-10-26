@@ -43,7 +43,3 @@ def run():
         ispyb_json(sys.argv[1])
     else:
         ispyb_json("ispyb.json")
-
-
-if __name__ == "__main__":
-    run()

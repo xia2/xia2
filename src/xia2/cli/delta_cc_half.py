@@ -167,7 +167,3 @@ def run(args=sys.argv[1:]):
     Citations.cite("delta_cc_half")
     for citation in Citations.get_citations_acta():
         logger.info(citation)
-
-
-if __name__ == "__main__":
-    run()

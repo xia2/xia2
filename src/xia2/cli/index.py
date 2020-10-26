@@ -41,7 +41,3 @@ def run_with_log():
         logfile="xia2.index.txt", debugfile="xia2.index-debug.txt"
     )
     run()
-
-
-if __name__ == "__main__":
-    run_with_log()

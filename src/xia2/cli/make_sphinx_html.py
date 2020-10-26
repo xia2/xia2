@@ -21,7 +21,3 @@ def run():
     )
     print("Moving HTML pages to", dest_dir)
     shutil.move("build/html", dest_dir)
-
-
-if __name__ == "__main__":
-    run()

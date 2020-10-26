@@ -156,7 +156,3 @@ def run(args=sys.argv[1:]):
         ScaleAndMerge.MultiCrystalScale(experiments, reflections_all, params)
     except ValueError as e:
         sys.exit(str(e))
-
-
-if __name__ == "__main__":
-    run()

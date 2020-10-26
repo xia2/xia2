@@ -72,7 +72,3 @@ def add_free_set(hklin, fraction, hklout_work, hklout_free):
 
 def run(args=sys.argv):
     add_free_set(args[1], float(args[2]), args[3], args[4])
-
-
-if __name__ == "__main__":
-    run()

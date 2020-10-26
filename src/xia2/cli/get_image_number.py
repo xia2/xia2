@@ -69,7 +69,3 @@ def run():
         print()
         print("Can be run after xia2 completed processing to obtain the file")
         print("names of images and image ranges")
-
-
-if __name__ == "__main__":
-    run()

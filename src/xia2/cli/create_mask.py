@@ -31,7 +31,3 @@ def run(args=sys.argv):
     threshold = int(args[2])
     images = args[3:]
     main(filename, threshold, images)
-
-
-if __name__ == "__main__":
-    run()

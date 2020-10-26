@@ -128,7 +128,3 @@ def run_with_log():
         debugfile="xia2.multi_crystal_analysis-debug.txt",
     )
     run()
-
-
-if __name__ == "__main__":
-    run_with_log()
