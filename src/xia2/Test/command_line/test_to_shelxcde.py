@@ -1,6 +1,6 @@
 import os
 
-from xia2.command_line import to_shelxcde
+from xia2.cli import to_shelxcde
 import pytest
 from libtbx.utils import Sorry
 

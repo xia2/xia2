@@ -899,7 +899,7 @@ class MultiCrystalScale:
 
     def multi_crystal_analysis(self):
         from xia2.Modules.MultiCrystalAnalysis import MultiCrystalReport
-        from xia2.command_line.multi_crystal_analysis import phil_scope as mca_phil
+        from xia2.cli.multi_crystal_analysis import phil_scope as mca_phil
 
         params = mca_phil.extract()
         params.prefix = "xia2.multiplex"

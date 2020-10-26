@@ -1,7 +1,7 @@
 import os
 import pytest
 
-from xia2.command_line import compare_merging_stats
+from xia2.cli import compare_merging_stats
 
 
 expected_files = [

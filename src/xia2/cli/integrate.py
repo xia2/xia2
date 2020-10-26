@@ -6,7 +6,7 @@ import traceback
 from xia2.Applications.xia2_main import check_environment, help
 import xia2.Handlers.Streams
 
-logger = logging.getLogger("xia2.command_line.integrate")
+logger = logging.getLogger("xia2.cli.integrate")
 
 
 def run():
@@ -25,7 +25,7 @@ def run():
     wd = os.getcwd()
 
     try:
-        from xia2.command_line.xia2_main import xia2_main
+        from .xia2_main import xia2_main
 
         xia2_main(stop_after="integrate")
         logger.info("Status: normal termination")

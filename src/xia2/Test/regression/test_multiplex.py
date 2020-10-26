@@ -14,7 +14,7 @@ from dials.util.multi_dataset_handling import (
     parse_multiple_datasets,
 )
 from xia2.Modules.Report import Report
-from xia2.command_line.multiplex import run as run_multiplex
+from xia2.cli.multiplex import run as run_multiplex
 from xia2.Modules.MultiCrystal import ScaleAndMerge
 
 import pytest_mock

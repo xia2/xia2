@@ -24,7 +24,7 @@ from iotbx.reflection_file_reader import any_reflection_file
 from mmtbx.scaling import printed_output
 from mmtbx.scaling.xtriage import master_params as xtriage_master_params
 from mmtbx.scaling.xtriage import xtriage_analyses
-from xia2.command_line.plot_multiplicity import master_phil, plot_multiplicity
+from xia2.cli.plot_multiplicity import master_phil, plot_multiplicity
 from xia2.Modules.Analysis import batch_phil_scope, phil_scope, separate_unmerged
 
 

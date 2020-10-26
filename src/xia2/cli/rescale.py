@@ -12,7 +12,7 @@ from xia2.Handlers.Files import cleanup
 from xia2.Handlers.Phil import PhilIndex
 from xia2.XIA2Version import Version
 
-logger = logging.getLogger("xia2.command_line.rescale")
+logger = logging.getLogger("xia2.cli.rescale")
 
 
 def run():

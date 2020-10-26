@@ -13,10 +13,10 @@ from xia2.Applications.xia2_main import (
     get_command_line,
     help,
 )
-from xia2.command_line.xia2_main import get_ccp4_version
+from .xia2_main import get_ccp4_version
 from xia2.Handlers.Citations import Citations
 
-logger = logging.getLogger("xia2.command_line.setup")
+logger = logging.getLogger("xia2.cli.setup")
 
 
 def xia2_setup():

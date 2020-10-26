@@ -22,7 +22,7 @@ from xia2.Handlers.Files import cleanup
 from xia2.Schema.XProject import XProject
 from xia2.Schema.XSweep import XSweep
 
-logger = logging.getLogger("xia2.command_line.xia2_main")
+logger = logging.getLogger("xia2.cli.xia2_main")
 
 
 def get_ccp4_version():
@@ -274,7 +274,7 @@ def xia2_main(stop_after=None):
 
             # looks like this import overwrites the initial command line
             # Phil overrides so... for https://github.com/xia2/xia2/issues/150
-            from xia2.command_line.xia2_html import generate_xia2_html
+            from .xia2_html import generate_xia2_html
 
             if params.xia2.settings.small_molecule:
                 params.xia2.settings.report.xtriage_analysis = False

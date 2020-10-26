@@ -20,7 +20,7 @@ help_message = """
 
 phil_scope = iotbx.phil.parse(
     """
-include scope xia2.command_line.report.phil_scope
+include scope xia2.cli.report.phil_scope
 
 seed = 42
   .type = int(value_min=0)

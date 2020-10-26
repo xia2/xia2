@@ -14,7 +14,7 @@ from xia2.Modules.Report import Report
 from xia2.Handlers.Citations import Citations
 import xia2.Handlers.Streams
 
-logger = logging.getLogger("xia2.command_line.html")
+logger = logging.getLogger("xia2.cli.html")
 
 
 def run(args):

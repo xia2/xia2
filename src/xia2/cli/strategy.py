@@ -8,7 +8,7 @@ from xia2.Applications.xia2_main import check_environment, get_command_line, hel
 import xia2.Handlers.Streams
 from xia2.lib.bits import auto_logfiler
 
-logger = logging.getLogger("xia2.command_line.strategy")
+logger = logging.getLogger("xia2.cli.strategy")
 
 
 def run():
@@ -26,7 +26,7 @@ def run():
     cwd = os.getcwd()
 
     try:
-        from xia2.command_line.xia2_main import xia2_main
+        from .xia2_main import xia2_main
 
         xia2_main(stop_after="integrate")
         logger.info("Status: normal termination")

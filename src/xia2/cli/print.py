@@ -4,7 +4,7 @@ import os
 from xia2.Applications.xia2_main import write_citations
 import xia2.Handlers.Streams
 
-logger = logging.getLogger("xia2.command_line.print")
+logger = logging.getLogger("xia2.cli.print")
 
 
 def run():

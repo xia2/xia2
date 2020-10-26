@@ -1,4 +1,4 @@
-from xia2.command_line.delta_cc_half import run
+from xia2.cli.delta_cc_half import run
 from xia2.Modules.DeltaCcHalf import DeltaCcHalf
 import pytest_mock
 
