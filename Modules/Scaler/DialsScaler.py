@@ -73,8 +73,13 @@ class DialsScaler(Scaler):
         self._scaler.set_resolution(d_min=resolution.d_min, d_max=resolution.d_max)
 
         self._scaler.set_intensities(PhilIndex.params.dials.scale.intensity_choice)
-
-        self._scaler.set_full_matrix(PhilIndex.params.dials.scale.full_matrix)
+        full_matrix = PhilIndex.params.dials.scale.full_matrix
+        if full_matrix in (libtbx.Auto, "auto", None):
+            if len(self.sweep_infos) > 4:
+                full_matrix = False
+            else:
+                full_matrix = True
+        self._scaler.set_full_matrix(full_matrix)
         self._scaler.set_outlier_rejection(
             PhilIndex.params.dials.scale.outlier_rejection
         )
