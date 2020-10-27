@@ -1,3 +1,27 @@
+xia2 0.7.101 (DIALS 3.2.0) (2020-10-27)
+=======================================
+
+Features
+--------
+
+- Add a radar plot to `xia2.multiplex` html report for comparison of merging
+  statistics between clusters. (#406)
+- Full matrix minimisation when using DIALS scaling is now Auto by default.
+  This will use full matrix for 4 sweeps or fewer, meaning that large data sets
+  now process much faster. (#428)
+
+
+Bugfixes
+--------
+- Temporary files are no longer left around during the dials scaling process (#497)
+
+
+Misc
+----
+
+- #514, #523
+
+
 xia2 (DIALS 3.1.4) (2020-10-12)
 ========================
 

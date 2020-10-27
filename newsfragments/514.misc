@@ -1,2 +1,0 @@
-Make sure a test that produces output files is run in a temporary directory.
-The test is ``xia2.Test.Schema.test_Schema.test_load_imageset_split_sweep``.
