@@ -141,8 +141,7 @@ def run(args):
 
     for arg in unhandled:
         if not os.path.isfile(arg):
-            print(f"{arg} is not a file or interpretable as a parameter")
-            sys.exit(1)
+            sys.exit(f"{arg} is neither a file nor an interpretable parameter")
         input_files.append(arg)
     merging_stats = [
         (merging_statistics.run([f], master_params=phil_scope)) for f in input_files
