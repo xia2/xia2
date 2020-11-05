@@ -131,16 +131,21 @@ def table1_tex(merging_stats):
 def run(args):
     if len(args) == 0 or "-h" in args or "--help" in args:
         master_params.show()
+        sys.exit()
     interp = master_params.command_line_argument_interpreter(args)
     phil_scope, unhandled = interp.process_and_fetch(
         args, custom_processor="collect_remaining"
     )
     params = phil_scope.extract()
-    merging_stats = []
+    input_files = []
 
     for arg in unhandled:
-        assert os.path.isfile(arg)
-        merging_stats.append(merging_statistics.run([arg], master_params=phil_scope))
+        if not os.path.isfile(arg):
+            sys.exit(f"{arg} is neither a file nor an interpretable parameter")
+        input_files.append(arg)
+    merging_stats = [
+        (merging_statistics.run([f], master_params=phil_scope)) for f in input_files
+    ]
     if params.latex:
         table1_tex(merging_stats)
 
