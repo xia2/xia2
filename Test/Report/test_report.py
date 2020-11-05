@@ -78,6 +78,7 @@ def test_resolution_plots_and_stats(report):
         "R<sub>merge</sub>",
         "R<sub>meas</sub>",
         "R<sub>pim</sub>",
+        "R<sub>anom</sub>",
         "CC<sub>\xbd</sub>",
         "CC<sub>ano</sub>",
     ]
@@ -92,6 +93,7 @@ def test_resolution_plots_and_stats(report):
         "0.027",
         "0.030",
         "0.013",
+        "0.046",
         "0.998*",
         "0.598*",
     ]
