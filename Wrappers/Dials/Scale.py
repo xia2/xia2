@@ -83,6 +83,7 @@ def DialsScale(DriverType=None, decay_correction=None):
             self._n_absorption_bins = None
 
             self._isigma_selection = None
+            self._reflection_selection_method = None
 
             self._intensities = None
 
@@ -184,6 +185,9 @@ def DialsScale(DriverType=None, decay_correction=None):
         def set_isigma_selection(self, isigma_selection):
             assert len(isigma_selection) == 2
             self._isigma_selection = isigma_selection
+
+        def set_reflection_selection_method(self, reflection_selection_method):
+            self._reflection_selection_method = reflection_selection_method
 
         def set_error_model(self, error_model="basic"):
             self._error_model = error_model
@@ -330,6 +334,11 @@ def DialsScale(DriverType=None, decay_correction=None):
                 self.add_command_line(
                     "reflection_selection.Isigma_range=%f,%f"
                     % tuple(self._isigma_selection)
+                )
+
+            if self._reflection_selection_method is not None:
+                self.add_command_line(
+                    f"reflection_selection.method={self._reflection_selection_method}"
                 )
 
             if self._d_min is not None:
