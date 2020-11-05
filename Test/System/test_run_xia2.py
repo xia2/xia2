@@ -6,4 +6,4 @@ import procrunner
 
 def test_start_xia2():
     result = procrunner.run(["xia2"])
-    assert result["exitcode"] == 0
+    assert result.returncode == 0
