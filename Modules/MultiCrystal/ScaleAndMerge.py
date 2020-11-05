@@ -69,14 +69,29 @@ scaling
     .type = choice
   outlier_rejection = simple *standard
     .type = choice
-  Isigma_range = 2.0,100000
-    .type = floats(size=2)
   min_partiality = None
     .type = float(value_min=0, value_max=1)
   partiality_cutoff = None
     .type = float(value_min=0, value_max=1)
+  reflection_selection {
+    method = quasi_random intensity_ranges use_all random
+      .type = choice
+      .help = "Method to use when choosing a reflection subset for scaling model"
+              "minimisation."
+              "The quasi_random option randomly selects reflections groups"
+              "within a dataset, and also selects groups which have good"
+              "connectedness across datasets for multi-dataset cases. The random"
+              "option selects reflection groups randomly for both single"
+              "and multi dataset scaling, so for a single dataset"
+              "quasi_random == random."
+              "The intensity_ranges option uses the E2_range, Isigma_range and"
+              "d_range options to the subset of reflections"
+              "The use_all option uses all suitable reflections, which may be"
+              "slow for large datasets."
+    Isigma_range = 2.0,100000
+      .type = floats(size=2)
+  }
 }
-
 symmetry {
   resolve_indexing_ambiguity = True
     .type = bool
@@ -1040,12 +1055,18 @@ class Scale:
             scaler.set_bfactor(brotation=decay_interval)
 
         scaler.set_resolution(d_min=d_min, d_max=d_max)
-        if self._params.scaling.Isigma_range is not None:
-            scaler.set_isigma_selection(self._params.scaling.Isigma_range)
+        if self._params.scaling.reflection_selection.Isigma_range is not None:
+            scaler.set_isigma_selection(
+                self._params.scaling.reflection_selection.Isigma_range
+            )
         if self._params.scaling.min_partiality is not None:
             scaler.set_min_partiality(self._params.scaling.min_partiality)
         if self._params.scaling.partiality_cutoff is not None:
             scaler.set_partiality_cutoff(self._params.scaling.partiality_cutoff)
+        if self._params.scaling.reflection_selection.method is not None:
+            scaler.set_reflection_selection_method(
+                self._params.scaling.reflection_selection.method
+            )
 
         scaler.set_full_matrix(False)
 
