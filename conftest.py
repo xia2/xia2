@@ -53,11 +53,11 @@ def ccp4():
         pytest.skip(
             "CCP4 installation required for this test - Could not find CCP4 executable"
         )
-    if result["exitcode"] or result["timeout"]:
+    if result.returncode:
         pytest.skip(
             "CCP4 installation required for this test - Could not run CCP4 executable"
         )
-    version = re.search(br"patch level *([0-9]+)\.([0-9]+)\.([0-9]+)", result["stdout"])
+    version = re.search(br"patch level *([0-9]+)\.([0-9]+)\.([0-9]+)", result.stdout)
     if not version:
         pytest.skip(
             "CCP4 installation required for this test - Could not determine CCP4 version"
@@ -75,12 +75,12 @@ def xds():
         result = procrunner.run(["xds"], print_stdout=False)
     except OSError:
         pytest.skip("XDS installation required for this test")
-    version = re.search(br"BUILT=([0-9]+)\)", result["stdout"])
+    version = re.search(br"BUILT=([0-9]+)\)", result.stdout)
     if version:
         return {"version": int(version.groups()[0])}
-    if result["exitcode"] or result["timeout"]:
+    if result.returncode:
         pytest.skip("XDS installation required for this test - Could not run XDS")
-    if b"license expired" in result["stdout"]:
+    if b"license expired" in result.stdout:
         raise RuntimeError(
             "XDS installation required for this test - XDS license is expired"
         )

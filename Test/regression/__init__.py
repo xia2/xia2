@@ -37,12 +37,12 @@ def check_result(
         print(error_file.read())
         return False, "xia2-error.txt present after execution"
 
-    if result["stderr"]:
-        return False, "xia2 terminated with output to STDERR:\n" + result["stderr"]
-    if result["exitcode"]:
+    if result.stderr:
+        return False, "xia2 terminated with output to STDERR:\n" + result.stderr
+    if result.returncode:
         return (
             False,
-            "xia2 terminated with non-zero exit code (%d)" % result["exitcode"],
+            "xia2 terminated with non-zero exit code (%d)" % result.returncode,
         )
 
     summary_file = tmpdir / "xia2-summary.dat"
