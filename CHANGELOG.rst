@@ -1,3 +1,20 @@
+xia2 (DIALS 3.2.1) (2020-11-09)
+===============================
+
+Features
+--------
+
+- ``xia2.multiplex``: Allow the user to override the default ``dials.scale``
+  parameter ``reflection_selection.method=``, to allow working around cases
+  where default can fail (#529)
+- ``xia2.merging_statistics``: Improved error handling  (#531)
+
+Misc
+----
+
+- #530
+
+
 xia2 0.7.101 (DIALS 3.2.0) (2020-10-27)
 =======================================
 
