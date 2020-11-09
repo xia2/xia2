@@ -30,6 +30,7 @@ from xia2.Wrappers.Dials.Reindex import Reindex as DialsReindex
 from xia2.Wrappers.Dials.AssignUniqueIdentifiers import DialsAssignIdentifiers
 from xia2.Wrappers.Dials.SplitExperiments import SplitExperiments
 from xia2.Wrappers.Dials.ExportMtz import ExportMtz
+from xia2.Wrappers.Dials.ExportMMCIF import ExportMMCIF
 from xia2.Wrappers.Dials.TwoThetaRefine import TwoThetaRefine
 from xia2.Handlers.Syminfo import Syminfo
 from dxtbx.serialize import load
@@ -40,6 +41,7 @@ from dials.array_family import flex
 import dials.util.version
 from cctbx.sgtbx import lattice_symmetry_group
 from iotbx import mtz
+import iotbx.cif
 from iotbx.scalepack import no_merge_original_index
 from iotbx.scalepack.merge import write as merge_scalepack_write
 
@@ -821,6 +823,22 @@ pipeline=dials (supported for pipeline=dials-aimless).
             # now export to sca format
             convert_mtz_to_sca(mtz_filename)
 
+        # Export an mmCIF file using dials.export.
+        exporter = ExportMMCIF()
+        exporter.set_working_directory(self.get_working_directory())
+        exporter.set_experiments_filename(self._scaled_experiments)
+        exporter.set_reflections_filename(self._scaled_reflections)
+        exporter.set_partiality_threshold(
+            PhilIndex.params.dials.scale.partiality_threshold
+        )  # 0.4 default
+        mmcif_path = scaled_unmerged_mtz_path.rstrip(".mtz") + ".mmcif"
+        exporter.set_filename(mmcif_path)
+        auto_logfiler(exporter)
+        logger.debug("Exporting %s", mmcif_path)
+        exporter.run()
+
+        FileHandler.record_temporary_file(mmcif_path)
+
         # Also export just integrated data.
         for si in self.sweep_infos:
             exporter = ExportMtz()
@@ -887,6 +905,8 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
 """
             % dials_version
         )
+        mmblock_dials = iotbx.cif.reader(file_path=mmcif_path).model()
+        mmCIF.set_block("dials", mmblock_dials["dials"])
 
     def _update_scaled_unit_cell_from_scaled_data(self):
 
