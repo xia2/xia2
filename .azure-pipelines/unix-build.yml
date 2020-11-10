@@ -30,6 +30,7 @@ steps:
     path: $(Pipeline.Workspace)/modules
     cacheHitVar: REPOSITORIES_CACHED
     securityNamespace: cache
+  condition: eq(variables['ENABLE_CACHE'], '1')
   displayName: Restore repository cache
 
 # Copy libGL/libGLU into a place where they can be found during the
@@ -84,6 +85,7 @@ steps:
       "base" | "$(CACHE_VERSION)-$(CURRENT_WEEK)" | "$(Agent.OS)-$(Agent.Version)-$(Pipeline.Workspace)" | "$(PYTHON_VERSION)" | ../modules/dials/${{ parameters.conda_environment }}
     path: $(Pipeline.Workspace)/conda_base
     cacheHitVar: BASE_CACHED
+  condition: eq(variables['ENABLE_CACHE'], '1')
   displayName: Restore environment cache
 
 # If the conda environment could not be loaded from cache then
@@ -109,6 +111,7 @@ steps:
       "build" | "$(CACHE_VERSION)-$(CURRENT_WEEK)" | "$(Agent.OS)-$(Agent.Version)-$(Pipeline.Workspace)" | "$(PYTHON_VERSION)" | ../modules/dials/installer/bootstrap.py | ../modules/dials/${{ parameters.conda_environment }}
     path: $(Pipeline.Workspace)/build
     cacheHitVar: BUILD_CACHED
+  condition: eq(variables['ENABLE_CACHE'], '1')
   displayName: Restore cached build
 
 # Copy GL/GLU/KHR headers into a place where they can be found during the
@@ -176,6 +179,7 @@ steps:
       "data" | "$(CACHE_VERSION)-$(CURRENT_WEEK)" | "$(DIALS_DATA_VERSION)"
     path: $(Pipeline.Workspace)/data
     cacheHitVar: DATA_CACHED
+  condition: eq(variables['ENABLE_CACHE'], '1')
   displayName: Restore regression data cache
 
 # Finally, run the full regression test suite
@@ -209,10 +213,11 @@ steps:
     rm -rf tests
   displayName: Recover disk space
   workingDirectory: $(Pipeline.Workspace)
-  condition: or(ne(variables.BASE_CACHED, 'true'),
-                ne(variables.BUILD_CACHED, 'true'),
-                ne(variables.DATA_CACHED, 'true'),
-                ne(variables.REPOSITORIES_CACHED, 'true'))
+  condition: and(eq(variables['ENABLE_CACHE'], '1'),
+                 or(ne(variables.BASE_CACHED, 'true'),
+                    ne(variables.BUILD_CACHED, 'true'),
+                    ne(variables.DATA_CACHED, 'true'),
+                    ne(variables.REPOSITORIES_CACHED, 'true')))
 
 # If the downloaded repositories are to be cached then clean them up before the
 # snapshot is made
@@ -243,4 +248,5 @@ steps:
     ls -la
   displayName: Preparing cache
   workingDirectory: $(Pipeline.Workspace)/modules
-  condition: ne(variables.REPOSITORIES_CACHED, 'true')
+  condition: and(eq(variables['ENABLE_CACHE'], '1'),
+                 ne(variables.REPOSITORIES_CACHED, 'true'))
