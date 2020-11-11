@@ -88,7 +88,6 @@ def DialsCosym(DriverType=None, decay_correction=None):
 
             self.add_command_line("output.experiments=%s" % self._reindexed_experiments)
             self.add_command_line("output.reflections=%s" % self._reindexed_reflections)
-            self.add_command_line("plot_prefix=%s_" % self.get_xpid())
             if self._space_group is not None:
                 self.add_command_line(
                     "space_group=%s" % self._space_group.type().lookup_symbol()
