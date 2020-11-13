@@ -88,7 +88,7 @@ scaling
               "d_range options to the subset of reflections"
               "The use_all option uses all suitable reflections, which may be"
               "slow for large datasets."
-    Isigma_range = 2.0,100000
+    Isigma_range = None
       .type = floats(size=2)
   }
 }
