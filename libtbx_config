@@ -5,7 +5,6 @@
     "python_required": [
         "dials-data>=2.0",
         "Jinja2",
-        "mock>=2.0",
         "procrunner",
         "pytest>=3.1",
         "pytest-mock",
