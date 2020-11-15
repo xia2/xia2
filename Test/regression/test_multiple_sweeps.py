@@ -49,4 +49,4 @@ def test_multiple_sweeps(multi_sweep_type, ccp4, dials_data, run_in_tmpdir):
     ]
     result = procrunner.run(command + [f"image={image}" for image in images])
 
-    assert not result["exitcode"] and not result["timeout"]
+    assert not result.returncode
