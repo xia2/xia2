@@ -906,7 +906,7 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
             % dials_version
         )
         mmblock_dials = iotbx.cif.reader(file_path=mmcif_path).model()
-        mmCIF.set_block("dials", mmblock_dials["dials"])
+        mmCIF.set_block("unmerged", mmblock_dials["dials"])
 
     def _update_scaled_unit_cell_from_scaled_data(self):
 
