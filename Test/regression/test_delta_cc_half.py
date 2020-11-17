@@ -1,5 +1,6 @@
 from xia2.command_line.delta_cc_half import run
 from xia2.Modules.DeltaCcHalf import DeltaCcHalf
+import pytest_mock
 
 
 def test_from_experiments_reflections(dials_data, tmpdir, capsys, mocker):
@@ -9,7 +10,11 @@ def test_from_experiments_reflections(dials_data, tmpdir, capsys, mocker):
     mocker.spy(DeltaCcHalf, "get_table")
     with tmpdir.as_cwd():
         run(input_files)
-        assert DeltaCcHalf.get_table.return_value == [
+        if getattr(pytest_mock, "version", "").startswith("1."):
+            rv = DeltaCcHalf.get_table.return_value
+        else:
+            rv = DeltaCcHalf.get_table.spy_return
+        assert rv == [
             ["Dataset", "Batches", "CC½", "ΔCC½", "σ"],
             ["0", "8 to 1795", " 0.995", " 0.000", "-1.11"],
             ["3", "5 to 1694", " 0.995", " 0.000", "-0.59"],
@@ -30,7 +35,11 @@ def test_image_groups_from_unmerged_mtz(dials_data, tmpdir, capsys, mocker):
                 "group_size=10",
             ]
         )
-        assert DeltaCcHalf.get_table.return_value == [
+        if getattr(pytest_mock, "version", "").startswith("1."):
+            rv = DeltaCcHalf.get_table.return_value
+        else:
+            rv = DeltaCcHalf.get_table.spy_return
+        assert rv == [
             ["Dataset", "Batches", "CC½", "ΔCC½", "σ"],
             ["0", "11 to 20", " 0.922", " 0.007", "-0.95"],
             ["0", "31 to 40", " 0.922", " 0.007", "-0.84"],

@@ -7,7 +7,7 @@
         "Jinja2",
         "procrunner",
         "pytest>=3.1",
-        "pytest-mock>=1.11,<2",
+        "pytest-mock",
         "tabulate",
     ],
 }

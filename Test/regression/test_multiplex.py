@@ -17,6 +17,8 @@ from xia2.Modules.Report import Report
 from xia2.command_line.multiplex import run as run_multiplex
 from xia2.Modules.MultiCrystal import ScaleAndMerge
 
+import pytest_mock
+
 
 expected_data_files = [
     "scaled.expt",
@@ -43,7 +45,12 @@ def test_proteinase_k(mocker, regression_test, dials_data, tmpdir):
         "completeness_vs_dose",
         "rd_vs_batch_difference",
     ):
-        assert Report.pychef_plots.return_value[k]["data"][0]["x"] == list(range(26))
+        if getattr(pytest_mock, "version", "").startswith("1."):
+            assert Report.pychef_plots.return_value[k]["data"][0]["x"] == list(
+                range(26)
+            )
+        else:
+            assert Report.pychef_plots.spy_return[k]["data"][0]["x"] == list(range(26))
     for f in expected_data_files:
         assert tmpdir.join(f).check(file=1), "expected file %s missing" % f
     multiplex_expts = load.experiment_list(
