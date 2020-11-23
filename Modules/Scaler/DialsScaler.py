@@ -4,6 +4,7 @@
 import logging
 import math
 import os
+import bz2
 from orderedset import OrderedSet
 
 import libtbx
@@ -829,6 +830,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
             exporter.set_working_directory(self.get_working_directory())
             exporter.set_experiments_filename(self._scaled_experiments)
             exporter.set_reflections_filename(self._scaled_reflections)
+            exporter.set_compression("bz2")
             exporter.set_partiality_threshold(
                 PhilIndex.params.dials.scale.partiality_threshold
             )  # 0.4 default
@@ -907,7 +909,8 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
             % dials_version
         )
         if PhilIndex.params.xia2.settings.output.mmcif.write_unmerged:
-            mmblock_dials = iotbx.cif.reader(file_path=mmcif_path).model()
+            mmcif_file_object = bz2.open(mmcif_path + ".bz2")
+            mmblock_dials = iotbx.cif.reader(file_object=mmcif_file_object).model()
             mmCIF.set_block(
                 f"{self._scalr_pname}_{self._scalr_xname}", mmblock_dials["dials"]
             )

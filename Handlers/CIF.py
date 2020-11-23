@@ -1,6 +1,6 @@
 # A handler to manage the data ending up in CIF output file
 
-
+import bz2
 import datetime
 
 import iotbx.cif.model
@@ -11,7 +11,7 @@ import xia2.XIA2Version
 class _CIFHandler:
     def __init__(self, mmCIFsemantics=False):
         self._cif = iotbx.cif.model.cif()
-        self._outfile = "xia2.cif" if not mmCIFsemantics else "xia2.mmcif"
+        self._outfile = "xia2.cif" if not mmCIFsemantics else "xia2.mmcif.bz2"
 
         # CIF/mmCIF key definitions
         self._keyname = (
@@ -93,7 +93,11 @@ class _CIFHandler:
         self.collate_audit_information()
 
         path.mkdir(parents=True, exist_ok=True)
-        with open(str(path.joinpath(self._outfile)), "w") as fh:
+        if self._outfile.endswith(".bz2"):
+            open_fn = bz2.open
+        else:
+            open_fn = open
+        with open_fn(str(path.joinpath(self._outfile)), "wt") as fh:
             self._cif.show(out=fh)
 
     def get_block(self, blockname=None):

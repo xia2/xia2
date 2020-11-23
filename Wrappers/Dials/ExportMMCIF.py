@@ -21,12 +21,17 @@ def ExportMMCIF(DriverType=None):
             self._partiality_threshold = 0.4
             self._combine_partials = True
             self._intensity_choice = "scale"
+            self._compress = None
 
         def set_intensity_choice(self, choice):
             self._intensity_choice = choice
 
         def set_partiality_threshold(self, partiality_threshold):
             self._partiality_threshold = partiality_threshold
+
+        def set_compression(self, compression=None):
+            "Set a compression type: gz bz2 xz or None(uncompressed)"
+            self._compress = compression
 
         def set_combine_partials(self, combine_partials):
             self._combine_partials = combine_partials
@@ -59,6 +64,8 @@ def ExportMMCIF(DriverType=None):
             self.add_command_line("mmcif.hklout=%s" % self._filename)
             if self._combine_partials:
                 self.add_command_line("combine_partials=true")
+            if self._compress:
+                self.add_command_line("mmcif.compress=%s" % self._compress)
             self.add_command_line(
                 "partiality_threshold=%s" % self._partiality_threshold
             )
