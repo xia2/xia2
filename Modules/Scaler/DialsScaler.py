@@ -824,20 +824,21 @@ pipeline=dials (supported for pipeline=dials-aimless).
             convert_mtz_to_sca(mtz_filename)
 
         # Export an mmCIF file using dials.export.
-        exporter = ExportMMCIF()
-        exporter.set_working_directory(self.get_working_directory())
-        exporter.set_experiments_filename(self._scaled_experiments)
-        exporter.set_reflections_filename(self._scaled_reflections)
-        exporter.set_partiality_threshold(
-            PhilIndex.params.dials.scale.partiality_threshold
-        )  # 0.4 default
-        mmcif_path = scaled_unmerged_mtz_path.rstrip(".mtz") + ".mmcif"
-        exporter.set_filename(mmcif_path)
-        auto_logfiler(exporter)
-        logger.debug("Exporting %s", mmcif_path)
-        exporter.run()
+        if PhilIndex.params.xia2.settings.output.mmcif.write_unmerged:
+            exporter = ExportMMCIF()
+            exporter.set_working_directory(self.get_working_directory())
+            exporter.set_experiments_filename(self._scaled_experiments)
+            exporter.set_reflections_filename(self._scaled_reflections)
+            exporter.set_partiality_threshold(
+                PhilIndex.params.dials.scale.partiality_threshold
+            )  # 0.4 default
+            mmcif_path = scaled_unmerged_mtz_path.rstrip(".mtz") + ".mmcif"
+            exporter.set_filename(mmcif_path)
+            auto_logfiler(exporter)
+            logger.debug("Exporting %s", mmcif_path)
+            exporter.run()
 
-        FileHandler.record_temporary_file(mmcif_path)
+            FileHandler.record_temporary_file(mmcif_path)
 
         # Also export just integrated data.
         for si in self.sweep_infos:
@@ -905,8 +906,11 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
 """
             % dials_version
         )
-        mmblock_dials = iotbx.cif.reader(file_path=mmcif_path).model()
-        mmCIF.set_block("unmerged", mmblock_dials["dials"])
+        if PhilIndex.params.xia2.settings.output.mmcif.write_unmerged:
+            mmblock_dials = iotbx.cif.reader(file_path=mmcif_path).model()
+            mmCIF.set_block(
+                f"{self._scalr_pname}_{self._scalr_xname}", mmblock_dials["dials"]
+            )
 
     def _update_scaled_unit_cell_from_scaled_data(self):
 

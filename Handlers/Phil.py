@@ -987,6 +987,15 @@ xia2.settings
     program = *pointless dials
       .type = choice
   }
+  output
+  {
+    mmcif {
+      write_unmerged = True
+        .type = bool
+        .help = "Option to turn off writing of unmerged data to mmcif file"
+        .expert_level = 2
+    }
+  }
 }
 """,
     process_includes=True,

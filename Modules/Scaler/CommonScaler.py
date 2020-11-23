@@ -531,7 +531,10 @@ class CommonScaler(Scaler):
         if not PhilIndex.params.xia2.settings.small_molecule:
             self._scale_finish_chunk_3_truncate()
 
-        if PhilIndex.params.xia2.settings.scaler != "dials":
+        if (
+            PhilIndex.params.xia2.settings.scaler != "dials"
+            and PhilIndex.params.xia2.settings.output.mmcif.write_unmerged
+        ):
             # do this before any file mangling for mad data.
             self._scale_finish_chunk_3point1_add_to_mmcif()
 
@@ -911,19 +914,7 @@ class CommonScaler(Scaler):
         for cname, xcryst in xinfo.get_crystals().items():
             # Note - likely only ever one xcrystal, but handle possibility of multiple
             reflection_files = xcryst.get_scaled_merged_reflections()
-
-            pname = None
-            try:  # XDSScaler has _sweep_info, others have sweep_handler
-                epochs = sorted(self._sweep_information.keys())
-                pname = self._sweep_information[epochs[0]]["pname"]
-            except AttributeError:
-                epoch = self._sweep_handler.get_epochs()[0]
-                pname = self._sweep_handler.get_sweep_information(
-                    epoch
-                ).get_project_info()[0]
-            assert pname, "Unable to find project name"
-
-            block_name = "%s_%s" % (pname, cname)
+            block_name = f"{self._scalr_pname}_{cname}"
 
             # First add section information
             cif_block = iotbx.cif.model.block()
@@ -950,7 +941,7 @@ class CommonScaler(Scaler):
                 # be in here.
 
                 if nwaves > 1:
-                    key = "%s_%s_%s" % (pname, cname, wname)
+                    key = f"{self._scalr_pname}_{cname}_{wname}"
                 else:
                     key = block_name
 
