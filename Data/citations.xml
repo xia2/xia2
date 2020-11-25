@@ -95,23 +95,6 @@ url = {https://doi.org/10.1107/S0907444913000061},
 </bibtex>
 </citation>
 
-<citation program="lepage-cell-reduction">
-<bibtex>
-@article{LePage:a21775,
-author = "Le Page, Y.",
-title = "{The derivation of the axes of the conventional unit cell from the dimensions of the Buerger-reduced cell}",
-journal = "Journal of Applied Crystallography",
-year = "1982",
-volume = "15",
-number = "3",
-pages = "255--259",
-month = "Jun",
-doi = {10.1107/S0021889882011959},
-url = {https://doi.org/10.1107/S0021889882011959},
-}
-</bibtex>
-</citation>
-
 <citation program="xds">
 <acta>Kabsch, W. (2010) Acta Cryst. D66, 125-132.</acta>
 <software_type>"package"</software_type>
@@ -152,37 +135,6 @@ url = {https://doi.org/10.1107/S0907444910045749},
 </bibtex>
 </citation>
 
-<citation program="distl">
-<acta>Zhang, Z., Sauter, N. K., van den Bedem, H., Snell, G. and Deacon, A. M. (2006) J. Appl. Cryst 39, 112-119.</acta>
-<bibtex>
-@article{zhang2006adi,
-  title={{Automated diffraction image analysis and spot searching for high-throughput crystal screening}},
-  author={Zhang, Z. and Sauter, N.K. and van den Bedem, H. and Snell, G. and Deacon, A.M.},
-  journal={J. Appl. Cryst},
-  volume={39},
-  pages={112--119},
-  year={2006}
-}
-</bibtex>
-</citation>
-
-<citation program="d*TREK">
-<bibtex>
-@article{Pflugrath:ba0030,
-author = "Pflugrath, J. W.",
-title = "{The finer things in X-ray diffraction data collection}",
-journal = "Acta Crystallographica Section D",
-year = "1999",
-volume = "55",
-number = "10",
-pages = "1718--1725",
-month = "Oct",
-doi = {10.1107/S090744499900935X},
-url = {https://doi.org/10.1107/S090744499900935X},
-}
-</bibtex>
-</citation>
-
 <citation program="pointless">
 <acta>Evans, P. (2006) Acta Cryst. D62, 72-82.</acta>
 <software_type>"program"</software_type>
@@ -201,47 +153,6 @@ pages = "72--82",
 month = "Jan",
 doi = {10.1107/S0907444905036693},
 url = {https://doi.org/10.1107/S0907444905036693},
-}
-</bibtex>
-</citation>
-
-<citation program="mosflm">
-<software_type>"package"</software_type>
-<software_name>"MOSFLM"</software_name>
-<software_classification>"data processing"</software_classification>
-<software_description>"Data integration"</software_description>
-<bibtex>
-@article{LesliePowellMosflm,
-author = "Leslie, A. G. W. and Powell, H. R.",
-title = "{Processing Diffraction Data with Mosflm}",
-journal = "Evolving Methods in Macromolecular Crystallography",
-year = "2007",
-volume = "245",
-pages = "41--51",
-}
-</bibtex>
-</citation>
-
-<citation program="denzo">
-<bibtex>
-@article{otwinowski1997pxr,
-  title={{Processing of X-ray diffraction data in oscillation mode}},
-  author={Otwinowski, Z. and Minor, W.},
-  journal={Methods Enzymol},
-  volume={276},
-  pages={307--326},
-  year={1997}
-}
-</bibtex>
-</citation>
-
-<citation program="scala">
-<bibtex>
-@article{evans1997smd,
-  title={{Scaling of MAD data}},
-  author={Evans, P.R.},
-  journal={Proceedings of CCP4 Study Weekend},
-  year={1997}
 }
 </bibtex>
 </citation>
