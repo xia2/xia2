@@ -3,6 +3,10 @@
 <citation program="dials.scale">
 <acta>Beilsten-Edmands, J. et al. (2020) Acta Cryst. D76.</acta>
 <url>https://doi.org/10.1107/S2059798320003198</url>
+<software_type>"program"</software_type>
+<software_name>"DIALS"</software_name>
+<software_classification>"data scaling"</software_classification>
+<software_description>"Data scaling and merging within the DIALS software package"</software_description>
 <bibtex>
 @article{Beilsten-Edmands:di5035,
 author = "Beilsten-Edmands, James and Winter, Graeme and Gildea, Richard and Parkhurst, James and Waterman, David and Evans, Gwyndaf",
@@ -24,6 +28,10 @@ keywords = {diffraction, crystallography, multi-crystal, data analysis, scaling}
 <citation program="dials">
 <acta>Winter, G. et al. (2018) Acta Cryst. D74, 85-97.</acta>
 <url>https://doi.org/10.1107/S2059798317017235</url>
+<software_type>"package"</software_type>
+<software_name>"DIALS"</software_name>
+<software_classification>"data processing"</software_classification>
+<software_description>"Data processing and integration within the DIALS software package"</software_description>
 <bibtex>
 @article{Winter:di5011,
 author = "Winter, G., Waterman, D. G., Parkhurst, J. M., Brewster, A. S., Gildea, R. J., Gerstel, M., Fuentes-Montero, L., Vollmar, M., Michels-Clark, T., Young, I. D., Sauter, N. K. and Evans, G.",
@@ -44,6 +52,10 @@ keywords = {X-ray diffraction, data processing, methods development, DIALS},
 
 <citation program="xia2">
 <acta>Winter, G. (2010) J. Appl. Cryst. 43, 186-190.</acta>
+<software_type>"package"</software_type>
+<software_name>"xia2"</software_name>
+<software_classification>"data processing"</software_classification>
+<software_description>"An expert system to perform automated X-ray diffraction data processing"</software_description>
 <bibtex>
 @article{Winter:ea5113,
 author = "Winter, G.",
@@ -63,6 +75,10 @@ url = {https://doi.org/10.1107/S0021889809045701},
 <citation program="aimless">
 <acta>Evans, P. R. and Murshudov, G. N. (2013) Acta Cryst. D69, 1204-1214.</acta>
 <url>http://journals.iucr.org/d/issues/2013/07/00/ba5190/index.html</url>
+<software_type>"program"</software_type>
+<software_name>"Aimless"</software_name>
+<software_classification>"data scaling"</software_classification>
+<software_description>"Data scaling and merging"</software_description>
 <bibtex>
 @article{Evans:ba5190,
 author = "Evans, Philip R. and Murshudov, Garib N.",
@@ -98,6 +114,10 @@ url = {https://doi.org/10.1107/S0021889882011959},
 
 <citation program="xds">
 <acta>Kabsch, W. (2010) Acta Cryst. D66, 125-132.</acta>
+<software_type>"package"</software_type>
+<software_name>"XDS"</software_name>
+<software_classification>"data processing"</software_classification>
+<software_description>"Data processing, scaling and merging"</software_description>
 <bibtex>
 @article{Kabsch:dz5179,
 author = "Kabsch, Wolfgang",
@@ -165,6 +185,10 @@ url = {https://doi.org/10.1107/S090744499900935X},
 
 <citation program="pointless">
 <acta>Evans, P. (2006) Acta Cryst. D62, 72-82.</acta>
+<software_type>"program"</software_type>
+<software_name>"pointless"</software_name>
+<software_classification>"data scaling"</software_classification>
+<software_description>"Symmetry assessment program"</software_description>
 <bibtex>
 @article{Evans:ba5084,
 author = "Evans, Philip",
@@ -182,6 +206,10 @@ url = {https://doi.org/10.1107/S0907444905036693},
 </citation>
 
 <citation program="mosflm">
+<software_type>"package"</software_type>
+<software_name>"MOSFLM"</software_name>
+<software_classification>"data processing"</software_classification>
+<software_description>"Data integration"</software_description>
 <bibtex>
 @article{LesliePowellMosflm,
 author = "Leslie, A. G. W. and Powell, H. R.",
@@ -220,6 +248,10 @@ pages = "41--51",
 
 <citation program="delta_cc_half">
 <acta>Assmann, G., Brehm, W. and Diederichs, K. (2016). J. Appl. Cryst. 49, 1021-1028.</acta>
+<software_type>"program"</software_type>
+<software_name>"xia2.delta_cc_half"</software_name>
+<software_classification>"data reduction"</software_classification>
+<software_description>"Assessment of data nonisomorphism using an implementation of the delta-CC-Half algorithm"</software_description>
 <bibtex>
 @article{assmann2016identification,
   title={Identification of rogue datasets in serial crystallography},
