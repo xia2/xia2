@@ -5,14 +5,35 @@ import datetime
 
 import iotbx.cif.model
 import xia2.Handlers.Citations
-import xia2.XIA2Version
+from xia2.Handlers.Versions import versions
+
+mmcif_software_header = (
+    "_software.pdbx_ordinal",
+    "_software.citation_id",
+    "_software.name",  # as defined at [1]
+    "_software.version",
+    "_software.type",
+    "_software.classification",
+    "_software.description",
+)
+
+mmcif_citations_header = (
+    "_citation.id",
+    "_citation.journal_abbrev",
+    "_citation.journal_volume",
+    "_citation.journal_issue",
+    "_citation.page_first",
+    "_citation.page_last",
+    "_citation.year",
+    "_citation.title",
+)
 
 
 class _CIFHandler:
     def __init__(self, mmCIFsemantics=False):
         self._cif = iotbx.cif.model.cif()
         self._outfile = "xia2.cif" if not mmCIFsemantics else "xia2.mmcif.bz2"
-
+        self._mmCIFsemantics = mmCIFsemantics
         # CIF/mmCIF key definitions
         self._keyname = (
             {
@@ -115,38 +136,83 @@ class _CIFHandler:
 
     def collate_audit_information(self, blockname=None):
         block = self.get_block(blockname)
-        block[self._keyname["audit.method"]] = xia2.XIA2Version.Version
+        block[self._keyname["audit.method"]] = versions["xia2"]
         block[self._keyname["audit.date"]] = datetime.date.today().isoformat()
 
         xia2.Handlers.Citations.Citations.cite("xia2")
-        programs = []
-        for program in xia2.Handlers.Citations.Citations.get_programs():
-            citations = []
-            for citation in xia2.Handlers.Citations.Citations.find_citations(program):
-                if "acta" in citation:
-                    if ")" in citation["acta"]:
-                        citations.append(
-                            citation["acta"][0 : citation["acta"].index(")")].replace(
-                                " (", ", "
-                            )
+
+        if self._mmCIFsemantics:
+            if "_software" not in block.loop_keys():
+                block.add_loop(iotbx.cif.model.loop(header=mmcif_software_header))
+                block.add_loop(iotbx.cif.model.loop(header=mmcif_citations_header))
+            software_loop = block.get_loop("_software")
+            citations_loop = block.get_loop("_citation")
+            # clear rows to avoid repeated row writing for multiple calls to
+            # collate_audit_information
+            for _ in range(0, software_loop.n_rows()):
+                software_loop.delete_row(0)
+                citations_loop.delete_row(0)
+            count = 1
+            for citation in xia2.Handlers.Citations.Citations.get_citations_dicts():
+                if "software_type" in citation:
+                    software_loop.add_row(
+                        (
+                            count,
+                            count,
+                            citation["software_name"],
+                            versions[citation["software_name"].lower()],
+                            citation["software_type"],
+                            citation["software_classification"],
+                            citation["software_description"],
                         )
-                    else:
-                        citations.append(citation["acta"])
-            if program == "xia2":
-                program = xia2.XIA2Version.Version
-            elif program == "dials":
-                import dials.util.version
+                    )
+                    bibtex_data = xia2.Handlers.Citations.Citations._parse_bibtex(
+                        citation["bibtex"]
+                    )
+                    citations_loop.add_row(
+                        (
+                            count,
+                            bibtex_data["journal"],
+                            bibtex_data["volume"],
+                            bibtex_data["number"],
+                            bibtex_data["pages"].split("--")[0],
+                            bibtex_data["pages"].split("--")[1],
+                            bibtex_data["year"],
+                            bibtex_data["title"].replace("\\it ", ""),
+                        )
+                    )
+                    count += 1
+        else:
+            programs = []
+            for program in xia2.Handlers.Citations.Citations.get_programs():
+                citations = []
+                for citation in xia2.Handlers.Citations.Citations.find_citations(
+                    program
+                ):
+                    if "acta" in citation:
+                        if ")" in citation["acta"]:
+                            citations.append(
+                                citation["acta"][
+                                    0 : citation["acta"].index(")")
+                                ].replace(" (", ", ")
+                            )
+                        else:
+                            citations.append(citation["acta"])
+                if program == "xia2":
+                    program = versions["xia2"]
+                elif program == "dials":
+                    program = versions["dials"]
+                if citations:
+                    program = program + " (%s)" % ("; ".join(citations))
+                programs.append(program)
+            block[self._keyname["sw.reduction"]] = "\n".join(programs)
 
-                program = dials.util.version.dials_version()
-            if citations:
-                program = program + " (%s)" % ("; ".join(citations))
-            programs.append(program)
-        block[self._keyname["sw.reduction"]] = "\n".join(programs)
-
-        block[self._keyname["references"]] = "\n".join(
-            xia2.Handlers.Citations.Citations.get_citations_acta()
-        )
+            block[self._keyname["references"]] = "\n".join(
+                xia2.Handlers.Citations.Citations.get_citations_acta()
+            )
 
 
 CIF = _CIFHandler()
 mmCIF = _CIFHandler(mmCIFsemantics=True)
+
+# [1] http://mmcif.wwpdb.org/dictionaries/mmcif_pdbx_v50.dic/Items/_software.name.html
