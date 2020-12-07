@@ -931,19 +931,12 @@ class CommonScaler(Scaler):
             xtal_id = 0
             entryno = 1
 
-            nwaves = len(reflection_files["mtz_unmerged"].values())
             results = {}
 
             for wname, unmerged_mtz in reflection_files["mtz_unmerged"].items():
                 xwav = xcryst.get_xwavelength(wname).get_wavelength()
                 wls.append(xwav)
-                # in MAD case, multiple scans at same wavelength can potentially
-                # be in here.
-
-                if nwaves > 1:
-                    key = f"{self._scalr_pname}_{cname}_{wname}"
-                else:
-                    key = block_name
+                key = f"{self._scalr_pname}_{cname}_{wname}"
 
                 umtz = mtz.object(file_name=unmerged_mtz)
                 result = self._iotbx_merging_statistics(unmerged_mtz, anomalous=False)

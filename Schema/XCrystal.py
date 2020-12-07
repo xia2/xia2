@@ -385,9 +385,6 @@ class XCrystal:
             CIF.set_wavelengths(
                 [w.get_wavelength() for w in self._wavelengths.values()]
             )
-            mmCIF.set_wavelengths(
-                [w.get_wavelength() for w in self._wavelengths.values()]
-            )
         else:
             for wavelength in list(self._wavelengths.keys()):
                 full_wave_name = "%s_%s_%s" % (
@@ -401,24 +398,28 @@ class XCrystal:
                 CIF.get_block(full_wave_name)[
                     "_diffrn_radiation_wavelength.id"
                 ] = wavelength
-                mmCIF.get_block(full_wave_name)[
-                    "_diffrn_radiation_wavelength.wavelength"
-                ] = self._wavelengths[wavelength].get_wavelength()
-                mmCIF.get_block(full_wave_name)[
-                    "_diffrn_radiation_wavelength.id"
-                ] = wavelength
             CIF.set_wavelengths(
                 {
                     name: wave.get_wavelength()
                     for name, wave in self._wavelengths.items()
                 }
             )
-            mmCIF.set_wavelengths(
-                {
-                    name: wave.get_wavelength()
-                    for name, wave in self._wavelengths.items()
-                }
+
+        for wavelength in list(self._wavelengths.keys()):
+            full_wave_name = "%s_%s_%s" % (
+                self._project._name,
+                self._name,
+                wavelength,
             )
+            mmCIF.get_block(full_wave_name)[
+                "_diffrn_radiation_wavelength.wavelength"
+            ] = self._wavelengths[wavelength].get_wavelength()
+            mmCIF.get_block(full_wave_name)[
+                "_diffrn_radiation_wavelength.id"
+            ] = wavelength
+        mmCIF.set_wavelengths(
+            {name: wave.get_wavelength() for name, wave in self._wavelengths.items()}
+        )
 
         result += "Assuming spacegroup: %s\n" % spacegroup
         if len(spacegroups) > 1:

@@ -741,6 +741,24 @@ pipeline=dials (supported for pipeline=dials-aimless).
                 exporter.run()
                 FileHandler.record_data_file(mtz_filename)
 
+                # Export an mmCIF file using dials.export.
+                if PhilIndex.params.xia2.settings.output.mmcif.write_unmerged:
+                    exporter = ExportMMCIF()
+                    exporter.set_working_directory(self.get_working_directory())
+                    exporter.set_experiments_filename(expt_name)
+                    exporter.set_reflections_filename(refl_name)
+                    exporter.set_compression("bz2")
+                    exporter.set_partiality_threshold(
+                        PhilIndex.params.dials.scale.partiality_threshold
+                    )  # 0.4 default
+                    mmcif_path = mtz_filename.rstrip(".mtz") + ".mmcif"
+                    exporter.set_filename(mmcif_path)
+                    auto_logfiler(exporter)
+                    logger.debug("Exporting %s", mmcif_path)
+                    exporter.run()
+
+                    FileHandler.record_temporary_file(mmcif_path)
+
                 # now convert to .sca format
                 convert_mtz_to_sca(mtz_filename)
 
@@ -824,23 +842,23 @@ pipeline=dials (supported for pipeline=dials-aimless).
             # now export to sca format
             convert_mtz_to_sca(mtz_filename)
 
-        # Export an mmCIF file using dials.export.
-        if PhilIndex.params.xia2.settings.output.mmcif.write_unmerged:
-            exporter = ExportMMCIF()
-            exporter.set_working_directory(self.get_working_directory())
-            exporter.set_experiments_filename(self._scaled_experiments)
-            exporter.set_reflections_filename(self._scaled_reflections)
-            exporter.set_compression("bz2")
-            exporter.set_partiality_threshold(
-                PhilIndex.params.dials.scale.partiality_threshold
-            )  # 0.4 default
-            mmcif_path = scaled_unmerged_mtz_path.rstrip(".mtz") + ".mmcif"
-            exporter.set_filename(mmcif_path)
-            auto_logfiler(exporter)
-            logger.debug("Exporting %s", mmcif_path)
-            exporter.run()
+            # Export an mmCIF file using dials.export.
+            if PhilIndex.params.xia2.settings.output.mmcif.write_unmerged:
+                exporter = ExportMMCIF()
+                exporter.set_working_directory(self.get_working_directory())
+                exporter.set_experiments_filename(self._scaled_experiments)
+                exporter.set_reflections_filename(self._scaled_reflections)
+                exporter.set_compression("bz2")
+                exporter.set_partiality_threshold(
+                    PhilIndex.params.dials.scale.partiality_threshold
+                )  # 0.4 default
+                mmcif_path = scaled_unmerged_mtz_path.rstrip(".mtz") + ".mmcif"
+                exporter.set_filename(mmcif_path)
+                auto_logfiler(exporter)
+                logger.debug("Exporting %s", mmcif_path)
+                exporter.run()
 
-            FileHandler.record_temporary_file(mmcif_path)
+                FileHandler.record_temporary_file(mmcif_path)
 
         # Also export just integrated data.
         for si in self.sweep_infos:
@@ -909,11 +927,28 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
             % dials_version
         )
         if PhilIndex.params.xia2.settings.output.mmcif.write_unmerged:
-            mmcif_file_object = bz2.open(mmcif_path + ".bz2")
-            mmblock_dials = iotbx.cif.reader(file_object=mmcif_file_object).model()
-            mmCIF.set_block(
-                f"{self._scalr_pname}_{self._scalr_xname}", mmblock_dials["dials"]
-            )
+            if len(dnames_set) > 1:
+                for dname in dnames_set:
+                    mmcif_path = (
+                        scaled_unmerged_mtz_path.rstrip(".mtz") + "_%s.mmcif" % dname
+                    )
+                    mmcif_file_object = bz2.open(mmcif_path + ".bz2")
+                    mmblock_dials = iotbx.cif.reader(
+                        file_object=mmcif_file_object
+                    ).model()
+                    mmblock_dials["dials"][
+                        "_pdbx_diffrn_data_section.id"
+                    ] = f"dials unmerged {dname}"
+                    blockname = f"{self._scalr_pname}_{self._scalr_xname}_{dname}"
+                    mmCIF.get_block(blockname).update(mmblock_dials["dials"])
+            else:
+                mmcif_file_object = bz2.open(mmcif_path + ".bz2")
+                mmblock_dials = iotbx.cif.reader(file_object=mmcif_file_object).model()
+                mmblock_dials["dials"][
+                    "_pdbx_diffrn_data_section.id"
+                ] = f"dials unmerged {dname}"
+                blockname = f"{self._scalr_pname}_{self._scalr_xname}_{dnames_set[0]}"
+                mmCIF.get_block(blockname).update(mmblock_dials["dials"])
 
     def _update_scaled_unit_cell_from_scaled_data(self):
 
@@ -976,15 +1011,15 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
                         tt_grouprefiner.import_cif(),
                         tt_grouprefiner.import_mmcif(),
                     )
-
-                    cif_in = tt_grouprefiner.import_cif()
-                    cif_out = CIF.get_block(pi)
-                    for key in sorted(cif_in.keys()):
-                        cif_out[key] = cif_in[key]
-                    mmcif_in = tt_grouprefiner.import_mmcif()
-                    mmcif_out = mmCIF.get_block(pi)
-                    for key in sorted(mmcif_in.keys()):
-                        mmcif_out[key] = mmcif_in[key]
+                    if len(groups_list) > 1:
+                        cif_in = tt_grouprefiner.import_cif()
+                        cif_out = CIF.get_block(pi)
+                        for key in sorted(cif_in.keys()):
+                            cif_out[key] = cif_in[key]
+                        mmcif_in = tt_grouprefiner.import_mmcif()
+                        mmcif_out = mmCIF.get_block(pi)
+                        for key in sorted(mmcif_in.keys()):
+                            mmcif_out[key] = mmcif_in[key]
 
             # now do two theta refine on combined scaled data.
             tt_refiner = TwoThetaRefine()
