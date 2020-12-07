@@ -11,6 +11,7 @@ from collections import OrderedDict
 import iotbx.merging_statistics
 from cctbx.xray import scatterer
 from cctbx.xray.structure import structure
+from xia2.Handlers.Citations import Citations
 from iotbx import mtz
 from cctbx import sgtbx
 from iotbx.reflection_file_reader import any_reflection_file
@@ -914,33 +915,29 @@ class CommonScaler(Scaler):
         for cname, xcryst in xinfo.get_crystals().items():
             # Note - likely only ever one xcrystal, but handle possibility of multiple
             reflection_files = xcryst.get_scaled_merged_reflections()
-            block_name = f"{self._scalr_pname}_{cname}"
-
-            # First add section information
-            cif_block = iotbx.cif.model.block()
-            cif_block["_pdbx_diffrn_data_section.id"] = "unmerged"
-            cif_block["_pdbx_diffrn_data_section.type_scattering"] = "x-ray"
-            cif_block["_pdbx_diffrn_data_section.type_merged"] = "false"
-            cif_block["_pdbx_diffrn_data_section.type_scaled"] = "true"
-
-            cif_loop_a = iotbx.cif.model.loop(header=section_a_header)
-            cif_loop_b = iotbx.cif.model.loop(header=section_b_header)
-
-            wls = []
-
-            xtal_id = 0
-            entryno = 1
-
-            results = {}
 
             for wname, unmerged_mtz in reflection_files["mtz_unmerged"].items():
                 xwav = xcryst.get_xwavelength(wname).get_wavelength()
-                wls.append(xwav)
                 key = f"{self._scalr_pname}_{cname}_{wname}"
+
+                mmblock = mmCIF.get_block(key)
+
+                # First add section information
+                mmblock["_pdbx_diffrn_data_section.id"] = f"unmerged {wname}"
+                mmblock["_pdbx_diffrn_data_section.type_scattering"] = "x-ray"
+                mmblock["_pdbx_diffrn_data_section.type_merged"] = "false"
+                mmblock["_pdbx_diffrn_data_section.type_scaled"] = "true"
+                mmblock["_diffrn_source.pdbx_wavelength_list"] = xwav
+
+                cif_loop_a = iotbx.cif.model.loop(header=section_a_header)
+                cif_loop_b = iotbx.cif.model.loop(header=section_b_header)
+
+                mmblock.add_loop(cif_loop_a)
+                mmblock.add_loop(cif_loop_b)
 
                 umtz = mtz.object(file_name=unmerged_mtz)
                 result = self._iotbx_merging_statistics(unmerged_mtz, anomalous=False)
-                results[key] = {"stats": result}
+                mmblock.update(result.as_cif_block())
 
                 scans = scan_info_from_batch_headers(umtz)
 
@@ -977,9 +974,11 @@ class CommonScaler(Scaler):
 
                 scan_no = flex.int(intensities.size(), 0)
                 image_no = flex.int(intensities.size(), 0)
+                xtal_id = 0
+                entryno = 1
 
                 for _, data in scans.items():
-                    # if multisweep, should only write one crystal. into loop_a
+                    # if multisweep, should only write one crystal. into loop_a (per wavelength)
                     if multisweep and xtal_id == 0:
                         xtal_id = 1
                         cif_loop_a.add_row(
@@ -1038,22 +1037,9 @@ class CommonScaler(Scaler):
                     scales,
                     angles,
                 ]
-                results[key]["unmerged"] = loop_values
 
-            cif_block["_diffrn_source.pdbx_wavelength_list"] = ", ".join(
-                str(w) for w in set(wls)
-            )
-
-            cif_block.add_loop(cif_loop_a)
-            cif_block.add_loop(cif_loop_b)
-
-            mmCIF.set_block(block_name, cif_block)
-
-            for k, v in results.items():
-                mmblock = mmCIF.get_block(k)
-                mmblock.update(v["stats"].as_cif_block())
                 cif_loop = iotbx.cif.model.loop(
-                    data=dict(zip(unmerged_header, v["unmerged"]))
+                    data=dict(zip(unmerged_header, loop_values))
                 )
                 mmblock.add_loop(cif_loop)
 
@@ -1322,6 +1308,7 @@ class CommonScaler(Scaler):
             )
             for pi in groups:
                 tt_grouprefiner = TwoThetaRefine()
+                Citations.cite("dials")
                 tt_grouprefiner.set_working_directory(self.get_working_directory())
                 auto_logfiler(tt_grouprefiner)
                 args = list(zip(*groups[pi]))
@@ -1372,6 +1359,7 @@ class CommonScaler(Scaler):
             # Two theta refine everything together
             if len(groups) > 1:
                 tt_refiner = TwoThetaRefine()
+                Citations.cite("dials")
                 tt_refiner.set_working_directory(self.get_working_directory())
                 tt_refiner.set_output_p4p(p4p_file)
                 auto_logfiler(tt_refiner)
@@ -1406,13 +1394,8 @@ class CommonScaler(Scaler):
             if params.xia2.settings.small_molecule:
                 FileHandler.record_data_file(p4p_file)
 
-            import dials.util.version
-
             cif_out = CIF.get_block("xia2")
             mmcif_out = mmCIF.get_block("xia2")
-            cif_out["_computing_cell_refinement"] = mmcif_out[
-                "_computing.cell_refinement"
-            ] = ("DIALS 2theta refinement, %s" % dials.util.version.dials_version())
             for key in sorted(cif_in.keys()):
                 cif_out[key] = cif_in[key]
             for key in sorted(mmcif_in.keys()):
@@ -1434,7 +1417,6 @@ class CommonScaler(Scaler):
 
             # Write average unit cell to .cif
             cif_out = CIF.get_block("xia2")
-            cif_out["_computing_cell_refinement"] = "AIMLESS averaged unit cell"
             for cell, cifname in zip(
                 self._scalr_cell,
                 [

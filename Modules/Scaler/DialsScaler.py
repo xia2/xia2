@@ -1050,9 +1050,6 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
 
             cif_out = CIF.get_block("xia2")
             mmcif_out = mmCIF.get_block("xia2")
-            cif_out["_computing_cell_refinement"] = mmcif_out[  # pylint: disable=E1137
-                "_computing.cell_refinement"
-            ] = ("DIALS 2theta refinement, %s" % dials.util.version.dials_version())
             for key in sorted(cif_in.keys()):
                 cif_out[key] = cif_in[key]
             for key in sorted(mmcif_in.keys()):
@@ -1077,9 +1074,6 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
 
             # Write average unit cell to .cif
             cif_out = CIF.get_block("xia2")
-            cif_out[  # pylint: disable=E1137
-                "_computing_cell_refinement"
-            ] = "AIMLESS averaged unit cell"
             for cell, cifname in zip(
                 self._scalr_cell,
                 [
