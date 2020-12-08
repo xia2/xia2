@@ -18,6 +18,7 @@ __pycache__/
 
 # Python packaging
 /dist
+/src/xia2.egg-info
 /xia2.egg-info
 
 # Ignored Mathematica files shall be prefixed by _
