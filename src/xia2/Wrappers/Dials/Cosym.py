@@ -33,6 +33,7 @@ def DialsCosym(DriverType=None, decay_correction=None):
             self._json = None
             self._html = None
             self._best_monoclinic_beta = False
+            self._lattice_symmetry_max_delta = None
 
         # getter and setter methods
 
@@ -59,6 +60,9 @@ def DialsCosym(DriverType=None, decay_correction=None):
 
         def set_best_monoclinic_beta(self, best_monoclinic_beta):
             self._best_monoclinic_beta = best_monoclinic_beta
+
+        def set_lattice_symmetry_max_delta(self, lattice_symmetry_max_delta):
+            self._lattice_symmetry_max_delta = lattice_symmetry_max_delta
 
         def get_json(self):
             return self._json
@@ -106,9 +110,11 @@ def DialsCosym(DriverType=None, decay_correction=None):
                     "%d_dials.cosym.html" % self.get_xpid(),
                 )
             self.add_command_line("output.html=%s" % self._html)
-            self.add_command_line(
-                "best_monoclinic_beta=%s" % self._best_monoclinic_beta
-            )
+            self.add_command_line(f"best_monoclinic_beta={self._best_monoclinic_beta}")
+            if self._lattice_symmetry_max_delta is not None:
+                self.add_command_line(
+                    f"lattice_symmetry_max_delta={self._lattice_symmetry_max_delta}"
+                )
 
             self.start()
             self.close_wait()
