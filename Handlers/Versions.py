@@ -24,6 +24,14 @@ class _Versions(Mapping):
     def __len__(self):
         return len(self._raw_dict)
 
+    def __eq__(self, other):
+        if isinstance(other, _Versions):
+            return all(x == y for x, y in zip(self, other))
+        return super().__eq__(other)
+
+    def __ne__(self, other):
+        return not (self == other)
+
 
 def get_xia2_version():
     return xia2.XIA2Version.Version
