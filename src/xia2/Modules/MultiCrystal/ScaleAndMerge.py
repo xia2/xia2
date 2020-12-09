@@ -98,8 +98,6 @@ symmetry {
   cosym {
     include scope dials.algorithms.symmetry.cosym.phil_scope
   }
-  le_page_max_delta = 5
-    .type = float(value_min=0)
   laue_group = None
     .type = space_group
     .help = "Specify the Laue group. If None, then the Laue group will be determined "
@@ -824,6 +822,9 @@ class MultiCrystalScale:
         if self._params.symmetry.laue_group is not None:
             cosym.set_space_group(self._params.symmetry.laue_group.group())
         cosym.set_best_monoclinic_beta(self._params.symmetry.cosym.best_monoclinic_beta)
+        cosym.set_lattice_symmetry_max_delta(
+            self._params.symmetry.cosym.lattice_symmetry_max_delta
+        )
         cosym.run()
         self._cosym_analysis = cosym.get_cosym_analysis()
         self._experiments_filename = cosym.get_reindexed_experiments()
