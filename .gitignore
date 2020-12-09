@@ -9,6 +9,7 @@ __pycache__/
 
 # Documentation build
 /doc/sphinx/build
+/html
 
 # Regression test outputs
 /Test/regression/output
