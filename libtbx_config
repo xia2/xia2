@@ -2,13 +2,4 @@
     "modules_required_for_build": [],
     "modules_required_for_use": ["cctbx", "iotbx", "dxtbx", "mmtbx"],
     "optional_modules": ["dials"],
-    "python_required": [
-        "dials-data>=2.0",
-        "Jinja2",
-        "mock>=2.0",
-        "procrunner",
-        "pytest>=3.1",
-        "pytest-mock>=1.11,<2",
-        "tabulate",
-    ],
 }

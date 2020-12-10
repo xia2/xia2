@@ -144,6 +144,7 @@ steps:
     cp -v build/activate dials  # restore copy from the cache
     . dials
     cd build
+    libtbx.refresh  # this looks redundant, but is required to ensure all dispatchers are updated
     make reconf
   displayName: DIALS build (incremental)
   workingDirectory: $(Pipeline.Workspace)
