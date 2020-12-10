@@ -211,6 +211,7 @@ class MultiCrystalReport(MultiCrystalAnalysis):
         image_range_table,
         scale_and_filter_results=None,
     ):
+        self._data_manager.export_experiments("tmp.expt")
         unit_cell_graphs = self.unit_cell_analysis()
         if self._cluster_analysis is None:
             self._cluster_analysis = self.cluster_analysis()
@@ -264,8 +265,6 @@ any systematic grouping of points may suggest a preferential crystal orientation
                 key = "stereographic_projection_%s%s%s" % hkl
                 orientation_graphs[key] = d
                 styles[key] = "square-plot"
-
-        self._data_manager.export_experiments("tmp.expt")
 
         from jinja2 import Environment, ChoiceLoader, PackageLoader
 
