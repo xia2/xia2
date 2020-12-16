@@ -16,3 +16,4 @@ ensure_newline_before_comments=true
 package="xia2"
 package_dir=".."
 filename="CHANGELOG.rst"
+issue_format = "`#{issue} <https://github.com/xia2/xia2/issues/{issue}>`_"
