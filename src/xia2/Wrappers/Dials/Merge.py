@@ -26,6 +26,7 @@ def DialsMerge(DriverType=None):
             self._reflections_filename = None
             self._mtz_filename = None
             self._truncate = False
+            self._html_report = None
             self._project_name = None
             self._crystal_names = None
             self._dataset_names = None
@@ -61,6 +62,9 @@ def DialsMerge(DriverType=None):
         def get_mtz_filename(self):
             return self._mtz_filename
 
+        def set_html_report(self, filename):
+            self._html_report = filename
+
         def run(self):
             """Run dials.merge"""
             self.clear_command_line()
@@ -85,6 +89,7 @@ def DialsMerge(DriverType=None):
                 self.add_command_line(
                     "partiality_threshold=%s" % self._partiality_threshold
                 )
+            self.add_command_line("output.html=%s" % self._html_report)
 
             self.start()
             self.close_wait()
