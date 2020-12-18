@@ -1087,6 +1087,9 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
 
             # Write average unit cell to .cif
             cif_out = CIF.get_block("xia2")
+            cif_out[  # pylint: disable=E1137
+                "_computing_cell_refinement"
+            ] = "AIMLESS averaged unit cell"
             for cell, cifname in zip(
                 self._scalr_cell,
                 [

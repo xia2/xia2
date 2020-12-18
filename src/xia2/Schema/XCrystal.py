@@ -393,11 +393,8 @@ class XCrystal:
                     wavelength,
                 )
                 CIF.get_block(full_wave_name)[
-                    "_diffrn_radiation_wavelength.wavelength"
+                    "_diffrn_radiation_wavelength"
                 ] = self._wavelengths[wavelength].get_wavelength()
-                CIF.get_block(full_wave_name)[
-                    "_diffrn_radiation_wavelength.id"
-                ] = wavelength
             CIF.set_wavelengths(
                 {
                     name: wave.get_wavelength()
