@@ -1129,6 +1129,8 @@ class CCP4ScalerA(Scaler):
 
         block = CIF.get_block("xia2")
         mmblock = mmCIF.get_block("xia2")
+        mmblock["_exptl.entry_id"] = "xia2"
+        mmblock["_exptl.method"] = "X-RAY DIFFRACTION"
         block["_exptl_absorpt_correction_T_min"] = mmblock[
             "_exptl.absorpt_correction_T_min"
         ] = (

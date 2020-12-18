@@ -908,6 +908,8 @@ pipeline=dials (supported for pipeline=dials-aimless).
         dials_version = dials.util.version.dials_version()
         block = CIF.get_block("xia2")
         mmblock = mmCIF.get_block("xia2")
+        mmblock["_exptl.entry_id"] = "xia2"
+        mmblock["_exptl.method"] = "X-RAY DIFFRACTION"
         block["_exptl_absorpt_correction_T_min"] = mmblock[
             "_exptl.absorpt_correction_T_min"
         ] = overall_absmin  # = scaled relative to 1
@@ -926,29 +928,30 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
 """
             % dials_version
         )
+
+        def _add_to_block(blockname, mmcif_path):
+            mmcif_file_object = bz2.open(mmcif_path + ".bz2")
+            mmblock_dials = iotbx.cif.reader(file_object=mmcif_file_object).model()
+            # give the entry a consistent unique name in all fields
+            mmblock_dials["dials"]["_pdbx_diffrn_data_section.id"] = blockname
+            mmblock_dials["dials"]["_entry.id"] = blockname
+            for key in mmblock_dials["dials"].keys():
+                if key.endswith("entry_id"):
+                    mmblock_dials["dials"][key] = blockname
+            mmCIF.get_block(blockname).update(mmblock_dials["dials"])
+
         if PhilIndex.params.xia2.settings.output.mmcif.write_unmerged:
             if len(dnames_set) > 1:
                 for dname in dnames_set:
                     mmcif_path = (
                         scaled_unmerged_mtz_path.rstrip(".mtz") + "_%s.mmcif" % dname
                     )
-                    mmcif_file_object = bz2.open(mmcif_path + ".bz2")
-                    mmblock_dials = iotbx.cif.reader(
-                        file_object=mmcif_file_object
-                    ).model()
-                    mmblock_dials["dials"][
-                        "_pdbx_diffrn_data_section.id"
-                    ] = f"dials unmerged {dname}"
                     blockname = f"{self._scalr_pname}_{self._scalr_xname}_{dname}"
-                    mmCIF.get_block(blockname).update(mmblock_dials["dials"])
+                    _add_to_block(blockname, mmcif_path)
             else:
-                mmcif_file_object = bz2.open(mmcif_path + ".bz2")
-                mmblock_dials = iotbx.cif.reader(file_object=mmcif_file_object).model()
-                mmblock_dials["dials"][
-                    "_pdbx_diffrn_data_section.id"
-                ] = f"dials unmerged {dname}"
-                blockname = f"{self._scalr_pname}_{self._scalr_xname}_{dnames_set[0]}"
-                mmCIF.get_block(blockname).update(mmblock_dials["dials"])
+                dname = dnames_set[0]
+                blockname = f"{self._scalr_pname}_{self._scalr_xname}_{dname}"
+                _add_to_block(blockname, mmcif_path)
 
     def _update_scaled_unit_cell_from_scaled_data(self):
 
@@ -1018,8 +1021,13 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
                             cif_out[key] = cif_in[key]
                         mmcif_in = tt_grouprefiner.import_mmcif()
                         mmcif_out = mmCIF.get_block(pi)
+                        # reset the entry id to be the name of the new block
+                        mmcif_out["_entry.id"] = pi
                         for key in sorted(mmcif_in.keys()):
-                            mmcif_out[key] = mmcif_in[key]
+                            if key.endswith("entry_id"):
+                                mmcif_out[key] = pi
+                            else:
+                                mmcif_out[key] = mmcif_in[key]
 
             # now do two theta refine on combined scaled data.
             tt_refiner = TwoThetaRefine()
@@ -1053,7 +1061,10 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
             for key in sorted(cif_in.keys()):
                 cif_out[key] = cif_in[key]
             for key in sorted(mmcif_in.keys()):
-                mmcif_out[key] = mmcif_in[key]
+                if key.endswith("entry_id"):
+                    mmcif_out[key] = "xia2"
+                else:
+                    mmcif_out[key] = mmcif_in[key]
 
             logger.debug("Unit cell obtained by two-theta refinement")
 

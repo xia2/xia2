@@ -77,13 +77,18 @@ class _CIFHandler:
             if rt_mx.is_unit_mx():
                 continue
             symm_ops.append(str(rt_mx))
+        if self._mmCIFsemantics:
+            loop["_symmetry_equiv.id"] = list(range(1, len(symm_ops) + 1))
         loop[self._keyname["symm.ops"]] = symm_ops
 
         block = self.get_block(blockname)
+        if self._mmCIFsemantics:
+            block["_symmetry.entry_id"] = block["_entry.id"]
         block[self._keyname["symm.sgsymbol"]] = spacegroup.lookup_symbol()
+        if self._mmCIFsemantics:
+            block["_space_group.id"] = 1  # category needs an 'id'
         block[self._keyname["sg.system"]] = sg.crystal_system().lower()
         block[self._keyname["sg.number"]] = spacegroup.number()
-        block[self._keyname["cell.Z"]] = sg.order_z()
         block.add_loop(loop)
 
     def set_wavelengths(self, wavelength, blockname=None):
@@ -128,6 +133,7 @@ class _CIFHandler:
         assert blockname, "invalid block name"
         if blockname not in self._cif:
             self._cif[blockname] = iotbx.cif.model.block()
+            self._cif[blockname]["_entry.id"] = blockname
         return self._cif[blockname]
 
     def set_block(self, blockname, iotbxblock):
@@ -136,6 +142,7 @@ class _CIFHandler:
 
     def collate_audit_information(self, blockname=None):
         block = self.get_block(blockname)
+        block["_audit.revision_id"] = 1
         block[self._keyname["audit.method"]] = versions["xia2"]
         block[self._keyname["audit.date"]] = datetime.date.today().isoformat()
 

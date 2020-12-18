@@ -910,8 +910,6 @@ class CommonScaler(Scaler):
             "_pdbx_diffrn_unmerged_refln.scan_angle_reflection",
         )
 
-        multisweep = PhilIndex.params.xia2.settings.multi_sweep_indexing
-
         for cname, xcryst in xinfo.get_crystals().items():
             # Note - likely only ever one xcrystal, but handle possibility of multiple
             reflection_files = xcryst.get_scaled_merged_reflections()
@@ -923,10 +921,14 @@ class CommonScaler(Scaler):
                 mmblock = mmCIF.get_block(key)
 
                 # First add section information
-                mmblock["_pdbx_diffrn_data_section.id"] = f"unmerged {wname}"
+                mmblock["_pdbx_diffrn_data_section.id"] = key
                 mmblock["_pdbx_diffrn_data_section.type_scattering"] = "x-ray"
                 mmblock["_pdbx_diffrn_data_section.type_merged"] = "false"
                 mmblock["_pdbx_diffrn_data_section.type_scaled"] = "true"
+                mmblock["_exptl_crystal.id"] = 1  # links to crystal_id
+                mmblock["_diffrn.id"] = 1  # links to diffrn_id
+                mmblock["_diffrn.crystal_id"] = 1
+                mmblock["_diffrn_source.diffrn_id"] = 1
                 mmblock["_diffrn_source.pdbx_wavelength_list"] = xwav
 
                 cif_loop_a = iotbx.cif.model.loop(header=section_a_header)
@@ -937,7 +939,13 @@ class CommonScaler(Scaler):
 
                 umtz = mtz.object(file_name=unmerged_mtz)
                 result = self._iotbx_merging_statistics(unmerged_mtz, anomalous=False)
-                mmblock.update(result.as_cif_block())
+
+                merged_block = iotbx.cif.model.block()
+                merged_block["_reflns.pdbx_ordinal"] = 1
+                merged_block["_reflns.pdbx_diffrn_id"] = 1
+                merged_block["_reflns.entry_id"] = key
+                merged_block.update(result.as_cif_block())
+                mmblock.update(merged_block)
 
                 scans = scan_info_from_batch_headers(umtz)
 
@@ -970,7 +978,6 @@ class CommonScaler(Scaler):
                 latt_type = str(bravais_types.bravais_lattice(group=s))
                 cell = umtz.crystals()[0].unit_cell()
                 # need to extract cell from mtz
-                # xtal_id == scan no unless multisweep
 
                 scan_no = flex.int(intensities.size(), 0)
                 image_no = flex.int(intensities.size(), 0)
@@ -978,21 +985,12 @@ class CommonScaler(Scaler):
                 entryno = 1
 
                 for _, data in scans.items():
-                    # if multisweep, should only write one crystal. into loop_a (per wavelength)
-                    if multisweep and xtal_id == 0:
-                        xtal_id = 1
-                        cif_loop_a.add_row(
-                            tuple([entryno, xtal_id, xwav])
-                            + tuple(cell.parameters())
-                            + tuple([latt_type])
-                        )
-                    elif not multisweep:
-                        xtal_id += 1
-                        cif_loop_a.add_row(
-                            tuple([entryno, xtal_id, xwav])
-                            + tuple(cell.parameters())
-                            + tuple([latt_type])
-                        )
+                    xtal_id += 1
+                    cif_loop_a.add_row(
+                        tuple([entryno, xtal_id, xwav])
+                        + tuple(cell.parameters())
+                        + tuple([latt_type])
+                    )
 
                     cif_loop_b.add_row(
                         (
@@ -1353,8 +1351,13 @@ class CommonScaler(Scaler):
                         cif_out[key] = cif_in[key]
                     mmcif_in = tt_grouprefiner.import_mmcif()
                     mmcif_out = mmCIF.get_block(pi)
+                    # reset the entry id to be the name of the new block
+                    mmcif_in["_entry.id"] = pi
                     for key in sorted(mmcif_in.keys()):
-                        mmcif_out[key] = mmcif_in[key]
+                        if key.endswith("entry_id"):
+                            mmcif_out[key] = pi
+                        else:
+                            mmcif_out[key] = mmcif_in[key]
 
             # Two theta refine everything together
             if len(groups) > 1:
@@ -1399,7 +1402,10 @@ class CommonScaler(Scaler):
             for key in sorted(cif_in.keys()):
                 cif_out[key] = cif_in[key]
             for key in sorted(mmcif_in.keys()):
-                mmcif_out[key] = mmcif_in[key]
+                if key.endswith("entry_id"):
+                    mmcif_out[key] = "xia2"
+                else:
+                    mmcif_out[key] = mmcif_in[key]
 
             logger.debug("Unit cell obtained by two-theta refinement")
 
