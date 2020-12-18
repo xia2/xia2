@@ -990,9 +990,12 @@ xia2.settings
   output
   {
     mmcif {
-      write_unmerged = True
-        .type = bool
-        .help = "Option to turn off writing of unmerged data to mmcif file"
+      pdb_version = v5 *v5_next
+        .type = choice
+        .help = "This controls which pdb mmcif dictionary version the output"
+                "mmcif file should comply with. v5_next adds support for"
+                "recording unmerged data as well as additional scan metadata"
+                "and statistics, however writing can be slow for large datasets."
         .expert_level = 2
     }
   }

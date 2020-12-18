@@ -22,6 +22,7 @@ def ExportMMCIF(DriverType=None):
             self._combine_partials = True
             self._intensity_choice = "scale"
             self._compress = None
+            self._pdb_version = "v5_next"
 
         def set_intensity_choice(self, choice):
             self._intensity_choice = choice
@@ -32,6 +33,9 @@ def ExportMMCIF(DriverType=None):
         def set_compression(self, compression=None):
             "Set a compression type: gz bz2 xz or None(uncompressed)"
             self._compress = compression
+
+        def set_pdb_version(self, version):
+            self._pdb_version = version
 
         def set_combine_partials(self, combine_partials):
             self._combine_partials = combine_partials
@@ -69,6 +73,7 @@ def ExportMMCIF(DriverType=None):
             self.add_command_line(
                 "partiality_threshold=%s" % self._partiality_threshold
             )
+            self.add_command_line("pdb_version=%s" % self._pdb_version)
             self.add_command_line("intensity=%s" % self._intensity_choice)
             self.start()
             self.close_wait()

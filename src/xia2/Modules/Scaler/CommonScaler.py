@@ -35,6 +35,9 @@ from xia2.Schema.Interfaces.Scaler import Scaler
 from xia2.Wrappers.Dials.EstimateResolution import EstimateResolution
 from xia2.XIA2Version import Version
 
+from cctbx.sgtbx import bravais_types
+from cctbx.array_family import flex
+
 logger = logging.getLogger("xia2.Modules.Scaler.CommonScaler")
 
 
@@ -532,12 +535,7 @@ class CommonScaler(Scaler):
         if not PhilIndex.params.xia2.settings.small_molecule:
             self._scale_finish_chunk_3_truncate()
 
-        if (
-            PhilIndex.params.xia2.settings.scaler != "dials"
-            and PhilIndex.params.xia2.settings.output.mmcif.write_unmerged
-        ):
-            # do this before any file mangling for mad data.
-            self._scale_finish_chunk_3point1_add_to_mmcif()
+        self._write_mmcif_output()
 
         self._scale_finish_chunk_4_mad_mangling()
 
@@ -866,11 +864,11 @@ class CommonScaler(Scaler):
         else:
             logger.debug("Local scaling failed")
 
-    def _scale_finish_chunk_3point1_add_to_mmcif(self):
-        """Use the mtz files and xia2 metadata to write unmerged mmcif data"""
+    def _write_mmcif_output(self):
+        """Use the mtz files and xia2 metadata to write mmcif data, conforming
+        to either the v5 or v5_next versions of the pdb mmcif dict."""
+
         from xia2.Handlers.CommandLine import CommandLine
-        from cctbx.sgtbx import bravais_types
-        from cctbx.array_family import flex
 
         xinfo = CommandLine.get_xinfo()
 
@@ -921,21 +919,16 @@ class CommonScaler(Scaler):
                 mmblock = mmCIF.get_block(key)
 
                 # First add section information
-                mmblock["_pdbx_diffrn_data_section.id"] = key
-                mmblock["_pdbx_diffrn_data_section.type_scattering"] = "x-ray"
-                mmblock["_pdbx_diffrn_data_section.type_merged"] = "false"
-                mmblock["_pdbx_diffrn_data_section.type_scaled"] = "true"
+                if PhilIndex.params.xia2.settings.output.mmcif.pdb_version == "v5_next":
+                    mmblock["_pdbx_diffrn_data_section.id"] = key
+                    mmblock["_pdbx_diffrn_data_section.type_scattering"] = "x-ray"
+                    mmblock["_pdbx_diffrn_data_section.type_merged"] = "false"
+                    mmblock["_pdbx_diffrn_data_section.type_scaled"] = "true"
                 mmblock["_exptl_crystal.id"] = 1  # links to crystal_id
                 mmblock["_diffrn.id"] = 1  # links to diffrn_id
                 mmblock["_diffrn.crystal_id"] = 1
                 mmblock["_diffrn_source.diffrn_id"] = 1
                 mmblock["_diffrn_source.pdbx_wavelength_list"] = xwav
-
-                cif_loop_a = iotbx.cif.model.loop(header=section_a_header)
-                cif_loop_b = iotbx.cif.model.loop(header=section_b_header)
-
-                mmblock.add_loop(cif_loop_a)
-                mmblock.add_loop(cif_loop_b)
 
                 umtz = mtz.object(file_name=unmerged_mtz)
                 result = self._iotbx_merging_statistics(unmerged_mtz, anomalous=False)
@@ -946,6 +939,16 @@ class CommonScaler(Scaler):
                 merged_block["_reflns.entry_id"] = key
                 merged_block.update(result.as_cif_block())
                 mmblock.update(merged_block)
+
+                # All following items are for v5_next only
+                if PhilIndex.params.xia2.settings.output.mmcif.pdb_version == "v5":
+                    continue
+
+                cif_loop_a = iotbx.cif.model.loop(header=section_a_header)
+                cif_loop_b = iotbx.cif.model.loop(header=section_b_header)
+
+                mmblock.add_loop(cif_loop_a)
+                mmblock.add_loop(cif_loop_b)
 
                 scans = scan_info_from_batch_headers(umtz)
 
