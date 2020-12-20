@@ -9,10 +9,15 @@ import traceback
 from collections import OrderedDict
 
 from libtbx import phil
+from iotbx import mtz
 import xia2
 from xia2.Modules.Report import Report
 from xia2.Handlers.Citations import Citations
 import xia2.Handlers.Streams
+
+from math import isclose
+from dials.algorithms.merging.merge import make_dano_plots
+from xia2.Handlers.Phil import PhilIndex
 
 logger = logging.getLogger("xia2.cli.html")
 
@@ -200,6 +205,25 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
                 "warnings": xtriage_warnings,
                 "danger": xtriage_danger,
             }
+
+            anom_data = {}
+            mtz_file = mtz.object(file_name=reflection_files["mtz"])
+            # Collect F+, F-, SigF+, SigF- data for the correct wavelength
+            for array in mtz_file.as_miller_arrays():
+                if (
+                    len(array.info().labels) == 4
+                    and array.info().type_hints_from_file == "amplitude"
+                    and isclose(
+                        xwav.get_wavelength(),
+                        array.info().wavelength,
+                        abs_tol=PhilIndex.params.xia2.settings.wavelength_tolerance,
+                    )
+                ):
+                    anom_data[array.info().wavelength] = array
+                    break
+            if anom_data:
+                data = make_dano_plots(anom_data)
+                d["resolution_graphs"]["dano_" + wname] = data["dF"]["dano"]
 
             merging_stats = report.merging_stats
             merging_stats_anom = report.merging_stats_anom
