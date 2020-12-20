@@ -6,10 +6,14 @@ import math
 import os
 import time
 
+from collections import OrderedDict
+
 import iotbx.merging_statistics
 from cctbx.xray import scatterer
 from cctbx.xray.structure import structure
+from xia2.Handlers.Citations import Citations
 from iotbx import mtz
+from cctbx import sgtbx
 from iotbx.reflection_file_reader import any_reflection_file
 from iotbx.shelx import writer
 from iotbx.shelx.hklf import miller_array_export_as_shelx_hklf
@@ -30,6 +34,9 @@ from xia2.Schema.Interfaces.Scaler import Scaler
 # new resolution limit code
 from xia2.Wrappers.Dials.EstimateResolution import EstimateResolution
 from xia2.XIA2Version import Version
+
+from cctbx.sgtbx import bravais_types
+from cctbx.array_family import flex
 
 logger = logging.getLogger("xia2.Modules.Scaler.CommonScaler")
 
@@ -528,6 +535,8 @@ class CommonScaler(Scaler):
         if not PhilIndex.params.xia2.settings.small_molecule:
             self._scale_finish_chunk_3_truncate()
 
+        self._write_mmcif_output()
+
         self._scale_finish_chunk_4_mad_mangling()
 
         if PhilIndex.params.xia2.settings.small_molecule:
@@ -855,6 +864,186 @@ class CommonScaler(Scaler):
         else:
             logger.debug("Local scaling failed")
 
+    def _write_mmcif_output(self):
+        """Use the mtz files and xia2 metadata to write mmcif data, conforming
+        to either the v5 or v5_next versions of the pdb mmcif dict."""
+
+        from xia2.Handlers.CommandLine import CommandLine
+
+        xinfo = CommandLine.get_xinfo()
+
+        section_a_header = (
+            "_pdbx_diffrn_unmerged_cell.ordinal",
+            "_pdbx_diffrn_unmerged_cell.crystal_id",
+            "_pdbx_diffrn_unmerged_cell.wavelength",
+            "_pdbx_diffrn_unmerged_cell.cell_length_a",
+            "_pdbx_diffrn_unmerged_cell.cell_length_b",
+            "_pdbx_diffrn_unmerged_cell.cell_length_c",
+            "_pdbx_diffrn_unmerged_cell.cell_angle_alpha",
+            "_pdbx_diffrn_unmerged_cell.cell_angle_beta",
+            "_pdbx_diffrn_unmerged_cell.cell_angle_gamma",
+            "_pdbx_diffrn_unmerged_cell.Bravais_lattice",
+        )
+
+        section_b_header = (
+            "_pdbx_diffrn_scan.scan_id",
+            "_pdbx_diffrn_scan.crystal_id",
+            "_pdbx_diffrn_scan.image_id_begin",
+            "_pdbx_diffrn_scan.image_id_end",
+            "_pdbx_diffrn_scan.scan_angle_begin",
+            "_pdbx_diffrn_scan.scan_angle_end",
+        )
+
+        unmerged_header = (
+            "_pdbx_diffrn_unmerged_refln.reflection_id",
+            "_pdbx_diffrn_unmerged_refln.scan_id",
+            "_pdbx_diffrn_unmerged_refln.image_id_begin",
+            "_pdbx_diffrn_unmerged_refln.image_id_end",
+            "_pdbx_diffrn_unmerged_refln.index_h",
+            "_pdbx_diffrn_unmerged_refln.index_k",
+            "_pdbx_diffrn_unmerged_refln.index_l",
+            "_pdbx_diffrn_unmerged_refln.intensity_meas",
+            "_pdbx_diffrn_unmerged_refln.intensity_sigma",
+            "_pdbx_diffrn_unmerged_refln.scale_value",
+            "_pdbx_diffrn_unmerged_refln.scan_angle_reflection",
+        )
+
+        for cname, xcryst in xinfo.get_crystals().items():
+            # Note - likely only ever one xcrystal, but handle possibility of multiple
+            reflection_files = xcryst.get_scaled_merged_reflections()
+
+            for wname, unmerged_mtz in reflection_files["mtz_unmerged"].items():
+                xwav = xcryst.get_xwavelength(wname).get_wavelength()
+                key = f"{self._scalr_pname}_{cname}_{wname}"
+
+                mmblock = mmCIF.get_block(key)
+
+                # First add section information
+                if PhilIndex.params.xia2.settings.output.mmcif.pdb_version == "v5_next":
+                    mmblock["_pdbx_diffrn_data_section.id"] = key
+                    mmblock["_pdbx_diffrn_data_section.type_scattering"] = "x-ray"
+                    mmblock["_pdbx_diffrn_data_section.type_merged"] = "false"
+                    mmblock["_pdbx_diffrn_data_section.type_scaled"] = "true"
+                mmblock["_exptl_crystal.id"] = 1  # links to crystal_id
+                mmblock["_diffrn.id"] = 1  # links to diffrn_id
+                mmblock["_diffrn.crystal_id"] = 1
+                mmblock["_diffrn_source.diffrn_id"] = 1
+                mmblock["_diffrn_source.pdbx_wavelength_list"] = xwav
+
+                umtz = mtz.object(file_name=unmerged_mtz)
+                result = self._iotbx_merging_statistics(unmerged_mtz, anomalous=False)
+
+                merged_block = iotbx.cif.model.block()
+                merged_block["_reflns.pdbx_ordinal"] = 1
+                merged_block["_reflns.pdbx_diffrn_id"] = 1
+                merged_block["_reflns.entry_id"] = key
+                merged_block.update(result.as_cif_block())
+                mmblock.update(merged_block)
+
+                # All following items are for v5_next only
+                if PhilIndex.params.xia2.settings.output.mmcif.pdb_version == "v5":
+                    continue
+
+                cif_loop_a = iotbx.cif.model.loop(header=section_a_header)
+                cif_loop_b = iotbx.cif.model.loop(header=section_b_header)
+
+                mmblock.add_loop(cif_loop_a)
+                mmblock.add_loop(cif_loop_b)
+
+                scans = scan_info_from_batch_headers(umtz)
+
+                intensities = None
+                batches = None
+                scales = None
+                angles = None
+                miller_arrays = umtz.as_miller_arrays(merge_equivalents=False)
+                for array in miller_arrays:
+                    if array.info().labels == ["I", "SIGI"]:
+                        intensities = array
+                    if array.info().labels == ["BATCH"]:
+                        batches = array
+                    if array.info().labels == ["SCALEUSED"]:
+                        scales = array.data()
+                    if array.info().labels == ["ROT"]:
+                        angles = array.data()
+                assert intensities
+                assert batches
+                assert scales
+                assert angles
+
+                # want to map batch back to image number as defined in the scans dict
+
+                s = sgtbx.space_group(
+                    sgtbx.space_group_symbols(
+                        str(xcryst.get_likely_spacegroups()[0])
+                    ).hall()
+                )
+                latt_type = str(bravais_types.bravais_lattice(group=s))
+                cell = umtz.crystals()[0].unit_cell()
+                # need to extract cell from mtz
+
+                scan_no = flex.int(intensities.size(), 0)
+                image_no = flex.int(intensities.size(), 0)
+                xtal_id = 0
+                entryno = 1
+
+                for _, data in scans.items():
+                    xtal_id += 1
+                    cif_loop_a.add_row(
+                        tuple([entryno, xtal_id, xwav])
+                        + tuple(cell.parameters())
+                        + tuple([latt_type])
+                    )
+
+                    cif_loop_b.add_row(
+                        (
+                            entryno,
+                            xtal_id,
+                            data["start_image"],
+                            data["end_image"],
+                            data["angle_begin"],
+                            data["angle_end"],
+                        )
+                    )
+
+                    # sort out scan number based on batch.
+                    min_batch = data["batch_begin"]
+                    max_batch = data["batch_end"]
+                    sel = (batches.data() >= min_batch) & (batches.data() <= max_batch)
+                    scan_no.set_selected(sel, entryno)
+                    # translate batch to image
+                    image = batches.data() - min_batch + 1
+                    image_no.set_selected(sel.iselection(), image.select(sel))
+
+                    entryno += 1
+
+                assert scan_no.count(0) == 0
+                assert image_no.count(0) == 0
+
+                h, k, l = [
+                    hkl.iround()
+                    for hkl in intensities.indices().as_vec3_double().parts()
+                ]
+
+                loop_values = [
+                    flex.size_t_range(1, intensities.size() + 1),
+                    scan_no,
+                    image_no,
+                    image_no,
+                    h,
+                    k,
+                    l,
+                    intensities.data(),
+                    intensities.sigmas(),
+                    scales,
+                    angles,
+                ]
+
+                cif_loop = iotbx.cif.model.loop(
+                    data=dict(zip(unmerged_header, loop_values))
+                )
+                mmblock.add_loop(cif_loop)
+
     def _estimate_resolution_limit(
         self, hklin, batch_range=None, reflections=None, experiments=None
     ):
@@ -1120,6 +1309,7 @@ class CommonScaler(Scaler):
             )
             for pi in groups:
                 tt_grouprefiner = TwoThetaRefine()
+                Citations.cite("dials")
                 tt_grouprefiner.set_working_directory(self.get_working_directory())
                 auto_logfiler(tt_grouprefiner)
                 args = list(zip(*groups[pi]))
@@ -1164,12 +1354,18 @@ class CommonScaler(Scaler):
                         cif_out[key] = cif_in[key]
                     mmcif_in = tt_grouprefiner.import_mmcif()
                     mmcif_out = mmCIF.get_block(pi)
+                    # reset the entry id to be the name of the new block
+                    mmcif_in["_entry.id"] = pi
                     for key in sorted(mmcif_in.keys()):
-                        mmcif_out[key] = mmcif_in[key]
+                        if key.endswith("entry_id"):
+                            mmcif_out[key] = pi
+                        else:
+                            mmcif_out[key] = mmcif_in[key]
 
             # Two theta refine everything together
             if len(groups) > 1:
                 tt_refiner = TwoThetaRefine()
+                Citations.cite("dials")
                 tt_refiner.set_working_directory(self.get_working_directory())
                 tt_refiner.set_output_p4p(p4p_file)
                 auto_logfiler(tt_refiner)
@@ -1204,17 +1400,15 @@ class CommonScaler(Scaler):
             if params.xia2.settings.small_molecule:
                 FileHandler.record_data_file(p4p_file)
 
-            import dials.util.version
-
             cif_out = CIF.get_block("xia2")
             mmcif_out = mmCIF.get_block("xia2")
-            cif_out["_computing_cell_refinement"] = mmcif_out[
-                "_computing.cell_refinement"
-            ] = ("DIALS 2theta refinement, %s" % dials.util.version.dials_version())
             for key in sorted(cif_in.keys()):
                 cif_out[key] = cif_in[key]
             for key in sorted(mmcif_in.keys()):
-                mmcif_out[key] = mmcif_in[key]
+                if key.endswith("entry_id"):
+                    mmcif_out[key] = "xia2"
+                else:
+                    mmcif_out[key] = mmcif_in[key]
 
             logger.debug("Unit cell obtained by two-theta refinement")
 
@@ -1232,7 +1426,6 @@ class CommonScaler(Scaler):
 
             # Write average unit cell to .cif
             cif_out = CIF.get_block("xia2")
-            cif_out["_computing_cell_refinement"] = "AIMLESS averaged unit cell"
             for cell, cifname in zip(
                 self._scalr_cell,
                 [
@@ -1425,3 +1618,49 @@ class CommonScaler(Scaler):
             logger.debug("Scaler highest resolution set to %5.2f", highest_resolution)
 
         return highest_suggested_resolution
+
+
+def scan_info_from_batch_headers(unmerged_mtz):
+    batches = unmerged_mtz.batches()
+
+    scans = OrderedDict(
+        {
+            1: {
+                "start_image": 1,
+                "end_image": None,
+                "batch_begin": batches[0].num(),
+                "batch_end": None,
+                "angle_begin": batches[0].phistt(),
+                "angle_end": None,
+            }
+        }
+    )
+
+    scan_no = 1
+    phi_end = batches[0].phiend()
+    last_batch = batches[0].num()
+
+    for b in batches[1:]:
+        if abs(b.phistt() - phi_end) > 0.0001:
+            scans[scan_no]["angle_end"] = phi_end
+            scans[scan_no]["batch_end"] = last_batch
+            scans[scan_no]["end_image"] = last_batch - scans[scan_no]["batch_begin"] + 1
+
+            scan_no += 1
+            scans[scan_no] = {
+                "start_image": 1,
+                "end_image": None,
+                "batch_begin": b.num(),
+                "batch_end": None,
+                "angle_begin": b.phistt(),
+                "angle_end": None,
+            }
+
+        phi_end = b.phiend()
+        last_batch = b.num()
+
+    scans[scan_no]["angle_end"] = phi_end
+    scans[scan_no]["batch_end"] = last_batch
+    scans[scan_no]["end_image"] = last_batch - scans[scan_no]["batch_begin"] + 1
+
+    return scans
