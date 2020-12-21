@@ -63,14 +63,16 @@ def exercise_serialization(dials_data, tmp_dir):
     integrater.set_integrater_epoch(sweep.get_epoch(1))
     integrater.set_integrater_sweep_name(sweep.get_name())
     integrater.set_integrater_project_info(
-        cryst.get_name(), wav.get_name(), sweep.get_name()
+        proj.get_name(),
+        cryst.get_name(),
+        wav.get_name(),
     )
     sweep._integrater = integrater
 
     scaler = CCP4ScalerA(base_path=base_path)
     scaler.add_scaler_integrater(integrater)
     scaler.set_scaler_xcrystal(cryst)
-    scaler.set_scaler_project_info(cryst.get_name(), wav.get_name())
+    scaler.set_scaler_project_info(proj.get_name(), cryst.get_name())
     scaler._scalr_xcrystal = cryst
     cryst._scaler = scaler
 

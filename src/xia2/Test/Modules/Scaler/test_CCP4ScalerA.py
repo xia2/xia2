@@ -35,9 +35,12 @@ def test_ccp4_scalerA(regression_test, ccp4, dials_data, run_in_tmpdir, nproc):
     from xia2.Schema.XWavelength import XWavelength
     from xia2.Schema.XSweep import XSweep
     from xia2.Schema.XSample import XSample
+    from xia2.Schema.XProject import XProject
 
-    cryst = XCrystal("CRYST1", None)
+    proj = XProject(name="AUTOMATIC")
+    cryst = XCrystal("CRYST1", proj)
     wav = XWavelength("WAVE1", cryst, imageset.get_beam().get_wavelength())
+    cryst.add_wavelength(wav)
     samp = XSample("X1", cryst)
     directory, image = os.path.split(imageset.get_path(1))
     with mock.patch.object(sys, "argv", []):
@@ -56,12 +59,12 @@ def test_ccp4_scalerA(regression_test, ccp4, dials_data, run_in_tmpdir, nproc):
     # integrater.set_integrater_indexer(indexer)
     integrater.set_integrater_sweep(sweep)
     integrater.set_integrater_sweep_name("SWEEP1")
-    integrater.set_integrater_project_info("CRYST1", "WAVE1", "SWEEP1")
+    integrater.set_integrater_project_info("AUTOMATIC", "CRYST1", "WAVE1")
 
     scaler = CCP4ScalerA(base_path=pathlib.Path(tmpdir))
     scaler.add_scaler_integrater(integrater)
     scaler.set_scaler_xcrystal(cryst)
-    scaler.set_scaler_project_info("CRYST1", "WAVE1")
+    scaler.set_scaler_project_info("AUTOMATIC", "CRYST1")
 
     check_scaler_files_exist(scaler)
 
