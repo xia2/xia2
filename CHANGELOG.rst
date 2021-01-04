@@ -1,3 +1,36 @@
+xia2 3.3.0 (2021-01-04)
+=======================
+
+From this release, xia2 version numbers `now follow <https://github.com/xia2/xia2/pull/528#issuecomment-716577121>`_ the DIALS release model.
+
+Features
+--------
+
+- xia2 has been turned into a python package. This change includes major
+  refactoring work underneath the hood. (`#528 <https://github.com/xia2/xia2/issues/528>`_)
+- Updates to ``xia2.mmcif`` output to conform to the latest pdb dictionaries (v5).
+  ``output.mmcif.pdb_version=`` option added (choices of ``v5``, ``v5_next``).
+  The default option ``v5_next`` includes output of unmerged reflection data. (`#537 <https://github.com/xia2/xia2/issues/537>`_)
+- ``xia2.html``: Add ``<dF/s(dF)>``-by-resolution plot if running xia with ``anomalous=True`` (`#551 <https://github.com/xia2/xia2/issues/551>`_)
+
+
+Bugfixes
+--------
+
+- ``xia2.multiplex``: pass ``dials.cosym`` parameter ``lattice_symmetry_max_delta=`` to ``dials.cosym``. (`#544 <https://github.com/xia2/xia2/issues/544>`_)
+- ``xia2.multiplex``: fix occasional error generating stereographic projections. (`#546 <https://github.com/xia2/xia2/issues/546>`_)
+
+
+Misc
+----
+
+- `#533 <https://github.com/xia2/xia2/issues/533>`_, `#535 <https://github.com/xia2/xia2/issues/535>`_,
+  `#538 <https://github.com/xia2/xia2/issues/538>`_, `#540 <https://github.com/xia2/xia2/issues/540>`_,
+  `#541 <https://github.com/xia2/xia2/issues/541>`_, `#545 <https://github.com/xia2/xia2/issues/545>`_,
+  `#547 <https://github.com/xia2/xia2/issues/547>`_, `#548 <https://github.com/xia2/xia2/issues/548>`_,
+  `#552 <https://github.com/xia2/xia2/issues/552>`_.
+
+
 xia2 (DIALS 3.2.1) (2020-11-09)
 ===============================
 
