@@ -88,14 +88,6 @@ def setup_logging(logfile=None, debugfile=None, verbose=False):
             logger_.setLevel(logging.DEBUG)
 
 
-if __name__ == "__main__":
-    setup_logging(logfile="logfile", debugfile="debugfile")
-    logger.debug("this is a debug-level message")
-    logger.info("this is an info-level message")
-    logger.notice("this is a notice-level message")
-    logger.warning("this is a warning-level message")
-    logger.error("this is an error-level message")
-
 # -------------------------------------------------------------------------------
 # colored stream handler for python logging framework based on:
 # http://stackoverflow.com/questions/384076/how-can-i-color-python-logging-output/1336640#1336640
@@ -255,3 +247,11 @@ else:
     ColorStreamHandler = _AnsiColorStreamHandler
 
 # -------------------------------------------------------------------------------
+
+if __name__ == "__main__":
+    setup_logging(logfile="logfile", debugfile="debugfile")
+    logger.debug("this is a debug-level message")
+    logger.info("this is an info-level message")
+    logger.notice("this is a notice-level message")
+    logger.warning("this is a warning-level message")
+    logger.error("this is an error-level message")
