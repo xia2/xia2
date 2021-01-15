@@ -73,7 +73,7 @@ def setup_logging(logfile=None, debugfile=None, verbose=False):
     other_loggers = [logging.getLogger(package) for package in ("dials", "dxtbx")]
 
     if logfile:
-        fh = logging.FileHandler(filename=logfile, mode="w")
+        fh = logging.FileHandler(filename=logfile, mode="w", encoding="utf-8")
         fh.setLevel(loglevel)
         xia2_logger.addHandler(fh)
         for logger_ in other_loggers:
@@ -81,7 +81,7 @@ def setup_logging(logfile=None, debugfile=None, verbose=False):
             logger_.setLevel(loglevel)
 
     if debugfile:
-        fh = logging.FileHandler(filename=debugfile, mode="w")
+        fh = logging.FileHandler(filename=debugfile, mode="w", encoding="utf-8")
         fh.setLevel(logging.DEBUG)
         for logger_ in [xia2_logger] + other_loggers:
             logger_.addHandler(fh)
