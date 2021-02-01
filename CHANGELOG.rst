@@ -1,3 +1,12 @@
+xia2 3.3.2 (2021-02-01)
+=======================
+
+Bugfixes
+--------
+
+- Fix unicode logging errors on Windows (`#558 <https://github.com/xia2/xia2/issues/558>`_)
+
+
 xia2 3.3.0 (2021-01-04)
 =======================
 
