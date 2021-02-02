@@ -253,7 +253,7 @@ def imageset_to_xds(
     # based on wavelength. May be useful to override this for in vacuo exps
     # result.append('AIR=0.001')
 
-    if detector == "PILATUS":
+    if detector in ("PILATUS", "EIGER"):
         try:
             thickness = converter.get_detector()[0].get_thickness()
             if not thickness:
