@@ -4,6 +4,7 @@ import logging
 from collections import OrderedDict
 
 import iotbx.phil
+import numpy as np
 from scipy.cluster import hierarchy
 from scitbx.array_family import flex
 
@@ -242,19 +243,17 @@ class multi_crystal_analysis:
 
         correlation_matrix = self.cosym.target.rij_matrix
 
-        for i in range(correlation_matrix.all()[0]):
+        for i in range(correlation_matrix.shape[0]):
             correlation_matrix[i, i] = 1
 
         # clip values of correlation matrix to account for floating point errors
-        correlation_matrix.set_selected(correlation_matrix < -1, -1)
-        correlation_matrix.set_selected(correlation_matrix > 1, 1)
+        correlation_matrix[np.where(correlation_matrix < -1)] = -1
+        correlation_matrix[np.where(correlation_matrix > 1)] = 1
         diffraction_dissimilarity = 1 - correlation_matrix
 
-        dist_mat = diffraction_dissimilarity.as_numpy_array()
-
-        assert ssd.is_valid_dm(dist_mat, tol=1e-12)
+        assert ssd.is_valid_dm(diffraction_dissimilarity, tol=1e-12)
         # convert the redundant n*n square matrix form into a condensed nC2 array
-        dist_mat = ssd.squareform(dist_mat, checks=False)
+        dist_mat = ssd.squareform(diffraction_dissimilarity, checks=False)
 
         linkage_matrix = hierarchy.linkage(dist_mat, method="average")
 
@@ -263,10 +262,9 @@ class multi_crystal_analysis:
     def compute_cos_angle_matrix(self):
         import scipy.spatial.distance as ssd
 
-        dist_mat = ssd.pdist(self.cosym.coords.as_numpy_array(), metric="cosine")
+        dist_mat = ssd.pdist(self.cosym.coords, metric="cosine")
         cos_angle = 1 - ssd.squareform(dist_mat)
-        linkage_matrix = hierarchy.linkage(dist_mat, method="average")
-        return flex.double(cos_angle), linkage_matrix
+        return cos_angle, hierarchy.linkage(dist_mat, method="average")
 
     @staticmethod
     def to_plotly_json(
@@ -292,7 +290,7 @@ class multi_crystal_analysis:
             d["yaxis"] = "y3"
             d["xaxis"] = "x3"
 
-        D = correlation_matrix.as_numpy_array()
+        D = correlation_matrix
         index = ddict["leaves"]
         D = D[index, :]
         D = D[:, index]
