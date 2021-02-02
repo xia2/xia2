@@ -1,0 +1,1 @@
+Fix for missing SENSOR_THICKNESS= in XDS.INP generated for EIGER datasets introduced in 3.3.1

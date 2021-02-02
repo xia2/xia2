@@ -253,18 +253,17 @@ def imageset_to_xds(
     # based on wavelength. May be useful to override this for in vacuo exps
     # result.append('AIR=0.001')
 
-    if detector == "PILATUS":
+    if detector in ("PILATUS", "EIGER"):
         try:
             thickness = converter.get_detector()[0].get_thickness()
-            if not thickness:
-                thickness = 0.32
-                logger.debug(
-                    "Could not determine sensor thickness. Assuming default PILATUS 0.32mm"
-                )
         except Exception:
-            thickness = 0.32
+            thickness = None
+        if not thickness:
+            thickness = {"PILATUS": 0.32, "EIGER": 0.45}.get(detector)
             logger.debug(
-                "Error occured during sensor thickness determination. Assuming default PILATUS 0.32mm"
+                "Could not determine sensor thickness. Assuming default %s %.2f mm",
+                detector,
+                thickness,
             )
         result.append("SENSOR_THICKNESS=%f" % thickness)
 
