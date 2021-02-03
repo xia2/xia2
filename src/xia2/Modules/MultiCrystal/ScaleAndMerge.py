@@ -111,6 +111,10 @@ symmetry {
 resolution
   .short_caption = "Resolution"
 {
+  combined = True
+    .type = bool
+    .help = "Perform the resolution analysis on the combined reflection list or "
+            "separately on each individual data set."
   d_max = None
     .type = float(value_min=0.0)
     .help = "Low resolution cutoff."
@@ -295,7 +299,7 @@ class DataManager:
             % (self._reflections.size(), n_refl_before)
         )
 
-    def reflections_as_miller_arrays(self, combined=False):
+    def reflections_as_miller_arrays(self, combined=False, d_min=None):
         from dials.util.batch_handling import (
             # calculate_batch_offsets,
             # get_batch_ranges,
@@ -304,11 +308,10 @@ class DataManager:
         from dials.report.analysis import scaled_data_as_miller_array
 
         # offsets = calculate_batch_offsets(experiments)
+        reflections = self.filter_d_min(d_min=d_min)
         reflection_tables = []
-        for id_ in set(self._reflections["id"]).difference({-1}):
-            reflection_tables.append(
-                self._reflections.select(self._reflections["id"] == id_)
-            )
+        for id_ in set(reflections["id"]).difference({-1}):
+            reflection_tables.append(reflections.select(reflections["id"] == id_))
 
         offsets = [expt.scan.get_batch_offset() for expt in self._experiments]
         reflection_tables = assign_batches_to_reflections(reflection_tables, offsets)
@@ -357,9 +360,7 @@ class DataManager:
             expt.crystal.update(cryst_reindexed)
 
     def export_reflections(self, filename, d_min=None):
-        reflections = self._reflections
-        if d_min:
-            reflections = reflections.select(reflections["d"] >= d_min)
+        reflections = self.filter_d_min(d_min)
         reflections.as_file(filename)
         return filename
 
@@ -369,19 +370,32 @@ class DataManager:
 
     def export_unmerged_mtz(self, filename, d_min=None):
         params = export.phil_scope.extract()
-        params.mtz.d_min = d_min
         params.mtz.hklout = filename
         params.intensity = ["scale"]
-        export.export_mtz(params, self._experiments, [self._reflections])
+        reflections = self.filter_d_min(d_min)
+        export.export_mtz(params, self._experiments, [reflections])
 
     def export_merged_mtz(self, filename, d_min=None):
         params = merge.phil_scope.extract()
-        params.d_min = d_min
         params.assess_space_group = False
-        mtz_obj = merge.merge_data_to_mtz(
-            params, self._experiments, [self._reflections]
-        )
+        reflections = self.filter_d_min(d_min)
+        mtz_obj = merge.merge_data_to_mtz(params, self._experiments, [reflections])
         mtz_obj.write(filename)
+
+    def filter_d_min(self, d_min):
+        if isinstance(d_min, float):
+            reflections = self._reflections.select(self._reflections["d"] >= d_min)
+        elif d_min:
+            assert len(d_min) == len(self._experiments)
+            reflections = flex.reflection_table()
+            for i, d in enumerate(d_min):
+                refl = self._reflections.select(self._reflections["id"] == i)
+                if d:
+                    refl = refl.select(refl["d"] >= d)
+                reflections.extend(refl)
+        else:
+            reflections = self._reflections
+        return reflections
 
 
 class MultiCrystalScale:
@@ -951,8 +965,35 @@ class Scale:
         self.scale(d_min=self.d_min, d_max=d_max)
 
         if self.d_min is None:
-            self.d_min, reason = self.estimate_resolution_limit()
-            logger.info(f"Resolution limit: {self.d_min:.2f} ({reason})")
+            if params.resolution.combined:
+                self.d_min, reason = self.estimate_resolution_limit(
+                    self._experiments_filename,
+                    self._reflections_filename,
+                    self._params.resolution,
+                )
+                logger.info(f"Resolution limit: {self.d_min:.2f} ({reason})")
+            else:
+                self.d_min = []
+                for i in range(len(self._data_manager.experiments)):
+                    refl = self._data_manager.reflections.select(
+                        self._data_manager.reflections["id"] == i
+                    )
+                    expts = self._data_manager.experiments[i : i + 1]
+                    tmp_refl = f"tmp_{i}.refl"
+                    tmp_expt = f"tmp_{i}.expt"
+                    refl.as_file(tmp_refl)
+                    expts.as_file(tmp_expt)
+                    d_min, reason = self.estimate_resolution_limit(
+                        tmp_expt, tmp_refl, self._params.resolution
+                    )
+                    label = self._data_manager.identifiers_to_ids_map[
+                        expts[0].identifier
+                    ]
+                    logger.info(
+                        f"Resolution limit for dataset {label}: {d_min:.2f} ({reason})"
+                    )
+                    self.d_min.append(d_min)
+
             if self._params.rescale_after_resolution_cutoff:
                 self.scale(d_min=self.d_min, d_max=d_max)
 
@@ -1101,17 +1142,15 @@ class Scale:
             self.scale_and_filter_results = scaler.get_scale_and_filter_results()
         return scaler
 
-    def estimate_resolution_limit(self):
+    @staticmethod
+    def estimate_resolution_limit(experiments_filename, reflections_filename, params):
+
         # see also xia2/Modules/Scaler/CommonScaler.py: CommonScaler._estimate_resolution_limit()
-        params = self._params.resolution
         m = EstimateResolution()
         auto_logfiler(m)
         # use the scaled .refl and .expt file
-        if self._experiments_filename and self._reflections_filename:
-            m.set_reflections(self._reflections_filename)
-            m.set_experiments(self._experiments_filename)
-        else:
-            m.set_hklin(self._scaled_unmerged_mtz)
+        m.set_reflections(reflections_filename)
+        m.set_experiments(experiments_filename)
         m.set_limit_rmerge(params.rmerge)
         m.set_limit_completeness(params.completeness)
         m.set_limit_cc_half(params.cc_half)
@@ -1120,9 +1159,6 @@ class Scale:
         m.set_limit_isigma(params.isigma)
         m.set_limit_misigma(params.misigma)
         m.set_labels(params.labels)
-        # if batch_range is not None:
-        # start, end = batch_range
-        # m.set_batch_range(start, end)
         m.run()
 
         resolution_limits = []
@@ -1170,6 +1206,7 @@ class Scale:
     def report(self):
         params = Report.phil_scope.extract()
         params.dose.batch = []
-        params.d_min = self.d_min
-        report = Report.Report.from_data_manager(self._data_manager, params=params)
+        report = Report.Report.from_data_manager(
+            self._data_manager, params=params, d_min=self.d_min
+        )
         return report

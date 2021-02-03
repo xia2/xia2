@@ -321,16 +321,17 @@ class Report:
         report = cls(
             intensities, params, batches=batches, scales=scales, report_dir=report_dir
         )
-        report.mtz_object = mtz_object  # nasty but xia2.report relys on this attribute
+        report.mtz_object = mtz_object  # nasty but xia2.report relies on this attribute
         return report
 
     @classmethod
-    def from_data_manager(cls, data_manager, params=None):
+    def from_data_manager(cls, data_manager, params=None, d_min=None):
         if params is None:
             params = phil_scope.extract()
             params.dose.batch = []
         intensities, batches, scales = data_manager.reflections_as_miller_arrays(
-            combined=True
+            combined=True,
+            d_min=d_min,
         )
 
         params.batch = []
