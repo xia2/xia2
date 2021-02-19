@@ -9,7 +9,7 @@ on:
 jobs:
   rename-news:
     name: Newsfragment
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     if: github.event.pull_request.draft == false
     steps:
       - name: Check out the repository

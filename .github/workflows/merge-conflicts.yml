@@ -11,7 +11,7 @@ on:
 
 jobs:
   label:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
     - name: Label Conflicting Pull Requests
