@@ -39,8 +39,6 @@ def exercise_serialization(dials_data, tmp_dir):
     sweep = wav.add_sweep(name="SWEEP1", sample=samp, directory=directory, image=image)
     samp.add_sweep(sweep)
 
-    from dxtbx.serialize.load import _decode_dict
-
     indexer = DialsIndexer()
     indexer.set_working_directory(tmp_dir)
     indexer.add_indexer_imageset(imageset)
@@ -80,19 +78,19 @@ def exercise_serialization(dials_data, tmp_dir):
 
     s_dict = sweep.to_dict()
     s_str = json.dumps(s_dict, ensure_ascii=True)
-    s_dict = json.loads(s_str, object_hook=_decode_dict)
+    s_dict = json.loads(s_str)
     xsweep = XSweep.from_dict(s_dict)
     assert xsweep
 
     w_dict = wav.to_dict()
     w_str = json.dumps(w_dict, ensure_ascii=True)
-    w_dict = json.loads(w_str, object_hook=_decode_dict)
+    w_dict = json.loads(w_str)
     xwav = XWavelength.from_dict(w_dict)
     assert xwav.get_sweeps()[0].get_wavelength() is xwav
 
     c_dict = cryst.to_dict()
     c_str = json.dumps(c_dict, ensure_ascii=True)
-    c_dict = json.loads(c_str, object_hook=_decode_dict)
+    c_dict = json.loads(c_str)
     xcryst = XCrystal.from_dict(c_dict)
     assert (
         xcryst.get_xwavelength(xcryst.get_wavelength_names()[0]).get_crystal() is xcryst
@@ -100,7 +98,7 @@ def exercise_serialization(dials_data, tmp_dir):
 
     p_dict = proj.to_dict()
     p_str = json.dumps(p_dict, ensure_ascii=True)
-    p_dict = json.loads(p_str, object_hook=_decode_dict)
+    p_dict = json.loads(p_str)
     xproj = XProject.from_dict(p_dict)
     assert xproj.path == base_path
     assert list(xproj.get_crystals().values())[0].get_project() is xproj

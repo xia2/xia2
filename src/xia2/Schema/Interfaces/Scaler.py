@@ -4,7 +4,6 @@ import logging
 import os
 import pathlib
 
-from dxtbx.serialize.load import _decode_dict
 from xia2.Handlers.Streams import banner
 
 logger = logging.getLogger("xia2.Schema.Interfaces.Scaler")
@@ -195,7 +194,7 @@ class Scaler:
         if filename is not None:
             with open(filename) as f:
                 string = f.read()
-        obj = json.loads(string, object_hook=_decode_dict)
+        obj = json.loads(string)
         return cls.from_dict(obj)
 
     def _scale_prepare(self):

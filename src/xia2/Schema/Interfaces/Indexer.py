@@ -44,7 +44,6 @@ import os
 from functools import reduce
 
 from cctbx.sgtbx import bravais_types
-from dxtbx.serialize.load import _decode_dict
 from xia2.Experts.LatticeExpert import SortLattices
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import banner
@@ -284,7 +283,7 @@ class Indexer:
         if filename is not None:
             with open(filename, "rb") as f:
                 string = f.read()
-        obj = json.loads(string, object_hook=_decode_dict)
+        obj = json.loads(string)
         return cls.from_dict(obj)
 
     # ----------------------------------------------------------------
