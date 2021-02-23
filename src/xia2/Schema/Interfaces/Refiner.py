@@ -3,8 +3,6 @@ import json
 import logging
 import os
 
-from dxtbx.serialize.load import _decode_dict
-
 logger = logging.getLogger("xia2.Schema.Interfaces.Refiner")
 
 
@@ -123,7 +121,7 @@ class Refiner:
         if filename is not None:
             with open(filename, "rb") as f:
                 string = f.read()
-        obj = json.loads(string, object_hook=_decode_dict)
+        obj = json.loads(string)
         return cls.from_dict(obj)
 
     def _refine_prepare(self):

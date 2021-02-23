@@ -46,7 +46,6 @@ from xia2.Schema.Exceptions.BadLatticeError import BadLatticeError
 
 # interfaces that this inherits from ...
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
-from dxtbx.serialize.load import _decode_dict
 
 logger = logging.getLogger("xia2.Schema.Interfaces.Integrater")
 
@@ -208,7 +207,7 @@ class Integrater(FrameProcessor):
         if filename is not None:
             with open(filename, "rb") as f:
                 string = f.read()
-        obj = json.loads(string, object_hook=_decode_dict)
+        obj = json.loads(string)
         return cls.from_dict(obj)
 
     # ------------------------------------------------------------------

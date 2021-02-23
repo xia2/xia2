@@ -8,7 +8,6 @@ import logging
 import os
 
 import pathlib
-from dxtbx.serialize.load import _decode_list
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Syminfo import Syminfo
 from xia2.Handlers.XInfo import XInfo
@@ -87,12 +86,10 @@ class XProject:
     @classmethod
     def from_json(cls, filename=None, string=None):
         def _decode_dict(data):
-            """ Decode a dict to str from unicode. """
+            """ Recursively decode possible float and int values. """
             rv = {}
             for key, value in data.items():
-                if isinstance(value, list):
-                    value = _decode_list(value)
-                elif isinstance(value, dict):
+                if isinstance(value, dict):
                     value = _decode_dict(value)
                 try:
                     key = float(key)
