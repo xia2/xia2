@@ -202,7 +202,7 @@ def visit(directory, files):
                     "Ignoring %s (Registry can not find format class)" % full_path
                 )
                 continue
-            elif format_class.ignore():
+            elif format_class.is_abstract():
                 continue
             templates.add(full_path)
 
