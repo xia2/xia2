@@ -203,10 +203,10 @@ def visit(directory, files):
                 )
                 continue
             elif getattr(
-                format_class, "ignore", getattr(format_class, "is_abstract")
+                format_class, "is_abstract", getattr(format_class, "ignore")
             )():
                 # temporary workaround while not all format classes have the
-                # ignore method - https://github.com/xia2/xia2/issues/567
+                # is_abstract method - https://github.com/xia2/xia2/issues/567
                 continue
             templates.add(full_path)
 
