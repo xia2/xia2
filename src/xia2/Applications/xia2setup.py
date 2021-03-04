@@ -202,11 +202,7 @@ def visit(directory, files):
                     "Ignoring %s (Registry can not find format class)" % full_path
                 )
                 continue
-            elif getattr(
-                format_class, "is_abstract", getattr(format_class, "ignore")
-            )():
-                # temporary workaround while not all format classes have the
-                # is_abstract method - https://github.com/xia2/xia2/issues/567
+            elif format_class.is_abstract():
                 continue
             templates.add(full_path)
 
