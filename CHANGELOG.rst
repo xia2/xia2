@@ -1,3 +1,12 @@
+xia2 3.3.4 (2021-03-05)
+=======================
+
+Bugfixes
+--------
+
+- Fix ``type object has no attribute 'ignore'`` error (`#570 <https://github.com/xia2/xia2/issues/570>`_)
+
+
 DIALS 3.3.3 (2021-02-15)
 ========================
 
