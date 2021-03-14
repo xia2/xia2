@@ -15,7 +15,7 @@ steps:
 
 # Download the current DIALS bootstrap script
 - bash: |
-    wget https://raw.githubusercontent.com/dials/dials/master/installer/bootstrap.py
+    wget https://raw.githubusercontent.com/dials/dials/main/installer/bootstrap.py
   workingDirectory: $(Pipeline.Workspace)
   displayName: Download DIALS bootstrap script
 
@@ -65,11 +65,11 @@ steps:
     git checkout FETCH_HEAD
     echo "##[command]Updating dxtbx"
     cd $(Pipeline.Workspace)/modules/dxtbx
-    git fetch origin master --depth=1
+    git fetch origin main --depth=1
     git checkout FETCH_HEAD
     echo "##[command]Updating dials"
     cd $(Pipeline.Workspace)/modules/dials
-    git fetch origin master --depth=1
+    git fetch origin main --depth=1
     git checkout FETCH_HEAD
   displayName: Repository update (incremental)
   condition: ne(variables.REPOSITORIES_CACHED, 'false')
