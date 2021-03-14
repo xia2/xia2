@@ -4,8 +4,17 @@ import itertools
 import logging
 import os
 
-from dxtbx.model import ExperimentList
-from dxtbx.model.experiment_list import ExperimentListTemplateImporter
+from dxtbx.imageset import ImageSequence
+from dxtbx.model.experiment_list import (
+    BeamComparison,
+    DetectorComparison,
+    ExperimentList,
+    ExperimentListFactory,
+    GoniometerComparison,
+)
+from dxtbx.sequence_filenames import locate_files_matching_template_string
+from dials.command_line.dials_import import ManualGeometryUpdater
+from dials.util.options import geometry_phil_scope
 from scitbx.array_family import flex
 from xia2.Handlers.Phil import PhilIndex
 
@@ -44,18 +53,11 @@ def load_imagesets(
     reversephi=False,
 ):
     global imageset_cache
-    from dxtbx.model.experiment_list import ExperimentListFactory
     from xia2.Applications.xia2setup import known_hdf5_extensions
-    from dxtbx.imageset import ImageSequence
 
     full_template_path = os.path.join(directory, template)
 
     if full_template_path not in imageset_cache or not use_cache:
-
-        from dxtbx.model.experiment_list import BeamComparison
-        from dxtbx.model.experiment_list import DetectorComparison
-        from dxtbx.model.experiment_list import GoniometerComparison
-
         params = PhilIndex.params.xia2.settings
         compare_beam = BeamComparison(
             wavelength_tolerance=params.input.tolerance.beam.wavelength,
@@ -108,7 +110,6 @@ def load_imagesets(
             unhandled = []
             experiments = ExperimentListFactory.from_filenames(
                 [master_file],
-                verbose=False,
                 unhandled=unhandled,
                 compare_beam=compare_beam,
                 compare_detector=compare_detector,
@@ -122,9 +123,6 @@ def load_imagesets(
             )
 
         else:
-
-            from dxtbx.sequence_filenames import locate_files_matching_template_string
-
             params = PhilIndex.get_python_object()
             read_all_image_headers = params.xia2.settings.read_all_image_headers
 
@@ -135,7 +133,6 @@ def load_imagesets(
                 unhandled = []
                 experiments = ExperimentListFactory.from_filenames(
                     paths,
-                    verbose=False,
                     unhandled=unhandled,
                     compare_beam=compare_beam,
                     compare_detector=compare_detector,
@@ -155,12 +152,11 @@ def load_imagesets(
                 if not start_ends:
                     start_ends.append(None)
                 for start_end in start_ends:
-                    importer = ExperimentListTemplateImporter(
+                    experiments = ExperimentListFactory.from_templates(
                         [full_template_path],
                         format_kwargs=format_kwargs,
                         image_range=start_end,
                     )
-                    experiments.extend(importer.experiments)
 
         imagesets = [
             iset for iset in experiments.imagesets() if isinstance(iset, ImageSequence)
@@ -182,9 +178,6 @@ def load_imagesets(
         # Update the geometry
         params = PhilIndex.params.xia2.settings
         update_geometry = []
-
-        from dials.command_line.dials_import import ManualGeometryUpdater
-        from dials.util.options import geometry_phil_scope
 
         # Then add manual geometry
         work_phil = geometry_phil_scope.format(params.input)
