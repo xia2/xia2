@@ -24,10 +24,9 @@ def test_ccp4_scalerA(regression_test, ccp4, dials_data, run_in_tmpdir, nproc):
 
     indexer = DialsIndexer()
     indexer.set_working_directory(tmpdir)
-    from dxtbx.model.experiment_list import ExperimentListTemplateImporter
+    from dxtbx.model import ExperimentList
 
-    importer = ExperimentListTemplateImporter([template])
-    experiments = importer.experiments
+    experiments = ExperimentList.from_templates([template])
     imageset = experiments.imagesets()[0]
     indexer.add_indexer_imageset(imageset)
 

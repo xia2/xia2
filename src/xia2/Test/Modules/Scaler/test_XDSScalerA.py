@@ -23,10 +23,9 @@ def test_xds_scalerA(regression_test, ccp4, xds, dials_data, run_in_tmpdir, npro
 
     indexer = XDSIndexer()
     indexer.set_working_directory(tmpdir)
-    from dxtbx.model.experiment_list import ExperimentListTemplateImporter
+    from dxtbx.model import ExperimentList
 
-    importer = ExperimentListTemplateImporter([template])
-    experiments = importer.experiments
+    experiments = ExperimentList.from_templates([template])
     imageset = experiments.imagesets()[0]
     indexer.add_indexer_imageset(imageset)
 

@@ -153,7 +153,7 @@ def load_imagesets(
                     start_ends.append(None)
                 for start_end in start_ends:
                     experiments.extend(
-                        ExperimentListFactory.from_templates(
+                        ExperimentList.from_templates(
                             [full_template_path],
                             format_kwargs=format_kwargs,
                             image_range=start_end,

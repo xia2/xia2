@@ -5,7 +5,7 @@ import sys
 
 from iotbx.reflection_file_reader import any_reflection_file
 from dials.array_family import flex
-from dxtbx.model.experiment_list import ExperimentListTemplateImporter
+from dxtbx.model import ExperimentList
 
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
@@ -25,8 +25,7 @@ def exercise_dials_integrater(dials_data, tmp_dir, nproc=None):
 
     indexer = DialsIndexer()
     indexer.set_working_directory(tmp_dir)
-    importer = ExperimentListTemplateImporter([template])
-    experiments = importer.experiments
+    experiments = ExperimentList.from_templates([template])
     imageset = experiments.imagesets()[0]
     indexer.add_indexer_imageset(imageset)
 
