@@ -152,10 +152,12 @@ def load_imagesets(
                 if not start_ends:
                     start_ends.append(None)
                 for start_end in start_ends:
-                    experiments = ExperimentListFactory.from_templates(
-                        [full_template_path],
-                        format_kwargs=format_kwargs,
-                        image_range=start_end,
+                    experiments.extend(
+                        ExperimentListFactory.from_templates(
+                            [full_template_path],
+                            format_kwargs=format_kwargs,
+                            image_range=start_end,
+                        )
                     )
 
         imagesets = [
