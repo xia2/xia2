@@ -3,7 +3,7 @@ import os
 import pytest
 import sys
 
-from dxtbx.model.experiment_list import ExperimentListTemplateImporter
+from dxtbx.model import ExperimentList
 
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
@@ -22,8 +22,7 @@ def exercise_xds_indexer(dials_data, tmp_dir, nproc=None):
     indexer = XDSIndexer()
     indexer.set_working_directory(tmp_dir)
 
-    importer = ExperimentListTemplateImporter([template])
-    experiments = importer.experiments
+    experiments = ExperimentList.from_templates([template])
     imageset = experiments.imagesets()[0]
     indexer.add_indexer_imageset(imageset)
 
