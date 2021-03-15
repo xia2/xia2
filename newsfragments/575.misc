@@ -1,1 +1,0 @@
-Fix read_all_image_headers=False bug introduced by #572

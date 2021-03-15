@@ -1,3 +1,15 @@
+xia2 3.4.0 (2021-03-15)
+=======================
+
+- Fix tests affected by changes to profile fitting in `dials/dials#1297 <https://github.com/dials/dials/pull/1297>` (`#569 <https://github.com/xia2/xia2/issues/569>`_)
+- The main development branch of xia2 was renamed from 'master' to 'main'. (`#561 <https://github.com/xia2/xia2/issues/561>`_)
+
+Misc
+----
+
+- `#550 <https://github.com/xia2/xia2/issues/550>`_, `#554 <https://github.com/xia2/xia2/issues/554>`_, `#555 <https://github.com/xia2/xia2/issues/555>`_, `#556 <https://github.com/xia2/xia2/issues/556>`_, `#565 <https://github.com/xia2/xia2/issues/565>`_, `#568 <https://github.com/xia2/xia2/issues/568>`_, `#572 <https://github.com/xia2/xia2/issues/572>`_, `#573 <https://github.com/xia2/xia2/issues/573>`_, `#574 <https://github.com/xia2/xia2/issues/574>`_, `#575 <https://github.com/xia2/xia2/issues/575>`_
+
+
 xia2 3.3.4 (2021-03-05)
 =======================
 
@@ -7,7 +19,7 @@ Bugfixes
 - Fix ``type object has no attribute 'ignore'`` error (`#570 <https://github.com/xia2/xia2/issues/570>`_)
 
 
-DIALS 3.3.3 (2021-02-15)
+xia2 3.3.3 (2021-02-15)
 ========================
 
 Bugfixes
