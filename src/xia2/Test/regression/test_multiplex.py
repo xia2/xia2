@@ -43,13 +43,10 @@ def proteinase_k(regression_test, dials_data, tmp_path):
         f.unlink()
 
 
-def test_proteinase_k(mocker, regression_test, dials_data, tmpdir):
-    data_dir = dials_data("multi_crystal_proteinase_k")
-    expts = sorted(f.strpath for f in data_dir.listdir("experiments*.json"))
-    refls = sorted(f.strpath for f in data_dir.listdir("reflections*.pickle"))
+def test_proteinase_k(mocker, proteinase_k):
+    expts, refls = proteinase_k
     mocker.spy(Report, "pychef_plots")
-    with tmpdir.as_cwd():
-        run_multiplex(expts + refls + ["exclude_images=0:1:10"])
+    run_multiplex(expts + refls + ["exclude_images=0:1:10"])
     # Verify that the *_vs_dose plots have been correctly plotted
     assert Report.pychef_plots.call_count == 1
     for k in (
@@ -65,17 +62,15 @@ def test_proteinase_k(mocker, regression_test, dials_data, tmpdir):
         else:
             assert Report.pychef_plots.spy_return[k]["data"][0]["x"] == list(range(26))
     for f in expected_data_files:
-        assert tmpdir.join(f).check(file=1), "expected file %s missing" % f
-    multiplex_expts = load.experiment_list(
-        tmpdir.join("scaled.expt").strpath, check_format=False
-    )
+        assert os.path.isfile(f), f"expected file {f} missing"
+    multiplex_expts = load.experiment_list("scaled.expt", check_format=False)
     for i, expt in enumerate(multiplex_expts):
         valid_image_ranges = expt.scan.get_valid_image_ranges(expt.identifier)
         if i == 0:
             assert valid_image_ranges == [(11, 25)]
         else:
             assert valid_image_ranges == [(1, 25)]
-    with tmpdir.join("xia2.multiplex.json").open("r") as fh:
+    with open("xia2.multiplex.json", "r") as fh:
         d = json.load(fh)
         for hkl in ("100", "010", "001"):
             k = f"stereographic_projection_{hkl}"
@@ -97,46 +92,40 @@ def test_proteinase_k(mocker, regression_test, dials_data, tmpdir):
             "warnings",
             "danger",
         ]
-    # Delete large temporary files to conserve disk space
-    for f in tmpdir.listdir("*.refl"):
-        f.remove()
 
 
 @pytest.mark.parametrize(
     "d_min",
     [None, 2.0],
 )
-def test_proteinase_k_filter_deltacchalf(d_min, regression_test, dials_data, tmpdir):
-    data_dir = dials_data("multi_crystal_proteinase_k")
-    expts = sorted(f.strpath for f in data_dir.listdir("experiments*.json"))
-    refls = sorted(f.strpath for f in data_dir.listdir("reflections*.pickle"))
-    with tmpdir.as_cwd():
-        command_line_args = (
-            expts
-            + refls
-            + [
-                "filtering.method=deltacchalf",
-                "filtering.deltacchalf.stdcutoff=1",
-                "max_clusters=1",
-                "nproc=1",
-                "resolution.d_min=%s" % d_min,
-            ]
-        )
-        run_multiplex(command_line_args)
+def test_proteinase_k_filter_deltacchalf(d_min, proteinase_k):
+    expts, refls = proteinase_k
+    command_line_args = (
+        expts
+        + refls
+        + [
+            "filtering.method=deltacchalf",
+            "filtering.deltacchalf.stdcutoff=1",
+            "max_clusters=1",
+            "nproc=1",
+            "resolution.d_min=%s" % d_min,
+        ]
+    )
+    run_multiplex(command_line_args)
     for f in expected_data_files + [
         "filtered.expt",
         "filtered.refl",
         "filtered.mtz",
         "filtered_unmerged.mtz",
     ]:
-        assert tmpdir.join(f).check(file=1), "expected file %s missing" % f
-    assert len(load.experiment_list(tmpdir / "scaled.expt", check_format=False)) == 8
-    assert len(load.experiment_list(tmpdir / "filtered.expt", check_format=False)) < 8
+        assert os.path.isfile(f), "expected file %s missing" % f
+    assert len(load.experiment_list("scaled.expt", check_format=False)) == 8
+    assert len(load.experiment_list("filtered.expt", check_format=False)) < 8
 
     # assert that the reflection files are different - the filtered reflections
     # should have fewer reflections as one data set has been removed
-    mtz_scaled = iotbx.mtz.object(tmpdir.join("scaled_unmerged.mtz").strpath)
-    mtz_filtered = iotbx.mtz.object(tmpdir.join("filtered_unmerged.mtz").strpath)
+    mtz_scaled = iotbx.mtz.object("scaled_unmerged.mtz")
+    mtz_filtered = iotbx.mtz.object("filtered_unmerged.mtz")
     if d_min:
         # assert that the input d_min has carried through to the output files
         for mtz in (mtz_scaled, mtz_filtered):
@@ -144,7 +133,7 @@ def test_proteinase_k_filter_deltacchalf(d_min, regression_test, dials_data, tmp
 
     assert mtz_filtered.n_reflections() != mtz_scaled.n_reflections()
 
-    with tmpdir.join("xia2.multiplex.json").open("r") as fh:
+    with open("xia2.multiplex.json", "r") as fh:
         d = json.load(fh)
         assert list(d["datasets"].keys()) == ["All data", "cluster 6", "Filtered"]
         # assert that the recorded merging statistics are different
@@ -158,27 +147,18 @@ def test_proteinase_k_filter_deltacchalf(d_min, regression_test, dials_data, tmp
         )
 
     # Check that cluster 6 has been scaled
-    assert tmpdir.join("cluster_6").check(dir=1)
-    assert tmpdir.join("cluster_6", "scaled.mtz").check(file=1)
-    assert tmpdir.join("cluster_6", "scaled_unmerged.mtz").check(file=1)
-
-    # Delete large temporary files to conserve disk space
-    for f in tmpdir.listdir("*.refl"):
-        f.remove()
-    for f in tmpdir.join("cluster_6").listdir("*.refl"):
-        f.remove()
+    cluster = pathlib.Path("cluster_6")
+    assert cluster.is_dir()
+    assert (cluster / "scaled.mtz").is_file()
+    assert (cluster / "scaled_unmerged.mtz").is_file()
 
 
 @pytest.mark.parametrize(
     "laue_group,space_group,threshold",
     [("P422", None, None), (None, "P422", 3.5), (None, "P43212", None)],
 )
-def test_proteinase_k_dose(
-    laue_group, space_group, threshold, regression_test, dials_data, tmpdir
-):
-    data_dir = dials_data("multi_crystal_proteinase_k")
-    expts = sorted(f.strpath for f in data_dir.listdir("experiments*.json"))
-    refls = sorted(f.strpath for f in data_dir.listdir("reflections*.pickle"))
+def test_proteinase_k_dose(laue_group, space_group, threshold, proteinase_k):
+    expts, refls = proteinase_k
     command_line_args = (
         [
             "dose=1,20",
@@ -191,15 +171,12 @@ def test_proteinase_k_dose(
     )
     if threshold is not None:
         command_line_args.append("unit_cell_clustering.threshold=%s" % threshold)
-    with tmpdir.as_cwd():
-        run_multiplex(command_line_args)
+    run_multiplex(command_line_args)
 
     for f in expected_data_files:
-        assert tmpdir.join(f).check(file=1), "expected file %s missing" % f
+        assert os.path.isfile, f"expected file {f} missing"
 
-    multiplex_expts = load.experiment_list(
-        tmpdir.join("scaled.expt").strpath, check_format=False
-    )
+    multiplex_expts = load.experiment_list("scaled.expt", check_format=False)
     if threshold is not None:
         # one experiment should have been rejected after unit cell clustering
         assert len(multiplex_expts) == 7
@@ -210,9 +187,10 @@ def test_proteinase_k_dose(
 
     # Check that expected clusters have been scaled
     for cluster in expected_clusters:
-        assert tmpdir.join(cluster).check(dir=1)
-        assert tmpdir.join(cluster, "scaled.mtz").check(file=1)
-        assert tmpdir.join(cluster, "scaled_unmerged.mtz").check(file=1)
+        cluster = pathlib.Path(cluster)
+        assert cluster.is_dir()
+        assert (cluster / "scaled.mtz").is_file()
+        assert (cluster / "scaled_unmerged.mtz").is_file()
 
     for expt in multiplex_expts:
         if space_group is None:
@@ -222,9 +200,6 @@ def test_proteinase_k_dose(
                 expt.crystal.get_space_group().type().lookup_symbol().replace(" ", "")
                 == space_group
             )
-    # Delete large temporary files to conserve disk space
-    for f in tmpdir.listdir("*.refl"):
-        f.remove()
 
 
 @pytest.mark.parametrize(
@@ -257,28 +232,20 @@ def test_proteinase_k_min_completeness(parameters, expected_clusters, proteinase
         assert (cluster / "scaled_unmerged.mtz").is_file()
 
 
-def test_proteinase_k_single_dataset_raises_error(regression_test, dials_data, tmpdir):
-    data_dir = dials_data("multi_crystal_proteinase_k")
-    expts = data_dir.join("experiments_1.json")
-    refls = data_dir.join("reflections_1.pickle")
-    with tmpdir.as_cwd():
-        with pytest.raises(SystemExit) as e:
-            run_multiplex([expts.strpath, refls.strpath])
-        assert str(e.value) == "xia2.multiplex requires a minimum of two experiments"
+def test_proteinase_k_single_dataset_raises_error(proteinase_k):
+    expts, refls = proteinase_k
+    with pytest.raises(SystemExit) as e:
+        run_multiplex([expts[0], refls[1]])
+    assert str(e.value) == "xia2.multiplex requires a minimum of two experiments"
 
 
-def test_proteinase_k_laue_group_space_group_raises_error(
-    regression_test, dials_data, tmpdir
-):
-    data_dir = dials_data("multi_crystal_proteinase_k")
-    expts = sorted(f.strpath for f in data_dir.listdir("experiments*.json"))
-    refls = sorted(f.strpath for f in data_dir.listdir("reflections*.pickle"))
+def test_proteinase_k_laue_group_space_group_raises_error(proteinase_k):
+    expts, refls = proteinase_k
     command_line_args = (
         ["symmetry.laue_group=P422", "symmetry.space_group=P41212"] + expts + refls
     )
-    with tmpdir.as_cwd():
-        with pytest.raises(SystemExit):
-            run_multiplex(command_line_args)
+    with pytest.raises(SystemExit):
+        run_multiplex(command_line_args)
 
 
 @pytest.fixture
