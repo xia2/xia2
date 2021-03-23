@@ -905,7 +905,10 @@ class MultiCrystalScale:
         params = mca_phil.extract()
         params.prefix = "xia2.multiplex"
         params.title = "xia2.multiplex report"
-        mca = MultiCrystalReport(params=params, data_manager=self._data_manager)
+        data_manager = copy.deepcopy(self._data_manager)
+        refl = data_manager.reflections
+        data_manager.reflections = refl.select(refl["d"] >= self._scaled.d_min)
+        mca = MultiCrystalReport(params=params, data_manager=data_manager)
         return mca
 
     def report(self):

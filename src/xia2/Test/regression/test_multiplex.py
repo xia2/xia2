@@ -1,4 +1,6 @@
 import json
+import os
+import pathlib
 import pytest
 
 from dxtbx.model import ExperimentList
@@ -28,6 +30,17 @@ expected_data_files = [
     "xia2.multiplex.html",
     "xia2.multiplex.json",
 ]
+
+
+@pytest.fixture()
+def proteinase_k(regression_test, dials_data, tmp_path):
+    data_dir = dials_data("multi_crystal_proteinase_k")
+    expts = sorted(f.strpath for f in data_dir.listdir("experiments*.json"))
+    refls = sorted(f.strpath for f in data_dir.listdir("reflections*.pickle"))
+    os.chdir(tmp_path)
+    yield expts, refls
+    for f in tmp_path.glob("**/*.refl"):
+        f.unlink()
 
 
 def test_proteinase_k(mocker, regression_test, dials_data, tmpdir):
@@ -212,6 +225,36 @@ def test_proteinase_k_dose(
     # Delete large temporary files to conserve disk space
     for f in tmpdir.listdir("*.refl"):
         f.remove()
+
+
+@pytest.mark.parametrize(
+    "parameters,expected_clusters",
+    (
+        (["min_completeness=0.6", "cluster_method=cos_angle"], ("cluster_6",)),
+        (
+            ["min_completeness=0.6", "cluster_method=correlation"],
+            ("cluster_5", "cluster_6"),
+        ),
+    ),
+)
+def test_proteinase_k_min_completeness(parameters, expected_clusters, proteinase_k):
+    expts, refls = proteinase_k
+    command_line_args = parameters + expts + refls
+    run_multiplex(command_line_args)
+
+    for f in expected_data_files:
+        assert pathlib.Path(f).is_file(), "expected file %s missing" % f
+
+    multiplex_expts = load.experiment_list("scaled.expt", check_format=False)
+    assert len(multiplex_expts) == 8
+
+    # Check that expected clusters have been scaled
+    print(list(pathlib.Path().glob("cluster_[0-9]*")))
+    for cluster in expected_clusters:
+        cluster = pathlib.Path(cluster)
+        assert cluster.is_dir()
+        assert (cluster / "scaled.mtz").is_file()
+        assert (cluster / "scaled_unmerged.mtz").is_file()
 
 
 def test_proteinase_k_single_dataset_raises_error(regression_test, dials_data, tmpdir):
