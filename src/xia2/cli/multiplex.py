@@ -2,6 +2,8 @@ import logging
 import random
 import sys
 
+import numpy as np
+
 import iotbx.phil
 
 import xia2.Handlers.Streams
@@ -127,6 +129,7 @@ def run(args=sys.argv[1:]):
 
     if params.seed is not None:
         flex.set_random_seed(params.seed)
+        np.random.seed(params.seed)
         random.seed(params.seed)
 
     experiments = flatten_experiments(params.input.experiments)
