@@ -203,16 +203,13 @@ def test_proteinase_k_dose(laue_group, space_group, threshold, proteinase_k):
 
 
 @pytest.mark.parametrize(
-    "parameters,expected_clusters",
+    "parameters",
     (
-        (["min_completeness=0.6", "cluster_method=cos_angle"], ("cluster_6",)),
-        (
-            ["min_completeness=0.6", "cluster_method=correlation"],
-            ("cluster_5", "cluster_6"),
-        ),
+        ["min_completeness=0.6", "cluster_method=cos_angle"],
+        ["min_completeness=0.6", "cluster_method=correlation"],
     ),
 )
-def test_proteinase_k_min_completeness(parameters, expected_clusters, proteinase_k):
+def test_proteinase_k_min_completeness(parameters, proteinase_k):
     expts, refls = proteinase_k
     command_line_args = parameters + expts + refls
     run_multiplex(command_line_args)
@@ -222,12 +219,9 @@ def test_proteinase_k_min_completeness(parameters, expected_clusters, proteinase
 
     multiplex_expts = load.experiment_list("scaled.expt", check_format=False)
     assert len(multiplex_expts) == 8
-
-    # Check that expected clusters have been scaled
-    print(list(pathlib.Path().glob("cluster_[0-9]*")))
-    for cluster in expected_clusters:
-        cluster = pathlib.Path(cluster)
-        assert cluster.is_dir()
+    clusters = list(pathlib.Path().glob("cluster_[0-9]*"))
+    assert len(clusters)
+    for cluster in clusters:
         assert (cluster / "scaled.mtz").is_file()
         assert (cluster / "scaled_unmerged.mtz").is_file()
 
