@@ -1,3 +1,18 @@
+xia2 3.4.1 (2021-04-01)
+=======================
+
+Features
+--------
+
+- ``xia2.multiplex``: Use resolution cutoff determined during scaling for cluster analysis (`#576 <https://github.com/xia2/xia2/issues/576>`_)
+
+
+Bugfixes
+--------
+
+- ``xia2.multiplex``: Fix cos-angle clustering varying between runs (`#576 <https://github.com/xia2/xia2/issues/576>`_)
+
+
 xia2 3.4.0 (2021-03-15)
 =======================
 
