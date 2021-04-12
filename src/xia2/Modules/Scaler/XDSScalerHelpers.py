@@ -69,7 +69,7 @@ class XDSScalerHelper:
                     break
 
                 for k in file_map:
-                    if "ISET" in line and int(line.split("ISET=")[1].split()[0]) != k:
+                    if "!ISET=" in line and int(line.split("ISET=")[1].split()[0]) != k:
                         continue
 
                     file_content[k].append(line)
