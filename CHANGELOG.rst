@@ -1,3 +1,12 @@
+xia2 3.4.2 (2021-04-12)
+=======================
+
+Bugfixes
+--------
+
+- Fix reading of split HKL files output from XSCALE (`#579 <https://github.com/xia2/xia2/issues/579>`_)
+
+
 xia2 3.4.1 (2021-04-01)
 =======================
 
