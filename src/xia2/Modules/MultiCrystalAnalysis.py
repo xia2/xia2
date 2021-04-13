@@ -132,9 +132,7 @@ class MultiCrystalAnalysis:
             )
         )
         self._cosym_graphs.update(
-            plot_coords(
-                mca.cosym.coords, mca.cosym.cluster_labels, key="cosym_coordinates_sg"
-            )
+            plot_coords(mca.cosym.coords, key="cosym_coordinates_sg")
         )
 
         self._cluster_analysis = mca
