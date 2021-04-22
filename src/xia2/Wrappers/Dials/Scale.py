@@ -70,8 +70,7 @@ def DialsScale(DriverType=None, decay_correction=None):
             self._cycles = None
             self._brotation = None
             self._bfactor_tie = None
-            # self._surface_tie = None
-            # self._surface_link = True
+            self._surface_weight = None
             self._lmax = None
 
             # dose_decay model parameters
@@ -148,11 +147,8 @@ def DialsScale(DriverType=None, decay_correction=None):
         def set_partiality_cutoff(self, v):
             self._partiality_cutoff = v
 
-        # def set_surface_tie(self, surface_tie):
-        # self._surface_tie = surface_tie
-
-        # def set_surface_link(self, surface_link):
-        # self._surface_link = surface_link
+        def set_surface_weight(self, surface_weight):
+            self._surface_weight = surface_weight
 
         def set_lmax(self, lmax):
             self._lmax = lmax
@@ -324,6 +320,10 @@ def DialsScale(DriverType=None, decay_correction=None):
             # 'Spacing' i.e. scale interval only relevant to physical model.
             if self._model in ("physical", "dose_decay") and self._spacing:
                 self.add_command_line(f"{self._model}.scale_interval={self._spacing:g}")
+            if self._model == "physical" and self._surface_weight:
+                self.add_command_line(
+                    f"{self._model}.surface_weight={self._surface_weight}"
+                )
 
             self.add_command_line("full_matrix=%s" % self._full_matrix)
             self.add_command_line("error_model=%s" % self._error_model)

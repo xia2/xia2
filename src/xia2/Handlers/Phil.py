@@ -452,6 +452,11 @@ dials
       lmax = 4
         .type = int(value_min=2)
         .help = "Order of spherical harmonics to use for absorption surface"
+      surface_weight = 1e6
+        .type = float
+        .help = "The restraint factor for the absorption correction parameters."
+                "A lower value means that the parameters are less restrained and"
+                "lead to a scaling model with a larger absorption correction."
     }
     dose_decay_model {
       share.decay = True

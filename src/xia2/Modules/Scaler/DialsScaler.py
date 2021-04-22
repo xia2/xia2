@@ -119,6 +119,9 @@ class DialsScaler(Scaler):
             if PhilIndex.params.dials.scale.absorption:
                 self._scaler.set_absorption_correction(True)
                 self._scaler.set_lmax(PhilIndex.params.dials.scale.physical_model.lmax)
+                self._scaler.set_surface_weight(
+                    PhilIndex.params.dials.scale.physical_model.surface_weight
+                )
             else:
                 self._scaler.set_absorption_correction(False)
         elif PhilIndex.params.dials.scale.model == "dose_decay":
