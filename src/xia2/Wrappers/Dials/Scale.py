@@ -123,6 +123,10 @@ def DialsScale(DriverType=None, decay_correction=None):
             self._d_min = d_min
             self._d_max = d_max
 
+        def set_anomalous(self, anomalous=True):
+            """Switch on/off separating of anomalous pairs."""
+            self._anomalous = anomalous
+
         def set_bfactor(self, bfactor=True, brotation=None):
             """Switch on/off bfactor refinement, optionally with the
             spacing for the bfactor refinement (in degrees.)"""
@@ -266,6 +270,9 @@ def DialsScale(DriverType=None, decay_correction=None):
             nproc = PhilIndex.params.xia2.settings.multiprocessing.nproc
             if isinstance(nproc, int) and nproc > 1:
                 self.add_command_line("nproc=%i" % nproc)
+
+            if self._anomalous:
+                self.add_command_line("anomalous=True")
 
             if self._intensities == "summation":
                 self.add_command_line("intensity_choice=sum")

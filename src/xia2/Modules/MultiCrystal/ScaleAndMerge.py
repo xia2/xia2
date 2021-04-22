@@ -51,6 +51,9 @@ unit_cell_clustering {
 
 scaling
 {
+  anomalous = False
+    .help = "Separate anomalous pairs in scaling and error model optimisation."
+    .type = bool
   rotation.spacing = None
     .type = int
     .expert_level = 2
@@ -1034,6 +1037,8 @@ class Scale:
         )
         scaler.set_scaled_unmerged_mtz(unmerged_mtz)
         scaler.set_scaled_mtz(merged_mtz)
+
+        scaler.set_anomalous(self._params.scaling.anomalous)
 
         # Set default scaling model
         if self._params.scaling.model in (None, "auto", Auto):
