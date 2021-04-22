@@ -1,1 +1,1 @@
-For the dials scaler, use anomalous scaling if atom=X/anomalous=True specified.
+Separate anomalous pairs when scaling with `dials.scale` if `anomalous=True`.
