@@ -233,7 +233,6 @@ class multi_crystal_analysis:
         ]
         params.lattice_group = self.individual_merged_intensities[0].space_group_info()
         params.space_group = self.individual_merged_intensities[0].space_group_info()
-        params.cluster.method = "dbscan"
 
         self.cosym = CosymAnalysis(datasets, params)
         self.cosym.run()
