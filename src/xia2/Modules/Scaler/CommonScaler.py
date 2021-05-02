@@ -1111,7 +1111,7 @@ class CommonScaler(Scaler):
     def _compute_scaler_statistics(
         self, scaled_unmerged_mtz, selected_band=None, wave=None
     ):
-        """ selected_band = (d_min, d_max) with None for automatic determination. """
+        """selected_band = (d_min, d_max) with None for automatic determination."""
         # mapping of expected dictionary names to iotbx.merging_statistics attributes
         key_to_var = {
             "I/sigma": "i_over_sigma_mean",

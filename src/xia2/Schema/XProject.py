@@ -86,7 +86,7 @@ class XProject:
     @classmethod
     def from_json(cls, filename=None, string=None):
         def _decode_dict(data):
-            """ Recursively decode possible float and int values. """
+            """Recursively decode possible float and int values."""
             rv = {}
             for key, value in data.items():
                 if isinstance(value, dict):
