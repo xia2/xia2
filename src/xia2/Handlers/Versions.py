@@ -39,7 +39,7 @@ def get_xia2_version():
 
 def get_xds_version():
     try:
-        result = procrunner.run(["xds"], print_stdout=False)
+        result = procrunner.run(["xds"], print_stdout=False, print_stderr=False)
     except OSError:
         pass
     version = re.search(br"BUILT=([0-9]+)\)", result.stdout)
@@ -49,7 +49,9 @@ def get_xds_version():
 
 
 def get_aimless_version():
-    result = procrunner.run(["aimless", "--no-input"], print_stdout=False)
+    result = procrunner.run(
+        ["aimless", "--no-input"], print_stdout=False, print_stderr=False
+    )
     version = re.search(br"version\s\d+\.\d+\.\d+", result.stdout)
     if version:
         return version.group().decode("utf-8").split(" ")[1]
@@ -57,7 +59,9 @@ def get_aimless_version():
 
 
 def get_pointless_version():
-    result = procrunner.run(["pointless", "--no-input"], print_stdout=False)
+    result = procrunner.run(
+        ["pointless", "--no-input"], print_stdout=False, print_stderr=False
+    )
     version = re.search(br"version\s\d+\.\d+\.\d+", result.stdout)
     if version:
         return version.group().decode("utf-8").split(" ")[1]
