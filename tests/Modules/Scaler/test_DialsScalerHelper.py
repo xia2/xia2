@@ -132,7 +132,7 @@ def test_dials_symmetry_decide_pointgroup(
     other_spacegroups,
     helper_directory,
 ):
-    """Test for the dials_symmetry_decide_pointgroup helper function """
+    """Test for the dials_symmetry_decide_pointgroup helper function"""
     helper, tmpdir = helper_directory
     refl_path = (tmpdir / "test.refl").strpath
     exp_path = (tmpdir / "test.expt").strpath
