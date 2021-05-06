@@ -489,6 +489,16 @@ dials
       .type = choice
       .help = "Choice of whether to refine an error model to adjust the" \
               "intensity sigmas using a two-parameter model."
+    error_model_grouping = *combined individual grouped
+      .type = choice
+      .help = "Choice of how the error models should be optimised in scaling," \
+              "either a combined more for all sweeps, an individual error model" \
+              "per sweep or in custom user-defined groups."
+    error_model_group = None
+      .type = ints
+      .multiple = True
+      .help = "Specify a subset of sweeps which should share an error model,"\
+              "for the option error_model_grouping=grouped."
     full_matrix = auto
       .type = bool
       .help = "Option to turn on/off Levenberg-Marquardt refinement round used " \

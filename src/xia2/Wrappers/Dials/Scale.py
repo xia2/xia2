@@ -29,6 +29,8 @@ def DialsScale(DriverType=None, decay_correction=None):
             self._full_matrix = True
             self._absorption_correction = True
             self._error_model = "basic"
+            self._error_model_grouping = "combined"
+            self._error_model_groups = None
             self._outlier_rejection = "standard"
             self._outlier_zmax = None
             self._min_partiality = None
@@ -192,6 +194,13 @@ def DialsScale(DriverType=None, decay_correction=None):
         def set_error_model(self, error_model="basic"):
             self._error_model = error_model
 
+        def set_error_model_grouping_method(self, grouping="combined"):
+            self._error_model_grouping = grouping
+
+        def set_error_model_groups(self, groups):
+            "Groups should be a list of groups e.g. ['0,1', '2,3']"
+            self._error_model_groups = groups
+
         def set_outlier_rejection(self, outlier_rejection):
             self._outlier_rejection = outlier_rejection
 
@@ -327,6 +336,10 @@ def DialsScale(DriverType=None, decay_correction=None):
 
             self.add_command_line("full_matrix=%s" % self._full_matrix)
             self.add_command_line("error_model=%s" % self._error_model)
+            self.add_command_line(f"error_model.grouping={self._error_model_grouping}")
+            if self._error_model_groups and self._error_model_grouping == "grouped":
+                for g in self._error_model_groups:
+                    self.add_command_line(f"error_model_group={g}")
             self.add_command_line("outlier_rejection=%s" % self._outlier_rejection)
 
             if self._min_partiality is not None:

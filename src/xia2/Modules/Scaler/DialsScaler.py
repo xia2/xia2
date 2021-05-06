@@ -88,6 +88,13 @@ class DialsScaler(Scaler):
         )
         self._scaler.set_outlier_zmax(PhilIndex.params.dials.scale.outlier_zmax)
         self._scaler.set_error_model(PhilIndex.params.dials.scale.error_model)
+        self._scaler.set_error_model_grouping_method(
+            PhilIndex.params.dials.scale.error_model_grouping
+        )
+        if PhilIndex.params.dials.scale.error_model_group:
+            self._scaler.set_error_model_groups(
+                PhilIndex.params.dials.scale.error_model_group
+            )
         self._scaler.set_partiality_cutoff(
             PhilIndex.params.dials.scale.partiality_threshold
         )
