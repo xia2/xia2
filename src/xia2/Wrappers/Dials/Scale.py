@@ -28,6 +28,7 @@ def DialsScale(DriverType=None, decay_correction=None):
             self._model = None
             self._full_matrix = True
             self._absorption_correction = True
+            self._absorption_level = None  # or low, medium, high
             self._error_model = "basic"
             self._error_model_grouping = "combined"
             self._error_model_groups = None
@@ -207,6 +208,9 @@ def DialsScale(DriverType=None, decay_correction=None):
         def set_outlier_zmax(self, z_max):
             self._outlier_zmax = z_max
 
+        def set_absorption_level(self, level):
+            self._absorption_level = level
+
         def get_scaled_mtz(self):
             return self._merged_reflections
 
@@ -325,6 +329,8 @@ def DialsScale(DriverType=None, decay_correction=None):
                 and self._lmax is not None
             ):
                 self.add_command_line("%s.lmax=%i" % (self._model, self._lmax))
+            if self._absorption_level:
+                self.add_command_line(f"absorption_level={self._absorption_level}")
 
             # 'Spacing' i.e. scale interval only relevant to physical model.
             if self._model in ("physical", "dose_decay") and self._spacing:
