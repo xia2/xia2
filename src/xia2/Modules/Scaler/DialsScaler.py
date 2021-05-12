@@ -106,7 +106,8 @@ class DialsScaler(Scaler):
         scale_interval, decay_interval = scaling_model_auto_rules(exp)
 
         # Model handling
-        if PhilIndex.params.dials.scale.model in (None, "auto", libtbx.Auto):
+        autos = (None, "auto", libtbx.Auto)
+        if PhilIndex.params.dials.scale.model in autos:
             PhilIndex.params.dials.scale.model = "physical"
         self._scaler.set_model(PhilIndex.params.dials.scale.model)
 
@@ -125,10 +126,21 @@ class DialsScaler(Scaler):
                 self._scaler.set_bfactor(False)
             if PhilIndex.params.dials.scale.absorption:
                 self._scaler.set_absorption_correction(True)
-                self._scaler.set_lmax(PhilIndex.params.dials.scale.physical_model.lmax)
-                self._scaler.set_surface_weight(
+                if PhilIndex.params.dials.scale.physical_model.absorption_level:
+                    self._scaler.set_absorption_level(
+                        PhilIndex.params.dials.scale.physical_model.absorption_level
+                    )
+                if PhilIndex.params.dials.scale.physical_model.lmax not in autos:
+                    self._scaler.set_lmax(
+                        PhilIndex.params.dials.scale.physical_model.lmax
+                    )
+                if (
                     PhilIndex.params.dials.scale.physical_model.surface_weight
-                )
+                    not in autos
+                ):
+                    self._scaler.set_surface_weight(
+                        PhilIndex.params.dials.scale.physical_model.surface_weight
+                    )
             else:
                 self._scaler.set_absorption_correction(False)
         elif PhilIndex.params.dials.scale.model == "dose_decay":

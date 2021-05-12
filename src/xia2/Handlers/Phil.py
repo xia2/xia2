@@ -449,14 +449,33 @@ dials
       Bfactor_spacing = None
         .type = float
         .help = "Parameter spacing for B-factor correction"
-      lmax = 4
+      absorption_level = low medium high
+        .type = choice
+        .help = "Expected degree of relative absorption for different scattering"
+                "paths through the crystal(s). If an option is selected, the"
+                "scaling model parameters lmax and surface_weight will be set to"
+                "appropriate values."
+                "Relative absorption increases as crystal size increases,"
+                "increases as wavelength increases and is increased as the crystal"
+                "dimensions become less equal (i.e. is higher for needle shaped"
+                "crystals and zero for a spherical crystal)."
+                "Definitions of the levels and approximate correction magnitude:"
+                "low:    ~1%% relative absorption, expected for typical protein"
+                "        crystals (containing no strongly absorbing atoms) on the"
+                "        order of ~100um measured at ~1A wavelength."
+                "medium: ~5%% relative absorption"
+                "high:   >25%% relative absorption, e.g. for measurements at long"
+                "        wavelength or crystals with high absorption from heavy atoms."
+      lmax = auto
         .type = int(value_min=2)
-        .help = "Order of spherical harmonics to use for absorption surface"
-      surface_weight = 1e6
+        .help = "Order of spherical harmonics to use for absorption surface,"
+                "defaults to 4 if no absorption_level is chosen."
+      surface_weight = auto
         .type = float
-        .help = "The restraint factor for the absorption correction parameters."
-                "A lower value means that the parameters are less restrained and"
-                "lead to a scaling model with a larger absorption correction."
+        .help = "Restraint weight applied to spherical harmonic terms in the"
+                "absorption correction. A lower restraint allows a higher amount"
+                "of absorption correction. Defaults to 5e5 if no absorption_level"
+                "is chosen."
     }
     dose_decay_model {
       share.decay = True
