@@ -25,14 +25,15 @@ are:
 Resolution limits
 -----------------
 
-The subject of resolution limits is one often raised - by default in xia2 they
-are:
+xia2 uses ``dials.estimate_resolution`` to estimate the resolution limit, sharing the
+same parameters and defaults.
+The default behaviour (``cc_half=0.3``) can be overridden with e.g.:
 
-  * :math:`CC_{\frac{1}{2}} > 0.5`
-  * Merged :math:`\frac{I}{\sigma_I} > 1`
-  * Unmerged :math:`\frac{I}{\sigma_I} > 0.25`
+.. code-block:: bash
 
-However you can override these with :samp:`cc_half=...`, :samp:`misigma=...`, :samp:`isigma=...`
+    xia2 [options] cc_half=None misigma=1 isigma=0.25
+
+See the dials.estimate_resolution_ documentation for further details.
 
 Phil parameters
 ---------------
@@ -68,3 +69,4 @@ Here is a comprehensive list of PHIL parameters used by xia2:
 .. _XDS: http://xds.mpimf-heidelberg.mpg.de/
 .. _XSCALE: http://xds.mpimf-heidelberg.mpg.de/html_doc/xscale_program.html
 .. _aimless: http://www.ccp4.ac.uk/html/aimless.html
+.. _dials.estimate_resolution: https://dials.github.io/documentation/programs/dials_estimate_resolution.html
