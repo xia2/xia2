@@ -1,3 +1,35 @@
+xia2 3.5.0 (2021-05-27)
+=======================
+
+Features
+--------
+
+- Separate anomalous pairs when scaling with ``dials.scale`` if ``anomalous=True``. The ``anomalous=`` parameter has also been added to ``xia2.multiplex``. (`#539 <https://github.com/xia2/xia2/issues/539>`_)
+- Add new ``surface_weight=`` parameter, to control the ``dials.scale`` absorption correction. (`#584 <https://github.com/xia2/xia2/issues/584>`_)
+- Add ``error_model_grouping=`` option to allow refining of an individual or grouped error model in dials. (`#585 <https://github.com/xia2/xia2/issues/585>`_)
+- Added ``absorption_level=[low|medium|high]`` option for control of the absorption correction, when using ``dials.scale``. (`#592 <https://github.com/xia2/xia2/issues/592>`_)
+
+
+Bugfixes
+--------
+
+- Prevent unintended output when checking version of ``pointless`` (`#586 <https://github.com/xia2/xia2/issues/586>`_)
+- Fix documentation section on resolution estimation (`#593 <https://github.com/xia2/xia2/issues/593>`_)
+
+
+Deprecations and Removals
+-------------------------
+
+- Removed python test files from the xia2 package installation, slightly reducing the package size. (`#587 <https://github.com/xia2/xia2/issues/587>`_)
+- Remove leftover Travis CI-related files (`#588 <https://github.com/xia2/xia2/issues/588>`_)
+
+
+Misc
+----
+
+- `#582 <https://github.com/xia2/xia2/issues/582>`_
+
+
 xia2 3.4.2 (2021-04-12)
 =======================
 
