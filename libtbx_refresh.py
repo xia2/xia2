@@ -27,10 +27,9 @@ def _install_xia2_setup():
 
 def _show_xia2_version():
     try:
-        from xia2.XIA2Version import Version
+        import xia2
 
-        # the import implicitly updates the .gitversion file
-        print(Version)
+        print(xia2.__version_string__)
     except ModuleNotFoundError:
         print("Can't tell xia2 version")
 

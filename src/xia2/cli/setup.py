@@ -7,7 +7,6 @@ from dials.util import Sorry
 from dials.util.version import dials_version
 import xia2.Driver.timing
 import xia2.Handlers.Streams
-import xia2.XIA2Version
 from xia2.Applications.xia2_main import (
     check_environment,
     get_command_line,
@@ -56,7 +55,7 @@ def run():
         sys.exit()
 
     if "-version" in sys.argv or "--version" in sys.argv:
-        print(xia2.XIA2Version.Version)
+        print(xia2.__version_string__)
         print(dials_version())
         ccp4_version = get_ccp4_version()
         if ccp4_version:

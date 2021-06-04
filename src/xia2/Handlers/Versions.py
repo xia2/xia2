@@ -3,7 +3,7 @@ from collections.abc import Mapping
 
 import procrunner
 
-import xia2.XIA2Version
+import xia2
 import dials.util.version
 
 
@@ -31,10 +31,6 @@ class _Versions(Mapping):
 
     def __ne__(self, other):
         return not (self == other)
-
-
-def get_xia2_version():
-    return xia2.XIA2Version.Version
 
 
 def get_xds_version():
@@ -70,7 +66,7 @@ def get_pointless_version():
 
 versions = _Versions(
     {
-        "xia2": get_xia2_version,
+        "xia2": lambda: xia2.__version_string__,
         "dials": dials.util.version.dials_version,
         "xds": get_xds_version,
         "aimless": get_aimless_version,

@@ -8,10 +8,10 @@ from dials.algorithms.symmetry.cosym.plots import plot_coords, plot_rij_histogra
 from dials.util.filter_reflections import filtered_arrays_from_experiments_reflections
 from dials.util.multi_dataset_handling import parse_multiple_datasets
 
+import xia2
 from xia2.Modules.MultiCrystal.ScaleAndMerge import DataManager
 from xia2.Modules.Analysis import batch_phil_scope
 from xia2.Modules.DeltaCcHalf import DeltaCcHalf
-from xia2.XIA2Version import Version
 
 from libtbx import phil
 
@@ -293,7 +293,7 @@ any systematic grouping of points may suggest a preferential crystal orientation
             comparison_graphs=comparison_graphs,
             symmetry_analysis=symmetry_analysis,
             styles=styles,
-            xia2_version=Version,
+            xia2_version=xia2.__version_string__,
         )
 
         json_data = {}

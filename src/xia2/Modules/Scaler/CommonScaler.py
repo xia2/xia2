@@ -9,6 +9,7 @@ import time
 from collections import OrderedDict
 
 import iotbx.merging_statistics
+import xia2
 from cctbx.xray import scatterer
 from cctbx.xray.structure import structure
 from xia2.Handlers.Citations import Citations
@@ -33,7 +34,6 @@ from xia2.Schema.Interfaces.Scaler import Scaler
 
 # new resolution limit code
 from xia2.Wrappers.Dials.EstimateResolution import EstimateResolution
-from xia2.XIA2Version import Version
 
 from cctbx.sgtbx import bravais_types
 from cctbx.array_family import flex
@@ -564,7 +564,7 @@ class CommonScaler(Scaler):
             reader = any_reflection_file(mtz_file)
             mtz_object = reader.file_content()
             date_str = time.strftime("%d/%m/%Y at %H:%M:%S", time.gmtime())
-            mtz_object.add_history(f"From {Version}, run on {date_str}")
+            mtz_object.add_history(f"From {xia2.__version_string__}, run on {date_str}")
             mtz_object.write(mtz_file)
 
     def _scale_finish_chunk_3_truncate(self):

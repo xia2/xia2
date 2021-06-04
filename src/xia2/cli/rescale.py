@@ -10,7 +10,6 @@ from xia2.Applications.xia2_main import check_environment, write_citations
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Files import cleanup
 from xia2.Handlers.Phil import PhilIndex
-from xia2.XIA2Version import Version
 
 logger = logging.getLogger("xia2.cli.rescale")
 
@@ -26,7 +25,7 @@ def run():
         logger.error('Status: error "%s"', str(e))
 
     # print the version
-    logger.info(Version)
+    logger.info(xia2.__version_string__)
     Citations.cite("xia2")
 
     start_time = time.time()

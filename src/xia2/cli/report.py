@@ -8,7 +8,6 @@ import xia2.Handlers.Streams
 from dials.util.options import OptionParser
 from jinja2 import ChoiceLoader, Environment, PackageLoader
 from xia2.Modules.Report import Report
-from xia2.XIA2Version import Version
 
 phil_scope = iotbx.phil.parse(
     """\
@@ -147,7 +146,7 @@ def run(args):
         batch_graphs=batch_graphs,
         misc_graphs=misc_graphs,
         styles=styles,
-        xia2_version=Version,
+        xia2_version=xia2.__version_string__,
         log_text=log_text,
     )
 

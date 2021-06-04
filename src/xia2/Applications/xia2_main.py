@@ -11,18 +11,15 @@ import sys
 import h5py
 
 from dials.util import Sorry
+import xia2
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Environment import df
-from xia2.XIA2Version import Version
 
 logger = logging.getLogger("xia2.Applications.xia2_main")
 
 
 def check_environment():
     """Check the environment we are running in..."""
-
-    if sys.hexversion < 0x02070000:
-        raise RuntimeError("Python versions older than 2.7 are not supported")
 
     import cctbx
 
@@ -57,12 +54,12 @@ def check_environment():
 
     logger.info("Contact: xia2.support@gmail.com")
 
-    logger.info(Version)
+    logger.info(xia2.__version_string__)
 
     # temporary workaround to bug in pointless...
     if " " in os.getcwd():
         raise RuntimeError(
-            "Space in working directory " "(https://github.com/xia2/xia2/issues/114)"
+            "Space in working directory (https://github.com/xia2/xia2/issues/114)"
         )
 
 
@@ -169,7 +166,7 @@ def write_citations():
 def help():
     """Print out some help for xia2."""
 
-    sys.stdout.write("%s\n" % Version)
+    sys.stdout.write(f"{xia2.__version_string__}\n")
 
     # FIXME also needs to make reference to Phil input
     # FIXME ideally should move all command-line functionality over to Phil...

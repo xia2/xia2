@@ -9,7 +9,6 @@ from dials.util.version import dials_version
 from libtbx import group_args
 import xia2.Driver.timing
 import xia2.Handlers.Streams
-import xia2.XIA2Version
 from xia2.Applications.xia2_helpers import process_one_sweep
 from xia2.Applications.xia2_main import (
     check_environment,
@@ -301,7 +300,7 @@ def run():
         sys.exit()
 
     if "-version" in sys.argv or "--version" in sys.argv:
-        print(xia2.XIA2Version.Version)
+        print(xia2.__version_string__)
         print(dials_version())
         ccp4_version = get_ccp4_version()
         if ccp4_version:

@@ -5,7 +5,7 @@ import string
 import sys
 
 import iotbx.cif.model
-import xia2.XIA2Version
+import xia2
 from cctbx.xray import scatterer
 from cctbx.xray.structure import structure
 from iotbx.reflection_file_reader import any_reflection_file
@@ -43,7 +43,7 @@ def parse_compound(compound):
 
 def generate_cif(prefix="xia2", unit_cell_data=None, wavelength=None, structure=None):
     block = iotbx.cif.model.block()
-    block["_audit_creation_method"] = xia2.XIA2Version.Version
+    block["_audit_creation_method"] = xia2.__version_string__
     block["_audit_creation_date"] = datetime.date.today().isoformat()
 
     block[
