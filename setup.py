@@ -1,12 +1,6 @@
-import os
-import subprocess
 from setuptools import setup
 
-# Version number is determined either by git revision (which takes precendence)
-# or a static version number which is updated by bump2version
-__version_tag__ = "3.6.dev"
-
-console_scripts = [
+console_scripts = (
     "dev.xia2.check_mosaic=xia2.cli.check_mosaic:run",
     "dev.xia2.create_mask=xia2.cli.create_mask:run",
     "dev.xia2.file_statistics=xia2.cli.file_statistics:run",
@@ -40,57 +34,9 @@ console_scripts = [
     "xia2.to_shelx=xia2.cli.to_shelx:run",
     "xia2.to_shelxcde=xia2.cli.to_shelxcde:run",
     "xia2=xia2.cli.xia2_main:run",
-]
-
-
-def get_git_revision():
-    """Try to obtain the current git revision number"""
-    xia2_root_path = os.path.split(os.path.realpath(__file__))[0]
-
-    if not os.path.exists(os.path.join(xia2_root_path, ".git")):
-        return None
-
-    try:
-        result = subprocess.run(
-            ("git", "describe", "--long"),
-            check=True,
-            cwd=xia2_root_path,
-            encoding="latin-1",
-            stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL,
-        )
-        version = result.stdout.rstrip()
-    except Exception:
-        return None
-    if version.startswith("v"):
-        version = version[1:].replace(".0-", ".")
-
-    try:
-        result = subprocess.run(
-            ("git", "describe", "--contains", "--all", "HEAD"),
-            check=True,
-            cwd=xia2_root_path,
-            encoding="latin-1",
-            stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL,
-        )
-        branch = result.stdout.rstrip()
-        if branch != "" and branch != "master" and not branch.endswith("/master"):
-            version = version + "-" + branch
-    except Exception:
-        pass
-
-    return version
-
+)
 
 setup(
-    install_requires=[
-        "dials-data>=2.0",
-        "Jinja2",
-        "procrunner",
-        "tabulate",
-        'importlib_metadata;python_version<"3.8"',
-    ],
     entry_points={
         "console_scripts": console_scripts,
         "libtbx.dispatcher.script": [
@@ -103,6 +49,4 @@ setup(
         "pytest>=3.1",
         "pytest-mock",
     ],
-    url="https://github.com/xia2/xia2",
-    version=get_git_revision() or __version_tag__,
 )
