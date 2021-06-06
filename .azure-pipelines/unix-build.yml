@@ -77,7 +77,7 @@ steps:
     set -ux
     export DIALS_DATA=${PWD}/data
     cd modules/xia2
-    # export PYTHONDEVMODE=1
+    export PYTHONDEVMODE=1
     pytest -v -ra -n auto --basetemp="$(Pipeline.Workspace)/tests" --durations=10 \
         --cov=$(pwd) --cov-report=html --cov-report=xml --cov-branch \
         --timeout=5400 --regression-full || echo "##vso[task.complete result=Failed;]Some tests failed"
