@@ -9,7 +9,7 @@ steps:
 # Obtain a shallow clone of the xia2 repository.
 # xia2 will not be able to report proper version numbers
 - checkout: self
-  path: ./xia2-checkout
+  path: ./modules/xia2
   fetchDepth: 1
   displayName: Checkout $(Build.SourceBranch)
 
@@ -19,146 +19,37 @@ steps:
   workingDirectory: $(Pipeline.Workspace)
   displayName: Download DIALS bootstrap script
 
-# Get all other source repositories from cache if available
-# Allow day-to-day incremental cache updates
-# Flush the cache once a week and whenever the bootstrap script is modified
-- task: Cache@2
-  inputs:
-    key: '"repositories" | "$(CACHE_VERSION)-$(CURRENT_WEEK)" | ../bootstrap.py | "$(TODAY_ISO)"'
-    restoreKeys: |
-      "repositories" | "$(CACHE_VERSION)-$(CURRENT_WEEK)" | ../bootstrap.py
-    path: $(Pipeline.Workspace)/modules
-    cacheHitVar: REPOSITORIES_CACHED
-    securityNamespace: cache
-  condition: eq(variables['ENABLE_CACHE'], '1')
-  displayName: Restore repository cache
-
-# Copy libGL/libGLU into a place where they can be found during the
-# build. We don't include system libraries so that we don't accidentally
-# pick up libc and friends
+# Download other source repositories
 - bash: |
-    mkdir -p modules/lib
-    cp -av /usr/lib/x86_64-linux-gnu/libGL.so* modules/lib
-    cp -av /usr/lib/x86_64-linux-gnu/libGLU.so* modules/lib
-  displayName: Set up GL/GLU libraries
+    set -eux
+    python bootstrap.py update --prebuilt-cctbx
+  displayName: Repository checkout
   workingDirectory: $(Pipeline.Workspace)
-  condition: eq(variables['Agent.OS'], 'Linux')
 
-# If other source repositories are not cached then download
-# them using the bootstrap script
-- bash: |
-    set -e
-    mkdir -p modules
-    ln -nsf ../xia2-checkout modules/xia2
-    python bootstrap.py update
-  displayName: Repository checkout (initial)
-  workingDirectory: $(Pipeline.Workspace)
-  condition: eq(variables.REPOSITORIES_CACHED, 'false')
-
-# Update the cctbx_project, dxtbx, and dials repositories now,
-# unless they were just freshly cloned
-- bash: |
-    set -e
-    echo "##[command]Updating cctbx_project"
-    cd $(Pipeline.Workspace)/modules/cctbx_project
-    git fetch upstream master --depth=1
-    git checkout FETCH_HEAD
-    echo "##[command]Updating dxtbx"
-    cd $(Pipeline.Workspace)/modules/dxtbx
-    git fetch origin main --depth=1
-    git checkout FETCH_HEAD
-    echo "##[command]Updating dials"
-    cd $(Pipeline.Workspace)/modules/dials
-    git fetch origin main --depth=1
-    git checkout FETCH_HEAD
-  displayName: Repository update (incremental)
-  condition: ne(variables.REPOSITORIES_CACHED, 'false')
-
-# Get a ready-made DIALS conda environment from cache if available
-# Allow day-to-day incremental cache updates
-# Flush the cache once a week and whenever the environment specification is modified
-# Cache is not shared across operating systems and python versions
-- task: Cache@2
-  inputs:
-    key: '"base" | "$(CACHE_VERSION)-$(CURRENT_WEEK)" | "$(Agent.OS)-$(Agent.Version)-$(Pipeline.Workspace)" | "$(PYTHON_VERSION)" | ../modules/dials/${{ parameters.conda_environment }} | "$(TODAY_ISO)"'
-    restoreKeys: |
-      "base" | "$(CACHE_VERSION)-$(CURRENT_WEEK)" | "$(Agent.OS)-$(Agent.Version)-$(Pipeline.Workspace)" | "$(PYTHON_VERSION)" | ../modules/dials/${{ parameters.conda_environment }}
-    path: $(Pipeline.Workspace)/conda_base
-    cacheHitVar: BASE_CACHED
-  condition: eq(variables['ENABLE_CACHE'], '1')
-  displayName: Restore environment cache
-
-# If the conda environment could not be loaded from cache then
-# create a new one using the bootstrap script
+# Create a new conda environment using the bootstrap script
+# Extract the dials-data version so we can correctly cache regression data.
 - script: |
-    python modules/dials/installer/bootstrap.py base --clean --python $(PYTHON_VERSION)
+    set -eux
+    python bootstrap.py base --clean --prebuilt-cctbx --python $(PYTHON_VERSION)
+
+    set +ux
+    . conda_base/bin/activate
+    conda install -p conda_base -y dials-data pytest-azurepipelines pytest-cov pytest-timeout
+    set -ux
+
+    dials.data info -v
+    echo "##vso[task.setvariable variable=DIALS_DATA_VERSION_FULL]$(dials.data info -v | grep version.full)"
+    echo "##vso[task.setvariable variable=DIALS_DATA_VERSION]$(dials.data info -v | grep version.major_minor)"
+    mkdir -p data
   displayName: Create python $(PYTHON_VERSION) environment
   workingDirectory: $(Pipeline.Workspace)
-  condition: eq(variables.BASE_CACHED, 'false')
-
-# Get a ready-made DIALS build directory from cache if available
-# Allow day-to-day incremental cache updates
-# Flush the cache once a week and whenever the environment specification
-# or the bootstrap script is modified.
-# Cache is not shared across operating systems and python versions
-- task: Cache@2
-  inputs:
-    key: '"build" | "$(CACHE_VERSION)-$(CURRENT_WEEK)" | "$(Agent.OS)-$(Agent.Version)-$(Pipeline.Workspace)" | "$(PYTHON_VERSION)" | ../modules/dials/installer/bootstrap.py | ../modules/dials/${{ parameters.conda_environment }} | "$(TODAY_ISO)"'
-    restoreKeys: |
-      "build" | "$(CACHE_VERSION)-$(CURRENT_WEEK)" | "$(Agent.OS)-$(Agent.Version)-$(Pipeline.Workspace)" | "$(PYTHON_VERSION)" | ../modules/dials/installer/bootstrap.py | ../modules/dials/${{ parameters.conda_environment }}
-    path: $(Pipeline.Workspace)/build
-    cacheHitVar: BUILD_CACHED
-  condition: eq(variables['ENABLE_CACHE'], '1')
-  displayName: Restore cached build
-
-# Copy GL/GLU/KHR headers into a place where they can be found during the
-# build. We don't include system headers so that we don't accidentally
-# pick up libc and friends
-- bash: |
-    set -e
-    mkdir -p build/include
-    cp -av /usr/include/GL build/include
-    cp -av /usr/include/KHR build/include
-  displayName: Set up GL/GLU headers
-  workingDirectory: $(Pipeline.Workspace)
-  condition: and(eq(variables.BUILD_CACHED, 'false'),
-                 eq(variables['Agent.OS'], 'Linux'))
 
 # If the build directory could not be loaded from cache then
 # create a new one using the bootstrap script
 - bash: |
-    set -e
-    python modules/dials/installer/bootstrap.py build
-    cp -v dials build/activate  # ensure a copy is kept in the cache
-  displayName: DIALS build (initial)
-  workingDirectory: $(Pipeline.Workspace)
-  condition: eq(variables.BUILD_CACHED, 'false')
-
-# If the build directory was loaded (or kick-started) from cache then
-# do an incremental build
-- bash: |
-    set -e
-    cp -v build/activate dials  # restore copy from the cache
-    . dials
-    cd build
-    libtbx.refresh  # this looks redundant, but is required to ensure all dispatchers are updated
-    make reconf
-  displayName: DIALS build (incremental)
-  workingDirectory: $(Pipeline.Workspace)
-  condition: ne(variables.BUILD_CACHED, 'false')
-
-# Ensure we are using up-to-date testing packages.
-# Extract the dials-data version so we can correctly cache regression data.
-- bash: |
-    set -e
-    . dials
-    conda install -p conda_base -y dials-data pytest-azurepipelines pytest-cov pytest-timeout
-    dials.data info -v
-    echo "##vso[task.setvariable variable=DIALS_DATA_VERSION_FULL]$(dials.data info -v | grep version.full)"
-    echo "##vso[task.setvariable variable=DIALS_DATA_VERSION]$(dials.data info -v | grep version.major)"
-    #                                                                this is a bug in dials-data ^^^^^
-    mkdir -p data
-  displayName: Install additional packages
+    set -eux
+    python bootstrap.py build --prebuilt-cctbx
+  displayName: Build DIALS
   workingDirectory: $(Pipeline.Workspace)
 
 # Retrieve the regression data from cache if possible
@@ -177,26 +68,26 @@ steps:
       "data" | "$(CACHE_VERSION)-$(CURRENT_WEEK)" | "$(DIALS_DATA_VERSION)"
     path: $(Pipeline.Workspace)/data
     cacheHitVar: DATA_CACHED
-  condition: eq(variables['ENABLE_CACHE'], '1')
   displayName: Restore regression data cache
 
 # Finally, run the full regression test suite
 - bash: |
     set -e
-    export DIALS_DATA=$(pwd)/data
     . dials
+    set -ux
+    export DIALS_DATA=${PWD}/data
     cd modules/xia2
+    # export PYTHONDEVMODE=1
     pytest -v -ra -n auto --basetemp="$(Pipeline.Workspace)/tests" --durations=10 \
         --cov=$(pwd) --cov-report=html --cov-report=xml --cov-branch \
         --timeout=5400 --regression-full || echo "##vso[task.complete result=Failed;]Some tests failed"
   displayName: Run tests
   workingDirectory: $(Pipeline.Workspace)
 
-- script: |
-    bash <(curl -s https://codecov.io/bash) -n "Python $(PYTHON_VERSION) $(Agent.OS)"
+- bash: bash <(curl -s https://codecov.io/bash) -t $(CODECOV_TOKEN) -n "Python $(PYTHON_VERSION) $(Agent.OS)"
   displayName: 'Publish coverage stats'
   continueOnError: True
-  timeoutInMinutes: 3
+  timeoutInMinutes: 2
   workingDirectory: $(Pipeline.Workspace)/modules/xia2
 
 # Recover disk space after testing
@@ -211,40 +102,4 @@ steps:
     rm -rf tests
   displayName: Recover disk space
   workingDirectory: $(Pipeline.Workspace)
-  condition: and(eq(variables['ENABLE_CACHE'], '1'),
-                 or(ne(variables.BASE_CACHED, 'true'),
-                    ne(variables.BUILD_CACHED, 'true'),
-                    ne(variables.DATA_CACHED, 'true'),
-                    ne(variables.REPOSITORIES_CACHED, 'true')))
-
-# If the downloaded repositories are to be cached then clean them up before the
-# snapshot is made
-- bash: |
-    set -e
-    echo Preparing repository cache
-    for repository in *; do
-      if [[ "${repository}" == "xia2" ]]; then
-        echo "  - Skipping xia2"
-      elif [ -f ${repository} ]; then
-        echo "  - Deleting file ${repository}"
-        rm ${repository}
-      elif [ -e ${repository}/.git ]; then
-        if [[ "${repository}" == "cctbx_project" ]] || [[ "${repository}" == "dxtbx" ]] || [[ "${repository}" == "dials" ]]; then
-          echo "  - Cleaning up ${repository}"
-          cd ${repository}
-          git reset --hard HEAD
-          git clean -dffxq
-          git repack -a -d
-          cd -
-        else
-          echo "  - Removing version control from ${repository}"
-          rm -rf ${repository}/.git
-        fi
-      fi
-    done
-    echo Completed
-    ls -la
-  displayName: Preparing cache
-  workingDirectory: $(Pipeline.Workspace)/modules
-  condition: and(eq(variables['ENABLE_CACHE'], '1'),
-                 ne(variables.REPOSITORIES_CACHED, 'true'))
+  condition: ne(variables.DATA_CACHED, 'true')

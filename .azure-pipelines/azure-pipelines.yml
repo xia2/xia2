@@ -1,6 +1,5 @@
 variables:
-  CACHE_VERSION: 20200724
-  ENABLE_CACHE: 0
+  CACHE_VERSION: 20210606
 
 schedules:
   # nightly builds to populate caches
