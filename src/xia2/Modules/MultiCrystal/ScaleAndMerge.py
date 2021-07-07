@@ -68,6 +68,10 @@ scaling
       .expert_level = 2
       .short_caption = "Number of spherical harmonics for absorption correction"
   }
+  absorption_level = low medium high *None
+    .type = choice
+    .expert_level = 2
+    .short_caption = "Set the extent of absorption correction in scaling"
   model = physical dose_decay array KB *auto
     .type = choice
   outlier_rejection = simple *standard
@@ -1040,17 +1044,18 @@ class Scale:
 
         scaler.set_anomalous(self._params.scaling.anomalous)
 
-        # Set default scaling model
-        if self._params.scaling.model in (None, "auto", Auto):
-            self._params.scaling.model = "physical"
-        scaler.set_model(self._params.scaling.model)
+        # Let dials.scale use its auto model determination as the default
+        # (physical model if > 1 degree sweep else KB model, with an absorption
+        # surface if > 60 degrees).
+        if self._params.scaling.model not in (None, "auto", Auto):
+            scaler.set_model(self._params.scaling.model)
 
-        lmax = self._params.scaling.secondary.lmax
-        if lmax:
+        if self._params.scaling.absorption_level:
+            scaler.set_absorption_level(self._params.scaling.absorption_level)
             scaler.set_absorption_correction(True)
-            scaler.set_lmax(lmax)
-        else:
-            scaler.set_absorption_correction(False)
+        elif self._params.scaling.secondary.lmax:
+            scaler.set_absorption_correction(True)
+            scaler.set_lmax(self._params.scaling.secondary.lmax)
 
         exp = self._data_manager.experiments[0]
         scale_interval, decay_interval = scaling_model_auto_rules(exp)
