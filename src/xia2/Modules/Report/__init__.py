@@ -18,6 +18,7 @@ from dials.report.plots import (
     make_image_range_table,
     scale_rmerge_vs_batch_plot,
 )
+from dials.algorithms.merging.merge import make_dano_plots
 from dials.util.batch_handling import batch_manager
 from iotbx import merging_statistics
 from iotbx.reflection_file_reader import any_reflection_file
@@ -74,7 +75,7 @@ class Report:
         if params.d_min or params.d_max:
             intensities = intensities.resolution_filter(
                 d_min=params.d_min, d_max=params.d_max
-            )
+            ).customized_copy(info=intensities.info())
             if batches:
                 batches = batches.resolution_filter(
                     d_min=params.d_min, d_max=params.d_max
@@ -108,7 +109,9 @@ class Report:
                 self.params.batch.append(batch_params)
 
         if self.params.anomalous:
-            self.intensities = self.intensities.as_anomalous_array()
+            self.intensities = self.intensities.as_anomalous_array().customized_copy(
+                info=self.intensities.info()
+            )
             if self.batches is not None:
                 self.batches = self.batches.as_anomalous_array()
 
@@ -292,6 +295,11 @@ class Report:
         pychef_stats = dials.pychef.Statistics(intensities, dose, n_bins=n_bins)
 
         return pychef_stats.to_dict()
+
+    def dano_plots(self):
+        anom_data = {self.intensities.info().wavelength: self.merged_intensities}
+        data = make_dano_plots(anom_data)
+        return {"dano": data["dF"]["dano"]}
 
     @classmethod
     def from_unmerged_mtz(cls, unmerged_mtz, params, report_dir):

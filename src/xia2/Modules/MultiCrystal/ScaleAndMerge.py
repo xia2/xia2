@@ -654,6 +654,8 @@ class MultiCrystalScale:
             stats_plots,
         ) = report.resolution_plots_and_stats()
 
+        if report.params.anomalous:
+            stats_plots.update(report.dano_plots())
         d = {
             "merging_statistics_table": merging_stats_table,
             "overall_statistics_table": overall_stats_table,
@@ -712,6 +714,7 @@ class MultiCrystalScale:
                 "wilson_intensity_plot",
                 "completeness",
                 "multiplicity_vs_resolution",
+                "dano",
             )
             if k in report_d
         )
@@ -1179,5 +1182,6 @@ class Scale:
         params = Report.phil_scope.extract()
         params.dose.batch = []
         params.d_min = self.d_min
+        params.anomalous = self._params.scaling.anomalous
         report = Report.Report.from_data_manager(self._data_manager, params=params)
         return report
