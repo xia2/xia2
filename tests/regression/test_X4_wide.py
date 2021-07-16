@@ -133,6 +133,8 @@ def test_dials(regression_test, dials_data, tmpdir, ccp4):
         expected_data_files=[
             "foo_bar_scaled.mtz",
             "foo_bar_scaled_unmerged.mtz",
+            "foo_bar_scaled.sca",
+            "foo_bar_scaled_unmerged.sca",
         ],
         expected_space_group="P41212",
     )
