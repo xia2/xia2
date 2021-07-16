@@ -94,6 +94,19 @@ def test_proteinase_k(mocker, proteinase_k):
         ]
 
 
+def test_proteinase_k_anomalous(proteinase_k):
+    expts, refls = proteinase_k
+    run_multiplex(expts + refls + ["anomalous=True"])
+    with open("xia2.multiplex.json", "r") as fh:
+        d = json.load(fh)
+        assert "dano_All_data" in d["datasets"]["All data"]["resolution_graphs"]
+
+    mtz_scaled = iotbx.mtz.object("scaled.mtz").as_miller_arrays()
+    labels = [ma.info().labels for ma in mtz_scaled]
+    assert ["F(+)", "SIGF(+)", "F(-)", "SIGF(-)"] in labels
+    assert ["I(+)", "SIGI(+)", "I(-)", "SIGI(-)"] in labels
+
+
 @pytest.mark.parametrize(
     "d_min",
     [None, 2.0],
