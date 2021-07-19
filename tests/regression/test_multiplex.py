@@ -27,6 +27,8 @@ expected_data_files = [
     "scaled.refl",
     "scaled.mtz",
     "scaled_unmerged.mtz",
+    "scaled.sca",
+    "scaled_unmerged.sca",
     "xia2.multiplex.html",
     "xia2.multiplex.json",
 ]
@@ -130,6 +132,8 @@ def test_proteinase_k_filter_deltacchalf(d_min, proteinase_k):
         "filtered.refl",
         "filtered.mtz",
         "filtered_unmerged.mtz",
+        "filtered.sca",
+        "filtered_unmerged.sca",
     ]:
         assert os.path.isfile(f), "expected file %s missing" % f
     assert len(load.experiment_list("scaled.expt", check_format=False)) == 8

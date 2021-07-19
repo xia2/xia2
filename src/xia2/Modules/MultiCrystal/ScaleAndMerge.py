@@ -25,7 +25,11 @@ from xia2.lib.bits import auto_logfiler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Environment import get_number_cpus
 from xia2.Modules import Report
-from xia2.Modules.Scaler.DialsScaler import scaling_model_auto_rules
+from xia2.Modules.Scaler.DialsScaler import (
+    convert_merged_mtz_to_sca,
+    convert_unmerged_mtz_to_sca,
+    scaling_model_auto_rules,
+)
 from xia2.Wrappers.Dials.Cosym import DialsCosym
 from xia2.Wrappers.Dials.EstimateResolution import EstimateResolution
 from xia2.Wrappers.Dials.Refine import Refine
@@ -470,6 +474,8 @@ class MultiCrystalScale:
         self._data_manager.export_merged_mtz("scaled.mtz", d_min=self._scaled.d_min)
         self._data_manager.export_experiments("scaled.expt")
         self._data_manager.export_reflections("scaled.refl", d_min=self._scaled.d_min)
+        convert_merged_mtz_to_sca("scaled.mtz")
+        convert_unmerged_mtz_to_sca("scaled_unmerged.mtz")
 
         self._record_individual_report(
             self._data_manager, self._scaled.report(), "All data"
@@ -527,6 +533,8 @@ class MultiCrystalScale:
                 data_manager.export_merged_mtz("scaled.mtz", d_min=scaled.d_min)
                 data_manager.export_experiments("scaled.expt")
                 data_manager.export_reflections("scaled.refl", d_min=scaled.d_min)
+                convert_merged_mtz_to_sca("scaled.mtz")
+                convert_unmerged_mtz_to_sca("scaled_unmerged.mtz")
 
                 self._record_individual_report(
                     data_manager, scaled.report(), cluster_dir.replace("_", " ")
@@ -546,6 +554,8 @@ class MultiCrystalScale:
                 "filtered_unmerged.mtz", d_min=scaled.d_min
             )
             data_manager.export_merged_mtz("filtered.mtz", d_min=scaled.d_min)
+            convert_merged_mtz_to_sca("filtered.mtz")
+            convert_unmerged_mtz_to_sca("filtered_unmerged.mtz")
 
             self._record_individual_report(data_manager, scaled.report(), "Filtered")
             data_manager.export_experiments("filtered.expt")
