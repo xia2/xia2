@@ -29,10 +29,10 @@ def DialsScale(DriverType=None, decay_correction=None):
             self._full_matrix = True
             self._absorption_correction = True
             self._absorption_level = None  # or low, medium, high
-            self._error_model = "basic"
-            self._error_model_grouping = "combined"
+            self._error_model = None
+            self._error_model_grouping = None
             self._error_model_groups = None
-            self._outlier_rejection = "standard"
+            self._outlier_rejection = None
             self._outlier_zmax = None
             self._min_partiality = None
             self._partiality_cutoff = None
@@ -340,19 +340,24 @@ def DialsScale(DriverType=None, decay_correction=None):
                     f"{self._model}.surface_weight={self._surface_weight}"
                 )
 
-            self.add_command_line("full_matrix=%s" % self._full_matrix)
-            self.add_command_line("error_model=%s" % self._error_model)
-            self.add_command_line(f"error_model.grouping={self._error_model_grouping}")
+            self.add_command_line(f"full_matrix={self._full_matrix}")
+            if self._error_model:
+                self.add_command_line(f"error_model={self._error_model}")
+            if self._error_model_grouping:
+                self.add_command_line(
+                    f"error_model.grouping={self._error_model_grouping}"
+                )
             if self._error_model_groups and self._error_model_grouping == "grouped":
                 for g in self._error_model_groups:
                     self.add_command_line(f"error_model_group={g}")
-            self.add_command_line("outlier_rejection=%s" % self._outlier_rejection)
+            if self._outlier_rejection:
+                self.add_command_line(f"outlier_rejection={self._outlier_rejection}")
 
             if self._min_partiality is not None:
-                self.add_command_line("min_partiality=%s" % self._min_partiality)
+                self.add_command_line(f"min_partiality={self._min_partiality}")
 
             if self._partiality_cutoff is not None:
-                self.add_command_line("partiality_cutoff=%s" % self._partiality_cutoff)
+                self.add_command_line(f"partiality_cutoff={self._partiality_cutoff}")
 
             # next any 'generic' parameters
 
