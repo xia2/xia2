@@ -70,7 +70,7 @@ scaling
   }
   model = physical dose_decay array KB *auto
     .type = choice
-  outlier_rejection = simple *standard
+  outlier_rejection = simple standard
     .type = choice
   min_partiality = None
     .type = float(value_min=0, value_max=1)
