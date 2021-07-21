@@ -1,11 +1,10 @@
 repos:
 
 # Automatically sort imports
-#- repo: https://github.com/timothycrosley/isort.git
-#  rev: 4.3.21
+#- repo: https://github.com/PyCQA/isort.git
+#  rev: 5.9.2
 #  hooks:
 #  - id: isort
-#    additional_dependencies: [toml]
 
 # Automatic source code formatting
 - repo: https://github.com/psf/black
