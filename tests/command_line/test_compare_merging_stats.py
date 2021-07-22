@@ -26,7 +26,13 @@ def blend_mtz_files(dials_data):
     ]
 
 
-@pytest.mark.parametrize("anomalous", [False, True])
+@pytest.mark.parametrize(
+    "anomalous",
+    [
+        False,
+        pytest.param(True, marks=pytest.mark.xfail(reason="cctbx/cctbx_project#633")),
+    ],
+)
 def test_compare_merging_stats(anomalous, blend_mtz_files, run_in_tmpdir):
     compare_merging_stats.run(blend_mtz_files + [f"anomalous={anomalous}"])
     for expected_file in expected_files:
