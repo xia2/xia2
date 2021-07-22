@@ -26,8 +26,9 @@ def blend_mtz_files(dials_data):
     ]
 
 
-def test_compare_merging_stats(blend_mtz_files, run_in_tmpdir):
-    compare_merging_stats.run(blend_mtz_files)
+@pytest.mark.parametrize("anomalous", [False, True])
+def test_compare_merging_stats(anomalous, blend_mtz_files, run_in_tmpdir):
+    compare_merging_stats.run(blend_mtz_files + [f"anomalous={anomalous}"])
     for expected_file in expected_files:
         assert os.path.exists(expected_file)
 
