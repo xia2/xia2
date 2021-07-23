@@ -476,6 +476,10 @@ dials
                 "absorption correction. A lower restraint allows a higher amount"
                 "of absorption correction. Defaults to 5e5 if no absorption_level"
                 "is chosen."
+      share.absorption = False
+        .type = bool
+        .help = "If True, one absorption correction model is refined for all sweeps"
+                "Therefore it should only be used when scaling data from a single crystal"
     }
     dose_decay_model {
       share.decay = True
