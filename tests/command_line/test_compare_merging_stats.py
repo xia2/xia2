@@ -30,7 +30,7 @@ def blend_mtz_files(dials_data):
     "anomalous",
     [
         False,
-        pytest.param(True, marks=pytest.mark.xfail(reason="cctbx/cctbx_project#633")),
+        True,
     ],
 )
 def test_compare_merging_stats(anomalous, blend_mtz_files, run_in_tmpdir):
