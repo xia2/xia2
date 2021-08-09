@@ -71,7 +71,11 @@ def run(args=sys.argv[1:]):
         params.nproc = number_of_processors()
 
     results = []
-    mtz_files = [arg for arg in args if os.path.isfile(arg)]
+    mtz_files = []
+    for arg in args:
+        if os.path.isfile(arg):
+            print(arg)
+            mtz_files.append(arg)
 
     get_merging_stats_partial = functools.partial(
         get_merging_stats,
@@ -111,7 +115,6 @@ def get_merging_stats(
     d_min=None,
     d_max=None,
 ):
-    print(scaled_unmerged_mtz)
     i_obs = iotbx.merging_statistics.select_data(
         scaled_unmerged_mtz, data_labels=data_labels
     )
