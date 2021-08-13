@@ -27,6 +27,8 @@ expected_data_files = [
     "scaled.refl",
     "scaled.mtz",
     "scaled_unmerged.mtz",
+    "scaled.sca",
+    "scaled_unmerged.sca",
     "xia2.multiplex.html",
     "xia2.multiplex.json",
 ]
@@ -94,6 +96,19 @@ def test_proteinase_k(mocker, proteinase_k):
         ]
 
 
+def test_proteinase_k_anomalous(proteinase_k):
+    expts, refls = proteinase_k
+    run_multiplex(expts + refls + ["anomalous=True"])
+    with open("xia2.multiplex.json", "r") as fh:
+        d = json.load(fh)
+        assert "dano_All_data" in d["datasets"]["All data"]["resolution_graphs"]
+
+    mtz_scaled = iotbx.mtz.object("scaled.mtz").as_miller_arrays()
+    labels = [ma.info().labels for ma in mtz_scaled]
+    assert ["F(+)", "SIGF(+)", "F(-)", "SIGF(-)"] in labels
+    assert ["I(+)", "SIGI(+)", "I(-)", "SIGI(-)"] in labels
+
+
 @pytest.mark.parametrize(
     "d_min",
     [None, 2.0],
@@ -117,6 +132,8 @@ def test_proteinase_k_filter_deltacchalf(d_min, proteinase_k):
         "filtered.refl",
         "filtered.mtz",
         "filtered_unmerged.mtz",
+        "filtered.sca",
+        "filtered_unmerged.sca",
     ]:
         assert os.path.isfile(f), "expected file %s missing" % f
     assert len(load.experiment_list("scaled.expt", check_format=False)) == 8

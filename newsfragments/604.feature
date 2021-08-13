@@ -1,0 +1,1 @@
+``xia2.multiplex``: Add dano/sigdano by resolution plots to html report 

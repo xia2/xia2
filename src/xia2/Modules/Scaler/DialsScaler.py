@@ -37,7 +37,7 @@ from xia2.Handlers.Syminfo import Syminfo
 from dxtbx.serialize import load
 from dials.util.batch_handling import calculate_batch_offsets
 from dials.util.export_mtz import match_wavelengths
-from dials.algorithms.scaling.plots import plot_absorption_surface
+from dials.algorithms.scaling.plots import plot_absorption_plots
 from dials.array_family import flex
 import dials.util.version
 from cctbx.sgtbx import lattice_symmetry_group
@@ -141,6 +141,8 @@ class DialsScaler(Scaler):
                     self._scaler.set_surface_weight(
                         PhilIndex.params.dials.scale.physical_model.surface_weight
                     )
+                if PhilIndex.params.dials.scale.physical_model.share.absorption:
+                    self._scaler.set_shared_absorption(True)
             else:
                 self._scaler.set_absorption_correction(False)
         elif PhilIndex.params.dials.scale.model == "dose_decay":
@@ -787,7 +789,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
                 FileHandler.record_temporary_file(mmcif_path)
 
                 # now convert to .sca format
-                convert_mtz_to_sca(mtz_filename)
+                convert_unmerged_mtz_to_sca(mtz_filename)
 
                 merger = DialsMerge()  # merge but don't truncate
                 merger.set_working_directory(self.get_working_directory())
@@ -814,7 +816,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
                 FileHandler.record_data_file(mtz_filename)
 
                 # now convert to .sca format
-                convert_mtz_to_sca(mtz_filename)
+                convert_merged_mtz_to_sca(mtz_filename)
 
         ### For non-MAD case, run dials.export and dials.merge on scaled data.
         else:
@@ -841,7 +843,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
             FileHandler.record_data_file(scaled_unmerged_mtz_path)
 
             # now convert to .sca format
-            convert_mtz_to_sca(scaled_unmerged_mtz_path)
+            convert_unmerged_mtz_to_sca(scaled_unmerged_mtz_path)
 
             merger = DialsMerge()
             merger.set_working_directory(self.get_working_directory())
@@ -867,7 +869,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
             FileHandler.record_data_file(mtz_filename)
 
             # now export to sca format
-            convert_mtz_to_sca(mtz_filename)
+            convert_merged_mtz_to_sca(mtz_filename)
 
             # Export an mmCIF file using dials.export.
             exporter = ExportMMCIF()
@@ -925,10 +927,8 @@ pipeline=dials (supported for pipeline=dials-aimless).
             if (expt.scaling_model.id_ == "physical") and (
                 "absorption" in expt.scaling_model.components
             ):
-                surface_plot = plot_absorption_surface(expt.scaling_model)
-                correction = np.array(
-                    surface_plot["absorption_surface"]["data"][0]["z"]
-                )
+                plots = plot_absorption_plots(expt.scaling_model)
+                correction = np.array(plots["absorption_surface"]["data"][0]["z"])
                 # correction is a 2D numpy array
                 absmin = np.min(correction) / np.max(correction)
                 if absmin > 0:  # hope should always happen!
@@ -1415,7 +1415,7 @@ def decide_correct_lattice_using_refiner(possible_lattices, refiner):
     return correct_lattice, rerun_symmetry, need_to_return
 
 
-def convert_mtz_to_sca(mtz_filename):
+def convert_unmerged_mtz_to_sca(mtz_filename):
     """Convert an mtz files to .sca format and write."""
     sca_filename = mtz_filename.replace("mtz", "sca")
     m = mtz.object(mtz_filename)
@@ -1424,7 +1424,19 @@ def convert_mtz_to_sca(mtz_filename):
             no_merge_original_index.writer(ma, file_name=sca_filename)
             FileHandler.record_data_file(sca_filename)
             break
-        elif ma.info().labels == ["IMEAN", "SIGIMEAN"]:
+    else:
+        raise KeyError("Intensity column labels not found in MTZ file")
+
+
+def convert_merged_mtz_to_sca(mtz_filename):
+    """Convert an mtz files to .sca format and write."""
+    # merged sca format contains 7 columns: h,k,l, I+, sigI+, I-, sigI-. We
+    # always run dials.merge with anomalous=True (whether or not anomalous is
+    # set in xia2), so data is always separated into I+/I- in the merged mtz.
+    sca_filename = mtz_filename.replace("mtz", "sca")
+    m = mtz.object(mtz_filename)
+    for ma in m.as_miller_arrays(merge_equivalents=False, anomalous=True):
+        if ma.info().labels == ["I(+)", "SIGI(+)", "I(-)", "SIGI(-)"]:
             merge_scalepack_write(miller_array=ma, file_name=sca_filename)
             FileHandler.record_data_file(sca_filename)
             break

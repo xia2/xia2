@@ -25,7 +25,11 @@ from xia2.lib.bits import auto_logfiler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Environment import get_number_cpus
 from xia2.Modules import Report
-from xia2.Modules.Scaler.DialsScaler import scaling_model_auto_rules
+from xia2.Modules.Scaler.DialsScaler import (
+    convert_merged_mtz_to_sca,
+    convert_unmerged_mtz_to_sca,
+    scaling_model_auto_rules,
+)
 from xia2.Wrappers.Dials.Cosym import DialsCosym
 from xia2.Wrappers.Dials.EstimateResolution import EstimateResolution
 from xia2.Wrappers.Dials.Refine import Refine
@@ -67,6 +71,11 @@ scaling
       .type = int
       .expert_level = 2
       .short_caption = "Number of spherical harmonics for absorption correction"
+    share.absorption = False
+      .type = bool
+      .expert_level = 2
+      .short_caption = "Apply a shared absorption correction between sweeps. Only"
+                       "suitable for scaling measurements from a single crystal."
   }
   absorption_level = low medium high *None
     .type = choice
@@ -74,7 +83,7 @@ scaling
     .short_caption = "Set the extent of absorption correction in scaling"
   model = physical dose_decay array KB *auto
     .type = choice
-  outlier_rejection = simple *standard
+  outlier_rejection = simple standard
     .type = choice
   min_partiality = None
     .type = float(value_min=0, value_max=1)
@@ -474,6 +483,8 @@ class MultiCrystalScale:
         self._data_manager.export_merged_mtz("scaled.mtz", d_min=self._scaled.d_min)
         self._data_manager.export_experiments("scaled.expt")
         self._data_manager.export_reflections("scaled.refl", d_min=self._scaled.d_min)
+        convert_merged_mtz_to_sca("scaled.mtz")
+        convert_unmerged_mtz_to_sca("scaled_unmerged.mtz")
 
         self._record_individual_report(
             self._data_manager, self._scaled.report(), "All data"
@@ -531,6 +542,8 @@ class MultiCrystalScale:
                 data_manager.export_merged_mtz("scaled.mtz", d_min=scaled.d_min)
                 data_manager.export_experiments("scaled.expt")
                 data_manager.export_reflections("scaled.refl", d_min=scaled.d_min)
+                convert_merged_mtz_to_sca("scaled.mtz")
+                convert_unmerged_mtz_to_sca("scaled_unmerged.mtz")
 
                 self._record_individual_report(
                     data_manager, scaled.report(), cluster_dir.replace("_", " ")
@@ -550,6 +563,8 @@ class MultiCrystalScale:
                 "filtered_unmerged.mtz", d_min=scaled.d_min
             )
             data_manager.export_merged_mtz("filtered.mtz", d_min=scaled.d_min)
+            convert_merged_mtz_to_sca("filtered.mtz")
+            convert_unmerged_mtz_to_sca("filtered_unmerged.mtz")
 
             self._record_individual_report(data_manager, scaled.report(), "Filtered")
             data_manager.export_experiments("filtered.expt")
@@ -658,6 +673,8 @@ class MultiCrystalScale:
             stats_plots,
         ) = report.resolution_plots_and_stats()
 
+        if report.params.anomalous:
+            stats_plots.update(report.dano_plots())
         d = {
             "merging_statistics_table": merging_stats_table,
             "overall_statistics_table": overall_stats_table,
@@ -716,6 +733,7 @@ class MultiCrystalScale:
                 "wilson_intensity_plot",
                 "completeness",
                 "multiplicity_vs_resolution",
+                "dano",
             )
             if k in report_d
         )
@@ -1056,6 +1074,8 @@ class Scale:
         elif self._params.scaling.secondary.lmax:
             scaler.set_absorption_correction(True)
             scaler.set_lmax(self._params.scaling.secondary.lmax)
+        if self._params.scaling.secondary.share.absorption:
+            scaler.set_shared_absorption(True)
 
         exp = self._data_manager.experiments[0]
         scale_interval, decay_interval = scaling_model_auto_rules(exp)
@@ -1184,5 +1204,6 @@ class Scale:
         params = Report.phil_scope.extract()
         params.dose.batch = []
         params.d_min = self.d_min
+        params.anomalous = self._params.scaling.anomalous
         report = Report.Report.from_data_manager(self._data_manager, params=params)
         return report
