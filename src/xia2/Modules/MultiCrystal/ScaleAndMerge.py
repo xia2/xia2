@@ -71,6 +71,11 @@ scaling
       .type = int
       .expert_level = 2
       .short_caption = "Number of spherical harmonics for absorption correction"
+    share.absorption = False
+      .type = bool
+      .expert_level = 2
+      .short_caption = "Apply a shared absorption correction between sweeps. Only"
+                       "suitable for scaling measurements from a single crystal."
   }
   model = physical dose_decay array KB *auto
     .type = choice
@@ -1064,6 +1069,8 @@ class Scale:
             scaler.set_lmax(lmax)
         else:
             scaler.set_absorption_correction(False)
+        if self._params.scaling.secondary.share.absorption:
+            scaler.set_shared_absorption(True)
 
         exp = self._data_manager.experiments[0]
         scale_interval, decay_interval = scaling_model_auto_rules(exp)

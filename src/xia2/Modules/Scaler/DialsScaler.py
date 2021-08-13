@@ -37,7 +37,7 @@ from xia2.Handlers.Syminfo import Syminfo
 from dxtbx.serialize import load
 from dials.util.batch_handling import calculate_batch_offsets
 from dials.util.export_mtz import match_wavelengths
-from dials.algorithms.scaling.plots import plot_absorption_surface
+from dials.algorithms.scaling.plots import plot_absorption_plots
 from dials.array_family import flex
 import dials.util.version
 from cctbx.sgtbx import lattice_symmetry_group
@@ -141,6 +141,8 @@ class DialsScaler(Scaler):
                     self._scaler.set_surface_weight(
                         PhilIndex.params.dials.scale.physical_model.surface_weight
                     )
+                if PhilIndex.params.dials.scale.physical_model.share.absorption:
+                    self._scaler.set_shared_absorption(True)
             else:
                 self._scaler.set_absorption_correction(False)
         elif PhilIndex.params.dials.scale.model == "dose_decay":
@@ -925,10 +927,8 @@ pipeline=dials (supported for pipeline=dials-aimless).
             if (expt.scaling_model.id_ == "physical") and (
                 "absorption" in expt.scaling_model.components
             ):
-                surface_plot = plot_absorption_surface(expt.scaling_model)
-                correction = np.array(
-                    surface_plot["absorption_surface"]["data"][0]["z"]
-                )
+                plots = plot_absorption_plots(expt.scaling_model)
+                correction = np.array(plots["absorption_surface"]["data"][0]["z"])
                 # correction is a 2D numpy array
                 absmin = np.min(correction) / np.max(correction)
                 if absmin > 0:  # hope should always happen!

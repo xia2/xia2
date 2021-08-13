@@ -31,6 +31,9 @@ def DialsScale(DriverType=None, decay_correction=None):
             self._absorption_level = None  # or low, medium, high
             self._error_model = None
             self._error_model_grouping = None
+            self._shared_absorption = False
+            self._error_model = None
+            self._error_model_grouping = None
             self._error_model_groups = None
             self._outlier_rejection = None
             self._outlier_zmax = None
@@ -170,6 +173,9 @@ def DialsScale(DriverType=None, decay_correction=None):
 
         def set_absorption_correction(self, absorption_correction=True):
             self._absorption_correction = absorption_correction
+
+        def set_shared_absorption(self, share=True):
+            self._shared_absorption = share
 
         def set_spacing(self, spacing):
             self._spacing = spacing
@@ -339,6 +345,8 @@ def DialsScale(DriverType=None, decay_correction=None):
                 self.add_command_line(
                     f"{self._model}.surface_weight={self._surface_weight}"
                 )
+            if self._shared_absorption:
+                self.add_command_line("share.absorption=True")
 
             self.add_command_line(f"full_matrix={self._full_matrix}")
             if self._error_model:
