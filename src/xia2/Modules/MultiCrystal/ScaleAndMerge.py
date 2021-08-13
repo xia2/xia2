@@ -1074,6 +1074,7 @@ class Scale:
         elif self._params.scaling.secondary.lmax:
             scaler.set_absorption_correction(True)
             scaler.set_lmax(self._params.scaling.secondary.lmax)
+
         if self._params.scaling.secondary.share.absorption:
             scaler.set_shared_absorption(True)
 
