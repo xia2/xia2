@@ -1,3 +1,32 @@
+xia2 3.6.0 (2021-08-16)
+=======================
+
+Features
+--------
+
+- ``xia2.multiplex``:
+  - Add ``absorption_level=`` parameter to set the corresponding parameter in dials.scale. If
+    unspecified, decisions about absorption correction will be deferred to ``dials.scale``. This
+    means that for large sweeps (>60°), absorption correction will now be turned on automatically. (`#603 <https://github.com/xia2/xia2/issues/603>`_)
+  - Add dano/sigdano by resolution plots to html report (`#604 <https://github.com/xia2/xia2/issues/604>`_)
+  - Also output reflections in scalepack format (`#607 <https://github.com/xia2/xia2/issues/607>`_)
+  - Enable sharing of an absorption correction for scaling with dials, with the option ``share.absorption=True`` (`#614 <https://github.com/xia2/xia2/issues/614>`_)
+
+
+Bugfixes
+--------
+
+- Separate data by I+/I- in merged .sca file produced by the dials pipeline (`#606 <https://github.com/xia2/xia2/issues/606>`_)
+- ``xia2.compare_merging_stats``: Print input files in deterministic order (`#612 <https://github.com/xia2/xia2/issues/612>`_)
+- ``xia2.compare_merging_stats``: fix crash when setting ``anomalous=True`` (`#613 <https://github.com/xia2/xia2/issues/613>`_)
+
+
+Misc
+----
+
+- `#596 <https://github.com/xia2/xia2/issues/596>`_, `#597 <https://github.com/xia2/xia2/issues/597>`_, `#598 <https://github.com/xia2/xia2/issues/598>`_, `#608 <https://github.com/xia2/xia2/issues/608>`_, `#609 <https://github.com/xia2/xia2/issues/609>`_
+
+
 xia2 3.5.0 (2021-05-27)
 =======================
 
