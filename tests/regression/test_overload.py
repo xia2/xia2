@@ -1,11 +1,9 @@
-from __future__ import absolute_import, division, print_function
-
 import procrunner
 
 
-def test(dials_data, tmpdir):
-    images = dials_data("centroid_test_data").listdir("centroid*.cbf")
+def test(dials_data, tmp_path):
+    images = list(dials_data("centroid_test_data", pathlib=True).glob("centroid*.cbf"))
 
-    result = procrunner.run(["xia2.overload"] + images, working_directory=tmpdir)
+    result = procrunner.run(["xia2.overload"] + images, working_directory=tmp_path)
     assert not result.returncode and not result.stderr
-    assert tmpdir.join("overload.json").check()
+    assert (tmp_path / "overload.json").is_file()
