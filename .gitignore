@@ -7,6 +7,10 @@ __pycache__/
 .cache
 .pytest_cache
 
+# Documentation build
+/doc/sphinx/build
+/html
+
 # Regression test outputs
 /Test/regression/output
 
@@ -15,6 +19,7 @@ __pycache__/
 
 # Python packaging
 /dist
+/src/xia2.egg-info
 /xia2.egg-info
 
 # Ignored Mathematica files shall be prefixed by _

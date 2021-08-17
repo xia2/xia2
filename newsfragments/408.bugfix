@@ -1,2 +1,0 @@
-If .nxs and _master.h5 files reference the same underlying data files on disk, 
-do not process both, only process _master files. Fixes longstanding annoyance.

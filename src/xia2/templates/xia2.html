@@ -1,0 +1,237 @@
+{% import 'xia2_macros.html' as xia2_macros %}
+
+
+{% extends "report_base.html" %}
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="page-header">
+        <h1>{{ page_title }}</h1>
+    </div>
+
+    <ul class="nav nav-tabs">
+        <li class="active"><a data-toggle="tab" data-target="#home">Summary</a></li>
+
+        {% for wname, item in individual_dataset_reports.items() %}
+            <li><a data-toggle="tab" data-target="#dataset_{{ wname }}">Dataset {{ wname }}</a></li>
+        {% endfor %}
+
+        <li><a data-toggle="tab" data-target="#output_files">Output files</a></li>
+    </ul>
+
+    <div class="tab-content">
+        <div id="home" class="tab-pane in active">
+
+            <h2>Merging statistics</h2>
+
+            <!--<b>Filename:</b> {{ filename }}-->
+            <!--<br>-->
+            <b>Space group:</b> {{ space_group }}
+            <br>
+
+            {% if alternative_space_groups %}
+                <b>Alternative space groups:</b>
+                    {% for item in alternative_space_groups %}
+                        {{ item }}
+                    {% endfor %}
+                <br>
+            {% endif %}
+            <b>Unit cell:</b> {{ unit_cell }}
+            <br>
+
+            <div>
+                <p></p>
+                <button type="button" class="btn btn-default" data-toggle="modal" data-target="#xia2_output">xia2 output</button>
+                {{ xia2_macros.xtriage_modal("xia2.txt", xia2_output, "xia2_output")}}
+                <p></p>
+            </div>
+
+            <div class="panel-group">
+
+                <div class="panel panel-default">
+                    <div class="panel-heading" data-toggle="collapse" data-target="#collapse_expt">
+                        <h4 class="panel-title">
+                            <a>Overall</a>
+                        </h4>
+                    </div>
+                    <div id="collapse_expt" class="panel-collapse collapse in">
+                        <div class="panel-body">
+                            <div style="width: 800px">
+                                {{ macros.table(overall_stats_table,
+                                                has_column_header=true,
+                                                has_row_header=true) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel panel-default">
+                    <div class="panel-heading" data-toggle="collapse" data-target="#collapse_references">
+                        <h4 class="panel-title">
+                            <a>References</a>
+                        </h4>
+                    </div>
+                    <div id="collapse_references" class="panel-collapse collapse in">
+                        <div class="panel-body">
+
+                            {% for citation, curl in references.items() %}
+                                <a href="{{curl}}">{{citation}}</a>
+                                <br>
+                            {% endfor %}
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div id="output_files" class="tab-pane">
+
+            <h2>xia2 output files</h2>
+
+            <div class="panel-group">
+
+                <div class="panel panel-default">
+                    <div class="panel-heading" data-toggle="collapse" data-target="#collapse_reflection_files">
+                        <h4 class="panel-title">
+                            <a>Reflection data files</a>
+                        </h4>
+                    </div>
+
+                    <div id="collapse_reflection_files" class="panel-collapse collapse in">
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <h5>Mtz files (useful for CCP4 and Phenix)</h5>
+                                <div style="width: 800px">
+                                    {{ macros.table(mtz_files,
+                                                    has_column_header=true,
+                                                    has_row_header=false) }}
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <h5>SCA files (useful for autoSHARP, etc.)</h5>
+                                <div style="width: 800px">
+                                    {{ macros.table(sca_files,
+                                                    has_column_header=true,
+                                                    has_row_header=false) }}
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <h5>SCA unmerged files (useful for XPREP and SHELXC/D/E)</h5>
+                                <div style="width: 800px">
+                                    {{ macros.table(unmerged_sca_files,
+                                                    has_column_header=true,
+                                                    has_row_header=false) }}
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <h5>Other files</h5>
+                                <div style="width: 800px">
+                                    {{ macros.table(other_files,
+                                                    has_column_header=true,
+                                                    has_row_header=false) }}
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="panel panel-default">
+                    <div class="panel-heading" data-toggle="collapse" data-target="#collapse_log_files">
+                        <h4 class="panel-title">
+                            <a>Log files</a>
+                        </h4>
+                    </div>
+                    <div id="collapse_log_files" class="panel-collapse collapse in">
+                        <div class="panel-body">
+                            <div style="width: 800px">
+                                {{ macros.table(log_files_table,
+                                                has_column_header=false,
+                                                has_row_header=false) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+
+        {% for wname, item in individual_dataset_reports.items() %}
+
+            <div id="dataset_{{ wname }}" class="tab-pane">
+
+                <div>
+                    <h2>Detailed statistics for dataset {{ wname }}</h2>
+
+                    <div class="panel-group">
+
+                        <div class="panel panel-default">
+                            <div class="panel-heading" data-toggle="collapse" data-target="#collapse_overall_{{ wname }}">
+                                <h4 class="panel-title">
+                                    <a>Overall</a>
+                                </h4>
+                            </div>
+                            <div id="collapse_overall_{{ wname }}" class="panel-collapse collapse in">
+                                <div class="panel-body">
+                                    <div style="width: 800px">
+                                        {{ macros.table(item['overall_statistics_table'],
+                                                        has_column_header=true,
+                                                        has_row_header=true) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel panel-default">
+                            <div class="panel-heading" data-toggle="collapse" data-target="#collapse_merging_stats_{{ wname }}">
+                                <h4 class="panel-title">
+                                    <a>Resolution shells</a>
+                                </h4>
+                            </div>
+                            <div id="collapse_merging_stats_{{ wname }}" class="panel-collapse collapse">
+                                <div class="panel-body">
+                                    {{ macros.table(item['merging_statistics_table'],
+                                                    has_column_header=true) }}
+                                  *significant at p={{ cc_half_significance_level }}
+                                </div>
+                            </div>
+                        </div>
+
+                        {{ xia2_macros.xtriage_results(
+                            item['xtriage']['success'],
+                            item['xtriage']['warnings'],
+                            item['xtriage']['danger'],
+                            suffix="_"+wname) }}
+
+                    </div>
+
+                </div>
+
+                <div>
+                    <h2>Analysis plots</h2>
+
+                    <div class="panel-group">
+                        {{ macros.panel('Analysis by resolution', 'resolution_' + wname, item['resolution_graphs']) }}
+                        {{ macros.panel('Analysis by batch', 'batch_' + wname, item['batch_graphs']) }}
+                        {{ macros.panel('Miscellaneous', 'misc_' + wname, item['misc_graphs'], styles=styles) }}
+                    </div>
+
+                </div>
+
+            </div>
+
+        {% endfor %}
+
+
+
+    </div>
+
+</div>
+
+
+
+{% endblock %}

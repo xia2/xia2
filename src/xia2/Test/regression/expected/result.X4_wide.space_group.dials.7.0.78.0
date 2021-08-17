@@ -1,0 +1,22 @@
+Project: AUTOMATIC
+Crystal: DEFAULT
+Sequence length: 0
+Wavelength: NATIVE (0.97950)
+Sweep: SWEEP1
+Files ***
+Images: 20 to 30
+Beam 220.00 212.48 => 219.88 212.61
+Distance 190.18 => 192.30(0.1)
+Date: Thu Jan  1 00:00:00 1970
+For AUTOMATIC/DEFAULT/NATIVE:
+High resolution limit                           1.32(5%)    3.58(10%)    1.32(**)
+Low resolution limit                           18.97(5%)   18.97(**)    1.34(**)
+Completeness                                   50.2(5%)    45.7(5%)    47.7(10)
+Multiplicity                                    1.4(0.2)     1.4(0.2)     1.3(0.2)
+I/sigma                                         7.2(15%)    38.4(**)     0.5(0.3)
+Rmerge(I+/-)                                  0.049(10%)   0.027(10%)   0.402(15%)
+CC half                                       0.997(2%)   0.996(0.2)   0.666(0.2)
+Anomalous completeness                         12.5(2%)    12.3(5%)     7.4(10)
+Anomalous multiplicity                          1.2(0.5)     1.2(0.5)     1.1(0.5)
+Cell:  42.434(0.5%)  42.434(0.5%)  39.734(0.5%)  90.000  90.000  90.000
+Spacegroup: P 4 2 2
