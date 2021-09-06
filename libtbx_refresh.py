@@ -26,6 +26,7 @@ def _install_xia2_setup():
             "-m",
             "pip",
             "install",
+            "--no-build-isolation",
             "--no-deps",
             "-e",
             libtbx.env.dist_path("xia2"),
