@@ -1,3 +1,12 @@
+xia2 3.6.1 (2021-09-06)
+=======================
+
+Bugfixes
+--------
+
+- Allow xia2 installation while offline (`#619 <https://github.com/xia2/xia2/issues/619>`_)
+
+
 xia2 3.6.0 (2021-08-16)
 =======================
 
