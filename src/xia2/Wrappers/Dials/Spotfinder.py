@@ -33,6 +33,7 @@ def Spotfinder(DriverType=None):
             self._write_hot_mask = False
             self._hot_mask_prefix = None
             self._gain = None
+            self._maximum_trusted_value = None
 
         def set_input_sweep_filename(self, sweep_filename):
             self._input_sweep_filename = sweep_filename
@@ -88,6 +89,9 @@ def Spotfinder(DriverType=None):
         def set_gain(self, gain):
             self._gain = gain
 
+        def set_maximum_trusted_value(self, maximum_trusted_value):
+            self._maximum_trusted_value = maximum_trusted_value
+
         def run(self):
             logger.debug("Running dials.find_spots")
 
@@ -138,6 +142,10 @@ def Spotfinder(DriverType=None):
                 self.add_command_line("hot_mask_prefix=%s" % self._hot_mask_prefix)
             if self._gain:
                 self.add_command_line("gain=%f" % self._gain)
+            if self._maximum_trusted_value:
+                self.add_command_line(
+                    "maximum_trusted_value=%f" % self._maximum_trusted_value
+                )
             self.start()
             self.close_wait()
             self.check_for_errors()
