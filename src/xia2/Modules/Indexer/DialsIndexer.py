@@ -105,7 +105,6 @@ class DialsIndexer(Indexer):
     def SearchBeamPosition(self):
         discovery = _SearchBeamPosition()
         discovery.set_working_directory(self.get_working_directory())
-        # params = PhilIndex.params.dials.index
         auto_logfiler(discovery)
         return discovery
 
@@ -164,10 +163,7 @@ class DialsIndexer(Indexer):
         auto_logfiler(report, "REPORT")
         return report
 
-    ##########################################
-
     def _index_select_images_i(self, imageset):
-        # FIXME copied from XDSIndexer.py!
         """Select correct images based on image headers."""
 
         start, end = imageset.get_scan().get_array_range()
@@ -260,8 +256,6 @@ class DialsIndexer(Indexer):
             # now cheat and pass in some information... save re-reading all of the
             # image headers
 
-            # FIXME need to adjust this to allow (say) three chunks of images
-
             from dxtbx.model.experiment_list import ExperimentListFactory
 
             sweep_filename = os.path.join(
@@ -292,8 +286,6 @@ class DialsIndexer(Indexer):
                 logger.info("Estimated gain: %.2f", gain)
                 PhilIndex.params.xia2.settings.input.gain = gain
 
-            # FIXME this should really use the assigned spot finding regions
-            # offset = self.get_frame_offset()
             dfs_params = PhilIndex.params.dials.find_spots
             spotfinder = self.Spotfinder()
             if last - first > 10:
@@ -526,19 +518,7 @@ class DialsIndexer(Indexer):
                 reindex.run()
                 indexed_file = reindex.get_reindexed_reflections_filename()
 
-                # do some scan-static refinement - run twice, first without outlier
-                # rejection as the model is too far from reality to do a sensible job of
-                # outlier rejection
-                refiner = self.Refine()
-                refiner.set_experiments_filename(indexed_experiments)
-                refiner.set_indexed_filename(
-                    reindex.get_reindexed_reflections_filename()
-                )
-                refiner.set_outlier_algorithm(None)
-                refiner.run()
-                indexed_experiments = refiner.get_refined_experiments_filename()
-
-                # now again with outlier rejection (possibly)
+                # do some scan-static refinement
                 refiner = self.Refine()
                 refiner.set_experiments_filename(indexed_experiments)
                 refiner.set_indexed_filename(indexed_file)
