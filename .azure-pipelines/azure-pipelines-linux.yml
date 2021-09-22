@@ -8,8 +8,6 @@ jobs:
     TODAY_ISO: $[ dependencies.setup.outputs['constants.TODAY_ISO'] ]
   strategy:
     matrix:
-      python36:
-        PYTHON_VERSION: 3.6
       python37:
         PYTHON_VERSION: 3.7
       python38:
