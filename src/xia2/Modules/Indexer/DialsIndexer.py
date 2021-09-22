@@ -6,6 +6,7 @@ import logging
 import math
 import os
 import string
+import time
 
 import libtbx
 from cctbx import crystal, sgtbx
@@ -321,6 +322,14 @@ class DialsIndexer(Indexer):
             gain = PhilIndex.params.xia2.settings.input.gain
             if gain:
                 spotfinder.set_gain(gain)
+
+            # set a limit for spot finding which is 25% greater than we
+            # actually trust - can use this to measure overloads
+
+            if PhilIndex.params.general.check_for_saturated_pixels:
+                count_limit = imageset.get_detector()[0].get_trusted_range()[1]
+                spotfinder.set_maximum_trusted_value(count_limit * 1.25)
+
             if dfs_params.filter_ice_rings:
                 spotfinder.set_filter_ice_rings(dfs_params.filter_ice_rings)
             if dfs_params.kernel_size:
@@ -345,6 +354,50 @@ class DialsIndexer(Indexer):
             if not len(refl):
                 raise RuntimeError("No spots found in sweep %s" % xsweep.get_name())
             logger.info(spot_counts_per_image_plot(refl))
+
+            # in terms of checking for saturation; measure (i) the maximum pixel
+            # in each spot then also a histogram of the totals to get a sense of
+            # _how_ overloaded things are
+
+            if PhilIndex.params.general.check_for_saturated_pixels:
+                t0 = time.time()
+                count_limit = imageset.get_detector()[0].get_trusted_range()[1]
+                maxima = flex.double()
+                boxes = refl["shoebox"]
+                nn = boxes.size()
+
+                pixel_histogram = flex.histogram(
+                    flex.double(), data_min=0, data_max=1.25 * count_limit, n_slots=5
+                )
+
+                for j in range(nn):
+                    b = boxes[j]
+                    pixel_histogram.update(
+                        flex.histogram(
+                            b.data.as_double().as_1d(),
+                            data_min=0,
+                            data_max=1.25 * count_limit,
+                            n_slots=5,
+                        )
+                    )
+                    maxima.append(flex.max(b.data))
+
+                maximum_histogram = flex.histogram(
+                    maxima, data_min=0, data_max=1.25 * count_limit, n_slots=5
+                )
+
+                maximum_counts = maximum_histogram.slots()
+                pixel_counts = pixel_histogram.slots()
+
+                if maximum_counts[4] > 0:
+                    logger.warn(
+                        f"Overloads found: {maximum_counts[4]} spots / {pixel_counts[4]} pixels"
+                    )
+                elif maximum_counts[3] > 0:
+                    logger.warn(
+                        f"Near overloads found: {maximum_counts[3]} spots / {pixel_counts[3]} pixels"
+                    )
+                logger.debug(f"Overload detection took {time.time() - t0}s")
 
             if not PhilIndex.params.dials.fast_mode:
                 detectblanks = self.DetectBlanks()
