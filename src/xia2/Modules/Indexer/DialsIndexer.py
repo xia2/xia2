@@ -397,7 +397,7 @@ class DialsIndexer(Indexer):
                     logger.warn(
                         f"Near overloads found: {maximum_counts[3]} spots / {pixel_counts[3]} pixels"
                     )
-                logger.debug(f"Overload detection took {time.time() - t0}s")
+                logger.debug(f"Overload detection took {time.time() - t0:.2f}s")
 
             if not PhilIndex.params.dials.fast_mode:
                 detectblanks = self.DetectBlanks()
