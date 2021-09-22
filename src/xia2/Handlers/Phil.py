@@ -21,6 +21,9 @@ general
   check_image_files_readable = True
     .type = bool
     .expert_level = 2
+  check_for_saturated_pixels = False
+    .type = bool
+    .expert_level = 2
 }
 xds
   .short_caption = "XDS settings"
