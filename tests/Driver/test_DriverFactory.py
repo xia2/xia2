@@ -8,5 +8,5 @@ def test_instantiate_driver():
 
 
 def test_instantiate_nonexistent_driver_fails():
-    with pytest.raises(RuntimeError):
+    with pytest.raises((RuntimeError, AssertionError)):
         DF.DriverFactory.Driver("nosuchtype")
