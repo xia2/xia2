@@ -37,6 +37,8 @@ class _DriverFactory:
         """Create a new Driver instance, optionally providing the
         type of Driver we want."""
 
+        assert driver_type is None
+
         if not driver_type:
             driver_type = self._driver_type
 
