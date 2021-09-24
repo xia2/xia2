@@ -1,8 +1,3 @@
-import os
-
-from xia2.Driver.InteractiveDriver import InteractiveDriver
-from xia2.Driver.QSubDriver import QSubDriver
-from xia2.Driver.ScriptDriver import ScriptDriver
 from xia2.Driver.SimpleDriver import SimpleDriver
 
 
@@ -12,21 +7,14 @@ class _DriverFactory:
 
         self._implemented_types = [
             "simple",
-            "script",
-            "interactive",
-            "qsub",
         ]
-
-        # should probably write a message or something explaining
-        # that the following Driver implementation is being used
-
-        if "XIA2CORE_DRIVERTYPE" in os.environ:
-            self.set_driver_type(os.environ["XIA2CORE_DRIVERTYPE"])
 
     def set_driver_type(self, driver_type):
         """Set the kind of driver this factory should produce."""
         if driver_type not in self._implemented_types:
             raise RuntimeError("unimplemented driver class: %s" % driver_type)
+        else:
+            raise RuntimeError("setting driver_type now unsupported")
 
         self._driver_type = driver_type
 
@@ -44,9 +32,6 @@ class _DriverFactory:
 
         driver_class = {
             "simple": SimpleDriver,
-            "script": ScriptDriver,
-            "interactive": InteractiveDriver,
-            "qsub": QSubDriver,
         }.get(driver_type)
         if driver_class:
             return driver_class()
