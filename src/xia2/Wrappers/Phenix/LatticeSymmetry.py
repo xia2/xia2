@@ -6,7 +6,7 @@ from xia2.lib.SymmetryLib import lauegroup_to_lattice
 def LatticeSymmetry(DriverType=None):
     """A factory for the LatticeSymmetry wrappers."""
 
-    DriverInstance = DriverFactory.Driver("simple")
+    DriverInstance = DriverFactory.Driver(DriverType)
 
     class LatticeSymmetryWrapper(DriverInstance.__class__):
         """A wrapper class for iotbx.lattice_symmetry."""
