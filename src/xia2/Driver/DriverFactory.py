@@ -22,16 +22,7 @@ class _DriverFactory:
 
         assert driver_type is None
 
-        if not driver_type:
-            driver_type = self._driver_type
-
-        driver_class = {
-            "simple": SimpleDriver,
-        }.get(driver_type)
-        if driver_class:
-            return driver_class()
-
-        raise RuntimeError('Driver class "%s" unknown' % driver_type)
+        return SimpleDriver()
 
 
 DriverFactory = _DriverFactory()
