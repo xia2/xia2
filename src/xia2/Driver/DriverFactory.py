@@ -11,12 +11,7 @@ class _DriverFactory:
 
     def set_driver_type(self, driver_type):
         """Set the kind of driver this factory should produce."""
-        if driver_type not in self._implemented_types:
-            raise RuntimeError("unimplemented driver class: %s" % driver_type)
-        else:
-            raise RuntimeError("setting driver_type now unsupported")
-
-        self._driver_type = driver_type
+        raise RuntimeError("setting driver_type now unsupported")
 
     def get_driver_type(self):
         return self._driver_type
