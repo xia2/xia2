@@ -68,7 +68,7 @@ def run(args=sys.argv[1:]):
     )
 
     if not args:
-        print("Usage: " + usage)
+        parser.print_help()
         return
 
     if params.nproc is libtbx.Auto:
