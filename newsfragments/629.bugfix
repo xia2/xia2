@@ -1,1 +1,1 @@
-``xia2.compare_merging_statistics``: do not create empty plot files if there is nothing to do. 
+``xia2.compare_merging_statistics``: print help if no input files provided
