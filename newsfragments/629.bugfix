@@ -1,1 +1,1 @@
-``xia2.compare_merging_statistics``: print help if no input files provided
+``xia2.compare_merging_statistics``: If no input files provided, print help, and not empty plots.
