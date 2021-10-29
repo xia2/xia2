@@ -67,6 +67,10 @@ def run(args=sys.argv[1:]):
         args, show_diff_phil=True, return_unhandled=True
     )
 
+    if not args:
+        parser.print_help()
+        return
+
     if params.nproc is libtbx.Auto:
         params.nproc = number_of_processors()
 
