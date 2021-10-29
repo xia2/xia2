@@ -1,3 +1,27 @@
+xia2 3.7.0 (2021-11-01)
+=======================
+
+Features
+--------
+
+- New option ``general.check_for_saturated_pixels=True``, to warn about saturated pixels found whilst performing spot finding. This may be turned on by default in a future release. (`#624 <https://github.com/xia2/xia2/issues/624>`_)
+
+
+Bugfixes
+--------
+
+- ``xia2.compare_merging_statistics``: If no input files provided, print help, and not empty plots. (`#629 <https://github.com/xia2/xia2/issues/629>`_)
+- ``xia2.overload``: Handle command arguments in a more standard way (`#415 <https://github.com/xia2/xia2/issues/415>`_)
+- Handle installing xia2 as a "real" package when the ``conda_base/`` is read-only (`#616 <https://github.com/xia2/xia2/issues/616>`_)
+- Allow xia2 installation while offline (`#619 <https://github.com/xia2/xia2/issues/619>`_)
+
+
+Misc
+----
+
+- `#620 <https://github.com/xia2/xia2/issues/620>`_, `#630 <https://github.com/xia2/xia2/issues/630>`_
+
+
 xia2 3.6.0 (2021-08-16)
 =======================
 
