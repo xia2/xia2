@@ -77,7 +77,7 @@ scaling
       .short_caption = "Apply a shared absorption correction between sweeps. Only"
                        "suitable for scaling measurements from a single crystal."
   }
-  absorption_level = low medium high *None
+  absorption_level = low medium high
     .type = choice
     .expert_level = 2
     .short_caption = "Set the extent of absorption correction in scaling"
