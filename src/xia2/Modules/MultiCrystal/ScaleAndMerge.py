@@ -143,16 +143,27 @@ rescale_after_resolution_cutoff = False
   .type = bool
 
 filtering {
+
   method = None deltacchalf
     .type = choice
     .help = "Choice of whether to do any filtering cycles, default None."
+
   deltacchalf {
-    max_cycles = 6
+    max_cycles = None
       .type = int(value_min=1)
+    max_percent_removed = None
+      .type = float
     min_completeness = None
       .type = float(value_min=0, value_max=100)
       .help = "Desired minimum completeness, as a percentage (0 - 100)."
-    stdcutoff = 4.0
+    mode = dataset image_group
+      .type = choice
+      .help = "Perform analysis on whole datasets or batch groups"
+    group_size = None
+      .type = int(value_min=1)
+      .help = "The number of images to group together when calculating delta"
+              "cchalf in image_group mode"
+    stdcutoff = None
       .type = float
       .help = "Datasets with a ΔCC½ below (mean - stdcutoff*std) are removed"
   }
@@ -1112,8 +1123,15 @@ class Scale:
             scaler.set_deltacchalf_max_cycles(
                 self._params.filtering.deltacchalf.max_cycles
             )
+            scaler.set_deltacchalf_max_percent_removed(
+                self._params.filtering.deltacchalf.max_percent_removed
+            )
             scaler.set_deltacchalf_min_completeness(
                 self._params.filtering.deltacchalf.min_completeness
+            )
+            scaler.set_deltacchalf_mode(self._params.filtering.deltacchalf.mode)
+            scaler.set_deltacchalf_group_size(
+                self._params.filtering.deltacchalf.group_size
             )
             scaler.set_deltacchalf_stdcutoff(
                 self._params.filtering.deltacchalf.stdcutoff

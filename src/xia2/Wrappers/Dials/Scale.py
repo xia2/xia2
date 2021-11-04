@@ -49,6 +49,9 @@ def DialsScale(DriverType=None, decay_correction=None):
             self._filtering_method = None
             self._deltacchalf_max_cycles = None
             self._deltacchalf_min_completeness = None
+            self._deltacchalf_max_percent_removed = None
+            self._deltacchalf_mode = None
+            self._deltacchalf_group_size = None
             self._deltacchalf_stdcutoff = None
             self._scale_and_filter_results = None
 
@@ -259,8 +262,17 @@ def DialsScale(DriverType=None, decay_correction=None):
         def set_deltacchalf_max_cycles(self, max_cycles):
             self._deltacchalf_max_cycles = max_cycles
 
+        def set_deltacchalf_max_percent_removed(self, max_percent_removed):
+            self._deltacchalf_max_percent_removed = max_percent_removed
+
         def set_deltacchalf_min_completeness(self, min_completeness):
             self._deltacchalf_min_completeness = min_completeness
+
+        def set_deltacchalf_mode(self, mode):
+            self._deltacchalf_mode = mode
+
+        def set_deltacchalf_group_size(self, group_size):
+            self._deltacchalf_group_size = group_size
 
         def set_deltacchalf_stdcutoff(self, stdcutoff):
             self._deltacchalf_stdcutoff = stdcutoff
@@ -437,26 +449,35 @@ def DialsScale(DriverType=None, decay_correction=None):
                     "%s_scale_and_filter_results.json" % self.get_xpid()
                 )
                 self.add_command_line(
-                    "output.scale_and_filter_results=%s" % scale_and_filter_filename
+                    f"output.scale_and_filter_results={scale_and_filter_filename}"
                 )
                 if self._deltacchalf_max_cycles:
                     self.add_command_line(
-                        "filtering.deltacchalf.max_cycles=%i"
-                        % self._deltacchalf_max_cycles
+                        f"filtering.deltacchalf.max_cycles={self._deltacchalf_max_cycles}"
+                    )
+                if self._deltacchalf_max_percent_removed:
+                    self.add_command_line(
+                        f"filtering.deltacchalf.max_percent_removed={self._deltacchalf_max_percent_removed}"
                     )
                 if self._deltacchalf_min_completeness:
                     self.add_command_line(
-                        "filtering.deltacchalf.min_completeness=%i"
-                        % self._deltacchalf_min_completeness
+                        f"filtering.deltacchalf.min_completeness={self._deltacchalf_min_completeness}"
+                    )
+                if self._deltacchalf_mode:
+                    self.add_command_line(
+                        f"filtering.deltacchalf.mode={self._deltacchalf_mode}"
+                    )
+                if self._deltacchalf_group_size:
+                    self.add_command_line(
+                        f"filtering.deltacchalf.group_size={self._deltacchalf_group_size}"
                     )
                 if self._deltacchalf_stdcutoff:
                     self.add_command_line(
-                        "filtering.deltacchalf.stdcutoff=%i"
-                        % self._deltacchalf_stdcutoff
+                        f"filtering.deltacchalf.stdcutoff={self._deltacchalf_stdcutoff}"
                     )
 
-            self.add_command_line("output.experiments=%s" % self._scaled_experiments)
-            self.add_command_line("output.reflections=%s" % self._scaled_reflections)
+            self.add_command_line(f"output.experiments={self._scaled_experiments}")
+            self.add_command_line(f"output.reflections={self._scaled_reflections}")
 
             # run using previously determined scales
             self.start()
