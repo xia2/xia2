@@ -963,6 +963,7 @@ class MultiCrystalScale:
                 "image_range_table"
             ],
             scale_and_filter_results=self.scale_and_filter_results,
+            scale_and_filter_mode=self._params.filtering.deltacchalf.mode,
         )
 
     def cluster_analysis(self):

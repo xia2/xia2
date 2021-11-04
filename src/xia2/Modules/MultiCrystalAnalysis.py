@@ -208,6 +208,7 @@ class MultiCrystalReport(MultiCrystalAnalysis):
         cosym_analysis,
         image_range_table,
         scale_and_filter_results=None,
+        scale_and_filter_mode=None,
     ):
         self._data_manager.export_experiments("tmp.expt")
         unit_cell_graphs = self.unit_cell_analysis()
@@ -225,9 +226,9 @@ class MultiCrystalReport(MultiCrystalAnalysis):
         delta_cc_half_graphs, delta_cc_half_table = self.delta_cc_half_analysis()
 
         if scale_and_filter_results:
-            filter_plots = self.make_scale_and_filter_plots(scale_and_filter_results)[
-                "filter_plots"
-            ]
+            filter_plots = self.make_scale_and_filter_plots(
+                scale_and_filter_results, scale_and_filter_mode
+            )["filter_plots"]
         else:
             filter_plots = None
 
@@ -326,12 +327,12 @@ any systematic grouping of points may suggest a preferential crystal orientation
         with open("%s.html" % self.params.prefix, "wb") as f:
             f.write(html.encode("utf-8", "xmlcharrefreplace"))
 
-    def make_scale_and_filter_plots(self, filtering_results):
+    def make_scale_and_filter_plots(self, filtering_results, mode):
         data = {
             "merging_stats": filtering_results.get_merging_stats(),
             "initial_expids_and_image_ranges": filtering_results.initial_expids_and_image_ranges,
             "cycle_results": filtering_results.get_cycle_results(),
             "expids_and_image_ranges": filtering_results.expids_and_image_ranges,
-            "mode": "dataset",
+            "mode": mode,
         }
         return {"filter_plots": make_scaling_filtering_plots(data)}
