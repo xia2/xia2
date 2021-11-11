@@ -49,6 +49,9 @@ def DialsScale(DriverType=None, decay_correction=None):
             self._filtering_method = None
             self._deltacchalf_max_cycles = None
             self._deltacchalf_min_completeness = None
+            self._deltacchalf_max_percent_removed = None
+            self._deltacchalf_mode = None
+            self._deltacchalf_group_size = None
             self._deltacchalf_stdcutoff = None
             self._scale_and_filter_results = None
 
@@ -259,8 +262,17 @@ def DialsScale(DriverType=None, decay_correction=None):
         def set_deltacchalf_max_cycles(self, max_cycles):
             self._deltacchalf_max_cycles = max_cycles
 
+        def set_deltacchalf_max_percent_removed(self, max_percent_removed):
+            self._deltacchalf_max_percent_removed = max_percent_removed
+
         def set_deltacchalf_min_completeness(self, min_completeness):
             self._deltacchalf_min_completeness = min_completeness
+
+        def set_deltacchalf_mode(self, mode):
+            self._deltacchalf_mode = mode
+
+        def set_deltacchalf_group_size(self, group_size):
+            self._deltacchalf_group_size = group_size
 
         def set_deltacchalf_stdcutoff(self, stdcutoff):
             self._deltacchalf_stdcutoff = stdcutoff
@@ -284,7 +296,7 @@ def DialsScale(DriverType=None, decay_correction=None):
 
             nproc = PhilIndex.params.xia2.settings.multiprocessing.nproc
             if isinstance(nproc, int) and nproc > 1:
-                self.add_command_line("nproc=%i" % nproc)
+                self.add_command_line(f"nproc={nproc}")
 
             if self._anomalous:
                 self.add_command_line("anomalous=True")
@@ -297,21 +309,19 @@ def DialsScale(DriverType=None, decay_correction=None):
             # Handle all model options. Model can be none - would trigger auto
             # models in dials.scale.
             if self._model is not None:
-                self.add_command_line("model=%s" % self._model)
+                self.add_command_line(f"model={self._model}")
                 # Decay correction can refer to any model (physical, array, KB)
                 if self._bfactor:
-                    self.add_command_line("%s.decay_correction=True" % self._model)
+                    self.add_command_line(f"{self._model}.decay_correction=True")
                 else:
-                    self.add_command_line("%s.decay_correction=False" % self._model)
+                    self.add_command_line(f"{self._model}.decay_correction=False")
 
             if self._model in ("physical", "dose_decay", "array"):
                 # These options can refer to array, physical or dose_decay model
                 if self._absorption_correction:
-                    self.add_command_line("%s.absorption_correction=True" % self._model)
+                    self.add_command_line(f"{self._model}.absorption_correction=True")
                 else:
-                    self.add_command_line(
-                        "%s.absorption_correction=False" % self._model
-                    )
+                    self.add_command_line(f"{self._model}.absorption_correction=False")
 
             if self._model in ("physical", "array"):
                 # These options can refer to array, physical or dose_decay model
@@ -334,7 +344,7 @@ def DialsScale(DriverType=None, decay_correction=None):
                 and self._absorption_correction
                 and self._lmax is not None
             ):
-                self.add_command_line("%s.lmax=%i" % (self._model, self._lmax))
+                self.add_command_line(f"{self._model}.lmax={self._lmax}")
             if self._absorption_level:
                 self.add_command_line(f"absorption_level={self._absorption_level}")
 
@@ -381,21 +391,21 @@ def DialsScale(DriverType=None, decay_correction=None):
                 )
 
             if self._d_min is not None:
-                self.add_command_line("cut_data.d_min=%g" % self._d_min)
+                self.add_command_line(f"cut_data.d_min={self._d_min:g}")
 
             if self._d_max is not None:
-                self.add_command_line("cut_data.d_max=%g" % self._d_max)
+                self.add_command_line(f"cut_data.d_max={self._d_max:g}")
 
             if self._cycles is not None:
-                self.add_command_line("max_iterations=%d" % self._cycles)
+                self.add_command_line(f"max_iterations={self._cycles}")
 
             if self._outlier_zmax:
-                self.add_command_line("outlier_zmax=%d" % self._outlier_zmax)
+                self.add_command_line(f"outlier_zmax={self._outlier_zmax}")
 
             if self._n_resolution_bins:
-                self.add_command_line("n_resolution_bins=%d" % self._n_resolution_bins)
+                self.add_command_line(f"n_resolution_bins={self._n_resolution_bins}")
             if self._n_absorption_bins:
-                self.add_command_line("n_absorption_bins=%d" % self._n_absorption_bins)
+                self.add_command_line(f"n_absorption_bins={self._n_absorption_bins}")
             if self._best_unit_cell is not None:
                 self.add_command_line(
                     "best_unit_cell=%s,%s,%s,%s,%s,%s" % self._best_unit_cell
@@ -405,58 +415,67 @@ def DialsScale(DriverType=None, decay_correction=None):
 
             if not self._scaled_experiments:
                 self._scaled_experiments = os.path.join(
-                    self.get_working_directory(), "%i_scaled.expt" % self.get_xpid()
+                    self.get_working_directory(), f"{self.get_xpid()}_scaled.expt"
                 )
             if not self._scaled_reflections:
                 self._scaled_reflections = os.path.join(
-                    self.get_working_directory(), "%i_scaled.refl" % self.get_xpid()
+                    self.get_working_directory(), f"{self.get_xpid()}_scaled.refl"
                 )
             if self._unmerged_reflections:
                 self.add_command_line(
-                    "output.unmerged_mtz=%s" % self._unmerged_reflections
+                    f"output.unmerged_mtz={self._unmerged_reflections}"
                 )
 
             if self._merged_reflections:
-                self.add_command_line("output.merged_mtz=%s" % self._merged_reflections)
+                self.add_command_line(f"output.merged_mtz={self._merged_reflections}")
 
             if not self._html:
                 self._html = os.path.join(
-                    self.get_working_directory(), "%i_scaling.html" % self.get_xpid()
+                    self.get_working_directory(), f"{self.get_xpid()}_scaling.html"
                 )
-            self.add_command_line("output.html=%s" % self._html)
+            self.add_command_line(f"output.html={self._html}")
 
             if self._crystal_name:
-                self.add_command_line("output.crystal_name=%s" % self._crystal_name)
+                self.add_command_line(f"output.crystal_name={self._crystal_name}")
 
             if self._project_name:
-                self.add_command_line("output.project_name=%s" % self._project_name)
+                self.add_command_line(f"output.project_name={self._project_name}")
 
             if self._filtering_method:
-                self.add_command_line("filtering.method=%s" % self._filtering_method)
+                self.add_command_line(f"filtering.method={self._filtering_method}")
                 scale_and_filter_filename = (
-                    "%s_scale_and_filter_results.json" % self.get_xpid()
+                    f"{self.get_xpid()}_scale_and_filter_results.json"
                 )
                 self.add_command_line(
-                    "output.scale_and_filter_results=%s" % scale_and_filter_filename
+                    f"output.scale_and_filter_results={scale_and_filter_filename}"
                 )
                 if self._deltacchalf_max_cycles:
                     self.add_command_line(
-                        "filtering.deltacchalf.max_cycles=%i"
-                        % self._deltacchalf_max_cycles
+                        f"filtering.deltacchalf.max_cycles={self._deltacchalf_max_cycles}"
+                    )
+                if self._deltacchalf_max_percent_removed:
+                    self.add_command_line(
+                        f"filtering.deltacchalf.max_percent_removed={self._deltacchalf_max_percent_removed}"
                     )
                 if self._deltacchalf_min_completeness:
                     self.add_command_line(
-                        "filtering.deltacchalf.min_completeness=%i"
-                        % self._deltacchalf_min_completeness
+                        f"filtering.deltacchalf.min_completeness={self._deltacchalf_min_completeness}"
+                    )
+                if self._deltacchalf_mode:
+                    self.add_command_line(
+                        f"filtering.deltacchalf.mode={self._deltacchalf_mode}"
+                    )
+                if self._deltacchalf_group_size:
+                    self.add_command_line(
+                        f"filtering.deltacchalf.group_size={self._deltacchalf_group_size}"
                     )
                 if self._deltacchalf_stdcutoff:
                     self.add_command_line(
-                        "filtering.deltacchalf.stdcutoff=%i"
-                        % self._deltacchalf_stdcutoff
+                        f"filtering.deltacchalf.stdcutoff={self._deltacchalf_stdcutoff}"
                     )
 
-            self.add_command_line("output.experiments=%s" % self._scaled_experiments)
-            self.add_command_line("output.reflections=%s" % self._scaled_reflections)
+            self.add_command_line(f"output.experiments={self._scaled_experiments}")
+            self.add_command_line(f"output.reflections={self._scaled_reflections}")
 
             # run using previously determined scales
             self.start()
