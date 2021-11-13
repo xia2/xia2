@@ -246,6 +246,12 @@ def plot_data(
     alpha=0.3,
 ):
     from matplotlib import pyplot as plt
+    from matplotlib import ticker
+
+    @ticker.FuncFormatter
+    def resolution_formatter(d_star_sq, pos):
+        d = 1 / d_star_sq ** 0.5 if d_star_sq > 0 else 0
+        return f"{d:.2f}"
 
     colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
 
@@ -317,8 +323,4 @@ def plot_data(
                 ax.set_ylim(0, min(2, ax.get_ylim()[1]))
             else:
                 ax.set_ylim(0)
-            xticks = ax.get_xticks()
-            xticks_d = [
-                "%.2f" % uctbx.d_star_sq_as_d(ds2) if ds2 > 0 else 0 for ds2 in xticks
-            ]
-            ax.set_xticklabels(xticks_d)
+            ax.xaxis.set_major_formatter(resolution_formatter)
