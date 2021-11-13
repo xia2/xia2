@@ -318,6 +318,7 @@ def plot_data(
             else:
                 ax.set_ylim(0)
             xticks = ax.get_xticks()
+            ax.set_xticks(ax.get_xticks().tolist())
             xticks_d = [
                 "%.2f" % uctbx.d_star_sq_as_d(ds2) if ds2 > 0 else 0 for ds2 in xticks
             ]
