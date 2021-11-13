@@ -53,11 +53,12 @@ def test_compare_merging_stats_override_space_group(blend_mtz_files, run_in_tmpd
         assert os.path.exists(expected_file)
 
 
-def test_compare_merging_stats_d_min_d_max(blend_mtz_files, run_in_tmpdir):
-    results = compare_merging_stats.run(blend_mtz_files + ["d_min=2.5", "d_max=50"])
+def test_compare_merging_stats_d_min_d_max(blend_mtz_files, run_in_tmpdir, mocker):
+    plot_merging_stats = mocker.spy(compare_merging_stats, "plot_merging_stats")
+    compare_merging_stats.run(blend_mtz_files + ["d_min=2.5", "d_max=50"])
     for expected_file in expected_files:
         assert os.path.exists(expected_file)
-    for result in results:
+    for result in plot_merging_stats.call_args.args[0]:
         assert result.overall.d_min > 2.5
         assert result.overall.d_max < 50
 
