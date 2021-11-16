@@ -317,6 +317,7 @@ any systematic grouping of points may suggest a preferential crystal orientation
                     "xtriage",
                     "merging_stats",
                     "merging_stats_anom",
+                    "misc_graphs",
                 )
             }
         json_data["comparison"] = comparison_graphs

@@ -87,8 +87,15 @@ def test_proteinase_k(mocker, proteinase_k):
             "6",
             "7",
         ]
-        for k in ("xtriage", "merging_stats", "merging_stats_anom"):
-            assert k in d["datasets"]["All data"]
+        expected_keys = {
+            "resolution_graphs",
+            "batch_graphs",
+            "xtriage",
+            "merging_stats",
+            "merging_stats_anom",
+            "misc_graphs",
+        }
+        assert not expected_keys - set(d["datasets"]["All data"])
         assert list(d["datasets"]["All data"]["xtriage"].keys()) == [
             "success",
             "warnings",
