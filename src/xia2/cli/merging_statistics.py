@@ -111,6 +111,7 @@ def table1_tex(merging_stats):
         ("Completeness (\\%)", "completeness", 1, "%.1f"),
         ("$<I/\\sigma(I)>$", "i_over_sigma_mean", 1, "%.1f"),
         ("$CC_{\\frac{1}{2}}$", "cc_one_half", 1, "%.3f"),
+        ("$CC_{anom}$", "cc_anom", 1, "%.3f"),
     ]
 
     for mw, p, m, fmt in magic_words_and_places_and_multipliers:
