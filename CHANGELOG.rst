@@ -1,3 +1,12 @@
+xia2 3.7.1 (2021-11-17)
+=======================
+
+Features
+--------
+
+- ``xia2.multiplex``: Include additional graphs in json output (`#637 <https://github.com/xia2/xia2/issues/637>`_)
+
+
 xia2 3.7.0 (2021-11-01)
 =======================
 
