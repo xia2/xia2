@@ -3,7 +3,7 @@ import timeit
 from collections import Counter
 import sys
 
-from dials.util.options import OptionParser
+from dials.util.options import ArgumentParser
 from dials.util.options import flatten_experiments
 import iotbx.phil
 from libtbx import easy_mp
@@ -35,7 +35,7 @@ output {
 def run(args=None):
     usage = "xia2.overload (data_master.h5|integrated.expt) [nproc=8]"
 
-    parser = OptionParser(
+    parser = ArgumentParser(
         usage=usage,
         phil=phil_scope,
         read_experiments=True,
@@ -43,7 +43,7 @@ def run(args=None):
         epilog=help_message,
     )
 
-    params, options = parser.parse_args(args=args, show_diff_phil=True)
+    params, _ = parser.parse_args(args=args, show_diff_phil=True)
 
     experiments = flatten_experiments(params.input.experiments)
     if len(experiments) != 1:
