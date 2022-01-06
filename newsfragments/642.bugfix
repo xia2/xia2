@@ -1,0 +1,1 @@
+Fix test failure by deprecation of DIALS' OptionParser.
