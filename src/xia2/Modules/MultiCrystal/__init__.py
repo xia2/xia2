@@ -27,10 +27,13 @@ master_phil_scope = iotbx.phil.parse(
     """\
 unit_cell = None
   .type = unit_cell
+  .short_caption = "unit cell"
 n_bins = 20
   .type = int(value_min=1)
+  .short_caption = "number of bins"
 d_min = None
   .type = float(value_min=0)
+  .short_caption = "high resolution cutoff"
 %s
 """
     % batch_phil_scope
