@@ -30,7 +30,7 @@ unit_cell = None
   .short_caption = "Unit cell"
 n_bins = 20
   .type = int(value_min=1)
-  .short_caption = "number of bins"
+  .short_caption = "Number of bins"
 d_min = None
   .type = float(value_min=0)
   .short_caption = "High resolution cutoff"
