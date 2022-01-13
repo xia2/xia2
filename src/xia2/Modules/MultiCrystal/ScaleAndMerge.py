@@ -229,7 +229,7 @@ max_clusters = None
   .short_caption = "Maximum number of clusters"
 cluster_method = *cos_angle correlation unit_cell
   .type = choice
-  .short_caption = "Descriptor on which to perform clustering"
+  .short_caption = "Metric on which to perform clustering"
 
 identifiers = None
   .type = strings
