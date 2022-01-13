@@ -33,7 +33,7 @@ n_bins = 20
   .short_caption = "number of bins"
 d_min = None
   .type = float(value_min=0)
-  .short_caption = "high resolution cutoff"
+  .short_caption = "High resolution cutoff"
 %s
 """
     % batch_phil_scope
