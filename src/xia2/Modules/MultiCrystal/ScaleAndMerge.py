@@ -108,7 +108,9 @@ scaling
       .type = floats(size=2)
   }
 }
-symmetry {
+symmetry
+  .short_caption = "Symmetry"
+{
   resolve_indexing_ambiguity = True
     .type = bool
   cosym {
@@ -122,6 +124,7 @@ symmetry {
     .type = space_group
     .help = "Specify the space group. If None, then the dials.symmetry will perform "
             "analysis of systematically absent reflections to determine the space group."
+    .short_caption = "Space group"
 }
 
 resolution
@@ -142,7 +145,9 @@ rescale_after_resolution_cutoff = False
   .help = "Re-scale the data after application of a resolution cutoff"
   .type = bool
 
-filtering {
+filtering
+  .short_caption = "Filtering"
+{
 
   method = None deltacchalf
     .type = choice
