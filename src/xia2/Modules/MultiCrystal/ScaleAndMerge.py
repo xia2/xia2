@@ -64,20 +64,20 @@ scaling
   rotation.spacing = None
     .type = int
     .expert_level = 2
-    .short_caption = "interval (in degrees) between scale factors on rotation axis"
+    .short_caption = "Interval (in degrees) between scale factors on rotation axis"
   brotation.spacing = None
     .type = int
     .expert_level = None
-    .short_caption = "interval (in degrees) between B-factors on rotation axis"
+    .short_caption = "Interval (in degrees) between B-factors on rotation axis"
   secondary {
     lmax = 0
       .type = int
       .expert_level = 2
-      .short_caption = "number of spherical harmonics for absorption correction"
+      .short_caption = "Number of spherical harmonics for absorption correction"
     share.absorption = False
       .type = bool
       .expert_level = 2
-      .short_caption = "shared absorption correction"
+      .short_caption = "Shared absorption correction"
       .help = "Apply a shared absorption correction between sweeps. Only"
               "suitable for scaling measurements from a single crystal."
   }
@@ -176,14 +176,14 @@ filtering
   {
     max_cycles = None
       .type = int(value_min=1)
-      .short_caption = "maximum number of cycles"
+      .short_caption = "Maximum number of cycles"
     max_percent_removed = None
       .type = float
-      .short_caption = "maximum percentage removed"
+      .short_caption = "Maximum percentage removed"
     min_completeness = None
       .type = float(value_min=0, value_max=100)
       .help = "Desired minimum completeness, as a percentage (0 - 100)."
-      .short_caption = "minimum completeness"
+      .short_caption = "Minimum completeness"
     mode = dataset image_group
       .type = choice
       .help = "Perform analysis on whole datasets or batch groups"
@@ -191,11 +191,11 @@ filtering
       .type = int(value_min=1)
       .help = "The number of images to group together when calculating delta"
               "cchalf in image_group mode"
-      .short_caption = "group size"
+      .short_caption = "Group size"
     stdcutoff = None
       .type = float
       .help = "Datasets with a ΔCC½ below (mean - stdcutoff*std) are removed"
-      .short_caption = "standard deviation cutoff"
+      .short_caption = "Standard deviation cutoff"
   }
 }
 
