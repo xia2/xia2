@@ -255,7 +255,7 @@ remove_profile_fitting_failures = True
 phil_scope = phil_scope.fetch(
     source=iotbx.phil.parse(
         """\
-resolution{
+resolution {
   cc_half_method = sigma_tau
   cc_half_fit = tanh
   cc_half = 0.3
