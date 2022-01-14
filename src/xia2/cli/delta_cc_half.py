@@ -156,6 +156,7 @@ def run(args=sys.argv[1:]):
         cc_one_half_method=params.cc_one_half_method,
         group_size=params.group_size,
     )
+    logger.info(f"Overall CC½ = {result.cc_half_overall:.3f}")
     logger.info(tabulate(result.get_table(), headers="firstrow"))
     hist_filename = "delta_cc_hist.png"
     logger.info("Saving histogram to %s" % hist_filename)
