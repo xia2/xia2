@@ -105,10 +105,7 @@ class DeltaCcHalf:
                 unmerged_i.merge_equivalents().array().completeness(multiplier=100)
             )
             logger.debug(
-                "CC½ excluding batches %i-%i: %.3f",
-                group_start,
-                group_end,
-                ccs[-1],
+                f"CC½ excluding batches {group_start}-{group_end}: {ccs[-1]:.3f}"
             )
         return ccs, completeness
 
@@ -154,11 +151,11 @@ class DeltaCcHalf:
             rows.append(
                 [
                     str(self._group_to_dataset_id[i]),
-                    "%i to %i" % (bmin, bmax),
-                    "% .3f" % self.cc_half[i],
-                    "% .3f" % self.delta_cc_half[i],
-                    "% .2f" % normalised_score[i],
-                    "% .1f" % self.completeness[i],
+                    f"{bmin} to {bmax}",
+                    f"{self.cc_half[i]:.3f}",
+                    f"{self.delta_cc_half[i]:.3f}",
+                    f"{normalised_score[i]:.2f}",
+                    f"{self.completeness[i]:.1f}",
                 ]
             )
         return rows
