@@ -15,12 +15,13 @@ def test_from_experiments_reflections(dials_data, tmpdir, capsys, mocker):
         else:
             rv = DeltaCcHalf.get_table.spy_return
         assert rv == [
-            ["Dataset", "Batches", "CC½", "ΔCC½", "σ"],
-            ["0", "8 to 1795", " 0.995", " 0.000", "-1.11"],
-            ["3", "5 to 1694", " 0.995", " 0.000", "-0.59"],
-            ["2", "4 to 1696", " 0.994", " 0.001", " 0.84"],
-            ["1", "5 to 1694", " 0.994", " 0.001", " 0.85"],
+            ["Dataset", "Batches", "CC½", "ΔCC½", "σ", "Compl. (%)"],
+            ["0", "8 to 1795", " 0.995", " 0.000", "-1.11", "94.4"],
+            ["3", "5 to 1694", " 0.995", " 0.000", "-0.59", "93.1"],
+            ["2", "4 to 1696", " 0.994", " 0.001", " 0.84", "92.3"],
+            ["1", "5 to 1694", " 0.994", " 0.001", " 0.85", "94.8"],
         ]
+
         assert tmpdir.join("delta_cc_hist.png").check()
         assert tmpdir.join("normalised_scores.png").check()
 

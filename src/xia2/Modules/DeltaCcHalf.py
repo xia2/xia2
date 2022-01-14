@@ -152,9 +152,9 @@ class DeltaCcHalf:
                 [
                     str(self._group_to_dataset_id[i]),
                     f"{bmin} to {bmax}",
-                    f"{self.cc_half[i]:.3f}",
-                    f"{self.delta_cc_half[i]:.3f}",
-                    f"{normalised_score[i]:.2f}",
+                    f"{self.cc_half[i]: .3f}",
+                    f"{self.delta_cc_half[i]: .3f}",
+                    f"{normalised_score[i]: .2f}",
                     f"{self.completeness[i]:.1f}",
                 ]
             )
