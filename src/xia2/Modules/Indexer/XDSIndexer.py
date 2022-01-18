@@ -2,43 +2,33 @@
 # XDS wrappers to actually implement the functionality.
 
 
+from __future__ import annotations
+
 import logging
-import os
 import math
+import os
 import shutil
 
+import dxtbx
 from cctbx.array_family import flex
+from dxtbx.model import Experiment, ExperimentList
+from dxtbx.serialize.xds import to_crystal, to_xds
+from iotbx.xds import spot_xds
 from scitbx import matrix
 
-# wrappers for programs that this needs
-
-from xia2.Wrappers.XDS.XDSXycorr import XDSXycorr as _Xycorr
-from xia2.Wrappers.XDS.XDSInit import XDSInit as _Init
-from xia2.Wrappers.XDS.XDSColspot import XDSColspot as _Colspot
-from xia2.Wrappers.XDS.XDSIdxref import XDSIdxref as _Idxref
-
-# helper functions
-
-from xia2.Wrappers.XDS.XDS import XDSException
-from xia2.Modules.Indexer.XDSCheckIndexerSolution import xds_check_indexer_solution
-
-# interfaces that this must implement to be an indexer
-
-from xia2.Schema.Interfaces.Indexer import IndexerSingleSweep
-
-# odds and sods that are needed
-
-from xia2.lib.bits import auto_logfiler
+from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Files import FileHandler
-from xia2.Wrappers.Dials.Spotfinder import Spotfinder
+from xia2.lib.bits import auto_logfiler
+from xia2.Modules.Indexer.XDSCheckIndexerSolution import xds_check_indexer_solution
+from xia2.Schema.Interfaces.Indexer import IndexerSingleSweep
 from xia2.Wrappers.Dials.ExportSpotXDS import ExportSpotXDS
-from dxtbx.serialize.xds import to_xds
-import dxtbx
-from dxtbx.model import Experiment, ExperimentList
-from iotbx.xds import spot_xds
-from dxtbx.serialize.xds import to_crystal
+from xia2.Wrappers.Dials.Spotfinder import Spotfinder
+from xia2.Wrappers.XDS.XDS import XDSException
+from xia2.Wrappers.XDS.XDSColspot import XDSColspot as _Colspot
+from xia2.Wrappers.XDS.XDSIdxref import XDSIdxref as _Idxref
+from xia2.Wrappers.XDS.XDSInit import XDSInit as _Init
+from xia2.Wrappers.XDS.XDSXycorr import XDSXycorr as _Xycorr
 
 logger = logging.getLogger("xia2.Modules.Indexer.XDSIndexer")
 

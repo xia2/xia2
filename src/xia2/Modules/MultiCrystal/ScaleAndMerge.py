@@ -1,29 +1,25 @@
+from __future__ import annotations
+
 import copy
 import logging
 import math
 import os
 from collections import OrderedDict
 
-from libtbx import Auto
 import iotbx.phil
-from cctbx import miller
-from cctbx import sgtbx
-from cctbx import uctbx
-from dxtbx.serialize import load
-from dxtbx.model import ExperimentList
-
-
+from cctbx import miller, sgtbx, uctbx
 from dials.array_family import flex
-from dials.command_line import export
-from dials.command_line import merge
+from dials.command_line import export, merge
 from dials.command_line.unit_cell_histogram import plot_uc_histograms
 from dials.util import tabulate
-
+from dxtbx.model import ExperimentList
+from dxtbx.serialize import load
+from libtbx import Auto
 from scitbx.math import five_number_summary
 
-from xia2.lib.bits import auto_logfiler
-from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Environment import get_number_cpus
+from xia2.Handlers.Phil import PhilIndex
+from xia2.lib.bits import auto_logfiler
 from xia2.Modules import Report
 from xia2.Modules.Scaler.DialsScaler import (
     convert_merged_mtz_to_sca,
@@ -365,7 +361,7 @@ class DataManager:
 
     def reflections_as_miller_arrays(self, combined=False):
         from dials.report.analysis import scaled_data_as_miller_array
-        from dials.util.batch_handling import (
+        from dials.util.batch_handling import (  # calculate_batch_offsets,; get_batch_ranges,
             assign_batches_to_reflections,
         )
 
