@@ -1,10 +1,12 @@
+from __future__ import annotations
+
 import logging
 import os
 import sys
 import traceback
 
-from xia2.Applications.xia2_main import check_environment, help
 import xia2.Handlers.Streams
+from xia2.Applications.xia2_main import check_environment, help
 
 logger = logging.getLogger("xia2.cli.index")
 

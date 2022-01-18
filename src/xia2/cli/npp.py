@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 import math
 import sys
 
-import xia2.Handlers.Streams
 from iotbx.reflection_file_reader import any_reflection_file
 from scitbx.array_family import flex
+
+import xia2.Handlers.Streams
 from xia2.Toolkit.NPP import npp_ify
 
 

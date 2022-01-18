@@ -14,21 +14,21 @@ repos:
     name: "Don't commit to 'main'"
 
 # Automatically sort imports
-#- repo: https://github.com/PyCQA/isort
-#  rev: 5.9.3
-#  hooks:
-#  - id: isort
-#    args: [
-#           '-a', 'from __future__ import annotations',        # 3.7-3.11
-#           '--rm', 'from __future__ import absolute_import',  # -3.0
-#           '--rm', 'from __future__ import division',         # -3.0
-#           '--rm', 'from __future__ import generator_stop',   # -3.7
-#           '--rm', 'from __future__ import generators',       # -2.3
-#           '--rm', 'from __future__ import nested_scopes',    # -2.2
-#           '--rm', 'from __future__ import print_function',   # -3.0
-#           '--rm', 'from __future__ import unicode_literals', # -3.0
-#           '--rm', 'from __future__ import with_statement',   # -2.6
-#          ]
+- repo: https://github.com/PyCQA/isort
+  rev: 5.9.3
+  hooks:
+  - id: isort
+    args: [
+           '-a', 'from __future__ import annotations',        # 3.7-3.11
+           '--rm', 'from __future__ import absolute_import',  # -3.0
+           '--rm', 'from __future__ import division',         # -3.0
+           '--rm', 'from __future__ import generator_stop',   # -3.7
+           '--rm', 'from __future__ import generators',       # -2.3
+           '--rm', 'from __future__ import nested_scopes',    # -2.2
+           '--rm', 'from __future__ import print_function',   # -3.0
+           '--rm', 'from __future__ import unicode_literals', # -3.0
+           '--rm', 'from __future__ import with_statement',   # -2.6
+          ]
 
 # Automatic source code formatting
 - repo: https://github.com/psf/black

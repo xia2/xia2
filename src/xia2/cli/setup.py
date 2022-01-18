@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import os
 import sys
@@ -5,16 +7,14 @@ import traceback
 
 from dials.util import Sorry
 from dials.util.version import dials_version
+
 import xia2.Driver.timing
 import xia2.Handlers.Streams
 import xia2.XIA2Version
-from xia2.Applications.xia2_main import (
-    check_environment,
-    get_command_line,
-    help,
-)
-from .xia2_main import get_ccp4_version
+from xia2.Applications.xia2_main import check_environment, get_command_line, help
 from xia2.Handlers.Citations import Citations
+
+from .xia2_main import get_ccp4_version
 
 logger = logging.getLogger("xia2.cli.setup")
 

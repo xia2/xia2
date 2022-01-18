@@ -1,10 +1,11 @@
+from __future__ import annotations
+
 import os
 import sys
 
 import iotbx.phil
 from cctbx import sgtbx
 from iotbx.command_line import merging_statistics
-
 
 master_phil = """\
 include scope iotbx.command_line.merging_statistics.master_phil

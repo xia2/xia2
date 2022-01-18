@@ -1,26 +1,25 @@
+from __future__ import annotations
+
 import json
 import os
 import pathlib
-import pytest
 
-from dxtbx.model import ExperimentList
-from dxtbx.serialize import load
+import pytest
+import pytest_mock
+
 import iotbx.mtz
 from dials.array_family import flex
-from dials.command_line.slice_sequence import (
-    slice_experiments,
-    slice_reflections,
-)
+from dials.command_line.slice_sequence import slice_experiments, slice_reflections
 from dials.util.multi_dataset_handling import (
     assign_unique_identifiers,
     parse_multiple_datasets,
 )
-from xia2.Modules.Report import Report
+from dxtbx.model import ExperimentList
+from dxtbx.serialize import load
+
 from xia2.cli.multiplex import run as run_multiplex
 from xia2.Modules.MultiCrystal import ScaleAndMerge
-
-import pytest_mock
-
+from xia2.Modules.Report import Report
 
 expected_data_files = [
     "scaled.expt",

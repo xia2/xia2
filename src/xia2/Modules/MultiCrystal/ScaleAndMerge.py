@@ -37,7 +37,6 @@ from xia2.Wrappers.Dials.Scale import DialsScale
 from xia2.Wrappers.Dials.Symmetry import DialsSymmetry
 from xia2.Wrappers.Dials.TwoThetaRefine import TwoThetaRefine
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -365,12 +364,10 @@ class DataManager:
         )
 
     def reflections_as_miller_arrays(self, combined=False):
+        from dials.report.analysis import scaled_data_as_miller_array
         from dials.util.batch_handling import (
-            # calculate_batch_offsets,
-            # get_batch_ranges,
             assign_batches_to_reflections,
         )
-        from dials.report.analysis import scaled_data_as_miller_array
 
         # offsets = calculate_batch_offsets(experiments)
         reflection_tables = []
@@ -823,8 +820,9 @@ class MultiCrystalScale:
         return d
 
     def unit_cell_clustering(self, plot_name=None):
-        from xia2.Modules.MultiCrystalAnalysis import MultiCrystalAnalysis
         from xfel.clustering.cluster_groups import unit_cell_info
+
+        from xia2.Modules.MultiCrystalAnalysis import MultiCrystalAnalysis
 
         lattice_ids = [
             self._data_manager.identifiers_to_ids_map[i]
@@ -977,8 +975,8 @@ class MultiCrystalScale:
         logger.info("Space group determined by dials.symmetry: %s" % space_group.info())
 
     def multi_crystal_analysis(self):
-        from xia2.Modules.MultiCrystalAnalysis import MultiCrystalReport
         from xia2.cli.multi_crystal_analysis import phil_scope as mca_phil
+        from xia2.Modules.MultiCrystalAnalysis import MultiCrystalReport
 
         params = mca_phil.extract()
         params.prefix = "xia2.multiplex"

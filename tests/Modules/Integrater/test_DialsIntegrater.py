@@ -1,20 +1,23 @@
-from unittest import mock
-import os
-import pytest
-import sys
+from __future__ import annotations
 
-from iotbx.reflection_file_reader import any_reflection_file
+import os
+import sys
+from unittest import mock
+
+import pytest
+
 from dials.array_family import flex
 from dxtbx.model import ExperimentList
+from iotbx.reflection_file_reader import any_reflection_file
 
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
 from xia2.Modules.Integrater.DialsIntegrater import DialsIntegrater
 from xia2.Modules.Refiner.DialsRefiner import DialsRefiner
 from xia2.Schema.XCrystal import XCrystal
-from xia2.Schema.XWavelength import XWavelength
-from xia2.Schema.XSweep import XSweep
 from xia2.Schema.XSample import XSample
+from xia2.Schema.XSweep import XSweep
+from xia2.Schema.XWavelength import XWavelength
 
 
 def exercise_dials_integrater(dials_data, tmp_dir, nproc=None):

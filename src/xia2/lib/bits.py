@@ -1,10 +1,11 @@
 # Python routines which don't really belong anywhere else.
 
 
+from __future__ import annotations
+
 import logging
 import math
 import os
-
 from multiprocessing import Lock, Value
 
 logger = logging.getLogger("xia2.lib.bits")

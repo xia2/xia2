@@ -1,23 +1,27 @@
 # Bits the scalers have in common - inherit from me!
 
 
+from __future__ import annotations
+
 import logging
 import math
 import os
 import time
-
 from collections import OrderedDict
 
 import iotbx.merging_statistics
+from cctbx import sgtbx
+from cctbx.array_family import flex
+from cctbx.sgtbx import bravais_types
 from cctbx.xray import scatterer
 from cctbx.xray.structure import structure
-from xia2.Handlers.Citations import Citations
 from iotbx import mtz
-from cctbx import sgtbx
 from iotbx.reflection_file_reader import any_reflection_file
 from iotbx.shelx import writer
 from iotbx.shelx.hklf import miller_array_export_as_shelx_hklf
+
 from xia2.Handlers.CIF import CIF, mmCIF
+from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import banner
@@ -34,9 +38,6 @@ from xia2.Schema.Interfaces.Scaler import Scaler
 # new resolution limit code
 from xia2.Wrappers.Dials.EstimateResolution import EstimateResolution
 from xia2.XIA2Version import Version
-
-from cctbx.sgtbx import bravais_types
-from cctbx.array_family import flex
 
 logger = logging.getLogger("xia2.Modules.Scaler.CommonScaler")
 
@@ -1271,8 +1272,8 @@ class CommonScaler(Scaler):
             and not fast_mode
             and params.xia2.settings.scale.two_theta_refine
         ):
-            from xia2.Wrappers.Dials.TwoThetaRefine import TwoThetaRefine
             from xia2.lib.bits import auto_logfiler
+            from xia2.Wrappers.Dials.TwoThetaRefine import TwoThetaRefine
 
             logger.notice(banner("Unit cell refinement"))
 

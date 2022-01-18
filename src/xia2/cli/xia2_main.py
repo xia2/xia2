@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import os
 import sys
@@ -7,6 +9,7 @@ import traceback
 from dials.util import Sorry
 from dials.util.version import dials_version
 from libtbx import group_args
+
 import xia2.Driver.timing
 import xia2.Handlers.Streams
 import xia2.XIA2Version

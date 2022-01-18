@@ -6,6 +6,8 @@
 # a Phil interface.
 
 
+from __future__ import annotations
+
 import collections
 import copy
 import logging
@@ -15,6 +17,7 @@ import sys
 
 from dials.util import Sorry
 from dxtbx.serialize import load
+
 from xia2.Experts.FindImages import image2template_directory
 from xia2.Handlers.Environment import which
 from xia2.Handlers.Flags import Flags
@@ -169,8 +172,9 @@ class _CommandLine:
 
         # first of all try to interpret arguments as phil parameters/files
 
-        from xia2.Handlers.Phil import master_phil
         from libtbx.phil import command_line
+
+        from xia2.Handlers.Phil import master_phil
 
         cmd_line = command_line.argument_interpreter(master_phil=master_phil)
         working_phil, self._argv = cmd_line.process_and_fetch(

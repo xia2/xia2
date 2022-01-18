@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import datetime
 import json
 import optparse
@@ -5,12 +7,13 @@ import string
 import sys
 
 import iotbx.cif.model
-import xia2.XIA2Version
 from cctbx.xray import scatterer
 from cctbx.xray.structure import structure
 from iotbx.reflection_file_reader import any_reflection_file
 from iotbx.shelx import writer
 from iotbx.shelx.hklf import miller_array_export_as_shelx_hklf
+
+import xia2.XIA2Version
 
 
 def parse_compound(compound):

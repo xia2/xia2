@@ -37,6 +37,8 @@
 #
 
 
+from __future__ import annotations
+
 import inspect
 import json
 import logging
@@ -44,6 +46,7 @@ import os
 from functools import reduce
 
 from cctbx.sgtbx import bravais_types
+
 from xia2.Experts.LatticeExpert import SortLattices
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import banner

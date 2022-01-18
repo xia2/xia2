@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import os
 
 from libtbx import phil
-from xia2.Driver.DriverFactory import DriverFactory
 
+from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 
 master_params = phil.parse(

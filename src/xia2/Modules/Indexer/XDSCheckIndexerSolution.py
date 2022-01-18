@@ -2,6 +2,8 @@
 # comes out as centered when it should not be)
 
 
+from __future__ import annotations
+
 import logging
 import math
 
@@ -10,6 +12,7 @@ from cctbx import crystal
 from cctbx.array_family import flex
 from iotbx.xds import spot_xds
 from scitbx import matrix
+
 from xia2.Experts.LatticeExpert import s2l
 
 logger = logging.getLogger("xia2.Modules.Indexer.XDSCheckIndexerSolution")

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import copy
 import logging
 import os
@@ -5,7 +7,7 @@ import shutil
 
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Wrappers.XDS.XDS import xds_check_error, get_xds_version
+from xia2.Wrappers.XDS.XDS import get_xds_version, xds_check_error
 from xia2.Wrappers.XDS.XScaleHelpers import get_correlation_coefficients_and_group
 
 logger = logging.getLogger("xia2.Wrappers.XDS.XScaleR")

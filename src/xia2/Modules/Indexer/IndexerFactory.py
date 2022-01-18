@@ -2,6 +2,8 @@
 # suitable for using in the context defined in the input.
 
 
+from __future__ import annotations
+
 import logging
 import os
 import time

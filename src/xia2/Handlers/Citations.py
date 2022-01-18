@@ -6,6 +6,8 @@
 # That would be %USERPROFILE%
 
 
+from __future__ import annotations
+
 import os
 import xml.dom.minidom
 

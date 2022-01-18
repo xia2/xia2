@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import random
 import sys
@@ -5,17 +7,16 @@ import sys
 import numpy as np
 
 import iotbx.phil
-
-import xia2.Handlers.Streams
 from dials.array_family import flex
 from dials.util.exclude_images import exclude_image_ranges_for_scaling
 from dials.util.multi_dataset_handling import (
     assign_unique_identifiers,
     parse_multiple_datasets,
 )
-from dials.util.options import OptionParser
-from dials.util.options import flatten_experiments, flatten_reflections
+from dials.util.options import OptionParser, flatten_experiments, flatten_reflections
 from dials.util.version import dials_version
+
+import xia2.Handlers.Streams
 from xia2.Modules.MultiCrystal import ScaleAndMerge
 
 logger = logging.getLogger("xia2.multiplex")

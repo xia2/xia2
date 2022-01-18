@@ -1,5 +1,7 @@
 # A top-level interface to the whole of xia2, for data processing & analysis.
 
+from __future__ import annotations
+
 import glob
 import itertools
 import logging
@@ -11,6 +13,7 @@ import sys
 import h5py
 
 from dials.util import Sorry
+
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Environment import df
 from xia2.XIA2Version import Version

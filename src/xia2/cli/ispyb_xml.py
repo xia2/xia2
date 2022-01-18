@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 import os
 import sys
 
 import iotbx.phil
+
 import xia2.Handlers.Streams
 from xia2.Interfaces.ISPyB.ISPyBXmlHandler import ISPyBXmlHandler
 from xia2.Schema.XProject import XProject

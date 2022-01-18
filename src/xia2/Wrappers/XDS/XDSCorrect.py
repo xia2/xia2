@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 import logging
 import os
 import shutil
 
 from cctbx.uctbx import unit_cell
+
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
 

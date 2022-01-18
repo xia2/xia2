@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import logging
 import os
 
-from xia2.Applications.xia2_main import write_citations
 import xia2.Handlers.Streams
+from xia2.Applications.xia2_main import write_citations
 
 logger = logging.getLogger("xia2.cli.print")
 

@@ -1,8 +1,10 @@
-import os
-import sys
+from __future__ import annotations
 
-from unittest import mock
+import os
 import pathlib
+import sys
+from unittest import mock
+
 import pytest
 
 
@@ -18,8 +20,8 @@ def test_ccp4_scalerA(regression_test, ccp4, dials_data, run_in_tmpdir, nproc):
     tmpdir = run_in_tmpdir.strpath
 
     from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
-    from xia2.Modules.Refiner.DialsRefiner import DialsRefiner
     from xia2.Modules.Integrater.DialsIntegrater import DialsIntegrater
+    from xia2.Modules.Refiner.DialsRefiner import DialsRefiner
     from xia2.Modules.Scaler.CCP4ScalerA import CCP4ScalerA
 
     indexer = DialsIndexer()
@@ -31,10 +33,10 @@ def test_ccp4_scalerA(regression_test, ccp4, dials_data, run_in_tmpdir, nproc):
     indexer.add_indexer_imageset(imageset)
 
     from xia2.Schema.XCrystal import XCrystal
-    from xia2.Schema.XWavelength import XWavelength
-    from xia2.Schema.XSweep import XSweep
-    from xia2.Schema.XSample import XSample
     from xia2.Schema.XProject import XProject
+    from xia2.Schema.XSample import XSample
+    from xia2.Schema.XSweep import XSweep
+    from xia2.Schema.XWavelength import XWavelength
 
     proj = XProject(name="AUTOMATIC")
     cryst = XCrystal("CRYST1", proj)

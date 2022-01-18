@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from xia2.Decorators.CCP4Decorator import CCP4DecoratorFactory
 
 

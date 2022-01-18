@@ -1,6 +1,10 @@
+from __future__ import annotations
+
 import collections
 import inspect
 import os
+
+from dxtbx.util import format_float_with_standard_uncertainty
 
 from xia2.Handlers.CIF import CIF, mmCIF
 from xia2.Handlers.Files import FileHandler
@@ -9,7 +13,6 @@ from xia2.Handlers.Streams import banner
 from xia2.Handlers.Syminfo import Syminfo
 from xia2.lib.NMolLib import compute_nmol, compute_solvent
 from xia2.Modules.Scaler.ScalerFactory import Scaler
-from dxtbx.util import format_float_with_standard_uncertainty
 
 
 class _aa_sequence:
@@ -228,8 +231,8 @@ class XCrystal:
 
     @classmethod
     def from_dict(cls, obj):
-        from xia2.Schema.XWavelength import XWavelength
         from xia2.Schema.XSample import XSample
+        from xia2.Schema.XWavelength import XWavelength
 
         assert obj["__id__"] == "XCrystal"
         return_obj = cls(name=None, project=None)

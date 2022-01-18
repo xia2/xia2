@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import inspect
 
 from xia2.Modules.DoseAccumulate import accumulate_dose

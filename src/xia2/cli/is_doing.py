@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+
 def tail(filename):
     for record in open(filename):
         print(record[:-1])

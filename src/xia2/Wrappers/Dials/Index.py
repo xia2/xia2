@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import math
 import os
@@ -5,6 +7,7 @@ import os
 import libtbx.utils
 from dials.array_family import flex
 from dxtbx.serialize import load
+
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
 

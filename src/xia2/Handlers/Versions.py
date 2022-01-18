@@ -1,10 +1,13 @@
+from __future__ import annotations
+
 import re
 from collections.abc import Mapping
 
 import procrunner
 
-import xia2.XIA2Version
 import dials.util.version
+
+import xia2.XIA2Version
 
 
 class _Versions(Mapping):

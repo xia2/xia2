@@ -1,12 +1,16 @@
+from __future__ import annotations
+
 import json
 import os
 import sys
 from collections import OrderedDict
 
-import iotbx.phil
-import xia2.Handlers.Streams
-from dials.util.options import OptionParser
 from jinja2 import ChoiceLoader, Environment, PackageLoader
+
+import iotbx.phil
+from dials.util.options import OptionParser
+
+import xia2.Handlers.Streams
 from xia2.Modules.Report import Report
 from xia2.XIA2Version import Version
 

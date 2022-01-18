@@ -4,6 +4,8 @@
 # xia2#42: this is due for retirement & working into the Phil structure
 
 
+from __future__ import annotations
+
 import os
 
 from xia2.Wrappers.XDS.XDS import xds_read_xparm

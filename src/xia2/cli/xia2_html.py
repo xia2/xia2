@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import glob
 import html
 import json
@@ -7,17 +9,17 @@ import re
 import sys
 import traceback
 from collections import OrderedDict
-
-from libtbx import phil
-from iotbx import mtz
-import xia2
-from xia2.Modules.Report import Report
-from xia2.Handlers.Citations import Citations
-import xia2.Handlers.Streams
-
 from math import isclose
+
 from dials.algorithms.merging.merge import make_dano_plots
+from iotbx import mtz
+from libtbx import phil
+
+import xia2
+import xia2.Handlers.Streams
+from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Phil import PhilIndex
+from xia2.Modules.Report import Report
 
 logger = logging.getLogger("xia2.cli.html")
 
@@ -387,7 +389,7 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
         cdict["acta"]: cdict.get("url") for cdict in Citations.get_citations_dicts()
     }
 
-    from jinja2 import Environment, ChoiceLoader, PackageLoader
+    from jinja2 import ChoiceLoader, Environment, PackageLoader
 
     loader = ChoiceLoader(
         [PackageLoader("xia2", "templates"), PackageLoader("dials", "templates")]
@@ -479,7 +481,7 @@ def make_logfile_html(logfile):
 
 def rst2html(rst):
     from docutils.core import publish_string
-    from docutils.writers.html4css1 import Writer, HTMLTranslator
+    from docutils.writers.html4css1 import HTMLTranslator, Writer
 
     class xia2HTMLTranslator(HTMLTranslator):
         def __init__(self, document):

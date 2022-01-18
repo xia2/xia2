@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import xia2.Modules.CctbxFrenchWilson
 from xia2.Driver.DefaultDriver import DefaultDriver
 

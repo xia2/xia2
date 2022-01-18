@@ -1,5 +1,7 @@
 #!/usr/bin/env xia2.python
 
+from __future__ import annotations
+
 from collections import OrderedDict
 
 

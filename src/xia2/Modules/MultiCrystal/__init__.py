@@ -1,14 +1,16 @@
+from __future__ import annotations
+
 import copy
 import json
 import logging
 from collections import OrderedDict
 
-import iotbx.phil
 import numpy as np
 from scipy.cluster import hierarchy
-from scitbx.array_family import flex
 
+import iotbx.phil
 from dials.util import tabulate
+from scitbx.array_family import flex
 
 logger = logging.getLogger(__name__)
 

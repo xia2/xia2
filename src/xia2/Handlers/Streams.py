@@ -6,6 +6,8 @@
 # "scientific" output of the program.
 
 
+from __future__ import annotations
+
 import ctypes
 import itertools
 import logging

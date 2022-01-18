@@ -1,5 +1,8 @@
-import xia2.Modules.CctbxFrenchWilson
+from __future__ import annotations
+
 from iotbx.reflection_file_reader import any_reflection_file
+
+import xia2.Modules.CctbxFrenchWilson
 
 
 def test_french_wilson(dials_data, tmpdir):

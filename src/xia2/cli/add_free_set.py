@@ -1,5 +1,7 @@
-import sys
+from __future__ import annotations
+
 import random
+import sys
 
 from iotbx import mtz
 from scitbx.array_family import flex

@@ -1,10 +1,12 @@
+from __future__ import annotations
+
 import argparse
 import sys
 from pprint import pformat
 
+from cctbx.xray import observation_types
 from iotbx.reflection_file_reader import any_reflection_file
 from iotbx.shelx.hklf import miller_array_export_as_shelx_hklf
-from cctbx.xray import observation_types
 
 
 def read_input_data(lb, params, update_params=True):
