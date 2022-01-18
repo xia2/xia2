@@ -262,7 +262,7 @@ def XDSIdxref(DriverType=None, params=None):
             min_frame = self._spot_range[0][0]
             max_frame = self._spot_range[-1][1]
 
-            refine_params = [p for p in self._params.refine]
+            refine_params = list(self._params.refine)
 
             phi_width = self.get_phi_width()
             if "AXIS" in refine_params and (max_frame - min_frame) * phi_width < 5.0:

@@ -985,9 +985,7 @@ class CommonScaler(Scaler):
             for _, data in scans.items():
                 xtal_id += 1
                 cif_loop_a.add_row(
-                    tuple([entryno, xtal_id, xwav])
-                    + tuple(cell.parameters())
-                    + tuple([latt_type])
+                    (entryno, xtal_id, xwav) + tuple(cell.parameters()) + (latt_type,)
                 )
 
                 cif_loop_b.add_row(

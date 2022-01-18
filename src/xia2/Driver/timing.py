@@ -68,11 +68,9 @@ def visualise_db(timing_db):
         return []
 
     # prepare a few helper data structures
-    ordered_by_start = list(
-        sorted((t["time_start"], n) for n, t in enumerate(timing_db))
-    )
+    ordered_by_start = sorted((t["time_start"], n) for n, t in enumerate(timing_db))
     start_order = tuple(n for _, n in ordered_by_start)
-    ordered_by_end = list(sorted((t["time_end"], n) for n, t in enumerate(timing_db)))
+    ordered_by_end = sorted((t["time_end"], n) for n, t in enumerate(timing_db))
 
     relative_start_time = ordered_by_start[0][0]
     total_runtime = ordered_by_end[-1][0] - relative_start_time
