@@ -68,9 +68,7 @@ def add_preference(key, value):
 
     if key in preferences:
         if preferences[key] != value:
-            raise RuntimeError(
-                "setting %s to %s: already %s" % (key, value, preferences[key])
-            )
+            raise RuntimeError(f"setting {key} to {value}: already {preferences[key]}")
 
     preferences[key] = value
 

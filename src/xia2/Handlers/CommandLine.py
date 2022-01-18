@@ -73,7 +73,7 @@ def unroll_datasets(datasets):
         tokens = dataset.split(":")
         if len(tokens[0]) == 1:
             # because windows
-            tokens = ["%s:%s" % (tokens[0], tokens[1])] + tokens[2:]
+            tokens = [f"{tokens[0]}:{tokens[1]}"] + tokens[2:]
         if tokens[0].endswith(".h5") and len(tokens) != 4:
             # check if we need to auto-discover the unrolling parameters
             # for multiple trigger data sets
@@ -413,7 +413,7 @@ class _CommandLine:
                 tokens = dataset.split(":")
                 # cope with windows drives i.e. C:\data\blah\thing_0001.cbf:1:100
                 if len(tokens[0]) == 1:
-                    tokens = ["%s:%s" % (tokens[0], tokens[1])] + tokens[2:]
+                    tokens = [f"{tokens[0]}:{tokens[1]}"] + tokens[2:]
                 if len(tokens) != 3:
                     raise RuntimeError("/path/to/image_0001.cbf:start:end")
 

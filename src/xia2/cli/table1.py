@@ -78,7 +78,7 @@ def table1_tex(crystal_params, merging_stats):
             low = ms[name]["Low resolution limit"]
             high = ms[name]["High resolution limit"]
             resolution_str.append(
-                "%.2f-%.2f (%.2f-%.2f)" % (low[0], high[0], low[2], high[2])
+                f"{low[0]:.2f}-{high[0]:.2f} ({low[2]:.2f}-{high[2]:.2f})"
             )
 
     print(" & ".join(resolution_str) + " \\\\")
@@ -104,7 +104,7 @@ def table1_tex(crystal_params, merging_stats):
         for ms in merging_stats:
             for name in ms:
                 data = ms[name][p]
-                magic_str.append(("%s (%s)" % (fmt, fmt)) % (data[0] * m, data[2] * m))
+                magic_str.append((f"{fmt} ({fmt})") % (data[0] * m, data[2] * m))
 
         print(" & ".join(magic_str) + " \\\\")
 

@@ -195,16 +195,12 @@ def to_shelx(hklin, prefix, compound="", options=None):
                     "solution_constrained", cell_data["solution_unconstrained"]
                 )
                 unit_cell_dims = tuple(
-                    [
-                        solution[dim]["mean"]
-                        for dim in ["a", "b", "c", "alpha", "beta", "gamma"]
-                    ]
+                    solution[dim]["mean"]
+                    for dim in ["a", "b", "c", "alpha", "beta", "gamma"]
                 )
                 unit_cell_esds = tuple(
-                    [
-                        solution[dim]["population_standard_deviation"]
-                        for dim in ["a", "b", "c", "alpha", "beta", "gamma"]
-                    ]
+                    solution[dim]["population_standard_deviation"]
+                    for dim in ["a", "b", "c", "alpha", "beta", "gamma"]
                 )
             else:
                 # json from dials.two_theta_refine

@@ -55,8 +55,8 @@ def npp(hklin):
 
         print(
             "%3d %3d %3d" % hkl,
-            "%.2f %.2f %.2f" % (i, v, i / math.sqrt(v)),
-            "%.2f %.2f" % (fit_all.slope(), fit_cen.slope()),
+            f"{i:.2f} {v:.2f} {i / math.sqrt(v):.2f}",
+            f"{fit_all.slope():.2f} {fit_cen.slope():.2f}",
             "%d" % m,
         )
 

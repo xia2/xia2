@@ -165,7 +165,7 @@ def get_template(f):
                 return
 
     except Exception as e:
-        logger.debug("Exception A: %s (%s)" % (str(e), f))
+        logger.debug(f"Exception A: {e} ({f})")
         logger.debug(traceback.format_exc())
 
     if template is None or directory is None:

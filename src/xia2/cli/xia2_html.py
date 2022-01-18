@@ -44,7 +44,7 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
     xia2_txt = os.path.join(os.path.abspath(os.path.curdir), "xia2.txt")
     assert os.path.isfile(xia2_txt), xia2_txt
 
-    with open(xia2_txt, "r") as f:
+    with open(xia2_txt) as f:
         xia2_output = html.escape(f.read())
 
     styles = {}

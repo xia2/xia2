@@ -93,14 +93,12 @@ class XDSScalerHelper:
         # and finally actually write the files
         for k in file_map:
             with open(
-                os.path.join(
-                    self.get_working_directory(), "%s%s" % (prefix, file_map[k])
-                ),
+                os.path.join(self.get_working_directory(), f"{prefix}{file_map[k]}"),
                 "w",
             ) as fh:
                 fh.write("".join(file_content[k]))
 
-        return {filename: "%s%s" % (prefix, filename) for filename in file_map.values()}
+        return {filename: f"{prefix}{filename}" for filename in file_map.values()}
 
     def split_and_convert_xscale_output(
         self, input_file, prefix, project_info, scale_factor=1.0

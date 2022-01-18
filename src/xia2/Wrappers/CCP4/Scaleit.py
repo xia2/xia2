@@ -110,7 +110,7 @@ def Scaleit(DriverType=None):
             self.input("refine anisotropic wilson")
             self.input("auto")
 
-            labin = "labin FP=%s SIGFP=%s" % (self._columns[0], self._columns[1])
+            labin = f"labin FP={self._columns[0]} SIGFP={self._columns[1]}"
 
             if self._anomalous:
                 groups = len(self._columns) // 4

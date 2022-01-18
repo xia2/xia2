@@ -16,7 +16,7 @@ def get_sweep(args):
 
     except Exception as e:
         logger = logging.getLogger("xia2.Applications.xia2setup_helpers")
-        logger.debug("Exception C: %s (%s)" % (str(e), args[0]))
+        logger.debug(f"Exception C: {e} ({args[0]})")
         logger.debug(traceback.format_exc())
         return None
 

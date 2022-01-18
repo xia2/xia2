@@ -94,7 +94,7 @@ def table1_tex(merging_stats):
         low = (ms.bins[0].d_max, ms.bins[0].d_min)
         high = (ms.bins[-1].d_max, ms.bins[-1].d_min)
         resolution_str.append(
-            "%.2f-%.2f (%.2f-%.2f)" % (low[0], high[1], high[0], high[1])
+            f"{low[0]:.2f}-{high[1]:.2f} ({high[0]:.2f}-{high[1]:.2f})"
         )
 
     print(" & ".join(resolution_str) + " \\\\")
@@ -121,7 +121,7 @@ def table1_tex(merging_stats):
         for ms in merging_stats:
             ms_d = ms.as_dict()
             magic_str.append(
-                ("%s (%s)" % (fmt, fmt)) % (ms_d["overall"][p] * m, ms_d[p][-1] * m)
+                (f"{fmt} ({fmt})") % (ms_d["overall"][p] * m, ms_d[p][-1] * m)
             )
 
         print(" & ".join(magic_str) + " \\\\")

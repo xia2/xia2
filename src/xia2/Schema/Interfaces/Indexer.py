@@ -773,7 +773,7 @@ class IndexerSingleSweep(Indexer):
 
         if isinstance(image, type(())):
             self._indxr_images.append(image)
-        if isinstance(image, type(1)):
+        if isinstance(image, int):
             self._indxr_images.append((image, image))
 
         if reset:

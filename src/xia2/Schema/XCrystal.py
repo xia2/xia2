@@ -564,7 +564,7 @@ class XCrystal:
                         + expanded_format_str % (statistics_all[key][s])
                     )
                 elif isinstance(statistics_all[key][s], str):
-                    summary.append("%s: %s" % (s.ljust(40), statistics_all[key][s]))
+                    summary.append(f"{s.ljust(40)}: {statistics_all[key][s]}")
                 else:
                     expanded_format_str = " ".join(
                         [format_str]

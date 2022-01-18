@@ -72,7 +72,7 @@ def sequence_mass(sequence):
     # if input is simply a sequence length, return the appropriate
     # multiple
 
-    if isinstance(sequence, type(42)):
+    if isinstance(sequence, int):
         return 128.0 * sequence
 
     # otherwise it must be a string
