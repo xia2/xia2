@@ -8,8 +8,10 @@ Test the behaviour of the `multiple_sweep_indexing`, `multiple_sweep_refinement`
  * `small_molecule=True`, others above set to default values.
 """
 
-import pytest
+from __future__ import annotations
+
 import procrunner
+import pytest
 
 
 @pytest.mark.parametrize(

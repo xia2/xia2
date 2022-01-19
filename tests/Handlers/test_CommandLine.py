@@ -1,6 +1,9 @@
-from unittest import mock
-import pytest
+from __future__ import annotations
+
 import sys
+from unittest import mock
+
+import pytest
 
 from dials.util import Sorry
 

@@ -1,16 +1,19 @@
-from unittest import mock
+from __future__ import annotations
+
 import os
-import pytest
 import sys
+from unittest import mock
+
+import pytest
 
 from dxtbx.model import ExperimentList
 
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
 from xia2.Schema.XCrystal import XCrystal
-from xia2.Schema.XWavelength import XWavelength
-from xia2.Schema.XSweep import XSweep
 from xia2.Schema.XSample import XSample
+from xia2.Schema.XSweep import XSweep
+from xia2.Schema.XWavelength import XWavelength
 
 
 def exercise_xds_indexer(dials_data, tmp_dir, nproc=None):

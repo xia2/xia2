@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 
 from xia2.Driver.InteractiveDriver import InteractiveDriver

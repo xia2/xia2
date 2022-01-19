@@ -1,6 +1,8 @@
 # A handler to manage the data which needs to end up in the ISPyB database
 
 
+from __future__ import annotations
+
 # mapping xia2 verbose names to ISPyB API field names
 # https://github.com/DiamondLightSource/ispyb-api/blob/
 #     41bf10db91ab0f0bea91f77a5f37f087c28218ca/ispyb/sp/mxprocessing.py#L28-L32

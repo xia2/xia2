@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+
 def Mtzdump(DriverType=None):
     """A factory for MtzdumpWrapper classes."""
 

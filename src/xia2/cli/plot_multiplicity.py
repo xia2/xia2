@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import sys
 
@@ -51,8 +53,7 @@ class MultiplicityViewPng(render_2d):
         self._filled_circle_colors.append(color)
 
     def render(self, ax):
-        from matplotlib import pyplot
-        from matplotlib import colors
+        from matplotlib import colors, pyplot
 
         render_2d.render(self, ax)
         if self._open_circle_points.size():

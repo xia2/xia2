@@ -1,7 +1,11 @@
+from __future__ import annotations
+
 import procrunner
 import pytest
-from dxtbx.serialize import load
+
 import iotbx.mtz
+from dxtbx.serialize import load
+
 import xia2.Test.regression
 
 

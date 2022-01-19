@@ -6,6 +6,8 @@
 # a Phil interface.
 
 
+from __future__ import annotations
+
 import collections
 import copy
 import logging
@@ -15,6 +17,7 @@ import sys
 
 from dials.util import Sorry
 from dxtbx.serialize import load
+
 from xia2.Experts.FindImages import image2template_directory
 from xia2.Handlers.Environment import which
 from xia2.Handlers.Flags import Flags
@@ -73,7 +76,7 @@ def unroll_datasets(datasets):
         tokens = dataset.split(":")
         if len(tokens[0]) == 1:
             # because windows
-            tokens = ["%s:%s" % (tokens[0], tokens[1])] + tokens[2:]
+            tokens = [f"{tokens[0]}:{tokens[1]}"] + tokens[2:]
         if tokens[0].endswith(".h5") and len(tokens) != 4:
             # check if we need to auto-discover the unrolling parameters
             # for multiple trigger data sets
@@ -169,8 +172,9 @@ class _CommandLine:
 
         # first of all try to interpret arguments as phil parameters/files
 
-        from xia2.Handlers.Phil import master_phil
         from libtbx.phil import command_line
+
+        from xia2.Handlers.Phil import master_phil
 
         cmd_line = command_line.argument_interpreter(master_phil=master_phil)
         working_phil, self._argv = cmd_line.process_and_fetch(
@@ -413,7 +417,7 @@ class _CommandLine:
                 tokens = dataset.split(":")
                 # cope with windows drives i.e. C:\data\blah\thing_0001.cbf:1:100
                 if len(tokens[0]) == 1:
-                    tokens = ["%s:%s" % (tokens[0], tokens[1])] + tokens[2:]
+                    tokens = [f"{tokens[0]}:{tokens[1]}"] + tokens[2:]
                 if len(tokens) != 3:
                     raise RuntimeError("/path/to/image_0001.cbf:start:end")
 

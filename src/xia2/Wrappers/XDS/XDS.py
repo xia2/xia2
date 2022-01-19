@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import datetime
 import logging
 import os
@@ -55,6 +57,7 @@ def _running_xds_version():
 
 def add_xds_version_to_mtz_history(mtz_file):
     from iotbx.reflection_file_reader import any_reflection_file
+
     from xia2.Wrappers.XDS import XDS
 
     reader = any_reflection_file(mtz_file)
@@ -472,8 +475,9 @@ def find_hdf5_lib(template=None):
     if __hdf5_lib:
         return __hdf5_lib
 
-    from xia2.Handlers.Phil import PhilIndex
     from dials.util import Sorry
+
+    from xia2.Handlers.Phil import PhilIndex
 
     plugin_name = PhilIndex.get_python_object().xds.hdf5_plugin
 

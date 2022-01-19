@@ -2,6 +2,8 @@
 # on data harvesting, working directories, a couple of other odds & sods.
 
 
+from __future__ import annotations
+
 import atexit
 import ctypes
 import logging

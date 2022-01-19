@@ -12,12 +12,15 @@
 # image header information
 
 
+from __future__ import annotations
+
 import logging
 import math
 import os
 
 from dxtbx.model.detector_helpers import set_mosflm_beam_centre
 from scitbx import matrix
+
 from xia2.Experts.FindImages import (
     digest_template,
     find_matching_images,
@@ -178,7 +181,7 @@ class FrameProcessor:
     def get_image_number(self, image):
         """Convert an image name to a number."""
 
-        if isinstance(image, type(1)):
+        if isinstance(image, int):
             return image
 
         return image2image(image)

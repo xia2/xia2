@@ -4,6 +4,8 @@
 # of the FreeR column.
 
 
+from __future__ import annotations
+
 from xia2.Wrappers.CCP4.Mtzdump import Mtzdump
 
 

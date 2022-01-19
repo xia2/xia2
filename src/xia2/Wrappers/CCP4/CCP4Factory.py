@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 
 # the wrappers that this will use - these are renamed so that the internal

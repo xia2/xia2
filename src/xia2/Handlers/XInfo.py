@@ -1,6 +1,8 @@
 # xia2 information / input file reader
 
 
+from __future__ import annotations
+
 from collections import OrderedDict
 
 

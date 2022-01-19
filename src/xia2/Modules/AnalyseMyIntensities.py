@@ -18,6 +18,8 @@
 # should also allow for a HKLREF.
 
 
+from __future__ import annotations
+
 import math
 import os
 

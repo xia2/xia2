@@ -1,6 +1,9 @@
+from __future__ import annotations
+
+import pytest_mock
+
 from xia2.cli.delta_cc_half import run
 from xia2.Modules.DeltaCcHalf import DeltaCcHalf
-import pytest_mock
 
 
 def test_from_experiments_reflections(dials_data, tmpdir, capsys, mocker):

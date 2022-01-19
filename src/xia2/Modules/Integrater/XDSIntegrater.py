@@ -5,6 +5,8 @@
 # considered to be a part of the scaling - see XDSScaler.py.
 
 
+from __future__ import annotations
+
 import copy
 import inspect
 import logging
@@ -16,6 +18,7 @@ import time
 import scitbx.matrix
 from dials.array_family import flex
 from iotbx.xds import xparm
+
 from xia2.Experts.SymmetryExpert import (
     lattice_to_spacegroup_number,
     mat_to_symop,
@@ -492,8 +495,8 @@ class XDSIntegrater(Integrater):
         integrate_hkl = os.path.join(self.get_working_directory(), "INTEGRATE.HKL")
 
         if PhilIndex.params.xia2.settings.input.format.dynamic_shadowing:
-            from dxtbx.serialize import load
             from dials.algorithms.shadowing.filter import filter_shadowed_reflections
+            from dxtbx.serialize import load
 
             experiments_json = xparm_xds_to_experiments_json(
                 os.path.join(self.get_working_directory(), "XPARM.XDS"),

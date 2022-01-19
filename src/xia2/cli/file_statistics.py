@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import sys
 
 from iotbx.reflection_file_reader import any_reflection_file

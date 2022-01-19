@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from xia2.Wrappers.XDS.XDSIntegrateHelpers import parse_integrate_lp
 
 

@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 import logging
 import os
 
 import iotbx.cif
 import iotbx.cif.model
 from dxtbx.model.experiment_list import ExperimentListFactory
+
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Citations import Citations
 
@@ -194,7 +197,7 @@ def TwoThetaRefine(DriverType=None):
                 block = cif["two_theta_refine"]
             else:
                 block = iotbx.cif.model.block()
-            subset = {k: block[k] for k in block.keys() if k.startswith(("_cell"))}
+            subset = {k: block[k] for k in block.keys() if k.startswith("_cell")}
             return subset
 
     return RefineWrapper()

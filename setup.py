@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import os
 import subprocess
+
 from setuptools import setup
 
 # Version number is determined either by git revision (which takes precendence)

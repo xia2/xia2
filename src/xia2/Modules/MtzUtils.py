@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import iotbx.mtz
 from cctbx import sgtbx
+
 from xia2.lib.SymmetryLib import clean_reindex_operator
 
 

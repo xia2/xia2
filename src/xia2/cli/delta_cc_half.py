@@ -1,21 +1,22 @@
+from __future__ import annotations
+
 import logging
-import matplotlib
 import os
 import sys
 
-from cctbx import crystal
-from iotbx.reflection_file_reader import any_reflection_file
-import libtbx.phil
+import matplotlib
 
+import libtbx.phil
+from cctbx import crystal
 from dials.util import tabulate
 from dials.util.filter_reflections import filtered_arrays_from_experiments_reflections
 from dials.util.multi_dataset_handling import (
     assign_unique_identifiers,
     parse_multiple_datasets,
 )
-from dials.util.options import OptionParser
-from dials.util.options import flatten_experiments, flatten_reflections
+from dials.util.options import OptionParser, flatten_experiments, flatten_reflections
 from dials.util.version import dials_version
+from iotbx.reflection_file_reader import any_reflection_file
 
 import xia2.Handlers.Streams
 from xia2.Handlers.Citations import Citations

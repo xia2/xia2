@@ -1,5 +1,7 @@
 # A top-level interface to the whole of xia2, for data processing & analysis.
 
+from __future__ import annotations
+
 import glob
 import itertools
 import logging
@@ -11,6 +13,7 @@ import sys
 import h5py
 
 from dials.util import Sorry
+
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Environment import df
 from xia2.XIA2Version import Version
@@ -83,7 +86,7 @@ def check_hdf5_master_files(master_files):
 
     if bad:
 
-        dirs = set(os.path.split(b)[0] for b in bad)
+        dirs = {os.path.split(b)[0] for b in bad}
         masters = itertools.chain.from_iterable(
             glob.glob(os.path.join(d, "*_master.h5")) for d in dirs
         )

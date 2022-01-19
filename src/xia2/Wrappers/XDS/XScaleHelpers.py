@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+
 def get_correlation_coefficients_and_group(xscale_lp):
     """Get and group correlation coefficients between data sets from the
     xscale log file. Also access the reflection file names to show which ones

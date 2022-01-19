@@ -2,6 +2,8 @@
 # from a list or wedges from a list, for XDS.
 
 
+from __future__ import annotations
+
 import logging
 
 logger = logging.getLogger("xia2.Modules.Indexer.IndexerSelectImages")

@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 import copy
 import logging
 import os
 
-import xia2.Wrappers.Dials.ExportXDS
 from dxtbx.model import ExperimentList
+
+import xia2.Wrappers.Dials.ExportXDS
 from xia2.Handlers.Phil import PhilIndex
 from xia2.lib.bits import auto_logfiler
 from xia2.Schema.Interfaces.Refiner import Refiner

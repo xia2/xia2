@@ -29,6 +29,8 @@
 #     This is left to the implementation to sort out.
 
 
+from __future__ import annotations
+
 import inspect
 import json
 import logging

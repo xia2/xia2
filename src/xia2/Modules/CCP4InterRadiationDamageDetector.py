@@ -21,6 +21,8 @@
 #
 
 
+from __future__ import annotations
+
 import os
 
 from xia2.lib.bits import auto_logfiler

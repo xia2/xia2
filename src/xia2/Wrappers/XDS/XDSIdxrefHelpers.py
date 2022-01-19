@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from xia2.Experts.LatticeExpert import ApplyLattice
 
 
