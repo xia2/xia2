@@ -1,20 +1,24 @@
-import pathlib
-from dxtbx.serialize import load
-from dxtbx.model import ExperimentList
-import math
-import procrunner
+from __future__ import annotations
+
 import functools
 import json
-from cctbx.uctbx import unit_cell
-import sys
 import logging
+import math
+import pathlib
+import sys
+
+import procrunner
+
+from cctbx.uctbx import unit_cell
 from dials.util import log
+from dials.util.options import ArgumentParser
+from dxtbx.model import ExperimentList
+from dxtbx.serialize import load
+from iotbx import phil
 
 # sensible image input?
 # multiple image=, directory= or template=
 
-from iotbx import phil
-from dials.util.options import ArgumentParser
 
 phil_str = """
 images = None
@@ -25,6 +29,8 @@ space_group = None
   .type = space_group
 unit_cell = None
   .type = unit_cell
+nproc = 1
+  .type = int
 """
 
 phil_scope = phil.parse(phil_str)
@@ -32,7 +38,7 @@ phil_scope = phil.parse(phil_str)
 logger = logging.getLogger("dials")
 
 
-def process_batch(working_directory, space_group, unit_cell, nproc=4):
+def process_batch(working_directory, space_group, unit_cell, nproc=1):
     logger.info(f"Performing spotfinding, indexing, integration in {working_directory}")
     run_spotfinding(working_directory)
     run_indexing(working_directory, nproc, space_group, unit_cell)
@@ -274,7 +280,7 @@ def determine_reference_geometry(
             run_spotfinding(new_directory)
         run_indexing(
             new_directory,
-            nproc=4,
+            nproc=space_group_determination["nproc"],
             space_group=space_group_determination["space_group"],
             unit_cell=space_group_determination["unit_cell"],
         )
@@ -360,7 +366,7 @@ def assess_crystal_parameters(main_directory, space_group_determination):
         run_spotfinding(new_directory)
         run_indexing(
             new_directory,
-            nproc=4,
+            nproc=space_group_determination["nproc"],
             space_group=space_group_determination["space_group"],
             unit_cell=space_group_determination["unit_cell"],
         )
@@ -405,7 +411,7 @@ def assess_crystal_parameters(main_directory, space_group_determination):
                 # do index
                 run_indexing(
                     new_directory,
-                    nproc=4,
+                    nproc=space_group_determination["nproc"],
                     space_group=space_group_determination["space_group"],
                     unit_cell=space_group_determination["unit_cell"],
                 )
@@ -439,6 +445,7 @@ def run(args=sys.argv[1:]):
         # if these are not both given, then below parameters come into effect.
         "N_images_to_index": 1000,
         "images_to_use": None,  # specify which image ranges from imported.expt to use e.g. [0:100,500:600]
+        "nproc": params.nproc,
     }  # specify to stop
 
     reference_geometry = {
@@ -484,4 +491,5 @@ def run(args=sys.argv[1:]):
             batch_dir,
             space_group_determination["space_group"],
             space_group_determination["unit_cell"],
+            nproc=params.nproc,
         )
