@@ -1,0 +1,487 @@
+import pathlib
+from dxtbx.serialize import load
+from dxtbx.model import ExperimentList
+import math
+import procrunner
+import functools
+import json
+from cctbx.uctbx import unit_cell
+import sys
+import logging
+from dials.util import log
+
+# sensible image input?
+# multiple image=, directory= or template=
+
+from iotbx import phil
+from dials.util.options import ArgumentParser
+
+phil_str = """
+images = None
+  .type = str
+  .multiple = True
+  .help = "Path to image files"
+space_group = None
+  .type = space_group
+unit_cell = None
+  .type = unit_cell
+"""
+
+phil_scope = phil.parse(phil_str)
+
+logger = logging.getLogger("dials")
+
+
+def process_batch(working_directory, space_group, unit_cell, nproc=4):
+    logger.info(f"Performing spotfinding, indexing, integration in {working_directory}")
+    run_spotfinding(working_directory)
+    run_indexing(working_directory, nproc, space_group, unit_cell)
+    run_integration(working_directory)
+
+
+def run_integration(working_directory):
+    integrate_command = [
+        "dev.dials.ssx_integrate",
+        "indexed.expt",
+        "indexed.refl",
+        "rlp_mosaicity=angular4",
+        "batch_size=100",
+        "prediction.probability=0.95",
+        "max_separation=1",
+        "outlier_probability=0.95",
+        "output.json=ssx_integrate.json",
+    ]
+    result = procrunner.run(integrate_command, working_directory=working_directory)
+    if result.returncode or result.stderr:
+        raise ValueError("Integration returned error status:\n" + str(result.stderr))
+
+
+def run_spotfinding(working_directory):
+    result = procrunner.run(
+        ["dials.find_spots", "imported.expt"],
+        working_directory=working_directory,
+    )
+    if result.returncode or result.stderr:
+        raise ValueError("Find spots returned error status:\n" + str(result.stderr))
+
+
+def run_indexing(working_directory, nproc=1, space_group=None, unit_cell=None):
+    index_command = [
+        "dev.dials.ssx_index",
+        "imported.expt",
+        "strong.refl",
+        f"indexing.nproc={nproc}",
+    ]
+    if space_group:
+        index_command.append(f"space_group={space_group}")
+    if unit_cell:
+        index_command.append(f"unit_cell={unit_cell}")
+    result = procrunner.run(index_command, working_directory=working_directory)
+    if result.returncode or result.stderr:
+        raise ValueError("Indexing returned error status:\n" + str(result.stderr))
+
+
+def run_refinement(working_directory):
+    refine_command = [
+        "dials.refine",
+        "indexed.expt",
+        "indexed.refl",
+        "auto_reduction.action=fix",
+        "beam.fix=all",
+        "detector.fix_list=Tau1",
+        "refinery.engine=SparseLevMar",
+        "outlier.algorithm=sauter_poon",
+    ]
+    result = procrunner.run(refine_command, working_directory=working_directory)
+    if result.returncode or result.stderr:
+        raise ValueError("Refinement returned error status:\n" + str(result.stderr))
+
+
+def setup_main_process(main_directory, main_process):
+    expts = load.experiment_list(
+        main_directory / "import_with_reference" / "imported.expt", check_format=True
+    )
+    batch_size = main_process["batch_size"]
+    n_batches = math.ceil(len(expts) / batch_size)
+    splits = [i * batch_size for i in range(n_batches)] + [len(expts)]
+    template = functools.partial(
+        "batch_{index:0{fmt:d}d}".format, fmt=len(str(n_batches))
+    )
+    batch_directories = []
+    for i in range(len(splits) - 1):
+        if not pathlib.Path.is_dir(main_directory / template(index=i + 1)):
+            pathlib.Path.mkdir(main_directory / template(index=i + 1))
+            # now copy file and run
+        sub_expt = expts[splits[i] : splits[i + 1]]
+        sub_expt.as_file(main_directory / f"batch_{i+1}" / "imported.expt")
+        batch_directories.append(main_directory / f"batch_{i+1}")
+    main_process["batch_directories"] = batch_directories
+
+
+def split_imported_to_batches(config):
+    assert config["reference_geometry"]
+    imported_expts = ExperimentList()
+    for file_ in config["imported"]:
+        expt = load.experiment_list(file_, check_format=True)
+        imported_expts.extend(expt)
+
+    cwd = pathlib.Path.cwd()
+    b_s = config["batch_size"]
+    n_batches = math.ceil(config["n_images"] / b_s)
+    splits = [i * b_s for i in range(n_batches)] + [config["n_images"]]
+
+    # make folders for batch_01, batch_02, ..., batch_n
+    template = functools.partial(
+        "batch_{index:0{fmt:d}d}".format, fmt=len(str(n_batches))
+    )
+    batch_directories = []
+    for i in range(len(splits) - 1):
+
+        if not pathlib.Path.is_dir(cwd / template(index=i + 1)):
+            pathlib.Path.mkdir(cwd / template(index=i + 1))
+
+        sub_expt = imported_expts[splits[i] : splits[i + 1]]
+        sub_expt.as_file(cwd / f"batch_{i+1}" / "imported.expt")
+        batch_directories.append(cwd / f"batch_{i+1}")
+        config["batch_directories"] = batch_directories
+    return config
+
+
+def slice_images_from_initial_input(main_directory, images=[], subdirectory=""):
+    expts = load.experiment_list(
+        str(main_directory / "initial_import" / "imported.expt"), check_format=False
+    )
+    if len(images) == 1:
+        # assert images[0] in form a:b
+        start_and_end = tuple(int(i) for i in images[0].split(":"))
+
+        if (start_and_end[1] - start_and_end[0]) > len(expts):
+            start_and_end = (start_and_end[0], start_and_end[0] + len(expts))
+        new_expts = expts[start_and_end[0] : start_and_end[1]]
+        new_expts.as_file(main_directory / subdirectory / "imported.expt")
+        logger.info(
+            f"xia2.ssx: Saved images {start_and_end[0]} to {start_and_end[1]} into {subdirectory / 'imported.expt'}"
+        )
+
+
+def run_import_with_reference(main_directory, file_input):
+
+    # allow for fact that reference may have changed or file input may have changed.
+    if not pathlib.Path.is_dir(main_directory / "import_with_reference"):
+        pathlib.Path.mkdir(main_directory / "import_with_reference")
+
+    logger.info("xia2.ssx: Importing images with determined reference experiments")
+    import_command = ["dials.import"] + [i for i in file_input["images"]]
+    import_command += [
+        f"reference_geometry={main_directory / 'reference_geometry' / 'refined.expt'}",
+        "use_gonio_reference=False",
+    ]
+    result = procrunner.run(
+        import_command,
+        working_directory=main_directory / "import_with_reference",
+    )
+    if result.returncode or result.stderr:
+        raise ValueError("dials.import returned error status:\n" + str(result.stderr))
+    outfile = main_directory / "import_with_reference" / "file_input.json"
+    outfile.touch()
+    with (outfile).open(mode="w") as f:
+        json.dump(file_input, f, indent=2)
+
+
+def determine_if_need_to_import_with_reference(main_directory, file_input):
+
+    if not pathlib.Path.is_dir(main_directory / "import_with_reference"):
+        pathlib.Path.mkdir(main_directory / "import_with_reference")
+        run_import_with_reference(main_directory, file_input)
+        return
+
+    if not (main_directory / "import_with_reference" / "file_input.json").is_file():
+        # some error must have occured in importing, so just rerun
+        run_import_with_reference(main_directory, file_input)
+        return
+
+    with open(main_directory / "import_with_reference" / "file_input.json", "r") as f:
+        previous = json.load(f)
+        if previous["images"] == file_input["images"]:
+            logger.info(
+                f"xia2.ssx: Images already imported with reference in previous run of xia2.ssx\n  {', '.join(previous['images'])}"
+            )
+        else:
+            logger.info(
+                "xia2.ssx: New images detected, rerunning import with reference"
+            )
+            run_import_with_reference(main_directory, file_input)
+        return
+
+
+def run_initial_import(main_directory, file_input):
+    def _do_run_and_save():
+        import_command = ["dials.import"] + [i for i in file_input["images"]]
+        result = procrunner.run(
+            import_command,
+            working_directory=main_directory / "initial_import",
+        )
+        if result.returncode or result.stderr:
+            raise ValueError(
+                "dials.import returned error status:\n" + str(result.stderr)
+            )
+        outfile = main_directory / "initial_import" / "file_input.json"
+        outfile.touch()
+        with (outfile).open(mode="w") as f:
+            json.dump(file_input, f, indent=2)
+
+    if not pathlib.Path.is_dir(main_directory / "initial_import"):
+        pathlib.Path.mkdir(main_directory / "initial_import")
+        _do_run_and_save()
+        return
+
+    if not (main_directory / "initial_import" / "file_input.json").is_file():
+        # some error must have occured in importing, so just rerun
+        _do_run_and_save()
+        return
+
+    with open(main_directory / "initial_import" / "file_input.json", "r") as f:
+        previous = json.load(f)
+        if previous["images"] == file_input["images"]:
+            logger.info(
+                f"xia2.ssx: Images already imported in previous run of xia2.ssx:\n  {', '.join(previous['images'])}"
+            )
+        else:
+            logger.info("xia2.ssx: New images detected, rerunning import")
+            _do_run_and_save()
+            return
+
+
+def determine_reference_geometry(
+    main_directory, reference_geometry, space_group_determination, history_tracking
+):
+
+    # if a reference geometry is not specified, look in the reference_geometry
+    # folder if it exists and see if there is a "refined.expt"
+
+    def _do_run_and_save(start_at_indexing=False):
+        logger.info(
+            "xia2.ssx: Determining reference geometry in reference_geometry folder"
+        )
+        if not start_at_indexing:
+            images = reference_geometry["images_to_use"]
+            if not images:
+                images = [f"0:{reference_geometry['N_images_to_refine']}"]
+            slice_images_from_initial_input(
+                main_directory, images, pathlib.Path("reference_geometry")
+            )
+
+            run_spotfinding(new_directory)
+        run_indexing(
+            new_directory,
+            nproc=4,
+            space_group=space_group_determination["space_group"],
+            unit_cell=space_group_determination["unit_cell"],
+        )
+        run_refinement(new_directory)
+
+        reference_geometry["space_group"] = space_group_determination["space_group"]
+        reference_geometry["unit_cell"] = space_group_determination["unit_cell"]
+        outfile = new_directory / "reference_geometry.json"
+        outfile.touch()
+        with (outfile).open(mode="w") as f:
+            json.dump(reference_geometry, f, indent=2)
+        history_tracking["reimport_with_current_reference"] = True
+
+    new_directory = main_directory / "reference_geometry"
+    if not pathlib.Path.is_dir(new_directory):
+        # First time, so determine reference geometry.
+        pathlib.Path.mkdir(new_directory)
+        _do_run_and_save()
+        return
+
+    if not (new_directory / "reference_geometry.json").is_file():
+        # some error must have occured when trying previously, so just rerun
+        _do_run_and_save()
+        return
+
+    # so have the right directory and record of previous run, check if we need to redo
+    with open(new_directory / "reference_geometry.json", "r") as f:
+        previous = json.load(f)
+        if reference_geometry["N_images_to_refine"] != previous["N_images_to_refine"]:
+            _do_run_and_save()  # need to do full rerun
+            return
+        if (
+            reference_geometry["N_images_to_refine"] == previous["N_images_to_refine"]
+        ) and (reference_geometry["images_to_use"] is not None):
+            if reference_geometry["images_to_use"] != previous["images_to_use"]:
+                _do_run_and_save()  # need to do full rerun
+                return
+
+        # is the space group and unit cell the same or different
+        if space_group_determination["space_group"] != previous["space_group"]:
+            _do_run_and_save(start_at_indexing=True)  # need to rerun
+            return
+
+        if not unit_cell(space_group_determination["unit_cell"]).is_similar_to(
+            unit_cell(previous["unit_cell"]),
+            absolute_length_tolerance=0.2,
+            absolute_angle_tolerance=0.5,
+        ):
+            _do_run_and_save(start_at_indexing=True)  # need to rerun
+            return
+        # also check if unit cells are similar, absolute length tolerance 0.2,
+        # absolute angle tolerance 0.5?
+
+        # everything appears to be the same as for previous run, so can use the refined.expt
+        if not (new_directory / "refined.expt").is_file():
+            _do_run_and_save()  # something went wrong, need to rerun
+            return
+        logger.info("xia2.ssx: Existing reference geometry found and will be used.")
+        history_tracking["reimport_with_current_reference"] = False
+
+
+def assess_crystal_parameters(main_directory, space_group_determination):
+
+    # U.C. + S.G. has not been given, so need to work out what was different from before
+    new_directory = main_directory / "assess_crystals"
+    if not pathlib.Path.is_dir(new_directory):  # This is the first attempt
+        pathlib.Path.mkdir(new_directory)
+
+        # select images, find spots, index, then pause or make smart choice
+        images = space_group_determination["images_to_use"]
+        if not images:
+            images = [f"0:{space_group_determination['N_images_to_index']}"]
+        slice_images_from_initial_input(
+            main_directory, images, pathlib.Path("assess_crystals")
+        )
+
+        outfile = main_directory / "assess_crystals" / "crystal_assessment.json"
+        outfile.touch()
+        with (outfile).open(mode="w") as f:
+            json.dump(space_group_determination, f, indent=2)
+
+        # now run find spots and index
+        run_spotfinding(new_directory)
+        run_indexing(
+            new_directory,
+            nproc=4,
+            space_group=space_group_determination["space_group"],
+            unit_cell=space_group_determination["unit_cell"],
+        )
+
+    else:
+        # Has previously been run, so see what settings were used.
+        # code below assumes crystal_assessment.json, strong.refl and imported.expt exist #FIXME
+        with open(
+            main_directory / "assess_crystals" / "crystal_assessment.json", "r"
+        ) as f:
+            previous = json.load(f)
+            # first of all, do we need to load more images, or can we just redo the indexing
+
+            if (
+                space_group_determination["N_images_to_index"]
+                != previous["N_images_to_index"]
+            ):
+                # need to get the right images and redo spotfinding and indexing
+                pass
+            elif (
+                space_group_determination["N_images_to_index"]
+                == previous["N_images_to_index"]
+            ) and (space_group_determination["images_to_use"] is not None):
+                if (
+                    space_group_determination["images_to_use"]
+                    != previous["images_to_use"]
+                ):
+                    # need to get the right images and redo spotfinding and indexing
+                    pass
+            else:  # working on same images, reindex with new sg and uc options
+                assert (main_directory / "assess_crystals" / "imported.expt").is_file()
+                assert (main_directory / "assess_crystals" / "strong.refl").is_file()
+
+                json_str = json.dumps(space_group_determination, indent=2)
+                with open(
+                    main_directory / "assess_crystals" / "crystal_assessment.json", "w"
+                ) as f:
+                    f.write(json_str)
+                logger.info(
+                    "xia2.ssx: Rerunning indexing for space group and unit cell assessment"
+                )
+                # do index
+                run_indexing(
+                    new_directory,
+                    nproc=4,
+                    space_group=space_group_determination["space_group"],
+                    unit_cell=space_group_determination["unit_cell"],
+                )
+
+
+def run(args=sys.argv[1:]):
+
+    parser = ArgumentParser(
+        usage="xia2.ssx images=*cbf unit_cell=x space_group=y",
+        read_experiments=False,
+        read_reflections=False,
+        phil=phil_scope,
+        check_format=False,
+        epilog="",
+    )
+    params, options = parser.parse_args(args=args, show_diff_phil=False)
+    log.config(verbosity=options.verbose, logfile="xia2.ssx.log")
+    diff_phil = parser.diff_phil.as_str()
+    if diff_phil:
+        logger.info("The following parameters have been modified:\n%s", diff_phil)
+
+    cwd = pathlib.Path.cwd()
+
+    file_input = {
+        "images": [str(pathlib.Path(i).resolve()) for i in params.images],
+    }
+
+    space_group_determination = {
+        "space_group": str(params.space_group),
+        "unit_cell": ",".join(str(i) for i in params.unit_cell.parameters()),
+        # if these are not both given, then below parameters come into effect.
+        "N_images_to_index": 1000,
+        "images_to_use": None,  # specify which image ranges from imported.expt to use e.g. [0:100,500:600]
+    }  # specify to stop
+
+    reference_geometry = {
+        "N_images_to_refine": 1000,
+        "images_to_use": None,  # specify which image ranges from imported.expt to use e.g. [0:100,500:600]
+    }
+
+    history_tracking = {
+        "reimport_with_current_reference": True,
+    }
+
+    main_process = {
+        "batch_size": 1000,
+    }
+
+    run_initial_import(cwd, file_input)
+
+    if (
+        space_group_determination["space_group"]
+        and space_group_determination["unit_cell"]
+    ):
+        logger.info("xia2.ssx: Space group and unit cell specified and will be used")
+    else:
+        assess_crystal_parameters(cwd, space_group_determination)
+        logger.info(
+            "xia2.ssx: Rerun with space group and unit cell to continue processing"
+        )
+        exit(0)
+
+    determine_reference_geometry(
+        cwd, reference_geometry, space_group_determination, history_tracking
+    )
+
+    if history_tracking["reimport_with_current_reference"]:
+        run_import_with_reference(cwd, file_input)
+    else:  # also allow for fact that input files may have changed.
+        determine_if_need_to_import_with_reference(cwd, file_input)
+    history_tracking["reimport_with_current_reference"] = False
+
+    setup_main_process(cwd, main_process)
+    for batch_dir in main_process["batch_directories"]:
+        process_batch(
+            batch_dir,
+            space_group_determination["space_group"],
+            space_group_determination["unit_cell"],
+        )

@@ -45,6 +45,7 @@ console_scripts = [
     "xia2.to_shelx=xia2.cli.to_shelx:run",
     "xia2.to_shelxcde=xia2.cli.to_shelxcde:run",
     "xia2=xia2.cli.xia2_main:run",
+    "dev.xia2.ssx=xia2.cli.ssx:run",
 ]
 
 
