@@ -1,3 +1,12 @@
+xia2 3.8.1 (2022-01-25)
+=======================
+
+Improved Documentation
+----------------------
+
+- ``xia2.multiplex``: Add, and update, PHIL parameter descriptions. (`#644 <https://github.com/xia2/xia2/issues/644>`_)
+
+
 xia2 3.8.0 (2022-01-11)
 =======================
 
