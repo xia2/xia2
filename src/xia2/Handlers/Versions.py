@@ -63,7 +63,12 @@ def get_aimless_version():
 
 def get_pointless_version():
     result = procrunner.run(
-        ["pointless", "--no-input"], print_stdout=False, print_stderr=False
+        [
+            "pointless",
+        ],
+        print_stdout=False,
+        print_stderr=False,
+        timeout=1,
     )
     version = re.search(br"version\s\d+\.\d+\.\d+", result.stdout)
     if version:
