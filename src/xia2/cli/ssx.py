@@ -31,6 +31,14 @@ unit_cell = None
   .type = unit_cell
 nproc = 1
   .type = int
+integration {
+  algorithm = stills *potato
+    .type = choice
+  potato {
+    rlp_mosaicity = *angular4 angular2 simple1 simple6
+      .type = choice
+  }
+}
 """
 
 phil_scope = phil.parse(phil_str)
@@ -38,25 +46,31 @@ phil_scope = phil.parse(phil_str)
 logger = logging.getLogger("dials")
 
 
-def process_batch(working_directory, space_group, unit_cell, nproc=1):
+def process_batch(
+    working_directory, space_group, unit_cell, integration_params, nproc=1
+):
     logger.info(f"Performing spotfinding, indexing, integration in {working_directory}")
     run_spotfinding(working_directory)
     run_indexing(working_directory, nproc, space_group, unit_cell)
-    run_integration(working_directory)
+    run_integration(working_directory, integration_params)
 
 
-def run_integration(working_directory):
+def run_integration(working_directory, integration_params):
     integrate_command = [
         "dev.dials.ssx_integrate",
         "indexed.expt",
         "indexed.refl",
-        "rlp_mosaicity=angular4",
+        f"algorithm={integration_params.algorithm}",
         "batch_size=100",
         "prediction.probability=0.95",
         "max_separation=1",
         "outlier_probability=0.95",
         "output.json=ssx_integrate.json",
     ]
+    if integration_params.algorithm == "potato":
+        integrate_command.extend(
+            [f"rlp_mosaicity={integration_params.potato.rlp_mosaicity}"]
+        )
     result = procrunner.run(integrate_command, working_directory=working_directory)
     if result.returncode or result.stderr:
         raise ValueError("Integration returned error status:\n" + str(result.stderr))
@@ -491,5 +505,6 @@ def run(args=sys.argv[1:]):
             batch_dir,
             space_group_determination["space_group"],
             space_group_determination["unit_cell"],
+            params.integration,
             nproc=params.nproc,
         )
