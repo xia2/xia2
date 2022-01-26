@@ -39,6 +39,13 @@ integration {
       .type = choice
   }
 }
+clustering {
+  threshold=1000
+    .type = float
+
+}
+anomalous = False
+  .type = bool
 """
 
 phil_scope = phil.parse(phil_str)
@@ -136,6 +143,146 @@ def setup_main_process(main_directory, main_process):
         sub_expt.as_file(main_directory / f"batch_{i+1}" / "imported.expt")
         batch_directories.append(main_directory / f"batch_{i+1}")
     main_process["batch_directories"] = batch_directories
+
+
+def cluster_all_unit_cells(main_directory, batch_directories, threshold=1000):
+
+    working_directory = main_directory / "unit_cell_cluster"
+    if not pathlib.Path.is_dir(working_directory):
+        pathlib.Path.mkdir(working_directory)
+
+    logger.info(f"xia2.ssx: Performing unit cell clustering in {working_directory}")
+    cmd = ["dials.cluster_unit_cell", "output.clusters=True", f"threshold={threshold}"]
+
+    for d in batch_directories:
+        for ext_ in (".refl", ".expt"):
+            for file_ in list(d.glob("integrated_*" + ext_)):
+                cmd.extend([file_])
+
+    result = procrunner.run(cmd, working_directory=working_directory)
+    if result.returncode or result.stderr:
+        raise ValueError(
+            "Unit cell clustering returned error status:\n" + str(result.stderr)
+        )
+
+
+def reindex_all_data(main_directory, space_group, batch_size):
+
+    # first split into chunks
+    if not pathlib.Path.is_dir(main_directory / "unit_cell_cluster"):
+        raise ValueError("Unable to locate clustering results")
+
+    working_directory = main_directory / "reindex"
+    if not pathlib.Path.is_dir(main_directory / "reindex"):
+        pathlib.Path.mkdir(main_directory / "reindex")
+
+    # now split into groups of size batch_size
+    cmd = [
+        "dials.split_experiments",
+        str(main_directory / "unit_cell_cluster" / "cluster_0.refl"),
+        str(main_directory / "unit_cell_cluster" / "cluster_0.expt"),
+        f"chunk_size={batch_size}",
+    ]
+    result = procrunner.run(cmd, working_directory=working_directory)
+    if result.returncode or result.stderr:
+        raise ValueError(
+            "dials.split_experiments returned error status:\n" + str(result.stderr)
+        )
+
+    # do chunk-based cosym and reindexing.
+    # note this loop could be parallelised!
+    for i, refl in enumerate((working_directory).glob("split_*.refl")):
+        expt = pathlib.Path(str(refl).rstrip(".refl") + ".expt")
+        assert expt.is_file()
+        # first scale, then run cosym.
+        # If not first, then reindex against reference
+        cmd = [
+            "dials.scale",
+            "model=KB",
+            "error_model=None",
+            "full_matrix=False",
+            "min_partiality=0.4",
+            "nproc=8",
+            str(expt),
+            str(refl),
+            f"output.reflections=processed_{i}.refl",
+            f"output.experiments=processed_{i}.expt",
+            f"log=dials.scale.{i}.log",
+        ]
+        result = procrunner.run(cmd, working_directory=working_directory)
+        if result.returncode or result.stderr:
+            raise ValueError(
+                "dials.scale returned error status:\n" + str(result.stderr)
+            )
+        cmd = [
+            "dials.cosym",
+            f"processed_{i}.refl",
+            f"processed_{i}.expt",
+            f"output.reflections=processed_{i}.refl",
+            f"output.experiments=processed_{i}.expt",
+            f"space_group={space_group}",
+            f"log=dials.cosym.{i}.log",
+        ]
+        result = procrunner.run(cmd, working_directory=working_directory)
+        if result.returncode or result.stderr:
+            raise ValueError(
+                "dials.cosym returned error status:\n" + str(result.stderr)
+            )
+        if i > 0:
+            cmd = [
+                "dials.reindex",
+                f"processed_{i}.refl",
+                f"processed_{i}.expt",
+                "reference.reflections=processed_0.refl",
+                "reference.experiments=processed_0.expt",
+                f"output.reflections=processed_{i}.refl",
+                f"output.experiments=processed_{i}.expt",
+            ]
+            result = procrunner.run(cmd, working_directory=working_directory)
+            if result.returncode or result.stderr:
+                raise ValueError(
+                    "dials.reindex returned error status:\n" + str(result.stderr)
+                )
+
+
+def scale_and_merge(main_directory, anomalous=False):
+    # now do final scale
+
+    working_directory = main_directory / "scale"
+    if not pathlib.Path.is_dir(working_directory):
+        pathlib.Path.mkdir(working_directory)
+
+    reindex_directory = main_directory / "reindex"
+    if not pathlib.Path.is_dir(reindex_directory):
+        raise ValueError("Unable to locate reindexing results")
+
+    logger.info(f"xia2.ssx: Running scaling of all data in {working_directory}")
+    cmd = [
+        "dials.scale",
+        "model=KB",
+        "error_model=None",
+        "full_matrix=False",
+        "min_partiality=0.4",
+        "nproc=8",
+        f"anomalous={anomalous}",
+    ]
+
+    for refl in (reindex_directory).glob("processed_*.refl"):
+        expt = pathlib.Path(str(refl).rstrip(".refl") + ".expt")
+        assert expt.is_file()
+        cmd.extend([str(refl), str(expt)])
+    result = procrunner.run(cmd, working_directory=working_directory)
+    if result.returncode or result.stderr:
+        raise ValueError("dials.scale returned error status:\n" + str(result.stderr))
+
+    cmd = ["dials.merge", "scaled.expt", "scaled.refl"]
+    result = procrunner.run(cmd, working_directory=working_directory)
+    if result.returncode or result.stderr:
+        raise ValueError("dials.merge returned error status:\n" + str(result.stderr))
+    cmd = ["dials.export", "scaled.expt", "scaled.refl"]
+    result = procrunner.run(cmd, working_directory=working_directory)
+    if result.returncode or result.stderr:
+        raise ValueError("dials.export returned error status:\n" + str(result.stderr))
 
 
 def split_imported_to_batches(config):
@@ -508,3 +655,15 @@ def run(args=sys.argv[1:]):
             params.integration,
             nproc=params.nproc,
         )
+
+    cluster_all_unit_cells(
+        cwd, main_process["batch_directories"], params.clustering.threshold
+    )
+
+    reindex_all_data(
+        cwd, space_group_determination["space_group"], main_process["batch_size"]
+    )
+
+    scale_and_merge(cwd, anomalous=params.anomalous)
+    logger.info("xia2.ssx: Finished processing")
+    # now use space group to reindex in batches
