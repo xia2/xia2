@@ -265,6 +265,8 @@ def scale_and_merge(main_directory, anomalous=False):
         "min_partiality=0.4",
         "nproc=8",
         f"anomalous={anomalous}",
+        "reflection_selection.method=intensity_ranges",
+        "reflection_selection.Isigma_range=2.0,0.0",
     ]
 
     for refl in (reindex_directory).glob("processed_*.refl"):
