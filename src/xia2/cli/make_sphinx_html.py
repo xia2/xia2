@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pathlib
 import shutil
+import subprocess
 
 import procrunner
 
@@ -17,13 +18,17 @@ def run():
     sphinx_dir = xia2_dir / "doc" / "sphinx"
     if dest_dir.is_dir():
         shutil.rmtree(dest_dir)
-    result = procrunner.run(["make", "clean"], working_directory=sphinx_dir)
+    result = procrunner.run(
+        ["make", "clean"], working_directory=sphinx_dir, stdin=subprocess.DEVNULL
+    )
     if result.returncode:
         exit(f"make clean failed with exit code {result.returncode}")
 
-    result = procrunner.run(["make", "html"], working_directory=sphinx_dir)
+    result = procrunner.run(
+        ["make", "html"], working_directory=sphinx_dir, stdin=subprocess.DEVNULL
+    )
     if result.returncode:
         exit(f"make html failed with exit code {result.returncode}")
 
-    print("Moving HTML pages to", dest_dir)
+    print(f"Moving HTML pages to {dest_dir}")
     shutil.move(sphinx_dir / "build" / "html", dest_dir)
