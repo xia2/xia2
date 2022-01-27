@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import subprocess
 from collections.abc import Mapping
 
 import procrunner
@@ -63,15 +64,18 @@ def get_aimless_version():
 
 def get_pointless_version():
     # timeout is provided here to prevent xia2 hanging under ccp4i2
-    result = procrunner.run(
-        [
-            "pointless",
-        ],
-        print_stdout=False,
-        print_stderr=False,
-        timeout=1,
-    )
-    version = re.search(br"version\s\d+\.\d+\.\d+", result.stdout)
+    try:
+        result = procrunner.run(
+            ["pointless"],
+            print_stdout=False,
+            print_stderr=False,
+            timeout=1,
+            raise_timeout_exception=True,
+        )
+        output = result.stdout
+    except subprocess.TimeoutExpired as te:
+        output = te.stdout
+    version = re.search(br"version\s\d+\.\d+\.\d+", output)
     if version:
         return version.group().decode("utf-8").split(" ")[1]
     return None
