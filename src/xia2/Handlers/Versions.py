@@ -62,6 +62,7 @@ def get_aimless_version():
 
 
 def get_pointless_version():
+    # timeout is provided here to prevent xia2 hanging under ccp4i2
     result = procrunner.run(
         [
             "pointless",
