@@ -136,7 +136,11 @@ def _show_xia2_version():
 #
 # We need to check before trying to install as pip does os.access-based
 # checks then installs with --user if it fails. We don't want that.
-if _test_writable_dir(Path(site.getsitepackages()[0])):
+# Additionally, if the CCTBX_INSTALL_PACKAGE_BUILD environment variable
+# is set, then we explicitly want to do the readonly fallback.
+if ("CCTBX_INSTALL_PACKAGE_BUILD" not in os.environ) and _test_writable_dir(
+    Path(site.getsitepackages()[0])
+):
     _install_xia2_setup()
 else:
     print("Python site directory not writable - falling back to tbx install")
