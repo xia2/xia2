@@ -136,12 +136,13 @@ def setup_main_process(main_directory, main_process):
     )
     batch_directories = []
     for i in range(len(splits) - 1):
-        if not pathlib.Path.is_dir(main_directory / template(index=i + 1)):
-            pathlib.Path.mkdir(main_directory / template(index=i + 1))
+        subdir = main_directory / template(index=i + 1)
+        if not pathlib.Path.is_dir(subdir):
+            pathlib.Path.mkdir(subdir)
             # now copy file and run
         sub_expt = expts[splits[i] : splits[i + 1]]
-        sub_expt.as_file(main_directory / f"batch_{i+1}" / "imported.expt")
-        batch_directories.append(main_directory / f"batch_{i+1}")
+        sub_expt.as_file(subdir / "imported.expt")
+        batch_directories.append(subdir)
     main_process["batch_directories"] = batch_directories
 
 
@@ -221,7 +222,7 @@ def reindex_all_data(main_directory, space_group, batch_size):
             f"output.reflections=processed_{i}.refl",
             f"output.experiments=processed_{i}.expt",
             f"space_group={space_group}",
-            f"log=dials.cosym.{i}.log",
+            f"output.log=dials.cosym.{i}.log",
         ]
         result = procrunner.run(cmd, working_directory=working_directory)
         if result.returncode or result.stderr:
@@ -285,35 +286,6 @@ def scale_and_merge(main_directory, anomalous=False):
     result = procrunner.run(cmd, working_directory=working_directory)
     if result.returncode or result.stderr:
         raise ValueError("dials.export returned error status:\n" + str(result.stderr))
-
-
-def split_imported_to_batches(config):
-    assert config["reference_geometry"]
-    imported_expts = ExperimentList()
-    for file_ in config["imported"]:
-        expt = load.experiment_list(file_, check_format=True)
-        imported_expts.extend(expt)
-
-    cwd = pathlib.Path.cwd()
-    b_s = config["batch_size"]
-    n_batches = math.ceil(config["n_images"] / b_s)
-    splits = [i * b_s for i in range(n_batches)] + [config["n_images"]]
-
-    # make folders for batch_01, batch_02, ..., batch_n
-    template = functools.partial(
-        "batch_{index:0{fmt:d}d}".format, fmt=len(str(n_batches))
-    )
-    batch_directories = []
-    for i in range(len(splits) - 1):
-
-        if not pathlib.Path.is_dir(cwd / template(index=i + 1)):
-            pathlib.Path.mkdir(cwd / template(index=i + 1))
-
-        sub_expt = imported_expts[splits[i] : splits[i + 1]]
-        sub_expt.as_file(cwd / f"batch_{i+1}" / "imported.expt")
-        batch_directories.append(cwd / f"batch_{i+1}")
-        config["batch_directories"] = batch_directories
-    return config
 
 
 def slice_images_from_initial_input(main_directory, images=[], subdirectory=""):
