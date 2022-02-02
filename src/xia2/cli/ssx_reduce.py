@@ -27,6 +27,8 @@ clustering {
 }
 anomalous = False
   .type = bool
+d_min = None
+  .type = float
 """
 
 phil_scope = phil.parse(phil_str)
@@ -59,4 +61,5 @@ def run(args=sys.argv[1:]):
         anomalous=params.anomalous,
         space_group=str(params.space_group),
         cluster_threshold=params.clustering.threshold,
+        d_min=params.d_min,
     )

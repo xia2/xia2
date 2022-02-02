@@ -109,7 +109,9 @@ def cluster_all_unit_cells(working_directory, batch_directories, threshold=1000)
     return {"expt": cluster_expt, "refl": cluster_refl}
 
 
-def scale_cosym(working_directory, expt_file, refl_file, index, space_group):
+def scale_cosym(
+    working_directory, expt_file, refl_file, index, space_group, d_min=None
+):
     scale_cmd = [
         "dials.scale",
         "model=KB",
@@ -123,6 +125,8 @@ def scale_cosym(working_directory, expt_file, refl_file, index, space_group):
         f"output.experiments=processed_{index}.expt",
         f"log=dials.scale.{index}.log",
     ]
+    if d_min:
+        scale_cmd.append(f"d_min={d_min}")
 
     result = procrunner.run(scale_cmd, working_directory=working_directory)
     if result.returncode or result.stderr:
@@ -136,6 +140,8 @@ def scale_cosym(working_directory, expt_file, refl_file, index, space_group):
         f"space_group={space_group}",
         f"output.log=dials.cosym.{index}.log",
     ]
+    if d_min:
+        cosym_cmd.append(f"d_min={d_min}")
     result = procrunner.run(cosym_cmd, working_directory=working_directory)
     if result.returncode or result.stderr:
         raise ValueError("dials.cosym returned error status:\n" + str(result.stderr))
@@ -211,6 +217,7 @@ class SimpleDataReduction(BaseDataReduction):
         nproc=1,
         anomalous=True,
         cluster_threshold=1000,
+        d_min=None,
     ):
 
         # just some test options for now
@@ -252,6 +259,7 @@ class SimpleDataReduction(BaseDataReduction):
             data_already_reindexed,
             space_group=space_group,
             nproc=nproc,
+            d_min=d_min,
         )
 
         # if we get here, we have successfully prepared the new data for scaling.
@@ -271,7 +279,9 @@ class SimpleDataReduction(BaseDataReduction):
         # for files_ in data_already_reindexed.values():
         #    files_to_scale.extend([files_["expt"], files_["refl"]])
 
-        self.scale_and_merge(self._main_directory, files_to_scale, anomalous=anomalous)
+        self.scale_and_merge(
+            self._main_directory, files_to_scale, anomalous=anomalous, d_min=d_min
+        )
 
     def filter(
         self,
@@ -423,6 +433,7 @@ class SimpleDataReduction(BaseDataReduction):
         data_already_reindexed,
         space_group=None,
         nproc=1,
+        d_min=None,
     ):
 
         working_directory = main_directory / "data_reduction" / "reindex"
@@ -444,6 +455,7 @@ class SimpleDataReduction(BaseDataReduction):
                     files["refl"],
                     index,
                     space_group,
+                    d_min,
                 ): index
                 for index, files in data_to_reindex.items()
             }
@@ -501,7 +513,7 @@ class SimpleDataReduction(BaseDataReduction):
         return files_to_scale
 
     @staticmethod
-    def scale_and_merge(main_directory, files_to_scale, anomalous=True):
+    def scale_and_merge(main_directory, files_to_scale, anomalous=True, d_min=None):
 
         working_directory = main_directory / "data_reduction" / "scale"
         if not Path.is_dir(working_directory):
@@ -519,6 +531,8 @@ class SimpleDataReduction(BaseDataReduction):
             "reflection_selection.method=intensity_ranges",
             "reflection_selection.Isigma_range=2.0,0.0",
         ]
+        if d_min:
+            cmd.append(f"d_min={d_min}")
 
         for file in files_to_scale:
             cmd.append(str(file))
