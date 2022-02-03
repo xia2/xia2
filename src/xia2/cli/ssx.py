@@ -33,9 +33,9 @@ unit_cell = None
 nproc = 1
   .type = int
 integration {
-  algorithm = stills *potato
+  algorithm = stills *ellipsoid
     .type = choice
-  potato {
+  ellipsoid {
     rlp_mosaicity = *angular4 angular2 simple1 simple6
       .type = choice
   }
@@ -77,9 +77,9 @@ def run_integration(working_directory, integration_params):
         "outlier_probability=0.95",
         "output.json=ssx_integrate.json",
     ]
-    if integration_params.algorithm == "potato":
+    if integration_params.algorithm == "ellipsoid":
         integrate_command.extend(
-            [f"rlp_mosaicity={integration_params.potato.rlp_mosaicity}"]
+            [f"rlp_mosaicity={integration_params.ellipsoid.rlp_mosaicity}"]
         )
     result = procrunner.run(integrate_command, working_directory=working_directory)
     if result.returncode or result.stderr:
