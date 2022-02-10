@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import os
+import re
 import subprocess
+from pathlib import Path
 
-from setuptools import setup
+import setuptools
 
 # Version number is determined either by git revision (which takes precendence)
 # or a static version number which is updated by bump2version
@@ -48,26 +50,33 @@ console_scripts = [
 
 def get_git_revision():
     """Try to obtain the current git revision number"""
-    xia2_root_path = os.path.split(os.path.realpath(__file__))[0]
+    xia2_root_path = Path(os.path.realpath(__file__)).parent
 
-    if not os.path.exists(os.path.join(xia2_root_path, ".git")):
+    if not xia2_root_path.joinpath(".git").exists():
         return None
 
     try:
         result = subprocess.run(
-            ("git", "describe", "--long"),
+            ("git", "describe", "--tags", "--long", "--first-parent"),
             check=True,
-            cwd=xia2_root_path,
             encoding="latin-1",
             stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL,
         )
-        version = result.stdout.rstrip()
+        major, minor, patch, count, commit = re.match(
+            r"v?(\d+)\.(\d+)\.(dev|\d+)-(\d+)-(.+)", result.stdout.rstrip()
+        ).groups()
     except Exception:
         return None
-    if version.startswith("v"):
-        version = version[1:].replace(".0-", ".")
 
+    # Some of our version schemes used vX.Y.0-Z
+    if patch == "0":
+        patch = count
+        count = "0"
+    elif patch == "dev":
+        patch = f"dev{count}"
+
+    # Get the branch name, if not main
     try:
         result = subprocess.run(
             ("git", "describe", "--contains", "--all", "HEAD"),
@@ -78,21 +87,37 @@ def get_git_revision():
             stderr=subprocess.DEVNULL,
         )
         branch = result.stdout.rstrip()
-        if branch != "" and branch != "master" and not branch.endswith("/master"):
-            version = version + "-" + branch
+        if branch and branch != "main" and not branch.endswith("/main"):
+            commit = f"{commit}-{branch.rsplit('/', 1)[-1]}"
     except Exception:
-        pass
+        branch = ""
 
+    version = f"{major}.{minor}.{patch}+{commit}"
     return version
 
 
-setup(
+setuptools.setup(
+    name="xia2",
+    version=get_git_revision() or __version_tag__,
+    long_description=Path(__file__).parent.joinpath("README.md").read_text(),
+    description="An expert system for automated reduction of X-ray diffraction data from macromolecular crystals",
+    author="Diamond Light Source",
+    license="BSD-3-Clause",
+    author_email="dials-support@lists.sourceforge.net",
+    packages=setuptools.find_packages(where="src"),
+    package_dir={"": "src"},
+    package_data={
+        "": ["*", "*.html"],
+        # "dxtbx": ["boost_python/*", "example/*", "py.typed"],
+        # "dxtbx.format": ["boost_python/*"],
+        # "dxtbx.masking": ["boost_python/*"],
+        # "dxtbx.model": ["boost_python/*"],
+    },
     install_requires=[
         "dials-data>=2.0",
         "Jinja2",
         "procrunner",
         "tabulate",
-        'importlib_metadata;python_version<"3.8"',
     ],
     entry_points={
         "console_scripts": console_scripts,
@@ -107,5 +132,4 @@ setup(
         "pytest-mock",
     ],
     url="https://github.com/xia2/xia2",
-    version=get_git_revision() or __version_tag__,
 )
