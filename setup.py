@@ -107,7 +107,7 @@ setuptools.setup(
     packages=setuptools.find_packages(where="src"),
     package_dir={"": "src"},
     package_data={
-        "": ["*", "*.html"],
+        "": ["*"],
         # "dxtbx": ["boost_python/*", "example/*", "py.typed"],
         # "dxtbx.format": ["boost_python/*"],
         # "dxtbx.masking": ["boost_python/*"],
