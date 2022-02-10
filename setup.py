@@ -108,10 +108,6 @@ setuptools.setup(
     package_dir={"": "src"},
     package_data={
         "": ["*"],
-        # "dxtbx": ["boost_python/*", "example/*", "py.typed"],
-        # "dxtbx.format": ["boost_python/*"],
-        # "dxtbx.masking": ["boost_python/*"],
-        # "dxtbx.model": ["boost_python/*"],
     },
     install_requires=[
         "dials-data>=2.0",
