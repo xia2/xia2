@@ -76,6 +76,8 @@ steps:
     . dials
     set -ux
     export DIALS_DATA=${PWD}/data
+    export PATH=build/xia2/bin:$PATH
+    which xia2
     cd modules/xia2
     export PYTHONDEVMODE=1
     pytest -v -ra -n auto --basetemp="$(Pipeline.Workspace)/tests" --durations=10 \
