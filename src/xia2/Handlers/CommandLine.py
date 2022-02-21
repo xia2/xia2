@@ -13,13 +13,13 @@ import copy
 import logging
 import os
 import re
+import shutil
 import sys
 
 from dials.util import Sorry
 from dxtbx.serialize import load
 
 from xia2.Experts.FindImages import image2template_directory
-from xia2.Handlers.Environment import which
 from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.PipelineSelection import add_preference
@@ -237,7 +237,7 @@ class _CommandLine:
 
         if mp_params.mode == "parallel":
             if mp_params.type == "qsub":
-                if which("qsub") is None:
+                if not shutil.which("qsub"):
                     raise Sorry("qsub not available")
             if mp_params.njob is Auto:
                 mp_params.njob = get_number_cpus()
@@ -247,7 +247,7 @@ class _CommandLine:
                 mp_params.nproc = get_number_cpus()
         elif mp_params.mode == "serial":
             if mp_params.type == "qsub":
-                if which("qsub") is None:
+                if not shutil.which("qsub"):
                     raise Sorry("qsub not available")
             if mp_params.njob is Auto:
                 mp_params.njob = 1
