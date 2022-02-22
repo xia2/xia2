@@ -16,6 +16,8 @@ from dials.array_family import flex
 from dxtbx.model.experiment_list import ExperimentList
 from dxtbx.serialize import load
 
+from xia2.Handlers.Streams import banner
+
 logger = logging.getLogger("dials")
 
 # data reduction works on a list of directories - searches for integrated files and a "batch.json" configuration file
@@ -277,10 +279,6 @@ class SimpleDataReduction(BaseDataReduction):
         ) as fp:
             json.dump(data_reduction_progress, fp)
 
-        # extend the new files with the rest to scale all together
-        # for files_ in data_already_reindexed.values():
-        #    files_to_scale.extend([files_["expt"], files_["refl"]])
-
         self.scale_and_merge(
             self._main_directory, files_to_scale, anomalous=anomalous, d_min=d_min
         )
@@ -312,6 +310,7 @@ class SimpleDataReduction(BaseDataReduction):
         if not current_unit_cell:
             # none previously processed (or processing failed for some reason)
             # so do clustering on all data, using a threshold.
+            logger.notice(banner("Clustering"))
             main_cluster_files = cluster_all_unit_cells(
                 working_directory,
                 new_directories_to_process,
@@ -373,6 +372,7 @@ class SimpleDataReduction(BaseDataReduction):
 
         # else going to filter some and prepare for reindexing, and note which is already reindexed.
 
+        logger.notice(banner("Filtering"))
         good_refls, good_expts = select_crystals_close_to(
             new_directories_to_process,
             current_unit_cell,
@@ -448,6 +448,7 @@ class SimpleDataReduction(BaseDataReduction):
             reference_files = {"expt": None, "refl": None}
         files_for_reference_reindex = {}
         reindexed_results = {}
+        logger.notice(banner("Reindexing"))
         with concurrent.futures.ProcessPoolExecutor(max_workers=nproc) as pool:
             futures = {
                 pool.submit(
@@ -540,12 +541,13 @@ class SimpleDataReduction(BaseDataReduction):
 
         for file in files_to_scale:
             cmd.append(str(file))
+        logger.notice(banner("Scaling"))
         result = procrunner.run(cmd, working_directory=working_directory)
         if result.returncode or result.stderr:
             raise ValueError(
                 "dials.scale returned error status:\n" + str(result.stderr)
             )
-
+        logger.notice(banner("Merging"))
         cmd = ["dials.merge", "scaled.expt", "scaled.refl"]
         result = procrunner.run(cmd, working_directory=working_directory)
         if result.returncode or result.stderr:
