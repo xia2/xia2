@@ -8,6 +8,8 @@ import os
 from pathlib import Path
 from typing import List, Tuple
 
+import procrunner
+
 from cctbx import crystal, sgtbx, uctbx
 from dials.algorithms.indexing.ssx.analysis import (
     generate_html_report,
@@ -113,6 +115,22 @@ def ssx_index(
         with open("dials.ssx_index.json", "w") as outfile:
             json.dump(summary_plots, outfile)
     return indexed_experiments, indexed_reflections, large_clusters
+
+
+def run_refinement(working_directory):
+    refine_command = [
+        "dials.refine",
+        "indexed.expt",
+        "indexed.refl",
+        "auto_reduction.action=fix",
+        "beam.fix=all",
+        "detector.fix_list=Tau1",
+        "refinery.engine=SparseLevMar",
+        "outlier.algorithm=sauter_poon",
+    ]
+    result = procrunner.run(refine_command, working_directory=working_directory)
+    if result.returncode or result.stderr:
+        raise ValueError("Refinement returned error status:\n" + str(result.stderr))
 
 
 def ssx_integrate(working_directory, integration_params):
