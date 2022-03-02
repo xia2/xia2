@@ -4,7 +4,6 @@ import logging
 import sys
 from pathlib import Path
 
-from dials.util import log
 from dials.util.options import ArgumentParser
 from iotbx import phil
 
@@ -35,6 +34,8 @@ phil_scope = phil.parse(phil_str)
 
 logger = logging.getLogger("dials")
 
+import xia2.Handlers.Streams
+
 
 def run(args=sys.argv[1:]):
 
@@ -47,7 +48,9 @@ def run(args=sys.argv[1:]):
         epilog="",
     )
     params, options = parser.parse_args(args=args, show_diff_phil=False)
-    log.config(verbosity=options.verbose, logfile="xia2.ssx_reduce.log")
+    xia2.Handlers.Streams.setup_logging(logfile="xia2.ssx_reduce.log")
+
+    # log.config(verbosity=options.verbose, logfile="xia2.ssx_reduce.log")
     diff_phil = parser.diff_phil.as_str()
     if diff_phil:
         logger.info("The following parameters have been modified:\n%s", diff_phil)
@@ -59,7 +62,7 @@ def run(args=sys.argv[1:]):
         batch_size=params.batch_size,
         nproc=params.nproc,
         anomalous=params.anomalous,
-        space_group=str(params.space_group),
+        space_group=params.space_group,
         cluster_threshold=params.clustering.threshold,
         d_min=params.d_min,
     )

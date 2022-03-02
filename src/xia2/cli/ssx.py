@@ -11,14 +11,15 @@ from typing import Tuple
 
 import procrunner
 
-from dials.util import log
 from dials.util.options import ArgumentParser
 from dxtbx.serialize import load
 from iotbx import phil
 
+import xia2.Handlers.Streams
 from xia2.Handlers.Streams import banner
 from xia2.Modules.SSX.data_integration import (
     best_cell_from_cluster,
+    condensed_unit_cell_info,
     run_refinement,
     ssx_find_spots,
     ssx_index,
@@ -92,7 +93,7 @@ workflow {
 
 phil_scope = phil.parse(phil_str)
 
-logger = logging.getLogger("dials")
+logger = logging.getLogger(__name__)
 
 
 def process_batch(
@@ -100,10 +101,26 @@ def process_batch(
 ):
     strong = ssx_find_spots(working_directory)
     strong.as_file(working_directory / "strong.refl")
-    expt, refl, _ = ssx_index(working_directory, nproc, space_group, unit_cell)
+    expt, refl, large_clusters = ssx_index(
+        working_directory, nproc, space_group, unit_cell
+    )
     expt.as_file(working_directory / "indexed.expt")
     refl.as_file(working_directory / "indexed.refl")
-    ssx_integrate(working_directory, integration_params)
+    if large_clusters:
+        logger.info(
+            f"""
+Unit cell clustering analysis for largest clusters:
+{condensed_unit_cell_info(large_clusters)}
+"""
+        )
+    large_clusters = ssx_integrate(working_directory, integration_params)
+    if large_clusters:
+        logger.info(
+            f"""
+Unit cell clustering analysis for largest clusters:
+{condensed_unit_cell_info(large_clusters)}
+"""
+        )
 
 
 def setup_main_process(main_directory, main_process, imported):
@@ -142,7 +159,7 @@ def slice_images_from_initial_input(
     new_expts = expts[start:end]
     new_expts.as_file(destination_directory / "imported.expt")
     logger.info(
-        f"xia2.ssx: Saved images {start+1} to {end} into {destination_directory / 'imported.expt'}"
+        f"Saved images {start+1} to {end} into {destination_directory / 'imported.expt'}"
     )
 
 
@@ -161,11 +178,11 @@ def run_import(
             if previous["images"] == file_input["images"]:
                 if str(reference_geometry) == previous["reference_geometry"]:
                     logger.info(
-                        f"xia2.ssx: Images already imported in previous run of xia2.ssx:\n  {', '.join(previous['images'])}"
+                        f"Images already imported in previous run of xia2.ssx:\n  {', '.join(previous['images'])}"
                     )
                     return
 
-    logger.info("xia2.ssx: New images or geometry detected, running import")
+    logger.info("New images or geometry detected, running import")
     import_command = ["dials.import"] + file_input["images"]
     if reference_geometry:
         import_command += [
@@ -207,7 +224,7 @@ def determine_reference_geometry(
     strong = ssx_find_spots(new_directory)
     strong.as_file(new_directory / "strong.refl")
 
-    expt, refl, _ = ssx_index(
+    expt, refl, large_clusters = ssx_index(
         new_directory,
         nproc=space_group_determination["nproc"],
         space_group=space_group_determination["space_group"],
@@ -215,7 +232,13 @@ def determine_reference_geometry(
     )
     expt.as_file(new_directory / "indexed.expt")
     refl.as_file(new_directory / "indexed.refl")
-
+    if large_clusters:
+        logger.info(
+            f"""
+Unit cell clustering analysis for largest clusters:
+{condensed_unit_cell_info(large_clusters)}
+"""
+        )
     run_refinement(new_directory)
 
 
@@ -245,12 +268,21 @@ def assess_crystal_parameters(
         space_group=space_group_determination["space_group"],
         unit_cell=space_group_determination["unit_cell"],
     )
+    if largest_clusters:
+        logger.info(
+            f"""
+Unit cell clustering analysis for largest clusters:
+{condensed_unit_cell_info(largest_clusters)}
+"""
+        )
+
     sg, uc = best_cell_from_cluster(largest_clusters[0])
     logger.info(
-        "xia2.ssx: Highest possible metric unit cell: "
+        "Properties of largest cluster:\n"
+        "Highest possible metric unit cell: "
         + ", ".join(f"{i:.3f}" for i in uc)
+        + f"\nHighest possible metric symmetry: {sg}"
     )
-    logger.info(f"xia2.ssx: Highest possible metric symmetry: {sg}")
 
 
 def run(args=sys.argv[1:]):
@@ -263,8 +295,9 @@ def run(args=sys.argv[1:]):
         check_format=False,
         epilog="",
     )
-    params, options = parser.parse_args(args=args, show_diff_phil=False)
-    log.config(verbosity=options.verbose, logfile="xia2.ssx.log")
+    params, _ = parser.parse_args(args=args, show_diff_phil=False)
+
+    xia2.Handlers.Streams.setup_logging(logfile="xia2.ssx.log")
     diff_phil = parser.diff_phil.as_str()
     if diff_phil:
         logger.info("The following parameters have been modified:\n%s", diff_phil)
@@ -325,12 +358,10 @@ def run(args=sys.argv[1:]):
         space_group_determination["space_group"]
         and space_group_determination["unit_cell"]
     ):
-        logger.info("xia2.ssx: Space group and unit cell specified and will be used")
+        logger.info("Space group and unit cell specified and will be used")
     else:
         assess_crystal_parameters(cwd, space_group_determination)
-        logger.info(
-            "xia2.ssx: Rerun with a space group and unit cell to continue processing"
-        )
+        logger.info("Rerun with a space group and unit cell to continue processing")
         exit(0)
 
     if reimport_with_reference:
@@ -365,9 +396,9 @@ def run(args=sys.argv[1:]):
         batch_size=main_process["batch_size"],
         nproc=params.nproc,
         anomalous=params.anomalous,
-        space_group=str(params.space_group),
+        space_group=params.space_group,
         cluster_threshold=params.clustering.threshold,
         d_min=params.d_min,
     )
 
-    logger.info("xia2.ssx: Finished processing")
+    logger.info("Finished processing")

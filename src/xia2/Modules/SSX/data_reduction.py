@@ -18,7 +18,7 @@ from dxtbx.serialize import load
 
 from xia2.Handlers.Streams import banner
 
-logger = logging.getLogger("dials")
+logger = logging.getLogger(__name__)
 
 # data reduction works on a list of directories - searches for integrated files and a "batch.json" configuration file
 
@@ -114,41 +114,37 @@ def cluster_all_unit_cells(working_directory, batch_directories, threshold=1000)
 def scale_cosym(
     working_directory, expt_file, refl_file, index, space_group, d_min=None
 ):
-    scale_cmd = [
-        "dials.scale",
-        "model=KB",
-        "error_model=None",
-        "full_matrix=False",
-        "min_partiality=0.4",
-        "nproc=8",
-        "outlier_rejection=simple",
-        "intensity_choice=sum",
-        str(expt_file),
-        str(refl_file),
-        f"output.reflections=processed_{index}.refl",
-        f"output.experiments=processed_{index}.expt",
-        f"log=dials.scale.{index}.log",
-    ]
-    if d_min:
-        scale_cmd.append(f"d_min={d_min}")
 
-    result = procrunner.run(scale_cmd, working_directory=working_directory)
-    if result.returncode or result.stderr:
-        raise ValueError("dials.scale returned error status:\n" + str(result.stderr))
-    cosym_cmd = [
-        "dials.cosym",
-        f"processed_{index}.refl",
-        f"processed_{index}.expt",
-        f"output.reflections=processed_{index}.refl",
-        f"output.experiments=processed_{index}.expt",
-        f"space_group={space_group}",
-        f"output.log=dials.cosym.{index}.log",
-    ]
-    if d_min:
-        cosym_cmd.append(f"d_min={d_min}")
-    result = procrunner.run(cosym_cmd, working_directory=working_directory)
-    if result.returncode or result.stderr:
-        raise ValueError("dials.cosym returned error status:\n" + str(result.stderr))
+    from dials.command_line.cosym import cosym
+    from dials.command_line.cosym import phil_scope as cosym_phil_scope
+    from dials.command_line.cosym import register_default_cosym_observers
+    from dials.command_line.scale import phil_scope, run_scaling
+
+    from xia2.Modules.SSX.data_integration import run_in_directory
+
+    with run_in_directory(working_directory):
+
+        params = phil_scope.extract()
+        refls = [flex.reflection_table.from_file(refl_file)]
+        expts = load.experiment_list(expt_file, check_format=False)
+        params.model = "KB"
+        params.exclude_images = ""  # Bug in extract for strings
+        if d_min:
+            params.cut_data.d_min = d_min
+        scaled_expts, table = run_scaling(params, expts, refls)
+
+        cosym_params = cosym_phil_scope.extract()
+        cosym_params.space_group = space_group
+        if d_min:
+            cosym_params.d_min = d_min
+        tables = table.split_by_experiment_id()
+        cosym_instance = cosym(scaled_expts, tables, cosym_params)
+        register_default_cosym_observers(cosym_instance)
+        cosym_instance.run()
+        cosym_instance.experiments.as_file(f"processed_{index}.expt")
+        joint_refls = flex.reflection_table.concat(cosym_instance.reflections)
+        joint_refls.as_file(f"processed_{index}.refl")
+
     return {
         index: {
             "expt": working_directory / f"processed_{index}.expt",
@@ -325,7 +321,7 @@ class SimpleDataReduction(BaseDataReduction):
 
             uc = determine_best_unit_cell(cluster_expts)
             result = {
-                "unit_cell": list(round(i, 4) for i in uc.parameters()),
+                "unit_cell": [round(i, 4) for i in uc.parameters()],
                 "n_in_cluster": n_in_cluster,
             }
             with open(working_directory / "cluster_results.json", "w") as fp:
