@@ -5,6 +5,7 @@ import functools
 import json
 import logging
 import math
+from io import StringIO
 from pathlib import Path
 from typing import Dict
 
@@ -13,10 +14,19 @@ import procrunner
 from cctbx import uctbx
 from dials.algorithms.scaling.scaling_library import determine_best_unit_cell
 from dials.array_family import flex
+from dials.command_line.cosym import cosym
+from dials.command_line.cosym import phil_scope as cosym_phil_scope
+from dials.command_line.cosym import register_default_cosym_observers
+from dials.command_line.merge import generate_html_report as merge_html_report
+from dials.command_line.merge import merge_data_to_mtz
+from dials.command_line.merge import phil_scope as merge_phil_scope
+from dials.command_line.scale import phil_scope as scaling_phil_scope
+from dials.command_line.scale import run_scaling
 from dxtbx.model.experiment_list import ExperimentList
 from dxtbx.serialize import load
 
 from xia2.Handlers.Streams import banner
+from xia2.Modules.SSX.data_integration import log_to_file, run_in_directory
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +47,8 @@ class BaseDataReduction(object):
         data_reduction_dir = self._main_directory / "data_reduction"
         directories_already_processed = []
         new_to_process = []
+
+        logger.notice(banner("Data reduction"))
 
         if not Path.is_dir(data_reduction_dir):
             Path.mkdir(data_reduction_dir)
@@ -76,9 +88,9 @@ class BaseDataReduction(object):
         self._directories_previously_processed = directories_already_processed
         if self._directories_previously_processed:
             dirs = "\n".join(str(i) for i in self._directories_previously_processed)
-            logger.info(f"xia2.ssx: Directories previously processed: {dirs}")
+            logger.info(f"Directories previously processed: {dirs}")
         dirs = "\n".join(str(i) for i in self._new_directories_to_process)
-        logger.info(f"xia2.ssx: New directories to process: {dirs}")
+        logger.info(f"New directories to process: {dirs}")
 
     def run(self):
         pass
@@ -89,7 +101,7 @@ def cluster_all_unit_cells(working_directory, batch_directories, threshold=1000)
     if not Path.is_dir(working_directory):
         Path.mkdir(working_directory)
 
-    logger.info(f"xia2.ssx: Performing unit cell clustering in {working_directory}")
+    logger.info(f"Performing unit cell clustering in {working_directory}")
     cmd = ["dials.cluster_unit_cell", "output.clusters=True", f"threshold={threshold}"]
 
     for d in batch_directories:
@@ -115,20 +127,14 @@ def scale_cosym(
     working_directory, expt_file, refl_file, index, space_group, d_min=None
 ):
 
-    from dials.command_line.cosym import cosym
-    from dials.command_line.cosym import phil_scope as cosym_phil_scope
-    from dials.command_line.cosym import register_default_cosym_observers
-    from dials.command_line.scale import phil_scope, run_scaling
-
-    from xia2.Modules.SSX.data_integration import run_in_directory
-
     with run_in_directory(working_directory):
 
-        params = phil_scope.extract()
+        params = scaling_phil_scope.extract()
         refls = [flex.reflection_table.from_file(refl_file)]
         expts = load.experiment_list(expt_file, check_format=False)
         params.model = "KB"
         params.exclude_images = ""  # Bug in extract for strings
+        params.output.html = None
         if d_min:
             params.cut_data.d_min = d_min
         scaled_expts, table = run_scaling(params, expts, refls)
@@ -298,7 +304,7 @@ class SimpleDataReduction(BaseDataReduction):
                 result = json.load(cluster_results.open())
                 current_unit_cell = uctbx.unit_cell(result["unit_cell"])
                 logger.info(
-                    f"xia2.ssx: Using unit cell {result['unit_cell']} from previous clustering analysis"
+                    f"Using unit cell {result['unit_cell']} from previous clustering analysis"
                 )
 
         working_directory = main_directory / "data_reduction" / "prefilter"
@@ -499,9 +505,10 @@ class SimpleDataReduction(BaseDataReduction):
                     }
 
         files_to_scale_dict = {**data_already_reindexed, **reindexed_results}
-        files_to_scale = []
+        files_to_scale = {"expts": [], "refls": []}
         for file_pair in files_to_scale_dict.values():
-            files_to_scale.extend([file_pair["expt"], file_pair["refl"]])
+            files_to_scale["expts"].append(file_pair["expt"])
+            files_to_scale["refls"].append(file_pair["refl"])
 
         reidx_results = (
             main_directory / "data_reduction" / "reindex" / "reindexing_results.json"
@@ -517,42 +524,51 @@ class SimpleDataReduction(BaseDataReduction):
         working_directory = main_directory / "data_reduction" / "scale"
         if not Path.is_dir(working_directory):
             Path.mkdir(working_directory)
-
-        logger.info(f"xia2.ssx: Running scaling of all data in {working_directory}")
-        cmd = [
-            "dials.scale",
-            "model=KB",
-            "error_model=None",
-            "full_matrix=False",
-            "min_partiality=0.4",
-            "outlier_rejection=simple",
-            "intensity_choice=sum",
-            "nproc=8",
-            f"anomalous={anomalous}",
-            "reflection_selection.method=intensity_ranges",
-            "reflection_selection.Isigma_range=2.0,0.0",
-        ]
-        if d_min:
-            cmd.append(f"d_min={d_min}")
-
-        for file in files_to_scale:
-            cmd.append(str(file))
         logger.notice(banner("Scaling"))
-        result = procrunner.run(cmd, working_directory=working_directory)
-        if result.returncode or result.stderr:
-            raise ValueError(
-                "dials.scale returned error status:\n" + str(result.stderr)
-            )
-        logger.notice(banner("Merging"))
-        cmd = ["dials.merge", "scaled.expt", "scaled.refl"]
-        result = procrunner.run(cmd, working_directory=working_directory)
-        if result.returncode or result.stderr:
-            raise ValueError(
-                "dials.merge returned error status:\n" + str(result.stderr)
-            )
-        cmd = ["dials.export", "scaled.expt", "scaled.refl"]
-        result = procrunner.run(cmd, working_directory=working_directory)
-        if result.returncode or result.stderr:
-            raise ValueError(
-                "dials.export returned error status:\n" + str(result.stderr)
-            )
+
+        with run_in_directory(working_directory):
+            logfile = "dials.scale.log"
+            with log_to_file(logfile) as dials_logger:
+                experiments = ExperimentList()
+                reflection_tables = []
+                for expt in files_to_scale["expts"]:
+                    experiments.extend(load.experiment_list(expt, check_format=False))
+                for table in files_to_scale["refls"]:
+                    reflection_tables.append(flex.reflection_table.from_file(table))
+
+                params = scaling_phil_scope.extract()
+                params.model = "KB"
+                params.exclude_images = ""  # Bug in extract for strings
+                params.weighting.error_model.error_model = None
+                params.scaling_options.full_matrix = False
+                params.scaling_options.outlier_rejection = "simple"
+                params.reflection_selection.min_partiality = 0.4
+                params.reflection_selection.intensity_choice = "sum"
+                params.scaling_options.nproc = 8
+                params.anomalous = anomalous
+                params.reflection_selection.method = "intensity_ranges"
+                params.reflection_selection.Isigma_range = (2.0, 0.0)
+                params.output.unmerged_mtz = "scaled.mtz"
+                if d_min:
+                    params.cut_data.d_min = d_min
+                scaled_expts, table = run_scaling(
+                    params, experiments, reflection_tables
+                )
+                dials_logger.info("Saving scaled experiments to scaled.expt")
+                scaled_expts.as_file("scaled.expt")
+                dials_logger.info("Saving scaled reflections to scaled.expt")
+                table.as_file("scaled.refl")
+
+            logger.notice(banner("Merging"))
+            logfile = "dials.merge.log"
+            with log_to_file(logfile) as dials_logger:
+                params = merge_phil_scope.extract()
+                if d_min:
+                    params.d_min = d_min
+                mtz_file = merge_data_to_mtz(params, scaled_expts, [table])
+                dials_logger.info("\nWriting reflections to merged.mtz")
+                out = StringIO()
+                mtz_file.show_summary(out=out)
+                dials_logger.info(out.getvalue())
+                mtz_file.write("merged.mtz")
+                merge_html_report(mtz_file, "dials.merge.html")

@@ -32,7 +32,7 @@ d_min = None
 
 phil_scope = phil.parse(phil_str)
 
-logger = logging.getLogger("dials")
+xia2_logger = logging.getLogger(__name__)
 
 import xia2.Handlers.Streams
 
@@ -49,11 +49,13 @@ def run(args=sys.argv[1:]):
     )
     params, options = parser.parse_args(args=args, show_diff_phil=False)
     xia2.Handlers.Streams.setup_logging(logfile="xia2.ssx_reduce.log")
+    # remove the xia2 handler from the dials logger.
+    dials_logger = logging.getLogger("dials")
+    dials_logger.handlers.clear()
 
-    # log.config(verbosity=options.verbose, logfile="xia2.ssx_reduce.log")
     diff_phil = parser.diff_phil.as_str()
     if diff_phil:
-        logger.info("The following parameters have been modified:\n%s", diff_phil)
+        xia2_logger.info("The following parameters have been modified:\n%s", diff_phil)
 
     directories = [Path(i).resolve() for i in params.directory]
 

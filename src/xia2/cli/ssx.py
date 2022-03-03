@@ -93,7 +93,7 @@ workflow {
 
 phil_scope = phil.parse(phil_str)
 
-logger = logging.getLogger(__name__)
+xia2_logger = logging.getLogger(__name__)
 
 
 def process_batch(
@@ -107,20 +107,10 @@ def process_batch(
     expt.as_file(working_directory / "indexed.expt")
     refl.as_file(working_directory / "indexed.refl")
     if large_clusters:
-        logger.info(
-            f"""
-Unit cell clustering analysis for largest clusters:
-{condensed_unit_cell_info(large_clusters)}
-"""
-        )
+        xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
     large_clusters = ssx_integrate(working_directory, integration_params)
     if large_clusters:
-        logger.info(
-            f"""
-Unit cell clustering analysis for largest clusters:
-{condensed_unit_cell_info(large_clusters)}
-"""
-        )
+        xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
 
 
 def setup_main_process(main_directory, main_process, imported):
@@ -158,7 +148,7 @@ def slice_images_from_initial_input(
         end = len(expts)
     new_expts = expts[start:end]
     new_expts.as_file(destination_directory / "imported.expt")
-    logger.info(
+    xia2_logger.info(
         f"Saved images {start+1} to {end} into {destination_directory / 'imported.expt'}"
     )
 
@@ -177,21 +167,21 @@ def run_import(
             previous = json.load(f)
             if previous["images"] == file_input["images"]:
                 if str(reference_geometry) == previous["reference_geometry"]:
-                    logger.info(
+                    xia2_logger.info(
                         f"Images already imported in previous run of xia2.ssx:\n  {', '.join(previous['images'])}"
                     )
                     return
 
-    logger.info("New images or geometry detected, running import")
+    xia2_logger.info("New images or geometry detected, running import")
     import_command = ["dials.import"] + file_input["images"]
     if reference_geometry:
         import_command += [
             f"reference_geometry={os.fspath(reference_geometry)}",
             "use_gonio_reference=False",
         ]
-        logger.notice(banner("Importing with reference geometry"))
+        xia2_logger.notice(banner("Importing with reference geometry"))
     else:
-        logger.notice(banner("Importing"))
+        xia2_logger.notice(banner("Importing"))
     result = procrunner.run(import_command, working_directory=working_directory)
     if result.returncode or result.stderr:
         raise ValueError("dials.import returned error status:\n" + str(result.stderr))
@@ -233,12 +223,7 @@ def determine_reference_geometry(
     expt.as_file(new_directory / "indexed.expt")
     refl.as_file(new_directory / "indexed.refl")
     if large_clusters:
-        logger.info(
-            f"""
-Unit cell clustering analysis for largest clusters:
-{condensed_unit_cell_info(large_clusters)}
-"""
-        )
+        xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
     run_refinement(new_directory)
 
 
@@ -269,15 +254,10 @@ def assess_crystal_parameters(
         unit_cell=space_group_determination["unit_cell"],
     )
     if largest_clusters:
-        logger.info(
-            f"""
-Unit cell clustering analysis for largest clusters:
-{condensed_unit_cell_info(largest_clusters)}
-"""
-        )
+        xia2_logger.info(f"{condensed_unit_cell_info(largest_clusters)}")
 
     sg, uc = best_cell_from_cluster(largest_clusters[0])
-    logger.info(
+    xia2_logger.info(
         "Properties of largest cluster:\n"
         "Highest possible metric unit cell: "
         + ", ".join(f"{i:.3f}" for i in uc)
@@ -298,9 +278,13 @@ def run(args=sys.argv[1:]):
     params, _ = parser.parse_args(args=args, show_diff_phil=False)
 
     xia2.Handlers.Streams.setup_logging(logfile="xia2.ssx.log")
+    # remove the xia2 handler from the dials logger.
+    dials_logger = logging.getLogger("dials")
+    dials_logger.handlers.clear()
+
     diff_phil = parser.diff_phil.as_str()
     if diff_phil:
-        logger.info("The following parameters have been modified:\n%s", diff_phil)
+        xia2_logger.info("The following parameters have been modified:\n%s", diff_phil)
 
     cwd = pathlib.Path.cwd()
 
@@ -343,7 +327,7 @@ def run(args=sys.argv[1:]):
     if params.reference_geometry:
         reference = pathlib.Path(params.reference_geometry).resolve()
         if not reference.is_file():
-            logger.warn(
+            xia2_logger.warn(
                 f"Unable to find reference geometry at {os.fspath(reference)}, proceeding without this reference"
             )
             reference = None
@@ -358,10 +342,12 @@ def run(args=sys.argv[1:]):
         space_group_determination["space_group"]
         and space_group_determination["unit_cell"]
     ):
-        logger.info("Space group and unit cell specified and will be used")
+        xia2_logger.info("Space group and unit cell specified and will be used")
     else:
         assess_crystal_parameters(cwd, space_group_determination)
-        logger.info("Rerun with a space group and unit cell to continue processing")
+        xia2_logger.info(
+            "Rerun with a space group and unit cell to continue processing"
+        )
         exit(0)
 
     if reimport_with_reference:
@@ -380,7 +366,7 @@ def run(args=sys.argv[1:]):
 
     setup_main_process(cwd, main_process, imported)
     for i, batch_dir in enumerate(main_process["batch_directories"]):
-        logger.notice(banner(f"Processing batch {i+i}"))
+        xia2_logger.notice(banner(f"Processing batch {i+1}"))
         process_batch(
             batch_dir,
             space_group_determination["space_group"],
@@ -400,5 +386,3 @@ def run(args=sys.argv[1:]):
         cluster_threshold=params.clustering.threshold,
         d_min=params.d_min,
     )
-
-    logger.info("Finished processing")

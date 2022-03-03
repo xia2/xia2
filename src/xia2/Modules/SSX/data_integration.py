@@ -4,6 +4,7 @@ import contextlib
 import copy
 import json
 import logging
+import math
 import os
 from pathlib import Path
 from typing import List, Tuple
@@ -24,15 +25,34 @@ from dials.array_family import flex
 from dials.command_line.find_spots import working_phil as find_spots_phil
 from dials.command_line.ssx_index import index, phil_scope
 from dials.command_line.ssx_integrate import run_integration, working_phil
-from dials.util import log, tabulate
+from dials.util import tabulate
 from dials.util.ascii_art import spot_counts_per_image_plot
+from dials.util.log import DialsLogfileFormatter, print_banner
 from dxtbx.model import ExperimentList
 from dxtbx.serialize import load
 from xfel.clustering.cluster import Cluster
 
 from xia2.Handlers.Streams import banner
 
-logger = logging.getLogger(__name__)
+xia2_logger = logging.getLogger(__name__)
+
+
+def config_quiet(logfile, verbosity=0):
+    dials_logger = logging.getLogger("dials")
+    logging.captureWarnings(True)
+    warning_logger = logging.getLogger("py.warnings")
+    if verbosity > 1:
+        loglevel = logging.DEBUG
+    else:
+        loglevel = logging.INFO
+
+    fh = logging.FileHandler(filename=logfile, mode="w", encoding="utf-8")
+    fh.setLevel(loglevel)
+    fh.setFormatter(DialsLogfileFormatter(timed=verbosity))
+    dials_logger.addHandler(fh)
+    warning_logger.addHandler(fh)
+    dials_logger.setLevel(loglevel)
+    print_banner(use_logging=True)
 
 
 @contextlib.contextmanager
@@ -48,27 +68,32 @@ def run_in_directory(directory):
 @contextlib.contextmanager
 def log_to_file(filename):
     try:
-        log.config(logfile=filename, add_console=False)
+        config_quiet(logfile=filename)
         dials_logger = logging.getLogger("dials")
         yield dials_logger
     finally:
         dials_logger = logging.getLogger("dials")
-        for h in dials_logger.handlers:
-            dials_logger.removeHandler(h)
+        dials_logger.handlers.clear()
 
 
 def ssx_find_spots(working_directory: Path) -> flex.reflection_table:
 
+    xia2_logger.notice(banner("Spotfinding"))
     with run_in_directory(working_directory):
         # Set up the input
-        imported_expts = load.experiment_list("imported.expt", check_format=True)
-        params = find_spots_phil.extract()
-        # Do spot-finding
-        logger.notice(banner("Spotfinding"))
-        reflections = flex.reflection_table.from_observations(imported_expts, params)
-        good = MaskCode.Foreground | MaskCode.Valid
-        reflections["n_signal"] = reflections["shoebox"].count_mask_values(good)
-        logger.info(spot_counts_per_image_plot(reflections))
+        logfile = "dials.find_spots.log"
+        with log_to_file(logfile) as dials_logger:
+            imported_expts = load.experiment_list("imported.expt", check_format=True)
+            params = find_spots_phil.extract()
+            # Do spot-finding
+            reflections = flex.reflection_table.from_observations(
+                imported_expts, params
+            )
+            good = MaskCode.Foreground | MaskCode.Valid
+            reflections["n_signal"] = reflections["shoebox"].count_mask_values(good)
+            plot = spot_counts_per_image_plot(reflections)
+            dials_logger.info(plot)
+            xia2_logger.info(plot)
     return reflections
 
 
@@ -79,6 +104,7 @@ def ssx_index(
     unit_cell: uctbx.unit_cell = None,
 ) -> Tuple[ExperimentList, flex.reflection_table, List[Cluster]]:
 
+    xia2_logger.notice(banner("Indexing"))
     with run_in_directory(working_directory):
         logfile = "dials.ssx_index.log"
         with log_to_file(logfile) as dials_logger:
@@ -103,7 +129,6 @@ def ssx_index(
             dials_logger.info(input_)
 
             # Do the indexing
-            logger.notice(banner("Indexing"))
             indexed_experiments, indexed_reflections, summary_data = index(
                 imported_expts, strong_refl, params
             )
@@ -113,7 +138,7 @@ def ssx_index(
                 + "\nSummary of images sucessfully indexed\n"
                 + make_summary_table(summary_data)
             )
-            logger.info(report)
+
             dials_logger.info(report)
 
             # Report on clustering, and generate html report and json output
@@ -128,11 +153,54 @@ def ssx_index(
                 crystal_symmetries, True
             )
             summary_plots = generate_plots(summary_data)
+            output_ = (
+                f"{indexed_reflections.size()} spots indexed on {n_images} images\n"
+                + f"{indexing_summary_output(summary_data, summary_plots)}"
+            )
+            xia2_logger.info(output_)
             summary_plots.update(cluster_plots)
             generate_html_report(summary_plots, "dials.ssx_index.html")
             with open("dials.ssx_index.json", "w") as outfile:
                 json.dump(summary_plots, outfile)
     return indexed_experiments, indexed_reflections, large_clusters
+
+
+def indexing_summary_output(summary_data, summary_plots):
+    success = ["\u2713" if v[0]["n_indexed"] else "." for v in summary_data.values()]
+    output_ = ""
+    block_width = 50
+    for i in range(0, math.ceil(len(success) / block_width)):
+        row_ = success[i * block_width : (i + 1) * block_width]
+        output_ += "".join(row_) + "\n"
+
+    # Now determine the IQR for the rmsds
+    output_ += "Indexing summary statistics (median and IQR):\n"
+    output_ += f"{'Quantity':<28} {'Q1':>6} Median {'Q3':>6}"
+    import numpy as np
+
+    rmsdx = [i["y"] for i in summary_plots["rmsds"]["data"][::2]]
+    rmsdy = [i["y"] for i in summary_plots["rmsds"]["data"][1::2]]
+    rmsdz = [i["y"] for i in summary_plots["rmsdz"]["data"]]
+    for name, vals in zip(
+        ["RMSD_X", "RMSD_Y", "RMSD_dPsi (deg)"], [rmsdx, rmsdy, rmsdz]
+    ):
+        x = np.concatenate([np.array(i) for i in vals])
+        n = x.size
+        sorted_x = np.sort(x)
+        Q1 = f"{sorted_x[n // 4]:.4f}"
+        Q2 = f"{sorted_x[n // 2]:.4f}"
+        Q3 = f"{sorted_x[3 * n // 4]:.4f}"
+        output_ += f"\n{name:<28} {Q1:>6} {Q2:>6} {Q3:>6}"
+    percent_idx = np.array(summary_plots["percent_indexed"]["data"][0]["y"])
+    name = f"{'%'} spots indexed per image"
+    percent_idx = percent_idx[percent_idx > 0]
+    n = percent_idx.size
+    sorted_x = np.sort(percent_idx)
+    Q1 = f"{sorted_x[n // 4]:3.2f}"
+    Q2 = f"{sorted_x[n // 2]:3.2f}"
+    Q3 = f"{sorted_x[3 * n // 4]:3.2f}"
+    output_ += f"\n{name:<28} {Q1:>6} {Q2:>6} {Q3:>6}"
+    return output_
 
 
 def generate_refinement_step_table(refiner):
@@ -164,7 +232,7 @@ def generate_refinement_step_table(refiner):
 
 
 def run_refinement(working_directory: Path) -> None:
-    logger.notice(banner("Joint refinement"))
+    xia2_logger.notice(banner("Joint refinement"))
 
     from dials.command_line.refine import run_dials_refine, working_phil
 
@@ -174,9 +242,9 @@ def run_refinement(working_directory: Path) -> None:
             params = working_phil.extract()
             indexed_refl = flex.reflection_table.from_file("indexed.refl")
             indexed_expts = load.experiment_list("indexed.expt", check_format=False)
-            params.refinement.parameterisation.beam.fix = "all"
+            params.refinement.parameterisation.beam.fix = ["all"]
             params.refinement.parameterisation.auto_reduction.action = "fix"
-            params.refinement.parameterisation.detector.fix_list = "Tau1"
+            params.refinement.parameterisation.detector.fix_list = ["Tau1"]
             params.refinement.refinery.engine = "SparseLevMar"
             params.refinement.reflections.outlier.algorithm = "sauter_poon"
             expts, refls, refiner, _ = run_dials_refine(
@@ -189,13 +257,14 @@ def run_refinement(working_directory: Path) -> None:
             )
             refls.as_file("refined.refl")
             step_table = generate_refinement_step_table(refiner)
-            logger.info("Summary of joint refinement steps:\n" + step_table)
+            xia2_logger.info("Summary of joint refinement steps:\n" + step_table)
 
 
 def ssx_integrate(
     working_directory: Path, integration_params: iotbx.phil.scope_extract
 ) -> List[Cluster]:
 
+    xia2_logger.notice(banner("Integrating"))
     with run_in_directory(working_directory):
         logfile = "dials.ssx_integrate.log"
         with log_to_file(logfile) as dials_logger:
@@ -225,7 +294,6 @@ def ssx_integrate(
             dials_logger.info(input_)
 
             # Run the integration
-            logger.notice(banner("Integrating"))
             integrated_crystal_symmetries = []
             n_refl, n_cryst = (0, 0)
             for i, (int_expt, int_refl, aggregator) in enumerate(
@@ -251,7 +319,7 @@ def ssx_integrate(
                         for cryst in int_expt.crystals()
                     ]
                 )
-            logger.info(f"{n_refl} reflections integrated from {n_cryst} crystals")
+            xia2_logger.info(f"{n_refl} reflections integrated from {n_cryst} crystals")
 
             # Report on clustering, and generate html report and json output
             plots = {}
@@ -282,8 +350,9 @@ def best_cell_from_cluster(cluster: Cluster) -> Tuple:
 
 
 def condensed_unit_cell_info(clusters: List[Cluster]) -> str:
+    out_str = "Unit cell clustering for largest clusters (median & stdev)"
     al, be, ga = "med_" + "\u03B1", "med_" + "\u03B2", "med_" + "\u03B3"
-    out_str = f"{'n_xtals'} {'s.g.':>7} {'':>5} {'med_a':>7} {'med_b':>7} {'med_c':>7} {al:>6} {be:>6} {ga:>6}\n"
+    out_str += f"\n{'n_xtals'} {'s.g.':>7} {'med_a':>7} {'med_b':>7} {'med_c':>7} {al:>6} {be:>6} {ga:>6}"
 
     for cluster in clusters:
         sorted_pg_comp = sorted(
@@ -293,6 +362,6 @@ def condensed_unit_cell_info(clusters: List[Cluster]) -> str:
         pg_str = ",".join([str(pg[0]) for pg in sorted_pg_comp])
         p = [f"{i:.2f}" for i in cluster.medians]
         sds = [f"{i:.2f}" for i in cluster.stdevs]
-        out_str += f"{len(cluster.members):>7} {pg_str:>7} value {p[0]:>7} {p[1]:>7} {p[2]:>7} {p[3]:>6} {p[4]:>6} {p[5]:>6}\n"
-        out_str += f"{'':>7} {'':>7} stdev {sds[0]:>7} {sds[1]:>7} {sds[2]:>7} {sds[3]:>6} {sds[4]:>6} {sds[5]:>6}\n"
+        out_str += f"\n{len(cluster.members):>7} {pg_str:>7} {p[0]:>7} {p[1]:>7} {p[2]:>7} {p[3]:>6} {p[4]:>6} {p[5]:>6}"
+        out_str += f"\n{'':>7} {'':>7} {sds[0]:>7} {sds[1]:>7} {sds[2]:>7} {sds[3]:>6} {sds[4]:>6} {sds[5]:>6}"
     return out_str
