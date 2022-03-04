@@ -36,6 +36,14 @@ images = None
   .type = str
   .multiple = True
   .help = "Path to image files"
+template = None
+  .type = str
+  .help = "The image sequence template"
+  .multiple = True
+directory = None
+  .type = str
+  .help = "A directory with images"
+  .multiple = True
 reference_geometry = None
   .type = path
   .help = "Path to reference geomtry .expt file"
@@ -171,9 +179,29 @@ def run_import(
                         f"Images already imported in previous run of xia2.ssx:\n  {', '.join(previous['images'])}"
                     )
                     return
+            if previous["template"] == file_input["template"]:
+                if str(reference_geometry) == previous["reference_geometry"]:
+                    xia2_logger.info(
+                        f"Images already imported in previous run of xia2.ssx:\n  {', '.join(previous['images'])}"
+                    )
+                    return
+            if previous["directory"] == file_input["directory"]:
+                if str(reference_geometry) == previous["reference_geometry"]:
+                    xia2_logger.info(
+                        f"Images already imported in previous run of xia2.ssx:\n  {', '.join(previous['images'])}"
+                    )
+                    return
 
     xia2_logger.info("New images or geometry detected, running import")
-    import_command = ["dials.import"] + file_input["images"]
+    import_command = ["dials.import"]
+    if file_input["images"]:
+        import_command += file_input["images"]
+    elif file_input["template"]:
+        for t in file_input["template"]:
+            import_command.append(f"template={t}")
+    elif file_input["directory"]:
+        for d in file_input["directory"]:
+            import_command.append(f"directory={d}")
     if reference_geometry:
         import_command += [
             f"reference_geometry={os.fspath(reference_geometry)}",
@@ -288,9 +316,17 @@ def run(args=sys.argv[1:]):
 
     cwd = pathlib.Path.cwd()
 
-    file_input = {
-        "images": [str(pathlib.Path(i).resolve()) for i in params.images],
-    }
+    file_input = {"images": [], "template": [], "directory": []}
+    if params.images:
+        file_input["images"] = [str(pathlib.Path(i).resolve()) for i in params.images]
+    elif params.template:
+        file_input["template"] = [
+            str(pathlib.Path(i).resolve()) for i in params.template
+        ]
+    elif params.directory:
+        file_input["directory"] = [
+            str(pathlib.Path(i).resolve()) for i in params.directory
+        ]
 
     space_group_determination = {
         "space_group": params.space_group,
