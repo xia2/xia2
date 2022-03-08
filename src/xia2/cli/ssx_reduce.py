@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import sys
+import time
 from pathlib import Path
 
 from dials.util.options import ArgumentParser
@@ -39,6 +40,8 @@ import xia2.Handlers.Streams
 
 def run(args=sys.argv[1:]):
 
+    start_time = time.time()
+
     parser = ArgumentParser(
         usage="xia2.ssx_reduce directory=/path/to/integrated/directory/",
         read_experiments=False,
@@ -67,4 +70,10 @@ def run(args=sys.argv[1:]):
         space_group=params.space_group,
         cluster_threshold=params.clustering.threshold,
         d_min=params.d_min,
+    )
+
+    duration = time.time() - start_time
+    # write out the time taken in a human readable way
+    xia2_logger.info(
+        "Processing took %s", time.strftime("%Hh %Mm %Ss", time.gmtime(duration))
     )

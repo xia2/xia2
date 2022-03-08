@@ -117,6 +117,7 @@ def test_full_run_without_reference(dials_data, tmp_path):
         "unit_cell=96.4,96.4,96.4,90,90,90",
         "space_group=P213",
         "integration.algorithm=stills",
+        "d_min=2.0",
     ]
     args.append("images=" + os.fspath(ssx / "merlin0047_1700*.cbf"))
 

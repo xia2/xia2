@@ -7,6 +7,7 @@ import math
 import os
 import pathlib
 import sys
+import time
 from typing import Tuple
 
 import procrunner
@@ -293,7 +294,17 @@ def assess_crystal_parameters(
     )
 
 
+def _log_duration(start_time):
+    duration = time.time() - start_time
+    # write out the time taken in a human readable way
+    xia2_logger.info(
+        "Processing took %s", time.strftime("%Hh %Mm %Ss", time.gmtime(duration))
+    )
+
+
 def run(args=sys.argv[1:]):
+
+    start_time = time.time()
 
     parser = ArgumentParser(
         usage="xia2.ssx images=*cbf unit_cell=x space_group=y",
@@ -384,11 +395,13 @@ def run(args=sys.argv[1:]):
         xia2_logger.info(
             "Rerun with a space group and unit cell to continue processing"
         )
+        _log_duration(start_time)
         exit(0)
 
     if reimport_with_reference:
         determine_reference_geometry(cwd, reference_geometry, space_group_determination)
         if params.workflow.stop_after_geometry_refinement:
+            _log_duration(start_time)
             exit(0)
 
         run_import(
@@ -411,6 +424,7 @@ def run(args=sys.argv[1:]):
             nproc=params.nproc,
         )
     if params.workflow.stop_after_integration:
+        _log_duration(start_time)
         exit(0)
 
     c = SimpleDataReduction(cwd, main_process["batch_directories"], 0)
@@ -422,3 +436,5 @@ def run(args=sys.argv[1:]):
         cluster_threshold=params.clustering.threshold,
         d_min=params.d_min,
     )
+
+    _log_duration(start_time)

@@ -5,6 +5,8 @@ import functools
 import json
 import logging
 import math
+import os
+import sys
 from io import StringIO
 from pathlib import Path
 from typing import Dict
@@ -12,6 +14,7 @@ from typing import Dict
 import procrunner
 
 from cctbx import uctbx
+from dials.algorithms.scaling.algorithm import ScalingAlgorithm
 from dials.algorithms.scaling.scaling_library import determine_best_unit_cell
 from dials.array_family import flex
 from dials.command_line.cosym import cosym
@@ -20,8 +23,10 @@ from dials.command_line.cosym import register_default_cosym_observers
 from dials.command_line.merge import generate_html_report as merge_html_report
 from dials.command_line.merge import merge_data_to_mtz
 from dials.command_line.merge import phil_scope as merge_phil_scope
+from dials.command_line.scale import _export_unmerged_mtz
 from dials.command_line.scale import phil_scope as scaling_phil_scope
 from dials.command_line.scale import run_scaling
+from dials.report.analysis import format_statistics, table_1_stats
 from dxtbx.model.experiment_list import ExperimentList
 from dxtbx.serialize import load
 
@@ -135,12 +140,22 @@ def scale_cosym(
         params.model = "KB"
         params.exclude_images = ""  # Bug in extract for strings
         params.output.html = None
+        params.scaling_options.full_matrix = False
+        params.weighting.error_model.error_model = None
+        params.scaling_options.outlier_rejection = "simple"
+        params.reflection_selection.intensity_choice = "sum"
+        params.reflection_selection.method = "intensity_ranges"
+        params.reflection_selection.Isigma_range = (2.0, 0.0)
+        params.reflection_selection.min_partiality = 0.4
         if d_min:
             params.cut_data.d_min = d_min
+
         scaled_expts, table = run_scaling(params, expts, refls)
 
         cosym_params = cosym_phil_scope.extract()
         cosym_params.space_group = space_group
+        cosym_params.output.html = f"dials.cosym.{index}.html"
+        cosym_params.output.json = f"dials.cosym.{index}.json"
         if d_min:
             cosym_params.d_min = d_min
         tables = table.split_by_experiment_id()
@@ -150,6 +165,9 @@ def scale_cosym(
         cosym_instance.experiments.as_file(f"processed_{index}.expt")
         joint_refls = flex.reflection_table.concat(cosym_instance.reflections)
         joint_refls.as_file(f"processed_{index}.refl")
+        logger.info(
+            f"Consistently indexed {len(cosym_instance.experiments)} crystals in data reduction batch {index+1}"
+        )
 
     return {
         index: {
@@ -439,7 +457,7 @@ class SimpleDataReduction(BaseDataReduction):
         nproc=1,
         d_min=None,
     ):
-
+        sys.stdout = open(os.devnull, "w")  # block printing from cosym
         working_directory = main_directory / "data_reduction" / "reindex"
         if not Path.is_dir(working_directory):
             Path.mkdir(working_directory)
@@ -503,6 +521,7 @@ class SimpleDataReduction(BaseDataReduction):
                         "expt": str(result["expt"]),
                         "refl": str(result["refl"]),
                     }
+                    logger.info(f"Reindexed batch {i+1} using batch 1 as reference")
 
         files_to_scale_dict = {**data_already_reindexed, **reindexed_results}
         files_to_scale = {"expts": [], "refls": []}
@@ -516,6 +535,7 @@ class SimpleDataReduction(BaseDataReduction):
         with open(reidx_results, "w") as f:
             data = {"reindexed_files": files_to_scale_dict}
             json.dump(data, f)
+        sys.stdout = sys.__stdout__  # restore printing
         return files_to_scale
 
     @staticmethod
@@ -524,7 +544,7 @@ class SimpleDataReduction(BaseDataReduction):
         working_directory = main_directory / "data_reduction" / "scale"
         if not Path.is_dir(working_directory):
             Path.mkdir(working_directory)
-        logger.notice(banner("Scaling"))
+        logger.notice(banner("Scaling & Merging"))
 
         with run_in_directory(working_directory):
             logfile = "dials.scale.log"
@@ -551,15 +571,33 @@ class SimpleDataReduction(BaseDataReduction):
                 params.output.unmerged_mtz = "scaled.mtz"
                 if d_min:
                     params.cut_data.d_min = d_min
-                scaled_expts, table = run_scaling(
-                    params, experiments, reflection_tables
-                )
+
+                scaler = ScalingAlgorithm(params, experiments, reflection_tables)
+                scaler.run()
+                scaled_expts, table = scaler.finish()
+
                 dials_logger.info("Saving scaled experiments to scaled.expt")
                 scaled_expts.as_file("scaled.expt")
                 dials_logger.info("Saving scaled reflections to scaled.expt")
                 table.as_file("scaled.refl")
 
-            logger.notice(banner("Merging"))
+                _export_unmerged_mtz(params, scaled_expts, table)
+
+                n_final = len(scaled_expts)
+                uc = determine_best_unit_cell(scaled_expts)
+                uc_str = ", ".join(str(round(i, 3)) for i in uc.parameters())
+                logger.info(
+                    f"{n_final} crystals scaled in space group {scaled_expts[0].crystal.get_space_group().info()}\nMedian cell: {uc_str}"
+                )
+
+                stats = format_statistics(
+                    table_1_stats(
+                        scaler.merging_statistics_result,
+                        scaler.anom_merging_statistics_result,
+                    )
+                )
+                logger.info(stats)
+
             logfile = "dials.merge.log"
             with log_to_file(logfile) as dials_logger:
                 params = merge_phil_scope.extract()
