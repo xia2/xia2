@@ -50,7 +50,7 @@ def get_xds_version():
         )
     except OSError:
         pass
-    version = re.search(br"BUILT=([0-9]+)\)", result.stdout)
+    version = re.search(rb"BUILT=([0-9]+)\)", result.stdout)
     if version:
         return int(version.groups()[0])
     return None
@@ -64,7 +64,7 @@ def get_aimless_version():
         print_stderr=False,
         stdin=subprocess.DEVNULL,
     )
-    version = re.search(br"version\s\d+\.\d+\.\d+", result.stdout)
+    version = re.search(rb"version\s\d+\.\d+\.\d+", result.stdout)
     if version:
         return version.group().decode("utf-8").split(" ")[1]
     return None
@@ -75,7 +75,7 @@ def get_pointless_version():
     result = procrunner.run(
         ["pointless"], print_stdout=False, print_stderr=False, stdin=subprocess.DEVNULL
     )
-    version = re.search(br"version\s\d+\.\d+\.\d+", result.stdout)
+    version = re.search(rb"version\s\d+\.\d+\.\d+", result.stdout)
     if version:
         return version.group().decode("utf-8").split(" ")[1]
     return None

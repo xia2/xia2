@@ -18,7 +18,7 @@ import pytest
     "multi_sweep_type",
     ("multi_sweep_indexing", "multi_sweep_refinement", "small_molecule"),
 )
-def test_multiple_sweeps(multi_sweep_type, ccp4, dials_data, run_in_tmpdir):
+def test_multiple_sweeps(multi_sweep_type, ccp4, dials_data, tmp_path):
     """
     Run xia2 with various different multiple-sweep options.
 
@@ -29,13 +29,12 @@ def test_multiple_sweeps(multi_sweep_type, ccp4, dials_data, run_in_tmpdir):
 
     Args:
         multi_sweep_type: Parameter governing multiple-sweep behaviour to be set True.
-        dials_data: DIALS custom Pytest fixture for access to test data.
-        run_in_tmpdir: DIALS custom Pytest fixture to run this test in a temporary
-                       directory.
+        dials_data: dials-data pytest fixture for access to test data.
+        tmp_path: pytest fixture to provide a temporary working directory
     """
     # Use as input the first fifteen images of the first two sweeps of a typical
     # multiple-sweep data set.
-    data_dir = dials_data("l_cysteine_dials_output")
+    data_dir = dials_data("l_cysteine_dials_output", pathlib=True)
     images = [data_dir / f"l-cyst_{sweep:02d}_00001.cbf:1:15" for sweep in (1, 2)]
 
     command = [
@@ -49,6 +48,9 @@ def test_multiple_sweeps(multi_sweep_type, ccp4, dials_data, run_in_tmpdir):
         # Don't run the Xtriage analysis — we don't have enough reflections overall.
         "xtriage_analysis=False",
     ]
-    result = procrunner.run(command + [f"image={image}" for image in images])
+    result = procrunner.run(
+        command + [f"image={str(image)}" for image in images],
+        working_directory=tmp_path,
+    )
 
     assert not result.returncode

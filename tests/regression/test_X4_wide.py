@@ -49,14 +49,10 @@ def test_incompatible_pipeline_scaler(pipeline, scaler, tmpdir, ccp4):
     command_line = ["xia2", "pipeline=%s" % pipeline, "nproc=1", "scaler=%s" % scaler]
     result = procrunner.run(command_line, working_directory=tmpdir)
     assert result.returncode
-    assert (
-        "Error: scaler=%s not compatible with pipeline=%s"
-        % (
-            scaler,
-            pipeline,
-        )
-        in result.stdout.decode("latin-1")
-    )
+    assert "Error: scaler=%s not compatible with pipeline=%s" % (
+        scaler,
+        pipeline,
+    ) in result.stdout.decode("latin-1")
 
 
 def test_dials_aimless(regression_test, dials_data, tmpdir, ccp4):

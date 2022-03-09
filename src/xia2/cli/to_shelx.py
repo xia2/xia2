@@ -59,7 +59,7 @@ Winter, G. (2010) Journal of Applied Crystallography 43
         return (
             "%%.%df(%%d)"
             % decimal_places
-            % (value, round(esd * (10 ** decimal_places)))
+            % (value, round(esd * (10**decimal_places)))
         )
 
     if unit_cell_data:

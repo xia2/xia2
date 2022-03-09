@@ -57,7 +57,7 @@ class DeltaCcHalf:
 
         self._group_size = group_size
         self._setup_processing_groups()
-        self.cc_half = self._compute_ccs()
+        self.cc_half, self.completeness = self._compute_omit_stats()
         self.delta_cc_half = self.cc_half_overall - self.cc_half
         self.normalised_delta_cc = self._compute_normalised_delta_ccs()
 
@@ -80,8 +80,9 @@ class DeltaCcHalf:
                 self._group_to_batches.append((b_min, b_max))
                 self._group_to_dataset_id.append(test_k)
 
-    def _compute_ccs(self):
+    def _compute_omit_stats(self):
         ccs = flex.double()
+        completeness = flex.double()
         for (group_start, group_end), test_k in zip(
             self._group_to_batches, self._group_to_dataset_id
         ):
@@ -102,13 +103,13 @@ class DeltaCcHalf:
             )
 
             ccs.append(self._compute_mean_weighted_cc_half(unmerged_i))
-            logger.debug(
-                "CC½ excluding batches %i-%i: %.3f",
-                group_start,
-                group_end,
-                ccs[-1],
+            completeness.append(
+                unmerged_i.merge_equivalents().array().completeness(multiplier=100)
             )
-        return ccs
+            logger.debug(
+                f"CC½ excluding batches {group_start}-{group_end}: {ccs[-1]:.3f}"
+            )
+        return ccs, completeness
 
     def _compute_mean_weighted_cc_half(self, intensities):
         intensities.use_binning(self.binner)
@@ -135,7 +136,16 @@ class DeltaCcHalf:
             cc_half_header = "CC<sub>½</sub>"
         else:
             cc_half_header = "CC½"
-        rows = [["Dataset", "Batches", cc_half_header, f"Δ{cc_half_header}", "σ"]]
+        rows = [
+            [
+                "Dataset",
+                "Batches",
+                cc_half_header,
+                f"Δ{cc_half_header}",
+                "σ",
+                "Compl. (%)",
+            ]
+        ]
         normalised_score = self.normalised_delta_cc
         perm = flex.sort_permutation(self.delta_cc_half)
         for i in perm:
@@ -143,10 +153,11 @@ class DeltaCcHalf:
             rows.append(
                 [
                     str(self._group_to_dataset_id[i]),
-                    "%i to %i" % (bmin, bmax),
-                    "% .3f" % self.cc_half[i],
-                    "% .3f" % self.delta_cc_half[i],
-                    "% .2f" % normalised_score[i],
+                    f"{bmin} to {bmax}",
+                    f"{self.cc_half[i]: .3f}",
+                    f"{self.delta_cc_half[i]: .3f}",
+                    f"{normalised_score[i]: .2f}",
+                    f"{self.completeness[i]:.1f}",
                 ]
             )
         return rows
