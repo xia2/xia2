@@ -18,6 +18,7 @@ __pycache__/
 .vscode
 
 # Python packaging
+/build
 /dist
 /src/xia2.egg-info
 /xia2.egg-info
