@@ -6,8 +6,8 @@ from pathlib import Path
 
 import setuptools
 
-# Version number is determined either by git revision (which takes precendence)
-# or a static version number which is updated by bump2version
+# Version number, or fallback version number for non-releases.
+# This should be updated by bump2version, not manually.
 __version_tag__ = "3.9.dev"
 
 console_scripts = [
@@ -86,7 +86,11 @@ def get_git_revision():
         )
         branch = result.stdout.rstrip()
         if branch and branch != "main" and not branch.endswith("/main"):
-            commit = f"{commit}-{branch.rsplit('/', 1)[-1]}"
+            branch_trail = branch.rsplit("/", 1)[-1]
+            # Normalise this branch name, in case it contains non-pep-440
+            # characters - only [a-zA-Z0-9.] are allowed in the "local version"
+            local_identifier = re.sub(r"[^\w]+", ".", branch_trail)
+            commit = f"{commit}.{local_identifier}"
     except Exception:
         pass
 
@@ -94,8 +98,19 @@ def get_git_revision():
     return version
 
 
+def get_version() -> str:
+    # If we're not a development version, we are a release, so this field takes precedent
+    if "dev" not in __version_tag__:
+        return __version_tag__
+    # If we're in a git repository, then use "git describe"
+    if (git_ver := get_git_revision()) is not None:
+        return git_ver
+    # If all else fails, return our development tag as-is
+    return __version_tag__
+
+
 setuptools.setup(
-    version=get_git_revision() or __version_tag__,
+    version=get_version(),
     package_data={
         "": ["*"],
         "xia2": ["Data/*", "css/*", "templates/*"],
