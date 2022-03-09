@@ -1,50 +1,53 @@
 # An implementation of the scaler interface for dials.scale
 
 
+from __future__ import annotations
+
+import bz2
 import logging
 import math
 import os
-import bz2
+
+import numpy as np
 from orderedset import OrderedSet
 
+import dials.util.version
+import iotbx.cif
 import libtbx
-import numpy as np
+from cctbx.sgtbx import lattice_symmetry_group
+from dials.algorithms.scaling.plots import plot_absorption_plots
+from dials.array_family import flex
+from dials.util.batch_handling import calculate_batch_offsets
+from dials.util.export_mtz import match_wavelengths
+from dxtbx.serialize import load
+from iotbx import mtz
+from iotbx.scalepack import no_merge_original_index
+from iotbx.scalepack.merge import write as merge_scalepack_write
 
+from xia2.Handlers.CIF import CIF, mmCIF
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Files import FileHandler
-from xia2.lib.bits import auto_logfiler
 from xia2.Handlers.Phil import PhilIndex
-from xia2.lib.SymmetryLib import sort_lattices
 from xia2.Handlers.Streams import banner
-from xia2.Handlers.CIF import CIF, mmCIF
-from xia2.Modules.Scaler.CommonScaler import CommonScaler as Scaler
-from xia2.Wrappers.Dials.Scale import DialsScale
-from xia2.Wrappers.Dials.Merge import DialsMerge
-from xia2.Wrappers.CCP4.CCP4Factory import CCP4Factory
+from xia2.Handlers.Syminfo import Syminfo
+from xia2.lib.bits import auto_logfiler
+from xia2.lib.SymmetryLib import sort_lattices
 from xia2.Modules.AnalyseMyIntensities import AnalyseMyIntensities
 from xia2.Modules.Scaler.CCP4ScalerHelpers import (
     SweepInformationHandler,
     mosflm_B_matrix,
 )
-from xia2.Wrappers.Dials.Symmetry import DialsSymmetry
-from xia2.Wrappers.Dials.Reindex import Reindex as DialsReindex
+from xia2.Modules.Scaler.CommonScaler import CommonScaler as Scaler
+from xia2.Wrappers.CCP4.CCP4Factory import CCP4Factory
 from xia2.Wrappers.Dials.AssignUniqueIdentifiers import DialsAssignIdentifiers
-from xia2.Wrappers.Dials.SplitExperiments import SplitExperiments
-from xia2.Wrappers.Dials.ExportMtz import ExportMtz
 from xia2.Wrappers.Dials.ExportMMCIF import ExportMMCIF
+from xia2.Wrappers.Dials.ExportMtz import ExportMtz
+from xia2.Wrappers.Dials.Merge import DialsMerge
+from xia2.Wrappers.Dials.Reindex import Reindex as DialsReindex
+from xia2.Wrappers.Dials.Scale import DialsScale
+from xia2.Wrappers.Dials.SplitExperiments import SplitExperiments
+from xia2.Wrappers.Dials.Symmetry import DialsSymmetry
 from xia2.Wrappers.Dials.TwoThetaRefine import TwoThetaRefine
-from xia2.Handlers.Syminfo import Syminfo
-from dxtbx.serialize import load
-from dials.util.batch_handling import calculate_batch_offsets
-from dials.util.export_mtz import match_wavelengths
-from dials.algorithms.scaling.plots import plot_absorption_plots
-from dials.array_family import flex
-import dials.util.version
-from cctbx.sgtbx import lattice_symmetry_group
-from iotbx import mtz
-import iotbx.cif
-from iotbx.scalepack import no_merge_original_index
-from iotbx.scalepack.merge import write as merge_scalepack_write
 
 logger = logging.getLogger("xia2.Modules.Scaler.DialsScaler")
 

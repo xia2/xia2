@@ -2,12 +2,14 @@
 # exactly correspond to the contents of the .xinfo file.
 
 
+from __future__ import annotations
+
 import inspect
 import json
 import logging
 import os
-
 import pathlib
+
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Syminfo import Syminfo
 from xia2.Handlers.XInfo import XInfo

@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import sys
+
 import xia2.Handlers.Streams
 
 master_phil = """\
@@ -28,6 +31,7 @@ dataset_name = None
 
 def run(args):
     import iotbx.phil
+
     from xia2.Modules.Scaler.rebatch import rebatch
 
     processed = iotbx.phil.process_command_line(args, master_phil)

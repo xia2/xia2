@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from cctbx import sgtbx
 from scitbx import matrix
 

@@ -1,6 +1,8 @@
 # An implementation of the Scaler interface using CCP4 programs and Aimless.
 
 
+from __future__ import annotations
+
 import copy
 import logging
 import math

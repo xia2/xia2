@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import scitbx.random
 
 from xia2.Modules.MultiCrystal import plots

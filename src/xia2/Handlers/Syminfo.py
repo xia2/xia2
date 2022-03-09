@@ -1,6 +1,8 @@
 # A collection of functions relating to spacegroup symmetry information
 
 
+from __future__ import annotations
+
 import re
 
 from cctbx import sgtbx

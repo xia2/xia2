@@ -1,10 +1,11 @@
+from __future__ import annotations
+
 import logging
 import os
 
-from xia2.Handlers.Phil import PhilIndex
-
 # other odds and ends
 from xia2.DriverExceptions.NotAvailableError import NotAvailableError
+from xia2.Handlers.Phil import PhilIndex
 
 # selection stuff
 from xia2.Handlers.PipelineSelection import get_preferences

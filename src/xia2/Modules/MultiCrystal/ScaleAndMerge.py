@@ -1,29 +1,25 @@
+from __future__ import annotations
+
 import copy
 import logging
 import math
 import os
 from collections import OrderedDict
 
-from libtbx import Auto
 import iotbx.phil
-from cctbx import miller
-from cctbx import sgtbx
-from cctbx import uctbx
-from dxtbx.serialize import load
-from dxtbx.model import ExperimentList
-
-
+from cctbx import miller, sgtbx, uctbx
 from dials.array_family import flex
-from dials.command_line import export
-from dials.command_line import merge
+from dials.command_line import export, merge
 from dials.command_line.unit_cell_histogram import plot_uc_histograms
 from dials.util import tabulate
-
+from dxtbx.model import ExperimentList
+from dxtbx.serialize import load
+from libtbx import Auto
 from scitbx.math import five_number_summary
 
-from xia2.lib.bits import auto_logfiler
-from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Environment import get_number_cpus
+from xia2.Handlers.Phil import PhilIndex
+from xia2.lib.bits import auto_logfiler
 from xia2.Modules import Report
 from xia2.Modules.Scaler.DialsScaler import (
     convert_merged_mtz_to_sca,
@@ -37,14 +33,15 @@ from xia2.Wrappers.Dials.Scale import DialsScale
 from xia2.Wrappers.Dials.Symmetry import DialsSymmetry
 from xia2.Wrappers.Dials.TwoThetaRefine import TwoThetaRefine
 
-
 logger = logging.getLogger(__name__)
 
 
 # The phil scope
 phil_scope = iotbx.phil.parse(
     """
-unit_cell_clustering {
+unit_cell_clustering
+  .short_caption = "Unit cell clustering"
+{
   threshold = 5000
     .type = float(value_min=0)
     .help = 'Threshold value for the clustering'
@@ -54,6 +51,7 @@ unit_cell_clustering {
 }
 
 scaling
+  .short_caption = "Scaling"
 {
   anomalous = False
     .help = "Separate anomalous pairs in scaling and error model optimisation."
@@ -74,22 +72,30 @@ scaling
     share.absorption = False
       .type = bool
       .expert_level = 2
-      .short_caption = "Apply a shared absorption correction between sweeps. Only"
-                       "suitable for scaling measurements from a single crystal."
+      .short_caption = "Shared absorption correction"
+      .help = "Apply a shared absorption correction between sweeps. Only"
+              "suitable for scaling measurements from a single crystal."
   }
   absorption_level = low medium high
     .type = choice
     .expert_level = 2
-    .short_caption = "Set the extent of absorption correction in scaling"
+    .help = "Set the extent of absorption correction in scaling"
+    .short_caption = "Absorption level"
   model = physical dose_decay array KB *auto
     .type = choice
+    .short_caption = "Scaling model"
   outlier_rejection = simple standard
     .type = choice
+    .short_caption = "Outlier rejection"
   min_partiality = None
     .type = float(value_min=0, value_max=1)
+    .short_caption = "Minimum partiality"
   partiality_cutoff = None
     .type = float(value_min=0, value_max=1)
-  reflection_selection {
+    .short_caption = "Partiality cutoff"
+  reflection_selection
+    .short_caption = "Reflection selection"
+  {
     method = quasi_random intensity_ranges use_all random
       .type = choice
       .help = "Method to use when choosing a reflection subset for scaling model"
@@ -106,22 +112,31 @@ scaling
               "slow for large datasets."
     Isigma_range = None
       .type = floats(size=2)
+      .short_caption = "I/σ range"
+      .help = "Minimum and maximum I/sigma values used to select a subset of"
+              "reflections for minimisation. A value of 0.0 for the maximum"
+              "indicates that no upper limit should be applied."
   }
 }
-symmetry {
+symmetry
+  .short_caption = "Symmetry"
+{
   resolve_indexing_ambiguity = True
     .type = bool
+    .short_caption = "Resolve indexing ambiguity"
   cosym {
     include scope dials.algorithms.symmetry.cosym.phil_scope
   }
   laue_group = None
     .type = space_group
-    .help = "Specify the Laue group. If None, then the Laue group will be determined "
+    .help = "Specify the Laue group. If None, then the Laue group will be determined"
             "by dials.cosym."
+    .short_caption = "Laue group"
   space_group = None
     .type = space_group
-    .help = "Specify the space group. If None, then the dials.symmetry will perform "
+    .help = "Specify the space group. If None, then the dials.symmetry will perform"
             "analysis of systematically absent reflections to determine the space group."
+    .short_caption = "Space group"
 }
 
 resolution
@@ -141,21 +156,29 @@ resolution
 rescale_after_resolution_cutoff = False
   .help = "Re-scale the data after application of a resolution cutoff"
   .type = bool
+  .short_caption = "Rescale after resolution cutoff"
 
-filtering {
+filtering
+  .short_caption = "Filtering"
+{
 
   method = None deltacchalf
     .type = choice
     .help = "Choice of whether to do any filtering cycles, default None."
 
-  deltacchalf {
+  deltacchalf
+    .short_caption = "ΔCC½"
+  {
     max_cycles = None
       .type = int(value_min=1)
+      .short_caption = "Maximum number of cycles"
     max_percent_removed = None
       .type = float
+      .short_caption = "Maximum percentage removed"
     min_completeness = None
       .type = float(value_min=0, value_max=100)
       .help = "Desired minimum completeness, as a percentage (0 - 100)."
+      .short_caption = "Minimum completeness"
     mode = dataset image_group
       .type = choice
       .help = "Perform analysis on whole datasets or batch groups"
@@ -163,9 +186,11 @@ filtering {
       .type = int(value_min=1)
       .help = "The number of images to group together when calculating delta"
               "cchalf in image_group mode"
+      .short_caption = "Group size"
     stdcutoff = None
       .type = float
       .help = "Datasets with a ΔCC½ below (mean - stdcutoff*std) are removed"
+      .short_caption = "Standard deviation cutoff"
   }
 }
 
@@ -173,30 +198,41 @@ multi_crystal_analysis {
   include scope xia2.Modules.MultiCrystal.master_phil_scope
 }
 
-unit_cell {
+unit_cell
+  .short_caption = "Unit cell"
+{
   refine = *two_theta
     .type = choice(multi=True)
 }
 
-two_theta_refine {
+two_theta_refine
+  .short_caption = "2θ refinement"
+{
   combine_crystal_models = True
     .type = bool
+    .short_caption = "Combine crystal models"
 }
 
 min_completeness = None
   .type = float(value_min=0, value_max=1)
+  .short_caption = "Minimum completeness"
 min_multiplicity = None
   .type = float(value_min=0)
+  .short_caption = "Minimum multiplicity"
 max_clusters = None
   .type = int(value_min=1)
+  .short_caption = "Maximum number of clusters"
 cluster_method = *cos_angle correlation unit_cell
   .type = choice
+  .short_caption = "Metric on which to perform clustering"
 
 identifiers = None
   .type = strings
+  .short_caption = "Identifiers"
 
 dose = None
   .type = ints(size=2, value_min=0)
+  .short_caption = "Dose"
 
 nproc = Auto
   .type = int(value_min=1)
@@ -204,6 +240,7 @@ nproc = Auto
   .expert_level = 0
 remove_profile_fitting_failures = True
   .type = bool
+  .short_caption = "Remove profile fitting failures"
 
 """,
     process_includes=True,
@@ -324,12 +361,10 @@ class DataManager:
         )
 
     def reflections_as_miller_arrays(self, combined=False):
-        from dials.util.batch_handling import (
-            # calculate_batch_offsets,
-            # get_batch_ranges,
+        from dials.report.analysis import scaled_data_as_miller_array
+        from dials.util.batch_handling import (  # calculate_batch_offsets,; get_batch_ranges,
             assign_batches_to_reflections,
         )
-        from dials.report.analysis import scaled_data_as_miller_array
 
         # offsets = calculate_batch_offsets(experiments)
         reflection_tables = []
@@ -782,8 +817,9 @@ class MultiCrystalScale:
         return d
 
     def unit_cell_clustering(self, plot_name=None):
-        from xia2.Modules.MultiCrystalAnalysis import MultiCrystalAnalysis
         from xfel.clustering.cluster_groups import unit_cell_info
+
+        from xia2.Modules.MultiCrystalAnalysis import MultiCrystalAnalysis
 
         lattice_ids = [
             self._data_manager.identifiers_to_ids_map[i]
@@ -936,8 +972,8 @@ class MultiCrystalScale:
         logger.info("Space group determined by dials.symmetry: %s" % space_group.info())
 
     def multi_crystal_analysis(self):
-        from xia2.Modules.MultiCrystalAnalysis import MultiCrystalReport
         from xia2.cli.multi_crystal_analysis import phil_scope as mca_phil
+        from xia2.Modules.MultiCrystalAnalysis import MultiCrystalReport
 
         params = mca_phil.extract()
         params.prefix = "xia2.multiplex"

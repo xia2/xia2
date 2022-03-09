@@ -1,8 +1,10 @@
-import os
-import sys
+from __future__ import annotations
 
-from unittest import mock
+import os
 import pathlib
+import sys
+from unittest import mock
+
 import pytest
 
 
@@ -30,10 +32,10 @@ def test_xds_scalerA(regression_test, ccp4, xds, dials_data, run_in_tmpdir, npro
     indexer.add_indexer_imageset(imageset)
 
     from xia2.Schema.XCrystal import XCrystal
-    from xia2.Schema.XWavelength import XWavelength
-    from xia2.Schema.XSweep import XSweep
-    from xia2.Schema.XSample import XSample
     from xia2.Schema.XProject import XProject
+    from xia2.Schema.XSample import XSample
+    from xia2.Schema.XSweep import XSweep
+    from xia2.Schema.XWavelength import XWavelength
 
     proj = XProject(name="AUTOMATIC")
     cryst = XCrystal("CRYST1", proj)

@@ -3,6 +3,8 @@
 # sequence files which will be used to add matadata.
 
 
+from __future__ import annotations
+
 import collections
 import logging
 import os
@@ -10,7 +12,9 @@ import sys
 import traceback
 
 import h5py
+
 from libtbx import easy_mp
+
 from xia2.Applications.xia2setup_helpers import get_sweep
 from xia2.Experts.FindImages import image2template_directory
 from xia2.Handlers.CommandLine import CommandLine
@@ -165,7 +169,7 @@ def get_template(f):
                 return
 
     except Exception as e:
-        logger.debug("Exception A: %s (%s)" % (str(e), f))
+        logger.debug(f"Exception A: {e} ({f})")
         logger.debug(traceback.format_exc())
 
     if template is None or directory is None:

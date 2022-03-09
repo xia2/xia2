@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 XDSFiles = [
     "X-CORRECTIONS.cbf",
     "Y-CORRECTIONS.cbf",

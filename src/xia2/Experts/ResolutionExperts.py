@@ -3,13 +3,15 @@
 # wavelength / position or h, k, l, / unit cell.
 
 
+from __future__ import annotations
+
 import logging
 import math
 import os
 import tempfile
 
-from xia2.Wrappers.CCP4.Pointless import Pointless
 from xia2.Modules.Scaler.rebatch import rebatch
+from xia2.Wrappers.CCP4.Pointless import Pointless
 
 logger = logging.getLogger("xia2.Experts.ResolutionExperts")
 

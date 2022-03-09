@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 from dxtbx.model import ExperimentList
-from xia2.Schema import load_reference_geometries, compare_geometries
+
+from xia2.Schema import compare_geometries, load_reference_geometries
 
 
 def test_load_reference_geometries(dials_data):

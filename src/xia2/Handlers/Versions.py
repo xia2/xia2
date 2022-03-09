@@ -1,14 +1,18 @@
+from __future__ import annotations
+
+import functools
 import re
+import subprocess
 from collections.abc import Mapping
 
 import procrunner
 
-import xia2.XIA2Version
 import dials.util.version
+
+import xia2.XIA2Version
 
 
 class _Versions(Mapping):
-
     """Mapping of program names and functions to determine their versions."""
 
     def __init__(self, *args, **kw):
@@ -33,13 +37,17 @@ class _Versions(Mapping):
         return not (self == other)
 
 
+@functools.lru_cache(maxsize=None)
 def get_xia2_version():
     return xia2.XIA2Version.Version
 
 
+@functools.lru_cache(maxsize=None)
 def get_xds_version():
     try:
-        result = procrunner.run(["xds"], print_stdout=False, print_stderr=False)
+        result = procrunner.run(
+            ["xds"], print_stdout=False, print_stderr=False, stdin=subprocess.DEVNULL
+        )
     except OSError:
         pass
     version = re.search(br"BUILT=([0-9]+)\)", result.stdout)
@@ -48,9 +56,13 @@ def get_xds_version():
     return None
 
 
+@functools.lru_cache(maxsize=None)
 def get_aimless_version():
     result = procrunner.run(
-        ["aimless", "--no-input"], print_stdout=False, print_stderr=False
+        ["aimless", "--no-input"],
+        print_stdout=False,
+        print_stderr=False,
+        stdin=subprocess.DEVNULL,
     )
     version = re.search(br"version\s\d+\.\d+\.\d+", result.stdout)
     if version:
@@ -58,9 +70,10 @@ def get_aimless_version():
     return None
 
 
+@functools.lru_cache(maxsize=None)
 def get_pointless_version():
     result = procrunner.run(
-        ["pointless", "--no-input"], print_stdout=False, print_stderr=False
+        ["pointless"], print_stdout=False, print_stderr=False, stdin=subprocess.DEVNULL
     )
     version = re.search(br"version\s\d+\.\d+\.\d+", result.stdout)
     if version:

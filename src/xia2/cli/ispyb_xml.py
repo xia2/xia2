@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 import os
 import sys
 
 import iotbx.phil
+
 import xia2.Handlers.Streams
 from xia2.Interfaces.ISPyB.ISPyBXmlHandler import ISPyBXmlHandler
 from xia2.Schema.XProject import XProject
@@ -15,7 +18,7 @@ def ispyb_xml(xml_out):
     for record in open("xia2.txt"):
         if record.startswith("Command line:"):
             command_line = record.replace("Command line:", "").strip()
-    with open("xia2-working.phil", "r") as f:
+    with open("xia2-working.phil") as f:
         working_phil = iotbx.phil.parse(f.read())
     xinfo = XProject.from_json(filename="xia2.json")
     crystals = xinfo.get_crystals()

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import codecs
 import copy
 import io
@@ -6,9 +8,8 @@ from collections import OrderedDict
 
 import dials.pychef
 import libtbx.phil
-import xia2.Handlers.Environment
-import xia2.Handlers.Files
 from cctbx.array_family import flex
+from dials.algorithms.merging.merge import make_dano_plots
 from dials.pychef import dose_phil_str
 from dials.report.analysis import batch_dependent_properties
 from dials.report.plots import (
@@ -18,13 +19,15 @@ from dials.report.plots import (
     make_image_range_table,
     scale_rmerge_vs_batch_plot,
 )
-from dials.algorithms.merging.merge import make_dano_plots
 from dials.util.batch_handling import batch_manager
 from iotbx import merging_statistics
 from iotbx.reflection_file_reader import any_reflection_file
 from mmtbx.scaling import printed_output
 from mmtbx.scaling.xtriage import master_params as xtriage_master_params
 from mmtbx.scaling.xtriage import xtriage_analyses
+
+import xia2.Handlers.Environment
+import xia2.Handlers.Files
 from xia2.cli.plot_multiplicity import master_phil, plot_multiplicity
 from xia2.Modules.Analysis import batch_phil_scope, phil_scope, separate_unmerged
 

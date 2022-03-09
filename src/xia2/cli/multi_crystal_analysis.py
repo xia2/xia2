@@ -1,15 +1,17 @@
+from __future__ import annotations
+
 import logging
 import random
 
-import iotbx.phil
 import matplotlib
+
+import iotbx.phil
 from dials.array_family import flex
-from dials.util import log
-from dials.util import Sorry
-from dials.util.options import OptionParser
-from dials.util.options import flatten_experiments, flatten_reflections
-from dials.util.version import dials_version
+from dials.util import Sorry, log
 from dials.util.multi_dataset_handling import parse_multiple_datasets
+from dials.util.options import OptionParser, flatten_experiments, flatten_reflections
+from dials.util.version import dials_version
+
 import xia2.Handlers.Streams
 from xia2.Modules.MultiCrystalAnalysis import MultiCrystalReport
 

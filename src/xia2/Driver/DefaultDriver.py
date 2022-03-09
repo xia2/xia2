@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import logging
 import os
-import time
 import signal
+import time
 
 import xia2.Driver.timing
 from xia2.Driver.DriverHelper import (

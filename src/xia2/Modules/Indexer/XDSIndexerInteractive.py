@@ -4,6 +4,8 @@
 # change images to use etc. so it becomes fully interactive.
 
 
+from __future__ import annotations
+
 from xia2.Modules.Indexer.IndexerSelectImages import index_select_image_wedges_user
 from xia2.Modules.Indexer.XDSIndexer import XDSIndexer
 

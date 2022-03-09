@@ -1,6 +1,8 @@
 # Replacement for CCP4 program rebatch, using cctbx Python.
 
 
+from __future__ import annotations
+
 import itertools
 
 from cctbx.array_family import flex

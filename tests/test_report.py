@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import pytest
 
 
@@ -7,9 +9,9 @@ def report(dials_data, tmpdir_factory):
     mtz = data_dir.join("insulin_dials_scaled_unmerged.mtz").strpath
     temp_path = tmpdir_factory.mktemp("test_report")
     with temp_path.as_cwd():
-        from xia2.Modules.Analysis import (
+        from xia2.Modules.Analysis import (  # import creates /xia2-debug.txt dropping
             phil_scope,
-        )  # import creates /xia2-debug.txt dropping
+        )
         from xia2.Modules.Report import Report  # import creates /DEFAULT/ dropping
 
         params = phil_scope.extract()

@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 import math
 import sys
 
-import xia2.Handlers.Streams
 from iotbx.reflection_file_reader import any_reflection_file
 from scitbx.array_family import flex
+
+import xia2.Handlers.Streams
 from xia2.Toolkit.NPP import npp_ify
 
 
@@ -55,8 +58,8 @@ def npp(hklin):
 
         print(
             "%3d %3d %3d" % hkl,
-            "%.2f %.2f %.2f" % (i, v, i / math.sqrt(v)),
-            "%.2f %.2f" % (fit_all.slope(), fit_cen.slope()),
+            f"{i:.2f} {v:.2f} {i / math.sqrt(v):.2f}",
+            f"{fit_all.slope():.2f} {fit_cen.slope():.2f}",
             "%d" % m,
         )
 

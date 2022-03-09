@@ -1,10 +1,13 @@
+from __future__ import annotations
+
 import os
 import subprocess
+
 from setuptools import setup
 
 # Version number is determined either by git revision (which takes precendence)
 # or a static version number which is updated by bump2version
-__version_tag__ = "3.8.dev"
+__version_tag__ = "3.9.dev"
 
 console_scripts = [
     "dev.xia2.check_mosaic=xia2.cli.check_mosaic:run",

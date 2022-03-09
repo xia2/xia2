@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import pytest
 
 from xia2.Applications.xia2_main import check_hdf5_master_files

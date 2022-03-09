@@ -1,9 +1,12 @@
 # A handler to manage the data ending up in CIF output file
 
+from __future__ import annotations
+
 import bz2
 import datetime
 
 import iotbx.cif.model
+
 import xia2.Handlers.Citations
 from xia2.Handlers.Versions import versions
 

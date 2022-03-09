@@ -1,23 +1,26 @@
-from unittest import mock
+from __future__ import annotations
+
 import os
-import pytest
 import shutil
 import sys
+from unittest import mock
 
-from dxtbx.serialize import load
+import pytest
+
 from dials.array_family import flex
+from dxtbx.serialize import load
 
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Wrappers.Dials.Import import Import
-from xia2.Wrappers.Dials.Spotfinder import Spotfinder
-from xia2.Wrappers.Dials.Index import Index
-from xia2.Wrappers.Dials.Integrate import Integrate
-from xia2.Wrappers.Dials.RefineBravaisSettings import RefineBravaisSettings
-from xia2.Wrappers.Dials.Refine import Refine
-from xia2.Wrappers.Dials.Reindex import Reindex
+from xia2.Wrappers.Dials.CombineExperiments import CombineExperiments
 from xia2.Wrappers.Dials.ExportMtz import ExportMtz
 from xia2.Wrappers.Dials.ExportXDSASCII import ExportXDSASCII
-from xia2.Wrappers.Dials.CombineExperiments import CombineExperiments
+from xia2.Wrappers.Dials.Import import Import
+from xia2.Wrappers.Dials.Index import Index
+from xia2.Wrappers.Dials.Integrate import Integrate
+from xia2.Wrappers.Dials.Refine import Refine
+from xia2.Wrappers.Dials.RefineBravaisSettings import RefineBravaisSettings
+from xia2.Wrappers.Dials.Reindex import Reindex
+from xia2.Wrappers.Dials.Spotfinder import Spotfinder
 
 
 def exercise_dials_wrappers(template, nproc=None):

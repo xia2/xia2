@@ -10,6 +10,9 @@
 # most often this is the result of a pseudo-higher-symmetry lattice.
 
 
+from __future__ import annotations
+
+
 class BadLatticeError(Exception):
     """An exception to be raised when a lattice is not right."""
 

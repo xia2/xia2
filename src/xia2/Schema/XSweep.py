@@ -4,6 +4,26 @@
 # .xinfo hierarchy.
 #
 
+from __future__ import annotations
+
+import copy
+import inspect
+import logging
+import math
+import os
+import pathlib
+import time
+
+from xia2.Experts.Filenames import expand_path
+from xia2.Experts.FindImages import (
+    image2template_directory,
+    template_directory_number2image,
+)
+from xia2.Handlers.Phil import PhilIndex
+from xia2.Modules.Indexer import IndexerFactory
+from xia2.Modules.Integrater import IntegraterFactory
+from xia2.Modules.Refiner import RefinerFactory
+
 # The following properties defined elsewhere impact in the definition
 # of the sweep:
 #
@@ -50,25 +70,6 @@
 # down the tree, to make sure that everything is kept up-to-date. This
 # should be no more difficult, just a little more complicated.
 
-
-import copy
-import inspect
-import logging
-import math
-import os
-import time
-
-import pathlib
-from xia2.Experts.Filenames import expand_path
-from xia2.Experts.FindImages import (
-    image2template_directory,
-    template_directory_number2image,
-)
-from xia2.Handlers.Phil import PhilIndex
-
-from xia2.Modules.Indexer import IndexerFactory
-from xia2.Modules.Integrater import IntegraterFactory
-from xia2.Modules.Refiner import RefinerFactory
 
 logger = logging.getLogger("xia2.Schema.XSweep")
 

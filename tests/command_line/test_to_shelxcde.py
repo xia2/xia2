@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 import os
 
-from xia2.cli import to_shelxcde
 import pytest
+
 from libtbx.utils import Sorry
 
+from xia2.cli import to_shelxcde
 
 expected_sad_files = [
     "test.hkl",

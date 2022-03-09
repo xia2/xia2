@@ -10,9 +10,11 @@ This wrapper is intended for use in the _integrate_finish step of the DialsInteg
 """
 
 
-from xia2.Driver.DriverFactory import DriverFactory
+from __future__ import annotations
 
 import os
+
+from xia2.Driver.DriverFactory import DriverFactory
 
 try:
     from typing import List, Optional, SupportsFloat, Tuple

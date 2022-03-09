@@ -6,6 +6,8 @@
 # should have done this in the first place.)
 
 
+from __future__ import annotations
+
 import logging
 import math
 import os
@@ -15,6 +17,7 @@ from dials.array_family import flex
 from dials.util.ascii_art import spot_counts_per_image_plot
 from dxtbx.model import Experiment, ExperimentList
 from dxtbx.serialize.xds import to_crystal, to_xds
+
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import banner

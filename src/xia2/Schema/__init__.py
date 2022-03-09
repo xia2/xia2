@@ -1,9 +1,13 @@
+from __future__ import annotations
+
 import collections
 import glob
 import itertools
 import logging
 import os
 
+from dials.command_line.dials_import import ManualGeometryUpdater
+from dials.util.options import geometry_phil_scope
 from dxtbx.imageset import ImageSequence
 from dxtbx.model.experiment_list import (
     BeamComparison,
@@ -13,11 +17,9 @@ from dxtbx.model.experiment_list import (
     GoniometerComparison,
 )
 from dxtbx.sequence_filenames import locate_files_matching_template_string
-from dials.command_line.dials_import import ManualGeometryUpdater
-from dials.util.options import geometry_phil_scope
 from scitbx.array_family import flex
-from xia2.Handlers.Phil import PhilIndex
 
+from xia2.Handlers.Phil import PhilIndex
 
 logger = logging.getLogger("xia2.Schema")
 

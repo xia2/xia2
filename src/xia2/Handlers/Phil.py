@@ -10,6 +10,8 @@
 # couple for XDS.
 
 
+from __future__ import annotations
+
 from iotbx.phil import parse
 from libtbx.phil import interface
 

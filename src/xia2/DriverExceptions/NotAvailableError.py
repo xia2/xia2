@@ -8,6 +8,9 @@
 # An exception to be raised if a program or class is not available.
 
 
+from __future__ import annotations
+
+
 class NotAvailableError(Exception):
     """An exception to be raised when a program is not available"""
 
