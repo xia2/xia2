@@ -52,6 +52,9 @@ space_group = None
   .type = space_group
 unit_cell = None
   .type = unit_cell
+max_lattices = 1
+  .type = int
+  .help = "Maximum number of lattices to search for, per image"
 nproc = 1
   .type = int
 batch_size = 1000
@@ -106,12 +109,17 @@ xia2_logger = logging.getLogger(__name__)
 
 
 def process_batch(
-    working_directory, space_group, unit_cell, integration_params, nproc=1
+    working_directory,
+    space_group,
+    unit_cell,
+    integration_params,
+    nproc=1,
+    max_lattices=1,
 ):
     strong = ssx_find_spots(working_directory)
     strong.as_file(working_directory / "strong.refl")
     expt, refl, large_clusters = ssx_index(
-        working_directory, nproc, space_group, unit_cell
+        working_directory, nproc, space_group, unit_cell, max_lattices=max_lattices
     )
     expt.as_file(working_directory / "indexed.expt")
     refl.as_file(working_directory / "indexed.refl")
@@ -248,6 +256,7 @@ def determine_reference_geometry(
         nproc=space_group_determination["nproc"],
         space_group=space_group_determination["space_group"],
         unit_cell=space_group_determination["unit_cell"],
+        max_lattices=reference_geometry["max_lattices"],
     )
     expt.as_file(new_directory / "indexed.expt")
     refl.as_file(new_directory / "indexed.refl")
@@ -281,6 +290,7 @@ def assess_crystal_parameters(
         nproc=space_group_determination["nproc"],
         space_group=space_group_determination["space_group"],
         unit_cell=space_group_determination["unit_cell"],
+        max_lattices=space_group_determination["max_lattices"],
     )
     if largest_clusters:
         xia2_logger.info(f"{condensed_unit_cell_info(largest_clusters)}")
@@ -346,6 +356,7 @@ def run(args=sys.argv[1:]):
         "n_images": params.assess_crystals.n_images,
         "images_to_use": None,  # specify which image ranges from imported.expt to use
         "nproc": params.nproc,
+        "max_lattices": params.max_lattices,
     }
     if params.assess_crystals.images_to_use:
         if ":" not in params.assess_crystals.images_to_use:
@@ -360,6 +371,7 @@ def run(args=sys.argv[1:]):
     reference_geometry = {
         "n_images": params.geometry_refinement.n_images,
         "images_to_use": None,  # specify which image ranges from imported.expt to use e.g. [0:100,500:600]
+        "max_lattices": params.max_lattices,
     }
 
     main_process = {
@@ -422,6 +434,7 @@ def run(args=sys.argv[1:]):
             space_group_determination["unit_cell"],
             params.integration,
             nproc=params.nproc,
+            max_lattices=params.max_lattices,
         )
     if params.workflow.stop_after_integration:
         _log_duration(start_time)

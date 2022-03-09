@@ -58,7 +58,6 @@ def load_imagesets(
     from xia2.Applications.xia2setup import known_hdf5_extensions
 
     full_template_path = os.path.join(directory, template)
-
     if full_template_path not in imageset_cache or not use_cache:
         params = PhilIndex.params.xia2.settings
         compare_beam = BeamComparison(

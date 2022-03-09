@@ -102,6 +102,7 @@ def ssx_index(
     nproc: int = 1,
     space_group: sgtbx.space_group = None,
     unit_cell: uctbx.unit_cell = None,
+    max_lattices: int = 1,
 ) -> Tuple[ExperimentList, flex.reflection_table, List[Cluster]]:
 
     xia2_logger.notice(banner("Indexing"))
@@ -126,6 +127,9 @@ def ssx_index(
                 input_ += (
                     f"  indexing.known_symmetry.space_group = {str(space_group)}\n"
                 )
+            if max_lattices > 1:
+                params.indexing.multiple_lattice_search.max_lattices = max_lattices
+                input_ += f"  indexing.multiple_lattice_search.max_lattices = {max_lattices}\n"
             dials_logger.info(input_)
 
             # Do the indexing
@@ -166,7 +170,10 @@ def ssx_index(
 
 
 def indexing_summary_output(summary_data, summary_plots):
-    success = ["\u2713" if v[0]["n_indexed"] else "." for v in summary_data.values()]
+    success = [
+        str(len(v)) if len(v) > 1 else "\u2713" if v[0]["n_indexed"] else "."
+        for v in summary_data.values()
+    ]
     output_ = ""
     block_width = 50
     for i in range(0, math.ceil(len(success) / block_width)):
