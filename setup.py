@@ -58,6 +58,7 @@ def get_git_revision():
         result = subprocess.run(
             ("git", "describe", "--tags", "--long", "--first-parent"),
             check=True,
+            cwd=xia2_root_path,
             encoding="latin-1",
             stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL,
