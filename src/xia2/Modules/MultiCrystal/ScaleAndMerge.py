@@ -222,7 +222,7 @@ min_multiplicity = None
 max_clusters = None
   .type = int(value_min=1)
   .short_caption = "Maximum number of clusters"
-cluster_method = *cos_angle correlation unit_cell
+cluster_method = *cos_angle correlation
   .type = choice
   .short_caption = "Metric on which to perform clustering"
 
