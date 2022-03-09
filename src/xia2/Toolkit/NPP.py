@@ -9,7 +9,7 @@ from scitbx.math import distributions
 def mean_variance(values):
     m = flex.sum(values) / values.size()
     m2 = flex.sum(values * values) / values.size()
-    v = m2 - m ** 2
+    v = m2 - m**2
     return m, v
 
 
