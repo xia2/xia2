@@ -1,26 +1,25 @@
+from __future__ import annotations
+
 import json
 import os
 import pathlib
-import pytest
 
-from dxtbx.model import ExperimentList
-from dxtbx.serialize import load
+import pytest
+import pytest_mock
+
 import iotbx.mtz
 from dials.array_family import flex
-from dials.command_line.slice_sequence import (
-    slice_experiments,
-    slice_reflections,
-)
+from dials.command_line.slice_sequence import slice_experiments, slice_reflections
 from dials.util.multi_dataset_handling import (
     assign_unique_identifiers,
     parse_multiple_datasets,
 )
-from xia2.Modules.Report import Report
+from dxtbx.model import ExperimentList
+from dxtbx.serialize import load
+
 from xia2.cli.multiplex import run as run_multiplex
 from xia2.Modules.MultiCrystal import ScaleAndMerge
-
-import pytest_mock
-
+from xia2.Modules.Report import Report
 
 expected_data_files = [
     "scaled.expt",
@@ -72,7 +71,7 @@ def test_proteinase_k(mocker, proteinase_k):
             assert valid_image_ranges == [(11, 25)]
         else:
             assert valid_image_ranges == [(1, 25)]
-    with open("xia2.multiplex.json", "r") as fh:
+    with open("xia2.multiplex.json") as fh:
         d = json.load(fh)
         for hkl in ("100", "010", "001"):
             k = f"stereographic_projection_{hkl}"
@@ -106,7 +105,7 @@ def test_proteinase_k(mocker, proteinase_k):
 def test_proteinase_k_anomalous(proteinase_k):
     expts, refls = proteinase_k
     run_multiplex(expts + refls + ["anomalous=True"])
-    with open("xia2.multiplex.json", "r") as fh:
+    with open("xia2.multiplex.json") as fh:
         d = json.load(fh)
         assert "dano_All_data" in d["datasets"]["All data"]["resolution_graphs"]
 
@@ -157,7 +156,7 @@ def test_proteinase_k_filter_deltacchalf(d_min, proteinase_k):
 
     assert mtz_filtered.n_reflections() != mtz_scaled.n_reflections()
 
-    with open("xia2.multiplex.json", "r") as fh:
+    with open("xia2.multiplex.json") as fh:
         d = json.load(fh)
         assert list(d["datasets"].keys()) == ["All data", "cluster 6", "Filtered"]
         # assert that the recorded merging statistics are different

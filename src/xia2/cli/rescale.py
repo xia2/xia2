@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import os
 import sys
@@ -5,6 +7,7 @@ import time
 import traceback
 
 from libtbx import Auto
+
 import xia2.Handlers.Streams
 from xia2.Applications.xia2_main import check_environment, write_citations
 from xia2.Handlers.Citations import Citations

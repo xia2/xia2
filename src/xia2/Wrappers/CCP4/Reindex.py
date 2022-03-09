@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import os
 
@@ -125,7 +127,7 @@ def Reindex(DriverType=None):
 
             if self._spacegroup:
 
-                if isinstance(self._spacegroup, type(0)):
+                if isinstance(self._spacegroup, int):
                     spacegroup = Syminfo.spacegroup_number_to_name(self._spacegroup)
                 elif self._spacegroup[0] in "0123456789":
                     spacegroup = Syminfo.spacegroup_number_to_name(

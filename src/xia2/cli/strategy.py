@@ -1,11 +1,13 @@
-import logging
+from __future__ import annotations
+
 import json
+import logging
 import os
 import sys
 import traceback
 
-from xia2.Applications.xia2_main import check_environment, get_command_line, help
 import xia2.Handlers.Streams
+from xia2.Applications.xia2_main import check_environment, get_command_line, help
 from xia2.lib.bits import auto_logfiler
 
 logger = logging.getLogger("xia2.cli.strategy")

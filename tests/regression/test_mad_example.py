@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import procrunner
+
 import xia2.Test.regression
 
 expected_data_files = [

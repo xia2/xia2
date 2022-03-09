@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 
 # other odds and ends
@@ -8,8 +10,8 @@ from xia2.Handlers.PipelineSelection import get_preferences
 
 # scaler implementations
 from xia2.Modules.Scaler.CCP4ScalerA import CCP4ScalerA
-from xia2.Modules.Scaler.XDSScalerA import XDSScalerA
 from xia2.Modules.Scaler.DialsScaler import DialsScaler
+from xia2.Modules.Scaler.XDSScalerA import XDSScalerA
 
 logger = logging.getLogger("xia2.Modules.Scaler.ScalerFactory")
 

@@ -1,11 +1,12 @@
+from __future__ import annotations
+
 import json
+import sys
 import timeit
 from collections import Counter
-import sys
 
-from dials.util.options import ArgumentParser
-from dials.util.options import flatten_experiments
 import iotbx.phil
+from dials.util.options import ArgumentParser, flatten_experiments
 from libtbx import easy_mp
 from scitbx.array_family import flex
 

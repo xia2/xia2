@@ -1,30 +1,31 @@
+from __future__ import annotations
+
 import json
 import os
-import sys
-
-from unittest import mock
 import pathlib
+import sys
+from unittest import mock
 
 
 def exercise_serialization(dials_data, tmp_dir):
     base_path = pathlib.Path(tmp_dir)
     template = dials_data("insulin").join("insulin_1_###.img").strpath
 
-    from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
-    from xia2.Modules.Refiner.DialsRefiner import DialsRefiner
-    from xia2.Modules.Integrater.DialsIntegrater import DialsIntegrater
-    from xia2.Modules.Scaler.CCP4ScalerA import CCP4ScalerA
-
     from dxtbx.model import ExperimentList
+
+    from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
+    from xia2.Modules.Integrater.DialsIntegrater import DialsIntegrater
+    from xia2.Modules.Refiner.DialsRefiner import DialsRefiner
+    from xia2.Modules.Scaler.CCP4ScalerA import CCP4ScalerA
 
     experiments = ExperimentList.from_templates([template])
     imageset = experiments.imagesets()[0]
 
-    from xia2.Schema.XProject import XProject
     from xia2.Schema.XCrystal import XCrystal
-    from xia2.Schema.XWavelength import XWavelength
-    from xia2.Schema.XSweep import XSweep
+    from xia2.Schema.XProject import XProject
     from xia2.Schema.XSample import XSample
+    from xia2.Schema.XSweep import XSweep
+    from xia2.Schema.XWavelength import XWavelength
 
     proj = XProject(base_path=base_path)
     proj._name = "PROJ1"

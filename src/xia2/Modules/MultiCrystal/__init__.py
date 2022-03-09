@@ -1,14 +1,16 @@
+from __future__ import annotations
+
 import copy
 import json
 import logging
 from collections import OrderedDict
 
-import iotbx.phil
 import numpy as np
 from scipy.cluster import hierarchy
-from scitbx.array_family import flex
 
+import iotbx.phil
 from dials.util import tabulate
+from scitbx.array_family import flex
 
 logger = logging.getLogger(__name__)
 
@@ -27,10 +29,13 @@ master_phil_scope = iotbx.phil.parse(
     """\
 unit_cell = None
   .type = unit_cell
+  .short_caption = "Unit cell"
 n_bins = 20
   .type = int(value_min=1)
+  .short_caption = "Number of bins"
 d_min = None
   .type = float(value_min=0)
+  .short_caption = "High resolution cutoff"
 %s
 """
     % batch_phil_scope

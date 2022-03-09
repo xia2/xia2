@@ -2,6 +2,8 @@
 # on data harvesting, working directories, a couple of other odds & sods.
 
 
+from __future__ import annotations
+
 import atexit
 import ctypes
 import logging
@@ -12,14 +14,6 @@ import tempfile
 from libtbx.introspection import number_of_processors
 
 logger = logging.getLogger("xia2.Handlers.Environment")
-
-
-def which(pgm):
-    path = os.getenv("PATH")
-    for p in path.split(os.path.pathsep):
-        p = os.path.join(p, pgm)
-        if os.path.exists(p) and os.access(p, os.X_OK):
-            return p
 
 
 def memory_usage():

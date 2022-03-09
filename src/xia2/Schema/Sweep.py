@@ -2,6 +2,8 @@
 # This pertains to the dataset object in the early phases of processing.
 
 
+from __future__ import annotations
+
 import os
 
 from xia2.Experts.FindImages import find_matching_images

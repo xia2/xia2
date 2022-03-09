@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 
 from dials.algorithms.refinement.restraints.restraints_parameterisation import (
@@ -5,6 +7,7 @@ from dials.algorithms.refinement.restraints.restraints_parameterisation import (
 )
 from dials.array_family import flex
 from dxtbx.model import ExperimentList
+
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.lib.bits import auto_logfiler

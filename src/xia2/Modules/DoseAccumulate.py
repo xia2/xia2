@@ -7,6 +7,8 @@
 # This is to work with fortran program "doser"
 
 
+from __future__ import annotations
+
 import collections
 
 from scitbx.array_family import flex

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Schema.Interfaces.FrameProcessor import FrameProcessor
 

@@ -15,6 +15,8 @@ position. The positions may be read from ADXV and will be applied to both XDS
 and Mosflm."""
 
 
+from __future__ import annotations
+
 import binascii
 import logging
 import math

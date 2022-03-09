@@ -2,6 +2,8 @@
 # file.
 
 
+from __future__ import annotations
+
 import os
 import time
 
@@ -99,7 +101,7 @@ class ISPyBXmlHandler:
             if out_name in ["nTotalObservations", "nTotalUniqueObservations"]:
                 fout.write("<%s>%d</%s>" % (out_name, int(stats_dict[name]), out_name))
             else:
-                fout.write("<%s>%s</%s>" % (out_name, stats_dict[name], out_name))
+                fout.write(f"<{out_name}>{stats_dict[name]}</{out_name}>")
 
         fout.write("</AutoProcScalingStatistics>\n")
 
@@ -242,7 +244,7 @@ class ISPyBXmlHandler:
             for k in reflection_files:
                 reflection_file = reflection_files[k]
 
-                if not isinstance(reflection_file, type("")):
+                if not isinstance(reflection_file, str):
                     continue
 
                 reflection_file = FileHandler.get_data_file(
@@ -427,7 +429,7 @@ class ISPyBXmlHandler:
             for k in reflection_files:
                 reflection_file = reflection_files[k]
 
-                if not isinstance(reflection_file, type("")):
+                if not isinstance(reflection_file, str):
                     continue
 
                 reflection_file = FileHandler.get_data_file(

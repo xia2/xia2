@@ -3,16 +3,19 @@
 # small functions for computing e.g. resolution limits.
 
 
+from __future__ import annotations
+
 import inspect
 import logging
 import math
 import os
 
-import xia2.Wrappers.CCP4.Pointless
-import xia2.Wrappers.Dials.Symmetry
 from cctbx.sgtbx import lattice_symmetry_group
 from iotbx import mtz
 from scitbx.matrix import sqr
+
+import xia2.Wrappers.CCP4.Pointless
+import xia2.Wrappers.Dials.Symmetry
 from xia2.Experts.ResolutionExperts import remove_blank
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex

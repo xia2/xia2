@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import alabaster
 
 # -*- coding: utf-8 -*-

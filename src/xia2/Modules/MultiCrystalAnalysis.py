@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import logging
 from collections import OrderedDict
@@ -7,14 +9,12 @@ from dials.algorithms.symmetry.cosym import SymmetryAnalysis
 from dials.algorithms.symmetry.cosym.plots import plot_coords, plot_rij_histogram
 from dials.util.filter_reflections import filtered_arrays_from_experiments_reflections
 from dials.util.multi_dataset_handling import parse_multiple_datasets
-
-from xia2.Modules.MultiCrystal.ScaleAndMerge import DataManager
-from xia2.Modules.Analysis import batch_phil_scope
-from xia2.Modules.DeltaCcHalf import DeltaCcHalf
-from xia2.XIA2Version import Version
-
 from libtbx import phil
 
+from xia2.Modules.Analysis import batch_phil_scope
+from xia2.Modules.DeltaCcHalf import DeltaCcHalf
+from xia2.Modules.MultiCrystal.ScaleAndMerge import DataManager
+from xia2.XIA2Version import Version
 
 logger = logging.getLogger(__name__)
 
@@ -265,7 +265,7 @@ any systematic grouping of points may suggest a preferential crystal orientation
                 orientation_graphs[key] = d
                 styles[key] = "square-plot"
 
-        from jinja2 import Environment, ChoiceLoader, PackageLoader
+        from jinja2 import ChoiceLoader, Environment, PackageLoader
 
         loader = ChoiceLoader(
             [PackageLoader("xia2", "templates"), PackageLoader("dials", "templates")]

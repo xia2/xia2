@@ -37,6 +37,8 @@
 #
 
 
+from __future__ import annotations
+
 import inspect
 import json
 import logging
@@ -44,6 +46,7 @@ import os
 from functools import reduce
 
 from cctbx.sgtbx import bravais_types
+
 from xia2.Experts.LatticeExpert import SortLattices
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import banner
@@ -773,7 +776,7 @@ class IndexerSingleSweep(Indexer):
 
         if isinstance(image, type(())):
             self._indxr_images.append(image)
-        if isinstance(image, type(1)):
+        if isinstance(image, int):
             self._indxr_images.append((image, image))
 
         if reset:

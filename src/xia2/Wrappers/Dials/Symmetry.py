@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import json
 import os
 import sys
 
-from cctbx import sgtbx, crystal, uctbx
+from cctbx import crystal, sgtbx, uctbx
 from cctbx.sgtbx import bravais_types
 
 from xia2.Driver.DriverFactory import DriverFactory

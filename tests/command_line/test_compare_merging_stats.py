@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import os
+
 import pytest
 
 from xia2.cli import compare_merging_stats
-
 
 expected_files = [
     "cc_anom.png",

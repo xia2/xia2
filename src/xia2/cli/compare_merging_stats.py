@@ -1,16 +1,19 @@
+from __future__ import annotations
+
 import concurrent.futures
 import functools
 import math
 import os
 import sys
 
+from cycler import cycler
+
 import iotbx.merging_statistics
 import iotbx.phil
 import libtbx
-from libtbx.introspection import number_of_processors
 from cctbx import uctbx
-from cycler import cycler
 from dials.util.options import OptionParser
+from libtbx.introspection import number_of_processors
 
 help_message = """
 """

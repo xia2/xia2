@@ -2,12 +2,15 @@
 # Dials wrappers to actually implement the functionality.
 
 
+from __future__ import annotations
+
 import logging
 import math
 import os
 
-import xia2.Wrappers.Dials.Integrate
 from dxtbx.serialize import load
+
+import xia2.Wrappers.Dials.Integrate
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex

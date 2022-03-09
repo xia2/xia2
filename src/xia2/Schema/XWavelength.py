@@ -23,6 +23,8 @@
 #                 reduce the least damaged data first.
 
 
+from __future__ import annotations
+
 import inspect
 import logging
 

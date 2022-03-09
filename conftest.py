@@ -4,12 +4,15 @@
 #
 
 
+from __future__ import annotations
+
 import argparse
 import os
 import re
 
 import procrunner
 import pytest
+
 from dials.conftest import run_in_tmpdir  # noqa; lgtm; exported symbol
 
 
