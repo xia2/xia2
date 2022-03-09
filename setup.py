@@ -72,7 +72,6 @@ def get_git_revision():
     # Some of our version schemes used vX.Y.0-Z
     if patch == "0":
         patch = count
-        count = "0"
     elif patch == "dev":
         patch = f"dev{count}"
 
@@ -90,7 +89,7 @@ def get_git_revision():
         if branch and branch != "main" and not branch.endswith("/main"):
             commit = f"{commit}-{branch.rsplit('/', 1)[-1]}"
     except Exception:
-        branch = ""
+        pass
 
     version = f"{major}.{minor}.{patch}+{commit}"
     return version
