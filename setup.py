@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 import re
 import subprocess
 from pathlib import Path
@@ -50,9 +49,9 @@ console_scripts = [
 
 def get_git_revision():
     """Try to obtain the current git revision number"""
-    xia2_root_path = Path(os.path.realpath(__file__)).parent
+    xia2_root_path = Path(__file__).resolve().parent
 
-    if not xia2_root_path.joinpath(".git").exists():
+    if not xia2_root_path.joinpath(".git").is_dir():
         return None
 
     try:
@@ -96,26 +95,12 @@ def get_git_revision():
 
 
 setuptools.setup(
-    name="xia2",
     version=get_git_revision() or __version_tag__,
-    long_description=Path(__file__).parent.joinpath("README.md").read_text(),
-    description="An expert system for automated reduction of X-ray diffraction data from macromolecular crystals",
-    author="Diamond Light Source",
-    license="BSD-3-Clause",
-    author_email="dials-support@lists.sourceforge.net",
-    packages=setuptools.find_packages(where="src"),
-    package_dir={"": "src"},
     package_data={
         "": ["*"],
         "xia2": ["Data/*", "css/*", "templates/*"],
         "xia2.Test": ["Handlers/*", "Modules/*", "regression/expected/*"],
     },
-    install_requires=[
-        "dials-data>=2.0",
-        "Jinja2",
-        "procrunner",
-        "tabulate",
-    ],
     entry_points={
         "console_scripts": console_scripts,
         "libtbx.dispatcher.script": [
@@ -128,5 +113,4 @@ setuptools.setup(
         "pytest>=3.1",
         "pytest-mock",
     ],
-    url="https://github.com/xia2/xia2",
 )
