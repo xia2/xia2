@@ -108,6 +108,8 @@ setuptools.setup(
     package_dir={"": "src"},
     package_data={
         "": ["*"],
+        "xia2": ["Data/*", "css/*", "templates/*"],
+        "xia2.Test": ["Handlers/*", "Modules/*", "regression/expected/*"],
     },
     install_requires=[
         "dials-data>=2.0",
