@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import re
 import subprocess
 from pathlib import Path
@@ -109,6 +110,9 @@ def get_version() -> str:
     # If all else fails, return our development tag as-is
     return __version_tag__
 
+
+# Ensure we're in the same directory as setup.cfg
+os.chdir(Path(__file__).resolve().parent)
 
 setuptools.setup(
     version=get_version(),
