@@ -28,10 +28,6 @@ from xia2.Modules.SSX.data_integration import (
 )
 from xia2.Modules.SSX.data_reduction import SimpleDataReduction
 
-# sensible image input?
-# multiple image=, directory= or template=
-
-
 phil_str = """
 images = None
   .type = str
@@ -75,7 +71,7 @@ geometry_refinement {
     .help = "Number of images to use for reference geometry determination."
   images_to_use = None
     .type = str
-    .help = "Specify an inclusive image range to use freference geometry"
+    .help = "Specify an inclusive image range to use for reference geometry"
             "determination, in the form start:end"
 }
 integration {
@@ -89,12 +85,15 @@ integration {
 clustering {
   threshold=1000
     .type = float
+    .help = "Threshold to use for splitting clusters during data reduction"
 
 }
 anomalous = False
   .type = bool
+  .help = "If True, keep anomalous pairs separate during scaling."
 d_min = None
   .type = float
+  .help = "Resolution cutoff for data reduction."
 workflow {
   stop_after_geometry_refinement = False
     .type = bool
@@ -182,24 +181,20 @@ def run_import(
     if (working_directory / "file_input.json").is_file():
         with open(working_directory / "file_input.json", "r") as f:
             previous = json.load(f)
-            if previous["images"] == file_input["images"]:
+            same_reference = False
+            if not reference_geometry:
+                if previous["reference_geometry"] is None:
+                    same_reference = True
+            else:
                 if str(reference_geometry) == previous["reference_geometry"]:
-                    xia2_logger.info(
-                        f"Images already imported in previous run of xia2.ssx:\n  {', '.join(previous['images'])}"
-                    )
-                    return
-            if previous["template"] == file_input["template"]:
-                if str(reference_geometry) == previous["reference_geometry"]:
-                    xia2_logger.info(
-                        f"Images already imported in previous run of xia2.ssx:\n  {', '.join(previous['images'])}"
-                    )
-                    return
-            if previous["directory"] == file_input["directory"]:
-                if str(reference_geometry) == previous["reference_geometry"]:
-                    xia2_logger.info(
-                        f"Images already imported in previous run of xia2.ssx:\n  {', '.join(previous['images'])}"
-                    )
-                    return
+                    same_reference = True
+            if same_reference:
+                for input_ in ["images", "template", "directory"]:
+                    if file_input[input_] and (previous[input_] == file_input[input_]):
+                        xia2_logger.info(
+                            f"Images already imported in previous run of xia2.ssx:\n  {', '.join(previous[input_])}"
+                        )
+                        return
 
     xia2_logger.info("New images or geometry detected, running import")
     import_command = ["dials.import"]
@@ -222,7 +217,6 @@ def run_import(
     result = procrunner.run(import_command, working_directory=working_directory)
     if result.returncode or result.stderr:
         raise ValueError("dials.import returned error status:\n" + str(result.stderr))
-
     outfile = working_directory / "file_input.json"
     outfile.touch()
     file_input["reference_geometry"] = None
@@ -312,31 +306,12 @@ def _log_duration(start_time):
     )
 
 
-def run(args=sys.argv[1:]):
+def run_xia2_ssx(root_working_directory, params):
 
+    cwd = root_working_directory
     start_time = time.time()
 
-    parser = ArgumentParser(
-        usage="xia2.ssx images=*cbf unit_cell=x space_group=y",
-        read_experiments=False,
-        read_reflections=False,
-        phil=phil_scope,
-        check_format=False,
-        epilog="",
-    )
-    params, _ = parser.parse_args(args=args, show_diff_phil=False)
-
-    xia2.Handlers.Streams.setup_logging(logfile="xia2.ssx.log")
-    # remove the xia2 handler from the dials logger.
-    dials_logger = logging.getLogger("dials")
-    dials_logger.handlers.clear()
-
-    diff_phil = parser.diff_phil.as_str()
-    if diff_phil:
-        xia2_logger.info("The following parameters have been modified:\n%s", diff_phil)
-
-    cwd = pathlib.Path.cwd()
-
+    # First separate out some of the input params into relevant sections.
     file_input = {"images": [], "template": [], "directory": []}
     if params.images:
         file_input["images"] = [str(pathlib.Path(i).resolve()) for i in params.images]
@@ -410,6 +385,7 @@ def run(args=sys.argv[1:]):
         _log_duration(start_time)
         exit(0)
 
+    # Do joint geometry refinement if applicable.
     if reimport_with_reference:
         determine_reference_geometry(cwd, reference_geometry, space_group_determination)
         if params.workflow.stop_after_geometry_refinement:
@@ -425,6 +401,7 @@ def run(args=sys.argv[1:]):
     else:
         imported = cwd / "initial_import" / "imported.expt"
 
+    # Now do the main processing using reference geometry
     setup_main_process(cwd, main_process, imported)
     for i, batch_dir in enumerate(main_process["batch_directories"]):
         xia2_logger.notice(banner(f"Processing batch {i+1}"))
@@ -440,6 +417,7 @@ def run(args=sys.argv[1:]):
         _log_duration(start_time)
         exit(0)
 
+    # Now do the data reduction
     c = SimpleDataReduction(cwd, main_process["batch_directories"], 0)
     c.run(
         batch_size=main_process["batch_size"],
@@ -451,3 +429,29 @@ def run(args=sys.argv[1:]):
     )
 
     _log_duration(start_time)
+
+
+def run(args=sys.argv[1:]):
+
+    parser = ArgumentParser(
+        usage="xia2.ssx images=*cbf unit_cell=x space_group=y",
+        read_experiments=False,
+        read_reflections=False,
+        phil=phil_scope,
+        check_format=False,
+        epilog="",
+    )
+    params, _ = parser.parse_args(args=args, show_diff_phil=False)
+
+    xia2.Handlers.Streams.setup_logging(logfile="xia2.ssx.log")
+    # remove the xia2 handler from the dials logger.
+    dials_logger = logging.getLogger("dials")
+    dials_logger.handlers.clear()
+
+    diff_phil = parser.diff_phil.as_str()
+    if diff_phil:
+        xia2_logger.info("The following parameters have been modified:\n%s", diff_phil)
+
+    cwd = pathlib.Path.cwd()
+
+    run_xia2_ssx(cwd, params)
