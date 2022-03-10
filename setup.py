@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import os
+import re
 import subprocess
+from pathlib import Path
 
-from setuptools import setup
+import setuptools
 
-# Version number is determined either by git revision (which takes precendence)
-# or a static version number which is updated by bump2version
+# Version number, or fallback version number for non-releases.
+# This should be updated by bump2version, not manually.
 __version_tag__ = "3.9.dev"
 
 console_scripts = [
@@ -48,26 +50,33 @@ console_scripts = [
 
 def get_git_revision():
     """Try to obtain the current git revision number"""
-    xia2_root_path = os.path.split(os.path.realpath(__file__))[0]
+    xia2_root_path = Path(__file__).resolve().parent
 
-    if not os.path.exists(os.path.join(xia2_root_path, ".git")):
+    if not xia2_root_path.joinpath(".git").is_dir():
         return None
 
     try:
         result = subprocess.run(
-            ("git", "describe", "--long"),
+            ("git", "describe", "--tags", "--long", "--first-parent"),
             check=True,
             cwd=xia2_root_path,
             encoding="latin-1",
             stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL,
         )
-        version = result.stdout.rstrip()
+        major, minor, patch, count, commit = re.match(
+            r"v?(\d+)\.(\d+)\.(dev|\d+)-(\d+)-(.+)", result.stdout.rstrip()
+        ).groups()
     except Exception:
         return None
-    if version.startswith("v"):
-        version = version[1:].replace(".0-", ".")
 
+    # Some of our version schemes used vX.Y.0-Z
+    if patch == "0":
+        patch = count
+    elif patch == "dev":
+        patch = f"dev{count}"
+
+    # Get the branch name, if not main
     try:
         result = subprocess.run(
             ("git", "describe", "--contains", "--all", "HEAD"),
@@ -78,22 +87,40 @@ def get_git_revision():
             stderr=subprocess.DEVNULL,
         )
         branch = result.stdout.rstrip()
-        if branch != "" and branch != "master" and not branch.endswith("/master"):
-            version = version + "-" + branch
+        if branch and branch != "main" and not branch.endswith("/main"):
+            branch_trail = branch.rsplit("/", 1)[-1]
+            # Normalise this branch name, in case it contains non-pep-440
+            # characters - only [a-zA-Z0-9.] are allowed in the "local version"
+            local_identifier = re.sub(r"[^\w]+", ".", branch_trail)
+            commit = f"{commit}.{local_identifier}"
     except Exception:
         pass
 
+    version = f"{major}.{minor}.{patch}+{commit}"
     return version
 
 
-setup(
-    install_requires=[
-        "dials-data>=2.0",
-        "Jinja2",
-        "procrunner",
-        "tabulate",
-        'importlib_metadata;python_version<"3.8"',
-    ],
+def get_version() -> str:
+    # If we're not a development version, we are a release, so this field takes precedent
+    if "dev" not in __version_tag__:
+        return __version_tag__
+    # If we're in a git repository, then use "git describe"
+    if (git_ver := get_git_revision()) is not None:
+        return git_ver
+    # If all else fails, return our development tag as-is
+    return __version_tag__
+
+
+# Ensure we're in the same directory as setup.cfg
+os.chdir(Path(__file__).resolve().parent)
+
+setuptools.setup(
+    version=get_version(),
+    package_data={
+        "": ["*"],
+        "xia2": ["Data/*", "css/*", "templates/*"],
+        "xia2.Test": ["Handlers/*", "Modules/*", "regression/expected/*"],
+    },
     entry_points={
         "console_scripts": console_scripts,
         "libtbx.dispatcher.script": [
@@ -106,6 +133,4 @@ setup(
         "pytest>=3.1",
         "pytest-mock",
     ],
-    url="https://github.com/xia2/xia2",
-    version=get_git_revision() or __version_tag__,
 )
