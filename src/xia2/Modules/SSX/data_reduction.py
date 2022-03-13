@@ -9,11 +9,11 @@ import os
 import sys
 from io import StringIO
 from pathlib import Path
-from typing import Dict
+from typing import Any, Dict, List, Tuple
 
 import procrunner
 
-from cctbx import uctbx
+from cctbx import sgtbx, uctbx
 from dials.algorithms.scaling.algorithm import ScalingAlgorithm
 from dials.algorithms.scaling.scaling_library import determine_best_unit_cell
 from dials.array_family import flex
@@ -27,21 +27,32 @@ from dials.command_line.scale import _export_unmerged_mtz
 from dials.command_line.scale import phil_scope as scaling_phil_scope
 from dials.command_line.scale import run_scaling
 from dials.report.analysis import format_statistics, table_1_stats
-from dxtbx.model.experiment_list import ExperimentList
+from dxtbx.model import ExperimentList
 from dxtbx.serialize import load
+from iotbx import phil
 
 from xia2.Handlers.Streams import banner
 from xia2.Modules.SSX.data_integration import log_to_file, run_in_directory
 
-logger = logging.getLogger(__name__)
+xia2_logger = logging.getLogger(__name__)
 
-# data reduction works on a list of directories - searches for integrated files and a "batch.json" configuration file
+# data reduction works on a list of directories - searches for integrated files
 
 # also inspects the current data reduction directories to see what has been done before.
 
+FilePairDict = Dict[str, Path]  # A Dict of {"expt" : exptpath, "refl" : reflpath}
+FilesDict = Dict[
+    int, FilePairDict
+]  # A Dict where the keys are an index, corresponding to a filepair
+
 
 class BaseDataReduction(object):
-    def __init__(self, main_directory, batch_directories, params):
+    def __init__(
+        self,
+        main_directory: Path,
+        batch_directories: List[Path],
+        params: phil.scope_extract,
+    ) -> None:
         # General setup, finding which of the batch directories have already
         # been processed. Then it's up to the specific data reduction algorithms
         # as to how that information should be used.
@@ -53,7 +64,7 @@ class BaseDataReduction(object):
         directories_already_processed = []
         new_to_process = []
 
-        logger.notice(banner("Data reduction"))
+        xia2_logger.notice(banner("Data reduction"))  # type: ignore
 
         if not Path.is_dir(data_reduction_dir):
             Path.mkdir(data_reduction_dir)
@@ -86,33 +97,31 @@ class BaseDataReduction(object):
                 input = {self._batch_directories}
                 new + previous != input"""
             )
-        # if not len(new_to_process):
-        #    raise ValueError("No new data found, all directories already processed")
 
         self._new_directories_to_process = new_to_process
         self._directories_previously_processed = directories_already_processed
         if self._directories_previously_processed:
             dirs = "\n".join(str(i) for i in self._directories_previously_processed)
-            logger.info(f"Directories previously processed: {dirs}")
+            xia2_logger.info(f"Directories previously processed: {dirs}")
         dirs = "\n".join(str(i) for i in self._new_directories_to_process)
-        logger.info(f"New directories to process: {dirs}")
+        xia2_logger.info(f"New directories to process: {dirs}")
 
-    def run(self):
+    def run(self) -> None:
         pass
 
 
-def cluster_all_unit_cells(working_directory, batch_directories, threshold=1000):
-
+def cluster_all_unit_cells(
+    working_directory: Path, new_data: Dict[str, List[Path]], threshold: float = 1000
+) -> FilePairDict:
+    """Run dials.cluster_unit_cell on all files in new_data"""
     if not Path.is_dir(working_directory):
         Path.mkdir(working_directory)
 
-    logger.info(f"Performing unit cell clustering in {working_directory}")
+    xia2_logger.info(f"Performing unit cell clustering in {working_directory}")
     cmd = ["dials.cluster_unit_cell", "output.clusters=True", f"threshold={threshold}"]
 
-    for d in batch_directories:
-        for ext_ in (".refl", ".expt"):
-            for file_ in list(d.glob("integrated_*" + ext_)):
-                cmd.extend([file_])
+    cmd.extend([str(i) for i in new_data["expt"]])
+    cmd.extend([str(i) for i in new_data["refl"]])
 
     result = procrunner.run(cmd, working_directory=working_directory)
     if result.returncode or result.stderr:
@@ -128,25 +137,85 @@ def cluster_all_unit_cells(working_directory, batch_directories, threshold=1000)
     return {"expt": cluster_expt, "refl": cluster_refl}
 
 
-def scale_cosym(
-    working_directory, expt_file, refl_file, index, space_group, d_min=None
-):
+def run_cosym(
+    params: phil.scope_extract,
+    expts: ExperimentList,
+    tables: List[flex.reflection_table],
+) -> Tuple[ExperimentList, List[flex.reflection_table]]:
+    """Small wrapper to hide cosym run implementation."""
+    cosym_instance = cosym(expts, tables, params)
+    register_default_cosym_observers(cosym_instance)
+    cosym_instance.run()
+    return cosym_instance.experiments, cosym_instance.reflections
 
+
+def merge(
+    working_directory: Path,
+    experiments: ExperimentList,
+    reflection_table: flex.reflection_table,
+    d_min: float = None,
+) -> None:
+
+    with run_in_directory(working_directory):
+        logfile = "dials.merge.log"
+        with log_to_file(logfile) as dials_logger:
+            params = merge_phil_scope.extract()
+            input_ = (
+                "Input parameters:\n  reflections = scaled.refl\n"
+                + "  experiments = scaled.expt\n"
+            )
+            if d_min:
+                params.d_min = d_min
+                input_ += f"  d_min = {d_min}\n"
+            dials_logger.info(input_)
+            mtz_file = merge_data_to_mtz(params, experiments, [reflection_table])
+            dials_logger.info("\nWriting reflections to merged.mtz")
+            out = StringIO()
+            mtz_file.show_summary(out=out)
+            dials_logger.info(out.getvalue())
+            mtz_file.write("merged.mtz")
+            merge_html_report(mtz_file, "dials.merge.html")
+
+
+def _set_scaling_options_for_ssx(
+    scaling_params: phil.scope_extract,
+) -> Tuple[phil.scope_extract, str]:
+    scaling_params.model = "KB"
+    scaling_params.exclude_images = ""  # Bug in extract for strings
+    scaling_params.scaling_options.full_matrix = False
+    scaling_params.weighting.error_model.error_model = None
+    scaling_params.scaling_options.outlier_rejection = "simple"
+    scaling_params.reflection_selection.intensity_choice = "sum"
+    scaling_params.reflection_selection.method = "intensity_ranges"
+    scaling_params.reflection_selection.Isigma_range = (2.0, 0.0)
+    scaling_params.reflection_selection.min_partiality = 0.4
+    input_ = (
+        "  model = KB\n  scaling_options.full_matrix = False\n"
+        + "  weighting.error_model.error_model = None\n"
+        + "  scaling_options.outlier_rejection = simple"
+        + "  reflection_selection.intensity_choice = sum"
+        + "  reflection_selection.method = intensity_ranges"
+        + "  reflection_selection.Isigma_range = 2.0,0.0"
+        + "  reflection_selection.min_partiality = 0.4"
+    )
+    return scaling_params, input_
+
+
+def scale_cosym(
+    working_directory: Path,
+    files: FilePairDict,
+    index: int,
+    space_group: sgtbx.space_group,
+    d_min: float = None,
+) -> FilesDict:
+    """Run prescaling followed by cosym an the expt and refl file."""
     with run_in_directory(working_directory):
 
         params = scaling_phil_scope.extract()
-        refls = [flex.reflection_table.from_file(refl_file)]
-        expts = load.experiment_list(expt_file, check_format=False)
-        params.model = "KB"
-        params.exclude_images = ""  # Bug in extract for strings
+        refls = [flex.reflection_table.from_file(files["refl"])]
+        expts = load.experiment_list(files["expt"], check_format=False)
+        params, _ = _set_scaling_options_for_ssx(params)
         params.output.html = None
-        params.scaling_options.full_matrix = False
-        params.weighting.error_model.error_model = None
-        params.scaling_options.outlier_rejection = "simple"
-        params.reflection_selection.intensity_choice = "sum"
-        params.reflection_selection.method = "intensity_ranges"
-        params.reflection_selection.Isigma_range = (2.0, 0.0)
-        params.reflection_selection.min_partiality = 0.4
         if d_min:
             params.cut_data.d_min = d_min
 
@@ -159,25 +228,30 @@ def scale_cosym(
         if d_min:
             cosym_params.d_min = d_min
         tables = table.split_by_experiment_id()
-        cosym_instance = cosym(scaled_expts, tables, cosym_params)
-        register_default_cosym_observers(cosym_instance)
-        cosym_instance.run()
-        cosym_instance.experiments.as_file(f"processed_{index}.expt")
-        joint_refls = flex.reflection_table.concat(cosym_instance.reflections)
-        joint_refls.as_file(f"processed_{index}.refl")
-        logger.info(
-            f"Consistently indexed {len(cosym_instance.experiments)} crystals in data reduction batch {index+1}"
+        # now run cosym
+        cosym_expts, cosym_tables = run_cosym(cosym_params, scaled_expts, tables)
+        out_refl = f"processed_{index}.refl"
+        out_expt = f"processed_{index}.expt"
+        cosym_expts.as_file(out_expt)
+        joint_refls = flex.reflection_table.concat(cosym_tables)
+        joint_refls.as_file(out_refl)
+        xia2_logger.info(
+            f"Consistently indexed {len(cosym_expts)} crystals in data reduction batch {index+1}"
         )
 
     return {
         index: {
-            "expt": working_directory / f"processed_{index}.expt",
-            "refl": working_directory / f"processed_{index}.refl",
+            "expt": working_directory / out_expt,
+            "refl": working_directory / out_refl,
         }
     }
 
 
-def reference_reindex(working_directory, reference_files, files_for_reindex):
+def reference_reindex(
+    working_directory: Path,
+    reference_files: FilePairDict,
+    files_for_reindex: FilePairDict,
+) -> FilePairDict:
     cmd = [
         "dials.reindex",
         str(files_for_reindex["expt"]),
@@ -196,17 +270,14 @@ def reference_reindex(working_directory, reference_files, files_for_reindex):
     }
 
 
-def select_crystals_close_to(new_directories, unit_cell, abs_angle_tol, abs_length_tol):
-    good_refls = []
-    good_expts = ExperimentList([])
-    refl_files_ = []
-    expt_files_ = []
-    for d in new_directories:
-        for file_ in list(d.glob("integrated_*.expt")):
-            expt_files_.append(file_)
-        for file_ in list(d.glob("integrated_*.refl")):
-            refl_files_.append(file_)
-    for expt, refl in zip(expt_files_, refl_files_):
+def select_crystals_close_to(
+    new_data: Dict[str, List[Path]],
+    unit_cell: uctbx.unit_cell,
+    abs_angle_tol: float,
+    abs_length_tol: float,
+) -> Tuple[List[flex.reflection_table], ExperimentList]:
+    good_refls, good_expts = ([], ExperimentList([]))
+    for expt, refl in zip(new_data["expt"], new_data["refl"]):
         experiments = load.experiment_list(expt, check_format=False)
         refls = flex.reflection_table.from_file(refl)
         identifiers = []
@@ -228,21 +299,74 @@ def select_crystals_close_to(new_directories, unit_cell, abs_angle_tol, abs_leng
             sub_refls.reset_ids()
             good_refls.append(sub_refls)
             good_expts.extend(ExperimentList([experiments[i] for i in expt_indices]))
-    # ok so have a list of reflection tables and an ExperimentList.
-    # first join all the tables together
     return good_refls, good_expts
+
+
+def inspect_directories(
+    new_directories_to_process: List[Path],
+) -> Dict[str, List[Path]]:
+    new_data: Dict[str, List[Path]] = {"expt": [], "refl": []}
+    for d in new_directories_to_process:
+        for file_ in list(d.glob("integrated_*.expt")):
+            new_data["expt"].append(file_)
+        for file_ in list(d.glob("integrated_*.refl")):
+            new_data["refl"].append(file_)
+    return new_data
+
+
+def split_cluster(
+    working_directory: Path,
+    cluster_files: FilePairDict,
+    n_in_cluster: int,
+    batch_size: int,
+) -> FilesDict:
+    data_to_reindex: FilesDict = {}
+    n_split_files = math.ceil(n_in_cluster / batch_size)
+    maxindexlength = len(str(n_in_cluster - 1))
+
+    def template(prefix, maxindexlength, extension, index):
+        return f"{prefix}_{index:0{maxindexlength:d}d}.{extension}"
+
+    # then split into chunks
+    cmd = [
+        "dials.split_experiments",
+        str(cluster_files["expt"]),
+        str(cluster_files["refl"]),
+        f"chunk_size={batch_size}",
+    ]
+    result = procrunner.run(cmd, working_directory=working_directory)
+    if result.returncode or result.stderr:
+        raise ValueError(
+            "dials.split_experiments returned error status:\n" + str(result.stderr)
+        )
+    # now get the files
+
+    for i in range(n_split_files):
+        data_to_reindex[i] = {}
+        for ext_ in ("refl", "expt"):
+            data_to_reindex[i][ext_] = working_directory / str(
+                template(
+                    index=i,
+                    prefix="split",
+                    maxindexlength=maxindexlength,
+                    extension=ext_,
+                )
+            )
+
+    # FIXME need to join the last two so that above the min threshold?
+    return data_to_reindex
 
 
 class SimpleDataReduction(BaseDataReduction):
     def run(
         self,
-        batch_size=1000,
-        space_group=None,
-        nproc=1,
-        anomalous=True,
-        cluster_threshold=1000,
-        d_min=None,
-    ):
+        batch_size: int = 1000,
+        space_group: sgtbx.space_group = None,
+        nproc: int = 1,
+        anomalous: bool = True,
+        cluster_threshold: float = 1000,
+        d_min: float = None,
+    ) -> None:
 
         # just some test options for now
         filter_params = {
@@ -251,14 +375,11 @@ class SimpleDataReduction(BaseDataReduction):
             "threshold": cluster_threshold,
         }
 
-        data_already_reindexed = {}  # a dict of expt-refl pairs
-        data_to_reindex = {}
-        reidx_results = (
-            self._main_directory
-            / "data_reduction"
-            / "reindex"
-            / "reindexing_results.json"
-        )
+        data_already_reindexed: FilesDict = {}
+        data_to_reindex: FilesDict = {}
+        reindex_directory = self._main_directory / "data_reduction" / "reindex"
+
+        reidx_results = reindex_directory / "reindexing_results.json"
         if reidx_results.is_file():
             previous = json.load(reidx_results.open())
             data_already_reindexed = {
@@ -269,16 +390,18 @@ class SimpleDataReduction(BaseDataReduction):
                 assert Path(file_pair["refl"]).is_file()
 
         if self._new_directories_to_process:
+            new_data = inspect_directories(self._new_directories_to_process)
+            filter_directory = self._main_directory / "data_reduction" / "prefilter"
             data_already_reindexed, data_to_reindex = self.filter(
-                self._main_directory,
-                self._new_directories_to_process,
+                filter_directory,
+                new_data,
                 data_already_reindexed,
                 batch_size,
                 filter_params,
             )
 
         files_to_scale = self.reindex(
-            self._main_directory,
+            reindex_directory,
             data_to_reindex,
             data_already_reindexed,
             space_group=space_group,
@@ -290,59 +413,61 @@ class SimpleDataReduction(BaseDataReduction):
         # So save this to allow reloading in future for iterative workflows.
         data_reduction_progress = {
             "directories_processed": [
-                str(i) for i in self._directories_previously_processed
+                str(i)
+                for i in (
+                    self._directories_previously_processed
+                    + self._new_directories_to_process
+                )
             ]
-            + [str(i) for i in self._new_directories_to_process]
         }
         with open(
             self._main_directory / "data_reduction" / "data_reduction.json", "w"
         ) as fp:
             json.dump(data_reduction_progress, fp)
 
+        scale_directory = self._main_directory / "data_reduction" / "scale"
         self.scale_and_merge(
-            self._main_directory, files_to_scale, anomalous=anomalous, d_min=d_min
+            scale_directory, files_to_scale, anomalous=anomalous, d_min=d_min
         )
 
+    @staticmethod
     def filter(
-        self,
-        main_directory,
-        new_directories_to_process,
-        data_already_reindexed: Dict,
-        batch_size,
-        filter_params,
-    ):
+        working_directory: Path,
+        new_data: Dict[str, List[Path]],
+        data_already_reindexed: FilesDict,
+        batch_size: int,
+        filter_params: Dict[str, float],
+    ) -> Tuple[FilesDict, FilesDict]:
 
-        data_to_reindex = {}
+        data_to_reindex = {}  # a FilesDict
         current_unit_cell = 0
+
         if data_already_reindexed:
-            cluster_results = (
-                main_directory / "data_reduction" / "prefilter" / "cluster_results.json"
-            )
+            cluster_results = working_directory / "cluster_results.json"
             if cluster_results.is_file():
                 result = json.load(cluster_results.open())
                 current_unit_cell = uctbx.unit_cell(result["unit_cell"])
-                logger.info(
+                xia2_logger.info(
                     f"Using unit cell {result['unit_cell']} from previous clustering analysis"
                 )
-
-        working_directory = main_directory / "data_reduction" / "prefilter"
 
         if not current_unit_cell:
             # none previously processed (or processing failed for some reason)
             # so do clustering on all data, using a threshold.
-            logger.notice(banner("Clustering"))
+            xia2_logger.notice(banner("Clustering"))  # type: ignore
             main_cluster_files = cluster_all_unit_cells(
                 working_directory,
-                new_directories_to_process,
+                new_data,
                 filter_params["threshold"],
-            )
-            cluster_expt = str(main_cluster_files["expt"])
-            cluster_refl = str(main_cluster_files["refl"])
+            )  # FIXME should we also consider data_already_reindexed here if processing
+            # previously failed? or assert not any already reindexed?
 
             # save the results to a json
-            cluster_expts = load.experiment_list(cluster_expt, check_format=False)
+            cluster_expts = load.experiment_list(
+                main_cluster_files["expt"],
+                check_format=False,
+            )
             n_in_cluster = len(cluster_expts)
-
             uc = determine_best_unit_cell(cluster_expts)
             result = {
                 "unit_cell": [round(i, 4) for i in uc.parameters()],
@@ -353,54 +478,20 @@ class SimpleDataReduction(BaseDataReduction):
 
             # now split into chunks
             #  Work out what the filenames will be from split_experiments
-            n_split_files = math.ceil(n_in_cluster / batch_size)
-            maxindexlength = len(str(n_in_cluster - 1))
-
-            def template(prefix, maxindexlength, extension, index):
-                return f"{prefix}_{index:0{maxindexlength:d}d}.{extension}"
-
-            # then split into chunks
-            cmd = [
-                "dials.split_experiments",
-                cluster_refl,
-                cluster_expt,
-                f"chunk_size={batch_size}",
-            ]
-            result = procrunner.run(cmd, working_directory=working_directory)
-            if result.returncode or result.stderr:
-                raise ValueError(
-                    "dials.split_experiments returned error status:\n"
-                    + str(result.stderr)
-                )
-            # now get the files
-
-            for i in range(n_split_files):
-                data_to_reindex[i] = {"refl": None, "expt": None}
-                for ext_ in ("refl", "expt"):
-                    data_to_reindex[i][ext_] = working_directory / str(
-                        template(
-                            index=i,
-                            prefix="split",
-                            maxindexlength=maxindexlength,
-                            extension=ext_,
-                        )
-                    )
-
-            # FIXME need to join the last two so that above the min threshold.
-
-            return data_already_reindexed, data_to_reindex  # list of files
+            data_to_reindex = split_cluster(
+                working_directory, main_cluster_files, n_in_cluster, batch_size
+            )
+            return data_already_reindexed, data_to_reindex  # dicts of files
 
         # else going to filter some and prepare for reindexing, and note which is already reindexed.
 
-        logger.notice(banner("Filtering"))
+        xia2_logger.notice(banner("Filtering"))  # type: ignore
         good_refls, good_expts = select_crystals_close_to(
-            new_directories_to_process,
+            new_data,
             current_unit_cell,
             filter_params["absolute_angle_tolerance"],
             filter_params["absolute_length_tolerance"],
         )
-
-        from dials.util.multi_dataset_handling import renumber_table_id_columns
 
         if len(good_expts) < batch_size:
             # we want all jobs to use at least batch_size crystals, so join on
@@ -408,17 +499,12 @@ class SimpleDataReduction(BaseDataReduction):
             last_batch = data_already_reindexed.pop(
                 list(data_already_reindexed.keys())[-1]
             )
-            last_expts = load.experiment_list(last_batch["expt"])
-            last_refls = flex.reflection_table.from_file(last_batch["refl"])
-            good_refls.append(last_refls)
-            good_expts.extend(last_expts)
+            good_refls.append(flex.reflection_table.from_file(last_batch["refl"]))
+            good_expts.extend(load.experiment_list(last_batch["expt"]))
 
-        good_refls = renumber_table_id_columns(good_refls)
-        overall_refls = flex.reflection_table()
-        for table in good_refls:
-            overall_refls.extend(table)
-        good_refls = overall_refls
+        joint_good_refls = flex.reflection_table.concat(good_refls)
 
+        # FIXME write generic splitting function for this and call to dials.split_experiments?
         # now slice into batches and save
         n_batches = math.floor(len(good_expts) / batch_size)
         # make sure last batch has at least the batch size
@@ -436,9 +522,9 @@ class SimpleDataReduction(BaseDataReduction):
             out_refl = working_directory / (template(index=i) + ".refl")
             sub_expt = good_expts[splits[i] : splits[i + 1]]
             sub_expt.as_file(out_expt)
-            sel = good_refls["id"] >= splits[i]
-            sel &= good_refls["id"] < splits[i + 1]
-            sub_refl = good_refls.select(sel)
+            sel = joint_good_refls["id"] >= splits[i]
+            sel &= joint_good_refls["id"] < splits[i + 1]
+            sub_refl = joint_good_refls.select(sel)
             sub_refl.reset_ids()
             sub_refl.as_file(out_refl)
             data_to_reindex[i + n_already_reindexed_files] = {
@@ -450,39 +536,37 @@ class SimpleDataReduction(BaseDataReduction):
 
     @staticmethod
     def reindex(
-        main_directory,
-        data_to_reindex,
-        data_already_reindexed,
-        space_group=None,
-        nproc=1,
-        d_min=None,
-    ):
+        working_directory: Path,
+        data_to_reindex: FilesDict,
+        data_already_reindexed: FilesDict,
+        space_group: sgtbx.space_group = None,
+        nproc: int = 1,
+        d_min: float = None,
+    ) -> FilesDict:
         sys.stdout = open(os.devnull, "w")  # block printing from cosym
-        working_directory = main_directory / "data_reduction" / "reindex"
+
         if not Path.is_dir(working_directory):
             Path.mkdir(working_directory)
 
+        reference_files: FilePairDict = {}
         if 0 in data_already_reindexed:
             reference_files = data_already_reindexed[0]
-        else:
-            reference_files = {"expt": None, "refl": None}
-        files_for_reference_reindex = {}
-        reindexed_results = {}
-        logger.notice(banner("Reindexing"))
+        files_for_reference_reindex: FilesDict = {}
+        reindexed_results: FilesDict = {}
+        xia2_logger.notice(banner("Reindexing"))  # type: ignore
         with concurrent.futures.ProcessPoolExecutor(max_workers=nproc) as pool:
-            futures = {
+            cosym_futures: Dict[Any, int] = {
                 pool.submit(
                     scale_cosym,
                     working_directory,
-                    files["expt"],
-                    files["refl"],
+                    files,
                     index,
                     space_group,
                     d_min,
                 ): index
                 for index, files in data_to_reindex.items()
             }
-            for future in concurrent.futures.as_completed(futures):
+            for future in concurrent.futures.as_completed(cosym_futures):
                 try:
                     result = future.result()
                 except Exception as e:
@@ -493,8 +577,8 @@ class SimpleDataReduction(BaseDataReduction):
                     if list(result.keys()) == [0]:
                         reference_files = result[0]
                         reindexed_results[0] = {
-                            "expt": str(result[0]["expt"]),
-                            "refl": str(result[0]["refl"]),
+                            "expt": result[0]["expt"],
+                            "refl": result[0]["refl"],
                         }
                     else:
                         files_for_reference_reindex.update(result)
@@ -502,91 +586,97 @@ class SimpleDataReduction(BaseDataReduction):
         # now do reference reindexing
 
         with concurrent.futures.ProcessPoolExecutor(max_workers=nproc) as pool:
-            futures = {
+            reidx_futures: Dict[Any, int] = {
                 pool.submit(
                     reference_reindex, working_directory, reference_files, files
                 ): index
                 for index, files in files_for_reference_reindex.items()
             }
-            for future in concurrent.futures.as_completed(futures):
+            for future in concurrent.futures.as_completed(reidx_futures):
                 try:
                     result = future.result()
-                    i = futures[future]
+                    i = reidx_futures[future]
                 except Exception as e:
                     raise ValueError(
                         f"Unsuccessful reindexing of the new data. Error:\n{e}"
                     )
                 else:
                     reindexed_results[i] = {
-                        "expt": str(result["expt"]),
-                        "refl": str(result["refl"]),
+                        "expt": result["expt"],
+                        "refl": result["refl"],
                     }
-                    logger.info(f"Reindexed batch {i+1} using batch 1 as reference")
+                    xia2_logger.info(
+                        f"Reindexed batch {i+1} using batch 1 as reference"
+                    )
 
-        files_to_scale_dict = {**data_already_reindexed, **reindexed_results}
-        files_to_scale = {"expts": [], "refls": []}
-        for file_pair in files_to_scale_dict.values():
-            files_to_scale["expts"].append(file_pair["expt"])
-            files_to_scale["refls"].append(file_pair["refl"])
+        files_to_scale = {**data_already_reindexed, **reindexed_results}
+        output_files_to_scale = {
+            k: {"expt": str(v["expt"]), "refl": str(v["refl"])}
+            for k, v in files_to_scale.items()
+        }
 
-        reidx_results = (
-            main_directory / "data_reduction" / "reindex" / "reindexing_results.json"
-        )
+        reidx_results = working_directory / "reindexing_results.json"
         with open(reidx_results, "w") as f:
-            data = {"reindexed_files": files_to_scale_dict}
+            data = {"reindexed_files": output_files_to_scale}
             json.dump(data, f)
         sys.stdout = sys.__stdout__  # restore printing
         return files_to_scale
 
     @staticmethod
-    def scale_and_merge(main_directory, files_to_scale, anomalous=True, d_min=None):
+    def scale_and_merge(
+        working_directory: Path,
+        files_to_scale: FilesDict,
+        anomalous: bool = True,
+        d_min: float = None,
+    ) -> None:
+        """Run scaling and merging"""
 
-        working_directory = main_directory / "data_reduction" / "scale"
         if not Path.is_dir(working_directory):
             Path.mkdir(working_directory)
-        logger.notice(banner("Scaling & Merging"))
+        xia2_logger.notice(banner("Scaling & Merging"))  # type: ignore
 
         with run_in_directory(working_directory):
             logfile = "dials.scale.log"
             with log_to_file(logfile) as dials_logger:
+                # Setup scaling
+                input_ = "Input parameters:\n"
                 experiments = ExperimentList()
                 reflection_tables = []
-                for expt in files_to_scale["expts"]:
+                for file_pair in files_to_scale.values():
+                    expt, table = file_pair["expt"], file_pair["refl"]
                     experiments.extend(load.experiment_list(expt, check_format=False))
-                for table in files_to_scale["refls"]:
                     reflection_tables.append(flex.reflection_table.from_file(table))
+                    input_ += "\n".join(f"  reflections = {table}")
+                    input_ += "\n".join(f"  experiments = {expt}")
 
                 params = scaling_phil_scope.extract()
-                params.model = "KB"
-                params.exclude_images = ""  # Bug in extract for strings
-                params.weighting.error_model.error_model = None
-                params.scaling_options.full_matrix = False
-                params.scaling_options.outlier_rejection = "simple"
-                params.reflection_selection.min_partiality = 0.4
-                params.reflection_selection.intensity_choice = "sum"
+                params, input_opts = _set_scaling_options_for_ssx(params)
+                input_ += input_opts
                 params.scaling_options.nproc = 8
                 params.anomalous = anomalous
-                params.reflection_selection.method = "intensity_ranges"
-                params.reflection_selection.Isigma_range = (2.0, 0.0)
                 params.output.unmerged_mtz = "scaled.mtz"
+                input_ += f"  scaling_options.nproc = 8\n  anomalous = {anomalous}\n"
+                input_ += "  output.unmerged_mtz = scaled.mtz\n"
                 if d_min:
                     params.cut_data.d_min = d_min
-
+                    input_ += f"  cut_data.d_min={d_min}\n"
+                dials_logger.info(input_)
+                # Run the scaling using the algorithm class to give access to scaler
                 scaler = ScalingAlgorithm(params, experiments, reflection_tables)
                 scaler.run()
-                scaled_expts, table = scaler.finish()
+                scaled_expts, scaled_table = scaler.finish()
 
                 dials_logger.info("Saving scaled experiments to scaled.expt")
                 scaled_expts.as_file("scaled.expt")
                 dials_logger.info("Saving scaled reflections to scaled.expt")
-                table.as_file("scaled.refl")
+                scaled_table.as_file("scaled.refl")
 
-                _export_unmerged_mtz(params, scaled_expts, table)
+                _export_unmerged_mtz(params, scaled_expts, scaled_table)
 
                 n_final = len(scaled_expts)
                 uc = determine_best_unit_cell(scaled_expts)
                 uc_str = ", ".join(str(round(i, 3)) for i in uc.parameters())
-                logger.info(
+                xia2_logger.info(
                     f"{n_final} crystals scaled in space group {scaled_expts[0].crystal.get_space_group().info()}\nMedian cell: {uc_str}"
                 )
 
@@ -596,17 +686,6 @@ class SimpleDataReduction(BaseDataReduction):
                         scaler.anom_merging_statistics_result,
                     )
                 )
-                logger.info(stats)
+                xia2_logger.info(stats)
 
-            logfile = "dials.merge.log"
-            with log_to_file(logfile) as dials_logger:
-                params = merge_phil_scope.extract()
-                if d_min:
-                    params.d_min = d_min
-                mtz_file = merge_data_to_mtz(params, scaled_expts, [table])
-                dials_logger.info("\nWriting reflections to merged.mtz")
-                out = StringIO()
-                mtz_file.show_summary(out=out)
-                dials_logger.info(out.getvalue())
-                mtz_file.write("merged.mtz")
-                merge_html_report(mtz_file, "dials.merge.html")
+        merge(working_directory, scaled_expts, scaled_table, d_min)

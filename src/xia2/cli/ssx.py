@@ -55,7 +55,10 @@ nproc = 1
   .type = int
 batch_size = 1000
   .type = int
-  .help = "Processes the images in batches, with a subfolder for each batch"
+  .help = "Index and integrate the images in batches with at least this number"
+          "of images, with a subfolder for each batch. In data reduction, perform"
+          "consistent reindexing of crystals in batches of at least this number"
+          "of crystals."
 assess_crystals {
   n_images = 1000
     .type = int

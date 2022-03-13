@@ -21,6 +21,7 @@ nproc = 1
   .type = int
 batch_size = 1000
   .type = int
+  .help = "The minimum batch size for consistent reindexing of data with cosym"
 clustering {
   threshold=1000
     .type = float
@@ -50,7 +51,7 @@ def run(args=sys.argv[1:]):
         check_format=False,
         epilog="",
     )
-    params, options = parser.parse_args(args=args, show_diff_phil=False)
+    params, _ = parser.parse_args(args=args, show_diff_phil=False)
     xia2.Handlers.Streams.setup_logging(logfile="xia2.ssx_reduce.log")
     # remove the xia2 handler from the dials logger.
     dials_logger = logging.getLogger("dials")
