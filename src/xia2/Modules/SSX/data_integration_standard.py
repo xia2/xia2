@@ -15,7 +15,7 @@ from dxtbx.serialize import load
 from iotbx import phil
 
 from xia2.Handlers.Streams import banner
-from xia2.Modules.SSX.data_integration import (
+from xia2.Modules.SSX.data_integration_programs import (
     best_cell_from_cluster,
     run_refinement,
     ssx_find_spots,

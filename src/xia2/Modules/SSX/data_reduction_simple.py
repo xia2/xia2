@@ -14,7 +14,8 @@ from dials.array_family import flex
 from dxtbx.serialize import load
 
 from xia2.Handlers.Streams import banner
-from xia2.Modules.SSX.data_reduction import (
+from xia2.Modules.SSX.data_reduction_base import BaseDataReduction
+from xia2.Modules.SSX.data_reduction_programs import (
     cluster_all_unit_cells,
     inspect_directories,
     merge,
@@ -24,7 +25,6 @@ from xia2.Modules.SSX.data_reduction import (
     select_crystals_close_to,
     split,
 )
-from xia2.Modules.SSX.data_reduction_base import BaseDataReduction
 
 xia2_logger = logging.getLogger(__name__)
 
