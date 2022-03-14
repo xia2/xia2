@@ -242,7 +242,7 @@ def run_import(
                         return
 
     xia2_logger.info("New images or geometry detected, running import")
-    import_command = ["dials.import"]
+    import_command = ["dials.import", "output.experiments=imported.expt"]
     if file_input["images"]:
         import_command += file_input["images"]
     elif file_input["template"]:
