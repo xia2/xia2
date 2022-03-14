@@ -1,13 +1,10 @@
 from __future__ import annotations
 
-import contextlib
 import copy
 import json
 import logging
-import math
-import os
 from pathlib import Path
-from typing import Any, Dict, Generator, List, Tuple
+from typing import List, Tuple
 
 import iotbx.phil
 from cctbx import crystal, sgtbx, uctbx
@@ -25,55 +22,19 @@ from dials.array_family import flex
 from dials.command_line.find_spots import working_phil as find_spots_phil
 from dials.command_line.ssx_index import index, phil_scope
 from dials.command_line.ssx_integrate import run_integration, working_phil
-from dials.util import tabulate
 from dials.util.ascii_art import spot_counts_per_image_plot
-from dials.util.log import DialsLogfileFormatter, print_banner
 from dxtbx.model import ExperimentList
 from dxtbx.serialize import load
 from xfel.clustering.cluster import Cluster
 
 from xia2.Handlers.Streams import banner
+from xia2.Modules.SSX.reporting import (
+    generate_refinement_step_table,
+    indexing_summary_output,
+)
+from xia2.Modules.SSX.util import log_to_file, run_in_directory
 
 xia2_logger = logging.getLogger(__name__)
-
-
-def config_quiet(logfile: str, verbosity: int = 0) -> None:
-    dials_logger = logging.getLogger("dials")
-    logging.captureWarnings(True)
-    warning_logger = logging.getLogger("py.warnings")
-    if verbosity > 1:
-        loglevel = logging.DEBUG
-    else:
-        loglevel = logging.INFO
-
-    fh = logging.FileHandler(filename=logfile, mode="w", encoding="utf-8")
-    fh.setLevel(loglevel)
-    fh.setFormatter(DialsLogfileFormatter(timed=verbosity))
-    dials_logger.addHandler(fh)
-    warning_logger.addHandler(fh)
-    dials_logger.setLevel(loglevel)
-    print_banner(use_logging=True)
-
-
-@contextlib.contextmanager
-def run_in_directory(directory: Path) -> Generator[Path, None, None]:
-    owd = os.getcwd()
-    try:
-        os.chdir(directory)
-        yield directory
-    finally:
-        os.chdir(owd)
-
-
-@contextlib.contextmanager
-def log_to_file(filename: str) -> Generator[logging.Logger, None, None]:
-    try:
-        config_quiet(logfile=filename)
-        dials_logger = logging.getLogger("dials")
-        yield dials_logger
-    finally:
-        dials_logger = logging.getLogger("dials")
-        dials_logger.handlers.clear()
 
 
 def ssx_find_spots(working_directory: Path) -> flex.reflection_table:
@@ -167,74 +128,6 @@ def ssx_index(
             with open("dials.ssx_index.json", "w") as outfile:
                 json.dump(summary_plots, outfile)
     return indexed_experiments, indexed_reflections, large_clusters
-
-
-def indexing_summary_output(summary_data: Dict, summary_plots: Dict) -> str:
-    success = [
-        str(len(v)) if len(v) > 1 else "\u2713" if v[0]["n_indexed"] else "."
-        for v in summary_data.values()
-    ]
-    output_ = ""
-    block_width = 50
-    for i in range(0, math.ceil(len(success) / block_width)):
-        row_ = success[i * block_width : (i + 1) * block_width]
-        output_ += "".join(row_) + "\n"
-
-    # Now determine the IQR for the rmsds
-    output_ += "Indexing summary statistics (median and IQR):\n"
-    output_ += f"{'Quantity':<28} {'Q1':>6} Median {'Q3':>6}"
-    import numpy as np
-
-    rmsdx = [i["y"] for i in summary_plots["rmsds"]["data"][::2]]
-    rmsdy = [i["y"] for i in summary_plots["rmsds"]["data"][1::2]]
-    rmsdz = [i["y"] for i in summary_plots["rmsdz"]["data"]]
-    for name, vals in zip(
-        ["RMSD_X", "RMSD_Y", "RMSD_dPsi (deg)"], [rmsdx, rmsdy, rmsdz]
-    ):
-        x = np.concatenate([np.array(i) for i in vals])
-        n = x.size
-        sorted_x = np.sort(x)
-        Q1 = f"{sorted_x[n // 4]:.4f}"
-        Q2 = f"{sorted_x[n // 2]:.4f}"
-        Q3 = f"{sorted_x[3 * n // 4]:.4f}"
-        output_ += f"\n{name:<28} {Q1:>6} {Q2:>6} {Q3:>6}"
-    percent_idx = np.array(summary_plots["percent_indexed"]["data"][0]["y"])
-    name = f"{'%'} spots indexed per image"
-    percent_idx = percent_idx[percent_idx > 0]
-    n = percent_idx.size
-    sorted_x = np.sort(percent_idx)
-    Q1 = f"{sorted_x[n // 4]:3.2f}"
-    Q2 = f"{sorted_x[n // 2]:3.2f}"
-    Q3 = f"{sorted_x[3 * n // 4]:3.2f}"
-    output_ += f"\n{name:<28} {Q1:>6} {Q2:>6} {Q3:>6}"
-    return output_
-
-
-def generate_refinement_step_table(refiner: Any) -> str:
-
-    rmsd_multipliers = []
-    header = ["Step", "Nref"]
-    for (name, units) in zip(refiner._target.rmsd_names, refiner._target.rmsd_units):
-        if units == "mm":
-            header.append(name + "\n(mm)")
-            rmsd_multipliers.append(1.0)
-        elif units == "rad":  # convert radians to degrees for reporting
-            header.append(name + "\n(deg)")
-            rmsd_multipliers.append(180 / math.pi)
-        else:  # leave unknown units alone
-            header.append(name + "\n(" + units + ")")
-
-    rows = []
-    for i in range(refiner._refinery.history.get_nrows()):
-        rmsds = [
-            r * m
-            for (r, m) in zip(refiner._refinery.history["rmsd"][i], rmsd_multipliers)
-        ]
-        rows.append(
-            [str(i), str(refiner._refinery.history["num_reflections"][i])]
-            + [f"{r:.5g}" for r in rmsds]
-        )
-    return tabulate(rows, header)
 
 
 def run_refinement(working_directory: Path) -> None:
@@ -353,21 +246,3 @@ def best_cell_from_cluster(cluster: Cluster) -> Tuple:
     uc_params_conv = group["best_subsym"].unit_cell().parameters()
     sg = group["best_subsym"].space_group_info().symbol_and_number()
     return sg, uc_params_conv
-
-
-def condensed_unit_cell_info(clusters: List[Cluster]) -> str:
-    out_str = "Unit cell clustering for largest clusters (median & stdev)"
-    al, be, ga = "med_" + "\u03B1", "med_" + "\u03B2", "med_" + "\u03B3"
-    out_str += f"\n{'n_xtals'} {'s.g.':>7} {'med_a':>7} {'med_b':>7} {'med_c':>7} {al:>6} {be:>6} {ga:>6}"
-
-    for cluster in clusters:
-        sorted_pg_comp = sorted(
-            cluster.pg_composition.items(),
-            key=lambda x: -1 * x[1],
-        )
-        pg_str = ",".join([str(pg[0]) for pg in sorted_pg_comp])
-        p = [f"{i:.2f}" for i in cluster.medians]
-        sds = [f"{i:.2f}" for i in cluster.stdevs]
-        out_str += f"\n{len(cluster.members):>7} {pg_str:>7} {p[0]:>7} {p[1]:>7} {p[2]:>7} {p[3]:>6} {p[4]:>6} {p[5]:>6}"
-        out_str += f"\n{'':>7} {'':>7} {sds[0]:>7} {sds[1]:>7} {sds[2]:>7} {sds[3]:>6} {sds[4]:>6} {sds[5]:>6}"
-    return out_str

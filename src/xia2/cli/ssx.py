@@ -42,13 +42,13 @@ import xia2.Handlers.Streams
 from xia2.Handlers.Streams import banner
 from xia2.Modules.SSX.data_integration import (
     best_cell_from_cluster,
-    condensed_unit_cell_info,
     run_refinement,
     ssx_find_spots,
     ssx_index,
     ssx_integrate,
 )
 from xia2.Modules.SSX.data_reduction import SimpleDataReduction
+from xia2.Modules.SSX.reporting import condensed_unit_cell_info
 
 phil_str = """
 images = None

@@ -26,13 +26,13 @@ from dials.command_line.merge import phil_scope as merge_phil_scope
 from dials.command_line.scale import _export_unmerged_mtz
 from dials.command_line.scale import phil_scope as scaling_phil_scope
 from dials.command_line.scale import run_scaling
-from dials.report.analysis import format_statistics, table_1_stats
 from dxtbx.model import ExperimentList
 from dxtbx.serialize import load
 from iotbx import phil
 
 from xia2.Handlers.Streams import banner
-from xia2.Modules.SSX.data_integration import log_to_file, run_in_directory
+from xia2.Modules.SSX.reporting import statistics_output_from_scaler
+from xia2.Modules.SSX.util import log_to_file, run_in_directory
 
 xia2_logger = logging.getLogger(__name__)
 
@@ -679,13 +679,6 @@ class SimpleDataReduction(BaseDataReduction):
                 xia2_logger.info(
                     f"{n_final} crystals scaled in space group {scaled_expts[0].crystal.get_space_group().info()}\nMedian cell: {uc_str}"
                 )
-
-                stats = format_statistics(
-                    table_1_stats(
-                        scaler.merging_statistics_result,
-                        scaler.anom_merging_statistics_result,
-                    )
-                )
-                xia2_logger.info(stats)
+                xia2_logger.info(statistics_output_from_scaler(scaler))
 
         merge(working_directory, scaled_expts, scaled_table, d_min)
