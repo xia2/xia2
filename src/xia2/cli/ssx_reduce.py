@@ -19,7 +19,7 @@ from pathlib import Path
 from dials.util.options import ArgumentParser
 from iotbx import phil
 
-from xia2.Modules.SSX.data_reduction import SimpleDataReduction
+from xia2.Modules.SSX.data_reduction_simple import SimpleDataReduction
 
 phil_str = """
 directory = None
