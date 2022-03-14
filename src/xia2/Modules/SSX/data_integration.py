@@ -7,7 +7,7 @@ import logging
 import math
 import os
 from pathlib import Path
-from typing import List, Tuple
+from typing import Any, Dict, Generator, List, Tuple
 
 import iotbx.phil
 from cctbx import crystal, sgtbx, uctbx
@@ -37,7 +37,7 @@ from xia2.Handlers.Streams import banner
 xia2_logger = logging.getLogger(__name__)
 
 
-def config_quiet(logfile, verbosity=0):
+def config_quiet(logfile: str, verbosity: int = 0) -> None:
     dials_logger = logging.getLogger("dials")
     logging.captureWarnings(True)
     warning_logger = logging.getLogger("py.warnings")
@@ -56,7 +56,7 @@ def config_quiet(logfile, verbosity=0):
 
 
 @contextlib.contextmanager
-def run_in_directory(directory):
+def run_in_directory(directory: Path) -> Generator[Path, None, None]:
     owd = os.getcwd()
     try:
         os.chdir(directory)
@@ -66,7 +66,7 @@ def run_in_directory(directory):
 
 
 @contextlib.contextmanager
-def log_to_file(filename):
+def log_to_file(filename: str) -> Generator[logging.Logger, None, None]:
     try:
         config_quiet(logfile=filename)
         dials_logger = logging.getLogger("dials")
@@ -78,7 +78,7 @@ def log_to_file(filename):
 
 def ssx_find_spots(working_directory: Path) -> flex.reflection_table:
 
-    xia2_logger.notice(banner("Spotfinding"))
+    xia2_logger.notice(banner("Spotfinding"))  # type: ignore
     with run_in_directory(working_directory):
         # Set up the input
         logfile = "dials.find_spots.log"
@@ -105,7 +105,7 @@ def ssx_index(
     max_lattices: int = 1,
 ) -> Tuple[ExperimentList, flex.reflection_table, List[Cluster]]:
 
-    xia2_logger.notice(banner("Indexing"))
+    xia2_logger.notice(banner("Indexing"))  # type: ignore
     with run_in_directory(working_directory):
         logfile = "dials.ssx_index.log"
         with log_to_file(logfile) as dials_logger:
@@ -169,7 +169,7 @@ def ssx_index(
     return indexed_experiments, indexed_reflections, large_clusters
 
 
-def indexing_summary_output(summary_data, summary_plots):
+def indexing_summary_output(summary_data: Dict, summary_plots: Dict) -> str:
     success = [
         str(len(v)) if len(v) > 1 else "\u2713" if v[0]["n_indexed"] else "."
         for v in summary_data.values()
@@ -210,8 +210,7 @@ def indexing_summary_output(summary_data, summary_plots):
     return output_
 
 
-def generate_refinement_step_table(refiner):
-    import math
+def generate_refinement_step_table(refiner: Any) -> str:
 
     rmsd_multipliers = []
     header = ["Step", "Nref"]
@@ -239,7 +238,7 @@ def generate_refinement_step_table(refiner):
 
 
 def run_refinement(working_directory: Path) -> None:
-    xia2_logger.notice(banner("Joint refinement"))
+    xia2_logger.notice(banner("Joint refinement"))  # type: ignore
 
     from dials.command_line.refine import run_dials_refine, working_phil
 
@@ -271,7 +270,7 @@ def ssx_integrate(
     working_directory: Path, integration_params: iotbx.phil.scope_extract
 ) -> List[Cluster]:
 
-    xia2_logger.notice(banner("Integrating"))
+    xia2_logger.notice(banner("Integrating"))  # type: ignore
     with run_in_directory(working_directory):
         logfile = "dials.ssx_integrate.log"
         with log_to_file(logfile) as dials_logger:

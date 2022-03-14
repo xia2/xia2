@@ -1,3 +1,14 @@
+"""
+xia2.ssx_reduce: A data reduction pipeline for synchrotron serial crystallography
+data, using tools from the DIALS package. This pipeline is the data reduction
+segment of xia2.ssx.
+To run, provide directories containing integrated data file and a space group:
+    xia2.ssx_reduce directory=batch_{1..5} space_group=x
+This processing runs dials.cluster_unit_cell, dials.cosym, dials.reindex,
+dials.scale and dials.merge. Refer to the individual DIALS program documentation
+or https://dials.github.io/ssx_processing_guide.html for more details.
+"""
+
 from __future__ import annotations
 
 import logging
@@ -49,7 +60,7 @@ def run(args=sys.argv[1:]):
         read_reflections=False,
         phil=phil_scope,
         check_format=False,
-        epilog="",
+        epilog=__doc__,
     )
     params, _ = parser.parse_args(args=args, show_diff_phil=False)
     xia2.Handlers.Streams.setup_logging(logfile="xia2.ssx_reduce.log")
