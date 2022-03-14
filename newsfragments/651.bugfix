@@ -1,1 +1,0 @@
-Avoid hanging on a call to ``pointless`` to get version information.

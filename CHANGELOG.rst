@@ -1,3 +1,31 @@
+xia2 3.9.0 (2022-03-14)
+=======================
+
+Features
+--------
+
+- ``xia2.delta_cc_half``: Add overall CC½, plus a completeness column to the table. (`#645 <https://github.com/xia2/xia2/issues/645>`_)
+
+
+Bugfixes
+--------
+
+- ``xia2.multiplex``: Allow processing imported mtz when imageset is absent. (`#641 <https://github.com/xia2/xia2/issues/641>`_)
+- Avoid hanging on a call to ``pointless`` to get version information. (`#651 <https://github.com/xia2/xia2/issues/651>`_)
+
+
+Deprecations and Removals
+-------------------------
+
+- xia2 no longer supports Python 3.7. (`#646 <https://github.com/xia2/xia2/issues/646>`_)
+
+
+Misc
+----
+
+- `#647 <https://github.com/xia2/xia2/issues/647>`_, `#648 <https://github.com/xia2/xia2/issues/648>`_, `#655 <https://github.com/xia2/xia2/issues/655>`_, `#657 <https://github.com/xia2/xia2/issues/657>`_, `#658 <https://github.com/xia2/xia2/issues/658>`_, `#659 <https://github.com/xia2/xia2/issues/659>`_
+
+
 xia2 3.8.1 (2022-01-25)
 =======================
 
