@@ -26,6 +26,7 @@ from dxtbx.model import ExperimentList
 from dxtbx.serialize import load
 from iotbx import phil
 
+from xia2.Driver.timing import record_step
 from xia2.Modules.SSX.reporting import statistics_output_from_scaler
 from xia2.Modules.SSX.util import log_to_file, run_in_directory
 
@@ -49,12 +50,12 @@ def cluster_all_unit_cells(
 
     cmd.extend([str(i) for i in new_data["expt"]])
     cmd.extend([str(i) for i in new_data["refl"]])
-
-    result = procrunner.run(cmd, working_directory=working_directory)
-    if result.returncode or result.stderr:
-        raise ValueError(
-            "Unit cell clustering returned error status:\n" + str(result.stderr)
-        )
+    with record_step("dials.cluster_unit_cell"):
+        result = procrunner.run(cmd, working_directory=working_directory)
+        if result.returncode or result.stderr:
+            raise ValueError(
+                "Unit cell clustering returned error status:\n" + str(result.stderr)
+            )
     # handle fact that could be cluster_0.expt or cluster_00.expt etc
     clusters = list(working_directory.glob("cluster_*.expt"))
     str_numbers = [str(c).split("cluster_")[-1].rstrip(".expt") for c in clusters]
@@ -85,7 +86,7 @@ def merge(
 
     with run_in_directory(working_directory):
         logfile = "dials.merge.log"
-        with log_to_file(logfile) as dials_logger:
+        with log_to_file(logfile) as dials_logger, record_step("dials.merge"):
             params = merge_phil_scope.extract()
             input_ = (
                 "Input parameters:\n  reflections = scaled.refl\n"
@@ -136,7 +137,7 @@ def scale(
 ) -> Tuple[ExperimentList, flex.reflection_table]:
     with run_in_directory(working_directory):
         logfile = "dials.scale.log"
-        with log_to_file(logfile) as dials_logger:
+        with log_to_file(logfile) as dials_logger, record_step("dials.scale"):
             # Setup scaling
             input_ = "Input parameters:\n"
             experiments = ExperimentList()
@@ -193,33 +194,36 @@ def scale_cosym(
     """Run prescaling followed by cosym an the expt and refl file."""
     with run_in_directory(working_directory):
 
-        params = scaling_phil_scope.extract()
-        refls = [flex.reflection_table.from_file(files["refl"])]
-        expts = load.experiment_list(files["expt"], check_format=False)
-        params, _ = _set_scaling_options_for_ssx(params)
-        params.output.html = None
-        if d_min:
-            params.cut_data.d_min = d_min
+        with record_step("dials.scale"):
 
-        scaled_expts, table = run_scaling(params, expts, refls)
+            params = scaling_phil_scope.extract()
+            refls = [flex.reflection_table.from_file(files["refl"])]
+            expts = load.experiment_list(files["expt"], check_format=False)
+            params, _ = _set_scaling_options_for_ssx(params)
+            params.output.html = None
+            if d_min:
+                params.cut_data.d_min = d_min
 
-        cosym_params = cosym_phil_scope.extract()
-        cosym_params.space_group = space_group
-        cosym_params.output.html = f"dials.cosym.{index}.html"
-        cosym_params.output.json = f"dials.cosym.{index}.json"
-        if d_min:
-            cosym_params.d_min = d_min
-        tables = table.split_by_experiment_id()
-        # now run cosym
-        cosym_expts, cosym_tables = run_cosym(cosym_params, scaled_expts, tables)
-        out_refl = f"processed_{index}.refl"
-        out_expt = f"processed_{index}.expt"
-        cosym_expts.as_file(out_expt)
-        joint_refls = flex.reflection_table.concat(cosym_tables)
-        joint_refls.as_file(out_refl)
-        xia2_logger.info(
-            f"Consistently indexed {len(cosym_expts)} crystals in data reduction batch {index+1}"
-        )
+            scaled_expts, table = run_scaling(params, expts, refls)
+
+        with record_step("dials.cosym"):
+            cosym_params = cosym_phil_scope.extract()
+            cosym_params.space_group = space_group
+            cosym_params.output.html = f"dials.cosym.{index}.html"
+            cosym_params.output.json = f"dials.cosym.{index}.json"
+            if d_min:
+                cosym_params.d_min = d_min
+            tables = table.split_by_experiment_id()
+            # now run cosym
+            cosym_expts, cosym_tables = run_cosym(cosym_params, scaled_expts, tables)
+            out_refl = f"processed_{index}.refl"
+            out_expt = f"processed_{index}.expt"
+            cosym_expts.as_file(out_expt)
+            joint_refls = flex.reflection_table.concat(cosym_tables)
+            joint_refls.as_file(out_refl)
+            xia2_logger.info(
+                f"Consistently indexed {len(cosym_expts)} crystals in data reduction batch {index+1}"
+            )
 
     return {
         index: {
@@ -243,9 +247,12 @@ def reference_reindex(
         f"output.reflections={str(files_for_reindex['refl'])}",
         f"output.experiments={str(files_for_reindex['expt'])}",
     ]
-    result = procrunner.run(cmd, working_directory=working_directory)
-    if result.returncode or result.stderr:
-        raise ValueError("dials.reindex returned error status:\n" + str(result.stderr))
+    with record_step("dials.reindex"):
+        result = procrunner.run(cmd, working_directory=working_directory)
+        if result.returncode or result.stderr:
+            raise ValueError(
+                "dials.reindex returned error status:\n" + str(result.stderr)
+            )
     return {
         "expt": files_for_reindex["expt"],
         "refl": files_for_reindex["refl"],
@@ -258,29 +265,32 @@ def select_crystals_close_to(
     abs_angle_tol: float,
     abs_length_tol: float,
 ) -> Tuple[List[flex.reflection_table], ExperimentList]:
-    good_refls, good_expts = ([], ExperimentList([]))
-    for expt, refl in zip(new_data["expt"], new_data["refl"]):
-        experiments = load.experiment_list(expt, check_format=False)
-        refls = flex.reflection_table.from_file(refl)
-        identifiers = []
-        expt_indices = []
-        for i, c in enumerate(experiments.crystals()):
-            if c.get_unit_cell().is_similar_to(
-                unit_cell,
-                absolute_angle_tolerance=abs_angle_tol,
-                absolute_length_tolerance=abs_length_tol,
-            ):
-                identifiers.append(experiments[i].identifier)
-                expt_indices.append(i)
-        if len(expt_indices) == len(experiments):
-            # all good
-            good_refls.append(refls)
-            good_expts.extend(experiments)
-        else:
-            sub_refls = refls.select_on_experiment_identifiers(identifiers)
-            sub_refls.reset_ids()
-            good_refls.append(sub_refls)
-            good_expts.extend(ExperimentList([experiments[i] for i in expt_indices]))
+    with record_step("select based on unit cell"):
+        good_refls, good_expts = ([], ExperimentList([]))
+        for expt, refl in zip(new_data["expt"], new_data["refl"]):
+            experiments = load.experiment_list(expt, check_format=False)
+            refls = flex.reflection_table.from_file(refl)
+            identifiers = []
+            expt_indices = []
+            for i, c in enumerate(experiments.crystals()):
+                if c.get_unit_cell().is_similar_to(
+                    unit_cell,
+                    absolute_angle_tolerance=abs_angle_tol,
+                    absolute_length_tolerance=abs_length_tol,
+                ):
+                    identifiers.append(experiments[i].identifier)
+                    expt_indices.append(i)
+            if len(expt_indices) == len(experiments):
+                # all good
+                good_refls.append(refls)
+                good_expts.extend(experiments)
+            else:
+                sub_refls = refls.select_on_experiment_identifiers(identifiers)
+                sub_refls.reset_ids()
+                good_refls.append(sub_refls)
+                good_expts.extend(
+                    ExperimentList([experiments[i] for i in expt_indices])
+                )
     return good_refls, good_expts
 
 
@@ -302,26 +312,26 @@ def split(
     reflection_table: flex.reflection_table,
     min_batch_size,
 ) -> FilesDict:
+    with record_step("splitting"):
+        data_to_reindex: FilesDict = {}
+        n_batches = max(math.floor(len(experiments) / min_batch_size), 1)
+        stride = len(experiments) / n_batches
+        # make sure last batch has at least the batch size
+        splits = [int(math.floor(i * stride)) for i in range(n_batches)]
+        splits.append(len(experiments))
 
-    data_to_reindex: FilesDict = {}
-    n_batches = max(math.floor(len(experiments) / min_batch_size), 1)
-    stride = len(experiments) / n_batches
-    # make sure last batch has at least the batch size
-    splits = [int(math.floor(i * stride)) for i in range(n_batches)]
-    splits.append(len(experiments))
-
-    template = functools.partial(
-        "split_{index:0{fmt:d}d}".format, fmt=len(str(n_batches))
-    )
-    for i in range(len(splits) - 1):
-        out_expt = working_directory / (template(index=i) + ".expt")
-        out_refl = working_directory / (template(index=i) + ".refl")
-        sub_expt = experiments[splits[i] : splits[i + 1]]
-        sub_expt.as_file(out_expt)
-        sel = reflection_table["id"] >= splits[i]
-        sel &= reflection_table["id"] < splits[i + 1]
-        sub_refl = reflection_table.select(sel)
-        sub_refl.reset_ids()
-        sub_refl.as_file(out_refl)
-        data_to_reindex[i] = {"expt": out_expt, "refl": out_refl}
+        template = functools.partial(
+            "split_{index:0{fmt:d}d}".format, fmt=len(str(n_batches))
+        )
+        for i in range(len(splits) - 1):
+            out_expt = working_directory / (template(index=i) + ".expt")
+            out_refl = working_directory / (template(index=i) + ".refl")
+            sub_expt = experiments[splits[i] : splits[i + 1]]
+            sub_expt.as_file(out_expt)
+            sel = reflection_table["id"] >= splits[i]
+            sel &= reflection_table["id"] < splits[i + 1]
+            sub_refl = reflection_table.select(sel)
+            sub_refl.reset_ids()
+            sub_refl.as_file(out_refl)
+            data_to_reindex[i] = {"expt": out_expt, "refl": out_refl}
     return data_to_reindex

@@ -31,6 +31,7 @@ from typing import Dict
 from dials.util.options import ArgumentParser
 from iotbx import phil
 
+import xia2.Driver.timing
 import xia2.Handlers.Streams
 from xia2.Modules.SSX.data_integration_standard import DataIntegration
 from xia2.Modules.SSX.data_reduction_simple import SimpleDataReduction
@@ -118,6 +119,10 @@ xia2_logger = logging.getLogger(__name__)
 
 
 def _log_duration(start_time: float) -> None:
+
+    xia2_logger.debug("\nTiming report:")
+    xia2_logger.debug("\n".join(xia2.Driver.timing.report()))
+
     duration = time.time() - start_time
     # write out the time taken in a human readable way
     xia2_logger.info(
@@ -247,7 +252,9 @@ def run(args=sys.argv[1:]):
     )
     params, _ = parser.parse_args(args=args, show_diff_phil=False)
 
-    xia2.Handlers.Streams.setup_logging(logfile="xia2.ssx.log")
+    xia2.Handlers.Streams.setup_logging(
+        logfile="xia2.ssx.log", debugfile="xia2.ssx.debug.log"
+    )
     # remove the xia2 handler from the dials logger.
     dials_logger = logging.getLogger("dials")
     dials_logger.handlers.clear()

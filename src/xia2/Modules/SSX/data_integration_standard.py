@@ -14,6 +14,7 @@ from cctbx import sgtbx, uctbx
 from dxtbx.serialize import load
 from iotbx import phil
 
+from xia2.Driver.timing import record_step
 from xia2.Handlers.Streams import banner
 from xia2.Modules.SSX.data_integration_programs import (
     best_cell_from_cluster,
@@ -154,9 +155,12 @@ def run_import(
         xia2_logger.notice(banner("Importing with reference geometry"))  # type: ignore
     else:
         xia2_logger.notice(banner("Importing"))  # type: ignore
-    result = procrunner.run(import_command, working_directory=working_directory)
-    if result.returncode or result.stderr:
-        raise ValueError("dials.import returned error status:\n" + str(result.stderr))
+    with record_step("dials.import"):
+        result = procrunner.run(import_command, working_directory=working_directory)
+        if result.returncode or result.stderr:
+            raise ValueError(
+                "dials.import returned error status:\n" + str(result.stderr)
+            )
     outfile = working_directory / "file_input.json"
     outfile.touch()
     file_input["reference_geometry"] = None

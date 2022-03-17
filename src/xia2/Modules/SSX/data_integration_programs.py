@@ -27,6 +27,7 @@ from dxtbx.model import ExperimentList
 from dxtbx.serialize import load
 from xfel.clustering.cluster import Cluster
 
+from xia2.Driver.timing import record_step
 from xia2.Handlers.Streams import banner
 from xia2.Modules.SSX.reporting import (
     generate_refinement_step_table,
@@ -40,7 +41,7 @@ xia2_logger = logging.getLogger(__name__)
 def ssx_find_spots(working_directory: Path) -> flex.reflection_table:
 
     xia2_logger.notice(banner("Spotfinding"))  # type: ignore
-    with run_in_directory(working_directory):
+    with run_in_directory(working_directory), record_step("dials.find_spots"):
         # Set up the input
         logfile = "dials.find_spots.log"
         with log_to_file(logfile) as dials_logger:
@@ -69,7 +70,9 @@ def ssx_index(
     xia2_logger.notice(banner("Indexing"))  # type: ignore
     with run_in_directory(working_directory):
         logfile = "dials.ssx_index.log"
-        with log_to_file(logfile) as dials_logger:
+        with log_to_file(logfile) as dials_logger, record_step(
+            "dials.ssx_index (indexing)"
+        ):
             # Set up the input and log it to the dials log file
             strong_refl = flex.reflection_table.from_file("strong.refl")
             imported_expts = load.experiment_list("imported.expt", check_format=False)
@@ -106,6 +109,7 @@ def ssx_index(
 
             dials_logger.info(report)
 
+        with record_step("dials.ssx_index (clustering)"):
             # Report on clustering, and generate html report and json output
             crystal_symmetries = [
                 crystal.symmetry(
@@ -117,6 +121,7 @@ def ssx_index(
             cluster_plots, large_clusters = report_on_crystal_clusters(
                 crystal_symmetries, True
             )
+        with record_step("dials.ssx_index (reporting)"):
             summary_plots = generate_plots(summary_data)
             output_ = (
                 f"{indexed_reflections.size()} spots indexed on {n_images} images\n"
@@ -137,7 +142,7 @@ def run_refinement(working_directory: Path) -> None:
 
     with run_in_directory(working_directory):
         logfile = "dials.refine.log"
-        with log_to_file(logfile) as dials_logger:
+        with log_to_file(logfile) as dials_logger, record_step("dials.refine"):
             params = working_phil.extract()
             indexed_refl = flex.reflection_table.from_file("indexed.refl")
             indexed_expts = load.experiment_list("indexed.expt", check_format=False)
@@ -166,7 +171,9 @@ def ssx_integrate(
     xia2_logger.notice(banner("Integrating"))  # type: ignore
     with run_in_directory(working_directory):
         logfile = "dials.ssx_integrate.log"
-        with log_to_file(logfile) as dials_logger:
+        with log_to_file(logfile) as dials_logger, record_step(
+            "dials.integrate (integration)"
+        ):
             # Set up the input and log it to the dials log file
             indexed_refl = flex.reflection_table.from_file(
                 "indexed.refl"
@@ -221,11 +228,13 @@ def ssx_integrate(
             xia2_logger.info(f"{n_refl} reflections integrated from {n_cryst} crystals")
 
             # Report on clustering, and generate html report and json output
+        with record_step("dials.integrate (clustering)"):
             plots = {}
             cluster_plots, large_clusters = report_on_crystal_clusters(
                 integrated_crystal_symmetries,
                 make_plots=True,
             )
+        with record_step("dials.integrate (reporting)"):
             plots = aggregator.make_plots()
             plots.update(cluster_plots)
             generate_integration_html_report(plots, "dials.ssx_integrate.html")

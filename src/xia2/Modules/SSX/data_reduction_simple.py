@@ -13,6 +13,7 @@ from dials.algorithms.scaling.scaling_library import determine_best_unit_cell
 from dials.array_family import flex
 from dxtbx.serialize import load
 
+from xia2.Driver.timing import record_step
 from xia2.Handlers.Streams import banner
 from xia2.Modules.SSX.data_reduction_base import BaseDataReduction
 from xia2.Modules.SSX.data_reduction_programs import (
@@ -243,7 +244,9 @@ class SimpleDataReduction(BaseDataReduction):
         files_for_reference_reindex: FilesDict = {}
         reindexed_results: FilesDict = {}
         xia2_logger.notice(banner("Reindexing"))  # type: ignore
-        with concurrent.futures.ProcessPoolExecutor(max_workers=nproc) as pool:
+        with record_step(
+            "dials.scale/dials.cosym (parallel)"
+        ), concurrent.futures.ProcessPoolExecutor(max_workers=nproc) as pool:
             cosym_futures: Dict[Any, int] = {
                 pool.submit(
                     scale_cosym,
@@ -273,8 +276,9 @@ class SimpleDataReduction(BaseDataReduction):
                         files_for_reference_reindex.update(result)
 
         # now do reference reindexing
-
-        with concurrent.futures.ProcessPoolExecutor(max_workers=nproc) as pool:
+        with record_step(
+            "dials.reindex (parallel)"
+        ), concurrent.futures.ProcessPoolExecutor(max_workers=nproc) as pool:
             reidx_futures: Dict[Any, int] = {
                 pool.submit(
                     reference_reindex, working_directory, reference_files, files
