@@ -80,7 +80,7 @@ def ssx_index(
             params.indexing.nproc = nproc
             input_ = (
                 "Input parameters:\n  reflections = strong.refl\n"
-                + "  experiments = imported.expt\n  indexing.nproc = {nproc}\n"
+                + f"  experiments = imported.expt\n  indexing.nproc = {nproc}\n"
             )
             if unit_cell:
                 params.indexing.known_symmetry.unit_cell = unit_cell

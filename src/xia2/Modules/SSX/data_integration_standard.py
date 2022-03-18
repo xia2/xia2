@@ -130,7 +130,7 @@ def run_import(
                 if str(reference_geometry) == previous["reference_geometry"]:
                     same_reference = True
             if same_reference:
-                for input_ in ["images", "template", "directory"]:
+                for input_ in ["images", "template", "directory", "mask"]:
                     if file_input[input_] and (previous[input_] == file_input[input_]):
                         xia2_logger.info(
                             f"Images already imported in previous run of xia2.ssx:\n  {', '.join(previous[input_])}"
@@ -147,6 +147,8 @@ def run_import(
     elif file_input["directory"]:
         for d in file_input["directory"]:
             import_command.append(f"directory={d}")
+    if file_input["mask"]:
+        import_command.append(f"mask={file_input['mask']}")
     if reference_geometry:
         import_command += [
             f"reference_geometry={os.fspath(reference_geometry)}",

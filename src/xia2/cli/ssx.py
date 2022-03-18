@@ -49,6 +49,9 @@ directory = None
   .type = str
   .help = "A directory with images"
   .multiple = True
+mask = None
+  .type = str
+  .help = "A mask to use for spotfinding and integration"
 reference_geometry = None
   .type = path
   .help = "Path to reference geomtry .expt file"
@@ -146,7 +149,7 @@ def run_xia2_ssx(
     # Although it would be nice to have these as lists of Paths, we will need
     # to compare to json data, add them as command line arguments etc, so simpler
     # to have as strings from the start.
-    file_input: Dict = {"images": [], "template": [], "directory": []}
+    file_input: Dict = {"images": [], "template": [], "directory": [], "mask": None}
     if params.images:
         file_input["images"] = [str(pathlib.Path(i).resolve()) for i in params.images]
     elif params.template:
@@ -161,6 +164,8 @@ def run_xia2_ssx(
         raise ValueError(
             "No input data identified (use images=, template= or directory=)"
         )
+    if params.mask:
+        file_input["mask"] = str(pathlib.Path(params.mask).resolve())
 
     # Now separate out the options for crystal assessment
     crystal_assessment = {
