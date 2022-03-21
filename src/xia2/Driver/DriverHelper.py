@@ -269,7 +269,7 @@ def error_python_traceback(records):
         raise Sorry(error_messages[0])
 
 
-executable_exists_cache = {}
+executable_exists_cache: dict[str, str] = {}
 
 
 def executable_exists(executable):

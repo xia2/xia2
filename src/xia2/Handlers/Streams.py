@@ -18,12 +18,12 @@ from datetime import date
 
 if not hasattr(logging, "NOTICE"):
     # Create a NOTICE log level and associated command
-    logging.NOTICE = 25
+    setattr(logging, "NOTICE", 25)
 
     def _notice(self, *args, **kwargs):
         return self.log(logging.NOTICE, *args, **kwargs)
 
-    logging.getLoggerClass().notice = _notice
+    setattr(logging.getLoggerClass(), "notice", _notice)
 
 
 def banner(comment, size=60):
@@ -242,11 +242,12 @@ class _WinColorStreamHandler(logging.StreamHandler):
         self._set_color(self.FOREGROUND_WHITE)
 
 
+ColorStreamHander: _WinColorStreamHandler | _AnsiColorStreamHandler
 # select ColorStreamHandler based on platform
 if platform.system() == "Windows":
-    ColorStreamHandler = _WinColorStreamHandler
+    ColorStreamHandler = _WinColorStreamHandler  # type: ignore
 else:
-    ColorStreamHandler = _AnsiColorStreamHandler
+    ColorStreamHandler = _AnsiColorStreamHandler  # type: ignore
 
 # -------------------------------------------------------------------------------
 
@@ -254,6 +255,6 @@ if __name__ == "__main__":
     setup_logging(logfile="logfile", debugfile="debugfile")
     logger.debug("this is a debug-level message")
     logger.info("this is an info-level message")
-    logger.notice("this is a notice-level message")
+    logger.notice("this is a notice-level message")  # type: ignore
     logger.warning("this is a warning-level message")
     logger.error("this is an error-level message")
