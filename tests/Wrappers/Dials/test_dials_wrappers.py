@@ -141,7 +141,7 @@ def exercise_dials_wrappers(template, nproc=None):
     assert os.path.exists(exporter.get_combined_reflections_filename())
 
 
-def test_dials_wrappers_serial(regression_test, ccp4, dials_data, run_in_tmpdir):
+def test_dials_wrappers_serial(regression_test, ccp4, dials_data, run_in_tmp_path):
     template = (dials_data("insulin") / "insulin_1_%03i.img").strpath
     with mock.patch.object(sys, "argv", []):
         exercise_dials_wrappers(template, nproc=1)

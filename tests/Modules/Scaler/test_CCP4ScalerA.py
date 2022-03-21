@@ -9,7 +9,7 @@ import pytest
 
 
 @pytest.mark.parametrize("nproc", [1])
-def test_ccp4_scalerA(regression_test, ccp4, dials_data, run_in_tmpdir, nproc):
+def test_ccp4_scalerA(regression_test, ccp4, dials_data, run_in_tmp_path, nproc):
     if nproc is not None:
         from xia2.Handlers.Phil import PhilIndex
 
@@ -17,7 +17,7 @@ def test_ccp4_scalerA(regression_test, ccp4, dials_data, run_in_tmpdir, nproc):
 
     template = dials_data("insulin").join("insulin_1_###.img").strpath
 
-    tmpdir = run_in_tmpdir.strpath
+    tmpdir = str(run_in_tmp_path)
 
     from xia2.Modules.Indexer.DialsIndexer import DialsIndexer
     from xia2.Modules.Integrater.DialsIntegrater import DialsIntegrater

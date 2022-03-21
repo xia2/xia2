@@ -13,7 +13,7 @@ import re
 import procrunner
 import pytest
 
-from dials.conftest import run_in_tmpdir  # noqa; lgtm; exported symbol
+from dials.conftest import run_in_tmp_path  # noqa; lgtm; exported symbol
 
 
 def pytest_addoption(parser):

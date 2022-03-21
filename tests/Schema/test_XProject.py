@@ -131,6 +131,6 @@ def exercise_serialization(dials_data, tmp_dir):
     print("\n".join(xproj.summarise()))
 
 
-def test_serialization(regression_test, ccp4, dials_data, run_in_tmpdir):
+def test_serialization(regression_test, ccp4, dials_data, run_in_tmp_path):
     with mock.patch.object(sys, "argv", []):
-        exercise_serialization(dials_data, run_in_tmpdir.strpath)
+        exercise_serialization(dials_data, str(run_in_tmp_path))

@@ -161,9 +161,9 @@ def exercise_dials_integrater(dials_data, tmp_dir, nproc=None):
     assert pytest.approx(control_intensities) != corrected_intensities
 
 
-def test_dials_integrater_serial(regression_test, ccp4, dials_data, run_in_tmpdir):
+def test_dials_integrater_serial(regression_test, ccp4, dials_data, run_in_tmp_path):
     with mock.patch.object(sys, "argv", []):
-        exercise_dials_integrater(dials_data, run_in_tmpdir.strpath, nproc=1)
+        exercise_dials_integrater(dials_data, str(run_in_tmp_path), nproc=1)
 
 
 def test_dials_integrater_high_pressure_set(monkeypatch):

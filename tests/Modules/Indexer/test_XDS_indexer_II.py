@@ -74,6 +74,6 @@ def exercise_xds_indexer(dials_data, tmp_dir, nproc=None):
     assert indexer2.get_indexer_lattice() == "hR"
 
 
-def test_xds_indexer_serial(regression_test, ccp4, xds, dials_data, run_in_tmpdir):
+def test_xds_indexer_serial(regression_test, ccp4, xds, dials_data, run_in_tmp_path):
     with mock.patch.object(sys, "argv", []):
-        exercise_xds_indexer(dials_data, run_in_tmpdir.strpath, nproc=1)
+        exercise_xds_indexer(dials_data, str(run_in_tmp_path), nproc=1)
