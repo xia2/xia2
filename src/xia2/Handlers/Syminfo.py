@@ -76,15 +76,3 @@ def get_num_symops(spacegroup_number):
     """Get the number of symmetry operations that spacegroup
     number has."""
     return len(sgtbx.space_group_info(number=spacegroup_number).group())
-
-
-class _Syminfo:
-    """Legacy method of accessing functions."""
-
-
-Syminfo = _Syminfo()
-Syminfo.get_pointgroup = get_pointgroup
-Syminfo.get_lattice = get_lattice
-Syminfo.spacegroup_number_to_name = spacegroup_number_to_name
-Syminfo.spacegroup_name_to_number = spacegroup_name_to_number
-Syminfo.get_num_symops = get_num_symops

@@ -49,7 +49,7 @@ def check(key, value):
         return value
 
 
-preferences = {}
+preferences: dict[str, str] = {}
 
 
 def get_preferences():

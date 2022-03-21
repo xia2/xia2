@@ -10,7 +10,7 @@ from xia2.Handlers.CIF import CIF, mmCIF
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import banner
-from xia2.Handlers.Syminfo import Syminfo
+from xia2.Handlers.Syminfo import get_pointgroup
 from xia2.lib.NMolLib import compute_nmol, compute_solvent
 from xia2.Modules.Scaler.ScalerFactory import Scaler
 
@@ -795,7 +795,7 @@ class XCrystal:
             if self._user_spacegroup:
                 # compute the lattice and pointgroup from this...
 
-                pointgroup = Syminfo.get_pointgroup(self._user_spacegroup)
+                pointgroup = get_pointgroup(self._user_spacegroup)
 
                 self._scaler.set_scaler_input_spacegroup(self._user_spacegroup)
                 self._scaler.set_scaler_input_pointgroup(pointgroup)

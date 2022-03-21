@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from xia2.Driver.DriverFactory import DriverFactory
-from xia2.Handlers.Syminfo import Syminfo
+from xia2.Handlers.Syminfo import spacegroup_number_to_name
 from xia2.lib.SymmetryLib import lauegroup_to_lattice
 
 
@@ -56,9 +56,7 @@ def LatticeSymmetry(DriverType=None):
                 "cI": 197,
             }
 
-            self._spacegroup = Syminfo.spacegroup_number_to_name(
-                lattice_to_spacegroup[lattice]
-            )
+            self._spacegroup = spacegroup_number_to_name(lattice_to_spacegroup[lattice])
 
             # bug 22/JUL/08 latest lattice symmetry no longer recognises
             # the spacegroup H3...

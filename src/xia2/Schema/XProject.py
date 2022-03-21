@@ -11,7 +11,7 @@ import os
 import pathlib
 
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Syminfo import Syminfo
+from xia2.Handlers.Syminfo import get_lattice
 from xia2.Handlers.XInfo import XInfo
 from xia2.Schema.XCrystal import XCrystal
 from xia2.Schema.XSample import XSample
@@ -243,12 +243,10 @@ class XProject:
 
                 # check to see if we have a user supplied lattice...
                 if "user_spacegroup" in crystals[crystal]:
-                    lattice = Syminfo.get_lattice(crystals[crystal]["user_spacegroup"])
+                    lattice = get_lattice(crystals[crystal]["user_spacegroup"])
                 elif settings.space_group is not None:
                     # XXX do we ever actually get here?
-                    lattice = Syminfo.get_lattice(
-                        settings.space_group.type().lookup_symbol()
-                    )
+                    lattice = get_lattice(settings.space_group.type().lookup_symbol())
                 else:
                     lattice = None
 

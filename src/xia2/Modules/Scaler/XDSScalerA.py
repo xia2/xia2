@@ -14,7 +14,7 @@ import shutil
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Syminfo import Syminfo
+from xia2.Handlers.Syminfo import get_lattice, spacegroup_name_to_number
 from xia2.lib.bits import auto_logfiler, is_mtz_file, transpose_loggraph
 from xia2.lib.SymmetryLib import lattices_in_order
 from xia2.Modules import MtzUtils
@@ -323,7 +323,7 @@ class XDSScalerA(Scaler):
 
                     logger.debug("X1698: %s: %s", pointgroup, reindex_op)
 
-                lattice = Syminfo.get_lattice(pointgroup)
+                lattice = get_lattice(pointgroup)
                 lattices.add(lattice)
 
                 if ntr:
@@ -450,7 +450,7 @@ class XDSScalerA(Scaler):
 
                 intgr.set_integrater_reindex_operator(reindex_op)
                 intgr.set_integrater_spacegroup_number(
-                    Syminfo.spacegroup_name_to_number(pointgroup)
+                    spacegroup_name_to_number(pointgroup)
                 )
                 sweep_information[
                     "corrected_intensities"
@@ -541,14 +541,14 @@ class XDSScalerA(Scaler):
                 reindex_op = "h,k,l"
                 need_to_return = True
 
-            self._xds_spacegroup = Syminfo.spacegroup_name_to_number(pointgroup)
+            self._xds_spacegroup = spacegroup_name_to_number(pointgroup)
 
             # next pass this reindexing operator back to the source
             # of the reflections
 
             intgr.set_integrater_reindex_operator(reindex_op)
             intgr.set_integrater_spacegroup_number(
-                Syminfo.spacegroup_name_to_number(pointgroup)
+                spacegroup_name_to_number(pointgroup)
             )
             self._sweep_information[epoch][
                 "corrected_intensities"
@@ -615,7 +615,7 @@ class XDSScalerA(Scaler):
 
                 intgr.set_integrater_reindex_operator(reindex_op)
                 intgr.set_integrater_spacegroup_number(
-                    Syminfo.spacegroup_name_to_number(pointgroup)
+                    spacegroup_name_to_number(pointgroup)
                 )
                 sweep_information[
                     "corrected_intensities"
@@ -665,7 +665,7 @@ class XDSScalerA(Scaler):
                 # difference, right?!
 
                 intgr.set_integrater_spacegroup_number(
-                    Syminfo.spacegroup_name_to_number(pointgroup)
+                    spacegroup_name_to_number(pointgroup)
                 )
                 intgr.set_integrater_reindex_operator(reindex_op)
                 sweep_information[
@@ -782,14 +782,14 @@ class XDSScalerA(Scaler):
 
                 need_to_return = True
 
-            self._xds_spacegroup = Syminfo.spacegroup_name_to_number(pointgroup)
+            self._xds_spacegroup = spacegroup_name_to_number(pointgroup)
 
             # next pass this reindexing operator back to the source
             # of the reflections
 
             intgr.set_integrater_reindex_operator(reindex_op)
             intgr.set_integrater_spacegroup_number(
-                Syminfo.spacegroup_name_to_number(pointgroup)
+                spacegroup_name_to_number(pointgroup)
             )
             self._sweep_information[epoch][
                 "corrected_intensities"
