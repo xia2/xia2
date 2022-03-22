@@ -3,10 +3,10 @@ from __future__ import annotations
 import copy
 import json
 import logging
+from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
-import iotbx.phil
 from cctbx import crystal, sgtbx, uctbx
 from dials.algorithms.indexing.ssx.analysis import (
     generate_html_report,
@@ -20,6 +20,8 @@ from dials.algorithms.integration.ssx.ssx_integrate import (
 from dials.algorithms.shoebox import MaskCode
 from dials.array_family import flex
 from dials.command_line.find_spots import working_phil as find_spots_phil
+from dials.command_line.refine import run_dials_refine
+from dials.command_line.refine import working_phil as refine_working_phil
 from dials.command_line.ssx_index import index, phil_scope
 from dials.command_line.ssx_integrate import run_integration, working_phil
 from dials.util.ascii_art import spot_counts_per_image_plot
@@ -38,33 +40,73 @@ from xia2.Modules.SSX.util import log_to_file, run_in_directory
 xia2_logger = logging.getLogger(__name__)
 
 
-def ssx_find_spots(working_directory: Path) -> flex.reflection_table:
+@dataclass
+class SpotfindingParams:
+    min_spot_size: int = 2
+    max_spot_size: int = 10
+    d_min: Optional[float] = None
+    nproc: int = 1
+
+
+@dataclass
+class IndexingParams:
+    space_group: Optional[sgtbx.space_group] = None
+    unit_cell: Optional[uctbx.unit_cell] = None
+    max_lattices: int = 1
+    nproc: int = 1
+
+
+@dataclass
+class RefinementParams:
+    outlier_algorithm: str = "sauter_poon"
+
+
+@dataclass
+class IntegrationParams:
+    algorithm: str = "ellipsoid"
+    rlp_mosaicity: str = "angular4"
+    d_min: Optional[float] = None
+    nproc: int = 1
+
+
+def ssx_find_spots(
+    working_directory: Path, spotfinding_params: SpotfindingParams
+) -> flex.reflection_table:
 
     xia2_logger.notice(banner("Spotfinding"))  # type: ignore
-    with run_in_directory(working_directory), record_step("dials.find_spots"):
+    logfile = "dials.find_spots.log"
+    with run_in_directory(working_directory), log_to_file(
+        logfile
+    ) as dials_logger, record_step("dials.find_spots"):
         # Set up the input
-        logfile = "dials.find_spots.log"
-        with log_to_file(logfile) as dials_logger:
-            imported_expts = load.experiment_list("imported.expt", check_format=True)
-            params = find_spots_phil.extract()
-            # Do spot-finding
-            reflections = flex.reflection_table.from_observations(
-                imported_expts, params
-            )
-            good = MaskCode.Foreground | MaskCode.Valid
-            reflections["n_signal"] = reflections["shoebox"].count_mask_values(good)
-            plot = spot_counts_per_image_plot(reflections)
-            dials_logger.info(plot)
-            xia2_logger.info(plot)
+        imported_expts = load.experiment_list("imported.expt", check_format=True)
+        params = find_spots_phil.extract()
+        params.spotfinder.filter.max_spot_size = spotfinding_params.max_spot_size
+        params.spotfinder.filter.min_spot_size = spotfinding_params.min_spot_size
+        params.spotfinder.mp.nproc = spotfinding_params.nproc
+        input_ = (
+            "Input parameters:\n  experiments = imported.expt\n"
+            + f"  spotfinder.mp.nproc = {spotfinding_params.nproc}\n"
+            + f"  spotfinder.filter.max_spot_size = {spotfinding_params.max_spot_size}\n"
+            + f"  spotfinder.filter.min_spot_size = {spotfinding_params.min_spot_size}\n"
+        )
+        if spotfinding_params.d_min:
+            params.spotfinder.filter.d_min = spotfinding_params.d_min
+            input_ += f"  spotfinder.filter.d_min = {spotfinding_params.d_min}"
+        dials_logger.info(input_)
+        # Do spot-finding
+        reflections = flex.reflection_table.from_observations(imported_expts, params)
+        good = MaskCode.Foreground | MaskCode.Valid
+        reflections["n_signal"] = reflections["shoebox"].count_mask_values(good)
+        plot = spot_counts_per_image_plot(reflections)
+        dials_logger.info(plot)
+        xia2_logger.info(plot)
     return reflections
 
 
 def ssx_index(
     working_directory: Path,
-    nproc: int = 1,
-    space_group: sgtbx.space_group = None,
-    unit_cell: uctbx.unit_cell = None,
-    max_lattices: int = 1,
+    indexing_params: IndexingParams,
 ) -> Tuple[ExperimentList, flex.reflection_table, List[Cluster]]:
 
     xia2_logger.notice(banner("Indexing"))  # type: ignore
@@ -77,23 +119,23 @@ def ssx_index(
             strong_refl = flex.reflection_table.from_file("strong.refl")
             imported_expts = load.experiment_list("imported.expt", check_format=False)
             params = phil_scope.extract()
-            params.indexing.nproc = nproc
+            params.indexing.nproc = indexing_params.nproc
             input_ = (
                 "Input parameters:\n  reflections = strong.refl\n"
-                + f"  experiments = imported.expt\n  indexing.nproc = {nproc}\n"
+                + f"  experiments = imported.expt\n  indexing.nproc = {indexing_params.nproc}\n"
             )
-            if unit_cell:
-                params.indexing.known_symmetry.unit_cell = unit_cell
-                uc = ",".join(str(i) for i in unit_cell.parameters())
+            if indexing_params.unit_cell:
+                params.indexing.known_symmetry.unit_cell = indexing_params.unit_cell
+                uc = ",".join(str(i) for i in indexing_params.unit_cell.parameters())
                 input_ += f"  indexing.known_symmetry.unit_cell = {uc}\n"
-            if space_group:
-                params.indexing.known_symmetry.space_group = space_group
-                input_ += (
-                    f"  indexing.known_symmetry.space_group = {str(space_group)}\n"
+            if indexing_params.space_group:
+                params.indexing.known_symmetry.space_group = indexing_params.space_group
+                input_ += f"  indexing.known_symmetry.space_group = {str(indexing_params.space_group)}\n"
+            if indexing_params.max_lattices > 1:
+                params.indexing.multiple_lattice_search.max_lattices = (
+                    indexing_params.max_lattices
                 )
-            if max_lattices > 1:
-                params.indexing.multiple_lattice_search.max_lattices = max_lattices
-                input_ += f"  indexing.multiple_lattice_search.max_lattices = {max_lattices}\n"
+                input_ += f"  indexing.multiple_lattice_search.max_lattices = {indexing_params.max_lattices}\n"
             dials_logger.info(input_)
 
             # Do the indexing
@@ -135,37 +177,46 @@ def ssx_index(
     return indexed_experiments, indexed_reflections, large_clusters
 
 
-def run_refinement(working_directory: Path) -> None:
+def run_refinement(
+    working_directory: Path,
+    refinement_params: RefinementParams,
+) -> None:
     xia2_logger.notice(banner("Joint refinement"))  # type: ignore
 
-    from dials.command_line.refine import run_dials_refine, working_phil
-
-    with run_in_directory(working_directory):
-        logfile = "dials.refine.log"
-        with log_to_file(logfile) as dials_logger, record_step("dials.refine"):
-            params = working_phil.extract()
-            indexed_refl = flex.reflection_table.from_file("indexed.refl")
-            indexed_expts = load.experiment_list("indexed.expt", check_format=False)
-            params.refinement.parameterisation.beam.fix = ["all"]
-            params.refinement.parameterisation.auto_reduction.action = "fix"
-            params.refinement.parameterisation.detector.fix_list = ["Tau1"]
-            params.refinement.refinery.engine = "SparseLevMar"
-            params.refinement.reflections.outlier.algorithm = "sauter_poon"
-            expts, refls, refiner, _ = run_dials_refine(
-                indexed_expts, indexed_refl, params
-            )
-            dials_logger.info("Saving refined experiments to refined.expt")
-            expts.as_file("refined.expt")
-            dials_logger.info(
-                "Saving reflections with updated predictions to refined.refl"
-            )
-            refls.as_file("refined.refl")
-            step_table = generate_refinement_step_table(refiner)
-            xia2_logger.info("Summary of joint refinement steps:\n" + step_table)
+    logfile = "dials.refine.log"
+    with run_in_directory(working_directory), log_to_file(
+        logfile
+    ) as dials_logger, record_step("dials.refine"):
+        params = refine_working_phil.extract()
+        indexed_refl = flex.reflection_table.from_file("indexed.refl")
+        indexed_expts = load.experiment_list("indexed.expt", check_format=False)
+        params.refinement.parameterisation.beam.fix = ["all"]
+        params.refinement.parameterisation.auto_reduction.action = "fix"
+        params.refinement.parameterisation.detector.fix_list = ["Tau1"]
+        params.refinement.refinery.engine = "SparseLevMar"
+        params.refinement.reflections.outlier.algorithm = (
+            refinement_params.outlier_algorithm
+        )
+        input_ = (
+            "Input parameters:\n  reflections = indexed.refl\n  experiments = indexed.expt\n"
+            + "  refinement.parameterisation.beam.fix = all\n"
+            + "  refinement.parameterisation.auto_reduction.action = fix\n"
+            + "  refinement.parameterisation.detector.fix_list = Tau1\n"
+            + "  refinement.refinery.engine = SparseLevMar\n"
+            + f" refinement.reflections.outlier.algorithm = {refinement_params.outlier_algorithm}\n"
+        )
+        dials_logger.info(input_)
+        expts, refls, refiner, _ = run_dials_refine(indexed_expts, indexed_refl, params)
+        dials_logger.info("Saving refined experiments to refined.expt")
+        expts.as_file("refined.expt")
+        dials_logger.info("Saving reflections with updated predictions to refined.refl")
+        refls.as_file("refined.refl")
+        step_table = generate_refinement_step_table(refiner)
+        xia2_logger.info("Summary of joint refinement steps:\n" + step_table)
 
 
 def ssx_integrate(
-    working_directory: Path, integration_params: iotbx.phil.scope_extract
+    working_directory: Path, integration_params: IntegrationParams
 ) -> List[Cluster]:
 
     xia2_logger.notice(banner("Integrating"))  # type: ignore
@@ -180,15 +231,17 @@ def ssx_integrate(
             ).split_by_experiment_id()
             indexed_expts = load.experiment_list("indexed.expt", check_format=True)
             params = working_phil.extract()
-            params.output.batch_size = 100
+            params.output.batch_size = 1000
             params.algorithm = integration_params.algorithm
+            params.nproc = integration_params.nproc
             input_ = (
                 "Input parameters:\n  reflections = indexed.refl\n"
+                + f"  nproc = {integration_params.nproc}\n"
                 + f"  experiments = indexed.expt\n  algorithm = {integration_params.algorithm}\n"
-                + "  output.batch_size = 100\n"
+                + "  output.batch_size = 1000\n"
             )
             if integration_params.algorithm == "ellipsoid":
-                model = integration_params.ellipsoid.rlp_mosaicity
+                model = integration_params.rlp_mosaicity
                 params.profile.ellipsoid.refinement.outlier_probability = 0.95
                 params.profile.ellipsoid.refinement.max_separation = 1
                 params.profile.ellipsoid.prediction.probability = 0.95
@@ -197,6 +250,13 @@ def ssx_integrate(
                 input_ += "  profile.ellipsoid.refinement.max_separation = 1\n"
                 input_ += "  profile.ellipsoid.prediction.probability = 0.95\n"
                 input_ += f"  profile.ellipsoid.rlp_mosaicity.model = {model}\n"
+            d_min = integration_params.d_min
+            if d_min:
+                params.prediction.d_min = d_min
+                input_ += f"  params.prediction.d_min = {d_min}\n"
+                if integration_params.algorithm == "ellipsoid":
+                    params.profile.ellipsoid.prediction.d_min = d_min
+                    input_ += f"  params.profile.ellipsoid.prediction.d_min = {d_min}\n"
             dials_logger.info(input_)
 
             # Run the integration
@@ -244,14 +304,13 @@ def ssx_integrate(
 
 
 def best_cell_from_cluster(cluster: Cluster) -> Tuple:
-    from cctbx import crystal
-    from cctbx.sgtbx.lattice_symmetry import metric_subgroups
-    from cctbx.uctbx import unit_cell
 
     input_symmetry = crystal.symmetry(
-        unit_cell=unit_cell(cluster.medians[0:6]), space_group_symbol="P 1"
+        unit_cell=uctbx.unit_cell(cluster.medians[0:6]), space_group_symbol="P 1"
     )
-    group = metric_subgroups(input_symmetry, 3.00).result_groups[0]
+    group = sgtbx.lattice_symmetry.metric_subgroups(input_symmetry, 3.00).result_groups[
+        0
+    ]
     uc_params_conv = group["best_subsym"].unit_cell().parameters()
     sg = group["best_subsym"].space_group_info().symbol_and_number()
     return sg, uc_params_conv

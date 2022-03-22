@@ -6,17 +6,20 @@ import logging
 import math
 import os
 import pathlib
-from typing import Dict, List, Tuple
+from dataclasses import asdict, dataclass, field
+from typing import List, Optional, Tuple
 
 import procrunner
 
-from cctbx import sgtbx, uctbx
 from dxtbx.serialize import load
-from iotbx import phil
 
 from xia2.Driver.timing import record_step
 from xia2.Handlers.Streams import banner
 from xia2.Modules.SSX.data_integration_programs import (
+    IndexingParams,
+    IntegrationParams,
+    RefinementParams,
+    SpotfindingParams,
     best_cell_from_cluster,
     run_refinement,
     ssx_find_spots,
@@ -28,20 +31,33 @@ from xia2.Modules.SSX.reporting import condensed_unit_cell_info
 xia2_logger = logging.getLogger(__name__)
 
 
+@dataclass
+class FileInput:
+    images: List[str] = field(default_factory=list)
+    templates: List[str] = field(default_factory=list)
+    directories: List[str] = field(default_factory=list)
+    mask: Optional[pathlib.Path] = None
+    reference_geometry: Optional[pathlib.Path] = None
+
+
+@dataclass
+class AlgorithmParams:
+    assess_images_to_use: Tuple[int, int] = (0, 1000)
+    refinement_images_to_use: Tuple[int, int] = (0, 1000)
+    batch_size: int = 1000
+    stop_after_geometry_refinement: bool = False
+
+
 def process_batch(
     working_directory: pathlib.Path,
-    space_group: sgtbx.space_group,
-    unit_cell: uctbx.unit_cell,
-    integration_params: phil.scope_extract,
-    nproc: int = 1,
-    max_lattices: int = 1,
+    spotfinding_params: SpotfindingParams,
+    indexing_params: IndexingParams,
+    integration_params: IntegrationParams,
 ) -> None:
     """Run find_spots, index and integrate in the working directory."""
-    strong = ssx_find_spots(working_directory)
+    strong = ssx_find_spots(working_directory, spotfinding_params)
     strong.as_file(working_directory / "strong.refl")
-    expt, refl, large_clusters = ssx_index(
-        working_directory, nproc, space_group, unit_cell, max_lattices=max_lattices
-    )
+    expt, refl, large_clusters = ssx_index(working_directory, indexing_params)
     expt.as_file(working_directory / "indexed.expt")
     refl.as_file(working_directory / "indexed.refl")
     if large_clusters:
@@ -101,11 +117,7 @@ def slice_images_from_experiments(
     )
 
 
-def run_import(
-    working_directory: pathlib.Path,
-    file_input: Dict,
-    reference_geometry: pathlib.Path = None,
-) -> None:
+def run_import(working_directory: pathlib.Path, file_input: FileInput) -> None:
     """
     Run dials.import with either images, templates or directories.
     After running dials.import, the options are saved to file_input.json
@@ -123,35 +135,52 @@ def run_import(
         with open(working_directory / "file_input.json", "r") as f:
             previous = json.load(f)
             same_reference = False
-            if not reference_geometry:
+            if not file_input.reference_geometry:
                 if previous["reference_geometry"] is None:
                     same_reference = True
             else:
-                if str(reference_geometry) == previous["reference_geometry"]:
+                if str(file_input.reference_geometry) == previous["reference_geometry"]:
                     same_reference = True
-            if same_reference:
-                for input_ in ["images", "template", "directory", "mask"]:
-                    if file_input[input_] and (previous[input_] == file_input[input_]):
+            same_mask = False
+            if not file_input.mask:
+                if previous["mask"] is None:
+                    same_mask = True
+            else:
+                if str(file_input.mask) == previous["mask"]:
+                    same_mask = True
+            if same_reference and same_mask:
+                inputs = [
+                    file_input.images,
+                    file_input.templates,
+                    file_input.directories,
+                ]
+                previous_inputs = [
+                    previous["images"],
+                    previous["templates"],
+                    previous["directories"],
+                ]
+                for this, other in zip(inputs, previous_inputs):
+                    if this and (this == other):
                         xia2_logger.info(
-                            f"Images already imported in previous run of xia2.ssx:\n  {', '.join(previous[input_])}"
+                            f"Images already imported in previous run of xia2.ssx:\n  {', '.join(other)}"
                         )
                         return
 
     xia2_logger.info("New images or geometry detected, running import")
     import_command = ["dials.import", "output.experiments=imported.expt"]
-    if file_input["images"]:
-        import_command += file_input["images"]
-    elif file_input["template"]:
-        for t in file_input["template"]:
+    if file_input.images:
+        import_command += file_input.images
+    elif file_input.templates:
+        for t in file_input.templates:
             import_command.append(f"template={t}")
-    elif file_input["directory"]:
-        for d in file_input["directory"]:
+    elif file_input.directories:
+        for d in file_input.directories:
             import_command.append(f"directory={d}")
-    if file_input["mask"]:
-        import_command.append(f"mask={file_input['mask']}")
-    if reference_geometry:
+    if file_input.mask:
+        import_command.append(f"mask={os.fspath(file_input.mask)}")
+    if file_input.reference_geometry:
         import_command += [
-            f"reference_geometry={os.fspath(reference_geometry)}",
+            f"reference_geometry={os.fspath(file_input.reference_geometry)}",
             "use_gonio_reference=False",
         ]
         xia2_logger.notice(banner("Importing with reference geometry"))  # type: ignore
@@ -165,17 +194,19 @@ def run_import(
             )
     outfile = working_directory / "file_input.json"
     outfile.touch()
-    file_input["reference_geometry"] = None
-    if reference_geometry:
-        file_input["reference_geometry"] = str(reference_geometry)
+    file_input_dict = asdict(file_input)
+    if file_input.reference_geometry:
+        file_input_dict["reference_geometry"] = str(file_input.reference_geometry)
+    if file_input.mask:
+        file_input_dict["mask"] = str(file_input.mask)
     with (outfile).open(mode="w") as f:
-        json.dump(file_input, f, indent=2)
+        json.dump(file_input_dict, f, indent=2)
 
 
 def assess_crystal_parameters(
     working_directory: pathlib.Path,
-    space_group_determination: Dict,
-    nproc: int = 1,
+    spotfinding_params: SpotfindingParams,
+    indexing_params: IndexingParams,
 ) -> None:
     """
     Using the options in the space_group_determination dict, run
@@ -184,15 +215,9 @@ def assess_crystal_parameters(
     """
 
     # now run find spots and index
-    strong = ssx_find_spots(working_directory)
+    strong = ssx_find_spots(working_directory, spotfinding_params)
     strong.as_file(working_directory / "strong.refl")
-    _, __, largest_clusters = ssx_index(
-        working_directory,
-        nproc=nproc,
-        space_group=space_group_determination["space_group"],
-        unit_cell=space_group_determination["unit_cell"],
-        max_lattices=space_group_determination["max_lattices"],
-    )
+    _, __, largest_clusters = ssx_index(working_directory, indexing_params)
     if largest_clusters:
         xia2_logger.info(f"{condensed_unit_cell_info(largest_clusters)}")
 
@@ -207,112 +232,87 @@ def assess_crystal_parameters(
 
 def determine_reference_geometry(
     working_directory: pathlib.Path,
-    reference_geometry: Dict,
-    space_group_determination: Dict,
-    nproc=1,
+    spotfinding_params: SpotfindingParams,
+    indexing_params: IndexingParams,
+    refinement_params: RefinementParams,
 ) -> None:
     """Run find spots, indexing and joint refinement in the working directory."""
 
-    strong = ssx_find_spots(working_directory)
+    strong = ssx_find_spots(working_directory, spotfinding_params)
     strong.as_file(working_directory / "strong.refl")
 
-    expt, refl, large_clusters = ssx_index(
-        working_directory,
-        nproc=nproc,
-        space_group=space_group_determination["space_group"],
-        unit_cell=space_group_determination["unit_cell"],
-        max_lattices=reference_geometry["max_lattices"],
-    )
+    expt, refl, large_clusters = ssx_index(working_directory, indexing_params)
     expt.as_file(working_directory / "indexed.expt")
     refl.as_file(working_directory / "indexed.refl")
     if large_clusters:
         xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
-    run_refinement(working_directory)
+    run_refinement(working_directory, refinement_params)
 
 
-class DataIntegration(object):
-    def __init__(
-        self, file_input: dict, crystal_assessment: dict, geometry_refinement: dict
-    ) -> None:
-        self.file_input = file_input
-        self.crystal_assessment = crystal_assessment
-        self.geometry_refinement = geometry_refinement
+def run_data_integration(
+    root_working_directory: pathlib.Path,
+    file_input: FileInput,
+    options: AlgorithmParams,
+    spotfinding_params: SpotfindingParams,
+    indexing_params: IndexingParams,
+    refinement_params: RefinementParams,
+    integration_params: IntegrationParams,
+) -> List[pathlib.Path]:
+    """
+    The main data integration processing function.
+    Import the data, followed by option crystal assessment (if the unit cell and
+    space group were not given) and geometry refinement (if a reference geometry
+    was not given). Then prepare and run data integration in batches with the
+    given/determined reference geometry.
+    """
+    # Start by importing the data
+    initial_import_wd = root_working_directory / "initial_import"
+    run_import(initial_import_wd, file_input)
+    imported_expts = initial_import_wd / "imported.expt"
 
-    def run(
-        self,
-        root_working_directory: pathlib.Path,
-        integration_params: phil.scope_extract,
-        nproc: int = 1,
-        batch_size: int = 1000,
-        stop_after_geometry_refinement: bool = False,
-    ) -> List[pathlib.Path]:
-
-        # Start by importing the data
-        initial_import_wd = root_working_directory / "initial_import"
-        run_import(
-            initial_import_wd, self.file_input, self.geometry_refinement["reference"]
+    # If space group and unit cell not both given, then assess the crystals
+    if not (indexing_params.space_group and indexing_params.unit_cell):
+        assess_wd = root_working_directory / "assess_crystals"
+        slice_images_from_experiments(
+            imported_expts,
+            assess_wd,
+            options.assess_images_to_use,
         )
-        imported_expts = initial_import_wd / "imported.expt"
+        assess_crystal_parameters(assess_wd, spotfinding_params, indexing_params)
+        xia2_logger.info(
+            "Rerun with a space group and unit cell to continue processing"
+        )
+        return []
 
-        # If space group and unit cell not both given, then assess the crystals
-        if not (
-            self.crystal_assessment["space_group"]
-            and self.crystal_assessment["unit_cell"]
-        ):
-            assess_working_directory = root_working_directory / "assess_crystals"
-            slice_images_from_experiments(
-                imported_expts,
-                assess_working_directory,
-                self.crystal_assessment["images_to_use"],
-            )
-            assess_crystal_parameters(
-                assess_working_directory, self.crystal_assessment, nproc
-            )
-            xia2_logger.info(
-                "Rerun with a space group and unit cell to continue processing"
-            )
+    # Do joint geometry refinement if a reference geometry was not specified.
+    if not file_input.reference_geometry:
+        geom_ref_wd = root_working_directory / "geometry_refinement"
+        slice_images_from_experiments(
+            imported_expts,
+            geom_ref_wd,
+            options.refinement_images_to_use,
+        )
+        determine_reference_geometry(
+            geom_ref_wd, spotfinding_params, indexing_params, refinement_params
+        )
+        if options.stop_after_geometry_refinement:
             return []
 
-        # Do joint geometry refinement if a reference geometry was not specified.
-        if not self.geometry_refinement["reference"]:
-            geom_ref_working_directory = root_working_directory / "geometry_refinement"
-            slice_images_from_experiments(
-                imported_expts,
-                geom_ref_working_directory,
-                self.geometry_refinement["images_to_use"],
-            )
-            determine_reference_geometry(
-                geom_ref_working_directory,
-                self.geometry_refinement,
-                self.crystal_assessment,
-                nproc,
-            )
-            if stop_after_geometry_refinement:
-                return []
+        # Reimport with this reference geometry to prepare for the main processing
+        reimport_wd = root_working_directory / "reimported_with_reference"
+        file_input.reference_geometry = geom_ref_wd / "refined.expt"
+        run_import(reimport_wd, file_input)
+        imported_expts = reimport_wd / "imported.expt"
 
-            # Reimport with this reference geometry to prepare for the main processing
-            reimport_wd = root_working_directory / "reimported_with_reference"
-            run_import(
-                reimport_wd,
-                self.file_input,
-                geom_ref_working_directory / "refined.expt",
-            )
-            imported_expts = reimport_wd / "imported.expt"
-
-        # Now do the main processing using reference geometry
-        batch_directories = setup_main_process(
-            root_working_directory,
-            imported_expts,
-            batch_size,
+    # Now do the main processing using reference geometry
+    batch_directories = setup_main_process(
+        root_working_directory,
+        imported_expts,
+        options.batch_size,
+    )
+    for i, batch_dir in enumerate(batch_directories):
+        xia2_logger.notice(banner(f"Processing batch {i+1}"))  # type: ignore
+        process_batch(
+            batch_dir, spotfinding_params, indexing_params, integration_params
         )
-        for i, batch_dir in enumerate(batch_directories):
-            xia2_logger.notice(banner(f"Processing batch {i+1}"))  # type: ignore
-            process_batch(
-                batch_dir,
-                self.crystal_assessment["space_group"],
-                self.crystal_assessment["unit_cell"],
-                integration_params,
-                nproc,
-                max_lattices=self.crystal_assessment["max_lattices"],
-            )
-        return batch_directories
+    return batch_directories

@@ -17,7 +17,7 @@ def test_import_without_reference_or_crystal_info(dials_data, tmp_path):
     ssx = dials_data("cunir_serial", pathlib=True)
 
     args = ["dev.xia2.ssx"]
-    args.append("images=" + os.fspath(ssx / "merlin0047_1700*.cbf"))
+    args.append("image=" + os.fspath(ssx / "merlin0047_1700*.cbf"))
 
     result = procrunner.run(args, working_directory=tmp_path)
     assert not result.returncode and not result.stderr
@@ -50,7 +50,7 @@ def test_geometry_refinement_and_run_with_reference(dials_data, tmp_path):
         "space_group=P213",
         "integration.algorithm=stills",
     ]
-    args.append("images=" + os.fspath(ssx / "merlin0047_1700*.cbf"))
+    args.append("image=" + os.fspath(ssx / "merlin0047_1700*.cbf"))
 
     result = procrunner.run(args, working_directory=tmp_path)
     assert not result.returncode and not result.stderr
@@ -119,7 +119,7 @@ def test_full_run_without_reference(dials_data, tmp_path):
         "integration.algorithm=stills",
         "d_min=2.0",
     ]
-    args.append("images=" + os.fspath(ssx / "merlin0047_1700*.cbf"))
+    args.append("image=" + os.fspath(ssx / "merlin0047_1700*.cbf"))
 
     result = procrunner.run(args, working_directory=tmp_path)
     assert not result.returncode and not result.stderr

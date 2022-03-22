@@ -26,18 +26,27 @@ import os
 import pathlib
 import sys
 import time
-from typing import Dict
 
 from dials.util.options import ArgumentParser
 from iotbx import phil
 
 import xia2.Driver.timing
 import xia2.Handlers.Streams
-from xia2.Modules.SSX.data_integration_standard import DataIntegration
+from xia2.Modules.SSX.data_integration_programs import (
+    IndexingParams,
+    IntegrationParams,
+    RefinementParams,
+    SpotfindingParams,
+)
+from xia2.Modules.SSX.data_integration_standard import (
+    AlgorithmParams,
+    FileInput,
+    run_data_integration,
+)
 from xia2.Modules.SSX.data_reduction_simple import SimpleDataReduction
 
 phil_str = """
-images = None
+image = None
   .type = str
   .multiple = True
   .help = "Path to image files"
@@ -55,21 +64,42 @@ mask = None
 reference_geometry = None
   .type = path
   .help = "Path to reference geomtry .expt file"
-space_group = None
-  .type = space_group
-unit_cell = None
-  .type = unit_cell
-max_lattices = 1
-  .type = int
-  .help = "Maximum number of lattices to search for, per image"
 nproc = 1
   .type = int
+space_group = None
+  .type = space_group
+d_min = None
+  .type = float
+  .help = "Resolution cutoff for spotfinding, integration and data reduction."
 batch_size = 1000
   .type = int
   .help = "Index and integrate the images in batches with at least this number"
           "of images, with a subfolder for each batch. In data reduction, perform"
           "consistent reindexing of crystals in batches of at least this number"
           "of crystals."
+spotfinding {
+  min_spot_size = 3
+    .type = int
+    .help = "The minimum spot size to allow in spotfinding."
+  max_spot_size = 20
+    .type = int
+    .help = "The maximum spot size to allow in spotfinding."
+}
+indexing {
+  unit_cell = None
+    .type = unit_cell
+  max_lattices = 1
+    .type = int
+    .help = "Maximum number of lattices to search for, per image"
+}
+integration {
+  algorithm = stills *ellipsoid
+    .type = choice
+  ellipsoid {
+    rlp_mosaicity = *angular4 angular2 simple1 simple6
+      .type = choice
+  }
+}
 assess_crystals {
   n_images = 1000
     .type = int(value_min=1)
@@ -87,14 +117,16 @@ geometry_refinement {
     .type = str
     .help = "Specify an inclusive image range to use for reference geometry"
             "determination, in the form start:end"
-}
-integration {
-  algorithm = stills *ellipsoid
+  outlier.algorithm = null auto mcd tukey *sauter_poon
+    .help = "Outlier rejection algorithm for joint refinement. If auto is"
+            "selected, the algorithm is chosen automatically."
     .type = choice
-  ellipsoid {
-    rlp_mosaicity = *angular4 angular2 simple1 simple6
-      .type = choice
-  }
+}
+workflow {
+  stop_after_geometry_refinement = False
+    .type = bool
+  stop_after_integration = False
+    .type = bool
 }
 clustering {
   threshold=1000
@@ -105,59 +137,47 @@ clustering {
 anomalous = False
   .type = bool
   .help = "If True, keep anomalous pairs separate during scaling."
-d_min = None
-  .type = float
-  .help = "Resolution cutoff for data reduction."
-workflow {
-  stop_after_geometry_refinement = False
-    .type = bool
-  stop_after_integration = False
-    .type = bool
-}
 """
 
-phil_scope = phil.parse(phil_str)
+phil_scope = phil.parse(phil_str, process_includes=True)
 
 xia2_logger = logging.getLogger(__name__)
 
 
-def _log_duration(start_time: float) -> None:
+def report_timing(fn):
+    def wrap_fn(*args, **kwargs):
+        start_time = time.time()
+        result = fn(*args, **kwargs)
+        xia2_logger.debug("\nTiming report:")
+        xia2_logger.debug("\n".join(xia2.Driver.timing.report()))
+        duration = time.time() - start_time
+        # write out the time taken in a human readable way
+        xia2_logger.info(
+            "Processing took %s", time.strftime("%Hh %Mm %Ss", time.gmtime(duration))
+        )
+        return result
 
-    xia2_logger.debug("\nTiming report:")
-    xia2_logger.debug("\n".join(xia2.Driver.timing.report()))
-
-    duration = time.time() - start_time
-    # write out the time taken in a human readable way
-    xia2_logger.info(
-        "Processing took %s", time.strftime("%Hh %Mm %Ss", time.gmtime(duration))
-    )
+    return wrap_fn
 
 
+@report_timing
 def run_xia2_ssx(
     root_working_directory: pathlib.Path, params: phil.scope_extract
 ) -> None:
     """
-    The main processing script.
-    Import the data, followed by option crystal assessment (if the unit cell and
-    space group were not given) and geometry refinement (if a reference geometry
-    was not given). Then prepare and run data integration in batches with the
-    given/determined reference geometry. Finally, run data reduction.
+    Run data integration and reduction for ssx images.
     """
-    start_time = time.time()
-
     # First separate out some of the input params into relevant sections.
     # Although it would be nice to have these as lists of Paths, we will need
     # to compare to json data, add them as command line arguments etc, so simpler
     # to have as strings from the start.
-    file_input: Dict = {"images": [], "template": [], "directory": [], "mask": None}
-    if params.images:
-        file_input["images"] = [str(pathlib.Path(i).resolve()) for i in params.images]
+    file_input = FileInput()
+    if params.image:
+        file_input.images = [str(pathlib.Path(i).resolve()) for i in params.image]
     elif params.template:
-        file_input["template"] = [
-            str(pathlib.Path(i).resolve()) for i in params.template
-        ]
+        file_input.templates = [str(pathlib.Path(i).resolve()) for i in params.template]
     elif params.directory:
-        file_input["directory"] = [
+        file_input.directories = [
             str(pathlib.Path(i).resolve()) for i in params.directory
         ]
     else:
@@ -165,15 +185,21 @@ def run_xia2_ssx(
             "No input data identified (use images=, template= or directory=)"
         )
     if params.mask:
-        file_input["mask"] = str(pathlib.Path(params.mask).resolve())
+        file_input.mask = pathlib.Path(params.mask).resolve()
+    if params.reference_geometry:
+        reference = pathlib.Path(params.reference_geometry).resolve()
+        if not reference.is_file():
+            xia2_logger.warn(
+                f"Unable to find reference geometry at {os.fspath(reference)}, proceeding without this reference"
+            )
+        else:
+            file_input.reference_geometry = reference
 
-    # Now separate out the options for crystal assessment
-    crystal_assessment = {
-        "space_group": params.space_group,
-        "unit_cell": params.unit_cell,
-        "nproc": params.nproc,
-        "max_lattices": params.max_lattices,
-    }
+    options = AlgorithmParams(
+        batch_size=params.batch_size,
+        stop_after_geometry_refinement=params.workflow.stop_after_geometry_refinement,
+    )
+
     if params.assess_crystals.images_to_use:
         if ":" not in params.assess_crystals.images_to_use:
             raise ValueError("Images to use must be given in format start:end")
@@ -182,26 +208,10 @@ def run_xia2_ssx(
             raise ValueError("Images to use must be given in format start:end")
         start = min(0, int(vals[0]) - 1)  # convert from image number to slice
         end = int(vals[1])
-        crystal_assessment["images_to_use"] = (start, end)
+        options.assess_images_to_use = (start, end)
     else:
-        crystal_assessment["images_to_use"] = (0, params.assess_crystals.n_images)
+        options.assess_images_to_use = (0, params.assess_crystals.n_images)
 
-    # First see if we have a reference geometry that we can use on first import.
-    # Else, we'll need to determine a reference geometry and reimport later.
-    # Start with the state of no reference geometry give.
-    reference = None
-    # See if a valid reference geometry has been given.
-    if params.reference_geometry:
-        reference = pathlib.Path(params.reference_geometry).resolve()
-        if not reference.is_file():
-            xia2_logger.warn(
-                f"Unable to find reference geometry at {os.fspath(reference)}, proceeding without this reference"
-            )
-            reference = None
-    geometry_refinement = {
-        "max_lattices": params.max_lattices,
-        "reference": reference,
-    }
     if params.geometry_refinement.images_to_use:
         if ":" not in params.geometry_refinement.images_to_use:
             raise ValueError("Images to use must be given in format start:end")
@@ -210,24 +220,41 @@ def run_xia2_ssx(
             raise ValueError("Images to use must be given in format start:end")
         start = min(0, int(vals[0]) - 1)  # convert from image number to slice
         end = int(vals[1])
-        geometry_refinement["images_to_use"] = (start, end)
+        options.refinement_images_to_use = (start, end)
     else:
-        geometry_refinement["images_to_use"] = (
-            0,
-            params.geometry_refinement.n_images,
-        )
+        options.refinement_images_to_use = (0, params.geometry_refinement.n_images)
 
-    integrator = DataIntegration(file_input, crystal_assessment, geometry_refinement)
-    processed_batch_directories = integrator.run(
+    spotfinding_params = SpotfindingParams(
+        params.spotfinding.min_spot_size,
+        params.spotfinding.max_spot_size,
+        params.d_min,
+        params.nproc,
+    )
+    indexing_params = IndexingParams(
+        params.space_group,
+        params.indexing.unit_cell,
+        params.indexing.max_lattices,
+        params.nproc,
+    )
+    refinement_params = RefinementParams(params.geometry_refinement.outlier.algorithm)
+    integration_params = IntegrationParams(
+        params.integration.algorithm,
+        params.integration.ellipsoid.rlp_mosaicity,
+        params.d_min,
+        params.nproc,
+    )
+
+    processed_batch_directories = run_data_integration(
         root_working_directory,
-        integration_params=params.integration,
-        nproc=params.nproc,
-        batch_size=params.batch_size,
-        stop_after_geometry_refinement=params.workflow.stop_after_geometry_refinement,
+        file_input,
+        options,
+        spotfinding_params,
+        indexing_params,
+        refinement_params,
+        integration_params,
     )
     if not processed_batch_directories or params.workflow.stop_after_integration:
-        _log_duration(start_time)
-        exit(0)
+        return
 
     # Now do the data reduction
     c = SimpleDataReduction(root_working_directory, processed_batch_directories, 0)
@@ -239,8 +266,6 @@ def run_xia2_ssx(
         cluster_threshold=params.clustering.threshold,
         d_min=params.d_min,
     )
-
-    _log_duration(start_time)
 
 
 def run(args=sys.argv[1:]):
