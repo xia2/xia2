@@ -5,9 +5,11 @@ import json
 import logging
 import os
 import sys
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
+import iotbx.phil
 from cctbx import sgtbx, uctbx
 from dials.algorithms.scaling.scaling_library import determine_best_unit_cell
 from dials.array_family import flex
@@ -35,28 +37,37 @@ FilesDict = Dict[
 ]  # A Dict where the keys are an index, corresponding to a filepair
 
 
+@dataclass
+class SimpleReductionParams:
+    space_group: sgtbx.space_group
+    batch_size: int = 1000
+    nproc: int = 1
+    d_min: Optional[float] = None
+    anomalous: bool = False
+    cluster_threshold: float = 1000.0
+    absolute_angle_tolerance: float = 0.5
+    absolute_length_tolerance: float = 0.2
+
+    @classmethod
+    def from_phil(cls, params: iotbx.phil.scope_extract):
+        """Construct from xia2.cli.ssx phil_scope."""
+        return cls(
+            params.space_group,
+            params.batch_size,
+            params.nproc,
+            params.d_min,
+            params.anomalous,
+            params.clustering.threshold,
+        )
+
+
 class SimpleDataReduction(BaseDataReduction):
-    def run(
-        self,
-        batch_size: int = 1000,
-        space_group: sgtbx.space_group = None,
-        nproc: int = 1,
-        anomalous: bool = True,
-        cluster_threshold: float = 1000,
-        d_min: float = None,
-    ) -> None:
+    def run(self, reduction_params: SimpleReductionParams) -> None:
         """
         A simple workflow for data reduction. First filter the input data, either
         by clustering on unit cells, or comparing against a previous cell. Then
         reindex data in batches, using cosym, followed by scaling and merging.
         """
-
-        # just some test options for now
-        filter_params = {
-            "absolute_angle_tolerance": 0.5,
-            "absolute_length_tolerance": 0.2,
-            "threshold": cluster_threshold,
-        }
 
         data_already_reindexed: FilesDict = {}
         data_to_reindex: FilesDict = {}
@@ -95,16 +106,17 @@ class SimpleDataReduction(BaseDataReduction):
                 data_to_reindex = self.filter_on_unit_cell_clustering(
                     filter_wd,
                     new_data,
-                    batch_size,
-                    filter_params,
+                    reduction_params.batch_size,
+                    reduction_params.cluster_threshold,
                 )
             else:
                 data_already_reindexed, data_to_reindex = self.filter_on_previous_cell(
                     filter_wd,
                     new_data,
                     data_already_reindexed,
-                    batch_size,
-                    filter_params,
+                    reduction_params.batch_size,
+                    reduction_params.absolute_angle_tolerance,
+                    reduction_params.absolute_length_tolerance,
                     current_unit_cell,
                 )
 
@@ -112,9 +124,9 @@ class SimpleDataReduction(BaseDataReduction):
             reindex_wd,
             data_to_reindex,
             data_already_reindexed,
-            space_group=space_group,
-            nproc=nproc,
-            d_min=d_min,
+            space_group=reduction_params.space_group,
+            nproc=reduction_params.nproc,
+            d_min=reduction_params.d_min,
         )
 
         # if we get here, we have successfully prepared the new data for scaling.
@@ -131,14 +143,19 @@ class SimpleDataReduction(BaseDataReduction):
         with open(data_reduction_wd / "data_reduction.json", "w") as fp:
             json.dump(data_reduction_progress, fp)
 
-        self.scale_and_merge(scale_wd, files_to_scale, anomalous=anomalous, d_min=d_min)
+        self.scale_and_merge(
+            scale_wd,
+            files_to_scale,
+            anomalous=reduction_params.anomalous,
+            d_min=reduction_params.d_min,
+        )
 
     @staticmethod
     def filter_on_unit_cell_clustering(
         working_directory: Path,
         new_data: Dict[str, List[Path]],
         batch_size: int,
-        filter_params: Dict[str, float],
+        threshold: float,
     ) -> FilesDict:
 
         """
@@ -149,7 +166,7 @@ class SimpleDataReduction(BaseDataReduction):
         main_cluster_files = cluster_all_unit_cells(
             working_directory,
             new_data,
-            filter_params["threshold"],
+            threshold,
         )
 
         # save the results to a json
@@ -179,7 +196,8 @@ class SimpleDataReduction(BaseDataReduction):
         new_data: Dict[str, List[Path]],
         data_already_reindexed: FilesDict,
         batch_size: int,
-        filter_params: Dict[str, float],
+        absolute_angle_tolerance: float,
+        absolute_length_tolerance: float,
         previous_unit_cell: uctbx.unit_cell,
     ) -> Tuple[FilesDict, FilesDict]:
         """
@@ -193,8 +211,8 @@ class SimpleDataReduction(BaseDataReduction):
         good_refls, good_expts = select_crystals_close_to(
             new_data,
             previous_unit_cell,
-            filter_params["absolute_angle_tolerance"],
-            filter_params["absolute_length_tolerance"],
+            absolute_angle_tolerance,
+            absolute_length_tolerance,
         )
 
         if len(good_expts) < batch_size:
@@ -223,7 +241,7 @@ class SimpleDataReduction(BaseDataReduction):
         working_directory: Path,
         data_to_reindex: FilesDict,
         data_already_reindexed: FilesDict,
-        space_group: sgtbx.space_group = None,
+        space_group: sgtbx.space_group,
         nproc: int = 1,
         d_min: float = None,
     ) -> FilesDict:

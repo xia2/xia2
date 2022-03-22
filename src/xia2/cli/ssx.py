@@ -27,8 +27,8 @@ import pathlib
 import sys
 import time
 
+import iotbx.phil
 from dials.util.options import ArgumentParser
-from iotbx import phil
 
 import xia2.Driver.timing
 import xia2.Handlers.Streams
@@ -43,7 +43,10 @@ from xia2.Modules.SSX.data_integration_standard import (
     FileInput,
     run_data_integration,
 )
-from xia2.Modules.SSX.data_reduction_simple import SimpleDataReduction
+from xia2.Modules.SSX.data_reduction_simple import (
+    SimpleDataReduction,
+    SimpleReductionParams,
+)
 
 phil_str = """
 image = None
@@ -139,7 +142,7 @@ anomalous = False
   .help = "If True, keep anomalous pairs separate during scaling."
 """
 
-phil_scope = phil.parse(phil_str, process_includes=True)
+phil_scope = iotbx.phil.parse(phil_str, process_includes=True)
 
 xia2_logger = logging.getLogger(__name__)
 
@@ -162,7 +165,7 @@ def report_timing(fn):
 
 @report_timing
 def run_xia2_ssx(
-    root_working_directory: pathlib.Path, params: phil.scope_extract
+    root_working_directory: pathlib.Path, params: iotbx.phil.scope_extract
 ) -> None:
     """
     Run data integration and reduction for ssx images.
@@ -257,15 +260,9 @@ def run_xia2_ssx(
         return
 
     # Now do the data reduction
-    c = SimpleDataReduction(root_working_directory, processed_batch_directories, 0)
-    c.run(
-        batch_size=params.batch_size,
-        nproc=params.nproc,
-        anomalous=params.anomalous,
-        space_group=params.space_group,
-        cluster_threshold=params.clustering.threshold,
-        d_min=params.d_min,
-    )
+    reduction_params = SimpleReductionParams.from_phil(params)
+    reducer = SimpleDataReduction(root_working_directory, processed_batch_directories)
+    reducer.run(reduction_params)
 
 
 def run(args=sys.argv[1:]):

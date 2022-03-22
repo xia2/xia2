@@ -5,8 +5,6 @@ import logging
 from pathlib import Path
 from typing import List
 
-from libtbx import phil
-
 xia2_logger = logging.getLogger(__name__)
 
 from xia2.Handlers.Streams import banner
@@ -17,14 +15,12 @@ class BaseDataReduction(object):
         self,
         main_directory: Path,
         batch_directories: List[Path],
-        params: phil.scope_extract,
     ) -> None:
         # General setup, finding which of the batch directories have already
         # been processed. Then it's up to the specific data reduction algorithms
         # as to how that information should be used.
         self._main_directory = main_directory
         self._batch_directories = batch_directories
-        self._params = params
 
         data_reduction_dir = self._main_directory / "data_reduction"
         directories_already_processed = []
