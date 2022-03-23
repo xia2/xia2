@@ -3,6 +3,7 @@ from __future__ import annotations
 import functools
 import logging
 import math
+from dataclasses import dataclass
 from io import StringIO
 from pathlib import Path
 from typing import Dict, List, Tuple
@@ -32,15 +33,26 @@ from xia2.Modules.SSX.util import log_to_file, run_in_directory
 
 xia2_logger = logging.getLogger(__name__)
 
-FilePairDict = Dict[str, Path]  # A Dict of {"expt" : exptpath, "refl" : reflpath}
+
+@dataclass(eq=False)
+class FilePair:
+    expt: Path
+    refl: Path
+
+    def check(self):
+        assert self.expt.is_file()
+        assert self.refl.is_file()
+        return True
+
+
 FilesDict = Dict[
-    int, FilePairDict
+    int, FilePair
 ]  # A Dict where the keys are an index, corresponding to a filepair
 
 
 def cluster_all_unit_cells(
-    working_directory: Path, new_data: Dict[str, List[Path]], threshold: float = 1000
-) -> FilePairDict:
+    working_directory: Path, new_data: FilesDict, threshold: float = 1000
+) -> FilePair:
     """Run dials.cluster_unit_cell on all files in new_data"""
     if not Path.is_dir(working_directory):
         Path.mkdir(working_directory)
@@ -48,8 +60,8 @@ def cluster_all_unit_cells(
     xia2_logger.info(f"Performing unit cell clustering in {working_directory}")
     cmd = ["dials.cluster_unit_cell", "output.clusters=True", f"threshold={threshold}"]
 
-    cmd.extend([str(i) for i in new_data["expt"]])
-    cmd.extend([str(i) for i in new_data["refl"]])
+    for file_pair in new_data.values():
+        cmd.extend([str(file_pair.expt), str(file_pair.refl)])
     with record_step("dials.cluster_unit_cell"):
         result = procrunner.run(cmd, working_directory=working_directory)
         if result.returncode or result.stderr:
@@ -62,7 +74,7 @@ def cluster_all_unit_cells(
     str_numbers.sort(key=int)
     cluster_expt = working_directory / ("cluster_" + str_numbers[0] + ".expt")
     cluster_refl = working_directory / ("cluster_" + str_numbers[0] + ".refl")
-    return {"expt": cluster_expt, "refl": cluster_refl}
+    return FilePair(cluster_expt, cluster_refl)
 
 
 def run_cosym(
@@ -129,6 +141,52 @@ def _set_scaling_options_for_ssx(
     return scaling_params, input_
 
 
+def scale_against_model(
+    working_directory: Path,
+    files: FilePair,
+    index: int,
+    model: Path,
+    anomalous: bool = True,
+    d_min: float = None,
+):
+    with run_in_directory(working_directory):
+        logfile = f"dials.scale.{index}.log"
+        with log_to_file(logfile) as dials_logger:
+            # Setup scaling
+            input_ = "Input parameters:\n"
+            expts = load.experiment_list(files.expt, check_format=False)
+            table = flex.reflection_table.from_file(files.refl)
+            input_ += "\n".join(f"  reflections = {files.refl}")
+            input_ += "\n".join(f"  experiments = {files.expt}")
+            params = scaling_phil_scope.extract()
+            params, input_opts = _set_scaling_options_for_ssx(params)
+            input_ += input_opts
+            params.anomalous = anomalous
+            params.scaling_options.target_model = str(model)
+            params.scaling_options.only_target = True
+            input_ += (
+                f"  anomalous = {anomalous}\n  scaling_options.target_model = {model}\n"
+            )
+            input_ += "  scaling_options.only_target = True\n"
+            if d_min:
+                params.cut_data.d_min = d_min
+                input_ += f"  cut_data.d_min={d_min}\n"
+            dials_logger.info(input_)
+            # Run the scaling using the algorithm class to give access to scaler
+            scaler = ScalingAlgorithm(params, expts, [table])
+            scaler.run()
+            scaled_expts, scaled_table = scaler.finish()
+            out_expt = f"scaled_{index}.expt"
+            out_refl = f"scaled_{index}.refl"
+
+            dials_logger.info(f"Saving scaled experiments to {out_expt}")
+            scaled_expts.as_file(out_expt)
+            dials_logger.info(f"Saving scaled reflections to {out_refl}")
+            scaled_table.as_file(out_refl)
+
+    return {index: FilePair(working_directory / out_expt, working_directory / out_refl)}
+
+
 def scale(
     working_directory: Path,
     files_to_scale: FilesDict,
@@ -143,11 +201,14 @@ def scale(
             experiments = ExperimentList()
             reflection_tables = []
             for file_pair in files_to_scale.values():
-                expt, table = file_pair["expt"], file_pair["refl"]
-                experiments.extend(load.experiment_list(expt, check_format=False))
-                reflection_tables.append(flex.reflection_table.from_file(table))
-                input_ += "\n".join(f"  reflections = {table}")
-                input_ += "\n".join(f"  experiments = {expt}")
+                experiments.extend(
+                    load.experiment_list(file_pair.expt, check_format=False)
+                )
+                reflection_tables.append(
+                    flex.reflection_table.from_file(file_pair.refl)
+                )
+                input_ += "\n".join(f"  reflections = {file_pair.refl}")
+                input_ += "\n".join(f"  experiments = {file_pair.expt}")
 
             params = scaling_phil_scope.extract()
             params, input_opts = _set_scaling_options_for_ssx(params)
@@ -168,7 +229,7 @@ def scale(
 
             dials_logger.info("Saving scaled experiments to scaled.expt")
             scaled_expts.as_file("scaled.expt")
-            dials_logger.info("Saving scaled reflections to scaled.expt")
+            dials_logger.info("Saving scaled reflections to scaled.refl")
             scaled_table.as_file("scaled.refl")
 
             _export_unmerged_mtz(params, scaled_expts, scaled_table)
@@ -186,7 +247,7 @@ def scale(
 
 def scale_cosym(
     working_directory: Path,
-    files: FilePairDict,
+    files: FilePair,
     index: int,
     space_group: sgtbx.space_group,
     d_min: float = None,
@@ -197,8 +258,8 @@ def scale_cosym(
         with record_step("dials.scale"):
 
             params = scaling_phil_scope.extract()
-            refls = [flex.reflection_table.from_file(files["refl"])]
-            expts = load.experiment_list(files["expt"], check_format=False)
+            refls = [flex.reflection_table.from_file(files.refl)]
+            expts = load.experiment_list(files.expt, check_format=False)
             params, _ = _set_scaling_options_for_ssx(params)
             params.output.html = None
             if d_min:
@@ -225,27 +286,22 @@ def scale_cosym(
                 f"Consistently indexed {len(cosym_expts)} crystals in data reduction batch {index+1}"
             )
 
-    return {
-        index: {
-            "expt": working_directory / out_expt,
-            "refl": working_directory / out_refl,
-        }
-    }
+    return {index: FilePair(working_directory / out_expt, working_directory / out_refl)}
 
 
 def reference_reindex(
     working_directory: Path,
-    reference_files: FilePairDict,
-    files_for_reindex: FilePairDict,
-) -> FilePairDict:
+    reference_files: FilePair,
+    files_for_reindex: FilePair,
+) -> FilePair:
     cmd = [
         "dials.reindex",
-        str(files_for_reindex["expt"]),
-        str(files_for_reindex["refl"]),
-        f"reference.reflections={str(reference_files['refl'])}",
-        f"reference.experiments={str(reference_files['expt'])}",
-        f"output.reflections={str(files_for_reindex['refl'])}",
-        f"output.experiments={str(files_for_reindex['expt'])}",
+        str(files_for_reindex.expt),
+        str(files_for_reindex.refl),
+        f"reference.reflections={str(reference_files.refl)}",
+        f"reference.experiments={str(reference_files.expt)}",
+        f"output.reflections={str(files_for_reindex.refl)}",
+        f"output.experiments={str(files_for_reindex.expt)}",
     ]
     with record_step("dials.reindex"):
         result = procrunner.run(cmd, working_directory=working_directory)
@@ -253,23 +309,20 @@ def reference_reindex(
             raise ValueError(
                 "dials.reindex returned error status:\n" + str(result.stderr)
             )
-    return {
-        "expt": files_for_reindex["expt"],
-        "refl": files_for_reindex["refl"],
-    }
+    return files_for_reindex
 
 
 def select_crystals_close_to(
-    new_data: Dict[str, List[Path]],
+    new_data: FilesDict,
     unit_cell: uctbx.unit_cell,
     abs_angle_tol: float,
     abs_length_tol: float,
 ) -> Tuple[List[flex.reflection_table], ExperimentList]:
     with record_step("select based on unit cell"):
         good_refls, good_expts = ([], ExperimentList([]))
-        for expt, refl in zip(new_data["expt"], new_data["refl"]):
-            experiments = load.experiment_list(expt, check_format=False)
-            refls = flex.reflection_table.from_file(refl)
+        for file_pair in new_data.values():
+            experiments = load.experiment_list(file_pair.expt, check_format=False)
+            refls = flex.reflection_table.from_file(file_pair.refl)
             identifiers = []
             expt_indices = []
             for i, c in enumerate(experiments.crystals()):
@@ -294,15 +347,27 @@ def select_crystals_close_to(
     return good_refls, good_expts
 
 
-def inspect_directories(
-    new_directories_to_process: List[Path],
-) -> Dict[str, List[Path]]:
-    new_data: Dict[str, List[Path]] = {"expt": [], "refl": []}
+def inspect_directories(new_directories_to_process: List[Path]) -> FilesDict:
+    """
+    Inspect the new directories and match up integrated .expt and .refl files
+    by name.
+    """
+    new_data: FilesDict = {}
+    n_pairs = 0
     for d in new_directories_to_process:
+        expts_this, refls_this = ([], [])
         for file_ in list(d.glob("integrated*.expt")):
-            new_data["expt"].append(file_)
+            expts_this.append(file_)
         for file_ in list(d.glob("integrated*.refl")):
-            new_data["refl"].append(file_)
+            refls_this.append(file_)
+        if len(expts_this) != len(refls_this):
+            raise ValueError(
+                f"Unequal number of experiments ({len(expts_this)}) "
+                + f"and reflections ({len(refls_this)}) files found in {d}"
+            )
+        for expt, refl in zip(sorted(expts_this), sorted(refls_this)):
+            new_data[n_pairs] = FilePair(expt, refl)
+            n_pairs += 1
     return new_data
 
 
@@ -312,6 +377,8 @@ def split(
     reflection_table: flex.reflection_table,
     min_batch_size,
 ) -> FilesDict:
+    if not Path.is_dir(working_directory):
+        Path.mkdir(working_directory)
     with record_step("splitting"):
         data_to_reindex: FilesDict = {}
         n_batches = max(math.floor(len(experiments) / min_batch_size), 1)
@@ -333,5 +400,5 @@ def split(
             sub_refl = reflection_table.select(sel)
             sub_refl.reset_ids()
             sub_refl.as_file(out_refl)
-            data_to_reindex[i] = {"expt": out_expt, "refl": out_refl}
+            data_to_reindex[i] = FilePair(out_expt, out_refl)
     return data_to_reindex

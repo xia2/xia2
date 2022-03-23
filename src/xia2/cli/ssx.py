@@ -137,12 +137,17 @@ clustering {
     .help = "Threshold to use for splitting clusters during data reduction"
 
 }
-anomalous = False
-  .type = bool
-  .help = "If True, keep anomalous pairs separate during scaling."
+scaling {
+  anomalous = False
+    .type = bool
+    .help = "If True, keep anomalous pairs separate during scaling."
+  model = None
+    .type = path
+    .help = "A model pdb file to use as a reference for scaling."
+}
 """
 
-phil_scope = iotbx.phil.parse(phil_str, process_includes=True)
+phil_scope = iotbx.phil.parse(phil_str)
 
 xia2_logger = logging.getLogger(__name__)
 

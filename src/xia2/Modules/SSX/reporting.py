@@ -103,3 +103,18 @@ def statistics_output_from_scaler(scaler: Any) -> str:
         )
     )
     return stats
+
+
+def statistics_output_from_scaled_files(experiments, reflection_table, best_unit_cell):
+    from dials.algorithms.scaling.scaling_library import (
+        merging_stats_from_scaled_array,
+        scaled_data_as_miller_array,
+    )
+
+    scaled_array = scaled_data_as_miller_array(
+        [reflection_table], experiments, best_unit_cell
+    )
+    stats, anom_stats = merging_stats_from_scaled_array(scaled_array)
+
+    stats = format_statistics(table_1_stats(stats, anom_stats))
+    return stats

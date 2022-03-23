@@ -13,13 +13,16 @@ from __future__ import annotations
 
 import logging
 import sys
-import time
 from pathlib import Path
 
+import iotbx.phil
 from dials.util.options import ArgumentParser
-from iotbx import phil
 
-from xia2.Modules.SSX.data_reduction_simple import SimpleDataReduction
+from xia2.cli.ssx import report_timing
+from xia2.Modules.SSX.data_reduction_simple import (
+    SimpleDataReduction,
+    SimpleReductionParams,
+)
 
 phil_str = """
 directory = None
@@ -35,24 +38,40 @@ batch_size = 1000
   .help = "The minimum batch size for consistent reindexing of data with cosym"
 clustering {
   threshold=1000
-    .type = float
+    .type = float(value_min=0)
 }
-anomalous = False
-  .type = bool
+scaling {
+  anomalous = False
+    .type = bool
+    .help = "If True, keep anomalous pairs separate during scaling."
+  model = None
+    .type = path
+    .help = "A model pdb file to use as a reference for scaling."
+}
+
 d_min = None
   .type = float
 """
 
-phil_scope = phil.parse(phil_str)
+phil_scope = iotbx.phil.parse(phil_str)
 
 xia2_logger = logging.getLogger(__name__)
 
 import xia2.Handlers.Streams
 
 
-def run(args=sys.argv[1:]):
+@report_timing
+def run_xia2_ssx_reduce(
+    root_working_directory: Path, params: iotbx.phil.scope_extract
+) -> None:
+    directories = [Path(i).resolve() for i in params.directory]
 
-    start_time = time.time()
+    reduction_params = SimpleReductionParams.from_phil(params)
+    reducer = SimpleDataReduction(root_working_directory, directories)
+    reducer.run(reduction_params)
+
+
+def run(args=sys.argv[1:]):
 
     parser = ArgumentParser(
         usage="xia2.ssx_reduce directory=/path/to/integrated/directory/",
@@ -63,7 +82,10 @@ def run(args=sys.argv[1:]):
         epilog=__doc__,
     )
     params, _ = parser.parse_args(args=args, show_diff_phil=False)
-    xia2.Handlers.Streams.setup_logging(logfile="xia2.ssx_reduce.log")
+
+    xia2.Handlers.Streams.setup_logging(
+        logfile="xia2.ssx_reduce.log", debugfile="xia2.ssx_reduce.debug.log"
+    )
     # remove the xia2 handler from the dials logger.
     dials_logger = logging.getLogger("dials")
     dials_logger.handlers.clear()
@@ -72,20 +94,5 @@ def run(args=sys.argv[1:]):
     if diff_phil:
         xia2_logger.info("The following parameters have been modified:\n%s", diff_phil)
 
-    directories = [Path(i).resolve() for i in params.directory]
-
-    reducer = SimpleDataReduction(Path.cwd(), directories, 0)
-    reducer.run(
-        batch_size=params.batch_size,
-        nproc=params.nproc,
-        anomalous=params.anomalous,
-        space_group=params.space_group,
-        cluster_threshold=params.clustering.threshold,
-        d_min=params.d_min,
-    )
-
-    duration = time.time() - start_time
-    # write out the time taken in a human readable way
-    xia2_logger.info(
-        "Processing took %s", time.strftime("%Hh %Mm %Ss", time.gmtime(duration))
-    )
+    cwd = Path.cwd()
+    run_xia2_ssx_reduce(cwd, params)

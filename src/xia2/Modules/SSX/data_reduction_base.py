@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import logging
 from pathlib import Path
-from typing import List
+from typing import Any, List
 
 xia2_logger = logging.getLogger(__name__)
 
@@ -68,5 +68,5 @@ class BaseDataReduction(object):
         dirs = "\n".join(str(i) for i in self._new_directories_to_process)
         xia2_logger.info(f"New directories to process: {dirs}")
 
-    def run(self) -> None:
+    def run(self, params: Any) -> None:
         pass
