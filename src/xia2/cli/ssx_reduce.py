@@ -37,8 +37,19 @@ batch_size = 1000
   .type = int
   .help = "The minimum batch size for consistent reindexing of data with cosym"
 clustering {
-  threshold=1000
-    .type = float(value_min=0)
+  threshold=5000
+    .type = float(value_min=0, allow_none=True)
+    .help = "If no data has previously been reduced, then unit cell clustering"
+            "is performed. This threshold is the value at which the dendrogram"
+            "will be split in dials.cluster_unit_cell. A higher threshold value"
+            "means that unit cells with greater differences will be retained."
+            "Only the largest cluster obtained from cutting at this threshold is"
+            "used for data reduction. Setting the threshold to None/0 will"
+            "cause all crystals to be used."
+  absolute_angle_tolerance = 1.0
+    .type = float(value_min=0, allow_none=True)
+  absolute_length_tolerance = 1.0
+    .type = float(value_min=0, allow_none=True)
 }
 scaling {
   anomalous = False

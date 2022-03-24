@@ -6,7 +6,7 @@ import math
 from dataclasses import dataclass
 from io import StringIO
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import procrunner
 
@@ -148,6 +148,7 @@ def scale_against_model(
     model: Path,
     anomalous: bool = True,
     d_min: float = None,
+    best_unit_cell: Optional[uctbx.unit_cell] = None,
 ):
     with run_in_directory(working_directory):
         logfile = f"dials.scale.{index}.log"
@@ -156,8 +157,8 @@ def scale_against_model(
             input_ = "Input parameters:\n"
             expts = load.experiment_list(files.expt, check_format=False)
             table = flex.reflection_table.from_file(files.refl)
-            input_ += "\n".join(f"  reflections = {files.refl}")
-            input_ += "\n".join(f"  experiments = {files.expt}")
+            input_ += f"  reflections = {files.refl}\n"
+            input_ += f"  experiments = {files.expt}\n"
             params = scaling_phil_scope.extract()
             params, input_opts = _set_scaling_options_for_ssx(params)
             input_ += input_opts
@@ -170,7 +171,10 @@ def scale_against_model(
             input_ += "  scaling_options.only_target = True\n"
             if d_min:
                 params.cut_data.d_min = d_min
-                input_ += f"  cut_data.d_min={d_min}\n"
+                input_ += f"  cut_data.d_min = {d_min}\n"
+            if best_unit_cell:
+                params.reflection_selection.best_unit_cell = best_unit_cell
+                input_ += f"  reflection_selection.best_unit_cell = {best_unit_cell.parameters()}\n"
             dials_logger.info(input_)
             # Run the scaling using the algorithm class to give access to scaler
             scaler = ScalingAlgorithm(params, expts, [table])
@@ -192,6 +196,7 @@ def scale(
     files_to_scale: FilesDict,
     anomalous: bool = True,
     d_min: float = None,
+    best_unit_cell: Optional[uctbx.unit_cell] = None,
 ) -> Tuple[ExperimentList, flex.reflection_table]:
     with run_in_directory(working_directory):
         logfile = "dials.scale.log"
@@ -207,8 +212,8 @@ def scale(
                 reflection_tables.append(
                     flex.reflection_table.from_file(file_pair.refl)
                 )
-                input_ += "\n".join(f"  reflections = {file_pair.refl}")
-                input_ += "\n".join(f"  experiments = {file_pair.expt}")
+                input_ += f"  reflections = {file_pair.refl}\n"
+                input_ += f"  experiments = {file_pair.expt}\n"
 
             params = scaling_phil_scope.extract()
             params, input_opts = _set_scaling_options_for_ssx(params)
@@ -221,6 +226,9 @@ def scale(
             if d_min:
                 params.cut_data.d_min = d_min
                 input_ += f"  cut_data.d_min={d_min}\n"
+            if best_unit_cell:
+                params.reflection_selection.best_unit_cell = best_unit_cell
+                input_ += f"  reflection_selection.best_unit_cell = {best_unit_cell}"
             dials_logger.info(input_)
             # Run the scaling using the algorithm class to give access to scaler
             scaler = ScalingAlgorithm(params, experiments, reflection_tables)
@@ -266,8 +274,8 @@ def scale_cosym(
                 params.cut_data.d_min = d_min
 
             scaled_expts, table = run_scaling(params, expts, refls)
-
-        with record_step("dials.cosym"):
+        logfile = f"dials.cosym.{index}.log"
+        with record_step("dials.cosym"), log_to_file(logfile):
             cosym_params = cosym_phil_scope.extract()
             cosym_params.space_group = space_group
             cosym_params.output.html = f"dials.cosym.{index}.html"

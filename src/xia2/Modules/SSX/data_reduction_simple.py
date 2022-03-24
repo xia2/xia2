@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
 import iotbx.phil
-from cctbx import sgtbx, uctbx
+from cctbx import crystal, sgtbx, uctbx
 from dials.algorithms.scaling.scaling_library import determine_best_unit_cell
 from dials.array_family import flex
 from dxtbx.model import ExperimentList
@@ -69,6 +69,30 @@ class SimpleReductionParams:
         )
 
 
+def assess_for_indexing_ambiguities(
+    space_group: sgtbx.space_group_info, unit_cell: uctbx.unit_cell
+):
+    # if lattice symmetry higher than space group symmetry, then need to
+    # assess for indexing ambiguity.
+    max_delta = 5
+    cs = crystal.symmetry(unit_cell=unit_cell, space_group=sgtbx.space_group())
+    # Get cell reduction operator
+    cb_op_inp_minimum = cs.change_of_basis_op_to_minimum_cell()
+    # New symmetry object with changed basis
+    minimum_symmetry = cs.change_basis(cb_op_inp_minimum)
+
+    # Get highest symmetry compatible with lattice
+    lattice_group = sgtbx.lattice_symmetry_group(
+        minimum_symmetry.unit_cell(),
+        max_delta=max_delta,
+        enforce_max_delta_for_generated_two_folds=True,
+    )
+    if lattice_group.order_z() > space_group.group().order_z():
+        return True
+    else:
+        return False
+
+
 class SimpleDataReduction(BaseDataReduction):
     def run(self, reduction_params: SimpleReductionParams) -> None:
         """
@@ -85,6 +109,7 @@ class SimpleDataReduction(BaseDataReduction):
         reindex_wd = data_reduction_wd / "reindex"
         scale_wd = data_reduction_wd / "scale"
 
+        # see if we have any data that has been marked as successfully reindexed.
         reidx_results = reindex_wd / "reindexing_results.json"
         if reidx_results.is_file():
             previous = json.load(reidx_results.open())
@@ -95,52 +120,110 @@ class SimpleDataReduction(BaseDataReduction):
             for file_pair in data_already_reindexed.values():
                 assert file_pair.check()
 
+        # if we have any new data, either cluster or compare to previous unit cell
+        # then we want to separate the data out into data that doesn't need
+        # to be assessed for reindexing (if possible in sg/lattice group).
+
+        # logic - the default is to cluster based on
+
+        # FIXME - want to allow no clustering assessment - if threshold=0, or abs angle?
+        new_best_unit_cell = None
         if self._new_directories_to_process:
             new_data = inspect_directories(self._new_directories_to_process)
-            current_unit_cell = None
+            best_unit_cell = None
             if data_already_reindexed:
                 cluster_results = filter_wd / "cluster_results.json"
                 if cluster_results.is_file():
                     result = json.load(cluster_results.open())
-                    current_unit_cell = uctbx.unit_cell(result["unit_cell"])
+                    best_unit_cell = uctbx.unit_cell(result["best_unit_cell"])
                     xia2_logger.info(
-                        f"Using unit cell {result['unit_cell']} from previous clustering analysis"
+                        f"Using unit cell {best_unit_cell} from previous clustering analysis"
                     )
 
-            if not current_unit_cell:
+            if not best_unit_cell:  # i.e. no previous data reduction
                 if reduction_params.cluster_threshold:
-                    data_to_reindex = self.filter_on_unit_cell_clustering(
+                    cluster_expts, cluster_refls = self.filter_on_unit_cell_clustering(
                         filter_wd,
                         new_data,
-                        reduction_params.batch_size,
                         reduction_params.cluster_threshold,
                     )
-                else:
-                    # handle splitting into directories
+                elif (
+                    reduction_params.absolute_angle_tolerance
+                    and reduction_params.absolute_length_tolerance
+                ):
                     tables = []
-                    experiments = ExperimentList([])
+                    cluster_expts = ExperimentList([])
                     for file_pair in new_data.values():
                         tables.append(flex.reflection_table.from_file(file_pair.refl))
-                        experiments.extend(
+                        cluster_expts.extend(
                             load.experiment_list(file_pair.expt, check_format=False)
                         )
-                    table = flex.reflection_table.concat(tables)
+                    cluster_refls = flex.reflection_table.concat(tables)
+                else:  # join all data for splitting
+                    tables = []
+                    cluster_expts = ExperimentList([])
+                    for file_pair in new_data.values():
+                        tables.append(flex.reflection_table.from_file(file_pair.refl))
+                        cluster_expts.extend(
+                            load.experiment_list(file_pair.expt, check_format=False)
+                        )
+                    cluster_refls = flex.reflection_table.concat(tables)
+                new_best_unit_cell = determine_best_unit_cell(cluster_expts)
 
-                    data_to_reindex = split(
-                        filter_wd, experiments, table, reduction_params.batch_size
-                    )
-            else:
-                data_already_reindexed, data_to_reindex = self.filter_on_previous_cell(
-                    filter_wd,
-                    new_data,
-                    data_already_reindexed,
-                    reduction_params.batch_size,
-                    reduction_params.absolute_angle_tolerance,
-                    reduction_params.absolute_length_tolerance,
-                    current_unit_cell,
+                data_to_reindex = split(
+                    filter_wd, cluster_expts, cluster_refls, reduction_params.batch_size
                 )
-        point_group = reduction_params.space_group.group().point_group_type()
-        if point_group in ["1", "2", "m", "mm2", "3", "3m", "4", "4mm", "6", "6mm"]:
+            else:
+                if (
+                    reduction_params.absolute_angle_tolerance
+                    and reduction_params.absolute_length_tolerance
+                ):
+                    xia2_logger.notice(banner("Filtering"))  # type: ignore
+                    good_refls, good_expts = select_crystals_close_to(
+                        new_data,
+                        best_unit_cell,
+                        reduction_params.absolute_angle_tolerance,
+                        reduction_params.absolute_length_tolerance,
+                    )
+                else:
+                    tables = []
+                    good_expts = ExperimentList([])
+                    for file_pair in new_data.values():
+                        tables.append(flex.reflection_table.from_file(file_pair.refl))
+                        good_expts.extend(
+                            load.experiment_list(file_pair.expt, check_format=False)
+                        )
+                    good_refls = flex.reflection_table.concat(tables)
+                if len(good_expts) < reduction_params.batch_size:
+                    # we want all jobs to use at least batch_size crystals, so join on
+                    # to last reindexed batch
+                    last_batch = data_already_reindexed.pop(
+                        list(data_already_reindexed.keys())[-1]
+                    )
+                    good_refls.append(flex.reflection_table.from_file(last_batch.refl))
+                    good_expts.extend(load.experiment_list(last_batch.expt))
+
+                # FIXME - need to include all previous unit cells
+                new_best_unit_cell = determine_best_unit_cell(good_expts)
+
+                joint_good_refls = flex.reflection_table.concat(good_refls)
+                data_to_reindex = split(
+                    filter_wd, good_expts, joint_good_refls, reduction_params.batch_size
+                )
+
+                n_already_reindexed_files = len(list(data_already_reindexed.keys()))
+                # offset keys by n_already_reindexed_files
+                for k in sorted(data_to_reindex.keys(), reverse=True):
+                    data_to_reindex[
+                        k + n_already_reindexed_files
+                    ] = data_to_reindex.pop(k)
+
+        # the assumption in the simple data reducer is that we know the space group
+        # and have a good value for the unit cell.
+        sym_requires_reindex = assess_for_indexing_ambiguities(
+            reduction_params.space_group, new_best_unit_cell
+        )
+        if sym_requires_reindex:
             files_to_scale = self.reindex(
                 reindex_wd,
                 data_to_reindex,
@@ -174,6 +257,7 @@ class SimpleDataReduction(BaseDataReduction):
                 d_min=reduction_params.d_min,
                 model=reduction_params.model,
                 nproc=reduction_params.nproc,
+                best_unit_cell=new_best_unit_cell,
             )
         else:
             self.scale_and_merge(
@@ -181,15 +265,15 @@ class SimpleDataReduction(BaseDataReduction):
                 files_to_scale,
                 anomalous=reduction_params.anomalous,
                 d_min=reduction_params.d_min,
+                best_unit_cell=new_best_unit_cell,
             )
 
     @staticmethod
     def filter_on_unit_cell_clustering(
         working_directory: Path,
         new_data: FilesDict,
-        batch_size: int,
         threshold: float,
-    ) -> FilesDict:
+    ) -> Tuple[ExperimentList, flex.reflection_table]:
 
         """
         Filter the integrated data using dials.cluster_unit_cell. Takes the
@@ -211,63 +295,16 @@ class SimpleDataReduction(BaseDataReduction):
         n_in_cluster = len(cluster_expts)
         uc = determine_best_unit_cell(cluster_expts)
         result = {
-            "unit_cell": [round(i, 4) for i in uc.parameters()],
+            "best_unit_cell": [round(i, 4) for i in uc.parameters()],
             "n_in_cluster": n_in_cluster,
+            "unit_cells": [
+                e.crystal.get_unit_cell().parameters() for e in cluster_expts
+            ],
         }
         with open(working_directory / "cluster_results.json", "w") as fp:
             json.dump(result, fp)
 
-        data_to_reindex = split(
-            working_directory, cluster_expts, cluster_refls, batch_size
-        )
-
-        return data_to_reindex
-
-    @staticmethod
-    def filter_on_previous_cell(
-        working_directory: Path,
-        new_data: FilesDict,
-        data_already_reindexed: FilesDict,
-        batch_size: int,
-        absolute_angle_tolerance: float,
-        absolute_length_tolerance: float,
-        previous_unit_cell: uctbx.unit_cell,
-    ) -> Tuple[FilesDict, FilesDict]:
-        """
-        Filter unit cells close to the previous cell. Then split the data
-        into batches ready for reindexing.
-        """
-
-        # else going to filter some and prepare for reindexing, and note which is already reindexed.
-        data_to_reindex: FilesDict = {}
-        xia2_logger.notice(banner("Filtering"))  # type: ignore
-        good_refls, good_expts = select_crystals_close_to(
-            new_data,
-            previous_unit_cell,
-            absolute_angle_tolerance,
-            absolute_length_tolerance,
-        )
-
-        if len(good_expts) < batch_size:
-            # we want all jobs to use at least batch_size crystals, so join on
-            # to last reindexed batch
-            last_batch = data_already_reindexed.pop(
-                list(data_already_reindexed.keys())[-1]
-            )
-            good_refls.append(flex.reflection_table.from_file(last_batch.refl))
-            good_expts.extend(load.experiment_list(last_batch.expt))
-
-        joint_good_refls = flex.reflection_table.concat(good_refls)
-
-        n_already_reindexed_files = len(list(data_already_reindexed.keys()))
-
-        data_to_reindex = split(
-            working_directory, good_expts, joint_good_refls, batch_size
-        )
-        # offset keys by n_already_reindexed_files
-        for k in sorted(data_to_reindex.keys(), reverse=True):
-            data_to_reindex[k + n_already_reindexed_files] = data_to_reindex.pop(k)
-        return data_already_reindexed, data_to_reindex
+        return cluster_expts, cluster_refls
 
     @staticmethod
     def reindex(
@@ -368,6 +405,7 @@ class SimpleDataReduction(BaseDataReduction):
         files_to_scale: FilesDict,
         anomalous: bool = True,
         d_min: float = None,
+        best_unit_cell: Optional[uctbx.unit_cell] = None,
     ) -> None:
         """Run scaling and merging"""
 
@@ -375,7 +413,11 @@ class SimpleDataReduction(BaseDataReduction):
             Path.mkdir(working_directory)
         xia2_logger.notice(banner("Scaling & Merging"))  # type: ignore
         scaled_expts, scaled_table = scale(
-            working_directory, files_to_scale, anomalous, d_min
+            working_directory,
+            files_to_scale,
+            anomalous,
+            d_min,
+            best_unit_cell,
         )
         merge(working_directory, scaled_expts, scaled_table, d_min)
 
@@ -387,6 +429,7 @@ class SimpleDataReduction(BaseDataReduction):
         d_min: float = None,
         model: Path = None,
         nproc: int = 1,
+        best_unit_cell: Optional[uctbx.unit_cell] = None,
     ) -> None:
         """Run scaling and merging"""
 
@@ -407,6 +450,7 @@ class SimpleDataReduction(BaseDataReduction):
                     model,
                     anomalous,
                     d_min,
+                    best_unit_cell,
                 ): index
                 for index, files in files_to_scale.items()
             }
