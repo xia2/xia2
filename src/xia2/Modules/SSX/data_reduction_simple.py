@@ -458,7 +458,7 @@ class SimpleDataReduction(BaseDataReduction):
                 try:
                     result = future.result()
                 except Exception as e:
-                    raise ValueError(f"Unsuccessful scaling of group. Error:\n{e}")
+                    xia2_logger.warning(f"Unsuccessful scaling of group. Error:\n{e}")
                 else:
                     scaled_results.update(result)
 
