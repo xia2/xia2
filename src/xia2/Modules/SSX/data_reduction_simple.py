@@ -169,6 +169,9 @@ class SimpleDataReduction(BaseDataReduction):
                         )
                     cluster_refls = flex.reflection_table.concat(tables)
                 new_best_unit_cell = determine_best_unit_cell(cluster_expts)
+                xia2_logger.info(
+                    f"{len(cluster_expts)} crystals remain after unit cell filtering"
+                )
 
                 data_to_reindex = split(
                     filter_wd, cluster_expts, cluster_refls, reduction_params.batch_size
@@ -457,9 +460,11 @@ class SimpleDataReduction(BaseDataReduction):
             for future in concurrent.futures.as_completed(scale_futures):
                 try:
                     result = future.result()
+                    i = scale_futures[future]
                 except Exception as e:
                     xia2_logger.warning(f"Unsuccessful scaling of group. Error:\n{e}")
                 else:
+                    xia2_logger.info(f"Completed scaling of group {i+1}")
                     scaled_results.update(result)
 
         xia2_logger.notice(banner("Merging"))  # type: ignore
