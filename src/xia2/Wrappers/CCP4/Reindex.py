@@ -6,7 +6,7 @@ import os
 from xia2.Decorators.DecoratorFactory import DecoratorFactory
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Syminfo import Syminfo
+from xia2.Handlers.Syminfo import spacegroup_number_to_name
 
 logger = logging.getLogger("xia2.Wrappers.CCP4.Reindex")
 
@@ -128,11 +128,9 @@ def Reindex(DriverType=None):
             if self._spacegroup:
 
                 if isinstance(self._spacegroup, int):
-                    spacegroup = Syminfo.spacegroup_number_to_name(self._spacegroup)
+                    spacegroup = spacegroup_number_to_name(self._spacegroup)
                 elif self._spacegroup[0] in "0123456789":
-                    spacegroup = Syminfo.spacegroup_number_to_name(
-                        int(self._spacegroup)
-                    )
+                    spacegroup = spacegroup_number_to_name(int(self._spacegroup))
                 else:
                     spacegroup = self._spacegroup
 

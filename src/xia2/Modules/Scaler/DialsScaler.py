@@ -29,7 +29,11 @@ from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import banner
-from xia2.Handlers.Syminfo import Syminfo
+from xia2.Handlers.Syminfo import (
+    get_lattice,
+    spacegroup_name_to_number,
+    spacegroup_number_to_name,
+)
 from xia2.lib.bits import auto_logfiler
 from xia2.lib.SymmetryLib import sort_lattices
 from xia2.Modules.AnalyseMyIntensities import AnalyseMyIntensities
@@ -311,7 +315,7 @@ class DialsScaler(Scaler):
                 [experiment], [reflections], [refiner]
             )
 
-            lattice = Syminfo.get_lattice(pointgroup)
+            lattice = get_lattice(pointgroup)
             if lattice not in lattices:
                 lattices.append(lattice)
             if ntr:
@@ -363,8 +367,8 @@ class DialsScaler(Scaler):
                 "Probably twinned, pointgroups: %s",
                 " ".join(p.replace(" ", "") for p in pointgroup_set),
             )
-            numbers = [Syminfo.spacegroup_name_to_number(s) for s in pointgroup_set]
-            overall_pointgroup = Syminfo.spacegroup_number_to_name(min(numbers))
+            numbers = [spacegroup_name_to_number(s) for s in pointgroup_set]
+            overall_pointgroup = spacegroup_number_to_name(min(numbers))
             self._scalr_input_pointgroup = overall_pointgroup
 
             logger.info("Twinning detected, assume pointgroup %s", overall_pointgroup)
@@ -1375,7 +1379,7 @@ Passing multple datasets to indexer_jiffy but not set multisweep=True"""
         """Add data from si and reindex, setting back in si"""
         integrater = si.get_integrater()
         integrater.set_integrater_spacegroup_number(
-            Syminfo.spacegroup_name_to_number(pointgroup)
+            spacegroup_name_to_number(pointgroup)
         )
         integrater.set_integrater_reindex_operator(
             reindex_op, reason="setting point group"
