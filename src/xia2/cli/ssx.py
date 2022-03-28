@@ -133,7 +133,7 @@ workflow {
 }
 clustering {
   threshold=1000
-    .type = float
+    .type = float(value_min=0, allow_none=True)
     .help = "Threshold to use for splitting clusters during data reduction"
 
 }
@@ -141,7 +141,7 @@ scaling {
   anomalous = False
     .type = bool
     .help = "If True, keep anomalous pairs separate during scaling."
-  model = None
+  model = Noneß
     .type = path
     .help = "A model pdb file to use as a reference for scaling."
 }

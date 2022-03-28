@@ -64,9 +64,9 @@ class BaseDataReduction(object):
         self._directories_previously_processed = directories_already_processed
         if self._directories_previously_processed:
             dirs = "\n".join(str(i) for i in self._directories_previously_processed)
-            xia2_logger.info(f"Directories previously processed: {dirs}")
-        dirs = "\n".join(str(i) for i in self._new_directories_to_process)
-        xia2_logger.info(f"New directories to process: {dirs}")
+            xia2_logger.info(f"Directories previously processed:\n{dirs}")
+        dirs = "\n".join(f"  {str(i)}" for i in self._new_directories_to_process)
+        xia2_logger.info(f"New directories to process:\n{dirs}")
 
     def run(self, params: Any) -> None:
         pass

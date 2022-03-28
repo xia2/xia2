@@ -1,8 +1,11 @@
+# -*- coding: utf-8 -*-
 from __future__ import annotations
 
 import functools
 import logging
 import math
+import os
+import sys
 from dataclasses import dataclass
 from io import StringIO
 from pathlib import Path
@@ -10,7 +13,7 @@ from typing import Dict, List, Optional, Tuple
 
 import procrunner
 
-from cctbx import sgtbx, uctbx
+from cctbx import crystal, sgtbx, uctbx
 from dials.algorithms.scaling.algorithm import ScalingAlgorithm
 from dials.algorithms.scaling.scaling_library import determine_best_unit_cell
 from dials.array_family import flex
@@ -50,6 +53,61 @@ FilesDict = Dict[
 ]  # A Dict where the keys are an index, corresponding to a filepair
 
 
+def run_uc_cluster(working_directory: Path, crystals_data, threshold: float = 1000):
+    if not Path.is_dir(working_directory):
+        Path.mkdir(working_directory)
+    sys.stdout = open(os.devnull, "w")  # block printing from cosym
+
+    from dials.command_line.cluster_unit_cell import do_cluster_analysis, phil_scope
+
+    with run_in_directory(working_directory):
+        with record_step("dials.cluster_unit_cell"), log_to_file(
+            "dials.cluster_unit_cell.log"
+        ):
+
+            params = phil_scope.extract()
+            params.threshold = threshold
+            crystal_symmetries = []
+            n_tot = 0
+            for k, v in crystals_data.items():
+                symmetries = [
+                    crystal.symmetry(
+                        unit_cell=c.get_unit_cell(),
+                        space_group=c.get_space_group(),
+                    )
+                    for c in v["crystals"]
+                ]
+                crystal_symmetries.extend(symmetries)
+                n_this = len(symmetries)
+                ids = list(range(n_tot, n_tot + n_this))
+                n_tot += n_this
+                crystals_data[k]["lattice_ids"] = ids
+
+            clusters = do_cluster_analysis(crystal_symmetries, params)
+            clusters.sort(key=lambda x: len(x.members), reverse=True)
+            main_cluster = clusters[0]
+            ids = set([m.lattice_id for m in main_cluster.members])
+            good_crystals_data = {}
+            for k, v in crystals_data.items():
+                ids_this = set(v["lattice_ids"]).intersection(ids)
+                if len(ids_this) < len(v["lattice_ids"]):
+                    identifiers = []
+                    crystals = []
+                    for i, id_ in enumerate(v["lattice_ids"]):
+                        if id_ in ids_this:
+                            identifiers.append(v["identifiers"][i])
+                            crystals.append(v["crystals"][i])
+                    good_crystals_data[k] = {
+                        "identifiers": identifiers,
+                        "crystals": crystals,
+                        "keep_all_original": False,
+                    }
+                else:
+                    good_crystals_data[k] = crystals_data[k]
+    sys.stdout = sys.__stdout__  # restore printing
+    return good_crystals_data
+
+
 def cluster_all_unit_cells(
     working_directory: Path, new_data: FilesDict, threshold: float = 1000
 ) -> FilePair:
@@ -57,12 +115,13 @@ def cluster_all_unit_cells(
     if not Path.is_dir(working_directory):
         Path.mkdir(working_directory)
 
-    xia2_logger.info(f"Performing unit cell clustering in {working_directory}")
     cmd = ["dials.cluster_unit_cell", "output.clusters=True", f"threshold={threshold}"]
 
     for file_pair in new_data.values():
         cmd.extend([str(file_pair.expt), str(file_pair.refl)])
-    with record_step("dials.cluster_unit_cell"):
+    with record_step("dials.cluster_unit_cell"), log_to_file(
+        "dials.cluster_unit_cell.log"
+    ):
         result = procrunner.run(cmd, working_directory=working_directory)
         if result.returncode or result.stderr:
             raise ValueError(
@@ -321,38 +380,54 @@ def reference_reindex(
 
 
 def select_crystals_close_to(
-    new_data: FilesDict,
+    crystals_data: dict,
     unit_cell: uctbx.unit_cell,
     abs_angle_tol: float,
     abs_length_tol: float,
 ) -> Tuple[List[flex.reflection_table], ExperimentList]:
+    good_crystals_data = {}
     with record_step("select based on unit cell"):
-        good_refls, good_expts = ([], ExperimentList([]))
-        for file_pair in new_data.values():
-            experiments = load.experiment_list(file_pair.expt, check_format=False)
-            refls = flex.reflection_table.from_file(file_pair.refl)
-            identifiers = []
-            expt_indices = []
-            for i, c in enumerate(experiments.crystals()):
+        n_input = 0
+        n_good = 0
+        for file_, data in crystals_data.items():
+            identifiers = data["identifiers"]
+            n = len(identifiers)
+            n_input += n
+            ids = []
+            for i, c in enumerate(data["crystals"]):
                 if c.get_unit_cell().is_similar_to(
                     unit_cell,
                     absolute_angle_tolerance=abs_angle_tol,
                     absolute_length_tolerance=abs_length_tol,
                 ):
-                    identifiers.append(experiments[i].identifier)
-                    expt_indices.append(i)
-            if len(expt_indices) == len(experiments):
-                # all good
-                good_refls.append(refls)
-                good_expts.extend(experiments)
+                    ids.append(i)
+            n_this = len(ids)
+            if n_this == n:
+                good_crystals_data[file_] = {
+                    "identifiers": identifiers,
+                    "crystals": data["crystals"],
+                    "keep_all_original": True,
+                }
             else:
-                sub_refls = refls.select_on_experiment_identifiers(identifiers)
-                sub_refls.reset_ids()
-                good_refls.append(sub_refls)
-                good_expts.extend(
-                    ExperimentList([experiments[i] for i in expt_indices])
-                )
-    return good_refls, good_expts
+                good_crystals_data[file_] = {
+                    "identifiers": [identifiers[i] for i in ids],
+                    "crystals": [data["crystals"][i] for i in ids],
+                    "keep_all_original": False,
+                }
+            n_good += n_this
+        uc_string = ",".join(f"{i:.2f}" for i in unit_cell.parameters())
+        xia2_logger.info(
+            f"""Unit cell filtering: {n_good}/{n_input} crystals remain, consistent
+with cell parameters {uc_string}
+and tolerances of"""
+            + " \u00b1"
+            + f"{abs_length_tol}"
+            + "\u212b &"
+            + " \u00b1"
+            + f"{abs_angle_tol}"
+            + "\u00b0"
+        )
+    return good_crystals_data
 
 
 def inspect_directories(new_directories_to_process: List[Path]) -> FilesDict:
@@ -377,6 +452,77 @@ def inspect_directories(new_directories_to_process: List[Path]) -> FilesDict:
             new_data[n_pairs] = FilePair(expt, refl)
             n_pairs += 1
     return new_data
+
+
+import copy
+
+
+def split_filtered_data(
+    working_directory: Path,
+    new_data,
+    good_crystals_data,
+    min_batch_size,
+    offset: int = 0,
+) -> FilesDict:
+    if not Path.is_dir(working_directory):
+        Path.mkdir(working_directory)
+    with record_step("splitting"):
+        data_to_reindex: FilesDict = {}
+        n_cryst = sum(len(v["identifiers"]) for v in good_crystals_data.values())
+        n_batches = max(math.floor(n_cryst / min_batch_size), 1)
+        stride = n_cryst / n_batches
+        # make sure last batch has at least the batch size
+        splits = [int(math.floor(i * stride)) for i in range(n_batches)]
+        splits.append(n_cryst)
+        template = functools.partial(
+            "split_{index:0{fmt:d}d}".format, fmt=len(str(n_batches + offset))
+        )
+        leftover_expts = ExperimentList([])
+        leftover_refls = []
+        n_batch_output = 0
+        n_required = splits[1] - splits[0]
+        for file_pair in new_data.values():
+            expts = load.experiment_list(file_pair.expt, check_format=False)
+            refls = flex.reflection_table.from_file(file_pair.refl)
+            good_crystals_this = good_crystals_data[str(file_pair.expt)]
+            good_identifiers = good_crystals_this["identifiers"]
+            if not good_crystals_this["keep_all_original"]:
+                expts = expts.select_on_experiment_identifiers(good_identifiers)
+                refls = refls.select_on_experiment_identifiers(good_identifiers)
+            leftover_expts.extend(expts)
+            leftover_refls.append(refls)
+            while len(leftover_expts) >= n_required:
+                sub_expt = leftover_expts[0:n_required]
+                leftover_refls = flex.reflection_table.concat(leftover_refls)
+                leftover_copy = copy.deepcopy(leftover_refls)
+                sub_refl = leftover_refls.select_on_experiment_identifiers(
+                    sub_expt.identifiers()
+                )
+                leftover_refls = [
+                    leftover_copy.remove_on_experiment_identifiers(
+                        sub_expt.identifiers()
+                    )
+                ]
+                leftover_expts = leftover_expts[n_required:]
+                out_expt = working_directory / (
+                    template(index=n_batch_output + offset) + ".expt"
+                )
+                out_refl = working_directory / (
+                    template(index=n_batch_output + offset) + ".refl"
+                )
+                sub_expt.as_file(out_expt)
+                sub_refl.reset_ids()  # necessary?
+                sub_refl.as_file(out_refl)
+                data_to_reindex[n_batch_output + offset] = FilePair(out_expt, out_refl)
+                n_batch_output += 1
+                if n_batch_output == len(splits) - 1:
+                    break
+                n_required = splits[n_batch_output + 1] - splits[n_batch_output]
+        assert n_batch_output == len(splits) - 1
+        assert not len(leftover_expts)
+        assert len(leftover_refls) == 1
+        assert leftover_refls[0].size() == 0
+    return data_to_reindex
 
 
 def split(
