@@ -8,7 +8,7 @@ import os
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional
 
 import iotbx.phil
 from cctbx import crystal, sgtbx, uctbx
@@ -22,8 +22,9 @@ from xia2.Handlers.Streams import banner
 from xia2.Modules.SSX.data_reduction_base import BaseDataReduction
 from xia2.Modules.SSX.data_reduction_programs import (
     FilePair,
-    cluster_all_unit_cells,
+    determine_best_unit_cell_from_crystals,
     inspect_directories,
+    load_crystal_data_from_new_expts,
     merge,
     reference_reindex,
     run_uc_cluster,
@@ -75,7 +76,7 @@ class SimpleReductionParams:
 
 def assess_for_indexing_ambiguities(
     space_group: sgtbx.space_group_info, unit_cell: uctbx.unit_cell
-):
+) -> bool:
     # if lattice symmetry higher than space group symmetry, then need to
     # assess for indexing ambiguity.
     cs = crystal.symmetry(unit_cell=unit_cell, space_group=sgtbx.space_group())
@@ -94,31 +95,6 @@ def assess_for_indexing_ambiguities(
         return True
     else:
         return False
-
-
-def load_crystal_data_from_new_expts(new_data):
-    data = {}
-    for file_pair in new_data.values():
-        new_expts = load.experiment_list(file_pair.expt, check_format=False)
-        data[str(file_pair.expt)] = {
-            "identifiers": copy.deepcopy(new_expts.identifiers()),
-            "crystals": copy.deepcopy(new_expts.crystals()),
-            "keep_all_original": True,
-        }
-    return data
-
-
-def determine_best_unit_cell_crystals(crystals_data):
-    """Set the median unit cell as the best cell, for consistent d-values across
-    experiments."""
-    uc_params = [flex.double() for i in range(6)]
-    for v in crystals_data.values():
-        for c in v["crystals"]:
-            unit_cell = c.get_recalculated_unit_cell() or c.get_unit_cell()
-            for i, p in enumerate(unit_cell.parameters()):
-                uc_params[i].append(p)
-    best_unit_cell = uctbx.unit_cell(parameters=[flex.median(p) for p in uc_params])
-    return best_unit_cell
 
 
 class SimpleDataReduction(BaseDataReduction):
@@ -173,22 +149,12 @@ class SimpleDataReduction(BaseDataReduction):
                     n_cryst = sum(
                         len(v["identifiers"]) for v in good_crystals_data.values()
                     )
-                    """cluster_expts, cluster_refls = self.filter_on_unit_cell_clustering(
-                        filter_wd,
-                        new_data,
-                        reduction_params.cluster_threshold,
-                    )"""
                 elif (
                     reduction_params.absolute_angle_tolerance
                     and reduction_params.absolute_length_tolerance
                 ):
                     # calculate the median unit cell
-                    """cluster_expts = ExperimentList([])
-                    for file_pair in new_data.values():
-                        cluster_expts.extend(
-                            load.experiment_list(file_pair.expt, check_format=False)
-                        )"""
-                    new_best_unit_cell = determine_best_unit_cell_crystals(
+                    new_best_unit_cell = determine_best_unit_cell_from_crystals(
                         crystals_data
                     )
                     good_crystals_data = select_crystals_close_to(
@@ -207,7 +173,7 @@ class SimpleDataReduction(BaseDataReduction):
                         f"No unit cell filtering applied, {n_cryst} crystals loaded."
                     )
                 if not new_best_unit_cell:
-                    new_best_unit_cell = determine_best_unit_cell_crystals(
+                    new_best_unit_cell = determine_best_unit_cell_from_crystals(
                         crystals_data
                     )
                 data_to_reindex = split_filtered_data(
@@ -231,7 +197,7 @@ class SimpleDataReduction(BaseDataReduction):
 
             else:  # if previous data reduction
                 xia2_logger.info(
-                    f"Using cell parameters from previous clustering analysis"
+                    "Using cell parameters from previous clustering analysis"
                 )
                 if (
                     reduction_params.absolute_angle_tolerance
@@ -285,12 +251,12 @@ class SimpleDataReduction(BaseDataReduction):
                 all_crystals_data = good_crystals_data
                 for file_pair in data_already_reindexed.values():
                     expts = load.experiment_list(file_pair.expt, check_format=False)
-                    all_crystals_data[file_pair.expt] = {
+                    all_crystals_data[str(file_pair.expt)] = {
                         "crystals": copy.deepcopy(expts.crystals())
                     }
                     n_cryst += len(expts)
 
-                new_best_unit_cell = determine_best_unit_cell_crystals(
+                new_best_unit_cell = determine_best_unit_cell_from_crystals(
                     all_crystals_data
                 )
                 all_ucs = []
@@ -374,49 +340,6 @@ class SimpleDataReduction(BaseDataReduction):
                 d_min=reduction_params.d_min,
                 best_unit_cell=new_best_unit_cell,
             )
-
-    @staticmethod
-    def filter_on_unit_cell_clustering(
-        working_directory: Path,
-        new_data: FilesDict,
-        threshold: float,
-    ) -> Tuple[ExperimentList, flex.reflection_table]:
-
-        """
-        Filter the integrated data using dials.cluster_unit_cell. Takes the
-        largest cluster found and splits it into batches for reindexing.
-        """
-        xia2_logger.info("Clustering with dials.cluster_unit_cell")  # type: ignore
-        main_cluster_files = cluster_all_unit_cells(
-            working_directory,
-            new_data,
-            threshold,
-        )
-
-        # save the results to a json
-        cluster_expts = load.experiment_list(
-            main_cluster_files.expt,
-            check_format=False,
-        )
-        cluster_refls = flex.reflection_table.from_file(main_cluster_files.refl)
-        n_in_cluster = len(cluster_expts)
-        uc = determine_best_unit_cell(cluster_expts)
-        uc_string = ",".join(f"{i:.2f}" for i in uc.parameters())
-        xia2_logger.info(
-            f"""Largest cluster contains {n_in_cluster} crystals with cell parameters:
-  {uc_string}"""
-        )
-        result = {
-            "best_unit_cell": [round(i, 4) for i in uc.parameters()],
-            "n_in_cluster": n_in_cluster,
-            "unit_cells": [
-                e.crystal.get_unit_cell().parameters() for e in cluster_expts
-            ],
-        }
-        with open(working_directory / "cluster_results.json", "w") as fp:
-            json.dump(result, fp)
-
-        return cluster_expts, cluster_refls
 
     @staticmethod
     def reindex(
@@ -523,7 +446,7 @@ class SimpleDataReduction(BaseDataReduction):
 
         if not Path.is_dir(working_directory):
             Path.mkdir(working_directory)
-        xia2_logger.notice(banner("Scaling & Merging"))  # type: ignore
+        xia2_logger.notice(banner("Scaling"))  # type: ignore
         scaled_expts, scaled_table = scale(
             working_directory,
             files_to_scale,
@@ -531,6 +454,7 @@ class SimpleDataReduction(BaseDataReduction):
             d_min,
             best_unit_cell,
         )
+        xia2_logger.notice(banner("Merging"))  # type: ignore
         merge(working_directory, scaled_expts, scaled_table, d_min)
 
     @staticmethod
@@ -579,11 +503,34 @@ class SimpleDataReduction(BaseDataReduction):
         xia2_logger.notice(banner("Merging"))  # type: ignore
         scaled_expts = ExperimentList([])
         scaled_tables = []
+        # For merging (a simple program), we don't require much data in the
+        # reflection table. So to avoid a large memory spike, just keep the
+        # values we know we need for merging and to report statistics
+        # first 6 in keep are required in merge, the rest will potentially
+        #  be used for filter_reflections call in merge
+        keep = [
+            "miller_index",
+            "inverse_scale_factor",
+            "intensity.scale.value",
+            "intensity.scale.variance",
+            "flags",
+            "id",
+            "partiality",
+            "partial_id",
+            "d",
+            "qe",
+            "dqe",
+            "lp",
+        ]
         for file_pair in scaled_results.values():
             scaled_expts.extend(
                 load.experiment_list(file_pair.expt, check_format=False)
             )
-            scaled_tables.append(flex.reflection_table.from_file(file_pair.refl))
+            table = flex.reflection_table.from_file(file_pair.refl)
+            for k in list(table.keys()):
+                if k not in keep:
+                    del table[k]
+            scaled_tables.append(table)
         scaled_table = flex.reflection_table.concat(scaled_tables)
 
         n_final = len(scaled_expts)
@@ -596,4 +543,4 @@ class SimpleDataReduction(BaseDataReduction):
             statistics_output_from_scaled_files(scaled_expts, scaled_table, uc)
         )
 
-        merge(working_directory, scaled_expts, scaled_table, d_min)
+        merge(working_directory, scaled_expts, scaled_table, d_min, best_unit_cell)

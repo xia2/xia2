@@ -177,3 +177,13 @@ def test_full_run_without_reference(dials_data, tmp_path):
     assert (tmp_path / "data_reduction" / "scale").is_dir()
     assert (tmp_path / "data_reduction" / "scale" / "merged.mtz").is_file()
     assert (tmp_path / "data_reduction" / "scale" / "scaled.mtz").is_file()
+
+    # now run again to check data reduction from where left off approach
+    args = [
+        "dev.xia2.ssx_reduce",
+        "space_group=P213",
+        "directory=batch_1/",
+        "d_min=2.0",
+    ]
+    result = procrunner.run(args, working_directory=tmp_path)
+    assert not result.returncode and not result.stderr

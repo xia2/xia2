@@ -132,16 +132,27 @@ workflow {
     .type = bool
 }
 clustering {
-  threshold=1000
+  threshold=None
     .type = float(value_min=0, allow_none=True)
-    .help = "Threshold to use for splitting clusters during data reduction"
-
+    .help = "If no data has previously been reduced, then unit cell clustering"
+            "is performed. This threshold is the value at which the dendrogram"
+            "will be split in dials.cluster_unit_cell (the default value there"
+            "is 5000). A higher threshold value means that unit cells with greater"
+            "differences will be retained."
+            "Only the largest cluster obtained from cutting at this threshold is"
+            "used for data reduction. Setting the threshold to None/0 will"
+            "skip this unit cell clustering and proceed to filtering based on"
+            "the absolute angle/length tolerances."
+  absolute_angle_tolerance = 1.0
+    .type = float(value_min=0, allow_none=True)
+  absolute_length_tolerance = 1.0
+    .type = float(value_min=0, allow_none=True)
 }
 scaling {
   anomalous = False
     .type = bool
     .help = "If True, keep anomalous pairs separate during scaling."
-  model = Noneß
+  model = None
     .type = path
     .help = "A model pdb file to use as a reference for scaling."
 }

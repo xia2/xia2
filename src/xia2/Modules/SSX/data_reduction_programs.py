@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import annotations
 
+import copy
 import functools
 import logging
 import math
@@ -9,7 +10,7 @@ import sys
 from dataclasses import dataclass
 from io import StringIO
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import procrunner
 
@@ -17,6 +18,8 @@ from cctbx import crystal, sgtbx, uctbx
 from dials.algorithms.scaling.algorithm import ScalingAlgorithm
 from dials.algorithms.scaling.scaling_library import determine_best_unit_cell
 from dials.array_family import flex
+from dials.command_line.cluster_unit_cell import do_cluster_analysis
+from dials.command_line.cluster_unit_cell import phil_scope as cluster_phil_scope
 from dials.command_line.cosym import cosym
 from dials.command_line.cosym import phil_scope as cosym_phil_scope
 from dials.command_line.cosym import register_default_cosym_observers
@@ -53,20 +56,48 @@ FilesDict = Dict[
 ]  # A Dict where the keys are an index, corresponding to a filepair
 
 
-def run_uc_cluster(working_directory: Path, crystals_data, threshold: float = 1000):
+def load_crystal_data_from_new_expts(new_data) -> dict[str, Any]:
+    data = {}
+    for file_pair in new_data.values():
+        new_expts = load.experiment_list(file_pair.expt, check_format=False)
+        data[str(file_pair.expt)] = {
+            "identifiers": copy.deepcopy(new_expts.identifiers()),
+            "crystals": copy.deepcopy(new_expts.crystals()),
+            "keep_all_original": True,
+        }
+    return data
+
+
+def determine_best_unit_cell_from_crystals(
+    crystals_data: dict[str, Any]
+) -> uctbx.unit_cell:
+    """Set the median unit cell as the best cell, for consistent d-values across
+    experiments."""
+    uc_params = [flex.double() for i in range(6)]
+    for v in crystals_data.values():
+        for c in v["crystals"]:
+            unit_cell = c.get_recalculated_unit_cell() or c.get_unit_cell()
+            for i, p in enumerate(unit_cell.parameters()):
+                uc_params[i].append(p)
+    best_unit_cell = uctbx.unit_cell(parameters=[flex.median(p) for p in uc_params])
+    return best_unit_cell
+
+
+def run_uc_cluster(
+    working_directory: Path, crystals_data: dict[str, Any], threshold: float = 1000
+) -> dict[str, Any]:
     if not Path.is_dir(working_directory):
         Path.mkdir(working_directory)
-    sys.stdout = open(os.devnull, "w")  # block printing from cosym
-
-    from dials.command_line.cluster_unit_cell import do_cluster_analysis, phil_scope
+    sys.stdout = open(os.devnull, "w")  # block printing from cluster_uc
 
     with run_in_directory(working_directory):
         with record_step("dials.cluster_unit_cell"), log_to_file(
             "dials.cluster_unit_cell.log"
         ):
-
-            params = phil_scope.extract()
+            # first extract the params and set the threshold
+            params = cluster_phil_scope.extract()
             params.threshold = threshold
+            # Now create the crystal symmetries, and keep track of the ids
             crystal_symmetries = []
             n_tot = 0
             for k, v in crystals_data.items():
@@ -82,14 +113,15 @@ def run_uc_cluster(working_directory: Path, crystals_data, threshold: float = 10
                 ids = list(range(n_tot, n_tot + n_this))
                 n_tot += n_this
                 crystals_data[k]["lattice_ids"] = ids
-
+            # run the main work function of dials.cluster_unit_cell
             clusters = do_cluster_analysis(crystal_symmetries, params)
             clusters.sort(key=lambda x: len(x.members), reverse=True)
             main_cluster = clusters[0]
-            ids = set([m.lattice_id for m in main_cluster.members])
+            main_ids = {m.lattice_id for m in main_cluster.members}
+            # Work out which subset of the input data corresponds to the main cluster
             good_crystals_data = {}
             for k, v in crystals_data.items():
-                ids_this = set(v["lattice_ids"]).intersection(ids)
+                ids_this = set(v["lattice_ids"]).intersection(main_ids)
                 if len(ids_this) < len(v["lattice_ids"]):
                     identifiers = []
                     crystals = []
@@ -106,34 +138,6 @@ def run_uc_cluster(working_directory: Path, crystals_data, threshold: float = 10
                     good_crystals_data[k] = crystals_data[k]
     sys.stdout = sys.__stdout__  # restore printing
     return good_crystals_data
-
-
-def cluster_all_unit_cells(
-    working_directory: Path, new_data: FilesDict, threshold: float = 1000
-) -> FilePair:
-    """Run dials.cluster_unit_cell on all files in new_data"""
-    if not Path.is_dir(working_directory):
-        Path.mkdir(working_directory)
-
-    cmd = ["dials.cluster_unit_cell", "output.clusters=True", f"threshold={threshold}"]
-
-    for file_pair in new_data.values():
-        cmd.extend([str(file_pair.expt), str(file_pair.refl)])
-    with record_step("dials.cluster_unit_cell"), log_to_file(
-        "dials.cluster_unit_cell.log"
-    ):
-        result = procrunner.run(cmd, working_directory=working_directory)
-        if result.returncode or result.stderr:
-            raise ValueError(
-                "Unit cell clustering returned error status:\n" + str(result.stderr)
-            )
-    # handle fact that could be cluster_0.expt or cluster_00.expt etc
-    clusters = list(working_directory.glob("cluster_*.expt"))
-    str_numbers = [str(c).split("cluster_")[-1].rstrip(".expt") for c in clusters]
-    str_numbers.sort(key=int)
-    cluster_expt = working_directory / ("cluster_" + str_numbers[0] + ".expt")
-    cluster_refl = working_directory / ("cluster_" + str_numbers[0] + ".refl")
-    return FilePair(cluster_expt, cluster_refl)
 
 
 def run_cosym(
@@ -153,6 +157,7 @@ def merge(
     experiments: ExperimentList,
     reflection_table: flex.reflection_table,
     d_min: float = None,
+    best_unit_cell: Optional[uctbx.unit_cell] = None,
 ) -> None:
 
     with run_in_directory(working_directory):
@@ -166,6 +171,9 @@ def merge(
             if d_min:
                 params.d_min = d_min
                 input_ += f"  d_min = {d_min}\n"
+            if best_unit_cell:
+                params.best_unit_cell = best_unit_cell
+                input_ += f"  best_unit_cell = {best_unit_cell.parameters()}"
             dials_logger.info(input_)
             mtz_file = merge_data_to_mtz(params, experiments, [reflection_table])
             dials_logger.info("\nWriting reflections to merged.mtz")
@@ -208,7 +216,7 @@ def scale_against_model(
     anomalous: bool = True,
     d_min: float = None,
     best_unit_cell: Optional[uctbx.unit_cell] = None,
-):
+) -> FilesDict:
     with run_in_directory(working_directory):
         logfile = f"dials.scale.{index}.log"
         with log_to_file(logfile) as dials_logger:
@@ -380,11 +388,11 @@ def reference_reindex(
 
 
 def select_crystals_close_to(
-    crystals_data: dict,
+    crystals_data: dict[str, Any],
     unit_cell: uctbx.unit_cell,
     abs_angle_tol: float,
     abs_length_tol: float,
-) -> Tuple[List[flex.reflection_table], ExperimentList]:
+) -> dict[str, Any]:
     good_crystals_data = {}
     with record_step("select based on unit cell"):
         n_input = 0
@@ -454,14 +462,11 @@ def inspect_directories(new_directories_to_process: List[Path]) -> FilesDict:
     return new_data
 
 
-import copy
-
-
 def split_filtered_data(
     working_directory: Path,
-    new_data,
-    good_crystals_data,
-    min_batch_size,
+    new_data: FilesDict,
+    good_crystals_data: dict[str, Any],
+    min_batch_size: int,
     offset: int = 0,
 ) -> FilesDict:
     if not Path.is_dir(working_directory):
@@ -522,37 +527,4 @@ def split_filtered_data(
         assert not len(leftover_expts)
         assert len(leftover_refls) == 1
         assert leftover_refls[0].size() == 0
-    return data_to_reindex
-
-
-def split(
-    working_directory: Path,
-    experiments: ExperimentList,
-    reflection_table: flex.reflection_table,
-    min_batch_size,
-) -> FilesDict:
-    if not Path.is_dir(working_directory):
-        Path.mkdir(working_directory)
-    with record_step("splitting"):
-        data_to_reindex: FilesDict = {}
-        n_batches = max(math.floor(len(experiments) / min_batch_size), 1)
-        stride = len(experiments) / n_batches
-        # make sure last batch has at least the batch size
-        splits = [int(math.floor(i * stride)) for i in range(n_batches)]
-        splits.append(len(experiments))
-
-        template = functools.partial(
-            "split_{index:0{fmt:d}d}".format, fmt=len(str(n_batches))
-        )
-        for i in range(len(splits) - 1):
-            out_expt = working_directory / (template(index=i) + ".expt")
-            out_refl = working_directory / (template(index=i) + ".refl")
-            sub_expt = experiments[splits[i] : splits[i + 1]]
-            sub_expt.as_file(out_expt)
-            sel = reflection_table["id"] >= splits[i]
-            sel &= reflection_table["id"] < splits[i + 1]
-            sub_refl = reflection_table.select(sel)
-            sub_refl.reset_ids()
-            sub_refl.as_file(out_refl)
-            data_to_reindex[i] = FilePair(out_expt, out_refl)
     return data_to_reindex
