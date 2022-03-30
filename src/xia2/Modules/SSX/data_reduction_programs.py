@@ -7,7 +7,7 @@ import logging
 import math
 import os
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from io import StringIO
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -60,7 +60,7 @@ class CrystalsData:
     identifiers: List[str]
     crystals: List[Crystal]
     keep_all_original: bool = True
-    lattice_ids: List[int] = []
+    lattice_ids: List[int] = field(default_factory=list)
 
 
 FilesDict = Dict[int, FilePair]

@@ -25,13 +25,13 @@ import logging
 import os
 import pathlib
 import sys
-import time
 
 import iotbx.phil
 from dials.util.options import ArgumentParser
 
 import xia2.Driver.timing
 import xia2.Handlers.Streams
+from xia2.cli.ssx_reduce import data_reduction_phil_str
 from xia2.Modules.SSX.data_integration_programs import (
     IndexingParams,
     IntegrationParams,
@@ -47,6 +47,7 @@ from xia2.Modules.SSX.data_reduction_simple import (
     SimpleDataReduction,
     SimpleReductionParams,
 )
+from xia2.Modules.SSX.util import report_timing
 
 phil_str = """
 image = None
@@ -71,6 +72,9 @@ nproc = 1
   .type = int
 space_group = None
   .type = space_group
+  .help = "Space group to be used for indexing and integration. Will also be"
+          "used for data reduction unless symmetry.space_group is specified."
+  .expert_level = 0
 d_min = None
   .type = float
   .help = "Resolution cutoff for spotfinding, integration and data reduction."
@@ -103,6 +107,9 @@ integration {
       .type = choice
   }
 }
+"""
+
+workflow_phil = """
 assess_crystals {
   n_images = 1000
     .type = int(value_min=1)
@@ -131,52 +138,11 @@ workflow {
   stop_after_integration = False
     .type = bool
 }
-clustering {
-  threshold=None
-    .type = float(value_min=0, allow_none=True)
-    .help = "If no data has previously been reduced, then unit cell clustering"
-            "is performed. This threshold is the value at which the dendrogram"
-            "will be split in dials.cluster_unit_cell (the default value there"
-            "is 5000). A higher threshold value means that unit cells with greater"
-            "differences will be retained."
-            "Only the largest cluster obtained from cutting at this threshold is"
-            "used for data reduction. Setting the threshold to None/0 will"
-            "skip this unit cell clustering and proceed to filtering based on"
-            "the absolute angle/length tolerances."
-  absolute_angle_tolerance = 1.0
-    .type = float(value_min=0, allow_none=True)
-  absolute_length_tolerance = 1.0
-    .type = float(value_min=0, allow_none=True)
-}
-scaling {
-  anomalous = False
-    .type = bool
-    .help = "If True, keep anomalous pairs separate during scaling."
-  model = None
-    .type = path
-    .help = "A model pdb file to use as a reference for scaling."
-}
 """
 
-phil_scope = iotbx.phil.parse(phil_str)
+phil_scope = iotbx.phil.parse(phil_str + data_reduction_phil_str + workflow_phil)
 
 xia2_logger = logging.getLogger(__name__)
-
-
-def report_timing(fn):
-    def wrap_fn(*args, **kwargs):
-        start_time = time.time()
-        result = fn(*args, **kwargs)
-        xia2_logger.debug("\nTiming report:")
-        xia2_logger.debug("\n".join(xia2.Driver.timing.report()))
-        duration = time.time() - start_time
-        # write out the time taken in a human readable way
-        xia2_logger.info(
-            "Processing took %s", time.strftime("%Hh %Mm %Ss", time.gmtime(duration))
-        )
-        return result
-
-    return wrap_fn
 
 
 @report_timing
@@ -276,6 +242,8 @@ def run_xia2_ssx(
         return
 
     # Now do the data reduction
+    if not params.symmetry.space_group:
+        params.symmetry.space_group = params.space_group
     reduction_params = SimpleReductionParams.from_phil(params)
     reducer = SimpleDataReduction(root_working_directory, processed_batch_directories)
     reducer.run(reduction_params)

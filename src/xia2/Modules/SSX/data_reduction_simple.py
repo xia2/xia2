@@ -64,7 +64,7 @@ class SimpleReductionParams:
         if params.scaling.model:
             model = Path(params.scaling.model).resolve()
         return cls(
-            params.space_group,
+            params.symmetry.space_group,
             params.batch_size,
             params.nproc,
             params.d_min,

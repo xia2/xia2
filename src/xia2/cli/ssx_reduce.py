@@ -18,24 +18,27 @@ from pathlib import Path
 import iotbx.phil
 from dials.util.options import ArgumentParser
 
-from xia2.cli.ssx import report_timing
 from xia2.Modules.SSX.data_reduction_simple import (
     SimpleDataReduction,
     SimpleReductionParams,
 )
+from xia2.Modules.SSX.util import report_timing
 
 phil_str = """
 directory = None
   .type = str
   .multiple = True
   .help = "Path to directory containing integrated_*.{refl,expt} files"
-space_group = None
-  .type = space_group
 nproc = 1
   .type = int
 batch_size = 1000
   .type = int
   .help = "The minimum batch size for consistent reindexing of data with cosym"
+d_min = None
+  .type = float
+"""
+
+data_reduction_phil_str = """
 clustering {
   threshold=None
     .type = float(value_min=0, allow_none=True)
@@ -50,8 +53,17 @@ clustering {
             "the absolute angle/length tolerances."
   absolute_angle_tolerance = 1.0
     .type = float(value_min=0, allow_none=True)
+    .help = "Filter the integrated data based on the median unit cell angles"
+            "and this tolerance. If set to None/0, filtering will be skipped."
   absolute_length_tolerance = 1.0
     .type = float(value_min=0, allow_none=True)
+    .help = "Filters the integrated data based on the median unit cell lengths"
+            "and this tolerance. If set to None/0, filtering will be skipped."
+}
+symmetry {
+  space_group = None
+    .type = space_group
+    .expert_level = 1
 }
 scaling {
   anomalous = False
@@ -61,12 +73,10 @@ scaling {
     .type = path
     .help = "A model pdb file to use as a reference for scaling."
 }
-
-d_min = None
-  .type = float
 """
 
-phil_scope = iotbx.phil.parse(phil_str)
+
+phil_scope = iotbx.phil.parse(phil_str + data_reduction_phil_str)
 
 xia2_logger = logging.getLogger(__name__)
 
