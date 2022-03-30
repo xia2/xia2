@@ -191,8 +191,8 @@ class SimpleDataReduction(BaseDataReduction):
                     n_cryst += len(last_expts)
 
             current_sg = new_sg
-            # Split the data that might need reindexing, with an offset so
-            # that they keys of data_to_reindex don't clash with data_already_reindexed
+            # Split the data, with an offset so that they keys of
+            # data_to_reindex don't clash with data_already_reindexed
             n_already_reindexed_files = len(
                 list(data_already_reindexed.keys())
             )  # will be 0 if no previous reduction.
@@ -205,15 +205,15 @@ class SimpleDataReduction(BaseDataReduction):
             )
             # Make a crystals_data object with all data for writing out
             # an updated best unit cell.
-            all_crystals_data = good_crystals_data
+            previous_crystals_data: CrystalsDict = {}
             for file_pair in data_already_reindexed.values():
                 expts = load.experiment_list(file_pair.expt, check_format=False)
-                all_crystals_data[str(file_pair.expt)] = CrystalsData(
+                previous_crystals_data[str(file_pair.expt)] = CrystalsData(
                     crystals=copy.deepcopy(expts.crystals()),
                     identifiers=[],
                 )
             new_best_unit_cell = self._write_unit_cells_to_json(
-                filter_wd, all_crystals_data
+                filter_wd, good_crystals_data, previous_crystals_data
             )
 
         else:
@@ -310,7 +310,7 @@ class SimpleDataReduction(BaseDataReduction):
             ):
                 # calculate the median unit cell
                 new_best_unit_cell = determine_best_unit_cell_from_crystals(
-                    crystals_data
+                    [crystals_data]
                 )
                 good_crystals_data = select_crystals_close_to(
                     crystals_data,
@@ -342,11 +342,17 @@ class SimpleDataReduction(BaseDataReduction):
 
     @staticmethod
     def _write_unit_cells_to_json(
-        working_directory: Path, crystals_dict: CrystalsDict
+        working_directory: Path,
+        crystals_dict: CrystalsDict,
+        previous_crystals_dict: CrystalsDict,
     ) -> uctbx.unit_cell:
         # now write out the best cell
-        new_best_unit_cell = determine_best_unit_cell_from_crystals(crystals_dict)
+        new_best_unit_cell = determine_best_unit_cell_from_crystals(
+            [crystals_dict, previous_crystals_dict]
+        )
         all_ucs = []
+        for v in previous_crystals_dict.values():
+            all_ucs.extend([c.get_unit_cell().parameters() for c in v.crystals])
         for v in crystals_dict.values():
             all_ucs.extend([c.get_unit_cell().parameters() for c in v.crystals])
         sg = v.crystals[0].get_space_group().type().number()
@@ -521,37 +527,38 @@ class SimpleDataReduction(BaseDataReduction):
                     scaled_results.update(result)
 
         xia2_logger.notice(banner("Merging"))  # type: ignore
-        scaled_expts = ExperimentList([])
-        scaled_tables = []
-        # For merging (a simple program), we don't require much data in the
-        # reflection table. So to avoid a large memory spike, just keep the
-        # values we know we need for merging and to report statistics
-        # first 6 in keep are required in merge, the rest will potentially
-        #  be used for filter_reflections call in merge
-        keep = [
-            "miller_index",
-            "inverse_scale_factor",
-            "intensity.scale.value",
-            "intensity.scale.variance",
-            "flags",
-            "id",
-            "partiality",
-            "partial_id",
-            "d",
-            "qe",
-            "dqe",
-            "lp",
-        ]
-        for file_pair in scaled_results.values():
-            scaled_expts.extend(
-                load.experiment_list(file_pair.expt, check_format=False)
-            )
-            table = flex.reflection_table.from_file(file_pair.refl)
-            for k in list(table.keys()):
-                if k not in keep:
-                    del table[k]
-            scaled_tables.append(table)
-        scaled_table = flex.reflection_table.concat(scaled_tables)
+        with record_step("joining for merge"):
+            scaled_expts = ExperimentList([])
+            scaled_tables = []
+            # For merging (a simple program), we don't require much data in the
+            # reflection table. So to avoid a large memory spike, just keep the
+            # values we know we need for merging and to report statistics
+            # first 6 in keep are required in merge, the rest will potentially
+            #  be used for filter_reflections call in merge
+            keep = [
+                "miller_index",
+                "inverse_scale_factor",
+                "intensity.scale.value",
+                "intensity.scale.variance",
+                "flags",
+                "id",
+                "partiality",
+                "partial_id",
+                "d",
+                "qe",
+                "dqe",
+                "lp",
+            ]
+            for file_pair in scaled_results.values():
+                scaled_expts.extend(
+                    load.experiment_list(file_pair.expt, check_format=False)
+                )
+                table = flex.reflection_table.from_file(file_pair.refl)
+                for k in list(table.keys()):
+                    if k not in keep:
+                        del table[k]
+                scaled_tables.append(table)
+            scaled_table = flex.reflection_table.concat(scaled_tables)
 
         n_final = len(scaled_expts)
         uc = determine_best_unit_cell(scaled_expts)

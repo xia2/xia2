@@ -89,16 +89,17 @@ def load_crystal_data_from_new_expts(new_data: FilesDict) -> CrystalsDict:
 
 
 def determine_best_unit_cell_from_crystals(
-    crystals_dict: CrystalsDict,
+    crystals_dicts: List[CrystalsDict],
 ) -> uctbx.unit_cell:
     """Set the median unit cell as the best cell, for consistent d-values across
     experiments."""
     uc_params = [flex.double() for i in range(6)]
-    for v in crystals_dict.values():
-        for c in v.crystals:
-            unit_cell = c.get_recalculated_unit_cell() or c.get_unit_cell()
-            for i, p in enumerate(unit_cell.parameters()):
-                uc_params[i].append(p)
+    for crystals_dict in crystals_dicts:
+        for v in crystals_dict.values():
+            for c in v.crystals:
+                unit_cell = c.get_recalculated_unit_cell() or c.get_unit_cell()
+                for i, p in enumerate(unit_cell.parameters()):
+                    uc_params[i].append(p)
     best_unit_cell = uctbx.unit_cell(parameters=[flex.median(p) for p in uc_params])
     return best_unit_cell
 
@@ -519,7 +520,7 @@ def split_filtered_data(
         for file_pair in new_data.values():
             expts = load.experiment_list(file_pair.expt, check_format=False)
             refls = flex.reflection_table.from_file(file_pair.refl)
-            good_crystals_this: CrystalsData = good_crystals_data[str(file_pair.expt)]
+            good_crystals_this = good_crystals_data[str(file_pair.expt)]
             good_identifiers = good_crystals_this.identifiers
             if not good_crystals_this.keep_all_original:
                 expts.select_on_experiment_identifiers(good_identifiers)
@@ -528,16 +529,17 @@ def split_filtered_data(
             leftover_refls.append(refls)
             while len(leftover_expts) >= n_required:
                 sub_expt = leftover_expts[0:n_required]
-                leftover_refls = [flex.reflection_table.concat(leftover_refls)]
-                leftover_copy = copy.deepcopy(leftover_refls)
-                sub_refl = leftover_refls[0].select_on_experiment_identifiers(
-                    sub_expt.identifiers()
+                if len(leftover_refls) > 1:
+                    leftover_refls = [flex.reflection_table.concat(leftover_refls)]
+                # concat guarantees that ids are ordered 0...n-1
+                sub_refl = leftover_refls[0].select(
+                    leftover_refls[0]["id"] < n_required
                 )
                 leftover_refls = [
-                    leftover_copy[0].remove_on_experiment_identifiers(
-                        sub_expt.identifiers()
-                    )
+                    leftover_refls[0].select(leftover_refls[0]["id"] >= n_required)
                 ]
+                leftover_refls[0].reset_ids()
+                sub_refl.reset_ids()  # necessary?
                 leftover_expts = leftover_expts[n_required:]
                 out_expt = working_directory / (
                     template(index=n_batch_output + offset) + ".expt"
@@ -546,7 +548,6 @@ def split_filtered_data(
                     template(index=n_batch_output + offset) + ".refl"
                 )
                 sub_expt.as_file(out_expt)
-                sub_refl.reset_ids()  # necessary?
                 sub_refl.as_file(out_refl)
                 data_to_reindex[n_batch_output + offset] = FilePair(out_expt, out_refl)
                 n_batch_output += 1
