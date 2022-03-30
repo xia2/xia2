@@ -21,6 +21,8 @@ from xia2.Driver.timing import record_step
 from xia2.Handlers.Streams import banner
 from xia2.Modules.SSX.data_reduction_base import BaseDataReduction
 from xia2.Modules.SSX.data_reduction_programs import (
+    CrystalsData,
+    CrystalsDict,
     FilePair,
     determine_best_unit_cell_from_crystals,
     inspect_directories,
@@ -91,10 +93,14 @@ def assess_for_indexing_ambiguities(
         max_delta=5,
         enforce_max_delta_for_generated_two_folds=True,
     )
-    if lattice_group.order_z() > space_group.group().order_z():
-        return True
-    else:
-        return False
+    need_to_assess = lattice_group.order_z() > space_group.group().order_z()
+    human_readable = {True: "yes", False: "no"}
+    xia2_logger.info(
+        "Indexing ambiguity assessment:\n"
+        f"  Lattice group: {str(lattice_group.info())}, Space group: {str(space_group)}\n"
+        f"  Potential indexing ambiguities: {human_readable[need_to_assess]}"
+    )
+    return need_to_assess
 
 
 class SimpleDataReduction(BaseDataReduction):
@@ -129,97 +135,41 @@ class SimpleDataReduction(BaseDataReduction):
             new_data = inspect_directories(self._new_directories_to_process)
 
         best_unit_cell = None
+        current_sg = None
+        new_best_unit_cell = None
         filter_results = filter_wd / "filter_results.json"
         if filter_results.is_file():
             result = json.load(filter_results.open())
             best_unit_cell = uctbx.unit_cell(result["best_unit_cell"])
+            current_sg = sgtbx.space_group_info(number=result["space_group"])
 
-        new_best_unit_cell = None
+        # First filter any new data
         if new_data:
             xia2_logger.notice(banner("Filtering"))  # type: ignore
             crystals_data = load_crystal_data_from_new_expts(new_data)
-            if not best_unit_cell:  # i.e. no previous data reduction
-                new_best_unit_cell = None
-                if reduction_params.cluster_threshold:
-                    good_crystals_data = run_uc_cluster(
-                        filter_wd,
-                        crystals_data,
-                        reduction_params.cluster_threshold,
-                    )
-                    n_cryst = sum(
-                        len(v["identifiers"]) for v in good_crystals_data.values()
-                    )
-                elif (
-                    reduction_params.absolute_angle_tolerance
-                    and reduction_params.absolute_length_tolerance
-                ):
-                    # calculate the median unit cell
-                    new_best_unit_cell = determine_best_unit_cell_from_crystals(
-                        crystals_data
-                    )
-                    good_crystals_data = select_crystals_close_to(
-                        crystals_data,
-                        new_best_unit_cell,
-                        reduction_params.absolute_angle_tolerance,
-                        reduction_params.absolute_length_tolerance,
-                    )
-                    n_cryst = sum(
-                        len(v["identifiers"]) for v in good_crystals_data.values()
-                    )
-                else:  # join all data for splitting
-                    good_crystals_data = crystals_data
-                    n_cryst = sum(len(v["identifiers"]) for v in crystals_data.values())
-                    xia2_logger.info(
-                        f"No unit cell filtering applied, {n_cryst} crystals loaded."
-                    )
-                if not new_best_unit_cell:
-                    new_best_unit_cell = determine_best_unit_cell_from_crystals(
-                        crystals_data
-                    )
-                data_to_reindex = split_filtered_data(
-                    filter_wd, new_data, good_crystals_data, reduction_params.batch_size
+            # check all space groups are the same
+            sgs = set()
+            for v in crystals_data.values():
+                sgs.update({c.get_space_group().type().number() for c in v.crystals})
+            if len(sgs) > 1:
+                sg_nos = ",".join(str(i) for i in sgs)
+                raise ValueError(
+                    f"Multiple space groups found, numbers: {sg_nos}\n"
+                    "All integrated data must be in the same space group"
                 )
-                # now write out the best cell
-                all_ucs = []
-                for v in good_crystals_data.values():
-                    all_ucs.extend(
-                        [c.get_unit_cell().parameters() for c in v["crystals"]]
-                    )
-                result = {
-                    "best_unit_cell": [
-                        round(i, 4) for i in new_best_unit_cell.parameters()
-                    ],
-                    "n_cryst": n_cryst,
-                    "unit_cells": all_ucs,
-                }
-                with open(filter_wd / "filter_results.json", "w") as fp:
-                    json.dump(result, fp)
+            new_sg = sgtbx.space_group_info(number=list(sgs)[0])
 
-            else:  # if previous data reduction
-                xia2_logger.info(
-                    "Using cell parameters from previous clustering analysis"
-                )
-                if (
-                    reduction_params.absolute_angle_tolerance
-                    and reduction_params.absolute_length_tolerance
-                ):
+            good_crystals_data = self.filter_new_data(
+                filter_wd, crystals_data, best_unit_cell, reduction_params
+            )
 
-                    good_crystals_data = select_crystals_close_to(
-                        crystals_data,
-                        best_unit_cell,
-                        reduction_params.absolute_angle_tolerance,
-                        reduction_params.absolute_length_tolerance,
+            if best_unit_cell and current_sg:  # i.e. if previous data reduction
+                if new_sg.type().number() != current_sg.type().number():
+                    raise ValueError(
+                        "Previous input data was not in same space group as new data:\n"
+                        f"{current_sg.type().number()} != {new_sg.type().number()}"
                     )
-                    n_cryst = sum(
-                        len(v["identifiers"]) for v in good_crystals_data.values()
-                    )
-                else:
-                    good_crystals_data = crystals_data
-                    n_cryst = sum(len(v["identifiers"]) for v in crystals_data.values())
-                    xia2_logger.info(
-                        f"No unit cell filtering applied, {n_cryst} crystals loaded."
-                    )
-
+                n_cryst = sum(len(v.identifiers) for v in good_crystals_data.values())
                 while n_cryst < reduction_params.batch_size:
                     # we want all jobs to use at least batch_size crystals, so join on
                     # to last reindexed batch until this has been satisfied
@@ -230,58 +180,55 @@ class SimpleDataReduction(BaseDataReduction):
                     last_expts = load.experiment_list(
                         last_batch.expt, check_format=False
                     )
-                    good_crystals_data[str(last_batch.expt)] = {
-                        "identifiers": copy.deepcopy(last_expts.identifiers()),
-                        "crystals": copy.deepcopy(last_expts.crystals()),
-                        "keep_all_original": True,
-                    }
+                    # copy to avoid keeping reference to expt list
+                    good_crystals_data[str(last_batch.expt)] = CrystalsData(
+                        identifiers=copy.deepcopy(last_expts.identifiers()),
+                        crystals=copy.deepcopy(last_expts.crystals()),
+                        keep_all_original=True,
+                    )
                     new_data_last_key = list(new_data.keys)[-1]
                     new_data[new_data_last_key + 1] = last_batch
                     n_cryst += len(last_expts)
 
-                n_already_reindexed_files = len(list(data_already_reindexed.keys()))
-                data_to_reindex = split_filtered_data(
-                    filter_wd,
-                    new_data,
-                    good_crystals_data,
-                    reduction_params.batch_size,
-                    offset=n_already_reindexed_files,
+            current_sg = new_sg
+            # Split the data that might need reindexing, with an offset so
+            # that they keys of data_to_reindex don't clash with data_already_reindexed
+            n_already_reindexed_files = len(
+                list(data_already_reindexed.keys())
+            )  # will be 0 if no previous reduction.
+            data_to_reindex = split_filtered_data(
+                filter_wd,
+                new_data,
+                good_crystals_data,
+                reduction_params.batch_size,
+                offset=n_already_reindexed_files,
+            )
+            # Make a crystals_data object with all data for writing out
+            # an updated best unit cell.
+            all_crystals_data = good_crystals_data
+            for file_pair in data_already_reindexed.values():
+                expts = load.experiment_list(file_pair.expt, check_format=False)
+                all_crystals_data[str(file_pair.expt)] = CrystalsData(
+                    crystals=copy.deepcopy(expts.crystals()),
+                    identifiers=[],
                 )
+            new_best_unit_cell = self._write_unit_cells_to_json(
+                filter_wd, all_crystals_data
+            )
 
-                all_crystals_data = good_crystals_data
-                for file_pair in data_already_reindexed.values():
-                    expts = load.experiment_list(file_pair.expt, check_format=False)
-                    all_crystals_data[str(file_pair.expt)] = {
-                        "crystals": copy.deepcopy(expts.crystals())
-                    }
-                    n_cryst += len(expts)
-
-                new_best_unit_cell = determine_best_unit_cell_from_crystals(
-                    all_crystals_data
-                )
-                all_ucs = []
-                for v in all_crystals_data.values():
-                    all_ucs.extend(
-                        [c.get_unit_cell().parameters() for c in v["crystals"]]
-                    )
-                result = {
-                    "best_unit_cell": [
-                        round(i, 4) for i in new_best_unit_cell.parameters()
-                    ],
-                    "n_cryst": n_cryst,
-                    "unit_cells": all_ucs,
-                }
-                with open(filter_wd / "filter_results.json", "w") as fp:
-                    json.dump(result, fp)
         else:
             new_best_unit_cell = best_unit_cell
-            if not new_best_unit_cell:
+            if not (new_best_unit_cell and current_sg):
                 raise ValueError(
                     "Error in intepreting new and previous processing results"
                 )
 
-        # the assumption in the simple data reducer is that we know the space group
-        # and have a good value for the unit cell.
+        # Use the space group from integration if not explicity specified.
+        if not reduction_params.space_group:
+            reduction_params.space_group = current_sg
+            xia2_logger.info(f"Using space group: {str(current_sg)}")
+
+        # Now check if we need to reindex due to indexing ambiguities
         sym_requires_reindex = assess_for_indexing_ambiguities(
             reduction_params.space_group, new_best_unit_cell
         )
@@ -322,6 +269,7 @@ class SimpleDataReduction(BaseDataReduction):
         with open(data_reduction_wd / "data_reduction.json", "w") as fp:
             json.dump(data_reduction_progress, fp)
 
+        # Finally scale and merge the data.
         if reduction_params.model:
             self.scale_and_merge_using_model(
                 scale_wd,
@@ -340,6 +288,78 @@ class SimpleDataReduction(BaseDataReduction):
                 d_min=reduction_params.d_min,
                 best_unit_cell=new_best_unit_cell,
             )
+
+    @staticmethod
+    def filter_new_data(
+        working_directory: Path,
+        crystals_data: dict,
+        best_unit_cell: uctbx.unit_cell,
+        reduction_params: SimpleReductionParams,
+    ) -> dict:
+
+        if not best_unit_cell:  # i.e. no previous data reduction
+            if reduction_params.cluster_threshold:
+                good_crystals_data = run_uc_cluster(
+                    working_directory,
+                    crystals_data,
+                    reduction_params.cluster_threshold,
+                )
+            elif (
+                reduction_params.absolute_angle_tolerance
+                and reduction_params.absolute_length_tolerance
+            ):
+                # calculate the median unit cell
+                new_best_unit_cell = determine_best_unit_cell_from_crystals(
+                    crystals_data
+                )
+                good_crystals_data = select_crystals_close_to(
+                    crystals_data,
+                    new_best_unit_cell,
+                    reduction_params.absolute_angle_tolerance,
+                    reduction_params.absolute_length_tolerance,
+                )
+            else:  # join all data for splitting
+                good_crystals_data = crystals_data
+                xia2_logger.info("No unit cell filtering applied")
+
+        else:
+            xia2_logger.info("Using cell parameters from previous clustering analysis")
+            if (
+                reduction_params.absolute_angle_tolerance
+                and reduction_params.absolute_length_tolerance
+            ):
+                good_crystals_data = select_crystals_close_to(
+                    crystals_data,
+                    best_unit_cell,
+                    reduction_params.absolute_angle_tolerance,
+                    reduction_params.absolute_length_tolerance,
+                )
+            else:
+                good_crystals_data = crystals_data
+                xia2_logger.info("No unit cell filtering applied")
+
+        return good_crystals_data
+
+    @staticmethod
+    def _write_unit_cells_to_json(
+        working_directory: Path, crystals_dict: CrystalsDict
+    ) -> uctbx.unit_cell:
+        # now write out the best cell
+        new_best_unit_cell = determine_best_unit_cell_from_crystals(crystals_dict)
+        all_ucs = []
+        for v in crystals_dict.values():
+            all_ucs.extend([c.get_unit_cell().parameters() for c in v.crystals])
+        sg = v.crystals[0].get_space_group().type().number()
+        n_cryst = len(all_ucs)
+        result = {
+            "best_unit_cell": [round(i, 4) for i in new_best_unit_cell.parameters()],
+            "n_cryst": n_cryst,
+            "unit_cells": all_ucs,
+            "space_group": sg,
+        }
+        with open(working_directory / "filter_results.json", "w") as fp:
+            json.dump(result, fp)
+        return new_best_unit_cell
 
     @staticmethod
     def reindex(

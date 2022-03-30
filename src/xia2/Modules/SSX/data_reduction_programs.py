@@ -10,7 +10,7 @@ import sys
 from dataclasses import dataclass
 from io import StringIO
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import procrunner
 
@@ -29,12 +29,15 @@ from dials.command_line.merge import phil_scope as merge_phil_scope
 from dials.command_line.scale import _export_unmerged_mtz
 from dials.command_line.scale import phil_scope as scaling_phil_scope
 from dials.command_line.scale import run_scaling
-from dxtbx.model import ExperimentList
+from dxtbx.model import Crystal, ExperimentList
 from dxtbx.serialize import load
 from iotbx import phil
 
 from xia2.Driver.timing import record_step
-from xia2.Modules.SSX.reporting import statistics_output_from_scaler
+from xia2.Modules.SSX.reporting import (
+    condensed_unit_cell_info,
+    statistics_output_from_scaler,
+)
 from xia2.Modules.SSX.util import log_to_file, run_in_directory
 
 xia2_logger = logging.getLogger(__name__)
@@ -51,31 +54,48 @@ class FilePair:
         return True
 
 
-FilesDict = Dict[
-    int, FilePair
-]  # A Dict where the keys are an index, corresponding to a filepair
+@dataclass(eq=False)
+class CrystalsData:
+    # Holds dxtbx.model.crystal data for an experimentlist, for use in filtering
+    identifiers: List[str]
+    crystals: List[Crystal]
+    keep_all_original: bool = True
+    lattice_ids: List[int] = []
 
 
-def load_crystal_data_from_new_expts(new_data) -> dict[str, Any]:
-    data = {}
+FilesDict = Dict[int, FilePair]
+# FilesDict: A dict where the keys are an index, corresponding to a filepair
+CrystalsDict = Dict[str, CrystalsData]
+# CrystalsDict: stores crystal data contained in each expt file, for use in
+# filtering without needing to keep expt files open.
+
+
+def load_crystal_data_from_new_expts(new_data: FilesDict) -> CrystalsDict:
+    data: CrystalsDict = {}
+    n = 0
     for file_pair in new_data.values():
         new_expts = load.experiment_list(file_pair.expt, check_format=False)
-        data[str(file_pair.expt)] = {
-            "identifiers": copy.deepcopy(new_expts.identifiers()),
-            "crystals": copy.deepcopy(new_expts.crystals()),
-            "keep_all_original": True,
-        }
+        if new_expts:
+            # copy to avoid need to keep expt file open
+            data[str(file_pair.expt)] = CrystalsData(
+                copy.deepcopy(new_expts.identifiers()),
+                copy.deepcopy(new_expts.crystals()),
+            )
+            n += len(new_expts)
+        else:
+            xia2_logger.warning(f"No crystals found in {str(file_pair.expt)}")
+    xia2_logger.info(f"Found {n} new integrated crystals")
     return data
 
 
 def determine_best_unit_cell_from_crystals(
-    crystals_data: dict[str, Any]
+    crystals_dict: CrystalsDict,
 ) -> uctbx.unit_cell:
     """Set the median unit cell as the best cell, for consistent d-values across
     experiments."""
     uc_params = [flex.double() for i in range(6)]
-    for v in crystals_data.values():
-        for c in v["crystals"]:
+    for v in crystals_dict.values():
+        for c in v.crystals:
             unit_cell = c.get_recalculated_unit_cell() or c.get_unit_cell()
             for i, p in enumerate(unit_cell.parameters()):
                 uc_params[i].append(p)
@@ -84,8 +104,8 @@ def determine_best_unit_cell_from_crystals(
 
 
 def run_uc_cluster(
-    working_directory: Path, crystals_data: dict[str, Any], threshold: float = 1000
-) -> dict[str, Any]:
+    working_directory: Path, crystals_dict: CrystalsDict, threshold: float = 1000
+) -> CrystalsDict:
     if not Path.is_dir(working_directory):
         Path.mkdir(working_directory)
     sys.stdout = open(os.devnull, "w")  # block printing from cluster_uc
@@ -100,42 +120,47 @@ def run_uc_cluster(
             # Now create the crystal symmetries, and keep track of the ids
             crystal_symmetries = []
             n_tot = 0
-            for k, v in crystals_data.items():
+            for k, v in crystals_dict.items():
                 symmetries = [
                     crystal.symmetry(
                         unit_cell=c.get_unit_cell(),
                         space_group=c.get_space_group(),
                     )
-                    for c in v["crystals"]
+                    for c in v.crystals
                 ]
                 crystal_symmetries.extend(symmetries)
                 n_this = len(symmetries)
                 ids = list(range(n_tot, n_tot + n_this))
                 n_tot += n_this
-                crystals_data[k]["lattice_ids"] = ids
+                crystals_dict[k].lattice_ids = ids
             # run the main work function of dials.cluster_unit_cell
             clusters = do_cluster_analysis(crystal_symmetries, params)
             clusters.sort(key=lambda x: len(x.members), reverse=True)
             main_cluster = clusters[0]
+            xia2_logger.info(condensed_unit_cell_info(clusters))
+            xia2_logger.info(
+                f"Selecting {len(main_cluster.members)} crystals from the largest cluster"
+            )
+
             main_ids = {m.lattice_id for m in main_cluster.members}
             # Work out which subset of the input data corresponds to the main cluster
-            good_crystals_data = {}
-            for k, v in crystals_data.items():
-                ids_this = set(v["lattice_ids"]).intersection(main_ids)
-                if len(ids_this) < len(v["lattice_ids"]):
+            good_crystals_data: CrystalsDict = {}
+            for k, v in crystals_dict.items():
+                ids_this = set(v.lattice_ids).intersection(main_ids)
+                if len(ids_this) < len(v.lattice_ids):
                     identifiers = []
                     crystals = []
-                    for i, id_ in enumerate(v["lattice_ids"]):
+                    for i, id_ in enumerate(v.lattice_ids):
                         if id_ in ids_this:
-                            identifiers.append(v["identifiers"][i])
-                            crystals.append(v["crystals"][i])
-                    good_crystals_data[k] = {
-                        "identifiers": identifiers,
-                        "crystals": crystals,
-                        "keep_all_original": False,
-                    }
+                            identifiers.append(v.identifiers[i])
+                            crystals.append(v.crystals[i])
+                    good_crystals_data[k] = CrystalsData(
+                        identifiers=identifiers,
+                        crystals=crystals,
+                        keep_all_original=False,
+                    )
                 else:
-                    good_crystals_data[k] = crystals_data[k]
+                    good_crystals_data[k] = crystals_dict[k]
     sys.stdout = sys.__stdout__  # restore printing
     return good_crystals_data
 
@@ -182,6 +207,7 @@ def merge(
             dials_logger.info(out.getvalue())
             mtz_file.write("merged.mtz")
             merge_html_report(mtz_file, "dials.merge.html")
+    xia2_logger.info(f"Merged mtz file: {working_directory / 'merged.mtz'}")
 
 
 def _set_scaling_options_for_ssx(
@@ -388,21 +414,21 @@ def reference_reindex(
 
 
 def select_crystals_close_to(
-    crystals_data: dict[str, Any],
+    crystals_dict: CrystalsDict,
     unit_cell: uctbx.unit_cell,
     abs_angle_tol: float,
     abs_length_tol: float,
-) -> dict[str, Any]:
-    good_crystals_data = {}
+) -> CrystalsDict:
+    good_crystals_data: CrystalsDict = {}
     with record_step("select based on unit cell"):
         n_input = 0
         n_good = 0
-        for file_, data in crystals_data.items():
-            identifiers = data["identifiers"]
+        for file_, data in crystals_dict.items():
+            identifiers = data.identifiers
             n = len(identifiers)
             n_input += n
             ids = []
-            for i, c in enumerate(data["crystals"]):
+            for i, c in enumerate(data.crystals):
                 if c.get_unit_cell().is_similar_to(
                     unit_cell,
                     absolute_angle_tolerance=abs_angle_tol,
@@ -411,23 +437,23 @@ def select_crystals_close_to(
                     ids.append(i)
             n_this = len(ids)
             if n_this == n:
-                good_crystals_data[file_] = {
-                    "identifiers": identifiers,
-                    "crystals": data["crystals"],
-                    "keep_all_original": True,
-                }
+                good_crystals_data[file_] = CrystalsData(
+                    identifiers=identifiers,
+                    crystals=data.crystals,
+                    keep_all_original=True,
+                )
             else:
-                good_crystals_data[file_] = {
-                    "identifiers": [identifiers[i] for i in ids],
-                    "crystals": [data["crystals"][i] for i in ids],
-                    "keep_all_original": False,
-                }
+                good_crystals_data[file_] = CrystalsData(
+                    identifiers=[identifiers[i] for i in ids],
+                    crystals=[data.crystals[i] for i in ids],
+                    keep_all_original=False,
+                )
             n_good += n_this
-        uc_string = ",".join(f"{i:.2f}" for i in unit_cell.parameters())
+        uc_string = ", ".join(f"{i:.2f}" for i in unit_cell.parameters())
         xia2_logger.info(
-            f"""Unit cell filtering: {n_good}/{n_input} crystals remain, consistent
-with cell parameters {uc_string}
-and tolerances of"""
+            "Unit cell filtering:\n"
+            f"  Selected {n_good} crystals consistent with cell parameters\n  {uc_string},\n"
+            "  and tolerances of"
             + " \u00b1"
             + f"{abs_length_tol}"
             + "\u212b &"
@@ -459,13 +485,17 @@ def inspect_directories(new_directories_to_process: List[Path]) -> FilesDict:
         for expt, refl in zip(sorted(expts_this), sorted(refls_this)):
             new_data[n_pairs] = FilePair(expt, refl)
             n_pairs += 1
+        if not expts_this:
+            xia2_logger.warning(f"No integrated data files found in {str(d)}")
+    if not n_pairs:
+        raise ValueError("No integrated datafiles found in directories")
     return new_data
 
 
 def split_filtered_data(
     working_directory: Path,
     new_data: FilesDict,
-    good_crystals_data: dict[str, Any],
+    good_crystals_data: CrystalsDict,
     min_batch_size: int,
     offset: int = 0,
 ) -> FilesDict:
@@ -473,7 +503,7 @@ def split_filtered_data(
         Path.mkdir(working_directory)
     with record_step("splitting"):
         data_to_reindex: FilesDict = {}
-        n_cryst = sum(len(v["identifiers"]) for v in good_crystals_data.values())
+        n_cryst = sum(len(v.identifiers) for v in good_crystals_data.values())
         n_batches = max(math.floor(n_cryst / min_batch_size), 1)
         stride = n_cryst / n_batches
         # make sure last batch has at least the batch size
@@ -483,28 +513,28 @@ def split_filtered_data(
             "split_{index:0{fmt:d}d}".format, fmt=len(str(n_batches + offset))
         )
         leftover_expts = ExperimentList([])
-        leftover_refls = []
+        leftover_refls: List[flex.reflection_table] = []
         n_batch_output = 0
         n_required = splits[1] - splits[0]
         for file_pair in new_data.values():
             expts = load.experiment_list(file_pair.expt, check_format=False)
             refls = flex.reflection_table.from_file(file_pair.refl)
-            good_crystals_this = good_crystals_data[str(file_pair.expt)]
-            good_identifiers = good_crystals_this["identifiers"]
-            if not good_crystals_this["keep_all_original"]:
-                expts = expts.select_on_experiment_identifiers(good_identifiers)
+            good_crystals_this: CrystalsData = good_crystals_data[str(file_pair.expt)]
+            good_identifiers = good_crystals_this.identifiers
+            if not good_crystals_this.keep_all_original:
+                expts.select_on_experiment_identifiers(good_identifiers)
                 refls = refls.select_on_experiment_identifiers(good_identifiers)
             leftover_expts.extend(expts)
             leftover_refls.append(refls)
             while len(leftover_expts) >= n_required:
                 sub_expt = leftover_expts[0:n_required]
-                leftover_refls = flex.reflection_table.concat(leftover_refls)
+                leftover_refls = [flex.reflection_table.concat(leftover_refls)]
                 leftover_copy = copy.deepcopy(leftover_refls)
-                sub_refl = leftover_refls.select_on_experiment_identifiers(
+                sub_refl = leftover_refls[0].select_on_experiment_identifiers(
                     sub_expt.identifiers()
                 )
                 leftover_refls = [
-                    leftover_copy.remove_on_experiment_identifiers(
+                    leftover_copy[0].remove_on_experiment_identifiers(
                         sub_expt.identifiers()
                     )
                 ]

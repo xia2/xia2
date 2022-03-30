@@ -223,7 +223,7 @@ def ssx_integrate(
     with run_in_directory(working_directory):
         logfile = "dials.ssx_integrate.log"
         with log_to_file(logfile) as dials_logger, record_step(
-            "dials.integrate (integration)"
+            "dials.ssx_integrate (integration)"
         ):
             # Set up the input and log it to the dials log file
             indexed_refl = flex.reflection_table.from_file(
@@ -288,13 +288,13 @@ def ssx_integrate(
             xia2_logger.info(f"{n_refl} reflections integrated from {n_cryst} crystals")
 
             # Report on clustering, and generate html report and json output
-        with record_step("dials.integrate (clustering)"):
+        with record_step("dials.ssx_integrate (clustering)"):
             plots = {}
             cluster_plots, large_clusters = report_on_crystal_clusters(
                 integrated_crystal_symmetries,
                 make_plots=True,
             )
-        with record_step("dials.integrate (reporting)"):
+        with record_step("dials.ssx_integrate (reporting)"):
             plots = aggregator.make_plots()
             plots.update(cluster_plots)
             generate_integration_html_report(plots, "dials.ssx_integrate.html")
