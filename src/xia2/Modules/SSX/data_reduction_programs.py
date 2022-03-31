@@ -226,11 +226,11 @@ def _set_scaling_options_for_ssx(
     input_ = (
         "  model = KB\n  scaling_options.full_matrix = False\n"
         + "  weighting.error_model.error_model = None\n"
-        + "  scaling_options.outlier_rejection = simple"
-        + "  reflection_selection.intensity_choice = sum"
-        + "  reflection_selection.method = intensity_ranges"
-        + "  reflection_selection.Isigma_range = 2.0,0.0"
-        + "  reflection_selection.min_partiality = 0.4"
+        + "  scaling_options.outlier_rejection = simple\n"
+        + "  reflection_selection.intensity_choice = sum\n"
+        + "  reflection_selection.method = intensity_ranges\n"
+        + "  reflection_selection.Isigma_range = 2.0,0.0\n"
+        + "  reflection_selection.min_partiality = 0.4\n"
     )
     return scaling_params, input_
 
@@ -263,6 +263,8 @@ def scale_against_model(
                 f"  anomalous = {anomalous}\n  scaling_options.target_model = {model}\n"
             )
             input_ += "  scaling_options.only_target = True\n"
+            params.output.html = "dials.scale.{index}.html"
+            input_ += f"  output.html = dials.scale.{index}.html\n"
             if d_min:
                 params.cut_data.d_min = d_min
                 input_ += f"  cut_data.d_min = {d_min}\n"
