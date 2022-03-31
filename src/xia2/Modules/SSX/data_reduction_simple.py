@@ -122,7 +122,8 @@ class SimpleDataReduction(BaseDataReduction):
         # see if we have any data that has been marked as successfully reindexed.
         reidx_results = reindex_wd / "reindexing_results.json"
         if reidx_results.is_file():
-            previous = json.load(reidx_results.open())
+            with reidx_results.open(mode="r") as f:
+                previous = json.load(f)
             data_already_reindexed = {
                 int(i): FilePair(Path(v["expt"]), Path(v["refl"]))
                 for i, v in previous["reindexed_files"].items()
@@ -139,7 +140,8 @@ class SimpleDataReduction(BaseDataReduction):
         new_best_unit_cell = None
         filter_results = filter_wd / "filter_results.json"
         if filter_results.is_file():
-            result = json.load(filter_results.open())
+            with filter_results.open(mode="r") as f:
+                result = json.load(f)
             best_unit_cell = uctbx.unit_cell(result["best_unit_cell"])
             current_sg = sgtbx.space_group_info(number=result["space_group"])
 
@@ -251,9 +253,9 @@ class SimpleDataReduction(BaseDataReduction):
             if not Path.is_dir(reindex_wd):
                 Path.mkdir(reindex_wd)
             reidx_results = reindex_wd / "reindexing_results.json"
-            with open(reidx_results, "w") as f:
-                data = {"reindexed_files": output_files_to_scale}
-                json.dump(data, f)
+            data = {"reindexed_files": output_files_to_scale}
+            with reidx_results.open(mode="w") as f:
+                json.dump(data, f, indent=2)
 
         # if we get here, we have successfully prepared the new data for scaling.
         # So save this to allow reloading in future for iterative workflows.
@@ -266,8 +268,8 @@ class SimpleDataReduction(BaseDataReduction):
                 )
             ]
         }
-        with open(data_reduction_wd / "data_reduction.json", "w") as fp:
-            json.dump(data_reduction_progress, fp)
+        with (data_reduction_wd / "data_reduction.json").open(mode="w") as fp:
+            json.dump(data_reduction_progress, fp, indent=2)
 
         # Finally scale and merge the data.
         if reduction_params.model:
@@ -363,8 +365,8 @@ class SimpleDataReduction(BaseDataReduction):
             "unit_cells": all_ucs,
             "space_group": sg,
         }
-        with open(working_directory / "filter_results.json", "w") as fp:
-            json.dump(result, fp)
+        with (working_directory / "filter_results.json").open(mode="w") as fp:
+            json.dump(result, fp, indent=2)
         return new_best_unit_cell
 
     @staticmethod
@@ -454,9 +456,9 @@ class SimpleDataReduction(BaseDataReduction):
         }
 
         reidx_results = working_directory / "reindexing_results.json"
-        with open(reidx_results, "w") as f:
-            data = {"reindexed_files": output_files_to_scale}
-            json.dump(data, f)
+        data = {"reindexed_files": output_files_to_scale}
+        with reidx_results.open(mode="w") as f:
+            json.dump(data, f, indent=2)
         sys.stdout = sys.__stdout__  # restore printing
         return files_to_scale
 

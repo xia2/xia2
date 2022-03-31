@@ -132,39 +132,39 @@ def run_import(working_directory: pathlib.Path, file_input: FileInput) -> None:
         pathlib.Path.mkdir(working_directory)
 
     if (working_directory / "file_input.json").is_file():
-        with open(working_directory / "file_input.json", "r") as f:
+        with (working_directory / "file_input.json").open(mode="r") as f:
             previous = json.load(f)
-            same_reference = False
-            if not file_input.reference_geometry:
-                if previous["reference_geometry"] is None:
-                    same_reference = True
-            else:
-                if str(file_input.reference_geometry) == previous["reference_geometry"]:
-                    same_reference = True
-            same_mask = False
-            if not file_input.mask:
-                if previous["mask"] is None:
-                    same_mask = True
-            else:
-                if str(file_input.mask) == previous["mask"]:
-                    same_mask = True
-            if same_reference and same_mask:
-                inputs = [
-                    file_input.images,
-                    file_input.templates,
-                    file_input.directories,
-                ]
-                previous_inputs = [
-                    previous["images"],
-                    previous["templates"],
-                    previous["directories"],
-                ]
-                for this, other in zip(inputs, previous_inputs):
-                    if this and (this == other):
-                        xia2_logger.info(
-                            f"Images already imported in previous run of xia2.ssx:\n  {', '.join(other)}"
-                        )
-                        return
+        same_reference = False
+        if not file_input.reference_geometry:
+            if previous["reference_geometry"] is None:
+                same_reference = True
+        else:
+            if str(file_input.reference_geometry) == previous["reference_geometry"]:
+                same_reference = True
+        same_mask = False
+        if not file_input.mask:
+            if previous["mask"] is None:
+                same_mask = True
+        else:
+            if str(file_input.mask) == previous["mask"]:
+                same_mask = True
+        if same_reference and same_mask:
+            inputs = [
+                file_input.images,
+                file_input.templates,
+                file_input.directories,
+            ]
+            previous_inputs = [
+                previous["images"],
+                previous["templates"],
+                previous["directories"],
+            ]
+            for this, other in zip(inputs, previous_inputs):
+                if this and (this == other):
+                    xia2_logger.info(
+                        f"Images already imported in previous run of xia2.ssx:\n  {', '.join(other)}"
+                    )
+                    return
 
     xia2_logger.info("New images or geometry detected, running import")
     import_command = ["dials.import", "output.experiments=imported.expt"]

@@ -173,7 +173,7 @@ def ssx_index(
             summary_plots.update(cluster_plots)
             generate_html_report(summary_plots, "dials.ssx_index.html")
             with open("dials.ssx_index.json", "w") as outfile:
-                json.dump(summary_plots, outfile)
+                json.dump(summary_plots, outfile, indent=2)
     return indexed_experiments, indexed_reflections, large_clusters
 
 

@@ -36,7 +36,8 @@ class BaseDataReduction(object):
         # data reduction dir that says it has been reindexed in a consistent
         # manner
         elif (data_reduction_dir / "data_reduction.json").is_file():
-            previous = json.load((data_reduction_dir / "data_reduction.json").open())
+            with (data_reduction_dir / "data_reduction.json").open(mode="r") as f:
+                previous = json.load(f)
             directories_already_processed = [
                 Path(i) for i in previous["directories_processed"]
             ]
