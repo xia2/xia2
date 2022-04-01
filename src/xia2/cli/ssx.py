@@ -28,6 +28,8 @@ import sys
 
 import iotbx.phil
 from dials.util.options import ArgumentParser
+from libtbx import Auto
+from libtbx.introspection import number_of_processors
 
 import xia2.Driver.timing
 import xia2.Handlers.Streams
@@ -68,7 +70,7 @@ mask = None
 reference_geometry = None
   .type = path
   .help = "Path to reference geomtry .expt file"
-nproc = 1
+nproc = Auto
   .type = int
 space_group = None
   .type = space_group
@@ -208,6 +210,9 @@ def run_xia2_ssx(
         options.refinement_images_to_use = (start, end)
     else:
         options.refinement_images_to_use = (0, params.geometry_refinement.n_images)
+
+    if params.nproc is Auto:
+        params.nproc = number_of_processors(return_value_if_unknown=1)
 
     spotfinding_params = SpotfindingParams(
         params.spotfinding.min_spot_size,

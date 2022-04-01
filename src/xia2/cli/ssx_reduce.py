@@ -17,6 +17,8 @@ from pathlib import Path
 
 import iotbx.phil
 from dials.util.options import ArgumentParser
+from libtbx import Auto
+from libtbx.introspection import number_of_processors
 
 from xia2.Modules.SSX.data_reduction_simple import (
     SimpleDataReduction,
@@ -29,7 +31,7 @@ directory = None
   .type = str
   .multiple = True
   .help = "Path to directory containing integrated_*.{refl,expt} files"
-nproc = 1
+nproc = Auto
   .type = int
 batch_size = 1000
   .type = int
@@ -88,6 +90,8 @@ def run_xia2_ssx_reduce(
     root_working_directory: Path, params: iotbx.phil.scope_extract
 ) -> None:
     directories = [Path(i).resolve() for i in params.directory]
+    if params.nproc is Auto:
+        params.nproc = number_of_processors(return_value_if_unknown=1)
 
     reduction_params = SimpleReductionParams.from_phil(params)
     reducer = SimpleDataReduction(root_working_directory, directories)

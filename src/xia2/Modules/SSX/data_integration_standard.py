@@ -62,6 +62,11 @@ def process_batch(
     refl.as_file(working_directory / "indexed.refl")
     if large_clusters:
         xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
+    if not (expt and refl):
+        xia2_logger.warning(
+            f"No images successfully indexed in {str(working_directory)}"
+        )
+        return
     large_clusters = ssx_integrate(working_directory, integration_params)
     if large_clusters:
         xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
@@ -246,6 +251,10 @@ def determine_reference_geometry(
     refl.as_file(working_directory / "indexed.refl")
     if large_clusters:
         xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
+    if not (expt and refl):
+        raise ValueError(
+            "No images successfully indexed, unable to run geometry refinement"
+        )
     run_refinement(working_directory, refinement_params)
 
 

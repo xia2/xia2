@@ -153,16 +153,19 @@ def ssx_index(
 
         with record_step("dials.ssx_index (clustering)"):
             # Report on clustering, and generate html report and json output
-            crystal_symmetries = [
-                crystal.symmetry(
-                    unit_cell=expt.crystal.get_unit_cell(),
-                    space_group=expt.crystal.get_space_group(),
+            if indexed_experiments:
+                crystal_symmetries = [
+                    crystal.symmetry(
+                        unit_cell=expt.crystal.get_unit_cell(),
+                        space_group=expt.crystal.get_space_group(),
+                    )
+                    for expt in indexed_experiments
+                ]
+                cluster_plots, large_clusters = report_on_crystal_clusters(
+                    crystal_symmetries, True
                 )
-                for expt in indexed_experiments
-            ]
-            cluster_plots, large_clusters = report_on_crystal_clusters(
-                crystal_symmetries, True
-            )
+            else:
+                cluster_plots, large_clusters = ({}, {})
         with record_step("dials.ssx_index (reporting)"):
             summary_plots = generate_plots(summary_data)
             output_ = (
