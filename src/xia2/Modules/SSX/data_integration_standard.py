@@ -278,6 +278,10 @@ def run_data_integration(
     initial_import_wd = root_working_directory / "initial_import"
     run_import(initial_import_wd, file_input)
     imported_expts = initial_import_wd / "imported.expt"
+    if not imported_expts.is_file():
+        raise ValueError(
+            "Unable to successfully import images, please check input filepaths"
+        )
 
     # If space group and unit cell not both given, then assess the crystals
     if not (indexing_params.space_group and indexing_params.unit_cell):
