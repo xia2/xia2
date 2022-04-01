@@ -167,16 +167,19 @@ def ssx_index(
             else:
                 cluster_plots, large_clusters = ({}, {})
         with record_step("dials.ssx_index (reporting)"):
-            summary_plots = generate_plots(summary_data)
+            summary_plots = {}
+            if indexed_experiments:
+                summary_plots = generate_plots(summary_data)
             output_ = (
                 f"{indexed_reflections.size()} spots indexed on {n_images} images\n"
                 + f"{indexing_summary_output(summary_data, summary_plots)}"
             )
             xia2_logger.info(output_)
             summary_plots.update(cluster_plots)
-            generate_html_report(summary_plots, "dials.ssx_index.html")
-            with open("dials.ssx_index.json", "w") as outfile:
-                json.dump(summary_plots, outfile, indent=2)
+            if summary_plots:
+                generate_html_report(summary_plots, "dials.ssx_index.html")
+                with open("dials.ssx_index.json", "w") as outfile:
+                    json.dump(summary_plots, outfile, indent=2)
     return indexed_experiments, indexed_reflections, large_clusters
 
 
@@ -293,16 +296,20 @@ def ssx_integrate(
             # Report on clustering, and generate html report and json output
         with record_step("dials.ssx_integrate (clustering)"):
             plots = {}
-            cluster_plots, large_clusters = report_on_crystal_clusters(
-                integrated_crystal_symmetries,
-                make_plots=True,
-            )
+            if integrated_crystal_symmetries:
+                cluster_plots, large_clusters = report_on_crystal_clusters(
+                    integrated_crystal_symmetries,
+                    make_plots=True,
+                )
+            else:
+                cluster_plots, large_clusters = ({}, {})
         with record_step("dials.ssx_integrate (reporting)"):
-            plots = aggregator.make_plots()
-            plots.update(cluster_plots)
-            generate_integration_html_report(plots, "dials.ssx_integrate.html")
-            with open("dials.ssx_integrate.json", "w") as outfile:
-                json.dump(plots, outfile, indent=2)
+            if integrated_crystal_symmetries:
+                plots = aggregator.make_plots()
+                plots.update(cluster_plots)
+                generate_integration_html_report(plots, "dials.ssx_integrate.html")
+                with open("dials.ssx_integrate.json", "w") as outfile:
+                    json.dump(plots, outfile, indent=2)
     return large_clusters
 
 

@@ -280,4 +280,7 @@ def run(args=sys.argv[1:]):
         xia2_logger.info("The following parameters have been modified:\n%s", diff_phil)
 
     cwd = pathlib.Path.cwd()
-    run_xia2_ssx(cwd, params)
+    try:
+        run_xia2_ssx(cwd, params)
+    except ValueError as e:
+        xia2_logger.info(f"Error: {e}")

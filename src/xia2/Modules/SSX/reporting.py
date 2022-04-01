@@ -65,6 +65,8 @@ def indexing_summary_output(summary_data: Dict, summary_plots: Dict) -> str:
     for i in range(0, math.ceil(len(success) / block_width)):
         row_ = success[i * block_width : (i + 1) * block_width]
         output_ += "".join(row_) + "\n"
+    if not summary_plots:
+        return output_
 
     # Now determine the IQR for the rmsds
     output_ += "Indexing summary statistics (median and IQR):\n"
