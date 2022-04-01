@@ -142,11 +142,11 @@ def ssx_index(
             indexed_experiments, indexed_reflections, summary_data = index(
                 imported_expts, strong_refl, params
             )
-            n_images = len({e.imageset.get_path(0) for e in indexed_experiments})
+            n_images = len([1 for v in summary_data.values() if v[0]["n_indexed"]])
             report = (
-                f"{indexed_reflections.size()} spots indexed on {n_images} images\n"
-                + "\nSummary of images sucessfully indexed\n"
+                "Summary of images sucessfully indexed\n"
                 + make_summary_table(summary_data)
+                + f"\n{indexed_reflections.size()} spots indexed on {n_images} images"
             )
 
             dials_logger.info(report)
