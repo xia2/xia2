@@ -8,8 +8,6 @@ import warnings
 from cctbx import sgtbx
 from iotbx.reflection_file_reader import any_reflection_file
 
-import xia2.Test.regression
-
 default_data_files = (
     "AUTOMATIC_DEFAULT_free.mtz",
     "AUTOMATIC_DEFAULT_scaled.sca",
@@ -64,17 +62,13 @@ def check_result(
     if system != "Linux":
         template_name += "." + system
 
-    output_result_dir = os.path.join(
-        os.path.dirname(xia2.Test.regression.__file__), "output"
-    )
+    output_result_dir = os.path.join(os.path.dirname(__file__), "output")
     if not os.path.exists(output_result_dir):
         os.mkdir(output_result_dir)
     with open(os.path.join(output_result_dir, template_name), "w") as fh:
         fh.write(generate_tolerant_template(summary_text_lines))
 
-    expected_result_dir = os.path.join(
-        os.path.dirname(xia2.Test.regression.__file__), "expected"
-    )
+    expected_result_dir = os.path.join(os.path.dirname(__file__), "expected")
     if not os.path.exists(expected_result_dir):
         return False, "Reference result directory (%s) not found" % expected_result_dir
 
