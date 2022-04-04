@@ -16,14 +16,14 @@ from xia2.Schema.XSweep import XSweep
 from xia2.Schema.XWavelength import XWavelength
 
 
-def exercise_dials_indexer(dials_data, tmp_dir, nproc=None):
+def exercise_dials_indexer(dials_data, tmp_path, nproc=None):
     if nproc is not None:
         PhilIndex.params.xia2.settings.multiprocessing.nproc = nproc
 
-    template = dials_data("insulin").join("insulin_1_###.img").strpath
+    template = dials_data("insulin", pathlib=True) / "insulin_1_###.img"
 
     indexer = DialsIndexer()
-    indexer.set_working_directory(tmp_dir)
+    indexer.set_working_directory(os.fspath(tmp_path))
 
     experiments = ExperimentList.from_templates([template])
     imageset = experiments.imagesets()[0]
@@ -74,4 +74,4 @@ def exercise_dials_indexer(dials_data, tmp_dir, nproc=None):
 
 def test_dials_indexer_serial(regression_test, ccp4, dials_data, run_in_tmp_path):
     with mock.patch.object(sys, "argv", []):
-        exercise_dials_indexer(dials_data, str(run_in_tmp_path), nproc=1)
+        exercise_dials_indexer(dials_data, run_in_tmp_path, nproc=1)
