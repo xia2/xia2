@@ -8,7 +8,7 @@ from collections import OrderedDict
 from jinja2 import ChoiceLoader, Environment, PackageLoader
 
 import iotbx.phil
-from dials.util.options import OptionParser
+from dials.util.options import ArgumentParser
 
 import xia2.Handlers.Streams
 from xia2.Modules.Report import Report
@@ -38,7 +38,7 @@ help_message = """
 def run(args):
     usage = "xia2.report [options] scaled_unmerged.mtz"
 
-    parser = OptionParser(
+    parser = ArgumentParser(
         usage=usage, phil=phil_scope, check_format=False, epilog=help_message
     )
 

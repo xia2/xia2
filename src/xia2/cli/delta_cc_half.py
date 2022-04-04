@@ -14,7 +14,7 @@ from dials.util.multi_dataset_handling import (
     assign_unique_identifiers,
     parse_multiple_datasets,
 )
-from dials.util.options import OptionParser, flatten_experiments, flatten_reflections
+from dials.util.options import ArgumentParser, flatten_experiments, flatten_reflections
 from dials.util.version import dials_version
 from iotbx.reflection_file_reader import any_reflection_file
 
@@ -53,7 +53,7 @@ output {
 
 def run(args=sys.argv[1:]):
     # Create the parser
-    parser = OptionParser(
+    parser = ArgumentParser(
         # usage=usage,
         phil=phil_scope,
         read_reflections=True,

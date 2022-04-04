@@ -9,7 +9,7 @@ import iotbx.phil
 from dials.array_family import flex
 from dials.util import Sorry, log
 from dials.util.multi_dataset_handling import parse_multiple_datasets
-from dials.util.options import OptionParser, flatten_experiments, flatten_reflections
+from dials.util.options import ArgumentParser, flatten_experiments, flatten_reflections
 from dials.util.version import dials_version
 
 import xia2.Handlers.Streams
@@ -65,7 +65,7 @@ def run():
     )
 
     # Create the parser
-    parser = OptionParser(
+    parser = ArgumentParser(
         usage=usage,
         phil=phil_scope,
         read_reflections=True,
