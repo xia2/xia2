@@ -19,14 +19,13 @@ from xia2.Schema.XSweep import XSweep
 from xia2.Schema.XWavelength import XWavelength
 
 
-def exercise_xds_integrater(dials_data, tmp_dir, nproc=None):
-    if nproc:
-        PhilIndex.params.xia2.settings.multiprocessing.nproc = nproc
+def _exercise_xds_integrater(dials_data, tmp_path):
+    PhilIndex.params.xia2.settings.multiprocessing.nproc = 1
 
-    template = dials_data("insulin").join("insulin_1_###.img").strpath
+    template = dials_data("insulin", pathlib=True) / "insulin_1_###.img"
 
     indexer = XDSIndexer()
-    indexer.set_working_directory(tmp_dir)
+    indexer.set_working_directory(os.fspath(tmp_path))
 
     experiments = ExperimentList.from_templates([template])
     imageset = experiments.imagesets()[0]
@@ -40,12 +39,12 @@ def exercise_xds_integrater(dials_data, tmp_dir, nproc=None):
     indexer.set_indexer_sweep(sweep)
 
     refiner = XDSRefiner()
-    refiner.set_working_directory(tmp_dir)
+    refiner.set_working_directory(os.fspath(tmp_path))
     refiner.add_refiner_indexer(sweep.get_epoch(1), indexer)
     # refiner.refine()
 
     integrater = XDSIntegrater()
-    integrater.set_working_directory(tmp_dir)
+    integrater.set_working_directory(os.fspath(tmp_path))
     integrater.setup_from_image(imageset.get_path(1))
     integrater.set_integrater_refiner(refiner)
     integrater.set_integrater_sweep(sweep)
@@ -123,4 +122,4 @@ def exercise_xds_integrater(dials_data, tmp_dir, nproc=None):
 
 def test_xds_integrater_serial(regression_test, ccp4, xds, dials_data, run_in_tmp_path):
     with mock.patch.object(sys, "argv", []):
-        exercise_xds_integrater(dials_data, str(run_in_tmp_path), nproc=1)
+        _exercise_xds_integrater(dials_data, run_in_tmp_path)
