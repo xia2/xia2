@@ -15,8 +15,8 @@ def test_load_reference_geometries(dials_data):
     There are eight input instrument models, of which only two are unique.
     """
     files = ["scaled_20_25.expt", "scaled_30.expt", "scaled_35.expt"]
-    files = [(dials_data("l_cysteine_4_sweeps_scaled") / f).strpath for f in files]
-    files.append((dials_data("l_cysteine_dials_output") / "indexed.expt").strpath)
+    files = [dials_data("l_cysteine_4_sweeps_scaled", pathlib=True) / f for f in files]
+    files.append(dials_data("l_cysteine_dials_output", pathlib=True) / "indexed.expt")
 
     num_input = sum(len(ExperimentList.from_file(f, check_format=False)) for f in files)
     assert num_input == 8, "Expected to find eight experiments, one for each sweep."
