@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import itertools
+import os
+
 import pytest_mock
 
 from xia2.cli.delta_cc_half import run
@@ -7,12 +10,13 @@ from xia2.Modules.DeltaCcHalf import DeltaCcHalf
 
 
 def test_from_experiments_reflections(dials_data, tmpdir, capsys, mocker):
-    data_dir = dials_data("l_cysteine_4_sweeps_scaled")
-    input_files = data_dir.listdir("scaled_*.refl") + data_dir.listdir("scaled_*.expt")
-    input_files = sorted(f.strpath for f in input_files)
+    data_dir = dials_data("l_cysteine_4_sweeps_scaled", pathlib=True)
+    input_files = sorted(
+        itertools.chain(data_dir.glob("scaled_*.expt"), data_dir.glob("scaled_*.refl"))
+    )
     mocker.spy(DeltaCcHalf, "get_table")
     with tmpdir.as_cwd():
-        run(input_files)
+        run([os.fspath(f) for f in input_files])
         if getattr(pytest_mock, "version", "").startswith("1."):
             rv = DeltaCcHalf.get_table.return_value
         else:
@@ -30,12 +34,12 @@ def test_from_experiments_reflections(dials_data, tmpdir, capsys, mocker):
 
 
 def test_image_groups_from_unmerged_mtz(dials_data, tmpdir, capsys, mocker):
-    data_dir = dials_data("x4wide_processed")
+    data_dir = dials_data("x4wide_processed", pathlib=True)
     mocker.spy(DeltaCcHalf, "get_table")
     with tmpdir.as_cwd():
         run(
             [
-                data_dir.join("AUTOMATIC_DEFAULT_scaled_unmerged.mtz").strpath,
+                os.fspath(data_dir / "AUTOMATIC_DEFAULT_scaled_unmerged.mtz"),
                 "group_size=10",
             ]
         )
