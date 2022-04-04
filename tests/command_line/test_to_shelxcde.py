@@ -58,34 +58,34 @@ def check_output(expected_files, expected_sh_script):
 
 
 def test_to_shelxcde_sad(dials_data, run_in_tmp_path):
-    input_mtz = dials_data("x4wide_processed").join(
+    input_mtz = dials_data("x4wide_processed", pathlib=True) / (
         "AUTOMATIC_DEFAULT_scaled_unmerged.mtz"
     )
-    to_shelxcde.run(["--sad", input_mtz.strpath, "test"])
+    to_shelxcde.run(["--sad", str(input_mtz), "test"])
     check_output(expected_sad_files, expected_sad_script)
 
 
 def test_to_shelxcde_sad_sites(dials_data, run_in_tmp_path):
-    input_mtz = dials_data("x4wide_processed").join(
+    input_mtz = dials_data("x4wide_processed", pathlib=True) / (
         "AUTOMATIC_DEFAULT_scaled_unmerged.mtz"
     )
-    to_shelxcde.run(["--sad", input_mtz.strpath, "--sites", "10", "test"])
+    to_shelxcde.run(["--sad", str(input_mtz), "--sites", "10", "test"])
     check_output(expected_sad_files, expected_sites_script)
 
 
 def test_to_shelxcde_sad_label(dials_data, run_in_tmp_path):
-    input_mtz = dials_data("x4wide_processed").join(
+    input_mtz = dials_data("x4wide_processed", pathlib=True) / (
         "AUTOMATIC_DEFAULT_scaled_unmerged.mtz"
     )
-    to_shelxcde.run(["--sad", input_mtz.strpath, "--label", "SIGI", "test"])
+    to_shelxcde.run(["--sad", str(input_mtz), "--label", "SIGI", "test"])
     check_output(expected_sad_files, expected_sad_script)
 
 
 def test_to_shelxcde_sad_native(dials_data, run_in_tmp_path):
-    input_mtz = dials_data("x4wide_processed").join(
+    input_mtz = dials_data("x4wide_processed", pathlib=True) / (
         "AUTOMATIC_DEFAULT_scaled_unmerged.mtz"
     )
-    to_shelxcde.run(["--sad", input_mtz.strpath, "--nat", input_mtz.strpath, "test"])
+    to_shelxcde.run(["--sad", str(input_mtz), "--nat", str(input_mtz), "test"])
     check_output(expected_sad_files + expected_native_files, expected_native_script)
 
 
@@ -95,37 +95,35 @@ def test_to_shelxcde_missing_input_file(dials_data, run_in_tmp_path):
 
 
 def test_to_shelxcde_missing_prefix(dials_data, run_in_tmp_path):
-    input_mtz = dials_data("x4wide_processed").join(
+    input_mtz = dials_data("x4wide_processed", pathlib=True) / (
         "AUTOMATIC_DEFAULT_scaled_unmerged.mtz"
     )
     with pytest.raises(SystemExit):
-        to_shelxcde.run(["--sad", input_mtz.strpath])
+        to_shelxcde.run(["--sad", str(input_mtz)])
 
 
 def test_to_shelxcde_invalid_args_sad_mad(dials_data, run_in_tmp_path):
-    input_mtz = dials_data("x4wide_processed").join(
+    input_mtz = dials_data("x4wide_processed", pathlib=True) / (
         "AUTOMATIC_DEFAULT_scaled_unmerged.mtz"
     )
     with pytest.raises(SystemExit):
-        to_shelxcde.run(["--sad", input_mtz.strpath, "--mad", input_mtz.strpath, "tmp"])
+        to_shelxcde.run(["--sad", str(input_mtz), "--mad", str(input_mtz), "tmp"])
 
 
 def test_to_shelxcde_invalid_args_sad_peak(dials_data, run_in_tmp_path):
-    input_mtz = dials_data("x4wide_processed").join(
+    input_mtz = dials_data("x4wide_processed", pathlib=True) / (
         "AUTOMATIC_DEFAULT_scaled_unmerged.mtz"
     )
     with pytest.raises(SystemExit):
-        to_shelxcde.run(
-            ["--sad", input_mtz.strpath, "--peak", input_mtz.strpath, "tmp"]
-        )
+        to_shelxcde.run(["--sad", str(input_mtz), "--peak", str(input_mtz), "tmp"])
 
 
 def test_to_shelxcde_invalid_args_mad_label(dials_data, run_in_tmp_path):
-    input_mtz = dials_data("x4wide_processed").join(
+    input_mtz = dials_data("x4wide_processed", pathlib=True) / (
         "AUTOMATIC_DEFAULT_scaled_unmerged.mtz"
     )
     with pytest.raises(SystemExit):
-        to_shelxcde.run(["--mad", input_mtz.strpath, "--label", "invalid", "tmp"])
+        to_shelxcde.run(["--mad", str(input_mtz), "--label", "invalid", "tmp"])
 
 
 def test_to_shelxcde_invalid_input_file(dials_data, run_in_tmp_path):
@@ -134,8 +132,8 @@ def test_to_shelxcde_invalid_input_file(dials_data, run_in_tmp_path):
 
 
 def test_to_shelxcde_invalid_label(dials_data, run_in_tmp_path):
-    input_mtz = dials_data("x4wide_processed").join(
+    input_mtz = dials_data("x4wide_processed", pathlib=True) / (
         "AUTOMATIC_DEFAULT_scaled_unmerged.mtz"
     )
     with pytest.raises(ValueError):
-        to_shelxcde.run(["--sad", input_mtz.strpath, "--label", "invalid", "test"])
+        to_shelxcde.run(["--sad", str(input_mtz), "--label", "invalid", "test"])
