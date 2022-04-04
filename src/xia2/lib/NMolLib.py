@@ -13,7 +13,7 @@ import logging
 import math
 import os
 
-from xia2.Handlers.Syminfo import Syminfo
+from xia2.Handlers.Syminfo import get_num_symops, spacegroup_name_to_number
 from xia2.Wrappers.CCP4.Matthews_coef import Matthews_coef
 
 logger = logging.getLogger("xia2.lib.NMolLib")
@@ -63,9 +63,9 @@ def spacegroup_number_operators(spacegroup):
         spacegroup_number = int(spacegroup)
     else:
         # spacegroup was passed in as a name
-        spacegroup_number = Syminfo.spacegroup_name_to_number(spacegroup.upper())
+        spacegroup_number = spacegroup_name_to_number(spacegroup.upper())
 
-    return Syminfo.get_num_symops(spacegroup_number)
+    return get_num_symops(spacegroup_number)
 
 
 def sequence_mass(sequence):

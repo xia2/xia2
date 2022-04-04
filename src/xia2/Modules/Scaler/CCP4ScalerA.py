@@ -13,7 +13,11 @@ from xia2.Handlers.CIF import CIF, mmCIF
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Phil import PhilIndex
-from xia2.Handlers.Syminfo import Syminfo
+from xia2.Handlers.Syminfo import (
+    get_lattice,
+    spacegroup_name_to_number,
+    spacegroup_number_to_name,
+)
 from xia2.lib.bits import is_mtz_file, nifty_power_of_ten, transpose_loggraph
 from xia2.lib.SymmetryLib import sort_lattices
 from xia2.Modules import MtzUtils
@@ -312,7 +316,7 @@ class CCP4ScalerA(Scaler):
 
                 logger.debug("X1698: %s: %s", pointgroup, reindex_op)
 
-                lattices = [Syminfo.get_lattice(pointgroup)]
+                lattices = [get_lattice(pointgroup)]
 
                 for epoch in self._sweep_handler.get_epochs():
                     si = self._sweep_handler.get_sweep_information(epoch)
@@ -356,7 +360,7 @@ class CCP4ScalerA(Scaler):
 
                         logger.debug("X1698: %s: %s", pointgroup, reindex_op)
 
-                    lattice = Syminfo.get_lattice(pointgroup)
+                    lattice = get_lattice(pointgroup)
 
                     if lattice not in lattices:
                         lattices.append(lattice)
@@ -592,8 +596,8 @@ class CCP4ScalerA(Scaler):
                 "Probably twinned, pointgroups: %s",
                 " ".join(p.replace(" ", "") for p in pointgroup_set),
             )
-            numbers = (Syminfo.spacegroup_name_to_number(ps) for ps in pointgroup_set)
-            overall_pointgroup = Syminfo.spacegroup_number_to_name(min(numbers))
+            numbers = (spacegroup_name_to_number(ps) for ps in pointgroup_set)
+            overall_pointgroup = spacegroup_number_to_name(min(numbers))
             self._scalr_input_pointgroup = overall_pointgroup
 
             logger.info("Twinning detected, assume pointgroup %s", overall_pointgroup)
@@ -612,7 +616,7 @@ class CCP4ScalerA(Scaler):
             integrater = si.get_integrater()
 
             integrater.set_integrater_spacegroup_number(
-                Syminfo.spacegroup_name_to_number(overall_pointgroup)
+                spacegroup_name_to_number(overall_pointgroup)
             )
             integrater.set_integrater_reindex_operator(
                 reindex_ops[epoch], reason="setting point group"
@@ -666,7 +670,7 @@ class CCP4ScalerA(Scaler):
 
             # then get the unit cell, lattice etc.
 
-            reference_lattice = Syminfo.get_lattice(md.get_spacegroup())
+            reference_lattice = get_lattice(md.get_spacegroup())
             reference_cell = md.get_dataset_info(datasets[0])["cell"]
 
             # then compute the pointgroup from this...
@@ -729,7 +733,7 @@ class CCP4ScalerA(Scaler):
                     reindex_op, reason="match reference"
                 )
                 integrater.set_integrater_spacegroup_number(
-                    Syminfo.spacegroup_name_to_number(pointgroup)
+                    spacegroup_name_to_number(pointgroup)
                 )
                 si.set_reflections(integrater.get_integrater_intensities())
 
@@ -746,7 +750,7 @@ class CCP4ScalerA(Scaler):
 
                 # then get the unit cell, lattice etc.
 
-                lattice = Syminfo.get_lattice(md.get_spacegroup())
+                lattice = get_lattice(md.get_spacegroup())
                 cell = md.get_dataset_info(datasets[0])["cell"]
 
                 if lattice != reference_lattice:
