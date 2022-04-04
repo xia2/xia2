@@ -2,14 +2,12 @@ from __future__ import annotations
 
 import json
 import os
-import pathlib
 import sys
 from unittest import mock
 
 
-def exercise_serialization(dials_data, tmp_dir):
-    base_path = pathlib.Path(tmp_dir)
-    template = dials_data("insulin").join("insulin_1_###.img").strpath
+def _exercise_serialization(dials_data, tmp_path):
+    template = dials_data("insulin", pathlib=True) / "insulin_1_###.img"
 
     from dxtbx.model import ExperimentList
 
@@ -27,7 +25,7 @@ def exercise_serialization(dials_data, tmp_dir):
     from xia2.Schema.XSweep import XSweep
     from xia2.Schema.XWavelength import XWavelength
 
-    proj = XProject(base_path=base_path)
+    proj = XProject(base_path=tmp_path)
     proj._name = "PROJ1"
     cryst = XCrystal("CRYST1", proj)
     wav = XWavelength("WAVE1", cryst, wavelength=0.98)
@@ -40,20 +38,20 @@ def exercise_serialization(dials_data, tmp_dir):
     samp.add_sweep(sweep)
 
     indexer = DialsIndexer()
-    indexer.set_working_directory(tmp_dir)
+    indexer.set_working_directory(os.fspath(tmp_path))
     indexer.add_indexer_imageset(imageset)
     indexer.set_indexer_sweep(sweep)
     sweep._indexer = indexer
 
     refiner = DialsRefiner()
-    refiner.set_working_directory(tmp_dir)
+    refiner.set_working_directory(os.fspath(tmp_path))
     refiner.add_refiner_indexer(sweep.get_epoch(1), indexer)
     refiner.add_refiner_sweep(sweep)
     sweep._refiner = refiner
 
     integrater = DialsIntegrater()
     integrater.set_output_format("hkl")
-    integrater.set_working_directory(tmp_dir)
+    integrater.set_working_directory(os.fspath(tmp_path))
     integrater.setup_from_image(imageset.get_path(1))
     integrater.set_integrater_refiner(refiner)
     # integrater.set_integrater_indexer(indexer)
@@ -67,7 +65,7 @@ def exercise_serialization(dials_data, tmp_dir):
     )
     sweep._integrater = integrater
 
-    scaler = CCP4ScalerA(base_path=base_path)
+    scaler = CCP4ScalerA(base_path=tmp_path)
     scaler.add_scaler_integrater(integrater)
     scaler.set_scaler_xcrystal(cryst)
     scaler.set_scaler_project_info(proj.get_name(), cryst.get_name())
@@ -100,22 +98,22 @@ def exercise_serialization(dials_data, tmp_dir):
     p_str = json.dumps(p_dict, ensure_ascii=True)
     p_dict = json.loads(p_str)
     xproj = XProject.from_dict(p_dict)
-    assert xproj.path == base_path
+    assert xproj.path == tmp_path
     assert list(xproj.get_crystals().values())[0].get_project() is xproj
-    assert list(xproj.get_crystals().values())[0]._scaler._base_path == base_path
+    assert list(xproj.get_crystals().values())[0]._scaler._base_path == tmp_path
 
     json_str = proj.as_json()
     xproj = XProject.from_json(string=json_str)
-    assert xproj.path == base_path
+    assert xproj.path == tmp_path
     assert list(xproj.get_crystals().values())[0].get_project() is xproj
     print(xproj.get_output())
     print("\n".join(xproj.summarise()))
     json_str = xproj.as_json()
     xproj = XProject.from_json(string=json_str)
-    assert xproj.path == base_path
+    assert xproj.path == tmp_path
     # Test that we can serialize to json and back again
     xproj = XProject.from_json(string=xproj.as_json())
-    assert xproj.path == base_path
+    assert xproj.path == tmp_path
     xcryst = list(xproj.get_crystals().values())[0]
     assert xcryst.get_project() is xproj
     intgr = xcryst._get_integraters()[0]
@@ -133,4 +131,4 @@ def exercise_serialization(dials_data, tmp_dir):
 
 def test_serialization(regression_test, ccp4, dials_data, run_in_tmp_path):
     with mock.patch.object(sys, "argv", []):
-        exercise_serialization(dials_data, str(run_in_tmp_path))
+        _exercise_serialization(dials_data, run_in_tmp_path)
