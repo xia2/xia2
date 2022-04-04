@@ -35,11 +35,13 @@ expected_data_files = [
 
 @pytest.fixture()
 def proteinase_k(regression_test, dials_data, tmp_path):
-    data_dir = dials_data("multi_crystal_proteinase_k")
-    expts = sorted(f.strpath for f in data_dir.listdir("experiments*.json"))
-    refls = sorted(f.strpath for f in data_dir.listdir("reflections*.pickle"))
+    data_dir = dials_data("multi_crystal_proteinase_k", pathlib=True)
+    expts = sorted(os.fspath(f) for f in data_dir.glob("experiments*.json"))
+    refls = sorted(os.fspath(f) for f in data_dir.glob("reflections*.pickle"))
+    cwd = pathlib.Path.cwd()
     os.chdir(tmp_path)
     yield expts, refls
+    os.chdir(cwd)
     for f in tmp_path.glob("**/*.refl"):
         f.unlink()
 
@@ -73,33 +75,33 @@ def test_proteinase_k(mocker, proteinase_k):
             assert valid_image_ranges == [(1, 25)]
     with open("xia2.multiplex.json") as fh:
         d = json.load(fh)
-        for hkl in ("100", "010", "001"):
-            k = f"stereographic_projection_{hkl}"
-            assert k in d
-        assert d["stereographic_projection_001"]["data"][0]["hovertext"] == [
-            "0",
-            "1",
-            "2",
-            "3",
-            "4",
-            "5",
-            "6",
-            "7",
-        ]
-        expected_keys = {
-            "resolution_graphs",
-            "batch_graphs",
-            "xtriage",
-            "merging_stats",
-            "merging_stats_anom",
-            "misc_graphs",
-        }
-        assert not expected_keys - set(d["datasets"]["All data"])
-        assert list(d["datasets"]["All data"]["xtriage"].keys()) == [
-            "success",
-            "warnings",
-            "danger",
-        ]
+    for hkl in ("100", "010", "001"):
+        k = f"stereographic_projection_{hkl}"
+        assert k in d
+    assert d["stereographic_projection_001"]["data"][0]["hovertext"] == [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+    ]
+    expected_keys = {
+        "resolution_graphs",
+        "batch_graphs",
+        "xtriage",
+        "merging_stats",
+        "merging_stats_anom",
+        "misc_graphs",
+    }
+    assert not expected_keys - set(d["datasets"]["All data"])
+    assert list(d["datasets"]["All data"]["xtriage"].keys()) == [
+        "success",
+        "warnings",
+        "danger",
+    ]
 
 
 def test_proteinase_k_anomalous(proteinase_k):
@@ -107,7 +109,7 @@ def test_proteinase_k_anomalous(proteinase_k):
     run_multiplex(expts + refls + ["anomalous=True"])
     with open("xia2.multiplex.json") as fh:
         d = json.load(fh)
-        assert "dano_All_data" in d["datasets"]["All data"]["resolution_graphs"]
+    assert "dano_All_data" in d["datasets"]["All data"]["resolution_graphs"]
 
     mtz_scaled = iotbx.mtz.object("scaled.mtz").as_miller_arrays()
     labels = [ma.info().labels for ma in mtz_scaled]
@@ -158,16 +160,16 @@ def test_proteinase_k_filter_deltacchalf(d_min, proteinase_k):
 
     with open("xia2.multiplex.json") as fh:
         d = json.load(fh)
-        assert list(d["datasets"].keys()) == ["All data", "cluster 6", "Filtered"]
-        # assert that the recorded merging statistics are different
-        assert (
-            d["datasets"]["All data"]["resolution_graphs"]["cc_one_half_All_data"][
-                "data"
-            ][0]["y"]
-            != d["datasets"]["Filtered"]["resolution_graphs"]["cc_one_half_Filtered"][
-                "data"
-            ][0]["y"]
-        )
+    assert list(d["datasets"].keys()) == ["All data", "cluster 6", "Filtered"]
+    # assert that the recorded merging statistics are different
+    assert (
+        d["datasets"]["All data"]["resolution_graphs"]["cc_one_half_All_data"]["data"][
+            0
+        ]["y"]
+        != d["datasets"]["Filtered"]["resolution_graphs"]["cc_one_half_Filtered"][
+            "data"
+        ][0]["y"]
+    )
 
     # Check that cluster 6 has been scaled
     cluster = pathlib.Path("cluster_6")
@@ -267,19 +269,17 @@ def test_proteinase_k_laue_group_space_group_raises_error(proteinase_k):
 
 @pytest.fixture
 def protk_experiments_and_reflections(dials_data):
-    data_dir = dials_data("multi_crystal_proteinase_k")
+    data_dir = dials_data("multi_crystal_proteinase_k", pathlib=True)
 
     # Load experiments
     experiments = ExperimentList()
-    for expt_file in sorted(f.strpath for f in data_dir.listdir("experiments*.json")):
+    for expt_file in sorted(data_dir.glob("experiments*.json")):
         experiments.extend(load.experiment_list(expt_file, check_format=False))
 
     # Load reflection tables
     reflections = [
         flex.reflection_table.from_file(refl_file)
-        for refl_file in sorted(
-            f.strpath for f in data_dir.listdir("reflections*.pickle")
-        )
+        for refl_file in sorted(data_dir.glob("reflections*.pickle"))
     ]
 
     # Setup experiment identifiers
