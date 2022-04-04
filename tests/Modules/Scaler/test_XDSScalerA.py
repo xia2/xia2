@@ -5,17 +5,13 @@ import pathlib
 import sys
 from unittest import mock
 
-import pytest
 
+def test_xds_scalerA(regression_test, ccp4, xds, dials_data, run_in_tmp_path):
+    from xia2.Handlers.Phil import PhilIndex
 
-@pytest.mark.parametrize("nproc", [1])
-def test_xds_scalerA(regression_test, ccp4, xds, dials_data, run_in_tmp_path, nproc):
-    if nproc is not None:
-        from xia2.Handlers.Phil import PhilIndex
+    PhilIndex.params.xia2.settings.multiprocessing.nproc = 1
 
-        PhilIndex.params.xia2.settings.multiprocessing.nproc = nproc
-
-    template = dials_data("insulin").join("insulin_1_###.img").strpath
+    template = dials_data("insulin", pathlib=True) / "insulin_1_###.img"
 
     tmpdir = str(run_in_tmp_path)
 
@@ -37,7 +33,7 @@ def test_xds_scalerA(regression_test, ccp4, xds, dials_data, run_in_tmp_path, np
     from xia2.Schema.XSweep import XSweep
     from xia2.Schema.XWavelength import XWavelength
 
-    proj = XProject(name="AUTOMATIC")
+    proj = XProject(name="AUTOMATIC", base_path=run_in_tmp_path)
     cryst = XCrystal("CRYST1", proj)
     wav = XWavelength("WAVE1", cryst, imageset.get_beam().get_wavelength())
     samp = XSample("X1", cryst)
@@ -67,7 +63,7 @@ def test_xds_scalerA(regression_test, ccp4, xds, dials_data, run_in_tmp_path, np
     scaler.set_scaler_xcrystal(cryst)
     scaler.set_scaler_project_info("AUTOMATIC", "CRYST1")
 
-    check_scaler_files_exist(scaler)
+    _check_scaler_files_exist(scaler)
 
     # test serialization of scaler
     json_str = scaler.as_json()
@@ -75,18 +71,18 @@ def test_xds_scalerA(regression_test, ccp4, xds, dials_data, run_in_tmp_path, np
     scaler2 = XDSScalerA.from_json(string=json_str)
     scaler2.set_scaler_xcrystal(cryst)
 
-    check_scaler_files_exist(scaler2)
+    _check_scaler_files_exist(scaler2)
 
     scaler2.set_scaler_done(False)
-    check_scaler_files_exist(scaler2)
+    _check_scaler_files_exist(scaler2)
 
     scaler2._scalr_integraters = {}  # XXX
     scaler2.add_scaler_integrater(integrater)
     scaler2.set_scaler_prepare_done(False)
-    check_scaler_files_exist(scaler2)
+    _check_scaler_files_exist(scaler2)
 
 
-def check_scaler_files_exist(scaler):
+def _check_scaler_files_exist(scaler):
     merged = scaler.get_scaled_merged_reflections()
     for filetype in ("mtz", "sca", "sca_unmerged"):
         assert filetype in merged
