@@ -431,7 +431,7 @@ class SimpleDataReduction(BaseDataReduction):
         ), concurrent.futures.ProcessPoolExecutor(max_workers=nproc) as pool:
             reidx_futures: Dict[Any, int] = {
                 pool.submit(
-                    reference_reindex, working_directory, reference_files, files
+                    reference_reindex, working_directory, reference_files, files, index
                 ): index
                 for index, files in files_for_reference_reindex.items()
             }

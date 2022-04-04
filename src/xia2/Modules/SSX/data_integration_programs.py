@@ -4,6 +4,7 @@ import copy
 import json
 import logging
 from dataclasses import dataclass
+from functools import reduce
 from pathlib import Path
 from typing import List, Optional, Tuple
 
@@ -142,7 +143,9 @@ def ssx_index(
             indexed_experiments, indexed_reflections, summary_data = index(
                 imported_expts, strong_refl, params
             )
-            n_images = len([1 for v in summary_data.values() if v[0]["n_indexed"]])
+            n_images = reduce(
+                lambda a, v: a + (v[0]["n_indexed"] > 0), summary_data.values(), 0
+            )
             report = (
                 "Summary of images sucessfully indexed\n"
                 + make_summary_table(summary_data)

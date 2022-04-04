@@ -264,7 +264,7 @@ def scale_against_model(
                 f"  anomalous = {anomalous}\n  scaling_options.target_model = {model}\n"
             )
             input_ += "  scaling_options.only_target = True\n"
-            params.output.html = "dials.scale.{index}.html"
+            params.output.html = f"dials.scale.{index}.html"
             input_ += f"  output.html = dials.scale.{index}.html\n"
             if d_min:
                 params.cut_data.d_min = d_min
@@ -398,6 +398,7 @@ def reference_reindex(
     working_directory: Path,
     reference_files: FilePair,
     files_for_reindex: FilePair,
+    index: int,
 ) -> FilePair:
     cmd = [
         "dials.reindex",
@@ -408,7 +409,8 @@ def reference_reindex(
         f"output.reflections={str(files_for_reindex.refl)}",
         f"output.experiments={str(files_for_reindex.expt)}",
     ]
-    with record_step("dials.reindex"):
+    logfile = f"dials.reindex.{index}.log"
+    with log_to_file(logfile), record_step("dials.reindex"):
         result = procrunner.run(cmd, working_directory=working_directory)
         if result.returncode or result.stderr:
             raise ValueError(
