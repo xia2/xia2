@@ -377,6 +377,7 @@ def scale_cosym(
             cosym_params.space_group = space_group
             cosym_params.output.html = f"dials.cosym.{index}.html"
             cosym_params.output.json = f"dials.cosym.{index}.json"
+            cosym_params.min_i_mean_over_sigma_mean = 2
             if d_min:
                 cosym_params.d_min = d_min
             tables = table.split_by_experiment_id()
