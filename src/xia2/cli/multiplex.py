@@ -13,7 +13,7 @@ from dials.util.multi_dataset_handling import (
     assign_unique_identifiers,
     parse_multiple_datasets,
 )
-from dials.util.options import OptionParser, flatten_experiments, flatten_reflections
+from dials.util.options import ArgumentParser, flatten_experiments, flatten_reflections
 from dials.util.version import dials_version
 
 import xia2.Handlers.Streams
@@ -86,7 +86,7 @@ def run(args=sys.argv[1:]):
     usage = "xia2.multiplex [options] [param.phil] integrated.expt integrated.refl"
 
     # Create the parser
-    parser = OptionParser(
+    parser = ArgumentParser(
         usage=usage,
         phil=phil_scope,
         read_reflections=True,

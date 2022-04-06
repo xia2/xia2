@@ -12,7 +12,7 @@ import iotbx.merging_statistics
 import iotbx.phil
 import libtbx
 from cctbx import uctbx
-from dials.util.options import OptionParser
+from dials.util.options import ArgumentParser
 from libtbx.introspection import number_of_processors
 
 help_message = """
@@ -62,7 +62,7 @@ alpha = 0.3
 def run(args=sys.argv[1:]):
     usage = "xia2.compare_merging_stats [options] unmerged1.mtz unmerged2.mtz (..)"
 
-    parser = OptionParser(
+    parser = ArgumentParser(
         usage=usage, phil=phil_scope, check_format=False, epilog=help_message
     )
 
