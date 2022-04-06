@@ -306,7 +306,7 @@ class Report:
 
     @classmethod
     def from_unmerged_mtz(cls, unmerged_mtz, params, report_dir):
-        reader = any_reflection_file(unmerged_mtz)
+        reader = any_reflection_file(os.fspath(unmerged_mtz))
         assert reader.file_type() == "ccp4_mtz"
         arrays = reader.as_miller_arrays(merge_equivalents=False)
 

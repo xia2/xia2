@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import io
 import logging
+import os
 
 from iotbx.reflection_file_reader import any_reflection_file
 from mmtbx.scaling import data_statistics
@@ -12,7 +13,7 @@ logger = logging.getLogger("xia2.Modules.CctbxFrenchWilson")
 def do_french_wilson(mtz_file, hklout, anomalous=False):
     logger.debug("Reading reflections from %s", mtz_file)
 
-    result = any_reflection_file(mtz_file)
+    result = any_reflection_file(os.fspath(mtz_file))
     assert result.file_type() == "ccp4_mtz"
 
     mtz_object = result.file_content()
@@ -64,6 +65,6 @@ def do_french_wilson(mtz_file, hklout, anomalous=False):
                 )
     mtz_object.add_history("cctbx.french_wilson analysis")
     mtz_object.show_summary(out=output)
-    logger.debug("Writing reflections to %s", hklout)
-    mtz_object.write(hklout)
+    logger.debug(f"Writing reflections to {hklout}")
+    mtz_object.write(os.fspath(hklout))
     return output.getvalue()

@@ -1,0 +1,1 @@
+All tests now use dials-data pathlib objects rather than outdated py.path objects.

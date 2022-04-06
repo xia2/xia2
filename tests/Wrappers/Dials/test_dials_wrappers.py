@@ -23,16 +23,15 @@ from xia2.Wrappers.Dials.Reindex import Reindex
 from xia2.Wrappers.Dials.Spotfinder import Spotfinder
 
 
-def exercise_dials_wrappers(template, nproc=None):
-    if nproc is not None:
-        PhilIndex.params.xia2.settings.multiprocessing.nproc = nproc
+def _exercise_dials_wrappers(image_file):
+    PhilIndex.params.xia2.settings.multiprocessing.nproc = 1
 
     scan_ranges = [(1, 45)]
     image_range = (1, 45)
 
     print("Begin importing")
     importer = Import()
-    importer.setup_from_image(template % 1)
+    importer.setup_from_image(str(image_file))
     importer.set_image_range(image_range)
     importer.run()
     print("".join(importer.get_all_output()))
@@ -141,7 +140,7 @@ def exercise_dials_wrappers(template, nproc=None):
     assert os.path.exists(exporter.get_combined_reflections_filename())
 
 
-def test_dials_wrappers_serial(regression_test, ccp4, dials_data, run_in_tmpdir):
-    template = (dials_data("insulin") / "insulin_1_%03i.img").strpath
+def test_dials_wrappers_serial(regression_test, ccp4, dials_data, run_in_tmp_path):
+    image_file = dials_data("insulin", pathlib=True) / "insulin_1_001.img"
     with mock.patch.object(sys, "argv", []):
-        exercise_dials_wrappers(template, nproc=1)
+        _exercise_dials_wrappers(image_file)

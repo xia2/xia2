@@ -12,7 +12,7 @@ expected_data_files = [
 ]
 
 
-def test_dials_aimless(regression_test, dials_data, tmpdir, ccp4):
+def test_dials_aimless(regression_test, dials_data, tmp_path, ccp4):
     command_line = [
         "xia2",
         "pipeline=dials-aimless",
@@ -20,20 +20,20 @@ def test_dials_aimless(regression_test, dials_data, tmpdir, ccp4):
         "small_molecule=True",
         "read_all_image_headers=False",
         "trust_beam_centre=True",
-        dials_data("small_molecule_example").strpath,
+        dials_data("small_molecule_example", pathlib=True),
     ]
-    result = procrunner.run(command_line, working_directory=tmpdir.strpath)
+    result = procrunner.run(command_line, working_directory=tmp_path)
     success, issues = xia2.Test.regression.check_result(
         "small_molecule.dials-aimless",
         result,
-        tmpdir,
+        tmp_path,
         ccp4,
         expected_data_files=expected_data_files,
     )
     assert success, issues
 
 
-def test_dials(regression_test, dials_data, tmpdir, ccp4):
+def test_dials(regression_test, dials_data, tmp_path, ccp4):
     command_line = [
         "xia2",
         "pipeline=dials",
@@ -41,20 +41,20 @@ def test_dials(regression_test, dials_data, tmpdir, ccp4):
         "small_molecule=True",
         "read_all_image_headers=False",
         "trust_beam_centre=True",
-        dials_data("small_molecule_example").strpath,
+        dials_data("small_molecule_example", pathlib=True),
     ]
-    result = procrunner.run(command_line, working_directory=tmpdir.strpath)
+    result = procrunner.run(command_line, working_directory=tmp_path)
     success, issues = xia2.Test.regression.check_result(
         "small_molecule.dials",
         result,
-        tmpdir,
+        tmp_path,
         ccp4,
         expected_data_files=expected_data_files,
     )
     assert success, issues
 
 
-def test_xds(regression_test, dials_data, tmpdir, ccp4, xds):
+def test_xds(regression_test, dials_data, tmp_path, ccp4, xds):
     command_line = [
         "xia2",
         "pipeline=3dii",
@@ -62,13 +62,13 @@ def test_xds(regression_test, dials_data, tmpdir, ccp4, xds):
         "small_molecule=True",
         "read_all_image_headers=False",
         "trust_beam_centre=True",
-        dials_data("small_molecule_example").strpath,
+        dials_data("small_molecule_example", pathlib=True),
     ]
-    result = procrunner.run(command_line, working_directory=tmpdir.strpath)
+    result = procrunner.run(command_line, working_directory=tmp_path)
     success, issues = xia2.Test.regression.check_result(
         "small_molecule.xds",
         result,
-        tmpdir,
+        tmp_path,
         ccp4,
         xds,
         expected_data_files=expected_data_files,
@@ -76,7 +76,7 @@ def test_xds(regression_test, dials_data, tmpdir, ccp4, xds):
     assert success, issues
 
 
-def test_xds_ccp4a(regression_test, dials_data, tmpdir, ccp4, xds):
+def test_xds_ccp4a(regression_test, dials_data, tmp_path, ccp4, xds):
     command_line = [
         "xia2",
         "pipeline=3dii",
@@ -85,13 +85,13 @@ def test_xds_ccp4a(regression_test, dials_data, tmpdir, ccp4, xds):
         "read_all_image_headers=False",
         "trust_beam_centre=True",
         "scaler=ccp4a",
-        dials_data("small_molecule_example").strpath,
+        dials_data("small_molecule_example", pathlib=True),
     ]
-    result = procrunner.run(command_line, working_directory=tmpdir.strpath)
+    result = procrunner.run(command_line, working_directory=tmp_path)
     success, issues = xia2.Test.regression.check_result(
         "small_molecule.ccp4a",
         result,
-        tmpdir,
+        tmp_path,
         ccp4,
         xds,
         expected_data_files=expected_data_files,

@@ -1,0 +1,39 @@
+Project: AUTOMATIC
+Crystal: DEFAULT
+Sequence length: 0
+Wavelength: WAVE1 (0.97966)
+Sweep: SWEEP1
+Files ***
+Images: 1 to 60
+Beam 108.95 105.10 => 108.98 105.15
+Distance 170.00 => 169.27(0.1)
+Date: Sun Sep 26 14:01:35 2004
+Wavelength: WAVE2 (1.00000)
+Sweep: SWEEP2
+Files ***
+Images: 1 to 60
+Beam 108.95 105.10 => 108.98 105.15
+Distance 170.00 => 169.26(0.1)
+Date: Sun Sep 26 14:05:43 2004
+For AUTOMATIC/DEFAULT/WAVE1:
+High resolution limit                           1.51(5%)    4.10(10%)    1.51(**)
+Low resolution limit                           36.80(5%)   36.81(**)    1.54(**)
+Completeness                                   89.9(5%)   100.0(5%)    48.9(10)
+Multiplicity                                    4.1(0.2)     4.2(0.2)     2.0(0.2)
+I/sigma                                        11.3(15%)    29.4(**)     0.7(0.3)
+Rmerge(I+/-)                                  0.051(10%)   0.030(10%)   0.908(15%)
+CC half                                       0.997(2%)   0.995(0.2)   0.112(0.2)
+Anomalous completeness                         87.3(2%)    99.0(5%)    39.8(10)
+Anomalous multiplicity                          2.2(0.5)     2.5(0.5)     1.2(0.5)
+For AUTOMATIC/DEFAULT/WAVE2:
+High resolution limit                           1.49(5%)    4.04(10%)    1.49(**)
+Low resolution limit                           36.80(5%)   36.81(**)    1.52(**)
+Completeness                                   84.9(5%)   100.0(5%)    30.6(10)
+Multiplicity                                    4.0(0.2)     4.2(0.2)     1.8(0.2)
+I/sigma                                        11.5(15%)    29.6(**)     0.5(0.3)
+Rmerge(I+/-)                                  0.050(10%)   0.032(10%)   1.197(15%)
+CC half                                       0.997(2%)   0.994(0.2)   0.354(0.2)
+Anomalous completeness                         81.3(2%)    99.5(5%)    22.1(10)
+Anomalous multiplicity                          2.2(0.5)     2.6(0.5)     1.1(0.5)
+Cell:  51.566(0.5%)  51.566(0.5%) 157.600(0.5%)  90.000  90.000  90.000
+Spacegroup: P 41 21 2

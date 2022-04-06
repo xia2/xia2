@@ -96,7 +96,7 @@ def check_hdf5_master_files(master_files):
 
         message = (
             "Provided input files not master files:\n  "
-            + "\n  ".join(bad)
+            + "\n  ".join(os.fspath(f) for f in bad)
             + "\ndo you mean one of:\n  "
             + "\n  ".join(itertools.chain.from_iterable((masters, nxss)))
         )

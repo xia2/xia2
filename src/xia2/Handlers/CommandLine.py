@@ -335,7 +335,6 @@ class _CommandLine:
             PhilIndex.update(reference_geometries)
             logger.debug("xia2.settings.trust_beam_centre=true")
             PhilIndex.update("xia2.settings.trust_beam_centre=true")
-            params = PhilIndex.get_python_object()
 
         params = PhilIndex.get_python_object()
         if params.xia2.settings.input.xinfo is not None:

@@ -8,8 +8,6 @@ import warnings
 from cctbx import sgtbx
 from iotbx.reflection_file_reader import any_reflection_file
 
-import xia2.Test.regression
-
 default_data_files = (
     "AUTOMATIC_DEFAULT_free.mtz",
     "AUTOMATIC_DEFAULT_scaled.sca",
@@ -25,7 +23,7 @@ class Xia2RegressionToleranceWarning(UserWarning):
 def check_result(
     test_name,
     result,
-    tmpdir,
+    tmp_path,
     ccp4,
     xds=None,
     expected_data_files=default_data_files,
@@ -34,9 +32,9 @@ def check_result(
     ccp4 = ccp4["version"]
     xds = xds["version"] if xds else 0
 
-    error_file = tmpdir / "xia2-error.txt"
-    if error_file.check():
-        print(error_file.read())
+    error_file = tmp_path / "xia2-error.txt"
+    if error_file.is_file():
+        print(error_file.read_text())
         return False, "xia2-error.txt present after execution"
 
     if result.stderr:
@@ -47,11 +45,11 @@ def check_result(
             "xia2 terminated with non-zero exit code (%d)" % result.returncode,
         )
 
-    summary_file = tmpdir / "xia2-summary.dat"
-    if not summary_file.check():
+    summary_file = tmp_path / "xia2-summary.dat"
+    if not summary_file.is_file():
         return False, "xia2-summary.dat not present after execution"
 
-    summary_text_lines = summary_file.readlines(cr=False)
+    summary_text_lines = summary_file.read_text().split("\n")
     template_name = "result.%s.%d.%d.%d.%d" % (
         test_name,
         ccp4[0],
@@ -64,17 +62,13 @@ def check_result(
     if system != "Linux":
         template_name += "." + system
 
-    output_result_dir = os.path.join(
-        os.path.dirname(xia2.Test.regression.__file__), "output"
-    )
+    output_result_dir = os.path.join(os.path.dirname(__file__), "output")
     if not os.path.exists(output_result_dir):
         os.mkdir(output_result_dir)
     with open(os.path.join(output_result_dir, template_name), "w") as fh:
         fh.write(generate_tolerant_template(summary_text_lines))
 
-    expected_result_dir = os.path.join(
-        os.path.dirname(xia2.Test.regression.__file__), "expected"
-    )
+    expected_result_dir = os.path.join(os.path.dirname(__file__), "expected")
     if not os.path.exists(expected_result_dir):
         return False, "Reference result directory (%s) not found" % expected_result_dir
 
@@ -220,11 +214,11 @@ def check_result(
     print("-" * 80)
 
     for data_file in expected_data_files:
-        if not (tmpdir / "DataFiles" / data_file).check():
+        if not (tmp_path / "DataFiles" / data_file).is_file():
             return False, "expected file %s is missing" % data_file
         if expected_space_group is not None:
             miller_arrays = any_reflection_file(
-                (tmpdir / "DataFiles" / data_file).strpath
+                str(tmp_path / "DataFiles" / data_file)
             ).as_miller_arrays()
             for ma in miller_arrays:
                 if (
@@ -241,8 +235,8 @@ def check_result(
                         ),
                     )
 
-    html_file = "xia2.html"
-    if not (tmpdir / html_file).check():
+    html_file = tmp_path / "xia2.html"
+    if not html_file.is_file():
         return False, "xia2.html not present after execution"
 
     if not output_identical:

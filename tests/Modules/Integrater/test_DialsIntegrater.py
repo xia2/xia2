@@ -20,14 +20,13 @@ from xia2.Schema.XSweep import XSweep
 from xia2.Schema.XWavelength import XWavelength
 
 
-def exercise_dials_integrater(dials_data, tmp_dir, nproc=None):
-    if nproc:
-        PhilIndex.params.xia2.settings.multiprocessing.nproc = nproc
+def _exercise_dials_integrater(dials_data, tmp_path):
+    PhilIndex.params.xia2.settings.multiprocessing.nproc = 1
 
-    template = dials_data("insulin").join("insulin_1_###.img").strpath
+    template = dials_data("insulin", pathlib=True) / "insulin_1_###.img"
 
     indexer = DialsIndexer()
-    indexer.set_working_directory(tmp_dir)
+    indexer.set_working_directory(os.fspath(tmp_path))
     experiments = ExperimentList.from_templates([template])
     imageset = experiments.imagesets()[0]
     indexer.add_indexer_imageset(imageset)
@@ -40,13 +39,13 @@ def exercise_dials_integrater(dials_data, tmp_dir, nproc=None):
     indexer.set_indexer_sweep(sweep)
 
     refiner = DialsRefiner()
-    refiner.set_working_directory(tmp_dir)
+    refiner.set_working_directory(os.fspath(tmp_path))
     refiner.add_refiner_indexer(sweep.get_epoch(1), indexer)
     # refiner.refine()
 
     integrater = DialsIntegrater()
     integrater.set_output_format("hkl")
-    integrater.set_working_directory(tmp_dir)
+    integrater.set_working_directory(os.fspath(tmp_path))
     integrater.setup_from_image(imageset.get_path(1))
     integrater.set_integrater_refiner(refiner)
     # integrater.set_integrater_indexer(indexer)
@@ -161,9 +160,9 @@ def exercise_dials_integrater(dials_data, tmp_dir, nproc=None):
     assert pytest.approx(control_intensities) != corrected_intensities
 
 
-def test_dials_integrater_serial(regression_test, ccp4, dials_data, run_in_tmpdir):
+def test_dials_integrater_serial(regression_test, ccp4, dials_data, run_in_tmp_path):
     with mock.patch.object(sys, "argv", []):
-        exercise_dials_integrater(dials_data, run_in_tmpdir.strpath, nproc=1)
+        _exercise_dials_integrater(dials_data, run_in_tmp_path)
 
 
 def test_dials_integrater_high_pressure_set(monkeypatch):
