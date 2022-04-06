@@ -7,7 +7,7 @@ from unittest import mock
 
 
 def _exercise_serialization(dials_data, tmp_path):
-    template = dials_data("insulin", pathlib=True) / "insulin_1_###.img"
+    template = dials_data("centroid_test_data", pathlib=True) / "centroid_####.cbf"
 
     from dxtbx.model import ExperimentList
 

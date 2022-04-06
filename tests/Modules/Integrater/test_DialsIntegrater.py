@@ -23,7 +23,7 @@ from xia2.Schema.XWavelength import XWavelength
 def _exercise_dials_integrater(dials_data, tmp_path):
     PhilIndex.params.xia2.settings.multiprocessing.nproc = 1
 
-    template = dials_data("insulin", pathlib=True) / "insulin_1_###.img"
+    template = dials_data("centroid_test_data", pathlib=True) / "centroid_####.cbf"
 
     indexer = DialsIndexer()
     indexer.set_working_directory(os.fspath(tmp_path))
@@ -41,14 +41,12 @@ def _exercise_dials_integrater(dials_data, tmp_path):
     refiner = DialsRefiner()
     refiner.set_working_directory(os.fspath(tmp_path))
     refiner.add_refiner_indexer(sweep.get_epoch(1), indexer)
-    # refiner.refine()
 
     integrater = DialsIntegrater()
     integrater.set_output_format("hkl")
     integrater.set_working_directory(os.fspath(tmp_path))
     integrater.setup_from_image(imageset.get_path(1))
     integrater.set_integrater_refiner(refiner)
-    # integrater.set_integrater_indexer(indexer)
     integrater.set_integrater_sweep(sweep)
     integrater.integrate()
 
@@ -58,10 +56,8 @@ def _exercise_dials_integrater(dials_data, tmp_path):
     reader = any_reflection_file(integrater_intensities)
     assert reader.file_type() == "ccp4_mtz", repr(integrater_intensities)
     mtz_object = reader.file_content()
-    expected_reflections = 48482
-    assert (
-        abs(mtz_object.n_reflections() - expected_reflections) < 300
-    ), mtz_object.n_reflections()
+    expected_reflections = 519
+    assert mtz_object.n_reflections() == pytest.approx(expected_reflections, abs=10)
 
     assert mtz_object.column_labels() == [
         "H",
@@ -83,9 +79,9 @@ def _exercise_dials_integrater(dials_data, tmp_path):
         "QE",
     ]
 
-    assert integrater.get_integrater_wedge() == (1, 45)
+    assert integrater.get_integrater_wedge() == (1, 9)
     assert integrater.get_integrater_cell() == pytest.approx(
-        (78.14, 78.14, 78.14, 90, 90, 90), abs=1e-1
+        (42.20, 42.20, 39.68, 90, 90, 90), abs=0.1
     )
 
     # test serialization of integrater
@@ -102,9 +98,7 @@ def _exercise_dials_integrater(dials_data, tmp_path):
     reader = any_reflection_file(integrater2_intensities)
     assert reader.file_type() == "ccp4_mtz"
     mtz_object = reader.file_content()
-    assert (
-        abs(mtz_object.n_reflections() - expected_reflections) < 300
-    ), mtz_object.n_reflections()
+    assert mtz_object.n_reflections() == pytest.approx(expected_reflections, abs=10)
 
     integrater2.set_integrater_done(False)
     integrater2_intensities = integrater2.get_integrater_intensities()
@@ -112,9 +106,7 @@ def _exercise_dials_integrater(dials_data, tmp_path):
     reader = any_reflection_file(integrater2_intensities)
     assert reader.file_type() == "ccp4_mtz"
     mtz_object = reader.file_content()
-    assert (
-        abs(mtz_object.n_reflections() - expected_reflections) < 300
-    ), mtz_object.n_reflections()
+    assert mtz_object.n_reflections() == pytest.approx(expected_reflections, abs=10)
 
     integrater2.set_integrater_prepare_done(False)
     integrater2_intensities = integrater2.get_integrater_intensities()
@@ -122,9 +114,7 @@ def _exercise_dials_integrater(dials_data, tmp_path):
     reader = any_reflection_file(integrater2_intensities)
     assert reader.file_type() == "ccp4_mtz"
     mtz_object = reader.file_content()
-    assert (
-        abs(mtz_object.n_reflections() - expected_reflections) < 300
-    ), mtz_object.n_reflections()
+    assert mtz_object.n_reflections() == pytest.approx(expected_reflections, abs=10)
 
     # Test that diamond anvil cell attenuation correction does something.
     # That it does the right thing is left as a matter for the DIALS tests.
