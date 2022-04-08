@@ -8,24 +8,22 @@ from xia2.XIA2Version import VersionNumber
 
 
 @pytest.fixture(scope="session")
-def report(dials_data, tmpdir_factory):
+def report(dials_data, tmp_path_factory):
     data_dir = dials_data("pychef", pathlib=True)
     mtz = data_dir / "insulin_dials_scaled_unmerged.mtz"
-    temp_path = tmpdir_factory.mktemp("test_report")
-    with temp_path.as_cwd():
-        from xia2.Modules.Analysis import (  # import creates /xia2-debug.txt dropping
-            phil_scope,
-        )
-        from xia2.Modules.Report import Report  # import creates /DEFAULT/ dropping
+    tmp_path = tmp_path_factory.mktemp("test_report")
 
-        params = phil_scope.extract()
-        params.batch = []
-        params.dose.batch = []
-        yield Report.from_unmerged_mtz(mtz, params, report_dir=temp_path)
+    from xia2.Modules.Analysis import phil_scope
+    from xia2.Modules.Report import Report
+
+    params = phil_scope.extract()
+    params.batch = []
+    params.dose.batch = []
+    return Report.from_unmerged_mtz(mtz, params, report_dir=tmp_path)
 
 
-def test_multiplicity_plots(report):
-    multiplicity_plots = report.multiplicity_plots(dest_path=".")
+def test_multiplicity_plots(report, tmp_path):
+    multiplicity_plots = report.multiplicity_plots(dest_path=tmp_path)
     assert set(multiplicity_plots) == {
         "multiplicity_h",
         "multiplicity_k",
