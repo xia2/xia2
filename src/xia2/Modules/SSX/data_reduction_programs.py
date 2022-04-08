@@ -421,6 +421,32 @@ def reference_reindex(
     return files_for_reindex
 
 
+def cosym_reindex(
+    working_directory: Path,
+    files_for_reindex: FilesDict,
+    d_min: float = None,
+):
+    from dials.command_line.cosym import phil_scope as cosym_scope
+
+    from xia2.Modules.SSX.batch_cosym import batch_cosym_analysis
+
+    expts = []
+    refls = []
+    params = cosym_scope.extract()
+
+    logfile = "dials.cosym_reindex.log"
+    for filepair in files_for_reindex.values():
+        expts.append(load.experiment_list(filepair.expt, check_format=False))
+        refls.append(flex.reflection_table.from_file(filepair.refl))
+    params.space_group = expts[0][0].crystal.get_space_group().info()
+    if d_min:
+        params.d_min = d_min
+    with run_in_directory(working_directory), log_to_file(logfile), record_step(
+        "cosym_reindex"
+    ):
+        batch_cosym_analysis(expts, refls, params)
+
+
 def select_crystals_close_to(
     crystals_dict: CrystalsDict,
     unit_cell: uctbx.unit_cell,

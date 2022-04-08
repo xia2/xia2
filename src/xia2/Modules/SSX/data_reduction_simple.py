@@ -20,15 +20,15 @@ from dxtbx.serialize import load
 from xia2.Driver.timing import record_step
 from xia2.Handlers.Streams import banner
 from xia2.Modules.SSX.data_reduction_base import BaseDataReduction
-from xia2.Modules.SSX.data_reduction_programs import (
+from xia2.Modules.SSX.data_reduction_programs import (  # reference_reindex,
     CrystalsData,
     CrystalsDict,
     FilePair,
+    cosym_reindex,
     determine_best_unit_cell_from_crystals,
     inspect_directories,
     load_crystal_data_from_new_expts,
     merge,
-    reference_reindex,
     run_uc_cluster,
     scale,
     scale_against_model,
@@ -419,14 +419,16 @@ class SimpleDataReduction(BaseDataReduction):
                         f"Unsuccessful scaling and symmetry analysis of the new data. Error:\n{e}"
                     )
                 else:
-                    if list(result.keys()) == [0]:
+                    """if list(result.keys()) == [0]:
                         reference_files = result[0]
                         reindexed_results[0] = result[0]
-                    else:
-                        files_for_reference_reindex.update(result)
+                    else:"""
+                    reindexed_results.update(result)
 
         # now do reference reindexing
-        with record_step(
+        cosym_reindex(working_directory, reindexed_results, d_min)
+
+        """with record_step(
             "dials.reindex (parallel)"
         ), concurrent.futures.ProcessPoolExecutor(max_workers=nproc) as pool:
             reidx_futures: Dict[Any, int] = {
@@ -447,7 +449,7 @@ class SimpleDataReduction(BaseDataReduction):
                     reindexed_results[i] = result
                     xia2_logger.info(
                         f"Reindexed batch {i+1} using batch 1 as reference"
-                    )
+                    )"""
 
         files_to_scale = {**data_already_reindexed, **reindexed_results}
         output_files_to_scale = {
