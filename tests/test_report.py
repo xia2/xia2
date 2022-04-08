@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+import warnings
+
 import pytest
+
+from xia2.XIA2Version import VersionNumber
 
 
 @pytest.fixture(scope="session")
@@ -68,6 +72,7 @@ def test_resolution_plots_and_stats(report):
         "Low resolution",
         "High resolution",
     ]
+    assert report.n_bins == 20
     assert len(merging_stats_table) == 21
     assert merging_stats_table[0] == [
         "Resolution (\xc5)",
@@ -106,6 +111,68 @@ def test_resolution_plots_and_stats(report):
         "i_over_sig_i",
         "cc_one_half",
     }
+
+
+def test_deprecated_resolution_bins(dials_data, tmp_path, caplog):
+    """
+    Test the mechanism for deprecating the 'report.resolution_bins' paramter.
+
+    The parameter 'xia2.settings.report.resolution_bins' is deprecated.  By default,
+    it is not set, and the value of 'xia2.settings.merging_statistics.n_bins' is used
+    instead.  For the duration of the deprecation period, we should continue to support
+    the case where the user sets 'resolution_bins', allowing their preference to take
+    precedence over 'n_bins', but show a warning.  The deprecated option will be
+    removed in version 3.10.
+
+    From version 3.10, running this test will produce a warning, as a reminder to
+    remove both the 'resolution_bins' parameter and this test itself.
+    """
+    major, minor, *_ = VersionNumber.split(".")
+    if tuple(map(int, (major, minor))) > (3, 9):
+        warnings.warn(
+            "Remove 'report.resolution_bins' parameter and test.", DeprecationWarning
+        )
+
+    mtz = dials_data("pychef", pathlib=True) / "insulin_dials_scaled_unmerged.mtz"
+
+    from xia2.Modules.Analysis import phil_scope
+    from xia2.Modules.Report import Report
+
+    # Test normal behaviour — number of bins is taken from 'n_bins'.  No warning.
+    params = phil_scope.extract()
+    params.batch = []
+    params.dose.batch = []
+    Report.from_unmerged_mtz(mtz, params, report_dir=tmp_path)
+
+    assert not caplog.records
+
+    # Test support for deprecated behaviour — 'resolution_bins' is respected.
+    # A warning is logged.
+    params.resolution_bins = 15
+    report = Report.from_unmerged_mtz(mtz, params, report_dir=tmp_path)
+
+    (record,) = caplog.records  # Make sure that there is only one log record.
+    assert record.name == "xia2.Modules.Report"
+    assert record.levelname == "WARNING"
+    assert "'xia2.settings.report.resolution_bins' is deprecated" in record.message
+
+    assert report.n_bins == 15
+    (_, merging_stats_table, _) = report.resolution_plots_and_stats()
+    assert merging_stats_table[1] == [
+        "24.70 - 3.97",
+        3672,
+        717,
+        "5.12",
+        "96.76",
+        "7772.7",
+        "75.3",
+        "0.025",
+        "0.028",
+        "0.012",
+        "0.043",
+        "0.998*",
+        "0.622*",
+    ]
 
 
 def test_intensity_stats_plots(report):
