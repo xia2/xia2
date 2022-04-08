@@ -4,6 +4,8 @@ import warnings
 
 import pytest
 
+from xia2.Modules.Analysis import phil_scope
+from xia2.Modules.Report import Report
 from xia2.XIA2Version import VersionNumber
 
 
@@ -12,9 +14,6 @@ def report(dials_data, tmp_path_factory):
     data_dir = dials_data("pychef", pathlib=True)
     mtz = data_dir / "insulin_dials_scaled_unmerged.mtz"
     tmp_path = tmp_path_factory.mktemp("test_report")
-
-    from xia2.Modules.Analysis import phil_scope
-    from xia2.Modules.Report import Report
 
     params = phil_scope.extract()
     params.batch = []
@@ -132,9 +131,6 @@ def test_deprecated_resolution_bins(dials_data, tmp_path, caplog):
         )
 
     mtz = dials_data("pychef", pathlib=True) / "insulin_dials_scaled_unmerged.mtz"
-
-    from xia2.Modules.Analysis import phil_scope
-    from xia2.Modules.Report import Report
 
     # Test normal behaviour — number of bins is taken from 'n_bins'.  No warning.
     params = phil_scope.extract()
