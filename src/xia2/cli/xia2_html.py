@@ -6,7 +6,6 @@ import json
 import logging
 import os
 import re
-import sys
 import traceback
 from collections import OrderedDict
 from math import isclose
@@ -22,14 +21,6 @@ from xia2.Handlers.Phil import PhilIndex
 from xia2.Modules.Report import Report
 
 logger = logging.getLogger("xia2.cli.html")
-
-
-def run(args):
-    assert os.path.exists("xia2.json")
-    from xia2.Schema.XProject import XProject
-
-    xinfo = XProject.from_json(filename="xia2.json")
-    generate_xia2_html(xinfo, args=args)
 
 
 def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
@@ -603,9 +594,3 @@ tick: {
         )
 
     return html_graphs
-
-
-def run_with_log():
-    args = sys.argv[1:]
-    xia2.Handlers.Streams.setup_logging(logfile="xia2.html.log")
-    run(args)
