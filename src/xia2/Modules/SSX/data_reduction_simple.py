@@ -426,7 +426,8 @@ class SimpleDataReduction(BaseDataReduction):
                     reindexed_results.update(result)
 
         # now do reference reindexing
-        cosym_reindex(working_directory, reindexed_results, d_min)
+        if len(reindexed_results) > 1:
+            cosym_reindex(working_directory, reindexed_results, d_min)
 
         """with record_step(
             "dials.reindex (parallel)"

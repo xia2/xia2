@@ -26,8 +26,12 @@ def batch_cosym_analysis(input_experiments, input_reflections, params):
 
     datasets = []
 
+    all_expts = ExperimentList([])
+    for expts in input_experiments:
+        all_expts.extend(expts)
+    best_unit_cell = determine_best_unit_cell(all_expts)
+
     def array_from_refl_expts(refls, expts):
-        best_unit_cell = determine_best_unit_cell(expts)
         wavelength = np.mean([expt.beam.get_wavelength() for expt in expts])
         expt = copy.deepcopy(expts[0])
         expt.beam.set_wavelength(wavelength)
@@ -39,6 +43,9 @@ def batch_cosym_analysis(input_experiments, input_reflections, params):
             absolute_angle_tolerance=2.0,
         )
         refls["miller_index"] = cb_ops[0].apply(refls["miller_index"])
+        for experiment in expts:
+            experiment.crystal = experiment.crystal.change_basis(cb_ops[0])
+            experiment.crystal.set_space_group(sgtbx.space_group())
         expt.crystal = expt.crystal.change_basis(cb_ops[0])
         expt.crystal.set_space_group(sgtbx.space_group())
         arr = filtered_arrays_from_experiments_reflections(
