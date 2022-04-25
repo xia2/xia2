@@ -23,7 +23,6 @@ steps:
 - bash: |
     set -eux
     # Temporarily make this pull an explicitly mainline cctbx
-    sed -i.bak 's;_prebuilt_cctbx_base = "2021.9";_prebuilt_cctbx_base = "2022.3";' bootstrap.py
     sed -i.bak 's;"releases/" + _prebuilt_cctbx_base;"master";' bootstrap.py
     python bootstrap.py update --prebuilt-cctbx
   displayName: Repository checkout
