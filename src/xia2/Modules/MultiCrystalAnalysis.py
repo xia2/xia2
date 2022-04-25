@@ -14,7 +14,7 @@ from libtbx import phil
 
 from xia2.Modules.Analysis import batch_phil_scope
 from xia2.Modules.DeltaCcHalf import DeltaCcHalf
-from xia2.Modules.MultiCrystal.ScaleAndMerge import DataManager
+from xia2.Modules.MultiCrystal.data_manager import DataManager
 from xia2.XIA2Version import Version
 
 logger = logging.getLogger(__name__)
