@@ -21,9 +21,9 @@ def condensed_unit_cell_info(clusters: List[Cluster]) -> str:
             key=lambda x: -1 * x[1],
         )
         pg_str = ",".join([str(pg[0]) for pg in sorted_pg_comp])
-        p = [f"{i:.2f}" for i in cluster.medians]
-        sds = [f"{i:.2f}" for i in cluster.stdevs]
-        out_str += f"\n{len(cluster.members):>7} {pg_str:>7} {p[0]:>7} {p[1]:>7} {p[2]:>7} {p[3]:>6} {p[4]:>6} {p[5]:>6}"
+        p = [f"{i:.2f}" for i in cluster.median_cell]
+        sds = [f"{i:.2f}" for i in cluster.cell_std]
+        out_str += f"\n{len(cluster):>7} {pg_str:>7} {p[0]:>7} {p[1]:>7} {p[2]:>7} {p[3]:>6} {p[4]:>6} {p[5]:>6}"
         out_str += f"\n{'':>7} {'':>7} {sds[0]:>7} {sds[1]:>7} {sds[2]:>7} {sds[3]:>6} {sds[4]:>6} {sds[5]:>6}"
     return out_str
 

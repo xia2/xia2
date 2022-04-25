@@ -137,14 +137,14 @@ def run_uc_cluster(
                 crystals_dict[k].lattice_ids = ids
             # run the main work function of dials.cluster_unit_cell
             clusters = do_cluster_analysis(crystal_symmetries, params)
-            clusters.sort(key=lambda x: len(x.members), reverse=True)
+            clusters.sort(key=lambda x: len(x), reverse=True)
             main_cluster = clusters[0]
             xia2_logger.info(condensed_unit_cell_info(clusters))
             xia2_logger.info(
-                f"Selecting {len(main_cluster.members)} crystals from the largest cluster"
+                f"Selecting {len(main_cluster)} crystals from the largest cluster"
             )
 
-            main_ids = {m.lattice_id for m in main_cluster.members}
+            main_ids = {main_cluster.lattice_ids}
             # Work out which subset of the input data corresponds to the main cluster
             good_crystals_data: CrystalsDict = {}
             for k, v in crystals_dict.items():

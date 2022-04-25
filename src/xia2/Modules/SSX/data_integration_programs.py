@@ -319,7 +319,7 @@ def ssx_integrate(
 def best_cell_from_cluster(cluster: Cluster) -> Tuple:
 
     input_symmetry = crystal.symmetry(
-        unit_cell=uctbx.unit_cell(cluster.medians[0:6]), space_group_symbol="P 1"
+        unit_cell=uctbx.unit_cell(cluster.median_cell[0:6]), space_group_symbol="P 1"
     )
     group = sgtbx.lattice_symmetry.metric_subgroups(input_symmetry, 3.00).result_groups[
         0
