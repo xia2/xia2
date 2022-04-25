@@ -21,6 +21,7 @@ from xia2.Handlers.Environment import get_number_cpus
 from xia2.Handlers.Phil import PhilIndex
 from xia2.lib.bits import auto_logfiler
 from xia2.Modules import Report
+from xia2.Modules.MultiCrystalAnalysis import MultiCrystalAnalysis
 from xia2.Modules.Scaler.DialsScaler import (
     convert_merged_mtz_to_sca,
     convert_unmerged_mtz_to_sca,
@@ -817,39 +818,29 @@ class MultiCrystalScale:
         return d
 
     def unit_cell_clustering(self, plot_name=None):
-        from xfel.clustering.cluster_groups import unit_cell_info
-
-        from xia2.Modules.MultiCrystalAnalysis import MultiCrystalAnalysis
-
         lattice_ids = [
             self._data_manager.identifiers_to_ids_map[i]
             for i in self._data_manager.experiments.identifiers()
         ]
 
-        clusters, dendrogram = MultiCrystalAnalysis.unit_cell_clustering(
+        clustering = MultiCrystalAnalysis.unit_cell_clustering(
             self._data_manager.experiments,
             lattice_ids=lattice_ids,
             threshold=self._params.unit_cell_clustering.threshold,
             log=self._params.unit_cell_clustering.log,
             plot_name=plot_name,
         )
-        logger.info(unit_cell_info(clusters))
-        largest_cluster_lattice_ids = None
-        for cluster in clusters:
-            cluster_lattice_ids = [m.lattice_id for m in cluster.members]
-            if largest_cluster_lattice_ids is None:
-                largest_cluster_lattice_ids = cluster_lattice_ids
-            elif len(cluster_lattice_ids) > len(largest_cluster_lattice_ids):
-                largest_cluster_lattice_ids = cluster_lattice_ids
+        logger.info(clustering)
+        largest_cluster = sorted(clustering.clusters, key=len)[-1]
 
-        if len(largest_cluster_lattice_ids) < len(self._data_manager.experiments):
+        if len(largest_cluster) < len(self._data_manager.experiments):
             logger.info(
                 "Selecting subset of data sets for subsequent analysis: %s"
-                % str(largest_cluster_lattice_ids)
+                % str(largest_cluster.lattice_ids)
             )
             cluster_identifiers = [
                 self._data_manager.ids_to_identifiers_map[l]
-                for l in largest_cluster_lattice_ids
+                for l in largest_cluster.lattice_ids
             ]
             self._data_manager.select(cluster_identifiers)
         else:
