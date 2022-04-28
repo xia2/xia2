@@ -33,7 +33,8 @@ from libtbx.introspection import number_of_processors
 
 import xia2.Driver.timing
 import xia2.Handlers.Streams
-from xia2.cli.ssx_reduce import data_reduction_phil_str
+
+# from xia2.cli.ssx_reduce import data_reduction_phil_str
 from xia2.Modules.SSX.data_integration_programs import (
     IndexingParams,
     IntegrationParams,
@@ -45,10 +46,11 @@ from xia2.Modules.SSX.data_integration_standard import (
     FileInput,
     run_data_integration,
 )
-from xia2.Modules.SSX.data_reduction_simple import (
-    SimpleDataReduction,
-    SimpleReductionParams,
-)
+
+# from xia2.Modules.SSX.data_reduction_simple import (
+#    SimpleDataReduction,
+#    SimpleReductionParams,
+# )
 from xia2.Modules.SSX.util import report_timing
 
 phil_str = """
@@ -137,12 +139,13 @@ geometry_refinement {
 workflow {
   stop_after_geometry_refinement = False
     .type = bool
-  stop_after_integration = False
+  stop_after_integration = True
     .type = bool
 }
 """
 
-phil_scope = iotbx.phil.parse(phil_str + data_reduction_phil_str + workflow_phil)
+# phil_scope = iotbx.phil.parse(phil_str + data_reduction_phil_str + workflow_phil)
+phil_scope = iotbx.phil.parse(phil_str + workflow_phil)
 
 xia2_logger = logging.getLogger(__name__)
 
@@ -247,11 +250,11 @@ def run_xia2_ssx(
         return
 
     # Now do the data reduction
-    if not params.symmetry.space_group:
-        params.symmetry.space_group = params.space_group
-    reduction_params = SimpleReductionParams.from_phil(params)
-    reducer = SimpleDataReduction(root_working_directory, processed_batch_directories)
-    reducer.run(reduction_params)
+    # if not params.symmetry.space_group:
+    #    params.symmetry.space_group = params.space_group
+    # reduction_params = SimpleReductionParams.from_phil(params)
+    # reducer = SimpleDataReduction(root_working_directory, processed_batch_directories)
+    # reducer.run(reduction_params)
 
 
 def run(args=sys.argv[1:]):

@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 
 from cctbx import crystal, sgtbx, uctbx
+from dials.algorithms.clustering.unit_cell import Cluster
 from dials.algorithms.indexing.ssx.analysis import (
     generate_html_report,
     generate_plots,
@@ -28,7 +29,6 @@ from dials.command_line.ssx_integrate import run_integration, working_phil
 from dials.util.ascii_art import spot_counts_per_image_plot
 from dxtbx.model import ExperimentList
 from dxtbx.serialize import load
-from xfel.clustering.cluster import Cluster
 
 from xia2.Driver.timing import record_step
 from xia2.Handlers.Streams import banner

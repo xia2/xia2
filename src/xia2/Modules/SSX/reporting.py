@@ -5,9 +5,9 @@ from typing import Any, Dict, List
 
 import numpy as np
 
+from dials.algorithms.clustering.unit_cell import Cluster
 from dials.report.analysis import format_statistics, table_1_stats
 from dials.util import tabulate
-from xfel.clustering.cluster import Cluster
 
 
 def condensed_unit_cell_info(clusters: List[Cluster]) -> str:
