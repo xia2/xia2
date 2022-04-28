@@ -3,11 +3,13 @@ from __future__ import annotations
 import copy
 import json
 import logging
+import os
 from dataclasses import dataclass
 from functools import reduce
 from pathlib import Path
 from typing import List, Optional, Tuple
 
+import iotbx.phil
 from cctbx import crystal, sgtbx, uctbx
 from dials.algorithms.clustering.unit_cell import Cluster
 from dials.algorithms.indexing.ssx.analysis import (
@@ -47,6 +49,7 @@ class SpotfindingParams:
     max_spot_size: int = 10
     d_min: Optional[float] = None
     nproc: int = 1
+    phil: Optional[Path] = None
 
 
 @dataclass
@@ -81,20 +84,37 @@ def ssx_find_spots(
     ) as dials_logger, record_step("dials.find_spots"):
         # Set up the input
         imported_expts = load.experiment_list("imported.expt", check_format=True)
-        params = find_spots_phil.extract()
-        params.spotfinder.filter.max_spot_size = spotfinding_params.max_spot_size
-        params.spotfinder.filter.min_spot_size = spotfinding_params.min_spot_size
-        params.spotfinder.mp.nproc = spotfinding_params.nproc
-        input_ = (
-            "Input parameters:\n  experiments = imported.expt\n"
-            + f"  spotfinder.mp.nproc = {spotfinding_params.nproc}\n"
-            + f"  spotfinder.filter.max_spot_size = {spotfinding_params.max_spot_size}\n"
-            + f"  spotfinder.filter.min_spot_size = {spotfinding_params.min_spot_size}\n"
-        )
+        xia2_phil = f"""
+          input.experiments = imported.expt
+          spotfinder.mp.nproc = {spotfinding_params.nproc}
+          spotfinder.filter.max_spot_size = {spotfinding_params.max_spot_size}
+          spotfinder.filter.min_spot_size = {spotfinding_params.min_spot_size}
+        """
         if spotfinding_params.d_min:
-            params.spotfinder.filter.d_min = spotfinding_params.d_min
-            input_ += f"  spotfinder.filter.d_min = {spotfinding_params.d_min}"
-        dials_logger.info(input_)
+            xia2_phil += f"\nspotfinder.filter.d_min = {spotfinding_params.d_min}"
+        if spotfinding_params.phil:
+            itpr = find_spots_phil.command_line_argument_interpreter()
+            try:
+                user_phil = itpr.process(args=[os.fspath(spotfinding_params.phil)])[0]
+                working_phil = find_spots_phil.fetch(
+                    sources=[user_phil, iotbx.phil.parse(xia2_phil)]
+                )
+            except Exception as e:
+                xia2_logger.warning(
+                    f"Unable to interpret {spotfinding_params.phil} as a spotfinding phil file. Error:\n{e}"
+                )
+                working_phil = find_spots_phil.fetch(
+                    sources=[iotbx.phil.parse(xia2_phil)]
+                )
+        else:
+            working_phil = find_spots_phil.fetch(sources=[iotbx.phil.parse(xia2_phil)])
+        diff_phil = find_spots_phil.fetch_diff(source=working_phil)
+        params = working_phil.extract()
+        dials_logger.info(
+            "The following parameters have been modified:\n"
+            + "input.experiments = imported.expt\n"
+            + f"{diff_phil.as_str()}"
+        )
         # Do spot-finding
         reflections = flex.reflection_table.from_observations(imported_expts, params)
         good = MaskCode.Foreground | MaskCode.Valid

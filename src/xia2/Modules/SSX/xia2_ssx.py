@@ -70,6 +70,11 @@ spotfinding {
   max_spot_size = 20
     .type = int
     .help = "The maximum spot size to allow in spotfinding."
+  phil = None
+    .type = path
+    .help = "Phil options file to use for spotfinding. Parameters defined in"
+            "the xia2.ssx phil scope will take precedent over identical options"
+            "defined in the phil file."
 }
 indexing {
   unit_cell = None
@@ -197,6 +202,11 @@ def run_xia2_ssx(
         params.spotfinding.max_spot_size,
         params.d_min,
         params.nproc,
+        (
+            pathlib.Path(params.spotfinding.phil).resolve()
+            if params.spotfinding.phil
+            else None
+        ),
     )
     indexing_params = IndexingParams(
         params.space_group,
