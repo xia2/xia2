@@ -38,6 +38,7 @@ class FileInput:
     directories: List[str] = field(default_factory=list)
     mask: Optional[pathlib.Path] = None
     reference_geometry: Optional[pathlib.Path] = None
+    phil: Optional[pathlib.Path] = None
 
 
 @dataclass
@@ -173,6 +174,8 @@ def run_import(working_directory: pathlib.Path, file_input: FileInput) -> None:
 
     xia2_logger.info("New images or geometry detected, running import")
     import_command = ["dials.import", "output.experiments=imported.expt"]
+    if file_input.phil:
+        import_command.insert(1, os.fspath(file_input.phil))
     if file_input.images:
         import_command += file_input.images
     elif file_input.templates:
@@ -204,6 +207,9 @@ def run_import(working_directory: pathlib.Path, file_input: FileInput) -> None:
         file_input_dict["reference_geometry"] = str(file_input.reference_geometry)
     if file_input.mask:
         file_input_dict["mask"] = str(file_input.mask)
+    if file_input.phil:
+        file_input_dict["phil"] = str(file_input.phil)
+    print(file_input_dict)
     with (outfile).open(mode="w") as f:
         json.dump(file_input_dict, f, indent=2)
 

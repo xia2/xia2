@@ -34,22 +34,28 @@ image = None
   .type = str
   .multiple = True
   .help = "Path to image files"
+  .expert_level=0
 template = None
   .type = str
   .help = "The image sequence template"
   .multiple = True
+  .expert_level=0
 directory = None
   .type = str
   .help = "A directory with images"
   .multiple = True
+  .expert_level=0
 mask = None
   .type = str
   .help = "A mask to use for spotfinding and integration"
+  .expert_level=1
 reference_geometry = None
   .type = path
-  .help = "Path to reference geomtry .expt file"
+  .help = "Path to a reference geomtery (refined.expt) file"
+  .expert_level=1
 nproc = Auto
   .type = int
+  .expert_level=2
 space_group = None
   .type = space_group
   .help = "Space group to be used for indexing and integration."
@@ -57,39 +63,64 @@ space_group = None
 d_min = None
   .type = float
   .help = "Resolution cutoff for spotfinding and integration."
+  .expert_level=1
 batch_size = 1000
   .type = int
   .help = "Index and integrate the images in batches with at least this number"
           "of images, with a subfolder for each batch. This is a means to manage"
           "the resource requirements and output reporting of the program, but"
           "does not change the resultant integrated data."
+  .expert_level=2
+dials_import.phil = None
+  .type = path
+  .help = "Phil file to use for dials.import. Parameters defined in the"
+          "xia2.ssx phil scope will take precedent over identical options"
+          "defined in the phil file."
+  .expert_level=3
 spotfinding {
   min_spot_size = 3
     .type = int
     .help = "The minimum spot size to allow in spotfinding."
+    .expert_level=2
   max_spot_size = 20
     .type = int
     .help = "The maximum spot size to allow in spotfinding."
+    .expert_level=2
   phil = None
     .type = path
     .help = "Phil options file to use for spotfinding. Parameters defined in"
             "the xia2.ssx phil scope will take precedent over identical options"
             "defined in the phil file."
+    .expert_level=3
 }
 indexing {
   unit_cell = None
     .type = unit_cell
+    .expert_level=0
   max_lattices = 1
     .type = int
     .help = "Maximum number of lattices to search for, per image"
+    .expert_level=1
+  phil = None
+    .type = path
+    .help = "Phil options file to use for indexing. Parameters defined in"
+            "the xia2.ssx phil scope will take precedent over identical options"
+            "defined in the phil file."
+    .expert_level=3
 }
 integration {
   algorithm = stills *ellipsoid
     .type = choice
-  ellipsoid {
-    rlp_mosaicity = *angular4 angular2 simple1 simple6
-      .type = choice
-  }
+    .expert_level=2
+  ellipsoid.rlp_mosaicity = *angular4 angular2 simple1 simple6
+    .type = choice
+    .expert_level=3
+  phil = None
+    .type = path
+    .help = "Phil options file to use for integration. Parameters defined in"
+            "the xia2.ssx phil scope will take precedent over identical options"
+            "defined in the phil file."
+    .expert_level=3
 }
 """
 
@@ -98,31 +129,39 @@ assess_crystals {
   n_images = 1000
     .type = int(value_min=1)
     .help = "Number of images to use for crystal assessment."
+    .expert_level=2
   images_to_use = None
     .type = str
     .help = "Specify an inclusive image range to use for crystal assessment,"
             "in the form start:end"
+    .expert_level=3
 }
 geometry_refinement {
   n_images = 1000
     .type = int(value_min=1)
     .help = "Number of images to use for reference geometry determination."
+    .expert_level=2
   images_to_use = None
     .type = str
     .help = "Specify an inclusive image range to use for reference geometry"
             "determination, in the form start:end"
-  outlier.algorithm = null auto mcd tukey *sauter_poon
-    .help = "Outlier rejection algorithm for joint refinement. If auto is"
-            "selected, the algorithm is chosen automatically."
-    .type = choice
+    .expert_level=3
+  phil = None
+    .type = path
+    .help = "Phil options file to use for joint refinement with dials.refine."
+            "Parameters defined in the xia2.ssx phil scope will take precedent"
+            "over identical options defined in the phil file."
+    .expert_level=3
 }
 workflow {
   stop_after_geometry_refinement = False
     .help = "If True, only perform spotfinding, indexing and joint refinement."
     .type = bool
+    .expert_level=2
   stop_after_integration = True
     .help = "If True, do not perform data reduction after data integration."
     .type = bool
+    .expert_level=2
 }
 """
 
@@ -164,6 +203,8 @@ def run_xia2_ssx(
             )
         else:
             file_input.reference_geometry = reference
+    if params.dials_import.phil:
+        file_input.phil = pathlib.Path(params.dials_import.phil).resolve()
 
     options = AlgorithmParams(
         batch_size=params.batch_size,
@@ -213,13 +254,29 @@ def run_xia2_ssx(
         params.indexing.unit_cell,
         params.indexing.max_lattices,
         params.nproc,
+        (
+            pathlib.Path(params.indexing.phil).resolve()
+            if params.indexing.phil
+            else None
+        ),
     )
-    refinement_params = RefinementParams(params.geometry_refinement.outlier.algorithm)
+    refinement_params = RefinementParams(
+        (
+            pathlib.Path(params.geometry_refinement.phil).resolve()
+            if params.geometry_refinement.phil
+            else None
+        ),
+    )
     integration_params = IntegrationParams(
         params.integration.algorithm,
         params.integration.ellipsoid.rlp_mosaicity,
         params.d_min,
         params.nproc,
+        (
+            pathlib.Path(params.integration.phil).resolve()
+            if params.integration.phil
+            else None
+        ),
     )
 
     processed_batch_directories = run_data_integration(

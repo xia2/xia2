@@ -25,9 +25,11 @@ from dials.algorithms.shoebox import MaskCode
 from dials.array_family import flex
 from dials.command_line.find_spots import working_phil as find_spots_phil
 from dials.command_line.refine import run_dials_refine
-from dials.command_line.refine import working_phil as refine_working_phil
-from dials.command_line.ssx_index import index, phil_scope
-from dials.command_line.ssx_integrate import run_integration, working_phil
+from dials.command_line.refine import working_phil as refine_phil
+from dials.command_line.ssx_index import index
+from dials.command_line.ssx_index import phil_scope as indexing_phil
+from dials.command_line.ssx_integrate import run_integration
+from dials.command_line.ssx_integrate import working_phil as integration_phil
 from dials.util.ascii_art import spot_counts_per_image_plot
 from dxtbx.model import ExperimentList
 from dxtbx.serialize import load
@@ -58,11 +60,12 @@ class IndexingParams:
     unit_cell: Optional[uctbx.unit_cell] = None
     max_lattices: int = 1
     nproc: int = 1
+    phil: Optional[Path] = None
 
 
 @dataclass
 class RefinementParams:
-    outlier_algorithm: str = "sauter_poon"
+    phil: Optional[Path] = None
 
 
 @dataclass
@@ -71,6 +74,7 @@ class IntegrationParams:
     rlp_mosaicity: str = "angular4"
     d_min: Optional[float] = None
     nproc: int = 1
+    phil: Optional[Path] = None
 
 
 def ssx_find_spots(
@@ -139,25 +143,47 @@ def ssx_index(
             # Set up the input and log it to the dials log file
             strong_refl = flex.reflection_table.from_file("strong.refl")
             imported_expts = load.experiment_list("imported.expt", check_format=False)
-            params = phil_scope.extract()
-            params.indexing.nproc = indexing_params.nproc
-            input_ = (
-                "Input parameters:\n  reflections = strong.refl\n"
-                + f"  experiments = imported.expt\n  indexing.nproc = {indexing_params.nproc}\n"
-            )
+            xia2_phil = f"""
+            input.experiments = imported.expt
+            input.reflections = strong.refl
+            indexing.nproc={indexing_params.nproc}
+            """
             if indexing_params.unit_cell:
-                params.indexing.known_symmetry.unit_cell = indexing_params.unit_cell
                 uc = ",".join(str(i) for i in indexing_params.unit_cell.parameters())
-                input_ += f"  indexing.known_symmetry.unit_cell = {uc}\n"
+                xia2_phil += f"\nindexing.known_symmetry.unit_cell={uc}"
             if indexing_params.space_group:
-                params.indexing.known_symmetry.space_group = indexing_params.space_group
-                input_ += f"  indexing.known_symmetry.space_group = {str(indexing_params.space_group)}\n"
+                xia2_phil += f"\nindexing.known_symmetry.space_group={str(indexing_params.space_group)}"
             if indexing_params.max_lattices > 1:
-                params.indexing.multiple_lattice_search.max_lattices = (
-                    indexing_params.max_lattices
+                xia2_phil += f"\nindexing.multiple_lattice_search.max_lattices={indexing_params.max_lattices}"
+
+            if indexing_params.phil:
+                itpr = indexing_phil.command_line_argument_interpreter()
+                try:
+                    user_phil = itpr.process(args=[os.fspath(indexing_params.phil)])[0]
+                    working_phil = indexing_phil.fetch(
+                        sources=[user_phil, iotbx.phil.parse(xia2_phil)]
+                    )
+                    # Note, the order above makes the xia2_phil take precedent
+                    # over the user phil
+                except Exception as e:
+                    xia2_logger.warning(
+                        f"Unable to interpret {indexing_params.phil} as a n indexing phil file. Error:\n{e}"
+                    )
+                    working_phil = indexing_phil.fetch(
+                        sources=[iotbx.phil.parse(xia2_phil)]
+                    )
+            else:
+                working_phil = indexing_phil.fetch(
+                    sources=[iotbx.phil.parse(xia2_phil)]
                 )
-                input_ += f"  indexing.multiple_lattice_search.max_lattices = {indexing_params.max_lattices}\n"
-            dials_logger.info(input_)
+            diff_phil = indexing_phil.fetch_diff(source=working_phil)
+            params = working_phil.extract()
+            dials_logger.info(
+                "The following parameters have been modified:\n"
+                + "input.experiments = imported.expt\n"
+                + "input.reflections = strong.refl\n"
+                + f"{diff_phil.as_str()}"
+            )
 
             # Do the indexing
             indexed_experiments, indexed_reflections, summary_data = index(
@@ -216,25 +242,44 @@ def run_refinement(
     with run_in_directory(working_directory), log_to_file(
         logfile
     ) as dials_logger, record_step("dials.refine"):
-        params = refine_working_phil.extract()
+
         indexed_refl = flex.reflection_table.from_file("indexed.refl")
         indexed_expts = load.experiment_list("indexed.expt", check_format=False)
-        params.refinement.parameterisation.beam.fix = ["all"]
-        params.refinement.parameterisation.auto_reduction.action = "fix"
-        params.refinement.parameterisation.detector.fix_list = ["Tau1"]
-        params.refinement.refinery.engine = "SparseLevMar"
-        params.refinement.reflections.outlier.algorithm = (
-            refinement_params.outlier_algorithm
+
+        extra_defaults = """
+            refinement.parameterisation.beam.fix="all"
+            refinement.parameterisation.auto_reduction.action="fix"
+            refinement.parameterisation.detector.fix_list="Tau1"
+            refinement.refinery.engine=SparseLevMar
+            refinement.reflections.outlier.algorithm=sauter_poon
+        """
+
+        if refinement_params.phil:
+            itpr = refine_phil.command_line_argument_interpreter()
+            try:
+                user_phil = itpr.process(args=[os.fspath(refinement_params.phil)])[0]
+                working_phil = refine_phil.fetch(
+                    sources=[iotbx.phil.parse(extra_defaults), user_phil]
+                )
+                # Note, the order above makes the user phil take precedent over the extra defaults
+            except Exception as e:
+                xia2_logger.warning(
+                    f"Unable to interpret {refinement_params.phil} as an integration phil file. Error:\n{e}"
+                )
+                working_phil = refine_phil.fetch(
+                    sources=[iotbx.phil.parse(extra_defaults)]
+                )
+        else:
+            working_phil = refine_phil.fetch(sources=[iotbx.phil.parse(extra_defaults)])
+        diff_phil = refine_phil.fetch_diff(source=working_phil)
+        params = working_phil.extract()
+        dials_logger.info(
+            "The following parameters have been modified:\n"
+            + "input.experiments = indexed.expt\n"
+            + "input.reflections = indexed.refl\n"
+            + f"{diff_phil.as_str()}"
         )
-        input_ = (
-            "Input parameters:\n  reflections = indexed.refl\n  experiments = indexed.expt\n"
-            + "  refinement.parameterisation.beam.fix = all\n"
-            + "  refinement.parameterisation.auto_reduction.action = fix\n"
-            + "  refinement.parameterisation.detector.fix_list = Tau1\n"
-            + "  refinement.refinery.engine = SparseLevMar\n"
-            + f" refinement.reflections.outlier.algorithm = {refinement_params.outlier_algorithm}\n"
-        )
-        dials_logger.info(input_)
+
         expts, refls, refiner, _ = run_dials_refine(indexed_expts, indexed_refl, params)
         dials_logger.info("Saving refined experiments to refined.expt")
         expts.as_file("refined.expt")
@@ -259,35 +304,70 @@ def ssx_integrate(
                 "indexed.refl"
             ).split_by_experiment_id()
             indexed_expts = load.experiment_list("indexed.expt", check_format=True)
-            params = working_phil.extract()
-            params.output.batch_size = 1000
-            params.algorithm = integration_params.algorithm
-            params.nproc = integration_params.nproc
-            input_ = (
-                "Input parameters:\n  reflections = indexed.refl\n"
-                + f"  nproc = {integration_params.nproc}\n"
-                + f"  experiments = indexed.expt\n  algorithm = {integration_params.algorithm}\n"
-                + "  output.batch_size = 1000\n"
-            )
+
+            xia2_phil = f"""
+                nproc={integration_params.nproc}
+                algorithm={integration_params.algorithm}
+            """
             if integration_params.algorithm == "ellipsoid":
                 model = integration_params.rlp_mosaicity
-                params.profile.ellipsoid.refinement.outlier_probability = 0.95
-                params.profile.ellipsoid.refinement.max_separation = 1
-                params.profile.ellipsoid.prediction.probability = 0.95
-                params.profile.ellipsoid.rlp_mosaicity.model = model
-                input_ += "  profile.ellipsoid.refinement.outlier_probability = 0.95\n"
-                input_ += "  profile.ellipsoid.refinement.max_separation = 1\n"
-                input_ += "  profile.ellipsoid.prediction.probability = 0.95\n"
-                input_ += f"  profile.ellipsoid.rlp_mosaicity.model = {model}\n"
+                xia2_phil += f"\nprofile.ellipsoid.rlp_mosaicity.model={model}"
             d_min = integration_params.d_min
             if d_min:
-                params.prediction.d_min = d_min
-                input_ += f"  params.prediction.d_min = {d_min}\n"
+                xia2_phil += f"\nprediction.d_min={d_min}"
                 if integration_params.algorithm == "ellipsoid":
-                    params.profile.ellipsoid.prediction.d_min = d_min
-                    input_ += f"  params.profile.ellipsoid.prediction.d_min = {d_min}\n"
-            dials_logger.info(input_)
+                    xia2_phil += f"\nprofile.ellipsoid.prediction.d_min={d_min}"
 
+            extra_defaults = """
+                output.batch_size=1000
+            """
+            if integration_params.algorithm == "ellipsoid":
+                extra_defaults += """
+                profile.ellipsoid.refinement.outlier_probability=0.95
+                profile.ellipsoid.refinement.max_separation=1
+                profile.ellipsoid.prediction.probability=0.95
+            """
+
+            if integration_params.phil:
+                itpr = integration_phil.command_line_argument_interpreter()
+                try:
+                    user_phil = itpr.process(args=[os.fspath(integration_params.phil)])[
+                        0
+                    ]
+                    working_phil = integration_phil.fetch(
+                        sources=[
+                            iotbx.phil.parse(extra_defaults),
+                            user_phil,
+                            iotbx.phil.parse(xia2_phil),
+                        ]
+                    )
+                    # Note, the order above makes the xia2_phil take precedent
+                    # over the user phil, which takes precedent over the extra defaults
+                except Exception as e:
+                    xia2_logger.warning(
+                        f"Unable to interpret {integration_params.phil} as an integration phil file. Error:\n{e}"
+                    )
+                    working_phil = integration_phil.fetch(
+                        sources=[
+                            iotbx.phil.parse(extra_defaults),
+                            iotbx.phil.parse(xia2_phil),
+                        ]
+                    )
+            else:
+                working_phil = integration_phil.fetch(
+                    sources=[
+                        iotbx.phil.parse(extra_defaults),
+                        iotbx.phil.parse(xia2_phil),
+                    ]
+                )
+            diff_phil = integration_phil.fetch_diff(source=working_phil)
+            params = working_phil.extract()
+            dials_logger.info(
+                "The following parameters have been modified:\n"
+                + "input.experiments = indexed.expt\n"
+                + "input.reflections = indexed.refl\n"
+                + f"{diff_phil.as_str()}"
+            )
             # Run the integration
             integrated_crystal_symmetries = []
             n_refl, n_cryst = (0, 0)
