@@ -39,8 +39,13 @@ image viewer can also be provided with the option :samp:`mask=`, which will be
 used in spotfinding and integration. A few other common options to set are the
 :samp:`max_lattices` parameter, which determines the number of lattice to search
 for on each image in indexing, and :samp:`d_min` which controls the resolution
-limit for spotfinding and integration. To see the full list of options and their
-descriptions, run :samp:`dev.xia2.ssx -ce2 -a1`.
+limit for spotfinding and integration.
+
+To see the full list of options and their descriptions, run :samp:`dev.xia2.ssx -ce2 -a1`.
+Change the number after :samp:`-ce` to a value from 0 to 3 to see different
+"expert levels" of program parameters. Note that a phil options file can be
+provided for each of the DIALS programs, to allow further customisation of the
+options for the individual programs.
 
 --------------
 Data Reduction
