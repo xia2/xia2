@@ -167,7 +167,7 @@ def ssx_index(
                     # over the user phil
                 except Exception as e:
                     xia2_logger.warning(
-                        f"Unable to interpret {indexing_params.phil} as a n indexing phil file. Error:\n{e}"
+                        f"Unable to interpret {indexing_params.phil} as an indexing phil file. Error:\n{e}"
                     )
                     working_phil = indexing_phil.fetch(
                         sources=[iotbx.phil.parse(xia2_phil)]
@@ -264,7 +264,7 @@ def run_refinement(
                 # Note, the order above makes the user phil take precedent over the extra defaults
             except Exception as e:
                 xia2_logger.warning(
-                    f"Unable to interpret {refinement_params.phil} as an integration phil file. Error:\n{e}"
+                    f"Unable to interpret {refinement_params.phil} as a refinement phil file. Error:\n{e}"
                 )
                 working_phil = refine_phil.fetch(
                     sources=[iotbx.phil.parse(extra_defaults)]
