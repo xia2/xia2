@@ -11,6 +11,7 @@
    introductory_example
    insulin_tutorial
    Multi-crystal data <multi_crystal>
+   Serial-crystallography <serial_crystallography>
    program_output
    parameters
    comments
