@@ -558,6 +558,7 @@ def split_filtered_data(
             if not good_crystals_this.keep_all_original:
                 expts.select_on_experiment_identifiers(good_identifiers)
                 refls = refls.select_on_experiment_identifiers(good_identifiers)
+            refls.reset_ids()
             leftover_expts.extend(expts)
             leftover_refls.append(refls)
             while len(leftover_expts) >= n_required:
