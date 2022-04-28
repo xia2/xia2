@@ -214,8 +214,7 @@ def assess_crystal_parameters(
     indexing_params: IndexingParams,
 ) -> None:
     """
-    Using the options in the space_group_determination dict, run
-    spotfinding and indexing and report on the properties of
+    Run spotfinding and indexing and report on the properties of
     the largest cluster.
     """
 

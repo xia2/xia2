@@ -1,5 +1,5 @@
 """
-xia2.ssx: A processing pipeline for data integration and reduction of synchrotron
+xia2.ssx: A processing pipeline for data integration of synchrotron
 serial crystallography images, using tools from the DIALS package.
 
 To explore the unit cell/space group of your data, run with just the image data, e.g.:
@@ -11,13 +11,10 @@ With a known unit cell & space group, to determine a reference geometry, run e.g
 To run full processing with a reference geometry, run e.g.:
     xia2.ssx template=images_####.cbf unit_cell=x space_group=y reference_geometry=geometry_refinement/refined.expt
 
-The full processing runs dials.import, dials.find_spots, dials.ssx_index,
-dials.ssx_integrate, dials.cluster_unit_cell, dials.cosym, dials.reindex,
-dials.scale and dials.merge! Data integration and data reduction can also be run
-separately: use the option stop_after_integration=True in xia2.ssx, then run
-xia2.ssx_reduce, providing the processing directories containing integrated files.
 Refer to the individual DIALS program documentation or
-https://dials.github.io/ssx_processing_guide.html for more details.
+https://dials.github.io/ssx_processing_guide.html for more details on SSX processing
+in DIALS, and https://xia2.github.io/serial_crystallography.html for more details
+on this pipeline.
 """
 from __future__ import annotations
 
@@ -76,18 +73,17 @@ nproc = Auto
   .type = int
 space_group = None
   .type = space_group
-  .help = "Space group to be used for indexing and integration. Will also be"
-          "used for data reduction unless symmetry.space_group is specified."
+  .help = "Space group to be used for indexing and integration."
   .expert_level = 0
 d_min = None
   .type = float
-  .help = "Resolution cutoff for spotfinding, integration and data reduction."
+  .help = "Resolution cutoff for spotfinding and integration."
 batch_size = 1000
   .type = int
   .help = "Index and integrate the images in batches with at least this number"
-          "of images, with a subfolder for each batch. In data reduction, perform"
-          "consistent reindexing of crystals in batches of at least this number"
-          "of crystals."
+          "of images, with a subfolder for each batch. This is a means to manage"
+          "the resource requirements and output reporting of the program, but"
+          "does not change the resultant integrated data."
 spotfinding {
   min_spot_size = 3
     .type = int
@@ -138,8 +134,10 @@ geometry_refinement {
 }
 workflow {
   stop_after_geometry_refinement = False
+    .help = "If True, only perform spotfinding, indexing and joint refinement."
     .type = bool
   stop_after_integration = True
+    .help = "If True, do not perform data reduction after data integration."
     .type = bool
 }
 """
@@ -155,7 +153,7 @@ def run_xia2_ssx(
     root_working_directory: pathlib.Path, params: iotbx.phil.scope_extract
 ) -> None:
     """
-    Run data integration and reduction for ssx images.
+    Run data integration for ssx images.
     """
     # First separate out some of the input params into relevant sections.
     # Although it would be nice to have these as lists of Paths, we will need
