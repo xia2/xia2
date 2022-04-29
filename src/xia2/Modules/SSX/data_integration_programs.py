@@ -137,9 +137,7 @@ def ssx_index(
     xia2_logger.notice(banner("Indexing"))  # type: ignore
     with run_in_directory(working_directory):
         logfile = "dials.ssx_index.log"
-        with log_to_file(logfile) as dials_logger, record_step(
-            "dials.ssx_index (indexing)"
-        ):
+        with log_to_file(logfile) as dials_logger, record_step("dials.ssx_index"):
             # Set up the input and log it to the dials log file
             strong_refl = flex.reflection_table.from_file("strong.refl")
             imported_expts = load.experiment_list("imported.expt", check_format=False)
@@ -200,7 +198,6 @@ def ssx_index(
 
             dials_logger.info(report)
 
-        with record_step("dials.ssx_index (clustering)"):
             # Report on clustering, and generate html report and json output
             if indexed_experiments:
                 crystal_symmetries = [
@@ -215,7 +212,7 @@ def ssx_index(
                 )
             else:
                 cluster_plots, large_clusters = ({}, {})
-        with record_step("dials.ssx_index (reporting)"):
+
             summary_plots = {}
             if indexed_experiments:
                 summary_plots = generate_plots(summary_data)
@@ -296,9 +293,7 @@ def ssx_integrate(
     xia2_logger.notice(banner("Integrating"))  # type: ignore
     with run_in_directory(working_directory):
         logfile = "dials.ssx_integrate.log"
-        with log_to_file(logfile) as dials_logger, record_step(
-            "dials.ssx_integrate (integration)"
-        ):
+        with log_to_file(logfile) as dials_logger, record_step("dials.ssx_integrate"):
             # Set up the input and log it to the dials log file
             indexed_refl = flex.reflection_table.from_file(
                 "indexed.refl"
@@ -397,7 +392,6 @@ def ssx_integrate(
             xia2_logger.info(f"{n_refl} reflections integrated from {n_cryst} crystals")
 
             # Report on clustering, and generate html report and json output
-        with record_step("dials.ssx_integrate (clustering)"):
             plots = {}
             if integrated_crystal_symmetries:
                 cluster_plots, large_clusters = report_on_crystal_clusters(
@@ -406,7 +400,6 @@ def ssx_integrate(
                 )
             else:
                 cluster_plots, large_clusters = ({}, {})
-        with record_step("dials.ssx_integrate (reporting)"):
             if integrated_crystal_symmetries:
                 plots = aggregator.make_plots()
                 plots.update(cluster_plots)
