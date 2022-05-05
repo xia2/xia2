@@ -380,6 +380,9 @@ def scale_cosym(
             cosym_params.output.json = f"dials.cosym.{index}.json"
             cosym_params.min_i_mean_over_sigma_mean = 2
             cosym_params.unit_cell_clustering.threshold = None
+            cosym_params.cc_star_threshold = 0.1
+            cosym_params.angular_separation_threshold = 5
+            cosym_params.lattice_symmetry_max_delta = 1
             if d_min:
                 cosym_params.d_min = d_min
             tables = table.split_by_experiment_id()
@@ -440,6 +443,7 @@ def cosym_reindex(
         expts.append(load.experiment_list(filepair.expt, check_format=False))
         refls.append(flex.reflection_table.from_file(filepair.refl))
     params.space_group = expts[0][0].crystal.get_space_group().info()
+    params.lattice_symmetry_max_delta = 1
     if d_min:
         params.d_min = d_min
     with run_in_directory(working_directory), log_to_file(logfile), record_step(
