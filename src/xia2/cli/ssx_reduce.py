@@ -61,6 +61,10 @@ clustering {
     .type = float(value_min=0, allow_none=True)
     .help = "Filters the integrated data based on the median unit cell lengths"
             "and this tolerance. If set to None/0, filtering will be skipped."
+  central_unit_cell = None
+    .type = unit_cell
+    .help = "Filter the integrated data based on the tolerances about these cell"
+            "parameters, rather than the median cell."
 }
 symmetry {
   space_group = None

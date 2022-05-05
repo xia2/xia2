@@ -55,6 +55,7 @@ class SimpleReductionParams:
     cluster_threshold: float = 1000.0
     absolute_angle_tolerance: float = 0.5
     absolute_length_tolerance: float = 0.2
+    central_unit_cell: Optional[uctbx.unit_cell] = None
     model: Optional[Path] = None
 
     @classmethod
@@ -63,6 +64,10 @@ class SimpleReductionParams:
         model = None
         if params.scaling.model:
             model = Path(params.scaling.model).resolve()
+        if params.clustering.central_unit_cell and params.clustering.threshold:
+            raise ValueError(
+                "Only one of clustering.central_unit_cell and clustering.threshold can be specified"
+            )
         return cls(
             params.symmetry.space_group,
             params.batch_size,
@@ -72,6 +77,7 @@ class SimpleReductionParams:
             params.clustering.threshold,
             params.clustering.absolute_angle_tolerance,
             params.clustering.absolute_length_tolerance,
+            params.clustering.central_unit_cell,
             model,
         )
 
@@ -164,6 +170,8 @@ class SimpleDataReduction(BaseDataReduction):
             good_crystals_data = self.filter_new_data(
                 filter_wd, crystals_data, best_unit_cell, reduction_params
             )
+            if not any(v.crystals for v in good_crystals_data.values()):
+                raise ValueError("No crystals remain after filtering")
 
             if best_unit_cell and current_sg:  # i.e. if previous data reduction
                 if new_sg.type().number() != current_sg.type().number():
@@ -305,6 +313,14 @@ class SimpleDataReduction(BaseDataReduction):
                     working_directory,
                     crystals_data,
                     reduction_params.cluster_threshold,
+                )
+            elif reduction_params.central_unit_cell:
+                new_best_unit_cell = reduction_params.central_unit_cell
+                good_crystals_data = select_crystals_close_to(
+                    crystals_data,
+                    new_best_unit_cell,
+                    reduction_params.absolute_angle_tolerance,
+                    reduction_params.absolute_length_tolerance,
                 )
             elif (
                 reduction_params.absolute_angle_tolerance
