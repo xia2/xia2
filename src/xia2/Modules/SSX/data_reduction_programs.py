@@ -143,8 +143,7 @@ def run_uc_cluster(
             xia2_logger.info(
                 f"Selecting {len(main_cluster)} crystals from the largest cluster"
             )
-
-            main_ids = {main_cluster.lattice_ids}
+            main_ids = set(main_cluster.lattice_ids)
             # Work out which subset of the input data corresponds to the main cluster
             good_crystals_data: CrystalsDict = {}
             for k, v in crystals_dict.items():
