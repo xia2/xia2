@@ -77,6 +77,7 @@ def process_batch(
     data = {
         "n_images_indexed": summary["n_images_indexed"],
         "n_cryst_integrated": integration_summary["n_cryst_integrated"],
+        "directory": str(working_directory),
     }
     if large_clusters:
         xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
@@ -100,7 +101,7 @@ def setup_main_process(
         "batch_{index:0{fmt:d}d}".format, fmt=len(str(n_batches))
     )
     batch_directories: List[pathlib.Path] = []
-    setup_data: dict = {"images_per_batch": []}
+    setup_data: dict = {"images_per_batch": {}}
     for i in range(len(splits) - 1):
         subdir = main_directory / template(index=i + 1)
         if not subdir.is_dir():
@@ -109,7 +110,7 @@ def setup_main_process(
         sub_expt = expts[splits[i] : splits[i + 1]]
         sub_expt.as_file(subdir / "imported.expt")
         batch_directories.append(subdir)
-        setup_data["images_per_batch"].append(splits[i + 1] - splits[i])
+        setup_data["images_per_batch"][str(subdir)] = splits[i + 1] - splits[i]
     return batch_directories, setup_data
 
 
@@ -284,12 +285,13 @@ class ProcessBatch(object):
         self.function = process_batch
 
     def __call__(self, directory):
-        self.function(
+        summary_data = self.function(
             directory,
             self.spotfinding_params,
             self.indexing_params,
             self.integration_params,
         )
+        return summary_data
 
 
 def process_batches(input_):
@@ -302,6 +304,32 @@ def process_batches(input_):
 
     from dials.util.mp import multi_node_parallel_map
 
+    class ProgressReport(object):
+        def __init__(self):
+            self.cumulative_images: int = 0
+            self.cumulative_images_indexed: int = 0
+            self.cumulative_crystals_integrated: int = 0
+
+        def add(self, summary_data):
+            self.cumulative_images += setup_data["images_per_batch"][
+                summary_data["directory"]
+            ]
+            self.cumulative_images_indexed += summary_data["n_images_indexed"]
+            self.cumulative_crystals_integrated += summary_data["n_cryst_integrated"]
+            pc_indexed = self.cumulative_images_indexed * 100 / self.cumulative_images
+            xia2_logger.info(
+                f"Cumulative number of images processed: {self.cumulative_images}"
+            )
+            xia2_logger.info(f"Cumulative % of images indexed: {pc_indexed:.2f}%")
+            xia2_logger.info(
+                f"Total number of integrated crystals: {self.cumulative_crystals_integrated}"
+            )
+
+    progress = ProgressReport()
+
+    def process_output(summary_data):
+        progress.add(summary_data)
+
     if options.njobs > 1:
         multi_node_parallel_map(
             func=ProcessBatch(spotfinding_params, indexing_params, integration_params),
@@ -309,27 +337,15 @@ def process_batches(input_):
             nproc=options.nproc,
             njobs=options.njobs,
             cluster_method=options.multiprocessing_method,
+            callback=process_output,
         )
     else:
-        cumulative_images = 0
-        cumulative_images_indexed = 0
-        cumulative_crystals_integrated = 0
         for i, batch_dir in enumerate(batch_directories):
             xia2_logger.notice(banner(f"Processing batch {i+1}"))  # type: ignore
             summary_data = process_batch(
                 batch_dir, spotfinding_params, indexing_params, integration_params
             )
-            cumulative_images += setup_data["images_per_batch"][i]
-            cumulative_images_indexed += summary_data["n_images_indexed"]
-            cumulative_crystals_integrated += summary_data["n_cryst_integrated"]
-            pc_indexed = cumulative_images_indexed * 100 / cumulative_images
-            xia2_logger.info(
-                f"Cumulative number of images processed: {cumulative_images}"
-            )
-            xia2_logger.info(f"Cumulative % of images indexed: {pc_indexed:.2f}%")
-            xia2_logger.info(
-                f"Total number of integrated crystals: {cumulative_crystals_integrated}"
-            )
+            progress.add(summary_data)
 
 
 def run_data_integration(
