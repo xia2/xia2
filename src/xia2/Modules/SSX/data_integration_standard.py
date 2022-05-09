@@ -286,9 +286,14 @@ def process_batches(input_):
 
     from dials.util.mp import multi_node_parallel_map
 
+    def _process_batch(directory):
+        return process_batch(
+            directory, spotfinding_params, indexing_params, integration_params
+        )
+
     if options.njobs > 1:
         multi_node_parallel_map(
-            func=process_batch,
+            func=_process_batch,
             iterable=batch_directories,
             nproc=options.nproc,
             njobs=options.njobs,
