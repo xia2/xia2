@@ -30,7 +30,10 @@ The overall sequence of the data integration part of the pipeline is as follows.
 First spotfinding, indexing and joint refinement are run on the first 1000 images,
 in order to determine an improved geometry model for the detector. Following this,
 the refined geometry is used to perform spotfinding, indexing and integration of
-all images, with feedback provided on batches of 1000 images at a time.
+all images, with feedback provided on batches of 1000 images at a time. This batch
+size can be adjusted with the :samp:`batch_size` parameter. The number of available
+processes will be determined automatically (optionally a value for :samp:`nproc` can be given),
+and parallel processing will be performed within the batch.
 
 A DIALS reference geometry file (:samp:`refined.expt`) can be provided as input
 with the option :samp:`reference_geometry=`, which will be used instead of

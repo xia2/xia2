@@ -7,7 +7,7 @@ import os
 from dataclasses import dataclass
 from functools import reduce
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Optional, Tuple
 
 import iotbx.phil
 from cctbx import crystal, sgtbx, uctbx
@@ -132,7 +132,7 @@ def ssx_find_spots(
 def ssx_index(
     working_directory: Path,
     indexing_params: IndexingParams,
-) -> Tuple[ExperimentList, flex.reflection_table, List[Cluster]]:
+) -> Tuple[ExperimentList, flex.reflection_table, dict]:
 
     xia2_logger.notice(banner("Indexing"))  # type: ignore
     with run_in_directory(working_directory):
@@ -226,7 +226,11 @@ def ssx_index(
                 generate_html_report(summary_plots, "dials.ssx_index.html")
                 with open("dials.ssx_index.json", "w") as outfile:
                     json.dump(summary_plots, outfile, indent=2)
-    return indexed_experiments, indexed_reflections, large_clusters
+            summary_for_xia2 = {
+                "n_images_indexed": n_images,
+                "large_clusters": large_clusters,
+            }
+    return indexed_experiments, indexed_reflections, summary_for_xia2
 
 
 def run_refinement(
@@ -288,7 +292,7 @@ def run_refinement(
 
 def ssx_integrate(
     working_directory: Path, integration_params: IntegrationParams
-) -> List[Cluster]:
+) -> dict:
 
     xia2_logger.notice(banner("Integrating"))  # type: ignore
     with run_in_directory(working_directory):
@@ -406,7 +410,12 @@ def ssx_integrate(
                 generate_integration_html_report(plots, "dials.ssx_integrate.html")
                 with open("dials.ssx_integrate.json", "w") as outfile:
                     json.dump(plots, outfile, indent=2)
-    return large_clusters
+
+            summary_for_xia2 = {
+                "n_cryst_integrated": n_cryst,
+                "large_clusters": large_clusters,
+            }
+    return summary_for_xia2
 
 
 def best_cell_from_cluster(cluster: Cluster) -> Tuple:

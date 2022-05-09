@@ -53,9 +53,20 @@ reference_geometry = None
   .type = path
   .help = "Path to a reference geomtery (refined.expt) file"
   .expert_level=1
-nproc = Auto
-  .type = int
-  .expert_level=2
+multiprocessing {
+  nproc = Auto
+    .type = int
+    .expert_level=2
+  njobs = 1
+    .type = int
+    .expert_level=3
+    .help = "If >1, try to integrate in parallel across multiple nodes"
+  method = *multiprocessing drmaa sge lsf pbs
+    .type = choice
+    .expert_level=3
+    .help = "Multiprocessing type to use"
+}
+
 space_group = None
   .type = space_group
   .help = "Space group to be used for indexing and integration."
@@ -209,6 +220,9 @@ def run_xia2_ssx(
     options = AlgorithmParams(
         batch_size=params.batch_size,
         stop_after_geometry_refinement=params.workflow.stop_after_geometry_refinement,
+        njobs=params.multiprocessing.njobs,
+        nproc=params.multiprocessing.nproc,
+        multiprocessing_method=params.multiprocessing.method,
     )
 
     if params.assess_crystals.images_to_use:
@@ -235,14 +249,14 @@ def run_xia2_ssx(
     else:
         options.refinement_images_to_use = (0, params.geometry_refinement.n_images)
 
-    if params.nproc is Auto:
-        params.nproc = number_of_processors(return_value_if_unknown=1)
+    if params.multiprocessing.nproc is Auto:
+        params.multiprocessing.nproc = number_of_processors(return_value_if_unknown=1)
 
     spotfinding_params = SpotfindingParams(
         params.spotfinding.min_spot_size,
         params.spotfinding.max_spot_size,
         params.d_min,
-        params.nproc,
+        params.multiprocessing.nproc,
         (
             pathlib.Path(params.spotfinding.phil).resolve()
             if params.spotfinding.phil
@@ -253,7 +267,7 @@ def run_xia2_ssx(
         params.space_group,
         params.indexing.unit_cell,
         params.indexing.max_lattices,
-        params.nproc,
+        params.multiprocessing.nproc,
         (
             pathlib.Path(params.indexing.phil).resolve()
             if params.indexing.phil
@@ -271,7 +285,7 @@ def run_xia2_ssx(
         params.integration.algorithm,
         params.integration.ellipsoid.rlp_mosaicity,
         params.d_min,
-        params.nproc,
+        params.multiprocessing.nproc,
         (
             pathlib.Path(params.integration.phil).resolve()
             if params.integration.phil

@@ -47,6 +47,9 @@ class AlgorithmParams:
     refinement_images_to_use: Tuple[int, int] = (0, 1000)
     batch_size: int = 1000
     stop_after_geometry_refinement: bool = False
+    nproc: int = 1
+    njobs: int = 1
+    multiprocessing_method: str = "multiprocessing"
 
 
 def process_batch(
@@ -54,11 +57,12 @@ def process_batch(
     spotfinding_params: SpotfindingParams,
     indexing_params: IndexingParams,
     integration_params: IntegrationParams,
-) -> None:
+) -> dict:
     """Run find_spots, index and integrate in the working directory."""
     strong = ssx_find_spots(working_directory, spotfinding_params)
     strong.as_file(working_directory / "strong.refl")
-    expt, refl, large_clusters = ssx_index(working_directory, indexing_params)
+    expt, refl, summary = ssx_index(working_directory, indexing_params)
+    large_clusters = summary["large_clusters"]
     expt.as_file(working_directory / "indexed.expt")
     refl.as_file(working_directory / "indexed.refl")
     if large_clusters:
@@ -67,17 +71,23 @@ def process_batch(
         xia2_logger.warning(
             f"No images successfully indexed in {str(working_directory)}"
         )
-        return
-    large_clusters = ssx_integrate(working_directory, integration_params)
+        return {"n_images_indexed": 0}
+    integration_summary = ssx_integrate(working_directory, integration_params)
+    large_clusters = integration_summary["large_clusters"]
+    data = {
+        "n_images_indexed": summary["n_images_indexed"],
+        "n_cryst_integrated": integration_summary["n_cryst_integrated"],
+    }
     if large_clusters:
         xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
+    return data
 
 
 def setup_main_process(
     main_directory: pathlib.Path,
     imported_expts: pathlib.Path,
     batch_size: int,
-) -> List[pathlib.Path]:
+) -> Tuple[List[pathlib.Path], dict]:
     """
     Slice data from the imported data according to the bath size,
     saving each into it's own subdirectory for batch processing.
@@ -90,6 +100,7 @@ def setup_main_process(
         "batch_{index:0{fmt:d}d}".format, fmt=len(str(n_batches))
     )
     batch_directories: List[pathlib.Path] = []
+    setup_data: dict = {"images_per_batch": []}
     for i in range(len(splits) - 1):
         subdir = main_directory / template(index=i + 1)
         if not subdir.is_dir():
@@ -98,7 +109,8 @@ def setup_main_process(
         sub_expt = expts[splits[i] : splits[i + 1]]
         sub_expt.as_file(subdir / "imported.expt")
         batch_directories.append(subdir)
-    return batch_directories
+        setup_data["images_per_batch"].append(splits[i + 1] - splits[i])
+    return batch_directories, setup_data
 
 
 def slice_images_from_experiments(
@@ -209,7 +221,6 @@ def run_import(working_directory: pathlib.Path, file_input: FileInput) -> None:
         file_input_dict["mask"] = str(file_input.mask)
     if file_input.phil:
         file_input_dict["phil"] = str(file_input.phil)
-    print(file_input_dict)
     with (outfile).open(mode="w") as f:
         json.dump(file_input_dict, f, indent=2)
 
@@ -227,7 +238,8 @@ def assess_crystal_parameters(
     # now run find spots and index
     strong = ssx_find_spots(working_directory, spotfinding_params)
     strong.as_file(working_directory / "strong.refl")
-    _, __, largest_clusters = ssx_index(working_directory, indexing_params)
+    _, __, summary = ssx_index(working_directory, indexing_params)
+    largest_clusters = summary["large_clusters"]
     if largest_clusters:
         xia2_logger.info(f"{condensed_unit_cell_info(largest_clusters)}")
 
@@ -251,7 +263,8 @@ def determine_reference_geometry(
     strong = ssx_find_spots(working_directory, spotfinding_params)
     strong.as_file(working_directory / "strong.refl")
 
-    expt, refl, large_clusters = ssx_index(working_directory, indexing_params)
+    expt, refl, summary = ssx_index(working_directory, indexing_params)
+    large_clusters = summary["large_clusters"]
     expt.as_file(working_directory / "indexed.expt")
     refl.as_file(working_directory / "indexed.refl")
     if large_clusters:
@@ -261,6 +274,46 @@ def determine_reference_geometry(
             "No images successfully indexed, unable to run geometry refinement"
         )
     run_refinement(working_directory, refinement_params)
+
+
+def process_batches(input_):
+    batch_directories = input_[0]
+    spotfinding_params = input_[1]
+    indexing_params = input_[2]
+    integration_params = input_[3]
+    setup_data = input_[4]
+    options = input_[5]
+
+    from dials.util.mp import multi_node_parallel_map
+
+    if options.njobs > 1:
+        multi_node_parallel_map(
+            func=process_batch,
+            iterable=batch_directories,
+            nproc=options.nproc,
+            njobs=options.njobs,
+            cluster_method=options.multiprocessing_method,
+        )
+    else:
+        cumulative_images = 0
+        cumulative_images_indexed = 0
+        cumulative_crystals_integrated = 0
+        for i, batch_dir in enumerate(batch_directories):
+            xia2_logger.notice(banner(f"Processing batch {i+1}"))  # type: ignore
+            summary_data = process_batch(
+                batch_dir, spotfinding_params, indexing_params, integration_params
+            )
+            cumulative_images += setup_data["images_per_batch"][i]
+            cumulative_images_indexed += summary_data["n_images_indexed"]
+            cumulative_crystals_integrated += summary_data["n_cryst_integrated"]
+            pc_indexed = cumulative_images_indexed * 100 / cumulative_images
+            xia2_logger.info(
+                f"Cumulative number of images processed: {cumulative_images}"
+            )
+            xia2_logger.info(f"Cumulative % of images indexed: {pc_indexed:.2f}%")
+            xia2_logger.info(
+                f"Total number of integrated crystals: {cumulative_crystals_integrated}"
+            )
 
 
 def run_data_integration(
@@ -323,14 +376,20 @@ def run_data_integration(
         imported_expts = reimport_wd / "imported.expt"
 
     # Now do the main processing using reference geometry
-    batch_directories = setup_main_process(
+    batch_directories, setup_data = setup_main_process(
         root_working_directory,
         imported_expts,
         options.batch_size,
     )
-    for i, batch_dir in enumerate(batch_directories):
-        xia2_logger.notice(banner(f"Processing batch {i+1}"))  # type: ignore
-        process_batch(
-            batch_dir, spotfinding_params, indexing_params, integration_params
-        )
+
+    input_ = (
+        batch_directories,
+        spotfinding_params,
+        indexing_params,
+        integration_params,
+        setup_data,
+        options,
+    )
+    process_batches(input_)
+
     return batch_directories
