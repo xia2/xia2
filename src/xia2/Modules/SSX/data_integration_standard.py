@@ -276,6 +276,22 @@ def determine_reference_geometry(
     run_refinement(working_directory, refinement_params)
 
 
+class ProcessBatch(object):
+    def __init__(self, spotfinding_params, indexing_params, integration_params):
+        self.spotfinding_params = spotfinding_params
+        self.indexing_params = indexing_params
+        self.integration_params = integration_params
+        self.function = process_batch
+
+    def __call__(self, directory):
+        self.function(
+            directory,
+            self.spotfinding_params,
+            self.indexing_params,
+            self.integration_params,
+        )
+
+
 def process_batches(input_):
     batch_directories = input_[0]
     spotfinding_params = input_[1]
@@ -286,14 +302,9 @@ def process_batches(input_):
 
     from dials.util.mp import multi_node_parallel_map
 
-    def _process_batch(directory):
-        return process_batch(
-            directory, spotfinding_params, indexing_params, integration_params
-        )
-
     if options.njobs > 1:
         multi_node_parallel_map(
-            func=_process_batch,
+            func=ProcessBatch(spotfinding_params, indexing_params, integration_params),
             iterable=batch_directories,
             nproc=options.nproc,
             njobs=options.njobs,
