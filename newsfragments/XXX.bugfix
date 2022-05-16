@@ -1,0 +1,2 @@
+xia2 with NeXus files: if the NeXus files are not from an Eiger some are ignored, as the /entry/data/data_[nnnn] entries do not exist -> in this case accept the data as passed in rather than trying to do "clever workarounds"
+

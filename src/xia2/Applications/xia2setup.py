@@ -247,6 +247,9 @@ def _filter_aliased_hdf5_sweeps(sweeps):
                 rest.append(s)
             continue
         filenames = tuple(_list_hdf5_data_files(s))
+        if not filenames and s not in rest:
+            rest.append(s)
+            continue
         if filenames in h5_data_to_sweep:
             # impose slight bias in favour of using _master.h5 in place of .nxs
             # because XDS
