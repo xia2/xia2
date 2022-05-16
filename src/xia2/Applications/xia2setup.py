@@ -238,6 +238,24 @@ def _list_hdf5_data_files(h5_file):
 
 
 def _filter_aliased_hdf5_sweeps(sweeps):
+    """
+    Filter HDF5 (or NeXus) data files which share the same underlying data:
+    avoiding the case where you have two NeXus / master files which represent
+    the same experimental measurements. N.B. this is rather heavily tied to
+    the HDF5 data representation which relies on /entry/data/data_000001...N
+    individual data sets.
+
+    Known issues:
+    - with non Eiger data, need to make sure that data are found correctly
+      (believe this is now resolved)
+    - results not well defined if you have multiple views on the data
+      deliberately e.g. when you have 14,400 image scan "split into four"
+      with four NeXus files pointing into 15 data files...
+    - proper use of /entry/data/data, as a VDS. with no data_000001...N may
+      result in this aliasing function missing alises e.g. if master.h5 and
+      nxs files exist pointing into the same image sequence both with VDS
+    """
+
     h5_data_to_sweep = {}
     rest = []
 
