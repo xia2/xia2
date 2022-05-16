@@ -60,7 +60,12 @@ multiprocessing {
   njobs = 1
     .type = int
     .expert_level=3
-    .help = "If >1, try to integrate in parallel across multiple nodes"
+    .help = "If >1, try to process in parallel across multiple computing nodes,"
+            "using $nproc processes on each node. Up to $njobs nodes will be used,"
+            "with the processing of each batch of images submitted as a job on this"
+            "cluster."
+            "WARNING: be considerate of fair use policies for the computing"
+            "resources you will be using and whether it is necessary to use njobs>1."
   method = *multiprocessing drmaa sge lsf pbs
     .type = choice
     .expert_level=3
@@ -165,14 +170,12 @@ geometry_refinement {
     .expert_level=3
 }
 workflow {
-  stop_after_geometry_refinement = False
-    .help = "If True, only perform spotfinding, indexing and joint refinement."
-    .type = bool
-    .expert_level=2
-  stop_after_integration = True
-    .help = "If True, do not perform data reduction after data integration."
-    .type = bool
-    .expert_level=2
+  steps = *find_spots *index *integrate
+    .help = "Option to turn off particular steps. If None, then only geometry"
+            "refinement will be done. Multiple choices should be of the format"
+            "steps=find_spots+index".
+    .type=choice(multi=True)
+    .expert_level=3
 }
 """
 
@@ -215,14 +218,14 @@ def run_xia2_ssx(
         else:
             file_input.reference_geometry = reference
     if params.dials_import.phil:
-        file_input.phil = pathlib.Path(params.dials_import.phil).resolve()
+        file_input.import_phil = pathlib.Path(params.dials_import.phil).resolve()
 
     options = AlgorithmParams(
         batch_size=params.batch_size,
-        stop_after_geometry_refinement=params.workflow.stop_after_geometry_refinement,
         njobs=params.multiprocessing.njobs,
         nproc=params.multiprocessing.nproc,
         multiprocessing_method=params.multiprocessing.method,
+        steps=params.workflow.steps,
     )
 
     if params.assess_crystals.images_to_use:
@@ -302,7 +305,7 @@ def run_xia2_ssx(
         refinement_params,
         integration_params,
     )
-    if not processed_batch_directories or params.workflow.stop_after_integration:
+    if not processed_batch_directories or not ("reduce" in params.workflow.steps):
         return
 
     # Now do the data reduction

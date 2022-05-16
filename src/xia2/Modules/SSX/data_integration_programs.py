@@ -78,9 +78,11 @@ class IntegrationParams:
 
 
 def ssx_find_spots(
-    working_directory: Path, spotfinding_params: SpotfindingParams
+    working_directory: Path,
+    spotfinding_params: SpotfindingParams,
 ) -> flex.reflection_table:
-
+    if not (working_directory / "imported.expt").is_file():
+        raise ValueError(f"Data has not yet been imported into {working_directory}")
     xia2_logger.notice(banner("Spotfinding"))  # type: ignore
     logfile = "dials.find_spots.log"
     with run_in_directory(working_directory), log_to_file(
@@ -133,7 +135,10 @@ def ssx_index(
     working_directory: Path,
     indexing_params: IndexingParams,
 ) -> Tuple[ExperimentList, flex.reflection_table, dict]:
-
+    if not (working_directory / "imported.expt").is_file():
+        raise ValueError(f"Data has not yet been imported into {working_directory}")
+    if not (working_directory / "strong.refl").is_file():
+        raise ValueError(f"Unable to find spotfinding results in {working_directory}")
     xia2_logger.notice(banner("Indexing"))  # type: ignore
     with run_in_directory(working_directory):
         logfile = "dials.ssx_index.log"
@@ -293,8 +298,15 @@ def run_refinement(
 def ssx_integrate(
     working_directory: Path, integration_params: IntegrationParams
 ) -> dict:
-
-    xia2_logger.notice(banner("Integrating"))  # type: ignore
+    if not (
+        (working_directory / "indexed.expt").is_file()
+        and (working_directory / "indexed.refl").is_file()
+    ):
+        raise ValueError(f"Unable to find indexing results in {working_directory}")
+    bannerstr = "Integrating"
+    if "batch" in working_directory.name:
+        bannerstr += f" {working_directory.name}"
+    xia2_logger.notice(banner(bannerstr))  # type: ignore
     with run_in_directory(working_directory):
         logfile = "dials.ssx_integrate.log"
         with log_to_file(logfile) as dials_logger, record_step("dials.ssx_integrate"):

@@ -48,7 +48,9 @@ To see the full list of options and their descriptions, run :samp:`dev.xia2.ssx 
 Change the number after :samp:`-ce` to a value from 0 to 3 to see different
 "expert levels" of program parameters. Note that a phil options file can be
 provided for each of the DIALS programs, to allow further customisation of the
-options for the individual programs.
+options for the individual programs. Additionally, stepwise processing can be
+performed by running the program multiple times with the option steps=find_spots,
+then steps=index and finally steps=integrate.
 
 --------------
 Data Reduction
