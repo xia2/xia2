@@ -417,7 +417,7 @@ def process_batches(
             ),
             iterable=batch_directories,
             nproc=options.nproc,
-            njobs=options.njobs,
+            njobs=min(options.njobs, len(batch_directories)),
             cluster_method=options.multiprocessing_method,
             callback=process_output,
         )
