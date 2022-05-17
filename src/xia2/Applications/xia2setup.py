@@ -240,7 +240,7 @@ def _list_hdf5_data_files(h5_file):
 def _filter_aliased_hdf5_sweeps(sweeps):
     """
     Filter HDF5 (or NeXus) data files which share the same underlying data.
-    
+
     Avoiding the case where you have two NeXus / master files which represent
     the same experimental measurements, e.g. in the case of DLS data,
     where prefix_master.h5 and prefix.nxs point to the same underlying
