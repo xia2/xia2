@@ -177,6 +177,10 @@ workflow {
     .type=choice(multi=True)
     .expert_level=3
 }
+enable_live_reporting = False
+  .type = bool
+  .help = "If True, additional output will be generated to allow in-process monitoring"
+  .expert_level=3
 """
 
 # full_phil_str = phil_str + data_reduction_phil_str + workflow_phil
@@ -226,6 +230,7 @@ def run_xia2_ssx(
         nproc=params.multiprocessing.nproc,
         multiprocessing_method=params.multiprocessing.method,
         steps=params.workflow.steps,
+        enable_live_reporting=params.enable_live_reporting,
     )
 
     if params.assess_crystals.images_to_use:

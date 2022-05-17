@@ -93,6 +93,7 @@ def test_geometry_refinement_and_run_with_reference(dials_data, tmp_path):
     # now rerun the processing using this reference geometry
     del args[1]
     args.append(f"reference_geometry={os.fspath(reference)}")
+    args.append("enable_live_reporting=True")
 
     result = procrunner.run(args, working_directory=tmp_path)
     assert not result.returncode and not result.stderr
@@ -101,6 +102,7 @@ def test_geometry_refinement_and_run_with_reference(dials_data, tmp_path):
 
     # Check that the data were integrated with this new reference geometry
     assert (tmp_path / "batch_1").is_dir()
+    assert (tmp_path / "batch_1/nuggets").is_dir()
     sliced_expts = tmp_path / "batch_1" / "imported.expt"
     assert sliced_expts.is_file()
     sliced_identifiers = load.experiment_list(
@@ -108,6 +110,8 @@ def test_geometry_refinement_and_run_with_reference(dials_data, tmp_path):
     ).identifiers()
     assert with_reference_identifiers == sliced_identifiers
     check_output(tmp_path, find_spots=True, index=True, integrate=True)
+    assert len(list((tmp_path / "batch_1/nuggets").glob("nugget_index*"))) == 5
+    assert len(list((tmp_path / "batch_1/nuggets").glob("nugget_integrate*"))) == 4
 
 
 def test_full_run_without_reference(dials_data, tmp_path):

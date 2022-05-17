@@ -52,6 +52,7 @@ class AlgorithmParams:
     nproc: int = 1
     njobs: int = 1
     multiprocessing_method: str = "multiprocessing"
+    enable_live_reporting: bool = False
 
 
 def process_batch(
@@ -69,6 +70,13 @@ def process_batch(
         "n_cryst_integrated": None,
         "directory": str(working_directory),
     }
+    if options.enable_live_reporting:
+        nuggets_dir = working_directory / "nuggets"
+        if not nuggets_dir.is_dir():
+            pathlib.Path.mkdir(nuggets_dir)
+        indexing_params.output_nuggets_dir = nuggets_dir
+        integration_params.output_nuggets_dir = nuggets_dir
+
     if "find_spots" in options.steps:
         strong = ssx_find_spots(working_directory, spotfinding_params)
         strong.as_file(working_directory / "strong.refl")

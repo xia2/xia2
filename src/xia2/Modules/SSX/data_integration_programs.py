@@ -61,6 +61,7 @@ class IndexingParams:
     max_lattices: int = 1
     nproc: int = 1
     phil: Optional[Path] = None
+    output_nuggets_dir: Optional[Path] = None
 
 
 @dataclass
@@ -75,6 +76,7 @@ class IntegrationParams:
     d_min: Optional[float] = None
     nproc: int = 1
     phil: Optional[Path] = None
+    output_nuggets_dir: Optional[Path] = None
 
 
 def ssx_find_spots(
@@ -158,6 +160,10 @@ def ssx_index(
                 xia2_phil += f"\nindexing.known_symmetry.space_group={str(indexing_params.space_group)}"
             if indexing_params.max_lattices > 1:
                 xia2_phil += f"\nindexing.multiple_lattice_search.max_lattices={indexing_params.max_lattices}"
+            if indexing_params.output_nuggets_dir:
+                xia2_phil += (
+                    f"\noutput.nuggets={os.fspath(indexing_params.output_nuggets_dir)}"
+                )
 
             if indexing_params.phil:
                 itpr = indexing_phil.command_line_argument_interpreter()
@@ -328,6 +334,8 @@ def ssx_integrate(
                 xia2_phil += f"\nprediction.d_min={d_min}"
                 if integration_params.algorithm == "ellipsoid":
                     xia2_phil += f"\nprofile.ellipsoid.prediction.d_min={d_min}"
+            if integration_params.output_nuggets_dir:
+                xia2_phil += f"\noutput.nuggets={os.fspath(integration_params.output_nuggets_dir)}"
 
             extra_defaults = """
                 output.batch_size=1000
