@@ -248,8 +248,6 @@ def _filter_aliased_hdf5_sweeps(sweeps):
     which relies on /entry/data/data_000001...N individual data sets.
 
     Known issues:
-    - with non Eiger data, need to make sure that data are found correctly
-      (believe this is now resolved)
     - results not well defined if you have multiple views on the data
       deliberately e.g. when you have 14,400 image scan "split into four"
       with four NeXus files pointing into 15 data files...
