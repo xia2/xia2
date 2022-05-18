@@ -12,6 +12,7 @@ import sys
 import traceback
 
 import h5py
+from orderedset import OrderedSet
 
 from libtbx import easy_mp
 
@@ -235,7 +236,7 @@ def _list_hdf5_data_files(h5_file):
     return filenames
 
 
-def _filter_aliased_hdf5_sweeps(sweeps):
+def _filter_aliased_hdf5_sweeps(sweeps: list[str]) -> list[str]:
     """
     Filter HDF5 (or NeXus) data files which share the same underlying data.
 
@@ -253,29 +254,20 @@ def _filter_aliased_hdf5_sweeps(sweeps):
       result in this aliasing function missing alises e.g. if master.h5 and
       nxs files exist pointing into the same image sequence both with VDS
     """
-    h5_data_to_sweep = {}
-    rest = []
+    deduplicated = OrderedSet()
+    hdf5_sweeps: dict[tuple[str, ...], str] = {}
 
     for s in sweeps:
-        if not is_hdf5_name(s):
-            if s not in rest:
-                rest.append(s)
-            continue
-        filenames = tuple(_list_hdf5_data_files(s))
-        if not filenames and s not in rest:
-            rest.append(s)
-            continue
-        if filenames in h5_data_to_sweep:
-            # impose slight bias in favour of using _master.h5 in place of .nxs
-            # because XDS
-            if h5_data_to_sweep[filenames].endswith(".nxs") and s.endswith(
-                "_master.h5"
-            ):
-                h5_data_to_sweep[filenames] = s
+        if not is_hdf5_name(s) or not (filenames := tuple(_list_hdf5_data_files(s))):
+            deduplicated.add(s)
+        elif filenames in hdf5_sweeps:
+            # Bias in favour of using _master.h5 in place of .nxs, because of XDS
+            if hdf5_sweeps[filenames].endswith(".nxs") and s.endswith("_master.h5"):
+                hdf5_sweeps[filenames] = s
         else:
-            h5_data_to_sweep[filenames] = s
+            hdf5_sweeps[filenames] = s
 
-    return rest + [h5_data_to_sweep[k] for k in sorted(h5_data_to_sweep)]
+    return list(deduplicated.update(hdf5_sweeps[k] for k in sorted(hdf5_sweeps)))
 
 
 def _write_sweeps(sweeps, out):
