@@ -244,7 +244,7 @@ def _filter_aliased_hdf5_sweeps(sweeps: list[str]) -> list[str]:
     suggests they are not HDF5 data, pass the name through unchanged.  For HDF5 data
     in the externally-link multiple-file layout described below, deduplicate the
     sweep names corresponding to the same underlying data.  For other HDF5 data,
-    pass the sweep name thorogh unchanged.
+    pass the sweep name through unchanged.
 
     Sometimes, diffraction data in HDF5 format may be stored in several files.  Raw
     image data may be in one or more files, some metadata perhaps stored in another
