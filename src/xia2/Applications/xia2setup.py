@@ -227,13 +227,11 @@ def visit(directory, files):
 
 
 def _list_hdf5_data_files(h5_file):
-    f = h5py.File(h5_file, "r")
-    filenames = [
-        f["/entry/data"][k].file.filename
-        for k in f["/entry/data"]
-        if k.startswith("data_")
-    ]
-    f.close()
+    data_path = "/entry/data"
+    with h5py.File(h5_file, "r") as f:
+        filenames = [
+            f[data_path][k].file.filename for k in f[data_path] if k.startswith("data_")
+        ]
     return filenames
 
 
