@@ -309,10 +309,8 @@ def ssx_integrate(
         and (working_directory / "indexed.refl").is_file()
     ):
         raise ValueError(f"Unable to find indexing results in {working_directory}")
-    bannerstr = "Integrating"
-    if "batch" in working_directory.name:
-        bannerstr += f" {working_directory.name}"
-    xia2_logger.notice(banner(bannerstr))  # type: ignore
+
+    xia2_logger.notice(banner("Integrating"))  # type: ignore
     with run_in_directory(working_directory):
         logfile = "dials.ssx_integrate.log"
         with log_to_file(logfile) as dials_logger, record_step("dials.ssx_integrate"):
