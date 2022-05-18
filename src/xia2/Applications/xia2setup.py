@@ -238,21 +238,56 @@ def _list_hdf5_data_files(h5_file):
 
 def _filter_aliased_hdf5_sweeps(sweeps: list[str]) -> list[str]:
     """
-    Filter HDF5 (or NeXus) data files which share the same underlying data.
+    Deduplicate HDF5 (or NeXus) data files that share the same underlying data.
 
-    Avoiding the case where you have two NeXus / master files which represent
-    the same experimental measurements, e.g. in the case of DLS data,
-    where prefix_master.h5 and prefix.nxs point to the same underlying
-    dataset. N.B. this is rather heavily tied to the HDF5 data representation
-    which relies on /entry/data/data_000001...N individual data sets.
+    For sweeps whose file name (or file name template for one-file-per-image data)
+    suggests they are not HDF5 data, pass the name through unchanged.  For HDF5 data
+    in the externally-link multiple-file layout described below, deduplicate the
+    sweep names corresponding to the same underlying data.  For other HDF5 data,
+    pass the sweep name thorogh unchanged.
 
-    Known issues:
-    - results not well defined if you have multiple views on the data
-      deliberately e.g. when you have 14,400 image scan "split into four"
-      with four NeXus files pointing into 15 data files...
-    - proper use of /entry/data/data, as a VDS. with no data_000001...N may
-      result in this aliasing function missing alises e.g. if master.h5 and
-      nxs files exist pointing into the same image sequence both with VDS
+    Sometimes, diffraction data in HDF5 format may be stored in several files.  Raw
+    image data may be in one or more files, some metadata perhaps stored in another
+    file.  In such a layout, a top-level ('master') file serves to define the data
+    structure, and may follow a standard for structured (meta)data, such as the NXmx
+    application definition of the NeXus data standard.  In such cases, the top-level
+    file is connected to the subordinate files by HDF5 external links.
+
+    For historical reasons, such a data layout may use two or more top-level files,
+    which are duplicates of each other.  For example, this is common at Diamond Light
+    Source for data from Dectris Eiger detectors, because XDS specifically requires
+    the top-level file to have a name ending in '_master.h5', whereas Diamond's
+    internal standard is for top-level files following the NeXus standard to have a
+    '.nxs' file extension.
+
+    To avoid these duplicate top-level HDF5 files being mis-identified as separate
+    sweeps, this function serves to identify such top-level files by the underlying
+    image data sets to which they are linked, and keep only one top-level file for
+    each unique set of image data files.  This identification depends on the image
+    data sets in the top-level file (which may be external links) having names like
+    '/entry/data/data_<stuff>', where <stuff> is usually a string of numerals.  See
+    '_list_hdf5_data_files'.
+
+    There are two known weakness of this method:
+      - If one genuinely wishes to import multiple top-level files pointing to the
+        same underlying image data (but perhaps with different metadata), they will
+        be erroneously deduplicated.
+      - The use of image data sets named '/entry/data/data_<stuff>' is not a
+        requirement of a valid top-level HDF5 data file.  The top-level file will
+        always have an image data set named '/entry/data/data', and may not bother
+        with any redundant 'data_<stuff>' data sets/links.  Even if the image data
+        are in separate files to the top-level file, '/entry/data/data' may link to
+        them using the separate HDF5 virtual data set formalism, which obviates the
+        need for external links called 'data_<stuff>'.  In such cases, any duplicates
+        will be missed.
+
+    Args:
+        sweeps:  The sweep data file names, or file name templates.
+
+    Returns:
+        The list of sweeps with duplicate top-level HDF5 files removed.  The original
+        order may not be preserved, as one-file-per-image sweeps will be listed
+        before HDF5 sweeps.
     """
     deduplicated = OrderedSet()
     hdf5_sweeps: dict[tuple[str, ...], str] = {}
