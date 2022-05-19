@@ -12,7 +12,6 @@ import sys
 import traceback
 
 import h5py
-from orderedset import OrderedSet
 
 from libtbx import easy_mp
 
@@ -227,16 +226,16 @@ def visit(directory, files):
     return templates
 
 
-def _list_hdf5_data_files(h5_file):
+def _linked_hdf5_data_files(h5_file):
     data_path = "/entry/data"
     with h5py.File(h5_file, "r") as f:
         filenames = [
             f[data_path][k].file.filename for k in f[data_path] if k.startswith("data_")
         ]
-    return filenames
+    return frozenset(filenames)
 
 
-def _filter_aliased_hdf5_sweeps(sweeps: list[str]) -> list[str]:
+def _filter_aliased_hdf5_sweeps(sweeps: list[str]) -> set[str]:
     """
     Deduplicate HDF5 (or NeXus) data files that share the same underlying data.
 
@@ -266,7 +265,7 @@ def _filter_aliased_hdf5_sweeps(sweeps: list[str]) -> list[str]:
     file for each unique set of image data files.  This identification depends on the
     image data sets in the top-level file (which may be external links) having names
     like '/entry/data/data_<stuff>', where <stuff> is usually a string of numerals
-    (see '_list_hdf5_data_files').
+    (see '_linked_hdf5_data_files').
 
     There are two known weakness of this method:
       - If one genuinely wishes to import multiple top-level files pointing to the
@@ -289,11 +288,11 @@ def _filter_aliased_hdf5_sweeps(sweeps: list[str]) -> list[str]:
         order may not be preserved, as one-file-per-image sweeps will be listed
         before HDF5 sweeps.
     """
-    deduplicated = OrderedSet()
-    hdf5_sweeps: dict[tuple[str, ...], str] = {}
+    deduplicated = set()
+    hdf5_sweeps: dict[frozenset[str], str] = {}
 
     for s in sweeps:
-        if not is_hdf5_name(s) or not (filenames := tuple(_list_hdf5_data_files(s))):
+        if not is_hdf5_name(s) or not (filenames := _linked_hdf5_data_files(s)):
             deduplicated.add(s)
         elif filenames in hdf5_sweeps:
             # Bias in favour of using _master.h5 in place of .nxs, because of XDS
@@ -302,15 +301,14 @@ def _filter_aliased_hdf5_sweeps(sweeps: list[str]) -> list[str]:
         else:
             hdf5_sweeps[filenames] = s
 
-    return list(deduplicated.union(hdf5_sweeps[k] for k in sorted(hdf5_sweeps)))
+    return deduplicated.union(hdf5_sweeps[k] for k in hdf5_sweeps)
 
 
 def _write_sweeps(sweeps, out):
     global latest_sequence
     _known_sweeps = sweeps
 
-    sweeplist = sorted(_known_sweeps)
-    sweeplist = _filter_aliased_hdf5_sweeps(sweeplist)
+    sweeplist = sorted(_filter_aliased_hdf5_sweeps(_known_sweeps))
     assert sweeplist, "no sweeps found"
 
     # sort sweeplist based on epoch of first image of each sweep
