@@ -284,9 +284,7 @@ def _filter_aliased_hdf5_sweeps(sweeps: list[str]) -> set[str]:
         sweeps:  The sweep data file names, or file name templates.
 
     Returns:
-        The list of sweeps with duplicate top-level HDF5 files removed.  The original
-        order may not be preserved, as one-file-per-image sweeps will be listed
-        before HDF5 sweeps.
+        The unique sweep names, with duplicate top-level HDF5 files removed.
     """
     deduplicated = set()
     hdf5_sweeps: dict[frozenset[str], str] = {}
