@@ -240,9 +240,9 @@ def _filter_aliased_hdf5_sweeps(sweeps: list[str]) -> list[str]:
     """
     Deduplicate HDF5 (or NeXus) data files that share the same underlying data.
 
-    For sweeps whose file name (or file name template for one-file-per-image data)
-    suggests they are not HDF5 data, pass the name through unchanged.  For HDF5 data
-    in the externally-link multiple-file layout described below, deduplicate the
+    For sweeps whose file names (or file name templates for one-file-per-image data)
+    suggest they are not HDF5 data, pass the names through unchanged.  For HDF5 data
+    in the externally-linked multiple-file layout described below, deduplicate any
     sweep names corresponding to the same underlying data.  For other HDF5 data,
     pass the sweep name through unchanged.
 
@@ -260,13 +260,13 @@ def _filter_aliased_hdf5_sweeps(sweeps: list[str]) -> list[str]:
     internal standard is for top-level files following the NeXus standard to have a
     '.nxs' file extension.
 
-    To avoid these duplicate top-level HDF5 files being mis-identified as separate
-    sweeps, this function serves to identify such top-level files by the underlying
-    image data sets to which they are linked, and keep only one top-level file for
-    each unique set of image data files.  This identification depends on the image
-    data sets in the top-level file (which may be external links) having names like
-    '/entry/data/data_<stuff>', where <stuff> is usually a string of numerals.  See
-    '_list_hdf5_data_files'.
+    To avoid these duplicate top-level HDF5 files being misidentified as separate
+    sweeps, this function serves to associate such top-level files with the
+    underlying image data sets to which they are linked, and keep only one top-level
+    file for each unique set of image data files.  This identification depends on the
+    image data sets in the top-level file (which may be external links) having names
+    like '/entry/data/data_<stuff>', where <stuff> is usually a string of numerals
+    (see '_list_hdf5_data_files').
 
     There are two known weakness of this method:
       - If one genuinely wishes to import multiple top-level files pointing to the
