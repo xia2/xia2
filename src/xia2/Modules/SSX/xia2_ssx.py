@@ -66,10 +66,6 @@ multiprocessing {
             "cluster."
             "WARNING: be considerate of fair use policies for the computing"
             "resources you will be using and whether it is necessary to use njobs>1."
-  method = *multiprocessing drmaa sge lsf pbs
-    .type = choice
-    .expert_level=3
-    .help = "Multiprocessing type to use"
 }
 
 space_group = None
@@ -228,7 +224,6 @@ def run_xia2_ssx(
         batch_size=params.batch_size,
         njobs=params.multiprocessing.njobs,
         nproc=params.multiprocessing.nproc,
-        multiprocessing_method=params.multiprocessing.method,
         steps=params.workflow.steps,
         enable_live_reporting=params.enable_live_reporting,
     )
