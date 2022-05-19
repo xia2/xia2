@@ -302,7 +302,7 @@ def _filter_aliased_hdf5_sweeps(sweeps: list[str]) -> list[str]:
         else:
             hdf5_sweeps[filenames] = s
 
-    return list(deduplicated.update(hdf5_sweeps[k] for k in sorted(hdf5_sweeps)))
+    return list(deduplicated.union(hdf5_sweeps[k] for k in sorted(hdf5_sweeps)))
 
 
 def _write_sweeps(sweeps, out):
