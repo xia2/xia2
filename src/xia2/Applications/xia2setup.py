@@ -228,7 +228,7 @@ def visit(directory, files):
 
 def _linked_hdf5_data_files(h5_file):
     data_path = "/entry/data"
-    with h5py.File(h5_file, "r") as f:
+    with h5py.File(h5_file) as f:
         filenames = [
             f[data_path][k].file.filename for k in f[data_path] if k.startswith("data_")
         ]
