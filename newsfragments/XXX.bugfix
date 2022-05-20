@@ -1,0 +1,2 @@
+Bug fix: if your directory where you are running xia2 contained the letters "mtz" these would be replaced with "sca" late in the pipeline resulting in an error. This replacement is now resolved.
+
