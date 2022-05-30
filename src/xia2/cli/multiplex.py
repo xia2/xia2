@@ -17,6 +17,8 @@ from dials.util.options import ArgumentParser, flatten_experiments, flatten_refl
 from dials.util.version import dials_version
 
 import xia2.Handlers.Streams
+from xia2.Applications.xia2_main import write_citations
+from xia2.Handlers.Citations import Citations
 from xia2.Modules.MultiCrystal import ScaleAndMerge
 
 logger = logging.getLogger("xia2.multiplex")
@@ -38,6 +40,9 @@ dials.two_theta_refine, dials.scale and dials.symmetry:
 - Analysis of systematic absences with dials.symmetry
 - Optional ΔCC½ filtering to remove outlier data sets
 - Analysis of non-isomorphism, radiation damage and preferred orientation
+
+For further details, and to cite usage, please see:
+`Gildea, R. J. et al. (2022) Acta Cryst. D78 <https://doi.org/10.1107/S2059798322004399>`_.
 
 Examples use cases
 ------------------
@@ -83,6 +88,8 @@ output {
 
 
 def run(args=sys.argv[1:]):
+    Citations.cite("xia2.multiplex")
+
     usage = "xia2.multiplex [options] [param.phil] integrated.expt integrated.refl"
 
     # Create the parser
@@ -160,3 +167,5 @@ def run(args=sys.argv[1:]):
         ScaleAndMerge.MultiCrystalScale(experiments, reflections_all, params)
     except ValueError as e:
         sys.exit(str(e))
+
+    write_citations(program="xia2.multiplex")

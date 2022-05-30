@@ -5,6 +5,7 @@ import logging
 import os
 
 from xia2.Driver.DriverFactory import DriverFactory
+from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Phil import PhilIndex
 
 logger = logging.getLogger("xia2.Wrappers.Dials.Scale")
@@ -284,7 +285,7 @@ def DialsScale(DriverType=None, decay_correction=None):
 
         def scale(self):
             """Actually perform the scaling."""
-
+            Citations.cite("dials.scale")
             self.clear_command_line()  # reset the command line in case has already
             # been run previously
 

@@ -5,6 +5,7 @@ import logging
 import os
 
 from xia2.Driver.DriverFactory import DriverFactory
+from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Phil import PhilIndex
 
 logger = logging.getLogger("xia2.Wrappers.Dials.Cosym")
@@ -73,6 +74,8 @@ def DialsCosym(DriverType=None, decay_correction=None):
             self._html
 
         def run(self):
+            Citations.cite("dials.cosym")
+
             assert len(self._experiments_json)
             assert len(self._reflection_files)
             assert len(self._experiments_json) == len(self._reflection_files)

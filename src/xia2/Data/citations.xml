@@ -1,5 +1,58 @@
 <citations>
 
+<citation program="xia2.multiplex">
+<acta>Gildea, R. J. et al. (2022) Acta Cryst. D78.</acta>
+<url>https://doi.org/10.1107/S2059798322004399</url>
+<software_type>program</software_type>
+<software_name>xia2.multiplex</software_name>
+<software_classification>data processing</software_classification>
+<software_description>xia2.multiplex: a multi-crystal data-analysis pipeline
+</software_description>
+<bibtex>
+@article{Gildea:gm5092,
+author = "Gildea, Richard J. and Beilsten-Edmands, James and Axford, Danny and Horrell, Sam and Aller, Pierre and Sandy, James and Sanchez-Weatherby, Juan and Owen, C. David and Lukacik, Petra and Strain-Damerell, Claire and Owen, Robin L. and Walsh, Martin A. and Winter, Graeme",
+title = "{{\it xia}2.{\it multiplex}: a multi-crystal data-analysis pipeline}",
+journal = "Acta Crystallographica Section D",
+year = "2022",
+volume = "78",
+number = "6",
+pages = "",
+month = "Jun",
+doi = {10.1107/S2059798322004399},
+url = {https://doi.org/10.1107/S2059798322004399},
+abstract = {In macromolecular crystallography, radiation damage limits the amount of data that can be collected from a single crystal. It is often necessary to merge data sets from multiple crystals; for example, small-wedge data collections from micro-crystals, {\it in situ} room-temperature data collections and data collection from membrane proteins in lipidic mesophases. Whilst the indexing and integration of individual data sets may be relatively straightforward with existing software, merging multiple data sets from small wedges presents new challenges. The identification of a consensus symmetry can be problematic, particularly in the presence of a potential indexing ambiguity. Furthermore, the presence of non-isomorphous or poor-quality data sets may reduce the overall quality of the final merged data set. To facilitate and help to optimize the scaling and merging of multiple data sets, a new program, {\it xia}2.{\it multiplex}, has been developed which takes data sets individually integrated with {\it DIALS} and performs symmetry analysis, scaling and merging of multi-crystal data sets. {\it xia}2.{\it multiplex} also performs analysis of various pathologies that typically affect multi-crystal data sets, including non-isomorphism, radiation damage and preferential orientation. After the description of a number of use cases, the benefit of {\it xia}2.{\it multiplex} is demonstrated within a wider autoprocessing framework in facilitating a multi-crystal experiment collected as part of {\it in situ} room-temperature fragment-screening experiments on the SARS-CoV-2 main protease.},
+keywords = {xia2.multiplex, multi-crystal data sets, data processing, data analysis, partial data sets, SARS-CoV-2},
+}
+</bibtex>
+</citation>
+
+<citation program="dials.cosym">
+<acta>Gildea, R. J. and Winter, G. (2018) Acta Cryst. D74, 405-410.</acta>
+<url>https://doi.org/10.1107/S2059798318002978</url>
+<software_type>program</software_type>
+<software_name>dials.cosym</software_name>
+<software_classification>data scaling</software_classification>
+<software_description>Determination of Patterson group symmetry from sparse multi-crystal data sets in the presence of an indexing ambiguity
+</software_description>
+<bibtex>
+@article{Gildea:rr5155,
+author = "Gildea, Richard J. and Winter, Graeme",
+title = "{Determination of Patterson group symmetry from sparse multi-crystal data sets in the presence of an indexing ambiguity}",
+journal = "Acta Crystallographica Section D",
+year = "2018",
+volume = "74",
+number = "5",
+pages = "405--410",
+month = "May",
+doi = {10.1107/S2059798318002978},
+url = {https://doi.org/10.1107/S2059798318002978},
+abstract = {Combining X-ray diffraction data from multiple samples requires determination of the symmetry and resolution of any indexing ambiguity. For the partial data sets typical of {\it in situ} room-temperature experiments, determination of the correct symmetry is often not straightforward. The potential for indexing ambiguity in polar space groups is also an issue, although methods to resolve this are available if the true symmetry is known. Here, a method is presented to simultaneously resolve the determination of the Patterson symmetry and the indexing ambiguity for partial data sets.},
+keywords = {Patterson group symmetry, partial data sets, indexing ambiguity},
+}
+</bibtex>
+</citation>
+
+
 <citation program="dials.scale">
 <acta>Beilsten-Edmands, J. et al. (2020) Acta Cryst. D76.</acta>
 <url>https://doi.org/10.1107/S2059798320003198</url>

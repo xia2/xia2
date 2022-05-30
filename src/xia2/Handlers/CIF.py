@@ -149,8 +149,6 @@ class _CIFHandler:
         block[self._keyname["audit.method"]] = versions["xia2"]
         block[self._keyname["audit.date"]] = datetime.date.today().isoformat()
 
-        xia2.Handlers.Citations.Citations.cite("xia2")
-
         if self._mmCIFsemantics:
             if "_software" not in block.loop_keys():
                 block.add_loop(iotbx.cif.model.loop(header=mmcif_software_header))
