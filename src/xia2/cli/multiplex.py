@@ -17,6 +17,8 @@ from dials.util.options import ArgumentParser, flatten_experiments, flatten_refl
 from dials.util.version import dials_version
 
 import xia2.Handlers.Streams
+from xia2.Applications.xia2_main import write_citations
+from xia2.Handlers.Citations import Citations
 from xia2.Modules.MultiCrystal import ScaleAndMerge
 
 logger = logging.getLogger("xia2.multiplex")
@@ -83,6 +85,8 @@ output {
 
 
 def run(args=sys.argv[1:]):
+    Citations.cite("xia2.multiplex")
+
     usage = "xia2.multiplex [options] [param.phil] integrated.expt integrated.refl"
 
     # Create the parser
@@ -160,3 +164,5 @@ def run(args=sys.argv[1:]):
         ScaleAndMerge.MultiCrystalScale(experiments, reflections_all, params)
     except ValueError as e:
         sys.exit(str(e))
+
+    write_citations(program="xia2.multiplex")

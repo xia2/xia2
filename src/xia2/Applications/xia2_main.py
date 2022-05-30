@@ -152,16 +152,16 @@ def get_command_line():
     return CommandLine
 
 
-def write_citations():
+def write_citations(program: str = "XIA2"):
     # tell the user which programs were used...
-    logger.info("XIA2 used... %s" % ", ".join(Citations.get_programs()))
+    logger.info(f"{program} used... %s" % ", ".join(Citations.get_programs()))
     logger.info("Here are the appropriate citations (BIBTeX in xia2-citations.bib.)")
 
     for citation in Citations.get_citations_acta():
         logger.info(citation)
 
     # and write the bibtex versions
-    out = open("xia2-citations.bib", "w")
+    out = open(f"{program.lower()}-citations.bib", "w")
 
     for citation in Citations.get_citations():
         out.write("%s\n" % citation)
