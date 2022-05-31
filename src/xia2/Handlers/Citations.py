@@ -1,54 +1,36 @@
-# A handler for management of program citations. This should initialise
-# from a citations.xml file which can be found in a number of places...
-# in particular $HOME or $USERDIR (I think, on Windows) .xia2,
-# data etc...
-#
-# That would be %USERPROFILE%
-
-
 from __future__ import annotations
 
-import os
-import xml.dom.minidom
+import itertools
+import pathlib
+
+import yaml
 
 
 class _Citations:
     """A class to track citations."""
 
     def __init__(self):
-        self._citations = {}
         self._cited = []
 
-        # set up the citations list...
-
-        dom = xml.dom.minidom.parse(
-            os.path.abspath(
-                os.path.join(os.path.dirname(__file__), "..", "Data", "citations.xml")
-            )
+        citations_yaml = (
+            pathlib.Path(__file__).parent.parent / "Data" / "citations.yaml"
         )
-        citations = dom.getElementsByTagName("citations")[0].getElementsByTagName(
-            "citation"
-        )
-        for citation in citations:
-            program = str(citation.attributes["program"].value)
-            citation_data = {}
-            for entry in citation.childNodes:
-                if entry.nodeType == entry.ELEMENT_NODE:
-                    citation_data[entry.nodeName] = entry.childNodes[0].data
+        self._citations = yaml.safe_load(citations_yaml.read_text())
+        for citation_list in self._citations.values():
+            for citation_data in citation_list:
+                if "acta" not in citation_data:
+                    # construct Acta style reference if necessary
+                    citation_data["acta"] = self._bibtex_to_acta(
+                        citation_data["bibtex"]
+                    )
 
-            if "acta" not in citation_data:
-                # construct Acta style reference if necessary
-                citation_data["acta"] = self._bibtex_to_acta(citation_data["bibtex"])
-
-            if "url" not in citation_data:
-                # obtain URL from bibtex entry if possible
-                bibtex_data = self._parse_bibtex(citation_data["bibtex"])
-                if "url" in bibtex_data:
-                    citation_data["url"] = bibtex_data["url"]
-                elif "doi" in bibtex_data:
-                    citation_data["url"] = "https://doi.org/" + bibtex_data["doi"]
-
-            self._citations.setdefault(program, []).append(citation_data)
+                if "url" not in citation_data:
+                    # obtain URL from bibtex entry if possible
+                    bibtex_data = self._parse_bibtex(citation_data["bibtex"])
+                    if "url" in bibtex_data:
+                        citation_data["url"] = bibtex_data["url"]
+                    elif "doi" in bibtex_data:
+                        citation_data["url"] = "https://doi.org/" + bibtex_data["doi"]
 
     def cite(self, program):
         """Cite a given program."""
@@ -68,13 +50,11 @@ class _Citations:
     def get_citations_dicts(self):
         """Get a list of citations dictionary objects."""
 
-        result = []
-
-        for c in self._cited:
-            for b in self._citations.get(c, []):
-                result.append(b)
-
-        return result
+        return list(
+            itertools.chain.from_iterable(
+                self._citations.get(program, []) for program in self._cited
+            )
+        )
 
     def get_citations_acta(self):
         """Return a list of strings of Acta style references."""

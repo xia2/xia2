@@ -50,4 +50,4 @@ repos:
   hooks:
   - id: mypy
     files: 'src/.*\.py$'
-    additional_dependencies: [ types-docutils ]
+    additional_dependencies: [ types-docutils, types-PyYAML ]
