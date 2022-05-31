@@ -1,3 +1,4 @@
+---
 # This workflow will check pull requests for merge conflicts and
 # automatically add (and remove) a relevant label
 
@@ -19,6 +20,6 @@ jobs:
             # This is tagged version v1.2.3, but do not use version tags
             # https://julienrenaux.fr/2019/12/20/github-actions-security-risk/
       with:
-        dirtyLabel: "PR: merge conflicts"
-        removeOnDirtyLabel: "PR: ready to ship"
+        dirtyLabel: 'PR: merge conflicts'
+        removeOnDirtyLabel: 'PR: ready to ship'
         repoToken: ${{ secrets.GITHUB_TOKEN }}

@@ -1,3 +1,4 @@
+---
 coverage:
   status:
     project:
@@ -10,7 +11,7 @@ coverage:
         threshold: 100%
 
 comment:
-  layout: "diff, flags"
+  layout: diff, flags
   branches:
-    - master
+  - master
   after_n_builds: 2

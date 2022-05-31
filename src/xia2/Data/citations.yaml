@@ -1,3 +1,4 @@
+---
 aimless:
 - acta: Evans, P. R. and Murshudov, G. N. (2013) Acta Cryst. D69, 1204-1214.
   bibtex: |
@@ -53,8 +54,7 @@ delta_cc_half:
     publisher={International Union of Crystallography}
     }
   software_classification: data reduction
-  software_description: Assessment of data nonisomorphism using an implementation
-    of the delta-CC-Half algorithm
+  software_description: Assessment of data nonisomorphism using an implementation of the delta-CC-Half algorithm
   software_name: xia2.delta_cc_half
   software_type: program
 
@@ -114,8 +114,7 @@ dials.cosym:
     keywords = {Patterson group symmetry, partial data sets, indexing ambiguity},
     }
   software_classification: data scaling
-  software_description: Determination of Patterson group symmetry from sparse multi-crystal
-    data sets in the presence of an indexing ambiguity
+  software_description: Determination of Patterson group symmetry from sparse multi-crystal data sets in the presence of an indexing ambiguity
   software_name: dials.cosym
   software_type: program
   url: https://doi.org/10.1107/S2059798318002978
