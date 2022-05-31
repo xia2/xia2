@@ -42,7 +42,7 @@ dials.two_theta_refine, dials.scale and dials.symmetry:
 - Analysis of non-isomorphism, radiation damage and preferred orientation
 
 For further details, and to cite usage, please see:
-`Gildea, R. J. et al. (2022) Acta Cryst. D78 <https://doi.org/10.1107/S2059798322004399>`_.
+`Gildea, R. J. et al. (2022) Acta Cryst. D78, 752-769 <https://doi.org/10.1107/S2059798322004399>`_.
 
 Examples use cases
 ------------------
