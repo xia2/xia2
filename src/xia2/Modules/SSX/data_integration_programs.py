@@ -127,9 +127,24 @@ def ssx_find_spots(
         reflections = flex.reflection_table.from_observations(imported_expts, params)
         good = MaskCode.Foreground | MaskCode.Valid
         reflections["n_signal"] = reflections["shoebox"].count_mask_values(good)
-        plot = spot_counts_per_image_plot(reflections)
-        dials_logger.info(plot)
-        xia2_logger.info(plot)
+
+        isets = imported_expts.imagesets()
+        if len(isets) > 1:
+            for i, imageset in enumerate(isets):
+                selected = flex.bool(reflections.nrows(), False)
+                for j, experiment in enumerate(imported_expts):
+                    if experiment.imageset is not imageset:
+                        continue
+                    selected.set_selected(reflections["id"] == j, True)
+                plot = spot_counts_per_image_plot(reflections.select(selected))
+                out_ = f"Histogram of per-image spot count for imageset {i}:\n" + plot
+                dials_logger.info(out_)
+                xia2_logger.info(out_)
+        else:
+            plot = spot_counts_per_image_plot(reflections)
+            dials_logger.info(plot)
+            xia2_logger.info(plot)
+
     return reflections
 
 
