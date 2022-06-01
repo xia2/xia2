@@ -19,9 +19,17 @@ repos:
   rev: 5.10.1
   hooks:
   - id: isort
-    args: [-a, from __future__ import annotations, --rm, from __future__ import absolute_import, --rm, from __future__ import division, --rm, from __future__
-        import generator_stop, --rm, from __future__ import generators, --rm, from __future__ import nested_scopes, --rm, from __future__ import print_function,
-      --rm, from __future__ import unicode_literals, --rm, from __future__ import with_statement]
+    args: [
+           '-a', 'from __future__ import annotations',        # 3.7-3.11
+           '--rm', 'from __future__ import absolute_import',  # -3.0
+           '--rm', 'from __future__ import division',         # -3.0
+           '--rm', 'from __future__ import generator_stop',   # -3.7
+           '--rm', 'from __future__ import generators',       # -2.3
+           '--rm', 'from __future__ import nested_scopes',    # -2.2
+           '--rm', 'from __future__ import print_function',   # -3.0
+           '--rm', 'from __future__ import unicode_literals', # -3.0
+           '--rm', 'from __future__ import with_statement',   # -2.6
+          ]
 
 # Automatic source code formatting
 - repo: https://github.com/psf/black
@@ -51,3 +59,4 @@ repos:
   hooks:
   - id: yamlfmt
     args: [--mapping, '2', --sequence, '2', --offset, '0', --width, '150']
+    exclude: .pre-commit-config.yaml
