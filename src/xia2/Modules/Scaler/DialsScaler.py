@@ -1424,7 +1424,7 @@ def decide_correct_lattice_using_refiner(possible_lattices, refiner):
 
 def convert_unmerged_mtz_to_sca(mtz_filename):
     """Convert an mtz files to .sca format and write."""
-    sca_filename = mtz_filename[:-3] + "sca"
+    sca_filename = os.path.splitext(mtz_filename[:-3])[0] + ".sca"
     m = mtz.object(mtz_filename)
     for ma in m.as_miller_arrays(merge_equivalents=False, anomalous=False):
         if ma.info().labels == ["I", "SIGI"]:
@@ -1440,7 +1440,7 @@ def convert_merged_mtz_to_sca(mtz_filename):
     # merged sca format contains 7 columns: h,k,l, I+, sigI+, I-, sigI-. We
     # always run dials.merge with anomalous=True (whether or not anomalous is
     # set in xia2), so data is always separated into I+/I- in the merged mtz.
-    sca_filename = mtz_filename[:-3] + "sca"
+    sca_filename = os.path.splitext(mtz_filename[:-3])[0] + ".sca"
     m = mtz.object(mtz_filename)
     for ma in m.as_miller_arrays(merge_equivalents=False, anomalous=True):
         if ma.info().labels == ["I(+)", "SIGI(+)", "I(-)", "SIGI(-)"]:
