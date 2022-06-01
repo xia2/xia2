@@ -6,6 +6,7 @@ from typing import Any, Dict, List
 import numpy as np
 
 from dials.algorithms.clustering.unit_cell import Cluster
+from dials.report.analysis import format_statistics, table_1_stats
 from dials.util import tabulate
 
 
@@ -94,3 +95,28 @@ def indexing_summary_output(summary_data: Dict, summary_plots: Dict) -> str:
     Q3 = f"{sorted_x[3 * n // 4]:3.2f}"
     output_ += f"\n{name:<28} {Q1:>6} {Q2:>6} {Q3:>6}"
     return output_
+
+
+def statistics_output_from_scaler(scaler: Any) -> str:
+    stats = format_statistics(
+        table_1_stats(
+            scaler.merging_statistics_result,
+            scaler.anom_merging_statistics_result,
+        )
+    )
+    return stats
+
+
+def statistics_output_from_scaled_files(experiments, reflection_table, best_unit_cell):
+    from dials.algorithms.scaling.scaling_library import (
+        merging_stats_from_scaled_array,
+        scaled_data_as_miller_array,
+    )
+
+    scaled_array = scaled_data_as_miller_array(
+        [reflection_table], experiments, best_unit_cell
+    )
+    stats, anom_stats = merging_stats_from_scaled_array(scaled_array)
+
+    stats = format_statistics(table_1_stats(stats, anom_stats))
+    return stats
