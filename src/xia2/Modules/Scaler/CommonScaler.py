@@ -891,7 +891,7 @@ class CommonScaler(Scaler):
             "_pdbx_diffrn_scan.scan_angle_end",
         )
 
-        unmerged_header = (
+        unmerged_header_v5_next = (
             "_pdbx_diffrn_unmerged_refln.reflection_id",
             "_pdbx_diffrn_unmerged_refln.scan_id",
             "_pdbx_diffrn_unmerged_refln.image_id_begin",
@@ -903,6 +903,21 @@ class CommonScaler(Scaler):
             "_pdbx_diffrn_unmerged_refln.intensity_sigma",
             "_pdbx_diffrn_unmerged_refln.scale_value",
             "_pdbx_diffrn_unmerged_refln.scan_angle_reflection",
+        )
+
+        unmerged_header_v5_0 = (
+            "_diffrn_refln.diffrn_id",  # pointer to _diffrn.id in the DIFFRN category
+            "_diffrn_refln.id",  # uniquely identifies reflection
+            "_diffrn_refln.index_h",
+            "_diffrn_refln.index_k",
+            "_diffrn_refln.index_l",
+            "_diffrn_refln.pdbx_image_id",
+            "_diffrn_refln.pdbx_detector_x",
+            "_diffrn_refln.pdbx_detector_y",
+            "_diffrn_refln.intensity_net",
+            "_diffrn_refln.intensity_sigma",
+            "_diffrn_refln.pdbx_scale_value",
+            "_diffrn_refln.pdbx_scan_angle",
         )
 
         xcryst = self._scalr_xcrystal
@@ -938,22 +953,19 @@ class CommonScaler(Scaler):
             merged_block.update(result.as_cif_block())
             mmblock.update(merged_block)
 
-            # All following items are for v5_next only
-            if PhilIndex.params.xia2.settings.output.mmcif.pdb_version == "v5":
-                continue
-
-            cif_loop_a = iotbx.cif.model.loop(header=section_a_header)
-            cif_loop_b = iotbx.cif.model.loop(header=section_b_header)
-
-            mmblock.add_loop(cif_loop_a)
-            mmblock.add_loop(cif_loop_b)
-
             scans = scan_info_from_batch_headers(umtz)
+            if PhilIndex.params.xia2.settings.output.mmcif.pdb_version == "v5_next":
+                cif_loop_a = iotbx.cif.model.loop(header=section_a_header)
+                cif_loop_b = iotbx.cif.model.loop(header=section_b_header)
+                mmblock.add_loop(cif_loop_a)
+                mmblock.add_loop(cif_loop_b)
 
             intensities = None
             batches = None
             scales = None
             angles = None
+            xdet = None
+            ydet = None
             miller_arrays = umtz.as_miller_arrays(merge_equivalents=False)
             for array in miller_arrays:
                 if array.info().labels == ["I", "SIGI"]:
@@ -964,10 +976,16 @@ class CommonScaler(Scaler):
                     scales = array.data()
                 if array.info().labels == ["ROT"]:
                     angles = array.data()
+                if array.info().labels == ["XDET"]:
+                    xdet = array.data()
+                if array.info().labels == ["YDET"]:
+                    ydet = array.data()
             assert intensities
             assert batches
             assert scales
             assert angles
+            assert xdet
+            assert ydet
 
             # want to map batch back to image number as defined in the scans dict
 
@@ -985,20 +1003,23 @@ class CommonScaler(Scaler):
 
             for _, data in scans.items():
                 xtal_id += 1
-                cif_loop_a.add_row(
-                    (entryno, xtal_id, xwav) + tuple(cell.parameters()) + (latt_type,)
-                )
-
-                cif_loop_b.add_row(
-                    (
-                        entryno,
-                        xtal_id,
-                        data["start_image"],
-                        data["end_image"],
-                        data["angle_begin"],
-                        data["angle_end"],
+                if PhilIndex.params.xia2.settings.output.mmcif.pdb_version == "v5_next":
+                    cif_loop_a.add_row(
+                        (entryno, xtal_id, xwav)
+                        + tuple(cell.parameters())
+                        + (latt_type,)
                     )
-                )
+
+                    cif_loop_b.add_row(
+                        (
+                            entryno,
+                            xtal_id,
+                            data["start_image"],
+                            data["end_image"],
+                            data["angle_begin"],
+                            data["angle_end"],
+                        )
+                    )
 
                 # sort out scan number based on batch.
                 min_batch = data["batch_begin"]
@@ -1017,24 +1038,43 @@ class CommonScaler(Scaler):
             h, k, l = [
                 hkl.iround() for hkl in intensities.indices().as_vec3_double().parts()
             ]
+            if PhilIndex.params.xia2.settings.output.mmcif.pdb_version == "v5_next":
+                loop_values = [
+                    flex.size_t_range(1, intensities.size() + 1),
+                    scan_no,
+                    image_no,
+                    image_no,
+                    h,
+                    k,
+                    l,
+                    intensities.data(),
+                    intensities.sigmas(),
+                    scales,
+                    angles,
+                ]
 
-            loop_values = [
-                flex.size_t_range(1, intensities.size() + 1),
-                scan_no,
-                image_no,
-                image_no,
-                h,
-                k,
-                l,
-                intensities.data(),
-                intensities.sigmas(),
-                scales,
-                angles,
-            ]
+                cif_loop = iotbx.cif.model.loop(
+                    data=dict(zip(unmerged_header_v5_next, loop_values))
+                )
+            else:
+                loop_values = [
+                    flex.int(intensities.size(), 1),
+                    flex.size_t_range(1, intensities.size() + 1),
+                    h,
+                    k,
+                    l,
+                    image_no,
+                    xdet,
+                    ydet,
+                    intensities.data(),
+                    intensities.sigmas(),
+                    scales,
+                    angles,
+                ]
+                cif_loop = iotbx.cif.model.loop(
+                    data=dict(zip(unmerged_header_v5_0, loop_values))
+                )
 
-            cif_loop = iotbx.cif.model.loop(
-                data=dict(zip(unmerged_header, loop_values))
-            )
             mmblock.add_loop(cif_loop)
 
     def _estimate_resolution_limit(

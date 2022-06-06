@@ -1033,12 +1033,12 @@ xia2.settings
   output
   {
     mmcif {
-      pdb_version = v5 *v5_next
+      pdb_version = *v5 v5_next
         .type = choice
         .help = "This controls which pdb mmcif dictionary version the output"
-                "mmcif file should comply with. v5_next adds support for"
-                "recording unmerged data as well as additional scan metadata"
-                "and statistics, however writing can be slow for large datasets."
+                "mmcif file should comply with. Unmerged data is exported in"
+                "both formats, v5_next adds additional support for"
+                "scan metadata."
         .expert_level = 2
     }
   }

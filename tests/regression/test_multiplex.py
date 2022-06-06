@@ -18,7 +18,7 @@ from dxtbx.model import ExperimentList
 from dxtbx.serialize import load
 
 from xia2.cli.multiplex import run as run_multiplex
-from xia2.Modules.MultiCrystal import ScaleAndMerge
+from xia2.Modules.MultiCrystal.data_manager import DataManager
 from xia2.Modules.Report import Report
 
 expected_data_files = [
@@ -297,7 +297,7 @@ def protk_experiments_and_reflections(dials_data):
 def test_data_manager_filter_dose(protk_experiments_and_reflections):
     # Construct the DataManager
     experiments, reflections = protk_experiments_and_reflections
-    data_manager = ScaleAndMerge.DataManager(experiments, reflections)
+    data_manager = DataManager(experiments, reflections)
 
     # Filter dose and verify the resulting filtered image ranges
     data_manager.filter_dose(1, 20)
@@ -317,7 +317,7 @@ def test_data_manager_filter_dose_out_of_range(protk_experiments_and_reflections
     reflections = slice_reflections(reflections, image_range)
 
     # Construct the DataManager
-    data_manager = ScaleAndMerge.DataManager(experiments, reflections)
+    data_manager = DataManager(experiments, reflections)
 
     # Filter on dose and verify that one experiment has been removed
     data_manager.filter_dose(12, 25)

@@ -26,8 +26,8 @@ from xia2.Wrappers.Dials.Spotfinder import Spotfinder
 def _exercise_dials_wrappers(image_file):
     PhilIndex.params.xia2.settings.multiprocessing.nproc = 1
 
-    scan_ranges = [(1, 45)]
-    image_range = (1, 45)
+    scan_ranges = [(1, 9)]
+    image_range = (1, 9)
 
     print("Begin importing")
     importer = Import()
@@ -60,20 +60,20 @@ def _exercise_dials_wrappers(image_file):
     rbs.run()
     print("".join(rbs.get_all_output()))
     print("Done refining")
-    bravais_setting_22 = rbs.get_bravais_summary()[22]
-    assert bravais_setting_22["bravais"] == "cI"
-    assert bravais_setting_22["cb_op"] == "b+c,a+c,a+b"
-    assert bravais_setting_22["unit_cell"] == pytest.approx(
-        (78.14, 78.14, 78.14, 90, 90, 90), abs=1e-1
+    bravais_setting_9 = rbs.get_bravais_summary()[9]
+    assert bravais_setting_9["bravais"] == "tP"
+    assert bravais_setting_9["cb_op"] == "b,c,a"
+    assert bravais_setting_9["unit_cell"] == pytest.approx(
+        (42.18, 42.18, 39.66, 90, 90, 90), abs=0.1
     )
-    bravais_setting_22_json = bravais_setting_22["experiments_file"]
-    assert os.path.exists(bravais_setting_22_json)
+    bravais_setting_9_json = bravais_setting_9["experiments_file"]
+    assert os.path.exists(bravais_setting_9_json)
 
     print("Begin reindexing")
     reindexer = Reindex()
     reindexer.set_experiments_filename(indexer.get_experiments_filename())
     reindexer.set_indexed_filename(indexer.get_indexed_filename())
-    reindexer.set_cb_op(bravais_setting_22["cb_op"])
+    reindexer.set_cb_op(bravais_setting_9["cb_op"])
     reindexer.run()
     assert os.path.exists(reindexer.get_reindexed_experiments_filename())
     assert os.path.exists(reindexer.get_reindexed_reflections_filename())
@@ -82,7 +82,7 @@ def _exercise_dials_wrappers(image_file):
 
     print("Begin refining")
     refiner = Refine()
-    refiner.set_experiments_filename(bravais_setting_22_json)
+    refiner.set_experiments_filename(bravais_setting_9_json)
     refiner.set_indexed_filename(reindexer.get_reindexed_reflections_filename())
     refiner.set_scan_varying(True)
     refiner.run()
@@ -140,7 +140,7 @@ def _exercise_dials_wrappers(image_file):
     assert os.path.exists(exporter.get_combined_reflections_filename())
 
 
-def test_dials_wrappers_serial(regression_test, ccp4, dials_data, run_in_tmp_path):
-    image_file = dials_data("insulin", pathlib=True) / "insulin_1_001.img"
+def test_dials_wrappers_serial(dials_data, run_in_tmp_path):
+    image_file = dials_data("centroid_test_data", pathlib=True) / "centroid_0001.cbf"
     with mock.patch.object(sys, "argv", []):
         _exercise_dials_wrappers(image_file)

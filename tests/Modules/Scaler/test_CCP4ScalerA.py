@@ -10,7 +10,7 @@ def test_ccp4_scalerA(regression_test, ccp4, dials_data, run_in_tmp_path):
 
     PhilIndex.params.xia2.settings.multiprocessing.nproc = 1
 
-    template = dials_data("insulin", pathlib=True) / "insulin_1_###.img"
+    template = dials_data("centroid_test_data", pathlib=True) / "centroid_####.cbf"
 
     tmpdir = str(run_in_tmp_path)
 

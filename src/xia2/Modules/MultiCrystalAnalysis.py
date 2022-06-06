@@ -4,6 +4,7 @@ import json
 import logging
 from collections import OrderedDict
 
+from dials.algorithms.clustering.unit_cell import cluster_unit_cells
 from dials.algorithms.scaling.scale_and_filter import make_scaling_filtering_plots
 from dials.algorithms.symmetry.cosym import SymmetryAnalysis
 from dials.algorithms.symmetry.cosym.plots import plot_coords, plot_rij_histogram
@@ -13,7 +14,7 @@ from libtbx import phil
 
 from xia2.Modules.Analysis import batch_phil_scope
 from xia2.Modules.DeltaCcHalf import DeltaCcHalf
-from xia2.Modules.MultiCrystal.ScaleAndMerge import DataManager
+from xia2.Modules.MultiCrystal.data_manager import DataManager
 from xia2.XIA2Version import Version
 
 logger = logging.getLogger(__name__)
@@ -65,17 +66,13 @@ class MultiCrystalAnalysis:
     def unit_cell_clustering(
         experiments, lattice_ids, threshold, log=True, plot_name=None
     ):
-        from dials.algorithms.clustering.unit_cell import UnitCellCluster
-
         crystal_symmetries = []
         for expt in experiments:
             crystal_symmetry = expt.crystal.get_crystal_symmetry(
                 assert_is_compatible_unit_cell=False
             )
             crystal_symmetries.append(crystal_symmetry.niggli_cell())
-        ucs = UnitCellCluster.from_crystal_symmetries(
-            crystal_symmetries, lattice_ids=lattice_ids
-        )
+
         if plot_name is not None:
             import matplotlib
 
@@ -86,20 +83,21 @@ class MultiCrystalAnalysis:
             ax = plt.gca()
         else:
             ax = None
-        clusters, dendrogram, _ = ucs.ab_cluster(
-            threshold,
-            log=log,
-            labels="lattice_id",
-            write_file_lists=False,
-            schnell=False,
-            doplot=(plot_name is not None),
+
+        clustering = cluster_unit_cells(
+            crystal_symmetries,
+            lattice_ids=lattice_ids,
+            threshold=threshold,
             ax=ax,
+            no_plot=plot_name is None,
         )
+
         if plot_name is not None:
             plt.tight_layout()
             plt.savefig(plot_name)
             plt.clf()
-        return clusters, dendrogram
+
+        return clustering
 
     def cluster_analysis(self):
         from xia2.Modules.MultiCrystal import multi_crystal_analysis
@@ -158,7 +156,7 @@ class MultiCrystalAnalysis:
         # self._plot_uc_vs_detector_distance(uc_params, panel_distances, outliers, params.steps_per_angstrom)
         # self._plot_number_of_crystals(experiments)
 
-        clustering, dendrogram = self.unit_cell_clustering(
+        clustering = self.unit_cell_clustering(
             experiments,
             lattice_ids,
             threshold=self.params.unit_cell_clustering.threshold,
@@ -167,7 +165,7 @@ class MultiCrystalAnalysis:
         from dials.algorithms.clustering.plots import scipy_dendrogram_to_plotly_json
 
         d["uc_clustering"] = scipy_dendrogram_to_plotly_json(
-            dendrogram,
+            clustering.dendrogram,
             title="Unit cell clustering",
             xtitle="Dataset",
             ytitle="Distance (Å<sup>2</sup>)",
