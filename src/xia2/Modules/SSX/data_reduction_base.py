@@ -6,7 +6,6 @@ import os
 from pathlib import Path
 from typing import Any, List
 
-
 xia2_logger = logging.getLogger(__name__)
 
 from xia2.Handlers.Streams import banner

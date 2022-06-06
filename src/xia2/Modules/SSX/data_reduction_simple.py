@@ -268,20 +268,22 @@ class SimpleDataReduction(BaseDataReduction):
             xia2_logger.info(f"Using space group: {str(new_space_group)}")
 
         # Now check if we need to reindex due to indexing ambiguities
-        sym_requires_reindex = assess_for_indexing_ambiguities(
-            reduction_params.space_group, new_best_unit_cell
-        )
-        if sym_requires_reindex:
-            files_to_scale = self.reindex(
-                reindex_wd,
-                data_to_reindex,
-                data_already_reindexed,
-                space_group=reduction_params.space_group,
-                nproc=reduction_params.nproc,
-                d_min=reduction_params.d_min,
+        if data_to_reindex:
+            sym_requires_reindex = assess_for_indexing_ambiguities(
+                reduction_params.space_group, new_best_unit_cell
             )
+            if sym_requires_reindex:
+                files_to_scale = self.reindex(
+                    reindex_wd,
+                    data_to_reindex,
+                    data_already_reindexed,
+                    space_group=reduction_params.space_group,
+                    nproc=reduction_params.nproc,
+                    d_min=reduction_params.d_min,
+                )
         else:
             files_to_scale = {**data_already_reindexed, **data_to_reindex}
+
         self._save_reindexing_results(reindex_wd, files_to_scale)
 
         # if we get here, we have successfully prepared the new data for scaling.
@@ -405,21 +407,14 @@ class SimpleDataReduction(BaseDataReduction):
     ) -> FilesDict:
         """
         Runs dials.scale + dials.cosym on each batch to resolve indexing
-        ambiguities. If there is more than one batch, the first batch is used
-        as a reference, and dials.reindex is used to reindex the other batches
-        against this reference.
+        ambiguities. If there is more than one batch, the dials.cosym is run
+        again to make sure all batches are consistently indexed.
         """
         sys.stdout = open(os.devnull, "w")  # block printing from cosym
 
         if not Path.is_dir(working_directory):
             Path.mkdir(working_directory)
 
-        if 0 in data_already_reindexed:
-            reference_files = data_already_reindexed[0]
-        else:
-            assert 0 in data_to_reindex  # make sure we have something that will
-            # become the reference file.
-        files_for_reference_reindex: FilesDict = {}
         reindexed_results: FilesDict = {}
         xia2_logger.notice(banner("Reindexing"))  # type: ignore
         with record_step(
@@ -444,40 +439,13 @@ class SimpleDataReduction(BaseDataReduction):
                         f"Unsuccessful scaling and symmetry analysis of the new data. Error:\n{e}"
                     )
                 else:
-                    """if list(result.keys()) == [0]:
-                        reference_files = result[0]
-                        reindexed_results[0] = result[0]
-                    else:"""
                     reindexed_results.update(result)
 
         # now do reference reindexing
-        if len(reindexed_results) > 1:
-            cosym_reindex(working_directory, reindexed_results, d_min)
-
-        """with record_step(
-            "dials.reindex (parallel)"
-        ), concurrent.futures.ProcessPoolExecutor(max_workers=nproc) as pool:
-            reidx_futures: Dict[Any, int] = {
-                pool.submit(
-                    reference_reindex, working_directory, reference_files, files, index
-                ): index
-                for index, files in files_for_reference_reindex.items()
-            }
-            for future in concurrent.futures.as_completed(reidx_futures):
-                try:
-                    result = future.result()
-                    i = reidx_futures[future]
-                except Exception as e:
-                    raise ValueError(
-                        f"Unsuccessful reindexing of the new data. Error:\n{e}"
-                    )
-                else:
-                    reindexed_results[i] = result
-                    xia2_logger.info(
-                        f"Reindexed batch {i+1} using batch 1 as reference"
-                    )"""
-
         files_to_scale = {**data_already_reindexed, **reindexed_results}
+        if len(files_to_scale) > 1:
+            cosym_reindex(working_directory, files_to_scale, d_min)
+
         sys.stdout = sys.__stdout__  # restore printing
         return files_to_scale
 

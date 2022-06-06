@@ -3,6 +3,9 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+from typing import List
+
+import pytest
 
 from dxtbx.serialize import load
 
@@ -236,3 +239,110 @@ def test_stepwise_run_without_reference(dials_data, tmp_path):
     result = subprocess.run(args, cwd=tmp_path, capture_output=True)
     assert not result.returncode and not result.stderr
     check_output(tmp_path, find_spots=True, index=True, integrate=True)
+
+
+def check_data_reduction_files(tmp_path):
+    assert (tmp_path / "data_reduction").is_dir()
+    assert (tmp_path / "data_reduction" / "prefilter").is_dir()
+    assert (tmp_path / "data_reduction" / "reindex").is_dir()
+    assert (tmp_path / "data_reduction" / "scale").is_dir()
+    assert (tmp_path / "data_reduction" / "scale" / "merged.mtz").is_file()
+    assert (tmp_path / "data_reduction" / "scale" / "scaled.mtz").is_file()
+
+
+def test_ssx_reduce_on_directory(dials_data, tmp_path):
+    ssx = dials_data("cunir_serial_processed", pathlib=True)
+    args = ["dev.xia2.ssx_reduce", f"directory={ssx}"]
+
+    result = subprocess.run(args, cwd=tmp_path, capture_output=True)
+    assert not result.returncode and not result.stderr
+    check_data_reduction_files(tmp_path)
+
+    # Now check that results were output at various stages to allow iterative
+    # workflows
+    filter_results = tmp_path / "data_reduction/prefilter/filter_results.json"
+    with filter_results.open(mode="r") as f:
+        result = json.load(f)
+    # check that the unit cells were written to file
+    assert result["best_unit_cell"] == [96.4105, 96.4105, 96.4105, 90.0, 90.0, 90.0]
+    assert result["n_cryst"] == 5
+    assert len(result["unit_cells"]) == 5
+    assert result["space_group"] == 198
+
+    data_reduction_json = tmp_path / "data_reduction/data_reduction.json"
+    with data_reduction_json.open(mode="r") as f:
+        reduction_result = json.load(f)
+    assert reduction_result["files_processed"] == {
+        "refls": [os.fspath(ssx / "integrated.refl")],
+        "expts": [os.fspath(ssx / "integrated.expt")],
+    }
+
+    reindex_results_json = tmp_path / "data_reduction/reindex/reindexing_results.json"
+    with reindex_results_json.open(mode="r") as f:
+        reidx_results = json.load(f)
+    assert reidx_results["reindexed_files"] == {
+        "0": {
+            "refl": os.fspath(tmp_path / "data_reduction/reindex/processed_0.refl"),
+            "expt": os.fspath(tmp_path / "data_reduction/reindex/processed_0.expt"),
+        }
+    }
+
+
+def test_ssx_reduce_on_files(dials_data, tmp_path):
+    ssx = dials_data("cunir_serial_processed", pathlib=True)
+    refls = ssx / "integrated.refl"
+    expts = ssx / "integrated.expt"
+    args = ["dev.xia2.ssx_reduce", f"reflections={refls}", f"experiments={expts}"]
+
+    result = subprocess.run(args, cwd=tmp_path, capture_output=True)
+    assert not result.returncode and not result.stderr
+    check_data_reduction_files(tmp_path)
+
+
+@pytest.mark.parametrize(
+    ("cluster_args", "expected_results"),
+    [
+        (
+            ["clustering.threshold=1"],
+            {
+                "best_unit_cell": [96.411, 96.411, 96.411, 90.0, 90.0, 90.0],
+                "n_cryst": 3,
+            },
+        ),
+        (
+            [
+                "central_unit_cell=96.4,96.4,96.4,90,90,90",
+                "absolute_length_tolerance=0.015",
+            ],
+            {
+                "best_unit_cell": [96.4107, 96.4107, 96.4107, 90.0, 90.0, 90.0],
+                "n_cryst": 4,
+            },
+        ),
+        (
+            ["absolute_length_tolerance=0.001"],
+            {
+                "best_unit_cell": [96.4107, 96.4107, 96.4107, 90.0, 90.0, 90.0],
+                "n_cryst": 2,
+            },
+        ),
+    ],
+)
+def test_ssx_reduce_filter_options(
+    dials_data, tmp_path, cluster_args: List[str], expected_results: dict
+):
+    ssx = dials_data("cunir_serial_processed", pathlib=True)
+    args = ["dev.xia2.ssx_reduce", f"directory={ssx}"] + cluster_args
+
+    result = subprocess.run(args, cwd=tmp_path, capture_output=True)
+    assert not result.returncode and not result.stderr
+    check_data_reduction_files(tmp_path)
+
+    # Now check that results were output at various stages to allow iterative
+    # workflows
+    filter_results = tmp_path / "data_reduction/prefilter/filter_results.json"
+    with filter_results.open(mode="r") as f:
+        result = json.load(f)
+    # check that the unit cells were written to file
+    assert result["best_unit_cell"] == expected_results["best_unit_cell"]
+    assert result["n_cryst"] == expected_results["n_cryst"]
