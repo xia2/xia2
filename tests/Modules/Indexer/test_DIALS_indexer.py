@@ -16,11 +16,10 @@ from xia2.Schema.XSweep import XSweep
 from xia2.Schema.XWavelength import XWavelength
 
 
-def exercise_dials_indexer(dials_data, tmp_path, nproc=None):
-    if nproc is not None:
-        PhilIndex.params.xia2.settings.multiprocessing.nproc = nproc
+def _exercise_dials_indexer(dials_data, tmp_path):
+    PhilIndex.params.xia2.settings.multiprocessing.nproc = 1
 
-    template = dials_data("insulin", pathlib=True) / "insulin_1_###.img"
+    template = dials_data("centroid_test_data", pathlib=True) / "centroid_####.cbf"
 
     indexer = DialsIndexer()
     indexer.set_working_directory(os.fspath(tmp_path))
@@ -39,18 +38,16 @@ def exercise_dials_indexer(dials_data, tmp_path, nproc=None):
     indexer.index()
 
     assert indexer.get_indexer_cell() == pytest.approx(
-        (78.14, 78.14, 78.14, 90, 90, 90), rel=1e-3
+        (42.20, 42.20, 39.68, 90, 90, 90), rel=1e-3
     )
     solution = indexer.get_solution()
-    assert solution["rmsd"] == pytest.approx(0.03545, abs=1e-3)
-    assert solution["metric"] == pytest.approx(0.02517, abs=5e-3)
-    assert solution["number"] == 22
-    assert solution["lattice"] == "cI"
+    assert solution["rmsd"] == pytest.approx(0.09241, abs=1e-3)
+    assert solution["metric"] == pytest.approx(0.34599, abs=5e-3)
+    assert solution["number"] == 9
+    assert solution["lattice"] == "tP"
 
     beam_centre = indexer.get_indexer_beam_centre()
-    assert beam_centre == pytest.approx(
-        (94.41567208118963, 94.51337522659865), abs=1e-3
-    )
+    assert beam_centre == pytest.approx((219.8758, 212.6103), abs=1e-3)
     print(indexer.get_indexer_experiment_list()[0].crystal)
     print(indexer.get_indexer_experiment_list()[0].detector)
 
@@ -68,10 +65,10 @@ def exercise_dials_indexer(dials_data, tmp_path, nproc=None):
     indexer2.eliminate()
 
     assert indexer.get_indexer_cell() == pytest.approx(indexer2.get_indexer_cell())
-    assert indexer.get_indexer_lattice() == "hR"
-    assert indexer2.get_indexer_lattice() == "hR"
+    assert indexer.get_indexer_lattice() == "oC"
+    assert indexer2.get_indexer_lattice() == "oC"
 
 
-def test_dials_indexer_serial(regression_test, ccp4, dials_data, run_in_tmp_path):
+def test_dials_indexer_serial(ccp4, dials_data, run_in_tmp_path):
     with mock.patch.object(sys, "argv", []):
-        exercise_dials_indexer(dials_data, run_in_tmp_path, nproc=1)
+        _exercise_dials_indexer(dials_data, run_in_tmp_path)
