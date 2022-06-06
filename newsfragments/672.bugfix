@@ -1,0 +1,1 @@
+Fix cases where NeXus files not following the Eiger conventions (``/entry/data/data_[nnnn]```) were ignored.
