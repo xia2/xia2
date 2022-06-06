@@ -5,13 +5,13 @@ repos:
   hooks:
   - id: check-merge-conflict
   - id: check-ast
-    fail_fast: True
+    fail_fast: true
   - id: check-json
   - id: check-added-large-files
-    args: ['--maxkb=200']
+    args: [--maxkb=200]
   - id: check-yaml
   - id: no-commit-to-branch
-    name: "Don't commit to 'main'"
+    name: Don't commit to 'main'
 
 # Automatically sort imports
 - repo: https://github.com/PyCQA/isort
@@ -42,12 +42,20 @@ repos:
   rev: 4.0.1
   hooks:
   - id: flake8
-    additional_dependencies: ['flake8-comprehensions==3.8.0']
+    additional_dependencies: [flake8-comprehensions==3.8.0]
 
 # Type checking
 - repo: https://github.com/pre-commit/mirrors-mypy
   rev: v0.941
   hooks:
   - id: mypy
-    files: 'src/.*\.py$'
-    additional_dependencies: [ types-docutils ]
+    files: src/.*\.py$
+    additional_dependencies: [types-docutils, types-PyYAML]
+
+# YAML formatter
+- repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
+  rev: 0.2.1  # or specific tag
+  hooks:
+  - id: yamlfmt
+    args: [--mapping, '2', --sequence, '2', --offset, '0', --width, '150', --implicit_start]
+    exclude: .pre-commit-config.yaml

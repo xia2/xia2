@@ -90,8 +90,8 @@ steps:
   workingDirectory: $(Pipeline.Workspace)
 
 - bash: bash <(curl -s https://codecov.io/bash) -t $(CODECOV_TOKEN) -n "Python $(PYTHON_VERSION) $(Agent.OS)"
-  displayName: 'Publish coverage stats'
-  continueOnError: True
+  displayName: Publish coverage stats
+  continueOnError: true
   timeoutInMinutes: 2
   workingDirectory: $(Pipeline.Workspace)/modules/xia2
 
