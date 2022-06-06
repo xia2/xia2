@@ -8,7 +8,7 @@ import os
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 
 import iotbx.phil
 from cctbx import crystal, sgtbx, uctbx
@@ -24,9 +24,9 @@ from xia2.Modules.SSX.data_reduction_programs import (  # reference_reindex,
     CrystalsData,
     CrystalsDict,
     FilePair,
+    FilesDict,
     cosym_reindex,
     determine_best_unit_cell_from_crystals,
-    inspect_directories,
     load_crystal_data_from_new_expts,
     merge,
     run_uc_cluster,
@@ -39,10 +39,6 @@ from xia2.Modules.SSX.data_reduction_programs import (  # reference_reindex,
 from xia2.Modules.SSX.reporting import statistics_output_from_scaled_files
 
 xia2_logger = logging.getLogger(__name__)
-
-FilesDict = Dict[
-    int, FilePair
-]  # A Dict where the keys are an index, corresponding to a filepair
 
 
 @dataclass
@@ -109,7 +105,53 @@ def assess_for_indexing_ambiguities(
     return need_to_assess
 
 
+def check_consistent_space_group(crystals_dict: CrystalsDict) -> sgtbx.space_group_info:
+    # check all space groups are the same and return that group
+    sgs = set()
+    for v in crystals_dict.values():
+        sgs.update({c.get_space_group().type().number() for c in v.crystals})
+    if len(sgs) > 1:
+        sg_nos = ",".join(str(i) for i in sgs)
+        raise ValueError(
+            f"Multiple space groups found, numbers: {sg_nos}\n"
+            "All integrated data must be in the same space group"
+        )
+    return sgtbx.space_group_info(number=list(sgs)[0])
+
+
 class SimpleDataReduction(BaseDataReduction):
+    def _load_previously_prepared(self, reindex_results: Path) -> FilesDict:
+        with reindex_results.open(mode="r") as f:
+            previous = json.load(f)
+        data_already_reindexed = {
+            int(i): FilePair(Path(v["expt"]), Path(v["refl"]))
+            for i, v in previous["reindexed_files"].items()
+        }
+        for file_pair in data_already_reindexed.values():
+            file_pair.check()
+        return data_already_reindexed
+
+    def _load_filtering_results(
+        self, filter_results: Path
+    ) -> Tuple[uctbx.unit_cell, sgtbx.space_group_info]:
+        with filter_results.open(mode="r") as f:
+            result = json.load(f)
+        best_unit_cell = uctbx.unit_cell(result["best_unit_cell"])
+        current_sg = sgtbx.space_group_info(number=result["space_group"])
+        return best_unit_cell, current_sg
+
+    def _save_reindexing_results(self, reindex_wd, files_to_scale):
+        output_files_to_scale = {
+            k: {"expt": str(v.expt), "refl": str(v.refl)}
+            for k, v in files_to_scale.items()
+        }
+        if not Path.is_dir(reindex_wd):
+            Path.mkdir(reindex_wd)
+        reidx_results = reindex_wd / "reindexing_results.json"
+        data = {"reindexed_files": output_files_to_scale}
+        with reidx_results.open(mode="w") as f:
+            json.dump(data, f, indent=2)
+
     def run(self, reduction_params: SimpleReductionParams) -> None:
         """
         A simple workflow for data reduction. First filter the input data, either
@@ -128,65 +170,50 @@ class SimpleDataReduction(BaseDataReduction):
         # see if we have any data that has been marked as successfully reindexed.
         reidx_results = reindex_wd / "reindexing_results.json"
         if reidx_results.is_file():
-            with reidx_results.open(mode="r") as f:
-                previous = json.load(f)
-            data_already_reindexed = {
-                int(i): FilePair(Path(v["expt"]), Path(v["refl"]))
-                for i, v in previous["reindexed_files"].items()
-            }
-            for file_pair in data_already_reindexed.values():
-                assert file_pair.check()
+            data_already_reindexed = self._load_previously_prepared(reidx_results)
 
-        new_data = {}
-        if self._new_directories_to_process:
-            new_data = inspect_directories(self._new_directories_to_process)
-
-        best_unit_cell = None
-        current_sg = None
+        previous_best_unit_cell = None
+        previous_space_group = None
         new_best_unit_cell = None
+        new_space_group = None
         filter_results = filter_wd / "filter_results.json"
         if filter_results.is_file():
-            with filter_results.open(mode="r") as f:
-                result = json.load(f)
-            best_unit_cell = uctbx.unit_cell(result["best_unit_cell"])
-            current_sg = sgtbx.space_group_info(number=result["space_group"])
+            (
+                previous_best_unit_cell,
+                previous_space_group,
+            ) = self._load_filtering_results(filter_results)
 
         # First filter any new data
-        if new_data:
+        if self.new_to_process:
             xia2_logger.notice(banner("Filtering"))  # type: ignore
-            crystals_data = load_crystal_data_from_new_expts(new_data)
-            # check all space groups are the same
-            sgs = set()
-            for v in crystals_data.values():
-                sgs.update({c.get_space_group().type().number() for c in v.crystals})
-            if len(sgs) > 1:
-                sg_nos = ",".join(str(i) for i in sgs)
-                raise ValueError(
-                    f"Multiple space groups found, numbers: {sg_nos}\n"
-                    "All integrated data must be in the same space group"
-                )
-            new_sg = sgtbx.space_group_info(number=list(sgs)[0])
+            crystals_data = load_crystal_data_from_new_expts(self.new_to_process)
+            new_space_group = check_consistent_space_group(crystals_data)
 
             good_crystals_data = self.filter_new_data(
-                filter_wd, crystals_data, best_unit_cell, reduction_params
+                filter_wd, crystals_data, previous_best_unit_cell, reduction_params
             )
             if not any(v.crystals for v in good_crystals_data.values()):
                 raise ValueError("No crystals remain after filtering")
 
-            if best_unit_cell and current_sg:  # i.e. if previous data reduction
-                if new_sg.type().number() != current_sg.type().number():
+            if (
+                previous_best_unit_cell and previous_space_group
+            ):  # i.e. if previous data reduction
+                if (
+                    new_space_group.type().number()
+                    != previous_space_group.type().number()
+                ):
                     raise ValueError(
                         "Previous input data was not in same space group as new data:\n"
-                        f"{current_sg.type().number()} != {new_sg.type().number()}"
+                        f"{previous_space_group.type().number()} != {new_space_group.type().number()}"
                     )
+                # we want all jobs to use at least batch_size crystals, so join on
+                # to last reindexed batch until this has been satisfied
                 n_cryst = sum(len(v.identifiers) for v in good_crystals_data.values())
                 while n_cryst < reduction_params.batch_size:
-                    # we want all jobs to use at least batch_size crystals, so join on
-                    # to last reindexed batch until this has been satisfied
                     already_reidx_keys = list(data_already_reindexed.keys())
                     if not already_reidx_keys:
                         break
-                    last_batch = data_already_reindexed.pop(already_reidx_keys)[-1]
+                    last_batch = data_already_reindexed.pop(already_reidx_keys[-1])
                     last_expts = load.experiment_list(
                         last_batch.expt, check_format=False
                     )
@@ -196,19 +223,19 @@ class SimpleDataReduction(BaseDataReduction):
                         crystals=copy.deepcopy(last_expts.crystals()),
                         keep_all_original=True,
                     )
-                    new_data_last_key = list(new_data.keys)[-1]
-                    new_data[new_data_last_key + 1] = last_batch
+                    self.new_to_process.append(last_batch)
                     n_cryst += len(last_expts)
 
-            current_sg = new_sg
+            # current_sg = new_sg
             # Split the data, with an offset so that they keys of
             # data_to_reindex don't clash with data_already_reindexed
-            n_already_reindexed_files = len(
-                list(data_already_reindexed.keys())
-            )  # will be 0 if no previous reduction.
+            n_already_reindexed_files = len(list(data_already_reindexed.keys()))
+            # ^ will be 0 if no previous reduction.
+
+            # Now split the data into batches for reindexing/scaling
             data_to_reindex = split_filtered_data(
                 filter_wd,
-                new_data,
+                self.new_to_process,
                 good_crystals_data,
                 reduction_params.batch_size,
                 offset=n_already_reindexed_files,
@@ -227,16 +254,18 @@ class SimpleDataReduction(BaseDataReduction):
             )
 
         else:
-            new_best_unit_cell = best_unit_cell
-            if not (new_best_unit_cell and current_sg):
+            # new_best_unit_cell = previous_best_unit_cell
+            if not (previous_best_unit_cell and previous_space_group):
                 raise ValueError(
                     "Error in intepreting new and previous processing results"
                 )
+            new_best_unit_cell = previous_best_unit_cell
+            new_space_group = previous_space_group
 
         # Use the space group from integration if not explicity specified.
         if not reduction_params.space_group:
-            reduction_params.space_group = current_sg
-            xia2_logger.info(f"Using space group: {str(current_sg)}")
+            reduction_params.space_group = new_space_group
+            xia2_logger.info(f"Using space group: {str(new_space_group)}")
 
         # Now check if we need to reindex due to indexing ambiguities
         sym_requires_reindex = assess_for_indexing_ambiguities(
@@ -252,32 +281,12 @@ class SimpleDataReduction(BaseDataReduction):
                 d_min=reduction_params.d_min,
             )
         else:
-            # save new data as already reindexed
             files_to_scale = {**data_already_reindexed, **data_to_reindex}
-            output_files_to_scale = {
-                k: {"expt": str(v.expt), "refl": str(v.refl)}
-                for k, v in files_to_scale.items()
-            }
-            if not Path.is_dir(reindex_wd):
-                Path.mkdir(reindex_wd)
-            reidx_results = reindex_wd / "reindexing_results.json"
-            data = {"reindexed_files": output_files_to_scale}
-            with reidx_results.open(mode="w") as f:
-                json.dump(data, f, indent=2)
+        self._save_reindexing_results(reindex_wd, files_to_scale)
 
         # if we get here, we have successfully prepared the new data for scaling.
         # So save this to allow reloading in future for iterative workflows.
-        data_reduction_progress = {
-            "directories_processed": [
-                str(i)
-                for i in (
-                    self._directories_previously_processed
-                    + self._new_directories_to_process
-                )
-            ]
-        }
-        with (data_reduction_wd / "data_reduction.json").open(mode="w") as fp:
-            json.dump(data_reduction_progress, fp, indent=2)
+        self._save_as_prepared()
 
         # Finally scale and merge the data.
         if reduction_params.model:
@@ -305,7 +314,7 @@ class SimpleDataReduction(BaseDataReduction):
         crystals_data: dict,
         best_unit_cell: uctbx.unit_cell,
         reduction_params: SimpleReductionParams,
-    ) -> dict:
+    ) -> CrystalsDict:
 
         if not best_unit_cell:  # i.e. no previous data reduction
             if reduction_params.cluster_threshold:
@@ -469,15 +478,6 @@ class SimpleDataReduction(BaseDataReduction):
                     )"""
 
         files_to_scale = {**data_already_reindexed, **reindexed_results}
-        output_files_to_scale = {
-            k: {"expt": str(v.expt), "refl": str(v.refl)}
-            for k, v in files_to_scale.items()
-        }
-
-        reidx_results = working_directory / "reindexing_results.json"
-        data = {"reindexed_files": output_files_to_scale}
-        with reidx_results.open(mode="w") as f:
-            json.dump(data, f, indent=2)
         sys.stdout = sys.__stdout__  # restore printing
         return files_to_scale
 

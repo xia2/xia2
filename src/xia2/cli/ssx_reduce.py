@@ -31,6 +31,14 @@ directory = None
   .type = str
   .multiple = True
   .help = "Path to directory containing integrated_*.{refl,expt} files"
+reflections = None
+  .type = str
+  .multiple = True
+  .help = "Path to an integrated reflections file"
+experiments = None
+  .type = str
+  .multiple = True
+  .help = "Path to an integrated experiments file"
 nproc = Auto
   .type = int
 batch_size = 1000
@@ -93,12 +101,32 @@ import xia2.Handlers.Streams
 def run_xia2_ssx_reduce(
     root_working_directory: Path, params: iotbx.phil.scope_extract
 ) -> None:
-    directories = [Path(i).resolve() for i in params.directory]
+
     if params.nproc is Auto:
         params.nproc = number_of_processors(return_value_if_unknown=1)
-
     reduction_params = SimpleReductionParams.from_phil(params)
-    reducer = SimpleDataReduction(root_working_directory, directories)
+
+    if params.directory:
+        if params.reflections or params.experiments:
+            xia2_logger.warning(
+                "Only a directory or reflections+experiments can be given\n"
+                "as input. Proceeding using only directories"
+            )
+        directories = [Path(i).resolve() for i in params.directory]
+        reducer = SimpleDataReduction.from_directories(
+            root_working_directory, directories
+        )
+    elif params.reflections or params.experiments:
+        if not (params.reflections and params.experiments):
+            raise ValueError("Reflections and experiments files must both be specified")
+        reflections = [Path(i).resolve() for i in params.reflections]
+        experiments = [Path(i).resolve() for i in params.experiments]
+        reducer = SimpleDataReduction.from_files(
+            root_working_directory, reflections, experiments
+        )
+    else:
+        raise ValueError("Reflections and experiments files must both be specified")
+
     reducer.run(reduction_params)
 
 

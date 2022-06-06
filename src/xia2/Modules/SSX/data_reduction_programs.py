@@ -49,9 +49,24 @@ class FilePair:
     refl: Path
 
     def check(self):
-        assert self.expt.is_file()
-        assert self.refl.is_file()
-        return True
+        if not self.expt.is_file():
+            raise FileNotFoundError(f"File {self.expt} does not exist")
+        if not self.refl.is_file():
+            raise FileNotFoundError(f"File {self.refl} does not exist")
+
+    def validate(self):
+        expt = load.experiment_list(self.expt, check_format=False)
+        refls = flex.reflection_table.from_file(self.refl)
+        refls.assert_experiment_identifiers_are_consistent(expt)
+
+    def __eq__(self, other):
+        if self.expt == other.expt and self.refl == other.refl:
+            return True
+        return False
+
+
+FilesDict = Dict[int, FilePair]
+# FilesDict: A dict where the keys are an index, corresponding to a filepair
 
 
 @dataclass(eq=False)
@@ -63,17 +78,15 @@ class CrystalsData:
     lattice_ids: List[int] = field(default_factory=list)
 
 
-FilesDict = Dict[int, FilePair]
-# FilesDict: A dict where the keys are an index, corresponding to a filepair
 CrystalsDict = Dict[str, CrystalsData]
 # CrystalsDict: stores crystal data contained in each expt file, for use in
 # filtering without needing to keep expt files open.
 
 
-def load_crystal_data_from_new_expts(new_data: FilesDict) -> CrystalsDict:
+def load_crystal_data_from_new_expts(new_data: List[FilePair]) -> CrystalsDict:
     data: CrystalsDict = {}
     n = 0
-    for file_pair in new_data.values():
+    for file_pair in new_data:
         new_expts = load.experiment_list(file_pair.expt, check_format=False)
         if new_expts:
             # copy to avoid need to keep expt file open
@@ -380,8 +393,8 @@ def scale_cosym(
             cosym_params.output.json = f"dials.cosym.{index}.json"
             cosym_params.min_i_mean_over_sigma_mean = 2
             cosym_params.unit_cell_clustering.threshold = None
-            cosym_params.cc_star_threshold = 0.1
-            cosym_params.angular_separation_threshold = 5
+            # cosym_params.cc_star_threshold = 0.1
+            # cosym_params.angular_separation_threshold = 5
             cosym_params.lattice_symmetry_max_delta = 1
             if d_min:
                 cosym_params.d_min = d_min
@@ -503,37 +516,9 @@ def select_crystals_close_to(
     return good_crystals_data
 
 
-def inspect_directories(new_directories_to_process: List[Path]) -> FilesDict:
-    """
-    Inspect the new directories and match up integrated .expt and .refl files
-    by name.
-    """
-    new_data: FilesDict = {}
-    n_pairs = 0
-    for d in new_directories_to_process:
-        expts_this, refls_this = ([], [])
-        for file_ in list(d.glob("integrated*.expt")):
-            expts_this.append(file_)
-        for file_ in list(d.glob("integrated*.refl")):
-            refls_this.append(file_)
-        if len(expts_this) != len(refls_this):
-            raise ValueError(
-                f"Unequal number of experiments ({len(expts_this)}) "
-                + f"and reflections ({len(refls_this)}) files found in {d}"
-            )
-        for expt, refl in zip(sorted(expts_this), sorted(refls_this)):
-            new_data[n_pairs] = FilePair(expt, refl)
-            n_pairs += 1
-        if not expts_this:
-            xia2_logger.warning(f"No integrated data files found in {str(d)}")
-    if not n_pairs:
-        raise ValueError("No integrated datafiles found in directories")
-    return new_data
-
-
 def split_filtered_data(
     working_directory: Path,
-    new_data: FilesDict,
+    new_data: List[FilePair],
     good_crystals_data: CrystalsDict,
     min_batch_size: int,
     offset: int = 0,
@@ -555,7 +540,7 @@ def split_filtered_data(
         leftover_refls: List[flex.reflection_table] = []
         n_batch_output = 0
         n_required = splits[1] - splits[0]
-        for file_pair in new_data.values():
+        for file_pair in new_data:
             expts = load.experiment_list(file_pair.expt, check_format=False)
             refls = flex.reflection_table.from_file(file_pair.refl)
             good_crystals_this = good_crystals_data[str(file_pair.expt)]
