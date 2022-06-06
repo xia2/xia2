@@ -22,7 +22,7 @@ d_min = None
   .type = float(value_min=0)
 d_max = None
   .type = float(value_min=0)
-resolution_bins = None  # Deprecated, remove after version 3.9.
+resolution_bins = None  # Deprecated, remove after DIALS 3.11.
   .type = int
 anomalous = False
   .type = bool
