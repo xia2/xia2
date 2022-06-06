@@ -6,6 +6,7 @@ import io
 import os
 import subprocess
 import sys
+from pathlib import Path
 
 import dials.precommitbx.nagger
 import libtbx
@@ -78,6 +79,16 @@ def _install_setup_readonly_fallback(package_name: str):
     with contextlib.redirect_stdout(io.StringIO()):
         for module in env.module_list:
             module.process_command_line_directories()
+
+    # The xia2 dispatchers do not get written automatically because:
+    # - xia2 does not use a libtbx command_line directory
+    # - xia2 dispatchers do not end up in conda_base/bin any more
+    #
+    # so we need to take care of this manually.
+    for script in Path(build_path).joinpath("bin").iterdir():
+        if not script.is_file():
+            continue
+        env.write_dispatcher(source_file=str(script), target_file=f"bin/{script.name}")
 
 
 def _get_real_env_hack_hack_hack():
