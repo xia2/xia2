@@ -58,5 +58,5 @@ repos:
   rev: 0.2.1  # or specific tag
   hooks:
   - id: yamlfmt
-    args: [--mapping, '2', --sequence, '2', --offset, '0', --width, '150']
+    args: [--mapping, '2', --sequence, '2', --offset, '0', --width, '150', --implicit_start]
     exclude: .pre-commit-config.yaml
