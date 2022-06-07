@@ -2,6 +2,7 @@
 # reduction from a directory full of images, optionally with scan and
 # sequence files which will be used to add matadata.
 
+from __future__ import annotations
 
 import collections
 import logging
