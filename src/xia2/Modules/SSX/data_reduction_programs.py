@@ -271,7 +271,7 @@ def scale_against_model(
             params.anomalous = anomalous
             params.scaling_options.target_model = str(model)
             params.scaling_options.only_target = True
-            params.scaling_options.cut_data.small_scale_cutoff = 1e-9
+            params.cut_data.small_scale_cutoff = 1e-9
             input_ += (
                 f"  anomalous = {anomalous}\n  scaling_options.target_model = {model}\n"
                 + "  small_scale_cutoff=1e-9\n"
