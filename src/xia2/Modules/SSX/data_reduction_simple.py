@@ -508,6 +508,8 @@ class SimpleDataReduction(BaseDataReduction):
                 else:
                     xia2_logger.info(f"Completed scaling of group {i+1}")
                     scaled_results.update(result)
+        if not scaled_results:
+            raise ValueError("No groups successfully scaled")
 
         xia2_logger.notice(banner("Merging"))  # type: ignore
         with record_step("joining for merge"):
