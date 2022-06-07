@@ -4,6 +4,7 @@ import contextlib
 import inspect
 import io
 import os
+import platform
 import subprocess
 import sys
 from pathlib import Path
@@ -85,10 +86,18 @@ def _install_setup_readonly_fallback(package_name: str):
     # - xia2 dispatchers do not end up in conda_base/bin any more
     #
     # so we need to take care of this manually.
-    for script in Path(build_path).joinpath("bin").iterdir():
+    if platform.system() == "Windows":
+        sources = Path(build_path).joinpath("Scripts").glob("*.exe")
+    else:
+        sources = Path(build_path).joinpath("bin").iterdir()
+    for script in sources:
         if not script.is_file():
             continue
-        env.write_dispatcher(source_file=str(script), target_file=f"bin/{script.name}")
+        if script.name.endswith(".exe"):
+            target_name = script.stem
+        else:
+            target_name = script.name
+        env.write_dispatcher(source_file=str(script), target_file=f"bin/{target_name}")
 
 
 def _get_real_env_hack_hack_hack():
