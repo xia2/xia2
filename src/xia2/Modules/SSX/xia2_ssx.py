@@ -205,7 +205,7 @@ def run_xia2_ssx(
         ]
     else:
         raise ValueError(
-            "No input data identified (use images=, template= or directory=)"
+            "No input data identified (use image=, template= or directory=)"
         )
     if params.mask:
         file_input.mask = pathlib.Path(params.mask).resolve()

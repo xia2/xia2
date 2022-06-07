@@ -4,10 +4,11 @@ serial crystallography images, using tools from the DIALS package.
 
 To explore the unit cell/space group of your data, run with just the image data, e.g.:
     xia2.ssx template=images_####.cbf
+    xia2.ssx image=image_master.h5
 Accurate data integration requires an accurate reference geometry determined from
 a joint refinement in DIALS (a refined.expt file).
-With a known unit cell & space group, to determine a reference geometry, run e.g.:
-    xia2.ssx template=images_####.cbf unit_cell=x space_group=y stop_after_geometry_refinement=True
+With a known unit cell & space group, to determine a reference geometry without further processing steps, run e.g.:
+    xia2.ssx template=images_####.cbf unit_cell=x space_group=y steps=None
 To run full processing with a reference geometry, run e.g.:
     xia2.ssx template=images_####.cbf unit_cell=x space_group=y reference_geometry=geometry_refinement/refined.expt
 
