@@ -1,3 +1,19 @@
+xia2 3.8.6 (2022-06-07)
+=======================
+
+Bugfixes
+--------
+
+- Fix cases where NeXus files not following the Eiger conventions (``/entry/data/data_[nnnn]```) were ignored. (`#672 <https://github.com/xia2/xia2/issues/672>`_)
+- Fix bug in ``pipeline=dials`` where the working directory contains the letters ``"mtz"``, which would incorrectly be replaced with ``"sca"``, leading to an error. (`#674 <https://github.com/xia2/xia2/issues/674>`_)
+
+
+Misc
+----
+
+- `#676 <https://github.com/xia2/xia2/issues/676>`_
+
+
 xia2 3.8.1 (2022-01-25)
 =======================
 
