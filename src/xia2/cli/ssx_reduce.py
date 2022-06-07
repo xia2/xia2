@@ -1,12 +1,17 @@
 """
 xia2.ssx_reduce: A data reduction pipeline for synchrotron serial crystallography
 data, using tools from the DIALS package. This pipeline is the data reduction
-segment of xia2.ssx.
-To run, provide directories containing integrated data file and a space group:
-    xia2.ssx_reduce directory=batch_{1..5} space_group=x
-This processing runs dials.cluster_unit_cell, dials.cosym, dials.reindex,
-dials.scale and dials.merge. Refer to the individual DIALS program documentation
-or https://dials.github.io/ssx_processing_guide.html for more details.
+section of xia2.ssx.
+
+The input to the program is a set of dials integrated data files (.expt and .refl)
+The easiest way to run is to specify directories containing integrated data files:
+    xia2.ssx_reduce directory=batch_1 directory=batch_2
+Alternatively, specify integrated data files:
+    xia2.ssx_reduce reflections=batch_1/integrated.refl experiments=batch_1/integrated.expt
+
+This processing runs unit cell filtering, dials.cosym, dials.scale and dials.merge.
+Refer to the individual DIALS program documentation or
+https://dials.github.io/ssx_processing_guide.html for more details.
 """
 
 from __future__ import annotations
@@ -17,117 +22,14 @@ from pathlib import Path
 
 import iotbx.phil
 from dials.util.options import ArgumentParser
-from libtbx import Auto
-from libtbx.introspection import number_of_processors
 
-from xia2.Modules.SSX.data_reduction_simple import (
-    SimpleDataReduction,
-    SimpleReductionParams,
-)
-from xia2.Modules.SSX.util import report_timing
+from xia2.Modules.SSX.xia2_ssx_reduce import full_phil_str, run_xia2_ssx_reduce
 
-phil_str = """
-directory = None
-  .type = str
-  .multiple = True
-  .help = "Path to directory containing integrated_*.{refl,expt} files"
-reflections = None
-  .type = str
-  .multiple = True
-  .help = "Path to an integrated reflections file"
-experiments = None
-  .type = str
-  .multiple = True
-  .help = "Path to an integrated experiments file"
-nproc = Auto
-  .type = int
-batch_size = 1000
-  .type = int
-  .help = "The minimum batch size for consistent reindexing of data with cosym"
-d_min = None
-  .type = float
-"""
-
-data_reduction_phil_str = """
-clustering {
-  threshold=None
-    .type = float(value_min=0, allow_none=True)
-    .help = "If no data has previously been reduced, then unit cell clustering"
-            "is performed. This threshold is the value at which the dendrogram"
-            "will be split in dials.cluster_unit_cell (the default value there"
-            "is 5000). A higher threshold value means that unit cells with greater"
-            "differences will be retained."
-            "Only the largest cluster obtained from cutting at this threshold is"
-            "used for data reduction. Setting the threshold to None/0 will"
-            "skip this unit cell clustering and proceed to filtering based on"
-            "the absolute angle/length tolerances."
-  absolute_angle_tolerance = 1.0
-    .type = float(value_min=0, allow_none=True)
-    .help = "Filter the integrated data based on the median unit cell angles"
-            "and this tolerance. If set to None/0, filtering will be skipped."
-  absolute_length_tolerance = 1.0
-    .type = float(value_min=0, allow_none=True)
-    .help = "Filters the integrated data based on the median unit cell lengths"
-            "and this tolerance. If set to None/0, filtering will be skipped."
-  central_unit_cell = None
-    .type = unit_cell
-    .help = "Filter the integrated data based on the tolerances about these cell"
-            "parameters, rather than the median cell."
-}
-symmetry {
-  space_group = None
-    .type = space_group
-    .expert_level = 1
-}
-scaling {
-  anomalous = False
-    .type = bool
-    .help = "If True, keep anomalous pairs separate during scaling."
-  model = None
-    .type = path
-    .help = "A model pdb file to use as a reference for scaling."
-}
-"""
-
-
-phil_scope = iotbx.phil.parse(phil_str + data_reduction_phil_str)
+phil_scope = iotbx.phil.parse(full_phil_str)
 
 xia2_logger = logging.getLogger(__name__)
 
 import xia2.Handlers.Streams
-
-
-@report_timing
-def run_xia2_ssx_reduce(
-    root_working_directory: Path, params: iotbx.phil.scope_extract
-) -> None:
-
-    if params.nproc is Auto:
-        params.nproc = number_of_processors(return_value_if_unknown=1)
-    reduction_params = SimpleReductionParams.from_phil(params)
-
-    if params.directory:
-        if params.reflections or params.experiments:
-            xia2_logger.warning(
-                "Only a directory or reflections+experiments can be given\n"
-                "as input. Proceeding using only directories"
-            )
-        directories = [Path(i).resolve() for i in params.directory]
-        reducer = SimpleDataReduction.from_directories(
-            root_working_directory, directories
-        )
-    elif params.reflections or params.experiments:
-        if not (params.reflections and params.experiments):
-            raise ValueError("Reflections and experiments files must both be specified")
-        reflections = [Path(i).resolve() for i in params.reflections]
-        experiments = [Path(i).resolve() for i in params.experiments]
-        reducer = SimpleDataReduction.from_files(
-            root_working_directory, reflections, experiments
-        )
-    else:
-        raise ValueError("Reflections and experiments files must both be specified")
-
-    reducer.run(reduction_params)
 
 
 def run(args=sys.argv[1:]):

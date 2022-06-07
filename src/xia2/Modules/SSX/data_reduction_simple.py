@@ -67,7 +67,7 @@ class SimpleReductionParams:
         return cls(
             params.symmetry.space_group,
             params.batch_size,
-            params.nproc,
+            params.multiprocessing.nproc,
             params.d_min,
             params.scaling.anomalous,
             params.clustering.threshold,
@@ -404,41 +404,44 @@ class SimpleDataReduction(BaseDataReduction):
         ambiguities. If there is more than one batch, the dials.cosym is run
         again to make sure all batches are consistently indexed.
         """
-        sys.stdout = open(os.devnull, "w")  # block printing from cosym
 
         if not Path.is_dir(working_directory):
             Path.mkdir(working_directory)
 
-        reindexed_results: FilesDict = {}
-        xia2_logger.notice(banner("Reindexing"))  # type: ignore
-        with record_step(
-            "dials.scale/dials.cosym (parallel)"
-        ), concurrent.futures.ProcessPoolExecutor(max_workers=nproc) as pool:
-            cosym_futures: Dict[Any, int] = {
-                pool.submit(
-                    scale_cosym,
-                    working_directory,
-                    files,
-                    index,
-                    space_group,
-                    d_min,
-                ): index
-                for index, files in data_to_reindex.items()
-            }
-            for future in concurrent.futures.as_completed(cosym_futures):
-                try:
-                    result = future.result()
-                except Exception as e:
-                    raise ValueError(
-                        f"Unsuccessful scaling and symmetry analysis of the new data. Error:\n{e}"
-                    )
-                else:
-                    reindexed_results.update(result)
+        with open(os.devnull, "w") as devnull:
+            sys.stdout = devnull  # block printing from cosym
 
-        # now do reference reindexing
-        files_to_scale = {**data_already_reindexed, **reindexed_results}
-        if len(files_to_scale) > 1:
-            cosym_reindex(working_directory, files_to_scale, d_min)
+            reindexed_results: FilesDict = {}
+            xia2_logger.notice(banner("Reindexing"))  # type: ignore
+            with record_step(
+                "dials.scale/dials.cosym (parallel)"
+            ), concurrent.futures.ProcessPoolExecutor(max_workers=nproc) as pool:
+
+                cosym_futures: Dict[Any, int] = {
+                    pool.submit(
+                        scale_cosym,
+                        working_directory,
+                        files,
+                        index,
+                        space_group,
+                        d_min,
+                    ): index
+                    for index, files in data_to_reindex.items()
+                }
+                for future in concurrent.futures.as_completed(cosym_futures):
+                    try:
+                        result = future.result()
+                    except Exception as e:
+                        raise ValueError(
+                            f"Unsuccessful scaling and symmetry analysis of the new data. Error:\n{e}"
+                        )
+                    else:
+                        reindexed_results.update(result)
+
+            # now do reference reindexing
+            files_to_scale = {**data_already_reindexed, **reindexed_results}
+            if len(files_to_scale) > 1:
+                cosym_reindex(working_directory, files_to_scale, d_min)
 
         sys.stdout = sys.__stdout__  # restore printing
         return files_to_scale

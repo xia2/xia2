@@ -160,22 +160,7 @@ def test_full_run_without_reference(dials_data, tmp_path):
     check_output(tmp_path, find_spots=True, index=True, integrate=True)
 
     # Check that data reduction completed.
-    """assert (tmp_path / "data_reduction").is_dir()
-    assert (tmp_path / "data_reduction" / "prefilter").is_dir()
-    assert (tmp_path / "data_reduction" / "reindex").is_dir()
-    assert (tmp_path / "data_reduction" / "scale").is_dir()
-    assert (tmp_path / "data_reduction" / "scale" / "merged.mtz").is_file()
-    assert (tmp_path / "data_reduction" / "scale" / "scaled.mtz").is_file()
-
-    # now run again to check data reduction from where left off approach
-    args = [
-        "dev.xia2.ssx_reduce",
-        "space_group=P213",
-        "directory=batch_1/",
-        "d_min=2.0",
-    ]
-    result = subprocess.run(args, cwd=tmp_path capture_output=True)
-    assert not result.returncode and not result.stderr"""
+    check_data_reduction_files(tmp_path)
 
 
 def test_stepwise_run_without_reference(dials_data, tmp_path):
@@ -187,6 +172,7 @@ def test_stepwise_run_without_reference(dials_data, tmp_path):
         "space_group=P213",
         "integration.algorithm=stills",
         "d_min=2.0",
+        "steps=find_spots+index+integrate",
     ]
     args.append("image=" + os.fspath(ssx / "merlin0047_1700*.cbf"))
     args.append("steps=find_spots")
