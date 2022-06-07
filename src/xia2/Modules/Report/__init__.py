@@ -3,6 +3,7 @@ from __future__ import annotations
 import codecs
 import copy
 import io
+import logging
 import os
 from collections import OrderedDict
 
@@ -29,7 +30,10 @@ from mmtbx.scaling.xtriage import xtriage_analyses
 import xia2.Handlers.Environment
 import xia2.Handlers.Files
 from xia2.cli.plot_multiplicity import master_phil, plot_multiplicity
+from xia2.Handlers.Phil import PhilIndex
 from xia2.Modules.Analysis import batch_phil_scope, phil_scope, separate_unmerged
+
+logger = logging.getLogger("xia2.Modules.Report")
 
 
 class _xtriage_output(printed_output):
@@ -74,6 +78,16 @@ class Report:
     ):
 
         self.params = params
+        self.n_bins = PhilIndex.params.xia2.settings.merging_statistics.n_bins
+        # Remove this if statement block, and the corresponding PHIL parameter
+        # xia2.settings.report.resolution_bins, after version 3.9.
+        if self.params.resolution_bins:
+            logger.warning(
+                "The parameter 'xia2.settings.report.resolution_bins' is deprecated "
+                "and will be removed in version 3.10.  Please use the parameter "
+                "'n_bins' ('xia2.settings.merging_statistics.n_bins') instead."
+            )
+            self.n_bins = self.params.resolution_bins
 
         if params.d_min or params.d_max:
             intensities = intensities.resolution_filter(
@@ -118,7 +132,7 @@ class Report:
             if self.batches is not None:
                 self.batches = self.batches.as_anomalous_array()
 
-        self.intensities.setup_binner(n_bins=self.params.resolution_bins)
+        self.intensities.setup_binner(n_bins=self.n_bins)
         self.merged_intensities = self.intensities.merge_equivalents().array()
 
     def multiplicity_plots(self, dest_path=None):
@@ -226,7 +240,7 @@ class Report:
     def resolution_plots_and_stats(self):
         self.merging_stats = merging_statistics.dataset_statistics(
             self.intensities,
-            n_bins=self.params.resolution_bins,
+            n_bins=self.n_bins,
             cc_one_half_significance_level=self.params.cc_half_significance_level,
             eliminate_sys_absent=self.params.eliminate_sys_absent,
             use_internal_variance=self.params.use_internal_variance,
@@ -239,7 +253,7 @@ class Report:
         )
         self.merging_stats_anom = merging_statistics.dataset_statistics(
             intensities_anom,
-            n_bins=self.params.resolution_bins,
+            n_bins=self.n_bins,
             anomalous=True,
             cc_one_half_significance_level=self.params.cc_half_significance_level,
             eliminate_sys_absent=self.params.eliminate_sys_absent,
@@ -261,7 +275,7 @@ class Report:
         plotter = IntensityStatisticsPlots(
             self.intensities,
             anomalous=self.params.anomalous,
-            n_resolution_bins=self.params.resolution_bins,
+            n_resolution_bins=self.n_bins,
             xtriage_analyses=self._xanalysis,
             run_xtriage_analysis=run_xtriage,
         )
