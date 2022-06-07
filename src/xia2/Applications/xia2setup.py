@@ -286,7 +286,10 @@ def _filter_aliased_hdf5_sweeps(sweeps: list[str]) -> set[str]:
     hdf5_sweeps: dict[frozenset[str], str] = {}
 
     for s in sweeps:
-        if not is_hdf5_name(s) or not (filenames := _linked_hdf5_data_files(s)):
+        filenames = set()
+        if is_hdf5_name(s):
+            filenames = _linked_hdf5_data_files(s)
+        if not is_hdf5_name(s) or not filenames:
             deduplicated.add(s)
         elif filenames in hdf5_sweeps:
             # Bias in favour of using _master.h5 in place of .nxs, because of XDS
