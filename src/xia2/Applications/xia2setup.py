@@ -2,6 +2,7 @@
 # reduction from a directory full of images, optionally with scan and
 # sequence files which will be used to add matadata.
 
+from __future__ import annotations
 
 import collections
 import logging
@@ -222,46 +223,90 @@ def visit(directory, files):
     return templates
 
 
-def _list_hdf5_data_files(h5_file):
-    f = h5py.File(h5_file, "r")
-    filenames = [
-        f["/entry/data"][k].file.filename
-        for k in f["/entry/data"]
-        if k.startswith("data_")
-    ]
-    f.close()
-    return filenames
+def _linked_hdf5_data_files(h5_file):
+    data_path = "/entry/data"
+    with h5py.File(h5_file) as f:
+        filenames = [
+            f[data_path][k].file.filename for k in f[data_path] if k.startswith("data_")
+        ]
+    return frozenset(filenames)
 
 
-def _filter_aliased_hdf5_sweeps(sweeps):
-    h5_data_to_sweep = {}
-    rest = []
+def _filter_aliased_hdf5_sweeps(sweeps: list[str]) -> set[str]:
+    """
+    Deduplicate HDF5 (or NeXus) data files that share the same underlying data.
+
+    For sweeps whose file names (or file name templates for one-file-per-image data)
+    suggest they are not HDF5 data, pass the names through unchanged.  For HDF5 data
+    in the externally-linked multiple-file layout described below, deduplicate any
+    sweep names corresponding to the same underlying data.  For other HDF5 data,
+    pass the sweep name through unchanged.
+
+    Sometimes, diffraction data in HDF5 format may be stored in several files.  Raw
+    image data may be in one or more files, some metadata perhaps stored in another
+    file.  In such a layout, a top-level ('master') file serves to define the data
+    structure, and may follow a standard for structured (meta)data, such as the NXmx
+    application definition of the NeXus data standard.  In such cases, the top-level
+    file is connected to the subordinate files by HDF5 external links.
+
+    For historical reasons, such a data layout may use two or more top-level files,
+    which are duplicates of each other.  For example, this is common at Diamond Light
+    Source for data from Dectris Eiger detectors, because XDS specifically requires
+    the top-level file to have a name ending in '_master.h5', whereas Diamond's
+    internal standard is for top-level files following the NeXus standard to have a
+    '.nxs' file extension.
+
+    To avoid these duplicate top-level HDF5 files being misidentified as separate
+    sweeps, this function serves to associate such top-level files with the
+    underlying image data sets to which they are linked, and keep only one top-level
+    file for each unique set of image data files.  This identification depends on the
+    image data sets in the top-level file (which may be external links) having names
+    like '/entry/data/data_<stuff>', where <stuff> is usually a string of numerals
+    (see '_linked_hdf5_data_files').
+
+    There are two known weakness of this method:
+      - If one genuinely wishes to import multiple top-level files pointing to the
+        same underlying image data (but perhaps with different metadata), they will
+        be erroneously deduplicated.
+      - The use of image data sets named '/entry/data/data_<stuff>' is not a
+        requirement of a valid top-level HDF5 data file.  The top-level file will
+        always have an image data set named '/entry/data/data', and may not bother
+        with any redundant 'data_<stuff>' data sets/links.  Even if the image data
+        are in separate files to the top-level file, '/entry/data/data' may link to
+        them using the separate HDF5 virtual data set formalism, which obviates the
+        need for external links called 'data_<stuff>'.  In such cases, any duplicates
+        will be missed.
+
+    Args:
+        sweeps:  The sweep data file names, or file name templates.
+
+    Returns:
+        The unique sweep names, with duplicate top-level HDF5 files removed.
+    """
+    deduplicated = set()
+    hdf5_sweeps: dict[frozenset[str], str] = {}
 
     for s in sweeps:
-        if not is_hdf5_name(s):
-            if s not in rest:
-                rest.append(s)
-            continue
-        filenames = tuple(_list_hdf5_data_files(s))
-        if filenames in h5_data_to_sweep:
-            # impose slight bias in favour of using _master.h5 in place of .nxs
-            # because XDS
-            if h5_data_to_sweep[filenames].endswith(".nxs") and s.endswith(
-                "_master.h5"
-            ):
-                h5_data_to_sweep[filenames] = s
+        filenames = set()
+        if is_hdf5_name(s):
+            filenames = _linked_hdf5_data_files(s)
+        if not is_hdf5_name(s) or not filenames:
+            deduplicated.add(s)
+        elif filenames in hdf5_sweeps:
+            # Bias in favour of using _master.h5 in place of .nxs, because of XDS
+            if hdf5_sweeps[filenames].endswith(".nxs") and s.endswith("_master.h5"):
+                hdf5_sweeps[filenames] = s
         else:
-            h5_data_to_sweep[filenames] = s
+            hdf5_sweeps[filenames] = s
 
-    return rest + [h5_data_to_sweep[k] for k in sorted(h5_data_to_sweep)]
+    return deduplicated.union(hdf5_sweeps[k] for k in hdf5_sweeps)
 
 
 def _write_sweeps(sweeps, out):
     global latest_sequence
     _known_sweeps = sweeps
 
-    sweeplist = sorted(_known_sweeps)
-    sweeplist = _filter_aliased_hdf5_sweeps(sweeplist)
+    sweeplist = sorted(_filter_aliased_hdf5_sweeps(_known_sweeps))
     assert sweeplist, "no sweeps found"
 
     # sort sweeplist based on epoch of first image of each sweep
