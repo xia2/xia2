@@ -103,17 +103,16 @@ def load_crystal_data_from_new_expts(new_data: List[FilePair]) -> CrystalsDict:
 
 
 def determine_best_unit_cell_from_crystals(
-    crystals_dicts: List[CrystalsDict],
+    crystals_dict: CrystalsDict,
 ) -> uctbx.unit_cell:
     """Set the median unit cell as the best cell, for consistent d-values across
     experiments."""
     uc_params = [flex.double() for i in range(6)]
-    for crystals_dict in crystals_dicts:
-        for v in crystals_dict.values():
-            for c in v.crystals:
-                unit_cell = c.get_recalculated_unit_cell() or c.get_unit_cell()
-                for i, p in enumerate(unit_cell.parameters()):
-                    uc_params[i].append(p)
+    for v in crystals_dict.values():
+        for c in v.crystals:
+            unit_cell = c.get_recalculated_unit_cell() or c.get_unit_cell()
+            for i, p in enumerate(unit_cell.parameters()):
+                uc_params[i].append(p)
     best_unit_cell = uctbx.unit_cell(parameters=[flex.median(p) for p in uc_params])
     return best_unit_cell
 
@@ -445,7 +444,7 @@ def cosym_reindex(
 ):
     from dials.command_line.cosym import phil_scope as cosym_scope
 
-    from xia2.Modules.SSX.batch_cosym import batch_cosym_analysis
+    from xia2.Modules.SSX.batch_cosym import BatchCosym
 
     expts = []
     refls = []
@@ -459,10 +458,13 @@ def cosym_reindex(
     params.lattice_symmetry_max_delta = 1
     if d_min:
         params.d_min = d_min
+
     with run_in_directory(working_directory), log_to_file(logfile), record_step(
         "cosym_reindex"
     ):
-        batch_cosym_analysis(expts, refls, params)
+        cosym_instance = BatchCosym(expts, refls, params)
+        register_default_cosym_observers(cosym_instance)
+        cosym_instance.run()
 
 
 def select_crystals_close_to(

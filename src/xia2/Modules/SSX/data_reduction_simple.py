@@ -242,15 +242,14 @@ class SimpleDataReduction(BaseDataReduction):
             )
             # Make a crystals_data object with all data for writing out
             # an updated best unit cell.
-            previous_crystals_data: CrystalsDict = {}
             for file_pair in data_already_reindexed.values():
                 expts = load.experiment_list(file_pair.expt, check_format=False)
-                previous_crystals_data[str(file_pair.expt)] = CrystalsData(
+                good_crystals_data[str(file_pair.expt)] = CrystalsData(
                     crystals=copy.deepcopy(expts.crystals()),
                     identifiers=[],
                 )
             new_best_unit_cell = self._write_unit_cells_to_json(
-                filter_wd, good_crystals_data, previous_crystals_data
+                filter_wd, good_crystals_data
             )
 
         else:
@@ -339,7 +338,7 @@ class SimpleDataReduction(BaseDataReduction):
             ):
                 # calculate the median unit cell
                 new_best_unit_cell = determine_best_unit_cell_from_crystals(
-                    [crystals_data]
+                    crystals_data
                 )
                 good_crystals_data = select_crystals_close_to(
                     crystals_data,
@@ -373,15 +372,10 @@ class SimpleDataReduction(BaseDataReduction):
     def _write_unit_cells_to_json(
         working_directory: Path,
         crystals_dict: CrystalsDict,
-        previous_crystals_dict: CrystalsDict,
     ) -> uctbx.unit_cell:
         # now write out the best cell
-        new_best_unit_cell = determine_best_unit_cell_from_crystals(
-            [crystals_dict, previous_crystals_dict]
-        )
+        new_best_unit_cell = determine_best_unit_cell_from_crystals(crystals_dict)
         all_ucs = []
-        for v in previous_crystals_dict.values():
-            all_ucs.extend([c.get_unit_cell().parameters() for c in v.crystals])
         for v in crystals_dict.values():
             all_ucs.extend([c.get_unit_cell().parameters() for c in v.crystals])
         sg = v.crystals[0].get_space_group().type().number()
