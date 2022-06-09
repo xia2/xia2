@@ -1,3 +1,35 @@
+xia2 3.10.0 (2022-06-09)
+========================
+
+Features
+--------
+
+- Add unmerged items to mmcif output, conform to the v5 mmcif dictionary by default. (`#667 <https://github.com/xia2/xia2/issues/667>`_)
+- ``dev.xia2.ssx``: Add first part of a developmental ssx processing pipeline (data integration) (`#670 <https://github.com/xia2/xia2/issues/670>`_)
+
+
+Bugfixes
+--------
+
+- Unit cell clustering fixes for `dials/dials#2081 <https://github.com/dials/dials/pull/2081>`_ (`#668 <https://github.com/xia2/xia2/issues/668>`_)
+- Move ``DataManager`` to separate module to avoid circular import (`#669 <https://github.com/xia2/xia2/issues/669>`_)
+- Fix cases where NeXus files not following the Eiger conventions (``/entry/data/data_[nnnn]```) were ignored. (`#672 <https://github.com/xia2/xia2/issues/672>`_)
+- Fix bug in ``pipeline=dials`` where the working directory contains the letters ``"mtz"``, which would incorrectly be replaced with ``"sca"``, leading to an error. (`#674 <https://github.com/xia2/xia2/issues/674>`_)
+- ``dev.xia2.ssx``: Correctly report all spot histograms for multi-imageset input to spotfinding (`#678 <https://github.com/xia2/xia2/issues/678>`_)
+
+
+Deprecations and Removals
+-------------------------
+
+- The option ``report.resolution_bins`` for specifying the number of resolution bins in the merging statistics report in ``xia2.html`` is now deprecated.  Please use the ``merging_statistics.n_bins`` option instead.  If you don't specify either parameter, you will not notice any change in behaviour — the default will still be to use 20 resolution bins. (`#666 <https://github.com/xia2/xia2/issues/666>`_)
+
+
+Misc
+----
+
+- `#661 <https://github.com/xia2/xia2/issues/661>`_, `#662 <https://github.com/xia2/xia2/issues/662>`_, `#663 <https://github.com/xia2/xia2/issues/663>`_, `#664 <https://github.com/xia2/xia2/issues/664>`_, `#675 <https://github.com/xia2/xia2/issues/675>`_, `#676 <https://github.com/xia2/xia2/issues/676>`_, `#677 <https://github.com/xia2/xia2/issues/677>`_, `#679 <https://github.com/xia2/xia2/issues/679>`_, `#681 <https://github.com/xia2/xia2/issues/681>`_, `#682 <https://github.com/xia2/xia2/issues/682>`_
+
+
 xia2 3.9.0 (2022-03-14)
 =======================
 

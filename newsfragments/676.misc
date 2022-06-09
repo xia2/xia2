@@ -1,1 +1,0 @@
-Always assume read-only conda-base when installing within a libtbx distribution.

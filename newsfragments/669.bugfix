@@ -1,1 +1,0 @@
-Move ``DataManager`` to separate module to avoid circular import
