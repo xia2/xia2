@@ -1,1 +1,0 @@
-The option ``report.resolution_bins`` for specifying the number of resolution bins in the merging statistics report in ``xia2.html`` is now deprecated.  Please use the ``merging_statistics.n_bins`` option instead.  If you don't specify either parameter, you will not notice any change in behaviour — the default will still be to use 20 resolution bins.
