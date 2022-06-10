@@ -275,7 +275,9 @@ def test_ssx_reduce_on_files_no_idx_ambiguity(dials_data, tmp_path, pdb_model):
         args.append(f"model={str(model)}")
 
     result = procrunner.run(args, working_directory=tmp_path)
-    assert not result.returncode and not result.stderr
+    assert (
+        not result.returncode
+    )  # can get result.stderr due to a warning in dials.export
     check_data_reduction_files(tmp_path, reindex=False)
 
 

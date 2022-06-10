@@ -260,6 +260,20 @@ def run_uc_cluster(
     return good_crystals_data
 
 
+def dials_export(
+    working_directory: Path,
+    experiments: ExperimentList,
+    reflection_table: flex.reflection_table,
+    reduction_params: ReductionParams,
+    suffix: Optional[str] = None,
+) -> None:
+    mtz_filename = "scaled" + (suffix if suffix else "") + ".mtz"
+    params, _ = _extract_scaling_params_for_prescale(reduction_params)
+    params.output.unmerged_mtz = mtz_filename
+    with run_in_directory(working_directory):
+        _export_unmerged_mtz(params, experiments, reflection_table)
+
+
 def merge(
     working_directory: Path,
     experiments: ExperimentList,
