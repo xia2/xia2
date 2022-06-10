@@ -1,15 +1,84 @@
 from __future__ import annotations
 
-import json
 import logging
-import os
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, List
+from typing import Dict, List, Optional
+
+import iotbx.phil
+from cctbx import sgtbx, uctbx
+from dials.array_family import flex
+from dxtbx.serialize import load
 
 xia2_logger = logging.getLogger(__name__)
 
-from xia2.Handlers.Streams import banner
-from xia2.Modules.SSX.data_reduction_programs import FilePair
+
+@dataclass(eq=False)
+class FilePair:
+    expt: Path
+    refl: Path
+
+    def check(self):
+        if not self.expt.is_file():
+            raise FileNotFoundError(f"File {self.expt} does not exist")
+        if not self.refl.is_file():
+            raise FileNotFoundError(f"File {self.refl} does not exist")
+
+    def validate(self):
+        expt = load.experiment_list(self.expt, check_format=False)
+        refls = flex.reflection_table.from_file(self.refl)
+        refls.assert_experiment_identifiers_are_consistent(expt)
+
+    def __eq__(self, other):
+        if self.expt == other.expt and self.refl == other.refl:
+            return True
+        return False
+
+
+FilesDict = Dict[int, FilePair]
+# FilesDict: A dict where the keys are an index, corresponding to a filepair
+
+
+@dataclass
+class ReductionParams:
+    space_group: sgtbx.space_group
+    batch_size: int = 1000
+    nproc: int = 1
+    d_min: Optional[float] = None
+    anomalous: bool = False
+    cluster_threshold: float = 1000.0
+    absolute_angle_tolerance: float = 0.5
+    absolute_length_tolerance: float = 0.2
+    central_unit_cell: Optional[uctbx.unit_cell] = None
+    model: Optional[Path] = None
+    cosym_phil: Optional[Path] = None
+
+    @classmethod
+    def from_phil(cls, params: iotbx.phil.scope_extract):
+        """Construct from xia2.cli.ssx phil_scope."""
+        model = None
+        cosym_phil = None
+        if params.scaling.model:
+            model = Path(params.scaling.model).resolve()
+        if params.clustering.central_unit_cell and params.clustering.threshold:
+            raise ValueError(
+                "Only one of clustering.central_unit_cell and clustering.threshold can be specified"
+            )
+        if params.symmetry.phil:
+            cosym_phil = Path(params.symmetry.phil).resolve()
+        return cls(
+            params.symmetry.space_group,
+            params.batch_size,
+            params.multiprocessing.nproc,
+            params.d_min,
+            params.scaling.anomalous,
+            params.clustering.threshold,
+            params.clustering.absolute_angle_tolerance,
+            params.clustering.absolute_length_tolerance,
+            params.clustering.central_unit_cell,
+            model,
+            cosym_phil,
+        )
 
 
 def inspect_directories(directories_to_process: List[Path]) -> List[FilePair]:
@@ -46,6 +115,40 @@ def inspect_directories(directories_to_process: List[Path]) -> List[FilePair]:
     return new_data
 
 
+def inspect_scaled_directories(
+    directories_to_process: List[Path],
+    reduction_params: ReductionParams,
+) -> List[FilePair]:
+    new_data: List[FilePair] = []
+    for d in directories_to_process:
+        # if reduction_params.model - check same as for these data.
+        expts_this, refls_this = ([], [])
+        for file_ in list(d.glob("scaled*.expt")):
+            expts_this.append(file_)
+        for file_ in list(d.glob("scaled*.refl")):
+            refls_this.append(file_)
+        if len(expts_this) != len(refls_this):
+            raise ValueError(
+                f"Unequal number of experiments ({len(expts_this)}) "
+                + f"and reflections ({len(refls_this)}) files found in {d}"
+            )
+        for expt, refl in zip(sorted(expts_this), sorted(refls_this)):
+            fp = FilePair(expt, refl)
+            try:
+                fp.validate()
+            except AssertionError:
+                raise ValueError(
+                    f"Files {fp.expt} & {fp.refl} not consistent, please check input data"
+                )
+            else:
+                new_data.append(fp)
+        if not expts_this:
+            xia2_logger.warning(f"No scaled data files found in {str(d)}")
+    if not new_data:
+        raise ValueError("No scaled datafiles found in directories given")
+    return new_data
+
+
 def inspect_files(
     reflection_files: List[Path], experiment_files: List[Path]
 ) -> List[FilePair]:
@@ -66,61 +169,50 @@ def inspect_files(
 
 
 class BaseDataReduction(object):
-    def __init__(self, main_directory: Path, input_data: List[FilePair]) -> None:
-        # General setup, finding which of the input data have already
-        # been processed. Then it's up to the specific data reduction algorithms
-        # as to how that information should be used.
-        self._main_directory = main_directory
-        self._input_data = input_data
-        self._data_reduction_wd = self._main_directory / "data_reduction"
 
-        self.files_already_processed = []
-        self.new_to_process = []
+    _no_input_error_msg = "No input data found"  # overwritten with more useful
+    # messages in derived classes.
 
-        xia2_logger.notice(banner("Data reduction"))  # type: ignore
+    def __init__(
+        self,
+        main_directory: Path,
+        integrated_data: List[FilePair],
+        processed_directories: List[Path],
+        reduction_params,
+    ):
+        self._integrated_data: List[FilePair] = integrated_data
+        self._main_directory: Path = main_directory
+        self._reduction_params: ReductionParams = reduction_params
+        self._data_reduction_wd: Path = self._main_directory / "data_reduction"
+
+        # load any previously scaled data
+        self._previously_scaled_data = []
+        if processed_directories:
+            self._previously_scaled_data = inspect_scaled_directories(
+                processed_directories, reduction_params
+            )
+
+        if not (self._integrated_data or self._previously_scaled_data):
+            raise ValueError(self._no_input_error_msg)
 
         if not Path.is_dir(self._data_reduction_wd):
             Path.mkdir(self._data_reduction_wd)
-            self.new_to_process = self._input_data
-        # if has been processed already, need to read something from the data
-        # reduction dir that says it has been reindexed in a consistent manner
-        elif (self._data_reduction_wd / "data_reduction.json").is_file():
-            self.files_already_processed = self._load_prepared()
-            for fp in self._input_data:
-                if fp not in self.files_already_processed:
-                    self.new_to_process.append(fp)
-        else:
-            # perhaps error in processing such that none were successfully
-            # processed previously. In this case all should be reprocessed
-            self.new_to_process = self._input_data
-
-        if len(self.new_to_process) + len(self.files_already_processed) != len(
-            self._input_data
-        ):
-            raise ValueError(
-                f"""Error assessing new and previously processed files:
-                new = {self.new_to_process}
-                previous = {self.files_already_processed}
-                input = {self._input_data}
-                new + previous != input"""
-            )
-
-        if self.files_already_processed:
-            files = "\n".join(
-                str(fp.expt) + "\n" + str(fp.refl)
-                for fp in self.files_already_processed
-            )
-            xia2_logger.info(f"Files previously processed:\n{files}")
-        new_files = "\n".join(
-            str(fp.expt) + "\n" + str(fp.refl) for fp in self.new_to_process
-        )
-        xia2_logger.info(f"New data to process:\n{new_files}")
 
     @classmethod
-    def from_directories(cls, main_directory: Path, directories_to_process: List[Path]):
-        # extract all integrated files from the directories
+    def from_directories(
+        cls,
+        main_directory: Path,
+        directories_to_process: List[Path],
+        processed_directories: List[Path],
+        reduction_params,
+    ):
         new_data = inspect_directories(directories_to_process)
-        return cls(main_directory, new_data)
+        return cls(
+            main_directory,
+            new_data,
+            processed_directories,
+            reduction_params,
+        )
 
     @classmethod
     def from_files(
@@ -128,34 +220,29 @@ class BaseDataReduction(object):
         main_directory: Path,
         reflection_files: List[Path],
         experiment_files: List[Path],
+        processed_directories: List[Path],
+        reduction_params,
     ):
         # load and check all integrated files
         try:
             new_data = inspect_files(reflection_files, experiment_files)
         except FileNotFoundError as e:
             raise ValueError(e)
-        return cls(main_directory, new_data)
+        return cls(
+            main_directory,
+            new_data,
+            processed_directories,
+            reduction_params,
+        )
 
-    def _save_as_prepared(self):
-        data_reduction_progress = {
-            "files_processed": {
-                "refls": [os.fspath(fp.refl) for fp in self._input_data],
-                "expts": [os.fspath(fp.expt) for fp in self._input_data],
-            },
-        }
-        with (self._data_reduction_wd / "data_reduction.json").open(mode="w") as fp:
-            json.dump(data_reduction_progress, fp, indent=2)
+    @classmethod
+    def from_processed_only(
+        cls,
+        main_directory: Path,
+        processed_directories: List[Path],
+        reduction_params,
+    ):
+        return cls(main_directory, [], processed_directories, reduction_params)
 
-    def _load_prepared(self):
-        with (self._data_reduction_wd / "data_reduction.json").open(mode="r") as fp:
-            previous = json.load(fp)
-        prev_refls = previous["files_processed"]["refls"]
-        prev_expts = previous["files_processed"]["expts"]
-        files_already_processed = [
-            FilePair(Path(expt), Path(refl))
-            for expt, refl in zip(prev_expts, prev_refls)
-        ]
-        return files_already_processed
-
-    def run(self, params: Any) -> None:
+    def run(self) -> None:
         pass

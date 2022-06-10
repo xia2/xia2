@@ -227,51 +227,56 @@ def test_stepwise_run_without_reference(dials_data, tmp_path):
     check_output(tmp_path, find_spots=True, index=True, integrate=True)
 
 
-def check_data_reduction_files(tmp_path):
+def check_data_reduction_files(tmp_path, reindex=True):
     assert (tmp_path / "data_reduction").is_dir()
     assert (tmp_path / "data_reduction" / "prefilter").is_dir()
-    assert (tmp_path / "data_reduction" / "reindex").is_dir()
+    if reindex:
+        assert (tmp_path / "data_reduction" / "reindex").is_dir()
     assert (tmp_path / "data_reduction" / "scale").is_dir()
     assert (tmp_path / "data_reduction" / "scale" / "merged.mtz").is_file()
     assert (tmp_path / "data_reduction" / "scale" / "scaled.mtz").is_file()
 
 
-def test_ssx_reduce_on_directory(dials_data, tmp_path):
+@pytest.mark.parametrize("pdb_model", [True, False])
+def test_ssx_reduce_on_directory(dials_data, tmp_path, pdb_model):
     ssx = dials_data("cunir_serial_processed", pathlib=True)
     args = ["dev.xia2.ssx_reduce", f"directory={ssx}"]
+    if pdb_model:
+        model = dials_data("cunir_serial", pathlib=True) / "2bw4.pdb"
+        args.append(f"model={str(model)}")
 
     result = subprocess.run(args, cwd=tmp_path, capture_output=True)
     assert not result.returncode and not result.stderr
     check_data_reduction_files(tmp_path)
 
-    # Now check that results were output at various stages to allow iterative
-    # workflows
-    filter_results = tmp_path / "data_reduction/prefilter/filter_results.json"
-    with filter_results.open(mode="r") as f:
-        result = json.load(f)
-    # check that the unit cells were written to file
-    assert result["best_unit_cell"] == [96.4105, 96.4105, 96.4105, 90.0, 90.0, 90.0]
-    assert result["n_cryst"] == 5
-    assert len(result["unit_cells"]) == 5
-    assert result["space_group"] == 198
 
-    data_reduction_json = tmp_path / "data_reduction/data_reduction.json"
-    with data_reduction_json.open(mode="r") as f:
-        reduction_result = json.load(f)
-    assert reduction_result["files_processed"] == {
-        "refls": [os.fspath(ssx / "integrated.refl")],
-        "expts": [os.fspath(ssx / "integrated.expt")],
-    }
+@pytest.mark.parametrize("pdb_model", [True, False])
+def test_ssx_reduce_on_files_no_idx_ambiguity(dials_data, tmp_path, pdb_model):
+    ssx = dials_data("cunir_serial_processed", pathlib=True)
+    result = procrunner.run(
+        [
+            "dials.reindex",
+            f"{ssx / 'integrated.refl'}",
+            f"{ssx / 'integrated.expt'}",
+            "space_group=P432",
+        ],
+        working_directory=tmp_path,
+    )
+    assert not result.returncode and not result.stderr
+    expts = tmp_path / "reindexed.expt"
+    refls = tmp_path / "reindexed.refl"
+    args = [
+        "dev.xia2.ssx_reduce",
+        f"reflections={refls}",
+        f"experiments={expts}",
+    ]
+    if pdb_model:
+        model = dials_data("cunir_serial", pathlib=True) / "2bw4.pdb"
+        args.append(f"model={str(model)}")
 
-    reindex_results_json = tmp_path / "data_reduction/reindex/reindexing_results.json"
-    with reindex_results_json.open(mode="r") as f:
-        reidx_results = json.load(f)
-    assert reidx_results["reindexed_files"] == {
-        "0": {
-            "refl": os.fspath(tmp_path / "data_reduction/reindex/processed_0.refl"),
-            "expt": os.fspath(tmp_path / "data_reduction/reindex/processed_0.expt"),
-        }
-    }
+    result = procrunner.run(args, working_directory=tmp_path)
+    assert not result.returncode and not result.stderr
+    check_data_reduction_files(tmp_path, reindex=False)
 
 
 def test_ssx_reduce_on_files(dials_data, tmp_path):
@@ -324,11 +329,11 @@ def test_ssx_reduce_filter_options(
     assert not result.returncode and not result.stderr
     check_data_reduction_files(tmp_path)
 
-    # Now check that results were output at various stages to allow iterative
+    """# Now check that results were output at various stages to allow iterative
     # workflows
     filter_results = tmp_path / "data_reduction/prefilter/filter_results.json"
     with filter_results.open(mode="r") as f:
         result = json.load(f)
     # check that the unit cells were written to file
     assert result["best_unit_cell"] == expected_results["best_unit_cell"]
-    assert result["n_cryst"] == expected_results["n_cryst"]
+    assert result["n_cryst"] == expected_results["n_cryst"]"""

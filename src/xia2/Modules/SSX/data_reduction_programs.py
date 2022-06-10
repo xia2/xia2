@@ -12,9 +12,8 @@ from io import StringIO
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-import procrunner
-
-from cctbx import crystal, sgtbx, uctbx
+import iotbx.phil
+from cctbx import crystal, uctbx
 from dials.algorithms.scaling.algorithm import ScalingAlgorithm
 from dials.algorithms.scaling.scaling_library import determine_best_unit_cell
 from dials.array_family import flex
@@ -34,6 +33,7 @@ from dxtbx.serialize import load
 from iotbx import phil
 
 from xia2.Driver.timing import record_step
+from xia2.Modules.SSX.data_reduction_base import FilePair, FilesDict, ReductionParams
 from xia2.Modules.SSX.reporting import (
     condensed_unit_cell_info,
     statistics_output_from_scaler,
@@ -41,32 +41,6 @@ from xia2.Modules.SSX.reporting import (
 from xia2.Modules.SSX.util import log_to_file, run_in_directory
 
 xia2_logger = logging.getLogger(__name__)
-
-
-@dataclass(eq=False)
-class FilePair:
-    expt: Path
-    refl: Path
-
-    def check(self):
-        if not self.expt.is_file():
-            raise FileNotFoundError(f"File {self.expt} does not exist")
-        if not self.refl.is_file():
-            raise FileNotFoundError(f"File {self.refl} does not exist")
-
-    def validate(self):
-        expt = load.experiment_list(self.expt, check_format=False)
-        refls = flex.reflection_table.from_file(self.refl)
-        refls.assert_experiment_identifiers_are_consistent(expt)
-
-    def __eq__(self, other):
-        if self.expt == other.expt and self.refl == other.refl:
-            return True
-        return False
-
-
-FilesDict = Dict[int, FilePair]
-# FilesDict: A dict where the keys are an index, corresponding to a filepair
 
 
 @dataclass(eq=False)
@@ -178,28 +152,18 @@ def run_uc_cluster(
     return good_crystals_data
 
 
-def run_cosym(
-    params: phil.scope_extract,
-    expts: ExperimentList,
-    tables: List[flex.reflection_table],
-) -> Tuple[ExperimentList, List[flex.reflection_table]]:
-    """Small wrapper to hide cosym run implementation."""
-    cosym_instance = cosym(expts, tables, params)
-    register_default_cosym_observers(cosym_instance)
-    cosym_instance.run()
-    return cosym_instance.experiments, cosym_instance.reflections
-
-
 def merge(
     working_directory: Path,
     experiments: ExperimentList,
     reflection_table: flex.reflection_table,
     d_min: float = None,
     best_unit_cell: Optional[uctbx.unit_cell] = None,
+    suffix: Optional[str] = None,
 ) -> None:
-
+    filename = "merged" + (suffix if suffix else "") + ".mtz"
+    logfile = "dials.merge" + (suffix if suffix else "") + ".log"
+    html_file = "dials.merge" + (suffix if suffix else "") + ".html"
     with run_in_directory(working_directory):
-        logfile = "dials.merge.log"
         with log_to_file(logfile) as dials_logger, record_step("dials.merge"):
             params = merge_phil_scope.extract()
             input_ = (
@@ -214,13 +178,13 @@ def merge(
                 input_ += f"  best_unit_cell = {best_unit_cell.parameters()}"
             dials_logger.info(input_)
             mtz_file = merge_data_to_mtz(params, experiments, [reflection_table])
-            dials_logger.info("\nWriting reflections to merged.mtz")
+            dials_logger.info(f"\nWriting reflections to {filename}")
             out = StringIO()
             mtz_file.show_summary(out=out)
             dials_logger.info(out.getvalue())
-            mtz_file.write("merged.mtz")
-            merge_html_report(mtz_file, "dials.merge.html")
-    xia2_logger.info(f"Merged mtz file: {working_directory / 'merged.mtz'}")
+            mtz_file.write(filename)
+            merge_html_report(mtz_file, html_file)
+    xia2_logger.info(f"Merged mtz file: {working_directory / filename}")
 
 
 def _set_scaling_options_for_ssx(
@@ -247,201 +211,286 @@ def _set_scaling_options_for_ssx(
     return scaling_params, input_
 
 
+def _extract_scaling_params(reduction_params):
+    # scaling options for scaling without a model
+    xia2_phil = f"""
+        model=KB
+        scaling_options.full_matrix=False
+        weighting.error_model.error_model=None
+        scaling_options.outlier_rejection=simple
+        reflection_selection.intensity_choice=sum
+        reflection_selection.method=intensity_ranges
+        reflection_selection.Isigma_range=2.0,0.0
+        reflection_selection.min_partiality=0.4
+        scaling_options.nproc=8
+        anomalous={reduction_params.anomalous}
+        output.unmerged_mtz=scaled.mtz
+    """
+    if reduction_params.d_min:
+        xia2_phil += f"\ncut_data.d_min={reduction_params.d_min}"
+    if reduction_params.central_unit_cell:
+        vals = ",".join(
+            str(round(p, 4)) for p in reduction_params.central_unit_cell.parameters()
+        )
+        xia2_phil += f"\nreflection_selection.best_unit_cell={vals}"
+    working_phil = scaling_phil_scope.fetch(sources=[iotbx.phil.parse(xia2_phil)])
+    diff_phil = scaling_phil_scope.fetch_diff(source=working_phil)
+    params = working_phil.extract()
+    return params, diff_phil
+
+
+def _extract_scaling_params_for_prescale(reduction_params):
+
+    xia2_phil = f"""
+        model=KB
+        scaling_options.full_matrix=False
+        weighting.error_model.error_model=None
+        scaling_options.outlier_rejection=simple
+        reflection_selection.intensity_choice=sum
+        reflection_selection.method=intensity_ranges
+        reflection_selection.Isigma_range=2.0,0.0
+        reflection_selection.min_partiality=0.4
+        anomalous={reduction_params.anomalous}
+        output.html=None
+    """
+    if reduction_params.d_min:
+        xia2_phil += f"\ncut_data.d_min={reduction_params.d_min}"
+    if reduction_params.central_unit_cell:
+        vals = ",".join(
+            str(round(p, 4)) for p in reduction_params.central_unit_cell.parameters()
+        )
+        xia2_phil += f"\nreflection_selection.best_unit_cell={vals}"
+    working_phil = scaling_phil_scope.fetch(sources=[iotbx.phil.parse(xia2_phil)])
+    diff_phil = scaling_phil_scope.fetch_diff(source=working_phil)
+    params = working_phil.extract()
+    return params, diff_phil
+
+
+def _extract_scaling_params_for_scale_against_model(reduction_params, index):
+    xia2_phil = f"""
+        model=KB
+        scaling_options.full_matrix=False
+        weighting.error_model.error_model=None
+        scaling_options.outlier_rejection=simple
+        reflection_selection.intensity_choice=sum
+        reflection_selection.method=intensity_ranges
+        reflection_selection.Isigma_range=2.0,0.0
+        reflection_selection.min_partiality=0.4
+        anomalous={reduction_params.anomalous}
+        output.experiments=scaled_{index}.expt
+        output.reflections=scaled_{index}.refl
+        output.html=dials.scale.{index}.html
+        scaling_options.target_model={str(reduction_params.model)}
+        scaling_options.only_target=True
+        cut_data.small_scale_cutoff=1e-9
+    """
+    if reduction_params.d_min:
+        xia2_phil += f"\ncut_data.d_min={reduction_params.d_min}"
+    if reduction_params.central_unit_cell:
+        vals = ",".join(
+            str(round(p, 4)) for p in reduction_params.central_unit_cell.parameters()
+        )
+        xia2_phil += f"\nreflection_selection.best_unit_cell={vals}"
+    working_phil = scaling_phil_scope.fetch(sources=[iotbx.phil.parse(xia2_phil)])
+    diff_phil = scaling_phil_scope.fetch_diff(source=working_phil)
+    params = working_phil.extract()
+    return params, diff_phil
+
+
 def scale_against_model(
     working_directory: Path,
     files: FilePair,
     index: int,
-    model: Path,
-    anomalous: bool = True,
-    d_min: float = None,
-    best_unit_cell: Optional[uctbx.unit_cell] = None,
+    reduction_params,
 ) -> FilesDict:
-    with run_in_directory(working_directory):
-        logfile = f"dials.scale.{index}.log"
-        with log_to_file(logfile) as dials_logger:
-            # Setup scaling
-            input_ = "Input parameters:\n"
-            expts = load.experiment_list(files.expt, check_format=False)
-            table = flex.reflection_table.from_file(files.refl)
-            input_ += f"  reflections = {files.refl}\n"
-            input_ += f"  experiments = {files.expt}\n"
-            params = scaling_phil_scope.extract()
-            params, input_opts = _set_scaling_options_for_ssx(params)
-            input_ += input_opts
-            params.anomalous = anomalous
-            params.scaling_options.target_model = str(model)
-            params.scaling_options.only_target = True
-            params.cut_data.small_scale_cutoff = 1e-9
-            input_ += (
-                f"  anomalous = {anomalous}\n  scaling_options.target_model = {model}\n"
-                + "  small_scale_cutoff=1e-9\n"
-            )
-            input_ += "  scaling_options.only_target = True\n"
-            params.output.html = f"dials.scale.{index}.html"
-            input_ += f"  output.html = dials.scale.{index}.html\n"
-            if d_min:
-                params.cut_data.d_min = d_min
-                input_ += f"  cut_data.d_min = {d_min}\n"
-            if best_unit_cell:
-                params.reflection_selection.best_unit_cell = best_unit_cell
-                input_ += f"  reflection_selection.best_unit_cell = {best_unit_cell.parameters()}\n"
-            dials_logger.info(input_)
-            # Run the scaling using the algorithm class to give access to scaler
-            scaler = ScalingAlgorithm(params, expts, [table])
-            scaler.run()
-            scaled_expts, scaled_table = scaler.finish()
-            out_expt = f"scaled_{index}.expt"
-            out_refl = f"scaled_{index}.refl"
+    with run_in_directory(working_directory), log_to_file(
+        f"dials.scale.{index}.log"
+    ) as dials_logger:
+        # Setup scaling
+        expts = load.experiment_list(files.expt, check_format=False)
+        table = flex.reflection_table.from_file(files.refl)
+        params, diff_phil = _extract_scaling_params_for_scale_against_model(
+            reduction_params, index
+        )
+        dials_logger.info(
+            "The following parameters have been modified:\n"
+            + f"input.experiments = {files.expt}\n"
+            + f"input.reflections = {files.refl}\n"
+            + f"{diff_phil.as_str()}"
+        )
+        # Run the scaling using the algorithm class to give access to scaler
+        scaler = ScalingAlgorithm(params, expts, [table])
+        scaler.run()
+        scaled_expts, scaled_table = scaler.finish()
 
-            dials_logger.info(f"Saving scaled experiments to {out_expt}")
-            scaled_expts.as_file(out_expt)
-            dials_logger.info(f"Saving scaled reflections to {out_refl}")
-            scaled_table.as_file(out_refl)
+        dials_logger.info(f"Saving scaled experiments to {params.output.experiments}")
+        scaled_expts.as_file(params.output.experiments)
+        dials_logger.info(f"Saving scaled reflections to {params.output.reflections}")
+        scaled_table.as_file(params.output.reflections)
 
-    return {index: FilePair(working_directory / out_expt, working_directory / out_refl)}
+    return {
+        index: FilePair(
+            working_directory / params.output.experiments,
+            working_directory / params.output.reflections,
+        )
+    }
 
 
 def scale(
     working_directory: Path,
-    files_to_scale: FilesDict,
-    anomalous: bool = True,
-    d_min: float = None,
-    best_unit_cell: Optional[uctbx.unit_cell] = None,
+    files_to_scale: List[FilePair],
+    reduction_params: ReductionParams,
 ) -> Tuple[ExperimentList, flex.reflection_table]:
-    with run_in_directory(working_directory):
-        logfile = "dials.scale.log"
-        with log_to_file(logfile) as dials_logger, record_step("dials.scale"):
-            # Setup scaling
-            input_ = "Input parameters:\n"
-            experiments = ExperimentList()
-            reflection_tables = []
-            for file_pair in files_to_scale.values():
-                experiments.extend(
-                    load.experiment_list(file_pair.expt, check_format=False)
-                )
-                reflection_tables.append(
-                    flex.reflection_table.from_file(file_pair.refl)
-                )
-                input_ += f"  reflections = {file_pair.refl}\n"
-                input_ += f"  experiments = {file_pair.expt}\n"
 
-            params = scaling_phil_scope.extract()
-            params, input_opts = _set_scaling_options_for_ssx(params)
-            input_ += input_opts
-            params.scaling_options.nproc = 8
-            params.anomalous = anomalous
-            params.output.unmerged_mtz = "scaled.mtz"
-            input_ += f"  scaling_options.nproc = 8\n  anomalous = {anomalous}\n"
-            input_ += "  output.unmerged_mtz = scaled.mtz\n"
-            if d_min:
-                params.cut_data.d_min = d_min
-                input_ += f"  cut_data.d_min={d_min}\n"
-            if best_unit_cell:
-                params.reflection_selection.best_unit_cell = best_unit_cell
-                input_ += f"  reflection_selection.best_unit_cell = {best_unit_cell}"
-            dials_logger.info(input_)
-            # Run the scaling using the algorithm class to give access to scaler
-            scaler = ScalingAlgorithm(params, experiments, reflection_tables)
-            scaler.run()
-            scaled_expts, scaled_table = scaler.finish()
+    with run_in_directory(working_directory), log_to_file(
+        "dials.scale.log"
+    ) as dials_logger, record_step("dials.scale"):
+        # Setup scaling
+        input_ = ""
+        expts = ExperimentList()
+        tables = []
+        for fp in files_to_scale:
+            expts.extend(load.experiment_list(fp.expt, check_format=False))
+            tables.append(flex.reflection_table.from_file(fp.refl))
+            input_ += f"reflections = {fp.refl}\nexperiments = {fp.expt}\n"
 
-            dials_logger.info("Saving scaled experiments to scaled.expt")
-            scaled_expts.as_file("scaled.expt")
-            dials_logger.info("Saving scaled reflections to scaled.refl")
-            scaled_table.as_file("scaled.refl")
+        params, diff_phil = _extract_scaling_params(reduction_params)
+        dials_logger.info(
+            "The following parameters have been modified:\n"
+            + input_
+            + f"{diff_phil.as_str()}"
+        )
 
-            _export_unmerged_mtz(params, scaled_expts, scaled_table)
+        # Run the scaling using the algorithm class to give access to scaler
+        scaler = ScalingAlgorithm(params, expts, tables)
+        scaler.run()
+        scaled_expts, scaled_table = scaler.finish()
 
-            n_final = len(scaled_expts)
-            uc = determine_best_unit_cell(scaled_expts)
-            uc_str = ", ".join(str(round(i, 3)) for i in uc.parameters())
-            xia2_logger.info(
-                f"{n_final} crystals scaled in space group {scaled_expts[0].crystal.get_space_group().info()}\nMedian cell: {uc_str}"
-            )
-            xia2_logger.info(statistics_output_from_scaler(scaler))
+        dials_logger.info("Saving scaled experiments to scaled.expt")
+        scaled_expts.as_file("scaled.expt")
+        dials_logger.info("Saving scaled reflections to scaled.refl")
+        scaled_table.as_file("scaled.refl")
+
+        _export_unmerged_mtz(params, scaled_expts, scaled_table)
+
+        n_final = len(scaled_expts)
+        uc = determine_best_unit_cell(scaled_expts)
+        uc_str = ", ".join(str(round(i, 3)) for i in uc.parameters())
+        xia2_logger.info(
+            f"{n_final} crystals scaled in space group {scaled_expts[0].crystal.get_space_group().info()}\nMedian cell: {uc_str}"
+        )
+        xia2_logger.info(statistics_output_from_scaler(scaler))
 
     return scaled_expts, scaled_table
+
+
+def _extract_cosym_params(reduction_params, index):
+    xia2_phil = f"""
+        space_group={reduction_params.space_group}
+        output.html=dials.cosym.{index}.html
+        output.json=dials.cosym.{index}.json
+        output.reflections=processed_{index}.refl
+        output.experiments=processed_{index}.expt
+    """
+    if reduction_params.d_min:
+        xia2_phil += f"\nd_min={reduction_params.d_min}"
+    extra_defaults = """
+        min_i_mean_over_sigma_mean=2
+        unit_cell_clustering.threshold=None
+        lattice_symmetry_max_delta=1
+    """
+    if reduction_params.cosym_phil:
+        itpr = cosym_phil_scope.command_line_argument_interpreter()
+        try:
+            user_phil = itpr.process(args=[os.fspath(reduction_params.cosym_phil)])[0]
+            working_phil = cosym_phil_scope.fetch(
+                sources=[
+                    iotbx.phil.parse(extra_defaults),
+                    user_phil,
+                    iotbx.phil.parse(xia2_phil),
+                ]
+            )
+            # Note, the order above makes the xia2_phil take precedent
+            # over the user phil, which takes precedent over the extra defaults
+        except Exception as e:
+            xia2_logger.warning(
+                f"Unable to interpret {reduction_params.cosym_phil} as a cosym phil file. Error:\n{e}"
+            )
+            working_phil = cosym_phil_scope.fetch(
+                sources=[
+                    iotbx.phil.parse(extra_defaults),
+                    iotbx.phil.parse(xia2_phil),
+                ]
+            )
+    else:
+        working_phil = cosym_phil_scope.fetch(
+            sources=[
+                iotbx.phil.parse(extra_defaults),
+                iotbx.phil.parse(xia2_phil),
+            ]
+        )
+    diff_phil = cosym_phil_scope.fetch_diff(source=working_phil)
+    cosym_params = working_phil.extract()
+    return cosym_params, diff_phil
 
 
 def scale_cosym(
     working_directory: Path,
     files: FilePair,
     index: int,
-    space_group: sgtbx.space_group,
-    d_min: float = None,
+    reduction_params,
 ) -> FilesDict:
     """Run prescaling followed by cosym an the expt and refl file."""
     with run_in_directory(working_directory):
 
-        with record_step("dials.scale"):
-
-            params = scaling_phil_scope.extract()
+        logfile = f"dials.scale.{index}.log"
+        with record_step("dials.scale"), log_to_file(logfile) as dials_logger:
             refls = [flex.reflection_table.from_file(files.refl)]
             expts = load.experiment_list(files.expt, check_format=False)
-            params, _ = _set_scaling_options_for_ssx(params)
-            params.output.html = None
-            if d_min:
-                params.cut_data.d_min = d_min
-
+            params, diff_phil = _extract_scaling_params_for_prescale(reduction_params)
+            dials_logger.info(
+                "The following parameters have been modified:\n"
+                + f"reflections = {files.refl}\n"
+                + f"experiments = {files.expt}\n"
+                + f"{diff_phil.as_str()}"
+            )
             scaled_expts, table = run_scaling(params, expts, refls)
+
         logfile = f"dials.cosym.{index}.log"
-        with record_step("dials.cosym"), log_to_file(logfile):
-            cosym_params = cosym_phil_scope.extract()
-            cosym_params.space_group = space_group
-            cosym_params.output.html = f"dials.cosym.{index}.html"
-            cosym_params.output.json = f"dials.cosym.{index}.json"
-            cosym_params.min_i_mean_over_sigma_mean = 2
-            cosym_params.unit_cell_clustering.threshold = None
+        with record_step("dials.cosym"), log_to_file(logfile) as dials_logger:
+            cosym_params, diff_phil = _extract_cosym_params(reduction_params, index)
+            dials_logger.info(
+                "The following parameters have been modified:\n"
+                + f"{diff_phil.as_str()}"
+            )
             # cosym_params.cc_star_threshold = 0.1
             # cosym_params.angular_separation_threshold = 5
-            cosym_params.lattice_symmetry_max_delta = 1
-            if d_min:
-                cosym_params.d_min = d_min
+
             tables = table.split_by_experiment_id()
             # now run cosym
-            cosym_expts, cosym_tables = run_cosym(cosym_params, scaled_expts, tables)
-            out_refl = f"processed_{index}.refl"
-            out_expt = f"processed_{index}.expt"
-            cosym_expts.as_file(out_expt)
-            joint_refls = flex.reflection_table.concat(cosym_tables)
-            joint_refls.as_file(out_refl)
+            cosym_instance = cosym(scaled_expts, tables, cosym_params)
+            register_default_cosym_observers(cosym_instance)
+            cosym_instance.run()
+            cosym_instance.experiments.as_file(cosym_params.output.experiments)
+            joint_refls = flex.reflection_table.concat(cosym_instance.reflections)
+            joint_refls.as_file(cosym_params.output.reflections)
             xia2_logger.info(
-                f"Consistently indexed {len(cosym_expts)} crystals in data reduction batch {index+1}"
+                f"Consistently indexed {len(cosym_instance.experiments)} crystals in data reduction batch {index+1}"
             )
 
-    return {index: FilePair(working_directory / out_expt, working_directory / out_refl)}
-
-
-def reference_reindex(
-    working_directory: Path,
-    reference_files: FilePair,
-    files_for_reindex: FilePair,
-    index: int,
-) -> FilePair:
-    cmd = [
-        "dials.reindex",
-        str(files_for_reindex.expt),
-        str(files_for_reindex.refl),
-        f"reference.reflections={str(reference_files.refl)}",
-        f"reference.experiments={str(reference_files.expt)}",
-        f"output.reflections={str(files_for_reindex.refl)}",
-        f"output.experiments={str(files_for_reindex.expt)}",
-    ]
-    logfile = f"dials.reindex.{index}.log"
-    with log_to_file(logfile), record_step("dials.reindex"):
-        result = procrunner.run(cmd, working_directory=working_directory)
-        if result.returncode or result.stderr:
-            raise ValueError(
-                "dials.reindex returned error status:\n" + str(result.stderr)
-            )
-    return files_for_reindex
+    return {
+        index: FilePair(
+            working_directory / cosym_params.output.experiments,
+            working_directory / cosym_params.output.reflections,
+        )
+    }
 
 
 def cosym_reindex(
     working_directory: Path,
-    files_for_reindex: FilesDict,
+    files_for_reindex: List[FilePair],
     d_min: float = None,
-):
+) -> List[FilePair]:
     from dials.command_line.cosym import phil_scope as cosym_scope
 
     from xia2.Modules.SSX.batch_cosym import BatchCosym
@@ -451,7 +500,7 @@ def cosym_reindex(
     params = cosym_scope.extract()
 
     logfile = "dials.cosym_reindex.log"
-    for filepair in files_for_reindex.values():
+    for filepair in files_for_reindex:
         expts.append(load.experiment_list(filepair.expt, check_format=False))
         refls.append(flex.reflection_table.from_file(filepair.refl))
     params.space_group = expts[0][0].crystal.get_space_group().info()
@@ -459,12 +508,20 @@ def cosym_reindex(
     if d_min:
         params.d_min = d_min
 
-    with run_in_directory(working_directory), log_to_file(logfile), record_step(
-        "cosym_reindex"
-    ):
+    with open(os.devnull, "w") as devnull, run_in_directory(
+        working_directory
+    ), log_to_file(logfile), record_step("cosym_reindex"):
+        sys.stdout = devnull  # block printing from cosym
         cosym_instance = BatchCosym(expts, refls, params)
         register_default_cosym_observers(cosym_instance)
         cosym_instance.run()
+    sys.stdout = sys.__stdout__
+    outfiles = []
+    for expt, refl in zip(
+        cosym_instance._output_expt_files, cosym_instance._output_refl_files
+    ):
+        outfiles.append(FilePair(working_directory / expt, working_directory / refl))
+    return outfiles
 
 
 def select_crystals_close_to(

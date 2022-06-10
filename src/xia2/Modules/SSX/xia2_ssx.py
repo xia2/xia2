@@ -19,10 +19,8 @@ from xia2.Modules.SSX.data_integration_standard import (
     FileInput,
     run_data_integration,
 )
-from xia2.Modules.SSX.data_reduction_simple import (
-    SimpleDataReduction,
-    SimpleReductionParams,
-)
+from xia2.Modules.SSX.data_reduction_base import ReductionParams
+from xia2.Modules.SSX.data_reduction_simple import get_reducer
 from xia2.Modules.SSX.util import report_timing
 from xia2.Modules.SSX.xia2_ssx_reduce import data_reduction_phil_str
 
@@ -295,7 +293,7 @@ def run_xia2_ssx(
         ),
     )
 
-    processed_batch_directories = run_data_integration(
+    integrated_batch_directories = run_data_integration(
         root_working_directory,
         file_input,
         options,
@@ -304,14 +302,15 @@ def run_xia2_ssx(
         refinement_params,
         integration_params,
     )
-    if not processed_batch_directories or not ("reduce" in params.workflow.steps):
+    if not integrated_batch_directories or not ("reduce" in params.workflow.steps):
         return
 
     # Now do the data reduction
     if not params.symmetry.space_group:
         params.symmetry.space_group = params.space_group
-    reducer = SimpleDataReduction.from_directories(
-        root_working_directory, processed_batch_directories
+    reduction_params = ReductionParams.from_phil(params)
+    reducer_class = get_reducer(reduction_params)
+    reducer = reducer_class.from_directories(
+        root_working_directory, integrated_batch_directories, [], reduction_params
     )
-    reduction_params = SimpleReductionParams.from_phil(params)
-    reducer.run(reduction_params)
+    reducer.run()

@@ -1,16 +1,12 @@
 from __future__ import annotations
 
 import concurrent.futures
-import copy
-import json
 import logging
 import os
 import sys
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, List, Type
 
-import iotbx.phil
 from cctbx import crystal, sgtbx, uctbx
 from dials.algorithms.scaling.scaling_library import determine_best_unit_cell
 from dials.array_family import flex
@@ -19,12 +15,14 @@ from dxtbx.serialize import load
 
 from xia2.Driver.timing import record_step
 from xia2.Handlers.Streams import banner
-from xia2.Modules.SSX.data_reduction_base import BaseDataReduction
-from xia2.Modules.SSX.data_reduction_programs import (  # reference_reindex,
-    CrystalsData,
-    CrystalsDict,
+from xia2.Modules.SSX.data_reduction_base import (
+    BaseDataReduction,
     FilePair,
     FilesDict,
+    ReductionParams,
+)
+from xia2.Modules.SSX.data_reduction_programs import (
+    CrystalsDict,
     cosym_reindex,
     determine_best_unit_cell_from_crystals,
     load_crystal_data_from_new_expts,
@@ -39,43 +37,6 @@ from xia2.Modules.SSX.data_reduction_programs import (  # reference_reindex,
 from xia2.Modules.SSX.reporting import statistics_output_from_scaled_files
 
 xia2_logger = logging.getLogger(__name__)
-
-
-@dataclass
-class SimpleReductionParams:
-    space_group: sgtbx.space_group
-    batch_size: int = 1000
-    nproc: int = 1
-    d_min: Optional[float] = None
-    anomalous: bool = False
-    cluster_threshold: float = 1000.0
-    absolute_angle_tolerance: float = 0.5
-    absolute_length_tolerance: float = 0.2
-    central_unit_cell: Optional[uctbx.unit_cell] = None
-    model: Optional[Path] = None
-
-    @classmethod
-    def from_phil(cls, params: iotbx.phil.scope_extract):
-        """Construct from xia2.cli.ssx phil_scope."""
-        model = None
-        if params.scaling.model:
-            model = Path(params.scaling.model).resolve()
-        if params.clustering.central_unit_cell and params.clustering.threshold:
-            raise ValueError(
-                "Only one of clustering.central_unit_cell and clustering.threshold can be specified"
-            )
-        return cls(
-            params.symmetry.space_group,
-            params.batch_size,
-            params.multiprocessing.nproc,
-            params.d_min,
-            params.scaling.anomalous,
-            params.clustering.threshold,
-            params.clustering.absolute_angle_tolerance,
-            params.clustering.absolute_length_tolerance,
-            params.clustering.central_unit_cell,
-            model,
-        )
 
 
 def assess_for_indexing_ambiguities(
@@ -119,285 +80,198 @@ def check_consistent_space_group(crystals_dict: CrystalsDict) -> sgtbx.space_gro
     return sgtbx.space_group_info(number=list(sgs)[0])
 
 
+def get_reducer(reduction_params: ReductionParams) -> Type[BaseDataReduction]:
+    if reduction_params.model:
+        return DataReductionWithPDBModel
+    else:
+        return SimpleDataReduction
+
+
+scaled_cols_to_keep = [
+    "miller_index",
+    "inverse_scale_factor",
+    "intensity.scale.value",
+    "intensity.scale.variance",
+    "flags",
+    "id",
+    "partiality",
+    "partial_id",
+    "d",
+    "qe",
+    "dqe",
+    "lp",
+]
+
+
+def _filter(working_directory, integrated_data, reduction_params):
+
+    crystals_data = load_crystal_data_from_new_expts(integrated_data)
+    space_group = check_consistent_space_group(crystals_data)
+    good_crystals_data = filter_new_data(
+        working_directory, crystals_data, reduction_params
+    )
+    if not any(v.crystals for v in good_crystals_data.values()):
+        raise ValueError("No crystals remain after filtering")
+
+    new_files_to_process = split_filtered_data(
+        working_directory,
+        integrated_data,
+        good_crystals_data,
+        reduction_params.batch_size,
+    )
+    best_unit_cell = determine_best_unit_cell_from_crystals(good_crystals_data)
+    return new_files_to_process, best_unit_cell, space_group
+
+
+def filter_new_data(
+    working_directory: Path,
+    crystals_data: dict,
+    reduction_params: ReductionParams,
+) -> CrystalsDict:
+
+    if reduction_params.cluster_threshold:
+        good_crystals_data = run_uc_cluster(
+            working_directory,
+            crystals_data,
+            reduction_params.cluster_threshold,
+        )
+    elif reduction_params.central_unit_cell:
+        new_best_unit_cell = reduction_params.central_unit_cell
+        good_crystals_data = select_crystals_close_to(
+            crystals_data,
+            new_best_unit_cell,
+            reduction_params.absolute_angle_tolerance,
+            reduction_params.absolute_length_tolerance,
+        )
+    elif (
+        reduction_params.absolute_angle_tolerance
+        and reduction_params.absolute_length_tolerance
+    ):
+        # calculate the median unit cell
+        new_best_unit_cell = determine_best_unit_cell_from_crystals(crystals_data)
+        good_crystals_data = select_crystals_close_to(
+            crystals_data,
+            new_best_unit_cell,
+            reduction_params.absolute_angle_tolerance,
+            reduction_params.absolute_length_tolerance,
+        )
+    else:  # join all data for splitting
+        good_crystals_data = crystals_data
+        xia2_logger.info("No unit cell filtering applied")
+
+    return good_crystals_data
+
+
 class SimpleDataReduction(BaseDataReduction):
-    def _load_previously_prepared(self, reindex_results: Path) -> FilesDict:
-        with reindex_results.open(mode="r") as f:
-            previous = json.load(f)
-        data_already_reindexed = {
-            int(i): FilePair(Path(v["expt"]), Path(v["refl"]))
-            for i, v in previous["reindexed_files"].items()
-        }
-        for file_pair in data_already_reindexed.values():
-            file_pair.check()
-        return data_already_reindexed
 
-    def _load_filtering_results(
-        self, filter_results: Path
-    ) -> Tuple[uctbx.unit_cell, sgtbx.space_group_info]:
-        with filter_results.open(mode="r") as f:
-            result = json.load(f)
-        best_unit_cell = uctbx.unit_cell(result["best_unit_cell"])
-        current_sg = sgtbx.space_group_info(number=result["space_group"])
-        return best_unit_cell, current_sg
+    _no_input_error_msg = (
+        "No input integrated data, or previously processed scale directories\n"
+        + "have been found in the input. Please provide at least some integrated data or\n"
+        + "a directory of data previously scaled with xia2.ssx/xia2.ssx_reduce\n"
+        + " - Use directory= to specify a directory containing integrated data,\n"
+        + "   or both reflections= and experiments= to specify integrated data files.\n"
+        + " - Use processed_directory= to specify /data_reduction/scale directories of\n"
+        + "   data previously processed in a similar manner (without a PDB model as reference)."
+    )
 
-    def _save_reindexing_results(self, reindex_wd, files_to_scale):
-        output_files_to_scale = {
-            k: {"expt": str(v.expt), "refl": str(v.refl)}
-            for k, v in files_to_scale.items()
-        }
-        if not Path.is_dir(reindex_wd):
-            Path.mkdir(reindex_wd)
-        reidx_results = reindex_wd / "reindexing_results.json"
-        data = {"reindexed_files": output_files_to_scale}
-        with reidx_results.open(mode="w") as f:
-            json.dump(data, f, indent=2)
+    def _run_only_previously_scaled(self):
+        # ok, so want to check all consistent sg, do batch reindex if
+        # necessary and then scale
 
-    def run(self, reduction_params: SimpleReductionParams) -> None:
+        data_reduction_wd = self._main_directory / "data_reduction"
+        reindex_wd = data_reduction_wd / "reindex"
+        scale_wd = data_reduction_wd / "scale"
+
+        crystals_data = load_crystal_data_from_new_expts(self._previously_scaled_data)
+        space_group = check_consistent_space_group(crystals_data)
+        best_unit_cell = determine_best_unit_cell_from_crystals(crystals_data)
+
+        if not self._reduction_params.space_group:
+            self._reduction_params.space_group = space_group
+            xia2_logger.info(f"Using space group: {str(space_group)}")
+
+        sym_requires_reindex = assess_for_indexing_ambiguities(
+            self._reduction_params.space_group, best_unit_cell
+        )
+        if sym_requires_reindex and len(self._previously_scaled_data) > 1:
+            files_to_scale = cosym_reindex(
+                reindex_wd, self._previously_scaled_data, self._reduction_params.d_min
+            )
+            xia2_logger.info("Consistently reindexed batches of previously scaled data")
+        else:
+            files_to_scale = self._previously_scaled_data
+        self.scale_and_merge(scale_wd, files_to_scale, self._reduction_params)
+
+    def run(self) -> None:
         """
         A simple workflow for data reduction. First filter the input data, either
         by clustering on unit cells, or comparing against a previous cell. Then
         reindex data in batches, using cosym, followed by scaling and merging.
         """
 
-        data_already_reindexed: FilesDict = {}
-        data_to_reindex: FilesDict = {}
-
         data_reduction_wd = self._main_directory / "data_reduction"
         filter_wd = data_reduction_wd / "prefilter"
         reindex_wd = data_reduction_wd / "reindex"
         scale_wd = data_reduction_wd / "scale"
 
-        # see if we have any data that has been marked as successfully reindexed.
-        reidx_results = reindex_wd / "reindexing_results.json"
-        if reidx_results.is_file():
-            data_already_reindexed = self._load_previously_prepared(reidx_results)
+        if not self._integrated_data:
+            self._run_only_previously_scaled()
+            return
 
-        previous_best_unit_cell = None
-        previous_space_group = None
-        new_best_unit_cell = None
-        new_space_group = None
-        filter_results = filter_wd / "filter_results.json"
-        if filter_results.is_file():
-            (
-                previous_best_unit_cell,
-                previous_space_group,
-            ) = self._load_filtering_results(filter_results)
+        # first filter the data.
+        xia2_logger.notice(banner("Filtering"))  # type: ignore
+        new_files_to_process, best_unit_cell, space_group = _filter(
+            filter_wd, self._integrated_data, self._reduction_params
+        )
 
-        # First filter any new data
-        if self.new_to_process:
-            xia2_logger.notice(banner("Filtering"))  # type: ignore
-            crystals_data = load_crystal_data_from_new_expts(self.new_to_process)
-            new_space_group = check_consistent_space_group(crystals_data)
-
-            good_crystals_data = self.filter_new_data(
-                filter_wd, crystals_data, previous_best_unit_cell, reduction_params
-            )
-            if not any(v.crystals for v in good_crystals_data.values()):
-                raise ValueError("No crystals remain after filtering")
-
-            if (
-                previous_best_unit_cell and previous_space_group
-            ):  # i.e. if previous data reduction
-                if (
-                    new_space_group.type().number()
-                    != previous_space_group.type().number()
-                ):
-                    raise ValueError(
-                        "Previous input data was not in same space group as new data:\n"
-                        f"{previous_space_group.type().number()} != {new_space_group.type().number()}"
-                    )
-                # we want all jobs to use at least batch_size crystals, so join on
-                # to last reindexed batch until this has been satisfied
-                n_cryst = sum(len(v.identifiers) for v in good_crystals_data.values())
-                while n_cryst < reduction_params.batch_size:
-                    already_reidx_keys = list(data_already_reindexed.keys())
-                    if not already_reidx_keys:
-                        break
-                    last_batch = data_already_reindexed.pop(already_reidx_keys[-1])
-                    last_expts = load.experiment_list(
-                        last_batch.expt, check_format=False
-                    )
-                    # copy to avoid keeping reference to expt list
-                    good_crystals_data[str(last_batch.expt)] = CrystalsData(
-                        identifiers=copy.deepcopy(last_expts.identifiers()),
-                        crystals=copy.deepcopy(last_expts.crystals()),
-                        keep_all_original=True,
-                    )
-                    self.new_to_process.append(last_batch)
-                    n_cryst += len(last_expts)
-
-            # current_sg = new_sg
-            # Split the data, with an offset so that they keys of
-            # data_to_reindex don't clash with data_already_reindexed
-            n_already_reindexed_files = len(list(data_already_reindexed.keys()))
-            # ^ will be 0 if no previous reduction.
-
-            # Now split the data into batches for reindexing/scaling
-            data_to_reindex = split_filtered_data(
-                filter_wd,
-                self.new_to_process,
-                good_crystals_data,
-                reduction_params.batch_size,
-                offset=n_already_reindexed_files,
-            )
-            # Make a crystals_data object with all data for writing out
-            # an updated best unit cell.
-            for file_pair in data_already_reindexed.values():
-                expts = load.experiment_list(file_pair.expt, check_format=False)
-                good_crystals_data[str(file_pair.expt)] = CrystalsData(
-                    crystals=copy.deepcopy(expts.crystals()),
-                    identifiers=[],
-                )
-            new_best_unit_cell = self._write_unit_cells_to_json(
-                filter_wd, good_crystals_data
-            )
-
-        else:
-            # new_best_unit_cell = previous_best_unit_cell
-            if not (previous_best_unit_cell and previous_space_group):
-                raise ValueError(
-                    "Error in intepreting new and previous processing results"
-                )
-            new_best_unit_cell = previous_best_unit_cell
-            new_space_group = previous_space_group
-
+        # ok so now need to reindex
         # Use the space group from integration if not explicity specified.
-        if not reduction_params.space_group:
-            reduction_params.space_group = new_space_group
-            xia2_logger.info(f"Using space group: {str(new_space_group)}")
+        if not self._reduction_params.space_group:
+            self._reduction_params.space_group = space_group
+            xia2_logger.info(f"Using space group: {str(space_group)}")
 
-        # Now check if we need to reindex due to indexing ambiguities
-        if data_to_reindex:
-            sym_requires_reindex = assess_for_indexing_ambiguities(
-                reduction_params.space_group, new_best_unit_cell
-            )
-            if sym_requires_reindex:
-                files_to_scale = self.reindex(
+        sym_requires_reindex = assess_for_indexing_ambiguities(
+            self._reduction_params.space_group, best_unit_cell
+        )
+        if sym_requires_reindex:
+            # First do parallel reindexing of each batch
+            reindexed_new_files = list(
+                self.reindex(
                     reindex_wd,
-                    data_to_reindex,
-                    data_already_reindexed,
-                    space_group=reduction_params.space_group,
-                    nproc=reduction_params.nproc,
-                    d_min=reduction_params.d_min,
-                )
-        else:
-            files_to_scale = {**data_already_reindexed, **data_to_reindex}
-
-        self._save_reindexing_results(reindex_wd, files_to_scale)
-
-        # if we get here, we have successfully prepared the new data for scaling.
-        # So save this to allow reloading in future for iterative workflows.
-        self._save_as_prepared()
-
-        # Finally scale and merge the data.
-        if reduction_params.model:
-            self.scale_and_merge_using_model(
-                scale_wd,
-                files_to_scale,
-                anomalous=reduction_params.anomalous,
-                d_min=reduction_params.d_min,
-                model=reduction_params.model,
-                nproc=reduction_params.nproc,
-                best_unit_cell=new_best_unit_cell,
+                    new_files_to_process,
+                    self._reduction_params,
+                    nproc=self._reduction_params.nproc,
+                ).values()
             )
+            # At this point, add in any previously scaled data.
+            files_to_scale = reindexed_new_files + self._previously_scaled_data
+            if len(files_to_scale) > 1:
+                # Reindex all batches together.
+                files_to_scale = cosym_reindex(
+                    reindex_wd, files_to_scale, self._reduction_params.d_min
+                )
+                if self._previously_scaled_data:
+                    xia2_logger.info(
+                        "Consistently reindexed all batches, including previously scaled data"
+                    )
+                else:
+                    xia2_logger.info(
+                        f"Consistently reindexed {len(reindexed_new_files)} batches"
+                    )
         else:
-            self.scale_and_merge(
-                scale_wd,
-                files_to_scale,
-                anomalous=reduction_params.anomalous,
-                d_min=reduction_params.d_min,
-                best_unit_cell=new_best_unit_cell,
+            # Now add in any previously scaled data for scaling all together.
+            files_to_scale = (
+                list(new_files_to_process.values()) + self._previously_scaled_data
             )
 
-    @staticmethod
-    def filter_new_data(
-        working_directory: Path,
-        crystals_data: dict,
-        best_unit_cell: uctbx.unit_cell,
-        reduction_params: SimpleReductionParams,
-    ) -> CrystalsDict:
-
-        if not best_unit_cell:  # i.e. no previous data reduction
-            if reduction_params.cluster_threshold:
-                good_crystals_data = run_uc_cluster(
-                    working_directory,
-                    crystals_data,
-                    reduction_params.cluster_threshold,
-                )
-            elif reduction_params.central_unit_cell:
-                new_best_unit_cell = reduction_params.central_unit_cell
-                good_crystals_data = select_crystals_close_to(
-                    crystals_data,
-                    new_best_unit_cell,
-                    reduction_params.absolute_angle_tolerance,
-                    reduction_params.absolute_length_tolerance,
-                )
-            elif (
-                reduction_params.absolute_angle_tolerance
-                and reduction_params.absolute_length_tolerance
-            ):
-                # calculate the median unit cell
-                new_best_unit_cell = determine_best_unit_cell_from_crystals(
-                    crystals_data
-                )
-                good_crystals_data = select_crystals_close_to(
-                    crystals_data,
-                    new_best_unit_cell,
-                    reduction_params.absolute_angle_tolerance,
-                    reduction_params.absolute_length_tolerance,
-                )
-            else:  # join all data for splitting
-                good_crystals_data = crystals_data
-                xia2_logger.info("No unit cell filtering applied")
-
-        else:
-            xia2_logger.info("Using cell parameters from previous clustering analysis")
-            if (
-                reduction_params.absolute_angle_tolerance
-                and reduction_params.absolute_length_tolerance
-            ):
-                good_crystals_data = select_crystals_close_to(
-                    crystals_data,
-                    best_unit_cell,
-                    reduction_params.absolute_angle_tolerance,
-                    reduction_params.absolute_length_tolerance,
-                )
-            else:
-                good_crystals_data = crystals_data
-                xia2_logger.info("No unit cell filtering applied")
-
-        return good_crystals_data
-
-    @staticmethod
-    def _write_unit_cells_to_json(
-        working_directory: Path,
-        crystals_dict: CrystalsDict,
-    ) -> uctbx.unit_cell:
-        # now write out the best cell
-        new_best_unit_cell = determine_best_unit_cell_from_crystals(crystals_dict)
-        all_ucs = []
-        for v in crystals_dict.values():
-            all_ucs.extend([c.get_unit_cell().parameters() for c in v.crystals])
-        sg = v.crystals[0].get_space_group().type().number()
-        n_cryst = len(all_ucs)
-        result = {
-            "best_unit_cell": [round(i, 4) for i in new_best_unit_cell.parameters()],
-            "n_cryst": n_cryst,
-            "unit_cells": all_ucs,
-            "space_group": sg,
-        }
-        with (working_directory / "filter_results.json").open(mode="w") as fp:
-            json.dump(result, fp, indent=2)
-        return new_best_unit_cell
+        self.scale_and_merge(scale_wd, files_to_scale, self._reduction_params)
 
     @staticmethod
     def reindex(
         working_directory: Path,
         data_to_reindex: FilesDict,
-        data_already_reindexed: FilesDict,
-        space_group: sgtbx.space_group,
+        reduction_params,
         nproc: int = 1,
-        d_min: float = None,
     ) -> FilesDict:
         """
         Runs dials.scale + dials.cosym on each batch to resolve indexing
@@ -423,8 +297,7 @@ class SimpleDataReduction(BaseDataReduction):
                         working_directory,
                         files,
                         index,
-                        space_group,
-                        d_min,
+                        reduction_params,
                     ): index
                     for index, files in data_to_reindex.items()
                 }
@@ -438,21 +311,14 @@ class SimpleDataReduction(BaseDataReduction):
                     else:
                         reindexed_results.update(result)
 
-            # now do reference reindexing
-            files_to_scale = {**data_already_reindexed, **reindexed_results}
-            if len(files_to_scale) > 1:
-                cosym_reindex(working_directory, files_to_scale, d_min)
-
         sys.stdout = sys.__stdout__  # restore printing
-        return files_to_scale
+        return reindexed_results
 
-    @staticmethod
     def scale_and_merge(
+        self,
         working_directory: Path,
-        files_to_scale: FilesDict,
-        anomalous: bool = True,
-        d_min: float = None,
-        best_unit_cell: Optional[uctbx.unit_cell] = None,
+        files_to_scale: List[FilePair],
+        reduction_params: ReductionParams,
     ) -> None:
         """Run scaling and merging"""
 
@@ -462,22 +328,142 @@ class SimpleDataReduction(BaseDataReduction):
         scaled_expts, scaled_table = scale(
             working_directory,
             files_to_scale,
-            anomalous,
-            d_min,
-            best_unit_cell,
+            reduction_params,
         )
         xia2_logger.notice(banner("Merging"))  # type: ignore
-        merge(working_directory, scaled_expts, scaled_table, d_min)
+        merge(
+            working_directory,
+            scaled_expts,
+            scaled_table,
+            reduction_params.d_min,
+            reduction_params.central_unit_cell,
+        )
 
-    @staticmethod
-    def scale_and_merge_using_model(
+
+def _wrap_extend_expts(first_elist, second_elist):
+    try:
+        first_elist.extend(second_elist)
+    except RuntimeError as e:
+        raise ValueError(
+            "Unable to combine experiments, check for datafiles containing duplicate experiments.\n"
+            + f"  Specific error message encountered:\n  {e}"
+        )
+
+
+class DataReductionWithPDBModel(BaseDataReduction):
+
+    _no_input_error_msg = (
+        "No input integrated data, or previously processed scale directories\n"
+        + "have been found in the input. Please provide at least some integrated data or\n"
+        + "a directory of data previously scaled with xia2.ssx/xia2.ssx_reduce\n"
+        + " - Use directory= to specify a directory containing integrated data,\n"
+        + "   or both reflections= and experiments= to specify integrated data files.\n"
+        + " - Use processed_directory= to specify /data_reduction/scale directories of\n"
+        + "   data previously processed with the same PDB model as reference."
+    )
+
+    def _combine_previously_scaled(self):
+        scaled_expts = ExperimentList([])
+        scaled_tables = []
+        for file_pair in self._previously_scaled_data:
+            prev_expts = load.experiment_list(file_pair.expt, check_format=False)
+            _wrap_extend_expts(scaled_expts, prev_expts)
+            table = flex.reflection_table.from_file(file_pair.refl)
+            for k in list(table.keys()):
+                if k not in scaled_cols_to_keep:
+                    del table[k]
+            scaled_tables.append(table)
+        return scaled_expts, scaled_tables
+
+    def _run_only_previously_scaled(self, working_directory):
+        if not Path.is_dir(working_directory):
+            Path.mkdir(working_directory)
+        scaled_expts, scaled_tables = self._combine_previously_scaled()
+        scaled_table = flex.reflection_table.concat(scaled_tables)
+        n_final = len(scaled_expts)
+        uc = determine_best_unit_cell(scaled_expts)
+        uc_str = ", ".join(str(round(i, 3)) for i in uc.parameters())
+        xia2_logger.info(
+            f"{n_final} crystals scaled in space group {scaled_expts[0].crystal.get_space_group().info()}\nMedian cell: {uc_str}"
+        )
+        xia2_logger.info("Summary statistics for combined previously scaled data")
+        xia2_logger.info(
+            statistics_output_from_scaled_files(scaled_expts, scaled_table, uc)
+        )
+        merge(
+            working_directory,
+            scaled_expts,
+            scaled_table,
+            self._reduction_params.d_min,
+            uc,
+            suffix="_all",
+        )
+
+    def run(self):
+
+        # processing steps are filter, reindex and the scale.
+
+        # If we have a reindexing strategy that uses the target model as a reference,
+        # then know all are consistent. Else, we might need to do batch-based reindexing
+
+        # scaling data can be done in batches, then can merge with prev scaled
+        # to get overall stats
+
+        # note that it is possible that there is no new data to process and we
+        # just want to merge existing data.
+        filter_wd = self._data_reduction_wd / "prefilter"
+        reindex_wd = self._data_reduction_wd / "reindex"
+        scale_wd = self._data_reduction_wd / "scale"
+
+        if not self._integrated_data:
+            self._run_only_previously_scaled(scale_wd)
+            return
+
+        # first filter the data.
+        xia2_logger.notice(banner("Filtering"))  # type: ignore
+        new_files_to_process, best_unit_cell, space_group = _filter(
+            filter_wd, self._integrated_data, self._reduction_params
+        )
+
+        # ok so now need to reindex
+        # Use the space group from integration if not explicity specified.
+        if not self._reduction_params.space_group:
+            self._reduction_params.space_group = space_group
+            xia2_logger.info(f"Using space group: {str(space_group)}")
+
+        sym_requires_reindex = assess_for_indexing_ambiguities(
+            self._reduction_params.space_group, best_unit_cell
+        )
+        if sym_requires_reindex:
+            # ideally - reindex each dataset against target, so don't need to
+            # do anything with
+            # on each batch - reindex internally to be consistent
+            # then reindex against pdb model.
+            # then scale
+            ##FIXME need to implement this
+            assert 0
+            data_already_reindexed = {}
+            files_to_scale = self.reindex(
+                reindex_wd,
+                new_files_to_process,
+                data_already_reindexed,
+                self._reduction_params,
+                nproc=self._reduction_params.nproc,
+            )
+            # then scale against target
+        else:
+            # just scale in batches against target
+            # Finally scale and merge the data.
+            files_to_scale = new_files_to_process
+            self._reduction_params.central_unit_cell = best_unit_cell
+
+        self.scale_and_merge(scale_wd, files_to_scale, self._reduction_params)
+
+    def scale_and_merge(
+        self,
         working_directory: Path,
         files_to_scale: FilesDict,
-        anomalous: bool = True,
-        d_min: float = None,
-        model: Path = None,
-        nproc: int = 1,
-        best_unit_cell: Optional[uctbx.unit_cell] = None,
+        reduction_params: ReductionParams,
     ) -> None:
         """Run scaling and merging"""
 
@@ -488,17 +474,16 @@ class SimpleDataReduction(BaseDataReduction):
         scaled_results: FilesDict = {}
         with record_step(
             "dials.scale (parallel)"
-        ), concurrent.futures.ProcessPoolExecutor(max_workers=nproc) as pool:
+        ), concurrent.futures.ProcessPoolExecutor(
+            max_workers=reduction_params.nproc
+        ) as pool:
             scale_futures: Dict[Any, int] = {
                 pool.submit(
                     scale_against_model,
                     working_directory,
                     files,
                     index,
-                    model,
-                    anomalous,
-                    d_min,
-                    best_unit_cell,
+                    reduction_params,
                 ): index
                 for index, files in files_to_scale.items()
             }
@@ -515,7 +500,8 @@ class SimpleDataReduction(BaseDataReduction):
             raise ValueError("No groups successfully scaled")
 
         xia2_logger.notice(banner("Merging"))  # type: ignore
-        with record_step("joining for merge"):
+
+        with record_step("merging"):
             scaled_expts = ExperimentList([])
             scaled_tables = []
             # For merging (a simple program), we don't require much data in the
@@ -523,39 +509,59 @@ class SimpleDataReduction(BaseDataReduction):
             # values we know we need for merging and to report statistics
             # first 6 in keep are required in merge, the rest will potentially
             #  be used for filter_reflections call in merge
-            keep = [
-                "miller_index",
-                "inverse_scale_factor",
-                "intensity.scale.value",
-                "intensity.scale.variance",
-                "flags",
-                "id",
-                "partiality",
-                "partial_id",
-                "d",
-                "qe",
-                "dqe",
-                "lp",
-            ]
             for file_pair in scaled_results.values():
-                scaled_expts.extend(
-                    load.experiment_list(file_pair.expt, check_format=False)
-                )
+                expts = load.experiment_list(file_pair.expt, check_format=False)
+                _wrap_extend_expts(scaled_expts, expts)
                 table = flex.reflection_table.from_file(file_pair.refl)
                 for k in list(table.keys()):
-                    if k not in keep:
+                    if k not in scaled_cols_to_keep:
                         del table[k]
                 scaled_tables.append(table)
             scaled_table = flex.reflection_table.concat(scaled_tables)
 
-        n_final = len(scaled_expts)
-        uc = determine_best_unit_cell(scaled_expts)
-        uc_str = ", ".join(str(round(i, 3)) for i in uc.parameters())
-        xia2_logger.info(
-            f"{n_final} crystals scaled in space group {scaled_expts[0].crystal.get_space_group().info()}\nMedian cell: {uc_str}"
-        )
-        xia2_logger.info(
-            statistics_output_from_scaled_files(scaled_expts, scaled_table, uc)
-        )
+            n_final = len(scaled_expts)
+            uc = determine_best_unit_cell(scaled_expts)
+            uc_str = ", ".join(str(round(i, 3)) for i in uc.parameters())
+            xia2_logger.info(
+                f"{n_final} crystals scaled in space group {scaled_expts[0].crystal.get_space_group().info()}\nMedian cell: {uc_str}"
+            )
+            xia2_logger.info(
+                statistics_output_from_scaled_files(scaled_expts, scaled_table, uc)
+            )
+            merge(
+                working_directory,
+                scaled_expts,
+                scaled_table,
+                reduction_params.d_min,
+                uc,
+            )
 
-        merge(working_directory, scaled_expts, scaled_table, d_min, best_unit_cell)
+            # export an unmerged mtz too
+
+            # now add any extra data previously scaled
+            if self._previously_scaled_data:
+                (
+                    prev_scaled_expts,
+                    prev_scaled_tables,
+                ) = self._combine_previously_scaled()
+                _wrap_extend_expts(scaled_expts, prev_scaled_expts)
+                scaled_table = flex.reflection_table.concat(
+                    scaled_tables + prev_scaled_tables
+                )
+
+                # n_final = len(scaled_expts)
+                uc = determine_best_unit_cell(scaled_expts)
+                uc_str = ", ".join(str(round(i, 3)) for i in uc.parameters())
+                xia2_logger.info(
+                    "Summary statistics for all input data, including previously scaled"
+                )
+                xia2_logger.info(
+                    statistics_output_from_scaled_files(scaled_expts, scaled_table, uc)
+                )
+                merge(
+                    working_directory,
+                    scaled_expts,
+                    scaled_table,
+                    reduction_params.d_min,
+                    suffix="_all",
+                )

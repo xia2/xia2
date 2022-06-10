@@ -30,6 +30,8 @@ class BatchCosym(Subject):
         self.input_reflections = reflections
         # self._experiments = None
         self._reflections = None
+        self._output_expt_files = []
+        self._output_refl_files = []
 
         if params.seed is not None:
             flex.set_random_seed(params.seed)
@@ -121,3 +123,5 @@ class BatchCosym(Subject):
             refls["miller_index"] = cb_op.apply(refls["miller_index"])
             expts.as_file(f"processed_{i}.expt")
             refls.as_file(f"processed_{i}.refl")
+            self._output_expt_files.append(f"processed_{i}.expt")
+            self._output_refl_files.append(f"processed_{i}.refl")

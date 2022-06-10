@@ -7,10 +7,8 @@ import iotbx.phil
 from libtbx import Auto
 from libtbx.introspection import number_of_processors
 
-from xia2.Modules.SSX.data_reduction_simple import (
-    SimpleDataReduction,
-    SimpleReductionParams,
-)
+from xia2.Modules.SSX.data_reduction_base import ReductionParams
+from xia2.Modules.SSX.data_reduction_simple import get_reducer
 from xia2.Modules.SSX.util import report_timing
 
 phil_str = """
@@ -26,6 +24,10 @@ experiments = None
   .type = str
   .multiple = True
   .help = "Path to an integrated experiments file"
+processed_directory = None
+  .type = str
+  .multiple = True
+  .help = "Path to previously reduced data"
 multiprocessing.nproc = Auto
   .type = int
 batch_size = 1000
@@ -65,6 +67,12 @@ symmetry {
   space_group = None
     .type = space_group
     .expert_level = 1
+  phil = None
+    .type = path
+    .help = "Phil options file to use for symmetry analysis with dials.cosym. "
+            "Parameters defined in the xia2.ssx phil scope will take precedent"
+            "over identical options defined in the phil file."
+    .expert_level = 3
 }
 scaling {
   anomalous = False
@@ -88,7 +96,13 @@ def run_xia2_ssx_reduce(
 
     if params.multiprocessing.nproc is Auto:
         params.multiprocessing.nproc = number_of_processors(return_value_if_unknown=1)
-    reduction_params = SimpleReductionParams.from_phil(params)
+
+    reduction_params = ReductionParams.from_phil(params)
+    reducer_class = get_reducer(reduction_params)
+    processed_directories = []
+    if params.processed_directory:
+        for d in params.processed_directory:
+            processed_directories.append(Path(d).resolve())
 
     if params.directory:
         if params.reflections or params.experiments:
@@ -97,22 +111,29 @@ def run_xia2_ssx_reduce(
                 "as input. Proceeding using only directories"
             )
         directories = [Path(i).resolve() for i in params.directory]
-        reducer = SimpleDataReduction.from_directories(
-            root_working_directory, directories
+        reducer = reducer_class.from_directories(
+            root_working_directory,
+            directories,
+            processed_directories,
+            reduction_params,
         )
     elif params.reflections or params.experiments:
         if not (params.reflections and params.experiments):
             raise ValueError("Reflections and experiments files must both be specified")
         reflections = [Path(i).resolve() for i in params.reflections]
         experiments = [Path(i).resolve() for i in params.experiments]
-        reducer = SimpleDataReduction.from_files(
-            root_working_directory, reflections, experiments
+        reducer = reducer_class.from_files(
+            root_working_directory,
+            reflections,
+            experiments,
+            processed_directories,
+            reduction_params,
+        )
+    elif processed_directories:
+        reducer = reducer_class.from_processed_only(
+            root_working_directory, processed_directories, reduction_params
         )
     else:
-        raise ValueError(
-            "No input data identified.\n"
-            + "   Use directory= to specify a directory containing integrated data,\n"
-            + "   or both reflections= and experiments= to specify integrated data files."
-        )
+        raise ValueError(reducer._no_input_error_msg)
 
-    reducer.run(reduction_params)
+    reducer.run()
