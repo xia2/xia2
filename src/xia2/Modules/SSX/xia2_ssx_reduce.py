@@ -7,8 +7,8 @@ import iotbx.phil
 from libtbx import Auto
 from libtbx.introspection import number_of_processors
 
-from xia2.Modules.SSX.data_reduction_base import ReductionParams
-from xia2.Modules.SSX.data_reduction_simple import get_reducer
+from xia2.Modules.SSX.data_reduction_definitions import ReductionParams
+from xia2.Modules.SSX.data_reduction_interface import get_reducer
 from xia2.Modules.SSX.util import report_timing
 
 phil_str = """

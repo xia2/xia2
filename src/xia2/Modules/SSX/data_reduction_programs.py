@@ -77,6 +77,57 @@ def load_crystal_data_from_new_expts(new_data: List[FilePair]) -> CrystalsDict:
     return data
 
 
+def filter_(
+    working_directory: Path,
+    integrated_data: list[FilePair],
+    reduction_params: ReductionParams,
+) -> Tuple[FilesDict, uctbx.unit_cell, sgtbx.space_group_info]:
+
+    crystals_data = load_crystal_data_from_new_expts(integrated_data)
+    space_group = check_consistent_space_group(crystals_data)
+    good_crystals_data = filter_new_data(
+        working_directory, crystals_data, reduction_params
+    )
+    if not any(v.crystals for v in good_crystals_data.values()):
+        raise ValueError("No crystals remain after filtering")
+
+    new_files_to_process = split_filtered_data(
+        working_directory,
+        integrated_data,
+        good_crystals_data,
+        reduction_params.batch_size,
+    )
+    best_unit_cell = determine_best_unit_cell_from_crystals(good_crystals_data)
+    return new_files_to_process, best_unit_cell, space_group
+
+
+def assess_for_indexing_ambiguities(
+    space_group: sgtbx.space_group_info, unit_cell: uctbx.unit_cell
+) -> bool:
+    # if lattice symmetry higher than space group symmetry, then need to
+    # assess for indexing ambiguity.
+    cs = crystal.symmetry(unit_cell=unit_cell, space_group=sgtbx.space_group())
+    # Get cell reduction operator
+    cb_op_inp_minimum = cs.change_of_basis_op_to_minimum_cell()
+    # New symmetry object with changed basis
+    minimum_symmetry = cs.change_basis(cb_op_inp_minimum)
+
+    # Get highest symmetry compatible with lattice
+    lattice_group = sgtbx.lattice_symmetry_group(
+        minimum_symmetry.unit_cell(),
+        max_delta=5,
+        enforce_max_delta_for_generated_two_folds=True,
+    )
+    need_to_assess = lattice_group.order_z() > space_group.group().order_z()
+    human_readable = {True: "yes", False: "no"}
+    xia2_logger.info(
+        "Indexing ambiguity assessment:\n"
+        f"  Lattice group: {str(lattice_group.info())}, Space group: {str(space_group)}\n"
+        f"  Potential indexing ambiguities: {human_readable[need_to_assess]}"
+    )
+    return need_to_assess
+
+
 def check_consistent_space_group(crystals_dict: CrystalsDict) -> sgtbx.space_group_info:
     # check all space groups are the same and return that group
     sgs = set()
