@@ -3,12 +3,14 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import iotbx.phil
-from cctbx import sgtbx, uctbx
+from cctbx import crystal, sgtbx, uctbx
 from dials.array_family import flex
 from dxtbx.serialize import load
+
+from xia2.Handlers.Streams import banner
 
 xia2_logger = logging.getLogger(__name__)
 
@@ -168,6 +170,33 @@ def inspect_files(
     return new_data
 
 
+def assess_for_indexing_ambiguities(
+    space_group: sgtbx.space_group_info, unit_cell: uctbx.unit_cell
+) -> bool:
+    # if lattice symmetry higher than space group symmetry, then need to
+    # assess for indexing ambiguity.
+    cs = crystal.symmetry(unit_cell=unit_cell, space_group=sgtbx.space_group())
+    # Get cell reduction operator
+    cb_op_inp_minimum = cs.change_of_basis_op_to_minimum_cell()
+    # New symmetry object with changed basis
+    minimum_symmetry = cs.change_basis(cb_op_inp_minimum)
+
+    # Get highest symmetry compatible with lattice
+    lattice_group = sgtbx.lattice_symmetry_group(
+        minimum_symmetry.unit_cell(),
+        max_delta=5,
+        enforce_max_delta_for_generated_two_folds=True,
+    )
+    need_to_assess = lattice_group.order_z() > space_group.group().order_z()
+    human_readable = {True: "yes", False: "no"}
+    xia2_logger.info(
+        "Indexing ambiguity assessment:\n"
+        f"  Lattice group: {str(lattice_group.info())}, Space group: {str(space_group)}\n"
+        f"  Potential indexing ambiguities: {human_readable[need_to_assess]}"
+    )
+    return need_to_assess
+
+
 class BaseDataReduction(object):
 
     _no_input_error_msg = "No input data found"  # overwritten with more useful
@@ -183,7 +212,14 @@ class BaseDataReduction(object):
         self._integrated_data: List[FilePair] = integrated_data
         self._main_directory: Path = main_directory
         self._reduction_params: ReductionParams = reduction_params
+
         self._data_reduction_wd: Path = self._main_directory / "data_reduction"
+        self._filter_wd = self._data_reduction_wd / "prefilter"
+        self._reindex_wd = self._data_reduction_wd / "reindex"
+        self._scale_wd = self._data_reduction_wd / "scale"
+
+        self._filtered_files_to_process: FilesDict = {}
+        self._files_to_scale: List[FilePair] = []
 
         # load any previously scaled data
         self._previously_scaled_data = []
@@ -245,4 +281,45 @@ class BaseDataReduction(object):
         return cls(main_directory, [], processed_directories, reduction_params)
 
     def run(self) -> None:
-        pass
+
+        if not self._integrated_data:
+            self._run_only_previously_scaled()
+            return
+
+        # first filter the data.
+        xia2_logger.notice(banner("Filtering"))  # type: ignore
+
+        self._filtered_files_to_process, best_unit_cell, space_group = self._filter()
+        #    self._filter_wd, self._integrated_data, self._reduction_params
+        # )
+
+        if not self._reduction_params.space_group:
+            self._reduction_params.space_group = space_group
+            xia2_logger.info(f"Using space group: {str(space_group)}")
+
+        sym_requires_reindex = assess_for_indexing_ambiguities(
+            self._reduction_params.space_group, best_unit_cell
+        )
+        if sym_requires_reindex:
+            xia2_logger.notice(banner("Reindexing"))  # type: ignore
+            self._reindex()
+        else:
+            self._prepare_for_scaling()
+
+        xia2_logger.notice(banner("Scaling"))  # type: ignore
+        self._scale_and_merge()
+
+    def _run_only_previously_scaled(self):
+        raise NotImplementedError
+
+    def _filter(self) -> Tuple[FilesDict, uctbx.unit_cell, sgtbx.space_group_info]:
+        raise NotImplementedError
+
+    def _reindex(self) -> None:
+        raise NotImplementedError
+
+    def _prepare_for_scaling(self) -> None:
+        raise NotImplementedError
+
+    def _scale_and_merge(self) -> None:
+        raise NotImplementedError

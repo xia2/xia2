@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import annotations
 
+import concurrent.futures
 import copy
 import functools
 import logging
@@ -10,10 +11,10 @@ import sys
 from dataclasses import dataclass, field
 from io import StringIO
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import iotbx.phil
-from cctbx import crystal, uctbx
+from cctbx import crystal, sgtbx, uctbx
 from dials.algorithms.scaling.algorithm import ScalingAlgorithm
 from dials.algorithms.scaling.scaling_library import determine_best_unit_cell
 from dials.array_family import flex
@@ -76,6 +77,20 @@ def load_crystal_data_from_new_expts(new_data: List[FilePair]) -> CrystalsDict:
     return data
 
 
+def check_consistent_space_group(crystals_dict: CrystalsDict) -> sgtbx.space_group_info:
+    # check all space groups are the same and return that group
+    sgs = set()
+    for v in crystals_dict.values():
+        sgs.update({c.get_space_group().type().number() for c in v.crystals})
+    if len(sgs) > 1:
+        sg_nos = ",".join(str(i) for i in sgs)
+        raise ValueError(
+            f"Multiple space groups found, numbers: {sg_nos}\n"
+            "All integrated data must be in the same space group"
+        )
+    return sgtbx.space_group_info(number=list(sgs)[0])
+
+
 def determine_best_unit_cell_from_crystals(
     crystals_dict: CrystalsDict,
 ) -> uctbx.unit_cell:
@@ -89,6 +104,45 @@ def determine_best_unit_cell_from_crystals(
                 uc_params[i].append(p)
     best_unit_cell = uctbx.unit_cell(parameters=[flex.median(p) for p in uc_params])
     return best_unit_cell
+
+
+def filter_new_data(
+    working_directory: Path,
+    crystals_data: dict,
+    reduction_params: ReductionParams,
+) -> CrystalsDict:
+
+    if reduction_params.cluster_threshold:
+        good_crystals_data = run_uc_cluster(
+            working_directory,
+            crystals_data,
+            reduction_params.cluster_threshold,
+        )
+    elif reduction_params.central_unit_cell:
+        new_best_unit_cell = reduction_params.central_unit_cell
+        good_crystals_data = select_crystals_close_to(
+            crystals_data,
+            new_best_unit_cell,
+            reduction_params.absolute_angle_tolerance,
+            reduction_params.absolute_length_tolerance,
+        )
+    elif (
+        reduction_params.absolute_angle_tolerance
+        and reduction_params.absolute_length_tolerance
+    ):
+        # calculate the median unit cell
+        new_best_unit_cell = determine_best_unit_cell_from_crystals(crystals_data)
+        good_crystals_data = select_crystals_close_to(
+            crystals_data,
+            new_best_unit_cell,
+            reduction_params.absolute_angle_tolerance,
+            reduction_params.absolute_length_tolerance,
+        )
+    else:  # join all data for splitting
+        good_crystals_data = crystals_data
+        xia2_logger.info("No unit cell filtering applied")
+
+    return good_crystals_data
 
 
 def run_uc_cluster(
@@ -522,6 +576,54 @@ def cosym_reindex(
     ):
         outfiles.append(FilePair(working_directory / expt, working_directory / refl))
     return outfiles
+
+
+def parallel_cosym(
+    working_directory: Path,
+    data_to_reindex: FilesDict,
+    reduction_params,
+    nproc: int = 1,
+) -> FilesDict:
+    """
+    Runs dials.scale + dials.cosym on each batch to resolve indexing
+    ambiguities. If there is more than one batch, the dials.cosym is run
+    again to make sure all batches are consistently indexed.
+    """
+
+    if not Path.is_dir(working_directory):
+        Path.mkdir(working_directory)
+
+    with open(os.devnull, "w") as devnull:
+        sys.stdout = devnull  # block printing from cosym
+
+        reindexed_results: FilesDict = {}
+
+        with record_step(
+            "dials.scale/dials.cosym (parallel)"
+        ), concurrent.futures.ProcessPoolExecutor(max_workers=nproc) as pool:
+
+            cosym_futures: Dict[Any, int] = {
+                pool.submit(
+                    scale_cosym,
+                    working_directory,
+                    files,
+                    index,
+                    reduction_params,
+                ): index
+                for index, files in data_to_reindex.items()
+            }
+            for future in concurrent.futures.as_completed(cosym_futures):
+                try:
+                    result = future.result()
+                except Exception as e:
+                    raise ValueError(
+                        f"Unsuccessful scaling and symmetry analysis of the new data. Error:\n{e}"
+                    )
+                else:
+                    reindexed_results.update(result)
+
+    sys.stdout = sys.__stdout__  # restore printing
+    return reindexed_results
 
 
 def select_crystals_close_to(

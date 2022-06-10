@@ -2,10 +2,8 @@ from __future__ import annotations
 
 import concurrent.futures
 import logging
-import os
-import sys
 from pathlib import Path
-from typing import Any, Dict, List, Type
+from typing import Any, Dict, Tuple, Type
 
 from cctbx import crystal, sgtbx, uctbx
 from dials.algorithms.scaling.scaling_library import determine_best_unit_cell
@@ -22,16 +20,15 @@ from xia2.Modules.SSX.data_reduction_base import (
     ReductionParams,
 )
 from xia2.Modules.SSX.data_reduction_programs import (
-    CrystalsDict,
+    check_consistent_space_group,
     cosym_reindex,
     determine_best_unit_cell_from_crystals,
+    filter_new_data,
     load_crystal_data_from_new_expts,
     merge,
-    run_uc_cluster,
+    parallel_cosym,
     scale,
     scale_against_model,
-    scale_cosym,
-    select_crystals_close_to,
     split_filtered_data,
 )
 from xia2.Modules.SSX.reporting import statistics_output_from_scaled_files
@@ -66,20 +63,6 @@ def assess_for_indexing_ambiguities(
     return need_to_assess
 
 
-def check_consistent_space_group(crystals_dict: CrystalsDict) -> sgtbx.space_group_info:
-    # check all space groups are the same and return that group
-    sgs = set()
-    for v in crystals_dict.values():
-        sgs.update({c.get_space_group().type().number() for c in v.crystals})
-    if len(sgs) > 1:
-        sg_nos = ",".join(str(i) for i in sgs)
-        raise ValueError(
-            f"Multiple space groups found, numbers: {sg_nos}\n"
-            "All integrated data must be in the same space group"
-        )
-    return sgtbx.space_group_info(number=list(sgs)[0])
-
-
 def get_reducer(reduction_params: ReductionParams) -> Type[BaseDataReduction]:
     if reduction_params.model:
         return DataReductionWithPDBModel
@@ -103,7 +86,11 @@ scaled_cols_to_keep = [
 ]
 
 
-def _filter(working_directory, integrated_data, reduction_params):
+def _filter(
+    working_directory: Path,
+    integrated_data: list[FilePair],
+    reduction_params: ReductionParams,
+) -> Tuple[FilesDict, uctbx.unit_cell, sgtbx.space_group_info]:
 
     crystals_data = load_crystal_data_from_new_expts(integrated_data)
     space_group = check_consistent_space_group(crystals_data)
@@ -123,43 +110,14 @@ def _filter(working_directory, integrated_data, reduction_params):
     return new_files_to_process, best_unit_cell, space_group
 
 
-def filter_new_data(
-    working_directory: Path,
-    crystals_data: dict,
-    reduction_params: ReductionParams,
-) -> CrystalsDict:
-
-    if reduction_params.cluster_threshold:
-        good_crystals_data = run_uc_cluster(
-            working_directory,
-            crystals_data,
-            reduction_params.cluster_threshold,
+def _wrap_extend_expts(first_elist, second_elist):
+    try:
+        first_elist.extend(second_elist)
+    except RuntimeError as e:
+        raise ValueError(
+            "Unable to combine experiments, check for datafiles containing duplicate experiments.\n"
+            + f"  Specific error message encountered:\n  {e}"
         )
-    elif reduction_params.central_unit_cell:
-        new_best_unit_cell = reduction_params.central_unit_cell
-        good_crystals_data = select_crystals_close_to(
-            crystals_data,
-            new_best_unit_cell,
-            reduction_params.absolute_angle_tolerance,
-            reduction_params.absolute_length_tolerance,
-        )
-    elif (
-        reduction_params.absolute_angle_tolerance
-        and reduction_params.absolute_length_tolerance
-    ):
-        # calculate the median unit cell
-        new_best_unit_cell = determine_best_unit_cell_from_crystals(crystals_data)
-        good_crystals_data = select_crystals_close_to(
-            crystals_data,
-            new_best_unit_cell,
-            reduction_params.absolute_angle_tolerance,
-            reduction_params.absolute_length_tolerance,
-        )
-    else:  # join all data for splitting
-        good_crystals_data = crystals_data
-        xia2_logger.info("No unit cell filtering applied")
-
-    return good_crystals_data
 
 
 class SimpleDataReduction(BaseDataReduction):
@@ -178,10 +136,6 @@ class SimpleDataReduction(BaseDataReduction):
         # ok, so want to check all consistent sg, do batch reindex if
         # necessary and then scale
 
-        data_reduction_wd = self._main_directory / "data_reduction"
-        reindex_wd = data_reduction_wd / "reindex"
-        scale_wd = data_reduction_wd / "scale"
-
         crystals_data = load_crystal_data_from_new_expts(self._previously_scaled_data)
         space_group = check_consistent_space_group(crystals_data)
         best_unit_cell = determine_best_unit_cell_from_crystals(crystals_data)
@@ -194,15 +148,54 @@ class SimpleDataReduction(BaseDataReduction):
             self._reduction_params.space_group, best_unit_cell
         )
         if sym_requires_reindex and len(self._previously_scaled_data) > 1:
-            files_to_scale = cosym_reindex(
-                reindex_wd, self._previously_scaled_data, self._reduction_params.d_min
+            xia2_logger.notice(banner("Reindexing"))
+            self._files_to_scale = cosym_reindex(
+                self._reindex_wd,
+                self._previously_scaled_data,
+                self._reduction_params.d_min,
             )
             xia2_logger.info("Consistently reindexed batches of previously scaled data")
         else:
-            files_to_scale = self._previously_scaled_data
-        self.scale_and_merge(scale_wd, files_to_scale, self._reduction_params)
+            self._files_to_scale = self._previously_scaled_data
+        xia2_logger.notice(banner("Scaling"))
+        self._scale_and_merge()
 
-    def run(self) -> None:
+    def _filter(self) -> Tuple[FilesDict, uctbx.unit_cell, sgtbx.space_group_info]:
+        return _filter(self._filter_wd, self._integrated_data, self._reduction_params)
+
+    def _reindex(self) -> None:
+        # First do parallel reindexing of each batch
+        reindexed_new_files = list(
+            parallel_cosym(
+                self._reindex_wd,
+                self._filtered_files_to_process,
+                self._reduction_params,
+                nproc=self._reduction_params.nproc,
+            ).values()
+        )
+        # At this point, add in any previously scaled data.
+        self._files_to_scale = reindexed_new_files + self._previously_scaled_data
+        if len(self._files_to_scale) > 1:
+            # Reindex all batches together.
+            self._files_to_scale = cosym_reindex(
+                self._reindex_wd, self._files_to_scale, self._reduction_params.d_min
+            )
+            if self._previously_scaled_data:
+                xia2_logger.info(
+                    "Consistently reindexed all batches, including previously scaled data"
+                )
+            else:
+                xia2_logger.info(
+                    f"Consistently reindexed {len(reindexed_new_files)} batches"
+                )
+
+    def _prepare_for_scaling(self) -> None:
+        self._files_to_scale = (
+            list(self._filtered_files_to_process.values())
+            + self._previously_scaled_data
+        )
+
+    '''def run(self) -> None:
         """
         A simple workflow for data reduction. First filter the input data, either
         by clustering on unit cells, or comparing against a previous cell. Then
@@ -264,89 +257,24 @@ class SimpleDataReduction(BaseDataReduction):
                 list(new_files_to_process.values()) + self._previously_scaled_data
             )
 
-        self.scale_and_merge(scale_wd, files_to_scale, self._reduction_params)
+        self.scale_and_merge(scale_wd, files_to_scale, self._reduction_params)'''
 
-    @staticmethod
-    def reindex(
-        working_directory: Path,
-        data_to_reindex: FilesDict,
-        reduction_params,
-        nproc: int = 1,
-    ) -> FilesDict:
-        """
-        Runs dials.scale + dials.cosym on each batch to resolve indexing
-        ambiguities. If there is more than one batch, the dials.cosym is run
-        again to make sure all batches are consistently indexed.
-        """
-
-        if not Path.is_dir(working_directory):
-            Path.mkdir(working_directory)
-
-        with open(os.devnull, "w") as devnull:
-            sys.stdout = devnull  # block printing from cosym
-
-            reindexed_results: FilesDict = {}
-            xia2_logger.notice(banner("Reindexing"))  # type: ignore
-            with record_step(
-                "dials.scale/dials.cosym (parallel)"
-            ), concurrent.futures.ProcessPoolExecutor(max_workers=nproc) as pool:
-
-                cosym_futures: Dict[Any, int] = {
-                    pool.submit(
-                        scale_cosym,
-                        working_directory,
-                        files,
-                        index,
-                        reduction_params,
-                    ): index
-                    for index, files in data_to_reindex.items()
-                }
-                for future in concurrent.futures.as_completed(cosym_futures):
-                    try:
-                        result = future.result()
-                    except Exception as e:
-                        raise ValueError(
-                            f"Unsuccessful scaling and symmetry analysis of the new data. Error:\n{e}"
-                        )
-                    else:
-                        reindexed_results.update(result)
-
-        sys.stdout = sys.__stdout__  # restore printing
-        return reindexed_results
-
-    def scale_and_merge(
-        self,
-        working_directory: Path,
-        files_to_scale: List[FilePair],
-        reduction_params: ReductionParams,
-    ) -> None:
+    def _scale_and_merge(self) -> None:
         """Run scaling and merging"""
 
-        if not Path.is_dir(working_directory):
-            Path.mkdir(working_directory)
-        xia2_logger.notice(banner("Scaling"))  # type: ignore
+        if not Path.is_dir(self._scale_wd):
+            Path.mkdir(self._scale_wd)
         scaled_expts, scaled_table = scale(
-            working_directory,
-            files_to_scale,
-            reduction_params,
+            self._scale_wd,
+            self._files_to_scale,
+            self._reduction_params,
         )
-        xia2_logger.notice(banner("Merging"))  # type: ignore
         merge(
-            working_directory,
+            self._scale_wd,
             scaled_expts,
             scaled_table,
-            reduction_params.d_min,
-            reduction_params.central_unit_cell,
-        )
-
-
-def _wrap_extend_expts(first_elist, second_elist):
-    try:
-        first_elist.extend(second_elist)
-    except RuntimeError as e:
-        raise ValueError(
-            "Unable to combine experiments, check for datafiles containing duplicate experiments.\n"
-            + f"  Specific error message encountered:\n  {e}"
+            self._reduction_params.d_min,
+            self._reduction_params.central_unit_cell,
         )
 
 
@@ -375,9 +303,11 @@ class DataReductionWithPDBModel(BaseDataReduction):
             scaled_tables.append(table)
         return scaled_expts, scaled_tables
 
-    def _run_only_previously_scaled(self, working_directory):
-        if not Path.is_dir(working_directory):
-            Path.mkdir(working_directory)
+    def _run_only_previously_scaled(self):
+
+        if not Path.is_dir(self._scale_wd):
+            Path.mkdir(self._scale_wd)
+
         scaled_expts, scaled_tables = self._combine_previously_scaled()
         scaled_table = flex.reflection_table.concat(scaled_tables)
         n_final = len(scaled_expts)
@@ -391,7 +321,7 @@ class DataReductionWithPDBModel(BaseDataReduction):
             statistics_output_from_scaled_files(scaled_expts, scaled_table, uc)
         )
         merge(
-            working_directory,
+            self._scale_wd,
             scaled_expts,
             scaled_table,
             self._reduction_params.d_min,
@@ -399,7 +329,15 @@ class DataReductionWithPDBModel(BaseDataReduction):
             suffix="_all",
         )
 
-    def run(self):
+    def _filter(self) -> Tuple[FilesDict, uctbx.unit_cell, sgtbx.space_group_info]:
+        new_files_to_process, best_unit_cell, space_group = _filter(
+            self._filter_wd, self._integrated_data, self._reduction_params
+        )
+        self._reduction_params.central_unit_cell = best_unit_cell  # store the
+        # updated value to use in scaling
+        return new_files_to_process, best_unit_cell, space_group
+
+    """def run(self):
 
         # processing steps are filter, reindex and the scale.
 
@@ -411,18 +349,17 @@ class DataReductionWithPDBModel(BaseDataReduction):
 
         # note that it is possible that there is no new data to process and we
         # just want to merge existing data.
-        filter_wd = self._data_reduction_wd / "prefilter"
-        reindex_wd = self._data_reduction_wd / "reindex"
-        scale_wd = self._data_reduction_wd / "scale"
+        # filter_wd = self._data_reduction_wd / "prefilter"
+        # reindex_wd = self._data_reduction_wd / "reindex"
+        # scale_wd = self._data_reduction_wd / "scale"
 
         if not self._integrated_data:
-            self._run_only_previously_scaled(scale_wd)
+            self._run_only_previously_scaled()
             return
 
         # first filter the data.
-        xia2_logger.notice(banner("Filtering"))  # type: ignore
         new_files_to_process, best_unit_cell, space_group = _filter(
-            filter_wd, self._integrated_data, self._reduction_params
+            self._filter_wd, self._integrated_data, self._reduction_params
         )
 
         # ok so now need to reindex
@@ -457,35 +394,41 @@ class DataReductionWithPDBModel(BaseDataReduction):
             files_to_scale = new_files_to_process
             self._reduction_params.central_unit_cell = best_unit_cell
 
-        self.scale_and_merge(scale_wd, files_to_scale, self._reduction_params)
+        self.scale_and_merge(scale_wd, files_to_scale, self._reduction_params)"""
 
-    def scale_and_merge(
-        self,
-        working_directory: Path,
-        files_to_scale: FilesDict,
-        reduction_params: ReductionParams,
-    ) -> None:
+    def _prepare_for_scaling(self) -> None:
+        self._files_to_scale = list(self._filtered_files_to_process.values())
+
+    def _reindex(self) -> None:
+        # ideally - reindex each dataset against target
+        # on each batch - reindex internally to be consistent
+        # then reindex against pdb model.
+        ##FIXME need to implement this in cosym
+        assert 0
+
+    def _scale_and_merge(self) -> None:
         """Run scaling and merging"""
 
-        if not Path.is_dir(working_directory):
-            Path.mkdir(working_directory)
+        if not Path.is_dir(self._scale_wd):
+            Path.mkdir(self._scale_wd)
+
         xia2_logger.notice(banner("Scaling using model"))  # type: ignore
 
         scaled_results: FilesDict = {}
         with record_step(
             "dials.scale (parallel)"
         ), concurrent.futures.ProcessPoolExecutor(
-            max_workers=reduction_params.nproc
+            max_workers=self._reduction_params.nproc
         ) as pool:
             scale_futures: Dict[Any, int] = {
                 pool.submit(
                     scale_against_model,
-                    working_directory,
+                    self._scale_wd,
                     files,
                     index,
-                    reduction_params,
+                    self._reduction_params,
                 ): index
-                for index, files in files_to_scale.items()
+                for index, files in enumerate(self._files_to_scale)  # .items()
             }
             for future in concurrent.futures.as_completed(scale_futures):
                 try:
@@ -529,10 +472,10 @@ class DataReductionWithPDBModel(BaseDataReduction):
                 statistics_output_from_scaled_files(scaled_expts, scaled_table, uc)
             )
             merge(
-                working_directory,
+                self._scale_wd,
                 scaled_expts,
                 scaled_table,
-                reduction_params.d_min,
+                self._reduction_params.d_min,
                 uc,
             )
 
@@ -559,9 +502,9 @@ class DataReductionWithPDBModel(BaseDataReduction):
                     statistics_output_from_scaled_files(scaled_expts, scaled_table, uc)
                 )
                 merge(
-                    working_directory,
+                    self._scale_wd,
                     scaled_expts,
                     scaled_table,
-                    reduction_params.d_min,
+                    self._reduction_params.d_min,
                     suffix="_all",
                 )
