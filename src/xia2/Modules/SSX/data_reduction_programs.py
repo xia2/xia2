@@ -13,7 +13,6 @@ from io import StringIO
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-import iotbx.phil
 from cctbx import crystal, sgtbx, uctbx
 from dials.algorithms.scaling.algorithm import ScalingAlgorithm
 from dials.algorithms.scaling.scaling_library import determine_best_unit_cell
@@ -31,10 +30,14 @@ from dials.command_line.scale import phil_scope as scaling_phil_scope
 from dials.command_line.scale import run_scaling
 from dxtbx.model import Crystal, ExperimentList
 from dxtbx.serialize import load
-from iotbx import phil
+from iotbx.phil import parse
 
 from xia2.Driver.timing import record_step
-from xia2.Modules.SSX.data_reduction_base import FilePair, FilesDict, ReductionParams
+from xia2.Modules.SSX.data_reduction_definitions import (
+    FilePair,
+    FilesDict,
+    ReductionParams,
+)
 from xia2.Modules.SSX.reporting import (
     condensed_unit_cell_info,
     statistics_output_from_scaler,
@@ -268,52 +271,29 @@ def merge(
     filename = "merged" + (suffix if suffix else "") + ".mtz"
     logfile = "dials.merge" + (suffix if suffix else "") + ".log"
     html_file = "dials.merge" + (suffix if suffix else "") + ".html"
-    with run_in_directory(working_directory):
-        with log_to_file(logfile) as dials_logger, record_step("dials.merge"):
-            params = merge_phil_scope.extract()
-            input_ = (
-                "Input parameters:\n  reflections = scaled.refl\n"
-                + "  experiments = scaled.expt\n"
-            )
-            if d_min:
-                params.d_min = d_min
-                input_ += f"  d_min = {d_min}\n"
-            if best_unit_cell:
-                params.best_unit_cell = best_unit_cell
-                input_ += f"  best_unit_cell = {best_unit_cell.parameters()}"
-            dials_logger.info(input_)
-            mtz_file = merge_data_to_mtz(params, experiments, [reflection_table])
-            dials_logger.info(f"\nWriting reflections to {filename}")
-            out = StringIO()
-            mtz_file.show_summary(out=out)
-            dials_logger.info(out.getvalue())
-            mtz_file.write(filename)
-            merge_html_report(mtz_file, html_file)
+    with run_in_directory(working_directory), log_to_file(
+        logfile
+    ) as dials_logger, record_step("dials.merge"):
+        params = merge_phil_scope.extract()
+        input_ = (
+            "Input parameters:\n  reflections = scaled.refl\n"
+            + "  experiments = scaled.expt\n"
+        )
+        if d_min:
+            params.d_min = d_min
+            input_ += f"  d_min = {d_min}\n"
+        if best_unit_cell:
+            params.best_unit_cell = best_unit_cell
+            input_ += f"  best_unit_cell = {best_unit_cell.parameters()}"
+        dials_logger.info(input_)
+        mtz_file = merge_data_to_mtz(params, experiments, [reflection_table])
+        dials_logger.info(f"\nWriting reflections to {filename}")
+        out = StringIO()
+        mtz_file.show_summary(out=out)
+        dials_logger.info(out.getvalue())
+        mtz_file.write(filename)
+        merge_html_report(mtz_file, html_file)
     xia2_logger.info(f"Merged mtz file: {working_directory / filename}")
-
-
-def _set_scaling_options_for_ssx(
-    scaling_params: phil.scope_extract,
-) -> Tuple[phil.scope_extract, str]:
-    scaling_params.model = "KB"
-    scaling_params.exclude_images = ""  # Bug in extract for strings
-    scaling_params.scaling_options.full_matrix = False
-    scaling_params.weighting.error_model.error_model = None
-    scaling_params.scaling_options.outlier_rejection = "simple"
-    scaling_params.reflection_selection.intensity_choice = "sum"
-    scaling_params.reflection_selection.method = "intensity_ranges"
-    scaling_params.reflection_selection.Isigma_range = (2.0, 0.0)
-    scaling_params.reflection_selection.min_partiality = 0.4
-    input_ = (
-        "  model = KB\n  scaling_options.full_matrix = False\n"
-        + "  weighting.error_model.error_model = None\n"
-        + "  scaling_options.outlier_rejection = simple\n"
-        + "  reflection_selection.intensity_choice = sum\n"
-        + "  reflection_selection.method = intensity_ranges\n"
-        + "  reflection_selection.Isigma_range = 2.0,0.0\n"
-        + "  reflection_selection.min_partiality = 0.4\n"
-    )
-    return scaling_params, input_
 
 
 def _extract_scaling_params(reduction_params):
@@ -338,7 +318,7 @@ def _extract_scaling_params(reduction_params):
             str(round(p, 4)) for p in reduction_params.central_unit_cell.parameters()
         )
         xia2_phil += f"\nreflection_selection.best_unit_cell={vals}"
-    working_phil = scaling_phil_scope.fetch(sources=[iotbx.phil.parse(xia2_phil)])
+    working_phil = scaling_phil_scope.fetch(sources=[parse(xia2_phil)])
     diff_phil = scaling_phil_scope.fetch_diff(source=working_phil)
     params = working_phil.extract()
     return params, diff_phil
@@ -365,7 +345,7 @@ def _extract_scaling_params_for_prescale(reduction_params):
             str(round(p, 4)) for p in reduction_params.central_unit_cell.parameters()
         )
         xia2_phil += f"\nreflection_selection.best_unit_cell={vals}"
-    working_phil = scaling_phil_scope.fetch(sources=[iotbx.phil.parse(xia2_phil)])
+    working_phil = scaling_phil_scope.fetch(sources=[parse(xia2_phil)])
     diff_phil = scaling_phil_scope.fetch_diff(source=working_phil)
     params = working_phil.extract()
     return params, diff_phil
@@ -396,7 +376,7 @@ def _extract_scaling_params_for_scale_against_model(reduction_params, index):
             str(round(p, 4)) for p in reduction_params.central_unit_cell.parameters()
         )
         xia2_phil += f"\nreflection_selection.best_unit_cell={vals}"
-    working_phil = scaling_phil_scope.fetch(sources=[iotbx.phil.parse(xia2_phil)])
+    working_phil = scaling_phil_scope.fetch(sources=[parse(xia2_phil)])
     diff_phil = scaling_phil_scope.fetch_diff(source=working_phil)
     params = working_phil.extract()
     return params, diff_phil
@@ -510,9 +490,9 @@ def _extract_cosym_params(reduction_params, index):
             user_phil = itpr.process(args=[os.fspath(reduction_params.cosym_phil)])[0]
             working_phil = cosym_phil_scope.fetch(
                 sources=[
-                    iotbx.phil.parse(extra_defaults),
+                    parse(extra_defaults),
                     user_phil,
-                    iotbx.phil.parse(xia2_phil),
+                    parse(xia2_phil),
                 ]
             )
             # Note, the order above makes the xia2_phil take precedent
@@ -523,15 +503,15 @@ def _extract_cosym_params(reduction_params, index):
             )
             working_phil = cosym_phil_scope.fetch(
                 sources=[
-                    iotbx.phil.parse(extra_defaults),
-                    iotbx.phil.parse(xia2_phil),
+                    parse(extra_defaults),
+                    parse(xia2_phil),
                 ]
             )
     else:
         working_phil = cosym_phil_scope.fetch(
             sources=[
-                iotbx.phil.parse(extra_defaults),
-                iotbx.phil.parse(xia2_phil),
+                parse(extra_defaults),
+                parse(xia2_phil),
             ]
         )
     diff_phil = cosym_phil_scope.fetch_diff(source=working_phil)
@@ -644,10 +624,10 @@ def parallel_cosym(
     if not Path.is_dir(working_directory):
         Path.mkdir(working_directory)
 
+    reindexed_results: FilesDict = {}
+
     with open(os.devnull, "w") as devnull:
         sys.stdout = devnull  # block printing from cosym
-
-        reindexed_results: FilesDict = {}
 
         with record_step(
             "dials.scale/dials.cosym (parallel)"
