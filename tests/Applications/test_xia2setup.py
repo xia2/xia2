@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-import procrunner
+import os
+import subprocess
+
 import pytest
 
 from xia2.Handlers.XInfo import XInfo
@@ -18,13 +20,13 @@ def insulin_with_missing_image(dials_data, tmp_path):
 
 
 def test_write_xinfo_insulin_with_missing_image(insulin_with_missing_image, tmp_path):
-    result = procrunner.run(
+    result = subprocess.run(
         [
             "xia2.setup",
             f"image={insulin_with_missing_image.parent.joinpath('insulin_1_001.img')}",
         ],
-        environment_override={"CCP4": tmp_path},
-        working_directory=tmp_path,
+        env={"CCP4": tmp_path, **os.environ},
+        cwd=tmp_path,
     )
     assert not result.returncode
     assert not result.stderr
@@ -37,14 +39,14 @@ def test_write_xinfo_insulin_with_missing_image(insulin_with_missing_image, tmp_
 
 
 def test_write_xinfo_template_missing_images(insulin_with_missing_image, tmp_path):
-    result = procrunner.run(
+    result = subprocess.run(
         [
             "xia2.setup",
             f"image={insulin_with_missing_image.parent.joinpath('insulin_1_001.img:1:22')}",
             "read_all_image_headers=False",
         ],
-        environment_override={"CCP4": tmp_path},
-        working_directory=tmp_path,
+        env={"CCP4": tmp_path, **os.environ},
+        cwd=tmp_path,
     )
     assert not result.returncode
     assert not result.stderr
@@ -56,15 +58,15 @@ def test_write_xinfo_template_missing_images(insulin_with_missing_image, tmp_pat
 
 
 def test_write_xinfo_split_sweep(dials_data, tmp_path):
-    result = procrunner.run(
+    result = subprocess.run(
         [
             "xia2.setup",
             f"image={dials_data('insulin', pathlib=True) / 'insulin_1_001.img:1:22'}",
             f"image={dials_data('insulin', pathlib=True) / 'insulin_1_001.img:23:45'}",
             "read_all_image_headers=False",
         ],
-        environment_override={"CCP4": tmp_path},
-        working_directory=tmp_path,
+        env={"CCP4": tmp_path, **os.environ},
+        cwd=tmp_path,
     )
     assert not result.returncode
     assert not result.stderr
@@ -78,14 +80,14 @@ def test_write_xinfo_split_sweep(dials_data, tmp_path):
 
 def test_write_xinfo_unroll(dials_data, tmp_path):
     # This test partially exercises the fix to https://github.com/xia2/xia2/issues/498 with a different syntax
-    result = procrunner.run(
+    result = subprocess.run(
         [
             "xia2.setup",
             f"image={dials_data('insulin', pathlib=True) / 'insulin_1_001.img:1:45:15'}",
             "read_all_image_headers=False",
         ],
-        environment_override={"CCP4": tmp_path},
-        working_directory=tmp_path,
+        env={"CCP4": tmp_path, **os.environ},
+        cwd=tmp_path,
     )
     assert not result.returncode
     assert not result.stderr

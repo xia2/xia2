@@ -3,9 +3,9 @@
 
 from __future__ import annotations
 
-import procrunner
+import subprocess
 
 
 def test_start_xia2():
-    result = procrunner.run(["xia2"])
+    result = subprocess.run(["xia2"])
     assert result.returncode == 0
