@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import procrunner
+import subprocess
 
 import xia2.Test.regression
 
@@ -25,7 +25,7 @@ def test_dials(regression_test, dials_data, tmp_path, ccp4):
         "trust_beam_centre=True",
         dials_data("fumarase", pathlib=True),
     ]
-    result = procrunner.run(command_line, working_directory=tmp_path)
+    result = subprocess.run(command_line, cwd=tmp_path)
     success, issues = xia2.Test.regression.check_result(
         "mad_example.dials",
         result,
@@ -46,7 +46,7 @@ def test_dials_aimless(regression_test, dials_data, tmp_path, ccp4):
         "trust_beam_centre=True",
         dials_data("fumarase", pathlib=True),
     ]
-    result = procrunner.run(command_line, working_directory=tmp_path)
+    result = subprocess.run(command_line, cwd=tmp_path)
     success, issues = xia2.Test.regression.check_result(
         "mad_example.dials-aimless",
         result,
@@ -67,7 +67,7 @@ def test_xds(regression_test, dials_data, tmp_path, ccp4, xds):
         "trust_beam_centre=True",
         dials_data("fumarase", pathlib=True),
     ]
-    result = procrunner.run(command_line, working_directory=tmp_path)
+    result = subprocess.run(command_line, cwd=tmp_path)
     success, issues = xia2.Test.regression.check_result(
         "mad_example.xds",
         result,
@@ -90,7 +90,7 @@ def test_xds_ccp4a(regression_test, dials_data, tmp_path, ccp4, xds):
         "scaler=ccp4a",
         dials_data("fumarase", pathlib=True),
     ]
-    result = procrunner.run(command_line, working_directory=tmp_path)
+    result = subprocess.run(command_line, cwd=tmp_path)
     success, issues = xia2.Test.regression.check_result(
         "mad_example.ccp4a",
         result,

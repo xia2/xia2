@@ -10,7 +10,8 @@ Test the behaviour of the `multiple_sweep_indexing`, `multiple_sweep_refinement`
 
 from __future__ import annotations
 
-import procrunner
+import subprocess
+
 import pytest
 
 
@@ -22,7 +23,7 @@ def test_multiple_sweeps(multi_sweep_type, ccp4, dials_data, tmp_path):
     """
     Run xia2 with various different multiple-sweep options.
 
-    Run xia2 using procrunner and look for errors or timeouts.  Run it with a reduced
+    Run xia2 using subprocess.run() and look for errors or timeouts.  Run it with a reduced
     number of reflections per degree required for profile modelling and turn off the
     Xtriage analysis, since we won't have enough reflections for the default settings
     of either to be successful.
@@ -48,9 +49,10 @@ def test_multiple_sweeps(multi_sweep_type, ccp4, dials_data, tmp_path):
         # Don't run the Xtriage analysis — we don't have enough reflections overall.
         "xtriage_analysis=False",
     ]
-    result = procrunner.run(
+    result = subprocess.run(
         command + [f"image={str(image)}" for image in images],
-        working_directory=tmp_path,
+        capture_output=True,
+        cwd=tmp_path,
     )
 
     assert not result.returncode

@@ -50,7 +50,7 @@ def ccp4():
         pytest.skip("CCP4 installation required for this test")
 
     try:
-        result = subprocess.run(["refmac5", "-i"], stdout=subprocess.DEVNULL)
+        result = subprocess.run(["refmac5", "-i"], capture_output=True)
     except OSError:
         pytest.skip(
             "CCP4 installation required for this test - Could not find CCP4 executable"
@@ -74,7 +74,7 @@ def xds():
     Skip the test if XDS is not installed.
     """
     try:
-        result = subprocess.run(["xds"], stdout=subprocess.DEVNULL)
+        result = subprocess.run(["xds"], capture_output=True)
     except OSError:
         pytest.skip("XDS installation required for this test")
     version = re.search(rb"BUILT=([0-9]+)\)", result.stdout)

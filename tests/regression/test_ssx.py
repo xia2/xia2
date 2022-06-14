@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import json
 import os
-
-import procrunner
+import subprocess
 
 from dxtbx.serialize import load
 
@@ -28,7 +27,7 @@ def test_import_without_reference_or_crystal_info(dials_data, tmp_path):
     args = ["dev.xia2.ssx"]
     args.append("image=" + os.fspath(ssx / "merlin0047_1700*.cbf"))
 
-    result = procrunner.run(args, working_directory=tmp_path)
+    result = subprocess.run(args, cwd=tmp_path, capture_output=True)
     assert not result.returncode and not result.stderr
 
     # want to test
@@ -61,7 +60,7 @@ def test_geometry_refinement_and_run_with_reference(dials_data, tmp_path):
     ]
     args.append("image=" + os.fspath(ssx / "merlin0047_1700*.cbf"))
 
-    result = procrunner.run(args, working_directory=tmp_path)
+    result = subprocess.run(args, cwd=tmp_path, capture_output=True)
     assert not result.returncode and not result.stderr
 
     # Check that the processing went straight to geometry refinement and then
@@ -95,7 +94,7 @@ def test_geometry_refinement_and_run_with_reference(dials_data, tmp_path):
     args.append(f"reference_geometry={os.fspath(reference)}")
     args.append("enable_live_reporting=True")
 
-    result = procrunner.run(args, working_directory=tmp_path)
+    result = subprocess.run(args, cwd=tmp_path, capture_output=True)
     assert not result.returncode and not result.stderr
 
     assert without_reference_identifiers != with_reference_identifiers
@@ -126,7 +125,7 @@ def test_full_run_without_reference(dials_data, tmp_path):
     ]
     args.append("image=" + os.fspath(ssx / "merlin0047_1700*.cbf"))
 
-    result = procrunner.run(args, working_directory=tmp_path)
+    result = subprocess.run(args, cwd=tmp_path, capture_output=True)
     assert not result.returncode and not result.stderr
 
     # Now check that the processing went straight to geometry refinement
@@ -172,7 +171,7 @@ def test_full_run_without_reference(dials_data, tmp_path):
         "directory=batch_1/",
         "d_min=2.0",
     ]
-    result = procrunner.run(args, working_directory=tmp_path)
+    result = subprocess.run(args, cwd=tmp_path capture_output=True)
     assert not result.returncode and not result.stderr"""
 
 
@@ -189,7 +188,7 @@ def test_stepwise_run_without_reference(dials_data, tmp_path):
     args.append("image=" + os.fspath(ssx / "merlin0047_1700*.cbf"))
     args.append("steps=find_spots")
 
-    result = procrunner.run(args, working_directory=tmp_path)
+    result = subprocess.run(args, cwd=tmp_path, capture_output=True)
     assert not result.returncode and not result.stderr
 
     # Now check that the processing went straight to geometry refinement
@@ -222,18 +221,18 @@ def test_stepwise_run_without_reference(dials_data, tmp_path):
 
     # Now rerun, check nothing further done if forgetting to specify geometry
     args[-1] = "steps=index"
-    result = procrunner.run(args, working_directory=tmp_path)
+    result = subprocess.run(args, cwd=tmp_path, capture_output=True)
     assert not result.returncode and not result.stderr
     check_output(tmp_path, find_spots=True)
 
     # Now specify geometry
     args.append("reference_geometry=geometry_refinement/refined.expt")
-    result = procrunner.run(args, working_directory=tmp_path)
+    result = subprocess.run(args, cwd=tmp_path, capture_output=True)
     assert not result.returncode and not result.stderr
     check_output(tmp_path, find_spots=True, index=True)
 
     # Now specify geometry
     args[-2] = "steps=integrate"
-    result = procrunner.run(args, working_directory=tmp_path)
+    result = subprocess.run(args, cwd=tmp_path, capture_output=True)
     assert not result.returncode and not result.stderr
     check_output(tmp_path, find_spots=True, index=True, integrate=True)
