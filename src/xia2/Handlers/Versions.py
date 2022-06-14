@@ -46,8 +46,7 @@ def get_xds_version():
         result = subprocess.run(
             ["xds"],
             stdin=subprocess.DEVNULL,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
+            capture_output=True,
         )
     except OSError:
         pass
@@ -62,8 +61,7 @@ def get_aimless_version():
     result = subprocess.run(
         ["aimless", "--no-input"],
         stdin=subprocess.DEVNULL,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
+        capture_output=True,
     )
     version = re.search(rb"version\s\d+\.\d+\.\d+", result.stdout)
     if version:
@@ -76,8 +74,7 @@ def get_pointless_version():
     result = subprocess.run(
         ["pointless"],
         stdin=subprocess.DEVNULL,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
+        capture_output=True,
     )
     version = re.search(rb"version\s\d+\.\d+\.\d+", result.stdout)
     if version:
