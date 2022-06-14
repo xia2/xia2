@@ -195,7 +195,7 @@ def test_xds(regression_test, dials_data, tmp_path, ccp4, xds):
         "read_all_image_headers=False",
         dials_data("x4wide", pathlib=True),
     ]
-    result = subprocess.run(command_line, cwd=True, capture_output=True)
+    result = subprocess.run(command_line, cwd=tmp_path, capture_output=True)
     success, issues = xia2.Test.regression.check_result(
         "X4_wide.xds", result, tmp_path, ccp4, xds, expected_space_group="P41212"
     )
@@ -212,9 +212,7 @@ def test_xds_split(regression_test, dials_data, tmp_path, ccp4, xds):
         "trust_beam_centre=True",
         "xinfo=%s" % _split_xinfo(dials_data("x4wide", pathlib=True), tmp_path),
     ]
-    result = subprocess.run(
-        command_line, working_directory=tmp_path, capture_output=True
-    )
+    result = subprocess.run(command_line, cwd=tmp_path, capture_output=True)
     success, issues = xia2.Test.regression.check_result(
         "X4_wide_split.xds", result, tmp_path, ccp4, xds
     )
