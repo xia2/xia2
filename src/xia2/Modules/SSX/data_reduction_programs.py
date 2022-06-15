@@ -359,6 +359,10 @@ def _extract_scaling_params_for_prescale(reduction_params):
             str(round(p, 4)) for p in reduction_params.central_unit_cell.parameters()
         )
         xia2_phil += f"\nreflection_selection.best_unit_cell={vals}"
+    if reduction_params.model:
+        xia2_phil += f"\nscaling_options.target_model={str(reduction_params.model)}"
+        xia2_phil += "\nscaling_options.only_target=True"
+        xia2_phil += "\ncut_data.small_scale_cutoff=1e-9"
     working_phil = scaling_phil_scope.fetch(sources=[parse(xia2_phil)])
     diff_phil = scaling_phil_scope.fetch_diff(source=working_phil)
     params = working_phil.extract()
@@ -493,6 +497,8 @@ def _extract_cosym_params(reduction_params, index):
     """
     if reduction_params.d_min:
         xia2_phil += f"\nd_min={reduction_params.d_min}"
+    if reduction_params.model:
+        xia2_phil += f"\nreference={reduction_params.model}"
     extra_defaults = """
         min_i_mean_over_sigma_mean=2
         unit_cell_clustering.threshold=None
@@ -531,6 +537,45 @@ def _extract_cosym_params(reduction_params, index):
     diff_phil = cosym_phil_scope.fetch_diff(source=working_phil)
     cosym_params = working_phil.extract()
     return cosym_params, diff_phil
+
+
+def cosym_against_reference(
+    working_directory: Path,
+    files: FilePair,
+    index: int,
+    reduction_params,
+) -> FilesDict:
+    with run_in_directory(working_directory):
+        logfile = f"dials.cosym.{index}.log"
+        with record_step("dials.cosym"), log_to_file(logfile) as dials_logger:
+            cosym_params, diff_phil = _extract_cosym_params(reduction_params, index)
+            dials_logger.info(
+                "The following parameters have been modified:\n"
+                + f"{diff_phil.as_str()}"
+            )
+            # cosym_params.cc_star_threshold = 0.1
+            # cosym_params.angular_separation_threshold = 5
+            table = flex.reflection_table.from_file(files.refl)
+            expts = load.experiment_list(files.expt, check_format=False)
+
+            tables = table.split_by_experiment_id()
+            # now run cosym
+            cosym_instance = cosym(expts, tables, cosym_params)
+            register_default_cosym_observers(cosym_instance)
+            cosym_instance.run()
+            cosym_instance.experiments.as_file(cosym_params.output.experiments)
+            joint_refls = flex.reflection_table.concat(cosym_instance.reflections)
+            joint_refls.as_file(cosym_params.output.reflections)
+            xia2_logger.info(
+                f"Consistently indexed {len(cosym_instance.experiments)} crystals in data reduction batch {index+1} against reference"
+            )
+
+    return {
+        index: FilePair(
+            working_directory / cosym_params.output.experiments,
+            working_directory / cosym_params.output.reflections,
+        )
+    }
 
 
 def scale_cosym(
@@ -650,6 +695,52 @@ def parallel_cosym(
             cosym_futures: Dict[Any, int] = {
                 pool.submit(
                     scale_cosym,
+                    working_directory,
+                    files,
+                    index,
+                    reduction_params,
+                ): index
+                for index, files in data_to_reindex.items()
+            }
+            for future in concurrent.futures.as_completed(cosym_futures):
+                try:
+                    result = future.result()
+                except Exception as e:
+                    raise ValueError(
+                        f"Unsuccessful scaling and symmetry analysis of the new data. Error:\n{e}"
+                    )
+                else:
+                    reindexed_results.update(result)
+
+    sys.stdout = sys.__stdout__  # restore printing
+    return reindexed_results
+
+
+def parallel_cosym_reference(
+    working_directory: Path,
+    data_to_reindex: FilesDict,
+    reduction_params,
+    nproc: int = 1,
+) -> FilesDict:
+    """
+    Runs dials.cosym on each batch to resolve indexing ambiguities
+    """
+
+    if not Path.is_dir(working_directory):
+        Path.mkdir(working_directory)
+
+    reindexed_results: FilesDict = {}
+
+    with open(os.devnull, "w") as devnull:
+        sys.stdout = devnull  # block printing from cosym
+
+        with record_step(
+            "dials.scale/dials.cosym (parallel)"
+        ), concurrent.futures.ProcessPoolExecutor(max_workers=nproc) as pool:
+
+            cosym_futures: Dict[Any, int] = {
+                pool.submit(
+                    cosym_against_reference,
                     working_directory,
                     files,
                     index,

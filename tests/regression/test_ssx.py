@@ -246,21 +246,24 @@ def test_ssx_reduce_on_directory(dials_data, tmp_path, pdb_model):
         args.append(f"model={str(model)}")
 
     result = subprocess.run(args, cwd=tmp_path, capture_output=True)
-    assert not result.returncode and not result.stderr
+    if pdb_model:
+        assert not result.returncode
+    else:
+        assert not result.returncode and not result.stderr
     check_data_reduction_files(tmp_path)
 
 
 @pytest.mark.parametrize("pdb_model", [True, False])
 def test_ssx_reduce_on_files_no_idx_ambiguity(dials_data, tmp_path, pdb_model):
     ssx = dials_data("cunir_serial_processed", pathlib=True)
-    result = procrunner.run(
+    result = subprocess.run(
         [
             "dials.reindex",
             f"{ssx / 'integrated.refl'}",
             f"{ssx / 'integrated.expt'}",
             "space_group=P432",
         ],
-        working_directory=tmp_path,
+        cwd=tmp_path, capture_output=True
     )
     assert not result.returncode and not result.stderr
     expts = tmp_path / "reindexed.expt"
@@ -274,7 +277,7 @@ def test_ssx_reduce_on_files_no_idx_ambiguity(dials_data, tmp_path, pdb_model):
         model = dials_data("cunir_serial", pathlib=True) / "2bw4.pdb"
         args.append(f"model={str(model)}")
 
-    result = procrunner.run(args, working_directory=tmp_path)
+    result = subprocess.run(args, cwd=tmp_path, capture_output=True)
     assert (
         not result.returncode
     )  # can get result.stderr due to a warning in dials.export

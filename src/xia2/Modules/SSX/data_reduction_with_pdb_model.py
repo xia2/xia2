@@ -17,6 +17,7 @@ from xia2.Modules.SSX.data_reduction_programs import (
     dials_export,
     filter_,
     merge,
+    parallel_cosym_reference,
     scale_against_model,
 )
 from xia2.Modules.SSX.reporting import statistics_output_from_scaled_files
@@ -121,7 +122,14 @@ class DataReductionWithPDBModel(BaseDataReduction):
         # on each batch - reindex internally to be consistent
         # then reindex against pdb model.
         ##FIXME need to implement this in cosym
-        assert 0
+        self._files_to_scale = list(
+            parallel_cosym_reference(
+                self._reindex_wd,
+                self._filtered_files_to_process,
+                self._reduction_params,
+                nproc=self._reduction_params.nproc,
+            ).values()
+        )
 
     def _scale_and_merge(self) -> None:
         """Run scaling and merging"""
