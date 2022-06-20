@@ -42,7 +42,20 @@ def run(args=sys.argv[1:]):
         check_format=False,
         epilog=__doc__,
     )
-    params, _ = parser.parse_args(args=args, show_diff_phil=False)
+    params, _, unhandled = parser.parse_args(
+        args=args, show_diff_phil=False, return_unhandled=True
+    )
+    # Do it this way to avoid loading all data into memory at start, as we
+    # may never need to load all data at once.
+    if unhandled:
+        for item in unhandled:
+            if item.endswith(".expt"):
+                args[args.index(item)] = f"input.experiments = {item}"
+            elif item.endswith(".refl"):
+                args[args.index(item)] = f"input.reflections = {item}"
+            else:
+                raise ValueError(f"Unhandled argument: {item}")
+        params, _ = parser.parse_args(args=args, show_diff_phil=False)
 
     xia2.Handlers.Streams.setup_logging(
         logfile="xia2.ssx_reduce.log", debugfile="xia2.ssx_reduce.debug.log"

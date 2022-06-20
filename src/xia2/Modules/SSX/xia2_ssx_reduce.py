@@ -12,22 +12,24 @@ from xia2.Modules.SSX.data_reduction_interface import get_reducer
 from xia2.Modules.SSX.util import report_timing
 
 phil_str = """
-directory = None
-  .type = str
-  .multiple = True
-  .help = "Path to directory containing integrated_*.{refl,expt} files"
-reflections = None
-  .type = str
-  .multiple = True
-  .help = "Path to an integrated reflections file"
-experiments = None
-  .type = str
-  .multiple = True
-  .help = "Path to an integrated experiments file"
-processed_directory = None
-  .type = str
-  .multiple = True
-  .help = "Path to previously reduced data"
+input {
+  directory = None
+    .type = str
+    .multiple = True
+    .help = "Path to directory containing integrated_*.{refl,expt} files"
+  reflections = None
+    .type = str
+    .multiple = True
+    .help = "Path to an integrated reflections file"
+  experiments = None
+    .type = str
+    .multiple = True
+    .help = "Path to an integrated experiments file"
+  processed_directory = None
+    .type = str
+    .multiple = True
+    .help = "Path to previously reduced data"
+}
 multiprocessing.nproc = Auto
   .type = int
 batch_size = 1000
@@ -100,28 +102,28 @@ def run_xia2_ssx_reduce(
     reduction_params = ReductionParams.from_phil(params)
     reducer_class = get_reducer(reduction_params)
     processed_directories = []
-    if params.processed_directory:
-        for d in params.processed_directory:
+    if params.input.processed_directory:
+        for d in params.input.processed_directory:
             processed_directories.append(Path(d).resolve())
 
-    if params.directory:
-        if params.reflections or params.experiments:
+    if params.input.directory:
+        if params.input.reflections or params.input.experiments:
             xia2_logger.warning(
                 "Only a directory or reflections+experiments can be given\n"
                 "as input. Proceeding using only directories"
             )
-        directories = [Path(i).resolve() for i in params.directory]
+        directories = [Path(i).resolve() for i in params.input.directory]
         reducer = reducer_class.from_directories(
             root_working_directory,
             directories,
             processed_directories,
             reduction_params,
         )
-    elif params.reflections or params.experiments:
-        if not (params.reflections and params.experiments):
+    elif params.input.reflections or params.input.experiments:
+        if not (params.input.reflections and params.input.experiments):
             raise ValueError("Reflections and experiments files must both be specified")
-        reflections = [Path(i).resolve() for i in params.reflections]
-        experiments = [Path(i).resolve() for i in params.experiments]
+        reflections = [Path(i).resolve() for i in params.input.reflections]
+        experiments = [Path(i).resolve() for i in params.input.experiments]
         reducer = reducer_class.from_files(
             root_working_directory,
             reflections,
@@ -134,6 +136,6 @@ def run_xia2_ssx_reduce(
             root_working_directory, processed_directories, reduction_params
         )
     else:
-        raise ValueError(reducer._no_input_error_msg)
+        raise ValueError(reducer_class._no_input_error_msg)
 
     reducer.run()
