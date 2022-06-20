@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-import procrunner
+import subprocess
+
 import pytest
 
 import xia2.Test.regression
@@ -20,7 +21,7 @@ def test_xia2(pipeline, regression_test, dials_data, tmp_path, ccp4):
         "space_group=P41212",
         f"image={master_h5}",
     ]
-    result = procrunner.run(command_line, working_directory=tmp_path)
+    result = subprocess.run(command_line, cwd=tmp_path, capture_output=True)
     success, issues = xia2.Test.regression.check_result(
         f"vmxi_thaumatin.{pipeline}",
         result,

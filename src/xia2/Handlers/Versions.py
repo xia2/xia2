@@ -5,8 +5,6 @@ import re
 import subprocess
 from collections.abc import Mapping
 
-import procrunner
-
 import dials.util.version
 
 import xia2.XIA2Version
@@ -45,8 +43,10 @@ def get_xia2_version():
 @functools.lru_cache(maxsize=None)
 def get_xds_version():
     try:
-        result = procrunner.run(
-            ["xds"], print_stdout=False, print_stderr=False, stdin=subprocess.DEVNULL
+        result = subprocess.run(
+            ["xds"],
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
         )
     except OSError:
         pass
@@ -58,11 +58,10 @@ def get_xds_version():
 
 @functools.lru_cache(maxsize=None)
 def get_aimless_version():
-    result = procrunner.run(
+    result = subprocess.run(
         ["aimless", "--no-input"],
-        print_stdout=False,
-        print_stderr=False,
         stdin=subprocess.DEVNULL,
+        capture_output=True,
     )
     version = re.search(rb"version\s\d+\.\d+\.\d+", result.stdout)
     if version:
@@ -72,8 +71,10 @@ def get_aimless_version():
 
 @functools.lru_cache(maxsize=None)
 def get_pointless_version():
-    result = procrunner.run(
-        ["pointless"], print_stdout=False, print_stderr=False, stdin=subprocess.DEVNULL
+    result = subprocess.run(
+        ["pointless"],
+        stdin=subprocess.DEVNULL,
+        capture_output=True,
     )
     version = re.search(rb"version\s\d+\.\d+\.\d+", result.stdout)
     if version:

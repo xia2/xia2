@@ -9,9 +9,9 @@ from __future__ import annotations
 import argparse
 import os
 import re
+import subprocess
 from pathlib import Path
 
-import procrunner
 import pytest
 
 
@@ -50,7 +50,7 @@ def ccp4():
         pytest.skip("CCP4 installation required for this test")
 
     try:
-        result = procrunner.run(["refmac5", "-i"], print_stdout=False)
+        result = subprocess.run(["refmac5", "-i"], capture_output=True)
     except OSError:
         pytest.skip(
             "CCP4 installation required for this test - Could not find CCP4 executable"
@@ -74,7 +74,7 @@ def xds():
     Skip the test if XDS is not installed.
     """
     try:
-        result = procrunner.run(["xds"], print_stdout=False)
+        result = subprocess.run(["xds"], capture_output=True)
     except OSError:
         pytest.skip("XDS installation required for this test")
     version = re.search(rb"BUILT=([0-9]+)\)", result.stdout)
@@ -100,7 +100,7 @@ def ensure_repository_is_clean():
     if not os.getenv("CHECK_CLEAN_WORKDIR"):
         return
     print("Working directory:", _repository)
-    status = procrunner.run(("git", "status", "-s"), working_directory=_repository)
+    status = subprocess.run(("git", "status", "-s"), cwd=_repository)
     if status.stdout:
         assert False, "Working directory is not clean"
 

@@ -6,11 +6,11 @@ import logging
 import math
 import os
 import pathlib
+import subprocess
 from dataclasses import asdict, dataclass, field
 from typing import List, Optional, Tuple
 
 import numpy as np
-import procrunner
 
 from dials.util.mp import multi_node_parallel_map
 from dxtbx.serialize import load
@@ -278,7 +278,7 @@ def run_import(working_directory: pathlib.Path, file_input: FileInput) -> None:
     else:
         xia2_logger.notice(banner("Importing"))  # type: ignore
     with record_step("dials.import"):
-        result = procrunner.run(import_command, working_directory=working_directory)
+        result = subprocess.run(import_command, cwd=working_directory)
         if result.returncode or result.stderr:
             raise ValueError(
                 "dials.import returned error status:\n" + str(result.stderr)

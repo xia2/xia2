@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-import procrunner
+import subprocess
+
 import pytest
 
 import iotbx.mtz
@@ -46,9 +47,10 @@ END PROJECT AUTOMATIC
 
 @pytest.mark.parametrize("pipeline,scaler", (("dials", "xdsa"), ("3dii", "dials")))
 def test_incompatible_pipeline_scaler(pipeline, scaler, tmp_path, ccp4):
-    result = procrunner.run(
+    result = subprocess.run(
         ["xia2", f"pipeline={pipeline}", "nproc=1", f"scaler={scaler}"],
-        working_directory=tmp_path,
+        cwd=tmp_path,
+        capture_output=True,
     )
     assert result.returncode
     assert (
@@ -67,7 +69,7 @@ def test_dials_aimless(regression_test, dials_data, tmp_path, ccp4):
         "truncate=cctbx",
         dials_data("x4wide", pathlib=True),
     ]
-    result = procrunner.run(command_line, working_directory=tmp_path)
+    result = subprocess.run(command_line, cwd=tmp_path, capture_output=True)
     success, issues = xia2.Test.regression.check_result(
         "X4_wide.dials-aimless", result, tmp_path, ccp4, expected_space_group="P41212"
     )
@@ -86,7 +88,7 @@ def test_dials_aimless_with_dials_pipeline(regression_test, dials_data, tmp_path
         "truncate=cctbx",
         dials_data("x4wide", pathlib=True),
     ]
-    result = procrunner.run(command_line, working_directory=tmp_path)
+    result = subprocess.run(command_line, cwd=tmp_path, capture_output=True)
     success, issues = xia2.Test.regression.check_result(
         "X4_wide.dials-aimless", result, tmp_path, ccp4
     )
@@ -106,7 +108,7 @@ def test_dials(regression_test, dials_data, tmp_path, ccp4):
         "crystal=bar",
         dials_data("x4wide", pathlib=True),
     ]
-    result = procrunner.run(command_line, working_directory=tmp_path)
+    result = subprocess.run(command_line, cwd=tmp_path, capture_output=True)
     scaled_expt_file = tmp_path / "DataFiles" / "foo_bar_scaled.expt"
     assert scaled_expt_file.is_file()
     scaled_expt = load.experiment_list(scaled_expt_file)
@@ -153,7 +155,7 @@ def test_dials_aimless_split(regression_test, dials_data, tmp_path, ccp4):
         "trust_beam_centre=True",
         "xinfo=%s" % _split_xinfo(dials_data("x4wide", pathlib=True), tmp_path),
     ]
-    result = procrunner.run(command_line, working_directory=tmp_path)
+    result = subprocess.run(command_line, cwd=tmp_path, capture_output=True)
     success, issues = xia2.Test.regression.check_result(
         "X4_wide_split.dials-aimless", result, tmp_path, ccp4
     )
@@ -170,7 +172,7 @@ def test_dials_split(regression_test, dials_data, tmp_path, ccp4):
         "xinfo=%s" % _split_xinfo(dials_data("x4wide", pathlib=True), tmp_path),
         "mode=parallel",
     ]
-    result = procrunner.run(command_line, working_directory=tmp_path)
+    result = subprocess.run(command_line, cwd=tmp_path, capture_output=True)
     success, issues = xia2.Test.regression.check_result(
         "X4_wide_split.dials",
         result,
@@ -193,7 +195,7 @@ def test_xds(regression_test, dials_data, tmp_path, ccp4, xds):
         "read_all_image_headers=False",
         dials_data("x4wide", pathlib=True),
     ]
-    result = procrunner.run(command_line, working_directory=tmp_path)
+    result = subprocess.run(command_line, cwd=tmp_path, capture_output=True)
     success, issues = xia2.Test.regression.check_result(
         "X4_wide.xds", result, tmp_path, ccp4, xds, expected_space_group="P41212"
     )
@@ -210,7 +212,7 @@ def test_xds_split(regression_test, dials_data, tmp_path, ccp4, xds):
         "trust_beam_centre=True",
         "xinfo=%s" % _split_xinfo(dials_data("x4wide", pathlib=True), tmp_path),
     ]
-    result = procrunner.run(command_line, working_directory=tmp_path)
+    result = subprocess.run(command_line, cwd=tmp_path, capture_output=True)
     success, issues = xia2.Test.regression.check_result(
         "X4_wide_split.xds", result, tmp_path, ccp4, xds
     )
@@ -226,7 +228,7 @@ def test_xds_ccp4a(regression_test, dials_data, tmp_path, ccp4, xds):
         "trust_beam_centre=True",
         dials_data("x4wide", pathlib=True),
     ]
-    result = procrunner.run(command_line, working_directory=tmp_path)
+    result = subprocess.run(command_line, cwd=tmp_path, capture_output=True)
     success, issues = xia2.Test.regression.check_result(
         "X4_wide.ccp4a", result, tmp_path, ccp4, xds
     )
@@ -245,7 +247,7 @@ def test_xds_ccp4a_split(regression_test, dials_data, tmp_path, ccp4, xds):
         "mode=parallel",
         "xinfo=%s" % _split_xinfo(dials_data("x4wide", pathlib=True), tmp_path),
     ]
-    result = procrunner.run(command_line, working_directory=tmp_path)
+    result = subprocess.run(command_line, cwd=tmp_path, capture_output=True)
     success, issues = xia2.Test.regression.check_result(
         "X4_wide_split.ccp4a", result, tmp_path, ccp4, xds
     )
@@ -269,7 +271,7 @@ def test_space_group_dials(
         "image=%s"
         % dials_data("x4wide", pathlib=True).joinpath("X4_wide_M1S4_2_0001.cbf:20:30"),
     ]
-    result = procrunner.run(command_line, working_directory=tmp_path)
+    result = subprocess.run(command_line, cwd=tmp_path, capture_output=True)
     success, issues = xia2.Test.regression.check_result(
         "X4_wide.space_group.%s" % pipeline,
         result,
@@ -296,7 +298,7 @@ def test_space_group_3dii(
         "image=%s"
         % dials_data("x4wide", pathlib=True).joinpath("X4_wide_M1S4_2_0001.cbf:20:30"),
     ]
-    result = procrunner.run(command_line, working_directory=tmp_path)
+    result = subprocess.run(command_line, cwd=tmp_path, capture_output=True)
     success, issues = xia2.Test.regression.check_result(
         "X4_wide.space_group.3dii",
         result,
