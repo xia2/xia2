@@ -81,6 +81,7 @@ scaling {
     .type = bool
     .help = "If True, keep anomalous pairs separate during scaling."
   model = None
+    .type = path
     .help = "An alias for the reference= option"
   reference = None
     .type = path
