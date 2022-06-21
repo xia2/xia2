@@ -81,8 +81,13 @@ scaling {
     .type = bool
     .help = "If True, keep anomalous pairs separate during scaling."
   model = None
+    .help = "An alias for the reference= option"
+  reference = None
     .type = path
-    .help = "A model pdb file to use as a reference for scaling."
+    .help = "A reference to use for scaling + indexing ambiguity resolution."
+            "Can be a model pdb/cif file or a cif/mtz data file contaning"
+            "intensity information."
+    .expert_level = 1
 }
 """
 

@@ -28,7 +28,7 @@ class SimpleDataReduction(BaseDataReduction):
         + " - Use directory= to specify a directory containing integrated data,\n"
         + "   or both reflections= and experiments= to specify integrated data files.\n"
         + " - Use processed_directory= to specify /data_reduction/scale directories of\n"
-        + "   data previously processed in a similar manner (without a PDB model as reference)."
+        + "   data previously processed in a similar manner (without a reference)."
     )
 
     def _run_only_previously_scaled(self):

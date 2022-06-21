@@ -311,7 +311,7 @@ def merge(
 
 
 def _extract_scaling_params(reduction_params):
-    # scaling options for scaling without a model
+    # scaling options for scaling without a reference
     xia2_phil = f"""
         model=KB
         scaling_options.full_matrix=False
@@ -359,9 +359,8 @@ def _extract_scaling_params_for_prescale(reduction_params):
             str(round(p, 4)) for p in reduction_params.central_unit_cell.parameters()
         )
         xia2_phil += f"\nreflection_selection.best_unit_cell={vals}"
-    if reduction_params.model:
-        xia2_phil += f"\nscaling_options.target_model={str(reduction_params.model)}"
-        xia2_phil += "\nscaling_options.only_target=True"
+    if reduction_params.reference:
+        xia2_phil += f"\nscaling_options.reference={str(reduction_params.reference)}"
         xia2_phil += "\ncut_data.small_scale_cutoff=1e-9"
     working_phil = scaling_phil_scope.fetch(sources=[parse(xia2_phil)])
     diff_phil = scaling_phil_scope.fetch_diff(source=working_phil)
@@ -369,7 +368,7 @@ def _extract_scaling_params_for_prescale(reduction_params):
     return params, diff_phil
 
 
-def _extract_scaling_params_for_scale_against_model(reduction_params, index):
+def _extract_scaling_params_for_scale_against_reference(reduction_params, index):
     xia2_phil = f"""
         model=KB
         scaling_options.full_matrix=False
@@ -383,8 +382,7 @@ def _extract_scaling_params_for_scale_against_model(reduction_params, index):
         output.experiments=scaled_{index}.expt
         output.reflections=scaled_{index}.refl
         output.html=dials.scale.{index}.html
-        scaling_options.target_model={str(reduction_params.model)}
-        scaling_options.only_target=True
+        scaling_options.reference={str(reduction_params.reference)}
         cut_data.small_scale_cutoff=1e-9
     """
     if reduction_params.d_min:
@@ -400,7 +398,7 @@ def _extract_scaling_params_for_scale_against_model(reduction_params, index):
     return params, diff_phil
 
 
-def scale_against_model(
+def scale_against_reference(
     working_directory: Path,
     files: FilePair,
     index: int,
@@ -412,7 +410,7 @@ def scale_against_model(
         # Setup scaling
         expts = load.experiment_list(files.expt, check_format=False)
         table = flex.reflection_table.from_file(files.refl)
-        params, diff_phil = _extract_scaling_params_for_scale_against_model(
+        params, diff_phil = _extract_scaling_params_for_scale_against_reference(
             reduction_params, index
         )
         dials_logger.info(
@@ -497,8 +495,8 @@ def _extract_cosym_params(reduction_params, index):
     """
     if reduction_params.d_min:
         xia2_phil += f"\nd_min={reduction_params.d_min}"
-    if reduction_params.model:
-        xia2_phil += f"\nreference={reduction_params.model}"
+    if reduction_params.reference:
+        xia2_phil += f"\nreference={reduction_params.reference}"
     extra_defaults = """
         min_i_mean_over_sigma_mean=2
         unit_cell_clustering.threshold=None

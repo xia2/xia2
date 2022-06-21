@@ -47,16 +47,18 @@ class ReductionParams:
     absolute_angle_tolerance: float = 0.5
     absolute_length_tolerance: float = 0.2
     central_unit_cell: Optional[uctbx.unit_cell] = None
-    model: Optional[Path] = None
+    reference: Optional[Path] = None
     cosym_phil: Optional[Path] = None
 
     @classmethod
     def from_phil(cls, params: iotbx.phil.scope_extract):
         """Construct from xia2.cli.ssx phil_scope."""
-        model = None
+        reference = None
         cosym_phil = None
-        if params.scaling.model:
-            model = Path(params.scaling.model).resolve()
+        if params.scaling.reference:
+            reference = Path(params.scaling.reference).resolve()
+        elif params.scaling.model:
+            reference = Path(params.scaling.model).resolve()
         if params.clustering.central_unit_cell and params.clustering.threshold:
             raise ValueError(
                 "Only one of clustering.central_unit_cell and clustering.threshold can be specified"
@@ -73,6 +75,6 @@ class ReductionParams:
             params.clustering.absolute_angle_tolerance,
             params.clustering.absolute_length_tolerance,
             params.clustering.central_unit_cell,
-            model,
+            reference,
             cosym_phil,
         )
