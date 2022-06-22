@@ -221,7 +221,7 @@ min_multiplicity = None
 max_clusters = None
   .type = int(value_min=1)
   .short_caption = "Maximum number of clusters"
-cluster_method = *cos_angle correlation
+cluster_method = *cos_angle correlation unit_cell
   .type = choice
   .short_caption = "Metric on which to perform clustering"
 
@@ -362,6 +362,8 @@ class MultiCrystalScale:
             clusters = self._cos_angle_clusters
         elif self._params.cluster_method == "correlation":
             clusters = self._cc_clusters
+        elif self._params.cluster_method == "unit_cell":
+            clusters = self._uc_clusters
         else:
             raise ValueError("Invalid cluster method: %s" % self._params.cluster_method)
         if max_clusters or min_completeness is not None or min_multiplicity is not None:
@@ -812,6 +814,7 @@ class MultiCrystalScale:
         mca = self._mca.cluster_analysis()
         self._cos_angle_clusters = mca.cos_angle_clusters
         self._cc_clusters = mca.cc_clusters
+        self._uc_clusters = mca.uc_clusters
 
 
 class Scale:

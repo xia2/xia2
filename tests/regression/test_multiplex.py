@@ -232,6 +232,7 @@ def test_proteinase_k_dose(laue_group, space_group, threshold, proteinase_k):
     (
         ["min_completeness=0.6", "cluster_method=cos_angle"],
         ["min_completeness=0.6", "cluster_method=correlation"],
+        ["min_completeness=0.6", "cluster_method=unit_cell"],
     ),
 )
 def test_proteinase_k_min_completeness(parameters, proteinase_k):

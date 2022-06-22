@@ -5,10 +5,10 @@ import logging
 import math
 
 from cctbx import miller
+from dials.algorithms.scaling.scaling_library import scaled_data_as_miller_array
 from dials.array_family import flex
 from dials.command_line import export, merge
 from dials.command_line.slice_sequence import slice_experiments, slice_reflections
-from dials.report.analysis import scaled_data_as_miller_array
 from dials.util.batch_handling import assign_batches_to_reflections
 from dxtbx.model import ExperimentList
 
@@ -144,7 +144,11 @@ class DataManager:
                 sel &= r["inverse_scale_factor"] > 0
                 batches = r["batch"].select(sel)
                 scales = r["inverse_scale_factor"].select(sel)
-                scaled_arrays.append(scaled_data_as_miller_array([r], [expt]))
+                scaled_arrays.append(
+                    scaled_data_as_miller_array(
+                        [r], [expt], best_unit_cell=expt.crystal.get_unit_cell()
+                    )
+                )
                 batch_arrays.append(miller.array(scaled_arrays[-1], data=batches))
                 scale_arrays.append(miller.array(scaled_arrays[-1], data=scales))
             return scaled_arrays, batch_arrays, scale_arrays

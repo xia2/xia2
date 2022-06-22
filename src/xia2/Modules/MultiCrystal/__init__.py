@@ -9,6 +9,7 @@ import numpy as np
 from scipy.cluster import hierarchy
 
 import iotbx.phil
+from dials.algorithms.clustering.unit_cell import cluster_unit_cells
 from dials.util import tabulate
 from scitbx.array_family import flex
 
@@ -117,14 +118,13 @@ class multi_crystal_analysis:
 
         self.cos_angle_linkage_matrix = ca_linkage_matrix
         self.cos_angle_matrix = cos_angle_matrix
-        self.cos_angle_clusters = self.cluster_info(
-            self.linkage_matrix_to_dict(self.cos_angle_linkage_matrix)
-        )
+        self.cos_angle_clusters = self.cluster_info(self.cos_angle_linkage_matrix)
         self.cc_linkage_matrix = linkage_matrix
         self.cc_matrix = correlation_matrix
-        self.cc_clusters = self.cluster_info(
-            self.linkage_matrix_to_dict(self.cc_linkage_matrix)
-        )
+        self.cc_clusters = self.cluster_info(self.cc_linkage_matrix)
+        uc_clustering = self.unit_cell_clustering()
+        self.uc_linkage_matrix = uc_clustering.linkage_matrix
+        self.uc_clusters = self.cluster_info(self.uc_linkage_matrix)
 
         logger.info("\nIntensity correlation clustering summary:")
         logger.info(
@@ -141,7 +141,8 @@ class multi_crystal_analysis:
             )
         )
 
-    def cluster_info(self, cluster_dict):
+    def cluster_info(self, linkage_matrix):
+        cluster_dict = self.linkage_matrix_to_dict(linkage_matrix)
         info = []
         for cluster_id, cluster in cluster_dict.items():
             sel_cluster = flex.bool(self._labels_all.size(), False)
@@ -241,6 +242,17 @@ class multi_crystal_analysis:
 
         self.cosym = CosymAnalysis(datasets, params)
         self.cosym.run()
+
+    def unit_cell_clustering(self):
+        crystal_symmetries = [ma.niggli_cell() for ma in self.unmerged_intensities]
+        clustering = cluster_unit_cells(
+            crystal_symmetries,
+            lattice_ids=self.labels,
+            threshold=5000,
+            ax=None,
+            no_plot=True,
+        )
+        return clustering
 
     def compute_correlation_coefficient_matrix(self):
         import scipy.spatial.distance as ssd
