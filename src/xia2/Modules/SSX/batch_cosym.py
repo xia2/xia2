@@ -46,7 +46,9 @@ class BatchCosym(Subject):
         best_unit_cell = determine_best_unit_cell(all_expts)
         self._experiments = all_expts
 
-        def array_from_refl_expts(refls, expts):
+        for i, (table, expts) in enumerate(
+            zip(self.input_reflections, self.input_experiments)
+        ):
             wavelength = np.mean([expt.beam.get_wavelength() for expt in expts])
             expt = copy.deepcopy(expts[0])
             expt.beam.set_wavelength(wavelength)
@@ -58,8 +60,13 @@ class BatchCosym(Subject):
                 params.relative_length_tolerance,
                 params.absolute_angle_tolerance,
             )
-            tables = eliminate_sys_absent(elist, [refls])
+            tables = eliminate_sys_absent(elist, [table])
+            self.input_reflections[i] = tables[0]
             elist, tables = apply_change_of_basis_ops(elist, tables, cb_ops)
+            self.input_reflections[i] = tables[0]
+            for j_expt in self.input_experiments[i]:
+                j_expt.crystal = j_expt.crystal.change_basis(cb_ops[0])
+                j_expt.crystal.set_space_group(sgtbx.space_group())
 
             arr = filtered_arrays_from_experiments_reflections(
                 elist,
@@ -67,10 +74,7 @@ class BatchCosym(Subject):
                 outlier_rejection_after_filter=False,
                 partiality_threshold=params.partiality_threshold,
             )
-            return arr
-
-        for refls, expts in zip(reflections, experiments):
-            datasets.extend(array_from_refl_expts(refls, expts))
+            datasets.extend(arr)
 
         datasets = [
             ma.as_non_anomalous_array().merge_equivalents().array() for ma in datasets
