@@ -27,7 +27,6 @@ from dials.command_line.merge import merge_data_to_mtz
 from dials.command_line.merge import phil_scope as merge_phil_scope
 from dials.command_line.scale import _export_unmerged_mtz
 from dials.command_line.scale import phil_scope as scaling_phil_scope
-from dials.command_line.scale import run_scaling
 from dxtbx.model import Crystal, ExperimentList
 from dxtbx.serialize import load
 from iotbx.phil import parse
@@ -576,49 +575,40 @@ def cosym_against_reference(
     }
 
 
-def scale_cosym(
+def individual_cosym(
     working_directory: Path,
     files: FilePair,
     index: int,
     reduction_params,
 ) -> FilesDict:
-    """Run prescaling followed by cosym an the expt and refl file."""
-    with run_in_directory(working_directory):
+    """Run  cosym an the expt and refl file."""
+    logfile = f"dials.cosym.{index}.log"
+    with run_in_directory(working_directory), record_step("dials.cosym"), log_to_file(
+        logfile
+    ) as dials_logger:
+        cosym_params, diff_phil = _extract_cosym_params(reduction_params, index)
+        dials_logger.info(
+            "The following parameters have been modified:\n"
+            + f"input.experiments = {files.expt}\n"
+            + f"input.reflections = {files.refl}\n"
+            + f"{diff_phil.as_str()}"
+        )
+        # cosym_params.cc_star_threshold = 0.1
+        # cosym_params.angular_separation_threshold = 5
+        table = flex.reflection_table.from_file(files.refl)
+        expts = load.experiment_list(files.expt, check_format=False)
 
-        logfile = f"dials.scale.{index}.log"
-        with record_step("dials.scale"), log_to_file(logfile) as dials_logger:
-            refls = [flex.reflection_table.from_file(files.refl)]
-            expts = load.experiment_list(files.expt, check_format=False)
-            params, diff_phil = _extract_scaling_params_for_prescale(reduction_params)
-            dials_logger.info(
-                "The following parameters have been modified:\n"
-                + f"reflections = {files.refl}\n"
-                + f"experiments = {files.expt}\n"
-                + f"{diff_phil.as_str()}"
-            )
-            scaled_expts, table = run_scaling(params, expts, refls)
-
-        logfile = f"dials.cosym.{index}.log"
-        with record_step("dials.cosym"), log_to_file(logfile) as dials_logger:
-            cosym_params, diff_phil = _extract_cosym_params(reduction_params, index)
-            dials_logger.info(
-                "The following parameters have been modified:\n"
-                + f"{diff_phil.as_str()}"
-            )
-            # cosym_params.cc_star_threshold = 0.1
-            # cosym_params.angular_separation_threshold = 5
-
-            tables = table.split_by_experiment_id()
-            # now run cosym
-            cosym_instance = cosym(scaled_expts, tables, cosym_params)
-            register_default_cosym_observers(cosym_instance)
-            cosym_instance.run()
-            cosym_instance.experiments.as_file(cosym_params.output.experiments)
-            joint_refls = flex.reflection_table.concat(cosym_instance.reflections)
-            joint_refls.as_file(cosym_params.output.reflections)
-            xia2_logger.info(
-                f"Consistently indexed {len(cosym_instance.experiments)} crystals in data reduction batch {index+1}"
-            )
+        tables = table.split_by_experiment_id()
+        # now run cosym
+        cosym_instance = cosym(expts, tables, cosym_params)
+        register_default_cosym_observers(cosym_instance)
+        cosym_instance.run()
+        cosym_instance.experiments.as_file(cosym_params.output.experiments)
+        joint_refls = flex.reflection_table.concat(cosym_instance.reflections)
+        joint_refls.as_file(cosym_params.output.reflections)
+        xia2_logger.info(
+            f"Consistently indexed {len(cosym_instance.experiments)} crystals in data reduction batch {index+1}"
+        )
 
     return {
         index: FilePair(
@@ -672,11 +662,7 @@ def parallel_cosym(
     reduction_params,
     nproc: int = 1,
 ) -> FilesDict:
-    """
-    Runs dials.scale + dials.cosym on each batch to resolve indexing
-    ambiguities. If there is more than one batch, the dials.cosym is run
-    again to make sure all batches are consistently indexed.
-    """
+    """Run dials.cosym on each batch to resolve indexing ambiguities."""
 
     if not Path.is_dir(working_directory):
         Path.mkdir(working_directory)
@@ -687,12 +673,12 @@ def parallel_cosym(
         sys.stdout = devnull  # block printing from cosym
 
         with record_step(
-            "dials.scale/dials.cosym (parallel)"
+            "dials.cosym (parallel)"
         ), concurrent.futures.ProcessPoolExecutor(max_workers=nproc) as pool:
 
             cosym_futures: Dict[Any, int] = {
                 pool.submit(
-                    scale_cosym,
+                    individual_cosym,
                     working_directory,
                     files,
                     index,
