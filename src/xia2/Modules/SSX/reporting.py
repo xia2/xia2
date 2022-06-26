@@ -89,11 +89,14 @@ def indexing_summary_output(summary_data: Dict, summary_plots: Dict) -> str:
     name = f"{'%'} spots indexed per image"
     percent_idx = percent_idx[percent_idx > 0]
     n = percent_idx.size
-    sorted_x = np.sort(percent_idx)
-    Q1 = f"{sorted_x[n // 4]:3.2f}"
-    Q2 = f"{sorted_x[n // 2]:3.2f}"
-    Q3 = f"{sorted_x[3 * n // 4]:3.2f}"
-    output_ += f"\n{name:<28} {Q1:>6} {Q2:>6} {Q3:>6}"
+    try:
+        sorted_x = np.sort(percent_idx)
+        Q1 = f"{sorted_x[n // 4]:3.2f}"
+        Q2 = f"{sorted_x[n // 2]:3.2f}"
+        Q3 = f"{sorted_x[3 * n // 4]:3.2f}"
+        output_ += f"\n{name:<28} {Q1:>6} {Q2:>6} {Q3:>6}"
+    except IndexError:
+        pass
     return output_
 
 

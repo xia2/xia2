@@ -65,3 +65,6 @@ def run(args=sys.argv[1:]):
         run_xia2_ssx(cwd, params)
     except ValueError as e:
         xia2_logger.info(f"Error: {e}")
+
+if __name__ == "__main__":
+    run()
