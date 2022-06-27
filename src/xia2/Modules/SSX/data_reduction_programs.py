@@ -446,8 +446,6 @@ def _extract_cosym_params(reduction_params, index):
         output.reflections=processed_{index}.refl
         output.experiments=processed_{index}.expt
     """
-    if reduction_params.d_min:
-        xia2_phil += f"\nd_min={reduction_params.d_min}"
     if reduction_params.reference:
         xia2_phil += f"\nreference={reduction_params.reference}"
     extra_defaults = """
@@ -455,6 +453,10 @@ def _extract_cosym_params(reduction_params, index):
         unit_cell_clustering.threshold=None
         lattice_symmetry_max_delta=1
     """
+    if reduction_params.d_min:
+        # note - allow user phil to override the overall xia2 d_min - might
+        # not want to use full resolution range for symmetry analysis
+        extra_defaults += f"\nd_min={reduction_params.d_min}"
     if reduction_params.cosym_phil:
         itpr = cosym_phil_scope.command_line_argument_interpreter()
         try:
