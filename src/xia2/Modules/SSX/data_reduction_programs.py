@@ -25,7 +25,6 @@ from dials.command_line.cosym import register_default_cosym_observers
 from dials.command_line.merge import generate_html_report as merge_html_report
 from dials.command_line.merge import merge_data_to_mtz
 from dials.command_line.merge import phil_scope as merge_phil_scope
-from dials.command_line.scale import _export_unmerged_mtz
 from dials.command_line.scale import phil_scope as scaling_phil_scope
 from dxtbx.model import Crystal, ExperimentList
 from dxtbx.serialize import load
@@ -259,20 +258,6 @@ def run_uc_cluster(
     return good_crystals_data
 
 
-def dials_export(
-    working_directory: Path,
-    experiments: ExperimentList,
-    reflection_table: flex.reflection_table,
-    reduction_params: ReductionParams,
-    suffix: Optional[str] = None,
-) -> None:
-    mtz_filename = "scaled" + (suffix if suffix else "") + ".mtz"
-    params, _ = _extract_scaling_params_for_prescale(reduction_params)
-    params.output.unmerged_mtz = mtz_filename
-    with run_in_directory(working_directory):
-        _export_unmerged_mtz(params, experiments, reflection_table)
-
-
 def merge(
     working_directory: Path,
     experiments: ExperimentList,
@@ -322,7 +307,6 @@ def _extract_scaling_params(reduction_params):
         reflection_selection.min_partiality=0.4
         scaling_options.nproc=8
         anomalous={reduction_params.anomalous}
-        output.unmerged_mtz=scaled.mtz
     """
     if reduction_params.d_min:
         xia2_phil += f"\ncut_data.d_min={reduction_params.d_min}"
@@ -331,36 +315,6 @@ def _extract_scaling_params(reduction_params):
             str(round(p, 4)) for p in reduction_params.central_unit_cell.parameters()
         )
         xia2_phil += f"\nreflection_selection.best_unit_cell={vals}"
-    working_phil = scaling_phil_scope.fetch(sources=[parse(xia2_phil)])
-    diff_phil = scaling_phil_scope.fetch_diff(source=working_phil)
-    params = working_phil.extract()
-    return params, diff_phil
-
-
-def _extract_scaling_params_for_prescale(reduction_params):
-
-    xia2_phil = f"""
-        model=KB
-        scaling_options.full_matrix=False
-        weighting.error_model.error_model=None
-        scaling_options.outlier_rejection=simple
-        reflection_selection.intensity_choice=sum
-        reflection_selection.method=intensity_ranges
-        reflection_selection.Isigma_range=2.0,0.0
-        reflection_selection.min_partiality=0.4
-        anomalous={reduction_params.anomalous}
-        output.html=None
-    """
-    if reduction_params.d_min:
-        xia2_phil += f"\ncut_data.d_min={reduction_params.d_min}"
-    if reduction_params.central_unit_cell:
-        vals = ",".join(
-            str(round(p, 4)) for p in reduction_params.central_unit_cell.parameters()
-        )
-        xia2_phil += f"\nreflection_selection.best_unit_cell={vals}"
-    if reduction_params.reference:
-        xia2_phil += f"\nscaling_options.reference={str(reduction_params.reference)}"
-        xia2_phil += "\ncut_data.small_scale_cutoff=1e-9"
     working_phil = scaling_phil_scope.fetch(sources=[parse(xia2_phil)])
     diff_phil = scaling_phil_scope.fetch_diff(source=working_phil)
     params = working_phil.extract()
@@ -471,7 +425,7 @@ def scale(
         dials_logger.info("Saving scaled reflections to scaled.refl")
         scaled_table.as_file("scaled.refl")
 
-        _export_unmerged_mtz(params, scaled_expts, scaled_table)
+        # _export_unmerged_mtz(params, scaled_expts, scaled_table)
 
         n_final = len(scaled_expts)
         uc = determine_best_unit_cell(scaled_expts)

@@ -234,7 +234,6 @@ def check_data_reduction_files(tmp_path, reindex=True):
         assert (tmp_path / "data_reduction" / "reindex").is_dir()
     assert (tmp_path / "data_reduction" / "scale").is_dir()
     assert (tmp_path / "data_reduction" / "scale" / "merged.mtz").is_file()
-    assert (tmp_path / "data_reduction" / "scale" / "scaled.mtz").is_file()
 
 
 @pytest.mark.parametrize("pdb_model", [True, False])
@@ -263,7 +262,8 @@ def test_ssx_reduce_on_files_no_idx_ambiguity(dials_data, tmp_path, pdb_model):
             f"{ssx / 'integrated.expt'}",
             "space_group=P432",
         ],
-        cwd=tmp_path, capture_output=True
+        cwd=tmp_path,
+        capture_output=True,
     )
     assert not result.returncode and not result.stderr
     expts = tmp_path / "reindexed.expt"

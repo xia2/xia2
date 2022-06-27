@@ -14,7 +14,6 @@ from dxtbx.serialize import load
 from xia2.Driver.timing import record_step
 from xia2.Modules.SSX.data_reduction_base import BaseDataReduction, FilesDict
 from xia2.Modules.SSX.data_reduction_programs import (
-    dials_export,
     filter_,
     merge,
     parallel_cosym_reference,
@@ -29,11 +28,6 @@ scaled_cols_to_keep = [
     "inverse_scale_factor",
     "intensity.scale.value",
     "intensity.scale.variance",
-    "intensity.sum.value",  # only needed for export
-    "intensity.sum.variance",  # only needed for export
-    "xyzobs.px.value",  # only needed for export
-    "xyzcal.px",  # only needed for export
-    "inverse_scale_factor_variance",  # only needed for export
     "flags",
     "id",
     "partiality",
@@ -184,6 +178,7 @@ class DataReductionWithReference(BaseDataReduction):
 
             n_final = len(scaled_expts)
             uc = determine_best_unit_cell(scaled_expts)
+            self._reduction_params.central_unit_cell = uc
             uc_str = ", ".join(str(round(i, 3)) for i in uc.parameters())
             xia2_logger.info(
                 f"{n_final} crystals scaled in space group {scaled_expts[0].crystal.get_space_group().info()}\nMedian cell: {uc_str}"
@@ -199,46 +194,31 @@ class DataReductionWithReference(BaseDataReduction):
                 self._reduction_params.d_min,
                 uc,
             )
-        with record_step("exporting"):
-            self._reduction_params.central_unit_cell = uc
-            dials_export(
-                self._scale_wd, scaled_expts, scaled_table, self._reduction_params
-            )
 
-            # now add any extra data previously scaled
-            if self._previously_scaled_data:
-                with record_step("joining for merge"):
-                    (
-                        prev_scaled_expts,
-                        prev_scaled_tables,
-                    ) = self._combine_previously_scaled()
-                    _wrap_extend_expts(scaled_expts, prev_scaled_expts)
-                    scaled_table = flex.reflection_table.concat(
-                        scaled_tables + prev_scaled_tables
-                    )
-                    uc = determine_best_unit_cell(scaled_expts)
-                    xia2_logger.info(
-                        "Summary statistics for all input data, including previously scaled"
-                    )
-                    xia2_logger.info(
-                        statistics_output_from_scaled_files(
-                            scaled_expts, scaled_table, uc
-                        )
-                    )
-                with record_step("merging"):
-                    merge(
-                        self._scale_wd,
-                        scaled_expts,
-                        scaled_table,
-                        self._reduction_params.d_min,
-                        suffix="_all",
-                    )
-                with record_step("exporting"):
-                    self._reduction_params.central_unit_cell = uc
-                    dials_export(
-                        self._scale_wd,
-                        scaled_expts,
-                        scaled_table,
-                        self._reduction_params,
-                        suffix="_all",
-                    )
+        # now add any extra data previously scaled
+        if self._previously_scaled_data:
+            with record_step("joining for merge"):
+                (
+                    prev_scaled_expts,
+                    prev_scaled_tables,
+                ) = self._combine_previously_scaled()
+                _wrap_extend_expts(scaled_expts, prev_scaled_expts)
+                scaled_table = flex.reflection_table.concat(
+                    scaled_tables + prev_scaled_tables
+                )
+                uc = determine_best_unit_cell(scaled_expts)
+                self._reduction_params.central_unit_cell = uc
+                xia2_logger.info(
+                    "Summary statistics for all input data, including previously scaled"
+                )
+                xia2_logger.info(
+                    statistics_output_from_scaled_files(scaled_expts, scaled_table, uc)
+                )
+            with record_step("merging"):
+                merge(
+                    self._scale_wd,
+                    scaled_expts,
+                    scaled_table,
+                    self._reduction_params.d_min,
+                    suffix="_all",
+                )
