@@ -89,7 +89,9 @@ class DataReductionWithReference(BaseDataReduction):
         )
         xia2_logger.info("Summary statistics for combined previously scaled data")
         xia2_logger.info(
-            statistics_output_from_scaled_files(scaled_expts, scaled_table, uc)
+            statistics_output_from_scaled_files(
+                scaled_expts, scaled_table, uc, self._reduction_params.d_min
+            )
         )
         merge(
             self._scale_wd,
@@ -212,7 +214,9 @@ class DataReductionWithReference(BaseDataReduction):
                     "Summary statistics for all input data, including previously scaled"
                 )
                 xia2_logger.info(
-                    statistics_output_from_scaled_files(scaled_expts, scaled_table, uc)
+                    statistics_output_from_scaled_files(
+                        scaled_expts, scaled_table, uc, self._reduction_params.d_min
+                    )
                 )
             with record_step("merging"):
                 merge(

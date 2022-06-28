@@ -107,7 +107,9 @@ def statistics_output_from_scaler(scaler: Any) -> str:
     return stats
 
 
-def statistics_output_from_scaled_files(experiments, reflection_table, best_unit_cell):
+def statistics_output_from_scaled_files(
+    experiments, reflection_table, best_unit_cell, d_min=None
+):
     from dials.algorithms.scaling.scaling_library import (
         merging_stats_from_scaled_array,
         scaled_data_as_miller_array,
@@ -116,6 +118,8 @@ def statistics_output_from_scaled_files(experiments, reflection_table, best_unit
     scaled_array = scaled_data_as_miller_array(
         [reflection_table], experiments, best_unit_cell
     )
+    if d_min:
+        scaled_array = scaled_array.select(scaled_array.d_spacings().data() >= d_min)
     stats, anom_stats = merging_stats_from_scaled_array(scaled_array)
 
     stats = format_statistics(table_1_stats(stats, anom_stats))
