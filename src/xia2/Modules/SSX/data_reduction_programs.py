@@ -817,6 +817,6 @@ def split_filtered_data(
                 n_required = splits[n_batch_output + 1] - splits[n_batch_output]
         assert n_batch_output == len(splits) - 1
         assert not len(leftover_expts)
-        assert len(leftover_refls) == 1
-        assert leftover_refls[0].size() == 0
+        for table in leftover_refls:
+            assert table.size() == 0
     return data_to_reindex
