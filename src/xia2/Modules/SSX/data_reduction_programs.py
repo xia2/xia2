@@ -202,58 +202,60 @@ def run_uc_cluster(
 ) -> CrystalsDict:
     if not Path.is_dir(working_directory):
         Path.mkdir(working_directory)
-    sys.stdout = open(os.devnull, "w")  # block printing from cluster_uc
 
-    with run_in_directory(working_directory):
-        with record_step("dials.cluster_unit_cell"), log_to_file(
-            "dials.cluster_unit_cell.log"
-        ):
-            # first extract the params and set the threshold
-            params = cluster_phil_scope.extract()
-            params.threshold = threshold
-            # Now create the crystal symmetries, and keep track of the ids
-            crystal_symmetries = []
-            n_tot = 0
-            for k, v in crystals_dict.items():
-                symmetries = [
-                    crystal.symmetry(
-                        unit_cell=c.get_unit_cell(),
-                        space_group=c.get_space_group(),
-                    )
-                    for c in v.crystals
-                ]
-                crystal_symmetries.extend(symmetries)
-                n_this = len(symmetries)
-                ids = list(range(n_tot, n_tot + n_this))
-                n_tot += n_this
-                crystals_dict[k].lattice_ids = ids
-            # run the main work function of dials.cluster_unit_cell
-            clusters = do_cluster_analysis(crystal_symmetries, params)
-            clusters.sort(key=lambda x: len(x), reverse=True)
-            main_cluster = clusters[0]
-            xia2_logger.info(condensed_unit_cell_info(clusters))
-            xia2_logger.info(
-                f"Selecting {len(main_cluster)} crystals from the largest cluster"
-            )
-            main_ids = set(main_cluster.lattice_ids)
-            # Work out which subset of the input data corresponds to the main cluster
-            good_crystals_data: CrystalsDict = {}
-            for k, v in crystals_dict.items():
-                ids_this = set(v.lattice_ids).intersection(main_ids)
-                if len(ids_this) < len(v.lattice_ids):
-                    identifiers = []
-                    crystals = []
-                    for i, id_ in enumerate(v.lattice_ids):
-                        if id_ in ids_this:
-                            identifiers.append(v.identifiers[i])
-                            crystals.append(v.crystals[i])
-                    good_crystals_data[k] = CrystalsData(
-                        identifiers=identifiers,
-                        crystals=crystals,
-                        keep_all_original=False,
-                    )
-                else:
-                    good_crystals_data[k] = crystals_dict[k]
+    with open(os.devnull, "w") as devnull, run_in_directory(
+        working_directory
+    ), record_step("dials.cluster_unit_cell"), log_to_file(
+        "dials.cluster_unit_cell.log"
+    ):
+        sys.stdout = devnull  # block printing from cluster_uc
+
+        # first extract the params and set the threshold
+        params = cluster_phil_scope.extract()
+        params.threshold = threshold
+        # Now create the crystal symmetries, and keep track of the ids
+        crystal_symmetries = []
+        n_tot = 0
+        for k, v in crystals_dict.items():
+            symmetries = [
+                crystal.symmetry(
+                    unit_cell=c.get_unit_cell(),
+                    space_group=c.get_space_group(),
+                )
+                for c in v.crystals
+            ]
+            crystal_symmetries.extend(symmetries)
+            n_this = len(symmetries)
+            ids = list(range(n_tot, n_tot + n_this))
+            n_tot += n_this
+            crystals_dict[k].lattice_ids = ids
+        # run the main work function of dials.cluster_unit_cell
+        clusters = do_cluster_analysis(crystal_symmetries, params)
+        clusters.sort(key=lambda x: len(x), reverse=True)
+        main_cluster = clusters[0]
+        xia2_logger.info(condensed_unit_cell_info(clusters))
+        xia2_logger.info(
+            f"Selecting {len(main_cluster)} crystals from the largest cluster"
+        )
+        main_ids = set(main_cluster.lattice_ids)
+        # Work out which subset of the input data corresponds to the main cluster
+        good_crystals_data: CrystalsDict = {}
+        for k, v in crystals_dict.items():
+            ids_this = set(v.lattice_ids).intersection(main_ids)
+            if len(ids_this) < len(v.lattice_ids):
+                identifiers = []
+                crystals = []
+                for i, id_ in enumerate(v.lattice_ids):
+                    if id_ in ids_this:
+                        identifiers.append(v.identifiers[i])
+                        crystals.append(v.crystals[i])
+                good_crystals_data[k] = CrystalsData(
+                    identifiers=identifiers,
+                    crystals=crystals,
+                    keep_all_original=False,
+                )
+            else:
+                good_crystals_data[k] = crystals_dict[k]
     sys.stdout = sys.__stdout__  # restore printing
     return good_crystals_data
 
