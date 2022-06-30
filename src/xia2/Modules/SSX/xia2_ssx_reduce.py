@@ -89,6 +89,12 @@ scaling {
             "Can be a model pdb/cif file or a cif/mtz data file contaning"
             "intensity information."
     .expert_level = 1
+  phil = None
+    .type = path
+    .help = "Phil options file to use for dials.scale. "
+            "Parameters defined in the xia2.ssx phil scope will take precedent"
+            "over identical options defined in the phil file."
+    .expert_level = 3
 }
 """
 

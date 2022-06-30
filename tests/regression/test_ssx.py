@@ -243,6 +243,15 @@ def test_ssx_reduce_on_directory(dials_data, tmp_path, pdb_model):
     if pdb_model:
         model = dials_data("cunir_serial", pathlib=True) / "2bw4.pdb"
         args.append(f"model={str(model)}")
+    # also test using scaling and cosym phil files
+    cosym_phil = "d_min=2.5"
+    scaling_phil = "reflection_selection.Isigma_range=3.0,0.0"
+    with open(tmp_path / "scaling.phil", "w") as f:
+        f.write(scaling_phil)
+    with open(tmp_path / "cosym.phil", "w") as f:
+        f.write(cosym_phil)
+    args.append("symmetry.phil=cosym.phil")
+    args.append("scaling.phil=scaling.phil")
 
     result = subprocess.run(args, cwd=tmp_path, capture_output=True)
     if pdb_model:

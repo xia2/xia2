@@ -298,7 +298,7 @@ def merge(
 
 def _extract_scaling_params(reduction_params):
     # scaling options for scaling without a reference
-    xia2_phil = f"""
+    extra_defaults = """
         model=KB
         scaling_options.full_matrix=False
         weighting.error_model.error_model=None
@@ -308,6 +308,8 @@ def _extract_scaling_params(reduction_params):
         reflection_selection.Isigma_range=2.0,0.0
         reflection_selection.min_partiality=0.4
         scaling_options.nproc=8
+    """
+    xia2_phil = f"""
         anomalous={reduction_params.anomalous}
     """
     if reduction_params.d_min:
@@ -317,14 +319,44 @@ def _extract_scaling_params(reduction_params):
             str(round(p, 4)) for p in reduction_params.central_unit_cell.parameters()
         )
         xia2_phil += f"\nreflection_selection.best_unit_cell={vals}"
-    working_phil = scaling_phil_scope.fetch(sources=[parse(xia2_phil)])
+
+    if reduction_params.scaling_phil:
+        itpr = scaling_phil_scope.command_line_argument_interpreter()
+        try:
+            user_phil = itpr.process(args=[os.fspath(reduction_params.scaling_phil)])[0]
+            working_phil = scaling_phil_scope.fetch(
+                sources=[
+                    parse(extra_defaults),
+                    user_phil,
+                    parse(xia2_phil),
+                ]
+            )
+            # Note, the order above makes the xia2_phil take precedent
+            # over the user phil, which takes precedent over the extra defaults
+        except Exception as e:
+            xia2_logger.warning(
+                f"Unable to interpret {reduction_params.scaling_phil} as a scaling phil file. Error:\n{e}"
+            )
+            working_phil = scaling_phil_scope.fetch(
+                sources=[
+                    parse(extra_defaults),
+                    parse(xia2_phil),
+                ]
+            )
+    else:
+        working_phil = scaling_phil_scope.fetch(
+            sources=[
+                parse(extra_defaults),
+                parse(xia2_phil),
+            ]
+        )
     diff_phil = scaling_phil_scope.fetch_diff(source=working_phil)
     params = working_phil.extract()
     return params, diff_phil
 
 
 def _extract_scaling_params_for_scale_against_reference(reduction_params, index):
-    xia2_phil = f"""
+    extra_defaults = """
         model=KB
         scaling_options.full_matrix=False
         weighting.error_model.error_model=None
@@ -333,12 +365,14 @@ def _extract_scaling_params_for_scale_against_reference(reduction_params, index)
         reflection_selection.method=intensity_ranges
         reflection_selection.Isigma_range=2.0,0.0
         reflection_selection.min_partiality=0.4
+        cut_data.small_scale_cutoff=1e-9
+    """
+    xia2_phil = f"""
         anomalous={reduction_params.anomalous}
         output.experiments=scaled_{index}.expt
         output.reflections=scaled_{index}.refl
         output.html=dials.scale.{index}.html
         scaling_options.reference={str(reduction_params.reference)}
-        cut_data.small_scale_cutoff=1e-9
     """
     if reduction_params.d_min:
         xia2_phil += f"\ncut_data.d_min={reduction_params.d_min}"
@@ -347,7 +381,37 @@ def _extract_scaling_params_for_scale_against_reference(reduction_params, index)
             str(round(p, 4)) for p in reduction_params.central_unit_cell.parameters()
         )
         xia2_phil += f"\nreflection_selection.best_unit_cell={vals}"
-    working_phil = scaling_phil_scope.fetch(sources=[parse(xia2_phil)])
+
+    if reduction_params.scaling_phil:
+        itpr = scaling_phil_scope.command_line_argument_interpreter()
+        try:
+            user_phil = itpr.process(args=[os.fspath(reduction_params.scaling_phil)])[0]
+            working_phil = scaling_phil_scope.fetch(
+                sources=[
+                    parse(extra_defaults),
+                    user_phil,
+                    parse(xia2_phil),
+                ]
+            )
+            # Note, the order above makes the xia2_phil take precedent
+            # over the user phil, which takes precedent over the extra defaults
+        except Exception as e:
+            xia2_logger.warning(
+                f"Unable to interpret {reduction_params.scaling_phil} as a scaling phil file. Error:\n{e}"
+            )
+            working_phil = scaling_phil_scope.fetch(
+                sources=[
+                    parse(extra_defaults),
+                    parse(xia2_phil),
+                ]
+            )
+    else:
+        working_phil = scaling_phil_scope.fetch(
+            sources=[
+                parse(extra_defaults),
+                parse(xia2_phil),
+            ]
+        )
     diff_phil = scaling_phil_scope.fetch_diff(source=working_phil)
     params = working_phil.extract()
     return params, diff_phil

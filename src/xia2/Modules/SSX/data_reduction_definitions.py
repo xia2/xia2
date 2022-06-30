@@ -49,12 +49,14 @@ class ReductionParams:
     central_unit_cell: Optional[uctbx.unit_cell] = None
     reference: Optional[Path] = None
     cosym_phil: Optional[Path] = None
+    scaling_phil: Optional[Path] = None
 
     @classmethod
     def from_phil(cls, params: iotbx.phil.scope_extract):
         """Construct from xia2.cli.ssx phil_scope."""
         reference = None
         cosym_phil = None
+        scaling_phil = None
         if params.scaling.reference:
             reference = Path(params.scaling.reference).resolve()
         elif params.scaling.model:
@@ -65,6 +67,8 @@ class ReductionParams:
             )
         if params.symmetry.phil:
             cosym_phil = Path(params.symmetry.phil).resolve()
+        if params.scaling.phil:
+            scaling_phil = Path(params.scaling.phil).resolve()
         return cls(
             params.symmetry.space_group,
             params.batch_size,
@@ -77,4 +81,5 @@ class ReductionParams:
             params.clustering.central_unit_cell,
             reference,
             cosym_phil,
+            scaling_phil,
         )
