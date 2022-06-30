@@ -55,5 +55,22 @@ then steps=index and finally steps=integrate.
 --------------
 Data Reduction
 --------------
+Following data integration, data reduction (reindexing, scaling and merging) will
+be performed. The data reduction can be run separately to the full pipeline through
+the command :samp:`dev.xia2.ssx_reduce`, taking integrated data as input.
+To run only the data integration without reduction, use the option
+:samp:`steps=find_spots+index+integrate` (i.e. omit :samp:`+reduce`) when running :samp:`dev.xia2.ssx`.
 
-Coming soon...
+The data reduction process consists of unit cell filtering, followed by indexing
+ambiguity resolution in batches (if ambiguities are possible due to lattice
+and space group symmetries), followed by scaling and merging. If a reference dataset/PDB model is
+provided with the option :samp:`reference=`, then reindexing and scaling is performed
+in parallel in batches of at least :samp:`reduction_batch_size` crystals, using intensities
+generated/extracted from the reference as a reference when reindexing and scaling.
+If there is no reference given, the scaling is not performed in parallel. Other important
+options are setting :samp:`anomalous=True/False` and specifying a :samp:`d_min` value.
+To evaluate the success of indexing ambiguity resolution, it is important to inspect
+the html output from dials.cosym jobs in the :samp:`data_reduction\\reindex` folder.
+To see the full list of data reduction parameters and their descriptions,
+run :samp:`dev.xia2.ssx_reduce -ce3 -a2`. The output of the data reduction pipeline
+is a merged MTZ file which can be taken onwards for structure determination.

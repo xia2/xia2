@@ -71,7 +71,7 @@ class ReductionParams:
             scaling_phil = Path(params.scaling.phil).resolve()
         return cls(
             params.symmetry.space_group,
-            params.batch_size,
+            params.reduction_batch_size,
             params.multiprocessing.nproc,
             params.d_min,
             params.scaling.anomalous,

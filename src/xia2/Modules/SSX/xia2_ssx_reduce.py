@@ -37,9 +37,9 @@ input {
 multiprocessing.nproc = Auto
   .type = int
   .expert_level = 1
-batch_size = 1000
+batch_size = None
   .type = int
-  .help = "The minimum batch size for consistent reindexing of data with cosym"
+  .help = "An alias for reduction_batch_size"
   .expert_level = 1
 d_min = None
   .type = float
@@ -47,6 +47,10 @@ d_min = None
 """
 
 data_reduction_phil_str = """
+reduction_batch_size=1000
+  .type = int
+  .help = "The minimum batch size for consistent reindexing of data with cosym."
+  .expert_level=2
 reference = None
   .type = path
   .help = "A reference to use for scaling + indexing ambiguity resolution."
@@ -123,6 +127,9 @@ def run_xia2_ssx_reduce(
 
     if params.multiprocessing.nproc is Auto:
         params.multiprocessing.nproc = number_of_processors(return_value_if_unknown=1)
+
+    if params.batch_size:  # This is an alias for reduction_batch_size
+        params.reduction_batch_size = params.batch_size
 
     reduction_params = ReductionParams.from_phil(params)
     reducer_class = get_reducer(reduction_params)

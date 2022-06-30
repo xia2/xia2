@@ -177,7 +177,6 @@ enable_live_reporting = False
 """
 
 full_phil_str = phil_str + data_reduction_phil_str + workflow_phil
-# full_phil_str = phil_str + workflow_phil
 
 
 @report_timing
