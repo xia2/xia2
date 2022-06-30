@@ -17,29 +17,42 @@ input {
     .type = str
     .multiple = True
     .help = "Path to directory containing integrated_*.{refl,expt} files"
+    .expert_level = 1
   reflections = None
     .type = str
     .multiple = True
     .help = "Path to an integrated reflections file"
+    .expert_level = 1
   experiments = None
     .type = str
     .multiple = True
     .help = "Path to an integrated experiments file"
+    .expert_level = 1
   processed_directory = None
     .type = str
     .multiple = True
     .help = "Path to previously reduced data"
+    .expert_level = 1
 }
 multiprocessing.nproc = Auto
   .type = int
+  .expert_level = 1
 batch_size = 1000
   .type = int
   .help = "The minimum batch size for consistent reindexing of data with cosym"
+  .expert_level = 1
 d_min = None
   .type = float
+  .expert_level = 1
 """
 
 data_reduction_phil_str = """
+reference = None
+  .type = path
+  .help = "A reference to use for scaling + indexing ambiguity resolution."
+          "Can be a model pdb/cif file or a cif/mtz data file contaning"
+          "intensity information."
+  .expert_level = 1
 clustering {
   threshold=None
     .type = float(value_min=0, allow_none=True)
@@ -52,23 +65,27 @@ clustering {
             "used for data reduction. Setting the threshold to None/0 will"
             "skip this unit cell clustering and proceed to filtering based on"
             "the absolute angle/length tolerances."
+    .expert_level = 2
   absolute_angle_tolerance = 1.0
     .type = float(value_min=0, allow_none=True)
     .help = "Filter the integrated data based on the median unit cell angles"
             "and this tolerance. If set to None/0, filtering will be skipped."
+    .expert_level = 2
   absolute_length_tolerance = 1.0
     .type = float(value_min=0, allow_none=True)
     .help = "Filters the integrated data based on the median unit cell lengths"
             "and this tolerance. If set to None/0, filtering will be skipped."
+    .expert_level = 2
   central_unit_cell = None
     .type = unit_cell
     .help = "Filter the integrated data based on the tolerances about these cell"
             "parameters, rather than the median cell."
+    .expert_level = 2
 }
 symmetry {
   space_group = None
     .type = space_group
-    .expert_level = 1
+    .expert_level = 2
   phil = None
     .type = path
     .help = "Phil options file to use for symmetry analysis with dials.cosym. "
@@ -80,15 +97,11 @@ scaling {
   anomalous = False
     .type = bool
     .help = "If True, keep anomalous pairs separate during scaling."
+    .expert_level = 1
   model = None
     .type = path
     .help = "An alias for the reference= option"
-  reference = None
-    .type = path
-    .help = "A reference to use for scaling + indexing ambiguity resolution."
-            "Can be a model pdb/cif file or a cif/mtz data file contaning"
-            "intensity information."
-    .expert_level = 1
+    .expert_level = 2
   phil = None
     .type = path
     .help = "Phil options file to use for dials.scale. "

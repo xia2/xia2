@@ -57,8 +57,8 @@ class ReductionParams:
         reference = None
         cosym_phil = None
         scaling_phil = None
-        if params.scaling.reference:
-            reference = Path(params.scaling.reference).resolve()
+        if params.reference:
+            reference = Path(params.reference).resolve()
         elif params.scaling.model:
             reference = Path(params.scaling.model).resolve()
         if params.clustering.central_unit_cell and params.clustering.threshold:
