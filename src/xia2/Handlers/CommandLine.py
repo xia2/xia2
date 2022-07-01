@@ -19,26 +19,47 @@ import sys
 from dials.util import Sorry
 from dxtbx.serialize import load
 
+# part of what this does is rummage around file systems looking for data
+# so pull in regular expressions for this
 from xia2.Experts.FindImages import image2template_directory
+
+# flags - I cannot remember how many of these survive but they are on / off
 from xia2.Handlers.Flags import Flags
+
+# we keep a central phil database for "modern" parameters
 from xia2.Handlers.Phil import PhilIndex
+
+# can probably completely retire - in days before pipeline= could select
+# different combinations but thus is no longer useful
 from xia2.Handlers.PipelineSelection import add_preference
+
+# schema was where the "data model" stuff comes from - ultimately we work
+# on one instance of an XProject which contains all the data to process with
 from xia2.Schema import imageset_cache, update_with_reference_geometry
 from xia2.Schema.XProject import XProject
 
 logger = logging.getLogger("xia2.Handlers.CommandLine")
 
+# because these can be ccp4 project names have to start with [a-z, A-Z]
 PATTERN_VALID_CRYSTAL_PROJECT_NAME = re.compile(r"[a-zA-Z_]\w*$")
 
-
+# load a dxtbx experiment list and (as needed) update the geometry with reference
+# geometry pointed to via a command line argument
 def load_experiments(filename):
     experiments = load.experiment_list(filename, check_format=False)
 
     imagesets = experiments.imagesets()
+    # I am not sure we need to go through this dance evrey time?
     params = PhilIndex.get_python_object()
     reference_geometry = params.xia2.settings.input.reference_geometry
+
+    # if reference_geometry would probably serve?
     if reference_geometry is not None and len(reference_geometry) > 0:
         update_with_reference_geometry(imagesets, reference_geometry)
+
+    # unpack the imagesets into template, directory etc. - the legacy XSseep
+    # interface - N.B. this is problematic as it is keyed on template and
+    # first image...
     for imageset in imagesets:
         template = imageset.get_template()
         if template not in imageset_cache:
@@ -46,6 +67,8 @@ def load_experiments(filename):
         imageset_cache[template][imageset.get_scan().get_image_range()[0]] = imageset
 
 
+# special corner case code - detect if a data set was acquired with > 1 trigger
+# and if it was, pass back - very heavily tied to Eiger file writer format
 def unroll_parameters(hdf5_master):
     """Determine auto-unroll parameters for Eiger data sets with multiple
     triggers - will mean several assumptions are made i.e. all are the
@@ -66,6 +89,9 @@ def unroll_parameters(hdf5_master):
         return None
 
 
+# for examole to split one huge data set into chunks or to allow processing
+# slices of the data concisely - internally makes many image= commands
+# if keeping should be moved to helper library to faciliate testing
 def unroll_datasets(datasets):
     """Unroll datasets i.e. if input img:1:900:450 make this into 1:450;
     451:900"""
@@ -115,6 +141,9 @@ def validate_project_crystal_name(parameter, value):
         )
 
 
+# singleton pattern - hidden class, all we see is exactly one class instance
+
+
 class _CommandLine:
     """A class to represent the command line input."""
 
@@ -124,6 +153,8 @@ class _CommandLine:
         self._argv = []
         self._understood = []
 
+        # this is quite possibly an indicator of a broken api already -
+        # these overlap with the xinfo sweep information
         self._default_template = []
         self._default_directory = []
         self._hdf5_master_files = []
@@ -148,6 +179,7 @@ class _CommandLine:
         else:
             cl = "xia2"
 
+        # why is this not self.get_argv()?
         for arg in sys.argv[1:]:
             if " " in arg:
                 arg = '"%s"' % arg
@@ -155,10 +187,12 @@ class _CommandLine:
 
         return cl
 
+    # TFW you should be using argparse.parse_args() or at least only one strategy to
+    # parsing the command line
     def setup(self):
         """Set everything up..."""
 
-        # check arguments are all ascii
+        # check arguments are all ascii - because legacy dependencies
 
         logger.debug("Start parsing command line: " + str(sys.argv))
 
@@ -171,6 +205,8 @@ class _CommandLine:
         self._argv = copy.deepcopy(sys.argv)
 
         # first of all try to interpret arguments as phil parameters/files
+        # this may be the behaviour we want, or we could simply put everything
+        # in phil?
 
         from libtbx.phil import command_line
 
@@ -190,6 +226,7 @@ class _CommandLine:
         # sanity check / interpret Auto in input
         from libtbx import Auto
 
+        # this should be explicit somewhere - read phil parameters then validate
         if params.xia2.settings.input.atom is None:
             if params.xia2.settings.input.anomalous is Auto:
                 PhilIndex.update("xia2.settings.input.anomalous=false")
@@ -199,6 +236,8 @@ class _CommandLine:
             params.xia2.settings.input.anomalous = True
             PhilIndex.update("xia2.settings.input.anomalous=true")
 
+        # FIXME is this something we want to keep? By default keeping all reflections
+        # for small molecule mode -> feels non-ideal
         if params.xia2.settings.resolution.keep_all_reflections is Auto:
             if (
                 params.xia2.settings.small_molecule is True
@@ -209,13 +248,15 @@ class _CommandLine:
             else:
                 PhilIndex.update("xia2.settings.resolution.keep_all_reflections=false")
 
+        # would be good to also check here that we have not got a space group set?
         if params.xia2.settings.small_molecule is True:
             logger.debug("Small molecule selected")
             if params.xia2.settings.symmetry.chirality is None:
                 PhilIndex.update("xia2.settings.symmetry.chirality=nonchiral")
             params = PhilIndex.get_python_object()
 
-        # pipeline options
+        # pipeline options - why is this pulled out? should just have
+        # xia2.settings.pipeline maybe?
         self._read_pipeline()
 
         for (parameter, value) in (
@@ -229,12 +270,16 @@ class _CommandLine:
 
         # FIXME add some consistency checks in here e.g. that there are
         # images assigned, there is a lattice assigned if cell constants
-        # are given and so on
+        # are given and so on. This FIXME may well be old enough for high
+        # school
 
         params = PhilIndex.get_python_object()
         mp_params = params.xia2.settings.multiprocessing
         from xia2.Handlers.Environment import get_number_cpus
 
+        # is this the behaviour we would expect? and if not, what should it be?
+        # if it is, we should be explicit and explain to $USER what we are
+        # doing here - and move this to validate_mp_params() or similar
         if mp_params.mode == "parallel":
             if mp_params.type == "qsub":
                 if not shutil.which("qsub"):
@@ -262,6 +307,7 @@ class _CommandLine:
         if mp_params.nproc > 1 and os.name == "nt":
             raise Sorry("nproc > 1 is not supported on Windows.")  # #191
 
+        # probably expunge all this and reduce to just 2 pipelines?
         if params.xia2.settings.indexer is not None:
             add_preference("indexer", params.xia2.settings.indexer)
         if params.xia2.settings.refiner is not None:
@@ -270,6 +316,9 @@ class _CommandLine:
             add_preference("integrater", params.xia2.settings.integrater)
         if params.xia2.settings.scaler is not None:
             add_preference("scaler", params.xia2.settings.scaler)
+
+        # this whole section feels very cumbersome - we should have
+        # something simpler?
 
         # If no multi-sweep refinement options have been set, adopt the default:
         #     True for small-molecule mode, False otherwise.
@@ -317,6 +366,10 @@ class _CommandLine:
             "MSI is not available for parallel processing."
         )
 
+        # end of cumbersome stuff
+
+        # json -> experiment file?
+
         input_json = params.xia2.settings.input.json
         if input_json is not None and len(input_json):
             for json_file in input_json:
@@ -335,6 +388,10 @@ class _CommandLine:
             PhilIndex.update(reference_geometries)
             logger.debug("xia2.settings.trust_beam_centre=true")
             PhilIndex.update("xia2.settings.trust_beam_centre=true")
+
+        # commenter realises at this point that we are _still_ in the setup() method
+
+        # this stuff is expanding out relative paths I think?
 
         params = PhilIndex.get_python_object()
         if params.xia2.settings.input.xinfo is not None:
@@ -377,10 +434,15 @@ class _CommandLine:
                 "dials.integrate.phil_file=%s"
                 % os.path.abspath(params.dials.integrate.phil_file)
             )
+
+        # XDS specific processing hints
         if params.xds.index.xparm is not None:
             Flags.set_xparm(params.xds.index.xparm)
         if params.xds.index.xparm_ub is not None:
             Flags.set_xparm_ub(params.xds.index.xparm_ub)
+
+        # data set references - process my data like this or copy the test reflection
+        # set from that data set
 
         if params.xia2.settings.scale.freer_file is not None:
             freer_file = os.path.abspath(params.xia2.settings.scale.freer_file)
@@ -405,6 +467,9 @@ class _CommandLine:
 
         params = PhilIndex.get_python_object()
 
+        # now start to do something useful from all those image= commands - except
+        # here we are also trying to shoe-horn everything back into the old style
+        # pre-dials models
         datasets = unroll_datasets(PhilIndex.params.xia2.settings.input.image)
 
         for dataset in datasets:
@@ -423,6 +488,8 @@ class _CommandLine:
                 dataset = tokens[0]
                 start_end = int(tokens[1]), int(tokens[2])
 
+            # we use stuff from here to write xinfo and optionally try and guess
+            # the beam centre
             from xia2.Applications.xia2setup import is_hdf5_name
 
             if os.path.exists(os.path.abspath(dataset)):
