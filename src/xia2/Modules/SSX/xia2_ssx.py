@@ -258,51 +258,10 @@ def run_xia2_ssx(
     if params.multiprocessing.nproc is Auto:
         params.multiprocessing.nproc = number_of_processors(return_value_if_unknown=1)
 
-    spotfinding_phil = None
-    if params.spotfinding.phil:
-        spotfinding_phil = pathlib.Path(params.spotfinding.phil).resolve()
-        if not spotfinding_phil.is_file():
-            raise FileNotFoundError(os.fspath(spotfinding_phil))
-    spotfinding_params = SpotfindingParams(
-        params.spotfinding.min_spot_size,
-        params.spotfinding.max_spot_size,
-        params.d_min,
-        params.multiprocessing.nproc,
-        spotfinding_phil,
-    )
-
-    indexing_phil = None
-    if params.indexing.phil:
-        indexing_phil = pathlib.Path(params.indexing.phil).resolve()
-        if not indexing_phil.is_file():
-            raise FileNotFoundError(os.fspath(indexing_phil))
-    indexing_params = IndexingParams(
-        params.space_group,
-        params.indexing.unit_cell,
-        params.indexing.max_lattices,
-        params.multiprocessing.nproc,
-        indexing_phil,
-    )
-
-    refinement_phil = None
-    if params.geometry_refinement.phil:
-        refinement_phil = pathlib.Path(params.geometry_refinement.phil).resolve()
-        if not refinement_phil.is_file():
-            raise FileNotFoundError(os.fspath(refinement_phil))
-    refinement_params = RefinementParams(refinement_phil)
-
-    integration_phil = None
-    if params.integration.phil:
-        integration_phil = pathlib.Path(params.integration.phil).resolve()
-        if not integration_phil.is_file():
-            raise FileNotFoundError(os.fspath(integration_phil))
-    integration_params = IntegrationParams(
-        params.integration.algorithm,
-        params.integration.ellipsoid.rlp_mosaicity,
-        params.d_min,
-        params.multiprocessing.nproc,
-        integration_phil,
-    )
+    spotfinding_params = SpotfindingParams.from_phil(params)
+    indexing_params = IndexingParams.from_phil(params)
+    refinement_params = RefinementParams.from_phil(params)
+    integration_params = IntegrationParams.from_phil(params)
 
     processed_batch_directories = run_data_integration(
         root_working_directory,
