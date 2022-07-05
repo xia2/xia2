@@ -208,17 +208,20 @@ def run_xia2_ssx(
             "No input data identified (use image=, template= or directory=)"
         )
     if params.mask:
-        file_input.mask = pathlib.Path(params.mask).resolve()
+        mask_file = pathlib.Path(params.mask).resolve()
+        if not mask_file.is_file():
+            raise FileNotFoundError(os.fspath(mask_file))
+        file_input.mask = mask_file
     if params.reference_geometry:
         reference = pathlib.Path(params.reference_geometry).resolve()
         if not reference.is_file():
-            xia2_logger.warn(
-                f"Unable to find reference geometry at {os.fspath(reference)}, proceeding without this reference"
-            )
-        else:
-            file_input.reference_geometry = reference
+            raise FileNotFoundError(os.fspath(reference))
+        file_input.reference_geometry = reference
     if params.dials_import.phil:
-        file_input.import_phil = pathlib.Path(params.dials_import.phil).resolve()
+        import_phil = pathlib.Path(params.dials_import.phil).resolve()
+        if not import_phil.is_file():
+            raise FileNotFoundError(os.fspath(import_phil))
+        file_input.import_phil = import_phil
 
     options = AlgorithmParams(
         batch_size=params.batch_size,
@@ -234,7 +237,7 @@ def run_xia2_ssx(
         vals = params.assess_crystals.images_to_use.split(":")
         if len(vals) != 2:
             raise ValueError("Images to use must be given in format start:end")
-        start = min(0, int(vals[0]) - 1)  # convert from image number to slice
+        start = max(0, int(vals[0]) - 1)  # convert from image number to slice
         end = int(vals[1])
         options.assess_images_to_use = (start, end)
     else:
@@ -246,7 +249,7 @@ def run_xia2_ssx(
         vals = params.geometry_refinement.images_to_use.split(":")
         if len(vals) != 2:
             raise ValueError("Images to use must be given in format start:end")
-        start = min(0, int(vals[0]) - 1)  # convert from image number to slice
+        start = max(0, int(vals[0]) - 1)  # convert from image number to slice
         end = int(vals[1])
         options.refinement_images_to_use = (start, end)
     else:
@@ -255,45 +258,50 @@ def run_xia2_ssx(
     if params.multiprocessing.nproc is Auto:
         params.multiprocessing.nproc = number_of_processors(return_value_if_unknown=1)
 
+    spotfinding_phil = None
+    if params.spotfinding.phil:
+        spotfinding_phil = pathlib.Path(params.spotfinding.phil).resolve()
+        if not spotfinding_phil.is_file():
+            raise FileNotFoundError(os.fspath(spotfinding_phil))
     spotfinding_params = SpotfindingParams(
         params.spotfinding.min_spot_size,
         params.spotfinding.max_spot_size,
         params.d_min,
         params.multiprocessing.nproc,
-        (
-            pathlib.Path(params.spotfinding.phil).resolve()
-            if params.spotfinding.phil
-            else None
-        ),
+        spotfinding_phil,
     )
+
+    indexing_phil = None
+    if params.indexing.phil:
+        indexing_phil = pathlib.Path(params.indexing.phil).resolve()
+        if not indexing_phil.is_file():
+            raise FileNotFoundError(os.fspath(indexing_phil))
     indexing_params = IndexingParams(
         params.space_group,
         params.indexing.unit_cell,
         params.indexing.max_lattices,
         params.multiprocessing.nproc,
-        (
-            pathlib.Path(params.indexing.phil).resolve()
-            if params.indexing.phil
-            else None
-        ),
+        indexing_phil,
     )
-    refinement_params = RefinementParams(
-        (
-            pathlib.Path(params.geometry_refinement.phil).resolve()
-            if params.geometry_refinement.phil
-            else None
-        ),
-    )
+
+    refinement_phil = None
+    if params.geometry_refinement.phil:
+        refinement_phil = pathlib.Path(params.geometry_refinement.phil).resolve()
+        if not refinement_phil.is_file():
+            raise FileNotFoundError(os.fspath(refinement_phil))
+    refinement_params = RefinementParams(refinement_phil)
+
+    integration_phil = None
+    if params.integration.phil:
+        integration_phil = pathlib.Path(params.integration.phil).resolve()
+        if not integration_phil.is_file():
+            raise FileNotFoundError(os.fspath(integration_phil))
     integration_params = IntegrationParams(
         params.integration.algorithm,
         params.integration.ellipsoid.rlp_mosaicity,
         params.d_min,
         params.multiprocessing.nproc,
-        (
-            pathlib.Path(params.integration.phil).resolve()
-            if params.integration.phil
-            else None
-        ),
+        integration_phil,
     )
 
     processed_batch_directories = run_data_integration(
