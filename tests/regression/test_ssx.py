@@ -25,7 +25,7 @@ def test_import_without_reference_or_crystal_info(dials_data, tmp_path):
 
     ssx = dials_data("cunir_serial", pathlib=True)
 
-    args = ["dev.xia2.ssx"]
+    args = ["dev.xia2.ssx", "assess_crystals.images_to_use=3:5"]
     args.append("image=" + os.fspath(ssx / "merlin0047_1700*.cbf"))
 
     result = procrunner.run(args, working_directory=tmp_path)
@@ -42,6 +42,10 @@ def test_import_without_reference_or_crystal_info(dials_data, tmp_path):
 
     assert (tmp_path / "assess_crystals").is_dir()
     assert (tmp_path / "assess_crystals" / "dials.ssx_index.html").is_file()
+
+    with open(tmp_path / "assess_crystals" / "dials.ssx_index.json", "r") as f:
+        data = json.load(f)
+    assert [i == 0.0 for i in data["n_indexed"]["data"][0]["y"]] == [False, True, False]
 
 
 def test_geometry_refinement_and_run_with_reference(dials_data, tmp_path):

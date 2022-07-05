@@ -314,13 +314,18 @@ def assess_crystal_parameters(
     if largest_clusters:
         xia2_logger.info(f"{condensed_unit_cell_info(largest_clusters)}")
 
-    sg, uc = best_cell_from_cluster(largest_clusters[0])
-    xia2_logger.info(
-        "Properties of largest cluster:\n"
-        "Highest possible metric unit cell: "
-        + ", ".join(f"{i:.3f}" for i in uc)
-        + f"\nHighest possible metric symmetry: {sg}"
-    )
+        sg, uc = best_cell_from_cluster(largest_clusters[0])
+        xia2_logger.info(
+            "Properties of largest cluster:\n"
+            "Highest possible metric unit cell: "
+            + ", ".join(f"{i:.3f}" for i in uc)
+            + f"\nHighest possible metric symmetry: {sg}"
+        )
+    else:
+        xia2_logger.warning(
+            "No successfully indexed images.\n"
+            + "Please try adjusting indexing parameters or try crystal assessment on different images"
+        )
 
 
 def determine_reference_geometry(
