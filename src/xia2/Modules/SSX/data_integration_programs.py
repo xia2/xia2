@@ -53,6 +53,21 @@ class SpotfindingParams:
     nproc: int = 1
     phil: Optional[Path] = None
 
+    @classmethod
+    def from_phil(cls, params):
+        spotfinding_phil = None
+        if params.spotfinding.phil:
+            spotfinding_phil = Path(params.spotfinding.phil).resolve()
+            if not spotfinding_phil.is_file():
+                raise FileNotFoundError(os.fspath(spotfinding_phil))
+        return cls(
+            params.spotfinding.min_spot_size,
+            params.spotfinding.max_spot_size,
+            params.d_min,
+            params.multiprocessing.nproc,
+            spotfinding_phil,
+        )
+
 
 @dataclass
 class IndexingParams:
@@ -63,10 +78,43 @@ class IndexingParams:
     phil: Optional[Path] = None
     output_nuggets_dir: Optional[Path] = None
 
+    @classmethod
+    def from_phil(cls, params):
+        indexing_phil = None
+        if params.indexing.phil:
+            indexing_phil = Path(params.indexing.phil).resolve()
+            if not indexing_phil.is_file():
+                raise FileNotFoundError(os.fspath(indexing_phil))
+        if params.indexing.unit_cell and params.space_group:
+            try:
+                _ = crystal.symmetry(
+                    unit_cell=params.indexing.unit_cell,
+                    space_group_info=params.space_group,
+                    assert_is_compatible_unit_cell=True,
+                )
+            except AssertionError as e:
+                raise ValueError(e)
+        return cls(
+            params.space_group,
+            params.indexing.unit_cell,
+            params.indexing.max_lattices,
+            params.multiprocessing.nproc,
+            indexing_phil,
+        )
+
 
 @dataclass
 class RefinementParams:
     phil: Optional[Path] = None
+
+    @classmethod
+    def from_phil(cls, params):
+        refinement_phil = None
+        if params.geometry_refinement.phil:
+            refinement_phil = Path(params.geometry_refinement.phil).resolve()
+            if not refinement_phil.is_file():
+                raise FileNotFoundError(os.fspath(refinement_phil))
+        return cls(refinement_phil)
 
 
 @dataclass
@@ -77,6 +125,21 @@ class IntegrationParams:
     nproc: int = 1
     phil: Optional[Path] = None
     output_nuggets_dir: Optional[Path] = None
+
+    @classmethod
+    def from_phil(cls, params):
+        integration_phil = None
+        if params.integration.phil:
+            integration_phil = Path(params.integration.phil).resolve()
+            if not integration_phil.is_file():
+                raise FileNotFoundError(os.fspath(integration_phil))
+        return cls(
+            params.integration.algorithm,
+            params.integration.ellipsoid.rlp_mosaicity,
+            params.d_min,
+            params.multiprocessing.nproc,
+            integration_phil,
+        )
 
 
 def ssx_find_spots(
