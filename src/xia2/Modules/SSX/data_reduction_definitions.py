@@ -43,6 +43,7 @@ class ReductionParams:
     nproc: int = 1
     d_min: Optional[float] = None
     anomalous: bool = False
+    lattice_symmetry_max_delta: float = 2.0
     cluster_threshold: float = 1000.0
     absolute_angle_tolerance: float = 0.5
     absolute_length_tolerance: float = 0.2
@@ -75,6 +76,7 @@ class ReductionParams:
             params.multiprocessing.nproc,
             params.d_min,
             params.scaling.anomalous,
+            params.symmetry.lattice_symmetry_max_delta,
             params.clustering.threshold,
             params.clustering.absolute_angle_tolerance,
             params.clustering.absolute_length_tolerance,

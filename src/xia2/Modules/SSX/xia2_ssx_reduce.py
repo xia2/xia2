@@ -90,6 +90,11 @@ symmetry {
   space_group = None
     .type = space_group
     .expert_level = 2
+  lattice_symmetry_max_delta = 2
+    .type = float
+    .help = "Tolerance for lattice symmetry analysis, used for example when"
+            "determining possible symmetries for ambiguity resolution."
+    .expert_level=3
   phil = None
     .type = path
     .help = "Phil options file to use for symmetry analysis with dials.cosym. "

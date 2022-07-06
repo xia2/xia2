@@ -103,7 +103,9 @@ def filter_(
 
 
 def assess_for_indexing_ambiguities(
-    space_group: sgtbx.space_group_info, unit_cell: uctbx.unit_cell
+    space_group: sgtbx.space_group_info,
+    unit_cell: uctbx.unit_cell,
+    max_delta: float = 2.0,
 ) -> bool:
     # if lattice symmetry higher than space group symmetry, then need to
     # assess for indexing ambiguity.
@@ -116,7 +118,7 @@ def assess_for_indexing_ambiguities(
     # Get highest symmetry compatible with lattice
     lattice_group = sgtbx.lattice_symmetry_group(
         minimum_symmetry.unit_cell(),
-        max_delta=5,
+        max_delta=max_delta,
         enforce_max_delta_for_generated_two_folds=True,
     )
     need_to_assess = lattice_group.order_z() > space_group.group().order_z()
@@ -514,10 +516,10 @@ def _extract_cosym_params(reduction_params, index):
     """
     if reduction_params.reference:
         xia2_phil += f"\nreference={reduction_params.reference}"
-    extra_defaults = """
+    extra_defaults = f"""
         min_i_mean_over_sigma_mean=2
         unit_cell_clustering.threshold=None
-        lattice_symmetry_max_delta=1
+        lattice_symmetry_max_delta={reduction_params.lattice_symmetry_max_delta}
     """
     if reduction_params.d_min:
         # note - allow user phil to override the overall xia2 d_min - might
@@ -644,6 +646,7 @@ def cosym_reindex(
     working_directory: Path,
     files_for_reindex: List[FilePair],
     d_min: float = None,
+    max_delta: float = 2.0,
 ) -> List[FilePair]:
     from dials.command_line.cosym import phil_scope as cosym_scope
 
@@ -658,7 +661,7 @@ def cosym_reindex(
         expts.append(load.experiment_list(filepair.expt, check_format=False))
         refls.append(flex.reflection_table.from_file(filepair.refl))
     params.space_group = expts[0][0].crystal.get_space_group().info()
-    params.lattice_symmetry_max_delta = 1
+    params.lattice_symmetry_max_delta = max_delta
     if d_min:
         params.d_min = d_min
 

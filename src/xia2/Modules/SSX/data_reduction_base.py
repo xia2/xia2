@@ -206,7 +206,9 @@ class BaseDataReduction(object):
             xia2_logger.info(f"Using space group: {str(space_group)}")
 
         sym_requires_reindex = assess_for_indexing_ambiguities(
-            self._reduction_params.space_group, best_unit_cell
+            self._reduction_params.space_group,
+            best_unit_cell,
+            self._reduction_params.lattice_symmetry_max_delta,
         )
         if sym_requires_reindex:
             xia2_logger.notice(banner("Reindexing"))  # type: ignore

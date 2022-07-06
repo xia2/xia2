@@ -44,7 +44,9 @@ class SimpleDataReduction(BaseDataReduction):
             xia2_logger.info(f"Using space group: {str(space_group)}")
 
         sym_requires_reindex = assess_for_indexing_ambiguities(
-            self._reduction_params.space_group, best_unit_cell
+            self._reduction_params.space_group,
+            best_unit_cell,
+            self._reduction_params.lattice_symmetry_max_delta,
         )
         if sym_requires_reindex and len(self._previously_scaled_data) > 1:
             xia2_logger.notice(banner("Reindexing"))
@@ -52,6 +54,7 @@ class SimpleDataReduction(BaseDataReduction):
                 self._reindex_wd,
                 self._previously_scaled_data,
                 self._reduction_params.d_min,
+                self._reduction_params.lattice_symmetry_max_delta,
             )
             xia2_logger.info("Consistently reindexed batches of previously scaled data")
         else:
@@ -74,7 +77,10 @@ class SimpleDataReduction(BaseDataReduction):
         if len(self._files_to_scale) > 1:
             # Reindex all batches together.
             self._files_to_scale = cosym_reindex(
-                self._reindex_wd, self._files_to_scale, self._reduction_params.d_min
+                self._reindex_wd,
+                self._files_to_scale,
+                self._reduction_params.d_min,
+                self._reduction_params.lattice_symmetry_max_delta,
             )
             if self._previously_scaled_data:
                 xia2_logger.info(
