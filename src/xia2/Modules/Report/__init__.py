@@ -190,12 +190,16 @@ class Report:
 
         xtriage_params = xtriage_master_params.fetch(sources=[]).extract()
         xtriage_params.scaling.input.xray_data.skip_sanity_checks = True
-        xanalysis = xtriage_analyses(
-            miller_obs=self.merged_intensities,
-            unmerged_obs=self.intensities,
-            text_out=pout,
-            params=xtriage_params,
-        )
+        try:
+            xanalysis = xtriage_analyses(
+                miller_obs=self.merged_intensities,
+                unmerged_obs=self.intensities,
+                text_out=pout,
+                params=xtriage_params,
+            )
+        except Exception as e:
+            logger.info(f"Exception runnning xtriage: {e}")
+            return xtriage_success, xtriage_warnings, xtriage_danger
         if self.report_dir is not None:
             with open(os.path.join(self.report_dir, "xtriage.log"), "w") as f:
                 f.write(s.getvalue())
