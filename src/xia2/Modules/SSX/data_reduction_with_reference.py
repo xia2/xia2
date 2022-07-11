@@ -88,11 +88,11 @@ class DataReductionWithReference(BaseDataReduction):
             f"{n_final} crystals scaled in space group {scaled_expts[0].crystal.get_space_group().info()}\nMedian cell: {uc_str}"
         )
         xia2_logger.info("Summary statistics for combined previously scaled data")
-        xia2_logger.info(
-            statistics_output_from_scaled_files(
-                scaled_expts, scaled_table, uc, self._reduction_params.d_min
-            )
+        stats_summary, _ = statistics_output_from_scaled_files(
+            scaled_expts, scaled_table, uc, self._reduction_params.d_min
         )
+        xia2_logger.info(stats_summary)
+
         merge(
             self._scale_wd,
             scaled_expts,
@@ -185,9 +185,11 @@ class DataReductionWithReference(BaseDataReduction):
             xia2_logger.info(
                 f"{n_final} crystals scaled in space group {scaled_expts[0].crystal.get_space_group().info()}\nMedian cell: {uc_str}"
             )
-            xia2_logger.info(
-                statistics_output_from_scaled_files(scaled_expts, scaled_table, uc)
+            stats_summary, _ = statistics_output_from_scaled_files(
+                scaled_expts, scaled_table, uc, self._reduction_params.d_min
             )
+            xia2_logger.info(stats_summary)
+
         with record_step("merging"):
             merge(
                 self._scale_wd,
@@ -213,11 +215,10 @@ class DataReductionWithReference(BaseDataReduction):
                 xia2_logger.info(
                     "Summary statistics for all input data, including previously scaled"
                 )
-                xia2_logger.info(
-                    statistics_output_from_scaled_files(
-                        scaled_expts, scaled_table, uc, self._reduction_params.d_min
-                    )
+                stats_summary, _ = statistics_output_from_scaled_files(
+                    scaled_expts, scaled_table, uc, self._reduction_params.d_min
                 )
+                xia2_logger.info(stats_summary)
             with record_step("merging"):
                 merge(
                     self._scale_wd,

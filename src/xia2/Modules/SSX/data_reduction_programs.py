@@ -38,7 +38,7 @@ from xia2.Modules.SSX.data_reduction_definitions import (
 )
 from xia2.Modules.SSX.reporting import (
     condensed_unit_cell_info,
-    statistics_output_from_scaler,
+    statistics_output_and_resolution_from_scaler,
 )
 from xia2.Modules.SSX.util import log_to_file, run_in_directory
 
@@ -493,15 +493,14 @@ def scale(
         dials_logger.info("Saving scaled reflections to scaled.refl")
         scaled_table.as_file("scaled.refl")
 
-        # _export_unmerged_mtz(params, scaled_expts, scaled_table)
-
         n_final = len(scaled_expts)
         uc = determine_best_unit_cell(scaled_expts)
         uc_str = ", ".join(str(round(i, 3)) for i in uc.parameters())
         xia2_logger.info(
             f"{n_final} crystals scaled in space group {scaled_expts[0].crystal.get_space_group().info()}\nMedian cell: {uc_str}"
         )
-        xia2_logger.info(statistics_output_from_scaler(scaler))
+        stats_summary, d_min_fit = statistics_output_and_resolution_from_scaler(scaler)
+        xia2_logger.info(stats_summary)
 
     return scaled_expts, scaled_table
 

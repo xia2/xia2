@@ -6,8 +6,14 @@ from typing import Any, Dict, List
 import numpy as np
 
 from dials.algorithms.clustering.unit_cell import Cluster
+from dials.algorithms.scaling.scaling_library import (
+    DialsMergingStatisticsError,
+    merging_stats_from_scaled_array,
+    scaled_data_as_miller_array,
+)
 from dials.report.analysis import format_statistics, table_1_stats
 from dials.util import tabulate
+from dials.util.resolution_analysis import resolution_cc_half
 
 
 def condensed_unit_cell_info(clusters: List[Cluster]) -> str:
@@ -97,30 +103,99 @@ def indexing_summary_output(summary_data: Dict, summary_plots: Dict) -> str:
     return output_
 
 
-def statistics_output_from_scaler(scaler: Any) -> str:
-    stats = format_statistics(
-        table_1_stats(
-            scaler.merging_statistics_result,
-            scaler.anom_merging_statistics_result,
+def statistics_output_and_resolution_from_scaler(scaler):
+    stats = scaler.merging_statistics_result
+    anom_stats = None
+    if not scaler.scaled_miller_array.space_group().is_centric():
+        anom_stats = scaler.anom_merging_statistics_result
+
+    t1_stats = ""
+    d_min_fit = None
+
+    if scaler.params.cut_data.d_min is not None:
+        t1_stats = format_statistics(table_1_stats(stats, anom_stats))
+    elif stats:
+        t1_stats, d_min_fit = _fit_stats(
+            stats,
+            anom_stats,
+            scaler.scaled_miller_array,
+            scaler.params.output.merging.nbins,
+            scaler.params.output.use_internal_variance,
         )
-    )
-    return stats
+    return (t1_stats, d_min_fit)
 
 
 def statistics_output_from_scaled_files(
     experiments, reflection_table, best_unit_cell, d_min=None
 ):
-    from dials.algorithms.scaling.scaling_library import (
-        merging_stats_from_scaled_array,
-        scaled_data_as_miller_array,
-    )
 
     scaled_array = scaled_data_as_miller_array(
         [reflection_table], experiments, best_unit_cell
     )
+    t1_stats = ""
+    d_min_fit = None
+
     if d_min:
         scaled_array = scaled_array.select(scaled_array.d_spacings().data() >= d_min)
-    stats, anom_stats = merging_stats_from_scaled_array(scaled_array)
+        try:
+            stats, anom_stats = merging_stats_from_scaled_array(scaled_array)
+        except DialsMergingStatisticsError:
+            pass
+        else:
+            if scaled_array.space_group().is_centric():
+                anom_stats = None
+            if stats:
+                t1_stats = format_statistics(table_1_stats(stats, anom_stats))
 
-    stats = format_statistics(table_1_stats(stats, anom_stats))
-    return stats
+    else:  # estimate resolution limit
+        try:
+            stats, anom_stats = merging_stats_from_scaled_array(scaled_array)
+        except DialsMergingStatisticsError:
+            pass
+        else:
+            if scaled_array.space_group().is_centric():
+                anom_stats = None
+            if stats:
+                t1_stats, d_min_fit = _fit_stats(stats, anom_stats, scaled_array)
+
+    return (t1_stats, d_min_fit)
+
+
+def _fit_stats(stats, anom_stats, scaled_array, n_bins=20, use_internal_variance=False):
+    fit_msg = ""
+    d_min_fit = None
+    cut_stats, cut_anom_stats = (None, None)
+    try:
+        d_min_fit = resolution_cc_half(stats, limit=0.3).d_min
+    except RuntimeError:
+        pass
+    else:
+        max_current_res = stats.bins[-1].d_min
+        if d_min_fit and d_min_fit - max_current_res > 0.005:
+            fit_msg = (
+                "Approximate resolution limit suggested from CC"
+                + "\u00BD"
+                + " fit (limit CC"
+                + "\u00BD"
+                + f"=0.3): {d_min_fit:.2f}"
+                + "\n"
+            )
+            try:
+                cut_stats, cut_anom_stats = merging_stats_from_scaled_array(
+                    scaled_array.resolution_filter(d_min=d_min_fit),
+                    n_bins=n_bins,
+                    use_internal_variance=use_internal_variance,
+                )
+            except DialsMergingStatisticsError:
+                pass
+            else:
+                if scaled_array.space_group().is_centric():
+                    cut_anom_stats = None
+    if not d_min_fit:
+        fit_msg = (
+            "Unable to estimate resolution limit from CC" + "\u00BD" + " fit" + "\n"
+        )
+    t1_stats = format_statistics(
+        table_1_stats(stats, anom_stats, cut_stats, cut_anom_stats)
+    )
+    return (fit_msg + t1_stats, d_min_fit)
