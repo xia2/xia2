@@ -1,3 +1,12 @@
+xia2 3.10.1 (2022-07-12)
+========================
+
+Bugfixes
+--------
+
+- ``dev.xia2.ssx``: Fix reporting of missing phil files, fix crash when no images indexed in a batch (`#686 <https://github.com/xia2/xia2/issues/686>`_)
+
+
 xia2 3.10.0 (2022-06-09)
 ========================
 
