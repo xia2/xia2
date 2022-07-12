@@ -65,3 +65,5 @@ def run(args=sys.argv[1:]):
         run_xia2_ssx(cwd, params)
     except ValueError as e:
         xia2_logger.info(f"Error: {e}")
+    except FileNotFoundError as e:
+        xia2_logger.info(f"Unable to find file: {e}")
