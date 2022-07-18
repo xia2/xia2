@@ -19,13 +19,10 @@ from xia2.Modules.SSX.data_integration_standard import (
     FileInput,
     run_data_integration,
 )
+from xia2.Modules.SSX.data_reduction_definitions import ReductionParams
+from xia2.Modules.SSX.data_reduction_interface import get_reducer
 from xia2.Modules.SSX.util import report_timing
-
-# from xia2.Modules.SSX.data_reduction_simple import (
-#    SimpleDataReduction,
-#    SimpleReductionParams,
-# )
-
+from xia2.Modules.SSX.xia2_ssx_reduce import data_reduction_phil_str
 
 xia2_logger = logging.getLogger(__name__)
 
@@ -166,7 +163,7 @@ geometry_refinement {
     .expert_level=3
 }
 workflow {
-  steps = *find_spots *index *integrate
+  steps = *find_spots *index *integrate *reduce
     .help = "Option to turn off particular steps. If None, then only geometry"
             "refinement will be done. Multiple choices should be of the format"
             "steps=find_spots+index".
@@ -179,8 +176,7 @@ enable_live_reporting = False
   .expert_level=3
 """
 
-# full_phil_str = phil_str + data_reduction_phil_str + workflow_phil
-full_phil_str = phil_str + workflow_phil
+full_phil_str = phil_str + data_reduction_phil_str + workflow_phil
 
 
 @report_timing
@@ -263,7 +259,7 @@ def run_xia2_ssx(
     refinement_params = RefinementParams.from_phil(params)
     integration_params = IntegrationParams.from_phil(params)
 
-    processed_batch_directories = run_data_integration(
+    integrated_batch_directories = run_data_integration(
         root_working_directory,
         file_input,
         options,
@@ -272,12 +268,15 @@ def run_xia2_ssx(
         refinement_params,
         integration_params,
     )
-    if not processed_batch_directories or not ("reduce" in params.workflow.steps):
+    if not integrated_batch_directories or not ("reduce" in params.workflow.steps):
         return
 
     # Now do the data reduction
-    # if not params.symmetry.space_group:
-    #    params.symmetry.space_group = params.space_group
-    # reduction_params = SimpleReductionParams.from_phil(params)
-    # reducer = SimpleDataReduction(root_working_directory, processed_batch_directories)
-    # reducer.run(reduction_params)
+    if not params.symmetry.space_group:
+        params.symmetry.space_group = params.space_group
+    reduction_params = ReductionParams.from_phil(params)
+    reducer_class = get_reducer(reduction_params)
+    reducer = reducer_class.from_directories(
+        root_working_directory, integrated_batch_directories, [], reduction_params
+    )
+    reducer.run()

@@ -3,6 +3,9 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+from typing import List
+
+import pytest
 
 from dxtbx.serialize import load
 
@@ -161,22 +164,7 @@ def test_full_run_without_reference(dials_data, tmp_path):
     check_output(tmp_path, find_spots=True, index=True, integrate=True)
 
     # Check that data reduction completed.
-    """assert (tmp_path / "data_reduction").is_dir()
-    assert (tmp_path / "data_reduction" / "prefilter").is_dir()
-    assert (tmp_path / "data_reduction" / "reindex").is_dir()
-    assert (tmp_path / "data_reduction" / "scale").is_dir()
-    assert (tmp_path / "data_reduction" / "scale" / "merged.mtz").is_file()
-    assert (tmp_path / "data_reduction" / "scale" / "scaled.mtz").is_file()
-
-    # now run again to check data reduction from where left off approach
-    args = [
-        "dev.xia2.ssx_reduce",
-        "space_group=P213",
-        "directory=batch_1/",
-        "d_min=2.0",
-    ]
-    result = subprocess.run(args, cwd=tmp_path capture_output=True)
-    assert not result.returncode and not result.stderr"""
+    check_data_reduction_files(tmp_path)
 
 
 def test_stepwise_run_without_reference(dials_data, tmp_path):
@@ -188,6 +176,7 @@ def test_stepwise_run_without_reference(dials_data, tmp_path):
         "space_group=P213",
         "integration.algorithm=stills",
         "d_min=2.0",
+        "steps=find_spots+index+integrate",
     ]
     args.append("image=" + os.fspath(ssx / "merlin0047_1700*.cbf"))
     args.append("steps=find_spots")
@@ -240,3 +229,129 @@ def test_stepwise_run_without_reference(dials_data, tmp_path):
     result = subprocess.run(args, cwd=tmp_path, capture_output=True)
     assert not result.returncode and not result.stderr
     check_output(tmp_path, find_spots=True, index=True, integrate=True)
+
+
+def check_data_reduction_files(tmp_path, reindex=True):
+    assert (tmp_path / "data_reduction").is_dir()
+    assert (tmp_path / "data_reduction" / "prefilter").is_dir()
+    if reindex:
+        assert (tmp_path / "data_reduction" / "reindex").is_dir()
+    assert (tmp_path / "data_reduction" / "scale").is_dir()
+    assert (tmp_path / "data_reduction" / "scale" / "merged.mtz").is_file()
+
+
+@pytest.mark.parametrize("pdb_model", [True, False])
+def test_ssx_reduce_on_directory(dials_data, tmp_path, pdb_model):
+    ssx = dials_data("cunir_serial_processed", pathlib=True)
+    args = ["dev.xia2.ssx_reduce", f"directory={ssx}"]
+    if pdb_model:
+        model = dials_data("cunir_serial", pathlib=True) / "2bw4.pdb"
+        args.append(f"model={str(model)}")
+    # also test using scaling and cosym phil files
+    cosym_phil = "d_min=2.5"
+    scaling_phil = "reflection_selection.Isigma_range=3.0,0.0"
+    with open(tmp_path / "scaling.phil", "w") as f:
+        f.write(scaling_phil)
+    with open(tmp_path / "cosym.phil", "w") as f:
+        f.write(cosym_phil)
+    args.append("symmetry.phil=cosym.phil")
+    args.append("scaling.phil=scaling.phil")
+
+    result = subprocess.run(args, cwd=tmp_path, capture_output=True)
+    if pdb_model:
+        assert not result.returncode
+    else:
+        assert not result.returncode and not result.stderr
+    check_data_reduction_files(tmp_path)
+
+
+@pytest.mark.parametrize("pdb_model", [True, False])
+def test_ssx_reduce_on_files_no_idx_ambiguity(dials_data, tmp_path, pdb_model):
+    ssx = dials_data("cunir_serial_processed", pathlib=True)
+    result = subprocess.run(
+        [
+            "dials.reindex",
+            f"{ssx / 'integrated.refl'}",
+            f"{ssx / 'integrated.expt'}",
+            "space_group=P432",
+        ],
+        cwd=tmp_path,
+        capture_output=True,
+    )
+    assert not result.returncode and not result.stderr
+    expts = tmp_path / "reindexed.expt"
+    refls = tmp_path / "reindexed.refl"
+    args = [
+        "dev.xia2.ssx_reduce",
+        f"reflections={refls}",
+        f"experiments={expts}",
+    ]
+    if pdb_model:
+        model = dials_data("cunir_serial", pathlib=True) / "2bw4.pdb"
+        args.append(f"model={str(model)}")
+
+    result = subprocess.run(args, cwd=tmp_path, capture_output=True)
+    assert (
+        not result.returncode
+    )  # can get result.stderr due to a warning in dials.export
+    check_data_reduction_files(tmp_path, reindex=False)
+
+
+def test_ssx_reduce_on_files(dials_data, tmp_path):
+    ssx = dials_data("cunir_serial_processed", pathlib=True)
+    refls = ssx / "integrated.refl"
+    expts = ssx / "integrated.expt"
+    args = ["dev.xia2.ssx_reduce", f"reflections={refls}", f"experiments={expts}"]
+
+    result = subprocess.run(args, cwd=tmp_path, capture_output=True)
+    assert not result.returncode and not result.stderr
+    check_data_reduction_files(tmp_path)
+
+
+@pytest.mark.parametrize(
+    ("cluster_args", "expected_results"),
+    [
+        (
+            ["clustering.threshold=1"],
+            {
+                "best_unit_cell": [96.411, 96.411, 96.411, 90.0, 90.0, 90.0],
+                "n_cryst": 3,
+            },
+        ),
+        (
+            [
+                "central_unit_cell=96.4,96.4,96.4,90,90,90",
+                "absolute_length_tolerance=0.015",
+            ],
+            {
+                "best_unit_cell": [96.4107, 96.4107, 96.4107, 90.0, 90.0, 90.0],
+                "n_cryst": 4,
+            },
+        ),
+        (
+            ["absolute_length_tolerance=0.001"],
+            {
+                "best_unit_cell": [96.4107, 96.4107, 96.4107, 90.0, 90.0, 90.0],
+                "n_cryst": 2,
+            },
+        ),
+    ],
+)
+def test_ssx_reduce_filter_options(
+    dials_data, tmp_path, cluster_args: List[str], expected_results: dict
+):
+    ssx = dials_data("cunir_serial_processed", pathlib=True)
+    args = ["dev.xia2.ssx_reduce", f"directory={ssx}"] + cluster_args
+
+    result = subprocess.run(args, cwd=tmp_path, capture_output=True)
+    assert not result.returncode and not result.stderr
+    check_data_reduction_files(tmp_path)
+
+    """# Now check that results were output at various stages to allow iterative
+    # workflows
+    filter_results = tmp_path / "data_reduction/prefilter/filter_results.json"
+    with filter_results.open(mode="r") as f:
+        result = json.load(f)
+    # check that the unit cells were written to file
+    assert result["best_unit_cell"] == expected_results["best_unit_cell"]
+    assert result["n_cryst"] == expected_results["n_cryst"]"""
