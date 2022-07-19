@@ -245,7 +245,7 @@ def test_ssx_reduce_on_directory(dials_data, tmp_path, pdb_model):
     ssx = dials_data("cunir_serial_processed", pathlib=True)
     args = ["dev.xia2.ssx_reduce", f"directory={ssx}"]
     if pdb_model:
-        model = dials_data("cunir_serial", pathlib=True) / "2bw4.pdb"
+        model = dials_data("cunir_serial", pathlib=True) / "2BW4.pdb"
         args.append(f"model={str(model)}")
     # also test using scaling and cosym phil files
     cosym_phil = "d_min=2.5"
@@ -287,7 +287,7 @@ def test_ssx_reduce_on_files_no_idx_ambiguity(dials_data, tmp_path, pdb_model):
         f"experiments={expts}",
     ]
     if pdb_model:
-        model = dials_data("cunir_serial", pathlib=True) / "2bw4.pdb"
+        model = dials_data("cunir_serial", pathlib=True) / "2BW4.pdb"
         args.append(f"model={str(model)}")
 
     result = subprocess.run(args, cwd=tmp_path, capture_output=True)
