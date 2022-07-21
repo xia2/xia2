@@ -68,4 +68,5 @@ def log_to_file(filename: str) -> Generator[logging.Logger, None, None]:
         dials_logger = logging.getLogger("dials")
         dials_logger.handlers.clear()
         warning_logger = logging.getLogger("py.warnings")
-        warning_logger.handlers.pop()
+        if warning_logger.handlers:
+            warning_logger.handlers.pop()
