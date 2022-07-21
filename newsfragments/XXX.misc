@@ -1,0 +1,1 @@
+``dev.xia2.ssx``: Remove file handler from warnings handler to avoid reporting warnings to all logs.
