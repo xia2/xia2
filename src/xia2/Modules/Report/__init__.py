@@ -10,7 +10,7 @@ from collections import OrderedDict
 import dials.pychef
 import libtbx.phil
 from cctbx.array_family import flex
-from dials.algorithms.merging.merge import make_dano_plots
+from dials.algorithms.merging.reporting import make_dano_plots
 from dials.pychef import dose_phil_str
 from dials.report.analysis import batch_dependent_properties
 from dials.report.plots import (

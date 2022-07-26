@@ -4,6 +4,7 @@ from __future__ import annotations
 import concurrent.futures
 import copy
 import functools
+import json
 import logging
 import math
 import os
@@ -23,7 +24,7 @@ from dials.command_line.cosym import cosym
 from dials.command_line.cosym import phil_scope as cosym_phil_scope
 from dials.command_line.cosym import register_default_cosym_observers
 from dials.command_line.merge import generate_html_report as merge_html_report
-from dials.command_line.merge import merge_data_to_mtz
+from dials.command_line.merge import merge_data_to_mtz_with_report_collection
 from dials.command_line.merge import phil_scope as merge_phil_scope
 from dials.command_line.scale import phil_scope as scaling_phil_scope
 from dxtbx.model import Crystal, ExperimentList
@@ -273,6 +274,7 @@ def merge(
     filename = "merged" + (suffix if suffix else "") + ".mtz"
     logfile = "dials.merge" + (suffix if suffix else "") + ".log"
     html_file = "dials.merge" + (suffix if suffix else "") + ".html"
+    json_file = "dials.merge" + (suffix if suffix else "") + ".json"
     with run_in_directory(working_directory), log_to_file(
         logfile
     ) as dials_logger, record_step("dials.merge"):
@@ -288,13 +290,17 @@ def merge(
             params.best_unit_cell = best_unit_cell
             input_ += f"  best_unit_cell = {best_unit_cell.parameters()}"
         dials_logger.info(input_)
-        mtz_file = merge_data_to_mtz(params, experiments, [reflection_table])
+        mtz_file, json_data = merge_data_to_mtz_with_report_collection(
+            params, experiments, [reflection_table]
+        )
         dials_logger.info(f"\nWriting reflections to {filename}")
         out = StringIO()
         mtz_file.show_summary(out=out)
         dials_logger.info(out.getvalue())
         mtz_file.write(filename)
-        merge_html_report(mtz_file, html_file)
+        with open(json_file, "w") as f:
+            json.dump(json_data, f, indent=2)
+        merge_html_report(json_data, html_file)
     xia2_logger.info(f"Merged mtz file: {working_directory / filename}")
 
 
@@ -373,7 +379,7 @@ def _extract_scaling_params_for_scale_against_reference(reduction_params, index)
         anomalous={reduction_params.anomalous}
         output.experiments=scaled_{index}.expt
         output.reflections=scaled_{index}.refl
-        output.html=dials.scale.{index}.html
+        output.html=None
         scaling_options.reference={str(reduction_params.reference)}
     """
     if reduction_params.d_min:
