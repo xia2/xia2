@@ -855,6 +855,8 @@ def split_filtered_data(
             expts = load.experiment_list(file_pair.expt, check_format=False)
             refls = flex.reflection_table.from_file(file_pair.refl)
             good_crystals_this = good_crystals_data[str(file_pair.expt)]
+            if not good_crystals_this.crystals:
+                continue
             good_identifiers = good_crystals_this.identifiers
             if not good_crystals_this.keep_all_original:
                 expts.select_on_experiment_identifiers(good_identifiers)
