@@ -278,10 +278,17 @@ def run_import(working_directory: pathlib.Path, file_input: FileInput) -> None:
     else:
         xia2_logger.notice(banner("Importing"))  # type: ignore
     with record_step("dials.import"):
-        result = subprocess.run(import_command, cwd=working_directory)
+        result = subprocess.run(
+            import_command, cwd=working_directory, capture_output=True, encoding="utf-8"
+        )
         if result.returncode or result.stderr:
             raise ValueError(
-                "dials.import returned error status:\n" + str(result.stderr)
+                "dials.import returned error status:\n"
+                + result.stderr
+                + "\nHint: To import data from a .h5 file use e.g. image=/path/to/data/data_master.h5"
+                + "\n      To import data from cbf files, use e.g. template=/path/to/data/name_#####.cbf"
+                + "\n      The option directory=/path/to/data/ can also be used."
+                + "\nPlease recheck the input path/file names for your data files."
             )
     outfile = working_directory / "file_input.json"
     outfile.touch()
