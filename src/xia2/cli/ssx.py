@@ -22,6 +22,7 @@ from __future__ import annotations
 import logging
 import pathlib
 import sys
+import traceback
 
 import iotbx.phil
 from dials.util.options import ArgumentParser
@@ -65,5 +66,16 @@ def run(args=sys.argv[1:]):
         run_xia2_ssx(cwd, params)
     except ValueError as e:
         xia2_logger.info(f"Error: {e}")
+        sys.exit(0)
     except FileNotFoundError as e:
         xia2_logger.info(f"Unable to find file: {e}")
+        sys.exit(0)
+    except Exception as e:
+        with (cwd / "xia2-error.txt").open(mode="w") as fh:
+            traceback.print_exc(file=fh)
+        xia2_logger.error("Error: %s", str(e))
+        xia2_logger.info(traceback.format_exc())
+        xia2_logger.warning(
+            "Please send the contents of xia2.ssx.log and xia2-error.txt to xia2.support@gmail.com"
+        )
+        sys.exit(1)
