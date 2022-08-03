@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import contextlib
+import io
 import logging
 import os
 import time
@@ -46,6 +47,27 @@ def config_quiet(logfile: str, verbosity: int = 0) -> None:
     warning_logger.addHandler(fh)
     dials_logger.setLevel(loglevel)
     print_banner(use_logging=True)
+
+
+@contextlib.contextmanager
+def config_quiet_xia2_logger(verbosity: int = 0) -> Generator[io.StringIO, None, None]:
+    # we want the xia2 logging to redirect to an iostream
+    xia2_logger = logging.getLogger("xia2")
+    original_levels = [fh.level for fh in xia2_logger.handlers]
+    try:
+        for fh in xia2_logger.handlers:
+            fh.setLevel(logging.ERROR)
+        iostream = io.StringIO()
+        sh = logging.StreamHandler(iostream)
+        sh.setFormatter(DialsLogfileFormatter(timed=verbosity))
+        xia2_logger.addHandler(sh)
+        yield iostream
+    finally:
+        iostream.close()
+        sh.close()
+        xia2_logger.handlers.pop()
+        for fh, oldlevel in zip(xia2_logger.handlers, original_levels):
+            fh.setLevel(oldlevel)
 
 
 @contextlib.contextmanager

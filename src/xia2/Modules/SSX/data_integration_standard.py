@@ -12,7 +12,7 @@ from typing import List, Optional, Tuple
 
 import numpy as np
 
-from dials.util.mp import multi_node_parallel_map
+import libtbx.easy_mp
 from dxtbx.serialize import load
 
 from xia2.Driver.timing import record_step
@@ -29,6 +29,7 @@ from xia2.Modules.SSX.data_integration_programs import (
     ssx_integrate,
 )
 from xia2.Modules.SSX.reporting import condensed_unit_cell_info
+from xia2.Modules.SSX.util import config_quiet_xia2_logger
 
 xia2_logger = logging.getLogger(__name__)
 
@@ -380,13 +381,16 @@ class ProcessBatch(object):
         self.function = process_batch
 
     def __call__(self, directory: pathlib.Path) -> dict:
-        summary_data = self.function(
-            directory,
-            self.spotfinding_params,
-            self.indexing_params,
-            self.integration_params,
-            self.options,
-        )
+        with config_quiet_xia2_logger() as iostream:
+            summary_data = self.function(
+                directory,
+                self.spotfinding_params,
+                self.indexing_params,
+                self.integration_params,
+                self.options,
+            )
+            s = iostream.getvalue()
+        xia2_logger.info(s)
         return summary_data
 
 
@@ -431,15 +435,16 @@ def process_batches(
         progress.add(summary_data)
 
     if options.njobs > 1:
-        multi_node_parallel_map(
+        libtbx.easy_mp.parallel_map(
             func=ProcessBatch(
                 spotfinding_params, indexing_params, integration_params, options
             ),
             iterable=batch_directories,
-            nproc=options.nproc,
-            njobs=min(options.njobs, len(batch_directories)),
-            cluster_method=options.multiprocessing_method,
+            qsub_command=f"qsub -pe smp {options.nproc}",
+            processes=min(options.njobs, len(batch_directories)),
+            method=options.multiprocessing_method,
             callback=process_output,
+            preserve_order=True,
         )
     else:
         for batch_dir in batch_directories:
