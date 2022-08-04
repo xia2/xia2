@@ -219,6 +219,9 @@ def run_xia2_ssx(
             raise FileNotFoundError(os.fspath(import_phil))
         file_input.import_phil = import_phil
 
+    if params.multiprocessing.nproc is Auto:
+        params.multiprocessing.nproc = number_of_processors(return_value_if_unknown=1)
+
     options = AlgorithmParams(
         batch_size=params.batch_size,
         njobs=params.multiprocessing.njobs,
@@ -250,9 +253,6 @@ def run_xia2_ssx(
         options.refinement_images_to_use = (start, end)
     else:
         options.refinement_images_to_use = (0, params.geometry_refinement.n_images)
-
-    if params.multiprocessing.nproc is Auto:
-        params.multiprocessing.nproc = number_of_processors(return_value_if_unknown=1)
 
     spotfinding_params = SpotfindingParams.from_phil(params)
     indexing_params = IndexingParams.from_phil(params)

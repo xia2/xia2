@@ -29,7 +29,7 @@ from xia2.Modules.SSX.data_integration_programs import (
     ssx_integrate,
 )
 from xia2.Modules.SSX.reporting import condensed_unit_cell_info
-from xia2.Modules.SSX.util import config_quiet_xia2_logger
+from xia2.Modules.SSX.util import redirect_xia2_logger
 
 xia2_logger = logging.getLogger(__name__)
 
@@ -381,7 +381,7 @@ class ProcessBatch(object):
         self.function = process_batch
 
     def __call__(self, directory: pathlib.Path) -> dict:
-        with config_quiet_xia2_logger() as iostream:
+        with redirect_xia2_logger() as iostream:
             summary_data = self.function(
                 directory,
                 self.spotfinding_params,
@@ -444,7 +444,7 @@ def process_batches(
             processes=min(options.njobs, len(batch_directories)),
             method=options.multiprocessing_method,
             callback=process_output,
-            preserve_order=True,
+            preserve_order=False,
         )
     else:
         for batch_dir in batch_directories:

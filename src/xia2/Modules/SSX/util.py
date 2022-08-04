@@ -50,7 +50,7 @@ def config_quiet(logfile: str, verbosity: int = 0) -> None:
 
 
 @contextlib.contextmanager
-def config_quiet_xia2_logger(verbosity: int = 0) -> Generator[io.StringIO, None, None]:
+def redirect_xia2_logger(verbosity: int = 0) -> Generator[io.StringIO, None, None]:
     # we want the xia2 logging to redirect to an iostream
     xia2_logger = logging.getLogger("xia2")
     original_levels = [fh.level for fh in xia2_logger.handlers]
