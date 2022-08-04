@@ -23,6 +23,7 @@ from dials.algorithms.integration.ssx.ssx_integrate import (
 )
 from dials.algorithms.shoebox import MaskCode
 from dials.array_family import flex
+from dials.command_line.combine_experiments import CombineWithReference
 from dials.command_line.find_spots import working_phil as find_spots_phil
 from dials.command_line.refine import run_dials_refine
 from dials.command_line.refine import working_phil as refine_phil
@@ -211,6 +212,18 @@ def ssx_find_spots(
     return reflections
 
 
+def clusters_from_experiments(experiments):
+    crystal_symmetries = [
+        crystal.symmetry(
+            unit_cell=expt.crystal.get_unit_cell(),
+            space_group=expt.crystal.get_space_group(),
+        )
+        for expt in experiments
+    ]
+    cluster_plots, large_clusters = report_on_crystal_clusters(crystal_symmetries, True)
+    return cluster_plots, large_clusters
+
+
 def ssx_index(
     working_directory: Path,
     indexing_params: IndexingParams,
@@ -289,15 +302,8 @@ def ssx_index(
 
             # Report on clustering, and generate html report and json output
             if indexed_experiments:
-                crystal_symmetries = [
-                    crystal.symmetry(
-                        unit_cell=expt.crystal.get_unit_cell(),
-                        space_group=expt.crystal.get_space_group(),
-                    )
-                    for expt in indexed_experiments
-                ]
-                cluster_plots, large_clusters = report_on_crystal_clusters(
-                    crystal_symmetries, True
+                cluster_plots, large_clusters = clusters_from_experiments(
+                    indexed_experiments
                 )
             else:
                 cluster_plots, large_clusters = ({}, {})
@@ -320,6 +326,16 @@ def ssx_index(
                 "large_clusters": large_clusters,
             }
     return indexed_experiments, indexed_reflections, summary_for_xia2
+
+
+def combine_with_reference(experiments):
+    combine = CombineWithReference(
+        detector=experiments[0].detector, beam=experiments[0].beam
+    )
+    elist = ExperimentList()
+    for expt in experiments:
+        elist.append(combine(expt))
+    return elist
 
 
 def run_refinement(

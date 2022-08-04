@@ -135,25 +135,35 @@ integration {
 
 workflow_phil = """
 assess_crystals {
-  n_images = 1000
+  n_crystals = 250
     .type = int(value_min=1)
-    .help = "Number of images to use for crystal assessment."
+    .help = "The minimum number of indexed crystals to use for assessing the unit"
+            "cell properties. For the crystal assessment, images will be processed"
+            "(spotfinding and indexing) in batches of size batch_size until at"
+            "least n_crystals have been indexed, or all images have been used,"
+            "at which point unit cell clustering will be reported."
     .expert_level=2
   images_to_use = None
     .type = str
     .help = "Specify an inclusive image range to use for crystal assessment,"
-            "in the form start:end"
+            "in the form start:end . If assess_crystals.images_to_use"
+            "is set, then it will take precedent over assess_crystals.n_crystals"
     .expert_level=3
 }
 geometry_refinement {
-  n_images = 1000
+  n_crystals = 250
     .type = int(value_min=1)
-    .help = "Number of images to use for reference geometry determination."
+    .help = "The minimum number of indexed crystals to use for reference geometry"
+            "determination. For the geometry refinement, images will be processed"
+            "(spotfinding and indexing) in batches of size batch_size until at"
+            "least n_crystals have been indexed, or all images have been used,"
+            "at which point a joint refinement will be performed."
     .expert_level=2
   images_to_use = None
     .type = str
     .help = "Specify an inclusive image range to use for reference geometry"
-            "determination, in the form start:end"
+            "determination, in the form start:end. If geometry_refinement.images_to_use"
+            "is set, then it will take precedent over geometry_refinement.n_crystals"
     .expert_level=3
   phil = None
     .type = path
@@ -223,6 +233,8 @@ def run_xia2_ssx(
         params.multiprocessing.nproc = number_of_processors(return_value_if_unknown=1)
 
     options = AlgorithmParams(
+        assess_crystals_n_crystals=params.assess_crystals.n_crystals,
+        geometry_refinement_n_crystals=params.geometry_refinement.n_crystals,
         batch_size=params.batch_size,
         njobs=params.multiprocessing.njobs,
         nproc=params.multiprocessing.nproc,
@@ -239,8 +251,6 @@ def run_xia2_ssx(
         start = max(0, int(vals[0]) - 1)  # convert from image number to slice
         end = int(vals[1])
         options.assess_images_to_use = (start, end)
-    else:
-        options.assess_images_to_use = (0, params.assess_crystals.n_images)
 
     if params.geometry_refinement.images_to_use:
         if ":" not in params.geometry_refinement.images_to_use:
@@ -251,8 +261,6 @@ def run_xia2_ssx(
         start = max(0, int(vals[0]) - 1)  # convert from image number to slice
         end = int(vals[1])
         options.refinement_images_to_use = (start, end)
-    else:
-        options.refinement_images_to_use = (0, params.geometry_refinement.n_images)
 
     spotfinding_params = SpotfindingParams.from_phil(params)
     indexing_params = IndexingParams.from_phil(params)
