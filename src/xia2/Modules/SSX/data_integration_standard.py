@@ -435,13 +435,17 @@ def process_batches(
         progress.add(summary_data)
 
     if options.njobs > 1:
+        njobs = min(options.njobs, len(batch_directories))
+        xia2_logger.info(
+            f"Submitting processing in {len(batch_directories)} batches across {njobs} cores, each with nproc={options.nproc}."
+        )
         libtbx.easy_mp.parallel_map(
             func=ProcessBatch(
                 spotfinding_params, indexing_params, integration_params, options
             ),
             iterable=batch_directories,
             qsub_command=f"qsub -pe smp {options.nproc}",
-            processes=min(options.njobs, len(batch_directories)),
+            processes=njobs,
             method=options.multiprocessing_method,
             callback=process_output,
             preserve_order=False,
