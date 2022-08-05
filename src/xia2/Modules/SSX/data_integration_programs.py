@@ -292,6 +292,9 @@ def ssx_index(
             n_images = reduce(
                 lambda a, v: a + (v[0]["n_indexed"] > 0), summary_data.values(), 0
             )
+            indexing_success_per_image = [
+                bool(v[0]["n_indexed"]) for v in summary_data.values()
+            ]
             report = (
                 "Summary of images sucessfully indexed\n"
                 + make_summary_table(summary_data)
@@ -324,6 +327,7 @@ def ssx_index(
             summary_for_xia2 = {
                 "n_images_indexed": n_images,
                 "large_clusters": large_clusters,
+                "success_per_image": indexing_success_per_image,
             }
     return indexed_experiments, indexed_reflections, summary_for_xia2
 

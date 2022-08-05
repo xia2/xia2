@@ -13,6 +13,8 @@ from typing import List, Optional, Tuple
 import numpy as np
 
 import libtbx.easy_mp
+from dials.algorithms.clustering.unit_cell import Cluster
+from dials.algorithms.indexing.ssx.analysis import generate_html_report
 from dials.array_family import flex
 from dxtbx.model import ExperimentList
 from dxtbx.serialize import load
@@ -191,7 +193,7 @@ def slice_images_from_experiments(
     start, end = images[0], images[1]
     if start >= len(expts):
         raise NoMoreImages
-    if (end - start) > len(expts):
+    if end > len(expts):
         end = len(expts)
     new_expts = expts[start:end]
     new_expts.as_file(destination_directory / "imported.expt")
@@ -324,23 +326,100 @@ def assess_crystal_parameters(
     """
     Run spotfinding and indexing and report on the properties of
     the largest cluster.
+
+    Generates a unit cell clustering html report if any clusters are found.
+    Always outputs a xia2.assess_crystals.json containing at least the
+    success_per_image.
     """
 
     # now run find spots and index
+    large_clusters: List[Cluster] = []
+    cluster_plots = {}
     strong = ssx_find_spots(working_directory, spotfinding_params)
     strong.as_file(working_directory / "strong.refl")
-    _, __, summary = ssx_index(working_directory, indexing_params)
-    largest_clusters = summary["large_clusters"]
-    if largest_clusters:
-        xia2_logger.info(f"{condensed_unit_cell_info(largest_clusters)}")
+    expts, __, summary = ssx_index(working_directory, indexing_params)
 
-        sg, uc = best_cell_from_cluster(largest_clusters[0])
-        xia2_logger.info(
-            "Properties of largest cluster:\n"
-            "Highest possible metric unit cell: "
-            + ", ".join(f"{i:.3f}" for i in uc)
-            + f"\nHighest possible metric symmetry: {sg}"
+    if expts:
+        cluster_plots, large_clusters = clusters_from_experiments(expts)
+        if large_clusters:
+            xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
+
+    if cluster_plots:
+        generate_html_report(
+            cluster_plots, working_directory / "xia2.assess_crystals.html"
         )
+    cluster_plots["success_per_image"] = summary["success_per_image"]
+    with open(working_directory / "xia2.assess_crystals.json", "w") as outfile:
+        json.dump(cluster_plots, outfile, indent=2)
+
+    _report_on_assess_crystals(expts, large_clusters)
+
+
+def cumulative_assess_crystal_parameters(
+    working_directory,
+    imported_expts,
+    options,
+    spotfinding_params,
+    indexing_params,
+):
+    n_xtal = 0
+    first_image = 0
+    all_expts = ExperimentList()
+    large_clusters = None
+    cluster_plots = {}
+    success_per_image = []
+    while n_xtal < options.assess_crystals_n_crystals:
+        try:
+            slice_images_from_experiments(
+                imported_expts,
+                working_directory,
+                (first_image, first_image + options.batch_size),
+            )
+        except NoMoreImages:
+            break
+        strong = ssx_find_spots(working_directory, spotfinding_params)
+        strong.as_file(working_directory / "strong.refl")
+        expts, _, summary_this = ssx_index(working_directory, indexing_params)
+        n_xtal += len(expts)
+        xia2_logger.info(f"Indexed {n_xtal} crystals in total")
+        all_expts.extend(expts)
+        first_image += options.batch_size
+        success_per_image.extend(summary_this["success_per_image"])
+        if all_expts:
+            # generate up-to-date cluster plots and lists
+            cluster_plots, large_clusters = clusters_from_experiments(all_expts)
+            if large_clusters:
+                xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
+
+    if cluster_plots:
+        generate_html_report(
+            cluster_plots, working_directory / "xia2.assess_crystals.html"
+        )
+    cluster_plots["success_per_image"] = success_per_image
+    with open(working_directory / "xia2.assess_crystals.json", "w") as outfile:
+        json.dump(cluster_plots, outfile, indent=2)
+
+    _report_on_assess_crystals(all_expts, large_clusters)
+
+
+def _report_on_assess_crystals(
+    experiments: ExperimentList, large_clusters: List[Cluster]
+) -> None:
+
+    if experiments:
+        if large_clusters:
+            sg, uc = best_cell_from_cluster(large_clusters[0])
+            xia2_logger.info(
+                "Properties of largest cluster:\n"
+                "Highest possible metric unit cell: "
+                + ", ".join(f"{i:.3f}" for i in uc)
+                + f"\nHighest possible metric symmetry: {sg}"
+            )
+        else:
+            xia2_logger.info(
+                "Some imaged indexed, but no significant unit cell clusters found.\n"
+                + "Please try adjusting indexing parameters or try crystal assessment on different images"
+            )
     else:
         xia2_logger.warning(
             "No successfully indexed images.\n"
@@ -472,58 +551,6 @@ def process_batches(
                 options,
             )
             progress.add(summary_data)
-
-
-def cumulative_assess_crystal_parameters(
-    imported_expts,
-    assess_wd,
-    options,
-    spotfinding_params,
-    indexing_params,
-):
-    n_xtal = 0
-    first_image = 0
-    all_expts = ExperimentList()
-    large_clusters = None
-    while n_xtal < options.assess_crystals_n_crystals:
-        try:
-            slice_images_from_experiments(
-                imported_expts,
-                assess_wd,
-                (first_image, first_image + options.batch_size),
-            )
-        except NoMoreImages:
-            break
-        strong = ssx_find_spots(assess_wd, spotfinding_params)
-        strong.as_file(assess_wd / "strong.refl")
-        expts, _, __ = ssx_index(assess_wd, indexing_params)
-        n_xtal += len(expts)
-        xia2_logger.info(f"Indexed {n_xtal} crystals in total")
-        all_expts.extend(expts)
-        first_image += options.batch_size
-        if all_expts:
-            _, large_clusters = clusters_from_experiments(all_expts)
-            if large_clusters:
-                xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
-    if all_expts:
-        if large_clusters:
-            sg, uc = best_cell_from_cluster(large_clusters[0])
-            xia2_logger.info(
-                "Properties of largest cluster:\n"
-                "Highest possible metric unit cell: "
-                + ", ".join(f"{i:.3f}" for i in uc)
-                + f"\nHighest possible metric symmetry: {sg}"
-            )
-        else:
-            xia2_logger.info(
-                "No significant unit cell clusters found.\n"
-                + "Please try adjusting indexing parameters or try crystal assessment on different images"
-            )
-    else:
-        xia2_logger.warning(
-            "No successfully indexed images.\n"
-            + "Please try adjusting indexing parameters or try crystal assessment on different images"
-        )
 
 
 def cumulative_determine_reference_geometry(
@@ -660,7 +687,7 @@ def run_data_integration(
             assess_crystal_parameters(assess_wd, spotfinding_params, indexing_params)
         else:
             cumulative_assess_crystal_parameters(
-                imported_expts, assess_wd, options, spotfinding_params, indexing_params
+                assess_wd, imported_expts, options, spotfinding_params, indexing_params
             )
 
         xia2_logger.info(

@@ -19,15 +19,32 @@ def check_output(main_dir, find_spots=False, index=False, integrate=False):
     assert integrate is (main_dir / "batch_1" / "integrated_1.refl").is_file()
 
 
-def test_import_without_reference_or_crystal_info(dials_data, tmp_path):
+@pytest.mark.parametrize(
+    "option,expected_success",
+    [
+        ("assess_crystals.images_to_use=3:5", [True, False, True]),
+        ("batch_size=2", [False, False, True, False, True]),
+        ("assess_crystals.n_crystals=2", [False, False, True, False, True]),
+    ],
+)
+def test_import_without_reference_or_crystal_info(
+    dials_data, tmp_path, option, expected_success
+):
     """
     Test a basic run. Expect to import and then do crystal assessment,
     and nothing more (for now).
+
+    The options test the two modes of operation - either assess a specific
+    image range or process cumulatively in batches until a given number of
+    crystals are indexed, or all images are used.
     """
 
     ssx = dials_data("cunir_serial", pathlib=True)
-
-    args = ["dev.xia2.ssx", "assess_crystals.images_to_use=3:5"]
+    # Set the max cell to avoid issue of a suitable max cell not being found
+    # due to very thin batch size.
+    with (tmp_path / "index.phil").open(mode="w") as f:
+        f.write("indexing.max_cell=150")
+    args = ["dev.xia2.ssx", option, "indexing.phil=index.phil"]
     args.append("image=" + os.fspath(ssx / "merlin0047_1700*.cbf"))
 
     result = subprocess.run(args, cwd=tmp_path, capture_output=True)
@@ -43,11 +60,12 @@ def test_import_without_reference_or_crystal_info(dials_data, tmp_path):
         assert file_input["images"] == [os.fspath(ssx / "merlin0047_1700*.cbf")]
 
     assert (tmp_path / "assess_crystals").is_dir()
-    assert (tmp_path / "assess_crystals" / "dials.ssx_index.html").is_file()
+    assert (tmp_path / "assess_crystals" / "xia2.assess_crystals.json").is_file()
+    assert (tmp_path / "assess_crystals" / "xia2.assess_crystals.html").is_file()
 
-    with open(tmp_path / "assess_crystals" / "dials.ssx_index.json", "r") as f:
+    with open(tmp_path / "assess_crystals" / "xia2.assess_crystals.json", "r") as f:
         data = json.load(f)
-    assert [i == 0.0 for i in data["n_indexed"]["data"][0]["y"]] == [False, True, False]
+    assert data["success_per_image"] == expected_success
 
 
 def test_geometry_refinement_and_run_with_reference(dials_data, tmp_path):
@@ -97,7 +115,7 @@ def test_geometry_refinement_and_run_with_reference(dials_data, tmp_path):
     ).identifiers()
 
     # now rerun the processing using this reference geometry
-    del args[1]
+    del args[1]  # i.e. remove steps=None
     args.append(f"reference_geometry={os.fspath(reference)}")
     args.append("enable_live_reporting=True")
 
