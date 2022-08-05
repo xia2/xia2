@@ -318,8 +318,10 @@ def run_import(working_directory: pathlib.Path, file_input: FileInput) -> None:
         json.dump(file_input_dict, f, indent=2)
 
 
-def assess_crystal_parameters(
+def assess_crystal_parameters_from_images(
     working_directory: pathlib.Path,
+    imported_expts: pathlib.Path,
+    images_to_use: Tuple[int, int],
     spotfinding_params: SpotfindingParams,
     indexing_params: IndexingParams,
 ) -> None:
@@ -328,16 +330,19 @@ def assess_crystal_parameters(
     the largest cluster.
 
     Generates a unit cell clustering html report if any clusters are found.
-    Always outputs a xia2.assess_crystals.json containing at least the
-    success_per_image.
+    Always outputs a assess_crystals.json containing at least the success_per_image.
     """
+    large_clusters: List[Cluster] = []
+    cluster_plots: dict = {}
+    success_per_image: List[bool] = []
+
+    slice_images_from_experiments(imported_expts, working_directory, images_to_use)
 
     # now run find spots and index
-    large_clusters: List[Cluster] = []
-    cluster_plots = {}
     strong = ssx_find_spots(working_directory, spotfinding_params)
     strong.as_file(working_directory / "strong.refl")
     expts, __, summary = ssx_index(working_directory, indexing_params)
+    success_per_image = summary["success_per_image"]
 
     if expts:
         cluster_plots, large_clusters = clusters_from_experiments(expts)
@@ -346,28 +351,29 @@ def assess_crystal_parameters(
 
     if cluster_plots:
         generate_html_report(
-            cluster_plots, working_directory / "xia2.assess_crystals.html"
+            cluster_plots, working_directory / "dials.cell_clusters.html"
         )
-    cluster_plots["success_per_image"] = summary["success_per_image"]
-    with open(working_directory / "xia2.assess_crystals.json", "w") as outfile:
+    cluster_plots["success_per_image"] = success_per_image
+    with open(working_directory / "assess_crystals.json", "w") as outfile:
         json.dump(cluster_plots, outfile, indent=2)
 
     _report_on_assess_crystals(expts, large_clusters)
 
 
 def cumulative_assess_crystal_parameters(
-    working_directory,
-    imported_expts,
-    options,
-    spotfinding_params,
-    indexing_params,
+    working_directory: pathlib.Path,
+    imported_expts: pathlib.Path,
+    options: AlgorithmParams,
+    spotfinding_params: SpotfindingParams,
+    indexing_params: IndexingParams,
 ):
+    large_clusters: List[Cluster] = []
+    cluster_plots: dict = {}
+    success_per_image: List[bool] = []
+
     n_xtal = 0
     first_image = 0
     all_expts = ExperimentList()
-    large_clusters = None
-    cluster_plots = {}
-    success_per_image = []
     while n_xtal < options.assess_crystals_n_crystals:
         try:
             slice_images_from_experiments(
@@ -385,6 +391,7 @@ def cumulative_assess_crystal_parameters(
         all_expts.extend(expts)
         first_image += options.batch_size
         success_per_image.extend(summary_this["success_per_image"])
+
         if all_expts:
             # generate up-to-date cluster plots and lists
             cluster_plots, large_clusters = clusters_from_experiments(all_expts)
@@ -393,10 +400,10 @@ def cumulative_assess_crystal_parameters(
 
     if cluster_plots:
         generate_html_report(
-            cluster_plots, working_directory / "xia2.assess_crystals.html"
+            cluster_plots, working_directory / "dials.cell_clusters.html"
         )
     cluster_plots["success_per_image"] = success_per_image
-    with open(working_directory / "xia2.assess_crystals.json", "w") as outfile:
+    with open(working_directory / "assess_crystals.json", "w") as outfile:
         json.dump(cluster_plots, outfile, indent=2)
 
     _report_on_assess_crystals(all_expts, large_clusters)
@@ -427,27 +434,113 @@ def _report_on_assess_crystals(
         )
 
 
-def determine_reference_geometry(
+def determine_reference_geometry_from_images(
     working_directory: pathlib.Path,
+    imported_expts: pathlib.Path,
+    images_to_use: Tuple[int, int],
     spotfinding_params: SpotfindingParams,
     indexing_params: IndexingParams,
     refinement_params: RefinementParams,
 ) -> None:
     """Run find spots, indexing and joint refinement in the working directory."""
+    slice_images_from_experiments(imported_expts, working_directory, images_to_use)
+
     xia2_logger.notice(banner("Joint-refinement of experimental geometry"))  # type: ignore
+    large_clusters = None
+    cluster_plots = {}
+    success_per_image = []
+
     strong = ssx_find_spots(working_directory, spotfinding_params)
     strong.as_file(working_directory / "strong.refl")
+    expts, refl, summary = ssx_index(working_directory, indexing_params)
+    success_per_image = summary["success_per_image"]
 
-    expt, refl, summary = ssx_index(working_directory, indexing_params)
-    large_clusters = summary["large_clusters"]
-    expt.as_file(working_directory / "indexed.expt")
-    refl.as_file(working_directory / "indexed.refl")
-    if large_clusters:
-        xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
-    if not (expt and refl):
+    if expts:
+        cluster_plots, large_clusters = clusters_from_experiments(expts)
+        if large_clusters:
+            xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
+    if cluster_plots:
+        generate_html_report(
+            cluster_plots, working_directory / "dials.cell_clusters.html"
+        )
+    cluster_plots["success_per_image"] = success_per_image
+    with open(working_directory / "geometry_refinement.json", "w") as outfile:
+        json.dump(cluster_plots, outfile, indent=2)
+
+    if not (expts and refl):
         raise ValueError(
             "No images successfully indexed, unable to run geometry refinement"
         )
+
+    # now do geom refinement.
+    expts.as_file(working_directory / "indexed.expt")
+    refl.as_file(working_directory / "indexed.refl")
+
+    run_refinement(working_directory, refinement_params)
+    xia2_logger.info(
+        f"Refined reference geometry saved to {working_directory}/refined.expt"
+    )
+
+
+def cumulative_determine_reference_geometry(
+    working_directory: pathlib.Path,
+    imported_expts: pathlib.Path,
+    options: AlgorithmParams,
+    spotfinding_params: SpotfindingParams,
+    indexing_params: IndexingParams,
+    refinement_params: RefinementParams,
+) -> None:
+    xia2_logger.notice(banner("Joint-refinement of experimental geometry"))  # type: ignore
+    large_clusters = None
+    cluster_plots = {}
+    success_per_image = []
+
+    n_xtal = 0
+    first_image = 0
+    all_expts = ExperimentList()
+    all_tables = []
+    while n_xtal < options.geometry_refinement_n_crystals:
+        try:
+            slice_images_from_experiments(
+                imported_expts,
+                working_directory,
+                (first_image, first_image + options.batch_size),
+            )
+        except NoMoreImages:
+            break
+        strong = ssx_find_spots(working_directory, spotfinding_params)
+        strong.as_file(working_directory / "strong.refl")
+        expts, refl, summary_this = ssx_index(working_directory, indexing_params)
+        n_xtal += len(expts)
+        xia2_logger.info(f"Indexed {n_xtal} crystals in total")
+        all_expts.extend(expts)
+        all_tables.append(refl)
+        first_image += options.batch_size
+        success_per_image.extend(summary_this["success_per_image"])
+
+        if all_expts:
+            cluster_plots, large_clusters = clusters_from_experiments(all_expts)
+            if large_clusters:
+                xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
+    if cluster_plots:
+        generate_html_report(
+            cluster_plots, working_directory / "dials.cell_clusters.html"
+        )
+    cluster_plots["success_per_image"] = success_per_image
+    with open(working_directory / "geometry_refinement.json", "w") as outfile:
+        json.dump(cluster_plots, outfile, indent=2)
+
+    if not all_expts:
+        raise ValueError(
+            "No images successfully indexed, unable to run geometry refinement"
+        )
+
+    # now do geom refinement.
+    joint_table = flex.reflection_table.concat(all_tables)
+    all_expts = combine_with_reference(all_expts)
+    all_expts.as_file(working_directory / "indexed.expt")
+    joint_table.as_file(working_directory / "indexed.refl")
+
     run_refinement(working_directory, refinement_params)
     xia2_logger.info(
         f"Refined reference geometry saved to {working_directory}/refined.expt"
@@ -553,63 +646,6 @@ def process_batches(
             progress.add(summary_data)
 
 
-def cumulative_determine_reference_geometry(
-    options,
-    imported_expts,
-    geom_ref_wd,
-    spotfinding_params,
-    indexing_params,
-    refinement_params,
-):
-
-    # loop through in batches of batch_size until n_xtal > n_xtal, then do
-    # geom refinement
-    n_xtal = 0
-    first_image = 0
-    xia2_logger.notice(banner("Joint-refinement of experimental geometry"))  # type: ignore
-
-    all_expts = ExperimentList()
-    all_tables = []
-    while n_xtal < options.geometry_refinement_n_crystals:
-        try:
-            slice_images_from_experiments(
-                imported_expts,
-                geom_ref_wd,
-                (first_image, first_image + options.batch_size),
-            )
-        except NoMoreImages:
-            break
-        strong = ssx_find_spots(geom_ref_wd, spotfinding_params)
-        strong.as_file(geom_ref_wd / "strong.refl")
-
-        expt, refl, summary = ssx_index(geom_ref_wd, indexing_params)
-        n_xtal += len(expt)
-        xia2_logger.info(f"Indexed {n_xtal} crystals in total")
-        all_expts.extend(expt)
-        all_tables.append(refl)
-        # large_clusters = summary["large_clusters"]
-        # if large_clusters:
-        #    xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
-        first_image += options.batch_size
-        if all_expts:
-            _, large_clusters = clusters_from_experiments(all_expts)
-            if large_clusters:
-                xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
-
-    # now do geom refinement.
-    joint_table = flex.reflection_table.concat(all_tables)
-    if not (all_expts and joint_table):
-        raise ValueError(
-            "No images successfully indexed, unable to run geometry refinement"
-        )
-    all_expts = combine_with_reference(all_expts)
-    all_expts.as_file(geom_ref_wd / "indexed.expt")
-    joint_table.as_file(geom_ref_wd / "indexed.refl")
-
-    run_refinement(geom_ref_wd, refinement_params)
-    xia2_logger.info(f"Refined reference geometry saved to {geom_ref_wd}/refined.expt")
-
-
 def check_for_gaps_in_steps(steps: List[str]) -> bool:
     if "find_spots" not in steps:
         if "index" in steps or "integrate" in steps:
@@ -679,12 +715,13 @@ def run_data_integration(
     if not (indexing_params.space_group and indexing_params.unit_cell):
         assess_wd = root_working_directory / "assess_crystals"
         if options.assess_images_to_use:
-            slice_images_from_experiments(
-                imported_expts,
+            assess_crystal_parameters_from_images(
                 assess_wd,
+                imported_expts,
                 options.assess_images_to_use,
+                spotfinding_params,
+                indexing_params,
             )
-            assess_crystal_parameters(assess_wd, spotfinding_params, indexing_params)
         else:
             cumulative_assess_crystal_parameters(
                 assess_wd, imported_expts, options, spotfinding_params, indexing_params
@@ -700,20 +737,19 @@ def run_data_integration(
         geom_ref_wd = root_working_directory / "geometry_refinement"
 
         if options.refinement_images_to_use:
-            # do refinement on these images
-            slice_images_from_experiments(
-                imported_expts,
+            determine_reference_geometry_from_images(
                 geom_ref_wd,
+                imported_expts,
                 options.refinement_images_to_use,
-            )
-            determine_reference_geometry(
-                geom_ref_wd, spotfinding_params, indexing_params, refinement_params
+                spotfinding_params,
+                indexing_params,
+                refinement_params,
             )
         else:
             cumulative_determine_reference_geometry(
-                options,
-                imported_expts,
                 geom_ref_wd,
+                imported_expts,
+                options,
                 spotfinding_params,
                 indexing_params,
                 refinement_params,
