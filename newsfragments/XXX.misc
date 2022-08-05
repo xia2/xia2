@@ -1,0 +1,1 @@
+``dev.xia2.ssx``: For assess_crystals and geometry_refinement modes, process until a given number of crystals are indexed, rather than a fixed number of images.

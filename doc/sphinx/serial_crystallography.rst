@@ -13,7 +13,7 @@ To integrate and reduce data, the minimal recommended example command is::
 i.e. the minimal required information is the location of the images, the expected
 space group and unit cell, and a suitable pdb model file to enable data reduction
 using a reference. Typically, a reference geometry and mask should also be provided,
-as desribed below.
+as described below.
 
 ----------------
 Data Integration
