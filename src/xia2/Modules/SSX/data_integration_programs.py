@@ -7,7 +7,7 @@ import os
 from dataclasses import dataclass
 from functools import reduce
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 
 import iotbx.phil
 from cctbx import crystal, sgtbx, uctbx
@@ -23,6 +23,7 @@ from dials.algorithms.integration.ssx.ssx_integrate import (
 )
 from dials.algorithms.shoebox import MaskCode
 from dials.array_family import flex
+from dials.command_line.combine_experiments import CombineWithReference
 from dials.command_line.find_spots import working_phil as find_spots_phil
 from dials.command_line.refine import run_dials_refine
 from dials.command_line.refine import working_phil as refine_phil
@@ -211,6 +212,20 @@ def ssx_find_spots(
     return reflections
 
 
+def clusters_from_experiments(
+    experiments: ExperimentList,
+) -> Tuple[dict, List[Cluster]]:
+    crystal_symmetries = [
+        crystal.symmetry(
+            unit_cell=expt.crystal.get_unit_cell(),
+            space_group=expt.crystal.get_space_group(),
+        )
+        for expt in experiments
+    ]
+    cluster_plots, large_clusters = report_on_crystal_clusters(crystal_symmetries, True)
+    return cluster_plots, large_clusters
+
+
 def ssx_index(
     working_directory: Path,
     indexing_params: IndexingParams,
@@ -279,6 +294,9 @@ def ssx_index(
             n_images = reduce(
                 lambda a, v: a + (v[0]["n_indexed"] > 0), summary_data.values(), 0
             )
+            indexing_success_per_image = [
+                bool(v[0]["n_indexed"]) for v in summary_data.values()
+            ]
             report = (
                 "Summary of images sucessfully indexed\n"
                 + make_summary_table(summary_data)
@@ -289,18 +307,11 @@ def ssx_index(
 
             # Report on clustering, and generate html report and json output
             if indexed_experiments:
-                crystal_symmetries = [
-                    crystal.symmetry(
-                        unit_cell=expt.crystal.get_unit_cell(),
-                        space_group=expt.crystal.get_space_group(),
-                    )
-                    for expt in indexed_experiments
-                ]
-                cluster_plots, large_clusters = report_on_crystal_clusters(
-                    crystal_symmetries, True
+                cluster_plots, large_clusters = clusters_from_experiments(
+                    indexed_experiments
                 )
             else:
-                cluster_plots, large_clusters = ({}, {})
+                cluster_plots, large_clusters = ({}, [])
 
             summary_plots = {}
             if indexed_experiments:
@@ -318,8 +329,19 @@ def ssx_index(
             summary_for_xia2 = {
                 "n_images_indexed": n_images,
                 "large_clusters": large_clusters,
+                "success_per_image": indexing_success_per_image,
             }
     return indexed_experiments, indexed_reflections, summary_for_xia2
+
+
+def combine_with_reference(experiments: ExperimentList) -> ExperimentList:
+    combine = CombineWithReference(
+        detector=experiments[0].detector, beam=experiments[0].beam
+    )
+    elist = ExperimentList()
+    for expt in experiments:
+        elist.append(combine(expt))
+    return elist
 
 
 def run_refinement(

@@ -19,15 +19,30 @@ def check_output(main_dir, find_spots=False, index=False, integrate=False):
     assert integrate is (main_dir / "batch_1" / "integrated_1.refl").is_file()
 
 
-def test_import_without_reference_or_crystal_info(dials_data, tmp_path):
+@pytest.mark.parametrize(
+    "option,expected_success",
+    [
+        ("assess_crystals.images_to_use=3:5", [True, False, True]),
+        ("batch_size=2", [False, False, True, False, True]),
+        ("assess_crystals.n_crystals=2", [False, False, True, False, True]),
+    ],
+)
+def test_assess_crystals(dials_data, tmp_path, option, expected_success):
     """
     Test a basic run. Expect to import and then do crystal assessment,
     and nothing more (for now).
+
+    The options test the two modes of operation - either assess a specific
+    image range or process cumulatively in batches until a given number of
+    crystals are indexed, or all images are used.
     """
 
     ssx = dials_data("cunir_serial", pathlib=True)
-
-    args = ["dev.xia2.ssx", "assess_crystals.images_to_use=3:5"]
+    # Set the max cell to avoid issue of a suitable max cell not being found
+    # due to very thin batch size.
+    with (tmp_path / "index.phil").open(mode="w") as f:
+        f.write("indexing.max_cell=150")
+    args = ["dev.xia2.ssx", option, "indexing.phil=index.phil"]
     args.append("image=" + os.fspath(ssx / "merlin0047_1700*.cbf"))
 
     result = subprocess.run(args, cwd=tmp_path, capture_output=True)
@@ -43,27 +58,35 @@ def test_import_without_reference_or_crystal_info(dials_data, tmp_path):
         assert file_input["images"] == [os.fspath(ssx / "merlin0047_1700*.cbf")]
 
     assert (tmp_path / "assess_crystals").is_dir()
-    assert (tmp_path / "assess_crystals" / "dials.ssx_index.html").is_file()
+    assert (tmp_path / "assess_crystals" / "assess_crystals.json").is_file()
+    assert (tmp_path / "assess_crystals" / "dials.cell_clusters.html").is_file()
 
-    with open(tmp_path / "assess_crystals" / "dials.ssx_index.json", "r") as f:
+    with open(tmp_path / "assess_crystals" / "assess_crystals.json", "r") as f:
         data = json.load(f)
-    assert [i == 0.0 for i in data["n_indexed"]["data"][0]["y"]] == [False, True, False]
+    assert data["success_per_image"] == expected_success
 
 
-def test_geometry_refinement_and_run_with_reference(dials_data, tmp_path):
-    """
-    Test a basic run. Expect to import and then do geometry refinement.
-    Then rerun using this as a reference to do integration.
-    """
-
+@pytest.mark.parametrize(
+    "option,expected_success",
+    [
+        ("geometry_refinement.images_to_use=3:5", [True, True, True]),
+        ("batch_size=2", [False, True, True, True, True]),
+        ("geometry_refinement.n_crystals=2", [False, True, True, True, True]),
+    ],
+)
+def test_geometry_refinement(dials_data, tmp_path, option, expected_success):
     ssx = dials_data("cunir_serial", pathlib=True)
-
+    # Set the max cell to avoid issue of a suitable max cell not being found
+    # due to very thin batch size.
+    with (tmp_path / "index.phil").open(mode="w") as f:
+        f.write("indexing.max_cell=150")
     args = [
         "dev.xia2.ssx",
         "steps=None",
         "unit_cell=96.4,96.4,96.4,90,90,90",
         "space_group=P213",
-        "integration.algorithm=stills",
+        option,
+        "indexing.phil=index.phil",
     ]
     args.append("image=" + os.fspath(ssx / "merlin0047_1700*.cbf"))
 
@@ -75,49 +98,73 @@ def test_geometry_refinement_and_run_with_reference(dials_data, tmp_path):
     assert not (tmp_path / "assess_crystals").is_dir()
     assert (tmp_path / "geometry_refinement").is_dir()
     reference = tmp_path / "geometry_refinement" / "refined.expt"
-    reference_import = tmp_path / "geometry_refinement" / "imported.expt"
     assert reference.is_file()
-    assert reference_import.is_file()
     assert not (tmp_path / "batch_1").is_dir()
-    without_reference_identifiers = load.experiment_list(
-        reference_import, check_format=False
-    ).identifiers()
 
     # Test the data was reimported correctly ready for next run
     assert (tmp_path / "import").is_dir()
     assert (tmp_path / "import" / "file_input.json").is_file()
+    assert (tmp_path / "import" / "imported.expt").is_file()
     with (tmp_path / "import" / "file_input.json").open(mode="r") as f:
         file_input = json.load(f)
         assert file_input["reference_geometry"] == os.fspath(reference)
         assert file_input["images"] == [os.fspath(ssx / "merlin0047_1700*.cbf")]
-    expts = tmp_path / "import" / "imported.expt"
-    assert expts.is_file()
-    with_reference_identifiers = load.experiment_list(
-        expts, check_format=False
-    ).identifiers()
 
-    # now rerun the processing using this reference geometry
-    del args[1]
-    args.append(f"reference_geometry={os.fspath(reference)}")
-    args.append("enable_live_reporting=True")
+    # Inspect the output to check which images were used in refinement.
+    assert (tmp_path / "geometry_refinement" / "geometry_refinement.json").is_file()
+    assert (tmp_path / "geometry_refinement" / "dials.cell_clusters.html").is_file()
+    with open(tmp_path / "geometry_refinement" / "geometry_refinement.json", "r") as f:
+        data = json.load(f)
+    assert data["success_per_image"] == expected_success
+    refined_expts = load.experiment_list(reference, check_format=False)
+    assert len(refined_expts) == sum(expected_success)
+    assert len(refined_expts.beams()) == 1
+    assert len(refined_expts.detectors()) == 1
+
+
+@pytest.fixture
+def refined_expt(dials_data, tmp_path):
+    ssx = dials_data("cunir_serial", pathlib=True)
+
+    args = [
+        "dev.xia2.ssx",
+        "steps=None",
+        "unit_cell=96.4,96.4,96.4,90,90,90",
+        "space_group=P213",
+    ]
+    args.append("image=" + os.fspath(ssx / "merlin0047_1700*.cbf"))
 
     result = subprocess.run(args, cwd=tmp_path, capture_output=True)
     assert not result.returncode and not result.stderr
 
-    assert without_reference_identifiers != with_reference_identifiers
+    assert (tmp_path / "geometry_refinement").is_dir()
+    reference = tmp_path / "geometry_refinement" / "refined.expt"
+    assert reference.is_file()
+    refined_expts = load.experiment_list(reference, check_format=False)
+    return refined_expts
 
-    # Check that the data were integrated with this new reference geometry
-    assert (tmp_path / "batch_1").is_dir()
-    assert (tmp_path / "batch_1/nuggets").is_dir()
-    sliced_expts = tmp_path / "batch_1" / "imported.expt"
-    assert sliced_expts.is_file()
-    sliced_identifiers = load.experiment_list(
-        sliced_expts, check_format=False
-    ).identifiers()
-    assert with_reference_identifiers == sliced_identifiers
+
+def test_run_with_reference(dials_data, tmp_path, refined_expt):
+    """
+    Test running with a supplied reference geometry from a refined.expt.
+    """
+    refined_expt.as_file(tmp_path / "refined.expt")
+
+    ssx = dials_data("cunir_serial", pathlib=True)
+
+    args = [
+        "dev.xia2.ssx",
+        "unit_cell=96.4,96.4,96.4,90,90,90",
+        "space_group=P213",
+        "integration.algorithm=stills",
+        f"reference_geometry={os.fspath(tmp_path / 'refined.expt')}",
+        "steps=find_spots+index+integrate",
+    ]
+    args.append("image=" + os.fspath(ssx / "merlin0047_1700*.cbf"))
+
+    result = subprocess.run(args, cwd=tmp_path, capture_output=True)
+    assert not result.returncode and not result.stderr
     check_output(tmp_path, find_spots=True, index=True, integrate=True)
-    assert len(list((tmp_path / "batch_1/nuggets").glob("nugget_index*"))) == 5
-    assert len(list((tmp_path / "batch_1/nuggets").glob("nugget_integrate*"))) == 4
 
 
 def test_full_run_without_reference(dials_data, tmp_path):
@@ -129,6 +176,7 @@ def test_full_run_without_reference(dials_data, tmp_path):
         "space_group=P213",
         "integration.algorithm=stills",
         "d_min=2.0",
+        "enable_live_reporting=True",
     ]
     args.append("image=" + os.fspath(ssx / "merlin0047_1700*.cbf"))
 
@@ -155,6 +203,7 @@ def test_full_run_without_reference(dials_data, tmp_path):
 
     # Check that the data were integrated with this new reference geometry
     assert (tmp_path / "batch_1").is_dir()
+    assert (tmp_path / "batch_1/nuggets").is_dir()
     sliced_expts = tmp_path / "batch_1" / "imported.expt"
     assert sliced_expts.is_file()
     sliced_identifiers = load.experiment_list(
@@ -162,6 +211,8 @@ def test_full_run_without_reference(dials_data, tmp_path):
     ).identifiers()
     assert with_reference_identifiers == sliced_identifiers
     check_output(tmp_path, find_spots=True, index=True, integrate=True)
+    assert len(list((tmp_path / "batch_1/nuggets").glob("nugget_index*"))) == 5
+    assert len(list((tmp_path / "batch_1/nuggets").glob("nugget_integrate*"))) == 5
 
     # Check that data reduction completed.
     check_data_reduction_files(tmp_path)

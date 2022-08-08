@@ -13,6 +13,10 @@ from typing import List, Optional, Tuple
 import numpy as np
 
 import libtbx.easy_mp
+from dials.algorithms.clustering.unit_cell import Cluster
+from dials.algorithms.indexing.ssx.analysis import generate_html_report
+from dials.array_family import flex
+from dxtbx.model import ExperimentList
 from dxtbx.serialize import load
 
 from xia2.Driver.timing import record_step
@@ -23,6 +27,8 @@ from xia2.Modules.SSX.data_integration_programs import (
     RefinementParams,
     SpotfindingParams,
     best_cell_from_cluster,
+    clusters_from_experiments,
+    combine_with_reference,
     run_refinement,
     ssx_find_spots,
     ssx_index,
@@ -46,8 +52,10 @@ class FileInput:
 
 @dataclass
 class AlgorithmParams:
-    assess_images_to_use: Tuple[int, int] = (0, 1000)
-    refinement_images_to_use: Tuple[int, int] = (0, 1000)
+    assess_images_to_use: Optional[Tuple[int, int]] = None
+    refinement_images_to_use: Optional[Tuple[int, int]] = None
+    assess_crystals_n_crystals: int = 250
+    geometry_refinement_n_crystals: int = 250
     batch_size: int = 1000
     steps: List[str] = field(default_factory=list)
     nproc: int = 1
@@ -166,6 +174,10 @@ def inspect_existing_batch_directories(
     return batch_directories, setup_data
 
 
+class NoMoreImages(Exception):
+    pass
+
+
 def slice_images_from_experiments(
     imported_expts: pathlib.Path,
     destination_directory: pathlib.Path,
@@ -179,7 +191,9 @@ def slice_images_from_experiments(
     expts = load.experiment_list(imported_expts, check_format=False)
     assert len(images) == 2  # Input is a tuple representing a slice
     start, end = images[0], images[1]
-    if (end - start) > len(expts):
+    if start >= len(expts):
+        raise NoMoreImages
+    if end > len(expts):
         end = len(expts)
     new_expts = expts[start:end]
     new_expts.as_file(destination_directory / "imported.expt")
@@ -304,31 +318,115 @@ def run_import(working_directory: pathlib.Path, file_input: FileInput) -> None:
         json.dump(file_input_dict, f, indent=2)
 
 
-def assess_crystal_parameters(
+def assess_crystal_parameters_from_images(
     working_directory: pathlib.Path,
+    imported_expts: pathlib.Path,
+    images_to_use: Tuple[int, int],
     spotfinding_params: SpotfindingParams,
     indexing_params: IndexingParams,
 ) -> None:
     """
     Run spotfinding and indexing and report on the properties of
     the largest cluster.
+
+    Generates a unit cell clustering html report if any clusters are found.
+    Always outputs a assess_crystals.json containing at least the success_per_image.
     """
+    large_clusters: List[Cluster] = []
+    cluster_plots: dict = {}
+    success_per_image: List[bool] = []
+
+    slice_images_from_experiments(imported_expts, working_directory, images_to_use)
 
     # now run find spots and index
     strong = ssx_find_spots(working_directory, spotfinding_params)
     strong.as_file(working_directory / "strong.refl")
-    _, __, summary = ssx_index(working_directory, indexing_params)
-    largest_clusters = summary["large_clusters"]
-    if largest_clusters:
-        xia2_logger.info(f"{condensed_unit_cell_info(largest_clusters)}")
+    expts, __, summary = ssx_index(working_directory, indexing_params)
+    success_per_image = summary["success_per_image"]
 
-        sg, uc = best_cell_from_cluster(largest_clusters[0])
-        xia2_logger.info(
-            "Properties of largest cluster:\n"
-            "Highest possible metric unit cell: "
-            + ", ".join(f"{i:.3f}" for i in uc)
-            + f"\nHighest possible metric symmetry: {sg}"
+    if expts:
+        cluster_plots, large_clusters = clusters_from_experiments(expts)
+        if large_clusters:
+            xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
+
+    if cluster_plots:
+        generate_html_report(
+            cluster_plots, working_directory / "dials.cell_clusters.html"
         )
+    cluster_plots["success_per_image"] = success_per_image
+    with open(working_directory / "assess_crystals.json", "w") as outfile:
+        json.dump(cluster_plots, outfile, indent=2)
+
+    _report_on_assess_crystals(expts, large_clusters)
+
+
+def cumulative_assess_crystal_parameters(
+    working_directory: pathlib.Path,
+    imported_expts: pathlib.Path,
+    options: AlgorithmParams,
+    spotfinding_params: SpotfindingParams,
+    indexing_params: IndexingParams,
+):
+    large_clusters: List[Cluster] = []
+    cluster_plots: dict = {}
+    success_per_image: List[bool] = []
+
+    n_xtal = 0
+    first_image = 0
+    all_expts = ExperimentList()
+    while n_xtal < options.assess_crystals_n_crystals:
+        try:
+            slice_images_from_experiments(
+                imported_expts,
+                working_directory,
+                (first_image, first_image + options.batch_size),
+            )
+        except NoMoreImages:
+            break
+        strong = ssx_find_spots(working_directory, spotfinding_params)
+        strong.as_file(working_directory / "strong.refl")
+        expts, _, summary_this = ssx_index(working_directory, indexing_params)
+        n_xtal += len(expts)
+        xia2_logger.info(f"Indexed {n_xtal} crystals in total")
+        all_expts.extend(expts)
+        first_image += options.batch_size
+        success_per_image.extend(summary_this["success_per_image"])
+
+        if all_expts:
+            # generate up-to-date cluster plots and lists
+            cluster_plots, large_clusters = clusters_from_experiments(all_expts)
+            if large_clusters:
+                xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
+
+    if cluster_plots:
+        generate_html_report(
+            cluster_plots, working_directory / "dials.cell_clusters.html"
+        )
+    cluster_plots["success_per_image"] = success_per_image
+    with open(working_directory / "assess_crystals.json", "w") as outfile:
+        json.dump(cluster_plots, outfile, indent=2)
+
+    _report_on_assess_crystals(all_expts, large_clusters)
+
+
+def _report_on_assess_crystals(
+    experiments: ExperimentList, large_clusters: List[Cluster]
+) -> None:
+
+    if experiments:
+        if large_clusters:
+            sg, uc = best_cell_from_cluster(large_clusters[0])
+            xia2_logger.info(
+                "Properties of largest cluster:\n"
+                "Highest possible metric unit cell: "
+                + ", ".join(f"{i:.3f}" for i in uc)
+                + f"\nHighest possible metric symmetry: {sg}"
+            )
+        else:
+            xia2_logger.info(
+                "Some imaged indexed, but no significant unit cell clusters found.\n"
+                + "Please try adjusting indexing parameters or try crystal assessment on different images"
+            )
     else:
         xia2_logger.warning(
             "No successfully indexed images.\n"
@@ -336,27 +434,111 @@ def assess_crystal_parameters(
         )
 
 
-def determine_reference_geometry(
+def determine_reference_geometry_from_images(
     working_directory: pathlib.Path,
+    imported_expts: pathlib.Path,
+    images_to_use: Tuple[int, int],
     spotfinding_params: SpotfindingParams,
     indexing_params: IndexingParams,
     refinement_params: RefinementParams,
 ) -> None:
     """Run find spots, indexing and joint refinement in the working directory."""
+    slice_images_from_experiments(imported_expts, working_directory, images_to_use)
+
     xia2_logger.notice(banner("Joint-refinement of experimental geometry"))  # type: ignore
+    cluster_plots: dict = {}
+    success_per_image: List[bool] = []
+
     strong = ssx_find_spots(working_directory, spotfinding_params)
     strong.as_file(working_directory / "strong.refl")
+    expts, refl, summary = ssx_index(working_directory, indexing_params)
+    success_per_image = summary["success_per_image"]
 
-    expt, refl, summary = ssx_index(working_directory, indexing_params)
-    large_clusters = summary["large_clusters"]
-    expt.as_file(working_directory / "indexed.expt")
-    refl.as_file(working_directory / "indexed.refl")
-    if large_clusters:
-        xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
-    if not (expt and refl):
+    if expts:
+        cluster_plots, large_clusters = clusters_from_experiments(expts)
+        if large_clusters:
+            xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
+    if cluster_plots:
+        generate_html_report(
+            cluster_plots, working_directory / "dials.cell_clusters.html"
+        )
+    cluster_plots["success_per_image"] = success_per_image
+    with open(working_directory / "geometry_refinement.json", "w") as outfile:
+        json.dump(cluster_plots, outfile, indent=2)
+
+    if not (expts and refl):
         raise ValueError(
             "No images successfully indexed, unable to run geometry refinement"
         )
+
+    # now do geom refinement.
+    expts.as_file(working_directory / "indexed.expt")
+    refl.as_file(working_directory / "indexed.refl")
+
+    run_refinement(working_directory, refinement_params)
+    xia2_logger.info(
+        f"Refined reference geometry saved to {working_directory}/refined.expt"
+    )
+
+
+def cumulative_determine_reference_geometry(
+    working_directory: pathlib.Path,
+    imported_expts: pathlib.Path,
+    options: AlgorithmParams,
+    spotfinding_params: SpotfindingParams,
+    indexing_params: IndexingParams,
+    refinement_params: RefinementParams,
+) -> None:
+    xia2_logger.notice(banner("Joint-refinement of experimental geometry"))  # type: ignore
+    cluster_plots: dict = {}
+    success_per_image: List[bool] = []
+
+    n_xtal = 0
+    first_image = 0
+    all_expts = ExperimentList()
+    all_tables = []
+    while n_xtal < options.geometry_refinement_n_crystals:
+        try:
+            slice_images_from_experiments(
+                imported_expts,
+                working_directory,
+                (first_image, first_image + options.batch_size),
+            )
+        except NoMoreImages:
+            break
+        strong = ssx_find_spots(working_directory, spotfinding_params)
+        strong.as_file(working_directory / "strong.refl")
+        expts, refl, summary_this = ssx_index(working_directory, indexing_params)
+        n_xtal += len(expts)
+        xia2_logger.info(f"Indexed {n_xtal} crystals in total")
+        all_expts.extend(expts)
+        all_tables.append(refl)
+        first_image += options.batch_size
+        success_per_image.extend(summary_this["success_per_image"])
+
+        if all_expts:
+            cluster_plots, large_clusters = clusters_from_experiments(all_expts)
+            if large_clusters:
+                xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
+    if cluster_plots:
+        generate_html_report(
+            cluster_plots, working_directory / "dials.cell_clusters.html"
+        )
+    cluster_plots["success_per_image"] = success_per_image
+    with open(working_directory / "geometry_refinement.json", "w") as outfile:
+        json.dump(cluster_plots, outfile, indent=2)
+
+    if not all_expts:
+        raise ValueError(
+            "No images successfully indexed, unable to run geometry refinement"
+        )
+
+    # now do geom refinement.
+    joint_table = flex.reflection_table.concat(all_tables)
+    all_expts = combine_with_reference(all_expts)
+    all_expts.as_file(working_directory / "indexed.expt")
+    joint_table.as_file(working_directory / "indexed.refl")
+
     run_refinement(working_directory, refinement_params)
     xia2_logger.info(
         f"Refined reference geometry saved to {working_directory}/refined.expt"
@@ -530,12 +712,19 @@ def run_data_integration(
     # If space group and unit cell not both given, then assess the crystals
     if not (indexing_params.space_group and indexing_params.unit_cell):
         assess_wd = root_working_directory / "assess_crystals"
-        slice_images_from_experiments(
-            imported_expts,
-            assess_wd,
-            options.assess_images_to_use,
-        )
-        assess_crystal_parameters(assess_wd, spotfinding_params, indexing_params)
+        if options.assess_images_to_use:
+            assess_crystal_parameters_from_images(
+                assess_wd,
+                imported_expts,
+                options.assess_images_to_use,
+                spotfinding_params,
+                indexing_params,
+            )
+        else:
+            cumulative_assess_crystal_parameters(
+                assess_wd, imported_expts, options, spotfinding_params, indexing_params
+            )
+
         xia2_logger.info(
             "Rerun with a space group and unit cell to continue processing"
         )
@@ -545,14 +734,24 @@ def run_data_integration(
     if not file_input.reference_geometry:
         geom_ref_wd = root_working_directory / "geometry_refinement"
 
-        slice_images_from_experiments(
-            imported_expts,
-            geom_ref_wd,
-            options.refinement_images_to_use,
-        )
-        determine_reference_geometry(
-            geom_ref_wd, spotfinding_params, indexing_params, refinement_params
-        )
+        if options.refinement_images_to_use:
+            determine_reference_geometry_from_images(
+                geom_ref_wd,
+                imported_expts,
+                options.refinement_images_to_use,
+                spotfinding_params,
+                indexing_params,
+                refinement_params,
+            )
+        else:
+            cumulative_determine_reference_geometry(
+                geom_ref_wd,
+                imported_expts,
+                options,
+                spotfinding_params,
+                indexing_params,
+                refinement_params,
+            )
 
         # Reimport with this reference geometry to prepare for the main processing
         file_input.reference_geometry = geom_ref_wd / "refined.expt"
