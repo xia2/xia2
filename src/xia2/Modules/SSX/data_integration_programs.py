@@ -7,7 +7,7 @@ import os
 from dataclasses import dataclass
 from functools import reduce
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 
 import iotbx.phil
 from cctbx import crystal, sgtbx, uctbx
@@ -212,7 +212,9 @@ def ssx_find_spots(
     return reflections
 
 
-def clusters_from_experiments(experiments):
+def clusters_from_experiments(
+    experiments: ExperimentList,
+) -> Tuple[dict, List[Cluster]]:
     crystal_symmetries = [
         crystal.symmetry(
             unit_cell=expt.crystal.get_unit_cell(),
@@ -309,7 +311,7 @@ def ssx_index(
                     indexed_experiments
                 )
             else:
-                cluster_plots, large_clusters = ({}, {})
+                cluster_plots, large_clusters = ({}, [])
 
             summary_plots = {}
             if indexed_experiments:
@@ -332,7 +334,7 @@ def ssx_index(
     return indexed_experiments, indexed_reflections, summary_for_xia2
 
 
-def combine_with_reference(experiments):
+def combine_with_reference(experiments: ExperimentList) -> ExperimentList:
     combine = CombineWithReference(
         detector=experiments[0].detector, beam=experiments[0].beam
     )

@@ -147,7 +147,7 @@ assess_crystals {
     .type = str
     .help = "Specify an inclusive image range to use for crystal assessment,"
             "in the form start:end . If assess_crystals.images_to_use"
-            "is set, then it will take precedent over assess_crystals.n_crystals"
+            "is set, then it will take precedence over assess_crystals.n_crystals"
     .expert_level=3
 }
 geometry_refinement {
@@ -163,7 +163,7 @@ geometry_refinement {
     .type = str
     .help = "Specify an inclusive image range to use for reference geometry"
             "determination, in the form start:end. If geometry_refinement.images_to_use"
-            "is set, then it will take precedent over geometry_refinement.n_crystals"
+            "is set, then it will take precedence over geometry_refinement.n_crystals"
     .expert_level=3
   phil = None
     .type = path

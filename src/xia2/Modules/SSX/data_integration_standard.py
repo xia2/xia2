@@ -446,9 +446,8 @@ def determine_reference_geometry_from_images(
     slice_images_from_experiments(imported_expts, working_directory, images_to_use)
 
     xia2_logger.notice(banner("Joint-refinement of experimental geometry"))  # type: ignore
-    large_clusters = None
-    cluster_plots = {}
-    success_per_image = []
+    cluster_plots: dict = {}
+    success_per_image: List[bool] = []
 
     strong = ssx_find_spots(working_directory, spotfinding_params)
     strong.as_file(working_directory / "strong.refl")
@@ -491,9 +490,8 @@ def cumulative_determine_reference_geometry(
     refinement_params: RefinementParams,
 ) -> None:
     xia2_logger.notice(banner("Joint-refinement of experimental geometry"))  # type: ignore
-    large_clusters = None
-    cluster_plots = {}
-    success_per_image = []
+    cluster_plots: dict = {}
+    success_per_image: List[bool] = []
 
     n_xtal = 0
     first_image = 0
