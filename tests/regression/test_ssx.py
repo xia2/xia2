@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import pathlib
 import subprocess
 from typing import List
 
@@ -17,6 +18,9 @@ def check_output(main_dir, find_spots=False, index=False, integrate=False):
     assert index is (main_dir / "batch_1" / "indexed.refl").is_file()
     assert integrate is (main_dir / "batch_1" / "integrated_1.expt").is_file()
     assert integrate is (main_dir / "batch_1" / "integrated_1.refl").is_file()
+    assert (main_dir / "LogFiles" / "xia2.ssx.log").is_file()
+    assert integrate is (main_dir / "DataFiles" / "integrated_1_batch_1.expt").is_file()
+    assert integrate is (main_dir / "DataFiles" / "integrated_1_batch_1.expt").is_file()
 
 
 @pytest.mark.parametrize(
@@ -121,6 +125,9 @@ def test_geometry_refinement(dials_data, tmp_path, option, expected_success):
     assert len(refined_expts.beams()) == 1
     assert len(refined_expts.detectors()) == 1
 
+    assert (tmp_path / "DataFiles" / "refined.expt").is_file()
+    assert (tmp_path / "LogFiles" / "dials.refine.log").is_file()
+
 
 @pytest.fixture
 def refined_expt(dials_data, tmp_path):
@@ -141,6 +148,10 @@ def refined_expt(dials_data, tmp_path):
     reference = tmp_path / "geometry_refinement" / "refined.expt"
     assert reference.is_file()
     refined_expts = load.experiment_list(reference, check_format=False)
+    import shutil
+
+    shutil.rmtree(tmp_path / "DataFiles")
+    shutil.rmtree(tmp_path / "LogFiles")
     return refined_expts
 
 
@@ -166,6 +177,9 @@ def test_run_with_reference(dials_data, tmp_path, refined_expt):
     assert not result.returncode and not result.stderr
     check_output(tmp_path, find_spots=True, index=True, integrate=True)
 
+    assert not (tmp_path / "DataFiles" / "refined.expt").is_file()
+    assert not (tmp_path / "LogFiles" / "dials.refine.log").is_file()
+
 
 def test_full_run_without_reference(dials_data, tmp_path):
     ssx = dials_data("cunir_serial", pathlib=True)
@@ -188,6 +202,8 @@ def test_full_run_without_reference(dials_data, tmp_path):
     assert (tmp_path / "geometry_refinement").is_dir()
     reference = tmp_path / "geometry_refinement" / "refined.expt"
     assert reference.is_file()
+    assert (tmp_path / "DataFiles" / "refined.expt").is_file()
+    assert (tmp_path / "LogFiles" / "dials.refine.log").is_file()
 
     # Now check that the data was reimported with this reference
     assert (tmp_path / "import" / "file_input.json").is_file()
@@ -282,13 +298,50 @@ def test_stepwise_run_without_reference(dials_data, tmp_path):
     check_output(tmp_path, find_spots=True, index=True, integrate=True)
 
 
-def check_data_reduction_files(tmp_path, reindex=True):
+def check_data_reduction_files(tmp_path, reindex=True, reference=False):
     assert (tmp_path / "data_reduction").is_dir()
     assert (tmp_path / "data_reduction" / "prefilter").is_dir()
-    if reindex:
-        assert (tmp_path / "data_reduction" / "reindex").is_dir()
+    assert reindex is (tmp_path / "data_reduction" / "reindex").is_dir()
+    assert reindex is (tmp_path / "LogFiles" / "dials.cosym.0.log").is_file()
+    assert reindex is (tmp_path / "LogFiles" / "dials.cosym.0.html").is_file()
     assert (tmp_path / "data_reduction" / "scale").is_dir()
     assert (tmp_path / "data_reduction" / "scale" / "merged.mtz").is_file()
+    assert (tmp_path / "DataFiles" / "merged.mtz").is_file()
+    assert (tmp_path / "LogFiles" / "dials.merge.html").is_file()
+    assert (tmp_path / "LogFiles" / "dials.merge.log").is_file()
+    if reference:
+        assert (tmp_path / "DataFiles" / "scaled_0.refl").is_file()
+        assert (tmp_path / "DataFiles" / "scaled_0.expt").is_file()
+        assert (tmp_path / "LogFiles" / "dials.scale.0.log").is_file()
+    else:
+        assert (tmp_path / "DataFiles" / "scaled.refl").is_file()
+        assert (tmp_path / "DataFiles" / "scaled.expt").is_file()
+        assert (tmp_path / "LogFiles" / "dials.scale.log").is_file()
+
+
+def check_data_reduction_files_on_scaled_only(tmp_path, reference=False):
+    assert (tmp_path / "data_reduction").is_dir()
+    assert not (tmp_path / "data_reduction" / "prefilter").is_dir()
+    assert not (tmp_path / "data_reduction" / "reindex").is_dir()
+    assert not (tmp_path / "LogFiles" / "dials.cosym.0.log").is_file()
+    assert not (tmp_path / "LogFiles" / "dials.cosym.0.html").is_file()
+    assert (tmp_path / "data_reduction" / "scale").is_dir()
+    if reference:
+        assert (tmp_path / "data_reduction" / "scale" / "merged_all.mtz").is_file()
+        assert (tmp_path / "DataFiles" / "merged_all.mtz").is_file()
+    else:
+        assert (tmp_path / "data_reduction" / "scale" / "merged.mtz").is_file()
+        assert (tmp_path / "DataFiles" / "merged.mtz").is_file()
+    assert (tmp_path / "LogFiles" / "dials.merge.html").is_file()
+    assert (tmp_path / "LogFiles" / "dials.merge.log").is_file()
+    if reference:
+        assert not (tmp_path / "DataFiles" / "scaled_0.refl").is_file()
+        assert not (tmp_path / "DataFiles" / "scaled_0.expt").is_file()
+        assert not (tmp_path / "LogFiles" / "dials.scale.0.log").is_file()
+    else:
+        assert (tmp_path / "DataFiles" / "scaled.refl").is_file()
+        assert (tmp_path / "DataFiles" / "scaled.expt").is_file()
+        assert (tmp_path / "LogFiles" / "dials.scale.log").is_file()
 
 
 @pytest.mark.parametrize("pdb_model", [True, False])
@@ -313,7 +366,18 @@ def test_ssx_reduce_on_directory(dials_data, tmp_path, pdb_model):
         assert not result.returncode
     else:
         assert not result.returncode and not result.stderr
-    check_data_reduction_files(tmp_path)
+    check_data_reduction_files(tmp_path, reference=pdb_model)
+
+    # now run again, starting from scaled data
+    pathlib.Path.mkdir(tmp_path / "reduce")
+    args[1] = f"processed_directory={tmp_path / 'DataFiles'}"
+    result = subprocess.run(args, cwd=tmp_path / "reduce", capture_output=True)
+    if pdb_model:
+        assert not result.returncode
+        check_data_reduction_files_on_scaled_only(tmp_path / "reduce", reference=True)
+    else:
+        assert not result.returncode and not result.stderr
+        check_data_reduction_files_on_scaled_only(tmp_path / "reduce", reference=False)
 
 
 @pytest.mark.parametrize("pdb_model", [True, False])
