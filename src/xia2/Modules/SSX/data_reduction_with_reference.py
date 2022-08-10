@@ -12,6 +12,7 @@ from dxtbx.model import ExperimentList
 from dxtbx.serialize import load
 
 from xia2.Driver.timing import record_step
+from xia2.Handlers.Files import FileHandler
 from xia2.Modules.SSX.data_reduction_base import BaseDataReduction, FilesDict
 from xia2.Modules.SSX.data_reduction_programs import (
     filter_,
@@ -157,6 +158,12 @@ class DataReductionWithReference(BaseDataReduction):
                 else:
                     xia2_logger.info(f"Completed scaling of group {i+1}")
                     scaled_results.update(result)
+                    FileHandler.record_data_file(result[i].expt)
+                    FileHandler.record_data_file(result[i].refl)
+                    FileHandler.record_log_file(
+                        f"dials.scale.{i}", self._scale_wd / f"dials.scale.{i}.log"
+                    )
+
         if not scaled_results:
             raise ValueError("No groups successfully scaled")
 

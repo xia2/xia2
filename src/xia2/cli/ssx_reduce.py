@@ -31,6 +31,7 @@ phil_scope = iotbx.phil.parse(full_phil_str)
 xia2_logger = logging.getLogger(__name__)
 
 import xia2.Handlers.Streams
+from xia2.Handlers.Files import FileHandler, cleanup
 
 
 def run(args=sys.argv[1:]):
@@ -71,7 +72,9 @@ def run(args=sys.argv[1:]):
 
     cwd = Path.cwd()
     try:
-        run_xia2_ssx_reduce(cwd, params)
+        with cleanup(cwd):
+            FileHandler.record_log_file("xia2.ssx_reduce", cwd / "xia2.ssx_reduce.log")
+            run_xia2_ssx_reduce(cwd, params)
     except ValueError as e:
         xia2_logger.info(f"Error: {e}")
         sys.exit(0)

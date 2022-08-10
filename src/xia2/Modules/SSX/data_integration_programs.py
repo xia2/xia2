@@ -36,6 +36,7 @@ from dxtbx.model import ExperimentList
 from dxtbx.serialize import load
 
 from xia2.Driver.timing import record_step
+from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Streams import banner
 from xia2.Modules.SSX.reporting import (
     generate_refinement_step_table,
@@ -397,6 +398,10 @@ def run_refinement(
         expts.as_file("refined.expt")
         dials_logger.info("Saving reflections with updated predictions to refined.refl")
         refls.as_file("refined.refl")
+        FileHandler.record_data_file(working_directory / "refined.expt")
+        FileHandler.record_log_file(
+            "dials.refine", working_directory / "dials.refine.log"
+        )
         step_table = generate_refinement_step_table(refiner)
         xia2_logger.info("Summary of joint refinement steps:\n" + step_table)
 
@@ -501,7 +506,14 @@ def ssx_integrate(
                 n_cryst += len(int_expt)
                 dials_logger.info(f"Saving the experiments to {experiments_filename}")
                 int_expt.as_file(experiments_filename)
-
+                FileHandler.record_more_data_file(
+                    f"integrated_{i+1} {working_directory.name}",
+                    working_directory / f"integrated_{i+1}.refl",
+                )
+                FileHandler.record_more_data_file(
+                    f"integrated_{i+1} {working_directory.name}",
+                    working_directory / f"integrated_{i+1}.expt",
+                )
                 integrated_crystal_symmetries.extend(
                     [
                         crystal.symmetry(
