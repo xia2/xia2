@@ -684,6 +684,8 @@ def cosym_reindex(
         register_default_cosym_observers(cosym_instance)
         cosym_instance.run()
     sys.stdout = sys.__stdout__
+    FileHandler.record_log_file(logfile.rstrip(".log"), working_directory / logfile)
+    FileHandler.record_html_file("dials.cosym", working_directory / "dials.cosym.html")
     outfiles = []
     for expt, refl in zip(
         cosym_instance._output_expt_files, cosym_instance._output_refl_files
@@ -725,12 +727,19 @@ def parallel_cosym(
             for future in concurrent.futures.as_completed(cosym_futures):
                 try:
                     result = future.result()
+                    i = cosym_futures[future]
                 except Exception as e:
                     raise ValueError(
                         f"Unsuccessful scaling and symmetry analysis of the new data. Error:\n{e}"
                     )
                 else:
                     reindexed_results.update(result)
+                    FileHandler.record_log_file(
+                        f"dials.cosym.{i}", working_directory / f"dials.cosym.{i}.log"
+                    )
+                    FileHandler.record_html_file(
+                        f"dials.cosym.{i}", working_directory / f"dials.cosym.{i}.html"
+                    )
 
     sys.stdout = sys.__stdout__  # restore printing
     return reindexed_results
@@ -771,12 +780,19 @@ def parallel_cosym_reference(
             for future in concurrent.futures.as_completed(cosym_futures):
                 try:
                     result = future.result()
+                    i = cosym_futures[future]
                 except Exception as e:
                     raise ValueError(
                         f"Unsuccessful scaling and symmetry analysis of the new data. Error:\n{e}"
                     )
                 else:
                     reindexed_results.update(result)
+                    FileHandler.record_log_file(
+                        f"dials.cosym.{i}", working_directory / f"dials.cosym.{i}.log"
+                    )
+                    FileHandler.record_html_file(
+                        f"dials.cosym.{i}", working_directory / f"dials.cosym.{i}.html"
+                    )
 
     sys.stdout = sys.__stdout__  # restore printing
     return reindexed_results
