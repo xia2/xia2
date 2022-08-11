@@ -18,8 +18,18 @@ def test_to_shelx(dials_data, tmp_path):
     args = ["xia2.to_shelx", tmp_path / "scaled.mtz", "lcys", "C3H7NO2S"]
     result = subprocess.run(args, cwd=tmp_path)
     assert not result.returncode or result.stderr
+    assert (tmp_path / "lcys.hkl").is_file()
+    assert (tmp_path / "lcys.ins").is_file()
 
     # now test the program with '--cell' option
-    args.append(f"--cell={expt}")
+    args = [
+        "xia2.to_shelx",
+        tmp_path / "scaled.mtz",
+        "lcyst",
+        "C3H7NO2S",
+        f"--cell={expt}",
+    ]
     result = subprocess.run(args, cwd=tmp_path)
     assert not result.returncode or result.stderr
+    assert (tmp_path / "lcyst.hkl").is_file()
+    assert (tmp_path / "lcyst.ins").is_file()
