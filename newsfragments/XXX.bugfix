@@ -1,0 +1,1 @@
+``xia2.to_shelx``: Fix crash when using unmerged mtz plus the --cell option
