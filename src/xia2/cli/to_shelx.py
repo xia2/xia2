@@ -208,9 +208,11 @@ def to_shelx(hklin, prefix, compound="", options=None):
             else:
                 # json from dials.two_theta_refine
                 cell_data = None
-                from dxtbx.model.experiment.experiment_list import ExperimentListFactory
+                from dxtbx.model.experiment_list import ExperimentListFactory
 
-                experiments = ExperimentListFactory.from_json_file(options.cell)
+                experiments = ExperimentListFactory.from_json_file(
+                    options.cell, check_format=False
+                )
                 crystal = experiments.crystals()[0]
                 unit_cell_dims = crystal.get_unit_cell().parameters()
                 unit_cell_esds = crystal.get_cell_parameter_sd()
