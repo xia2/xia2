@@ -8,6 +8,7 @@ from typing import List
 
 import pytest
 
+from dials.array_family import flex
 from dxtbx.serialize import load
 
 
@@ -326,12 +327,8 @@ def check_data_reduction_files_on_scaled_only(tmp_path, reference=False):
     assert not (tmp_path / "LogFiles" / "dials.cosym.0.log").is_file()
     assert not (tmp_path / "LogFiles" / "dials.cosym.0.html").is_file()
     assert (tmp_path / "data_reduction" / "scale").is_dir()
-    if reference:
-        assert (tmp_path / "data_reduction" / "scale" / "merged_all.mtz").is_file()
-        assert (tmp_path / "DataFiles" / "merged_all.mtz").is_file()
-    else:
-        assert (tmp_path / "data_reduction" / "scale" / "merged.mtz").is_file()
-        assert (tmp_path / "DataFiles" / "merged.mtz").is_file()
+    assert (tmp_path / "data_reduction" / "scale" / "merged.mtz").is_file()
+    assert (tmp_path / "DataFiles" / "merged.mtz").is_file()
     assert (tmp_path / "LogFiles" / "dials.merge.html").is_file()
     assert (tmp_path / "LogFiles" / "dials.merge.log").is_file()
     if reference:
@@ -344,8 +341,50 @@ def check_data_reduction_files_on_scaled_only(tmp_path, reference=False):
         assert (tmp_path / "LogFiles" / "dials.scale.log").is_file()
 
 
+def check_data_reduction_files_on_scaled_plus_integrated(
+    tmp_path, reindex=True, reference=False
+):
+    assert (tmp_path / "data_reduction").is_dir()
+    assert (tmp_path / "data_reduction" / "prefilter").is_dir()
+    assert reindex is (tmp_path / "data_reduction" / "reindex").is_dir()
+    assert reindex is (tmp_path / "LogFiles" / "dials.cosym.0.log").is_file()
+    assert reindex is (tmp_path / "LogFiles" / "dials.cosym.0.html").is_file()
+    assert (tmp_path / "data_reduction" / "scale").is_dir()
+    assert (tmp_path / "data_reduction" / "scale" / "merged.mtz").is_file()
+    assert (tmp_path / "DataFiles" / "merged.mtz").is_file()
+    assert (tmp_path / "LogFiles" / "dials.merge.html").is_file()
+    assert (tmp_path / "LogFiles" / "dials.merge.log").is_file()
+    if reference:
+        assert (tmp_path / "DataFiles" / "scaled_0.refl").is_file()
+        assert (tmp_path / "DataFiles" / "scaled_0.expt").is_file()
+        assert (tmp_path / "LogFiles" / "dials.scale.0.log").is_file()
+    else:
+        assert (tmp_path / "DataFiles" / "scaled.refl").is_file()
+        assert (tmp_path / "DataFiles" / "scaled.expt").is_file()
+        assert (tmp_path / "LogFiles" / "dials.scale.log").is_file()
+
+
+# For testing data reduction, there are a few different paths.
+# Processing can be done on integrated data, only on previously scaled data,
+# or on a mix of new data and previously scaled.
+# Processing can be done with or without a reference pdb model
+# There can be an indexing ambiguity or not
+
+# With a reference - reindexing is optionally done against this. New data is
+# scaled. Any previously scaled data is merged in at the end.
+
+# Without a reference - if idx ambiguity, unscaled input data is reindexed in
+# batches, then all data (scaled plus unscaled) must be reindexed together in
+# batch mode. Then all data is scaled together
+
+
 @pytest.mark.parametrize("pdb_model", [True, False])
 def test_ssx_reduce_on_directory(dials_data, tmp_path, pdb_model):
+    """Test ssx_reduce in the case of an indexing ambiguity.
+
+    Test with and without a reference model, plus processing integrated,
+    scaled, and integrated+scaled data.
+    """
     ssx = dials_data("cunir_serial_processed", pathlib=True)
     args = ["dev.xia2.ssx_reduce", f"directory={ssx}"]
     if pdb_model:
@@ -368,7 +407,7 @@ def test_ssx_reduce_on_directory(dials_data, tmp_path, pdb_model):
         assert not result.returncode and not result.stderr
     check_data_reduction_files(tmp_path, reference=pdb_model)
 
-    # now run again, starting from scaled data
+    # now run again only on previously scaled data
     pathlib.Path.mkdir(tmp_path / "reduce")
     args[1] = f"processed_directory={tmp_path / 'DataFiles'}"
     result = subprocess.run(args, cwd=tmp_path / "reduce", capture_output=True)
@@ -379,9 +418,41 @@ def test_ssx_reduce_on_directory(dials_data, tmp_path, pdb_model):
         assert not result.returncode and not result.stderr
         check_data_reduction_files_on_scaled_only(tmp_path / "reduce", reference=False)
 
+    # now run again only on previously scaled data + integrated data
+    # Need to assign new identifiers to avoid clash
+    pathlib.Path.mkdir(tmp_path / "integrated_copy")
+    int_expts = load.experiment_list(ssx / "integrated.expt", check_format=False)
+    int_refls = flex.reflection_table.from_file(ssx / "integrated.refl")
+    new_identifiers = ["0", "1", "2", "3", "4"]
+
+    for i, (expt, new) in enumerate(zip(int_expts, new_identifiers)):
+        expt.identifier = new
+        del int_refls.experiment_identifiers()[i]
+        int_refls.experiment_identifiers()[i] = new
+    int_expts.as_file(tmp_path / "integrated_copy" / "integrated.expt")
+    int_refls.as_file(tmp_path / "integrated_copy" / "integrated.refl")
+    pathlib.Path.mkdir(tmp_path / "reduce_combined")
+    args.append(f"directory={tmp_path / 'integrated_copy'}")
+    result = subprocess.run(args, cwd=tmp_path / "reduce_combined", capture_output=True)
+    if pdb_model:
+        assert not result.returncode
+        check_data_reduction_files_on_scaled_plus_integrated(
+            tmp_path / "reduce_combined", reference=True
+        )
+    else:
+        assert not result.returncode and not result.stderr
+        check_data_reduction_files_on_scaled_plus_integrated(
+            tmp_path / "reduce_combined", reference=False
+        )
+
 
 @pytest.mark.parametrize("pdb_model", [True, False])
 def test_ssx_reduce_on_files_no_idx_ambiguity(dials_data, tmp_path, pdb_model):
+    """Test ssx_reduce in the case of no indexing ambiguity.
+
+    Test with and without a reference model, plus processing integrated,
+    scaled, and integrated+scaled data.
+    """
     ssx = dials_data("cunir_serial_processed", pathlib=True)
     result = subprocess.run(
         [
@@ -398,29 +469,59 @@ def test_ssx_reduce_on_files_no_idx_ambiguity(dials_data, tmp_path, pdb_model):
     refls = tmp_path / "reindexed.refl"
     args = [
         "dev.xia2.ssx_reduce",
-        f"reflections={refls}",
-        f"experiments={expts}",
+        f"{refls}",
+        f"{expts}",
     ]
     if pdb_model:
         model = dials_data("cunir_serial", pathlib=True) / "2BW4.pdb"
         args.append(f"model={str(model)}")
 
     result = subprocess.run(args, cwd=tmp_path, capture_output=True)
-    assert (
-        not result.returncode
-    )  # can get result.stderr due to a warning in dials.export
-    check_data_reduction_files(tmp_path, reindex=False)
+    if pdb_model:
+        assert (
+            not result.returncode
+        )  # can get result.stderr due to a warning in dials.export
+    else:
+        assert not result.returncode and not result.stderr
+    check_data_reduction_files(tmp_path, reference=pdb_model, reindex=False)
 
+    # now run again only on previously scaled data
+    pathlib.Path.mkdir(tmp_path / "reduce")
+    args = ["dev.xia2.ssx_reduce", f"processed_directory={tmp_path / 'DataFiles'}"]
+    if pdb_model:
+        model = dials_data("cunir_serial", pathlib=True) / "2BW4.pdb"
+        args.append(f"model={str(model)}")
 
-def test_ssx_reduce_on_files(dials_data, tmp_path):
-    ssx = dials_data("cunir_serial_processed", pathlib=True)
-    refls = ssx / "integrated.refl"
-    expts = ssx / "integrated.expt"
-    args = ["dev.xia2.ssx_reduce", f"reflections={refls}", f"experiments={expts}"]
+    result = subprocess.run(args, cwd=tmp_path / "reduce", capture_output=True)
+    if pdb_model:
+        assert not result.returncode
+    else:
+        assert not result.returncode and not result.stderr
+    check_data_reduction_files_on_scaled_only(tmp_path / "reduce", reference=pdb_model)
 
-    result = subprocess.run(args, cwd=tmp_path, capture_output=True)
-    assert not result.returncode and not result.stderr
-    check_data_reduction_files(tmp_path)
+    # now run again only on previously scaled data + integrated data
+    # Need to assign new identifiers to avoid clash
+    pathlib.Path.mkdir(tmp_path / "integrated_copy")
+    int_expts = load.experiment_list(tmp_path / "reindexed.expt", check_format=False)
+    int_refls = flex.reflection_table.from_file(tmp_path / "reindexed.refl")
+    new_identifiers = ["0", "1", "2", "3", "4"]
+
+    for i, (expt, new) in enumerate(zip(int_expts, new_identifiers)):
+        expt.identifier = new
+        del int_refls.experiment_identifiers()[i]
+        int_refls.experiment_identifiers()[i] = new
+    int_expts.as_file(tmp_path / "integrated_copy" / "integrated.expt")
+    int_refls.as_file(tmp_path / "integrated_copy" / "integrated.refl")
+    pathlib.Path.mkdir(tmp_path / "reduce_combined")
+    args.append(f"directory={tmp_path / 'integrated_copy'}")
+    result = subprocess.run(args, cwd=tmp_path / "reduce_combined", capture_output=True)
+    if pdb_model:
+        assert not result.returncode
+    else:
+        assert not result.returncode and not result.stderr
+    check_data_reduction_files_on_scaled_plus_integrated(
+        tmp_path / "reduce_combined", reindex=False, reference=pdb_model
+    )
 
 
 @pytest.mark.parametrize(
@@ -462,11 +563,10 @@ def test_ssx_reduce_filter_options(
     assert not result.returncode and not result.stderr
     check_data_reduction_files(tmp_path)
 
-    """# Now check that results were output at various stages to allow iterative
-    # workflows
-    filter_results = tmp_path / "data_reduction/prefilter/filter_results.json"
-    with filter_results.open(mode="r") as f:
-        result = json.load(f)
-    # check that the unit cells were written to file
-    assert result["best_unit_cell"] == expected_results["best_unit_cell"]
-    assert result["n_cryst"] == expected_results["n_cryst"]"""
+    expts = load.experiment_list(tmp_path / "DataFiles" / "scaled.expt")
+    assert len(expts) == expected_results["n_cryst"]
+    from xia2.Modules.SSX.data_reduction_programs import determine_best_unit_cell
+
+    assert list(determine_best_unit_cell(expts).parameters()) == pytest.approx(
+        expected_results["best_unit_cell"]
+    )
