@@ -20,6 +20,7 @@ from dxtbx.model import ExperimentList
 from dxtbx.serialize import load
 
 from xia2.Driver.timing import record_step
+from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Streams import banner
 from xia2.Modules.SSX.data_integration_programs import (
     IndexingParams,
@@ -112,6 +113,7 @@ def process_batch(
         if large_clusters:
             xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
         data["n_cryst_integrated"] = integration_summary["n_cryst_integrated"]
+        data["DataFiles"] = integration_summary["DataFiles"]
 
     return data
 
@@ -615,6 +617,12 @@ def process_batches(
 
     def process_output(summary_data):
         progress.add(summary_data)
+        if "DataFiles" in summary_data:
+            for tag, file in zip(
+                summary_data["DataFiles"]["tags"],
+                summary_data["DataFiles"]["filenames"],
+            ):
+                FileHandler.record_more_data_file(tag, file)
 
     if options.njobs > 1:
         njobs = min(options.njobs, len(batch_directories))
@@ -641,7 +649,7 @@ def process_batches(
                 integration_params,
                 options,
             )
-            progress.add(summary_data)
+            process_output(summary_data)
 
 
 def check_for_gaps_in_steps(steps: List[str]) -> bool:

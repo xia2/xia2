@@ -38,8 +38,11 @@ For cbf data, the file template option is recommended, e.g.::
       unit_cell=79.1,79.1,38.2,90,90,90
 
 The overall sequence of the data integration part of the pipeline is as follows.
-First spotfinding, indexing and joint refinement are run on the first 1000 images,
-in order to determine an improved geometry model for the detector. Following this,
+In the absence of an explicitly provided reference geometry, spotfinding and
+indexing will be run on batches of 1000 images at a time, until a threshold number
+of crystals have been indexed (250 by default, as specified by the
+:samp:`geometry_refinement.n_crystals` parameter). Then joint refinement of the
+detector geometry is run to determine an improved geometry model. Following this,
 the refined geometry is used to perform spotfinding, indexing and integration of
 all images, with feedback provided on batches of 1000 images at a time. This batch
 size can be adjusted with the :samp:`batch_size` parameter. The number of available
@@ -51,7 +54,7 @@ with the option :samp:`reference_geometry=`, which will be used instead of
 performing a joint refinement on the data. A mask file created from the DIALS
 image viewer can also be provided with the option :samp:`mask=`, which will be
 used in spotfinding and integration. A few other common options to set are the
-:samp:`max_lattices` parameter, which determines the number of lattice to search
+:samp:`max_lattices` parameter, which determines the number of lattices to search
 for on each image in indexing, and :samp:`d_min` which controls the resolution
 limit for spotfinding and integration.
 

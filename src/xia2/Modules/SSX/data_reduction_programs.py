@@ -32,6 +32,7 @@ from dxtbx.serialize import load
 from iotbx.phil import parse
 
 from xia2.Driver.timing import record_step
+from xia2.Handlers.Files import FileHandler
 from xia2.Modules.SSX.data_reduction_definitions import (
     FilePair,
     FilesDict,
@@ -301,6 +302,9 @@ def merge(
         with open(json_file, "w") as f:
             json.dump(json_data, f, indent=2)
         merge_html_report(json_data, html_file)
+        FileHandler.record_data_file(working_directory / filename)
+        FileHandler.record_log_file("dials.merge", working_directory / logfile)
+        FileHandler.record_html_file("dials.merge", working_directory / html_file)
     xia2_logger.info(f"Merged mtz file: {working_directory / filename}")
 
 
@@ -431,9 +435,8 @@ def scale_against_reference(
     index: int,
     reduction_params,
 ) -> FilesDict:
-    with run_in_directory(working_directory), log_to_file(
-        f"dials.scale.{index}.log"
-    ) as dials_logger:
+    logfile = f"dials.scale.{index}.log"
+    with run_in_directory(working_directory), log_to_file(logfile) as dials_logger:
         # Setup scaling
         expts = load.experiment_list(files.expt, check_format=False)
         table = flex.reflection_table.from_file(files.refl)
@@ -469,9 +472,9 @@ def scale(
     files_to_scale: List[FilePair],
     reduction_params: ReductionParams,
 ) -> Tuple[ExperimentList, flex.reflection_table]:
-
+    logfile = "dials.scale.log"
     with run_in_directory(working_directory), log_to_file(
-        "dials.scale.log"
+        logfile
     ) as dials_logger, record_step("dials.scale"):
         # Setup scaling
         input_ = ""
@@ -507,6 +510,9 @@ def scale(
         )
         stats_summary, d_min_fit = statistics_output_and_resolution_from_scaler(scaler)
         xia2_logger.info(stats_summary)
+        FileHandler.record_data_file(working_directory / "scaled.expt")
+        FileHandler.record_data_file(working_directory / "scaled.refl")
+        FileHandler.record_log_file("dials.scale", working_directory / logfile)
 
     return scaled_expts, scaled_table
 
@@ -678,6 +684,8 @@ def cosym_reindex(
         register_default_cosym_observers(cosym_instance)
         cosym_instance.run()
     sys.stdout = sys.__stdout__
+    FileHandler.record_log_file(logfile.rstrip(".log"), working_directory / logfile)
+    FileHandler.record_html_file("dials.cosym", working_directory / "dials.cosym.html")
     outfiles = []
     for expt, refl in zip(
         cosym_instance._output_expt_files, cosym_instance._output_refl_files
@@ -719,12 +727,19 @@ def parallel_cosym(
             for future in concurrent.futures.as_completed(cosym_futures):
                 try:
                     result = future.result()
+                    i = cosym_futures[future]
                 except Exception as e:
                     raise ValueError(
                         f"Unsuccessful scaling and symmetry analysis of the new data. Error:\n{e}"
                     )
                 else:
                     reindexed_results.update(result)
+                    FileHandler.record_log_file(
+                        f"dials.cosym.{i}", working_directory / f"dials.cosym.{i}.log"
+                    )
+                    FileHandler.record_html_file(
+                        f"dials.cosym.{i}", working_directory / f"dials.cosym.{i}.html"
+                    )
 
     sys.stdout = sys.__stdout__  # restore printing
     return reindexed_results
@@ -765,12 +780,19 @@ def parallel_cosym_reference(
             for future in concurrent.futures.as_completed(cosym_futures):
                 try:
                     result = future.result()
+                    i = cosym_futures[future]
                 except Exception as e:
                     raise ValueError(
                         f"Unsuccessful scaling and symmetry analysis of the new data. Error:\n{e}"
                     )
                 else:
                     reindexed_results.update(result)
+                    FileHandler.record_log_file(
+                        f"dials.cosym.{i}", working_directory / f"dials.cosym.{i}.log"
+                    )
+                    FileHandler.record_html_file(
+                        f"dials.cosym.{i}", working_directory / f"dials.cosym.{i}.html"
+                    )
 
     sys.stdout = sys.__stdout__  # restore printing
     return reindexed_results

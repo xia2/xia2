@@ -12,6 +12,7 @@ from dxtbx.model import ExperimentList
 from dxtbx.serialize import load
 
 from xia2.Driver.timing import record_step
+from xia2.Handlers.Files import FileHandler
 from xia2.Modules.SSX.data_reduction_base import BaseDataReduction, FilesDict
 from xia2.Modules.SSX.data_reduction_programs import (
     filter_,
@@ -99,7 +100,6 @@ class DataReductionWithReference(BaseDataReduction):
             scaled_table,
             self._reduction_params.d_min,
             uc,
-            suffix="_all",
         )
 
     def _filter(self) -> Tuple[FilesDict, uctbx.unit_cell, sgtbx.space_group_info]:
@@ -157,6 +157,12 @@ class DataReductionWithReference(BaseDataReduction):
                 else:
                     xia2_logger.info(f"Completed scaling of group {i+1}")
                     scaled_results.update(result)
+                    FileHandler.record_data_file(result[i].expt)
+                    FileHandler.record_data_file(result[i].refl)
+                    FileHandler.record_log_file(
+                        f"dials.scale.{i}", self._scale_wd / f"dials.scale.{i}.log"
+                    )
+
         if not scaled_results:
             raise ValueError("No groups successfully scaled")
 
@@ -176,7 +182,19 @@ class DataReductionWithReference(BaseDataReduction):
                     if k not in scaled_cols_to_keep:
                         del table[k]
                 scaled_tables.append(table)
-            scaled_table = flex.reflection_table.concat(scaled_tables)
+
+            # now add any extra data previously scaled
+            if self._previously_scaled_data:
+                (
+                    prev_scaled_expts,
+                    prev_scaled_tables,
+                ) = self._combine_previously_scaled()
+                _wrap_extend_expts(scaled_expts, prev_scaled_expts)
+                scaled_table = flex.reflection_table.concat(
+                    scaled_tables + prev_scaled_tables
+                )
+            else:
+                scaled_table = flex.reflection_table.concat(scaled_tables)
 
             n_final = len(scaled_expts)
             uc = determine_best_unit_cell(scaled_expts)
@@ -185,6 +203,10 @@ class DataReductionWithReference(BaseDataReduction):
             xia2_logger.info(
                 f"{n_final} crystals scaled in space group {scaled_expts[0].crystal.get_space_group().info()}\nMedian cell: {uc_str}"
             )
+            if self._previously_scaled_data:
+                xia2_logger.info(
+                    "Summary statistics for all input data, including previously scaled"
+                )
             stats_summary, _ = statistics_output_from_scaled_files(
                 scaled_expts, scaled_table, uc, self._reduction_params.d_min
             )
@@ -198,32 +220,3 @@ class DataReductionWithReference(BaseDataReduction):
                 self._reduction_params.d_min,
                 uc,
             )
-
-        # now add any extra data previously scaled
-        if self._previously_scaled_data:
-            with record_step("joining for merge"):
-                (
-                    prev_scaled_expts,
-                    prev_scaled_tables,
-                ) = self._combine_previously_scaled()
-                _wrap_extend_expts(scaled_expts, prev_scaled_expts)
-                scaled_table = flex.reflection_table.concat(
-                    scaled_tables + prev_scaled_tables
-                )
-                uc = determine_best_unit_cell(scaled_expts)
-                self._reduction_params.central_unit_cell = uc
-                xia2_logger.info(
-                    "Summary statistics for all input data, including previously scaled"
-                )
-                stats_summary, _ = statistics_output_from_scaled_files(
-                    scaled_expts, scaled_table, uc, self._reduction_params.d_min
-                )
-                xia2_logger.info(stats_summary)
-            with record_step("merging"):
-                merge(
-                    self._scale_wd,
-                    scaled_expts,
-                    scaled_table,
-                    self._reduction_params.d_min,
-                    suffix="_all",
-                )

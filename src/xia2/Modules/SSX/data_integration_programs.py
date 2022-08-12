@@ -36,6 +36,7 @@ from dxtbx.model import ExperimentList
 from dxtbx.serialize import load
 
 from xia2.Driver.timing import record_step
+from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Streams import banner
 from xia2.Modules.SSX.reporting import (
     generate_refinement_step_table,
@@ -397,6 +398,10 @@ def run_refinement(
         expts.as_file("refined.expt")
         dials_logger.info("Saving reflections with updated predictions to refined.refl")
         refls.as_file("refined.refl")
+        FileHandler.record_data_file(working_directory / "refined.expt")
+        FileHandler.record_log_file(
+            "dials.refine", working_directory / "dials.refine.log"
+        )
         step_table = generate_refinement_step_table(refiner)
         xia2_logger.info("Summary of joint refinement steps:\n" + step_table)
 
@@ -486,6 +491,10 @@ def ssx_integrate(
                 + f"{diff_phil.as_str()}"
             )
             # Run the integration
+            # Record the datafiles so that the information can be passed
+            # out in the case of processing on multiple nodes, as adding to
+            # the FileHandler won't work here.
+            summary_for_xia2: dict = {"DataFiles": {"tags": [], "filenames": []}}
             integrated_crystal_symmetries = []
             n_refl, n_cryst = (0, 0)
             for i, (int_expt, int_refl, aggregator) in enumerate(
@@ -501,7 +510,18 @@ def ssx_integrate(
                 n_cryst += len(int_expt)
                 dials_logger.info(f"Saving the experiments to {experiments_filename}")
                 int_expt.as_file(experiments_filename)
-
+                summary_for_xia2["DataFiles"]["tags"].append(
+                    f"integrated_{i+1} {working_directory.name}"
+                )
+                summary_for_xia2["DataFiles"]["filenames"].append(
+                    working_directory / f"integrated_{i+1}.refl"
+                )
+                summary_for_xia2["DataFiles"]["tags"].append(
+                    f"integrated_{i+1} {working_directory.name}"
+                )
+                summary_for_xia2["DataFiles"]["filenames"].append(
+                    working_directory / f"integrated_{i+1}.expt"
+                )
                 integrated_crystal_symmetries.extend(
                     [
                         crystal.symmetry(
@@ -529,10 +549,8 @@ def ssx_integrate(
                 with open("dials.ssx_integrate.json", "w") as outfile:
                     json.dump(plots, outfile, indent=2)
 
-            summary_for_xia2 = {
-                "n_cryst_integrated": n_cryst,
-                "large_clusters": large_clusters,
-            }
+            summary_for_xia2["n_cryst_integrated"] = n_cryst
+            summary_for_xia2["large_clusters"] = large_clusters
     return summary_for_xia2
 
 
