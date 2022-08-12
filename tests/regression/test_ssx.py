@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import pathlib
+import shutil
 import subprocess
 from typing import List
 
@@ -10,6 +11,8 @@ import pytest
 
 from dials.array_family import flex
 from dxtbx.serialize import load
+
+from xia2.Modules.SSX.data_reduction_programs import determine_best_unit_cell
 
 
 def check_output(main_dir, find_spots=False, index=False, integrate=False):
@@ -149,7 +152,6 @@ def refined_expt(dials_data, tmp_path):
     reference = tmp_path / "geometry_refinement" / "refined.expt"
     assert reference.is_file()
     refined_expts = load.experiment_list(reference, check_format=False)
-    import shutil
 
     shutil.rmtree(tmp_path / "DataFiles")
     shutil.rmtree(tmp_path / "LogFiles")
@@ -507,7 +509,6 @@ def test_ssx_reduce_filter_options(
 
     expts = load.experiment_list(tmp_path / "DataFiles" / "scaled.expt")
     assert len(expts) == expected_results["n_cryst"]
-    from xia2.Modules.SSX.data_reduction_programs import determine_best_unit_cell
 
     assert list(determine_best_unit_cell(expts).parameters()) == pytest.approx(
         expected_results["best_unit_cell"]
