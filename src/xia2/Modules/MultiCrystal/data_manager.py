@@ -17,9 +17,6 @@ logger = logging.getLogger(__name__)
 
 class DataManager:
     def __init__(self, experiments, reflections):
-        self._input_experiments = experiments
-        self._input_reflections = reflections
-
         self._experiments = copy.deepcopy(experiments)
         self._reflections = copy.deepcopy(reflections)
         self.ids_to_identifiers_map = dict(self._reflections.experiment_identifiers())
