@@ -304,6 +304,7 @@ def merge(
         merge_html_report(json_data, html_file)
         FileHandler.record_data_file(working_directory / filename)
         FileHandler.record_log_file("dials.merge", working_directory / logfile)
+        FileHandler.record_more_log_file("dials.merge", working_directory / json_file)
         FileHandler.record_html_file("dials.merge", working_directory / html_file)
     xia2_logger.info(f"Merged mtz file: {working_directory / filename}")
 

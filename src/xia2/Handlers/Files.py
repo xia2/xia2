@@ -25,6 +25,7 @@ class _FileHandler:
 
         self._html_files = {}
         self._log_files = {}
+        self._more_log_files = {}
         self._xml_files = {}
 
         # for putting the reflection files somewhere nice...
@@ -50,6 +51,14 @@ class _FileHandler:
             filename = log_directory.joinpath("%s.log" % tag.replace(" ", "_"))
             shutil.copyfile(source, filename)
             logger.debug(f"Copied log file {source} to {filename}")
+
+        for tag, ext in self._more_log_files:
+            filename_out = log_directory.joinpath(
+                "{}.{}".format(tag.replace(" ", "_"), ext)
+            )
+            filename_in = self._more_log_files[(tag, ext)]
+            shutil.copyfile(filename_in, filename_out)
+            logger.debug(f"Copied extra log file {filename_in} to {filename_out}")
 
         for tag, source in self._xml_files.items():
             filename = log_directory.joinpath("%s.xml" % tag.replace(" ", "_"))
@@ -80,6 +89,12 @@ class _FileHandler:
     def record_log_file(self, tag, filename):
         """Record a log file."""
         self._log_files[tag] = filename
+
+    def record_more_log_file(self, tag, filename):
+        """Record an extra log file."""
+        ext = os.path.splitext(filename)[1][1:]
+        key = (tag, ext)
+        self._more_log_files[key] = filename
 
     def record_xml_file(self, tag, filename):
         """Record an xml file."""

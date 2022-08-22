@@ -312,6 +312,7 @@ def check_data_reduction_files(tmp_path, reindex=True, reference=False):
     assert (tmp_path / "DataFiles" / "merged.mtz").is_file()
     assert (tmp_path / "LogFiles" / "dials.merge.html").is_file()
     assert (tmp_path / "LogFiles" / "dials.merge.log").is_file()
+    assert (tmp_path / "LogFiles" / "dials.merge.json").is_file()
     if reference:
         assert (tmp_path / "DataFiles" / "scaled_0.refl").is_file()
         assert (tmp_path / "DataFiles" / "scaled_0.expt").is_file()
@@ -333,6 +334,7 @@ def check_data_reduction_files_on_scaled_only(tmp_path, reference=False):
     assert (tmp_path / "DataFiles" / "merged.mtz").is_file()
     assert (tmp_path / "LogFiles" / "dials.merge.html").is_file()
     assert (tmp_path / "LogFiles" / "dials.merge.log").is_file()
+    assert (tmp_path / "LogFiles" / "dials.merge.json").is_file()
     if reference:
         assert not (tmp_path / "DataFiles" / "scaled_0.refl").is_file()
         assert not (tmp_path / "DataFiles" / "scaled_0.expt").is_file()
