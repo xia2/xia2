@@ -340,13 +340,17 @@ class MultiCrystalScale:
         self.decide_space_group()
 
         self._data_manager.export_unmerged_mtz(
-            "scaled_unmerged.mtz", d_min=self._scaled.d_min
+            f"{params.output.prefix}_unmerged.mtz", d_min=self._scaled.d_min
         )
-        self._data_manager.export_merged_mtz("scaled.mtz", d_min=self._scaled.d_min)
-        self._data_manager.export_experiments("scaled.expt")
-        self._data_manager.export_reflections("scaled.refl", d_min=self._scaled.d_min)
-        convert_merged_mtz_to_sca("scaled.mtz")
-        convert_unmerged_mtz_to_sca("scaled_unmerged.mtz")
+        self._data_manager.export_merged_mtz(
+            f"{params.output.prefix}.mtz", d_min=self._scaled.d_min
+        )
+        self._data_manager.export_experiments(f"{params.output.prefix}.expt")
+        self._data_manager.export_reflections(
+            f"{params.output.prefix}.refl", d_min=self._scaled.d_min
+        )
+        convert_merged_mtz_to_sca(f"{params.output.prefix}.mtz")
+        convert_unmerged_mtz_to_sca(f"{params.output.prefix}_unmerged.mtz")
 
         self._record_individual_report(
             self._data_manager, self._scaled.report(), "All data"
@@ -399,13 +403,17 @@ class MultiCrystalScale:
                 scaled = Scale(data_manager, self._params)
 
                 data_manager.export_unmerged_mtz(
-                    "scaled_unmerged.mtz", d_min=scaled.d_min
+                    f"{params.output.prefix}_unmerged.mtz", d_min=scaled.d_min
                 )
-                data_manager.export_merged_mtz("scaled.mtz", d_min=scaled.d_min)
-                data_manager.export_experiments("scaled.expt")
-                data_manager.export_reflections("scaled.refl", d_min=scaled.d_min)
-                convert_merged_mtz_to_sca("scaled.mtz")
-                convert_unmerged_mtz_to_sca("scaled_unmerged.mtz")
+                data_manager.export_merged_mtz(
+                    f"{params.output.prefix}.mtz", d_min=scaled.d_min
+                )
+                data_manager.export_experiments(f"{params.output.prefix}.expt")
+                data_manager.export_reflections(
+                    f"{params.output.prefix}.refl", d_min=scaled.d_min
+                )
+                convert_merged_mtz_to_sca(f"{params.output.prefix}.mtz")
+                convert_unmerged_mtz_to_sca(f"{params.output.prefix}_unmerged.mtz")
 
                 self._record_individual_report(
                     data_manager, scaled.report(), cluster_dir.replace("_", " ")
