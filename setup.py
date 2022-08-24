@@ -9,7 +9,7 @@ import setuptools
 
 # Version number, or fallback version number for non-releases.
 # This should be updated by bump2version, not manually.
-__version_tag__ = "3.11.dev"
+__version_tag__ = "3.11.0"
 
 console_scripts = [
     "dev.xia2.check_mosaic=xia2.cli.check_mosaic:run",
