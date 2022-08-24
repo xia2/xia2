@@ -1,1 +1,0 @@
-Replace ``procrunner.run()`` usage with standard Python library routine ``subprocess.run()``

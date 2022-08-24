@@ -1,3 +1,24 @@
+xia2 3.11.0 (2022-08-24)
+========================
+
+Features
+--------
+
+- ``dev.xia2.ssx``: Add data reduction to experimental ssx pipeline, and expose data reduction as the new standalone ``dev.xia2.ssx_reduce`` program. (`#683 <https://github.com/xia2/xia2/issues/683>`_)
+
+
+Bugfixes
+--------
+
+- ``xia2.to_shelx``: Fix crash when using unmerged mtz with the ``--cell`` option. (`#698 <https://github.com/xia2/xia2/issues/698>`_)
+
+
+Misc
+----
+
+- `#684 <https://github.com/xia2/xia2/issues/684>`_, `#688 <https://github.com/xia2/xia2/issues/688>`_, `#689 <https://github.com/xia2/xia2/issues/689>`_, `#690 <https://github.com/xia2/xia2/issues/690>`_, `#691 <https://github.com/xia2/xia2/issues/691>`_, `#692 <https://github.com/xia2/xia2/issues/692>`_, `#693 <https://github.com/xia2/xia2/issues/693>`_, `#696 <https://github.com/xia2/xia2/issues/696>`_, `#699 <https://github.com/xia2/xia2/issues/699>`_, `#701 <https://github.com/xia2/xia2/issues/701>`_
+
+
 xia2 3.10.1 (2022-07-12)
 ========================
 
