@@ -145,6 +145,18 @@ class BaseDataReduction(object):
         if not Path.is_dir(self._data_reduction_wd):
             Path.mkdir(self._data_reduction_wd)
 
+        if self._reduction_params.groupby_yaml:
+            from xia2.Modules.SSX.yml_handling import full_parse
+            with open(self._reduction_params.groupby_yaml, 'r') as f:
+                parsed = full_parse(f)
+            self._parsed_yaml = parsed
+        else:
+            self._parsed_yaml = None
+
+        self._merge_wd = self._data_reduction_wd / "merge"
+        if not Path(self._merge_wd).is_dir():
+            Path.mkdir(self._merge_wd)
+
     @classmethod
     def from_directories(
         cls,
@@ -199,7 +211,9 @@ class BaseDataReduction(object):
 
         # first filter the data.
         xia2_logger.notice(banner("Filtering"))  # type: ignore
-        self._filtered_files_to_process, best_unit_cell, space_group = self._filter()
+        #self._filtered_files_to_process, best_unit_cell, space_group = self._filter()
+
+        good_crystals_data, best_unit_cell, space_group = self._filter()
 
         if not self._reduction_params.space_group:
             self._reduction_params.space_group = space_group
@@ -210,25 +224,37 @@ class BaseDataReduction(object):
             best_unit_cell,
             self._reduction_params.lattice_symmetry_max_delta,
         )
+
         if sym_requires_reindex:
+            # split good crystals based on resolve_by + batchsize
             xia2_logger.notice(banner("Reindexing"))  # type: ignore
+            self._split_data_for_reindex(good_crystals_data)
             self._reindex()
         else:
-            self._prepare_for_scaling()
+            # split good crystals based on scale_by + batchsize
+            #self._split_data_for_scaling(good_crystals_data)
+            self._prepare_for_scaling(good_crystals_data)
 
         xia2_logger.notice(banner("Scaling"))  # type: ignore
         self._scale_and_merge()
 
+    def _split_data_for_reindex(self, good_crystals_data):
+        from xia2.Modules.SSX.data_reduction_programs import split_integrated_data
+        self._filtered_files_to_process = split_integrated_data(
+            self._filter_wd, good_crystals_data, self._integrated_data, self._reduction_params
+        )
+
     def _run_only_previously_scaled(self):
         raise NotImplementedError
 
-    def _filter(self) -> Tuple[FilesDict, uctbx.unit_cell, sgtbx.space_group_info]:
+    def _filter(self) -> Tuple[CrystalsDict, uctbx.unit_cell, sgtbx.space_group_info]:
         return filter_(self._filter_wd, self._integrated_data, self._reduction_params)
 
     def _reindex(self) -> None:
         raise NotImplementedError
 
-    def _prepare_for_scaling(self) -> None:
+    def _prepare_for_scaling(self, good_crystals_data) -> None:
+        "Inspect filtered files and organise for scaling."
         raise NotImplementedError
 
     def _scale_and_merge(self) -> None:

@@ -84,7 +84,7 @@ def filter_(
     working_directory: Path,
     integrated_data: list[FilePair],
     reduction_params: ReductionParams,
-) -> Tuple[FilesDict, uctbx.unit_cell, sgtbx.space_group_info]:
+) -> Tuple[CrystalsDict, uctbx.unit_cell, sgtbx.space_group_info]:
 
     crystals_data = load_crystal_data_from_new_expts(integrated_data)
     if not any(v.crystals for v in crystals_data.values()):
@@ -97,15 +97,22 @@ def filter_(
     )
     if not any(v.crystals for v in good_crystals_data.values()):
         raise ValueError("No crystals remain after filtering, processing finished.")
+    best_unit_cell = determine_best_unit_cell_from_crystals(good_crystals_data)
+    return good_crystals_data, best_unit_cell, space_group
 
+def split_integrated_data(
+    working_directory,
+    good_crystals_data,
+    integrated_data,
+    reduction_params
+) -> FilesDict:
     new_files_to_process = split_filtered_data(
         working_directory,
         integrated_data,
         good_crystals_data,
         reduction_params.batch_size,
     )
-    best_unit_cell = determine_best_unit_cell_from_crystals(good_crystals_data)
-    return new_files_to_process, best_unit_cell, space_group
+    return new_files_to_process
 
 
 def assess_for_indexing_ambiguities(
@@ -171,7 +178,6 @@ def filter_new_data(
     crystals_data: dict,
     reduction_params: ReductionParams,
 ) -> CrystalsDict:
-
     if reduction_params.cluster_threshold:
         good_crystals_data = run_uc_cluster(
             working_directory,
@@ -274,12 +280,17 @@ def merge(
     reflection_table: flex.reflection_table,
     d_min: float = None,
     best_unit_cell: Optional[uctbx.unit_cell] = None,
-    suffix: Optional[str] = None,
+    name: Optional[str] = None,
 ) -> None:
-    filename = "merged" + (suffix if suffix else "") + ".mtz"
-    logfile = "dials.merge" + (suffix if suffix else "") + ".log"
-    html_file = "dials.merge" + (suffix if suffix else "") + ".html"
-    json_file = "dials.merge" + (suffix if suffix else "") + ".json"
+    logfile = "dials.merge.log"
+    filename = "merged.mtz"
+    html_file = "dials.merge.html"
+    json_file = "dials.merge.json"
+    if name:
+        logfile = f"dials.merge.{name}.log"
+        filename = f"{name}.mtz"
+        html_file = f"dials.merge.{name}.html"
+        json_file = f"dials.merge.{name}.json"
     with run_in_directory(working_directory), log_to_file(
         logfile
     ) as dials_logger, record_step("dials.merge"):
@@ -311,7 +322,7 @@ def merge(
         FileHandler.record_log_file("dials.merge", working_directory / logfile)
         FileHandler.record_more_log_file("dials.merge", working_directory / json_file)
         FileHandler.record_html_file("dials.merge", working_directory / html_file)
-    xia2_logger.info(f"Merged mtz file: {working_directory / filename}")
+    return working_directory / filename
 
 
 def _extract_scaling_params(reduction_params):
@@ -374,7 +385,7 @@ def _extract_scaling_params(reduction_params):
     return params, diff_phil
 
 
-def _extract_scaling_params_for_scale_against_reference(reduction_params, index):
+def _extract_scaling_params_for_scale_against_reference(reduction_params, name):
     extra_defaults = """
         model=KB
         scaling_options.full_matrix=False
@@ -389,8 +400,8 @@ def _extract_scaling_params_for_scale_against_reference(reduction_params, index)
     """
     xia2_phil = f"""
         anomalous={reduction_params.anomalous}
-        output.experiments=scaled_{index}.expt
-        output.reflections=scaled_{index}.refl
+        output.experiments={name}.expt
+        output.reflections={name}.refl
         output.html=None
         scaling_options.reference={str(reduction_params.reference)}
     """
@@ -440,16 +451,16 @@ def _extract_scaling_params_for_scale_against_reference(reduction_params, index)
 def scale_against_reference(
     working_directory: Path,
     files: FilePair,
-    index: int,
     reduction_params,
-) -> FilesDict:
-    logfile = f"dials.scale.{index}.log"
+    name="",
+) -> FilePair:
+    logfile = f"dials.scale.{name}.log"
     with run_in_directory(working_directory), log_to_file(logfile) as dials_logger:
         # Setup scaling
         expts = load.experiment_list(files.expt, check_format=False)
         table = flex.reflection_table.from_file(files.refl)
         params, diff_phil = _extract_scaling_params_for_scale_against_reference(
-            reduction_params, index
+            reduction_params, name
         )
         dials_logger.info(
             "The following parameters have been modified:\n"
@@ -467,20 +478,21 @@ def scale_against_reference(
         dials_logger.info(f"Saving scaled reflections to {params.output.reflections}")
         scaled_table.as_file(params.output.reflections)
 
-    return {
-        index: FilePair(
-            working_directory / params.output.experiments,
-            working_directory / params.output.reflections,
-        )
-    }
+    return FilePair(
+        working_directory / params.output.experiments,
+        working_directory / params.output.reflections,
+    )
 
 
 def scale(
     working_directory: Path,
     files_to_scale: List[FilePair],
     reduction_params: ReductionParams,
+    name="",
 ) -> Tuple[ExperimentList, flex.reflection_table]:
     logfile = "dials.scale.log"
+    if name:
+        logfile=f"dials.scale.{name}.log"
     with run_in_directory(working_directory), log_to_file(
         logfile
     ) as dials_logger, record_step("dials.scale"):
@@ -504,25 +516,34 @@ def scale(
         scaler = ScalingAlgorithm(params, expts, tables)
         scaler.run()
         scaled_expts, scaled_table = scaler.finish()
+        if name:
+            out_expt = f"scaled.{name}.expt"
+            out_refl = f"scaled.{name}.refl"
+        else:
+            out_expt = f"scaled.expt"
+            out_refl = f"scaled.refl"
 
-        dials_logger.info("Saving scaled experiments to scaled.expt")
-        scaled_expts.as_file("scaled.expt")
-        dials_logger.info("Saving scaled reflections to scaled.refl")
-        scaled_table.as_file("scaled.refl")
+        dials_logger.info(f"Saving scaled experiments to {out_expt}")
+        scaled_expts.as_file(out_expt)
+        dials_logger.info(f"Saving scaled reflections to {out_refl}")
+        scaled_table.as_file(out_refl)
 
-        n_final = len(scaled_expts)
+        '''n_final = len(scaled_expts)
         uc = determine_best_unit_cell(scaled_expts)
         uc_str = ", ".join(str(round(i, 3)) for i in uc.parameters())
         xia2_logger.info(
             f"{n_final} crystals scaled in space group {scaled_expts[0].crystal.get_space_group().info()}\nMedian cell: {uc_str}"
         )
         stats_summary, d_min_fit = statistics_output_and_resolution_from_scaler(scaler)
-        xia2_logger.info(stats_summary)
-        FileHandler.record_data_file(working_directory / "scaled.expt")
-        FileHandler.record_data_file(working_directory / "scaled.refl")
+        xia2_logger.info(stats_summary)'''
+        FileHandler.record_data_file(working_directory / out_expt)
+        FileHandler.record_data_file(working_directory / out_refl)
         FileHandler.record_log_file("dials.scale", working_directory / logfile)
 
-    return scaled_expts, scaled_table
+    return FilePair(
+        working_directory / out_expt,
+        working_directory / out_refl,
+    )#scaled_expts, scaled_table
 
 
 def _extract_cosym_params(reduction_params, index):
