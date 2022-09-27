@@ -1,3 +1,4 @@
+from tkinter import E
 from dxtbx.serialize import load
 import h5py
 from importlib_metadata import metadata
@@ -13,84 +14,26 @@ import yaml
 from yaml.loader import SafeLoader
 import h5py
 
-def parse_grouping(data, groupname="group_by"):
-    #data = list(yaml.load_all(yml, Loader=SafeLoader))[0]
+class MetadataInFile(object):
 
-    # first check we have everything expected in our yml definition - images, structure with values and tolerances
-    if not "images" in data:
-        raise AssertionError("No images defined in yml file")
-    images = data["images"]
-    if not "structure" in data:
-        raise AssertionError("No structure defiend in yml file")
-    structure = data["structure"]
-    if not groupname in structure:
-        raise AssertionError(f"{groupname} not found as a key in the yml structure section")
-    if not "values" in data["structure"][groupname]:
-        raise AssertionError(f"values key not found in structure:{groupname} in the yml definition")
-    values =  data["structure"][groupname]["values"]
-    if not "tolerances" in data["structure"][groupname]:
-        raise AssertionError(f"Tolerances must be specified")
-    tolerances = data["structure"][groupname]["tolerances"]
+    def __init__(self, file, item):
+        self.file = file
+        self.item = item
 
-    # in python, want to form a dict of image file to
-    from collections import defaultdict
-    metadata_dict = defaultdict(dict)
-    """image_i: {value_name_j : {file: , item: }}"""
-    parsed = ParsedGrouping(groupname, images)
+    def __eq__(self, other):
+        return (self.file == other.file and self.item == other.item)
 
-    if "metadata" not in data:
-        # expected format is file:data, so split on ':'
-        for value in values:
-            pieces = value.split(":")
-            if len(pieces) != 2:
-                raise AssertionError(f"Unable to understand value: {value}, expected format file:item e.g. /data/file.h5:/entry/data/timepoint")
-            image, metadata = pieces
-            _, valuename = metadata.rsplit('/', 1)#FIXME use Path
-            if image not in images:
-                raise AssertionError("File part of values does not match any input datafiles listed in images")
-            #metadata_dict[image][valuename] = {"file" : image, "item": metadata}
-            parsed.add_metadata_for_image(image, {valuename : {"file" : image, "item": metadata}})
-    else:
-        images_to_metadata = data["metadata"]
-        if set(images_to_metadata.keys()) != set(images):
-            raise AssertionError("Not all images have a corresponding metadata file")
-        for value in values:
-            pieces = value.split(":")
-            if len(pieces) != 2:
-                raise AssertionError(f"Unable to understand value: {value}, expected format file:item e.g. /data/file.h5:/entry/data/timepoint")
-            metafile, metadata = pieces
-            _, valuename = metadata.rsplit('/', 1)#FIXME use Path
-            image = None
-            for k,v in images_to_metadata.items():
-                if v == metafile:
-                    image = k
-                    break
-            if not image:
-                raise AssertionError(f"Unable to find image matching metadata file {metafile}")
-            #metadata_dict[image][valuename] = {"file" : metafile, "item": metadata}
-            parsed.add_metadata_for_image(image, {valuename : {"file" : metafile, "item": metadata}})
+class ConstantMetadataForFile(object):
 
-    parsed.add_tolerances(tolerances)
-    parsed.check_consistent()
-    #print(parsed)
-    return parsed
+    def __init__(self, value):
+        self.value = value
 
-def full_parse(yml):
-    data = list(yaml.load_all(yml, Loader=SafeLoader))[0]
-    if not "structure" in data:
-        raise AssertionError("No structure defiend in yml file")
-    structure = data["structure"]
-    parsed_groups = {}
-    groups = structure.keys()
-    for g in groups:
-        parsed_groups[g] = parse_grouping(data, g)
-    #print(parsed_groups)
-
-    return parsed_groups
+    def __eq__(self, other):
+        return self.value == other.value
 
 class ParsedGrouping(object):
-    def __init__(self, name, images):
-        self.name = name
+    def __init__(self, images):
+        self.name = 'test'#name
         self._images_to_metadata = {i:{} for i in images}
         self.tolerances:dict = {}
         self._metadata_names = set()
@@ -106,7 +49,7 @@ class ParsedGrouping(object):
     def add_metadata_for_image(self, image:str, metadata:dict):
         if not image in self._images_to_metadata:
             raise ValueError(f"{image} not in initialised images")
-        self._images_to_metadata[image] = metadata
+        self._images_to_metadata[image].update(metadata)
         self._metadata_names.add(list(metadata.keys())[0])
 
     def add_tolerances(self, tolerances:dict):
@@ -138,82 +81,134 @@ Summary of data in ParsedGrouping class
             header += f"  Image: {i}\n    metadata: {v}\n"
         return header
 
+    def join(self, new):
+        assert self.name == new.name
+        assert self.metadata_names == new.metadata_names
+        assert self.tolerances == new.tolerances
+        for image, meta in new._images_to_metadata.items():
+            if image in self._images_to_metadata:
+                assert self._images_to_metadata[image] == meta
+            else:
+                self._images_to_metadata[image] = meta
+        return self
+
+
     def extract_data(self):
         relevant_metadata = defaultdict(dict)
         for img, metadata_dict in self._images_to_metadata.items():
             for k,v in metadata_dict.items():
-                file = v["file"]
-                item = v["item"]
-                with h5py.File(file, mode="r") as filedata:
-                    item = item.split("/")[1:]
-                    while item:
-                        next = item.pop(0)
-                        filedata = filedata[next]
-                    this_values = filedata[()]
-                relevant_metadata[img][k] = this_values
-        #print(relevant_metadata)
+                if isinstance(v, MetadataInFile):
+                    file = v.file
+                    item = v.item
+                    with h5py.File(file, mode="r") as filedata:
+                        try:
+                            item = item.split("/")[1:]
+                            while item:
+                                next = item.pop(0)
+                                filedata = filedata[next]
+                            this_values = filedata[()]
+                        except Exception:
+                            raise ValueError(f"Unable to extract {item} from {file}")
+                        else:
+                            relevant_metadata[img][k] = this_values
+                elif isinstance(v, ConstantMetadataForFile):
+                    relevant_metadata[img][k] = v.value
+                else:
+                    raise TypeError()
         return relevant_metadata
 
-def extract_metadata_from_parsed(parsed, grouping="scale_by"):
-    relevant_metadata = defaultdict(dict)
-    #print(parsed)
-    for img, metadata_dict in parsed[grouping].items():
-        for k,v in metadata_dict.items():
-            #print(k,v)
-            if k == "tolerances":
-                continue
-            file = v["file"]
-            item = v["item"]
-            #print(file, item)
-            with h5py.File(file, mode="r") as filedata:
-                item = item.split("/")[1:]
-                while item:
-                    next = item.pop(0)
-                    filedata = filedata[next]
-                this_values = filedata[()]
-            relevant_metadata[img][k] = this_values
-    #print(relevant_metadata)
-    return relevant_metadata
+class ParsedYAML(object):
 
+    def __init__(self, images, metadata, structure):
+        self._images = images
+        self.metadata_items = {}
+        self._groupings = {}
+        self._parse_metadata(metadata)
+        self._parse_structure(structure)
 
-    file = parsed[grouping]["/Users/whi10850/Documents/vmxi_grouping/image_58769.h5"]["timepoint"]["file"]
-    with h5py.File(file, mode="r") as filedata:
-        metadata = parsed["scale_by"]["/Users/whi10850/Documents/vmxi_grouping/image_58769.h5"]["timepoint"]["item"]
-        metadata = metadata.split("/")[1:]
-        while metadata:
-            next = metadata.pop(0)
-            filedata = filedata[next]
-        groups_for_images = filedata[()]
-    #{image: {name1:values, name2:values}} etc
-    return groups_for_images
+    @property
+    def groupings(self):
+        return self._groupings
+
+    def _parse_metadata(self, metadata):
+        for name, metadict in metadata.items():
+            self.metadata_items[name] = {}
+            for image, meta in metadict.items():
+                if not image in self._images:
+                    raise ValueError(f"Image {image} not specified in 'Images:'")
+                if type(meta) is float:
+                    self.metadata_items[name][image] = ConstantMetadataForFile(meta)
+                elif type(meta) is str:
+                    pieces = meta.split(":")
+                    if len(pieces) != 2:
+                        raise ValueError(f"Unable to understand value: {meta}, expected format file:item e.g. /data/file.h5:/entry/data/timepoint")
+                    metafile, loc = pieces
+                    self.metadata_items[name][image] = MetadataInFile(metafile, loc)
+                else:
+                    raise TypeError("Only float and string metadata items understood")
+        for name, items in self.metadata_items.items():
+            if len(items) != len(self._images):
+                raise ValueError(f"Not all images do have {name} values specified")
+
+    def _parse_structure(self, structure):
+        for groupby, data in structure.items():
+            self._groupings[groupby] = ParsedGrouping(self._images)
+            if "values" not in data:
+               raise ValueError(f"Grouping {groupby} does not have 'values' specified")
+            if "tolerances" not in data:
+                raise ValueError(f"Grouping {groupby} does not have 'tolerances' specified")
+            if type(data["values"]) is not list:
+                raise ValueError(f"Grouping {groupby}: values must be a list of metadata names")
+            values = data["values"]
+            if type(data["tolerances"]) is not list:
+                raise ValueError(f"Grouping {groupby}: tolerances must be a list")
+            tolerances = data["tolerances"]
+            if len(tolerances) != len(values):
+                raise ValueError(f"The tolerances and values lists are unequal in {groupby} grouping")
+            for name in values:
+                if not name in self.metadata_items:
+                    raise ValueError(f"Location of {name} values not specified in metadata category")
+                for image in self._images:
+                    self._groupings[groupby].add_metadata_for_image(image, {name: self.metadata_items[name][image]})
+            self._groupings[groupby].add_tolerances({n:t for n, t in zip(values, tolerances)})
+            self._groupings[groupby].check_consistent()
+
+    def join(self, new):
+        self._images = list(set(self._images + new._images))
+        # first combine the metadata
+        assert set(self.metadata_items.keys()) == set(new.metadata_items.keys())
+        for name, metadict in new.metadata_items.items():
+            self.metadata_items[name].update(metadict)
+        for name, items in self.metadata_items.items():
+            if len(items) != len(self._images):
+                raise ValueError(f"Not all images do have {name} values specified")
+        # now join the groupings
+        for name, group in new.groupings.items():
+            # FIXME should we assert same name groupings?
+            if name in self.groupings.keys():
+                self.groupings[name].join(group)
+            else:
+                self.groupings[name] = group
+        return self
+
+def full_parse(yml):
+    data = list(yaml.load_all(yml, Loader=SafeLoader))[0]
+
+    if not "images" in data:
+        raise AssertionError("No images defined in yml file")
+    images = data["images"]
+    if not "metadata" in data:
+        raise AssertionError("No metadata defined in yml file")
+    metadata = data["metadata"]
+    if not "structure" in data:
+        raise AssertionError("No structure defined in yml file")
+    structure = data["structure"]
+
+    return ParsedYAML(images, metadata, structure)
+
 from collections import defaultdict
 
-def join_groups(g1, g2, tolerance=0.1):
-    #while g2.items():
-    g2_to_g1_map = {}
-    for n1,v1 in g1.items():
-        letftover_g2 = {}
-        for n2,v2 in g2.items():
-            min_overall = min(v1[0], v2[0])
-            max_overall = max(v1[1], v2[1])
-            if abs(max_overall - min_overall) < tolerance:
-                # join groups
-                print(f"join {n1}, {n2}")
-                g1[n1] = (min_overall, max_overall)
-                v1 = (min_overall, max_overall)
-                g2_to_g1_map[n2] = n1
-            elif (abs(v1[1] - v2[0]) > tolerance) and (abs(v1[0] - v2[1]) > tolerance):
-                print(f"well separated {n1}, {n2}")
-                letftover_g2[n2] = v2
-            else:
-                raise ValueError(f"Groups are not well separated: {v1} {v2}")
-        g2 = letftover_g2
-    if letftover_g2:
-        max_idx = max(g1.keys()) + 1
-        for k,v in letftover_g2.items():
-            g1[max_idx] = v
-            g2_to_g1_map[k] = max_idx
-    return g1, g2_to_g1_map
+
 
 from typing import List
 
@@ -262,30 +257,22 @@ def yml_to_filesdict(working_directory, parsed, integrated_files, good_crystals_
     if not Path.is_dir(working_directory):
         Path.mkdir(working_directory)
 
-    # with open(structure, 'r') as f:
-    #    parsed = full_parse(f)
-
-    metadata = parsed[grouping].extract_data()
-    joint_metadata = {n : [] for n in parsed[grouping].metadata_names}
-    #print(joint_metadata)
-    #print(metadata)
+    parsed_group = parsed._groupings[grouping]
+    metadata = parsed_group.extract_data()
+    joint_metadata = {n : [] for n in parsed_group.metadata_names}
     for _, metadata_item in metadata.items():# iterate over images
         for name,values in metadata_item.items(): # iterate over different metadata categories
             joint_metadata[name].append(values)
-    #print(joint_metadata)
-    tolerances = [parsed[grouping].tolerances[k] for k in joint_metadata.keys()]
-    #print(tolerances)
+    tolerances = [parsed_group.tolerances[k] for k in joint_metadata.keys()]
 
     groups_for_images = list(joint_metadata.values())[0] # FIXME just works for one metadata name atm
     metadata_name = list(joint_metadata.keys())[0]
     tolerance = tolerances[0]
     import random
-    # desired output is a dict of group index to list of filepairs.
     #groups_for_images = np.array([g + random.uniform(-0.01, 0.01) for g in groups_for_images])
 
     group_idx_to_image_idx, groups, images_to_groups = assign_(groups_for_images, tolerance)
-    images_to_order = {img:i for i,img in enumerate(parsed[grouping]._images_to_metadata.keys())}
-    #print(groups)
+    images_to_order = {img:i for i,img in enumerate(parsed_group._images_to_metadata.keys())}
     file_to_groups = {}
     file_to_identifiers = {} # map of integrated_expt file to good identifiers
 
@@ -296,7 +283,6 @@ def yml_to_filesdict(working_directory, parsed, integrated_files, good_crystals_
             good_identifiers = good_crystals_this.identifiers
             if not good_crystals_this.keep_all_original:
                 expts.select_on_experiment_identifiers(good_identifiers)
-        #indices = np.array([expt.imageset.indices()[0] for expt in expts])
         if not expts:
             file_to_groups[i] = np.array([])
             file_to_identifiers[i] = np.array([])
@@ -344,5 +330,4 @@ def yml_to_filesdict(working_directory, parsed, integrated_files, good_crystals_
         refls_0 = flex.reflection_table.concat(refls_0)
         refls_0.as_file(reflout)
         filesdict[name] = [FilePair(exptout, reflout)]
-        #print(f"saved {len(expts_0)} expts to group {g}")
     return filesdict

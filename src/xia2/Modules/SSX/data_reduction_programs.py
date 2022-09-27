@@ -318,11 +318,91 @@ def merge(
         with open(json_file, "w") as f:
             json.dump(json_data, f, indent=2)
         merge_html_report(json_data, html_file)
-        FileHandler.record_data_file(working_directory / filename)
-        FileHandler.record_log_file("dials.merge", working_directory / logfile)
-        FileHandler.record_more_log_file("dials.merge", working_directory / json_file)
-        FileHandler.record_html_file("dials.merge", working_directory / html_file)
-    return working_directory / filename
+        result = MergeResult(
+            working_directory / filename,
+            working_directory / logfile,
+            working_directory / json_file,
+            working_directory / html_file
+        )
+
+    return result
+
+scaled_cols_to_keep = [
+    "miller_index",
+    "inverse_scale_factor",
+    "intensity.scale.value",
+    "intensity.scale.variance",
+    "flags",
+    "id",
+    "partiality",
+    "partial_id",
+    "d",
+    "qe",
+    "dqe",
+    "lp",
+]
+
+def _wrap_extend_expts(first_elist, second_elist):
+    try:
+        first_elist.extend(second_elist)
+    except RuntimeError as e:
+        raise ValueError(
+            "Unable to combine experiments, check for datafiles containing duplicate experiments.\n"
+            + f"  Specific error message encountered:\n  {e}"
+        )
+
+
+
+@dataclass
+class MergeResult:
+    merge_file: str
+    logfile : str
+    jsonfile: str = ''
+    htmlfile: str = ''
+    summary : str = ''
+
+
+from xia2.Modules.SSX.reporting import statistics_output_from_scaled_files
+def merge_files(working_directory, scaled_results, reduction_params, name):
+
+    #with record_step("joining for merge"):
+    scaled_expts = ExperimentList([])
+    scaled_tables = []
+    # For merging (a simple program), we don't require much data in the
+    # reflection table. So to avoid a large memory spike, just keep the
+    # values we know we need for merging and to report statistics
+    # first 6 in keep are required in merge, the rest will potentially
+    #  be used for filter_reflections call in merge
+    for file_pair in scaled_results:#.values():
+        expts = load.experiment_list(file_pair.expt, check_format=False)
+        _wrap_extend_expts(scaled_expts, expts)
+        table = flex.reflection_table.from_file(file_pair.refl)
+        for k in list(table.keys()):
+            if k not in scaled_cols_to_keep:
+                del table[k]
+        scaled_tables.append(table)
+
+    scaled_table = flex.reflection_table.concat(scaled_tables)
+
+    n_final = len(scaled_expts)
+    stats_summary, _ = statistics_output_from_scaled_files(
+        scaled_expts, scaled_table, reduction_params.central_unit_cell , reduction_params.d_min
+    )
+
+    mergeresult = merge(
+        working_directory,
+        scaled_expts,
+        scaled_table,
+        reduction_params.d_min,
+        reduction_params.central_unit_cell,
+        name,
+    )
+    mergeresult.summary = (
+        f"Merged {n_final} crystals in {', '.join(name.split('.'))}\n" +
+        f"Merged mtz file: {mergeresult.merge_file}\n" +
+        stats_summary
+    )
+    return mergeresult
 
 
 def _extract_scaling_params(reduction_params):
@@ -543,7 +623,7 @@ def scale(
     return FilePair(
         working_directory / out_expt,
         working_directory / out_refl,
-    )#scaled_expts, scaled_table
+    )
 
 
 def _extract_cosym_params(reduction_params, index):

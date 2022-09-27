@@ -310,15 +310,15 @@ def check_data_reduction_files(tmp_path, reindex=True, reference=False):
     assert reindex is (tmp_path / "LogFiles" / "dials.cosym.0.log").is_file()
     assert reindex is (tmp_path / "LogFiles" / "dials.cosym.0.html").is_file()
     assert (tmp_path / "data_reduction" / "scale").is_dir()
-    assert (tmp_path / "data_reduction" / "scale" / "merged.mtz").is_file()
-    assert (tmp_path / "DataFiles" / "merged.mtz").is_file()
-    assert (tmp_path / "LogFiles" / "dials.merge.html").is_file()
-    assert (tmp_path / "LogFiles" / "dials.merge.log").is_file()
-    assert (tmp_path / "LogFiles" / "dials.merge.json").is_file()
+    assert (tmp_path / "data_reduction" / "merge" / "mergegroup_1.mtz").is_file()
+    assert (tmp_path / "DataFiles" / "mergegroup_1.mtz").is_file()
+    assert (tmp_path / "LogFiles" / "dials.merge.mergegroup_1.html").is_file()
+    assert (tmp_path / "LogFiles" / "dials.merge.mergegroup_1.log").is_file()
+    assert (tmp_path / "LogFiles" / "dials.merge.mergegroup_1.json").is_file()
     if reference:
-        assert (tmp_path / "DataFiles" / "scaled_0.refl").is_file()
-        assert (tmp_path / "DataFiles" / "scaled_0.expt").is_file()
-        assert (tmp_path / "LogFiles" / "dials.scale.0.log").is_file()
+        assert (tmp_path / "DataFiles" / "scalebatch_1.refl").is_file()
+        assert (tmp_path / "DataFiles" / "scalebatch_1.expt").is_file()
+        assert (tmp_path / "LogFiles" / "dials.scale.scalebatch_1.log").is_file()
     else:
         assert (tmp_path / "DataFiles" / "scaled.refl").is_file()
         assert (tmp_path / "DataFiles" / "scaled.expt").is_file()
@@ -331,16 +331,16 @@ def check_data_reduction_files_on_scaled_only(tmp_path, reference=False):
     assert not (tmp_path / "data_reduction" / "reindex").is_dir()
     assert not (tmp_path / "LogFiles" / "dials.cosym.0.log").is_file()
     assert not (tmp_path / "LogFiles" / "dials.cosym.0.html").is_file()
-    assert (tmp_path / "data_reduction" / "scale").is_dir()
-    assert (tmp_path / "data_reduction" / "scale" / "merged.mtz").is_file()
-    assert (tmp_path / "DataFiles" / "merged.mtz").is_file()
-    assert (tmp_path / "LogFiles" / "dials.merge.html").is_file()
-    assert (tmp_path / "LogFiles" / "dials.merge.log").is_file()
-    assert (tmp_path / "LogFiles" / "dials.merge.json").is_file()
+    assert (tmp_path / "data_reduction" / "merge").is_dir()
+    assert (tmp_path / "data_reduction" / "merge" / "mergegroup_1.mtz").is_file()
+    assert (tmp_path / "DataFiles" / "mergegroup_1.mtz").is_file()
+    assert (tmp_path / "LogFiles" / "dials.merge.mergegroup_1.html").is_file()
+    assert (tmp_path / "LogFiles" / "dials.merge.mergegroup_1.log").is_file()
+    assert (tmp_path / "LogFiles" / "dials.merge.mergegroup_1.json").is_file()
     if reference:
-        assert not (tmp_path / "DataFiles" / "scaled_0.refl").is_file()
-        assert not (tmp_path / "DataFiles" / "scaled_0.expt").is_file()
-        assert not (tmp_path / "LogFiles" / "dials.scale.0.log").is_file()
+        assert not (tmp_path / "DataFiles" / "scalebatch_1.refl").is_file()
+        assert not (tmp_path / "DataFiles" / "scalebatch_1.expt").is_file()
+        assert not (tmp_path / "LogFiles" / "dials.scale.scalebatch_1.log").is_file()
     else:
         assert (tmp_path / "DataFiles" / "scaled.refl").is_file()
         assert (tmp_path / "DataFiles" / "scaled.expt").is_file()
@@ -356,14 +356,14 @@ def check_data_reduction_files_on_scaled_plus_integrated(
     assert reindex is (tmp_path / "LogFiles" / "dials.cosym.0.log").is_file()
     assert reindex is (tmp_path / "LogFiles" / "dials.cosym.0.html").is_file()
     assert (tmp_path / "data_reduction" / "scale").is_dir()
-    assert (tmp_path / "data_reduction" / "scale" / "merged.mtz").is_file()
-    assert (tmp_path / "DataFiles" / "merged.mtz").is_file()
-    assert (tmp_path / "LogFiles" / "dials.merge.html").is_file()
-    assert (tmp_path / "LogFiles" / "dials.merge.log").is_file()
+    assert (tmp_path / "data_reduction" / "merge" / "mergegroup_1.mtz").is_file()
+    assert (tmp_path / "DataFiles" / "mergegroup_1.mtz").is_file()
+    assert (tmp_path / "LogFiles" / "dials.merge.mergegroup_1.html").is_file()
+    assert (tmp_path / "LogFiles" / "dials.merge.mergegroup_1.log").is_file()
     if reference:
-        assert (tmp_path / "DataFiles" / "scaled_0.refl").is_file()
-        assert (tmp_path / "DataFiles" / "scaled_0.expt").is_file()
-        assert (tmp_path / "LogFiles" / "dials.scale.0.log").is_file()
+        assert (tmp_path / "DataFiles" / "scalebatch_1.refl").is_file()
+        assert (tmp_path / "DataFiles" / "scalebatch_1.expt").is_file()
+        assert (tmp_path / "LogFiles" / "dials.scale.scalebatch_1.log").is_file()
     else:
         assert (tmp_path / "DataFiles" / "scaled.refl").is_file()
         assert (tmp_path / "DataFiles" / "scaled.expt").is_file()
@@ -406,7 +406,8 @@ def test_ssx_reduce(dials_data, tmp_path, pdb_model, idx_ambiguity):
             cwd=tmp_path,
             capture_output=True,
         )
-        assert not result.returncode and not result.stderr
+        #assert not result.returncode
+        assert not result.stderr.decode()
         expts = tmp_path / "reindexed.expt"
         refls = tmp_path / "reindexed.refl"
         args = [
@@ -431,7 +432,8 @@ def test_ssx_reduce(dials_data, tmp_path, pdb_model, idx_ambiguity):
     extra_args.append("scaling.phil=scaling.phil")
 
     result = subprocess.run(args + extra_args, cwd=tmp_path, capture_output=True)
-    assert not result.returncode and not result.stderr
+    #assert not result.returncode
+    assert not result.stderr.decode()
     check_data_reduction_files(tmp_path, reference=pdb_model, reindex=idx_ambiguity)
 
     # now run again only on previously scaled data
@@ -441,7 +443,8 @@ def test_ssx_reduce(dials_data, tmp_path, pdb_model, idx_ambiguity):
         f"processed_directory={tmp_path / 'DataFiles'}",
     ] + extra_args
     result = subprocess.run(args, cwd=tmp_path / "reduce", capture_output=True)
-    assert not result.returncode and not result.stderr
+    #assert not result.returncode
+    assert not result.stderr.decode()
     check_data_reduction_files_on_scaled_only(tmp_path / "reduce", reference=pdb_model)
 
     # now run again only on previously scaled data + integrated data
@@ -466,7 +469,8 @@ def test_ssx_reduce(dials_data, tmp_path, pdb_model, idx_ambiguity):
     pathlib.Path.mkdir(tmp_path / "reduce_combined")
     args.append(f"directory={tmp_path / 'integrated_copy'}")
     result = subprocess.run(args, cwd=tmp_path / "reduce_combined", capture_output=True)
-    assert not result.returncode and not result.stderr
+    #assert not result.returncode
+    assert not result.stderr.decode()
     check_data_reduction_files_on_scaled_plus_integrated(
         tmp_path / "reduce_combined", reference=pdb_model, reindex=idx_ambiguity
     )
