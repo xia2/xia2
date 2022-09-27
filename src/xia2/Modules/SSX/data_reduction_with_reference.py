@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import concurrent.futures
+import functools
 import logging
 from pathlib import Path
 from typing import Any, Dict, Tuple
@@ -56,23 +57,19 @@ class DataReductionWithReference(BaseDataReduction):
 
     def _prepare_for_scaling(self, good_crystals_data) -> None:
 
-        self._files_to_scale = list(
-            split_integrated_data(
-                self._filter_wd,
-                good_crystals_data,
-                self._integrated_data,
-                self._reduction_params,
-            ).values()
+        self._files_to_scale = split_integrated_data(
+            self._filter_wd,
+            good_crystals_data,
+            self._integrated_data,
+            self._reduction_params,
         )
 
     def _reindex(self) -> None:
-        self._files_to_scale = list(
-            parallel_cosym_reference(
-                self._reindex_wd,
-                self._filtered_files_to_process,
-                self._reduction_params,
-                nproc=self._reduction_params.nproc,
-            ).values()
+        self._files_to_scale = parallel_cosym_reference(
+            self._reindex_wd,
+            self._filtered_files_to_process,
+            self._reduction_params,
+            nproc=self._reduction_params.nproc,
         )
 
     def _scale(self) -> None:
@@ -82,15 +79,15 @@ class DataReductionWithReference(BaseDataReduction):
             Path.mkdir(self._scale_wd)
 
         scaled_results = []
-        jobs = {}
-        import functools
 
         batch_template = functools.partial(
             "scalebatch_{index:0{maxindexlength:d}d}".format,
             maxindexlength=len(str(len(self._files_to_scale))),
         )
-        for i, fp in enumerate(self._files_to_scale):
-            jobs[f"{batch_template(index=i+1)}"] = fp
+        jobs = {
+            f"{batch_template(index=i+1)}": fp
+            for i, fp in enumerate(self._files_to_scale)
+        }
 
         with record_step(
             "dials.scale (parallel)"
@@ -125,7 +122,6 @@ class DataReductionWithReference(BaseDataReduction):
         if not scaled_results:
             raise ValueError("No groups successfully scaled")
         self._files_to_merge = scaled_results
-        # now add in previously scaled?
 
     def _prepare_for_merging(self):
 

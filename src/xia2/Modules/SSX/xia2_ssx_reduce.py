@@ -33,10 +33,10 @@ input {
     .multiple = True
     .help = "Path to previously reduced data"
     .expert_level = 1
-  groupby_yaml = None
-    .type = str
-    .help = "Path to .yml file defining grouping structure during processing"
 }
+groupby_yaml = None
+  .type = str
+  .help = "Path to .yml file defining grouping structure during processing"
 multiprocessing.nproc = Auto
   .type = int
   .expert_level = 1

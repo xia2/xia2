@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Optional
 
 import iotbx.phil
 from cctbx import sgtbx, uctbx
@@ -30,10 +30,6 @@ class FilePair:
         if self.expt == other.expt and self.refl == other.refl:
             return True
         return False
-
-
-FilesDict = Dict[int, FilePair]
-# FilesDict: A dict where the keys are an index, corresponding to a filepair
 
 
 @dataclass
@@ -72,8 +68,8 @@ class ReductionParams:
             cosym_phil = Path(params.symmetry.phil).resolve()
         if params.scaling.phil:
             scaling_phil = Path(params.scaling.phil).resolve()
-        if params.input.groupby_yaml:
-            groupby_yaml = Path(params.input.groupby_yaml).resolve()
+        if params.groupby_yaml:
+            groupby_yaml = Path(params.groupby_yaml).resolve()
         return cls(
             params.symmetry.space_group,
             params.reduction_batch_size,

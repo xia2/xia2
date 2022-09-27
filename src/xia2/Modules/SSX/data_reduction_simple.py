@@ -67,13 +67,11 @@ class SimpleDataReduction(BaseDataReduction):
 
     def _reindex(self) -> None:
         # First do parallel reindexing of each batch
-        reindexed_new_files = list(
-            parallel_cosym(
-                self._reindex_wd,
-                self._filtered_files_to_process,
-                self._reduction_params,
-                nproc=self._reduction_params.nproc,
-            ).values()
+        reindexed_new_files = parallel_cosym(
+            self._reindex_wd,
+            self._filtered_files_to_process,
+            self._reduction_params,
+            nproc=self._reduction_params.nproc,
         )
         # At this point, add in any previously scaled data.
         files_to_scale = reindexed_new_files + self._previously_scaled_data
@@ -102,9 +100,7 @@ class SimpleDataReduction(BaseDataReduction):
             self._integrated_data,
             self._reduction_params,
         )
-        self._files_to_scale = (
-            list(new_files_to_process.values()) + self._previously_scaled_data
-        )
+        self._files_to_scale = new_files_to_process + self._previously_scaled_data
 
     def _scale(self) -> None:
 

@@ -17,11 +17,7 @@ from dxtbx.serialize import load
 
 from xia2.Driver.timing import record_step
 from xia2.Handlers.Files import FileHandler
-from xia2.Modules.SSX.data_reduction_definitions import (
-    FilePair,
-    FilesDict,
-    ReductionParams,
-)
+from xia2.Modules.SSX.data_reduction_definitions import FilePair, ReductionParams
 from xia2.Modules.SSX.data_reduction_programs import (
     CrystalsDict,
     assess_for_indexing_ambiguities,
@@ -140,7 +136,7 @@ class BaseDataReduction(object):
         self._scale_wd = self._data_reduction_wd / "scale"
         self._merge_wd = self._data_reduction_wd / "merge"
 
-        self._filtered_files_to_process: FilesDict = {}
+        self._filtered_files_to_process: List[FilePair] = []
         self._files_to_scale: List[FilePair] = []
         self._files_to_merge: List[FilePair] = []
 

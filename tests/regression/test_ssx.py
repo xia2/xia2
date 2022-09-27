@@ -9,10 +9,9 @@ from typing import List
 
 import pytest
 
+from dials.algorithms.scaling.scaling_library import determine_best_unit_cell
 from dials.array_family import flex
 from dxtbx.serialize import load
-
-from xia2.Modules.SSX.data_reduction_programs import determine_best_unit_cell
 
 
 def check_output(main_dir, find_spots=False, index=False, integrate=False):
@@ -406,7 +405,7 @@ def test_ssx_reduce(dials_data, tmp_path, pdb_model, idx_ambiguity):
             cwd=tmp_path,
             capture_output=True,
         )
-        #assert not result.returncode
+        assert not result.returncode
         assert not result.stderr.decode()
         expts = tmp_path / "reindexed.expt"
         refls = tmp_path / "reindexed.refl"
@@ -432,7 +431,7 @@ def test_ssx_reduce(dials_data, tmp_path, pdb_model, idx_ambiguity):
     extra_args.append("scaling.phil=scaling.phil")
 
     result = subprocess.run(args + extra_args, cwd=tmp_path, capture_output=True)
-    #assert not result.returncode
+    assert not result.returncode
     assert not result.stderr.decode()
     check_data_reduction_files(tmp_path, reference=pdb_model, reindex=idx_ambiguity)
 
@@ -443,7 +442,7 @@ def test_ssx_reduce(dials_data, tmp_path, pdb_model, idx_ambiguity):
         f"processed_directory={tmp_path / 'DataFiles'}",
     ] + extra_args
     result = subprocess.run(args, cwd=tmp_path / "reduce", capture_output=True)
-    #assert not result.returncode
+    assert not result.returncode
     assert not result.stderr.decode()
     check_data_reduction_files_on_scaled_only(tmp_path / "reduce", reference=pdb_model)
 
@@ -469,7 +468,7 @@ def test_ssx_reduce(dials_data, tmp_path, pdb_model, idx_ambiguity):
     pathlib.Path.mkdir(tmp_path / "reduce_combined")
     args.append(f"directory={tmp_path / 'integrated_copy'}")
     result = subprocess.run(args, cwd=tmp_path / "reduce_combined", capture_output=True)
-    #assert not result.returncode
+    assert not result.returncode
     assert not result.stderr.decode()
     check_data_reduction_files_on_scaled_plus_integrated(
         tmp_path / "reduce_combined", reference=pdb_model, reindex=idx_ambiguity

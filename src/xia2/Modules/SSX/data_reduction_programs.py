@@ -32,12 +32,11 @@ from iotbx.phil import parse
 
 from xia2.Driver.timing import record_step
 from xia2.Handlers.Files import FileHandler
-from xia2.Modules.SSX.data_reduction_definitions import (
-    FilePair,
-    FilesDict,
-    ReductionParams,
+from xia2.Modules.SSX.data_reduction_definitions import FilePair, ReductionParams
+from xia2.Modules.SSX.reporting import (
+    condensed_unit_cell_info,
+    statistics_output_from_scaled_files,
 )
-from xia2.Modules.SSX.reporting import condensed_unit_cell_info
 from xia2.Modules.SSX.util import log_to_file, run_in_directory
 
 xia2_logger = logging.getLogger(__name__)
@@ -99,7 +98,7 @@ def filter_(
 
 def split_integrated_data(
     working_directory, good_crystals_data, integrated_data, reduction_params
-) -> FilesDict:
+) -> List[FilePair]:
     new_files_to_process = split_filtered_data(
         working_directory,
         integrated_data,
@@ -357,9 +356,6 @@ class MergeResult:
     summary: str = ""
 
 
-from xia2.Modules.SSX.reporting import statistics_output_from_scaled_files
-
-
 def merge_files(working_directory, scaled_results, reduction_params, name):
 
     # with record_step("joining for merge"):
@@ -571,8 +567,8 @@ def scale_against_reference(
         working_directory / params.output.experiments,
         working_directory / params.output.reflections,
         working_directory / logfile,
-        working_directory / params.output.html,
-        working_directory / params.output.json,
+        None,
+        None,
     )
 
 
@@ -624,8 +620,8 @@ def scale(
         working_directory / out_expt,
         working_directory / out_refl,
         working_directory / logfile,
-        working_directory / params.output.html,
-        working_directory / params.output.json,
+        None,
+        None,
     )
 
 
@@ -717,7 +713,7 @@ def cosym_against_reference(
     return ProgramResult(
         working_directory / cosym_params.output.experiments,
         working_directory / cosym_params.output.reflections,
-        working_directory / cosym_params.output.log,
+        working_directory / logfile,
         working_directory / cosym_params.output.html,
         working_directory / cosym_params.output.json,
     )
@@ -761,7 +757,7 @@ def individual_cosym(
     return ProgramResult(
         working_directory / cosym_params.output.experiments,
         working_directory / cosym_params.output.reflections,
-        working_directory / cosym_params.output.log,
+        working_directory / logfile,
         working_directory / cosym_params.output.html,
         working_directory / cosym_params.output.json,
     )
@@ -810,16 +806,16 @@ def cosym_reindex(
 
 def parallel_cosym(
     working_directory: Path,
-    data_to_reindex: FilesDict,
+    data_to_reindex: List[FilePair],
     reduction_params,
     nproc: int = 1,
-) -> FilesDict:
+) -> List[FilePair]:
     """Run dials.cosym on each batch to resolve indexing ambiguities."""
 
     if not Path.is_dir(working_directory):
         Path.mkdir(working_directory)
 
-    reindexed_results: FilesDict = {}
+    reindexed_results = []
 
     with open(os.devnull, "w") as devnull:
         sys.stdout = devnull  # block printing from cosym
@@ -828,28 +824,25 @@ def parallel_cosym(
             "dials.cosym (parallel)"
         ), concurrent.futures.ProcessPoolExecutor(max_workers=nproc) as pool:
 
-            cosym_futures: Dict[Any, int] = {
+            cosym_futures: List[Any] = [
                 pool.submit(
                     individual_cosym,
                     working_directory,
                     files,
                     index,
                     reduction_params,
-                ): index
-                for index, files in data_to_reindex.items()
-            }
+                )
+                for index, files in enumerate(data_to_reindex)
+            ]
             for future in concurrent.futures.as_completed(cosym_futures):
                 try:
                     result = future.result()
-                    i = cosym_futures[future]
                 except Exception as e:
                     raise ValueError(
                         f"Unsuccessful scaling and symmetry analysis of the new data. Error:\n{e}"
                     )
                 else:
-                    reindexed_results.update(
-                        {i: FilePair(result.exptfile, result.reflfile)}
-                    )
+                    reindexed_results.append(FilePair(result.exptfile, result.reflfile))
                     FileHandler.record_log_file(
                         result.logfile.name.rstrip(".log"), result.logfile
                     )
@@ -863,10 +856,10 @@ def parallel_cosym(
 
 def parallel_cosym_reference(
     working_directory: Path,
-    data_to_reindex: FilesDict,
+    data_to_reindex: List[FilePair],
     reduction_params,
     nproc: int = 1,
-) -> FilesDict:
+) -> List[FilePair]:
     """
     Runs dials.cosym on each batch to resolve indexing ambiguities
     """
@@ -874,7 +867,7 @@ def parallel_cosym_reference(
     if not Path.is_dir(working_directory):
         Path.mkdir(working_directory)
 
-    reindexed_results: FilesDict = {}
+    reindexed_results = []
 
     with open(os.devnull, "w") as devnull:
         sys.stdout = devnull  # block printing from cosym
@@ -883,28 +876,25 @@ def parallel_cosym_reference(
             "dials.scale/dials.cosym (parallel)"
         ), concurrent.futures.ProcessPoolExecutor(max_workers=nproc) as pool:
 
-            cosym_futures: Dict[Any, int] = {
+            cosym_futures: List[Any] = [
                 pool.submit(
                     cosym_against_reference,
                     working_directory,
                     files,
                     index,
                     reduction_params,
-                ): index
-                for index, files in data_to_reindex.items()
-            }
+                )
+                for index, files in enumerate(data_to_reindex)
+            ]
             for future in concurrent.futures.as_completed(cosym_futures):
                 try:
                     result = future.result()
-                    i = cosym_futures[future]
                 except Exception as e:
                     raise ValueError(
                         f"Unsuccessful scaling and symmetry analysis of the new data. Error:\n{e}"
                     )
                 else:
-                    reindexed_results.update(
-                        {i: FilePair(result.exptfile, result.reflfile)}
-                    )
+                    reindexed_results.append(FilePair(result.exptfile, result.reflfile))
                     FileHandler.record_log_file(
                         result.logfile.name.rstrip(".log"), result.logfile
                     )
@@ -972,12 +962,11 @@ def split_filtered_data(
     new_data: List[FilePair],
     good_crystals_data: CrystalsDict,
     min_batch_size: int,
-    offset: int = 0,
-) -> FilesDict:
+) -> List[FilePair]:
     if not Path.is_dir(working_directory):
         Path.mkdir(working_directory)
     with record_step("splitting"):
-        data_to_reindex: FilesDict = {}
+        data_to_reindex: List = []
         n_cryst = sum(len(v.identifiers) for v in good_crystals_data.values())
         n_batches = max(math.floor(n_cryst / min_batch_size), 1)
         stride = n_cryst / n_batches
@@ -985,7 +974,7 @@ def split_filtered_data(
         splits = [int(math.floor(i * stride)) for i in range(n_batches)]
         splits.append(n_cryst)
         template = functools.partial(
-            "split_{index:0{fmt:d}d}".format, fmt=len(str(n_batches + offset))
+            "split_{index:0{fmt:d}d}".format, fmt=len(str(n_batches))
         )
         leftover_expts = ExperimentList([])
         leftover_refls: List[flex.reflection_table] = []
@@ -1019,14 +1008,14 @@ def split_filtered_data(
                 sub_refl.reset_ids()  # necessary?
                 leftover_expts = leftover_expts[n_required:]
                 out_expt = working_directory / (
-                    template(index=n_batch_output + offset) + ".expt"
+                    template(index=n_batch_output) + ".expt"
                 )
                 out_refl = working_directory / (
-                    template(index=n_batch_output + offset) + ".refl"
+                    template(index=n_batch_output) + ".refl"
                 )
                 sub_expt.as_file(out_expt)
                 sub_refl.as_file(out_refl)
-                data_to_reindex[n_batch_output + offset] = FilePair(out_expt, out_refl)
+                data_to_reindex.append(FilePair(out_expt, out_refl))
                 n_batch_output += 1
                 if n_batch_output == len(splits) - 1:
                     break
