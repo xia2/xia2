@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import concurrent.futures
-import enum
 import logging
 from pathlib import Path
 from typing import Any, Dict, Tuple
@@ -10,13 +9,15 @@ from cctbx import sgtbx, uctbx
 
 from xia2.Driver.timing import record_step
 from xia2.Handlers.Files import FileHandler
-from xia2.Modules.SSX.data_reduction_base import BaseDataReduction, FilesDict
+from xia2.Modules.SSX.data_reduction_base import BaseDataReduction
 from xia2.Modules.SSX.data_reduction_programs import (
+    CrystalsDict,
+    FilePair,
     filter_,
     parallel_cosym_reference,
     scale_against_reference,
+    split_integrated_data,
 )
-from xia2.Modules.SSX.data_reduction_programs import split_integrated_data
 
 xia2_logger = logging.getLogger(__name__)
 
@@ -45,25 +46,24 @@ class DataReductionWithReference(BaseDataReduction):
         self._files_to_merge = self._previously_scaled_data
         self._merge()
 
-
-    def _filter(self) -> Tuple[FilesDict, uctbx.unit_cell, sgtbx.space_group_info]:
-        new_files_to_process, best_unit_cell, space_group = filter_(
+    def _filter(self) -> Tuple[CrystalsDict, uctbx.unit_cell, sgtbx.space_group_info]:
+        good_crystals_data, best_unit_cell, space_group = filter_(
             self._filter_wd, self._integrated_data, self._reduction_params
         )
         self._reduction_params.central_unit_cell = best_unit_cell  # store the
         # updated value to use in scaling
-        return new_files_to_process, best_unit_cell, space_group
-
+        return good_crystals_data, best_unit_cell, space_group
 
     def _prepare_for_scaling(self, good_crystals_data) -> None:
 
-        self._files_to_scale = list(split_integrated_data(
-            self._filter_wd,
-            good_crystals_data,
-            self._integrated_data,
-            self._reduction_params,
-        ).values())
-
+        self._files_to_scale = list(
+            split_integrated_data(
+                self._filter_wd,
+                good_crystals_data,
+                self._integrated_data,
+                self._reduction_params,
+            ).values()
+        )
 
     def _reindex(self) -> None:
         self._files_to_scale = list(
@@ -97,7 +97,7 @@ class DataReductionWithReference(BaseDataReduction):
         ), concurrent.futures.ProcessPoolExecutor(
             max_workers=self._reduction_params.nproc
         ) as pool:
-            scale_futures: Dict[Any, int] = {
+            scale_futures: Dict[Any, str] = {
                 pool.submit(
                     scale_against_reference,
                     self._scale_wd,
@@ -115,11 +115,11 @@ class DataReductionWithReference(BaseDataReduction):
                     xia2_logger.warning(f"Unsuccessful scaling of group. Error:\n{e}")
                 else:
                     xia2_logger.info(f"Completed scaling of {name}")
-                    scaled_results.append(result)
-                    FileHandler.record_data_file(result.expt)
-                    FileHandler.record_data_file(result.refl)
+                    scaled_results.append(FilePair(result.exptfile, result.reflfile))
+                    FileHandler.record_data_file(result.exptfile)
+                    FileHandler.record_data_file(result.reflfile)
                     FileHandler.record_log_file(
-                        f"dials.scale.{name}", self._scale_wd / f"dials.scale.{name}.log"
+                        result.logfile.name.rstrip(".log"), result.logfile
                     )
 
         if not scaled_results:
@@ -131,4 +131,3 @@ class DataReductionWithReference(BaseDataReduction):
 
         if self._previously_scaled_data:
             self._files_to_merge += self._previously_scaled_data
-

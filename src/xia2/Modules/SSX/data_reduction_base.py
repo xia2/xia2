@@ -10,23 +10,24 @@ from xia2.Handlers.Streams import banner
 
 xia2_logger = logging.getLogger(__name__)
 
+import concurrent.futures
+
+from dials.array_family import flex
+from dxtbx.serialize import load
+
+from xia2.Driver.timing import record_step
+from xia2.Handlers.Files import FileHandler
 from xia2.Modules.SSX.data_reduction_definitions import (
     FilePair,
     FilesDict,
     ReductionParams,
 )
 from xia2.Modules.SSX.data_reduction_programs import (
+    CrystalsDict,
     assess_for_indexing_ambiguities,
     filter_,
     merge_files,
 )
-
-from xia2.Handlers.Files import FileHandler
-import concurrent.futures
-from dials.array_family import flex
-from dxtbx.serialize import load
-
-from xia2.Driver.timing import record_step
 from xia2.Modules.SSX.yml_handling import yml_to_filesdict
 
 
@@ -161,14 +162,18 @@ class BaseDataReduction(object):
         if self._reduction_params.groupby_yaml:
             # verify the grouping yaml and save into the data reduction dir.
             from xia2.Modules.SSX.yml_handling import full_parse
-            with open(self._reduction_params.groupby_yaml, 'r') as f:
+
+            with open(self._reduction_params.groupby_yaml, "r") as f:
                 parsed = full_parse(f)
             self._parsed_yaml = parsed
             from shutil import copyfile
-            copyfile(self._reduction_params.groupby_yaml, self._data_reduction_wd / "groupby.yaml")
+
+            copyfile(
+                self._reduction_params.groupby_yaml,
+                self._data_reduction_wd / "groupby.yaml",
+            )
         else:
             self._parsed_yaml = None
-
 
     @classmethod
     def from_directories(
@@ -247,13 +252,17 @@ class BaseDataReduction(object):
         xia2_logger.notice(banner("Scaling"))  # type: ignore
         self._scale()
         self._prepare_for_merging()
-        xia2_logger.notice(banner("Merging"))
+        xia2_logger.notice(banner("Merging"))  # type: ignore
         self._merge()
 
     def _split_data_for_reindex(self, good_crystals_data):
         from xia2.Modules.SSX.data_reduction_programs import split_integrated_data
+
         self._filtered_files_to_process = split_integrated_data(
-            self._filter_wd, good_crystals_data, self._integrated_data, self._reduction_params
+            self._filter_wd,
+            good_crystals_data,
+            self._integrated_data,
+            self._reduction_params,
         )
 
     def _run_only_previously_scaled(self):
@@ -295,21 +304,23 @@ class BaseDataReduction(object):
             f"{n_final} crystals in total scaled in space group {self._reduction_params.space_group}\nMedian cell: {uc_str}"
         )
 
-        merge_input = {"mergegroup_1" : scaled_results} # default if no 'merge_by'
+        merge_input = {"mergegroup_1": scaled_results}  # default if no 'merge_by'
         if self._parsed_yaml:
             if "merge_by" in self._parsed_yaml._groupings:
-                #for name, scaled_files in scaled_results.items():
+                # for name, scaled_files in scaled_results.items():
                 merge_input = {}
                 groups_for_merge = yml_to_filesdict(
                     self._reindex_wd,
                     self._parsed_yaml,
                     scaled_results,
-                    grouping="merge_by"
+                    grouping="merge_by",
                 )
                 for g, flist in groups_for_merge.items():
                     merge_input[f"{g}"] = flist
 
-        future_list = [] # do it this way to get results in order for consistent printing
+        future_list = (
+            []
+        )  # do it this way to get results in order for consistent printing
 
         with record_step(
             "dials.merge (parallel)"
@@ -334,7 +345,12 @@ class BaseDataReduction(object):
             else:
                 xia2_logger.info(mergeresult.summary)
                 FileHandler.record_data_file(mergeresult.merge_file)
-                FileHandler.record_log_file(mergeresult.logfile.name.rstrip('.log'), mergeresult.logfile)
-                FileHandler.record_more_log_file(mergeresult.jsonfile.name.rstrip('.json'), mergeresult.jsonfile)
-                FileHandler.record_html_file(mergeresult.htmlfile.name.rstrip('.html'), mergeresult.htmlfile)
-
+                FileHandler.record_log_file(
+                    mergeresult.logfile.name.rstrip(".log"), mergeresult.logfile
+                )
+                FileHandler.record_more_log_file(
+                    mergeresult.jsonfile.name.rstrip(".json"), mergeresult.jsonfile
+                )
+                FileHandler.record_html_file(
+                    mergeresult.htmlfile.name.rstrip(".html"), mergeresult.htmlfile
+                )

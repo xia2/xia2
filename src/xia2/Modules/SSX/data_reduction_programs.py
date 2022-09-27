@@ -16,7 +16,6 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from cctbx import crystal, sgtbx, uctbx
 from dials.algorithms.scaling.algorithm import ScalingAlgorithm
-from dials.algorithms.scaling.scaling_library import determine_best_unit_cell
 from dials.array_family import flex
 from dials.command_line.cluster_unit_cell import do_cluster_analysis
 from dials.command_line.cluster_unit_cell import phil_scope as cluster_phil_scope
@@ -38,10 +37,7 @@ from xia2.Modules.SSX.data_reduction_definitions import (
     FilesDict,
     ReductionParams,
 )
-from xia2.Modules.SSX.reporting import (
-    condensed_unit_cell_info,
-    statistics_output_and_resolution_from_scaler,
-)
+from xia2.Modules.SSX.reporting import condensed_unit_cell_info
 from xia2.Modules.SSX.util import log_to_file, run_in_directory
 
 xia2_logger = logging.getLogger(__name__)
@@ -100,11 +96,9 @@ def filter_(
     best_unit_cell = determine_best_unit_cell_from_crystals(good_crystals_data)
     return good_crystals_data, best_unit_cell, space_group
 
+
 def split_integrated_data(
-    working_directory,
-    good_crystals_data,
-    integrated_data,
-    reduction_params
+    working_directory, good_crystals_data, integrated_data, reduction_params
 ) -> FilesDict:
     new_files_to_process = split_filtered_data(
         working_directory,
@@ -281,7 +275,7 @@ def merge(
     d_min: float = None,
     best_unit_cell: Optional[uctbx.unit_cell] = None,
     name: Optional[str] = None,
-) -> None:
+) -> MergeResult:
     logfile = "dials.merge.log"
     filename = "merged.mtz"
     html_file = "dials.merge.html"
@@ -322,10 +316,11 @@ def merge(
             working_directory / filename,
             working_directory / logfile,
             working_directory / json_file,
-            working_directory / html_file
+            working_directory / html_file,
         )
 
     return result
+
 
 scaled_cols_to_keep = [
     "miller_index",
@@ -342,6 +337,7 @@ scaled_cols_to_keep = [
     "lp",
 ]
 
+
 def _wrap_extend_expts(first_elist, second_elist):
     try:
         first_elist.extend(second_elist)
@@ -352,20 +348,21 @@ def _wrap_extend_expts(first_elist, second_elist):
         )
 
 
-
 @dataclass
 class MergeResult:
-    merge_file: str
-    logfile : str
-    jsonfile: str = ''
-    htmlfile: str = ''
-    summary : str = ''
+    merge_file: Path
+    logfile: Path
+    jsonfile: Optional[Path] = None
+    htmlfile: Optional[Path] = None
+    summary: str = ""
 
 
 from xia2.Modules.SSX.reporting import statistics_output_from_scaled_files
+
+
 def merge_files(working_directory, scaled_results, reduction_params, name):
 
-    #with record_step("joining for merge"):
+    # with record_step("joining for merge"):
     scaled_expts = ExperimentList([])
     scaled_tables = []
     # For merging (a simple program), we don't require much data in the
@@ -373,7 +370,7 @@ def merge_files(working_directory, scaled_results, reduction_params, name):
     # values we know we need for merging and to report statistics
     # first 6 in keep are required in merge, the rest will potentially
     #  be used for filter_reflections call in merge
-    for file_pair in scaled_results:#.values():
+    for file_pair in scaled_results:  # .values():
         expts = load.experiment_list(file_pair.expt, check_format=False)
         _wrap_extend_expts(scaled_expts, expts)
         table = flex.reflection_table.from_file(file_pair.refl)
@@ -386,7 +383,10 @@ def merge_files(working_directory, scaled_results, reduction_params, name):
 
     n_final = len(scaled_expts)
     stats_summary, _ = statistics_output_from_scaled_files(
-        scaled_expts, scaled_table, reduction_params.central_unit_cell , reduction_params.d_min
+        scaled_expts,
+        scaled_table,
+        reduction_params.central_unit_cell,
+        reduction_params.d_min,
     )
 
     mergeresult = merge(
@@ -398,9 +398,9 @@ def merge_files(working_directory, scaled_results, reduction_params, name):
         name,
     )
     mergeresult.summary = (
-        f"Merged {n_final} crystals in {', '.join(name.split('.'))}\n" +
-        f"Merged mtz file: {mergeresult.merge_file}\n" +
-        stats_summary
+        f"Merged {n_final} crystals in {', '.join(name.split('.'))}\n"
+        + f"Merged mtz file: {mergeresult.merge_file}\n"
+        + stats_summary
     )
     return mergeresult
 
@@ -528,12 +528,21 @@ def _extract_scaling_params_for_scale_against_reference(reduction_params, name):
     return params, diff_phil
 
 
+@dataclass
+class ProgramResult:
+    exptfile: Path
+    reflfile: Path
+    logfile: Path
+    htmlfile: Optional[Path]
+    jsonfile: Optional[Path]
+
+
 def scale_against_reference(
     working_directory: Path,
     files: FilePair,
     reduction_params,
     name="",
-) -> FilePair:
+) -> ProgramResult:
     logfile = f"dials.scale.{name}.log"
     with run_in_directory(working_directory), log_to_file(logfile) as dials_logger:
         # Setup scaling
@@ -558,9 +567,12 @@ def scale_against_reference(
         dials_logger.info(f"Saving scaled reflections to {params.output.reflections}")
         scaled_table.as_file(params.output.reflections)
 
-    return FilePair(
+    return ProgramResult(
         working_directory / params.output.experiments,
         working_directory / params.output.reflections,
+        working_directory / logfile,
+        working_directory / params.output.html,
+        working_directory / params.output.json,
     )
 
 
@@ -569,10 +581,10 @@ def scale(
     files_to_scale: List[FilePair],
     reduction_params: ReductionParams,
     name="",
-) -> Tuple[ExperimentList, flex.reflection_table]:
+) -> ProgramResult:
     logfile = "dials.scale.log"
     if name:
-        logfile=f"dials.scale.{name}.log"
+        logfile = f"dials.scale.{name}.log"
     with run_in_directory(working_directory), log_to_file(
         logfile
     ) as dials_logger, record_step("dials.scale"):
@@ -600,29 +612,20 @@ def scale(
             out_expt = f"scaled.{name}.expt"
             out_refl = f"scaled.{name}.refl"
         else:
-            out_expt = f"scaled.expt"
-            out_refl = f"scaled.refl"
+            out_expt = "scaled.expt"
+            out_refl = "scaled.refl"
 
         dials_logger.info(f"Saving scaled experiments to {out_expt}")
         scaled_expts.as_file(out_expt)
         dials_logger.info(f"Saving scaled reflections to {out_refl}")
         scaled_table.as_file(out_refl)
 
-        '''n_final = len(scaled_expts)
-        uc = determine_best_unit_cell(scaled_expts)
-        uc_str = ", ".join(str(round(i, 3)) for i in uc.parameters())
-        xia2_logger.info(
-            f"{n_final} crystals scaled in space group {scaled_expts[0].crystal.get_space_group().info()}\nMedian cell: {uc_str}"
-        )
-        stats_summary, d_min_fit = statistics_output_and_resolution_from_scaler(scaler)
-        xia2_logger.info(stats_summary)'''
-        FileHandler.record_data_file(working_directory / out_expt)
-        FileHandler.record_data_file(working_directory / out_refl)
-        FileHandler.record_log_file("dials.scale", working_directory / logfile)
-
-    return FilePair(
+    return ProgramResult(
         working_directory / out_expt,
         working_directory / out_refl,
+        working_directory / logfile,
+        working_directory / params.output.html,
+        working_directory / params.output.json,
     )
 
 
@@ -685,7 +688,7 @@ def cosym_against_reference(
     files: FilePair,
     index: int,
     reduction_params,
-) -> FilesDict:
+) -> ProgramResult:
     with run_in_directory(working_directory):
         logfile = f"dials.cosym.{index}.log"
         with record_step("dials.cosym"), log_to_file(logfile) as dials_logger:
@@ -711,12 +714,13 @@ def cosym_against_reference(
                 f"Consistently indexed {len(cosym_instance.experiments)} crystals in data reduction batch {index+1} against reference"
             )
 
-    return {
-        index: FilePair(
-            working_directory / cosym_params.output.experiments,
-            working_directory / cosym_params.output.reflections,
-        )
-    }
+    return ProgramResult(
+        working_directory / cosym_params.output.experiments,
+        working_directory / cosym_params.output.reflections,
+        working_directory / cosym_params.output.log,
+        working_directory / cosym_params.output.html,
+        working_directory / cosym_params.output.json,
+    )
 
 
 def individual_cosym(
@@ -724,7 +728,7 @@ def individual_cosym(
     files: FilePair,
     index: int,
     reduction_params,
-) -> FilesDict:
+) -> ProgramResult:
     """Run  cosym an the expt and refl file."""
     logfile = f"dials.cosym.{index}.log"
     with run_in_directory(working_directory), record_step("dials.cosym"), log_to_file(
@@ -754,12 +758,13 @@ def individual_cosym(
             f"Consistently indexed {len(cosym_instance.experiments)} crystals in data reduction batch {index+1}"
         )
 
-    return {
-        index: FilePair(
-            working_directory / cosym_params.output.experiments,
-            working_directory / cosym_params.output.reflections,
-        )
-    }
+    return ProgramResult(
+        working_directory / cosym_params.output.experiments,
+        working_directory / cosym_params.output.reflections,
+        working_directory / cosym_params.output.log,
+        working_directory / cosym_params.output.html,
+        working_directory / cosym_params.output.json,
+    )
 
 
 def cosym_reindex(
@@ -842,12 +847,14 @@ def parallel_cosym(
                         f"Unsuccessful scaling and symmetry analysis of the new data. Error:\n{e}"
                     )
                 else:
-                    reindexed_results.update(result)
+                    reindexed_results.update(
+                        {i: FilePair(result.exptfile, result.reflfile)}
+                    )
                     FileHandler.record_log_file(
-                        f"dials.cosym.{i}", working_directory / f"dials.cosym.{i}.log"
+                        result.logfile.name.rstrip(".log"), result.logfile
                     )
                     FileHandler.record_html_file(
-                        f"dials.cosym.{i}", working_directory / f"dials.cosym.{i}.html"
+                        result.htmlfile.name.rstrip(".html"), result.htmlfile
                     )
 
     sys.stdout = sys.__stdout__  # restore printing
@@ -895,12 +902,14 @@ def parallel_cosym_reference(
                         f"Unsuccessful scaling and symmetry analysis of the new data. Error:\n{e}"
                     )
                 else:
-                    reindexed_results.update(result)
+                    reindexed_results.update(
+                        {i: FilePair(result.exptfile, result.reflfile)}
+                    )
                     FileHandler.record_log_file(
-                        f"dials.cosym.{i}", working_directory / f"dials.cosym.{i}.log"
+                        result.logfile.name.rstrip(".log"), result.logfile
                     )
                     FileHandler.record_html_file(
-                        f"dials.cosym.{i}", working_directory / f"dials.cosym.{i}.html"
+                        result.htmlfile.name.rstrip(".html"), result.htmlfile
                     )
 
     sys.stdout = sys.__stdout__  # restore printing

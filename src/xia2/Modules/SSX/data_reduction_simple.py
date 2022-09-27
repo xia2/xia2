@@ -3,9 +3,11 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
+from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Streams import banner
 from xia2.Modules.SSX.data_reduction_base import BaseDataReduction
 from xia2.Modules.SSX.data_reduction_programs import (
+    FilePair,
     assess_for_indexing_ambiguities,
     check_consistent_space_group,
     cosym_reindex,
@@ -13,10 +15,11 @@ from xia2.Modules.SSX.data_reduction_programs import (
     load_crystal_data_from_new_expts,
     parallel_cosym,
     scale,
+    split_integrated_data,
 )
-from xia2.Modules.SSX.data_reduction_programs import split_integrated_data
 
 xia2_logger = logging.getLogger(__name__)
+
 
 class SimpleDataReduction(BaseDataReduction):
 
@@ -90,7 +93,7 @@ class SimpleDataReduction(BaseDataReduction):
                 xia2_logger.info(
                     f"Consistently reindexed {len(reindexed_new_files)} batches"
                 )
-        self._files_to_scale =  files_to_scale
+        self._files_to_scale = files_to_scale
 
     def _prepare_for_scaling(self, good_crystals_data) -> None:
         new_files_to_process = split_integrated_data(
@@ -99,8 +102,9 @@ class SimpleDataReduction(BaseDataReduction):
             self._integrated_data,
             self._reduction_params,
         )
-        self._files_to_scale = list(new_files_to_process.values()) + self._previously_scaled_data
-
+        self._files_to_scale = (
+            list(new_files_to_process.values()) + self._previously_scaled_data
+        )
 
     def _scale(self) -> None:
 
@@ -108,5 +112,8 @@ class SimpleDataReduction(BaseDataReduction):
             Path.mkdir(self._scale_wd)
 
         result = scale(self._scale_wd, self._files_to_scale, self._reduction_params)
-        xia2_logger.info(f"Completed scaling of all data")
-        self._files_to_merge = [result]
+        xia2_logger.info("Completed scaling of all data")
+        self._files_to_merge = [FilePair(result.exptfile, result.reflfile)]
+        FileHandler.record_data_file(result.exptfile)
+        FileHandler.record_data_file(result.reflfile)
+        FileHandler.record_log_file(result.logfile.name.rstrip(".log"), result.logfile)
