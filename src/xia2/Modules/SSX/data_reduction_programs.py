@@ -289,10 +289,7 @@ def merge(
     ) as dials_logger, record_step("dials.merge"):
         params = merge_phil_scope.extract()
         params.output.additional_stats = True
-        input_ = (
-            "Input parameters:\n  reflections = scaled.refl\n"
-            + "  experiments = scaled.expt\n"
-        )
+        input_ = "Input parameters:\n"
         if d_min:
             params.d_min = d_min
             input_ += f"  d_min = {d_min}\n"

@@ -305,6 +305,7 @@ class BaseDataReduction(object):
             if "merge_by" in self._parsed_yaml._groupings:
                 # for name, scaled_files in scaled_results.items():
                 merge_input = {}
+                print("splitting for merge")
                 groups_for_merge = yml_to_filesdict(
                     self._reindex_wd,
                     self._parsed_yaml,
@@ -313,6 +314,7 @@ class BaseDataReduction(object):
                 )
                 for g, flist in groups_for_merge.items():
                     merge_input[f"{g}"] = flist
+                print("completed splitting for merge")
 
         future_list = (
             []
