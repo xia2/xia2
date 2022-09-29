@@ -95,6 +95,7 @@ def test_geometry_refinement(dials_data, tmp_path, option, expected_success):
         "space_group=P213",
         option,
         "indexing.phil=index.phil",
+        "max_lattices=1",
     ]
     args.append("image=" + os.fspath(ssx / "merlin0047_1700*.cbf"))
 
@@ -194,6 +195,7 @@ def test_full_run_without_reference(dials_data, tmp_path):
         "integration.algorithm=stills",
         "d_min=2.0",
         "enable_live_reporting=True",
+        "max_lattices=1",
     ]
     args.append("image=" + os.fspath(ssx / "merlin0047_1700*.cbf"))
 
