@@ -301,20 +301,22 @@ class BaseDataReduction(object):
         )
 
         merge_input = {"mergegroup_1": scaled_results}  # default if no 'merge_by'
+        metadata_groups = ["  all_data"]
         if self._parsed_yaml:
             if "merge_by" in self._parsed_yaml._groupings:
                 # for name, scaled_files in scaled_results.items():
                 merge_input = {}
-                print("splitting for merge")
-                groups_for_merge = yml_to_filesdict(
-                    self._reindex_wd,
+                groups_for_merge, metadata_groups = yml_to_filesdict(
+                    self._scale_wd,
                     self._parsed_yaml,
                     scaled_results,
                     grouping="merge_by",
                 )
                 for g, flist in groups_for_merge.items():
                     merge_input[f"{g}"] = flist
-                print("completed splitting for merge")
+                xia2_logger.info(
+                    f"Split data into {len(groups_for_merge)} merge groups based on metadata items: {', '.join(self._parsed_yaml.groupings['merge_by'].metadata_names)}"
+                )
 
         future_list = (
             []
@@ -335,13 +337,15 @@ class BaseDataReduction(object):
                         name,
                     )
                 )
-        for name, future in zip(merge_input.keys(), future_list):
+        for name, group, future in zip(
+            merge_input.keys(), metadata_groups, future_list
+        ):
             try:
                 mergeresult = future.result()
             except Exception as e:
                 xia2_logger.warning(f"Unsuccessful merging of {name}. Error:\n{e}")
             else:
-                xia2_logger.info(mergeresult.summary)
+                xia2_logger.info(f"{name}:\n{group}\n" + mergeresult.summary)
                 FileHandler.record_data_file(mergeresult.merge_file)
                 FileHandler.record_log_file(
                     mergeresult.logfile.name.rstrip(".log"), mergeresult.logfile

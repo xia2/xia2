@@ -10,6 +10,7 @@ from cctbx import sgtbx, uctbx
 
 from xia2.Driver.timing import record_step
 from xia2.Handlers.Files import FileHandler
+from xia2.Handlers.Streams import banner
 from xia2.Modules.SSX.data_reduction_base import BaseDataReduction
 from xia2.Modules.SSX.data_reduction_programs import (
     CrystalsDict,
@@ -45,6 +46,7 @@ class DataReductionWithReference(BaseDataReduction):
             Path.mkdir(self._merge_wd)
 
         self._files_to_merge = self._previously_scaled_data
+        xia2_logger.notice(banner("Merging"))
         self._merge()
 
     def _filter(self) -> Tuple[CrystalsDict, uctbx.unit_cell, sgtbx.space_group_info]:

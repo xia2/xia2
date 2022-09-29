@@ -1,17 +1,25 @@
 from __future__ import annotations
 
+import functools
+import itertools
+import logging
 from collections import defaultdict
 from pathlib import Path
+from typing import List, Tuple, TypedDict
 
 import h5py
 import numpy as np
 import yaml
 from yaml.loader import SafeLoader
 
+from dials.array_family import flex
+from dxtbx import flumpy
 from dxtbx.model import ExperimentList
 from dxtbx.serialize import load
 
 from xia2.Modules.SSX.data_reduction_programs import FilePair
+
+xia2_logger = logging.getLogger(__name__)
 
 
 class MetadataInFile(object):
@@ -95,8 +103,8 @@ Summary of data in ParsedGrouping class
                 self._images_to_metadata[image] = meta
         return self
 
-    def extract_data(self):
-        relevant_metadata = defaultdict(dict)
+    def extract_data(self) -> dict:
+        relevant_metadata: dict[str, dict] = defaultdict(dict)
         for img, metadata_dict in self._images_to_metadata.items():
             for k, v in metadata_dict.items():
                 if isinstance(v, MetadataInFile):
@@ -124,12 +132,12 @@ class ParsedYAML(object):
     def __init__(self, images, metadata, structure):
         self._images = images
         self.metadata_items = {}
-        self._groupings = {}
+        self._groupings: dict[str, ParsedGrouping] = {}
         self._parse_metadata(metadata)
         self._parse_structure(structure)
 
     @property
-    def groupings(self):
+    def groupings(self) -> dict[str, ParsedGrouping]:
         return self._groupings
 
     def _parse_metadata(self, metadata):
@@ -226,29 +234,19 @@ def full_parse(yml):
     return ParsedYAML(images, metadata, structure)
 
 
-import logging
-
-xia2_logger = logging.getLogger(__name__)
-
-
-import itertools
-
-from dxtbx import flumpy
-from scitbx.array_family import flex
-
-
-def determine_groups(metadata, metadata_names, tolerances):
+def determine_groups(
+    metadata: dict, metadata_names: List[str], tolerances: dict
+) -> List[MetaDataGroup]:
     # based on the metadata, determine what are the unique groupings.
 
     # a bit of reshaping is needed to handle the fact that the metadata is
     # allowed to be an array of values (of length the number of images in the h5)
     # file, or a single value that corresponds to all images.
     #
-    groups = []  # list of dicts
+    groups: List[MetaDataGroup] = []  # list of dicts
     uniques = []  # list of arrays
 
-    full_values_per_metadata = {}
-    n_images_per_file = {file: 1 for file in metadata.keys()}
+    n_images_per_file: dict[str, int] = {file: 1 for file in metadata.keys()}
 
     # First determine the unique values for each metadata name
     # also do a little bookkeeping as to how many images are in each file
@@ -307,12 +305,27 @@ def determine_groups(metadata, metadata_names, tolerances):
             sel1 = sel1 & flumpy.from_numpy(sel)
         if any(sel1):
             groups.append(
-                {
-                    n: {"min": v, "max": v + tolerances[n]}
-                    for n, v in zip(metadata_names, vals)
-                }
+                MetaDataGroup(
+                    {
+                        n: {"min": v, "max": v + tolerances[n]}
+                        for n, v in zip(metadata_names, vals)
+                    }
+                )
             )
     return groups
+
+
+class MetaDataGroup(object):
+    def __init__(self, data_dict):
+        self._data_dict = data_dict
+
+    def min_max_for_metadata(self, name):
+        return (self._data_dict[name]["min"], self._data_dict[name]["max"])
+
+    def __str__(self):
+        return "\n".join(
+            f"  {k} : {v['min']} - {v['max']}" for k, v in self._data_dict.items()
+        )
 
 
 class ImgIdxToGroupId(object):
@@ -332,22 +345,30 @@ class ImgIdxToGroupId(object):
         return self.group_ids[key]
 
 
-def files_to_groups(metadata, groups):
-    # print(groups)
-    file_to_groups = {
+class GroupInfo(TypedDict):
+    groups: List[int]
+    img_idx_to_group_id: ImgIdxToGroupId
+
+
+def files_to_groups(
+    metadata: dict, groups: List[MetaDataGroup]
+) -> dict[str, GroupInfo]:
+
+    file_to_groups: dict[str, GroupInfo] = {
         n: {"groups": [], "img_idx_to_group_id": ImgIdxToGroupId()}
         for n in metadata.keys()
     }
     for f in file_to_groups:
         metaforfile = metadata[f]
         for i, group in enumerate(groups):
-            in_group = None
+            in_group = np.array([])
             for n, data in metaforfile.items():
                 if isinstance(data, float) or isinstance(data, int):
                     data = np.array([data])
-                s1 = data >= group[n]["min"]
-                s2 = data < group[n]["max"]
-                if in_group is None:
+                minv, maxv = group.min_max_for_metadata(n)
+                s1 = data >= minv
+                s2 = data < maxv
+                if in_group.size == 0:
                     in_group = s1 & s2
                 else:
                     in_group = in_group & s1 & s2
@@ -368,9 +389,6 @@ def files_to_groups(metadata, groups):
                         file_to_groups[f]["img_idx_to_group_id"].set_selected(
                             flumpy.from_numpy(in_group), i
                         )
-    # print(file_to_groups)
-    # for g in file_to_groups.values():
-    #    print(g["img_idx_to_group_id"].single_return_val)
     return file_to_groups
 
 
@@ -383,7 +401,9 @@ class GroupsIdentifiersForExpt(object):
         self.unique_group_numbers = None
 
 
-def get_expt_file_to_groupsdata(integrated_files, img_file_to_groups):
+def get_expt_file_to_groupsdata(
+    integrated_files: List[FilePair], img_file_to_groups: dict
+) -> dict:
     expt_file_to_groupsdata = {}
 
     for fp in integrated_files:
@@ -424,9 +444,7 @@ def get_expt_file_to_groupsdata(integrated_files, img_file_to_groups):
 
 def split_files_to_groups(
     working_directory, groups, expt_file_to_groupsdata, integrated_files, grouping
-):
-    filesdict = {}  # dict of lists
-    import functools
+) -> dict[str, List[FilePair]]:
 
     template = "{name}group_{index:0{maxindexlength:d}d}"
     name_template = functools.partial(
@@ -435,12 +453,12 @@ def split_files_to_groups(
         maxindexlength=len(str(len(groups))),
     )
 
-    names = [name_template(index=i + 1) for i, _ in enumerate(groups)]
-    filesdict = {name: [] for name in names}
+    names: List[str] = [name_template(index=i + 1) for i, _ in enumerate(groups)]
+    filesdict: dict[str, List[FilePair]] = {name: [] for name in names}
     output_group_idx = 0
     for g, name in enumerate(names):
         expts_0 = ExperimentList([])
-        refls_0 = []
+        refls_0: List[flex.reflection_table] = []
         for fp in integrated_files:
             groupdata = expt_file_to_groupsdata[fp.expt]
             if groupdata.single_group == g:
@@ -458,20 +476,19 @@ def split_files_to_groups(
             exptout = working_directory / f"group_{output_group_idx}.expt"
             reflout = working_directory / f"group_{output_group_idx}.refl"
             expts_0.as_file(exptout)
-            refls_0 = flex.reflection_table.concat(refls_0)
-            refls_0.as_file(reflout)
+            joint_refls = flex.reflection_table.concat(refls_0)
+            joint_refls.as_file(reflout)
             output_group_idx += 1
             filesdict[name].append(FilePair(exptout, reflout))
     return filesdict
 
 
 def yml_to_filesdict(
-    working_directory,
-    parsed,
-    integrated_files,
-    good_crystals_data=None,
-    grouping="scale_by",
-):
+    working_directory: Path,
+    parsed: ParsedYAML,
+    integrated_files: List[FilePair],
+    grouping: str = "scale_by",
+) -> Tuple[dict[str, List[FilePair]], List[MetaDataGroup]]:
     if not Path.is_dir(working_directory):
         Path.mkdir(working_directory)
 
@@ -490,4 +507,4 @@ def yml_to_filesdict(
     fd = split_files_to_groups(
         working_directory, groups, expt_file_to_groupsdata, integrated_files, grouping
     )
-    return fd
+    return fd, groups

@@ -63,6 +63,7 @@ class SimpleDataReduction(BaseDataReduction):
             self._files_to_scale = self._previously_scaled_data
         xia2_logger.notice(banner("Scaling"))
         self._scale()
+        xia2_logger.notice(banner("Merging"))
         self._merge()
 
     def _reindex(self) -> None:
