@@ -443,7 +443,12 @@ def get_expt_file_to_groupsdata(
 
 
 def split_files_to_groups(
-    working_directory, groups, expt_file_to_groupsdata, integrated_files, grouping
+    working_directory,
+    groups,
+    expt_file_to_groupsdata,
+    integrated_files,
+    grouping,
+    batch_size=1000,
 ) -> dict[str, List[FilePair]]:
 
     template = "{name}group_{index:0{maxindexlength:d}d}"
@@ -457,6 +462,7 @@ def split_files_to_groups(
     filesdict: dict[str, List[FilePair]] = {name: [] for name in names}
     output_group_idx = 0
     for g, name in enumerate(names):
+        group_batch_idx = 0
         expts_0 = ExperimentList([])
         refls_0: List[flex.reflection_table] = []
         for fp in integrated_files:
@@ -472,14 +478,40 @@ def split_files_to_groups(
                 expts.select_on_experiment_identifiers(sel_identifiers)
                 refls_0.append(refls.select_on_experiment_identifiers(sel_identifiers))
                 expts_0.extend(expts)
+            if len(expts_0) >= batch_size:
+                exptout = (
+                    working_directory
+                    / f"group_{output_group_idx}_{group_batch_idx}.expt"
+                )
+                reflout = (
+                    working_directory
+                    / f"group_{output_group_idx}_{group_batch_idx}.refl"
+                )
+                expts_0.as_file(exptout)
+                if len(refls_0) > 1:
+                    joint_refls = flex.reflection_table.concat(refls_0)
+                    joint_refls.as_file(reflout)
+                else:
+                    refls_0[0].as_file(reflout)
+                filesdict[name].append(FilePair(exptout, reflout))
+                group_batch_idx += 1
+                expts_0 = ExperimentList([])
+                refls_0 = []
         if refls_0:
-            exptout = working_directory / f"group_{output_group_idx}.expt"
-            reflout = working_directory / f"group_{output_group_idx}.refl"
+            exptout = (
+                working_directory / f"group_{output_group_idx}_{group_batch_idx}.expt"
+            )
+            reflout = (
+                working_directory / f"group_{output_group_idx}_{group_batch_idx}.refl"
+            )
             expts_0.as_file(exptout)
-            joint_refls = flex.reflection_table.concat(refls_0)
-            joint_refls.as_file(reflout)
-            output_group_idx += 1
+            if len(refls_0) > 1:
+                joint_refls = flex.reflection_table.concat(refls_0)
+                joint_refls.as_file(reflout)
+            else:
+                refls_0[0].as_file(reflout)
             filesdict[name].append(FilePair(exptout, reflout))
+        output_group_idx += 1
     return filesdict
 
 
@@ -488,6 +520,7 @@ def yml_to_filesdict(
     parsed: ParsedYAML,
     integrated_files: List[FilePair],
     grouping: str = "scale_by",
+    batch_size: int = 1000,
 ) -> Tuple[dict[str, List[FilePair]], List[MetaDataGroup]]:
     if not Path.is_dir(working_directory):
         Path.mkdir(working_directory)
@@ -505,6 +538,11 @@ def yml_to_filesdict(
     )
 
     fd = split_files_to_groups(
-        working_directory, groups, expt_file_to_groupsdata, integrated_files, grouping
+        working_directory,
+        groups,
+        expt_file_to_groupsdata,
+        integrated_files,
+        grouping,
+        batch_size,
     )
     return fd, groups

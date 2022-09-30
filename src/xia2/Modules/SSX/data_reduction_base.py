@@ -311,6 +311,7 @@ class BaseDataReduction(object):
                     self._parsed_yaml,
                     scaled_results,
                     grouping="merge_by",
+                    batch_size=self._reduction_params.batch_size,
                 )
                 for g, flist in groups_for_merge.items():
                     merge_input[f"{g}"] = flist
