@@ -61,6 +61,18 @@ def inspect_directories(directories_to_process: List[Path]) -> List[FilePair]:
     return new_data
 
 
+def validate(expt: Path, refl: Path):
+    fp = FilePair(expt, refl)
+    try:
+        fp.validate()
+    except AssertionError:
+        raise ValueError(
+            f"Files {fp.expt} & {fp.refl} not consistent, please check input data"
+        )
+    else:
+        return fp
+
+
 def inspect_scaled_directories(
     directories_to_process: List[Path],
     reduction_params: ReductionParams,
@@ -78,14 +90,17 @@ def inspect_scaled_directories(
                 f"Unequal number of experiments ({len(expts_this)}) "
                 + f"and reflections ({len(refls_this)}) files found in {d}"
             )
-        for expt, refl in zip(sorted(expts_this), sorted(refls_this)):
-            fp = FilePair(expt, refl)
+        future_list = []
+        with concurrent.futures.ProcessPoolExecutor(
+            max_workers=min(reduction_params.nproc, len(expts_this))
+        ) as pool:
+            for expt, refl in zip(sorted(expts_this), sorted(refls_this)):
+                future_list.append(pool.submit(validate, expt, refl))
+        for future in future_list:
             try:
-                fp.validate()
-            except AssertionError:
-                raise ValueError(
-                    f"Files {fp.expt} & {fp.refl} not consistent, please check input data"
-                )
+                fp = future.result()
+            except ValueError as e:
+                xia2_logger.warning(e)
             else:
                 new_data.append(fp)
         if not expts_this:
