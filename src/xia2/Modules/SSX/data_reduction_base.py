@@ -81,30 +81,32 @@ def inspect_scaled_directories(
     for d in directories_to_process:
         # if reduction_params.model - check same as for these data.
         expts_this, refls_this = ([], [])
-        for file_ in list(d.glob("scale*.expt")):
+        for file_ in list(d.glob("*batch*.expt")):
             expts_this.append(file_)
-        for file_ in list(d.glob("scale*.refl")):
+        for file_ in list(d.glob("*batch*.refl")):
             refls_this.append(file_)
         if len(expts_this) != len(refls_this):
             raise ValueError(
                 f"Unequal number of experiments ({len(expts_this)}) "
                 + f"and reflections ({len(refls_this)}) files found in {d}"
             )
-        future_list = []
-        with concurrent.futures.ProcessPoolExecutor(
-            max_workers=min(reduction_params.nproc, len(expts_this))
-        ) as pool:
-            for expt, refl in zip(sorted(expts_this), sorted(refls_this)):
-                future_list.append(pool.submit(validate, expt, refl))
-        for future in future_list:
-            try:
-                fp = future.result()
-            except ValueError as e:
-                xia2_logger.warning(e)
-            else:
-                new_data.append(fp)
         if not expts_this:
             xia2_logger.warning(f"No scaled data files found in {str(d)}")
+        else:
+            future_list = []
+            with concurrent.futures.ProcessPoolExecutor(
+                max_workers=min(reduction_params.nproc, len(expts_this))
+            ) as pool:
+                for expt, refl in zip(sorted(expts_this), sorted(refls_this)):
+                    future_list.append(pool.submit(validate, expt, refl))
+            for future in future_list:
+                try:
+                    fp = future.result()
+                except ValueError as e:
+                    xia2_logger.warning(e)
+                else:
+                    new_data.append(fp)
+
     if not new_data:
         raise ValueError("No scaled datafiles found in directories given")
     return new_data
@@ -326,7 +328,7 @@ class BaseDataReduction(object):
                     self._parsed_yaml,
                     scaled_results,
                     grouping="merge_by",
-                    batch_size=self._reduction_params.batch_size,
+                    nproc=self._reduction_params.nproc,
                 )
                 for g, flist in groups_for_merge.items():
                     merge_input[f"{g}"] = flist

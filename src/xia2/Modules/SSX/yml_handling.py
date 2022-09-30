@@ -4,6 +4,7 @@ import functools
 import itertools
 import logging
 from collections import defaultdict
+from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Tuple, TypedDict
 
@@ -14,7 +15,6 @@ from yaml.loader import SafeLoader
 
 from dials.array_family import flex
 from dxtbx import flumpy
-from dxtbx.model import ExperimentList
 from dxtbx.serialize import load
 
 from xia2.Modules.SSX.data_reduction_programs import FilePair
@@ -442,13 +442,47 @@ def get_expt_file_to_groupsdata(
     return expt_file_to_groupsdata
 
 
+from xia2.Modules.SSX.data_reduction_programs import trim_table_for_merge
+
+
+def _save_split_for_merge(input_):
+    expts = load.experiment_list(input_.fp.expt, check_format=False)
+    refls = flex.reflection_table.from_file(input_.fp.refl)
+    trim_table_for_merge(refls)
+    identifiers = expts.identifiers()
+    sel = input_.groupdata.groups_array == input_.g
+    sel_identifiers = list(identifiers.select(flumpy.from_numpy(sel)))
+    expts.select_on_experiment_identifiers(sel_identifiers)
+    refls.select_on_experiment_identifiers(sel_identifiers)
+    if expts:
+        exptout = input_.working_directory / f"group_{input_.g}_{input_.i}.expt"
+        reflout = input_.working_directory / f"group_{input_.g}_{input_.i}.refl"
+        expts.as_file(exptout)
+        refls.as_file(reflout)
+        return (input_.name, FilePair(exptout, reflout))
+    return None
+
+
+@dataclass
+class InputIterable(object):
+    working_directory: Path
+    fp: FilePair
+    i: int
+    g: int
+    groupdata: GroupsIdentifiersForExpt
+    name: str
+
+
+from multiprocessing import Pool
+
+
 def split_files_to_groups(
     working_directory,
     groups,
     expt_file_to_groupsdata,
     integrated_files,
     grouping,
-    batch_size=1000,
+    nproc=1,
 ) -> dict[str, List[FilePair]]:
 
     template = "{name}group_{index:0{maxindexlength:d}d}"
@@ -460,58 +494,25 @@ def split_files_to_groups(
 
     names: List[str] = [name_template(index=i + 1) for i, _ in enumerate(groups)]
     filesdict: dict[str, List[FilePair]] = {name: [] for name in names}
-    output_group_idx = 0
+
+    input_iterable = []
     for g, name in enumerate(names):
-        group_batch_idx = 0
-        expts_0 = ExperimentList([])
-        refls_0: List[flex.reflection_table] = []
-        for fp in integrated_files:
+        for i, fp in enumerate(integrated_files):
             groupdata = expt_file_to_groupsdata[fp.expt]
             if groupdata.single_group == g:
                 filesdict[name].append(fp)
             elif g in groupdata.unique_group_numbers:
-                expts = load.experiment_list(fp.expt, check_format=False)
-                refls = flex.reflection_table.from_file(fp.refl)
-                identifiers = expts.identifiers()
-                sel = groupdata.groups_array == g
-                sel_identifiers = list(identifiers.select(flumpy.from_numpy(sel)))
-                expts.select_on_experiment_identifiers(sel_identifiers)
-                refls_0.append(refls.select_on_experiment_identifiers(sel_identifiers))
-                expts_0.extend(expts)
-            if len(expts_0) >= batch_size:
-                exptout = (
-                    working_directory
-                    / f"group_{output_group_idx}_{group_batch_idx}.expt"
+                input_iterable.append(
+                    InputIterable(working_directory, fp, i, g, groupdata, name)
                 )
-                reflout = (
-                    working_directory
-                    / f"group_{output_group_idx}_{group_batch_idx}.refl"
-                )
-                expts_0.as_file(exptout)
-                if len(refls_0) > 1:
-                    joint_refls = flex.reflection_table.concat(refls_0)
-                    joint_refls.as_file(reflout)
-                else:
-                    refls_0[0].as_file(reflout)
-                filesdict[name].append(FilePair(exptout, reflout))
-                group_batch_idx += 1
-                expts_0 = ExperimentList([])
-                refls_0 = []
-        if refls_0:
-            exptout = (
-                working_directory / f"group_{output_group_idx}_{group_batch_idx}.expt"
-            )
-            reflout = (
-                working_directory / f"group_{output_group_idx}_{group_batch_idx}.refl"
-            )
-            expts_0.as_file(exptout)
-            if len(refls_0) > 1:
-                joint_refls = flex.reflection_table.concat(refls_0)
-                joint_refls.as_file(reflout)
-            else:
-                refls_0[0].as_file(reflout)
-            filesdict[name].append(FilePair(exptout, reflout))
-        output_group_idx += 1
+    if input_iterable:
+        with Pool(min(nproc, len(input_iterable))) as pool:
+            results = pool.map(_save_split_for_merge, input_iterable)
+        for result in results:
+            if result:
+                name = result[0]
+                fp = result[1]
+                filesdict[name].append(fp)
     return filesdict
 
 
@@ -520,7 +521,7 @@ def yml_to_filesdict(
     parsed: ParsedYAML,
     integrated_files: List[FilePair],
     grouping: str = "scale_by",
-    batch_size: int = 1000,
+    nproc: int = 1,
 ) -> Tuple[dict[str, List[FilePair]], List[MetaDataGroup]]:
     if not Path.is_dir(working_directory):
         Path.mkdir(working_directory)
@@ -543,6 +544,6 @@ def yml_to_filesdict(
         expt_file_to_groupsdata,
         integrated_files,
         grouping,
-        batch_size,
+        nproc,
     )
     return fd, groups

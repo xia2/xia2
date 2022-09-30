@@ -334,6 +334,12 @@ scaled_cols_to_keep = [
 ]
 
 
+def trim_table_for_merge(table):
+    for k in list(table.keys()):
+        if k not in scaled_cols_to_keep:
+            del table[k]
+
+
 def _wrap_extend_expts(first_elist, second_elist):
     try:
         first_elist.extend(second_elist)
@@ -367,9 +373,7 @@ def merge_files(working_directory, scaled_results, reduction_params, name):
         expts = load.experiment_list(file_pair.expt, check_format=False)
         _wrap_extend_expts(scaled_expts, expts)
         table = flex.reflection_table.from_file(file_pair.refl)
-        for k in list(table.keys()):
-            if k not in scaled_cols_to_keep:
-                del table[k]
+        trim_table_for_merge(table)
         scaled_tables.append(table)
 
     scaled_table = flex.reflection_table.concat(scaled_tables)
