@@ -81,9 +81,9 @@ def inspect_scaled_directories(
     for d in directories_to_process:
         # if reduction_params.model - check same as for these data.
         expts_this, refls_this = ([], [])
-        for file_ in list(d.glob("*batch*.expt")):
+        for file_ in list(d.glob("scale*.expt")):
             expts_this.append(file_)
-        for file_ in list(d.glob("*batch*.refl")):
+        for file_ in list(d.glob("scale*.refl")):
             refls_this.append(file_)
         if len(expts_this) != len(refls_this):
             raise ValueError(
