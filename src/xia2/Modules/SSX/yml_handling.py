@@ -462,16 +462,20 @@ def _save_split_for_merge(input_):
         return (input_.name, FilePair(exptout, reflout))
     return None
 
+
 from dials.algorithms.scaling.scaling_library import scaled_data_as_miller_array
+
+
 def _save_scaled_array_for_merge(input_):
     expts = load.experiment_list(input_.fp.expt, check_format=False)
     refls = flex.reflection_table.from_file(input_.fp.refl)
     trim_table_for_merge(refls)
-    identifiers = expts.identifiers()
-    sel = input_.groupdata.groups_array == input_.g
-    sel_identifiers = list(identifiers.select(flumpy.from_numpy(sel)))
-    expts.select_on_experiment_identifiers(sel_identifiers)
-    refls.select_on_experiment_identifiers(sel_identifiers)
+    if input_.select:
+        identifiers = expts.identifiers()
+        sel = input_.groupdata.groups_array == input_.g
+        sel_identifiers = list(identifiers.select(flumpy.from_numpy(sel)))
+        expts.select_on_experiment_identifiers(sel_identifiers)
+        refls.select_on_experiment_identifiers(sel_identifiers)
     if expts:
         refls["d"] = input_.best_unit_cell.d(refls["miller_index"])
         for expt in expts:
@@ -481,7 +485,7 @@ def _save_scaled_array_for_merge(input_):
             intensity_choice=["scale"],
             d_min=input_.d_min,
             combine_partials=False,
-            partiality_threshold=0.4, # make this setable?
+            partiality_threshold=0.4,  # make this setable?
         )
         tmp = flex.reflection_table()
         tmp["miller_index"] = refls["miller_index"]
@@ -496,8 +500,10 @@ def _save_scaled_array_for_merge(input_):
         return (input_.name, FilePair(exptout, reflout))
     return None
 
-from dials.util.filter_reflections import filter_reflection_table
+
 from cctbx import uctbx
+from dials.util.filter_reflections import filter_reflection_table
+
 
 @dataclass
 class InputIterable(object):
@@ -507,13 +513,47 @@ class InputIterable(object):
     g: int
     groupdata: GroupsIdentifiersForExpt
     name: str
-    d_min:float
+    d_min: float
     best_unit_cell: uctbx.unit_cell
+    select: bool = False
 
 
-from multiprocessing import Pool
 import copy
+from multiprocessing import Pool
+
 from xia2.Modules.SSX.data_reduction_definitions import ReductionParams
+
+def apply_scaled_array_to_all_files(working_directory, scaled_files, reduction_params):
+
+    g = 0
+    name = "all data"
+    groupdata = ""
+    input_iterable = []
+    filesdict = {name : []}
+    for i, fp in enumerate(scaled_files):
+        input_iterable.append(
+            InputIterable(
+                working_directory,
+                fp,
+                i,
+                g,
+                groupdata,
+                name,
+                reduction_params.d_min,
+                copy.deepcopy(reduction_params.central_unit_cell),
+                select=False,
+            )
+        )
+    if input_iterable:
+        with Pool(min(reduction_params.nproc, len(input_iterable))) as pool:
+            results = pool.map(_save_scaled_array_for_merge, input_iterable)
+        for result in results:
+            if result:
+                name = result[0]
+                fp = result[1]
+                filesdict[name].append(fp)
+    return (filesdict, ["  all data"])
+
 
 def split_files_to_groups(
     working_directory,
@@ -521,7 +561,7 @@ def split_files_to_groups(
     expt_file_to_groupsdata,
     integrated_files,
     grouping,
-    reduction_params : ReductionParams,
+    reduction_params: ReductionParams,
 ) -> dict[str, List[FilePair]]:
 
     template = "{name}group_{index:0{maxindexlength:d}d}"
@@ -539,10 +579,32 @@ def split_files_to_groups(
         for i, fp in enumerate(integrated_files):
             groupdata = expt_file_to_groupsdata[fp.expt]
             if groupdata.single_group == g:
-                filesdict[name].append(fp)
+                input_iterable.append(
+                    InputIterable(
+                        working_directory,
+                        fp,
+                        i,
+                        g,
+                        groupdata,
+                        name,
+                        reduction_params.d_min,
+                        copy.deepcopy(reduction_params.central_unit_cell),
+                    )
+                )
+                # filesdict[name].append(fp)
             elif g in groupdata.unique_group_numbers:
                 input_iterable.append(
-                    InputIterable(working_directory, fp, i, g, groupdata, name, reduction_params.d_min, copy.deepcopy(reduction_params.central_unit_cell))
+                    InputIterable(
+                        working_directory,
+                        fp,
+                        i,
+                        g,
+                        groupdata,
+                        name,
+                        reduction_params.d_min,
+                        copy.deepcopy(reduction_params.central_unit_cell),
+                        select=True,
+                    )
                 )
     if input_iterable:
         with Pool(min(reduction_params.nproc, len(input_iterable))) as pool:
