@@ -23,7 +23,7 @@ from dials.command_line.cosym import cosym
 from dials.command_line.cosym import phil_scope as cosym_phil_scope
 from dials.command_line.cosym import register_default_cosym_observers
 from dials.command_line.merge import generate_html_report as merge_html_report
-from dials.command_line.merge import merge_data_to_mtz_with_report_collection
+from dials.command_line.merge import merge_data_to_mtz_with_report_collection, merge_scaled_array_to_mtz_with_report_collection
 from dials.command_line.merge import phil_scope as merge_phil_scope
 from dials.command_line.scale import phil_scope as scaling_phil_scope
 from dxtbx.model import Crystal, ExperimentList
@@ -37,6 +37,7 @@ from xia2.Modules.SSX.reporting import (
     condensed_unit_cell_info,
     statistics_output_from_scaled_files,
 )
+from dials.algorithms.scaling.scaling_library import scaled_data_as_miller_array
 from xia2.Modules.SSX.util import log_to_file, run_in_directory
 
 xia2_logger = logging.getLogger(__name__)
@@ -269,8 +270,8 @@ def run_uc_cluster(
 
 def merge(
     working_directory: Path,
-    experiments: ExperimentList,
-    reflection_table: flex.reflection_table,
+    scaled_array,
+    experiments,
     d_min: float = None,
     best_unit_cell: Optional[uctbx.unit_cell] = None,
     name: Optional[str] = None,
@@ -296,10 +297,22 @@ def merge(
         if best_unit_cell:
             params.best_unit_cell = best_unit_cell
             input_ += f"  best_unit_cell = {best_unit_cell.parameters()}"
+        params.assess_space_group = False
+        params.combine_partials = False
+
+        # use multiprocessing to load data, filter,
+        '''experiments, scaled_array = prepare_scaled_array(
+            scaled_results[0],
+            best_unit_cell,
+            d_min,
+        )'''
         dials_logger.info(input_)
-        mtz_file, json_data = merge_data_to_mtz_with_report_collection(
-            params, experiments, [reflection_table]
+        mtz_file, json_data = merge_scaled_array_to_mtz_with_report_collection(
+            params, experiments, scaled_array
         )
+        #mtz_file, json_data = merge_data_to_mtz_with_report_collection(
+        #    params, experiments, [reflection_table]
+        #)
         dials_logger.info(f"\nWriting reflections to {filename}")
         out = StringIO()
         mtz_file.show_summary(out=out)
@@ -313,7 +326,13 @@ def merge(
             working_directory / logfile,
             working_directory / json_file,
             working_directory / html_file,
+            name = name,
         )
+        wlkey = list(json_data.keys())[0]
+        table_1_stats = json_data[wlkey]["table_1_stats"]
+        result.summary = (f"Merged {len(experiments)} crystals in {', '.join(name.split('.'))}\n" +
+            f"Merged mtz file: {filename}\n"
+            + f"{table_1_stats}")
 
     return result
 
@@ -357,11 +376,13 @@ class MergeResult:
     jsonfile: Optional[Path] = None
     htmlfile: Optional[Path] = None
     summary: str = ""
+    table_1_stats: str = ""
+    name:str = ""
 
 
-def merge_files(working_directory, scaled_results, reduction_params, name):
+def merge_files(working_directory, scaled_array, elist, reduction_params, name):
 
-    # with record_step("joining for merge"):
+    '''# with record_step("joining for merge"):
     scaled_expts = ExperimentList([])
     scaled_tables = []
     # For merging (a simple program), we don't require much data in the
@@ -369,6 +390,7 @@ def merge_files(working_directory, scaled_results, reduction_params, name):
     # values we know we need for merging and to report statistics
     # first 6 in keep are required in merge, the rest will potentially
     #  be used for filter_reflections call in merge
+
     for file_pair in scaled_results:  # .values():
         expts = load.experiment_list(file_pair.expt, check_format=False)
         _wrap_extend_expts(scaled_expts, expts)
@@ -377,28 +399,16 @@ def merge_files(working_directory, scaled_results, reduction_params, name):
         scaled_tables.append(table)
 
     scaled_table = flex.reflection_table.concat(scaled_tables)
-
-    n_final = len(scaled_expts)
-    stats_summary, _ = statistics_output_from_scaled_files(
-        scaled_expts,
-        scaled_table,
-        reduction_params.central_unit_cell,
-        reduction_params.d_min,
-    )
-
+    '''
     mergeresult = merge(
         working_directory,
-        scaled_expts,
-        scaled_table,
+        scaled_array,
+        elist,
         reduction_params.d_min,
         reduction_params.central_unit_cell,
         name,
     )
-    mergeresult.summary = (
-        f"Merged {n_final} crystals in {', '.join(name.split('.'))}\n"
-        + f"Merged mtz file: {mergeresult.merge_file}\n"
-        + stats_summary
-    )
+
     return mergeresult
 
 
